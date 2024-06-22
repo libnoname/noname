@@ -2,6 +2,70 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL界刘表
+	olzishou: {
+		audio: 2,
+		trigger: {
+			player: "phaseDrawBegin2",
+		},
+		check: function (event, player) {
+			return (
+				player.countCards("h") <= (player.hasSkill("olzongshi") ? player.maxHp : player.hp - 2) ||
+				player.skipList.includes("phaseUse") ||
+				!player.countCards("h", function (card) {
+					return get.tag(card, "damage") && player.hasUseTarget(card);
+				})
+			);
+		},
+		filter: function (event, player) {
+			return !event.numFixed;
+		},
+		async content(event, trigger, player) {
+			trigger.num += game.countGroup();
+			player.storage.olzishou = false
+			player.when({ global: "phaseJieshuBegin" }).then(() => {
+				if (player.hasHistory("sourceDamage", evt => evt.player != player) && player.getHistory("useSkill", evt => {
+					evt.skill == "olzishou"
+				}) && player.storage.olzishou != true) player.chooseToDiscard(true, game.countGroup());
+				player.storage.olzishou = true
+			});
+		},
+		ai: {
+			threaten: 1.5,
+		},
+	},
+	olzongshi: {
+		audio: 2,
+		inherit: "zongshi",
+		trigger: {
+			player: "damageBegin4",
+		},
+		filter: function (event, player) {
+			if (!event.source || !event.source.isIn() || event.source == player) return false;
+			return !player.getStorage("olzongshi").includes(event.source.group);
+		},
+		forced: true,
+		onremove: true,
+		logTarget: "source",
+		async content(event, trigger, player) {
+			player.markAuto("olzongshi", [trigger.source.group])
+			await trigger.source.draw();
+			trigger.cancel();
+		},
+		intro: {
+			content: "已记过势力：$",
+		},
+		ai: {
+			filterDamage: true,
+			skillTagFilter: function (player, tag, arg) {
+				if (arg && arg.player) {
+					if (arg.player.hasSkillTag('jueqing', false, player)) return false;
+					if (!player.getStorage("olzongshi").includes(arg.player.group) && arg.jiu) return true;
+				}
+				return false;
+			},
+		},
+	},
 	//OL界李儒
 	olmieji: {
 		audio: 2,
