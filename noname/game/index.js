@@ -119,6 +119,15 @@ export class Game extends GameCompatible {
 		}
 	})();
 	/**
+	 * 添加新的点数
+	 */
+	addNumber(number, string) {
+		if (!number) throw new TypeError();
+		if (string) lib.strNumber.set(number, string);
+		else lib.strNumber.set(number, number.toString());
+		return number;
+	};
+	/**
 	 * 交换任意两个元素的位置，附带过渡动画
 	 * @param {HTMLDivElement} e1
 	 * @param {HTMLDivElement} e2

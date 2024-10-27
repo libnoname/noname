@@ -5458,23 +5458,22 @@ const skills = {
 			},
 			aiValue: (player, card, val) => {
 				if (card.name == "wuxie") return 0;
-				var num = get.number(card);
-				if ([1, 11, 12, 13].includes(num)) return val * 1.1;
+				if (get.strNumber(card)) return val * 1.1;
 			},
 			aiUseful: (player, card, val) => {
 				if (card.name == "wuxie") return 0;
-				var num = get.number(card);
-				if ([1, 11, 12, 13].includes(num)) return val * 1.1;
+				if (get.strNumber(card)) return val * 1.1;
 			},
 			aiOrder: (player, card, order) => {
 				if (get.name(card) == "sha" && player.hasSkill("oltuishi_unlimit")) order += 9;
-				var num = get.number(card);
-				if ([1, 11, 12, 13].includes(num)) order += 3;
+				if (get.strNumber(card)) order += 3;
 				return order;
 			},
 		},
-		trigger: { player: ["useCard", "useCardAfter"] },
-		filter: function (event, player, name) {
+		trigger: {
+			player: ["useCard", "useCardAfter"],
+		},
+		filter(event, player, name) {
 			if (name == "useCardAfter") {
 				if (player.isTempBanned("olxiaofan")) return false;
 				return (
@@ -5489,10 +5488,10 @@ const skills = {
 						.indexOf(event) >= 2
 				);
 			}
-			return [1, 11, 12, 13].includes(get.number(event.card));
+			return get.strNumber(event.card);
 		},
 		forced: true,
-		content: function () {
+		content() {
 			"step 0";
 			if (event.triggername == "useCardAfter") {
 				player.tempBanSkill("olxiaofan");
@@ -5517,8 +5516,10 @@ const skills = {
 						if (target.countCards("h") < player.countCards("h")) return true;
 					},
 				},
-				trigger: { player: "useCard1" },
-				filter: function (event, player) {
+				trigger: {
+					player: "useCard1",
+				},
+				filter(event, player) {
 					if (!event.targets || !event.targets.length) return false;
 					let num = 0;
 					if (event.cards && event.cards.length) {
@@ -5534,7 +5535,7 @@ const skills = {
 				popup: false,
 				silent: true,
 				firstDo: true,
-				content: function () {
+				content() {
 					player.removeSkill("oltuishi_unlimit");
 					var card = trigger.card;
 					if (!card.storage) card.storage = {};
@@ -5545,7 +5546,9 @@ const skills = {
 					}
 				},
 				mark: true,
-				intro: { content: "对手牌数小于你的角色使用的下一张牌无距离次数限制" },
+				intro: {
+					content: "对手牌数小于你的角色使用的下一张牌无距离次数限制",
+				},
 			},
 		},
 	},

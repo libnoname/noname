@@ -4704,8 +4704,7 @@ const skills = {
 			"step 3";
 			if (result.bool) {
 				var card = result.cards[0];
-				var num = get.number(card);
-				if ([1, 11, 12, 13].includes(num)) {
+				if (get.strNumber(card)) {
 					if (lib.filter.canBeGained(card, player, target)) player.gain(card, target, "give", "bySelf");
 				} else if (lib.filter.canBeDiscarded(card, player, target)) target.discard(card);
 			} else event.finish();
@@ -4909,7 +4908,7 @@ const skills = {
 				audio: 2,
 				mod: {
 					cardname(card, player) {
-						if (player.storage.yuheng && [1, 11, 12, 13].includes(card.number)) {
+						if (player.storage.yuheng && get.strNumber(card)) {
 							var list = ["rezhiheng", "jiexun", "reanxu"];
 							for (var i of list) {
 								if (!player.storage.yuheng.includes(i)) return;

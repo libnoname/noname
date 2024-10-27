@@ -311,22 +311,8 @@ export class Card extends HTMLDivElement {
 		var info = lib.card[card[2]];
 		var cardnum = card[1] || "";
 		if (parseInt(cardnum) == cardnum) cardnum = parseInt(cardnum);
-		if (cardnum > 0 && cardnum < 14) {
-			cardnum = [
-				"A",
-				"2",
-				"3",
-				"4",
-				"5",
-				"6",
-				"7",
-				"8",
-				"9",
-				"10",
-				"J",
-				"Q",
-				"K",
-			][cardnum - 1];
+		if (lib.strNumber.has(cardnum)) {
+			cardnum = lib.strNumber.get(cardnum);
 		}
 		if (this.name) {
 			this.classList.remove("epic");
@@ -373,50 +359,31 @@ export class Card extends HTMLDivElement {
 			this.classList.add("fullskin");
 			if (img) {
 				if (img.startsWith("ext:")) {
-					this.node.image.setBackgroundImage(
-						img.replace(/^ext:/, "extension/")
-					);
+					this.node.image.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 				} else {
 					this.node.image.setBackgroundDB(img);
 				}
 			} else {
 				if (lib.card[bg].modeimage) {
-					this.node.image.setBackgroundImage(
-						"image/mode/" +
-							lib.card[bg].modeimage +
-							"/card/" +
-							bg +
-							".png"
-					);
+					this.node.image.setBackgroundImage("image/mode/" + lib.card[bg].modeimage + "/card/" + bg + ".png");
 				} else {
 					do {
 						let nature = card[3];
 						if (bg == "sha" && typeof nature == "string") {
 							let natures = get.natureList(nature),
 								_bg;
-							for (const n of natures)
-								if (lib.natureBg.has(n)) _bg = n;
+							for (const n of natures) if (lib.natureBg.has(n)) _bg = n;
 							if (_bg) {
-								this.node.image.setBackgroundImage(
-									lib.natureBg.get(_bg)
-								);
+								this.node.image.setBackgroundImage(lib.natureBg.get(_bg));
 								break;
 							}
 						}
-						this.node.image.setBackgroundImage(
-							"image/card/" + bg + ".png"
-						);
+						this.node.image.setBackgroundImage("image/card/" + bg + ".png");
 					} while (0);
 				}
 			}
-		} else if (
-			get.dynamicVariable(lib.card[bg].image, this) == "background"
-		) {
-			if (card[3])
-				this.node.background.setBackground(
-					bg + "_" + get.natureList(card[3])[0],
-					"card"
-				);
+		} else if (get.dynamicVariable(lib.card[bg].image, this) == "background") {
+			if (card[3]) this.node.background.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
 			else this.node.background.setBackground(bg, "card");
 		} else if (lib.card[bg].fullimage) {
 			this.classList.add("fullimage");
@@ -428,19 +395,10 @@ export class Card extends HTMLDivElement {
 					this.setBackgroundDB(img);
 				}
 			} else if (get.dynamicVariable(lib.card[bg].image, this)) {
-				if (
-					get
-						.dynamicVariable(lib.card[bg].image, this)
-						.startsWith("character:")
-				) {
-					this.setBackground(
-						get.dynamicVariable(lib.card[bg].image, this).slice(10),
-						"character"
-					);
+				if (get.dynamicVariable(lib.card[bg].image, this).startsWith("character:")) {
+					this.setBackground(get.dynamicVariable(lib.card[bg].image, this).slice(10), "character");
 				} else {
-					this.setBackground(
-						get.dynamicVariable(lib.card[bg].image, this)
-					);
+					this.setBackground(get.dynamicVariable(lib.card[bg].image, this));
 				}
 			} else {
 				var cardPack = lib.cardPack["mode_" + get.mode()];
@@ -468,49 +426,29 @@ export class Card extends HTMLDivElement {
 			}
 			if (img) {
 				if (img.startsWith("ext:")) {
-					this.node.avatar.setBackgroundImage(
-						img.replace(/^ext:/, "extension/")
-					);
+					this.node.avatar.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					this.node.avatar.style.backgroundSize = "cover";
 				} else {
 					this.node.avatar.setBackgroundDB(img);
 				}
 			} else if (get.dynamicVariable(lib.card[bg].image, this)) {
-				if (
-					get
-						.dynamicVariable(lib.card[bg].image, this)
-						.startsWith("character:")
-				) {
-					this.node.avatar.setBackground(
-						get.dynamicVariable(lib.card[bg].image, this).slice(10),
-						"character"
-					);
+				if (get.dynamicVariable(lib.card[bg].image, this).startsWith("character:")) {
+					this.node.avatar.setBackground(get.dynamicVariable(lib.card[bg].image, this).slice(10), "character");
 				} else {
-					this.node.avatar.setBackground(
-						get.dynamicVariable(lib.card[bg].image, this)
-					);
+					this.node.avatar.setBackground(get.dynamicVariable(lib.card[bg].image, this));
 				}
 			} else {
 				var cardPack = lib.cardPack["mode_" + get.mode()];
 				if (Array.isArray(cardPack) && cardPack.includes(bg)) {
-					this.node.avatar.setBackground(
-						"mode/" + get.mode() + "/card/" + bg
-					);
+					this.node.avatar.setBackground("mode/" + get.mode() + "/card/" + bg);
 				} else {
 					this.node.avatar.setBackground("card/" + bg);
 				}
 			}
 		} else if (get.dynamicVariable(lib.card[bg].image, this) == "card") {
-			if (card[3])
-				this.setBackground(
-					bg + "_" + get.natureList(card[3])[0],
-					"card"
-				);
+			if (card[3]) this.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
 			else this.setBackground(bg, "card");
-		} else if (
-			typeof get.dynamicVariable(lib.card[bg].image, this) == "string" &&
-			!lib.card[bg].fullskin
-		) {
+		} else if (typeof get.dynamicVariable(lib.card[bg].image, this) == "string" && !lib.card[bg].fullskin) {
 			if (img) {
 				if (img.startsWith("ext:")) {
 					this.setBackgroundImage(img.replace(/^ext:/, "extension/"));
@@ -519,18 +457,12 @@ export class Card extends HTMLDivElement {
 					this.setBackgroundDB(img);
 				}
 			} else {
-				this.setBackground(
-					get.dynamicVariable(lib.card[bg].image, this)
-				);
+				this.setBackground(get.dynamicVariable(lib.card[bg].image, this));
 			}
 		} else {
-			this.node.background.innerHTML =
-				lib.translate[bg + "_cbg"] ||
-				lib.translate[bg + "_bg"] ||
-				get.translation(bg)[0];
+			this.node.background.innerHTML = lib.translate[bg + "_cbg"] || lib.translate[bg + "_bg"] || get.translation(bg)[0];
 			// this.node.background.style.fontFamily=lib.config.card_font;
-			if (this.node.background.innerHTML.length > 1)
-				this.node.background.classList.add("tight");
+			if (this.node.background.innerHTML.length > 1) this.node.background.classList.add("tight");
 			else this.node.background.classList.remove("tight");
 		}
 		if (!lib.card[bg].fullborder && this.node.avatar && this.node.framebg) {
@@ -555,11 +487,7 @@ export class Card extends HTMLDivElement {
 		if (info.modinfo) {
 			this.node.info.innerHTML = info.modinfo;
 		} else {
-			this.node.info.innerHTML =
-				get.translation(card[0]) +
-				'<span style="font-family:xinwei"> </span><span style="font-family:xinwei">' +
-				cardnum +
-				"</span>";
+			this.node.info.innerHTML = get.translation(card[0]) + '<span style="font-family:xinwei"> </span><span style="font-family:xinwei">' + cardnum + "</span>";
 		}
 		if (info.addinfo) {
 			if (!this.node.addinfo) {
@@ -582,10 +510,7 @@ export class Card extends HTMLDivElement {
 				let natures = get.natureList(nature);
 				natures.sort(lib.sort.nature);
 				for (let nature of natures) {
-					name +=
-						lib.translate["nature_" + nature] ||
-						lib.translate[nature] ||
-						"";
+					name += lib.translate["nature_" + nature] || lib.translate[nature] || "";
 					if (nature != "stab") this.node.image.classList.add(nature);
 				}
 			}
@@ -598,16 +523,15 @@ export class Card extends HTMLDivElement {
 				this.node.name.classList.add("longlong");
 			}
 		}
-		this.node.name2.innerHTML =
-			get.translation(card[0]) + cardnum + " " + name;
+		this.node.name2.innerHTML = get.translation(card[0]) + cardnum + " " + name;
 		this.classList.add("card");
 		if (card[3]) {
 			let natures = get.natureList(card[3]);
-			natures.forEach((n) => {
+			natures.forEach(n => {
 				if (n) this.classList.add(n);
 			});
 			this.nature = natures
-				.filter((n) => lib.nature.has(n))
+				.filter(n => lib.nature.has(n))
 				.sort(lib.sort.nature)
 				.join(lib.natureSeparator);
 		} else if (this.nature) {
@@ -623,8 +547,7 @@ export class Card extends HTMLDivElement {
 					var dist = lib.card[this.name].distance;
 					if (dist.attackFrom) {
 						added = true;
-						this.node.range.innerHTML =
-							"范围: " + (-dist.attackFrom + 1);
+						this.node.range.innerHTML = "范围: " + (-dist.attackFrom + 1);
 					}
 				}
 				if (!added) {
@@ -633,15 +556,13 @@ export class Card extends HTMLDivElement {
 				break;
 			case "equip3":
 				if (info.distance && info.distance.globalTo) {
-					this.node.range.innerHTML =
-						"防御: " + info.distance.globalTo;
+					this.node.range.innerHTML = "防御: " + info.distance.globalTo;
 					this.node.name2.innerHTML += "+";
 				}
 				break;
 			case "equip4":
 				if (info.distance && info.distance.globalFrom) {
-					this.node.range.innerHTML =
-						"进攻: " + -info.distance.globalFrom;
+					this.node.range.innerHTML = "进攻: " + -info.distance.globalFrom;
 					this.node.name2.innerHTML += "-";
 				}
 				break;
