@@ -37,7 +37,7 @@ const skills = {
 				charlotte: true,
 				popup: false,
 				filter: function (event, player) {
-					return event.player.hasHistory("lose", function (evt) {
+					return player.hasHistory("lose", function (evt) {
 						if (evt.getParent() != event) return false;
 						for (var i in evt.gaintag_map) {
 							if (evt.gaintag_map[i].includes("newj_yuxi"))
