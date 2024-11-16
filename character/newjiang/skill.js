@@ -61,13 +61,13 @@ const skills = {
 		group: "newj_porong_lazy",
 		subSkill: {
 			lazy: {
-				charlotte: true,
 				trigger: {
-					player: "useCard1",
+					player: "useCardAfter",
 				},
 				forced: true,
 				popup: false,
 				firstDo: true,
+				charlotte: true,
 				content: function () {
 					if (
 						get.tag(
@@ -79,7 +79,7 @@ const skills = {
 							"damage"
 						) &&
 						player.getStorage("newj_porong") !=
-							lib.skill.newj_porong.getLastUsed(player, null, 2)
+							lib.skill.newj_porong.getLastUsed(player, null, 1)
 								.card
 					)
 						player.addTip(
@@ -132,7 +132,8 @@ const skills = {
 							)
 							.set("target", i);
 			}
-			let Tipcard = lib.skill.newj_porong.getLastUsed(player).card;
+			player.storage[event.name] =
+				lib.skill.newj_porong.getLastUsed(player).card;
 		},
 		onremove(player, skill) {
 			player.removeTip("newj_porong_lazy");
