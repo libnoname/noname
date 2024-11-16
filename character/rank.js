@@ -739,6 +739,7 @@ window.noname_character_rank = {
 		"clan_wangchang",
 	],
 	bp: [
+		"wei_zhangliao",
 		"dongxie",
 		"ol_dongxie",
 		"dc_sb_huanggai",
