@@ -2,6 +2,104 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//威张辽
+	newj_yuxi: {
+		trigger: {
+			player: "damageBegin4",
+			source: "damageBegin3",
+		},
+		frequent: true,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			player.draw().gaintag = ["newj_yuxi"];
+			player.addSkill(event.name + "_use");
+		},
+		subSkill: {
+			use: {
+				mod: {
+					cardUsable: function (card, player, num) {
+						if (!card.cards) return;
+						if (card.cards.some(i => i.hasGaintag("newj_yuxi"))) return Infinity;
+					},
+					aiOrder: function (player, card, num) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("newj_yuxi")) return num - 1;
+					},
+				},
+				trigger: {
+					player: "useCard",
+				},
+				forced: true,
+				charlotte: true,
+				filter: function (event, player) {
+					return event.player.hasHistory("lose", function (evt) {
+						if (evt.getParent() != event) return false;
+						for (var i in evt.gaintag_map) {
+							if (evt.gaintag_map[i].includes("newj_yuxi")) return true;
+						}
+						return false;
+					});
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					if (trigger.addCount !== false) {
+						trigger.addCount = false;
+						var stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") stat[name]--;
+					}
+				},
+			},
+		},
+	},
+	newj_porong: {
+		group: "newj_porong_lazy",
+		subSkill: {
+			lazy: {
+				charlotte: true,
+				trigger: {
+					player: "useCard1",
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				content: function () {
+					if (get.tag(lib.skill.newj_porong.getLastUsed(player, null, null).card, "damage") && player.getStorage("newj_porong") != lib.skill.newj_porong.getLastUsed(player, null, 2).card) player.addTip(event.name, get.translation("newj_porong") + "可用")
+					else {
+						player.addTip(event.name, get.translation("newj_porong") + "不可用")
+					}
+				},
+			},
+		},
+		getLastUsed: function (player, event, num) {
+			let history = player.getAllHistory("useCard");
+			let index;
+			if (event) index = history.indexOf(event) - 1;
+			else if (num) index = history.length - num;
+			else index = history.length - 1;
+			if (index >= 0) return history[index];
+			return false;
+		},
+		trigger: {
+			player: "useCard",
+		},
+		frequent: true,
+		filter: function (event, player) {
+			let evt = lib.skill.newj_porong.getLastUsed(player, event);
+			if (!evt || !evt.card) return false;
+
+			return get.tag(evt.card, "damage") && get.name(event.card) === "sha" && player.getStorage("newj_porong") != lib.skill.newj_porong.getLastUsed(player, null, 2).card && event.targets.length;
+		},
+		async content(event, trigger, player) {
+			trigger.directHit.addArray(game.filterPlayer());
+			for (let target of trigger.targets.toUniqued()) {
+				for (let i of [target.getNext(), target.getPrevious()]) if (player !== i) await player.gainPlayerCard(i, true, "h").set("ai", button => get.value(button.link, _status.event.target)).set("target", i);
+			}
+			let Tipcard = lib.skill.newj_porong.getLastUsed(player).card
+		},
+		onremove(player, skill) {
+			player.removeTip("newj_porong_lazy");
+		},
+	},
 	//传械马钧
 	chuanxie: {
 		audio: 2,
