@@ -31,7 +31,6 @@ const characters = {
 	cx_majun: ["male", "wei", 3, ["chuanxie", "yjqiaosi"], [...["character", "die"].map(i => i + ":yj_majun")]],
 	qq_majun: ["male", "wei", 3, ["yuliao", "qiqiao", "yanxie"], [...["character", "die"].map(i => i + ":yj_majun")]],
 	new_yj_dongzhuo: ["male", "qun", "4/5", ["xiongjin", "xiawei", "baoxi"]],
-	wei_zhangliao: ["male", "qun", 4, ["newj_yuxi", "newj_porong"]],
 };
 
 export default characters;

@@ -124,6 +124,7 @@ const characters = {
 	gexuan: ["male", "wu", 3, ["gxlianhua", "zhafu"]],
 	leitong: ["male", "shu", 4, ["kuiji"]],
 	wulan: ["male", "shu", 4, ["wlcuorui"]],
+	wei_zhangliao: ["male", "qun", 4, ["newj_yuxi", "newj_porong"]],
 };
 
 export default characters;

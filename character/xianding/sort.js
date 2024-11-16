@@ -19,7 +19,7 @@ const characterSort = {
 	sp2_dushi: ["dc_sb_caoang", "dc_sb_zhangxiu", "dc_sb_dianwei", "dc_sb_hucheer"],
 	sp2_zhoulang: ["dc_sb_chengyu", "dc_sb_huanggai"],
 	sp2_qizuo: ["dc_sb_jushou", "dc_sb_chenlin"],
-	sp2_waitingforsort: [],
+	sp2_waitingforsort: ["wei_zhangliao"],
 };
 
 const characterSortTranslate = {
