@@ -22,19 +22,25 @@ const cards = {
 			var source = cards[0].storage.nsfuzhou_source;
 			if (!source || !source.isIn()) return;
 			source.line(player, "thunder");
-			if (result.color == "black") {
-				player.damage(source, source.storage.nsfuzhou_damage ? 2 : 1, "thunder");
-				player.chooseToDiscard("he", true);
-			} else {
-				source.draw(2);
-				if (typeof player.storage.nsfuzhou_num != "number") player.storage.nsfuzhou_num = 0;
-				if (source.storage.nsfuzhou_draw) {
-					player.recover();
-					player.draw();
-					player.storage.nsfuzhou_num++;
-				} else player.storage.nsfuzhou_num--;
-				player.addTempSkill("nsfuzhou_num");
-				player.markSkill("nsfuzhou_num");
+			switch (result.color) {
+				case "black":
+					player.damage(source, source.storage.nsfuzhou_damage ? 2 : 1, "thunder");
+					player.chooseToDiscard("he", true);
+					break;
+				case "red":
+					source.draw(2);
+					if (typeof player.storage.nsfuzhou_num != "number") player.storage.nsfuzhou_num = 0;
+					if (source.storage.nsfuzhou_draw) {
+						player.recover();
+						player.draw();
+						player.storage.nsfuzhou_num++;
+					} else player.storage.nsfuzhou_num--;
+					player.addTempSkill("nsfuzhou_num");
+					player.markSkill("nsfuzhou_num");
+					break;
+
+				default:
+					break;
 			}
 		},
 		ai: {

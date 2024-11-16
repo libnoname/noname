@@ -8,10 +8,12 @@ const cards = {
 		subtype: "equip1",
 		distance: { attackFrom: -5 },
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -45,10 +47,12 @@ const cards = {
 		type: "equip",
 		subtype: "equip2",
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -83,10 +87,12 @@ const cards = {
 		subtype: "equip3",
 		distance: { globalTo: 2 },
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -121,10 +127,12 @@ const cards = {
 		subtype: "equip4",
 		distance: { globalFrom: -2 },
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -159,10 +167,12 @@ const cards = {
 		subtype: "equip5",
 		skills: ["changandajian_equip5"],
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -197,10 +207,12 @@ const cards = {
 		subtype: "equip6",
 		distance: { globalTo: 2, globalFrom: -2 },
 		onLose() {
-			card.fix();
-			card.remove();
-			card.destroyed = true;
-			game.log(card, "被销毁了");
+			cards.forEach(card => {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			});
 			player.addTempSkill("changandajian_destroy");
 		},
 		ai: {
@@ -284,6 +296,7 @@ const cards = {
 						if (get.name(card) == _status.event.choice) return get.order(card);
 						return 0;
 					})
+					.set("respondTo", [player, card])
 					.set(
 						"choice",
 						(function () {

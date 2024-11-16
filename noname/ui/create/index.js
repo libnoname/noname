@@ -10,6 +10,7 @@ import { extensionMenu } from "./menu/pages/exetensionMenu.js";
 import { optionsMenu } from "./menu/pages/optionsMenu.js";
 import { otherMenu } from "./menu/pages/otherMenu.js";
 import { startMenu } from "./menu/pages/startMenu.js";
+import { Pagination } from "../../util/pagination.js";
 
 export class Create {
 	/**
@@ -21,13 +22,9 @@ export class Create {
 	 */
 	identityCard(identity, position, noclick) {
 		const card = ui.create.card(position, "noclick", noclick);
-		card.removeEventListener(
-			lib.config.touchscreen ? "touchend" : "click",
-			ui.click.card
-		);
+		card.removeEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.card);
 		card.classList.add("button");
-		card._customintro = (uiintro) =>
-			uiintro.add(`${get.translation(`${identity}${2}`)}的身份牌`);
+		card._customintro = uiintro => uiintro.add(`${get.translation(`${identity}${2}`)}的身份牌`);
 		const fileName = `image/card/identity_${identity}.jpg`;
 		new Promise((resolve, reject) => {
 			const image = new Image();
@@ -39,8 +36,7 @@ export class Create {
 				card.classList.add("fullskin");
 				card.node.image.setBackgroundImage(fileName);
 			},
-			() =>
-				(card.node.background.innerHTML = get.translation(identity)[0])
+			() => (card.node.background.innerHTML = get.translation(identity)[0])
 		);
 		return card;
 	}
@@ -58,19 +54,16 @@ export class Create {
 			card.classList.add("infohidden");
 		}
 		card.style.transition = "all 0s";
-		card.style.transform =
-			"perspective(600px) rotateY(180deg) translateX(0)";
+		card.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
 		const onEnd01 = function () {
 			setTimeout(function () {
 				card.style.transition = "all ease-in 0.3s";
-				card.style.transform =
-					"perspective(600px) rotateY(270deg) translateX(52px)";
+				card.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
 				var onEnd = function () {
 					card.classList.remove("infohidden");
 					card.style.transition = "all 0s";
 					ui.refresh(card);
-					card.style.transform =
-						"perspective(600px) rotateY(-90deg) translateX(52px)";
+					card.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
 					ui.refresh(card);
 					card.style.transition = "";
 					ui.refresh(card);
@@ -105,10 +98,9 @@ export class Create {
 		//删除container的时候，删除创建的ul列表
 		container.delete = function () {
 			for (let i = createList.length - 1; i >= 0; i--) {
-				createList[i].parentNode &&
-					createList[i].parentNode.removeChild(createList[i]);
+				createList[i].parentNode && createList[i].parentNode.removeChild(createList[i]);
 			}
-			Array.from(editorpage.children).forEach((v) => {
+			Array.from(editorpage.children).forEach(v => {
 				v.style.background = "";
 			});
 			containerDelete.apply(this, arguments);
@@ -140,12 +132,7 @@ export class Create {
 				height: "20em",
 				width: (pos.width * 4) / game.documentZoom + "px",
 				//'font-family':'shousha',
-				"font-size":
-					(lib.config.codeMirror_fontSize
-						? lib.config.codeMirror_fontSize.slice(0, -2)
-						: 16) /
-						game.documentZoom +
-					"px",
+				"font-size": (lib.config.codeMirror_fontSize ? lib.config.codeMirror_fontSize.slice(0, -2) : 16) / game.documentZoom + "px",
 			});
 			const theme = editor.options.theme;
 			lib.setScroll(ul);
@@ -154,20 +141,13 @@ export class Create {
 			const getActive = () => {
 				let i = 0;
 				while (i < ul.childElementCount) {
-					if (
-						ul.childNodes[i].classList.contains(
-							"CodeMirror-hint-active"
-						)
-					)
-						break;
+					if (ul.childNodes[i].classList.contains("CodeMirror-hint-active")) break;
 					else i++;
 				}
 				return i;
 			};
-			const setActive = (i) => {
-				ul.childNodes[getActive()].classList.remove(
-					"CodeMirror-hint-active"
-				);
+			const setActive = i => {
+				ul.childNodes[getActive()].classList.remove("CodeMirror-hint-active");
 				ul.childNodes[i].classList.add("CodeMirror-hint-active");
 				return i;
 			};
@@ -182,11 +162,8 @@ export class Create {
 					} else {
 						elt.innerHTML = cur;
 					}
-					let className =
-						"CodeMirror-hint" +
-						(i != 0 ? "" : " " + "CodeMirror-hint-active");
-					if (cur.className != null)
-						className = cur.className + " " + className;
+					let className = "CodeMirror-hint" + (i != 0 ? "" : " " + "CodeMirror-hint-active");
+					if (cur.className != null) className = cur.className + " " + className;
 					elt.className = className;
 					elt.hintId = i;
 					ui.window.listen.call(elt, function () {
@@ -214,132 +191,93 @@ export class Create {
 			createList.remove(ul);
 			return ul;
 		};
-		const discardConfig = ui.create.div(
-			".editbutton",
-			"取消",
-			editorpage,
-			function () {
-				ui.window.classList.remove("shortcutpaused");
-				ui.window.classList.remove("systempaused");
-				container.delete(null);
-				delete window.saveNonameInput;
+		const discardConfig = ui.create.div(".editbutton", "取消", editorpage, function () {
+			ui.window.classList.remove("shortcutpaused");
+			ui.window.classList.remove("systempaused");
+			container.delete(null);
+			delete window.saveNonameInput;
+		});
+		const saveConfig = ui.create.div(".editbutton", "保存", editorpage, saveInput);
+		const theme = ui.create.div(".editbutton", "主题", editorpage, function () {
+			if (!this || this == window) return;
+			if (this.ul && this.ul.parentNode) {
+				return closeMenu.call(this);
 			}
-		);
-		const saveConfig = ui.create.div(
-			".editbutton",
-			"保存",
-			editorpage,
-			saveInput
-		);
-		const theme = ui.create.div(
-			".editbutton",
-			"主题",
-			editorpage,
-			function () {
-				if (!this || this == window) return;
-				if (this.ul && this.ul.parentNode) {
-					return closeMenu.call(this);
-				}
-				//this
-				const self = this;
-				if (!this.ul) {
-					//主题列表
-					const list = ["mdn-like", "mbo"];
-					//正在使用的主题
-					const active = container.editor.options.theme;
-					//排个序
-					list.remove(active).splice(0, 0, active);
-					//元素位置
-					const pos = self.getBoundingClientRect();
-					//点击事件
-					const click = function (e) {
-						const theme = this.innerHTML;
-						container.editor.setOption("theme", theme);
-						setTimeout(() => container.editor.refresh(), 0);
-						game.saveConfig("codeMirror_theme", theme);
-						closeMenu.call(self);
-					};
-					const ul = createMenu(pos, self, list, click);
-					self.ul = ul;
-				} else {
-					createMenu(null, self);
-				}
+			//this
+			const self = this;
+			if (!this.ul) {
+				//主题列表
+				const list = ["mdn-like", "mbo"];
+				//正在使用的主题
+				const active = container.editor.options.theme;
+				//排个序
+				list.remove(active).splice(0, 0, active);
+				//元素位置
+				const pos = self.getBoundingClientRect();
+				//点击事件
+				const click = function (e) {
+					const theme = this.innerHTML;
+					container.editor.setOption("theme", theme);
+					setTimeout(() => container.editor.refresh(), 0);
+					game.saveConfig("codeMirror_theme", theme);
+					closeMenu.call(self);
+				};
+				const ul = createMenu(pos, self, list, click);
+				self.ul = ul;
+			} else {
+				createMenu(null, self);
 			}
-		);
-		const edit = ui.create.div(
-			".editbutton",
-			"编辑",
-			editorpage,
-			function () {
-				if (!this || this == window) return;
-				if (this.ul && this.ul.parentNode) {
-					return closeMenu.call(this);
-				}
-				const self = this;
-				if (!this.ul) {
-					const pos = this.getBoundingClientRect();
-					const list = ["撤销        Ctrl+Z", "恢复撤销    Ctrl+Y"];
-					const click = function (e) {
-						const num = this.innerHTML.indexOf("Ctrl");
-						const inner = this.innerHTML
-							.slice(num)
-							.replace("+", "-");
-						container.editor.execCommand(
-							container.editor.options.extraKeys[inner]
-						);
-						setTimeout(() => container.editor.refresh(), 0);
-						closeMenu.call(self);
-					};
-					const ul = createMenu(pos, self, list, click);
-					this.ul = ul;
-				} else {
-					createMenu(null, self);
-				}
+		});
+		const edit = ui.create.div(".editbutton", "编辑", editorpage, function () {
+			if (!this || this == window) return;
+			if (this.ul && this.ul.parentNode) {
+				return closeMenu.call(this);
 			}
-		);
-		const fontSize = ui.create.div(
-			".editbutton",
-			"字号",
-			editorpage,
-			function () {
-				if (!this || this == window) return;
-				if (this.ul && this.ul.parentNode) {
-					return closeMenu.call(this);
-				}
-				const self = this;
-				if (!this.ul) {
-					const pos = this.getBoundingClientRect();
-					const list = [
-						"16px",
-						"18px",
-						"20px",
-						"22px",
-						"24px",
-						"26px",
-					];
-					const click = function (e) {
-						const size = this.innerHTML;
-						container.style.fontSize =
-							size.slice(0, -2) / game.documentZoom + "px";
-						Array.from(self.parentElement.children)
-							.map((v) => v.ul)
-							.filter(Boolean)
-							.forEach((v) => {
-								v.style.fontSize =
-									size.slice(0, -2) / game.documentZoom +
-									"px";
-							});
-						setTimeout(() => container.editor.refresh(), 0);
-						game.saveConfig("codeMirror_fontSize", size);
-						closeMenu.call(self);
-					};
-					const ul = createMenu(pos, self, list, click);
-					this.ul = ul;
-				} else {
-					createMenu(null, self);
-				}
+			const self = this;
+			if (!this.ul) {
+				const pos = this.getBoundingClientRect();
+				const list = ["撤销        Ctrl+Z", "恢复撤销    Ctrl+Y"];
+				const click = function (e) {
+					const num = this.innerHTML.indexOf("Ctrl");
+					const inner = this.innerHTML.slice(num).replace("+", "-");
+					container.editor.execCommand(container.editor.options.extraKeys[inner]);
+					setTimeout(() => container.editor.refresh(), 0);
+					closeMenu.call(self);
+				};
+				const ul = createMenu(pos, self, list, click);
+				this.ul = ul;
+			} else {
+				createMenu(null, self);
 			}
-		);
+		});
+		const fontSize = ui.create.div(".editbutton", "字号", editorpage, function () {
+			if (!this || this == window) return;
+			if (this.ul && this.ul.parentNode) {
+				return closeMenu.call(this);
+			}
+			const self = this;
+			if (!this.ul) {
+				const pos = this.getBoundingClientRect();
+				const list = ["16px", "18px", "20px", "22px", "24px", "26px"];
+				const click = function (e) {
+					const size = this.innerHTML;
+					container.style.fontSize = size.slice(0, -2) / game.documentZoom + "px";
+					Array.from(self.parentElement.children)
+						.map(v => v.ul)
+						.filter(Boolean)
+						.forEach(v => {
+							v.style.fontSize = size.slice(0, -2) / game.documentZoom + "px";
+						});
+					setTimeout(() => container.editor.refresh(), 0);
+					game.saveConfig("codeMirror_fontSize", size);
+					closeMenu.call(self);
+				};
+				const ul = createMenu(pos, self, list, click);
+				this.ul = ul;
+			} else {
+				createMenu(null, self);
+			}
+		});
 		const editor = ui.create.div(editorpage);
 		return editor;
 	}
@@ -365,9 +303,7 @@ export class Create {
 			ui.create.showNextToast();
 		};
 		if (!ui.toastStyle) {
-			ui.toastStyle = lib.init.promises
-				.css(lib.assetURL + "layout/default/toast.css")
-				.then(() => toShow());
+			ui.toastStyle = lib.init.promises.css(lib.assetURL + "layout/default/toast.css").then(() => toShow());
 		} else {
 			toShow();
 		}
@@ -389,32 +325,26 @@ export class Create {
 		let cardNature = get.nature(card);
 		let tempname = get.translation(cardName);
 		let cardTempNameConfig = lib.config.cardtempname;
-		let node =
-			getApplyNode._tempName || ui.create.div(".tempname", getApplyNode);
+		let node = getApplyNode._tempName || ui.create.div(".tempname", getApplyNode);
 		let datasetNature = "";
+		let cardPosition = get.position(card);
 		getApplyNode._tempName = node;
 		if (cardTempNameConfig != "image") {
 			//清空，避免和下面的image部分有冲突
 			node.innerHTML = "";
 			datasetNature = "fire";
-			if (
-				get.position(card) == "j" &&
-				card.viewAs &&
-				card.viewAs != card.name
-			) {
+			if ((cardPosition === "e" || cardPosition === "j") && card.viewAs && card.viewAs != card.name) {
 				datasetNature = "wood";
 				tempname = get.translation(card.viewAs);
 			} else {
 				if (cardName == "sha") {
-					if (cardNature)
-						tempname = get.translation(cardNature) + tempname;
+					if (cardNature) tempname = get.translation(cardNature) + tempname;
 					if (cardNature == "thunder") datasetNature = "thunder";
 					if (cardNature == "kami") datasetNature = "kami";
 					if (cardNature == "ice") datasetNature = "ice";
 				}
 			}
-			if (cardTempNameConfig == "default")
-				getApplyNode._tempName.classList.add("vertical");
+			if (cardTempNameConfig == "default") getApplyNode._tempName.classList.add("vertical");
 			if (datasetNature.length > 0) {
 				node.dataset.nature = datasetNature;
 			} else {
@@ -422,17 +352,12 @@ export class Create {
 				node.classList.add(datasetNature);
 			}
 		} else {
-			if (
-				get.position(card) == "j" &&
-				card.viewAs &&
-				card.viewAs != card.name
-			) {
+			if ((cardPosition === "e" || cardPosition === "j") && card.viewAs && card.viewAs != card.name) {
 				cardName = card.viewAs;
 				tempname = get.translation(card.viewAs);
 			}
 			if (cardName == "sha") {
-				if (cardNature)
-					tempname = get.translation(cardNature) + tempname;
+				if (cardNature) tempname = get.translation(cardNature) + tempname;
 				if (cardNature == "fire") datasetNature = "fire";
 				if (cardNature == "thunder") datasetNature = "thunder";
 				if (cardNature == "kami") datasetNature = "kami";
@@ -441,8 +366,8 @@ export class Create {
 			let bg = node.querySelector("div");
 			if (bg) {
 				Array.from(node.childNodes)
-					.filter((v) => v != bg)
-					.forEach((v) => node.removeChild(v));
+					.filter(v => v != bg)
+					.forEach(v => node.removeChild(v));
 			} else bg = ui.create.div(node);
 			node.classList.add("tempimage");
 			let img = get.dynamicVariable(lib.card[cardName].image, card);
@@ -456,103 +381,56 @@ export class Create {
 			if (lib.card[cardName].fullskin) {
 				if (img) {
 					if (img.startsWith("ext:")) {
-						bg.setBackgroundImage(
-							img.replace(/^ext:/, "extension/")
-						);
+						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					} else {
 						bg.setBackgroundDB(img);
 					}
 				} else {
 					if (lib.card[cardName].modeimage) {
-						bg.setBackgroundImage(
-							"image/mode/" +
-								lib.card[cardName].modeimage +
-								"/card/" +
-								cardName +
-								".png"
-						);
+						bg.setBackgroundImage("image/mode/" + lib.card[cardName].modeimage + "/card/" + cardName + ".png");
 					} else {
-						if (cardName == "sha" && cardNature == "stab")
-							bg.setBackgroundImage("image/card/cisha.png");
-						else
-							bg.setBackgroundImage(
-								"image/card/" + cardName + ".png"
-							);
+						if (cardName == "sha" && cardNature == "stab") bg.setBackgroundImage("image/card/cisha.png");
+						else bg.setBackgroundImage("image/card/" + cardName + ".png");
 					}
 				}
-			} else if (
-				get.dynamicVariable(lib.card[cardName].image, card) ==
-				"background"
-			) {
-				if (cardNature)
-					bg.setBackground(cardName + "_" + cardNature, "card");
+			} else if (get.dynamicVariable(lib.card[cardName].image, card) == "background") {
+				if (cardNature) bg.setBackground(cardName + "_" + cardNature, "card");
 				else bg.setBackground(cardName, "card");
 			} else if (lib.card[cardName].fullimage) {
 				if (img) {
 					if (img.startsWith("ext:")) {
-						bg.setBackgroundImage(
-							img.replace(/^ext:/, "extension/")
-						);
+						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 						bg.style.backgroundSize = "cover";
 					} else {
 						bg.setBackgroundDB(img);
 					}
-				} else if (
-					get.dynamicVariable(lib.card[cardName].image, card)
-				) {
-					if (
-						get
-							.dynamicVariable(lib.card[cardName].image, card)
-							.startsWith("character:")
-					) {
-						bg.setBackground(
-							get
-								.dynamicVariable(lib.card[cardName].image, card)
-								.slice(10),
-							"character"
-						);
+				} else if (get.dynamicVariable(lib.card[cardName].image, card)) {
+					if (get.dynamicVariable(lib.card[cardName].image, card).startsWith("character:")) {
+						bg.setBackground(get.dynamicVariable(lib.card[cardName].image, card).slice(10), "character");
 					} else {
-						bg.setBackground(
-							get.dynamicVariable(lib.card[cardName].image, card)
-						);
+						bg.setBackground(get.dynamicVariable(lib.card[cardName].image, card));
 					}
 				} else {
 					let cardPack = lib.cardPack["mode_" + get.mode()];
-					if (
-						Array.isArray(cardPack) &&
-						cardPack.includes(cardName)
-					) {
-						bg.setBackground(
-							"mode/" + get.mode() + "/card/" + cardName
-						);
+					if (Array.isArray(cardPack) && cardPack.includes(cardName)) {
+						bg.setBackground("mode/" + get.mode() + "/card/" + cardName);
 					} else {
 						bg.setBackground("card/" + cardName);
 					}
 				}
-			} else if (
-				get.dynamicVariable(lib.card[cardName].image, card) == "card"
-			) {
-				if (cardNature)
-					bg.setBackground(cardName + "_" + cardNature, "card");
+			} else if (get.dynamicVariable(lib.card[cardName].image, card) == "card") {
+				if (cardNature) bg.setBackground(cardName + "_" + cardNature, "card");
 				else bg.setBackground(cardName, "card");
-			} else if (
-				typeof get.dynamicVariable(lib.card[cardName].image, card) ==
-					"string" &&
-				!lib.card[cardName].fullskin
-			) {
+			} else if (typeof get.dynamicVariable(lib.card[cardName].image, card) == "string" && !lib.card[cardName].fullskin) {
 				if (img) {
 					if (img.startsWith("ext:")) {
-						bg.setBackgroundImage(
-							img.replace(/^ext:/, "extension/")
-						);
+						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 						bg.style.backgroundSize = "cover";
 					} else {
 						bg.setBackgroundDB(img);
 					}
 				} else {
-					bg.setBackground(
-						get.dynamicVariable(lib.card[cardName].image, card)
-					);
+					bg.setBackground(get.dynamicVariable(lib.card[cardName].image, card));
 				}
 			} else {
 				console.warn("卡牌图片解析失败");
@@ -562,11 +440,7 @@ export class Create {
 			}
 			delete node.dataset.nature;
 		}
-		node.innerHTML += `<span>${
-			cardTempNameConfig == "default"
-				? get.verticalStr(tempname)
-				: tempname
-		}</span>`;
+		node.innerHTML += `<span>${cardTempNameConfig == "default" ? get.verticalStr(tempname) : tempname}</span>`;
 		node.tempname = tempname;
 		return node;
 	}
@@ -580,15 +454,10 @@ export class Create {
 		ui.roombase.classList.add("scroll2");
 		ui.roombase.classList.add("noupdate");
 		for (var i = 0; i < list.length; i++) {
-			var player = ui.roombase.add(
-				'<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>'
-			);
+			var player = ui.roombase.add('<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>');
 			player.roomindex = i;
 			player.initRoom = lib.element.Player.prototype.initRoom;
-			player.addEventListener(
-				lib.config.touchscreen ? "touchend" : "click",
-				ui.click.connectroom
-			);
+			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.connectroom);
 			player.initRoom(list[i]);
 			ui.rooms.push(player);
 		}
@@ -635,15 +504,9 @@ export class Create {
 				} else {
 					str = arguments[i];
 				}
-			} else if (
-				["div", "table", "tr", "td", "body", "fragment"].includes(
-					get.objtype(arguments[i])
-				)
-			)
-				position = arguments[i];
+			} else if (["div", "table", "tr", "td", "body", "fragment"].includes(get.objtype(arguments[i]))) position = arguments[i];
 			else if (typeof arguments[i] == "number") position2 = arguments[i];
-			else if (get.itemtype(arguments[i]) == "divposition")
-				divposition = arguments[i];
+			else if (get.itemtype(arguments[i]) == "divposition") divposition = arguments[i];
 			else if (typeof arguments[i] == "object") style = arguments[i];
 			else if (typeof arguments[i] == "function") listen = arguments[i];
 		}
@@ -654,30 +517,19 @@ export class Create {
 				if (node.className.length != 0) {
 					node.className += " ";
 				}
-				while (
-					str[i + 1] != "." &&
-					str[i + 1] != "#" &&
-					i + 1 < str.length
-				) {
+				while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 					node.className += str[i + 1];
 					i++;
 				}
 			} else if (str[i] == "#") {
-				while (
-					str[i + 1] != "." &&
-					str[i + 1] != "#" &&
-					i + 1 < str.length
-				) {
+				while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 					node.id += str[i + 1];
 					i++;
 				}
 			}
 		}
 		if (position) {
-			if (
-				typeof position2 == "number" &&
-				position.childNodes.length > position2
-			) {
+			if (typeof position2 == "number" && position.childNodes.length > position2) {
 				position.insertBefore(node, position.childNodes[position2]);
 			} else {
 				position.appendChild(node);
@@ -710,14 +562,7 @@ export class Create {
 		return div;
 	}
 	node() {
-		var tagName,
-			str,
-			innerHTML,
-			position,
-			position2,
-			style,
-			divposition,
-			listen;
+		var tagName, str, innerHTML, position, position2, style, divposition, listen;
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "string") {
 				if (typeof tagName == "string") {
@@ -725,15 +570,9 @@ export class Create {
 				} else {
 					tagName = arguments[i];
 				}
-			} else if (
-				["div", "table", "tr", "td", "body", "fragment"].includes(
-					get.objtype(arguments[i])
-				)
-			)
-				position = arguments[i];
+			} else if (["div", "table", "tr", "td", "body", "fragment"].includes(get.objtype(arguments[i]))) position = arguments[i];
 			else if (typeof arguments[i] == "number") position2 = arguments[i];
-			else if (get.itemtype(arguments[i]) == "divposition")
-				divposition = arguments[i];
+			else if (get.itemtype(arguments[i]) == "divposition") divposition = arguments[i];
 			else if (typeof arguments[i] == "object") style = arguments[i];
 			else if (typeof arguments[i] == "function") listen = arguments[i];
 		}
@@ -757,20 +596,12 @@ export class Create {
 					if (node.className.length != 0) {
 						node.className += " ";
 					}
-					while (
-						str[i + 1] != "." &&
-						str[i + 1] != "#" &&
-						i + 1 < str.length
-					) {
+					while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 						node.className += str[i + 1];
 						i++;
 					}
 				} else if (str[i] == "#") {
-					while (
-						str[i + 1] != "." &&
-						str[i + 1] != "#" &&
-						i + 1 < str.length
-					) {
+					while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 						node.id += str[i + 1];
 						i++;
 					}
@@ -778,18 +609,14 @@ export class Create {
 			}
 		}
 		if (position) {
-			if (
-				typeof position2 == "number" &&
-				position.childNodes.length > position2
-			) {
+			if (typeof position2 == "number" && position.childNodes.length > position2) {
 				position.insertBefore(node, position.childNodes[position2]);
 			} else {
 				position.appendChild(node);
 			}
 		}
 		if (style) HTMLDivElement.prototype.css.call(node, style);
-		if (divposition)
-			HTMLDivElement.prototype.setPosition.call(node, divposition);
+		if (divposition) HTMLDivElement.prototype.setPosition.call(node, divposition);
 		if (innerHTML) node.innerHTML = innerHTML;
 		if (listen) node.onclick = listen;
 		return node;
@@ -813,21 +640,15 @@ export class Create {
 		webview.style.border = "none";
 		layer.appendChild(webview);
 
-		var backbutton = ui.create.div(
-			".menubutton.round",
-			"返",
-			layer,
-			function () {
-				layer.remove();
-			}
-		);
+		var backbutton = ui.create.div(".menubutton.round", "返", layer, function () {
+			layer.remove();
+		});
 		backbutton.style.bottom = "10px";
 		backbutton.style.right = "10px";
 		backbutton.style.background = "rgba(0,0,0,0.4)";
 		backbutton.style.color = "white";
 		backbutton.style.textShadow = "rgba(0,0,0,0.5) 0px 0px 2px";
-		backbutton.style.boxShadow =
-			"rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px";
+		backbutton.style.boxShadow = "rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px";
 		backbutton.style.position = "fixed";
 
 		ui.window.appendChild(layer);
@@ -965,15 +786,9 @@ export class Create {
 					if (typeof col == "number") position2 = arguments[i];
 					else col = arguments[i];
 				} else row = arguments[i];
-			} else if (
-				["div", "table", "tr", "td", "body", "fragment"].includes(
-					get.objtype(arguments[i])
-				)
-			)
-				position = arguments[i];
+			} else if (["div", "table", "tr", "td", "body", "fragment"].includes(get.objtype(arguments[i]))) position = arguments[i];
 			else if (typeof arguments[i] == "boolean") fixed = arguments[i];
-			else if (get.itemtype(arguments[i]) == "divposition")
-				divposition = arguments[i];
+			else if (get.itemtype(arguments[i]) == "divposition") divposition = arguments[i];
 			else if (typeof arguments[i] == "object") style = arguments[i];
 		}
 		if (str == undefined) str = "";
@@ -983,20 +798,12 @@ export class Create {
 				if (node.className.length != 0) {
 					node.className += " ";
 				}
-				while (
-					str[i + 1] != "." &&
-					str[i + 1] != "#" &&
-					i + 1 < str.length
-				) {
+				while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 					node.className += str[i + 1];
 					i++;
 				}
 			} else if (str[i] == "#") {
-				while (
-					str[i + 1] != "." &&
-					str[i + 1] != "#" &&
-					i + 1 < str.length
-				) {
+				while (str[i + 1] != "." && str[i + 1] != "#" && i + 1 < str.length) {
 					node.id += str[i + 1];
 					i++;
 				}
@@ -1013,10 +820,7 @@ export class Create {
 			}
 		}
 		if (position) {
-			if (
-				typeof position2 == "number" &&
-				position.childNodes.length > position2
-			) {
+			if (typeof position2 == "number" && position.childNodes.length > position2) {
 				position.insertBefore(node, position.childNodes[position2]);
 			} else {
 				position.appendChild(node);
@@ -1053,69 +857,44 @@ export class Create {
 			true
 		);
 	}
+
 	groupControl(dialog) {
-		return ui.create.control(
-			"wei",
-			"shu",
-			"wu",
-			"qun",
-			"jin",
-			"western",
-			"key",
-			function (link, node) {
-				if (link == "全部") {
-					dialog.currentcapt = "";
-					dialog.currentgroup = "";
+		return ui.create.control("wei", "shu", "wu", "qun", "jin", "western", "key", function (link, node) {
+			if (link == "全部") {
+				dialog.currentcapt = "";
+				dialog.currentgroup = "";
+				for (var i = 0; i < dialog.buttons.length; i++) {
+					dialog.buttons[i].style.display = "";
+				}
+			} else {
+				if (node.classList.contains("thundertext")) {
+					dialog.currentgroup = null;
+					dialog.currentgroupnode = null;
+					node.classList.remove("thundertext");
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						dialog.buttons[i].style.display = "";
+						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
+							dialog.buttons[i].classList.add("nodisplay");
+						} else {
+							dialog.buttons[i].classList.remove("nodisplay");
+						}
 					}
 				} else {
-					if (node.classList.contains("thundertext")) {
-						dialog.currentgroup = null;
-						dialog.currentgroupnode = null;
-						node.classList.remove("thundertext");
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							if (
-								dialog.currentcapt &&
-								dialog.buttons[i].capt !=
-									dialog.getCurrentCapt(
-										dialog.buttons[i].link,
-										dialog.buttons[i].capt
-									)
-							) {
-								dialog.buttons[i].classList.add("nodisplay");
-							} else {
-								dialog.buttons[i].classList.remove("nodisplay");
-							}
-						}
-					} else {
-						if (dialog.currentgroupnode) {
-							dialog.currentgroupnode.classList.remove(
-								"thundertext"
-							);
-						}
-						dialog.currentgroup = link;
-						dialog.currentgroupnode = node;
-						node.classList.add("thundertext");
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							if (
-								dialog.buttons[i].group != link ||
-								(dialog.currentcapt &&
-									dialog.buttons[i].capt !=
-										dialog.getCurrentCapt(
-											dialog.buttons[i].link,
-											dialog.buttons[i].capt
-										))
-							) {
-								dialog.buttons[i].classList.add("nodisplay");
-							} else {
-								dialog.buttons[i].classList.remove("nodisplay");
-							}
+					if (dialog.currentgroupnode) {
+						dialog.currentgroupnode.classList.remove("thundertext");
+					}
+					dialog.currentgroup = link;
+					dialog.currentgroupnode = node;
+					node.classList.add("thundertext");
+					for (var i = 0; i < dialog.buttons.length; i++) {
+						if (dialog.buttons[i].group != link || (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt))) {
+							dialog.buttons[i].classList.add("nodisplay");
+						} else {
+							dialog.buttons[i].classList.remove("nodisplay");
 						}
 					}
 				}
 			}
-		);
+		});
 	}
 	cardDialog() {
 		var args = ["thisiscard"];
@@ -1128,10 +907,7 @@ export class Create {
 		var list = [];
 		for (var i in lib.character) {
 			if (lib.character[i].isMinskin) continue;
-			if (
-				lib.character[i].isBoss ||
-				lib.character[i].isHiddenBoss
-			) {
+			if (lib.character[i].isBoss || lib.character[i].isHiddenBoss) {
 				if (lib.config.mode == "boss") continue;
 				if (!lib.character[i].isBossAllowed) continue;
 			}
@@ -1180,12 +956,7 @@ export class Create {
 			} else if (packname == "收藏") {
 				pack = lib.config.favouriteCharacter;
 			}
-			var node = ui.create.div(
-				".dialogbutton.menubutton.large",
-				packname,
-				packnode,
-				clickCapt
-			);
+			var node = ui.create.div(".dialogbutton.menubutton.large", packname, packnode, clickCapt);
 			node.pack = pack;
 			return node;
 		};
@@ -1216,11 +987,7 @@ export class Create {
 			clickCapt.call(packnode.firstChild);
 		}
 
-		var node = ui.create.div(
-			".dialogbutton.menubutton.large",
-			"筛选",
-			packnode
-		);
+		var node = ui.create.div(".dialogbutton.menubutton.large", "筛选", packnode);
 		return dialog;
 	}
 	characterDialog() {
@@ -1234,15 +1001,7 @@ export class Create {
 		//      			return ui.create.characterDialog2.apply(this,arguments);
 		//     }
 		// }
-		var filter,
-			str,
-			noclick,
-			thisiscard,
-			seperate,
-			expandall,
-			onlypack,
-			heightset,
-			characterx;
+		var filter, str, noclick, thisiscard, seperate, expandall, onlypack, heightset, characterx;
 		for (var i = 0; i < arguments.length; i++) {
 			if (arguments[i] === "thisiscard") {
 				thisiscard = true;
@@ -1252,15 +1011,9 @@ export class Create {
 				heightset = true;
 			} else if (arguments[i] == "characterx") {
 				characterx = true;
-			} else if (
-				typeof arguments[i] == "string" &&
-				arguments[i].startsWith("onlypack:")
-			) {
+			} else if (typeof arguments[i] == "string" && arguments[i].startsWith("onlypack:")) {
 				onlypack = arguments[i].slice(9);
-			} else if (
-				typeof arguments[i] == "object" &&
-				typeof arguments[i].seperate == "function"
-			) {
+			} else if (typeof arguments[i] == "object" && typeof arguments[i].seperate == "function") {
 				seperate = arguments[i].seperate;
 			} else if (typeof arguments[i] === "string") {
 				str = arguments[i];
@@ -1272,7 +1025,9 @@ export class Create {
 		}
 		var list = [];
 		const groups = [];
+		/** @type { Dialog } */
 		var dialog;
+		/** 筛选武将的信息 */
 		var node = ui.create.div(".caption.pointerspan");
 		if (get.is.phoneLayout()) {
 			node.style.fontSize = "30px";
@@ -1302,12 +1057,9 @@ export class Create {
 			}
 		} else {
 			for (var i in lib.character) {
-				if(lib.character[i][4]) {
+				if (lib.character[i][4]) {
 					if (lib.character[i].isMinskin) continue;
-					if (
-						lib.character[i].isBoss ||
-						lib.character[i].isHiddenBoss
-					) {
+					if (lib.character[i].isBoss || lib.character[i].isHiddenBoss) {
 						if (lib.config.mode == "boss") continue;
 						if (!lib.character[i].isBossAllowed) continue;
 					}
@@ -1316,11 +1068,7 @@ export class Create {
 					if (lib.character[i].isUnseen) continue;
 				}
 				if (lib.config.banned.includes(i)) continue;
-				if (
-					lib.characterFilter[i] &&
-					!lib.characterFilter[i](get.mode())
-				)
-					continue;
+				if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) continue;
 				if (filter && filter(i)) continue;
 				list.push(i);
 				if (get.is.double(i)) {
@@ -1345,13 +1093,10 @@ export class Create {
 		var newlined = false;
 		var newlined2;
 		var packsource;
+		/** 点击筛选中的按钮 */
 		var clickCapt = function (e) {
 			if (_status.dragged) return;
-			if (
-				dialog.currentcapt2 == "最近" &&
-				dialog.currentcaptnode2 != this &&
-				!dialog.currentcaptnode2.inited
-			) {
+			if (dialog.currentcapt2 == "最近" && dialog.currentcaptnode2 != this && !dialog.currentcaptnode2.inited) {
 				dialog.currentcapt2 = null;
 				dialog.currentcaptnode2.classList.remove("thundertext");
 				dialog.currentcaptnode2.inited = true;
@@ -1366,20 +1111,10 @@ export class Create {
 						this.touchlink.classList.remove("active");
 					}
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.currentgroup &&
-							dialog.buttons[i].group != dialog.currentgroup
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentcapt2 &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt,
-									true
-								)
-						) {
+						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1389,9 +1124,7 @@ export class Create {
 					if (dialog.currentcaptnode) {
 						dialog.currentcaptnode.classList.remove("thundertext");
 						if (dialog.currentcaptnode.touchlink) {
-							dialog.currentcaptnode.touchlink.classList.remove(
-								"active"
-							);
+							dialog.currentcaptnode.touchlink.classList.remove("active");
 						}
 					}
 					dialog.currentcapt = this.link;
@@ -1401,28 +1134,12 @@ export class Create {
 						this.touchlink.classList.add("active");
 					}
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.buttons[i].capt !=
-							dialog.getCurrentCapt(
-								dialog.buttons[i].link,
-								dialog.buttons[i].capt
-							)
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentcapt2 &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt,
-									true
-								)
-						) {
+						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentgroup &&
-							dialog.buttons[i].group != dialog.currentgroup
-						) {
+						} else if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1434,10 +1151,7 @@ export class Create {
 					newlined2.style.display = "none";
 					if (!packsource.onlypack) {
 						packsource.classList.remove("thundertext");
-						if (
-							!get.is.phoneLayout() ||
-							!lib.config.filternode_button
-						) {
+						if (!get.is.phoneLayout() || !lib.config.filternode_button) {
 							packsource.innerHTML = "武将包";
 						}
 					}
@@ -1450,19 +1164,10 @@ export class Create {
 						this.touchlink.classList.remove("active");
 					}
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.currentgroup &&
-							dialog.buttons[i].group != dialog.currentgroup
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentcapt &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt
-								)
-						) {
+						} else if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1472,9 +1177,7 @@ export class Create {
 					if (dialog.currentcaptnode2) {
 						dialog.currentcaptnode2.classList.remove("thundertext");
 						if (dialog.currentcaptnode2.touchlink) {
-							dialog.currentcaptnode2.touchlink.classList.remove(
-								"active"
-							);
+							dialog.currentcaptnode2.touchlink.classList.remove("active");
 						}
 					}
 					dialog.currentcapt2 = this.link;
@@ -1487,28 +1190,12 @@ export class Create {
 						packsource.classList.add("thundertext");
 					}
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.currentcapt &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt
-								)
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.buttons[i].capt !=
-							dialog.getCurrentCapt(
-								dialog.buttons[i].link,
-								dialog.buttons[i].capt,
-								true
-							)
-						) {
+						} else if (dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentgroup &&
-							dialog.buttons[i].group != dialog.currentgroup
-						) {
+						} else if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							if (dialog.buttons[i].activate) {
@@ -1521,11 +1208,7 @@ export class Create {
 			}
 			if (dialog.seperate) {
 				for (var i = 0; i < dialog.seperate.length; i++) {
-					if (
-						!dialog.seperate[i].nextSibling.querySelector(
-							".button:not(.nodisplay)"
-						)
-					) {
+					if (!dialog.seperate[i].nextSibling.querySelector(".button:not(.nodisplay)")) {
 						dialog.seperate[i].style.display = "none";
 						dialog.seperate[i].nextSibling.style.display = "none";
 					} else {
@@ -1541,6 +1224,7 @@ export class Create {
 					packsource.classList.remove("thundertext");
 				}
 			}
+			updatePagination();
 			if (e) e.stopPropagation();
 		};
 		for (i = 0; i < namecapt.length; i++) {
@@ -1557,17 +1241,12 @@ export class Create {
 				newlined.style.textAlign = "center";
 				node.appendChild(newlined);
 			} else if (newlined) {
-				var span = ui.create.div(
-					".tdnode.pointerdiv.shadowed.reduce_radius"
-				);
+				var span = ui.create.div(".tdnode.pointerdiv.shadowed.reduce_radius");
 				span.style.margin = "3px";
 				span.style.width = "auto";
 				span.innerHTML = " " + namecapt[i].toUpperCase() + " ";
 				span.link = namecapt[i];
-				span.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					clickCapt
-				);
+				span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
 				newlined.appendChild(span);
 				node[namecapt[i]] = span;
 				if (namecapt[i] == "收藏") {
@@ -1580,10 +1259,7 @@ export class Create {
 				span.innerHTML = " " + namecapt[i].toUpperCase() + " ";
 				span.link = namecapt[i];
 				span.alphabet = true;
-				span.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					clickCapt
-				);
+				span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
 				node.appendChild(span);
 			}
 		}
@@ -1592,13 +1268,10 @@ export class Create {
 			var span = document.createElement("span");
 			newlined.appendChild(span);
 			span.style.margin = "8px";
+			/** 点击筛选某势力的武将 */
 			var clickGroup = function () {
 				if (_status.dragged) return;
-				if (
-					dialog.currentcapt2 == "最近" &&
-					dialog.currentcaptnode2 != this &&
-					!dialog.currentcaptnode2.inited
-				) {
+				if (dialog.currentcapt2 == "最近" && dialog.currentcaptnode2 != this && !dialog.currentcaptnode2.inited) {
 					dialog.currentcapt2 = null;
 					dialog.currentcaptnode2.classList.remove("thundertext");
 					dialog.currentcaptnode2.inited = true;
@@ -1611,24 +1284,10 @@ export class Create {
 					dialog.currentgroupnode = null;
 					node.classList.remove("thundertext");
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.currentcapt &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt
-								)
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentcapt2 &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt,
-									true
-								)
-						) {
+						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1642,38 +1301,19 @@ export class Create {
 					dialog.currentgroupnode = node;
 					node.classList.add("thundertext");
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (
-							dialog.currentcapt &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt
-								)
-						) {
+						restoreState(dialog.buttons[i]);
+						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (
-							dialog.currentcapt2 &&
-							dialog.buttons[i].capt !=
-								dialog.getCurrentCapt(
-									dialog.buttons[i].link,
-									dialog.buttons[i].capt,
-									true
-								)
-						) {
+						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else if (dialog.currentgroup == "double") {
-							if (dialog.buttons[i]._changeGroup)
-								dialog.buttons[i].classList.remove("nodisplay");
+							if (dialog.buttons[i]._changeGroup) dialog.buttons[i].classList.remove("nodisplay");
 							else dialog.buttons[i].classList.add("nodisplay");
 						} else if (dialog.currentgroup == "ye") {
-							if (dialog.buttons[i].group == "ye")
-								dialog.buttons[i].classList.remove("nodisplay");
+							if (dialog.buttons[i].group == "ye") dialog.buttons[i].classList.remove("nodisplay");
 							else dialog.buttons[i].classList.add("nodisplay");
 						} else {
-							if (
-								dialog.buttons[i]._changeGroup ||
-								dialog.buttons[i].group != dialog.currentgroup
-							) {
+							if (dialog.buttons[i]._changeGroup || dialog.buttons[i].group != dialog.currentgroup) {
 								dialog.buttons[i].classList.add("nodisplay");
 							} else {
 								dialog.buttons[i].classList.remove("nodisplay");
@@ -1681,29 +1321,23 @@ export class Create {
 						}
 					}
 				}
+				updatePagination();
 			};
 			for (var i = 0; i < groups.length; i++) {
-				var span = ui.create.div(
-					".tdnode.pointerdiv.shadowed.reduce_radius.reduce_margin"
-				);
+				var span = ui.create.div(".tdnode.pointerdiv.shadowed.reduce_radius.reduce_margin");
 				span.style.margin = "3px";
 				newlined.appendChild(span);
 				span.innerHTML = get.translation(groups[i]);
 				span.link = groups[i];
 				span._nature = natures[i];
-				span.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					clickGroup
-				);
+				span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickGroup);
 			}
 
 			var span = document.createElement("span");
 			newlined.appendChild(span);
 			span.style.margin = "8px";
 
-			packsource = ui.create.div(
-				".tdnode.pointerdiv.shadowed.reduce_radius.reduce_margin"
-			);
+			packsource = ui.create.div(".tdnode.pointerdiv.shadowed.reduce_radius.reduce_margin");
 			packsource.style.margin = "3px";
 			newlined.appendChild(packsource);
 			var filternode = null;
@@ -1717,9 +1351,7 @@ export class Create {
 			if (get.is.phoneLayout() && lib.config.filternode_button) {
 				newlined.style.marginTop = "";
 				packsource.innerHTML = "筛选";
-				filternode = ui.create.div(
-					".popup-container.filter-character.modenopause"
-				);
+				filternode = ui.create.div(".popup-container.filter-character.modenopause");
 				ui.create.div(filternode);
 				filternode.listen(function (e) {
 					if (this.classList.contains("removing")) return;
@@ -1732,12 +1364,7 @@ export class Create {
 				for (var i = 0; i < node.childElementCount; i++) {
 					if (node.childNodes[i].tagName.toLowerCase() == "span") {
 						node.childNodes[i].style.display = "none";
-						node.childNodes[i].touchlink = ui.create.div(
-							filternode.firstChild,
-							clickCaptNode,
-							".menubutton.large.capt",
-							node.childNodes[i].innerHTML
-						);
+						node.childNodes[i].touchlink = ui.create.div(filternode.firstChild, clickCaptNode, ".menubutton.large.capt", node.childNodes[i].innerHTML);
 						node.childNodes[i].touchlink.link = node.childNodes[i];
 					}
 				}
@@ -1745,9 +1372,7 @@ export class Create {
 			} else {
 				if (onlypack) {
 					packsource.onlypack = true;
-					packsource.innerHTML = get.translation(
-						onlypack + "_character_config"
-					);
+					packsource.innerHTML = get.translation(onlypack + "_character_config");
 					packsource.style.display = "none";
 					packsource.previousSibling.style.display = "none";
 				} else {
@@ -1768,59 +1393,48 @@ export class Create {
 			newlined2.style.textAlign = "center";
 			node.appendChild(newlined2);
 
-			packsource.addEventListener(
-				lib.config.touchscreen ? "touchend" : "click",
-				function () {
-					if (packsource.onlypack) return;
-					if (_status.dragged) return;
-					if (
-						get.is.phoneLayout() &&
-						lib.config.filternode_button &&
-						filternode
-					) {
-						_status.filterCharacter = true;
-						ui.window.classList.add("shortcutpaused");
-						ui.window.appendChild(filternode);
-						ui.refresh(filternode);
-						filternode.classList.add("shown");
-						var dh =
-							filternode.offsetHeight -
-							filternode.firstChild.offsetHeight;
-						if (dh > 0) {
-							filternode.firstChild.style.top = dh / 2 + "px";
-						} else {
-							filternode.firstChild.style.top = "";
-						}
+			packsource.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+				if (packsource.onlypack) return;
+				if (_status.dragged) return;
+				if (get.is.phoneLayout() && lib.config.filternode_button && filternode) {
+					_status.filterCharacter = true;
+					ui.window.classList.add("shortcutpaused");
+					ui.window.appendChild(filternode);
+					ui.refresh(filternode);
+					filternode.classList.add("shown");
+					var dh = filternode.offsetHeight - filternode.firstChild.offsetHeight;
+					if (dh > 0) {
+						filternode.firstChild.style.top = dh / 2 + "px";
 					} else {
-						if (newlined2.style.display == "none") {
-							newlined2.style.display = "block";
-						} else {
-							newlined2.style.display = "none";
-						}
+						filternode.firstChild.style.top = "";
+					}
+				} else {
+					if (newlined2.style.display == "none") {
+						newlined2.style.display = "block";
+					} else {
+						newlined2.style.display = "none";
 					}
 				}
-			);
+			});
 			var packlist = [];
 			for (var i = 0; i < lib.config.all.characters.length; i++) {
-				if (
-					!lib.config.characters.includes(
-						lib.config.all.characters[i]
-					)
-				)
-					continue;
+				if (!lib.config.characters.includes(lib.config.all.characters[i])) continue;
 				packlist.add(lib.config.all.characters[i]);
 			}
+			for (var i = 0; i < lib.config.characters.length; i++) {
+				if (lib.config.all.characters.includes(lib.config.characters[i])) continue;
+				if (!lib.characterPack[lib.config.characters[i]]) continue;
+				if (!lib.translate[lib.config.characters[i] + "_character_config"]) continue;
+				packlist.add(lib.config.characters[i]);
+			}
 			Object.keys(lib.characterPack)
-				.filter((key) => {
+				.filter(key => {
 					if (key.indexOf("mode_extension") != 0) return false;
 					const extName = key.slice(15);
 					//if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
-					return (
-						lib.config[`extension_${extName}_characters_enable`] ===
-						true
-					);
+					return lib.config[`extension_${extName}_characters_enable`] === true;
 				})
-				.forEach((key) => packlist.add(key));
+				.forEach(key => packlist.add(key));
 			for (var i = 0; i < packlist.length; i++) {
 				var span = document.createElement("div");
 				span.style.display = "inline-block";
@@ -1831,21 +1445,12 @@ export class Create {
 				} else {
 					span.style.fontSize = "22px";
 				}
-				span.innerHTML =
-					lib.translate[packlist[i] + "_character_config"];
+				span.innerHTML = lib.translate[packlist[i] + "_character_config"];
 				span.link = packlist[i];
-				span.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					clickCapt
-				);
+				span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
 				newlined2.appendChild(span);
 				if (filternode && !onlypack) {
-					span.touchlink = ui.create.div(
-						filternode.firstChild,
-						clickCaptNode,
-						".menubutton.large",
-						span.innerHTML
-					);
+					span.touchlink = ui.create.div(filternode.firstChild, clickCaptNode, ".menubutton.large", span.innerHTML);
 					span.touchlink.link = span;
 				}
 			}
@@ -1894,21 +1499,20 @@ export class Create {
 		} else {
 			list.sort(lib.sort.character);
 		}
+		// 自由选将
 		dialog = ui.create.dialog("hidden");
 		dialog.classList.add("noupdate");
 		dialog.classList.add("scroll1");
 		dialog.classList.add("scroll2");
 		dialog.classList.add("scroll3");
-		dialog.addEventListener(
-			lib.config.touchscreen ? "touchend" : "mouseup",
-			function () {
-				_status.clicked2 = true;
-			}
-		);
+		dialog.supportsPagination = Boolean(parseInt(lib.config.showMax_character_number));
+		dialog.paginationMaxCount.set("character", parseInt(lib.config.showMax_character_number));
+		dialog.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", function () {
+			_status.clicked2 = true;
+		});
 		if (heightset) {
-			dialog.style.height =
-				(game.layout == "long2" || game.layout == "nova" ? 380 : 350) +
-				"px";
+			//这里如果dialog的高度较低的话，会显示不全下面的分页按钮，所以我增加了50px，后面遇到高度问题，可以研究更完美的方案，在这里更改。
+			dialog.style.height = (game.layout == "long2" || game.layout == "nova" ? 380 : 350) + 50 + "px";
 			dialog._scrollset = true;
 		}
 		dialog.getCurrentCapt = function (link, capt, noalph) {
@@ -1928,6 +1532,68 @@ export class Create {
 			}
 			return this.currentcapt;
 		};
+		// 搜索框，by Curpond
+		/** @type { Element } */
+		// @ts-ignore
+		const container = dialog.querySelector(".content-container>.content");
+		const Searcher = ui.create.div(".searcher.caption");
+		const input = document.createElement("input").css({
+			textAlign: "center",
+			border: "solid 2px #294510",
+			borderRadius: "6px",
+			fontWeight: "bold",
+			fontSize: "21px"
+		});
+		const div = ui.create.div(".searcher.find");
+		input.placeholder = "支持正则搜索";
+		//使用click事件搜索，因为用input事件，难以解决按下a键会触发自动托管的bug
+		let find = ui.create.button(["find", "搜索"], "tdnodes");
+		find.style.display = "inline";
+		const updatePagination = () => {
+			if (dialog.paginationMaxCount.get("character")) {
+				const buttons = dialog.content.querySelector(".buttons");
+				const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== 'none');
+				/** @type { Pagination } */
+				// @ts-ignore
+				const p = dialog.paginationMap.get(buttons);
+				if (p) {
+					p.state.data = array;
+					// @ts-ignore
+					p.setTotalPageCount(Math.ceil(array.length / dialog.paginationMaxCount.get("character")));
+				}
+			}
+		};
+		const restoreState = btn => {
+			if (btn.style.display == 'none') {
+				btn.style.display = '';
+			}
+		};
+		const updateFind = () => {
+			const { value } = input;
+			const reg = new RegExp(value);
+			for (let btn of dialog.buttons) {
+				if (reg.test(get.translation(btn.link)) || reg.test(get.translation(btn.link + '_ab'))) {
+					btn.classList.remove("nodisplay");
+				} else {
+					btn.classList.add("nodisplay");
+				}
+			}
+			updatePagination();
+		};
+		find.addEventListener('click', updateFind);
+		input.onkeydown = function (e) {
+			e.stopPropagation();
+			if (e.code == "Enter") {
+				updateFind();
+			}
+		};
+		//阻止冒泡以防止触发窗口被拖动而无法选中文字
+		input.onmousedown = function (e) {
+			e.stopPropagation();
+		};
+		Searcher.append(input, find);
+		container.prepend(Searcher);
+
 		if (str) {
 			dialog.add(str);
 		}
@@ -1955,10 +1621,7 @@ export class Create {
 						span.innerHTML = i;
 						span.link = i;
 						span.seperate = true;
-						span.addEventListener(
-							lib.config.touchscreen ? "touchend" : "click",
-							clickCapt
-						);
+						span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
 						newlined.appendChild(span);
 					}
 				}
@@ -1990,59 +1653,50 @@ export class Create {
 			if (thisiscard) {
 				dialog.buttons[i].capt = getCapt(dialog.buttons[i].link[2]);
 			} else {
-				dialog.buttons[i].group =
-					lib.character[dialog.buttons[i].link][1];
+				dialog.buttons[i].group = lib.character[dialog.buttons[i].link][1];
 				dialog.buttons[i].capt = getCapt(dialog.buttons[i].link);
 			}
 		}
 		if (!expandall) {
-			if (
-				!thisiscard &&
-				(lib.characterDialogGroup[lib.config.character_dialog_tool] ||
-					lib.config.character_dialog_tool == "自创")
-			) {
+			if (!thisiscard && (lib.characterDialogGroup[lib.config.character_dialog_tool] || lib.config.character_dialog_tool == "自创")) {
 				clickCapt.call(node[lib.config.character_dialog_tool]);
 			}
 		}
-
-		//仅仅下面是新加的，by Curpond
-
-		let container = dialog.querySelector(".content-container>.content");
-		let Searcher = ui.create.div(".searcher.caption");
-		let input = document.createElement("input");
-		input.style.textAlign = "center";
-		input.style.border = "solid 2px #294510";
-		input.style.borderRadius = "6px";
-		input.style.fontWeight = "bold";
-		input.style.fontSize = "21px";
-		input.placeholder = "支持正则搜索";
-		let find = ui.create.button(["find", "搜索"], "tdnodes");
-		find.style.display = "inline";
-		let clickfind = function (e) {
-			e.stopPropagation();
-			let value = input.value;
-			if (value == "") {
-				game.alert("搜索不能为空");
-				input.focus();
-				return;
-			}
-			let list = [];
-			for (let btn of dialog.buttons) {
-				if (new RegExp(value, "g").test(get.translation(btn.link))) {
-					btn.classList.remove("nodisplay");
-				} else {
-					btn.classList.add("nodisplay");
-				}
-			}
-		};
-		input.addEventListener("keydown", (e) => {
-			if (e.key == "Enter") clickfind(e);
-			e.stopPropagation();
-		});
-		find.listen(clickfind);
-		Searcher.appendChild(input);
-		Searcher.appendChild(find);
-		container.prepend(Searcher);
+		if (dialog.paginationMaxCount.get("character")) {
+			/** @type { HTMLDivElement } */
+			// @ts-ignore
+			const buttons = dialog.content.querySelector(".buttons");
+			const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== 'none');
+			// 传入初始配置
+			const p = new Pagination({
+				// 数据
+				data: array,
+				// 总页数(向上取整)
+				totalPageCount: Math.ceil(array.length / dialog.paginationMaxCount.get("character")),
+				// 父元素
+				container: dialog.content,
+				// 添加到容器的哪个子元素后面
+				insertAfter: buttons,
+				// 回调修改数据
+				onPageChange: state => {
+					const { pageNumber, data } = state;
+					// 设一个dialog一页显示10张武将牌
+					data.forEach((item, index) => {
+						const maxCount = dialog.paginationMaxCount.get("character");
+						if (index >= (pageNumber - 1) * maxCount && index < pageNumber * maxCount) {
+							item.classList.remove("nodisplay");
+						} else {
+							item.classList.add("nodisplay");
+						}
+					});
+				},
+				// 触发什么事件来更改当前页数，默认为click
+				changePageEvent: "click",
+			});
+			dialog.paginationMap.set(buttons, p);
+			// 渲染元素
+			p.renderPageDOM();
+		}
 
 		return dialog;
 	}
@@ -2063,12 +1717,8 @@ export class Create {
 			func;
 		var node = ui.create.div(".config");
 		for (var i = 0; i < arguments.length; i++) {
-			if (
-				typeof arguments[i] == "string" ||
-				typeof arguments[i] == "number"
-			) {
-				if (two)
-					ui.create.div(".toggle", node).innerHTML = arguments[i];
+			if (typeof arguments[i] == "string" || typeof arguments[i] == "number") {
+				if (two) ui.create.div(".toggle", node).innerHTML = arguments[i];
 				else {
 					ui.create.div(node).innerHTML = arguments[i];
 					two = true;
@@ -2076,8 +1726,7 @@ export class Create {
 			} else if (typeof arguments[i] == "function") func = arguments[i];
 		}
 		if (func) {
-			for (var i = 0; i < node.childNodes.length; i++)
-				node.childNodes[i].listen(func);
+			for (var i = 0; i < node.childNodes.length; i++) node.childNodes[i].listen(func);
 		}
 		return node;
 	}
@@ -2098,18 +1747,12 @@ export class Create {
 			switcher.innerHTML = get.translation(current);
 			switcher.contentEditable = true;
 			switcher.style.webkitUserSelect = "text";
-			switcher.addEventListener(
-				lib.config.touchscreen ? "touchend" : "click",
-				ui.click.editor
-			);
+			switcher.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.editor);
 		} else if (typeof current == "object") {
 			switcher.link = current2 || current[0];
 			switcher.innerHTML = get.translation(switcher.link);
 			switcher.choice = current;
-			switcher.addEventListener(
-				lib.config.touchscreen ? "touchend" : "click",
-				ui.click.switcher
-			);
+			switcher.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.switcher);
 		} else {
 			if (current) {
 				switcher.classList.add("on");
@@ -2117,10 +1760,7 @@ export class Create {
 			switcher.classList.add("onoff");
 			ui.create.div(ui.create.div(switcher));
 			switcher.link = current ? true : false;
-			switcher.addEventListener(
-				lib.config.touchscreen ? "touchend" : "click",
-				ui.click.toggle
-			);
+			switcher.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.toggle);
 		}
 		if (func) switcher.additionalCommand = func;
 		return node;
@@ -2168,10 +1808,7 @@ export class Create {
 	skills(skills) {
 		var i, same;
 		if (ui.skills) {
-			if (
-				ui.skills.skills.length == skills.length &&
-				ui.skills.style.display != "none"
-			) {
+			if (ui.skills.skills.length == skills.length && ui.skills.style.display != "none") {
 				same = true;
 				for (i = 0; i < skills.length; i++) {
 					if (ui.skills.skills.includes(skills[i]) == false) {
@@ -2190,10 +1827,7 @@ export class Create {
 		}
 		ui.skills = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills.childNodes.length; i++) {
-			ui.skills.childNodes[i].innerHTML = get.skillTranslation(
-				ui.skills.childNodes[i].link,
-				_status.event.player
-			);
+			ui.skills.childNodes[i].innerHTML = get.skillTranslation(ui.skills.childNodes[i].link, _status.event.player);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills.style.display = "none";
@@ -2207,10 +1841,7 @@ export class Create {
 	skills2(skills) {
 		var i, same;
 		if (ui.skills2) {
-			if (
-				ui.skills2.skills.length == skills.length &&
-				ui.skills2.style.display != "none"
-			) {
+			if (ui.skills2.skills.length == skills.length && ui.skills2.style.display != "none") {
 				same = true;
 				for (i = 0; i < skills.length; i++) {
 					if (ui.skills2.skills.includes(skills[i]) == false) {
@@ -2229,10 +1860,7 @@ export class Create {
 		}
 		ui.skills2 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills2.childNodes.length; i++) {
-			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(
-				ui.skills2.childNodes[i].link,
-				_status.event.player
-			);
+			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(ui.skills2.childNodes[i].link, _status.event.player);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills2.style.display = "none";
@@ -2246,10 +1874,7 @@ export class Create {
 	skills3(skills) {
 		var i, same;
 		if (ui.skills3) {
-			if (
-				ui.skills3.skills.length == skills.length &&
-				ui.skills3.style.display != "none"
-			) {
+			if (ui.skills3.skills.length == skills.length && ui.skills3.style.display != "none") {
 				same = true;
 				for (i = 0; i < skills.length; i++) {
 					if (ui.skills3.skills.includes(skills[i]) == false) {
@@ -2268,10 +1893,7 @@ export class Create {
 		}
 		ui.skills3 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills3.childNodes.length; i++) {
-			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(
-				ui.skills3.childNodes[i].link,
-				_status.event.player
-			);
+			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(ui.skills3.childNodes[i].link, _status.event.player);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills3.style.display = "none";
@@ -2299,11 +1921,7 @@ export class Create {
 			ui.window.classList.add("server");
 			var serverinfo = ui.create.div(".serverinfo", ui.window);
 			ui.create.div("", "服务器正在运行", serverinfo);
-			var serverinfotable = ui.create.table(
-				2,
-				2,
-				ui.create.div(serverinfo)
-			);
+			var serverinfotable = ui.create.table(2, 2, ui.create.div(serverinfo));
 			serverinfotable.style.display = "inline-block";
 			serverinfotable.firstChild.firstChild.innerHTML = "房间人数：";
 			serverinfotable.firstChild.lastChild.id = "server_count";
@@ -2315,12 +1933,7 @@ export class Create {
 				".menubutton.large",
 				"关闭服务器",
 				function () {
-					if (
-						_status.gameStarted &&
-						!confirm(
-							"关闭服务器当前进行的游戏将终止且不可恢复，是否确定关闭？"
-						)
-					) {
+					if (_status.gameStarted && !confirm("关闭服务器当前进行的游戏将终止且不可恢复，是否确定关闭？")) {
 						return;
 					}
 					localStorage.removeItem(lib.configprefix + "asserver");
@@ -2330,10 +1943,7 @@ export class Create {
 			);
 		}
 
-		ui.window.addEventListener(
-			lib.config.touchscreen ? "touchend" : "click",
-			ui.click.window
-		);
+		ui.window.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.window);
 		ui.system = ui.create.div("#system.", ui.window);
 		ui.arena = ui.create.div("#arena.nome", ui.window);
 		if (lib.device == "ios" && !get.is.phoneLayout()) {
@@ -2368,11 +1978,7 @@ export class Create {
 		if (game.layout == "default") {
 			ui.arena.classList.add("oldlayout");
 		}
-		if (
-			lib.config.player_border != "wide" ||
-			game.layout == "long" ||
-			game.layout == "long2"
-		) {
+		if (lib.config.player_border != "wide" || game.layout == "long" || game.layout == "long2") {
 			ui.arena.classList.add("slim_player");
 		}
 		if (lib.config.player_border == "slim") {
@@ -2381,11 +1987,7 @@ export class Create {
 		if (lib.config.player_border == "narrow") {
 			ui.arena.classList.add("mslim_player");
 		}
-		if (
-			lib.config.player_border == "normal" &&
-			lib.config.mode != "brawl" &&
-			(game.layout == "long" || game.layout == "long2")
-		) {
+		if (lib.config.player_border == "normal" && lib.config.mode != "brawl" && (game.layout == "long" || game.layout == "long2")) {
 			ui.arena.classList.add("lslim_player");
 		}
 		ui.window.dataset.player_border = lib.config.player_border;
@@ -2397,12 +1999,7 @@ export class Create {
 			//if(lib.config.textequip=='text') ui.arena.classList.add('textequip');
 			ui.arena.classList.add("textequip");
 		}
-		if (
-			game.layout == "long" ||
-			game.layout == "long2" ||
-			game.layout == "mobile" ||
-			game.layout == "nova"
-		) {
+		if (game.layout == "long" || game.layout == "long2" || game.layout == "mobile" || game.layout == "nova") {
 			if (lib.config.cardshape == "oblong") {
 				ui.window.classList.add("oblongcard");
 				ui.arena.classList.add("oblongcard");
@@ -2422,19 +2019,14 @@ export class Create {
 			document.body.classList.add("statusbar");
 		}
 		if (lib.config.keep_awake) {
-			if (window.plugins && window.plugins.insomnia)
-				window.plugins.insomnia.keepAwake();
+			if (window.plugins && window.plugins.insomnia) window.plugins.insomnia.keepAwake();
 			else {
 				lib.init.js(lib.assetURL + "game", "NoSleep", function () {
 					var noSleep = new NoSleep();
 					document.addEventListener(
 						lib.config.touchscreen ? "touchend" : "click",
 						function enableNoSleep() {
-							document.removeEventListener(
-								lib.config.touchscreen ? "touchend" : "click",
-								enableNoSleep,
-								false
-							);
+							document.removeEventListener(lib.config.touchscreen ? "touchend" : "click", enableNoSleep, false);
 							noSleep.enable();
 							window.noSleep = noSleep;
 						},
@@ -2443,16 +2035,14 @@ export class Create {
 				});
 			}
 		}
-		lib.init.js(lib.assetURL + "game", "keyWords", function () {});
+		lib.init.js(lib.assetURL + "game", "keyWords", function () { });
 
-		lib.updateURL =
-			lib.updateURLS[lib.config.update_link] || lib.updateURLS.coding;
+		lib.updateURL = lib.updateURLS[lib.config.update_link] || lib.updateURLS.coding;
 
 		lib.init.cssstyles();
 
 		ui.arena.dataset.player_height = lib.config.player_height || "default";
-		ui.arena.dataset.player_height_nova =
-			lib.config.player_height_nova || "default";
+		ui.arena.dataset.player_height_nova = lib.config.player_height_nova || "default";
 		// if(lib.config.player_height_nova=='long') ui.arena.classList.add('player_autolong');
 		ui.arena.dataset.target_shake = lib.config.target_shake || "off";
 		ui.backgroundMusic = document.createElement("audio");
@@ -2464,12 +2054,7 @@ export class Create {
 		ui.window.addEventListener(
 			lib.config.touchscreen ? "touchend" : "click",
 			() => {
-				if (
-					!ui.backgroundMusic.played.length &&
-					lib.config.background_music != "music_off" &&
-					!isNaN(ui.backgroundMusic.duration)
-				)
-					ui.backgroundMusic.play();
+				if (!ui.backgroundMusic.played.length && lib.config.background_music != "music_off" && !isNaN(ui.backgroundMusic.duration)) ui.backgroundMusic.play();
 			},
 			{ once: true }
 		);
@@ -2486,15 +2071,9 @@ export class Create {
 			ui.arena.classList.add("hide_name");
 		}
 		if (lib.config.change_skin_auto != "off") {
-			_status.skintimeout = setTimeout(
-				ui.click.autoskin,
-				parseInt(lib.config.change_skin_auto)
-			);
+			_status.skintimeout = setTimeout(ui.click.autoskin, parseInt(lib.config.change_skin_auto));
 		}
-		if (
-			lib.config.border_style &&
-			lib.config.border_style.startsWith("dragon_")
-		) {
+		if (lib.config.border_style && lib.config.border_style.startsWith("dragon_")) {
 			ui.arena.dataset.framedecoration = lib.config.border_style.slice(7);
 		}
 
@@ -2509,10 +2088,7 @@ export class Create {
 		ui.historybar = ui.create.div("#historybar.shadowed", ui.window);
 		lib.setScroll(ui.historybar);
 
-		ui.roundmenu = ui.create.div(
-			"#roundmenu.roundarenabutton.menubutton.round",
-			ui.arena
-		);
+		ui.roundmenu = ui.create.div("#roundmenu.roundarenabutton.menubutton.round", ui.arena);
 		ui.roundmenu._position = [180, 210];
 		ui.create.div(ui.roundmenu);
 		ui.create.div(ui.roundmenu);
@@ -2610,8 +2186,7 @@ export class Create {
 				if (!ui.roundmenu._dragtransform) {
 					ui.roundmenu._dragtransform = [0, 0];
 				}
-				ui.roundmenu._dragorigintransform =
-					ui.roundmenu._dragtransform.slice(0);
+				ui.roundmenu._dragorigintransform = ui.roundmenu._dragtransform.slice(0);
 				ui.roundmenu._resetTimeout = setTimeout(function () {
 					resetround();
 					delete ui.roundmenu._resetTimeout;
@@ -2626,8 +2201,7 @@ export class Create {
 		if (lib.config.roundmenu_transform) {
 			var translate = lib.config.roundmenu_transform;
 			ui.roundmenu._dragtransform = translate;
-			ui.roundmenu.style.transform =
-				"translate(" + translate[0] + "px," + translate[1] + "px)";
+			ui.roundmenu.style.transform = "translate(" + translate[0] + "px," + translate[1] + "px)";
 			ui.click.checkroundtranslate();
 		}
 		if (get.is.phoneLayout()) {
@@ -2695,14 +2269,7 @@ export class Create {
 			ui.pause.hide();
 		}
 		if (!lib.config.touchscreen) {
-			lib.setPopped(
-				ui.pause,
-				ui.click.pausehistory,
-				220,
-				400,
-				null,
-				true
-			);
+			lib.setPopped(ui.pause, ui.click.pausehistory, 220, 400, null, true);
 		}
 		if (!lib.config.show_pause) {
 			ui.pause.style.display = "none";
@@ -2730,11 +2297,7 @@ export class Create {
 			});
 		}
 		ui.auto.id = "autobutton";
-		ui.autonode = ui.create.div(
-			"#autonode",
-			"<div>托管中...</div>",
-			ui.arena
-		);
+		ui.autonode = ui.create.div("#autonode", "<div>托管中...</div>", ui.arena);
 		ui.autonode.listen(ui.click.auto);
 		if (lib.config.mode == "connect") {
 			ui.auto.hide();
@@ -2742,16 +2305,11 @@ export class Create {
 		}
 
 		if (lib.forcehide) {
-			if (lib.forcehide.includes("replay"))
-				ui.replay.classList.add("forcehide");
-			if (lib.forcehide.includes("auto"))
-				ui.auto.classList.add("forcehide");
-			if (lib.forcehide.includes("pause"))
-				ui.pause.classList.add("forcehide");
-			if (lib.forcehide.includes("wuxie"))
-				ui.wuxie.classList.add("forcehide");
-			if (lib.forcehide.includes("cardPileButton"))
-				ui.cardPileButton.classList.add("forcehide");
+			if (lib.forcehide.includes("replay")) ui.replay.classList.add("forcehide");
+			if (lib.forcehide.includes("auto")) ui.auto.classList.add("forcehide");
+			if (lib.forcehide.includes("pause")) ui.pause.classList.add("forcehide");
+			if (lib.forcehide.includes("wuxie")) ui.wuxie.classList.add("forcehide");
+			if (lib.forcehide.includes("cardPileButton")) ui.cardPileButton.classList.add("forcehide");
 		}
 		ui.volumn = ui.create.system("♫");
 		lib.setPopped(ui.volumn, ui.click.volumn, 200);
@@ -2787,8 +2345,7 @@ export class Create {
 			} else
 				hs.sort(function (b, a) {
 					if (a.name != b.name) return lib.sort.card(a.name, b.name);
-					else if (a.suit != b.suit)
-						return lib.suit.indexOf(a) - lib.suit.indexOf(b);
+					else if (a.suit != b.suit) return lib.suit.indexOf(a) - lib.suit.indexOf(b);
 					else return a.number - b.number;
 				});
 			game.me.directgain(hs, false);
@@ -2796,6 +2353,187 @@ export class Create {
 		if (!lib.config.show_sortcard) {
 			ui.sortCard.style.display = "none";
 		}
+		//------添加记牌器 by Curpond-------
+		ui.deckMonitor = ui.create.system(
+			"记牌器",
+			async function () {
+				function getResult() {
+					return new Promise((resolve, reject) => {
+						if (game.online) {
+							try {
+								game.ws.send(JSON.stringify(['cardPile']));
+								game.ws.addEventListener('message', function (e) {
+									let data = JSON.parse(JSON.parse(e.data)[0]);
+									if (data.type == 'cardPile') {
+										resolve(data.data);
+									}
+								}, { once: true });
+
+							} catch (error) {
+								resolve(false);
+							}
+
+
+						} else {
+							resolve({
+								drawPile: ui.cardPile.children,
+								discardPile: ui.discardPile.children
+							});
+						}
+					});
+
+				}
+				if (!_status.gameStarted) return;
+				game.pause2();
+
+				let result = await getResult();
+				if (!result) return;
+				let drawPile = result.drawPile;
+				let discardPile = result.discardPile;
+
+				let popupContainer = ui.create.div(".popupContainer.deckMonitor", ui.window, function () {
+					this.delete(400);
+					game.resume2();
+				});
+				let container = ui.create.div(".deckMonitor", popupContainer, function (e) {
+					e.stopPropagation();
+				});
+				let flag = true;
+				let titleContainer = ui.create.div(".title", container, function (e) {
+					if (flag) {
+						statistic(discardPile, "弃牌牌堆");
+					} else {
+						statistic(drawPile, "摸牌牌堆");
+					}
+					flag = !flag;
+				});
+				let contentContainer = ui.create.div(".contentContainer", container);
+				statistic(drawPile, "摸牌牌堆");
+				function statistic(cards, title) {
+					titleContainer.innerHTML = `${title}【${cards.length}张】 <span>(点击切换)</span>`;
+					contentContainer.innerHTML = "";
+					renderNumberColumn();
+					renderSuitColumn();
+					renderTypeColumns();
+					function renderNumberColumn() {
+						let numberResult = Object.groupBy(cards, card => get.number(card));
+						for (let i = 1; i <= 13; i++) {
+							if (!numberResult[i]) numberResult[i] = [];
+						}
+						createColumnContainer(numberResult, "点数", cards.length);
+					}
+					function renderSuitColumn() {
+						let suitResult = Object.groupBy(cards, card => get.suit(card));
+						Object.assign(
+							suitResult,
+							Object.groupBy(cards, card => {
+								if (get.suit(card) == "spade" && get.number(card) <= 9 && get.number(card) >= 2) {
+									return "♠2-9";
+								}
+							})
+						);
+						// @ts-ignore
+						delete suitResult[void 0];
+						for (let suit of lib.suit) {
+							if (!suitResult[suit]) suitResult[suit] = [];
+						}
+						createColumnContainer(suitResult, "花色", cards.length);
+					}
+					function renderTypeColumns() {
+						let typeResult = Object.groupBy(cards, card => get.type(card));
+						typeResult.basic ??= [];
+						typeResult.trick ??= [];
+						typeResult.equip ??= [];
+						typeResult.delay ??= [];
+						for (let key of Object.keys(typeResult).sort((a, b) => {
+							let arr = ["basic", "trick", "equip", "delay", "jiqi", "spell", "zhenfa", "food", "jiguan", "land"];
+							return arr.indexOf(a) - arr.indexOf(b);
+						})) {
+							let result = Object.groupBy(typeResult[key], card => get.name(card));
+							if (key == "basic") {
+								Object.assign(
+									result,
+									Object.groupBy(typeResult[key], card => {
+										if (get.name(card) !== "sha") return;
+										return get.translation(get.color(card)) + "杀";
+									})
+								);
+								Object.assign(
+									result,
+									Object.groupBy(typeResult[key], card => {
+										if (get.name(card) !== "sha") return;
+										let perfix = get.translation(get.nature(card));
+										if (perfix == "") perfix = "普通";
+										return perfix + "杀";
+									})
+								);
+								// @ts-ignore
+								delete result[void 0];
+								createColumnContainer(result, get.translation(key), typeResult[key].length);
+							} else {
+								createColumnContainer(result, get.translation(key), typeResult[key].length);
+							}
+						}
+					}
+					function createColumnContainer(result, title, count) {
+						let column = ui.create.div(".columnContainer", contentContainer);
+						let subtitle = ui.create.div(".subtitle", column);
+						subtitle.textContent = `${title}(${count})`;
+						let itemContainer = ui.create.div(".itemContainer", column);
+						for (let key in result) {
+							let item = ui.create.div(".item", itemContainer);
+							let tip = ui.create.div(".tip", item);
+							tip.innerHTML = handleColor(
+								result[key].reduce((a, c) => {
+									return a + `${get.translation(get.suit(c))}${get.number(c)} `;
+								}, "")
+							);
+							item.addEventListener("mouseenter", function (e) {
+								if (tip.innerHTML == "") return;
+								tip.style.display = "block";
+								let rect = item.getBoundingClientRect();
+								if (rect.top < window.innerHeight / 2) {
+									tip.style.top = "110%";
+								} else {
+									tip.style.bottom = "110%";
+								}
+							});
+							item.addEventListener("mouseleave", function (e) {
+								tip.style.display = "none";
+							});
+							let itemName = ui.create.div(".itemName", item);
+							let itemCount = ui.create.div(".itemCount", item);
+							itemName.innerHTML = handleColor(get.translation(key));
+							itemCount.textContent = `×${result[key].length}`;
+						}
+						function handleColor(str) {
+							let red = `[${get.translation("diamond")}${get.translation("heart")}]`;
+							let black = `[${get.translation("club")}${get.translation("spade")}]`;
+							return str.replace(new RegExp(red, "g"), '<span style="color:red">$&</span>').replace(new RegExp(black, "g"), '<span style="color:black">$&</span>');
+						}
+					}
+				}
+			},
+			true,
+			true
+		);
+
+
+
+		lib.arenaReady?.push(function () {
+			if (lib.config.show_deckMonitor) {
+				ui.deckMonitor.style.display = "";
+				if (_status.connectMode && !lib.config.show_deckMonitor_online) {
+					ui.deckMonitor.style.display = "none";
+				}
+			} else {
+				ui.deckMonitor.style.display = "none";
+			}
+			document.documentElement.style.setProperty("--tip-display", lib.config.show_tip ? "flex" : "none");
+		});
+
+
+		//---------------------------------
 		ui.playerids = ui.create.system(
 			"显示身份",
 			function () {
@@ -2827,16 +2565,11 @@ export class Create {
 			var hours = date.getHours();
 			var minutes = date.getMinutes();
 			if (lib.config.watchface == "simple") {
-				ui.roundmenu.childNodes[13].style.transform =
-					"rotate(" + get.round((hours + 9) * 30, 2) + "deg)";
+				ui.roundmenu.childNodes[13].style.transform = "rotate(" + get.round((hours + 9) * 30, 2) + "deg)";
 			} else {
-				ui.roundmenu.childNodes[13].style.transform =
-					"rotate(" +
-					get.round((hours + minutes / 60 + 9) * 30, 2) +
-					"deg)";
+				ui.roundmenu.childNodes[13].style.transform = "rotate(" + get.round((hours + minutes / 60 + 9) * 30, 2) + "deg)";
 			}
-			ui.roundmenu.childNodes[12].style.transform =
-				"rotate(" + (minutes + 45) * 6 + "deg)";
+			ui.roundmenu.childNodes[12].style.transform = "rotate(" + (minutes + 45) * 6 + "deg)";
 			if (minutes < 10) {
 				minutes = "0" + minutes.toString();
 			}
@@ -2896,30 +2629,10 @@ export class Create {
 		ui.create.div(ui.shortcut, function (e) {
 			e.stopPropagation();
 		});
-		ui.create.div(
-			".menubutton.round",
-			"<span>重来</span>",
-			ui.shortcut,
-			game.reload
-		).dataset.position = 1;
-		ui.create.div(
-			".menubutton.round",
-			"<span>退出</span>",
-			ui.shortcut,
-			game.exit
-		).dataset.position = 3;
-		ui.create.div(
-			".menubutton.round",
-			"<span>记录</span>",
-			ui.shortcut,
-			ui.click.pause
-		).dataset.position = 4;
-		ui.shortcut.autobutton = ui.create.div(
-			".menubutton.round",
-			"<span>托管</span>",
-			ui.shortcut,
-			ui.click.auto
-		);
+		ui.create.div(".menubutton.round", "<span>重来</span>", ui.shortcut, game.reload).dataset.position = 1;
+		ui.create.div(".menubutton.round", "<span>退出</span>", ui.shortcut, game.exit).dataset.position = 3;
+		ui.create.div(".menubutton.round", "<span>记录</span>", ui.shortcut, ui.click.pause).dataset.position = 4;
+		ui.shortcut.autobutton = ui.create.div(".menubutton.round", "<span>托管</span>", ui.shortcut, ui.click.auto);
 		ui.shortcut.autobutton.dataset.position = 2;
 		ui.favmodelist = ui.create.div(".favmodelist", ui.shortcut);
 		ui.favmodelist.update = function () {
@@ -2932,9 +2645,7 @@ export class Create {
 			}
 			if (removed) game.saveConfigValue("favouriteMode");
 			this.innerHTML = "";
-			favouriteMode
-				.slice(0, 6)
-				.forEach((value, index) => this.add(value, index));
+			favouriteMode.slice(0, 6).forEach((value, index) => this.add(value, index));
 			let mode = lib.config.mode;
 			const config = get.config(`${mode}_mode`);
 			if (typeof config == "string") mode += `|${config}`;
@@ -2947,10 +2658,7 @@ export class Create {
 				submode = info[1],
 				node = ui.create.div(".menubutton.large", this),
 				dataset = node.dataset;
-			dataset.type =
-				Math.min(6, lib.config.favouriteMode.length) % 2 == 0
-					? "even"
-					: "odd";
+			dataset.type = Math.min(6, lib.config.favouriteMode.length) % 2 == 0 ? "even" : "odd";
 			dataset.position = index;
 			let str = lib.translate[name] || lib.translate[mode] || "";
 			if (str.length == 2) str += "模式";
@@ -2962,10 +2670,7 @@ export class Create {
 			});
 		};
 		ui.favmode = ui.create.system("收藏", function () {
-			const mode =
-				typeof _status.mode == "string"
-					? `${lib.config.mode}|${_status.mode}`
-					: lib.config.mode;
+			const mode = typeof _status.mode == "string" ? `${lib.config.mode}|${_status.mode}` : lib.config.mode;
 			if (this.classList.contains("glow")) {
 				this.classList.remove("glow");
 				lib.config.favouriteMode.remove(mode);
@@ -3007,10 +2712,7 @@ export class Create {
 		// @ts-ignore
 		while (lib.arenaReady.length) lib.arenaReady.shift()();
 		delete lib.arenaReady;
-		if (
-			lib.config.auto_check_update &&
-			!sessionStorage.getItem("auto_check_update")
-		) {
+		if (lib.config.auto_check_update && !sessionStorage.getItem("auto_check_update")) {
 			setTimeout(() => {
 				sessionStorage.setItem("auto_check_update", "1");
 				game.checkForUpdate(false);
@@ -3023,12 +2725,8 @@ export class Create {
 						game.saveConfig("asset_version", "无");
 					} else {
 						var func = function () {
-							if (
-								confirm("是否下载图片和字体素材？（约386.6MB）")
-							) {
-								if (
-									!ui.arena.classList.contains("menupaused")
-								) {
+							if (confirm("是否下载图片和字体素材？（约386.6MB）")) {
+								if (!ui.arena.classList.contains("menupaused")) {
 									ui.click.configMenu();
 									ui.click.menuTab("其它");
 								}
@@ -3078,25 +2776,15 @@ export class Create {
 			node.listen(func);
 		}
 		if (lib.config.button_press) {
-			node.addEventListener(
-				lib.config.touchscreen ? "touchstart" : "mousedown",
-				function (e) {
-					if (!node.classList.contains("hidden"))
-						node.classList.add("pressdown");
-				}
-			);
-			node.addEventListener(
-				lib.config.touchscreen ? "touchend" : "mouseup",
-				function (e) {
-					node.classList.remove("pressdown");
-				}
-			);
-			node.addEventListener(
-				lib.config.touchscreen ? "touchmove" : "mousemove",
-				function (e) {
-					node.classList.remove("pressdown");
-				}
-			);
+			node.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", function (e) {
+				if (!node.classList.contains("hidden")) node.classList.add("pressdown");
+			});
+			node.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", function (e) {
+				node.classList.remove("pressdown");
+			});
+			node.addEventListener(lib.config.touchscreen ? "touchmove" : "mousemove", function (e) {
+				node.classList.remove("pressdown");
+			});
 		}
 		return node;
 	}
@@ -3152,13 +2840,10 @@ export class Create {
 	}
 	buttonPresets = {
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		tdnodes: (item, type, position, noclick, node) => {
-			node = ui.create.div(
-				".shadowed.reduce_radius.pointerdiv.tdnode.tdnodes",
-				position
-			);
+			node = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode.tdnodes", position);
 			if (Array.isArray(item)) {
 				node.innerHTML = "<span>" + item[1] + "</span>";
 				node.link = item[0];
@@ -3169,26 +2854,20 @@ export class Create {
 			return node;
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		blank: (item, type, position, noclick, node) => {
 			node = ui.create.div(".button.card", position);
 			node.link = item;
-			if (
-				get.position(item) == "j" &&
-				item.viewAs &&
-				lib.config.cardtempname != "off"
-			) {
+			if (get.position(item) == "j" && item.viewAs && lib.config.cardtempname != "off") {
 				node.classList.add("infoflip");
 				node.classList.add("infohidden");
-				ui.create
-					.cardTempName(item, node)
-					.style.setProperty("display", "block", "important");
+				ui.create.cardTempName(item, node).style.setProperty("display", "block", "important");
 			}
 			return node;
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		card: (item, type, position, noclick, node) => {
 			if (typeof item.copy == "function") {
@@ -3208,23 +2887,19 @@ export class Create {
 			}
 			if (item.nature) {
 				let natures = get.natureList(item.nature);
-				natures.forEach((n) => node.classList.add(n));
+				natures.forEach(n => node.classList.add(n));
 			}
 			if (!noclick) {
 				lib.setIntro(node);
 			}
-			if (
-				get.position(item) == "j" &&
-				item.viewAs &&
-				item.viewAs != item.name &&
-				lib.config.cardtempname != "off"
-			) {
+			const itemPosition = get.position(item);
+			if ((itemPosition === "e" || itemPosition === "j") && item.viewAs && item.viewAs != item.name && lib.config.cardtempname != "off") {
 				ui.create.cardTempName(item, node);
 			}
 			return node;
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		vcard: (item, type, position, noclick, node) => {
 			if (typeof item == "string") {
@@ -3237,7 +2912,7 @@ export class Create {
 			return node;
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		character: (item, type, position, noclick, node) => {
 			if (node) {
@@ -3248,25 +2923,15 @@ export class Create {
 				node = ui.create.div(".button.character", position);
 			}
 			node._link = item;
-			if (_status.noReplaceCharacter && type == "characterx")
-				type = "character";
+			if (_status.noReplaceCharacter && type == "characterx") type = "character";
 			if (type == "characterx") {
-				if (
-					lib.characterReplace[item] &&
-					lib.characterReplace[item].length
-				)
-					item = lib.characterReplace[item].randomGet();
+				if (lib.characterReplace[item] && lib.characterReplace[item].length) item = lib.characterReplace[item].randomGet();
 			}
 			node.link = item;
 
 			var double = get.is.double(node._link, true);
 			if (double) node._changeGroup = true;
-			if (
-				type == "characterx" &&
-				lib.characterReplace[node._link] &&
-				lib.characterReplace[node._link].length > 1
-			)
-				node._replaceButton = true;
+			if (type == "characterx" && lib.characterReplace[node._link] && lib.characterReplace[node._link].length > 1) node._replaceButton = true;
 			var func = function (node, item) {
 				node.setBackground(item, "character");
 				if (node.node) {
@@ -3274,8 +2939,7 @@ export class Create {
 					node.node.hp.remove();
 					node.node.group.remove();
 					node.node.intro.remove();
-					if (node.node.replaceButton)
-						node.node.replaceButton.remove();
+					if (node.node.replaceButton) node.node.replaceButton.remove();
 				}
 				node.node = {
 					name: ui.create.div(".name", node),
@@ -3285,21 +2949,13 @@ export class Create {
 				};
 				var infoitem = get.character(item);
 				node.node.name.innerHTML = get.slimName(item);
-				if (
-					lib.config.buttoncharacter_style == "default" ||
-					lib.config.buttoncharacter_style == "simple"
-				) {
+				if (lib.config.buttoncharacter_style == "default" || lib.config.buttoncharacter_style == "simple") {
 					if (lib.config.buttoncharacter_style == "simple") {
 						node.node.group.style.display = "none";
 					}
 					node.classList.add("newstyle");
-					node.node.name.dataset.nature = get.groupnature(
-						get.bordergroup(infoitem)
-					);
-					node.node.group.dataset.nature = get.groupnature(
-						get.bordergroup(infoitem),
-						"raw"
-					);
+					node.node.name.dataset.nature = get.groupnature(get.bordergroup(infoitem));
+					node.node.group.dataset.nature = get.groupnature(get.bordergroup(infoitem), "raw");
 					ui.create.div(node.node.hp);
 					var hp = infoitem.hp,
 						maxHp = infoitem.maxHp,
@@ -3326,8 +2982,7 @@ export class Create {
 						maxHp = infoitem.maxHp,
 						shield = infoitem.hujia;
 					if (maxHp > 14) {
-						if (hp !== maxHp || shield > 0)
-							node.node.hp.innerHTML = infoitem[2];
+						if (hp !== maxHp || shield > 0) node.node.hp.innerHTML = infoitem[2];
 						else node.node.hp.innerHTML = get.numStr(infoitem[2]);
 						node.node.hp.classList.add("text");
 					} else {
@@ -3346,14 +3001,8 @@ export class Create {
 				if (node.node.name.querySelectorAll("br").length >= 4) {
 					node.node.name.classList.add("long");
 					if (lib.config.buttoncharacter_style == "old") {
-						node.addEventListener(
-							"mouseenter",
-							ui.click.buttonnameenter
-						);
-						node.addEventListener(
-							"mouseleave",
-							ui.click.buttonnameleave
-						);
+						node.addEventListener("mouseenter", ui.click.buttonnameenter);
+						node.addEventListener("mouseleave", ui.click.buttonnameleave);
 					}
 				}
 				node.node.intro.innerHTML = lib.config.intro;
@@ -3362,24 +3011,12 @@ export class Create {
 				}
 				if (infoitem[1]) {
 					if (double) {
-						node.node.group.innerHTML = double.reduce(
-							(previousValue, currentValue) =>
-								`${previousValue}<div data-nature="${get.groupnature(
-									currentValue
-								)}">${get.translation(currentValue)}</div>`,
-							""
-						);
+						node.node.group.innerHTML = double.reduce((previousValue, currentValue) => `${previousValue}<div data-nature="${get.groupnature(currentValue)}">${get.translation(currentValue)}</div>`, "");
 						if (double.length > 4)
-							if (new Set([5, 6, 9]).has(double.length))
-								node.node.group.style.height = "48px";
+							if (new Set([5, 6, 9]).has(double.length)) node.node.group.style.height = "48px";
 							else node.node.group.style.height = "64px";
-					} else
-						node.node.group.innerHTML = `<div>${get.translation(
-							infoitem[1]
-						)}</div>`;
-					node.node.group.style.backgroundColor = get.translation(
-						`${get.bordergroup(infoitem)}Color`
-					);
+					} else node.node.group.innerHTML = `<div>${get.translation(infoitem[1])}</div>`;
+					node.node.group.style.backgroundColor = get.translation(`${get.bordergroup(infoitem)}Color`);
 				} else {
 					node.node.group.style.display = "none";
 				}
@@ -3389,24 +3026,21 @@ export class Create {
 					node.node.replaceButton = intro;
 					intro.innerHTML = "切换";
 					intro._node = node;
-					intro.addEventListener(
-						lib.config.touchscreen ? "touchend" : "click",
-						function () {
-							_status.tempNoButton = true;
-							var node = this._node;
-							var list = lib.characterReplace[node._link];
-							var link = node.link;
-							var index = list.indexOf(link);
-							if (index == list.length - 1) index = 0;
-							else index++;
-							link = list[index];
-							node.link = link;
-							node.refresh(node, link);
-							setTimeout(function () {
-								delete _status.tempNoButton;
-							}, 200);
-						}
-					);
+					intro.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+						_status.tempNoButton = true;
+						var node = this._node;
+						var list = lib.characterReplace[node._link];
+						var link = node.link;
+						var index = list.indexOf(link);
+						if (index == list.length - 1) index = 0;
+						else index++;
+						link = list[index];
+						node.link = link;
+						node.refresh(node, link);
+						setTimeout(function () {
+							delete _status.tempNoButton;
+						}, 200);
+					});
 				}
 			};
 			node.refresh = func;
@@ -3415,19 +3049,13 @@ export class Create {
 			return node;
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		characterx: (item, type, position, noclick, node) => {
-			return ui.create.buttonPresets.character(
-				item,
-				type,
-				position,
-				noclick,
-				node
-			);
+			return ui.create.buttonPresets.character(item, type, position, noclick, node);
 		},
 		/**
-		 * @returns { import("../library/index.js").Button }
+		 * @returns { import("../../library/index.js").Button }
 		 */
 		player: (item, type, position, noclick, node) => {
 			if (node) {
@@ -3446,11 +3074,7 @@ export class Create {
 			if (item.name && item.name.startsWith("unknown")) {
 				if (item.node && item.node.name_seat) {
 					node.classList.add("cardbg");
-					ui.create.div(
-						".avatar_name",
-						node,
-						get.translation(item.name)
-					);
+					ui.create.div(".avatar_name", node, get.translation(item.name));
 				} else {
 					node.setBackground(item.name1, "character");
 				}
@@ -3482,18 +3106,9 @@ export class Create {
 		var fragment = document.createDocumentFragment();
 		for (var i = 0; i < list.length; i++) {
 			if (pre) {
-				buttons.push(
-					ui.create.prebutton(
-						list[i],
-						type.slice(3),
-						fragment,
-						noclick
-					)
-				);
+				buttons.push(ui.create.prebutton(list[i], type.slice(3), fragment, noclick));
 			} else {
-				buttons.push(
-					ui.create.button(list[i], type, fragment, noclick)
-				);
+				buttons.push(ui.create.button(list[i], type, fragment, noclick));
 			}
 		}
 		if (position) position.appendChild(fragment);
@@ -3509,14 +3124,9 @@ export class Create {
 				str = item;
 				link = item;
 			}
-			if (!str.startsWith("<div"))
-				str = '<div class="popup text textbutton">' + str + "</div>";
+			if (!str.startsWith("<div")) str = '<div class="popup text textbutton">' + str + "</div>";
 			var next = dialog.add(str);
-			if (!noclick)
-				next.firstChild.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					ui.click.button
-				);
+			if (!noclick) next.firstChild.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.button);
 			next.firstChild.link = link;
 			Object.setPrototypeOf(next, lib.element.Button.prototype);
 			dialog.buttons.add(next.firstChild);
@@ -3529,8 +3139,7 @@ export class Create {
 		ui.updateConnectPlayerPositions();
 		game.connectPlayers = [];
 		const configOL = lib.configOL;
-		const numberOfPlayers =
-			parseInt(configOL.player_number) || configOL.number;
+		const numberOfPlayers = parseInt(configOL.player_number) || configOL.number;
 		for (let position = 0; position < numberOfPlayers; position++) {
 			const player = ui.create.player(ui.window);
 			player.dataset.position = position;
@@ -3549,86 +3158,80 @@ export class Create {
 		ipbar.style.borderRadius = "2px";
 		ipbar.style.position = "relative";
 
-		var button = ui.create.div(
-			".menubutton.large.highlight.connectbutton.connectbutton1.pointerdiv",
-			game.online ? "退出联机" : "开始游戏",
-			ui.window,
-			function () {
-				if (button.clicked) return;
-				if (game.online) {
-					if (game.onlinezhu) {
-						game.send("startGame");
-					} else {
-						game.saveConfig("tmp_owner_roomId");
-						game.saveConfig("tmp_user_roomId");
-						game.saveConfig("reconnect_info");
-						game.reload();
-					}
+		var button = ui.create.div(".menubutton.large.highlight.connectbutton.connectbutton1.pointerdiv", game.online ? "退出联机" : "开始游戏", ui.window, function () {
+			if (button.clicked) return;
+			if (game.online) {
+				if (game.onlinezhu) {
+					game.send("startGame");
 				} else {
-					var num = 0;
-					for (var i of game.connectPlayers) {
-						if (
-							!i.nickname &&
-							!i.classList.contains("unselectable2")
-						)
-							num++;
-					}
-					if (num >= lib.configOL.number - 1) {
-						alert("至少要有两名玩家才能开始游戏！");
-						return;
-					}
-					game.resume();
+					game.saveConfig("tmp_owner_roomId");
+					game.saveConfig("tmp_user_roomId");
+					game.saveConfig("reconnect_info");
+					game.reload();
 				}
-				button.delete();
-				bar.delete();
-				shareButton.delete();
-				delete ui.connectStartButton;
-				delete ui.connectStartBar;
-				delete ui.connectShareButton;
-				button.clicked = true;
+			} else {
+				var num = 0;
+				for (var i of game.connectPlayers) {
+					if (!i.nickname && !i.classList.contains("unselectable2")) num++;
+				}
+				if (num >= lib.configOL.number - 1) {
+					alert("至少要有两名玩家才能开始游戏！");
+					return;
+				}
+				game.resume();
 			}
-		);
+			button.delete();
+			bar.delete();
+			shareButton.delete();
+			delete ui.connectStartButton;
+			delete ui.connectStartBar;
+			delete ui.connectShareButton;
+			button.clicked = true;
+		});
 
-		var shareButton = ui.create.div(
-			".menubutton.large.highlight.connectbutton.connectbutton2.pointerdiv",
-			"分享房间",
-			ui.window,
-			function () {
-				var text = `无名杀-联机-${lib.translate[get.mode()]}-${
-					game.connectPlayers.filter((p) => p.avatar).length
-				}/${
-					game.connectPlayers.filter(
-						(p) => !p.classList.contains("unselectable2")
-					).length
-				}\n${get.connectNickname()}邀请你加入${
-					game.roomId
-				}房间\n联机地址:${
-					game.ip
-				}\n请先通过游戏内菜单-开始-联机中启用“读取邀请链接”选项`;
-				window.focus();
-				if (navigator.clipboard && lib.node) {
-					navigator.clipboard
-						.writeText(text)
-						.then(() => {
-							game.alert(`分享内容复制成功`);
-						})
-						.catch((e) => {
-							game.alert(`分享内容复制失败${e || ""}`);
-						});
-				} else {
-					var input = ui.create.node("textarea", ui.window, {
-						opacity: "0",
-					});
-					input.value = text;
-					input.focus();
-					input.select();
-					var result = document.execCommand("copy");
-					input.blur();
-					ui.window.removeChild(input);
-					game.alert(`分享内容复制${result ? "成功" : "失败"}`);
+		var shareButton = ui.create.div(".menubutton.large.highlight.connectbutton.connectbutton2.pointerdiv", "分享房间", ui.window, function () {
+			var text = `无名杀-联机-${lib.translate[get.mode()]}-${game.connectPlayers.filter(p => p.avatar).length}/${game.connectPlayers.filter(p => !p.classList.contains("unselectable2")).length}\n${get.connectNickname()}邀请你加入${game.roomId}房间\n联机地址:${game.ip}\n请先通过游戏内菜单-开始-联机中启用“读取邀请链接”选项`;
+			window.focus();
+			const fallbackCopyTextToClipboard = function (text) {
+				const textArea = document.createElement("textarea");
+				textArea.value = text;
+				textArea.style.position = "fixed";
+				textArea.style.top = "0";
+				textArea.style.left = "0";
+				textArea.style.width = "1px";
+				textArea.style.height = "1px";
+				textArea.style.padding = "0";
+				textArea.style.border = "none";
+				textArea.style.outline = "none";
+				textArea.style.boxShadow = "none";
+				textArea.style.background = "transparent";
+				document.body.appendChild(textArea);
+				textArea.focus();
+				textArea.select();
+				try {
+					const successful = document.execCommand("copy");
+					if (!successful) {
+						console.error("Unable to copy using execCommand");
+						game.promises.prompt(`###分享内容复制失败，请自行复制以下内容###${text}`, true);
+					}
+					else {
+						game.alert("分享内容复制成功");
+					}
+				} catch (err) {
+					console.error("Unable to copy using execCommand:", err);
 				}
+				document.body.removeChild(textArea);
+			};
+			if ("clipboard" in navigator) {
+				navigator.clipboard.writeText(text).then(() => {
+					game.alert("分享内容复制成功");
+				}).catch(() => {
+					fallbackCopyTextToClipboard(text);
+				});
+			} else {
+				fallbackCopyTextToClipboard(text);
 			}
-		);
+		});
 
 		ui.connectStartButton = button;
 		ui.connectStartBar = bar;
@@ -3665,7 +3268,7 @@ export class Create {
 		players[players.length - 1].next = players[0];
 		players[players.length - 1].nextSeat = players[0];
 		ui.arena.setNumber(numberOfPlayers);
-		players.forEach((player) => ui.arena.appendChild(player));
+		players.forEach(player => ui.arena.appendChild(player));
 		return players;
 	}
 	me(hasme) {
@@ -3732,27 +3335,14 @@ export class Create {
 			if (lib.card[lib.card.list[i][2]]) {
 				if (!lib.card.list[i]._replaced) {
 					if (!_status.connectMode) {
-						if (
-							lib.config.bannedcards.includes(lib.card.list[i][2])
-						)
-							continue;
+						if (lib.config.bannedcards.includes(lib.card.list[i][2])) continue;
 					} else {
-						if (
-							lib.configOL.bannedcards.includes(
-								lib.card.list[i][2]
-							)
-						)
-							continue;
+						if (lib.configOL.bannedcards.includes(lib.card.list[i][2])) continue;
 					}
-					if (
-						game.bannedcards &&
-						game.bannedcards.includes(lib.card.list[i][2])
-					)
-						continue;
+					if (game.bannedcards && game.bannedcards.includes(lib.card.list[i][2])) continue;
 				}
 				lib.inpile.add(lib.card.list[i][2]);
-				if (lib.card.list[i][2] == "sha" && lib.card.list[i][3])
-					lib.inpile_nature.add(lib.card.list[i][3]);
+				if (lib.card.list[i][2] == "sha" && lib.card.list[i][3]) lib.inpile_nature.add(lib.card.list[i][3]);
 				ui.create.card(ui.cardPile).init(lib.card.list[i]);
 			}
 		}
@@ -3766,8 +3356,7 @@ export class Create {
 		}
 		game.broadcastAll(
 			function (num, pile, top, cardtag, inpile2) {
-				if (ui.cardPileNumber)
-					ui.cardPileNumber.innerHTML = "0轮 剩余牌: " + num;
+				if (ui.cardPileNumber) ui.cardPileNumber.innerHTML = "0轮 剩余牌: " + num;
 				lib.inpile = pile;
 				_status.pileTop = top;
 				_status.cardtag = cardtag;
@@ -3779,5 +3368,12 @@ export class Create {
 			_status.cardtag,
 			lib.inpile_nature
 		);
+	}
+	/**
+	 * 创建分页类
+	 * @param {Partial<PaginationState>} options 
+	 */
+	pagination(options) {
+		return new Pagination(options);
 	}
 }

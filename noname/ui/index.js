@@ -41,6 +41,10 @@ export class UI {
 	/**
 	 * @type { HTMLDivElement }
 	 */
+	system;
+	/**
+	 * @type { HTMLDivElement }
+	 */
 	arena;
 	/**
 	 * @type { Control[] }
@@ -140,11 +144,27 @@ export class UI {
 	 * @type {HTMLDivElement[]}
 	 */
 	toastQueue = [];
-  
+
 	/**
 	 * @type {HTMLDivElement}
 	 */
 	cardPile;
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	discardPile;
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	ordering;
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	coin;
+	/**
+	 * @type {SMap<HTMLLinkElement | HTMLStyleElement>}
+	 */
+	css;
 	refresh(node) {
 		void window.getComputedStyle(node, null).getPropertyValue("opacity");
 	}
@@ -543,7 +563,7 @@ export class UI {
 					ui.dialog.classList.contains("fullheight") == false &&
 					get.mode() != "stone"
 				) {
-					ui.dialog.classList.add("nobutton");
+					if (!ui.dialog.classList.contains("addNewRow")) ui.dialog.classList.add("nobutton");
 					if (ui.dialog.content.offsetHeight < 240) {
 						if (!ui.dialog._heightset) {
 							ui.dialog._heightset = ui.dialog.style.height || true;
@@ -569,7 +589,7 @@ export class UI {
 						ui.dialog.style.height = "";
 					}
 					delete ui.dialog._heightset;
-					ui.dialog.classList.remove("nobutton");
+					if (!ui.dialog.classList.contains("addNewRow")) ui.dialog.classList.remove("nobutton");
 				}
 			}
 			var height1 = ui.dialog.content.offsetHeight;
@@ -699,7 +719,7 @@ export class UI {
 				Math.max(
 					0,
 					Math.round(numberOfPlayers / 5) -
-						Math.min(Math.abs(ordinal - 1), Math.abs(reversedOrdinal))
+					Math.min(Math.abs(ordinal - 1), Math.abs(reversedOrdinal))
 				) * quarterHeight;
 			const selector = `#arena[data-number='${numberOfPlayers}']>.player[data-position='${ordinal}']`;
 			game.dynamicStyle.add(selector, {

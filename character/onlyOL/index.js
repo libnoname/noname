@@ -25,7 +25,9 @@ game.import("character", function () {
 		characterIntro: { ...characterIntros },
 		characterReplace: { ...characterReplaces },
 		characterSubstitute: {
-			ol_sb_yuanshao: [],
+			ol_sb_yuanshao: [
+				["ol_sb_yuanshao_shadow", ["die:ol_sb_yuanshao"]],
+			],
 		},
 		card: { ...cards },
 		skill: { ...skills },

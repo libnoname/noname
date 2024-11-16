@@ -1,0 +1,49 @@
+/* -----------------------神黄忠的对话框---------------------- */
+.dialog.dclieqiong {
+    background-repeat: no-repeat;
+    width: auto !important;
+    aspect-ratio: 4/7;
+    height: 80% !important;
+
+    background-size: contain;
+    background-position: center;
+    background-color: hsla(26, 59%, 37%, 0.749);
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) !important;
+
+}
+.dialog.dclieqiong>.position {
+    height: 50px;
+    width: 50px;
+    /* background: yellow; */
+    background: url(../../image/card/yiwu_click.png) center/100% no-repeat;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 14%;
+}
+.dialog.dclieqiong>.position.selected_cp {
+    background-image: url(../../image/card/yiwu_click_chosen.png);
+}
+.dialog.dclieqiong>.position.selected_cp::before {
+    content: var(--info, "");
+    position: absolute;
+    bottom: 100%;
+    transform: translateX(-40%);
+    width: 230px;
+    height: 40px;
+    background-color: #3a3434;
+    font-size: 0.9em;
+    border: 2px solid #b3a4a4;
+    border-radius: 5px;
+    padding: 3px 4px;
+    overflow: auto;
+    color: #ecec3a;
+    text-shadow: none;
+}
+.dialog.dclieqiong>.title {
+    left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+    top: 1%;
+}

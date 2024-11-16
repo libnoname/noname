@@ -14,10 +14,6 @@ https://github.com/nonameShijian/noname-server
 
 [《无名杀》项目 Pull Request 提交规范](https://github.com/libccy/noname/wiki/%E3%80%8A%E6%97%A0%E5%90%8D%E6%9D%80%E3%80%8B%E9%A1%B9%E7%9B%AE-Pull-Request-%E6%8F%90%E4%BA%A4%E8%A7%84%E8%8C%83)
 
-在线试玩：
-
-https://spmario233.github.io/noname/index.html (图片素材加载速度较慢，不推荐)
-
 客户端下载戳这里：
 
 GitHub： https://github.com/libccy/noname/releases/tag/chromium85-client
@@ -26,7 +22,7 @@ docker: [docker.md](./docker/docker.md)
 
 网页端推荐使用 Chrome 系内核浏览器游玩，不推荐使用低版本 Firefox 浏览器
 
-请尽量保证游玩的 Chrome 系浏览器或手机 Webview 的`内核版本大于等于77`
+请尽量保证游玩的 Chrome 系浏览器或手机 Webview 的`内核版本大于等于85`
 
 提交 Pull Request 时请推送到"PR-Branch"分支！
 

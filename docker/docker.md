@@ -1,6 +1,6 @@
 ### 使用 docker 运行 noname
 
-/docker/index.js 来自[noname-server](https://github.com/nonameShijian/noname-server)
+/docker/index.js.deprecated 来自[noname-server](https://github.com/nonameShijian/noname-server)
 
 1.克隆存储库
 

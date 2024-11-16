@@ -100,11 +100,11 @@ export class Check {
 		const player = event.player;
 		const card = get.card();
 		const targets = game.players.slice();
-		if (event.deadTarget) targets.addArray(game.dead);
+		if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget)) targets.addArray(game.dead);
 		const isSelectable = (target, event) => {
 			if (game.chess && !event.chessForceAll && player && get.distance(player, target, "pure") > 7)
 				return false;
-			if (target.isOut()) return false;
+			if (target.isOut() && !event.includeOut && !(event.skill && get.info(event.skill)?.includeOut)) return false;
 			return event.filterTarget(card, player, target);
 		};
 		return game.Check.processSelection({ type: "target", items: targets, event, useCache, isSelectable });

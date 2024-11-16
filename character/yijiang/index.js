@@ -21,6 +21,7 @@ game.import("character", function () {
 		characterSort: {
 			yijiang: characterSort,
 		},
+		characterSubstitute: {},
 		characterFilter: { ...characterFilters },
 		characterTitle: {},
 		dynamicTranslate: { ...dynamicTranslates },

@@ -1,4 +1,8 @@
 const characters = {
+	ol_sb_dongzhuo: ["male", "qun", 5, ["olguanbian", "olxiongni", "olfengshang", "olzhibin"], ["zhu"]],
+	ol_sb_huaxiong: ["male", "qun", 6, ["olsbbojue", "olsbyangwei"]],
+	ol_sb_yuanshu: ["male", "qun", 4, ["olsbjinming", "olsbxiaoshi", "olsbyanliang"], ["zhu"]],
+	ol_sb_sunjian: ["male", "wu", "4/5", ["olsbhulie", "olsbyipo"]],
 	ol_sb_jiangwei: ["male", "shu", 4, ["olsbzhuri", "olsbranji"]],
 	ol_caozhang: ["male", "wei", 4, ["oljiangchi"], ["die:xin_caozhang"]],
 	ol_jianyong: ["male", "shu", 3, ["olqiaoshui", "jyzongshi"], ["tempname:re_jianyong", "die:re_jianyong"]],
@@ -6,16 +10,20 @@ const characters = {
 	ol_sb_guanyu: ["male", "shu", 4, ["olsbweilin", "olsbduoshou"]],
 	ol_sb_taishici: ["male", "wu", 4, ["olsbdulie", "olsbdouchan"], ["name:太史|慈"]],
 	ol_gaoshun: ["male", "qun", 4, ["olxianzhen", "decadejinjiu"], ["die:re_gaoshun"]],
-	ol_sb_yuanshao: ["male", "qun", 4, ["olsbhetao", "olsbshenli", "olsbyufeng", "olsbshishou"], ["zhu"]],
-	ol_yufan: ["male", "wu", 3, ["olzongxuan", "olzhiyan"], ["tempname:re_yufan", "die:re_yufan"]],
+	ol_sb_yuanshao: ["male", "qun", 4, ["olsbhetao", "olsbshenli", "olsbyufeng", "olsbshishou"], ["die:true", "die:2", "zhu"]],
+	ol_yufan: ["male", "wu", 3, ["olzongxuan", "olzhiyan"]],
 	ol_chengpu: ["male", "wu", 4, ["dclihuo", "olchunlao"], ["tempname:xin_chengpu", "die:xin_chengpu"]],
 	ol_wangyi: ["female", "wei", 3, ["olzhenlie", "olmiji"]],
 	ol_sb_pangtong: ["male", "shu", 3, ["olsbhongtu", "olsbqiwu"], ["die:true", "die:3"]],
 	ol_fazheng: ["male", "shu", 3, ["olxuanhuo", "olenyuan"]],
 	ol_caifuren: ["female", "qun", 3, ["olqieting", "xianzhou"], ["name:蔡|null"]],
-	ol_liru: ["male", "qun", 3, ["xinjuece", "olmieji", "dcfencheng"]],
+	ol_liru: ["male", "qun", 3, ["oljuece", "olmieji", "dcfencheng"]],
 	ol_liubiao: ["male", "qun", 3, ["olzishou", "olzongshi"]],
 	ol_wuguotai: ["female", "wu", 3, ["olganlu", "olbuyi"], ["name:丁|null"]],
+	ol_sb_kongrong: ["male", "qun", 4, ["olsbliwen", "olsbzhengyi"]],
+	ol_zhangchunhua: ["female", "wei", 3, ["jueqing", "shangshi", "oljianmie"]],
+	ol_caochong: ["male", "wei", 3, ["olchengxiang", "olrenxin"]],
+	ol_caozhi: ["male", "wei", 3, ["reluoying", "oljiushi"]],
 };
 
 export default characters;

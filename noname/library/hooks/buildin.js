@@ -2,7 +2,7 @@ import { lib } from "../index.js";
 import { game } from "../../game/index.js";
 
 /**
- * @type {(import("./interface.js").NonameHookType["addGroup"])[]}
+ * @type {(NonameHookType["addGroup"])[]}
  */
 export const addGroup = [
 	function addColor(id, _short, _name, config) {
@@ -84,7 +84,7 @@ export const addGroup = [
 ];
 
 /**
- * @type {(import("./interface.js").NonameHookType["addNature"])[]}
+ * @type {NonameHookType["addNature"][]}
  */
 export const addNature = [
 	function addColor(nature, _translation, config) {

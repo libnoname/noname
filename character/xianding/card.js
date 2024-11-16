@@ -97,16 +97,7 @@ const cards = {
 		},
 		loseDelay: false,
 		onLose: function () {
-			var next = game.createEvent("baiyin_recover");
-			event.next.remove(next);
-			var evt = event.getParent();
-			if (evt.getlx === false) evt = evt.getParent();
-			evt.after.push(next);
-			next.player = player;
-			next.setContent(function () {
-				if (player.isDamaged()) player.logSkill("pyzhuren_club");
-				player.recover();
-			});
+			player.addTempSkill("pyzhuren_club_lose");
 		},
 	},
 	pyzhuren_spade: {

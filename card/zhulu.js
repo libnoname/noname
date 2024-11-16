@@ -548,14 +548,14 @@ game.import("card", function () {
 					if (
 						player.sex == "male" &&
 						player.countCards("he", function (cardx) {
-							return cardx != card;
+							return card.cards && !card.cards.includes(cardx);
 						})
 					)
 						player
 							.chooseToDiscard(
 								true,
 								function (card) {
-									return card != _status.event.card;
+									return !_status.event.card?.cards.includes(card);
 								},
 								"he"
 							)
@@ -687,7 +687,7 @@ game.import("card", function () {
 					if (
 						event.getParent(2) &&
 						event.getParent(2).name != "swapEquip" &&
-						get.position(card) != "d" &&
+						get.position(card?.cards?.[0]) != "d" &&
 						event.parent.type != "equip" &&
 						_status.jinhe &&
 						_status.jinhe[id]
@@ -893,6 +893,7 @@ game.import("card", function () {
 				},
 			},
 			wufengjian_skill: {
+				equipSkill: true,
 				trigger: { player: "useCard" },
 				forced: true,
 				filter: function (event, player) {
@@ -912,14 +913,10 @@ game.import("card", function () {
 				},
 			},
 			yajiaoqiang_skill: {
+				equipSkill: true,
 				trigger: { player: "useCardAfter" },
 				filter: function (event, player) {
-					if (
-						_status.currentPhase == player ||
-						get.color(event.card) != "black" ||
-						event.cards.filterInD().length == 0
-					)
-						return false;
+					if (_status.currentPhase == player || get.color(event.card) != "black" || event.cards.filterInD().length == 0) return false;
 					return (
 						player
 							.getHistory("useCard", function (evt) {

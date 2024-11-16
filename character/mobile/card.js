@@ -104,7 +104,6 @@ const cards = {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip2",
-		//cardnature:"fire",
 		ai: {
 			equipValue: function (card, player) {
 				if (player.hasSkillTag("maixie") && player.hp > 1) return 0;
@@ -162,6 +161,39 @@ const cards = {
 			},
 		},
 		skills: ["rw_zhuge_skill"],
+	},
+	//大攻车
+	dagongche_attack: {
+		cardimage: "dagongche",
+		fullskin: true,
+		derivation: "mb_zhangfen",
+		type: "equip",
+		subtype: "equip1",
+		destroyLog: false,
+		distance: { attackFrom: -8 },
+		ai: { basic: { equipValue: 10 } },
+		cardPrompt(card) {
+			if (!card.storage || typeof card.storage.mbquchong != "number") return lib.translate["dagongche_attack_info"];
+			let str = "②此牌剩余" + parseFloat(card.storage.mbquchong) + "点耐久度，耐久度为0时销毁此牌。";
+			return str + "①当此牌进入你的装备区时，弃置你装备区里的其他牌。②其他装备区进入你的装备区前，改为将这些牌置于弃牌堆。③当你对一名角色造成伤害时，你可减少1点此牌的耐久度，令此伤害+X（X为游戏轮数且至多为3）。④当此牌不因〖渠冲〗离开装备区时，减少1点此牌的耐久度并防止之。";
+		},
+		skills: ["dagongche_attack_skill", "mbquchong_effect"],
+	},
+	dagongche_defend: {
+		cardimage: "dagongche",
+		fullskin: true,
+		derivation: "mb_zhangfen",
+		type: "equip",
+		subtype: "equip1",
+		destroyLog: false,
+		distance: { attackFrom: -8 },
+		ai: { basic: { equipValue: 10 } },
+		cardPrompt(card) {
+			if (!card.storage || typeof card.storage.mbquchong != "number") return lib.translate["dagongche_defend_info"];
+			let str = "②此牌剩余" + parseFloat(card.storage.mbquchong) + "点耐久度，耐久度为0时销毁此牌。";
+			return str + "①当此牌进入你的装备区时，弃置你装备区里的其他牌。②其他装备区进入你的装备区前，改为将这些牌置于弃牌堆。③当你受到伤害时，减少X点此牌的耐久度，令此伤害-X（X为伤害值且至多为此牌耐久度）。④当此牌不因〖渠冲〗离开装备区时，减少1点此牌的耐久度并防止之。";
+		},
+		skills: ["dagongche_defend_skill", "mbquchong_effect"],
 	},
 };
 export default cards;

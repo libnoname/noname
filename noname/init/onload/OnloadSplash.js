@@ -2,7 +2,7 @@ import { lib, get } from "../../../noname.js";
 import { ref, onMounted } from "../../../game/vue.esm-browser.js";
 import { delay } from "../../util/index.js";
 
-const html = String.raw;
+const html = (strings, ...values) => String.raw({ raw: strings }, ...values);
 /**
  * @type {import("vue").Component}
  */

@@ -445,7 +445,12 @@ export const cardPackMenu = function (connectMenu) {
 					var card = lib.config.addedpile[mode][i];
 					var cfgnode = ui.create.div(".config.toggle.cardpilecfg");
 					cfgnode._info = card;
-					cfgnode.innerHTML = get.translation(card[2]) + " " + get.translation(card[0]) + card[1];
+					cfgnode.innerHTML =
+						(card[2] === "sha" && card[3] ? get.translation(card[3]) : "") +
+						get.translation(card[2]) +
+						" " +
+						get.translation(card[0]) +
+						card[1];
 					var cfgnodedelete = document.createElement("span");
 					cfgnodedelete.classList.add("cardpiledelete");
 					cfgnodedelete.innerHTML = "删除";

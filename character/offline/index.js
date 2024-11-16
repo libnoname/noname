@@ -15,7 +15,7 @@ game.import("character", function () {
 	return {
 		name: "offline",
 		connect: true,
-		connectBanned: ["zhangliang"],
+		connectBanned: ["zhangliang", "yj_tianchuan"],
 		character: { ...characters },
 		characterSort: {
 			offline: characterSort,
@@ -44,6 +44,9 @@ game.import("character", function () {
 			ps2080_zhouyu: "S2080",
 			ps_caozhi: "S2081",
 			ps_shen_machao: "SX015",
+		},
+		characterSubstitute: {
+			jd_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },

@@ -12,9 +12,7 @@ const SANDBOX_AUTOTEST_NODELAY = false;
 const SANDBOX_DEV = false;
 
 const WSURL_FOR_IP = /ws:\/\/(\d+.\d+.\d+.\d+):\d+\//;
-const TRUSTED_IPS = Object.freeze([
-	"47.99.105.222",
-]);
+const TRUSTED_IPS = Object.freeze([]);
 
 // 声明导入类
 /** @type {boolean} */

@@ -449,7 +449,7 @@
 							"chrome",
 							...window.process.versions.chrome
 								.split(".")
-								.slice(3)
+								.slice(0, 3)
 								.map(item => parseInt(item)),
 						];
 					}

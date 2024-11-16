@@ -1,1 +1,1 @@
-export function onload(resetGameTimeout: any): Promise<void>;
+export function onload(): Promise<void>;

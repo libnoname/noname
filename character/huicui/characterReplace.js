@@ -5,7 +5,8 @@ const characterReplaces = {
 	gaoxiang: ["gaoxiang", "jsrg_gaoxiang"],
 	zhangchu: ["zhangchu", "jsrg_zhangchu"],
 	mamidi: ["mamidi", "xin_mamidi"],
-	re_chunyuqiong: ["re_chunyuqiong", "re_chunyuqiong", "chunyuqiong", "jsrg_chunyuqiong"],
+	re_chunyuqiong: ["re_chunyuqiong", "chunyuqiong", "jsrg_chunyuqiong"],
+	chengui: ["chengui", "mb_chengui"],
 };
 
 export default characterReplaces;

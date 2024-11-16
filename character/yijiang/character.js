@@ -1,21 +1,9 @@
 const characters = {
-	xiahoumao: ["male", "wei", 4, ["tongwei", "cuguo"], ["name:夏侯|楙"]],
-	chenshi: ["male", "shu", 4, ["qingbei"]],
-	sunli: ["male", "wei", 4, ["kangli"]],
-	feiyao: ["male", "wei", 4, ["zhenfeng"]],
-	wuanguo: ["male", "qun", 4, ["diezhang", "duanwan"]],
-	hanlong: ["male", "wei", 4, ["duwang", "cibei"]],
-	yj_qiaozhou: ["male", "shu", 3, ["shiming", "jiangxi"]],
-	yj_sufei: ["male", "wu", 4, ["shuojian"]],
-	liwan: ["female", "wei", 3, ["liandui", "biejun"]],
-	zhugeshang: ["male", "shu", 3, ["sangu", "yizu"], ["name:诸葛|尚"]],
-	kebineng: ["male", "qun", 4, ["kousheng"]],
-	lukai: ["male", "wu", 4, ["lkbushi", "lkzhongzhuang"]],
 	xin_fazheng: ["male", "shu", 3, ["xinxuanhuo", "xinenyuan"]],
 	guanzhang: ["male", "shu", 4, ["fuhun"], ["name:关|兴-张|苞"]],
 	wangyi: ["female", "wei", 3, ["zhenlie", "miji"]],
 	caozhang: ["male", "wei", 4, ["new_jiangchi"]],
-	guohuai: ["male", "wei", 4, ["rejingce"]],
+	guohuai: ["male", "wei", 3, ["rejingce"]],
 	zhangchunhua: ["female", "wei", 3, ["jueqing", "shangshi"]],
 	caozhi: ["male", "wei", 3, ["luoying", "jiushi"]],
 	caochong: ["male", "wei", 3, ["chengxiang", "renxin"]],
@@ -67,10 +55,10 @@ const characters = {
 	gongsunyuan: ["male", "qun", 4, ["huaiyi"], ["name:公孙|渊"]],
 	guotufengji: ["male", "qun", 3, ["jigong", "shifei"], ["name:郭|图-逢|纪"]],
 
-	xin_liru: ["male", "qun", 3, ["xinjuece", "xinmieji", "xinfencheng"]],
+	xin_liru: ["male", "qun", 3, ["xinjuece", "xinmieji", "xinfencheng"], ["die:liru"]],
 
 	guohuanghou: ["female", "wei", 3, ["jiaozhao", "danxin"], ["name:郭|null"]],
-	liuyu: ["male", "qun", 2, ["xinzhige", "xinzongzuo"]],
+	liuyu: ["male", "qun", 2, ["zhige", "zongzuo", "twchongwang"], ["zhu"]],
 	liyan: ["male", "shu", 3, ["dcduliang", "fulin"]],
 	sundeng: ["male", "wu", 4, ["kuangbi"]],
 
@@ -92,11 +80,6 @@ const characters = {
 	old_huaxiong: ["male", "qun", 6, ["shiyong"]],
 
 	yujin: ["male", "wei", 4, ["rezhenjun"], ["die:ol_yujin.mp3"]],
-
-	linghuyu: ["male", "wei", 4, ["xvzhi"], ["name:令狐|愚"]],
-	yj_simafu: ["male", "wei", 3, ["beiyu", "duchi"], ["name:司马|孚"]],
-	yj_xuangongzhu: ["female", "wei", 3, ["yjqimei", "yjzhuiji"], ["name:司马|null"]],
-	xukun: ["male", "wu", 4, ["fazhu"]],
 };
 
 export default characters;

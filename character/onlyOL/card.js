@@ -17,7 +17,7 @@ const cards = {
 		},
 		distance: { attackFrom: -1 },
 		ai: { basic: { equipValue: 7 } },
-		skills: ["olsbyufeng_sizhaojian"],
+		skills: ["sizhaojian_skill"],
 	},
 };
 export default cards;

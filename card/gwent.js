@@ -13,6 +13,7 @@ game.import("card", function () {
 				cardimage: "gw_dieyi",
 				type: "equip",
 				subtype: "equip1",
+				//TODO: 维护所有水乎武将的onLose事件
 				onLose: function () {
 					lib.skill.gw_dieyi.process(player);
 				},
@@ -1426,7 +1427,7 @@ game.import("card", function () {
 				selectTarget: -1,
 				content: function () {
 					var list = get.gainableSkills(function (info, skill) {
-						return !info.notemp && info.ai && info.ai.maixie_hp && !player.hasSkill(skill);
+						return info.ai && info.ai.maixie_hp && !player.hasSkill(skill);
 					});
 					list.remove("guixin");
 					if (list.length) {
@@ -1960,7 +1961,7 @@ game.import("card", function () {
 					nodamage: true,
 					effect: {
 						target: function (card, player, target, current) {
-							if (get.tag(card, "damage") && !get.tag(card, "natureDamage")) return [0, 0];
+							if (get.tag(card, "damage") && !get.tag(card, "natureDamage")) return "zeroplayertarget";
 						},
 					},
 				},
@@ -2002,7 +2003,11 @@ game.import("card", function () {
 					weather: true,
 					effect: {
 						player_use(card, player) {
-							if (!player.needsToDiscard()) return "zeroplayertarget";
+							return [1, (player.needsToDiscard(0, (i, p) => {
+								if (p.canIgnoreHandcard(i)) return false;
+								if (i === card || card.cards && card.cards.includes(i)) return false;
+								return true;
+							}) ? -0.4 : -1)];
 						},
 					},
 				},

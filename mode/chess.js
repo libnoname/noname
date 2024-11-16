@@ -1,17 +1,18 @@
-"use strict";
-game.import("mode", function (lib, game, ui, get, ai, _status) {
+import { lib, game, ui, get, ai, _status } from "../noname.js";
+export const type = "mode";
+/**
+ * @type { () => importModeConfig }
+ */
+export default () => {
 	return {
 		name: "chess",
 		canvasUpdates2: [],
 		hiddenCharacters: [],
-		start: function () {
+		start() {
 			"step 0";
 			_status.gameDrawed = true;
 			_status.mode = get.config("chess_mode");
-			if (
-				lib.config.player_border == "normal" &&
-				(lib.config.layout == "long" || lib.config.layout == "long2")
-			) {
+			if (lib.config.player_border == "normal" && (lib.config.layout == "long" || lib.config.layout == "long2")) {
 				ui.arena.classList.add("lslim_player");
 			}
 			// if(_status.mode=='leader'){
@@ -26,7 +27,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			}
 			"step 1";
 			for (var i in lib.skill) {
-				if (lib.skill[i].changeSeat) {
+				if (lib.skill[i].seatRelated) {
 					lib.skill[i] = {};
 					if (lib.translate[i + "_info"]) {
 						lib.translate[i + "_info"] = "此模式下不可用";
@@ -304,12 +305,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				);
 			}
 
-			if (
-				!event.video &&
-				_status.mode == "combat" &&
-				!_status.vsboss &&
-				(_status.replacelist.length || get.config("additional_player"))
-			) {
+			if (!event.video && _status.mode == "combat" && !_status.vsboss && (_status.replacelist.length || get.config("additional_player"))) {
 				_status.enemyDied = 0;
 				_status.friendDied = 0;
 				ui.enemyDied = ui.create.system("杀敌: " + get.cnNumber(0), null, true);
@@ -362,12 +358,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					true
 				);
 			}
-			if (
-				!event.video &&
-				_status.mode == "combat" &&
-				!_status.vsboss &&
-				get.config("additional_player")
-			) {
+			if (!event.video && _status.mode == "combat" && !_status.vsboss && get.config("additional_player")) {
 				var finishGameBr = document.createElement("br");
 				finishGameBr.classList.add("finish_game");
 				ui.finishGame = ui.create.system("结束游戏", function () {
@@ -387,14 +378,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			ui.create.me();
 			ui.create.fakeme();
 
-			if (
-				!event.video &&
-				((_status.mode == "combat" &&
-					get.config("zhu") &&
-					!_status.vsboss &&
-					game.players.length > 2) ||
-					_status.mode == "three")
-			) {
+			if (!event.video && ((_status.mode == "combat" && get.config("zhu") && !_status.vsboss && game.players.length > 2) || _status.mode == "three")) {
 				game.friendZhu = event.friendZhu;
 				game.friendZhu.hp++;
 				game.friendZhu.maxHp++;
@@ -702,28 +686,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 
 					if (player.getLeft() - ui.chessContainer.chessLeft < 14) {
 						dx = player.getLeft() - ui.chessContainer.chessLeft - 14;
-					} else if (
-						player.getLeft() - ui.chessContainer.chessLeft >
-						ui.chessContainer.offsetWidth - 134
-					) {
-						dx =
-							player.getLeft() -
-							ui.chessContainer.chessLeft -
-							ui.chessContainer.offsetWidth +
-							134;
+					} else if (player.getLeft() - ui.chessContainer.chessLeft > ui.chessContainer.offsetWidth - 134) {
+						dx = player.getLeft() - ui.chessContainer.chessLeft - ui.chessContainer.offsetWidth + 134;
 					}
 					if (player.getTop() - ui.chessContainer.chessTop < 14) {
 						dy = player.getTop() - ui.chessContainer.chessTop - 14;
-					} else if (
-						player.getTop() + ui.chess.offsetTop - ui.chessContainer.chessTop >
-						ui.chessContainer.offsetHeight - 134
-					) {
-						dy =
-							player.getTop() +
-							ui.chess.offsetTop -
-							ui.chessContainer.chessTop -
-							ui.chessContainer.offsetHeight +
-							134;
+					} else if (player.getTop() + ui.chess.offsetTop - ui.chessContainer.chessTop > ui.chessContainer.offsetHeight - 134) {
+						dy = player.getTop() + ui.chess.offsetTop - ui.chessContainer.chessTop - ui.chessContainer.offsetHeight + 134;
 					}
 					// if(_status.currentChessFocus){
 					// 	cancelAnimationFrame(_status.currentChessFocus);
@@ -907,12 +876,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					if (_status.mode == "combat" && !_status.vsboss) {
-						if (
-							game.players.length == 1 &&
-							get.config("additional_player") &&
-							_status.additionallist.length &&
-							source == game.players[0]
-						) {
+						if (game.players.length == 1 && get.config("additional_player") && _status.additionallist.length && source == game.players[0]) {
 							source.draw(get.config("reward"));
 						}
 						if (player.side == game.me.side) {
@@ -1098,35 +1062,20 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				$phaseJudge: function (card) {
 					game.addVideo("phaseJudge", this, get.cardInfo(card));
-					var clone = card.copy("thrown", this.parentNode).addTempClass("judgestart");
-					var player = this;
+					let cardToThrow;
+					if (card.cards?.length) {
+						//TODO: 这里先偷懒，只用其中的第一张牌进行处理，先解决bug
+						cardToThrow = card.cards[0];
+					} else {
+						cardToThrow = game.createCard(card.name, "虚拟", "");
+					}
+					const clone = cardToThrow.copy("thrown", this.parentNode).addTempClass("judgestart");
+					const player = this;
 					clone.style.opacity = 0.6;
-					clone.style.left =
-						Math.random() * 100 -
-						50 +
-						ui.chessContainer.chessLeft +
-						ui.chessContainer.offsetWidth / 2 -
-						52 +
-						"px";
-					clone.style.top =
-						Math.random() * 80 -
-						40 +
-						ui.chessContainer.chessTop +
-						ui.chessContainer.offsetHeight / 2 -
-						52 -
-						ui.chessContainer.offsetTop +
-						"px";
+					clone.style.left = Math.random() * 100 - 50 + ui.chessContainer.chessLeft + ui.chessContainer.offsetWidth / 2 - 52 + "px";
+					clone.style.top = Math.random() * 80 - 40 + ui.chessContainer.chessTop + ui.chessContainer.offsetHeight / 2 - 52 - ui.chessContainer.offsetTop + "px";
 					game.delay();
-					game.linexy(
-						[
-							clone.offsetLeft + clone.offsetWidth / 2,
-							clone.offsetTop + clone.offsetHeight / 2,
-							player.getLeft() + player.offsetWidth / 2,
-							player.getTop() + player.offsetHeight / 2,
-						],
-						{ opacity: 0.5, dashed: true },
-						true
-					);
+					game.linexy([clone.offsetLeft + clone.offsetWidth / 2, clone.offsetTop + clone.offsetHeight / 2, player.getLeft() + player.offsetWidth / 2, player.getTop() + player.offsetHeight / 2], { opacity: 0.5, dashed: true }, true);
 				},
 				$randomMove: function (node, length, rand) {
 					if (!this.node.chessthrown) {
@@ -1134,10 +1083,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					var thrown = this.node.chessthrown;
 					for (var i = 0; i < thrown.length; i++) {
-						if (
-							thrown[i].parentNode != this.parentNode ||
-							thrown[i].classList.contains("removing")
-						) {
+						if (thrown[i].parentNode != this.parentNode || thrown[i].classList.contains("removing")) {
 							thrown.splice(i--, 1);
 						}
 					}
@@ -1214,15 +1160,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				replaceChessPlayer: function () {
 					"step 0";
 					if (get.config("additional_player")) {
-						if (
-							!event.enemy &&
-							!_status.auto &&
-							(game.me.isDead() || get.config("single_control"))
-						) {
-							event.dialog = ui.create.dialog("选择替补角色", [
-								_status.additionallist.randomGets(parseInt(get.config("choice_number"))),
-								"character",
-							]);
+						if (!event.enemy && !_status.auto && (game.me.isDead() || get.config("single_control"))) {
+							event.dialog = ui.create.dialog("选择替补角色", [_status.additionallist.randomGets(parseInt(get.config("choice_number"))), "character"]);
 							event.filterButton = function () {
 								return true;
 							};
@@ -1241,12 +1180,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						} else {
 							event.playername = _status.additionallist.randomRemove();
 						}
-					} else if (
-						!event.enemy &&
-						get.config("seat_order") == "指定" &&
-						!_status.auto &&
-						_status.replacelist.length
-					) {
+					} else if (!event.enemy && get.config("seat_order") == "指定" && !_status.auto && _status.replacelist.length) {
 						_status.replacelist.add(event.playername);
 						event.dialog = ui.create.dialog("选择替补角色", [_status.replacelist, "character"]);
 						event.filterButton = function () {
@@ -1283,12 +1217,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				chooseToMoveChess: function () {
 					"step 0";
-					if (
-						!player.movable(0, 1) &&
-						!player.movable(0, -1) &&
-						!player.movable(1, 0) &&
-						!player.movable(-1, 0)
-					) {
+					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 						return;
 					}
 					event.switchToAuto = function () {
@@ -1322,10 +1251,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									}
 								}
 								targets2.sort(function (a, b) {
-									return (
-										Math.abs((a % ui.chesswidth) - player.getXY()[0]) -
-										Math.abs((b % ui.chesswidth) - player.getXY()[0])
-									);
+									return Math.abs((a % ui.chesswidth) - player.getXY()[0]) - Math.abs((b % ui.chesswidth) - player.getXY()[0]);
 								});
 								var tafangmoved = false;
 								for (var i = 0; i < targets2.length; i++) {
@@ -1441,15 +1367,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ui.chess.style.height = 148 * ui.chessheight + "px";
 				ui.chess.style.width = 148 * ui.chesswidth + "px";
 				ui.chessContainer.xmax = Math.max(0, 148 * ui.chesswidth - ui.chessContainer.offsetWidth);
-				ui.chessContainer.ymax =
-					Math.max(0, 148 * ui.chessheight - ui.chessContainer.offsetHeight) + 72;
+				ui.chessContainer.ymax = Math.max(0, 148 * ui.chessheight - ui.chessContainer.offsetHeight) + 72;
 				if (lib.config.show_history == "right") {
 					ui.chessContainer.xmax += 50;
 				}
 				lib.onresize.push(function () {
 					ui.chessContainer.xmax = Math.max(0, 148 * ui.chesswidth - ui.chessContainer.offsetWidth);
-					ui.chessContainer.ymax =
-						Math.max(0, 148 * ui.chessheight - ui.chessContainer.offsetHeight) + 72;
+					ui.chessContainer.ymax = Math.max(0, 148 * ui.chessheight - ui.chessContainer.offsetHeight) + 72;
 					if (lib.config.show_history == "right") {
 						ui.chessContainer.xmax += 50;
 					}
@@ -1477,10 +1401,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					ui.chess.addEventListener("mousemove", function (e) {
 						if (_status.mousedragging) return;
 						if (this._chessdrag) {
-							ui.chessContainer.move(
-								this._chessdrag[1] - e.x + this._chessdrag[0].x - ui.chessContainer.chessLeft,
-								this._chessdrag[2] - e.y + this._chessdrag[0].y - ui.chessContainer.chessTop
-							);
+							ui.chessContainer.move(this._chessdrag[1] - e.x + this._chessdrag[0].x - ui.chessContainer.chessLeft, this._chessdrag[2] - e.y + this._chessdrag[0].y - ui.chessContainer.chessTop);
 							// this.parentNode.scrollLeft=this._chessdrag[1]-e.x+this._chessdrag[0].x;
 							// this.parentNode.scrollTop=this._chessdrag[2]-e.y+this._chessdrag[0].y;
 							_status.clicked = true;
@@ -1509,16 +1430,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					ui.chess.addEventListener("touchmove", function (e) {
 						if (_status.mousedragging) return;
 						if (this._chessdrag && e.touches.length == 1) {
-							ui.chessContainer.move(
-								this._chessdrag[1] -
-									e.touches[0].clientX +
-									this._chessdrag[0].touches[0].clientX -
-									ui.chessContainer.chessLeft,
-								this._chessdrag[2] -
-									e.touches[0].clientY +
-									this._chessdrag[0].touches[0].clientY -
-									ui.chessContainer.chessTop
-							);
+							ui.chessContainer.move(this._chessdrag[1] - e.touches[0].clientX + this._chessdrag[0].touches[0].clientX - ui.chessContainer.chessLeft, this._chessdrag[2] - e.touches[0].clientY + this._chessdrag[0].touches[0].clientY - ui.chessContainer.chessTop);
 							_status.clicked = true;
 						}
 						e.preventDefault();
@@ -1557,37 +1469,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						var pos = '[data-position="' + (i + j * ui.chesswidth) + '"]';
 						// ui.chesssheet.sheet.insertRule('#arena.chess #chess>.player'+pos+
 						// '{left:'+(14+i*148)+'px;top:'+(14+j*148)+'px}',0);
-						ui.chesssheet.sheet.insertRule(
-							"#arena.chess #chess>.card" +
-								pos +
-								"{left:" +
-								(22 + i * 148) +
-								"px;top:" +
-								(22 + j * 148) +
-								"px}",
-							0
-						);
-						ui.chesssheet.sheet.insertRule(
-							"#arena.chess #chess>.popup" +
-								pos +
-								"{left:" +
-								(19 + i * 148) +
-								"px;top:" +
-								(142 + j * 148) +
-								"px}",
-							0
-						);
+						ui.chesssheet.sheet.insertRule("#arena.chess #chess>.card" + pos + "{left:" + (22 + i * 148) + "px;top:" + (22 + j * 148) + "px}", 0);
+						ui.chesssheet.sheet.insertRule("#arena.chess #chess>.popup" + pos + "{left:" + (19 + i * 148) + "px;top:" + (142 + j * 148) + "px}", 0);
 					}
 				}
 			},
 			getVideoName: function () {
-				var str =
-					"战棋" +
-					get.translation(_status.mode) +
-					" - " +
-					_status.friendCount +
-					"v" +
-					_status.enemyCount;
+				var str = "战棋" + get.translation(_status.mode) + " - " + _status.friendCount + "v" + _status.enemyCount;
 				var name = [get.translation(game.me.name), str];
 				return name;
 			},
@@ -1787,8 +1675,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (_status.challenge && _status.challengeMoney <= game.data.dust) {
 							var div2 = ui.create.div();
 							div2.style.display = "block";
-							div2.innerHTML =
-								"招降所需招募令：" + _status.challengeMoney + "/" + game.data.dust;
+							div2.innerHTML = "招降所需招募令：" + _status.challengeMoney + "/" + game.data.dust;
 							dialog.add(div2);
 						}
 						game.changeMoney(game.reward);
@@ -1865,13 +1752,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						"step 1";
 						if (player != game.friendZhu && player != game.enemyZhu) {
 							for (var i = 0; i < game.players.length; i++) {
-								if (
-									game.players[i].side == player.side &&
-									game.players[i] != game.friendZhu &&
-									game.players[i] != game.enemyZhu &&
-									game.players[i] != player &&
-									!game.players[i].classList.contains("acted")
-								) {
+								if (game.players[i].side == player.side && game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != player && !game.players[i].classList.contains("acted")) {
 									game.players[i].classList.add("acted");
 									game.players[i].phase();
 									break;
@@ -1911,15 +1792,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							event.directresult = swap[0];
 						} else {
 							var rand = Math.random();
-							var next = target.chooseTarget(
-								"选择行动的角色",
-								true,
-								function (card, player, target2) {
-									return (
-										target2.side == target.side && !target2.classList.contains("acted")
-									);
-								}
-							);
+							var next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
+								return target2.side == target.side && !target2.classList.contains("acted");
+							});
 							next._triggered = null;
 							next.includeOut = true;
 							next.ai = function (target2) {
@@ -1929,13 +1804,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								}
 								if (target2 != game.friendZhu && target2 != game.enemyZhu) {
 									for (var i = 0; i < game.players.length; i++) {
-										if (
-											game.players[i] != game.friendZhu &&
-											game.players[i] != game.enemyZhu &&
-											game.players[i] != target2 &&
-											game.players[i].side == target2.side &&
-											game.players[i].countCards("j")
-										) {
+										if (game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
 											num -= 2;
 										}
 									}
@@ -2201,21 +2070,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					ui.money = ui.create.div(ui.window);
 					lib.setIntro(ui.money, function (uiintro) {
 						uiintro.add('<span style="font-family:xinwei">' + game.data.money + "金币");
-						uiintro.addText(
-							"通过战斗或竞技场可获得金币。花费100金币可招募3名随机武将；花费150金币可参加一次竞技场"
-						);
+						uiintro.addText("通过战斗或竞技场可获得金币。花费100金币可招募3名随机武将；花费150金币可参加一次竞技场");
 						uiintro.add('<span style="font-family:xinwei">' + game.data.dust + "招募令");
-						uiintro.addText(
-							"通过遣返武将或竞技场可获得招募令。挑战武将成功后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别花费40/100/400/1600招募令"
-						);
+						uiintro.addText("通过遣返武将或竞技场可获得招募令。挑战武将成功后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别花费40/100/400/1600招募令");
 					});
-					ui.money.innerHTML =
-						"<span>⚑</span><span>" +
-						game.data.dust +
-						"</span>" +
-						"<span>㉤</span><span>" +
-						game.data.money +
-						"</span>";
+					ui.money.innerHTML = "<span>⚑</span><span>" + game.data.dust + "</span>" + "<span>㉤</span><span>" + game.data.money + "</span>";
 					ui.money.style.top = "auto";
 					ui.money.style.left = "auto";
 					ui.money.style.right = "20px";
@@ -2253,10 +2112,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						for (var i in lib.rank.rarity) {
 							if (Array.isArray(lib.rank.rarity[i])) {
 								for (var j = 0; j < lib.rank.rarity[i].length; j++) {
-									if (
-										!list.includes(lib.rank.rarity[i][j]) ||
-										!lib.character[lib.rank.rarity[i][j]]
-									) {
+									if (!list.includes(lib.rank.rarity[i][j]) || !lib.character[lib.rank.rarity[i][j]]) {
 										lib.rank.rarity[i].splice(j--, 1);
 									}
 								}
@@ -2279,22 +2135,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						//}
 					}
 					"step 1";
-					lib.rank.all = lib.rank.s
-						.concat(lib.rank.ap)
-						.concat(lib.rank.a)
-						.concat(lib.rank.am)
-						.concat(lib.rank.bp)
-						.concat(lib.rank.b)
-						.concat(lib.rank.bm)
-						.concat(lib.rank.c)
-						.concat(lib.rank.d);
+					lib.rank.all = lib.rank.s.concat(lib.rank.ap).concat(lib.rank.a).concat(lib.rank.am).concat(lib.rank.bp).concat(lib.rank.b).concat(lib.rank.bm).concat(lib.rank.c).concat(lib.rank.d);
 					lib.rank.rarity.common = [];
 					for (var i = 0; i < lib.rank.all.length; i++) {
-						if (
-							!lib.rank.rarity.legend.includes(lib.rank.all[i]) &&
-							!lib.rank.rarity.epic.includes(lib.rank.all[i]) &&
-							!lib.rank.rarity.rare.includes(lib.rank.all[i])
-						) {
+						if (!lib.rank.rarity.legend.includes(lib.rank.all[i]) && !lib.rank.rarity.epic.includes(lib.rank.all[i]) && !lib.rank.rarity.rare.includes(lib.rank.all[i])) {
 							lib.rank.rarity.common.push(lib.rank.all[i]);
 						}
 					}
@@ -2417,10 +2261,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									}
 									var button = ui.create.button(name, "character");
 									button.classList.add("glow2");
-									dialog1.content.lastChild.insertBefore(
-										button,
-										dialog1.content.lastChild.firstChild
-									);
+									dialog1.content.lastChild.insertBefore(button, dialog1.content.lastChild.firstChild);
 									dialog1.buttons.push(button);
 									fixButton(button);
 									button.area = "character";
@@ -2823,9 +2664,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									break;
 							}
 						}
-						if (
-							confirm(translation + "将被遣返，一共将获得" + dust + "个招募令。是否确定遣返？")
-						) {
+						if (confirm(translation + "将被遣返，一共将获得" + dust + "个招募令。是否确定遣返？")) {
 							for (var i = 0; i < selected.character.length; i++) {
 								var node = selected.character[i];
 								var rarity = game.getRarity(node.link);
@@ -2880,15 +2719,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									rarity = 1600;
 									break;
 							}
-							if (
-								!confirm(
-									"即将挑战" +
-										get.translation(cname) +
-										"，战斗胜利后可消耗" +
-										rarity +
-										"招募令招募该武将，无论是否招募，挑战列表将被刷新。是否继续？"
-								)
-							) {
+							if (!confirm("即将挑战" + get.translation(cname) + "，战斗胜利后可消耗" + rarity + "招募令招募该武将，无论是否招募，挑战列表将被刷新。是否继续？")) {
 								return;
 							}
 						}
@@ -2903,9 +2734,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								_status.mylist.push(selected.character[i].link);
 							}
 						} else {
-							_status.mylist = _status.mylist.concat(
-								game.data.character.randomGets(_status.lord ? 2 : 3)
-							);
+							_status.mylist = _status.mylist.concat(game.data.character.randomGets(_status.lord ? 2 : 3));
 						}
 						var difficulty;
 						if (selected.challenge.length) {
@@ -2959,19 +2788,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							}
 							for (var i = 0; i < total; i++) {
 								if (Math.random() < 0.7) {
-									_status.enemylist.push(
-										Array.prototype.randomGet.apply(
-											lib.rank[rank],
-											_status.enemylist.concat(_status.mylist)
-										)
-									);
+									_status.enemylist.push(Array.prototype.randomGet.apply(lib.rank[rank], _status.enemylist.concat(_status.mylist)));
 								} else {
-									_status.enemylist.push(
-										Array.prototype.randomGet.apply(
-											list,
-											_status.enemylist.concat(_status.mylist)
-										)
-									);
+									_status.enemylist.push(Array.prototype.randomGet.apply(list, _status.enemylist.concat(_status.mylist)));
 								}
 							}
 						} else {
@@ -3122,11 +2941,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					});
 					event.custom.replace.button = function (button) {
 						if (_status.kaibao) return;
-						if (
-							button.classList.contains("unselectable") &&
-							!button.classList.contains("selected")
-						)
-							return;
+						if (button.classList.contains("unselectable") && !button.classList.contains("selected")) return;
 						_status.chessclicked = true;
 						button.classList.toggle("selected");
 						if (button.classList.contains("selected")) {
@@ -3151,10 +2966,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								for (var i = 0; i < dialog1.buttons.length; i++) {
 									if (dialog1.buttons[i].area == "character") {
 										var maxq = game.data.character.length - 3;
-										if (
-											(!_status.qianfan && selected.character.length > 5) ||
-											(_status.qianfan && selected.character.length >= maxq)
-										) {
+										if ((!_status.qianfan && selected.character.length > 5) || (_status.qianfan && selected.character.length >= maxq)) {
 											dialog1.buttons[i].classList.add("unselectable");
 										} else {
 											dialog1.buttons[i].classList.remove("unselectable");
@@ -3294,11 +3106,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (this.isChosen) {
 								if (_status.chessgiveup) return;
 								if (!event.choosefinished) return;
-								if (
-									this.classList.contains("unselectable") &&
-									!this.classList.contains("selected")
-								)
-									return;
+								if (this.classList.contains("unselectable") && !this.classList.contains("selected")) return;
 								_status.chessclicked = true;
 								this.classList.toggle("selected");
 								if (this.classList.contains("selected")) {
@@ -3702,16 +3510,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							while (map.length) {
 								var val = Math.round((Math.random() * 0.4 + 0.8) * prizeValue);
 								if (Math.random() < 0.7) {
-									prize[map.shift()] = [
-										"chess_coin",
-										Math.max(Math.ceil(Math.random() * 5), val),
-									];
+									prize[map.shift()] = ["chess_coin", Math.max(Math.ceil(Math.random() * 5), val)];
 								} else {
 									val = Math.round(val / 3);
-									prize[map.shift()] = [
-										"chess_dust",
-										Math.max(Math.ceil(Math.random() * 3), val),
-									];
+									prize[map.shift()] = ["chess_dust", Math.max(Math.ceil(Math.random() * 3), val)];
 								}
 							}
 							for (var i = 1; i < prize.length; i++) {
@@ -3973,8 +3775,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var bossbuttons = ui.create.buttons(bosslist, "character", bosses);
 					var addToButton = function () {
 						if (ui.cheat2 && ui.cheat2.backup) return;
-						_status.event.dialog.content.childNodes[1].innerHTML =
-							ui.selected.buttons.length + "/" + _status.event.selectButton();
+						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
 					};
 					var jiange = ui.create.div(".buttons");
 					event.jiange = jiange;
@@ -4036,16 +3837,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						jiangebuttons[i].listen(clickJiange);
 					}
 
-					if (get.config("additional_player") == undefined)
-						game.saveConfig("additional_player", true, true);
+					if (get.config("additional_player") == undefined) game.saveConfig("additional_player", true, true);
 					if (get.config("reward") == undefined) game.saveConfig("reward", 3, true);
 					if (get.config("punish") == undefined) game.saveConfig("punish", "无", true);
 					if (get.config("battle_number") == undefined) game.saveConfig("battle_number", 3, true);
 					if (get.config("choice_number") == undefined) game.saveConfig("choice_number", 6, true);
 					if (get.config("seat_order") == undefined) game.saveConfig("seat_order", "交替", true);
 					if (get.config("replace_number") == undefined) game.saveConfig("replace_number", 0, true);
-					if (get.config("single_control") == undefined)
-						game.saveConfig("single_control", false, true);
+					if (get.config("single_control") == undefined) game.saveConfig("single_control", false, true);
 					if (get.config("first_less") == undefined) game.saveConfig("first_less", true, true);
 
 					var dialog = ui.create.dialog("选择出场角色", "hidden");
@@ -4053,15 +3852,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					dialog.classList.add("fullheight");
 					dialog.classList.add("fixed");
 					dialog.add("0/0");
-					dialog.add([
-						list.slice(
-							0,
-							parseInt(get.config("battle_number")) * 4 +
-								parseInt(get.config("replace_number")) +
-								5
-						),
-						"character",
-					]);
+					dialog.add([list.slice(0, parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5), "character"]);
 					if (bossbuttons.length) {
 						dialog.add("挑战魔王");
 						dialog.add(bosses);
@@ -4073,62 +3864,26 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.addConfig = function (dialog) {
 						dialog.add("选项");
 						dialog.choice = {};
-						dialog.choice.zhu = dialog
-							.add(ui.create.switcher("zhu", get.config("zhu")))
-							.querySelector(".toggle");
-						dialog.choice.main_zhu = dialog
-							.add(ui.create.switcher("main_zhu", get.config("main_zhu")))
-							.querySelector(".toggle");
+						dialog.choice.zhu = dialog.add(ui.create.switcher("zhu", get.config("zhu"))).querySelector(".toggle");
+						dialog.choice.main_zhu = dialog.add(ui.create.switcher("main_zhu", get.config("main_zhu"))).querySelector(".toggle");
 						if (get.config("zhu")) {
 							dialog.choice.main_zhu.parentNode.classList.remove("disabled");
 						} else {
 							dialog.choice.main_zhu.parentNode.classList.add("disabled");
 						}
-						dialog.choice.noreplace_end = dialog
-							.add(ui.create.switcher("noreplace_end", get.config("noreplace_end")))
-							.querySelector(".toggle");
-						dialog.choice.additional_player = dialog
-							.add(ui.create.switcher("additional_player", get.config("additional_player")))
-							.querySelector(".toggle");
-						dialog.choice.single_control = dialog
-							.add(ui.create.switcher("single_control", get.config("single_control")))
-							.querySelector(".toggle");
-						dialog.choice.first_less = dialog
-							.add(ui.create.switcher("first_less", get.config("first_less")))
-							.querySelector(".toggle");
+						dialog.choice.noreplace_end = dialog.add(ui.create.switcher("noreplace_end", get.config("noreplace_end"))).querySelector(".toggle");
+						dialog.choice.additional_player = dialog.add(ui.create.switcher("additional_player", get.config("additional_player"))).querySelector(".toggle");
+						dialog.choice.single_control = dialog.add(ui.create.switcher("single_control", get.config("single_control"))).querySelector(".toggle");
+						dialog.choice.first_less = dialog.add(ui.create.switcher("first_less", get.config("first_less"))).querySelector(".toggle");
 						// dialog.attack_move=dialog.add(ui.create.switcher('attack_move',get.config('attack_move'))).querySelector('.toggle');
 						// this.dialog.versus_single_control=this.dialog.add(ui.create.switcher('versus_single_control',lib.storage.single_control)).querySelector('.toggle');
 						// this.dialog.versus_first_less=this.dialog.add(ui.create.switcher('versus_first_less',lib.storage.first_less)).querySelector('.toggle');
-						dialog.choice.reward = dialog
-							.add(ui.create.switcher("reward", [0, 1, 2, 3, 4], get.config("reward")))
-							.querySelector(".toggle");
-						dialog.choice.punish = dialog
-							.add(ui.create.switcher("punish", ["弃牌", "无", "摸牌"], get.config("punish")))
-							.querySelector(".toggle");
-						dialog.choice.seat_order = dialog
-							.add(ui.create.switcher("seat_order", ["指定", "交替"], get.config("seat_order")))
-							.querySelector(".toggle");
-						dialog.choice.battle_number = dialog
-							.add(
-								ui.create.switcher(
-									"battle_number",
-									[1, 2, 3, 4, 6, 8],
-									get.config("battle_number")
-								)
-							)
-							.querySelector(".toggle");
-						dialog.choice.replace_number = dialog
-							.add(
-								ui.create.switcher(
-									"replace_number",
-									[0, 1, 2, 3, 5, 7, 9, 17],
-									get.config("replace_number")
-								)
-							)
-							.querySelector(".toggle");
-						dialog.choice.choice_number = dialog
-							.add(ui.create.switcher("choice_number", [3, 6, 9], get.config("choice_number")))
-							.querySelector(".toggle");
+						dialog.choice.reward = dialog.add(ui.create.switcher("reward", [0, 1, 2, 3, 4], get.config("reward"))).querySelector(".toggle");
+						dialog.choice.punish = dialog.add(ui.create.switcher("punish", ["弃牌", "无", "摸牌"], get.config("punish"))).querySelector(".toggle");
+						dialog.choice.seat_order = dialog.add(ui.create.switcher("seat_order", ["指定", "交替"], get.config("seat_order"))).querySelector(".toggle");
+						dialog.choice.battle_number = dialog.add(ui.create.switcher("battle_number", [1, 2, 3, 4, 6, 8], get.config("battle_number"))).querySelector(".toggle");
+						dialog.choice.replace_number = dialog.add(ui.create.switcher("replace_number", [0, 1, 2, 3, 5, 7, 9, 17], get.config("replace_number"))).querySelector(".toggle");
+						dialog.choice.choice_number = dialog.add(ui.create.switcher("choice_number", [3, 6, 9], get.config("choice_number"))).querySelector(".toggle");
 						if (get.config("additional_player")) {
 							dialog.choice.noreplace_end.parentNode.classList.add("disabled");
 							dialog.choice.replace_number.parentNode.classList.add("disabled");
@@ -4211,10 +3966,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								dialog.choice.replace_number.parentNode.classList.remove("disabled");
 								dialog.choice.choice_number.parentNode.classList.add("disabled");
 							}
-							var num =
-								parseInt(get.config("battle_number")) * 4 +
-								parseInt(get.config("replace_number")) +
-								5;
+							var num = parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5;
 							if (dialog.buttons.length > num) {
 								for (var i = num; i < dialog.buttons.length; i++) {
 									dialog.buttons[i].remove();
@@ -4222,11 +3974,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								dialog.buttons.splice(num);
 							} else if (dialog.buttons.length < num) {
 								for (var i = dialog.buttons.length; i < num; i++) {
-									dialog.buttons.push(
-										ui.create
-											.button(list[i], "character", dialog.buttons[0].parentNode)
-											.addTempClass("zoom")
-									);
+									dialog.buttons.push(ui.create.button(list[i], "character", dialog.buttons[0].parentNode).addTempClass("zoom"));
 								}
 								game.check();
 							}
@@ -4244,16 +3992,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 
 						var buttons = ui.create.div(".buttons");
 						var node = _status.event.dialog.buttons[0].parentNode;
-						_status.event.dialog.buttons = ui.create.buttons(
-							list.slice(
-								0,
-								parseInt(get.config("battle_number")) * 4 +
-									parseInt(get.config("replace_number")) +
-									5
-							),
-							"character",
-							buttons
-						);
+						_status.event.dialog.buttons = ui.create.buttons(list.slice(0, parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5), "character", buttons);
 						_status.event.dialog.content.insertBefore(buttons, node);
 						buttons.addTempClass("start");
 						node.remove();
@@ -4365,9 +4104,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (get.config("additional_player")) {
 								addnum = parseInt(get.config("battle_number"));
 							} else {
-								addnum =
-									parseInt(get.config("battle_number")) +
-									parseInt(get.config("replace_number"));
+								addnum = parseInt(get.config("battle_number")) + parseInt(get.config("replace_number"));
 							}
 							for (var i = 0; i < addnum - 1; i++) {
 								result.links.push(event.list.randomRemove());
@@ -4728,10 +4465,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				filter: function (event, player) {
 					for (var i = 0; i < game.treasures.length; i++) {
 						if (game.treasures[i].name == "treasure_shenmidiaoxiang") {
-							return (
-								player.canMoveTowards(game.treasures[i]) &&
-								get.chessDistance(game.treasures[i], player) > 3
-							);
+							return player.canMoveTowards(game.treasures[i]) && get.chessDistance(game.treasures[i], player) > 3;
 						}
 					}
 					return false;
@@ -4768,11 +4502,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				enable: "phaseUse",
 				usable: 1,
 				filter: function (event, player) {
-					return (
-						_status.enterArena &&
-						player.side == game.me.side &&
-						game.data.arena.arenachoice.length > game.data.arena.dead.length
-					);
+					return _status.enterArena && player.side == game.me.side && game.data.arena.arenachoice.length > game.data.arena.dead.length;
 				},
 				direct: true,
 				delay: 0,
@@ -4821,26 +4551,15 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var targets = [];
 					var skill = lib.skill.leader_zhaoxiang;
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							!game.data.character.includes(game.players[i].name) &&
-							game.players[i].side != player.side
-						) {
+						if (!game.data.character.includes(game.players[i].name) && game.players[i].side != player.side) {
 							targets.push(game.players[i]);
 						}
 					}
 					var str = lib.translate.leader_zhaoxiang_info;
 					if (targets.length) {
-						str =
-							'<p style="text-align:center;line-height:20px;margin-top:0">⚑ ' +
-							game.data.dust +
-							'</p><p style="text-align:center;line-height:20px;margin-top:8px">';
+						str = '<p style="text-align:center;line-height:20px;margin-top:0">⚑ ' + game.data.dust + '</p><p style="text-align:center;line-height:20px;margin-top:8px">';
 						for (var i = 0; i < targets.length; i++) {
-							str +=
-								'<span style="width:120px;display:inline-block;text-align:right">' +
-								get.translation(targets[i]) +
-								'：</span><span style="width:120px;display:inline-block;text-align:left">' +
-								(skill.chance(targets[i], player) * 100).toFixed(2) +
-								"%</span><br>";
+							str += '<span style="width:120px;display:inline-block;text-align:right">' + get.translation(targets[i]) + '：</span><span style="width:120px;display:inline-block;text-align:left">' + (skill.chance(targets[i], player) * 100).toFixed(2) + "%</span><br>";
 						}
 						str += "</p>";
 					}
@@ -4903,9 +4622,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					return game.data.dust >= 10;
 				},
 				filterTarget: function (card, player, target) {
-					return (
-						game.isChessNeighbour(player, target) && !game.data.character.includes(target.name)
-					);
+					return game.isChessNeighbour(player, target) && !game.data.character.includes(target.name);
 				},
 				content: function () {
 					var chance = lib.skill.leader_zhaoxiang.chance(target, player);
@@ -5030,13 +4747,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 						var skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							dialog.add(
-								'<div><div class="skill">【' +
-									get.translation(skill) +
-									"】</div><div>" +
-									lib.translate[skill + "_info"] +
-									"</div></div>"
-							);
+							dialog.add('<div><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>");
 						}
 					},
 				},
@@ -5194,11 +4905,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { player: "phaseBegin" },
 				forced: true,
 				filter: function (event, player) {
-					return (
-						player.storage.tongshuai &&
-						player.storage.tongshuai.unowned &&
-						player.storage.tongshuai.unowned.length > 0
-					);
+					return player.storage.tongshuai && player.storage.tongshuai.unowned && player.storage.tongshuai.unowned.length > 0;
 				},
 				content: function () {
 					player.storage.tongshuai.get();
@@ -5244,7 +4951,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ai: {
 					order: 10,
 					effect: {
-						player: function (card, player) {
+						player_use: function (card, player) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (get.attitude(player, game.players[i]) < 0) {
@@ -5253,11 +4960,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								}
 							}
 							if (num <= 1) return;
-							if (
-								_status.currentPhase == player &&
-								player.countCards("h") < player.hp &&
-								player.hp >= 6
-							) {
+							if (_status.currentPhase == player && player.countCards("h") < player.hp && player.hp >= 6) {
 								if (typeof card == "string") return;
 								if (card.name == "wuzhong") return;
 								if (card.name == "shunshou") return;
@@ -5390,9 +5093,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			sanjiansheji: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					return (
-						player.countCards("h", "sha") > 1 && lib.filter.filterCard({ name: "sha" }, player)
-					);
+					return player.countCards("h", "sha") > 1 && lib.filter.filterCard({ name: "sha" }, player);
 				},
 				filterCard: { name: "sha" },
 				selectCard: 2,
@@ -5400,10 +5101,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var num = 0;
 					var player = _status.event.player;
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							lib.filter.targetEnabled({ name: "sha" }, player, game.players[i]) &&
-							get.effect(game.players[i], { name: "sha" }, player) > 0
-						) {
+						if (lib.filter.targetEnabled({ name: "sha" }, player, game.players[i]) && get.effect(game.players[i], { name: "sha" }, player) > 0) {
 							num++;
 							if (num > 1) return 8 - get.value(card);
 						}
@@ -5414,10 +5112,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				discard: false,
 				prepare: "throw",
 				filterTarget: function (card, player, target) {
-					return (
-						lib.filter.targetEnabled({ name: "sha" }, player, target) &&
-						get.distance(player, target, "pure") <= 5
-					);
+					return lib.filter.targetEnabled({ name: "sha" }, player, target) && get.distance(player, target, "pure") <= 5;
 				},
 				content: function () {
 					targets.sort(lib.sort.seat);
@@ -5436,18 +5131,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					effect: {
 						player: function (card, player) {
 							if (_status.currentPhase != player) return;
-							if (
-								card.name == "sha" &&
-								player.countCards("h", "sha") < 2 &&
-								player.countCards("h") <= player.hp
-							) {
+							if (card.name == "sha" && player.countCards("h", "sha") < 2 && player.countCards("h") <= player.hp) {
 								var num = 0;
 								var player = _status.event.player;
 								for (var i = 0; i < game.players.length; i++) {
-									if (
-										lib.filter.targetEnabled({ name: "sha" }, player, game.players[i]) &&
-										get.attitude(player, game.players[i]) < 0
-									) {
+									if (lib.filter.targetEnabled({ name: "sha" }, player, game.players[i]) && get.attitude(player, game.players[i]) < 0) {
 										num++;
 										if (num > 1) return "zeroplayertarget";
 									}
@@ -5460,11 +5148,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			zhiming: {
 				trigger: { source: "damageBegin1" },
 				filter: function (event, player) {
-					return (
-						get.distance(event.player, player, "attack") > 1 &&
-						event.card &&
-						event.card.name == "sha"
-					);
+					return get.distance(event.player, player, "attack") > 1 && event.card && event.card.name == "sha";
 				},
 				forced: true,
 				content: function () {
@@ -5543,11 +5227,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			_noactpunish: {
 				trigger: { player: "useCard" },
 				filter: function (event, player) {
-					return (
-						_status.currentPhase == player &&
-						event.targets &&
-						(event.targets.length > 1 || event.targets[0] != player)
-					);
+					return _status.currentPhase == player && event.targets && (event.targets.length > 1 || event.targets[0] != player);
 				},
 				forced: true,
 				popup: false,
@@ -5567,41 +5247,25 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var xy = player.getXY();
 					var neighbour;
 					neighbour = player.getNeighbour(-1, 0);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[0] == 0) {
 						num++;
 					}
 					neighbour = player.getNeighbour(1, 0);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[0] + 1 >= ui.chesswidth) {
 						num++;
 					}
 					neighbour = player.getNeighbour(0, -1);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[1] == 0) {
 						num++;
 					}
 					neighbour = player.getNeighbour(0, 1);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[1] + 1 >= ui.chessheight) {
 						num++;
@@ -5614,44 +5278,28 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.movemap = {};
 					var neighbour;
 					neighbour = player.getNeighbour(-1, 0);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(-2, 0)) {
 							event.movemap["[-1,0]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(1, 0);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(2, 0)) {
 							event.movemap["[1,0]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(0, -1);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(0, -2)) {
 							event.movemap["[0,-1]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(0, 1);
-					if (
-						neighbour &&
-						typeof neighbour.tempObstacle != "number" &&
-						game.obstacles.includes(neighbour)
-					) {
+					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(0, 2)) {
 							event.movemap["[0,1]"] = neighbour;
@@ -5670,9 +5318,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						game.pause();
 						_status.imchoosing = true;
 						event.dialog = ui.create.dialog("移动一个与你相邻的路障");
-						event.dialog.add(
-							'<div class="text">' + lib.translate._chess_chuzhang_info + "</div>"
-						);
+						event.dialog.add('<div class="text">' + lib.translate._chess_chuzhang_info + "</div>");
 						event.custom.replace.confirm = function () {
 							player.getStat().skill._chess_chuzhang--;
 							event.cancelled = true;
@@ -5740,12 +5386,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				delay: false,
 				preservecancel: true,
 				filter: function (event, player) {
-					if (
-						!player.movable(0, 1) &&
-						!player.movable(0, -1) &&
-						!player.movable(1, 0) &&
-						!player.movable(-1, 0)
-					) {
+					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 						return false;
 					}
 					var move = 2;
@@ -5779,49 +5420,29 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								return 1;
 							}
 							var nh = player.countCards("h");
-							if (
-								!player.countCards("h", "sha") &&
-								!player.countCards("h", "shunshou") &&
-								!player.countCards("h", "bingliang")
-							) {
+							if (!player.countCards("h", "sha") && !player.countCards("h", "shunshou") && !player.countCards("h", "bingliang")) {
 								if (nh <= Math.min(3, player.hp)) return Math.random() - 0.3;
 								else if (nh <= Math.min(2, player.hp)) return Math.random() - 0.4;
 								return Math.random() - 0.5;
 							}
 							var neighbour;
 							neighbour = player.getNeighbour(0, 1);
-							if (
-								neighbour &&
-								game.players.includes(neighbour) &&
-								neighbour.side != player.side
-							) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) return 1;
 								return 0;
 							}
 							neighbour = player.getNeighbour(0, -1);
-							if (
-								neighbour &&
-								game.players.includes(neighbour) &&
-								neighbour.side != player.side
-							) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) return 1;
 								return 0;
 							}
 							neighbour = player.getNeighbour(1, 0);
-							if (
-								neighbour &&
-								game.players.includes(neighbour) &&
-								neighbour.side != player.side
-							) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) return 1;
 								return 0;
 							}
 							neighbour = player.getNeighbour(-1, 0);
-							if (
-								neighbour &&
-								game.players.includes(neighbour) &&
-								neighbour.side != player.side
-							) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) return 1;
 								return 0;
 							}
@@ -5840,14 +5461,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			},
 			_chesscenter: {
 				trigger: {
-					player: [
-						"phaseBegin",
-						"useCardBegin",
-						"useSkillBegin",
-						"respondBegin",
-						"damageBegin",
-						"loseHpBegin",
-					],
+					player: ["phaseBegin", "useCardBegin", "useSkillBegin", "respondBegin", "damageBegin", "loseHpBegin"],
 					target: "useCardToBegin",
 				},
 				forced: true,
@@ -5953,11 +5567,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i] != player &&
-							game.players[i].countCards("h") &&
-							get.distance(player, game.players[i]) <= 5
-						) {
+						if (game.players[i] != player && game.players[i].countCards("h") && get.distance(player, game.players[i]) <= 5) {
 							return true;
 						}
 					}
@@ -5967,11 +5577,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					"step 0";
 					var players = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i] != player &&
-							game.players[i].countCards("h") &&
-							get.distance(player, game.players[i]) <= 5
-						) {
+						if (game.players[i] != player && game.players[i].countCards("h") && get.distance(player, game.players[i]) <= 5) {
 							players.push(game.players[i]);
 						}
 					}
@@ -5980,10 +5586,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					"step 1";
 					if (event.players.length) {
 						event.current = event.players.shift();
-						event.current.chooseCard(
-							"神天并地：交给" + get.translation(player) + "一张手牌",
-							true
-						);
+						event.current.chooseCard("神天并地：交给" + get.translation(player) + "一张手牌", true);
 					} else {
 						event.finish();
 					}
@@ -6101,13 +5704,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			shenmidiaoxiang: "秘咒",
 			shenmidiaoxiang_info: "距离三格以外的所有角色在回合结束后强制向此处移动一格。",
 			shenpanxianjing: "审判",
-			shenpanxianjing_info:
-				"在任意一名角色回合结束后，若没有其他角色手牌数比其多，随机弃置其一张手牌。",
+			shenpanxianjing_info: "在任意一名角色回合结束后，若没有其他角色手牌数比其多，随机弃置其一张手牌。",
 			shiyuansu: "护体",
 			shiyuansu_info: "任意一名角色一次性受到不少于2点伤害后，使其获得1点护甲。",
 			wuyashenxiang: "厄音",
-			wuyashenxiang_info:
-				"距离3格以内的角色在其回合结束后，若体力值不大于1，令其回复1点体力，然后将牌堆中的一张延时锦囊牌置于其判定区。",
+			wuyashenxiang_info: "距离3格以内的角色在其回合结束后，若体力值不大于1，令其回复1点体力，然后将牌堆中的一张延时锦囊牌置于其判定区。",
 
 			leader_caocao: "曹操",
 			leader_liubei: "刘备",
@@ -6125,8 +5726,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			tongshuai: "统率",
 			tongshuai_info: "准备阶段和结束阶段，你可以选择一名未上场的已方武将的一个技能作为你的技能。",
 			leader_zhaoxiang: "招降",
-			leader_zhaoxiang_info:
-				"出牌阶段限一次，你可以尝试对相邻敌方武将进行招降，若成功，你获得该武将并立即结束本局游戏，若失败，你受到1点伤害。每发动一次消耗10招募令。",
+			leader_zhaoxiang_info: "出牌阶段限一次，你可以尝试对相邻敌方武将进行招降，若成功，你获得该武将并立即结束本局游戏，若失败，你受到1点伤害。每发动一次消耗10招募令。",
 
 			common: "普通",
 			rare: "精品",
@@ -6139,25 +5739,21 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			chess_chuzhang_info: "将与你相邻的路障向后推移一格，每影响一个路障你摸一张牌。",
 
 			_chess_chuzhang: "除障",
-			_chess_chuzhang_info:
-				"出牌阶段限一次，若你周围四格至少有三个为障碍或在边缘外，你可以选择将其中一个障碍向后推移一格（若无法推移则改为清除之）。",
+			_chess_chuzhang_info: "出牌阶段限一次，若你周围四格至少有三个为障碍或在边缘外，你可以选择将其中一个障碍向后推移一格（若无法推移则改为清除之）。",
 
 			arenaAdd: "援军",
-			arenaAdd_info:
-				"出牌阶段限一次，你可以令一名未出场的已方角色加入战场。战斗结束后，该角色无论是否存活均不能再次出场。",
+			arenaAdd_info: "出牌阶段限一次，你可以令一名未出场的已方角色加入战场。战斗结束后，该角色无论是否存活均不能再次出场。",
 
 			pianyi: "翩仪",
 			pianyi_info: "结束阶段，若你于本回合内未造成过伤害，你获得一次移动机会。",
 			lingdong: "灵动",
 			lingdong_info: "结束阶段，你可以移动至多X格（X为你本回合内使用【杀】的次数）。",
 			lianshe: "箭舞",
-			lianshe_info:
-				"当你于一回合内首次使用【杀】时，你可以摸一张牌；你的回合内，当你使用一张不为【杀】的牌时，你令本回合内使用【杀】的次数上限+1。",
+			lianshe_info: "当你于一回合内首次使用【杀】时，你可以摸一张牌；你的回合内，当你使用一张不为【杀】的牌时，你令本回合内使用【杀】的次数上限+1。",
 			zhiming: "穿杨",
 			zhiming_info: "锁定技，当你使用【杀】造成伤害时，若你不在目标角色的攻击范围内，此伤害+1。",
 			sanjiansheji: "散箭",
-			sanjiansheji_info:
-				"你可以将两张【杀】当做【杀】使用，你以此法使用的【杀】可以指定距离5格内的角色为目标。",
+			sanjiansheji_info: "你可以将两张【杀】当做【杀】使用，你以此法使用的【杀】可以指定距离5格内的角色为目标。",
 			guanchuan: "强弩",
 			guanchuan_info: "当你使用【杀】指定唯一目标后，你可令攻击射线内的其他角色也成为此【杀】的目标。",
 
@@ -6168,16 +5764,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			boss_moyan_info: "锁定技，结束阶段，你对场上所有角色造成1点火焰伤害。",
 
 			cangming: "颠动沧溟",
-			cangming_info:
-				"出牌阶段限一次，你可弃置四张花色不同的手牌并将武将牌翻至背面，然后令所有其他角色进入混乱状态直到你的下一回合开始。",
+			cangming_info: "出牌阶段限一次，你可弃置四张花色不同的手牌并将武将牌翻至背面，然后令所有其他角色进入混乱状态直到你的下一回合开始。",
 			boss_bfengxing: "风行",
 			boss_bfengxing_info: "锁定技，摸牌阶段，你多摸两张牌；你的攻击范围+2；你回合内的移动距离+2。",
 			boss_chiyu: "炽羽",
-			boss_chiyu_info:
-				"出牌阶段限一次，你可以弃置一张红色牌，对距离5以内的所有其他角色各造成1点火焰伤害。",
+			boss_chiyu_info: "出牌阶段限一次，你可以弃置一张红色牌，对距离5以内的所有其他角色各造成1点火焰伤害。",
 			boss_tenglong: "腾龙八齐",
-			boss_tenglong_info:
-				"锁定技，你废除你的装备区；出牌阶段限一次，你可以弃置一张装备牌并对一名距离你2以内的其他角色造成3点火焰伤害。",
+			boss_tenglong_info: "锁定技，你废除你的装备区；出牌阶段限一次，你可以弃置一张装备牌并对一名距离你2以内的其他角色造成3点火焰伤害。",
 			boss_wushang: "神天并地",
 			boss_wushang_info: "锁定技，准备阶段，距离你5以内的所有其他角色需交给你一张手牌。",
 			boss_wuying: "无影",
@@ -6243,12 +5836,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var ymax = ui.chessContainer.ymax;
 					if (ui.chessContainer.chessLeft > xmax) ui.chessContainer.chessLeft = xmax;
 					if (ui.chessContainer.chessTop > ymax) ui.chessContainer.chessTop = ymax;
-					ui.chess.style.transform =
-						"translate(" +
-						-ui.chessContainer.chessLeft +
-						"px," +
-						-ui.chessContainer.chessTop +
-						"px)";
+					ui.chess.style.transform = "translate(" + -ui.chessContainer.chessLeft + "px," + -ui.chessContainer.chessTop + "px)";
 					if (scroll) {
 						var ending = ui.chess.listenTransition(function () {
 							if (ui.chess._ending == ending) {
@@ -6266,10 +5854,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				chessInfo: function (e) {
 					if (this.link.isAlive()) {
 						this.link.chessFocus();
-						if (
-							this.link.classList.contains("selectable") ||
-							this.link.classList.contains("selected")
-						) {
+						if (this.link.classList.contains("selectable") || this.link.classList.contains("selected")) {
 							ui.click.target.call(this.link, e);
 							ui.click.window.call(ui.window, e);
 						}
@@ -6292,12 +5877,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.resume();
 				},
 				obstacle: function () {
-					if (
-						_status.event.chooseObstacle &&
-						_status.paused &&
-						_status.event.obstacles &&
-						_status.event.obstacles.includes(this)
-					) {
+					if (_status.event.chooseObstacle && _status.paused && _status.event.obstacles && _status.event.obstacles.includes(this)) {
 						_status.event.obstacle = this;
 						game.resume();
 					}
@@ -6413,14 +5993,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				selectTarget: -1,
 				enable: function (event, player) {
-					if (game.obstacles.includes(player.getNeighbour(-1, 0)) && player.movable(-2, 0))
-						return true;
-					if (game.obstacles.includes(player.getNeighbour(1, 0)) && player.movable(2, 0))
-						return true;
-					if (game.obstacles.includes(player.getNeighbour(0, -1)) && player.movable(0, -2))
-						return true;
-					if (game.obstacles.includes(player.getNeighbour(0, 1)) && player.movable(0, 2))
-						return true;
+					if (game.obstacles.includes(player.getNeighbour(-1, 0)) && player.movable(-2, 0)) return true;
+					if (game.obstacles.includes(player.getNeighbour(1, 0)) && player.movable(2, 0)) return true;
+					if (game.obstacles.includes(player.getNeighbour(0, -1)) && player.movable(0, -2)) return true;
+					if (game.obstacles.includes(player.getNeighbour(0, 1)) && player.movable(0, 2)) return true;
 				},
 				content: function () {
 					var neighbour,
@@ -6545,20 +6121,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 		},
 		characterSort: {
 			mode_chess: {
-				chess_default: [
-					"chess_zhangliao",
-					"chess_huangzhong",
-					"chess_taishici",
-					"chess_sunshangxiang",
-					"chess_diaochan",
-				],
-				chess_boss: [
-					"chess_jinchidiao",
-					"chess_beimingjukun",
-					"chess_wuzhaojinlong",
-					"chess_dongzhuo",
-					"chess_xingtian",
-				],
+				chess_default: ["chess_zhangliao", "chess_huangzhong", "chess_taishici", "chess_sunshangxiang", "chess_diaochan"],
+				chess_boss: ["chess_jinchidiao", "chess_beimingjukun", "chess_wuzhaojinlong", "chess_dongzhuo", "chess_xingtian"],
 				chess_leader: ["leader_caocao", "leader_liubei", "leader_sunquan", "leader_yuri"],
 			},
 		},
@@ -6602,28 +6166,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				// chess_zhangjiao:['male','qun',3,['']],
 				// chess_menghuo:['male','qun',3,['']],
 				//
-				chess_jinchidiao: [
-					"male",
-					"qun",
-					15,
-					["boss_bfengxing", "boss_chiyu"],
-					["boss", "chessboss"],
-				],
+				chess_jinchidiao: ["male", "qun", 15, ["boss_bfengxing", "boss_chiyu"], ["boss", "chessboss"]],
 				chess_beimingjukun: ["male", "qun", 25, ["boss_wuying", "cangming"], ["boss", "chessboss"]],
-				chess_wuzhaojinlong: [
-					"male",
-					"qun",
-					30,
-					["boss_tenglong", "boss_wushang"],
-					["boss", "chessboss"],
-				],
-				chess_dongzhuo: [
-					"male",
-					"qun",
-					20,
-					["jiuchi", "boss_stoneqiangzheng", "boss_stonebaolin"],
-					["boss", "chessboss"],
-				],
+				chess_wuzhaojinlong: ["male", "qun", 30, ["boss_tenglong", "boss_wushang"], ["boss", "chessboss"]],
+				chess_dongzhuo: ["male", "qun", 20, ["jiuchi", "boss_stoneqiangzheng", "boss_stonebaolin"], ["boss", "chessboss"]],
 				chess_xingtian: ["male", "qun", 99, ["boss_moyan", "wushuang"], ["boss", "chessboss"]],
 			},
 		},
@@ -6658,4 +6204,4 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				"修改金钱：<br>game.changeMoney<br>修改招募令：<br>game.changeDust</ul>",
 		},
 	};
-});
+};

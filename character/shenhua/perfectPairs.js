@@ -1,9 +1,9 @@
 export default {
 	jiaxu: ["liqueguosi"],
-	re_yuanshao: ["yanwen", "tianfeng"],
+	re_yuanshao: ["yanwen", "tianfeng", "yanliang", "wenchou"],
 	menghuo: ["zhurong"],
 	sp_zhugeliang: ["pangtong", "huangyueying"],
-	sunce: ["zhouyu", "taishici", "daqiao"],
+	sunce: ["zhouyu", "taishici", "re_taishici", "daqiao"],
 	zuoci: ["yuji"],
 	xunyu: ["xunyou"],
 	lukang: ["luxun"],
@@ -12,4 +12,5 @@ export default {
 	wangping: ["jiangfei"],
 	jiangwei: ["xiahouba"],
 	guanqiujian: ["wenqin"],
+	dongzhuo: ["liru", "dongbai", "xurong"],
 };

@@ -5,3 +5,4 @@ export function canUseHttpProtocol(): boolean;
  */
 export function sendUpdate(): string | void;
 export function boot(): Promise<void>;
+export { onload } from "./onload.js";

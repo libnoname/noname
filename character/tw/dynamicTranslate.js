@@ -25,7 +25,7 @@ const dynamicTranslates = {
 	},
 	twdengjian(player) {
 		let str = "①其他角色的弃牌阶段结束时，你可以随机获得本回合所有造成伤害的牌对应的实体牌的其中一张与你本轮以此法获得的牌的颜色均不同的【杀】，称为“剑法”。";
-		if (player.hasSkill("twdengjian_ban")) str = '<span style="opacity:0.5">' + str + "</span>";
+		if (player.isTempBanned("twdengjian")) str = '<span style="opacity:0.5">' + str + "</span>";
 		str += "②你使用“剑法”牌不计入次数限制。";
 		return str;
 	},
@@ -43,6 +43,14 @@ const dynamicTranslates = {
 	},
 	twylyanshi(player) {
 		return lib.translate[(player.storage.twduwang_ylyanshi ? "twylyanshix" : "twylyanshi") + "_info"];
+	},
+	twjielv(player) {
+		if(player.storage.isInHuan) return lib.translate.twjielvx_info;
+		return lib.translate.twjielv_info;
+	},
+	twbeiding(player) {
+		if(player.storage.isInHuan) return lib.translate.twbeidingx_info;
+		return lib.translate.twbeiding_info;
 	},
 };
 export default dynamicTranslates;

@@ -173,6 +173,7 @@ const characters = {
 		hp: 4,
 		skills: ["jsrgcangchu", "jsrgshishou"],
 		dieAudios: ["re_chunyuqiong"],
+		names: "淳于|琼",
 	},
 	//转
 	jsrg_guojia: {
@@ -303,7 +304,6 @@ const characters = {
 		sex: "female",
 		group: "wu",
 		hp: 3,
-		maxHp: 4,
 		names: "孙|鲁班-孙|鲁育",
 		skills: ["jsrgdaimou", "jsrgfangjie"],
 	},
@@ -382,7 +382,7 @@ const characters = {
 	jsrg_zhangjiao: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["jsrgxiangru", "jsrgwudao"],
 	},
 	jsrg_yangqiu: {
@@ -400,7 +400,7 @@ const characters = {
 	jsrg_zhanghuan: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["jsrgzhushou", "jsrgyangge"],
 	},
 	jsrg_liubiao: {
@@ -426,6 +426,86 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["jsrgqiluan", "jsrgxiangjia"],
+	},
+	//兴
+	jsrg_jiananfeng: {
+		sex: "female",
+		group: "jin",
+		hp: 3,
+		skills: ["jsrgshanzheng", "jsrgxiongbao", "jsrgliedu"],
+	},
+	jsrg_wenyang: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jsrgfuzhen"],
+	},
+	jsrg_zhugedan: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jsrgzuozhan", "jsrgcuibing", "jsrglangan"],
+		names: "诸葛|诞",
+	},
+	jsrg_wangjun: {
+		sex: "male",
+		group: "jin",
+		hp: 4,
+		skills: ["jsrgchengliu", "jsrgjianlou"],
+	},
+	jsrg_limi: {
+		sex: "male",
+		group: "shu",
+		groupBorder: "jin",
+		hp: 3,
+		skills: ["jsrgciyin", "jsrgchendu"],
+	},
+	jsrg_simazhao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jsrgqiantun", "jsrgxiezheng", "jsrgzhaoxiong"],
+		names: "司马|昭",
+	},
+	jin_jsrg_simazhao: {
+		sex: "male",
+		group: "jin",
+		isZhugong: true,
+		hp: 4,
+		isUnseen: true,
+		skills: ["jsrgweisi", "jsrgxiezheng", "jsrgdangyi"],
+		names: "司马|昭",
+	},
+	jsrg_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jsrgpiqi", "jsrgzhoulin"],
+	},
+	jsrg_simaliang: {
+		sex: "male",
+		group: "jin",
+		hp: 3,
+		maxHp: 4,
+		skills: ["jsrgsheju", "jsrgzuwang"],
+	},
+	jsrg_tufashujineng: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["jsrgqinrao", "jsrgfuran"],
+	},
+	jsrg_lukang: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["jsrgzhuwei", "jsrgkuangjian"],
+	},
+	jsrg_malong: {
+		sex: "male",
+		group: "jin",
+		hp: 4,
+		skills: ["jsrgfennan", "jsrgxunji"],
 	},
 };
 

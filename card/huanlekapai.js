@@ -120,6 +120,7 @@ game.import("card", function () {
 		},
 		skill: {
 			monkey: {
+				equipSkill: true,
 				trigger: {
 					global: "useCardToBegin",
 				},
@@ -167,7 +168,7 @@ game.import("card", function () {
 					noturnOver: true,
 					effect: {
 						target: function (card, player, target, current) {
-							if (get.tag(card, "turnOver")) return [0, 0];
+							if (get.tag(card, "turnOver")) return "zeroplayertarget";
 						},
 					},
 				},

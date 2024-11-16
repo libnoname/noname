@@ -24,26 +24,6 @@ const dynamicTranslates = {
 		if (player.hasSkill("funan_jiexun")) return "其他角色使用或打出牌响应你使用的牌时，你可获得其使用或打出的牌。";
 		return "其他角色使用或打出牌响应你使用的牌时，你可令其获得你使用的牌（其本回合不能使用或打出这些牌），然后你获得其使用或打出的牌。";
 	},
-	lkbushi(player) {
-		var list = lib.skill.lkbushi.getBushi(player).map(i => get.translation(i));
-		return "①你使用" + list[0] + "牌无次数限制。②当你使用或打出" + list[1] + "牌后，你摸一张牌。③当你成为" + list[2] + "牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆或弃牌堆获得一张" + list[3] + "牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。";
-	},
-	diezhang(player) {
-		var str = "";
-		str += player.storage.duanwan ? "" : "①出牌阶段，你使用【杀】的次数上限+1。②";
-		str += "转换技" + (player.storage.duanwan ? "，每回合限一次" : "") + "。";
-		var cnNum = get.cnNumber(player.storage.duanwan ? 2 : 1);
-		var yinStr = "阴：当你使用牌被其他角色抵消后，你可以弃置一张牌，视为对其使用" + cnNum + "张【杀】";
-		var yangStr = "阳：当其他角色使用牌被你抵消后，你可以摸" + cnNum + "张牌，视为对其使用一张【杀】";
-		if (player.storage.diezhang) {
-			if (player.storage.duanwan) yinStr = '<span style="text-decoration: line-through; ">' + yinStr + "</span>";
-			yangStr = '<span class="bluetext">' + yangStr + "</span>";
-		} else {
-			yinStr = '<span class="bluetext">' + yinStr + "</span>";
-			if (player.storage.duanwan) yangStr = '<span style="text-decoration: line-through; ">' + yangStr + "</span>";
-		}
-		return str + yinStr + "；" + yangStr + "。";
-	},
 };
 
 export default dynamicTranslates;

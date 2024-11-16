@@ -516,7 +516,7 @@ game.import("card", function () {
 				},
 				usable: 1,
 				content: function () {
-					player.recast(cards, null, (player, cards) => {
+					player.recast(cards, void 0, (player, cards) => {
 						var cardsToGain = [];
 						for (var repetition = 0; repetition < cards.length; repetition++) {
 							var card = get.cardPile((card) => get.type(card, "trick") == "trick");

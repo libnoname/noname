@@ -285,6 +285,19 @@
 	opacity: 0.6;
 }
 
+.menubg.charactercard > .ava > .changeskin2 {
+	bottom: 6px;
+	right: 6px;
+	font-family: "xinwei";
+	font-size: 16px;
+	z-index: 2;
+	color: white;
+	text-shadow: black 0 0 2px;
+	height: 16px;
+	line-height: 16px;
+	opacity: 0.6;
+}
+
 #window:not(.nopointer) .menubg.charactercard .menubutton:not(.ava):not(.intro):not(.unselectable),
 #window:not(.nopointer) .menubg.charactercard > .ava > .avatars > div {
 	cursor: pointer;
@@ -2066,13 +2079,14 @@ div.popup-container.editor div {
 	margin-bottom: 15px;
 }
 
-.popup-container > .prompt-container > div > div > div > input {
+.popup-container > .prompt-container > div > div > div > input,
+.popup-container > .prompt-container > div > div > div > textarea {
 	text-align: left;
 	width: 100%;
-	resize: none;
+	resize: vertical;
 	border: none;
 	border-radius: 2px;
-	height: 20px;
+	min-height: 20px;
 	box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
 }
 

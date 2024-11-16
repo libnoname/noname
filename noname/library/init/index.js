@@ -3,15 +3,12 @@ import { game } from "../../game/index.js";
 import { lib } from "../index.js";
 import { _status } from "../../status/index.js";
 import { ui } from "../../ui/index.js";
-import { gnc } from "../../gnc/index.js";
 
 import { LibInitPromises } from "./promises.js";
-import { GameEvent } from "../element/gameEvent.js";
-import { GameEventPromise } from "../element/gameEventPromise.js";
 import { rootURL } from "../../../noname.js";
 
 import security from "../../util/security.js";
-import { CodeSnippet, ErrorManager } from "../../util/error.js";
+import { ContentCompiler } from "../element/gameEvent.js";
 
 export class LibInit {
 	/**
@@ -90,7 +87,7 @@ export class LibInit {
 		event._resultid = null;
 		event._result = null;
 		game.pause();
-		("step 1");
+		"step 1";
 		if (result) {
 			if (event._resultid) {
 				result.id = event._resultid;
@@ -219,7 +216,7 @@ export class LibInit {
 		}
 		let scriptSource = file ? `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.js` : path;
 		if (path.startsWith("http")) scriptSource += `?rand=${get.id()}`;
-		else if (lib.config.fuck_sojson && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
+		else if (lib.config.fuck_sojson && !_status.connectMode && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
 			const pathToRead = scriptSource.slice(lib.assetURL.length);
 			const alertMessage = `检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`;
 			if (typeof game.readFileAsText == "function")
@@ -593,189 +590,9 @@ export class LibInit {
 	 * @returns
 	 */
 	parsex(item, scope) {
-		// 虽然现在 parsex 被控制到了沙盒，
-		// 但是因为默认沙盒还是可以额外操作东西，
-		// 故而对不同的运行域做了区分
-		const [
-			ModFunction,
-			ModGeneratorFunction,
-			// ModAsyncFunction,
-			// ModAsyncGeneratorFunction,
-		] = security.getIsolatedsFrom(item);
-
-		//by 诗笺、Tipx-L
-		/**
-		 * @param {Function} func
-		 */
-		function Legacy(func) {
-			// 沙盒在封装函数时，为了保存源代码会另外存储函数的源代码
-			/** @type {(func: Function) => string} */
-			const decompileFunction = security.isSandboxRequired()
-				? security.importSandbox().Marshal.decompileFunction
-				: Function.prototype.call.bind(Function.prototype.toString);
-			//Remove all comments
-			//移除所有注释
-			const code = decompileFunction(func)
-				.replace(/((?:(?:^[ \t]*)?(?:\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/(?:[ \t]*\r?\n(?=[ \t]*(?:\r?\n|\/\*|\/\/)))?|\/\/(?:[^\\]|\\(?:\r?\n)?)*?(?:\r?\n(?=[ \t]*(?:\r?\n|\/\*|\/\/))|(?=\r?\n))))+)|("(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|(?:\r?\n|[\s\S])[^/"'\\\s]*)/gm, "$2")
-				.trim();
-			//获取第一个 { 后的所有字符
-			let str = code.slice(code.indexOf("{") + 1);
-			//判断代码中是否有debugger
-			let regex = /event\.debugger\(\)/;
-			let hasDebugger = false;
-			let insertDebugger = `yield code=>eval(code);`;
-			let debuggerSkip = 0;
-			let debuggerResult;
-			while ((debuggerResult = str.slice(debuggerSkip).match(regex)) != null) {
-				let debuggerCopy = str;
-				debuggerCopy = debuggerCopy.slice(0, debuggerSkip + debuggerResult.index) + insertDebugger + debuggerCopy.slice(debuggerSkip + debuggerResult.index + debuggerResult[0].length, -1);
-				//测试是否有错误
-				try {
-					new ModGeneratorFunction(debuggerCopy);
-					str = debuggerCopy + "}";
-					debuggerSkip += debuggerResult.index + insertDebugger.length;
-					hasDebugger = true;
-				} catch (error) {
-					debuggerSkip += debuggerResult.index + debuggerResult[0].length;
-				}
-			}
-			//func中要写步骤的话，必须要写step 0
-			if (str.indexOf("step 0") == -1) {
-				str = "{if(event.step==1) {event.finish();return;}\n" + str;
-			} else {
-				let skip = 0;
-				let k = 0;
-				let result;
-				//去除99个step的限制
-				while ((result = str.slice(skip).match(new RegExp(`\\(?['"]step ${k}['"]\\)?;?`))) != null) {
-					let insertStr;
-					if (k == 0) {
-						insertStr = `switch(step){case 0:`;
-					} else {
-						insertStr = `break;case ${k}:`;
-					}
-					let copy = str;
-					copy = copy.slice(0, skip + result.index) + insertStr + copy.slice(skip + result.index + result[0].length);
-					//测试是否有错误
-					try {
-						new (hasDebugger ? ModGeneratorFunction : ModFunction)(copy);
-						str = copy;
-						skip += result.index + insertStr.length;
-					} catch (error) {
-						k--;
-						skip += result.index + result[0].length;
-					}
-					k++;
-				}
-				str = `if(event.step==${k}){event.finish();return;}` + str;
-			}
-			if (!scope) {
-				const argList = ["event", "step", "source", "player", "target", "targets", "card", "cards", "skill", "forced", "num", "trigger", "result", "_status", "lib", "game", "ui", "get", "ai"];
-				const compiled = new (hasDebugger ? ModGeneratorFunction : ModFunction)(...argList, str);
-				ErrorManager.setCodeSnippet(compiled, new CodeSnippet(code, 3)); // 记录编译后函数的原代码片段
-				return compiled;
-			} else {
-				new (hasDebugger ? ModGeneratorFunction : ModFunction)(str); // 防止注入喵
-				return scope(`(function${hasDebugger ? "*" : ""}(event,step,source,player,target,targets,
-						card,cards,skill,forced,num,trigger,result,
-						_status,lib,game,ui,get,ai){${str}})`);
-			}
-		}
-		switch (typeof item) {
-			case "object":
-				if (Array.isArray(item)) {
-					let lastEvent = null;
-					return function* (event, step, source, player, target, targets, card, cards, skill, forced, num, trigger, result, _status, lib, game, ui, get, ai) {
-						if (step >= item.length) return event.finish();
-						var current = item[step];
-						if (typeof current != "function") throw new Error(`content ${step} of ${event.name} is not vaild: ${current}`);
-						var currentResult = current(
-							event,
-							{
-								event: event,
-								step: step,
-								source: source,
-								player: player,
-								target: target,
-								targets: targets,
-								card: card,
-								cards: cards,
-								skill: skill,
-								forced: forced,
-								num: num,
-								trigger: trigger,
-								result: result,
-							},
-							lastEvent && "result" in lastEvent ? lastEvent.result : null
-						);
-						// TODO: use `event.debugger` to replace source
-						if (gnc.is.generator(currentResult)) lastEvent = yield* currentResult;
-						else lastEvent = currentResult;
-					};
-				} else {
-					if (Symbol.iterator in item) return lib.init.parsex(Array.from(item));
-					// 根据狂神喵的建议，禁用parsex接受字符串喵
-					// if (item.toString !== Object.prototype.toString) return lib.init.parsex(item.toString());
-					if ("render" in item) {
-						// TODO: Object Render Parse
-						throw new Error("NYI: Object Render Parse");
-					}
-					// TODO: Object Other Parse
-					throw new Error("NYI: Object Other Parse");
-				}
-			case "function":
-				if (gnc.is.generatorFunc(item)) {
-					// let gen, lastEvent;
-					let content = function* (event, step, source, player, target, targets, card, cards, skill, forced, num, trigger, result, _status, lib, game, ui, get, ai) {
-						event.step = NaN;
-						if (!this.gen)
-							this.gen = item(event, {
-								event,
-								step,
-								source,
-								player,
-								target,
-								targets,
-								card,
-								cards,
-								skill,
-								forced,
-								num,
-								trigger,
-								result,
-							});
-
-						let res;
-						if (!this.last) res = this.gen.next();
-						else if (typeof this.last !== "object") res = this.gen.next(this.last);
-						else if (this.last instanceof GameEvent || this.last instanceof GameEventPromise) res = this.gen.next(this.last.result);
-						else res = this.gen.next(this.last);
-
-						if (res.done) {
-							this.gen = null;
-							return event.finish();
-						}
-						let currentResult = res.value;
-						// TODO: use `event.debugger` to replace source
-						if (typeof currentResult == "function") yield currentResult;
-						else {
-							if (Array.isArray(currentResult)) {
-								event.step = currentResult[1];
-								currentResult = currentResult[0];
-							}
-							this.last = currentResult;
-						}
-					}.bind({
-						gen: null,
-						last: undefined,
-					});
-					content._gen = true;
-					return content;
-				} else if (item._parsed) return item;
-				return Legacy(item);
-			default:
-				throw new TypeError("为确保安全禁止用parsex解析字符串");
-		}
+		if (scope) throw new Error("parsex已经被拆分，不再支持scope的使用");
+		// parsex 的 Legacy 主体移动到 noname/library/event/compilers/StepCompiler.ts
+		return ContentCompiler.compile(item);
 	}
 
 	eval(func) {

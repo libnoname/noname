@@ -381,12 +381,7 @@ export class Is {
 	}
 	/**
 	 * @overload
-	 * @param { Function } func
-	 * @returns { false }
-	 */
-	/**
-	 * @overload
-	 * @param { number | [number, number] } func
+	 * @param { Function | number | [number, number] } func
 	 * @returns { boolean }
 	 */
 	singleSelect(func) {
@@ -455,6 +450,7 @@ export class Is {
 	}
 	/**
 	 * @param { string } str
+	 * @returns { str is "h" | "e" | "j" | "he" | "hej" | "ej" | "hj" }
 	 */
 	pos(str) {
 		return str == "h" || str == "e" || str == "j" || str == "he" || str == "hj" || str == "ej" || str == "hej";
@@ -466,6 +462,7 @@ export class Is {
 	 */
 	locked(skill, player) {
 		const info = lib.skill[skill];
+		if (!info) return false;
 		if (typeof info.locked == "function") return info.locked(skill, player);
 		if (info.locked == false) return false;
 		if (info.trigger && info.forced) return true;

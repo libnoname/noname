@@ -1,0 +1,101 @@
+/* 
+ * 分页css, 颜色样式修改
+ * https: //github.com/accforgit/blog-data/blob/master/%E7%AE%80%E5%8D%95%E5%88%86%E9%A1%B5/demo/style.css
+ */
+
+ .pagination {
+	padding-inline-start: 0px;
+	margin-top: 18px;
+	font-size: 0;
+	text-align: center;
+	position: fixed;
+	bottom: 0px;
+	display: block;
+	left: 0;
+	right: 0;
+	margin: 8px auto;
+	z-index: 100;
+}
+
+.pagination .page-li {
+	display: inline-block;
+	font-size: 15px;
+	line-height: 1;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.pagination .page-li:not(.number-ellipsis):hover {
+	cursor: pointer;
+	background-color: #409eff;
+}
+
+.pagination .page-li.page-active {
+	cursor: default;
+	color: #fff;
+	border-color: #409eff;
+	background-color: #409eff;
+}
+
+.pagination .page-li.number-ellipsis {
+	border: none;
+	cursor: default;
+}
+
+.pagination .page-li.number-ellipsis:hover {
+	color: #409eff;
+}
+
+.pagination .page-number {
+	width: 38px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	border: 1px solid #EAEAEA;
+	text-align: center;
+}
+
+.pagination .page-prev {
+	padding: 8px 14px;
+	margin-right: 8px;
+	border: 1px solid #EAEAEA;
+}
+
+.pagination .page-prev.no-prev {
+	color: #c6c6c6;
+}
+
+.pagination .page-prev.no-prev:hover {
+	cursor: default;
+	background-color: #409eff;
+}
+
+.pagination .page-next {
+	padding: 8px 14px;
+	margin-left: 8px;
+	border: 1px solid #EAEAEA;
+}
+
+.pagination .page-next.no-next {
+	color: #c6c6c6;
+}
+
+.pagination .page-next.no-next:hover {
+	cursor: default;
+}
+
+.pagination .number-ellipsis {
+	display: inline-block;
+	font-size: 15px;
+	padding: 8px 14px;
+}
+
+.pagination .number-ellipsis.page-hidden {
+	display: none;
+}
+
+#page-go {
+	margin-top: 10px;
+	text-align: center;
+}

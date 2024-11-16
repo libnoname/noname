@@ -49,7 +49,7 @@ export default {
 	"#key_hinata:die": "呜哇啊啊啊啊啊啊啊啊——————————",
 	"#shiki_omusubi1": "始めるんだ…神山識",
 	"#shiki_omusubi2": "大切な人を守るために！",
-	"#key_shiki:die": "ありがとう…羽伊里くん…",
+	"#key_shiki:die": "ありがとう…羽依里くん…",
 	"#saya_shouji1": "じゃあ…Game Start!",
 	"#saya_shouji2": "いくつかポイントがあるの",
 	"#saya_powei1": "決して任務には失敗しないんだ！",

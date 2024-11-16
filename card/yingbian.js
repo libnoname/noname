@@ -184,9 +184,10 @@ game.import("card", function () {
 					return target == player;
 				},
 				modTarget: true,
-				content: function () {
-					target.chooseToGuanxing(2);
-					target.draw(2);
+				async content(event, trigger, player) {
+					const target = event.target;
+					await target.chooseToGuanxing(2);
+					await target.draw(2);
 				},
 				ai: {
 					basic: {
@@ -485,10 +486,16 @@ game.import("card", function () {
 				trigger: { player: "equipAfter" },
 				forced: true,
 				equipSkill: true,
-				filter: (event, player) =>
-					event.card.name == "tianjitu" && player.hasCard((card) => card != event.card, "he"),
+				getIndex(event, player){
+					return event.vcards.filter(card => card.name === "tianjitu").length;
+				},
+				filter: (event, player) => {
+					return player.hasCard(card => {
+						return !event.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tianjitu_skill");
+					}, "he")
+				},
 				content: () => {
-					player.chooseToDiscard(true, (card) => card != _status.event.getTrigger().card, "he");
+					player.chooseToDiscard(true, (card) => !get.event().getTrigger().cards?.includes(card), "he");
 				},
 				subSkill: {
 					lose: {
@@ -507,9 +514,16 @@ game.import("card", function () {
 							],
 						},
 						filter: (event, player) => {
-							if (player.countCards("h") >= 5) return false;
-							var evt = event.getl(player);
-							return evt && evt.es.some((card) => card.name == "tianjitu");
+							return (player.countCards("h") < 5);
+						},
+						getIndex(event, player){
+							const evt = event.getl(player);
+							const lostCards = [];
+							evt.es.forEach((card) => {
+								const VEquip = evt.vcard_map.get(card);
+								if(VEquip.name === "tianjitu") lostCards.add(VEquip);
+							});
+							return lostCards.length;
 						},
 						content: function () {
 							player.drawTo(5);
@@ -750,7 +764,7 @@ game.import("card", function () {
 			heiguangkai_ai: {
 				ai: {
 					effect: {
-						player_use(card, player, target) {
+						player(card, player, target) {
 							if (
 								typeof card !== "object" ||
 								!target ||

@@ -1,14 +1,15 @@
 // @ts-nocheck
-import { ai } from "../ai/index.js";
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
+import { ai, setAI } from "../ai/index.js";
+import { get, setGet } from "../get/index.js";
+import { lib, Library, setLibrary } from "../library/index.js";
+import { game, setGame } from "../game/index.js";
 import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
+import { setUI, ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
 import { importMode } from "./import.js";
 import { Mutex } from "../util/mutex.js";
 import { load } from "../util/config.js";
+import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 export async function onload() {
 	const libOnload = lib.onload;
@@ -87,448 +88,6 @@ export async function onload() {
 		lib.configMenu.appearence.config.splash_style.item[splash.id] = splash.name;
 	});
 
-	// 改不动，暂时不改了
-	const proceed2 = async () => {
-		let mode = lib.imported.mode;
-		var card = lib.imported.card;
-		var character = lib.imported.character;
-		var play = lib.imported.play;
-		delete window.game;
-		var i, j, k;
-		for (i in mode[lib.config.mode].element) {
-			if (!lib.element[i]) lib.element[i] = [];
-			for (j in mode[lib.config.mode].element[i]) {
-				if (j == "init") {
-					if (!lib.element[i].inits) lib.element[i].inits = [];
-					lib.element[i].inits.push(mode[lib.config.mode].element[i][j]);
-				} else {
-					lib.element[i][j] = mode[lib.config.mode].element[i][j];
-				}
-			}
-		}
-		for (i in mode[lib.config.mode].ai) {
-			if (typeof mode[lib.config.mode].ai[i] == "object") {
-				if (ai[i] == undefined) ai[i] = {};
-				for (j in mode[lib.config.mode].ai[i]) {
-					ai[i][j] = mode[lib.config.mode].ai[i][j];
-				}
-			} else {
-				ai[i] = mode[lib.config.mode].ai[i];
-			}
-		}
-		for (i in mode[lib.config.mode].ui) {
-			if (typeof mode[lib.config.mode].ui[i] == "object") {
-				if (ui[i] == undefined) ui[i] = {};
-				for (j in mode[lib.config.mode].ui[i]) {
-					ui[i][j] = mode[lib.config.mode].ui[i][j];
-				}
-			} else {
-				ui[i] = mode[lib.config.mode].ui[i];
-			}
-		}
-		for (i in mode[lib.config.mode].game) {
-			game[i] = mode[lib.config.mode].game[i];
-		}
-		for (i in mode[lib.config.mode].get) {
-			get[i] = mode[lib.config.mode].get[i];
-		}
-		lib.init.start = mode[lib.config.mode].start;
-		lib.init.startBefore = mode[lib.config.mode].startBefore;
-		if (game.onwash) {
-			lib.onwash.push(game.onwash);
-			delete game.onwash;
-		}
-		if (game.onover) {
-			lib.onover.push(game.onover);
-			delete game.onover;
-		}
-		lib.config.banned = lib.config[lib.config.mode + "_banned"] || [];
-		lib.config.bannedcards = lib.config[lib.config.mode + "_bannedcards"] || [];
-
-		lib.rank = window.noname_character_rank;
-		delete window.noname_character_rank;
-		for (i in mode[lib.config.mode]) {
-			if (i == "element") continue;
-			if (i == "game") continue;
-			if (i == "ai") continue;
-			if (i == "ui") continue;
-			if (i == "get") continue;
-			if (i == "config") continue;
-			if (i == "onreinit") continue;
-			if (i == "start") continue;
-			if (i == "startBefore") continue;
-			if (lib[i] == undefined) lib[i] = Array.isArray(mode[lib.config.mode][i]) ? [] : {};
-			for (j in mode[lib.config.mode][i]) {
-				lib[i][j] = mode[lib.config.mode][i][j];
-			}
-		}
-		if (typeof mode[lib.config.mode].init == "function") {
-			mode[lib.config.mode].init();
-		}
-
-		var connectCharacterPack = [];
-		var connectCardPack = [];
-		for (i in character) {
-			if (character[i].character) {
-				const characterPack = lib.characterPack[i];
-				if (characterPack) Object.assign(characterPack, character[i].character);
-				else lib.characterPack[i] = character[i].character;
-			}
-			for (j in character[i]) {
-				if (j == "mode" || j == "forbid") continue;
-				if (j == "connect") {
-					connectCharacterPack.push(i);
-					continue;
-				}
-				if (j == "character" && !lib.config.characters.includes(i) && lib.config.mode != "connect") {
-					if (lib.config.mode == "chess" && get.config("chess_mode") == "leader" && get.config("chess_leader_allcharacter")) {
-						for (k in character[i][j]) {
-							lib.hiddenCharacters.push(k);
-						}
-					} else if (lib.config.mode != "boss" || i != "boss") {
-						continue;
-					}
-				}
-				if (Array.isArray(lib[j]) && Array.isArray(character[i][j])) {
-					lib[j].addArray(character[i][j]);
-					continue;
-				}
-				for (k in character[i][j]) {
-					if (j == "character") {
-						if (lib.config.forbidai_user && lib.config.forbidai_user.includes(k)) {
-							lib.config.forbidai.add(k);
-						}
-						if (Array.isArray(character[i][j][k])) {
-							if (!character[i][j][k][4]) {
-								character[i][j][k][4] = [];
-							}
-							if (character[i][j][k][4].includes("boss") || character[i][j][k][4].includes("hiddenboss")) {
-								lib.config.forbidai.add(k);
-							}
-							for (var l = 0; l < character[i][j][k][3].length; l++) {
-								lib.skilllist.add(character[i][j][k][3][l]);
-							}
-						} else {
-							if (character[i][j][k].isBoss || character[i][j][k].isHiddenBoss) {
-								lib.config.forbidai.add(k);
-							}
-							if (character[i][j][k].skills) {
-								for (var l = 0; l < character[i][j][k].skills.length; l++) {
-									lib.skilllist.add(character[i][j][k].skills[l]);
-								}
-							}
-						}
-					}
-					if (j == "skill" && k[0] == "_" && (lib.config.mode != "connect" ? !lib.config.characters.includes(i) : !character[i].connect)) {
-						continue;
-					}
-					if (j == "translate" && k == i) {
-						lib[j][k + "_character_config"] = character[i][j][k];
-					} else {
-						if (lib[j][k] == undefined) {
-							if (j == "skill" && !character[i][j][k].forceLoad && lib.config.mode == "connect" && !character[i].connect) {
-								lib[j][k] = {
-									nopop: character[i][j][k].nopop,
-									derivation: character[i][j][k].derivation,
-								};
-							} else if (j === "character") {
-								lib.character[k] = character[i][j][k];
-							} else {
-								Object.defineProperty(lib[j], k, Object.getOwnPropertyDescriptor(character[i][j], k));
-							}
-							if (j == "card" && lib[j][k].derivation) {
-								if (!lib.cardPack.mode_derivation) {
-									lib.cardPack.mode_derivation = [k];
-								} else {
-									lib.cardPack.mode_derivation.push(k);
-								}
-							}
-						} else if (Array.isArray(lib[j][k]) && Array.isArray(character[i][j][k])) {
-							lib[j][k].addArray(character[i][j][k]);
-						} else {
-							console.log(`duplicated ${j} in character ${i}:\n${k}:\nlib.${j}.${k}`, lib[j][k], `\ncharacter.${i}.${j}.${k}`, character[i][j][k]);
-						}
-					}
-				}
-			}
-		}
-		var connect_avatar_list = [];
-		for (var i in lib.character) {
-			connect_avatar_list.push(i);
-		}
-		connect_avatar_list.sort(lib.sort.capt);
-		for (var i = 0; i < connect_avatar_list.length; i++) {
-			var ia = connect_avatar_list[i];
-			lib.mode.connect.config.connect_avatar.item[ia] = lib.translate[ia];
-		}
-		if (lib.config.mode != "connect") {
-			var pilecfg = lib.config.customcardpile[get.config("cardpilename") || "当前牌堆"];
-			if (pilecfg) {
-				lib.config.bannedpile = get.copy(pilecfg[0] || {});
-				lib.config.addedpile = get.copy(pilecfg[1] || {});
-			} else {
-				lib.config.bannedpile = {};
-				lib.config.addedpile = {};
-			}
-		} else {
-			lib.cardPackList = {};
-		}
-		for (i in card) {
-			const cardPack = lib.cardPack[i] ? lib.cardPack[i] : (lib.cardPack[i] = []);
-			if (card[i].card) {
-				for (var j in card[i].card) {
-					if (!card[i].card[j].hidden && card[i].translate[j + "_info"]) {
-						cardPack.push(j);
-					}
-				}
-			}
-			for (j in card[i]) {
-				if (j == "mode" || j == "forbid") continue;
-				if (j == "connect") {
-					connectCardPack.push(i);
-					continue;
-				}
-				if (j == "list") {
-					if (lib.config.mode == "connect") {
-						const cardPackList = lib.cardPackList[i];
-						if (cardPackList) cardPackList.addArray(card[i][j]);
-						else lib.cardPackList[i] = card[i][j];
-					} else {
-						if (lib.config.cards.includes(i)) {
-							var pile;
-							if (typeof card[i][j] == "function") {
-								pile = card[i][j]();
-							} else {
-								pile = card[i][j];
-							}
-							const cardPile = lib.cardPile[i];
-							if (cardPile) cardPile.addArray(pile);
-							else lib.cardPile[i] = pile.slice(0);
-							if (lib.config.bannedpile[i]) {
-								for (var k = 0; k < lib.config.bannedpile[i].length; k++) {
-									pile[lib.config.bannedpile[i][k]] = null;
-								}
-							}
-							for (var k = 0; k < pile.length; k++) {
-								if (!pile[k]) {
-									pile.splice(k--, 1);
-								}
-							}
-							if (lib.config.addedpile[i]) {
-								for (var k = 0; k < lib.config.addedpile[i].length; k++) {
-									pile.push(lib.config.addedpile[i][k]);
-								}
-							}
-							lib.card.list.addArray(pile);
-						}
-					}
-				} else {
-					for (k in card[i][j]) {
-						if (j == "skill" && k[0] == "_" && !card[i][j][k].forceLoad && (lib.config.mode != "connect" ? !lib.config.cards.includes(i) : !card[i].connect)) {
-							continue;
-						}
-						if (j == "translate" && k == i) {
-							lib[j][k + "_card_config"] = card[i][j][k];
-						} else {
-							if (lib[j][k] == undefined) {
-								if (j == "skill" && !card[i][j][k].forceLoad && lib.config.mode == "connect" && !card[i].connect) {
-									lib[j][k] = {
-										nopop: card[i][j][k].nopop,
-										derivation: card[i][j][k].derivation,
-									};
-								} else {
-									Object.defineProperty(lib[j], k, Object.getOwnPropertyDescriptor(card[i][j], k));
-								}
-							} else {
-								console.log(`duplicated ${j} in card ${i}:\n${k}:\nlib.${j}.${k}`, lib[j][k], `\ncard.${i}.${j}.${k}`, card[i][j][k]);
-							}
-							if (j == "card" && lib[j][k].derivation) {
-								if (!lib.cardPack.mode_derivation) {
-									lib.cardPack.mode_derivation = [k];
-								} else {
-									lib.cardPack.mode_derivation.push(k);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		if (lib.cardPack.mode_derivation) {
-			for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
-				if (typeof lib.card[lib.cardPack.mode_derivation[i]].derivation == "string" && !lib.character[lib.card[lib.cardPack.mode_derivation[i]].derivation]) {
-					lib.cardPack.mode_derivation.splice(i--, 1);
-				} else if (typeof lib.card[lib.cardPack.mode_derivation[i]].derivationpack == "string" && !lib.config.cards.includes(lib.card[lib.cardPack.mode_derivation[i]].derivationpack)) {
-					lib.cardPack.mode_derivation.splice(i--, 1);
-				}
-			}
-			if (lib.cardPack.mode_derivation.length == 0) {
-				delete lib.cardPack.mode_derivation;
-			}
-		}
-		if (lib.config.mode != "connect") {
-			for (i in play) {
-				if (lib.config.hiddenPlayPack.includes(i)) continue;
-				if (play[i].forbid && play[i].forbid.includes(lib.config.mode)) continue;
-				if (play[i].mode && play[i].mode.includes(lib.config.mode) == false) continue;
-				for (j in play[i].element) {
-					if (!lib.element[j]) lib.element[j] = [];
-					for (k in play[i].element[j]) {
-						if (k == "init") {
-							if (!lib.element[j].inits) lib.element[j].inits = [];
-							lib.element[j].inits.push(play[i].element[j][k]);
-						} else {
-							lib.element[j][k] = play[i].element[j][k];
-						}
-					}
-				}
-				for (j in play[i].ui) {
-					if (typeof play[i].ui[j] == "object") {
-						if (ui[j] == undefined) ui[j] = {};
-						for (k in play[i].ui[j]) {
-							ui[j][k] = play[i].ui[j][k];
-						}
-					} else {
-						ui[j] = play[i].ui[j];
-					}
-				}
-				for (j in play[i].game) {
-					game[j] = play[i].game[j];
-				}
-				for (j in play[i].get) {
-					get[j] = play[i].get[j];
-				}
-				for (j in play[i]) {
-					if (j == "mode" || j == "forbid" || j == "init" || j == "element" || j == "game" || j == "get" || j == "ui" || j == "arenaReady") continue;
-					for (k in play[i][j]) {
-						if (j == "translate" && k == i) {
-							// lib[j][k+'_play_config']=play[i][j][k];
-						} else {
-							if (lib[j][k] != undefined) {
-								console.log(`duplicated ${j} in play ${i}:\n${k}:\nlib.${j}.${k}`, lib[j][k], `\nplay.${i}.${j}.${k}`, play[i][j][k]);
-							}
-							lib[j][k] = play[i][j][k];
-						}
-					}
-				}
-				if (typeof play[i].init == "function") play[i].init();
-				if (typeof play[i].arenaReady == "function") lib.arenaReady.push(play[i].arenaReady);
-			}
-		}
-
-		lib.connectCharacterPack = [];
-		lib.connectCardPack = [];
-		for (var i = 0; i < lib.config.all.characters.length; i++) {
-			var packname = lib.config.all.characters[i];
-			if (connectCharacterPack.includes(packname)) {
-				lib.connectCharacterPack.push(packname);
-			}
-		}
-		for (var i = 0; i < lib.config.all.cards.length; i++) {
-			var packname = lib.config.all.cards[i];
-			if (connectCardPack.includes(packname)) {
-				lib.connectCardPack.push(packname);
-			}
-		}
-		if (lib.config.mode != "connect") {
-			for (i = 0; i < lib.card.list.length; i++) {
-				if (lib.card.list[i][2] == "huosha") {
-					lib.card.list[i] = lib.card.list[i].slice(0);
-					lib.card.list[i][2] = "sha";
-					lib.card.list[i][3] = "fire";
-				} else if (lib.card.list[i][2] == "leisha") {
-					lib.card.list[i] = lib.card.list[i].slice(0);
-					lib.card.list[i][2] = "sha";
-					lib.card.list[i][3] = "thunder";
-				}
-				if (!lib.card[lib.card.list[i][2]]) {
-					lib.card.list.splice(i, 1);
-					i--;
-				} else if (lib.card[lib.card.list[i][2]].mode && lib.card[lib.card.list[i][2]].mode.includes(lib.config.mode) == false) {
-					lib.card.list.splice(i, 1);
-					i--;
-				}
-			}
-		}
-
-		if (lib.config.mode == "connect") {
-			_status.connectMode = true;
-		}
-		if (window.isNonameServer) {
-			lib.cheat.i();
-		} else if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
-			lib.cheat.i();
-		}
-		lib.config.sort_card = get.sortCard(lib.config.sort);
-		delete lib.imported.character;
-		delete lib.imported.card;
-		delete lib.imported.mode;
-		delete lib.imported.play;
-		for (var i in lib.init) {
-			if (i.startsWith("setMode_")) {
-				delete lib.init[i];
-			}
-		}
-		if (!_status.connectMode) {
-			for (var i = 0; i < lib.extensions.length; i++) {
-				try {
-					_status.extension = lib.extensions[i][0];
-					_status.evaluatingExtension = lib.extensions[i][3];
-					if (typeof lib.extensions[i][1] == "function")
-						try {
-							await (gnc.is.coroutine(lib.extensions[i][1]) ? gnc.of(lib.extensions[i][1]) : lib.extensions[i][1]).call(lib.extensions[i], lib.extensions[i][2], lib.extensions[i][4]);
-						} catch (e) {
-							console.log(`加载《${lib.extensions[i][0]}》扩展的content时出现错误。`, e);
-							if (!lib.config.extension_alert) alert(`加载《${lib.extensions[i][0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
-						}
-					if (lib.extensions[i][4]) {
-						if (lib.extensions[i][4].character) {
-							for (var j in lib.extensions[i][4].character.character) {
-								game.addCharacterPack(get.copy(lib.extensions[i][4].character));
-								break;
-							}
-						}
-						if (lib.extensions[i][4].card) {
-							for (var j in lib.extensions[i][4].card.card) {
-								game.addCardPack(get.copy(lib.extensions[i][4].card));
-								break;
-							}
-						}
-						if (lib.extensions[i][4].skill) {
-							for (var j in lib.extensions[i][4].skill.skill) {
-								game.addSkill(j, lib.extensions[i][4].skill.skill[j], lib.extensions[i][4].skill.translate[j], lib.extensions[i][4].skill.translate[j + "_info"], lib.extensions[i][4].skill.translate[j + "_append"], lib.extensions[i][4].skill.translate[j + "_ab"]);
-							}
-						}
-					}
-					delete _status.extension;
-					delete _status.evaluatingExtension;
-				} catch (e) {
-					console.log(e);
-				}
-			}
-		}
-		delete lib.extensions;
-
-		if (lib.init.startBefore) {
-			lib.init.startBefore();
-			delete lib.init.startBefore;
-		}
-		ui.create.arena();
-		game.createEvent("game", false).setContent(lib.init.start);
-		if (lib.mode[lib.config.mode] && lib.mode[lib.config.mode].fromextension) {
-			var startstr = mode[lib.config.mode].start.toString();
-			if (startstr.indexOf("onfree") == -1) {
-				setTimeout(lib.init.onfree, 500);
-			}
-		}
-		delete lib.init.start;
-		if (Array.isArray(_status.onprepare) && _status.onprepare.length) {
-			await Promise.allSettled(_status.onprepare);
-			delete _status.onprepare;
-		}
-		game.loop();
-	};
-
 	localStorage.removeItem(lib.configprefix + "directstart");
 	if (!lib.imported.mode?.[lib.config.mode]) {
 		window.inSplash = true;
@@ -554,27 +113,119 @@ export async function onload() {
 	}
 	lib.storage = (await load(lib.config.mode, "data")) || {};
 
-	/*
-	if (!lib.db) {
-		try {
-			lib.storage = JSON.parse(localStorage.getItem(lib.configprefix + lib.config.mode));
-			if (typeof lib.storage != "object" || lib.storage == null) jumpToCatchBlock();
-		} catch (err) {
-			lib.storage = {};
-			localStorage.setItem(lib.configprefix + lib.config.mode, "{}");
-		}
-	} else {
-		let storage = await game.getDB("data", lib.config.mode);
-		lib.storage = storage || {};
-	}
-	 */
-
 	const libOnload2 = lib.onload2;
 	delete lib.onload2;
 	await runCustomContents(libOnload2);
 
 	await Promise.allSettled(loadingCustomStyle);
-	await proceed2();
+	delete window.game;
+
+	lib.connectCharacterPack = [];
+	lib.connectCardPack = [];
+
+	const currentMode = lib.imported.mode[lib.config.mode];
+	loadMode(currentMode);
+	// 为了模式扩展，两个东西删不了
+	lib.init.start = currentMode.start;
+	lib.init.startBefore = currentMode.startBefore;
+
+	if (lib.imported.character != null) {
+		Object.values(lib.imported.character).forEach(loadCharacter);
+	}
+
+	// 我不好说，但我尊重水乎的想法
+	Object.keys(lib.character)
+		.toSorted(lib.sort.capt)
+		.forEach(character => {
+			lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
+		});
+
+	loadCardPile();
+
+	if (lib.imported.card != null) {
+		Object.values(lib.imported.card).forEach(loadCard);
+	}
+
+	if (lib.cardPack.mode_derivation) {
+		lib.cardPack.mode_derivation = lib.cardPack.mode_derivation.filter(item => {
+			if (typeof lib.card[item].derivation == "string" && !lib.character[lib.card[item].derivation]) {
+				return false;
+			}
+			return !(typeof lib.card[item].derivationpack == "string" && !lib.config.cards.includes(lib.card[item].derivationpack));
+		});
+
+		if (lib.cardPack.mode_derivation.length === 0) {
+			delete lib.cardPack.mode_derivation;
+		}
+	}
+
+	if (lib.config.mode === "connect") {
+		_status.connectMode = true;
+	} else {
+		if (lib.imported.play != null) {
+			Object.values(lib.imported.play).forEach(loadPlay);
+		}
+
+		lib.card.list = lib.card.list
+			.filter(cardData => {
+				if (!cardData[2]) return false;
+				if (cardData[2] === "huosha") {
+					cardData[2] = "sha";
+					cardData[3] = "fire";
+				} else if (cardData[2] === "leisha") {
+					cardData[2] = "sha";
+					cardData[3] = "thunder";
+				} else if (cardData[2] === "icesha") {
+					cardData[2] = "sha";
+					cardData[3] = "ice";
+				} else if (cardData[2] === "cisha") {
+					cardData[2] = "sha";
+					cardData[3] = "stab";
+				} else if (cardData[2] === "kamisha") {
+					cardData[2] = "sha";
+					cardData[3] = "kami";
+				}
+				return lib.card[cardData[2]] && !lib.card[cardData[2]].mode?.includes(lib.config.mode);
+			});
+	}
+
+	if (window.isNonameServer) {
+		lib.cheat.i();
+	} else if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
+		lib.cheat.i();
+	}
+	lib.config.sort_card = get.sortCard(lib.config.sort);
+
+	for (let funcName in lib.init) {
+		if (funcName.startsWith("setMode_")) {
+			delete lib.init[funcName];
+		}
+	}
+
+	if (Array.isArray(lib.extensions)) {
+		await Promise.allSettled(lib.extensions.map(loadExtension));
+	}
+
+	if (lib.init.startBefore) {
+		lib.init.startBefore();
+		delete lib.init.startBefore;
+	}
+
+	ui.create.arena();
+	game.createEvent("game", false).setContent(lib.init.start);
+	if (lib.mode[lib.config.mode] && lib.mode[lib.config.mode].fromextension) {
+		var startstr = currentMode.start.toString();
+		if (startstr.indexOf("onfree") === -1) {
+			setTimeout(lib.init.onfree, 500);
+		}
+	}
+	delete lib.init.start;
+	if (Array.isArray(_status.onprepare) && _status.onprepare.length) {
+		await Promise.allSettled(_status.onprepare);
+		delete _status.onprepare;
+	}
+
+	game.loop();
 }
 
 async function createBackground() {

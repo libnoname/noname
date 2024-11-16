@@ -11,10 +11,6 @@ const dynamicTranslates = {
 	shhlianhua(player) {
 		return ["当你成为【杀】的目标后，你摸一张牌。", "当你成为【杀】的目标后，你摸一张牌。然后你进行判定，若结果为黑桃，则此【杀】对你无效。", "当你成为【杀】的目标后，你摸一张牌。然后此【杀】的使用者选择一项：①弃置一张牌。②令此【杀】对你无效。"][player.countMark("shhlianhua")];
 	},
-	spshidi(player) {
-		if (player.countMark("spshidi") % 2 == 0) return '转换技，锁定技。①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。<span class="bluetext">②若你的“☯”数为偶数，则你至其他角色的距离-1，且你使用的黑色【杀】不可被响应。</span>③若你的“☯”数为奇数，则其他角色至你的距离+1，且你不可响应红色【杀】。';
-		return '转换技，锁定技。①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。②若你的“☯”数为偶数，则你至其他角色的距离-1，且你使用的黑色【杀】不可被响应。<span class="bluetext">③若你的“☯”数为奇数，则其他角色至你的距离+1，且你不可响应红色【杀】。</span>';
-	},
 	mobilexingxue(player) {
 		return lib.translate[(player.storage.mobileyanzhu ? "mobilexingxuex" : "mobilexingxue") + "_info"];
 	},
@@ -35,8 +31,8 @@ const dynamicTranslates = {
 		} else if (status === 1) {
 			return lib.translate.mbxuetu_achieve_info;
 		} else {
-			if (!xuetu) return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以回复1点体力，然后令一名角色弃置两张牌；</span>阳：你可以摸一张牌，然后对一名角色造成1点伤害。';
-			return '转换技。出牌阶段限一次，阴：你可以回复1点体力，然后令一名角色弃置两张牌；<span class="bluetext">阳：你可以摸一张牌，然后对一名角色造成1点伤害。</span>';
+			if (!xuetu) return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；</span>阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。';
+			return '转换技。出牌阶段限一次，阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；<span class="bluetext">阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。</span>';
 		}
 	},
 	mbzuoyou(player) {

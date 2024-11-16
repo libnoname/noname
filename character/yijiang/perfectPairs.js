@@ -14,7 +14,6 @@ export default {
 	zhoucang: ["guanyu"],
 	guanping: ["guanyu"],
 	sundeng: ["sunquan", "zhoufei"],
-	liru: ["dongzhuo"],
 	liuchen: ["liushan"],
 	yujin: ["xiahoudun"],
 	fazheng: ["liubei"],

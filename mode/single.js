@@ -1,5 +1,9 @@
-"use strict";
-game.import("mode", function (lib, game, ui, get, ai, _status) {
+import { lib, game, ui, get, ai, _status } from "../noname.js";
+export const type = "mode";
+/**
+ * @type { () => importModeConfig }
+ */
+export default () => {
 	return {
 		name: "single",
 		changbanCharacter: [
@@ -242,74 +246,77 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			["spade", 12, "zhangba"],
 			["spade", 13, "nanman"],
 		],
-		characterSingle: Object.assign(new Proxy(
-			{},
+		characterSingle: Object.assign(
+			new Proxy(
+				{},
+				{
+					set(target, prop, newValue) {
+						return Reflect.set(target, prop, get.convertedCharacter(newValue));
+					},
+				}
+			),
 			{
-				set(target, prop, newValue) {
-					return Reflect.set(target, prop, get.convertedCharacter(newValue));
-				},
+				caocao: ["male", "wei", 4, ["jianxiong"], ["zhu"]],
+				simayi: ["male", "wei", 3, ["fankui", "guicai"]],
+				xiahoudun: ["male", "wei", 4, ["ganglie"]],
+				zhangliao: ["male", "wei", 4, ["retuxi"]],
+				xuzhu: ["male", "wei", 4, ["luoyi", "xiechan"]],
+				guojia: ["male", "wei", 3, ["tiandu", "yiji"]],
+				zhenji: ["female", "wei", 3, ["luoshen", "sgqingguo"]],
+				liubei: ["male", "shu", 4, ["sgrenwang"], ["zhu"]],
+				guanyu: ["male", "shu", 4, ["wusheng", "huwei"]],
+				zhangfei: ["male", "shu", 4, ["paoxiao"]],
+				zhugeliang: ["male", "shu", 3, ["guanxing", "kongcheng"]],
+				zhaoyun: ["male", "shu", 4, ["longdan"]],
+				machao: ["male", "shu", 4, ["xiaoxi", "tieji"]],
+				huangyueying: ["female", "shu", 3, ["jizhi", "cangji"]],
+				sunquan: ["male", "wu", 4, ["sgzhiheng"], ["zhu"]],
+				ganning: ["male", "wu", 4, ["qixi"]],
+				lvmeng: ["male", "wu", 4, ["shenju", "botu"]],
+				huanggai: ["male", "wu", 4, ["kurou"]],
+				zhouyu: ["male", "wu", 3, ["yingzi", "fanjian"]],
+				daqiao: ["female", "wu", 3, ["guose", "wanrong"]],
+				luxun: ["male", "wu", 3, ["qianxun", "lianying"]],
+				sunshangxiang: ["female", "wu", 3, ["xiaoji", "yinli"]],
+				//huatuo:['male','qun',3,['qingnang','jijiu']],
+				lvbu: ["male", "qun", 4, ["wushuang"]],
+				diaochan: ["female", "qun", 3, ["pianyi", "biyue"]],
+
+				xiahouyuan: ["male", "wei", 4, ["shensu", "suzi"]],
+				old_caoren: ["male", "wei", 4, ["jushou"]],
+				huangzhong: ["male", "shu", 4, ["sgliegong"]],
+				weiyan: ["male", "shu", 4, ["sgkuanggu"]],
+				xiaoqiao: ["female", "wu", 3, ["tianxiang", "hongyan"]],
+				old_zhoutai: ["male", "wu", 4, ["gzbuqu"]],
+				zhangjiao: ["male", "qun", 3, ["leiji", "guidao"], ["zhu"]],
+
+				dianwei: ["male", "wei", 4, ["qiangxi"]],
+				yanwen: ["male", "qun", 4, ["shuangxiong"]],
+				pangde: ["male", "qun", 4, ["xiaoxi", "mengjin"]],
+
+				menghuo: ["male", "shu", 4, ["manyi", "zaiqi"]],
+				zhurong: ["female", "shu", 4, ["manyi", "lieren"]],
+				xuhuang: ["male", "wei", 4, ["sgduanliang"]],
+				sunjian: ["male", "wu", 4, ["gzyinghun"]],
+
+				jiangwei: ["male", "shu", 4, ["tiaoxin"]],
+
+				hejin: ["male", "qun", 4, ["mouzhu", "yanhuo"]],
+				hansui: ["male", "qun", 4, ["xiaoxi", "niluan"]],
+				niujin: ["male", "wei", 4, ["cuorui", "liewei"]],
+
+				jin_zhangchunhua: ["female", "jin", 3, ["huishi", "qingleng"]],
+				jin_simayi: ["male", "jin", 3, ["smyyingshi", "xiongzhi", "quanbian"]],
+				jin_wangyuanji: ["female", "jin", 3, ["yanxi"]],
+				jin_simazhao: ["male", "jin", 3, ["choufa", "zhaoran"]],
+				jin_xiahouhui: ["female", "jin", 3, ["jyishi", "shiduo"]],
+				jin_simashi: ["male", "jin", "3/4", ["yimie", "tairan"]],
+				zhanghuyuechen: ["male", "jin", 4, ["xijue"]],
+				duyu: ["male", "jin", 4, ["sanchen", "zhaotao"]],
 			}
-		), {
-			caocao: ["male", "wei", 4, ["jianxiong"], ["zhu"]],
-			simayi: ["male", "wei", 3, ["fankui", "guicai"]],
-			xiahoudun: ["male", "wei", 4, ["ganglie"]],
-			zhangliao: ["male", "wei", 4, ["retuxi"]],
-			xuzhu: ["male", "wei", 4, ["luoyi", "xiechan"]],
-			guojia: ["male", "wei", 3, ["tiandu", "yiji"]],
-			zhenji: ["female", "wei", 3, ["luoshen", "sgqingguo"]],
-			liubei: ["male", "shu", 4, ["sgrenwang"], ["zhu"]],
-			guanyu: ["male", "shu", 4, ["wusheng", "huwei"]],
-			zhangfei: ["male", "shu", 4, ["paoxiao"]],
-			zhugeliang: ["male", "shu", 3, ["guanxing", "kongcheng"]],
-			zhaoyun: ["male", "shu", 4, ["longdan"]],
-			machao: ["male", "shu", 4, ["xiaoxi", "tieji"]],
-			huangyueying: ["female", "shu", 3, ["jizhi", "cangji"]],
-			sunquan: ["male", "wu", 4, ["sgzhiheng"], ["zhu"]],
-			ganning: ["male", "wu", 4, ["qixi"]],
-			lvmeng: ["male", "wu", 4, ["shenju", "botu"]],
-			huanggai: ["male", "wu", 4, ["kurou"]],
-			zhouyu: ["male", "wu", 3, ["yingzi", "fanjian"]],
-			daqiao: ["female", "wu", 3, ["guose", "wanrong"]],
-			luxun: ["male", "wu", 3, ["qianxun", "lianying"]],
-			sunshangxiang: ["female", "wu", 3, ["xiaoji", "yinli"]],
-			//huatuo:['male','qun',3,['qingnang','jijiu']],
-			lvbu: ["male", "qun", 4, ["wushuang"]],
-			diaochan: ["female", "qun", 3, ["pianyi", "biyue"]],
-
-			xiahouyuan: ["male", "wei", 4, ["shensu", "suzi"]],
-			old_caoren: ["male", "wei", 4, ["jushou"]],
-			huangzhong: ["male", "shu", 4, ["liegong"]],
-			weiyan: ["male", "shu", 4, ["sgkuanggu"]],
-			xiaoqiao: ["female", "wu", 3, ["tianxiang", "hongyan"]],
-			old_zhoutai: ["male", "wu", 4, ["gzbuqu"]],
-			zhangjiao: ["male", "qun", 3, ["leiji", "guidao"], ["zhu"]],
-
-			dianwei: ["male", "wei", 4, ["qiangxi"]],
-			yanwen: ["male", "qun", 4, ["shuangxiong"]],
-			pangde: ["male", "qun", 4, ["xiaoxi", "mengjin"]],
-
-			menghuo: ["male", "shu", 4, ["manyi", "zaiqi"]],
-			zhurong: ["female", "shu", 4, ["manyi", "lieren"]],
-			xuhuang: ["male", "wei", 4, ["sgduanliang"]],
-			sunjian: ["male", "wu", 4, ["gzyinghun"]],
-
-			jiangwei: ["male", "shu", 4, ["tiaoxin"]],
-
-			hejin: ["male", "qun", 4, ["mouzhu", "yanhuo"]],
-			hansui: ["male", "qun", 4, ["xiaoxi", "niluan"]],
-			niujin: ["male", "wei", 4, ["cuorui", "liewei"]],
-
-			jin_zhangchunhua: ["female", "jin", 3, ["huishi", "qingleng"]],
-			jin_simayi: ["male", "jin", 3, ["smyyingshi", "xiongzhi", "quanbian"]],
-			jin_wangyuanji: ["female", "jin", 3, ["yanxi"]],
-			jin_simazhao: ["male", "jin", 3, ["choufa", "zhaoran"]],
-			jin_xiahouhui: ["female", "jin", 3, ["jyishi", "shiduo"]],
-			jin_simashi: ["male", "jin", "3/4", ["yimie", "tairan"]],
-			zhanghuyuechen: ["male", "jin", 4, ["xijue"]],
-			duyu: ["male", "jin", 4, ["sanchen", "zhaotao"]],
-		}),
-		startBefore: function () {},
-		onreinit: function () {
+		),
+		startBefore() {},
+		onreinit() {
 			_status.mode = _status.connectMode ? lib.configOL.single_mode : get.config("single_mode");
 			if (_status.mode != "normal") return;
 			for (var i in lib.characterSingle) {
@@ -317,7 +324,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			}
 			for (var j in lib.singleTranslate) lib.translate[j] = lib.singleTranslate[j];
 		},
-		start: function () {
+		start() {
 			"step 0";
 			_status.mode = _status.connectMode ? lib.configOL.single_mode : get.config("single_mode");
 			var playback = localStorage.getItem(lib.configprefix + "playback");
@@ -369,24 +376,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				_status.characterlist = [];
 				for (var i = 0; i < lib.changbanCharacter.length; i++) {
 					var name = lib.changbanCharacter[i];
-					if (lib.character[name] && !lib.filter.characterDisabled(name))
-						_status.characterlist.push(name);
+					if (lib.character[name] && !lib.filter.characterDisabled(name)) _status.characterlist.push(name);
 				}
 				game.broadcastAll(function () {
 					_status.mode = "changban";
-					lib.translate.bingliang_info =
-						"目标角色判定阶段进行判定：若判定结果不为梅花，则跳过该角色的摸牌阶段。";
+					lib.translate.bingliang_info = "目标角色判定阶段进行判定：若判定结果不为梅花，则跳过该角色的摸牌阶段。";
 					lib.translate.zhuge_info = "锁定技，出牌阶段，你使用杀的次数上限+3";
 				});
 				for (var i = 0; i < lib.card.list.length; i++) {
 					var card = lib.card.list[i];
-					if (
-						card[2] == "muniu" ||
-						card[2] == "shandian" ||
-						(card[2] == "tengjia" && card[0] == "club") ||
-						(card[2] == "wuxie" && card[0] == "diamond" && card[1] == 12)
-					)
-						lib.card.list.splice(i--, 1);
+					if (card[2] == "muniu" || card[2] == "shandian" || (card[2] == "tengjia" && card[0] == "club") || (card[2] == "wuxie" && card[0] == "diamond" && card[1] == 12)) lib.card.list.splice(i--, 1);
 				}
 			} else if (_status.mode == "wuxianhuoli") {
 				var list = [];
@@ -396,8 +395,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				else {
 					var list = [];
 					for (var i in lib.character) {
-						if (!lib.filter.characterDisabled2(i) && !lib.filter.characterDisabled(i))
-							list.push(i);
+						if (!lib.filter.characterDisabled2(i) && !lib.filter.characterDisabled(i)) list.push(i);
 					}
 				}
 				game.countPlayer2(function (current) {
@@ -406,7 +404,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					list.remove(current.name2);
 				});
 				_status.characterlist = list;
-				game.broadcast((list) => (_status.characterlist = list), list);
+				game.broadcast(list => (_status.characterlist = list), list);
 			}
 			if (_status.connectMode) {
 				lib.configOL.number = 2;
@@ -455,7 +453,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			if (_status.connectMode && lib.configOL.change_card) game.replaceHandcards(game.players.slice(0));
 			"step 4";
 			game.phaseLoop(game.zhu);
-			game.countPlayer((current) => current.showGiveup(), true);
+			game.countPlayer(current => current.showGiveup(), true);
 		},
 		game: {
 			canReplaceViewpoint: () => true,
@@ -480,14 +478,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						str += get.translation(j + 2) + "：<br>";
 						for (var i = 0; i < list.length; i++) {
 							if (data[j][list[i]]) {
-								str +=
-									lib.translate[list[i] + "2"] +
-									"：" +
-									data[j][list[i]][0] +
-									"胜" +
-									" " +
-									data[j][list[i]][1] +
-									"负<br>";
+								str += lib.translate[list[i] + "2"] + "：" + data[j][list[i]][0] + "胜" + " " + data[j][list[i]][1] + "负<br>";
 							}
 						}
 					}
@@ -512,14 +503,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				}
 			},
 			getRoomInfo: function (uiintro) {
-				if (lib.configOL.single_mode == "normal")
-					uiintro.add(
-						'<div class="text chat">晋势力武将：' + (lib.configOL.enable_jin ? "开启" : "关闭")
-					);
+				if (lib.configOL.single_mode == "normal") uiintro.add('<div class="text chat">晋势力武将：' + (lib.configOL.enable_jin ? "开启" : "关闭"));
 				if (lib.configOL.bannedcards.length) {
-					uiintro.add(
-						'<div class="text chat">禁用卡牌：' + get.translation(lib.configOL.bannedcards)
-					);
+					uiintro.add('<div class="text chat">禁用卡牌：' + get.translation(lib.configOL.bannedcards));
 				}
 				uiintro.style.paddingBottom = "8px";
 			},
@@ -528,10 +514,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				if (game.me.name2) {
 					str += "/" + get.translation(game.me.name2);
 				}
-				var name = [
-					str,
-					get.translation(_status.mode + 2) + " - " + lib.translate[game.me.identity + "2"],
-				];
+				var name = [str, get.translation(_status.mode + 2) + " - " + lib.translate[game.me.identity + "2"]];
 				return name;
 			},
 			showIdentity: function () {},
@@ -561,7 +544,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.videoId = lib.status.videoId++;
 					var list = [];
 					for (var i in lib.character) {
-						if (lib.filter.characterDisabled(i)) continue;
+						if (lib.filter.characterDisabled2(i, "ignoreForibidden")) continue;
 						list.push(i);
 					}
 					_status.characterlist = list;
@@ -576,22 +559,48 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						.set("ai", function (button) {
 							return Math.random();
 						})
+						.set(
+							"selectButton",
+							(function (choice) {
+								if (choice == "singble") return [1, 2];
+								if (choice == "double") return 2;
+								return 1;
+							})(get.config("double_character"))
+						)
 						.set("dialog", event.videoId);
 					"step 4";
-					game.me.init(result.links[0]);
-					_status.characterlist.remove(result.links[0]);
 					game.addRecentCharacter(result.links[0]);
+					_status.characterlist.removeArray(result.links);
+					if (result.links.length == 2) {
+						game.me.init(result.links[0], result.links[1]);
+						game.addRecentCharacter(result.links[1]);
+					} else {
+						game.me.init(result.links[0]);
+					}
 					game.me
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
 						})
+						.set(
+							"selectButton",
+							(function (choice) {
+								if (choice == "singble") return [1, 2];
+								if (choice == "double") return 2;
+								return 1;
+							})(get.config("double_character"))
+						)
 						.set("dialog", event.videoId);
 					"step 5";
 					game.broadcastAll("closeDialog", event.videoId);
-					game.me.next.init(result.links[0]);
-					_status.characterlist.remove(result.links[0]);
 					game.addRecentCharacter(result.links[0]);
+					_status.characterlist.removeArray(result.links);
+					if (result.links.length == 2) {
+						game.me.next.init(result.links[0], result.links[1]);
+						game.addRecentCharacter(result.links[1]);
+					} else {
+						game.me.next.init(result.links[0]);
+					}
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
@@ -619,12 +628,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						game.players[i].showIdentity();
 					}
 					game.globalBuff = ["wuxianhuoli_weisuoyuwei"];
-					const randomBuff = [
-						"liuanhuaming",
-						"duoduoyishan",
-						"xushidaifa",
-						"mianmianjudao",
-					].randomGet();
+					const randomBuff = ["liuanhuaming", "duoduoyishan", "xushidaifa", "mianmianjudao"].randomGet();
 					game.globalBuff.add(`wuxianhuoli_${randomBuff}`);
 					"step 1";
 					_status.characterChoice = {
@@ -633,11 +637,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					};
 					const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 					game.globalBuff.forEach((buff, ind) => {
-						dialog.add(
-							`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(
-								buff
-							)}：${get.skillInfoTranslation(buff)}</div>`
-						);
+						dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff)}</div>`);
 					});
 					dialog.add([_status.characterChoice[game.me.identity], "character"]);
 					game.me.chooseButton(true, dialog);
@@ -646,11 +646,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					_status.characterChoice[game.me.identity].removeArray(result.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(1);
 					game.me.enemy.init(list[0]);
-					[game.me, game.me.enemy].forEach((current) => {
-						if (
-							current.storage.nohp ||
-							(lib.character[current.name1].hasHiddenSkil && !current.noclick)
-						) {
+					[game.me, game.me.enemy].forEach(current => {
+						if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
 							current.storage.rawHp = 1;
 							current.storage.rawMaxHp = 1;
 						}
@@ -659,16 +656,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						current.hujia = 0;
 						current.update();
 					});
-					game.globalBuff.forEach((buff) => {
+					game.globalBuff.forEach(buff => {
 						game.addGlobalSkill(buff);
 					});
 					game.addGlobalSkill("wuxianhuoli_task");
 					_status.wuxianhuoliProgress = 0;
 					_status.wuxianhuoliLevel = 0;
 					const func = () => {
-						ui.wuxianhuoliProgress = get.is.phoneLayout()
-							? ui.create.div(".touchinfo.left", ui.window)
-							: ui.create.div(ui.gameinfo);
+						ui.wuxianhuoliProgress = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
 						ui.wuxianhuoliProgress.innerHTML = "任务进度(0/3)";
 						const showTasks = () => {
 							if (ui.wuxianhuoliInfo) return;
@@ -679,34 +674,20 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								ui.wuxianhuoliInfo,
 								() => {
 									var uiintro = ui.create.dialog("hidden");
-									uiintro.add(
-										`<div class="text center" style="font-size:18px"><b>任务列表</b></div>`
-									);
+									uiintro.add(`<div class="text center" style="font-size:18px"><b>任务列表</b></div>`);
 									if (typeof _status.wuxianhuoliLevel !== "number") {
-										uiintro.add(
-											`<div class="text center" style="font-size:12px">未获取当前进度，请于一名角色受伤后再查看</div>`
-										);
+										uiintro.add(`<div class="text center" style="font-size:12px">未获取当前进度，请于一名角色受伤后再查看</div>`);
 									} else if (_status.wuxianhuoliLevel < 2) {
-										uiintro.add(`<div class="text center">全场角色造成${
-											_status.wuxianhuoliLevel === 0 ? 3 : 5
-										}点伤害(当前${_status.wuxianhuoliProgress}点)</div>\
+										uiintro.add(`<div class="text center">全场角色造成${_status.wuxianhuoliLevel === 0 ? 3 : 5}点伤害(当前${_status.wuxianhuoliProgress}点)</div>\
 										<div class="text center">奖励：获得一个技能，摸两张牌</div>`);
 									} else {
-										uiintro.add(
-											`<div class="text center">所有任务已完成，无后续任务</div>`
-										);
+										uiintro.add(`<div class="text center">所有任务已完成，无后续任务</div>`);
 									}
-									uiintro.add(
-										`<div class="text center" style="font-size:18px"><b>全局Buff</b></div>`
-									);
+									uiintro.add(`<div class="text center" style="font-size:18px"><b>全局Buff</b></div>`);
 									uiintro.add(
 										`<div class="text">${game.globalBuff
 											.map((buff, ind) => {
-												return (
-													get.translation(buff) +
-													"：" +
-													get.skillInfoTranslation(buff)
-												);
+												return get.translation(buff) + "：" + get.skillInfoTranslation(buff);
 											})
 											.join("<br>")}</div>`
 									);
@@ -775,10 +756,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.videoIdx = lib.status.videoId++;
 					game.broadcastAll(
 						function (id, list) {
-							var dialog = ui.create.dialog("选择武将", [list.all, "character"], "起始武将", [
-								list[game.me.identity],
-								"character",
-							]);
+							var dialog = ui.create.dialog("选择武将", [list.all, "character"], "起始武将", [list[game.me.identity], "character"]);
 							dialog.videoId = id;
 						},
 						event.videoIdx,
@@ -807,8 +785,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -846,8 +823,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -885,8 +861,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -924,8 +899,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -945,17 +919,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					"step 7";
 					game.broadcastAll("closeDialog", event.videoIdx);
 					"step 8";
-					game.me.chooseButton(
-						true,
-						["请选择出场武将", [_status.characterChoice[game.me.identity], "character"]],
-						_status.mode == "changban" ? 2 : 1
-					);
+					game.me.chooseButton(true, ["请选择出场武将", [_status.characterChoice[game.me.identity], "character"]], _status.mode == "changban" ? 2 : 1);
 					"step 9";
 					game.me.init(result.links[0], _status.mode == "changban" ? result.links[1] : null);
 					_status.characterChoice[game.me.identity].removeArray(result.links);
-					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(
-						_status.mode == "changban" ? 2 : 1
-					);
+					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(_status.mode == "changban" ? 2 : 1);
 					game.me.enemy.init(list[0], list[1]);
 					"step 10";
 					setTimeout(function () {
@@ -1006,40 +974,62 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						.set("ai", function (button) {
 							return Math.random();
 						})
+						.set(
+							"selectButton",
+							(function (choice) {
+								if (choice == "singble") return [1, 2];
+								if (choice == "double") return 2;
+								return 1;
+							})(lib.configOL.double_character)
+						)
 						.set("dialog", event.videoId);
 					"step 2";
 					game.broadcastAll(
 						function (player, character, id) {
-							player.init(character);
-							_status.characterlist.remove(character);
-							if (player == game.me) game.addRecentCharacter(character);
+							if (player == game.me) game.addRecentCharacter(character[0]);
+							if (character.length !== 2) player.init(character[0]);
+							else {
+								player.init(character[0], character[1]);
+								if (player == game.me) game.addRecentCharacter(character[1]);
+							}
+							_status.characterlist.removeArray(character);
 						},
 						game.zhu,
-						result.links[0]
+						result.links
 					);
 					game.fan
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
 						})
+						.set(
+							"selectButton",
+							(function (choice) {
+								if (choice == "singble") return [1, 2];
+								if (choice == "double") return 2;
+								return 1;
+							})(lib.configOL.double_character)
+						)
 						.set("dialog", event.videoId);
 					"step 3";
 					game.broadcastAll("closeDialog", event.videoId);
 					game.broadcastAll(
 						function (player, character, id) {
 							var dialog = get.idDialog(id);
-							if (dialog) {
-								dialog.close();
+							if (dialog) dialog.close();
+							if (player == game.me) game.addRecentCharacter(character[0]);
+							if (character.length !== 2) player.init(character[0]);
+							else {
+								player.init(character[0], character[1]);
+								if (player == game.me) game.addRecentCharacter(character[1]);
 							}
-							player.init(character);
-							_status.characterlist.remove(character);
-							if (player == game.me) game.addRecentCharacter(character);
+							_status.characterlist.removeArray(character);
 							setTimeout(function () {
 								ui.arena.classList.remove("choose-character");
 							}, 500);
 						},
 						game.fan,
-						result.links[0],
+						result.links,
 						event.videoId
 					);
 				});
@@ -1065,33 +1055,23 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						game.players[i].showIdentity();
 					}
 					game.globalBuff = ["wuxianhuoli_weisuoyuwei"];
-					const randomBuff = [
-						"liuanhuaming",
-						"duoduoyishan",
-						"xushidaifa",
-						"mianmianjudao",
-					].randomGet();
+					const randomBuff = ["liuanhuaming", "duoduoyishan", "xushidaifa", "mianmianjudao"].randomGet();
 					game.globalBuff.add(`wuxianhuoli_${randomBuff}`);
-					const setBuff = (buff) => {
+					const setBuff = buff => {
 						game.globalBuff = buff;
 					};
 					game.broadcast(setBuff, game.globalBuff);
-					if (!_status.postReconnect.wuxianhuoliBuff)
-						_status.postReconnect.wuxianhuoliBuff = [setBuff, []];
+					if (!_status.postReconnect.wuxianhuoliBuff) _status.postReconnect.wuxianhuoliBuff = [setBuff, []];
 					_status.postReconnect.wuxianhuoliBuff[1].addArray(game.globalBuff);
 					"step 1";
 					_status.characterChoice = {
 						zhu: _status.characterlist.randomRemove(6),
 						fan: _status.characterlist.randomRemove(6),
 					};
-					const list = ["zhu", "fan"].map((identity) => {
+					const list = ["zhu", "fan"].map(identity => {
 						const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 						game.globalBuff.forEach((buff, ind) => {
-							dialog.add(
-								`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(
-									buff
-								)}：${get.skillInfoTranslation(buff)}</div>`
-							);
+							dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff)}</div>`);
 						});
 						dialog.add([_status.characterChoice[identity], "character"]);
 						return [game[identity], true, dialog];
@@ -1116,10 +1096,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						_status.characterChoice[current.identity].removeArray(result[i]);
 						if (!current.name) {
 							current.init(result[i][0]);
-							if (
-								current.storage.nohp ||
-								(lib.character[current.name1].hasHiddenSkil && !current.noclick)
-							) {
+							if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
 								current.storage.rawHp = 1;
 								current.storage.rawMaxHp = 1;
 							}
@@ -1134,11 +1111,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							const current = lib.playerOL[i];
 							if (!current.name) {
 								current.init(result[i][0]);
-								if (
-									current.storage.nohp ||
-									(lib.character[current.name1].hasHiddenSkil &&
-										!current.noclick)
-								) {
+								if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
 									current.storage.rawHp = 1;
 									current.storage.rawMaxHp = 1;
 								}
@@ -1152,7 +1125,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							ui.arena.classList.remove("choose-character");
 						}, 500);
 					}, result);
-					game.globalBuff.forEach((buff) => {
+					game.globalBuff.forEach(buff => {
 						game.addGlobalSkill(buff);
 					});
 					game.addGlobalSkill("wuxianhuoli_task");
@@ -1161,9 +1134,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						_status.wuxianhuoliLevel = 0;
 					});
 					const func = () => {
-						ui.wuxianhuoliProgress = get.is.phoneLayout()
-							? ui.create.div(".touchinfo.left", ui.window)
-							: ui.create.div(ui.gameinfo);
+						ui.wuxianhuoliProgress = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
 						ui.wuxianhuoliProgress.innerHTML = "任务进度(0/3)";
 						const showTasks = () => {
 							if (ui.wuxianhuoliInfo) return;
@@ -1174,34 +1145,20 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								ui.wuxianhuoliInfo,
 								() => {
 									var uiintro = ui.create.dialog("hidden");
-									uiintro.add(
-										`<div class="text center" style="font-size:18px"><b>任务列表</b></div>`
-									);
+									uiintro.add(`<div class="text center" style="font-size:18px"><b>任务列表</b></div>`);
 									if (typeof _status.wuxianhuoliLevel !== "number") {
-										uiintro.add(
-											`<div class="text center" style="font-size:12px">未获取当前进度，请于一名角色受伤后再查看</div>`
-										);
+										uiintro.add(`<div class="text center" style="font-size:12px">未获取当前进度，请于一名角色受伤后再查看</div>`);
 									} else if (_status.wuxianhuoliLevel < 2) {
-										uiintro.add(`<div class="text center">全场角色造成${
-											_status.wuxianhuoliLevel === 0 ? 3 : 5
-										}点伤害(当前${_status.wuxianhuoliProgress}点)</div>\
+										uiintro.add(`<div class="text center">全场角色造成${_status.wuxianhuoliLevel === 0 ? 3 : 5}点伤害(当前${_status.wuxianhuoliProgress}点)</div>\
 										<div class="text center">奖励：获得一个技能，摸两张牌</div>`);
 									} else {
-										uiintro.add(
-											`<div class="text center">所有任务已完成，无后续任务</div>`
-										);
+										uiintro.add(`<div class="text center">所有任务已完成，无后续任务</div>`);
 									}
-									uiintro.add(
-										`<div class="text center" style="font-size:18px"><b>全局Buff</b></div>`
-									);
+									uiintro.add(`<div class="text center" style="font-size:18px"><b>全局Buff</b></div>`);
 									uiintro.add(
 										`<div class="text">${game.globalBuff
 											.map((buff, ind) => {
-												return (
-													get.translation(buff) +
-													"：" +
-													get.skillInfoTranslation(buff)
-												);
+												return get.translation(buff) + "：" + get.skillInfoTranslation(buff);
 											})
 											.join("<br>")}</div>`
 									);
@@ -1214,8 +1171,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							);
 						};
 						showTasks();
-						if (!_status.postReconnect.wuxianhuoliShowTasks)
-							_status.postReconnect.wuxianhuoliShowTasks = [showTasks, []];
+						if (!_status.postReconnect.wuxianhuoliShowTasks) _status.postReconnect.wuxianhuoliShowTasks = [showTasks, []];
 						const dialog = ui.create.dialog("hidden", "forcebutton");
 						dialog.add(`任务一`);
 						dialog.addText(`任务：全场角色共计造成3点伤害<br>奖励：获得一个技能，摸两张牌`);
@@ -1271,12 +1227,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.videoIdx = lib.status.videoId++;
 					game.broadcastAll(
 						function (id, list) {
-							var dialog = ui.create.dialog(
-								game.me.identity == "fan" ? "选择武将" : "请等待对手选择武将",
-								[list.all, "character"],
-								"起始武将",
-								[list[game.me.identity], "character"]
-							);
+							var dialog = ui.create.dialog(game.me.identity == "fan" ? "选择武将" : "请等待对手选择武将", [list.all, "character"], "起始武将", [list[game.me.identity], "character"]);
 							dialog.videoId = id;
 						},
 						event.videoIdx,
@@ -1304,8 +1255,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -1343,8 +1293,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -1382,8 +1331,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -1421,8 +1369,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								} else {
 									choosing = "对手";
 								}
-								dialog.content.firstChild.innerHTML =
-									choosing + "选择了" + get.translation(link);
+								dialog.content.firstChild.innerHTML = choosing + "选择了" + get.translation(link);
 								for (var i = 0; i < dialog.buttons.length; i++) {
 									if (link.includes(dialog.buttons[i].link)) {
 										if (first) {
@@ -1454,9 +1401,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					for (var i in result) {
 						var current = lib.playerOL[i];
 						if (result[i] == "ai") {
-							result[i] = _status.characterChoice[current.identity].randomGets(
-								_status.mode == "changban" ? 2 : 1
-							);
+							result[i] = _status.characterChoice[current.identity].randomGets(_status.mode == "changban" ? 2 : 1);
 						} else {
 							result[i] = result[i].links;
 						}
@@ -1484,8 +1429,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 		element: {
 			player: {
 				dieAfter: function () {
-					if (_status.mode != "normal" || _status.characterChoice[this.identity].length <= 3)
-						game.checkResult();
+					if (_status.mode != "normal" || _status.characterChoice[this.identity].length <= 3) game.checkResult();
 				},
 				dieAfter2: function () {
 					if (_status.mode != "normal") return;
@@ -1496,12 +1440,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						"step 0";
 						game.delay();
 						"step 1";
-						player
-							.chooseButton(true, [
-								"请选择一名出场武将",
-								[_status.characterChoice[player.identity].slice(0), "character"],
-							])
-							.set("forceDie", true);
+						player.chooseButton(true, ["请选择一名出场武将", [_status.characterChoice[player.identity].slice(0), "character"]]).set("forceDie", true);
 						"step 2";
 						var source = player;
 						var name = result.links[0];
@@ -1627,11 +1566,30 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				direct: true,
 				content: function () {
-					player.chooseUseTarget(
-						"shuiyanqijunx",
-						get.prompt("huwei"),
-						"视为使用一张【水淹七军】"
-					).logSkill = "huwei";
+					player.chooseUseTarget("shuiyanqijunx", get.prompt("huwei"), "视为使用一张【水淹七军】").logSkill = "huwei";
+				},
+			},
+			sgliegong: {
+				audio: "liegong",
+				audioname: ["re_huangzhong"],
+				trigger: { player: "useCardToPlayered" },
+				filter(event, player) {
+					if (event.card.name != "sha" || !player.enemy) return false;
+					return player.enemy.countCards("h") >= player.hp;
+				},
+				check(event, player) {
+					return get.attitude(player, event.target) <= 0;
+				},
+				logTarget: "target",
+				async content(event, trigger, player) {
+					trigger.getParent().directHit.push(trigger.target);
+				},
+				ai: {
+					directHit_ai: true,
+					skillTagFilter(player, tag, arg) {
+						if (get.attitude(player, arg.target) > 0 || arg.card.name != "sha") return false;
+						return player.enemy && player.enemy.countCards("h") >= player.hp;
+					},
 				},
 			},
 			sgkuanggu: {
@@ -1692,20 +1650,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { target: "useCardToTargeted" },
 				direct: true,
 				filter: function (event, player) {
-					return (
-						event.player != player &&
-						event.player.isPhaseUsing() &&
-						(event.card.name == "sha" || get.type(event.card) == "trick")
-					);
+					return event.player != player && event.player.isPhaseUsing() && (event.card.name == "sha" || get.type(event.card) == "trick");
 				},
 				content: function () {
-					if (!player.hasSkill("sgrenwang_one"))
-						player.addTempSkill("sgrenwang_one", "phaseUseEnd");
+					if (!player.hasSkill("sgrenwang_one")) player.addTempSkill("sgrenwang_one", "phaseUseEnd");
 					else if (trigger.player.countDiscardableCards(player, "he")) {
-						player.discardPlayerCard(trigger.player, "he", get.prompt("sgrenwang")).logSkill = [
-							"sgrenwang",
-							trigger.player,
-						];
+						player.discardPlayerCard(trigger.player, "he", get.prompt("sgrenwang")).logSkill = ["sgrenwang", trigger.player];
 					}
 				},
 			},
@@ -1719,10 +1669,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					return get.color(card) == "black";
 				},
 				filter: function (event, player) {
-					return (
-						player.hasSkill("sgduanliang_sss") &&
-						player.countCards("he", { type: ["basic", "equip"], color: "black" })
-					);
+					return player.hasSkill("sgduanliang_sss") && player.countCards("he", { type: ["basic", "equip"], color: "black" });
 				},
 				position: "he",
 				viewAs: { name: "bingliang" },
@@ -1767,8 +1714,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					},
 					effect: {
 						target: function (card, player, target, current) {
-							if (target.countCards("e") && get.tag(card, "respondShan") && current < 0)
-								return 0.6;
+							if (target.countCards("e") && get.tag(card, "respondShan") && current < 0) return 0.6;
 						},
 					},
 				},
@@ -1795,15 +1741,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				audio: 2,
 				trigger: { global: "loseEnd" },
 				filter: function (event, player) {
-					if (
-						event.player == player ||
-						event.player != _status.currentPhase ||
-						event.getParent().name == "useCard"
-					)
-						return false;
+					if (event.player == player || event.player != _status.currentPhase || event.getParent().name == "useCard") return false;
 					for (var i = 0; i < event.cards.length; i++) {
-						if (get.type(event.cards[i]) == "equip" && get.position(event.cards[i]) == "d")
-							return true;
+						if (get.type(event.cards[i]) == "equip" && get.position(event.cards[i]) == "d") return true;
 					}
 					return false;
 				},
@@ -1811,8 +1751,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					var list = [];
 					for (var i = 0; i < trigger.cards.length; i++) {
-						if (get.type(trigger.cards[i]) == "equip" && get.position(trigger.cards[i]) == "d")
-							list.push(trigger.cards[i]);
+						if (get.type(trigger.cards[i]) == "equip" && get.position(trigger.cards[i]) == "d") list.push(trigger.cards[i]);
 					}
 					if (list.length) player.gain(list, "gain2");
 				},
@@ -1850,10 +1789,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					player.draw(hs.length, "nodelay");
 					for (var i = 0; i < hs.length; i++) {
 						hs[i].fix();
-						ui.cardPile.insertBefore(
-							hs[i],
-							ui.cardPile.childNodes[get.rand(ui.cardPile.childElementCount)]
-						);
+						ui.cardPile.insertBefore(hs[i], ui.cardPile.childNodes[get.rand(ui.cardPile.childElementCount)]);
 					}
 				},
 			},
@@ -1888,7 +1824,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (!event.card || event.card.name !== "sha") return false;
 					return (
 						game
-							.getGlobalHistory("everything", (evt) => {
+							.getGlobalHistory("everything", evt => {
 								if (evt.name !== "damage") return false;
 								return evt.card && evt.card.name === "sha";
 							})
@@ -1906,13 +1842,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			wuxianhuoli_liuanhuaming: {
 				trigger: {
 					player: "loseAfter",
-					global: [
-						"equipAfter",
-						"addJudgeAfter",
-						"gainAfter",
-						"loseAsyncAfter",
-						"addToExpansionAfter",
-					],
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
 					if (player === _status.currentPhase) return false;
@@ -1937,7 +1867,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				async content(_, __, player) {
 					const cards = [];
 					for (const type of ["basic", "trick"]) {
-						const card = get.cardPile((card) => {
+						const card = get.cardPile(card => {
 							const typex = get.type2(card, false);
 							return type === typex;
 						});
@@ -1962,12 +1892,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							_status.wuxianhuoliProgress = num;
 							_status.wuxianhuoliLevel = level;
 							if (!ui.wuxianhuoliProgress) {
-								ui.wuxianhuoliProgress = get.is.phoneLayout()
-									? ui.create.div(".touchinfo.left", ui.window)
-									: ui.create.div(ui.gameinfo);
+								ui.wuxianhuoliProgress = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
 							}
-							ui.wuxianhuoliProgress.innerHTML =
-								"任务进度(" + num + "/" + (level === 0 ? 3 : 5) + ")";
+							ui.wuxianhuoliProgress.innerHTML = "任务进度(" + num + "/" + (level === 0 ? 3 : 5) + ")";
 						},
 						_status.wuxianhuoliProgress,
 						_status.wuxianhuoliLevel
@@ -2058,7 +1985,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					if (withol && !event.resultOL) {
-						await new Promise((resolve) => {
+						await new Promise(resolve => {
 							const interval = setInterval(() => {
 								if (results.length === players.length) {
 									resolve();
@@ -2069,7 +1996,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					if (ai_targets.length > 0) {
 						withai = true;
-						await new Promise((resolve) => {
+						await new Promise(resolve => {
 							const interval = setInterval(() => {
 								if (results.length === players.length) {
 									resolve();
@@ -2106,17 +2033,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								return;
 							}
 							if (!ui.wuxianhuoliProgress) {
-								ui.wuxianhuoliProgress = get.is.phoneLayout()
-									? ui.create.div(".touchinfo.left", ui.window)
-									: ui.create.div(ui.gameinfo);
+								ui.wuxianhuoliProgress = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
 							}
-							ui.wuxianhuoliProgress.innerHTML =
-								"任务进度(" + num + "/" + (level === 0 ? 3 : 5) + ")";
+							ui.wuxianhuoliProgress.innerHTML = "任务进度(" + num + "/" + (level === 0 ? 3 : 5) + ")";
 						},
 						_status.wuxianhuoliProgress,
 						_status.wuxianhuoliLevel
 					);
-					await game.asyncDelay();
+					await game.delay();
 				},
 				getSkills(num = 6) {
 					let allList = _status.characterlist.slice(0);
@@ -2134,18 +2058,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							game.expandSkills(list2);
 							for (let k = 0; k < list2.length; k++) {
 								let info = lib.skill[list2[k]];
-								if (
-									!info ||
-									info.silent ||
-									info.juexingji ||
-									info.hiddenSkill ||
-									info.dutySkill ||
-									info.zhuSkill ||
-									info.unique ||
-									info.groupSkill
-								)
-									continue;
-								if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
+								if (!info || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill || info.zhuSkill || info.unique || info.groupSkill) continue;
+								if (info.ai && (info.ai.combo || info.ai.neg)) continue;
 								list.add(name);
 								if (!map[name]) map[name] = [];
 								map[name].push(skills2[j]);
@@ -2161,7 +2075,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				async contentx(event) {
 					_status.noclearcountdown = true;
 					const controls = [
-						(link) => {
+						link => {
 							const evt = get.event();
 							evt.result = { refresh: true };
 							event.control.classList.add("disabled");
@@ -2182,17 +2096,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							.chooseControl(skills)
 							.set(
 								"choiceList",
-								skills.map((skill) => {
-									return (
-										'<div class="skill">【' +
-										get.translation(
-											lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)
-										) +
-										"】</div>" +
-										"<div>" +
-										get.skillInfoTranslation(skill, game.me) +
-										"</div>"
-									);
+								skills.map(skill => {
+									return '<div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(skill, game.me) + "</div>";
 								})
 							)
 							.set("displayIndex", false)
@@ -2218,10 +2123,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			zhangjiao: "张角",
 			old_caoren: "曹仁",
 			old_zhoutai: "周泰",
-			shuiyanqijunx_info:
-				"出牌阶段，对一名其他角色使用。目标角色选择一项：1、弃置装备区里的所有牌；2、受到你造成的1点伤害。",
-			guohe_info:
-				"出牌阶段，对有牌的一名其他角色使用。你选择一项：①弃置其装备区里的一张牌。②观看其手牌并弃置其中的一张。",
+			shuiyanqijunx_info: "出牌阶段，对一名其他角色使用。目标角色选择一项：1、弃置装备区里的所有牌；2、受到你造成的1点伤害。",
+			guohe_info: "出牌阶段，对有牌的一名其他角色使用。你选择一项：①弃置其装备区里的一张牌。②观看其手牌并弃置其中的一张。",
 			shunshou_info: "出牌阶段，对距离为1且有牌的一名其他角色使用。你获得其的一张牌。",
 		},
 		translate: {
@@ -2250,22 +2153,20 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			sgzhiheng: "制衡",
 			sgzhiheng_info: "出牌阶段限一次，你可以弃置至多两张牌，然后摸等量的牌。",
 			xiechan: "挟缠",
-			xiechan_info:
-				"限定技，出牌阶段，你可以和对手拼点。若你赢/没赢，你/其视为对其/你使用一张【决斗】。",
+			xiechan_info: "限定技，出牌阶段，你可以和对手拼点。若你赢/没赢，你/其视为对其/你使用一张【决斗】。",
 			huwei: "虎威",
 			huwei_info: "当你登场时，你可以视为使用一张【水淹七军】。",
+			sgliegong: "烈弓",
+			sgliegong_info: "当你使用【杀】指定目标后，若对手的手牌数大于等于你的体力值，你可令此【杀】不可被【闪】响应。",
 			sgkuanggu: "狂骨",
 			sgkuanggu_info: "当你造成伤害后，若你已受伤，你可以进行判定：若结果为黑色，你回复1点体力。",
 			suzi: "肃资",
 			cangji: "藏机",
-			cangji_info:
-				"当你死亡时，你可以将装备区内的所有牌移动到游戏外。若如此做，你的下一名角色登场时，你将这些牌置入你的装备区。",
+			cangji_info: "当你死亡时，你可以将装备区内的所有牌移动到游戏外。若如此做，你的下一名角色登场时，你将这些牌置入你的装备区。",
 			sgrenwang: "仁望",
-			sgrenwang_info:
-				"当你于一名其他角色的出牌阶段内成为该角色使用的【杀】或普通锦囊牌的目标后，若此牌不是其本阶段内对你使用的第一张【杀】或普通锦囊牌，则你可以弃置该角色的一张牌。",
+			sgrenwang_info: "当你于一名其他角色的出牌阶段内成为该角色使用的【杀】或普通锦囊牌的目标后，若此牌不是其本阶段内对你使用的第一张【杀】或普通锦囊牌，则你可以弃置该角色的一张牌。",
 			sgduanliang: "断粮",
-			sgduanliang_info:
-				"出牌阶段，若你本回合内使用牌指定过其他角色为目标，则你可以将一张黑色基本牌或装备牌当做【兵粮寸断】使用。",
+			sgduanliang_info: "出牌阶段，若你本回合内使用牌指定过其他角色为目标，则你可以将一张黑色基本牌或装备牌当做【兵粮寸断】使用。",
 			sgqingguo: "倾国",
 			sgqingguo_info: "你可以将一张装备区内的牌当做【闪】使用或打出。",
 			pianyi: "翩仪",
@@ -2276,12 +2177,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			shenju_info: "锁定技，你的手牌上限+X（X为你对手的体力值）。",
 		},
 		help: {
-			血战长坂:
-				'<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>选将阶段<br>双方在游戏开始时由系统随机分配身份。分配到先手身份的玩家优先出牌，分配到后手身份的玩家优先选将。<br>双方各自随机获得3名暗置武将，同时从将池中随机选出6名明置武将，由后手玩家开始，按照一次1张-2张-2张-1张的顺序，轮流选择获得明置武将。之后双方各从自己的6名武将中选择2名分别作为主将和副将进行游戏。<li>胜利条件<br>对方死亡。' +
-				"<li>双将规则<br>双将主将决定角色的性别和势力，体力上限为主副将体力上限的平均值，向下取整。体力上限为3的角色可在游戏开始后更换一次起始手牌。<li>牌堆<br>牌堆中移除【木牛流马】【闪电】，♣花色的【藤甲】和【无懈可击 ♦️Q】️</ul>",
-			无限火力:
-				'<div style="margin:10px">1ｖ1火力全开模式</div><ul style="margin-top:0">（来自三国杀国际服）<li>所有角色的初始体力值和体力上限均为10，护甲均为0<li>每局游戏会有一个固定的Buff和一个随机的Buff，对所有角色生效' +
-				"<li>游戏全程会有两个任务，分别为“所有角色造成3点伤害”和“所有角色造成5点伤害”，在任务一完成后才会解锁任务二。<br>每当任务完成时，系统会发放奖励：所有角色观看三个随机的技能并获得其中一个（每名角色每局有一次刷新的机会），然后摸两张牌。",
+			血战长坂: '<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>选将阶段<br>双方在游戏开始时由系统随机分配身份。分配到先手身份的玩家优先出牌，分配到后手身份的玩家优先选将。<br>双方各自随机获得3名暗置武将，同时从将池中随机选出6名明置武将，由后手玩家开始，按照一次1张-2张-2张-1张的顺序，轮流选择获得明置武将。之后双方各从自己的6名武将中选择2名分别作为主将和副将进行游戏。<li>胜利条件<br>对方死亡。' + "<li>双将规则<br>双将主将决定角色的性别和势力，体力上限为主副将体力上限的平均值，向下取整。体力上限为3的角色可在游戏开始后更换一次起始手牌。<li>牌堆<br>牌堆中移除【木牛流马】【闪电】，♣花色的【藤甲】和【无懈可击 ♦️Q】️</ul>",
+			无限火力: '<div style="margin:10px">1ｖ1火力全开模式</div><ul style="margin-top:0">（来自三国杀国际服）<li>所有角色的初始体力值和体力上限均为10，护甲均为0<li>每局游戏会有一个固定的Buff和一个随机的Buff，对所有角色生效' + "<li>游戏全程会有两个任务，分别为“所有角色造成3点伤害”和“所有角色造成5点伤害”，在任务一完成后才会解锁任务二。<br>每当任务完成时，系统会发放奖励：所有角色观看三个随机的技能并获得其中一个（每名角色每局有一次刷新的机会），然后摸两张牌。",
 		},
 	};
-});
+};

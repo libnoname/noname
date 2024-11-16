@@ -3803,6 +3803,8 @@ div:hover > .intro {
 	background: rgba(0, 0, 0, 0.2);
 	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
 	border-radius: 4px;
+	padding-left: 30px;
+	padding-right: 30px;
 }
 
 .tdnode {

@@ -1,3 +1,5 @@
+// 通过比对本地文件来自动修改asset.js和update.js
+// 年久失修
 var fs = require("fs");
 var path = require("path");
 var exec = require("child_process").exec;
@@ -12,7 +14,7 @@ if (process.argv[2]) {
 	if (/[0-9]/.test(process.argv[2][0])) {
 		newversion = true;
 		updates.update = updates.version;
-		updates.version = "1.9." + process.argv[2];
+		updates.version = "1.10." + process.argv[2];
 		commit = updates.version;
 	} else {
 		commit = process.argv[2];

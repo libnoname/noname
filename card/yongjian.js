@@ -509,24 +509,20 @@ game.import("card", function () {
 				},
 			},
 			qixingbaodao: {
-				trigger: { player: "equipBegin" },
+				trigger: { player: "equipAfter" },
 				forced: true,
 				equipSkill: true,
-				filter: function (event, player) {
-					return (
-						event.card.name == "qixingbaodao" &&
-						player.hasCard(function (card) {
-							return card != event.card;
-						}, "ej")
-					);
+				filter(event, player){
+					if(event.card.name!="qixingbaodao") return false;
+					return event.card?.cards.length > 0 && player.hasCard(card => {
+						return !event.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "qixingbaodao");
+					}, "ej");
 				},
-				content: function () {
-					var cards = player.getCards("ej", function (card) {
-						return (
-							card != trigger.card && lib.filter.cardDiscardable(card, player, "qixingbaodao")
-						);
+				async content(event, trigger, player) {
+					const cards = player.getCards("ej", card => {
+						return !trigger.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "qixingbaodao");
 					});
-					if (cards.length) player.discard(cards);
+					if (cards.length > 0) await player.discard(cards);
 				},
 			},
 			g_du: {
@@ -738,6 +734,7 @@ game.import("card", function () {
 					if (!player.needsToDiscard() && get.position(card) == "h") return 0;
 					return 1 + Math.random();
 				},
+				prompt: "出牌阶段，你可将一张拥有“赠”标签的手牌区装备牌置于一名其他角色的装备区内，或将一张拥有“赠”标签的手牌区非装备牌正面朝上交给一名其他角色。",
 				content: () => {
 					player.gift(cards, target);
 				},
@@ -839,7 +836,7 @@ game.import("card", function () {
 			yitianjian_info:
 				"当你因执行【杀】的效果而造成伤害后，若你已受伤，则你可弃置一张手牌，然后回复1点体力。",
 			qixingbaodao: "七星宝刀",
-			qixingbaodao_info: "锁定技。当此牌进入你的装备区时，你弃置装备区和判定区内的所有其他牌。",
+			qixingbaodao_info: "锁定技。当此牌进入你的装备区后，你弃置装备区和判定区内的所有其他牌。",
 			duanjian: "断剑",
 			duanjian_info: "这是一把坏掉的武器……",
 			duanjian_append: '<span class="text" style="font-family: yuanli">不要因为手快而装给自己。</span>',
@@ -861,8 +858,6 @@ game.import("card", function () {
 			xinge_append: '<span class="text" style="font-family: yuanli">咕咕咕。</span>',
 
 			_gifting: "赠予",
-			_gifting_info:
-				"出牌阶段，你可将一张拥有“赠”标签的手牌区装备牌置于一名其他角色的装备区内，或将一张拥有“赠”标签的手牌区非装备牌正面朝上交给一名其他角色。",
 		},
 		list: [
 			["spade", 1, "guaguliaodu"],

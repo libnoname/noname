@@ -1,8 +1,12 @@
-"use strict";
-game.import("mode", function (lib, game, ui, get, ai, _status) {
+import { lib, game, ui, get, ai, _status } from "../noname.js";
+export const type = "mode";
+/**
+ * @type { () => importModeConfig }
+ */
+export default () => {
 	return {
 		name: "stone",
-		start: function () {
+		start() {
 			"step 0";
 			lib.init.css(lib.assetURL + "layout/mode/", "stone");
 			_status.mode = "deck";
@@ -149,19 +153,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								};
 								for (var i = 0; i < list.length; i++) {
 									if (lib.card[list[i][2]].type == "stonecard") {
-										if (
-											lib.card[list[i][2]].career &&
-											lib.careerList.includes(lib.card[list[i][2]].career)
-										) {
+										if (lib.card[list[i][2]].career && lib.careerList.includes(lib.card[list[i][2]].career)) {
 											careerspell[lib.card[list[i][2]].career].push(list[i]);
 										} else {
 											ns.push(list[i]);
 										}
 									} else {
-										if (
-											lib.card[list[i][2]].career &&
-											lib.careerList.includes(lib.card[list[i][2]].career)
-										) {
+										if (lib.card[list[i][2]].career && lib.careerList.includes(lib.card[list[i][2]].career)) {
 											career[lib.card[list[i][2]].career].push(list[i]);
 										} else {
 											nl.push(list[i]);
@@ -169,21 +167,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									}
 								}
 								for (var i = 0; i < lib.careerList.length; i++) {
-									result.list[get.translation(lib.careerList[i])] = careerspell[
-										lib.careerList[i]
-									].concat(career[lib.careerList[i]]);
-									result[
-										"法术·" +
-											get.translation(lib.careerList[i]) +
-											"_link:" +
-											lib.careerList[i]
-									] = careerspell[lib.careerList[i]];
-									result[
-										"随从·" +
-											get.translation(lib.careerList[i]) +
-											"_link:" +
-											lib.careerList[i]
-									] = career[lib.careerList[i]];
+									result.list[get.translation(lib.careerList[i])] = careerspell[lib.careerList[i]].concat(career[lib.careerList[i]]);
+									result["法术·" + get.translation(lib.careerList[i]) + "_link:" + lib.careerList[i]] = careerspell[lib.careerList[i]];
+									result["随从·" + get.translation(lib.careerList[i]) + "_link:" + lib.careerList[i]] = career[lib.careerList[i]];
 								}
 								result.list["中立"] = ns.concat(nl);
 								result["法术·中立"] = ns;
@@ -197,8 +183,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							var buttonName = cardDialog.buttons[i].link[2];
 							buttonName = buttonName.slice(0, buttonName.indexOf("_stonecharacter"));
 							buttonName = lib.character[buttonName];
-							cardDialog.buttons[i].node.info.innerHTML =
-								buttonName[5][1] + "/" + buttonName[2];
+							cardDialog.buttons[i].node.info.innerHTML = buttonName[5][1] + "/" + buttonName[2];
 						}
 						lib.setIntro(cardDialog.buttons[i]);
 					}
@@ -315,75 +300,57 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							updateCardDialog();
 						}
 					};
-					var newDeck = ui.create.div(
-						".menubutton.large.create",
-						"新建卡组",
-						deckList,
-						function (e) {
-							if (this.innerHTML == "新建卡组") {
-								this.classList.toggle("active");
-								if (this.classList.contains("active")) {
-									careerList.classList.add("shown");
-								} else {
-									careerList.classList.remove("shown");
-								}
+					var newDeck = ui.create.div(".menubutton.large.create", "新建卡组", deckList, function (e) {
+						if (this.innerHTML == "新建卡组") {
+							this.classList.toggle("active");
+							if (this.classList.contains("active")) {
+								careerList.classList.add("shown");
 							} else {
-								cardDialog.classList.remove("shown");
-								controls.classList.remove("shown");
-								this.innerHTML = "新建卡组";
-								this.classList.remove("active");
-								var editing = cardDialog.editing;
-								if (editing) {
-									editing.content.deck.length = 0;
-									for (var i = 0; i < deckContainer.childElementCount; i++) {
-										editing.content.deck.push(deckContainer.childNodes[i].name);
-									}
-									editing.content.deck.sort(function (a, b) {
-										if (a > b) return 1;
-										if (a < b) return -1;
-										return 0;
-									});
-									if (editing.origin) {
-										for (var i = 0; i < listContainer.childElementCount; i++) {
-											if (listContainer.childNodes[i].name == editing.origin) {
-												listContainer.childNodes[i].name = editing.name;
-												listContainer.childNodes[i].firstChild.innerHTML =
-													editing.name;
-												break;
-											}
-										}
-										delete lib.storage.deckList[editing.origin];
-									} else if (!lib.storage.deckList[editing.name]) {
-										var deckitem = ui.create.div(
-											".deckitem.shadowed",
-											"<span>" + editing.name + "</span>",
-											listContainer,
-											editDeck
-										);
-										ui.create.div(".menubutton.round", deckitem).dataset.career =
-											editing.content.career;
-										deckitem.name = editing.name;
-									}
-									lib.storage.deckList[editing.name] = editing.content;
-								}
-								game.save("deckList", lib.storage.deckList);
-								listContainer.style.transform = "";
-								deckContainer.classList.remove("shown");
-								updateCardDialog();
+								careerList.classList.remove("shown");
 							}
-							e.stopPropagation();
+						} else {
+							cardDialog.classList.remove("shown");
+							controls.classList.remove("shown");
+							this.innerHTML = "新建卡组";
+							this.classList.remove("active");
+							var editing = cardDialog.editing;
+							if (editing) {
+								editing.content.deck.length = 0;
+								for (var i = 0; i < deckContainer.childElementCount; i++) {
+									editing.content.deck.push(deckContainer.childNodes[i].name);
+								}
+								editing.content.deck.sort(function (a, b) {
+									if (a > b) return 1;
+									if (a < b) return -1;
+									return 0;
+								});
+								if (editing.origin) {
+									for (var i = 0; i < listContainer.childElementCount; i++) {
+										if (listContainer.childNodes[i].name == editing.origin) {
+											listContainer.childNodes[i].name = editing.name;
+											listContainer.childNodes[i].firstChild.innerHTML = editing.name;
+											break;
+										}
+									}
+									delete lib.storage.deckList[editing.origin];
+								} else if (!lib.storage.deckList[editing.name]) {
+									var deckitem = ui.create.div(".deckitem.shadowed", "<span>" + editing.name + "</span>", listContainer, editDeck);
+									ui.create.div(".menubutton.round", deckitem).dataset.career = editing.content.career;
+									deckitem.name = editing.name;
+								}
+								lib.storage.deckList[editing.name] = editing.content;
+							}
+							game.save("deckList", lib.storage.deckList);
+							listContainer.style.transform = "";
+							deckContainer.classList.remove("shown");
+							updateCardDialog();
 						}
-					);
+						e.stopPropagation();
+					});
 					var listContainer = ui.create.div(".list-container", deckList);
 					for (var i in lib.storage.deckList) {
-						var deckitem = ui.create.div(
-							".deckitem.shadowed",
-							"<span>" + i + "</span>",
-							listContainer,
-							editDeck
-						);
-						ui.create.div(".menubutton.round", deckitem).dataset.career =
-							lib.storage.deckList[i].career;
+						var deckitem = ui.create.div(".deckitem.shadowed", "<span>" + i + "</span>", listContainer, editDeck);
+						ui.create.div(".menubutton.round", deckitem).dataset.career = lib.storage.deckList[i].career;
 						deckitem.name = i;
 					}
 					var deckContainer = ui.create.div(".list-container.deck", deckList);
@@ -469,9 +436,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						uiintro.listen(function (e) {
 							e.stopPropagation();
 						});
-						uiintro.add(
-							'剩余 <span style="font-family:' + "xinwei" + '">' + game.me.deckCards.length
-						);
+						uiintro.add('剩余 <span style="font-family:' + "xinwei" + '">' + game.me.deckCards.length);
 						uiintro.addSmall([game.me.deckCards, "card"]);
 						return uiintro;
 					},
@@ -897,10 +862,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					this.actcharacterlist[i] = fellow;
-					game.addVideo("stonePosition", null, [
-						fellow.dataset.position,
-						i + 4 + (this == game.me ? 0 : 4),
-					]);
+					game.addVideo("stonePosition", null, [fellow.dataset.position, i + 4 + (this == game.me ? 0 : 4)]);
 					fellow.dataset.position = i + 4 + (this == game.me ? 0 : 4);
 					return this;
 				},
@@ -1062,21 +1024,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 			},
 		},
-		beastList: [
-			"stone_misha",
-			"stone_leiouke",
-			"stone_huofu",
-			"stone_caoyuanshi",
-			"stone_jiewangzhu",
-			"stone_huangjialeixiang",
-			"stone_damoshatuo",
-			"stone_tujiu",
-			"stone_senlinlang",
-			"stone_fennuxiaoji",
-			"stone_juxingchanchu",
-			"stone_yanjingshe",
-			"stone_yuanhou",
-		],
+		beastList: ["stone_misha", "stone_leiouke", "stone_huofu", "stone_caoyuanshi", "stone_jiewangzhu", "stone_huangjialeixiang", "stone_damoshatuo", "stone_tujiu", "stone_senlinlang", "stone_fennuxiaoji", "stone_juxingchanchu", "stone_yanjingshe", "stone_yuanhou"],
 		cardPack: {
 			mode_stone: [
 				"spell_xiaoshi",
@@ -1205,232 +1153,50 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 		},
 		characterPack: {
 			mode_stone: {
-				stone_tutengyongshi: [
-					"male",
-					"wei",
-					4,
-					["shaman_jili"],
-					["minskin", "stone"],
-					[4, 2, "shaman"],
-				],
+				stone_tutengyongshi: ["male", "wei", 4, ["shaman_jili"], ["minskin", "stone"], [4, 2, "shaman"]],
 				stone_xuejuren: ["male", "wei", 2, ["shaman_xueju"], ["minskin", "stone"], [1, 1, "shaman"]],
 				stone_tuyuansu: ["male", "qun", 5, ["lschaofeng"], ["minskin", "stone"], [5, 4, "shaman"]],
 				stone_huoyuansu: ["male", "shu", 3, ["shaman_huoxi"], ["minskin", "stone"], [4, 3, "shaman"]],
-				stone_fachao: [
-					"male",
-					"wei",
-					3,
-					["shaman_tuteng", "shaman_fachao"],
-					["minskin", "stone"],
-					[3, 0, "shaman"],
-				],
-				stone_huoshe: [
-					"male",
-					"shu",
-					3,
-					["shaman_tuteng", "shaman_huoshe"],
-					["minskin", "stone"],
-					[3, 0, "shaman"],
-				],
-				stone_huoli: [
-					"male",
-					"wei",
-					3,
-					["shaman_tuteng", "shaman_huoli"],
-					["minskin", "stone"],
-					[2, 0, "shaman"],
-				],
-				stone_huoyanweishi: [
-					"male",
-					"shu",
-					4,
-					["shaman_zhuhuo"],
-					["minskin", "stone"],
-					[4, 1, "shaman"],
-				],
-				stone_tutengshi: [
-					"female",
-					"wei",
-					2,
-					["shaman_peiyu"],
-					["minskin", "stone"],
-					[3, 3, "shaman"],
-				],
-				stone_shachuisaman: [
-					"male",
-					"qun",
-					3,
-					["shaman_fengnu"],
-					["minskin", "stone"],
-					[4, 4, "shaman"],
-				],
-				stone_wanshiyuansu: [
-					"male",
-					"qun",
-					3,
-					["shaman_zoushi"],
-					["minskin", "stone"],
-					[3, 1, "shaman"],
-				],
-				stone_shalinxingzhe: [
-					"male",
-					"qun",
-					4,
-					["shaman_anhun"],
-					["minskin", "stone"],
-					[4, 2, "shaman"],
-				],
+				stone_fachao: ["male", "wei", 3, ["shaman_tuteng", "shaman_fachao"], ["minskin", "stone"], [3, 0, "shaman"]],
+				stone_huoshe: ["male", "shu", 3, ["shaman_tuteng", "shaman_huoshe"], ["minskin", "stone"], [3, 0, "shaman"]],
+				stone_huoli: ["male", "wei", 3, ["shaman_tuteng", "shaman_huoli"], ["minskin", "stone"], [2, 0, "shaman"]],
+				stone_huoyanweishi: ["male", "shu", 4, ["shaman_zhuhuo"], ["minskin", "stone"], [4, 1, "shaman"]],
+				stone_tutengshi: ["female", "wei", 2, ["shaman_peiyu"], ["minskin", "stone"], [3, 3, "shaman"]],
+				stone_shachuisaman: ["male", "qun", 3, ["shaman_fengnu"], ["minskin", "stone"], [4, 4, "shaman"]],
+				stone_wanshiyuansu: ["male", "qun", 3, ["shaman_zoushi"], ["minskin", "stone"], [3, 1, "shaman"]],
+				stone_shalinxingzhe: ["male", "qun", 4, ["shaman_anhun"], ["minskin", "stone"], [4, 2, "shaman"]],
 
-				stone_kuangyedoushi: [
-					"male",
-					"wu",
-					3,
-					["druid_nuhuo"],
-					["minskin", "stone"],
-					[4, 2, "druid"],
-				],
-				stone_conglinshouwei: [
-					"male",
-					"wu",
-					3,
-					["druid_huwei"],
-					["minskin", "stone"],
-					[4, 2, "druid"],
-				],
+				stone_kuangyedoushi: ["male", "wu", 3, ["druid_nuhuo"], ["minskin", "stone"], [4, 2, "druid"]],
+				stone_conglinshouwei: ["male", "wu", 3, ["druid_huwei"], ["minskin", "stone"], [4, 2, "druid"]],
 				stone_baohuzhishu: ["male", "qun", 6, ["lschaofeng"], ["minskin", "stone"], [6, 4, "druid"]],
 				stone_liebao: ["male", "wei", 3, ["stone_chongfeng"], ["minskin", "stone"], [3, 2, "druid"]],
 				stone_zongxiong: ["male", "shu", 4, ["lschaofeng"], ["minskin", "stone"], [4, 2, "druid"]],
-				stone_baoqishi: [
-					"female",
-					"wei",
-					2,
-					["druid_chengzhang"],
-					["minskin", "stone"],
-					[2, 2, "druid"],
-				],
-				stone_renyaqishi: [
-					"female",
-					"wei",
-					1,
-					["druid_renya"],
-					["minskin", "stone"],
-					[1, 1, "druid"],
-				],
-				stone_huangyeqishi: [
-					"male",
-					"wei",
-					4,
-					["druid_chicheng"],
-					["minskin", "stone"],
-					[5, 2, "druid"],
-				],
-				stone_huoshanxiemu: [
-					"male",
-					"wei",
-					3,
-					["druid_juhuo", "lschaofeng"],
-					["minskin", "stone"],
-					[5, 6, "druid"],
-				],
-				stone_conglinxiaoshou: [
-					"male",
-					"wei",
-					3,
-					["druid_yuehuo"],
-					["minskin", "stone"],
-					[4, 4, "druid"],
-				],
-				stone_lindishuyao: [
-					"female",
-					"wei",
-					3,
-					["druid_yeyou"],
-					["minskin", "stone"],
-					[3, 3, "druid"],
-				],
-				stone_xunmenglong: [
-					"male",
-					"wei",
-					2,
-					["druid_qicheng"],
-					["minskin", "stone"],
-					[3, 3, "druid"],
-				],
+				stone_baoqishi: ["female", "wei", 2, ["druid_chengzhang"], ["minskin", "stone"], [2, 2, "druid"]],
+				stone_renyaqishi: ["female", "wei", 1, ["druid_renya"], ["minskin", "stone"], [1, 1, "druid"]],
+				stone_huangyeqishi: ["male", "wei", 4, ["druid_chicheng"], ["minskin", "stone"], [5, 2, "druid"]],
+				stone_huoshanxiemu: ["male", "wei", 3, ["druid_juhuo", "lschaofeng"], ["minskin", "stone"], [5, 6, "druid"]],
+				stone_conglinxiaoshou: ["male", "wei", 3, ["druid_yuehuo"], ["minskin", "stone"], [4, 4, "druid"]],
+				stone_lindishuyao: ["female", "wei", 3, ["druid_yeyou"], ["minskin", "stone"], [3, 3, "druid"]],
+				stone_xunmenglong: ["male", "wei", 2, ["druid_qicheng"], ["minskin", "stone"], [3, 3, "druid"]],
 
-				stone_caoyuanshi: [
-					"male",
-					"qun",
-					5,
-					["hunter_nuhou"],
-					["minskin", "stone"],
-					[5, 2, "hunter"],
-				],
+				stone_caoyuanshi: ["male", "qun", 5, ["hunter_nuhou"], ["minskin", "stone"], [5, 2, "hunter"]],
 				stone_leiouke: ["male", "shu", 2, ["hunter_zhanhuo"], ["minskin", "stone"], [3, 1, "hunter"]],
 				stone_huofu: ["male", "qun", 2, ["stone_chongfeng"], ["minskin", "stone"], [3, 4, "hunter"]],
 				stone_misha: ["male", "shu", 3, ["lschaofeng"], ["minskin", "stone"], [3, 3, "hunter"]],
-				stone_jiewangzhu: [
-					"male",
-					"wu",
-					1,
-					["hunter_jiewang"],
-					["minskin", "stone"],
-					[1, 2, "hunter"],
-				],
-				stone_xunshoushi: [
-					"male",
-					"qun",
-					2,
-					["hunter_xunshou"],
-					["minskin", "stone"],
-					[4, 3, "hunter"],
-				],
-				stone_senlinlang: [
-					"male",
-					"qun",
-					1,
-					["hunter_qunxi"],
-					["minskin", "stone"],
-					[1, 2, "hunter"],
-				],
+				stone_jiewangzhu: ["male", "wu", 1, ["hunter_jiewang"], ["minskin", "stone"], [1, 2, "hunter"]],
+				stone_xunshoushi: ["male", "qun", 2, ["hunter_xunshou"], ["minskin", "stone"], [4, 3, "hunter"]],
+				stone_senlinlang: ["male", "qun", 1, ["hunter_qunxi"], ["minskin", "stone"], [1, 2, "hunter"]],
 				stone_tujiu: ["male", "qun", 3, ["hunter_mishi"], ["minskin", "stone"], [3, 2, "hunter"]],
-				stone_muyangren: [
-					"male",
-					"qun",
-					3,
-					["hunter_muyang"],
-					["minskin", "stone"],
-					[4, 3, "hunter"],
-				],
+				stone_muyangren: ["male", "qun", 3, ["hunter_muyang"], ["minskin", "stone"], [4, 3, "hunter"]],
 				stone_jujishou: ["male", "qun", 2, ["hunter_juji"], ["minskin", "stone"], [2, 2, "hunter"]],
-				stone_damoshatuo: [
-					"male",
-					"qun",
-					3,
-					["hunter_dusha"],
-					["minskin", "stone"],
-					[3, 3, "hunter"],
-				],
-				stone_huangjialeixiang: [
-					"male",
-					"qun",
-					2,
-					["hunter_chuanlin"],
-					["minskin", "stone"],
-					[2, 3, "hunter"],
-				],
+				stone_damoshatuo: ["male", "qun", 3, ["hunter_dusha"], ["minskin", "stone"], [3, 3, "hunter"]],
+				stone_huangjialeixiang: ["male", "qun", 2, ["hunter_chuanlin"], ["minskin", "stone"], [2, 3, "hunter"]],
 
 				stone_shuiyuansu: ["male", "wei", 4, ["mage_bingdong"], ["minskin", "stone"], [4, 2, "mage"]],
 				stone_wushixuetu: ["female", "wu", 1, ["mage_zhufa"], ["minskin", "stone"], [1, 2, "mage"]],
 				stone_huoyao: ["male", "shu", 3, ["mage_lieyan"], ["minskin", "stone"], [3, 1, "mage"]],
 				stone_falifulong: ["male", "shu", 2, ["mage_tunfa"], ["minskin", "stone"], [1, 1, "mage"]],
-				stone_yingxiongzhihun: [
-					"male",
-					"wei",
-					1,
-					["mage_minghuo"],
-					["minskin", "stone"],
-					[1, 2, "mage"],
-				],
+				stone_yingxiongzhihun: ["male", "wei", 1, ["mage_minghuo"], ["minskin", "stone"], [1, 2, "mage"]],
 				stone_shifazhe: ["male", "qun", 3, ["mage_shifa"], ["minskin", "stone"], [3, 3, "mage"]],
 				stone_aoshushi: ["male", "qun", 3, ["mage_aoshu"], ["minskin", "stone"], [3, 2, "mage"]],
 				stone_faqishi: ["male", "qun", 4, ["mage_jili"], ["minskin", "stone"], [4, 2, "mage"]],
@@ -1439,451 +1205,73 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				stone_yanshushi: ["male", "qun", 2, ["mage_yanshu"], ["minskin", "stone"], [4, 4, "mage"]],
 				stone_xulingwushi: ["male", "qun", 2, ["mage_pingxu"], ["minskin", "stone"], [3, 3, "mage"]],
 
-				stone_hudunren: [
-					"male",
-					"qun",
-					2,
-					["paladin_hudun"],
-					["minskin", "stone"],
-					[2, 2, "paladin"],
-				],
-				stone_junxuguan: [
-					"male",
-					"qun",
-					3,
-					["paladin_buji"],
-					["minskin", "stone"],
-					[4, 1, "paladin"],
-				],
-				stone_yurenqishi: [
-					"male",
-					"qun",
-					2,
-					["paladin_zhaochao"],
-					["minskin", "stone"],
-					[4, 2, "paladin"],
-				],
-				stone_chidunweishi: [
-					"male",
-					"qun",
-					3,
-					["paladin_chidun"],
-					["minskin", "stone"],
-					[3, 2, "paladin"],
-				],
-				stone_liewangshouwei: [
-					"male",
-					"qun",
-					5,
-					["paladin_shouwei"],
-					["minskin", "stone"],
-					[5, 2, "paladin"],
-				],
-				stone_longwangpeiou: [
-					"female",
-					"qun",
-					4,
-					["paladin_zhaohuan"],
-					["minskin", "stone"],
-					[5, 4, "paladin"],
-				],
-				stone_baoweizhe: [
-					"male",
-					"qun",
-					2,
-					["paladin_baowei"],
-					["minskin", "stone"],
-					[2, 1, "paladin"],
-				],
+				stone_hudunren: ["male", "qun", 2, ["paladin_hudun"], ["minskin", "stone"], [2, 2, "paladin"]],
+				stone_junxuguan: ["male", "qun", 3, ["paladin_buji"], ["minskin", "stone"], [4, 1, "paladin"]],
+				stone_yurenqishi: ["male", "qun", 2, ["paladin_zhaochao"], ["minskin", "stone"], [4, 2, "paladin"]],
+				stone_chidunweishi: ["male", "qun", 3, ["paladin_chidun"], ["minskin", "stone"], [3, 2, "paladin"]],
+				stone_liewangshouwei: ["male", "qun", 5, ["paladin_shouwei"], ["minskin", "stone"], [5, 2, "paladin"]],
+				stone_longwangpeiou: ["female", "qun", 4, ["paladin_zhaohuan"], ["minskin", "stone"], [5, 4, "paladin"]],
+				stone_baoweizhe: ["male", "qun", 2, ["paladin_baowei"], ["minskin", "stone"], [2, 1, "paladin"]],
 				stone_guiqishi: ["male", "qun", 5, ["paladin_tuxi"], ["minskin", "stone"], [5, 4, "paladin"]],
-				stone_shenmiqishou: [
-					"male",
-					"qun",
-					4,
-					["paladin_miying"],
-					["minskin", "stone"],
-					[5, 4, "paladin"],
-				],
-				stone_shixiangweishi: [
-					"female",
-					"qun",
-					3,
-					["paladin_huashi"],
-					["minskin", "stone"],
-					[3, 3, "paladin"],
-				],
-				stone_xuefanzhanshi: [
-					"male",
-					"qun",
-					3,
-					["paladin_jinghua"],
-					["minskin", "stone"],
-					[4, 4, "paladin"],
-				],
+				stone_shenmiqishou: ["male", "qun", 4, ["paladin_miying"], ["minskin", "stone"], [5, 4, "paladin"]],
+				stone_shixiangweishi: ["female", "qun", 3, ["paladin_huashi"], ["minskin", "stone"], [3, 3, "paladin"]],
+				stone_xuefanzhanshi: ["male", "qun", 3, ["paladin_jinghua"], ["minskin", "stone"], [4, 4, "paladin"]],
 				stone_xunmashi: ["male", "qun", 3, ["paladin_moma"], ["minskin", "stone"], [3, 2, "paladin"]],
 
-				stone_lieyanxiaogui: [
-					"male",
-					"qun",
-					2,
-					["warlock_nonghuo"],
-					["minskin", "stone"],
-					[1, 4, "warlock"],
-				],
-				stone_xiaoguishouling: [
-					"male",
-					"qun",
-					3,
-					["warlock_zhaogui"],
-					["minskin", "stone"],
-					[3, 1, "warlock"],
-				],
+				stone_lieyanxiaogui: ["male", "qun", 2, ["warlock_nonghuo"], ["minskin", "stone"], [1, 4, "warlock"]],
+				stone_xiaoguishouling: ["male", "qun", 3, ["warlock_zhaogui"], ["minskin", "stone"], [3, 1, "warlock"]],
 				stone_xiaogui: ["male", "qun", 1, [], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_kongjuzhanma: [
-					"male",
-					"qun",
-					1,
-					["warlock_yongsheng"],
-					["minskin", "stone"],
-					[3, 1, "warlock"],
-				],
-				stone_morishouwei: [
-					"male",
-					"qun",
-					4,
-					["stone_chongfeng", "warlock_zaihuo"],
-					["minskin", "stone"],
-					[4, 4, "warlock"],
-				],
-				stone_xukongxingzhe: [
-					"male",
-					"qun",
-					2,
-					["lschaofeng"],
-					["minskin", "stone"],
-					[1, 1, "warlock"],
-				],
+				stone_kongjuzhanma: ["male", "qun", 1, ["warlock_yongsheng"], ["minskin", "stone"], [3, 1, "warlock"]],
+				stone_morishouwei: ["male", "qun", 4, ["stone_chongfeng", "warlock_zaihuo"], ["minskin", "stone"], [4, 4, "warlock"]],
+				stone_xukongxingzhe: ["male", "qun", 2, ["lschaofeng"], ["minskin", "stone"], [1, 1, "warlock"]],
 				stone_diyuhuo: ["male", "qun", 4, ["warlock_yuhuo"], ["minskin", "stone"], [5, 4, "warlock"]],
-				stone_diyuhuox: [
-					"male",
-					"qun",
-					2,
-					[],
-					["minskin", "stone", "stonehidden"],
-					[2, 2, "warlock"],
-				],
-				stone_heishitanfan: [
-					"male",
-					"qun",
-					2,
-					["warlock_anyu"],
-					["minskin", "stone"],
-					[2, 2, "warlock"],
-				],
-				stone_zhaohuanzhe: [
-					"male",
-					"qun",
-					3,
-					["warlock_zhaohuan"],
-					["minskin", "stone"],
-					[4, 2, "warlock"],
-				],
-				stone_meimo: [
-					"male",
-					"qun",
-					3,
-					["warlock_huanmeng"],
-					["minskin", "stone"],
-					[2, 3, "warlock"],
-				],
-				stone_tongkunvwang: [
-					"male",
-					"qun",
-					2,
-					["warlock_tongku"],
-					["minskin", "stone"],
-					[2, 1, "warlock"],
-				],
-				stone_xukongkongmo: [
-					"male",
-					"qun",
-					3,
-					["warlock_tunshi"],
-					["minskin", "stone"],
-					[3, 3, "warlock"],
-				],
-				stone_fukongmoyan: [
-					"male",
-					"qun",
-					4,
-					["warlock_shijie"],
-					["minskin", "stone"],
-					[5, 4, "warlock"],
-				],
+				stone_diyuhuox: ["male", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 2, "warlock"]],
+				stone_heishitanfan: ["male", "qun", 2, ["warlock_anyu"], ["minskin", "stone"], [2, 2, "warlock"]],
+				stone_zhaohuanzhe: ["male", "qun", 3, ["warlock_zhaohuan"], ["minskin", "stone"], [4, 2, "warlock"]],
+				stone_meimo: ["male", "qun", 3, ["warlock_huanmeng"], ["minskin", "stone"], [2, 3, "warlock"]],
+				stone_tongkunvwang: ["male", "qun", 2, ["warlock_tongku"], ["minskin", "stone"], [2, 1, "warlock"]],
+				stone_xukongkongmo: ["male", "qun", 3, ["warlock_tunshi"], ["minskin", "stone"], [3, 3, "warlock"]],
+				stone_fukongmoyan: ["male", "qun", 4, ["warlock_shijie"], ["minskin", "stone"], [5, 4, "warlock"]],
 
-				stone_zhihuiguan: [
-					"female",
-					"qun",
-					2,
-					["warrior_tongling"],
-					["minskin", "stone"],
-					[3, 2, "warrior"],
-				],
-				stone_kuangzhanshi: [
-					"male",
-					"qun",
-					2,
-					["warrior_baoluan"],
-					["minskin", "stone"],
-					[3, 1, "warrior"],
-				],
-				stone_zhujiashi: [
-					"male",
-					"qun",
-					2,
-					["warrior_zhujia"],
-					["minskin", "stone"],
-					[2, 1, "warrior"],
-				],
-				stone_jiangong: [
-					"male",
-					"qun",
-					2,
-					["warrior_jiangong"],
-					["minskin", "stone"],
-					[2, 2, "warrior"],
-				],
-				stone_chidunshinv: [
-					"female",
-					"qun",
-					4,
-					["warrior_tidun"],
-					["minskin", "stone"],
-					[5, 4, "warrior"],
-				],
+				stone_zhihuiguan: ["female", "qun", 2, ["warrior_tongling"], ["minskin", "stone"], [3, 2, "warrior"]],
+				stone_kuangzhanshi: ["male", "qun", 2, ["warrior_baoluan"], ["minskin", "stone"], [3, 1, "warrior"]],
+				stone_zhujiashi: ["male", "qun", 2, ["warrior_zhujia"], ["minskin", "stone"], [2, 1, "warrior"]],
+				stone_jiangong: ["male", "qun", 2, ["warrior_jiangong"], ["minskin", "stone"], [2, 2, "warrior"]],
+				stone_chidunshinv: ["female", "qun", 4, ["warrior_tidun"], ["minskin", "stone"], [5, 4, "warrior"]],
 				stone_yuanhou: ["male", "qun", 2, ["lschaofeng"], ["minskin", "stone"], [2, 3, "warrior"]],
-				stone_heiyaoyaoshou: [
-					"male",
-					"qun",
-					4,
-					["warrior_heiyao"],
-					["minskin", "stone"],
-					[5, 4, "warrior"],
-				],
-				stone_honglongyongshi: [
-					"male",
-					"qun",
-					2,
-					["warrior_fenyong"],
-					["minskin", "stone"],
-					[2, 3, "warrior"],
-				],
-				stone_peilianshi: [
-					"male",
-					"qun",
-					2,
-					["lschaofeng", "warrior_peilian"],
-					["minskin", "stone"],
-					[2, 2, "warrior"],
-				],
-				stone_jingyingweishi: [
-					"male",
-					"qun",
-					3,
-					["stone_chongfeng"],
-					["minskin", "stone"],
-					[4, 3, "warrior"],
-				],
-				stone_mengmaren: [
-					"male",
-					"qun",
-					3,
-					["warrior_chuanci"],
-					["minskin", "stone"],
-					[4, 4, "warrior"],
-				],
-				stone_zhifuzhe: [
-					"male",
-					"qun",
-					2,
-					["warrior_zhifu"],
-					["minskin", "stone"],
-					[3, 1, "warrior"],
-				],
+				stone_heiyaoyaoshou: ["male", "qun", 4, ["warrior_heiyao"], ["minskin", "stone"], [5, 4, "warrior"]],
+				stone_honglongyongshi: ["male", "qun", 2, ["warrior_fenyong"], ["minskin", "stone"], [2, 3, "warrior"]],
+				stone_peilianshi: ["male", "qun", 2, ["lschaofeng", "warrior_peilian"], ["minskin", "stone"], [2, 2, "warrior"]],
+				stone_jingyingweishi: ["male", "qun", 3, ["stone_chongfeng"], ["minskin", "stone"], [4, 3, "warrior"]],
+				stone_mengmaren: ["male", "qun", 3, ["warrior_chuanci"], ["minskin", "stone"], [4, 4, "warrior"]],
+				stone_zhifuzhe: ["male", "qun", 2, ["warrior_zhifu"], ["minskin", "stone"], [3, 1, "warrior"]],
 
-				stone_daomufeizei: [
-					"male",
-					"qun",
-					3,
-					["rogue_xunbao"],
-					["minskin", "stone"],
-					[4, 3, "rogue"],
-				],
+				stone_daomufeizei: ["male", "qun", 3, ["rogue_xunbao"], ["minskin", "stone"], [4, 3, "rogue"]],
 				stone_qiezei: ["male", "qun", 2, ["rogue_touqie"], ["minskin", "stone"], [2, 2, "rogue"]],
-				stone_heitieairen: [
-					"male",
-					"qun",
-					2,
-					["rogue_qiancang"],
-					["minskin", "stone"],
-					[4, 3, "rogue"],
-				],
+				stone_heitieairen: ["male", "qun", 2, ["rogue_qiancang"], ["minskin", "stone"], [4, 3, "rogue"]],
 				stone_tegong: ["male", "qun", 2, ["rogue_touxi"], ["minskin", "stone"], [3, 3, "rogue"]],
-				stone_haidaotoumu: [
-					"male",
-					"qun",
-					2,
-					["rogue_zhaomu"],
-					["minskin", "stone"],
-					[2, 2, "rogue"],
-				],
+				stone_haidaotoumu: ["male", "qun", 2, ["rogue_zhaomu"], ["minskin", "stone"], [2, 2, "rogue"]],
 				stone_haidao: ["male", "qun", 1, [], ["minskin", "stone", "stonehidden"], [1, 2, "rogue"]],
-				stone_cike: [
-					"male",
-					"qun",
-					1,
-					["rogue_cisha", "stone_qianxing"],
-					["minskin", "stone"],
-					[1, 1, "rogue"],
-				],
-				stone_duyanhaidao: [
-					"male",
-					"qun",
-					2,
-					["rogue_duxing"],
-					["minskin", "stone"],
-					[3, 4, "rogue"],
-				],
-				stone_gangtiewushi: [
-					"male",
-					"qun",
-					2,
-					["rogue_shoudao"],
-					["minskin", "stone"],
-					[3, 2, "rogue"],
-				],
+				stone_cike: ["male", "qun", 1, ["rogue_cisha", "stone_qianxing"], ["minskin", "stone"], [1, 1, "rogue"]],
+				stone_duyanhaidao: ["male", "qun", 2, ["rogue_duxing"], ["minskin", "stone"], [3, 4, "rogue"]],
+				stone_gangtiewushi: ["male", "qun", 2, ["rogue_shoudao"], ["minskin", "stone"], [3, 2, "rogue"]],
 				stone_lifaji: ["male", "qun", 2, ["rogue_lifa"], ["minskin", "stone"], [2, 2, "rogue"]],
-				stone_shihualong: [
-					"male",
-					"qun",
-					1,
-					["rogue_fusheng"],
-					["minskin", "stone"],
-					[3, 2, "rogue"],
-				],
-				stone_xiushuihaidao: [
-					"male",
-					"qun",
-					1,
-					["rogue_jielue"],
-					["minskin", "stone"],
-					[1, 2, "rogue"],
-				],
-				stone_zousishangfan: [
-					"male",
-					"qun",
-					3,
-					["rogue_jiaoyi"],
-					["minskin", "stone"],
-					[4, 3, "rogue"],
-				],
+				stone_shihualong: ["male", "qun", 1, ["rogue_fusheng"], ["minskin", "stone"], [3, 2, "rogue"]],
+				stone_xiushuihaidao: ["male", "qun", 1, ["rogue_jielue"], ["minskin", "stone"], [1, 2, "rogue"]],
+				stone_zousishangfan: ["male", "qun", 3, ["rogue_jiaoyi"], ["minskin", "stone"], [4, 3, "rogue"]],
 
-				stone_beijunmushi: [
-					"male",
-					"qun",
-					2,
-					["priest_shengliao"],
-					["minskin", "stone"],
-					[1, 1, "priest"],
-				],
-				stone_guanliyuan: [
-					"male",
-					"qun",
-					2,
-					["priest_faxian"],
-					["minskin", "stone"],
-					[2, 1, "priest"],
-				],
-				stone_linghunjisi: [
-					"female",
-					"qun",
-					4,
-					["priest_hunwu"],
-					["minskin", "stone"],
-					[4, 2, "priest"],
-				],
-				stone_heianjiaotu: [
-					"male",
-					"qun",
-					3,
-					["priest_zhufu"],
-					["minskin", "stone"],
-					[3, 2, "priest"],
-				],
-				stone_guangyaozhizi: [
-					"male",
-					"qun",
-					3,
-					["priest_guangyao"],
-					["minskin", "stone"],
-					[5, 3, "priest"],
-				],
-				stone_longmianjiaoguan: [
-					"male",
-					"qun",
-					2,
-					["priest_xundao"],
-					["minskin", "stone"],
-					[2, 2, "priest"],
-				],
-				stone_shengdianzhishi: [
-					"male",
-					"qun",
-					4,
-					["priest_puzhao"],
-					["minskin", "stone"],
-					[5, 4, "priest"],
-				],
-				stone_suoxiaojishi: [
-					"male",
-					"qun",
-					2,
-					["priest_suoxiao"],
-					["minskin", "stone"],
-					[2, 2, "priest"],
-				],
-				stone_anyingzisi: [
-					"male",
-					"qun",
-					3,
-					["priest_shixin"],
-					["minskin", "stone"],
-					[4, 4, "priest"],
-				],
-				stone_guangmingquan: [
-					"male",
-					"qun",
-					3,
-					["priest_shengshui"],
-					["minskin", "stone"],
-					[2, 0, "priest"],
-				],
-				stone_muguangchulong: [
-					"male",
-					"qun",
-					2,
-					["priest_muguang"],
-					["minskin", "stone"],
-					[1, 1, "priest"],
-				],
-				stone_shenshengyongshi: [
-					"male",
-					"qun",
-					3,
-					["priest_shengguang"],
-					["minskin", "stone"],
-					[4, 3, "priest"],
-				],
+				stone_beijunmushi: ["male", "qun", 2, ["priest_shengliao"], ["minskin", "stone"], [1, 1, "priest"]],
+				stone_guanliyuan: ["male", "qun", 2, ["priest_faxian"], ["minskin", "stone"], [2, 1, "priest"]],
+				stone_linghunjisi: ["female", "qun", 4, ["priest_hunwu"], ["minskin", "stone"], [4, 2, "priest"]],
+				stone_heianjiaotu: ["male", "qun", 3, ["priest_zhufu"], ["minskin", "stone"], [3, 2, "priest"]],
+				stone_guangyaozhizi: ["male", "qun", 3, ["priest_guangyao"], ["minskin", "stone"], [5, 3, "priest"]],
+				stone_longmianjiaoguan: ["male", "qun", 2, ["priest_xundao"], ["minskin", "stone"], [2, 2, "priest"]],
+				stone_shengdianzhishi: ["male", "qun", 4, ["priest_puzhao"], ["minskin", "stone"], [5, 4, "priest"]],
+				stone_suoxiaojishi: ["male", "qun", 2, ["priest_suoxiao"], ["minskin", "stone"], [2, 2, "priest"]],
+				stone_anyingzisi: ["male", "qun", 3, ["priest_shixin"], ["minskin", "stone"], [4, 4, "priest"]],
+				stone_guangmingquan: ["male", "qun", 3, ["priest_shengshui"], ["minskin", "stone"], [2, 0, "priest"]],
+				stone_muguangchulong: ["male", "qun", 2, ["priest_muguang"], ["minskin", "stone"], [1, 1, "priest"]],
+				stone_shenshengyongshi: ["male", "qun", 3, ["priest_shengguang"], ["minskin", "stone"], [4, 3, "priest"]],
 
 				stone_zhongshi: ["male", "wei", 1, ["stone_zhongshi1"], ["minskin", "stone"], [1, 2]],
 				stone_zhucangzhe: ["male", "wei", 1, ["stone_zhucangzhe1"], ["minskin", "stone"], [1, 2]],
@@ -1894,36 +1282,15 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				stone_yuanguanying: ["male", "shu", 3, ["stone_yuanguanying1"], ["minskin", "stone"], [3, 1]],
 
 				stone_dijieshicong: ["male", "wu", 2, ["stone_dijieshicong1"], ["minskin", "stone"], [1, 1]],
-				stone_yaosaishouwei: [
-					"male",
-					"wu",
-					2,
-					["stone_yaosaishouwei1"],
-					["minskin", "stone"],
-					[1, 1],
-				],
+				stone_yaosaishouwei: ["male", "wu", 2, ["stone_yaosaishouwei1"], ["minskin", "stone"], [1, 1]],
 				stone_famingjia: ["male", "wu", 3, ["stone_famingjia1"], ["minskin", "stone"], [3, 1]],
 
 				stone_chilundashi: ["male", "qun", 2, ["stone_chilundashi1"], ["minskin", "stone"], [1, 1]],
-				stone_hanguangzhizhe: [
-					"male",
-					"qun",
-					2,
-					["stone_hanguangzhizhe1"],
-					["minskin", "stone"],
-					[2, 2],
-				],
+				stone_hanguangzhizhe: ["male", "qun", 2, ["stone_hanguangzhizhe1"], ["minskin", "stone"], [2, 2]],
 				stone_aihaozhihun: ["male", "qun", 3, ["stone_aihaozhihun1"], ["minskin", "stone"], [3, 1]],
 
 				stone_fennuxiaoji: ["male", "qun", 1, ["stone_fennuxiaoji1"], ["minskin", "stone"], [1, 2]],
-				stone_juxingchanchu: [
-					"male",
-					"qun",
-					2,
-					["stone_juxingchanchu1"],
-					["minskin", "stone"],
-					[2, 1],
-				],
+				stone_juxingchanchu: ["male", "qun", 2, ["stone_juxingchanchu1"], ["minskin", "stone"], [2, 1]],
 				stone_wuyi: ["male", "qun", 1, ["jijiu"], ["minskin", "stone", "die:wuyi"], [2, 2]],
 				stone_langren: ["male", "qun", 1, ["stone_qianxing"], ["minskin", "stone"], [1, 2]],
 				stone_shishigui: ["male", "qun", 2, ["stone_shishigui1"], ["minskin", "stone"], [2, 1]],
@@ -1937,258 +1304,47 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				stone_mafengzhuru: ["female", "qun", 1, ["stone_mafengzhuru1"], ["minskin", "stone"], [1, 2]],
 
 				stone_shumiao: ["none", "wu", 1, [], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_shuren: [
-					"none",
-					"wu",
-					2,
-					["stone_chongfeng", "stone_zibao"],
-					["minskin", "stone", "stonehidden"],
-					[2, 2],
-				],
+				stone_shuren: ["none", "wu", 2, ["stone_chongfeng", "stone_zibao"], ["minskin", "stone", "stonehidden"], [2, 2]],
 				stone_shurenx: ["none", "wu", 2, [], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_shurenxx: [
-					"none",
-					"wu",
-					2,
-					["lschaofeng"],
-					["minskin", "stone", "stonehidden"],
-					[2, 2],
-				],
-				stone_youlinglang: [
-					"none",
-					"qun",
-					2,
-					["lschaofeng"],
-					["minskin", "stone", "stonehidden"],
-					[2, 2],
-				],
-				stone_xiaojingling: [
-					"none",
-					"qun",
-					1,
-					["xuying"],
-					["minskin", "stone", "stonehidden"],
-					[1, 1],
-				],
+				stone_shurenxx: ["none", "wu", 2, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 2]],
+				stone_youlinglang: ["none", "qun", 2, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 2]],
+				stone_xiaojingling: ["none", "qun", 1, ["xuying"], ["minskin", "stone", "stonehidden"], [1, 1]],
 				stone_zhumo: ["none", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_jingxiang: [
-					"none",
-					"qun",
-					2,
-					["stone_jingxiang", "lschaofeng"],
-					["minskin", "stone", "stonehidden"],
-					[2, 0],
-				],
-				stone_shengguanghuwei: [
-					"female",
-					"qun",
-					2,
-					["priest_shengguang"],
-					["minskin", "stone", "stonehidden"],
-					[1, 1],
-				],
-				stone_liegou: [
-					"none",
-					"qun",
-					1,
-					["stone_chongfeng"],
-					["minskin", "stone", "stonehidden"],
-					[1, 2],
-				],
-				stone_mianyang: [
-					"none",
-					"qun",
-					1,
-					["mage_mianyang"],
-					["minskin", "stone", "stonehidden"],
-					[1, 0],
-				],
-				stone_qingwa: [
-					"none",
-					"wu",
-					1,
-					["shaman_qingwa"],
-					["minskin", "stone", "stonehidden"],
-					[1, 0],
-				],
-				stone_shengjiachong: [
-					"none",
-					"qun",
-					1,
-					["lschaofeng"],
-					["minskin", "stone", "stonehidden"],
-					[1, 1],
-				],
+				stone_jingxiang: ["none", "qun", 2, ["stone_jingxiang", "lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 0]],
+				stone_shengguanghuwei: ["female", "qun", 2, ["priest_shengguang"], ["minskin", "stone", "stonehidden"], [1, 1]],
+				stone_liegou: ["none", "qun", 1, ["stone_chongfeng"], ["minskin", "stone", "stonehidden"], [1, 2]],
+				stone_mianyang: ["none", "qun", 1, ["mage_mianyang"], ["minskin", "stone", "stonehidden"], [1, 0]],
+				stone_qingwa: ["none", "wu", 1, ["shaman_qingwa"], ["minskin", "stone", "stonehidden"], [1, 0]],
+				stone_shengjiachong: ["none", "qun", 1, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [1, 1]],
 
-				stone_tuteng1: [
-					"none",
-					"qun",
-					2,
-					["shaman_tuteng", "lschaofeng"],
-					["minskin", "stone", "stonehidden"],
-					[2, 0],
-				],
-				stone_tuteng2: [
-					"none",
-					"qun",
-					2,
-					["shaman_tuteng", "shaman_zhuore"],
-					["minskin", "stone", "stonehidden"],
-					[2, 0],
-				],
-				stone_tuteng3: [
-					"none",
-					"qun",
-					2,
-					["shaman_tuteng", "shaman_fali"],
-					["minskin", "stone", "stonehidden"],
-					[2, 0],
-				],
-				stone_tuteng4: [
-					"none",
-					"qun",
-					2,
-					["shaman_tuteng", "shaman_zhiliao"],
-					["minskin", "stone", "stonehidden"],
-					[2, 0],
-				],
+				stone_tuteng1: ["none", "qun", 2, ["shaman_tuteng", "lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 0]],
+				stone_tuteng2: ["none", "qun", 2, ["shaman_tuteng", "shaman_zhuore"], ["minskin", "stone", "stonehidden"], [2, 0]],
+				stone_tuteng3: ["none", "qun", 2, ["shaman_tuteng", "shaman_fali"], ["minskin", "stone", "stonehidden"], [2, 0]],
+				stone_tuteng4: ["none", "qun", 2, ["shaman_tuteng", "shaman_zhiliao"], ["minskin", "stone", "stonehidden"], [2, 0]],
 				stone_xinbing: ["none", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 0]],
 
-				stone_siwangzhiyi: [
-					"male",
-					"qun",
-					4,
-					["stone_mieshi"],
-					["minskin", "stone", "stonehidden", "stonelegend"],
-					[6, 4],
-				],
-				stone_alaikesita: [
-					"female",
-					"qun",
-					4,
-					["stone_fushi"],
-					["minskin", "stone", "stonehidden", "stonelegend"],
-					[6, 4],
-				],
-				stone_yisela: [
-					"female",
-					"qun",
-					4,
-					["stone_chenshui"],
-					["minskin", "stone", "stonehidden", "stonelegend"],
-					[6, 2],
-				],
-				stone_nuoziduomu: [
-					"male",
-					"qun",
-					4,
-					["stone_shixu"],
-					["minskin", "stone", "stonehidden", "stonelegend"],
-					[6, 4],
-				],
-				stone_maligousi: [
-					"male",
-					"qun",
-					4,
-					["stone_mowang"],
-					["minskin", "stone", "stonehidden", "stonelegend"],
-					[6, 2],
-				],
+				stone_siwangzhiyi: ["male", "qun", 4, ["stone_mieshi"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
+				stone_alaikesita: ["female", "qun", 4, ["stone_fushi"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
+				stone_yisela: ["female", "qun", 4, ["stone_chenshui"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 2]],
+				stone_nuoziduomu: ["male", "qun", 4, ["stone_shixu"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
+				stone_maligousi: ["male", "qun", 4, ["stone_mowang"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 2]],
 
-				stone_aolajier: [
-					"male",
-					"qun",
-					4,
-					["stone_chongfeng", "shaman_fengnu", "paladin_hudun", "lschaofeng"],
-					["minskin", "stone", "stonehidden", "stonelegend_shaman"],
-					[6, 4],
-				],
-				stone_andongni: [
-					"male",
-					"qun",
-					4,
-					["stone_zhiyin"],
-					["minskin", "stone", "stonehidden", "stonelegend_mage"],
-					[6, 4],
-				],
-				stone_jialakesi: [
-					"male",
-					"qun",
-					6,
-					["stone_bianshen"],
-					["minskin", "stone", "stonehidden", "stonelegend_warlock"],
-					[6, 0],
-				],
-				stone_jialakesix: [
-					"male",
-					"qun",
-					6,
-					["stone_lianyu"],
-					["modeimage", "stonehidden", "stonespecial"],
-				],
-				stone_kelushi: [
-					"male",
-					"qun",
-					5,
-					["stone_chongfeng"],
-					["minskin", "stone", "stonehidden", "stonelegend_hunter"],
-					[6, 5],
-				],
-				stone_geluomashi: [
-					"male",
-					"qun",
-					4,
-					["stone_chongfeng", "stone_jinu"],
-					["minskin", "stone", "stonehidden", "stonelegend_warrior"],
-					[6, 4],
-				],
-				stone_aidewen: [
-					"male",
-					"qun",
-					3,
-					["stone_lianji"],
-					["minskin", "stone", "stonehidden", "stonelegend_rogue"],
-					[6, 3],
-				],
-				stone_sainaliusi: [
-					"male",
-					"qun",
-					3,
-					["stone_shenyu"],
-					["minskin", "stone", "stonehidden", "stonelegend_druid"],
-					[6, 3],
-				],
-				stone_fuding: [
-					"male",
-					"qun",
-					3,
-					["paladin_hudun", "lschaofeng", "stone_fuchou"],
-					["minskin", "stone", "stonehidden", "stonelegend_paladin"],
-					[6, 3],
-				],
-				stone_weilun: [
-					"male",
-					"qun",
-					4,
-					["stone_shenyou"],
-					["minskin", "stone", "stonehidden", "stonelegend_priest"],
-					[6, 6],
-				],
+				stone_aolajier: ["male", "qun", 4, ["stone_chongfeng", "shaman_fengnu", "paladin_hudun", "lschaofeng"], ["minskin", "stone", "stonehidden", "stonelegend_shaman"], [6, 4]],
+				stone_andongni: ["male", "qun", 4, ["stone_zhiyin"], ["minskin", "stone", "stonehidden", "stonelegend_mage"], [6, 4]],
+				stone_jialakesi: ["male", "qun", 6, ["stone_bianshen"], ["minskin", "stone", "stonehidden", "stonelegend_warlock"], [6, 0]],
+				stone_jialakesix: ["male", "qun", 6, ["stone_lianyu"], ["modeimage", "stonehidden", "stonespecial"]],
+				stone_kelushi: ["male", "qun", 5, ["stone_chongfeng"], ["minskin", "stone", "stonehidden", "stonelegend_hunter"], [6, 5]],
+				stone_geluomashi: ["male", "qun", 4, ["stone_chongfeng", "stone_jinu"], ["minskin", "stone", "stonehidden", "stonelegend_warrior"], [6, 4]],
+				stone_aidewen: ["male", "qun", 3, ["stone_lianji"], ["minskin", "stone", "stonehidden", "stonelegend_rogue"], [6, 3]],
+				stone_sainaliusi: ["male", "qun", 3, ["stone_shenyu"], ["minskin", "stone", "stonehidden", "stonelegend_druid"], [6, 3]],
+				stone_fuding: ["male", "qun", 3, ["paladin_hudun", "lschaofeng", "stone_fuchou"], ["minskin", "stone", "stonehidden", "stonelegend_paladin"], [6, 3]],
+				stone_weilun: ["male", "qun", 4, ["stone_shenyou"], ["minskin", "stone", "stonehidden", "stonelegend_priest"], [6, 6]],
 			},
 		},
 		careerList: ["mage", "shaman", "druid", "paladin", "rogue", "priest", "hunter", "warrior", "warlock"],
 		game: {
 			reserveDead: true,
-			bannedcards: [
-				"lebu",
-				"guiyoujie",
-				"xietianzi",
-				"lingjiandai",
-				"jiguanshu",
-				"sifeizhenmian",
-				"fengxueren",
-				"chuansongmen",
-			],
+			bannedcards: ["lebu", "guiyoujie", "xietianzi", "lingjiandai", "jiguanshu", "sifeizhenmian", "fengxueren", "chuansongmen"],
 			onwash: function () {
 				if (_status.mode != "deck") return;
 				var list = [];
@@ -2211,12 +1367,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				return name;
 			},
 			updateStatusCount: function () {
-				_status.friendCount.innerHTML =
-					"友军: " +
-					get.cnNumber(1 + _status.mylist.length / (_status.double_character ? 2 : 1), true);
-				_status.enemyCount.innerHTML =
-					"敌军: " +
-					get.cnNumber(1 + _status.enemylist.length / (_status.double_character ? 2 : 1), true);
+				_status.friendCount.innerHTML = "友军: " + get.cnNumber(1 + _status.mylist.length / (_status.double_character ? 2 : 1), true);
+				_status.enemyCount.innerHTML = "敌军: " + get.cnNumber(1 + _status.enemylist.length / (_status.double_character ? 2 : 1), true);
 			},
 			stoneLoop: function (player) {
 				var next = game.createEvent("phaseLoop");
@@ -2315,75 +1467,31 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						for (i = 0; i < list.length; i++) {
 							lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), list[i]]);
 						}
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_shengerpingdeng",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_anyingkuangluan",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_jingshenkongzhi",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_binghuan",
-						]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_shengerpingdeng"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_anyingkuangluan"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_jingshenkongzhi"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_binghuan"]);
 						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_zuzhou"]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_diyulieyan",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_diyulieyan",
-						]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_diyulieyan"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_diyulieyan"]);
 						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_chenmo"]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_xishengqiyue",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_zhiliaoshui",
-						]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_xishengqiyue"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_zhiliaoshui"]);
 					}
 					while (addedcardcount2--) {
 						for (i = 0; i < list2.length; i++) {
 							lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), list2[i]]);
 						}
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_morizaihuo",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_zhiliaozhichu",
-						]);
-						lib.card.list.push([
-							suit.randomGet(),
-							Math.ceil(Math.random() * 13),
-							"spell_wangzhezhufu",
-						]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_morizaihuo"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_zhiliaozhichu"]);
+						lib.card.list.push([suit.randomGet(), Math.ceil(Math.random() * 13), "spell_wangzhezhufu"]);
 					}
 					lib.card.list.randomSort();
 				}
 
 				lib.skill._recasting.usable = 3;
 				for (i in lib.skill) {
-					if (lib.skill[i].changeSeat) {
+					if (lib.skill[i].seatRelated) {
 						lib.skill[i] = {};
 						if (lib.translate[i + "_info"]) {
 							lib.translate[i + "_info"] = "此模式下不可用";
@@ -2422,10 +1530,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						list.push(i);
 					}
 					list.randomSort();
-					var dialog = ui.create.dialog(
-						"按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : ""),
-						"hidden"
-					);
+					var dialog = ui.create.dialog("按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : ""), "hidden");
 					dialog.add("0/" + (get.config("double_character") ? 2 : 1) * get.config("battle_number"));
 					dialog.add([list.slice(0, get.config("battle_number") * 2 + 5), "character"]);
 					dialog.open();
@@ -2436,10 +1541,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					};
 					next.custom.add.button = function () {
 						if (ui.cheat2 && ui.cheat2.backup) return;
-						_status.event.dialog.content.childNodes[0].innerHTML =
-							"按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : "");
-						_status.event.dialog.content.childNodes[1].innerHTML =
-							ui.selected.buttons.length + "/" + _status.event.selectButton();
+						_status.event.dialog.content.childNodes[0].innerHTML = "按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : "");
+						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
 					};
 					event.changeDialog = function () {
 						if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
@@ -2452,11 +1555,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 
 						var buttons = ui.create.div(".buttons");
 						var node = _status.event.dialog.buttons[0].parentNode;
-						_status.event.dialog.buttons = ui.create.buttons(
-							list.slice(0, get.config("battle_number") * 2 + 5),
-							"character",
-							buttons
-						);
+						_status.event.dialog.buttons = ui.create.buttons(list.slice(0, get.config("battle_number") * 2 + 5), "character", buttons);
 						_status.event.dialog.content.insertBefore(buttons, node);
 						buttons.addTempClass("start");
 						node.remove();
@@ -2569,17 +1668,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									if (_status.double_character) {
 										names.push(list.shift());
 										names.push(list.shift());
-										event.dialog.content.firstChild.innerHTML =
-											"为" +
-											get.translation(names[0]) +
-											"/" +
-											get.translation(names[1]) +
-											"选择一个卡组";
+										event.dialog.content.firstChild.innerHTML = "为" + get.translation(names[0]) + "/" + get.translation(names[1]) + "选择一个卡组";
 										currentNode = ui.create.player().init(names[0], names[1]);
 									} else {
 										names.push(list.shift());
-										event.dialog.content.firstChild.innerHTML =
-											"为" + get.translation(names[0]) + "选择一个卡组";
+										event.dialog.content.firstChild.innerHTML = "为" + get.translation(names[0]) + "选择一个卡组";
 										currentNode = ui.create.player().init(names[0]);
 									}
 									currentNode.classList.add("stone_deck");
@@ -2596,26 +1689,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							clickButton(false);
 							for (var i in lib.storage.deckList) {
 								if (lib.storage.deckList[i].deck.length == 30) {
-									var deckitem = ui.create.div(
-										".deckitem.shadowed",
-										"<span>" + i + "</span>",
-										buttons,
-										clickButton
-									);
-									ui.create.div(".menubutton.round", deckitem).dataset.career =
-										lib.storage.deckList[i].career;
+									var deckitem = ui.create.div(".deckitem.shadowed", "<span>" + i + "</span>", buttons, clickButton);
+									ui.create.div(".menubutton.round", deckitem).dataset.career = lib.storage.deckList[i].career;
 									deckitem.name = i;
 								}
 							}
 							for (var i = 0; i < lib.careerList.length; i++) {
-								var deckitem = ui.create.div(
-									".deckitem.shadowed",
-									"<span>随机</span>",
-									buttons,
-									clickButton
-								);
-								ui.create.div(".menubutton.round", deckitem).dataset.career =
-									lib.careerList[i];
+								var deckitem = ui.create.div(".deckitem.shadowed", "<span>随机</span>", buttons, clickButton);
+								ui.create.div(".menubutton.round", deckitem).dataset.career = lib.careerList[i];
 								deckitem.name = "random:" + lib.careerList[i];
 							}
 							event.dialog.open();
@@ -2688,13 +1769,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					} else {
 						career = name.slice(7);
 					}
-					deck = lib.careerMinions[career]
-						.randomGets(6)
-						.concat(lib.careerMinions[career].randomGets(6))
-						.concat(lib.minions.randomGets(6))
-						.concat(lib.spells.randomGets(4))
-						.concat(lib.careerSpells[career].randomGets(4))
-						.concat(lib.careerSpells[career].randomGets(4));
+					deck = lib.careerMinions[career].randomGets(6).concat(lib.careerMinions[career].randomGets(6)).concat(lib.minions.randomGets(6)).concat(lib.spells.randomGets(4)).concat(lib.careerSpells[career].randomGets(4)).concat(lib.careerSpells[career].randomGets(4));
 				} else {
 					career = lib.storage.deckList[name].career;
 					deck = lib.storage.deckList[name].deck.slice(0);
@@ -3655,11 +2730,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				enable: true,
 				fullimage: true,
 				filterTarget: function (card, player, target) {
-					return (
-						player.side == target.side &&
-						target.isMin() &&
-						!target.hasSkill("druid_conglinzhihun")
-					);
+					return player.side == target.side && target.isMin() && !target.hasSkill("druid_conglinzhihun");
 				},
 				selectTarget: -1,
 				content: function () {
@@ -3673,11 +2744,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						player: function (player) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
-								if (
-									game.players[i].isMin() &&
-									game.players[i].side == player.side &&
-									!game.players[i].hasSkill("druid_conglinzhihun")
-								) {
+								if (game.players[i].isMin() && game.players[i].side == player.side && !game.players[i].hasSkill("druid_conglinzhihun")) {
 									num++;
 									if (num >= 2) return 1;
 								}
@@ -3825,8 +2892,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				content: function () {
 					"step 0";
-					player.chooseControl("两点", "一点").prompt =
-						"造成2点伤害，或造成1点伤害并从牌库中获得一张牌";
+					player.chooseControl("两点", "一点").prompt = "造成2点伤害，或造成1点伤害并从牌库中获得一张牌";
 					"step 1";
 					if (result.control == "一点") {
 						target.damage();
@@ -4044,9 +3110,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var cards = player.getEnemy().deckCards.randomGets(2);
 					var list = [];
 					for (var i = 0; i < cards.length; i++) {
-						list.push(
-							game.createCard(cards[i].name, cards[i].suit, cards[i].number, cards[i].nature)
-						);
+						list.push(game.createCard(cards[i].name, cards[i].suit, cards[i].number, cards[i].nature));
 					}
 					if (list.length) {
 						player.gain(list, "draw");
@@ -4964,13 +4028,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				selectTarget: -1,
 				content: function () {
-					var list = [
-						"spell_lierenyinji",
-						"spell_guanmenfanggou",
-						"spell_duochongsheji",
-						"spell_kuaisusheji",
-						"spell_zhaohuanchongwu",
-					];
+					var list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
 					player.gain(game.createCard(list.randomGet()), "draw");
 					player.addTempSkill("hunter_zidanshangtang");
 				},
@@ -5436,9 +4494,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					if (player.countCards("e")) {
-						player.chooseToDiscard("e", "是否弃置一张装备区内的牌令伤害+1？").ai = function (
-							card
-						) {
+						player.chooseToDiscard("e", "是否弃置一张装备区内的牌令伤害+1？").ai = function (card) {
 							return 7 - get.value(card);
 						};
 					} else {
@@ -6305,11 +5361,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				enable: true,
 				stoneact: 1,
 				filterTarget: function (card, player, target) {
-					return (
-						target.isMin() &&
-						target.side == player.side &&
-						(!target.hasSkill("lschaofeng") || target.hp < target.maxHp)
-					);
+					return target.isMin() && target.side == player.side && (!target.hasSkill("lschaofeng") || target.hp < target.maxHp);
 				},
 				content: function () {
 					if (target.hp < target.maxHp) {
@@ -6546,13 +5598,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { player: "phaseEnd" },
 				forced: true,
 				content: function () {
-					var list = [
-						"hsmengjing_feicuiyoulong",
-						"hsmengjing_huanxiaojiemei",
-						"hsmengjing_suxing",
-						"hsmengjing_mengye",
-						"hsmengjing_mengjing",
-					];
+					var list = ["hsmengjing_feicuiyoulong", "hsmengjing_huanxiaojiemei", "hsmengjing_suxing", "hsmengjing_mengye", "hsmengjing_mengjing"];
 					var target = player.getLeader();
 					target.gain(game.createCard(list.randomGet()));
 					target.$draw();
@@ -6580,14 +5626,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					return (
-						event.source &&
-						event.source != player &&
-						player.side == event.source.side &&
-						event.notLink() &&
-						event.card &&
-						get.type(event.card) == "stonecard"
-					);
+					return event.source && event.source != player && player.side == event.source.side && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
 				content: function () {
 					if (trigger.player.isMin()) {
@@ -6604,14 +5643,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					return (
-						event.source &&
-						event.source != player &&
-						event.source == player.getLeader() &&
-						event.notLink() &&
-						event.card &&
-						get.type(event.card) == "stonecard"
-					);
+					return event.source && event.source != player && event.source == player.getLeader() && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
 				content: function () {
 					trigger.num++;
@@ -6778,11 +5810,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					player.removeSkill("stone_fuchou2");
 					var targets = player.getEnemy().getFellow();
 					if (targets.length) {
-						player.useCard(
-							targets,
-							game.createCard("spell_fuchouzhinu"),
-							false
-						).noActCount = true;
+						player.useCard(targets, game.createCard("spell_fuchouzhinu"), false).noActCount = true;
 					}
 				},
 			},
@@ -6880,11 +5908,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i].side == player.side &&
-							game.players[i] != player
-						) {
+						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
 							return true;
 						}
 					}
@@ -6971,12 +5995,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i] != player &&
-							game.players[i].isMin() &&
-							!game.players[i].hasSkill("lschaofeng")
-						)
-							return true;
+						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) return true;
 					}
 					return false;
 				},
@@ -7006,23 +6025,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (event.parent.name == "warrior_chuanci") return false;
 					if (!target.isMin()) return false;
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i] != target &&
-							game.players[i].isMin() &&
-							game.players[i].side != player.side
-						)
-							return true;
+						if (game.players[i] != target && game.players[i].isMin() && game.players[i].side != player.side) return true;
 					}
 					return false;
 				},
 				content: function () {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i] != trigger.player &&
-							game.players[i].isMin() &&
-							game.players[i].side != player.side
-						) {
+						if (game.players[i] != trigger.player && game.players[i].isMin() && game.players[i].side != player.side) {
 							list.push(game.players[i]);
 						}
 					}
@@ -7050,24 +6060,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].side == player.side &&
-							game.players[i] != player &&
-							game.players[i].isMin()
-						)
-							return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
 					}
 					return false;
 				},
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"普照：选择一名己方随从增加2点体力和体力上限",
-						function (card, playerx, target) {
-							return player != target && player.side == target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("普照：选择一名己方随从增加2点体力和体力上限", function (card, playerx, target) {
+						return player != target && player.side == target.side && target.isMin();
+					}).ai = function (target) {
 						return get.attitude(event.chooser, target) * Math.max(1, 10 - target.hp);
 					};
 					player.line(event.chooser);
@@ -7086,20 +6088,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1)
-							return true;
+						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) return true;
 					}
 					return false;
 				},
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"缩小：令一名随从减少2点体力上限",
-						function (card, playerx, target) {
-							return player != target && target.isMin() && target.maxHp > 1;
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("缩小：令一名随从减少2点体力上限", function (card, playerx, target) {
+						return player != target && target.isMin() && target.maxHp > 1;
+					}).ai = function (target) {
 						if (get.attitude(player, target) >= 0) return 0;
 						if (target.hp == 1) return 0.01;
 						if (target.maxHp - target.hp >= 2) return 0.01;
@@ -7189,7 +6187,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return 0;
+							if (card.name == "bingliang") return [0, 0];
 						},
 					},
 					noPhaseDelay: 1,
@@ -7231,12 +6229,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var num = player.getLeader().countFellow() - 1;
 					var list = [];
 					for (var i in lib.character) {
-						if (
-							lib.character[i].isFellowInStoneMode &&
-							!lib.character[i].isHiddenInStoneMode &&
-							lib.character[i].extraModeData &&
-							lib.character[i].extraModeData[0] == num
-						) {
+						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] == num) {
 							list.push(i);
 						}
 					}
@@ -7258,10 +6251,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var list = [];
 					var target = player.getLeader();
 					for (var i = 0; i < target.deckCards.length; i++) {
-						if (
-							get.type(target.deckCards[i]) == "stonecharacter" &&
-							get.info(target.deckCards[i]).stoneact == 1
-						) {
+						if (get.type(target.deckCards[i]) == "stonecharacter" && get.info(target.deckCards[i]).stoneact == 1) {
 							list.push(target.deckCards[i]);
 						}
 					}
@@ -7272,10 +6262,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var list = [];
 					var target = player.getEnemy();
 					for (var i = 0; i < target.deckCards.length; i++) {
-						if (
-							get.type(target.deckCards[i]) == "stonecharacter" &&
-							get.info(target.deckCards[i]).stoneact == 1
-						) {
+						if (get.type(target.deckCards[i]) == "stonecharacter" && get.info(target.deckCards[i]).stoneact == 1) {
 							list.push(target.deckCards[i]);
 						}
 					}
@@ -7329,13 +6316,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseToDiscard(
-						"是否弃置一张装备牌令" + get.translation(player) + "摸三张牌？",
-						"he",
-						function (card) {
-							return get.type(card) == "equip";
-						}
-					).ai = function (card) {
+					event.chooser.chooseToDiscard("是否弃置一张装备牌令" + get.translation(player) + "摸三张牌？", "he", function (card) {
+						return get.type(card) == "equip";
+					}).ai = function (card) {
 						return 7 - get.value(card);
 					};
 					"step 1";
@@ -7467,11 +6450,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].countCards("h") > 1
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].countCards("h") > 1) {
 							return true;
 						}
 					}
@@ -7481,11 +6460,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].countCards("h") > 1
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].countCards("h") > 1) {
 							list.push(game.players[i]);
 						}
 					}
@@ -7528,26 +6503,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							(game.players[i].hp != 2 || game.players[i].maxHp != 2)
-						)
-							return true;
+						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) return true;
 					}
 					return false;
 				},
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"化石：令一名随从的体力值及体力上限变为2",
-						function (card, playerx, target) {
-							return (
-								player != target && target.isMin() && (target.hp != 2 || target.maxHp != 2)
-							);
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("化石：令一名随从的体力值及体力上限变为2", function (card, playerx, target) {
+						return player != target && target.isMin() && (target.hp != 2 || target.maxHp != 2);
+					}).ai = function (target) {
 						if (target.hp == 2 && target.maxHp > 2) {
 							return (get.attitude(event.chooser, target) * (2 - target.maxHp)) / 100;
 						}
@@ -7569,24 +6534,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].side == player.side &&
-							game.players[i] != player &&
-							game.players[i].isMin()
-						)
-							return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
 					}
 					return false;
 				},
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"保卫：令一名友方随从获得1点护甲",
-						function (card, playerx, target) {
-							return player != target && player.side == target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("保卫：令一名友方随从获得1点护甲", function (card, playerx, target) {
+						return player != target && player.side == target.side && target.isMin();
+					}).ai = function (target) {
 						return get.attitude(event.chooser, target);
 					};
 					player.line(event.chooser);
@@ -7786,12 +6743,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.delay();
 					var list = [];
 					for (var i in lib.character) {
-						if (
-							lib.character[i].isFellowInStoneMode &&
-							!lib.character[i].isHiddenInStoneMode &&
-							lib.character[i].extraModeData &&
-							lib.character[i].extraModeData[0] == 1
-						) {
+						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] == 1) {
 							list.push(i);
 						}
 					}
@@ -8233,13 +7185,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					return get.type(event.card) == "stonecard";
 				},
 				content: function () {
-					var list = [
-						"spell_lierenyinji",
-						"spell_guanmenfanggou",
-						"spell_duochongsheji",
-						"spell_kuaisusheji",
-						"spell_zhaohuanchongwu",
-					];
+					var list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
 					player.gain(game.createCard(list.randomGet()), "draw");
 				},
 			},
@@ -8308,7 +7254,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return 0;
+							if (card.name == "bingliang") return [0, 0];
 						},
 					},
 					noPhaseDelay: 1,
@@ -8353,11 +7299,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i].side == player.side &&
-							game.players[i] != player
-						) {
+						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
 							return true;
 						}
 					}
@@ -8366,11 +7308,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i].side == player.side &&
-							game.players[i] != player
-						) {
+						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
 							list.push(game.players[i]);
 						}
 					}
@@ -8480,11 +7418,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i].side != player.side &&
-							game.players[i].hp == game.players[i].maxHp
-						) {
+						if (game.players[i].isMin() && game.players[i].side != player.side && game.players[i].hp == game.players[i].maxHp) {
 							return true;
 						}
 					}
@@ -8494,11 +7428,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i].side != player.side &&
-							game.players[i].hp == game.players[i].maxHp
-						) {
+						if (game.players[i].isMin() && game.players[i].side != player.side && game.players[i].hp == game.players[i].maxHp) {
 							list.push(game.players[i]);
 						}
 					}
@@ -8578,11 +7508,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				forced: true,
 				unique: true,
 				filter: function (event, player) {
-					return (
-						event.source.side == player.side &&
-						event.source != player &&
-						event.source.countCards("h") <= 2
-					);
+					return event.source.side == player.side && event.source != player && event.source.countCards("h") <= 2;
 				},
 				content: function () {
 					trigger.source.classList.remove("turnedover");
@@ -8620,12 +7546,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"监工：对一名随从造成1点伤害然后令其摸两张牌",
-						function (card, playerx, target) {
-							return player != target && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("监工：对一名随从造成1点伤害然后令其摸两张牌", function (card, playerx, target) {
+						return player != target && target.isMin();
+					}).ai = function (target) {
 						var att = get.attitude(event.chooser, target);
 						if (target.hp == 1) return -att;
 						if (target.hp == 2) return 0;
@@ -8773,11 +7696,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].side != player.side &&
-							game.players[i].isMin() &&
-							game.players[i].countCards("he")
-						) {
+						if (game.players[i].side != player.side && game.players[i].isMin() && game.players[i].countCards("he")) {
 							return true;
 						}
 					}
@@ -8786,14 +7705,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"持盾：弃置对方一名随从的所有牌",
-						function (card, playerx, target) {
-							return (
-								player.side != target.side && target.isMin() && target.countCards("he") > 0
-							);
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("持盾：弃置对方一名随从的所有牌", function (card, playerx, target) {
+						return player.side != target.side && target.isMin() && target.countCards("he") > 0;
+					}).ai = function (target) {
 						return target.countCards("he");
 					};
 					player.line(event.chooser);
@@ -8883,11 +7797,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					return (
-						event.source &&
-						event.source == player.getLeader() &&
-						event.parent.name == "_mage_skill"
-					);
+					return event.source && event.source == player.getLeader() && event.parent.name == "_mage_skill";
 				},
 				content: function () {
 					trigger.num++;
@@ -8955,24 +7865,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].side == player.side &&
-							game.players[i] != player &&
-							game.players[i].isMin()
-						)
-							return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
 					}
 					return false;
 				},
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"驯兽：选择一名己方随从增加1点体力和体力上限并摸两张牌",
-						function (card, playerx, target) {
-							return player != target && player.side == target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("驯兽：选择一名己方随从增加1点体力和体力上限并摸两张牌", function (card, playerx, target) {
+						return player != target && player.side == target.side && target.isMin();
+					}).ai = function (target) {
 						return get.attitude(event.chooser, target);
 					};
 					player.line(event.chooser);
@@ -9002,11 +7904,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					var targets = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].side == player.side
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side) {
 							targets.push(game.players[i]);
 						}
 					}
@@ -9020,12 +7918,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				content: function () {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].side == player.side &&
-							game.players[i].hp < game.players[i].maxHp
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							game.players[i].recover();
 						}
 					}
@@ -9101,12 +7994,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"护卫：对一名对方随从造成1点伤害或弃置其所有牌并将其体力上限改为1",
-						function (card, playerx, target) {
-							return player.side != target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("护卫：对一名对方随从造成1点伤害或弃置其所有牌并将其体力上限改为1", function (card, playerx, target) {
+						return player.side != target.side && target.isMin();
+					}).ai = function (target) {
 						return Math.max(1, 10 - target.hp);
 					};
 					player.line(event.chooser);
@@ -9219,12 +8109,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"火袭：对一名对方随从造成2点伤害",
-						function (card, playerx, target) {
-							return player.side != target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("火袭：对一名对方随从造成2点伤害", function (card, playerx, target) {
+						return player.side != target.side && target.isMin();
+					}).ai = function (target) {
 						return Math.max(1, 10 - target.hp);
 					};
 					player.line(event.chooser);
@@ -9253,11 +8140,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				filter: function (event, player) {
 					if (event.player.career && player.side == event.player.side) {
 						for (var i = 0; i < game.players.length; i++) {
-							if (
-								!game.players[i].career &&
-								game.players[i].hasSkill("shaman_tuteng") &&
-								game.players[i].side == player.side
-							) {
+							if (!game.players[i].career && game.players[i].hasSkill("shaman_tuteng") && game.players[i].side == player.side) {
 								return true;
 							}
 						}
@@ -9267,11 +8150,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							!game.players[i].career &&
-							game.players[i].hasSkill("shaman_tuteng") &&
-							game.players[i].side == player.side
-						) {
+						if (!game.players[i].career && game.players[i].hasSkill("shaman_tuteng") && game.players[i].side == player.side) {
 							list.push(game.players[i]);
 						}
 					}
@@ -9284,13 +8163,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					return (
-						event.source &&
-						event.source != player &&
-						event.source.isMin() &&
-						player.side == event.source.side &&
-						event.notLink()
-					);
+					return event.source && event.source != player && event.source.isMin() && player.side == event.source.side && event.notLink();
 				},
 				content: function () {
 					trigger.num++;
@@ -9552,10 +8425,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ai: {
 					order: function (skill, player) {
 						if (!player.getEquip(1) && player.countCards("e") < 2) {
-							if (
-								player.countCards("h", "sha") &&
-								player.getActCount() + 3 <= player.actcount
-							) {
+							if (player.countCards("h", "sha") && player.getActCount() + 3 <= player.actcount) {
 								return 4;
 							}
 							return 0.1;
@@ -9609,7 +8479,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return 0;
+							if (card.name == "bingliang") return [0, 0];
 						},
 					},
 					noPhaseDelay: 1,
@@ -9624,11 +8494,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var players = get.players();
 					var targets = [];
 					for (var i = 0; i < players.length; i++) {
-						if (
-							players[i].side == player.side &&
-							!players[i].career &&
-							players[i].hp < players[i].maxHp
-						) {
+						if (players[i].side == player.side && !players[i].career && players[i].hp < players[i].maxHp) {
 							targets.push(players[i]);
 							players[i].recover();
 						}
@@ -9657,11 +8523,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var players = get.players();
 					var targets = [];
 					for (var i = 0; i < players.length; i++) {
-						if (
-							players[i].side == player.side &&
-							!players[i].career &&
-							players[i].countCards("h") <= 1
-						) {
+						if (players[i].side == player.side && !players[i].career && players[i].countCards("h") <= 1) {
 							targets.push(players[i]);
 						}
 					}
@@ -9759,10 +8621,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (target.hasSkill("lschaofeng")) return;
 						if (card.name == "sha") {
 							for (var i = 0; i < game.players.length; i++) {
-								if (
-									game.players[i].side == target.side &&
-									game.players[i].hasSkill("lschaofeng")
-								) {
+								if (game.players[i].side == target.side && game.players[i].hasSkill("lschaofeng")) {
 									return false;
 								}
 							}
@@ -9793,12 +8652,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"毒液：令一名敌方随从失去1点体力",
-						function (card, playerx, target) {
-							return player.side != target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("毒液：令一名敌方随从失去1点体力", function (card, playerx, target) {
+						return player.side != target.side && target.isMin();
+					}).ai = function (target) {
 						return Math.max(1, 10 - target.hp);
 					};
 					player.line(event.chooser);
@@ -9905,12 +8761,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"暗影：选择敌方一名角色视为对其使用一张杀",
-						function (card, player, target) {
-							return lib.filter.targetEnabled({ name: "sha" }, event.chooser, target);
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("暗影：选择敌方一名角色视为对其使用一张杀", function (card, player, target) {
+						return lib.filter.targetEnabled({ name: "sha" }, event.chooser, target);
+					}).ai = function (target) {
 						return get.effect(target, { name: "sha" }, event.chooser);
 					};
 					player.line(event.chooser);
@@ -9933,12 +8786,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"发明：选择己方一名角色摸一张牌",
-						function (card, playerx, target) {
-							return player != target && player.side == target.side;
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("发明：选择己方一名角色摸一张牌", function (card, playerx, target) {
+						return player != target && player.side == target.side;
+					}).ai = function (target) {
 						return get.attitude(event.chooser, target);
 					};
 					player.line(event.chooser);
@@ -9955,11 +8805,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].side != player.side &&
-							game.players[i].isMin() &&
-							game.players[i].countCards("he")
-						) {
+						if (game.players[i].side != player.side && game.players[i].isMin() && game.players[i].countCards("he")) {
 							return true;
 						}
 					}
@@ -9968,14 +8814,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"叫嚣：弃置对方一名随从的所有牌",
-						function (card, playerx, target) {
-							return (
-								player.side != target.side && target.isMin() && target.countCards("he") > 0
-							);
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("叫嚣：弃置对方一名随从的所有牌", function (card, playerx, target) {
+						return player.side != target.side && target.isMin() && target.countCards("he") > 0;
+					}).ai = function (target) {
 						return target.countCards("he");
 					};
 					player.line(event.chooser);
@@ -10002,12 +8843,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					"step 0";
 					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"火枪：对一名对方随从造成1点伤害",
-						function (card, playerx, target) {
-							return player.side != target.side && target.isMin();
-						}
-					).ai = function (target) {
+					event.chooser.chooseTarget("火枪：对一名对方随从造成1点伤害", function (card, playerx, target) {
+						return player.side != target.side && target.isMin();
+					}).ai = function (target) {
 						return Math.max(1, 10 - target.hp);
 					};
 					player.line(event.chooser);
@@ -10189,12 +9027,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				filter: function (event, player) {
 					if (event.player != player.getLeader()) return false;
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].side == player.side &&
-							game.players[i].hp < game.players[i].maxHp
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							return true;
 						}
 					}
@@ -10203,12 +9036,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				content: function () {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].isMin() &&
-							game.players[i] != player &&
-							game.players[i].side == player.side &&
-							game.players[i].hp < game.players[i].maxHp
-						) {
+						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							list.push(game.players[i]);
 						}
 					}
@@ -10372,12 +9200,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							list2.push(i);
 						}
 					}
-					var dialog = ui.create.dialog(
-						"hidden",
-						"召唤一名传说随从",
-						'<div class="text center">消耗100怒气值和4点行动值</div>',
-						[list.concat(list2), "character"]
-					);
+					var dialog = ui.create.dialog("hidden", "召唤一名传说随从", '<div class="text center">消耗100怒气值和4点行动值</div>', [list.concat(list2), "character"]);
 					var heilong = false;
 					var dc = player.getEnemy().countFellow() - player.countFellow();
 					if (dc > 2) {
@@ -10511,15 +9334,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			stone_zhiyin: "指引",
 			stone_zhiyin_info: "每当己方主将使用一张法术牌，将一张火球术置于其手牌。",
 			stone_bianshen: "变身",
-			stone_bianshen_info:
-				"你出场时，若己方主将职业为术士，则代之成为新的主将；若己变身，则改为令你召唤的地狱火的初始手牌数和体力值+1。",
+			stone_bianshen_info: "你出场时，若己方主将职业为术士，则代之成为新的主将；若己变身，则改为令你召唤的地狱火的初始手牌数和体力值+1。",
 			stone_lianyu: "炼狱",
 			stone_lianyu_info: "你的职业技能改为召唤一个地狱火。",
 			stone_lianji: "连击",
 			stone_lianji_info: "每当己方主将召唤一个随从，便增加1点体力和体力上限并摸一张牌。",
 			stone_shenyu: "神谕",
-			stone_shenyu_info:
-				"你出场时，己方主将可以选择一项：召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌。",
+			stone_shenyu_info: "你出场时，己方主将可以选择一项：召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌。",
 			stone_fuchou: "复仇",
 			stone_fuchou_info: "你死亡后，视为己方主将使用了一张复仇之怒。",
 			stone_shenyou: "神佑",
@@ -10532,8 +9353,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_shengguangzhadan: "圣光炸弹",
 			spell_shengguangzhadan_info: "对所有随从造成等同于其手牌数的伤害。",
 			spell_maizang: "埋葬",
-			spell_maizang_info:
-				"令一名敌方随从死亡（不触发死亡技能），并将一张与该随从同名的随从洗入你的牌库。",
+			spell_maizang_info: "令一名敌方随从死亡（不触发死亡技能），并将一张与该随从同名的随从洗入你的牌库。",
 			spell_xinlingshijie: "心灵视界",
 			spell_xinlingshijie_info: "将一张敌方主将手牌的复制置于你的手牌。",
 			spell_naluzhiguang: "纳鲁之光",
@@ -10592,8 +9412,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_tanxianmao: "探险帽",
 			hunter_tanxianmao: "探险帽",
 			hunter_tanxianmao_info: "你死亡时，将一张探险帽置入主将的手牌。",
-			spell_tanxianmao_info:
-				"令一名友方随从增加1点体力和体力上限并摸一张牌，当该随从死亡时，将一张探险帽置入你的手牌。",
+			spell_tanxianmao_info: "令一名友方随从增加1点体力和体力上限并摸一张牌，当该随从死亡时，将一张探险帽置入你的手牌。",
 			spell_shalumingling: "杀戮命令",
 			spell_shalumingling_info: "造成1点伤害，如果你控制任何野兽，则改为造成2点伤害。",
 			spell_zhuizongshu: "追踪术",
@@ -10675,8 +9494,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_fennu: "愤怒",
 			spell_fennu_info: "对一名随从造成2点伤害，或造成1点伤害并从牌库中获得一张牌。",
 			spell_heiandiyu: "黑暗低语",
-			spell_heiandiyu_info:
-				"召唤若干个小精灵直到你的随从数达到4；或令一名随从增加1点体力和体力上限并摸三张牌。",
+			spell_heiandiyu_info: "召唤若干个小精灵直到你的随从数达到4；或令一名随从增加1点体力和体力上限并摸三张牌。",
 
 			druid_yexingchengzhang: "成长",
 			druid_yexingchengzhang_bg: "长",
@@ -10715,8 +9533,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_zhumo: "蛛魔",
 			stone_zhumo: "蛛魔",
 			spell_zhumo_info: "每当该牌被弃置，为你的对手召唤一只蛛魔。",
-			spell_weijisifu_info:
-				"将三张蛛魔牌洗入对手的牌库；每当一名角色弃置蛛魔牌，为其对手召唤一只蛛魔。",
+			spell_weijisifu_info: "将三张蛛魔牌洗入对手的牌库；每当一名角色弃置蛛魔牌，为其对手召唤一只蛛魔。",
 			spell_piaoqie: "剽窃",
 			spell_piaoqie_info: "复制两张对手牌库中的牌加入你的手牌。",
 			spell_jipao: "疾跑",
@@ -10745,10 +9562,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_yongshizhufu_info: "令一名随从的手牌数翻倍。",
 			spell_zhengqianghaosheng: "争强好胜",
 			paladin_zhengqianghaosheng: "争强好胜",
-			paladin_zhengqianghaosheng_info:
-				"在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌。",
-			spell_zhengqianghaosheng_info:
-				"在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌。",
+			paladin_zhengqianghaosheng_info: "在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌。",
+			spell_zhengqianghaosheng_info: "在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌。",
 			spell_zhihuizhufu: "智慧祝福",
 			paladin_zhihuizhufu: "智慧祝福",
 			spell_zhihuizhufu_info: "选择一名随从，在其每个准备阶段，你从牌库中获得一张牌。",
@@ -10762,8 +9577,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_shihuawuqi: "石化武器",
 			shaman_shihuawuqi: "充能",
 			shaman_shihuawuqi_info: "准备阶段，你摸三张牌。",
-			spell_shihuawuqi_info:
-				"令一名友方随从获得技能充能（准备阶段，你摸三张牌），直到你的下一回合开始。",
+			spell_shihuawuqi_info: "令一名友方随从获得技能充能（准备阶段，你摸三张牌），直到你的下一回合开始。",
 			spell_xianzuzhaohuan: "先祖召唤",
 			spell_xianzuzhaohuan_info: "双方各将手牌中的一张随机随从牌置入战场。",
 			spell_xianzuzhihun: "先祖之魂",
@@ -10971,8 +9785,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			warlock_tongku: "痛苦",
 			warlock_tongku_info: "每当你造成一次伤害，令己方主将回复1点体力。",
 			warlock_tunshi: "吞噬",
-			warlock_tunshi_info:
-				"你出场时，己方主将须令一名其他友方随从死亡，然后你获得其全部的手牌和体力值。",
+			warlock_tunshi_info: "你出场时，己方主将须令一名其他友方随从死亡，然后你获得其全部的手牌和体力值。",
 			warlock_shijie: "视界",
 			warlock_shijie_info: "每当己方主将受到一次伤害，你增加1点体力和体力上限并摸一张牌。",
 
@@ -11052,8 +9865,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			mage_yufa: "驭法",
 			mage_yufa_info: "每当己方主将使用一次职业技能，令其获得1点行动值。",
 			mage_yanshu: "炎术",
-			mage_yanshu_info:
-				"你出场时，造成X点火焰伤害，随机分配到敌方随从上，X为己方主将装备区内装备牌的数量。",
+			mage_yanshu_info: "你出场时，造成X点火焰伤害，随机分配到敌方随从上，X为己方主将装备区内装备牌的数量。",
 			mage_pingxu: "冯虚",
 			mage_pingxu_info: "你出场时，己方主将从三张随机法术牌中选择一张加入手牌。",
 
@@ -11087,8 +9899,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			hunter_jiewang: "结网",
 			hunter_jiewang_info: "你死亡时，己方主将获得一张随机野兽牌。",
 			hunter_xunshou: "驯兽",
-			hunter_xunshou_info:
-				"你出场时，己方主将可选择一名其他友方随从令其增加1点体力和体力上限，摸两张牌并获得嘲讽。",
+			hunter_xunshou_info: "你出场时，己方主将可选择一名其他友方随从令其增加1点体力和体力上限，摸两张牌并获得嘲讽。",
 			hunter_nuhou: "怒吼",
 			hunter_nuhou_info: "当你死亡时，对所有敌方角色造成1点伤害。",
 			hunter_zhanhuo: "战火",
@@ -11123,8 +9934,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			stone_huoshanxiemu: "火山邪木",
 
 			druid_renya: "刃牙",
-			druid_renya_info:
-				"你出场时，己方主将可以选择一项：令你摸一张牌并将武将牌翻至正面，或令你增加1点体力上限并获得技能潜行。",
+			druid_renya_info: "你出场时，己方主将可以选择一项：令你摸一张牌并将武将牌翻至正面，或令你增加1点体力上限并获得技能潜行。",
 			druid_yuehuo: "月火",
 			druid_yuehuo_info: "所有锦囊牌造成的伤害+1。",
 			druid_qicheng: "骑乘",
@@ -11144,8 +9954,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			druid_chengzhang2: "成长",
 			druid_chengzhang_info: "你出场时，己方主将获得1点行动值；你死亡时，己方主将需弃置一张手牌。",
 			druid_huwei: "护卫",
-			druid_huwei_info:
-				"你出场时，己方主将可以选择一项：对一名随从造成1点伤害，或弃置一名随从的所有牌并将其体力上限改为2。",
+			druid_huwei_info: "你出场时，己方主将可以选择一项：对一名随从造成1点伤害，或弃置一名随从的所有牌并将其体力上限改为2。",
 
 			stone_fachao: "法潮图腾",
 			stone_tutengyongshi: "图腾勇士",
@@ -11304,8 +10113,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_jingshenkongzhi: "精神控制",
 			spell_jingshenkongzhi_info: "将一名敌方随从吸收为己方。",
 			spell_anyingkuangluan: "暗影狂乱",
-			spell_anyingkuangluan_info:
-				"将一名手牌数不超过1的敌方随从吸收为己方，并令其于下个回合结束后死亡。",
+			spell_anyingkuangluan_info: "将一名手牌数不超过1的敌方随从吸收为己方，并令其于下个回合结束后死亡。",
 			spell_anyingkuangluan_die: "暗影狂乱",
 			spell_anyingkuangluan_die_info: "下个回合结束后死亡。",
 			spell_binghuan: "冰环",
@@ -11323,13 +10131,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_chenmo: "沉默",
 			spell_chenmo_info: "弃置一名随从的所有牌，并令其体力上限减至2。",
 			spell_zhiliaoshui: "治疗水",
-			spell_zhiliaoshui_info:
-				"出牌阶段对自己使用，恢复2点体力值；或于濒死阶段对一名角色使用，令目标恢复1点体力。",
+			spell_zhiliaoshui_info: "出牌阶段对自己使用，恢复2点体力值；或于濒死阶段对一名角色使用，令目标恢复1点体力。",
 			spell_yanmie: "极恶之咒",
 			spell_yanmie_info: "交换你与敌方主将的装备区，并摸若干张牌直到你的手牌数与敌方主将相等。",
 			spell_xiaoshi: "消失",
-			spell_xiaoshi_info:
-				"令敌方主将将所有装备区内的牌收入手牌，并弃置其若干张手牌，直到其手牌数与你相等。",
+			spell_xiaoshi_info: "令敌方主将将所有装备区内的牌收入手牌，并弃置其若干张手牌，直到其手牌数与你相等。",
 
 			stonecard: "法术",
 			mode_stone_card_config: "炉石模式",
@@ -11367,4 +10173,4 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				"<li>行动顺序为先主将后随从。主将或随从死亡后立即移出游戏，主将死亡后替补登场，替补登场时摸3+X张牌，X为对方存活的随从数，无替补时游戏结束",
 		},
 	};
-});
+};

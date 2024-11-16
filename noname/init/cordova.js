@@ -9,20 +9,28 @@ import { checkVersion } from "../library/update.js";
 export async function cordovaReady() {
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑
-		window.addEventListener("importExtension", e => {
-			const extensionName = e.detail.extensionName;
-			lib.config.extensions.add(extensionName);
-			game.saveConfig("extensions", lib.config.extensions);
-			game.saveConfig(`extension_${extensionName}_enable`, true);
-			if (confirm(`扩展${extensionName}已导入成功，是否重启游戏？`)) {
-				game.reload();
-			}
-		}, false);
-		window.addEventListener("importPackage", () => {
-			if (confirm(`离线包/完整包已导入成功，是否重启游戏？`)) {
-				game.reload();
-			}
-		}, false);
+		window.addEventListener(
+			"importExtension",
+			e => {
+				const extensionName = e.detail.extensionName;
+				lib.config.extensions.add(extensionName);
+				game.saveConfig("extensions", lib.config.extensions);
+				game.saveConfig(`extension_${extensionName}_enable`, true);
+				if (confirm(`扩展${extensionName}已导入成功，是否重启游戏？`)) {
+					game.reload();
+				}
+			},
+			false
+		);
+		window.addEventListener(
+			"importPackage",
+			() => {
+				if (confirm(`离线包/完整包已导入成功，是否重启游戏？`)) {
+					game.reload();
+				}
+			},
+			false
+		);
 		document.addEventListener("pause", function () {
 			if (!_status.paused2 && typeof _status.event.isMine == "function" && !_status.event.isMine()) {
 				ui.click.pause();
@@ -64,33 +72,36 @@ export async function cordovaReady() {
 		if ("cordova" in window && "plugins" in window.cordova && "permissions" in window.cordova.plugins) {
 			const permissions = cordova.plugins.permissions;
 			const requests = ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"];
-			if (typeof device == 'object') {
+			if (typeof device == "object") {
 				// 安卓13或以上
 				if (checkVersion(device.version, "13") >= 0) {
 					requests.length = 0;
-					requests.push('READ_MEDIA_IMAGES', 'READ_MEDIA_VIDEO', 'READ_MEDIA_AUDIO');
+					requests.push("READ_MEDIA_IMAGES", "READ_MEDIA_VIDEO", "READ_MEDIA_AUDIO");
 				}
 			}
-			Promise.all(requests.map(request => {
-				return new Promise((resolve, reject) => {
-					permissions.checkPermission(permissions[request], status => {
-						resolve({
-							request: request,
-							hasPermission: status.hasPermission
-						});
-					}, reject);
-				});
-			})).then(shouldRequestPermissions => {
-				return shouldRequestPermissions
-					.filter(({ hasPermission }) => !hasPermission)
-					.map(({ request }) => permissions[request] || `android.permission.${request}`);
-			}).then(willRequestPermissions => {
-				permissions.requestPermissions(
-					willRequestPermissions,
-					lib.other.ignore,
-					lib.other.ignore
-				);
-			}).catch(console.log);
+			Promise.all(
+				requests.map(request => {
+					return new Promise((resolve, reject) => {
+						permissions.checkPermission(
+							permissions[request],
+							status => {
+								resolve({
+									request: request,
+									hasPermission: status.hasPermission,
+								});
+							},
+							reject
+						);
+					});
+				})
+			)
+				.then(shouldRequestPermissions => {
+					return shouldRequestPermissions.filter(({ hasPermission }) => !hasPermission).map(({ request }) => permissions[request] || `android.permission.${request}`);
+				})
+				.then(willRequestPermissions => {
+					permissions.requestPermissions(willRequestPermissions, lib.other.ignore, lib.other.ignore);
+				})
+				.catch(console.log);
 		}
 	}
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
@@ -119,6 +130,65 @@ export async function cordovaReady() {
 			onerror
 		);
 	};
+
+	/**
+	 * 检查指定的路径是否是一个文件
+	 *
+	 * @param {string} fileName - 需要查询的路径
+	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是文件
+	 *  - `1`: 路径的内容是文件
+	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
+	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 */
+	game.checkFile = function (fileName, callback, onerror) {
+		let path = lib.path.join(nonameInitialized, fileName);
+
+		window.resolveLocalFileSystemURL(
+			path,
+			entry => {
+				callback?.(entry.isFile ? 1 : 0);
+			},
+			error => {
+				if ([FileError.NOT_FOUND_ERR, FileError.NOT_READABLE_ERR].includes(error.code)) {
+					callback?.(-1);
+				} else {
+					onerror?.(new Error(`Code: ${error.code}`));
+				}
+			}
+		);
+	};
+
+	/**
+	 * 检查指定的路径是否是一个目录
+	 *
+	 * @param {string} dir - 需要查询的路径
+	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是目录
+	 *  - `1`: 路径的内容是目录
+	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
+	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 */
+	game.checkDir = function (dir, callback, onerror) {
+		let path = lib.path.join(nonameInitialized, dir);
+
+		window.resolveLocalFileSystemURL(
+			path,
+			entry => {
+				callback?.(entry.isDirectory ? 1 : 0);
+			},
+			error => {
+				if ([FileError.NOT_FOUND_ERR, FileError.NOT_READABLE_ERR].includes(error.code)) {
+					callback?.(-1);
+				} else {
+					onerror?.(new Error(`Code: ${error.code}`));
+				}
+			}
+		);
+	};
+
 	game.readFile = function (filename, callback, onerror) {
 		window.resolveLocalFileSystemURL(
 			nonameInitialized,
@@ -214,11 +284,11 @@ export async function cordovaReady() {
 			folders = [];
 		window.resolveLocalFileSystemURL(
 			nonameInitialized + dir,
-			(entry) => {
+			entry => {
 				var dirReader = entry.createReader();
 				var entries = [];
 				var readEntries = () => {
-					dirReader.readEntries((results) => {
+					dirReader.readEntries(results => {
 						if (!results.length) {
 							entries.sort();
 							for (var i = 0; i < entries.length; i++) {
@@ -261,7 +331,7 @@ export async function cordovaReady() {
 				)
 					.catch(
 						() =>
-							new Promise((resolve) =>
+							new Promise(resolve =>
 								entry.getDirectory(
 									str,
 									{
@@ -271,15 +341,14 @@ export async function cordovaReady() {
 								)
 							)
 					)
-					.then((directoryEntry) => access(directoryEntry, directory, createDirectory));
+					.then(directoryEntry => access(directoryEntry, directory, createDirectory));
 			};
 		return new Promise((resolve, reject) =>
 			window.resolveLocalFileSystemURL(
 				nonameInitialized,
-				(rootEntry) => {
+				rootEntry => {
 					const createDirectory = () => {
-						if (directoryList.length)
-							access(rootEntry, directoryList.pop().split("/").reverse(), createDirectory);
+						if (directoryList.length) access(rootEntry, directoryList.pop().split("/").reverse(), createDirectory);
 						if (typeof callback == "function") callback();
 						resolve();
 					};
@@ -291,11 +360,9 @@ export async function cordovaReady() {
 	};
 	game.createDir = (directory, successCallback, errorCallback) => {
 		const paths = directory.split("/").reverse();
-		new Promise((resolve, reject) =>
-			window.resolveLocalFileSystemURL(nonameInitialized, resolve, reject)
-		).then(
-			(directoryEntry) => {
-				const redo = (entry) =>
+		new Promise((resolve, reject) => window.resolveLocalFileSystemURL(nonameInitialized, resolve, reject)).then(
+			directoryEntry => {
+				const redo = entry =>
 					new Promise((resolve, reject) =>
 						entry.getDirectory(
 							paths.pop(),
@@ -305,13 +372,13 @@ export async function cordovaReady() {
 							resolve,
 							reject
 						)
-					).then((resolvedDirectoryEntry) => {
+					).then(resolvedDirectoryEntry => {
 						if (paths.length) return redo(resolvedDirectoryEntry);
 						if (typeof successCallback == "function") successCallback();
 					});
 				return redo(directoryEntry);
 			},
-			(reason) => {
+			reason => {
 				if (typeof errorCallback != "function") return Promise.reject(reason);
 				errorCallback(reason);
 			}
@@ -320,12 +387,12 @@ export async function cordovaReady() {
 	game.removeDir = (directory, successCallback, errorCallback) => {
 		window.resolveLocalFileSystemURL(
 			`${nonameInitialized}${directory}`,
-			(directoryEntry) => {
+			directoryEntry => {
 				directoryEntry.removeRecursively(() => {
 					if (typeof successCallback == "function") successCallback();
 				});
 			},
-			(e) => {
+			e => {
 				if (typeof errorCallback == "function") errorCallback(e);
 				else throw e;
 			}

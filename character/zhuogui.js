@@ -15,7 +15,7 @@ game.import("character", function () {
 				ai: {
 					effect: {
 						target: function (card, player, target, current) {
-							if (card.name == "lebu" && card.name == "bingliang") return 0.8;
+							if (card.name == "lebu" || card.name == "bingliang") return 0.8;
 						},
 					},
 				},
@@ -200,7 +200,7 @@ game.import("character", function () {
 				},
 				ai: {
 					effect: {
-						target: function (card, player, target, current) {
+						target_use: function (card, player, target, current) {
 							if (get.type(card) == "delay" && target.countCards("j") == 0) return 0.1;
 						},
 					},

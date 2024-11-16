@@ -104,6 +104,12 @@ export class Card extends HTMLDivElement {
 	 * @type { boolean }
 	 */
 	isCard;
+	/**
+	 * @type { string[] }
+	 * 卡牌“占用的装备栏”
+	 * TODO: 补充对应的typings
+	 */
+	subtypes;
 	//执行销毁一张牌的钩子函数
 	selfDestroy(event) {
 		if (this._selfDestroyed) return;
@@ -305,23 +311,7 @@ export class Card extends HTMLDivElement {
 		var info = lib.card[card[2]];
 		var cardnum = card[1] || "";
 		if (parseInt(cardnum) == cardnum) cardnum = parseInt(cardnum);
-		if (cardnum > 0 && cardnum < 14) {
-			cardnum = [
-				"A",
-				"2",
-				"3",
-				"4",
-				"5",
-				"6",
-				"7",
-				"8",
-				"9",
-				"10",
-				"J",
-				"Q",
-				"K",
-			][cardnum - 1];
-		}
+		cardnum = get.strNumber(cardnum, true) || "";
 		if (this.name) {
 			this.classList.remove("epic");
 			this.classList.remove("legend");
@@ -359,7 +349,7 @@ export class Card extends HTMLDivElement {
 		this.classList.remove("fullborder");
 		this.dataset.cardName = card[2];
 		this.dataset.cardType = info.type || "";
-		this.dataset.cardSubype = info.subtype || "";
+		this.dataset.cardSubtype = info.subtype || "";
 		this.dataset.cardMultitarget = info.multitarget ? "1" : "0";
 		this.node.name.dataset.nature = "";
 		this.node.info.classList.remove("red");
@@ -670,6 +660,40 @@ export class Card extends HTMLDivElement {
 		}
 		return this;
 	}
+	/**
+	 * 给此牌添加特定的cardtag（如添加应变条件）
+	 * @param { string } tag 
+	 */
+	addCardtag(tag) {
+		let card = this;
+		game.broadcastAll(function (card, tag) {
+			if (!_status.cardtag) {
+				_status.cardtag = {};
+			}
+			if (!_status.cardtag[tag]) {
+				_status.cardtag[tag] = [];
+			}
+			_status.cardtag[tag].add(card.cardid);
+			card.$init([card.suit, card.number, card.name, card.nature]);
+		}, card, tag);
+	}
+	/**
+	 * 给此牌移除特定的cardtag（如移除应变条件）
+	 * @param { string } tag 
+	 */
+	removeCardtag(tag) {
+		let card = this;
+		game.broadcastAll(function (card, tag) {
+			if (!_status.cardtag) {
+				_status.cardtag = {};
+			}
+			if (!_status.cardtag[tag]) {
+				_status.cardtag[tag] = [];
+			}
+			_status.cardtag[tag].remove(card.cardid);
+			card.$init([card.suit, card.number, card.name, card.nature]);
+		}, card, tag);
+	}
 	updateTransform(bool, delay) {
 		if (delay) {
 			var that = this;
@@ -891,11 +915,20 @@ export class Card extends HTMLDivElement {
 	}
 	/**
 	 * 返回一个键值，用于在缓存中作为键名。
-	 *
+	 * @param { boolean } [similar] false统一前缀
 	 * @returns {string} cacheKey
 	 */
-	getCacheKey() {
-		return `[c:${this.cardid}]`;
+	getCacheKey(similar) {
+		let prefix = "[object:";
+		if (similar !== false) prefix = "[card:";
+		if (this.cardid) return prefix + this.cardid + "]";
+		return prefix + `${this.name}+${
+			this.suit ? this.suit : "none"
+		}+${
+			this.number === undefined ? "none" : this.number
+		}${
+			this.nature ? "+" + this.nature : ""
+		}]`;
 	}
 	discard(bool) {
 		if (!this._selfDestroyed) {

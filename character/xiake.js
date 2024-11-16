@@ -6,7 +6,7 @@ game.import("character", function () {
 			xk_guyuexuan: ["male", "qun", 4, ["rouquan", "gzhenji"]],
 			xk_jinji: ["male", "shu", 4, ["zhongzhan", "lianpo"]],
 			// xk_shenxiangyun:['female','wei',3,['zhenjiu']],
-			// xk_fujianhan: ["male", "qun", 4, ["zuijian", "zitong"]],
+			// xk_fujianhan: ["male", "qun", 4, ["zitong"]],
 		},
 		skill: {
 			zhongzhan: {

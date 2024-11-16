@@ -27,7 +27,6 @@ export default {
 	ns_huamulan: "#p哎别管我是谁",
 	ns_jinke: "#p哎别管我是谁",
 	ns_huangzu: "#r小芯儿童鞋",
-	ns_lisu: "#r小芯儿童鞋",
 	ns_yanliang: "#r丶橙续缘",
 	ns_wenchou: "#r丶橙续缘",
 	ns_caocao: "#r一瞬间丶遗忘",

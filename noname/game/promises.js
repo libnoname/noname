@@ -173,4 +173,34 @@ export class GamePromises {
 	saveExtensionConfigValue(extension, key) {
 		return game.promises.saveExtensionConfig(extension, key, game.getExtensionConfig(extension, key));
 	}
+
+	/**
+	 * 检查指定的路径是否是一个文件
+	 *
+	 * @param {string} fileName - 需要查询的路径
+	 * @return {Promise<(-1 | 0 | 1)>} - 返回值意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是文件
+	 *  - `1`: 路径的内容是文件
+	 */
+	checkFile(fileName) {
+		return new Promise((resolve, reject) => {
+			game.checkFile(fileName, resolve, reject);
+		});
+	}
+
+	/**
+	 * 检查指定的路径是否是一个目录
+	 *
+	 * @param {string} dir - 需要查询的路径
+	 * @return {Promise<(-1 | 0 | 1)>} - 返回值意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是目录
+	 *  - `1`: 路径的内容是目录
+	 */
+	checkDir(dir) {
+		return new Promise((resolve, reject) => {
+			game.checkDir(dir, resolve, reject);
+		});
+	}
 }

@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		return '转换技，出牌阶段限一次。<span class="bluetext">阴：你可以观看牌堆顶的至多四张牌；</span>阳：你可以观看一名角色的至多四张手牌。然后你可以使用其中的一张牌。';
 	},
 	clanjiexuan(player) {
-		if (player.storage.clanjiexuan) return '限定技，转换技。阴：你可以将一张红色牌当【顺手牵羊】使用；<span class="bluetext">阳：你可以将一张黑色牌当【过河拆桥】使用。</span>';
+		if((player.storage?.clanjiexuan || 0) % 2) return '限定技，转换技。阴：你可以将一张红色牌当【顺手牵羊】使用；<span class="bluetext">阳：你可以将一张黑色牌当【过河拆桥】使用。</span>';
 		return '限定技，转换技。<span class="bluetext">阴：你可以将一张红色牌当【顺手牵羊】使用；</span>阳：你可以将一张黑色牌当【过河拆桥】使用。';
 	},
 };

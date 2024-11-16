@@ -278,10 +278,12 @@ const cards = {
 		forceDie: true,
 		onLose: function () {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
-				card.fix();
-				card.remove();
-				card.destroyed = true;
-				game.log(card, "被销毁了");
+				cards.forEach(card => {
+					card.fix();
+					card.remove();
+					card.destroyed = true;
+					game.log(card, "被销毁了");
+				});
 			}
 		},
 		equipDelay: false,
@@ -304,10 +306,12 @@ const cards = {
 		skills: ["zhuangshu_trick"],
 		onLose: function () {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
-				card.fix();
-				card.remove();
-				card.destroyed = true;
-				game.log(card, "被销毁了");
+				cards.forEach(card => {
+					card.fix();
+					card.remove();
+					card.destroyed = true;
+					game.log(card, "被销毁了");
+				});
 			}
 		},
 		equipDelay: false,
@@ -325,10 +329,12 @@ const cards = {
 		inherit: "zhuangshu_basic",
 		onLose: function () {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
-				card.fix();
-				card.remove();
-				card.destroyed = true;
-				game.log(card, "被销毁了");
+				cards.forEach(card => {
+					card.fix();
+					card.remove();
+					card.destroyed = true;
+					game.log(card, "被销毁了");
+				});
 			}
 		},
 		equipDelay: false,

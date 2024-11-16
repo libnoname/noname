@@ -20,11 +20,18 @@ game.import("character", function () {
 			xianding: characterSort,
 		},
 		characterSubstitute: {
-			dc_sb_simayi: [],
-			dc_sb_zhouyu: [],
-			dc_sb_lusu: [],
-			dc_sb_jiaxu: [],
-			dc_sb_guojia: [],
+			dc_sb_simayi: [
+				["dc_sb_simayi_shadow", []],
+			],
+			dc_sb_zhouyu: [
+				["dc_sb_zhouyu_shadow", []],
+			],
+			dc_sb_lusu: [
+				["dc_sb_lusu_shadow", []],
+			],
+			dc_sb_jiaxu: [
+				["dc_sb_jiaxu_shadow", []],
+			],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {

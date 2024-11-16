@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcsbkongwu(player) {
+		let str = "转换技，出牌阶段限一次，你可以弃置至多体力上限张牌，选择一名其他角色：",
+			yin = "阴，弃置其至多等量张牌；",
+			yang = "阳，视为对其使用等量张【杀】。";
+		if (player.storage.dcsbkongwu) yang = `<span class="firetext">${yang}</span>`;
+		else yin = `<span class="bluetext">${yin}</span>`;
+		return str + yin + yang + "此阶段结束时，若其手牌数和体力值均不大于你，其下回合摸牌阶段摸牌数-1且装备区里的所有牌失效。";
+	},
+	dckengqiang(player) {
+		let str = player.storage.dcshangjue ? "每回合每项各限一次" : "每回合限一次";
+		str += "，当你造成伤害时，你可以：1.摸体力上限张牌；2.令此伤害+1并获得造成伤害的牌。";
+		return str;
+	},
 	xinlvli(player) {
 		var str = "每回合限一次";
 		if (player.storage.choujue) str += "（自己的回合内则改为限两次）";
@@ -24,7 +37,7 @@ const dynamicTranslates = {
 		return '转换技，出牌阶段限一次，<span class="bluetext">阴：你可以将至多两张手牌交给一名其他角色。</span>阳：你可以获得一名其他角色的至多两张手牌。若以此法移动的牌包含【酒】或♥牌，则你可令得到此牌的角色执行一项：①回复1点体力。②复原武将牌。';
 	},
 	zhiren(player) {
-		return "当你于" + (player.hasSkill("yaner_zhiren") ? "一" : "你的") + "回合内使用第一张非转化牌时，你可依次执行以下选项中的前X项：①卜算X。②可弃置场上的一张装备牌和延时锦囊牌。③回复1点体力。④摸三张牌。（X为此牌的名称的字数）";
+		return "当你于" + (player.hasSkill("yaner_zhiren") ? "一" : "你的") + "回合内使用第一张非转化牌时，你可依次执行以下选项中的前X项：①卜算X。②可弃置场上的一张" + (get.mode() == "guozhan" ? "牌" : "装备牌和延时锦囊牌") + "。③回复1点体力。④摸" + (get.mode() == "guozhan" ? "两" : "三") + "张牌。（X为此牌的名称的字数）";
 	},
 	yuqi(player) {
 		var info = lib.skill.yuqi.getInfo(player);
@@ -66,30 +79,30 @@ const dynamicTranslates = {
 	},
 	dcsbmengmou(player) {
 		var storage = player.storage.dcsbmengmou;
-		var str = "转换技，每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：";
+		var str = "转换技，①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：";
 		if (!storage) str += '<span class="bluetext">';
-		str += "阴，你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力；";
+		str += "阳，你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力；";
 		if (!storage) str += "</span>";
 		if (storage) str += '<span class="bluetext">';
-		str += "阳，你可令该角色打出至多X张【杀】，然后其失去Y点体力。";
+		str += "阴，你可令该角色打出至多X张【杀】，然后其失去Y点体力。";
 		if (storage) str += "</span>";
 		str += "（X为你的体力上限，Y为X-其打出【杀】数）";
 		return str;
 	},
 	dcsbyingmou(player) {
 		var storage = player.storage.dcsbyingmou;
-		var str = "转换技，每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：";
+		var str = "转换技，①游戏开始时，你可以转换此技能状态；②每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：";
 		if (!storage) str += '<span class="bluetext">';
-		str += "阴，你将手牌数摸至与其相同（至多摸五张），然后视为对其使用一张【火攻】；";
+		str += "阳，你将手牌数摸至与其相同（至多摸五张），然后视为对其使用一张【火攻】；";
 		if (!storage) str += "</span>";
 		if (storage) str += '<span class="bluetext">';
-		str += "阳，令一名手牌数为全场最大的角色对其使用手牌中所有的【杀】和伤害类锦囊牌（若其没有可使用的牌则将手牌数弃至与你相同）。";
+		str += "阴，令一名手牌数为全场最大的角色对其使用手牌中所有的【杀】和伤害类锦囊牌（若其没有可使用的牌则将手牌数弃至与你相同）。";
 		if (storage) str += "</span>";
 		return str;
 	},
 	dcsbquanmou(player) {
-		if (player.storage.dcsbquanmou) return '转换技。出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。阴：当你于本阶段内下次对其造成伤害时，取消之；<span class="bluetext">阳：当你于本阶段内下次对其造成伤害后，你可以选择除其外的至多三名其他角色，对这些角色依次造成1点伤害。</span>';
-		return '转换技。出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。<span class="bluetext">阴：当你于本阶段内下次对其造成伤害时，取消之；</span>阳：当你于本阶段内下次对其造成伤害后，你可以选择除其外的至多三名其他角色，对这些角色依次造成1点伤害。';
+		if (player.storage.dcsbquanmou) return '转换技。①游戏开始时，你可以转换此技能状态；②出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。阳：当你于本阶段内下次对其造成伤害时，取消之；<span class="bluetext">阴：当你于本阶段内下次对其造成伤害后，你可以选择除其外的至多三名其他角色，对这些角色依次造成1点伤害。</span>';
+		return '转换技。①游戏开始时，你可以转换此技能状态；②出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。<span class="bluetext">阳：当你于本阶段内下次对其造成伤害时，取消之；</span>阴：当你于本阶段内下次对其造成伤害后，你可以选择除其外的至多三名其他角色，对这些角色依次造成1点伤害。';
 	},
 	dcshouzhi(player) {
 		let skillName = "dcshouzhi";
@@ -98,25 +111,14 @@ const dynamicTranslates = {
 	},
 	dcsbfumou(player) {
 		const storage = player.storage.dcsbfumou;
-		var str = "转换技，出牌阶段限一次，你可以观看一名其他角色A的手牌并展示其一半手牌：";
+		var str = "转换技，①游戏开始时，你可以转换此技能状态；②出牌阶段限一次，你可以观看一名其他角色A的手牌并展示其至多一半手牌：";
 		if (!storage) str += '<span class="bluetext">';
-		str += "阴，并将这些牌交给另一名其他角色B，然后你与A各摸X张牌（X为A以此法失去的手牌数）；";
+		str += "阳，并将这些牌交给另一名其他角色B，然后你与A各摸X张牌（X为A以此法失去的手牌数）；";
 		if (!storage) str += "</span>";
 		if (storage) str += '<span class="bluetext">';
-		str += "阳，令A依次使用这些牌中所有其可以使用的牌（无距离限制且不可被响应）。";
+		str += "阴，令A依次使用这些牌中所有其可以使用的牌（无距离限制且不可被响应）。";
 		if (storage) str += "</span>";
 		return str;
-	},
-	dcxianmou(player) {
-		const storage = player.storage.dcxianmou;
-		var str = "转换技，你失去过牌的回合结束时，你可以：";
-		if (!storage) str += '<span class="bluetext">';
-		str += "阴，观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得【遗计】直到再发动此项；";
-		if (!storage) str += "</span>";
-		if (storage) str += '<span class="bluetext">';
-		str += "阳，观看一名角色手牌并弃置其中至多X张牌，若弃置X张牌则你进行一次【闪电】判定。";
-		if (storage) str += "</span>";
-		return str+="（X为你本回合失去牌数）";
 	},
 };
 export default dynamicTranslates;

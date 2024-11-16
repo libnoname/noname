@@ -2,84 +2,6 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	//山包初版神赵
-	oldjuejing: {
-		audio: "xinjuejing",
-		trigger: { player: "phaseDrawBegin2" },
-		filter: function (event, player) {
-			return !event.numFixed && player.getHp() < player.maxHp;
-		},
-		forced: true,
-		content: function () {
-			trigger.num += player.getDamagedHp();
-		},
-		mod: {
-			maxHandcard: (player, num) => num + 2,
-		},
-	},
-	oldlonghun: {
-		audio: "relonghun",
-		inherit: "xinlonghun",
-		prompt: () => `将${get.cnNumber(Math.max(1, get.player().getHp()))}张♦牌当做杀，♥牌当做桃，♣牌当做闪，♠牌当做无懈可击使用或打出`,
-		selectCard: () => Math.max(1, get.player().getHp()),
-		complexCard: true,
-		precontent: function () {
-			delete event.result.skill;
-			player.logSkill("oldlonghun");
-		},
-		ai: {
-			respondSha: true,
-			respondShan: true,
-			skillTagFilter: function (player, tag) {
-				var name;
-				switch (tag) {
-					case "respondSha":
-						name = "diamond";
-						break;
-					case "respondShan":
-						name = "club";
-						break;
-					case "save":
-						name = "heart";
-						break;
-				}
-				if (!player.countCards("hes", { suit: name })) return false;
-			},
-			order: function (item, player) {
-				if (player && _status.event.type == "phase") {
-					var max = 0;
-					var list = ["sha", "tao"];
-					var map = { sha: "diamond", tao: "heart" };
-					for (var i = 0; i < list.length; i++) {
-						var name = list[i];
-						if (
-							player.countCards("hes", function (card) {
-								return (name != "sha" || get.value(card) < 5) && get.suit(card, player) == map[name];
-							}) >= Math.max(1, player.getHp()) &&
-							player.getUseValue({
-								name: name,
-								nature: name == "sha" ? "fire" : null,
-							}) > 0
-						) {
-							var temp = get.order({
-								name: name,
-								nature: name == "sha" ? "fire" : null,
-							});
-							if (temp > max) max = temp;
-						}
-					}
-					max /= 1.1;
-					return max;
-				}
-				return 2;
-			},
-		},
-		hiddenCard: function (player, name) {
-			if (name == "wuxie" && _status.connectMode && player.countCards("hes") > 0) return true;
-			if (name == "wuxie") return player.countCards("hes", { suit: "spade" }) >= Math.max(1, get.player().getHp());
-			if (name == "tao") return player.countCards("hes", { suit: "heart" }) >= Math.max(1, get.player().getHp());
-		},
-	},
 	//魏武帝
 	junkguixin: {
 		forbid: ["guozhan"],
@@ -658,6 +580,7 @@ const skills = {
 		popup: false,
 		firstDo: true,
 		charlotte: true,
+		sourceSkill: "old_guhuo",
 		filter: function (event, player) {
 			return event.skill && event.skill.indexOf("old_guhuo_") == 0;
 		},
@@ -971,6 +894,7 @@ const skills = {
 		ai: {
 			expose: 0.2,
 		},
+		global: "faen_global",
 	},
 	oldxuanfeng: {
 		audio: "xuanfeng",

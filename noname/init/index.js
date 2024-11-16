@@ -94,7 +94,7 @@ export function sendUpdate() {
 				fs.writeFileSync(path.join(__dirname, "Home", "saveProtocol.txt"), "");
 				// 启动http
 				const cp = require("child_process");
-				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => {});
+				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => { });
 				return `http://localhost:8089/app.html?sendUpdate=true`;
 			}
 		}
@@ -195,7 +195,7 @@ export async function boot() {
 			//但这种方式只允许修改game的文件读写函数。
 			if (typeof window.initReadWriteFunction == "function") {
 				const g = {};
-				const ReadWriteFunctionName = ["download", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
+				const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
 				ReadWriteFunctionName.forEach(prop => {
 					Object.defineProperty(g, prop, {
 						configurable: true,
@@ -264,6 +264,7 @@ export async function boot() {
 	config.get("all").plays = [];
 	config.get("all").mode = [];
 
+	if (config.get("compatiblemode")) _status.withError = true;
 	if (config.get("debug")) {
 		await lib.init.promises.js(`${lib.assetURL}game`, "asset");
 		if (window.noname_skin_list) {
@@ -550,7 +551,8 @@ export async function boot() {
 	} else {
 		Reflect.get(ui, "css").phone = lib.init.css();
 	}
-
+	ui.css._others = lib.init.css(lib.assetURL + "layout/" + "others", "dialog");
+	ui.css._skill = lib.init.css(lib.assetURL + "layout/" + "others", "skill");
 	initSheet(Reflect.get(lib, "config"));
 
 	config.set("duration", 500);
@@ -857,7 +859,7 @@ async function loadCss() {
  * @deprecated
  * @return {Promise<void>}
  */
-async function onWindowReady() {}
+async function onWindowReady() { }
 
 function setBackground() {
 	let htmlbg = localStorage.getItem(lib.configprefix + "background");
@@ -1020,12 +1022,6 @@ async function setOnError() {
 		Reflect.set(window, "ec", column);
 		Reflect.set(window, "eo", err);
 		if (promiseErrorHandler.onErrorFinish) promiseErrorHandler.onErrorFinish();
-		// @ts-ignore
-		if (!lib.config.errstop && _status && _status.event) {
-			if (_status.event.content instanceof AsyncFunction || Array.isArray(_status.event.contents)) return;
-			_status.withError = true;
-			game.loop();
-		}
 	};
 
 	return promiseErrorHandler;

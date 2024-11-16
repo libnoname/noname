@@ -11,12 +11,12 @@ game.import("play", function () {
 				storage = {};
 			}
 			if (get.mode() != "boss") {
-				lib.characterPack.mode_extension_boss = storage.boss || {};
-				for (var i in lib.characterPack.mode_extension_boss) {
-					lib.characterPack.mode_extension_boss[i][4].push(
+				lib.characterPack.boss = storage.boss || {};
+				for (var i in lib.characterPack.boss) {
+					lib.characterPack.boss[i][4].push(
 						"mode:boss"
 					);
-					lib.character[i] = lib.characterPack.mode_extension_boss[i];
+					lib.character[i] = lib.characterPack.boss[i];
 					if (
 						typeof lib.character[i][2] != "number" &&
 						(typeof lib.character[i][2] != "string" ||
@@ -34,13 +34,12 @@ game.import("play", function () {
 				get.mode() != "versus" ||
 				get.config("versus_mode") != "jiange"
 			) {
-				lib.characterPack.mode_extension_jiange = list2;
-				for (var i in list2) {
-					lib.characterPack.mode_extension_jiange[i] = list2[i];
-					lib.characterPack.mode_extension_jiange[i][4].push(
+				lib.characterPack.jiange = list2;
+				for (var i in lib.characterPack.jiange) {
+					lib.characterPack.jiange[i][4].push(
 						"mode:versus"
 					);
-					lib.character[i] = list2[i];
+					lib.character[i] = lib.characterPack.jiange[i];
 					if (typeof lib.character[i][2] != "number") {
 						lib.character[i][2] = Infinity;
 					}
@@ -72,8 +71,8 @@ game.import("play", function () {
 				}
 			}
 			var list = storage.translate || {};
-			list.mode_extension_boss_character_config = "挑战武将";
-			list.mode_extension_jiange_character_config = "剑阁武将";
+			list.boss_character_config = "挑战武将";
+			list.jiange_character_config = "剑阁武将";
 
 			for (var i in list) {
 				lib.translate[i] = lib.translate[i] || list[i];

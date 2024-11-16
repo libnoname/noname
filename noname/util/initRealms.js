@@ -2,7 +2,7 @@ import { CodeSnippet, ErrorReporter, ErrorManager } from "./error.js";
 
 // 方便开关确定沙盒的问题喵
 // 当此处为true、debug模式未启用、设备非苹果时，沙盒生效
-let SANDBOX_ENABLED = true;
+let SANDBOX_ENABLED = false;
 
 // 执行上下文传递函数，请勿动喵
 // 用于传递顶级execute context

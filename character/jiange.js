@@ -4,7 +4,7 @@ game.import("character", function () {
 		name: "jiange",
 		character: {
 			jg_pangtong: ["male", "shu", 3, ["qiwu", "tianyu"]],
-			jg_huangyueying: ["female", "shu", 3, ["zhinang", "jingmiao"]],
+			jg_huangyueying: ["female", "shu", 3, ["jgzhinang", "jingmiao"]],
 			jg_zhugeliang: ["male", "shu", 3, ["biantian", "bazhen"]],
 			jg_liubei: ["male", "shu", 4, ["jizhen", "lingfeng"]],
 			jg_xiahouyuan: ["male", "wei", 4, ["xinshensu", "juechen"]],
@@ -379,7 +379,7 @@ game.import("character", function () {
 					nodamage: true,
 					effect: {
 						target: function (card, player, target, current) {
-							if (get.tag(card, "damage") && !get.tag(card, "thunderDamage")) return [0, 0];
+							if (get.tag(card, "damage") && !get.tag(card, "thunderDamage")) return "zeroplayertarget";
 						},
 					},
 				},
@@ -425,7 +425,7 @@ game.import("character", function () {
 					expose: 0.2,
 				},
 			},
-			zhinang: {
+			jgzhinang: {
 				trigger: { player: "phaseBegin" },
 				frequent: true,
 				content: function () {
@@ -567,7 +567,7 @@ game.import("character", function () {
 			jg_zhanghe: "巧魁儁乂",
 			jg_simayi: "断狱仲达",
 			tianyu: "天狱",
-			zhinang: "智囊",
+			jgzhinang: "智囊",
 			jingmiao: "精妙",
 			biantian: "变天",
 			biantian2: "大雾",
@@ -594,7 +594,7 @@ game.import("character", function () {
 			biantian_info:
 				"锁定技，准备阶段，你进行一次判定，若为红色，你可以选择至多三名角色进入“狂风”状态直到你的下一回合开始，若为黑桃，直到下个回合开始前，你处于“大雾”状态。",
 			jingmiao_info: "每当有一名其他角色使用无懈可击，你可以弃置其一张牌。",
-			zhinang_info: "准备阶段，你可以亮出牌堆顶的三张牌，你可以将其中锦囊或装备牌交给一名角色。",
+			jgzhinang_info: "准备阶段，你可以亮出牌堆顶的三张牌，你可以将其中锦囊或装备牌交给一名角色。",
 			tianyu_info: "结束阶段，你可以将任意名未横置的其他角色横置。",
 			juechen: "绝尘",
 			juechen_info: "每当你使用一张【杀】，可以弃置一名其他角色的一张牌（不能是【杀】的目标）。",

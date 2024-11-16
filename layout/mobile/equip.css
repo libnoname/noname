@@ -107,24 +107,24 @@
 	background: linear-gradient(rgba(0, 133, 255, 0.6), rgba(0, 133, 255, 0.5)) !important;
 	box-shadow: rgba(0, 0, 0, 0.4) 0 1px 0 0 !important;
 }
-#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.fire,
-.player:not([data-position="0"]) .equips > .card.fire,
-#arena.chess .player .equips > .card.fire {
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.fire:not(.fakeequip),
+.player:not([data-position="0"]) .equips > .card.fire:not(.fakeequip),
+#arena.chess .player .equips > .card.fire:not(.fakeequip) {
 	color: rgb(255, 119, 63);
 }
-#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.thunder,
-.player:not([data-position="0"]) .equips > .card.thunder,
-#arena.chess .player .equips > .card.thunder {
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.thunder:not(.fakeequip),
+.player:not([data-position="0"]) .equips > .card.thunder:not(.fakeequip),
+#arena.chess .player .equips > .card.thunder:not(.fakeequip) {
 	color: rgb(117, 186, 255);
 }
-#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.poison,
-.player:not([data-position="0"]) .equips > .card.poison,
-#arena.chess .player .equips > .card.poison {
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.poison:not(.fakeequip),
+.player:not([data-position="0"]) .equips > .card.poison:not(.fakeequip),
+#arena.chess .player .equips > .card.poison:not(.fakeequip) {
 	color: rgb(104, 221, 127);
 }
-#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.brown,
-.player:not([data-position="0"]) .equips > .card.brown,
-#arena.chess .player .equips > .card.brown {
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.brown:not(.fakeequip),
+.player:not([data-position="0"]) .equips > .card.brown:not(.fakeequip),
+#arena.chess .player .equips > .card.brown:not(.fakeequip) {
 	color: rgb(195, 161, 223);
 }
 

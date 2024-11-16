@@ -77,16 +77,16 @@
 	border-style: solid;
 	border-image: linear-gradient(to right, rgba(0, 103, 205, 0.4) 70%, transparent) 100% 0 0;
 }
-.player .equips > .card.fire {
+.player .equips > .card.fire:not(.fakeequip) {
 	color: rgb(255, 119, 63);
 }
-.player .equips > .card.thunder {
+.player .equips > .card.thunder:not(.fakeequip) {
 	color: rgb(117, 186, 255);
 }
-.player .equips > .card.poison {
+.player .equips > .card.poison:not(.fakeequip) {
 	color: rgb(104, 221, 127);
 }
-.player .equips > .card.brown {
+.player .equips > .card.brown:not(.fakeequip) {
 	color: rgb(195, 161, 223);
 }
 

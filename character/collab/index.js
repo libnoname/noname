@@ -19,6 +19,14 @@ game.import("character", function () {
 		characterSort: {
 			collab: characterSort,
 		},
+		characterSubstitute: {
+			zhutiexiong: [
+				["wu_zhutiexiong", ["die:zhutiexiong"]],
+			],
+			liuxiecaojie: [
+				["liuxiecaojie_shadow", []],
+			],
+		},
 		characterFilter: { ...characterFilters },
 		characterInitFilter: { ...characterInitFilters },
 		characterTitle: {},

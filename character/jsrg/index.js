@@ -19,6 +19,9 @@ game.import("character", function () {
 		characterSort: {
 			jsrg: characterSort,
 		},
+		characterSubstitute: {
+			jsrg_simazhao: [["jin_jsrg_simazhao", []]],
+		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {},
 		dynamicTranslate: { ...dynamicTranslates },

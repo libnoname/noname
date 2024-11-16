@@ -1,12 +1,12 @@
 const characters = {
+	liuxiecaojie: ["male", "qun", 2, ["dcjuanlv", "dcqixin"]],
 	dc_zhaoyun: ["male", "shen", 1, ["boss_juejing", "dclonghun", "dczhanjiang"], ["shu", "InitFilter:noZhuHp:noZhuSkill"]],
 	dc_sunce: ["male", "wu", 4, ["dcshuangbi"]],
 	nezha: ["male", "qun", 3, ["dcsantou", "dcfaqi"], ["InitFilter:noZhuHp", "name:李|哪吒"]],
 	dc_caocao: ["male", "wei", 4, ["dcjianxiong"]],
 	dc_liubei: ["male", "shu", 4, ["dcrende"]],
 	dc_sunquan: ["male", "wu", 4, ["dczhiheng"]],
-	zhutiexiong: ["male", "qun", 3, ["dcbianzhuang"]],
-	wu_zhutiexiong: ["male", "qun", 3, ["dcbianzhuang"], ["unseen"]],
+	zhutiexiong: ["male", "qun", 3, ["dcbianzhuang"], ["die:true", "die:2"]],
 	xiaoyuehankehan: ["male", "qun", 3, ["dctongliao", "dcwudao"], ["die:true", "die:3", "name:null|null"]],
 	libai: ["male", "qun", 3, ["dclbjiuxian", "dcshixian"], ["die:true", "die:2"]],
 	sunwukong: ["male", "qun", 3, ["dcjinjing", "dccibei", "dcruyi"]],
@@ -24,7 +24,10 @@ const characters = {
 	xin_sunquan: ["male", "wu", 3, ["dchuiwan", "dchuanli"]],
 	wuhujiang: ["male", "shu", 4, ["olhuyi"], ["name:关|羽-张|飞-赵|云-马|超-黄|忠", "die:true", "die:5"]],
 	dc_noname: ["male", "qun", 3, ["dcchushan"], ["name:null|null"]],
-	dc_xunyuxunyou: ["male", "wei", 3, ["dczhinang", "dcgouzhu"], ["name:荀|彧-荀|攸"]],
+	ol_jsrg_caocao: ["male", "qun", 4, ["oldingxi", "olnengchen", "olhuojie"], ["character:jsrg_caocao"]],
+	jiangziya: ["male", "qun", 3, ["xingzhou", "lieshen"], ["name:姜|尚"]],
+	shengongbao: ["male", "qun", 3, ["zhuzhou", "yaoxian"]],
+	nanjixianweng: ["male", "qun", 3, ["xwshoufa", "fuzhao"], ["name:null|null"]],
 };
 
 export default characters;

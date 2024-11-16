@@ -1,8 +1,12 @@
-"use strict";
-game.import("mode", function (lib, game, ui, get, ai, _status) {
+import { lib, game, ui, get, ai, _status } from "../noname.js";
+export const type = "mode";
+/**
+ * @type { () => importModeConfig }
+ */
+export default () => {
 	return {
 		name: "identity",
-		start: function () {
+		start() {
 			"step 0";
 			if (!lib.config.new_tutorial) {
 				ui.arena.classList.add("only_dialog");
@@ -12,17 +16,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				_status.mode = _status.brawl.submode;
 			}
 			event.replacePile = function () {
-				var list = [
-					"shengdong",
-					"qijia",
-					"caomu",
-					"jinchan",
-					"zengbin",
-					"fulei",
-					"qibaodao",
-					"zhungangshuo",
-					"lanyinjia",
-				];
+				var list = ["shengdong", "qijia", "caomu", "jinchan", "zengbin", "fulei", "qibaodao", "zhungangshuo", "lanyinjia"];
 				var map = {
 					shunshou: "shengdong",
 					jiedao: "qijia",
@@ -107,9 +101,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				var step2 = function () {
 					if (!lib.config.phonelayout) {
 						clear();
-						ui.create.dialog(
-							"如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大"
-						);
+						ui.create.dialog("如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大");
 						ui.dialog.add('<div class="text center">你可以在选项-外观-布局中更改此设置');
 						var lcontrol = ui.create.control("使用移动布局", function () {
 							if (lib.config.phonelayout) {
@@ -143,26 +135,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					ui.click.configMenu();
 					ui.control.classList.add("noclick_click_important");
 					ui.control.style.top = "calc(100% - 105px)";
-					yield new Promise((resolve) => ui.create.control("在菜单中，可以进行各项设置", resolve));
+					yield new Promise(resolve => ui.create.control("在菜单中，可以进行各项设置", resolve));
 					ui.click.menuTab("选项");
-					yield new Promise((resolve) =>
-						ui.controls[0].replace("如果你感到游戏较卡，可以开启流畅模式", resolve)
-					);
-					yield new Promise((resolve) =>
-						ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve)
-					);
+					yield new Promise(resolve => ui.controls[0].replace("如果你感到游戏较卡，可以开启流畅模式", resolve));
+					yield new Promise(resolve => ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve));
 					ui.click.menuTab("武将");
-					yield new Promise((resolve) =>
-						ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve)
-					);
+					yield new Promise(resolve => ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve));
 					ui.click.menuTab("战局");
-					yield new Promise((resolve) =>
-						ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve)
-					);
+					yield new Promise(resolve => ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve));
 					ui.click.menuTab("帮助");
-					yield new Promise((resolve) =>
-						ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve)
-					);
+					yield new Promise(resolve => ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve));
 					ui.click.configMenu();
 					ui.window.classList.remove("noclick_important");
 					ui.control.classList.remove("noclick_click_important");
@@ -212,12 +194,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.log("年份已到，主忠方判定为胜利");
 					game.delay(2);
 					"step 2";
-					game.over(
-						game.me.identity == "zhu" ||
-							game.me.identity == "zhong" ||
-							game.me.identity == "mingzhong" ||
-							(game.me.identity == "commoner" && game.me.isIn())
-					);
+					game.over(game.me.identity == "zhu" || game.me.identity == "zhong" || game.me.identity == "mingzhong" || (game.me.identity == "commoner" && game.me.isIn()));
 				});
 			};
 			if (_status.connectMode) {
@@ -235,20 +212,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
 							var list = lib.config.mode_config.identity.identity[i];
 							var toReplace;
-							if (list.filter((i) => i == "nei").length >= 2) toReplace = "nei";
-							else if (
-								list.filter((i) => i == "zhong").length >
-								list.filter((i) => i == "fan").length / 2
-							)
-								toReplace = "zhong";
+							if (list.filter(i => i == "nei").length >= 2) toReplace = "nei";
+							else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) toReplace = "zhong";
 							else toReplace = "fan";
 							list.remove(toReplace);
 							list.push(identity);
 						}
-						game.broadcast(
-							(identityList) => (lib.config.mode_config.identity.identity = identityList),
-							lib.config.mode_config.identity.identity
-						);
+						game.broadcast(identityList => (lib.config.mode_config.identity.identity = identityList), lib.config.mode_config.identity.identity);
 					}
 				}
 				if (lib.configOL.number < 2) {
@@ -264,12 +234,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
 						var list = lib.config.mode_config.identity.identity[i];
 						var toReplace;
-						if (list.filter((i) => i == "nei").length >= 2) toReplace = "nei";
-						else if (
-							list.filter((i) => i == "zhong").length >
-							list.filter((i) => i == "fan").length / 2
-						)
-							toReplace = "zhong";
+						if (list.filter(i => i == "nei").length >= 2) toReplace = "nei";
+						else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) toReplace = "zhong";
 						else toReplace = "fan";
 						list.remove(toReplace);
 						list.push(identity);
@@ -323,32 +289,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 
 				var stratagemBroadcast = () => {
 					_status.stratagemFuryMax = 3;
-					ui.css.stratagemCardStyle = lib.init.sheet(
-						[
-							".card.stratagem-fury-glow:before{",
-							"opacity:0.2;",
-							"box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;",
-							"background-color:yellow;",
-							"-webkit-filter:blur(5px);",
-							"filter:blur(5px);",
-							"}",
-						].join("")
-					);
+					ui.css.stratagemCardStyle = lib.init.sheet([".card.stratagem-fury-glow:before{", "opacity:0.2;", "box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;", "background-color:yellow;", "-webkit-filter:blur(5px);", "filter:blur(5px);", "}"].join(""));
 				};
 				game.broadcastAll(stratagemBroadcast);
-				if (_status.connectMode && !_status.postReconnect.stratagemReinit)
-					_status.postReconnect.stratagemReinit = [stratagemBroadcast, {}];
+				if (_status.connectMode && !_status.postReconnect.stratagemReinit) _status.postReconnect.stratagemReinit = [stratagemBroadcast, {}];
 				for (var current of game.players) {
 					if (current.identity == "zhu") current.addSkill("stratagem_monarchy");
 					if (current.identity == "fan") current.addSkill("stratagem_revitalization");
 				}
 			}
-			if (
-				game.zhu == game.me &&
-				game.zhu.identity != "zhu" &&
-				_status.brawl &&
-				_status.brawl.identityShown
-			) {
+			if (game.zhu == game.me && game.zhu.identity != "zhu" && _status.brawl && _status.brawl.identityShown) {
 				delete game.zhu;
 			} else {
 				if (!stratagemMode) game.zhu.ai.shown = 1;
@@ -364,15 +314,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				}
 				var enhance_zhu = false;
 				if (_status.connectMode) {
-					enhance_zhu =
-						!["zhong", "stratagem", "purple"].includes(_status.mode) &&
-						lib.configOL.enhance_zhu &&
-						get.population("fan") >= 3;
+					enhance_zhu = !["zhong", "stratagem", "purple"].includes(_status.mode) && lib.configOL.enhance_zhu && get.population("fan") >= 3;
 				} else {
-					enhance_zhu =
-						!["zhong", "stratagem", "purple"].includes(_status.mode) &&
-						get.config("enhance_zhu") &&
-						get.population("fan") >= 3;
+					enhance_zhu = !["zhong", "stratagem", "purple"].includes(_status.mode) && get.config("enhance_zhu") && get.population("fan") >= 3;
 				}
 				if (enhance_zhu) {
 					var skill;
@@ -467,8 +411,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				game.stratagemCamouflage();
 			}
 			"step 6";
-			if (_status.mode != "stratagem")
-				event.beginner = _status.firstAct2 || game.zhong || game.zhu || _status.firstAct || game.me;
+			if (_status.mode != "stratagem") event.beginner = _status.firstAct2 || game.zhong || game.zhu || _status.firstAct || game.me;
 			game.gameDraw(event.beginner, function (player) {
 				if (_status.mode == "purple" && player.seatNum > 5) return 5;
 				return 4;
@@ -506,17 +449,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var player = lib.playerOL[i];
 					if (player) {
 						player.identity = state[i].identity;
-						if (state[i].identity == "rZhu" || state[i].identity == "bZhu")
-							game[state[i].identity] = player;
+						if (state[i].identity == "rZhu" || state[i].identity == "bZhu") game[state[i].identity] = player;
 						if (state[i].special_identity) {
 							player.special_identity = state[i].special_identity;
 							if (player.node.dieidentity) {
-								player.node.dieidentity.innerHTML = get.translation(
-									state[i].special_identity
-								);
-								player.node.identity.firstChild.innerHTML = get.translation(
-									state[i].special_identity + "_bg"
-								);
+								player.node.dieidentity.innerHTML = get.translation(state[i].special_identity);
+								player.node.identity.firstChild.innerHTML = get.translation(state[i].special_identity + "_bg");
 							}
 						}
 						if (state[i].zhu) {
@@ -535,57 +473,30 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				}
 			},
 			getRoomInfo: function (uiintro) {
-				uiintro.add(
-					'<div class="text chat">游戏模式：' +
-						(lib.configOL.identity_mode == "zhong" ? "明忠" : "标准")
-				);
-				uiintro.add(
-					'<div class="text chat">双将模式：' + (lib.configOL.double_character ? "开启" : "关闭")
-				);
+				uiintro.add('<div class="text chat">游戏模式：' + (lib.configOL.identity_mode == "zhong" ? "明忠" : "标准"));
+				uiintro.add('<div class="text chat">双将模式：' + (lib.configOL.double_character ? "开启" : "关闭"));
 				if (lib.configOL.identity_mode != "zhong") {
 					if (lib.configOL.identity_mode == "stratagem") {
-						uiintro.add(
-							'<div class="text chat">首轮强化：' +
-								(lib.configOL.round_one_use_fury ? "开启" : "关闭")
-						);
+						uiintro.add('<div class="text chat">首轮强化：' + (lib.configOL.round_one_use_fury ? "开启" : "关闭"));
 					} else if (lib.configOL.identity_mode != "purple") {
-						uiintro.add(
-							'<div class="text chat">双内奸：' + (lib.configOL.double_nei ? "开启" : "关闭")
-						);
+						uiintro.add('<div class="text chat">双内奸：' + (lib.configOL.double_nei ? "开启" : "关闭"));
 						if (lib.configOL.identity_mode != "stratagem") {
-							uiintro.add(
-								'<div class="text chat">加强主公：' +
-									(lib.configOL.enhance_zhu ? "开启" : "关闭")
-							);
-							uiintro.add(
-								'<div class="text chat">平民身份：' +
-									(lib.configOL.enable_commoner ? "开启" : "关闭")
-							);
+							uiintro.add('<div class="text chat">加强主公：' + (lib.configOL.enhance_zhu ? "开启" : "关闭"));
+							uiintro.add('<div class="text chat">平民身份：' + (lib.configOL.enable_commoner ? "开启" : "关闭"));
 						}
-						uiintro.add(
-							'<div class="text chat">年机制：' +
-								(lib.configOL.enable_year_limit ? "开启" : "关闭")
-						);
+						uiintro.add('<div class="text chat">年机制：' + (lib.configOL.enable_year_limit ? "开启" : "关闭"));
 					}
 				} else {
-					uiintro.add(
-						'<div class="text chat">卡牌替换：' + (lib.configOL.zhong_card ? "开启" : "关闭")
-					);
+					uiintro.add('<div class="text chat">卡牌替换：' + (lib.configOL.zhong_card ? "开启" : "关闭"));
 				}
-				var last = uiintro.add(
-					'<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒"
-				);
+				var last = uiintro.add('<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒");
 				// uiintro.add('<div class="text chat">屏蔽弱将：'+(lib.configOL.ban_weak?'开启':'关闭'));
 				// var last=uiintro.add('<div class="text chat">屏蔽强将：'+(lib.configOL.ban_strong?'开启':'关闭'));
 				if (lib.configOL.banned.length) {
-					last = uiintro.add(
-						'<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned)
-					);
+					last = uiintro.add('<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned));
 				}
 				if (lib.configOL.bannedcards.length) {
-					last = uiintro.add(
-						'<div class="text chat">禁用卡牌：' + get.translation(lib.configOL.bannedcards)
-					);
+					last = uiintro.add('<div class="text chat">禁用卡牌：' + get.translation(lib.configOL.bannedcards));
 				}
 				last.style.paddingBottom = "8px";
 			},
@@ -593,12 +504,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				if (player.identityShown) return;
 				if (player == game.me) return;
 				if (_status.mode == "purple") {
-					if (
-						_status.yeconfirm &&
-						["rNei", "bNei"].includes(game.me.identity) &&
-						["rNei", "bNei"].includes(player.identity)
-					)
-						return;
+					if (_status.yeconfirm && ["rNei", "bNei"].includes(game.me.identity) && ["rNei", "bNei"].includes(player.identity)) return;
 					if (player.identity.slice(0, 1) == "r")
 						return {
 							cai2: "猜",
@@ -723,28 +629,16 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				else {
 					switch (_status.mode) {
 						case "purple":
-							str2 =
-								"3v3v2 - " +
-								(game.me.identity.indexOf("r") == 0 ? "暖色" : "冷色") +
-								lib.translate[game.me.identity + "2"];
+							str2 = "3v3v2 - " + (game.me.identity.indexOf("r") == 0 ? "暖色" : "冷色") + lib.translate[game.me.identity + "2"];
 							break;
 						case "zhong":
 							str2 = "忠胆英杰 - " + lib.translate[game.me.identity + "2"];
 							break;
 						case "stratagem":
-							str2 =
-								get.cnNumber(get.playerNumber()) +
-								"人谋攻" +
-								"-" +
-								lib.translate[game.me.identity + "2"];
+							str2 = get.cnNumber(get.playerNumber()) + "人谋攻" + "-" + lib.translate[game.me.identity + "2"];
 							break;
 						default:
-							str2 =
-								get.cnNumber(get.playerNumber()) +
-								"人" +
-								get.translation(lib.config.mode) +
-								" - " +
-								lib.translate[game.me.identity + "2"];
+							str2 = get.cnNumber(get.playerNumber()) + "人" + get.translation(lib.config.mode) + " - " + lib.translate[game.me.identity + "2"];
 					}
 				}
 				var name = [str, str2];
@@ -769,14 +663,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var str = "";
 					for (var i = 0; i < list.length; i++) {
 						if (data[list[i]]) {
-							str +=
-								lib.translate[list[i] + "2"] +
-								"：" +
-								data[list[i]][0] +
-								"胜" +
-								" " +
-								data[list[i]][1] +
-								"负<br>";
+							str += lib.translate[list[i] + "2"] + "：" + data[list[i]][0] + "胜" + " " + data[list[i]][1] + "负<br>";
 						}
 					}
 					lib.config.gameRecord.identity.str = str;
@@ -791,9 +678,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.players[i].ai.shown = 1;
 					game.players[i].setIdentity(game.players[i].identity);
 					if (game.players[i].special_identity) {
-						game.players[i].node.identity.firstChild.innerHTML = get.translation(
-							game.players[i].special_identity + "_bg"
-						);
+						game.players[i].node.identity.firstChild.innerHTML = get.translation(game.players[i].special_identity + "_bg");
 					}
 					if (game.players[i].identity == "zhu") {
 						game.players[i].isZhu = true;
@@ -939,20 +824,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						game.over(true);
 					}
 				} else if (me.identity == "nei") {
-					if (
-						game.players.length ==
-							1 + game.players.filter((i) => i.identity == "commoner").length &&
-						me.isAlive()
-					) {
+					if (game.players.length == 1 + game.players.filter(i => i.identity == "commoner").length && me.isAlive()) {
 						game.over(true);
 					} else {
 						game.over(false);
 					}
 				} else if (me.identity == "fan") {
-					if (
-						(get.population("fan") + get.population("zhong") > 0 || get.population("nei") > 1) &&
-						game.zhu.classList.contains("dead")
-					) {
+					if ((get.population("fan") + get.population("zhong") > 0 || get.population("nei") > 1) && game.zhu.classList.contains("dead")) {
 						game.over(true);
 					} else {
 						game.over(false);
@@ -968,17 +846,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (_status.winner.includes(player)) return true;
 				}
 				if (game.zhu.isAlive()) {
-					return (
-						player.identity == "zhu" ||
-						player.identity == "zhong" ||
-						player.identity == "mingzhong" ||
-						(player.identity == "commoner" && player.isAlive())
-					);
-				} else if (
-					(game.players.length == 1 + game.players.filter((i) => i.identity == "commoner").length &&
-						game.players[0].identity == "nei") ||
-					game.players[0].identity == "commoner"
-				) {
+					return player.identity == "zhu" || player.identity == "zhong" || player.identity == "mingzhong" || (player.identity == "commoner" && player.isAlive());
+				} else if ((game.players.length == 1 + game.players.filter(i => i.identity == "commoner").length && game.players[0].identity == "nei") || game.players[0].identity == "commoner") {
 					return player.isAlive();
 				} else {
 					return player.identity == "fan" || (player.identity == "commoner" && player.isAlive());
@@ -1272,8 +1141,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (game.me == game.rZhu || game.me == game.bZhu) {
 						event.isZhu = true;
 						var list = event.map[event[game.me.identity]].randomGets(4);
-						if (event.map_zhu[event[game.me.identity]])
-							list.addArray(event.map_zhu[event[game.me.identity]].randomGets(2));
+						if (event.map_zhu[event[game.me.identity]]) list.addArray(event.map_zhu[event[game.me.identity]].randomGets(2));
 						game.me.chooseButton(true, ["请选择您的武将牌", [list, "character"]]);
 					}
 					"step 5";
@@ -1307,10 +1175,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					if (!event.isZhu) {
 						var group = game.me.identity.indexOf("r") == 0 ? event.rZhu : event.bZhu;
-						game.me.chooseButton(true, [
-							"请选择您的武将牌",
-							[event.map[group].randomRemove(5), "character"],
-						]);
+						game.me.chooseButton(true, ["请选择您的武将牌", [event.map[group].randomRemove(5), "character"]]);
 					}
 					"step 6";
 					if (!event.isZhu) {
@@ -1374,7 +1239,6 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						game.players[i].identityShown = false;
 					}
 
-					game.zhu.isZhu = game.zhu.identity == "zhu";
 					game.me.setIdentity();
 					game.me.node.identity.classList.remove("guessing");
 
@@ -1387,7 +1251,6 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								}
 								zhu.identity = zhuid;
 								if (zhuid == "zhu") zhu.isZhu = true;
-								me.setIdentity(identity);
 								me.node.identity.classList.remove("guessing");
 								ui.arena.classList.add("choose-character");
 							},
@@ -1414,8 +1277,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					for (i in lib.characterReplace) {
 						var ix = lib.characterReplace[i];
 						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j]))
-								ix.splice(j--, 1);
+							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j])) ix.splice(j--, 1);
 						}
 						if (ix.length) {
 							event.list.push(i);
@@ -1465,12 +1327,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							num3 = num2;
 						}
 						var str = "选择角色";
-						list.push([
-							game.players[i],
-							[str, [event.list.randomRemove(num + num3), "characterx"]],
-							selectButton,
-							true,
-						]);
+						list.push([game.players[i], [str, [event.list.randomRemove(num + num3), "characterx"]], selectButton, true]);
 					}
 					game.me.chooseButtonOL(list, function (player, result) {
 						if (game.online || player == game.me) player.init(result.links[0], result.links[1]);
@@ -1494,13 +1351,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (
-							get.is.double(result[i][0]) ||
-							(lib.character[result[i][0]] &&
-								lib.character[result[i][0]].group == "shen" &&
-								!lib.character[result[i][0]].hasHiddenSkill)
-						)
-							shen.push(lib.playerOL[i]);
+						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.character[result[i][0]].group == "shen" && !lib.character[result[i][0]].hasHiddenSkill)) shen.push(lib.playerOL[i]);
 					}
 					event.result2 = result;
 					if (shen.length) {
@@ -1517,11 +1368,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									[
 										"请选择你的势力",
 										[
-											get.is
-												.double(result[shen[i].playerid][0], true)
-												.map(function (i) {
-													return ["", "", "group_" + i];
-												}),
+											get.is.double(result[shen[i].playerid][0], true).map(function (i) {
+												return ["", "", "group_" + i];
+											}),
 											"vcard",
 										],
 									],
@@ -1532,8 +1381,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 						game.me
 							.chooseButtonOL(shen, function (player, result) {
-								if (player == game.me)
-									player.changeGroup(result.links[0][2].slice(6), false, false);
+								if (player == game.me) player.changeGroup(result.links[0][2].slice(6), false, false);
 							})
 							.set("switchToAuto", function () {
 								_status.event.result = "ai";
@@ -1561,8 +1409,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								if (!lib.playerOL[i].name) {
 									lib.playerOL[i].init(result[i][0], result[i][1]);
 								}
-								if (result2[i] && result2[i].length)
-									lib.playerOL[i].changeGroup(result2[i], false, false);
+								if (result2[i] && result2[i].length) lib.playerOL[i].changeGroup(result2[i], false, false);
 							}
 							setTimeout(function () {
 								ui.arena.classList.remove("choose-character");
@@ -1576,8 +1423,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (!lib.playerOL[i].name) {
 							lib.playerOL[i].init(result2[i][0], result2[i][1]);
 						}
-						if (result[i] && result[i].length)
-							lib.playerOL[i].changeGroup(result[i], false, false);
+						if (result[i] && result[i].length) lib.playerOL[i].changeGroup(result[i], false, false);
 					}
 
 					for (var i = 0; i < game.players.length; i++) {
@@ -1586,10 +1432,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						_status.characterlist.remove(game.players[i].name2);
 					}
 
-					["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach((globalSkill) =>
-						game.addGlobalSkill(globalSkill)
-					);
-					game.players.forEach((current) => {
+					["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
+					game.players.forEach(current => {
 						current.storage.zhibi = [];
 						current.storage.stratagem_expose = [];
 						current.markSkill("stratagem_fury");
@@ -1655,10 +1499,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							choice = list[0];
 							choice2 = list[1];
 						}
-						if (lib.characterReplace[choice] && lib.characterReplace[choice].length)
-							choice = lib.characterReplace[choice].randomGet();
-						if (lib.characterReplace[choice2] && lib.characterReplace[choice2].length)
-							choice2 = lib.characterReplace[choice2].randomGet();
+						if (lib.characterReplace[choice] && lib.characterReplace[choice].length) choice = lib.characterReplace[choice].randomGet();
+						if (lib.characterReplace[choice2] && lib.characterReplace[choice2].length) choice2 = lib.characterReplace[choice2].randomGet();
 						if (get.config("double_character")) {
 							player.init(choice, choice2);
 						} else {
@@ -1671,11 +1513,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								player.update();
 							}
 						}
-					} else if (
-						player.identity == "zhong" &&
-						(Math.random() < 0.5 || ["sunliang", "key_akane"].includes(game.zhu.name)) &&
-						!stratagemMode
-					) {
+					} else if (player.identity == "zhong" && (Math.random() < 0.5 || ["sunliang", "key_akane"].includes(game.zhu.name)) && !stratagemMode) {
 						var listc = list.slice(0);
 						for (var i = 0; i < listc.length; i++) {
 							var listx = lib.characterReplace[listc[i]];
@@ -1713,8 +1551,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					if (typeof lib.config.test_game == "string" && player == game.me.next) {
-						if (lib.config.test_game != "_")
-							player.init(lib.config.test_game);
+						if (lib.config.test_game != "_") player.init(lib.config.test_game);
 					}
 					if (get.is.double(player.name1)) {
 						player._groupChosen = true;
@@ -1726,52 +1563,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (list.length)
 							player.group = (function () {
 								if (_status.mode != "zhong" && game.zhu && game.zhu.group) {
-									if (
-										[
-											"re_zhangjiao",
-											"liubei",
-											"re_liubei",
-											"caocao",
-											"re_caocao",
-											"sunquan",
-											"re_sunquan",
-											"zhangjiao",
-											"sp_zhangjiao",
-											"caopi",
-											"re_caopi",
-											"liuchen",
-											"caorui",
-											"sunliang",
-											"sunxiu",
-											"sunce",
-											"re_sunben",
-											"ol_liushan",
-											"re_liushan",
-											"key_akane",
-											"dongzhuo",
-											"re_dongzhuo",
-											"ol_dongzhuo",
-											"jin_simashi",
-											"caomao",
-										].includes(game.zhu.name)
-									)
-										return game.zhu.group;
+									if (["re_zhangjiao", "liubei", "re_liubei", "caocao", "re_caocao", "sunquan", "re_sunquan", "zhangjiao", "sp_zhangjiao", "caopi", "re_caopi", "liuchen", "caorui", "sunliang", "sunxiu", "sunce", "re_sunben", "ol_liushan", "re_liushan", "key_akane", "dongzhuo", "re_dongzhuo", "ol_dongzhuo", "jin_simashi", "caomao"].includes(game.zhu.name)) return game.zhu.group;
 									if (game.zhu.name == "yl_yuanshu") {
 										if (player.identity == "zhong") list.remove("qun");
 										else return "qun";
 									}
-									if (
-										[
-											"sunhao",
-											"xin_yuanshao",
-											"re_yuanshao",
-											"re_sunce",
-											"ol_yuanshao",
-											"yuanshu",
-											"jin_simazhao",
-											"liubian",
-										].includes(game.zhu.name)
-									) {
+									if (["sunhao", "xin_yuanshao", "re_yuanshao", "re_sunce", "ol_yuanshao", "yuanshu", "jin_simazhao", "liubian"].includes(game.zhu.name)) {
 										if (player.identity != "zhong") list.remove(game.zhu.group);
 										else return game.zhu.group;
 									}
@@ -1834,11 +1631,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								var link = this.link;
 								if (game.zhu) {
 									if (link != "random") {
-										_status.event.parent.fixedseat = get.distance(
-											game.me,
-											game.zhu,
-											"absolute"
-										);
+										_status.event.parent.fixedseat = get.distance(game.me, game.zhu, "absolute");
 									}
 									if (game.zhu.name) game.zhu.uninit();
 									delete game.zhu.isZhu;
@@ -1857,8 +1650,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										link = ["zhu", "zhong", "nei", "fan", "mingzhong"].randomGet();
 									} else {
 										var listi = ["zhu", "zhong", "nei", "fan"];
-										if (get.config("enable_commoner") && !event.stratagemMode)
-											listi.push("commoner");
+										if (get.config("enable_commoner") && !event.stratagemMode) listi.push("commoner");
 										link = listi.randomGet();
 									}
 									for (var i = 0; i < this.parentNode.childElementCount; i++) {
@@ -1887,10 +1679,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									game.check();
 									if (event.stratagemMode) return;
 									for (var i = 0; i < seats.childElementCount; i++) {
-										if (
-											get.distance(game.zhu, game.me, "absolute") ===
-											seats.childNodes[i].link
-										) {
+										if (get.distance(game.zhu, game.me, "absolute") === seats.childNodes[i].link) {
 											seats.childNodes[i].classList.add("bluebg");
 										}
 									}
@@ -2038,12 +1827,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 
-					if (
-						get.config("special_identity") &&
-						!event.zhongmode &&
-						!event.stratagemMode &&
-						game.players.length == 8
-					) {
+					if (get.config("special_identity") && !event.zhongmode && !event.stratagemMode && game.players.length == 8) {
 						for (var i = 0; i < game.players.length; i++) {
 							delete game.players[i].special_identity;
 						}
@@ -2078,10 +1862,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					else {
 						if (!stratagemMode) {
 							game.zhu.setIdentity();
+							game.zhu.isZhu = game.zhu.identity == "zhu";
 							game.zhu.identityShown = true;
 							game.zhu.node.identity.classList.remove("guessing");
 						}
-						game.zhu.isZhu = game.zhu.identity == "zhu";
 						game.me.setIdentity();
 						game.me.node.identity.classList.remove("guessing");
 					}
@@ -2089,8 +1873,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					for (i in lib.characterReplace) {
 						var ix = lib.characterReplace[i];
 						for (var j = 0; j < ix.length; j++) {
-							if (chosen.includes(ix[j]) || lib.filter.characterDisabled(ix[j]))
-								ix.splice(j--, 1);
+							if (chosen.includes(ix[j]) || lib.filter.characterDisabled(ix[j])) ix.splice(j--, 1);
 						}
 						if (ix.length) {
 							event.list.push(i);
@@ -2134,8 +1917,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 						var getGroup = function (name) {
 							var characterReplace = lib.characterReplace[name];
-							if (characterReplace && characterReplace[0] && lib.character[characterReplace[0]])
-								return lib.character[characterReplace[0]][1];
+							if (characterReplace && characterReplace[0] && lib.character[characterReplace[0]]) return lib.character[characterReplace[0]][1];
 							return lib.character[name][1];
 						};
 						var list2x = list2.slice(0);
@@ -2159,11 +1941,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					var num = get.config("choice_" + game.me.identity);
 					if (event.zhongmode) {
 						num = 6;
-						if (
-							game.me.identity == "zhu" ||
-							game.me.identity == "nei" ||
-							game.me.identity == "mingzhong"
-						) {
+						if (game.me.identity == "zhu" || game.me.identity == "nei" || game.me.identity == "mingzhong") {
 							num = 8;
 						}
 					}
@@ -2221,9 +1999,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					if (game.me.special_identity) {
 						dialog.setCaption("选择角色（" + get.translation(game.me.special_identity) + "）");
-						game.me.node.identity.firstChild.innerHTML = get.translation(
-							game.me.special_identity + "_bg"
-						);
+						game.me.node.identity.firstChild.innerHTML = get.translation(game.me.special_identity + "_bg");
 					} else {
 						dialog.setCaption("选择角色");
 						game.me.setIdentity();
@@ -2367,11 +2143,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (get.is.double(name)) {
 						game.me._groupChosen = true;
 						game.me.chooseControl(get.is.double(name, true)).set("prompt", "请选择你的势力");
-					} else if (
-						lib.character[name].group == "shen" &&
-						!lib.character[name].hasHiddenSkill &&
-						get.config("choose_group")
-					) {
+					} else if (lib.character[name].group == "shen" && !lib.character[name].hasHiddenSkill && get.config("choose_group")) {
 						var list = lib.group.slice(0);
 						list.remove("shen");
 						game.me.chooseControl(list).set("prompt", "请选择神武将的势力");
@@ -2393,17 +2165,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							(event.stratagemMode || game.players[i] != game.zhu) &&
-							game.players[i] != game.me
-						) {
+						if ((event.stratagemMode || game.players[i] != game.zhu) && game.players[i] != game.me) {
 							event.list.randomSort();
-							event.ai(
-								game.players[i],
-								event.list.splice(0, get.config("choice_" + game.players[i].identity)),
-								null,
-								event.list
-							);
+							event.ai(game.players[i], event.list.splice(0, get.config("choice_" + game.players[i].identity)), null, event.list);
 						}
 					}
 					"step 3";
@@ -2419,10 +2183,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					"step 4";
 					if (event.stratagemMode) {
-						["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach((globalSkill) =>
-							game.addGlobalSkill(globalSkill)
-						);
-						game.players.forEach((i) => {
+						["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
+						game.players.forEach(i => {
 							i.storage.zhibi = [];
 							i.storage.stratagem_expose = [];
 							i.markSkill("stratagem_fury");
@@ -2517,9 +2279,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.me.setIdentity();
 					game.me.node.identity.classList.remove("guessing");
 					if (game.me.special_identity) {
-						game.me.node.identity.firstChild.innerHTML = get.translation(
-							game.me.special_identity + "_bg"
-						);
+						game.me.node.identity.firstChild.innerHTML = get.translation(game.me.special_identity + "_bg");
 					}
 
 					for (var i = 0; i < game.players.length; i++) {
@@ -2537,9 +2297,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								me.setIdentity(identity);
 								me.node.identity.classList.remove("guessing");
 								if (me.special_identity) {
-									me.node.identity.firstChild.innerHTML = get.translation(
-										me.special_identity + "_bg"
-									);
+									me.node.identity.firstChild.innerHTML = get.translation(me.special_identity + "_bg");
 								}
 								ui.arena.classList.add("choose-character");
 							},
@@ -2568,8 +2326,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					for (i in lib.characterReplace) {
 						var ix = lib.characterReplace[i];
 						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j]))
-								ix.splice(j--, 1);
+							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j])) ix.splice(j--, 1);
 						}
 						if (ix.length) {
 							event.list.push(i);
@@ -2611,15 +2368,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					} else {
 						var getZhuList = function (list2) {
 							var limit_zhu = lib.configOL.limit_zhu;
-							if (!limit_zhu || limit_zhu == "off")
-								return list2.slice(0).sort(lib.sort.character);
+							if (!limit_zhu || limit_zhu == "off") return list2.slice(0).sort(lib.sort.character);
 							if (limit_zhu != "group") {
 								var num = parseInt(limit_zhu) || 6;
 								return list2.randomGets(num).sort(lib.sort.character);
 							}
 							var getGroup = function (name) {
-								if (lib.characterReplace[name])
-									return lib.character[lib.characterReplace[name][0]][1];
+								if (lib.characterReplace[name]) return lib.character[lib.characterReplace[name][0]][1];
 								return lib.character[name][1];
 							};
 							var list2x = list2.slice(0);
@@ -2683,11 +2438,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (!lib.group.includes(list[i])) list.splice(i--, 1);
 							else list[i] = ["", "", "group_" + list[i]];
 						}
-						game.zhu
-							.chooseButton(["请选择神武将的势力", [list, "vcard"]], true)
-							.set("ai", function () {
-								return Math.random();
-							});
+						game.zhu.chooseButton(["请选择神武将的势力", [list, "vcard"]], true).set("ai", function () {
+							return Math.random();
+						});
 					} else if (get.is.double(game.zhu.name1)) {
 						game.zhu._groupChosen = true;
 						var list = get.is.double(game.zhu.name1, true);
@@ -2695,11 +2448,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (!lib.group.includes(list[i])) list.splice(i--, 1);
 							else list[i] = ["", "", "group_" + list[i]];
 						}
-						game.zhu
-							.chooseButton(["请选择你的势力", [list, "vcard"]], true)
-							.set("ai", function () {
-								return Math.random();
-							});
+						game.zhu.chooseButton(["请选择你的势力", [list, "vcard"]], true).set("ai", function () {
+							return Math.random();
+						});
 					} else event.goto(3);
 					"step 2";
 					var name = result.links[0][2].slice(6);
@@ -2741,12 +2492,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (game.players[i].special_identity) {
 								str += "（" + get.translation(game.players[i].special_identity) + "）";
 							}
-							list.push([
-								game.players[i],
-								[str, [event.list.randomRemove(num + num3), "characterx"]],
-								selectButton,
-								true,
-							]);
+							list.push([game.players[i], [str, [event.list.randomRemove(num + num3), "characterx"]], selectButton, true]);
 						}
 					}
 					game.me.chooseButtonOL(list, function (player, result) {
@@ -2771,13 +2517,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (
-							get.is.double(result[i][0]) ||
-							(lib.character[result[i][0]] &&
-								lib.character[result[i][0]].group == "shen" &&
-								!lib.character[result[i][0]].hasHiddenSkill)
-						)
-							shen.push(lib.playerOL[i]);
+						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.character[result[i][0]].group == "shen" && !lib.character[result[i][0]].hasHiddenSkill)) shen.push(lib.playerOL[i]);
 					}
 					event.result2 = result;
 					if (shen.length) {
@@ -2794,11 +2534,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									[
 										"请选择你的势力",
 										[
-											get.is
-												.double(result[shen[i].playerid][0], true)
-												.map(function (i) {
-													return ["", "", "group_" + i];
-												}),
+											get.is.double(result[shen[i].playerid][0], true).map(function (i) {
+												return ["", "", "group_" + i];
+											}),
 											"vcard",
 										],
 									],
@@ -2809,8 +2547,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 						game.me
 							.chooseButtonOL(shen, function (player, result) {
-								if (player == game.me)
-									player.changeGroup(result.links[0][2].slice(6), false, false);
+								if (player == game.me) player.changeGroup(result.links[0][2].slice(6), false, false);
 							})
 							.set("switchToAuto", function () {
 								_status.event.result = "ai";
@@ -2834,52 +2571,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									if (!lib.group.includes(list[ix])) list.splice(ix--, 1);
 								}
 								if (_status.mode != "zhong" && game.zhu && game.zhu.group) {
-									if (
-										[
-											"re_zhangjiao",
-											"liubei",
-											"re_liubei",
-											"caocao",
-											"re_caocao",
-											"sunquan",
-											"re_sunquan",
-											"zhangjiao",
-											"sp_zhangjiao",
-											"caopi",
-											"re_caopi",
-											"liuchen",
-											"caorui",
-											"sunliang",
-											"sunxiu",
-											"sunce",
-											"re_sunben",
-											"ol_liushan",
-											"re_liushan",
-											"key_akane",
-											"dongzhuo",
-											"re_dongzhuo",
-											"ol_dongzhuo",
-											"jin_simashi",
-											"caomao",
-										].includes(game.zhu.name)
-									)
-										return game.zhu.group;
+									if (["re_zhangjiao", "liubei", "re_liubei", "caocao", "re_caocao", "sunquan", "re_sunquan", "zhangjiao", "sp_zhangjiao", "caopi", "re_caopi", "liuchen", "caorui", "sunliang", "sunxiu", "sunce", "re_sunben", "ol_liushan", "re_liushan", "key_akane", "dongzhuo", "re_dongzhuo", "ol_dongzhuo", "jin_simashi", "caomao"].includes(game.zhu.name)) return game.zhu.group;
 									if (game.zhu.name == "yl_yuanshu") {
 										if (player.identity == "zhong") list.remove("qun");
 										else return "qun";
 									}
-									if (
-										[
-											"sunhao",
-											"xin_yuanshao",
-											"re_yuanshao",
-											"re_sunce",
-											"ol_yuanshao",
-											"yuanshu",
-											"jin_simazhao",
-											"liubian",
-										].includes(game.zhu.name)
-									) {
+									if (["sunhao", "xin_yuanshao", "re_yuanshao", "re_sunce", "ol_yuanshao", "yuanshu", "jin_simazhao", "liubian"].includes(game.zhu.name)) {
 										if (player.identity != "zhong") list.remove(game.zhu.group);
 										else return game.zhu.group;
 									}
@@ -2894,8 +2591,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								if (!lib.playerOL[i].name) {
 									lib.playerOL[i].init(result[i][0], result[i][1]);
 								}
-								if (result2[i] && result2[i].length)
-									lib.playerOL[i].changeGroup(result2[i], false, false);
+								if (result2[i] && result2[i].length) lib.playerOL[i].changeGroup(result2[i], false, false);
 							}
 							setTimeout(function () {
 								ui.arena.classList.remove("choose-character");
@@ -2909,8 +2605,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (!lib.playerOL[i].name) {
 							lib.playerOL[i].init(result2[i][0], result2[i][1]);
 						}
-						if (result[i] && result[i].length)
-							lib.playerOL[i].changeGroup(result[i], false, false);
+						if (result[i] && result[i].length) lib.playerOL[i].changeGroup(result[i], false, false);
 					}
 
 					if (event.special_identity) {
@@ -2989,8 +2684,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			dongcha: "洞察",
 			dongcha_info: "游戏开始时，随机一名反贼的身份对你可见；准备阶段，你可以弃置场上的一张牌。",
 			sheshen: "舍身",
-			sheshen_info:
-				"锁定技，主公处于濒死状态即将死亡时，令主公+1体力上限，回复体力至X点（X为你的体力值数），获得你的所有牌，然后你死亡。",
+			sheshen_info: "锁定技，主公处于濒死状态即将死亡时，令主公+1体力上限，回复体力至X点（X为你的体力值数），获得你的所有牌，然后你死亡。",
 			yexinbilu: "野心毕露",
 			stratagem_insight: "洞察",
 		},
@@ -3055,12 +2749,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (_status.mode == "purple") {
 						if (source) {
 							if (this.identity == "rZhu" || this.identity == "bZhu") {
-								if (this.identity.slice(0, 1) != source.identity.slice(0, 1))
-									source.recover();
+								if (this.identity.slice(0, 1) != source.identity.slice(0, 1)) source.recover();
 							} else if (this.identity == "rZhong" || this.identity == "bZhong") {
 								if (this.identity.slice(0, 1) != source.identity.slice(0, 1)) source.draw(2);
-								else if (source.identity.indexOf("Zhu") == 1)
-									source.discard(source.getCards("h"));
+								else if (source.identity.indexOf("Zhu") == 1) source.discard(source.getCards("h"));
 							} else if (this.identity == "rNei" || this.identity == "bNei") {
 								if (this.identity.slice(0, 1) == source.identity.slice(0, 1)) source.draw(3);
 							}
@@ -3071,10 +2763,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							game.broadcastAll(function () {
 								if (game.me.identity == "rYe" || game.me.identity == "bYe") {
 									var player = game.findPlayer(function (current) {
-										return (
-											current != game.me &&
-											(current.identity == "bYe" || current.identity == "rYe")
-										);
+										return current != game.me && (current.identity == "bYe" || current.identity == "rYe");
 									});
 									if (player) {
 										player.showIdentity();
@@ -3091,12 +2780,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						} else {
 							source.draw(3);
 						}
-					} else if (
-						this.identity == "zhong" &&
-						source &&
-						source.identity == "zhu" &&
-						source.isZhu
-					) {
+					} else if (this.identity == "zhong" && source && source.identity == "zhu" && source.isZhu) {
 						source.discard(source.getCards("he"));
 					}
 				},
@@ -3108,9 +2792,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								player.identityShown = true;
 								player.node.identity.classList.remove("guessing");
 								if (identity) {
-									player.node.identity.firstChild.innerHTML = get.translation(
-										identity + "_bg"
-									);
+									player.node.identity.firstChild.innerHTML = get.translation(identity + "_bg");
 									game.log(player, "的身份是", "#g" + get.translation(identity));
 								} else {
 									game.log(player, "的身份是", "#g" + get.translation(identity2 + "2"));
@@ -3145,25 +2827,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						return;
 					}
 					if (game.zhu && game.zhu.isZhu) {
-						if (
-							(get.population("zhong") + get.population("nei") == 0 ||
-								get.population("zhong") + get.population("fan") == 0) &&
-							get.population("commoner") == 0
-						) {
+						if ((get.population("zhong") + get.population("nei") == 0 || get.population("zhong") + get.population("fan") == 0) && get.population("commoner") == 0) {
 							game.broadcastAll(function () {
 								if (game.showIdentity) game.showIdentity();
-								if (
-									game.zhu &&
-									game.zhu.isAlive() &&
-									get.population("nei") == 1 &&
-									get.config("nei_fullscreenpop")
-								)
-									game.me.$fullscreenpop(
-										'<span style="font-family:xinwei"><span data-nature="fire">主公</span><span data-nature="soil"> vs </span><span data-nature="thunder">内奸</span></span>',
-										null,
-										null,
-										false
-									);
+								if (game.zhu && game.zhu.isAlive() && get.population("nei") == 1 && get.config("nei_fullscreenpop")) game.me.$fullscreenpop('<span style="font-family:xinwei"><span data-nature="fire">主公</span><span data-nature="soil"> vs </span><span data-nature="thunder">内奸</span></span>', null, null, false);
 							});
 						}
 					}
@@ -3178,7 +2845,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							game.zhu.ai.shown = 1;
 							game.zhu.setIdentity();
 							game.zhu.isZhu = true;
-							var skills = player.getStockSkills(true, true).filter((skill) => {
+							var skills = player.getStockSkills(true, true).filter(skill => {
 								if (player.hasSkill(skill)) return false;
 								var info = get.info(skill);
 								return info && info.zhuSkill;
@@ -3210,10 +2877,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									break;
 								}
 							}
-						} else if (
-							get.population("zhong") + get.population("mingzhong") + get.population("nei") ==
-							0
-						) {
+						} else if (get.population("zhong") + get.population("mingzhong") + get.population("nei") == 0) {
 							giveup = game.zhu;
 						}
 						if (giveup) {
@@ -3253,12 +2917,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								else c = 1;
 								var eff = get.effect(targets[i], card, this);
 								effect += eff * c;
-								if (
-									eff == 0 &&
-									shown == 0 &&
-									["zhong", "rZhong", "bZhong"].includes(this.identity) &&
-									targets[i] != this
-								) {
+								if (eff == 0 && shown == 0 && ["zhong", "rZhong", "bZhong"].includes(this.identity) && targets[i] != this) {
 									effect += 0.1;
 								}
 							}
@@ -3269,11 +2928,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (targets.length == 1 && targets[0] == this);
 							else if (targets.length == 1) this.ai.shown += 0.2 * c;
 							else this.ai.shown += 0.1 * c;
-						} else if (
-							effect < 0 &&
-							this == game.me &&
-							["nei", "commoner", "rYe", "bYe"].includes(game.me.identity)
-						) {
+						} else if (effect < 0 && this == game.me && ["nei", "commoner", "rYe", "bYe"].includes(game.me.identity)) {
 							if (targets.length == 1 && targets[0] == this);
 							else if (targets.length == 1) this.ai.shown -= 0.2;
 							else this.ai.shown -= 0.1;
@@ -3285,11 +2940,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					if (_status.mode == "purple") return;
 					if (stratagemMode) return;
 
-					var marknow =
-						!_status.connectMode &&
-						this != game.me &&
-						get.config("auto_mark_identity") &&
-						this.ai.identity_mark != "finished";
+					var marknow = !_status.connectMode && this != game.me && get.config("auto_mark_identity") && this.ai.identity_mark != "finished";
 					// if(true){
 					if (marknow && _status.clickingidentity && _status.clickingidentity[0] == this) {
 						for (var i = 0; i < _status.clickingidentity[1].length; i++) {
@@ -3363,9 +3014,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					this.ai.shown = 1;
 					this.setIdentity();
 					if (this.special_identity) {
-						this.node.identity.firstChild.innerHTML = get.translation(
-							this.special_identity + "_bg"
-						);
+						this.node.identity.firstChild.innerHTML = get.translation(this.special_identity + "_bg");
 					}
 					if (this.identity == "zhu") {
 						this.isZhu = true;
@@ -3382,7 +3031,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 			},
 			content: {
-				stratagemInsight: (event) => {
+				stratagemInsight: () => {
 					"step 0";
 					game.log(player, "洞察了", target, "与其的阵营关系");
 					"step 1";
@@ -3394,17 +3043,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					event.videoId = lib.status.videoId++;
 					var send = (clientTarget, clientInsightResult, id) => {
 						var classList = clientTarget.classList,
-							nonStratagemInsightFlashing = classList.contains(
-								"flash-animation-iteration-count-infinite"
-							);
+							nonStratagemInsightFlashing = classList.contains("flash-animation-iteration-count-infinite");
 						if (nonStratagemInsightFlashing) clientTarget.nonStratagemInsightFlashing = true;
 						else classList.add("flash-animation-iteration-count-infinite");
 						var identity = get.translation(`${clientInsightResult}2`);
 						clientTarget.prompt(identity, clientInsightResult);
-						var dialog = ui.create.dialog(
-							`${get.translation(clientTarget)}是${identity}<br>`,
-							"forcebutton"
-						);
+						var dialog = ui.create.dialog(`${get.translation(clientTarget)}是${identity}<br>`, "forcebutton");
 						ui.create.spinningIdentityCard(clientInsightResult, dialog);
 						var control = ui.create.control("ok", () => {
 							dialog.close();
@@ -3421,12 +3065,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					};
 					game.broadcastAll(
 						(clientPlayer, clientTarget, id) => {
-							if (clientPlayer != game.me)
-								ui.create.dialog(
-									`${get.translation(clientPlayer)}正在洞察${get.translation(
-										clientTarget
-									)}的阵营...<br>`
-								).videoId = id;
+							if (clientPlayer != game.me) ui.create.dialog(`${get.translation(clientPlayer)}正在洞察${get.translation(clientTarget)}的阵营...<br>`).videoId = id;
 						},
 						player,
 						target,
@@ -3440,78 +3079,63 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					"step 2";
 					game.broadcastAll("closeDialog", event.videoId);
-					if (
-						!_status.connectMode &&
-						get.config("auto_mark_identity") &&
-						!target.node.identity.firstChild.innerHTML.length
-					)
+					if (!_status.connectMode && get.config("auto_mark_identity") && !target.node.identity.firstChild.innerHTML.length)
 						game.broadcastAll(
 							(clientPlayer, clientTarget, insightResult) => {
-								if (clientPlayer.isUnderControl(true))
-									clientTarget.setIdentity(insightResult);
+								if (clientPlayer.isUnderControl(true)) clientTarget.setIdentity(insightResult);
 							},
 							player,
 							target,
 							event.insightResult
 						);
-					var afterInsight = (clientTarget) => {
+					var afterInsight = clientTarget => {
 						clientTarget.unprompt();
 						if (clientTarget.nonStratagemInsightFlashing) {
 							delete clientTarget.nonStratagemInsightFlashing;
 							return;
 						}
 						var classList = clientTarget.classList;
-						if (classList.contains("flash-animation-iteration-count-infinite"))
-							classList.remove("flash-animation-iteration-count-infinite");
+						if (classList.contains("flash-animation-iteration-count-infinite")) classList.remove("flash-animation-iteration-count-infinite");
 					};
 					if (event.isMine()) afterInsight(target);
 					else if (event.isOnline()) player.send(afterInsight, target);
 				},
 				stratagemCamouflage: () => {
 					"step 0";
-					var camouflaged = (event.targets = game.players
-						.filter((current) => current.identity == "fan" && !current.ai.stratagemCamouflage)
-						.randomGets(Math.max(Math.round(get.population() / 6), 1)));
-					camouflaged.forEach((current) => (current.ai.stratagemCamouflage = true));
+					var camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
+					camouflaged.forEach(current => (current.ai.stratagemCamouflage = true));
 					var me = game.me;
 					if (event.players.includes(me) && me.identity == "nei") {
 						event.videoId = lib.status.videoId++;
 						var rebel = get.translation("fan2"),
-							dialog = ui.create.dialog(
-								`${get.translation(camouflaged)}是${rebel}<br>`,
-								"forcebutton"
-							);
+							dialog = ui.create.dialog(`${get.translation(camouflaged)}是${rebel}<br>`, "forcebutton");
 						ui.create.spinningIdentityCard("fan", dialog);
 						dialog.videoId = event.videoId;
-						camouflaged.forEach((victim) => {
+						camouflaged.forEach(victim => {
 							var classList = victim.classList,
-								nonCamouflageFlashing = classList.contains(
-									"flash-animation-iteration-count-infinite"
-								);
+								nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
 							if (nonCamouflageFlashing) victim.nonCamouflageFlashing = true;
 							else classList.add("flash-animation-iteration-count-infinite");
 							victim.prompt(rebel, "fan");
 						});
 						me.chooseControl("ok").set("dialog", dialog);
 					}
-					game.filterPlayer((current) => {
+					game.filterPlayer(current => {
 						if (current.identity != "nei") return;
 						var storage = current.storage;
 						if (!storage.zhibi) storage.zhibi = [];
 						storage.zhibi.addArray(camouflaged);
 					});
 					"step 1";
-					targets.forEach((current) => {
-						if (game.me.identity == "nei" && get.config("nei_auto_mark_camouflage"))
-							current.setIdentity();
+					targets.forEach(current => {
+						if (game.me.identity == "nei" && get.config("nei_auto_mark_camouflage")) current.setIdentity();
 						current.unprompt();
 						if (current.nonCamouflageFlashing) {
 							delete current.nonCamouflageFlashing;
 							return;
 						}
 						var classList = current.classList;
-						if (classList.contains("flash-animation-iteration-count-infinite"))
-							classList.remove("flash-animation-iteration-count-infinite");
+						if (classList.contains("flash-animation-iteration-count-infinite")) classList.remove("flash-animation-iteration-count-infinite");
 					});
 				},
 				stratagemCamouflageOL: () => {
@@ -3523,17 +3147,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							if (!storage.zhibi) storage.zhibi = [];
 							storage.zhibi.addArray(clientCamouflaged);
 							var rebel = get.translation("fan2"),
-								dialog = ui.create.dialog(
-									`${get.translation(clientCamouflaged)}是${rebel}<br>`,
-									"forcebutton"
-								);
+								dialog = ui.create.dialog(`${get.translation(clientCamouflaged)}是${rebel}<br>`, "forcebutton");
 							ui.create.spinningIdentityCard("fan", dialog);
 							dialog.videoId = id;
-							clientCamouflaged.forEach((victim) => {
+							clientCamouflaged.forEach(victim => {
 								var classList = victim.classList,
-									nonCamouflageFlashing = classList.contains(
-										"flash-animation-iteration-count-infinite"
-									);
+									nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
 								if (nonCamouflageFlashing) victim.nonCamouflageFlashing = true;
 								else classList.add("flash-animation-iteration-count-infinite");
 								victim.prompt(rebel, "fan");
@@ -3542,16 +3161,13 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						} else ui.create.dialog("请等待内奸身份确认...").videoId = id;
 						if (online) game.resume();
 					};
-					var camouflaged = (event.targets = game.players
-						.filter((current) => current.identity == "fan" && !current.ai.stratagemCamouflage)
-						.randomGets(Math.max(Math.round(get.population() / 6), 1)));
-					camouflaged.forEach((current) => (current.ai.stratagemCamouflage = true));
+					var camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
+					camouflaged.forEach(current => (current.ai.stratagemCamouflage = true));
 					event.videoId = lib.status.videoId++;
 					var time = 10000;
-					if (lib.configOL && lib.configOL.choose_timeout)
-						time = parseInt(lib.configOL.choose_timeout) * 1000;
+					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
 					var aiTargets = (event.aiTargets = []);
-					event.players.forEach((current) => {
+					event.players.forEach(current => {
 						current.showTimer(time);
 						if (current.isOnline()) {
 							current.send(send, camouflaged, event.videoId, true);
@@ -3577,9 +3193,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					});
 					if (!aiTargets.length) return;
 					aiTargets.randomSort();
-					new Promise((resolve) =>
-						setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))
-					).then(() => {
+					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
 						var interval = setInterval(() => {
 							aiTargets.shift();
 							if (aiTargets.length) return;
@@ -3597,19 +3211,18 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.pause();
 					"step 4";
 					game.broadcastAll("closeDialog", event.videoId);
-					event.players.forEach((current) => current.hideTimer());
-					var afterCamouflage = (clientCamouflaged) =>
-						clientCamouflaged.forEach((victim) => {
+					event.players.forEach(current => current.hideTimer());
+					var afterCamouflage = clientCamouflaged =>
+						clientCamouflaged.forEach(victim => {
 							victim.unprompt();
 							if (victim.nonCamouflageFlashing) {
 								delete victim.nonCamouflageFlashing;
 								return;
 							}
 							var classList = victim.classList;
-							if (classList.contains("flash-animation-iteration-count-infinite"))
-								classList.remove("flash-animation-iteration-count-infinite");
+							if (classList.contains("flash-animation-iteration-count-infinite")) classList.remove("flash-animation-iteration-count-infinite");
 						});
-					event.players.forEach((current) => {
+					event.players.forEach(current => {
 						if (current.isOnline()) {
 							current.send(afterCamouflage, targets);
 							return;
@@ -3640,19 +3253,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				}
 				if (_status.mode == "purple") {
 					var real = get.realAttitude(from, to);
-					if (
-						from == to ||
-						to.identityShown ||
-						(from.storage.zhibi && from.storage.zhibi.includes(to)) ||
-						(_status.yeconfirm &&
-							["rYe", "bYe"].includes(to.identity) &&
-							["rYe", "bYe"].includes(to.identity))
-					)
-						return real * 1.1;
-					return (
-						(to.ai.shown + 0.1) * real +
-						(from.identity.slice(0, 1) == to.identity.slice(0, 1) ? 3 : -3) * (1 - to.ai.shown)
-					);
+					if (from == to || to.identityShown || (from.storage.zhibi && from.storage.zhibi.includes(to)) || (_status.yeconfirm && ["rYe", "bYe"].includes(to.identity) && ["rYe", "bYe"].includes(to.identity))) return real * 1.1;
+					return (to.ai.shown + 0.1) * real + (from.identity.slice(0, 1) == to.identity.slice(0, 1) ? 3 : -3) * (1 - to.ai.shown);
 				} else if (_status.mode == "stratagem") {
 					var x = 0,
 						num = 0,
@@ -3674,29 +3276,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						zhibi = from.storage.zhibi,
 						stratagem_expose = from.storage.stratagem_expose,
 						followCamouflage = true;
-					if (to.ai.shown)
-						return (
-							to.ai.shown *
-							(real +
-								(from.identity == to.identity ||
-								(from.identity == "zhu" && to.identity == "zhong") ||
-								(from.identity == "zhong" && to.identity == "zhu") ||
-								(from.identity == "nei" && to.identity == "zhu" && get.situation() <= 1) ||
-								(to.identity == "nei" &&
-									get.situation() <= 0 &&
-									["zhu", "zhong"].includes(from.identity)) ||
-								(get.situation() >= 3 && from.identity == "fan")
-									? 2.9
-									: -2.9))
-						);
-					if (
-						from == to ||
-						to.identityShown ||
-						(((stratagem_expose && stratagem_expose.includes(to)) ||
-							(zhibi && zhibi.includes(to))) &&
-							!to.ai.stratagemCamouflage)
-					)
-						return real * 1.1;
+					if (to.ai.shown) return to.ai.shown * (real + (from.identity == to.identity || (from.identity == "zhu" && to.identity == "zhong") || (from.identity == "zhong" && to.identity == "zhu") || (from.identity == "nei" && to.identity == "zhu" && get.situation() <= 1) || (to.identity == "nei" && get.situation() <= 0 && ["zhu", "zhong"].includes(from.identity)) || (get.situation() >= 3 && from.identity == "fan") ? 2.9 : -2.9));
+					if (from == to || to.identityShown || (((stratagem_expose && stratagem_expose.includes(to)) || (zhibi && zhibi.includes(to))) && !to.ai.stratagemCamouflage)) return real * 1.1;
 					if (from.identity == "nei" && to.ai.stratagemCamouflage) return real * 1.1;
 					if (to.identity == "nei") {
 						if (from.identity == "fan") {
@@ -3704,15 +3285,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								if (zhibi) {
 									var dead = game.dead.slice();
 									for (var current of dead) {
-										if (
-											from.storage.zhibi.includes(current) &&
-											current.ai.stratagemCamouflage
-										) {
-											if (
-												from.storage.stratagem_expose &&
-												from.storage.stratagem_expose.includes(to)
-											)
-												return -7;
+										if (from.storage.zhibi.includes(current) && current.ai.stratagemCamouflage) {
+											if (from.storage.stratagem_expose && from.storage.stratagem_expose.includes(to)) return -7;
 										}
 									}
 									if (zhibi.includes(to)) return 3;
@@ -3725,8 +3299,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						from.identity == "nei" &&
 						zhibi.includes(game.zhu) &&
 						game.players
-							.filter((i) => i != from && !zhibi.includes(i))
-							.map((i) => i.identity)
+							.filter(i => i != from && !zhibi.includes(i))
+							.map(i => i.identity)
 							.reduce((p, c) => (!p.includes(c) ? p.push(c) && p : p), []).length == 1
 					)
 						return real;
@@ -3740,40 +3314,22 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					}
 					if (from.identity == "fan" && to.identity == "fan") {
 						if (from.ai.stratagemCamouflage) {
-							var zhu =
-								game.zhu && game.zhu.isZhu && game.zhu.identityShown ? game.zhu : undefined;
+							var zhu = game.zhu && game.zhu.isZhu && game.zhu.identityShown ? game.zhu : undefined;
 							if (zhu) {
-								if (zhu.storage.stratagem_expose && zhu.storage.stratagem_expose.includes(to))
-									return 0;
+								if (zhu.storage.stratagem_expose && zhu.storage.stratagem_expose.includes(to)) return 0;
 							}
 							if (zhibi && zhibi.includes(to)) return -7;
 						}
 						if (to.ai.stratagemCamouflage) {
-							var zhu =
-								game.zhu && game.zhu.isZhu && game.zhu.identityShown ? game.zhu : undefined;
+							var zhu = game.zhu && game.zhu.isZhu && game.zhu.identityShown ? game.zhu : undefined;
 							if (zhu) {
-								if (zhu.storage.stratagem_expose && zhu.storage.stratagem_expose.includes(to))
-									return 0;
+								if (zhu.storage.stratagem_expose && zhu.storage.stratagem_expose.includes(to)) return 0;
 							}
 							if (zhibi && zhibi.includes(to)) return -7;
 						}
 					}
-					if (
-						from.identity != "nei" &&
-						zhibi &&
-						zhibi.includes(to) &&
-						!to.identityShown &&
-						followCamouflage &&
-						to.ai.stratagemCamouflage
-					)
-						return -5;
-					if (
-						from.identity != "nei" &&
-						stratagem_expose &&
-						stratagem_expose.includes(to) &&
-						!to.identityShown
-					)
-						return -5;
+					if (from.identity != "nei" && zhibi && zhibi.includes(to) && !to.identityShown && followCamouflage && to.ai.stratagemCamouflage) return -5;
+					if (from.identity != "nei" && stratagem_expose && stratagem_expose.includes(to) && !to.identityShown) return -5;
 					if (zhibi) {
 						for (var to2 of zhibi) {
 							if (to2.storage.stratagem_expose) {
@@ -3789,10 +3345,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									}
 								} else {
 									for (var to3 of to2.storage.stratagem_expose) {
-										if (
-											!zhibi.slice().addArray(stratagem_expose).includes(to3) &&
-											to == to3
-										) {
+										if (!zhibi.slice().addArray(stratagem_expose).includes(to3) && to == to3) {
 											return get.rawAttitude(to3, to) * Math.sign(real);
 										}
 									}
@@ -3800,32 +3353,15 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							}
 						}
 					}
-					return Math.max(
-						-1,
-						Math.min(
-							-0.1,
-							(-Math.min(5, to.countCards("hes") / 2 + 1) / 5 - Math.max(0, 5 - to.hp) / 4) / 2
-						)
-					);
+					return Math.max(-1, Math.min(-0.1, (-Math.min(5, to.countCards("hes") / 2 + 1) / 5 - Math.max(0, 5 - to.hp) / 4) / 2));
 				}
 				//正常身份模式态度
 				var difficulty = 0;
 				if (to == game.me) difficulty = 2 - get.difficulty();
-				if (
-					from == to ||
-					to.identityShown ||
-					from.storage.dongcha == to ||
-					to.identityShown ||
-					(from.storage.zhibi && from.storage.zhibi.includes(to))
-				) {
+				if (from == to || to.identityShown || from.storage.dongcha == to || to.identityShown || (from.storage.zhibi && from.storage.zhibi.includes(to))) {
 					return get.realAttitude(from, to) + difficulty * 1.5;
 				} else {
-					if (
-						from.identity == "zhong" &&
-						to.ai.shown == 0 &&
-						from.ai.tempIgnore &&
-						!from.ai.tempIgnore.includes(to)
-					) {
+					if (from.identity == "zhong" && to.ai.shown == 0 && from.ai.tempIgnore && !from.ai.tempIgnore.includes(to)) {
 						for (var i = 0; i < game.players.length; i++) {
 							if (game.players[i].ai.shown == 0 && game.players[i].identity == "fan") {
 								return -0.1 + difficulty * 1.5;
@@ -3833,20 +3369,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						}
 					}
 					var aishown = to.ai.shown;
-					if (
-						(to.identity == "nei" || to.identity == "commoner") &&
-						to.ai.shown < 1 &&
-						(to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")
-					) {
+					if ((to.identity == "nei" || to.identity == "commoner") && to.ai.shown < 1 && (to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")) {
 						aishown = 0.5;
 					} else if (aishown == 0 && to.identity != "fan" && to.identity != "zhu") {
 						var fanshown = true;
 						for (var i = 0; i < game.players.length; i++) {
-							if (
-								game.players[i].identity == "fan" &&
-								game.players[i].ai.shown == 0 &&
-								game.players[i] != from
-							) {
+							if (game.players[i].identity == "fan" && game.players[i].ai.shown == 0 && game.players[i] != from) {
 								fanshown = false;
 								break;
 							}
@@ -3890,26 +3418,12 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						identity2 = "zhong";
 						if (from == to) return 10;
 					}
-					if (
-						from != to &&
-						to.identity == "nei" &&
-						to.ai.shown < 1 &&
-						(to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")
-					) {
+					if (from != to && to.identity == "nei" && to.ai.shown < 1 && (to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")) {
 						identity2 = to.ai.identity_mark;
 					}
-					if (
-						from.identity != "nei" &&
-						from != to &&
-						get.population("fan") == 0 &&
-						identity2 == "zhong"
-					) {
+					if (from.identity != "nei" && from != to && get.population("fan") == 0 && identity2 == "zhong") {
 						for (var i = 0; i < game.players.length; i++) {
-							if (
-								game.players[i].identity == "nei" &&
-								game.players[i].ai.identity_mark == "zhong" &&
-								game.players[i].ai.shown < 1
-							) {
+							if (game.players[i].identity == "nei" && game.players[i].ai.identity_mark == "zhong" && game.players[i].ai.shown < 1) {
 								identity2 = "nei";
 								break;
 							}
@@ -3929,11 +3443,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										if (to.ai.identity_mark == "zhong" && to.ai.shown < 1) return 0;
 										return -1;
 									}
-									if (
-										get.population("fan") == 1 &&
-										get.population("nei") == 1 &&
-										game.players.length == 3
-									) {
+									if (get.population("fan") == 1 && get.population("nei") == 1 && game.players.length == 3) {
 										var fan;
 										for (var i = 0; i < game.players.length; i++) {
 											if (game.players[i].identity == "fan") {
@@ -3942,11 +3452,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 											}
 										}
 										if (fan) {
-											if (
-												to.hp > 1 &&
-												to.hp > fan.hp &&
-												to.countCards("he") > fan.countCards("he")
-											) {
+											if (to.hp > 1 && to.hp > fan.hp && to.countCards("he") > fan.countCards("he")) {
 												return -3;
 											}
 										}
@@ -3955,11 +3461,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									if (situation > 1) return Math.max((situation - 8) / 3, -2);
 									return Math.min(3, get.population("fan"));
 								case "fan":
-									if (
-										get.population("fan") == 1 &&
-										get.population("nei") == 1 &&
-										game.players.length == 3
-									) {
+									if (get.population("fan") == 1 && get.population("nei") == 1 && game.players.length == 3) {
 										var nei;
 										for (var i = 0; i < game.players.length; i++) {
 											if (game.players[i].identity == "nei") {
@@ -3968,11 +3470,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 											}
 										}
 										if (nei) {
-											if (
-												nei.hp > 1 &&
-												nei.hp > to.hp &&
-												nei.countCards("he") > to.countCards("he")
-											) {
+											if (nei.hp > 1 && nei.hp > to.hp && nei.countCards("he") > to.countCards("he")) {
 												return 0;
 											}
 										}
@@ -4020,11 +3518,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 											}
 										}
 										if (fan) {
-											if (
-												to.hp > 1 &&
-												to.hp > fan.hp &&
-												to.countCards("he") > fan.countCards("he")
-											) {
+											if (to.hp > 1 && to.hp > fan.hp && to.countCards("he") > fan.countCards("he")) {
 												return -3;
 											}
 										}
@@ -4056,11 +3550,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								case "fan":
 									if (strategy == 5) return Math.max(-1, situation);
 									if (strategy == 6) return Math.min(0, situation);
-									if ((game.zhu && game.zhu.hp <= 2 && situation < 0) || situation < -1)
-										num = -3;
+									if ((game.zhu && game.zhu.hp <= 2 && situation < 0) || situation < -1) num = -3;
 									else if (situation < 0 || get.population("zhong") == 0) num = -2;
-									else if ((game.zhu && game.zhu.hp >= 4 && situation > 0) || situation > 1)
-										num = 1;
+									else if ((game.zhu && game.zhu.hp >= 4 && situation > 0) || situation > 1) num = 1;
 									else num = 0;
 									if (strategy == 2) num++;
 									if (strategy == 3) num--;
@@ -4092,13 +3584,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				}
 				//正常身份模式态度
 				if (!game.zhu) {
-					if (
-						from.identity == "nei" ||
-						to.identity == "nei" ||
-						from.identity == "commoner" ||
-						to.identity == "commoner"
-					)
-						return -1;
+					if (from.identity == "nei" || to.identity == "nei" || from.identity == "commoner" || to.identity == "commoner") return -1;
 					if (from.identity == to.identity) return 6;
 					return -6;
 				}
@@ -4109,34 +3595,15 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					identity2 = "zhong";
 					if (from == to) return 10;
 				}
-				if (
-					from != to &&
-					to.identity == "nei" &&
-					to.ai.shown < 1 &&
-					(to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")
-				) {
+				if (from != to && to.identity == "nei" && to.ai.shown < 1 && (to.ai.identity_mark == "fan" || to.ai.identity_mark == "zhong")) {
 					identity2 = to.ai.identity_mark;
 				}
-				if (
-					from.identity != "nei" &&
-					from.identity != "commoner" &&
-					from != to &&
-					get.population("fan") == 0 &&
-					identity2 == "zhong"
-				) {
+				if (from.identity != "nei" && from.identity != "commoner" && from != to && get.population("fan") == 0 && identity2 == "zhong") {
 					for (var i = 0; i < game.players.length; i++) {
-						if (
-							game.players[i].identity == "nei" &&
-							game.players[i].ai.identity_mark == "zhong" &&
-							game.players[i].ai.shown < 1
-						) {
+						if (game.players[i].identity == "nei" && game.players[i].ai.identity_mark == "zhong" && game.players[i].ai.shown < 1) {
 							identity2 = "nei";
 							break;
-						} else if (
-							game.players[i].identity == "commoner" &&
-							game.players[i].ai.identity_mark == "zhong" &&
-							game.players[i].ai.shown < 1
-						) {
+						} else if (game.players[i].identity == "commoner" && game.players[i].ai.identity_mark == "zhong" && game.players[i].ai.shown < 1) {
 							identity2 = "commoner";
 							break;
 						}
@@ -4162,11 +3629,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									return -0.5;
 								}
 								if (zhongmode && to.ai.sizhong && to.ai.shown < 1) return 6;
-								if (
-									get.population("fan") == 1 &&
-									get.population("nei") == 1 &&
-									game.players.length == 3
-								) {
+								if (get.population("fan") == 1 && get.population("nei") == 1 && game.players.length == 3) {
 									var fan;
 									for (var i = 0; i < game.players.length; i++) {
 										if (game.players[i].identity == "fan") {
@@ -4175,11 +3638,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										}
 									}
 									if (fan) {
-										if (
-											to.hp > 1 &&
-											to.hp > fan.hp &&
-											to.countCards("he") > fan.countCards("he")
-										) {
+										if (to.hp > 1 && to.hp > fan.hp && to.countCards("he") > fan.countCards("he")) {
 											return -3;
 										}
 									}
@@ -4188,11 +3647,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								if (situation > 1) return 0;
 								return Math.min(3, get.population("fan"));
 							case "fan":
-								if (
-									get.population("fan") == 1 &&
-									get.population("nei") == 1 &&
-									game.players.length == 3
-								) {
+								if (get.population("fan") == 1 && get.population("nei") == 1 && game.players.length == 3) {
 									var nei;
 									for (var i = 0; i < game.players.length; i++) {
 										if (game.players[i].identity == "nei") {
@@ -4201,11 +3656,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										}
 									}
 									if (nei) {
-										if (
-											nei.hp > 1 &&
-											nei.hp > to.hp &&
-											nei.countCards("he") > to.countCards("he")
-										) {
+										if (nei.hp > 1 && nei.hp > to.hp && nei.countCards("he") > to.countCards("he")) {
 											return 0;
 										}
 									}
@@ -4228,11 +3679,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										}
 									}
 									if (fan) {
-										if (
-											to.hp > 1 &&
-											to.hp > fan.hp &&
-											to.countCards("he") > fan.countCards("he")
-										) {
+										if (to.hp > 1 && to.hp > fan.hp && to.countCards("he") > fan.countCards("he")) {
 											return -3;
 										}
 									}
@@ -4262,13 +3709,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						break;
 					case "nei":
 						if (identity2 == "zhu" && game.players.length == 2) return -10;
-						if (
-							from != to &&
-							identity2 != "zhu" &&
-							identity2 != "commoner" &&
-							game.players.length == 3
-						)
-							return -8;
+						if (from != to && identity2 != "zhu" && identity2 != "commoner" && game.players.length == 3) return -8;
 						var strategy = get.aiStrategy();
 						if (strategy == 4) {
 							if (from == to) return 10;
@@ -4289,11 +3730,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 										}
 									}
 									if (fan) {
-										if (
-											to.hp > 1 &&
-											to.hp > fan.hp &&
-											to.countCards("he") > fan.countCards("he")
-										) {
+										if (to.hp > 1 && to.hp > fan.hp && to.countCards("he") > fan.countCards("he")) {
 											return -1.7;
 										}
 									}
@@ -4343,15 +3780,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							case "fan":
 								if (strategy == 5) return Math.max(-1, situation);
 								if (strategy == 6) return Math.min(0, situation);
-								if ((game.zhu && game.zhu.hp <= 2 && situation < 0) || situation < -1)
-									num = -3;
-								else if (
-									situation < 0 ||
-									get.population("zhong") + get.population("mingzhong") == 0
-								)
-									num = -2;
-								else if ((game.zhu && game.zhu.hp >= 4 && situation > 0) || situation > 1)
-									num = 1;
+								if ((game.zhu && game.zhu.hp <= 2 && situation < 0) || situation < -1) num = -3;
+								else if (situation < 0 || get.population("zhong") + get.population("mingzhong") == 0) num = -2;
+								else if ((game.zhu && game.zhu.hp >= 4 && situation > 0) || situation > 1) num = 1;
 								else num = 0;
 								if (strategy == 2) num++;
 								if (strategy == 3) num--;
@@ -4396,24 +3827,17 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								return to.hp + to.countCards("h") / 3 - 4;
 							case "zhong":
 								if (situation > 0) {
-									if (to.hp >= 2)
-										return Math.min(3, Math.max(1, to.hp + to.countCards("h") / 4 - 4));
+									if (to.hp >= 2) return Math.min(3, Math.max(1, to.hp + to.countCards("h") / 4 - 4));
 									else return 0;
 								}
 								return -2;
 							case "nei":
-								if (game.players.length == 3 && get.population("nei") == 1)
-									return (
-										Math.min(3.5, to.hp - 1.5 + to.countCards("h") / 3) -
-										(to.hp < (game.zhu ? game.zhu.hp : 0) ? 4 : 0)
-									);
-								if (game.players.length <= 4 && get.population("nei") == 1)
-									return Math.min(5, to.hp - 1.5 + to.countCards("h") / 3);
+								if (game.players.length == 3 && get.population("nei") == 1) return Math.min(3.5, to.hp - 1.5 + to.countCards("h") / 3) - (to.hp < (game.zhu ? game.zhu.hp : 0) ? 4 : 0);
+								if (game.players.length <= 4 && get.population("nei") == 1) return Math.min(5, to.hp - 1.5 + to.countCards("h") / 3);
 								if (situation > 0) return -3;
 								return 0;
 							case "fan":
-								if (situation < 0)
-									return to.hp + to.countCards("h") / 4 - 1.7 * get.population("fan") + 2;
+								if (situation < 0) return to.hp + to.countCards("h") / 4 - 1.7 * get.population("fan") + 2;
 								else if (situation == 0) return 0;
 								return 0.55 * get.population("fan") - 2.1;
 							case "commoner":
@@ -4466,12 +3890,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				if (from.identity == "nei") return to.identity;
 				if (to.identity == "nei") return friend;
 				if (from.ai.stratagemCamouflage || to.ai.stratagemCamouflage) return enemy;
-				if (
-					from.identity == to.identity ||
-					(from.identity == "zhu" && to.identity == "zhong") ||
-					(from.identity == "zhong" && to.identity == "zhu")
-				)
-					return friend;
+				if (from.identity == to.identity || (from.identity == "zhu" && to.identity == "zhong") || (from.identity == "zhong" && to.identity == "zhu")) return friend;
 				return enemy;
 			},
 		},
@@ -4504,7 +3923,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					return player == source;
 				},
 				logTarget: "player",
-				prompt2: (event) => `消耗1点怒气，洞察${get.translation(event.player)}的身份`,
+				prompt2: event => `消耗1点怒气，洞察${get.translation(event.player)}的身份`,
 				check: (event, player) => {
 					const storage = player.storage,
 						zhibi = storage.zhibi;
@@ -4534,18 +3953,15 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ruleSkill: true,
 				filter: (event, player, name) => {
 					if (player.storage.stratagem_monarchy || player.identity != "zhu") return false;
-					if (name == "dieAfter")
-						return game.dead.length >= Math.max(Math.round(get.population() / 3), 2);
-					return (
-						name == "dying" || game.roundNumber >= Math.max(Math.round(get.population() / 2), 3)
-					);
+					if (name == "dieAfter") return game.dead.length >= Math.max(Math.round(get.population() / 3), 2);
+					return name == "dying" || game.roundNumber >= Math.max(Math.round(get.population() / 2), 3);
 				},
 				content: () => {
 					"step 0";
 					if (event.triggername == "dying") game.delayx();
 					"step 1";
 					player.storage.stratagem_monarchy = true;
-					game.broadcastAll((clientPlayer) => {
+					game.broadcastAll(clientPlayer => {
 						if (!game.zhu) game.zhu = clientPlayer;
 						clientPlayer.identityShown = true;
 						clientPlayer.ai.shown = 1;
@@ -4556,7 +3972,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						if (config.animation && !config.low_performance) clientPlayer.$legend();
 						var clickingIdentity = _status.clickingidentity;
 						if (!clickingIdentity || clickingIdentity[0] != clientPlayer) return;
-						clickingIdentity[1].forEach((element) => {
+						clickingIdentity[1].forEach(element => {
 							element.delete();
 							element.style.transform = "";
 						});
@@ -4570,7 +3986,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					player.recover();
 					player.draw();
 					"step 3";
-					const skills = player.getStockSkills(true, true).filter((stockSkill) => {
+					const skills = player.getStockSkills(true, true).filter(stockSkill => {
 						if (player.hasSkill(stockSkill)) return;
 						var info = get.info(stockSkill);
 						if (!info || !info.zhuSkill) return;
@@ -4590,19 +4006,14 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				ruleSkill: true,
 				filter: (event, player) => {
 					const storage = player.storage;
-					return (
-						!storage.stratagem_revitalization &&
-						player.ai.stratagemCamouflage &&
-						game.dead.length < Math.max(Math.round(get.population() / 6), 1) &&
-						storage.stratagem_fury >= 2
-					);
+					return !storage.stratagem_revitalization && player.ai.stratagemCamouflage && game.dead.length < Math.max(Math.round(get.population() / 6), 1) && storage.stratagem_fury >= 2;
 				},
 				content: () => {
 					"step 0";
 					game.delayx();
 					"step 1";
 					player.storage.stratagem_revitalization = true;
-					game.broadcastAll((clientPlayer) => {
+					game.broadcastAll(clientPlayer => {
 						clientPlayer.identityShown = true;
 						clientPlayer.ai.shown = 1;
 						clientPlayer.setIdentity();
@@ -4634,13 +4045,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						target == player &&
 						(target.identityShown ||
 							player.storage.zhibi.includes(target) ||
-							game.hasPlayer2((current) => {
+							game.hasPlayer2(current => {
 								if (!current.identityShown) return false;
 								const storage = current.storage;
-								return (
-									(storage.stratagem_revitalization || storage.stratagem_monarchy) &&
-									storage.stratagem_expose.includes(target)
-								);
+								return (storage.stratagem_revitalization || storage.stratagem_monarchy) && storage.stratagem_expose.includes(target);
 							}))
 					);
 				},
@@ -4668,11 +4076,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 							return (
 								1 -
 								game.countPlayer(function (current) {
-									return (
-										current != player &&
-										(current.identity == "rYe" || current.identity == "bYe") &&
-										(current == game.me || current.isOnline())
-									);
+									return current != player && (current.identity == "rYe" || current.identity == "bYe") && (current == game.me || current.isOnline());
 								})
 							);
 						},
@@ -4683,8 +4087,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				name: "军师",
 				mark: true,
 				intro: {
-					content:
-						"准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
+					content: "准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
 				},
 				trigger: { player: "phaseZhunbeiBegin" },
 				silent: true,
@@ -4694,7 +4097,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 					game.cardsGotoOrdering(cards);
 					var next = player.chooseToMove();
 					next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-					next.set("prompt", "观星：点击将牌移动到牌堆顶或牌堆底");
+					next.set("prompt", "观星：点击或拖动将牌移动到牌堆顶或牌堆底");
 					next.processAI = function (list) {
 						var cards = list[0][1],
 							player = _status.event.player;
@@ -4792,19 +4195,11 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 								var js = target.getCards("j");
 								if (js.length) {
 									var jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
-									if (
-										jj.name == "guohe" ||
-										js.length > 1 ||
-										get.effect(target, jj, target, player) < 0
-									) {
+									if (jj.name == "guohe" || js.length > 1 || get.effect(target, jj, target, player) < 0) {
 										return 2 * att;
 									}
 								}
-								if (
-									target.getEquip("baiyin") &&
-									target.isDamaged() &&
-									get.recoverEffect(target, player, player) > 0
-								) {
+								if (target.getEquip("baiyin") && target.isDamaged() && get.recoverEffect(target, player, player) > 0) {
 									if (target.hp == 1 && !target.hujia) return 1.6 * att;
 									if (target.hp == 2) return 0.01 * att;
 									return 0;
@@ -4855,12 +4250,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 									player.popup("dongcha");
 								}
 							} else {
-								player
-									.chooseControl("ok")
-									.set("dialog", [
-										get.translation(target) + "是反贼",
-										[[target.name], "character"],
-									]);
+								player.chooseControl("ok").set("dialog", [get.translation(target) + "是反贼", [[target.name], "character"]]);
 							}
 						},
 					},
@@ -4869,11 +4259,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 						forced: true,
 						popup: false,
 						filter: function (event, player) {
-							return (
-								event.targets.length == 1 &&
-								event.targets[0] == player.storage.dongcha &&
-								event.targets[0].ai.shown < 0.95
-							);
+							return event.targets.length == 1 && event.targets[0] == player.storage.dongcha && event.targets[0].ai.shown < 0.95;
 						},
 						content: function () {
 							trigger.targets[0].addExpose(0.2);
@@ -4911,15 +4297,8 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			},
 		},
 		help: {
-			身份模式:
-				'<div style="margin:10px">选项</div><ul style="margin-top:0"><li>加强主公<br>反贼人数多于2时主公会额外增加一个技能（每个主公的额外技能固定，非常备主公增加天命）' +
-				'<li>特殊身份<br><ul style="padding-left:20px;padding-top:5px"><li>军师：忠臣身份。只要军师存活，主公在准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底<li>大将：忠臣身份。只要大将存活，主公手牌上限+1<li>贼首：反贼身份，只要贼首存活，主公手牌上限-1</ul></ul>' +
-				"<li>平民身份<br>英盗版三国杀于2017标准版中提出的新概念。平民的获胜条件为：当其他身份的角色达成了其获胜条件，且你存活，你也获胜；同时内奸的获胜条件改为：主公死亡时，场上所有忠臣和反贼均已死亡。即内奸可以和与平民共同胜利。杀死平民的角色的奖惩为：摸两张牌。" +
-				"<li>年机制<br>英盗版三国杀于2019标准版中提出的新概念。“年”是一个全局概念，游戏开始时为第一年，当牌堆洗牌时，年数+1。一局游戏的限定年数为本局游戏开始时玩家总数。当年数增加后，若当前年数已超过限定年数，则主忠方直接获胜，若平民存活则平民也获胜。",
-			明忠模式:
-				'<div style="margin:10px">明忠模式（忠胆英杰）</div><ul style="margin-top:0"><li>本模式需要8名玩家进行游戏，使用的身份牌为：1主公、2忠臣、4反贼和1内奸。游戏开始时，每名玩家随机获得一个身份，由系统随机选择一名忠臣身份的玩家亮出身份（将忠臣牌正面朝上放在面前），其他身份（包括主公）的玩家不亮出身份。<li>' +
-				"首先由亮出身份的忠臣玩家随机获得六张武将牌，挑选一名角色，并将选好的武将牌展示给其他玩家。之后其余每名玩家随机获得三张武将牌，各自从其中挑选一张同时亮出<li>" +
-				"亮出身份牌的忠臣增加1点体力上限。角色濒死和死亡的结算及胜利条件与普通身份局相同。",
+			身份模式: '<div style="margin:10px">选项</div><ul style="margin-top:0"><li>加强主公<br>反贼人数多于2时主公会额外增加一个技能（每个主公的额外技能固定，非常备主公增加天命）' + '<li>特殊身份<br><ul style="padding-left:20px;padding-top:5px"><li>军师：忠臣身份。只要军师存活，主公在准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底<li>大将：忠臣身份。只要大将存活，主公手牌上限+1<li>贼首：反贼身份，只要贼首存活，主公手牌上限-1</ul></ul>' + "<li>平民身份<br>英盗版三国杀于2017标准版中提出的新概念。平民的获胜条件为：当其他身份的角色达成了其获胜条件，且你存活，你也获胜；同时内奸的获胜条件改为：主公死亡时，场上所有忠臣和反贼均已死亡。即内奸可以和与平民共同胜利。杀死平民的角色的奖惩为：摸两张牌。" + "<li>年机制<br>英盗版三国杀于2019标准版中提出的新概念。“年”是一个全局概念，游戏开始时为第一年，当牌堆洗牌时，年数+1。一局游戏的限定年数为本局游戏开始时玩家总数。当年数增加后，若当前年数已超过限定年数，则主忠方直接获胜，若平民存活则平民也获胜。",
+			明忠模式: '<div style="margin:10px">明忠模式（忠胆英杰）</div><ul style="margin-top:0"><li>本模式需要8名玩家进行游戏，使用的身份牌为：1主公、2忠臣、4反贼和1内奸。游戏开始时，每名玩家随机获得一个身份，由系统随机选择一名忠臣身份的玩家亮出身份（将忠臣牌正面朝上放在面前），其他身份（包括主公）的玩家不亮出身份。<li>' + "首先由亮出身份的忠臣玩家随机获得六张武将牌，挑选一名角色，并将选好的武将牌展示给其他玩家。之后其余每名玩家随机获得三张武将牌，各自从其中挑选一张同时亮出<li>" + "亮出身份牌的忠臣增加1点体力上限。角色濒死和死亡的结算及胜利条件与普通身份局相同。",
 			谋攻模式:
 				'<div style="margin:10px">模式命名由来</div><ul style="margin-top:0"><li>《谋攻篇》一词出自《孙子兵法·谋攻篇》，是春秋时期兵法家孙武创作的一篇散文。《谋攻篇》故知胜有五：知可以战与不可以战者胜，识众寡之用者胜，上下同欲者胜，以虞待不虞者胜，将能而君不御者胜。</ul>' +
 				'<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>谋攻篇模式为六名玩家参与的全暗身份模式，引入新机制“怒气”，玩家可以消耗怒气探查其他角色的身份是敌人或者队友，或使用怒气强化手牌，以达到识别出队友并击杀敌人的目标。' +
@@ -4944,4 +4323,4 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				"<li>制作团队<br>游戏出品：紫星居<br>游戏设计：食茸貳拾肆<br>游戏开发：食茸貳拾肆、紫髯的小乔、聆星Mine、空城琴音依旧弥漫、丽景原同志、雪之彩翼、拉普拉斯、明月照沟渠<br>程序化：无名杀<br>鸣谢：荆哲、魔风、萨巴鲁酱、这就是秋夜</ul></ul>",
 		},
 	};
-});
+};

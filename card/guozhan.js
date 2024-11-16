@@ -463,20 +463,7 @@ game.import("card", function () {
 				},
 				loseDelay: false,
 				onLose: function () {
-					var next = game.createEvent("taipingyaoshu");
-					event.next.remove(next);
-					var evt = event.getParent();
-					if (evt.getlx === false) evt = evt.getParent();
-					evt.after.push(next);
-					next.player = player;
-					next.setContent(lib.card.taipingyaoshu.onLosex);
-				},
-				onLosex: function () {
-					"step 0";
-					player.logSkill("taipingyaoshu");
-					player.draw(2);
-					"step 1";
-					if (player.hp > 1) player.loseHp();
+					player.addTempSkill("taipingyaoshu_lose");
 				},
 			},
 			yuxi: {
@@ -529,6 +516,7 @@ game.import("card", function () {
 				audio: "shuiyanqijun",
 				fullskin: true,
 				type: "trick",
+				cardnature: "thunder",
 				filterTarget: function (card, player, target) {
 					return (
 						target != player &&
@@ -584,6 +572,12 @@ game.import("card", function () {
 									)
 								)
 									return "discard_card";
+								if (lib.skill.huxinjing.filter({
+									player: player,
+									card: event.card,
+									source: event.player,
+									num: 1
+								}, player)) return "take_damage";
 								if (
 									(player.hp > 2 && player.countCards("e") > 2) ||
 									(player.hp > 1 && player.countCards("e") > 3)
@@ -728,6 +722,18 @@ game.import("card", function () {
 					order: 7.5,
 					value: 4,
 					useful: 2,
+					wuxie: (target, card, player, viewer, status) => {
+						if (
+							target.hasSkillTag("nodamage") ||
+							target.hasSkillTag("nofire") ||
+							target.hasSkillTag("nothunder")
+						) return 0;
+						if (
+							get.damageEffect(target, player, viewer, "thunder") >= 0 ||
+							get.damageEffect(target, player, viewer, "fire") >= 0
+						) return 0;
+						if (target.hp + target.hujia > 2 && target.mayHaveShan(viewer, "use")) return 0;
+					},
 					result: {
 						target: function (player, target) {
 							if (get.mode() == "versus") {
@@ -1033,6 +1039,7 @@ game.import("card", function () {
 				fullskin: true,
 				audio: true,
 				type: "trick",
+				cardnature: "fire",
 				filterTarget: function (card, player, target) {
 					if (get.mode() == "guozhan") {
 						var next = player.getNext();
@@ -1455,7 +1462,7 @@ game.import("card", function () {
 				equipSkill: true,
 				mod: {
 					canBeReplaced: function (card, player) {
-						if (player.getEquips("liulongcanjia").includes(card)) return false;
+						if (player.getVEquips("liulongcanjia").includes(card)) return false;
 					},
 				},
 			},
@@ -1476,7 +1483,7 @@ game.import("card", function () {
 				},
 				ai: {
 					effect: {
-						target_use(card, player, target, current) {
+						target(card, player, target, current) {
 							if (
 								["huoshaolianying", "huogong"].includes(card.name) ||
 								(card.name == "sha" && game.hasNature(card, "fire"))
@@ -1838,8 +1845,42 @@ game.import("card", function () {
 								return;
 							if (get.tag(card, "natureDamage")) return "zeroplayertarget";
 							if (card.name == "tiesuo") {
-								return [0, 0];
+								return 0.01;
 							}
+						},
+					},
+				},
+				subSkill: {
+					lose: {
+						audio: "taipingyaoshu",
+						forced: true,
+						charlotte: true,
+						equipSkill: true,
+						trigger: {
+							player: "loseAfter",
+							global: [
+								"equipAfter",
+								"addJudgeAfter",
+								"gainAfter",
+								"loseAsyncAfter",
+								"addToExpansionAfter",
+							],
+						},
+						filter: (event, player) => {
+							return !player.hasSkillTag("unequip2")
+						},
+						getIndex(event, player){
+							const evt = event.getl(player);
+							const lostCards = [];
+							evt.es.forEach((card) => {
+								const VEquip = evt.vcard_map.get(card);
+								if(VEquip.name === "taipingyaoshu") lostCards.add(VEquip);
+							});
+							return lostCards.length;
+						},
+						async content(event, trigger, player) {
+							await player.draw(2);
+							if (player.hp > 1) await player.loseHp();
 						},
 					},
 				},
@@ -1981,6 +2022,9 @@ game.import("card", function () {
 				trigger: { player: "damageBegin4" },
 				// forced:true,
 				filter: function (event, player) {
+					if (event.num < player.hp && (get.mode() == "guozhan" || event.num <= 1)) return false;
+					let cards = player.getEquips("huxinjing");
+					if (!cards.length) return false;
 					if (player.hasSkillTag("unequip2")) return false;
 					if (
 						event.source &&
@@ -1991,10 +2035,7 @@ game.import("card", function () {
 						})
 					)
 						return false;
-					var cards = player.getEquips("huxinjing");
-					if (!cards.length) return false;
-					if (get.mode() != "guozhan" && event.num > 1) return true;
-					return event.num >= player.hp;
+					return true;
 				},
 				content: function () {
 					trigger.cancel();

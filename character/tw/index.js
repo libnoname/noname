@@ -26,7 +26,9 @@ game.import("character", function () {
 		characterIntro: { ...characterIntros },
 		characterReplace: { ...characterReplaces },
 		characterSubstitute: {
-			huan_zhugeliang: [],
+			huan_zhugeliang: [
+				["huan_zhugeliang_shadow", []],
+			],
 		},
 		card: { ...cards },
 		skill: { ...skills },

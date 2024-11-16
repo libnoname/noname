@@ -7,7 +7,7 @@ const characterSort = {
 	diy_xushi: ["diy_feishi", "diy_hanlong", "diy_liufu", "diy_liuyan", "diy_liuzan", "diy_tianyu", "diy_xizhenxihong", "diy_yangyi", "diy_zaozhirenjun"],
 	diy_default: ["diy_yuji", "diy_caiwenji", "diy_lukang", "diy_zhenji", "old_majun"],
 	diy_noname: ["noname"],
-	diy_trashbin: ["junk_guanyu", "junk_zhangjiao", "old_jiakui", "ol_guohuai", "junk_zhangrang", "old_bulianshi", "ol_maliang", "junk_liubei", "junk_huangyueying", "junk_lidian", "junk_duanwei", "junk_xuyou", "junk_liuyan"],
+	diy_trashbin: ["junk_guanyu", "junk_zhangrang", "old_bulianshi", "ol_maliang", "junk_liubei", "junk_huangyueying", "junk_lidian", "junk_duanwei", "junk_xuyou", "junk_liuyan"],
 };
 
 const characterSortTranslate = {

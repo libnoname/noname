@@ -6,6 +6,7 @@ game.import("card", function () {
 			linghunzhihuo: {
 				fullskin: true,
 				type: "trick",
+				cardnature: "fire",
 				enable: true,
 				filterTarget: true,
 				content: function () {
@@ -623,6 +624,7 @@ game.import("card", function () {
 			yuansuhuimie: {
 				fullskin: true,
 				type: "trick",
+				cardnature: "thunder",
 				enable: true,
 				selectTarget: -1,
 				filterTarget: true,

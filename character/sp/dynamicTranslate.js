@@ -96,5 +96,21 @@ const dynamicTranslates = {
 		const str = nameList.map(i => "【" + get.translation(i) + "】").join("/");
 		return "每轮每项限一次，你可以将一张牌当作" + str + "使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若〖寇钞〗的所有项均为基本牌，则你修改〖寇钞〗的所有项为【顺手牵羊】。";
 	},
+    oljinghua(player) {
+        const storage = player.storage.oljinghua;
+        var str = "当其他角色获得你的牌后，或当你交给其他角色牌后，其";
+        str += storage ? "失去" : "回复";
+        str += "1点体力。";
+        if (!storage) str += "当你失去最后的手牌后，你可以将此技能描述中的“回复”改为“失去”。";
+        return str;
+    },
+    olshuiyue(player) {
+        const storage = player.storage.olshuiyue;
+        var str = "当其他角色受到你造成的伤害后，其";
+        str += storage ? "弃置" : "摸";
+        str += "一张牌。";
+        if (!storage) str += "当你令其他角色进入濒死状态后，你可以将此技能描述中的“摸”改为“弃置”。";
+        return str;
+    },
 };
 export default dynamicTranslates;

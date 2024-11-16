@@ -4,25 +4,16 @@ game.import("character", function () {
 		name: "mtg",
 		character: {
 			mtg_jiding: ["male", "qun", 4, ["mbaizhan", "msilian"]],
-			// mtg_qianzhuo:['female','shu',3,[]],
 			mtg_jiesi: ["male", "wei", 3, ["mtongnian", "msuoling", "mhuanyi"]],
 			mtg_lilianna: ["female", "qun", 3, ["lingyong", "mduohun"]],
-			// mtg_nisha:['female','wu',3,[]],
-			// mtg_ayeni:['male','qun',4,[]],
 		},
 		characterIntro: {
 			mtg_jiding:
 				"这名白色魔法的使用者极其注重忠诚，正义和荣誉。他曾全力追捕茜卓纳拉，如今已不可思议地与这位火焰法师成为伙伴。",
-			mtg_qianzhuo:
-				"茜卓纳拉是使用红色法术力的旅法师。她擅长使用火焰：除了火焰，还是火焰。茜卓性格冲动、易怒、富有激情，不断增长的火焰法术能力随时都准备爆发。她的火花在还很年轻时便已点燃，如今已是相当有经验的烈焰术士和旅法师。",
 			mtg_jiesi:
 				"杰斯贝连是使用蓝色法术的鹏洛客。他擅长心灵法术：读取心灵，幻影，知识，以及欺瞒的咒语。",
 			mtg_lilianna:
 				"莉莲娜维斯是一位精通死灵术的旅法师，她擅长用黑色法术力来复活死者，腐化生者，并从死亡中召唤力量。",
-			mtg_nisha:
-				"赞迪卡妖精部落玖瑞加的一名战士，做事倾尽全力，与大地有密切的联系，还擅使元素魔法。她能够引导时空的魔法生机地脉，为土地赋予生命。",
-			mtg_ayeni:
-				"金鬃阿耶尼是使用白色法术的鹏洛客。他长于净化身体与心灵的法术：用咒语来治疗、强化盟友，以及唤醒他人内在的心灵精华。",
 		},
 		skill: {
 			mduohun: {
@@ -226,106 +217,6 @@ game.import("character", function () {
 					}
 				},
 			},
-			msuoling_old: {
-				enable: "phaseUse",
-				usable: 1,
-				subSkill: {
-					ai: {
-						onremove: true,
-					},
-				},
-				filter: function (event, player) {
-					var nh = player.countCards("h");
-					if (nh <= 1 || nh >= 5) return false;
-					return lib.skill.msuoling.getc(player).number > 0;
-				},
-				getc: function (player) {
-					var hs = player.getCards("h");
-					for (var i = 0; i < hs.length; i++) {
-						if (hs[i].mtongnian_link) {
-							return hs[i];
-						}
-					}
-					return -1;
-				},
-				getn: function (player) {
-					var hs = player.getCards("h");
-					var ns = [];
-					for (var i = 0; i < hs.length; i++) {
-						if (!hs[i].mtongnian_link) {
-							ns.push(hs[i].number);
-						}
-					}
-					return ns;
-				},
-				test: function (player) {
-					var cs = lib.skill.msuoling.getc(player).number;
-					var ns = lib.skill.msuoling.getn(player);
-					return lib.skill.msuoling.calc(ns, cs);
-				},
-				calc: function (arr, num) {
-					for (var i = 0; i < arr.length; i++) {
-						if (arr[i] == num) {
-							return true;
-						}
-					}
-					if (arr.length > 1) {
-						for (var i = 0; i < arr.length - 1; i++) {
-							for (var j = i + 1; j < arr.length; j++) {
-								var brr = [];
-								for (var k = 0; k < arr.length; k++) {
-									if (k != i && k != j) {
-										brr.push(arr[k]);
-									}
-								}
-								if (lib.skill.msuoling.calc(brr.concat([arr[i] + arr[j]]), num)) return true;
-								if (lib.skill.msuoling.calc(brr.concat([arr[i] - arr[j]]), num)) return true;
-								if (lib.skill.msuoling.calc(brr.concat([arr[i] * arr[j]]), num)) return true;
-								if (lib.skill.msuoling.calc(brr.concat([arr[i] / arr[j]]), num)) return true;
-							}
-						}
-					}
-					return false;
-				},
-				check: function (card) {
-					// if(player.isUnderControl(true)) return 0;
-					var player = _status.event.player;
-					if (player.hasSkill("msuoling_ai")) {
-						return false;
-					}
-					if (lib.skill.msuoling.test(player)) {
-						return true;
-					} else {
-						player.addTempSkill("msuoling_ai", { player: ["gainAfter", "phaseAfter"] });
-						return false;
-					}
-				},
-				content: function () {
-					"step 0";
-					player.showHandcards();
-					"step 1";
-					if (lib.skill.msuoling.test(player)) {
-						var card = lib.skill.msuoling.getc(player);
-						card.classList.remove("glow");
-						delete card.mtongnian_link;
-						delete card._destroy;
-
-						var list = lib.skill.mtongnian.getList(player);
-						if (list.length) {
-							var card = list.randomGet();
-							var fake = game.createCard(card);
-							fake.mtongnian_link = card;
-							player.gain(fake, "draw")._triggered = null;
-							fake.classList.add("glow");
-							fake._destroy = "mtongnian";
-						}
-					}
-				},
-				selectCard: [1, Infinity],
-				ai: {
-					order: 11,
-				},
-			},
 			mtongnian: {
 				trigger: { player: "phaseUseBegin" },
 				forced: true,
@@ -481,11 +372,8 @@ game.import("character", function () {
 		},
 		translate: {
 			mtg_jiding: "基定",
-			mtg_qianzhuo: "茜卓",
 			mtg_jiesi: "杰斯",
 			mtg_lilianna: "莉莲娜",
-			mtg_nisha: "妮莎",
-			mtg_ayeni: "阿耶尼",
 
 			mduohun: "夺魂",
 			mduohun_info: "锁定技，当你解除濒死状态后，令你进入濒死状态的角色失去1点体力。",
@@ -506,8 +394,6 @@ game.import("character", function () {
 			msuoling: "塑灵",
 			msuoling_info:
 				"每轮限一次，当一名其他角色使用一张非转化的普通锦囊牌时，你可以弃置一张与之花色相同的牌取消之，然后你视为使用该锦囊牌。",
-			msuoling_old_info:
-				"出牌阶段限一次，若你手牌中有替身牌且手牌数不超过5，你可以展示手牌，若其中的非替身手牌能通过四则运算得到你的替身牌的点数，你将替身牌转化为非替身牌，然后获得一张新的替身牌（此技能托管无效）。",
 			mhuanyi: "幻逸",
 			mhuanyi_info:
 				"每两轮限一次，结束阶段，你可以选择一名其他角色和一种卡牌类型（选择结果对其他角色不可见），直到下一回合开始，当你首次成为该类型卡牌的惟一目标时，你将目标转移给你指定的角色（目标须合法）。",

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
 * vue v3.4.21
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
@@ -69,6 +70,10 @@ const hyphenate = cacheStringFunction(
 const capitalize = cacheStringFunction((str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 });
+/**
+ * @template {String}T
+ * @type {(str: T) => T extends "" ? "" : `on${Capitalize<T>}`}
+ */
 const toHandlerKey = cacheStringFunction((str) => {
   const s = str ? `on${capitalize(str)}` : ``;
   return s;
@@ -325,6 +330,9 @@ function looseIndexOf(arr, val) {
   return arr.findIndex((item) => looseEqual(item, val));
 }
 
+/**
+ * @type {(val: unknown) => string}
+ */
 const toDisplayString = (val) => {
   return isString(val) ? val : val == null ? "" : isArray(val) || isObject(val) && (val.toString === objectToString || !isFunction(val.toString)) ? JSON.stringify(val, replacer, 2) : String(val);
 };
@@ -448,9 +456,15 @@ function recordEffectScope(effect, scope = activeEffectScope) {
     scope.effects.push(effect);
   }
 }
+/**
+ * @type {import("@vue/reactivity").getCurrentScope}
+ */
 function getCurrentScope() {
   return activeEffectScope;
 }
+/**
+ * @type {import("@vue/reactivity").onScopeDispose}
+ */
 function onScopeDispose(fn) {
   if (activeEffectScope) {
     activeEffectScope.cleanups.push(fn);
@@ -1238,6 +1252,11 @@ function targetTypeMap(rawType) {
 function getTargetType(value) {
   return value["__v_skip"] || !Object.isExtensible(value) ? 0 /* INVALID */ : targetTypeMap(toRawType(value));
 }
+/**
+ * @template T
+ * @param {T} target 
+ * @return {UnwrapNestedRefs<T>}
+ */
 function reactive(target) {
   if (isReadonly(target)) {
     return target;
@@ -1259,6 +1278,9 @@ function shallowReactive(target) {
     shallowReactiveMap
   );
 }
+/**
+ * @type {import("@vue/reactivity").readonly}
+ */
 function readonly(target) {
   return createReactiveObject(
     target,
@@ -1317,6 +1339,9 @@ function isShallow(value) {
 function isProxy(value) {
   return isReactive(value) || isReadonly(value);
 }
+/**
+ * @type {import("@vue/reactivity").toRaw}
+ */
 function toRaw(observed) {
   const raw = observed && observed["__v_raw"];
   return raw ? toRaw(raw) : observed;
@@ -1435,6 +1460,17 @@ function triggerRefValue(ref2, dirtyLevel = 4, newVal) {
 function isRef(r) {
   return !!(r && r.__v_isRef === true);
 }
+/**
+ * @template {any} T
+ * @overload
+ * @returns {import("@vue/reactivity").Ref<T | undefined>}
+ */
+/**
+ * @template T
+ * @overload
+ * @param {T} value
+ * @returns {import("@vue/reactivity").Ref<import("@vue/reactivity").UnwrapRef<T>>}
+ */
 function ref(value) {
   return createRef(value, false);
 }
@@ -1472,9 +1508,15 @@ class RefImpl {
 function triggerRef(ref2) {
   triggerRefValue(ref2, 4, ref2.value );
 }
+/**
+ * @type {import("@vue/reactivity").unref}
+ */
 function unref(ref2) {
   return isRef(ref2) ? ref2.value : ref2;
 }
+/**
+ * @type {import("@vue/reactivity").toValue}
+ */
 function toValue(source) {
   return isFunction(source) ? source() : unref(source);
 }
@@ -1514,6 +1556,11 @@ class CustomRefImpl {
 function customRef(factory) {
   return new CustomRefImpl(factory);
 }
+/**
+ * @template {Object} T
+ * @param {T} object
+ * @return {import("@vue/runtime-core").ToRefs<T>}
+ */
 function toRefs(object) {
   if (!isProxy(object)) {
     warn$2(`toRefs() expects a reactive object but received a plain one.`);
@@ -1552,6 +1599,29 @@ class GetterRefImpl {
     return this._getter();
   }
 }
+/**
+ * @template T
+ * @overload
+ * @param {T} source
+ * @returns {T extends () => infer R ? Readonly<import("@vue/runtime-core").Ref<R>> : T extends import("@vue/runtime-core").Ref ? T : import("@vue/runtime-core").Ref<import("@vue/runtime-core").UnwrapRef<T>>}
+ */
+/**
+ * @template {object} T
+ * @template {keyof T} K
+ * @overload
+ * @param {T} source
+ * @param {K} key
+ * @returns {import("@vue/runtime-core").ToRef<T[K]>}
+ */
+/**
+ * @template {object} T
+ * @template {keyof T} K
+ * @overload
+ * @param {T} source
+ * @param {K} key
+ * @param {T[K]} defaultValue
+ * @return {import("@vue/runtime-core").ToRef<Exclude<T[K], undefined>>}
+ */
 function toRef(source, key, defaultValue) {
   if (isRef(source)) {
     return source;
@@ -3370,6 +3440,12 @@ function watchSyncEffect(effect, options) {
   );
 }
 const INITIAL_WATCHER_VALUE = {};
+/**
+ * @param {Parameters<import("@vue/runtime-core").watch>[0]} source
+ * @param {Parameters<import("@vue/runtime-core").watch>[1]} cb
+ * @param {Parameters<import("@vue/runtime-core").watch>[2]} [options]
+ * @return {ReturnType<import("@vue/runtime-core").watch>}
+ */
 function watch(source, cb, options) {
   if (!isFunction(cb)) {
     warn$1(
@@ -3981,6 +4057,9 @@ function getTransitionRawChildren(children, keepComment = false, parentKey) {
 
 /*! #__NO_SIDE_EFFECTS__ */
 // @__NO_SIDE_EFFECTS__
+/**
+ * @return {ReturnType<import("@vue/runtime-core").defineComponent>}
+ */
 function defineComponent(options, extraOptions) {
   return isFunction(options) ? (
     // #8326: extend call and options.name access are considered side-effects
@@ -3992,6 +4071,9 @@ function defineComponent(options, extraOptions) {
 const isAsyncWrapper = (i) => !!i.type.__asyncLoader;
 /*! #__NO_SIDE_EFFECTS__ */
 // @__NO_SIDE_EFFECTS__
+/**
+ * @type {import("@vue/runtime-core").defineAsyncComponent}
+ */
 function defineAsyncComponent(source) {
   if (isFunction(source)) {
     source = { loader: source };
@@ -4324,9 +4406,15 @@ function matches(pattern, name) {
   }
   return false;
 }
+/**
+ * @type {import("@vue/runtime-core").onActivated}
+ */
 function onActivated(hook, target) {
   registerKeepAliveHook(hook, "a", target);
 }
+/**
+ * @type {import("@vue/runtime-core").onDeactivated}
+ */
 function onDeactivated(hook, target) {
   registerKeepAliveHook(hook, "da", target);
 }
@@ -4403,19 +4491,49 @@ const createHook = (lifecycle) => (hook, target = currentInstance) => (
   // post-create lifecycle registrations are noops during SSR (except for serverPrefetch)
   (!isInSSRComponentSetup || lifecycle === "sp") && injectHook(lifecycle, (...args) => hook(...args), target)
 );
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onBeforeMount = createHook("bm");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onMounted = createHook("m");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onBeforeUpdate = createHook("bu");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onUpdated = createHook("u");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onBeforeUnmount = createHook("bum");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onUnmounted = createHook("um");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onServerPrefetch = createHook("sp");
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onRenderTriggered = createHook(
   "rtg"
 );
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 const onRenderTracked = createHook(
   "rtc"
 );
+/**
+ * @type {(hook: () => any, target?: import("@vue/runtime-core").ComponentInternalInstance | null) => false | Function | undefined}
+ */
 function onErrorCaptured(hook, target = currentInstance) {
   injectHook("ec", hook, target);
 }
@@ -4525,7 +4643,9 @@ function ensureValidVNode(vnodes) {
     return true;
   }) ? vnodes : null;
 }
-
+/**
+ * @type {import("@vue/runtime-core").toHandlers}
+ */
 function toHandlers(obj, preserveCaseIfNecessary) {
   const ret = {};
   if (!isObject(obj)) {
@@ -5520,6 +5640,12 @@ function provide(key, value) {
     provides[key] = value;
   }
 }
+/**
+ * @param {Parameters<import("@vue/runtime-core").inject>[0]} key 
+ * @param {Parameters<import("@vue/runtime-core").inject>[1]} defaultValue 
+ * @param {Parameters<import("@vue/runtime-core").inject>[2]} treatDefaultAsFactory
+ * @return {ReturnType<import("@vue/runtime-core").inject>}
+ */
 function inject(key, defaultValue, treatDefaultAsFactory = false) {
   const instance = currentInstance || currentRenderingInstance;
   if (instance || currentApp) {
@@ -8998,6 +9124,9 @@ function createComponentInstance(vnode, parent, suspense) {
   return instance;
 }
 let currentInstance = null;
+/**
+ * @type {() => import("@vue/runtime-core").ComponentInternalInstance | null}
+ */
 const getCurrentInstance = () => currentInstance || currentRenderingInstance;
 let internalSetCurrentInstance;
 let setInSSRSetupState;
@@ -9316,6 +9445,9 @@ function isClassComponent(value) {
   return isFunction(value) && "__vccOpts" in value;
 }
 
+/**
+ * @type {import("@vue/runtime-core").computed}
+ */
 const computed = (getterOrOptions, debugOptions) => {
   const c = computed$1(getterOrOptions, debugOptions, isInSSRComponentSetup);
   {
@@ -9380,6 +9512,12 @@ function useModel(props, name, options = EMPTY_OBJ) {
   return res;
 }
 
+/**
+ * @param {Parameters<import("@vue/runtime-dom").h>[0]} type 
+ * @param {Parameters<import("@vue/runtime-dom").h>[1]} propsOrChildren
+ * @param {Parameters<import("@vue/runtime-dom").h>[2]} children
+ * @return {ReturnType<import("@vue/runtime-core").h>}
+ */
 function h(type, propsOrChildren, children) {
   const l = arguments.length;
   if (l === 2) {
@@ -11050,12 +11188,21 @@ function ensureHydrationRenderer() {
   enabledHydration = true;
   return renderer;
 }
+/**
+ * @type {import("@vue/runtime-dom").RootRenderFunction<Element | ShadowRoot>}
+ */
 const render = (...args) => {
   ensureRenderer().render(...args);
 };
+/**
+ * @type {import("@vue/runtime-dom").RootHydrateFunction}
+ */
 const hydrate = (...args) => {
   ensureHydrationRenderer().hydrate(...args);
 };
+/**
+ * @type {import("@vue/runtime-dom").CreateAppFunction<Element>}
+ */
 const createApp = (...args) => {
   const app = ensureRenderer().createApp(...args);
   {
@@ -11081,6 +11228,9 @@ const createApp = (...args) => {
   };
   return app;
 };
+/**
+ * @type {import("@vue/runtime-dom").CreateAppFunction<Element>}
+ */
 const createSSRApp = (...args) => {
   const app = ensureHydrationRenderer().createApp(...args);
   {
@@ -16631,6 +16781,11 @@ function getCache(options) {
   }
   return c;
 }
+/**
+ * @param {string | HTMLElement} template 
+ * @param {import("@vue/compiler-dom").CompilerOptions} [options] 
+ * @return {import("@vue/runtime-core").RenderFunction}
+ */
 function compileToFunction(template, options) {
   if (!isString(template)) {
     if (template.nodeType) {
