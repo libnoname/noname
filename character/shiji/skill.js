@@ -2224,7 +2224,7 @@ const skills = {
 			var num1 = player.countCards("h"),
 				num2 = player.storage.fengjie2.hp;
 			if (num1 > num2) player.chooseToDiscard("h", true, num1 - num2);
-			else player.drawTo(Math.min(num1 + 4, num2));
+			else player.drawTo(Math.min(4, num2));
 		},
 	},
 	//陈武董袭
@@ -2643,7 +2643,7 @@ const skills = {
 	},
 	dbzhuifeng: {
 		audio: 2,
-		groupSkill: true,
+		groupSkill: "wei",
 		enable: "chooseToUse",
 		usable: 2,
 		viewAsFilter: function (player) {
@@ -2687,7 +2687,7 @@ const skills = {
 	},
 	dbchongjian: {
 		audio: 2,
-		groupSkill: true,
+		groupSkill: "wu",
 		hiddenCard: function (player, name) {
 			if (
 				player.group == "wu" &&
@@ -3279,15 +3279,15 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter: function (event, player) {
-			return event.source && event.source.isIn() && player.hasMark("xinlirang") && event.source.countCards("he") > 0;
+			return event.source && event.source.isIn() && player.hasMark("xinlirang") && event.source.countCards("hej") > 0;
 		},
 		content: function () {
 			"step 0";
 			trigger.source
-				.chooseToDiscard("he", true)
+				.discardPlayerCard(trigger.source, "hej", true)
 				.set("color", get.attitude(trigger.source, player) > 0 ? "red" : "black")
 				.set("ai", function (card) {
-					return (get.color(card) == _status.event.color ? 4 : 0) - get.value(card);
+					return (get.color(card.link) == _status.event.color ? 4 : 0) - get.value(card.link);
 				});
 			"step 1";
 			if (result.bool && result.cards && result.cards.length) {
@@ -5542,7 +5542,7 @@ const skills = {
 			return player.storage.xunyi2;
 		},
 		content: function () {
-			(player == trigger.source ? player.storage.xunyi2 : player).draw();
+			(player == trigger.source ? player.storage.xunyi2 : player).draw(trigger.num);
 		},
 		group: "xunyi3",
 		mark: true,
@@ -5555,13 +5555,13 @@ const skills = {
 		charlotte: true,
 		filter: function (event, player) {
 			var list = [player, player.storage.xunyi2];
-			return list.includes(event.player) && !list.includes(event.source) && (player == event.player ? player.storage.xunyi2 : player).countCards("he") > 0;
+			return event.num && list.includes(event.player) && !list.includes(event.source) && (player == event.player ? player.storage.xunyi2 : player).countCards("he") > 0;
 		},
 		logTarget: function (event, player) {
 			return player.storage.xunyi2;
 		},
 		content: function () {
-			(player == trigger.player ? player.storage.xunyi2 : player).chooseToDiscard("he", true);
+			(player == trigger.player ? player.storage.xunyi2 : player).chooseToDiscard("he", trigger.num, true);
 		},
 	},
 	//狗剩

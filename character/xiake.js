@@ -3,11 +3,10 @@ game.import("character", function () {
 	return {
 		name: "xiake",
 		character: {
-			// xk_dongfangweiming:['male','shu',4,[]],
 			xk_guyuexuan: ["male", "qun", 4, ["rouquan", "gzhenji"]],
 			xk_jinji: ["male", "shu", 4, ["zhongzhan", "lianpo"]],
 			// xk_shenxiangyun:['female','wei',3,['zhenjiu']],
-			xk_fujianhan: ["male", "qun", 4, ["zuijian", "zitong"]],
+			// xk_fujianhan: ["male", "qun", 4, ["zuijian", "zitong"]],
 		},
 		skill: {
 			zhongzhan: {
@@ -105,7 +104,6 @@ game.import("character", function () {
 			},
 		},
 		translate: {
-			xk_dongfangweiming: "东方未明",
 			xk_guyuexuan: "谷月轩",
 			xk_jinji: "荆棘",
 			xk_shenxiangyun: "沈湘芸",
@@ -113,9 +111,9 @@ game.import("character", function () {
 			zhongzhan: "重斩",
 			zhongzhan_info: "每当你即将造成伤害，你可失去1点体力令伤害+1。",
 			gzhenji: "震击",
-			gzhenji_info: "你使用杀造成伤害后，可以摸一张牌，并且本回合内可以额外使用一张杀。",
+			gzhenji_info: "你使用【杀】造成伤害后，可以摸一张牌，并且本回合内可以额外使用一张【杀】。",
 			rouquan: "柔拳",
-			rouquan_info: "你可以重铸装备区内的牌；当你没有武器牌时，你的杀可以指定任意个目标。",
+			rouquan_info: "你可以重铸装备区内的牌；当你没有武器牌时，你的【杀】可以指定任意个目标。",
 			zitong: "通悟",
 			zitong_info: "当你于自己的回合内使用第三张牌时，你可以将一张传送门置于你的手牌。",
 		},

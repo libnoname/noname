@@ -60,7 +60,7 @@ export class Is {
 	sameNature() {
 		let processedArguments = [],
 			every = false;
-		Array.from(arguments).forEach((argument) => {
+		Array.from(arguments).forEach(argument => {
 			if (typeof argument == "boolean") every = argument;
 			else if (argument) processedArguments.push(argument);
 		});
@@ -72,29 +72,17 @@ export class Is {
 			if (argument.length == 1) return false;
 			processedArguments = argument;
 		}
-		const naturesList = processedArguments.map((card) => {
+		const naturesList = processedArguments.map(card => {
 			if (typeof card == "string") return card.split(lib.natureSeparator);
 			else if (Array.isArray(card)) return card;
 			return get.natureList(card || {});
 		});
 		const testingNaturesList = naturesList.slice(0, naturesList.length - 1);
-		if (every)
-			return testingNaturesList.every((natures, index) =>
-				naturesList
-					.slice(index + 1)
-					.every(
-						(testingNatures) =>
-							testingNatures.length == natures.length &&
-							testingNatures.every((nature) => natures.includes(nature))
-					)
-			);
+		if (every) return testingNaturesList.every((natures, index) => naturesList.slice(index + 1).every(testingNatures => testingNatures.length == natures.length && testingNatures.every(nature => natures.includes(nature))));
 		return testingNaturesList.every((natures, index) => {
 			const comparingNaturesList = naturesList.slice(index + 1);
-			if (natures.length)
-				return natures.some((nature) =>
-					comparingNaturesList.every((testingNatures) => testingNatures.includes(nature))
-				);
-			return comparingNaturesList.every((testingNatures) => !testingNatures.length);
+			if (natures.length) return natures.some(nature => comparingNaturesList.every(testingNatures => testingNatures.includes(nature)));
+			return comparingNaturesList.every(testingNatures => !testingNatures.length);
 		});
 	}
 	/**
@@ -105,7 +93,7 @@ export class Is {
 	differentNature() {
 		let processedArguments = [],
 			every = false;
-		Array.from(arguments).forEach((argument) => {
+		Array.from(arguments).forEach(argument => {
 			if (typeof argument == "boolean") every = argument;
 			else if (argument) processedArguments.push(argument);
 		});
@@ -117,29 +105,17 @@ export class Is {
 			if (argument.length == 1) return true;
 			processedArguments = argument;
 		}
-		const naturesList = processedArguments.map((card) => {
+		const naturesList = processedArguments.map(card => {
 			if (typeof card == "string") return card.split(lib.natureSeparator);
 			else if (Array.isArray(card)) return card;
 			return get.natureList(card || {});
 		});
 		const testingNaturesList = naturesList.slice(0, naturesList.length - 1);
-		if (every)
-			return testingNaturesList.every((natures, index) =>
-				naturesList
-					.slice(index + 1)
-					.every((testingNatures) => testingNatures.every((nature) => !natures.includes(nature)))
-			);
+		if (every) return testingNaturesList.every((natures, index) => naturesList.slice(index + 1).every(testingNatures => testingNatures.every(nature => !natures.includes(nature))));
 		return testingNaturesList.every((natures, index) => {
 			const comparingNaturesList = naturesList.slice(index + 1);
-			if (natures.length)
-				return natures.some((nature) =>
-					comparingNaturesList.every(
-						(testingNatures) =>
-							!testingNatures.length ||
-							testingNatures.some((testingNature) => testingNature != nature)
-					)
-				);
-			return comparingNaturesList.every((testingNatures) => testingNatures.length);
+			if (natures.length) return natures.some(nature => comparingNaturesList.every(testingNatures => !testingNatures.length || testingNatures.some(testingNature => testingNature != nature)));
+			return comparingNaturesList.every(testingNatures => testingNatures.length);
 		});
 	}
 	/**
@@ -149,7 +125,7 @@ export class Is {
 	shownCard(card) {
 		if (!card) return false;
 		const gaintag = card.gaintag;
-		return Array.isArray(gaintag) && gaintag.some((tag) => tag.startsWith("visible_"));
+		return Array.isArray(gaintag) && gaintag.some(tag => tag.startsWith("visible_"));
 	}
 	/**
 	 * 是否是虚拟牌
@@ -198,8 +174,7 @@ export class Is {
 	blocked(skill, player) {
 		if (!player.storage.skill_blocker || !player.storage.skill_blocker.length) return false;
 		for (let i of player.storage.skill_blocker) {
-			if (lib.skill[i] && lib.skill[i].skillBlocker && lib.skill[i].skillBlocker(skill, player))
-				return true;
+			if (lib.skill[i] && lib.skill[i].skillBlocker && lib.skill[i].skillBlocker(skill, player)) return true;
 		}
 		return false;
 	}
@@ -211,7 +186,7 @@ export class Is {
 	 */
 	double(name, array) {
 		const extraInformation = get.character(name);
-		if(extraInformation && extraInformation.doubleGroup && extraInformation.doubleGroup.length>0){
+		if (extraInformation && extraInformation.doubleGroup && extraInformation.doubleGroup.length > 0) {
 			return array ? extraInformation.doubleGroup.slice(0) : true;
 		}
 		return false;
@@ -295,16 +270,7 @@ export class Is {
 						return true;
 					} else if (0x3297 <= hs && hs <= 0x3299) {
 						return true;
-					} else if (
-						hs == 0xa9 ||
-						hs == 0xae ||
-						hs == 0x303d ||
-						hs == 0x3030 ||
-						hs == 0x2b55 ||
-						hs == 0x2b1c ||
-						hs == 0x2b1b ||
-						hs == 0x2b50
-					) {
+					} else if (hs == 0xa9 || hs == 0xae || hs == 0x303d || hs == 0x3030 || hs == 0x2b55 || hs == 0x2b1c || hs == 0x2b1b || hs == 0x2b50) {
 						return true;
 					}
 				}
@@ -316,7 +282,7 @@ export class Is {
 	 * @param { string } str
 	 */
 	banWords(str) {
-		return get.is.emoji(str) || window.bannedKeyWords.some((item) => str.includes(item));
+		return get.is.emoji(str) || window.bannedKeyWords.some(item => str.includes(item));
 	}
 	/**
 	 * @param { GameEventPromise } event
@@ -333,7 +299,7 @@ export class Is {
 	 */
 	// @ts-ignore
 	freePosition(cards) {
-		return !cards.some((card) => !card.hasPosition || card.hasPosition());
+		return !cards.some(card => !card.hasPosition || card.hasPosition());
 	}
 	/**
 	 * @param { string } name
@@ -456,33 +422,17 @@ export class Is {
 	 * @param { Player } [player]
 	 */
 	mobileMe(player) {
-		return (
-			(game.layout == "mobile" || game.layout == "long") &&
-			!game.chess &&
-			player &&
-			player.dataset.position == "0"
-		);
+		return (game.layout == "mobile" || game.layout == "long") && !game.chess && player && player.dataset.position == "0";
 	}
 	newLayout() {
 		return game.layout != "default";
 	}
 	phoneLayout() {
 		if (!lib.config.phonelayout) return false;
-		return (
-			game.layout == "mobile" ||
-			game.layout == "long" ||
-			game.layout == "long2" ||
-			game.layout == "nova"
-		);
+		return game.layout == "mobile" || game.layout == "long" || game.layout == "long2" || game.layout == "nova";
 	}
 	singleHandcard() {
-		return (
-			game.singleHandcard ||
-			game.layout == "mobile" ||
-			game.layout == "long" ||
-			game.layout == "long2" ||
-			game.layout == "nova"
-		);
+		return game.singleHandcard || game.layout == "mobile" || game.layout == "long" || game.layout == "long2" || game.layout == "nova";
 	}
 	/**
 	 * @param { Player } player
@@ -507,15 +457,7 @@ export class Is {
 	 * @param { string } str
 	 */
 	pos(str) {
-		return (
-			str == "h" ||
-			str == "e" ||
-			str == "j" ||
-			str == "he" ||
-			str == "hj" ||
-			str == "ej" ||
-			str == "hej"
-		);
+		return str == "h" || str == "e" || str == "j" || str == "he" || str == "hj" || str == "ej" || str == "hej";
 	}
 	/**
 	 * @param { string } skill
@@ -545,5 +487,17 @@ export class Is {
 			return Boolean(zhuanhuanji2);
 		}
 		return Boolean(zhuanhuanji);
+	}
+
+	/**
+	 * 检查指定玩家的名称的子串是否包含指定字符串
+	 *
+	 * @author tangXins
+	 * @param {Player} player
+	 * @param {string} name
+	 * @returns {boolean}
+	 */
+	playerNames(player, name) {
+		return get.nameList(player).some(namex => namex.startsWith(name));
 	}
 }

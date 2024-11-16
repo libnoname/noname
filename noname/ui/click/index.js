@@ -4200,12 +4200,7 @@ export class Click {
 		game.swapPlayer(this);
 	}
 	mousewheel(evt) {
-		if (
-			this.firstChild &&
-			this.firstChild.classList.contains("handcards") &&
-			!this.classList.contains("scrollh")
-		)
-			return;
+		if (this.firstElementChild && this.firstElementChild.classList.contains("handcards") && !this.classList.contains("scrollh")) return;
 		var node = this;
 		var num = this._scrollnum || 6;
 		var speed = this._scrollspeed || 16;

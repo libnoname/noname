@@ -4,7 +4,13 @@ import { get } from "./index.js";
 /**
  * @typedef { (string | number | boolean)[] | string | number | boolean } AudioInfo
  * @typedef { {
+ *  audio: AudioInfo,
+ *  audioname?: string[],
+ *  audioname2?: { [playerName: string]: AudioInfo }
+ * } } SkillInfo
+ * @typedef { {
  *  name: string,
+ *  sex:Sex,
  *  name1?: string,
  *  name2?: string,
  *  tempname: string[]
@@ -26,7 +32,6 @@ export class Audio {
 
     /**
      * 根据skill中的audio,audioname,audioname2和player来获取技能台词列表及其对应的源文件名
-     * @typedef {{audio: AudioInfo, audioname?: string[], audioname2?: {[playerName: string]: AudioInfo}}} SkillInfo
      * @param { object } options
      * @param { string } options.skill 技能名
      * @param { Player | string } [options.player] 角色/角色名
@@ -34,12 +39,13 @@ export class Audio {
      * @returns { Audio }
      */
     static skill({ skill, player, info }) {
-        if (skill === void 0) throw new ReferenceError(`skill is not defined`);
-        
-        const formatedPlayer = player ? this.formatPlayer(player) : void 0;
-        if (info !== void 0 && (typeof info !== "object" || info === null || Array.isArray(info))) info = { audio: info };
+        if (skill == void 0) throw new ReferenceError(`skill is not defined`);
 
-        return new Audio(new SkillAudio(skill, formatedPlayer, info));
+        const formatedPlayer = player != void 0 ? this.formatPlayer(player) : void 0;
+        let formatedInfo;
+        if (info != void 0 && (typeof info !== "object" || Array.isArray(info))) formatedInfo = { audio: info };
+        else formatedInfo = info;
+        return new Audio(new SkillAudio(skill, formatedPlayer, formatedInfo));
     }
 
     /**
@@ -50,33 +56,45 @@ export class Audio {
      * @returns { Audio } 
      */
     static die({ player, info }) {
-        if (player === void 0) throw new ReferenceError(`player is not defined`);
+        if (player == void 0) throw new ReferenceError(`player is not defined`);
 
-        return new Audio(new DieAudio(this.formatPlayer(player), info !== void 0 ? { dieAudios: info } : void 0));
+        let formatedInfo;
+        if (info != void 0 && (typeof info !== "object" || Array.isArray(info))) formatedInfo = { dieAudios: info };
+
+        return new Audio(new DieAudio(this.formatPlayer(player), formatedInfo));
     }
 
     /**
      * @param { Player | string } player 
-     * @returns {FormatedPlayer}
+     * @returns { FormatedPlayer }
      */
     static formatPlayer(player) {
         /**
          * @type { FormatedPlayer }
          */
-        const formatedPlayer = { name: "", tempname: [], skin: {} };
-        if (typeof player === "string") formatedPlayer.name = player;
+        const formatedPlayer = { name: "", sex: "male", tempname: [], skin: {} };
+        if (typeof player === "string") {
+            formatedPlayer.name = player;
+            const sex = get.character(player).sex;
+            if (sex) formatedPlayer.sex = sex;
+        }
         //@ts-ignore
         else if (typeof player === "object" && player !== null) {
             ({
                 name: formatedPlayer.name,
+                //@ts-ignore
+                sex: formatedPlayer.sex,
                 name1: formatedPlayer.name1,
                 name2: formatedPlayer.name2,
                 tempname: formatedPlayer.tempname = [],
                 skin: formatedPlayer.skin = {},
             } = player);
         }
+
+
         return formatedPlayer;
     }
+
     /**
      * @param {TextMap[]} list
      * @returns {string[]}
@@ -90,7 +108,7 @@ export class Audio {
      * @returns {string[]}
      */
     static toText(list) {
-        return list.map(data => data.text).filter(text => text !== void 0);
+        return list.map(data => data.text).filter(text => text != void 0);
     }
 
 
@@ -100,6 +118,10 @@ export class Audio {
      */
     #Audio;
 
+    get name() {
+        return this.#Audio.name;
+    }
+    
     get type() {
         return this.#Audio.type;
     }
@@ -107,10 +129,6 @@ export class Audio {
      * @type { string[] }
      */
     #history = [];
-
-    get name() {
-        return this.#Audio.name;
-    }
     /**
      * @type { AudioInfo }
      */
@@ -140,7 +158,7 @@ export class Audio {
         }
         const key = this.#Audio.getCacheKey();
         const result = Audio.#audioCache[key];
-        if (result !== void 0) this.#audioList = JSON.parse(JSON.stringify(result));
+        if (result != void 0) this.#audioList = JSON.parse(JSON.stringify(result));
         else {
             const result = this.parseAudio(this.name, this.#audioInfo);
             Audio.#audioCache[key] = result;
@@ -154,8 +172,9 @@ export class Audio {
     constructor(audio, history = []) {
         this.#history = history.slice();
         this.#Audio = audio;
-        if (this.checkHistory()) this.#history.unshift(this.#Audio.name);
-        this.#audioInfo = this.#Audio.getAudioInfo();
+        const isExist = this.checkHistory();
+        if (isExist) this.#history.unshift(this.#Audio.name);
+        this.#audioInfo = isExist ? this.#Audio.getAudioInfo() : this.#Audio.defaultInfo;
     }
     getAudio(name, info) {
         const audio = this.#Audio.getAudio(name, info);
@@ -202,9 +221,9 @@ export class Audio {
         const list = audioInfoString.match(/(?:(.*):|^)(true|\d+)(?::(.*)|$)/); // [path, number|true, ext]
         if (list) {
             let [, path, audioNum, ext] = list;
-            if (path === void 0) path = this.#Audio.defaultPath;
+            if (path == void 0) path = this.#Audio.defaultPath;
             else path = path + "/";
-            if (ext === void 0) ext = ".mp3";
+            if (ext == void 0) ext = ".mp3";
             else ext = "." + ext;
 
             if (audioNum === "true") return [this.#Audio.textMapWithIndex(path, ext)];
@@ -218,9 +237,8 @@ export class Audio {
         let path = this.#Audio.defaultPath;
         const pathIndex = audioInfoString.lastIndexOf("/");
         if (pathIndex !== -1) {
-            path = audioInfoString.slice(0, pathIndex);
-            audioInfoString = audioInfoString.slice(pathIndex);
-            if (!["db:", "ext:"].some(i => audioInfoString.startsWith(i))) path = this.#Audio.defaultPath + path;
+            path = audioInfoString.slice(0, pathIndex + 1);
+            audioInfoString = audioInfoString.slice(pathIndex + 1);
         }
 
         let ext = ".mp3";
@@ -258,10 +276,10 @@ class AudioBase {
      * @type { string }
      */
     defaultPath;
-    // /**
-    //  * @type { AudioInfo }
-    //  */
-    // defaultInfo;
+    /**
+     * @type { AudioInfo }
+     */
+    defaultInfo;
 
     /**
      * @type { boolean }
@@ -316,6 +334,10 @@ class SkillAudio {
      * @type { string }
      */
     filteredAudioName;
+    /**
+     * @type { AudioInfo }
+     */
+    filteredAudioName2;
 
     useCache = true;
     getCacheKey() {
@@ -323,16 +345,16 @@ class SkillAudio {
         const result = {
             type: this.type,
             name: this.name,
-        }
-        if (this.filteredAudioName) result.filteredAudioName = this.filteredAudioName;
-        if (this.info.audioname2 && this.info.audioname2[this.getName(i => this.info.audioname2[i])] !== void 0) result.player = this.player;
+            filteredAudioName: this.filteredAudioName || void 0,
+            player: this.filteredAudioName2 != void 0 ? this.player : void 0
+        };
         return JSON.stringify(result);
     }
 
-    constructor(name, player, info, audioname = []) {
+    constructor(name, player, info, audioname) {
         this.name = name;
 
-        if (info !== void 0) {
+        if (info != void 0) {
             this.info = info;
             this.useCache = false;
         }
@@ -343,22 +365,27 @@ class SkillAudio {
         }
 
         this.player = player;
-        this.audioname = audioname.slice();
+
+        if (!audioname) this.audioname = [];
+        else this.audioname = audioname.slice();
         if (Array.isArray(this.info.audioname)) this.audioname.addArray(this.info.audioname);
         this.filteredAudioName = this.getName(i => this.audioname.includes(i));
+
+        if (this.info.audioname2) {
+            const key = this.getName(name => this.info.audioname2 && this.info.audioname2[name]);
+            const audioname2 = this.info.audioname2[key];
+            if (audioname2 != void 0) this.filteredAudioName2 = audioname2;
+        }
     }
 
     getAudioInfo() {
-        if (this.info.audioname2) {
-            const audioInfo = this.info.audioname2[this.getName(i => this.info.audioname2[i])];
-            if (audioInfo !== void 0) return audioInfo;
-        }
+        if (this.filteredAudioName2 != void 0) return this.filteredAudioName2;
         const audioInfo = this.info.audio;
-        if (audioInfo !== void 0) return audioInfo;
+        if (audioInfo != void 0) return audioInfo;
         return this.defaultInfo;
     }
     getAudio(name, info) {
-        return new SkillAudio(name, this.player, info !== void 0 ? { audio: info } : void 0, this.audioname);
+        return new SkillAudio(name, this.player, info != void 0 ? { audio: info } : void 0, this.audioname);
     }
     getName(filter) {
         if (!this.player) return "";
@@ -373,18 +400,18 @@ class SkillAudio {
         return "";
     }
     textMap(path, ext, name) {
-        const translatePath = path.startsWith(this.defaultPath) ? path.slice(this.defaultPath.length) : path;
+        const translatedPath = path.startsWith(this.defaultPath) ? path.slice(this.defaultPath.length) : path;
         return {
-            name: translatePath + name,
+            name: translatedPath + name,
             file: path + name + ext,
-            text: lib.translate[`#${translatePath}${name}`],
+            text: lib.translate[`#${translatedPath}${name}`],
             type: "skill",
         }
     }
     textMapWithIndex(path, ext, index) {
         let name = this.name;
-        name += this.filteredAudioName;
-        if (index !== void 0) name += index;
+        if (this.filteredAudioName) name += "_" + this.filteredAudioName;
+        if (typeof index === "number") name += index;
         return this.textMap(path, ext, name);
     }
 }
@@ -413,16 +440,16 @@ class DieAudio {
         if (!this.useCache) throw new ReferenceError("Cannot get cache key when not using cache.");
         const result = {
             type: this.type,
-            name: this.player.name
-        }
-        if (this.name !== this.player.name) result.skin = this.player.skin;
+            name: this.name,
+            skin: this.name !== this.player.name ? this.player.skin : void 0
+        };
         return JSON.stringify(result);
     }
 
     constructor(player, info) {
         this.player = player;
 
-        if (info !== void 0) {
+        if (info != void 0) {
             this.useCache = false;
             this.name = player.name;
             this.info = info;
@@ -452,24 +479,25 @@ class DieAudio {
 
     getAudioInfo() {
         const audioInfo = this.info.dieAudios;
-        if ((Array.isArray(audioInfo) && audioInfo.length === 0) || audioInfo === void 0) return this.defaultInfo;
+        if (audioInfo == void 0) return this.defaultInfo;
+        if (Array.isArray(audioInfo) && audioInfo.length === 0) return this.defaultInfo;
         return audioInfo;
     }
     getAudio(name, info) {
-        return new DieAudio(Audio.formatPlayer(name), info !== void 0 ? { dieAudios: info } : void 0);
+        return new DieAudio(Audio.formatPlayer(name), info != void 0 ? { dieAudios: info } : void 0);
     }
     textMap(path, ext, name) {
-        const translatePath = path.startsWith(this.defaultPath) ? path.slice(this.defaultPath.length) : path;
+        const translatedPath = path.startsWith(this.defaultPath) ? path.slice(this.defaultPath.length) : path;
         return {
-            name: translatePath + name,
+            name: translatedPath + name,
             file: path + name + ext,
-            text: lib.translate[`#${translatePath}${name}:die`],
+            text: lib.translate[`#${translatedPath}${name}:die`],
             type: "die",
         }
     }
     textMapWithIndex(path, ext, index) {
         let name = this.name;
-        if (index !== void 0) name += index;
+        if (typeof index === "number") name += index;
         return this.textMap(path, ext, name);
     }
 }

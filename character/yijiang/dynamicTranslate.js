@@ -30,7 +30,7 @@ const dynamicTranslates = {
 	},
 	diezhang(player) {
 		var str = "";
-		str += player.storage.duanwan ? "" : "①出牌阶段，你使用杀的次数上限+1。②";
+		str += player.storage.duanwan ? "" : "①出牌阶段，你使用【杀】的次数上限+1。②";
 		str += "转换技" + (player.storage.duanwan ? "，每回合限一次" : "") + "。";
 		var cnNum = get.cnNumber(player.storage.duanwan ? 2 : 1);
 		var yinStr = "阴：当你使用牌被其他角色抵消后，你可以弃置一张牌，视为对其使用" + cnNum + "张【杀】";

@@ -1787,27 +1787,17 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				init: function () {
 					var map = {};
 					var map3 = [];
-					var list1 = ["司", "夏", "诸", "皇"];
-					var list2 = ["马", "侯", "葛", "甫"];
 					for (var i in lib.character) {
 						if (lib.filter.characterDisabled(i)) continue;
 						if (lib.character[i][1] == "key") continue;
-						var surname = get.rawName2(i);
-						for (var j = 0; j < surname.length; j++) {
-							if (!/[a-z]/i.test(surname[j])) {
-								var index = list1.indexOf(surname[j]);
-								if (index != -1 && surname[j + 1] == list2[index]) {
-									surname = surname[j] + surname[j + 1];
-								} else {
-									surname = surname[j];
-								}
-								break;
+						var list = get.characterSurname(i);
+						for (var j of list) {
+							var surname = j[0];
+							if (!map[surname]) {
+								map[surname] = [];
 							}
+							map[surname].push(i);
 						}
-						if (!map[surname]) {
-							map[surname] = [];
-						}
-						map[surname].push(i);
 					}
 					for (var i in map) {
 						if (map[i].length < 6) {

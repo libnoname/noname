@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "express": "https://esm.sh/express@4.19.2",
+    "minimist": "https://esm.sh/minimist@1.2.8",
+    "body-parser": "https://esm.sh/body-parser@1.20.2"
+  },
+  "tasks": {
+    "start": "deno run --allow-read --allow-net --allow-env noname-server.js",
+    "watch": "deno run --allow-read --allow-net --allow-env --watch noname-server.js"
+  }
+}

@@ -8,6 +8,7 @@
  * @typedef { GameEvent & InstanceType<typeof lib.element.GameEventPromise> } GameEventPromise
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
+ * @typedef { import("../init/onload/onload-splash.d.ts").OnloadSplash } IOnloadSplash
  */
 import { nonameInitialized, assetURL, userAgent, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "../util/index.js";
 import { ai } from "../ai/index.js";
@@ -26,6 +27,8 @@ import { defaultHooks } from "./hooks/index.js";
 import { freezeButExtensible } from "../util/index.js";
 import security from "../util/security.js";
 import { ErrorManager } from "../util/error.js";
+
+import { defaultSplashs } from "../init/onload/index.js";
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -134,6 +137,12 @@ export class Library {
 	inpile_nature = [];
 	extensions = [];
 	extensionPack = {};
+
+	/**
+	 * @type { IOnloadSplash[] }
+	 */
+	onloadSplashes = [...defaultSplashs];
+
 	cardType = {};
 	hook = { globalskill: {} };
 	/**
@@ -308,35 +317,35 @@ export class Library {
 										typeof yingbianZhuzhanAI == "function"
 											? yingbianZhuzhanAI(player, card, source, targets)
 											: cardx => {
-												var info = get.info(card);
-												if (info && info.ai && info.ai.yingbian) {
-													var ai = info.ai.yingbian(card, source, targets, player);
-													if (!ai) return 0;
-													return ai - get.value(cardx);
-												} else if (get.attitude(player, source) <= 0) return 0;
-												return 5 - get.value(cardx);
-											},
+													var info = get.info(card);
+													if (info && info.ai && info.ai.yingbian) {
+														var ai = info.ai.yingbian(card, source, targets, player);
+														if (!ai) return 0;
+														return ai - get.value(cardx);
+													} else if (get.attitude(player, source) <= 0) return 0;
+													return 5 - get.value(cardx);
+												},
 								});
 								if (!game.online) return;
 								_status.event._resultid = id;
 								game.resume();
 							};
-							"step 1";
+							("step 1");
 							var type = get.type2(card);
 							event.list = game.filterPlayer(current => current != player && current.countCards("h") && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
 							event.id = get.id();
-							"step 2";
+							("step 2");
 							if (!event.list.length) event.finish();
 							else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) event.goto(4);
 							else event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
-							"step 3";
+							("step 3");
 							if (result.bool) {
 								event.zhuzhanresult = event.current;
 								event.zhuzhanresult2 = result;
 								if (event.current != game.me) game.delayx();
 								event.goto(8);
 							} else event.goto(2);
-							"step 4";
+							("step 4");
 							var id = event.id,
 								sendback = (result, player) => {
 									if (result && result.id == id && !event.zhuzhanresult && result.bool) {
@@ -373,16 +382,16 @@ export class Library {
 									if (value != player) value.showTimer();
 								});
 							event.withol = withol;
-							"step 5";
+							("step 5");
 							if (!result || !result.bool || event.zhuzhanresult) return;
 							game.broadcast("cancel", event.id);
 							event.zhuzhanresult = game.me;
 							event.zhuzhanresult2 = result;
-							"step 6";
+							("step 6");
 							if (event.withol && !event.resultOL) game.pause();
-							"step 7";
+							("step 7");
 							game.players.forEach(value => value.hideTimer());
-							"step 8";
+							("step 8");
 							if (event.zhuzhanresult) {
 								var target = event.zhuzhanresult;
 								target.line(player, "green");
@@ -1045,7 +1054,7 @@ export class Library {
 							delete window.game;
 							delete window.ui;
 							delete window.get;
-							delete window.ai;
+							delete window.nonameAI;
 							delete window.lib;
 							delete window._status;
 						}
@@ -1466,15 +1475,11 @@ export class Library {
 						style1: "样式一",
 						style2: "样式二",
 					},
-					visualMenu: (node, link) => {
-						node.className = "button character";
-						node.style.width = "200px";
-						node.style.height = `${(node.offsetWidth * 1080) / 2400}px`;
-						node.style.display = "flex";
-						node.style.flexDirection = "column";
-						node.style.alignItems = "center";
-						node.style.backgroundSize = "100% 100%";
-						node.setBackgroundImage(`image/splash/${link}.jpg`);
+					visualMenu: async (node, link) => {
+						let splash = lib.onloadSplashes.find(item => item.id == link);
+						if (splash) {
+							await splash.preview(node);
+						}
 					},
 				},
 				// fewplayer:{
@@ -7755,8 +7760,15 @@ export class Library {
 				try {
 					const code = context.length == 1 ? context[0].string : context.reduceRight((pre, cur) => (pre.string || pre) + "." + cur.string);
 					obj = security.exec(`return ${code};`, {
-						event, trigger, player, card, cards,
-						result, source, target, targets,
+						event,
+						trigger,
+						player,
+						card,
+						cards,
+						result,
+						source,
+						target,
+						targets,
 					});
 					if (![null, undefined].includes(obj)) {
 						const keys = Object.getOwnPropertyNames(obj)
@@ -8045,10 +8057,10 @@ export class Library {
 	genAwait(item) {
 		return gnc.is.generator(item)
 			? gnc.of(function* () {
-				for (const content of item) {
-					yield content;
-				}
-			})()
+					for (const content of item) {
+						yield content;
+					}
+				})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -8229,7 +8241,7 @@ export class Library {
 			window.game = game;
 			window.ui = ui;
 			window.get = get;
-			window.ai = ai;
+			window.nonameAI = ai;
 			window.lib = lib;
 			window._status = _status;
 		},
@@ -10624,16 +10636,16 @@ export class Library {
 					const cardName = get.name(cards[0], player);
 					return cardName
 						? new lib.element.VCard({
-							name: cardName,
-							nature: get.nature(cards[0], player),
-							suit: get.suit(cards[0], player),
-							number: get.number(cards[0], player),
-							isCard: true,
-							cards: [cards[0]],
-							storage: {
-								stratagem_buffed: 1,
-							},
-						})
+								name: cardName,
+								nature: get.nature(cards[0], player),
+								suit: get.suit(cards[0], player),
+								number: get.number(cards[0], player),
+								isCard: true,
+								cards: [cards[0]],
+								storage: {
+									stratagem_buffed: 1,
+								},
+							})
 						: new lib.element.VCard();
 				}
 				return null;
@@ -11797,7 +11809,7 @@ export class Library {
 				"step 0";
 				event.dying = trigger.player;
 				if (!event.acted) event.acted = [];
-				"step 1";
+				("step 1");
 				if (trigger.player.isDead()) {
 					event.finish();
 					return;
@@ -11848,7 +11860,7 @@ export class Library {
 				} else {
 					event._result = { bool: false };
 				}
-				"step 2";
+				("step 2");
 				if (result.bool) {
 					var player = trigger.player;
 					if (player.hp <= 0 && !trigger.nodying && !player.nodying && player.isAlive() && !player.isOut() && !player.removed) event.goto(0);
@@ -11938,7 +11950,7 @@ export class Library {
 			content: function () {
 				"step 0";
 				event.logvid = trigger.getLogv();
-				"step 1";
+				("step 1");
 				event.targets = game.filterPlayer(function (current) {
 					return current != event.player && current.isLinked();
 				});
@@ -11948,7 +11960,7 @@ export class Library {
 				event._args = [trigger.num, trigger.nature, trigger.cards, trigger.card];
 				if (trigger.source) event._args.push(trigger.source);
 				else event._args.push("nosource");
-				"step 2";
+				("step 2");
 				if (event.targets.length) {
 					var target = event.targets.shift();
 					if (target.isLinked()) target.damage.apply(target, event._args.slice(0));
@@ -12260,9 +12272,9 @@ export class Library {
 			 * ```plain
 			 * 当客机向主机发送投降请求时的回调
 			 * ```
-			 * 
+			 *
 			 * @this {import("./element/client.js").Client}
-			 * @param {Player} player 
+			 * @param {Player} player
 			 */
 			giveup(player) {
 				if (lib.node.observing.includes(this) || !player || !player._giveUp) return;
@@ -12589,7 +12601,7 @@ export class Library {
 								navigator.clipboard
 									.readText()
 									.then(read)
-									.catch(_ => { });
+									.catch(_ => {});
 							} else {
 								var input = ui.create.node("textarea", ui.window, { opacity: "0" });
 								input.select();
@@ -13032,14 +13044,17 @@ export class Library {
 			exec: function (func) {
 				const key = game.onlineKey;
 				if (typeof func == "function") {
-					const isMarshalled = security.isSandboxRequired()
-						&& security.importSandbox().Domain.current.isFrom(func);
+					const isMarshalled = security.isSandboxRequired() && security.importSandbox().Domain.current.isFrom(func);
 					// 被封送的函数额外间隔了四层调用栈
 					const level = isMarshalled ? 4 : 0;
 					const args = Array.from(arguments).slice(1);
-					ErrorManager.errorHandle(() => {
-						func.apply(this, args);
-					}, func, level);
+					ErrorManager.errorHandle(
+						() => {
+							func.apply(this, args);
+						},
+						func,
+						level
+					);
 				}
 				if (key) {
 					game.onlineKey = key;
@@ -13698,10 +13713,31 @@ export class Library {
 			},
 		],
 		[
+			"玄",
+			{
+				color: "#000000",
+				nature: "metalmm",
+			},
+		],
+		[
+			"魂",
+			{
+				color: "#ffff99",
+				nature: "firemm",
+			},
+		],
+		[
 			"幻",
 			{
 				color: "#ffff99",
 				nature: "firemm",
+			},
+		],
+		[
+			"标",
+			{
+				color: "#912cee",
+				nature: "purple",
 			},
 		],
 	]);

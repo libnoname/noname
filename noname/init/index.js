@@ -9,7 +9,6 @@ import { userAgent, nonameInitialized, AsyncFunction, device, leaveCompatibleEnv
 import * as config from "../util/config.js";
 import { promiseErrorHandlerMap } from "../util/browser.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
-import { onload } from "./onload.js";
 import { initializeSandboxRealms } from "../util/initRealms.js";
 import { ErrorManager } from "../util/error.js";
 
@@ -25,14 +24,14 @@ export function canUseHttpProtocol() {
 			// 直接确定包名
 			// 因为懒人包作者不一定会改成什么版本
 			// @ts-ignore
-			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === 'function') {
+			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 				// 每个app自定义能升级的渠道，比如判断版本
 				// @ts-ignore
 				return window.noname_shijianInterfaces.getApkVersion() >= 16000;
 			}
 			// 由理版判断，后续所有app都通过此接口来升级协议
 			// @ts-ignore
-			if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === 'function') {
+			if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 				return true;
 			}
 		}
@@ -65,7 +64,7 @@ export function sendUpdate() {
 	if (window.cordova) {
 		// 直接确定包名
 		// @ts-ignore
-		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === 'function') {
+		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 			// 给诗笺版apk的java层传递升级完成的信息
 			// @ts-ignore
 			const url = new URL(window.noname_shijianInterfaces.sendUpdate());
@@ -74,7 +73,7 @@ export function sendUpdate() {
 		}
 		// 由理版判断
 		// @ts-ignore
-		if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === 'function') {
+		if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 			// 给由理版apk的java层传递升级完成的信息
 			// @ts-ignore
 			const url = new URL(window.NonameAndroidBridge.sendUpdate());
@@ -95,10 +94,7 @@ export function sendUpdate() {
 				fs.writeFileSync(path.join(__dirname, "Home", "saveProtocol.txt"), "");
 				// 启动http
 				const cp = require("child_process");
-				cp.exec(
-					`start /min ${__dirname}\\noname-server.exe -platform=electron`,
-					(err, stdout, stderr) => { }
-				);
+				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => {});
 				return `http://localhost:8089/app.html?sendUpdate=true`;
 			}
 		}
@@ -628,6 +624,7 @@ export async function boot() {
 			.filter(name => game.hasExtension(name))
 			.forEach(name => {
 				lib.announce.publish("Noname.Init.Extension.onLoad", name);
+				// @ts-ignore
 				lib.announce.publish(`Noname.Init.Extension.${name}.onLoad`, void 0);
 			});
 		delete _status.extensionLoading;
@@ -708,8 +705,10 @@ export async function boot() {
 		delete _status.importing;
 	}
 
-	await onload(resetGameTimeout);
+	Reflect.set(window, "resetGameTimeout", resetGameTimeout);
 }
+
+export { onload } from "./onload.js";
 
 function initSheet(libConfig) {
 	if (libConfig.player_style && libConfig.player_style != "default" && libConfig.player_style != "custom") {
@@ -725,47 +724,19 @@ function initSheet(libConfig) {
 				str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4))";
 				break;
 		}
-		Reflect.get(ui, "css").player_stylesheet = lib.init.sheet(
-			"#window .player{background-image:" + str + "}"
-		);
+		Reflect.get(ui, "css").player_stylesheet = lib.init.sheet("#window .player{background-image:" + str + "}");
 	}
-	if (
-		libConfig.border_style &&
-		libConfig.border_style != "default" &&
-		libConfig.border_style != "custom" &&
-		libConfig.border_style != "auto"
-	) {
+	if (libConfig.border_style && libConfig.border_style != "default" && libConfig.border_style != "custom" && libConfig.border_style != "auto") {
 		Reflect.get(ui, "css").border_stylesheet = lib.init.sheet();
 		var bstyle = libConfig.border_style;
 		if (bstyle.startsWith("dragon_")) {
 			bstyle = bstyle.slice(7);
 		}
-		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule(
-			'#window .player>.framebg,#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"]>.framebg{display:block;background-image:url("' +
-			lib.assetURL +
-			"theme/style/player/" +
-			bstyle +
-			'1.png")}',
-			0
-		);
-		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule(
-			'#window #arena.long:not(.fewplayer) .player>.framebg, #arena.oldlayout .player>.framebg{background-image:url("' +
-			lib.assetURL +
-			"theme/style/player/" +
-			bstyle +
-			'3.png")}',
-			0
-		);
-		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule(
-			".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}",
-			0
-		);
+		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule('#window .player>.framebg,#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"]>.framebg{display:block;background-image:url("' + lib.assetURL + "theme/style/player/" + bstyle + '1.png")}', 0);
+		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule('#window #arena.long:not(.fewplayer) .player>.framebg, #arena.oldlayout .player>.framebg{background-image:url("' + lib.assetURL + "theme/style/player/" + bstyle + '3.png")}', 0);
+		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
 	}
-	if (
-		libConfig.control_style &&
-		libConfig.control_style != "default" &&
-		libConfig.control_style != "custom"
-	) {
+	if (libConfig.control_style && libConfig.control_style != "default" && libConfig.control_style != "custom") {
 		var str = "";
 		switch (libConfig.control_style) {
 			case "wood":
@@ -775,22 +746,13 @@ function initSheet(libConfig) {
 				str = "linear-gradient(#4b4b4b, #464646);color:white;text-shadow:black 0 0 2px";
 				break;
 			case "simple":
-				str =
-					"linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
+				str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
 				break;
 		}
 		if (libConfig.control_style == "wood") {
-			Reflect.get(ui, "css").control_stylesheet = lib.init.sheet(
-				"#window .control,#window .menubutton,#window #system>div>div,#window #system>div>.pressdown2{background-image:" +
-				str +
-				"}"
-			);
+			Reflect.get(ui, "css").control_stylesheet = lib.init.sheet("#window .control,#window .menubutton,#window #system>div>div,#window #system>div>.pressdown2{background-image:" + str + "}");
 		} else {
-			Reflect.get(ui, "css").control_stylesheet = lib.init.sheet(
-				"#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:" +
-				str +
-				"}"
-			);
+			Reflect.get(ui, "css").control_stylesheet = lib.init.sheet("#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:" + str + "}");
 		}
 	}
 	if (libConfig.menu_style && libConfig.menu_style != "default" && libConfig.menu_style != "custom") {
@@ -803,13 +765,10 @@ function initSheet(libConfig) {
 				str = "linear-gradient(#4b4b4b, #464646);color:white;text-shadow:black 0 0 2px";
 				break;
 			case "simple":
-				str =
-					"linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
+				str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
 				break;
 		}
-		Reflect.get(ui, "css").menu_stylesheet = lib.init.sheet(
-			"html #window>.dialog.popped,html .menu,html .menubg{background-image:" + str + "}"
-		);
+		Reflect.get(ui, "css").menu_stylesheet = lib.init.sheet("html #window>.dialog.popped,html .menu,html .menubg{background-image:" + str + "}");
 	}
 }
 
@@ -825,7 +784,7 @@ async function loadConfig() {
 			const idbOpenDBRequest = window.indexedDB.open(`${lib.configprefix}data`, 4);
 			idbOpenDBRequest.onerror = reject;
 			idbOpenDBRequest.onsuccess = resolve;
-			idbOpenDBRequest.onupgradeneeded = (idbVersionChangeEvent) => {
+			idbOpenDBRequest.onupgradeneeded = idbVersionChangeEvent => {
 				// @ts-expect-error MaybeHave
 				const idbDatabase = idbVersionChangeEvent.target.result;
 				if (!idbDatabase.objectStoreNames.contains("video"))
@@ -851,8 +810,8 @@ async function loadConfig() {
 			} catch (err) {
 				result = {};
 			}
-			Object.keys(result).forEach((key) => game.saveConfig(key, result[key]));
-			Object.keys(lib.mode).forEach((key) => {
+			Object.keys(result).forEach(key => game.saveConfig(key, result[key]));
+			Object.keys(lib.mode).forEach(key => {
 				try {
 					const item = localStorage.getItem(`${lib.configprefix}${key}`);
 					if (!item) throw "err";
@@ -898,7 +857,7 @@ async function loadCss() {
  * @deprecated
  * @return {Promise<void>}
  */
-async function onWindowReady() { }
+async function onWindowReady() {}
 
 function setBackground() {
 	let htmlbg = localStorage.getItem(lib.configprefix + "background");
@@ -917,8 +876,7 @@ function setBackground() {
 			}
 		}
 		if (htmlbg) {
-			document.documentElement.style.backgroundImage =
-				'url("' + lib.assetURL + "image/background/" + htmlbg + '.jpg")';
+			document.documentElement.style.backgroundImage = 'url("' + lib.assetURL + "image/background/" + htmlbg + '.jpg")';
 			document.documentElement.style.backgroundSize = "cover";
 			document.documentElement.style.backgroundPosition = "50% 50%";
 		}
@@ -942,25 +900,18 @@ function setServerIndex() {
 async function setOnError() {
 	const [core] = get.coreInfo();
 
-	const promiseErrorHandler = new (
-		core in promiseErrorHandlerMap ? promiseErrorHandlerMap[core] : promiseErrorHandlerMap.other
-	)();
+	const promiseErrorHandler = new (core in promiseErrorHandlerMap ? promiseErrorHandlerMap[core] : promiseErrorHandlerMap.other)();
 
 	if (promiseErrorHandler.onLoad) await promiseErrorHandler.onLoad();
 
-	window.onunhandledrejection = async (event) => {
+	window.onunhandledrejection = async event => {
 		if (promiseErrorHandler.onHandle) await promiseErrorHandler.onHandle(event);
 	};
 
 	window.onerror = function (msg, src, line, column, err) {
 		if (promiseErrorHandler.onErrorPrepare) promiseErrorHandler.onErrorPrepare();
-		const winPath = window.__dirname
-			? "file:///" + (__dirname.replace(new RegExp("\\\\", "g"), "/") + "/")
-			: "";
-		let str = `错误文件: ${typeof src == "string"
-				? decodeURI(src).replace(lib.assetURL, "").replace(winPath, "")
-				: "未知文件"
-			}`;
+		const winPath = window.__dirname ? "file:///" + (__dirname.replace(new RegExp("\\\\", "g"), "/") + "/") : "";
+		let str = `错误文件: ${typeof src == "string" ? decodeURI(src).replace(lib.assetURL, "").replace(winPath, "") : "未知文件"}`;
 		str += `\n错误信息: ${msg}`;
 		const tip = lib.getErrorTip(msg);
 		if (tip) str += `\n错误提示: ${tip}`;
@@ -970,24 +921,19 @@ async function setOnError() {
 		const reg = /[^\d.]/;
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
-		if (match)
-			str +=
-				"\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;
 			// @ts-ignore
-			if (evt.parent)
-				str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;
+			if (evt.parent) str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;
 			// @ts-ignore
-			if (evt.parent && evt.parent.parent)
-				str += `\nevent.parent.parent.name: ${evt.parent.parent.name}\nevent.parent.parent.step: ${evt.parent.parent.step}`;
+			if (evt.parent && evt.parent.parent) str += `\nevent.parent.parent.name: ${evt.parent.parent.name}\nevent.parent.parent.step: ${evt.parent.parent.step}`;
 			if (evt.player || evt.target || evt.source || evt.skill || evt.card) {
 				str += "\n-------------";
 			}
 			if (evt.player) {
-				if (lib.translate[evt.player.name])
-					str += `\nplayer: ${lib.translate[evt.player.name]}[${evt.player.name}]`;
+				if (lib.translate[evt.player.name]) str += `\nplayer: ${lib.translate[evt.player.name]}[${evt.player.name}]`;
 				else str += "\nplayer: " + evt.player.name;
 				let distance = get.distance(_status.roundStart, evt.player, "absolute");
 				if (distance != Infinity) {
@@ -995,13 +941,11 @@ async function setOnError() {
 				}
 			}
 			if (evt.target) {
-				if (lib.translate[evt.target.name])
-					str += `\ntarget: ${lib.translate[evt.target.name]}[${evt.target.name}]`;
+				if (lib.translate[evt.target.name]) str += `\ntarget: ${lib.translate[evt.target.name]}[${evt.target.name}]`;
 				else str += "\ntarget: " + evt.target.name;
 			}
 			if (evt.source) {
-				if (lib.translate[evt.source.name])
-					str += `\nsource: ${lib.translate[evt.source.name]}[${evt.source.name}]`;
+				if (lib.translate[evt.source.name]) str += `\nsource: ${lib.translate[evt.source.name]}[${evt.source.name}]`;
 				else str += "\nsource: " + evt.source.name;
 			}
 			if (evt.skill) {
@@ -1009,8 +953,7 @@ async function setOnError() {
 				else str += "\nskill: " + evt.skill;
 			}
 			if (evt.card) {
-				if (lib.translate[evt.card.name])
-					str += `\ncard: ${lib.translate[evt.card.name]}[${evt.card.name}]`;
+				if (lib.translate[evt.card.name]) str += `\ncard: ${lib.translate[evt.card.name]}[${evt.card.name}]`;
 				else str += "\ncard: " + evt.card.name;
 			}
 		}
@@ -1018,10 +961,7 @@ async function setOnError() {
 		const errorReporter = ErrorManager.getErrorReporter(err);
 		if (errorReporter) game.print(errorReporter.report(str + "\n代码出现错误"));
 		else {
-			if (
-				typeof line == "number" &&
-				(typeof Reflect.get(game, "readFile") == "function" || location.origin != "file://")
-			) {
+			if (typeof line == "number" && (typeof Reflect.get(game, "readFile") == "function" || location.origin != "file://")) {
 				const createShowCode = function (lines) {
 					let showCode = "";
 					if (lines.length >= 10) {
@@ -1035,18 +975,14 @@ async function setOnError() {
 							}
 						}
 					} else {
-						showCode = lines
-							.map((_line, i) => `${i + 1}| ${line == i + 1 ? "⚠️" : ""}${_line}\n`)
-							.toString();
+						showCode = lines.map((_line, i) => `${i + 1}| ${line == i + 1 ? "⚠️" : ""}${_line}\n`).toString();
 					}
 					return showCode;
 				};
 				//协议名须和html一致(网页端防跨域)，且文件是js
 				if (typeof src == "string" && src.startsWith(location.protocol) && src.endsWith(".js")) {
 					//获取代码
-					const codes = lib.init.reqSync(
-						"local:" + decodeURI(src).replace(lib.assetURL, "").replace(winPath, "")
-					);
+					const codes = lib.init.reqSync("local:" + decodeURI(src).replace(lib.assetURL, "").replace(winPath, ""));
 					if (codes) {
 						const lines = codes.split("\n");
 						str += "\n" + createShowCode(lines);
@@ -1058,7 +994,7 @@ async function setOnError() {
 				else if (
 					err &&
 					err.stack &&
-					["at Object.eval [as content]", "at Proxy.content"].some((str) => {
+					["at Object.eval [as content]", "at Proxy.content"].some(str => {
 						let stackSplit1 = err.stack.split("\n")[1];
 						if (stackSplit1) {
 							return stackSplit1.trim().startsWith(str);
@@ -1074,12 +1010,7 @@ async function setOnError() {
 					}
 				}
 			}
-			if (err && err.stack)
-				str +=
-					"\n" +
-					decodeURI(err.stack)
-						.replace(new RegExp(lib.assetURL, "g"), "")
-						.replace(new RegExp(winPath, "g"), "");
+			if (err && err.stack) str += "\n" + decodeURI(err.stack).replace(new RegExp(lib.assetURL, "g"), "").replace(new RegExp(winPath, "g"), "");
 			alert(str);
 			game.print(str);
 		}
@@ -1091,8 +1022,7 @@ async function setOnError() {
 		if (promiseErrorHandler.onErrorFinish) promiseErrorHandler.onErrorFinish();
 		// @ts-ignore
 		if (!lib.config.errstop && _status && _status.event) {
-			if (_status.event.content instanceof AsyncFunction ||
-				Array.isArray(_status.event.contents)) return;
+			if (_status.event.content instanceof AsyncFunction || Array.isArray(_status.event.contents)) return;
 			_status.withError = true;
 			game.loop();
 		}

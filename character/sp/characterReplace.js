@@ -61,6 +61,9 @@ const characterReplaces = {
 	wenqin: ["ol_wenqin", "pe_wenqin"],
 	lukai: ["ol_lukai", "lukai"],
 	liupi: ["ol_liupi", "liupi"],
+	kanze: ["kanze", "re_kanze"],
+	lvfan: ["lvfan", "sp_lvfan"],
+	dongbai: ["dongbai", "re_dongbai", "jsrg_dongbai"],
 };
 
 export default characterReplaces;

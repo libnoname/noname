@@ -1,4 +1,9 @@
 export default {
+	"#olziruo1": "泰山虽崩于前，我亦风清云淡。",
+	"#olziruo2": "诸君勿忧，一切尽在掌握。",
+	"#olxvfa1": "常言道，积善之家必有余庆。",
+	"#olxvfa2": "蓄势待发，一鸣惊天下。",
+	"#ol_jiangwan:die": "臣既暗弱，加婴疾疢，规方无成……",
 	"#olsilv1": "大义同胶漆，匪石心不移。",
 	"#olsilv2": "人谁不虑终，日月有合离。",
 	"#ollianju1": "叹息亦何为，但恐大义亏。",
@@ -455,7 +460,7 @@ export default {
 	"#zhugeke:die": "重权震主，是我疏忽了……",
 	"#huxiao1": "大仇未报，还不能放弃！",
 	"#huxiao2": "虎父无犬女！",
-	"#xueji1": "取你首级，祭先父之灵！",
+	"#xueji1": "这炽热的鲜血，父亲，你可感觉得到？",
 	"#xueji2": "取你首级，祭先父之灵！",
 	"#wuji1": "我感受到了，父亲的力量。",
 	"#wuji2": "我也要像父亲那样坚强。",
@@ -746,8 +751,10 @@ export default {
 	"#xintan2": "人人心中都有一团欲望之火！",
 	"#tianxiang_daxiaoqiao1": "哼，我才不怕你呢~",
 	"#tianxiang_daxiaoqiao2": "替我挡着吧~",
+	/*
 	"#liuli_daxiaoqiao1": "不懂得怜香惜玉么~",
 	"#liuli_daxiaoqiao2": "交给你了。",
+	*/
 	"#zhengnan1": "末将愿承父志，随丞相出征！",
 	"#zhengnan2": "索全凭丞相差遣，万死不辞！",
 	"#wusheng_guansuo1": "逆贼，可识得关氏之勇？",
@@ -776,6 +783,6 @@ export default {
 	"#olpijing2": "荆楚多锦绣，安能丧于小儿之手！",
 	"#liupan:die": "今袍泽离散，无以为战……",
 	"#olqingya1": "罡风从虎，威震四方！",
-	"#olqingya1": "铁车过处，寸草不生！",
+	"#olqingya2": "铁车过处，寸草不生！",
 	"#yadan:die": "多谢丞相不杀之恩……",
 };

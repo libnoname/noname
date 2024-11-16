@@ -78,7 +78,7 @@ const dynamicTranslates = {
 	},
 	dcsbyingmou(player) {
 		var storage = player.storage.dcsbyingmou;
-		var str = "转换技，每回合限一次，当你使用牌指定第一个目标后，你可以选择一名目标角色：";
+		var str = "转换技，每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：";
 		if (!storage) str += '<span class="bluetext">';
 		str += "阴，你将手牌数摸至与其相同（至多摸五张），然后视为对其使用一张【火攻】；";
 		if (!storage) str += "</span>";
@@ -106,6 +106,17 @@ const dynamicTranslates = {
 		str += "阳，令A依次使用这些牌中所有其可以使用的牌（无距离限制且不可被响应）。";
 		if (storage) str += "</span>";
 		return str;
+	},
+	dcxianmou(player) {
+		const storage = player.storage.dcxianmou;
+		var str = "转换技，你失去过牌的回合结束时，你可以：";
+		if (!storage) str += '<span class="bluetext">';
+		str += "阴，观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得【遗计】直到再发动此项；";
+		if (!storage) str += "</span>";
+		if (storage) str += '<span class="bluetext">';
+		str += "阳，观看一名角色手牌并弃置其中至多X张牌，若弃置X张牌则你进行一次【闪电】判定。";
+		if (storage) str += "</span>";
+		return str+="（X为你本回合失去牌数）";
 	},
 };
 export default dynamicTranslates;

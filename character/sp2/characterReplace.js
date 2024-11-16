@@ -33,6 +33,8 @@ const characterReplaces = {
 	wangjun: ["dc_wangjun", "wangjun"],
 	re_zoushi: ["yue_zoushi", "re_zoushi", "jsrg_zoushi"],
 	zhangmancheng: ["dc_zhangmancheng", "tw_zhangmancheng"],
+	xf_huangquan: ["xf_huangquan", "dc_huangquan"],
+	re_zoushi: ["re_zoushi", "jsrg_zoushi", "yue_zoushi"],
 };
 
 export default characterReplaces;

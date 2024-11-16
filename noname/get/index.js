@@ -30,7 +30,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * 返回 VCard[] 形式的所有牌，用于印卡将遍历
-	 * @param {Function} filter
+	 * @param {Function} [filter]
 	 * @returns {string[][]}
 	 */
 	inpileVCardList(filter) {
@@ -51,6 +51,7 @@ export class Get extends GetCompatible {
 	/**
 	 * 根据(Player的)座次数n（从1开始）获取对应的“n号位”翻译
 	 * @param {number | Player} seat
+	 * @returns { string }
 	 */
 	seatTranslation(seat) {
 		if (get.itemtype(seat) === "player") seat = seat.getSeatNum() - 1;
@@ -112,6 +113,9 @@ export class Get extends GetCompatible {
 	 * Get the card name length
 	 *
 	 * 获取此牌的字数
+	 * @param { Card } card
+	 * @param { Player } [player]
+	 * @returns { number }
 	 */
 	cardNameLength(card, player) {
 		const actualCardName = lib.actualCardName,
@@ -156,6 +160,8 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * 优先度判断
+	 * @param { string } skill
+	 * @returns { number }
 	 */
 	priority(skill) {
 		const info = get.info(skill);
@@ -341,6 +347,41 @@ export class Get extends GetCompatible {
 		if (list.length) return list;
 		return get.inpile("trick", "trick").randomGets(3);
 	}
+	/**
+	 * 用于获取武将的姓氏和名字
+	 * @param { string } str
+	 * @param { string|undefined } defaultSurname
+	 * @param { string|undefined } defaultName
+	 * @returns { Array }
+	 */
+	characterSurname(str, defaultSurname, defaultName) {
+		const info = get.character(str).names;
+		if (!info) {
+			let rawName = get.rawName(str);
+			return [[rawName[0], rawName.slice(1)]];
+		}
+		let infoarr = info.split("-");
+		let names = [];
+		for (let i = 0; i < infoarr.length; i++) {
+			let name = infoarr[i].split("|");
+			if (name[0] === "null") {
+				name[0] = defaultSurname || "";
+			}
+			if (name[1] === "null") {
+				name[1] = defaultName || "某";
+			}
+			names.push([name[0], name[1]]);
+		}
+		return names;
+	}
+	/**
+	 * 返回角色对应的原角色
+	 * @param { string } str
+	 * @returns { string }
+	 * @example
+	 * //以界曹操为例
+	 * get.sourceCharacter("re_caocao") == "caocao"
+	 */
 	sourceCharacter(str) {
 		if (str) {
 			for (var i in lib.characterReplace) {
@@ -349,6 +390,11 @@ export class Get extends GetCompatible {
 		}
 		return str;
 	}
+	/**
+	 * 返回玩家是否处于幸运星状态
+	 * @param { Player } player
+	 * @returns { boolean }
+	 */
 	isLuckyStar(player) {
 		if (player && player.hasSkillTag("luckyStar")) return true;
 		if (_status.connectMode) return false;
@@ -399,6 +445,12 @@ export class Get extends GetCompatible {
 		}
 		return 0;
 	}
+	/**
+	 * 获取牌堆底的牌
+	 * @param { number } [num = 1]
+	 * @param { boolean } [putBack]
+	 * @returns { Card[] }
+	 */
 	bottomCards(num, putBack) {
 		if (_status.waitingForCards) {
 			ui.create.cards.apply(ui.create, _status.waitingForCards);
@@ -612,6 +664,11 @@ export class Get extends GetCompatible {
 		if (!info) return [];
 		return info.initFilters || [];
 	}
+	/**
+	 * 返回武将介绍
+	 * @param { string } name
+	 * @returns { string }
+	 */
 	characterIntro(name) {
 		if (lib.characterIntro[name]) return lib.characterIntro[name];
 		var tags = get.character(name, 4);
@@ -641,11 +698,22 @@ export class Get extends GetCompatible {
 		}
 		return nature + "mm";
 	}
+	/**
+	 * 判定数字的正负，若num大于0，返回1，若num小于0，返回-1，若num等于0，返回0
+	 * @param { number } num
+	 * @returns { 1 | -1 | 0 }
+	 */
 	sgn(num) {
 		if (num > 0) return 1;
 		if (num < 0) return -1;
 		return 0;
 	}
+	/**
+	 * 生成随机数，若存在num2，返回num到num2之间的随机数，否则返回0到num之间的随机数
+	 * @param { number } num
+	 * @param { number } [num2]
+	 * @returns { number }
+	 */
 	rand(num, num2) {
 		if (typeof num2 == "number") {
 			return num + Math.floor(Math.random() * (num2 - num + 1));
@@ -656,6 +724,12 @@ export class Get extends GetCompatible {
 	sort(arr, method, arg) {
 		return method == "seat" ? arr.sortBySeat(arg) : void 0;
 	}
+	/**
+	 * 返回一个按座次排序的玩家数组
+	 * @param { Player[] } arr
+	 * @param { Player } target
+	 * @returns { Player[] }
+	 */
 	sortSeat(arr, target) {
 		return arr.sortBySeat(target);
 	}
@@ -770,6 +844,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * @param {any} obj
+	 * @param { number } [level = 0]
 	 */
 	stringify(obj, level = 0) {
 		level = level || 0;
@@ -1491,7 +1566,7 @@ export class Get extends GetCompatible {
 		return Array.from(infos || []).map(get.infoPlayerOL);
 	}
 	/** @type {RegExp} */
-	#specialHeadPattern = /^(?:async)?\s+[\w$]+\s*=>/;
+	#specialHeadPattern = /^(?:async\b)?\s*[\w$]+\s*=>/;
 	/** @type {RegExp} */
 	#functionHeadPattern = /^(?:async\b\s*)?(?:function\b\s*)?(?:\*\s*)?(?:[\w$]+\b\s*)?\(/;
 	/** @type {RegExp} */
@@ -1506,11 +1581,14 @@ export class Get extends GetCompatible {
 	 * ```plain
 	 * 测试一段代码是否为函数参数列表
 	 * ```
-	 * 
+	 *
 	 * @param {string} paramstr
+	 * @returns { boolean }
 	 */
 	isFunctionParam(paramstr) {
 		if (paramstr.length == 0) return true;
+		const canCreateFunction = security.isSandboxRequired() && security.importSandbox().Marshal.canCreateFunction;
+		if (canCreateFunction) return canCreateFunction(paramstr, "");
 		try {
 			new Function(paramstr, "");
 			return true;
@@ -1530,6 +1608,8 @@ export class Get extends GetCompatible {
 	 * @returns {boolean}
 	 */
 	isFunctionBody(code, type = /* (function(){return null})() */ null) {
+		const canCreateFunction = security.isSandboxRequired() && security.importSandbox().Marshal.canCreateFunction;
+		if (canCreateFunction) return canCreateFunction("", code, type);
 		if (type == "any") {
 			return (
 				["async", "generator", "agenerator", null]
@@ -1621,7 +1701,7 @@ export class Get extends GetCompatible {
 		if (neckMatch[0].includes("=>")) {
 			let funcHead = functionHead[0];
 			let idMatch;
-			while (idMatch = get.#identifierPattern.exec(funcHead)) {
+			while ((idMatch = get.#identifierPattern.exec(funcHead))) {
 				if (idMatch[0] != "async") {
 					if (log) console.warn("发现无法识别的远程代码:", str);
 					return emptyFunction;
@@ -1631,7 +1711,7 @@ export class Get extends GetCompatible {
 		} else {
 			let funcHead = functionHead[0];
 			let idMatch;
-			while (idMatch = get.#identifierPattern.exec(funcHead)) {
+			while ((idMatch = get.#identifierPattern.exec(funcHead))) {
 				if (idMatch[0] != "async") break;
 				funcHead = funcHead.slice(idMatch.index + idMatch[0].length);
 			}
@@ -1916,53 +1996,43 @@ export class Get extends GetCompatible {
 	/**
 	 * @overload
 	 * @returns { void }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { string } obj
 	 * @returns { 'position' | 'natures' | 'nature' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Player[] } obj
 	 * @returns { 'players' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Card[] } obj
 	 * @returns { 'cards' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { [number, number] } obj
 	 * @returns { 'select' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { [number, number, number, number] } obj
 	 * @returns { 'divposition' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Button } obj
 	 * @returns { 'button' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Card } obj
 	 * @returns { 'card' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Player } obj
 	 * @returns { 'player' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { Dialog } obj
 	 * @returns { 'dialog' }
-	 */
-	/**
+	 *
 	 * @overload
 	 * @param { GameEvent | GameEventPromise } obj
 	 * @returns { 'event' }
@@ -2012,6 +2082,40 @@ export class Get extends GetCompatible {
 		}
 		return 0;
 	}
+	/**
+	 * 返回对象的实际类型
+	 * @overload
+	 * @param { Array } obj
+	 * @returns { 'array' }
+	 *
+	 * @overload
+	 * @param { Object } obj
+	 * @returns { 'object' }
+	 *
+	 * @overload
+	 * @param { HTMLDivElement } obj
+	 * @returns { 'div' }
+	 *
+	 * @overload
+	 * @param { HTMLTableElement } obj
+	 * @returns { 'table' }
+	 *
+	 * @overload
+	 * @param { HTMLTableRowElement } obj
+	 * @returns { 'tr' }
+	 *
+	 * @overload
+	 * @param { HTMLTableCellElement } obj
+	 * @returns { 'td' }
+	 *
+	 * @overload
+	 * @param { HTMLBodyElement } obj
+	 * @returns { 'td' }
+	 *
+	 * @overload
+	 * @param { DocumentFragment } obj
+	 * @returns { 'fragment' }
+	 */
 	objtype(obj) {
 		if (Object.prototype.toString.call(obj) === "[object Array]") return "array";
 		if (Object.prototype.toString.call(obj) === "[object Object]") return "object";
@@ -2022,6 +2126,20 @@ export class Get extends GetCompatible {
 		if (Object.prototype.toString.call(obj) === "[object HTMLBodyElement]") return "td";
 		if (Object.prototype.toString.call(obj) === "[object DocumentFragment]") return "fragment";
 	}
+	/**
+	 * 返回牌的类型
+	 * @overload
+	 * @param { string } obj
+	 * @param { 'trick' } [method]
+	 * @param { Player } [player]
+	 * @returns { string }
+	 *
+	 * @overload
+	 * @param { Card } obj
+	 * @param { 'trick' } [method]
+	 * @param { Player } [player]
+	 * @returns { string }
+	 */
 	type(obj, method, player) {
 		if (typeof obj == "string") obj = { name: obj };
 		if (typeof obj != "object") return;
@@ -2043,10 +2161,10 @@ export class Get extends GetCompatible {
 		return get.type(card, "trick", player);
 	}
 	/**
-	 *
+	 * 返回牌的副类型
 	 * @param { string | Card | VCard | CardBaseUIData } obj
 	 * @param { false | Player } [player]
-	 * @returns { string }
+	 * @returns { string | undefined }
 	 */
 	subtype(obj, player) {
 		if (typeof obj == "string") obj = { name: obj };
@@ -2062,10 +2180,10 @@ export class Get extends GetCompatible {
 		return 0;
 	}
 	/**
-	 *
+	 * 返回牌的牌名
 	 * @param { Card | VCard | CardBaseUIData } card
 	 * @param { false | Player } [player]
-	 * @returns { string }
+	 * @returns { string | undefined }
 	 */
 	name(card, player) {
 		if (get.itemtype(player) == "player" || (player !== false && get.position(card) == "h")) {
@@ -2077,9 +2195,10 @@ export class Get extends GetCompatible {
 		return card.name;
 	}
 	/**
+	 * 返回牌的花色
 	 * @param {Card | VCard | Card[] | VCard[]} card
 	 * @param {false | Player} [player]
-	 * @returns {string}
+	 * @returns {string | undefined }
 	 */
 	suit(card, player) {
 		if (typeof card !== "object") return;
@@ -2100,9 +2219,10 @@ export class Get extends GetCompatible {
 		}
 	}
 	/**
+	 * 返回牌的颜色
 	 * @param {Card | VCard | Card[] | VCard[]} card
 	 * @param {false | Player} [player]
-	 * @returns {string}
+	 * @returns {string | undefined }
 	 */
 	color(card, player) {
 		if (typeof card !== "object") return;
@@ -2127,9 +2247,10 @@ export class Get extends GetCompatible {
 		}
 	}
 	/**
+	 * 返回牌的点数
 	 * @param {Card | VCard} card
 	 * @param {false | Player} [player]
-	 * @returns {number}
+	 * @returns {number | undefined | "unsure" | null}
 	 */
 	number(card, player) {
 		if (typeof card !== "object") return;
@@ -2182,6 +2303,12 @@ export class Get extends GetCompatible {
 		if (typeof natures != "string") return [];
 		return natures.split(lib.natureSeparator);
 	}
+	/**
+	 * 返回牌堆顶的牌
+	 * @param { number } [num = 1]
+	 * @param { boolean } [putBack]
+	 * @returns
+	 */
 	cards(num, putBack) {
 		if (_status.waitingForCards) {
 			ui.create.cards.apply(ui.create, _status.waitingForCards);
@@ -2362,11 +2489,24 @@ export class Get extends GetCompatible {
 	 * @returns {GameEvent[T]}
 	 */
 	event(key) {
-		return key ? _status.event[key] : _status.event;
+		if (key) {
+			// 能跑起来的东西还是不要去动它比较好 --Spmario233
+			// 跑起来没问题的东西就不要乱动！ --Spmario233
+			// console.warn(`get.event("${key}")写法即将被废弃，请更改为get.event().${key}`);
+			return _status.event[key];
+		}
+		return _status.event;
 	}
 	player() {
 		return _status.event.player;
 	}
+	/**
+	 * 返回玩家的数组
+	 * @param {*} [sort]
+	 * @param { boolean } [dead] 包含死人
+	 * @param { boolean } [out] 包含移除游戏的人
+	 * @returns { Player[] }
+	 */
 	players(sort, dead, out) {
 		var players = game.players.slice(0);
 		if (sort != false) {
@@ -2377,7 +2517,28 @@ export class Get extends GetCompatible {
 		if (!out) players = players.filter(current => !current.isOut());
 		return players;
 	}
+
+	/**
+	 * 返回指定角色所有的id，用于统一双将和单将的检查
+	 *
+	 * @author tangXins
+	 * @param {Player} player
+	 * @returns {string[]}
+	 */
+	nameList(player) {
+		let type;
+		if (typeof player == "undefined" || ((type = typeof player), type != "object") || ((type = get.itemtype(player)), type != "player")) {
+			throw new Error(`函数接受了一个不是Player的东西: ${type}: ${player}`);
+		}
+
+		return ["name", "name1", "name2"]
+			.filter(prop => player[prop])
+			.map(prop => player[prop])
+			.toUniqued();
+	}
+
 	position(card, ordering) {
+		//哪个大聪明在返回牌位置的函数写返回玩家位置的功能
 		if (get.itemtype(card) == "player") return parseInt(card.dataset.position);
 		if (card.timeout && card.destiny && card.destiny.classList) {
 			if (card.destiny.classList.contains("equips")) return "e";
@@ -2401,6 +2562,12 @@ export class Get extends GetCompatible {
 		if (card.parentNode.id == "ordering") return ordering ? "o" : "d";
 		return null;
 	}
+	/**
+	 *
+	 * @param { string } str
+	 * @param { Player } [player]
+	 * @returns { string }
+	 */
 	skillTranslation(str, player) {
 		var str2;
 		if (str.startsWith("re")) {
@@ -2539,6 +2706,11 @@ export class Get extends GetCompatible {
 		}
 		return game.menuZoom;
 	}
+	/**
+	 * 返回数字在扑克牌中的表示形式
+	 * @param { number } num
+	 * @returns { string }
+	 */
 	strNumber(num) {
 		switch (num) {
 			case 1:
@@ -2553,6 +2725,12 @@ export class Get extends GetCompatible {
 				return num.toString();
 		}
 	}
+	/**
+	 * 将阿拉伯数字转换为中文的表达形式
+	 * @param { number } num
+	 * @param { boolean } [ordinal]
+	 * @returns { string }
+	 */
 	cnNumber(num, ordinal) {
 		if (isNaN(num)) return "";
 		let numStr = "" + num;
@@ -2625,6 +2803,7 @@ export class Get extends GetCompatible {
 		}
 	}
 	/**
+	 * 返回可以选择的按钮
 	 * @param {((a: Button, b: Button) => number)} [sort] 排序函数
 	 * @returns { Button[] }
 	 */
@@ -2643,6 +2822,7 @@ export class Get extends GetCompatible {
 		return selectable;
 	}
 	/**
+	 * 返回可以选择的牌
 	 * @param {((a: Card, b: Card) => number)} [sort] 排序函数
 	 * @returns { Card[] }
 	 */
@@ -2732,6 +2912,7 @@ export class Get extends GetCompatible {
 		return list;
 	}
 	/**
+	 * 返回可以选择的目标
 	 * @param {((a: Player, b: Player) => number)} [sort] 排序函数
 	 * @returns { Player[] }
 	 */
@@ -2809,6 +2990,23 @@ export class Get extends GetCompatible {
 		result._filter_args = [filter, i];
 		return result;
 	}
+	/**
+	 * 返回玩家本回合牌的使用次数
+	 * @overload
+	 * @param { true } card
+	 * @param { Player } [player = _status.event.player]
+	 * @returns { number }
+	 *
+	 * @overload
+	 * @param { Card } card
+	 * @param { Player } [player = _status.event.player]
+	 * @returns { number }
+	 *
+	 * @overload
+	 * @param { string } card 牌名
+	 * @param { Player } [player = _status.event.player]
+	 * @returns { number }
+	 */
 	cardCount(card, player) {
 		var num;
 		if (player == undefined) player = _status.event.player;
@@ -2827,12 +3025,24 @@ export class Get extends GetCompatible {
 		if (num == undefined) return 0;
 		return num;
 	}
+	/**
+	 * 返回玩家本回合技能的使用次数
+	 * @param { string } skill 技能ID
+	 * @param { Player } [player = _status.event.player]
+	 * @returns { number }
+	 */
 	skillCount(skill, player) {
 		if (player == undefined) player = _status.event.player;
 		var num = player.getStat("skill")[skill];
 		if (num == undefined) return 0;
 		return num;
 	}
+	/**
+	 * 返回牌的所有者
+	 * @param { Card } card
+	 * @param { 'judge' } [method]
+	 * @returns { Player | undefined }
+	 */
 	owner(card, method) {
 		return game.players.concat(game.dead).find(current => {
 			if (current.judging[0] == card && method != "judge") return true;
@@ -2862,6 +3072,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * @param { Card | VCard } item
+	 * @param { string } tag
 	 */
 	cardtag(item, tag) {
 		return (item.cardid && (get.itemtype(item) == "card" || !item.cards || !item.cards.length || item.name == item.cards[0].name) && _status.cardtag && _status.cardtag[tag] && _status.cardtag[tag].includes(item.cardid)) || (item.cardtags && item.cardtags.includes(tag));
@@ -4790,19 +5001,6 @@ export class Get extends GetCompatible {
 					)
 						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
 					else temp2 = undefined;
-				} else if (typeof temp2.effect == "function") {
-					//考虑废弃
-					console.log("此写法使用频率极低且影响代码可读性，不建议使用");
-					if (
-						!player.hasSkillTag("ignoreSkill", true, {
-							card: card,
-							target: target,
-							skill: skills2[i],
-							isLink: isLink,
-						})
-					)
-						temp2 = cache.delegate(temp2).effect(card, player, target, result2, isLink);
-					else temp2 = undefined;
 				} else temp2 = undefined;
 				if (typeof temp2 == "object") {
 					if (temp2.length == 2 || temp2.length == 4) {
@@ -4844,12 +5042,12 @@ export class Get extends GetCompatible {
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
 				// *** continue here ***
-				if (target.hp == 1) result2 *= 2.5;
+				if (target.hp == 1) result2 *= 3;
 				if (target.hp == 2) result2 *= 1.8;
 				let targetCountCards = target.countCards("h");
 				if (targetCountCards == 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
-						result2 *= 1.7;
+						result2 *= 2.1;
 					} else {
 						result2 *= 1.5;
 					}
@@ -4978,7 +5176,24 @@ export class Get extends GetCompatible {
 	attitude2(to) {
 		return get.attitude(_status.event.player, to);
 	}
-
+	/**
+	 * Get the number of a skill's item's length
+	 *
+	 * 获取一个转换技的转换项数
+	 * @param {string} skill 技能名
+	 * @param {Player} player
+	 * @returns {number}
+	 */
+	zhuanhuanItemNum(skill, player) {
+		if (!get.is.zhuanhuanji(skill, player)) return 0;
+		const info = lib.skill[skill];
+		if ("zhuanhuanLimit" in info) {
+			const { zhuanhuanLimit } = info;
+			if (typeof zhuanhuanLimit === "function") return parseInt(zhuanhuanLimit(skill, player));
+			return parseInt(zhuanhuanLimit);
+		}
+		return 2;
+	}
 	/**
 	 * 将URL转换成相对于无名杀根目录的路径
 	 *
@@ -5101,7 +5316,7 @@ export let get = new Get();
 /**
  * @param { InstanceType<typeof Get> } [instance]
  */
-export let setGet = (instance) => {
+export let setGet = instance => {
 	get = instance || new Get();
 	if (lib.config.dev) {
 		window.get = get;

@@ -140,7 +140,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				if (lib.character.xiahoudun) lib.character.xiahoudun[3] = ["ganglie_three"];
 				if (!get.config("enable_all_cards")) {
 					lib.translate.wuzhong_info += "若对方存活角色多于己方，则额外摸一张牌";
-					lib.translate.zhuge_info = "锁定技，出牌阶段，你使用杀的次数上限+3";
+					lib.translate.zhuge_info = "锁定技，出牌阶段，你使用【杀】的次数上限+3";
 					lib.card.list = lib.cardsThree;
 					game.fixedPile = true;
 				} else if (Array.isArray(lib.config.forbidthreecard)) {
@@ -5490,7 +5490,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				"当你使用【杀】或普通锦囊牌仅指定唯一目标时，你可以弃置任意张手牌，为其指定等量的额外目标。",
 			boss_bashi: "拔矢",
 			boss_bashi_info:
-				"每当你成为其他角色使用的杀或普通锦囊牌的目标时，你可以从正面翻至背面，若如此做，此牌对你无效。",
+				"每当你成为其他角色使用的【杀】或普通锦囊牌的目标时，你可以从正面翻至背面，若如此做，此牌对你无效。",
 			boss_danjing: "啖睛",
 			boss_danjing_info:
 				"友方角色进入濒死状态时，若你的体力值大于1，你可以失去1点体力，视为对其使用一张【桃】。",
@@ -5551,7 +5551,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			boss_chuanyun: "穿云",
 			boss_chuanyun_info: "结束阶段，你可以对体力比你多的一名其他角色造成1点伤害。",
 			boss_leili: "雷厉",
-			boss_leili_info: "每当你的[杀]造成伤害后，你可以对另一名敌方角色造成1点雷电伤害。",
+			boss_leili_info: "每当你的【杀】造成伤害后，你可以对另一名敌方角色造成1点雷电伤害。",
 			boss_fengxing: "风行",
 			boss_fengxing_info: "准备阶段，你可以选择一名敌方角色，若如此做，视为对其使用了一张【杀】。",
 			boss_skonghun: "控魂",

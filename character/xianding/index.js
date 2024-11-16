@@ -23,6 +23,8 @@ game.import("character", function () {
 			dc_sb_simayi: [],
 			dc_sb_zhouyu: [],
 			dc_sb_lusu: [],
+			dc_sb_jiaxu: [],
+			dc_sb_guojia: [],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {

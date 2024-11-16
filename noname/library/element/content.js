@@ -7774,7 +7774,7 @@ export const Content = {
 	},
 	gain: function () {
 		"step 0";
-		if (event.animate == "give") event.visible = true;
+		if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") event.visible = true;
 		if (cards) {
 			var map = {};
 			for (var i of cards) {
@@ -7787,6 +7787,7 @@ export const Content = {
 					if (position == "h") map[id][1].push(i);
 					else map[id][2].push(i);
 				} else if (!event.updatePile && get.position(i) == "c") event.updatePile = true;
+				if (event.visible) i.addKnower("everyone");
 			}
 			event.losing_map = map;
 			for (var i in map) {
@@ -7817,7 +7818,7 @@ export const Content = {
 						if (hs.includes(cards[i])) {
 							cards.splice(i--, 1);
 						} else {
-							cards[i].addKnower(event.visible ? "everyone" : source);
+							cards[i].addKnower(source);
 						}
 					}
 				}

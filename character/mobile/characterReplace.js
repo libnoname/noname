@@ -20,6 +20,9 @@ const characterReplaces = {
 	xianglang: ["xianglang", "mb_xianglang"],
 	miheng: ["yue_miheng", "re_miheng", "miheng"],
 	peixiu: ["ol_peixiu", "peixiu"],
+	chendeng: ["chendeng", "re_chendeng", "ol_chendeng", "jsrg_chendeng"],
+	liuba: ["liuba", "ol_liuba", "dc_liuba"],
+	lingcao: ["lingcao", "dc_lingcao"],
 };
 
 export default characterReplaces;

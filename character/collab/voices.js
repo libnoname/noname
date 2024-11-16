@@ -1,4 +1,14 @@
 export default {
+	"#olhuyi1": "青龙啸赤月，长刀行千里。",
+	"#olhuyi2": "谋取敌将首，声震当阳桥。",
+	"#olhuyi3": "身跨白玉鞍，铁骑踏冰河。",
+	"#olhuyi4": "满弓望西北，弦惊夜行之虎。",
+	"#olhuyi5": "游龙战长坂，可复七进七出。",
+	"#wuhujiang:die": "亢龙有悔…",
+	"#wuhujiang2:die": "年老力衰，不复当年勇…",
+	"#wuhujiang3:die": "西风寒，冷铁衣…",
+	"#wuhujiang4:die": "当阳空余声…",
+	"#wuhujiang5:die": "麦城残阳息长刀…",
 	"#dcqiusuo1": "驾八龙之婉婉兮，载云旗之委蛇。",
 	"#dcqiusuo2": "路漫漫其修远兮，吾将上下而求索。",
 	"#dclisao1": "朝饮木兰之坠露，夕餐秋菊之落英。",
@@ -48,8 +58,10 @@ export default {
 	"#dcnutao3": "智勇深沉，一世之雄！",
 	"#dcnutao4": "波涛怒天，神力无边！",
 	"#taoshen:die": "马革裹尸，身沉江心……",
+	/*
 	"#jieyuan_more": "我所有的努力，都是为了杀你！",
 	"#jieyuan_less": "我必须活下去！",
+	*/
 	"#dchuiwan1": "金珠弹黄鹂，玉带做秋千，如此游戏人间。",
 	"#dchuiwan2": "小爷横行江东，今日走马、明日弄鹰。",
 	"#dchuanli1": "金乌当空，汝欲与我辩日否？",

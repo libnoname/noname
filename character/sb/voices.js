@@ -1,4 +1,9 @@
 export default {
+	"#sbqianxun1": "虽有戈矛之刺，不如恭俭之利也。",
+	"#sbqianxun2": "贤者任重而行恭 知者功大而辞顺。",
+	"#sblianying1": "蜀营连绵百里，正待吾燎原一炬！",
+	"#sblianying2": "蜀军虚实已知，吾等不日便破也。",
+	"#sb_luxun:die": "心淤岂容有污，今唯以死自证。",
 	"#sbxianzhen1": "陷阵营中，皆是以一敌百之士！",
 	"#sbxianzhen2": "军令既出，使命必完！",
 	"#sbjinjiu1": "军规严戒，不容稍纵形骸！",

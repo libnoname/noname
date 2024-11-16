@@ -1,4 +1,4 @@
-import { game } from "../../noname.js";
+import { lib, _status, game } from "../../noname.js";
 
 export class GamePromises {
 	/**
@@ -85,7 +85,7 @@ export class GamePromises {
 		return new Promise((resolve, reject) => {
 			// @ts-ignore
 			game.writeFile(data, path, name, resolve);
-		}).then((result) => {
+		}).then(result => {
 			return new Promise((resolve, reject) => {
 				if (result instanceof Error) {
 					reject(result);
@@ -111,7 +111,7 @@ export class GamePromises {
 		return /** @type {Promise<void>} */ (
 			new Promise((resolve, reject) => {
 				// @ts-ignore
-				game.removeFile(filename, (err) => {
+				game.removeFile(filename, err => {
 					if (err) reject(err);
 					else resolve();
 				});
@@ -138,5 +138,39 @@ export class GamePromises {
 			// @ts-ignore
 			game.getFileList(dir, (folders, files) => resolve([folders, files]), reject);
 		});
+	}
+
+	/**
+	 * @param { string } key
+	 * @param { * } [value]
+	 * @param { string | boolean } [local]
+	 */
+	saveConfig(key, value, local) {
+		// @ts-ignore
+		if (_status.reloading) return Promise.resolve();
+
+		// @ts-ignore
+		return new Promise(resolve => game.saveConfig(key, value, local, resolve));
+	}
+	/**
+	 * @param { string } key
+	 */
+	saveConfigValue(key) {
+		return game.promises.saveConfig(key, lib.config[key]);
+	}
+	/**
+	 * @param { string } extension
+	 * @param { string } key
+	 * @param { * } [value]
+	 */
+	saveExtensionConfig(extension, key, value) {
+		return game.promises.saveConfig(`extension_${extension}_${key}`, value);
+	}
+	/**
+	 * @param { string } extension
+	 * @param { string } key
+	 */
+	saveExtensionConfigValue(extension, key) {
+		return game.promises.saveExtensionConfig(extension, key, game.getExtensionConfig(extension, key));
 	}
 }

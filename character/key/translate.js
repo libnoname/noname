@@ -72,7 +72,7 @@ const translates = {
 	key_mia: "藤川米娅",
 	key_kano: "雾岛佳乃",
 	db_key_liyingxia: "李映夏",
-	key_erika: "苍井绘梨花",
+	key_erika: "苍井绘里香",
 	key_satomi: "藏里见",
 	key_iriya: "喵呜·喵呼",
 	key_iriya_ab: "喵呜喵呼",

@@ -1,6 +1,6 @@
 const characters = {
 	wangcan: ["male", "qun", 3, ["xinfu_sanwen", "xinfu_qiai", "xinfu_denglou"]],
-	sp_taishici: ["male", "qun", 4, ["xinfu_jixu"]],
+	sp_taishici: ["male", "qun", 4, ["xinfu_jixu"], ["name:太史|慈"]],
 	re_jsp_pangtong: ["male", "wu", 3, ["xinfu_guolun", "xinfu_songsang"]],
 	lvdai: ["male", "wu", 4, ["xinfu_qinguo"]],
 	re_zhangliang: ["male", "qun", 4, ["xinfu_jijun", "xinfu_fangtong"]],

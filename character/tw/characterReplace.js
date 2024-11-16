@@ -6,6 +6,7 @@ const characterReplaces = {
 	baoxin: ["tw_baoxin", "baoxin"],
 	yanxiang: ["yanxiang", "tw_yanxiang"],
 	liwei: ["liwei", "tw_liwei"],
+	tw_jiling: ["jiling", "dc_jiling", "tw_jiling"],
 };
 
 export default characterReplaces;

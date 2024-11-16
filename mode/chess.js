@@ -5910,7 +5910,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				filterCard: { type: "equip" },
 				init: function (player) {
 					for (var i = 1; i < 6; i++) {
-						player.$disableEquip("equip" + i);
+						player.disableEquip("equip" + i);
 					}
 				},
 				check: function (card) {

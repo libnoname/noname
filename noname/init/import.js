@@ -135,6 +135,7 @@ async function createEmptyExtension(name) {
 		);
 	return {
 		name: extensionInfo.name,
+		editable: false,
 		content: function (config, pack) {},
 		precontent: function () {},
 		config: {},

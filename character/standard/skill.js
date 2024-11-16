@@ -27,7 +27,7 @@ const skills = {
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
 					if (event.card.name != "sha" && get.type(event.card) != "trick") return false;
-					return event.target.isDamaged();
+					return event.target.isDamaged() && player.countCards("he");
 				},
 				forced: true,
 				autodelay: true,
@@ -45,6 +45,8 @@ const skills = {
 		enable: "phaseUse",
 		filterTarget: true,
 		selectTarget: [1, Infinity],
+		multitarget: true,
+		multiline: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
@@ -213,6 +215,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				onremove: true,
 				mod: {
 					cardEnabled(card, player) {
 						if (player.getStorage("stddaoshu_effect").includes(get.suit(card))) return false;
@@ -551,7 +554,8 @@ const skills = {
 					(card, player, target) => {
 						return target.getHp() == player.getHp();
 					},
-					[1, Infinity]
+					[1, Infinity],
+					true
 				)
 				.set("ai", target => {
 					const player = get.event("player");
@@ -565,6 +569,32 @@ const skills = {
 				await i.damage();
 			}
 		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (
+						target.hp <= 1 ||
+						!target.hasFriend() ||
+						!_status.currentPhase ||
+						!get.tag(card, "damage")
+					) return;
+					let hp = target.hp - 1;
+					if (game.hasPlayer(cur => {
+						return cur.hp > hp;
+					})) return;
+					let ori = game.countPlayer(cur => {
+						return cur.hp === hp + 1 && get.attitude(target, cur) <= 0;
+					}), now = game.countPlayer(cur => {
+						return cur.hp === hp && get.attitude(target, cur) <= 0;
+					}), seat = 1, tar = _status.currentPhase.next;
+					while (tar !== target) {
+						if (get.attitude(target, tar) <= 0) seat++;
+						tar = tar.next;
+					}
+					return [1, 2 * (now - ori) / seat];
+				}
+			}
+		}
 	},
 	//程普
 	stdchunlao: {
@@ -633,6 +663,7 @@ const skills = {
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt2("stdzhiyinmeng"),
+					filterTarget: lib.filter.notMe,
 					filterCard: true,
 					position: "he",
 					selectCard: [1, Infinity],
@@ -678,12 +709,13 @@ const skills = {
 					(card, player, target) => {
 						return target != player && target.countCards("h") == player.countCards("h");
 					},
-					[1, Infinity]
+					[1, 2]
 				)
 				.set("ai", target => {
 					const player = get.event("player");
 					return get.effect(target, { name: "draw" }, player, player);
-				});
+				})
+				.forResult();
 		},
 		locked: true,
 		async content(event, trigger, player) {
@@ -900,72 +932,104 @@ const skills = {
 	stdtiaohe: {
 		audio: "fyjianyu",
 		enable: "phaseUse",
+		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(target => {
-				return target.getDiscardableCards(player, "e").some(card => parseInt(get.subtype(card).slice("equip".length)) <= 2);
+			return game.hasPlayer(tar1 => {
+				return tar1.countDiscardableCards(player, "e", i => get.subtype(i) == "equip2") && game.hasPlayer(tar2 => {
+					return tar1 !== tar2 && tar2.countDiscardableCards(player, "e");
+				});
 			});
+			let e = 0, fj = false;
+			game.countPlayer(target => {
+				let es = target.getDiscardableCards(player, "e"), js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+				if (es.length) e++;
+				e += js.length;
+				if (!fj && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) fj = true;
+			});
+			return fj && e >= 2;
 		},
 		filterTarget(card, player, target) {
-			if (!ui.selected.targets.length) {
-				return target.getDiscardableCards(player, "e").some(card => parseInt(get.subtype(card).slice("equip".length)) <= 2);
+			if (!ui.selected.targets.length || ui.selected.targets[0].countDiscardableCards(player, "e", i => get.subtype(i) == "equip2")) {
+				return target.countDiscardableCards(player, "e");
 			}
-			const cards = ui.selected.targets[0]
-				.getDiscardableCards(player, "e")
-				.filter(card => parseInt(get.subtype(card).slice("equip".length)) <= 2)
-				.map(card => get.subtype(card));
-			if (cards.length == 2) {
-				return target.getDiscardableCards(player, "e").some(card => parseInt(get.subtype(card).slice("equip".length)) <= 2);
+			return target.countDiscardableCards(player, "e", i => get.subtype(i) == "equip2");
+			let e = 0;
+			let es = target.getDiscardableCards(player, "e"), js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+			if (es.length) e++;
+			e += js.length;
+			if (!e) return false;
+			if (!ui.selected.targets.length) return true;
+			if (!ui.selected.targets[0].countDiscardableCards(player, "ej", i => get.subtype(i) == "equip2")) {
+				return es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2");
 			}
-			let Tcards = target
-				.getDiscardableCards(player, "e")
-				.filter(card => parseInt(get.subtype(card).slice("equip".length)) <= 2)
-				.map(card => get.subtype(card));
-			Tcards.removeArray(cards);
-			return Tcards.length;
+			return true;
 		},
-		selectTarget: [1, 2],
+		selectTarget: function() {
+			return 2;
+			if (!ui.selected.targets.length) return [1, 2];
+			let e = 0, player = get.event("player"), target = ui.selected.targets[0];
+			let es = target.getDiscardableCards(player, "e"), js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+			if (es.length) e++;
+			e += js.length;
+			if (e >= 2 && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) return [1, 2];
+			return 2;
+		},
 		complexTarget: true,
 		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
 			const targets = event.targets.slice();
 			if (targets.length == 1) {
-				await player.discardPlayerCard("e", targets[0], true);
+				await player.discardPlayerCard("ej", targets[0], true, 2).set("filterButton", button => {
+					let position = get.position(button.link), subtype = get.subtype(button.link);
+					if (!subtype || !subtype.startsWith("equip")) return false;
+					if (ui.selected.buttons.length) {
+						let pos = get.position(ui.selected.buttons[0].link), sub = get.subtype(ui.selected.buttons[0].link);
+						if (pos == "e" && position == "e") return false;
+						if (sub == "equip2") return true;
+						return subtype == "equip2";
+					}
+					if (position == "e") {
+						if (!get.event("js").some(i => get.subtype(i) == "equip2")) return subtype == "equip2";
+						return true;
+					}
+					if (!get.event("es").length) return subtype == "equip2";
+					return true;
+				}).set("es", targets[0].getDiscardableCards(player, "e", i => get.subtype(i) == "equip2")).set("js", targets[0].getDiscardableCards(player, "j", i => get.type(i) == "equip"));
 				return;
 			}
-			let discardedType = [];
+			let canfj = targets.filter(target => {
+				return target.countDiscardableCards(player, "e", i => get.subtype(i) == "equip2");
+			});
 			for (let i = 0; i < 2; i++) {
-				const target = targets[i],
-					other = targets[1 - i];
-				let cards = target
-					.getDiscardableCards(player, "e")
-					.filter(card => parseInt(get.subtype(card).slice("equip".length)) <= 2)
-					.map(card => get.subtype(card));
-				const Tcards = other
-					.getDiscardableCards(player, "e")
-					.filter(card => parseInt(get.subtype(card).slice("equip".length)) <= 2)
-					.map(card => get.subtype(card));
-				cards.removeArray(i == 0 ? (Tcards.length == 2 ? [] : Tcards) : discardedType);
-				if (!cards.length) continue;
+				if (i && canfj.includes(targets[i]) && !targets[i].countDiscardableCards(player, "e", i => get.subtype(i) == "equip2")) break;
 				const result = await player
-					.discardPlayerCard("e", target, true)
+					.discardPlayerCard("e", targets[i], true)
 					.set("filterButton", button => {
-						return get.event("cards").includes(get.subtype(button.link));
+						if (get.event("fj")) return get.subtype(button.link) == "equip2";
+						return true;
+						return get.type(button.link) == "equip";
 					})
-					.set("cards", cards)
+					.set("fj", canfj.length === 1 && canfj.includes(targets[i]))
 					.forResult();
-				if (result.bool) {
-					discardedType.addArray(
-						result.cards.reduce((list, card) => {
-							return list.add(get.subtype(card));
-						}, [])
-					);
+				if (result.bool && get.subtype(result.cards[0]) == "equip2") {
+					canfj = [];
 				}
 			}
 		},
 		ai: {
 			order: 10,
-			result: { target: -1 },
+			result: {
+				target(player, target) {
+					let att = get.attitude(player, target), es = [];
+					target.countDiscardableCards(player, "e").forEach(i => {
+						es.push(get.value(i, target));
+					});
+					let min = Math.min(...es), max = Math.max(...es), ext = target.hasSkillTag("noe") ? 10 : 0;
+					if (att <= 0) return ext - max;
+					return ext - min;
+				}
+			},
 		},
 	},
 	stdqiansu: {
@@ -979,6 +1043,7 @@ const skills = {
 			player.draw();
 		},
 		ai: {
+			noe: true,
 			effect: {
 				target(card, player, target) {
 					if (target.countCards("e")) return;
@@ -1227,6 +1292,9 @@ const skills = {
 	},
 	guicai: {
 		audio: 2,
+		audioname2: {
+			xin_simayi: "jilue_guicai",
+		},
 		trigger: { global: "judge" },
 		preHidden: true,
 		filter(event, player) {
@@ -2194,7 +2262,6 @@ const skills = {
 	},
 	tieji: {
 		audio: 2,
-		shaRelated: true,
 		trigger: { player: "useCardToPlayered" },
 		check(event, player) {
 			return get.attitude(player, event.target) <= 0;
@@ -2231,6 +2298,9 @@ const skills = {
 	jizhi: {
 		audio: 2,
 		audioname: ["jianyong"],
+		audioname2: {
+			xin_simayi: "jilue_jizhi",
+		},
 		trigger: { player: "useCard" },
 		frequent: true,
 		preHidden: true,
@@ -2344,6 +2414,9 @@ const skills = {
 	zhiheng: {
 		audio: 2,
 		audioname: ["gz_jun_sunquan"],
+		audioname2: {
+			xin_simayi: "jilue_zhiheng",
+		},
 		mod: {
 			aiOrder(player, card, num) {
 				if (num <= 0 || get.itemtype(card) !== "card" || get.type(card) !== "equip") return num;
@@ -2967,7 +3040,6 @@ const skills = {
 		},
 	},
 	wushuang: {
-		shaRelated: true,
 		audio: 2,
 		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
 		forced: true,

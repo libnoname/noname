@@ -345,14 +345,27 @@ const skills = {
 	},
 	//徐琨（菜不菜我不知道）
 	fazhu: {
-		audio: 2,
+		audio: 3,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return player.hasCard(card => !get.tag(card, "damage") && player.canRecast(card), "hej");
 		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.choosePlayerCard(get.prompt(event.name.slice(0, -5)), player, "hej", [1, Infinity])
+				.set("ai", button => {
+					const card = button.link;
+					if (get.position(card) == "j") return 10;
+					return 6 - get.value(card);
+				})
+				.set("filterButton", button => {
+					const card = button.link;
+					return !get.tag(card, "damage") && player.canRecast(card);
+				})
+				.forResult();
+		},
 		async content(event, trigger, player) {
-			const cardx = player.getCards("hej", card => !get.tag(card, "damage") && player.canRecast(card));
-			await player.recast(cardx);
+			await player.recast(event.cards);
 			const cards = player
 				.getHistory("gain", evt => evt.getParent(3) == event)
 				.reduce((list, evt) => {
@@ -3421,42 +3434,39 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "water",
 		derivation: ["new_canyun"],
-		content: function () {
-			"step 0";
-			if (trigger.source) {
-				trigger.source.discard(trigger.source.getCards("e"));
-				trigger.source.loseHp();
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			if (source && source.isIn()) {
+				await source.discard(source.getCards("e"));
+				await source.loseHp();
 			}
-			"step 1";
-			player
-				.chooseTarget("【绝响】：是否令一名其他角色获得技能〖残韵〗？", function (card, player, target) {
-					return target != player;
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
+			const targets = await player
+				.chooseTarget("【绝响】：是否令一名其他角色获得技能〖残韵〗？", lib.filter.notMe)
+				.set("ai", target => {
+					var att = get.attitude(get.player(), target);
 					if (target.countCards("ej", { suit: "club" })) att = att * 2;
 					return 10 + att;
 				})
-				.set("forceDie", true);
-			"step 2";
+				.set("forceDie", true)
+				.forResultTargets();
+			if (!targets || !targets.length) return;
+			const target = targets[0];
+			player.line(target, "thunder");
+			await target.addSkills("new_canyun");
+			const { result } = await target
+				.chooseTarget("是否弃置场上的一张牌，获得技能〖绝响〗？", (card, player, target) => {
+					return target.getDiscardableCards(player, "ej").some(i => get.suit(i) == "club");
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return get.effect(target, { name: "guohe_copy2" }, player, player);
+				});
 			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target, "thunder");
-				target.addSkills("new_canyun");
-				target
-					.discardPlayerCard("是否弃置自己区域内的一张梅花牌，获得技能〖绝响〗？", target, "hej")
-					.set("ai", function (card) {
-						if (get.position(card) == "j") return 100 + get.value(card);
-						return 100 - get.value(card);
-					})
-					.set("visible", true)
-					.set("filterButton", function (card) {
-						return get.suit(card.link) == "club";
-					});
-			} else event.finish();
-			"step 3";
-			if (result.bool) target.addSkills("new_juexiang");
+				await target.discardPlayerCard(result.targets[0], "ej", true).set("filterButton", button => {
+					return get.suit(button.link) == "club";
+				});
+				await target.addSkills("new_juexiang");
+			}
 		},
 	},
 	new_canyun: {
@@ -4061,7 +4071,6 @@ const skills = {
 		intro: { content: "已经发动过了#次" },
 	},
 	zhuandui: {
-		shaRelated: true,
 		audio: 2,
 		group: ["zhuandui_respond", "zhuandui_use"],
 		subSkill: {
@@ -6934,7 +6943,7 @@ const skills = {
 		},
 	},
 	xinmieji: {
-		audio: 2,
+		audio: "mieji",
 		enable: "phaseUse",
 		usable: 1,
 		filter: function (event, player) {
@@ -7299,9 +7308,12 @@ const skills = {
 			},
 			effect: {
 				player_use(card, player, target, current, isLink) {
-					if (isLink || !player.storage.xinxianzhen) return;
+					if (isLink || !player.storage.xinxianzhen || player._xinxianzhen_effect_temp) return;
 					if (target != player.storage.xinxianzhen && ["sha", "guohe", "shunshou", "huogong", "juedou"].includes(card.name)) {
-						if (get.effect(player.storage.xinxianzhen, card, player, player) > 0) {
+						player._xinxianzhen_effect_temp = true;
+						let eff = get.effect(player.storage.xinxianzhen, card, player, player);
+						delete player._xinxianzhen_effect_temp;
+						if (eff > 0) {
 							return [1, 2];
 						}
 					}
@@ -8146,7 +8158,6 @@ const skills = {
 	},
 	longyin: {
 		audio: 2,
-		shaRelated: true,
 		init: player => {
 			game.addGlobalSkill("longyin_order");
 		},
@@ -9371,7 +9382,7 @@ const skills = {
 		},
 	},
 	// taoxi:{
-	// 	audio:2,
+	// 	audio: "qingxi",
 	// 	trigger:{player:'useCardToPlayered'},
 	// 	filter:function(event,player){
 	// 		return _status.currentPhase==player&&event.targets.length==1&&
@@ -9462,7 +9473,7 @@ const skills = {
 	// },
 	// taoxi4:{},
 	taoxi: {
-		audio: 2,
+		audio: "qingxi",
 		trigger: { player: "useCardToPlayered" },
 		check: function (event, player) {
 			if (get.attitude(player, event.target) >= 0) return false;
@@ -10012,13 +10023,12 @@ const skills = {
 		},
 	},
 	xinpojun: {
-		shaRelated: true,
 		trigger: { player: "useCardToPlayered" },
 		direct: true,
 		filter: function (event, player) {
 			return event.card.name == "sha" && player.isPhaseUsing() && event.target.hp > 0 && event.target.countCards("he") > 0;
 		},
-		audio: 2,
+		audio: "pojun",
 		content: function () {
 			"step 0";
 			player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.countCards("he"), trigger.target.hp)], get.prompt("xinpojun", trigger.target)).set("forceAuto", true);
@@ -10225,7 +10235,7 @@ const skills = {
 	fencheng: {
 		skillAnimation: "epic",
 		animationColor: "gray",
-		audio: 2,
+		audio: "xinfencheng",
 		enable: "phaseUse",
 		filter: function (event, player) {
 			return !player.storage.fencheng;
@@ -11354,7 +11364,7 @@ const skills = {
 		},
 	},
 	dingpin: {
-		audio: 2,
+		audio: "pindi",
 		enable: "phaseUse",
 		onChooseToUse: function (event) {
 			if (event.type != "phase" || game.online) return;

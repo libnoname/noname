@@ -1,4 +1,16 @@
 export default {
+	"#dcsbsushen1": "谋先于行则昌，行先于谋则亡。",
+	"#dcsbsushen2": "天行五色，雪覆林间睡狐，独我执白。",
+	"#dcsbfumou1": "恩仇付浊酒，荡平劫波，且做英雄吼。",
+	"#dcsbfumou2": "人无恒敌，亦无恒友，唯有恒利。",
+	"#dcsbrushi1": "孤立川上，观逝者如东去之流水。",
+	"#dcsbrushi2": "九州如画，怎可空老人间？",
+	"#dc_sb_jiaxu:die": "辛者抱薪，妄燃烽火以戏诸侯……",
+	"#dcsbfuxi1": "可因势而附，亦可因势而袭。",
+	"#dcsbfuxi2": "仗剑在手，或亮之，或藏之。",
+	"#dcsbhaoyi1": "今缴丧敌之炙，且宴麾下袍泽。",
+	"#dcsbhaoyi2": "龙骧枯荣一体，岂曰同袍无衣。",
+	"#dc_sb_zhangxiu:die": "曹贼欺我太甚！",
 	"#dctongdao1": "安定宫无一丈之长，恐难七步成诗。",
 	"#dctongdao2": "故峻恶，皓恶甚于峻。",
 	"#dccilv1": "妾一介女流，安知社稷之虑。",
@@ -453,20 +465,26 @@ export default {
 	"#wlcuorui1": "减辎疾行，挫敌军锐气。",
 	"#wlcuorui2": "外物当舍，摄敌为重。",
 	"#wulan:die": "蛮狗，尔敢杀我！",
+	/*
 	"#tiaoxin_xiahouba1": "跪下受降，饶你不死！",
 	"#tiaoxin_xiahouba2": "黄口小儿，可听过将军名号？",
 	"#paoxiao_xiahouba1": "喝啊！",
 	"#paoxiao_xiahouba2": "受死吧！",
 	"#shensu1_xiahouba1": "冲杀敌阵，来去如电！",
 	"#shensu1_xiahouba2": "今日有恙在身，须得速战速决！",
-	"#tianxiang_daxiaoqiao1": "哼，我才不怕你呢~",
-	"#tianxiang_daxiaoqiao2": "替我挡着吧~",
+	*/
+	"#retianxiang_daxiaoqiao1": "哼，我才不怕你呢~",
+	"#retianxiang_daxiaoqiao2": "替我挡着吧~",
+	/*
 	"#liuli_daxiaoqiao1": "不懂得怜香惜玉么~",
 	"#liuli_daxiaoqiao2": "交给你了。",
+	*/
 	"#yongjue1": "扶幼主，成霸业！",
 	"#yongjue2": "能救一个是一个！",
+	/*
 	"#jingong1": "若无老夫之谋，尔等皆化为腐土也。",
 	"#jingong2": "董贼旧部，可尽诛之！",
+	*/
 	"#dcshouze": "白绫加之我颈，其罪何患无辞。",
 	"#dczimu1": "既为汉吏，当遵汉律。",
 	"#refenyin_wufan1": "奋音鼓劲，片甲不留！",

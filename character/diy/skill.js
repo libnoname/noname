@@ -2814,6 +2814,15 @@ const skills = {
 			trigger.cancel();
 			//event.finish();
 		},
+		ai: {
+			nofire: true,
+			nothunder: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "natureDamage")) return "zerotarget";
+				}
+			}
+		}
 	},
 	ns_xiandao: {
 		forced: true,
@@ -3375,18 +3384,13 @@ const skills = {
 			var check = function (list) {
 				for (var i = 0; i < list.length; i++) {
 					var info = lib.skill[list[i]];
-					if (info && info.shaRelated) return true;
+					if (!info) continue;
+					if (info.shaRelated) return true;
 					if (info && info.trigger) {
 						for (var j in info.trigger) {
 							var cond = info.trigger[j];
 							if (typeof cond == "string") {
 								cond = [cond];
-							}
-							if (j == "player" || j == "global") {
-								if (cond.indexOf("shaBefore") != -1) return true;
-								if (cond.indexOf("shaBegin") != -1) return true;
-								if (cond.indexOf("shaEnd") != -1) return true;
-								if (cond.indexOf("shaAfter") != -1) return true;
 							}
 							if (j == "source" || j == "global") {
 								if (cond.indexOf("damageBefore") != -1) return true;
@@ -3399,6 +3403,8 @@ const skills = {
 							}
 						}
 					}
+					if (info.shaRelated === false) return false;
+					if (get.skillInfoTranslation(list[i], player).includes("【杀】")) return true;
 				}
 				return false;
 			};

@@ -10828,7 +10828,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 
 			stone_mianyang: "绵羊",
 			mage_mianyang: "绵羊",
-			mage_mianyang_info: "锁定技，你不能使用杀。",
+			mage_mianyang_info: "锁定技，你不能使用【杀】。",
 
 			stone_beijunmushi: "北郡牧师",
 			stone_guangyaozhizi: "光耀之子",
@@ -11212,7 +11212,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			_hunter_skill: "射击",
 			_hunter_skill_info: "对敌方主将造成1点伤害。",
 			_druid_skill: "猛击",
-			_druid_skill_info: "视为使用一张不计入出杀次数的杀。",
+			_druid_skill_info: "视为使用一张不计入出杀次数的【杀】。",
 
 			stone_tuteng1: "石爪图腾",
 			stone_tuteng2: "灼热图腾",
@@ -11238,7 +11238,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			stone_kutongsiseng1_info: "你出场时，己方主将于本结束阶段摸一张牌。",
 			stone_yuanguanying: "远古暗影",
 			stone_yuanguanying1: "暗影",
-			stone_yuanguanying1_info: "你出场时，己方主将可视为对一名敌方角色使用一张杀。",
+			stone_yuanguanying1_info: "你出场时，己方主将可视为对一名敌方角色使用一张【杀】。",
 
 			stone_dijieshicong: "低阶侍从",
 			stone_dijieshicong1: "持枪",
@@ -11294,7 +11294,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			stone_fatiaozhuru1_info: "结束阶段，若你没有手牌，你摸两张牌。",
 
 			stonesha: "进攻",
-			stonesha_info: "锁定技，你的装备牌均视为杀。",
+			stonesha_info: "锁定技，你的装备牌均视为【杀】。",
 			stoneshan: "格挡",
 			stoneshan_info: "锁定技，你的随从和法术牌均视为闪。",
 
@@ -11315,7 +11315,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			spell_zhiliaozhichu: "治疗之触",
 			spell_zhiliaozhichu_info: "令目标随从恢复所有体力值并获得嘲讽。",
 			lschaofeng: "嘲讽",
-			lschaofeng_info: "同阵营的无嘲讽角色不以能成为杀的目标。",
+			lschaofeng_info: "同阵营的无嘲讽角色不能成为【杀】的目标。",
 			spell_wangzhezhufu: "王者祝福",
 			spell_wangzhezhufu_info: "令一名随从增加2点体力和体力上限并摸两张牌。",
 			spell_diyulieyan: "地狱烈焰",

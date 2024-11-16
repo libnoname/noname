@@ -11,6 +11,7 @@ const characterSort = {
 	extra_mobilexin: ["shen_taishici", "shen_sunce"],
 	extra_mobileren: ["shen_huatuo", "shen_lusu"],
 	extra_tw: ["tw_shen_guanyu", "tw_shen_lvmeng"],
+	extra_mb: ["xin_simayi", "new_simayi"],
 	extra_offline: ["shen_diaochan", "boss_zhaoyun", "shen_dianwei", "le_shen_jiaxu"],
 };
 
@@ -29,6 +30,7 @@ const characterSortTranslate = {
 	extra_offline: "神话再临·线下",
 	extra_decade: "神·武",
 	extra_tw: "海外服神将",
+	extra_mb: "移动版神将",
 };
 
 export { characterSort, characterSortTranslate };

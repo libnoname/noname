@@ -15,7 +15,7 @@ export let ai = new AI();
 export let setAI = (instance) => {
 	ai = instance || new AI();
 	if (lib.config.dev) {
-		window.ai = ai;
+		window.nonameAI = ai;
 	}
 };
 

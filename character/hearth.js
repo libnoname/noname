@@ -717,16 +717,6 @@ game.import("character", function () {
 					},
 				},
 			},
-			hsxiujian: {
-				trigger: { player: "useCardToAfter" },
-				forced: true,
-				filter(event, player) {
-					return get.type2(event.card) == "trick" && event.target.isEnemiesOf(player);
-				},
-				content() {
-					player.useCard({ name: "sha" }, trigger.target, false);
-				},
-			},
 			hsxingyi: {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
@@ -10154,10 +10144,6 @@ game.import("character", function () {
 			tqchuanyue: "穿越",
 			tqchuanyue_info:
 				"锁定技，准备阶段开始时，你随机选择一个被削弱过的炉石技能，获得其未削弱的版本，替换上一个以此法获得的技能。",
-			// hsxiujian:'袖箭',
-			// hsxiujian_info:'锁定技，在你对一名敌方角色使用一张锦囊牌后，你视为对其使用一张杀。',
-			// hsyingzong:'影踪',
-			// hsyingzong_info:'',
 			hsxingyi: "星移",
 			hsxingyi_info: "锁定技，每当一名敌方角色于回合内使用主动技能，你获得此技能直到下一回合结束。",
 
@@ -10211,7 +10197,7 @@ game.import("character", function () {
 			ysjqisha_info: "锁定技，每当你造成或受到伤害，你令对方随机获得一种消极状态直到下一回合结束。",
 			zhaochao: "招潮",
 			zhaochao_info:
-				"锁定技，结束阶段，你视为对一名随机敌人使用一张杀；若此杀被闪避，你视为对另一名随机敌人使用一张杀。",
+				"锁定技，结束阶段，你视为对一名随机敌人使用一张【杀】；若此【杀】被闪避，你视为对另一名随机敌人使用一张【杀】。",
 			hllingxi: "灵息",
 			hllingxi_info:
 				"出牌阶段，你可以令一名已受伤的其他角色弃置两张牌并回复1点体力（同阶段对一名角色限用一次）；结束阶段，你可以回复1点体力。",
@@ -10228,7 +10214,7 @@ game.import("character", function () {
 			oldhuanjue: "幻觉",
 			oldhuanjue_info: "每回合限一次，当你成为一名其他角色的卡牌惟一目标时，你可以发现一张牌代替此牌。",
 			zhziwu: "紫雾",
-			zhziwu_info: "每当你于回合外失去牌，你可以令当前回合角色不能使用杀直到回合结束。",
+			zhziwu_info: "每当你于回合外失去牌，你可以令当前回合角色不能使用【杀】直到回合结束。",
 			huanjue_info_old:
 				"每名角色的回合限一次，当你使用卡牌指定其他角色为惟一目标，或当其他角色使用卡牌指定你为惟一目标时，你可以发现一张牌代替此牌，然后该牌的使用者在结算后摸一张牌。",
 			yinzong: "影踪",
@@ -10272,7 +10258,7 @@ game.import("character", function () {
 			jinhua_info: "锁定技，每当你以自己为目标使用一张非转化的锦囊牌，你发现一个技能并获得之。",
 			hsqizhou: "祈咒",
 			hsqizhou_feng: "风之祈咒",
-			hsqizhou_feng_info: "出牌阶段对自己使用，令所有目标的敌人打出一张杀或受到1点雷属性伤害。",
+			hsqizhou_feng_info: "出牌阶段对自己使用，令所有目标的敌人打出一张【杀】或受到1点雷属性伤害。",
 			hsqizhou_shui: "水之祈咒",
 			hsqizhou_shui_info: "出牌阶段对自己使用，回复2点体力。",
 			hsqizhou_huo: "火之祈咒",
@@ -10353,20 +10339,20 @@ game.import("character", function () {
 				"出牌阶段限一次，你可以弃置一张牌并获得一张由三张随机牌组成的药水；当你因弃置而失去药水牌时，你随机获得药水的组成卡牌之一。",
 			shouji: "收集",
 			shouji_info:
-				"每当你使用一张杀，你可以获得一张目标随机手牌的复制；每当你的杀被闪避，你可以获得一张目标随机非特殊装备牌的复制；每回合限各限一次。",
+				"每当你使用一张【杀】，你可以获得一张目标随机手牌的复制；每当你的【杀】被闪避，你可以获得一张目标随机非特殊装备牌的复制；每回合限各限一次。",
 			hsguimou: "鬼谋",
 			hsguimou_info:
 				"每当你受到一次伤害，你可以获得伤害来源的一张手牌，若此牌是黑色，你展示此牌并重复此过程。",
 			yingxi: "影袭",
 			yingxi_info:
-				"结束阶段，若你本回合未造成伤害，你可以将一张黑色牌当作杀对任意一名角色使用，若目标未受到伤害，此杀不可闪避。",
+				"结束阶段，若你本回合未造成伤害，你可以将一张黑色牌当作【杀】对任意一名角色使用，若目标未受到伤害，此【杀】不可闪避。",
 			peiyu: "培育",
 			peiyu_info: "准备阶段，你可以令一名没有图腾的角色获得一个随机图腾直到其首次受到伤害。",
 			peiyu_old_info:
 				"出牌阶段，你可以弃置一张牌令一名没有图腾的角色获得一个随机图腾，或令一名有图腾的角色替换一个图腾；你死亡时，其他角色失去以此法获得的图腾。",
 			wzhanyi: "战意",
 			wzhanyi_info:
-				"你可以跳过出牌阶段，改为摸三张牌并展示之，将摸到的装备牌置于装备区，然后可以使用手牌中的杀。",
+				"你可以跳过出牌阶段，改为摸三张牌并展示之，将摸到的装备牌置于装备区，然后可以使用手牌中的【杀】。",
 			shengteng: "升腾",
 			shengteng_info: "锁定技，每当你使用锦囊牌造成伤害，你增加1点体力上限并回复1点体力。",
 			yuansu: "寂灭",
@@ -10376,8 +10362,8 @@ game.import("character", function () {
 			nuyan2: "怒焰",
 			nuyan_backup: "怒焰",
 			nuyan_info:
-				"出牌阶段限一次，你可以将一张红色牌当作任意一张能造成伤害的牌使用（不得是你本局以此法使用过的牌）。",
-			nuyan2_info: "出牌阶段限三次，你可以失去1点体力，视为使用任意一张能造成伤害的牌”。",
+				"出牌阶段限一次，你可以将一张红色牌当作任意一张具有「伤害」标签的牌使用（不得是你本局以此法使用过的牌）。",
+			nuyan2_info: "出牌阶段限三次，你可以失去1点体力，视为使用任意一张具有「伤害」标签的牌。",
 			chouhuo: "仇火",
 			chouhuo_info:
 				"觉醒技，出牌阶段开始时，若你的怒焰技能已将可用的牌用完，你失去1点体力上限，获得2点护甲，然后将怒焰的描述改为“出牌阶段限三次，你可以失去1点体力，视为使用任意一张能造成伤害的牌”。",
@@ -10414,7 +10400,7 @@ game.import("character", function () {
 			xianji_info:
 				"其他角色可以在其结束阶段弃置1~2张手牌并令你摸等量的牌，若如此做，直到其下一回合结束，每当你使用卡牌指定其为目标时，其摸一张牌。",
 			xueren: "血刃",
-			xueren_info: "每当你使用杀造成伤害，你可以令受伤害角色与你各失去1点体力，然后你摸两张牌。",
+			xueren_info: "每当你使用【杀】造成伤害，你可以令受伤害角色与你各失去1点体力，然后你摸两张牌。",
 			maoxian: "奇旅",
 			maoxian2: "奇旅",
 			maoxian_info: "出牌阶段限两次，你可以发现一个技能并获得之（替换此前发现的技能）。",
@@ -10440,10 +10426,10 @@ game.import("character", function () {
 			xieneng_info: "结束阶段，你可以选择一张神器牌并获得之。",
 			fbeifa: "北伐",
 			fbeifa_info:
-				"每当你失去最后一张手牌，你可以视为使用一张无视距离的杀，若此杀造成伤害，你摸一张牌，每回合最多发动3次。",
+				"每当你失去最后一张手牌，你可以视为使用一张无视距离的【杀】，若此【杀】造成伤害，你摸一张牌，每回合最多发动3次。",
 			oldfbeifa: "北伐",
 			oldfbeifa_info:
-				"每当你失去最后一张手牌，你可以视为使用一张无视距离的杀，若此杀造成伤害，你摸一张牌。",
+				"每当你失去最后一张手牌，你可以视为使用一张无视距离的【杀】，若此【杀】造成伤害，你摸一张牌。",
 			yufa: "驭法",
 			yufa_info:
 				"在任意一名其他角色的结束阶段，若你于此回合内受过其伤害，你可以将一张传送门交给除此角色外的任意一名角色。",
@@ -10523,7 +10509,7 @@ game.import("character", function () {
 			jixuan_info: "锁定技，回合结束后，你摸一张牌进行一个额外的回合。",
 			biri: "蔽日",
 			biri_info:
-				"每当距离你1以内的一名其他角色成为杀的惟一目标时，若杀的使用者不是你，你可以弃置一张闪取消之。",
+				"每当距离你1以内的一名其他角色成为【杀】的唯一目标时，若【杀】的使用者不是你，你可以弃置一张闪取消之。",
 			stuxi: "吐息",
 			stuxi2: "吐息",
 			stuxi2_bg: "息",
@@ -10531,7 +10517,7 @@ game.import("character", function () {
 			bingdong: "冰冻",
 			bingdong_info: "锁定技，你在一个回合内首次造成伤害后，获得一个冰冻零件。",
 			ronghuo: "熔火",
-			ronghuo_info: "锁定技，你的普通杀均视为火杀。",
+			ronghuo_info: "锁定技，你的普通【杀】均视为火【杀】。",
 			luoshi: "落石",
 			luoshi_info: "锁定技，每当你受到一次伤害，你与伤害来源各随机弃置一张牌。",
 			moyao: "魔曜",
@@ -10557,12 +10543,12 @@ game.import("character", function () {
 			hszuzhou_nvwudeganguo_info:
 				"出牌阶段对一名角色使用，目标弃置一张牌，然后随机获得一张炉石衍生牌。",
 			hszuzhou_nvwudepingguo: "女巫的苹果",
-			hszuzhou_nvwudepingguo_info: "出牌阶段对一名角色使用，目标获得两张杀。",
+			hszuzhou_nvwudepingguo_info: "出牌阶段对一名角色使用，目标获得两张【杀】。",
 			hszuzhou_nvwudexuetu: "女巫的学徒",
 			hszuzhou_nvwudexuetu_info:
 				"出牌阶段对没有咒降技能的角色使用，令目标非锁定技失效，并获得技能咒降直到下一回合结束。",
 			hszuzhou_wushushike: "巫术时刻",
-			hszuzhou_wushushike_info: "出牌阶段对所有角色使用，将手牌中的闪替换为杀。",
+			hszuzhou_wushushike_info: "出牌阶段对所有角色使用，将手牌中的闪替换为【杀】。",
 			hszuzhou_guhuo: "蛊惑",
 			hszuzhou_guhuo_info: "出牌阶段对一名其他角色使用，令其交给你一张牌。",
 			xjumo: "聚魔",
@@ -10583,7 +10569,7 @@ game.import("character", function () {
 			xshixin_info_alter:
 				"锁定技，每当你对一名其他角色造成一次伤害，若受伤害角色体力值不小于你，其与你各失去1点体力。",
 			xmojian: "魔箭",
-			xmojian_info: "每当你的武将牌翻至正面时，你可以指定一名角色视为对其使用了一张杀。",
+			xmojian_info: "每当你的武将牌翻至正面时，你可以指定一名角色视为对其使用了一张【杀】。",
 			enze: "恩泽",
 			enze_info: "出牌阶段限一次，你可以指定一名角色令其手牌数与你相等（最多摸或弃三张牌）。",
 			oldenze: "恩泽",
@@ -10716,7 +10702,7 @@ game.import("character", function () {
 			tuteng5: "法潮图腾",
 			tuteng5_info: "结束阶段，你摸一张牌。",
 			tuteng6: "火舌图腾",
-			tuteng6_info: "在你的回合内，你的杀造成的首次伤害+1。",
+			tuteng6_info: "在你的回合内，你的【杀】造成的首次伤害+1。",
 			tuteng7: "活力图腾",
 			tuteng7_info: "结束阶段，你令一名其他角色回复1点体力。",
 			tuteng8: "图腾魔像",

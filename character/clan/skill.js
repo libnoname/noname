@@ -4,9 +4,14 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//族钟繇
 	clanchengqi: {
+		getUsed: player =>
+			player
+				.getHistory("useCard", evt => ["basic", "trick"].includes(get.type(evt.card, null, false)))
+				.map(evt => get.name(evt.card))
+				.toUniqued(),
 		hiddenCard(player, name) {
 			if (get.type(name) != "basic" && get.type(name) != "trick") return false;
-			if (player.getStorage("clanchengqi_effect").includes(name)) return false;
+			if (get.info("clanchengqi").getUsed(player).includes(name)) return false;
 			return player.countCards("hs") > 1 && lib.inpile.includes(name);
 		},
 		audio: 2,
@@ -17,9 +22,15 @@ const skills = {
 				.inpileVCardList(info => {
 					const name = info[2];
 					if (get.type(name) != "basic" && get.type(name) != "trick") return false;
-					return !player.getStorage("clanchengqi_effect").includes(name);
+					return !(event.clanchengqi || []).includes(name);
 				})
 				.some(card => event.filterCard({ name: card[2], nature: card[3] }, player, event));
+		},
+		onChooseToUse(event) {
+			if (!game.online && !event.clanchengqi) {
+				const player = event.player;
+				event.set("clanchengqi", get.info("clanchengqi").getUsed(player));
+			}
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -27,7 +38,7 @@ const skills = {
 					.inpileVCardList(info => {
 						const name = info[2];
 						if (get.type(name) != "basic" && get.type(name) != "trick") return false;
-						return !player.getStorage("clanchengqi_effect").includes(name);
+						return !(event.clanchengqi || []).includes(name);
 					})
 					.filter(card => event.filterCard({ name: card[2], nature: card[3] }, player, event));
 				return ui.create.dialog("承启", [list, "vcard"]);
@@ -76,7 +87,6 @@ const skills = {
 					position: "hs",
 					precontent() {
 						player.addTempSkill("clanchengqi_effect");
-						player.markAuto("clanchengqi_effect", [event.result.card.name]);
 					},
 				};
 			},
@@ -91,7 +101,7 @@ const skills = {
 						.inpileVCardList(info => {
 							const name = info[2];
 							if (get.type(name) != "basic" && get.type(name) != "trick") return false;
-							return !player.getStorage("clanchengqi_effect").includes(name);
+							return !get.info("clanchengqi").getUsed(player).includes(name);
 						})
 						.map(card => {
 							return { name: card[2], nature: card[3] };
@@ -116,7 +126,6 @@ const skills = {
 			backup: { audio: "clanchengqi" },
 			effect: {
 				charlotte: true,
-				onremove: true,
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					return (
@@ -826,10 +835,12 @@ const skills = {
 					var target = event.targets.shift();
 					event.target = target;
 					var list = [];
+					const nameFilter = trigger.card.name == "sha"
+						? name => get.type(name) == "trick"
+						: name => name == "sha";
 					for (var name of lib.inpile) {
 						if (name != "sha" && get.type(name) != "trick") continue;
-						if (trigger.card.name == "sha" && get.type(name) != "trick") continue;
-						if (name == "sha" && get.type(trigger.card) != "trick") continue;
+						if (!nameFilter(name)) continue;
 						if (!player.canUse(get.autoViewAs({ name: name }, []), target)) continue;
 						list.push([get.translation(get.type(name)), "", name]);
 					}
@@ -870,10 +881,18 @@ const skills = {
 	clanjianyuan: {
 		inherit: "clanchenya",
 		filter(event, player) {
+			if (event.type != "player") return false;
+			var skill = event.sourceSkill || event.skill;
+			var info = get.info(skill);
+			if (info.charlotte) return false;
+			var translation = get.skillInfoTranslation(skill, event.player);
+			if (!translation) return false;
+			var match = get.plainText(translation).match(/“?出牌阶段限一次/g);
+			if (!match || match.every(value => value != "出牌阶段限一次") || !event.player.countCards("he")) return false;
 			for (var phase of lib.phaseName) {
 				var evt = event.getParent(phase);
 				if (evt && evt.name == phase) {
-					if (event.player.getHistory("useCard", evtx => evtx.getParent(phase) == evt).length) return lib.skill.clanchenya.filter(event, player);
+					if (event.player.getHistory("useCard", evtx => evtx.getParent(phase) == evt).length) return true;
 				}
 			}
 			return false;
@@ -1346,7 +1365,7 @@ const skills = {
 			if (info.charlotte) return false;
 			var translation = get.skillInfoTranslation(skill, event.player);
 			if (!translation) return false;
-			var match = translation.match(/“?出牌阶段限一次/g);
+			var match = get.plainText(translation).match(/“?出牌阶段限一次/g);
 			if (!match || match.every(value => value != "出牌阶段限一次")) return false;
 			return event.player.countCards("h") > 0;
 		},
@@ -2408,7 +2427,7 @@ const skills = {
 				event.loser.chooseUseTarget(true, card, false);
 			} else event.goto(5);
 			"step 4";
-			if (cards.filter(i => get.position(i, true) == "d" && event.loser.hasUseTarget(i)).length) event.goto(3);
+			if (cards.filter(i => get.position(i, true) == "d" && event.loser.hasUseTarget(i)).length) event.goto(2);
 			"step 5";
 			if (get.distance(player, target) != event.distance[0] || get.distance(target, player) != event.distance[1]) {
 				player.restoreSkill("clanxumin");
@@ -2694,7 +2713,8 @@ const skills = {
 			if (result.bool) {
 				var cards = result.cards;
 				target.give(cards, player);
-				game.delayx();
+				if (!cards.length) event.finish();
+				else game.delayx();
 			} else event.finish();
 			"step 3";
 			if (trigger.cards.filterInD().length) target.gain(trigger.cards.filterInD(), "gain2", "bySelf");

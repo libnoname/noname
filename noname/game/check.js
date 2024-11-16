@@ -37,8 +37,14 @@ export class Check {
 		items.forEach((item) => {
 			let selectable;
 			if (!lib.filter.cardAiIncluded(item)) selectable = false;
-			else if (useCache && !firstCheck) selectable = cache.includes(item);
-			else selectable = isSelectable(item, event);
+			else if (!useCache) selectable = isSelectable(item, event);
+			else{
+				if(!firstCheck) selectable = cache.includes(item);
+				else{
+					selectable = isSelectable(item, event);
+					if(selectable) cache.push(item);
+				}
+			}
 
 			if (range[1] <= -1) {
 				if (selectable) {
@@ -52,7 +58,6 @@ export class Check {
 			} else {
 				if (selectable && uiSelected.length < range[1]) {
 					item.classList.add("selectable");
-					if (firstCheck) cache.push(item);
 				} else item.classList.remove("selectable");
 			}
 

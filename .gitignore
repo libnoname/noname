@@ -31,3 +31,4 @@ package-lock.json
 package.json
 Thumbs.db
 bun.lockb
+deno.lock

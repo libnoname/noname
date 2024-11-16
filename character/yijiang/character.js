@@ -1,5 +1,5 @@
 const characters = {
-	xiahoumao: ["male", "wei", 4, ["tongwei", "cuguo"]],
+	xiahoumao: ["male", "wei", 4, ["tongwei", "cuguo"], ["name:夏侯|楙"]],
 	chenshi: ["male", "shu", 4, ["qingbei"]],
 	sunli: ["male", "wei", 4, ["kangli"]],
 	feiyao: ["male", "wei", 4, ["zhenfeng"]],
@@ -8,11 +8,11 @@ const characters = {
 	yj_qiaozhou: ["male", "shu", 3, ["shiming", "jiangxi"]],
 	yj_sufei: ["male", "wu", 4, ["shuojian"]],
 	liwan: ["female", "wei", 3, ["liandui", "biejun"]],
-	zhugeshang: ["male", "shu", 3, ["sangu", "yizu"]],
+	zhugeshang: ["male", "shu", 3, ["sangu", "yizu"], ["name:诸葛|尚"]],
 	kebineng: ["male", "qun", 4, ["kousheng"]],
 	lukai: ["male", "wu", 4, ["lkbushi", "lkzhongzhuang"]],
 	xin_fazheng: ["male", "shu", 3, ["xinxuanhuo", "xinenyuan"]],
-	guanzhang: ["male", "shu", 4, ["fuhun"]],
+	guanzhang: ["male", "shu", 4, ["fuhun"], ["name:关|兴-张|苞"]],
 	wangyi: ["female", "wei", 3, ["zhenlie", "miji"]],
 	caozhang: ["male", "wei", 4, ["new_jiangchi"]],
 	guohuai: ["male", "wei", 4, ["rejingce"]],
@@ -24,7 +24,7 @@ const characters = {
 	xin_masu: ["male", "shu", 3, ["olsanyao", "rezhiman"]],
 	zhuran: ["male", "wu", 4, ["danshou"]],
 	xusheng: ["male", "wu", 4, ["xinpojun"]],
-	wuguotai: ["female", "wu", 3, ["ganlu", "buyi"]],
+	wuguotai: ["female", "wu", 3, ["ganlu", "buyi"], ["name:丁|null"]],
 	lingtong: ["male", "wu", 4, ["xuanfeng"]],
 	liubiao: ["male", "qun", 3, ["rezishou", "zongshi"]],
 	yufan: ["male", "wu", 3, ["zhiyan", "zongxuan"]],
@@ -40,13 +40,13 @@ const characters = {
 	chenqun: ["male", "wei", 3, ["pindi", "faen"]],
 	sunluban: ["female", "wu", 3, ["chanhui", "jiaojin"]],
 	guyong: ["male", "wu", 3, ["shenxing", "olbingyi"]],
-	caifuren: ["female", "qun", 3, ["qieting", "xianzhou"]],
+	caifuren: ["female", "qun", 3, ["qieting", "xianzhou"], ["name:蔡|null"]],
 	yj_jushou: ["male", "qun", 3, ["jianying", "shibei"]],
 	zhangsong: ["male", "shu", 3, ["qiangzhi", "xiantu"]],
 	zhuhuan: ["male", "wu", 4, ["fenli", "pingkou"]],
-	xiahoushi: ["female", "shu", 3, ["qiaoshi", "yanyu"]],
+	xiahoushi: ["female", "shu", 3, ["qiaoshi", "yanyu"], ["name:夏侯|null"]],
 
-	panzhangmazhong: ["male", "wu", 4, ["duodao", "anjian"]],
+	panzhangmazhong: ["male", "wu", 4, ["duodao", "anjian"], ["name:潘|璋-马|忠"]],
 	zhoucang: ["male", "shu", 4, ["xinzhongyong"]],
 	guanping: ["male", "shu", 4, ["longyin"]],
 	liaohua: ["male", "shu", 4, ["dangxian", "fuli"]],
@@ -54,7 +54,7 @@ const characters = {
 	gaoshun: ["male", "qun", 4, ["xinxianzhen", "jinjiu"]],
 	caozhen: ["male", "wei", 4, ["xinsidi"]],
 	wuyi: ["male", "shu", 4, ["benxi"], ["clan:陈留吴氏"]],
-	hanhaoshihuan: ["male", "wei", 4, ["shenduan", "yonglve"]],
+	hanhaoshihuan: ["male", "wei", 4, ["shenduan", "yonglve"], ['name:韩|浩-史|涣']],
 
 	caorui: ["male", "wei", 3, ["huituo", "mingjian", "xingshuai"], ["zhu"]],
 	caoxiu: ["male", "wei", 4, ["qianju", "qingxi"]],
@@ -64,12 +64,12 @@ const characters = {
 	sunxiu: ["male", "wu", 3, ["yanzhu", "xingxue", "xinzhaofu"], ["zhu"]],
 	zhuzhi: ["male", "wu", 4, ["xinanguo"]],
 	quancong: ["male", "wu", 4, ["yaoming"]],
-	gongsunyuan: ["male", "qun", 4, ["huaiyi"]],
-	guotufengji: ["male", "qun", 3, ["jigong", "shifei"]],
+	gongsunyuan: ["male", "qun", 4, ["huaiyi"], ["name:公孙|渊"]],
+	guotufengji: ["male", "qun", 3, ["jigong", "shifei"], ["name:郭|图-逢|纪"]],
 
 	xin_liru: ["male", "qun", 3, ["xinjuece", "xinmieji", "xinfencheng"]],
 
-	guohuanghou: ["female", "wei", 3, ["jiaozhao", "danxin"]],
+	guohuanghou: ["female", "wei", 3, ["jiaozhao", "danxin"], ["name:郭|null"]],
 	liuyu: ["male", "qun", 2, ["xinzhige", "xinzongzuo"]],
 	liyan: ["male", "shu", 3, ["dcduliang", "fulin"]],
 	sundeng: ["male", "wu", 4, ["kuangbi"]],
@@ -77,11 +77,11 @@ const characters = {
 	cenhun: ["male", "wu", 4, ["jishe", "lianhuo"]],
 	huanghao: ["male", "shu", 3, ["qinqing", "huisheng"]],
 	zhangrang: ["male", "qun", 3, ["taoluan"], ["sex:male_castrated"]],
-	sunziliufang: ["male", "wei", 3, ["guizao", "jiyu"]],
+	sunziliufang: ["male", "wei", 3, ["guizao", "jiyu"], ['name:孙|资-刘|放']],
 
 	xinxianying: ["female", "wei", 3, ["zhongjian", "caishi"]],
 	wuxian: ["female", "shu", 3, ["fumian", "daiyan"], ["clan:陈留吴氏"]],
-	xushi: ["female", "wu", 3, ["wengua", "fuzhu"]],
+	xushi: ["female", "wu", 3, ["wengua", "fuzhu"], ["name:徐|null"]],
 	caojie: ["female", "qun", 3, ["shouxi", "huimin"]],
 
 	caiyong: ["male", "qun", 3, ["bizhuan", "tongbo"]],
@@ -93,9 +93,9 @@ const characters = {
 
 	yujin: ["male", "wei", 4, ["rezhenjun"], ["die:ol_yujin.mp3"]],
 
-	linghuyu: ["male", "wei", 4, ["xvzhi"]],
-	yj_simafu: ["male", "wei", 3, ["beiyu", "duchi"]],
-	yj_xuangongzhu: ["female", "wei", 3, ["yjqimei", "yjzhuiji"]],
+	linghuyu: ["male", "wei", 4, ["xvzhi"], ["name:令狐|愚"]],
+	yj_simafu: ["male", "wei", 3, ["beiyu", "duchi"], ["name:司马|孚"]],
+	yj_xuangongzhu: ["female", "wei", 3, ["yjqimei", "yjzhuiji"], ["name:司马|null"]],
 	xukun: ["male", "wu", 4, ["fazhu"]],
 };
 

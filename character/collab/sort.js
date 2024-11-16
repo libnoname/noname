@@ -5,6 +5,8 @@ const characterSort = {
 	collab_decade: ["libai", "xiaoyuehankehan", "zhutiexiong", "wu_zhutiexiong"],
 	collab_remake: ["dc_caocao", "dc_liubei", "dc_sunquan", "nezha", "dc_sunce", "dc_zhaoyun", "dc_wuyi"],
 	collab_duanwu_2024: ["quyuan", "xin_sunquan"],
+	collab_dcdoudizhui: ["dc_noname", "dc_xunyuxunyou"],
+	collab_oldoudizhu: ["wuhujiang"],
 };
 
 const characterSortTranslate = {
@@ -14,6 +16,8 @@ const characterSortTranslate = {
 	collab_decade: "新服·创玩节",
 	collab_remake: "新服·共创武将",
 	collab_duanwu_2024: "新服·端午畅玩2024",
+	collab_dcdoudizhui: "新服·限时地主",
+	collab_oldoudizhu: "OL·限时地主",
 };
 
 export { characterSort, characterSortTranslate };

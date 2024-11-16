@@ -8269,9 +8269,9 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				},
 				ai: {
 					effect: {
-						target: function (card, player, target, current) {
+						target_use: function (card, player, target, current) {
 							if (target.getEquip(2)) return;
-							return lib.skill.tengjia1.ai.effect.target.apply(this, arguments);
+							return lib.skill.tengjia1.ai.effect.target_use.apply(this, arguments);
 						},
 					},
 				},
@@ -9901,7 +9901,7 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 			boss_yaoshou_info: "锁定技，你与其他角色计算-2。",
 			boss_duqu: "毒躯",
 			boss_duqu_info:
-				"锁定技，你受到伤害时，伤害来源获得1枚“蛇毒”标记；你自身不会拥有“蛇毒”标记；你的“桃”均视为“杀”。“蛇毒”标记：锁定技，拥有“蛇毒”标记的角色回合开始时，需要选择弃置X张牌或者失去X点体力，然后弃置一枚“蛇毒”标记。X为其拥有的“蛇毒”标记个数。",
+				"锁定技，你受到伤害时，伤害来源获得1枚“蛇毒”标记；你自身不会拥有“蛇毒”标记；你的【桃】均视为【杀】。“蛇毒”标记：锁定技，拥有“蛇毒”标记的角色回合开始时，需要选择弃置X张牌或者失去X点体力，然后弃置一枚“蛇毒”标记。X为其拥有的“蛇毒”标记个数。",
 			boss_shedu: "蛇毒",
 			boss_jiushou: "九首",
 			boss_jiushou_info:
@@ -9912,10 +9912,10 @@ game.import("mode", function (lib, game, ui, get, ai, _status) {
 				"体力值首次减少至一半或更少时激活此技能。锁定技，除你之外的其他角色使用“桃”或“酒”时，获得1枚“蛇毒”标记。",
 			boss_bingxian: "兵燹",
 			boss_bingxian_info:
-				"锁定技，其他角色的回合结束时，若其回合内没有使用杀，则视为你对其使用一张“杀”。",
+				"锁定技，其他角色的回合结束时，若其回合内没有使用【杀】，则视为你对其使用一张【杀】。",
 			boss_juyuan: "巨猿",
 			boss_juyuan_info:
-				"锁定技，你的体力上限+5，你的出牌阶段内，若你的体力少于上一次你的回合结束时的体力，则你本回合使用“杀”可额外指定1个目标。",
+				"锁定技，你的体力上限+5，你的出牌阶段内，若你的体力少于上一次你的回合结束时的体力，则你本回合使用【杀】可额外指定1个目标。",
 			boss_xushi_switch: "蓄势",
 			boss_xushi: "蓄势",
 			boss_xushi_info:

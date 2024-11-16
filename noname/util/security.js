@@ -75,7 +75,7 @@ let sandBoxRequired = SANDBOX_FORCED;
 const pfPrototypes = ["Object", "Array", "String", "Map"]; // 传递的实例垫片
 const pfNamespaces = ["Object", "Array", "Reflect", "Math", "Promise"]; // 传递的静态垫片
 // 可能还要补充喵？
-const nativePattern = /^function \w*\(\) \{ \[native code\] \}$/;
+const nativePattern = /\{ \[native code\] \}$/;
 
 // 垫片备份
 const polyfills = {
@@ -876,13 +876,13 @@ function loadPolyfills() {
 		for (const key of Reflect.ownKeys(top)) {
 			const descriptor = Reflect.getOwnPropertyDescriptor(top, key);
 
-			if (!descriptor
-				|| (typeof descriptor.value !== "function"
-					&& !descriptor.get && !descriptor.set))
-				continue;
+			// if (!descriptor
+			// 	|| (typeof descriptor.value !== "function"
+			// 		&& !descriptor.get && !descriptor.set))
+			// 	continue;
 
-			if (isNativeDescriptor(descriptor))
-				continue;
+			// if (isNativeDescriptor(descriptor))
+			// 	continue;
 
 			box[key] = descriptor;
 		}
@@ -928,7 +928,8 @@ function setupPolyfills(sandbox) {
 	sandbox.exec(`
 	function definePolyfills(top, box) {
 		for (const key in top)
-			Reflect.defineProperty(box, key, top[key]);
+			if (!(key in box))
+				Reflect.defineProperty(box, key, top[key]);
 	}
 
 	for (const key of pfPrototypes) {

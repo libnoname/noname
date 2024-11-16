@@ -9,6 +9,7 @@ const characterReplaces = {
 	shen_caocao: ["shen_caocao", "old_caocao"],
 	shen_zhangjiao: ["shen_zhangjiao", "junk_zhangjiao"],
 	shen_huatuo: ["dc_shen_huatuo", "shen_huatuo"],
+	shen_simayi: ["shen_simayi", "xin_simayi", "new_simayi"],
 };
 
 export default characterReplaces;

@@ -44,12 +44,42 @@ export class GetCompatible {
 	 * @returns {["firefox" | "chrome" | "safari" | "other", number, number, number]}
 	 */
 	coreInfo() {
+		// 如果存在process并且存在process.versions，则默认为node环境
+		if (typeof window.process != "undefined" && typeof window.process.versions == "object") {
+			// 如果存在versions.chrome，默认为electron的versions.chrome
+			if (window.process.versions.chrome) {
+				// @ts-expect-error Type must be right
+				return [
+					"chrome",
+					...window.process.versions.chrome
+						.split(".")
+						.slice(3)
+						.map(item => parseInt(item)),
+				];
+			}
+		}
+
+		// @ts-ignore
+		if (typeof navigator.userAgentData != "undefined") {
+			// @ts-ignore
+			const userAgentData = navigator.userAgentData;
+			if (userAgentData.brands && userAgentData.brands.length) {
+				let brand = userAgentData.brands.find(({ brand }) => {
+					let str = brand.toLowerCase();
+					// 当前支持的浏览器中只有chrome支持userAgentData，故只判断chrome的情况
+					return str.includes("chrome") || str.includes("chromium");
+				});
+
+				return brand ? ["chrome", parseInt(brand.version), 0, 0] : ["other", NaN, NaN, NaN];
+			}
+		}
+
 		const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
 		let result;
 		if (!(result = userAgent.match(regex))) return ["other", NaN, NaN, NaN];
 
 		// 非Safari情况直接返回结果
-		if (result[1] != "safari") {
+		if (result[1] !== "safari") {
 			const [major, minor, patch] = result[2].split(".");
 			// @ts-expect-error "Matched result must be the status."
 			return [result[1], parseInt(major), parseInt(minor), parseInt(patch)];
