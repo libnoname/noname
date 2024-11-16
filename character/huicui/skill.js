@@ -196,7 +196,7 @@ const skills = {
 						return -1;
 					},
 					filterTarget(card, player, target) {
-						return target != player && target.countCards("h");
+						return target != player && target.countCards("he");
 					},
 					async content(event, trigger, player) {
 						const { choice } = get.info("dcfuxie_backup");

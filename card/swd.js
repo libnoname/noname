@@ -4795,8 +4795,6 @@ game.import("card", function () {
 			yuchandui_info: "在你行动时可当作雪肌冰鲍使用；可用于煅造装备；在你使用一张牌后，此牌会随机切换形态。",
 			yangpijuan: "羊皮卷",
 			yangpijuan_info: "出牌阶段对自己使用，选择一种卡牌类别，发现一张该类别的卡牌。",
-			// pantao:'蟠桃',
-			// pantao_info:'出牌阶段对自己使用，或对濒死角色使用，目标回复2点体力并获得1点护甲。',
 			shencaojie: "神草结",
 			shencaojie_info: "你的锦囊牌即将造成伤害时对目标使用，令此伤害+1；你即将受到锦囊牌伤害时对自己使用，令此伤害-1。",
 			yuruyi: "玉如意",
@@ -5112,7 +5110,6 @@ game.import("card", function () {
 			["heart", 1, "daihuofenglun", "fire"],
 
 			["diamond", 2, "xiayuncailing"],
-			// ['heart',2,'pantao'],
 			// ['heart',2,'huanpodan'],
 
 			["club", 3, "caoyao"],

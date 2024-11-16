@@ -6,11 +6,8 @@ const skills = {
 	sbhuanshi: {
 		audio: 2,
 		trigger: { global: "judge" },
-		filter(event, player) {
-			return player.countCards("hs") + player.hp > 0;
-		},
 		async cost(event, trigger, player) {
-			let cardsx = get.cards(player.hp, true).map(card => {
+			let cardsx = get.cards(1, true).map(card => {
 				var cardx = ui.create.card();
 				cardx.init(get.cardInfo(card));
 				cardx._cardid = card.cardid;
@@ -36,13 +33,15 @@ const skills = {
 					const result = trigger.judge(card) - trigger.judge(judging);
 					const attitude = get.attitude(player, trigger.player);
 					if (attitude == 0 || result == 0) return 0;
+					if (get.event("pile").includes(card)) return attitude > 0 ? result : -result;
 					if (attitude > 0) {
-						return result - get.value(card) / 2;
+						return result - get.value(card) * 0.3;
 					} else {
-						return -result - get.value(card) / 2;
+						return -result - get.value(card) * 0.3;
 					}
 				})
-				.set("judging", trigger.player.judging[0]);
+				.set("judging", trigger.player.judging[0])
+				.set("pile", cardsx);
 
 			cardsx = player.getCards("s", card => card.hasGaintag("sbhuanshi_tag"));
 			if (cardsx.length) {
@@ -109,7 +108,7 @@ const skills = {
 		trigger: {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
-		chargeSkill: 4,
+		chargeSkill: 3,
 		getIndex(event, player) {
 			if (!player.countCharge()) return [];
 			let list = [];
@@ -180,6 +179,9 @@ const skills = {
 				},
 			},
 		},
+		ai: {
+			combo: "sbmingzhe"
+		},
 	},
 	sbmingzhe: {
 		audio: 2,
@@ -190,7 +192,7 @@ const skills = {
 		locked: true,
 		filter: function (event, player) {
 			if (player == _status.currentPhase) return false;
-			if (player.countMark("sbmingzhe_used") >= 3) return false;
+			if (player.countMark("sbmingzhe_used") >= 2) return false;
 			var evt = event.getl(player);
 			return evt.cards2?.length;
 		},
@@ -200,7 +202,7 @@ const skills = {
 				.set("ai", target => {
 					const player = get.player();
 					let eff = get.effect(target, { name: "draw" }, player, player);
-					if (target.countCharge(true) > 0) eff *= 1.5;
+					if (target.countCharge(true) > 0) eff *= 2.1;
 					return eff;
 				})
 				.forResult();
@@ -210,8 +212,20 @@ const skills = {
 			player.addMark("sbmingzhe_used", 1, false);
 			const target = event.targets[0];
 			const cards = trigger.getl(player).cards2;
-			await target.draw(cards.length);
-			if (cards.some(card => get.type(card) != "basic") && target.countCharge(true)) target.addCharge();
+			if (target.countCharge(true)) target.addCharge();
+			if (cards.some(card => get.type(card) != "basic")) await target.draw();
+		},
+		ai: {
+			effect: {
+				player(card, player, target) {
+					if (player === _status.currentPhase || player.countMark("sbmingzhe_used") >= 2) return;
+					if (typeof card === "object" && get.position(card) === "h") return [1, 1];
+				},
+				target(card, player, target) {
+					if (target === _status.currentPhase || target.countMark("sbmingzhe_used") >= 2) return;
+					if (get.tag(card, "lose") || get.tag(card, "discard")) return [1, 1];
+				},
+			}
 		},
 		subSkill: {
 			used: {
@@ -7628,7 +7642,15 @@ const skills = {
 			return player.hujia > 0 && event.card.name == "sha";
 		},
 		check: function (event, player) {
-			return event.target.countGainableCards(player, "he") > 0 || player.countCards("hs", { name: "sha" }) > 0;
+			return (
+				get.attitude(player, event.target) <= 0 &&
+				event.target.countGainableCards(player, "h") > 0 ||
+				player.getCardUsable("sha") === 0 &&
+				player.countCards("hs", card => {
+					if (get.name(card) !== "sha") return false;
+					return player.hasValueTarget(card, true, true);
+				}) > 0
+			);
 		},
 		logTarget: "target",
 		content: function () {
@@ -7638,7 +7660,7 @@ const skills = {
 			trigger.card.storage.sbduojing = true;
 			"step 1";
 			var target = trigger.target;
-			if (target.countGainableCards(player, "he") > 0) player.gainPlayerCard(target, "he", true);
+			if (target.countGainableCards(player, "h") > 0) player.gainPlayerCard(target, "h", true);
 			player.addTempSkill("sbduojing_add", "phaseUseAfter");
 			player.addMark("sbduojing_add", 1, false);
 			player.markSkill("sbduojing_add");

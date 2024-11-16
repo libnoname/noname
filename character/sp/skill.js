@@ -7124,7 +7124,8 @@ const skills = {
 						return _status.event.targetsx.includes(target);
 					})
 					.set("ai", target => {
-						return 1 - get.effect(target, _status.event.getTrigger().card, _status.event.player, _status.event.player);
+						const evt = _status.event.getTrigger(), player = _status.event.player;
+						return -get.effect(target, evt.card, evt.player, player);
 					})
 					.set("targetsx", trigger.targets);
 			} else event.finish();
@@ -14434,7 +14435,7 @@ const skills = {
 			maixie: true,
 			effect: {
 				target: function (card, player, target) {
-					if (get.tag(card, "damage") && !target.hasSkill("oltiaoxin", null, null, false)) {
+					if (get.tag(card, "damage") && !target.hasSkill("tiaoxin", null, null, false)) {
 						if (!target.hasFriend()) return;
 						if (target.hp >= 4) return [0, 1];
 					}

@@ -228,51 +228,6 @@ game.import("card", function () {
 					},
 				},
 			},
-			// xiaolicangdao:{
-			// 	fullskin:true,
-			// 	type:'trick',
-			// 	enable:true,
-			// 	filterTarget:function(card,player,target){
-			// 		return target!=player;
-			// 	},
-			// 	multitarget:true,
-			// 	content:function(){
-			// 		'step 0'
-			// 		if(cards&&cards.length){
-			// 			target.gain(cards,player);
-			// 			target.$gain2(cards);
-			// 			if(cards.length==1){
-			// 				event.card1=cards[0];
-			// 			}
-			// 		}
-			// 		'step 1'
-			// 		event.card2=target.getCards('h').randomGet();
-			// 		if(event.card2){
-			// 			target.discard(event.card2);
-			// 		}
-			// 		else{
-			// 			event.finish();
-			// 		}
-			// 		'step 2'
-			// 		if(event.card1&&event.card1.name==event.card2.name){
-			// 			target.damage();
-			// 		}
-			// 	},
-			// 	ai:{
-			// 		order:6,
-			// 		value:[3,1],
-			// 		result:{
-			// 			target:function(player,target){
-			// 				return -2/Math.sqrt(1+target.countCards('h'));
-			// 			},
-			// 		},
-			// 		tag:{
-			// 			damage:1,
-			// 			discard:1,
-			// 			loseCard:1,
-			// 		}
-			// 	}
-			// },
 			geanguanhuo: {
 				fullskin: true,
 				type: "trick",
@@ -1000,8 +955,6 @@ game.import("card", function () {
 			caochuanjiejian: "草船借箭",
 			caochuanjiejian_info:
 				"出牌阶段对一名有手牌的其他角色使用，目标选择一项：将手牌中的所有杀（至少1张）交给你，并视为对你使用一张杀；或展示手牌并令你弃置任意张。",
-			// xiaolicangdao:'笑里藏刀',
-			// xiaolicangdao_info:'出牌阶段，对一名其他角色使用。你将此【笑里藏刀】交给目标，然后弃置其一张手牌，若这两张牌牌名相同，你对其造成1点伤害。',
 			shezhanqunru: "舌战群儒",
 			shezhanqunru_info:
 				"出牌阶段，对你使用。你请求所有有手牌的其他角色响应，然后同时与响应的角色拼点。若有角色响应且结果中你赢的次数更多，或若没有角色响应，你摸三张牌。",
@@ -1059,8 +1012,6 @@ game.import("card", function () {
 
 			["club", 3, "caochuanjiejian"],
 			["spade", 7, "caochuanjiejian"],
-			// ['spade',5,'xiaolicangdao'],
-			// ['diamond',11,'xiaolicangdao'],
 			["heart", 1, "geanguanhuo"],
 			["spade", 6, "geanguanhuo"],
 			["heart", 4, "shezhanqunru"],

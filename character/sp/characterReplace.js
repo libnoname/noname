@@ -77,6 +77,7 @@ const characterReplaces = {
 	hanfu: ["hanfu", "ol_hanfu"],
 	niufu: ["niufu", "ol_niufu"],
 	dongxie: ["dongxie", "ol_dongxie"],
+	caoying: ["caoying", "scl_caoying"],
 };
 
 export default characterReplaces;

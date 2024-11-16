@@ -900,21 +900,6 @@ game.import("card", function () {
 					},
 				},
 			},
-			// wenhuangsan:{
-			//     type:'jiguan',
-			// 	enable:true,
-			// 	fullskin:true,
-			// },
-			// tuhunsha:{
-			//     type:'jiguan',
-			// 	enable:true,
-			// 	fullskin:true,
-			// },
-			// shenhuofeiya:{
-			//     type:'jiguan',
-			// 	enable:true,
-			// 	fullskin:true,
-			// },
 			mianlijinzhen: {
 				type: "jiguan",
 				enable: true,
@@ -1751,10 +1736,6 @@ game.import("card", function () {
 			mianlijinzhen_info: "出牌阶段对一名体力值不小于你的角色使用，目标摸一张牌然后失去1点体力。",
 			shenhuofeiya: "神火飞鸦",
 			shenhuofeiya_info: "出牌阶段对一名其他角色和其相邻角色使用，目标需打出一张【闪】，否则受到1点火属性伤害。",
-			// tuhunsha:'土魂砂',
-			// tuhunsha_info:'土魂砂',
-			// wenhuangsan:'瘟癀伞',
-			// wenhuangsan_info:'瘟癀伞',
 			qiankunbiao: "乾坤镖",
 			qiankunbiao_info: "随机弃置一名其他角色和其相邻角色的一张牌。",
 

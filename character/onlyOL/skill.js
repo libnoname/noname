@@ -78,11 +78,13 @@ const skills = {
 	},
 	olfengshang: {
 		audio: 2,
-		getCards() {
-			const cards = [];
+		getCards(player) {
+			const cards = [], suits = player.getStorage("olfengshang_clear");
 			game.checkGlobalHistory("cardMove", evt => {
 				if (evt.name != "cardsDiscard" && (evt.name != "lose" || evt.position != ui.discardPile)) return;
-				cards.addArray(evt.cards.filterInD("d"));
+				cards.addArray(evt.cards.filterInD("d").filter(card => {
+					return !suits.includes(get.suit(card));
+				}));
 			});
 			return cards;
 		},
@@ -91,13 +93,13 @@ const skills = {
 			global: "dying",
 		},
 		filter(event, player) {
-			const cards = event.name == "chooseToUse" ? event.olfengshang_cards || [] : get.info("olfengshang").getCards();
+			const cards = event.name == "chooseToUse" ? event.olfengshang_cards || [] : get.info("olfengshang").getCards(player);
 			if (!lib.suit.some(suit => cards.filter(card => get.suit(card) == suit).length > 1)) return false;
 			return event.name != "chooseToUse" || !player.hasSkill("olfengshang_used", null, null, false);
 		},
 		onChooseToUse(event) {
 			if (!game.online && !event.olfengshang_cards) {
-				event.set("olfengshang_cards", get.info("olfengshang").getCards());
+				event.set("olfengshang_cards", get.info("olfengshang").getCards(event.player));
 			}
 		},
 		async content(event, trigger, player) {
@@ -105,7 +107,7 @@ const skills = {
 			if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));
 			const given_map = {};
 			event.given_map = given_map;
-			const cards = !trigger ? event.getParent(2).olfengshang_cards : get.info(event.name).getCards();
+			const cards = !trigger ? event.getParent(2).olfengshang_cards : get.info(event.name).getCards(player);
 			let result;
 			while (Object.keys(given_map).length < 2 && cards.length) {
 				if (cards.length > 1) {
@@ -167,6 +169,9 @@ const skills = {
 					animate: "gain2",
 				})
 				.setContent("gaincardMultiple");
+			const suit  = get.suit(Object.values(given_map).flat()[0]);
+			player.addTempSkill("olfengshang_clear", "roundStart");
+			player.markAuto("olfengshang_clear", suit);
 			await game.delayx();
 			if (!player.hasHistory("gain", evt => evt.getParent(2) == event) && player.hasUseTarget({ name: "jiu", isCard: true }, true, false)) {
 				await player.chooseUseTarget({ name: "jiu", isCard: true }, true, false);
@@ -180,6 +185,15 @@ const skills = {
 		},
 		subSkill: {
 			used: { charlotte: true },
+			clear: {
+				intro: {
+					content(storage, player) {
+						return "本轮已赏赐过" + get.translation(storage) + "花色的牌";
+					}
+				},
+				charlotte: true,
+				onremove: true
+			},
 		},
 	},
 	olzhibin: {

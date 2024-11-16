@@ -701,6 +701,9 @@ const skills = {
 			if (!event.source || !event.source.isIn() || event.source == player) return false;
 			return player.inRange(event.player);
 		},
+		check(event, player) {
+			return get.damageEffect(event.player, event.source, player, event.nature) > 0;
+		},
 		async content(event, trigger, player) {
 			trigger.num++;
 		},
