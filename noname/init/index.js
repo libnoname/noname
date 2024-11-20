@@ -924,8 +924,11 @@ async function setOnError() {
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
 		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
-		if (_status && _status.event) {
-			let evt = _status.event;
+		if (_status && (_status.errEvent || _status.event)) {
+			let evt = _status.errEvent;
+			if (!evt) {
+				evt = _status.event
+			}
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;
 			// @ts-ignore
 			if (evt.parent) str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;

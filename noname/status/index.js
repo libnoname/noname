@@ -16,6 +16,10 @@ export class status {
 	set event(event) {
 		this.eventManager.setStatusEvent(event);
 	}
+	/**
+	 * @type { GameEvent | undefined }
+	 */
+	errEvent = undefined;
 	ai = {};
 	lastdragchange = [];
 	/**

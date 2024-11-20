@@ -1019,15 +1019,15 @@ export class GameEvent {
 		return (this.parent ? this.parent.waitNext() : this.start()).then(
 			onfulfilled
 				? () => {
-						return onfulfilled(
-							new Proxy(this, {
-								get(target, p, receiver) {
-									if (p === "then") return void 0;
-									return Reflect.get(target, p, receiver);
-								},
-							})
-						);
-					}
+					return onfulfilled(
+						new Proxy(this, {
+							get(target, p, receiver) {
+								if (p === "then") return void 0;
+								return Reflect.get(target, p, receiver);
+							},
+						})
+					);
+				}
 				: onfulfilled,
 			onrejected
 		);
@@ -1073,9 +1073,16 @@ export class GameEvent {
 			game.getGlobalHistory("everything").push(this);
 			if (this.manager.eventStack.length === 0) this.manager.rootEvent = this;
 			this.manager.eventStack.push(this);
-			await this.loop().finally(() => {
-				this.manager.eventStack.pop();
-			});
+			await this.loop()
+				.catch(err => {
+					if (_status && _status.event && !_status.errEvent) {
+						_status.errEvent = _status.event;
+					}
+					throw err;
+				})
+				.finally(() => {
+					this.manager.eventStack.pop();
+				});
 		})();
 		return this.#start;
 	}
