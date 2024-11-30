@@ -23,16 +23,30 @@ export function loadCard1(cardConfig) {
 	lib.cardPack[cardConfigName] ??= [];
 	if (cardConfig.card) {
 		for (let [cardPackName, cardPack2] of Object.entries(cardConfig.card)) {
-			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) continue;
+			if (
+				!(
+					!cardPack2.hidden &&
+					cardConfig.translate[`${cardPackName}_info`]
+				)
+			)
+				continue;
 			lib.cardPack[cardConfigName].add(cardPackName);
 		}
 		for (const i in cardConfig.card) {
 			if (lib.card[i] == null) {
 				// @ts-ignore
-				Object.defineProperty(lib.card, i, Object.getOwnPropertyDescriptor(cardConfig.card, i));
-			}
-			else {
-				console.log(`duplicated card in card ${cardConfigName}:\n${i}:\nlib.card.${i}`, lib.card[i], `\ncard.${cardConfigName}.card.${i}`, item);
+				Object.defineProperty(
+					lib.card,
+					i,
+					Object.getOwnPropertyDescriptor(cardConfig.card, i)
+				);
+			} else {
+				console.log(
+					`duplicated card in card ${cardConfigName}:\n${i}:\nlib.card.${i}`,
+					lib.card[i],
+					`\ncard.${cardConfigName}.card.${i}`,
+					item
+				);
 			}
 			if (lib.card[i].derivation) {
 				lib.cardPack.mode_derivation ??= [];
@@ -46,11 +60,17 @@ export function loadCard1(cardConfig) {
 export function loadCard2(cardConfig) {
 	const cardConfigName = cardConfig.name;
 	for (const [configName, configItem] of Object.entries(cardConfig)) {
-		switch (configName) {//["name", "connect", "card", "skill", "translate", "list", "help", "cardType"]
-			case "name": break;
-			case "mode": break;
-			case "card": break;
-			case "forbid": break;
+		switch (
+		configName //["name", "connect", "card", "skill", "translate", "list", "help", "cardType"]
+		) {
+			case "name":
+				break;
+			case "mode":
+				break;
+			case "card":
+				break;
+			case "forbid":
+				break;
 			case "connect":
 				// @ts-ignore
 				lib.connectCardPack.push(cardConfigName);
@@ -65,50 +85,88 @@ export function loadCard2(cardConfig) {
 					/**
 					 * @type {any[]}
 					 */
-					let pile = typeof configItem == "function" ? configItem() : configItem;
+					let pile =
+						typeof configItem == "function"
+							? configItem()
+							: configItem;
 					lib.cardPile[cardConfigName] ??= [];
 					lib.cardPile[cardConfigName].addArray(pile);
 					if (lib.config.bannedpile[cardConfigName]) {
-						pile = pile.filter((_value, index) => !lib.config.bannedpile[cardConfigName].includes(index));
+						pile = pile.filter(
+							(_value, index) =>
+								!lib.config.bannedpile[cardConfigName].includes(
+									index
+								)
+						);
 					}
 					if (lib.config.addedpile[cardConfigName]) {
-						pile = [...pile, ...lib.config.addedpile[cardConfigName]];
+						pile = [
+							...pile,
+							...lib.config.addedpile[cardConfigName],
+						];
 					}
 					for (var j of pile) {
 						if (lib.card[j[2]]) {
-							if ((!lib.card[j[2]].mode || lib.card[j[2]].mode.includes(lib.config.mode))) {
+							if (
+								!lib.card[j[2]].mode ||
+								lib.card[j[2]].mode.includes(lib.config.mode)
+							) {
 								lib.card.list.push(j);
 							}
+						} else {
+							console.log(j[2], "没有lib.card");
 						}
-						else {
-							console.log(j[2], '没有lib.card');
-						}
-					}//QQQ
+					} //QQQ
 				}
 				break;
 			default:
-				for (const [itemName, item] of Object.entries(configItem)) {//["card", "skill", "translate", "help", "cardType"]	
-					if (configName === "skill" && itemName[0] === "_" && !item.forceLoad && (lib.config.mode !== "connect" ? !lib.config.cards.includes(cardConfigName) : !cardConfig.connect)) {
+				for (const [itemName, item] of Object.entries(configItem)) {
+					//["card", "skill", "translate", "help", "cardType"]
+					if (
+						configName === "skill" &&
+						itemName[0] === "_" &&
+						!item.forceLoad &&
+						(lib.config.mode !== "connect"
+							? !lib.config.cards.includes(cardConfigName)
+							: !cardConfig.connect)
+					) {
 						continue;
 					}
-					if (configName === "translate" && itemName === cardConfigName) {
+					if (
+						configName === "translate" &&
+						itemName === cardConfigName
+					) {
 						lib[configName][`${itemName}_card_config`] = item;
-					}
-					else {
+					} else {
 						if (lib[configName][itemName] == null) {
-							if (configName === "skill" && !item.forceLoad && lib.config.mode === "connect" && !cardConfig.connect) {
+							if (
+								configName === "skill" &&
+								!item.forceLoad &&
+								lib.config.mode === "connect" &&
+								!cardConfig.connect
+							) {
 								lib[configName][itemName] = {
 									nopop: item.nopop,
 									derivation: item.derivation,
 								};
-							}
-							else {
+							} else {
 								// @ts-ignore
-								Object.defineProperty(lib[configName], itemName, Object.getOwnPropertyDescriptor(configItem, itemName));
+								Object.defineProperty(
+									lib[configName],
+									itemName,
+									Object.getOwnPropertyDescriptor(
+										configItem,
+										itemName
+									)
+								);
 							}
-						}
-						else {
-							console.log(`duplicated ${configName} in card ${cardConfigName}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\ncard.${cardConfigName}.${configName}.${itemName}`, item);
+						} else {
+							console.log(
+								`duplicated ${configName} in card ${cardConfigName}:\n${itemName}:\nlib.${configName}.${itemName}`,
+								lib[configName][itemName],
+								`\ncard.${cardConfigName}.${configName}.${itemName}`,
+								item
+							);
 						}
 					}
 				}
@@ -125,7 +183,8 @@ export function loadCardPile() {
 		// @ts-ignore
 		lib.cardPackList = {};
 	} else {
-		let pilecfg = lib.config.customcardpile[get.config("cardpilename") || "当前牌堆"];
+		let pilecfg =
+			lib.config.customcardpile[get.config("cardpilename") || "当前牌堆"];
 		if (pilecfg) {
 			lib.config.bannedpile = get.copy(pilecfg[0] || {});
 			lib.config.addedpile = get.copy(pilecfg[1] || {});
@@ -167,8 +226,15 @@ export function loadCharacter(character) {
 				lib.connectCharacterPack.push(name);
 				break;
 			case "character":
-				if (!lib.config.characters.includes(name) && lib.config.mode !== "connect") {
-					if (lib.config.mode === "chess" && get.config("chess_mode") === "leader" && get.config("chess_leader_allcharacter")) {
+				if (
+					!lib.config.characters.includes(name) &&
+					lib.config.mode !== "connect"
+				) {
+					if (
+						lib.config.mode === "chess" &&
+						get.config("chess_mode") === "leader" &&
+						get.config("chess_leader_allcharacter")
+					) {
 						for (let charaName in value) {
 							// @ts-ignore
 							lib.hiddenCharacters.push(charaName);
@@ -188,14 +254,20 @@ export function loadCharacter(character) {
 					let value2 = value[key2];
 
 					if (key === "character") {
-						if (lib.config.forbidai_user && lib.config.forbidai_user.includes(key2)) {
+						if (
+							lib.config.forbidai_user &&
+							lib.config.forbidai_user.includes(key2)
+						) {
 							lib.config.forbidai.add(key2);
 						}
 						if (Array.isArray(value2)) {
 							if (!value2[4]) {
 								value2[4] = [];
 							}
-							if (value2[4].includes("boss") || value2[4].includes("hiddenboss")) {
+							if (
+								value2[4].includes("boss") ||
+								value2[4].includes("hiddenboss")
+							) {
 								lib.config.forbidai.add(key2);
 							}
 							for (let skill of value2[3]) {
@@ -213,7 +285,13 @@ export function loadCharacter(character) {
 						}
 					}
 
-					if (key === "skill" && key2[0] === "_" && (lib.config.mode !== "connect" ? !lib.config.characters.includes(name) : !character.connect)) {
+					if (
+						key === "skill" &&
+						key2[0] === "_" &&
+						(lib.config.mode !== "connect"
+							? !lib.config.characters.includes(name)
+							: !character.connect)
+					) {
 						continue;
 					}
 
@@ -221,7 +299,12 @@ export function loadCharacter(character) {
 						lib[key][`${key2}_character_config`] = value2;
 					} else {
 						if (lib[key][key2] == null) {
-							if (key === "skill" && !value2.forceLoad && lib.config.mode === "connect" && !character.connect) {
+							if (
+								key === "skill" &&
+								!value2.forceLoad &&
+								lib.config.mode === "connect" &&
+								!character.connect
+							) {
 								lib[key][key2] = {
 									nopop: value2.nopop,
 									derivation: value2.derivation,
@@ -230,7 +313,14 @@ export function loadCharacter(character) {
 								lib.character[key2] = value2;
 							} else {
 								// @ts-ignore
-								Object.defineProperty(lib[key], key2, Object.getOwnPropertyDescriptor(character[key], key2));
+								Object.defineProperty(
+									lib[key],
+									key2,
+									Object.getOwnPropertyDescriptor(
+										character[key],
+										key2
+									)
+								);
 							}
 							if (key === "card" && lib[key][key2].derivation) {
 								// @ts-ignore
@@ -242,10 +332,18 @@ export function loadCharacter(character) {
 									lib.cardPack.mode_derivation.push(key2);
 								}
 							}
-						} else if (Array.isArray(lib[key][key2]) && Array.isArray(value2)) {
+						} else if (
+							Array.isArray(lib[key][key2]) &&
+							Array.isArray(value2)
+						) {
 							lib[key][key2].addArray(value2);
 						} else {
-							console.log(`duplicated ${key} in character ${name}:\n${key2}:\nlib.${key}.${key2}`, lib[key][key2], `\ncharacter.${name}.${key}.${key2}`, value2);
+							console.log(
+								`duplicated ${key} in character ${name}:\n${key2}:\nlib.${key}.${key2}`,
+								lib[key][key2],
+								`\ncharacter.${name}.${key}.${key2}`,
+								value2
+							);
 						}
 					}
 				}
@@ -263,16 +361,31 @@ export async function loadExtension(extension) {
 		_status.evaluatingExtension = extension[3];
 		if (typeof extension[1] == "function") {
 			try {
-				await (gnc.is.coroutine(extension[1]) ? gnc.of(extension[1]) : extension[1]).call(extension, extension[2], extension[4]);
+				await (gnc.is.coroutine(extension[1])
+					? gnc.of(extension[1])
+					: extension[1]
+				).call(extension, extension[2], extension[4]);
 			} catch (e) {
-				console.log(`加载《${extension[0]}》扩展的content时出现错误。`, e);
+				console.log(
+					`加载《${extension[0]}》扩展的content时出现错误。`,
+					e
+				);
 				// @ts-ignore
-				if (!lib.config.extension_alert) alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
+				if (!lib.config.extension_alert)
+					alert(
+						`加载《${extension[0]
+						}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(
+							e.stack
+						)}`
+					);
 			}
 		}
 
 		if (extension[4]) {
-			if (typeof extension[4].character?.character == "object" && Object.keys(extension[4].character.character).length > 0) {
+			if (
+				typeof extension[4].character?.character == "object" &&
+				Object.keys(extension[4].character.character).length > 0
+			) {
 				const content = { ...extension[4].character };
 				content.name = extension[0];
 				content.translate ??= {};
@@ -283,22 +396,40 @@ export async function loadExtension(extension) {
 				if (content.mode === "guozhan") {
 					lib.characterGuozhanFilter.add(content.name);
 				}
-				for (const [charaName, character] of Object.entries(content.character)) {
+				for (const [charaName, character] of Object.entries(
+					content.character
+				)) {
 					if (!character[4]) {
 						character[4] = [];
 					}
 
-					if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
-						const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
+					if (
+						!character[4].some(
+							(str) =>
+								typeof str == "string" &&
+								/^(?:db:extension-.+?|ext|img):.+/.test(str)
+						)
+					) {
+						const img = extension[3]
+							? `db:extension-${extension[0]}:${charaName}.jpg`
+							: `ext:${extension[0]}/${charaName}.jpg`;
 						character[4].add(img);
 					}
-					if (!character[4].some(str => typeof str == "string" && /^die:.+/.test(str))) {
+					if (
+						!character[4].some(
+							(str) =>
+								typeof str == "string" && /^die:.+/.test(str)
+						)
+					) {
 						const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
 						character[4].add(audio);
 					}
 
-					const boss = character[4].includes("boss") || character[4].includes("hiddenboss");
-					const userForbidAI = lib.config.forbidai_user?.includes(charaName);
+					const boss =
+						character[4].includes("boss") ||
+						character[4].includes("hiddenboss");
+					const userForbidAI =
+						lib.config.forbidai_user?.includes(charaName);
 					if (boss || userForbidAI) {
 						lib.config.forbidai.add(charaName);
 					}
@@ -317,15 +448,25 @@ export async function loadExtension(extension) {
 					lib.imported.character[extension[0]] = content;
 				}
 
-				if (!lib.config[`@Experimental.extension.${extension[0]}.character`]) {
-					game.saveConfig(`@Experimental.extension.${extension[0]}.character`, true);
+				if (
+					!lib.config[
+					`@Experimental.extension.${extension[0]}.character`
+					]
+				) {
+					game.saveConfig(
+						`@Experimental.extension.${extension[0]}.character`,
+						true
+					);
 					lib.config.characters.add(extension[0]);
 					await game.promises.saveConfigValue("characters");
 				}
 
 				loadCharacter(content);
 			}
-			if (typeof extension[4].card?.card == "object" && Object.keys(extension[4].card.card).length > 0) {
+			if (
+				typeof extension[4].card?.card == "object" &&
+				Object.keys(extension[4].card.card).length > 0
+			) {
 				const content = { ...extension[4].card };
 				content.name = extension[0];
 				content.translate ??= {};
@@ -359,21 +500,36 @@ export async function loadExtension(extension) {
 					lib.imported.card[extension[0]] = content;
 				}
 
-				if (!lib.config[`@Experimental.extension.${extension[0]}.card`]) {
-					game.saveConfig(`@Experimental.extension.${extension[0]}.card`, true);
+				if (
+					!lib.config[`@Experimental.extension.${extension[0]}.card`]
+				) {
+					game.saveConfig(
+						`@Experimental.extension.${extension[0]}.card`,
+						true
+					);
 					lib.config.cards.add(extension[0]);
 					await game.promises.saveConfigValue("cards");
 				}
 				if (!_status.loadcard) {
 					_status.loadcard = [];
 				}
-				_status.loadcard.add(content);//QQQ
+				_status.loadcard.add(content); //QQQ
 				loadCard1(content);
 			}
-			if (typeof extension[4].skill?.skill == "object" && Object.keys(extension[4].skill.skill).length > 0) {
-				for (const [skillName, skillInfo] of Object.entries(extension[4].skill.skill)) {
+			if (
+				typeof extension[4].skill?.skill == "object" &&
+				Object.keys(extension[4].skill.skill).length > 0
+			) {
+				for (const [skillName, skillInfo] of Object.entries(
+					extension[4].skill.skill
+				)) {
 					if (lib.skill[skillName]) {
-						console.log(`duplicated skill in extension ${extension[0]}:\n${skillName}:\nlib.skill.${skillName}`, lib.skill[skillName], `\nextension.${extension[0]}.skill.skill.${skillName}`, skillInfo);
+						console.log(
+							`duplicated skill in extension ${extension[0]}:\n${skillName}:\nlib.skill.${skillName}`,
+							lib.skill[skillName],
+							`\nextension.${extension[0]}.skill.skill.${skillName}`,
+							skillInfo
+						);
 						continue;
 					}
 
@@ -382,9 +538,16 @@ export async function loadExtension(extension) {
 				}
 
 				if (typeof extension[4].skill.translate == "object") {
-					for (const [transName, translate] of Object.entries(extension[4].skill.translate)) {
+					for (const [transName, translate] of Object.entries(
+						extension[4].skill.translate
+					)) {
 						if (lib.translate[transName]) {
-							console.log(`duplicated translate in extension ${extension[0]}:\n${transName}:\nlib.translate.${transName}`, lib.translate[transName], `\nextension.${extension[0]}.skill.translate.${transName}`, translate);
+							console.log(
+								`duplicated translate in extension ${extension[0]}:\n${transName}:\nlib.translate.${transName}`,
+								lib.translate[transName],
+								`\nextension.${extension[0]}.skill.translate.${transName}`,
+								translate
+							);
 							continue;
 						}
 
@@ -416,7 +579,7 @@ export function loadMode(mode) {
 	// @ts-ignore
 	delete window.noname_character_rank;
 
-	["onwash", "onover"].forEach(name => {
+	["onwash", "onover"].forEach((name) => {
 		if (game[name]) {
 			lib[name]?.push(game[name]);
 			delete game[name];
@@ -437,7 +600,8 @@ export function loadPlay(playConfig) {
 	const i = playConfig.name;
 
 	if (lib.config.hiddenPlayPack.includes(i)) return;
-	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode)) return;
+	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode))
+		return;
 	if (playConfig.mode && !playConfig.mode.includes(lib.config.mode)) return;
 
 	// @ts-ignore
@@ -462,7 +626,12 @@ export function loadPlay(playConfig) {
 					// lib[j][k+'_play_config']=play[i][j][k];
 					if (configName !== "translate" || itemName !== i) {
 						if (lib[configName][itemName] != null) {
-							console.log(`duplicated ${configName} in play ${i}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\nplay.${i}.${configName}.${itemName}`, item);
+							console.log(
+								`duplicated ${configName} in play ${i}:\n${itemName}:\nlib.${configName}.${itemName}`,
+								lib[configName][itemName],
+								`\nplay.${i}.${configName}.${itemName}`,
+								item
+							);
 						}
 						lib[configName][itemName] = item;
 					}
@@ -472,11 +641,15 @@ export function loadPlay(playConfig) {
 	}
 
 	if (typeof playConfig.init == "function") playConfig.init();
-	if (typeof playConfig.arenaReady == "function") lib.arenaReady?.push(playConfig.arenaReady);
+	if (typeof playConfig.arenaReady == "function")
+		lib.arenaReady?.push(playConfig.arenaReady);
 }
 
 function extSkillInject(extName, skillInfo) {
-	if (typeof skillInfo.audio == "number" || typeof skillInfo.audio == "boolean") {
+	if (
+		typeof skillInfo.audio == "number" ||
+		typeof skillInfo.audio == "boolean"
+	) {
 		skillInfo.audio = `ext:${extName}:${Number(skillInfo.audio)}`;
 	}
 }
@@ -521,7 +694,18 @@ function mixinGeneral(config, name, where) {
  * @return {void}
  */
 function mixinLibrary(config, lib) {
-	const KeptWords = ["name", "element", "game", "ai", "ui", "get", "config", "onreinit", "start", "startBefore"];
+	const KeptWords = [
+		"name",
+		"element",
+		"game",
+		"ai",
+		"ui",
+		"get",
+		"config",
+		"onreinit",
+		"start",
+		"startBefore",
+	];
 
 	// @ts-ignore
 	lib.element = mixinElement(config, lib.element);
@@ -532,7 +716,8 @@ function mixinLibrary(config, lib) {
 
 	for (let name in config) {
 		if (KeptWords.includes(name)) continue;
-		if (lib[name] == null) lib[name] = Array.isArray(config[name]) ? [] : {};
+		if (lib[name] == null)
+			lib[name] = Array.isArray(config[name]) ? [] : {};
 
 		Object.assign(lib[name], config[name]);
 	}
