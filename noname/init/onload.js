@@ -9,7 +9,7 @@ import { gnc } from "../gnc/index.js";
 import { importMode } from "./import.js";
 import { Mutex } from "../util/mutex.js";
 import { load } from "../util/config.js";
-import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
+import { loadCard1, loadCard2, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 export async function onload() {
 	const libOnload = lib.onload;
@@ -143,7 +143,8 @@ export async function onload() {
 	loadCardPile();
 
 	if (lib.imported.card != null) {
-		Object.values(lib.imported.card).forEach(loadCard);
+		Object.values(lib.imported.card).forEach(loadCard1);
+		Object.values(lib.imported.card).forEach(loadCard2);
 	}
 
 	if (lib.cardPack.mode_derivation) {
@@ -205,6 +206,9 @@ export async function onload() {
 	if (Array.isArray(lib.extensions)) {
 		await Promise.allSettled(lib.extensions.map(loadExtension));
 	}
+	for (var i of _status.loadcard) {
+		loadCard2(i);
+	}//QQQ
 
 	if (lib.init.startBefore) {
 		lib.init.startBefore();

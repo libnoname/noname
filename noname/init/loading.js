@@ -18,23 +18,39 @@ import { load } from "../util/config.js";
  *
  * @param {importCardConfig} cardConfig
  */
-export function loadCard(cardConfig) {
+export function loadCard1(cardConfig) {
 	const cardConfigName = cardConfig.name;
-
 	lib.cardPack[cardConfigName] ??= [];
 	if (cardConfig.card) {
 		for (let [cardPackName, cardPack2] of Object.entries(cardConfig.card)) {
 			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) continue;
 			lib.cardPack[cardConfigName].add(cardPackName);
 		}
+		for (const i in cardConfig.card) {
+			if (lib.card[i] == null) {
+				// @ts-ignore
+				Object.defineProperty(lib.card, i, Object.getOwnPropertyDescriptor(cardConfig.card, i));
+			}
+			else {
+				console.log(`duplicated card in card ${cardConfigName}:\n${i}:\nlib.card.${i}`, lib.card[i], `\ncard.${cardConfigName}.card.${i}`, item);
+			}
+			if (lib.card[i].derivation) {
+				lib.cardPack.mode_derivation ??= [];
+				// @ts-ignore
+				lib.cardPack.mode_derivation.push(i);
+			}
+		}
 	}
+}
 
+export function loadCard2(cardConfig) {
+	const cardConfigName = cardConfig.name;
 	for (const [configName, configItem] of Object.entries(cardConfig)) {
-		switch (configName) {
-			case "name":
-			case "mode":
-			case "forbid":
-				break;
+		switch (configName) {//["name", "connect", "card", "skill", "translate", "list", "help", "cardType"]
+			case "name": break;
+			case "mode": break;
+			case "card": break;
+			case "forbid": break;
 			case "connect":
 				// @ts-ignore
 				lib.connectCardPack.push(cardConfigName);
@@ -50,49 +66,49 @@ export function loadCard(cardConfig) {
 					 * @type {any[]}
 					 */
 					let pile = typeof configItem == "function" ? configItem() : configItem;
-
 					lib.cardPile[cardConfigName] ??= [];
 					lib.cardPile[cardConfigName].addArray(pile);
-
 					if (lib.config.bannedpile[cardConfigName]) {
 						pile = pile.filter((_value, index) => !lib.config.bannedpile[cardConfigName].includes(index));
 					}
-
 					if (lib.config.addedpile[cardConfigName]) {
 						pile = [...pile, ...lib.config.addedpile[cardConfigName]];
 					}
-
-					lib.card.list.addArray(pile);
+					for (var j of pile) {
+						if (lib.card[j[2]]) {
+							if ((!lib.card[j[2]].mode || lib.card[j[2]].mode.includes(lib.config.mode))) {
+								lib.card.list.push(j);
+							}
+						}
+						else {
+							console.log(j[2], '没有lib.card');
+						}
+					}//QQQ
 				}
 				break;
 			default:
-				for (const [itemName, item] of Object.entries(configItem)) {
+				for (const [itemName, item] of Object.entries(configItem)) {//["card", "skill", "translate", "help", "cardType"]	
 					if (configName === "skill" && itemName[0] === "_" && !item.forceLoad && (lib.config.mode !== "connect" ? !lib.config.cards.includes(cardConfigName) : !cardConfig.connect)) {
 						continue;
 					}
-
 					if (configName === "translate" && itemName === cardConfigName) {
 						lib[configName][`${itemName}_card_config`] = item;
-					} else {
+					}
+					else {
 						if (lib[configName][itemName] == null) {
 							if (configName === "skill" && !item.forceLoad && lib.config.mode === "connect" && !cardConfig.connect) {
 								lib[configName][itemName] = {
 									nopop: item.nopop,
 									derivation: item.derivation,
 								};
-							} else {
+							}
+							else {
 								// @ts-ignore
 								Object.defineProperty(lib[configName], itemName, Object.getOwnPropertyDescriptor(configItem, itemName));
 							}
-						} else {
-							console.log(`duplicated ${configName} in card ${cardConfigName}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\ncard.${cardConfigName}.${configName}.${itemName}`, item);
 						}
-
-						if (configName === "card" && lib[configName][itemName].derivation) {
-							// @ts-ignore
-							lib.cardPack.mode_derivation ??= [];
-							// @ts-ignore
-							lib.cardPack.mode_derivation.push(itemName);
+						else {
+							console.log(`duplicated ${configName} in card ${cardConfigName}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\ncard.${cardConfigName}.${configName}.${itemName}`, item);
 						}
 					}
 				}
@@ -348,8 +364,11 @@ export async function loadExtension(extension) {
 					lib.config.cards.add(extension[0]);
 					await game.promises.saveConfigValue("cards");
 				}
-
-				loadCard(content);
+				if (!_status.loadcard) {
+					_status.loadcard = [];
+				}
+				_status.loadcard.add(content);//QQQ
+				loadCard1(content);
 			}
 			if (typeof extension[4].skill?.skill == "object" && Object.keys(extension[4].skill.skill).length > 0) {
 				for (const [skillName, skillInfo] of Object.entries(extension[4].skill.skill)) {
