@@ -259,8 +259,10 @@ export async function onload() {
 	if (Array.isArray(lib.extensions)) {
 		await Promise.allSettled(lib.extensions.map(loadExtension));
 	}
-	for (var i of _status.loadcard) {
-		loadCard2(i);
+	if (_status.loadcard) {
+		for (var i of _status.loadcard) {
+			loadCard2(i);
+		}
 	} //QQQ
 
 	if (lib.init.startBefore) {
