@@ -335,7 +335,7 @@ export const extensionMenu = function (connectMenu) {
 					var ext = {};
 					for (var i in dash4.content) {
 						try {
-							if (i == "content" || i == "precontent") {
+							if (i =="arenaReady" || i == "content" || i == "precontent") {
 								ext[i] = security.exec2(`return (${dash4.content[i]});`).return;
 								if (typeof ext[i] != "function") {
 									throw "err";
@@ -420,17 +420,18 @@ export const extensionMenu = function (connectMenu) {
 					}
 					str += ",files:" + JSON.stringify(files);
 					str += "}";
-					var extension = {
+					const extension = {
 						"extension.js":
-							'import { lib, game, ui, get, ai, _status } from "../../noname.js";\ngame.import("extension",function(){\n\treturn ' +
+							'import { lib, game, ui, get, ai, _status } from "../../noname.js";\nexport const type = "extension";\nexport default function(){\n\treturn ' +
 							str +
-							"\n});",
+							"\n};",
 						"info.json": JSON.stringify({
+							intro: introExtLine.querySelector("input").value ?? "",
 							name: page.currentExtension,
-							author: authorExtLine.querySelector("input").value || "",
-							diskURL: diskExtLine.querySelector("input").value || "",
-							forumURL: forumExtLine.querySelector("input").value || "",
-							version: versionExtLine.querySelector("input").value || ""
+							author: authorExtLine.querySelector("input").value ?? "",
+							diskURL: diskExtLine.querySelector("input").value ?? "",
+							forumURL: forumExtLine.querySelector("input").value ?? "",
+							version: versionExtLine.querySelector("input").value ?? ""
 						}),
 					};
 					for (var i in dash1.content.image) {
@@ -2429,6 +2430,8 @@ export const extensionMenu = function (connectMenu) {
 							dashes[i].node.code = page.content[i] || "";
 						}
 					} else {
+						dashes.arenaReady.node.code =
+							"function(){\n    \n}\n\n/*\n函数执行时机为舞台创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
 						dashes.content.node.code =
 							"function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
 						dashes.precontent.node.code =
@@ -2457,7 +2460,7 @@ export const extensionMenu = function (connectMenu) {
 							code = container.textarea.value;
 						}
 						try {
-							if (link == "content" || link == "precontent") {
+							if (link == "arenaReady" || link == "content" || link == "precontent") {
 								var { func } = security.exec2(`func = ${code}`);
 								if (typeof func != "function") {
 									throw "err";
@@ -2532,6 +2535,14 @@ export const extensionMenu = function (connectMenu) {
 					}
 				};
 				page.content = {};
+				createCode(
+					"辅",
+					"辅助代码",
+					page,
+					clickCode,
+					"arenaReady",
+					"function(){\n    \n}\n\n/*\n函数执行时机为游戏舞台创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
+				);
 				createCode(
 					"主",
 					"主代码",
