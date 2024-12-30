@@ -255,6 +255,9 @@ export async function loadExtension(extension) {
 			}
 		}
 
+		if (extension[6]) {
+			if (typeof extension[6] == "function") lib.arenaReady?.push(extension[6]);
+		}
 		if (extension[4]) {
 			if (typeof extension[4].character?.character == "object" && Object.keys(extension[4].character.character).length > 0) {
 				const content = { ...extension[4].character };
