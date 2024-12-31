@@ -239,6 +239,12 @@ export function loadCharacter(character) {
 }
 
 export async function loadExtension(extension) {
+	function isClass(func) {//让我查查你是不是类喵
+		if (typeof func !== 'function') return false;
+		const fnStr = Function.prototype.toString.call(func);
+		return /^class\s/.test(fnStr);
+	}
+
 	if (!extension[5] && lib.config.mode === "connect") return;
 
 	try {
@@ -256,7 +262,17 @@ export async function loadExtension(extension) {
 		}
 
 		if (extension[6]) {
-			if (typeof extension[6] == "function") lib.arenaReady?.push(extension[6]);
+			if (isClass(extension[6])) {
+				const classInstance = new extension[6]();
+				const proto = Object.getPrototypeOf(classInstance);
+				const methods = Object.getOwnPropertyNames(proto).filter(methodName => typeof proto[methodName] === 'function' && methodName !== 'constructor'); //防止把他的属性加进去了喵
+
+				methods.forEach(methodName => {
+					lib.arenaReady?.push(proto[methodName].bind(classInstance));
+				});
+			} else {
+				lib.arenaReady?.push(extension[6]);
+			}
 		}
 		if (extension[4]) {
 			if (typeof extension[4].character?.character == "object" && Object.keys(extension[4].character.character).length > 0) {
