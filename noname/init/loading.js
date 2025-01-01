@@ -182,7 +182,7 @@ export function loadCharacter(character) {
 							if (value2[4].includes("boss") || value2[4].includes("hiddenboss")) {
 								lib.config.forbidai.add(key2);
 							}
-							for (let skill of value2[3]) {
+							for (const skill of value2[3]) {
 								lib.skilllist.add(skill);
 							}
 						} else {
@@ -190,7 +190,7 @@ export function loadCharacter(character) {
 								lib.config.forbidai.add(key2);
 							}
 							if (value2.skills) {
-								for (let skill of value2.skills) {
+								for (const skill of value2.skills) {
 									lib.skilllist.add(skill);
 								}
 							}
@@ -287,27 +287,38 @@ export async function loadExtension(extension) {
 					lib.characterGuozhanFilter.add(content.name);
 				}
 				for (const [charaName, character] of Object.entries(content.character)) {
-					if (!character[4]) {
-						character[4] = [];
-					}
+					if (Array.isArray(character)) {
+						if (!character[4]) {
+							character[4] = [];
+						}
 
-					if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
-						const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
-						character[4].add(img);
-					}
-					if (!character[4].some(str => typeof str == "string" && /^die:.+/.test(str))) {
-						const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
-						character[4].add(audio);
-					}
+						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
+							const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
+							character[4].add(img);
+						}
+						if (!character[4].some(str => typeof str == "string" && /^die:.+/.test(str))) {
+							const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
+							character[4].add(audio);
+						}
 
-					const boss = character[4].includes("boss") || character[4].includes("hiddenboss");
-					const userForbidAI = lib.config.forbidai_user?.includes(charaName);
-					if (boss || userForbidAI) {
-						lib.config.forbidai.add(charaName);
-					}
+						const boss = character[4].includes("boss") || character[4].includes("hiddenboss");
+						const userForbidAI = lib.config.forbidai_user?.includes(charaName);
+						if (boss || userForbidAI) {
+							lib.config.forbidai.add(charaName);
+						}
 
-					for (const skill of character[3]) {
-						lib.skilllist.add(skill);
+						for (const skill of character[3]) {
+							lib.skilllist.add(skill);
+						}
+					} else {
+						if (character.isBoss || character.isHiddenBoss) {
+							lib.config.forbidai.add(charaName);
+						}
+						if (character.skills) {
+							for (const skill of character.skills) {
+								lib.skilllist.add(skill);
+							}
+						}
 					}
 				}
 				if (typeof content.skill == "object") {
