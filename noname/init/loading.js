@@ -311,6 +311,19 @@ export async function loadExtension(extension) {
 							lib.skilllist.add(skill);
 						}
 					} else {
+						if (character.img) {
+							if (!character.img.some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
+								const i = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
+								character.img.add(i);
+							}
+						}
+						if (character.dieAudios) {
+							if (!character.dieAudios.some(str => typeof str == "string" && /^die:.+/.test(str))) {
+								const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
+								character.dieAudios.add(audio);
+							}
+						}
+
 						if (character.isBoss || character.isHiddenBoss) {
 							lib.config.forbidai.add(charaName);
 						}
