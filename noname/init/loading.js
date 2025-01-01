@@ -287,6 +287,9 @@ export async function loadExtension(extension) {
 					lib.characterGuozhanFilter.add(content.name);
 				}
 				for (const [charaName, character] of Object.entries(content.character)) {
+					if (lib.config.forbidai_user && lib.config.forbidai_user.includes(charaName)) {
+						lib.config.forbidai.add(charaName);
+					}
 					if (Array.isArray(character)) {
 						if (!character[4]) {
 							character[4] = [];
@@ -301,12 +304,9 @@ export async function loadExtension(extension) {
 							character[4].add(audio);
 						}
 
-						const boss = character[4].includes("boss") || character[4].includes("hiddenboss");
-						const userForbidAI = lib.config.forbidai_user?.includes(charaName);
-						if (boss || userForbidAI) {
+						if (character[4].includes("boss") || character[4].includes("hiddenboss")) {
 							lib.config.forbidai.add(charaName);
 						}
-
 						for (const skill of character[3]) {
 							lib.skilllist.add(skill);
 						}
