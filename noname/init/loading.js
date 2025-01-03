@@ -12,6 +12,7 @@ import { gnc } from "../gnc/index.js";
 import { importMode } from "./import.js";
 import { Mutex } from "../util/mutex.js";
 import { load } from "../util/config.js";
+import { isClass } from "../util/index.js";
 
 /**
  * 读取导入的卡牌包信息
@@ -153,7 +154,7 @@ export function loadCharacter(character) {
 			case "character":
 				if (!lib.config.characters.includes(name) && lib.config.mode !== "connect") {
 					if (lib.config.mode === "chess" && get.config("chess_mode") === "leader" && get.config("chess_leader_allcharacter")) {
-						for (let charaName in value) {
+						for (const charaName in value) {
 							// @ts-ignore
 							lib.hiddenCharacters.push(charaName);
 						}
@@ -239,12 +240,6 @@ export function loadCharacter(character) {
 }
 
 export async function loadExtension(extension) {
-	function isClass(func) {//让我查查你是不是类喵
-		if (typeof func !== 'function') return false;
-		const fnStr = Function.prototype.toString.call(func);
-		return /^class\s/.test(fnStr);
-	}
-
 	if (!extension[5] && lib.config.mode === "connect") return;
 
 	try {
@@ -311,7 +306,15 @@ export async function loadExtension(extension) {
 							lib.skilllist.add(skill);
 						}
 					} else {
-						// TODO 宝贝，有空看一下这里的原画和语音，绕得我头晕晕的。先睡一觉喵
+						if (!character.img) {
+							const characterImage = `extension/${extension[0]}/${charaName}.jpg`;
+							character.img = characterImage;
+						}
+						if (!character.dieAudios) {
+							character.dieAudios = [];
+							const characterDieAudio = `ext:${extension[0]}/${charaName}.mp3`;
+							character.dieAudios.push(characterDieAudio);
+						}
 						if (character.isBoss || character.isHiddenBoss) {
 							lib.config.forbidai.add(charaName);
 						}
@@ -471,7 +474,6 @@ export function loadPlay(playConfig) {
 				break;
 			default:
 				for (const [itemName, item] of Object.entries(configItem)) {
-					// lib[j][k+'_play_config']=play[i][j][k];
 					if (configName !== "translate" || itemName !== i) {
 						if (lib[configName][itemName] != null) {
 							console.log(`duplicated ${configName} in play ${i}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\nplay.${i}.${configName}.${itemName}`, item);
