@@ -109,8 +109,7 @@ function generateImportFunction(type, pathParser) {
 }
 
 async function createEmptyExtension(name) {
-	const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/${name}/info.json`) //await import(`../../extension/${name}/info.json`,{assert:{type:'json'}})
-	.then(info => info, () => {
+	const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/${name}/info.json`).then(info => info, () => {
 		return {
 			name,
 			intro: `扩展<b>《${name}》</b>尚未开启，请开启后查看信息。（建议扩展添加info.json以在关闭时查看信息）`,
