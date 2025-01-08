@@ -4032,24 +4032,33 @@ export const Content = {
 		"step 6";
 		event.trigger("phaseUseAfter");
 	},
-	phaseDiscard: function () {
-		"step 0";
-		game.log(player, "进入了弃牌阶段");
-		event.num = player.needsToDiscard();
-		event.trigger("phaseDiscard");
-		if (event.num <= 0) event.finish();
-		else {
-			game.broadcastAll(function (player) {
-				if (lib.config.show_phase_prompt) {
-					player.popup("弃牌阶段", null, false);
-				}
-			}, player);
-		}
-		"step 1";
-		player.chooseToDiscard(num, true).set("useCache", true);
-		"step 2";
-		event.cards = result.cards;
-	},
+    async phaseDiscard(event, trigger, player) {
+        game.log(player, '进入了弃牌阶段');
+        let discardCount = player.needsToDiscard();
+        if (discardCount <= 0) {
+            event.finish();
+            return;
+        } else {
+            game.broadcastAll(function (player) {
+                if (lib.config.show_phase_prompt) {
+                    player.popup('弃牌阶段', null, false);
+                }
+            }, player);
+        }
+        let discarded = 0;
+        while (discarded < discardCount) {
+            let maxDiscard = discardCount - discarded;
+            const { result } = await player.chooseCard([1, maxDiscard], true).set('useCache', true);
+            if (result.cards) {
+                player.lose(result.cards, null, 'visible')._triggered = null;
+                discarded += result.cards.length;
+                if (!event.cards) event.cards = [];
+                event.cards.addArray(result.cards);
+            }
+        }
+        player.discard(event.cards);
+        event.trigger('phaseDiscard');
+    },
 	phaseJieshu: function () {
 		event.trigger(event.name);
 		game.log(player, "进入了结束阶段");
