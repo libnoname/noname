@@ -5885,6 +5885,18 @@ export const Content = {
 				event.result = "ai";
 			}
 		}
+        var range = get.select(event.selectCard);
+        if (range[1] > 1 && typeof event.selectCard != 'function') {
+            event.promptdiscard = ui.create.control('AI代选', function () {
+                ai.basic.chooseCard(event.ai);
+                if (_status.event.custom && _status.event.custom.add.card) {
+                    _status.event.custom.add.card();
+                }
+                for (var i = 0; i < ui.selected.cards.length; i++) {
+                    ui.selected.cards[i].updateTransform(true);
+                }
+            });
+        }
 		"step 1";
 		if (event.result == "ai") {
 			game.check();
@@ -5908,6 +5920,7 @@ export const Content = {
 			}
 		}
 		if (event.dialog) event.dialog.close();
+        if (event.promptdiscard) event.promptdiscard.close();
 	},
 	chooseTarget: function () {
 		"step 0";
