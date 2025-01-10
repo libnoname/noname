@@ -713,7 +713,24 @@ export class Get extends GetCompatible {
 	 * @returns { string }
 	 */
 	characterIntro(name) {
-		if (lib.characterIntro[name]) return lib.characterIntro[name];
+		var str = '';
+		if (lib.characterCopyright[name]) {//版权信息
+			str += lib.characterCopyright[name];
+		}
+		else str += '暂无版权信息';
+		str += '<br>';
+		if (lib.characterCitetext[name]) {//上引文
+			str += lib.characterCitetext[name];
+			str += '<br>';
+		}
+		if (lib.characterUndertext[name]) {//下引文
+			str += lib.characterUndertext[name];
+			str += '<br>';
+		}
+		//正片开始
+		if (lib.characterIntro[name]) {
+			return str + lib.characterIntro[name];
+		}
 		var tags = get.character(name, 4);
 		if (tags) {
 			for (var i = 0; i < tags.length; i++) {
@@ -725,8 +742,8 @@ export class Get extends GetCompatible {
 		while (name.includes("_") && !lib.characterIntro[name]) {
 			name = name.slice(name.indexOf("_") + 1);
 		}
-		if (lib.characterIntro[name]) return lib.characterIntro[name];
-		return "暂无武将介绍";
+		if (lib.characterIntro[name]) return str + lib.characterIntro[name];
+		return str + "暂无武将介绍";
 	}
 	bordergroup(info, raw) {
 		if (typeof info == "string") info = get.character(info);
@@ -3612,6 +3629,9 @@ export class Get extends GetCompatible {
 			if (lib.characterTitle[node.name]) {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.name]));
 			}
+			if (lib.characterCitetext[node.name]) {
+				uiintro.addText(get.colorspan(lib.characterCitetext[node.name]));
+			}
 
 			if (get.characterInitFilter(node.name)) {
 				const initFilters = get.characterInitFilter(node.name).filter(tag => {
@@ -3767,6 +3787,9 @@ export class Get extends GetCompatible {
 			// 		}
 			// 	}
 			// }
+			if (lib.characterUndertext[node.name]) {
+				uiintro.addText(get.colorspan(lib.characterUndertext[node.name]));
+			}
 
 			if (lib.config.right_range && _status.gameStarted) {
 				uiintro.add(ui.create.div(".placeholder"));
@@ -4336,6 +4359,9 @@ export class Get extends GetCompatible {
 			if (lib.characterTitle[node.link]) {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.link]));
 			}
+			if (lib.characterCitetext[node.link]) {
+				uiintro.addText(get.colorspan(lib.characterCitetext[node.link]));
+			}
 
 			if (get.characterInitFilter(node.link)) {
 				const initFilters = get.characterInitFilter(node.link).filter(tag => {
@@ -4538,6 +4564,9 @@ export class Get extends GetCompatible {
 						});
 					}
 				}
+			}
+			if (lib.characterUndertext[node.link]) {
+				uiintro.addText(get.colorspan(lib.characterUndertext[node.link]));
 			}
 		} else if (node.classList.contains("equips") && ui.arena.classList.contains("selecting")) {
 			(function () {

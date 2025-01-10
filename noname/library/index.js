@@ -51,6 +51,9 @@ export class Library {
 	connectBanned = [];
 	characterIntro = {};
 	characterTitle = {};
+	characterCopyright = {};
+	characterCitetext = {};
+	characterUndertext = {};
 	characterPack = new Proxy(
 		{},
 		{
