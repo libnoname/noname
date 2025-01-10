@@ -4034,6 +4034,7 @@ export const Content = {
 	},
     async phaseDiscard(event, trigger, player) {
         game.log(player, '进入了弃牌阶段');
+        await event.trigger('phaseDiscard');
         let discardCount = player.needsToDiscard();
         if (discardCount <= 0) {
             event.finish();
@@ -4057,7 +4058,6 @@ export const Content = {
             }
         }
         player.discard(event.cards);
-        event.trigger('phaseDiscard');
     },
 	phaseJieshu: function () {
 		event.trigger(event.name);
