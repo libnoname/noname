@@ -716,9 +716,8 @@ export class Get extends GetCompatible {
 		var str = '';
 		if (lib.characterCopyright[name]) {//版权信息
 			str += lib.characterCopyright[name];
+			str += '<br>';
 		}
-		else str += '暂无版权信息';
-		str += '<br>';
 		if (lib.characterCitetext[name]) {//上引文
 			str += lib.characterCitetext[name];
 			str += '<br>';
