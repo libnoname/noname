@@ -72,6 +72,29 @@ const skills = {
 				await target.damage("fire", player);
 			}
 		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (get.name(card, player) == 'tiesuo') return 1;
+				const targets = game.filterPlayer((current) => player.canUse(card, current, true, true));
+				if (targets.length == 1) {
+					if ((!player.storage.fengliao && targets[0].isFriendsOf(player)) || (player.storage.fengliao && !targets[0].isFriendsOf(player))) {
+						return 99;
+					}
+					return 1;
+				}
+			},
+		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (lib.card[card.name] && player.storage.fengliao) {
+						return [1, -20];
+					} else {
+						return [1, 10];
+					}
+				},
+			}
+		},
 	},
 	kunyu: {
 		audio: 2,
