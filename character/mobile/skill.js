@@ -2148,7 +2148,14 @@ const skills = {
 						const bool = game.hasPlayer(current => player != current && get.distance(player, current) <= 1 && get.effect(current, { name: "shunshou_copy2" }, player, player) > 0);
 						if (list.includes("背水！") && eff > 0 && bool) return "背水！";
 						if (bool) return "选项二";
-						if (eff > 0) return "选项一";
+						if (
+							eff > 0 &&
+							!(
+								trigger.targets.includes(player) &&
+								trigger.targets.length == 1
+							)
+						)
+							return "选项一";
 						return "cancel2";
 					})()
 				)

@@ -1204,7 +1204,7 @@ const skills = {
 						.chooseControl(groups, "cancel2")
 						.set("ai", () => {
 							const groups = get.event().controls.filter(group => !["wei", "shu", "wu", "qun"].includes(group));
-							return groups.length ? group.randomGet() : "cancel2";
+							return groups.length ? groups.randomGet() : "cancel2";
 						})
 						.set("prompt", get.translation("xinrenjie") + "：是否变更势力？")
 						.forResult());

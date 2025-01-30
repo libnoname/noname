@@ -59,7 +59,7 @@ const characterReplaces = {
 	caiyong: ["caiyong", "re_caiyong", "yue_caiyong"],
 	chengong: ["chengong", "re_chengong", "sb_chengong"],
 	xunyou: ["xunyou", "re_xunyou", "clan_xunyou"],
-	xuezong: ["xuezong", "tw_xuezong", "std_xuezong"],
+	xuezong: ["xuezong", "tw_xuezong", "std_xuezong", "mb_xuezong"],
 	huanghao: ["huanghao", "dc_huanghao", "old_huanghao"],
 	caorui: ["caorui", "re_caorui", "old_caorui", "yy_caorui", "std_caorui"],
 	sunziliufang: ["sunziliufang", "dc_sunziliufang"],

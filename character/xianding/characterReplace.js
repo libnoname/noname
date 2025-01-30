@@ -1,4 +1,5 @@
 const characterReplaces = {
+	xuelingyun: ["xuelingyun", "ol_xuelingyun"],
 	wenyang: ["wenyang", "db_wenyang", "diy_wenyang", "std_db_wenyang", "jsrg_wenyang"],
 	gexuan: ["gexuan", "tw_gexuan"],
 	panshu: ["panshu", "re_panshu"],
@@ -8,7 +9,7 @@ const characterReplaces = {
 	luotong: ["dc_luotong", "luotong", "std_dc_luotong", "scl_luotong"],
 	dc_wangchang: ["dc_wangchang", "tw_wangchang", "clan_wangchang"],
 	guozhao: ["guozhao", "xin_guozhao", "jsrg_guozhao"],
-	dingshangwan: ["dingshangwan", "ol_dingshangwan"],
+	dingshangwan: ["dingshangwan", "ol_dingshangwan", "huan_dingshangwan"],
 	qinghegongzhu: ["qinghegongzhu", "dc_qinghegongzhu"],
 	caofang: ["caofang", "jsrg_caofang"],
 	caomao: ["caomao", "mb_caomao"],
