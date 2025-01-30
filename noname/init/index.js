@@ -925,7 +925,7 @@ async function setOnError() {
 		const reg = /[^\d.]/;
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
-		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		if (match) str += "\n⚠️您使用的游戏代码不是源于libnoname/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;

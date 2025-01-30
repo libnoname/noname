@@ -1,6 +1,6 @@
 import { ui, game, lib } from "../../noname.js";
 
-// https://github.com/libccy/noname/archive/refs/tags/v1.10.10.zip
+// https://github.com/libnoname/noname/archive/refs/tags/v1.10.10.zip
 
 /**
  * HTTP响应头中的Rate Limit相关信息：
@@ -44,17 +44,7 @@ const defaultResponse = async (/** @type {Response} */ response) => {
 	console.log(`剩余请求次数`, remaining);
 	// @ts-ignore
 	console.log(`限制重置时间`, new Date(reset * 1000).toLocaleString());
-	if (
-		(
-			Number(remaining) === 0 &&
-			!sessionStorage.getItem("noname_authorization") &&
-			confirm(`您达到了每小时${limit}次的访问限制，是否输入您github账号的token以获取更高的请求总量限制`)
-		) || (
-			response.status === 401 &&
-			(localStorage.removeItem("noname_authorization"), true) &&
-			(alert(`身份验证凭证错误，是否重新输入您github账号的token以获取更高的请求总量限制`), true)
-		)
-	) {
+	if ((Number(remaining) === 0 && !sessionStorage.getItem("noname_authorization") && confirm(`您达到了每小时${limit}次的访问限制，是否输入您github账号的token以获取更高的请求总量限制`)) || (response.status === 401 && (localStorage.removeItem("noname_authorization"), true) && (alert(`身份验证凭证错误，是否重新输入您github账号的token以获取更高的请求总量限制`), true))) {
 		return gainAuthorization();
 	}
 };
@@ -268,11 +258,7 @@ export async function getRepoTagDescription(tagName, options = { username: "libc
  * 	.catch(error => console.error('Failed to fetch files:', error));
  * ```
  */
-export async function getRepoFilesList(
-	path = "",
-	branch,
-	options = { username: "libccy", repository: "noname" }
-) {
+export async function getRepoFilesList(path = "", branch, options = { username: "libccy", repository: "noname" }) {
 	// if (!localStorage.getItem("noname_authorization")) {
 	// 	await gainAuthorization();
 	// }
@@ -311,9 +297,9 @@ export async function getRepoFilesList(
 /**
  *
  * 获取仓库指定分支和指定目录内的所有文件(包含子目录的文件)
- * 
+ *
  * **注意： 此api可能会大幅度消耗请求次数，请谨慎使用**
- * 
+ *
  * @param { string } [path = ''] 路径名称(可放参数)
  * @param { string } [branch = ''] 仓库分支名称
  * @param { Object } options
@@ -328,11 +314,7 @@ export async function getRepoFilesList(
  * 	.catch(error => console.error('Failed to fetch files:', error));
  * ```
  */
-export async function flattenRepositoryFiles(
-	path = "",
-	branch,
-	options = { username: "libccy", repository: "noname" }
-) {
+export async function flattenRepositoryFiles(path = "", branch, options = { username: "libccy", repository: "noname" }) {
 	if (!localStorage.getItem("noname_authorization")) {
 		await gainAuthorization();
 	}
@@ -510,14 +492,14 @@ export function createProgress(title, max, fileName, value) {
 	progress.setAttribute("max", max);
 
 	parent.getTitle = () => caption.innerText;
-	parent.setTitle = (title) => (caption.innerHTML = title);
+	parent.setTitle = title => (caption.innerHTML = title);
 	parent.getFileName = () => file.innerText;
-	parent.setFileName = (name) => (file.innerHTML = name);
+	parent.setFileName = name => (file.innerHTML = name);
 	parent.getProgressValue = () => progress.value;
-	parent.setProgressValue = (value) => (progress.value = index.innerHTML = value);
+	parent.setProgressValue = value => (progress.value = index.innerHTML = value);
 	parent.getProgressMax = () => progress.max;
-	parent.setProgressMax = (max) => (progress.max = maxSpan.innerHTML = max);
-	parent.autoSetFileNameFromArray = (fileNameList) => {
+	parent.setProgressMax = max => (progress.max = maxSpan.innerHTML = max);
+	parent.autoSetFileNameFromArray = fileNameList => {
 		if (fileNameList.length > 2) {
 			parent.setFileName(
 				fileNameList
@@ -538,7 +520,7 @@ export function createProgress(title, max, fileName, value) {
 
 /**
  * 从GitHub存储库检索最新版本(tag)，不包括特定tag。
- * 
+ *
  * 此函数从GitHub存储库中获取由所有者和存储库名称指定的tags列表，然后返回不是“v1998”的最新tag名称。
  * @param {string} owner GitHub上拥有存储库的用户名或组织名称。
  * @param {string} repo 要从中提取tag的存储库的名称。
@@ -584,15 +566,11 @@ export async function getLatestVersionFromGitHub(owner = "libccy", repo = "nonam
 export async function getTreesFromGithub(directories, version, owner = "libccy", repo = "noname") {
 	// if (!localStorage.getItem("noname_authorization")) await gainAuthorization();
 
-	const treesResponse = await fetch(
-		`https://api.github.com/repos/${owner}/${repo}/git/trees/${version}?recursive=1`,
-		{
-			headers: defaultHeaders,
-		}
-	);
+	const treesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${version}?recursive=1`, {
+		headers: defaultHeaders,
+	});
 	await defaultResponse(treesResponse);
-	if (!treesResponse.ok)
-		throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);
+	if (!treesResponse.ok) throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);
 	/**
 	 * @type {{
 	 * 	sha: string;
@@ -610,7 +588,5 @@ export async function getTreesFromGithub(directories, version, owner = "libccy",
 	 */
 	const trees = await treesResponse.json();
 	const tree = trees.tree;
-	return directories.map((directory) =>
-		tree.filter(({ type, path }) => type === "blob" && path.startsWith(directory))
-	);
+	return directories.map(directory => tree.filter(({ type, path }) => type === "blob" && path.startsWith(directory)));
 }
