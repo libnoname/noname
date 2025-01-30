@@ -148,7 +148,7 @@ export function checkVersion(ver1, ver2) {
  *
  * 获取指定仓库的tags
  * @param { Object } options
- * @param { string } [options.username = 'libccy'] 仓库拥有者
+ * @param { string } [options.username = 'libnoname'] 仓库拥有者
  * @param { string } [options.repository = 'noname'] 仓库名称
  * @param { string } [options.accessToken] 身份令牌
  * @returns { Promise<{ commit: { sha: string, url: string }, name: string, node_id: string, tarball_url: string, zipball_url: string }[]> }
@@ -163,11 +163,11 @@ export function checkVersion(ver1, ver2) {
  * });
  * ```
  */
-export async function getRepoTags(options = { username: "libccy", repository: "noname" }) {
+export async function getRepoTags(options = { username: "libnoname", repository: "noname" }) {
 	// if (!localStorage.getItem("noname_authorization")) {
 	// 	await gainAuthorization();
 	// }
-	const { username = "libccy", repository = "noname", accessToken } = options;
+	const { username = "libnoname", repository = "noname", accessToken } = options;
 	const headers = Object.assign({}, defaultHeaders);
 	if (accessToken) {
 		headers["Authorization"] = `token ${accessToken}`;
@@ -187,7 +187,7 @@ export async function getRepoTags(options = { username: "libccy", repository: "n
  * 获取指定仓库的指定tags的描述
  * @param { string } tagName tag名称
  * @param { Object } options
- * @param { string } [options.username = 'libccy'] 仓库拥有者
+ * @param { string } [options.username = 'libnoname'] 仓库拥有者
  * @param { string } [options.repository = 'noname'] 仓库名称
  * @param { string } [options.accessToken] 身份令牌
  * @example
@@ -198,11 +198,11 @@ export async function getRepoTags(options = { username: "libccy", repository: "n
  * ```
  */
 
-export async function getRepoTagDescription(tagName, options = { username: "libccy", repository: "noname" }) {
+export async function getRepoTagDescription(tagName, options = { username: "libnoname", repository: "noname" }) {
 	// if (!localStorage.getItem("noname_authorization")) {
 	// 	await gainAuthorization();
 	// }
-	const { username = "libccy", repository = "noname", accessToken } = options;
+	const { username = "libnoname", repository = "noname", accessToken } = options;
 	const headers = Object.assign({}, defaultHeaders);
 	if (accessToken) {
 		headers["Authorization"] = `token ${accessToken}`;
@@ -247,7 +247,7 @@ export async function getRepoTagDescription(tagName, options = { username: "libc
  * @param { string } [path = ''] 路径名称(可放参数)
  * @param { string } [branch = ''] 仓库分支名称
  * @param { Object } options
- * @param { string } [options.username = 'libccy'] 仓库拥有者
+ * @param { string } [options.username = 'libnoname'] 仓库拥有者
  * @param { string } [options.repository = 'noname'] 仓库名称
  * @param { string } [options.accessToken] 身份令牌
  * @returns { Promise<({ download_url: string, name: string, path: string, sha: string, size: number, type: 'file' } | { download_url: null, name: string, path: string, sha: string, size: 0, type: 'dir' })[]> }
@@ -258,11 +258,11 @@ export async function getRepoTagDescription(tagName, options = { username: "libc
  * 	.catch(error => console.error('Failed to fetch files:', error));
  * ```
  */
-export async function getRepoFilesList(path = "", branch, options = { username: "libccy", repository: "noname" }) {
+export async function getRepoFilesList(path = "", branch, options = { username: "libnoname", repository: "noname" }) {
 	// if (!localStorage.getItem("noname_authorization")) {
 	// 	await gainAuthorization();
 	// }
-	const { username = "libccy", repository = "noname", accessToken } = options;
+	const { username = "libnoname", repository = "noname", accessToken } = options;
 	const headers = Object.assign({}, defaultHeaders);
 	if (accessToken) {
 		headers["Authorization"] = `token ${accessToken}`;
@@ -303,7 +303,7 @@ export async function getRepoFilesList(path = "", branch, options = { username: 
  * @param { string } [path = ''] 路径名称(可放参数)
  * @param { string } [branch = ''] 仓库分支名称
  * @param { Object } options
- * @param { string } [options.username = 'libccy'] 仓库拥有者
+ * @param { string } [options.username = 'libnoname'] 仓库拥有者
  * @param { string } [options.repository = 'noname'] 仓库名称
  * @param { string } [options.accessToken] 身份令牌
  * @returns { Promise<{ download_url: string, name: string, path: string, sha: string, size: number, type: 'file' }[]> }
@@ -314,7 +314,7 @@ export async function getRepoFilesList(path = "", branch, options = { username: 
  * 	.catch(error => console.error('Failed to fetch files:', error));
  * ```
  */
-export async function flattenRepositoryFiles(path = "", branch, options = { username: "libccy", repository: "noname" }) {
+export async function flattenRepositoryFiles(path = "", branch, options = { username: "libnoname", repository: "noname" }) {
 	if (!localStorage.getItem("noname_authorization")) {
 		await gainAuthorization();
 	}
@@ -527,7 +527,7 @@ export function createProgress(title, max, fileName, value) {
  * @returns {Promise<string>} 以最新版本tag的名称解析的promise，或者如果操作失败则以错误拒绝。
  * @throws {Error} 如果获取操作失败或找不到有效tag，将抛出错误。
  */
-export async function getLatestVersionFromGitHub(owner = "libccy", repo = "noname") {
+export async function getLatestVersionFromGitHub(owner = "libnoname", repo = "noname") {
 	const tags = await getRepoTags({
 		username: owner,
 		repository: repo,
@@ -551,7 +551,7 @@ export async function getLatestVersionFromGitHub(owner = "libccy", repo = "nonam
  * 从指定目录中的GitHub存储库中获取树
  * @param {string[]} directories 要从中获取树的目录列表
  * @param {string} version 从中获取树的版本或分支。
- * @param {string} [owner = 'libccy'] GitHub上拥有存储库的用户名或组织名称。
+ * @param {string} [owner = 'libnoname'] GitHub上拥有存储库的用户名或组织名称。
  * @param {string} [repo = 'noname'] GitHub存储库的名称
  * @returns {Promise<{
  * 	path: string;
@@ -563,7 +563,7 @@ export async function getLatestVersionFromGitHub(owner = "libccy", repo = "nonam
  * }[][]>} A promise that resolves with trees from the specified directories.
  * @throws {Error} Will throw an error if unable to fetch the repository tree from GitHub.
  */
-export async function getTreesFromGithub(directories, version, owner = "libccy", repo = "noname") {
+export async function getTreesFromGithub(directories, version, owner = "libnoname", repo = "noname") {
 	// if (!localStorage.getItem("noname_authorization")) await gainAuthorization();
 
 	const treesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${version}?recursive=1`, {
