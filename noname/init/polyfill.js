@@ -10,7 +10,7 @@ import { ui } from "../ui/index.js";
  * @returns {HTMLElement}
  */
 HTMLElement.prototype.setNodeIntro = function (title, content) {
-	this.classList.add('nodeintro');
+	this.classList.add("nodeintro");
 	this.nodeTitle = title;
 	this.nodeContent = content;
 	if (!lib.config.touchscreen) {
@@ -241,7 +241,10 @@ HTMLDivElement.prototype.setBackgroundDB = function (img) {
  */
 HTMLDivElement.prototype.setBackgroundImage = function (img) {
 	if (Array.isArray(img)) {
-		this.style.backgroundImage = img.unique().map(v => `url("${lib.assetURL}${v}")`).join(",");
+		this.style.backgroundImage = img
+			.unique()
+			.map(v => `url("${lib.assetURL}${v}")`)
+			.join(",");
 	} else if (URL.canParse(img)) {
 		this.style.backgroundImage = `url("${img}")`;
 	} else {
@@ -314,8 +317,8 @@ HTMLDivElement.prototype.setPosition = function () {
 
 	const [topPercent, topOffset, leftPercent, leftOffset] = position;
 
-	this.style.top = `calc(${topPercent}% ${topOffset > 0 ? '+ ' : '- '}${Math.abs(topOffset)}px)`;
-	this.style.left = `calc(${leftPercent}% ${leftOffset > 0 ? '+ ' : '- '}${Math.abs(leftOffset)}px)`;
+	this.style.top = `calc(${topPercent}% ${topOffset > 0 ? "+ " : "- "}${Math.abs(topOffset)}px)`;
+	this.style.left = `calc(${leftPercent}% ${leftOffset > 0 ? "+ " : "- "}${Math.abs(leftOffset)}px)`;
 
 	return this;
 };
@@ -600,9 +603,14 @@ Object.defineProperty(Array.prototype, "randomGet", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['randomGet'] }
 	 */
-	value() {
-		let arr = this.slice(0);
-		arr.removeArray(Array.from(arguments));
+	value(...excludes) {
+		let arr = this;
+
+		if (excludes.length > 0) {
+			arr = this.slice(0);
+			arr.removeArray(Array.from(arguments));
+		}
+
 		return arr[Math.floor(Math.random() * arr.length)];
 	},
 });
