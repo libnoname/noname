@@ -540,17 +540,20 @@ Object.defineProperty(Array.prototype, "remove", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['remove'] }
 	 */
-	value() {
-		for (const item of arguments) {
-			let pos = -1;
+	value(...args) {
+		for (const item of args) {
+			let pos;
+
 			if (typeof item == "number" && isNaN(item)) {
 				pos = this.findIndex(v => isNaN(v));
 			} else {
 				pos = this.indexOf(item);
 			}
-			if (pos == -1) continue;
+
+			if (pos === -1) continue;
 			this.splice(pos, 1);
 		}
+
 		return this;
 	},
 });
