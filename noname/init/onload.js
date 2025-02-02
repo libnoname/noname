@@ -58,16 +58,12 @@ export async function onload() {
 				ui.css.hp_stylesheet4 = lib.init.sheet(`.hp:not(.text):not(.actcount)>.lost{background-image:url(${data})}`);
 			},
 		}),
-		tryLoadCustomStyle(
-			"player_style",
-			data => {
-				if (ui.css.player_stylesheet) ui.css.player_stylesheet.remove();
-				ui.css.player_stylesheet = lib.init.sheet(`#window .player{background-image:url("${data}");background-size:100% 100%;}`);
-			},
-			() => {
-				ui.css.player_stylesheet = lib.init.sheet("#window .player{background-image:none;background-size:100% 100%;}");
-			}
-		),
+		tryLoadCustomStyle("player_style", data => {
+			if (ui.css.player_stylesheet) ui.css.player_stylesheet.remove();
+			ui.css.player_stylesheet = lib.init.sheet(`#window .player{background-image:url("${data}");background-size:100% 100%;}`);
+		}, () => {
+			ui.css.player_stylesheet = lib.init.sheet("#window .player{background-image:none;background-size:100% 100%;}");
+		}),
 		tryLoadCustomStyle("border_style", data => {
 			if (ui.css.border_stylesheet) ui.css.border_stylesheet.remove();
 			ui.css.border_stylesheet = lib.init.sheet();
@@ -134,11 +130,9 @@ export async function onload() {
 	}
 
 	// 我不好说，但我尊重水乎的想法
-	Object.keys(lib.character)
-		.toSorted(lib.sort.capt)
-		.forEach(character => {
-			lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
-		});
+	Object.keys(lib.character).toSorted(lib.sort.capt).forEach(character => {
+		lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
+	});
 
 	loadCardPile();
 
@@ -166,27 +160,26 @@ export async function onload() {
 			Object.values(lib.imported.play).forEach(loadPlay);
 		}
 
-		lib.card.list = lib.card.list
-			.filter(cardData => {
-				if (!cardData[2]) return false;
-				if (cardData[2] === "huosha") {
-					cardData[2] = "sha";
-					cardData[3] = "fire";
-				} else if (cardData[2] === "leisha") {
-					cardData[2] = "sha";
-					cardData[3] = "thunder";
-				} else if (cardData[2] === "icesha") {
-					cardData[2] = "sha";
-					cardData[3] = "ice";
-				} else if (cardData[2] === "cisha") {
-					cardData[2] = "sha";
-					cardData[3] = "stab";
-				} else if (cardData[2] === "kamisha") {
-					cardData[2] = "sha";
-					cardData[3] = "kami";
-				}
-				return lib.card[cardData[2]] && !lib.card[cardData[2]].mode?.includes(lib.config.mode);
-			});
+		lib.card.list = lib.card.list.filter(cardData => {
+			if (!cardData[2]) return false;
+			if (cardData[2] === "huosha") {
+				cardData[2] = "sha";
+				cardData[3] = "fire";
+			} else if (cardData[2] === "leisha") {
+				cardData[2] = "sha";
+				cardData[3] = "thunder";
+			} else if (cardData[2] === "icesha") {
+				cardData[2] = "sha";
+				cardData[3] = "ice";
+			} else if (cardData[2] === "cisha") {
+				cardData[2] = "sha";
+				cardData[3] = "stab";
+			} else if (cardData[2] === "kamisha") {
+				cardData[2] = "sha";
+				cardData[3] = "kami";
+			}
+			return lib.card[cardData[2]] && !lib.card[cardData[2]].mode?.includes(lib.config.mode);
+		});
 	}
 
 	if (window.isNonameServer) {
@@ -290,11 +283,8 @@ function runCustomContents(contents) {
 	if (!Array.isArray(contents)) return;
 
 	const mutex = new Mutex();
-
-	const tasks = contents
-		.filter(fn => typeof fn === "function")
-		.map(fn => (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn)) // 将生成器函数转换成genCoroutin
-		.map(fn => fn(mutex));
+	 // 将生成器函数转换成genCoroutin
+	const tasks = contents.filter(fn => typeof fn === "function").map(fn => (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn)).map(fn => fn(mutex));
 
 	return Promise.allSettled(tasks).then(results => {
 		results.forEach(result => {

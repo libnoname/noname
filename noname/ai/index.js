@@ -44,7 +44,7 @@ export class AI {
 	 * @param { number } l 最小值限制，默认1
 	 * @returns { { nums: number[], max: number, min: number } }
 	 */
-	getTargetPoints(target, viewer, cards, access = "11", r = 13, l = 1) {
+	guessTargetPoints(target, viewer, cards, access = "11", r = 13, l = 1) {
 		if (viewer === true) viewer = target;
 		let filter = typeof cards === "function" ? cards : () => true;
 		if (!Array.isArray(cards)) cards = target.getCards("h", filter);
@@ -57,7 +57,7 @@ export class AI {
 			cache;
 		if (access[1] === "1") {
 			key = this.getCacheKey([viewer, target, cards], true);
-			cache = _status.event?.getTempCache("getTargetPoints", key);
+			cache = _status.event?.getTempCache("guessTargetPoints", key);
 			if (cache) return cache;
 		}
 		let nums = [];
@@ -76,7 +76,7 @@ export class AI {
 			max: Math.min(r, Math.max(...nums)),
 			min: Math.max(l, Math.min(...nums)),
 		};
-		if (access[0] === "1") _status.event?.putTempCache("getTargetPoints", key, cache);
+		if (access[0] === "1") _status.event?.putTempCache("guessTargetPoints", key, cache);
 		return cache;
 	}
 }

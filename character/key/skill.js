@@ -10732,7 +10732,7 @@ const skills = {
 		},
 		ai: {
 			abnormalDraw: true,
-			skillTagFilter: function (player, tag, arg) {
+			skillTagFilter(player, tag, arg) {
 				if (tag === "abnormalDraw") return !arg || arg === "bottom";
 			},
 		},

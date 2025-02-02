@@ -314,7 +314,8 @@ const skills = {
 					const player = _status.event.player;
 					const judging = _status.event.judging;
 					const result = trigger.judge(card) - trigger.judge(judging);
-					const attitude = get.attitude(player, trigger.player);let val = get.value(card);
+					const attitude = get.attitude(player, trigger.player);
+					let val = get.value(card);
 					if (get.subtype(card) == "equip2") val /= 2;
 					else val /= 4;
 					if (attitude == 0 || result == 0) return 0;
@@ -1022,14 +1023,12 @@ const skills = {
 		preHidden: true,
 		async content(event, trigger, player) {
 			const num = player.hasSkill("yizhi") && player.hasSkill("guanxing") ? 5 : Math.min(5, game.countPlayer());
-			const result = await player.chooseToGuanxing(num)
-				.set("prompt", "观星：点击或拖动将牌移动到牌堆顶或牌堆底")
-				.forResult();
+			const result = await player.chooseToGuanxing(num).set("prompt", "观星：点击或拖动将牌移动到牌堆顶或牌堆底").forResult();
 			if (!result.bool || !result.moved[0].length) player.addTempSkill("guanxing_fail");
 		},
 		ai: {
 			threaten: 1.2,
-			guanxing: true
+			guanxing: true,
 		},
 	},
 	kongcheng: {
@@ -1071,6 +1070,7 @@ const skills = {
 	longdan: {
 		audio: "longdan_sha",
 		audioname: ["re_zhaoyun"],
+		audioname2: { old_zhaoyun: "longdan_sha_re_zhaoyun" },
 		group: ["longdan_sha", "longdan_shan", "longdan_draw"],
 		subSkill: {
 			draw: {
@@ -1089,6 +1089,7 @@ const skills = {
 			sha: {
 				audio: 2,
 				audioname: ["re_zhaoyun"],
+				audioname2: { old_zhaoyun: "longdan_sha_re_zhaoyun" },
 				enable: ["chooseToUse", "chooseToRespond"],
 				filterCard: { name: "shan" },
 				viewAs: { name: "sha" },
@@ -1120,6 +1121,7 @@ const skills = {
 			shan: {
 				audio: "longdan_sha",
 				audioname: ["re_zhaoyun"],
+				audioname2: { old_zhaoyun: "longdan_sha_re_zhaoyun" },
 				enable: ["chooseToRespond", "chooseToUse"],
 				filterCard: { name: "sha" },
 				viewAs: { name: "shan" },
@@ -1148,6 +1150,7 @@ const skills = {
 			},
 		},
 	},
+	longdan_sha_re_zhaoyun: { audio: 2 },
 	mashu: {
 		mod: {
 			globalFrom(from, to, distance) {
@@ -1654,6 +1657,7 @@ const skills = {
 		locked: false,
 		audio: 2,
 		audioname: ["re_huatuo"],
+		audioname2: { old_huatuo: "jijiu_re_huatuo" },
 		enable: "chooseToUse",
 		viewAsFilter(player) {
 			return player != _status.currentPhase && player.countCards("hes", { color: "red" }) > 0;
@@ -1671,6 +1675,7 @@ const skills = {
 			threaten: 1.5,
 		},
 	},
+	jijiu_re_huatuo: { audio: 2 },
 	wushuang: {
 		audio: 2,
 		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
@@ -1853,7 +1858,7 @@ const skills = {
 		trigger: {
 			player: "phaseDrawEnd",
 		},
-		logAudio: (event, player, name, indexedData, costResult) => costResult.cost_data == "弃牌" ? "new_jiangchi1.mp3" : "new_jiangchi2.mp3",
+		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data == "弃牌" ? "new_jiangchi1.mp3" : "new_jiangchi2.mp3"),
 		async cost(event, trigger, player) {
 			const list = ["弃牌", "摸牌", "cancel2"];
 			if (!player.countCards("he")) list.remove("弃牌");

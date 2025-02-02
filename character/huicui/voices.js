@@ -1,4 +1,9 @@
 export default {
+	"#dcpingzhi1": "陈祗何许人也？我等当重其虚！",
+	"#dcpingzhi2": "这满朝朱紫，鲜有非酒囊饭袋之徒。",
+	"#dcgangjian1": "道同则谋，道不同则不相为谋。",
+	"#dcgangjian2": "怎么，陈尚书要教我几句道德仁义？",
+	"#panghong:die": "不孝子宏，泉下无颜见父祖。",
 	"#dcguyin1": "曲有误，不可不顾。",
 	"#dcguyin2": "兀音曳绕梁，愿君去芜存菁。",
 	"#dcpinglu1": "惊涛卷千雪，如林敌舰今何存？",

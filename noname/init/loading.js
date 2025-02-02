@@ -12,6 +12,7 @@ import { gnc } from "../gnc/index.js";
 import { importMode } from "./import.js";
 import { Mutex } from "../util/mutex.js";
 import { load } from "../util/config.js";
+import { isClass } from "../util/index.js";
 
 /**
  * 读取导入的卡牌包信息
@@ -153,7 +154,7 @@ export function loadCharacter(character) {
 			case "character":
 				if (!lib.config.characters.includes(name) && lib.config.mode !== "connect") {
 					if (lib.config.mode === "chess" && get.config("chess_mode") === "leader" && get.config("chess_leader_allcharacter")) {
-						for (let charaName in value) {
+						for (const charaName in value) {
 							// @ts-ignore
 							lib.hiddenCharacters.push(charaName);
 						}
@@ -182,7 +183,7 @@ export function loadCharacter(character) {
 							if (value2[4].includes("boss") || value2[4].includes("hiddenboss")) {
 								lib.config.forbidai.add(key2);
 							}
-							for (let skill of value2[3]) {
+							for (const skill of value2[3]) {
 								lib.skilllist.add(skill);
 							}
 						} else {
@@ -190,7 +191,7 @@ export function loadCharacter(character) {
 								lib.config.forbidai.add(key2);
 							}
 							if (value2.skills) {
-								for (let skill of value2.skills) {
+								for (const skill of value2.skills) {
 									lib.skilllist.add(skill);
 								}
 							}
@@ -255,7 +256,20 @@ export async function loadExtension(extension) {
 			}
 		}
 
-		if (extension[4]) {
+		if (extension[6]) {
+			if (isClass(extension[6])) {
+				const classInstance = new extension[6]();
+				const proto = Object.getPrototypeOf(classInstance);
+				const methods = Object.getOwnPropertyNames(proto).filter(methodName => typeof proto[methodName] === "function" && methodName !== "constructor"); //防止把他的属性加进去了喵
+
+				methods.forEach(methodName => {
+					lib.arenaReady?.push(proto[methodName].bind(classInstance));
+				});
+			} else {
+				lib.arenaReady?.push(extension[6]);
+			}
+		}
+		if (extension[4] && !extension[4].nopack) {
 			if (typeof extension[4].character?.character == "object" && Object.keys(extension[4].character.character).length > 0) {
 				const content = { ...extension[4].character };
 				content.name = extension[0];
@@ -268,27 +282,47 @@ export async function loadExtension(extension) {
 					lib.characterGuozhanFilter.add(content.name);
 				}
 				for (const [charaName, character] of Object.entries(content.character)) {
-					if (!character[4]) {
-						character[4] = [];
-					}
-
-					if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
-						const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
-						character[4].add(img);
-					}
-					if (!character[4].some(str => typeof str == "string" && /^die:.+/.test(str))) {
-						const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
-						character[4].add(audio);
-					}
-
-					const boss = character[4].includes("boss") || character[4].includes("hiddenboss");
-					const userForbidAI = lib.config.forbidai_user?.includes(charaName);
-					if (boss || userForbidAI) {
+					if (lib.config.forbidai_user && lib.config.forbidai_user.includes(charaName)) {
 						lib.config.forbidai.add(charaName);
 					}
+					if (Array.isArray(character)) {
+						if (!character[4]) {
+							character[4] = [];
+						}
 
-					for (const skill of character[3]) {
-						lib.skilllist.add(skill);
+						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
+							const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
+							character[4].add(img);
+						}
+						if (!character[4].some(str => typeof str == "string" && /^die:.+/.test(str))) {
+							const audio = `die:ext:${extension[0]}/${charaName}.mp3`;
+							character[4].add(audio);
+						}
+
+						if (character[4].includes("boss") || character[4].includes("hiddenboss")) {
+							lib.config.forbidai.add(charaName);
+						}
+						for (const skill of character[3]) {
+							lib.skilllist.add(skill);
+						}
+					} else {
+						if (!character.img) {
+							const characterImage = `extension/${extension[0]}/${charaName}.jpg`;
+							character.img = characterImage;
+						}
+						if (!character.dieAudios) {
+							character.dieAudios = [];
+							const characterDieAudio = `ext:${extension[0]}/${charaName}.mp3`;
+							character.dieAudios.push(characterDieAudio);
+						}
+						if (character.isBoss || character.isHiddenBoss) {
+							lib.config.forbidai.add(charaName);
+						}
+						if (character.skills) {
+							for (const skill of character.skills) {
+								lib.skilllist.add(skill);
+							}
+						}
 					}
 				}
 				if (typeof content.skill == "object") {
@@ -440,7 +474,6 @@ export function loadPlay(playConfig) {
 				break;
 			default:
 				for (const [itemName, item] of Object.entries(configItem)) {
-					// lib[j][k+'_play_config']=play[i][j][k];
 					if (configName !== "translate" || itemName !== i) {
 						if (lib[configName][itemName] != null) {
 							console.log(`duplicated ${configName} in play ${i}:\n${itemName}:\nlib.${configName}.${itemName}`, lib[configName][itemName], `\nplay.${i}.${configName}.${itemName}`, item);

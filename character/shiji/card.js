@@ -7,7 +7,7 @@ const cards = {
 		derivation: "sp_xunchen",
 		fullskin: true,
 		filterTarget: lib.filter.notMe,
-		content: function () {
+		content() {
 			"step 0";
 			if (!player.isIn() || !target.isIn()) {
 				event.finish();
@@ -40,7 +40,7 @@ const cards = {
 			},
 			order: 4,
 			result: {
-				target: function (player, target, card, isLink) {
+				target(player, target, card, isLink) {
 					if (get.effect(target, { name: "sha" }, player, target) == 0) return 0;
 					return -2.5;
 				},
@@ -57,7 +57,7 @@ const cards = {
 		type: "trick",
 		derivation: "feiyi",
 		fullskin: true,
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			var targets = [];
 			if (ui.selected.targets.length) targets.addArray(ui.selected.targets);
 			var evt = _status.event.getParent("useCard");
@@ -74,7 +74,7 @@ const cards = {
 		recastable: true,
 		selectTarget: 2,
 		postAi: () => true,
-		contentBefore: function () {
+		contentBefore() {
 			if (!targets.length) return;
 			var map = {};
 			event.getParent().customArgs.default.tiaojiyanmei_map = map;
@@ -86,7 +86,7 @@ const cards = {
 			}
 			map.average = average / targets.length;
 		},
-		content: function () {
+		content() {
 			var map = event.tiaojiyanmei_map,
 				num1 = map.average,
 				num2 = map[target.playerid];
@@ -94,7 +94,7 @@ const cards = {
 			if (num2 > num1) target.chooseToDiscard("he", true);
 			else if (num2 < num1) target.draw();
 		},
-		contentAfter: function () {
+		contentAfter() {
 			"step 0";
 			if (!player.isIn() || targets.length < 2) {
 				event.finish();
@@ -133,7 +133,7 @@ const cards = {
 				value: 3,
 			},
 			result: {
-				target: function (player, target, card, isLink) {
+				target(player, target, card, isLink) {
 					var targets = [];
 					if (ui.selected.targets.length) targets.addArray(ui.selected.targets);
 					var evt = _status.event.getParent("useCard");

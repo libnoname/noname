@@ -32,7 +32,7 @@ const cards = {
 				loseCard: 1,
 			},
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					if (!ui.selected.targets.length) return -1.5;
 					return -0.5;
 				},
@@ -96,7 +96,7 @@ const cards = {
 			},
 		},
 		loseDelay: false,
-		onLose: function () {
+		onLose() {
 			player.addTempSkill("pyzhuren_club_lose");
 		},
 	},
@@ -144,7 +144,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip5",
 		skills: ["dagongche_skill"],
-		cardPrompt: function (card) {
+		cardPrompt(card) {
 			if (!card.storage) return "出牌阶段开始时，你可以视为使用一张【杀】，且当此【杀】因执行效果而对目标角色造成伤害后，你弃置其一张牌。若此【大攻车】未被强化，则其他角色无法弃置你装备区内的【大攻车】。当此牌离开你的装备区后，销毁之。";
 			var str = "出牌阶段开始时，你可以视为使用一张";
 			if (card.storage.大攻车选项一) str += "无距离限制且无视防具的";

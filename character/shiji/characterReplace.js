@@ -10,7 +10,7 @@ const characterReplaces = {
 	huaman: ["huaman", "sp_huaman"],
 	gaolan: ["gaolan", "dc_gaolan", "sp_gaolan"],
 	cuiyan: ["cuiyan", "sp_cuiyan"],
-	wujing: ["wujing", "tw_wujing"],
+	wujing: ["wujing", "ol_wujing", "tw_wujing"],
 	zhouchu: ["jin_zhouchu", "zhouchu", "tw_zhouchu", "std_zhouchu"],
 	liuzhang: ["liuzhang", "tw_liuzhang", "std_liuzhang"],
 	sp_chenzhen: ["sp_chenzhen", "tw_chenzhen"],

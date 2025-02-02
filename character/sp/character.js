@@ -1,4 +1,6 @@
 const characters = {
+	hanshiwuhu: ["male", "wei", 5, ["oljuejue", "olpimi"], ["name:韩|德‌-韩|瑛-韩|瑶-韩|琼-韩|琪"]],
+	ol_wujing: ["male", "wu", 4, ["heji", "olliubing"], ["die:wujing"]],
 	ol_yangfeng: ["male", "qun", 4, ["oljiawei"]],
 	ol_yuanhuan: ["male", "qun", 3, ["olderu", "ollinjie"]],
 	sp_ol_liubei: ["male", "qun", 4, ["spolxudai", "spolzhujiu", "spoljinglei"]],

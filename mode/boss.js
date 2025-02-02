@@ -3577,6 +3577,7 @@ export default () => {
 				mark: true,
 				intro: { content: "mark" },
 				forced: true,
+				sourceSkill: "boss_duqu",
 				filter: function (event, player) {
 					return player.storage.boss_shedu && player.storage.boss_shedu > 0;
 				},
@@ -3614,6 +3615,7 @@ export default () => {
 			boss_echou_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_echou",
 				group: ["boss_echou_switch_on", "boss_echou_switch_off"],
 				subSkill: {
 					off: {
@@ -3684,6 +3686,7 @@ export default () => {
 			boss_xushi_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_xushi",
 				group: ["boss_xushi_switch_on", "boss_xushi_switch_off"],
 				subSkill: {
 					off: {
@@ -3799,6 +3802,7 @@ export default () => {
 			boss_yanyu_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_yanyu",
 				group: ["boss_yanyu_switch_on", "boss_yanyu_switch_off"],
 				subSkill: {
 					off: {
@@ -3881,6 +3885,7 @@ export default () => {
 			boss_sipu_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_sipu",
 				group: ["boss_sipu_switch_on", "boss_sipu_switch_off"],
 				subSkill: {
 					off: {
@@ -4279,6 +4284,7 @@ export default () => {
 			boss_yinzei_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_yinzei",
 				group: ["boss_yinzei_switch_on", "boss_yinzei_switch_off"],
 				subSkill: {
 					off: {
@@ -4306,6 +4312,7 @@ export default () => {
 			boss_jicai_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_jicai",
 				group: ["boss_jicai_switch_on", "boss_jicai_switch_off"],
 				subSkill: {
 					off: {
@@ -4333,6 +4340,7 @@ export default () => {
 			boss_luanchang_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_luanchang",
 				group: ["boss_luanchang_switch_on", "boss_luanchang_switch_off"],
 				subSkill: {
 					off: {
@@ -4360,6 +4368,7 @@ export default () => {
 			boss_yandu_switch: {
 				unique: true,
 				charlotte: true,
+				sourceSkill: "boss_yandu",
 				group: ["boss_yandu_switch_on", "boss_yandu_switch_off"],
 				subSkill: {
 					off: {
@@ -5532,6 +5541,7 @@ export default () => {
 				},
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
+				sourceSkill: "boss_shenen",
 				filter: function (event, player) {
 					return !player.side;
 				},
@@ -5564,6 +5574,7 @@ export default () => {
 			boss_fentian2: {
 				trigger: { player: "useCard" },
 				forced: true,
+				sourceSkill: "boss_fentian",
 				filter: function (event, player) {
 					return get.color(event.card) == "red";
 				},
@@ -5675,6 +5686,7 @@ export default () => {
 				forced: true,
 				globalFixed: true,
 				unique: true,
+				sourceSkill: "boss_huihuo",
 				filter: function (event, player) {
 					return event.player.hasSkill("boss_huihuo") && event.player.isDead() && player.isEnemyOf(event.player);
 				},
@@ -5707,6 +5719,7 @@ export default () => {
 				position: "he",
 				viewAs: { name: "tao" },
 				prompt: "将一张红色牌当桃使用",
+				sourceSkill: "boss_furan",
 				check: function (card) {
 					return 8 - get.value(card);
 				},
@@ -5770,6 +5783,7 @@ export default () => {
 				trigger: { player: "damageBegin3" },
 				forced: true,
 				popup: false,
+				sourceSkill: "boss_chiyi",
 				content: function () {
 					trigger.num++;
 				},
@@ -7433,6 +7447,7 @@ export default () => {
 				trigger: { target: ["useCardToBefore", "shaBegin"] },
 				forced: true,
 				priority: 6,
+				sourceSkill: "boss_manjia",
 				filter: function (event, player, name) {
 					if (player.getEquip(2)) return false;
 					if (name == "shaBegin") return lib.skill.tengjia3.filter(event, player);
@@ -7452,6 +7467,7 @@ export default () => {
 			},
 			boss_manjia2: {
 				trigger: { player: "damageBegin3" },
+				sourceSkill: "boss_manjia",
 				filter: function (event, player) {
 					if (player.getEquip(2)) return false;
 					if (event.hasNature("fire")) return true;
@@ -7516,6 +7532,7 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				globalFixed: true,
+				sourceSkill: "boss_minbao",
 				filter: function (event, player) {
 					return event.player.hasSkill("boss_minbao") && event.player.isDead();
 				},
@@ -7598,6 +7615,7 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				globalFixed: true,
+				sourceSkill: "boss_shanbeng",
 				filter: function (event, player) {
 					return player.countCards("e") > 0 && event.player.hasSkill("boss_shanbeng") && event.player.isDead();
 				},
@@ -7842,6 +7860,7 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				popup: false,
+				sourceSkill: "boss_konghun",
 				content: function () {
 					var players = game.players.concat(game.dead);
 					for (var i = 0; i < players.length; i++) {
@@ -7944,6 +7963,7 @@ export default () => {
 				priority: 10,
 				forced: true,
 				popup: false,
+				sourceSkill: "huanhua",
 				check: function () {
 					return false;
 				},
@@ -7954,6 +7974,7 @@ export default () => {
 			huanhua3: {
 				trigger: { global: "drawAfter" },
 				forced: true,
+				sourceSkill: "huanhua",
 				filter: function (event, player) {
 					if (event.parent.name != "phaseDraw") return false;
 					return event.player != player;
@@ -7965,6 +7986,7 @@ export default () => {
 			huanhua4: {
 				trigger: { global: "discardAfter" },
 				forced: true,
+				sourceSkill: "huanhua",
 				filter: function (event, player) {
 					if (event.parent.parent.name != "phaseDiscard") return false;
 					return event.player != player;
@@ -8447,6 +8469,7 @@ export default () => {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				unique: true,
+				sourceSkill: "shangshix",
 				filter: function (event, player) {
 					return player.hp > 1;
 				},
@@ -8644,6 +8667,7 @@ export default () => {
 			shenqu2: {
 				trigger: { player: "damageAfter" },
 				direct: true,
+				sourceSkill: "shenqu",
 				filter: function (event, player) {
 					return player.hasSkillTag("respondTao") || player.countCards("h", "tao") > 0;
 				},

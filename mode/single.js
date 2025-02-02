@@ -606,6 +606,10 @@ export default () => {
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
+					if (get.config("single_control")) {
+						game.addGlobalSkill("autoswap");
+						game.me.next._trueMe = game.me;
+					}
 				});
 			},
 			chooseCharacterWuxianhuoli() {

@@ -722,17 +722,44 @@ export class GameEvent {
 					})
 				)
 					return;
-
-				const toadd = {
-					skill: skill,
-					player: player,
-					priority: get.priority(skill),
-				};
+				let toadds = [];
+				if (typeof info.getIndex === "function") {
+					const indexedResult = info.getIndex(evt.getTrigger(), player, evt.triggername);
+					if (Array.isArray(indexedResult)) {
+						indexedResult.forEach(indexedData => {
+							toadds.push({
+								skill: skill,
+								player: player,
+								priority: get.priority(skill),
+								indexedData,
+							});
+						});
+					} else if (typeof indexedResult === "number" && indexedResult > 0) {
+						for (let i = 0; i < indexedResult; i++) {
+							toadds.push({
+								skill: skill,
+								player: player,
+								priority: get.priority(skill),
+								indexedData: true,
+							});
+						}
+					}
+				} else {
+					toadds.push({
+						skill: skill,
+						player: player,
+						priority: get.priority(skill),
+					});
+				}
 				const map = info.firstDo ? firstDo : info.lastDo ? lastDo : doing;
 				if (!map) return;
-				if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-				if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-				map.todoList.add(toadd);
+				for (const toadd of toadds) {
+					if (!toadd.indexedData) {
+						if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
+						if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
+					}
+					map.todoList.add(toadd);
+				}
 				if (typeof map.player === "string") map.todoList.sort((a, b) => b.priority - a.priority || evt.playerMap.indexOf(a) - evt.playerMap.indexOf(b));
 				else map.todoList.sort((a, b) => b.priority - a.priority);
 			});
@@ -1027,7 +1054,7 @@ export class GameEvent {
 								},
 							})
 						);
-					}
+				  }
 				: onfulfilled,
 			onrejected
 		);

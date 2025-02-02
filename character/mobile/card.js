@@ -52,7 +52,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip2",
 		loseDelay: false,
-		onLose: function () {
+		onLose() {
 			player.addTempSkill("rw_baiyin_skill_lose");
 		},
 		skills: ["rw_baiyin_skill"],
@@ -61,7 +61,7 @@ const cards = {
 		},
 		ai: {
 			order: 9.5,
-			equipValue: function (card, player) {
+			equipValue(card, player) {
 				if (player.hp == player.maxHp) return 5;
 				if (player.countCards("h", "rewrite_baiyin")) return 6;
 				return 0;
@@ -105,7 +105,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip2",
 		ai: {
-			equipValue: function (card, player) {
+			equipValue(card, player) {
 				if (player.hasSkillTag("maixie") && player.hp > 1) return 0;
 				if (player.hasSkillTag("noDirectDamage")) return 10;
 				if (get.damageEffect(player, player, player, "fire") >= 0) return 10;
@@ -136,7 +136,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip1",
 		ai: {
-			equipValue: function (card, player) {
+			equipValue(card, player) {
 				if (
 					!game.hasPlayer(function (current) {
 						return player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
@@ -204,7 +204,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip1",
 		ai: {
-			equipValue: function (card, player) {
+			equipValue(card, player) {
 				return 4;
 			},
 			basic: {

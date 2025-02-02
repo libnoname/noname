@@ -104,7 +104,7 @@ const dynamicTranslates = {
 		if (!storage) str += "</span>";
 		str += "；";
 		if (storage) str += '<span class="bluetext">';
-		str += "阴：你可以弃置一张你本回合已使用过的花色的牌，令一名角色视为对你使用【决斗】";
+		str += "阴：你可以从牌堆中获得一张你本回合使用过的花色的牌，令一名其他角色视为对你使用一张【决斗】。";
 		if (storage) str += "</span>";
 		str += "。";
 		return str;

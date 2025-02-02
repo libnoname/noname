@@ -19,12 +19,12 @@ const characterSort = {
 	sp2_zhongyuan: ["re_hucheer", "re_zoushi", "caoanmin", "re_dongcheng"],
 	sp2_xiaohu: ["haomeng", "yanfuren", "yanrou", "dc_zhuling"],
 	sp2_qunxiong: ["chezhou", "hansong", "matie"],
-	sp2_tianshu: ["star_yuanshu", "star_dongzhuo", "star_yuanshao", "star_zhangzhao"],
+	sp2_tianshu: ["star_yuanshu", "star_dongzhuo", "star_yuanshao"],
 	sp2_yuheng: ["star_caoren", "star_zhangchunhua"],
 	sp2_kaiyang: ["star_sunjian"],
-	sp2_yaoguang: ["star_sunshangxiang", "star_dingfeng"],
-	sp2_tianxuan: ["star_xunyu", "star_fazheng"],
-	sp2_waitforsort: ["caobuxing", "re_maliang", "dc_jikang", "star_wenchou"],
+	sp2_yaoguang: ["star_sunshangxiang", "star_dingfeng", "star_wenchou"],
+	sp2_tianxuan: ["star_xunyu", "star_fazheng", "star_zhangzhao"],
+	sp2_waitforsort: ["caobuxing", "re_maliang", "dc_jikang"],
 };
 
 const characterSortTranslate = {
@@ -36,7 +36,7 @@ const characterSortTranslate = {
 	sp2_guandu: "活动场·官渡之战",
 	sp2_whlw: "南征北战·文和乱武",
 	sp2_zltx: "南征北战·逐鹿天下",
-	sp2_zizouqi: "南征北战·自走棋",
+	sp2_zizouqi: "南征北战·食禄尽忠",
 	sp2_sbfm: "南征北战·上兵伐谋",
 	sp2_qihuan: "南征北战·戚宦之争",
 	sp2_binglin: "南征北战·兵临城下",

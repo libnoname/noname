@@ -162,16 +162,7 @@ export async function boot() {
 		} else resolve(void 0);
 	}).then(onWindowReady.bind(window));
 
-	// 闭源客户端检测并提醒
-	if (typeof window.NonameAndroidBridge == "object") {
-		if (["com.widget.noname.qingyao", "online.nonamekill.android"].some(packageName => window.NonameAndroidBridge.getPackageName().includes(packageName))) {
-			alert("您正在一个不受信任的闭源客户端上运行《无名杀》。建议您更换为其他开源的无名杀客户端，避免给您带来不必要的损失。");
-		}
-	} else {
-		if (lib.assetURL.includes("com.widget.noname.qingyao") || lib.assetURL.includes("online.nonamekill.android")) {
-			alert("您正在一个不受信任的闭源客户端上运行《无名杀》。建议您更换为其他开源的无名杀客户端，避免给您带来不必要的损失。");
-		}
-	}
+	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
 
 	// Electron平台
 	if (typeof window.require === "function") {
@@ -934,7 +925,7 @@ async function setOnError() {
 		const reg = /[^\d.]/;
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
-		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		if (match) str += "\n⚠️您使用的游戏代码不是源于libnoname/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;

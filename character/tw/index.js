@@ -26,12 +26,9 @@ game.import("character", function () {
 		characterIntro: { ...characterIntros },
 		characterReplace: { ...characterReplaces },
 		characterSubstitute: {
-			huan_zhugeliang: [
-				["huan_zhugeliang_shadow", []],
-			],
-			huan_caoang: [
-				["huan_caoang_shadow", []],
-			],
+			huan_zhugeliang: [["huan_zhugeliang_shadow", []]],
+			huan_caoang: [["huan_caoang_shadow", []]],
+			tw_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
 		},
 		card: { ...cards },
 		skill: { ...skills },

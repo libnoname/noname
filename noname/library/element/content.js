@@ -250,6 +250,7 @@ export const Content = {
 					...event.addSkill
 						.filter(i => i in lib.translate)
 						.map(i => {
+							if (event.popup) player.popup(i);
 							return "#g【" + get.translation(i) + "】";
 						})
 				);
@@ -262,6 +263,7 @@ export const Content = {
 					...event.removeSkill
 						.filter(i => i in lib.translate)
 						.map(i => {
+							if (event.popup) player.popup(i);
 							return "#g【" + get.translation(i) + "】";
 						})
 				);

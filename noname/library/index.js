@@ -387,7 +387,7 @@ export class Library {
 														return ai - get.value(cardx);
 													} else if (get.attitude(player, source) <= 0) return 0;
 													return 5 - get.value(cardx);
-											  },
+												},
 								});
 								if (!game.online) return;
 								_status.event._resultid = id;
@@ -7274,6 +7274,12 @@ export class Library {
 					},
 					restart: true,
 				},
+				single_control: {
+					name: "单人控制",
+					intro: "由玩家操作点将单挑的两名游戏角色",
+					init: false,
+					restart: true,
+				},
 				update: function (config, map) {
 					if (config.single_mode != "normal") {
 						map.enable_jin.hide();
@@ -7288,8 +7294,10 @@ export class Library {
 					if (config.single_mode != "dianjiang") {
 						map.double_character.hide();
 						map.double_hp.hide();
+						map.single_control.hide();
 					} else {
 						map.double_character.show();
+						map.single_control.show();
 						if (["double", "singble"].includes(config.double_character)) {
 							map.double_hp.show();
 						} else {
@@ -7732,7 +7740,7 @@ export class Library {
 		globalId: 0,
 	};
 	help = {
-		关于游戏: '<div style="margin:10px">关于无名杀</div><ul style="margin-top:0"><li>无名杀官方发布地址仅有GitHub仓库！<br><a href="https://github.com/libccy/noname">点击前往Github仓库</a><br><li>无名杀基于GPLv3开源协议。<br><a href="https://www.gnu.org/licenses/gpl-3.0.html">点击查看GPLv3协议</a><br><li>其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！',
+		关于游戏: '<div style="margin:10px">关于无名杀</div><ul style="margin-top:0"><li>无名杀官方发布地址仅有GitHub仓库！<br><a href="https://github.com/libnoname/noname">点击前往Github仓库</a><br><li>无名杀基于GPLv3开源协议。<br><a href="https://www.gnu.org/licenses/gpl-3.0.html">点击查看GPLv3协议</a><br><li>其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！',
 		游戏操作: "<ul><li>长按/鼠标悬停/右键单击显示信息。<li>触屏模式中，双指点击切换暂停；下划显示菜单，上划切换托管。<li>键盘快捷键<br>" + "<table><tr><td>A<td>切换托管<tr><td>W<td>切换不询问无懈<tr><td>空格<td>暂停</table><li>编辑牌堆<br>在卡牌包中修改牌堆后，将自动创建一个临时牌堆，在所有模式中共用，当保存当前牌堆后，临时牌堆被清除。每个模式可设置不同的已保存牌堆，设置的牌堆优先级大于临时牌堆。</ul>",
 		游戏命令:
 			'<div style="margin:10px">变量名</div><ul style="margin-top:0"><li>场上角色<br>game.players<li>阵亡角色<br>game.dead' +
@@ -8308,7 +8316,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-			  })()
+				})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -10910,7 +10918,7 @@ export class Library {
 								storage: {
 									stratagem_buffed: 1,
 								},
-						  })
+							})
 						: new lib.element.VCard();
 				}
 				return null;
@@ -11627,7 +11635,7 @@ export class Library {
 			},
 			content: function () {
 				"step 0";
-				player._groupChosen = true;
+				player._groupChosen = "double";
 				player.chooseControl(get.is.double(player.name1, true)).set("prompt", "请选择你的势力");
 				"step 1";
 				player.changeGroup(result.control);
@@ -13938,12 +13946,12 @@ export class Library {
 			},
 		],
 		[
-			"汉末", 	
+			"汉末",
 			{
 				showName: "汉",
 				color: "#fefedc",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"汉末神",
@@ -14247,6 +14255,15 @@ export class Library {
 			{
 				color: "#7d26cd",
 				nature: "purplemm",
+			},
+		],
+		[
+			"TW谋",
+			{
+				/**
+				 * @returns {string}
+				 */
+				getSpan: () => `${get.prefixSpan("TW")}${get.prefixSpan("谋")}`,
 			},
 		],
 	]);

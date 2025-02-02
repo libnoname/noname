@@ -12,7 +12,7 @@ game.import("character", function () {
 			zhongzhan: {
 				trigger: { source: "damageBegin" },
 				logTarget: "player",
-				check: function (event, player) {
+				check(event, player) {
 					if (
 						get.damageEffect(event.player, player, player) > 0 &&
 						get.attitude(player, event.player) < 0
@@ -21,20 +21,20 @@ game.import("character", function () {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					player.loseHp();
 					trigger.num++;
 				},
 			},
 			rouquan: {
 				mod: {
-					selectTarget: function (card, player, range) {
+					selectTarget(card, player, range) {
 						if (card.name == "sha" && !player.getEquip(1) && range[1] != -1) range[1] = Infinity;
 					},
 				},
 				enable: "phaseUse",
 				position: "e",
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasCard(
 						(card) => lib.skill.rouquan.filterCard(card, player),
 						lib.skill.rouquan.position
@@ -45,7 +45,7 @@ game.import("character", function () {
 				discard: false,
 				lose: false,
 				delay: false,
-				check: function (card, player) {
+				check(card, player) {
 					var val = get.equipValue(card);
 					var player = _status.event.player;
 					var cards = player.getCards("h", { subtype: get.subtype(card) });
@@ -56,7 +56,7 @@ game.import("character", function () {
 					}
 					return 0;
 				},
-				content: function () {
+				content() {
 					player.recast(cards);
 				},
 				ai: {
@@ -69,18 +69,18 @@ game.import("character", function () {
 			gzhenji: {
 				trigger: { source: "damageEnd" },
 				frequent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event._notrigger.includes(event.player)) return false;
 					return _status.currentPhase == player && event.card && event.card.name == "sha";
 				},
-				content: function () {
+				content() {
 					player.draw();
 					player.addTempSkill("gzhenji3");
 				},
 			},
 			gzhenji3: {
 				mod: {
-					cardUsable: function (card, player, num) {
+					cardUsable(card, player, num) {
 						if (card.name == "sha") return num + 1;
 					},
 				},
@@ -88,10 +88,10 @@ game.import("character", function () {
 			zitong: {
 				trigger: { player: "useCard" },
 				frequent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return _status.currentPhase == player && player.countUsed() == 3;
 				},
-				content: function () {
+				content() {
 					var card = get.cardPile("chuansongmen");
 					if (!card) {
 						card = game.createCard("chuansongmen");

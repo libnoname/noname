@@ -2385,7 +2385,7 @@ const skills = {
 		},
 		ai: {
 			abnormalDraw: true,
-			skillTagFilter: function (player, tag, arg) {
+			skillTagFilter(player, tag, arg) {
 				if (tag === "abnormalDraw") return !arg || arg === "bottom";
 			},
 		},
@@ -5821,24 +5821,24 @@ const skills = {
 		enable: "phaseUse",
 		usable: 2,
 		locked: false,
-		filter: function (event, player) {
+		filter(event, player) {
 			if (player.hp < 1 && !player.hasCard(card => lib.skill.qiangxix.filterCard(card), "he")) return false;
 			return game.hasPlayer(current => lib.skill.qiangxix.filterTarget(null, player, current));
 		},
-		filterCard: function (card) {
+		filterCard(card) {
 			return get.subtype(card) == "equip1";
 		},
 		position: "he",
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			if (target == player) return false;
 			var stat = player.getStat()._qiangxix;
 			return !stat || !stat.includes(target);
 		},
-		selectCard: function () {
+		selectCard() {
 			if (_status.event.player.hp < 1) return 1;
 			return [0, 1];
 		},
-		content: function () {
+		content() {
 			var stat = player.getStat();
 			if (!stat._qiangxix) stat._qiangxix = [];
 			stat._qiangxix.push(target);
@@ -5849,13 +5849,13 @@ const skills = {
 			damage: true,
 			order: 8,
 			result: {
-				player: function (player, target) {
+				player(player, target) {
 					if (ui.selected.cards.length) return 0;
 					if (player.hp >= target.hp) return -0.9;
 					if (player.hp <= 2) return -10;
 					return get.effect(player, { name: "losehp" }, player, player);
 				},
-				target: function (player, target) {
+				target(player, target) {
 					if (!ui.selected.cards.length) {
 						if (player.hp < 2) return 0;
 						if (player.hp == 2 && target.hp >= 2) return 0;

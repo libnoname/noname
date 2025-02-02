@@ -16,7 +16,7 @@ import { lib } from "../library/index.js";
 import { _status } from "../status/index.js";
 import { ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
-import { userAgent, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
+import { isClass, userAgent, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
@@ -840,16 +840,25 @@ export class Game extends GameCompatible {
 			.flat();
 		next.setContent("cardsDiscard");
 		next.getd = function (player, key, position) {
+			if (!player) return this.cards.slice(0);
 			if (!position) position = ui.ordering;
 			if (!key) key = "cards";
 			var cards = [],
 				event = this;
 			game.checkGlobalHistory("cardMove", function (evt) {
-				if (evt.name != "lose" || evt.position != position || !event.getParent(2).childEvents.find(evtx => evt == evtx)) return;
+				if (evt.name != "lose" || evt.position != position) return;
 				if (player && player != evt.player) return;
-				cards.addArray(evt[key]);
+				if (
+					(position == ui.ordering && evt.relatedEvent == event.getParent(2)) ||
+					event.getParent(2).childEvents.find(evtx => {
+						if (evtx.name == "loseAsync") return evtx.childEvents.find(evtx2 => evtx2 == evt);
+						return evt == evtx;
+					})
+				) {
+					cards.addArray(evt[key]);
+				}
 			});
-			return cards.filter(c => event.cards.includes(c));;
+			return cards.filter(c => event.cards.includes(c));
 		};
 		return next;
 	}
@@ -1972,7 +1981,13 @@ export class Game extends GameCompatible {
 	async loadExtension(object) {
 		let noEval = false;
 		if (typeof object == "function") {
-			object = await (gnc.is.generatorFunc(object) ? gnc.of(object) : object)(lib, game, ui, get, ai, _status);
+			if (isClass(object)) {
+				const filters = await object.filter?.();
+				if (filters ?? true) object = await object.init?.() ?? new object();
+				else return;
+			} else {
+				object = await (gnc.is.generatorFunc(object) ? gnc.of(object) : object)(lib, game, ui, get, ai, _status);
+			}
 			noEval = true;
 		}
 		if (object.closeSyntaxCheck) {
@@ -1989,48 +2004,38 @@ export class Game extends GameCompatible {
 			objectPackage = object.package;
 		if (objectPackage) {
 			const author = Object.getOwnPropertyDescriptor(objectPackage, "author");
-			if (author)
-				Object.defineProperty(
-					(extensionMenu.author = {
-						get name() {
-							return `作者：${this.author}`;
-						},
-						clear: true,
-						nopointer: true,
-					}),
-					"author",
-					author
-				);
+			if (author) {
+				Object.defineProperty((extensionMenu.author = {
+					get name() {
+						return `作者：${this.author}`;
+					},
+					clear: true,
+					nopointer: true,
+				}), "author", author);
+			}
 			const intro = Object.getOwnPropertyDescriptor(objectPackage, "intro");
-			if (intro)
-				Object.defineProperty(
-					(extensionMenu.intro = {
-						clear: true,
-						nopointer: true,
-					}),
-					"name",
-					intro
-				);
+			if (intro) {
+				Object.defineProperty((extensionMenu.intro = {
+					clear: true,
+					nopointer: true,
+				}), "name", intro);
+			}
 		}
 		const objectConfig = object.config;
-		if (objectConfig)
-			Object.defineProperties(
-				extensionMenu,
-				Object.keys(objectConfig).reduce((propertyDescriptorMap, key) => {
-					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(objectConfig, key);
-					return propertyDescriptorMap;
-				}, {})
-			);
+		if (objectConfig) {
+			Object.defineProperties(extensionMenu, Object.keys(objectConfig).reduce((propertyDescriptorMap, key) => {
+				propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(objectConfig, key);
+				return propertyDescriptorMap;
+			}, {}));
+		}
 		const help = object.help;
-		if (help)
-			Object.defineProperties(
-				lib.help,
-				Object.keys(help).reduce((propertyDescriptorMap, key) => {
-					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(help, key);
-					return propertyDescriptorMap;
-				}, {})
-			);
-		if (object.editable !== false && lib.config.show_extensionmaker)
+		if (help) {
+			Object.defineProperties(lib.help, Object.keys(help).reduce((propertyDescriptorMap, key) => {
+				propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(help, key);
+				return propertyDescriptorMap;
+			}, {}));
+		}
+		if (object.editable !== false && lib.config.show_extensionmaker) {
 			extensionMenu.edit = {
 				name: "编辑此扩展",
 				clear: true,
@@ -2039,10 +2044,11 @@ export class Game extends GameCompatible {
 					else alert("无法编辑未启用的扩展，请启用此扩展并重启后重试");
 				},
 			};
+		}
 		extensionMenu.delete = {
 			name: "删除此扩展",
 			clear: true,
-			onclick: function () {
+			onclick () {
 				if (this.innerHTML != "<span>确认删除</span>") {
 					this.innerHTML = "<span>确认删除</span>";
 					new Promise(resolve => setTimeout(resolve, 1000)).then(() => (this.innerHTML = "<span>删除此扩展</span>"));
@@ -2083,18 +2089,23 @@ export class Game extends GameCompatible {
 			let extensionPack = lib.extensionPack[name];
 			if (objectPackage) {
 				extensionPack = lib.extensionPack[name] = objectPackage;
-				objectPackage.files = object.files || {};
+				objectPackage.files = object.files ?? {};
 				const extensionPackFiles = objectPackage.files;
 				if (!extensionPackFiles.character) extensionPackFiles.character = [];
 				if (!extensionPackFiles.card) extensionPackFiles.card = [];
 				if (!extensionPackFiles.skill) extensionPackFiles.skill = [];
+				if (!extensionPackFiles.audio) extensionPackFiles.audio = [];
 			} else extensionPack = lib.extensionPack[name] = {};
-			const content = object.content,
+			const arenaReady = object.arenaReady,
+				content = object.content,
+				prepare = object.prepare,
 				precontent = object.precontent;
 			extensionPack.code = {
-				content: content,
-				precontent: precontent,
-				help: help,
+				arenaReady,
+				content,
+				prepare,
+				precontent,
+				help,
 				config: objectConfig,
 			};
 			try {
@@ -2104,14 +2115,17 @@ export class Game extends GameCompatible {
 					await (gnc.is.generatorFunc(precontent) ? gnc.of(precontent) : precontent).call(object, config);
 					delete _status.extension;
 				}
+				if (prepare) {
+					lib.onprepare?.push(prepare);
+				}
 			} catch (e1) {
-				console.log(`加载《${name}》扩展的precontent时出现错误。`, e1);
+				console.error(`加载《${name}》扩展的precontent时出现错误。`, e1);
 				if (!lib.config.extension_alert) alert(`加载《${name}》扩展的precontent时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e1.stack)}`);
 			}
 
-			if (content) lib.extensions.push([name, content, config, _status.evaluatingExtension, objectPackage || {}, object.connect]);
+			if (content) lib.extensions.push([name, content, config, _status.evaluatingExtension, objectPackage ?? {}, object.connect, arenaReady]);
 		} catch (e) {
-			console.log(e);
+			console.error(e);
 		}
 
 		return name;

@@ -175,10 +175,10 @@ const cards = {
 		derivation: "wangyun",
 		type: "trick",
 		enable: true,
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target.countCards("h") && target != player && target.hasSex("male");
 		},
-		content: function () {
+		content() {
 			"step 0";
 			event.list = game
 				.filterPlayer(function (current) {
@@ -214,7 +214,7 @@ const cards = {
 		ai: {
 			order: 6,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					var num = game.countPlayer(function (current) {
 						return current != player && current != target && current.hasSex("female");
 					});
@@ -236,10 +236,10 @@ const cards = {
 		derivation: "wangyun",
 		type: "trick",
 		enable: true,
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content: function () {
+		content() {
 			"step 0";
 			var num = Math.min(5, target.maxHp - target.hp);
 			if (num) target.draw(num);
@@ -252,7 +252,7 @@ const cards = {
 				damage: 1,
 			},
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					var num = Math.min(5, target.maxHp - target.hp);
 					if (target.hp == 1) {
 						if (num >= 3) return 0;
@@ -276,7 +276,7 @@ const cards = {
 		subtype: "equip5",
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -304,7 +304,7 @@ const cards = {
 		subtype: "equip5",
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -327,7 +327,7 @@ const cards = {
 		skills: ["zhuangshu_equip"],
 		forceDie: true,
 		inherit: "zhuangshu_basic",
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();

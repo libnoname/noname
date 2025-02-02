@@ -335,7 +335,7 @@ export const extensionMenu = function (connectMenu) {
 					var ext = {};
 					for (var i in dash4.content) {
 						try {
-							if (i == "content" || i == "precontent") {
+							if (["arenaReady", "content", "prepare", "precontent"].includes(i)) {
 								ext[i] = security.exec2(`return (${dash4.content[i]});`).return;
 								if (typeof ext[i] != "function") {
 									throw "err";
@@ -364,74 +364,62 @@ export const extensionMenu = function (connectMenu) {
 					for (var i = 0; i < dash2.pile.childNodes.length; i++) {
 						dash2.content.pack.list.push(dash2.pile.childNodes[i].link);
 					}
-					str +=
-						",package:" +
-						get.stringify({
-							//替换die audio，加上扩展名
-							//TODO: 创建扩展这部分更是重量级
-							character: ((pack) => {
-								var character = pack.character;
-								for (var key in character) {
-									var info = character[key];
-									if (Array.isArray(info[4])) {
-										var tag = info[4].find((tag) => /^die:.+$/.test(tag));
-										if (tag) {
-											info[4].remove(tag);
-											if (typeof game.readFile == "function") {
-												info[4].push(
-													"die:ext:" +
-													page.currentExtension +
-													"/audio/die/" +
-													tag.slice(tag.lastIndexOf("/") + 1)
-												);
-											} else {
-												info[4].push(
-													"die:db:extension-" +
-													page.currentExtension +
-													":audio/die/" +
-													tag.slice(tag.lastIndexOf("/") + 1)
-												);
-											}
+					str += ",package:" + get.stringify({
+						//替换die audio，加上扩展名
+						//TODO: 创建扩展这部分更是重量级
+						character: ((pack) => {
+							var character = pack.character;
+							for (var key in character) {
+								var info = character[key];
+								if (Array.isArray(info[4])) {
+									var tag = info[4].find((tag) => /^die:.+$/.test(tag));
+									if (tag) {
+										info[4].remove(tag);
+										if (typeof game.readFile == "function") {
+											info[4].push("die:ext:" + page.currentExtension + "/audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
+										} else {
+											info[4].push("die:db:extension-" + page.currentExtension + ":audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
 										}
 									}
 								}
-								return pack;
-							})(dash1.content.pack),
-							card: dash2.content.pack,
-							skill: dash3.content.pack,
-							intro: introExtLine.querySelector("input").value || "",
-							author: authorExtLine.querySelector("input").value || "",
-							diskURL: diskExtLine.querySelector("input").value || "",
-							forumURL: forumExtLine.querySelector("input").value || "",
-							version: versionExtLine.querySelector("input").value || "",
-						});
+							}
+							return pack;
+						})(dash1.content.pack),
+						card: dash2.content.pack,
+						skill: dash3.content.pack,
+						intro: introExtLine.querySelector("input").value ?? "",
+						author: authorExtLine.querySelector("input").value ?? "",
+						diskURL: diskExtLine.querySelector("input").value ?? "",
+						forumURL: forumExtLine.querySelector("input").value ?? "",
+						version: versionExtLine.querySelector("input").value ?? "",
+					});
 					var files = { character: [], card: [], skill: [], audio: [] };
-					for (var i in dash1.content.image) {
+					for (const i in dash1.content.image) {
 						files.character.push(i);
 					}
-					for (var i in dash1.content.audio) {
+					for (const i in dash1.content.audio) {
 						files.audio.push("audio/die/" + i);
 					}
-					for (var i in dash2.content.image) {
+					for (const i in dash2.content.image) {
 						files.card.push(i);
 					}
-					for (var i in dash3.content.audio) {
+					for (const i in dash3.content.audio) {
 						files.skill.push(i);
 					}
 					str += ",files:" + JSON.stringify(files);
+					str += ",connect:false"//不写的话，这里会变成undefined喵，所以默认是不能联机的哦
 					str += "}";
-					var extension = {
-						"extension.js":
-							'import { lib, game, ui, get, ai, _status } from "../../noname.js";\ngame.import("extension",function(){\n\treturn ' +
-							str +
-							"\n});",
+					const extension = {
+						"extension.js": `import { lib, game, ui, get, ai, _status } from "../../noname.js";\nexport const type = "extension";\nexport default function(){\n\treturn ${str} \n};`,
 						"info.json": JSON.stringify({
+							intro: introExtLine.querySelector("input").value ?? "",
 							name: page.currentExtension,
-							author: authorExtLine.querySelector("input").value || "",
-							diskURL: diskExtLine.querySelector("input").value || "",
-							forumURL: forumExtLine.querySelector("input").value || "",
-							version: versionExtLine.querySelector("input").value || ""
+							author: authorExtLine.querySelector("input").value ?? "",
+							diskURL: diskExtLine.querySelector("input").value ?? "",
+							forumURL: forumExtLine.querySelector("input").value ?? "",
+							version: versionExtLine.querySelector("input").value ?? ""
 						}),
+						"README.md": ""
 					};
 					for (var i in dash1.content.image) {
 						extension[i] = dash1.content.image[i];
@@ -2429,14 +2417,12 @@ export const extensionMenu = function (connectMenu) {
 							dashes[i].node.code = page.content[i] || "";
 						}
 					} else {
-						dashes.content.node.code =
-							"function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.precontent.node.code =
-							"function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.config.node.code =
-							'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n    name:"示例列表选项",\n        init:"3",\n        item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
-						dashes.help.node.code =
-							'help={\n    \n}\n\ns/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+						dashes.arenaReady.node.code = "function(){\n    \n}\n\n/*\n函数执行时机为界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
+						dashes.content.node.code = "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
+						dashes.prepare.node.code = "function(){\n    \n}\n\n/*\n函数执行时机玩游戏扩展加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
+						dashes.precontent.node.code = "function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
+						dashes.config.node.code = 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n    name:"示例列表选项",\n        init:"3",\n        item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+						dashes.help.node.code = 'help={\n    \n}\n\ns/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 					}
 				};
 				var dashes = {};
@@ -2457,7 +2443,7 @@ export const extensionMenu = function (connectMenu) {
 							code = container.textarea.value;
 						}
 						try {
-							if (link == "content" || link == "precontent") {
+							if (["arenaReady", "content", "prepare", "precontent"].includes(link)) {
 								var { func } = security.exec2(`func = ${code}`);
 								if (typeof func != "function") {
 									throw "err";
@@ -2533,12 +2519,28 @@ export const extensionMenu = function (connectMenu) {
 				};
 				page.content = {};
 				createCode(
+					"辅",
+					"辅助代码",
+					page,
+					clickCode,
+					"arenaReady",
+					"function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
+				);
+				createCode(
 					"主",
 					"主代码",
 					page,
 					clickCode,
 					"content",
 					"function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
+				);
+				createCode(
+					"预",
+					"预备代码",
+					page,
+					clickCode,
+					"prepare",
+					"function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
 				);
 				createCode(
 					"启",

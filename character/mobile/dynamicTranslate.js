@@ -16,7 +16,7 @@ const dynamicTranslates = {
 	},
 	shoufa(player) {
 		const zhoufa = player.storage.zhoulin_zhoufa;
-		const nodoudizhu = get.mode() == "doudizhu" ? "与你距离大于/不大于1的" : "与你距离大于/不大于2的";
+		const nodoudizhu = get.mode() == "doudizhu" ? "与你距离不小于1的/距离不大于1的" : "与你距离不小于2的/距离不大于2的";
 		if (!zhoufa) return "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，令其随机执行以下一项：豹，令其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，令其摸一张牌。";
 		let str = "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，";
 		str += ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
@@ -67,8 +67,8 @@ const dynamicTranslates = {
 				}[player.storage.pothanzhan]
 		);
 	},
-	mbfunan(player){
-		if(player.storage.mbfunan_rewrite) return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
+	mbfunan(player) {
+		if (player.storage.mbfunan_rewrite) return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
 		return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌。`;
 	},
 };

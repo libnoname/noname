@@ -1,6 +1,5 @@
 export default {
 	"#ganfuren:die": "请替我照顾好阿斗……",
-	"#std_panfeng:die": "潘凤又被华雄斩了……",
 	"#jianxiong1": "宁教我负天下人，休教天下人负我！",
 	"#jianxiong2": "吾好梦中杀人！",
 	"#hujia1": "魏将何在？",

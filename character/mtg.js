@@ -19,20 +19,20 @@ game.import("character", function () {
 			mduohun: {
 				trigger: { player: "dyingAfter" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source.isIn() && event.source.hp > 0;
 				},
 				logTarget: "source",
-				content: function () {
+				content() {
 					trigger.source.loseHp();
 				},
 				ai: {
-					threaten: function (player, target) {
+					threaten(player, target) {
 						if (target.hp == 1) return 0.6;
 						return 1;
 					},
 					effect: {
-						target: function (card, player, target, current) {
+						target(card, player, target, current) {
 							if (!target.hasFriend()) return;
 							if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -1];
 						},
@@ -41,7 +41,7 @@ game.import("character", function () {
 			},
 			lingyong: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.hasSkill("subplayer") && player.getSubPlayers("lingyong_get").length > 0;
 				},
 				nosub: true,
@@ -50,13 +50,13 @@ game.import("character", function () {
 				delay: 0,
 				skillAnimation: true,
 				animationColor: "thunder",
-				content: function () {
+				content() {
 					player.callSubPlayer().set("tag", "lingyong_get");
 				},
 				ai: {
 					order: 1,
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							return 1;
 							// if(player.hp<=1) return 1;
 							// if(!player.needsToDiscard(player.hp-1)) return 1;
@@ -68,13 +68,13 @@ game.import("character", function () {
 					get: {
 						trigger: { global: "dieAfter" },
 						forced: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return (
 								!event.player.isMin() &&
 								![player.name, player.name1, player.name2].includes(event.player.name)
 							);
 						},
-						content: function () {
+						content() {
 							var skills = lib.character[trigger.player.name][3].slice(0);
 							for (var i = 0; i < skills.length; i++) {
 								if (lib.skill[skills[i]].nosub) {
@@ -95,13 +95,13 @@ game.import("character", function () {
 				round: 2,
 				trigger: { player: "phaseEnd" },
 				direct: true,
-				addintro: function (storage, player) {
+				addintro(storage, player) {
 					if (player.hasSkill("mhuanyi_target")) {
 						return "直到下一回合开始，当成为某类型的卡牌的惟一目标时，将目标转移给某名其他角色；";
 					}
 					return "";
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var rand = Math.random();
 					player
@@ -142,7 +142,7 @@ game.import("character", function () {
 						forced: true,
 						onremove: true,
 						group: "mhuanyi_die",
-						filter: function (event, player) {
+						filter(event, player) {
 							if (!player.storage.mhuanyi_target) return false;
 							if (event.player == player.storage.mhuanyi_target[0]) return false;
 							if (get.type(event.card) == "basic") {
@@ -161,10 +161,10 @@ game.import("character", function () {
 							}
 							return true;
 						},
-						logTarget: function (event, player) {
+						logTarget(event, player) {
 							return player.storage.mhuanyi_target[0];
 						},
-						content: function () {
+						content() {
 							trigger.target = player.storage.mhuanyi_target[0];
 							player.removeSkill("mhuanyi_target");
 						},
@@ -172,11 +172,11 @@ game.import("character", function () {
 					die: {
 						trigger: { global: "dieAfter" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							if (!player.storage.mhuanyi_target) return false;
 							return event.player == player.storage.mhuanyi_target[0];
 						},
-						content: function () {
+						content() {
 							player.removeSkill("mhuanyi_target");
 						},
 					},
@@ -187,7 +187,7 @@ game.import("character", function () {
 				direct: true,
 				priority: 5.5,
 				round: 1,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (get.type(event.card) == "trick" && event.card.isCard) {
 						if (event.player == player) return false;
 						if (!player.countCards("he", { suit: get.suit(event.card) })) return false;
@@ -195,7 +195,7 @@ game.import("character", function () {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var att = get.attitude(player, trigger.player);
 					var suit = get.suit(trigger.card);
@@ -220,14 +220,14 @@ game.import("character", function () {
 			mtongnian: {
 				trigger: { player: "phaseUseBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
 						if (enemies[i].countCards("h")) return true;
 					}
 					return false;
 				},
-				getList: function (player) {
+				getList(player) {
 					var list = [];
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
@@ -235,7 +235,7 @@ game.import("character", function () {
 					}
 					return list;
 				},
-				content: function () {
+				content() {
 					var list = lib.skill.mtongnian.getList(player);
 					if (list.length) {
 						var card = list.randomGet();
@@ -251,12 +251,12 @@ game.import("character", function () {
 					change: {
 						trigger: { player: "useCard" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return player.hasCard(function (card) {
 								return card.mtongnian_link ? true : false;
 							}, "h");
 						},
-						content: function () {
+						content() {
 							var list = lib.skill.mtongnian.getList(player);
 							var hs = player.getCards("h", function (card) {
 								return card.mtongnian_link ? true : false;
@@ -274,10 +274,10 @@ game.import("character", function () {
 					use: {
 						trigger: { player: "useCardBefore" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return event.card.mtongnian_link ? true : false;
 						},
-						content: function () {
+						content() {
 							var link = trigger.card.mtongnian_link;
 							var target = get.owner(link);
 							if (target && target != player) {
@@ -299,13 +299,13 @@ game.import("character", function () {
 					lose: {
 						trigger: { player: "phaseUseEnd", global: "loseEnd" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							if (event.name == "lose") {
 								return lib.skill.mtongnian.getList(player).length == 0;
 							}
 							return true;
 						},
-						content: function () {
+						content() {
 							var hs = player.getCards("h", function (card) {
 								return card.mtongnian_link ? true : false;
 							});
@@ -322,10 +322,10 @@ game.import("character", function () {
 			mbaizhan: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				filter: function (event) {
+				filter(event) {
 					return event.num > 0;
 				},
-				content: function () {
+				content() {
 					player.changeHujia(trigger.num);
 				},
 				ai: {
@@ -334,13 +334,13 @@ game.import("character", function () {
 			},
 			msilian: {
 				trigger: { player: "phaseEnd" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hujia > 0;
 				},
-				check: function (event, player) {
+				check(event, player) {
 					return player.hujia > 1 && player.hp > 1;
 				},
-				content: function () {
+				content() {
 					player.storage.msilian = player.hujia;
 					player.changeHujia(-player.hujia);
 					player.insertPhase();
@@ -350,20 +350,20 @@ game.import("character", function () {
 					hp: {
 						trigger: { player: "phaseAfter" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return event.skill == "msilian" && !player.getStat("damage");
 						},
-						content: function () {
+						content() {
 							player.loseHp();
 						},
 					},
 					draw: {
 						trigger: { player: "phaseDrawBegin" },
-						filter: function (event) {
+						filter(event) {
 							return event.getParent("phase").skill == "msilian";
 						},
 						silent: true,
-						content: function () {
+						content() {
 							trigger.num += player.storage.msilian - 2;
 						},
 					},

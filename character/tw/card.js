@@ -8,13 +8,13 @@ const cards = {
 		derivation: "tw_dongzhao",
 		global: ["dz_mantianguohai"],
 		selectTarget: [1, 2],
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target != player && target.countCards("hej") > 0;
 		},
-		content: function () {
+		content() {
 			player.gainPlayerCard(target, "hej", true);
 		},
-		contentAfter: function () {
+		contentAfter() {
 			"step 0";
 			var evtx = event.getParent();
 			event.targets = targets.filter(function (target) {

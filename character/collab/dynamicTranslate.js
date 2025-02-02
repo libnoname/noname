@@ -21,5 +21,21 @@ const dynamicTranslates = {
 		if (storage) str += "</span>";
 		return str + "②当你即将死亡时，你取消之并将性别变更为〖齐心①〗的转换状态，将体力调整至此状态的体力，然后你本局游戏不能发动〖齐心〗。";
 	},
+	olshouhun(player) {
+		const storage = player.storage.olshouhun;
+		const str = lib.translate.olshouhun_info;
+		if (!storage) return str;
+		const regex = /\[\d+\]/g;
+		let match,
+			result = str,
+			index = 0;
+		while ((match = regex.exec(str)) !== null) {
+			if (index < storage.length) {
+				result = result.replace(match[0], `[${storage[index]}]`);
+			}
+			index++;
+		}
+		return result;
+	},
 };
 export default dynamicTranslates;

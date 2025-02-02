@@ -14,7 +14,7 @@ game.import("character", function () {
 				group: ["qixiang1", "qixiang2"],
 				ai: {
 					effect: {
-						target: function (card, player, target, current) {
+						target(card, player, target, current) {
 							if (card.name == "lebu" || card.name == "bingliang") return 0.8;
 						},
 					},
@@ -23,7 +23,7 @@ game.import("character", function () {
 			qixiang1: {
 				trigger: { player: "judge" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.card) {
 						if (event.card.viewAs) {
 							return event.card.viewAs == "lebu";
@@ -32,14 +32,14 @@ game.import("character", function () {
 						}
 					}
 				},
-				content: function () {
+				content() {
 					player.addTempSkill("qixiang3", "phaseJudgeAfter");
 				},
 			},
 			qixiang2: {
 				trigger: { player: "judge" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.card) {
 						if (event.card.viewAs) {
 							return event.card.viewAs == "bingliang";
@@ -48,27 +48,27 @@ game.import("character", function () {
 						}
 					}
 				},
-				content: function () {
+				content() {
 					player.addTempSkill("qixiang4", "phaseJudgeAfter");
 				},
 			},
 			qixiang3: {
 				mod: {
-					suit: function (card, suit) {
+					suit(card, suit) {
 						if (suit == "diamond") return "heart";
 					},
 				},
 			},
 			qixiang4: {
 				mod: {
-					suit: function (card, suit) {
+					suit(card, suit) {
 						if (suit == "spade") return "club";
 					},
 				},
 			},
 			nianrui: {
 				trigger: { player: ["phaseBegin", "phaseEnd"] },
-				content: function () {
+				content() {
 					"step 0";
 					player.judge(function (card) {
 						return get.color(card) == "red" ? 1 : 0;
@@ -83,18 +83,18 @@ game.import("character", function () {
 				enable: "phaseUse",
 				usable: 1,
 				filterCard: { color: "red" },
-				check: function (card) {
+				check(card) {
 					return 6 - get.value(card);
 				},
 				filterTarget: true,
 				selectTarget: -1,
 				line: "fire",
-				content: function () {
+				content() {
 					target.damage("fire");
 				},
 				ai: {
 					result: {
-						player: function (card, player, target) {
+						player(card, player, target) {
 							var eff = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (!game.players[i].isOut()) {
@@ -114,11 +114,11 @@ game.import("character", function () {
 				trigger: { target: "useCardToBefore" },
 				forced: true,
 				priority: 6,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.getEquip(2)) return false;
 					return lib.skill.tengjia1.filter(event, player);
 				},
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
@@ -132,20 +132,20 @@ game.import("character", function () {
 			},
 			manjia2: {
 				trigger: { player: "damageBegin" },
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.getEquip(2)) return false;
 					if (event.hasNature("fire")) return true;
 				},
 				forced: true,
-				check: function () {
+				check() {
 					return false;
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 				ai: {
 					effect: {
-						target: function (card, player, target, current) {
+						target(card, player, target, current) {
 							if (target.getEquip(2)) return;
 							return lib.skill.tengjia2.ai.effect.target.apply(this, arguments);
 						},
@@ -154,28 +154,28 @@ game.import("character", function () {
 			},
 			xiaoshou: {
 				trigger: { player: "phaseEnd" },
-				filter: function (event, player) {
+				filter(event, player) {
 					var players = game.players.slice(0);
 					players.sort(function (a, b) {
 						return b.hp - a.hp;
 					});
 					return players[0].hp > players[1].hp && players[0] != player;
 				},
-				check: function (event, player) {
+				check(event, player) {
 					var players = game.players.slice(0);
 					players.sort(function (a, b) {
 						return b.hp - a.hp;
 					});
 					return get.damageEffect(players[0], player, player, "fire") > 0;
 				},
-				prompt: function () {
+				prompt() {
 					var players = game.players.slice(0);
 					players.sort(function (a, b) {
 						return b.hp - a.hp;
 					});
 					return "枭首：是否对" + get.translation(players[0]) + "造成1点火焰伤害？";
 				},
-				content: function () {
+				content() {
 					var players = game.players.slice(0);
 					players.sort(function (a, b) {
 						return b.hp - a.hp;
@@ -192,15 +192,15 @@ game.import("character", function () {
 			guiji: {
 				trigger: { player: "phaseJudgeBegin" },
 				forced: true,
-				content: function () {
+				content() {
 					player.discard(player.getCards("j").randomGet());
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("j") > 0;
 				},
 				ai: {
 					effect: {
-						target_use: function (card, player, target, current) {
+						target_use(card, player, target, current) {
 							if (get.type(card) == "delay" && target.countCards("j") == 0) return 0.1;
 						},
 					},
@@ -211,13 +211,13 @@ game.import("character", function () {
 				trigger: { player: "phaseEnd" },
 				direct: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].countCards("h")) return true;
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseTarget("获得一名角色的一张手牌", true, function (card, player, target) {
 						return player != target && target.countCards("h") > 0;
@@ -239,7 +239,7 @@ game.import("character", function () {
 			suoling: {
 				trigger: { player: "phaseEnd" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.isLinked()) return true;
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && !game.players[i].isLinked()) {
@@ -248,7 +248,7 @@ game.import("character", function () {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.targets = game.players.slice(0);
 					event.targets.remove(player);
@@ -267,7 +267,7 @@ game.import("character", function () {
 			xixing: {
 				enable: "phaseUse",
 				usable: 1,
-				filterCard: function (card) {
+				filterCard(card) {
 					var type = get.type(card);
 					for (var i = 0; i < ui.selected.cards.length; i++) {
 						if (get.type(ui.selected.cards[i]) == type) return false;
@@ -277,16 +277,16 @@ game.import("character", function () {
 				complexCard: true,
 				selectCard: 3,
 				position: "he",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player != target;
 				},
-				check: function (card) {
+				check(card) {
 					if (_status.event.player.hp == _status.event.player.maxHp) {
 						return 5 - get.value(card);
 					}
 					return 10 - get.value(card);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.damage();
 					"step 1";
@@ -295,7 +295,7 @@ game.import("character", function () {
 				ai: {
 					order: 9.5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player);
 						},
 					},

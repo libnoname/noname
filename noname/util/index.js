@@ -78,3 +78,14 @@ export function leaveCompatibleEnvironment() {
 export function jumpToCatchBlock() {
 	throw new Error("");
 }
+
+/**
+ *
+ * @return {boolean}
+ * @param {function} func
+ */
+export function isClass(func) {
+	if (typeof func !== "function") return false;
+	const fnStr = Function.prototype.toString.call(func);
+	return /^class\s/.test(fnStr);
+}

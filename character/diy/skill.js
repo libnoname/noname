@@ -18,11 +18,11 @@ const skills = {
 		audio: "xinfuli",
 		enable: "chooseToUse",
 		locked: true,
-		init: function (player, skill) {
+		init(player, skill) {
 			player.storage[skill] = false;
 		},
 		mark: true,
-		filter: function (event, player) {
+		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
 			if (player.storage.fuli) return false;
@@ -36,13 +36,13 @@ const skills = {
 		},
 		ai: {
 			save: true,
-			skillTagFilter: function (player, arg, target) {
+			skillTagFilter(player, arg, target) {
 				return player == target && player.storage.diy_fuli != true;
 			},
 			result: {
 				player: 10,
 			},
-			threaten: function (player, target) {
+			threaten(player, target) {
 				if (!target.storage.diy_fuli) return 0.9;
 			},
 		},
@@ -55,11 +55,11 @@ const skills = {
 		audio: "paoxiao",
 		trigger: { player: "shaMiss" },
 		forced: true,
-		content: function () {
+		content() {
 			player.addTempSkill("diy_paoxiao_damage");
 		},
 		mod: {
-			cardUsable: function (card, player, num) {
+			cardUsable(card, player, num) {
 				if (card.name == "sha") return Infinity;
 			},
 		},
@@ -68,11 +68,11 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				audio: "paoxiao",
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.card && event.card.name == "sha";
 				},
 				onremove: true,
-				content: function () {
+				content() {
 					trigger.num++;
 					player.removeSkill("diy_paoxiao_damage");
 				},
@@ -86,7 +86,7 @@ const skills = {
 		animationColor: "soil",
 		locked: true,
 		trigger: { player: "phaseZhunbeiBegin" },
-		filter: function (event, player) {
+		filter(event, player) {
 			return player.isDamaged();
 		},
 		async content(event, trigger, player) {
@@ -4820,7 +4820,7 @@ const skills = {
 				event.finish();
 			}
 			"step 1";
-			trigger.player.addSkillLog(result.control);
+			trigger.player.addSkills(result.control);
 			trigger.player.recover(1 - trigger.player.hp);
 			trigger.player.draw(2);
 			trigger.player.storage.ns_chuanshu2 = player;
@@ -7559,79 +7559,75 @@ const skills = {
 				trigger: { player: "subPlayerDie" },
 				forced: true,
 				filter(event, player) {
-					var left = player.storage.nshuanxian_left;
+					const left = player.storage.nshuanxian_left;
 					if (left && player.hasSkill(left)) return false;
-					var right = player.storage.nshuanxian_right;
+					const right = player.storage.nshuanxian_right;
 					if (right && player.hasSkill(right)) return false;
 					if (!player.storage.nshuanxian_damage) return false;
 					return true;
 				},
-				content() {
-					player.addSkill("releiji");
-					player.addSkill("guidao");
+				async content(event, trigger, player) {
+					await player.addSkills(["releiji", "guidao"]);
 				},
 			},
 			die: {
-				trigger: { player: "dieBegin" },
-				direct: true,
+				trigger: { player: "die" },
 				filter(event, player) {
-					if (game.countPlayer() <= 2) return false;
-					var left = player.storage.nshuanxian_left;
+					if (!game.hasPlayer(current => player != current && player != event.source)) return false;
+					const left = player.storage.nshuanxian_left;
 					if (left && player.hasSkill(left)) return true;
-					var right = player.storage.nshuanxian_right;
+					const right = player.storage.nshuanxian_right;
 					if (right && player.hasSkill(right)) return true;
 					return false;
 				},
-				content() {
-					"step 0";
-					var str;
-					var left = player.storage.nshuanxian_left;
-					var right = player.storage.nshuanxian_right;
+				skillAnimation: true,
+				animationColor: "wood",
+				forceDie: true,
+				async cost(event, trigger, player) {
+					const { source } = trigger;
+					let str;
+					const left = player.storage.nshuanxian_left;
+					const right = player.storage.nshuanxian_right;
 					if (left && player.hasSkill(left) && right && player.hasSkill(right)) {
 						str = "令一名其他角色获得技能【雷击】和【鬼道】";
 					} else {
 						str = "令一名其他角色获得技能【雷击】或【鬼道】";
 					}
-					if (trigger.source) {
-						str += "（" + get.translation(trigger.source) + "除外）";
+					if (source) {
+						str += "（" + get.translation(source) + "除外）";
 					}
-					player
-						.chooseTarget(function (card, player, target) {
+					event.result = await player
+						.chooseTarget((card, player, target) => {
 							return target != player && target != _status.event.source;
-						}, get.prompt("nsshoudao"))
-						.set("ai", function (target) {
+						}, get.prompt(event.name.slice(0, -5)))
+						.set("ai", target => {
 							if (target.hasSkill("releiji")) return 0;
-							return get.attitude(_status.event.player, target);
+							return get.attitude(get.player(), target);
 						})
-						.set("source", trigger.source)
-						.set("prompt2", str);
-					"step 1";
-					var goon = false;
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("nsshoudao", target);
-						var left = player.storage.nshuanxian_left;
-						var right = player.storage.nshuanxian_right;
-						if (left && player.hasSkill(left) && right && player.hasSkill(right)) {
-							target.addSkillLog("releiji");
-							target.addSkillLog("guidao");
-						} else {
-							event.target = target;
-							player.chooseControl("releiji", "guidao").set("prompt", "令" + get.translation(target) + "获得一项技能");
-							goon = true;
-						}
+						.set("source", source)
+						.set("prompt2", str)
+						.set("forceDie", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					const left = player.storage.nshuanxian_left;
+					const right = player.storage.nshuanxian_right;
+					if (left && player.hasSkill(left) && right && player.hasSkill(right)) {
+						await target.addSkills(["releiji", "guidao"]);
+					} else {
+						const control = await player
+							.chooseControl("releiji", "guidao")
+							.set("prompt", `令${get.translation(target)}获得一项技能`)
+							.forResultControl();
+						await target.addSkills(control);
 					}
-					if (!goon) {
-						event.finish();
-					}
-					"step 2";
-					event.target.addSkillLog(result.control);
 				},
 			},
 		},
-		ai: {
-			combo: "nshuanxian",
-		},
+		ai: { combo: "nshuanxian" },
 	},
 	nshuanxian: {
 		trigger: { global: "gameStart", player: "enterGame" },

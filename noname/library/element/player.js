@@ -8270,7 +8270,7 @@ export class Player extends HTMLDivElement {
 		}
 		return this;
 	}
-	addSkillLog(skill) {
+	addSkillLog(skill, popup = true) {
 		if (!skill) return this;
 		this.addSkill(skill);
 		if (!Array.isArray(skill)) skill = [skill];
@@ -8278,12 +8278,12 @@ export class Player extends HTMLDivElement {
 			this,
 			"获得了技能",
 			...skill.map(i => {
-				this.popup(i);
+				if (popup) this.popup(i);
 				return "#g【" + get.translation(i) + "】";
 			})
 		);
 	}
-	removeSkillLog(skill, popup) {
+	removeSkillLog(skill, popup = true) {
 		if (!skill) return this;
 		this.removeSkill(skill);
 		if (!Array.isArray(skill)) skill = [skill];
@@ -8291,7 +8291,7 @@ export class Player extends HTMLDivElement {
 			this,
 			"失去了技能",
 			...skill.map(i => {
-				if (popup === true) this.popup(i);
+				if (popup) this.popup(i);
 				return "#g【" + get.translation(i) + "】";
 			})
 		);
@@ -8343,7 +8343,7 @@ export class Player extends HTMLDivElement {
 		if (!skill) return;
 		return this.changeSkills([], Array.isArray(skill) ? skill : [skill]);
 	}
-	changeSkills(addSkill = [], removeSkill = []) {
+	changeSkills(addSkill = [], removeSkill = [], popup = true) {
 		if (!Array.isArray(addSkill) || !Array.isArray(removeSkill)) {
 			console.warn(`警告：Player[${this.name}].changeSkills的参数错误，应当为数组形式。`);
 			return;
@@ -8351,6 +8351,7 @@ export class Player extends HTMLDivElement {
 		const next = game.createEvent("changeSkills", false);
 		next.player = this;
 		next.forceDie = true;
+		next.popup = popup;
 		next.addSkill = addSkill.slice(0).unique();
 		next.removeSkill = removeSkill.slice(0).unique();
 		next.setContent("changeSkills");
@@ -8435,14 +8436,7 @@ export class Player extends HTMLDivElement {
 		return this.changeSkills(skillsToAdd, skillsToRemove).set("$handle", function (player, skillsToAdd, skillsToRemove) {
 			//先失去先前获得的衍生技能
 			if (skillsToRemove.length > 0) {
-				game.log(
-					player,
-					"失去了技能",
-					...skillsToRemove.map(i => {
-						return "#g【" + get.translation(i) + "】";
-					})
-				);
-				player.removeSkill(skillsToRemove);
+				player.removeSkillLog(skillsToRemove, get.event().popup);
 			}
 			//再获得新的衍生技能
 			if (skillsToAdd.length > 0) {
@@ -8450,6 +8444,7 @@ export class Player extends HTMLDivElement {
 					player,
 					"获得了技能",
 					...skillsToAdd.map(i => {
+						if (get.event().popup) player.popup(i);
 						return "#g【" + get.translation(i) + "】";
 					})
 				);
@@ -8543,14 +8538,7 @@ export class Player extends HTMLDivElement {
 			skills = this.getRemovableAdditionalSkills(skill, target);
 		return player.changeSkills([], skills).set("$handle", function (player, addSkills, removeSkills) {
 			if (removeSkills.length > 0) {
-				game.log(
-					player,
-					"失去了技能",
-					...removeSkills.map(i => {
-						return "#g【" + get.translation(i) + "】";
-					})
-				);
-				player.removeSkill(removeSkills);
+				player.removeSkillLog(removeSkills, get.event().popup);
 			}
 			player.$removeAdditionalSkills(skill, target);
 		});
@@ -8852,6 +8840,7 @@ export class Player extends HTMLDivElement {
 					player,
 					"获得了技能",
 					...addSkills.map(i => {
+						if (get.event().popup) player.popup(i);
 						return "#g【" + get.translation(i) + "】";
 					})
 				);

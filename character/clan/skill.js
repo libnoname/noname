@@ -150,16 +150,29 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const count = Math.min(4, player.countMark("clananran_used") + 1);
-			const { result } = await player.chooseButton([
-				get.prompt2("clananran"),
-				[
+			const { result } = await player
+				.chooseButton([
+					get.prompt2("clananran"),
 					[
-						["draw", `摸${get.cnNumber(count)}张牌`],
-						["asyncDraw", `令至多${get.cnNumber(count)}名角色摸一张牌`],
+						[
+							["draw", `摸${get.cnNumber(count)}张牌`],
+							["asyncDraw", `令至多${get.cnNumber(count)}名角色摸一张牌`],
+						],
+						"textbutton",
 					],
-					"textbutton",
-				],
-			]);
+				])
+				.set("ai", button => {
+					const player = get.player(),
+						count = Math.min(4, player.countMark("clananran_used") + 1);
+					if (button.link === "draw") return get.effect(player, { name: "draw" }, player, player) * count;
+					return game
+						.filterPlayer(target => get.effect(target, { name: "draw" }, player, player) > 0)
+						.sort((a, b) => {
+							return get.effect(b, { name: "draw" }, player, player) - get.effect(a, { name: "draw" }, player, player);
+						})
+						.slice(0, count)
+						.reduce((sum, target) => sum + get.effect(target, { name: "draw" }, player, player), 0);
+				});
 			event.result = {
 				bool: result.bool,
 				cost_data: result.links[0],
@@ -169,15 +182,19 @@ const skills = {
 			player.addSkill("clananran_used");
 			if (player.countMark("clananran_used") < 4) player.addMark("clananran_used", 1, false);
 			const count = player.countMark("clananran_used");
-			const { cost_data } = event;
+			const { cost_data } = event,
+				map = { player: "useCard1", global: "phaseAfter" };
 			if (cost_data == "draw") {
+				player.addTempSkill("clananran_tag", map);
 				await player.draw(count).set("gaintag", ["clananran_tag"]);
-				player.addTempSkill("clananran_tag", { player: "useCardAfter" });
 			} else {
-				const { result } = await player.chooseTarget(`令至多${get.cnNumber(count)}名角色摸一张牌`, [1, count]);
-				for (const i of result.targets) {
-					await i.draw().set("gaintag", ["clananran_tag"]);
-					i.addTempSkill("clananran_tag", { player: "useCardAfter" });
+				const { result } = await player.chooseTarget(`岸然：令至多${get.cnNumber(count)}名角色摸一张牌`, [1, count], true);
+				if (result.targets?.length) {
+					for (const i of result.targets.sortBySeat()) {
+						i.addTempSkill("clananran_tag", map);
+						await i.draw("nodelay").set("gaintag", ["clananran_tag"]);
+					}
+					await game.delayx();
 				}
 			}
 		},
@@ -205,49 +222,51 @@ const skills = {
 	},
 	clangaobian: {
 		audio: 2,
-		trigger: {
-			global: "phaseAfter",
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			if (event.player == player) return false;
-			return (
-				game.countPlayer(target => {
-					return target.getHistory("damage").length;
-				}) === 1
-			);
+			const targets = game.filterPlayer2(target => target.hasHistory("damage"));
+			return targets.length == 1 && targets[0]?.isIn();
 		},
 		forced: true,
+		logTarget(event, player) {
+			return game.findPlayer2(target => target.hasHistory("damage"));
+		},
 		async content(event, trigger, player) {
-			const target = game.findPlayer(target => {
-				return target.getHistory("damage").length;
-			});
+			const target = game.findPlayer2(target => target.hasHistory("damage"));
 			const discarded = get.discarded().filter(c => c.name == "sha");
 			const bool = discarded.some(c => target.hasUseTarget(c));
-			const { result } = await player
-				.chooseButton([
-					"请选择一项",
-					[
-						[
-							["sha", `令${get.translation(target)}使用本回合进入弃牌堆的一张【杀】`],
-							["loseHp", `令${get.translation(target)}失去一点体力`],
-						],
-						"textbutton",
-					],
-				])
-				.set("filterButton", function (button) {
-					if (button.link == "sha") {
-						return bool;
-					}
-					return true;
-				});
+			const result = bool
+				? await target
+						.chooseButton(
+							[
+								"告变：请选择一项",
+								[
+									[
+										["sha", "使用本回合进入弃牌堆的一张【杀】"],
+										["loseHp", "失去1点体力"],
+									],
+									"textbutton",
+								],
+							],
+							true
+						)
+						.set("discarded", discarded.filter(c => target.hasUseTarget(c)))
+						.set("ai", button => {
+							const { player, discarded: cards } = get.event();
+							return {
+								sha: Math.max(...cards.map(card => player.getUseValue(card))),
+								loseHp: get.effect(player, { name: "losehp" }, player, player),
+							}[button.link];
+						})
+						.forResult()
+				: { bool: true, links: ["loseHp"] };
 			if (result.links[0] == "sha") {
-				const { result: result2 } = await target.chooseCardButton(discarded).set("filterButton", button => {
-					return target.hasUseTarget(button);
-				});
-				await target.chooseUseTarget(result2.links[0], true);
-			} else {
-				await target.loseHp();
-			}
+				const result2 = await target.chooseCardButton("告变：请选择其中一张【杀】使用", discarded, true).set("filterButton", button => {
+					return get.player().hasUseTarget(button.link);
+				}).forResult();
+				if (result2?.bool && result2.links?.length) await target.chooseUseTarget(result2.links[0], true, false);
+			} else await target.loseHp();
 		},
 	},
 	// 族王昶

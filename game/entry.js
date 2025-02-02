@@ -14,7 +14,7 @@ if (core === "chrome" && !isNaN(version) && version < 85) {
 	game.print(tip);
 	const redirect_tip = `您使用的浏览器或无名杀客户端内核版本过低，将在未来的版本被废弃！\n目前使用的浏览器UA信息为：\n${userAgent}\n点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。`;
 	if (confirm(redirect_tip)) {
-		window.open("https://github.com/libccy/noname/releases/tag/chromium77-client");
+		window.open("https://github.com/libnoname/noname/releases/tag/chromium77-client");
 	}
 	*/
 	waitUpdate = game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
@@ -40,11 +40,11 @@ waitUpdate
 				}
 			};
 			/*
-			升级方法:
-				1. 游戏启动后导出数据，然后以http/s协议重启
-				2. 以http/s协议导入数据
-				3. 保存http/s协议的状态，以后不再以file协议启动
-			*/
+		升级方法:
+			1. 游戏启动后导出数据，然后以http/s协议重启
+			2. 以http/s协议导入数据
+			3. 保存http/s协议的状态，以后不再以file协议启动
+		*/
 			// 导出数据到根目录的noname.config.txt
 			if (navigator.notification) {
 				navigator.notification.activityStart("正在进行升级", "请稍候");
@@ -147,8 +147,7 @@ waitUpdate
 						if (url.searchParams.get("sendUpdate")) {
 							url.searchParams.delete("sendUpdate");
 							location.href = url.toString();
-						}
-						else {
+						} else {
 							location.reload();
 						}
 					})
@@ -157,8 +156,7 @@ waitUpdate
 						if (window.FileError) {
 							if (!(e instanceof window.FileError)) {
 								alert(typeof e?.message == "string" ? e.message : JSON.stringify(e));
-							}
-							else {
+							} else {
 								console.error(`noname.config.txt读取失败: ${Object.keys(window.FileError).find(msg => window.FileError[msg] === e.code)}`);
 							}
 						}

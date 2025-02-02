@@ -111,4 +111,10 @@ export default {
 	"#jsrgjuelie3": "洛阳已在眼下，莫让董贼轻逃。",
 	"#jsrgjuelie4": "火势刻不容缓，全军速速进发。",
 	"#jsrg_sunjian:die": "若违此誓，某必为万箭穿心！",
+	"#jsrgshacheng1": "丞相今与贼战，当急筑营寨，以御敌变也。",
+	"#jsrgshacheng2": "三军既出，营为首务，安可不筑城以御乎？",
+	"#jsrgninghan1": "今趁天寒，可灌沙为城，不过达晓之功。",
+	"#jsrgninghan2": "如此坚壁可成，虽金汤之固未能过也。",
+	"#jsrgninghan3": "丞相英明一世，岂为此事所迷？",
+	"#jsrg_lougui:die": "丞相留步，老夫告辞……",
 };

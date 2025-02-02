@@ -144,7 +144,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 	 * @this HTMLDivElement
 	 * @type { typeof HTMLDivElement['prototype']['setBackground'] }
 	 */
-	value: function (name, type, ext, subfolder) {
+	value(name, type, ext, subfolder) {
 		if (!name) return this;
 		let src;
 		if (ext == "noskin") ext = ".jpg";
@@ -241,10 +241,7 @@ HTMLDivElement.prototype.setBackgroundDB = function (img) {
  */
 HTMLDivElement.prototype.setBackgroundImage = function (img) {
 	if (Array.isArray(img)) {
-		this.style.backgroundImage = img
-			.unique()
-			.map(v => `url("${lib.assetURL}${v}")`)
-			.join(",");
+		this.style.backgroundImage = img.unique().map(v => `url("${lib.assetURL}${v}")`).join(",");
 	} else if (URL.canParse(img)) {
 		this.style.backgroundImage = `url("${img}")`;
 	} else {
@@ -300,25 +297,26 @@ HTMLDivElement.prototype.listenTransition = function (func, time) {
 /**
  * @this HTMLDivElement
  * @type { typeof HTMLDivElement['prototype']['setPosition'] }
+ *- 用Array.from(arguments)来创建一个新的数组，这比使用循环更加简洁。
+  - 使用解构赋值来直接从position数组中提取出四个参数，使代码更清晰。
+  - 将条件运算符的结果直接嵌入到模板字符串中，取代了之前使用字符串拼接的方式喵。
+  //最后，宝贝看一下我的理解有问题吗？🥺
  */
 HTMLDivElement.prototype.setPosition = function () {
 	var position;
-	if (arguments.length == 4) {
-		position = [];
-		for (var i = 0; i < arguments.length; i++) position.push(arguments[i]);
-	} else if (arguments.length == 1 && Array.isArray(arguments[0]) && arguments[0].length == 4) {
+	if (arguments.length === 4) {
+		position = Array.from(arguments);
+	} else if (arguments.length === 1 && Array.isArray(arguments[0]) && arguments[0].length === 4) {
 		position = arguments[0];
 	} else {
 		return this;
 	}
-	var top = "calc(" + position[0] + "% ";
-	if (position[1] > 0) top += "+ " + position[1] + "px)";
-	else top += "- " + Math.abs(position[1]) + "px)";
-	var left = "calc(" + position[2] + "% ";
-	if (position[3] > 0) left += "+ " + position[3] + "px)";
-	else left += "- " + Math.abs(position[3]) + "px)";
-	this.style.top = top;
-	this.style.left = left;
+
+	const [topPercent, topOffset, leftPercent, leftOffset] = position;
+
+	this.style.top = `calc(${topPercent}% ${topOffset > 0 ? '+ ' : '- '}${Math.abs(topOffset)}px)`;
+	this.style.left = `calc(${leftPercent}% ${leftOffset > 0 ? '+ ' : '- '}${Math.abs(leftOffset)}px)`;
+
 	return this;
 };
 /**
@@ -395,7 +393,7 @@ Object.defineProperty(Map.prototype, "addArray", {
 	 * @this Map<any, any>
 	 * @type { typeof Map['prototype']['addArray'] }
 	 */
-	value: function (arr) {
+	value(arr) {
 		for (let i = 0; i < arr.length; i++) {
 			this.add(arr[i]);
 		}
@@ -410,7 +408,7 @@ Object.defineProperty(Map.prototype, "remove", {
 	 * @this Map<any, any>
 	 * @type { typeof Map['prototype']['remove'] }
 	 */
-	value: function (item) {
+	value(item) {
 		console.trace(this, "已经从array改为map，请改为使用delete方法");
 		this.delete(item);
 		return this;
@@ -425,7 +423,7 @@ Object.defineProperty(Array.prototype, "filterInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['filterInD'] }
 	 */
-	value: function (pos = "o") {
+	value(pos = "o") {
 		if (typeof pos != "string") pos = "o";
 		// @ts-ignore
 		return this.filter(card => pos.includes(get.position(card, true)));
@@ -439,7 +437,7 @@ Object.defineProperty(Array.prototype, "someInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['someInD'] }
 	 */
-	value: function (pos = "o") {
+	value(pos = "o") {
 		if (typeof pos != "string") pos = "o";
 		// @ts-ignore
 		return this.some(card => pos.includes(get.position(card, true)));
@@ -453,7 +451,7 @@ Object.defineProperty(Array.prototype, "everyInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['everyInD'] }
 	 */
-	value: function (pos = "o") {
+	value(pos = "o") {
 		if (typeof pos != "string") pos = "o";
 		// @ts-ignore
 		return this.every(card => pos.includes(get.position(card, true)));
@@ -470,7 +468,7 @@ Object.defineProperty(Array.prototype, "contains", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['contains'] }
 	 */
-	value: function (...args) {
+	value(...args) {
 		console.warn(this, "Array的contains方法已废弃，请使用includes方法");
 		return this.includes(...args);
 	},
@@ -483,7 +481,7 @@ Object.defineProperty(Array.prototype, "containsSome", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['containsSome'] }
 	 */
-	value: function () {
+	value() {
 		return Array.from(arguments).some(i => this.includes(i));
 	},
 });
@@ -495,7 +493,7 @@ Object.defineProperty(Array.prototype, "containsAll", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['containsAll'] }
 	 */
-	value: function () {
+	value() {
 		return Array.from(arguments).every(i => this.includes(i));
 	},
 });
@@ -508,7 +506,7 @@ Object.defineProperty(Array.prototype, "add", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['add'] }
 	 */
-	value: function () {
+	value() {
 		for (const arg of arguments) {
 			if (this.includes(arg)) continue;
 			this.push(arg);
@@ -524,7 +522,7 @@ Object.defineProperty(Array.prototype, "addArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['addArray'] }
 	 */
-	value: function () {
+	value() {
 		for (const arr of arguments) {
 			for (const item of arr) this.add(item);
 		}
@@ -539,7 +537,7 @@ Object.defineProperty(Array.prototype, "remove", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['remove'] }
 	 */
-	value: function () {
+	value() {
 		for (const item of arguments) {
 			let pos = -1;
 			if (typeof item == "number" && isNaN(item)) {
@@ -561,7 +559,7 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
-	value: function () {
+	value() {
 		// @ts-ignore
 		for (const i of Array.from(arguments)) this.remove(...i);
 		return this;
@@ -575,7 +573,7 @@ Object.defineProperty(Array.prototype, "unique", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['unique'] }
 	 */
-	value: function () {
+	value() {
 		let uniqueArray = [...new Set(this)];
 		this.length = uniqueArray.length;
 		for (let i = 0; i < uniqueArray.length; i++) this[i] = uniqueArray[i];
@@ -590,7 +588,7 @@ Object.defineProperty(Array.prototype, "toUniqued", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['toUniqued'] }
 	 */
-	value: function () {
+	value() {
 		return [...new Set(this)];
 	},
 });
@@ -602,7 +600,7 @@ Object.defineProperty(Array.prototype, "randomGet", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['randomGet'] }
 	 */
-	value: function () {
+	value() {
 		let arr = this.slice(0);
 		arr.removeArray(Array.from(arguments));
 		return arr[Math.floor(Math.random() * arr.length)];
@@ -616,7 +614,7 @@ Object.defineProperty(Array.prototype, "randomGets", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['randomGets'] }
 	 */
-	value: function (num = 0) {
+	value(num = 0) {
 		if (num > this.length) num = this.length;
 		let arr = this.slice(0);
 		let list = [];
@@ -635,7 +633,7 @@ Object.defineProperty(Array.prototype, "randomRemove", {
 	 * @param { number } [num]
 	 * @type { typeof Array['prototype']['randomRemove'] }
 	 */
-	value: function (num) {
+	value(num) {
 		if (typeof num == "number") {
 			let list = [];
 			for (let i = 0; i < num; i++) {
@@ -655,7 +653,7 @@ Object.defineProperty(Array.prototype, "randomSort", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['randomSort'] }
 	 */
-	value: function () {
+	value() {
 		let list = [];
 		while (this.length) {
 			list.push(this.randomRemove());
@@ -674,7 +672,7 @@ Object.defineProperty(Array.prototype, "sortBySeat", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['sortBySeat'] }
 	 */
-	value: function (target) {
+	value(target) {
 		lib.tempSortSeat = target;
 		this.sort(lib.sort.seat);
 		delete lib.tempSortSeat;
@@ -692,7 +690,7 @@ Object.defineProperty(Array.prototype, "maxBy", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['maxBy'] }
 	 */
-	value: function (sortBy, filter) {
+	value(sortBy, filter) {
 		let list = this.filter(filter || (() => true));
 		if (sortBy && typeof sortBy == "function") list.sort((a, b) => sortBy(a) - sortBy(b));
 		else list.sort();
@@ -707,7 +705,7 @@ Object.defineProperty(Array.prototype, "minBy", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['minBy'] }
 	 */
-	value: function (sortBy, filter) {
+	value(sortBy, filter) {
 		let list = this.filter(filter || (() => true));
 		if (sortBy && typeof sortBy == "function") list.sort((a, b) => sortBy(a) - sortBy(b));
 		else list.sort();
