@@ -11,7 +11,9 @@ import { ui } from "../ui/index.js";
  */
 HTMLElement.prototype.setNodeIntro = function (title, content) {
 	this.classList.add("nodeintro");
+	// @ts-expect-error ThereBe
 	this.nodeTitle = title;
+	// @ts-expect-error ThereBe
 	this.nodeContent = content;
 	if (!lib.config.touchscreen) {
 		if (lib.config.hover_all) {
@@ -338,12 +340,15 @@ HTMLElement.prototype.css = function (style) {
 };
 /**
  * @this HTMLTableElement
- * @type { typeof HTMLTableElement['prototype']['get'] }
+ * @param {number} row
+ * @param {number} col
+ * @returns {HTMLElement | void}
  */
+// @ts-expect-error OnType
 HTMLTableElement.prototype.get = function (row, col) {
 	if (row < this.childNodes.length) {
 		// @ts-ignore
-		return this.childNodes[row].childNodes[col];
+		return /** @type {HTMLElement | void} */ this.childNodes[row].childNodes[col];
 	}
 };
 /*处理lib.nature等从array改为map的兼容性问题*/
@@ -684,6 +689,7 @@ Object.defineProperty(Array.prototype, "sortBySeat", {
 	 * @type { typeof Array['prototype']['sortBySeat'] }
 	 */
 	value(target) {
+		// @ts-expect-error TypeCorrect
 		lib.tempSortSeat = target;
 		this.sort(lib.sort.seat);
 		delete lib.tempSortSeat;
