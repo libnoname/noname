@@ -587,9 +587,9 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
-	value() {
+	value(...args) {
 		// @ts-ignore
-		for (const i of Array.from(arguments)) this.remove(...i);
+		for (const i of args) this.remove(...i);
 		return this;
 	},
 });
@@ -633,7 +633,7 @@ Object.defineProperty(Array.prototype, "randomGet", {
 
 		if (excludes.length > 0) {
 			arr = this.slice(0);
-			arr.removeArray(Array.from(arguments));
+			arr.removeArray(excludes);
 		}
 
 		return arr[Math.floor(Math.random() * arr.length)];
