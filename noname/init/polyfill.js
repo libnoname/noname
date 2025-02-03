@@ -687,30 +687,14 @@ Object.defineProperty(Array.prototype, "randomSort", {
 	 * @type { typeof Array['prototype']['randomSort'] }
 	 */
 	value() {
-		for (let i = 0; i < this.length - 1; ++i) {
-			swap(this, i, randInt(i, this.length - 1));
+		for (let i = this.length; i > 1; --i) {
+			const index = /* randInt(0, i); */ Math.floor(Math.random() * i);
+			const temp = this[i - 1];
+			this[i - 1] = this[index];
+			this[index] = temp;
 		}
+
 		return this;
-
-		/**
-		 * @param {any[]} ary
-		 * @param {number} i
-		 * @param {number} j
-		 */
-		function swap(ary, i, j) {
-			let temp = ary[i];
-			ary[i] = ary[j];
-			ary[j] = temp;
-		}
-
-		/**
-		 * @param {number} min
-		 * @param {number} max
-		 * @return {number}
-		 */
-		function randInt(min, max) {
-			return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
 	},
 });
 Object.defineProperty(Array.prototype, "sortBySeat", {
