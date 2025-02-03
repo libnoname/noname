@@ -587,9 +587,9 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
-	value(...args) {
+	value() {
 		// @ts-ignore
-		for (const i of args) this.remove(...i);
+		for (const i of Array.from(arguments)) this.remove(...i);
 		return this;
 	},
 });
@@ -633,7 +633,7 @@ Object.defineProperty(Array.prototype, "randomGet", {
 
 		if (excludes.length > 0) {
 			arr = this.slice(0);
-			arr.removeArray(excludes);
+			arr.removeArray(Array.from(arguments));
 		}
 
 		return arr[Math.floor(Math.random() * arr.length)];
@@ -687,14 +687,30 @@ Object.defineProperty(Array.prototype, "randomSort", {
 	 * @type { typeof Array['prototype']['randomSort'] }
 	 */
 	value() {
-		let list = [];
-		while (this.length) {
-			list.push(this.randomRemove());
-		}
-		for (let i = 0; i < list.length; i++) {
-			this.push(list[i]);
+		for (let i = 0; i < this.length - 1; ++i) {
+			swap(this, i, randInt(i, this.length - 1));
 		}
 		return this;
+
+		/**
+		 * @param {any[]} ary
+		 * @param {number} i
+		 * @param {number} j
+		 */
+		function swap(ary, i, j) {
+			let temp = ary[i];
+			ary[i] = ary[j];
+			ary[j] = temp;
+		}
+
+		/**
+		 * @param {number} min
+		 * @param {number} max
+		 * @return {number}
+		 */
+		function randInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
 	},
 });
 Object.defineProperty(Array.prototype, "sortBySeat", {
