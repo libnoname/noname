@@ -75,8 +75,8 @@ export class GetCompatible {
 		}
 
 		const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
-		let result;
-		if (!(result = userAgent.match(regex))) return ["other", NaN, NaN, NaN];
+		let result = userAgent.match(regex);
+		if (result == null) return ["other", NaN, NaN, NaN];
 
 		// 非Safari情况直接返回结果
 		if (result[1] !== "safari") {
@@ -89,13 +89,13 @@ export class GetCompatible {
 		// macOS以及以桌面显示的移动端则直接判断
 		if (/macintosh/.test(userAgent)) {
 			result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/);
-			if (!result) return ["other", NaN, NaN, NaN];
+			if (result == null) return ["other", NaN, NaN, NaN];
 		}
 		// 不然则通过OS后面的版本号来获取内容
 		else {
 			let safariRegex = /(?:iphone|ipad); cpu (?:iphone )?os (\d+(?:_\d+)+)/;
 			result = userAgent.match(safariRegex);
-			if (!result) return ["other", NaN, NaN, NaN];
+			if (result == null) return ["other", NaN, NaN, NaN];
 		}
 		// result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/)
 		// @ts-ignore
