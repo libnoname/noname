@@ -11,11 +11,12 @@ export const AsyncFunction = async function () {}.constructor;
 /** @type {typeof Function} */
 // @ts-ignore
 export const AsyncGeneratorFunction = async function* () {}.constructor;
-export const userAgent = navigator.userAgent.toLowerCase();
+export const userAgent = navigator.userAgent;
+export const userAgentLowerCase = userAgent.toLowerCase();
 // export { Mutex } from "./mutex.js";
 export const characterDefaultPicturePath = "image/character/default_silhouette_";
 
-export const device = nonameInitialized && nonameInitialized !== "nodejs" ? (userAgent.includes("android") ? "android" : userAgent.includes("iphone") || userAgent.includes("ipad") || userAgent.includes("macintosh") ? "ios" : void 0) : void 0;
+export const device = nonameInitialized && nonameInitialized !== "nodejs" ? (userAgentLowerCase.includes("android") ? "android" : userAgentLowerCase.includes("iphone") || userAgentLowerCase.includes("ipad") || userAgentLowerCase.includes("macintosh") ? "ios" : void 0) : void 0;
 
 export const androidNewStandardApp = device === "android" && typeof window.NonameAndroidBridge != "undefined";
 

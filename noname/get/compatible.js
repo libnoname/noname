@@ -1,4 +1,4 @@
-import { userAgent } from "../util/index.js";
+import { userAgentLowerCase } from "../util/index.js";
 
 /**
  * 用于老版本能用的`get`
@@ -75,7 +75,7 @@ export class GetCompatible {
 		}
 
 		const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
-		let result = userAgent.match(regex);
+		let result = userAgentLowerCase.match(regex);
 		if (result == null) return ["other", NaN, NaN, NaN];
 
 		// 非Safari情况直接返回结果
@@ -87,14 +87,14 @@ export class GetCompatible {
 
 		// 以下是所有Safari平台的判断方法
 		// macOS以及以桌面显示的移动端则直接判断
-		if (/macintosh/.test(userAgent)) {
-			result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/);
+		if (/macintosh/.test(userAgentLowerCase)) {
+			result = userAgentLowerCase.match(/version\/(\d+(?:\.\d+)+).*safari/);
 			if (result == null) return ["other", NaN, NaN, NaN];
 		}
 		// 不然则通过OS后面的版本号来获取内容
 		else {
 			let safariRegex = /(?:iphone|ipad); cpu (?:iphone )?os (\d+(?:_\d+)+)/;
-			result = userAgent.match(safariRegex);
+			result = userAgentLowerCase.match(safariRegex);
 			if (result == null) return ["other", NaN, NaN, NaN];
 		}
 		// result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/)

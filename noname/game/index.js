@@ -16,7 +16,7 @@ import { lib } from "../library/index.js";
 import { _status } from "../status/index.js";
 import { ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
-import { isClass, userAgent, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
+import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
@@ -4065,7 +4065,7 @@ export class Game extends GameCompatible {
 		delete _status.waitingToReload;
 	}
 	exit() {
-		var ua = userAgent;
+		var ua = userAgentLowerCase;
 		var ios = ua.includes("iphone") || ua.includes("ipad") || ua.includes("macintosh");
 		//electron
 		if (typeof window.process == "object" && typeof window.require == "function") {

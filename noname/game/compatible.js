@@ -1,4 +1,4 @@
-import { userAgent, compatibleEnvironment, androidNewStandardApp, device } from "../util/index.js";
+import { userAgentLowerCase, compatibleEnvironment, androidNewStandardApp, device } from "../util/index.js";
 import { get } from "../get/compatible.js";
 
 export class GameCompatible {
@@ -8,7 +8,7 @@ export class GameCompatible {
 	 * @author Spmario233
 	 */
 	exit() {
-		const ios = userAgent.includes("iphone") || userAgent.includes("ipad") || userAgent.includes("macintosh");
+		const ios = userAgentLowerCase.includes("iphone") || userAgentLowerCase.includes("ipad") || userAgentLowerCase.includes("macintosh");
 		//electron
 		if (typeof window.process == "object" && typeof window.require == "function") {
 			const versions = window.process.versions;
@@ -129,11 +129,11 @@ export class GameCompatible {
 
 				// 使用新版本的客户端，但版本号不到需要的程度，查看是否是由理版或诗笺版，提示更新chrome
 				if (androidNewStandardApp) {
-					let tips = ["您使用的无名杀客户端已达到最新，但目前的浏览器内核版本过低，未来可能将无法使用！", "目前使用的浏览器UA信息为: ", userAgent, "新版本的客户端在机器存在Chrome的情况下会直接使用Chrome的内核", "请前往下载最新版的Chrome，以获取最佳的体验！", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
+					let tips = ["您使用的无名杀客户端已达到最新，但目前的浏览器内核版本过低，未来可能将无法使用！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "新版本的客户端在机器存在Chrome的情况下会直接使用Chrome的内核", "请前往下载最新版的Chrome，以获取最佳的体验！", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
 
 					let packageName = window.NonameAndroidBridge.getPackageName();
 					if (!(packageName.includes("shijian") || packageName.includes("yuri"))) {
-						tips = ["您使用的无名杀客户端已达到最新，但目前的浏览器内核版本过低，未来可能将无法使用！", "目前使用的浏览器UA信息为: ", userAgent, "检测到你现在使用的是第三方客户端，请联系客户端制作者寻求帮助！", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
+						tips = ["您使用的无名杀客户端已达到最新，但目前的浏览器内核版本过低，未来可能将无法使用！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "检测到你现在使用的是第三方客户端，请联系客户端制作者寻求帮助！", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
 					}
 
 					alert(tips);
@@ -141,8 +141,8 @@ export class GameCompatible {
 				// 使用旧版安卓客户端，提示更新，在版本号为77时识别为兼容版
 				// 此时将先考虑能不能加载更新代码
 				else if (device == "android") {
-					let tips = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，未来可能将无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgent, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”将开始下载最新版客户端（如果你使用的是第三方客户端，请不要点击“确认”）", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
-					let fallbacks = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，已无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgent, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）"].join("\n");
+					let tips = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，未来可能将无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”将开始下载最新版客户端（如果你使用的是第三方客户端，请不要点击“确认”）", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
+					let fallbacks = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，已无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）"].join("\n");
 
 					/**
 					 * @param {typeof import("../library/update.js")} module
@@ -170,7 +170,7 @@ export class GameCompatible {
 				}
 				// 使用电脑端客户端，直接转到github
 				else if (typeof window.require == "function") {
-					let tips = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，未来可能将无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgent, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
+					let tips = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，未来可能将无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
 					fallback(tips);
 				}
 				// 使用chrome的，直接提示更新（不是现在还有人用Chrome 85以下的版本吗）

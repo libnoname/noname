@@ -5,7 +5,7 @@ import { game } from "../game/index.js";
 import { _status } from "../status/index.js";
 import { ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
-import { userAgent, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
+import { userAgentLowerCase, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
 import * as config from "../util/config.js";
 import { promiseErrorHandlerMap } from "../util/browser.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
@@ -383,7 +383,7 @@ export async function boot() {
 		appearenceConfig.global_font.item.default = "默认";
 	}
 
-	const ua = userAgent;
+	const ua = userAgentLowerCase;
 	if ("ontouchstart" in document) {
 		if (!config.get("totouched")) {
 			game.saveConfig("totouched", true);

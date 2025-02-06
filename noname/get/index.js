@@ -1,4 +1,4 @@
-import { userAgent, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
+import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
 import { game } from "../game/index.js";
 import { lib } from "../library/index.js";
 import { _status } from "../status/index.js";

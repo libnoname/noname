@@ -9,7 +9,7 @@
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
-import { nonameInitialized, assetURL, userAgent, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "../util/index.js";
+import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "../util/index.js";
 import { ai } from "../ai/index.js";
 import { get } from "../get/index.js";
 import { game } from "../game/index.js";
@@ -37,7 +37,7 @@ export class Library {
 	mirrorURL = updateURLs.coding;
 	hallURL = "";
 	assetURL = assetURL;
-	userAgent = userAgent;
+	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;
 	compatibleEdition = Boolean(typeof nonameInitialized == "string" && nonameInitialized.match(/\/(?:com\.widget|yuri\.nakamura)\.noname\//));
 	changeLog = [];
