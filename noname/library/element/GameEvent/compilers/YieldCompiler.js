@@ -1,6 +1,8 @@
 import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
 import ContentCompilerBase from "./ContentCompilerBase.js";
+import ContentCompiler from "./ContentCompiler.js";
 import { GameEvent } from "../../gameEvent.js";
+
 export default class YieldCompiler extends ContentCompilerBase {
 	type = "yield";
 	static #mapArgs(event) {
@@ -32,25 +34,30 @@ export default class YieldCompiler extends ContentCompilerBase {
 	}
 	compile(content) {
 		const compiler = this;
-		return async function (event) {
+		const middleware = async function (event) {
 			const args = YieldCompiler.#mapArgs(event);
-			//@ts-ignore
-			const generator = Reflect.apply(content, this, [event, args]);
+			const generator =
+				//@ts-ignore
+				Reflect.apply(content, this, [event, args]);
+
 			let result = null;
 			let done = false;
-			while (!event.finished) {
-				if (done) {
-					event.finish();
-					break;
-				}
+
+			while (!done) {
 				let value = null;
-				compiler.beforeExecute(event);
-				if (!compiler.isPrevented(event)) ({ value, done = false } = generator.next(result));
-				await event.waitNext();
-				result = value instanceof GameEvent ? value.result : value;
-				compiler.afterExecute(event);
+
+				if (!compiler.isPrevented(event)) {
+					({ value, done = true } = generator.next(result));
+					result = await (value instanceof GameEvent ? value.forResult() : value);
+				}
+
+				const nextResult = await event.waitNext();
+				event._result = result ?? nextResult ?? event._result;
 			}
+
 			generator.return();
 		};
+
+		return ContentCompiler.compile([middleware]);
 	}
 }
