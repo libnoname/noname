@@ -1,16 +1,16 @@
 import { GameEvent } from "../gameEvent.js";
 
-export default class GameEventManager{
+export default class GameEventManager {
 	get [Symbol.toStringTag]() {
-		return 'GameEventManager';
+		return "GameEventManager";
 	}
 	eventStack = [];
 	rootEvent;
 	tempEvent;
-	get event(){
+	get event() {
 		return this.getStatusEvent();
 	}
-    getStartedEvent(){
+	getStartedEvent() {
 		return this.tempEvent || this.eventStack.at(-1);
 	}
 	getStatusEvent() {

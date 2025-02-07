@@ -7,14 +7,14 @@ import { EventContent } from "./IContentCompiler.ts";
 type AsyncFunction<R> = (...args: any[]) => Promise<R>;
 
 export default class AsyncCompiler extends ContentCompilerBase {
-    type = "async";
+	type = "async";
 
-    filter(content: EventContent): boolean {
-        if (typeof content !== 'function') return false;
-        return content.constructor.name === "AsyncFunction" && content.length >= 1;
-    }
+	filter(content: EventContent): boolean {
+		if (typeof content !== "function") return false;
+		return content.constructor.name === "AsyncFunction" && content.length >= 1;
+	}
 
-    compile(content: EventContent) {
-        return ContentCompiler.compile([content as AsyncFunction<void>]);
-    }
+	compile(content: EventContent) {
+		return ContentCompiler.compile([content as AsyncFunction<void>]);
+	}
 }

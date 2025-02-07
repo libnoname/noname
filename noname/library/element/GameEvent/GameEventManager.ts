@@ -2,7 +2,7 @@ import { GameEvent } from "../gameEvent.js";
 
 export default class GameEventManager {
 	get [Symbol.toStringTag]() {
-		return 'GameEventManager';
+		return "GameEventManager";
 	}
 	eventStack: GameEvent[] = [];
 	rootEvent?: GameEvent;
