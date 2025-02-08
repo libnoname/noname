@@ -9515,7 +9515,7 @@ const skills = {
 						.chooseButtonOL(list)
 						.set("switchToAuto", () => (_status.event.result = "ai"))
 						.set("processAI", () => {
-							var cards = _status.event.dialog.buttons.slice();
+							var cards = _status.event?.getParent()?.cards?.slice() ?? _status.event.dialog.buttons.map(button => button.link);
 							var card = cards.find(card => lib.card.list.some(cardx => cardx[2] == card.name) && !lib.card.list.some(cardx => cardx[2] == card.name && cardx[0] == get.suit(card, false) && cardx[0] == get.number(card, false)));
 							return {
 								bool: true,
