@@ -11,7 +11,7 @@ export default class StepCompiler extends ContentCompilerBase {
 	type = "step";
 
 	filter(content: EventContent) {
-		return typeof content === "function" && content.length === 0;
+		return typeof content === "function" && !["AsyncFunction", "GeneratorFunction", "AsyncGeneratorFunction"].includes(content.constructor.name);
 	}
 
 	compile(content: EventContent) {

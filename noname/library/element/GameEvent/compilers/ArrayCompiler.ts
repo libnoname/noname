@@ -5,7 +5,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 	type = "array";
 
 	filter(content: EventContent): boolean {
-		return Array.isArray(content);
+		return Array.isArray(content) && content.every(item => typeof item === "function");
 	}
 
 	compile(content: EventContent) {

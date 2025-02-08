@@ -3,7 +3,7 @@ import { GameEvent } from "../../gameEvent.js";
 export default class ArrayCompiler extends ContentCompilerBase {
 	type = "array";
 	filter(content) {
-		return Array.isArray(content);
+		return Array.isArray(content) && content.every(item => typeof item === "function");
 	}
 	compile(content) {
 		if (!Array.isArray(content)) throw new ReferenceError("content必须是一个数组");
