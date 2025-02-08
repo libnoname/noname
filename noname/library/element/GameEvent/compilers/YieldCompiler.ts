@@ -51,6 +51,9 @@ export default class YieldCompiler extends ContentCompilerBase {
 
 				if (!compiler.isPrevented(event)) {
 					({ value, done = true } = generator.next(result));
+					if (done) {
+						break;
+					}
 					result = await (value instanceof GameEvent ? value.forResult() : value);
 				}
 
