@@ -471,7 +471,7 @@ export class Player extends HTMLDivElement {
 	 *  @example
 	 * when('xxx') when([xxx1,xxx2])//均会被解析为：player:xxx或player:[xxx1,xxx2]
 	 *
-	 * when({player:xxx})或when({gloal:[xxx]})//对象类型将直接应用
+	 * when({player:xxx})或when({global:[xxx]})//对象类型将直接应用
 	 *
 	 * when(xxx1,xxx2)//解析为player:[xxx1,xxx2]
 	 *
@@ -770,6 +770,7 @@ export class Player extends HTMLDivElement {
 			 * 如果instantlyAdd为false，则需要以此法获得技能
 			 **/
 			finish() {
+				if (lib.skill[skillName] != skill) throw `This skill has been destroyed`;
 				player.addSkill(skillName);
 				return this;
 			},
