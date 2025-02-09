@@ -1,5 +1,6 @@
 // 喵喵！step写法的content全在这里处理喵！
 import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
+import { AsyncFunction, GeneratorFunction, AsyncGeneratorFunction } from "../../../../util/index.js";
 import ContentCompilerBase from "./ContentCompilerBase.js";
 import ContentCompiler from "./ContentCompiler.js";
 import security from "../../../../util/security.js";
@@ -7,7 +8,7 @@ import { CodeSnippet, ErrorManager } from "../../../../util/error.js";
 export default class StepCompiler extends ContentCompilerBase {
 	type = "step";
 	filter(content) {
-		return typeof content === "function" && !["AsyncFunction", "GeneratorFunction", "AsyncGeneratorFunction"].includes(content.constructor.name);
+		return typeof content === "function" && ![AsyncFunction, GeneratorFunction, AsyncGeneratorFunction].some(parent => content instanceof parent);
 	}
 	compile(content) {
 		if (typeof content != "function") throw new Error("StepCompiler只能接受函数");

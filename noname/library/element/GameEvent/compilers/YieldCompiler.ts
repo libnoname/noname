@@ -1,3 +1,4 @@
+import { GeneratorFunction } from "../../../../util/index.js";
 import { EventContent, GameEvent } from "./IContentCompiler.ts";
 import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
 import ContentCompiler from "./ContentCompiler.ts";
@@ -32,7 +33,7 @@ export default class YieldCompiler extends ContentCompilerBase {
 	}
 
 	filter(content: EventContent): boolean {
-		return typeof content === "function" && content.constructor.name === "GeneratorFunction";
+		return typeof content === "function" && content instanceof GeneratorFunction;
 	}
 
 	compile(content: EventContent) {

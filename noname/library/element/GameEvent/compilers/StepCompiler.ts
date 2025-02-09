@@ -1,7 +1,7 @@
 // 喵喵！step写法的content全在这里处理喵！
-
 import { EventContent, GameEvent } from "./IContentCompiler.ts";
 import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
+import { AsyncFunction, GeneratorFunction, AsyncGeneratorFunction } from "../../../../util/index.js";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 import ContentCompiler from "./ContentCompiler.ts";
 import security from "../../../../util/security.js";
@@ -11,7 +11,7 @@ export default class StepCompiler extends ContentCompilerBase {
 	type = "step";
 
 	filter(content: EventContent) {
-		return typeof content === "function" && !["AsyncFunction", "GeneratorFunction", "AsyncGeneratorFunction"].includes(content.constructor.name);
+		return typeof content === "function" && ![AsyncFunction, GeneratorFunction, AsyncGeneratorFunction].some(parent => content instanceof parent);
 	}
 
 	compile(content: EventContent) {

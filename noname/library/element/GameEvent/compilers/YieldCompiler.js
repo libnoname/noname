@@ -1,3 +1,4 @@
+import { GeneratorFunction } from "../../../../util/index.js";
 import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
 import ContentCompilerBase from "./ContentCompilerBase.js";
 import ContentCompiler from "./ContentCompiler.js";
@@ -30,7 +31,7 @@ export default class YieldCompiler extends ContentCompilerBase {
 		};
 	}
 	filter(content) {
-		return typeof content === "function" && content.constructor.name === "GeneratorFunction";
+		return typeof content === "function" && content instanceof GeneratorFunction;
 	}
 	compile(content) {
 		const compiler = this;
