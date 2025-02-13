@@ -1240,27 +1240,35 @@ const skills = {
 		audio: 3,
 		trigger: {
 			global: "phaseBefore",
-			player: ["enterGame", "dying"],
+			player: ["enterGame", "dyingAfter"],
 		},
 		filter(event, player) {
 			if (event.name === "dying") return game.getAllGlobalHistory("everything", evt => evt.name === "dying" && evt.player === player).indexOf(event) === 0;
 			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		forced: true,
+		priority: 12,//本体御用优先级
 		content() {
-			player.addMark(event.name, 1 + (trigger.name !== "dying"), false);
+			player.storage[event.name] = 2 + (trigger.name === "dying");
+			player.markSkill(event.name);
 		},
 		intro: { content: "至多拥有#册“天书”" },
+		getLimit(player) {
+			const num = player.storage.olhedao;
+			return typeof num === "number" ? num : 1;
+		},
 		//时机
 		tianshuTrigger: [
 			//用牌相关
 			{
+				fromIndex: 1,
 				name: "当你使用牌后",
 				effect: {
 					trigger: { player: "useCardAfter" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你使用或打出【闪】时",
 				effect: {
 					trigger: { player: "useCard" },
@@ -1270,6 +1278,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你成为【杀】的目标时",
 				effect: {
 					trigger: { target: "useCardToTarget" },
@@ -1279,6 +1288,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你成为普通锦囊牌的目标后",
 				effect: {
 					trigger: { target: "useCardToTargeted" },
@@ -1288,6 +1298,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 1,
 				name: "其他角色对你使用牌后",
 				effect: {
 					trigger: { global: "useCardAfter" },
@@ -1297,6 +1308,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "一名角色使用【南蛮入侵】或【万箭齐发】后",
 				effect: {
 					trigger: { global: "useCardAfter" },
@@ -1306,6 +1318,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你使用牌被抵消后",
 				effect: {
 					trigger: { player: ["eventNeutralized", "shaMiss"] },
@@ -1316,6 +1329,7 @@ const skills = {
 			},
 			//失去牌相关
 			{
+				fromIndex: 1,
 				name: "当你失去手牌后",
 				effect: {
 					trigger: {
@@ -1328,6 +1342,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "当你失去装备牌后",
 				effect: {
 					trigger: {
@@ -1340,6 +1355,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你于回合外失去红色牌后",
 				effect: {
 					trigger: {
@@ -1352,6 +1368,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "一名角色失去最后的手牌后",
 				effect: {
 					trigger: {
@@ -1364,12 +1381,14 @@ const skills = {
 			},
 			//判定相关
 			{
+				fromIndex: 2,
 				name: "当一张判定牌生效前",
 				effect: {
 					trigger: { global: "judge" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当一张判定牌生效后",
 				effect: {
 					trigger: { global: "judgeAfter" },
@@ -1377,36 +1396,42 @@ const skills = {
 			},
 			//阶段相关
 			{
+				fromIndex: 2,
 				name: "每轮开始时",
 				effect: {
 					trigger: { global: "roundStart" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "准备阶段",
 				effect: {
 					trigger: { player: "phaseZhunbeiBegin" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "摸牌阶段开始时",
 				effect: {
 					trigger: { player: "phaseDrawBegin" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "出牌阶段开始时",
 				effect: {
 					trigger: { player: "phaseUseBegin" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "弃牌阶段开始时",
 				effect: {
 					trigger: { player: "phaseDiscardBegin" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "结束阶段",
 				effect: {
 					trigger: { player: "phaseJieshuBegin" },
@@ -1414,18 +1439,21 @@ const skills = {
 			},
 			//伤害相关
 			{
+				fromIndex: 2,
 				name: "当你造成伤害后",
 				effect: {
 					trigger: { source: "damageSource" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你受到伤害后",
 				effect: {
 					trigger: { player: "damageEnd" },
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "当你的体力值变化后",
 				effect: {
 					trigger: { player: "changeHpEnd" },
@@ -1435,6 +1463,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "当你使用【杀】造成伤害后",
 				effect: {
 					trigger: { source: "damageSource" },
@@ -1444,6 +1473,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "一名角色受到【杀】造成的伤害后",
 				effect: {
 					trigger: { global: "damageEnd" },
@@ -1453,6 +1483,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "一名角色造成伤害时",
 				effect: {
 					trigger: { global: "damageBegin3" },
@@ -1462,12 +1493,14 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "一名角色受到伤害时",
 				effect: {
 					trigger: { global: "damageBegin4" },
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "一名角色受到属性伤害后",
 				effect: {
 					trigger: { global: "damageEnd" },
@@ -1478,12 +1511,14 @@ const skills = {
 			},
 			//其他
 			{
+				fromIndex: 3,
 				name: "一名角色进入濒死状态时",
 				effect: {
 					trigger: { global: "dying" },
 				},
 			},
 			{
+				fromIndex: 3,
 				name: "其他角色死亡后",
 				effect: {
 					trigger: { global: "dieAfter" },
@@ -1493,6 +1528,7 @@ const skills = {
 				},
 			},
 			{
+				fromIndex: 2,
 				name: "一名角色进入连环状态后",
 				effect: {
 					trigger: { global: "linkAfter" },
@@ -1505,6 +1541,7 @@ const skills = {
 		//执行
 		tianshuContent: [
 			{
+				toIndex: 1,
 				name: "你可以摸一张牌",
 				effect: {
 					content() {
@@ -1514,6 +1551,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以弃置一名角色区域内的一张牌",
 				effect: {
 					getIndex(event, player) {
@@ -1537,6 +1575,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以观看牌堆顶三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
 				effect: {
 					content() {
@@ -1546,6 +1585,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以弃置任意张牌并摸等量张牌",
 				effect: {
 					getIndex(event, player) {
@@ -1570,6 +1610,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以获得造成伤害的牌",
 				filter: item => item.includes("伤害"),
 				effect: {
@@ -1586,6 +1627,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以视为使用一张无距离和次数限制的【杀】",
 				effect: {
 					getIndex(event, player) {
@@ -1607,6 +1649,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以获得一名角色区域内的一张牌",
 				effect: {
 					getIndex(event, player) {
@@ -1630,6 +1673,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以回复1点体力",
 				effect: {
 					getIndex(event, player) {
@@ -1645,6 +1689,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以摸三张牌，然后弃置一张牌",
 				effect: {
 					async content(event, trigger, player) {
@@ -1655,6 +1700,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以将手牌摸至体力上限（至多摸五张）",
 				effect: {
 					getIndex(event, player) {
@@ -1667,6 +1713,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以令一名角色的非锁定技失效直到其下个回合开始",
 				effect: {
 					getIndex(event, player) {
@@ -1698,6 +1745,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以令一名角色摸两张牌并将武将牌翻面",
 				effect: {
 					async cost(event, trigger, player) {
@@ -1732,6 +1780,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以令此牌对你无效",
 				filter: item => item.includes("你成为") && (item.includes("的目标时") || item.includes("的目标后")),
 				effect: {
@@ -1749,6 +1798,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以令一名其他角色判定，若判定结果为黑桃，则其受到2点雷属性伤害",
 				effect: {
 					getIndex(event, player) {
@@ -1778,6 +1828,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以打出一张手牌替换此判定牌",
 				filter: item => item.includes("判定牌生效前"),
 				effect: {
@@ -1838,6 +1889,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以获得此判定牌",
 				filter: item => item.includes("判定牌生效后"),
 				effect: {
@@ -1854,6 +1906,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "若你不是体力上限最高的角色，则你可以增加1点体力上限",
 				filter: item => item.includes("判定牌生效后"),
 				effect: {
@@ -1867,6 +1920,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以与一名已受伤角色拼点，若你赢，你获得其两张牌",
 				effect: {
 					getIndex(event, player) {
@@ -1903,6 +1957,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以令至多两名角色各摸一张牌",
 				effect: {
 					async cost(event, trigger, player) {
@@ -1926,6 +1981,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 1,
 				name: "你可以令一名角色的手牌上限+2直到其回合结束",
 				effect: {
 					async cost(event, trigger, player) {
@@ -1946,6 +2002,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以获得两张非基本牌",
 				effect: {
 					content() {
@@ -1961,6 +2018,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以获得两张锦囊牌",
 				effect: {
 					content() {
@@ -1976,6 +2034,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以摸三张牌并将武将牌翻面",
 				effect: {
 					content() {
@@ -1986,6 +2045,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可令你对一名角色使用牌无距离和次数限制直到回合结束",
 				effect: {
 					getIndex(event, player) {
@@ -2010,6 +2070,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以弃置两张牌，令你与一名其他角色各回复1点体力",
 				effect: {
 					getIndex(event, player) {
@@ -2052,6 +2113,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可令此伤害+1",
 				filter: item => item.includes("伤害时"),
 				effect: {
@@ -2068,6 +2130,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以失去1点体力并摸三张牌",
 				effect: {
 					check(event, player) {
@@ -2081,6 +2144,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以交换两名角色的手牌",
 				effect: {
 					getIndex(event, player) {
@@ -2111,6 +2175,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 3,
 				name: "你可以交换两名角色装备区的牌",
 				effect: {
 					getIndex(event, player) {
@@ -2141,6 +2206,7 @@ const skills = {
 				},
 			},
 			{
+				toIndex: 2,
 				name: "你可以防止此伤害，令伤害来源摸三张牌",
 				filter: item => item.includes("伤害时"),
 				effect: {
@@ -2216,16 +2282,17 @@ const skills = {
 		async content(event, trigger, player) {
 			const FromItems = lib.skill.olhedao.tianshuTrigger.slice();
 			const froms = await player
-				.chooseButton(["青书：请选择“天书”时机", [FromItems.randomGets(3).map(item => [item, item.name]), "textbutton"]], true)
+				.chooseButton(['###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>', [FromItems.randomGets(3).map(item => [item, "（触发等级：" + item.fromIndex + "）" + item.name]), "textbutton"]], true)
 				.set("ai", () => 1 + Math.random())
 				.forResult("links");
 			if (!froms?.length) return;
 			const [from] = froms;
 			const ToItems = lib.skill.olhedao.tianshuContent.filter(item => {
+				if (from.fromIndex !== item.toIndex) return false;
 				return !item.filter || item.filter(from.name);
 			});
 			const tos = await player
-				.chooseButton(['###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>", [ToItems.randomGets(3).map(item => [item, item.name]), "textbutton"]], true)
+				.chooseButton(['###青书：请选择“天书”效果###<div class="text center">（效果等级：' + from.fromIndex + "）" + from.name + "</div>", [ToItems.randomGets(3).map(item => [item, item.name]), "textbutton"]], true)
 				.set("ai", () => 1 + Math.random())
 				.forResult("links");
 			if (!tos?.length) return;
@@ -2266,12 +2333,15 @@ const skills = {
 			player.addSkill(skill);
 			lib.skill.olhedao.tianshuClear(skill, player, -2);
 			const skills = player.getSkills(null, false, false).filter(skill => get.info(skill)?.olhedao);
-			const num = skills.length - Math.max(1, player.countMark("olhedao"));
+			const num = skills.length - get.info("olhedao").getLimit(player);
 			if (num > 0) {
-				const result = await player
-					.chooseButton(["青书：选择失去" + get.cnNumber(num) + "册多余的“天书”", [skills.map(item => [item, "（剩余" + player.storage[item][0] + "次）" + lib.translate[item + "_info"]]), "textbutton"]], true, num)
-					.set("ai", () => 1 + Math.random())
-					.forResult();
+				const result =
+					num > skills.length
+						? await player
+								.chooseButton(["青书：选择失去" + get.cnNumber(num) + "册多余的“天书”", [skills.map(item => [item, "（剩余" + player.storage[item][0] + "次）" + lib.translate[item + "_info"]]), "textbutton"]], true, num)
+								.set("ai", () => 1 + Math.random())
+								.forResult()
+						: { bool: true, links: skills };
 				if (result?.bool && result.links?.length) player.removeSkill(result.links);
 			}
 		},
@@ -2318,6 +2388,10 @@ const skills = {
 				player.removeSkill(skill);
 				target.addSkill(skill);
 				lib.skill.olhedao.tianshuClear(skill, target, -1);
+				let skills = target.getSkills(null, false, false).filter(skill => get.info(skill)?.olhedao);
+				const num = skills.length - get.info("olhedao").getLimit(target);
+				skills = skills.slice(0, Math.max(0, num));
+				if (skills.length) target.removeSkill(skills);
 			}
 		},
 		ai: {
