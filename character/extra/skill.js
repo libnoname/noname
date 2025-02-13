@@ -52,7 +52,7 @@ const skills = {
 					delete player.storage[skill];
 					player.removeGaintag(skill);
 				},
-				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "cardsDiscardAfter"] },
 				filter(event, player) {
 					return player.hasCard(card => {
 						if (!card.hasGaintag("luansuo_debuff")) return false;
