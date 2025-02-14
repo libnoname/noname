@@ -23,14 +23,14 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	runButton.style.display = "none";
 	var clearButton = ui.create.div(".menubutton.round.highlight", "清", start);
 	clearButton.style.display = "none";
-	clearButton.style.left = "275px";
+	clearButton.style.left = "17.1875rem";
 	var playButton = ui.create.div(".menubutton.round.highlight.hidden", "播", start);
 	playButton.style.display = "none";
-	playButton.style.left = "215px";
+	playButton.style.left = "13.4375rem";
 	playButton.style.transition = "opacity 0.3s";
 	var deleteButton = ui.create.div(".menubutton.round.highlight.hidden", "删", start);
 	deleteButton.style.display = "none";
-	deleteButton.style.left = "275px";
+	deleteButton.style.left = "17.1875rem";
 	deleteButton.style.transition = "opacity 0.3s";
 	var saveButton = ui.create.div(".menubutton.round.highlight.hidden", "存", start);
 	saveButton.style.display = "none";
@@ -1075,17 +1075,17 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 
 			const text = document.createElement("div");
 			text.css({
-				width: "194px",
-				height: "124px",
-				padding: "3px",
-				borderRadius: "2px",
-				boxShadow: "rgba(0, 0, 0, 0.2) 0 0 0 1px",
+				width: "12.125rem",
+				height: "7.75rem",
+				padding: ".1875rem",
+				borderRadius: ".125rem",
+				boxShadow: "rgba(0, 0, 0, 0.2) 0 0 0 .0625rem",
 				textAlign: "left",
 				webkitUserSelect: "initial",
 				overflow: "scroll",
 				position: "absolute",
-				left: "30px",
-				top: "50px",
+				left: "1.875rem",
+				top: "3.125rem",
 				wordBreak: "break-all",
 			});
 
@@ -1102,16 +1102,16 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 
 			const text2 = document.createElement("input");
 			text.css.call(text2, {
-				width: "200px",
-				height: "20px",
+				width: "12.5rem",
+				height: "1.25rem",
 				padding: "0",
 				position: "absolute",
-				top: "15px",
-				left: "30px",
+				top: ".9375rem",
+				left: "1.875rem",
 				resize: "none",
 				border: "none",
-				borderRadius: "2px",
-				boxShadow: "rgba(0, 0, 0, 0.2) 0 0 0 1px",
+				borderRadius: ".125rem",
+				boxShadow: "rgba(0, 0, 0, 0.2) 0 0 0 .0625rem",
 			});
 
 			const g = {};
