@@ -529,14 +529,20 @@ export class UI {
 		var width = document.documentElement.offsetWidth;
 		var height = document.documentElement.offsetHeight;
 		var zoom = game.documentZoom;
+		// if (zoom != 1) {
+		// 	document.body.style.width = Math.round(width / zoom) + "px";
+		// 	document.body.style.height = Math.round(height / zoom) + "px";
+		// 	document.body.style.transform = "scale(" + Math.floor(zoom * 100) / 100 + ")";
+		// } else {
+		// 	document.body.style.width = width + "px";
+		// 	document.body.style.height = height + "px";
+		// 	document.body.style.transform = "";
+		// }
 		if (zoom != 1) {
-			document.body.style.width = Math.round(width / zoom) + "px";
-			document.body.style.height = Math.round(height / zoom) + "px";
-			document.body.style.transform = "scale(" + Math.floor(zoom * 100) / 100 + ")";
-		} else {
-			document.body.style.width = width + "px";
-			document.body.style.height = height + "px";
-			document.body.style.transform = "";
+			document.documentElement.style.fontSize = zoom * 16 + "px";
+		}
+		else {
+			document.documentElement.style.fontSize = "16px";
 		}
 	}
 	update() {

@@ -1,141 +1,141 @@
 #arena.stone > .player.minskin[data-position="4"] {
-	top: calc(100% - 305px);
-	left: calc(100% - 120px);
+	top: calc(100% - 19.0625rem);
+	left: calc(100% - 7.5rem);
 }
 
 #arena.stone > .card[data-position="4"] {
-	top: calc(100% - 297px);
-	left: calc(100% - 112px);
+	top: calc(100% - 18.5625rem);
+	left: calc(100% - 7rem);
 }
 
 #arena.stone > .popup[data-position="4"] {
-	top: calc(100% - 340px);
-	left: calc(100% - 112px);
+	top: calc(100% - 21.25rem);
+	left: calc(100% - 7rem);
 }
 
 #arena.stone > .player.minskin[data-position="6"] {
-	top: calc(100% - 305px);
-	left: calc(100% - 260px);
+	top: calc(100% - 19.0625rem);
+	left: calc(100% - 16.25rem);
 }
 
 #arena.stone > .card[data-position="6"] {
-	top: calc(100% - 297px);
-	left: calc(100% - 252px);
+	top: calc(100% - 18.5625rem);
+	left: calc(100% - 15.75rem);
 }
 
 #arena.stone > .popup[data-position="6"] {
-	top: calc(100% - 340px);
-	left: calc(100% - 252px);
+	top: calc(100% - 21.25rem);
+	left: calc(100% - 15.75rem);
 }
 
 #arena.stone > .player.minskin[data-position="7"] {
-	top: calc(100% - 305px);
-	left: 140px;
+	top: calc(100% - 19.0625rem);
+	left: 8.75rem;
 }
 
 #arena.stone > .card[data-position="7"] {
-	top: calc(100% - 297px);
-	left: 148px;
+	top: calc(100% - 18.5625rem);
+	left: 9.25rem;
 }
 
 #arena.stone > .popup[data-position="7"] {
-	top: calc(100% - 340px);
-	left: 148px;
+	top: calc(100% - 21.25rem);
+	left: 9.25rem;
 }
 
 #arena.stone > .player.minskin[data-position="5"] {
-	top: calc(100% - 305px);
+	top: calc(100% - 19.0625rem);
 	left: 0;
 }
 
 #arena.stone > .card[data-position="5"] {
-	top: calc(100% - 297px);
-	left: 8px;
+	top: calc(100% - 18.5625rem);
+	left: .5rem;
 }
 
 #arena.stone > .popup[data-position="5"] {
-	top: calc(100% - 340px);
-	left: 8px;
+	top: calc(100% - 21.25rem);
+	left: .5rem;
 }
 
 #arena.stone > .player.minskin[data-position="9"] {
-	top: 30px;
-	left: calc(100% - 120px);
+	top: 1.875rem;
+	left: calc(100% - 7.5rem);
 }
 
 #arena.stone > .card[data-position="9"] {
-	top: 38px;
-	left: calc(100% - 112px);
+	top: 2.375rem;
+	left: calc(100% - 7rem);
 }
 
 #arena.stone > .popup[data-position="9"] {
-	top: 160px;
-	left: calc(100% - 112px);
+	top: 10rem;
+	left: calc(100% - 7rem);
 }
 
 #arena.stone > .player.minskin[data-position="11"] {
-	top: 10px;
-	left: calc(100% - 260px);
+	top: .625rem;
+	left: calc(100% - 16.25rem);
 }
 
 #arena.stone > .card[data-position="11"] {
-	top: 18px;
-	left: calc(100% - 252px);
+	top: 1.125rem;
+	left: calc(100% - 15.75rem);
 }
 
 #arena.stone > .popup[data-position="11"] {
-	top: 140px;
-	left: calc(100% - 252px);
+	top: 8.75rem;
+	left: calc(100% - 15.75rem);
 }
 
 #arena.stone > .player.minskin[data-position="10"] {
-	top: 10px;
-	left: 140px;
+	top: .625rem;
+	left: 8.75rem;
 }
 
 #arena.stone > .card[data-position="10"] {
-	top: 18px;
-	left: 148px;
+	top: 1.125rem;
+	left: 9.25rem;
 }
 
 #arena.stone > .popup[data-position="10"] {
-	top: 140px;
-	left: 148px;
+	top: 8.75rem;
+	left: 9.25rem;
 }
 
 #arena.stone > .player.minskin[data-position="8"] {
-	top: 30px;
+	top: 1.875rem;
 	left: 0;
 }
 
 #arena.stone > .card[data-position="8"] {
-	top: 38px;
-	left: 8px;
+	top: 2.375rem;
+	left: .5rem;
 }
 
 #arena.stone > .popup[data-position="8"] {
-	top: 160px;
-	left: 8px;
+	top: 10rem;
+	left: .5rem;
 }
 
 #arena:not(.chess).mobile > .player[data-position="0"] > .name {
-	top: 30px;
+	top: 1.875rem;
 }
 
 #arena .player > .name {
-	top: 36px;
+	top: 2.25rem;
 }
 
 #arena.slim_player .player > .name {
-	top: 33px;
+	top: 2.0625rem;
 }
 
 #arena .player.linked > .name {
-	transform: rotate(90deg) translate(120px, -96px);
+	transform: rotate(90deg) translate(7.5rem, -6rem);
 }
 
 #arena .player.linked > .name.name2 {
-	transform: rotate(90deg) translate(98px, -31px);
+	transform: rotate(90deg) translate(6.125rem, -1.9375rem);
 }
 
 #arena.oldlayout .player.linked > .name {
@@ -147,17 +147,17 @@
 }
 
 .player.minskin .judges {
-	top: 14px;
+	top: .875rem;
 }
 
 .player > .identity.menubutton.round {
 	padding: 0;
-	transform: scale(1.2) translate(-2px, 2px);
+	transform: scale(1.2) translate(-0.125rem, .125rem);
 }
 
 .card .wunature {
-	top: 74px;
-	left: 6px;
+	top: 4.625rem;
+	left: .375rem;
 	right: auto;
 }
 
@@ -166,8 +166,8 @@
 /* } */
 
 #arena:not(.chess).mobile .player[data-position="0"]:not(.minskin) > .identity {
-	left: 100px;
-	top: -7px;
+	left: 6.25rem;
+	top: -0.4375rem;
 }
 
 #deck-builder {
@@ -175,12 +175,12 @@
 }
 
 #deck-builder > .shadowed.list {
-	width: 200px;
+	width: 12.5rem;
 	height: 100%;
 	right: 0;
 	top: 0;
-	border-radius: 0px;
-	transform: translateX(200px);
+	border-radius: 0rem;
+	transform: translateX(12.5rem);
 	opacity: 0;
 }
 
@@ -191,22 +191,22 @@
 
 #deck-builder > .shadowed.list > .menubutton.large.create {
 	position: absolute;
-	bottom: 10px;
+	bottom: .625rem;
 	left: auto;
-	right: 10px;
+	right: .625rem;
 	margin: 0;
 	padding: 0;
-	width: 180px;
-	height: 50px;
-	font-size: 36px;
-	line-height: 50px;
+	width: 11.25rem;
+	height: 3.125rem;
+	font-size: 2.25rem;
+	line-height: 3.125rem;
 	z-index: 2;
 }
 
 #deck-builder > .shadowed.list > .list-container {
 	width: 100%;
 	left: 0;
-	height: calc(100% - 60px);
+	height: calc(100% - 3.75rem);
 	overflow-y: scroll;
 	overflow-x: visible;
 	text-align: left;
@@ -227,41 +227,41 @@
 }
 
 #deck-builder > .shadowed.list > .list-container.deck > .card {
-	/* zoom: 0.8; */
-	margin-bottom: 15px;
+	zoom: 0.8;
+	margin-bottom: .9375rem;
 	margin-top: 0;
 	transition: all 0s;
 }
 
 #deck-builder > .shadowed.list > .list-container.deck > .card:nth-child(2n + 1) {
-	margin-left: 15px;
+	margin-left: .9375rem;
 }
 
 #deck-builder > .shadowed.list > .list-container.deck > .card:nth-child(2n) {
-	margin-left: 7px;
+	margin-left: .4375rem;
 }
 
 #deck-builder > .shadowed.list > .list-container.deck > .card:first-child,
 #deck-builder > .shadowed.list > .list-container.deck > .card:first-child + div {
-	margin-top: 15px;
+	margin-top: .9375rem;
 }
 
 .deckitem {
 	position: relative;
-	width: 170px;
-	margin-left: 15px;
+	width: 10.625rem;
+	margin-left: .9375rem;
 	margin-right: 0;
 	padding-left: 0;
 	padding-right: 0;
-	padding-top: 5px;
-	padding-bottom: 5px;
-	margin-top: 15px;
-	margin-bottom: 0px;
+	padding-top: .3125rem;
+	padding-bottom: .3125rem;
+	margin-top: .9375rem;
+	margin-bottom: 0rem;
 	text-align: left;
-	font-size: 24px;
-	line-height: 30px;
+	font-size: 1.5rem;
+	line-height: 1.875rem;
 	font-family: "xinwei";
-	border-radius: 40px 4px 4px 40px;
+	border-radius: 2.5rem .25rem .25rem 2.5rem;
 	background-size: cover;
 	white-space: nowrap;
 	transition: all 0s;
@@ -274,12 +274,12 @@
 }
 
 .dialog .deckitem {
-	margin-left: 8px;
-	margin-right: 9px;
+	margin-left: .5rem;
+	margin-right: .5625rem;
 }
 
 .deckitem.random {
-	border-radius: 4px;
+	border-radius: .25rem;
 	text-align: center;
 }
 
@@ -288,28 +288,28 @@
 }
 
 .deckitem:last-child {
-	margin-bottom: 15px;
+	margin-bottom: .9375rem;
 }
 
 .deckitem > span {
-	margin-left: 46px;
+	margin-left: 2.875rem;
 }
 
 .deckitem > .menubutton.round {
 	position: absolute;
-	left: -1px;
-	top: -2px;
-	width: 34px;
-	height: 34px;
+	left: -0.0625rem;
+	top: -0.125rem;
+	width: 2.125rem;
+	height: 2.125rem;
 }
 
 #deck-builder > .shadowed.career {
-	width: 240px;
-	height: 240px;
-	right: 220px;
-	bottom: 20px;
+	width: 15rem;
+	height: 15rem;
+	right: 13.75rem;
+	bottom: 1.25rem;
 	opacity: 0;
-	transform: scale(0) translateX(300px);
+	transform: scale(0) translateX(18.75rem);
 	transform-origin: right bottom;
 	transition-duration: 0.3s;
 	z-index: 8;
@@ -321,8 +321,8 @@
 }
 
 #deck-builder > .shadowed.career > div {
-	width: 80px;
-	height: 80px;
+	width: 5rem;
+	height: 5rem;
 	margin: 0;
 	padding: 0;
 	position: relative;
@@ -330,21 +330,21 @@
 }
 
 #deck-builder > .shadowed.career > div > .menubutton.round {
-	left: 15px;
-	top: 5px;
+	left: .9375rem;
+	top: .3125rem;
 }
 
 #deck-builder > .shadowed.career > div > .text {
-	font-size: 12px;
+	font-size: .75rem;
 	width: 100%;
 	text-align: center;
-	top: 58px;
+	top: 3.625rem;
 }
 
 #deck-builder > .dialog.fixed {
 	left: auto;
-	right: 240px;
-	width: calc(100% - 280px);
+	right: 15rem;
+	width: calc(100% - 17.5rem);
 	/*opacity: 0;*/
 	animation: none;
 	-webkit-animation: none;
@@ -368,9 +368,9 @@
 
 #deck-builder > .controls {
 	opacity: 0;
-	height: 50px;
-	width: calc(100% - 200px);
-	bottom: 10px;
+	height: 3.125rem;
+	width: calc(100% - 12.5rem);
+	bottom: .625rem;
 	left: 0;
 	text-align: right;
 	z-index: 9;
@@ -379,25 +379,25 @@
 
 #deck-builder > .controls > div {
 	position: relative;
-	margin-top: 5px;
-	margin-left: 5px;
-	margin-right: 5px;
+	margin-top: .3125rem;
+	margin-left: .3125rem;
+	margin-right: .3125rem;
 }
 
 #deck-builder > .controls > .card-count {
 	position: absolute;
-	width: 100px;
+	width: 6.25rem;
 	height: 100%;
-	left: calc(50% - 50px);
+	left: calc(50% - 3.125rem);
 	text-align: center;
 	font-family: "xinwei";
-	font-size: 24px;
-	line-height: 50px;
+	font-size: 1.5rem;
+	line-height: 3.125rem;
 	margin: 0;
 }
 
 #deck-builder > .controls > div:last-child {
-	margin-right: 40px;
+	margin-right: 2.5rem;
 	white-space: nowrap;
 	user-select: text;
 	-webkit-user-select: text;
@@ -409,11 +409,11 @@
 }
 
 #arena > .player.stone_deck {
-	transform: scale(1) translateX(100px);
+	transform: scale(1) translateX(6.25rem);
 	opacity: 0;
 	transition: all 0.5s;
-	left: calc(5% + 50px);
-	top: calc(50% - 90px);
+	left: calc(5% + 3.125rem);
+	top: calc(50% - 5.625rem);
 }
 
 #arena > .player.stone_deck.shown {
@@ -422,7 +422,7 @@
 }
 
 #arena > .player.stone_deck.shown.removing {
-	transform: scale(0.6) translateX(-100px);
+	transform: scale(0.6) translateX(-6.25rem);
 }
 
 #arena > .player.stone_deck > div:not(.avatar):not(.avatar2) {
@@ -434,31 +434,31 @@
 }*/
 @keyframes skillbarglow {
 	0% {
-		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px;
+		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem;
 	}
 
 	50% {
-		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px, rgba(255, 0, 0, 0.4) 0 0 12px,
-			rgba(255, 0, 0, 1) 0 0 30px, rgba(255, 0, 0, 0.2) 0 0 30px;
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem, rgba(255, 0, 0, 0.4) 0 0 .75rem,
+			rgba(255, 0, 0, 1) 0 0 1.875rem, rgba(255, 0, 0, 0.2) 0 0 1.875rem;
 	}
 
 	100% {
-		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px;
+		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem;
 	}
 }
 
 @-webkit-keyframes skillbarglow {
 	0% {
-		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px;
+		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem;
 	}
 
 	50% {
-		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px, rgba(255, 0, 0, 0.4) 0 0 12px,
-			rgba(255, 0, 0, 1) 0 0 30px, rgba(255, 0, 0, 0.2) 0 0 30px;
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem, rgba(255, 0, 0, 0.4) 0 0 .75rem,
+			rgba(255, 0, 0, 1) 0 0 1.875rem, rgba(255, 0, 0, 0.2) 0 0 1.875rem;
 	}
 
 	100% {
-		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px;
+		box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 .0625rem, rgba(255, 0, 0, 0.4) 0 0 .3125rem;
 	}
 }
 

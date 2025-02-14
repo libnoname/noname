@@ -8,13 +8,13 @@
     width: 80%;
 
     left: 10%;
-    border-radius: 10px;
+    border-radius: .625rem;
 }
 
 .dialog.addNewRow .row-container {
     display: grid;
     height: fit-content;
-    margin: 10px auto !important;
+    margin: .625rem auto !important;
     width: 95%;
 }
 
@@ -38,8 +38,8 @@
     margin: auto;
     display: flex;
     justify-content: center;
-    border-radius: 10px;
-    padding: 3px 3px;
+    border-radius: .625rem;
+    padding: .1875rem .1875rem;
     overflow: auto;
     max-width: 90%;
 }
@@ -50,7 +50,7 @@
 }
 
 .dialog.addNewRow .item-container>.item:not(:first-of-type) {
-    margin-left: var(--ml, 3px);
+    margin-left: var(--ml, .1875rem);
 }
 
 /* .dialog.addNewRow .item-container.zoom>.item.card:hover {
@@ -64,7 +64,7 @@
 }
 
 .dialog.addNewRow>.content-container {
-    border-radius: 10px;
+    border-radius: .625rem;
     /* background-color: var(--bgColor); */
 }
 
@@ -94,7 +94,7 @@
 
 .popupContainer.deckMonitor .deckMonitor {
     --bgColor: #45362c;
-    border: 3px solid rgb(213 194 179);
+    border: .1875rem solid rgb(213 194 179);
     width: 80%;
     height: 75%;
     background-color: var(--bgColor);
@@ -135,8 +135,8 @@
     display: flex;
     justify-content: space-between;
     background: #45362c;
-    border: 2px solid #594d41;
-    padding: 5px;
+    border: .125rem solid #594d41;
+    padding: .3125rem;
     box-sizing: border-box;
     /* 滚动方案开启，压缩方案关闭 */
     overflow-x: scroll;
@@ -151,9 +151,9 @@
     height: 100%;
     flex-grow: 1;
     flex-shrink: 1;
-    flex-basis: 100px;
-    margin: 0 5px;
-    padding: 3px;
+    flex-basis: 6.25rem;
+    margin: 0 .3125rem;
+    padding: .1875rem;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -186,7 +186,7 @@
 
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .itemCount {
     display: flex;
-    flex: 1 3 30px;
+    flex: 1 3 1.875rem;
     flex-shrink: 0;
     overflow: visible;
     font-size: 0.9em;
@@ -199,30 +199,30 @@
     background-color: #45362c;
     display: flex;
     width: 96%;
-    margin-top: 4px;
-    padding: 2px 2px;
-    border-radius: 3px;
+    margin-top: .25rem;
+    padding: .125rem .125rem;
+    border-radius: .1875rem;
     align-items: center;
-    border-radius: 3px;
+    border-radius: .1875rem;
     transition: 0.2s;
 
 
 }
 
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item:hover {
-    box-shadow: 0 0 4px 3px yellow;
+    box-shadow: 0 0 .25rem .1875rem yellow;
 }
 
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item .itemName {
     background: #d6cece;
-    margin: 3px;
-    margin: 5px 2px;
-    border-radius: 5px;
+    margin: .1875rem;
+    margin: .3125rem .125rem;
+    border-radius: .3125rem;
     color: black;
     text-shadow: none;
-    padding: 2px;
+    padding: .125rem;
     font-size: 0.9em;
-    flex: 1 5 50px;
+    flex: 1 5 3.125rem;
     justify-content: center;
     display: flex;
 }
@@ -233,10 +233,10 @@
     width: 102%;
     height: fit-content;
     z-index: 1;
-    padding: 6px;
+    padding: .375rem;
     color: black;
-    border: 3px solid #143308;
-    border-radius: 3px;
+    border: .1875rem solid #143308;
+    border-radius: .1875rem;
     left: 0;
     display: none;
 }
@@ -258,7 +258,7 @@
 }
 
 .player[data-position="0"] .tipContainer {
-    width: max(var(--w, 120px), 120px);
+    width: max(var(--w, 7.5rem), 7.5rem);
 }
 
 .player .tipContainer>.tip {
@@ -266,10 +266,10 @@
     box-sizing: border-box;
     width: 93%;
     background: var(--bg);
-    border-radius: 5px;
-    padding: 3px 3px;
-    border: 1px solid #8f8686;
-    margin-bottom: 3px;
+    border-radius: .3125rem;
+    padding: .1875rem .1875rem;
+    border: .0625rem solid #8f8686;
+    margin-bottom: .1875rem;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
@@ -282,9 +282,9 @@
 /* 方案二 */
 /* .player .tipContainer {
     --bg: #48310cf0;
-    border: solid 3px #a17132;
+    border: solid .1875rem #a17132;
     padding: 0;
-    border-radius: 5px;
+    border-radius: .3125rem;
     box-sizing: border-box;
 
 }
@@ -293,6 +293,6 @@
     border: none;
     border-radius: 0;
     margin: 0;
-    padding: 2px;
+    padding: .125rem;
     font-size: 1.1em;
 } */

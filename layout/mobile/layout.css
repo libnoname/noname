@@ -2,33 +2,33 @@
 @import "equip.css";
 
 #arena {
-	height: calc(95% + 20px);
+	height: calc(95% + 1.25rem);
 }
 #arena.oblongcard:not(.chess):not(.nome) {
 	height: 95%;
 }
 #arena.oblongcard:not(.chess):not(.nome) #me,
 #arena.oblongcard:not(.chess):not(.nome) #mebg {
-	height: 140px;
-	bottom: 10px;
+	height: 8.75rem;
+	bottom: .625rem;
 }
 #historybar {
-	height: calc(95% - 160px);
+	height: calc(95% - 10rem);
 }
 #window.oblongcard #historybar {
-	height: calc(95% - 180px);
+	height: calc(95% - 11.25rem);
 }
 #control {
-	width: calc(5000% / 47 - 240px);
-	left: calc(-150% / 47 + 120px);
-	bottom: 150px;
-	height: 40px;
+	width: calc(5000% / 47 - 15rem);
+	left: calc(-150% / 47 + 7.5rem);
+	bottom: 9.375rem;
+	height: 2.5rem;
 }
 #arena.choose-to-move > #control,
 #arena.discard-player-card > #control,
 #arena.gain-player-card > #control,
 #arena.choose-player-card > #control {
-	bottom: 30px;
+	bottom: 1.875rem;
 	transition: all 0s;
 }
 
@@ -36,75 +36,75 @@
 #arena.phone.gain-player-card > #control,
 #arena.phone.choose-player-card > #control,
 #arena.phone.choose-to-move > #control {
-	bottom: 43px;
+	bottom: 2.6875rem;
 }
 
 #arena.ipad.discard-player-card > #control,
 #arena.ipad.gain-player-card > #control,
 #arena.ipad.choose-player-card > #control,
 #arena.ipad.choose-to-move > #control {
-	bottom: 45px;
+	bottom: 2.8125rem;
 }
 #arena:not(.chess) > #me,
 #arena:not(.chess) > #mebg,
 #arena:not(.chess) > #autonode {
-	bottom: 30px;
+	bottom: 1.875rem;
 	width: calc(5000% / 47);
 	left: calc(-150% / 47);
 	top: auto;
 	border-radius: 0 !important;
-	height: 120px;
+	height: 7.5rem;
 }
 #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 - 240px);
-	left: calc(-150% / 47 + 120px);
+	width: calc(5000% / 47 - 15rem);
+	left: calc(-150% / 47 + 7.5rem);
 }
 #window.leftbar #arena:not(.chess) > #me,
 #window.leftbar #arena:not(.chess) > #mebg,
 #window.leftbar #arena:not(.chess) > #autonode,
 #window.leftbar #arena:not(.chess) .player[data-position="0"] {
-	width: calc(5000% / 47 + 2500px / 47);
-	left: calc(-150% / 47 - 50px - 75px / 47);
+	width: calc(5000% / 47 + 156.25rem / 47);
+	left: calc(-150% / 47 - 3.125rem - 4.6875rem / 47);
 }
 #window.leftbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47 - 240px);
-	left: calc(-150% / 47 - 50px - 75px / 47 + 120px);
+	width: calc(5000% / 47 + 156.25rem / 47 - 15rem);
+	left: calc(-150% / 47 - 3.125rem - 4.6875rem / 47 + 7.5rem);
 }
 #window.rightbar #arena:not(.chess) > #me,
 #window.rightbar #arena:not(.chess) > #mebg,
 #window.rightbar #arena:not(.chess) > #autonode,
 #window.rightbar #arena:not(.chess) .player[data-position="0"] {
-	width: calc(5000% / 47 + 2500px / 47);
-	left: calc(-150% / 47 - 75px / 47);
+	width: calc(5000% / 47 + 156.25rem / 47);
+	left: calc(-150% / 47 - 4.6875rem / 47);
 }
 #window.rightbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47 - 240px);
-	left: calc(-150% / 47 - 75px / 47 + 120px);
+	width: calc(5000% / 47 + 156.25rem / 47 - 15rem);
+	left: calc(-150% / 47 - 4.6875rem / 47 + 7.5rem);
 }
 #arena:not(.chess) #handcards1 {
-	height: 120px;
+	height: 7.5rem;
 	padding: 0;
-	top: calc(100% - 120px);
+	top: calc(100% - 7.5rem);
 }
 #arena:not(.chess):not(.single-handcard) #handcards1 {
-	width: calc(100% - 240px);
-	left: 120px;
+	width: calc(100% - 15rem);
+	left: 7.5rem;
 }
 #handcards2 {
 	display: none;
 }
 /*#arena:not(.chess) .player[data-position='0']>.playerjiu{
-    width: 120px;
-    border-radius: 0px;
+    width: 7.5rem;
+    border-radius: 0rem;
 }*/
 #arena:not(.chess) .player[data-position="0"].playerfocus {
 	transform: scale(1);
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) {
-	width: 45px;
-	height: 45px;
+	width: 2.8125rem;
+	height: 2.8125rem;
 	margin: 0;
-	border-radius: 4px;
+	border-radius: .25rem;
 	position: absolute;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .image {
@@ -117,21 +117,21 @@
 	display: block;
 	transform: scale(0.43) !important;
 	transform-origin: left top;
-	left: 2px;
-	top: 3px;
+	left: .125rem;
+	top: .1875rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .name.long {
-	top: 2px;
+	top: .125rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .info {
 	display: block;
 	transform: scale(0.43) !important;
 	transform-origin: right top;
-	right: 3px;
-	top: 3px;
+	right: .1875rem;
+	top: .1875rem;
 }
 /*#arena.oblongcard:not(.chess) .player[data-position='0']>.equips>div:not(.equip5){
-    height: 54px;
+    height: 3.375rem;
 }
 #arena.oblongcard:not(.chess) .player[data-position='0']>.equips>div:not(.equip5)>.image{
     width: 120%;
@@ -140,10 +140,10 @@
     top: 0%;
 }*/
 #arena:not(.chess):not(.textequip) .player[data-position="0"] > .equips > div.legend {
-	border: 1px solid rgb(192, 90, 255);
+	border: .0625rem solid rgb(192, 90, 255);
 }
 #arena:not(.chess):not(.textequip) .player[data-position="0"] > .equips > div.epic {
-	border: 1px solid rgb(90, 171, 255);
+	border: .0625rem solid rgb(90, 171, 255);
 }
 #arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 {
 	border-radius: 100%;
@@ -151,21 +151,21 @@
 #arena:not(.chess) .player[data-position="0"] {
 	width: calc(5000% / 47);
 	left: calc(-150% / 47);
-	height: 120px;
-	top: calc(100% - 150px);
+	height: 7.5rem;
+	top: calc(100% - 9.375rem);
 	background: none !important;
 	border: none !important;
 	border-radius: 0 !important;
 	pointer-events: none;
 }
 #arena:not(.chess) .player[data-position="0"] > .turned {
-	width: 120px;
+	width: 7.5rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .chain {
-	width: 120px;
+	width: 7.5rem;
 }
 #arena.oblongcard:not(.chess) .player[data-position="0"] {
-	height: 140px;
+	height: 8.75rem;
 }
 
 #arena:not(.chess) .player[data-position="0"].linked > .damage {
@@ -180,15 +180,15 @@
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .avatar,
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .avatar2,
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .equips {
-	width: 120px;
+	width: 7.5rem;
 	height: 100%;
-	border-radius: 0px !important;
+	border-radius: 0rem !important;
 	top: 0;
 	left: 0;
 	transition-property: opacity, transform;
 	transition-duration: 0.5s;
 	pointer-events: auto;
-	/*-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 180px, -10px 180px);*/
+	/*-webkit-clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 11.25rem, -0.625rem 11.25rem);*/
 }
 /*#window.compatiblemode #arena:not(.chess) .player[data-position='0']:not(.minskin)>.avatar,
 #window.compatiblemode #arena:not(.chess) .player[data-position='0']:not(.minskin)>.avatar2,
@@ -203,33 +203,33 @@
 	pointer-events: auto;
 }
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .equips {
-	left: calc(100% - 120px);
+	left: calc(100% - 7.5rem);
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > .equip1 {
-	top: 10px;
-	left: 10px;
+	top: .625rem;
+	left: .625rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > .equip2 {
-	top: 10px;
-	right: 10px;
+	top: .625rem;
+	right: .625rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > .equip3 {
-	bottom: 10px;
-	left: 10px;
+	bottom: .625rem;
+	left: .625rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > .equip4 {
-	bottom: 10px;
-	right: 10px;
+	bottom: .625rem;
+	right: .625rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .equips > .equip6 {
-	bottom: 10px;
-	right: 10px;
+	bottom: .625rem;
+	right: .625rem;
 }
 
 #arena:not(.chess) .player[data-position="0"] > .name,
 #arena:not(.chess) .player[data-position="0"].linked > .name {
-	left: 4px;
-	top: 10px;
+	left: .25rem;
+	top: .625rem;
 	transform: none;
 }
 #arena:not(.chess) .player[data-position="0"] > .nameol {
@@ -237,65 +237,65 @@
 }
 #arena:not(.chess) .player[data-position="0"] > .name.name2,
 #arena:not(.chess) .player[data-position="0"].linked > .name.name2 {
-	left: 69px;
+	left: 4.3125rem;
 }
 #arena:not(.chess):not(.stone) .player[data-position="0"] > .identity {
 	left: 0;
-	width: 130px;
+	width: 8.125rem;
 }
 #arena:not(.chess) .player[data-position="0"] > .damage {
-	width: 120px;
+	width: 7.5rem;
 }
 #arena:not(.chess) .player[data-position="0"].target {
 	transform: none !important;
 }
 #arena:not(.chess) .player[data-position="0"] > .hp:not(.actcount) {
-	bottom: 5px;
-	left: 100px;
+	bottom: .3125rem;
+	left: 6.25rem;
 }
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .count {
-	bottom: 10px;
-	border-radius: 0 2px 2px 0;
-	left: -1px;
+	bottom: .625rem;
+	border-radius: 0 .125rem .125rem 0;
+	left: -0.0625rem;
 	z-index: 3;
 	text-align: right;
 }
 #arena:not(.chess).slim_player .player[data-position="0"]:not(.minskin) > .count {
-	border-radius: 0 2px 2px 0;
-	left: -1px;
+	border-radius: 0 .125rem .125rem 0;
+	left: -0.0625rem;
 	z-index: 3;
 	text-align: right;
 }
 #arena:not(.chess) .player[data-position="0"] > .hp.actcount {
-	top: 10px;
-	left: 2px;
+	top: .625rem;
+	left: .125rem;
 }
 
 #arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar,
 #arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar2 {
-	width: 60px;
+	width: 3.75rem;
 	background-position: 50%;
 }
 #arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar2 {
-	left: 60px;
+	left: 3.75rem;
 	top: 0;
 	z-index: 1;
 }
 
 .popup[data-position="0"] {
-	top: calc(100% - 187px);
-	left: calc(-150% / 47 + 15px);
+	top: calc(100% - 11.6875rem);
+	left: calc(-150% / 47 + .9375rem);
 }
 
 #arena:not(.chess) .player[data-position="0"] > .judges {
-	left: 6px;
-	top: -16px;
+	left: .375rem;
+	top: -1rem;
 	transform: none;
 }
 #arena:not(.chess) .player[data-position="0"] > .marks {
-	right: -6px;
+	right: -0.375rem;
 	left: auto;
-	top: -16px;
+	top: -1rem;
 	transform: none;
 }
 
@@ -314,60 +314,60 @@
 }
 
 .dialog {
-	height: calc(100% - 370px);
-	bottom: 170px;
+	height: calc(100% - 23.125rem);
+	bottom: 10.625rem;
 }
 .dialog.fullheight {
-	height: calc(100% - 123px) !important;
-	top: 40px !important;
+	height: calc(100% - 7.6875rem) !important;
+	top: 2.5rem !important;
 }
 
 #me > .fakeme.avatar {
-	width: 120px;
+	width: 7.5rem;
 	height: 100%;
-	border-radius: 0px;
+	border-radius: 0rem;
 	top: 0;
 	left: 0;
 	background-size: cover;
-	clip-path: polygon(-10px 0, 130px 0, 130px 150px, -10px 150px);
-	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 150px, -10px 150px);
+	clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 9.375rem, -0.625rem 9.375rem);
+	-webkit-clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 9.375rem, -0.625rem 9.375rem);
 }
 #window[data-radius_size="increase"] #me > .fakeme.avatar,
 #window[data-radius_size="reduce"] #me > .fakeme.avatar {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 
 #arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip1,
 #arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip2 {
-	top: 20px;
+	top: 1.25rem;
 }
 #arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip3,
 #arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip4,
 #arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip6 {
-	bottom: 20px;
+	bottom: 1.25rem;
 }
 
 #arena.mobile.oblongcard.textequip:not(.chess) .player[data-position="0"] .equips > .removing {
-	margin-top: -14px !important;
-	margin-bottom: -14px !important;
+	margin-top: -0.875rem !important;
+	margin-bottom: -0.875rem !important;
 	transform: scale(1);
 }
 
 #arena.mobile.oblongcard:not(.chess) #handcards1 {
 	height: 100%;
-	top: 2px;
+	top: .125rem;
 }
 #arena.mobile.oblongcard:not(.chess) > .card,
 #arena.mobile.oblongcard:not(.chess) .handcards > .card {
-	height: 120px;
+	height: 7.5rem;
 }
 #arena.mobile.oblongcard:not(.chess) > .card > .image,
 #arena.mobile.oblongcard:not(.chess) .handcards > .card > .image {
-	height: 110px;
-	top: 8px;
-	background-position-x: -3px;
+	height: 6.875rem;
+	top: .5rem;
+	background-position-x: -0.1875rem;
 }
 
 #arena.phone.oblongcard:not(.chess):not(.nome) {
-	height: calc(97% + 10px);
+	height: calc(97% + .625rem);
 }

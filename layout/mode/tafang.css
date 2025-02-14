@@ -11,7 +11,7 @@
 }
 .storyscene.removing {
 	pointer-events: none;
-	transform: translateY(500px);
+	transform: translateY(31.25rem);
 }
 .storyscene.lockscroll {
 	overflow-x: hidden;

@@ -47,15 +47,15 @@
 
 .popup-container.filter-character > div > div {
 	position: relative;
-	margin: 10px;
+	margin: .625rem;
 }
 
 .popup-container.filter-character > div > .capt {
-	width: 80px;
-	height: 80px;
+	width: 5rem;
+	height: 5rem;
 	padding: 0;
-	font-size: 60px;
-	line-height: 90px;
+	font-size: 3.75rem;
+	line-height: 5.625rem;
 }
 
 .menu-container,
@@ -69,18 +69,18 @@
 
 .menu-buttons,
 .menu-sym {
-	padding-bottom: 5px !important;
-	width: calc(100% - 10px) !important;
-	padding-right: 5px !important;
+	padding-bottom: .3125rem !important;
+	width: calc(100% - .625rem) !important;
+	padding-right: .3125rem !important;
 }
 
 .menu-buttons.leftbutton {
 	text-align: left;
-	margin-left: 10px;
+	margin-left: .625rem;
 }
 
 .menu-buttons.leftbutton:not(.commandbutton) {
-	width: calc(100% - 30px) !important;
+	width: calc(100% - 1.875rem) !important;
 }
 
 .menu.main > .menu-content > div > .right.pane > .menu-buttons.leftbutton > .config.toggle:first-child,
@@ -91,8 +91,8 @@
 	> .menu-buttons.leftbutton
 	> .config.toggle:first-child
 	+ .config.toggle {
-	margin-left: 3px !important;
-	width: calc(100% - 15px) !important;
+	margin-left: .1875rem !important;
+	width: calc(100% - .9375rem) !important;
 }
 
 .menu-buttons div {
@@ -100,22 +100,22 @@
 }
 
 .menu-buttons > .glow {
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.8) 0 0 10px, rgba(0, 133, 255, 0.8) 0 0 10px,
-		rgba(0, 133, 255, 0.8) 0 0 15px !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 133, 255, 0.8) 0 0 .625rem, rgba(0, 133, 255, 0.8) 0 0 .625rem,
+		rgba(0, 133, 255, 0.8) 0 0 .9375rem !important;
 }
 
 .menu-cheat > div {
-	margin: 5px;
+	margin: .3125rem;
 }
 
 .menu-cheat > .selecting {
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.8) 0 0 5px, rgba(255, 0, 0, 0.8) 0 0 5px !important;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(255, 0, 0, 0.8) 0 0 .3125rem, rgba(255, 0, 0, 0.8) 0 0 .3125rem !important;
 }
 
 .menu-cheat.config > .menubutton {
-	height: 16px;
-	line-height: 16px;
-	transform: translateY(-10px);
+	height: 1rem;
+	line-height: 1rem;
+	transform: translateY(-0.625rem);
 }
 
 .menu-cheat.config {
@@ -125,10 +125,10 @@
 .menu-buttons > .toggle,
 .menu-buttons > .config.more {
 	position: relative;
-	margin-bottom: 10px !important;
-	margin-left: 10px !important;
-	margin-right: 10px !important;
-	width: calc(100% - 25px) !important;
+	margin-bottom: .625rem !important;
+	margin-left: .625rem !important;
+	margin-right: .625rem !important;
+	width: calc(100% - 1.5625rem) !important;
 	display: inline-block;
 }
 
@@ -139,8 +139,8 @@
 }
 
 .menu-buttons > .config.more.pile {
-	margin-top: 5px !important;
-	margin-left: 3px !important;
+	margin-top: .3125rem !important;
+	margin-left: .1875rem !important;
 }
 
 .menu-buttons > .toggle.cardpilecfgadd:not(.hidden) {
@@ -148,23 +148,23 @@
 }
 
 .menu-buttons > .toggle.cardpilecfg:not(.nomarginleft) {
-	margin-left: 20px !important;
-	width: calc(100% - 35px) !important;
+	margin-left: 1.25rem !important;
+	width: calc(100% - 2.1875rem) !important;
 }
 
 .menu-buttons > .config.more * {
 	position: relative;
 }
 
-/* .menu-buttons > .button {
+.menu-buttons > .button {
 	zoom: 0.75;
-} */
+}
 
 .menu-buttons .cardpiledelete,
 .toggle > .cardpiledelete {
 	position: relative;
 	float: right;
-	margin-right: 4px;
+	margin-right: .25rem;
 }
 
 .menu-buttons .menuplaceholder {
@@ -172,11 +172,11 @@
 	margin: 0;
 	padding: 0;
 	width: 100%;
-	height: 10px;
+	height: .625rem;
 }
 
 .menu-buttons .menuplaceholder.slim {
-	height: 5px;
+	height: .3125rem;
 }
 
 #window:not(.nopointer) .cardpiledelete {
@@ -184,37 +184,37 @@
 }
 
 .menu-help {
-	width: calc(100% - 30px) !important;
+	width: calc(100% - 1.875rem) !important;
 	text-align: left !important;
 }
 
 .menu-help li {
-	margin-bottom: 10px !important;
+	margin-bottom: .625rem !important;
 }
 
 .menu-container > .menu.main {
-	left: 15px;
-	top: 52px;
+	left: .9375rem;
+	top: 3.25rem;
 }
 
 .menu-container > .menu.main.center {
-	left: calc(50% - 200px);
-	top: calc(50% - 150px);
+	left: calc(50% - 12.5rem);
+	top: calc(50% - 9.375rem);
 }
 
 .menu-container.hidden > .menu.main {
 	transform: scale(0.5);
-	transform-origin: 2px -35px;
+	transform-origin: .125rem -2.1875rem;
 	opacity: 0;
 }
 
 .menu-container > .menu.main {
 	transition: all 0.3s;
-	transform-origin: 2px -35px;
+	transform-origin: .125rem -2.1875rem;
 }
 
 .menu-container.hidden > .menu.main.center {
-	/*transform:translateY(300px);*/
+	/*transform:translateY(18.75rem);*/
 	transform-origin: center center;
 }
 
@@ -223,8 +223,8 @@
 }
 
 .menu.main {
-	width: 400px;
-	height: 300px;
+	width: 25rem;
+	height: 18.75rem;
 	position: absolute;
 	overflow: hidden;
 	padding: 0;
@@ -237,64 +237,64 @@
 }
 
 .menubg.charactercard {
-	width: 500px;
-	height: 300px;
-	left: calc(50% - 250px);
-	top: calc(50% - 150px);
+	width: 31.25rem;
+	height: 18.75rem;
+	left: calc(50% - 15.625rem);
+	top: calc(50% - 9.375rem);
 	animation: dialog_start2 0.3s;
 	-webkit-animation: dialog_start2 0.3s;
 }
 
 .menubg.charactercard > .menubutton.large.ava {
-	width: 180px;
-	height: 240px;
-	left: 10px;
-	top: 10px;
+	width: 11.25rem;
+	height: 15rem;
+	left: .625rem;
+	top: .625rem;
 	overflow: hidden;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px !important;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 0 .3125rem !important;
 }
 
 .menubg.charactercard > .menubutton.large {
-	width: 85px;
-	height: 30px;
-	bottom: 10px;
-	line-height: 30px;
+	width: 5.3125rem;
+	height: 1.875rem;
+	bottom: .625rem;
+	line-height: 1.875rem;
 	padding: 0;
-	font-size: 20px;
+	font-size: 1.25rem;
 }
 
 .menubg.charactercard > .menubutton.ban {
-	left: 10px;
+	left: .625rem;
 }
 
 .menubg.charactercard > .menubutton.fav {
-	left: 105px;
+	left: 6.5625rem;
 }
 
 .menubg.charactercard > .ava > .changeskin {
-	bottom: 6px;
-	left: 6px;
+	bottom: .375rem;
+	left: .375rem;
 	font-family: "xinwei";
-	font-size: 16px;
+	font-size: 1rem;
 	z-index: 2;
 	color: white;
-	text-shadow: black 0 0 2px;
-	height: 16px;
-	line-height: 16px;
+	text-shadow: black 0 0 .125rem;
+	height: 1rem;
+	line-height: 1rem;
 	pointer-events: none;
 	opacity: 0.6;
 }
 
 .menubg.charactercard > .ava > .changeskin2 {
-	bottom: 6px;
-	right: 6px;
+	bottom: .375rem;
+	right: .375rem;
 	font-family: "xinwei";
-	font-size: 16px;
+	font-size: 1rem;
 	z-index: 2;
 	color: white;
-	text-shadow: black 0 0 2px;
-	height: 16px;
-	line-height: 16px;
+	text-shadow: black 0 0 .125rem;
+	height: 1rem;
+	line-height: 1rem;
 	opacity: 0.6;
 }
 
@@ -304,24 +304,24 @@
 }
 
 .menubg.charactercard > .characterskill {
-	left: 191px;
-	padding-left: 9px;
-	padding-right: 10px;
-	width: 290px;
-	top: 125px;
-	height: 50px;
+	left: 11.9375rem;
+	padding-left: .5625rem;
+	padding-right: .625rem;
+	width: 18.125rem;
+	top: 7.8125rem;
+	height: 3.125rem;
 	white-space: nowrap;
 	overflow-x: scroll;
 }
 
 .menubg.charactercard > .characterskill > .menubutton.large {
-	height: 20px;
-	line-height: 20px;
-	padding: 5px;
-	margin-top: 10px;
+	height: 1.25rem;
+	line-height: 1.25rem;
+	padding: .3125rem;
+	margin-top: .625rem;
 	position: relative;
-	font-size: 20px;
-	margin-right: 10px;
+	font-size: 1.25rem;
+	margin-right: .625rem;
 }
 
 .menubg.charactercard .characterintro .character-group img,
@@ -376,8 +376,8 @@
 }
 
 .menubg.charactercard .characterintro .hp > div:nth-child(odd) {
-	height: 10px;
-	width: 10px;
+	height: .625rem;
+	width: .625rem;
 }
 
 .menubg.charactercard .characterintro .hp > div.text {
@@ -402,23 +402,23 @@
 }
 
 .menubg.charactercard .characterintro {
-	left: 200px;
-	width: 280px;
-	height: 105px;
-	padding: 5px;
+	left: 12.5rem;
+	width: 17.5rem;
+	height: 6.5625rem;
+	padding: .3125rem;
 	overflow: scroll;
-	border-radius: 4px;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px;
+	border-radius: .25rem;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem;
 }
 
 .menubg.charactercard .characterintro:not(.intro2) {
-	top: 10px;
+	top: .625rem;
 	bottom: auto;
 }
 
 .menubg.charactercard .characterintro.intro2 {
 	top: auto;
-	bottom: 10px;
+	bottom: .625rem;
 }
 
 .menubg.charactercard > .ava > .avatars {
@@ -442,22 +442,22 @@
 
 .menubg.charactercard > .ava > .avatars > div {
 	position: relative;
-	margin: 3px;
-	width: 81px;
-	height: 111px;
-	border-radius: 4px;
+	margin: .1875rem;
+	width: 5.0625rem;
+	height: 6.9375rem;
+	border-radius: .25rem;
 	background-size: cover;
 	background-position: 50% 0;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 0 .3125rem;
 }
 
 .menubg.charactercard > .ava > .avatars > div:first-child,
 .menubg.charactercard > .ava > .avatars > div:first-child + div {
-	margin-top: 6px;
+	margin-top: .375rem;
 }
 
 .menubg.charactercard > .ava > .avatars > div:nth-of-type(odd) {
-	margin-left: 6px;
+	margin-left: .375rem;
 }
 
 .menubg.charactercard > .ava.scroll > .avatars {
@@ -471,31 +471,31 @@
 }
 
 .menubg.charactercard > .ava.scroll > .avatar {
-	transform: translateX(-200px);
+	transform: translateX(-12.5rem);
 	pointer-events: none;
 }
 
 .menubg.charactercard > .ava > .avatar {
-	left: 5px;
-	top: 5px;
-	width: calc(100% - 10px);
-	height: calc(100% - 10px);
+	left: .3125rem;
+	top: .3125rem;
+	width: calc(100% - .625rem);
+	height: calc(100% - .625rem);
 	background-position: 50% 0;
-	border-radius: 4px !important;
+	border-radius: .25rem !important;
 	z-index: 1;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 0 .3125rem;
 }
 
 .menu.main > .menu-tab {
-	height: 37px;
+	height: 2.3125rem;
 	text-align: center;
-	width: calc(100% - 30px);
-	padding-left: 15px;
-	padding-right: 15px;
+	width: calc(100% - 1.875rem);
+	padding-left: .9375rem;
+	padding-right: .9375rem;
 	position: relative;
 	text-align: center;
 
-	border-width: 0 0 1px;
+	border-width: 0 0 .0625rem;
 	border-style: solid;
 	border-image: linear-gradient(
 			to right,
@@ -508,9 +508,9 @@
 }
 
 .menu.main > .menu-tab-bar {
-	width: 45px;
-	height: 2px;
-	top: 35px;
+	width: 2.8125rem;
+	height: .125rem;
+	top: 2.1875rem;
 	position: absolute;
 	background-color: rgb(0, 133, 255);
 	transition: transform 0.3s;
@@ -519,12 +519,12 @@
 
 .menu.main > .menu-tab > div {
 	display: inline-block;
-	height: 32px;
-	line-height: 30px;
-	padding-top: 5px;
-	width: 45px;
-	margin-left: 5px;
-	margin-right: 5px;
+	height: 2rem;
+	line-height: 1.875rem;
+	padding-top: .3125rem;
+	width: 2.8125rem;
+	margin-left: .3125rem;
+	margin-right: .3125rem;
 	transition: color 0.5s;
 }
 
@@ -534,7 +534,7 @@
 }
 
 .menu.main > .menu-content {
-	height: calc(100% - 38px);
+	height: calc(100% - 2.375rem);
 	position: relative;
 	width: 100%;
 }
@@ -557,13 +557,13 @@
 }
 
 .menu.main > .menu-content > div > .left.pane > div {
-	width: calc(100% - 30px);
-	margin-top: 9px;
-	margin-left: 10px;
+	width: calc(100% - 1.875rem);
+	margin-top: .5625rem;
+	margin-left: .625rem;
 	transition: all 0.3s;
-	height: 23px;
-	font-size: 26px;
-	line-height: 26px;
+	height: 1.4375rem;
+	font-size: 1.625rem;
+	line-height: 1.625rem;
 	white-space: nowrap;
 }
 
@@ -573,11 +573,11 @@
 
 .menu.main > .menu-content > div > .left.pane > .lefttext {
 	font-family: "xinwei";
-	font-size: 20px;
+	font-size: 1.25rem;
 }
 
 .menu.main > .menu-content > div > .left.pane > div:last-child {
-	margin-bottom: 9px;
+	margin-bottom: .5625rem;
 }
 
 .menu.main > .menu-content > div > .left.pane.dim > div:not(.active) {
@@ -591,43 +591,43 @@
 }
 
 .menu.main > .menu-content > div > .right.pane > div {
-	width: calc(100% - 5px);
+	width: calc(100% - .3125rem);
 	position: absolute;
 	top: 0;
 	left: 0;
-	padding-left: 5px;
-	padding-top: 5px;
+	padding-left: .3125rem;
+	padding-top: .3125rem;
 }
 
 .menu.main > .menu-content > div > .right.pane > .expanded {
-	padding-bottom: 80px;
+	padding-bottom: 5rem;
 }
 
 .menu.main > .menu-content > div > .right.pane > .expanded.expanded2 {
-	padding-bottom: 12px;
+	padding-bottom: .75rem;
 }
 
 .menu.main > .menu-content > div > .right.pane > .morenodes {
-	padding-bottom: 10px;
+	padding-bottom: .625rem;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config {
-	left: 2px;
-	margin-top: 10px;
-	margin-left: 3px;
+	left: .125rem;
+	margin-top: .625rem;
+	margin-left: .1875rem;
 	transition: all 0.3s;
-	width: calc(100% - 20px);
+	width: calc(100% - 1.25rem);
 	overflow: visible;
 	position: relative;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.banskilladd {
-	height: 50px;
+	height: 3.125rem;
 	transition: all 0s;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.banskilladd.hidden {
-	margin-top: -50px !important;
+	margin-top: -3.125rem !important;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.banskilladd:not(.hidden),
@@ -636,23 +636,23 @@
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.banskilladd > select {
-	margin-right: 3px;
+	margin-right: .1875rem;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.toggle {
-	left: 2px !important;
+	left: .125rem !important;
 	text-align: left !important;
 	white-space: nowrap;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.toggle.pointerspan.cardpilecfg {
-	left: 0px !important;
+	left: 0rem !important;
 }
 
 .menu.main > .menu-content > div > .right.pane > div > .config.indent,
 .menu.main > .menu-content > div > .right.pane > div > .config.toggle.indent {
-	left: 12px !important;
-	width: calc(100% - 32px) !important;
+	left: .75rem !important;
+	width: calc(100% - 2rem) !important;
 }
 
 #window:not(.low_performance)
@@ -663,7 +663,7 @@
 	> div:not(.expanded)
 	> .config.auto-hide,
 #window:not(.low_performance) .menu.main > .menu-content > div > .right.pane > div > .config.hidden {
-	margin-top: -25px;
+	margin-top: -1.5625rem;
 	opacity: 0;
 	z-index: -1;
 }
@@ -681,8 +681,8 @@
 }
 
 .menu.main > .menu-content > div > .menubutton.round {
-	left: 335px;
-	top: 197px;
+	left: 20.9375rem;
+	top: 12.3125rem;
 	z-index: 3;
 	transition-property: color, box-shadow;
 	transition-duration: 0.3s;
@@ -690,7 +690,7 @@
 }
 
 .menu.main > .menu-content > div > .menubutton.round.glowing {
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.8) 0 0 10px, rgba(0, 133, 255, 0.8) 0 0 15px !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 133, 255, 0.8) 0 0 .625rem, rgba(0, 133, 255, 0.8) 0 0 .9375rem !important;
 }
 
 .popup-container.hidden {
@@ -700,20 +700,20 @@
 .popup-container > .menu {
 	position: absolute;
 	overflow: scroll;
-	max-height: 400px;
+	max-height: 25rem;
 	transition-property: opacity;
 }
 
 .popup-container > .menu.visual {
-	padding: 5px;
+	padding: .3125rem;
 	overflow: scroll;
 }
 
 .popup-container > .menu > div {
-	padding-top: 5px;
-	padding-bottom: 5px;
-	padding-left: 10px;
-	padding-right: 10px;
+	padding-top: .3125rem;
+	padding-bottom: .3125rem;
+	padding-left: .625rem;
+	padding-right: .625rem;
 	position: relative;
 	display: block;
 	transition: all 0s;
@@ -729,22 +729,22 @@
 
 .popup-container > .menu.visual > .dashedmenubutton {
 	box-shadow: none !important;
-	width: 86px;
-	height: 86px;
-	border: 2px dashed rgb(40, 40, 40);
+	width: 5.375rem;
+	height: 5.375rem;
+	border: .125rem dashed rgb(40, 40, 40);
 }
 
 .popup-container > .menu.visual > .controlbutton {
-	height: 26px;
-	border-radius: 4px;
+	height: 1.625rem;
+	border-radius: .25rem;
 }
 
 .popup-container > .menu.visual > .controlbutton.dashedmenubutton {
-	height: 22px;
+	height: 1.375rem;
 }
 
 .popup-container > .menu.visual > .controlbutton.dashedmenubutton > div {
-	line-height: 22px;
+	line-height: 1.375rem;
 }
 
 .popup-container > .menu.visual > .controlbutton > div {
@@ -752,11 +752,11 @@
 	height: 100%;
 	left: 0 !important;
 	top: 0 !important;
-	font-size: 20px;
+	font-size: 1.25rem;
 	margin: 0;
 	padding: 0;
 	text-align: center;
-	line-height: 26px;
+	line-height: 1.625rem;
 }
 
 .popup-container > .menu.visual > .controlbutton > div > br {
@@ -764,14 +764,14 @@
 }
 
 .popup-container > .menu.visual > .hpbutton {
-	width: 60px;
-	height: 60px;
+	width: 3.75rem;
+	height: 3.75rem;
 	overflow: hidden;
 }
 
 .popup-container > .menu.visual > .hpbutton > div {
-	width: 30px;
-	height: 30px;
+	width: 1.875rem;
+	height: 1.875rem;
 	margin: 0;
 	padding: 0;
 	position: absolute;
@@ -813,48 +813,48 @@
 	left: 20%;
 	top: 20%;
 	border-radius: 100%;
-	box-shadow: rgba(0, 0, 0, 0.2) 1px -1px 2px inset, rgba(255, 255, 255, 0.15) -1px 1px 5px inset;
+	box-shadow: rgba(0, 0, 0, 0.2) .0625rem -0.0625rem .125rem inset, rgba(255, 255, 255, 0.15) -0.0625rem .0625rem .3125rem inset;
 	filter: brightness(1.5);
 	-webkit-filter: brightness(1.5);
 }
 
 .popup-container > .menu.visual > .hpbutton > div:nth-child(1) > div {
 	background: rgba(57, 123, 4, 1);
-	border: 1px solid rgba(39, 79, 7, 1);
+	border: .0625rem solid rgba(39, 79, 7, 1);
 }
 
 .popup-container > .menu.visual > .hpbutton > div:nth-child(2) > div {
 	background: rgba(166, 140, 6, 1);
-	border: 1px solid rgba(79, 64, 7, 1);
+	border: .0625rem solid rgba(79, 64, 7, 1);
 }
 
 .popup-container > .menu.visual > .hpbutton > div:nth-child(3) > div {
 	background: rgba(148, 27, 27, 1);
-	border: 1px solid rgba(79, 7, 7, 1);
+	border: .0625rem solid rgba(79, 7, 7, 1);
 }
 
 .popup-container > .menu.visual > .hpbutton > div:nth-child(4) > div {
 	background: rgba(57, 123, 4, 1);
-	border: 1px solid rgba(39, 79, 7, 1);
+	border: .0625rem solid rgba(39, 79, 7, 1);
 }
 
 .themebutton > div {
-	width: 50px;
-	height: 76px;
-	top: 7px;
-	right: 7px;
-	border-radius: 4px;
+	width: 3.125rem;
+	height: 4.75rem;
+	top: .4375rem;
+	right: .4375rem;
+	border-radius: .25rem;
 }
 
 .themebutton > div > div {
-	width: calc(100% - 10px);
-	height: 12px;
+	width: calc(100% - .625rem);
+	height: .75rem;
 	display: block;
-	margin-left: 5px;
-	margin-top: 6px;
+	margin-left: .3125rem;
+	margin-top: .375rem;
 	position: relative;
-	border-radius: 2px;
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px;
+	border-radius: .125rem;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 0, 0, 0.3) 0 0 .3125rem;
 	transition: all 0s;
 }
 
@@ -868,11 +868,11 @@
 
 .themebutton.woodden > div:not(*:first-child) {
 	background: url("../../theme/woodden/wood2.png");
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 .1875rem .625rem;
 }
 
 .themebutton.woodden > div.fakeplayer:not(*:first-child) {
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 0rem .625rem;
 }
 
 .themebutton.woodden > div > div {
@@ -880,7 +880,7 @@
 }
 
 .themebutton.woodden > div > div.active {
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.4) 0 0 0 2px, rgba(0, 133, 255, 1) 0 0 5px !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 133, 255, 0.4) 0 0 0 .125rem, rgba(0, 133, 255, 1) 0 0 .3125rem !important;
 }
 
 .themebutton.music {
@@ -889,7 +889,7 @@
 
 .themebutton.music > div:not(*:first-child) {
 	background: linear-gradient(#4b4b4b, #464646);
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 .1875rem .625rem;
 }
 
 .themebutton.music > div > div {
@@ -903,7 +903,7 @@
 
 .themebutton.ol > div:not(*:first-child) {
 	background: linear-gradient(#4b4b4b, #464646);
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 .1875rem .625rem;
 }
 
 .themebutton.ol > div > div {
@@ -917,7 +917,7 @@
 
 .themebutton.simple > div:not(*:first-child) {
 	background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
-	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 .1875rem .625rem;
 }
 
 .themebutton.simple > div > div {
@@ -930,37 +930,37 @@
 }
 
 .themebutton > div > div:first-child {
-	margin-top: 5px;
+	margin-top: .3125rem;
 }
 
 .themebutton > .fakeplayer > .avatar {
-	width: calc(100% - 2px);
-	height: calc(100% - 2px);
-	left: 1px;
-	top: 1px;
-	border-radius: 2px;
+	width: calc(100% - .125rem);
+	height: calc(100% - .125rem);
+	left: .0625rem;
+	top: .0625rem;
+	border-radius: .125rem;
 	position: absolute;
 	margin: 0 !important;
 	padding: 0;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px inset;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem inset;
 }
 
 .themebutton > .fakeplayer.oldlayout > .avatar {
-	width: calc(50% - 2px);
+	width: calc(50% - .125rem);
 }
 
 .themebutton > .fakeplayer.me > .avatar {
-	width: 22px;
-	height: 22px;
-	left: 3px;
+	width: 1.375rem;
+	height: 1.375rem;
+	left: .1875rem;
 	top: 0;
 	box-shadow: none;
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 
 .themebutton > .fakeplayer.me {
-	clip-path: polygon(-10px 0, 32px 0, 32px 32px, -10px 32px);
-	-webkit-clip-path: polygon(-10px 0, 32px 0, 32px 32px, -10px 32px);
+	clip-path: polygon(-0.625rem 0, 2rem 0, 2rem 2rem, -0.625rem 2rem);
+	-webkit-clip-path: polygon(-0.625rem 0, 2rem 0, 2rem 2rem, -0.625rem 2rem);
 }
 
 .themebutton > div > div > div {
@@ -970,9 +970,9 @@
 	top: 0;
 	transform: scale(0.5);
 	color: white;
-	box-shadow: black 0 0 2px;
+	box-shadow: black 0 0 .125rem;
 	transform-origin: top left;
-	line-height: 24px;
+	line-height: 1.5rem;
 	text-align: center;
 	box-shadow: none !important;
 }
@@ -988,15 +988,15 @@
 
 .popup-container > .menu.visual > div {
 	display: inline-block;
-	margin: 5px !important;
+	margin: .3125rem !important;
 	padding: 0 !important;
-	width: 90px;
-	height: 90px;
+	width: 5.625rem;
+	height: 5.625rem;
 }
 
 .popup-container > .menu.visual.withbar > div:last-child {
 	display: block;
-	width: calc(100% - 10px);
+	width: calc(100% - .625rem);
 	text-align: center;
 	height: auto;
 	cursor: default !important;
@@ -1005,8 +1005,8 @@
 .popup-container > .menu.visual.withbar > div:last-child > div {
 	display: inline-block;
 	position: relative;
-	margin-left: 5px;
-	margin-right: 5px;
+	margin-left: .3125rem;
+	margin-right: .3125rem;
 }
 
 .popup-container > .menu.visual.withbar > div:not(.showdelete) > .deletebutton {
@@ -1045,20 +1045,20 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .popup-container > .menu.visual > .button.character > .name {
-	top: 10px;
+	top: .625rem;
 }
 
 .popup-container > .menu > div:first-child {
-	margin-top: 5px;
+	margin-top: .3125rem;
 }
 
 .popup-container > .menu > div:last-child {
-	margin-bottom: 5px;
+	margin-bottom: .3125rem;
 }
 
 .config {
-	/* height: 25px; */
-	line-height: 25px;
+	/* height: 1.5625rem; */
+	line-height: 1.5625rem;
 	position: relative;
 }
 
@@ -1074,14 +1074,14 @@ input.fileinput::-webkit-file-upload-button {
 	left: auto;
 	display: inline-block;
 	transition: all 0.3s;
-	height: 25px;
+	height: 1.5625rem;
 }
 
 .config.switcher > div {
-	border-bottom-width: 2px;
+	border-bottom-width: .125rem;
 	border-bottom-style: solid;
 	border-bottom-color: transparent;
-	margin-right: 4px;
+	margin-right: .25rem;
 }
 
 .config.switcher.on > div {
@@ -1089,14 +1089,14 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .config.toggle > div {
-	width: 60px;
+	width: 3.75rem;
 }
 
 .config.toggle > div > div {
 	display: inline-block;
 	position: relative;
-	width: 25px;
-	height: 25px;
+	width: 1.5625rem;
+	height: 1.5625rem;
 	top: 0;
 	left: 0;
 	transition: all 0.3s;
@@ -1104,7 +1104,7 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .config.toggle.on > div > div {
-	left: calc(100% - 25px);
+	left: calc(100% - 1.5625rem);
 }
 
 .config.more {
@@ -1117,32 +1117,32 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .config.more > div {
-	transform: translateY(-2px);
+	transform: translateY(-0.125rem);
 	font-family: "huangcao", "xinwei";
 }
 
 .config.more.on > div {
-	transform: rotate(90deg) translateX(-2px);
+	transform: rotate(90deg) translateX(-0.125rem);
 }
 
 .menubutton {
 	text-align: center;
 	display: inline-block;
-	padding: 5px;
+	padding: .3125rem;
 }
 
 .menubutton.large {
-	font-size: 30px;
-	line-height: 30px;
+	font-size: 1.875rem;
+	line-height: 1.875rem;
 	font-family: "STXinwei", "xinwei";
 }
 
 .menubutton.round {
-	width: 40px;
-	height: 40px;
+	width: 2.5rem;
+	height: 2.5rem;
 	border-radius: 100%;
-	font-size: 36px;
-	line-height: 40px;
+	font-size: 2.25rem;
+	line-height: 2.5rem;
 	font-family: "xinwei";
 }
 
@@ -1206,11 +1206,11 @@ input.fileinput::-webkit-file-upload-button {
 	from {
 		transform: scale(0.5);
 		opacity: 0;
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 
 	to {
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 }
 
@@ -1218,35 +1218,35 @@ input.fileinput::-webkit-file-upload-button {
 	from {
 		transform: scale(0.5);
 		opacity: 0;
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 
 	to {
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 }
 
 @keyframes menuzoomout {
 	from {
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 
 	to {
 		transform: scale(0.5);
 		opacity: 0;
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 }
 
 @-webkit-keyframes menuzoomout {
 	from {
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 
 	to {
 		transform: scale(0.5);
 		opacity: 0;
-		transform-origin: 2px -35px;
+		transform-origin: .125rem -2.1875rem;
 	}
 }
 
@@ -1262,22 +1262,22 @@ input.fileinput::-webkit-file-upload-button {
 
 .menu-buttons > .new_character > .avatar,
 .menu-buttons > .new_character > .card {
-	top: 8px;
-	left: 12px;
+	top: .5rem;
+	left: .75rem;
 	position: absolute;
-	width: 100px;
-	height: 130px;
+	width: 6.25rem;
+	height: 8.125rem;
 	margin: 0;
 }
 
 .menu-buttons > .new_character > .card {
-	height: 100px;
+	height: 6.25rem;
 }
 
 .menu-buttons > .new_character > .card:not(.fullskin) {
 	color: white;
-	text-shadow: black 0px 0px 2px;
-	transform: translateX(0px);
+	text-shadow: black 0rem 0rem .125rem;
+	transform: translateX(0rem);
 	background-image: url("image/card/hslingjian_jinjilengdong.jpg");
 	background-size: cover;
 }
@@ -1285,7 +1285,7 @@ input.fileinput::-webkit-file-upload-button {
 .menu-buttons > .new_character > .avatar > input,
 .menu-buttons > .new_character > .card > input {
 	z-index: 3;
-	border-radius: 8px;
+	border-radius: .5rem;
 	opacity: 0;
 	width: 100%;
 	height: 100%;
@@ -1296,33 +1296,33 @@ input.fileinput::-webkit-file-upload-button {
 
 #window[data-radius_size="reduce"] .menu-buttons > .new_character > .avatar > input,
 #window[data-radius_size="reduce"] .menu-buttons > .new_character > .card > input {
-	border-radius: 4px;
+	border-radius: .25rem;
 }
 
 #window[data-radius_size="off"] .menu-buttons > .new_character > .avatar > input,
 #window[data-radius_size="off"] .menu-buttons > .new_character > .card > input {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 
 #window[data-radius_size="increase"] .menu-buttons > .new_character > .avatar > input,
 #window[data-radius_size="increase"] .menu-buttons > .new_character > .card > input {
-	border-radius: 16px;
+	border-radius: 1rem;
 }
 
 .menu-buttons > .new_character > .avatar > .select_avatar,
 .menu-buttons > .new_character > .card > .select_avatar {
 	font-family: "xinwei";
-	font-size: 20px;
+	font-size: 1.25rem;
 	width: 100%;
-	height: 20px;
-	line-height: 20px;
-	top: 55px;
+	height: 1.25rem;
+	line-height: 1.25rem;
+	top: 3.4375rem;
 	left: 0;
 	text-align: center;
 }
 
 .menu-buttons > .new_character > .card > .select_avatar {
-	top: 40px;
+	top: 2.5rem;
 }
 
 .menu-buttons > .new_character > .avatar.inited > .select_avatar,
@@ -1332,57 +1332,57 @@ input.fileinput::-webkit-file-upload-button {
 
 .menu-buttons > .new_character > .indent {
 	display: block;
-	margin-left: 123px;
-	width: calc(100% - 135px);
+	margin-left: 7.6875rem;
+	width: calc(100% - 8.4375rem);
 	position: relative;
-	padding-top: 7px;
+	padding-top: .4375rem;
 	text-align: left;
 	white-space: nowrap;
 }
 
 .menu-buttons > .new_character > .indent > input {
-	width: 60px;
+	width: 3.75rem;
 }
 
 .menu-buttons > .new_character > div > select {
-	margin-right: 3px;
+	margin-right: .1875rem;
 }
 
 .menu-buttons > .new_character > .die_audio {
 	position: absolute;
-	left: 12px;
-	top: 160px;
-	height: 45px;
-	width: calc(100% - 12px);
+	left: .75rem;
+	top: 10rem;
+	height: 2.8125rem;
+	width: calc(100% - .75rem);
 }
 
 .menu-buttons > .new_character > .die_audio > input {
-	width: calc(100% - 100px);
+	width: calc(100% - 6.25rem);
 }
 
 .menu-buttons > .new_character > .die_audio > button {
-	margin-right: 12px;
+	margin-right: .75rem;
 }
 
 .menu-buttons > .new_character > .add_skill {
 	position: absolute;
-	left: 12px;
-	top: 250px;
+	left: .75rem;
+	top: 15.625rem;
 	text-align: left;
-	line-height: 20px;
+	line-height: 1.25rem;
 	white-space: nowrap;
 }
 
 .menu-buttons > .new_character > .add_skill.options {
-	top: 205px;
+	top: 12.8125rem;
 }
 
 .menu-buttons > .new_character > .add_skill.options > span {
-	margin-right: 10px;
+	margin-right: .625rem;
 }
 
 .menu-buttons > .new_character > .add_skill.create {
-	top: 220px;
+	top: 13.75rem;
 }
 
 .menu-buttons > .new_character > .add_skill.create > div {
@@ -1395,28 +1395,28 @@ input.fileinput::-webkit-file-upload-button {
 
 .menu-buttons > .new_character > .add_skill.create > div > textarea {
 	resize: none;
-	width: 200px;
-	height: 100px;
-	margin-top: 5px;
+	width: 12.5rem;
+	height: 6.25rem;
+	margin-top: .3125rem;
 }
 
 .menu-buttons > .new_character > .add_skill.create > div > div {
 	position: relative;
-	margin-top: 5px;
+	margin-top: .3125rem;
 }
 
 .menu-buttons > .new_character > .add_skill.create > div > div > input {
-	width: 120px;
+	width: 7.5rem;
 }
 
 .menu-buttons > .new_character > .skill_list {
 	position: absolute;
-	left: 12px;
-	top: 265px;
+	left: .75rem;
+	top: 16.5625rem;
 	text-align: left;
 	height: auto;
-	width: calc(100% - 20px);
-	padding-bottom: 30px;
+	width: calc(100% - 1.25rem);
+	padding-bottom: 1.875rem;
 	transition: all 0s;
 }
 
@@ -1433,13 +1433,13 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .menu-buttons > .new_character > .skill_list > div:first-child {
-	margin-bottom: 10px;
+	margin-bottom: .625rem;
 }
 
 .menu-buttons > .new_character > .skill_list > div:first-child > div {
-	width: calc(50% - 10px);
-	margin-right: 10px;
-	margin-top: 6px;
+	width: calc(50% - .625rem);
+	margin-right: .625rem;
+	margin-top: .375rem;
 }
 
 .menu-buttons > .new_character > .skill_list > div:first-child > div > div {
@@ -1456,22 +1456,22 @@ input.fileinput::-webkit-file-upload-button {
 
 .menu-buttons > .new_character.export > div {
 	position: relative;
-	margin-left: 12px;
-	margin-top: 5px;
+	margin-left: .75rem;
+	margin-top: .3125rem;
 }
 
 .menu-buttons > .new_character.export > div > input {
-	width: 100px;
-	margin-right: 5px;
+	width: 6.25rem;
+	margin-right: .3125rem;
 }
 
 .menu-buttons > .new_character.export.import > div > input {
-	width: 153px;
+	width: 9.5625rem;
 }
 
 .menubutton {
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
-	border-radius: 4px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 .1875rem .625rem;
+	border-radius: .25rem;
 	background-image: linear-gradient(rgba(75, 75, 75, 1), rgba(70, 70, 70, 1));
 }
 
@@ -1479,7 +1479,7 @@ input.fileinput::-webkit-file-upload-button {
 .menubutton.large.red,
 .redbg {
 	color: white !important;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px !important;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.3) 0 .1875rem .625rem !important;
 }
 
 .menubutton.active,
@@ -1516,12 +1516,12 @@ input.fileinput::-webkit-file-upload-button {
 
 .menubutton.large.active,
 .menubutton.large.lighlight {
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.3) 0 .1875rem .625rem;
 }
 
 .config.toggle > div {
-	border-radius: 25px;
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 0 10px inset;
+	border-radius: 1.5625rem;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 0 .625rem inset;
 }
 
 .config.toggle.on > div {
@@ -1529,34 +1529,34 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .config.toggle > div > div {
-	border-radius: 25px;
+	border-radius: 1.5625rem;
 	background-image: linear-gradient(rgba(75, 75, 75, 1), rgba(70, 70, 70, 1));
-	box-shadow: rgba(51, 51, 51, 1) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	box-shadow: rgba(51, 51, 51, 1) 0 0 0 .0625rem, rgba(0, 0, 0, 0.2) 0 .1875rem .625rem;
 }
 
 .popup-container > .menu:not(.visual) > div:hover {
 	color: white;
 	background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1));
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem;
 }
 
 .videonode.menubutton {
-	width: calc(100% - 50px);
-	height: 70px;
-	margin-bottom: 6px;
-	margin-left: -10px;
-	margin-top: 6px;
+	width: calc(100% - 3.125rem);
+	height: 4.375rem;
+	margin-bottom: .375rem;
+	margin-left: -0.625rem;
+	margin-top: .375rem;
 	overflow: hidden;
 }
 
 .videonode.menubutton.extension {
 	text-align: left;
 	height: auto;
-	max-height: 90px;
+	max-height: 5.625rem;
 }
 
 .videonode.menubutton.extension.current {
-	max-height: 400px;
+	max-height: 25rem;
 }
 
 .videonode.menubutton > div {
@@ -1578,10 +1578,10 @@ input.fileinput::-webkit-file-upload-button {
 .videonode.menubutton.extension > .caption > .menubutton {
 	position: relative;
 	float: right;
-	font-size: 16px;
+	font-size: 1rem;
 	padding: 0;
 	text-align: center;
-	width: 80px;
+	width: 5rem;
 	font-family: "STHeiti", "SimHei", "Microsoft JhengHei", "Microsoft YaHei", "WenQuanYi Micro Hei",
 		Helvetica, Arial, sans-serif;
 }
@@ -1599,26 +1599,26 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .videonode.menubutton > .videoavatar {
-	width: 56px;
-	height: 56px;
-	top: 7px;
-	left: 7px;
+	width: 3.5rem;
+	height: 3.5rem;
+	top: .4375rem;
+	left: .4375rem;
 	background-size: cover;
 }
 
 .videonode.menubutton > .videoavatar2 {
-	width: 20px;
-	height: 20px;
-	top: 47px;
-	left: 3px;
+	width: 1.25rem;
+	height: 1.25rem;
+	top: 2.9375rem;
+	left: .1875rem;
 	background-size: cover;
 	border-radius: 100%;
 }
 
 .videonode.menubutton > .caption {
 	display: inline-block;
-	left: 84px;
-	top: 6px;
+	left: 5.25rem;
+	top: .375rem;
 	padding-top: 0;
 	white-space: nowrap;
 }
@@ -1626,14 +1626,14 @@ input.fileinput::-webkit-file-upload-button {
 .videonode.menubutton.extension > .caption {
 	left: 0;
 	top: 0;
-	margin-left: 2px;
+	margin-left: .125rem;
 }
 
 .videonode.menubutton > .text {
-	font-size: 14px;
-	left: 85px;
-	top: 35px;
-	line-height: 20px;
+	font-size: .875rem;
+	left: 5.3125rem;
+	top: 2.1875rem;
+	line-height: 1.25rem;
 	text-align: left;
 	font-family: "STHeiti", "SimHei", "Microsoft JhengHei", "Microsoft YaHei", "WenQuanYi Micro Hei",
 		Helvetica, Arial, sans-serif;
@@ -1642,7 +1642,7 @@ input.fileinput::-webkit-file-upload-button {
 .videonode.menubutton.extension > .text {
 	left: 0;
 	top: 0;
-	margin-left: 5px;
+	margin-left: .3125rem;
 }
 
 .videonode.menubutton.extension > .text.author > span {
@@ -1650,8 +1650,8 @@ input.fileinput::-webkit-file-upload-button {
 	position: absolute;
 	right: 0;
 	top: 0;
-	transform: translateY(2px) scale(0.7);
-	width: 80px;
+	transform: translateY(.125rem) scale(0.7);
+	width: 5rem;
 	text-align: center;
 	opacity: 0;
 }
@@ -1662,24 +1662,24 @@ input.fileinput::-webkit-file-upload-button {
 
 .videonode.menubutton > .victory {
 	font-family: "huangcao", "xinwei";
-	font-size: 25px;
-	text-shadow: black 0 0 1px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 5px,
-		rgba(255, 203, 0, 1) 0 0 5px, rgba(255, 203, 0, 1) 0 0 5px, black 0 0 1px;
+	font-size: 1.5625rem;
+	text-shadow: black 0 0 .0625rem, rgba(255, 203, 0, 1) 0 0 .125rem, rgba(255, 203, 0, 1) 0 0 .3125rem,
+		rgba(255, 203, 0, 1) 0 0 .3125rem, rgba(255, 203, 0, 1) 0 0 .3125rem, black 0 0 .0625rem;
 	color: white;
 	position: absolute;
-	left: 48px;
-	top: 48px;
+	left: 3rem;
+	top: 3rem;
 }
 
 .videonode > .video_star {
 	opacity: 0;
 	position: absolute;
-	left: 196px;
-	top: 4px;
-	font-size: 16px;
-	width: 20px;
-	height: 20px;
-	line-height: 20px;
+	left: 12.25rem;
+	top: .25rem;
+	font-size: 1rem;
+	width: 1.25rem;
+	height: 1.25rem;
+	line-height: 1.25rem;
 	text-align: center;
 }
 
@@ -1692,43 +1692,43 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .onlineclient .videonode {
-	margin: 5px;
+	margin: .3125rem;
 	padding: 0;
-	width: calc(100% - 20px);
-	height: 30px;
+	width: calc(100% - 1.25rem);
+	height: 1.875rem;
 	overflow: visible;
-	border-top-left-radius: 10px;
-	border-bottom-left-radius: 10px;
+	border-top-left-radius: .625rem;
+	border-bottom-left-radius: .625rem;
 }
 
 .onlineclient .videonode > .videoavatar {
 	padding: 0;
-	left: -4px;
-	top: -2px;
-	width: 34px;
-	height: 34px;
+	left: -0.25rem;
+	top: -0.125rem;
+	width: 2.125rem;
+	height: 2.125rem;
 	border-radius: 100%;
 }
 
 .onlineclient .videotext {
-	margin-top: 0px;
-	font-size: 14px;
-	width: calc(100% - 30px);
+	margin-top: 0rem;
+	font-size: .875rem;
+	width: calc(100% - 1.875rem);
 }
 
 .onlineclient .onlineevent.videotext {
-	margin-top: 2px;
+	margin-top: .125rem;
 }
 
 .onlineclient .videonode > .name {
-	left: 35px;
-	max-width: 125px;
+	left: 2.1875rem;
+	max-width: 7.8125rem;
 	overflow: hidden;
 	white-space: nowrap;
 	text-align: left;
-	height: 30px;
-	line-height: 30px;
-	font-size: 18px;
+	height: 1.875rem;
+	line-height: 1.875rem;
+	font-size: 1.125rem;
 	font-family: "lishu", "xinwei";
 }
 
@@ -1739,28 +1739,28 @@ input.fileinput::-webkit-file-upload-button {
 .onlineclient .videonode.videonodestatus > .videostatus {
 	position: relative;
 	display: block;
-	margin-left: 10px;
-	margin-top: 30px;
-	margin-bottom: 5px;
-	width: calc(100% - 20px);
+	margin-left: .625rem;
+	margin-top: 1.875rem;
+	margin-bottom: .3125rem;
+	width: calc(100% - 1.25rem);
 }
 
 .onlineevent > div {
 	text-align: left;
 	position: relative;
 	display: block;
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-top: .3125rem;
+	margin-bottom: .3125rem;
 }
 
 .onlineevent > div.title {
 	font-family: "xinwei";
-	font-size: 18px;
+	font-size: 1.125rem;
 }
 
 .button-downloading > .button-progress {
 	width: 100%;
-	border-radius: 4px;
+	border-radius: .25rem;
 	z-index: 1;
 	overflow: hidden;
 }
@@ -1769,9 +1769,9 @@ input.fileinput::-webkit-file-upload-button {
 	width: 0;
 	height: 100%;
 	position: absolute;
-	left: 0px;
-	top: 0px;
-	border-radius: 0px;
+	left: 0rem;
+	top: 0rem;
+	border-radius: 0rem;
 	background: linear-gradient(rgb(29, 206, 68), rgb(1, 148, 46));
 }
 
@@ -1808,8 +1808,8 @@ input.fileinput::-webkit-file-upload-button {
 	position: relative;
 	left: 0;
 	display: block;
-	margin: 12px;
-	margin-bottom: 15px;
+	margin: .75rem;
+	margin-bottom: .9375rem;
 	white-space: nowrap;
 	text-align: left;
 }
@@ -1821,46 +1821,46 @@ input.fileinput::-webkit-file-upload-button {
 
 .menu-buttons .file-container > div > img {
 	display: block;
-	margin-top: 5px;
+	margin-top: .3125rem;
 }
 
 .menubutton.large.dashboard {
-	width: 80px;
-	height: 80px;
-	margin: 6px;
+	width: 5rem;
+	height: 5rem;
+	margin: .375rem;
 	position: relative !important;
 }
 
 .menubutton.large.dashboard.dashboard2 {
-	width: 60px;
-	height: 60px;
-	margin: 5px;
-	margin-top: 10px;
+	width: 3.75rem;
+	height: 3.75rem;
+	margin: .3125rem;
+	margin-top: .625rem;
 }
 
 .menubutton.large.dashboard.dashboard2 > div:first-child {
-	font-size: 40px;
-	line-height: 40px;
+	font-size: 2.5rem;
+	line-height: 2.5rem;
 }
 
 .menubutton.large.dashboard.dashboard2 > div:last-child {
-	font-size: 16px;
+	font-size: 1rem;
 	white-space: nowrap;
 }
 
 .menubutton.large.dashboard > div:first-child {
 	font-family: "lishu", "xiaozhuan";
-	font-size: 60px;
-	line-height: 60px;
+	font-size: 3.75rem;
+	line-height: 3.75rem;
 	position: absolute;
 	left: 0;
-	top: 7px;
+	top: .4375rem;
 	width: 100%;
-	height: 60px;
+	height: 3.75rem;
 }
 
 .menubutton.large.dashboard > div:last-child {
-	font-size: 18px;
+	font-size: 1.125rem;
 	position: absolute;
 	left: 0;
 	bottom: 0;
@@ -1872,8 +1872,8 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 #create-extension {
-	height: calc(100% - 5px);
-	width: calc(100% - 10px);
+	height: calc(100% - .3125rem);
+	width: calc(100% - .625rem);
 	overflow: hidden;
 }
 
@@ -1887,20 +1887,20 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 #create-extension > .menu-buttons {
-	left: 10px;
-	height: calc(100% - 5px);
-	width: calc(100% - 15px) !important;
+	left: .625rem;
+	height: calc(100% - .3125rem);
+	width: calc(100% - .9375rem) !important;
 }
 
 #create-extension > .menu-buttons > .config.more {
-	margin-left: 0px !important;
-	margin-top: 10px !important;
+	margin-left: 0rem !important;
+	margin-top: .625rem !important;
 }
 
 #create-extension > .menu-buttons > .config.more.margin-bottom {
-	margin-left: 0px !important;
-	margin-top: 10px !important;
-	margin-bottom: 5px !important;
+	margin-left: 0rem !important;
+	margin-top: .625rem !important;
+	margin-bottom: .3125rem !important;
 }
 
 #create-extension > .hidden {
@@ -1908,11 +1908,11 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 #create-extension > div:not(*:first-child).hidden {
-	transform: translateX(200px);
+	transform: translateX(12.5rem);
 }
 
 #create-extension > .menu-buttons > .new_character > .skill_list {
-	top: 290px;
+	top: 18.125rem;
 }
 
 #create-extension > .menu-buttons > .new_character > .skill_list > div:first-child {
@@ -1920,13 +1920,13 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 #create-extension > .menu-buttons > .new_character > .skill_list > div:first-child:not(*:empty) {
-	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-top: .625rem;
+	margin-bottom: .625rem;
 }
 
 #create-extension > .menu-buttons > .new_character > .skill_list > div:first-child > button {
-	margin-right: 3px;
-	margin-bottom: 3px;
+	margin-right: .1875rem;
+	margin-bottom: .1875rem;
 }
 
 div.popup-container.editor,
@@ -1939,21 +1939,21 @@ div.popup-container.editor div {
 	position: absolute;
 	left: 10%;
 	top: 5%;
-	border-radius: 4px;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 10px;
+	border-radius: .25rem;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 0 .625rem;
 	background: white;
 	overflow: hidden;
 }
 
 .popup-container.editor > div > .editbutton {
 	font-family: "lishu";
-	font-size: 18px;
+	font-size: 1.125rem;
 	color: rgb(60, 60, 60);
 	text-shadow: none;
 	position: absolute;
 	left: 0;
-	padding: 7px;
-	font-size: 24px;
+	padding: .4375rem;
+	font-size: 1.5rem;
 	cursor: pointer;
 }
 
@@ -1968,12 +1968,12 @@ div.popup-container.editor div {
 
 .popup-container.editor > div > div:last-child {
 	width: 100%;
-	height: calc(100% - 40px);
+	height: calc(100% - 2.5rem);
 	position: absolute;
-	top: 40px;
-	left: 0px;
-	border-radius: 0 0 4px 4px;
-	border-top: 1px solid rgba(0, 0, 0, 0.2);
+	top: 2.5rem;
+	left: 0rem;
+	border-radius: 0 0 .25rem .25rem;
+	border-top: .0625rem solid rgba(0, 0, 0, 0.2);
 }
 
 .popup-container.editor > div > div:last-child > textarea {
@@ -1987,19 +1987,19 @@ div.popup-container.editor div {
 
 .menubutton.large.new_card,
 .menubutton.large.new_card_delete {
-	left: 12px;
-	top: 130px;
-	margin-bottom: 20px;
+	left: .75rem;
+	top: 8.125rem;
+	margin-bottom: 1.25rem;
 }
 
 .menubutton.large.new_card_delete {
-	left: 155px;
+	left: 9.6875rem;
 }
 
 .edit_pile {
 	width: 100%;
 	left: 0;
-	padding-bottom: 20px;
+	padding-bottom: 1.25rem;
 }
 
 .edit_pile > div:last-child {
@@ -2008,34 +2008,34 @@ div.popup-container.editor div {
 }
 
 .edit_pile > div:last-child > button {
-	margin-right: 3px;
-	margin-top: 3px;
+	margin-right: .1875rem;
+	margin-top: .1875rem;
 }
 
 .new_character.new_skill > div {
 	position: relative;
-	margin-top: 2px;
+	margin-top: .125rem;
 	white-space: nowrap;
 	overflow: visible;
 }
 
 .new_character.new_skill > div > button {
-	margin-right: 3px;
+	margin-right: .1875rem;
 }
 
 .menu-buttons.new_skill > .menubutton {
 	position: relative;
-	margin: 5px;
+	margin: .3125rem;
 }
 
 .new_character.new_skill > .menubutton.large {
-	left: 13px;
+	left: .8125rem;
 	position: absolute;
-	top: 88px;
+	top: 5.5rem;
 }
 
 .new_character.new_skill > .menubutton.large.new_card_delete {
-	left: 155px;
+	left: 9.6875rem;
 }
 
 .popup-container > .prompt-container {
@@ -2062,21 +2062,21 @@ div.popup-container.editor div {
 
 .popup-container > .prompt-container > div > div > div {
 	display: block;
-	width: calc(100% - 10px);
-	margin-top: 15px;
-	margin-left: 10px;
-	margin-right: 10px;
+	width: calc(100% - .625rem);
+	margin-top: .9375rem;
+	margin-left: .625rem;
+	margin-right: .625rem;
 	margin-bottom: 0;
 	text-align: center;
 	position: relative;
-	width: 230px;
+	width: 14.375rem;
 }
 
 /* .popup-container>.prompt-container>div>div>div:first-child{ */
 /*text-align: left;*/
 /* } */
 .popup-container > .prompt-container > div > div > div:last-child {
-	margin-bottom: 15px;
+	margin-bottom: .9375rem;
 }
 
 .popup-container > .prompt-container > div > div > div > input,
@@ -2085,18 +2085,18 @@ div.popup-container.editor div {
 	width: 100%;
 	resize: vertical;
 	border: none;
-	border-radius: 2px;
-	min-height: 20px;
-	box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
+	border-radius: .125rem;
+	min-height: 1.25rem;
+	box-shadow: rgba(0, 0, 0, 0.2) 0rem 0rem 0rem .0625rem;
 }
 
 .popup-container > .prompt-container > div > div > div > .menubutton {
 	position: relative;
-	margin-left: 6px;
-	margin-right: 6px;
-	font-size: 24px;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	margin-left: .375rem;
+	margin-right: .375rem;
+	font-size: 1.5rem;
+	padding-top: .125rem;
+	padding-bottom: .125rem;
 }
 
 #window:not(.nopointer) .popup-container > .prompt-container > div > div > div > .menubutton {

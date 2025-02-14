@@ -49,15 +49,15 @@
 }
 
 .pagination .page-number {
-	width: 38px;
-	padding-top: 8px;
-	padding-bottom: 8px;
+	width: 2.375rem;
+	padding-top: .5rem;
+	padding-bottom: .5rem;
 	border: 1px solid #EAEAEA;
 	text-align: center;
 }
 
 .pagination .page-prev {
-	padding: 8px 14px;
+	padding: .5rem .875rem;
 	margin-right: 8px;
 	border: 1px solid #EAEAEA;
 }
@@ -72,7 +72,7 @@
 }
 
 .pagination .page-next {
-	padding: 8px 14px;
+	padding: .5rem .875rem;
 	margin-left: 8px;
 	border: 1px solid #EAEAEA;
 }
@@ -88,7 +88,7 @@
 .pagination .number-ellipsis {
 	display: inline-block;
 	font-size: 15px;
-	padding: 8px 14px;
+	padding: .5rem .875rem;
 }
 
 .pagination .number-ellipsis.page-hidden {

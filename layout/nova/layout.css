@@ -1,71 +1,71 @@
 @import "../newlayout/layout.css";
 #arena {
-	height: calc(95% + 20px);
+	height: calc(95% + 1.25rem);
 }
 #control {
-	width: calc(5000% / 47 - 240px);
-	left: calc(-150% / 47 + 120px);
-	bottom: 150px;
-	height: 40px;
+	width: calc(5000% / 47 - 15rem);
+	left: calc(-150% / 47 + 7.5rem);
+	bottom: 9.375rem;
+	height: 2.5rem;
 }
 #arena.phone #control {
-	bottom: 160px;
+	bottom: 10rem;
 }
 #arena.ipad #control {
-	bottom: 155px;
+	bottom: 9.6875rem;
 }
 #arena:not(.chess) > #me,
 #arena:not(.chess) > #mebg,
 #arena:not(.chess) > #autonode {
-	bottom: 30px;
+	bottom: 1.875rem;
 	width: calc(5000% / 47);
 	left: calc(-150% / 47);
 	top: auto;
 	border-radius: 0 !important;
-	height: 120px;
+	height: 7.5rem;
 }
 #arena.oblongcard:not(.chess) > #me,
 #arena.oblongcard:not(.chess) > #mebg,
 #arena.oblongcard:not(.chess) > #autonode {
-	height: 140px;
+	height: 8.75rem;
 }
 #arena.oblongcard:not(.chess) > .card,
 #arena.oblongcard:not(.chess) .handcards > .card {
-	height: 120px;
+	height: 7.5rem;
 }
 #arena.oblongcard:not(.chess) > .card > .image,
 #arena.oblongcard:not(.chess) .handcards > .card > .image {
-	height: 110px;
-	top: 8px;
-	background-position-x: -3px;
+	height: 6.875rem;
+	top: .5rem;
+	background-position-x: -0.1875rem;
 }
 #arena.oblongcard:not(.chess) #handcards1 {
 	height: 100%;
-	top: 2px;
+	top: .125rem;
 }
 #arena.oblongcard:not(.chess):not(.choose-character) #control {
-	bottom: 165px;
+	bottom: 10.3125rem;
 }
 #arena.phone.oblongcard:not(.chess):not(.choose-character) #control {
-	bottom: 180px;
+	bottom: 11.25rem;
 }
 
 #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 - 240px);
-	left: calc(-150% / 47 + 120px);
+	width: calc(5000% / 47 - 15rem);
+	left: calc(-150% / 47 + 7.5rem);
 }
 #arena:not(.mobile).single-handcard #handcards1 {
-	width: calc(100% - 120px);
+	width: calc(100% - 7.5rem);
 }
 #window.rightbar #system,
 #window.leftbar #system {
-	width: calc(100% - 62px);
+	width: calc(100% - 3.875rem);
 }
 #window.leftbar #system {
-	left: 50px;
+	left: 3.125rem;
 }
 #window.rightbar #historybar {
-	left: calc(100% - 50px);
+	left: calc(100% - 3.125rem);
 	border-radius: 0;
 	top: 0;
 	height: 100%;
@@ -78,69 +78,69 @@
 }
 
 #window.single-handcard #historybar {
-	height: calc(100% - 121px);
+	height: calc(100% - 7.5625rem);
 }
 #window.oblongcard.single-handcard #historybar {
-	height: calc(100% - 141px);
+	height: calc(100% - 8.8125rem);
 }
 
 #window.leftbar #arena:not(.chess) > #me,
 #window.leftbar #arena:not(.chess) > #mebg,
 #window.leftbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47);
-	left: calc(-150% / 47 - 50px - 75px / 47);
+	width: calc(5000% / 47 + 156.25rem / 47);
+	left: calc(-150% / 47 - 3.125rem - 4.6875rem / 47);
 }
 #window.leftbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47 - 240px);
-	left: calc(-150% / 47 - 50px - 75px / 47 + 120px);
+	width: calc(5000% / 47 + 156.25rem / 47 - 15rem);
+	left: calc(-150% / 47 - 3.125rem - 4.6875rem / 47 + 7.5rem);
 }
 #window.rightbar #arena:not(.chess) > #me,
 #window.rightbar #arena:not(.chess) > #mebg,
 #window.rightbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47);
-	left: calc(-150% / 47 - 75px / 47);
+	width: calc(5000% / 47 + 156.25rem / 47);
+	left: calc(-150% / 47 - 4.6875rem / 47);
 }
 #window.rightbar #arena:not(.chess) > #autonode {
-	width: calc(5000% / 47 + 2500px / 47 - 240px);
-	left: calc(-150% / 47 - 75px / 47 + 120px);
+	width: calc(5000% / 47 + 156.25rem / 47 - 15rem);
+	left: calc(-150% / 47 - 4.6875rem / 47 + 7.5rem);
 }
 #arena:not(.chess) #handcards1 {
-	height: 120px;
+	height: 7.5rem;
 	padding: 0;
-	top: calc(100% - 120px);
+	top: calc(100% - 7.5rem);
 }
 #arena:not(.chess) #handcards1.scrollh {
-	top: calc(100% - 180px);
-	height: 180px;
+	top: calc(100% - 11.25rem);
+	height: 11.25rem;
 }
 #arena:not(.chess).oblongcard #handcards1.scrollh {
-	top: calc(100% - 200px);
-	height: 200px;
+	top: calc(100% - 12.5rem);
+	height: 12.5rem;
 }
 #arena:not(.chess) #handcards1.scrollh > div {
-	height: 120px;
-	top: 60px;
+	height: 7.5rem;
+	top: 3.75rem;
 }
 #arena:not(.chess).oblongcard #handcards1.scrollh > div {
-	top: 62px;
+	top: 3.875rem;
 }
 #arena:not(.chess):not(.single-handcard) #handcards1 {
-	width: calc(100% - 240px);
-	left: calc(150% / 47 - 300% / 94 + 625% / 47 - 105px + 120px);
+	width: calc(100% - 15rem);
+	left: calc(150% / 47 - 300% / 94 + 625% / 47 - 6.5625rem + 7.5rem);
 }
 #arena:not(.single-handcard):not(.chess) > #me,
 #arena:not(.single-handcard):not(.chess) > #mebg,
 #arena:not(.single-handcard):not(.chess) > #autonode {
 	left: 0 !important;
-	bottom: 38px !important;
+	bottom: 2.375rem !important;
 	width: calc(9700% / 94) !important;
 }
 #arena:not(.single-handcard):not(.chess) > #mebg {
 	visibility: hidden;
 }
 #arena:not(.single-handcard):not(.chess) > #me #handcards1 {
-	left: 150px !important;
-	width: calc(100% - 150px) !important;
+	left: 9.375rem !important;
+	width: calc(100% - 9.375rem) !important;
 }
 #arena:not(.single-handcard):not(.chess) > #me #handcards1 > .handcards {
 	left: 0 !important;
@@ -148,51 +148,51 @@
 #autonode {
 	display: table !important;
 }
-@media screen and (max-width: 1105px) {
+@media screen and (max-width: 69.0625rem) {
 	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #me,
 	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #mebg,
 	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #autonode {
-		left: calc(-300% / 94 + 625% / 47 - 105px) !important;
-		width: calc(9700% / 94 + 300% / 94 - 625% / 47 + 105px) !important;
+		left: calc(-300% / 94 + 625% / 47 - 6.5625rem) !important;
+		width: calc(9700% / 94 + 300% / 94 - 625% / 47 + 6.5625rem) !important;
 	}
 }
 #handcards2 {
 	display: none;
 }
 .dialog {
-	height: calc(100% - 370px);
-	bottom: 170px;
+	height: calc(100% - 23.125rem);
+	bottom: 10.625rem;
 }
 #arena.choose-character > .dialog .placeholder + .placeholder {
 	display: none;
 }
 #arena.choose-character > .dialog .placeholder {
-	margin-bottom: 4px;
-	height: 0px;
+	margin-bottom: .25rem;
+	height: 0rem;
 }
 #arena.choose-character > .dialog.noupdate .placeholder {
 	margin-bottom: 0;
 	height: 0;
 }
 #arena.choose-character > .dialog {
-	height: calc(100% - 280px);
-	bottom: 80px;
+	height: calc(100% - 17.5rem);
+	bottom: 5rem;
 }
 #arena.choose-character > .dialog.scroll3 {
-	height: calc(100% - 240px);
+	height: calc(100% - 15rem);
 }
 #arena.phone.choose-character > .dialog {
-	bottom: 93px;
+	bottom: 5.8125rem;
 }
 #arena.ipad.choose-character > .dialog {
-	bottom: 96px;
+	bottom: 6rem;
 }
 #arena.discard-player-card > #control,
 #arena.gain-player-card > #control,
 #arena.choose-player-card > #control,
 #arena.choose-to-move > #control,
 #arena.choose-character > #control {
-	bottom: 30px;
+	bottom: 1.875rem;
 	transition: all 0s;
 }
 #arena.phone.discard-player-card > #control,
@@ -200,246 +200,246 @@
 #arena.phone.choose-player-card > #control,
 #arena.phone.choose-to-move > #control,
 #arena.phone.choose-character > #control {
-	bottom: 43px;
+	bottom: 2.6875rem;
 }
 #arena.ipad.discard-player-card > #control,
 #arena.ipad.gain-player-card > #control,
 #arena.ipad.choose-player-card > #control,
 #arena.ipad.choose-to-move > #control,
 #arena.ipad.choose-character > #control {
-	bottom: 45px;
+	bottom: 2.8125rem;
 }
 .dialog.fullheight {
-	height: calc(100% - 123px) !important;
-	top: 40px !important;
+	height: calc(100% - 7.6875rem) !important;
+	top: 2.5rem !important;
 }
 
 #me > .fakeme.avatar {
-	width: 120px;
+	width: 7.5rem;
 	height: 100%;
-	border-radius: 0px;
+	border-radius: 0rem;
 	top: 0;
 	left: 0;
 	background-size: cover;
-	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
-	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
+	-webkit-clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
 }
 #window[data-radius_size="increase"] #me > .fakeme.avatar,
 #window[data-radius_size="reduce"] #me > .fakeme.avatar {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 
 /*--------位置(8人)------*/
 [data-number="8"] > .player[data-position="1"] {
-	top: calc(55% - 135px);
-	left: calc(100% - 150px);
+	top: calc(55% - 8.4375rem);
+	left: calc(100% - 9.375rem);
 }
 [data-number="8"] > .player[data-position="2"] {
-	top: calc(10% - 50px);
-	left: calc(100% - 150px);
+	top: calc(10% - 3.125rem);
+	left: calc(100% - 9.375rem);
 }
 [data-number="8"] > .player[data-position="3"] {
 	top: 0;
-	left: calc(75% - 112.5px);
+	left: calc(75% - 7.0313rem);
 }
 [data-number="8"] > .player[data-position="4"] {
 	top: 0;
-	left: calc(50% - 75px);
+	left: calc(50% - 4.6875rem);
 }
 [data-number="8"] > .player[data-position="5"] {
 	top: 0;
-	left: calc(25% - 37.5px);
+	left: calc(25% - 2.3438rem);
 }
 [data-number="8"] > .player[data-position="6"] {
-	top: calc(10% - 50px);
+	top: calc(10% - 3.125rem);
 	left: 0;
 }
 [data-number="8"] > .player[data-position="7"] {
-	top: calc(55% - 135px);
+	top: calc(55% - 8.4375rem);
 	left: 0;
 }
 /*--------位置(7人)------*/
 [data-number="7"] > .player[data-position="1"] {
-	top: calc(55% - 135px);
-	left: calc(100% - 150px);
+	top: calc(55% - 8.4375rem);
+	left: calc(100% - 9.375rem);
 }
 [data-number="7"] > .player[data-position="2"] {
-	top: calc(10% - 50px);
-	left: calc(100% - 150px);
+	top: calc(10% - 3.125rem);
+	left: calc(100% - 9.375rem);
 }
 [data-number="7"] > .player[data-position="3"] {
 	top: 0;
-	left: calc(62.5% - 75px);
+	left: calc(62.5% - 4.6875rem);
 }
 [data-number="7"] > .player[data-position="4"] {
 	top: 0;
-	left: calc(37.5% - 75px);
+	left: calc(37.5% - 4.6875rem);
 }
 [data-number="7"] > .player[data-position="5"] {
-	top: calc(10% - 50px);
+	top: calc(10% - 3.125rem);
 	left: 0;
 }
 [data-number="7"] > .player[data-position="6"] {
-	top: calc(55% - 135px);
+	top: calc(55% - 8.4375rem);
 	left: 0;
 }
 /*--------位置(6人)------*/
 #arena[data-number="6"] > .player[data-position="1"] {
-	top: calc(30% - 128px);
-	left: calc(100% - 120px);
+	top: calc(30% - 8rem);
+	left: calc(100% - 7.5rem);
 }
 #arena[data-number="6"] > .player[data-position="2"] {
-	top: 0px;
-	left: calc(75% - 90px);
+	top: 0rem;
+	left: calc(75% - 5.625rem);
 }
 #arena[data-number="6"] > .player[data-position="3"] {
 	top: 0;
-	left: calc(50% - 60px);
+	left: calc(50% - 3.75rem);
 }
 #arena[data-number="6"] > .player[data-position="4"] {
-	top: 0px;
-	left: calc(25% - 30px);
+	top: 0rem;
+	left: calc(25% - 1.875rem);
 }
 #arena[data-number="6"] > .player[data-position="5"] {
-	top: calc(30% - 128px);
+	top: calc(30% - 8rem);
 	left: 0;
 }
 /*--------位置(5人)------*/
 #arena[data-number="5"] > .player[data-position="1"] {
-	top: calc(30% - 128px);
-	left: calc(100% - 120px);
+	top: calc(30% - 8rem);
+	left: calc(100% - 7.5rem);
 }
 #arena[data-number="5"] > .player[data-position="2"] {
 	top: 0;
-	left: calc(200% / 3 - 80px);
+	left: calc(200% / 3 - 5rem);
 }
 #arena[data-number="5"] > .player[data-position="3"] {
 	top: 0;
-	left: calc(100% / 3 - 40px);
+	left: calc(100% / 3 - 2.5rem);
 }
 #arena[data-number="5"] > .player[data-position="4"] {
-	top: calc(30% - 128px);
+	top: calc(30% - 8rem);
 	left: 0;
 }
 /*--------位置(4人)------*/
 #arena[data-number="4"] > .player[data-position="1"] {
-	top: calc(30% - 128px);
-	left: calc(100% - 120px);
+	top: calc(30% - 8rem);
+	left: calc(100% - 7.5rem);
 }
 #arena[data-number="4"] > .player[data-position="2"] {
 	top: 0;
-	left: calc(50% - 60px);
+	left: calc(50% - 3.75rem);
 }
 #arena[data-number="4"] > .player[data-position="3"] {
-	top: calc(30% - 128px);
+	top: calc(30% - 8rem);
 	left: 0;
 }
 /*--------位置(3人)------*/
 #arena[data-number="3"] > .player[data-position="1"] {
-	top: calc(60% / 3 - 88px);
-	left: calc(75% + 80px);
+	top: calc(60% / 3 - 5.5rem);
+	left: calc(75% + 5rem);
 }
 #arena[data-number="3"] > .player[data-position="2"] {
-	top: calc(60% / 3 - 88px);
-	left: calc(25% - 200px);
+	top: calc(60% / 3 - 5.5rem);
+	left: calc(25% - 12.5rem);
 }
 /*--------位置(2人)------*/
 #arena[data-number="2"] > .player[data-position="1"] {
 	top: 0;
-	left: calc(50% - 60px);
+	left: calc(50% - 3.75rem);
 }
 /*--------位置(1人)------*/
 .player[data-position="0"] {
-	top: calc(100% - 220px);
+	top: calc(100% - 13.75rem);
 	left: 0;
 }
 
 #arena[data-player_height_nova="default"] > .player[data-position="0"]:not(.minskin) {
-	top: calc(100% - 236px);
+	top: calc(100% - 14.75rem);
 }
 [data-number="8"][data-player_height_nova="default"] > .player[data-position="1"],
 [data-number="8"][data-player_height_nova="default"] > .player[data-position="7"],
 [data-number="7"][data-player_height_nova="default"] > .player[data-position="1"],
 [data-number="7"][data-player_height_nova="default"] > .player[data-position="6"] {
-	top: calc(55% - 143px);
+	top: calc(55% - 8.9375rem);
 }
 
 #arena[data-player_height_nova="default"] > .player:not(.minskin) {
-	height: 196px !important;
+	height: 12.25rem !important;
 }
 #arena[data-player_height_nova="default"] .timerbar > div {
-	top: 181px;
+	top: 11.3125rem;
 }
 
 #arena[data-player_height_nova="default"] > .player .avatar {
-	height: 176px;
+	height: 11rem;
 }
 #arena.slim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 182px;
+	height: 11.375rem;
 }
 
 #arena.uslim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 190px;
+	height: 11.875rem;
 }
 #arena.mslim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 186px;
+	height: 11.625rem;
 }
 #arena[data-player_height_nova="default"] > .player.fullskin2 .avatar2 {
-	height: 176px;
+	height: 11rem;
 }
 
 #arena.slim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 182px;
+	height: 11.375rem;
 }
 #arena.uslim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 190px;
+	height: 11.875rem;
 }
 #arena.mslim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 186px;
+	height: 11.625rem;
 }
 
 #arena[data-player_height_nova="long"] > .player[data-position="0"]:not(.minskin) {
-	top: calc(100% - 250px);
+	top: calc(100% - 15.625rem);
 }
 [data-number="8"][data-player_height_nova="long"] > .player[data-position="1"],
 [data-number="8"][data-player_height_nova="long"] > .player[data-position="7"],
 [data-number="7"][data-player_height_nova="long"] > .player[data-position="1"],
 [data-number="7"][data-player_height_nova="long"] > .player[data-position="6"] {
-	top: calc(55% - 150px);
+	top: calc(55% - 9.375rem);
 }
 
 #arena[data-player_height_nova="long"] > .player:not(.minskin) {
-	height: 210px !important;
+	height: 13.125rem !important;
 }
 #arena[data-player_height_nova="long"] .timerbar > div {
-	top: 195px;
+	top: 12.1875rem;
 }
 
 #arena[data-player_height_nova="long"] > .player .avatar {
-	height: 190px;
+	height: 11.875rem;
 }
 #arena.slim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 196px;
+	height: 12.25rem;
 }
 
 #arena.uslim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 204px;
+	height: 12.75rem;
 }
 #arena.mslim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
-	height: 200px;
+	height: 12.5rem;
 }
 #arena[data-player_height_nova="long"] > .player.fullskin2 .avatar2 {
-	height: 190px;
+	height: 11.875rem;
 }
 
 #arena.slim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 196px;
+	height: 12.25rem;
 }
 #arena.uslim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 204px;
+	height: 12.75rem;
 }
 #arena.mslim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
-	height: 200px;
+	height: 12.5rem;
 }
 
 #arena > .player:not(.minskin) > .avatar,

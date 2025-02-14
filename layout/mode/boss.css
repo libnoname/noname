@@ -1,42 +1,42 @@
 #bosslist {
 	width: 100%;
-	height: 260px;
+	height: 16.25rem;
 	text-align: center;
-	/* top: calc(50% - 200px); */
-	top: 60px;
+	/* top: calc(50% - 12.5rem); */
+	top: 3.75rem;
 	white-space: nowrap;
 	z-index: 1;
 	overflow-x: scroll;
 }
 
 #window[data-radius_size="reduce"] #bosslist > .player {
-	border-radius: 4px;
+	border-radius: .25rem;
 }
 
 #window[data-radius_size="off"] #bosslist > .player {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 
 #window[data-radius_size="increase"] #bosslist > .player {
-	border-radius: 20px;
+	border-radius: 1.25rem;
 }
 
 #window #bosslist > .player {
-	border-radius: 10px;
+	border-radius: .625rem;
 }
 
 #window[data-player_border="normal"] #bosslist > .player > .avatar {
-	left: 8px;
-	top: 8px;
-	width: 164px;
-	height: 200px;
+	left: .5rem;
+	top: .5rem;
+	width: 10.25rem;
+	height: 12.5rem;
 }
 
 #window[data-player_border="slim"] #bosslist > .player > .avatar {
-	left: 4px;
-	top: 4px;
-	width: 172px;
-	height: 208px;
+	left: .25rem;
+	top: .25rem;
+	width: 10.75rem;
+	height: 13rem;
 }
 
 .bosspaused > #bosslist,
@@ -51,7 +51,7 @@
 
 #bosslist > div:first-child,
 #bosslist > div:last-child {
-	width: 20px;
+	width: 1.25rem;
 	position: relative;
 }
 
@@ -97,11 +97,11 @@
 
 .player.bossplayer {
 	position: relative;
-	margin: 10px;
+	margin: .625rem;
 	left: 0;
-	top: 4px;
-	width: 180px;
-	height: 216px;
+	top: .25rem;
+	width: 11.25rem;
+	height: 13.5rem;
 	transition: all 0.3s;
 	opacity: 0.6;
 	animation: game_start 0.5s;
@@ -113,37 +113,37 @@
 }
 
 .player.bossplayer > .identity {
-	left: 16px;
-	top: 18px;
-	line-height: 24px;
+	left: 1rem;
+	top: 1.125rem;
+	line-height: 1.5rem;
 	white-space: normal;
 }
 
 .player.bossplayer > .hp {
-	top: 22px;
-	left: 144px;
+	top: 1.375rem;
+	left: 9rem;
 }
 
 .player.bossplayer > .avatar {
-	width: 160px;
-	height: 196px;
+	width: 10rem;
+	height: 12.25rem;
 }
 
 #control.bosslist {
-	top: calc(100% - 50px) !important;
+	top: calc(100% - 3.125rem) !important;
 	position: fixed;
 }
 
 .dialog.bosscharacter {
 	top: auto;
-	bottom: 65px;
-	height: calc(100% - 383px);
+	bottom: 4.0625rem;
+	height: calc(100% - 23.9375rem);
 	animation: dialog_start2 0.5s;
 	-webkit-animation: dialog_start2 0.5s;
 }
 
 .bosschongzheng {
-	width: calc(100% - 20px);
+	width: calc(100% - 1.25rem);
 	white-space: nowrap;
 	position: relative;
 }
@@ -155,7 +155,7 @@
 .bosschongzheng > div {
 	width: 100%;
 	display: block;
-	margin-bottom: 5px;
+	margin-bottom: .3125rem;
 }
 
 .bosschongzheng > div > div:first-child {
@@ -168,17 +168,17 @@
 	width: 70%;
 }
 
-@media screen and (min-height: 800px) {
+@media screen and (min-height: 50rem) {
 	.dialog.bosscharacter {
-		height: 417px;
-		bottom: calc(50% - 335px);
+		height: 26.0625rem;
+		bottom: calc(50% - 20.9375rem);
 	}
 
 	#control.bosslist {
-		top: calc(50% + 350px) !important;
+		top: calc(50% + 21.875rem) !important;
 	}
 
 	#bosslist {
-		top: calc(40% - 260px);
+		top: calc(40% - 16.25rem);
 	}
 }

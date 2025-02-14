@@ -1,6 +1,6 @@
 .storyscene {
-	height: 500px;
-	top: calc(50% - 250px);
+	height: 31.25rem;
+	top: calc(50% - 15.625rem);
 	width: 100%;
 	position: absolute;
 	left: 0;
@@ -11,23 +11,23 @@
 }
 .storyscene.removing {
 	pointer-events: none;
-	transform: translateY(500px);
+	transform: translateY(31.25rem);
 }
 .storyscene.lockscroll {
 	overflow-x: hidden;
 }
 .storyscene > .scene {
-	width: 350px;
-	height: 420px;
+	width: 21.875rem;
+	height: 26.25rem;
 	position: relative;
 	left: 0;
-	top: 40px;
-	margin-left: -40px;
-	margin-right: -40px;
+	top: 2.5rem;
+	margin-left: -2.5rem;
+	margin-right: -2.5rem;
 	z-index: 1;
-	border-radius: 16px !important;
+	border-radius: 1rem !important;
 	overflow: hidden;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 .0625rem, rgba(0, 0, 0, 0.45) 0 .1875rem .625rem;
 }
 .storyscene > .scene > .background.player {
 	border-radius: 0 !important;
@@ -40,7 +40,7 @@
 }
 .storyscene > .scene.unselectable {
 	opacity: 1 !important;
-	box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(0, 0, 0, 0.225) 0 3px 10px;
+	box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 .0625rem, rgba(0, 0, 0, 0.225) 0 .1875rem .625rem;
 }
 .storyscene > .scene.unselectable > .background {
 	opacity: 0.3;
@@ -61,13 +61,13 @@
 }
 .storyscene > .scene > .mask > div {
 	width: 100%;
-	height: 240px;
-	top: calc(50% - 120px);
+	height: 15rem;
+	top: calc(50% - 7.5rem);
 	position: absolute;
 	left: 0;
 	text-align: center;
-	font-size: 80px;
-	line-height: 80px;
+	font-size: 5rem;
+	line-height: 5rem;
 	font-family: "xinwei";
 	opacity: 0.8;
 }
@@ -79,7 +79,7 @@
 }
 .storyscene > .scene.flipped {
 	z-index: 2;
-	border-radius: 12px !important;
+	border-radius: .75rem !important;
 }
 .storyscene > .scene.flipped > div:not(.menu) {
 	display: none !important;
@@ -88,18 +88,18 @@
 	display: none;
 }
 .storyscene > .scene:first-child {
-	margin-left: 50px;
+	margin-left: 3.125rem;
 }
 .storyscene > .scene:last-child {
-	margin-right: 50px;
+	margin-right: 3.125rem;
 }
 .storyscene > .scene > .name {
-	font-size: 48px;
-	left: 25px;
+	font-size: 3rem;
+	left: 1.5625rem;
 	top: auto;
-	bottom: 28px;
+	bottom: 1.75rem;
 	/*transform: rotateY(-180deg);*/
-	border-radius: 16px !important;
+	border-radius: 1rem !important;
 	z-index: 2;
 	font-family: "xinwei";
 }
@@ -113,10 +113,10 @@
 	overflow: scroll;
 }
 .storyscene > .scene > .background > .avatar {
-	width: calc(100% - 26px);
-	height: calc(100% - 26px);
-	left: 13px;
-	top: 13px;
+	width: calc(100% - 1.625rem);
+	height: calc(100% - 1.625rem);
+	left: .8125rem;
+	top: .8125rem;
 	z-index: 2;
 }
 .storyscene > .scene > .menu {
@@ -128,63 +128,63 @@
 .scene > .menu > .menubutton.enter {
 	position: absolute;
 	top: auto;
-	bottom: 10px;
-	width: 70px;
-	left: calc(50% - 35px);
+	bottom: .625rem;
+	width: 4.375rem;
+	left: calc(50% - 2.1875rem);
 }
 .scene > .menu > .conversation {
 	display: table;
 	position: absolute;
-	left: 16px;
+	left: 1rem;
 	top: 0;
-	width: calc(100% - 32px);
+	width: calc(100% - 2rem);
 	height: 100%;
-	font-size: 24px;
+	font-size: 1.5rem;
 	font-family: "xinwei";
 	white-space: normal;
 	text-align: left;
 }
 .scene > .menu > .conversation.center {
 	text-align: center;
-	font-size: 30px;
+	font-size: 1.875rem;
 }
 .scene > .menu > .avatarconversation {
 	position: relative;
 	display: block;
 	width: 100%;
-	height: 100px;
+	height: 6.25rem;
 	left: 0;
-	margin-top: 10px;
+	margin-top: .625rem;
 }
 .scene > .menu > .avatarconversation:last-child {
-	margin-bottom: 10px;
+	margin-bottom: .625rem;
 }
 .scene > .menu > .avatarconversation > div {
 	height: 100%;
 	top: 0;
 }
 .scene > .menu > .avatarconversation > .avatar {
-	width: 100px;
-	height: 100px;
-	left: 10px;
+	width: 6.25rem;
+	height: 6.25rem;
+	left: .625rem;
 	background-size: cover;
 }
 .scene > .menu > .avatarconversation.swap > .avatar {
 	left: auto;
-	right: 10px;
+	right: .625rem;
 }
 .scene > .menu > .avatarconversation > div:not(.avatar) {
-	width: calc(100% - 120px);
-	left: 120px;
-	top: 5px;
-	height: calc(100% - 5px);
+	width: calc(100% - 7.5rem);
+	left: 7.5rem;
+	top: .3125rem;
+	height: calc(100% - .3125rem);
 	text-align: left;
 	white-space: normal;
-	line-height: 18px;
+	line-height: 1.125rem;
 }
 .scene > .menu > .avatarconversation.swap > div:not(.avatar) {
 	left: auto;
-	right: 120px;
+	right: 7.5rem;
 	text-align: right;
 }
 .scene > .menu > .conversation > div {
@@ -193,10 +193,10 @@
 	position: relative;
 }
 #create-player {
-	width: 400px;
-	height: 300px;
-	left: calc(50% - 200px);
-	top: calc(50% - 150px);
+	width: 25rem;
+	height: 18.75rem;
+	left: calc(50% - 12.5rem);
+	top: calc(50% - 9.375rem);
 	position: absolute;
 	-webkit-animation: dialog_start2 0.5s;
 }
@@ -205,12 +205,12 @@
 }
 #create-player > .caption {
 	width: 100%;
-	height: 24px;
-	line-height: 24px;
+	height: 1.5rem;
+	line-height: 1.5rem;
 	left: 0;
 	top: 0;
 	font-family: "xinwei";
-	font-size: 24px;
+	font-size: 1.5rem;
 	text-align: center;
 }
 
@@ -218,13 +218,13 @@
 	from {
 		opacity: 0;
 		transform: scale(0.5);
-		margin-left: -175px;
-		margin-right: -175px;
+		margin-left: -10.9375rem;
+		margin-right: -10.9375rem;
 	}
 	to {
 		opacity: 1;
 		transform: scale(1);
-		margin-left: 16px;
-		margin-right: 16px;
+		margin-left: 1rem;
+		margin-right: 1rem;
 	}
 }

@@ -13,18 +13,18 @@
 	border-radius: 0;
 }
 #arena.chess > #autonode {
-	width: calc(100% - 240px);
-	left: 120px;
+	width: calc(100% - 15rem);
+	left: 7.5rem;
 }
 #me > .fakeme.avatar {
-	width: 120px;
-	height: 120px;
-	border-radius: 0px;
+	width: 7.5rem;
+	height: 7.5rem;
+	border-radius: 0rem;
 	top: 0;
 	left: 0;
 	background-size: cover;
-	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
-	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
+	-webkit-clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
 }
 #window:not(.nopointer) .dialog.fullheight .buttons .button.character:not(.squarebutton):not(.selectable) {
 	cursor: default;
@@ -35,7 +35,7 @@
 }
 #chess-container {
 	width: 100%;
-	height: calc(100% - 121px);
+	height: calc(100% - 7.5625rem);
 	left: 0;
 	top: 0;
 	overflow: hidden;
@@ -43,8 +43,8 @@
 	position: absolute;
 }
 #chess {
-	margin-top: 36px;
-	margin-bottom: 36px;
+	margin-top: 2.25rem;
+	margin-bottom: 2.25rem;
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -60,11 +60,11 @@
 }
 
 #handcards1 {
-	height: 120px;
+	height: 7.5rem;
 	padding: 0;
-	top: calc(100% - 120px);
-	width: calc(100% - 240px);
-	left: 120px;
+	top: calc(100% - 7.5rem);
+	width: calc(100% - 15rem);
+	left: 7.5rem;
 }
 #handcards2 {
 	display: none;
@@ -72,7 +72,7 @@
 #mebg,
 #me,
 #autonode {
-	height: 120px;
+	height: 7.5rem;
 }
 #window:not(.nopointer) .dialog.pointerbutton .buttons .button:not(.unselectable) {
 	cursor: pointer !important;
@@ -81,63 +81,63 @@
 	z-index: 5;
 }
 #arena > .dialog {
-	width: 400px;
-	height: 240px;
-	left: calc(50% - 200px);
-	top: calc(50% - 120px);
+	width: 25rem;
+	height: 15rem;
+	left: calc(50% - 12.5rem);
+	top: calc(50% - 7.5rem);
 	background: rgba(0, 0, 0, 0.2);
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
-	border-radius: 8px;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem;
+	border-radius: .5rem;
 }
 #arena.chess > .dialog {
-	height: calc(50% - 20px);
-	max-height: 240px;
+	height: calc(50% - 1.25rem);
+	max-height: 15rem;
 }
 #window[data-radius_size="reduce"] > .dialog {
-	border-radius: 4px;
+	border-radius: .25rem;
 }
 #window[data-radius_size="off"] > .dialog {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 #window[data-radius_size="increase"] > .dialog {
-	border-radius: 16px;
+	border-radius: 1rem;
 }
 #arena > .dialog.slim:not(.center) {
-	top: 40px;
+	top: 2.5rem;
 	pointer-events: none;
 }
 #control {
-	top: calc(100% - 155px);
+	top: calc(100% - 9.6875rem);
 }
 #arena.ipad #control {
-	top: calc(100% - 165px);
+	top: calc(100% - 10.3125rem);
 }
 .fakeme {
-	width: 120px;
-	height: 120px;
-	border-radius: 0px !important;
+	width: 7.5rem;
+	height: 7.5rem;
+	border-radius: 0rem !important;
 	top: 0;
 }
 #window[data-radius_size="increase"] .fakeme,
 #window[data-radius_size="reduce"] .fakeme {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 .fakeme.avatar {
 	left: 0;
 	background-size: cover;
 }
 .fakeme.player {
-	left: calc(100% - 120px);
+	left: calc(100% - 7.5rem);
 	text-align: center;
 	transition: all 0s;
-	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
-	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
+	-webkit-clip-path: polygon(-0.625rem 0, 8.125rem 0, 8.125rem 8.125rem, -0.625rem 8.125rem);
 }
 .fakeme.player.zoomed {
-	width: 240px;
-	height: 240px;
-	left: calc(100% - 240px);
-	top: calc(100% - 240px);
+	width: 15rem;
+	height: 15rem;
+	left: calc(100% - 15rem);
+	top: calc(100% - 15rem);
 	background-size: 200%;
 }
 .fakeme.player > div {
@@ -150,25 +150,25 @@
 	top: 0;
 }
 .fakeme.player.zoomed > div > div {
-	width: 90px;
-	height: 90px;
+	width: 5.625rem;
+	height: 5.625rem;
 	left: 0;
-	top: 16px;
-	margin-left: 8px;
-	margin-right: 8px;
-	margin-bottom: 16px;
+	top: 1rem;
+	margin-left: .5rem;
+	margin-right: .5rem;
+	margin-bottom: 1rem;
 }
 .fakeme.player > div > div {
-	width: 45px;
-	height: 45px;
+	width: 2.8125rem;
+	height: 2.8125rem;
 	background-size: cover;
-	border-radius: 4px;
+	border-radius: .25rem;
 	position: relative;
 	left: 0;
-	top: 8px;
-	margin-left: 4px;
-	margin-right: 4px;
-	margin-bottom: 8px;
+	top: .5rem;
+	margin-left: .25rem;
+	margin-right: .25rem;
+	margin-bottom: .5rem;
 	transition: box-shadow 0.5s;
 }
 #window:not(.nopointer) .fakeme.player > div > div {
@@ -176,10 +176,10 @@
 }
 
 .fakeme.player > div > .selectable {
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 1) 0 0 5px, rgba(0, 133, 255, 1) 0 0 10px;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(0, 133, 255, 1) 0 0 .3125rem, rgba(0, 133, 255, 1) 0 0 .625rem;
 }
 .fakeme.player > div > .selected {
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(255, 0, 0, 1) 0 0 5px, rgba(255, 0, 0, 1) 0 0 10px !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem, rgba(255, 0, 0, 1) 0 0 .3125rem, rgba(255, 0, 0, 1) 0 0 .625rem !important;
 }
 .fakeme.player > div > .dead {
 	filter: grayscale(1);
@@ -196,20 +196,20 @@
 .player.playergrid,
 .player.obstacle {
 	background: rgba(0, 0, 0, 0.2);
-	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
-	border-radius: 8px;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 .0625rem;
+	border-radius: .5rem;
 }
 #window[data-radius_size="reduce"] .player.playergrid,
 #window[data-radius_size="reduce"] .player.obstacle {
-	border-radius: 4px;
+	border-radius: .25rem;
 }
 #window[data-radius_size="off"] .player.playergrid,
 #window[data-radius_size="off"] .player.obstacle {
-	border-radius: 0px;
+	border-radius: 0rem;
 }
 #window[data-radius_size="increase"] .player.playergrid,
 #window[data-radius_size="increase"] .player.obstacle {
-	border-radius: 16px;
+	border-radius: 1rem;
 }
 .player.playerblank {
 	background: none;
@@ -218,29 +218,29 @@
 	background: repeating-linear-gradient(
 		135deg,
 		rgba(0, 0, 0, 0.2),
-		rgba(0, 0, 0, 0.2) 10px,
-		rgba(0, 0, 0, 0.1) 10px,
-		rgba(0, 0, 0, 0.1) 20px
+		rgba(0, 0, 0, 0.2) .625rem,
+		rgba(0, 0, 0, 0.1) .625rem,
+		rgba(0, 0, 0, 0.1) 1.25rem
 	);
 }
 #window .player.obstacle[data-obscolor="blue"] {
 	background: repeating-linear-gradient(
 		135deg,
 		rgba(0, 64, 162, 0.4),
-		rgba(0, 64, 162, 0.4) 10px,
-		rgba(0, 0, 0, 0) 10px,
-		rgba(0, 0, 0, 0) 20px
+		rgba(0, 64, 162, 0.4) .625rem,
+		rgba(0, 0, 0, 0) .625rem,
+		rgba(0, 0, 0, 0) 1.25rem
 	);
-	box-shadow: rgba(0, 64, 162, 0.6) 0 0 0 1px;
+	box-shadow: rgba(0, 64, 162, 0.6) 0 0 0 .0625rem;
 }
 
 .playergrid.temp {
 	opacity: 0.3;
 }
 .chessscroll {
-	height: calc(100% - 162px);
-	width: 20px;
-	top: 42px;
+	height: calc(100% - 10.125rem);
+	width: 1.25rem;
+	top: 2.625rem;
 	z-index: 1;
 	position: fixed;
 }
@@ -269,14 +269,14 @@
 	display: none;
 }
 .player.treasure .avatar {
-	width: 120px;
-	height: 120px;
+	width: 7.5rem;
+	height: 7.5rem;
 	left: 0;
 	top: 0;
 }
 .player.minskin .action {
-	text-shadow: black 0 0 1px !important;
-	font-size: 16px !important;
+	text-shadow: black 0 0 .0625rem !important;
+	font-size: 1rem !important;
 	left: 0;
 }
 .player .action.thunder {
@@ -287,59 +287,59 @@
 }
 .button .intro.showintro.tafang {
 	font-family: "xinwei";
-	font-size: 20px;
-	top: 66px;
-	right: 5px;
+	font-size: 1.25rem;
+	top: 4.125rem;
+	right: .3125rem;
 	left: auto;
 }
 .button.newstyle .intro.showintro.tafang {
-	top: 6px;
+	top: .375rem;
 }
 .dialog .buttons > .button.character.squarebutton {
-	height: 90px;
+	height: 5.625rem;
 }
 .dialog .buttons > .button.character.squarebutton > .hp.text {
-	/*left:22px;*/
-	right: 4px;
+	/*left:1.375rem;*/
+	right: .25rem;
 	text-align: right;
-	bottom: 4px;
+	bottom: .25rem;
 	top: auto;
 	left: auto;
 }
 .dialog .buttons > .button.character.squarebutton > .name {
-	top: 8px;
+	top: .5rem;
 }
 br.finish_game {
 	display: none;
 }
 
 #arena.chess.slim_player.lslim_player .player.minskin:not(.fakeme) > .avatar:not(.fakeme) {
-	left: 5px;
-	top: 5px;
-	width: calc(100% - 10px);
-	height: calc(100% - 10px);
+	left: .3125rem;
+	top: .3125rem;
+	width: calc(100% - .625rem);
+	height: calc(100% - .625rem);
 }
 
 #arena.chess #chess > .player {
-	left: 14px;
-	top: 14px;
+	left: .875rem;
+	top: .875rem;
 }
 
 #window.rightbar #system,
 #window.leftbar #system {
-	width: calc(100% - 62px);
+	width: calc(100% - 3.875rem);
 }
 #window.leftbar #system {
-	left: 50px;
+	left: 3.125rem;
 }
 
 #historybar {
 	border-radius: 0;
 	top: 0;
-	height: calc(100% - 121px);
+	height: calc(100% - 7.5625rem);
 }
 #window.rightbar #historybar {
-	left: calc(100% - 50px);
+	left: calc(100% - 3.125rem);
 }
 #window.leftbar #historybar {
 	left: 0;

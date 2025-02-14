@@ -14,8 +14,8 @@
 
 }
 .dialog.dclieqiong>.position {
-    height: 50px;
-    width: 50px;
+    height: 3.125rem;
+    width: 3.125rem;
     /* background: yellow; */
     background: url(../../image/card/yiwu_click.png) center/100% no-repeat;
     left: 50%;
@@ -30,13 +30,13 @@
     position: absolute;
     bottom: 100%;
     transform: translateX(-40%);
-    width: 230px;
-    height: 40px;
+    width: 14.375rem;
+    height: 2.5rem;
     background-color: #3a3434;
     font-size: 0.9em;
-    border: 2px solid #b3a4a4;
-    border-radius: 5px;
-    padding: 3px 4px;
+    border: .125rem solid #b3a4a4;
+    border-radius: .3125rem;
+    padding: .1875rem .25rem;
     overflow: auto;
     color: #ecec3a;
     text-shadow: none;

@@ -4,6 +4,7 @@ export function openMenu(node, e, onclose) {
 	popupContainer.innerHTML = "";
 	var left = Math.round(e.clientX / get.menuZoom());
 	var zoom = get.is.phoneLayout() ? 1.3 : 1;
+	// var zoom = 1;
 	popupContainer.appendChild(node);
 	// var rect=node.getBoundingClientRect();
 	if (node.classList.contains("visual")) {
@@ -24,13 +25,22 @@ export function openMenu(node, e, onclose) {
 	// if(e){
 	var height = node.offsetHeight;
 	var idealtop = e.clientY / get.menuZoom();
+	var coreInfo = get.coreInfo();
 	if (idealtop < 10) {
 		idealtop = 10;
 	} else if ((idealtop + height) * zoom + 10 > ui.window.offsetHeight) {
 		idealtop = (ui.window.offsetHeight - 10) / zoom - height;
 	}
-	node.style.top = idealtop + "px";
-	node.style.left = left + "px";
+	if ((coreInfo[0] == "chrome" && coreInfo[1] >= 128)
+		||( coreInfo[0] == "firefox" && coreInfo[1] >= 126)
+	) {
+		node.style.top = idealtop / 16 / zoom + "rem";
+		node.style.left = left / 16 / zoom + "rem";
+	}
+	else {
+		node.style.top = idealtop / 16 + "rem";
+		node.style.left = left / 16 + "rem";
+	}
 	// }
 
 	popupContainer.classList.remove("hidden");
@@ -148,9 +158,9 @@ export function createMenu(connectMenu, tabs, config) {
 	}
 	var menuTab = ui.create.div(".menu-tab", menu);
 	var menuTabBar = ui.create.div(".menu-tab-bar", menu);
-	menuTabBar.style.left = (config.bar || 0) + "px";
+	menuTabBar.style.left = (config.bar || 0) / 16 + "rem";
 	if (Math.round(2 * get.menuZoom()) < 2) {
-		menuTabBar.style.height = "3px";
+		menuTabBar.style.height = "0.1875rem";
 	}
 	var menuContent = ui.create.div(".menu-content", menu);
 	var clickTab = function () {
@@ -161,11 +171,21 @@ export function createMenu(connectMenu, tabs, config) {
 			active._link.remove();
 		}
 		this.classList.add("active");
+		var zoom = get.is.phoneLayout() ? 1.3 : 1;
+		var coreInfo = get.coreInfo();
+		var thisRectLeft = this.getBoundingClientRect().left;
+		var firstChildRectLeft = this.parentNode.firstChild.getBoundingClientRect().left;
+		if ((coreInfo[0] == "chrome" && coreInfo[1] >= 128)
+			||( coreInfo[0] == "firefox" && coreInfo[1] >= 126)
+		) {
+			thisRectLeft = thisRectLeft / zoom;
+			firstChildRectLeft = firstChildRectLeft / zoom;
+		}
 		menuTabBar.style.transform =
 			"translateX(" +
-			(this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) /
-				get.menuZoom() +
-			"px)";
+			(thisRectLeft - firstChildRectLeft) /
+				get.menuZoom() / 16 +
+			"rem)";
 		menuContent.appendChild(this._link);
 	};
 	ui.click.menuTab = function (tab) {
@@ -201,7 +221,7 @@ export function createConfig(config, position) {
 			}
 			lib.setIntro(node, function (uiintro) {
 				if (lib.config.touchscreen) _status.dragged = true;
-				uiintro.style.width = "170px";
+				uiintro.style.width = "10.625rem";
 				var str = config.intro;
 				if (typeof str == "function") {
 					str = str();
@@ -306,7 +326,7 @@ export function createConfig(config, position) {
 			input.contentEditable = true;
 			input.style.webkitUserSelect = "text";
 		}
-		input.style.minWidth = "10px";
+		input.style.minWidth = "0.625rem";
 		input.style.maxWidth = "60%";
 		input.style.overflow = "hidden";
 		input.style.whiteSpace = "nowrap";
