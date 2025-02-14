@@ -31,6 +31,18 @@ export class Pagination {
 		disbaleNextCName: "no-next",
 		pageNumberCName: "page-number",
 		changePageEvent: "click",
+		/** @type { Required<PaginationState> } */
+		insertAfter: undefined,
+		/** @type { Required<PaginationState> } */
+		activePosition: undefined,
+		/** @type { Required<PaginationState> } */
+		pageNumberForCN: undefined,
+		/** @type { Required<PaginationState> } */
+		pageLimitForCN: undefined,
+		/** @type { Required<PaginationState> } */
+		pageRefuseChanged: undefined,
+		/** @type { Required<PaginationState> } */
+		pageElement: undefined,
 	};
 	/**
 	 * @param { Partial<PaginationState> } paramsObj
