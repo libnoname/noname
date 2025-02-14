@@ -2309,8 +2309,7 @@ const skills = {
 		derivation: "zhangming",
 		subSkill: {
 			chuhai: {
-				audio: "chuhai",
-				logAudio: () => "chuhai1.mp3",
+				audio: "chuhai1.mp3",
 				inherit: "chuhai",
 				prompt: "与一名其他角色进行拼点",
 			},

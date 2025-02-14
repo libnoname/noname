@@ -6206,16 +6206,13 @@ const skills = {
 		},
 		subSkill: {
 			true1: {
-				audio: "sbduanliang",
-				logAudio: () => "sbduanliang2.mp3",
+				audio: "sbduanliang2.mp3",
 			},
 			true2: {
-				audio: "sbduanliang",
-				logAudio: () => "sbduanliang3.mp3",
+				audio: "sbduanliang3.mp3",
 			},
 			false: {
-				audio: "sbduanliang",
-				logAudio: () => "sbduanliang4.mp3",
+				audio: "sbduanliang4.mp3",
 			},
 		},
 	},
@@ -6408,16 +6405,13 @@ const skills = {
 		},
 		subSkill: {
 			true1: {
-				audio: "sbtieji",
-				logAudio: () => "sbtieji2.mp3",
+				audio: "sbtieji2.mp3",
 			},
 			true2: {
-				audio: "sbtieji",
-				logAudio: () => "sbtieji3.mp3",
+				audio: "sbtieji3.mp3",
 			},
 			false: {
-				audio: "sbtieji",
-				logAudio: () => "sbtieji4.mp3",
+				audio: "sbtieji4.mp3",
 			},
 		},
 	},

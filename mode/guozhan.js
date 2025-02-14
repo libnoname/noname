@@ -17718,7 +17718,7 @@ export default () => {
 				preHidden: ["gzsuishi2"],
 				trigger: { global: "dying" },
 				forced: true,
-				logAudio: () => 1,
+				logAudio: () => "suishi1.mp3",
 				check() {
 					return false;
 				},
@@ -17731,10 +17731,9 @@ export default () => {
 				group: "gzsuishi2",
 			},
 			gzsuishi2: {
-				audio: "suishi",
+				audio: "suishi2.mp3",
 				trigger: { global: "dieAfter" },
 				forced: true,
-				logAudio: () => 2,
 				filter(event, player) {
 					return event.player.isFriendOf(player);
 				},

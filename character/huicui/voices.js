@@ -1,4 +1,9 @@
 export default {
+	"#dcmurui1": "背水一战，将至绝地而何畏死。",
+	"#dcmurui2": "破釜沉舟，置之死地而后生。",
+	"#dcaoren1": "为国效死，百战不殆。",
+	"#dcaoren2": "血染沙场，一往无前。",
+	"#dc_zhangyì:die": "大汉，万胜！",
 	"#dcpingzhi1": "陈祗何许人也？我等当重其虚！",
 	"#dcpingzhi2": "这满朝朱紫，鲜有非酒囊饭袋之徒。",
 	"#dcgangjian1": "道同则谋，道不同则不相为谋。",

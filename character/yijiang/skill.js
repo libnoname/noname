@@ -5341,8 +5341,7 @@ const skills = {
 				},
 			},
 			gain: {
-				audio: "jieyue",
-				logAudio: () => 2,
+				audio: ["jieyue1.mp3", "jieyue2.mp3"],
 				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
 					return player.getExpansions("jieyue").length;

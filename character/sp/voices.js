@@ -1,4 +1,11 @@
 export default {
+	"#spolxudai1": "曹公之邀，备莫敢辞。",
+	"#spolxudai2": "孟德兄以礼相待，备岂有不应之理。",
+	"#spolzhujiu1": "当下青梅正好，可为佐酒之资。",
+	"#spolzhujiu2": "枝头梅子青青，值煮酒正熟，不可不赏。",
+	"#spoljinglei1": "备得仕于朝，天下英雄，实有未知。",
+	"#spoljinglei2": "闻惊雷而颤，备肉眼安识英雄？",
+	"#sp_ol_liubei:die": "一介凡夫俗子，不识龙为何物。",
 	"#oljieyan1": "父高居殿陛，德当配其位。",
 	"#oljieyan2": "君子慎行，阿耶固君子，应有所不为。",
 	"#oljinghua1": "白驹失蹄，踏断谁家黄花？",

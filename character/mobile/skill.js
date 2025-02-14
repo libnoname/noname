@@ -183,7 +183,7 @@ const skills = {
 		},
 	},
 	friendqihui: {
-		audio: 2,
+		audio: 3,
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			const storage = player.getStorage("friendqihui");
@@ -333,7 +333,7 @@ const skills = {
 	},
 	//牢又寄 —— 诸葛亮
 	friendyance: {
-		audio: 2,
+		audio: 7,
 		trigger: {
 			global: "roundStart",
 			player: "phaseZhunbeiBegin",
@@ -343,6 +343,8 @@ const skills = {
 			return true;
 		},
 		round: 1,
+		popup: false,
+		logAudio: index => (typeof index === "number" ? "friendyance" + index + ".mp3" : 1),
 		async cost(event, trigger, player) {
 			const { result } = await player
 				.chooseButton([
@@ -371,6 +373,7 @@ const skills = {
 					links: [choice],
 				},
 			} = event;
+			player.logSkill("friendyance", null, null, null, [choice === "trick" ? null : get.rand(2, 3)]);
 			if (choice === "trick") {
 				const card = get.cardPile2(c => get.type2(c) === "trick");
 				if (card) {
@@ -426,6 +429,7 @@ const skills = {
 					return parseInt(button.link.at(-1)) === ui.selected.buttons.length;
 				})
 				.set("ai", () => 1 + Math.random());
+			if (!links?.length) return;
 			for (const i of links) {
 				storage[1].push(i.replace(`_${i.at(-1)}`, ""));
 			}
@@ -462,9 +466,9 @@ const skills = {
 					aiOrder(player, card, num) {
 						if (num > 0) {
 							const storage = player.getStorage("friendyance_record");
-							if (!storage[1]?.length) return;
-							if (player.hasSkill("friendzhugelianggongli") && get.info("friendgongli").isFriendOf(player, "friend_xushu") && storage[3] - 1 === storage[1].length) return;
-							return get[storage[2]](trigger.card) === storage[1][0] ? num + 1145141919810 : num * 0.00001;
+							if (storage[0]?.length === storage[3]) return;
+							if (player.hasSkill("friendzhugelianggongli") && get.info("friendgongli").isFriendOf(player, "friend_xushu") && storage[0].length === 0) return;
+							return get[storage[2]](card) === storage[1][storage[0].length] ? num + 1145141919810 : num * 0.00001;
 						}
 					},
 				},
@@ -477,7 +481,8 @@ const skills = {
 					player: "friendyance_minigameBegin",
 				},
 				filter(event, player) {
-					return event.name !== "useCard" || player.getStorage("friendyance_record")[1].length;
+					const storage = player.getStorage("friendyance_record");
+					return event.name !== "useCard" || storage[0].length < storage[3];
 				},
 				forced: true,
 				popup: false,
@@ -485,8 +490,8 @@ const skills = {
 					const storage = player.getStorage("friendyance_record");
 					const num = trigger.name === "useCard" && storage[4] ? 1 : 0;
 					if (trigger.name === "useCard") {
-						const i = storage[1].shift();
-						if (get[storage[2]](trigger.card) === i || (player.hasSkill("friendzhugelianggongli") && get.info("friendgongli").isFriendOf(player, "friend_xushu") && storage[3] - 1 === storage[1].length)) {
+						const i = storage[1][storage[0].length];
+						if (get[storage[2]](trigger.card) === i || (player.hasSkill("friendzhugelianggongli") && get.info("friendgongli").isFriendOf(player, "friend_xushu") && storage[0].length === 0)) {
 							player.popup("预测正确", "wood");
 							game.log(player, "预测", "#y正确");
 							storage[0].push(true);
@@ -499,15 +504,18 @@ const skills = {
 							storage[0].push(false);
 						}
 					}
-					if (trigger.name !== "useCard" || !storage[1].length) {
+					if (trigger.name !== "useCard" || storage[0].length === storage[3]) {
 						const trueArr = storage[0].filter(b => b === true);
 						if (trueArr.length === 0) {
+							player.logSkill("friendyance", null, null, null, [4]);
 							await player.loseHp(1 + num);
 							player.removeMark("friendyance", 1 + num, false);
 						}
 						if (trueArr.length * 2 < storage[3]) {
-							await player.chooseToDiscard(1 + num, "he", true);
+							if (trueArr.length !== 0) player.logSkill("friendyance", null, null, null, [5]);
+							if (player.hasCard(card => lib.filter.cardDiscardable(card, player), "he")) await player.chooseToDiscard(1 + num, "he", true);
 						} else {
+							player.logSkill("friendyance", null, null, null, [trueArr.length === storage[3] ? 7 : 6]);
 							const choice = storage[1].unique();
 							const control =
 								choice.length > 1
@@ -520,11 +528,13 @@ const skills = {
 											.forResult("control")
 									: choice[0];
 							let gains = [];
-							while (gains.length < num) {
+							while (gains.length < 1 + num) {
 								const card = get.cardPile2(c => {
 									if (gains.includes(c)) return false;
 									return get[storage[2]](c) === control;
 								});
+								if (card) gains.push(card);
+								else break;
 							}
 							if (gains.length) await player.gain(gains, "draw");
 							else player.chat("一无所获");
@@ -543,7 +553,7 @@ const skills = {
 		},
 	},
 	friendfangqiu: {
-		audio: 2,
+		audio: 3,
 		limited: true,
 		trigger: { player: "friendyance_minigame" },
 		check(event, player) {
@@ -1136,7 +1146,7 @@ const skills = {
 					async content(event, trigger, player) {
 						player.awakenSkill("potzhenfeng");
 						if (get.info(event.name).item === "recover") {
-							player.logSkill("potzhenfeng");
+							player.logSkill("potzhenfeng", null, null, null, [null]);
 							player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");
 							await player.recover(2);
 						} else {
@@ -7900,8 +7910,7 @@ const skills = {
 				},
 			},
 			move: {
-				audio: "sbanguo",
-				logAudio: () => ["sbanguo1.mp3", "sbanguo2.mp3"],
+				audio: ["sbanguo1.mp3", "sbanguo2.mp3"],
 				direct: true,
 				trigger: { player: "phaseUseBegin" },
 				filter(event, player) {
@@ -7947,8 +7956,7 @@ const skills = {
 				},
 			},
 			damage: {
-				audio: "sbanguo",
-				logAudio: () => ["sbanguo1.mp3", "sbanguo2.mp3"],
+				audio: ["sbanguo1.mp3", "sbanguo2.mp3"],
 				forced: true,
 				locked: false,
 				trigger: { player: "damageBegin4" },

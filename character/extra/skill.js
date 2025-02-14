@@ -1019,8 +1019,7 @@ const skills = {
 		group: ["jilin_kanpo", "jilin_change"],
 		subSkill: {
 			kanpo: {
-				audio: "jilin",
-				logAudio: () => ["jilin2.mp3", "jilin3.mp3"],
+				audio: ["jilin2.mp3", "jilin3.mp3"],
 				trigger: {
 					target: "useCardToTarget",
 				},
@@ -1072,8 +1071,7 @@ const skills = {
 				},
 			},
 			change: {
-				audio: "jilin",
-				logAudio: () => ["jilin4.mp3", "jilin5.mp3"],
+				audio: ["jilin4.mp3", "jilin5.mp3"],
 				trigger: {
 					player: "phaseBegin",
 				},
@@ -1172,8 +1170,7 @@ const skills = {
 		group: "yingyou_draw",
 		subSkill: {
 			draw: {
-				audio: "yingyou",
-				logAudio: () => ["yingyou3.mp3", "yingyou4.mp3"],
+				audio: ["yingyou3.mp3", "yingyou4.mp3"],
 				trigger: {
 					player: "loseAfter",
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],

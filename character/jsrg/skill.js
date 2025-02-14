@@ -8245,7 +8245,7 @@ const skills = {
 		zhuSkill: true,
 		subSkill: {
 			draw: {
-				audio: "jsrgjulian",
+				audio: ["jsrgjulian1.mp3", "jsrgjulian2.mp3"],
 				trigger: { global: "gainAfter" },
 				filter(event, player) {
 					const { player: source } = event;
@@ -8253,7 +8253,6 @@ const skills = {
 					var evt = event.getParent("phaseDraw");
 					return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != "jsrgjulian_draw" && player.hasZhuSkill("jsrgjulian", event.player);
 				},
-				logAudio: () => 2,
 				popup: false,
 				async cost(event, trigger, player) {
 					event.result = await trigger.player.chooseBool(`是否响应${get.translation(player)}的【聚敛】摸一张牌？`).forResult();
@@ -8490,8 +8489,7 @@ const skills = {
 		group: "jsrgjuelie_pojun",
 		subSkill: {
 			pojun: {
-				audio: "jsrgjuelie",
-				logAudio: () => ["jsrgjuelie1.mp3", "jsrgjuelie2.mp3"],
+				audio: ["jsrgjuelie1.mp3", "jsrgjuelie2.mp3"],
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
 					if (!player.isMinHandcard() && !player.isMinHp()) return false;
@@ -10067,8 +10065,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
-				audio: "jsrgzhenglve",
-				logAudio: () => ["jsrgzhenglve3.mp3", "jsrgzhenglve4.mp3"],
+				audio: ["jsrgzhenglve3.mp3", "jsrgzhenglve4.mp3"],
 				trigger: { source: "damageSource" },
 				usable: 1,
 				filter(event, player) {
@@ -10890,8 +10887,7 @@ const skills = {
 						const num = Math.max(4 - _status.event.ciyin_suits.length, 1);
 						return [num, Infinity];
 					},
-					audio: "jsrgciyin",
-					logAudio: () => ["jsrgciyin1.mp3", "jsrgciyin2.mp3"],
+					audio: ["jsrgciyin1.mp3", "jsrgciyin2.mp3"],
 					ai1(card) {
 						const suits = _status.event.ciyin_suits;
 						if (!suits.includes(get.suit(card))) return 15 - get.value(card);
@@ -10932,8 +10928,7 @@ const skills = {
 		group: "jsrgciyin_draw",
 		subSkill: {
 			draw: {
-				audio: "jsrgciyin",
-				logAudio: () => ["jsrgciyin3.mp3"],
+				audio: "jsrgciyin3.mp3",
 				trigger: { global: ["cardsDiscardAfter"] },
 				forced: true,
 				filter(event, player) {
@@ -11370,8 +11365,7 @@ const skills = {
 		group: "jsrgzuozhan_gain",
 		subSkill: {
 			gain: {
-				audio: "jsrgzuozhan",
-				logAudio: () => ["jsrgzuozhan3.mp3", "jsrgzuozhan4.mp3"],
+				audio: ["jsrgzuozhan3.mp3", "jsrgzuozhan4.mp3"],
 				trigger: {
 					global: "dieAfter",
 				},

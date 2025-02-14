@@ -1199,7 +1199,7 @@ const skills = {
 	},
 	twhuangzhu: {
 		audio: 2,
-		audioname: ["huan_caoang"],
+		audioname: ["huan_caoang_shadow"],
 		trigger: { player: ["phaseZhunbeiBegin", "phaseUseBegin"] },
 		filter(event, player) {
 			if (event.name == "phaseZhunbei") return player.hasDisabledSlot();
@@ -1317,7 +1317,7 @@ const skills = {
 	},
 	twliyuan: {
 		audio: 2,
-		audioname: ["huan_caoang"],
+		audioname: ["huan_caoang_shadow"],
 		mod: {
 			targetInRange(card) {
 				if (card.storag?.twliyuan) return true;
