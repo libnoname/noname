@@ -164,6 +164,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "dieBegin" },
 		filter(event, player) {
+			if (!(event.getParent().name !== "giveup" && player.maxHp > 0)) return false;
 			return get.cardPile2(c => get.tag(c, "fireDamage"));
 		},
 		forced: true,
