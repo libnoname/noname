@@ -10870,7 +10870,9 @@ export class Player extends HTMLDivElement {
 	}
 	$throw(card, time, init, nosource, cardsetion) {
 		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
-			cardsetion = get.cardsetion(this);
+			let source = this;
+			if (["useCard", "respond"].includes(get.event().name)) source = get.player();
+			cardsetion = get.cardsetion(source);
 		}
 		if (typeof card == "number") {
 			var tmp = card;
@@ -10945,7 +10947,6 @@ export class Player extends HTMLDivElement {
 			let node = arguments[0];
 			let eventInfo = arguments[2],
 				player = this;
-			if (["useCard", "respond"].includes(get.event().name)) player = get.event().player;
 			if (!eventInfo) eventInfo = get.cardsetion(player);
 			if (eventInfo?.length) {
 				game.broadcastAll(
