@@ -84,7 +84,7 @@ self.addEventListener("fetch", event => {
 	if (!['.ts', '.json', '.vue', 'css', '.js'].some(ext => url.pathname.endsWith(ext)) && !request.url.replace(location.origin, '').startsWith('/noname-builtinModules/')) return;
 	// 普通js请求不处理
 	if (url.pathname.endsWith('.js')) {
-		if (url.searchParams.size == 0 || !url.searchParams.keys().some(key => searchParams.includes(key))) return;
+		if (url.searchParams.size == 0 || !Array.from(url.searchParams.keys()).some(key => searchParams.includes(key))) return;
 	}
 	if (url.pathname.endsWith('.ts')) {
 		// 不处理视频文件
