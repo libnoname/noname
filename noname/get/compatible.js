@@ -59,18 +59,24 @@ export class GetCompatible {
 			}
 		}
 
+		// Chrome/Chromium下的实验性特性，具体可参见
+		// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
 		// @ts-ignore
 		if (typeof navigator.userAgentData != "undefined") {
 			// @ts-ignore
 			const userAgentData = navigator.userAgentData;
 			if (userAgentData.brands && userAgentData.brands.length) {
-				let brand = userAgentData.brands.find(({ brand }) => {
+				const brand = userAgentData.brands.find(({ brand }) => {
 					let str = brand.toLowerCase();
 					// 当前支持的浏览器中只有chrome支持userAgentData，故只判断chrome的情况
 					return str.includes("chrome") || str.includes("chromium");
 				});
 
-				return brand ? ["chrome", parseInt(brand.version), 0, 0] : ["other", NaN, NaN, NaN];
+				// 如果能通过userAgentData找到对应的浏览器信息，则直接返回
+				// 反之则继续通过正则表达式匹配userAgent
+				if (brand) {
+					return ["chrome", parseInt(brand.version), 0, 0];
+				}
 			}
 		}
 
