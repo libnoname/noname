@@ -458,59 +458,83 @@
 				if (typeof window.process != "undefined" && typeof window.process.versions == "object") {
 					// 如果存在versions.chrome，默认为electron的versions.chrome
 					if (window.process.versions.chrome) {
-						// @ts-expect-error Type must be right
-						return [
-							"chrome",
-							...window.process.versions.chrome
-								.split(".")
-								.slice(0, 3)
-								.map(item => parseInt(item)),
-						];
+						return parseVersion("chrome", window.process.versions.chrome);
 					}
 				}
 
+				// Chrome/Chromium下的实验性特性，具体可参见
+				// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
 				// @ts-ignore
 				if (typeof navigator.userAgentData != "undefined") {
 					// @ts-ignore
 					const userAgentData = navigator.userAgentData;
 					if (userAgentData.brands && userAgentData.brands.length) {
-						let brand = userAgentData.brands.find(({ brand }) => {
+						const brand = userAgentData.brands.find(({ brand }) => {
 							let str = brand.toLowerCase();
 							// 当前支持的浏览器中只有chrome支持userAgentData，故只判断chrome的情况
 							return str.includes("chrome") || str.includes("chromium");
 						});
 
-						return brand ? ["chrome", parseInt(brand.version), 0, 0] : ["other", NaN, NaN, NaN];
+						// 如果能通过userAgentData找到对应的浏览器信息，则直接返回
+						// 反之则继续通过正则表达式匹配userAgent
+						if (brand) {
+							return ["chrome", parseInt(brand.version), 0, 0];
+						}
 					}
 				}
 
+				// 目前仅考虑Firefox, Chrome和Safari三种浏览器
+				// 其余浏览器均归于other
 				const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
-				let result = userAgent.match(regex);
-				if (result == null) return ["other", NaN, NaN, NaN];
+				let result = userAgentLowerCase.match(regex);
+				if (result == null) {
+					return ["other", NaN, NaN, NaN];
+				}
 
-				// 非Safari情况直接返回结果
+				// 非Safari情况可直接返回结果
 				if (result[1] !== "safari") {
-					const [major, minor, patch] = result[2].split(".");
-					// @ts-expect-error "Matched result must be the status."
-					return [result[1], parseInt(major), parseInt(minor), parseInt(patch)];
+					// @ts-expect-error Type must be right
+					return parseVersion(result[1], result[2]);
 				}
 
 				// 以下是所有Safari平台的判断方法
 				// macOS以及以桌面显示的移动端则直接判断
-				if (/macintosh/.test(userAgent)) {
-					result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/);
-					if (result == null) return ["other", NaN, NaN, NaN];
+				if (/macintosh/.test(userAgentLowerCase)) {
+					result = userAgentLowerCase.match(/version\/(\d+(?:\.\d+)+).*safari/);
+					if (result == null) {
+						return ["other", NaN, NaN, NaN];
+					}
 				}
 				// 不然则通过OS后面的版本号来获取内容
 				else {
 					let safariRegex = /(?:iphone|ipad); cpu (?:iphone )?os (\d+(?:_\d+)+)/;
-					result = userAgent.match(safariRegex);
-					if (result == null) return ["other", NaN, NaN, NaN];
+					result = userAgentLowerCase.match(safariRegex);
+					if (result == null) {
+						return ["other", NaN, NaN, NaN];
+					}
 				}
 				// result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/)
-				// @ts-ignore
-				const [major, minor, patch] = result[1].split(".");
-				return ["safari", parseInt(major), parseInt(minor), parseInt(patch)];
+				return parseVersion("safari", result[1]);
+
+				/**
+				 * 通用解析版本号方法
+				 *
+				 * @param {"firefox" | "chrome" | "safari" | "other"} coreName
+				 * @param {string} versions
+				 * @returns {["firefox" | "chrome" | "safari" | "other", number, number, number]}
+				 */
+				function parseVersion(coreName, versions) {
+					const [major, minor, patch] = versions.split(".");
+					const majorVersion = parseInt(major);
+
+					// 如果major解析为NaN，则整体解析为NaN（此时不考虑minor和patch）
+					if (Number.isNaN(majorVersion)) {
+						return [coreName, NaN, NaN, NaN];
+					}
+
+					// 反之则将不为NaN的minor和patch解析为0
+					return [coreName, majorVersion, parseInt(minor) || 0, parseInt(patch) || 0];
+				}
 			}
 		}
 
