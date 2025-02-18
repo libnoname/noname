@@ -33,6 +33,7 @@ Thumbs.db
 bun.lockb
 deno.lock
 pnpm-lock.yaml
+.pnpm-store
 game/*.zip  
 
 downloadExtension.html
