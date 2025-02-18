@@ -8,11 +8,11 @@
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
-	"mounts": [
-		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached",
-		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gnupg,target=/home/node/.gnupg,type=bind,consistency=cached",
-		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached"
-	],
+	//"mounts": [
+	//	"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached",
+	//	"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gnupg,target=/home/node/.gnupg,type=bind,consistency=cached",
+	//	"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached"
+	//],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
