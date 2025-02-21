@@ -390,7 +390,7 @@ export class Library {
 														return ai - get.value(cardx);
 													} else if (get.attitude(player, source) <= 0) return 0;
 													return 5 - get.value(cardx);
-												},
+											  },
 								});
 								if (!game.online) return;
 								_status.event._resultid = id;
@@ -5140,6 +5140,7 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
+						3: "三",
 						4: "四",
 						6: "六",
 						8: "八",
@@ -5740,6 +5741,7 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
+						3: "三",
 						4: "四",
 						6: "六",
 						8: "八",
@@ -8325,7 +8327,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-				})()
+			  })()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -10930,7 +10932,7 @@ export class Library {
 								storage: {
 									stratagem_buffed: 1,
 								},
-							})
+						  })
 						: new lib.element.VCard();
 				}
 				return null;
