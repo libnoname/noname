@@ -103,7 +103,11 @@
 		// 在http环境下修改__dirname和require的逻辑
 		if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
 			const path = require("path");
-			window.__dirname = path.join(path.resolve(), "resources/app");
+			if (window.process.platform === "darwin") {
+				window.__dirname = path.join(window.process.resourcesPath, "app");
+			} else {
+				window.__dirname = path.join(path.resolve(), "resources/app");
+			}
 			const oldData = Object.entries(window.require);
 			// @ts-ignore
 			window.require = function (moduleId) {
