@@ -5,7 +5,7 @@ const characters = {
 	sp_ol_liubei: ["male", "qun", 4, ["spolxudai", "spolzhujiu", "spoljinglei"]],
 	ol_liuzhang: ["male", "qun", 3, ["olfengwei", "olzonghu"]],
 	ol_taoqian: ["male", "qun", 3, ["olzongluan", "olwenren", "olzhaohuo"]],
-	ol_xuelingyun: ["female", "wei", "3/3", ["olsiqi", "olqiaozhi"]],
+	ol_xuelingyun: ["female", "wei", 3, ["olsiqi", "olqiaozhi"]],
 	ol_guozhao: ["female", "wei", 3, ["oljiaoyu", "olneixun"]],
 	ol_qinlang: ["male", "wei", 3, ["olxianying"]],
 	ol_wuanguo: ["male", "qun", 4, ["olliyong"]],
