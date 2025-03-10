@@ -436,7 +436,7 @@ export class Click {
 					//ui.create.div('.videostatus',node,button.info[i][5]);
 					//node.classList.add('videonodestatus');
 					if (button.info[i][3]) {
-						ui.create.div(".videostatus", node, button.info[i][3].slice(0, 80));
+						ui.create.div(".videostatus", node, get.plainText(button.info[i][3].slice(0, 80)));
 						node.classList.add("videonodestatus");
 					}
 				}
