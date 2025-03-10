@@ -7,12 +7,11 @@ import { get } from "./index.js";
 
 export class Is {
 	/**
-	 * 
 	 * @param { string } str 
 	 * @returns 
 	 */
 	emotion(str) {
-		let regExp = /<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"\/]+)\/([^"\/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")[^>]*>/gi;
+		let regExp = /^<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"\/]+)\/([^"\/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")(?!.*\b(?!src|width|height)\w+=)[^>]*\/?>$/i;
 		return regExp.test(str);
 	}
 	/**
