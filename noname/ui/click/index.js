@@ -174,7 +174,7 @@ export class Click {
 							hour: parseInt(hoursselect.value),
 							nickname: get.connectNickname(),
 							avatar: lib.config.connect_avatar,
-							content: button.input.value,
+							content: get.plainText(button.input.value),
 							create: game.onlineKey,
 							members: [game.onlineKey],
 						};
