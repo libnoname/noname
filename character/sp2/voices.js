@@ -1,4 +1,9 @@
 export default {
+	"#stardangchen1": "举帆据徐塘，寒夜荡敌尘！",
+	"#stardangchen2": "无恃敌之不至，恃吾有以胜之！",
+	"#starjianyu1": "綝友党甚盛，当翦羽而后诛之。",
+	"#starjianyu2": "奉虽不能吏书，犹怀一腔忠胆！",
+	"#star_dingfeng:die": "野豕入营，此凶征也。",
 	"#starzhongyan1": "千夫诺诺，不如一士谔谔。",
 	"#starzhongyan2": "忠言如药，苦口而利身。",
 	"#starjinglun1": "腹有珠玑，可坠在殿之玉盘。",

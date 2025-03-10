@@ -8313,7 +8313,7 @@ export const Content = {
 	gain: function () {
 		"step 0";
 		if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") event.visible = true;
-		if (cards) {
+		if (get.itemtype(cards) == "cards") {
 			var map = {};
 			for (var i of cards) {
 				var owner = get.owner(i, "judge");
@@ -8337,6 +8337,8 @@ export const Content = {
 				event.relatedLose = next;
 			}
 		} else {
+			const name = event.getParent(event.getlx === false ? 2 : 1).name;
+			console.warn(`请检查技能：${name}中关于gain的写法`);
 			event.finish();
 		}
 		"step 1";

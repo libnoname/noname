@@ -562,43 +562,7 @@ export class GameEvent {
 			var info = get.info(skill);
 			this.skill = skill;
 			this._aiexclude = [];
-			if (typeof info.viewAs == "function") {
-				if (info.filterButton != undefined) this.filterButton = get.filter(info.filterButton);
-				if (info.selectButton != undefined) this.selectButton = info.selectButton;
-				if (info.filterTarget != undefined) this.filterTarget = get.filter(info.filterTarget);
-				if (info.selectTarget != undefined) this.selectTarget = info.selectTarget;
-				if (info.filterCard != undefined) {
-					if (info.ignoreMod) this.ignoreMod = true;
-					this.filterCard2 = get.filter(info.filterCard);
-					this.filterCard = function (card, player, event) {
-						var evt = event || _status.event;
-						if (!evt.ignoreMod && player) {
-							var mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-							if (mod != "unchanged") return mod;
-						}
-						return get.filter(evt.filterCard2).apply(this, arguments);
-					};
-				}
-				if (info.filterOk == undefined) {
-					this.filterOk = function () {
-						var evt = _status.event;
-						var card = get.card(),
-							player = get.player();
-						var filter = evt._backup.filterCard;
-						if (filter && !filter(card, player, evt)) return false;
-						if (evt._backup.filterOk) return evt._backup.filterOk();
-						return true;
-					};
-				} else this.filterOk = info.filterOk;
-				if (info.selectCard != undefined) this.selectCard = info.selectCard;
-				if (info.position != undefined) this.position = info.position;
-				//if(info.forced!=undefined) this.forced=info.forced;
-				if (info.complexSelect != undefined) this.complexSelect = info.complexSelect;
-				if (info.complexCard != undefined) this.complexCard = info.complexCard;
-				if (info.complexTarget != undefined) this.complexTarget = info.complexTarget;
-				if (info.ai1 != undefined) this.ai1 = info.ai1;
-				if (info.ai2 != undefined) this.ai2 = info.ai2;
-			} else if (info.viewAs) {
+			if (info.viewAs) {
 				if (info.filterButton != undefined) this.filterButton = get.filter(info.filterButton);
 				if (info.selectButton != undefined) this.selectButton = info.selectButton;
 				if (info.filterTarget != undefined) this.filterTarget = get.filter(info.filterTarget);

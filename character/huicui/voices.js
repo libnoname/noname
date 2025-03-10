@@ -1,4 +1,7 @@
 export default {
+	"#dcxianniang1": "将军！嘿嘿~酒来了~",
+	"#dcxianniang2": "酒里没毒，真是的，自己吓自己！",
+	"#houcheng:die": "将军，你不喝酒呀？",
 	"#dcmurui1": "背水一战，将至绝地而何畏死。",
 	"#dcmurui2": "破釜沉舟，置之死地而后生。",
 	"#dcaoren1": "为国效死，百战不殆。",

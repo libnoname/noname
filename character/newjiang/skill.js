@@ -1906,7 +1906,6 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					if (!lib.suit.includes(get.suit(event.card))) return false;
 					return player.getStorage("qingbei_effect").length;
 				},
 				content() {
@@ -1914,7 +1913,7 @@ const skills = {
 				},
 				mark: true,
 				intro: {
-					content: storage => `本轮内不能使用${get.translation(storage)}花色的牌，且使用一张有花色的牌后摸${get.cnNumber(storage.length)}张牌`,
+					content: storage => `本轮内不能使用${get.translation(storage)}花色的牌，且使用牌后摸${get.cnNumber(storage.length)}张牌`,
 				},
 				mod: {
 					cardEnabled(card, player) {

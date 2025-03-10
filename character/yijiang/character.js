@@ -41,7 +41,7 @@ const characters = {
 	chengpu: ["male", "wu", 4, ["lihuo", "chunlao"]],
 	gaoshun: ["male", "qun", 4, ["xinxianzhen", "jinjiu"]],
 	caozhen: ["male", "wei", 4, ["xinsidi"]],
-	wuyi: ["male", "shu", 4, ["benxi"], ["clan:陈留吴氏"]],
+	wuyi: ["male", "shu", 4, ["olbenxi"], ["clan:陈留吴氏"]],
 	hanhaoshihuan: ["male", "wei", 4, ["shenduan", "yonglve"], ['name:韩|浩-史|涣']],
 
 	caorui: ["male", "wei", 3, ["huituo", "mingjian", "xingshuai"], ["zhu"]],

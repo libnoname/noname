@@ -1,12 +1,12 @@
 const characters = {
-	hanshiwuhu: ["male", "wei", 5, ["oljuejue", "olpimi"], ["name:韩|德‌-韩|瑛-韩|瑶-韩|琼-韩|琪"]],
+	ol_zhaozhong: ["male", "qun", 3, ["olpengbi", "oldici"], ["sex:male_castrated"]],
 	ol_wujing: ["male", "wu", 4, ["heji", "olliubing"], ["die:wujing"]],
 	ol_yangfeng: ["male", "qun", 4, ["oljiawei"]],
 	ol_yuanhuan: ["male", "qun", 3, ["olderu", "ollinjie"]],
 	sp_ol_liubei: ["male", "qun", 4, ["spolxudai", "spolzhujiu", "spoljinglei"]],
 	ol_liuzhang: ["male", "qun", 3, ["olfengwei", "olzonghu"]],
 	ol_taoqian: ["male", "qun", 3, ["olzongluan", "olwenren", "olzhaohuo"]],
-	ol_xuelingyun: ["female", "wei", "3/3", ["olsiqi", "olqiaozhi"]],
+	ol_xuelingyun: ["female", "wei", 3, ["olsiqi", "olqiaozhi"]],
 	ol_guozhao: ["female", "wei", 3, ["oljiaoyu", "olneixun"]],
 	ol_qinlang: ["male", "wei", 3, ["olxianying"]],
 	ol_wuanguo: ["male", "qun", 4, ["olliyong"]],
@@ -180,7 +180,7 @@ const characters = {
 	mizhu: ["male", "shu", 3, ["ziyuan", "jugu"]],
 	buzhi: ["male", "wu", 3, ["hongde", "dingpan"]],
 
-	caochun: ["male", "wei", 4, ["xinshanjia"]],
+	caochun: ["male", "wei", 4, ["olshanjia"]],
 
 	dongbai: ["female", "qun", 3, ["lianzhu", "xiahui"]],
 

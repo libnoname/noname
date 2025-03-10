@@ -1,5 +1,5 @@
 const characterSort = {
-	offline_hanmo: ["hm_bairao", "hm_shen_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_zhangkai", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
+	offline_hanmo: ["hm_bairao", "hm_shen_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
 	offline_scl: ["scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
@@ -8,7 +8,7 @@ const characterSort = {
 	offline_yongjian: ["ns_chendao", "yj_caoang", "yj_caocao", "yj_liru", "yj_caohong", "yj_zhangfei", "yongjian_ganning", "yj_dongzhuo", "yj_xuyou", "yj_jiaxu", "yj_zhenji"],
 	offline_piracyE_zy: ["shen_jiaxu", "pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
-	offline_piracyE: ["yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling"],
+	offline_piracyE: ["yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai"],
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "ps_shen_machao", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
 	offline_vtuber: ["vtb_xiaosha", "vtb_xiaoshan", "vtb_xiaotao", "vtb_xiaole", "vtb_xiaojiu"],

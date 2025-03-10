@@ -9493,7 +9493,7 @@ export default () => {
 			boss_remen: "热闷",
 			boss_remen_info: "锁定技，若你的装备区内没有防具牌，则【南蛮入侵】、【万箭齐发】和普通【杀】对你无效。",
 			boss_zhifen: "炙焚",
-			boss_zhifen_info: "锁定技，准备阶段，你随机选择一名其他角色，获得其1张手牌（没有则不获得），并对其造成1点火属性伤害。",
+			boss_zhifen_info: "锁定技，准备阶段，你随机选择一名其他角色，获得其一张手牌（没有则不获得），并对其造成1点火属性伤害。",
 			boss_huoxing: "火刑",
 			boss_huoxing_info: "锁定技，你死亡时，你对所有其他角色造成1点火属性伤害。",
 			boss_pingdengwang_ab: "平等王",

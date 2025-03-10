@@ -179,7 +179,7 @@ export class Library {
 		xiaojiu_emotion: 20,
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
-		huangdou_emotion: 20,
+		huangdou_emotion: 50,
 		maoshu_emotion: 18,
 	};
 	animate = {
@@ -390,7 +390,7 @@ export class Library {
 														return ai - get.value(cardx);
 													} else if (get.attitude(player, source) <= 0) return 0;
 													return 5 - get.value(cardx);
-												},
+											  },
 								});
 								if (!game.online) return;
 								_status.event._resultid = id;
@@ -5140,6 +5140,7 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
+						3: "三",
 						4: "四",
 						6: "六",
 						8: "八",
@@ -5740,6 +5741,7 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
+						3: "三",
 						4: "四",
 						6: "六",
 						8: "八",
@@ -8325,7 +8327,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-				})()
+			  })()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -10128,6 +10130,7 @@ export class Library {
 				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
 			}
+			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
 			if (mod != "unchanged") return mod;
 			var savable = get.info(card).savable;
@@ -10325,17 +10328,19 @@ export class Library {
 		cardRespondable: function (card, player, event) {
 			event = event || _status.event;
 			if (event.name != "chooseToRespond") return true;
+			if (player == undefined) player = _status.event.player;
+			if (!player) return false;
 			var source = event.getParent().player;
 			if (source && source != player) {
 				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
 					return false;
 				}
 			}
-			if (player == undefined) player = _status.event.player;
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
 			}
+			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
 			if (mod != "unchanged") return mod;
 			return true;
@@ -10930,7 +10935,7 @@ export class Library {
 								storage: {
 									stratagem_buffed: 1,
 								},
-							})
+						  })
 						: new lib.element.VCard();
 				}
 				return null;
@@ -14091,6 +14096,13 @@ export class Library {
 		],
 		[
 			"魂",
+			{
+				color: "#ffff99",
+				nature: "firemm",
+			},
+		],
+		[
+			"韩氏",
 			{
 				color: "#ffff99",
 				nature: "firemm",

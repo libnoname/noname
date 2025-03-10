@@ -30,14 +30,16 @@ export class Get extends GetCompatible {
 		const info = lib.translate;
 		const { name, targets, judgestr } = _status.event;
 		const playername = get.slimName(player?.name);
-		let border = get.groupnature(get.bordergroup(player?.name), "raw");
-		let eventInfo = `<span style="font-weight:700"><span data-nature=${border}>${playername}</span><br/><span style="color:#FFD700">`;
+		const SeatNum = player.getSeatNum();
+		const addSeat = game.hasPlayer2(current => current != player && get.slimName(current?.name) == playername, true) && typeof SeatNum == "number";
+		let border = get.groupnature(get.bordergroup(player?.name));
+		let eventInfo = `<span style="font-weight:700"><span data-nature=${border}><span style="letter-spacing:0.1em">${playername}${addSeat ? "[" + SeatNum + "]" : ""}</span></span><br/><span style="color:#FFD700">`;
 		let name1 = name,
 			name2 = _status.event.getParent().name,
 			th_skill = false,
 			evt1 = get.event(),
 			evt2 = get.event().getParent();
-		if ((name == "lose" && !lib.skill[name2] && _status.event.getParent(2).name != "die") || (name == "gain" && !info[get.event().getParent().name])) {
+		if ((["lose", "loseAsync"].includes(name) && !lib.skill[name2] && _status.event.getParent(2).name != "die") || (name == "gain" && !info[get.event().getParent().name])) {
 			name1 = _status.event.getParent(2).name;
 			evt1 = _status.event.getParent(2);
 			name2 = _status.event.getParent(3).name;
@@ -69,7 +71,7 @@ export class Get extends GetCompatible {
 			if ((name2 == "chooseToUse" || name2 == "chooseToRespond" || name2 == "_wuxie") && evt2.childEvents) {
 				let tempEvt;
 				for (let key of evt2.childEvents) {
-					if (key.name.indexOf("pre_") == 0 && key.name.indexOf("_backup") != -1) {
+					if (key.name.indexOf("pre_") == 0) {
 						tempEvt = key;
 						break;
 					}
@@ -163,10 +165,10 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * 返回牌名“【XXX】”形式的数组
-	 * @param { Function } [filter] 
+	 * @param { Function } [filter]
 	 * @returns { string[] }
 	 */
-	cardTranslation(filter = lib.filter.all){
+	cardTranslation(filter = lib.filter.all) {
 		let list = [];
 		if (get["#cardTranslation"]) {
 			list = get["#cardTranslation"];
@@ -176,7 +178,7 @@ export class Get extends GetCompatible {
 			}
 			get["#cardTranslation"] = list;
 		}
-		return list.filter(filter).map(c=>`【${get.translation(c)}】`);
+		return list.filter(filter).map(c => `【${get.translation(c)}】`);
 	}
 	/**
 	 * 获取装备牌对应的技能
@@ -523,8 +525,8 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * 返回智囊牌名组成的数组
-	 * @param { Function | boolean } [filter] 
-	 * @returns { String[] } 
+	 * @param { Function | boolean } [filter]
+	 * @returns { String[] }
 	 */
 	zhinangs(filter) {
 		var list = (_status.connectMode ? lib.configOL : lib.config).zhinang_tricks;
@@ -667,11 +669,16 @@ export class Get extends GetCompatible {
 		return list;
 	}
 	/**
-	 * 返回本回合在进入弃牌堆且还在弃牌堆的牌
+	 * 返回本回合进入[过]弃牌堆的牌
 	 * @returns { Card[] }
 	 */
 	discarded() {
-		return _status.discarded.filter(item => item.parentNode == ui.discardPile);
+		return game
+			.getGlobalHistory("everything", evt => {
+				if (!evt.cards?.length) return false;
+				return evt.name === "cardsDiscard" || evt.position == ui.discardPile;
+			})
+			.reduce((cards, evt) => cards.addArray(evt.cards), []);
 	}
 	cardOffset() {
 		var x = ui.arena.getBoundingClientRect();
@@ -886,7 +893,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * Get the source of the skill or event
-	 * 
+	 *
 	 * 获取一个技能或事件的某个属性的源技能
 	 * @param { string | Object } skill - 传入的技能或事件
 	 * @param { string } text - 要获取的属性（不填写默认获取sourceSkill）
@@ -3455,23 +3462,25 @@ export class Get extends GetCompatible {
 	 * 从指定区域获得一张牌
 	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
 	 * @param { string | boolean } [position] 筛选区域，默认牌堆+弃牌堆：
-	 * 
+	 *
 	 * cardPile: 仅牌堆；discardPile: 仅弃牌堆；filed: 牌堆+弃牌堆+场上
-	 * 
+	 *
 	 * 若为true且name为string | object类型，则在筛选区域内没有找到卡牌时创建一张name条件的牌
-	 * 
+	 *
 	 * @param { string } [start] 遍历方式。默认top
-	 * 
+	 *
 	 * top: 从牌堆/弃牌堆顶自顶向下遍历
 	 * bottom: 从牌堆/弃牌堆底自底向上遍历
 	 * random: 随机位置遍历
 	 * @returns { Card | ChildNode | null }
 	 */
 	cardPile(name, position, start = "top") {
-		let filter, create = null;
-		if (typeof name === "function") filter = function (card) {
-			return name(card);
-		};
+		let filter,
+			create = null;
+		if (typeof name === "function")
+			filter = function (card) {
+				return name(card);
+			};
 		else if (name === true) filter = () => true;
 		else if (name) {
 			if (typeof name === "string") name = { name };
@@ -3482,22 +3491,23 @@ export class Get extends GetCompatible {
 				return true;
 			};
 			if (position === true) create = true;
-		}
-		else {
+		} else {
 			console.error("调用Get.cardPile()时未传入符合条件的参数name！");
 			return null;
 		}
 		if (start === "bottom") {
-			if (position !== "cardPile") for (let i = ui.discardPile.childNodes.length - 1; i >= 0; i--) {
-				if (filter(ui.discardPile.childNodes[i])) {
-					return ui.discardPile.childNodes[i];
+			if (position !== "cardPile")
+				for (let i = ui.discardPile.childNodes.length - 1; i >= 0; i--) {
+					if (filter(ui.discardPile.childNodes[i])) {
+						return ui.discardPile.childNodes[i];
+					}
 				}
-			}
-			if (position !== "discardPile") for (let i = ui.cardPile.childNodes.length - 1; i >= 0; i--) {
-				if (filter(ui.cardPile.childNodes[i])) {
-					return ui.cardPile.childNodes[i];
+			if (position !== "discardPile")
+				for (let i = ui.cardPile.childNodes.length - 1; i >= 0; i--) {
+					if (filter(ui.cardPile.childNodes[i])) {
+						return ui.cardPile.childNodes[i];
+					}
 				}
-			}
 			if (position === "field") {
 				let curs = game.filterPlayer(() => true);
 				for (let i = curs.length - 1; i >= 0; i--) {
@@ -3550,7 +3560,7 @@ export class Get extends GetCompatible {
 	 * 从牌堆获得一张牌
 	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
 	 * @param { string } [start] 遍历方式。默认top
-	 * 
+	 *
 	 * top：从牌堆顶自顶向下遍历
 	 * bottom：从牌堆底自底向上遍历
 	 * random: 随机位置遍历
@@ -3563,7 +3573,7 @@ export class Get extends GetCompatible {
 	 * 从弃牌堆获得一张牌
 	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
 	 * @param { string } [start] 遍历方式。默认top
-	 * 
+	 *
 	 * top：从弃牌堆顶自顶向下遍历
 	 * bottom：从弃牌堆底自底向上遍历
 	 * random: 随机位置遍历
@@ -5319,8 +5329,7 @@ export class Get extends GetCompatible {
 					game.players.forEach(function (current) {
 						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, { source: target });
 					});
-			}
-			else {
+			} else {
 				let canLink = info.ai.canLink(player, target, card);
 				if (canLink) {
 					if (typeof canLink !== "object") canLink = {};
@@ -5498,8 +5507,7 @@ export class Get extends GetCompatible {
 					game.players.forEach(function (current) {
 						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, { source: target });
 					});
-			}
-			else {
+			} else {
 				let canLink = info.ai.canLink(player, target, card);
 				if (canLink) {
 					if (typeof canLink !== "object") canLink = {};

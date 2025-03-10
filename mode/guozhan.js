@@ -22,7 +22,7 @@ export default () => {
 				}
 			}
 			for (var i in lib.character) {
-				if (lib.character[i].group == "shen" || lib.character[i].group == "western") {
+				if (lib.character[i].group == "shen") {
 					lib.character[i].group = lib.character[i].groupInGuozhan || "qun";
 				}
 			}
@@ -1382,6 +1382,7 @@ export default () => {
 							return get.event().getTrigger().targets.includes(target) && target.countCards("he");
 						})
 						.set("ai", target => {
+							if (_status.event.player === target) return 0;
 							var att = get.attitude(_status.event.player, target);
 							if (att > 0) return Math.sqrt(att) / 10;
 							return 5 - att;
@@ -1390,7 +1391,7 @@ export default () => {
 				},
 				async content(event, trigger, player) {
 					const result = await event.targets[0]
-						.chooseToGive(player, "he", true, "give")
+						.chooseToGive(player, "he", true, `承赏：交给${get.translation(player)}一张牌，若为${get.translation(trigger.card.suit)}${get.strNumber(trigger.card.number)}则${get.translation(player)}失去此技能`)
 						.set("ai", card => {
 							const player = get.player(),
 								source = get.event().getParent().player,
@@ -1569,16 +1570,15 @@ export default () => {
 						},
 					},
 					backup: {
-						filterCard: true,
+						filterCard(card) {
+							return get.itemtype(card) == "card";
+						},
 						position: "hs",
 						check(card) {
 							return 7 - get.value(card);
 						},
 						log: false,
 						viewAs: { name: "huoshaolianying" },
-						precontent() {
-							delete event.result.skill;
-						},
 					},
 				},
 			},
@@ -2815,9 +2815,9 @@ export default () => {
 									filterCard: true,
 									position: "hs",
 									popname: true,
+									log: false,
 									precontent() {
 										player.logSkill("fakechengshang_effect");
-										delete event.result.skill;
 										const cardx = event.result.card;
 										const removes = player.getStorage("fakechengshang_effect").filter(card => {
 											return lib.card.list.some(list => {
@@ -3522,9 +3522,9 @@ export default () => {
 									},
 									position: "h",
 									popname: true,
+									log: false,
 									precontent() {
 										player.logSkill("fakemibei_effect");
-										delete event.result.skill;
 										player.tempBanSkill("fakemibei_effect", null, false);
 									},
 									viewAs: {
@@ -4444,9 +4444,7 @@ export default () => {
 						position: "he",
 						popname: true,
 						viewAs: { name: "sha", nature: "ice" },
-						precontent() {
-							delete event.result.skill;
-						},
+						log: false,
 					},
 					effect: {
 						charlotte: true,

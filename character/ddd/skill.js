@@ -518,13 +518,13 @@ const skills = {
 						}
 						return 0.1;
 					},
+					log: false,
 					precontent() {
 						"step 0";
 						player.logSkill("dddshilie");
 						player.addTempSkill("dddshilie_used");
 						var cards = event.result.cards.slice();
 						player.addShownCards(cards, "visible_dddshilie");
-						delete event.result.skill;
 						player.showCards(cards, get.translation(player) + "发动了【示烈】");
 						if (
 							cards
@@ -1117,6 +1117,7 @@ const skills = {
 						suit: "none",
 						number: null,
 						isCard: true,
+						log: false,
 					},
 				};
 				var num = 2 - player.countCards("h");
@@ -1154,13 +1155,10 @@ const skills = {
 				if (player.countCards("h") < 4) return get.order({ name: "sha" }, player) + 0.2;
 				return 1;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		content_draw() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.draw(lib.skill.dddbingjian_backup.draw);
 			player.addTempSkill("dddbingjian_used");
@@ -1179,7 +1177,6 @@ const skills = {
 		},
 		content_discard() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.discard(event.result.cards);
 			event.num = event.result.cards.length;
@@ -1211,7 +1208,6 @@ const skills = {
 		},
 		content_draw_old() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.addTempSkill("dddbingjian_round", "roundStart");
 			player.draw(lib.skill.dddbingjian_backup.draw);
@@ -1232,7 +1228,6 @@ const skills = {
 		},
 		content_discard_old() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.discard(event.result.cards);
 			event.result.card = {
@@ -1281,9 +1276,7 @@ const skills = {
 					},
 				},
 				mark: true,
-				intro: {
-					content: "本轮内不能使用或打出$",
-				},
+				intro: { content: "本轮内不能使用或打出$" },
 			},
 			used: {
 				charlotte: true,
@@ -2791,6 +2784,7 @@ const skills = {
 					viewAs: get.autoViewAs(links[0]),
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					precontent() {
 						"step 0";
 						var card = lib.skill["dddfusi_global_backup"].card;
@@ -2799,7 +2793,6 @@ const skills = {
 						event.source = get.owner(card);
 						if (!event.result.card.storage) event.result.card.storage = {};
 						event.result.card.storage._dddfusi_owner = event.source;
-						delete event.result.skill;
 						player.logSkill("dddfusi_global", event.source);
 						if (player.hasSkill("dddfusi_allowed")) event.finish();
 						"step 1";

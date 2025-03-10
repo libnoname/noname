@@ -907,7 +907,7 @@ game.import("card", function () {
 					if (player != game.me && !player.isUnderControl() && !player.isOnline()) game.delayx();
 					player
 						.chooseToDiscard(true, "he", function (card) {
-							return !_status.event.cards.includes(card);
+							return !_status.event.cards?.includes(card);
 						})
 						.set("cards", player.getEquips("wufengjian"));
 				},

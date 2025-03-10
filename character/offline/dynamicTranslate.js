@@ -31,7 +31,7 @@ const dynamicTranslates = {
 	tyqianshou(player) {
 		let str = "转换技，其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，",
 			yin = "阴：你可展示并交给其一张红色牌，本回合你不能使用手牌且你与其不能成为牌的目标；",
-			yang = "阳：你可令其展示并交给你一张牌，若此牌不为黑色，你失去一点体力。";
+			yang = "阳：你可令其展示并交给你一张牌，若此牌不为黑色，你失去1点体力。";
 		if (player.storage.tyqianshou) yang = "<span class='firetext'>" + yang + "</span>";
 		else yin = "<span class='bluetext'>" + yin + "</span>";
 		return str + yin + yang;
@@ -49,8 +49,8 @@ const dynamicTranslates = {
 		return '转换技。<span class="bluetext">阴：当你受到伤害后，你可以回复1点体力</span>；阳：你可以将一张手牌当作【声东击西】使用。';
 	},
 	hm_shice(player) {
-		if (player.storage.hm_shice) return '转换技，<span class="bluetext">阴：当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】</span>；阳：当你不因此技能使用牌指定唯一目标后，你可以令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）。'
-		return '转换技，阴：当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】；<span class="bluetext">阳：当你不因此技能使用牌指定唯一目标后，你可以令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）</span>。'
-	}
+		if (!player.storage.hm_shice) return '转换技，<span class="bluetext">阴：当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】</span>；阳：当你不因此技能使用牌指定唯一目标后，你可以令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）。';
+		return '转换技，阴：当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】；<span class="bluetext">阳：当你不因此技能使用牌指定唯一目标后，你可以令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）</span>。';
+	},
 };
 export default dynamicTranslates;

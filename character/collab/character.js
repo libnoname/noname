@@ -1,4 +1,7 @@
 const characters = {
+	tianji: ["male", "qun", 3, ["dcweiji", "dcsaima"]],
+	ol_xiahouen: ["male", "wei", 4, ["olyinfeng", "olfulu"], ["name:夏侯|恩"]],
+	hanshiwuhu: ["male", "wei", 5, ["oljuejue", "olpimi"], ["InitFilter:noZhuHp", "name:韩|德‌-韩|瑛-韩|瑶-韩|琼-韩|琪"]],
 	shi_cenhun: ["male", "wu", 3, ["dcxinggong", "dcbaoshi"], ["name:岑|昏"]],
 	ol_zishu: ["male", "qun", 3, ["olzishu"]],
 	ol_chouniu: ["male", "qun", "1/5", ["olchouniu"]],

@@ -1497,8 +1497,8 @@ const skills = {
 		prompt: () => `将${get.cnNumber(Math.max(1, get.player().getHp()))}张♦牌当做杀，♥牌当做桃，♣牌当做闪，♠牌当做无懈可击使用或打出`,
 		selectCard: () => Math.max(1, get.player().getHp()),
 		complexCard: true,
+		log: false,
 		precontent() {
-			delete event.result.skill;
 			player.logSkill("oldlonghun");
 		},
 		ai: {
@@ -2047,76 +2047,24 @@ const skills = {
 	//伏皇后
 	stdqiuyuan: {
 		audio: "xinqiuyuan",
-		trigger: {
-			target: "useCardToTarget",
-		},
-		filter(event, player) {
-			return (
-				event.card.name == "sha" &&
-				game.hasPlayer(function (current) {
-					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(event.card, event.player, current);
-				})
-			);
-		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt2("stdqiuyuan"), function (card, player, target) {
-					var evt = _status.event.getTrigger();
-					return target != player && !evt.targets.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target);
-				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, trigger.player, player) + 0.1;
-				})
-				.set("targets", trigger.targets)
-				.set("playerx", trigger.player)
-				.forResult();
-		},
+		inherit: "qiuyuan",
 		async content(event, trigger, player) {
-			const target = event.targets[0];
-			const result = await target
-				.chooseCard("交给" + get.translation(player) + "一张牌，或成为此杀的额外目标")
-				.set("ai", function (card) {
-					return get.attitude(target, _status.event.sourcex) >= 0 ? 1 : -1;
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const bool = await target
+				.chooseToGive(`交给${get.translation(player)}一张牌，或成为${get.translation(card)}的额外目标`, player)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return get.attitude(player, target) >= 0 ? 1 : -1;
 				})
-				.set("sourcex", player)
-				.forResult();
-			if (result.bool) {
-				await target.give(result.cards, player);
-				game.delay();
-			} else {
+				.forResultBool();
+			if (!bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
-				game.log(target, "成为了额外目标");
+				game.log(target, "成为了", card, "的额外目标");
 			}
-		},
-		ai: {
-			expose: 0.2,
-			effect: {
-				target_use(card, player, target) {
-					if (card.name != "sha") return;
-					var players = game.filterPlayer();
-					if (get.attitude(player, target) <= 0) {
-						for (var i = 0; i < players.length; i++) {
-							var target2 = players[i];
-							if (player != target2 && target != target2 && player.canUse(card, target2, false) && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, target) > 0 && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, player) < 0) {
-								if (target.hp == target.maxHp) return 0.3;
-								return 0.6;
-							}
-						}
-					} else {
-						for (var i = 0; i < players.length; i++) {
-							var target2 = players[i];
-							if (player != target2 && target != target2 && player.canUse(card, target2, false) && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, player) > 0) {
-								if (player.canUse(card, target2)) return;
-								if (target.hp == target.maxHp) return [0, 1];
-								return [0, 0];
-							}
-						}
-					}
-				},
-			},
 		},
 	},
 	stdzhuikong: {

@@ -14,7 +14,7 @@ const characters = {
 	kebineng: ["male", "qun", 4, ["kousheng"], ["name:科比|罐头"]],
 	lukai: ["male", "wu", 4, ["lkbushi", "lkzhongzhuang"]],
 	linghuyu: ["male", "wei", 4, ["xvzhi"], ["name:令狐|愚"]],
-	yj_simafu: ["male", "wei", 4, ["beiyu", "duchi"], ["name:司马|孚", "border:jin"]],
+	yj_simafu: ["male", "wei", 3, ["beiyu", "duchi"], ["name:司马|孚", "border:jin"]],
 	yj_xuangongzhu: ["female", "wei", 3, ["yjqimei", "yjzhuiji"], ["name:司马|null"]],
 	xukun: ["male", "wu", 4, ["fazhu"]],
 	yj_zhangliao: ["male", "qun", 4, ["weifeng"]],

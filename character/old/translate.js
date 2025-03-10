@@ -129,6 +129,8 @@ const translates = {
 	panfeng_prefix: "旧",
 	old_shixie: "旧士燮",
 	old_shixie_prefix: "旧",
+	old_wuyi: "旧吴懿",
+	old_wuyi_prefix: "旧",
 };
 
 export default translates;

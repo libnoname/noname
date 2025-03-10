@@ -6228,7 +6228,7 @@ export class Game extends GameCompatible {
 	 */
 	delay(time = 1, time2 = 0) {
 		time = time * lib.config.duration + time2;
-		if (lib.config.speed == "vvfast") time /= 3;
+		if (lib.config.game_speed == "vvfast") time /= 3;
 		return _status.pauseManager.setDelay(delay(time));
 	}
 	/**

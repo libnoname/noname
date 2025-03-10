@@ -3384,7 +3384,7 @@ export class Player extends HTMLDivElement {
 		}
 		if (node) {
 			if (name === name2) {
-				var skinName = this.skin.name;
+				var skinName = this.name2 != name ? this.skin?.name : this.skin?.name2;
 				if (!skinName || skinName === name2) node.setBackground(name2, "character");
 				else node.setBackground(skinName, "character");
 			} else node.setBackground(name2, "character");
@@ -6121,10 +6121,10 @@ export class Player extends HTMLDivElement {
 		} else if (next.card == undefined) {
 			if (next.cards) {
 				next.card = next.cards[0];
-				if (!next.skill) {
-					next.card = get.autoViewAs(next.card, next.cards);
-				}
 			}
+		}
+		if (next.card) {
+			next.card = get.autoViewAs(next.card, next.cards);
 		}
 		next.setContent("respond");
 		return next;
@@ -6303,6 +6303,9 @@ export class Player extends HTMLDivElement {
 			if (!("log" in next)) {
 				next.log = true;
 			}
+		}
+		if (get.itemtype(next.cards) !== "cards") {
+			next.cards = [];
 		}
 		next.setContent("gain");
 		next.getd = function (player, key, position) {
@@ -8342,13 +8345,13 @@ export class Player extends HTMLDivElement {
 		}
 		return skill;
 	}
-	addSkills(skill) {
+	addSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills(Array.isArray(skill) ? skill : [skill], []);
+		return this.changeSkills(Array.isArray(skill) ? skill : [skill], [], popup);
 	}
-	removeSkills(skill) {
+	removeSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills([], Array.isArray(skill) ? skill : [skill]);
+		return this.changeSkills([], Array.isArray(skill) ? skill : [skill], popup);
 	}
 	changeSkills(addSkill = [], removeSkill = [], popup = true) {
 		if (!Array.isArray(addSkill) || !Array.isArray(removeSkill)) {
@@ -11377,7 +11380,6 @@ export class Player extends HTMLDivElement {
 	$give(card, player, log, init, cardsetion) {
 		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
 			let evt = get.cardsetion(null, true);
-			game.log(evt.name, evt.player, player);
 			if (evt && evt.player == player) cardsetion = get.cardsetion(player);
 			else cardsetion = get.cardsetion(this);
 		}

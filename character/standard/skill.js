@@ -245,6 +245,7 @@ const skills = {
 	},
 	jianxiong: {
 		audio: 2,
+		audioname2: { caoying: "lingren_jianxiong" },
 		preHidden: true,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {

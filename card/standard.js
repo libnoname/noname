@@ -1148,7 +1148,11 @@ game.import("card", function () {
 					"step 1";
 					if (event.directHit) event._result = { bool: false };
 					else {
-						var next = target.chooseToRespond({ name: "sha" });
+						var next = target.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "sha") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shaRequired > 1) {
 							next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
 						}
@@ -1381,7 +1385,11 @@ game.import("card", function () {
 					"step 1";
 					if (event.directHit) event._result = { bool: false };
 					else {
-						var next = target.chooseToRespond({ name: "shan" });
+						var next = target.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "shan") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shanRequired > 1) {
 							next.set("prompt2", "共需打出" + event.shanRequired + "张闪");
 						}
@@ -1681,7 +1689,11 @@ game.import("card", function () {
 					if (event.directHit) {
 						event._result = { bool: false };
 					} else {
-						var next = event.turn.chooseToRespond({ name: "sha" });
+						var next = event.turn.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "sha") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shaRequired > 1) next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
 						next.set("ai", function (card) {
 							let event = _status.event,
@@ -3169,7 +3181,7 @@ game.import("card", function () {
 				filter(event, player) {
 					if (get.mode() != "guozhan") return false;
 					if (event.card.name != "sha") return false;
-					return game.hasPlayer(function (target) {
+					return game.hasPlayer(target => {
 						if (event.targets.includes(target)) return false;
 						if (!lib.filter.filterTarget(event.card, player, target)) return false;
 						if (target.identity == "ye" || target.identity == "unknown") return true;
@@ -3179,17 +3191,15 @@ game.import("card", function () {
 						return true;
 					});
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt2("fangtian"), [1, Infinity], function (card, player, target) {
-							var cardx = _status.event.cardx;
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt2("fangtian"), [1, Infinity], (card, player, target) => {
+							let { targets, cardx } = get.event();
 							if (!lib.filter.filterTarget(cardx, player, target)) return false;
-							var targets = _status.event.targets.slice(0).concat(ui.selected.targets);
+							targets = targets.slice(0).concat(ui.selected.targets);
 							if (targets.includes(target)) return false;
 							if (target.identity == "ye" || target.identity == "unknown") return true;
-							for (var i = 0; i < targets.length; i++) {
+							for (let i = 0; i < targets.length; i++) {
 								if (target.identity == targets[i].identity) return false;
 							}
 							return true;
@@ -3197,37 +3207,32 @@ game.import("card", function () {
 						.set("promptbar", "none")
 						.set("cardx", trigger.card)
 						.set("targets", trigger.targets)
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, _status.event.cardx, player, player);
-						});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("fangtian_skill", result.targets);
-						if (!player.storage.fangtian_guozhan_trigger) player.storage.fangtian_guozhan_trigger = [];
-						player.storage.fangtian_guozhan_trigger.add(trigger.card);
-						trigger.targets.addArray(result.targets);
-						player.addTempSkill("fangtian_guozhan_trigger");
-					}
+						.set("ai", target => {
+							const { player, cardx } = get.event();
+							return get.effect(target, cardx, player, player);
+						})
+						.set("complexTarget", true)
+						.forResult();
 				},
-			},
-			fangtian_guozhan_trigger: {
-				trigger: { player: "shaMiss" },
-				silent: true,
-				onremove: true,
-				content() {
-					if (player.storage[event.name].includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
+				async content(event, trigger, player) {
+					trigger.targets.addArray(event.targets);
+					player.addTempSkill(event.name + "_trigger");
+					player.markAuto(event.name + "_trigger", [trigger.card]);
 				},
-				group: "fangtian_guozhan_remove",
-			},
-			fangtian_guozhan_remove: {
-				trigger: { player: ["useCardAfter", "useCardCancelled"] },
-				silent: true,
-				filter(event, player) {
-					return player.storage.fangtian_guozhan_trigger && player.storage.fangtian_guozhan_trigger.includes(event.card);
-				},
-				content() {
-					player.storage.fangtian_guozhan_trigger.remove(trigger.card);
+				subSkill: {
+					trigger: {
+						trigger: { player: ["shaMiss", "useCardAfter", "useCardCancelled"] },
+						filter(event, player) {
+							return player.getStorage("fangtian_guozhan_trigger").includes(event.card);
+						},
+						silent: true,
+						onremove: true,
+						charlotte: true,
+						async content(event, trigger, player) {
+							if (event.triggername == "shaMiss" && player.getStorage(event.name).includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
+							else player.unmarkAuto(event.name, [trigger.card]);
+						},
+					},
 				},
 			},
 			qilin_skill: {

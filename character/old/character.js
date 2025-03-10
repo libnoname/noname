@@ -1,4 +1,5 @@
 const characters = {
+	old_wuyi: ["male", "shu", 4, ["benxi"], ["clan:陈留吴氏"]],
 	old_shixie: ["male", "qun", 3, ["biluan", "lixia"], ["die:shixie"]],
 	panfeng: ["male", "qun", 4, ["kuangfu"]],
 	old_guanyinping: ["female", "shu", 3, ["xueji_old", "oldhuxiao", "oldwuji"], ["die:guanyinping"]],

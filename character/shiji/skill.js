@@ -5335,25 +5335,10 @@ const skills = {
 	muzhen: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 2,
 		filter(event, player) {
 			const list = player.getStorage("muzhen_used");
-			if (
-				!list.includes("gain") &&
-				player.hasCard(i => get.type(i) == "equip", "he") &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") > 0;
-				})
-			)
-				return true;
-			if (
-				!list.includes("give") &&
-				player.countCards("he") > 1 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("e") > 0;
-				})
-			)
-				return true;
+			if (!list.includes("gain") && player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0)) return true;
+			if (!list.includes("give") && player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0)) return true;
 			return false;
 		},
 		chooseButton: {
@@ -5370,40 +5355,27 @@ const skills = {
 			},
 			filter(button, player) {
 				const list = player.getStorage("muzhen_used");
-				if (button.link == 0)
-					return (
-						!list.includes("gain") &&
-						player.hasCard(i => get.type(i) == "equip", "he") &&
-						game.hasPlayer(function (current) {
-							return current != player && current.countCards("h") > 0;
-						})
-					);
-				return (
-					!list.includes("give") &&
-					player.countCards("he") > 1 &&
-					game.hasPlayer(function (current) {
-						return current != player && current.countCards("e") > 0;
-					})
-				);
+				if (button.link == 0) return !list.includes("gain") && player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0);
+				return !list.includes("give") && player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0);
 			},
 			backup(links) {
 				return {
 					audio: "muzhen",
 					filterTarget: [
-						function (card, player, target) {
+						(card, player, target) => {
+							if (target == player) return false;
 							return target.countCards("h") > 0 && target.canEquip(ui.selected.cards[0]);
 						},
-						function (card, player, target) {
+						(card, player, target) => {
+							if (target == player) return false;
 							return target.countCards("e") > 0;
 						},
 					][links[0]],
 					filterCard: [
-						function (card, player) {
+						(card, player) => {
 							if (get.type(card) != "equip") return false;
 							if (ui.selected.targets.length) return ui.selected.targets[0].canEquip(card);
-							return game.hasPlayer(function (current) {
-								return current.countCards("h") > 0 && current.canEquip(card);
-							});
+							return game.hasPlayer(current => current.countCards("h") > 0 && current.canEquip(card));
 						},
 						true,
 					][links[0]],
@@ -5412,19 +5384,20 @@ const skills = {
 					discard: false,
 					lose: false,
 					delay: false,
-					content() {
-						"step 0";
+					async content(event, trigger, player) {
+						const { cards, target } = event;
 						player.addTempSkill("muzhen_used", "phaseUseEnd");
 						if (cards.length == 1) {
 							player.markAuto("muzhen_used", "gain");
 							player.$giveAuto(cards[0], target);
-							game.delayx();
-							target.equip(cards[0]);
+							await game.delayx();
+							await target.equip(cards[0]);
 						} else {
 							player.markAuto("muzhen_used", "give");
-							player.give(cards, target);
+							await player.give(cards, target);
 						}
-						player.gainPlayerCard(target, cards.length == 2 ? "e" : "h", true);
+						const position = cards.length == 2 ? "e" : "h";
+						if (target.countGainableCards(player, position)) await player.gainPlayerCard(target, position, true);
 					},
 				};
 			},
@@ -5439,23 +5412,21 @@ const skills = {
 			},
 		},
 	},
-	sheyi2: { charlotte: true },
 	sheyi: {
 		audio: 2,
 		trigger: { global: "damageBegin4" },
-		direct: true,
 		filter(event, player) {
-			return !player.hasSkill("sheyi2") && player != event.player && event.player.hp < player.hp && player.countCards("he") >= Math.max(1, player.hp);
+			return player != event.player && event.player.hp < player.hp && player.countCards("he") >= Math.max(1, player.hp);
 		},
-		content() {
-			"step 0";
-			var num = Math.max(1, player.hp),
-				target = trigger.player;
-			player
-				.chooseCard("he", get.prompt("sheyi", target), "交给其至少" + get.cnNumber(num) + "张牌，防止即将受到的伤害（" + trigger.num + "点）", [num, player.countCards("he")])
+		round: 1,
+		async cost(event, trigger, player) {
+			const num = Math.max(1, player.hp),
+				{ player: target } = trigger;
+			event.result = await player
+				.chooseCard("he", get.prompt(event.skill, target), `交给其至少${get.cnNumber(num)}张牌，防止即将受到的伤害（${trigger.num}点）`, [num, player.countCards("he")])
 				.set(
 					"goon",
-					(function () {
+					(() => {
 						if (get.attitude(player, target) < 0) return false;
 						if (trigger.num < target.hp && get.damageEffect(target, trigger.source, player, trigger.nature) >= 0) return false;
 						if (trigger.num < 2 && target.hp > trigger.num) return 6 / Math.sqrt(num);
@@ -5463,19 +5434,19 @@ const skills = {
 						return 8 / Math.sqrt(num);
 					})()
 				)
-				.set("ai", function (card) {
-					if (ui.selected.cards.length >= Math.max(1, _status.event.player.hp)) return 0;
-					if (typeof _status.event.goon == "number") return _status.event.goon - get.value(card);
+				.set("ai", card => {
+					const { player, goon } = get.event();
+					if (ui.selected.cards.length >= Math.max(1, player.hp)) return 0;
+					if (typeof goon == "number") return goon - get.value(card);
 					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = trigger.player;
-				player.logSkill("sheyi", target);
-				player.addTempSkill("sheyi2", "roundStart");
-				player.give(result.cards, target);
-				trigger.cancel();
-			}
+				})
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const { player: target } = trigger;
+			await player.give(event.cards, target);
+			trigger.cancel();
 		},
 	},
 	tianyin: {

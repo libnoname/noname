@@ -1172,19 +1172,17 @@ const skills = {
 		},
 		ignoreMod: true,
 		position: "hes",
+		log: false,
 		precontent() {
 			player.logSkill("misuzu_nongyin");
 			player.$throw(event.result.cards);
 			player.addJudge({ name: "lebu" }, event.result.cards);
 			event.result.card.cards = [];
 			event.result.cards = [];
-			delete event.result.skill;
 			delete event.result.card.suit;
 			delete event.result.card.number;
 		},
-		ai: {
-			result: 0.5,
-		},
+		ai: { result: 0.5 },
 	},
 	misuzu_zhongxing: {
 		trigger: {
@@ -4906,11 +4904,11 @@ const skills = {
 							nature: links[0][3],
 							isCard: true,
 						},
+						log: false,
 						popname: true,
 						precontent() {
 							player.logSkill("chihaya_youfeng");
 							player.gainMaxHp();
-							delete event.result.skill;
 							player.addTempSkill("chihaya_youfeng_" + (player.storage.chihaya_youfeng || false), "roundStart");
 							player.changeZhuanhuanji("chihaya_youfeng");
 						},
@@ -4931,10 +4929,10 @@ const skills = {
 						isCard: true,
 					},
 					popname: true,
+					log: false,
 					precontent() {
 						player.logSkill("chihaya_youfeng");
 						player.disableEquip(lib.skill.chihaya_youfeng_backup.equip);
-						delete event.result.skill;
 						player.addTempSkill("chihaya_youfeng_" + (player.storage.chihaya_youfeng || false), "roundStart");
 						player.changeZhuanhuanji("chihaya_youfeng");
 					},
@@ -4961,9 +4959,11 @@ const skills = {
 				player: 1,
 			},
 		},
+		subSkill: {
+			true: { charlotte: true },
+			false: { charlotte: true },
+		},
 	},
-	chihaya_youfeng_true: { charlotte: true },
-	chihaya_youfeng_false: { charlotte: true },
 	//七濑留美
 	rumi_shuwu: {
 		mod: {
@@ -6106,8 +6106,8 @@ const skills = {
 						return false;
 					},
 					selectCard: -1,
+					log: false,
 					precontent() {
-						delete event.result.skill;
 						var name = lib.skill.kotori_huazhan_backup.markname;
 						if (!player.storage.kotori_huazhan2) player.storage.kotori_huazhan2 = [];
 						player.storage.kotori_huazhan2.push(name);
@@ -6852,7 +6852,7 @@ const skills = {
 	shizuru_nianli: {
 		enable: "chooseToUse",
 		charlotte: true,
-		prompt: "展示一张♦/♣/♥/♠手牌，然后视为使用一张雷杀/闪/桃/无懈可击",
+		prompt: "展示一张♦/♣/♥/♠手牌，然后视为使用一张雷【杀】/【闪】/【桃】/【无懈可击】",
 		viewAs(cards, player) {
 			var name = false;
 			var nature = null;
@@ -6927,13 +6927,13 @@ const skills = {
 			if (filter({ name: "wuxie" }, player, event) && player.countCards("h", { suit: "spade" })) return true;
 			return false;
 		},
+		log: false,
 		precontent() {
 			player.logSkill("shizuru_nianli");
 			player.addTempSkill("shizuru_nianli_round", "roundStart");
 			player.showCards(get.translation(player) + "发动了【念力】", event.result.cards.slice(0));
 			event.result.card.cards = [];
 			event.result.cards = [];
-			delete event.result.skill;
 			delete event.result.card.suit;
 			delete event.result.card.number;
 			event.getParent().addCount = false;

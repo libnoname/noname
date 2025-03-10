@@ -1,7 +1,7 @@
 const characterSort = {
 	onlyOL_yijiang1: ["ol_zhangchunhua", "ol_jianyong", "ol_lingtong", "ol_gaoshun", "ol_fazheng", "ol_wuguotai", "ol_caozhi"],
 	onlyOL_yijiang2: ["ol_liaohua", "ol_caozhang", "ol_chengpu", "ol_wangyi", "ol_liubiao"],
-	onlyOL_yijiang3: ["ol_yufan", "ol_liru", "ol_caochong"],
+	onlyOL_yijiang3: ["ol_guohuai", "ol_fuhuanghou", "ol_yufan", "ol_liru", "ol_caochong"],
 	onlyOL_yijiang4: ["ol_caifuren"],
 	onlyOL_yijiang5: ["ol_sunxiu"],
 	onlyOL_sb_mouding: ["ol_sb_jiangwei", "ol_sb_pangtong"],
@@ -9,7 +9,7 @@ const characterSort = {
 	onlyOL_sb_fenwu: ["ol_sb_gongsunzan", "ol_sb_zhangxiu", "ol_sb_dengai", "ol_sb_taishici", "ol_sb_yuanshao", "ol_sb_sunjian", "ol_sb_huaxiong"],
 	onlyOL_sb_shiren: ["ol_sb_kongrong"],
 	onlyOL_sb_daquan: ["ol_sb_huangyueying", "ol_sb_jushou", "ol_sb_yuanshu"],
-	onlyOL_waitingforsort: [],
+	onlyOL_waitingforsort: ["ol_sb_zhangrang"],
 };
 
 const characterSortTranslate = {

@@ -4,7 +4,7 @@ const characterSort = {
 	sb_tong: ["liucheng", "sp_yangwan", "sb_xiahoushi", "sb_zhangfei", "sb_zhaoyun", "sb_sunce", "sb_zhurong", "sb_xiaoqiao", "sb_xiahoudun"],
 	sb_yu: ["sb_yujin", "sb_lvmeng", "sb_huangzhong", "sb_huanggai", "sb_zhouyu", "sb_caoren", "sb_yl_luzhi", "sb_huangyueying", "sb_luxun"],
 	sb_neng: ["sb_zhugejin", "sb_huaxiong", "sb_sunshangxiang", "sb_jiangwei", "sb_yuanshao", "sb_menghuo", "sb_guanyu", "sb_gaoshun", "sb_gongsunzan", "sb_zhangliao"],
-	sb_waitforsort: [],
+	sb_waitforsort: ["sb_xiahouyuan"],
 };
 
 const characterSortTranslate = {

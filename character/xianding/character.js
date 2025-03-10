@@ -1,4 +1,5 @@
 const characters = {
+	dc_caochun: ["male", "wei", 4, ["xinshanjia"], ["die:caochun"]],
 	zhanghuai: ["female", "wu", 3, ["dclaoyan", "dcjueyan"], ["name:张|null"]],
 	xuxin: ["female", "wu", 3, ["dcyuxian", "dcminshan"]],
 	v_lvbu: ["male", "qun", 5, ["dcxiaowu", "dcbaguan"]],

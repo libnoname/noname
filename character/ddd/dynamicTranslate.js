@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	dddxiaheng(player) {
-		return "锁定技。出牌阶段开始时，你选择一名角色，其弃置两张牌，然后你对一名角色造成1点伤害。" + (player.storage["dddxiaheng_del"] ? "" : "“若两名角色：均不为你，你失去一点体力上限；为同一名角色，你失去一点体力；然后若以此法对包括你在内三名不同的角色造成伤害，删除双引号里的描述内容”");
+		return "锁定技。出牌阶段开始时，你选择一名角色，其弃置两张牌，然后你对一名角色造成1点伤害。" + (player.storage["dddxiaheng_del"] ? "" : "“若两名角色：均不为你，你失去1点体力上限；为同一名角色，你失去1点体力；然后若以此法对包括你在内三名不同的角色造成伤害，删除双引号里的描述内容”");
 	},
 	dddshichao(player) {
 		return "锁定技，准备阶段，你选择一名手牌数为全场第（" + (1 + player.countMark("dddshichao")) + "）大的角色，将手牌数调整至与其相等且至多等于主公的体力上限；其于你的下回合开始前对你造成伤害时，其可防止之，然后令（）内的数字+1。";

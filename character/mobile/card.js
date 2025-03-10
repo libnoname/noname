@@ -197,9 +197,7 @@ const cards = {
 	},
 	xuanjian: {
 		derivation: "friend_xushu",
-		distance: {
-			attackFrom: -1,
-		},
+		distance: { attackFrom: -2 },
 		fullskin: true,
 		type: "equip",
 		subtype: "equip1",
@@ -207,12 +205,8 @@ const cards = {
 			equipValue(card, player) {
 				return 4;
 			},
-			basic: {
-				equipValue: 5,
-			},
-			tag: {
-				valueswap: 1,
-			},
+			basic: { equipValue: 5 },
+			tag: { valueswap: 1 },
 		},
 		cardPrompt(card, player) {
 			if (!player?.hasSkill("friendxushugongli")) return lib.translate.xuanjian_info;

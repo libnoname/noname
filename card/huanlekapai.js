@@ -195,82 +195,67 @@ game.import("card", function () {
 			},
 			xuelunyang: {
 				audio: true,
-				trigger: {
-					player: "phaseBegin",
-				},
+				trigger: { player: "phaseBegin" },
 				equipSkill: true,
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt2("xuelunyang"), function (card, player, target) {
-							var names = [];
-							if (target.name && !target.isUnseen(0)) names.add(target.name);
-							if (target.name1 && !target.isUnseen(0)) names.add(target.name1);
-							if (target.name2 && !target.isUnseen(1)) names.add(target.name2);
-							var pss = player.getSkills();
-							for (var i = 0; i < names.length; i++) {
-								var info = lib.character[names[i]];
-								if (info) {
-									var skills = info[3];
-									for (var j = 0; j < skills.length; j++) {
-										if (
-											lib.translate[skills[j] + "_info"] &&
-											lib.skill[skills[j]] &&
-											!lib.skill[skills[j]].unique &&
-											!pss.includes(skills[j])
-										) {
-											return true;
-										}
-									}
-								}
-								return false;
-							}
+				filter(event, player) {
+					return game.hasPlayer(
+						current =>
+							player != current &&
+							current.getSkills(null, false, false).filter(skill => {
+								const info = get.info(skill);
+								return info && !info.charlotte;
+							}).length
+					);
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+							return (
+								player != target &&
+								target.getSkills(null, false, false).filter(skill => {
+									const info = get.info(skill);
+									return info && !info.charlotte;
+								}).length
+							);
 						})
-						.set("ai", function (target) {
+						.set("ai", target => {
 							return Math.random();
-						});
-					"step 1";
-					if (result.bool) {
-						event.target = result.targets[0];
-						player.logSkill("xuelunyang", event.target);
-					} else {
-						event.finish();
-					}
-					"step 2";
-					var names = [];
-					var list = [];
-					if (target.name && !target.isUnseen(0)) names.add(target.name);
-					if (target.name1 && !target.isUnseen(0)) names.add(target.name1);
-					if (target.name2 && !target.isUnseen(1)) names.add(target.name2);
-					var pss = player.getSkills();
-					for (var i = 0; i < names.length; i++) {
-						var info = lib.character[names[i]];
-						if (info) {
-							var skills = info[3];
-							for (var j = 0; j < skills.length; j++) {
-								if (
-									lib.translate[skills[j] + "_info"] &&
-									lib.skill[skills[j]] &&
-									!lib.skill[skills[j]].unique &&
-									!pss.includes(skills[j])
-								) {
-									list.push(skills[j]);
-								}
-							}
-						}
-					}
-					player
-						.chooseControl(list)
-						.set("prompt", "选择获得一个技能")
-						.set("choice", get.max(list, get.skillRank, "item"))
-						.set("ai", function () {
-							return _status.event.choice;
-						});
-					"step 3";
-					player.addTempSkill(result.control);
-					player.popup(result.control);
-					game.log(player, "获得了", "#g【" + get.translation(result.control) + "】");
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					const skills = target.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte;
+					});
+					if (!skills.length) return;
+					const list = skills.map(skill => [
+						skill,
+						'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
+							(() => {
+								let str = get.translation(skill);
+								if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
+								return str;
+							})() +
+							"</div><div>" +
+							lib.translate[skill + "_info"] +
+							"</div></div>",
+					]);
+					const links = await player
+						.chooseButton(["选择获得一个技能", [list, "textbutton"]])
+						.set("displayIndex", false)
+						.set("ai", button => {
+							const player = get.player();
+							let info = get.info(button.link);
+							if (info?.ai?.neg || info?.ai?.halfneg) return 0;
+							return get.skillRank(button.link, "inout");
+						})
+						.forResultLinks();
+					if (!links?.length) return;
+					await player.addTempSkills(links[0]);
 				},
 			},
 			jiuwei: {
@@ -300,7 +285,7 @@ game.import("card", function () {
 			kuwu: "苦无",
 			kuwu_info: "<font color=#f00>锁定技</font> 每当你使用【杀】造成一次伤害，受伤角色须弃置一张牌。",
 			xuelunyang: "写轮眼",
-			xuelunyang_info: "回合开始阶段，你可以选择一名角色，然后获得其一项技能，直到回合结束。",
+			xuelunyang_info: "回合开始时，你可以选择一名其他角色，然后获得其一个技能直到回合结束。",
 			jiuwei: "九尾",
 			jiuwei_info: "（收集查克拉）回合结束时，若你已受伤，你可回复1点体力，否则摸一张牌。",
 		},

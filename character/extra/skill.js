@@ -25,18 +25,18 @@ const skills = {
 				mod: {
 					cardname(card, player) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
-						if (card.hasGaintag("luansuo_debuff") && !player.getStorage("luansuo_debuff").includes(get.suit(card))) return "tiesuo";
+						if (card.hasGaintag("luansuo_debuff")) return "tiesuo";
 					},
 					cardnature(card, player) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
-						if (card.hasGaintag("luansuo_debuff") && !player.getStorage("luansuo_debuff").includes(get.suit(card))) return false;
+						if (card.hasGaintag("luansuo_debuff")) return false;
 					},
 					cardDiscardable(card, player) {
 						if (get.position(card) === "h") return false;
 					},
-					//canBeDiscarded(card, player) {
-					//	if (get.position(card) === "h") return false;
-					//},
+					canBeDiscarded(card, player) {
+						if (get.position(card) === "h") return false;
+					},
 					aiOrder(player, card, num) {
 						if (num > 0 && get.name(card, player) === "huogong") return 0;
 					},
@@ -49,7 +49,6 @@ const skills = {
 				},
 				charlotte: true,
 				onremove(player, skill) {
-					delete player.storage[skill];
 					player.removeGaintag(skill);
 				},
 				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "cardsDiscardAfter"] },
@@ -567,7 +566,7 @@ const skills = {
 		positions: {
 			head: {
 				name: "天冲",
-				info: "令其失去所有体力，若其因此死亡，你增加一点体力上限",
+				info: "令其失去所有体力，若其因此死亡，你增加1点体力上限",
 				css_male: {
 					left: "50%",
 					top: "14%",
@@ -1235,9 +1234,16 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: ["chooseToUseAfter", "chooseToRespondAfter"],
+			global: "_wuxieAfter",
 		},
 		filter(event, player) {
 			if (player.countMark("xinrenjie_used") >= 4) return false;
+			if (event.name == "chooseToUse" && event.type == "wuxie") return false;
+			if (event.name == "_wuxie") {
+				if (event.wuxieresult && event.wuxieresult == player) return false;
+				if (event._info_map.player == player) return false;
+				return true;
+			}
 			return event.respondTo && event.respondTo[0] !== player && !event.result.bool;
 		},
 		forced: true,
@@ -4435,7 +4441,7 @@ const skills = {
 		audio: 2,
 		mod: {
 			cardUsable(card) {
-				if (card.storage && card.storage.shouli) return Infinity;
+				if (card.storage?.shouli) return Infinity;
 			},
 		},
 		enable: ["chooseToUse", "chooseToRespond"],
@@ -4621,7 +4627,6 @@ const skills = {
 						replace: { window() {} },
 					});
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(
 						{
@@ -4673,9 +4678,7 @@ const skills = {
 					game.setNature(trigger, "thunder");
 				},
 				marktext: "⚡",
-				intro: {
-					content: "受到的伤害+1且改为雷属性",
-				},
+				intro: { content: "受到的伤害+1且改为雷属性" },
 				ai: {
 					effect: {
 						target: (card, player, target) => {
@@ -4731,31 +4734,28 @@ const skills = {
 					if (event.num < targets.length) event.redo();
 				},
 			},
+			backup: {
+				precontent() {
+					"step 0";
+					var cards = event.result.card.cards;
+					event.result.cards = cards;
+					var owner = get.owner(cards[0]);
+					event.target = owner;
+					owner.$give(cards[0], player, false);
+					player.popup(event.result.card.name, "metal");
+					game.delayx();
+					event.getParent().addCount = false;
+					"step 1";
+					if (player != target) target.addTempSkill("fengyin");
+					target.addTempSkill("shouli_thunder");
+					player.addTempSkill("shouli_thunder");
+				},
+				filterCard: () => false,
+				prompt: "请选择【杀】的目标",
+				selectCard: -1,
+				log: false,
+			},
 		},
-	},
-	shouli_backup: {
-		sourceSkill: "shouli",
-		precontent() {
-			"step 0";
-			delete event.result.skill;
-			var cards = event.result.card.cards;
-			event.result.cards = cards;
-			var owner = get.owner(cards[0]);
-			event.target = owner;
-			owner.$give(cards[0], player, false);
-			player.popup(event.result.card.name, "metal");
-			game.delayx();
-			event.getParent().addCount = false;
-			"step 1";
-			if (player != target) target.addTempSkill("fengyin");
-			target.addTempSkill("shouli_thunder");
-			player.addTempSkill("shouli_thunder");
-		},
-		filterCard() {
-			return false;
-		},
-		prompt: "请选择【杀】的目标",
-		selectCard: -1,
 	},
 	hengwu: {
 		audio: 2,
@@ -6495,11 +6495,11 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
+					log: false,
 					precontent() {
 						player.logSkill("zuoxing");
 						var target = player.storage.zuoxing;
 						target.loseMaxHp();
-						//delete event.result.skill;
 					},
 				};
 			},
@@ -9802,72 +9802,45 @@ const skills = {
 	},
 	drlt_zhiti: {
 		audio: 2,
-		locked: true,
-		group: ["drlt_zhiti_damage", "drlt_zhiti_compare", "drlt_zhiti_juedou"],
-		global: "g_drlt_zhiti",
-		subSkill: {
-			juedou: {
-				audio: "drlt_zhiti",
-				trigger: {
-					player: "juedouAfter",
-					target: "juedouAfter",
-				},
-				forced: true,
-				filter(event, player) {
-					if (!event.turn || event.turn === player || !player.hasDisabledSlot()) return false;
-					const opposite = event.player === player ? event.target : event.player;
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				content() {
-					player.chooseToEnable();
-				},
-			},
-			compare: {
-				audio: "drlt_zhiti",
-				trigger: {
-					player: ["chooseToCompareAfter", "compareMultipleAfter"],
-					target: ["chooseToCompareAfter", "compareMultipleAfter"],
-				},
-				filter(event, player) {
-					if (event.preserve || !player.hasDisabledSlot()) return false;
-					let opposite;
-					if (player === event.player) {
-						if (event.num1 > event.num2) {
-							opposite = event.target;
-						} else {
-							return false;
-						}
-					} else {
-						if (event.num1 < event.num2) {
-							opposite = event.player;
-						} else {
-							return false;
-						}
-					}
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				forced: true,
-				content() {
-					player.chooseToEnable();
-				},
-			},
-			damage: {
-				audio: "drlt_zhiti",
-				trigger: { player: "damageEnd" },
-				forced: true,
-				filter(event, player) {
-					if (!player.hasDisabledSlot()) return false;
-					const opposite = event.source;
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				content() {
-					player.chooseToEnable();
-				},
-			},
+		trigger: {
+			global: ["juedouAfter", "chooseToCompareAfter", "compareMultipleAfter"],
+			player: "damageEnd",
 		},
+		filter(event, player) {
+			if (!player.hasDisabledSlot()) return false;
+			if (event.name == "juedou") {
+				if (![event.player, event.target].includes(player)) return false;
+				if (!event.turn || event.turn === player) return false;
+				const opposite = event.player === player ? event.target : event.player;
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			} else if (event.name == "damage") {
+				const opposite = event.source;
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			} else {
+				if (![event.player, event.target].includes(player)) return false;
+				if (event.preserve) return false;
+				let opposite;
+				if (player === event.player) {
+					if (event.num1 > event.num2) {
+						opposite = event.target;
+					} else {
+						return false;
+					}
+				} else {
+					if (event.num1 < event.num2) {
+						opposite = event.player;
+					} else {
+						return false;
+					}
+				}
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			}
+		},
+		forced: true,
+		content() {
+			player.chooseToEnable();
+		},
+		global: "g_drlt_zhiti",
 	},
 	g_drlt_zhiti: {
 		mod: {

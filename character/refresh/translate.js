@@ -269,7 +269,7 @@ const translates = {
 	refangzhu: "放逐",
 	refangzhu_info: "当你受到伤害后，你可以令一名其他角色选择一项：摸X张牌并将武将牌翻面，或弃置X张牌并失去1点体力。（X为你已损失的体力值）",
 	rezaiqi: "再起",
-	rezaiqi_info: "结束阶段开始时，你可以令至多X名角色选择一项：1.摸一张牌，2.令你回复1点体力（X为本回合进入弃牌堆的红色牌数）。",
+	rezaiqi_info: "结束阶段，你可以令至多X名角色选择一项：1.摸一张牌，2.令你回复1点体力（X为本回合进入过弃牌堆的红色牌数）。",
 	ol_caiwenji: "界蔡琰",
 	ol_caiwenji_prefix: "界",
 	retuntian: "屯田",

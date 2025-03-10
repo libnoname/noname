@@ -1,4 +1,5 @@
 const characters = {
+	sb_xiahouyuan: ["male", "wei", 4, ["sbshensu", "sbzhengzi"]],
 	sb_guohuai: ["male", "wei", 4, ["sbjingce"]],
 	sb_zhangliao: ["male", "wei", 4, ["sbtuxi", "sbdengfeng"]],
 	sb_guojia: ["male", "wei", 3, ["sbtiandu", "sbyiji"]],

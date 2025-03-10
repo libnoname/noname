@@ -8387,7 +8387,7 @@ game.import("character", function () {
 			xingluo: "星落",
 			xingluo_info: "准备阶段，你可以令任意名手牌数多于你的角色各弃置一张手牌，然后你可以从弃置的牌中选择一张加入手牌。",
 			yushou: "御兽",
-			yushou_info: "出牌阶段，你可以弃置一张牌并召唤一个随机的野兽宠物，回合开始阶段，你随机失去一个宠物。",
+			yushou_info: "①出牌阶段，你可以弃置一张牌并召唤一个随机的野兽宠物。②回合开始时，你随机失去一个宠物。",
 			yushou_misha: "米莎",
 			yushou_misha_info: "每当你受到一次伤害，你获得1点护甲。",
 			yushou_huofu: "霍弗",

@@ -191,7 +191,8 @@ game.import("card", function () {
 					while (
 						game.hasPlayer(function (current) {
 							return current != target && current[judge] == "wu" && !give_list.includes(current);
-						})
+						}) &&
+						give_cards.length
 					) {
 						const result2 = await target.chooseButton(["是否将弃置的牌交给其他吴势力角色？", give_cards], [1, 2]).forResult();
 						if (result2.bool) {
