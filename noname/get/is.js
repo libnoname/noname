@@ -7,6 +7,15 @@ import { get } from "./index.js";
 
 export class Is {
 	/**
+	 * 
+	 * @param { string } str 
+	 * @returns 
+	 */
+	emotion(str) {
+		let regExp = /<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"\/]+)\/([^"\/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")[^>]*>/gi;
+		return regExp.test(str);
+	}
+	/**
 	 * 判断是否为进攻坐骑
 	 * @param { Card | VCard } card
 	 * @param { false | Player } [player]

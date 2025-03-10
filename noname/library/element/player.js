@@ -3189,7 +3189,7 @@ export class Player extends HTMLDivElement {
 		);
 	}
 	emotion(pack, id) {
-		var str = '<img src="##assetURL##image/emotion/' + pack + "/" + id + '.gif" width="50" height="50">';
+		var str = `<img src="##assetURL##image/emotion/${pack}/${id}.gif" width="50" height="50">`;
 		this.say(str);
 		game.broadcast(
 			function (id, str) {
@@ -3237,6 +3237,9 @@ export class Player extends HTMLDivElement {
 	 * @param { string } str
 	 */
 	say(str) {
+		if (!get.is.emotion(str)) {
+			str = get.plainText(str);
+		}
 		str = str.replace(/##assetURL##/g, lib.assetURL);
 		var dialog = ui.create.dialog("hidden");
 		dialog.classList.add("static");
