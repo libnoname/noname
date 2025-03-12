@@ -2361,9 +2361,7 @@ export default () => {
 					event.toRemove = player.name2;
 					event.toChange = name;
 					if (event.change) event.trigger("removeCharacterBefore");
-					if (event.hidden) {
-						if (!player.isUnseen(1)) player.hideCharacter(1);
-					}
+					if (!player.isUnseen(1)) player.hideCharacter(1);
 					"step 2";
 					var name = event.toChange;
 					if (event.hidden) game.log(player, "替换了副将", "#g" + get.translation(player.name2));
@@ -2371,6 +2369,7 @@ export default () => {
 					player.viceChanged = true;
 					player.reinitCharacter(player.name2, name, false);
 					"step 3";
+					if (!event.hidden) player.showCharacter(1);
 					if (event.change && event.toRemove) {
 						const list = [event.toRemove];
 						player.markAuto("fakeshilu", list);
@@ -22374,15 +22373,15 @@ export default () => {
 					event.toChange = name;
 					if (event.change) event.trigger("removeCharacterBefore");
 					"step 1";
-					if (event.hidden) {
-						if (!player.isUnseen(1)) player.hideCharacter(1);
-					}
+					if (!player.isUnseen(1)) player.hideCharacter(1);
 					"step 2";
 					var name = event.toChange;
 					if (event.hidden) game.log(player, "替换了副将", "#g" + get.translation(player.name2));
 					else game.log(player, "将副将从", "#g" + get.translation(player.name2), "变更为", "#g" + get.translation(name));
 					player.viceChanged = true;
 					player.reinitCharacter(player.name2, name, false);
+					"step 3";
+					if (!event.hidden) player.showCharacter(1);
 				},
 				changeVice() {
 					"step 0";
@@ -22433,15 +22432,15 @@ export default () => {
 					event.toRemove = player.name2;
 					event.toChange = name;
 					if (event.change) event.trigger("removeCharacterBefore");
-					if (event.hidden) {
-						if (!player.isUnseen(1)) player.hideCharacter(1);
-					}
+					if (!player.isUnseen(1)) player.hideCharacter(1);
 					"step 2";
 					var name = event.toChange;
 					if (event.hidden) game.log(player, "替换了副将", "#g" + get.translation(player.name2));
 					else game.log(player, "将副将从", "#g" + get.translation(player.name2), "变更为", "#g" + get.translation(name));
 					player.viceChanged = true;
 					player.reinitCharacter(player.name2, name, false);
+					"step 3";
+					if (!event.hidden) player.showCharacter(1);
 				},
 				/*----分界线----*/
 				mayChangeVice() {
