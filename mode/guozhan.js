@@ -5542,7 +5542,7 @@ export default () => {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseCardTarget({
-							prompt: get.prompt2("yuanhu"),
+							prompt: get.prompt2("fakehuyuan"),
 							filterCard(card) {
 								return get.type(card) == "equip";
 							},
@@ -21271,7 +21271,7 @@ export default () => {
 			fakejizhi: "集智",
 			fakejueyan_info: "主将技。①此武将牌计算体力上限时减少半个阴阳鱼。②准备阶段，你可以选择一个区域并于本回合的结束阶段弃置此区域的所有牌，然后你于本回合获得以下对应效果：⒈判定区：跳过判定阶段，获得〖集智〗直到回合结束；⒉装备区：摸三张牌，本回合手牌上限+3；⒊手牌区：本回合使用【杀】的额定次数+3。",
 			fakequanji: "权计",
-			fakequanji_info: "①每回合每项各限一次，当你造成或受到伤害后，你可以摸X张牌，然后将等量的牌称为“权”置于武将牌上。②你的手牌上限+X（X为你武将牌上的“权”数）。",
+			fakequanji_info: "①每回合每项各限一次，当你造成或受到伤害后，你可以摸X张牌（至多为体力上限），然后将等量的牌称为“权”置于武将牌上。②你的手牌上限+X（X为你武将牌上的“权”数）。",
 			fakepaiyi: "排异",
 			fakepaiyi_info: "出牌阶段限一次，你可以选择一名角色，然后选择一个军令令其选择是否执行。若其执行，则你摸X张牌，然后将一张“权”置入弃牌堆；若其不执行，则你可以对至多X名与其势力相同的角色各造成1点伤害，然后将等量的“权”置入弃牌堆。（X为你武将牌上的“权”数）",
 			fakeshilu: "嗜戮",
