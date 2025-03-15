@@ -2794,7 +2794,7 @@ const skills = {
 		selectTarget: -1,
 		async content(event, trigger, player) {
 			player.awakenSkill("jsrgfusha");
-			event.target.damage(Math.min(game.countPlayer(), player.getAttackRange()));
+			event.target.damage(Math.min(game.countPlayer2(), player.getAttackRange()));
 		},
 		ai: {
 			order: 1,
