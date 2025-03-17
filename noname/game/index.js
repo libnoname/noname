@@ -7870,7 +7870,7 @@ export class Game extends GameCompatible {
 		} else if (Array.isArray(card)) {
 			node.cards = card[1].slice(0);
 			card = card[0];
-			const info = [get.plainText(card.suit) || "", card.number || "", card.name || "", card.nature || ""];
+			const info = [get.plainText(card.suit || ""), card.number || "", card.name || "", card.nature || ""];
 			if (!Array.isArray(node.cards) || !node.cards.length) node.cards = [ui.create.card(node, "noclick", true).init(info)];
 			if (card.name == "wuxie") {
 				if (ui.historybar.firstChild && ui.historybar.firstChild.type == "wuxie") {
