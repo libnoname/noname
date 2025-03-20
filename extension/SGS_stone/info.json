@@ -1,0 +1,10 @@
+{
+	"type": "extension",
+	"nopack": false,
+	"intro": "炉石传说风格的三国杀DIY卡牌，武将，模式。",
+	"name": "SGS_stone",
+	"author": "libccy",
+	"diskURL": "",
+	"forumURL": "",
+	"version": "1.0"
+}
