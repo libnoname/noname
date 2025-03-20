@@ -1,0 +1,1 @@
+// Strip away all the Hearthstone-style SGS DIY
