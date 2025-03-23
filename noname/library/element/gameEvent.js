@@ -1062,10 +1062,14 @@ export class GameEvent {
 		this.#start = (async () => {
 			if (this.parent) this.parent.childEvents.push(this);
 			game.getGlobalHistory("everything").push(this);
-			if (this.manager.eventStack.length === 0) this.manager.rootEvent = this;
-			this.manager.eventStack.push(this);
+			// if (this.manager.eventStack.length === 0) {
+			// 	this.manager.rootEvent = this;
+			// }
+			// this.manager.eventStack.push(this);
+			this.manager.setStatusEvent(this, true);
 			await this.loop().then(() => {
-				this.manager.eventStack.pop();
+				// this.manager.eventStack.pop();
+				this.manager.popStatusEvent();
 			});
 		})();
 		return this.#start;
