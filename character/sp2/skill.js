@@ -11834,69 +11834,46 @@ const skills = {
 	},
 	bingzhao: {
 		audio: 2,
-		unique: true,
-		zhuSkill: true,
-		forced: true,
-		locked: false,
-		intro: {
-			content(group) {
-				return "已选择了" + get.translation(group) + "势力";
-			},
+		trigger: {
+			global: ["phaseBefore", "zhuUpdate"],
+			player: "enterGame",
 		},
-		trigger: { global: ["phaseBefore", "zhuUpdate"] },
 		filter(event, player) {
-			if (
-				!lib.group.some(function (group) {
-					if (group == player.group) return false;
-					return (
-						lib.group.includes(group) ||
-						game.hasPlayer(function (current) {
-							return current.group == group;
-						})
-					);
-				})
-			)
-				return false;
-			return !player.storage.bingzhao && player.hasZhuSkill("bingzhao") && (event.name != "phase" || game.phaseNumber == 0);
+			if (player.storage.bingzhao) return false;
+			return lib.group.some(group => group != player.group) && player.hasZhuSkill("bingzhao") && (event.name != "phase" || game.phaseNumber == 0);
 		},
-		content() {
-			"step 0";
-			var list = lib.group.filter(function (group) {
-				if (group == player.group) return false;
+		zhuSkill: true,
+		async cost(event, trigger, player) {
+			const list = lib.group.filter(group => group != player.group).slice();
+			const maxGroup = list.slice().sort((a, b) => {
 				return (
-					lib.group.includes(group) ||
-					game.hasPlayer(function (current) {
-						return current.group == group;
+					game.countPlayer(current => {
+						return current.group == b && current != player;
+					}) -
+					game.countPlayer(current => {
+						return current.group == a && current != player;
 					})
 				);
-			});
-			player
+			})[0];
+			const control = await player
 				.chooseControl(list)
 				.set("prompt", "秉诏：请选择一个其他势力")
-				.set("ai", function () {
-					var listx = list.slice(0);
-					listx.sort(function (a, b) {
-						return (
-							game.countPlayer(function (current) {
-								return current != player && current.group == b;
-							}) -
-							game.countPlayer(function (current) {
-								return current != player && current.group == a;
-							})
-						);
-					});
-					return listx[0];
-				});
-			"step 1";
-			var group = result.control;
+				.set("ai", () => {
+					return get.event().choice;
+				})
+				.set("choice", maxGroup)
+				.forResultControl();
+			event.result = { bool: true, cost_data: control };
+		},
+		async content(event, trigger, player) {
+			const { cost_data: group } = event;
 			player.popup(get.translation(group) + "势力", get.groupnature(group, "raw"));
 			game.log(player, "选择了", "#y" + get.translation(group) + "势力");
-			player.storage.bingzhao = group;
-			player.markSkill("bingzhao");
+			player.storage[event.name] = group;
+			player.markSkill(event.name);
 		},
-		ai: {
-			combo: "guju",
-		},
+		intro: { content: "已选择了$势力" },
+		ai: { combo: "guju" },
 	},
 	baijia: {
 		audio: 2,
@@ -11904,184 +11881,150 @@ const skills = {
 		unique: true,
 		derivation: "bmcanshi",
 		juexingji: true,
-		ai: {
-			combo: "guju",
-		},
+		ai: { combo: "guju" },
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
-			return player.hasSkill("guju") && player.storage.guju >= 7;
+			return player.getAllHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "guju").reduce((num, evt) => num + evt.cards.length, 0) >= 7;
 		},
-		content() {
-			player.awakenSkill("baijia");
-			player.gainMaxHp();
-			player.recover();
-			var list = game.filterPlayer();
-			for (var i = 0; i < list.length; i++) {
-				if (list[i] != player && !list[i].hasMark("zongkui_mark")) {
-					list[i].addMark("zongkui_mark", 1);
-					player.line(list[i], "green");
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.gainMaxHp();
+			await player.recover();
+			const targets = game.filterPlayer(current => player != current && !current.hasMark("zongkui_mark"));
+			if (targets.length) {
+				for (const target of targets.sortBySeat()) {
+					target.addMark("zongkui_mark", 1);
+					player.line(target, "green");
 				}
 			}
-			//player.removeSkill('guju');
-			player.changeSkills(["bmcanshi"], ["guju"]);
+			await player.changeSkills(["bmcanshi"], ["guju"]);
 		},
 	},
 	bmcanshi: {
 		audio: 2,
 		audioname: ["tw_beimihu"],
-		group: ["bmcanshi_add", "bmcanshi_remove"],
-		ai: {
-			combo: "zongkui",
+		trigger: {
+			player: "useCard2",
+			target: "useCardToTarget",
 		},
-		subSkill: {
-			add: {
-				audio: "bmcanshi",
-				trigger: { player: "useCard2" },
-				filter(event, player) {
-					if (!event.targets || event.targets.length != 1) return false;
-					var info = get.info(event.card);
-					if (info.multitarget) return false;
-					if (info.allowMultiple == false) return false;
-					if (info.type == "equip") return false;
-					if (info.type == "delay") return false;
-					return game.hasPlayer(function (current) {
-						if (!current.hasMark("zongkui_mark")) return false;
-						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current);
-					});
-				},
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt2("bmcanshi"), [1, Infinity], function (card, player, target) {
-							if (!target.hasMark("zongkui_mark")) return false;
-							var trigger = _status.event.getTrigger();
-							return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, _status.event.getTrigger().card, player, player);
-						});
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) game.delayx();
-						event.targets = result.targets.sortBySeat();
-					} else {
-						event.finish();
-					}
-					"step 2";
-					player.logSkill("bmcanshi", event.targets);
-					for (var i = 0; i < event.targets.length; i++) {
-						event.targets[i].removeMark("zongkui_mark", 1);
-					}
-					trigger.targets.addArray(event.targets);
-				},
-			},
-			remove: {
-				audio: "bmcanshi",
-				trigger: {
-					target: "useCardToTarget",
-				},
-				check(event, player) {
-					return get.attitude(event.player, player) < 0 && get.effect(player, event.card, event.player, player) < 0;
-				},
-				logTarget: "player",
-				filter(event, player) {
-					if (!["basic", "trick"].includes(get.type(event.card))) return false;
-					if (!event.targets || event.targets.length != 1) return false;
-					return event.player.hasMark("zongkui_mark");
-				},
-				content() {
-					trigger.targets.remove(player);
-					trigger.getParent().triggeredTargets2.remove(player);
-					game.delay();
-					trigger.player.removeMark("zongkui_mark");
-				},
-			},
+		filter(event, player, name) {
+			const { targets, card } = event;
+			if (!["basic", "trick"].includes(get.type(card))) return false;
+			if (!targets || targets.length != 1) return false;
+			if (name == "useCardToTarget") return event.player.hasMark("zongkui_mark");
+			const info = get.info(card);
+			if (info.multitarget) return false;
+			if (info.allowMultiple == false) return false;
+			return game.hasPlayer(current => {
+				if (!current.hasMark("zongkui_mark")) return false;
+				return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current);
+			});
 		},
+		check(event, player) {
+			return get.attitude(event.player, player) < 0 && get.effect(player, event.card, event.player, player) < 0;
+		},
+		async cost(event, trigger, player) {
+			if (event.triggername == "useCardToTarget") {
+				const { player: target } = trigger;
+				const { result } = await player.chooseBool(get.prompt2(event.skill, target)).set("choice", get.info(event.skill).check(trigger, player));
+				if (result?.bool) event.result = { bool: true, targets: [target] };
+			} else {
+				event.result = await player
+					.chooseTarget(get.prompt2(event.skill), [1, Infinity], (card, player, target) => {
+						if (!target.hasMark("zongkui_mark")) return false;
+						const trigger = get.event().getTrigger();
+						return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+					})
+					.set("ai", target => {
+						const player = get.player();
+						return get.effect(target, get.event().getTrigger().card, player, player);
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.triggername == "useCardToTarget") {
+				trigger.targets.remove(player);
+				trigger.getParent().triggeredTargets2.remove(player);
+				await game.delay();
+				trigger.player.removeMark("zongkui_mark");
+			} else {
+				if (!event.isMine() && !event.isOnline()) await game.delayx();
+				const { targets } = event;
+				targets.sortBySeat().forEach(current => current.removeMark("zongkui_mark", 1));
+				trigger.targets.addArray(event.targets);
+			}
+		},
+		ai: { combo: "zongkui" },
 	},
 	guju: {
 		audio: 2,
 		audioname: ["tw_beimihu"],
-		init(player) {
-			if (!player.storage.guju) player.storage.guju = 0;
-		},
-		intro: {
-			content: "已因此技能得到#张牌",
-		},
 		trigger: { global: "damageEnd" },
 		forced: true,
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && event.player.hasMark("zongkui_mark");
+			return event.player != player && event.player.hasMark("zongkui_mark");
 		},
-		content() {
-			"step 0";
-			player.draw();
-			player.storage.guju++;
-			player.markSkill("guju");
-			"step 1";
-			if (player.hasZhuSkill("bingzhao", trigger.player) && trigger.player.group == player.storage.bingzhao && trigger.player.isIn()) {
-				trigger.player.chooseBool("是否对" + get.translation(player) + "发动【秉诏】？").ai = function () {
-					return get.attitude(trigger.player, player) > 1;
-				};
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				trigger.player.logSkill("bingzhao", player);
-				player.draw();
-				player.storage.guju++;
-				player.markSkill("guju");
+		async content(event, trigger, player) {
+			await player.draw();
+			player.addMark(event.name, 1, false);
+			const { player: target } = trigger;
+			if (player.hasZhuSkill("bingzhao", target) && target.group == player.storage.bingzhao && target.isIn()) {
+				const { result } = await target.chooseBool(`是否对${get.translation(player)}发动【秉诏】？`).set("choice", get.attitude(target, player) > 1);
+				if (!result?.bool) return;
+				target.logSkill("bingzhao", player);
+				await player.draw();
+				player.addMark(event.name, 1, false);
 			}
 		},
-		ai: {
-			combo: "zongkui",
-		},
+		intro: { content: "已因〖骨疽〗获得#张牌" },
+		ai: { combo: "zongkui" },
 	},
 	zongkui: {
 		trigger: {
 			player: "phaseBeforeEnd",
 			global: "roundStart",
 		},
-		direct: true,
 		audio: 2,
 		audioname: ["tw_beimihu"],
 		filter(event, player, name) {
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				if (name == "roundStart" && !current.isMinHp()) return false;
 				return current != player && !current.hasMark("zongkui_mark");
 			});
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const targets = game.filterPlayer(current => {
 				if (event.triggername == "roundStart" && !current.isMinHp()) return false;
 				return current != player && !current.hasMark("zongkui_mark");
 			});
 			if (event.triggername == "roundStart" && targets.length == 1) {
-				event._result = { bool: true, targets: targets };
+				event.result = { bool: true, targets: targets };
 			} else {
-				var next = player
-					.chooseTarget(get.prompt("zongkui"), "令一名" + (event.triggername == "roundStart" ? "体力值最小的" : "") + "其他角色获得“傀”标记", function (card, player, target) {
-						if (_status.event.round && !target.isMinHp()) return false;
+				const round = event.triggername == "roundStart";
+				const next = player
+					.chooseTarget(get.prompt(event.skill), `令一名${event.triggername == "roundStart" ? "体力值最小的" : ""}其他角色获得“傀”标记`, (card, player, target) => {
+						if (get.event().round && !target.isMinHp()) return false;
 						return target != player && !target.hasMark("zongkui_mark");
 					})
-					.set("ai", function (target) {
-						var num = target.isMinHp() ? 0.5 : 1;
+					.set("ai", target => {
+						const num = target.isMinHp() ? 0.5 : 1;
 						return num * get.threaten(target);
 					})
-					.set("round", event.triggername == "roundStart");
-				if (event.triggername == "roundStart") next.set("forced", true);
+					.set("round", round);
+				if (round) next.set("forced", true);
+				event.result = await next.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("zongkui", target);
-				target.addMark("zongkui_mark", 1);
-				game.delayx();
-			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			target.addMark("zongkui_mark", 1);
+			await game.delayx();
 		},
 		subSkill: {
 			mark: {

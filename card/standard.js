@@ -3398,7 +3398,7 @@ game.import("card", function () {
 				forced: true,
 				silent: true,
 				filter(event, player) {
-					if (event.card.storage && event.card.storage.nowuxie) return false;
+					if (event.card.storage?.nowuxie) return false;
 					var card = event.card;
 					if (event.name == "phaseJudge" && card.viewAs) card = { name: card.viewAs };
 					var info = get.info(card);
@@ -3631,6 +3631,12 @@ game.import("card", function () {
 								if (_status.event.id == id && _status.event.name == "chooseToUse" && _status.paused) event.resultOL = _status.event.resultOL;
 								if (_status.event._parent_id == id) {
 									ui.click.cancel();
+									if (_status.event.getParent().name == "chooseToUse" && _status.event.getParent().id == id) {
+										_status.event.getParent().cancel(null, null, true);
+										if (ui.confirm) {
+											ui.confirm.close();
+										}
+									}
 								}
 								if (_status.event.id == id) {
 									if (_status.event._backup) ui.click.cancel();
@@ -3669,7 +3675,7 @@ game.import("card", function () {
 									info.onChooseToUse(onchooseToUse_data);
 								}
 							}
-							onchooseToUse_data.cancel();
+							onchooseToUse_data.cancel(null, null, true);
 							list[i].wait(sendback);
 							list[i].send(event.send, list[i], event._info_map, get.skillState(list[i]), onchooseToUse_data);
 							list.splice(i--, 1);
@@ -3697,7 +3703,7 @@ game.import("card", function () {
 						event.wuxieresult2 = result;
 					}
 					"step 6";
-					if (event.withol && !event.resultOL) {
+					if (event.withol && !event.wuxieresult) {
 						game.pause();
 					}
 					"step 7";

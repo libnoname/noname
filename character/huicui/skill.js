@@ -81,7 +81,7 @@ const skills = {
 					await next;
 				}
 			}
-			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name).reduce((num, evt) => num + evt.cards.length, 0) > 1) await player.loseHp();
+			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name).reduce((num, evt) => num + evt.cards.length, 0) > 2) await player.loseHp();
 		},
 		subSkill: {
 			tag: {

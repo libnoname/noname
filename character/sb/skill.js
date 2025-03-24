@@ -259,8 +259,9 @@ const skills = {
 			player.storage.sbjingceCount = 0;
 		},
 		audio: 9,
-		trigger: {
-			player: "phaseEnd",
+		trigger: { player: "phaseEnd" },
+		filter(event, player) {
+			return player.countExpansions("sbjingce_expansions");
 		},
 		logAudio: index => (typeof index === "number" ? "sbjingce" + index + ".mp3" : 2),
 		async cost(event, trigger, player) {
@@ -333,16 +334,14 @@ const skills = {
 		subSkill: {
 			expansions: {
 				audio: ["sbjingce1.mp3", "sbjingce2.mp3"],
-				trigger: {
-					player: "phaseBegin",
-				},
+				trigger: { player: "phaseBegin" },
 				mark: true,
 				intro: {
 					content: "expansion",
 					markcount: "expansion",
 				},
 				filter(event, player) {
-					return player.getExpansions("sbjingce_expansions").length == 0;
+					return !player.countExpansions("sbjingce_expansions");
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -370,9 +369,7 @@ const skills = {
 				},
 			},
 			check: {
-				trigger: {
-					global: ["equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"],
-				},
+				trigger: { global: ["equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"] },
 				forced: true,
 				popup: false,
 				filter(event, player) {
@@ -1089,91 +1086,14 @@ const skills = {
 	sbluanwu: {
 		audio: 4,
 		logAudio: () => 2,
-		unique: true,
-		enable: "phaseUse",
-		limited: true,
-		skillAnimation: "epic",
-		animationColor: "thunder",
-		filterTarget(card, player, target) {
-			return target !== player;
-		},
-		selectTarget: -1,
-		multitarget: true,
-		multiline: true,
+		inherit: "luanwu",
 		contentBefore() {
 			player.addTempSkill("sbluanwu_add");
-		},
-		async content(event, trigger, player) {
-			player.awakenSkill(event.name);
-			const currented = [player];
-			let current = player.next;
-			do {
-				currented.push(current);
-				current.addTempClass("target");
-				const bool = await current
-					.chooseToUse(
-						"乱武：对除" + get.translation(player) + "以外的一名其他角色使用一张杀或失去1点体力",
-						function (card) {
-							if (get.name(card) !== "sha") return false;
-							return lib.filter.cardEnabled.apply(this, arguments);
-						},
-						function (card, player, target) {
-							if (target === player || target === get.event("jx")) return false;
-							const dist = get.distance(player, target);
-							if (dist > 1) {
-								if (
-									game.hasPlayer(function (current) {
-										return current != player && get.distance(player, current) < dist;
-									})
-								) {
-									return false;
-								}
-							}
-							return lib.filter.filterTarget.apply(this, arguments);
-						}
-					)
-					.set("jx", player)
-					.set("ai2", function () {
-						return get.effect_use.apply(this, arguments) + 0.01;
-					})
-					.set("addCount", false)
-					.forResultBool();
-				if (!bool) await current.loseHp();
-				current = current.next;
-			} while (!currented.includes(current) && !void (await game.delay(0.5)));
-		},
-		ai: {
-			order: 1,
-			result: {
-				player(player) {
-					if (lib.config.mode === "identity" && game.zhu.isZhu && player.identity === "fan") {
-						if (game.zhu.hp === 1 && game.zhu.countCards("h") <= 2) return 1;
-					}
-					const players = game.filterPlayer(cur => cur !== player);
-					let num = 0;
-					for (let i = 0; i < players.length; i++) {
-						let att = get.sgnAttitude(player, players[i]);
-						if (players[i].hp <= 3) {
-							const hs = players[i].countCards("hs");
-							if (hs === 0) num += att / players[i].hp;
-							else if (hs === 1) num += att / 2 / players[i].hp;
-							else if (hs === 2) num += att / 4 / players[i].hp;
-						}
-						if (players[i].hp === 1) num += att * 1.5;
-					}
-					if (player.hp === 1) {
-						return -num;
-					}
-					return -game.players.length / 4 - num;
-				},
-			},
 		},
 		subSkill: {
 			add: {
 				audio: ["sbluanwu3.mp3", "sbluanwu4.mp3"],
-				trigger: {
-					global: "loseHpEnd",
-				},
+				trigger: { global: "loseHpEnd" },
 				filter(event, player) {
 					if (event.getParent().name != "sbluanwu") return false;
 					return ["sbwansha", "sbweimu"].some(skill => player.hasSkill(skill, null, null, false) && !player.storage[skill]);

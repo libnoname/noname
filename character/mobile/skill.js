@@ -32,9 +32,9 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (!player.isPhaseUsing() || typeof card !== "object") return;
 				const name = get.name(card, player);
-				if (card.hasGaintag("potwanglie")) {
+				if (get.itemtype(card) == "card" && card.hasGaintag("potwanglie")) {
 					if (
-						!player.hasCards(cardx => {
+						!player.hasCard(cardx => {
 							if (cardx === card) return false;
 							if (player.getCardUsable(name, true) == 1 && get.name(cardx, player) == name) return false;
 							return player.hasValueTarget(cardx, null, true);
@@ -108,7 +108,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const num = player.countMark("pothongyi");
-			let list = [`摸${get.cnNumber(num)}张牌`, `清空“毅”标记，视为使用${get.cnNumber(num)}张【杀】`];
+			let list = [`摸${get.cnNumber(num)}张牌`, `移去所有“毅”标记，视为使用${get.cnNumber(num)}张【杀】`];
 			const result = await player
 				.chooseControl()
 				.set("prompt", get.translation(event.skill) + "：请选择一项执行")
@@ -155,7 +155,7 @@ const skills = {
 				getIndex: event => (event.name === "damage" ? event.num : 1),
 				filter(event, player) {
 					if (player.countMark("pothongyi") >= get.info("pothongyi").maxMark()) return false;
-					return event.name !== "damage" || event.name != "phase" || game.phaseNumber == 0;
+					return event.name != "phase" || game.phaseNumber == 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {

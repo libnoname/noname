@@ -1196,14 +1196,14 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					const storage = player.storage.olsbchoulie_buff;
-					for (const i of trigger.targets) {
-						if (i == storage[0]) {
+					for (const target of trigger.targets) {
+						if (target == storage[0]) {
 							const {
 								result: { bool },
-							} = await i
-								.chooseToDiscard(`仇猎：你可以弃置一张基本牌或武器牌，令${get.translation(trigger.card)}对你无效`)
+							} = await target
+								.chooseToDiscard(`仇猎：你可以弃置一张基本牌或武器牌，令${get.translation(trigger.card)}对你无效`, "he")
 								.set("filterCard", card => {
-									return get.type(card) == "basic" || get.subtype(card) == "equip1";
+									return get.type(card) == "basic" || get.subtypes(card).includes("equip1");
 								})
 								.set("ai", card => {
 									const player = get.player(),
@@ -1211,8 +1211,8 @@ const skills = {
 									return -get.effect(player, trigger.card, trigger.player, player) - get.value(card);
 								});
 							if (bool) {
-								trigger.excluded.add(i);
-								game.log(trigger.card, "对", i, "无效");
+								trigger.excluded.add(target);
+								game.log(trigger.card, "对", target, "无效");
 								await game.delayx();
 							}
 						}

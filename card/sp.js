@@ -623,7 +623,11 @@ game.import("card", function () {
 				},
 				content() {
 					"step 0";
-					var next = player.chooseToUse(get.prompt("yinyueqiang"), { name: "sha" });
+					const next = player.chooseToUse(get.prompt("yinyueqiang"));
+					next.set("filterCard", function (card, player, event) {
+						if (get.name(card) != "sha") return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					});
 					next.aidelay = true;
 					next.logSkill = "yinyueqiang";
 					next.noButton = true;
