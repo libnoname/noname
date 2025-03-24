@@ -1,6 +1,8 @@
 import { lib } from "../../index.js";
 import { GameEvent } from "../gameEvent.js";
 
+export type NonameGameEventChangedArgs = [newEvent: GameEvent, oldEvent: GameEvent];
+
 export default class GameEventManager {
 	get [Symbol.toStringTag]() {
 		return "GameEventManager";
@@ -37,14 +39,14 @@ export default class GameEventManager {
 		}
 
 		if (oldEvent == null || event !== oldEvent) {
-			lib.announce.publish("Noname.Game.Event.Changed", [event, oldEvent]);
+			lib.announce.publish<NonameGameEventChangedArgs>("Noname.Game.Event.Changed", [event, oldEvent!]);
 		}
 	}
 	popStatusEvent() {
 		const lastEvent = this.eventStack.pop();
 		const now = this.getStatusEvent();
-		if (lastEvent == null || lastEvent != now) {
-			lib.announce.publish("Noname.Game.Event.Changed", [now, lastEvent]);
+		if (lastEvent == null || lastEvent !== now) {
+			lib.announce.publish<NonameGameEventChangedArgs>("Noname.Game.Event.Changed", [now!, lastEvent!]);
 		}
 	}
 }

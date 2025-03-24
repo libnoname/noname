@@ -43,7 +43,7 @@ export default class GameEventManager {
 	popStatusEvent() {
 		const lastEvent = this.eventStack.pop();
 		const now = this.getStatusEvent();
-		if (lastEvent == null || lastEvent != now) {
+		if (lastEvent == null || lastEvent !== now) {
 			lib.announce.publish("Noname.Game.Event.Changed", [now, lastEvent]);
 		}
 	}
