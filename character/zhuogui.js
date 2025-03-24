@@ -3,11 +3,36 @@ game.import("character", function () {
 	return {
 		name: "zhuogui",
 		character: {
-			nianshou: ["male", "shu", 4, ["nianrui", "qixiang"]],
-			mamian: ["male", "qun", 4, ["lianyu", "guiji"]],
-			niutou: ["male", "shu", 4, ["manjia", "xiaoshou"]],
-			baiwuchang: ["male", "qun", 3, ["qiangzheng", "moukui"]],
-			heiwuchang: ["male", "qun", 3, ["suoling", "xixing"]],
+			nianshou: {
+				sex: "male",
+				group: "shu",
+				hp: 4,
+				skills: ["nianrui", "qixiang"],
+			},
+			mamian: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["lianyu", "guiji"],
+			},
+			niutou: {
+				sex: "male",
+				group: "shu",
+				hp: 4,
+				skills: ["manjia", "xiaoshou"],
+			},
+			baiwuchang: {
+				sex: "male",
+				group: "qun",
+				hp: 3,
+				skills: ["qiangzheng", "moukui"],
+			},
+			heiwuchang: {
+				sex: "male",
+				group: "qun",
+				hp: 3,
+				skills: ["suoling", "xixing"],
+			},
 		},
 		skill: {
 			qixiang: {

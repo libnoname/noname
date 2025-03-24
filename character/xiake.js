@@ -3,8 +3,18 @@ game.import("character", function () {
 	return {
 		name: "xiake",
 		character: {
-			xk_guyuexuan: ["male", "qun", 4, ["rouquan", "gzhenji"]],
-			xk_jinji: ["male", "shu", 4, ["zhongzhan", "lianpo"]],
+			xk_guyuexuan: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["rouquan", "gzhenji"],
+			},
+			xk_jinji: {
+				sex: "male",
+				group: "shu",
+				hp: 4,
+				skills: ["zhongzhan", "lianpo"],
+			},
 			// xk_shenxiangyun:['female','wei',3,['zhenjiu']],
 			// xk_fujianhan: ["male", "qun", 4, ["zitong"]],
 		},

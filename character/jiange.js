@@ -3,14 +3,54 @@ game.import("character", function () {
 	return {
 		name: "jiange",
 		character: {
-			jg_pangtong: ["male", "shu", 3, ["qiwu", "tianyu"]],
-			jg_huangyueying: ["female", "shu", 3, ["jgzhinang", "jingmiao"]],
-			jg_zhugeliang: ["male", "shu", 3, ["biantian", "bazhen"]],
-			jg_liubei: ["male", "shu", 4, ["jizhen", "lingfeng"]],
-			jg_xiahouyuan: ["male", "wei", 4, ["xinshensu", "juechen"]],
-			jg_caozhen: ["male", "wei", 4, ["chiying", "jingfan"]],
-			jg_zhanghe: ["male", "wei", 4, ["huodi", "jueji"]],
-			jg_simayi: ["male", "wei", 5, ["xuanlei", "sfanshi", "konghun"]],
+			jg_pangtong: {
+				sex: "male",
+				group: "shu",
+				hp: 3,
+				skills: ["qiwu", "tianyu"],
+			},
+			jg_huangyueying: {
+				sex: "female",
+				group: "shu",
+				hp: 3,
+				skills: ["jgzhinang", "jingmiao"],
+			},
+			jg_zhugeliang: {
+				sex: "male",
+				group: "shu",
+				hp: 3,
+				skills: ["biantian", "bazhen"],
+			},
+			jg_liubei: {
+				sex: "male",
+				group: "shu",
+				hp: 4,
+				skills: ["jizhen", "lingfeng"],
+			},
+			jg_xiahouyuan: {
+				sex: "male",
+				group: "wei",
+				hp: 4,
+				skills: ["xinshensu", "juechen"],
+			},
+			jg_caozhen: {
+				sex: "male",
+				group: "wei",
+				hp: 4,
+				skills: ["chiying", "jingfan"],
+			},
+			jg_zhanghe: {
+				sex: "male",
+				group: "wei",
+				hp: 4,
+				skills: ["huodi", "jueji"],
+			},
+			jg_simayi: {
+				sex: "male",
+				group: "wei",
+				hp: 5,
+				skills: ["xuanlei", "sfanshi", "konghun"],
+			},
 		},
 		skill: {
 			sfanshi: {
