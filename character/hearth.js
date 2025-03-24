@@ -620,7 +620,13 @@ game.import("character", function () {
 				hp: 4,
 				skills: ["ylyuchu"],
 			},
-			hs_yelinchulong: ["male", "qun", 1, [], ["unseen"]],
+			hs_yelinchulong: {
+				sex: "male",
+				group: "qun",
+				hp: 1,
+				skills: [],
+				isUnseen: true,
+			},
 			hs_ashamoer: {
 				sex: "female",
 				group: "wei",

@@ -7309,7 +7309,13 @@ game.import("character", function () {
 					player.addSkill("jifeng");
 					player.addSkill("swd_xiuluo");
 
-					lib.character.swd_satan = ["", "qun", 4, ["moyan", "miedao", "jifeng", "swd_xiuluo"], ["temp"]];
+					lib.character.swd_satan = {
+						sex: "",
+						group: "qun",
+						hp: 4,
+						skills: ["moyan", "miedao", "jifeng", "swd_xiuluo"],
+						trashBin: ["temp"],
+					};
 					if (player.name == "swd_miles") player.name = "swd_satan";
 					if (player.name1 == "swd_miles") player.name1 = "swd_satan";
 					if (player.name2 == "swd_miles") {

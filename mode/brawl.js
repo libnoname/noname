@@ -591,10 +591,30 @@ export default () => {
 									},
 								},
 								character: {
-									hhzz_shiona: ["female", "key", 1, ["hhzz_huilei"]],
-									hhzz_kanade: ["female", "key", 2, ["hhzz_youlian"]],
-									hhzz_takaramono1: ["male", "qun", 5, ["hhzz_jubao", "hhzz_huizhen"]],
-									hhzz_takaramono2: ["male", "qun", 3, ["hhzz_jubao", "hhzz_zhencang"]],
+									hhzz_shiona: {
+										sex: "female",
+										group: "key",
+										hp: 1,
+										skills: ["hhzz_huilei"],
+									},
+									hhzz_kanade: {
+										sex: "female",
+										group: "key",
+										hp: 2,
+										skills: ["hhzz_youlian"],
+									},
+									hhzz_takaramono1: {
+										sex: "male",
+										group: "qun",
+										hp: 5,
+										skills: ["hhzz_jubao", "hhzz_huizhen"],
+									},
+									hhzz_takaramono2: {
+										sex: "male",
+										group: "qun",
+										hp: 3,
+										skills: ["hhzz_jubao", "hhzz_zhencang"],
+									},
 								},
 								skill: {
 									_lingli_damage: {
@@ -1170,10 +1190,30 @@ export default () => {
 												},
 											},
 											character: {
-												hhzz_shiona: ["female", "key", 1, ["hhzz_huilei"]],
-												hhzz_kanade: ["female", "key", 2, ["hhzz_youlian"]],
-												hhzz_takaramono1: ["male", "qun", 5, ["hhzz_jubao", "hhzz_huizhen"]],
-												hhzz_takaramono2: ["male", "qun", 3, ["hhzz_jubao", "hhzz_zhencang"]],
+												hhzz_shiona: {
+													sex: "female",
+													group: "key",
+													hp: 1,
+													skills: ["hhzz_huilei"],
+												},
+												hhzz_kanade: {
+													sex: "female",
+													group: "key",
+													hp: 2,
+													skills: ["hhzz_youlian"],
+												},
+												hhzz_takaramono1: {
+													sex: "male",
+													group: "qun",
+													hp: 5,
+													skills: ["hhzz_jubao", "hhzz_huizhen"],
+												},
+												hhzz_takaramono2: {
+													sex: "male",
+													group: "qun",
+													hp: 3,
+													skills: ["hhzz_jubao", "hhzz_zhencang"],
+												},
 											},
 											translate: {
 												_lingli: "聚灵",
@@ -3193,9 +3233,22 @@ export default () => {
 
 								var pack = {
 									character: {
-										pujing: ["male", "qun", 1, [], []],
-										huban: ["male", "qun", 2, [], []],
-										caiyang: ["male", "qun", 1, ["zhuixi"], []],
+										pujing: {
+											sex: "male",
+											group: "qun",
+											hp: 1,
+										},
+										huban: {
+											sex: "male",
+											group: "qun",
+											hp: 2,
+										},
+										caiyang: {
+											sex: "male",
+											group: "qun",
+											hp: 1,
+											skills: ["zhuixi"],
+										},
 									},
 									translate: {
 										pujing: "普净",
@@ -3338,10 +3391,32 @@ export default () => {
 								character: ["re_sp_zhugeliang", "yujin_yujin", "re_zhangliao", "re_lusu"],
 								lib: {
 									character: {
-										re_sp_zhugeliang: ["male", "shu", 3, ["tiaoxin", "bazhen", "feiying"], ["name:诸葛|亮"]],
-										yujin_yujin: ["male", "wei", 4, ["jiangchi", "danshou"], ["die:xin_yujin.mp3"]],
-										re_zhangliao: ["male", "wei", 4, ["benxi", "tuifeng", "qingxi"], []],
-										re_lusu: ["male", "wu", 3, ["kaikang", "shenxian"], []],
+										re_sp_zhugeliang: {
+											sex: "male",
+											group: "shu",
+											hp: 3,
+											skills: ["tiaoxin", "bazhen", "feiying"],
+											names: "诸葛|亮",
+										},
+										yujin_yujin: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["jiangchi", "danshou"],
+											dieAudios: ["xin_yujin.mp3"],
+										},
+										re_zhangliao: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["benxi", "tuifeng", "qingxi"],
+										},
+										re_lusu: {
+											sex: "male",
+											group: "wu",
+											hp: 3,
+											skills: ["kaikang", "shenxian"],
+										},
 									},
 									translate: {
 										re_sp_zhugeliang: "诸葛卧龙",
@@ -3357,10 +3432,31 @@ export default () => {
 								character: ["re_huangzhong", "re_xiahouyuan", "zhanghe", "xin_fazheng"],
 								lib: {
 									character: {
-										re_huangzhong: ["male", "shu", 4, ["yingjian", "weikui", "gzyinghun"], []],
-										re_xiahouyuan: ["male", "wei", 4, ["benxi", "yaowu", "dujin", "juesi"], ["name:夏侯|渊"]],
-										zhanghe: ["male", "wei", 4, ["kaikang", "xingshang", "zhiheng"], []],
-										xin_fazheng: ["male", "shu", 4, ["xinfu_zhanji", "nzry_chenglve", "yiji"], []],
+										re_huangzhong: {
+											sex: "male",
+											group: "shu",
+											hp: 4,
+											skills: ["yingjian", "weikui", "gzyinghun"],
+										},
+										re_xiahouyuan: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["benxi", "yaowu", "dujin", "juesi"],
+											names: "夏侯|渊",
+										},
+										zhanghe: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["kaikang", "xingshang", "zhiheng"],
+										},
+										xin_fazheng: {
+											sex: "male",
+											group: "shu",
+											hp: 4,
+											skills: ["xinfu_zhanji", "nzry_chenglve", "yiji"],
+										},
 									},
 									translate: {
 										re_huangzhong: "定军黄忠",
@@ -3376,10 +3472,31 @@ export default () => {
 								character: ["re_caocao", "xin_yuanshao", "guotufengji", "re_guojia"],
 								lib: {
 									character: {
-										re_caocao: ["male", "wei", 4, ["fankui", "zhuiji", "duanbing"], []],
-										xin_yuanshao: ["male", "qun", "3/6", ["reluanji", "kuanggu", "benghuai", "weizhong"], []],
-										guotufengji: ["male", "qun", 2, ["sijian", "jigong", "shifei", "jianying"], ["name:null|null"]],
-										re_guojia: ["male", "wei", 3, ["yiji", "sanyao", "gongxin"], []],
+										re_caocao: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["fankui", "zhuiji", "duanbing"],
+										},
+										xin_yuanshao: {
+											sex: "male",
+											group: "qun",
+											hp: "3/6",
+											skills: ["reluanji", "kuanggu", "benghuai", "weizhong"],
+										},
+										guotufengji: {
+											sex: "male",
+											group: "qun",
+											hp: 2,
+											skills: ["sijian", "jigong", "shifei", "jianying"],
+											names: "null|null",
+										},
+										re_guojia: {
+											sex: "male",
+											group: "wei",
+											hp: 3,
+											skills: ["yiji", "sanyao", "gongxin"],
+										},
 									},
 									translate: {
 										re_caocao: "官渡曹操",
@@ -3395,10 +3512,31 @@ export default () => {
 								character: ["chunyuqiong", "sp_xuyou", "re_xuhuang", "gaolan"],
 								lib: {
 									character: {
-										chunyuqiong: ["male", "qun", 8, ["ranshang", "duliang", "jiuchi"], ["name:淳于|琼"]],
-										sp_xuyou: ["male", "qun", 3, ["qice", "lianying", "nzry_jianxiang"], []],
-										re_xuhuang: ["male", "wei", 4, ["shenduan", "xiaoguo", "nzry_juzhan"], []],
-										gaolan: ["male", "qun", 4, ["yuanhu", "shensu", "benyu", "suishi"], []],
+										chunyuqiong: {
+											sex: "male",
+											group: "qun",
+											hp: 8,
+											skills: ["ranshang", "duliang", "jiuchi"],
+											names: "淳于|琼",
+										},
+										sp_xuyou: {
+											sex: "male",
+											group: "qun",
+											hp: 3,
+											skills: ["qice", "lianying", "nzry_jianxiang"],
+										},
+										re_xuhuang: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["shenduan", "xiaoguo", "nzry_juzhan"],
+										},
+										gaolan: {
+											sex: "male",
+											group: "qun",
+											hp: 4,
+											skills: ["yuanhu", "shensu", "benyu", "suishi"],
+										},
 									},
 									translate: {
 										chunyuqiong: "乌巢淳于琼",
@@ -3414,10 +3552,31 @@ export default () => {
 								character: ["re_zhangzhang", "re_sp_zhugeliang", "guyong", "re_lusu"],
 								lib: {
 									character: {
-										re_sp_zhugeliang: ["male", "shu", 3, ["tianbian", "jyzongshi", "xinfu_guolun"], []],
-										re_zhangzhang: ["male", "wu", 3, ["zhuandui", "tiaoxin", "guzheng"], ["name:张|昭-张|纮"]],
-										guyong: ["male", "wu", 3, ["qiaoshui", "qicai", "bingyi"], []],
-										re_lusu: ["male", "wu", 3, ["qingzhongx", "shuimeng"], []],
+										re_sp_zhugeliang: {
+											sex: "male",
+											group: "shu",
+											hp: 3,
+											skills: ["tianbian", "jyzongshi", "xinfu_guolun"],
+										},
+										re_zhangzhang: {
+											sex: "male",
+											group: "wu",
+											hp: 3,
+											skills: ["zhuandui", "tiaoxin", "guzheng"],
+											names: "张|昭-张|纮",
+										},
+										guyong: {
+											sex: "male",
+											group: "wu",
+											hp: 3,
+											skills: ["qiaoshui", "qicai", "bingyi"],
+										},
+										re_lusu: {
+											sex: "male",
+											group: "wu",
+											hp: 3,
+											skills: ["qingzhongx", "shuimeng"],
+										},
 									},
 									translate: {
 										re_sp_zhugeliang: "诸葛卧龙",
@@ -3433,10 +3592,31 @@ export default () => {
 								character: ["yj_jushou", "re_caocao", "jsp_guanyu", "re_yanwen"],
 								lib: {
 									character: {
-										yj_jushou: ["male", "qun", 3, ["mingce", "jianyan", "shibei"], []],
-										re_caocao: ["male", "wei", 4, ["miji", "beige", "feiying"], []],
-										jsp_guanyu: ["male", "wei", 4, ["nuzhan", "jianchu", "new_rewusheng"], []],
-										re_yanwen: ["male", "qun", 4, ["shuangxiong", "zhanyi", "zhichi"], ["name:颜|良-文|丑"]],
+										yj_jushou: {
+											sex: "male",
+											group: "qun",
+											hp: 3,
+											skills: ["mingce", "jianyan", "shibei"],
+										},
+										re_caocao: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["miji", "beige", "feiying"],
+										},
+										jsp_guanyu: {
+											sex: "male",
+											group: "wei",
+											hp: 4,
+											skills: ["nuzhan", "jianchu", "new_rewusheng"],
+										},
+										re_yanwen: {
+											sex: "male",
+											group: "qun",
+											hp: 4,
+											skills: ["shuangxiong", "zhanyi", "zhichi"],
+											names: "颜|良-文|丑",
+										},
 									},
 									translate: {
 										yj_jushou: "白马沮授",
@@ -3452,10 +3632,31 @@ export default () => {
 								character: ["re_lingtong", "re_lidian", "re_zhangliao", "re_ganning"],
 								lib: {
 									character: {
-										re_lingtong: ["male", "wu", 4, ["xuanfeng", "zishou", "tiaoxin"], []],
-										re_lidian: ["male", "wei", 3, ["weijing", "wangxi", "zhuandui"], ["die:lidian"]],
-										re_zhangliao: ["male", "wei", 3, ["retuxi", "mashu", "reyingzi", "xinpojun"], []],
-										re_ganning: ["male", "wu", 5, ["lizhan", "jiang", "zhenwei"], []],
+										re_lingtong: {
+											sex: "male",
+											group: "wu",
+											hp: 4,
+											skills: ["xuanfeng", "zishou", "tiaoxin"],
+										},
+										re_lidian: {
+											sex: "male",
+											group: "wei",
+											hp: 3,
+											skills: ["weijing", "wangxi", "zhuandui"],
+											dieAudios: ["lidian"],
+										},
+										re_zhangliao: {
+											sex: "male",
+											group: "wei",
+											hp: 3,
+											skills: ["retuxi", "mashu", "reyingzi", "xinpojun"],
+										},
+										re_ganning: {
+											sex: "male",
+											group: "wu",
+											hp: 5,
+											skills: ["lizhan", "jiang", "zhenwei"],
+										},
 									},
 									translate: {
 										re_lingtong: "合肥凌统",
@@ -3471,10 +3672,30 @@ export default () => {
 								character: ["re_guanyu", "caoren", "re_lvmeng", "guanping"],
 								lib: {
 									character: {
-										re_guanyu: ["male", "shu", 5, ["wusheng", "zishou", "zhongyong"], []],
-										caoren: ["male", "wei", 1, ["xinjiewei", "qiuyuan", "gzbuqu", "xinjushou"], []],
-										re_lvmeng: ["male", "wu", 4, ["gongxin", "duodao", "dujin", "huituo"], []],
-										guanping: ["male", "shu", 5, ["longyin", "suishi"], []],
+										re_guanyu: {
+											sex: "male",
+											group: "shu",
+											hp: 5,
+											skills: ["wusheng", "zishou", "zhongyong"],
+										},
+										caoren: {
+											sex: "male",
+											group: "wei",
+											hp: 1,
+											skills: ["xinjiewei", "qiuyuan", "gzbuqu", "xinjushou"],
+										},
+										re_lvmeng: {
+											sex: "male",
+											group: "wu",
+											hp: 4,
+											skills: ["gongxin", "duodao", "dujin", "huituo"],
+										},
+										guanping: {
+											sex: "male",
+											group: "shu",
+											hp: 5,
+											skills: ["longyin", "suishi"],
+										},
 									},
 									translate: {
 										re_guanyu: "荆州关羽",
@@ -3490,10 +3711,30 @@ export default () => {
 								character: ["liubei", "re_wuyi", "zhangren", "pangtong"],
 								lib: {
 									character: {
-										liubei: ["male", "shu", 4, ["rezhijian", "jijiu", "reyingzi"], []],
-										re_wuyi: ["male", "qun", 4, ["weijing", "rerende"], []],
-										zhangren: ["male", "qun", 4, ["shefu", "gnsheque"], []],
-										pangtong: ["male", "shu", 3, ["dujin"], []],
+										liubei: {
+											sex: "male",
+											group: "shu",
+											hp: 4,
+											skills: ["rezhijian", "jijiu", "reyingzi"],
+										},
+										re_wuyi: {
+											sex: "male",
+											group: "qun",
+											hp: 4,
+											skills: ["weijing", "rerende"],
+										},
+										zhangren: {
+											sex: "male",
+											group: "qun",
+											hp: 4,
+											skills: ["shefu", "gnsheque"],
+										},
+										pangtong: {
+											sex: "male",
+											group: "shu",
+											hp: 3,
+											skills: ["dujin"],
+										},
 									},
 									translate: {
 										liubei: "雒城刘备",
@@ -3517,10 +3758,30 @@ export default () => {
 									character: ["caozhen", "key_hisako", "key_iwasawa", "sp_key_kanade"],
 									lib: {
 										character: {
-											caozhen: ["male", "wei", 4, ["xinsidi", "tuxi"]],
-											key_hisako: ["female", "key", "2/3", ["hisako_yinbao", "shenzhi", "shiorimiyuki_banyin", "hisako_zhuanyun"], []],
-											key_iwasawa: ["female", "key", "-999/3", ["iwasawa_yinhang", "iwasawa_mysong", "hisako_zhuanyun"]],
-											sp_key_kanade: ["female", "key", 3, ["xinwuyan", "xinbenxi"]],
+											caozhen: {
+												sex: "male",
+												group: "wei",
+												hp: 4,
+												skills: ["xinsidi", "tuxi"],
+											},
+											key_hisako: {
+												sex: "female",
+												group: "key",
+												hp: "2/3",
+												skills: ["hisako_yinbao", "shenzhi", "shiorimiyuki_banyin", "hisako_zhuanyun"],
+											},
+											key_iwasawa: {
+												sex: "female",
+												group: "key",
+												hp: "-999/3",
+												skills: ["iwasawa_yinhang", "iwasawa_mysong", "hisako_zhuanyun"],
+											},
+											sp_key_kanade: {
+												sex: "female",
+												group: "key",
+												hp: 3,
+												skills: ["xinwuyan", "xinbenxi"],
+											},
 										},
 										translate: {
 											caozhen: "突袭教师",
@@ -3536,10 +3797,30 @@ export default () => {
 									character: ["key_yuzuru", "sp_key_kanade", "key_ayato", "key_hinata"],
 									lib: {
 										character: {
-											key_yuzuru: ["male", "key", 4, ["hinata_qiulve", "kurou"]],
-											sp_key_kanade: ["female", "key", 3, ["hinata_qiulve", "benxi"], []],
-											key_ayato: ["male", "key", 3, ["hinata_qiulve", "retieji"]],
-											key_hinata: ["female", "key", 4, ["hinata_qiulve", "hinata_ehou"]],
+											key_yuzuru: {
+												sex: "male",
+												group: "key",
+												hp: 4,
+												skills: ["hinata_qiulve", "kurou"],
+											},
+											sp_key_kanade: {
+												sex: "female",
+												group: "key",
+												hp: 3,
+												skills: ["hinata_qiulve", "benxi"],
+											},
+											key_ayato: {
+												sex: "male",
+												group: "key",
+												hp: 3,
+												skills: ["hinata_qiulve", "retieji"],
+											},
+											key_hinata: {
+												sex: "female",
+												group: "key",
+												hp: 4,
+												skills: ["hinata_qiulve", "hinata_ehou"],
+											},
 										},
 										translate: {
 											key_yuzuru: "新秀球王",

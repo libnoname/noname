@@ -19,6 +19,7 @@ import {
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { nonameInitialized } from "../../../../util/index.js";
 import security from "../../../../util/security.js";
+import { Character } from "../../../../library/element/character.js";
 
 export const extensionMenu = function (connectMenu) {
 	if (connectMenu) return;
@@ -1034,7 +1035,13 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				if(!list.length){
-					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = ["male", "wu", 4, ["jiang"], ["unseen"]];
+					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = new Character({
+						sex: "male",
+						group: "wu",
+						hp: 4,
+						skills: ["jiang"],
+						isUnseen: true,
+					});
 					if(!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}
@@ -2197,7 +2204,13 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				if(!list.length){
-					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = ["male", "wu", 4, ["jiang"], ["unseen"]];
+					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = new Character({
+						sex: "male",
+						group: "wu",
+						hp: 4,
+						skills: ["jiang"],
+						isUnseen: true,
+					});
 					if(!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}

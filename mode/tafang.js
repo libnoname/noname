@@ -1146,12 +1146,13 @@ export default () => {
 				// tafang_mech_shiyuansu:['','',4,[],['boss'],5],
 				// tafang_mech_jiqishi:['','',4,[],['boss'],5],
 
-				tafang_mech_guangmingquan: ["", "", 3, [], ["boss"], 3],
-				tafang_mech_nengliangqiu: ["", "", 3, [], ["boss"], 3],
-				tafang_mech_jiguanren: ["", "", 3, [], ["boss"], 3],
-				tafang_mech_weixingxianjing: ["", "", 3, [], ["boss"], 4],
-				tafang_mech_mutong: ["", "", 3, [], ["boss"], 4],
-				tafang_mech_gongchengche: ["", "", 3, [], ["boss"], 4],
+				tafang_mech_guangmingquan: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 3 },
+
+				tafang_mech_nengliangqiu: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 3 },
+				tafang_mech_jiguanren: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 3 },
+				tafang_mech_weixingxianjing: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 4 },
+				tafang_mech_mutong: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 4 },
+				tafang_mech_gongchengche: { sex: "", group: "", hp: 3, isBoss: true, extraModeData: 4 },
 			},
 		},
 		cardPack: {
