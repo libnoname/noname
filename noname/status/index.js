@@ -1,5 +1,6 @@
 import { lib } from "../library/index.js";
 import PauseManager from "../game/PauseManager.js";
+import { GameEvent } from "../library/element/gameEvent.js";
 import { GameEventManager } from "../library/element/gameEvent.js";
 
 export class status {
@@ -8,9 +9,10 @@ export class status {
 	auto = false;
 	eventManager= new GameEventManager();
 	/**
-	 * @type { GameEvent | undefined }
+	 * @type { GameEvent }
 	 */
 	get event() {
+		// @ts-expect-error 除开局外，必然存在当前事件
 		return this.eventManager.getStatusEvent();
 	}
 	set event(event) {
