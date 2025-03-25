@@ -7353,6 +7353,12 @@ export class Player extends HTMLDivElement {
 		lib.node.torespond = {};
 		if (typeof proceed == "function") proceed();
 		else if (_status.paused && !noresume) game.resume();
+
+		if (lib.node.waitForResult[this.playerid]?.length > 0) {
+			const current = lib.node.waitForResult.pop();
+			current(result);
+			// delete lib.node.waitForResult[this.playerid];
+		}
 	}
 	tempUnwait(result) {
 		if (!(this.playerid in lib.node.torespond)) return;

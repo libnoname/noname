@@ -232,6 +232,7 @@ export class Library {
 	 *  observing:[],
 	 *  torespond:{},
 	 *  torespondtimeout:{},
+	 *  waitForResult: Record<number | string, ((result: any) => void)[]>,
 	 * } }
 	 */
 	node;

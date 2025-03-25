@@ -1507,6 +1507,7 @@ export class Game extends GameCompatible {
 		lib.node.observing = [];
 		lib.node.torespond = {};
 		lib.node.torespondtimeout = {};
+		lib.node.waitForResult = {};
 		lib.playerOL = {};
 		lib.cardOL = {};
 		lib.vcardOL = {};
