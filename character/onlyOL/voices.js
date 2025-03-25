@@ -1,4 +1,9 @@
 export default {
+	"#olsblunzhan1": "杀!尽歼贼败军之众!",
+	"#olsblunzhan2": "白马公孙?哼，不过吾一合之敌!",
+	"#olsbjuejue1": "冠绝河北，威震冀幽，一勇可当万夫!",
+	"#olsbjuejue2": "今丑单骑独往，必绝曹军之威!",
+	"#ol_sb_wenchou:die": "何人…杀吾兄弟………",
 	"#olsbchoulie1": "匹夫欺我太甚，此仇不死不休！",
 	"#olsbchoulie2": "唯有那曹操项上人头，方能解我心头之恨。",
 	"#olsbzhuijiao1": "曹阿瞒，这次看你往哪里逃！",

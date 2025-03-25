@@ -3171,7 +3171,7 @@ const skills = {
 					}, "ej")
 				);
 			if (player.isHealthy()) return false;
-			return game.hasPlayer(target => event.getl?.(target)?.es?.some(card => get.suit(card, target) === "spade"));
+			return game.hasPlayer2(target => event.getl?.(target)?.es?.some(card => get.suit(card, target) === "spade"));
 		},
 		async cost(event, trigger, player) {
 			if (trigger.name === "damage") {

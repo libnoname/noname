@@ -1,4 +1,9 @@
 export default {
+	"#oljiaoyu1": "椒房熠辉，长寄心于君王。",
+	"#oljiaoyu2": "妾本蒲柳，幸载皇恩，昭母仪于天下。",
+	"#olneixun1": "妾充女君之位，当处中馈之任。",
+	"#olneixun2": "诸宫人非圣贤，偶有失亦可谅。",
+	"#ol_guozhao:die": "我本浮萍，何能长居椒房?",
 	"#olliyong1": "今日，我虽死，却未辱武安之名！",
 	"#olliyong2": "我受文举恩义，今当以死报之！",
 	"#ol_wuanguo:die": "哎呀，我的膀子呀！",

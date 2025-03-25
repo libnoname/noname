@@ -387,7 +387,7 @@ const skills = {
 					audio: "twhanhong",
 					suit: result.control,
 					filterCard: true,
-					position: "h",
+					position: "he",
 					selectCard() {
 						const player = get.player();
 						const nums = lib.suit

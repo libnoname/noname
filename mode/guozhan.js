@@ -23128,7 +23128,7 @@ export default () => {
 				if (fid == toidentity && toidentity != "ye") {
 					return 4 + difficulty;
 				}
-				if (from.identity == "unknown" && fid == toidentity) {
+				if (from.identity == "unknown" && fid == toidentity && fid != "ye") {
 					if (from.wontYe()) return 4 + difficulty;
 				}
 				var groups = [];
@@ -23197,7 +23197,7 @@ export default () => {
 				if (to == game.me) difficulty = (2 - get.difficulty()) * 1.5;
 				if (from == to) return 5 + difficulty;
 				if (from.isFriendOf(to)) return 5 + difficulty;
-				if (from.identity == "unknown" && fid == to.identity) {
+				if (from.identity == "unknown" && fid == to.identity && fid != "ye") {
 					if (from.wontYe()) return 4 + difficulty;
 				}
 				var att = get.realAttitude(from, to, difficulty, tid);
