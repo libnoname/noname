@@ -7355,7 +7355,7 @@ export class Player extends HTMLDivElement {
 		else if (_status.paused && !noresume) game.resume();
 
 		if (lib.node.waitForResult[this.playerid]?.length > 0) {
-			const current = lib.node.waitForResult.pop();
+			const current = lib.node.waitForResult[this.playerid].pop();
 			current(result);
 			// delete lib.node.waitForResult[this.playerid];
 		}

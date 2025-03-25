@@ -477,6 +477,26 @@ export class GameEvent {
 		game.pause();
 		return this;
 	}
+
+	/**
+	 * 在可await/异步情况下获取客机执行的结果
+	 */
+	sendAsync() {
+		return new Promise(resolve => {
+			this.send()
+			if (!lib.node?.waitForResult || !this.player.playerid) {
+				resolve(null);
+				return;
+			}
+
+			if (!Array.isArray(lib.node.waitForResult[this.player.playerid])) {
+				lib.node.waitForResult[this.player.playerid] = [resolve];
+			} else {
+				lib.node.waitForResult[this.player.playerid].push(resolve);
+			}
+		});
+	}
+
 	resume() {
 		delete this._buttonChoice;
 		delete this._cardChoice;

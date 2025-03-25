@@ -5,6 +5,8 @@ import { lib } from "../index.js";
 import { _status } from "../../status/index.js";
 import { ui } from "../../ui/index.js";
 import { gnc } from "../../gnc/index.js";
+import { GameEvent } from "./gameEvent.js";
+import { Player } from "./player.js";
 
 // 未来再改
 export const Content = {
@@ -1600,222 +1602,234 @@ export const Content = {
 		var result = event.result || result;
 		event.result = result;
 	},
-	chooseToMove: function () {
-		"step 0";
+	/**
+	 *
+	 * @param {GameEvent} event
+	 * @param {GameEvent} trigger
+	 * @param {Player} player
+	 */
+	async chooseToMove(event, trigger, player) {
 		if (event.chooseTime && _status.connectMode && !game.online) {
 			event.time = lib.configOL.choose_timeout;
-			game.broadcastAll(function (time) {
+			game.broadcastAll(time => {
 				lib.configOL.choose_timeout = time;
 			}, event.chooseTime);
 		}
+
+		let result;
 		if (event.isMine()) {
-			delete ui.selected.guanxing_button;
-			var list = event.list,
-				filterMove = event.filterMove,
-				filterOk = event.filterOk;
-			_status.imchoosing = true;
-			var event = _status.event;
-			event.settleed = false;
-			event.dialog = ui.create.dialog(event.prompt || "请选择要操作的牌", "hidden", "forcebutton");
-			event.switchToAuto = function () {
-				if (!filterOk(event.moved)) {
-					if (!event.forced) event._result = { bool: false };
-					else event._result = "ai";
-				} else {
-					event._result = {
-						bool: true,
-						moved: event.moved,
-					};
-				}
-				event.dialog.close();
-				if (ui.confirm) ui.confirm.close();
-				game.resume();
-				_status.imchoosing = false;
-				setTimeout(function () {
-					ui.arena.classList.remove("choose-to-move");
-				}, 500);
-			};
-			event.dialog.classList.add("scroll1");
-			event.dialog.classList.add("scroll2");
-			event.dialog.classList.add("fullwidth");
-			if (list.length > 2) {
-				ui.arena.classList.add("choose-to-move");
-				event.dialog.classList.add("fullheight");
-			}
+			result = await new Promise(resolve => {
+				delete ui.selected.guanxing_button;
 
-			/**
-			 * @type { Card[][] } 保存每次移动后的对应实体牌的位置
-			 */
-			event.moved = [];
-			/**
-			 * @type { HTMLDivElement[] } 所有可移动的buttons数组
-			 */
-			var buttonss = [];
-			event.buttonss = buttonss;
-			/**
-			 * 是否处于拖拽动画中(禁止其他的选择，拖拽)
-			 */
-			event.isPlayingAnimation = false;
-			// 初始化触摸点位置和元素偏移量
-			var touchStartX = 0;
-			var touchStartY = 0;
-			var elementOffsetX = 0;
-			var elementOffsetY = 0;
-			var currentElement;
-			// 首次触发move事件的元素
-			var firstOnDragElement;
-			/**
-			 * 每次移动后更新数据
-			 */
-			var updateButtons = function () {
-				for (var i of buttonss) {
-					// 更新每次移动后的对应实体牌的位置
-					event.moved[i._link] = get.links(Array.from(i.childNodes));
-					// 更新这个buttons的提示文本
-					if (typeof i.textPrompt == "function") i.previousSibling.innerHTML = '<div class="text center">' + i.textPrompt(event.moved[i._link]) + "</div>";
-				}
-				if (filterOk(event.moved)) {
-					ui.create.confirm("o");
-				} else {
-					if (!event.forced) ui.create.confirm("c");
-					else if (ui.confirm) ui.confirm.close();
-				}
-			};
+				const list = event.list;
+				const filterMove = event.filterMove;
+				const filterOk = event.filterOk;
 
-			/**
-			 * 确认是否是拖拽开始
-			 *
-			 * 按下时，是不能判断出是否拖拽开始的，得在move事件才可以
-			 *
-			 * @this buttons
-			 * @param { TouchEvent | MouseEvent } e
-			 */
-			var dragStart = function (e) {
-				if (event.isPlayingAnimation) return;
-				// 左键按下
-				if (e instanceof MouseEvent) {
-					if (e.which != 1) return;
-				}
-				// 单个手指按下
-				if (window.TouchEvent && e instanceof TouchEvent) {
-					if (e.touches.length != 1) return;
-				}
-				// 判断按下的元素是否是card
-				var cards = Array.from(this.children);
-				var target = cards.find(card => {
-					// Node.contains()
-					return card.contains(e.target);
-				});
-				if (target) {
-					if (!target.copy) {
-						target.copy = target.cloneNode(true);
-						target.copy.style.opacity = "0.75";
-						target.copy.style.pointerEvents = "none";
-					}
-					touchStartX = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) / game.documentZoom;
-					touchStartY = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY) / game.documentZoom;
-					elementOffsetX = target.getBoundingClientRect().x / game.documentZoom - touchStartX;
-					elementOffsetY = target.getBoundingClientRect().y / game.documentZoom - touchStartY;
-					currentElement = target;
-					// e.stopPropagation();
-				}
-			};
+				_status.imchoosing = true;
+				event.settleed = false;
 
-			/**
-			 * 判断出是否拖拽开始
-			 *
-			 * move事件是在button元素上监听的，而不是在dialog.content上。
-			 *
-			 * @this dialog
-			 * @param { TouchEvent | MouseEvent } e
-			 */
-			var onDrag = function (e) {
-				if (event.isPlayingAnimation) return;
-				if (e instanceof MouseEvent) {
-					if (e.which != 1) return;
-				}
-				if (window.TouchEvent && e instanceof TouchEvent) {
-					if (e.touches.length != 1) return;
-				}
-				if (!currentElement || !currentElement.copy) return;
-				if (!firstOnDragElement) {
-					if (!currentElement.contains(e.target)) {
-						return;
+				event.dialog = ui.create.dialog(event.prompt || "请选择要操作的牌", "hidden", "forcebutton");
+
+				event.switchToAuto = () => {
+					if (!filterOk(event.moved)) {
+						if (!event.forced) event._result = { bool: false };
+						else event._result = "ai";
 					} else {
-						firstOnDragElement = currentElement;
+						event._result = {
+							bool: true,
+							moved: event.moved,
+						};
 					}
+					event.dialog.close();
+					if (ui.confirm) ui.confirm.close();
+					game.resume();
+					_status.imchoosing = false;
+					setTimeout(function () {
+						ui.arena.classList.remove("choose-to-move");
+					}, 500);
+					resolve(event._result);
+				};
+				event.dialog.classList.add("scroll1");
+				event.dialog.classList.add("scroll2");
+				event.dialog.classList.add("fullwidth");
+				if (list.length > 2) {
+					ui.arena.classList.add("choose-to-move");
+					event.dialog.classList.add("fullheight");
 				}
-				// 拖动离开了这个牌的区域，进行赋值
-				// if (!currentElement.contains(e.target)) {
 
-				// }
-				// 移除高亮
-				ui.selected.guanxing_button?.classList.remove("glow2");
-				ui.selected.guanxing_button = currentElement;
-				ui.selected.guanxing_button.classList.add("glow2");
-				// 显示拖拽的元素
 				/**
-				 * @type { HTMLDivElement }
+				 * @type { Card[][] } 保存每次移动后的对应实体牌的位置
 				 */
-				var copy = currentElement.copy;
-				if (!ui.window.contains(copy)) {
-					copy.style.position = "absolute";
-					copy.style.transition = "none";
-					copy.style.zIndex = "100";
-					copy.css({
-						boxShadow: "0px 0px 7px 2px rgba(233, 30, 77, 0.95)",
+				event.moved = [];
+				/**
+				 * @type { HTMLDivElement[] } 所有可移动的buttons数组
+				 */
+				var buttonss = [];
+				event.buttonss = buttonss;
+				/**
+				 * 是否处于拖拽动画中(禁止其他的选择，拖拽)
+				 */
+				event.isPlayingAnimation = false;
+				// 初始化触摸点位置和元素偏移量
+				var touchStartX = 0;
+				var touchStartY = 0;
+				var elementOffsetX = 0;
+				var elementOffsetY = 0;
+				var currentElement;
+				// 首次触发move事件的元素
+				var firstOnDragElement;
+				/**
+				 * 每次移动后更新数据
+				 */
+				var updateButtons = function () {
+					for (var i of buttonss) {
+						// 更新每次移动后的对应实体牌的位置
+						event.moved[i._link] = get.links(Array.from(i.childNodes));
+						// 更新这个buttons的提示文本
+						if (typeof i.textPrompt == "function") i.previousSibling.innerHTML = '<div class="text center">' + i.textPrompt(event.moved[i._link]) + "</div>";
+					}
+					if (filterOk(event.moved)) {
+						ui.create.confirm("o");
+					} else {
+						if (!event.forced) ui.create.confirm("c");
+						else if (ui.confirm) ui.confirm.close();
+					}
+				};
+
+				/**
+				 * 确认是否是拖拽开始
+				 *
+				 * 按下时，是不能判断出是否拖拽开始的，得在move事件才可以
+				 *
+				 * @this buttons
+				 * @param { TouchEvent | MouseEvent } e
+				 */
+				var dragStart = function (e) {
+					if (event.isPlayingAnimation) return;
+					// 左键按下
+					if (e instanceof MouseEvent) {
+						if (e.which != 1) return;
+					}
+					// 单个手指按下
+					if (window.TouchEvent && e instanceof TouchEvent) {
+						if (e.touches.length != 1) return;
+					}
+					// 判断按下的元素是否是card
+					var cards = Array.from(this.children);
+					var target = cards.find(card => {
+						// Node.contains()
+						return card.contains(e.target);
 					});
-					ui.window.appendChild(copy);
-				}
-				e = e instanceof MouseEvent ? e : e.touches[0];
-
-				const ex = e.clientX / game.documentZoom;
-				const ey = e.clientY / game.documentZoom;
-				copy.style.left = `${ex + elementOffsetX}px`;
-				copy.style.top = `${ey + elementOffsetY}px`;
-			};
-
-			var dragEnd = function (e) {
-				if (event.isPlayingAnimation) return;
-				if (e instanceof MouseEvent) {
-					if (e.which != 1) return;
-				}
-				if (window.TouchEvent && e instanceof TouchEvent) {
-					if (e.changedTouches.length != 1) return;
-				}
-				firstOnDragElement = null;
-				buttonss.forEach(btn => {
-					Array.from(btn.children).forEach(element => {
-						if (element.copy && ui.window.contains(element.copy)) {
-							ui.window.removeChild(element.copy);
+					if (target) {
+						if (!target.copy) {
+							target.copy = target.cloneNode(true);
+							target.copy.style.opacity = "0.75";
+							target.copy.style.pointerEvents = "none";
 						}
+						touchStartX = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) / game.documentZoom;
+						touchStartY = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY) / game.documentZoom;
+						elementOffsetX = target.getBoundingClientRect().x / game.documentZoom - touchStartX;
+						elementOffsetY = target.getBoundingClientRect().y / game.documentZoom - touchStartY;
+						currentElement = target;
+						// e.stopPropagation();
+					}
+				};
+
+				/**
+				 * 判断出是否拖拽开始
+				 *
+				 * move事件是在button元素上监听的，而不是在dialog.content上。
+				 *
+				 * @this dialog
+				 * @param { TouchEvent | MouseEvent } e
+				 */
+				var onDrag = function (e) {
+					if (event.isPlayingAnimation) return;
+					if (e instanceof MouseEvent) {
+						if (e.which != 1) return;
+					}
+					if (window.TouchEvent && e instanceof TouchEvent) {
+						if (e.touches.length != 1) return;
+					}
+					if (!currentElement || !currentElement.copy) return;
+					if (!firstOnDragElement) {
+						if (!currentElement.contains(e.target)) {
+							return;
+						} else {
+							firstOnDragElement = currentElement;
+						}
+					}
+					// 拖动离开了这个牌的区域，进行赋值
+					// if (!currentElement.contains(e.target)) {
+
+					// }
+					// 移除高亮
+					ui.selected.guanxing_button?.classList.remove("glow2");
+					ui.selected.guanxing_button = currentElement;
+					ui.selected.guanxing_button.classList.add("glow2");
+					// 显示拖拽的元素
+					/**
+					 * @type { HTMLDivElement }
+					 */
+					var copy = currentElement.copy;
+					if (!ui.window.contains(copy)) {
+						copy.style.position = "absolute";
+						copy.style.transition = "none";
+						copy.style.zIndex = "100";
+						copy.css({
+							boxShadow: "0px 0px 7px 2px rgba(233, 30, 77, 0.95)",
+						});
+						ui.window.appendChild(copy);
+					}
+					e = e instanceof MouseEvent ? e : e.touches[0];
+
+					const ex = e.clientX / game.documentZoom;
+					const ey = e.clientY / game.documentZoom;
+					copy.style.left = `${ex + elementOffsetX}px`;
+					copy.style.top = `${ey + elementOffsetY}px`;
+				};
+
+				var dragEnd = function (e) {
+					if (event.isPlayingAnimation) return;
+					if (e instanceof MouseEvent) {
+						if (e.which != 1) return;
+					}
+					if (window.TouchEvent && e instanceof TouchEvent) {
+						if (e.changedTouches.length != 1) return;
+					}
+					firstOnDragElement = null;
+					buttonss.forEach(btn => {
+						Array.from(btn.children).forEach(element => {
+							if (element.copy && ui.window.contains(element.copy)) {
+								ui.window.removeChild(element.copy);
+							}
+						});
 					});
-				});
-				if (!ui.selected.guanxing_button?.copy) return;
-				var clientX = (e instanceof MouseEvent ? e.clientX : e.changedTouches[0].clientX) / game.documentZoom;
-				var clientY = (e instanceof MouseEvent ? e.clientY : e.changedTouches[0].clientY) / game.documentZoom;
-				// 鼠标当前处于哪个元素上
-				var target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
-				// 相当于没移动，让它自己触发后续的click
-				if (ui.selected.guanxing_button.contains(target)) return;
-				// 停止拖拽的目标处于哪个button区域中
-				var button = buttonss.find(b => {
-					// Node.contains()
-					return b.contains(target);
-				});
-				// 不能拖拽到区域外
-				if (!button) return;
-				var children = Array.from(button.children);
-				// 与card交换位置
-				var card = children.find(element => element.contains(target));
-				// 判断是否可以移动
-				if (!card) {
-					if (!filterMove(ui.selected.guanxing_button, button._link, event.moved)) return;
-				} else {
-					if (!filterMove(card, ui.selected.guanxing_button, event.moved)) return;
-				}
-				//后续这里可以增加拖动到空白位置的效果
-				/*
+					if (!ui.selected.guanxing_button?.copy) return;
+					var clientX = (e instanceof MouseEvent ? e.clientX : e.changedTouches[0].clientX) / game.documentZoom;
+					var clientY = (e instanceof MouseEvent ? e.clientY : e.changedTouches[0].clientY) / game.documentZoom;
+					// 鼠标当前处于哪个元素上
+					var target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
+					// 相当于没移动，让它自己触发后续的click
+					if (ui.selected.guanxing_button.contains(target)) return;
+					// 停止拖拽的目标处于哪个button区域中
+					var button = buttonss.find(b => {
+						// Node.contains()
+						return b.contains(target);
+					});
+					// 不能拖拽到区域外
+					if (!button) return;
+					var children = Array.from(button.children);
+					// 与card交换位置
+					var card = children.find(element => element.contains(target));
+					// 判断是否可以移动
+					if (!card) {
+						if (!filterMove(ui.selected.guanxing_button, button._link, event.moved)) return;
+					} else {
+						if (!filterMove(card, ui.selected.guanxing_button, event.moved)) return;
+					}
+					//后续这里可以增加拖动到空白位置的效果
+					/*
 
 				 if (拖动到空白) {
 					game.$elementGoto().then(){
@@ -1829,174 +1843,180 @@ export const Content = {
 				}
 				
 				*/
-				// FLIP动画
-				// first
-				buttonss.forEach(btn => {
-					Array.from(btn.children).forEach(element => {
-						element.style.transition = "none";
-						element._rect = element.getBoundingClientRect();
+					// FLIP动画
+					// first
+					buttonss.forEach(btn => {
+						Array.from(btn.children).forEach(element => {
+							element.style.transition = "none";
+							element._rect = element.getBoundingClientRect();
+						});
 					});
-				});
-				// last
-				// 如果拖拽到一个空区域内
-				if (!button.hasChildNodes()) {
-					button.appendChild(ui.selected.guanxing_button);
-				} else if (!card) {
-					// 判断是加在第一个还是最后一个
-					if (children.length > 0) {
-						var firstChild = children[0];
-						if (clientX < firstChild.getBoundingClientRect().left / game.documentZoom) {
-							button.insertBefore(ui.selected.guanxing_button, firstChild);
+					// last
+					// 如果拖拽到一个空区域内
+					if (!button.hasChildNodes()) {
+						button.appendChild(ui.selected.guanxing_button);
+					} else if (!card) {
+						// 判断是加在第一个还是最后一个
+						if (children.length > 0) {
+							var firstChild = children[0];
+							if (clientX < firstChild.getBoundingClientRect().left / game.documentZoom) {
+								button.insertBefore(ui.selected.guanxing_button, firstChild);
+							} else button.appendChild(ui.selected.guanxing_button);
 						} else button.appendChild(ui.selected.guanxing_button);
-					} else button.appendChild(ui.selected.guanxing_button);
-				} else {
-					// 是交换而不是到card前面
-					var par1 = ui.selected.guanxing_button.parentNode,
-						ind1 = ui.selected.guanxing_button.nextSibling,
-						par2 = card.parentNode,
-						ind2 = card.nextSibling;
-					ui.selected.guanxing_button.classList.remove("glow2");
-					par1.insertBefore(card, ind1);
-					par2.insertBefore(ui.selected.guanxing_button, ind2);
-				}
-				// invert
-				buttonss.forEach(btn => {
-					Array.from(btn.children).forEach(element => {
-						element._rect2 = element.getBoundingClientRect();
-						element.style.transform = `translateX(${(element._rect.left - element._rect2.left) / game.documentZoom}px) translateY(${(element._rect.top - element._rect2.top) / game.documentZoom}px)`;
-					});
-				});
-				// play
-				event.isPlayingAnimation = true;
-				setTimeout(() => {
-					Promise.race([
-						new Promise(resolve => setTimeout(resolve, 700)),
-						Promise.all(
-							buttonss
-								.map(btn => Array.from(btn.children))
-								.flat(1)
-								.map(element => {
-									return new Promise(resolve => {
-										element.classList.remove("glow2");
-										element.style.transition = "";
-										const transformValue = element.style.transform;
-										if (transformValue !== "translateX(0px) translateY(0px)" && transformValue !== "") {
-											element.style.transform = "translateX(0px) translateY(0px)";
-											element.addEventListener(
-												"transitionend",
-												event => {
-													// 确保 transitionend 事件是针对当前元素的 transform 属性
-													if (event.propertyName === "transform") {
-														resolve();
-													}
-												},
-												{ once: true }
-											);
-										} else resolve();
-									});
-								})
-						),
-					]).then(() => {
-						delete ui.selected.guanxing_button;
-						event.isPlayingAnimation = false;
-						updateButtons();
-					});
-				}, 0);
-			};
-
-			// 根据数据创建区域
-			for (var i = 0; i < list.length; i++) {
-				var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
-				tex.classList.add("choosetomove");
-				var buttons = ui.create.div(".buttons", event.dialog.content);
-				buttons.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", dragStart, true);
-				event.dialog.addEventListener(lib.config.touchscreen ? "touchmove" : "mousemove", onDrag, true);
-				event.dialog.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", dragEnd, true);
-				buttonss.push(buttons);
-				buttons.classList.add("popup");
-				buttons.classList.add("guanxing");
-				buttons._link = i;
-				if (list[i][1]) {
-					if (get.itemtype(list[i][1]) == "cards") {
-						var cardsb = ui.create.buttons(list[i][1], "card", buttons);
-						if (list[i][2] && typeof list[i][2] == "string") {
-							for (var ij of cardsb) ij.node.gaintag.innerHTML = get.translation(list[i][2]);
-						}
-					} else if (list[i][1].length == 2) {
-						ui.create.buttons(list[i][1][0], list[i][1][1], buttons);
+					} else {
+						// 是交换而不是到card前面
+						var par1 = ui.selected.guanxing_button.parentNode,
+							ind1 = ui.selected.guanxing_button.nextSibling,
+							par2 = card.parentNode,
+							ind2 = card.nextSibling;
+						ui.selected.guanxing_button.classList.remove("glow2");
+						par1.insertBefore(card, ind1);
+						par2.insertBefore(ui.selected.guanxing_button, ind2);
 					}
-				}
-				if (list[i][2] && typeof list[i][2] == "function") buttons.textPrompt = list[i][2];
-			}
-			var tex = event.dialog.add('<div class="text center">点击或拖动两张牌以交换位置；点击一张牌并点击其他区域或拖动到其他区域以移动卡牌</div>');
-			tex.classList.add("choosetomove");
-
-			event.dialog.open();
-			updateButtons();
-
-			event.custom.replace.button = function (button) {
-				if (event.isPlayingAnimation) return;
-				var node = button.parentNode;
-				if (!buttonss.includes(node)) return;
-				if (!ui.selected.guanxing_button) {
-					ui.selected.guanxing_button = button;
-					button.classList.add("glow2");
-					return;
-				}
-				if (ui.selected.guanxing_button == button) {
-					button.classList.remove("glow2");
-					delete ui.selected.guanxing_button;
-					return;
-				}
-			};
-			event.custom.replace.confirm = function (bool) {
-				if (event.isPlayingAnimation) return;
-				event.buttonss.forEach(btn => {
-					Array.from(btn.children).forEach(element => {
-						if (element.copy && ui.window.contains(element.copy)) {
-							ui.window.removeChild(element.copy);
-							delete element.copy;
-						}
+					// invert
+					buttonss.forEach(btn => {
+						Array.from(btn.children).forEach(element => {
+							element._rect2 = element.getBoundingClientRect();
+							element.style.transform = `translateX(${(element._rect.left - element._rect2.left) / game.documentZoom}px) translateY(${(element._rect.top - element._rect2.top) / game.documentZoom}px)`;
+						});
 					});
-				});
-				if (bool)
-					event._result = {
-						bool: true,
-						moved: event.moved,
-					};
-				else event._result = { bool: false };
-				event.dialog.close();
-				if (ui.confirm) ui.confirm.close();
-				game.resume();
-				_status.imchoosing = false;
-				setTimeout(function () {
-					ui.arena.classList.remove("choose-to-move");
-				}, 500);
-			};
+					// play
+					event.isPlayingAnimation = true;
+					setTimeout(() => {
+						Promise.race([
+							new Promise(resolve => setTimeout(resolve, 700)),
+							Promise.all(
+								buttonss
+									.map(btn => Array.from(btn.children))
+									.flat(1)
+									.map(element => {
+										return new Promise(resolve => {
+											element.classList.remove("glow2");
+											element.style.transition = "";
+											const transformValue = element.style.transform;
+											if (transformValue !== "translateX(0px) translateY(0px)" && transformValue !== "") {
+												element.style.transform = "translateX(0px) translateY(0px)";
+												element.addEventListener(
+													"transitionend",
+													event => {
+														// 确保 transitionend 事件是针对当前元素的 transform 属性
+														if (event.propertyName === "transform") {
+															resolve();
+														}
+													},
+													{ once: true }
+												);
+											} else resolve();
+										});
+									})
+							),
+						]).then(() => {
+							delete ui.selected.guanxing_button;
+							event.isPlayingAnimation = false;
+							updateButtons();
+						});
+					}, 0);
+				};
 
-			game.pause();
-			game.countChoose();
-			event.choosing = true;
+				// 根据数据创建区域
+				for (var i = 0; i < list.length; i++) {
+					var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
+					tex.classList.add("choosetomove");
+					var buttons = ui.create.div(".buttons", event.dialog.content);
+					buttons.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", dragStart, true);
+					event.dialog.addEventListener(lib.config.touchscreen ? "touchmove" : "mousemove", onDrag, true);
+					event.dialog.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", dragEnd, true);
+					buttonss.push(buttons);
+					buttons.classList.add("popup");
+					buttons.classList.add("guanxing");
+					buttons._link = i;
+					if (list[i][1]) {
+						if (get.itemtype(list[i][1]) == "cards") {
+							var cardsb = ui.create.buttons(list[i][1], "card", buttons);
+							if (list[i][2] && typeof list[i][2] == "string") {
+								for (var ij of cardsb) ij.node.gaintag.innerHTML = get.translation(list[i][2]);
+							}
+						} else if (list[i][1].length == 2) {
+							ui.create.buttons(list[i][1][0], list[i][1][1], buttons);
+						}
+					}
+					if (list[i][2] && typeof list[i][2] == "function") buttons.textPrompt = list[i][2];
+				}
+				var tex = event.dialog.add('<div class="text center">点击或拖动两张牌以交换位置；点击一张牌并点击其他区域或拖动到其他区域以移动卡牌</div>');
+				tex.classList.add("choosetomove");
+
+				event.dialog.open();
+				updateButtons();
+
+				event.custom.replace.button = function (button) {
+					if (event.isPlayingAnimation) return;
+					var node = button.parentNode;
+					if (!buttonss.includes(node)) return;
+					if (!ui.selected.guanxing_button) {
+						ui.selected.guanxing_button = button;
+						button.classList.add("glow2");
+						return;
+					}
+					if (ui.selected.guanxing_button == button) {
+						button.classList.remove("glow2");
+						delete ui.selected.guanxing_button;
+						return;
+					}
+				};
+				event.custom.replace.confirm = function (bool) {
+					if (event.isPlayingAnimation) return;
+					event.buttonss.forEach(btn => {
+						Array.from(btn.children).forEach(element => {
+							if (element.copy && ui.window.contains(element.copy)) {
+								ui.window.removeChild(element.copy);
+								delete element.copy;
+							}
+						});
+					});
+					if (bool)
+						event._result = {
+							bool: true,
+							moved: event.moved,
+						};
+					else event._result = { bool: false };
+					event.dialog.close();
+					if (ui.confirm) ui.confirm.close();
+					game.resume();
+					_status.imchoosing = false;
+					setTimeout(function () {
+						ui.arena.classList.remove("choose-to-move");
+					}, 500);
+					resolve(event._result);
+				};
+
+				game.pause();
+				game.countChoose();
+				event.choosing = true;
+			});
 		} else if (event.isOnline()) {
-			event.send();
+			result = await event.sendAsync();
 		} else {
-			event.result = "ai";
+			result = "ai";
 		}
-		"step 1";
-		if (event.time)
-			game.broadcastAll(function (time) {
+
+		if (event.time) {
+			game.broadcastAll(time => {
 				lib.configOL.choose_timeout = time;
 			}, event.time);
-		var result = event.result || result;
+		}
+
 		if ((!result || result == "ai" || (event.forced && !result.bool)) && event.processAI) {
 			var moved = event.processAI(event.list);
-			if (moved)
+			if (moved) {
 				result = {
 					bool: true,
 					moved,
 				};
-			else result = { bool: false };
+			} else {
+				result = { bool: false };
+			}
 		}
+
 		event.result = result;
 	},
 	showCharacter: function () {
