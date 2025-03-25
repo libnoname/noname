@@ -8613,51 +8613,6 @@ const skills = {
 			},
 		},
 	},
-	zaiqix: {
-		trigger: { player: "phaseDrawBefore" },
-		filter(event, player) {
-			return player.hp < player.maxHp;
-		},
-		check(event, player) {
-			if (1 + player.maxHp - player.hp < 2) {
-				return false;
-			} else if (1 + player.maxHp - player.hp == 2) {
-				return player.countCards("h") >= 2;
-			}
-			return true;
-		},
-		content() {
-			"step 0";
-			trigger.cancel();
-			event.cards = get.cards(player.maxHp - player.hp + 1);
-			player.showCards(event.cards);
-			"step 1";
-			var num = 0;
-			for (var i = 0; i < event.cards.length; i++) {
-				if (get.suit(event.cards[i]) == "heart") {
-					num++;
-					event.cards[i].discard();
-					event.cards.splice(i--, 1);
-				}
-			}
-			if (num) {
-				player.recover(num);
-			}
-			"step 2";
-			if (event.cards.length) {
-				player.gain(event.cards);
-				player.$gain2(event.cards);
-				game.delay();
-			}
-		},
-		ai: {
-			threaten(player, target) {
-				if (target.hp == 1) return 2;
-				if (target.hp == 2) return 1.5;
-				return 1;
-			},
-		},
-	},
 	batu: {
 		trigger: { player: "phaseEnd" },
 		frequent: true,
@@ -8680,60 +8635,6 @@ const skills = {
 			} else {
 				player.recover(trigger.num);
 			}
-		},
-	},
-	diyduanliang: {
-		group: ["diyduanliang1", "diyduanliang2"],
-		ai: {
-			threaten: 1.2,
-		},
-	},
-	diyduanliang1: {
-		enable: "phaseUse",
-		usable: 1,
-		discard: false,
-		sourceSkill: "diyduanliang",
-		filter(event, player) {
-			var cards = player.getCards("he", { color: "black" });
-			for (var i = 0; i < cards.length; i++) {
-				var type = get.type(cards[i]);
-				if (type == "basic") return true;
-			}
-			return false;
-		},
-		prepare: "throw",
-		position: "he",
-		filterCard(card) {
-			if (get.color(card) != "black") return false;
-			var type = get.type(card);
-			return type == "basic";
-		},
-		filterTarget(card, player, target) {
-			return lib.filter.filterTarget({ name: "bingliang" }, player, target);
-		},
-		check(card) {
-			return 7 - get.value(card);
-		},
-		content() {
-			player.useCard({ name: "bingliang" }, target, cards).animate = false;
-			player.draw();
-		},
-		ai: {
-			result: {
-				target(player, target) {
-					return get.effect(target, { name: "bingliang" }, player, target);
-				},
-			},
-			order: 9,
-		},
-	},
-	diyduanliang2: {
-		mod: {
-			targetInRange(card, player, target) {
-				if (card.name == "bingliang") {
-					if (get.distance(player, target) <= 2) return true;
-				}
-			},
 		},
 	},
 	guihan: {
@@ -8831,14 +8732,23 @@ const skills = {
 			}
 		},
 	},
-	yaliang: {
-		inherit: "wangxi",
-	},
-	xiongzi: {
-		trigger: { player: "phaseDrawBegin" },
-		forced: true,
-		content() {
-			trigger.num += 1 + Math.floor(player.countCards("e") / 2);
+	jieyan: {
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasCard(card => get.color(card) === "red", "h");
+		},
+		filterCard(card, player) {
+			return get.color(card) === "red";
+		},
+		filterTarget: true,
+		selectTarget: -1,
+		multitarget: true,
+		multiline: true,
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			for (const target of targets) {
+				await target.damage("fire", "nocard");
+			}
 		},
 	},
 	honglian: {
@@ -9210,50 +9120,6 @@ const skills = {
 			}
 			if (list.length > 0) player.draw(list.length);
 		},
-	},
-	diyqiangxi: {
-		enable: "phaseUse",
-		usable: 1,
-		filterCard(card) {
-			return get.subtype(card) == "equip1";
-		},
-		selectCard: [0, 1],
-		filterTarget(card, player, target) {
-			if (player == target) return false;
-			return get.distance(player, target, "attack") <= 1;
-		},
-		content() {
-			"step 0";
-			if (cards.length == 0) {
-				player.loseHp();
-			}
-			"step 1";
-			target.damage();
-			"step 2";
-			if (target.isAlive() && target.countCards("he")) {
-				player.discardPlayerCard(target);
-			}
-		},
-		check(card) {
-			return 10 - get.value(card);
-		},
-		position: "he",
-		ai: {
-			order: 8,
-			result: {
-				player(player, target) {
-					if (ui.selected.cards.length) return 0;
-					if (player.hp >= target.hp) return -0.9;
-					if (player.hp <= 2) return -10;
-					return -2;
-				},
-				target(player, target) {
-					if (player.hp <= 1) return 0;
-					return get.damageEffect(target, player);
-				},
-			},
-		},
-		threaten: 1.3,
 	},
 	nsdingzhou: {
 		enable: "phaseUse",

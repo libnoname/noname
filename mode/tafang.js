@@ -1127,27 +1127,10 @@ export default () => {
 			tafang_mech_guangmingquan: "光明泉",
 			tafang_mech_guangmingquan_skill: "圣疗",
 			tafang_mech_guangmingquan_skill_info: "每一轮令距离2格以内的所有友方角色各回复1点体力。",
-
-			tafang_mech_dubiaoxianjing: "毒镖陷阱",
-			tafang_mech_dubiaoxianjing_skill: "毒镖",
-			tafang_mech_dubiaoxianjing_skill_info: "每当距离2格以内的一名敌方角色。",
-			tafang_mech_jiqishi: "集合石",
-			tafang_mech_shenmidiaoxiang: "神秘雕像",
-			tafang_mech_shenpanxianjing: "审判之刃",
-			tafang_mech_shiyuansu: "石元素",
-			tafang_mech_wuyashenxiang: "乌鸦神像",
 		},
 		characterPack: {
 			mode_tafang: {
-				// tafang_mech_dubiaoxianjing:['','',4,[],['boss'],2],
-				// tafang_mech_wuyashenxiang:['','',4,[],['boss'],2],
-				// tafang_mech_shenpanxianjing:['','',4,[],['boss'],2],
-				// tafang_mech_shenmidiaoxiang:['','',4,[],['boss'],5],
-				// tafang_mech_shiyuansu:['','',4,[],['boss'],5],
-				// tafang_mech_jiqishi:['','',4,[],['boss'],5],
-
 				tafang_mech_guangmingquan: { sex: "", group: "", hp: 3, skills: [], isBoss: true, extraModeData: 3 },
-
 				tafang_mech_nengliangqiu: { sex: "", group: "", hp: 3, skills: [], isBoss: true, extraModeData: 3 },
 				tafang_mech_jiguanren: { sex: "", group: "", hp: 3, skills: [], isBoss: true, extraModeData: 3 },
 				tafang_mech_weixingxianjing: { sex: "", group: "", hp: 3, skills: [], isBoss: true, extraModeData: 4 },

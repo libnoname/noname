@@ -9666,7 +9666,6 @@ export default () => {
 			boss_liubei: "蜀汉烈帝",
 			boss_caiwenji: "异乡孤女",
 			boss_huatuo: "药坛圣手",
-			boss_luxun: "蹁跹君子",
 			boss_zhenji: "洛水仙子",
 			boss_diaochan: "绝代妖姬",
 			boss_guojia: "世之奇士",

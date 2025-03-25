@@ -83,7 +83,12 @@ game.import("character", function () {
 				hp: 4,
 				skills: ["qiangyun"],
 			},
-			// yxs_jinke:['male','qun',3,['cike','qiangxi']],
+			yxs_jinke: {
+				sex: "male",
+				group: "qun",
+				hp: 3,
+				skills: ["cike", "qiangxi"],
+			},
 			yxs_libai: {
 				sex: "male",
 				group: "qun",
