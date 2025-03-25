@@ -101,7 +101,7 @@ const characters = {
 		hp: 4,
 		skills: ["wusheng", "twdanji"],
 		dieAudios: ["jsp_guanyu"],
-		tempname: "jsp_guanyu",
+		tempname: ["jsp_guanyu"],
 	},
 	tw_fuhuanghou: {
 		sex: "female",
@@ -532,7 +532,7 @@ const characters = {
 		hp: 4,
 		skills: ["new_repaoxiao", "twxuhe"],
 		dieAudios: ["re_zhangfei"],
-		tempname: "re_zhangfei",
+		tempname: ["re_zhangfei"],
 	},
 	tw_xuezong: {
 		sex: "male",
@@ -618,7 +618,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["twxingwu", "twpingting"],
-		tempname: "daxiaoqiao",
+		tempname: ["daxiaoqiao"],
 		names: "桥|null-桥|null",
 		dieAudios: ["daxiaoqiao"],
 	},

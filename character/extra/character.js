@@ -42,7 +42,7 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["xinrenjie", "xinbaiyin", "xinlianpo"],
-		tempname: "new_simayi",
+		tempname: ["new_simayi"],
 		groupInGuozhan: "wei",
 		names: "司马|懿",
 		dieAudios: ["new_simayi"],

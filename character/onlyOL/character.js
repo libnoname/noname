@@ -143,7 +143,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["olqiaoshui", "jyzongshi"],
-		tempname: "re_jianyong",
+		tempname: ["re_jianyong"],
 		dieAudios: ["re_jianyong"],
 	},
 	ol_lingtong: {
@@ -151,7 +151,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["olxuanfeng"],
-		tempname: "re_lingtong",
+		tempname: ["re_lingtong"],
 		dieAudios: ["re_lingtong"],
 	},
 	ol_sb_guanyu: {
@@ -193,7 +193,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["dclihuo", "olchunlao"],
-		tempname: "xin_chengpu",
+		tempname: ["xin_chengpu"],
 		dieAudios: ["xin_chengpu"],
 	},
 	ol_wangyi: {

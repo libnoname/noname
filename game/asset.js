@@ -7508,7 +7508,6 @@ window.noname_asset_list = [
 	"image/character/dc_daxiaoqiao.jpg",
 	"image/character/dc_dongzhao.jpg",
 	"image/character/dc_duyu.jpg",
-	"image/character/dc_fuwan.jpg",
 	"image/character/dc_ganfuren.jpg",
 	"image/character/dc_gaolan.jpg",
 	"image/character/dc_gongsunzan.jpg",

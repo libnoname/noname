@@ -114,7 +114,7 @@ const characters = {
 		hp: 4,
 		skills: ["new_rewusheng", "dcdanji"],
 		dieAudios: ["jsp_guanyu"],
-		tempname: "jsp_guanyu",
+		tempname: ["jsp_guanyu"],
 	},
 	dc_mengda: {
 		sex: "male",
@@ -122,7 +122,6 @@ const characters = {
 		hp: 4,
 		skills: ["dclibang", "dcwujie"],
 	},
-	//dc_fuwan:['male','qun',4,['dcmoukui']],
 	guānning: {
 		sex: "male",
 		group: "shu",

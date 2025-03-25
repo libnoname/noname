@@ -391,7 +391,12 @@ export default () => {
 					hp: 3,
 					skills: ["xiaoji", "yinli"],
 				},
-				//huatuo:['male','qun',3,['qingnang','jijiu']],
+				huatuo: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["jijiu", "puji"],
+				},
 				lvbu: {
 					sex: "male",
 					group: "qun",
@@ -2024,6 +2029,50 @@ export default () => {
 					},
 				},
 			},
+			puji: {
+				// audio: "chulao",
+				enable: "phaseUse",
+				filter(event, player) {
+					return player.countCards("he") > 0 && player.enemy && player.enemy.countCards("he") > 0;
+				},
+				filterTarget(card, player, target) {
+					return target === player.enemy && target.countCards("he") > 0;
+				},
+				filterCard: true,
+				position: "he",
+				check(card) {
+					if (get.suit(card) == "spade") return 8 - get.value(card);
+					return 5 - get.value(card);
+				},
+				usable: 1,
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					const result = await player
+						.discardPlayerCard(target, "he", true)
+						.set("ai", button => {
+							let val = get.buttonValue(button);
+							if (get.suit(button.link) === "spade") val -= 2;
+							return val;
+						})
+						.forResult();
+					if (get.suit(event.cards[0]) === "spade") await player.draw();
+					if (result.bool && get.suit(result.cards[0]) === "spade") await target.draw();
+				},
+				ai: {
+					order: 3,
+					result: {
+						player(player, target) {
+							if (!ui.selected.cards.length) return 0;
+							const card = ui.selected.cards[0];
+							let val = get.value(card) / 6;
+							if (get.suit(card) === "spade") val--;
+							return -val;
+						},
+						target: -1,
+					},
+					threaten: 1.2,
+				},
+			},
 
 			_changeHandcard: {
 				trigger: { global: "gameDrawAfter" },
@@ -2435,6 +2484,8 @@ export default () => {
 			yinli_info: "其他角色的装备牌于其回合内进入弃牌堆后，你可以获得之。",
 			shenju: "慎拒",
 			shenju_info: "锁定技，你的手牌上限+X（X为你对手的体力值）。",
+			puji: "普济",
+			puji_info: "出牌阶段限一次，你可弃置你与对手各一张牌，然后被弃置黑桃牌的角色各摸一张牌。",
 		},
 		help: {
 			血战长坂: '<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>选将阶段<br>双方在游戏开始时由系统随机分配身份。分配到先手身份的玩家优先出牌，分配到后手身份的玩家优先选将。<br>双方各自随机获得3名暗置武将，同时从将池中随机选出6名明置武将，由后手玩家开始，按照一次1张-2张-2张-1张的顺序，轮流选择获得明置武将。之后双方各从自己的6名武将中选择2名分别作为主将和副将进行游戏。<li>胜利条件<br>对方死亡。' + "<li>双将规则<br>双将主将决定角色的性别和势力，体力上限为主副将体力上限的平均值，向下取整。体力上限为3的角色可在游戏开始后更换一次起始手牌。<li>牌堆<br>牌堆中移除【木牛流马】【闪电】，♣花色的【藤甲】和【无懈可击 ♦️Q】️</ul>",

@@ -3343,7 +3343,7 @@ game.import("character", function () {
 							skills: ["lschaofeng"],
 							isMinskin: true,
 							isFellowInStoneMode: true,
-							trashBin: ["mode:stone"],
+							img: "image/mode/stone/character/stone_misha.jpg",
 							extraModeData: [3, 3, "hunter"],
 						};
 					}
@@ -3355,7 +3355,7 @@ game.import("character", function () {
 							skills: ["stone_chongfeng"],
 							isMinskin: true,
 							isFellowInStoneMode: true,
-							trashBin: ["mode:stone"],
+							img: "image/mode/stone/character/stone_huofu.jpg",
 							extraModeData: [3, 4, "hunter"],
 						};
 					}
@@ -3367,7 +3367,7 @@ game.import("character", function () {
 							skills: ["hunter_zhanhuo"],
 							isMinskin: true,
 							isFellowInStoneMode: true,
-							trashBin: ["mode:stone"],
+							img: "image/mode/stone/character/stone_leiouke.jpg",
 							extraModeData: [3, 1, "hunter"],
 						};
 					}

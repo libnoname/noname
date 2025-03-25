@@ -528,7 +528,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["jdlianhuan", "oldniepan"],
-		tempname: "sb_pangtong",
+		tempname: ["sb_pangtong"],
 		dieAudios: ["sb_pangtong"],
 	},
 	jd_hanlong: {

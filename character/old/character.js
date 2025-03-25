@@ -379,7 +379,6 @@ const characters = {
 		names: "诸葛|瞻",
 		dieAudios: ["zhugezhan"],
 	},
-	//ol_manchong:['male','wei',3,['yuce','junxing']],
 	old_guanqiujian: {
 		sex: "male",
 		group: "wei",

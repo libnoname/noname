@@ -1546,10 +1546,14 @@ export default () => {
 					extraModeData: "wu",
 				},
 
-				// boss_nianshou:['male','shen',Infinity,['boss_nianrui','boss_qixiang','boss_damagecount'],['boss'],'shu'],
-				// boss_yuji:['male','qun',8,[],['boss','bossallowed'],'nei'],
-				// boss_shuijing:['male','qun',8,[],['boss','bossallowed'],'wei'],
-				// boss_sunshangxiang:['male','qun',8,[],['boss','bossallowed'],'wei'],
+				boss_nianshou: {
+					sex: 'male',
+					group: 'shen',
+					hp: Infinity,
+					skills:['boss_nianrui','boss_qixiang','boss_damagecount'],
+					isBoss: true,
+					extraModeData:'shu'
+				},
 			},
 		},
 		cardPack: {
@@ -9647,7 +9651,6 @@ export default () => {
 			boss_nianshou_baonu: "暴怒年兽",
 			boss_nianshou_ruizhi: "睿智年兽",
 
-			boss_shuijing: "水镜先生",
 			boss_huangyueying: "奇智女杰",
 			boss_zhangchunhua: "冷血皇后",
 			boss_satan: "堕落天使",
@@ -9660,7 +9663,6 @@ export default () => {
 			boss_zhugeliang: "祭风卧龙",
 			boss_zhangjiao: "天公将军",
 			boss_zuoci: "迷之仙人",
-			boss_yuji: "琅琊道士",
 			boss_liubei: "蜀汉烈帝",
 			boss_caiwenji: "异乡孤女",
 			boss_huatuo: "药坛圣手",

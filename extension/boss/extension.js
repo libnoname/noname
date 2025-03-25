@@ -13,9 +13,7 @@ game.import("play", function () {
 			if (get.mode() != "boss") {
 				lib.characterPack.boss = storage.boss || {};
 				for (var i in lib.characterPack.boss) {
-					lib.characterPack.boss[i][4].push(
-						"mode:boss"
-					);
+					lib.characterPack.boss[i].img = `image/mode/boss/character/${i}.jpg`;
 					lib.character[i] = lib.characterPack.boss[i];
 					if (
 						typeof lib.character[i][2] != "number" &&
@@ -36,9 +34,7 @@ game.import("play", function () {
 			) {
 				lib.characterPack.jiange = list2;
 				for (var i in lib.characterPack.jiange) {
-					lib.characterPack.jiange[i][4].push(
-						"mode:versus"
-					);
+					lib.characterPack.jiange[i].img = `image/mode/versus/character/${i}.jpg`;
 					lib.character[i] = lib.characterPack.jiange[i];
 					if (typeof lib.character[i][2] != "number") {
 						lib.character[i][2] = Infinity;
@@ -110,7 +106,7 @@ game.import("play", function () {
 						}
 						storage.versus = {};
 						for (var i in mode.jiangeboss) {
-							if (mode.jiangeboss[i][4].includes("bossallowed")) {
+							if (mode.jiangeboss[i].isBossAllowed) {
 								storage.versus[i] = mode.jiangeboss[i];
 							}
 						}
@@ -145,9 +141,7 @@ game.import("play", function () {
 					storage.boss = {};
 					for (var i in mode.characterPack.mode_boss) {
 						if (
-							mode.characterPack.mode_boss[i][4].includes(
-								"bossallowed"
-							)
+							mode.characterPack.mode_boss[i].isBossAllowed
 						) {
 							storage.boss[i] = mode.characterPack.mode_boss[i];
 						}
