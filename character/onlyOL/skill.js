@@ -1066,7 +1066,7 @@ const skills = {
 				)
 				.set("ai", card => {
 					const { player, target } = get.event();
-					return (Math.sign(Math.sign(get.attitude(player, target)) - 0.5)) * get.value(card);
+					return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card);
 				})
 				.set("namex", name)
 				.set("type", type)
@@ -4356,7 +4356,8 @@ const skills = {
 						})
 					) {
 						player.chooseToDiscard("he", "疠火：弃置一张牌，或失去1点体力").set("ai", card => {
-							const player = get.event("player");
+							const player = get.event("player"),
+								cards = player.getCards("h");
 							if ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, player, player)) return -1;
 							if (player.hp <= 1) {
 								if (

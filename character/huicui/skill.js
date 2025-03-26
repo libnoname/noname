@@ -118,6 +118,7 @@ const skills = {
 			return (name === "phaseAfter" && game.getGlobalHistory("everything", evt => evt.name == "die").length) || ["phaseBegin", "roundStart"].includes(name);
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			let name = event.triggername;
 			player
@@ -8192,6 +8193,7 @@ const skills = {
 				locked: false,
 				charlotte: true,
 				direct: true,
+				clearTime: true,
 				content() {
 					"step 0";
 					if (trigger.player && trigger.player != player) trigger.player.markSkill("dcsilve_target");
@@ -14801,11 +14803,7 @@ const skills = {
 			if (control != "cancel2") {
 				player.logSkill("reliangying");
 				const num = draws.indexOf(control) + 1,
-					max = Math.min(
-						num,
-						player.countCards("he"),
-						game.countPlayer()
-					);
+					max = Math.min(num, player.countCards("he"), game.countPlayer());
 				await player.draw(num);
 				let list = [];
 				if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));

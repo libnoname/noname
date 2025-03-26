@@ -275,6 +275,7 @@ const skills = {
 			return event.type == "dying" && _status.currentPhase !== player;
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			const list = [event.name, trigger.dying];
 			player

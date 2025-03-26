@@ -15,7 +15,7 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					if (player.hasValueTarget(card, true)) {
-						return player.getUseValue(card, false, true) * (player.hasValueTarget(card) ? 1 : 2);
+						return player.getUseValue(card, false, true) * (get.tag(card, "damage") > 0.5 ? 2 : 1);
 					}
 					return 0.1 + Math.random();
 				})
@@ -30,20 +30,9 @@ const skills = {
 		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
-				if (!player.isPhaseUsing() || typeof card !== "object") return;
-				const name = get.name(card, player);
-				if (get.itemtype(card) == "card" && card.hasGaintag("potwanglie")) {
-					if (
-						!player.hasCard(cardx => {
-							if (cardx === card) return false;
-							if (player.getCardUsable(name, true) == 1 && get.name(cardx, player) == name) return false;
-							return player.hasValueTarget(cardx, null, true);
-						}, "hs")
-					)
-						return num + 10;
-					return num - 5;
-				}
-				return num + 5;
+				if (!player.isPhaseUsing() || typeof card !== "object" || num <= 0) return;
+				if (get.itemtype(card) == "card" && card.hasGaintag("potwanglie")) num / 20;
+				return num;
 			},
 		},
 		subSkill: {
@@ -15832,6 +15821,7 @@ const skills = {
 				(_status.connectMode || player.hasSha())
 			);
 		},
+		clearTime: true,
 		content() {
 			"step 0";
 			player.chooseToUse({

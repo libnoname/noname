@@ -3703,7 +3703,7 @@ game.import("card", function () {
 						event.wuxieresult2 = result;
 					}
 					"step 6";
-					if (event.withol && !event.wuxieresult) {
+					if (event.withol && !event.wuxieresult && !event.resultOL) {
 						game.pause();
 					}
 					"step 7";

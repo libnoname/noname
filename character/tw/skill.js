@@ -7,12 +7,11 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		hiddenCard(player, name) {
-			return name === "tao";
+			return name === "tao" && player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
 		},
 		filter(event, player) {
-			if (event.twfushu) return false;
-			const card = get.autoViewAs({ name: "tao", isCard: true });
-			return event.filterCard(card, player, event) && player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
+			if (event.twfushu || event.name != "chooseToUse") return false;
+			return event.filterCard({ name: "tao", isCard: true }, player, event) && player.countCards("h") && !player.hasSkillTag("noCompareSource");
 		},
 		filterCard: () => true,
 		selectCard: 1,
@@ -327,7 +326,7 @@ const skills = {
 			return player != event.player && event.player.countCards("h") && !event.player.hasHistory("sourceDamage");
 		},
 		check(event, player) {
-			return get.attiude(player, event.player) < 0 && event.player.countDiscardableCards(player, "h");
+			return get.attitude(player, event.player) < 0 && event.player.countDiscardableCards(player, "h");
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -15896,6 +15895,7 @@ const skills = {
 			return player.countCards("h") > 0;
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			player
 				.chooseToUse(function (card, player, event) {

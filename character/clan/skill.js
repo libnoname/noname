@@ -171,6 +171,7 @@ const skills = {
 					player.$throw(get.position(card) == "h" ? 1 : card, 1000);
 					game.log(player, "将", get.position(card) == "h" ? "一张牌" : card, "置于牌堆顶");
 					await player.lose(card, ui.cardPile, "insert");
+					await game.delayx();
 				}
 			}
 		},
@@ -224,13 +225,13 @@ const skills = {
 			const result = await player
 				.chooseControl(list)
 				.set("prompt", `###谏直###进行至多${used}次判定，并执行后续效果`)
-				.set("ai", () => list.length)
+				.set("ai", () => get.event().list.length - 1)
+				.set("list", list)
 				.forResult();
-			const num = result.control,
+			const num = result.index + 1,
 				judge = [];
 			let count = 1;
 			while (true) {
-				if (num < count) break;
 				const judgeEvent = player.judge();
 				judgeEvent.judge2 = result => result.bool;
 				judgeEvent.set("callback", async event => {
@@ -241,6 +242,7 @@ const skills = {
 				} = await judgeEvent;
 				judge.push(card);
 				count++;
+				if (count > num) break;
 			}
 			const suits = player
 				.getHistory("useCard")

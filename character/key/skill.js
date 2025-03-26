@@ -8257,6 +8257,7 @@ const skills = {
 		filter(event, player) {
 			return player != event.player && event.targets && event.targets.includes(player) && (_status.connectMode || player.hasSha());
 		},
+		clearTime: true,
 		content() {
 			"step 0";
 			player.chooseToUse({

@@ -5814,6 +5814,7 @@ const skills = {
 			if (_status.connectMode && player.countCards("h") > 0) return true;
 			return player.hasSha() || player.hasUsableCard("juedou");
 		},
+		clearTime: true,
 		content() {
 			player
 				.chooseToUse(function (card, player, event) {

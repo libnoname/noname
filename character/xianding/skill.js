@@ -694,6 +694,7 @@ const skills = {
 			return event.getg(player).length === 2;
 		},
 		direct: true,
+		clearTime: true,
 		frequent: true,
 		async content(event, trigger, player) {
 			if (trigger.name === "useCard") {
@@ -1174,6 +1175,7 @@ const skills = {
 		},
 		direct: true,
 		comboSkill: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const num = player.getEquips(1).reduce((sum, card) => sum + get.cardNameLength(card), 0);
 			game.broadcastAll(num => (lib.skill.dcbaguan_backup.selectCard = [1, num]), num);
@@ -1867,6 +1869,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const { targets } = trigger;
 			const next = player.chooseToUse();
