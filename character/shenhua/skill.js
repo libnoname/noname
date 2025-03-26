@@ -5373,7 +5373,7 @@ const skills = {
 			do {
 				currented.push(current);
 				current.addTempClass("target");
-				const bool = await current
+				const { result } = await current
 					.chooseToUse(
 						"乱武：使用一张杀或失去1点体力",
 						function (card) {
@@ -5398,9 +5398,8 @@ const skills = {
 					.set("ai2", function () {
 						return get.effect_use.apply(this, arguments) + 0.01;
 					})
-					.set("addCount", false)
-					.forResultBool();
-				if (!bool) await current.loseHp();
+					.set("addCount", false);
+				if (!result?.bool) await current.loseHp();
 				current = current.next;
 			} while (!currented.includes(current) && !void (await game.delay(0.5)));
 		},
@@ -6146,7 +6145,7 @@ const skills = {
 				str += "不为";
 				str += get.translation(colors[i]);
 			}
-			str += "的牌当做【决斗】使用";
+			str += "的手牌当做【决斗】使用";
 			return str;
 		},
 		check(card) {

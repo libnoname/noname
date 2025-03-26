@@ -14548,6 +14548,7 @@ const skills = {
 		filter(event, player) {
 			return event.player.isIn() && event.player.getStat("damage") && lib.filter.targetEnabled({ name: "sha" }, player, event.player) && (player.hasSha() || (_status.connectMode && player.countCards("h") > 0));
 		},
+		clearTime: true,
 		content() {
 			player
 				.chooseToUse(function (card, player, event) {

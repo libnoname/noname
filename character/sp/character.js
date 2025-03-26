@@ -1,4 +1,5 @@
 const characters = {
+	ol_peiyuanshao: ["male", "qun", 4, ["olfulve"]],
 	ol_zhaozhong: ["male", "qun", 3, ["olpengbi", "oldici"], ["sex:male_castrated"]],
 	ol_wujing: ["male", "wu", 4, ["heji", "olliubing"], ["die:wujing"]],
 	ol_yangfeng: ["male", "qun", 4, ["oljiawei"]],
@@ -127,7 +128,7 @@ const characters = {
 	simahui: ["male", "qun", 3, ["jianjie", "xinfu_chenghao", "xinfu_yinshi"], ["name:司马|徽"]],
 	baosanniang: ["female", "shu", 4, ["olwuniang", "olxushen"], []],
 
-	yangxiu: ["male", "wei", 3, ["jilei", "danlao"]],
+	yangxiu: ["male", "wei", 3, ["jilei", "danlao"], ["clan:弘农杨氏"]],
 	chenlin: ["male", "wei", 3, ["bifa", "songci"]],
 	caohong: ["male", "wei", 4, ["yuanhu"]],
 	xiahouba: ["male", "shu", 4, ["baobian"], ["name:夏侯|霸"]],

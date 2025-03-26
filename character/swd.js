@@ -4340,6 +4340,7 @@ game.import("character", function () {
 				filter(event, player) {
 					return lib.filter.targetEnabled({ name: "sha" }, player, event.player) && player.hasSha(null, true);
 				},
+				clearTime: true,
 				content() {
 					var next = player.chooseToUse({ name: "sha" }, "热血：是否对" + get.translation(trigger.player) + "使用一张杀", trigger.player, -1);
 					next.logSkill = "rexue";

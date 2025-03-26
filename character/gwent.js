@@ -2092,6 +2092,7 @@ game.import("character", function () {
 			junchi: {
 				trigger: { global: "shaAfter" },
 				direct: true,
+				clearTime: true,
 				usable: 1,
 				filter(event, player) {
 					return (

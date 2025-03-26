@@ -8402,11 +8402,11 @@ export class Player extends HTMLDivElement {
 			}
 			if (info.mark) {
 				if (info.mark == "card" && get.itemtype(this.storage[skill]) == "card") {
-					this.markSkill(skill, null, this.storage[skill], nobroadcast);
+					this.markSkill(skill, null, this.storage[skill]);
 				} else if (info.mark == "card" && get.itemtype(this.storage[skill]) == "cards") {
-					this.markSkill(skill, null, this.storage[skill][0], nobroadcast);
+					this.markSkill(skill, null, this.storage[skill][0]);
 				} else if (info.mark == "image") {
-					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]), nobroadcast);
+					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]));
 				} else if (info.mark == "character") {
 					var intro = info.intro.content;
 					if (typeof intro == "function") {
@@ -8424,9 +8424,9 @@ export class Player extends HTMLDivElement {
 					} else {
 						caption = get.translation(skill);
 					}
-					this.markSkillCharacter(skill, this.storage[skill], caption, intro, nobroadcast);
+					this.markSkillCharacter(skill, this.storage[skill], caption, intro);
 				} else {
-					this.markSkill(skill, null, null, nobroadcast);
+					this.markSkill(skill, null, null);
 				}
 			}
 			game.callHook("addSkillCheck", [skill, this]);
@@ -9054,7 +9054,7 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -9069,7 +9069,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getHistory(key, filter, last) {
@@ -9129,7 +9129,7 @@ export class Player extends HTMLDivElement {
 		return history.some(filter);
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -9138,7 +9138,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getLastHistory(key, filter, last) {
@@ -11855,6 +11855,15 @@ export class Player extends HTMLDivElement {
 			list2 = [];
 		for (var i = 0; i < cards.length; i++) {
 			if (cards[i].clone && (cards[i].clone.parentNode == this.parentNode || cards[i].clone.parentNode == ui.arena) && parseFloat(getComputedStyle(cards[i].clone).opacity) > 0.3) {
+				var next = ui.create.div(".cardsetion", cardsetion, cards[i].clone);
+				next.style.setProperty("display", "block", "important");
+				if (cards[i].clone.node) {
+					if (cards[i].clone.node.cardsetion) {
+						cards[i].clone.node.cardsetion.remove();
+						delete cards[i].clone.node.cardsetion;
+					}
+					cards[i].clone.node.cardsetion = next;
+				}
 				cards[i].clone.moveDelete(this);
 				list2.push(cards[i].clone);
 			} else {

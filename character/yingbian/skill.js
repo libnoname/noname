@@ -299,7 +299,7 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
-			const {name} = trigger.card;
+			const { name } = trigger.card;
 			const bool = await target
 				.chooseToDiscard("he", { name: name }, "弃置一张【" + get.translation(name) + "】或受到1点伤害")
 				.set("ai", card => {

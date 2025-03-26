@@ -2,6 +2,382 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族杨修 —— by 刘巴
+	clanjiewu: {
+		audio: 2,
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt("clanjiewu"), "令一名角色的手牌在本阶段对你可见")
+				.set("ai", target => {
+					let items = target.getCards("h");
+					let count = [...new Set(items.map(item => get.suit(item, target)))].length;
+					const player = get.player();
+					return (4 - count) * get.effect(target, { name: "draw" }, target, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.markAuto(event.name + "_effect", target);
+			player.addSkill(event.name + "_effect");
+			player
+				.when({ global: "phaseUseAfter" })
+				.filter(evt => evt === trigger)
+				.then(() => player.removeSkill("clanjiewu_effect"));
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					player: "useCardToPlayered",
+				},
+				filter: (event, player) => event.isFirstTarget,
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt("clanjiewu"), "选择一名「捷悟」角色展示其一张手牌")
+						.set("filterTarget", (card, player, target) => target.hasCard(true, "h") && player.getStorage("clanjiewu_effect").includes(target))
+						.set("ai", target => {
+							let items = target.getCards("h");
+							let count = [...new Set(items.map(item => get.suit(item, target)))].length;
+							const player = get.player();
+							return (4 - count) * get.effect(target, { name: "draw" }, target, player);
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					let cards;
+					if (target === player) {
+						cards = await player.chooseCard("h", true, `捷悟：展示你的一张手牌`).forResultCards();
+					} else {
+						cards = await player.choosePlayerCard(target, true, "h", `捷悟：展示${get.translation(target)}的一张手牌`).forResultCards();
+					}
+					if (!cards?.length) return;
+					const card = cards[0];
+					await player.showCards(card, `${get.translation(player)}对${get.translation(target)}发动了【捷悟】`).set("clanjiewu", true);
+					if (get.suit(trigger.card, player) === get.suit(card, target)) await player.draw();
+					if (
+						game.getGlobalHistory("everything", evt => {
+							return evt.name === "showCards" && evt.cards.length && evt.cards.some(c => c === card) && evt?.clanjiewu;
+						}).length > 1
+					) {
+						let cardsx;
+						if ((target.countCards("h") !== player.countCards("h") && target !== player) || target === player) {
+							const putee = player.countCards("h") > target.countCards("h") || target === player ? player : target;
+							if (!putee.countCards("he")) return;
+							if (player !== putee) {
+								cardsx = await player.choosePlayerCard(putee, true, "he", "捷悟：将" + get.translation(putee) + "的一张牌置于牌堆顶").forResultCards();
+							} else {
+								cardsx = await player.chooseCard("he", true, "捷悟：将你的一张牌置于牌堆顶").forResultCards();
+							}
+							const card = cardsx[0];
+							putee.$throw(get.position(card) == "h" ? 1 : card, 1000);
+							game.log(player, "将", putee === player ? "" : get.translation(putee) + "的", get.position(card) == "h" ? "一张牌" : card, "置于牌堆顶");
+							await putee.lose(card, ui.cardPile, "insert");
+						}
+					}
+				},
+				ai: {
+					viewHandcard: true,
+					skillTagFilter(player, tag, arg) {
+						if (!player.getStorage("clanjiewu_effect").includes(arg)) return false;
+					},
+				},
+			},
+		},
+	},
+	clangaoshi: {
+		audio: 2,
+		trigger: { player: "phaseJieshuBegin" },
+		frequent: true,
+		filter: (event, player) => player.hasHistory("useSkill", evt => ["clanjiewu", "clanjiewu_effect"].includes(evt.skill)),
+		prompt(event, player) {
+			return get.prompt("clangaoshi") + "（可亮出" + get.cnNumber(player.getHistory("useSkill", evt => ["clanjiewu", "clanjiewu_effect"].includes(evt.skill)).length) + "张牌）";
+		},
+		async content(event, trigger, player) {
+			const num = player.getHistory("useSkill", evt => {
+				return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
+			}).length;
+			const names = player.getHistory("useCard", evt => evt.isPhaseUsing()).map(evt => evt.card.name);
+			let cards = get.cards(num);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards, `${get.translation(player)}发动了〖高视〗`);
+			//game.log(player, "亮出了牌堆顶的", cards);
+			while (cards.some(card => player.hasUseTarget(card))) {
+				const links = await player
+					.chooseButton([`高视：是否使用其中一张牌？`, cards])
+					.set("filterButton", button => {
+						const player = get.player(),
+							card = button.link;
+						return player.hasUseTarget(card) && !get.event().names.includes(card.name);
+					})
+					.set("names", names)
+					.set("ai", button => {
+						return get.player().getUseValue(button.link);
+					})
+					.forResultLinks();
+				if (!links?.length) break;
+				cards.remove(links[0]);
+				player.$gain(links[0], false);
+				await player.chooseUseTarget(links[0], true, false);
+			}
+			if (!cards.length) await player.draw(2);
+		},
+	},
+	//族杨赐
+	clanqieyi: {
+		audio: 2,
+		trigger: {
+			player: ["phaseUseBegin", "useCardAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "useCard") {
+				if (!player.hasSkill("clanqieyi_effect") || !lib.suits.includes(get.suit(event.card))) return false;
+				const history = player.getHistory("useCard", evt => get.suit(evt.card) == get.suit(event.card));
+				return history.indexOf(event) == 0;
+			}
+			return true;
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "phaseUse") {
+				event.result = await player
+					.chooseBool(get.prompt2("clanqieyi"))
+					.set("ai", () => true)
+					.forResult();
+			} else {
+				event.result = {
+					bool: true,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "phaseUse") {
+				player.addTempSkill(event.name + "_effect");
+				const cards = get.cards(2, true);
+				await player.viewCards("切议", cards);
+			} else {
+				const card = get.cards(1, true)[0];
+				await player.showCards([card]);
+				if (get.suit(card) == get.suit(trigger.card) || get.type2(card) == get.type2(trigger.card)) {
+					await player.gain(card, "gain2");
+				} else {
+					if (!player.countCards("h")) return;
+					const result = await player.chooseCard(`切议：将一张牌置于牌堆顶`, "he", true).forResult();
+					const card = result.cards[0];
+					player.$throw(get.position(card) == "h" ? 1 : card, 1000);
+					game.log(player, "将", get.position(card) == "h" ? "一张牌" : card, "置于牌堆顶");
+					await player.lose(card, ui.cardPile, "insert");
+					await game.delayx();
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				init(player, skill) {
+					const suits = player
+						.getHistory("useCard", evt => lib.suits.includes(get.suit(evt.card)))
+						.map(evt => get.suit(evt.card))
+						.unique()
+						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+					player.markAuto(skill, suits);
+					if (suits.length) player.addTip(skill, get.translation(skill) + suits.reduce((str, i) => str + get.translation(i), ""));
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				mark: true,
+				intro: {
+					content: "已使用过的花色：$",
+					onunmark(storage, player) {
+						player.removeTip("clanqieyi_effect");
+					},
+				},
+				silent: true,
+				charlotte: true,
+				trigger: {
+					player: "useCard",
+				},
+				content() {
+					lib.skill.clanqieyi_effect.init(player, event.name);
+				},
+			},
+		},
+	},
+	clanjianzhi: {
+		audio: 2,
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		forced: true,
+		filter(event, player) {
+			const num = player.getHistory("useSkill", evt => evt.skill == "clanqieyi").length;
+			return num > 0;
+		},
+		async content(event, trigger, player) {
+			const list = [],
+				used = player.getHistory("useSkill", evt => evt.skill == "clanqieyi").length;
+			while (list.length < used) list.add(list.length + 1);
+			const result = await player
+				.chooseControl(list)
+				.set("prompt", `###谏直###进行至多${used}次判定，并执行后续效果`)
+				.set("ai", () => get.event().list.length - 1)
+				.set("list", list)
+				.forResult();
+			const num = result.index + 1,
+				judge = [];
+			let count = 1;
+			while (true) {
+				const judgeEvent = player.judge();
+				judgeEvent.judge2 = result => result.bool;
+				judgeEvent.set("callback", async event => {
+					event.getParent().orderingCards.remove(event.card);
+				});
+				const {
+					result: { card },
+				} = await judgeEvent;
+				judge.push(card);
+				count++;
+				if (count > num) break;
+			}
+			const suits = player
+				.getHistory("useCard")
+				.map(evt => get.suit(evt.card))
+				.unique();
+			const cards = judge.filter(card => suits.includes(get.suit(card, false)));
+			if (cards.length) {
+				if (_status.connectMode)
+					game.broadcastAll(() => {
+						_status.noclearcountdown = true;
+					});
+				const given_map = {};
+				let result;
+				while (true) {
+					if (cards.length > 1) {
+						result = await player
+							.chooseCardButton("谏直：请选择要分配的牌", true, cards, [1, cards.length])
+							.set("ai", button => {
+								if (ui.selected.buttons.length) return 0;
+								return get.buttonValue(button);
+							})
+							.forResult();
+					} else if (cards.length === 1) result = { bool: true, links: cards.slice(0) };
+					else break;
+					const toGive = result.links;
+					result = await player
+						.chooseTarget(`选择一名角色获得${get.translation(toGive)}`, cards.length === 1)
+						.set("ai", target => {
+							const att = get.attitude(get.player(), target);
+							if (get.event("toEnemy")) return Math.max(0.01, 100 - att);
+							else if (att > 0) {
+								return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event("given_map")[target.playerid] || 0)));
+							} else return Math.max(0.01, (100 + att) / 200);
+						})
+						.set("given_map", given_map)
+						.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
+						.forResult();
+					if (result.bool) {
+						cards.removeArray(toGive);
+						if (result.targets.length) {
+							const id = result.targets[0].playerid;
+							if (!given_map[id]) given_map[id] = [];
+							given_map[id].addArray(toGive);
+						}
+						if (!cards.length) break;
+					}
+				}
+				if (_status.connectMode)
+					game.broadcastAll(() => {
+						delete _status.noclearcountdown;
+						game.stopCountChoose();
+					});
+				const gain_list = [];
+				for (const i in given_map) {
+					const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+					player.line(source, "green");
+					gain_list.push([source, given_map[i]]);
+					game.log(source, "获得了", given_map[i]);
+				}
+				await game
+					.loseAsync({
+						gain_list,
+						giver: player,
+						animate: "gain2",
+					})
+					.setContent("gaincardMultiple");
+			}
+			if (judge.some(card => !suits.includes(get.suit(card, false)))) await player.damage("nosource", "thunder");
+		},
+	},
+	clanquhuo: {
+		audio: 2,
+		clanSkill: true,
+		audioname: ["clan_yangci", "clan_yangxiu"],
+		trigger: {
+			player: "loseAfter",
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		filter(event, player) {
+			const evt = event.getl(player);
+			if (!evt?.hs?.length) return false;
+			const hs = evt.hs;
+			if (!hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu")) return false;
+			//排除因使用、打出、弃置而失去牌的情况
+			if (event.name.indexOf("lose") == 0) {
+				if (event.type === "discard") return false;
+				if (event.name == "lose" && ["useCard", "respond"].includes(event?.getParent()?.name)) return false;
+			}
+			const history = player.getHistory("lose", evtx => {
+				if (evtx.type == "discard") return false;
+				if (["useCard", "respond"].includes(evtx.getParent().name)) return false;
+				return evtx?.hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu");
+			});
+			return (
+				history.indexOf(event) == 0 &&
+				game.hasPlayer(target => {
+					return target.isDamaged() && target.hasClan("弘农杨氏");
+				})
+			);
+		},
+		async cost(event, trigger, player) {
+			const targets = game.filterPlayer(target => {
+				return target.isDamaged() && target.hasClan("弘农杨氏");
+			});
+			if (!targets.length) return;
+			if (targets.length == 1) {
+				const result = await player
+					.chooseBool(get.prompt2(`clanquhuo`, targets))
+					.set("ai", () => {
+						return get.attitude(get.player(), get.event().target) > 0;
+					})
+					.set("target", targets[0])
+					.forResult();
+				if (result.bool) {
+					event.result = {
+						bool: true,
+						targets: targets,
+					};
+				}
+			} else {
+				event.result = await player
+					.chooseTarget(get.prompt2(`clanquhuo`), (card, player, target) => {
+						return target.isDamaged() && target.hasClan("弘农杨氏");
+					})
+					.set("ai", target => {
+						return get.recoverEffect(target, get.player());
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.recover();
+		},
+	},
 	//族吴懿
 	//距离变化后神将
 	clangaojin: {

@@ -1,7 +1,8 @@
 import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "../../../../library/update.js";
-import security from "../../../../util/security.js";
+import { createApp } from "../../../../../game/vue.esm-browser.js";
+import security from "../../../../util/security.js"
 import dedent from "../../../../../game/dedent.js";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
@@ -1626,14 +1627,47 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		if (!get.config("menu_loadondemand")) node._initLink();
 	})();
 
-	for (var i in lib.help) {
-		var page = ui.create.div("");
-		var node = ui.create.div(".menubutton.large", i, start.firstChild, clickMode);
-		node.type = "help";
-		node.link = page;
+	// 创建各模式/扩展的帮助页面
+	for (const [name, content] of Object.entries(lib.help)) {
+		// 创建帮助页面的内容元素
+		const page = ui.create.div("");
+		// 创建帮助按钮
+		// TODO: 对是否应该对按钮进行其他框架的挂载处理
+		var node = ui.create.div(".menubutton.large", name, start.firstChild, clickMode);
+		// 设置帮助按钮的类型
+		Reflect.set(node, "type", "help");
+		// 初始化帮助按钮的链接
+		Reflect.set(node, "link", page);
+		// 在非帮助页面下默认隐藏
 		node.style.display = "none";
+		// 设置帮助页面的类名
 		page.classList.add("menu-help");
-		page.innerHTML = lib.help[i];
+		
+		// 若传递的内容为对象，则特殊处理
+		if (typeof content == "object") {
+			/** @type {object} */
+			const contentObject = content;
+
+			// 如果对象拥有"mount"方式，则调用该方法进行挂载
+			if (typeof contentObject.mount == "function") {
+				contentObject.mount(page);
+			}
+			// 如果对象拥有"data"方式或"setup"方式，则视为vue组件
+			else if (typeof contentObject.data == "function" || typeof contentObject.setup == "function") {
+				// 创建vue组件
+				const component = createApp(contentObject);
+				// 挂载到页面
+				component.mount(page);
+			}
+			// 否则相信`Object#toString`的结果
+			else {
+				page.innerHTML = content;
+			}
+		}
+		// 否则将视为字符串，直接创建文本元素
+		else {
+			page.innerHTML = content;
+		}
 	}
 
 	if (!connectMenu) {

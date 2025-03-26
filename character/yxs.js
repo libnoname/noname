@@ -102,6 +102,7 @@ game.import("character", function () {
 					player: "damageEnd",
 				},
 				direct: true,
+				clearTime: true,
 				priority: 12,
 				filter(event, player) {
 					if (!player.countCards("h", { name: "sha" })) return false;
@@ -531,6 +532,7 @@ game.import("character", function () {
 					return event.card.name == "shan" && player.hasSha();
 				},
 				direct: true,
+				clearTime: true,
 				content() {
 					player.chooseToUse({ name: "sha" }, "太极：是否使用一张杀？").logSkill = "taiji";
 				},

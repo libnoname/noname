@@ -13390,6 +13390,9 @@ export class Library {
 			cancel: function (id) {
 				if (_status.event._parent_id == id) {
 					ui.click.cancel();
+					if (_status.event.getParent().name == "chooseToUse" && _status.event.getParent().id == id) {
+						_status.event.getParent().cancel(null, null, false);
+					}
 				}
 				if (_status.event.id == id) {
 					if (_status.event._backup) ui.click.cancel();
@@ -14203,6 +14206,14 @@ export class Library {
 			"闪",
 			{
 				color: "#00bfff",
+				nature: "watermm",
+			},
+		],
+		[
+			"ddd",
+			{
+				showName: "3D",
+				color: "#edb5b5",
 				nature: "watermm",
 			},
 		],

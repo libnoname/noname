@@ -1,4 +1,9 @@
 const characters = {
+	huan_dianwei: ["male", "wei", 4, ["twmiewei", "twmiyong"]],
+	huan_caopi: ["male", "wei", 3, ["twqianxiong", "twzhengshi"]],
+	huan_caozhi: ["male", "wei", 3, ["twhanhong", "twhuazhang"]],
+	tw_zhangyun: ["male", "qun", 4, ["twhuiyu", "twbeixing"]],
+	huan_caochong: ["male", "wei", 3, ["twfushu", "twxiumu"]],
 	tw_simashi: ["male", "wei", 4, ["baiyi", "twjinglve", "shanli"], ["name:司马|师", "border:jin", "die:simashi"]],
 	tw_sb_caopi: ["male", "wei", 3, ["twxingshang", "twfangzhu", "twsongwei"], ["zhu", "die:sb_caopi"]],
 	tw_sb_sp_zhugeliang: ["male", "shu", 3, ["sbhuoji", "twkanpo"], ["name:诸葛|亮", "die:sb_sp_zhugeliang"]],

@@ -4381,7 +4381,8 @@ const skills = {
 				},
 				usable: 1,
 				filter(event, player) {
-					return player.isTurnedOver() && player != _status.currentPhase && event.getg(player).length > 0;
+					if (!_status.currentPhase?.isIn()) return false;
+					return player.isTurnedOver() && player != _status.currentPhase && event.getg?.(player)?.length > 0;
 				},
 				check(event, player) {
 					return get.attitude(player, _status.currentPhase) > 0;
@@ -4401,20 +4402,15 @@ const skills = {
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
+					if (!_status.currentPhase?.isIn()) return false;
 					if (event.name == "gain" && player == event.player) return false;
-					var evt = event.getl(player);
-					if (!evt || !evt.cards2 || !evt.cards2.length) return false;
+					if (!event.getl?.(player)?.cards2?.length) return false;
 					return player.isTurnedOver() && player != _status.currentPhase && _status.currentPhase.countCards("he") > 0;
 				},
 				check(event, player) {
-					var target = _status.currentPhase;
-					var att = get.attitude(player, target);
-					if (
-						target.countCards("e", function (card) {
-							return get.value(card, target) <= 0;
-						})
-					)
-						return att > 0;
+					const target = _status.currentPhase;
+					const att = get.attitude(player, target);
+					if (target.countCards("e", card => get.value(card, target) <= 0)) return att > 0;
 					return att < 0;
 				},
 				logTarget() {

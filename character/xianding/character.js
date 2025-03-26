@@ -1,4 +1,5 @@
 const characters = {
+	dc_sb_xunyu: ["male", "wei", 3, ["dcsbbizuo", "dcsbshimou", "dcsbxianshi"]],
 	v_dongzhuo: ["male", "qun", 5, ["dcguangyong", "dcjuchui"]],
 	liujinliupei: ["female", "wei", 3, ["dcllqixin", "dcjiusi"], ["name:刘|衿-刘|佩"]],
 	caoyuan: ["female", "qun", 3, ["dcwuyan", "dczhanyu"]],
@@ -6,7 +7,7 @@ const characters = {
 	zhanghuai: ["female", "wu", 3, ["dclaoyan", "dcrejueyan"], ["name:张|null"]],
 	xuxin: ["female", "wu", 3, ["dcyuxian", "dcminshan"]],
 	v_lvbu: ["male", "qun", 5, ["dcxiaowu", "dcbaguan"]],
-	wu_lukang: ["male", "wu", 4, ["dckegou", "dcjiduan", "dcdixian"]],
+	wu_lukang: ["male", "wu", 4, ["dcshenduan", "dckegou", "dcdixian"]],
 	two_dc_sp_machao: ["male", "qun", 4, ["twodcspzhuiji", "twodcspshichou"]],
 	one_dc_sp_machao: ["male", "qun", 4, ["onedcspzhuiji", "onedcspshichou"]],
 	sunba: ["male", "wu", 4, ["dcjiedang", "dcjidi"]],

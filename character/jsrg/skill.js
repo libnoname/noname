@@ -214,7 +214,7 @@ const skills = {
 		zhuanhuanji: true,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (player.storage.jsrgdangren) return false;
+			if (player.storage.jsrgdangren || event.name != "chooseToUse") return false;
 			const card = get.autoViewAs({ name: "tao", isCard: true });
 			return event.filterCard(card, player, event) && event.filterTarget(card, player, player);
 		},
@@ -4758,6 +4758,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			var next = player.chooseToUse();
 			next.set("openskilldialog", `###${get.prompt("jsrgchuanxin")}###将一张牌当【杀】使用，且当一名角色受到此【杀】伤害时，此伤害+X（X为其本回合回复过的体力值）。`);
@@ -11561,6 +11562,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			const target = trigger.player;
 			const next = player.chooseToUse();

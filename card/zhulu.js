@@ -194,11 +194,7 @@ game.import("card", function () {
 							if (player.hasUnknown(2)) {
 								return 0;
 							}
-							return (1 - get.distance(player, target, "absolute") / game.countPlayer()) *
-								get.attitude(player, target) >
-								0
-								? 0.4
-								: 0.7;
+							return (1 - get.distance(player, target, "absolute") / game.countPlayer()) * get.attitude(player, target) > 0 ? 0.4 : 0.7;
 						},
 					},
 					tag: {
@@ -224,8 +220,7 @@ game.import("card", function () {
 						return;
 					}
 					target.chooseToDiscard(true, "he", [1, 2]).set("ai", function (card) {
-						if (!ui.selected.cards.length && get.type(card) == "equip")
-							return 8 - get.value(card);
+						if (!ui.selected.cards.length && get.type(card) == "equip") return 8 - get.value(card);
 						return 6 - get.value(card);
 					});
 					"step 1";
@@ -388,15 +383,7 @@ game.import("card", function () {
 				skills: ["yajiaoqiang_skill"],
 				ai: {
 					equipValue(card, player) {
-						var skills = [
-							"longdan",
-							"kanpo",
-							"rekanpo",
-							"qingguo",
-							"reqingguo",
-							"ollongdan",
-							"refanghun",
-						];
+						var skills = ["longdan", "kanpo", "rekanpo", "qingguo", "reqingguo", "ollongdan", "refanghun"];
 						for (var i = 0; i < skills.length; i++) {
 							if (player.hasSkill(skills[i])) return 5;
 						}
@@ -684,14 +671,7 @@ game.import("card", function () {
 				onLose() {
 					player.unmarkSkill("jinhe_skill");
 					var id = card.cardid;
-					if (
-						event.getParent(2) &&
-						event.getParent(2).name != "swapEquip" &&
-						get.position(card?.cards?.[0]) != "d" &&
-						event.parent.type != "equip" &&
-						_status.jinhe &&
-						_status.jinhe[id]
-					) {
+					if (event.getParent(2) && event.getParent(2).name != "swapEquip" && get.position(card?.cards?.[0]) != "d" && event.parent.type != "equip" && _status.jinhe && _status.jinhe[id]) {
 						var card2 = _status.jinhe[id].card;
 						player.$throw(card2, 1000);
 						game.log(card, "掉落了", card2);
@@ -703,12 +683,7 @@ game.import("card", function () {
 					order: 9.5,
 					equipValue(card, player) {
 						if (!player.getEquips(5).includes(card)) return 5;
-						if (
-							_status.jinhe &&
-							_status.jinhe[card.cardid] &&
-							_status.event.name != "gainPlayerCard"
-						)
-							return 3 * player.countCards("h");
+						if (_status.jinhe && _status.jinhe[card.cardid] && _status.event.name != "gainPlayerCard") return 3 * player.countCards("h");
 						return 0;
 					},
 					value() {
@@ -720,8 +695,7 @@ game.import("card", function () {
 					result: {
 						keepAI: true,
 						target(player, target, cardx) {
-							if (_status.jinhe && _status.jinhe[cardx.cardid])
-								return -0.5 - 2 * target.countCards("h");
+							if (_status.jinhe && _status.jinhe[cardx.cardid]) return -0.5 - 2 * target.countCards("h");
 							var card = target.getEquip(5);
 							if (!card) return 0;
 							return -get.value(card, target);
@@ -743,12 +717,7 @@ game.import("card", function () {
 				forced: true,
 				filter(event, player) {
 					if (event.getl === false) return false;
-					if (
-						!event.getd(player).length ||
-						!_status.jinhe ||
-						(event.getParent(2).name == "jinhe_skill" && event.getParent(2).player == player)
-					)
-						return false;
+					if (!event.getd(player).length || !_status.jinhe || (event.getParent(2).name == "jinhe_skill" && event.getParent(2).player == player)) return false;
 					var evt = event.getl(player);
 					if (!evt) return false;
 					for (var i = 0; i < evt.es.length; i++) {
@@ -784,11 +753,7 @@ game.import("card", function () {
 					mark(dialog, storage, player) {
 						var card = player.getEquip("jinhe");
 						if (card && _status.jinhe && _status.jinhe[card.cardid]) {
-							if (
-								_status.jinhe[card.cardid].player == game.me ||
-								_status.jinhe[card.cardid].player.isUnderControl()
-							)
-								dialog.addAuto([_status.jinhe[card.cardid].card]);
+							if (_status.jinhe[card.cardid].player == game.me || _status.jinhe[card.cardid].player.isUnderControl()) dialog.addAuto([_status.jinhe[card.cardid].card]);
 							else return "共有一张「礼」";
 						} else return "没有牌";
 					},
@@ -858,14 +823,7 @@ game.import("card", function () {
 							})
 						) {
 							const cards = player.getEquips("yexingyi");
-							if (
-								player.hasSkill("yexingyi_skill", null, false) ||
-								!card.cards ||
-								!cards.some(
-									(cardx) => card.cards.includes(cardx) || ui.selected.cards.includes(cardx)
-								)
-							)
-								return false;
+							if (player.hasSkill("yexingyi_skill", null, false) || !card.cards || !cards.some(cardx => card.cards.includes(cardx) || ui.selected.cards.includes(cardx))) return false;
 						}
 					},
 				},
@@ -937,24 +895,12 @@ game.import("card", function () {
 				forced: true,
 				priority: 6,
 				filter(event, player) {
-					if (
-						event.directHit ||
-						!get.tag(event.card, "damage") ||
-						!["basic", "trick"].includes(get.type(event.card))
-					)
-						return false;
+					if (event.directHit || !get.tag(event.card, "damage") || !["basic", "trick"].includes(get.type(event.card))) return false;
 					return player.hasUsableCard("caochuan");
 				},
 				content() {
 					var next = player.chooseToUse();
-					next.set(
-						"prompt",
-						"是否使用【草船借箭】响应" +
-							get.translation(trigger.player) +
-							"使用的" +
-							get.translation(trigger.card) +
-							"？"
-					);
+					next.set("prompt", "是否使用【草船借箭】响应" + get.translation(trigger.player) + "使用的" + get.translation(trigger.card) + "？");
 					next.set("filterCard", function (card, player) {
 						if (get.name(card) != "caochuan") return false;
 						return lib.filter.cardEnabled(card, player, "forceEnable");
@@ -969,42 +915,35 @@ game.import("card", function () {
 		},
 		translate: {
 			jinhe: "锦盒",
-			jinhe_info:
-				"此牌的使用目标为其他角色。当你使用【锦盒】时，你将原有的与此牌对应的「礼」置入弃牌堆（若有），然后观看牌堆顶的两张牌并将其中一张置于游戏外与此牌对应，称之为「礼」。<br>出牌阶段，你可以将与此牌对应的「礼」置入弃牌堆，然后弃置【锦盒】以及所有与「礼」花色相同的手牌。当此牌因其他原因进入弃牌堆后，你将与此牌对应的「礼」置入弃牌堆并弃置所有手牌。",
+			jinhe_info: "此牌的使用目标为其他角色。当你使用【锦盒】时，你将原有的与此牌对应的「礼」置入弃牌堆（若有），然后观看牌堆顶的两张牌并将其中一张置于游戏外与此牌对应，称之为「礼」。<br>出牌阶段，你可以将与此牌对应的「礼」置入弃牌堆，然后弃置【锦盒】以及所有与「礼」花色相同的手牌。当此牌因其他原因进入弃牌堆后，你将与此牌对应的「礼」置入弃牌堆并弃置所有手牌。",
 			jinhe_skill: "锦盒",
 			jinhe_lose: "锦盒",
 			yexingyi: "夜行衣",
 			yexingyi_info: "锁定技，你不是黑色锦囊牌的合法目标。",
 			nvzhuang: "女装",
-			nvzhuang_info:
-				"此牌的使用目标为其他角色。锁定技，当此牌进入或离开你的装备区时，若你的性别为男性，你弃置一张不为此牌的牌。",
+			nvzhuang_info: "此牌的使用目标为其他角色。锁定技，当此牌进入或离开你的装备区时，若你的性别为男性，你弃置一张不为此牌的牌。",
 			yinfengjia: "引蜂甲",
 			yinfengjia_info: "此牌的使用目标为其他角色。锁定技，当你受到锦囊牌造成的伤害时，此伤害+1。",
 			yinfengjia_skill: "引蜂甲",
 			zheji: "折戟",
 			zheji_info: "此牌的使用目标为其他角色。这是一把坏掉的武器……",
 			wufengjian: "无锋剑",
-			wufengjian_info:
-				"此牌的使用目标为其他角色。锁定技，当你使用【杀】时，你弃置一张不为装备区内【无锋剑】的牌。",
+			wufengjian_info: "此牌的使用目标为其他角色。锁定技，当你使用【杀】时，你弃置一张不为装备区内【无锋剑】的牌。",
 			wufengjian_skill: "无锋剑",
 			yajiaoqiang_skill: "涯角枪",
 			yajiaoqiang: "涯角枪",
-			yajiaoqiang_info:
-				"当你于一名其他角色的回合内第一次使用的黑色牌结算完成后，你可以获得此牌对应的所有实体牌。",
+			yajiaoqiang_info: "当你于一名其他角色的回合内第一次使用的黑色牌结算完成后，你可以获得此牌对应的所有实体牌。",
 			numa: "驽马",
-			numa_info:
-				"此牌的使用目标为其他角色。锁定技，当此牌进入你的装备区时，你弃置装备区内的所有其他牌。",
+			numa_info: "此牌的使用目标为其他角色。锁定技，当此牌进入你的装备区时，你弃置装备区内的所有其他牌。",
 			caochuan: "草船借箭",
-			caochuan_info:
-				"当带有「伤害」标签的基本牌或普通锦囊牌对你生效前，对此牌使用。抵消此牌对你产生的效果。当此牌结算完成后，你获得此牌对应的所有实体牌。",
+			caochuan_info: "当带有「伤害」标签的基本牌或普通锦囊牌对你生效前，对此牌使用。抵消此牌对你产生的效果。当此牌结算完成后，你获得此牌对应的所有实体牌。",
 			jiejia: "解甲归田",
 			jiejia_info: "出牌阶段，对一名装备区内有牌的角色使用。该角色获得其装备区内的所有牌。",
 			kaihua: "树上开花",
-			kaihua_info:
-				"出牌阶段，对包含你自己在内的一名角色使用。目标角色弃置一至两张牌，然后摸等量的牌。若其以此法弃置了装备牌，则多摸一张牌。",
+			kaihua_info: "出牌阶段，对包含你自己在内的一名角色使用。目标角色弃置一至两张牌，然后摸等量的牌。若其以此法弃置了装备牌，则多摸一张牌。",
 			zhulu_card: "逐鹿天下",
-			zhulu_card_info:
-				"出牌阶段，对所有角色使用。你从牌堆和弃牌堆亮出等同于目标角色数的装备牌，每名目标角色将其中一张牌置于自己的装备区。",
+			zhulu_card_info: "出牌阶段，对所有角色使用。你从牌堆和弃牌堆亮出等同于目标角色数的装备牌，每名目标角色将其中一张牌置于自己的装备区。",
+			caochuan_gain: "草船借箭",
 		},
 		list: [
 			["diamond", 3, "jiejia"],
