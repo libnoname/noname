@@ -115,13 +115,6 @@ const characters = {
 		maxHp: 6,
 		skills: ["lvli", "choujue"],
 	},
-	diy_caocao: {
-		sex: "male",
-		group: "wei",
-		hp: 4,
-		skills: ["xicai", "diyjianxiong", "hujia"],
-		names: "曹|操",
-	},
 	diy_hanlong: {
 		sex: "male",
 		group: "wei",
@@ -551,6 +544,13 @@ const characters = {
 		hp: 4,
 		maxHp: 6,
 		skills: ["olpianan", "olyinji", "olkuisi"],
+	},
+	zhangren: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["chuanxin", "zfengshi"],
+		//xdm我打赢复活赛了，虽然在垃圾桶里
 	},
 };
 

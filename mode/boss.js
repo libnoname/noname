@@ -1345,7 +1345,16 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 				},
-				//boss_shikieiki:['female','qun',8,['boss_yingzhong'],['qun','hiddenboss','bossallowed']],
+				boss_shikieiki: {
+					sex: "female",
+					group: "qun",
+					hp: 8,
+					skills: ["boss_yingzhong"],
+					groupInGuozhan: "qun",
+					isBoss: true,
+					isHiddenBoss: false,
+					isBossAllowed: true,
+				},
 
 				boss_lvbu1: {
 					sex: "male",
@@ -1547,12 +1556,12 @@ export default () => {
 				},
 
 				boss_nianshou: {
-					sex: 'male',
-					group: 'shen',
+					sex: "male",
+					group: "shen",
 					hp: Infinity,
-					skills:['boss_nianrui','boss_qixiang','boss_damagecount'],
+					skills: ["boss_nianrui", "boss_qixiang", "boss_damagecount"],
 					isBoss: true,
-					extraModeData:'shu'
+					extraModeData: "shu",
 				},
 			},
 		},
@@ -2526,7 +2535,55 @@ export default () => {
 		},
 		skill: {
 			boss_yingzhong: {
-				//Unfinished
+				getList(type, outside) {
+					let characters = [];
+					if (type === "highHp") {
+						characters = [];
+					}
+					if (outside) {
+						game.filterPlayer2(cur => {
+							characters.removeArray(get.nameList(cur));
+						});
+					}
+					return characters.randomSort();
+				},
+				trigger: {
+					player: "phaseBefore",
+				},
+				filter: function (event, player, name) {
+					return player.phaseNumber === 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					let num = 2,
+						skills = [],
+						characters = lib.skill.boss_yingzhong.getList();
+					const func = name => {
+						const ss = get.character(name, 3);
+						if (ss.length) {
+							skills.addArray(get.character(name, 3));
+							return true;
+						}
+						return false;
+					};
+					for (const name of characters) {
+						if (func(name)) num--;
+						if (!num) break;
+					}
+					if (!num && lib.rank) {
+						//备用方案
+						for (const r of ["s", "ap", "a", "am"]) {
+							if (!Array.isArray(lib.rank[r])) continue;
+							const ss = lib.rank[r].randomSort();
+							for (const name of ss) {
+								if (func(name)) num--;
+								if (!num) break;
+							}
+							if (!num) break;
+						}
+					}
+					if (skills.length) await player.addSkills(skills);
+				},
 			},
 			niaobaidaowenha_skill: {
 				trigger: { player: "loseMaxHpAfter" },
@@ -3028,6 +3085,13 @@ export default () => {
 					if (game.phaseNumber <= 50 && _status.shidianyanluo_level == 2 && _status.shidianyanluo_mengpodie == true) {
 						list = ["boss_dizangwang"];
 					}
+					if (_status.shidianyanluo_level == 2 && game.boss.getEnemies().some(cur => {
+						const names = get.nameList(cur);
+						for (let name of names) {
+							if (lib.skill.boss_yingzhong.getList().includes(name)) return true;
+						}
+						return false;
+					})) list.push("boss_shikieiki");
 					if (list.length == 1) event._result = { control: list[0] };
 					else {
 						player
@@ -10155,7 +10219,7 @@ export default () => {
 			boss_wangsheng_info: "锁定技，你的出牌阶段开始时，视为你随机使用一张【南蛮入侵】或【万箭齐发】。",
 			boss_zlfanshi: "反噬",
 			boss_zlfanshi_info: "锁定技，每个回合你受到第一次伤害后，若再次受到伤害，则对随机一名其他角色造成1点伤害。",
-			boss_shikieiki_ab: "四季映姫",
+			boss_shikieiki_ab: "四季映姬",
 			boss_shikieiki: "四季映姬·夜魔仙那度",
 			boss_yingzhong: "映冢",
 			boss_yingzhong_info: "锁定技。你登场后的第一个回合开始时，你随机获得两个“阴间武将”的全部技能。",

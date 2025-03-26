@@ -8915,37 +8915,6 @@ const skills = {
 			player.draw();
 		},
 	},
-	xicai: {
-		inherit: "jianxiong",
-	},
-	diyjianxiong: {
-		mode: ["identity", "guozhan"],
-		trigger: { global: "dieBefore" },
-		forced: true,
-		filter(event, player) {
-			if (_status.currentPhase !== player) return false;
-			if (get.mode() === "identity") return event.player != game.zhu;
-			return get.mode() === "guozhan" && event.player.isFriendOf(player);
-		},
-		content() {
-			game.broadcastAll(
-				function (target, group) {
-					if (get.mode() === "identity") {
-						target.identity = group;
-						target.setIdentity(group);
-						target.identityShown = true;
-					} else {
-						target.trueIdentity = lib.group
-							.slice(0)
-							.filter(i => group !== i)
-							.randomGet();
-					}
-				},
-				trigger.player,
-				get.mode() === "identity" ? "fan" : player.getGuozhanGroup()
-			);
-		},
-	},
 	nsshuaiyan: {
 		trigger: { global: "recoverAfter" },
 		filter(event, player) {

@@ -6,10 +6,7 @@ const translates = {
 	diy_yangyi: "杨仪",
 	diy_tianyu: "田豫",
 
-	diy_caocao: "曹孟德",
 	diy_weiyan: "魏文长",
-	xicai: "惜才",
-	diyjianxiong: "奸雄",
 	diy_feishi: "费诗",
 	nsshuaiyan: "率言",
 	moshou: "墨守",
@@ -342,8 +339,6 @@ const translates = {
 	ciqiu_info: "锁定技，每当你使用【杀】对目标角色造成伤害时，若该角色未受伤，你令此伤害+1；若其因此进入濒死状态，你令其死亡，然后你失去“刺酋”。",
 	nsshuaiyan_info: "每当其他角色于你的回合外回复体力后，你可以令该角色选择一项：1.令你摸一张牌；2.令你弃置其一张牌。",
 	moshou_info: "锁定技，你不能成为乐不思蜀和兵粮寸断的目标。",
-	xicai_info: "你可以立即获得对你造成伤害的牌。",
-	diyjianxiong_info: "锁定技，在身份局中，在你回合内死亡的角色均视为反贼，国战中，在你回合内死亡的角色若与你势力相同则随机改为另一个势力。",
 
 	ns_zanghong: "臧洪",
 	nsshimeng: "誓盟",

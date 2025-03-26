@@ -165,14 +165,6 @@ const characters = {
 		skills: ["oldjuejing", "oldlonghun"],
 		groupInGuozhan: "shu",
 	},
-	std_pengyang: {
-		//不想你，diy牢彭羕
-		sex: "male",
-		group: "shu",
-		hp: 3,
-		skills: ["stdxiaofan", "stdtuishi"],
-		isUnseen: true,
-	},
 	std_xushu: {
 		sex: "male",
 		group: "shu",

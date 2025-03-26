@@ -82,8 +82,6 @@ const translates = {
 
 	old_shen_zhaoyun: "牢神赵云",
 	old_shen_zhaoyun_prefix: "牢神",
-	std_pengyang: "牢彭羕",
-	std_pengyang_prefix: "牢",
 	std_xushu: "标徐庶",
 	std_xushu_prefix: "标",
 	std_xuezong: "标薛综",

@@ -731,13 +731,6 @@ const characters = {
 		names: "邹|null",
 		isUnseen: true,
 	},
-	zhangren: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["chuanxin", "zfengshi"],
-		isUnseen: true,
-	},
 
 	huangfusong: {
 		sex: "male",

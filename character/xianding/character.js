@@ -360,7 +360,6 @@ const characters = {
 		group: "qun",
 		hp: 105,
 		skills: ["dc_zj_a", "dc_zj_b"],
-		isUnseen: true,
 	},
 	zhugeruoxue: {
 		sex: "female",
