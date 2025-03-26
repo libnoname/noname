@@ -15,7 +15,6 @@ game.import("character", function () {
 				hp: 4,
 				skills: ["zhongzhan", "lianpo"],
 			},
-			// xk_shenxiangyun:['female','wei',3,['zhenjiu']],
 			// xk_fujianhan: ["male", "qun", 4, ["zitong"]],
 		},
 		skill: {
@@ -116,7 +115,6 @@ game.import("character", function () {
 		translate: {
 			xk_guyuexuan: "谷月轩",
 			xk_jinji: "荆棘",
-			xk_shenxiangyun: "沈湘芸",
 			xk_fujianhan: "傅剑寒",
 			zhongzhan: "重斩",
 			zhongzhan_info: "每当你即将造成伤害，你可失去1点体力令伤害+1。",
