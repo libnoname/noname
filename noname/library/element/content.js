@@ -1300,6 +1300,7 @@ export const Content = {
 			player.cooperationWith(target, result.links[0][2].slice(12), event.reason);
 		}
 	},
+
 	chooseToPlayBeatmap: function () {
 		"step 0";
 		if (game.online) return;
@@ -1364,7 +1365,6 @@ export const Content = {
 				ui.roundmenu.style.display = "none";
 			}
 			if (ui.backgroundMusic) ui.backgroundMusic.pause();
-			var event = _status.event;
 			event.settleed = false;
 			//建个框框
 			var dialog = ui.create.dialog("forcebutton", "hidden");
@@ -1602,6 +1602,7 @@ export const Content = {
 		var result = event.result || result;
 		event.result = result;
 	},
+
 	/**
 	 *
 	 * @param {GameEvent} event
