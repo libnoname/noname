@@ -29,7 +29,13 @@ game.import("character", function () {
 				hp: 3,
 				skills: ["yueren", "shangshi"],
 			},
-			// swd_miles:['male','qun',4,['aojian','miles_xueyi','mohua2']],
+			swd_miles: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["aojian", "miles_xueyi", "mohua2"],
+				isUnseen: true,
+			},
 			swd_nicole: {
 				sex: "female",
 				group: "qun",
@@ -310,8 +316,6 @@ game.import("character", function () {
 				skills: ["fzhenwei", "shangxi"],
 			},
 
-			// swd_wushi:['male','wei',3,['zhoufu','yingbin','xuying']],
-			// swd_lanmoshen:['female','wei',3,['bingjian','lieren']],
 			swd_huanglei: {
 				sex: "male",
 				group: "qun",
@@ -325,7 +329,6 @@ game.import("character", function () {
 				skills: ["zhanxing", "kbolan"],
 				names: "肯迪|null",
 			},
-			// swd_lijing:['male','qun',4,['tianyi','zhuhai']],
 			swd_lilian: {
 				sex: "female",
 				group: "qun",
@@ -333,9 +336,6 @@ game.import("character", function () {
 				skills: ["swd_wuxie", "lqingcheng"],
 				names: "null|null",
 			},
-			// swd_linming:['male','qun',3,['shelie','bifa']],
-			// swd_philis:['male','qun',4,['yicong','wangxi']],
-			// swd_pepin:['male','qun',4,['rejianxiong','quhu']],
 			swd_kangnalishi: {
 				sex: "male",
 				group: "qun",
@@ -357,8 +357,20 @@ game.import("character", function () {
 				skills: ["hwendao", "lingfeng", "hxunzhi"],
 			},
 
-			// swd_chenfu:['male','qun',4,['xuanzhou','bingfeng']],
-			// swd_chengyaojin:['male','qun',4,['jiuchi','jufu']],
+			swd_chenfu: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["xuanzhou", "bingfeng"],
+				isUnseen: true,
+			},
+			swd_chengyaojin: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["jiuchi", "jufu"],
+				isUnseen: true,
+			},
 			swd_shanxiaoxiao: {
 				sex: "female",
 				group: "wu",
@@ -372,10 +384,20 @@ game.import("character", function () {
 				skills: ["huanxing", "meihuo"],
 				names: "尉迟|嫣红",
 			},
-			// swd_heran:['male','qun',3,['yujian','guiyin','shejie']],
-			// swd_qinshubao:['male','qun',3,['huajing','pingxu']],
-			// swd_yangshuo:['male','qun',4,['longdan','luomu']],
-			// swd_zhanglie:['male','qun',4,['huajin','poxiao']],
+			swd_qinshubao: {
+				sex: "male",
+				group: "qun",
+				hp: 3,
+				skills: ["huajing", "pingxu"],
+				isUnseen: true,
+			},
+			swd_zhanglie: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["huajin", "poxiao"],
+				isUnseen: true,
+			},
 
 			swd_hanluo: {
 				sex: "male",
@@ -4452,50 +4474,6 @@ game.import("character", function () {
 					},
 				},
 			},
-			shejie: {
-				trigger: { player: "damageEnd" },
-				priority: 9,
-				check(event, player) {
-					return get.attitude(player, event.source) < 0;
-				},
-				filter(event) {
-					return event && event.source;
-				},
-				content() {
-					trigger.source.addSkill("shejie2");
-				},
-				ai: {
-					threaten: 0.4,
-				},
-			},
-			shejie2: {
-				mark: true,
-				marktext: "界",
-				intro: {
-					content: "不能使用或打出手牌直到下一回合开始",
-				},
-				trigger: { player: "phaseBegin" },
-				forced: true,
-				priority: 10,
-				mod: {
-					cardEnabled2(card) {
-						if (get.position(card) == "h") return false;
-					},
-				},
-				content() {
-					player.removeSkill("shejie2");
-				},
-			},
-			guiyin: {
-				trigger: { player: "phaseDiscardEnd" },
-				frequent: true,
-				filter(event, player) {
-					return event.cards && event.cards.length > 1;
-				},
-				content() {
-					player.draw(2);
-				},
-			},
 			wangchen: {
 				trigger: { player: "phaseDiscardEnd" },
 				direct: true,
@@ -5468,17 +5446,6 @@ game.import("character", function () {
 				forced: true,
 				content() {
 					trigger.num++;
-				},
-			},
-			luomu: {
-				trigger: { source: "damageEnd" },
-				forced: true,
-				filter(event, player) {
-					if (event._notrigger.includes(event.player)) return false;
-					return event.player.countCards("hej");
-				},
-				content() {
-					trigger.player.discard(trigger.player.getCards("hej").randomGet());
 				},
 			},
 			huanhun: {
@@ -8209,7 +8176,7 @@ game.import("character", function () {
 				},
 				position: "he",
 				viewAs: { name: "sha" },
-				prompt: "将一张闪当杀使用或打出",
+				prompt: "将一张装备牌当杀使用或打出",
 				check(card) {
 					if (get.subtype(card) == "equip1") return 10 - get.value(card);
 					return 7 - get.equipValue(card);
@@ -8256,7 +8223,6 @@ game.import("character", function () {
 			swd_miles: "麦尔斯",
 			swd_kangnalishi: "康那里士",
 			swd_satan: "撒旦",
-			swd_philis: "菲力斯",
 			swd_weida: "薇达",
 			swd_fengtianling: "凤天凌",
 			swd_huyue: "瑚月",
@@ -8264,15 +8230,12 @@ game.import("character", function () {
 			swd_rongshuang: "蓉霜",
 			swd_zhuoshanzhu: "浊山铸",
 			swd_jialanduo: "迦兰多",
-			swd_linming: "林明",
 			swd_duanmeng: "端蒙",
 			swd_nicole: "妮可",
 			swd_kendi: "肯迪",
-			swd_lijing: "李靖",
 			swd_yuwentuo: "宇文拓",
 			swd_shanxiaoxiao: "单小小",
 			swd_yuchiyanhong: "尉迟嫣红",
-			swd_pepin: "丕平",
 			swd_anka: "安卡",
 			swd_jiangwu: "疆梧",
 			swd_situqiang: "司徒蔷",
@@ -8287,7 +8250,6 @@ game.import("character", function () {
 			swd_yuli: "玉澧",
 			swd_duopeng: "多鹏",
 			swd_jiangziya: "姜子牙",
-			swd_heran: "何然",
 			swd_zhanggao: "张诰",
 			swd_hanlong: "韩龙",
 			swd_jiuyou: "久悠",
@@ -8321,8 +8283,6 @@ game.import("character", function () {
 			swd_fengyu: "凤煜",
 			swd_qi: "柒",
 			swd_chenfu: "陈辅",
-			swd_lanmoshen: "蓝魔神",
-			swd_wushi: "巫师",
 			swd_quxian: "屈娴",
 			swd_xiyan: "犀衍",
 			swd_shuwaner: "舒莞儿",
@@ -8540,11 +8500,6 @@ game.import("character", function () {
 			wangchen_info_alter: "弃牌阶段结束时，若你于此阶段弃置了基本牌，你可以令一名角色翻面并获得1点护甲。",
 			// wangchen_info:'若你于弃牌阶段弃置了基本牌，可令一名角色翻面。',
 			// wangchen_info:'弃牌阶段结束时，若你于此阶段弃置了基本牌，可将一名其他角色移出游戏直到你死亡或下一回合开始。',
-			guiyin: "归隐",
-			guiyin_info: "若你于弃牌阶段弃置了至少两张牌，你可以摸两张牌。",
-			shejie: "设界",
-			shejie2: "设界",
-			shejie_info: "每当你受到一次伤害，可以令伤害来源不能使用或打出其手牌，直到其下一回合开始。",
 			yinyue: "引月",
 			yinyue_info: "每当有一名角色回复一次体力，你可以令其摸一张牌，若该角色不是你且你的手牌数不大于该角色，你也摸一张牌。",
 			yinyue_info_alter: "每当有一名角色回复一次体力，你可以令其摸一张牌。",
@@ -8638,7 +8593,6 @@ game.import("character", function () {
 			shehun_info: "出牌阶段限一次，你可以弃置任意张花色不同的牌，另一名其他角色弃置等量的牌，若其弃置的牌中有牌的花色与你弃置的牌相同，你对其造成1点伤害。",
 
 			zhanlu: "沾露",
-			luomu: "落木",
 			liaoyuan: "燎原",
 			huanhun: "唤魂",
 			daixing: "代形",
@@ -8724,7 +8678,6 @@ game.import("character", function () {
 			lanzhi_info: "每当你使用一张梅花牌，你可以令所有体力值不大于你的角色回复1点体力。",
 			tianhuo_info: "出牌阶段，你可以令所有角色弃置其判定区域内的牌，并受到没有来源的等量火焰伤害，每阶段限一次。",
 			huanyin_info: "锁定技，每当你成为其他角色的卡牌的目标时，你进行一次判定，若为黑桃则取消之，若为红桃你摸一张牌。",
-			luomu_info: "锁定技，每当你造成伤害时，受伤害角色随机弃置一张牌。",
 			poxing_info: "锁定技，每当你即将造成伤害，若目标的体力值大于你，你令伤害+1。",
 			liaoyuan_info: "每当你使用一张【杀】指定目标后，你可以弃置任意张与此【杀】花色相同的牌，若如此做，目标需额外打出等量的闪，每少打出一张闪，此【杀】的伤害+1。",
 			liaoyuan_info_alter: "每当你使用一张【杀】指定目标后，你可以弃置一张与此【杀】花色相同的牌，若如此做，目标需额外打出一张闪，若目标没打出闪，此【杀】的伤害+1。",

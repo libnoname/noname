@@ -491,7 +491,6 @@ export default () => {
 							"xianfu",
 							"fenyong",
 							"xuehen",
-							"yingbin",
 							"midao",
 							"yishe",
 							"yinbing",

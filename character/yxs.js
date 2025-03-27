@@ -2389,7 +2389,6 @@ game.import("character", function () {
 						if (trigger.player.hasSkill("roulin") && trigger.target.sex == "female") return 0;
 						if (trigger.player.hasSkill("nvquan") && trigger.target.sex == "male") return 0;
 						if (trigger.target.hasSkill("yijue2")) return 0;
-						if (trigger.target.hasSkill("shejie2")) return 0;
 						if (trigger.target.hasSkill("shanguang2")) return 0;
 
 						var equip = trigger.target.getEquip(2);

@@ -127,7 +127,13 @@ game.import("character", function () {
 				hp: 4,
 				skills: ["gwzhanjiang"],
 			},
-			// gw_yioufeisi:['male','wu',4,['gwchuanxin']],
+			gw_yioufeisi: {
+				sex: "male",
+				group: "wu",
+				hp: 4,
+				skills: ["gwchuanxin"],
+				isUnseen: true,
+			},
 
 			gw_aigeleisi: {
 				sex: "female",

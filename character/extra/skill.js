@@ -9716,7 +9716,7 @@ const skills = {
 			if (player.hasEnabledSlot() && !player.hasEnabledSlot(5)) return false;
 			return true;
 		},
-		bannedList: ["bifa", "buqu", "gzbuqu", "songci", "funan", "xinfu_guhuo", "reguhuo", "huashen", "rehuashen", "old_guhuo", "shouxi", "xinpojun", "taoluan", "xintaoluan", "yinbing", "xinfu_yingshi", "zhenwei", "zhengnan", "xinzhengnan", "zhoufu"],
+		bannedList: ["bifa", "buqu", "gzbuqu", "songci", "funan", "xinfu_guhuo", "reguhuo", "huashen", "rehuashen", "old_guhuo", "shouxi", "xinpojun", "taoluan", "xintaoluan", "xinfu_yingshi", "zhenwei", "zhengnan", "xinzhengnan"],
 		logTarget: "player",
 		content() {
 			"step 0";

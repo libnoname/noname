@@ -123,7 +123,6 @@ window.noname_source_list = [
 	"character/ow.js",
 	"character/rank.js",
 	"character/swd.js",
-	"character/xiake.js",
 	"character/xianjian.js",
 	"character/yxs.js",
 	"character/zhuogui.js",
