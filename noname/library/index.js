@@ -169,17 +169,18 @@ export class Library {
 	ondb2 = [];
 	chatHistory = [];
 	emotionList = {
-		xiaowu_emotion: 14,
-		xiaokuo_emotion: 8,
+		huangdou_emotion: 50,
 		shibing_emotion: 15,
+		wanglang_emotion: 18,
 		guojia_emotion: 20,
 		zhenji_emotion: 20,
+		xiaowu_emotion: 14,
+		xiaokuo_emotion: 8,
 		xiaosha_emotion: 20,
 		xiaotao_emotion: 20,
 		xiaojiu_emotion: 20,
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
-		huangdou_emotion: 50,
 		maoshu_emotion: 18,
 	};
 	animate = {
@@ -9712,6 +9713,7 @@ export class Library {
 		_disableJudge: "判定区",
 
 		xiaowu_emotion: "小无表情",
+		wanglang_emotion: "王朗表情",
 		guojia_emotion: "郭嘉表情",
 		zhenji_emotion: "甄姬表情",
 		shibing_emotion: "士兵表情",
