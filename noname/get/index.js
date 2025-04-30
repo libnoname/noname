@@ -2727,7 +2727,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * @overload
-	 * @param { string } item
+	 * @param { string | Symbol } item
 	 * @returns { Skill }
 	 */
 	/**
@@ -2737,15 +2737,13 @@ export class Get extends GetCompatible {
 	 * @returns { any }
 	 */
 	info(item, player) {
-		if (typeof item == "string") {
-			const info = (() => {
-				const info = lib.skill[item];
-				if (!info) {
-					console.warn(`孩子，你的技能${item}是不是忘写了什么？！`);
-					return {};
-				}
-				return info;
-			})();
+		if (typeof item == "string" || typeof item == "symbol") {
+			const info = Reflect.get(lib.skill, item);
+			if (!info) {
+				const str = typeof item == "string" ? item : `[${item.toString()}]`;
+				console.warn(`孩子，你的技能${str}是不是忘写了什么？！`);
+				return {};
+			}
 			return info;
 		}
 		if (typeof item == "object") {
