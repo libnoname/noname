@@ -2,6 +2,125 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL蔡贞姬
+	olkedi: {
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			if (!player.isPhaseUsing()) return false;
+			if (!player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == event)) return false;
+			return player.getHistory("useCard", evt => {
+				if (!evt.isPhaseUsing()) return false;
+				return player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == evt);
+			}, event).length <= 2;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2("olkedi"), (card, player, target) => target.countCards("he"))
+				.set("ai", target => {
+					const player = get.player();
+					return get.attitude(player, target) * target.countCards("he");
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				prompt = `柯笛：重铸一张牌，若花色为${get.translation(get.suit(trigger.card))}则${get.translation(player)}可以使用之`,
+				result = await target
+					.chooseCard("he", prompt, lib.filter.cardRecastable)
+					.set("suit", get.suit(trigger.card))
+					.set("source", player)
+					.set("ai", card => {
+						const { suit, source, player } = get.event(),
+							bool1 = get.suit(card) == suit && source.hasValueTarget(card),
+							bool2 = get.attitude(player, source) > 0;
+						if (bool1 == bool2) return 20 - get.value(card);
+						return 7 - get.value(card);
+					})
+					.forResult();
+			if (result?.cards) {
+				await target.recast(result.cards);
+				if (get.suit(result.cards[0]) == get.suit(trigger.card) && player.hasUseTarget(result.cards[0])) {
+					await player.chooseUseTarget(result.cards[0], false);
+				}
+			}
+		},
+	},
+	olcunze: {
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseTarget(get.prompt2("olcunze"))
+				.set("ai", function (target) {
+					let att = get.attitude(_status.event.player, target);
+					if (att > 0) return att + 1;
+					if (att == 0) return Math.random();
+					return att;
+				})
+				.set("animate", false)
+				.forResult();
+			event.result = {
+				bool: true,
+				cost_data: result.targets[0],
+			};
+		},
+		async content(event, trigger, player) {
+			let target = event.cost_data;
+			player.addTempSkill("olcunze_mark", { player: "phaseBegin" });
+			if (!player.storage.olcunze_mark) player.storage.olcunze_mark = [];
+			player.storage.olcunze_mark.add(target);
+
+			const func = (player, target) => {
+				target.markSkill("olcunze_mark", null, null, true);
+			};
+			if (event.isMine()) func(player, target);
+			else if (player.isOnline2()) player.send(func, player, target);
+		},
+		subSkill: {
+			tao: {
+				charlotte: true,
+				mark: true,
+				marktext: "择",
+				intro: {
+					name: "存择",
+					content: "你不能使用桃",
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (card.name == "tao") return false;
+					},
+					cardSavable(card, player) {
+						if (card.name == "tao") return false;
+					},
+				}
+			},
+			mark: {
+				onremove: true,
+				charlotte: true,
+				trigger: {
+					global: "dying",
+				},
+				filter(event, player) {
+					return player.getStorage("olcunze_mark").includes(event.player) && event.player.hp < 1;
+				},
+				forced: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					player.unmarkAuto("olcunze_mark", [trigger.player]);
+					await trigger.player.recoverTo(1);
+					player.addTempSkill("olcunze_tao", { player: "phaseBegin" });
+				},
+				marktext: "存",
+				intro: {
+					name: "存择",
+					content: "$首次进入濒死时，你令其回复体力至1点",
+				},
+			},
+		},
+	},
 	//OL张曼成 —— by 星の语
 	olkuangxin: {
 		audio: 2,

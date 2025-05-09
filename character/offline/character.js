@@ -1,19 +1,4 @@
 const characters = {
-	zombie_jiaxu: {
-		sex: "male",
-		group: "shen",
-		hp: 3,
-		skills: ["zombiesangluan", "zombieshibao", "zombiechuce", "zombielongmu"],
-		groupInGuozhan: "qun",
-	},
-	zombie_zombie: {
-		sex: "male",
-		group: "qun",
-		hp: 2,
-		maxHp: 4,
-		skills: ["zombieshibian", "zombieganran"],
-		isUnseen: true,
-	},
 	ps_zhangrang: {
 		sex: "male",
 		group: "qun",
@@ -147,43 +132,6 @@ const characters = {
 		hp: 5,
 		skills: ["psxiaofan", "psjiaohu", "psquanpan", "pshuoluan"],
 		doubleGroup: ["qun", "shu", "wu"],
-	},
-	hm_shen_zhangjiao: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_fudao", "hm_zongfu", "hm_dangjing", "hm_sanshou"],
-	},
-	hm_shen_zhangbao: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_zhouyuan", "hm_zhaobing", "hm_sanshou"],
-	},
-	hm_shen_zhangliang: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_jijun", "hm_fengtong", "hm_sanshou"],
-	},
-	hm_shen_huangfusong: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_shice", "hm_podai"],
-		names: "皇甫|嵩",
-	},
-	hm_shen_luzhi: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_jigan", "hm_weizhu", "hm_guiquan"],
-	},
-	hm_shen_zhujun: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["hm_cheji", "hm_daicui", "hm_kuixiang"],
 	},
 	hm_guigu: {
 		sex: "male",
@@ -497,27 +445,6 @@ const characters = {
 		hp: 3,
 		skills: ["tyqianshou", "tytanlong", "tyxibei"],
 		clans: ["吴郡陆氏"],
-	},
-	ty_shen_liubei: {
-		sex: "male",
-		group: "shen",
-		hp: 6,
-		skills: ["tylongnu", "nzry_jieying", "tytaoyuan"],
-		groupInGuozhan: "shu",
-	},
-	ty_shen_zhangfei: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["tyshencai", "tyxunshi"],
-		groupInGuozhan: "shu",
-	},
-	ty_shen_guanyu: {
-		sex: "male",
-		group: "shen",
-		hp: 5,
-		skills: ["tywushen", "tywuhun"],
-		groupInGuozhan: "shu",
 	},
 	ty_guanyinping: {
 		sex: "female",
@@ -838,20 +765,6 @@ const characters = {
 		hp: 4,
 		skills: ["jxwusheng", "jsrgguanjue", "nuzhan"],
 	},
-	jx_shen_caoren: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["jxjushou"],
-		groupInGuozhan: "wei",
-	},
-	jx_shen_liubiao: {
-		sex: "male",
-		group: "shen",
-		hp: 2,
-		skills: ["jxxiongju", "jxfujing", "jxyongrong"],
-		groupInGuozhan: "qun",
-	},
 	yj_tianchuan: {
 		sex: "female",
 		group: "qun",
@@ -982,13 +895,6 @@ const characters = {
 		hp: 4,
 		skills: ["vtbmeiniang", "vtbyaoli"],
 		names: "null|酒",
-	},
-	ps_shen_machao: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["psshouli", "pshengwu"],
-		groupInGuozhan: "qun",
 	},
 	mateng: {
 		sex: "male",
@@ -1166,13 +1072,6 @@ const characters = {
 		hp: 3,
 		skills: ["zylianji", "zymoucheng"],
 		clans: ["太原王氏"],
-	},
-	shen_jiaxu: {
-		sex: "male",
-		group: "shen",
-		hp: 3,
-		skills: ["weimu", "zybishi", "zyjianbing"],
-		groupInGuozhan: "qun",
 	},
 	yj_zhenji: {
 		sex: "female",
