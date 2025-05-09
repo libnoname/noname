@@ -2,7 +2,7 @@ window.noname_character_replace = {
 	//大致按照OL，新杀，手杀，外服，线下，DIY，怀旧的顺序排列。（同服按标，界，谋，sp）
 	key_yuri: ["key_yuri", "sp_key_yuri"],
 	sp_key_kanade: ["sp_key_kanade", "kanade"],
-	shen_caocao: ["shen_caocao", "old_caocao", "hm_shen_caocao"],
+	shen_caocao: ["shen_caocao", "old_caocao", "ca_shen_caocao"],
 	shen_guanyu: ["shen_guanyu", "tw_shen_guanyu", "ty_shen_guanyu"],
 	shen_huatuo: ["dc_shen_huatuo", "shen_huatuo"],
 	shen_jiaxu: ["le_shen_jiaxu", "shen_jiaxu", "zombie_jiaxu"],

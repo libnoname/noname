@@ -14002,6 +14002,23 @@ export class Library {
 			},
 		],
 		[
+			"长安",
+			{	
+				showName: "镐",
+				color: "#40e0d0",
+				nature: "shenmm",
+			},
+		],
+		[
+			"长安神",
+			{
+				/**
+				 * @returns {string}
+				 */
+				getSpan: () => `${get.prefixSpan("长安")}${get.prefixSpan("神")}`,
+			},
+		],
+		[
 			"TW神",
 			{
 				/**

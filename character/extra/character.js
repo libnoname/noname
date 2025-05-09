@@ -1,21 +1,21 @@
 const characters = {
-	hm_shen_wangyun: {
+	ca_shen_wangyun: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
-		skills: ["hmanchao", "hmyurong", "hmdingxi"],
+		skills: ["caanchao", "cayurong", "cadingxi"],
 	},
-	hm_shen_caocao: {
+	ca_shen_caocao: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
-		skills: ["hmzhaoshao", "hmxiaoxiong"],
+		skills: ["cazhaoshao", "caxiaoxiong"],
 	},
-	hm_shen_lijueguosi: {
+	ca_shen_lijueguosi: {
 		sex: "male",
 		group: "shen",
 		hp: 5,
-		skills: ["hmweijue", "hmchuxiong"],
+		skills: ["caweijue", "cachuxiong"],
 		names: "李|傕-郭|汜",
 	},
 	zombie_jiaxu: {
