@@ -3834,8 +3834,11 @@ export class Player extends HTMLDivElement {
 	addCharge(num, log) {
 		if (typeof num != "number" || !num) num = 1;
 		let maxCharge = this.getMaxCharge();
-		num = Math.min(num, maxCharge - this.countMark("charge"));
-		if (num > 0) this.addMark("charge", num, log);
+		if (maxCharge == Infinity) this.addMark("charge", num, log);
+		else {
+			num = Math.min(num, maxCharge - this.countMark("charge"));
+			if (num > 0) this.addMark("charge", num, log);
+		}
 	}
 	/**
 	 * 移去蓄力点
@@ -3853,7 +3856,10 @@ export class Player extends HTMLDivElement {
 	 * @returns { number }
 	 */
 	countCharge(max) {
-		if (max) return this.getMaxCharge() - this.countMark("charge");
+		if (max) {
+			if (this.getMaxCharge() == Infinity) return Infinity;
+			return this.getMaxCharge() - this.countMark("charge");
+		}
 		return this.countMark("charge");
 	}
 	/**
@@ -3865,6 +3871,7 @@ export class Player extends HTMLDivElement {
 		for (let skill of skills) {
 			let info = get.info(skill);
 			if (!info || !info.chargeSkill || typeof info.chargeSkill != "number") continue;
+			if (info.chargeSkill == Infinity) return Infinity;
 			max += info.chargeSkill;
 		}
 		max = game.checkMod(this, max, "maxCharge", this);

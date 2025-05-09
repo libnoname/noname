@@ -11068,7 +11068,8 @@ export class Library {
 			markimage: "image/card/charge.png",
 			intro: {
 				content(storage, player) {
-					const max = player.getMaxCharge();
+					let max = player.getMaxCharge();
+					if (max == Infinity) max = "∞";
 					return `当前蓄力点数：${storage}/${max}`;
 				},
 			},
