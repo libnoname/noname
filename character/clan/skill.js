@@ -89,11 +89,17 @@ const skills = {
 							break;
 						}
 						case "选项二": {
-							await target.draw(2);
+							const next = target.draw(2);
+							next.gaintag = ["clanjiannan"];
+							await next;
 							break;
 						}
 						case "选项三": {
-							await target.recast(target.getCards("e", lib.filter.cardRecastable));
+							await target.recast(target.getCards("e", lib.filter.cardRecastable), null, (player, cards) => {
+								let next = player.draw(cards.length);
+								next.log = false;
+								next.gaintag = ["clanjiannan"];
+							});
 							break;
 						}
 						case "选项四": {
@@ -766,7 +772,7 @@ const skills = {
 				if (evtx.type == "discard") return false;
 				if (["useCard", "respond"].includes(evtx.getParent().name)) return false;
 				return evtx?.hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu");
-			});
+			}).map(evtx => event.name == "lose" ? evtx : evtx.getParent());
 			return (
 				history.indexOf(event) == 0 &&
 				game.hasPlayer(target => {

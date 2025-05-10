@@ -3127,7 +3127,7 @@ export class Click {
 					}
 				}
 			});
-			if (dieAudios.length || skillAudioMap.size > 0) {
+			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
 				const eleHr = document.createElement("hr");
 				eleHr.style.marginTop = "11px";
 				intro.appendChild(eleHr);
@@ -3426,7 +3426,7 @@ export class Click {
 					}
 				}
 			});
-			if (dieAudios.length || skillAudioMap.size > 0) {
+			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
 				introduction.appendChild(document.createElement("hr"));
 
 				if (skillAudioMap.size > 0) {
