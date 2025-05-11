@@ -3140,12 +3140,20 @@ player.removeVirtualEquip(card);
 		"step 2";
 		event.trigger("phaseOver");
 		"step 3";
-		if (!game.players.includes(event.player.next)) {
-			event.player = game.findNext(event.player.next);
-		} else {
-			event.player = event.player.next;
-		}
-		event.goto(1);
+		let findNext = current => {
+			let players = game.players
+				.slice(0)
+				.concat(game.dead)
+				.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+			let position = parseInt(current.dataset.position);
+			for (let i = 0; i < players.length; i++) {
+				if (parseInt(players[i].dataset.position) > position) return players[i];
+			}
+			return players[0];
+		};
+		event.player = findNext(event.player);
+		if (game.players.includes(event.player)) event.goto(1);
+		else event.goto(2);
 	},
 	loadPackage: function () {
 		"step 0";

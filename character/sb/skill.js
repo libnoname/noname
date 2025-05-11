@@ -5615,6 +5615,9 @@ const skills = {
 					content: "使用牌只能指定$和自己为目标",
 				},
 				mod: {
+					cardSavable(card, player, target) {
+						if (player != target && !player.getStorage("sbzhiji_beifa").includes(target)) return false;
+					},
 					playerEnabled(card, player, target) {
 						if (player != target && !player.getStorage("sbzhiji_beifa").includes(target)) return false;
 					},
