@@ -897,30 +897,25 @@ const skills = {
 		},
 	},
 	gaoling: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "showCharacterAfter" },
 		hiddenSkill: true,
 		filter(event, player) {
 			return event.toShow?.some(i => get.character(i).skills?.includes("gaoling")) && player != _status.currentPhase && game.hasPlayer(current => current.isDamaged());
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("gaoling"), "令一名角色回复1点体力", function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.isDamaged();
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
+				.set("ai", target => {
+					const player = get.player();
 					return get.recoverEffect(target, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gaoling", target);
-				target.recover();
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await event.targets[0].recover();
 		},
 	},
 	qimei: {
@@ -2962,7 +2957,6 @@ const skills = {
 		},
 	},
 	ruilve: {
-		unique: true,
 		audio: 2,
 		global: "ruilve2",
 		zhuSkill: true,

@@ -560,12 +560,9 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		forced: true,
-		trigger: {
-			player: "phaseBegin",
-		},
+		trigger: { player: "phaseBegin" },
 		filter(event, player) {
 			return !game.hasPlayer(current => !current.hasAllHistory("damage", evt => evt.num));
 		},
@@ -2058,9 +2055,7 @@ const skills = {
 			await player.addSkills("xinjilve");
 		},
 		derivation: ["xinjilve", "reguicai", "fangzhu", "rejizhi", "rezhiheng", "rewansha"],
-		ai: {
-			combo: "xinrenjie",
-		},
+		ai: { combo: "xinrenjie" },
 	},
 	xinlianpo: {
 		audio: "lianpo",
@@ -7811,7 +7806,6 @@ const skills = {
 		derivation: ["tianxing", "new_rejianxiong", "rerende", "rezhiheng", "olluanji", "caopi_xingdong"],
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "water",
@@ -7832,7 +7826,6 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -8482,7 +8475,6 @@ const skills = {
 	baonu: {
 		audio: 2,
 		marktext: "暴",
-		unique: true,
 		trigger: {
 			source: "damageSource",
 			player: ["damageEnd", "enterGame"],
@@ -8657,7 +8649,6 @@ const skills = {
 		juexingji: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		audio: 2,
 		filter(event, player) {
 			return player.countMark("renjie") >= 4;
@@ -8668,12 +8659,9 @@ const skills = {
 			player.addSkills("jilue");
 		},
 		derivation: ["jilue", "jilue_guicai", "jilue_fangzhu", "jilue_jizhi", "jilue_zhiheng", "jilue_wansha"],
-		ai: {
-			combo: "renjie",
-		},
+		ai: { combo: "renjie" },
 	},
 	jilue: {
-		unique: true,
 		audio: 2,
 		group: ["jilue_guicai", "jilue_fangzhu", "jilue_wansha", "jilue_zhiheng", "jilue_jizhi"],
 		ai: { combo: "renjie" },
@@ -9052,7 +9040,6 @@ const skills = {
 	},
 	qixing: {
 		audio: 2,
-		unique: true,
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -9261,7 +9248,6 @@ const skills = {
 		},
 	},
 	kuangfeng: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		direct: true,
@@ -9331,7 +9317,6 @@ const skills = {
 		},
 	},
 	yeyan: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
@@ -10371,19 +10356,11 @@ const skills = {
 	nzry_dinghuo: {
 		audio: 2,
 		limited: true,
-		init(player) {
-			player.storage.nzry_dinghuo = false;
-		},
-		intro: {
-			content: "limited",
-		},
-		unique: true,
-		mark: true,
 		skillAnimation: true,
 		animationColor: "metal",
 		enable: "phaseUse",
 		filter(event, player) {
-			return !player.storage.nzry_dinghuo && player.countMark("nzry_junlve") > 0;
+			return player.countMark("nzry_junlve") > 0;
 		},
 		check(event, player) {
 			var num = game.countPlayer(function (current) {

@@ -9,7 +9,7 @@ export default {
 	"#dcsbshimou_dc_sb_xunyu_shadow2": "为大汉抱薪者，不可使其冻毙于风雨。",
 	"#dc_sb_xunyu:die": "诸君见我冢，亦如见青山。",
 	"#dc_sb_xunyu_shadow:die": "知我罪我，其惟春秋。",
-	"#dcsbzhanban1": "君岂不闻飞则冲天，鸣则惊人。",
+	"#dcsbzhanban1": "君岂不闻，飞则冲天，鸣则惊人。",
 	"#dcsbzhanban2": "困龙将出，朕再也不受羁绊了。",
 	"#dcsbchensheng1": "请卿取狐狸，为天子裘。",
 	"#dcsbchensheng2": "朕客居许昌，唯仰丞相鼻息。",

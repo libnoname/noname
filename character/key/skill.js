@@ -2071,7 +2071,6 @@ const skills = {
 	kiyu_rexianyu: {
 		trigger: { player: "phaseUseEnd" },
 		charlotte: true,
-		unique: true,
 		filter(event, player) {
 			return (
 				!player.hasSkill("kiyu_rexianyu_round", null, null, false) &&
@@ -4479,7 +4478,6 @@ const skills = {
 		},
 	},
 	yukito_yaxiang: {
-		unique: true,
 		forceunique: true,
 		enable: "chooseToUse",
 		limited: true,
@@ -7307,7 +7305,6 @@ const skills = {
 	mio_tishen: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		limited: true,
-		unique: true,
 		forceunique: true,
 		charlotte: true,
 		skillAnimation: true,
@@ -7387,7 +7384,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		limited: true,
 		charlotte: true,
-		unique: true,
 		forceunique: true,
 		skillAnimation: true,
 		animationColor: "water",
@@ -7550,7 +7546,6 @@ const skills = {
 		derivation: ["yuzuru_kunfen", "yuzuru_quji", "yuzuru_wangsheng", "yuzuru_kunfen_rewrite", "yuzuru_quji_rewrite"],
 		trigger: { global: "dieAfter" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -7644,7 +7639,6 @@ const skills = {
 		trigger: { player: "dieBegin" },
 		forced: true,
 		juexingji: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "soil",
 		content() {
@@ -7751,7 +7745,6 @@ const skills = {
 		forced: true,
 		skillAnimation: true,
 		animationColor: "key",
-		unique: true,
 		filter(event, player) {
 			var list = player.getExpansions("ao_diegui");
 			var list2 = [];
@@ -7766,9 +7759,7 @@ const skills = {
 			player.gainMaxHp();
 			player.recover();
 		},
-		ai: {
-			combo: "ao_kuihun",
-		},
+		ai: { combo: "ao_kuihun" },
 	},
 	ao_diegui: {
 		enable: "phaseUse",
@@ -8405,7 +8396,6 @@ const skills = {
 		forced: true,
 		derivation: "riki_chongzhen",
 		juexingji: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "key",
 		filter(event, player) {
@@ -8422,9 +8412,7 @@ const skills = {
 			player.recover();
 			player.addSkills("riki_chongzhen");
 		},
-		ai: {
-			combo: "riki_spwenji",
-		},
+		ai: { combo: "riki_spwenji" },
 	},
 	riki_chongzhen: {
 		trigger: {
@@ -8648,7 +8636,6 @@ const skills = {
 		},
 	},
 	akane_yifu: {
-		unique: true,
 		global: "akane_yifu2",
 		zhuSkill: true,
 	},
@@ -9238,7 +9225,6 @@ const skills = {
 		trigger: { player: "phaseAfter" },
 		locked: true,
 		limited: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "metal",
 		filter(event, player) {
@@ -9636,7 +9622,6 @@ const skills = {
 	yui_takaramono: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "key",
@@ -10360,7 +10345,6 @@ const skills = {
 		},
 	},
 	umi_qihuan: {
-		unique: true,
 		forceunique: true,
 		enable: "chooseToUse",
 		filter(summer, umi) {
@@ -10438,9 +10422,7 @@ const skills = {
 			skillTagFilter(player, tag, target) {
 				return player == target;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	//神尾晴子
@@ -10583,7 +10565,6 @@ const skills = {
 			}
 		},
 		zhuSkill: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
@@ -10628,9 +10609,7 @@ const skills = {
 			await trigger.player.changeGroup(player.group);
 			await trigger.player.draw();
 		},
-		ai: {
-			combo: "yuri_xingdong",
-		},
+		ai: { combo: "yuri_xingdong" },
 	},
 	//枣恭介
 	nk_shekong: {

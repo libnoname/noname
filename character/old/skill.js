@@ -22,7 +22,6 @@ const skills = {
 				}
 			}
 		},
-		unique: true,
 		audio: "guixin",
 		trigger: { player: "phaseEnd" },
 		direct: true,

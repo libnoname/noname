@@ -907,15 +907,21 @@ game.import("card", function () {
 					return player.hasUsableCard("chenhuodajie");
 				},
 				content() {
-					player.chooseToUse(
-						get.prompt("chenhuodajie", trigger.player).replace(/发动/, "使用"),
-						function (card, player) {
-							if (card.name != "chenhuodajie") return false;
-							return lib.filter.cardEnabled(card, player, "forceEnable");
-						},
-						trigger.player,
-						-1
-					).targetRequired = true;
+					player
+						.chooseToUse(
+							get.prompt("chenhuodajie", trigger.player).replace(/发动/, "使用"),
+							function (card, player) {
+								if (get.name(card) != "chenhuodajie") return false;
+								return lib.filter.cardEnabled(card, player, "forceEnable");
+							},
+							-1
+						)
+						.set("sourcex", trigger.player)
+						.set("filterTarget", function (card, player, target) {
+							if (target != _status.event.sourcex) return false;
+							return lib.filter.targetEnabled.apply(this, arguments);
+						})
+						.set("targetRequired", true);
 				},
 			},
 		},

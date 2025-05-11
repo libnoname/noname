@@ -465,7 +465,8 @@ const skills = {
 		},
 	},
 	twhuazhang: {
-		audio: 2,
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "twhuazhang" + index + ".mp3" : "twhuazhang" + get.rand(1, 2) + ".mp3"),
 		trigger: {
 			player: "phaseUseEnd",
 		},
@@ -489,7 +490,10 @@ const skills = {
 			}
 			if (cards.map(card => get.name(card, player)).unique().length == 1) count++;
 
-			if (count > 0) await player.draw(num);
+			if (count > 0) {
+				player.logSkill("twhuazhang", null, null, null, [3]);
+				await player.draw(num);
+			}
 			if (count > 1) {
 				player.addTempSkill("twhuazhang_hs");
 				player.addMark("twhuazhang_hs", num, false);
@@ -566,7 +570,7 @@ const skills = {
 		group: ["twqianxiong_effect"],
 		subSkill: {
 			damage: {
-				audio: 2,
+				audio: "twqianxiong",
 				onremove: true,
 				forced: true,
 				charlotte: true,
@@ -582,7 +586,7 @@ const skills = {
 				},
 			},
 			effect: {
-				audio: 2,
+				audio: "twqianxiong",
 				trigger: { global: "phaseUseBegin" },
 				filter(event, player) {
 					return event.player.getExpansions("twqianxiong").length;
@@ -648,10 +652,12 @@ const skills = {
 		},
 	},
 	twzhengshi: {
-		audio: 2,
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "twzhengshi" + index + ".mp3" : 2),
 		derivation: ["twjunsi"],
 		forced: true,
 		locked: false,
+		popup: false,
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -670,13 +676,14 @@ const skills = {
 					.forResult();
 				targets = result.targets.concat([player]).sortBySeat();
 			}
+			player.logSkill("twzhengshi", null, null, null, [get.rand(2, 3)]);
 			player.line(targets, "thunder");
 			for (const target of targets) await target.addSkills(["twjunsi"]);
 		},
 		group: ["twzhengshi_change"],
 		subSkill: {
 			change: {
-				audio: 2,
+				popup: false,
 				trigger: { global: ["roundStart", "dieAfter"] },
 				filter(event, player) {
 					if (!player.hasSkill("twjunsi")) return false;
@@ -737,6 +744,7 @@ const skills = {
 						})
 						.forResult();
 					const num = result.links[0] + 1;
+					player.logSkill("twzhengshi", [target], null, null, [1]);
 					target.popup(list[num - 1]);
 					game.log(target, "〖隽嗣〗的", list[num - 1]);
 					target.storage.twjunsi[Math.ceil(num / 2) - 1] += num % 2 == 1 ? 1 : -1;
@@ -746,6 +754,7 @@ const skills = {
 		},
 	},
 	twjunsi: {
+		audio: 4,
 		init(player, skill) {
 			player.storage[skill] = [1, 1];
 		},
@@ -763,11 +772,13 @@ const skills = {
 		group: ["twjunsi_source", "twjunsi_end"],
 		subSkill: {
 			source: {
-				audio: 2,
 				forced: true,
 				usable: 2,
 				trigger: {
 					source: "damageSource",
+				},
+				logAudio(event, player) {
+					if (player.name == "huan_caopi") return ["twjunsi1.mp3", "twjunsi2.mp3"];
 				},
 				filter(event, player) {
 					const bool = !game.hasPlayer(target => target != player && target.hasSkill("twjunsi")) ? true : event.player.hasSkill("twjunsi");
@@ -780,11 +791,13 @@ const skills = {
 				},
 			},
 			end: {
-				audio: 2,
 				forced: true,
 				usable: 2,
 				trigger: {
 					player: "damageEnd",
+				},
+				logAudio(event, player) {
+					if (player.name == "huan_caopi") return ["twjunsi3.mp3", "twjunsi4.mp3"];
 				},
 				filter(event, player) {
 					if (!event.source) return false;
@@ -2511,7 +2524,6 @@ const skills = {
 	//魏关羽
 	twdanji: {
 		derivation: ["mashu", "nuzhan"],
-		unique: true,
 		audio: "danji",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -3410,7 +3422,6 @@ const skills = {
 	},
 	twhunyou: {
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
 		filter(event, player) {
@@ -3437,9 +3448,7 @@ const skills = {
 		derivation: ["twhuanji", "twchanggui"],
 		subSkill: {
 			buff: {
-				trigger: {
-					player: ["damageBefore", "loseHpBefore"],
-				},
+				trigger: { player: ["damageBefore", "loseHpBefore"] },
 				forced: true,
 				charlotte: true,
 				async content(event, trigger, player) {
@@ -3457,9 +3466,7 @@ const skills = {
 					},
 				},
 				mark: true,
-				intro: {
-					content: "我是无敌的",
-				},
+				intro: { content: "我是无敌的" },
 			},
 		},
 		ai: {
@@ -3468,9 +3475,7 @@ const skills = {
 			skillTagFilter(player, tag, target) {
 				if (player != target || player.storage.twhunyou) return false;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	twhuanji: {
@@ -7158,7 +7163,6 @@ const skills = {
 	//海外主公技
 	//张鲁
 	twshijun: {
-		unique: true,
 		global: "twshijun_global",
 		audio: 2,
 		zhuSkill: true,
@@ -7201,7 +7205,6 @@ const skills = {
 	},
 	//张绣
 	twjuxiang: {
-		unique: true,
 		global: "twjuxiang_global",
 		audio: 2,
 		zhuSkill: true,
@@ -7251,7 +7254,6 @@ const skills = {
 	},
 	//孙坚
 	twpolu: {
-		unique: true,
 		audio: "repolu",
 		trigger: { global: ["dieAfter", "die"] },
 		forceDie: true,
@@ -7262,28 +7264,25 @@ const skills = {
 			if (name == "die" && event.player.group == "wu") return true;
 			return false;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			if (!player.storage.twpolu) player.storage.twpolu = 0;
-			event.num = player.storage.twpolu + 1;
-			player.chooseTarget([1, Infinity], get.prompt("twpolu"), "令任意名角色摸" + get.cnNumber(event.num) + "张牌").set("forceDie", true).ai = function (target) {
-				return get.attitude(_status.event.player, target);
-			};
-			"step 1";
-			if (result.bool) {
-				player.storage.twpolu++;
-				result.targets.sortBySeat();
-				player.logSkill("repolu", result.targets);
-				game.asyncDraw(result.targets, num);
-			} else event.finish();
-			"step 2";
-			game.delay();
+		async cost(event, trigger, player) {
+			const num = player.getAllHistory("useSkill", evt => evt.skill == event.skill).length + 1;
+			event.result = await player
+				.chooseTarget([1, Infinity], get.prompt(event.skill), `令任意名角色摸${get.cnNumber(num)}张牌`)
+				.set("forceDie", true)
+				.set("ai", target => {
+					const player = get.player();
+					return get.attitude(player, target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const num = player.getAllHistory("useSkill", evt => evt.skill == event.name).length;
+			await game.asyncDraw(event.targets.sortBySeat(), num);
+			await game.delay();
 		},
 	},
 	//孟获
 	twqiushou: {
-		unique: true,
 		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
@@ -7314,7 +7313,6 @@ const skills = {
 	},
 	//刘协
 	twzhuiting: {
-		unique: true,
 		zhuSkill: true,
 		audio: 2,
 		global: "twzhuiting_global",
@@ -7491,7 +7489,6 @@ const skills = {
 			},
 		},
 		locked: false,
-		unique: true,
 		onremove: true,
 		global: "twchongwang_global",
 		group: "twchongwang_clear",
@@ -9484,7 +9481,6 @@ const skills = {
 	twluannian: {
 		audio: 2,
 		global: "twluannian_global",
-		unique: true,
 		zhuSkill: true,
 		subSkill: {
 			global: {
@@ -15804,7 +15800,7 @@ const skills = {
 						var num = player.countMark("twchuanshu_mark");
 						trigger.card.twchuanshu_mark = num;
 						player.removeMark("twchuanshu_mark", num, false);
-					} else if (name == "damageBegin1") trigger.num++;
+					} else if (name == "damageBegin1") trigger.num += trigger.card.twchuanshu_mark;
 					else {
 						var num1 = trigger.card.twchuanshu_mark;
 						var num2 = 0;
@@ -15814,6 +15810,7 @@ const skills = {
 						var targets = player.getStorage("twchuanshu_effect").filter(function (target) {
 							return target.isIn() && target != player;
 						});
+						if (!targets.length) return;
 						if (targets.length == 1) targets[0].draw(num1 * num2);
 						else game.asyncDraw(targets, num1 * num2);
 					}
@@ -19360,7 +19357,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill(event.name);
+			player.awakenSkill("twsidai");
 			player.addTempSkill("twsidai_effect");
 		},
 		ai: {
@@ -20219,7 +20216,6 @@ const skills = {
 	twfuhan: {
 		audio: "fuhan",
 		trigger: { player: "phaseZhunbeiBegin" },
-		unique: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -20284,9 +20280,7 @@ const skills = {
 				player.gain(card, "gain2", "log");
 			}
 		},
-		ai: {
-			combo: "refanghun",
-		},
+		ai: { combo: "refanghun" },
 	},
 	twqueshi: {
 		trigger: {

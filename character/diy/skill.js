@@ -2711,7 +2711,6 @@ const skills = {
 		},
 	},
 	nsbizhao: {
-		unique: true,
 		trigger: { player: "showCharacterAfter" },
 		forced: true,
 		hiddenSkill: true,
@@ -2724,19 +2723,20 @@ const skills = {
 				player != _status.currentPhase
 			);
 		},
-		content() {
-			player.addTempSkill("nsbizhao2", {
-				player: "phaseBeginStart",
-			});
+		async content(event, trigger, player) {
+			player.addTempSkill(event.nam + "_effect", { player: "phaseBeginStart" });
+			player.addMark(event.nam + "_effect", 1, false);
 		},
-	},
-	nsbizhao2: {
-		charlotte: true,
-		mark: true,
-		intro: { content: "其他角色至自己的距离+1" },
-		mod: {
-			globalTo(source, player, distance) {
-				return distance + 1;
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "其他角色至自己的距离+#" },
+				mod: {
+					globalTo(source, player, distance) {
+						return distance + player.countMark("nsbizhao_effect");
+					},
+				},
 			},
 		},
 	},
@@ -3785,7 +3785,6 @@ const skills = {
 	nsfuwei: {
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -3794,15 +3793,12 @@ const skills = {
 		},
 		content() {
 			player.awakenSkill(event.name);
-			player.storage.nsfuwei = true;
 			player.addSkill("nsdiemou");
 			player.addSkill("nszhihuang");
 			player.gainMaxHp(2);
 		},
 		derivation: ["nsdiemou", "nszhihuang"],
-		ai: {
-			combo: "nsjiquan",
-		},
+		ai: { combo: "nsjiquan" },
 	},
 	nsdiemou: {
 		trigger: { player: "phaseUseBegin" },
@@ -4644,11 +4640,7 @@ const skills = {
 	},
 	ns_chuanshu: {
 		audio: ["xingshuai", 2],
-		trigger: {
-			global: "dying",
-		},
-		priority: 8,
-		unique: true,
+		trigger: { global: "dying" },
 		skillAnimation: true,
 		animationColor: "water",
 		filter(event, player) {
@@ -4818,7 +4810,6 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		zhuSkill: true,
-		unique: true,
 		filter(event, player) {
 			if (!player.hasZhuSkill("nskaicheng")) return false;
 			if (
@@ -5793,8 +5784,7 @@ const skills = {
 	},
 	nstianji: {
 		trigger: { global: "dying" },
-		priority: 6,
-		unique: true,
+		limited: true,
 		skillAnimation: true,
 		animationColor: "water",
 		filter(event, player) {
@@ -6078,7 +6068,6 @@ const skills = {
 		},
 	},
 	nscangxi: {
-		unique: true,
 		global: "nscangxi2",
 		zhuSkill: true,
 		init(player) {
@@ -6196,12 +6185,9 @@ const skills = {
 	},
 	nswulie: {
 		trigger: { player: "phaseBegin" },
+		limited: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		unique: true,
-		check() {
-			return false;
-		},
 		filter(event, player) {
 			return ui.discardPile.childElementCount > 0;
 		},
@@ -6223,9 +6209,6 @@ const skills = {
 		subSkill: {
 			end: {
 				trigger: { player: "phaseEnd" },
-				check() {
-					return false;
-				},
 				filter(event, player) {
 					return ui.discardPile.childElementCount > 0;
 				},
@@ -6853,7 +6836,6 @@ const skills = {
 	nshaoling: {
 		skillAnimation: true,
 		animationColor: "water",
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
@@ -7088,7 +7070,6 @@ const skills = {
 		},
 	},
 	nsshuangxiong: {
-		unique: true,
 		trigger: { player: "juedouBegin", target: "juedouBegin" },
 		check(event, player) {
 			return player.isTurnedOver();
@@ -7096,9 +7077,7 @@ const skills = {
 		content() {
 			player.turnOver();
 		},
-		ai: {
-			combo: "nsduijue",
-		},
+		ai: { combo: "nsduijue" },
 	},
 	nsguanyong: {
 		enable: "chooseToRespond",
@@ -8483,7 +8462,6 @@ const skills = {
 		},
 	},
 	guihan: {
-		unique: true,
 		enable: "chooseToUse",
 		skillAnimation: "epic",
 		limited: true,
@@ -8507,6 +8485,7 @@ const skills = {
 			target.draw(2);
 		},
 		ai: {
+			order: 3,
 			skillTagFilter(player) {
 				if (player.storage.guihan) return false;
 				if (player.hp > 0) return false;

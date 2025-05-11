@@ -1928,7 +1928,6 @@ const skills = {
 		},
 	},
 	starhaoshou: {
-		unique: true,
 		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
@@ -2208,7 +2207,6 @@ const skills = {
 		ai: { combo: "starcanxi" },
 	},
 	starzhonggu: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "phaseDrawBegin2" },
 		filter(event, player) {
@@ -10684,7 +10682,7 @@ const skills = {
 						.loseAsync({
 							gain_list: list,
 							player: player,
-							cards: list.slice().map(list => list[1]),
+							cards: list.slice().flatMap(list => list[1]),
 							giver: player,
 							animate: "giveAuto",
 						})
@@ -10867,11 +10865,21 @@ const skills = {
 	//和沙摩柯一起上线的新服三将
 	spjiedao: {
 		audio: 2,
-		trigger: {
-			source: "damageBegin1",
-		},
+		trigger: { source: "damageBegin1" },
 		filter(event, player) {
-			return player.isDamaged() && !player.getHistory("sourceDamage").length;
+			return (
+				player.isDamaged() &&
+				game
+					.getGlobalHistory(
+						"everything",
+						evt => {
+							return evt.name == "damage" && evt.source == player;
+						},
+						event
+					)
+					.indexOf(event) == 0 &&
+				event.player.isIn()
+			);
 		},
 		logTarget: "player",
 		direct: true,
@@ -12028,7 +12036,6 @@ const skills = {
 	baijia: {
 		audio: 2,
 		audioname: ["tw_beimihu"],
-		unique: true,
 		derivation: "bmcanshi",
 		juexingji: true,
 		ai: { combo: "guju" },

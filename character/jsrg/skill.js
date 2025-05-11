@@ -2721,10 +2721,8 @@ const skills = {
 				if (typeof stat[name] == "number") stat[name]--;
 			}
 			await player.gainPlayerCard(trigger.target, "he", true);
-			const {
-				result: { bool },
-			} = await trigger.target.chooseBool(`是否令${get.translation(player)}至你的距离于本回合内+2？`).set("ai", () => true);
-			if (bool) {
+			const { result } = await trigger.target.chooseBool(`是否令${get.translation(player)}至你的距离于本回合内+2？`).set("ai", () => true);
+			if (result?.bool) {
 				player.addTempSkill("jsrgeqian_distance");
 				if (!player.storage.jsrgeqian_distance) player.storage.jsrgeqian_distance = {};
 				const id = trigger.target.playerid;
@@ -2742,16 +2740,15 @@ const skills = {
 				},
 				direct: true,
 				async content(event, trigger, player) {
-					while (player.countCards("h") > 0) {
-						const {
-							result: { bool, cards },
-						} = await player.chooseCard(get.prompt("jsrgeqian"), "你可以蓄谋任意次").set("ai", card => {
+					while (player.countCards("h") && !player.isDisabledJudge()) {
+						const { result } = await player.chooseCard(get.prompt("jsrgeqian"), "你可以蓄谋任意次").set("ai", card => {
 							const player = get.player();
 							if (player.hasValueTarget(card)) return player.getUseValue(card);
 							return 0;
 						});
-						if (!bool) break;
-						await player.addJudge({ name: "xumou_jsrg" }, cards);
+						if (result?.bool && result?.cards?.length) {
+							await player.addJudge({ name: "xumou_jsrg" }, result.cards);
+						} else break;
 					}
 				},
 			},
@@ -8138,7 +8135,7 @@ const skills = {
 					const targets = player.getStorage("jsrgshenchong_die");
 					player.line(targets);
 					targets.sortBySeat().forEach(current => {
-						current.clearSkills(true);
+						current.clearSkills();
 						current.chooseToDiscard(current.countCards("h"), "h", true);
 					});
 				},

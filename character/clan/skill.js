@@ -333,33 +333,39 @@ const skills = {
 			return player.countCards("h");
 		},
 		async content(event, trigger, player) {
-			let cards = player.getCards("h", card => get.color(card, player) == "black"),
-				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.hasCard(card => cards.includes(card) && player.hasUseTarget(card, null, false), "h");
+			let cards = player.getCards("h").filter(card => get.color(card, player) == "black" && player.hasUseTarget(card)),
+				lastCard;
 			await player.showHandcards(`${get.translation(player)}发动了〖佯疾〗`);
-			while (goon()) {
-				const result = await player
+			while (!player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.getCards("h").some(card => cards.includes(card) && player.hasUseTarget(card))) {
+				const { result } = await player
 					.chooseToUse(function (card, player, event) {
-						return cards.includes(card) && get.color(card, player) === "black" && lib.filter.filterCard.apply(this, arguments);
-					}, "佯疾：请使用一张黑色牌")
+						if (get.itemtype(card) != "card" || !get.event("cardsx").includes(card) || get.position(card) != "h") return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "佯疾：请使用一张黑色手牌")
+					.set("targetRequired", true)
+					.set("complexSelect", true)
+					.set("filterTarget", function (card, player, target) {
+						return lib.filter.filterTarget.apply(this, arguments);
+					})
+					.set("cardsx", cards)
 					.set("forced", true)
-					.set("addCount", false)
-					.forResult();
-				const card = result.cards[0];
-				cards.remove(card);
-				if (!goon()) {
-					const target = _status.currentPhase;
-					if (card && get.suit(card, player) == "spade" && (!get.owner(card) || get.owner(card) === player) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
-						await target.addJudge({ name: "lebu" }, card);
-					}
-				}
+					.set("addCount", false);
+				if (result?.cards?.length) {
+					const card = result.cards[0];
+					lastCard = card;
+					cards.remove(card);
+				} else break;
 			}
+			const target = _status.currentPhase;
+			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(lastCard) || get.position(lastCard) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
 		},
 	},
 	clandandao: {
-		trigger: {
-			player: "judgeAfter",
-		},
+		trigger: { player: "judgeAfter" },
 		forced: true,
+		filter(event, player) {
+			return _status.currentPhase?.isIn();
+		},
 		content() {
 			const target = _status.currentPhase;
 			if (!target?.isIn()) return;
@@ -376,18 +382,12 @@ const skills = {
 					markcount: () => 3,
 					content: "手牌上限+3",
 				},
-				mod: {
-					maxHandcard(player, num) {
-						return num + 3;
-					},
-				},
+				mod: { maxHandcard: (player, num) => num + 3 },
 			},
 		},
 	},
 	clanqingli: {
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
 			return player.countCards("h") < player.getHandcardLimit();
@@ -1737,7 +1737,6 @@ const skills = {
 		},
 	},
 	clanjianji: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },

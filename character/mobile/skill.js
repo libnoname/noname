@@ -816,11 +816,7 @@ const skills = {
 		},
 		group: ["mbxuehen_sha"],
 		subSkill: {
-			rewrite: {
-				charlotte: true,
-				init: (player, skill) => (player.storage[skill] = true),
-				onremove: true,
-			},
+			rewrite: { nopop: true },
 			sha: {
 				mod: {
 					cardname(card) {
@@ -845,7 +841,7 @@ const skills = {
 				filter(event, player, name) {
 					if (event.name == "useCard") {
 						if (name == "useCard1" && event.addCount === false) return false;
-						if (name == "useCardAfter" && !player.storage.mbxuehen_rewrite) return false;
+						if (name == "useCardAfter" && !player.storage.mbxuehen) return false;
 						return player.hasHistory("lose", evt => {
 							return evt.getParent() == event && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
 						});
@@ -966,10 +962,10 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		limited: true,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (player.hasSkill("mbxuehen")) {
-				player.addSkill("mbxuehen_rewrite");
+				player.storage.mbxuehen = true;
 				player
 					.when({ player: "phaseUseEnd" })
 					.filter(evt => event.getParent("phaseUse") == evt)
@@ -979,7 +975,7 @@ const skills = {
 								return evt.getParent(2)?.name == "mbxuehen_sha" && evt.cards?.length;
 							})
 							.reduce((sum, evt) => sum + evt.cards.length, 0);
-						if (num < 2) player.removeSkill("mbxuehen_rewrite");
+						if (num < 2) delete player.storage.mbxuehen;
 					});
 			}
 		},
@@ -3277,7 +3273,9 @@ const skills = {
 				await player.draw();
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
-			player.when({ player: "phaseBegin" }).then(() => player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji"));
+			player.when({ player: "phaseBegin" }).then(() => {
+				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+			});
 		},
 		ai: {
 			order: 10,
@@ -3639,7 +3637,7 @@ const skills = {
 		subSkill: {
 			unlimit: {
 				charlotte: true,
-				mod: { cardUsable: () => true },
+				mod: { cardUsable: () => Infinity },
 				trigger: { player: "useCard1" },
 				forced: true,
 				popup: false,
@@ -4491,7 +4489,7 @@ const skills = {
 					animationColor: "metal",
 					log: false,
 					async content(event, trigger, player) {
-						player.awakenSkill(event.name);
+						player.awakenSkill("potzhenfeng");
 						if (get.info(event.name).item === "recover") {
 							player.logSkill("potzhenfeng", null, null, null, [null]);
 							player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");
@@ -4871,7 +4869,7 @@ const skills = {
 						.loseAsync({
 							gain_list: given_map,
 							player: player,
-							cards: given_map.slice().map(list => list[1]),
+							cards: given_map.slice().flatMap(list => list[1]),
 							giver: player,
 							animate: "giveAuto",
 						})
@@ -7507,7 +7505,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill(event.name);
+			player.awakenSkill("sidai");
 			player.addTempSkill("sidai_tao");
 			player.addTempSkill("sidai_shan");
 		},
@@ -7726,7 +7724,6 @@ const skills = {
 	zhoulin: {
 		audio: 2,
 		limited: true,
-		unique: true,
 		enable: "phaseUse",
 		skillAnimation: true,
 		animationColor: "fire",
@@ -9374,7 +9371,6 @@ const skills = {
 		},
 	},
 	xinlijun: {
-		unique: true,
 		audio: "nzry_lijun1",
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
@@ -17674,10 +17670,8 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "soil",
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
@@ -18974,7 +18968,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		audio: "drlt_hongju",
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -19041,9 +19034,7 @@ const skills = {
 			player.addSkills("reqingce");
 			player.loseMaxHp();
 		},
-		ai: {
-			combo: "rezhengrong",
-		},
+		ai: { combo: "rezhengrong" },
 	},
 	reqingce: {
 		enable: "phaseUse",
@@ -19768,7 +19759,6 @@ const skills = {
 			return !player.hasUnknown();
 		},
 		limited: true,
-		unique: true,
 		filter(event, player) {
 			return event.player.hp <= 0;
 		},
@@ -21192,6 +21182,17 @@ const skills = {
 	},
 	xinfu_qianchong: {
 		audio: 1,
+		init(player, skill) {
+			const es = player.getCards("e");
+			if (es.length) {
+				if (es.every(card => get.color(card) == "red")) player.addAdditionalSkill(skill, "mingzhe");
+				else if (es.every(card => get.color(card) == "black")) player.addAdditionalSkill(skill, "weimu");
+				else player.removeAdditionalSkill(skill);
+			} else player.removeAdditionalSkill(skill);
+		},
+		onremove(player, skill) {
+			player.removeAdditionalSkill(skill);
+		},
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			if (["basic", "trick", "equip"].every(type => player.getStorage("xinfu_qianchong_effect").includes(type))) return false;
@@ -21203,6 +21204,7 @@ const skills = {
 			}
 			return false;
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			const list = ["basic", "trick", "equip", "cancel2"];
 			list.removeArray(player.getStorage("xinfu_qianchong_effect"));
@@ -21229,7 +21231,7 @@ const skills = {
 			player.popup(str, "thunder");
 		},
 		derivation: ["weimu", "mingzhe"],
-		group: ["qc_weimu", "qc_mingzhe"],
+		group: "xinfu_qianchong_change",
 		subSkill: {
 			effect: {
 				charlotte: true,
@@ -21246,50 +21248,26 @@ const skills = {
 					},
 				},
 			},
-		},
-	},
-	qc_weimu: {
-		audio: true,
-		trigger: { global: "useCard1" },
-		forced: true,
-		firstDo: true,
-		filter(event, player) {
-			if (player.hasSkill("weimu")) return false;
-			if (event.player == player) return false;
-			if (get.color(event.card) != "black" || get.type(event.card) != "trick") return false;
-			var es = player.getCards("e");
-			if (!es.length) return false;
-			for (var i = 0; i < es.length; i++) {
-				if (get.color(es[i]) != "black") return false;
-			}
-			var info = lib.card[event.card.name];
-			return info && info.selectTarget && info.selectTarget == -1 && !info.toself;
-		},
-		async content() {},
-		mod: {
-			targetEnabled(card, player, target) {
-				var bool = true;
-				var es = target.getCards("e");
-				if (!es.length) bool = false;
-				for (var i = 0; i < es.length; i++) {
-					if (get.color(es[i]) != "black") bool = false;
-				}
-				if (bool && (get.type(card) == "trick" || get.type(card) == "delay") && get.color(card) == "black") return false;
+			change: {
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "equip" && event.player == player) return true;
+					return event.getl?.(player)?.es?.length;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const skill = "xinfu_qianchong";
+					get.info(skill).init(player, skill);
+				},
 			},
 		},
 	},
-	qc_mingzhe: {
-		audio: true,
-		inherit: "mingzhe",
-		filter(event, player) {
-			if (player.hasSkill("mingzhe")) return false;
-			const es = player.getCards("e");
-			if (!es.length || es.some(card => get.color(card) != "red")) return false;
-			if (player == _status.currentPhase) return false;
-			if (event.name.indexOf("lose") != 0) return get.color(event.card) == "red";
-			return event.type == "discard";
-		},
-	},
+	qc_weimu: { audio: true },
+	qc_mingzhe: { audio: true },
 	xinfu_shangjian: {
 		audio: 2,
 		getNum(player) {
@@ -22099,11 +22077,8 @@ const skills = {
 	xinfu_longyuan: {
 		audio: 2,
 		forced: true,
-		unique: true,
 		juexingji: true,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		skillAnimation: true,
 		animationColor: "orange",
 		filter(event, player) {
@@ -22114,9 +22089,7 @@ const skills = {
 			player.storage.yizan = true;
 		},
 		derivation: "yizan_rewrite",
-		ai: {
-			combo: "yizan_use",
-		},
+		ai: { combo: "yizan_use" },
 	},
 	xinfu_jingxie: {
 		audio: 2,

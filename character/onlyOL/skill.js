@@ -698,7 +698,7 @@ const skills = {
 					const targets = player.getStorage("olshenchong_die");
 					player.line(targets);
 					targets.sortBySeat().forEach(current => {
-						current.clearSkills(true);
+						current.clearSkills();
 						current.chooseToDiscard(current.countCards("h"), "h", true);
 					});
 				},
@@ -4009,7 +4009,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (typeof card == "object" && _status.currentPhase === player) {
 					const evt = player.getLastUsed(1);
-					if (evt && evt.card && ((get.suit(evt.card) && get.suit(evt.card) == get.suit(card)) || (evt.card.number && evt.card.number == get.number(card)))) {
+					if (evt && evt.card && ((get.suit(evt.card) && get.suit(evt.card) == get.suit(card)) || get.type2(evt.card) == get.type2(card))) {
 						return num + 10;
 					}
 				}
@@ -4907,7 +4907,7 @@ const skills = {
 						.loseAsync({
 							gain_list: given_map,
 							player: player,
-							cards: given_map.slice().map(list => list[1]),
+							cards: given_map.slice().flatMap(list => list[1]),
 							giver: player,
 							animate: "giveAuto",
 						})
@@ -5486,7 +5486,6 @@ const skills = {
 		},
 	},
 	olsbshishou: {
-		unique: true,
 		audio: 6,
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],

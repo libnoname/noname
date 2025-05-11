@@ -7248,9 +7248,20 @@ player.removeVirtualEquip(card);
 				return false;
 			} else {
 				if (!get.event("sourceTargets").includes(target)) return false;
-				var range = "ej";
-				if (_status.event.nojudge) range = "e";
-				return target.countVCards(range, filterCard) > 0;
+				return game.hasPlayer(current => {
+					if (!get.event("aimTargets").includes(current) || target == current) return false;
+					var js = target.getCards("j", filterCard);
+					for (var i = 0; i < js.length; i++) {
+						if (_status.event.nojudge) break;
+						if (current.canAddJudge(js[i])) return true;
+					}
+					if (current.isMin()) return false;
+					var es = target.getCards("e", filterCard);
+					for (var i = 0; i < es.length; i++) {
+						if (current.canEquip(es[i], _status.event.canReplace)) return true;
+					}
+					return false;
+				});
 			}
 		});
 		next.set("nojudge", event.nojudge || false);

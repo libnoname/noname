@@ -375,6 +375,7 @@ export class GameEvent {
 		let next;
 		if (!notrigger) {
 			if (this.player && lib.phaseName.includes(this.name)) this.player.getHistory("skipped").add(this.name);
+			this._cancelled = true;
 			next = this.trigger(this.name + "Cancelled");
 		}
 		this.finish();

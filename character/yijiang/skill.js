@@ -992,7 +992,7 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(function (target) {
 				return ["摸牌", "弃牌", "制衡"].some(function (control) {
-					var storage = player.getStorage("xinyaoming_kanon");
+					var storage = player.getStorage("xinyaoming_used");
 					if (storage.includes(control)) return false;
 					if (control == "摸牌" && target != player) return true;
 					if (control == "弃牌" && target != player && target.countCards("h")) return true;
@@ -1004,10 +1004,10 @@ const skills = {
 		direct: true,
 		content() {
 			"step 0";
-			var func = function () {
+			var func = function (player) {
 				game.countPlayer(function (target) {
 					var list = ["摸牌", "弃牌", "制衡"].filter(function (control) {
-							var storage = player.getStorage("xinyaoming_kanon");
+							var storage = player.getStorage("xinyaoming_used");
 							if (storage.includes(control)) return false;
 							if (control == "摸牌" && target != player) return true;
 							if (control == "弃牌" && target != player && target.countCards("h")) return true;
@@ -1020,18 +1020,18 @@ const skills = {
 					target.prompt(str);
 				});
 			};
-			if (event.player == game.me) func();
-			else if (event.isOnline()) player.send(func);
+			if (event.player == game.me) func(player);
+			else if (event.isOnline()) player.send(func, player);
 			player
 				.chooseTarget(get.prompt2("xinyaoming"), function (card, player, target) {
-					var storage = player.getStorage("xinyaoming_kanon");
+					var storage = player.getStorage("xinyaoming_used");
 					if (!storage.includes("制衡")) return true;
 					if (target == player) return false;
 					return !storage.includes("摸牌") || target.countCards("h");
 				})
 				.set("ai", function (target) {
 					var player = _status.event.player;
-					var storage = player.getStorage("xinyaoming_kanon");
+					var storage = player.getStorage("xinyaoming_used");
 					if (get.attitude(player, target) > 0 && !storage.includes("摸牌") && target != player) return get.effect(target, { name: "draw" }, player, player);
 					if (get.attitude(player, target) < 0 && !storage.includes("弃牌") && target != player && target.countCards("h")) return get.effect(target, { name: "guohe_copy2" }, player, player);
 					if (get.attitude(player, target) > 0 && !storage.includes("制衡")) return get.effect(target, { name: "kaihua" }, player, player);
@@ -1043,7 +1043,7 @@ const skills = {
 				event.target = target;
 				player.logSkill("xinyaoming", target);
 				var controls = ["摸牌", "弃牌", "制衡"].filter(function (control) {
-					var storage = player.getStorage("xinyaoming_kanon");
+					var storage = player.getStorage("xinyaoming_used");
 					if (storage.includes(control)) return false;
 					if (control == "摸牌" && target != player) return true;
 					if (control == "弃牌" && target != player && target.countCards("h")) return true;
@@ -1079,8 +1079,8 @@ const skills = {
 				}
 			} else event.finish();
 			"step 2";
-			player.addTempSkill("xinyaoming_kanon");
-			player.markAuto("xinyaoming_kanon", [result.control]);
+			player.addTempSkill("xinyaoming_used");
+			player.markAuto("xinyaoming_used", [result.control]);
 			switch (result.control) {
 				case "摸牌":
 					target.draw();
@@ -1099,7 +1099,7 @@ const skills = {
 			}
 		},
 		subSkill: {
-			kanon: {
+			used: {
 				charlotte: true,
 				onremove: true,
 			},
@@ -1109,41 +1109,30 @@ const skills = {
 		audio: 2,
 		skillAnimation: true,
 		animationColor: "soil",
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
 			return true;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.num = game.countGroup();
-			player.recover(event.num - player.hp);
-			"step 1";
-			var num2 = num - player.countCards("h");
-			if (num2) player.draw(num2);
-			"step 2";
-			if (num > 2) player.turnOver();
-			player.storage.xinfuli = true;
+			const num = game.countGroup();
+			await player.recover(event.num - player.hp);
+			const num2 = num - player.countCards("h");
+			if (num2) await player.draw(num2);
+			if (num > 2) await player.turnOver();
 		},
 		ai: {
 			save: true,
 			skillTagFilter(player, arg, target) {
 				return player == target;
 			},
-			result: {
-				player: 10,
-			},
+			result: { player: 10 },
 			threaten(player, target) {
 				if (!target.storage.xinfuli) return 0.9;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	xindangxian: {
@@ -6946,7 +6935,6 @@ const skills = {
 		},
 	},
 	rezhaofu: {
-		unique: true,
 		global: "rezhaofu2",
 		zhuSkill: true,
 	},
@@ -6966,7 +6954,6 @@ const skills = {
 	zhaofu: {
 		audio: 2,
 		audioname: ["ol_sunxiu"],
-		unique: true,
 		global: "zhaofu2",
 		zhuSkill: true,
 		locked: true,
@@ -7424,7 +7411,6 @@ const skills = {
 	zhanjue5: {},
 	qinwang: {
 		audio: "qinwang1",
-		unique: true,
 		group: ["qinwang1"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -7926,7 +7912,6 @@ const skills = {
 			re_caorui: "rexingshuai",
 		},
 		trigger: { player: "dying" },
-		//priority:6,
 		zhuSkill: true,
 		filter(event, player) {
 			if (player.hp > 0) return false;
@@ -7935,8 +7920,6 @@ const skills = {
 				return current != player && current.group == "wei";
 			});
 		},
-		mark: true,
-		unique: true,
 		limited: true,
 		content() {
 			"step 0";
@@ -8831,17 +8814,11 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "soil",
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		init(player) {
-			player.storage.fuli = false;
-		},
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
-			if (player.storage.fuli) return false;
 			return true;
 		},
 		content() {
@@ -8863,9 +8840,6 @@ const skills = {
 			threaten(player, target) {
 				if (!target.storage.fuli) return 0.9;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	qianxi: {
@@ -10029,7 +10003,6 @@ const skills = {
 		animationColor: "thunder",
 		audio: 2,
 		audioname: ["re_zhonghui"],
-		unique: true,
 		juexingji: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
@@ -10112,7 +10085,6 @@ const skills = {
 		animationColor: "gray",
 		audio: 2,
 		audioname: ["xin_caifuren", "ol_caifuren"],
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -10121,7 +10093,6 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
-		mark: true,
 		delay: false,
 		content() {
 			"step 0";
@@ -10158,9 +10129,6 @@ const skills = {
 				event.num2++;
 				event.redo();
 			}
-		},
-		intro: {
-			content: "limited",
 		},
 		ai: {
 			order: 1,

@@ -615,7 +615,6 @@ game.import("card", function () {
 			},
 			caomu_skill: {
 				cardSkill: true,
-				unique: true,
 				trigger: { player: "phaseDrawBegin" },
 				popup: false,
 				charlotte: true,

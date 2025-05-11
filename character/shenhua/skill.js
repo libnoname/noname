@@ -531,7 +531,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		audio: "drlt_hongju",
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -577,9 +576,7 @@ const skills = {
 			game.log(player, "获得了技能", "#g【清侧】");
 			await player.loseMaxHp();
 		},
-		ai: {
-			combo: "zhengrong",
-		},
+		ai: { combo: "zhengrong" },
 	},
 	qingce: {
 		enable: "phaseUse",
@@ -1136,11 +1133,8 @@ const skills = {
 		audio: 2,
 		skillAnimation: true,
 		animationColor: "wood",
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		derivation: ["drlt_huairou"],
 		filter(event, player) {
@@ -1235,11 +1229,8 @@ const skills = {
 	drlt_weidi: {
 		audio: 2,
 		forceaudio: true,
-		unique: true,
 		zhuSkill: true,
-		trigger: {
-			player: "phaseDiscardBegin",
-		},
+		trigger: { player: "phaseDiscardBegin" },
 		filter(event, player) {
 			if (!player.hasZhuSkill("drlt_weidi")) return false;
 			return (
@@ -2124,7 +2115,6 @@ const skills = {
 		group: "rechezheng",
 	},
 	nzry_lijun: {
-		unique: true,
 		global: "nzry_lijun1",
 		audio: "nzry_lijun1",
 		zhuSkill: true,
@@ -2135,6 +2125,7 @@ const skills = {
 				if (card.name == "sha") return num + player.countMark("nzry_lijun2");
 			},
 		},
+		charlotte: true,
 		onremove: true,
 	},
 	nzry_lijun1: {
@@ -3300,9 +3291,7 @@ const skills = {
 		animationColor: "fire",
 		audio: 2,
 		audioname: ["re_jiangwei"],
-		unique: true,
 		juexingji: true,
-		//priority:-10,
 		derivation: "reguanxing",
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
@@ -3449,7 +3438,6 @@ const skills = {
 		animationColor: "fire",
 		audio: 2,
 		audioname: ["re_liushan"],
-		unique: true,
 		juexingji: true,
 		zhuSkill: true,
 		keepSkill: true,
@@ -3784,13 +3772,11 @@ const skills = {
 		audio: 2,
 		juexingji: true,
 		derivation: ["reyingzi", "gzyinghun"],
-		unique: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return player.hp <= 1 && !player.storage.hunzi;
 		},
 		forced: true,
-		//priority:3,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.loseMaxHp();
@@ -4791,7 +4777,6 @@ const skills = {
 	},
 	fangzhu_new_simayi: { audio: 1 },
 	songwei: {
-		unique: true,
 		group: "songwei2",
 		audioname: ["re_caopi"],
 		audio: "songwei2",
@@ -5312,7 +5297,6 @@ const skills = {
 		},
 	},
 	baonue: {
-		unique: true,
 		group: "baonue2",
 		audioname: ["re_dongzhuo"],
 		audio: "baonue2",
@@ -5472,7 +5456,7 @@ const skills = {
 			var info = lib.card[event.card.name];
 			return info && info.selectTarget && info.selectTarget == -1 && !info.toself;
 		},
-		async content() {},
+		async content(event, trigger, player) {},
 		mod: {
 			targetEnabled(card) {
 				if ((get.type(card) == "trick" || get.type(card) == "delay") && get.color(card) == "black") return false;
@@ -7278,26 +7262,25 @@ const skills = {
 		preHidden: true,
 		line: "thunder",
 		async cost(event, trigger, player) {
-			const next = player.chooseTarget(get.prompt2("leiji")).setHiddenSkill(event.name.slice(0, -5));
-			next.ai = function (target) {
-				if (target.hasSkill("hongyan")) return 0;
-				return get.damageEffect(target, _status.event.player, _status.event.player, "thunder");
-			};
-			event.result = await next.forResult();
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const player = get.player();
+					if (target.hasSkill("hongyan")) return 0;
+					return get.damageEffect(target, player, player, "thunder");
+				})
+				.setHiddenSkill(event.skill)
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			const next = target.judge(function (card) {
+			const next = target.judge(card => {
 				if (get.suit(card) == "spade") return -4;
 				return 0;
 			});
-			next.judge2 = function (result) {
-				return result.bool == false ? true : false;
-			};
-			const bool = await next.forResultBool();
-			if (bool == false) {
-				await target.damage(2, "thunder");
-			}
+			next.judge2 = result => !result.bool;
+			const { result } = await next;
+			if (!result?.bool) await target.damage(2, "thunder");
 		},
 		ai: {
 			mingzhi: false,
@@ -7470,7 +7453,6 @@ const skills = {
 	},
 	*/
 	huangtian: {
-		unique: true,
 		audio: "huangtian2",
 		audioname: ["zhangjiao", "re_zhangjiao"],
 		global: "huangtian2",
@@ -7810,7 +7792,7 @@ const skills = {
 			return player.hp == 1;
 		},
 		forced: true,
-		async content() {},
+		async content(event, trigger, player) {},
 	},
 	guhuo_phase: {},
 };

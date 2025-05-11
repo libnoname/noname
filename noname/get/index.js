@@ -2764,9 +2764,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	card(original) {
 		if (_status.event.skill) {
-			var card = get.info(_status.event.skill).viewAs;
+			const info = get.info(_status.event.skill);
+			let card = info.viewAs;
 			if (typeof card == "function") card = card(ui.selected.cards, _status.event.player);
 			if (card) {
+				if (!ui.selected.cards.length) return get.autoViewAs(card, card.cards);
 				return get.autoViewAs(card, ui.selected.cards);
 			}
 		}

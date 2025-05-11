@@ -2961,7 +2961,6 @@ const skills = {
 	},
 	//马腾
 	stdxiongyi: {
-		unique: true,
 		limited: true,
 		audio: "xiongyi",
 		enable: "phaseUse",

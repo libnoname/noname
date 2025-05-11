@@ -186,7 +186,6 @@ const skills = {
 	hujia: {
 		audio: 2,
 		audioname: ["re_caocao"],
-		unique: true,
 		zhuSkill: true,
 		trigger: { player: ["chooseToRespondBefore", "chooseToUseBefore"] },
 		filter(event, player) {
@@ -808,7 +807,6 @@ const skills = {
 	jijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		unique: true,
 		group: ["jijiang1"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -1252,7 +1250,6 @@ const skills = {
 	},
 	jiuyuan: {
 		audio: 2,
-		unique: true,
 		trigger: { target: "taoBegin" },
 		zhuSkill: true,
 		forced: true,

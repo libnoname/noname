@@ -4,7 +4,6 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//刘巴
 	duanbi: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
