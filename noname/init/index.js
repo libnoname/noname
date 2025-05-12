@@ -728,7 +728,7 @@ async function autoImportExtensions(extensionlist) {
 
 	const unimportedExtensions = extFolders.filter(folder => !includedPlays.includes(folder) && !savedExtensions.includes(folder));
 
-	for (const ext of unimportedExtensions) {
+	const promises = unimportedExtensions.map(async ext => {
 		const path = new URL(`./${ext}/`, extensionPath);
 		const file = new URL("./extension.js", path);
 		const tsFile = new URL("./extension.ts", path);
@@ -741,7 +741,8 @@ async function autoImportExtensions(extensionlist) {
 				await game.promises.saveConfig(`extension_${ext}_enable`, false);
 			}
 		}
-	}
+	});
+	await Promise.allSettled(promises);
 
 	if (changed) {
 		await game.promises.saveConfig("extensions", savedExtensions);
