@@ -722,14 +722,14 @@ async function autoImportExtensions(extensionlist) {
 
 	const includedPlays = config.get("all").plays;
 	const savedExtensions = config.get("extensions");
-	const extensionPath = get.relativePath(new URL("./extension/", rootURL));
-	const [extFolders] = await game.promises.getFileList(extensionPath);
+	const extensionPath = new URL("./extension/", rootURL);
+	const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
 	let changed = false;
 
 	const unimportedExtensions = extFolders.filter(folder => !includedPlays.includes(folder) && !savedExtensions.includes(folder));
 
 	for (const ext of unimportedExtensions) {
-		const path = new URL(`./extension/${ext}/`, rootURL);
+		const path = new URL(`./${ext}/`, extensionPath);
 		const file = new URL("./extension.js", path);
 		const tsFile = new URL("./extension.ts", path);
 
