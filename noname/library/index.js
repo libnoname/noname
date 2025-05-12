@@ -1157,7 +1157,7 @@ export class Library {
 				extension_auto_import: {
 					name: "自动导入扩展",
 					intro: dedent`
-						开启后无名杀会自动导入扩展目录下的扩展
+						开启后无名杀会自动导入扩展目录下的扩展（以此法导入的扩展默认关闭）
 						<br />
 						※ 如果你的运行环境不支持文件操作，则该选项无效
 						<br />

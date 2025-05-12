@@ -737,7 +737,9 @@ async function autoImportExtensions(extensionlist) {
 			extensionlist.push(ext);
 			savedExtensions.push(ext);
 			changed = true;
-			await game.promises.saveConfig(`extension_${ext}_enable`, false);
+			if (!config.has(`extension_${ext}_enable`)) {
+				await game.promises.saveConfig(`extension_${ext}_enable`, false);
+			}
 		}
 	}
 
