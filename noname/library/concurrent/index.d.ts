@@ -1,5 +1,11 @@
 import { Uninstantable } from "../../util/index.js";
 
+/**
+ * 提供一组用于并发异步操作的静态工具方法
+ * 
+ * 由于 JavaScript 的单线程特性，不能实现真正的并行操作。
+ * 该类提供的方法通过异步操作模拟并发执行，优化处理多个异步任务的效率。
+ */
 export class Concurrent extends Uninstantable {
 	/**
 	 * 执行一个异步的、步长为1的for range循环
@@ -11,8 +17,13 @@ export class Concurrent extends Uninstantable {
 	 * @param start - 开始索引（包含）
 	 * @param end - 结束索引（不包含）
 	 * @param callback - 回调函数，接收当前索引；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的回调函数不是一个函数
+	 * @example
+	 * // 对1到5的每个数字进行异步处理
+	 * await Concurrent.for(1, 6, async (i) => {
+	 *   await someAsyncOperation(i);
+	 * });
 	 */
 	static async for<T extends number>(start: T, end: T, callback: ForCallback<T>): Promise<ForException<T>[]>;
 
@@ -27,8 +38,15 @@ export class Concurrent extends Uninstantable {
 	 * @param end - 结束索引（不包含）
 	 * @param signal - AbortSignal信号，用于自行中止循环
 	 * @param callback - 回调函数，接收当前索引和提供的信号；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的回调函数不是一个函数
+	 * @example
+	 * // 使用AbortController来控制循环的终止
+	 * const controller = new AbortController();
+	 * await Concurrent.for(1, 100, controller.signal, async (i, signal) => {
+	 *   if (signal.aborted) return;
+	 *   await someAsyncOperation(i);
+	 * });
 	 */
 	static async for<T extends number>(start: T, end: T, signal: AbortSignal, callback: ForCallback<T>): Promise<ForException<T>[]>;
 
@@ -40,9 +58,15 @@ export class Concurrent extends Uninstantable {
 	 * > 为了性能考虑，假定传入的可迭代对象均为有限迭代器，请勿传递无限迭代器
 	 *
 	 * @param iterable - 可迭代对象（请勿传递无限迭代器）
-	 * @param callback - 回调函数，接收当前索引；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @param callback - 回调函数，接收当前元素；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的`iterable`不是一个对象，或回调函数不是一个函数
+	 * @example
+	 * // 对数组中的每项进行异步处理
+	 * const items = [1, 2, 3, 4, 5];
+	 * await Concurrent.forEach(items, async (item) => {
+	 *   await processItem(item);
+	 * });
 	 */
 	static async forEach<T>(iterable: Iterable<T>, callback: ForEachCallback<T>): Promise<ForEachException<T>[]>;
 
@@ -55,8 +79,8 @@ export class Concurrent extends Uninstantable {
 	 *
 	 * @param iterable - 可迭代对象（请勿传递无限迭代器）
 	 * @param signal - AbortSignal信号，用于自行中止循环
-	 * @param callback - 回调函数，接收当前索引；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @param callback - 回调函数，接收当前元素；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的`iterable`不是一个对象，或回调函数不是一个函数
 	 */
 	static async forEach<T>(iterable: Iterable<T>, signal: AbortSignal, callback: ForEachCallback<T>): Promise<ForEachException<T>[]>;
@@ -69,8 +93,8 @@ export class Concurrent extends Uninstantable {
 	 * > 为了性能考虑，假定传入的可迭代对象均为有限迭代器，请勿传递无限迭代器
 	 *
 	 * @param iterable - 异步可迭代对象（请勿传递无限迭代器）
-	 * @param callback - 回调函数，接收当前索引；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @param callback - 回调函数，接收当前元素；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的`iterable`不是一个对象，或回调函数不是一个函数
 	 */
 	static async forEach<T>(iterable: AsyncIterable<T>, callback: ForEachCallback<T>): Promise<ForEachException<T>[]>;
@@ -84,15 +108,35 @@ export class Concurrent extends Uninstantable {
 	 *
 	 * @param iterable - 异步可迭代对象（请勿传递无限迭代器）
 	 * @param signal - AbortSignal信号，用于自行中止循环
-	 * @param callback - 回调函数，接收当前索引；如果回调函数不包含异步操作，则将退化为同步操作
-	 * @returns 返回一个Promise，包含执行其中所有的异常
+	 * @param callback - 回调函数，接收当前元素；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
 	 * @throws {TypeError} 如果提供的`iterable`不是一个对象，或回调函数不是一个函数
 	 */
 	static async forEach<T>(iterable: AsyncIterable<T>, signal: AbortSignal, callback: ForEachCallback<T>): Promise<ForEachException<T>[]>;
 }
 
+/**
+ * For循环回调函数类型
+ * @template T 索引类型，必须是数字类型
+ */
 type ForCallback<T extends number> = (index: T, signal: AbortSignal) => Promise<void> | void;
+
+/**
+ * For循环异常信息类型
+ * @template T 索引类型，必须是数字类型
+ * @template E 错误类型，默认为Error
+ */
 type ForException<T extends number, E extends Error = Error> = { index: number; error: E };
 
+/**
+ * ForEach循环回调函数类型
+ * @template T 元素类型
+ */
 type ForEachCallback<T> = (item: T, signal: AbortSignal) => Promise<void> | void;
+
+/**
+ * ForEach循环异常信息类型
+ * @template T 元素类型
+ * @template E 错误类型，默认为Error
+ */
 type ForEachException<T, E extends Error = Error> = { item: T; error: E };
