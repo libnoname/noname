@@ -40,7 +40,10 @@ const skills = {
 	},
 	stdguijie: {
 		enable: ["chooseToRespond", "chooseToUse"],
-		viewAs: { name: "shan" },
+		viewAs: {
+			name: "shan",
+			isCard: true,
+		},
 		filter(event, player) {
 			return player.countCards("hes", { color: "red" }) > 1;
 		},

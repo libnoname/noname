@@ -15,7 +15,7 @@ jobs:
       - name: Close Stale Issues
         uses: actions/stale@v9
         with:
-          repo-token: ${{ secrets.STALE_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-issue-stale: 60                # 60天未活动的议题将被标记为【过时】
           days-before-pr-stale: 90                   # 90天未活动的PR将被标记为【过时】
           days-before-issue-close: 7                 # 7天未活动的过时议题将被关闭

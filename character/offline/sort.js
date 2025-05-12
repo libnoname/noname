@@ -19,7 +19,7 @@ const characterSort = {
 	offline_yanyou: ["yy_quyi", "yy_gongsunzan", "yy_wenchou", "yy_gongsunyuan", "yy_yuanshao", "yy_simayi", "yy_caorui", "yy_zhaoyun", "yy_quancong"],
 	offline_jingyang: ["jy_caocao", "jy_caoren", "jy_zhugeliang", "jy_pangtong", "jy_lusu", "jy_zhangzhao", "jy_zhouyu", "jy_huanggai"],
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
-	//offline_others:[""],
+	offline_others: ["chenshou"],
 };
 
 const characterSortTranslate = {

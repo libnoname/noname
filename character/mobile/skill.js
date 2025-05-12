@@ -3273,9 +3273,15 @@ const skills = {
 				await player.draw();
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
-			player.when({ player: "phaseBegin" }).then(() => {
-				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
-			});
+			player
+				.when({ player: ["phaseBegin", "useCard"] })
+				.filter(evt => (evt.name == "phase" ? true : !["potfuji_sha", "potfuji_shan"].some(skill => player.hasSkill(skill))))
+				.assign({
+					lastDo: true,
+				})
+				.then(() => {
+					player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+				});
 		},
 		ai: {
 			order: 10,
@@ -3336,14 +3342,16 @@ const skills = {
 					content: "使用【杀】造成的伤害+1",
 				},
 				audio: ["potfuji4.mp3", "potfuji5.mp3"],
-				trigger: { source: "damageBegin1" },
+				trigger: { player: "useCard" },
 				filter(event, player) {
-					return event.card && event.card.name === "sha";
+					return event.card.name === "sha";
 				},
 				forced: true,
 				logTarget: "player",
 				content() {
-					trigger.num++;
+					const gain = get.cardPile2(gain => get.suit(gain) === get.suit(trigger.card, false));
+					if (gain) player.gain(gain, "gain2");
+					trigger.baseDamage++;
 					player.removeSkill(event.name);
 				},
 			},
@@ -3356,13 +3364,18 @@ const skills = {
 					content: "使用【闪】结算完毕后摸一张牌",
 				},
 				audio: ["potfuji4.mp3", "potfuji5.mp3"],
-				trigger: { player: "useCardAfter" },
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					return event.card.name === "shan";
 				},
 				forced: true,
 				content() {
-					player.draw();
+					const gain = get.cardPile2(gain => get.suit(gain) === get.suit(trigger.card, false));
+					if (gain) player.gain(gain, "gain2");
+					player
+						.when("useCardAfter")
+						.filter(evt => evt === trigger)
+						.then(() => player.draw());
 					player.removeSkill(event.name);
 				},
 			},

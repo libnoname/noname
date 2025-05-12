@@ -136,8 +136,8 @@ const skills = {
 						if (name.endsWith("_backup")) name = name.slice(0, name.lastIndexOf("_backup"));
 						if (name.endsWith("ContentBefore")) name = name.slice(0, name.lastIndexOf("ContentBefore"));
 						if (name.endsWith("ContentAfter")) name = name.slice(0, name.lastIndexOf("ContentAfter"));
+						if (name.endsWith("_cost")) name = name.slice(0, name.lastIndexOf("_cost"));
 						skill = get.sourceSkillFor(name);
-						if (skill.endsWith("_cost")) skill = skill.slice(0, skill.lastIndexOf("_cost"));
 						const info = get.info(skill);
 						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) continue;
 						return skill;

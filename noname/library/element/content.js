@@ -3040,7 +3040,17 @@ player.removeVirtualEquip(card);
 
 			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
-			const cards = player.getTopCards ? player.getTopCards(numx) : get.cards(numx);
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const cards = [],
+				otherGetCards = event.otherPile?.[player.playerid]?.getCards;
+			if (player.getTopCards) cards.addArray(player.getTopCards(numx));
+			else {
+				if (otherGetCards) cards.addArray(otherGetCards(numx));
+				cards.addArray(get.cards(numx - cards.length));
+			}
 			if (event.gaintag?.[player.playerid]) {
 				const gaintag = event.gaintag[player.playerid];
 				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
@@ -3097,16 +3107,28 @@ player.removeVirtualEquip(card);
 			if (game.changeCoin) {
 				game.changeCoin(-3);
 			}
-			var hs = game.me.getCards("h");
-			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
-			for (var i = 0; i < hs.length; i++) {
-				hs[i].removeGaintag(true);
-				hs[i].discard(false);
-			}
-
 			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
-			const cards = get.cards(hs.length);
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const hs = game.me.getCards("h"),
+				cards = [],
+				otherGetCards = event.otherPile?.[game.me.playerid]?.getCards,
+				otherDiscacrd = event.otherPile?.[game.me.playerid]?.discard;
+			//先弃牌
+			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
+			for (let i = 0; i < hs.length; i++) {
+				hs[i].removeGaintag(true);
+				if (otherDiscacrd) otherDiscacrd(hs[i]);
+				else hs[i].discard(false);
+			}
+			//再摸牌
+			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+			//专属牌堆不够时从正常牌堆获取
+			cards.addArray(get.cards(hs.length - cards.length));
+			//添加标记相关
 			if (event.gaintag?.[game.me.playerid]) {
 				const gaintag = event.gaintag[game.me.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -3690,12 +3712,26 @@ player.removeVirtualEquip(card);
 		}
 		"step 1";
 		if (result && result.bool) {
-			var hs = game.me.getCards("h");
-			for (var i = 0; i < hs.length; i++) {
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const hs = game.me.getCards("h"),
+				cards = [],
+				otherGetCards = event.otherPile?.[game.me.playerid]?.getCards,
+				otherDiscacrd = event.otherPile?.[game.me.playerid]?.discard;
+			//先弃牌
+			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
+			for (let i = 0; i < hs.length; i++) {
 				hs[i].removeGaintag(true);
-				hs[i].discard(false);
+				if (otherDiscacrd) otherDiscacrd(hs[i]);
+				else hs[i].discard(false);
 			}
-			const cards = get.cards(hs.length);
+			//再摸牌
+			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+			//专属牌堆不够时从正常牌堆获取
+			cards.addArray(get.cards(hs.length - cards.length));
+			//添加标记相关
 			if (event.gaintag?.[game.me.playerid]) {
 				const gaintag = event.gaintag[game.me.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -3714,19 +3750,32 @@ player.removeVirtualEquip(card);
 		};
 		var sendback = function (result, player) {
 			if (result && result.bool) {
-				var hs = player.getCards("h");
+				/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+				 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+				 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+				 */
+				const hs = player.getCards("h"),
+					cards = [],
+					otherGetCards = event.otherPile?.[player.playerid]?.getCards,
+					otherDiscacrd = event.otherPile?.[player.playerid]?.discard;
+				//先弃牌
 				game.broadcastAll(
-					function (player, hs) {
+					function (player, hs, otherDiscacrd) {
 						game.addVideo("lose", player, [get.cardsInfo(hs), [], [], []]);
 						for (var i = 0; i < hs.length; i++) {
 							hs[i].removeGaintag(true);
-							hs[i].discard(false);
+							if (otherDiscacrd) otherDiscacrd(hs[i]);
+							else hs[i].discard(false);
 						}
 					},
 					player,
-					hs
+					hs,
+					otherDiscacrd
 				);
-				const cards = get.cards(hs.length);
+				//再摸牌
+				if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+				//专属牌堆不够时从正常牌堆获取
+				cards.addArray(get.cards(hs.length - cards.length));
 				if (event.gaintag?.[player.playerid]) {
 					const gaintag = event.gaintag[player.playerid];
 					const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -7447,7 +7496,15 @@ player.removeVirtualEquip(card);
 		}
 		if (!get.info(card, false).noForceDie) event.forceDie = true;
 		if (cards.length) {
+			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {
@@ -8245,20 +8302,26 @@ player.removeVirtualEquip(card);
 			}
 			num -= event.drawDeck;
 		}
+		let logList;
 		if (event.log != false) {
+			logList = [player];
 			if (num > 0) {
-				if (event.bottom) game.log(player, "从牌堆底摸了" + get.cnNumber(num) + "张牌");
-				else game.log(player, "摸了" + get.cnNumber(num) + "张牌");
+				if (event.bottom) logList.add("从牌堆底摸了" + get.cnNumber(num) + "张牌");
+				else logList.add("摸了" + get.cnNumber(num) + "张牌");
 			}
 			if (event.drawDeck) {
-				game.log(player, "从牌库中获得了" + get.cnNumber(event.drawDeck) + "张牌");
+				logList.add("从牌库中获得了" + get.cnNumber(event.drawDeck) + "张牌");
 			}
 		}
-		let cards;
+		let cards = [];
 		if (num > 0) {
-			if (event.bottom) cards = get.bottomCards(num);
-			else if (player.getTopCards) cards = player.getTopCards(num);
-			else cards = get.cards(num);
+			if (player.getTopCards) cards.addArray(player.getTopCards(num - cards.length));
+			else {
+				//otherGetCards属性是从专属牌堆摸牌，不够再从一般牌堆补
+				if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
+				if (event.bottom) cards.addArray(get.bottomCards(num - cards.length));
+				else cards.addArray(get.cards(num - cards.length));
+			}
 		} else {
 			cards = [];
 		}
@@ -8268,9 +8331,8 @@ player.removeVirtualEquip(card);
 		let next;
 		if (event.animate != false) {
 			if (event.visible) {
-				next = player.gain(cards, "gain2");
-				if (event.bottom) game.log(player, "从牌堆底摸了" + get.cnNumber(num) + "张牌（", cards, "）");
-				else game.log(player, "摸了" + get.cnNumber(num) + "张牌（", cards, "）");
+				next = player.gain(cards, "gain2").set("log", false);
+				logList.addArray(["（", cards, "）"]);
 			} else {
 				next = player.gain(cards, "draw");
 			}
@@ -8280,6 +8342,7 @@ player.removeVirtualEquip(card);
 				player.$draw(cards.length);
 			}
 		}
+		if (logList?.length) game.log(...logList);
 		next.gaintag.addArray(event.gaintag);
 		event.result = cards;
 	},
@@ -8357,7 +8420,15 @@ player.removeVirtualEquip(card);
 		}
 		player.actionHistory[player.actionHistory.length - 1].respond.push(event);
 		if (cards.length) {
+			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {

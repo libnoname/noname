@@ -492,17 +492,15 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player //
-				.chooseTarget(`###${get.prompt(event.skill)}###令一名没有「凛」的角色获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
+				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成一点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
 				.set("ai", target => {
-					let att = get.attitude(get.player(), target);
-					if (att < 0) return att + 1;
-					if (att === 0) return Math.random();
-					return att;
+					return get.damageEffect(target, get.player(), get.player());
 				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			await target.damage();
 			target.addMark(event.name, 1);
 		},
 		subSkill: {
@@ -535,7 +533,7 @@ const skills = {
 	},
 	dcduzhang: {
 		audio: 2,
-		usable: 2,
+		usable: 1,
 		mod: {
 			maxHandcard(player, num) {
 				return (num += player.countMark("dclinjie"));
@@ -552,6 +550,7 @@ const skills = {
 		locked: false,
 		frequent: true,
 		content() {
+			player.draw();
 			player.addMark("dclinjie", 1);
 		},
 	},
@@ -600,7 +599,7 @@ const skills = {
 						[
 							[
 								["fengyin", "令所有其他角色于下个准备和结束阶段期间非锁定技失效"],
-								["judge", "令所有其他角色于下个判定阶段开始时在【闪电】.【乐不思蜀】和【兵粮寸断】中选择一个并进行判定。"],
+								["judge", "令所有其他角色于下个判定阶段开始时在【闪电】.【乐不思蜀】和【兵粮寸断】中选择两个个并依次进行判定。"],
 								["discard", "令所有其他角色于下个摸牌阶段期间内摸到的牌若颜色相同，则全部弃置。"],
 								["use", "令所有其他角色于下个出牌阶段每种类型的牌仅能使用一张"],
 								["gain", "令所有其他角色于下个弃牌阶段期间内弃置牌后你获得之"],
@@ -650,13 +649,16 @@ const skills = {
 				for (const target of targets) {
 					target.when({ player: "phaseJudgeBegin" }).step(async (event, trigger, player) => {
 						const result = await player
-							.chooseVCardButton(["lebu", "bingliang", "shandian"], "立世：请选择一个延时锦囊进行判定", true)
+							.chooseVCardButton(["lebu", "bingliang", "shandian"], "立世：请选择两个延时锦囊并依次进行判定", 2, true)
 							.set("ai", button => {
 								const player = get.player();
 								return get.info({ name: button.link[2] }).ai.result.target(player, player);
 							})
 							.forResult();
-						await player.executeDelayCardEffect(result.links[0][2]);
+						if (result?.links.length) {
+							const links = result.links;
+							for (let i = 0; i < links.length; i++) await target.executeDelayCardEffect(links[i][2]);
+						}
 					});
 				}
 			}

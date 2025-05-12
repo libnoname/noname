@@ -48,13 +48,14 @@ game.import("card", function () {
 						cards1 = player.getCards("h"),
 						cards2 = target.getCards("h");
 					if (!cards1.length && !cards2.length) return;
-					for (const targetx of [player, target]) {
-						await targetx
-							.lose(targetx == player ? cards1 : cards2, ui.ordering, "visible")
-							.set("getlx", false)
-							.set("log", false);
-						targetx.$throw(targetx == player ? cards1 : cards2);
-					}
+					await game
+						.loseAsync({
+							lose_list: [
+								[player, cards1],
+								[target, cards2],
+							],
+						})
+						.setContent("chooseToCompareLose");
 					const result = await target
 						.chooseToMove("兄弟同心：请分配" + get.translation(player) + "和你的手牌", true)
 						.set("list", [
@@ -85,8 +86,8 @@ game.import("card", function () {
 						.set("cards2", cards2)
 						.forResult();
 					if (result?.bool) {
-						await player.gain(result.moved[0], "gain2");
-						await target.gain(result.moved[1], "gain2");
+						await player.gain(result.moved[0], "draw");
+						await target.gain(result.moved[1], "draw");
 						const num = player.countCards("h") - target.countCards("h");
 						if (num > 0) await target.draw();
 						else if (num < 0) await player.draw();

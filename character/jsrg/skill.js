@@ -927,7 +927,7 @@ const skills = {
 			let locals = targets.slice(),
 				card;
 			locals.removeArray(humans);
-			const send = (current, eventId) => {
+			const send = (current, eventId, videoId, player) => {
 				lib.skill.mbsaojian.chooseCard(current, eventId, videoId, player);
 				game.resume();
 			};

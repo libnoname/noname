@@ -1197,6 +1197,19 @@ const translates = {
 	zombieshibian_info: "锁定技。①你保留被替换武将牌的技能。②你的身份和胜利条件改为和神贾诩一致。",
 	zombieganran: "感染",
 	zombieganran_info: "锁定技，结束阶段，你令本回合被你杀死且未拥有“丧尸”武将牌的角色复活，然后你将体力值回复至上限并摸等量张牌。",
+	chenshou: "陈寿",
+	//eternal_poker: "invisible",
+	nschenzhi_poker: "扑克",
+	nschenzhi_poker_info: "扑克牌，无效果且类型为poker的牌",
+	nschenzhi: "沉滞",
+	nschenzhi_info: "锁定技，你摸牌改为从一副扑克牌中摸牌（包含初始手牌）；扑克牌拥有独立的弃牌堆。",
+	nsdianmo: "点墨",
+	nsdianmo_info: "准备阶段或当你每回合首次受到伤害后，你可以观看两个转化牌类的技能，选择是否获得其中一个（至多4个）或用其中一个替换另一个以此法获得的技能，然后摸空置的技能数张牌。",
+	nszaibi: "载笔",
+	nszaibi_info: "出牌阶段限一次，你可以重铸至少两张点数连续的牌，然后将游戏外的【春秋笔】置入你的装备区。",
+	chunqiubi: "春秋笔",
+	chunqiubi_skill: "春秋笔",
+	chunqiubi_info: "出牌阶段限一次，你可以选择一项，然后选择一名其他角色从此项开始正序或逆序依次执行所有项。起：失去1点体力。承：摸已损失体力值张牌。转：回复1点体力。合：弃置已损失体力值张手牌（不足则全弃）。此牌离开你的装备区后销毁。",
 };
 
 export default translates;
