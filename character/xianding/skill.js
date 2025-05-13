@@ -3,6 +3,238 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//吴质
+	dcweiti: {
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: true,
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await target
+				.chooseControl("受到伤害", "回复体力")
+				.set("prompt", "伪涕：请选择一项")
+				.set("choiceList", [
+					"受到1点伤害，然后获得两张点数与你所有手牌均不同的牌",
+					"回复1点体力，然后弃置两张点数不相同的牌",
+				])
+				.set("ai", () => {
+					const player = get.player();
+					let eff1 = get.recoverEffect(player, player) - Math.min(2, player.countCards("he")),
+						eff2 = 2 + get.damageEffect(player, player);
+					return eff1 > eff2 ? "回复体力" : "受到伤害";			
+				})
+				.forResult();
+			if (result.control == "受到伤害") {
+				await target.damage();
+				const nums = target.getCards("h").map(card => get.number(card, target));
+				let cards = [];
+				while(cards.length < 2) {
+					const card = get.cardPile2(card => !nums.includes(get.number(card, target)) && !cards.includes(card));
+					if (card) cards.push(card);
+					else break;
+				}
+				if (cards.length) await target.gain(cards, "gain2");
+			}
+			else {
+				await target.recover();
+				const num = Math.min(2, target.getCards("h").map(card => get.number(card, target)).toUniqued().length);
+				await target
+					.chooseToDiscard(num, true, `弃置${get.cnNumber(num)}张点数不同的牌`, "he")
+					.set("filterCard", card => {
+						const player = get.player();
+						return !ui.selected.cards?.some(cardx => get.number(cardx, player) == get.number(card, player));
+					})
+					.set("complexCard", true);
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				target: 1,
+			},
+		},
+	},
+	dcyuanrong: {
+		trigger: {
+        	player: "phaseEnd",
+    	},
+    	filter(event, player) {
+    	    if (!player.getHistory("lose").length) return false;
+    	    let cardsLost = [];
+        	game.getGlobalHistory("cardMove", evt => {
+        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+        	        cardsLost.addArray(evt.cards);
+        	    }
+        	});
+        	cardsLost = cardsLost.filterInD("d");
+			return cardsLost.some(card => get.color(card) == "black");
+    	},
+		async cost(event, trigger, player) {
+			let cardsLost = [];
+        	game.getGlobalHistory("cardMove", evt => {
+        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+        	        cardsLost.addArray(evt.cards);
+        	    }
+        	});
+        	cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "black");
+			let cards = get.inpileVCardList(info => {
+        	    if (get.type(info[2]) != "trick") return false;
+				return cardsLost.some(card => {
+        	    	const cardx = get.autoViewAs({ name: info[2] }, [card]);
+        	    	return player.hasUseTarget(cardx, true, true);
+				});
+        	});
+			if (!cards.length) return;
+			const result = await player
+				.chooseButton([`###${get.prompt("dcyuanrong")}###弃牌堆`, cardsLost, "###可转化锦囊牌###", [cards, "vcard"]], 2)
+				.set("filterButton", button => {
+					if (!Array.isArray(button.link)) return ui.selected.buttons.length == 0;
+					const cardx = get.autoViewAs({ name: button.link[2] }, ui.selected.buttons);
+        	    	return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+				})
+				.set("complexButton", true)
+				.set("ai", button => {
+					if (ui.selected.buttons.length == 0) return Math.random();
+					if (!Array.isArray(button.link)) return 0;
+					const cardx = get.autoViewAs({ name: button.link[2] });
+        	    	return player.getUseValue(cardx, true, true);
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cards: [result?.links?.[0]],
+				cost_data: result?.links?.[1][2],
+			};
+		},
+		async content(event, trigger, player) {
+			const { cards, cost_data: name } = event;
+			const card = get.autoViewAs({ name: name }, cards);
+        	if (player.hasUseTarget(card, true, true)) await player.chooseUseTarget(card, true, cards);
+			let cardsLost = [];
+        	game.getGlobalHistory("cardMove", evt => {
+        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+        	        cardsLost.addArray(evt.cards);
+        	    }
+        	});
+        	cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "red");
+			let cardxs = get.inpileVCardList(info => {
+        	    if (get.type(info[2]) != "basic") return false;
+				return cardsLost.some(card => {
+        	    	const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+        	    	return player.hasUseTarget(cardx, true, true);
+				});
+        	});
+			if (!cardxs.length) return;
+			let bcard, btarget;
+			if (cardsLost.length == 1 && cardxs.length == 1) {
+				bcard = cardsLost;
+				btarget = cardxs[0];
+			}
+			else {
+				const result = await player
+					.chooseButton([`###圆融：将一张红色牌当基本牌使用###弃牌堆`, cardsLost, "###可转化基本牌###", [cardxs, "vcard"]], 2, true)
+					.set("filterButton", button => {
+						if (!Array.isArray(button.link)) return ui.selected.buttons.length == 0;
+						const cardx = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, ui.selected.buttons);
+        		    	return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+					})
+					.set("complexButton", true)
+					.set("ai", button => {
+						if (ui.selected.buttons.length == 0) return Math.random();
+						if (!Array.isArray(button.link)) return 0;
+						const cardx = get.autoViewAs({ name: button.link[2] });
+        	    		return player.getUseValue(cardx, true, true);
+					})
+					.forResult();
+				if (!result.bool) return;
+				bcard = [result.links[0]];
+				btarget = result.links[1];
+			}
+			const cardx = get.autoViewAs({ name: btarget[2], nature: btarget[3] }, bcard);
+        	if (player.hasUseTarget(cardx, true, true)) await player.chooseUseTarget(cardx, true, bcard);
+		},
+	},
+	//朱铄
+	dczsshuhe: {
+		trigger: {
+			global: "useCard",
+		},
+		usable: 1,
+		filter(event, player) {
+			if (event.player == player) return false;
+			return get.tag(event.card, "damage");
+		},
+		logTarget: "player",
+		check(event, player) {
+			if (get.attitude(player, event.player) > 0) return true;
+			let eff = 2;
+			if (event.targets) {
+				for (let target of event.targets) eff += get.effect(target, event.card, event.player, player);
+			}
+			return eff <= 0;
+		},
+		async content(event, trigger, player) {
+			const card = get.cardPile2(card => card.name == "jiu");
+			if (card) await player.gain(card, "gain2");
+			let eff = -1;
+			if (trigger.targets) {
+				for (let target of trigger.targets) eff += get.effect(target, trigger.card, trigger.player, trigger.player);
+			}
+			const result = await trigger.player
+				.chooseBool()
+				.set("prompt", "疏和")
+				.set("prompt2", `令${get.translation(trigger.card)}无效并视为使用一张【酒】，或点取消令${get.translation(player)}摸一张牌`)
+				.set("choice", eff < 0)
+				.forResult();
+			if (result.bool) {
+        		trigger.targets.length = 0;
+        		trigger.all_excluded = true;
+        		game.log(trigger.card, "被无效了");
+				const card = { name: "jiu", isCard: true };
+				if (trigger.player.hasUseTarget(card)) await trigger.player.chooseUseTarget(card, false, true);
+			}
+			else {
+				await player.draw();
+			}
+		},
+	},
+	dcjilie: {
+    	enable: "phaseUse",
+    	filterCard(card, player) {
+    	    return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+    	},
+		position: "he",
+    	selectCard: [1,4],
+    	complexCard: true,
+    	complexSelect: true,
+		usable: 1,
+		filter(event, player) {
+			return player.countCards("he");
+		},
+		async content(event, trigger, player) {
+			let num = event.cards.map(i => get.suit(i, player)).toUniqued().length * 2;
+			while(num > 0) {
+				num--;
+				const judgeEvent = player.judge(card => card.name == "sha" ? 10 : -1);
+				judgeEvent.set("callback", async event => {
+					if (event.card.name == "sha" && player.hasUseTarget(event.card, false)) {
+						const next = player.chooseUseTarget(event.card, false, "nodistance");
+						next.set("oncard", () => {
+							_status.event.baseDamage += player.getHistory("useCard", evt => evt.card.name == "sha").length;
+						})
+						await next;
+					}
+				});
+				await judgeEvent;
+			}
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 1,
+			},
+		},
+	},
 	//威曹丕
 	dcdianlun: {
 		audio: 2,
