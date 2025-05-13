@@ -1,4 +1,22 @@
 const characters = {
+	mb_mengda: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbjili", "mbshishu"],
+	},
+	mb_caoxing: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbjinzu", "mbanxian"],
+	},
+	mb_zhangyan: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbfeijing", "mbxiaoge"],
+	},
 	guoyuan: {
 		sex: "male",
 		group: "wei",
