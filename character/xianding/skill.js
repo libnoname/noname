@@ -10401,7 +10401,6 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
-						isCard: true,
 					},
 					check(card) {
 						return 6.5 - get.value(card);
@@ -21703,7 +21702,10 @@ const skills = {
 			return false;
 		},
 		selectCard: -1,
-		viewAs: { name: "shan" },
+		viewAs: {
+			name: "shan",
+			isCard: true,
+		},
 		ai: {
 			skillTagFilter(player) {
 				if (player.storage.lvli > 1) return false;
@@ -21727,7 +21729,10 @@ const skills = {
 			return false;
 		},
 		selectCard: -1,
-		viewAs: { name: "wuxie" },
+		viewAs: {
+			name: "wuxie",
+			isCard: true,
+		},
 	},
 	lvli6: {
 		trigger: { player: "damageEnd" },

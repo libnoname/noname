@@ -210,10 +210,6 @@ const skills = {
 			//筛选技能
 			for (let skill of skills) {
 				let info = get.info(skill);
-				//去除觉醒技、隐匿技、势力技、主公技
-				if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
-				//去除有联动的技能和负面技能
-				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				//获取技能的内容，后者是一些主动技会用到的内容
 				info = info.content || info.chooseButton?.backup;
 				//将内容转为字符串
@@ -221,8 +217,13 @@ const skills = {
 				//检测是否包含“.damage(”子串，即造成伤害的函数
 				if (str?.includes(".damage(")) {
 					skill = get.sourceSkillFor(skill);
+					info = get.info(skill);
 					//双重检测，如果技能描述中不带伤害字样的去除
 					if (!skill || !get.plainText(get.skillInfoTranslation(skill)).includes("伤害")) continue;
+					//去除觉醒技、隐匿技、势力技、主公技
+					if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
+					//去除有联动的技能和负面技能
+					if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 					list.add(skill);
 				}
 			}
@@ -242,18 +243,7 @@ const skills = {
 				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
-				.chooseButton(
-					[
-						`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
-						[
-							skills.map(skill => {
-								return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
-							}),
-							"textbutton",
-						],
-					],
-					true
-				)
+				.chooseButton([`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`, [skills, lib.skill.nsdianmo.$createButton]], true)
 				.set("ai", button => Math.random())
 				.forResult();
 			if (!result?.links) return;
@@ -1472,7 +1462,7 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					viewAs: { name: links[0][2], nature: links[0][3], isCard: true },
 					precontent() {
 						player.addTempSkill("olsblucun_used", "roundStart");
 						player.markAuto("olsblucun_used", [event.result.card.name]);
@@ -1989,7 +1979,7 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					viewAs: { name: links[0][2], nature: links[0][3], isCard: true },
 					async precontent(event, trigger, player) {
 						player.markAuto("olsbjueya", event.result.card.name);
 					},
@@ -2340,7 +2330,6 @@ const skills = {
 				},
 				viewAs: {
 					name: "sha",
-					isCard: true,
 				},
 				viewAsFilter(player) {
 					if (!player.countCards("hs", lib.skill["olsblixian_sha"].filterCard)) return false;
@@ -2368,7 +2357,6 @@ const skills = {
 				},
 				viewAs: {
 					name: "shan",
-					isCard: true,
 				},
 				prompt: "将一张“理贤”牌当闪打出",
 				check() {

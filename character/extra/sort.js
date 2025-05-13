@@ -12,9 +12,11 @@ const characterSort = {
 	extra_mobileren: ["shen_huatuo", "shen_lusu"],
 	extra_tw: ["tw_shen_guanyu", "tw_shen_lvmeng"],
 	extra_mb: ["xin_simayi", "new_simayi"],
-	extra_offline: ["ty_shen_zhangfei", "ty_shen_guanyu", "ty_shen_liubei", "jx_shen_caoren", "jx_shen_liubiao", "shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao"],
 	extra_hanmo: ["hm_shen_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun"],
 	extra_changan: ["ca_shen_wangyun", "ca_shen_caocao", "ca_shen_lijueguosi", "zombie_jiaxu", "zombie_zombie"],
+	extra_taoyuan: ["ty_shen_zhangfei", "ty_shen_guanyu", "ty_shen_liubei"],
+	extra_jingxiang: ["jx_shen_caoren", "jx_shen_liubiao"],
 };
 
 const characterSortTranslate = {
@@ -33,8 +35,10 @@ const characterSortTranslate = {
 	extra_decade: "神·武",
 	extra_tw: "海外服神将",
 	extra_mb: "移动版神将",
-	extra_hanmo: "汉末风云",
-	extra_changan: "长安风云",
+	extra_hanmo: "风云志·汉末风云",
+	extra_changan: "风云志·长安风云",
+	extra_taoyuan: "山河煮酒·桃园挽歌",
+	extra_jingxiang: "风云志·荆襄风云",
 };
 
 export { characterSort, characterSortTranslate };

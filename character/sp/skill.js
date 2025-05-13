@@ -1451,7 +1451,6 @@ const skills = {
 		enable: "chooseToUse",
 		viewAs: {
 			name: "jiu",
-			isCard: true,
 		},
 		position: "hes",
 		filter(event, player) {

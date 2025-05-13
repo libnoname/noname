@@ -11,6 +11,7 @@ import { promiseErrorHandlerMap } from "../util/browser.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { initializeSandboxRealms } from "../util/initRealms.js";
 import { ErrorManager } from "../util/error.js";
+import { rootURL } from "../../noname.js";
 
 // 判断是否从file协议切换到http/s协议
 export function canUseHttpProtocol() {
@@ -133,6 +134,7 @@ export async function boot() {
 		delete window.cordovaLoadTimeout;
 	}
 
+	// @ts-expect-error 类型系统未来可期
 	for (const link of document.head.querySelectorAll("link")) {
 		if (link.href.includes("app/color.css")) {
 			link.remove();
@@ -438,6 +440,7 @@ export async function boot() {
 				extensionlist.push(config.get("plays")[name]);
 			}
 		}
+
 		for (var name = 0; name < config.get("extensions").length; name++) {
 			if (Reflect.get(window, "bannedExtensions").includes(config.get("extensions")[name])) {
 				continue;
@@ -458,6 +461,10 @@ export async function boot() {
 			}
 		}
 	}
+
+	// 自动导入扩展
+	// 其实个人觉得直接加到这里会有问题，但至少现在能跑
+	const importExtensionPromise = autoImportExtensions(extensionlist);
 
 	let layout = config.get("layout");
 	if (layout == "default" || lib.layoutfixed.indexOf(config.get("mode")) !== -1) {
@@ -569,6 +576,7 @@ export async function boot() {
 		Reflect.get(ui, "css")[stylesName[i]] = stylesLoaded[i];
 	}
 
+	await importExtensionPromise;
 	if (extensionlist.length) {
 		_status.extensionLoading = [];
 		_status.extensionLoaded = [];
@@ -703,6 +711,43 @@ export async function boot() {
 }
 
 export { onload } from "./onload.js";
+
+async function autoImportExtensions(extensionlist) {
+	const configValue = config.get("extension_auto_import");
+	const fsAccess = typeof game.getFileList == "function" && typeof game.checkFile == "function";
+
+	if (!configValue || !fsAccess) {
+		return;
+	}
+
+	const includedPlays = config.get("all").plays;
+	const savedExtensions = config.get("extensions");
+	const extensionPath = new URL("./extension/", rootURL);
+	const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
+	let changed = false;
+
+	const unimportedExtensions = extFolders.filter(folder => !includedPlays.includes(folder) && !savedExtensions.includes(folder));
+
+	const promises = unimportedExtensions.map(async ext => {
+		const path = new URL(`./${ext}/`, extensionPath);
+		const file = new URL("./extension.js", path);
+		const tsFile = new URL("./extension.ts", path);
+
+		if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
+			extensionlist.push(ext);
+			savedExtensions.push(ext);
+			changed = true;
+			if (!config.has(`extension_${ext}_enable`)) {
+				await game.promises.saveConfig(`extension_${ext}_enable`, false);
+			}
+		}
+	});
+	await Promise.allSettled(promises);
+
+	if (changed) {
+		await game.promises.saveConfig("extensions", savedExtensions);
+	}
+}
 
 function initSheet(libConfig) {
 	if (libConfig.player_style && libConfig.player_style != "default" && libConfig.player_style != "custom") {

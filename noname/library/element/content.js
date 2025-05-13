@@ -3038,19 +3038,18 @@ player.removeVirtualEquip(card);
 				numx = num(player);
 			}
 
-			//别问，问就是初始手牌要有标记 by 星の语
-			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
 			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
 			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
 			 */
 			const cards = [],
 				otherGetCards = event.otherPile?.[player.playerid]?.getCards;
-			if (player.getTopCards) cards.addArray(player.getTopCards(numx));
-			else {
-				if (otherGetCards) cards.addArray(otherGetCards(numx));
-				cards.addArray(get.cards(numx - cards.length));
-			}
+			//先专属牌堆，再一般的牌堆
+			if (otherGetCards) cards.addArray(otherGetCards(numx));
+			if (player.getTopCards) cards.addArray(player.getTopCards(numx - cards.length));
+			cards.addArray(get.cards(numx - cards.length));
+			//别问，问就是初始手牌要有标记 by 星の语
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			if (event.gaintag?.[player.playerid]) {
 				const gaintag = event.gaintag[player.playerid];
 				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
@@ -3107,8 +3106,6 @@ player.removeVirtualEquip(card);
 			if (game.changeCoin) {
 				game.changeCoin(-3);
 			}
-			//别问，问就是初始手牌要有标记 by 星の语
-			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
 			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
 			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
@@ -3129,6 +3126,8 @@ player.removeVirtualEquip(card);
 			//专属牌堆不够时从正常牌堆获取
 			cards.addArray(get.cards(hs.length - cards.length));
 			//添加标记相关
+			//别问，问就是初始手牌要有标记 by 星の语
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			if (event.gaintag?.[game.me.playerid]) {
 				const gaintag = event.gaintag[game.me.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -3732,6 +3731,7 @@ player.removeVirtualEquip(card);
 			//专属牌堆不够时从正常牌堆获取
 			cards.addArray(get.cards(hs.length - cards.length));
 			//添加标记相关
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			if (event.gaintag?.[game.me.playerid]) {
 				const gaintag = event.gaintag[game.me.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -3776,6 +3776,8 @@ player.removeVirtualEquip(card);
 				if (otherGetCards) cards.addArray(otherGetCards(hs.length));
 				//专属牌堆不够时从正常牌堆获取
 				cards.addArray(get.cards(hs.length - cards.length));
+				//添加标记相关
+				//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 				if (event.gaintag?.[player.playerid]) {
 					const gaintag = event.gaintag[player.playerid];
 					const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
@@ -8315,13 +8317,11 @@ player.removeVirtualEquip(card);
 		}
 		let cards = [];
 		if (num > 0) {
+			//otherGetCards属性是从专属牌堆摸牌，不够再从一般牌堆补
+			if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
 			if (player.getTopCards) cards.addArray(player.getTopCards(num - cards.length));
-			else {
-				//otherGetCards属性是从专属牌堆摸牌，不够再从一般牌堆补
-				if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
-				if (event.bottom) cards.addArray(get.bottomCards(num - cards.length));
-				else cards.addArray(get.cards(num - cards.length));
-			}
+			if (event.bottom) cards.addArray(get.bottomCards(num - cards.length));
+			else cards.addArray(get.cards(num - cards.length));
 		} else {
 			cards = [];
 		}

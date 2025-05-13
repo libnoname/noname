@@ -16179,7 +16179,7 @@ const skills = {
 					const evt = player.storage.twgongge_buff2;
 					const { target } = evt;
 					const num = Math.min(evt.num, player.countCards("he"));
-					await player.chooseToGive("he", target, `攻阁：交给${get.translation(target)}${get.cnNumber(num)}张牌`, true);
+					await player.chooseToGive("he", target, `攻阁：交给${get.translation(target)}${get.cnNumber(num)}张牌`, num, true);
 				},
 			},
 			//加伤后续

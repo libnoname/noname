@@ -8155,7 +8155,10 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(target => lib.skill.noda_xunxin.filterTarget(null, player, target));
 		},
-		viewAs: { name: "juedou" },
+		viewAs: { 
+			name: "juedou",
+			isCard: true,
+		},
 		filterTarget(card, player, target) {
 			if (target.hp < player.hp) return false;
 			return player.canUse({ name: "juedou" }, target);

@@ -1555,7 +1555,10 @@ game.import("character", function () {
 				subSkill: {
 					sha: {
 						enable: "chooseToUse",
-						viewAs: { name: "sha" },
+						viewAs: {
+							name: "sha",
+							isCard: true,
+						},
 						viewAsFilter(player) {
 							if (player.isLinked()) return false;
 						},

@@ -1124,7 +1124,7 @@ const skills = {
 				content() {
 					var cards = [];
 					player.getHistory("damage", function (evt) {
-						if (evt.card && evt.cards) cards.addArray(evt.cards.filter(card => get.position(card, true)));
+						if (evt.card && evt.cards) cards.addArray(evt.cards.filterInD("d"));
 					});
 					if (cards.length) player.gain(cards, "gain2");
 				},

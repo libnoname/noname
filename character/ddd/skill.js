@@ -1103,8 +1103,8 @@ const skills = {
 						suit: "none",
 						number: null,
 						isCard: true,
-						log: false,
 					},
+					log: false,
 				};
 				var num = 2 - player.countCards("h");
 				if (num > 0) {

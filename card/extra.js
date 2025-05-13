@@ -694,9 +694,11 @@ game.import("card", function () {
 								}
 								const muniu = player.getVCards("e").find(card => card.vcardID == lib.skill.muniu_skill_backup.muniu);
 								if (!muniu || !event.cards.length) {
-									for (var i = 0; i < event.cards.length; i++) {
-										event.cards[i].discard();
-									}
+									game.broadcastAll(cards => {
+										for (var i = 0; i < cards.length; i++) {
+											cards[i].discard();
+										}
+									}, event.cards);
 									event.finish();
 									return;
 								}

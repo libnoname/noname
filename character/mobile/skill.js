@@ -3112,7 +3112,11 @@ const skills = {
 				return {
 					filterCard: () => false,
 					selectCard: -1,
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
+					},
 					log: false,
 					async precontent(event, trigger, player) {
 						const goon = _status.currentPhase?.isIn() && _status.currentPhase !== player;

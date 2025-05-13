@@ -2181,7 +2181,7 @@ game.import("character", function () {
 			},
 			huxi: {
 				enable: "chooseToUse",
-				viewAs: { name: "sha" },
+				viewAs: { name: "sha", isCard: true },
 				precontent() {
 					"step 0";
 					player.loseHp();

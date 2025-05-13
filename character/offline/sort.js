@@ -23,7 +23,7 @@ const characterSort = {
 };
 
 const characterSortTranslate = {
-	offline_hanmo: "汉末风云",
+	offline_hanmo: "风云志·汉末风云",
 	offline_scl: "王者之战",
 	offline_star: "桌游志·SP",
 	offline_sticker: "桌游志·贴纸",
@@ -39,9 +39,9 @@ const characterSortTranslate = {
 	offline_vtuber: "天书乱斗·虚拟偶像",
 	offline_piracyK: "官盗K系列",
 	offline_others: "线下其他系列",
-	offline_longyutao: "龙起襄樊",
-	offline_jingxiang: "荆襄风云",
-	offline_taoyuan: "桃园挽歌",
+	offline_longyutao: "山河煮酒·龙起襄樊",
+	offline_jingxiang: "风云志·荆襄风云",
+	offline_taoyuan: "山河煮酒·桃园挽歌",
 	offline_jiudin: "九鼎系列",
 	offline_yanyou: "燕幽烽火",
 	offline_jingyang: "荆扬对垒",

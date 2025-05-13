@@ -834,11 +834,6 @@ export class Card extends HTMLDivElement {
 		return prefix + `${this.name}+${this.suit ? this.suit : "none"}+${this.number === undefined ? "none" : this.number}${this.nature ? "+" + this.nature : ""}]`;
 	}
 	discard(bool) {
-		/*//不是哥们，为什么之前不移除标记的 by 星の语
-		if (this.gaintag && this.gaintag.length) {
-			const tags = this.gaintag.filter(tag => !tag.startsWith("eternal_"));
-			tags.forEach(tag => this.removeGaintag(tag));
-		}*/
 		if (!this._selfDestroyed) {
 			this.fix();
 			ui.discardPile.appendChild(this);

@@ -1,19 +1,4 @@
 const characters = {
-	zombie_jiaxu: {
-		sex: "male",
-		group: "shen",
-		hp: 3,
-		skills: ["zombiesangluan", "zombieshibao", "zombiechuce", "zombielongmu"],
-		groupInGuozhan: "qun",
-	},
-	zombie_zombie: {
-		sex: "male",
-		group: "qun",
-		hp: 2,
-		maxHp: 4,
-		skills: ["zombieshibian", "zombieganran"],
-		isUnseen: true,
-	},
 	chenshou: {
 		sex: "male",
 		group: "shu",
