@@ -4,15 +4,12 @@ import { Uninstantable } from "../../util/index.js";
 export class Concurrent extends Uninstantable {
 	static #control = new AbortController();
 
-	static async for(begin, end, signal, callback) {
-		if (typeof signal == "function") {
-			callback = signal;
-			signal = this.#control.signal;
-		}
+	static async for(begin, end, callback, options) {
 		if (typeof callback != "function") {
 			throw new TypeError("Callback must be a function");
 		}
 
+		const signal = options?.signal ?? this.#control.signal;
 		const length = end - begin;
 
 		const promises = Array(length);
@@ -34,17 +31,15 @@ export class Concurrent extends Uninstantable {
 	}
 
 	// 谁传一个无限迭代器我必拷打谁
-	static async forEach(iterable, signal, callback) {
+	static async forEach(iterable, callback, options) {
 		if (iterable == null || typeof iterable != "object") {
 			throw new TypeError("Iterable must be an object");
-		}
-		if (typeof signal == "function") {
-			callback = signal;
-			signal = this.#control.signal;
 		}
 		if (typeof callback != "function") {
 			throw new TypeError("Callback must be a function");
 		}
+
+		const signal = options?.signal ?? this.#control.signal;
 
 		let promises;
 		if (Symbol.asyncIterator in iterable) {
