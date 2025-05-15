@@ -2587,8 +2587,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return natures.split(lib.natureSeparator);
 	}
 	/**
-	 * 返回能响应此牌的牌名数组（也支持一些标签，如trick，damage和all）具体用法可见player.canRespond
-	 * @param {string | Card | VCard} card
+	 * 返回如何响应此牌的一个数组，其中包含字符串或者函数，具体用法可见player.canRespond
+	 * @param {string | Card | VCard | object } card（也支持一些标签，如trick，damage和all）
 	 * @param {false | Player} [player]
 	 * @returns {string[]}
 	 */
@@ -2597,9 +2597,10 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (typeof card == "object") name = get.name(card, player);
 		else name = card;
 		if (typeof name != "string") return [];
-		const names = lib.respondMap[name];
-		if (!names?.length) return [];
-		return names;
+		const filter = lib.respondMap[name];
+		if (Array.isArray(filter)) return filter;
+		if (typeof filter == "function") return [filter];
+		return [];
 	}
 	/**
 	 * 返回牌堆顶的牌

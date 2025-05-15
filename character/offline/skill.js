@@ -562,7 +562,7 @@ const skills = {
 			if (typeof num != "number") num = 1;
 			if (num <= 0) return [];
 			const list = [];
-			while (num--) {
+			while (num > 0) {
 				if (!_status.pokerPile.length) lib.skill.nschenzhi.washCard();
 				if (!_status.pokerPile.length) break;
 				game.broadcastAll(() => {
@@ -572,7 +572,10 @@ const skills = {
 				if (!cardx) break;
 				cardx.original = "s";
 				list.push(cardx);
+				num--;
 			}
+			//数量不够，用牌堆补一下
+			if (num > 0) list.addArray(get.cards(num));
 			delete _status.onePoker;
 			lib.skill.nschenzhi.update();
 			return list;

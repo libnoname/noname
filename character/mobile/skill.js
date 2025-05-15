@@ -9058,25 +9058,24 @@ const skills = {
 	mutao: {
 		audio: "twmutao",
 		inherit: "twmutao",
-		content() {
-			"step 0";
-			event.togive = target.getNext();
-			var cards = target.getCards("h", { name: "sha" });
+		async content(event, trigger, player) {
+			const source = event.target;
+			const cards = source.getCards("h", { name: "sha" });
 			if (!cards.length) {
-				game.log("但", target, "没有", "#y杀", "！");
-				event.finish();
-			} else target.addToExpansion(cards, target, "give").gaintag.add("mutao");
-			"step 1";
-			var card = target.getExpansions("mutao").randomGet();
-			target.give(card, event.togive);
-			"step 2";
-			if (target.getExpansions("mutao").length) {
-				event.togive = event.togive.getNext();
-				event.goto(1);
-			} else {
-				target.line(event.togive);
-				event.togive.damage(Math.min(2, event.togive.countCards("h", { name: "sha" })), target);
+				game.log("但", source, "没有", "#y杀", "！");
+				return;
 			}
+			const next = source.addToExpansion(cards, source, "give");
+			next.gaintag.add("mutao");
+			await next;
+			let togive = source;
+			while (source.getExpansions("mutao").length) {
+				togive = togive.getNext();
+				await source.give(source.getExpansions("mutao").randomGet(), togive);
+			}
+			source.line(togive);
+			let num = togive.countCards("h", { name: "sha" });
+			if (num) await togive.damage(Math.min(2, num), source);
 		},
 		intro: {
 			content: "expansion",

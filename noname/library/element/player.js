@@ -363,27 +363,39 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
-	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌，需要添加新卡牌的可响应牌请到lib.respondMap添加
+	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌，需要添加新卡牌的可以到lib.respondMap按格式添加
+	 * 请注意，该函数只能粗略判断，有些情况是没法判断的
 	 * @param {GameEvent} event 需要判断能否响应的事件，目前只能为useCard或者它的下一级衍生事件，其他全部返回undefined
 	 * @param { Card | VCard | object | string } card 需要检测的牌
+	 * @param { string | boolean } [type] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
 	 * @returns { boolean | undefined }
 	 */
-	canRespond(event, card) {
+	canRespond(event, card, type) {
 		const player = this;
-		if (event.name?.indexOf("useCard") !== 0) return;
+		if (!event.name?.startsWith("useCard")) return;
 		const evt = event.name == "useCard" ? event : event.getParent();
-		if (!evt) return;
+		if (!evt || !evt.card) return;
 		if (card && typeof card == "string") {
-			card = { name: card, isCard: true };
+			card = { name: card };
 		}
-		const key = [],
-			list = get.canRespond(card, player);
-		if (list?.length) key.addArray(list);
-		if (get.type(evt?.card) == "trick") key.addArray(get.canRespond("trcik"));
-		if (get.tag(evt?.card, "damage") > 0.5) key.addArray(get.canRespond("damage"));
-		key.addArray(get.canRespond("all"));
-		if (card) return key.includes(get.name(card, player));
-		return key.some(name => player.hasUsableCard(name)) && !evt.directHit.includes(player);
+		if (typeof type !== "string") type = type ? "all" : "use";
+		const keys = get.canRespond(evt.card);
+		if (get.type(evt?.card) == "trick") keys.addArray(get.canRespond("trcik"));
+		if (get.tag(evt?.card, "damage")) keys.addArray(get.canRespond("damage"));
+		keys.addArray(get.canRespond("all"));
+		if (card) return keys.some(key => (typeof key == "function" ? key(card, player) : key == get.name(card, player)));
+		const evtx = get.event();
+		let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
+		const cards = player.getCards("hs", card => {
+			if (type === "all") return true;
+			return evtNames.some(evtName => {
+				let evty = evtx.getParent(evtName);
+				if (get.itemtype(evt) !== "event") evty = evtx;
+				if (type === "respond") return lib.filter.cardRespondable(card, player, evty);
+				return lib.filter.cardEnabled(card, player, evty);
+			});
+		});
+		return keys.some(key => (typeof key == "function" ? cards.some(card => key(card, player)) : player.hasUsableCard(name, type))) && !evt.directHit.includes(player);
 	}
 	/**
 	 * 设置提示文字，有则更改，无则加之。

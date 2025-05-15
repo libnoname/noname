@@ -886,7 +886,7 @@ const skills = {
 			source: "damageBegin1",
 		},
 		filter(event, player) {
-			if (!event.source || event.source == event.player || !event.cards || !event.cards.length) return false;
+			if (!event.source || event.source == event.player) return false;
 			const evt = event.getParent(2);
 			return evt && evt.name == "useCard";
 		},
@@ -895,6 +895,10 @@ const skills = {
 			return event.source == player ? event.player : event.source;
 		},
 		content() {
+			if (!trigger.cards?.length) {
+				trigger.cancel();
+				return;
+			}
 			const evt = trigger.getParent(2);
 			const cards = evt.cards.filter(card => {
 				if (trigger.source._start_cards.includes(card)) return true;

@@ -201,6 +201,10 @@ export const characterPackMenu = function (connectMenu) {
 			} else {
 				page.style.paddingTop = "8px";
 			}
+			if (lib.translate[mode + "_info"]) {
+                var modeTranslation = "<p style=\"padding-left: 2em; margin-block: unset;\">" + lib.translate[mode + "_info"] + "</p>";
+                page.insertAdjacentHTML('beforeend', modeTranslation);
+			}
 			var banCharacter = function (e) {
 				if (_status.clicked) {
 					_status.clicked = false;

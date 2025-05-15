@@ -3044,10 +3044,10 @@ player.removeVirtualEquip(card);
 			 */
 			const cards = [],
 				otherGetCards = event.otherPile?.[player.playerid]?.getCards;
-			//先专属牌堆，再一般的牌堆
+			//先看有没有专属牌堆，再看其他的
 			if (otherGetCards) cards.addArray(otherGetCards(numx));
-			if (player.getTopCards) cards.addArray(player.getTopCards(numx - cards.length));
-			cards.addArray(get.cards(numx - cards.length));
+			else if (player.getTopCards) cards.addArray(player.getTopCards(numx));
+			else cards.addArray(get.cards(numx));
 			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			if (event.gaintag?.[player.playerid]) {
@@ -3121,10 +3121,9 @@ player.removeVirtualEquip(card);
 				if (otherDiscacrd) otherDiscacrd(hs[i]);
 				else hs[i].discard(false);
 			}
-			//再摸牌
+			//再摸牌，先看有没有专属牌堆
 			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
-			//专属牌堆不够时从正常牌堆获取
-			cards.addArray(get.cards(hs.length - cards.length));
+			else cards.addArray(get.cards(hs.length));
 			//添加标记相关
 			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
@@ -3726,10 +3725,9 @@ player.removeVirtualEquip(card);
 				if (otherDiscacrd) otherDiscacrd(hs[i]);
 				else hs[i].discard(false);
 			}
-			//再摸牌
+			//再摸牌，先看有没有专属牌堆
 			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
-			//专属牌堆不够时从正常牌堆获取
-			cards.addArray(get.cards(hs.length - cards.length));
+			else cards.addArray(get.cards(hs.length));
 			//添加标记相关
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			if (event.gaintag?.[game.me.playerid]) {
@@ -3772,10 +3770,9 @@ player.removeVirtualEquip(card);
 					hs,
 					otherDiscacrd
 				);
-				//再摸牌
+				//再摸牌，先看有没有专属牌堆
 				if (otherGetCards) cards.addArray(otherGetCards(hs.length));
-				//专属牌堆不够时从正常牌堆获取
-				cards.addArray(get.cards(hs.length - cards.length));
+				else cards.addArray(get.cards(hs.length));
 				//添加标记相关
 				//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 				if (event.gaintag?.[player.playerid]) {
@@ -8317,11 +8314,11 @@ player.removeVirtualEquip(card);
 		}
 		let cards = [];
 		if (num > 0) {
-			//otherGetCards属性是从专属牌堆摸牌，不够再从一般牌堆补
+			//otherGetCards属性是从专属牌堆摸牌，没有再看其他的
 			if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
-			if (player.getTopCards) cards.addArray(player.getTopCards(num - cards.length));
-			if (event.bottom) cards.addArray(get.bottomCards(num - cards.length));
-			else cards.addArray(get.cards(num - cards.length));
+			else if (player.getTopCards) cards.addArray(player.getTopCards(num));
+			else if (event.bottom) cards.addArray(get.bottomCards(num));
+			else cards.addArray(get.cards(num));
 		} else {
 			cards = [];
 		}

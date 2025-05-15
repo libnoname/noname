@@ -593,7 +593,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		content() {
-			const cards = player.getCards("h", card => player._start_cards.includes(card));
+			const cards = player.getCards("h");
 			player.addGaintag(cards, "dctanban");
 		},
 		mod: {
@@ -1217,7 +1217,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			const cards = player.getCards("h", card => player._start_cards.includes(card));
+			const cards = player.getCards("h");
 			player.addGaintag(cards, "dcxidi_tag");
 		},
 		mod: {
@@ -1310,7 +1310,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			const cards = player.getCards("h", card => player._start_cards.includes(card));
+			const cards = player.getCards("h");
 			player.addGaintag(cards, "eternal_dcyunzheng_tag");
 		},
 		mod: {
@@ -1331,7 +1331,7 @@ const skills = {
 				},
 				filter(event, player) {
 					if (
-						["lose", "loseAsync", "gain", "equip", "addJudge", "addToExpansion"].includes(event.name) &&
+						["lose", "loseAsync", "equip", "addJudge", "addToExpansion"].includes(event.name) &&
 						!game.hasPlayer(target => {
 							const evt = event.getl(target);
 							return evt && (evt.hs || []).length;
@@ -1392,9 +1392,7 @@ const skills = {
 				forceDie: true,
 				content() {
 					game.removeGlobalSkill("dcyunzheng_gloabl");
-					game.countPlayer(cur => {
-						cur.removeSkill("dcyunzheng_block");
-					});
+					game.countPlayer(cur => cur.removeSkill("dcyunzheng_block"));
 				},
 			},
 			block: {
@@ -1472,7 +1470,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const cards = player.getCards("h", card => player._start_cards.includes(card));
+			const cards = player.getCards("h");
 			player.addGaintag(cards, "dcjigu");
 		},
 		mod: {
@@ -3464,7 +3462,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			let cards = player.getCards("h", card => player._start_cards.includes(card)); //
+			let cards = player.getCards("h"); //
 			player.addGaintag(cards, "eternal_dcqiqin_tag");
 			//player.markAuto("dcqiqin", cards);
 		},
@@ -3963,7 +3961,7 @@ const skills = {
 		group: "dcjiaowei_prevent",
 		*content(event, map) {
 			const player = map.player;
-			var cards = player.getCards("h", card => player._start_cards.includes(card));
+			var cards = player.getCards("h");
 			player.addGaintag(cards, "dcjiaowei_tag");
 		},
 		mod: {
@@ -4556,7 +4554,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = player.getCards("h", card => player._start_cards.includes(card));
+			var cards = player.getCards("h");
 			player.addGaintag(cards, "dclingkong_tag");
 		},
 		mod: {
@@ -4806,7 +4804,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = player.getCards("h", card => player._start_cards.includes(card));
+			var cards = player.getCards("h");
 			player.addGaintag(cards, "dcshuangjia_tag");
 		},
 		mod: {

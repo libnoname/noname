@@ -684,6 +684,7 @@ export class Library {
 	 *
 	 * 卡牌的可被响应牌（主要是用于player.canRespond函数）
 	 * 例如可响应杀的主要就是闪，或者本体的草船借箭，以此类推；
+	 * 类似劝酒这种复杂条件的，可以放函数，但仅检测实体牌
 	 */
 	respondMap = {
 		sha: ["shan"],
@@ -698,6 +699,8 @@ export class Library {
 		damage: ["caochuan"],
 		//所有基本牌或普通锦囊牌都可以响应
 		all: [],
+		//也可以放函数
+		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
 	characterDialogGroup = {
 		收藏: function (name, capt) {

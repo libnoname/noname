@@ -9575,50 +9575,48 @@ const skills = {
 	twmutao: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 1,
 		filterTarget(card, player, target) {
 			return target.countCards("h");
 		},
+		usable: 1,
 		async content(event, trigger, player) {
-			let togive = event.target.getNext();
-			let cards = event.target.getCards("h", { name: "sha" });
+			let source = event.target;
+			let cards = source.getCards("h", { name: "sha" });
 			if (!cards.length) {
-				game.log("但", event.target, "没有", "#y杀", "！");
+				game.log("但", source, "没有", "#y杀", "！");
 				return;
 			}
+			let togive = source.getNext();
 			let gained;
 			while (true) {
-				let card = event.target.getCards("h", { name: "sha" }).randomGet();
+				let card = source.getCards("h", { name: "sha" }).randomGet();
 				if (togive == gained) break;
 				if (togive.isIn()) {
-					await event.target.give(card, togive);
+					await source.give(card, togive);
 					gained = togive;
 				}
-				let num = togive == event.target ? 1 : 0;
-				if (event.target.countCards("h", { name: "sha" }) > num) togive = togive.getNext();
+				let num = togive == source ? 1 : 0;
+				if (source.countCards("h", { name: "sha" }) > num) togive = togive.getNext();
 				else break;
 			}
-			event.target.line(togive);
+			source.line(togive);
 			let num = togive.countCards("h", { name: "sha" });
-			if (!num) return;
-			await togive.damage(Math.min(2, num), event.target);
+			if (num) await togive.damage(Math.min(2, num), source);
 		},
 		ai: {
 			order: 10,
 			result: {
-				target(player, target) {
-					var num = 0,
-						numx = target.countCards("h", { name: "sha" }),
-						targetx = target;
+				player(player, target) {
+					var numx = target.countCards("h", { name: "sha" }),
+						targetx = target,
+						map = {};
 					for (var i = 0; i < numx; i++) {
-						targetx = targetx.next;
-						if (targetx == player) targetx = targetx.next;
+						targetx = targetx.getNext();
+						map[targetx.playerid] ??= 0;
+						map[targetx.playerid]++;
 					}
-					var att1 = get.attitude(player, target),
-						att2 = get.attitude(player, targetx);
-					if (att1 > 0 && att2 < 0) num = 0.25;
-					if (att1 < 0 && att2 < 0) num = 4;
-					return att1 * num * numx * (targetx.countCards("h", { name: "sha" }) + 1);
+					var att = get.damageEffect(targetx, player, player);
+					return att * numx * Math.min(2, targetx.countCards("h", { name: "sha" }) + map[targetx.playerid]);
 				},
 			},
 		},
@@ -17457,7 +17455,13 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const skillName = event.name.slice(0, -5);
-			const num = 1 + player.getStorage(skillName).length;
+			const num =
+				1 +
+				game
+					.getAllGlobalHistory("everything", evt => evt.name === "dying")
+					.map(evt => evt.player)
+					.unique()
+					.length;
 			event.result = await player
 				.chooseTarget([1, num], get.prompt(skillName), `令至多${get.cnNumber(num)}名角色各摸一张牌`)
 				.set("ai", target => {
@@ -17470,23 +17474,6 @@ const skills = {
 			await game.asyncDraw(targets.sortBySeat());
 			if (targets.length > 1) await game.delayx();
 			if (targets.some(current => current.hasHistory("gain", evt => evt.getParent(2) == event && get.type(evt.cards[0], current) != "basic"))) await player.draw();
-		},
-		group: "twkaiji_count",
-		subSkill: {
-			count: {
-				trigger: { global: "dying" },
-				forced: true,
-				firstDo: true,
-				silent: true,
-				popup: false,
-				charlotte: true,
-				filter(event, player) {
-					return !player.getStorage("twkaiji").includes(event.player);
-				},
-				content() {
-					player.markAuto("twkaiji", [trigger.player]);
-				},
-			},
 		},
 	},
 	twshepan: {

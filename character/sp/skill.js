@@ -10,10 +10,16 @@ const skills = {
 		filter(event, player) {
 			if (!player.isPhaseUsing()) return false;
 			if (!player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == event)) return false;
-			return player.getHistory("useCard", evt => {
-				if (!evt.isPhaseUsing()) return false;
-				return player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == evt);
-			}, event).length <= 2;
+			return (
+				player.getHistory(
+					"useCard",
+					evt => {
+						if (!evt.isPhaseUsing()) return false;
+						return player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == evt);
+					},
+					event
+				).length <= 2
+			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -95,7 +101,7 @@ const skills = {
 					cardSavable(card, player) {
 						if (card.name == "tao") return false;
 					},
-				}
+				},
 			},
 			mark: {
 				onremove: true,
@@ -497,10 +503,12 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseZhunbei") {
+				const max = Math.max(1, player.getExpansions("oljiyun").length);
 				event.result = await player
-					.chooseTarget(`###${get.prompt("oljiyun")}###令任意名角色各摸一张牌`, [1, Infinity])
+					.chooseTarget(`###${get.prompt("oljiyun")}###令至多${get.cnNumber(max)}名角色各摸一张牌`, [1, max])
 					.set("ai", target => {
-						return get.attitude(get.player(), target);
+						const player = get.player();
+						return effect(target, { name: "draw" }, player, player);
 					})
 					.forResult();
 			} else {
@@ -532,6 +540,7 @@ const skills = {
 			if (trigger.name == "phaseZhunbei") {
 				const targets = event.targets?.sortBySeat();
 				for (const target of targets) await target.draw("nodelay").set("gaintag", ["oljiyun_effect"]);
+				await game.delayx();
 			} else {
 				const cards = event.cost_data;
 				await player.addToExpansion(cards, "gain2").set("gaintag", ["oljiyun"]);
@@ -547,15 +556,15 @@ const skills = {
 		group: ["oljiyun_init"],
 		subSkill: {
 			init: {
-				audio: 2,
+				audio: "oljiyun",
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
 				},
-				forced: true,
 				filter(event, player) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
+				forced: true,
 				content() {
 					const cards = [];
 					for (const type of ["basic", "trick", "equip"]) {
@@ -629,7 +638,7 @@ const skills = {
 		subSkill: {
 			backup: { audio: "olshuliang" },
 			allocate: {
-				audio: 2,
+				audio: "olshuliang",
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
 					return player.getExpansions("oljiyun").length > 0;
@@ -638,7 +647,7 @@ const skills = {
 					const cards = player.getExpansions("oljiyun");
 					event.result = await player
 						.chooseBool()
-						.set("createDialog", [`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量其他角色`, cards])
+						.set("createDialog", [`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量角色`, cards])
 						.set("ai", () => {
 							return true;
 						})
@@ -655,13 +664,21 @@ const skills = {
 								forced: Object.keys(map).length == 0,
 								selectButton: [1, cards.length],
 								cardsx: cards,
-								filterTarget: lib.filter.notMe,
+								map: map,
+								filterTarget: true,
 								ai1(button) {
 									if (get.event().cardsx.length < 2) return false;
-									return !ui.selected.buttons.length && button.link.name == "du" ? 1 : 0;
+									const { player, map } = get.event();
+									return Math.max(
+										...game.filterPlayer().map(target => {
+											return [...ui.selected.cards, button.link, ...(map[target.playerid] || [])].reduce((sum, card) => {
+												return get.value(card, target) * get.attitude(player, target);
+											}, 0);
+										})
+									);
 								},
 								ai2(target) {
-									const player = get.event().player;
+									const player = get.player();
 									const card = ui.selected.buttons[0].link;
 									if (card) return get.value(card, target) * get.attitude(player, target);
 									return 0;
@@ -696,7 +713,7 @@ const skills = {
 								animate: "gain2",
 							})
 							.setContent("gaincardMultiple");
-						await player.draw(Object.keys(map).length);
+						await player.draw();
 					}
 				},
 			},
@@ -1643,7 +1660,6 @@ const skills = {
 								}
 								if (target.hasJudge("lebu")) return 0;
 								const nh = target.countCards("h");
-								const np = player.countCards("h");
 								return Math.max(1, 5 - nh);
 							});
 						await player.give(cards, result.targets[0], false);
