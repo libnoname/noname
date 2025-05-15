@@ -276,6 +276,7 @@ const skills = {
 		filter(event, player) {
 			return player.countExpansions("sbjingce_expansions");
 		},
+		locked: true,
 		logAudio: index => (typeof index === "number" ? "sbjingce" + index + ".mp3" : 2),
 		async cost(event, trigger, player) {
 			const cards = player.getExpansions("sbjingce_expansions");
@@ -1178,7 +1179,10 @@ const skills = {
 		derivation: ["sbwansha_rewrite", "sbweimu_rewrite"],
 	},
 	sbwansha_rewrite: { nopop: true },
-	sbweimu_rewrite: { nopop: true },
+	sbweimu_rewrite: {
+		locked: true,
+		nopop: true,
+	},
 	sbweimu: {
 		audio: 4,
 		trigger: {
@@ -5468,6 +5472,7 @@ const skills = {
 		},
 		logAudio: index => (typeof index === "number" ? "sbenyuan" + index + ".mp3" : 2),
 		direct: true,
+		locked: true,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			target.clearMark("sbxuanhuo_mark");

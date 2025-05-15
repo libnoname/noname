@@ -5021,7 +5021,7 @@ const skills = {
 		},
 	},
 	xkjizhong: {
-		forced: true,
+		locked: true,
 		global: "xkjizhong_global",
 		subSkill: {
 			global: {
@@ -5986,6 +5986,7 @@ const skills = {
 		},
 	},
 	yylinzhen: {
+		locked: true,
 		zhuSkill: true,
 		global: "yylinzhen_global",
 		subSkill: {

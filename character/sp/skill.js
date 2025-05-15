@@ -4009,6 +4009,7 @@ const skills = {
 			if (player.isHealthy()) return false;
 			return game.hasPlayer2(target => event.getl?.(target)?.es?.some(card => get.suit(card, target) === "spade"));
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			if (trigger.name === "damage") {
 				const target = trigger.player;
@@ -22776,6 +22777,7 @@ const skills = {
 	},
 	//统率三军诸葛瑾和文聘
 	zhenwei_three: {
+		locked: true,
 		global: "zhenwei_three_others",
 		subSkill: {
 			others: {
@@ -28003,6 +28005,7 @@ const skills = {
 		},
 	},
 	luoyan: {
+		locked: true,
 		group: ["luoyan_tianxiang", "luoyan_liuli"],
 		derivation: ["tianxiang", "liuli"],
 		ai: {

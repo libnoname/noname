@@ -4687,6 +4687,7 @@ const skills = {
 	dddfuyi: {
 		audio: 2,
 		zhuSkill: true,
+		locked: true,
 		trigger: {
 			global: "dieAfter",
 		},

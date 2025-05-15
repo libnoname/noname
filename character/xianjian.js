@@ -272,6 +272,7 @@ game.import("character", function () {
 			lingquan: {
 				trigger: { player: "phaseEnd" },
 				forced: true,
+				juexingji: true,
 				skillAnimation: true,
 				animationColor: "water",
 				unique: true,
@@ -290,6 +291,7 @@ game.import("character", function () {
 			shenwu: {
 				trigger: { global: "phaseEnd" },
 				forced: true,
+				juexingji: true,
 				skillAnimation: true,
 				animationColor: "water",
 				unique: true,
@@ -956,6 +958,7 @@ game.import("character", function () {
 			tianwu2: {},
 			shiying: {
 				trigger: { global: "dieBefore" },
+				limited: true,
 				skillAnimation: "epic",
 				animationColor: "water",
 				unique: true,
@@ -1130,6 +1133,7 @@ game.import("character", function () {
 			yanshi: {
 				trigger: { player: "phaseAfter" },
 				forced: true,
+				juexingji: true,
 				skillAnimation: true,
 				init(player) {
 					player.storage.yanshi = 0;
@@ -1604,6 +1608,7 @@ game.import("character", function () {
 			},
 			huahu: {
 				enable: "phaseUse",
+				limited: true,
 				skillAnimation: true,
 				animationColor: "metal",
 				filterTarget(card, player, target) {
@@ -2795,6 +2800,7 @@ game.import("character", function () {
 				},
 			},
 			xuanyan: {
+				locked: true,
 				group: ["xuanyan2", "xuanyan3"],
 			},
 			xuanyan2: {
@@ -4065,9 +4071,9 @@ game.import("character", function () {
 			xyufeng: "御蜂",
 			xyufeng_info: "出牌阶段限一次，可以将一张黑桃牌当作机关蜂使用。",
 			lingquan: "灵泉",
-			lingquan_info: "觉醒技，结束阶段，若游戏轮数不小于3且你本回合使用的牌数大于你的体力值，你摸三张牌，然后获得技能【水蕴】。",
+			lingquan_info: "觉醒技，结束阶段，若游戏轮数不小于3且你本回合使用的牌数大于你的体力值，你摸三张牌，然后获得技能〖水蕴〗。",
 			shenwu: "神舞",
-			shenwu_info: "觉醒技，在一名角色的结束阶段，若你本局至少发动过3次【水蕴】，你增加1点体力和体力上限并获得2点护甲，然后获得技能【回梦】。",
+			shenwu_info: "觉醒技，在一名角色的结束阶段，若你本局至少发动过3次〖水蕴〗，你增加1点体力和体力上限并获得2点护甲，然后获得技能〖回梦〗。",
 			txianqu: "仙音",
 			txianqu_info: "出牌阶段限一次，当你即将造成伤害时，你可以防止之，然后摸两张牌并回复1点体力。",
 			qiongguang: "穹光",
@@ -4075,12 +4081,12 @@ game.import("character", function () {
 			xunying: "迅影",
 			xunying_info: "每当你使用【杀】对一名目标结算完毕后，你可以继续对目标使用【杀】。",
 			liefeng: "冽风",
-			liefeng_info: "锁定技，当你在回合内使用第二张牌时，你本回合获得【炎斩】；当你在回合内使用第三张牌时，你本回合获得【天剑】；当你在回合内使用第四张牌时，你本回合获得【御风】。",
+			liefeng_info: "锁定技，当你在回合内使用第二张牌时，你本回合获得〖炎斩〗；当你在回合内使用第三张牌时，你本回合获得〖天剑〗；当你在回合内使用第四张牌时，你本回合获得〖御风〗。",
 			yuexing: "越行",
 			yuexing2: "越行",
 			yuexing_info: "出牌阶段限一次，你可以指定一名角色，本阶段内将你与该角色到其他角色的距离基数互换。",
 			lingdi: "灵笛",
-			lingdi_info: "出牌阶段，你可以弃置一张本回合与此法弃置的牌花色均不同的手牌，然后选择一名与你距离为X的角色与其各摸一张牌，X为本回合发动灵笛的次数（含此次）。",
+			lingdi_info: "出牌阶段，你可以弃置一张本回合与此法弃置的牌花色均不同的手牌，然后选择一名与你距离为X的角色与其各摸一张牌，X为本回合发动〖灵笛〗的次数（含此次）。",
 			xiaoyue: "啸月",
 			xiaoyue_info: "锁定技，每轮开始时，若你手牌中有【杀】，你将手牌中的一张随机【杀】对一名随机敌方角色使用，然后获得1点护甲。",
 			minsha: "冥煞",
@@ -4148,7 +4154,7 @@ game.import("character", function () {
 			longhuo: "龙火",
 			longhuo_info: "结束阶段，你可以对所有角色各造成1点火焰伤害。",
 			fenshi: "焚世",
-			fenshi_info: "觉醒技，当你解除濒死状态时，你获得2点护甲，摸两张牌，然后获得技能龙火。",
+			fenshi_info: "觉醒技，当你解除濒死状态时，你获得2点护甲，摸两张牌，然后获得技能〖龙火〗。",
 			yanzhan: "炎斩",
 			yanzhan_info: "出牌阶段限一次，你可以将一张红色牌当作火【杀】使用，此【杀】只能用与之花色相同的闪响应；若此【杀】造成了伤害，你本回合可以额外使用一张【杀】。",
 			feixia: "飞霞",
@@ -4256,9 +4262,9 @@ game.import("character", function () {
 			runxin: "润心",
 			runxin_info: "每当你使用或打出一张红桃牌，你可以令一名角色回复1点体力。",
 			tannang: "探囊",
-			tannang_info: "出牌阶段限一次，你可以将一张梅花手牌当顺手牵羊使用；你的顺手牵羊无距离限制。",
+			tannang_info: "出牌阶段限一次，你可以将一张梅花手牌当【顺手牵羊】使用；你的【顺手牵羊】无距离限制。",
 			tuoqiao: "烟瘴",
-			tuoqiao_info: "你可以将一张黑色牌当作石灰粉使用。",
+			tuoqiao_info: "你可以将一张黑色牌当作【石灰粉】使用。",
 			xiaoyao: "逍遥",
 			xiaoyao_info: "每当你成为其他角色的卡牌目标，你可以弃置一张与之花色相同的手牌取消之。",
 			tianjian: "天剑",

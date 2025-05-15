@@ -16866,6 +16866,7 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		forced: true,
+		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
 		filter(event, player) {
@@ -19289,6 +19290,7 @@ const skills = {
 	},
 	twfengqi: {
 		audio: 2,
+		locked: true,
 		zhuSkill: true,
 		trigger: { player: "twgezhi_buffAfter" },
 		direct: true,
