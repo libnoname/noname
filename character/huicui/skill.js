@@ -513,7 +513,11 @@ const skills = {
 				const evt2 = evtx.relatedEvent || evtx.getParent();
 				if (evt2.name != "useCard") return false;
 			}
-			const list = game.filterPlayer2(current => player != current).reduce((listx, i) => listx.addArray(i._start_cards), []);
+			const list = game
+				.filterPlayer2(current => player != current)
+				.reduce((listx, i) => {
+					if (i._start_cards) listx.addArray(i._start_cards);
+				}, []);
 			return game.hasPlayer(current => {
 				const cards = event.name == "cardsDiscard" ? event.cards.filterInD("d") : event.getl(current)?.cards2 || [];
 				return cards.some(card => list.includes(card));
