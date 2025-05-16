@@ -508,7 +508,7 @@ const skills = {
 					.chooseTarget(`###${get.prompt("oljiyun")}###令至多${get.cnNumber(max)}名角色各摸一张牌`, [1, max])
 					.set("ai", target => {
 						const player = get.player();
-						return effect(target, { name: "draw" }, player, player);
+						return get.effect(target, { name: "draw" }, player, player);
 					})
 					.forResult();
 			} else {
