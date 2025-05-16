@@ -18229,7 +18229,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		precontent() {
-			player.awakenSkill(event.name);
+			player.awakenSkill("juesheng");
 			player.addTempSkill("juesheng_counter");
 		},
 		ai: {
