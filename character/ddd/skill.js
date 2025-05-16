@@ -1351,7 +1351,7 @@ const skills = {
 				filter(event, player) {
 					if (event.skill != "dddtongyu" || event.remained.filterInD().length == 0) return false;
 					var list = event.getParent().dddtongyu_targets;
-					return list.some(target => target.isIn());
+					return list?.some(target => target.isIn());
 				},
 				content() {
 					"step 0";
