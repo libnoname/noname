@@ -1637,6 +1637,7 @@ const skills = {
 				target.markAuto("dcjuchui_ban", [choice]);
 			}
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				if (typeof card === "object") {
@@ -3727,6 +3728,7 @@ const skills = {
 			if (!evt || !evt.card || evt.dcporong) return false;
 			return get.tag(evt.card, "damage") > 0.5;
 		},
+		locked: false,
 		logTarget(event, player) {
 			return event.targets.sortBySeat();
 		},

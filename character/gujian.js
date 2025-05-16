@@ -625,6 +625,7 @@ game.import("character", function () {
 				locked: true,
 				group: ["humeng_count", "humeng_call", "humeng_dying"],
 				unique: true,
+				juexingji: true,
 				threaten(player, target) {
 					if (target.hasSkill("humeng_sub")) return 1.6;
 					return 1;
@@ -651,6 +652,7 @@ game.import("character", function () {
 						trigger: { player: "dying" },
 						priority: 10,
 						forced: true,
+						juexingji: true,
 						content() {
 							"step 0";
 							player.discard(player.getCards("hej"));
@@ -1829,6 +1831,7 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.hp < player.maxHp;
 				},
+				locked: false,
 				content() {
 					"step 0";
 					player.recover();
@@ -2124,6 +2127,7 @@ game.import("character", function () {
 			},
 			shahun: {
 				enable: "chooseToUse",
+				limited: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				derivation: "juejing",
@@ -2406,6 +2410,7 @@ game.import("character", function () {
 			},
 			jiehuo: {
 				unique: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				enable: "phaseUse",

@@ -1329,6 +1329,7 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(current => player != current && current.hasSex("male") && !player.getStorage("olfengzhu").includes(current));
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(

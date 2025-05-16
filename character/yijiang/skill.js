@@ -6935,6 +6935,7 @@ const skills = {
 		},
 	},
 	rezhaofu: {
+		locked: true,
 		global: "rezhaofu2",
 		zhuSkill: true,
 	},

@@ -727,7 +727,7 @@ const translates = {
 	jdsbtongye: "统业",
 	jdsbtongye_info: "锁定技，若牌堆未洗过牌，你视为拥有〖英姿〗和〖固政〗。",
 	jdsbjiuyuan: "救援",
-	jdsbjiuyuan_info: "出牌阶段限一次，你可以获得一名其他吴势力角色装备区的所有牌，然后你回复1点体力。",
+	jdsbjiuyuan_info: "主公技，出牌阶段限一次，你可以获得一名其他吴势力角色装备区的所有牌，然后你回复1点体力。",
 	jd_sb_xiaoqiao: "九鼎小乔",
 	jd_sb_xiaoqiao_prefix: "九鼎",
 	jdsbtianxiang: "天香",

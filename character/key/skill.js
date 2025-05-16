@@ -1565,6 +1565,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
+		locked: true,
 		promptfunc: () => "出牌阶段，你可以赠予一张“米券”，然后执行一项本回合内未被选择过的效果：⒈对其造成1点伤害；⒉摸两张牌；⒊弃置其的两张牌；⒋亮出牌堆顶的一张牌，然后你可以使用之。",
 		check: card => {
 			const player = _status.event.player;
@@ -3783,6 +3784,7 @@ const skills = {
 				.set("ai", serafu => get.attitude(_status.event.player, serafu))
 				.forResult();
 		},
+		groupSkill: "key",
 		content() {
 			targets.sortBySeat();
 			game.asyncDraw(targets);
@@ -3843,6 +3845,7 @@ const skills = {
 				}
 			}
 		},
+		groupSkill: "shu",
 		async content(event, trigger, player) {
 			const result = event.cost_data;
 			if (result.type === "addSkill") {
@@ -4003,6 +4006,7 @@ const skills = {
 			player: "enterGame",
 		},
 		forced: true,
+		locked: false,
 		dutySkill: true,
 		derivation: "mia_fengfa",
 		filter(event, player) {
@@ -4530,6 +4534,7 @@ const skills = {
 	},
 	misuzu_zhongyuan: {
 		trigger: { player: "judge" },
+		limited: true,
 		skillAnimation: true,
 		animationColor: "key",
 		logTarget: "player",
@@ -7108,6 +7113,7 @@ const skills = {
 		},
 	},
 	kyoko_zhengyi: {
+		locked: true,
 		group: ["kyoko_jingce", "kyoko_shelie", "kyoko_zhiheng"],
 		count(player) {
 			var list = [];
@@ -9226,8 +9232,8 @@ const skills = {
 	saya_powei: {
 		audio: 2,
 		trigger: { player: "phaseAfter" },
-		locked: true,
 		limited: true,
+		locked: false,
 		skillAnimation: true,
 		animationColor: "metal",
 		filter(event, player) {

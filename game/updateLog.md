@@ -1,352 +1,370 @@
-# v1.10.17.1版本更新内容
+# v1.10.17.2版本更新内容
 
 - 新武将
-OL：裴元绍、族杨修、族杨赐、界关张、夏侯恩、界郭淮、界伏皇后、曹纯、赵忠、谋张让、谋文丑、谋贾诩、闪赵云、闪刘宏、祢衡
-新杀：谋荀彧（带〖先识〗）、谋董承、谋曹洪、田忌、曹媛、刘衿刘佩、威董卓
-手杀：谋吕布、庞羲、孙韶、夏侯尚、杨弘、吴珂、势陈到、邢道荣、雍闿、清河公主、势娄圭、谋夏侯渊、势于吉、友崔均、友石韬、(玄)司马昭
-TW：张允、幻曹丕、幻典韦、幻曹植、幻曹冲
-线下：四象封印太阳
-- 调整文鸳、界刘表、星丁奉、徐馨、SP祝融、乐蔡邕、张怀、武陆抗技能至最新版
--  解禁隐藏武将：张任、张臶、陆伯言、周公瑾、英雄杀荆轲、四季映姬、年兽、昆特牌伊欧菲斯、轩辕剑陈辅、程咬金、麦尔斯、秦叔宝、张烈，并为张烈补图
-- 增补线下1v1华佗、DIY周公瑾【劫焰】、四季映姬·夜魔仙那度【映冢】，四季映姬·夜魔仙那度可自选挑战，同时提供十殿阎罗的隐藏BOSS触发
-- `lib.element.player.say`现在会过滤不为表情包的html标签，服务器的新建约战标题会自动削去HTML标签。
-- 修复两个鲍信的prompt错误
-- 修复backup子技能的filterOk有定义时直接赋值，没有再走一遍filterCard导致印牌不走条件的bug
-- 势太史慈〖振锋〗切换原画条件变更
-- 颜良文丑prompt文本错误
-- 修复角色死亡弃置装备区黑桃牌不能触发OL董翓凤瑶回血的bug
-- 手杀界顾雍秉壹交互优化
-- 修改如意金箍棒的技能翻译
-- 修复手杀毌丘俭征荣无人可选但仍有弹窗的bug
-- 修复direct+chooseToUse导致的计时器异常
-- 修复OL程普疠火打中后ai弃牌报错
-- 修复陈蕃印桃因没有save的tag的报错
-- 修复势太史慈振锋修改后酣战摸牌数异常
-- 修复二版武陆抗超过两人的拼点事件报错
-- 幻丁尚涴技能id命名错误
-- 修复满宠御策ai错误
-- 调整OL郭照【椒遇】【内训】
-- 修复OL界廖化【伏枥】报错
-- 修复王匡【任侠】部分情况下（如手里有如董白给的黠慧黑杀选择弃牌）死循环的bug
-- 优化SP刘备【誓仇】【昭烈】、星SP张飞【大喝】
-- 3D精选武将包添加ddd前缀
-- 修复3d甄宓未对“水相”牌进行牌数判定的bug
-- 修复手杀谋郭淮【精策】因化身类技能获得后回合结束时没有判定精策牌数的bug
-- 修复SP刘备【煮酒】联机未生效、OL谋张绣【仇猎】不能弃置装备区的武器牌的bug
-- 修复银月枪使用【杀】未进行限制的bug
-- 修复侯成【献酿】失去体力条件错误的bug
-- 优化3d甄宓【水相】【淼形】、卑弥呼【纵傀】、【骨疽】、【拜假】、【蚕食】、【秉诏】
-- 修复【五谷丰登】的fixedShownCards在置入处理区的relatedEvent设置错误
-- 修复未开启自动确定时托管的bug
-- 修复刘禅【享乐】、【推心置腹】角色死亡报错的bug
-- 修复曹髦【清正】、张怀【诀言】托管报错的bug
-- 修复装备【冲应神符】受到无来源伤害的bug
-- 修复【固国安邦】联机报错的bug
-- 修复OL谋邓艾【积谷】不为判断体力上限最大的bug
-- 修复谋曹丕及TW谋曹丕【行殇】增加体力上限效果未对角色进行体力上限小于10判断的bug
-- 修复刘永【诛佞】不选择使用伤害牌报错的bug
-- 修复孙霸【结党】不弃置延时锦囊牌的bug
-- 修复OL蒲元托管默认助力的bug
-- 调整SP甄宓【惠济】、友诸葛【演策】、手杀董昭【妙略】、手杀彭羕【达命】结算
-- 优化枣祗任峻【粮策】【坚壁】、TW葛玄【丹法】、【灵宝】、【司道】、【太极拂尘】、薛灵芸【暗织】操作方式
-- 修复汉末南华老仙【御风】与类似十常侍对局只有一人而卡死的bug
-- 修复眭固角色名错误及其【吞天】技能描述和结算错误的bug
-- 修复手杀贾充【悖逆】可以对自己发动的bug
-- 修复合赵云【镇胆】使用牌不触发神孙权【圣质】的bug
-- 修复衰董卓【观势】火攻被抵消后续结算不改为决斗的bug
-- 旧杨芷【婉嫕】、龙凤【游龙】适配中流
-- 优化一些执行额外阶段的技能
-- 优化含当你受到1点伤害后/当你失去1点体力后的描述的技能
-- 修复转黄忠【摧锋】【登难】未检测不为卡牌造成的伤害而报错的bug
-- 修复浮云【余热】仅检测弃牌阶段弃牌的bug
-- 优化浮云【余热】
-- 地道的黄豆表情包
-- 修复神司马联机忍戒不能获得忍标记的bug
-- 优化本体delete event.result.skill的技能的操作改为log:false
-- 线下武将暗影调整
-- 修复伏完【持重】无技能描述的bug
-- 修复起孔融【争义】报错的bug
-- 优化get.cardsetion方法中对势力色底的get方式
-- 修复OL武安国【厉勇】、卢氏【驻颜】联机客机报错
-- 修复OL界张春华【翦灭】、谋华雄【搏决】、马玩【浑疆】、谋孔融【争义】、年兽【岁崇】等联机报错且不为同时选择的bug
-- 修复OLSP曹操【西向】结算错误的bug
-- 调整威吕布【骁武】、【霸关】；调整韩氏五虎分包
-- 优化梦曹操【政略】、与【求援】相关的多个伏皇后
-- 补充遗漏的addskills和removeskills的popup参数
-- 修复谋貂蝉【离间】和起皇甫嵩【居下】的bug
-- 修复吾彦【澜疆】没有手牌数小于自己的目标角色仍然摸牌的bug
-- 修复晋贾充【凶竖】未检测出牌结束时未与发动技能时的阶段不为同一个阶段而导致可以对下一个触发此时机的角色而非目标角色造成伤害的bug
-- 修复用间曹操【义兵】不为转化杀的bug
-- 修复OL刘璋【丰蔚】受到牌的伤害未加伤的bug
-- 修复韩五虎【披靡】未适配联机且未进行await的bug
-- 修复OL李异【缠双】使用杀计入次数限制的bug
-- 修复友庞统【养名】未进行await的bug
-- 修复神张辽【止啼】受到无来源伤害报错的bug
-- 修复族王允【铭戒】联机效果显示错误的bug
-- 修复族王沈【岸然】点击取消发动报错的bug
-- 修复孙笨觉醒【制霸】拒绝拼点报错的bug
-- 修复周姬【炎谋】遇到八卦阵报错的bug
-- 修复汉末神皇甫嵩对死亡玩家仍能发动【破怠】的bug
-- OL冯妤、SP张郃、OL朱灵、郭照、OL胡班、OL董昭、OL王荣、左芬、写轮眼、DIY于吉优化
-- 庞宏【评骘】翻译勘误；
-- 初步修复部分需要打出牌的本体卡牌未限制合法性的问题
-- 修复界左慈【化身】翻页会导致已选择的制衡化身牌丢失bug并调整此技能结算为OL操作方式
-- 将十周年版本的曹纯移动至限定专属包的祈福小包
-- 修复江山如故娄圭【沙城】【凝寒】配音台词写反的bug
-- 修复神庞统【鸾锁】不能弃置的牌也得是回合开始时打上“鸾锁”标记牌的bug
-- 修改应天神司马【戢鳞】初始“志”张数为全模式两张
-- 修复谋程昱【告谏】选择交换牌但是不进行交换的弹窗bug
-- 修复旧伏皇后【求援】进行两次角色选择的bug
-- 修复幻曹昂【离渊】storage的e被吃掉的bug
-- 删除鲍信【毅谋】、刘晔【破橹】的技能中的!!及技能相关的衍生bug
-- 修复薛灵芸【霞泪】部分情况下无法触发的bug
-- 修复SP甄姬【惠济】开五谷不判定角色数和是否有可使用目标的bug
-- 管宁【遁世】技能筛选优化，不会筛选描述中含有“游戏开始时”的技能
-- 调整本体所有“一轮游戏开始时”的技能描述为“每轮开始时
-- 将character下的`lib.character`和mode下除国战外的`lib.characterPack\[mode\]`中的武将改为类Character写法，Character具体属性详见`noname/library/element/character.js`，旧写法改新写法步骤可参考其中的`setPropertiesFromTrash`方法
-- 使用传统方法引用`lib.characterPack\[mode\]`的扩展需改用`get.character`等进行检测
-- 移除无引用的character/jiange.js、character/boss.js、character/xiake.js
-- 移除本体所有带alter标签的技能的alter相关信息，并移除对应的菜单显示机制
-- 移除四象彭羕、无图片和技能实现的注释武将和DIY包剩余注释武将
-- 移除蛇年错印武将廖化、张飞、朱儁
-- 移除部分冗余素材
--  删除部分注释掉的武将和技能代码
-- 重写【望梅止渴】ai
-- 修复DIY曹操【号令】描述并async化
-- 唯一连环的人机被队友属性杀时不会一律不出闪
-- 常备主候选武将数支持选3个
-- 更新README.md
-- 将本体中出现在trashBin下的图片引用改为更规范的img属性
-- 适配本体扩展『诸神降临』
-- 将yinbin1.mp3和yinbin2.mp3引用更新为yinbing1.mp3和yinbing2.mp3
-- 简化Get.rank方法，修改本体绝大多数武将的武将出场率
-- 修复手杀薛综【诫询】不能弃置装备牌的bug
-- 修复中津静流【念力】被如义绝封印而可以一直发动的bug
-- 修复标郭皇后【矫诏】没手牌导致不能替换而报错的bug
-- 修复幻陆逊【逆涡】、孙翎鸾【盼睇】dcpandi_effect的mod的selectCard拼写错误的bug
-- 修复侯成【献酿】不为基本牌也视为酒的bug
-- 修复庞宏【评骘】未显示转换技标记的bug
-- 修复OL蒲元【神工】不能替换打造的装备的bug
-- 修复OL谋庞统【鸿图】联机不显示手牌上限且报错的bug
-- 修复修复当主机处于chooseToUse衍生的chooseButton事件选择中时，客机取消无懈会导致该事件异常被终止且无法正常生成event.resultOL导致_wuxie事件异常暂停的bug；
+线下：长安神曹操、神王允、神李傕郭汜、长安神贾诩、车胄、陈寿
+OL：蔡贞姬、族杨彪、族荀爽、杨阜、李丰、界马岱、谋卢植、族杨众、管亥、张曼成、魔司马懿、张角三兄弟
+新杀：夏侯玄、星张让、谋刘协、钟毓、夏侯徽、烈袁绍袁术、威曹丕、神钟会、吴质、朱铄
+手杀：国渊、黄祖、田丰、陆郁生、关银屏、孟达、曹性、张燕
+- 跟进旧武将的技能效果
+- 添加“自动导入扩展”选项，开启后将在启动时自动检索扩展文件夹，并导入未导入的扩展
+  - 由于可能存在某一平台下文件管理的效率低下，导致启动页加载效率过低，故不自动开启，有需求请自行开启
+  - 当以此法导入新扩展时，为防止一些特殊情况，此扩展将默认被关闭
 
-# 新增函数/函数修改/函数修复
-1. 将Get.character方法的返回值改为经get.convertedCharacter包装后的结果
-2. 修复联机模式下询问【无懈可击】因chooseButton框架引起的游戏异常暂停
-3. 修复了生成onChooseToUse赋值时的cancel会生成“事件cancel”触发节点的bug
-4. 移除了markSkill因nobroadcast不向客机广播的设定用于修复客机有些标记看不见的bug
-5. 修复`lib.elemet.Player.respond`未全部使用get.autoViewAs包装而导致如通过八卦打出闪而没有event.card.cards和如使用丈八打出杀判断颜色错误的bug
-6. 修复了$gain2进行moveDelete动画时不更新卡牌信息的bug
-7. 修复客机$gain2卡牌信息缺失、$gain没有卡牌信息的bug；对$draw的卡牌信息代码进行优化
-8. 优化get.cardsetion，增加get.sourceSkillFor获取源技能
-9. 为给element/content.js的chooseToCompareMultiple和chooseToCompareMeanwhile的step 0加上先检测是否有对应角色的fixedResult，避免出现角色没牌但已经有fixedResult仍结束拼点事件的情况
-10. 在precontent或其他可修改_wuxie、chooseToUse、chooseToRespond的event.result(event.wuxieresult2)的地方，将对应result.cancel设置为true，则此次预使用卡牌作废，相应事件将goto(0)
-11. 新增`lib.element.player.isMaxMaxHp`、`lib.element.player.isMinMaxHp`方法判断一名角色是否为场上体力上限最大/最小
+- 将扩展《富甲天下》所有的构造函数变成类，重写help对象
+- 增添联机聊天表情包
+- 添加角色引言（lib.characterAppend用法与lib.characterTitle相同）
+- 规范大部分觉醒技、限定技的unique标签
+- 修复文钦偕举没有目标仍选择出杀目标的bug
+- 修复马伶俐send缺漏导致的bug（直接重写了选择部分）
+- 修复衰曹节王甫和OL谋卢植持续加伤效果未能多次叠加
+- 修复OL界关张继承标父魂后没有修改viewAsFilter
+- 修复SCL祢衡效果的错误，之前即使不摸牌用到五张牌后就不能出牌了
+- 修复手杀薛综诫训prompt补充，以及ai补充
+- 修复OL费祎和衷ai错误
+- 修复星法正语音引用错误
+- 修复谋黄忠亮出牌不进处理区的bug
+- 修复线下汉末风云严政印杀会触发八卦阵的bug
+- 修复威吕布霸关出杀受限制问题
+- 修复赵昂在自己没有手牌时不能正常观看其他角色手牌的bug
+- 修复神华佗寰道ai报错bug
+- 增加族杨修高视，族杨赐谏直、张翼鏖刃、乐貂蝉低讴、新杀张虎同援的combo
+- 修复OL界蔡夫人窃听filterButton和ai未定义player导致的bug
+- 修复用间李儒毒谋其他角色失去手牌里的视为毒不会失去体力的bug
+- 修复幻黄盖焚险决斗能指定黄盖的bug
+- 修复食岑昏ai错误、年兽岁崇prompt错误的bug
+- 修复张曼成掠城目标使用第一张杀后没有再次筛选能使用的牌导致的bug
+- 修复荆扬曹仁御军技能描述错误的bug
+- 修复桃园沙摩柯二技能效果错误的bug
+- 汉末神朱儁撤击修改
+- 修复神皇甫嵩有个choice拼错的bug
+- 族荀爽耽道和界朱然胆守增加对当前回合角色的判断
+- 修复线下张曼背水加伤结算bug
+- 修复神张角天劫chooseTarget与描述不符的bug
+- 修复阳球扫奸send缺少参数的bug
+- 修复修复若干技能错误使用或者没使用isCard的问题的bug
+- 新杀SP马超追击子技能增加onremove
+- 修复海外郝萌攻阁交给牌数量缺失的bug
+- 修复ol界双雄捡牌没有判断区域的bug
+- 庞凤衣异瞳摸牌条件调整
+- 补充谋黄盖、谋周瑜技能的tip
+- 海外谋曹仁护甲调整
+- 手杀星董卓雄进效果调整为在董卓死后会移除
+- 调整乐系列武将标记初始手牌的技能的描述和效果
+- 手杀谋黄盖诈降跟进描述和效果
+- 乐邹氏筝标记调整为永久标记
+- 重写战役篇王允的连计
+- 新杀谋荀彧技能同步
+- 增加曹婴凌人三种类型的牌面
+- 新增OL开黑季限时锦囊（ai差点意思）
+- 为木马的牌被弃置添加广播
+- 修复食岑昏【暴食】ai判断相反的bug
+- 修复起何进【诛宦】结算与描述不符的bug
+- 修复威张辽【破戎】插结情况下tip显示错误问题
+- 修复charater类一个duaslside拼写错误问题
+- 修复界关羽【义绝】加伤buff永久累加的bug
+- 修复界刘备【仁德】未按阶段计数导致同一回合多个出牌阶段只能使用一次基本牌的bug
+- 修复幻丁尚涴【春晖】摸牌结算错误问题
+- 修复孙霸【结党】联机客机看不见对话框的bug
+- 修复TW法正【恩怨】摸牌条件错误问题
+- 修复谋吕蒙【夺荆】没有护甲仍能无视防具的bug
+- 修复杨彪【义争】和马忠【抚蛮】技能buff未加夏洛特标签的bug
+- 修复星文丑【连战】联机选择增加目标卡死的bug
+- 修正年兽【岁崇】及TW张昭【力谏】部分错别字的情况
+- 修正谋典韦【亢勇】描述
+- 宝宝化手杀星董卓【镇边】结算、界法正【恩怨】、星法正【谙计】
+- 修复本体编辑器引用技能报错的bug
+- 修复player.hasUsableCard部分情况报错的bug
+- 修复神贾诩【炼魄】判断最大阵营数错误的bug
+- 修复柳婒【迟行】某些情况下报错的bug
+- 优化王元姬【谦冲】、【尚俭】
+- 优化势董昭、TW董昭【妙略】
+- 修复SP蔡文姬【默识】不使用第一张牌也能使用第二张的bug
+- 注释掉缺失素材的水墨指示线
+- 补充义绝、强化、纵掠等技能的skillTagFilter
+- 修复蛇韩悝【宵赂】最后为韩悝向选择的角色使用牌的bug
+- 修复族杨赐【切议】判定打断报错的bug
+- 修复蛇赵忠【鸱咽】ai报错问题
+- 修复高升【地锋】使用错误函数的bug
+- 修复十周年界马忠【抚蛮】filter只限制有手牌才能发动的bug
+- 南华老仙天书的一个效果更正
+- 修复庞统【连环】缺失ai白板的bug
+- 给与当前回合角色相关的技能补全对当前回合角色存在的判断
+- OL谋赵云【逆澜】【绝崖】、乐诸葛果【乘烟】、阮瑀【妙弦】调整
+- 将除国战外的与player.awakenskil相关的l具体技能名改为event.name/skill方便扩展/其他技能继承
+- 修改【木牛】支持装备多个木牛流马下可以任选其中一个扣置牌
+- 修复手杀裴秀【行图】一个逻辑问题导致的显示bug
+- 修复手杀谋贾诩【乱武】其他角色可以杀贾诩的bug
+- 修复界夏侯氏【樵拾】满足条件也不能继续发动的bug
+- 修复手杀皇甫嵩中止甄姬【洛神】、夏侯惇【刚烈】判定导致报错的bug
+- 调整贾诩/界贾诩【乱武】结算
+- 修复十周年界全琮【邀名】联机player未定义报错的bug
+- 修复起刘宏与闪刘宏【甚宠】多了true的参数导致清除jiu2等夏洛特技的bug
+- 修复TW霍峻与手杀【霍峻】【伺怠】、司马徽【荐杰】、势太史慈【振锋】因批量替换awakenSkill导致的报错的bug
+- 修复张角【雷击】因插入结算导致判断无后续而报错的bug
+- 修复忙牙长【截刀】技能fiter错误导致可以多次触发的bug
+- 修复手杀谋贾诩【完杀】为正面向上分配的bug
+- 修复卢氏在有角色体力/手牌均进行调整后触发【驻颜】报错的bug
+- 修复手杀谋郭嘉【遗计】、手杀谋贾诩【完杀】、淳于琼【粮营】、十周年李丰【输粮】、手杀SP甄宓【济危】、徐琨【筏铸】、吕常【守襄】、OL界王异【秘计】、OL董昭【先略】、【宿守】、谋张绣【豪义】中loseAsync事件的cards未展开的bug
+- 调整reluoyi，gameEvent.cancel方法中为事件添加_cancelled属性
+- 修复友徐庶【启诲】多刀buff未生效的bug
+- 修复OL袁涣【德辱】摸牌效果为摸至体力上限的bug
+- 修复OL袁涣【德辱】必须选择至少一个牌名的bug
+- OL董昭与其两个技能开放其他模式的使用权
+- OL袁涣【德辱】添加技能AI，优化操作界面
+- OL韩遂【骁袭】发动时机调整
+- OL谋董卓【封赏】记录花色时机调整，防止嵌套结算，添加已选择过的花色tip标记
+- 关索【当先】改为OL界廖化版本，修复关索【征南】可重复选择已拥有但失效的技能的bug
+- OL南华老仙【青书】添加概率获得1条高级词条
+- 修复国战野心家司马昭翻译问题
+- 修复OL谋文丑【决绝】不仅为使用手牌也能触发技能的bug（人话：实体牌不能掺杂自己手牌外的牌）
+- 修复twxiayong颜良播放配音错误的bug
+- 优化外服王昶【开济】写法（从存储进入过濒死的角色改为采用历史获取进入过濒死的角色）
+- 修改鲍信/TW鲍信【募讨】中获取下家的方法从.next改为getNext()
+- 修复慑伏在无实体牌不触发技能防止伤害的bug
+- 提升万箭齐发的音质
+- 增加为武将包添加文字描述的方法，添加武将包id+'_info'格式即可实现
+- 其他bug修复、AI优化、台词调整、素材补充、姓名适配和补充函数注释
+
+## 新增函数/函数修改/函数修复
+1.新增player方法ChooseButtonTarget，简化一些交互，后续增加了可隐藏弹窗的按钮（由canHidden参数控制是否开启，默认为true，主要用于应对弹窗过大导致手机端没法选择目标的问题），该按钮的实现会覆盖event的custom.add.button，如果后续有人覆盖了该事件的custom请适配一下。目前给出的例子如下：陆郁生（一般的选选项和目标且dialog为自己搓的）、国渊（有选项不需要目标的且用createDialog创建dialog）、李丰（用于分牌）、管亥（用于主动技，但不太推荐）
+
 ```js
-/**
- * 判断玩家是否是场上体力上限最少的玩家
- * @param { boolean } [only] 是否唯一
- * @returns { boolean }
- */
-isMinMaxHp(only) {
-	return game.players.every(value => {
-		if (value.isOut() || value == this) return true;
-		return only ? value.maxHp > this.maxHp : value.maxHp >= this.maxHp;
-	});
-}
-/**
- * 判断玩家是否是场上体力最大的玩家
- * @param { boolean } [only] 是否唯一
- * @param { boolean } [raw]
- * @returns { boolean }
- */
-isMaxHp(only, raw) {
-	return game.players.every(value => {
-		if (value.isOut() || value == this) return true;
-		return only ? value.getHp(raw) < this.getHp(raw) : value.getHp(raw) <= this.getHp(raw);
-	});
+//使用例
+async (event, trigger, player) => {
+    const { result } = await player.chooseButtonTarget({
+        createDialog: ...,//同chooseButton的dialog写法
+        filterButton(button) {...},//同chooseButton的filterButton写法
+        filterTarget(card, player, target){ ...},//同chooseTarget的filterTarget写法
+        ai1(button) { ...},//同chooseButton的ai写法
+        ai2(target) { ...},//同chooseTarget的ai写法
+    });
+    console.log(result)//返回bool/links/targets
+};
+```
+2.新增player.canRespond(event,card)，新增lib.respondMap用于保存一些卡牌的可被响应牌，新增get.canRespond以获取lib.respondMap，用于判断玩家或玩家的某张牌能否响应该useCard事件，目前仅适配本体常用的卡牌（但有接口可以添加），具体用法见player.js
+
+3.修复“复活”后异常显示的身份标记；对一系列addSkill函数增加广播；修复主机进行chooseToMove不受联机时间限制；修复联机的一个注入漏洞
+
+4.给useSkill的contentBefore和contentAfter增加skill属性，提高部分代码的复用性；修复 #2436——一个可能的逻辑错误
+
+5.gameDraw、replaceHandCards、replaceHandCardsOL事件新增gaintag接口，可以为初始手牌上标记，具体用法见该事件代码
+
+6.为无名杀支持卡牌的永久标记，修改了lose事件、gain事件以及addGaintag的相关部分，永久标记通过前缀eternal_来区分，详情见card.addGaintag
+
+7.gameDraw、两个replaceHandcards事件重新添加更换手牌时移除所有标记，包括永久标记
+
+8.为when生成的skill添加sourceSkill属性以适配一些需要读取源技能的技能
+
+9.修改useCard，respond以适配直接使用装备区或判定区的转化后的牌
+
+10.draw新增接口，otherGetCards用于从其他牌堆获得牌，传入的是从其他牌堆获得牌的函数，例子见陈寿；同时修改原来的log，正面向上摸牌时不会再log两次
+
+11.gamedraw、replacehandcards、replacehandcardsOL新增接口otherPile用于适配起始手牌和手气卡从别的牌堆获得牌，具体见对应函数，例子见陈寿
+
+12.对虚拟装备/虚拟判定牌机制进行完善
+
+获取转化后实体牌的位置:
+- get.owner
+- get.position
+- get.vcardinfo
+
+重构事件效果:
+
+- `Player`
+- lib.element.player.equip
+- lib.element.player.addVirtualJudge
+- lib.element.player.#addVirtualJudge
+- lib.element.player.addVirtualEquip
+- lib.element.player.#addVirtualEquip
+- `Content`
+- lib.element.content.lose
+- lib.element.content.equip
+- lib.element.content.replaceEquip
+- lib.element.content.swapEquip
+- lib.element.content.swapHandcardsx
+- lib.element.content.addJudge
+- lib.element.content.phaseJudge
+- lib.element.content.moveCard
+
+其他修改:
+
+- 为新的虚拟装备/虚拟延时锦囊兼容了“重连”
+
+注意事项:
+
+- 新的equip目前不再支持同时装备多个装备(也就是回退回了老“equip”的使用方法)，有可能需要扩展兼容
+
+13.调整player.chooseDrawRecover，支持令玩家对其他角色选择回复体力和摸牌的操作，不填target参数默认自己对自己进行选择
+
+14.gain/lose从step-content改contents
+
+```js
+//其实就是让函数少走一次解构的同时也方便修改
+//牢函数
+lib.element.content.gain/lose=()=>{
+'step 0'
+...
+'step 114513'
+};
+//新函数
+lib.element.content.gain/lose=[
+第1步的函数
+...
+第114514步的函数
+];
+```
+
+15.添加boss挑战黑名单接口，用例见下
+
+```
+//挑战祭风卧龙时禁用晋司马师
+_status.banlist["boss_zhugeliang"] = ["jin_simashi"];
+```
+
+```
+//也可以写成函数形式
+//下为挑战boss刘备时禁选所有关羽
+_status.banlist["boss_liubei"] = function (button) {
+	let { link } = button;
+	if (link.includes("guanyu")) {
+		return false;
+	}
+	return true;
 }
 ```
-12. 针对是否拥有XXX牌的判定修复+优化，详细内容如下：
-① 修复`lib.element.player.hasUsableCard`不走filter的bug，添加最后的返回值false
-② 修改`lib.element.player.hasSha`和`lib.element.player.hasShan`的判断逻辑，不传入参数默认为use使用情况，传入respond为打出情况，传入all为使用和打出的情况，并修复和”自动跳过“选项的联动问题
-③ 修复和调整本体诸多使用hasSha和hasShan的地方逻辑和respondSha和respondShan的skillTag的arg逻辑
-④ 调整`lib.filter.autoRespondSha`和`lib.filter.autoRespondShan`的逻辑为仅判定打出情况
+
+16.继续优化get.cardsetion
+
+17.为player.draw添加默认摸牌来源
+
+18.修复player.choosecard部分情况导致的bug
+
+19.添加响应列表，具体函数见下
+
 ```js
-//新的lib.element.player.hasSha
 /**
- * 有没有可用杀
- * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
- * @param { boolean } [noauto] 不考虑出牌阶段才能用的（待补充）
+ * the cards which can respond card
+ *
+ * 卡牌的可被响应牌（主要是用于player.canRespond函数）
+ * 例如可响应杀的主要就是闪，或者本体的草船借箭，以此类推；
+ * 类似劝酒这种复杂条件的，可以放函数，但仅检测实体牌
  */
-hasSha(respond, noauto) {
-	if (this.countCards("hs", "sha")) return true;
-	if (this.countCards("hs", "hufu")) return true;
-	if (!noauto && this.countCards("hs", "yuchanqian")) return true;
-	if (typeof respond !== "string") respond = respond ? "all" : "use";
-	if (this.hasSkillTag("respondSha", true, respond, true)) return true;
-	return this.hasUsableCard("sha", respond);
-}
-//新的lib.element.player.hasShan
+lib.respondMap = {
+	sha: ["shan"],
+	wanjian: ["shan"],
+	qizhengxiangsheng: ["sha", "shan"],
+	juedou: ["sha"],
+	nanman: ["sha"],
+	jiedao: ["jiedao"],
+	//所有锦囊都可以用无懈可击响应
+	trick: ["wuxie"],
+	//所有伤害牌都可以用草船借箭响应
+	damage: ["caochuan"],
+	//所有基本牌或普通锦囊牌都可以响应
+	all: [],
+	//也可以放函数
+	khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
+};
 /**
- * 有没有可用闪
- * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
+ * 返回如何响应此牌的一个数组，其中包含字符串或者函数，具体用法可见player.canRespond
+ * @param {string | Card | VCard | object } card（也支持一些标签，如trick，damage和all）
+ * @param {false | Player} [player]
+ * @returns {string[]}
  */
-hasShan(respond) {
-	if (this.countCards("hs", "shan")) return true;
-	if (this.countCards("hs", "hufu")) return true;
-	if (typeof respond !== "string") respond = respond ? "all" : "use";
-	if (this.hasSkillTag("respondShan", true, respond, true)) return true;
-	return this.hasUsableCard("shan", respond);
-}
-//新的lib.element.player.hasUsableCard
+get.canRespond = function (card, player) {
+	let name;
+	if (typeof card == "object") name = get.name(card, player);
+	else name = card;
+	if (typeof name != "string") return [];
+	const filter = lib.respondMap[name];
+	if (Array.isArray(filter)) return filter;
+	if (typeof filter == "function") return [filter];
+	return [];
+};
 /**
- * @param { string } name
- * @param { string } type
+ * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌，需要添加新卡牌的可以到lib.respondMap按格式添加
+ * 请注意，该函数只能粗略判断，有些情况是没法判断的
+ * @param {GameEvent} event 需要判断能否响应的事件，目前只能为useCard或者它的下一级衍生事件，其他全部返回undefined
+ * @param { Card | VCard | object | string } card 需要检测的牌
+ * @param { string | boolean } [type] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
  * @returns { boolean | undefined }
  */
-hasUsableCard(name, type) {
+lib.element.player.canRespond = function (event, card, type) {
 	const player = this;
-	if (typeof type !== "string") type = type ? "limit" : "all";
-	let event = get.event();
+	if (!event.name?.startsWith("useCard")) return;
+	const evt = event.name == "useCard" ? event : event.getParent();
+	if (!evt || !evt.card) return;
+	if (card && typeof card == "string") {
+		card = { name: card };
+	}
+	if (typeof type !== "string") type = type ? "all" : "use";
+	const keys = get.canRespond(evt.card);
+	if (get.type(evt?.card) == "trick") keys.addArray(get.canRespond("trcik"));
+	if (get.tag(evt?.card, "damage")) keys.addArray(get.canRespond("damage"));
+	keys.addArray(get.canRespond("all"));
+	if (card) return keys.some(key => (typeof key == "function" ? key(card, player) : key == get.name(card, player)));
+	const evtx = get.event();
 	let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
-	if (
-		player.hasCard(i => {
-			if (get.name(i, player) !== name) return false;
-			if (type === "all") return true;
-			return evtNames.some(evtName => {
-				let evt = event.getParent(evtName);
-				if (get.itemtype(evt) !== "event") evt = event;
-				if (type === "respond") return lib.filter.cardRespondable(i, player, evt);
-				return lib.filter.cardEnabled(i, player, type === "limit" ? evt : "forceEnable");
-			});
-		}, "hs")
-	)
-		return true;
-	const skills = player.getSkills("invisible").concat(lib.skill.global);
-	game.expandSkills(skills);
-	for (let i = 0; i < skills.length; i++) {
-		const skill = skills[i],
-			ifo = get.info(skill),
-			hiddenCard = ifo.hiddenCard;
-		if (ifo.usable !== undefined) {
-			let num = ifo.usable;
-			if (typeof num === "function") num = ifo.usable(skill, player);
-			if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
-		}
-		if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
-			const goon = !ifo.viewAsFilter || ifo.viewAsFilter(player) !== false;
-			const bool =
-				!ifo.filter ||
-				evtNames.some(evtName => {
-					let evt = event.getParent(evtName);
-					if (get.itemtype(evt) !== "event") evt = get.event();
-					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-					return ifo.filter(evt, player, evt.triggername);
-				});
-			if (goon && bool) return true;
-		} else if (typeof hiddenCard == "function") {
-			if (hiddenCard(player, name)) return true;
-		}
-	}
-	return false;
+	const cards = player.getCards("hs", card => {
+		if (type === "all") return true;
+		return evtNames.some(evtName => {
+			let evty = evtx.getParent(evtName);
+			if (get.itemtype(evt) !== "event") evty = evtx;
+			if (type === "respond") return lib.filter.cardRespondable(card, player, evty);
+			return lib.filter.cardEnabled(card, player, evty);
+		});
+	});
+	return keys.some(key => (typeof key == "function" ? cards.some(card => key(card, player)) : player.hasUsableCard(name, type))) && !evt.directHit.includes(player);
+};
+```
+
+20.添加`lib.concurrent`异步库，用于一些特定情况的异步场景，目前的定义如下:
+
+```typescript
+export class Concurrent extends Uninstantable {
+	/**
+	 * 执行一个异步的for range循环
+	 *
+	 * 由于异步的特性，你无法中途中止循环，但你可以提供一个AbortSignal，来使回调函数能通过该信号中止
+	 *
+	 * > 步长为1主要是C#的Parallel.ForAsync的步长只能为1，~~绝对不是我懒~~
+	 *
+	 * @param start - 开始索引（包含）
+	 * @param end - 结束索引（不包含）
+	 * @param callback - 回调函数，接收当前索引和提供的信号；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @param options - 可选参数，具体可参阅`ConcurrentOptions`
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
+	 * @throws {TypeError} 如果提供的回调函数不是一个函数
+	 * @example
+	 * // 使用AbortController来控制循环的终止
+	 * const controller = new AbortController();
+	 * await Concurrent.for(1, 100, async (i, signal) => {
+	 * 	if (signal.aborted) return;
+	 * 	await someAsyncOperation(i);
+	 * }, { signal: controller.signal });
+	 */
+	static async for<T extends number>(start: T, end: T, callback: ForCallback<T>, options?: ConcurrentOptions): Promise<ForException<T>[]>;
+
+	/**
+	 * 执行一个异步的for of循环
+	 *
+	 * 由于异步的特性，你无法中途中止循环
+	 *
+	 * > 为了性能考虑，假定传入的可迭代对象均为有限迭代器，请勿传递无限迭代器
+	 *
+	 * @param iterable - 可迭代对象（请勿传递无限迭代器）
+	 * @param callback - 回调函数，接收当前元素；如果回调函数不包含异步操作，则将退化为同步操作
+	 * @param options - 可选参数，具体可参阅`ConcurrentOptions`
+	 * @returns 返回一个Promise，包含执行过程中所有的异常
+	 * @throws {TypeError} 如果提供的`iterable`不是一个对象，或回调函数不是一个函数
+	 * @example
+	 * // 对数组中的每项进行异步处理
+	 * const controller = new AbortController();
+	 * const items = [1, 2, 3, 4, 5];
+	 * await Concurrent.forEach(items, async (item) => {
+	 *   await processItem(item);
+	 * }, { signal: controller.signal });
+	 */
+	static async forEach<T>(iterable: Iterable<T> | AsyncIterable<T>, callback: ForEachCallback<T>, options?: ConcurrentOptions): Promise<ForEachException<T>[]>;
 }
 ```
-13. 现在可以用[vue.js](https://cn.vuejs.org/)/其他前端库/框架编写扩展/模式的“帮助”界面
-
-- 对于vue，如果传入的是带有`data`方式或`setup`方式的对象，则认定为是vue的组件，将通过本体自带的vue创建并挂载到帮助界面上，代码案例如下（以关于游戏为示范，下同）:
-
-```javascript
-{
-	help: {
-		关于游戏: {
-			template: html`
-				<div style="margin:10px">关于无名杀</div>
-				<ul style="margin-top:0">
-					<li>
-						无名杀官方发布地址仅有GitHub仓库！<br />
-						<a :href="repoLink">点击前往Github仓库</a>
-						<br/>
-					</li>
-					<li>
-						无名杀基于GPLv3开源协议。
-						<br />
-						<a :href="licenseLink">点击查看GPLv3协议</a>
-						<br />
-					</li>
-					<li>
-						其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！
-					</li>
-				</ul>
-			`,
-			setup() {
-				const repoLink = "https://github.com/libnoname/noname";
-				const licenseLink = "https://www.gnu.org/licenses/gpl-3.0.html";
-
-				return {
-					repoLink,
-					licenseLink
-				}
-			}
-		}
-	}
-}
-```
-
-- 对于其他前端库/框架，如果传入的是带有mount方式的对象，则会调用该函数，参数为帮助页面的dom元素；此处兼容已创建的vue应用
-
-例如，创建preact的帮助界面，则代码大致如下:
-
-```javascript
-{
-	help: {
-		关于游戏: {
-			mount(node) {
-				function App() {
-					const repoLink = "https://github.com/libnoname/noname";
-					const licenseLink = "https://www.gnu.org/licenses/gpl-3.0.html";
-					
-					return html`
-						<div style="margin:10px">关于无名杀</div>
-						<ul style="margin-top:0">
-							<li>
-								无名杀官方发布地址仅有GitHub仓库！<br />
-								<a href=${repoLink}>点击前往Github仓库</a>
-								<br/>
-							</li>
-							<li>
-								无名杀基于GPLv3开源协议。
-								<br />
-								<a href=${licenseLink}>点击查看GPLv3协议</a>
-								<br />
-							</li>
-							<li>
-								其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！
-							</li>
-						</ul>
-					`;
-				}
-				
-				h(html`<App />`, node);
-			}
-		}
-	}
-}
-```
-
-- 对于不满足上述条件的对象，则直接按照以前的字符串解析
-
-14. 现在无名杀会在当前事件变动后通过`lib.announce`广播变动前后的事件
-
-大致用法如下:
-
-```javascript
-lib.announce.subscribe("Noname.Game.Event.Changed", ([now, last]) => {
-	// 在事件变更前后打印相关事件的名字
-	// now是变更后的事件，last是变更前的事件
-	console.log(`[Event Change] To "${now.name}" From "${last.name}"`);
-});
-```
-
-- Q: 广播的时机是事件变更前还是事件变更后
-  A: 事件变更后，此时当前事件已经变成了新事件

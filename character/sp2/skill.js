@@ -901,7 +901,7 @@ const skills = {
 			}
 			const evt = trigger.getParent(2);
 			const cards = evt.cards.filter(card => {
-				if (trigger.source._start_cards.includes(card)) return true;
+				if (trigger.source._start_cards?.includes(card)) return true;
 				return trigger.source.getAllHistory("gain", evt => {
 					return evt.cards.includes(card);
 				}).length;
@@ -914,7 +914,7 @@ const skills = {
 					for (let i = history.length - 1; i >= 0; i--) {
 						if (history[i].gain.some(evtx => evtx.cards.includes(card))) break;
 						if (history[i].isRound) num++;
-						if (i == 0 && trigger.source._start_cards.includes(card)) num--;
+						if (i == 0 && trigger.source._start_cards?.includes(card)) num--;
 					}
 					return sum + num;
 				}, 0);

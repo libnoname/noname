@@ -4419,7 +4419,6 @@ const skills = {
 	//共励
 	friendgongli: {
 		audio: 2,
-		locked: true,
 		isFriendOf(player, name) {
 			return player.getFriends(true).some(target => {
 				if (!target.identityShown) return false;
@@ -6936,6 +6935,7 @@ const skills = {
 			player: "mbqianlong_beginBegin",
 		},
 		forced: true,
+		locked: false,
 		content() {},
 		ai: {
 			combo: "mbqianlong",
@@ -7744,7 +7744,7 @@ const skills = {
 			return true;
 		},
 		zhuanhuanji2(skill, player) {
-			return player && player.countMark("mbxuetu_status") !== 1;
+			return !player || player.countMark("mbxuetu_status") !== 1;
 		},
 		position: "he",
 		onremove: ["mbxuetu", "mbxuetu_status"],
@@ -8523,20 +8523,19 @@ const skills = {
 		filter(event, player) {
 			return !player.storage.mbyilie2 && (event.name != "phase" || game.phaseNumber == 0);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
+		forced: true,
+		async content(event, trigger, player) {
+			const targets = await player
 				.chooseTarget(get.prompt2("mbyilie"), lib.filter.notMe, true)
 				.set("ai", function (target) {
 					let player = _status.event.player;
 					return Math.max(1 + get.attitude(player, target) * get.threaten(target), Math.random());
 				})
-				.set("animate", false);
-			"step 1";
-			if (result.bool) {
-				let target = result.targets[0];
-				player.logSkill("mbyilie");
+				.set("animate", false)
+				.forResultTargets();
+			if (targets) {
+				const target = targets[0];
+				player.line(target, "green");
 				player.storage.mbyilie2 = target;
 				player.addSkill("mbyilie2");
 
@@ -19414,6 +19413,7 @@ const skills = {
 					1 && game.hasPlayer(target => target != player && target.countCards("he") > 0)
 			);
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt("rezhengrong"), true, "将一名其他角色的随机一张牌置于你的武将牌上，称为「荣」", function (card, player, target) {

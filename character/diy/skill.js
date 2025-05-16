@@ -4641,6 +4641,7 @@ const skills = {
 	ns_chuanshu: {
 		audio: ["xingshuai", 2],
 		trigger: { global: "dying" },
+		limited: true,
 		skillAnimation: true,
 		animationColor: "water",
 		filter(event, player) {
@@ -4763,6 +4764,7 @@ const skills = {
 	},
 	nsanruo: {
 		unique: true,
+		locked: true,
 		init(player) {
 			if (!player.node.handcards1.cardMod) {
 				player.node.handcards1.cardMod = {};
@@ -6053,6 +6055,7 @@ const skills = {
 				}
 			},
 		},
+		locked: true,
 		ai: {
 			neg: true,
 		},
@@ -6069,6 +6072,7 @@ const skills = {
 	},
 	nscangxi: {
 		global: "nscangxi2",
+		locked: false,
 		zhuSkill: true,
 		init(player) {
 			player.storage.nscangxi = 0;
@@ -7104,6 +7108,7 @@ const skills = {
 		filter(event, player) {
 			return event.cards.length >= 3;
 		},
+		forced: true,
 		content() {
 			player.insertPhase();
 			player.storage.nsjihui_use = _status.currentPhase;
@@ -7157,6 +7162,7 @@ const skills = {
 		forbid: ["guozhan"],
 		unique: true,
 		forceunique: true,
+		locked: true,
 		init(player) {
 			if (player.storage.nscongjun_show || ![player.name1, player.name2].includes("ns_huamulan")) return false;
 			var change = function (target) {

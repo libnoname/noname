@@ -5677,7 +5677,7 @@ const skills = {
 	jsrgjiemeng: {
 		audio: 2,
 		zhuSkill: true,
-		forced: true,
+		locked: true,
 		init: () => {
 			game.addGlobalSkill("jsrgjiemeng_effect");
 		},

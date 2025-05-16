@@ -665,6 +665,7 @@ game.import("character", function () {
 				filter(event) {
 					return event.card && event.card.name == "sha";
 				},
+				charlotte: true,
 				forced: true,
 				temp: true,
 				vanish: true,
@@ -2960,6 +2961,7 @@ game.import("character", function () {
 				check(event, player) {
 					return get.effect(event.target, { name: "sha" }, player, player) > 0;
 				},
+				locked: false,
 				logTarget: "target",
 				content() {
 					"step 0";
@@ -4369,7 +4371,7 @@ game.import("character", function () {
 			gw_saqiya: "萨琪亚",
 
 			sqlongnu: "龙怒",
-			sqlongnu_info: "准备阶段，你可以发现一张牌堆中的牌，若你手牌中有同名牌，你可以改为造成1点火属性伤害锁定技。准备阶段开始时，你随机切换至一种形态。",
+			sqlongnu_info: "准备阶段，你可以发现一张牌堆中的牌，若你手牌中有同名牌，你可以改为造成1点火属性伤害；锁定技，准备阶段开始时，你随机切换至一种形态。",
 			sqlonghuo: "龙火",
 			sqlonghuo_info: "出牌阶段限一次，你可以弃置所有手牌并摸等量的牌，若敌方角色手牌中与你弃置的牌同名的牌，则随机弃置其中一张。准备阶段开始时，你随机切换至一种形态。",
 			sqlongwu: "龙舞",

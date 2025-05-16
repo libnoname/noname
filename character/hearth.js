@@ -2524,6 +2524,7 @@ game.import("character", function () {
 			szbianshen: {
 				trigger: { player: "phaseBefore" },
 				unique: true,
+				limited: true,
 				skillAnimation: true,
 				filter() {
 					return game.roundNumber >= 3;
@@ -3920,6 +3921,7 @@ game.import("character", function () {
 				unique: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
+				juexingji: true,
 				derivation: "nuyan2",
 				skillAnimation: true,
 				animationColor: "fire",
@@ -5289,6 +5291,7 @@ game.import("character", function () {
 				},
 			},
 			shixu: {
+				locked: true,
 				group: ["shixu_begin", "shixu_end", "shixu_discard"],
 				subSkill: {
 					begin: {
@@ -6082,6 +6085,7 @@ game.import("character", function () {
 				},
 			},
 			bingshi: {
+				locked: true,
 				global: "bingshi2",
 			},
 			bingshi2: {
@@ -6572,6 +6576,7 @@ game.import("character", function () {
 			},
 			anying: {
 				unique: true,
+				limited: true,
 				enable: "phaseUse",
 				skillAnimation: "epic",
 				animationColor: "thunder",
@@ -7275,6 +7280,7 @@ game.import("character", function () {
 				animationColor: "thunder",
 				trigger: { player: "phaseBegin" },
 				forced: true,
+				juexingji: true,
 				unique: true,
 				filter(event, player) {
 					if (!player.storage.tuteng_awake) {
@@ -9137,7 +9143,7 @@ game.import("character", function () {
 			oldzhanhou: "战吼",
 			oldzhanhou_info: "出牌阶段，你可以弃置一张防具牌并获得1点护甲。",
 			anying: "暗影",
-			anying_info: "限定技，出牌阶段，你可以弃置一张黑色牌，失去技能圣光，并获得技能心刺。",
+			anying_info: "限定技，出牌阶段，你可以弃置一张黑色牌，失去技能〖圣光〗，并获得技能〖心刺〗。",
 			shijie: "视界",
 			shijie_info: "结束阶段，你可以获得一名其他角色的一张手牌，然后该角色摸一张牌。",
 			shengguang: "圣光",
