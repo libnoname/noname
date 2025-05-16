@@ -665,6 +665,7 @@ game.import("character", function () {
 				filter(event) {
 					return event.card && event.card.name == "sha";
 				},
+				charlotte: true,
 				forced: true,
 				temp: true,
 				vanish: true,
@@ -2960,6 +2961,7 @@ game.import("character", function () {
 				check(event, player) {
 					return get.effect(event.target, { name: "sha" }, player, player) > 0;
 				},
+				locked: false,
 				logTarget: "target",
 				content() {
 					"step 0";

@@ -1831,6 +1831,7 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.hp < player.maxHp;
 				},
+				locked: false,
 				content() {
 					"step 0";
 					player.recover();

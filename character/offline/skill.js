@@ -36,7 +36,7 @@ const skills = {
 						);
 					}
 					let list = [get.effect(source, { name: "losehp" }, player, player) + get.recoverEffect(player, player, player)];
-					let cards = sourcegetCards("h", card => get.name(card) === "sha" && source.canUse(card, target));
+					let cards = source.getCards("h", card => get.name(card) === "sha" && source.canUse(card, target));
 					if (cards.length) {
 						cards.sort((a, b) => get.effect(target, b, source, source) - get.effect(target, a, source, source));
 						list.push(get.effect(target, cards[0], source, player));
