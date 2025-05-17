@@ -10191,6 +10191,61 @@ export class Player extends HTMLDivElement {
 			return true;
 		}
 	}
+	siege(player) {
+		if (this.identity == "unknown" || this.hasSkill("undist")) return false;
+		if (!player) {
+			var next = this.getNext();
+			if (next && next.sieged()) return true;
+			var previous = this.getPrevious();
+			if (previous && previous.sieged()) return true;
+			return false;
+		} else {
+			return player.sieged() && (player.getNext() == this || player.getPrevious() == this);
+		}
+	}
+	sieged(player) {
+		if (this.identity == "unknown") return false;
+		if (player) {
+			return player.siege(this);
+		} else {
+			var next = this.getNext();
+			var previous = this.getPrevious();
+			if (next && previous && next != previous) {
+				if (next.identity == "unknown" || next.isFriendOf(this)) return false;
+				return next.isFriendOf(previous);
+			}
+			return false;
+		}
+	}
+	inline() {
+		if (["unknown", "ye"].includes(this.identity) || this.hasSkill("undist")) return false;
+		var next = this,
+			previous = this;
+		var list = [];
+		for (var i = 0; next || previous; i++) {
+			if (next) {
+				next = next.getNext();
+				if (!next.isFriendOf(this) || next == this) {
+					next = null;
+				} else {
+					list.add(next);
+				}
+			}
+			if (previous) {
+				previous = previous.getPrevious();
+				if (!previous.isFriendOf(this) || previous == this) {
+					previous = null;
+				} else {
+					list.add(previous);
+				}
+			}
+		}
+		if (!list.length) return false;
+		for (var i = 0; i < arguments.length; i++) {
+			if (!list.includes(arguments[i]) && arguments[i] != this) return false;
+		}
+		return true;
+	}
 	checkShow(skill, showonly) {
 		var sourceSkill = get.info(skill);
 		var noshow = false;

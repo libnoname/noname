@@ -22922,61 +22922,6 @@ export default () => {
 					if (!list.includes(name1) || !list.includes(name2)) return false;
 					return (lib.perfectPair[name1] && lib.perfectPair[name1].flat(Infinity).includes(name2)) || (lib.perfectPair[name2] && lib.perfectPair[name2].flat(Infinity).includes(name1));
 				},
-				siege(player) {
-					if (this.identity == "unknown" || this.hasSkill("undist")) return false;
-					if (!player) {
-						var next = this.getNext();
-						if (next && next.sieged()) return true;
-						var previous = this.getPrevious();
-						if (previous && previous.sieged()) return true;
-						return false;
-					} else {
-						return player.sieged() && (player.getNext() == this || player.getPrevious() == this);
-					}
-				},
-				sieged(player) {
-					if (this.identity == "unknown") return false;
-					if (player) {
-						return player.siege(this);
-					} else {
-						var next = this.getNext();
-						var previous = this.getPrevious();
-						if (next && previous && next != previous) {
-							if (next.identity == "unknown" || next.isFriendOf(this)) return false;
-							return next.isFriendOf(previous);
-						}
-						return false;
-					}
-				},
-				inline() {
-					if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) return false;
-					var next = this,
-						previous = this;
-					var list = [];
-					for (var i = 0; next || previous; i++) {
-						if (next) {
-							next = next.getNext();
-							if (!next.isFriendOf(this) || next == this) {
-								next = null;
-							} else {
-								list.add(next);
-							}
-						}
-						if (previous) {
-							previous = previous.getPrevious();
-							if (!previous.isFriendOf(this) || previous == this) {
-								previous = null;
-							} else {
-								list.add(previous);
-							}
-						}
-					}
-					if (!list.length) return false;
-					for (var i = 0; i < arguments.length; i++) {
-						if (!list.includes(arguments[i]) && arguments[i] != this) return false;
-					}
-					return true;
-				},
 				logAi(targets, card) {
 					if (this.ai.shown == 1 || this.isMad()) return;
 					if (typeof targets == "number") {

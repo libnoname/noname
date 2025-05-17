@@ -517,6 +517,7 @@ const skills = {
 				.filterPlayer2(current => player != current)
 				.reduce((listx, i) => {
 					if (i._start_cards) listx.addArray(i._start_cards);
+					return listx;
 				}, []);
 			return game.hasPlayer(current => {
 				const cards = event.name == "cardsDiscard" ? event.cards.filterInD("d") : event.getl(current)?.cards2 || [];

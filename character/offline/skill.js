@@ -16732,10 +16732,8 @@ const skills = {
 				}
 			}
 			if (num > 1 && player.isDamaged()) {
-				const {
-					result: { bool },
-				} = await player.chooseBool(get.prompt("zylianji"), "回复1点体力").set("ai", () => true);
-				if (bool) {
+				const { result } = await player.chooseBool(get.prompt("zylianji"), "回复1点体力");
+				if (result?.bool) {
 					if (!logged) {
 						logged = true;
 						player.logSkill("zylianji");
@@ -16770,7 +16768,7 @@ const skills = {
 					})
 					.forResult();
 				if (result?.targets?.length) {
-					const target = targets[0];
+					const target = result.targets[0];
 					if (!logged) {
 						logged = true;
 						player.logSkill("zylianji", target);

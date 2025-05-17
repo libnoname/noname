@@ -8316,8 +8316,8 @@ player.removeVirtualEquip(card);
 		if (num > 0) {
 			//otherGetCards属性是从专属牌堆摸牌，没有再看其他的
 			if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
-			else if (player.getTopCards) cards.addArray(player.getTopCards(num));
 			else if (event.bottom) cards.addArray(get.bottomCards(num));
+			else if (player.getTopCards) cards.addArray(player.getTopCards(num));
 			else cards.addArray(get.cards(num));
 		} else {
 			cards = [];
