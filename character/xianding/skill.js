@@ -1031,7 +1031,7 @@ const skills = {
 		group: ["dcsbbaojia_effect"],
 		subSkill: {
 			effect: {
-				audio: 2,
+				audio: "dcsbbaojia",
 				onremove: true,
 				trigger: {
 					global: "damageBegin4",

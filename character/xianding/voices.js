@@ -1,4 +1,9 @@
 export default {
+	"#dcsbbaojia1": "臣一息尚存，必保陛下无虞！",
+	"#dcsbbaojia2": "此心向汉，虽九死犹未悔！",
+	"#dcsbdouwei1": "挥戈止争渡，解绢困龙出！",
+	"#dcsbdouwei2": "君于马上揖，怀刃在背乎？",
+	"#dc_sb_dongcheng:die": "东都破败，非龙栖之所。",
 	"#dcsbbizuo1": "君同日月，国若山河，吾不敢舍昼夜。",
 	"#dcsbbizuo2": "人生百载，或死利，或死欲，死义可乎。",
 	"#dcsbshimou1": "臣未寒在胸之血，君何吝雨露雷霆。",

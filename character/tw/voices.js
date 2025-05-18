@@ -12,7 +12,7 @@ export default {
 	"#twhanhong1": "鸿雁撷诗去，天地入怀来！",
 	"#twhanhong2": "振翻凌霄汉，弃梅引风章。",
 	"#twhuazhang1": "起承转合处，自有风云生。",
-	"#twhuazhang2": "文心蕴天地，笔落引风鸣。",
+	"#twhuazhang2": "文心蕴天地，笔落引凤鸣。",
 	"#twhuazhang3": "谐君且看，此篇之才当值几斗？哈哈哈哈！",
 	"#huan_caozhi:die": "从此江海寄浮生。",
 	"#twbeixing1": "荆襄之地，容不得异根异刺。",

@@ -507,7 +507,7 @@ const skills = {
 			hs: {
 				onremove: true,
 				charlotte: true,
-				marktext: "image/card/handcard.png",
+				markimage: "image/card/handcard.png",
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("twhuazhang_hs");

@@ -1,4 +1,9 @@
 export default {
+	"#dcjiaowei1": "古木为薪，来煎琴音。",
+	"#dcjiaowei2": "天雷击焦木，弦动如天籁仙鸣。",
+	"#dcfeibai1": "顺笔若枯丝平行，转折如青锋突起。",
+	"#dcfeibai2": "以帚蘸金，可妆鸿都以飞白。",
+	"#yue_caiyong:die": "笔颓墨尽，而立成老夫。",
 	"#dcxidi1": "霜清飞鸟静，月明晚笛声。",
 	"#dcxidi2": "玉声暗飞来，青城盈春风。",
 	"#dcchengyan1": "素女乘烟去，白玉凤凰声。",
