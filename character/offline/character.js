@@ -1,4 +1,10 @@
 const characters = {
+	chenshou: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["nschenzhi", "nsdianmo", "nszaibi"],
+	},
 	drag_huaci: {
 		sex: "male",
 		group: "qun",
@@ -70,12 +76,6 @@ const characters = {
 		maxHp: 4,
 		hujia: 1,
 		skills: ["shefujing", "shefujiang", "shetonglu"],
-	},
-	chenshou: {
-		sex: "male",
-		group: "shu",
-		hp: 3,
-		skills: ["nschenzhi", "nsdianmo", "nszaibi"],
 	},
 	ps_zhangrang: {
 		sex: "male",

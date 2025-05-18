@@ -15110,6 +15110,9 @@ const skills = {
 				.set("ai", target => get.attitude(get.player(), target))
 				.forResult();
 		},
+		onRound(event) {
+			return !event.wumei_phase;
+		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
 			const next = target.insertPhase();
@@ -15119,7 +15122,11 @@ const skills = {
 				trigger.finish();
 				trigger.untrigger(true);
 				trigger._triggered = 5;
+				if (!lib.onround.includes(lib.skill.dcwumei.onRound)) {
+					lib.onround.push(lib.skill.dcwumei.onRound);
+				}
 				const evt = player.insertPhase();
+				evt.wumei_phase = true;
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
 				evt._noTurnOver = true;
