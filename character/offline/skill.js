@@ -1404,7 +1404,7 @@ const skills = {
 				})
 				.some(card =>
 					player.hasCard(cardx => {
-						if (get.type2(cardx) !== "trick") return true;
+						if (get.type2(cardx) !== "trick") return false;
 						return event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event);
 					}, "hes")
 				);
@@ -1417,7 +1417,7 @@ const skills = {
 			filter(button, player) {
 				const event = get.event().getParent();
 				return player.hasCard(cardx => {
-					if (get.type2(cardx) !== "trick") return true;
+					if (get.type2(cardx) !== "trick") return false;
 					return event.filterCard({ name: button.link[2], nature: button.link[3], cards: [cardx] }, player, event);
 				}, "hes");
 			},
