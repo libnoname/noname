@@ -84,7 +84,7 @@ const skills = {
 				content() {
 					if (!trigger.gaintag) trigger.gaintag = [];
 					trigger.gaintag.add("oldigong_tag");
-					player.addTempSkill("oldigong_remove", "roundStart");
+					player.addTempSkill("oldigong_remove", "roundEnd");
 				},
 			},
 			remove: {

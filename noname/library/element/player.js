@@ -6642,9 +6642,12 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		if (next.cards) {
-			const ej = this.getCards("ej").filter(card => card[card.cardSymbol]?.cards?.some(cardx => next.cards.includes(cardx)));
-			const hsx = this.getCards("hsx").filter(card => next.cards.includes(card));
-			next.cards = ej.addArray(hsx);
+			var hej = this.getCards("hejsx");
+			for (var i = 0; i < next.cards.length; i++) {
+				if (!hej.includes(next.cards[i])) {
+					next.cards.splice(i--, 1);
+				}
+			}
 		}
 		if (!next.cards || !next.cards.length) {
 			_status.event.next.remove(next);

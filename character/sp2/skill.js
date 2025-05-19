@@ -483,32 +483,27 @@ const skills = {
 	//荀彧
 	staranshu: {
 		audio: 2,
-		trigger: {
-			global: "roundStart",
-		},
+		trigger: { global: "roundEnd" },
 		filter(event, player) {
-			return game.roundNumber > 1;
+			return get.discardPile(card => get.type(card) == "basic");
 		},
 		async cost(event, trigger, player) {
-			game.players.forEach(current => current.removeSkill("staranshu_remove"));
 			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "basic");
-			if (cards.length) {
-				const result = await player
-					.chooseButton([get.prompt2("staranshu"), cards], [1, Infinity])
-					.set("filterButton", button => {
-						if (ui.selected.buttons?.some(buttonx => buttonx.link.name == button.link.name)) return false;
-						return true;
-					})
-					.set("ai", card => Math.random())
-					.forResult();
-				event.result = {
-					bool: result.bool,
-					cards: result.links,
-				};
-			} else event.result = { bool: false };
+			const result = await player
+				.chooseButton([get.prompt2("staranshu"), cards], [1, Infinity])
+				.set("filterButton", button => {
+					if (ui.selected.buttons?.some(buttonx => buttonx.link.name == button.link.name)) return false;
+					return true;
+				})
+				.set("ai", () => 1 + Math.random())
+				.forResult();
+			event.result = {
+				bool: result?.bool,
+				cards: result?.links ?? [],
+			};
 		},
 		async content(event, trigger, player) {
-			game.players.forEach(current => current.addTempSkill("staranshu_remove", "roundStart"));
+			game.players.forEach(current => current.addTempSkill("staranshu_remove", "roundEnd"));
 			await game.cardsGotoPile(event.cards, "insert");
 			player
 				.when({ global: "useCardToTargeted" })
@@ -539,9 +534,7 @@ const skills = {
 		subSkill: {
 			draw: {
 				audio: "staranshu",
-				trigger: {
-					global: "phaseEnd",
-				},
+				trigger: { global: "phaseEnd" },
 				getIndex(event, player) {
 					return game
 						.filterPlayer(current => {
@@ -571,17 +564,16 @@ const skills = {
 				},
 			},
 			remove: {
-				trigger: {
-					player: "gainAfter",
-				},
-				filter(event, player) {
-					return event.getParent("staranshu", true) && event.getParent("wugu", true);
-				},
 				charlotte: true,
-				direct: true,
 				onremove(player) {
 					player.removeGaintag("staranshu");
 				},
+				trigger: { player: "gainAfter" },
+				filter(event, player) {
+					return event.getParent("staranshu", true) && event.getParent("wugu", true);
+				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					player.addGaintag(trigger.cards, "staranshu");
 				},
@@ -1720,14 +1712,13 @@ const skills = {
 	},
 	starjiaowang: {
 		audio: 2,
-		trigger: { global: "roundStart" },
+		trigger: { global: "roundEnd" },
 		filter(event, player) {
-			if (game.roundNumber <= 1) return false;
 			const history = game.getAllGlobalHistory();
-			for (let i = history.length - 2; i >= 0; i--) {
+			for (let i = history.length - 1; i >= 0; i--) {
 				const evt = history[i]["everything"];
 				for (let j = evt.length - 1; j >= 0; j--) {
-					if (evt[j].name == "die" && evt[j].getParent(3).name != "starxiaoyan") return false;
+					if (evt[j].name == "die") return false;
 				}
 				if (history[i].isRound) break;
 			}

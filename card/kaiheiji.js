@@ -158,7 +158,7 @@ game.import("card", function () {
 					const target = event.target;
 					const result = await target
 						.chooseToUse("劝酒：使用一张【酒】或点数为9的牌，否则失去1点体力", function (card) {
-							if (get.name(card) != "jiu" && get.number(card) != 9) return false;
+							if (get.name(card) != "jiu" && get.number(card)!="unsure" && get.number(card) != 9) return false;
 							return lib.filter.filterCard.apply(this, arguments);
 						})
 						.set("ai2", function () {

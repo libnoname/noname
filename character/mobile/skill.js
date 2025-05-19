@@ -3710,6 +3710,7 @@ const skills = {
 			return player.countCards("h") > 0 && game.hasPlayer(target => target !== player);
 		},
 		filterCard: true,
+		position: "he",
 		selectCard: () => [1, Infinity],
 		filterTarget: lib.filter.notMe,
 		selectTarget: () => ui.selected.cards.length,
@@ -17636,9 +17637,9 @@ const skills = {
 		},
 		position: "he",
 		content() {
-			player.addTempSkill("hongyi2", { player: "phaseBeginStart" });
-			player.storage.hongyi2.add(target);
-			player.markSkill("hongyi2");
+			const skill = event.name + "_effect";
+			player.addTempSkill(skill, { player: "phaseBeginStart" });
+			player.markAuto(skill, target);
 		},
 		ai: {
 			order: 1,
@@ -17649,30 +17650,26 @@ const skills = {
 				},
 			},
 		},
-	},
-	hongyi2: {
-		audio: "hongyi",
-		trigger: { global: "damageBegin1" },
-		charlotte: true,
-		forced: true,
-		logTarget: "source",
-		sourceSkill: "hongyi",
-		filter(event, player) {
-			return player.storage.hongyi2.includes(event.source);
-		},
-		content() {
-			"step 0";
-			trigger.source.judge();
-			"step 1";
-			if (result.color == "black") trigger.num--;
-			else trigger.player.draw();
-		},
-		onremove: true,
-		intro: {
-			content: "已选中$为技能目标",
-		},
-		init(player, skill) {
-			if (!player.storage[skill]) player.storage[skill] = [];
+		subSkill: {
+			effect: {
+				audio: "hongyi",
+				trigger: { global: "damageBegin1" },
+				charlotte: true,
+				forced: true,
+				logTarget: "source",
+				filter(event, player) {
+					return player.getStorage("hongyi_effect").includes(event.source);
+				},
+				async content(event, trigger, player) {
+					const result = await trigger.source.judge().forResult();
+					if (result.color == "black") trigger.num--;
+					else await trigger.player.draw();
+				},
+				onremove: true,
+				intro: {
+					content: "已选中$为技能目标",
+				},
+			},
 		},
 	},
 	requanfeng: {
@@ -17681,43 +17678,9 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		filter(event, player) {
-			return event.type == "dying" && player == event.dying;
-		},
-		content() {
-			player.awakenSkill(event.name);
-			player.gainMaxHp(2);
-			player.recover(4);
-		},
-		ai: {
-			save: true,
-			skillTagFilter(player, tag, arg) {
-				return player == arg;
-			},
-			order: 10,
-			result: {
-				player: 1,
-			},
-		},
-		group: "requanfeng_gain",
-	},
-	requanfeng_gain: {
-		audio: "quanfeng",
-		trigger: { global: "die" },
-		sourceSkill: "requanfeng",
-		filter(event, player) {
-			return (
-				player.hasSkill("hongyi") &&
-				event.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
-					var info = get.info(skill);
-					return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
-				}).length > 0
-			);
-		},
-		logTarget: "player",
-		skillAnimation: true,
-		animationColor: "thunder",
 		prompt2: "（限定技）失去技能【劝封】，并获得该角色武将牌上的所有技能，然后加1点体力上限并回复1点体力",
+		logTarget: "player",
+		trigger: { global: "die" },
 		check: (event, player) => {
 			if (
 				event.player
@@ -17734,27 +17697,53 @@ const skills = {
 				return false;
 			return true;
 		},
-		content() {
+		filter(event, player) {
+			if (event.name == "die")
+				return (
+					player.hasSkill("hongyi") &&
+					event.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
+						var info = get.info(skill);
+						return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
+					}).length > 0
+				);
+			return event.type == "dying" && player == event.dying;
+		},
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.removeSkills("hongyi");
-			var skills = trigger.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
-				var info = get.info(skill);
-				return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
-			});
-			if (skills.length) {
-				player.addSkills(skills);
-				game.broadcastAll(function (list) {
-					game.expandSkills(list);
-					for (var i of list) {
-						var info = lib.skill[i];
-						if (!info) continue;
-						if (!info.audioname2) info.audioname2 = {};
-						info.audioname2.yanghuiyu = "quanfeng";
-					}
-				}, skills);
+			if (trigger?.name == "die") {
+				await player.removeSkills("hongyi");
+				const skills = trigger.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
+					const info = get.info(skill);
+					return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
+				});
+				if (skills.length) {
+					await player.addSkills(skills);
+					game.broadcastAll(function (list) {
+						game.expandSkills(list);
+						for (const i of list) {
+							const info = lib.skill[i];
+							if (!info) continue;
+							if (!info.audioname2) info.audioname2 = {};
+							info.audioname2.yanghuiyu = "quanfeng";
+						}
+					}, skills);
+				}
+				await player.gainMaxHp();
+				await player.recover();
+			} else {
+				await player.gainMaxHp(2);
+				await player.recover(4);
 			}
-			player.gainMaxHp();
-			player.recover();
+		},
+		ai: {
+			save: true,
+			skillTagFilter(player, tag, arg) {
+				return player == arg;
+			},
+			order: 10,
+			result: {
+				player: 1,
+			},
 		},
 	},
 	quanfeng: {

@@ -1454,7 +1454,7 @@ export class Game extends GameCompatible {
 	 */
 	connect(ip, callback) {
 		// 如果已经联机了就不需要再连接了
-		if (game.online) {
+		if (game.online || typeof ip !== "string" || !ip?.length) {
 			return;
 		}
 

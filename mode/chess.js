@@ -1736,7 +1736,7 @@ export default () => {
 				}
 			},
 			phaseLoopThree: function (player) {
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				next.player = player;
 				(next.swap = function (player) {
 					if (player.side == game.me.side) {
@@ -1745,227 +1745,244 @@ export default () => {
 						return game.me;
 					}
 				}),
-					next.setContent(function () {
-						"step 0";
-						player.classList.add("acted");
-						player.phase();
-						"step 1";
-						if (player != game.friendZhu && player != game.enemyZhu) {
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].side == player.side && game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != player && !game.players[i].classList.contains("acted")) {
-									game.players[i].classList.add("acted");
-									game.players[i].phase();
-									break;
-								}
-							}
-						}
-						"step 2";
-						var target = event.swap(player);
-						var swap = [],
-							swap2 = [];
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].isOut()) continue;
-							if (!game.players[i].classList.contains("acted")) {
-								if (game.players[i].side == target.side) {
-									swap.push(game.players[i]);
-								} else {
-									swap2.push(game.players[i]);
-								}
-							}
-						}
-						if (swap.length == 0) {
-							if (swap2.length) {
-								target = event.swap(target);
-								swap = swap2;
-							} else {
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i].isOut()) continue;
-									game.players[i].classList.remove("acted");
-								}
-								delete _status.roundStart;
-								event.redo();
-								game.delay();
-								return;
-							}
-						}
-						if (swap.length == 1) {
-							event.directresult = swap[0];
-						} else {
-							var rand = Math.random();
-							var next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
-								return target2.side == target.side && !target2.classList.contains("acted");
-							});
-							next._triggered = null;
-							next.includeOut = true;
-							next.ai = function (target2) {
-								var num = 0;
-								if (target2.countCards("j")) {
-									num -= 5;
-								}
-								if (target2 != game.friendZhu && target2 != game.enemyZhu) {
-									for (var i = 0; i < game.players.length; i++) {
-										if (game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
-											num -= 2;
-										}
+					next.setContent([
+						async (event, trigger, player) => {
+							lib.onphase.forEach(i => i());
+							player.classList.add("acted");
+							await player.phase();
+							await event.trigger("phaseOver");
+						},
+						async (event, trigger, player) => {
+							if (player != game.friendZhu && player != game.enemyZhu) {
+								for (let i = 0; i < game.players.length; i++) {
+									if (game.players[i].side == player.side && game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != player && !game.players[i].classList.contains("acted")) {
+										lib.onphase.forEach(i => i());
+										game.players[i].classList.add("acted");
+										await game.players[i].phase();
+										break;
 									}
 								}
-								if (rand < 1 / 3) {
-									num += 1 / (target2.hp + 1);
-								} else if (rand < 2 / 3) {
-									num += target2.countCards("h") / 5;
+								await event.trigger("phaseOver");
+							}
+						},
+						async (event, trigger, player) => {
+							let target = event.swap(player);
+							let swap = [],
+								swap2 = [];
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].isOut()) continue;
+								if (!game.players[i].classList.contains("acted")) {
+									if (game.players[i].side == target.side) {
+										swap.push(game.players[i]);
+									} else {
+										swap2.push(game.players[i]);
+									}
 								}
-								return num;
-							};
-						}
-						"step 3";
-						if (event.directresult) {
-							event.player = event.directresult;
-							delete event.directresult;
-						} else if (result.bool) {
-							event.player = result.targets[0];
-						}
-						event.goto(0);
-					});
+							}
+							if (swap.length == 0) {
+								if (swap2.length) {
+									target = event.swap(target);
+									swap = swap2;
+								} else {
+									for (let i = 0; i < game.players.length; i++) {
+										if (game.players[i].isOut()) continue;
+										game.players[i].classList.remove("acted");
+									}
+									delete _status.roundStart;
+									event.redo();
+									await game.delay();
+									await event.trigger("roundEnd");
+									return;
+								}
+							}
+							if (swap.length == 1) {
+								event.directresult = swap[0];
+							} else {
+								let rand = Math.random();
+								const next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
+									return target2.side == target.side && !target2.classList.contains("acted");
+								});
+								next._triggered = null;
+								next.includeOut = true;
+								next.ai = function (target2) {
+									let num = 0;
+									if (target2.countCards("j")) {
+										num -= 5;
+									}
+									if (target2 != game.friendZhu && target2 != game.enemyZhu) {
+										for (let i = 0; i < game.players.length; i++) {
+											if (game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
+												num -= 2;
+											}
+										}
+									}
+									if (rand < 1 / 3) {
+										num += 1 / (target2.hp + 1);
+									} else if (rand < 2 / 3) {
+										num += target2.countCards("h") / 5;
+									}
+									return num;
+								};
+							}
+						},
+						async (event, trigger, player, result) => {
+							if (event.directresult) {
+								event.player = event.directresult;
+								delete event.directresult;
+							} else if (result.bool) {
+								event.player = result.targets[0];
+							}
+							event.goto(0);
+						},
+					]);
 			},
 			phaseLoopOrdered: function (player) {
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				next.player = player;
-				next.setContent(function () {
-					"step 0";
-					if (
-						!game.hasPlayer(function (current) {
-							return current.side == player.side && !current.classList.contains("acted");
-						})
-					) {
-						var num1 = 0;
-						var next = null;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == player.side) {
-								game.players[i].classList.remove("acted");
-								num1++;
-							} else if (!next) {
-								next = game.players[i];
+				next.setContent([
+					async (event, trigger, player) => {
+						if (
+							!game.hasPlayer(function (current) {
+								return current.side == player.side && !current.classList.contains("acted");
+							})
+						) {
+							let num1 = 0;
+							let next = null;
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side == player.side) {
+									game.players[i].classList.remove("acted");
+									num1++;
+								} else if (!next) {
+									next = game.players[i];
+								}
 							}
-						}
-						if (_status.roundStart && _status.roundStart.side == player.side) {
-							delete _status.roundStart;
-						}
-						var num2 = game.players.length - num1;
-						if (num2 > num1) {
-							if (next.side == game.me.side) {
-								next = game.me;
+							if (_status.roundStart && _status.roundStart.side == player.side) {
+								delete _status.roundStart;
+								await event.trigger("roundEnd");
 							}
-							var str;
-							if (num2 - num1 > 1) {
-								str = "选择至多" + get.cnNumber(num2 - num1) + "个已方角色各摸一张牌";
+							let num2 = game.players.length - num1;
+							if (num2 > num1) {
+								if (next.side == game.me.side) {
+									next = game.me;
+								}
+								let str;
+								if (num2 - num1 > 1) {
+									str = "选择至多" + get.cnNumber(num2 - num1) + "个已方角色各摸一张牌";
+								} else {
+									str = "选择一个已方角色摸一张牌";
+								}
+								let nevt = player.chooseTarget(
+									str,
+									function (card, player, target) {
+										return target.side == player.side;
+									},
+									[1, num2 - num1]
+								);
+								nevt.ai = function (target) {
+									return Math.max(1, 10 - target.countCards("h"));
+								};
+								nevt.includeOut = true;
+								nevt.chessForceAll = true;
 							} else {
-								str = "选择一个已方角色摸一张牌";
+								await game.delay();
+								event.goto(2);
 							}
-							var nevt = player.chooseTarget(
-								str,
-								function (card, player, target) {
-									return target.side == player.side;
-								},
-								[1, num2 - num1]
-							);
-							nevt.ai = function (target) {
-								return Math.max(1, 10 - target.countCards("h"));
-							};
-							nevt.includeOut = true;
-							nevt.chessForceAll = true;
 						} else {
-							game.delay();
 							event.goto(2);
 						}
-					} else {
-						event.goto(2);
-					}
-					"step 1";
-					if (result.bool) {
-						game.asyncDraw(result.targets);
-					}
-					"step 2";
-					if (player.side == game.me.side) {
-						player = game.me;
-					}
-					if (player.isDead()) {
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == player.side) {
-								player = game.players[i];
+					},
+					async (event, trigger, player, result) => {
+						if (result.bool) {
+							await game.asyncDraw(result.targets);
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.side == game.me.side) {
+							player = game.me;
+						}
+						if (player.isDead()) {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side == player.side) {
+									player = game.players[i];
+								}
 							}
 						}
-					}
-					var players = game.filterPlayer(function (current) {
-						return player.side == current.side && !current.classList.contains("acted");
-					});
-					if (players.length > 1) {
-						var nevt = player.chooseTarget(
-							"选择下一个行动的角色",
-							function (card, player, target) {
-								return target.side == player.side && !target.classList.contains("acted");
-							},
-							true
-						);
-						nevt.chessForceAll = true;
-						nevt.includeOut = true;
-						nevt.ai = function (target) {
-							var nj = target.countCards("j");
-							if (nj) {
-								return -nj;
-							}
-							return Math.max(0, 10 - target.hp);
-						};
-					} else if (players.length) {
-						event.decided = players[0];
-					} else {
-						event.player = game.findPlayer(function (current) {
-							return current.side != player.side;
+						const players = game.filterPlayer(function (current) {
+							return player.side == current.side && !current.classList.contains("acted");
 						});
+						if (players.length > 1) {
+							const nevt = player.chooseTarget(
+								"选择下一个行动的角色",
+								function (card, player, target) {
+									return target.side == player.side && !target.classList.contains("acted");
+								},
+								true
+							);
+							nevt.chessForceAll = true;
+							nevt.includeOut = true;
+							nevt.ai = function (target) {
+								var nj = target.countCards("j");
+								if (nj) {
+									return -nj;
+								}
+								return Math.max(0, 10 - target.hp);
+							};
+						} else if (players.length) {
+							event.decided = players[0];
+						} else {
+							event.player = game.findPlayer(function (current) {
+								return current.side != player.side;
+							});
+							event.goto(0);
+						}
+					},
+					async (event, trigger, player, result) => {
+						lib.onphase.forEach(i => i());
+						if (event.decided) {
+							await event.decided.phase();
+							event.justacted = event.decided;
+							delete event.decided;
+						} else {
+							var current = result.targets[0];
+							await current.phase();
+							event.justacted = current;
+						}
+						await event.trigger("phaseOver");
+					},
+					async (event, trigger, player) => {
+						event.justacted.classList.add("acted");
 						event.goto(0);
-					}
-					"step 3";
-					if (event.decided) {
-						event.decided.phase();
-						event.justacted = event.decided;
-						delete event.decided;
-					} else {
-						var current = result.targets[0];
-						current.phase();
-						event.justacted = current;
-					}
-					"step 4";
-					event.justacted.classList.add("acted");
-					event.goto(0);
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != event.justacted.side) {
-							event.player = game.players[i];
-							break;
-						}
-					}
-					if (Math.random() < parseFloat(get.config("chess_treasure"))) {
-						var list = [];
-						for (var i = 0; i < game.treasures.length; i++) {
-							list.push(game.treasures[i].name);
-						}
-						if (list.length < lib.treasurelist.length) {
-							var name = Array.prototype.randomGet.apply(lib.treasurelist, list);
-							var treasure = game.addChessPlayer(name, "treasure", 0);
-							treasure.playerfocus(1500);
-							if (lib.config.animation && !lib.config.low_performance) {
-								setTimeout(function () {
-									treasure.$rare2();
-								}, 500);
+						for (let i = 0; i < game.players.length; i++) {
+							if (game.players[i].side != event.justacted.side) {
+								event.player = game.players[i];
+								break;
 							}
-							game.delay(3);
 						}
-					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						game.treasures[i].life--;
-						if (game.treasures[i].life <= 0) {
-							game.removeTreasure(game.treasures[i--]);
+						if (Math.random() < parseFloat(get.config("chess_treasure"))) {
+							let list = [];
+							for (let i = 0; i < game.treasures.length; i++) {
+								list.push(game.treasures[i].name);
+							}
+							if (list.length < lib.treasurelist.length) {
+								let name = Array.prototype.randomGet.apply(lib.treasurelist, list);
+								let treasure = game.addChessPlayer(name, "treasure", 0);
+								treasure.playerfocus(1500);
+								if (lib.config.animation && !lib.config.low_performance) {
+									setTimeout(function () {
+										treasure.$rare2();
+									}, 500);
+								}
+								await game.delay(3);
+							}
 						}
-					}
-				});
+						for (var i = 0; i < game.treasures.length; i++) {
+							game.treasures[i].life--;
+							if (game.treasures[i].life <= 0) {
+								game.removeTreasure(game.treasures[i--]);
+							}
+						}
+					},
+				]);
 			},
 			isChessNeighbour: function (a, b) {
 				if (a && a.dataset) {

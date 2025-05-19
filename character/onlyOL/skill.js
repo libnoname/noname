@@ -244,7 +244,7 @@ const skills = {
 			if (!skills.length) return;
 			const result = await player
 				.chooseButton([`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`, [skills, lib.skill.nsdianmo.$createButton]], true)
-				.set("ai", button => Math.random())
+				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!result?.links) return;
 			const skill = result.links[0];
@@ -253,11 +253,11 @@ const skills = {
 		group: ["olzhouxi_tiaoxin"],
 		subSkill: {
 			tiaoxin: {
-				trigger: { global: "roundStart" },
+				audio: "olzhouxi",
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					return lib.skill.olzhouxi_tiaoxin.logTarget(event, player).length > 0;
 				},
-				firstDo: true,
 				forced: true,
 				logTarget(event, player) {
 					return player
@@ -272,44 +272,23 @@ const skills = {
 					if (!targets.length) return;
 					const card = get.autoViewAs({ name: "sha", isCard: true });
 					for (const target of targets) {
-						if (!target.canUse(card, player, false, false)) continue;
-						await target.useCard(card, player, false);
-						/*const result = await target
-							.chooseBool(`骤袭：是否视为对${get.translation(player)}使用一张【杀】`)
-							.set("ai", () => get.effect(get.event().targetx, { name: "sha", isCard: true }, get.player(), get.player()) > 0)
-							.set("targetx", player)
-							.forResult();
-						if (result?.bool) {
-							
-						}*/
+						if (target.canUse(card, player, false, false)) await target.useCard(card, player, false);
 					}
 				},
 			},
 		},
 	},
 	olrumo: {
-		trigger: {
-			global: "roundStart",
-		},
-		firstDo: true,
-		silent: true,
-		nopop: true,
+		charlotte: true,
+		trigger: { global: "roundEnd" },
+		forced: true,
+		popup: false,
 		content() {
-			if (!player.getRoundHistory("sourceDamage", evt => evt.num > 0, 1)?.length) {
-				player.loseHp();
-			}
+			if (!player.getRoundHistory("sourceDamage", evt => evt.num > 0)?.length) player.loseHp();
 		},
-		/*init(player) {
-			player.storage.olrumo_isDemonized = true;
-		},
-		onremove(player) {
-			delete player.storage.olrumo_isDemonized;
-		},*/
 		mark: true,
 		marktext: "魔",
-		intro: {
-			content: "你已入魔",
-		},
+		intro: { content: "你已入魔" },
 	},
 	//OL界马岱
 	olqianxi: {
@@ -2815,16 +2794,16 @@ const skills = {
 	olguanbian: {
 		audio: 2,
 		trigger: {
-			global: ["phaseBefore", "roundStart"],
+			global: ["phaseBefore", "roundEnd"],
 			player: ["enterGame", "olxiongniAfter", "olfengshangAfter"],
 		},
 		filter(event, player, name) {
-			if (name == "roundStart") return game.roundNumber == 2;
+			if (name == "roundEnd") return game.roundNumber == 1;
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			if (event.triggername == "roundStart" || ["olxiongni", "olfengshang"].includes(trigger.name)) await player.removeSkills(event.name);
+			if (event.triggername == "roundEnd" || ["olxiongni", "olfengshang"].includes(trigger.name)) await player.removeSkills(event.name);
 			else player.addMark(event.name, game.players.length + game.dead.length, false);
 		},
 		mod: {

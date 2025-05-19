@@ -3808,7 +3808,7 @@ export default () => {
 				_status.isRoundFilter = function (event) {
 					return event._isThreeRound === true;
 				};
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				next.player = player;
 				next.swap = function (player) {
 					if (player.side == game.me.side) {
@@ -3817,153 +3817,186 @@ export default () => {
 						return game.me;
 					}
 				};
-				next.setContent(function () {
-					"step 0";
-					var next = player.phase();
-					if (!game.players.some(current => current.classList.contains("acted"))) {
-						next._isThreeRound = true;
-					}
-					player.classList.add("acted");
-					"step 1";
-					if (player.identity != "zhu") {
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == player.side && game.players[i].identity != "zhu" && game.players[i] != player && !game.players[i].classList.contains("acted")) {
-								game.players[i].classList.add("acted");
-								game.players[i].phase();
-								break;
-							}
+				//已改为contents
+				next.setContent([
+					async (event, trigger, player) => {
+						//执行event.player的回合
+						lib.onphase.forEach(i => i());
+						const next = player.phase();
+						if (!game.players.some(current => current.classList.contains("acted"))) {
+							next._isThreeRound = true;
 						}
-					}
-					"step 2";
-					var target = event.swap(player);
-					var swap = [],
-						swap2 = [];
-					for (var i = 0; i < game.players.length; i++) {
-						//if (game.players[i].isOut()) continue;
-						if (!game.players[i].classList.contains("acted")) {
-							if (game.players[i].side == target.side) {
-								swap.push(game.players[i]);
-							} else {
-								swap2.push(game.players[i]);
-							}
-						}
-					}
-					if (swap.length == 0) {
-						if (swap2.length) {
-							target = event.swap(target);
-							swap = swap2;
-						} else {
-							for (var i = 0; i < game.players.length; i++) {
-								//if (game.players[i].isOut()) continue;
-								game.players[i].classList.remove("acted");
-							}
-							delete _status.roundStart;
-							event.redo();
-							game.delay();
-							return;
-						}
-					}
-					if (swap.length == 1) {
-						event.directresult = swap[0];
-					} else {
-						var rand = Math.random();
-						var next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
-							return target2.side == target.side && !target2.classList.contains("acted");
-						});
-						next._triggered = null;
-						next.includeOut = true;
-						next.ai = function (target2) {
-							var num = 0;
-							if (target2.countCards("j")) {
-								num -= 5;
-							}
-							if (target2.identity != "zhu") {
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i].identity != "zhu" && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
-										num -= 2;
-									}
+						player.classList.add("acted");
+						await next;
+						await event.trigger("phaseOver");
+					},
+					async (event, trigger, player) => {
+						//继续执行某一方的回合
+						if (player.identity != "zhu") {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side == player.side && game.players[i].identity != "zhu" && game.players[i] != player && !game.players[i].classList.contains("acted")) {
+									lib.onphase.forEach(i => i());
+									game.players[i].classList.add("acted");
+									await game.players[i].phase();
+									break;
 								}
 							}
-							if (rand < 1 / 3) {
-								num += 1 / (target2.hp + 1);
-							} else if (rand < 2 / 3) {
-								num += target2.countCards("h") / 5;
+							await event.trigger("phaseOver");
+						}
+					},
+					async (event, trigger, player) => {
+						//判断双方该谁执行回合
+						let target = event.swap(player);
+						let swap = [],
+							swap2 = [];
+						for (let i = 0; i < game.players.length; i++) {
+							//if (game.players[i].isOut()) continue;
+							if (!game.players[i].classList.contains("acted")) {
+								if (game.players[i].side == target.side) {
+									swap.push(game.players[i]);
+								} else {
+									swap2.push(game.players[i]);
+								}
 							}
-							return num;
-						};
-					}
-					"step 3";
-					if (event.directresult) {
-						event.player = event.directresult;
-						delete event.directresult;
-					} else if (result.bool) {
-						event.player = result.targets[0];
-					}
-					event.goto(0);
-				});
+						}
+						if (swap.length == 0) {
+							if (swap2.length) {
+								target = event.swap(target);
+								swap = swap2;
+							} else {
+								//双方的角色都执行过回合后就触发轮次结束的时机
+								for (let i = 0; i < game.players.length; i++) {
+									//if (game.players[i].isOut()) continue;
+									game.players[i].classList.remove("acted");
+								}
+								delete _status.roundStart;
+								event.redo();
+								await game.delay();
+								await event.trigger("roundEnd");
+								return;
+							}
+						}
+						if (swap.length == 1) {
+							event.directresult = swap[0];
+						} else {
+							//选择要先行动的角色
+							const rand = Math.random();
+							const next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
+								return target2.side == target.side && !target2.classList.contains("acted");
+							});
+							next._triggered = null;
+							next.includeOut = true;
+							next.ai = function (target2) {
+								let num = 0;
+								if (target2.countCards("j")) {
+									num -= 5;
+								}
+								if (target2.identity != "zhu") {
+									for (let i = 0; i < game.players.length; i++) {
+										if (game.players[i].identity != "zhu" && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
+											num -= 2;
+										}
+									}
+								}
+								if (rand < 1 / 3) {
+									num += 1 / (target2.hp + 1);
+								} else if (rand < 2 / 3) {
+									num += target2.countCards("h") / 5;
+								}
+								return num;
+							};
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (event.directresult) {
+							event.player = event.directresult;
+							delete event.directresult;
+						} else if (result.bool) {
+							event.player = result.targets[0];
+						}
+						event.goto(0);
+					},
+				]);
 			},
 			versusPhaseLoop: function (player) {
 				var next = game.createEvent("phaseLoop");
 				next.player = player;
-				next.setContent(function () {
-					"step 0";
-					if (lib.storage.zhu) {
-						player.classList.add("acted");
-					}
-					player.phase();
-					"step 1";
-					if (lib.storage.zhu) {
-						_status.currentSide = !_status.currentSide;
-						_status.round++;
-						if (_status.round >= 2 * Math.max(game.friend.length, game.enemy.length)) {
-							_status.round = 0;
-							for (var i = 0; i < game.players.length; i++) {
-								game.players[i].classList.remove("acted");
-							}
-							delete _status.roundStart;
+				//已改为contents
+				next.setContent([
+					async (event, trigger, player) => {
+						//执行回合
+						lib.onphase.forEach(i => i());
+						if (lib.storage.zhu) {
+							player.classList.add("acted");
 						}
-						var list = _status.currentSide == game.me.side ? game.friend.slice(0) : game.enemy.slice(0);
-						for (var i = 0; i < list.length; i++) {
-							if (list[i].classList.contains("acted") || list[i].isOut()) {
-								list.splice(i, 1);
-								i--;
+						await player.phase();
+						await event.trigger("phaseOver");
+					},
+					async (event, trigger, player) => {
+						//判断接着行动的一方和角色
+						if (lib.storage.zhu) {
+							_status.currentSide = !_status.currentSide;
+							_status.round++;
+							if (_status.round >= 2 * Math.max(game.friend.length, game.enemy.length)) {
+								//行动次数达到上限，触发轮次结束的时机
+								_status.round = 0;
+								await event.trigger("roundEnd");
+								for (let i = 0; i < game.players.length; i++) {
+									game.players[i].classList.remove("acted");
+								}
+								delete _status.roundStart;
 							}
-						}
-						if (list.length == 0) event.redo();
-						else if (list.length == 1 || (game.me != game.friendZhu && !lib.storage.single_control) || _status.currentSide != game.me.side) {
-							list.sort(function (a, b) {
-								if (a.countCards("j") > b.countCards("j")) return 1;
-								return a.hp - b.hp;
-							});
-							event.player = list[0];
-							event.goto(0);
+							let list = _status.currentSide == game.me.side ? game.friend.slice(0) : game.enemy.slice(0);
+							for (let i = 0; i < list.length; i++) {
+								if (list[i].classList.contains("acted") || list[i].isOut()) {
+									list.splice(i, 1);
+									i--;
+								}
+							}
+							if (list.length == 0) event.redo();
+							else if (list.length == 1 || (game.me != game.friendZhu && !lib.storage.single_control) || _status.currentSide != game.me.side) {
+								list.sort(function (a, b) {
+									if (a.countCards("j") > b.countCards("j")) return 1;
+									return a.hp - b.hp;
+								});
+								event.player = list[0];
+								event.goto(0);
+							} else {
+								const result = await game.me
+									.chooseTarget("选择要行动的角色", true, function (card, player, target) {
+										return target.classList.contains("acted") == false && target.side == game.me.side;
+									})
+									.set("includeOut", true)
+									.forResult();
+								event.player = result.targets[0];
+								event.goto(0);
+							}
 						} else {
-							game.me.chooseTarget("选择要行动的角色", true, function (card, player, target) {
-								return target.classList.contains("acted") == false && target.side == game.me.side;
-							}).includeOut = true;
+							event.player = event.player.next;
+							event.goto(0);
 						}
-					} else {
-						event.player = event.player.next;
-						event.goto(0);
-					}
-					"step 2";
-					event.player = result.targets[0];
-					event.goto(0);
-				});
+					},
+				]);
 			},
 			phaseLoopJiange: function () {
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				next.num = 0;
-				next.setContent(function () {
-					if (event.num >= 8) {
-						event.num -= 8;
+				next.setContent(async (event, trigger, player) => {
+					while (true) {
+						if (event.num >= 8) {
+							event.num -= 8;
+						}
+						const player = _status.actlist[event.num];
+						if (player.isAlive()) {
+							lib.onphase.forEach(i => i());
+							await player.phase();
+						}
+						await event.trigger("phaseOver");
+						event.num++;
+						if (event.num == _status.actlist.length) {
+							await event.trigger("roundEnd");
+						}
 					}
-					var player = _status.actlist[event.num];
-					if (player.isAlive()) {
-						player.phase();
-					}
-					event.num++;
-					event.redo();
 				});
 			},
 			replacePlayerOL: function (player) {
