@@ -2050,12 +2050,12 @@ const skills = {
 				const judgeEvent = player.judge();
 				judgeEvent.judge2 = result => result.bool;
 				judgeEvent.set("callback", async event => {
-					event.getParent().orderingCards.remove(event.judgeResult.card);
 					event.getParent(2).cards.push(event.judgeResult.card);
 				});
 				await judgeEvent;
 			}
-			if (!event.cards.length) return;
+			if (!event.cards.someInD("d")) return;
+			event.cards = event.cards.filterInD("d");
 			const list = Object.keys(lib.color);
 			const color = event.cards
 				.map(card => get.color(card))
@@ -33073,12 +33073,10 @@ const skills = {
 				targets: [target],
 			} = event;
 			const list = ["basic", "trick", "equip"].map(type => ["", "", "caoying_" + type]);
-			const {
-				result: { bool, links },
-			} = await player
+			const { result } = await player
 				.chooseButton(["凌人：猜测其有哪些类别的手牌", [list, "vcard"]], [0, 3], true)
 				.set("ai", button => {
-					return get.event("choice").includes(button.link[2]);
+					return get.event("choice").includes(button.link[2].slice(8));
 				})
 				.set(
 					"choice",
@@ -33109,8 +33107,8 @@ const skills = {
 						return choice;
 					})()
 				);
-			if (!bool) return;
-			const choices = links.map(i => i[2].slice(8));
+			if (!result?.bool) return;
+			const choices = result.links.map(i => i[2].slice(8));
 			if (!event.isMine() && !event.isOnline()) await game.delayx();
 			let num = 0;
 			["basic", "trick", "equip"].forEach(type => {
@@ -33119,9 +33117,9 @@ const skills = {
 			player.popup("猜对" + get.cnNumber(num) + "项");
 			game.log(player, "猜对了" + get.cnNumber(num) + "项");
 			if (num > 0) {
-				var map = trigger.customArgs;
-				var id = target.playerid;
-				if (!map[id]) map[id] = {};
+				const map = trigger.customArgs;
+				const id = target.playerid;
+				map[id] ??= {};
 				if (typeof map[id].extraDamage != "number") map[id].extraDamage = 0;
 				map[id].extraDamage++;
 			}

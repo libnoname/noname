@@ -197,20 +197,19 @@ const skills = {
 	},
 	twxiumu: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.countCards("h") && current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("twxiumu"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.countCards("h") > 0 && target != player;
 				})
 				.set("ai", target => {
-					const num = get.player().countCards("h") - target.countCards("h");
-					return get.attitude(get.player(), target) * (num / 2);
+					const player = get.player();
+					const num = player.countCards("h") - target.countCards("h");
+					return get.attitude(player, target) * (num / 2);
 				})
 				.forResult();
 		},
@@ -227,30 +226,32 @@ const skills = {
 				const result = await target
 					.chooseCard(`修睦：请选择点数之和大于等于13的手牌与${get.translation(player)}的手牌交换`, [1, Infinity], true, "h")
 					.set("filterOk", () => {
+						const player = get.player();
 						const selected = ui.selected.cards;
 						if (!selected.length) return false;
 						return (
 							selected.reduce((num, card) => {
-								return num + get.number(card, target);
+								return num + get.number(card, player);
 							}, 0) >= 13
 						);
 					})
 					.set("ai", card => {
-						const att = get.attitude(get.player(), get.event().sourcex);
+						const player = get.player();
+						const att = get.attitude(player, get.event().sourcex);
 						const num = ui.selected.cards.reduce((num, cardx) => {
-							return num + get.number(cardx, target);
+							return num + get.number(cardx, player);
 						}, 0);
 						if (num < 13) {
 							if (att > 0) 8 - get.value(card);
-							return Math.ceil(get.number(card, get.player()) / 4) * (6 - get.value(card));
+							return Math.ceil(get.number(card, player) / 4) * (6 - get.value(card));
 						}
 						return 0;
 					})
 					.set("sourcex", player)
 					.forResult();
-				cards = result.cards;
+				cards = result?.cards;
 			}
-			await target.swapHandcards(player, cards, player.getCards("h"));
+			if (get.itemtype(cards) == "cards") await target.swapHandcards(player, cards, player.getCards("h"));
 		},
 		ai: {
 			//法正恩怨的ai
@@ -17461,8 +17462,7 @@ const skills = {
 				game
 					.getAllGlobalHistory("everything", evt => evt.name === "dying")
 					.map(evt => evt.player)
-					.unique()
-					.length;
+					.unique().length;
 			event.result = await player
 				.chooseTarget([1, num], get.prompt(skillName), `令至多${get.cnNumber(num)}名角色各摸一张牌`)
 				.set("ai", target => {

@@ -6857,29 +6857,17 @@ const skills = {
 	},
 	scls_lingren: {
 		audio: "xinfu_lingren",
-		trigger: { player: "useCardToPlayered" },
+		inherit: "xinfu_lingren",
 		filter(event, player) {
-			if (!player.isPhaseUsing() || player.hasSkill("scls_lingren_used")) return false;
+			if (!player.isPhaseUsing()) return false;
 			if (event.getParent().triggeredTargets3.length > 1) return false;
 			if (event.card.name === "sha") return true;
 			return get.tag(event.card, "damage") && get.type(event.card) === "trick";
 		},
 		derivation: ["jianxiong", "xingshang"],
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt(event.name.slice(0, -5)), "选择一名目标角色并猜测其手牌构成", (card, player, target) => {
-					return _status.event.targets.includes(target);
-				})
-				.set("ai", target => {
-					return 2 - get.attitude(_status.event.player, target);
-				})
-				.set("targets", trigger.targets)
-				.forResult();
-		},
 		async content(event, trigger, player) {
-			player.addTempSkill("scls_lingren_used", "phaseUseAfter");
 			const target = event.targets[0];
-			const result = await player
+			const { result } = await player
 				.chooseButton(["凌人：猜测其有哪些类别的手牌", [["basic", "trick", "equip"], "vcard"]], [0, 3], true)
 				.set("ai", button => {
 					return get.event("choice").includes(button.link[2]);
@@ -6899,9 +6887,8 @@ const skills = {
 						if (!choice.includes("equip") && cards > 6 * Math.random()) choice.push("equip");
 						return choice;
 					})()
-				)
-				.forResult();
-			if (!result.bool) return;
+				);
+			if (!result?.bool) return;
 			const choices = result.links.map(i => i[2]);
 			await target.showHandcards();
 			let num = 0;
@@ -6910,26 +6897,15 @@ const skills = {
 			});
 			player.popup("猜对" + get.cnNumber(num) + "项");
 			game.log(player, "猜对了" + get.cnNumber(num) + "项");
-			switch (num) {
-				case 1:
-					await player.draw(2);
-				case 2:
-					var map = trigger.customArgs;
-					var id = target.playerid;
-					if (!map[id]) map[id] = {};
-					if (typeof map[id].extraDamage != "number") map[id].extraDamage = 0;
-					map[id].extraDamage++;
-				case 3:
-					player.addTempSkills(get.info(event.name).derivation, { player: "phaseBegin" });
+			if (num > 0) await player.draw(2);
+			if (num > 1) {
+				const map = trigger.customArgs;
+				const id = target.playerid;
+				map[id] ??= {};
+				if (typeof map[id].extraDamage != "number") map[id].extraDamage = 0;
+				map[id].extraDamage++;
 			}
-		},
-		ai: {
-			threaten: 2.4,
-		},
-		subSkill: {
-			used: {
-				charlotte: true,
-			},
+			if (num > 2) await player.addTempSkills(get.info(event.name).derivation, { player: "phaseBegin" });
 		},
 	},
 	scls_qinzheng: {

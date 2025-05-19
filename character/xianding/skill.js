@@ -13,31 +13,33 @@ const skills = {
 			const result = await target
 				.chooseControl("受到伤害", "回复体力")
 				.set("prompt", "伪涕：请选择一项")
-				.set("choiceList", [
-					"受到1点伤害，然后获得两张点数与你所有手牌均不同的牌",
-					"回复1点体力，然后弃置两张点数不相同的牌",
-				])
+				.set("choiceList", ["受到1点伤害，然后获得两张点数与你所有手牌均不同的牌", "回复1点体力，然后弃置两张点数不相同的牌"])
 				.set("ai", () => {
 					const player = get.player();
 					let eff1 = get.recoverEffect(player, player) - Math.min(2, player.countCards("he")),
 						eff2 = 2 + get.damageEffect(player, player);
-					return eff1 > eff2 ? "回复体力" : "受到伤害";			
+					return eff1 > eff2 ? "回复体力" : "受到伤害";
 				})
 				.forResult();
 			if (result.control == "受到伤害") {
 				await target.damage();
 				const nums = target.getCards("h").map(card => get.number(card, target));
 				let cards = [];
-				while(cards.length < 2) {
+				while (cards.length < 2) {
 					const card = get.cardPile2(card => !nums.includes(get.number(card, target)) && !cards.includes(card));
 					if (card) cards.push(card);
 					else break;
 				}
 				if (cards.length) await target.gain(cards, "gain2");
-			}
-			else {
+			} else {
 				await target.recover();
-				const num = Math.min(2, target.getCards("h").map(card => get.number(card, target)).toUniqued().length);
+				const num = Math.min(
+					2,
+					target
+						.getCards("h")
+						.map(card => get.number(card, target))
+						.toUniqued().length
+				);
 				await target
 					.chooseToDiscard(num, true, `弃置${get.cnNumber(num)}张点数不同的牌`, "he")
 					.set("filterCard", card => {
@@ -56,48 +58,48 @@ const skills = {
 	},
 	dcyuanrong: {
 		trigger: {
-        	player: "phaseEnd",
-    	},
-    	filter(event, player) {
-    	    if (!player.getHistory("lose").length) return false;
-    	    let cardsLost = [];
-        	game.getGlobalHistory("cardMove", evt => {
-        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-        	        cardsLost.addArray(evt.cards);
-        	    }
-        	});
-        	cardsLost = cardsLost.filterInD("d");
+			player: "phaseEnd",
+		},
+		filter(event, player) {
+			if (!player.getHistory("lose").length) return false;
+			let cardsLost = [];
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+					cardsLost.addArray(evt.cards);
+				}
+			});
+			cardsLost = cardsLost.filterInD("d");
 			return cardsLost.some(card => get.color(card) == "black");
-    	},
+		},
 		async cost(event, trigger, player) {
 			let cardsLost = [];
-        	game.getGlobalHistory("cardMove", evt => {
-        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-        	        cardsLost.addArray(evt.cards);
-        	    }
-        	});
-        	cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "black");
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+					cardsLost.addArray(evt.cards);
+				}
+			});
+			cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "black");
 			let cards = get.inpileVCardList(info => {
-        	    if (get.type(info[2]) != "trick") return false;
+				if (get.type(info[2]) != "trick") return false;
 				return cardsLost.some(card => {
-        	    	const cardx = get.autoViewAs({ name: info[2] }, [card]);
-        	    	return player.hasUseTarget(cardx, true, true);
+					const cardx = get.autoViewAs({ name: info[2] }, [card]);
+					return player.hasUseTarget(cardx, true, true);
 				});
-        	});
+			});
 			if (!cards.length) return;
 			const result = await player
 				.chooseButton([`###${get.prompt("dcyuanrong")}###弃牌堆`, cardsLost, "###可转化锦囊牌###", [cards, "vcard"]], 2)
 				.set("filterButton", button => {
 					if (!Array.isArray(button.link)) return ui.selected.buttons.length == 0;
 					const cardx = get.autoViewAs({ name: button.link[2] }, ui.selected.buttons);
-        	    	return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+					return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
 				.set("complexButton", true)
 				.set("ai", button => {
 					if (ui.selected.buttons.length == 0) return Math.random();
 					if (!Array.isArray(button.link)) return 0;
 					const cardx = get.autoViewAs({ name: button.link[2] });
-        	    	return player.getUseValue(cardx, true, true);
+					return player.getUseValue(cardx, true, true);
 				})
 				.forResult();
 			event.result = {
@@ -109,41 +111,40 @@ const skills = {
 		async content(event, trigger, player) {
 			const { cards, cost_data: name } = event;
 			const card = get.autoViewAs({ name: name }, cards);
-        	if (player.hasUseTarget(card, true, true)) await player.chooseUseTarget(card, true, cards);
+			if (player.hasUseTarget(card, true, true)) await player.chooseUseTarget(card, true, cards);
 			let cardsLost = [];
-        	game.getGlobalHistory("cardMove", evt => {
-        	    if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-        	        cardsLost.addArray(evt.cards);
-        	    }
-        	});
-        	cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "red");
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+					cardsLost.addArray(evt.cards);
+				}
+			});
+			cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "red");
 			let cardxs = get.inpileVCardList(info => {
-        	    if (get.type(info[2]) != "basic") return false;
+				if (get.type(info[2]) != "basic") return false;
 				return cardsLost.some(card => {
-        	    	const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
-        	    	return player.hasUseTarget(cardx, true, true);
+					const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+					return player.hasUseTarget(cardx, true, true);
 				});
-        	});
+			});
 			if (!cardxs.length) return;
 			let bcard, btarget;
 			if (cardsLost.length == 1 && cardxs.length == 1) {
 				bcard = cardsLost;
 				btarget = cardxs[0];
-			}
-			else {
+			} else {
 				const result = await player
 					.chooseButton([`###圆融：将一张红色牌当基本牌使用###弃牌堆`, cardsLost, "###可转化基本牌###", [cardxs, "vcard"]], 2, true)
 					.set("filterButton", button => {
 						if (!Array.isArray(button.link)) return ui.selected.buttons.length == 0;
 						const cardx = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, ui.selected.buttons);
-        		    	return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+						return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 					})
 					.set("complexButton", true)
 					.set("ai", button => {
 						if (ui.selected.buttons.length == 0) return Math.random();
 						if (!Array.isArray(button.link)) return 0;
 						const cardx = get.autoViewAs({ name: button.link[2] });
-        	    		return player.getUseValue(cardx, true, true);
+						return player.getUseValue(cardx, true, true);
 					})
 					.forResult();
 				if (!result.bool) return;
@@ -151,7 +152,7 @@ const skills = {
 				btarget = result.links[1];
 			}
 			const cardx = get.autoViewAs({ name: btarget[2], nature: btarget[3] }, bcard);
-        	if (player.hasUseTarget(cardx, true, true)) await player.chooseUseTarget(cardx, true, bcard);
+			if (player.hasUseTarget(cardx, true, true)) await player.chooseUseTarget(cardx, true, bcard);
 		},
 	},
 	//朱铄
@@ -187,41 +188,40 @@ const skills = {
 				.set("choice", eff < 0)
 				.forResult();
 			if (result.bool) {
-        		trigger.targets.length = 0;
-        		trigger.all_excluded = true;
-        		game.log(trigger.card, "被无效了");
+				trigger.targets.length = 0;
+				trigger.all_excluded = true;
+				game.log(trigger.card, "被无效了");
 				const card = { name: "jiu", isCard: true };
 				if (trigger.player.hasUseTarget(card)) await trigger.player.chooseUseTarget(card, false, true);
-			}
-			else {
+			} else {
 				await player.draw();
 			}
 		},
 	},
 	dcjilie: {
-    	enable: "phaseUse",
-    	filterCard(card, player) {
-    	    return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
-    	},
+		enable: "phaseUse",
+		filterCard(card, player) {
+			return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+		},
 		position: "he",
-    	selectCard: [1,4],
-    	complexCard: true,
-    	complexSelect: true,
+		selectCard: [1, 4],
+		complexCard: true,
+		complexSelect: true,
 		usable: 1,
 		filter(event, player) {
 			return player.countCards("he");
 		},
 		async content(event, trigger, player) {
 			let num = event.cards.map(i => get.suit(i, player)).toUniqued().length * 2;
-			while(num > 0) {
+			while (num > 0) {
 				num--;
-				const judgeEvent = player.judge(card => card.name == "sha" ? 10 : -1);
+				const judgeEvent = player.judge(card => (card.name == "sha" ? 10 : -1));
 				judgeEvent.set("callback", async event => {
 					if (event.card.name == "sha" && player.hasUseTarget(event.card, false)) {
 						const next = player.chooseUseTarget(event.card, false, "nodistance");
 						next.set("oncard", () => {
 							_status.event.baseDamage += player.getHistory("useCard", evt => evt.card.name == "sha").length;
-						})
+						});
 						await next;
 					}
 				});
@@ -21801,21 +21801,20 @@ const skills = {
 		audio: "lvli",
 		trigger: { player: "damageEnd", source: "damageSource" },
 		filter(event, player, name) {
-			var stat = player.getStat().skill;
-			if (!stat.xinlvli) stat.xinlvli = 0;
 			if (name == "damageEnd" && !player.storage.beishui) return false;
-			if (stat.xinlvli > 1) return false;
-			if (stat.xinlvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) return false;
 			if (player.hp == player.countCards("h")) return false;
 			if (player.hp < player.countCards("h") && player.isHealthy()) return false;
 			return true;
 		},
-		content() {
-			var stat = player.getStat().skill;
-			stat.xinlvli++;
-			var num = player.hp - player.countCards("h");
-			if (num > 0) player.draw(num);
-			else player.recover(-num);
+		usable(skill, player) {
+			let num = 1;
+			if (player.storage.choujue && player === _status.currentPhase) num++;
+			return num;
+		},
+		async content(event, trigger, player) {
+			const num = player.hp - player.countCards("h");
+			if (num > 0) await player.draw(num);
+			else await player.recover(-num);
 		},
 		//group:'lvli3',
 	},

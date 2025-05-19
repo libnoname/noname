@@ -14145,15 +14145,14 @@ const skills = {
 		},
 	},
 	yijue2: {
+		charlotte: true,
 		mark: true,
 		mod: {
 			cardEnabled2(card) {
 				if (get.position(card) == "h") return false;
 			},
 		},
-		intro: {
-			content: "不能使用或打出手牌",
-		},
+		intro: { content: "不能使用或打出手牌" },
 	},
 	retieji: {
 		audio: 2,

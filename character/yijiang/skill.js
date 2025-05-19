@@ -1119,9 +1119,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const num = game.countGroup();
-			await player.recover(event.num - player.hp);
-			const num2 = num - player.countCards("h");
-			if (num2) await player.draw(num2);
+			await player.recoverTo(num);
+			await player.drawTo(num);
 			if (num > 2) await player.turnOver();
 		},
 		ai: {
@@ -1144,7 +1143,7 @@ const skills = {
 			dc_guansuo: "dangxian_guansuo",
 			guansuo: "dangxian_guansuo",
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 		group: "xindangxian_rewrite",

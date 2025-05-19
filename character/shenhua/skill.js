@@ -1335,10 +1335,10 @@ const skills = {
 			}
 			if (disables.length > 0) await player.disableEquip(disables);
 			await player.disableJudge();
-			player.addTempSkill("drlt_xiongluan1");
-			player.storage.drlt_xiongluan1 = event.target;
-			event.target.addSkill("drlt_xiongluan2");
-			event.target.markSkillCharacter("drlt_xiongluan1", player, "雄乱", "无法使用或打出任何手牌");
+			const { target } = event;
+			player.addTempSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", [target]);
+			target.addTempSkill(event.name + "_ban");
 		},
 		ai: {
 			order: 13,
@@ -1364,52 +1364,49 @@ const skills = {
 				},
 			},
 		},
-	},
-	drlt_xiongluan1: {
-		onremove(player) {
-			player.storage.drlt_xiongluan1.removeSkill("drlt_xiongluan2");
-			player.storage.drlt_xiongluan1.unmarkSkill("drlt_xiongluan1");
-			delete player.storage.drlt_xiongluan1;
-		},
-		mod: {
-			targetInRange(card, player, target) {
-				if (target.hasSkill("drlt_xiongluan2")) {
-					return true;
-				}
-			},
-			cardUsableTarget(card, player, target) {
-				if (target.hasSkill("drlt_xiongluan2")) return true;
-			},
-		},
-		charlotte: true,
-	},
-	drlt_xiongluan2: {
-		mod: {
-			cardEnabled2(card, player) {
-				if (get.position(card) == "h") return false;
-			},
-		},
-		ai: {
+		subSkill: {
 			effect: {
-				target(card, player, target) {
-					if (!target._drlt_xiongluan2_effect && get.tag(card, "damage")) {
-						target._drlt_xiongluan2_effect = true;
-						const eff = get.effect(target, card, player, target);
-						delete target._drlt_xiongluan2_effect;
-						if (eff > 0) return [1, -999999];
-						if (eff < 0) return 114514;
-					}
+				charlotte: true,
+				onremove: true,
+				mod: {
+					targetInRange(card, player, target) {
+						if (player.getStorage("drlt_xiongluan_effect").includes(target)) return true;
+					},
+					cardUsableTarget(card, player, target) {
+						if (player.getStorage("drlt_xiongluan_effect").includes(target)) return true;
+					},
+				},
+				intro: { content: "本回合对$使用牌无距离和次数限制且其不能使用和打出手牌" },
+			},
+			ban: {
+				charlotte: true,
+				mark: true,
+				mod: {
+					cardEnabled2(card, player) {
+						if (get.position(card) == "h") return false;
+					},
+				},
+				intro: { content: "本回合不能使用或打出手牌" },
+				ai: {
+					effect: {
+						target(card, player, target) {
+							if (!target._drlt_xiongluan2_effect && get.tag(card, "damage")) {
+								target._drlt_xiongluan2_effect = true;
+								const eff = get.effect(target, card, player, target);
+								delete target._drlt_xiongluan2_effect;
+								if (eff > 0) return [1, -999999];
+								if (eff < 0) return 114514;
+							}
+						},
+					},
 				},
 			},
 		},
-		charlotte: true,
 	},
 	drlt_congjian: {
 		audio: 2,
 		audioname2: { tongyuan: "ocongjian_tongyuan" },
-		trigger: {
-			target: "useCardToTargeted",
-		},
+		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return get.type(event.card) == "trick" && event.targets.length > 1 && player.countCards("he") > 0;
 		},
@@ -1417,25 +1414,26 @@ const skills = {
 			event.result = await player
 				.chooseCardTarget({
 					filterCard: true,
-					selectCard: 1,
 					position: "he",
 					filterTarget(card, player, target) {
 						return player != target && _status.event.targets.includes(target);
 					},
 					ai1(card) {
+						const player = get.player();
 						if (card.name == "du") return 20;
-						if (_status.event.player.storage.drlt_xiongluan && get.type(card) == "equip") return 15;
+						if (player.storage.drlt_xiongluan && get.type(card) == "equip") return 15;
 						return 6 - get.value(card);
 					},
 					ai2(target) {
-						const att = get.attitude(_status.event.player, target);
+						const player = get.player();
+						const att = get.attitude(player, target);
 						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
 							if (target.hasSkillTag("nodu")) return 0.1;
 							return 1 - att;
 						}
 						return att - 3;
 					},
-					prompt: get.prompt2("drlt_congjian"),
+					prompt: get.prompt2(event.skill),
 					targets: trigger.targets,
 				})
 				.forResult();
