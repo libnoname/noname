@@ -4554,7 +4554,7 @@ const skills = {
 		},
 		subSkill: {
 			xiongluan: {
-				trigger: { player: ["phaseEnd", "useCard"] },
+				trigger: { player: ["phaseEnd", "useCard1"] },
 				charlotte: true,
 				forced: true,
 				popup: false,
@@ -4564,13 +4564,10 @@ const skills = {
 				},
 				filter(event, player) {
 					if (event.name == "useCard") {
-						if (event.addCount === false) return false;
+						if (event.addCount === false || !event.targets.some(target => player.getStorage("dclvecheng_xiongluan").includes(target))) return false;
 						return player.hasHistory("lose", evt => {
 							if (evt.getParent() != event) return false;
-							for (var i in evt.gaintag_map) {
-								if (evt.gaintag_map[i].includes("dclvecheng_xiongluan")) return true;
-							}
-							return false;
+							return Object.values(evt.gaintag_map).flat().includes("dclvecheng_xiongluan");
 						});
 					}
 					return player.getStorage("dclvecheng_xiongluan").some(i => i.isIn());

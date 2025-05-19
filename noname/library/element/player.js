@@ -8578,11 +8578,11 @@ export class Player extends HTMLDivElement {
 			}
 			if (info.mark) {
 				if (info.mark == "card" && get.itemtype(this.storage[skill]) == "card") {
-					this.markSkill(skill, null, this.storage[skill]);
+					this.markSkill(skill, null, this.storage[skill], nobroadcast);
 				} else if (info.mark == "card" && get.itemtype(this.storage[skill]) == "cards") {
-					this.markSkill(skill, null, this.storage[skill][0]);
+					this.markSkill(skill, null, this.storage[skill][0], nobroadcast);
 				} else if (info.mark == "image") {
-					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]));
+					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]), nobroadcast);
 				} else if (info.mark == "character") {
 					var intro = info.intro.content;
 					if (typeof intro == "function") {
@@ -8600,9 +8600,9 @@ export class Player extends HTMLDivElement {
 					} else {
 						caption = get.translation(skill);
 					}
-					this.markSkillCharacter(skill, this.storage[skill], caption, intro);
+					this.markSkillCharacter(skill, this.storage[skill], caption, intro, nobroadcast);
 				} else {
-					this.markSkill(skill, null, null);
+					this.markSkill(skill, null, null, nobroadcast);
 				}
 			}
 			game.callHook("addSkillCheck", [skill, this]);
@@ -8660,7 +8660,7 @@ export class Player extends HTMLDivElement {
 		//然后处理获得技能的操作
 		if (!Array.isArray(this.additionalSkills[skill])) this.additionalSkills[skill] = [];
 		for (var i = 0; i < skillsToAdd.length; i++) {
-			this.addSkill(skillsToAdd[i], null, true, true);
+			this.addSkill(skillsToAdd[i], null, null, true);
 			this.additionalSkills[skill].push(skillsToAdd[i]);
 		}
 		game.broadcast(
@@ -9081,7 +9081,7 @@ export class Player extends HTMLDivElement {
 			}
 		} else {
 			if (this.hasSkill(skill) && this.tempSkills[skill] == undefined) return;
-			this.addSkill(skill, checkConflict, true, true);
+			this.addSkill(skill, checkConflict, false, true);
 
 			if (!expire) expire = { global: ["phaseAfter", "phaseBeforeStart"] };
 			else if (typeof expire == "string" || Array.isArray(expire)) expire = { global: expire };

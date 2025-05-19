@@ -243,7 +243,7 @@ const skills = {
 				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
-				.chooseButton([`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`, [skills, lib.skill.nsdianmo.$createButton]], true)
+				.chooseButton([`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`, [skills, lib.skill.hsdianmo.$createButton]], true)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!result?.links) return;

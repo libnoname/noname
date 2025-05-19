@@ -20239,19 +20239,18 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		logTarget: "player",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var hs = player.getCards("h");
-			if (hs.length) player.discard(hs);
-			"step 1";
-			var num = 1 - trigger.player.hp;
-			if (num) trigger.player.recover(num);
-			"step 2";
-			if (_status.currentPhase && _status.currentPhase.isIn()) {
-				var next = _status.currentPhase.damage();
-				event.next.remove(next);
-				trigger.after.push(next);
+			const hs = player.getCards("h");
+			if (hs.length) {
+				await player.modedDiscard(hs);
+			}
+			await trigger.player.recoverTo(1);
+			if (_status.currentPhase?.isIn()) {
+				player
+					.when({ global: "dyingAfter" })
+					.filter(evt => evt === trigger)
+					.then(() => _status.currentPhase?.damage());
 			}
 		},
 	},

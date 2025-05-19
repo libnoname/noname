@@ -3715,35 +3715,32 @@ const skills = {
 	//珪固
 	hm_tuntian: {
 		trigger: { player: "phaseZhunbeiBegin" },
-		filter(event, player) {
-			return !player.hasAllHistory("custom", evt => evt.hm_tuntian);
-		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.getHistory("custom").push({ hm_tuntian: true });
 			player.addTempSkill("hm_tuntian_temp", { player: "hm_qianjunAfter" });
+			player.addMark("hm_tuntian_temp", 1, false);
 		},
 		subSkill: {
 			temp: {
 				mod: {
 					maxHandcard(player, num) {
-						return num + 1;
+						return num + player.countMark("hm_tuntian_temp");
 					},
 				},
 				trigger: {
-					player: "phaseDrawBegin2",
-					source: "damageBegin1",
+					player: ["phaseDrawBegin2", "damageBegin3"],
 				},
 				forced: true,
 				filter(event, player) {
 					if (event.name == "phaseDraw") return !event.numFixed;
-					return game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0;
+					return game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.player == player).indexOf(event) == 0;
 				},
 				async content(event, trigger, player) {
-					trigger.num++;
+					trigger.num += player.countMark(event.name);
 				},
+				onremove: true,
 				mark: true,
-				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次造成的伤害+1" },
+				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次造成的伤害+#" },
 			},
 		},
 	},
@@ -5053,7 +5050,8 @@ const skills = {
 			return target.countCards("h") > 0;
 		},
 		async content(event, trigger, player) {
-			const { targets } = event;
+			const { targets } = event,
+				target=targets[0];
 			const dialog = [
 				"请选择一项",
 				[
@@ -5064,7 +5062,7 @@ const skills = {
 					"textbutton",
 				],
 			];
-			const next = targets[0].chooseButton(dialog, true);
+			const next = target.chooseButton(dialog, true);
 			next.set("filterButton", function (button) {
 				const evt = get.event();
 				if (button.link == "black") {
@@ -5073,20 +5071,17 @@ const skills = {
 				return evt.player.countCards("h", { color: "red" });
 			});
 			const { result } = await next;
-			switch (result.links[0]) {
-				case "black":
-					game.log(targets[0], "选择了黑色");
-					await targets[0].loseToSpecial(targets[0].getCards("h", { color: "black" }), "hm_zhouyuan_expansion");
-					await player.loseToSpecial(player.getCards("h", { color: "red" }), "hm_zhouyuan_expansion");
-					break;
-				case "red":
-					game.log(targets[0], "选择了红色");
-					await targets[0].loseToSpecial(targets[0].getCards("h", { color: "red" }), "hm_zhouyuan_expansion");
-					await player.loseToSpecial(player.getCards("h", { color: "black" }), "hm_zhouyuan_expansion");
-					break;
+			if(result?.links){
+				const color1=result.links[0],
+					cards1=target.getCards("h", { color: color1 }),
+					cards2=player.getCards("h", { color: color1=="black"?"red":"black" });
+				game.log(target,"选择了",color1);
+				await target.addToExpansion(cards1,"draw").set("gaintag",["hm_zhouyuan_expansion"]);
+				target.addTempSkill("hm_zhouyuan_expansion",["phaseChange","phaseAfter","phaseBeforeStart"]);
+				await player.addToExpansion(cards2,"draw").set("gaintag",["hm_zhouyuan_expansion"]);
+				player.addTempSkill("hm_zhouyuan_expansion",["phaseChange","phaseAfter","phaseBeforeStart"]);
+				
 			}
-			player.addSkill("hm_zhouyuan_expansion");
-			targets[0].addSkill("hm_zhouyuan_expansion");
 		},
 		subSkill: {
 			expansion: {
@@ -5097,18 +5092,19 @@ const skills = {
 				popup: false,
 				charlotte: true,
 				filter(event, player) {
-					return player.getCards("s", card => card.hasGaintag("hm_zhouyuan_expansion")).length > 0;
+					return player.countExpansions("hm_zhouyuan_expansion");
 				},
 				async content(event, trigger, player) {
-					var cards = player.getCards("s", card => card.hasGaintag("hm_zhouyuan_expansion"));
-					await player.gain(cards, "draw");
+					const cards = player.getExpansions("hm_zhouyuan_expansion");
 					game.log(player, "收回了" + get.cnNumber(cards.length) + "张“咒兵”牌");
-					player.removeSkill("hm_zhouyuan_expansion");
+					await player.gain(cards, "draw");
 				},
+				onremove: true,
+				mark: true,
 				intro: {
-					markcount: "expansion",
+					markcount:"expansion",
 					mark(dialog, storage, player) {
-						var cards = player.getCards("s", card => card.hasGaintag("hm_zhouyuan_expansion"));
+						const cards = player.getExpansions("hm_zhouyuan_expansion");
 						if (player.isUnderControl(true)) dialog.addAuto(cards);
 						else return "共有" + get.cnNumber(cards.length) + "张牌";
 					},
@@ -5124,17 +5120,128 @@ const skills = {
 		},
 	},
 	hm_zhaobing: {
-		global: "hm_zhaobing_global",
-		subSkill: {
-			global: {
+		trigger: {
+			player: ["loseEnd","dying","phaseBefore","phaseAfter","dyingAfter","die"],
+			global: ["equipEnd","addJudgeEnd","gainEnd","loseAsyncEnd","addToExpansionEnd"],
+		},
+		filter(event, player) {
+			return (player.countExpansions("hm_zhouyuan_expansion") && event.name != "die" ) ^ player.hasSkill("hm_zhaobing_in");
+		},
+		forced: true,
+		firstDo: true,
+		silent: true,
+		forceDie: true,
+		content() {
+			if (player.countExpansions("hm_zhouyuan_expansion") && trigger.name != "die") {
+				const cards = game.filterPlayer().map(target=>target.getExpansions("hm_zhouyuan_expansion")).flat();
+				const cardsx = cards.map(card => {
+					const cardx = ui.create.card();
+					cardx.init(get.cardInfo(card));
+					cardx._cardid = card.cardid;
+					return cardx;
+				});
+				player.directgains(cardsx, null, "hm_zhaobing_tag");
+				player.addSkill("hm_zhaobing_in");
+			} else player.removeSkill("hm_zhaobing_in");
+		},
+		ai:{
+			combo:"hm_zhouyuan",
+		},
+		subSkill:{
+			tag:{},
+			in:{
 				charlotte: true,
-				mod: {
-					cardEnabled2(card, player, result) {
-						if (card.hasGaintag("hm_zhouyuan_expansion") && result) {
-							return player.hasSkill("hm_zhaobing");
-						}
-						return result;
-					},
+				trigger: {
+					player: "addToExpansionEnd",
+				},
+				filter(event, player) {
+					return event.gaintag.includes("hm_zhouyuan_expansion");
+				},
+				forced: true,
+				locked: false,
+				silent: true,
+				content() {
+					"step 0";
+					const cards2 = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag"));
+					if (player.isOnline2()) {
+						player.send(
+							function (cards, player) {
+								cards.forEach(i => i.delete());
+								if (player == game.me) ui.updatehl();
+							},
+							cards2,
+							player
+						);
+					}
+					cards2.forEach(i => i.delete());
+					if (player == game.me) ui.updatehl();
+					"step 1";
+					const cards = game.filterPlayer().map(target=>target.getExpansions("hm_zhouyuan_expansion")).flat();
+					const cardsx = cards.map(card => {
+						const cardx = ui.create.card();
+						cardx.init(get.cardInfo(card));
+						cardx._cardid = card.cardid;
+						return cardx;
+					});
+					player.directgains(cardsx, null, "hm_zhaobing_tag");
+				},
+				onremove(player) {
+					const cards2 = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag"));
+					if (player.isOnline2()) {
+						player.send(
+							function (cards, player) {
+								cards.forEach(i => i.delete());
+								if (player == game.me) ui.updatehl();
+							},
+							cards2,
+							player
+						);
+					}
+					cards2.forEach(i => i.delete());
+					if (player == game.me) ui.updatehl();
+				},
+				group: "hm_zhaobing_use",
+			},
+			use:{
+				charlotte: true,
+				trigger: {
+					player: ["useCardBefore","respondBefore"],
+				},
+				filter(event, player) {
+					const cards = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag") && card._cardid);
+					return (
+						event.cards &&
+						event.cards.some(card => {
+							return cards.includes(card);
+						})
+					);
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				content() {
+					const idList = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag")).map(i => i._cardid);
+					const cards = game.filterPlayer().map(target=>target.getExpansions("hm_zhouyuan_expansion")).flat();
+					const cards2 = [];
+					for (const card of trigger.cards) {
+						const cardx = cards.find(cardx => cardx.cardid == card._cardid);
+						if (cardx) cards2.push(cardx);
+					}
+					const cards3 = trigger.cards.slice();
+					trigger.cards = cards2;
+					trigger.card.cards = cards2;
+					if (player.isOnline2()) {
+						player.send(
+							function (cards, player) {
+								cards.forEach(i => i.delete());
+								if (player == game.me) ui.updatehl();
+							},
+							cards3,
+							player
+						);
+					}
+					cards3.forEach(i => i.delete());
+					if (player == game.me) ui.updatehl();
 				},
 			},
 		},
@@ -16926,6 +17033,11 @@ const skills = {
 	},
 	//孙綝
 	zyshilu: {
+		init() {
+			if (!_status.characterlist) {
+				lib.skill.pingjian.initList();
+			}
+		},
 		audio: 2,
 		preHidden: true,
 		trigger: { global: "dieAfter" },
