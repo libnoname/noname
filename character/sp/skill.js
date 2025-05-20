@@ -19593,6 +19593,7 @@ const skills = {
 			if (!control) return;
 			await target.addSkills(control);
 		},
+		derivation: ["olfengzi", "oljizhan"],
 	},
 	//邓芝
 	olxiuhao: {
@@ -25834,6 +25835,7 @@ const skills = {
 			player.addMark("fanghun", trigger.num || 1);
 			player.addMark("fanghun2", trigger.num || 1, false);
 		},
+		derivation: "fanghun_sha",
 		group: ["fanghun_sha", "fanghun_draw"],
 		subSkill: {
 			draw: {

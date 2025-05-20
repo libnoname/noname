@@ -440,6 +440,7 @@ const skills = {
 			target.storage.remingjian_buff.push(player);
 			target.markSkill("remingjian_buff");
 		},
+		derivation: "huituo",
 		subSkill: {
 			buff: {
 				charlotte: true,

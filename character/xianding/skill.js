@@ -415,6 +415,7 @@ const skills = {
 				}
 			}
 		},
+		derivation: "rexingshang",
 		subSkill: {
 			viewAs: {
 				enable: "phaseUse",
@@ -4166,6 +4167,7 @@ const skills = {
 				player: 1,
 			},
 		},
+		derivation: "dcsbzhuanwen",
 		subSkill: {
 			effect: {
 				audio: "dcsbyaozuo",
@@ -9363,6 +9365,7 @@ const skills = {
 			player.addTempSkill("dc_zj_b_effect", { player: "phaseBegin" });
 			yield target.addAdditionalSkills("dc_zj_b_" + player.playerid, "dc_zj_a", true);
 		},
+		derivation: "dc_zj_a",
 		subSkill: {
 			effect: {
 				charlotte: true,
@@ -16725,6 +16728,7 @@ const skills = {
 			for (var target of targets) target.addSkills("dcshoutan");
 			game.delayx();
 		},
+		derivation: "dcshoutan",
 		global: "dcyaoyi_blocker",
 		subSkill: {
 			blocker: {

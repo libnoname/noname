@@ -1683,6 +1683,7 @@ const skills = {
 				})
 				.forResult();
 		},
+		derivation: "stdjiaozhao",
 		async content(event, trigger, player) {
 			await player.useSkill("stdjiaozhao", event.targets);
 		},
