@@ -410,4 +410,5 @@ window.noname_character_replace = {
 	clan_zhongyu: ["clan_zhongyu", "dc_zhongyu"],
 	guanhai: ["ol_guanhai", "guanhai"],
 	zerong: ["zerong", "std_zerong"],
+	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
 };
