@@ -281,6 +281,11 @@ export class Dialog extends HTMLDivElement {
 			this.buttons = this.buttons.concat(ui.create.buttons(item, "player", buttons, noclick));
 		} else if (item[1] == "textbutton") {
 			ui.create.textbuttons(item[0], this, noclick);
+		} else if (item[1] == "skill") {
+			var buttons = ui.create.div(".buttons", this.content);
+			if (zoom) buttons.classList.add("smallzoom");
+			// @ts-ignore
+			this.buttons = this.buttons.concat(ui.create.buttons(item[0], lib.skill.hsdianmo.$createButton, buttons, noclick));
 		} else {
 			var buttons = ui.create.div(".buttons", this.content);
 			if (zoom) buttons.classList.add("smallzoom");

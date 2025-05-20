@@ -9024,7 +9024,7 @@ const skills = {
 				var info = get.info(i);
 				return info && !info.charlotte;
 			});
-			var next = player.chooseButton(["请选择失去任意个技能", [skills, lib.skill.hsdianmo.$createButton]]);
+			var next = player.chooseButton(["请选择失去任意个技能", [skills, "skill"]]);
 			next.set("forced", true);
 			next.set("selectButton", [1, skills.length]);
 			next.set("ai", function (button) {

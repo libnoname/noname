@@ -232,20 +232,8 @@ game.import("card", function () {
 						return info && !info.charlotte;
 					});
 					if (!skills.length) return;
-					const list = skills.map(skill => [
-						skill,
-						'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
-							(() => {
-								let str = get.translation(skill);
-								if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
-								return str;
-							})() +
-							"</div><div>" +
-							lib.translate[skill + "_info"] +
-							"</div></div>",
-					]);
 					const links = await player
-						.chooseButton(["选择获得一个技能", [list, "textbutton"]])
+						.chooseButton(["选择获得一个技能", [skills, "skill"]])
 						.set("displayIndex", false)
 						.set("ai", button => {
 							const player = get.player();
