@@ -20,7 +20,8 @@ const characterSort = {
 	offline_yanyou: ["yy_quyi", "yy_gongsunzan", "yy_wenchou", "yy_gongsunyuan", "yy_yuanshao", "yy_simayi", "yy_caorui", "yy_zhaoyun", "yy_quancong"],
 	offline_jingyang: ["jy_caocao", "jy_caoren", "jy_zhugeliang", "jy_pangtong", "jy_lusu", "jy_zhangzhao", "jy_zhouyu", "jy_huanggai"],
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
-	offline_others: ["chenshou"],
+	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
+	//offline_others: [],
 };
 
 const characterSortTranslate = {
@@ -47,6 +48,7 @@ const characterSortTranslate = {
 	offline_jiudin: "九鼎系列",
 	offline_yanyou: "燕幽烽火",
 	offline_jingyang: "荆扬对垒",
+	offline_qingshi: "特典·青史翰墨",
 	offline_shichangshi: "蛇年限定·十常侍",
 };
 

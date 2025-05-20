@@ -20200,6 +20200,7 @@ const skills = {
 			},
 		},
 	},
+	//TW赵襄
 	twfuhan: {
 		audio: "fuhan",
 		trigger: { player: "phaseZhunbeiBegin" },
@@ -20219,16 +20220,14 @@ const skills = {
 			if (player.hp <= 2 && player.storage.fanghun >= 3) return true;
 			return false;
 		},
-		content() {
-			"step 0";
-			var num = Math.max(2, player.storage.fanghun);
+		async content(event, trigger, player) {
+			let num = Math.max(2, player.storage.fanghun);
 			num = Math.min(num, 8);
-			event.num = num;
 			player.removeMark("fanghun", player.storage.fanghun);
 			player.awakenSkill(event.name);
+			let list = [];
 			if (_status.characterlist) {
-				list = [];
-				for (var i = 0; i < _status.characterlist.length; i++) {
+				for (let i = 0; i < _status.characterlist.length; i++) {
 					var name = _status.characterlist[i];
 					if (lib.character[name][1] == "shu") list.push(name);
 				}
@@ -20248,23 +20247,20 @@ const skills = {
 				list.remove(players[i].name2);
 			}
 			list.remove("zhaoxiang");
-			player.chooseButton(["扶汉：选择获得一张武将牌上的所有技能", [list.randomGets(5), "character"]], true);
-			"step 1";
-			if (result.bool) {
+			const result = await player.chooseButton(["扶汉：选择获得一张武将牌上的所有技能", [list.randomGets(5), "character"]], true).forResult();
+			if (result?.links) {
 				var name = result.links[0];
 				player.flashAvatar("twhuashen", name);
 				game.log(player, "获得了", "#y" + get.translation(name), "的所有技能");
-				player.addSkills(lib.character[name][3]);
+				await player.addSkills(lib.character[name][3]);
 			}
-			"step 2";
-			var num = event.num - player.maxHp;
-			if (num > 0) player.gainMaxHp(num);
-			else player.loseMaxHp(-num);
-			player.recover();
-			"step 3";
+			num = num - player.maxHp;
+			if (num > 0) await player.gainMaxHp(num);
+			else await player.loseMaxHp(-num);
+			await player.recover();
 			var card = get.cardPile("meiyingqiang", "field");
 			if (card) {
-				player.gain(card, "gain2", "log");
+				await player.gain(card, "gain2", "log");
 			}
 		},
 		ai: { combo: "refanghun" },
@@ -20284,7 +20280,7 @@ const skills = {
 				lib.inpile.push("meiyingqiang");
 				player.equip(game.createCard("meiyingqiang", "diamond", 12));
 			} else {
-				var card = get.cardPile(function (card) {
+				const card = get.cardPile(function (card) {
 					return card.name == "meiyingqiang" && !player.getEquips(1).includes(card);
 				}, "field");
 				if (card) player.equip(card);

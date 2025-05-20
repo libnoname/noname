@@ -405,7 +405,6 @@ const skills = {
 				content() {
 					player.draw(2);
 					if (!player.getExpansions("olxiewei").some(card => get.suit(card) == "spade")) player.tempBanSkill("olyouque", "phaseUseAfter");
-					player.removeSkill(event.name);
 				},
 			},
 		},
@@ -4765,45 +4764,36 @@ const skills = {
 	},
 	olshuiyue: {
 		audio: 2,
-		group: "olshuiyue_roundEnd",
 		trigger: {
+			global: "roundEnd",
 			player: "phaseEnd",
 		},
 		forced: true,
+		filter: (event, player, name) => !(name === "roundEnd" && !player.hasCard(c => c.hasGaintag("olshuiyue"), "hej")),
 		async content(event, trigger, player) {
-			const next = player.draw(2);
-			next.gaintag = [event.name];
-			await next;
-		},
-		subSkill: {
-			roundEnd: {
-				audio: "olshuiyue",
-				trigger: {
-					global: "roundStart",
-				},
-				firstDo: true,
-				forced: true,
-				filter: (event, player) => player.hasCard(c => c.hasGaintag("olshuiyue"), "hej"),
-				async content(event, trigger, player) {
-					let cards = player.getCards("hej").filter(c => c.hasGaintag("olshuiyue"));
-					if (cards.length > 1) {
-						const { result } = await player
-							.chooseToMove("水月：将牌按顺序置于牌堆顶(左为上)", true)
-							.set("list", [["牌堆顶", cards]])
-							.set("reverse", _status.currentPhase?.next && get.attitude(player, _status.currentPhase.next) > 0)
-							.set("processAI", function (list) {
-								const cards = list[0][1].slice(0);
-								cards.sort(function (a, b) {
-									return (_status.event.reverse ? 1 : -1) * (get.value(b) - get.value(a));
-								});
-								return [cards];
+			if (event.triggername === "phaseEnd") {
+				const next = player.draw(2);
+				next.gaintag = [event.name];
+				await next;
+			} else {
+				let cards = player.getCards("hej").filter(c => c.hasGaintag("olshuiyue"));
+				if (cards.length > 1) {
+					const { result } = await player
+						.chooseToMove("水月：将牌按顺序置于牌堆顶(左为上)", true)
+						.set("list", [["牌堆顶", cards]])
+						.set("reverse", _status.currentPhase?.next && get.attitude(player, _status.currentPhase.next) > 0)
+						.set("processAI", function (list) {
+							const cards = list[0][1].slice(0);
+							cards.sort(function (a, b) {
+								return (_status.event.reverse ? 1 : -1) * (get.value(b) - get.value(a));
 							});
-						if (!result.bool) return;
-						cards = result.moved[0];
-					}
-					await player.lose(cards, ui.cardPile, false, "blank", "insert").set("log", false);
-				},
-			},
+							return [cards];
+						});
+					if (!result.bool) return;
+					cards = result.moved[0];
+				}
+				await player.lose(cards, ui.cardPile, false, "blank", "insert").set("log", false);
+			}
 		},
 	},
 	//OL轲比能
@@ -15116,10 +15106,8 @@ const skills = {
 		ai: { threaten: 3 },
 		subSkill: {
 			round: {
-				trigger: { global: "roundStart" },
-				forced: true,
 				charlotte: true,
-				popup: false,
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					var storage = player.getStorage("olzeyue_round");
 					for (var source of storage) {
@@ -15127,6 +15115,8 @@ const skills = {
 					}
 					return false;
 				},
+				forced: true,
+				popup: false,
 				content() {
 					"step 0";
 					event.targets = player.storage.olzeyue_round.slice(0).sortBySeat();

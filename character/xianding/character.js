@@ -8,7 +8,7 @@ const characters = {
 	dc_zhushuo: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["dczsshuhe", "dcjilie"],
 	},
 	v_caopi: {

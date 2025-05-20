@@ -1,9 +1,34 @@
 const characters = {
+	hs_caohuan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["hsjunwei", "hsmoran"],
+	},
+	hs_liuxuan: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["hssifen", "hsfunan"],
+		isZhugong: true,
+	},
+	hs_liuxie: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["hsjixu", "hsyouchong"],
+	},
+	hs_sunhao: {
+		sex: "male",
+		group: "wu",
+		hp: 5,
+		skills: ["hsshezuo"],
+	},
 	chenshou: {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["nschenzhi", "nsdianmo", "nszaibi"],
+		skills: ["hschenzhi", "hsdianmo", "hszaibi"],
 	},
 	drag_huaci: {
 		sex: "male",

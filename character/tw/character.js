@@ -147,7 +147,7 @@ const characters = {
 	},
 	licuilianzhaoquanding: {
 		sex: "double",
-		group: "qun",
+		group: "shu",
 		hp: 3,
 		skills: ["twciyin", "twchenglong"],
 		names: "李|翠莲-赵|全定",

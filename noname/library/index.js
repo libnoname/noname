@@ -14389,6 +14389,17 @@ export class Library {
 				nature: "fire",
 			},
 		],
+		[
+			"青史",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "📚";
+					return span.outerHTML;
+				},
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

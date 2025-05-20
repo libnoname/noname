@@ -540,7 +540,7 @@ export const Content = {
 			if (!player.disabledSlots) player.disabledSlots = {};
 			if (!player.disabledSlots[slot_key]) player.disabledSlots[slot_key] = 0;
 			player.disabledSlots[slot_key] += lose;
-			var cards = player.getEquips(slot).filter(card => !event.cards.includes(card));
+			var cards = player.getCards("e", card => get.subtypes(card).includes(slot) && !event.cards.includes(card));
 			if (cards.length > 0) {
 				if (lose >= left) {
 					event._result = { bool: true, links: cards };
@@ -3144,37 +3144,38 @@ player.removeVirtualEquip(card);
 			event.finish();
 		}
 	},
-	phaseLoop: function () {
-		"step 0";
-		var num = 1,
+	async phaseLoop(event, trigger, player) {
+		let num = 1,
 			current = player;
-		while (current.getSeatNum() == 0) {
+		while (current.getSeatNum() === 0) {
 			current.setSeatNum(num);
 			current = current.next;
 			num++;
 		}
-		"step 1";
-		for (var i = 0; i < lib.onphase.length; i++) {
-			lib.onphase[i]();
-		}
-		player.phase();
-		"step 2";
-		event.trigger("phaseOver");
-		"step 3";
-		let findNext = current => {
-			let players = game.players
-				.slice(0)
-				.concat(game.dead)
-				.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
-			let position = parseInt(current.dataset.position);
-			for (let i = 0; i < players.length; i++) {
-				if (parseInt(players[i].dataset.position) > position) return players[i];
+		while (true) {
+			let list = [];
+			while ([...game.players, ...game.dead].some(i => !list.includes(i))) {
+				list.push(event.player);
+				if (game.players.includes(event.player)) {
+					lib.onphase.forEach(i => i());
+					await event.player.phase();
+				}
+				await event.trigger("phaseOver");
+				let findNext = current => {
+					let players = game.players
+						.slice(0)
+						.concat(game.dead)
+						.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+					let position = parseInt(current.dataset.position);
+					for (let i = 0; i < players.length; i++) {
+						if (parseInt(players[i].dataset.position) > position) return players[i];
+					}
+					return players[0];
+				};
+				event.player = findNext(event.player);
 			}
-			return players[0];
-		};
-		event.player = findNext(event.player);
-		if (game.players.includes(event.player)) event.goto(1);
-		else event.goto(2);
+			await event.trigger("roundEnd");
+		}
 	},
 	loadPackage: function () {
 		"step 0";
@@ -8287,12 +8288,12 @@ player.removeVirtualEquip(card);
 	},
 	draw: function () {
 		// if(lib.config.background_audio){
-		// 	game.playAudio('effect','draw');
+		//     game.playAudio('effect','draw');
 		// }
 		// game.broadcast(function(){
 		//     if(lib.config.background_audio){
-		// 		game.playAudio('effect','draw');
-		// 	}
+		//         game.playAudio('effect','draw');
+		//     }
 		// });
 		if (typeof event.minnum == "number" && num < event.minnum) {
 			num = event.minnum;
@@ -8327,22 +8328,24 @@ player.removeVirtualEquip(card);
 		if (event.drawDeck) {
 			cards = cards.concat(player.getDeckCards(event.drawDeck));
 		}
-		let next;
-		if (event.animate != false) {
-			if (event.visible) {
-				next = player.gain(cards, "gain2").set("log", false);
-				logList.addArray(["（", cards, "）"]);
+		if (get.itemtype(cards) == "cards") {
+			let next;
+			if (event.animate != false) {
+				if (event.visible) {
+					next = player.gain(cards, "gain2").set("log", false);
+					logList.addArray(["（", cards, "）"]);
+				} else {
+					next = player.gain(cards, "draw");
+				}
 			} else {
-				next = player.gain(cards, "draw");
+				next = player.gain(cards);
+				if (event.$draw) {
+					player.$draw(cards.length);
+				}
 			}
-		} else {
-			next = player.gain(cards);
-			if (event.$draw) {
-				player.$draw(cards.length);
-			}
+			if (logList?.length) game.log(...logList);
+			next.gaintag.addArray(event.gaintag);
 		}
-		if (logList?.length) game.log(...logList);
-		next.gaintag.addArray(event.gaintag);
 		event.result = cards;
 	},
 	discard: function () {

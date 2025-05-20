@@ -2292,6 +2292,7 @@ const skills = {
 				return event.card && suit === get.suit(event.card);
 			});
 		},
+		getIndex: event => event.num,
 		async cost(event, trigger, player) {
 			event.result = player
 				.chooseTarget(get.prompt2("dcminshan"))

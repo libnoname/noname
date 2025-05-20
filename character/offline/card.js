@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
-	nschenzhi_poker: {
+	hschenzhi_poker: {
 		type: "poker",
 		fullskin: true,
 	},

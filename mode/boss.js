@@ -1681,65 +1681,75 @@ export default () => {
 			},
 			bossPhaseLoop: function () {
 				var next = game.createEvent("phaseLoop");
+				//确定首次行动的角色
 				if (game.bossinfo.loopFirst) {
 					next.player = game.bossinfo.loopFirst();
 				} else {
 					next.player = game.boss;
 				}
 				_status.looped = true;
-				next.setContent(function () {
-					"step 0";
-					if (player.chongzheng) {
-						player.chongzheng = false;
-					} else if (player.isDead()) {
-						if (player.hp < 0) player.hp = 0;
-						player.storage.boss_chongzheng++;
-						if (player.maxHp > 0 && game.bossinfo.chongzheng) {
-							if (player.hp < player.maxHp) {
-								player.hp++;
-							} else if (player.countCards("h") < 4) {
-								var card = get.cards()[0];
-								var sort = lib.config.sort_card(card);
-								var position = sort > 0 ? player.node.handcards1 : player.node.handcards2;
-								card.fix();
-								card.addTempClass("start");
-								position.insertBefore(card, position.firstChild);
+				next.setContent([
+					async (event, trigger, player) => {
+						if (player.chongzheng) {
+							player.chongzheng = false;
+						} else if (player.isDead()) {
+							//增加重整计数，以及复活角色
+							if (player.hp < 0) player.hp = 0;
+							player.storage.boss_chongzheng++;
+							if (player.maxHp > 0 && game.bossinfo.chongzheng) {
+								if (player.hp < player.maxHp) {
+									player.hp++;
+								} else if (player.countCards("h") < 4) {
+									var card = get.cards()[0];
+									var sort = lib.config.sort_card(card);
+									var position = sort > 0 ? player.node.handcards1 : player.node.handcards2;
+									card.fix();
+									card.addTempClass("start");
+									position.insertBefore(card, position.firstChild);
+								}
+								player.update();
+								if (player.storage.boss_chongzheng >= game.bossinfo.chongzheng) {
+									player.revive(player.hp);
+								}
 							}
-							player.update();
-							if (player.storage.boss_chongzheng >= game.bossinfo.chongzheng) {
-								player.revive(player.hp);
-							}
-						}
-						if (game.bossinfo.loopType == 2) {
-							game.boss.chongzheng = true;
-						}
-					} else {
-						if (player.identity == "zhu" && game.boss != player) {
-							player = game.boss;
-						}
-						player.phase();
-					}
-					"step 1";
-					if (game.bossinfo.loopType == 2) {
-						_status.roundStart = true;
-						if (event.player == game.boss) {
-							if (!_status.last || _status.last.nextSeat == game.boss) {
-								event.player = game.boss.nextSeat;
-							} else {
-								event.player = _status.last.nextSeat;
+							if (game.bossinfo.loopType == 2) {
+								game.boss.chongzheng = true;
 							}
 						} else {
-							_status.last = player;
-							event.player = game.boss;
-							if (player.nextSeat == game.boss) {
-								delete _status.roundStart;
+							//执行回合
+							if (player.identity == "zhu" && game.boss != player) {
+								player = game.boss;
 							}
+							lib.onphase.forEach(i => i());
+							await player.phase();
 						}
-					} else {
-						event.player = event.player.nextSeat;
-					}
-					event.goto(0);
-				});
+						//触发phaseOver时机
+						await event.trigger("phaseOver");
+					},
+					async (event, trigger, player) => {
+						if (game.bossinfo.loopType == 2) {
+							//最强神话那种回合执行顺序，boss一个回合，玩家再按顺序执行一个回合
+							_status.roundStart = true;
+							if (event.player == game.boss) {
+								if (!_status.last || _status.last.nextSeat == game.boss) {
+									event.player = game.boss.nextSeat;
+									//如果当前角色为boss且下一个角色从头开始才触发每轮结束时的时机
+									delete _status.roundStart;
+									await event.trigger("roundEnd");
+								} else {
+									event.player = _status.last.nextSeat;
+								}
+							} else {
+								_status.last = player;
+								event.player = game.boss;
+							}
+						} else {
+							//这个是正常的执行顺序，就按座位顺序算
+							event.player = event.player.nextSeat;
+						}
+						event.goto(0);
+					},
+				]);
 			},
 			onSwapControl: function () {
 				if (game.me == game.boss) return;
