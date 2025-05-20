@@ -1114,6 +1114,7 @@ const skills = {
 			if (num) await target.draw(num);
 			await player.useSkill("starzhongyan", [target]);
 		},
+		derivation: "starzhongyan",
 	},
 	//星孙坚
 	starruijun: {
@@ -1725,6 +1726,7 @@ const skills = {
 			return true;
 		},
 		forced: true,
+		derivation: "starxiaoyan",
 		async content(event, trigger, player) {
 			await player.loseHp();
 			if (game.hasPlayer(current => current != player)) player.useResult({ skill: "starxiaoyan" }, event);
@@ -1734,6 +1736,7 @@ const skills = {
 		audio: 2,
 		zhuSkill: true,
 		global: "staraoshi_global",
+		derivation: "starzongshi",
 		subSkill: {
 			global: {
 				audio: "staraoshi",

@@ -3121,6 +3121,7 @@ export class Click {
 					}
 					for (var i = 0; i < derivation.length; i++) {
 						if (derivation[i].indexOf("_faq") != -1) continue;
+						if (nameinfo.skills.includes(derivation[i])) continue;
 						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
 						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
 						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
@@ -3420,6 +3421,7 @@ export class Click {
 					}
 					for (var i = 0; i < derivation.length; i++) {
 						if (derivation[i].indexOf("_faq") != -1) continue;
+						if (nameInfo.skills.includes(derivation[i])) continue;
 						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
 						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
 						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);

@@ -96,6 +96,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		group: ["hsfunan_2"],
+		derivation: "rejijiang",
 		ai: {
 			order() {
 				return get.order({ name: "sha" }) + 0.3;
@@ -1400,10 +1401,16 @@ const skills = {
 		//创建技能卡button
 		$createButton(item, type, position, noclick, node) {
 			//搜索拥有这个技能的角色
-			const characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item));
+			let characterName;
+			if (Array.isArray(item)) {
+				characterName = item[1];
+				item = item[0];
+			}
+			else characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item));
 			const info = get.character(characterName);
 			//创建这张vcard并重新赋值link
 			node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick);
+			node.owner = characterName;
 			node.link = item;
 			//更改vcard的名字不然看不清
 			node.node.name.innerHTML = `<div class="name" data-nature=${get.groupnature(info[1], "raw")}m style="position: relative;color:#ffffff;fontweight:bold">${get.translation(item)}</div>`;
@@ -1419,6 +1426,13 @@ const skills = {
 					if (lib.translate[skill + "_append"]) {
 						uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skill + "_append"] + "</div>");
 					}
+				}
+				if (lib.skill[skill]?.derivation) {
+					let skills = lib.skill[skill].derivation;
+					if (!Array.isArray(skills)) skills = [skills];
+					skills = skills.filter(skill => lib.translate[`${skill}_info`] && lib.skill[skill]);
+					if (skills.length) uiintro.add(`—— 衍生技能 ——`);
+					uiintro.add([skills.map(i => [i, node.owner]), lib.skill.hsdianmo.$createButton]);
 				}
 			};
 			return node;
@@ -4983,6 +4997,7 @@ const skills = {
 				}
 			}
 		},
+		derivation: "hm_fudao",
 		group: "hm_zongfu_useSkill",
 		subSkill: {
 			lose: {
@@ -6576,6 +6591,7 @@ const skills = {
 			order: 1,
 			result: { target: 1 },
 		},
+		derivation: "yicong",
 	},
 	//文丑
 	yyxuezhan: {
@@ -22352,6 +22368,7 @@ const skills = {
 				return player.canUse(get.autoViewAs({ name: name }, "unsure"), event.player, false);
 			});
 		},
+		derivation: "dragduyi",
 		direct: true,
 		async content(event, trigger, player) {
 			if (trigger.name == "recover") {
