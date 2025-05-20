@@ -4622,7 +4622,7 @@ const skills = {
 			if (!skills.length) result = { bool: false };
 			else {
 				result = await player
-					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [skills, lib.skill.hsdianmo.$createButton]])
+					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [skills, "skill"]])
 					.set("displayIndex", false)
 					.set("ai", button => {
 						const player = get.player();

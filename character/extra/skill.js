@@ -420,7 +420,7 @@ const skills = {
 			return val;
 		},
 		async content(event, trigger, player) {
-			await player.showHandcards(player, "发动了【除凶】");
+			await player.showHandcards(`${get.translation(player)}发动了【除凶】`);
 			let colors = player.getCards("h").map(card => get.color(card, player)).toUniqued();
 			if (!colors.length) return;
 			colors.sort((a, b) => lib.skill.cachuxiong.getVal(b, player) - lib.skill.cachuxiong.getVal(a, player));
@@ -10465,18 +10465,17 @@ const skills = {
 			"step 1";
 			if (event.skills.length > 0) {
 				player
-					.chooseControl(event.skills)
-					.set("prompt", "请选择要获得的技能")
+					.chooseButton(["请选择要获得的技能", [event.skills, "skill"]], true)
 					.set("ai", function () {
-						return event.skills.randomGet();
+						return Math.random();
 					});
 			} else event.finish();
 			"step 2";
-			player.addTempSkills(result.control, { player: "dieAfter" });
+			player.addTempSkills(result.links, { player: "dieAfter" });
 			// player.popup(result.control,'thunder');
-			player.storage.drlt_duorui = [result.control];
+			player.storage.drlt_duorui = result.links;
 			player.storage.drlt_duorui_player = trigger.player;
-			trigger.player.storage.drlt_duorui = [result.control];
+			trigger.player.storage.drlt_duorui = result.links;
 			trigger.player.addTempSkill("drlt_duorui1", { player: "phaseAfter" });
 			// game.log(player,'获得了技能','#g【'+get.translation(result.control)+'】')
 		},

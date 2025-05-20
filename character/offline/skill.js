@@ -1352,7 +1352,7 @@ const skills = {
 						],
 						"tdnodes",
 					],
-					[skills, lib.skill.hsdianmo.$createButton],
+					[skills, "skill"],
 				])
 				.set("selectButton", () => {
 					if (ui.selected.buttons.length && ui.selected.buttons[0].link == "draw") return 1;
@@ -4067,11 +4067,7 @@ const skills = {
 			if (cost_data === "disable") {
 				const list = lib.skill.hm_podai.getSkills(target);
 				if (!list.length) return;
-				const dialog = ui.create.dialog();
-				dialog.addText("令一个技能失效", true);
-				for (const skill of list) {
-					dialog.add([[[skill, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]], "textbutton"]);
-				}
+				const dialog = ui.create.dialog(`令${get.translation(target)}的一个技能失效`, [list, "skill"]);
 				const next = player.chooseButton(dialog, true);
 				const result = await next.forResult();
 				if (result.bool) {
@@ -12865,7 +12861,7 @@ const skills = {
 				target.chat(`我猜你有${result.links[0]}张红色牌！`);
 				game.log(target, "猜测", player, "有红色牌", "#g" + result.links[0] + "张");
 				if (event.isMine() && !event.isOnline()) await game.delay();
-				await player.showHandcards(player, "发动了【绽焰】");
+				await player.showHandcards(`${get.translation(player)}发动了【绽焰】`);
 				const num = Math.min(3, Math.abs(result.links[0] - player.countCards("h", card => get.color(card, player) == "red")));
 				const redCards = player.getCards("he", card => get.color(card, player) == "red");
 				if (redCards.length) await player.give(redCards, target);
