@@ -1403,10 +1403,12 @@ const skills = {
 			//搜索拥有这个技能的角色
 			let characterName;
 			if (Array.isArray(item)) {
-				characterName = item[1];
+				characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item[0])) || item[1];
 				item = item[0];
 			}
-			else characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item));
+			else {
+				characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item)) || "shibing";
+			}
 			const info = get.character(characterName);
 			//创建这张vcard并重新赋值link
 			node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick);

@@ -9024,11 +9024,7 @@ const skills = {
 				var info = get.info(i);
 				return info && !info.charlotte;
 			});
-			var list = [];
-			for (var skill of skills) {
-				list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
-			}
-			var next = player.chooseButton(["请选择失去任意个技能", [list, "textbutton"]]);
+			var next = player.chooseButton(["请选择失去任意个技能", [skills, lib.skill.hsdianmo.$createButton]]);
 			next.set("forced", true);
 			next.set("selectButton", [1, skills.length]);
 			next.set("ai", function (button) {

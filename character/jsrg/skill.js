@@ -5637,6 +5637,45 @@ const skills = {
 		content() {
 			trigger.num++;
 		},
+		init(player) {
+			player.addSkill("jsrghuchou_tip");
+		},
+		onremove(player) {
+			player.removeSkill("jsrghuchou_tip");
+		},
+		subSkill: {
+			tip: {
+				trigger: {
+					target: "useCardToTarget",
+				},
+				charlotte: true,
+				init(player, skill) {
+					const history = _status.globalHistory || [];
+					round: for (let i = history.length - 1; i >= 0; i--) {
+						let evts = history[i]["useCard"];
+						for (let j = evts.length - 1; j >= 0; j--) {
+							var evt = evts[j];
+							let card = evt.card,
+								targets = evt.targets;
+							if (!get.tag(card, "damage") || !targets.includes(player)) continue;
+							game.log(evt.player);
+							player.addTip(skill, `互雠 ${get.translation(evt.player)}`);
+							break round;
+						}
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				filter(event, player) {
+					if (get.tag(event.card, "damage")) {
+						lib.skill.jsrghuchou_tip.init(player, "jsrghuchou_tip");
+					}
+					return false;
+				},
+				async content(event, trigger, player) {},
+			},
+		},
 		ai: {
 			damageBonus: true,
 			skillTagFilter: (player, tag, arg) => {
