@@ -4621,20 +4621,8 @@ const skills = {
 			let result;
 			if (!skills.length) result = { bool: false };
 			else {
-				const list = skills.map(skill => [
-					skill,
-					'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
-						(() => {
-							let str = get.translation(skill);
-							if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
-							return str;
-						})() +
-						"</div><div>" +
-						lib.translate[skill + "_info"] +
-						"</div></div>",
-				]);
 				result = await player
-					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [list, "textbutton"]])
+					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [skills, lib.skill.hsdianmo.$createButton]])
 					.set("displayIndex", false)
 					.set("ai", button => {
 						const player = get.player();
