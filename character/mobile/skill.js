@@ -3518,7 +3518,7 @@ const skills = {
 				},
 			},
 			refresh: {
-				audio: "jsrgshacheng",
+				audio: "potjiyu",
 				trigger: {
 					player: "loseAfter",
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
