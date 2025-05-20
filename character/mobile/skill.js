@@ -833,6 +833,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const cards = event.cards,
 						target = trigger.player;
+					player.logSkill("mbduanyang", target, null, null, [3]);
 					await target.recast(cards);
 					const basic = cards.filter(card => get.type(card, false) == "basic" && !get.owner(card));
 					let result;
@@ -849,7 +850,6 @@ const skills = {
 							.set("cardsx", [basic, cards])
 							.forResult();
 					}
-					player.logSkill("mbduanyang", target, null, null, [3]);
 					if (result?.control == "选项一") {
 						await player.gain(basic, "gain2");
 					} else await player.draw(cards.length);
@@ -1178,7 +1178,7 @@ const skills = {
 	},
 	mbshuanghuai: {
 		audio: 3,
-		logAudio: index => (typeof index === "number" ? "mbshuanghuai" + index + ".mp3" : 2),
+		logAudio: index => (typeof index === "number" ? "mbshuanghuai" + index + ".mp3" : 3),
 		init(player, skill) {
 			const history = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.targets);
 			if (history.length) {
@@ -1245,14 +1245,17 @@ const skills = {
 			const link = event.cost_data,
 				target = trigger.player,
 				last = player.storage[event.name];
-			player.logSkill("mbshuanghuai", target, null, null, [last && last != target ? 1 : get.rand(2, 3)]);
+			player.logSkill("mbshuanghuai", target, null, null, [link == "cancel" ? 1 : 2]);
 			if (link == "cancel") trigger.cancel();
 			else {
 				const card = get.discardPile("tao");
 				if (card) await target.gain(card, "gain2");
 			}
 			if (last && last == target) return;
-			if (last && last != target) await player.loseHp();
+			if (last && last != target) {
+				player.logSkill("mbshuanghuai", null, null, null, [3]);
+				await player.loseHp();
+			}
 			player.storage[event.name] = target;
 			player.markSkill(event.name);
 			player.addTip(event.name, `霜怀 ${get.translation(target)}`);
@@ -1699,7 +1702,7 @@ const skills = {
 	//吴珂 —— by 刘巴
 	mbzhuguo: {
 		audio: 3,
-		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : "mbzhuguo" + get.rand(1, 2) + ".mp3"),
+		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : 2),
 		usable: 1,
 		enable: "phaseUse",
 		filterTarget: true,
@@ -1997,7 +2000,7 @@ const skills = {
 		audio: 3,
 		trigger: { player: ["phaseZhunbeiBegin", "damageEnd"] },
 		filter: (event, player) => player.canMoveCard(),
-		logAudio: index => (typeof index === "number" ? "mbyuanmo" + index + ".mp3" : 2),
+		logAudio: index => (typeof index === "number" ? "mbyuanmo" + index + ".mp3" : 1),
 		async cost(event, trigger, player) {
 			let nums = {};
 			game.filterPlayer().forEach(target => (nums[target.playerid] = game.countPlayer(c => c.inRangeOf(target))));
@@ -2152,7 +2155,7 @@ const skills = {
 		popup: false,
 		async cost(event, trigger, player) {
 			//照搬谋曹操的清正（包括ai）
-			player.logSkill("mbzhuji", null, null, null, [get.rand(3, 4)]);
+			player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) game.swapPlayerAuto(player);
@@ -2363,7 +2366,7 @@ const skills = {
 				if (evt.type == "discard" && evt.getParent(2) == event) num += evt.cards.length;
 			});
 			if (num >= es) {
-				player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
+				player.logSkill("mbzhuji", null, null, null, [get.rand(3, 4)]);
 				await player.chooseDrawRecover(2, true);
 			}
 		},
@@ -2379,14 +2382,14 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
-		popup: false,
 		logAudio: index => (typeof index === "number" ? "mbxuye" + index + ".mp3" : 2),
 		async content(event, trigger, player) {
 			const target = event.targets[0]; //兼容匡襄后续效果才这么写的
 			const isMax = target.isMaxHandcard();
 			await target.draw(2);
-			player.logSkill("mbxuye", [target], null, null, !isMax && target.isMaxHandcard() && target.countCards("ej") > 0 ? [1] : [get.rand(2, 3)]);
+			//player.logSkill("mbxuye", [target], null, null, !isMax && target.isMaxHandcard() && target.countCards("ej") > 0 ? [1] : [get.rand(2, 3)]);
 			if (!isMax && target.isMaxHandcard() && target.countCards("ej") > 0) {
+				player.logSkill("mbxuye", target, null, null, [3]);
 				const result = await player.choosePlayerCard(`蓄业：将${get.translation(target)}场上一张牌置于牌堆顶`, target, "ej", true).forResult();
 				const card = result.cards[0];
 				target.$throw(card, 1000);
@@ -2409,7 +2412,7 @@ const skills = {
 			return target != player && target.countCards("h") < player.countCards("h");
 		},
 		usable: 1,
-		logAudio: () => ["mbkuangxiang2.mp3", "mbkuangxiang3.mp3"],
+		logAudio: () => 2,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addTempSkill("mbkuangxiang_effect", { player: "phaseUseBegin" });
@@ -2455,7 +2458,7 @@ const skills = {
 					delete player.storage[skill];
 				},
 				intro: { content: "players" },
-				audio: ["mbkuangxiang1.mp3"],
+				audio: "mbkuangxiang3.mp3",
 				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 				getIndex(event, player) {
 					return game
@@ -3547,6 +3550,7 @@ const skills = {
 	potdaozhuan: {
 		audio: 4,
 		enable: "chooseToUse",
+		logAudio: index => (typeof index === "number" ? "potdaozhuan" + index + ".mp3" : 2),
 		filter(event, player) {
 			if (event.potdaozhuan) return false;
 			let num = player.countCards("he");
@@ -3627,14 +3631,17 @@ const skills = {
 							})
 							.forResult();
 						if (result?.bool) {
-							player.logSkill("potdaozhuan");
+							player.logSkill("potdaozhuan", null, null, null, [get.rand(1, 2)]);
 							player.addTempSkill("potdaozhuan_used", "roundStart");
 							player.markAuto("potdaozhuan_used", [event.result.card.name]);
 							if (result.links?.length) {
 								const target = _status.currentPhase;
 								const owners = result.links.map(i => get.owner(i)).unique();
 								await owners[0].loseToDiscardpile(result.links);
-								if (owners[0] === target) player.tempBanSkill("potdaozhuan", "roundStart");
+								if (owners[0] === target) {
+									player.tempBanSkill("potdaozhuan", "roundStart");
+									player.logSkill("potdaozhuan", null, null, null, [get.rand(3, 4)]);
+								}
 							}
 							return;
 						}
@@ -3705,7 +3712,7 @@ const skills = {
 	potfuji: {
 		audio: 5,
 		enable: "phaseUse",
-		logAudio: () => ["potfuji1.mp3", "potfuji2.mp3", "potfuji3.mp3"],
+		logAudio: () => 2,
 		filter(event, player) {
 			return player.countCards("h") > 0 && game.hasPlayer(target => target !== player);
 		},
@@ -3746,13 +3753,13 @@ const skills = {
 				.setContent("gaincardMultiple");
 			for (const list of gain_list) list[0].addSkill("potfuji_effect");
 			if (player.isMinHandcard()) {
+				player.logSkill("potfuji", null, null, null, [3]);
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
 				await player.draw();
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
 			player
-				.when({ player: ["phaseBegin", "useCard"] })
-				.filter(evt => (evt.name == "phase" ? true : !["potfuji_sha", "potfuji_shan"].some(skill => player.hasSkill(skill))))
+				.when({ player: ["phaseBegin"] })
 				.assign({
 					lastDo: true,
 				})
@@ -3772,7 +3779,6 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
-				audio: ["potfuji4.mp3", "potfuji5.mp3"],
 				trigger: {
 					player: ["useCard", "useCardAfter"],
 					source: "damageBegin1",
@@ -3792,7 +3798,9 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "player",
+				popup: false,
 				async content(event, trigger, player) {
+					if(trigger.name === "damage" || event.triggername === "useCardAfter") player.logSkill("potfuji", null, null, null, [trigger.name === "damage" ? 4 : 5]);
 					if (trigger.name === "damage") trigger.num++;
 					else if (event.triggername === "useCardAfter") await player.draw();
 					else {
@@ -3818,7 +3826,7 @@ const skills = {
 					name: "符济 - 杀",
 					content: "使用【杀】造成的伤害+1",
 				},
-				audio: ["potfuji4.mp3", "potfuji5.mp3"],
+				audio: "potfuji4.mp3",
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					return event.card.name === "sha";
@@ -3840,7 +3848,7 @@ const skills = {
 					name: "符济 - 闪",
 					content: "使用【闪】结算完毕后摸一张牌",
 				},
-				audio: ["potfuji4.mp3", "potfuji5.mp3"],
+				audio: "potfuji5.mp3",
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					return event.card.name === "shan";

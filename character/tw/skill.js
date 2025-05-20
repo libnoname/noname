@@ -467,7 +467,7 @@ const skills = {
 	},
 	twhuazhang: {
 		audio: 3,
-		logAudio: index => (typeof index === "number" ? "twhuazhang" + index + ".mp3" : "twhuazhang" + get.rand(1, 2) + ".mp3"),
+		logAudio: index => (typeof index === "number" ? "twhuazhang" + index + ".mp3" : 2),
 		trigger: {
 			player: "phaseUseEnd",
 		},
@@ -654,11 +654,10 @@ const skills = {
 	},
 	twzhengshi: {
 		audio: 3,
-		logAudio: index => (typeof index === "number" ? "twzhengshi" + index + ".mp3" : 2),
+		logAudio: index => (typeof index === "number" ? "twzhengshi" + index + ".mp3" : 1),
 		derivation: ["twjunsi"],
 		forced: true,
 		locked: false,
-		popup: false,
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -672,12 +671,11 @@ const skills = {
 				targets = game.filterPlayer();
 			} else {
 				const result = await player
-					.chooseTarget(`争适：请选择两名其他角色，然后你和这些角色获得〖隽嗣〗`, 2, lib.filter.notMe, true)
+					.chooseTarget(`争適：请选择两名其他角色，然后你和这些角色获得〖隽嗣〗`, 2, lib.filter.notMe, true)
 					.set("ai", target => -get.attitude(get.player(), target))
 					.forResult();
 				targets = result.targets.concat([player]).sortBySeat();
 			}
-			player.logSkill("twzhengshi", null, null, null, [get.rand(2, 3)]);
 			player.line(targets, "thunder");
 			for (const target of targets) await target.addSkills(["twjunsi"]);
 		},
@@ -692,7 +690,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(`争适：令一名角色〖隽嗣〗的摸牌数或弃牌数+1或-1`, (card, player, target) => {
+						.chooseTarget(`争適：令一名角色〖隽嗣〗的摸牌数或弃牌数+1或-1`, (card, player, target) => {
 							return target.hasSkill("twjunsi");
 						})
 						.set("ai", target => {
@@ -707,7 +705,7 @@ const skills = {
 					const result = await player
 						.chooseButton(
 							[
-								`争适：令${get.translation(target)}〖隽嗣〗的摸牌数或弃牌数+1或-1`,
+								`争適：令${get.translation(target)}〖隽嗣〗的摸牌数或弃牌数+1或-1`,
 								/*[
 									list.map((item, index) => {
 										return [index, item];
@@ -745,7 +743,7 @@ const skills = {
 						})
 						.forResult();
 					const num = result.links[0] + 1;
-					player.logSkill("twzhengshi", [target], null, null, [1]);
+					player.logSkill("twzhengshi", [target], null, null, [get.rand(2, 3)]);
 					target.popup(list[num - 1]);
 					game.log(target, "〖隽嗣〗的", list[num - 1]);
 					target.storage.twjunsi[Math.ceil(num / 2) - 1] += num % 2 == 1 ? 1 : -1;
