@@ -453,6 +453,14 @@ const skills = {
 						if (get.type(card, null, false) == "basic" && card.hasGaintag("dcxianniang_tag")) return false;
 					},
 				},
+				ai: {
+					save: true,
+					skillTagFilter(player, tag, arg) {
+						if (!player.countCards("h", card => {
+							return get.type(card, null, false) == "basic" && card.hasGaintag("dcxianniang_tag");
+						})) return false;
+					},
+				},
 			},
 			used: {
 				charlotte: true,

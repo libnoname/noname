@@ -21767,6 +21767,7 @@ const skills = {
 				player.addTempSkill("dragzhawang_draw");
 			}
 		},
+		derivation: "zhaxiang",
 		subSkill: {
 			draw: {
 				trigger: {
