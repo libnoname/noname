@@ -21290,7 +21290,7 @@ const skills = {
 					const target = player.getStorage("shefujing_mark").find(p => p.isIn());
 					const result = await target
 						.chooseControl("选项一", "选项二", "背水！", "cancel2")
-						.set("prompt", get.prompt("shefujing", player))
+						.set("prompt", get.prompt("shefujing", player, target))
 						.set("choiceList", ["摸一张牌", "获得1点护甲", `背水：失去1点体力并对${get.translation(player)}发动一次【攻心】`])
 						.set("ai", () => {
 							const player = get.player();
@@ -21355,7 +21355,7 @@ const skills = {
 		animationColor: "wood",
 		juexingji: true,
 		trigger: {
-			global: "roundStart",
+			global: "roundEnd",
 		},
 		forced: true,
 		filter(event, player) {
