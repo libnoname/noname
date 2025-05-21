@@ -36,7 +36,9 @@ HTMLDivElement.prototype.animate = function (keyframes, options) {
 		console.trace(this, "无名杀开发者修改的animate方法已废弃，请改为使用addTempClass方法");
 		// @ts-ignore
 		return HTMLDivElement.prototype.addTempClass.call(this, keyframes, options);
-	} else return HTMLElement.prototype.animate.call(this, keyframes, options);
+	} else {
+		return HTMLElement.prototype.animate.call(this, keyframes, options);
+	}
 };
 
 /**
@@ -65,7 +67,9 @@ HTMLDivElement.prototype.hide = function () {
  * @type { typeof HTMLDivElement['prototype']['unfocus'] }
  */
 HTMLDivElement.prototype.unfocus = function () {
-	if (lib.config.transparent_dialog) this.classList.add("transparent");
+	if (lib.config.transparent_dialog) {
+		this.classList.add("transparent");
+	}
 	return this;
 };
 /**
@@ -94,13 +98,17 @@ HTMLDivElement.prototype.delete = function (time = 500, callback) {
 		delete this.timeout;
 	}
 	if (!this._listeningEnd || this._transitionEnded) {
-		if (typeof time != "number") time = 500;
+		if (typeof time != "number") {
+			time = 500;
+		}
 		this.classList.add("removing");
 		// @ts-ignore
 		this.timeout = setTimeout(() => {
 			this.remove();
 			this.classList.remove("removing");
-			if (typeof callback == "function") callback();
+			if (typeof callback == "function") {
+				callback();
+			}
 		}, time);
 	} else {
 		this._onEndDelete = true;
@@ -116,7 +124,9 @@ HTMLDivElement.prototype.goto = function (position, time) {
 		clearTimeout(this.timeout);
 		delete this.timeout;
 	}
-	if (typeof time != "number") time = 500;
+	if (typeof time != "number") {
+		time = 500;
+	}
 	this.classList.add("removing");
 	if (!this._selfDestroyed) {
 		position.appendChild(this);
@@ -147,9 +157,13 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 	 * @type { typeof HTMLDivElement['prototype']['setBackground'] }
 	 */
 	value(name, type, ext, subfolder) {
-		if (!name) return this;
+		if (!name) {
+			return this;
+		}
 		let src;
-		if (ext === "noskin") ext = ".jpg";
+		if (ext === "noskin") {
+			ext = ".jpg";
+		}
 		ext = ext || ".jpg";
 		subfolder = subfolder || "default";
 		if (type) {
@@ -163,14 +177,17 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 				nameinfo = get.character(name);
 				if (lib.characterPack[`mode_${mode}`] && lib.characterPack[`mode_${mode}`][name]) {
 					if (mode === "guozhan") {
-						if (name.startsWith("gz_shibing")) name = name.slice(3, 11);
-						else {
+						if (name.startsWith("gz_shibing")) {
+							name = name.slice(3, 11);
+						} else {
 							if (lib.config.mode_config.guozhan.guozhanSkin && nameinfo && nameinfo.hasSkinInGuozhan) {
 								gzbool = true;
 							}
 							name = name.slice(3);
 						}
-					} else modeimage = mode;
+					} else {
+						modeimage = mode;
+					}
 				} else if (name.includes("::")) {
 					// @ts-ignore
 					name = name.split("::");
@@ -203,17 +220,25 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					}
 				}
 			}
-			if (imgPrefixUrl) src = imgPrefixUrl;
-			else if (extimage) src = extimage.replace(/^ext:/, "extension/");
-			else if (dbimage) {
+			if (imgPrefixUrl) {
+				src = imgPrefixUrl;
+			} else if (extimage) {
+				src = extimage.replace(/^ext:/, "extension/");
+			} else if (dbimage) {
 				this.setBackgroundDB(dbimage.slice(3)).then(lib.filter.none);
 				return this;
-			} else if (modeimage) src = `image/mode/${modeimage}/character/${name}${ext}`;
-			else if (type === "character" && lib.config.skin[name] && arguments[2] !== "noskin") src = `image/skin/${name}/${lib.config.skin[name]}${ext}`;
-			else if (type === "character") {
+			} else if (modeimage) {
+				src = `image/mode/${modeimage}/character/${name}${ext}`;
+			} else if (type === "character" && lib.config.skin[name] && arguments[2] !== "noskin") {
+				src = `image/skin/${name}/${lib.config.skin[name]}${ext}`;
+			} else if (type === "character") {
 				src = `image/character/${gzbool ? "gz_" : ""}${name}${ext}`;
-			} else src = `image/${type}/${subfolder}/${name}${ext}`;
-		} else src = `image/${name}${ext}`;
+			} else {
+				src = `image/${type}/${subfolder}/${name}${ext}`;
+			}
+		} else {
+			src = `image/${name}${ext}`;
+		}
 		this.style.backgroundPositionX = "center";
 		this.style.backgroundSize = "cover";
 		if (type === "character") {
@@ -260,7 +285,9 @@ HTMLDivElement.prototype.setBackgroundImage = function (img) {
 HTMLDivElement.prototype.listen = function (func) {
 	if (lib.config.touchscreen) {
 		this.addEventListener("touchend", function (e) {
-			if (!_status.dragged) func.call(this, e);
+			if (!_status.dragged) {
+				func.call(this, e);
+			}
 		});
 		/**
 		 * @this HTMLDivElement
@@ -446,7 +473,9 @@ Object.defineProperty(Array.prototype, "filterInD", {
 	 * @type { typeof Array['prototype']['filterInD'] }
 	 */
 	value(pos = "o") {
-		if (typeof pos != "string") pos = "o";
+		if (typeof pos != "string") {
+			pos = "o";
+		}
 		// @ts-ignore
 		return this.filter(card => pos.includes(get.position(card, true)));
 	},
@@ -460,7 +489,9 @@ Object.defineProperty(Array.prototype, "someInD", {
 	 * @type { typeof Array['prototype']['someInD'] }
 	 */
 	value(pos = "o") {
-		if (typeof pos != "string") pos = "o";
+		if (typeof pos != "string") {
+			pos = "o";
+		}
 		// @ts-ignore
 		return this.some(card => pos.includes(get.position(card, true)));
 	},
@@ -474,7 +505,9 @@ Object.defineProperty(Array.prototype, "everyInD", {
 	 * @type { typeof Array['prototype']['everyInD'] }
 	 */
 	value(pos = "o") {
-		if (typeof pos != "string") pos = "o";
+		if (typeof pos != "string") {
+			pos = "o";
+		}
 		// @ts-ignore
 		return this.every(card => pos.includes(get.position(card, true)));
 	},
@@ -533,7 +566,9 @@ Object.defineProperty(Array.prototype, "add", {
 	 */
 	value() {
 		for (const arg of arguments) {
-			if (this.includes(arg)) continue;
+			if (this.includes(arg)) {
+				continue;
+			}
 			this.push(arg);
 		}
 		return this;
@@ -549,7 +584,9 @@ Object.defineProperty(Array.prototype, "addArray", {
 	 */
 	value() {
 		for (const arr of arguments) {
-			for (const item of arr) this.add(item);
+			for (const item of arr) {
+				this.add(item);
+			}
 		}
 		return this;
 	},
@@ -572,7 +609,9 @@ Object.defineProperty(Array.prototype, "remove", {
 				pos = this.indexOf(item);
 			}
 
-			if (pos === -1) continue;
+			if (pos === -1) {
+				continue;
+			}
 			this.splice(pos, 1);
 		}
 
@@ -589,7 +628,9 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 */
 	value() {
 		// @ts-ignore
-		for (const i of Array.from(arguments)) this.remove(...i);
+		for (const i of Array.from(arguments)) {
+			this.remove(...i);
+		}
 		return this;
 	},
 });
@@ -604,7 +645,9 @@ Object.defineProperty(Array.prototype, "unique", {
 	value() {
 		let uniqueArray = [...new Set(this)];
 		this.length = uniqueArray.length;
-		for (let i = 0; i < uniqueArray.length; i++) this[i] = uniqueArray[i];
+		for (let i = 0; i < uniqueArray.length; i++) {
+			this[i] = uniqueArray[i];
+		}
 		return this;
 	},
 });
@@ -648,7 +691,9 @@ Object.defineProperty(Array.prototype, "randomGets", {
 	 * @type { typeof Array['prototype']['randomGets'] }
 	 */
 	value(num = 0) {
-		if (num > this.length) num = this.length;
+		if (num > this.length) {
+			num = this.length;
+		}
 		let arr = this.slice(0);
 		let list = [];
 		for (let i = 0; i < num; i++) {
@@ -670,7 +715,9 @@ Object.defineProperty(Array.prototype, "randomRemove", {
 		if (typeof num == "number") {
 			let list = [];
 			for (let i = 0; i < num; i++) {
-				if (!this.length) break;
+				if (!this.length) {
+					break;
+				}
 				list.push(this.randomRemove());
 			}
 			return list;
@@ -726,8 +773,11 @@ Object.defineProperty(Array.prototype, "maxBy", {
 	 */
 	value(sortBy, filter) {
 		let list = this.filter(filter || (() => true));
-		if (sortBy && typeof sortBy == "function") list.sort((a, b) => sortBy(a) - sortBy(b));
-		else list.sort();
+		if (sortBy && typeof sortBy == "function") {
+			list.sort((a, b) => sortBy(a) - sortBy(b));
+		} else {
+			list.sort();
+		}
 		return list[list.length - 1];
 	},
 });
@@ -741,8 +791,11 @@ Object.defineProperty(Array.prototype, "minBy", {
 	 */
 	value(sortBy, filter) {
 		let list = this.filter(filter || (() => true));
-		if (sortBy && typeof sortBy == "function") list.sort((a, b) => sortBy(a) - sortBy(b));
-		else list.sort();
+		if (sortBy && typeof sortBy == "function") {
+			list.sort((a, b) => sortBy(a) - sortBy(b));
+		} else {
+			list.sort();
+		}
 		return list[0];
 	},
 });

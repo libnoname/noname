@@ -40,7 +40,9 @@ export async function cordovaReady() {
 			}
 		});
 		document.addEventListener("resume", () => {
-			if (ui.backgroundMusic && !isNaN(ui.backgroundMusic.duration)) ui.backgroundMusic.play();
+			if (ui.backgroundMusic && !isNaN(ui.backgroundMusic.duration)) {
+				ui.backgroundMusic.play();
+			}
 		});
 		document.addEventListener("backbutton", function () {
 			if (ui.arena && ui.arena.classList.contains("menupaused")) {
@@ -103,13 +105,11 @@ export async function cordovaReady() {
 				})
 				.catch(console.log);
 		}
-		if (typeof window.NonameAndroidBridge == "undefined" || 
-			typeof window.NonameAndroidBridge.getPackageName != "function" ||
-			typeof window.NonameAndroidBridge.getPackageVersionCode != "function") {
+		if (typeof window.NonameAndroidBridge == "undefined" || typeof window.NonameAndroidBridge.getPackageName != "function" || typeof window.NonameAndroidBridge.getPackageVersionCode != "function") {
 			throw new Error("您的安卓客户端版本过低，请升级至最新版");
 		}
 		const versionCode = window.NonameAndroidBridge.getPackageVersionCode();
-		switch(window.NonameAndroidBridge.getPackageName()) {
+		switch (window.NonameAndroidBridge.getPackageName()) {
 			case "com.noname.shijian":
 				if (versionCode < 16007) {
 					throw new Error("您的安卓诗笺版客户端版本过低，请升级至v1.6.7或以上");
@@ -131,7 +131,7 @@ export async function cordovaReady() {
 				}
 				break;
 			default:
-				// todo: 懒人包提示
+			// todo: 懒人包提示
 		}
 	}
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
@@ -307,7 +307,9 @@ export async function cordovaReady() {
 					{},
 					function (fileEntry) {
 						fileEntry.remove();
-						if (callback) callback();
+						if (callback) {
+							callback();
+						}
 					},
 					callback || function () {}
 				);
@@ -384,8 +386,12 @@ export async function cordovaReady() {
 				nonameInitialized,
 				rootEntry => {
 					const createDirectory = () => {
-						if (directoryList.length) access(rootEntry, directoryList.pop().split("/").reverse(), createDirectory);
-						if (typeof callback == "function") callback();
+						if (directoryList.length) {
+							access(rootEntry, directoryList.pop().split("/").reverse(), createDirectory);
+						}
+						if (typeof callback == "function") {
+							callback();
+						}
 						resolve();
 					};
 					createDirectory();
@@ -409,13 +415,19 @@ export async function cordovaReady() {
 							reject
 						)
 					).then(resolvedDirectoryEntry => {
-						if (paths.length) return redo(resolvedDirectoryEntry);
-						if (typeof successCallback == "function") successCallback();
+						if (paths.length) {
+							return redo(resolvedDirectoryEntry);
+						}
+						if (typeof successCallback == "function") {
+							successCallback();
+						}
 					});
 				return redo(directoryEntry);
 			},
 			reason => {
-				if (typeof errorCallback != "function") return Promise.reject(reason);
+				if (typeof errorCallback != "function") {
+					return Promise.reject(reason);
+				}
 				errorCallback(reason);
 			}
 		);
@@ -425,12 +437,17 @@ export async function cordovaReady() {
 			`${nonameInitialized}${directory}`,
 			directoryEntry => {
 				directoryEntry.removeRecursively(() => {
-					if (typeof successCallback == "function") successCallback();
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
 				});
 			},
 			e => {
-				if (typeof errorCallback == "function") errorCallback(e);
-				else throw e;
+				if (typeof errorCallback == "function") {
+					errorCallback(e);
+				} else {
+					throw e;
+				}
 			}
 		);
 	};

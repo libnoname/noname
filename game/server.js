@@ -10,7 +10,7 @@
 	var bannedKeyWords = [];
 	var messages = {
 		create: function (key, nickname, avatar, config, mode) {
-			if (this.onlineKey != key) return;
+			if (this.onlineKey != key) {return;}
 			this.nickname = util.getNickname(nickname);
 			this.avatar = avatar;
 			var room = {};
@@ -142,10 +142,10 @@
 						}
 					}
 				} else if (
-					cfg.hasOwnProperty("utc") &&
-					cfg.hasOwnProperty("day") &&
-					cfg.hasOwnProperty("hour") &&
-					cfg.hasOwnProperty("content")
+					Object.hasOwn(cfg, "utc") &&
+					Object.hasOwn(cfg, "day") &&
+					Object.hasOwn(cfg, "hour") &&
+					Object.hasOwn(cfg, "content")
 				) {
 					if (events.length >= 20) {
 						this.sendl("eventsdenied", "total");
@@ -214,7 +214,7 @@
 		},
 		isBanned: function (str) {
 			for (var i of bannedKeyWords) {
-				if (str.indexOf(i) != -1) return true;
+				if (str.indexOf(i) != -1) {return true;}
 			}
 			return false;
 		},
@@ -352,7 +352,7 @@
 			}
 		}, 60000);
 		ws.on("message", function (message) {
-			if (!clients[this.wsid]) return;
+			if (!clients[this.wsid]) {return;}
 			if (message == "heartbeat") {
 				this.beat = false;
 			} else if (this.owner) {
@@ -395,8 +395,8 @@
 				}
 				delete clients[this.wsid];
 			}
-			if (this.room) util.updaterooms();
-			else util.updateclients();
+			if (this.room) {util.updaterooms();}
+			else {util.updateclients();}
 		});
 	});
 })();

@@ -133,7 +133,9 @@ export default () => {
 				var tafanglist = [0, 2, 3, 5, 6, 8, 9, 11, 12];
 				for (var i = 0; i < ui.chessheight - 1; i++) {
 					for (var j = 0; j < ui.chesswidth; j++) {
-						if (i >= 8 && j != 0 && j != ui.chesswidth - 1) continue;
+						if (i >= 8 && j != 0 && j != ui.chesswidth - 1) {
+							continue;
+						}
 						if (tafanglist.includes(j)) {
 							var cg = i * ui.chesswidth + j;
 							grids.remove(cg);
@@ -145,13 +147,19 @@ export default () => {
 				for (var i = 0; i < ui.chesswidth; i++) {
 					switch (ui.chesswidth) {
 						case 6:
-							if (i == 2 || i == 3) continue;
+							if (i == 2 || i == 3) {
+								continue;
+							}
 							break;
 						case 9:
-							if (i == 3 || i == 4 || i == 5) continue;
+							if (i == 3 || i == 4 || i == 5) {
+								continue;
+							}
 							break;
 						case 12:
-							if (i == 4 || i == 5 || i == 6 || i == 7) continue;
+							if (i == 4 || i == 5 || i == 6 || i == 7) {
+								continue;
+							}
 							break;
 					}
 					var cg = (ui.chessheight - 1) * ui.chesswidth + i;
@@ -224,12 +232,24 @@ export default () => {
 
 			var list = [];
 			for (i in lib.character) {
-				if (i.indexOf("treasure_") == 0) continue;
-				if (i.indexOf("tafang_mech_") == 0) continue;
-				if (lib.character[i].isMinskin) continue;
-				if (lib.config.forbidchess.includes(i)) continue;
-				if (lib.character[i].isBoss) continue;
-				if (lib.filter.characterDisabled(i)) continue;
+				if (i.indexOf("treasure_") == 0) {
+					continue;
+				}
+				if (i.indexOf("tafang_mech_") == 0) {
+					continue;
+				}
+				if (lib.character[i].isMinskin) {
+					continue;
+				}
+				if (lib.config.forbidchess.includes(i)) {
+					continue;
+				}
+				if (lib.character[i].isBoss) {
+					continue;
+				}
+				if (lib.filter.characterDisabled(i)) {
+					continue;
+				}
 				list.push(i);
 			}
 			list.randomSort();
@@ -443,8 +463,12 @@ export default () => {
 						updateSelected();
 					};
 					event.custom.add.window = function (clicked) {
-						if (clicked) return;
-						if (event.step > 1) return;
+						if (clicked) {
+							return;
+						}
+						if (event.step > 1) {
+							return;
+						}
 						for (var i in map) {
 							for (var j = 0; j < map[i].length; j++) {
 								map[i][j].classList.remove("selected");
@@ -471,9 +495,13 @@ export default () => {
 						_status.lastTafangCommand = link;
 					};
 					event.control = ui.create.control("布防", "招募", function (link, node) {
-						if (node.disabled) return;
+						if (node.disabled) {
+							return;
+						}
 						var current = node.parentNode.querySelector(".thundertext");
-						if (current == node) return;
+						if (current == node) {
+							return;
+						}
 						if (current) {
 							current.classList.remove("thundertext");
 						}
@@ -679,7 +707,9 @@ export default () => {
 							}
 						}
 					}
-					if (shalldelay) game.delay();
+					if (shalldelay) {
+						game.delay();
+					}
 					"step 7";
 					event.justadded = [];
 					if (_status.characterList.length) {
@@ -740,7 +770,7 @@ export default () => {
 					} else {
 						event.mechlist = game.treasures.slice(0);
 					}
-					"step 10";
+					("step 10");
 					if (event.mechlist.length) {
 						var mech = event.mechlist.shift();
 						var info = lib.skill[mech.name + "_skill"];
@@ -763,7 +793,7 @@ export default () => {
 						}
 						event.redo();
 					}
-					"step 11";
+					("step 11");
 					delete event.xingdong;
 					delete event.mechlist;
 					if (_status.turnCount >= _status.turnTotal) {
@@ -800,9 +830,15 @@ export default () => {
 						setTimeout(game.resume, 300);
 					};
 					var clickScene = function (e) {
-						if (this.classList.contains("unselectable")) return;
-						if (this._clicking) return;
-						if (e && e.stopPropagation) e.stopPropagation();
+						if (this.classList.contains("unselectable")) {
+							return;
+						}
+						if (this._clicking) {
+							return;
+						}
+						if (e && e.stopPropagation) {
+							e.stopPropagation();
+						}
 						if (this.classList.contains("flipped")) {
 							return;
 						}
@@ -855,7 +891,9 @@ export default () => {
 					};
 					ui.click.scene = clickScene;
 					var restoreScene = function (node, forced) {
-						if (node._clicking && !forced) return;
+						if (node._clicking && !forced) {
+							return;
+						}
 						if (node.transformInterval) {
 							clearInterval(node.transformInterval);
 							delete node.transformInterval;

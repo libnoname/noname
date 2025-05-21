@@ -11,7 +11,9 @@ export class Client {
 	 * @param {boolean} temp
 	 */
 	constructor(ws, temp = false) {
-		if (ws instanceof Client) throw new Error("Client cannot copy.");
+		if (ws instanceof Client) {
+			throw new Error("Client cannot copy.");
+		}
 		this.ws = ws;
 		/**
 		 * @type { string }
@@ -37,7 +39,9 @@ export class Client {
 		}
 	}
 	send() {
-		if (this.closed) return this;
+		if (this.closed) {
+			return this;
+		}
 		var args = Array.from(arguments);
 		if (typeof args[0] == "function") {
 			args.unshift("exec");

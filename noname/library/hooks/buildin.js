@@ -14,54 +14,26 @@ export const addGroup = [
 				let c3 = parseInt(`0x${config.color.slice(5, 7)}`);
 				color1 = color2 = color3 = color4 = [c1, c2, c3, 1];
 			} else if (Array.isArray(config.color) && config.color.length == 4) {
-				if (config.color.every((item) => Array.isArray(item))) {
+				if (config.color.every(item => Array.isArray(item))) {
 					color1 = config.color[0];
 					color2 = config.color[1];
 					color3 = config.color[2];
 					color4 = config.color[3];
-				} else color1 = color2 = color3 = color4 = config.color;
+				} else {
+					color1 = color2 = color3 = color4 = config.color;
+				}
 			}
 			if (color1 && color2 && color3 && color4) {
 				const cs = lib.linq.cselector;
 				game.dynamicStyle.addObject({
-					[cs.group(
-						cs.of(cs.class("player ", "identity"), cs.isAttr("data-color", `"${id}"`)),
-						cs.of("div", cs.isAttr("data-nature", `"${id}"`)),
-						cs.of("span", cs.isAttr("data-nature", `"${id}"`))
-					)]: {
-						textShadow: cs.group(
-							"black 0 0 1px",
-							`rgba(${color1.join()}) 0 0 2px`,
-							`rgba(${color2.join()}) 0 0 5px`,
-							`rgba(${color3.join()}) 0 0 10px`,
-							`rgba(${color4.join()}) 0 0 10px`
-						),
+					[cs.group(cs.of(cs.class("player ", "identity"), cs.isAttr("data-color", `"${id}"`)), cs.of("div", cs.isAttr("data-nature", `"${id}"`)), cs.of("span", cs.isAttr("data-nature", `"${id}"`)))]: {
+						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 5px`, `rgba(${color3.join()}) 0 0 10px`, `rgba(${color4.join()}) 0 0 10px`),
 					},
-					[cs.group(
-						cs.of("div", cs.isAttr("data-nature", `"${id}m"`)),
-						cs.of("span", cs.isAttr("data-nature", `"${id}m"`))
-					)]: {
-						textShadow: cs.group(
-							"black 0 0 1px",
-							`rgba(${color1.join()}) 0 0 2px`,
-							`rgba(${color2.join()}) 0 0 5px`,
-							`rgba(${color3.join()}) 0 0 5px`,
-							`rgba(${color4.join()}) 0 0 5px`,
-							"black 0 0 1px"
-						),
+					[cs.group(cs.of("div", cs.isAttr("data-nature", `"${id}m"`)), cs.of("span", cs.isAttr("data-nature", `"${id}m"`)))]: {
+						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 5px`, `rgba(${color3.join()}) 0 0 5px`, `rgba(${color4.join()}) 0 0 5px`, "black 0 0 1px"),
 					},
-					[cs.group(
-						cs.of("div", cs.isAttr("data-nature", `"${id}mm"`)),
-						cs.of("span", cs.isAttr("data-nature", `"${id}mm"`))
-					)]: {
-						textShadow: cs.group(
-							"black 0 0 1px",
-							`rgba(${color1.join()}) 0 0 2px`,
-							`rgba(${color2.join()}) 0 0 2px`,
-							`rgba(${color3.join()}) 0 0 2px`,
-							`rgba(${color4.join()}) 0 0 2px`,
-							"black 0 0 1px"
-						),
+					[cs.group(cs.of("div", cs.isAttr("data-nature", `"${id}mm"`)), cs.of("span", cs.isAttr("data-nature", `"${id}mm"`)))]: {
+						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 2px`, `rgba(${color3.join()}) 0 0 2px`, `rgba(${color4.join()}) 0 0 2px`, "black 0 0 1px"),
 					},
 				});
 				lib.groupnature[id] = id;
@@ -88,7 +60,9 @@ export const addGroup = [
  */
 export const addNature = [
 	function addColor(nature, _translation, config) {
-		if (typeof config != "object") config = {};
+		if (typeof config != "object") {
+			config = {};
+		}
 		/**
 		 * @type {boolean}
 		 */
@@ -109,17 +83,30 @@ export const addNature = [
 		 */
 		// @ts-ignore
 		let lineColor = config.lineColor;
-		if (typeof linked != "boolean") linked = true;
-		if (typeof order != "number") order = 0;
-		if (typeof background != "string") background = "";
-		if (!Array.isArray(lineColor) || lineColor.length != 3) lineColor = [];
-		else if (background.startsWith("ext:")) {
+		if (typeof linked != "boolean") {
+			linked = true;
+		}
+		if (typeof order != "number") {
+			order = 0;
+		}
+		if (typeof background != "string") {
+			background = "";
+		}
+		if (!Array.isArray(lineColor) || lineColor.length != 3) {
+			lineColor = [];
+		} else if (background.startsWith("ext:")) {
 			background = background.replace(/^ext:/, "extension/");
 		}
-		if (linked) lib.linked.add(nature);
-		if (lineColor.length) lib.lineColor.set(nature, lineColor);
+		if (linked) {
+			lib.linked.add(nature);
+		}
+		if (lineColor.length) {
+			lib.lineColor.set(nature, lineColor);
+		}
 		lib.nature.set(nature, order);
-		if (background.length > 0) lib.natureBg.set(nature, background);
+		if (background.length > 0) {
+			lib.natureBg.set(nature, background);
+		}
 		if (config.audio) {
 			for (let key in config.audio) {
 				if (!lib.natureAudio[key]) {
@@ -139,12 +126,14 @@ export const addNature = [
 			let c3 = parseInt(`0x${config.color.slice(5, 7)}`);
 			color1 = color2 = [c1, c2, c3, 1];
 		} else if (Array.isArray(config.color) && config.color.length >= 2 && config.color.length <= 4) {
-			if (config.color.every((item) => Array.isArray(item))) {
+			if (config.color.every(item => Array.isArray(item))) {
 				color1 = config.color[0];
 				color2 = config.color[1];
 			} else {
 				let color = config.color.slice();
-				if (color.length == 3) color.push(1);
+				if (color.length == 3) {
+					color.push(1);
+				}
 				color1 = color2 = color;
 			}
 		}
@@ -159,9 +148,7 @@ export const addNature = [
 			// @ts-ignore
 			game.dynamicStyle.addObject(result);
 
-			const g2 = cs.group(
-				cs.of(cs.class("tempname", `${nature}`), ":not([data-nature])>", cs.class("span"))
-			);
+			const g2 = cs.group(cs.of(cs.class("tempname", `${nature}`), ":not([data-nature])>", cs.class("span")));
 			let result2 = {};
 			result2[g2] = {
 				color: `rgba(${color1.join()})`,

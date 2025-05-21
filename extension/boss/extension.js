@@ -4,7 +4,9 @@ game.import("play", function () {
 	return {
 		name: "boss",
 		init() {
-			if (get.mode() == "tafang") return;
+			if (get.mode() == "tafang") {
+				return;
+			}
 			let storage = localStorage.getItem("boss_storage_playpackconfig");
 			try {
 				storage = JSON.parse(storage) || {};
@@ -62,7 +64,9 @@ game.import("play", function () {
 			}
 		},
 		arenaReady() {
-			if (get.mode() == "tafang") return;
+			if (get.mode() == "tafang") {
+				return;
+			}
 			let storage = localStorage.getItem("boss_storage_playpackconfig");
 			try {
 				storage = JSON.parse(storage) || {};
@@ -80,7 +84,9 @@ game.import("play", function () {
 							storage.translate[i] = mode.translate[i];
 						}
 						for (const i in mode.skill) {
-							if (lib.skill[i]) console.log(i);
+							if (lib.skill[i]) {
+								console.log(i);
+							}
 							if (i != "versus_ladder") {
 								lib.skill[i] = mode.skill[i];
 							}
@@ -109,7 +115,9 @@ game.import("play", function () {
 						storage.translate[i] = mode.translate[i];
 					}
 					for (const i in mode.skill) {
-						if (lib.skill[i]) console.log(i);
+						if (lib.skill[i]) {
+							console.log(i);
+						}
 						lib.skill[i] = mode.skill[i];
 					}
 					for (const ii in mode.skill) {

@@ -7,7 +7,7 @@ export class status {
 	imchoosing = false;
 	clicked = false;
 	auto = false;
-	eventManager= new GameEventManager();
+	eventManager = new GameEventManager();
 	/**
 	 * @type { GameEvent }
 	 */
@@ -119,29 +119,41 @@ export class status {
 		return this.pauseManager.pause.isStarted;
 	}
 	set paused(bool) {
-		if (bool) this.pauseManager.pause.start();
-		else this.pauseManager.pause.resolve();
+		if (bool) {
+			this.pauseManager.pause.start();
+		} else {
+			this.pauseManager.pause.resolve();
+		}
 	}
 	get paused2() {
 		return this.pauseManager.pause2.isStarted;
 	}
 	set paused2(bool) {
-		if (bool) this.pauseManager.pause2.start();
-		else this.pauseManager.pause2.resolve();
+		if (bool) {
+			this.pauseManager.pause2.start();
+		} else {
+			this.pauseManager.pause2.resolve();
+		}
 	}
 	get paused3() {
 		return this.pauseManager.pause3.isStarted;
 	}
 	set paused3(bool) {
-		if (bool) this.pauseManager.pause3.start();
-		else this.pauseManager.pause3.resolve();
+		if (bool) {
+			this.pauseManager.pause3.start();
+		} else {
+			this.pauseManager.pause3.resolve();
+		}
 	}
 	get over() {
 		return this.pauseManager.over.isStarted;
 	}
 	set over(bool) {
-		if (bool) this.pauseManager.over.start();
-		else this.pauseManager.over.resolve();
+		if (bool) {
+			this.pauseManager.over.start();
+		} else {
+			this.pauseManager.over.resolve();
+		}
 	}
 }
 

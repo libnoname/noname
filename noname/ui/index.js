@@ -177,11 +177,15 @@ export class UI {
 			nodes.push(thrown[i]);
 		}
 		for (i = 0; i < nodes.length; i++) {
-			if (!nodes[i].fixed) nodes[i].delete();
+			if (!nodes[i].fixed) {
+				nodes[i].delete();
+			}
 		}
 	}
 	updatec() {
-		if (_status.noupdatec) return;
+		if (_status.noupdatec) {
+			return;
+		}
 		var length = 0,
 			minoffset = -Infinity;
 		var controls = [];
@@ -214,7 +218,9 @@ export class UI {
 		widths = leftwidths.concat(widths);
 		var staylefts = [];
 		for (var i = 0; i < ui.control.childNodes.length; i++) {
-			if (ui.control.childNodes[i].classList.contains("removing")) continue;
+			if (ui.control.childNodes[i].classList.contains("removing")) {
+				continue;
+			}
 			if (lib.config.wuxie_right && ui.control.childNodes[i].stayleft) {
 				staylefts.push(ui.control.childNodes[i]);
 			} else {
@@ -223,14 +229,12 @@ export class UI {
 		}
 		if (staylefts.length) {
 			var fullwidth = 0;
-			var fullright =
-				game.layout == "long" ||
-				game.layout == "long2" ||
-				game.chess ||
-				(game.layout != "nova" && parseInt(ui.arena.dataset.number) <= 5);
+			var fullright = game.layout == "long" || game.layout == "long2" || game.chess || (game.layout != "nova" && parseInt(ui.arena.dataset.number) <= 5);
 			for (var i = 0; i < widths.length; i++) {
 				fullwidth += widths[i] + 6;
-				if (get.is.phoneLayout()) fullwidth += 6;
+				if (get.is.phoneLayout()) {
+					fullwidth += 6;
+				}
 			}
 			fullwidth /= 2;
 			var currentLeft = 0;
@@ -248,11 +252,7 @@ export class UI {
 			}
 			if (fullright) {
 				fullwidth += 124;
-				if (
-					(game.layout == "long2" || game.layout == "nova") &&
-					ui.arena.dataset.number == "8" &&
-					get.mode() != "boss"
-				) {
+				if ((game.layout == "long2" || game.layout == "nova") && ui.arena.dataset.number == "8" && get.mode() != "boss") {
 					fullwidth += game.me.getLeft();
 				}
 			} else {
@@ -263,11 +263,7 @@ export class UI {
 					var current_offset = stayleft._offset;
 					if (fullright) {
 						stayleft._offset = Math.ceil(-ui.arena.offsetWidth / 2) + 135;
-						if (
-							(game.layout == "long2" || game.layout == "nova") &&
-							ui.arena.dataset.number == "8" &&
-							get.mode() != "boss"
-						) {
+						if ((game.layout == "long2" || game.layout == "nova") && ui.arena.dataset.number == "8" && get.mode() != "boss") {
 							stayleft._offset += game.me.getLeft();
 						}
 					} else {
@@ -288,9 +284,13 @@ export class UI {
 				minoffset = last._offset + last.offsetWidth + (get.is.phoneLayout() ? 18 : 12);
 			}
 		}
-		if (!controls.length) return;
+		if (!controls.length) {
+			return;
+		}
 		var offset = -length / 2;
-		if (minoffset > offset) offset = minoffset;
+		if (minoffset > offset) {
+			offset = minoffset;
+		}
 		var control = controls.shift();
 		if (control._offset != offset) {
 			control.addTempClass("controlpressdownx", 500);
@@ -380,9 +380,15 @@ export class UI {
 		}
 	}
 	updatehl() {
-		if (!game.me) return;
-		if (!ui.handcards1Container || !ui.handcards2Container) return;
-		if (!ui.handcards1Container.childNodes.length) return;
+		if (!game.me) {
+			return;
+		}
+		if (!ui.handcards1Container || !ui.handcards2Container) {
+			return;
+		}
+		if (!ui.handcards1Container.childNodes.length) {
+			return;
+		}
 		var hs1 = [],
 			hs2 = [];
 		for (var i = 0; i < ui.handcards1Container.firstChild.childElementCount; i++) {
@@ -478,8 +484,12 @@ export class UI {
 		ui.handcards2Container.firstChild.style.width = offset2 * (hs2.length - 1) + 118 + "px";
 	}
 	updateh(compute) {
-		if (!game.me) return;
-		if (!ui.handcards1Container) return;
+		if (!game.me) {
+			return;
+		}
+		if (!ui.handcards1Container) {
+			return;
+		}
 		if (lib.config.low_performance) {
 			if (compute) {
 				ui.updatehl();
@@ -517,10 +527,7 @@ export class UI {
 	}
 	updated() {
 		if (document.documentElement.offsetWidth < 900 || document.documentElement.offsetHeight < 500) {
-			game.deviceZoom = Math.min(
-				Math.round(document.documentElement.offsetWidth / 98) / 10,
-				Math.round(document.documentElement.offsetHeight / 50) / 10
-			);
+			game.deviceZoom = Math.min(Math.round(document.documentElement.offsetWidth / 98) / 10, Math.round(document.documentElement.offsetHeight / 50) / 10);
 		} else {
 			game.deviceZoom = 1;
 		}
@@ -545,11 +552,7 @@ export class UI {
 		}
 		if (ui.dialog && !ui.dialog.classList.contains("noupdate")) {
 			if (game.chess) {
-				if (
-					ui.dialog.content.scrollHeight < 240 &&
-					(!ui.dialog.buttons || !ui.dialog.buttons.length) &&
-					!ui.dialog.forcebutton
-				) {
+				if (ui.dialog.content.scrollHeight < 240 && (!ui.dialog.buttons || !ui.dialog.buttons.length) && !ui.dialog.forcebutton) {
 					ui.dialog.style.height = ui.dialog.content.offsetHeight + "px";
 					ui.dialog.classList.add("slim");
 				} else {
@@ -557,13 +560,10 @@ export class UI {
 					ui.dialog.classList.remove("slim");
 				}
 			} else {
-				if (
-					(!ui.dialog.buttons || !ui.dialog.buttons.length) &&
-					!ui.dialog.forcebutton &&
-					ui.dialog.classList.contains("fullheight") == false &&
-					get.mode() != "stone"
-				) {
-					if (!ui.dialog.classList.contains("addNewRow")) ui.dialog.classList.add("nobutton");
+				if ((!ui.dialog.buttons || !ui.dialog.buttons.length) && !ui.dialog.forcebutton && ui.dialog.classList.contains("fullheight") == false && get.mode() != "stone") {
+					if (!ui.dialog.classList.contains("addNewRow")) {
+						ui.dialog.classList.add("nobutton");
+					}
 					if (ui.dialog.content.offsetHeight < 240) {
 						if (!ui.dialog._heightset) {
 							ui.dialog._heightset = ui.dialog.style.height || true;
@@ -589,7 +589,9 @@ export class UI {
 						ui.dialog.style.height = "";
 					}
 					delete ui.dialog._heightset;
-					if (!ui.dialog.classList.contains("addNewRow")) ui.dialog.classList.remove("nobutton");
+					if (!ui.dialog.classList.contains("addNewRow")) {
+						ui.dialog.classList.remove("nobutton");
+					}
 				}
 			}
 			var height1 = ui.dialog.content.offsetHeight;
@@ -599,25 +601,14 @@ export class UI {
 					ui.dialog.style.height = height1 + "px";
 				}
 			} else {
-				if (
-					!ui.dialog.forcebutton &&
-					!ui.dialog._scrollset &&
-					(height1 <= 190 || (height2 >= height1 && height2 >= 210))
-				) {
+				if (!ui.dialog.forcebutton && !ui.dialog._scrollset && (height1 <= 190 || (height2 >= height1 && height2 >= 210))) {
 					ui.dialog.classList.remove("scroll1");
 					ui.dialog.classList.remove("scroll2");
 				} else {
 					ui.dialog.classList.add("scroll1");
 					ui.dialog.classList.add("scroll2");
 					if (game.layout != "default") {
-						ui.dialog.style.height =
-							Math.min(
-								height1,
-								(game.layout == "long2" || game.layout == "nova") &&
-									ui.arena.classList.contains("choose-character")
-									? 380
-									: 350
-							) + "px";
+						ui.dialog.style.height = Math.min(height1, (game.layout == "long2" || game.layout == "nova") && ui.arena.classList.contains("choose-character") ? 380 : 350) + "px";
 						ui.dialog._scrollset = true;
 					}
 				}
@@ -632,7 +623,9 @@ export class UI {
 		}
 	}
 	recycle(node, key) {
-		if (!ui._recycle) ui._recycle = {};
+		if (!ui._recycle) {
+			ui._recycle = {};
+		}
 		if (typeof node == "string") {
 			return ui._recycle[node];
 		}
@@ -648,9 +641,11 @@ export class UI {
 			const configOL = lib.configOL;
 			numberOfPlayers = parseInt(configOL.player_number) || configOL.number;
 		}
-		if (!numberOfPlayers) return;
+		if (!numberOfPlayers) {
+			return;
+		}
 		const playerPositions = ui.playerPositions;
-		playerPositions.forEach((position) => {
+		playerPositions.forEach(position => {
 			game.dynamicStyle.remove(position);
 		});
 		playerPositions.length = 0;
@@ -668,7 +663,9 @@ export class UI {
 				left: `calc(${upperPercentage * (ordinal + 1)}% - ${halfWidth}px)`,
 				top: `calc(${100 / 3}% - ${halfHeight}px)`,
 			};
-			if (scale < 1) css["transform"] = `scale(${scale})`;
+			if (scale < 1) {
+				css["transform"] = `scale(${scale})`;
+			}
 
 			game.dynamicStyle.add(selector, css);
 			playerPositions.push(selector);
@@ -680,7 +677,9 @@ export class UI {
 				left: `calc(${lowerPercentage * (ordinal - halfNumberOfPlayers + 1)}% - ${halfWidth}px)`,
 				top: `calc(${(100 * 2) / 3}% - ${halfHeight}px)`,
 			};
-			if (scale < 1) css["transform"] = `scale(${scale})`;
+			if (scale < 1) {
+				css["transform"] = `scale(${scale})`;
+			}
 
 			game.dynamicStyle.add(selector, css);
 			playerPositions.push(selector);
@@ -692,11 +691,15 @@ export class UI {
 	 * @param {number} [numberOfPlayers]
 	 */
 	updatePlayerPositions(numberOfPlayers) {
-		if (typeof numberOfPlayers != "number") numberOfPlayers = ui.arena.dataset.number;
+		if (typeof numberOfPlayers != "number") {
+			numberOfPlayers = ui.arena.dataset.number;
+		}
 		//当人数不超过8人时，还是用以前的布局
-		if (!numberOfPlayers || numberOfPlayers <= 8) return;
+		if (!numberOfPlayers || numberOfPlayers <= 8) {
+			return;
+		}
 		const playerPositions = ui.playerPositions;
-		playerPositions.forEach((position) => {
+		playerPositions.forEach(position => {
 			game.dynamicStyle.remove(position);
 		});
 		playerPositions.length = 0;
@@ -715,12 +718,7 @@ export class UI {
 		for (let ordinal = 1; ordinal < numberOfPlayers; ordinal++) {
 			const reversedOrdinal = columnCount - ordinal;
 			//动态计算玩家的top属性，实现拱桥的效果；只让两边的各两个人向下偏移一些
-			const top =
-				Math.max(
-					0,
-					Math.round(numberOfPlayers / 5) -
-					Math.min(Math.abs(ordinal - 1), Math.abs(reversedOrdinal))
-				) * quarterHeight;
+			const top = Math.max(0, Math.round(numberOfPlayers / 5) - Math.min(Math.abs(ordinal - 1), Math.abs(reversedOrdinal))) * quarterHeight;
 			const selector = `#arena[data-number='${numberOfPlayers}']>.player[data-position='${ordinal}']`;
 			game.dynamicStyle.add(selector, {
 				left: `calc(${percentage * reversedOrdinal + 5}% - ${halfWidth}px)`,
@@ -731,7 +729,9 @@ export class UI {
 		}
 	}
 	updateRoundNumber(roundNumber, cardPileNumber) {
-		if (ui.cardPileNumber) ui.cardPileNumber.innerHTML = `${roundNumber}轮 剩余牌: ${cardPileNumber}`;
+		if (ui.cardPileNumber) {
+			ui.cardPileNumber.innerHTML = `${roundNumber}轮 剩余牌: ${cardPileNumber}`;
+		}
 	}
 }
 
@@ -740,7 +740,7 @@ export let ui = new UI();
 /**
  * @param { InstanceType<typeof UI> } [instance]
  */
-export let setUI = (instance) => {
+export let setUI = instance => {
 	ui = instance || new UI();
 	if (lib.config.dev) {
 		window.ui = ui;

@@ -26,8 +26,9 @@ export const characterPackMenu = function (connectMenu) {
 		}
 		this.classList.add("active");
 		updateActive(this);
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -56,33 +57,49 @@ export const characterPackMenu = function (connectMenu) {
 					// 扩展武将包开启逻辑
 					if (node.mode.startsWith("mode_extension")) {
 						const extName = node.mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) continue;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							continue;
+						}
 						if (lib.config[`extension_${extName}_characters_enable`] == true) {
 							node.classList.remove("off");
-							if (node.link) node.link.firstChild.classList.add("on");
+							if (node.link) {
+								node.link.firstChild.classList.add("on");
+							}
 						} else {
 							node.classList.add("off");
-							if (node.link) node.link.firstChild.classList.remove("on");
+							if (node.link) {
+								node.link.firstChild.classList.remove("on");
+							}
 						}
 					}
 					continue;
 				}
-				if (node.mode == "custom") continue;
+				if (node.mode == "custom") {
+					continue;
+				}
 				if (connectMenu) {
 					if (!lib.config.connect_characters.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				} else {
 					if (lib.config.characters.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				}
 			}
@@ -93,7 +110,9 @@ export const characterPackMenu = function (connectMenu) {
 		// 扩展武将包开启逻辑
 		if (name.startsWith("mode_extension")) {
 			const extName = name.slice(15);
-			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+				return false;
+			}
 			game.saveExtensionConfig(extName, "characters_enable", bool);
 		}
 		// 原逻辑
@@ -135,10 +154,16 @@ export const characterPackMenu = function (connectMenu) {
 			var boolAI = true;
 			for (var i in _info) {
 				const characterInfo = _info[i];
-				if (characterInfo.isUnseen) continue;
-				if (connectMenu && lib.connectBanned.includes(i)) continue;
+				if (characterInfo.isUnseen) {
+					continue;
+				}
+				if (connectMenu && lib.connectBanned.includes(i)) {
+					continue;
+				}
 				list.push(i);
-				if (boolAI && !lib.config.forbidai_user.includes(i)) boolAI = false;
+				if (boolAI && !lib.config.forbidai_user.includes(i)) {
+					boolAI = false;
+				}
 				for (var j = 0; j < characterInfo.skills.length; j++) {
 					if (!lib.skill[characterInfo.skills[j]]) {
 						continue;
@@ -154,7 +179,9 @@ export const characterPackMenu = function (connectMenu) {
 					// 扩展武将包开启逻辑
 					if (mode.startsWith("mode_extension")) {
 						const extName = mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							return false;
+						}
 						// 这块或许应该在加载扩展时候写
 						if (lib.config[`extension_${extName}_characters_enable`] === undefined) {
 							game.saveExtensionConfig(extName, "characters_enable", true);
@@ -202,8 +229,8 @@ export const characterPackMenu = function (connectMenu) {
 				page.style.paddingTop = "8px";
 			}
 			if (lib.translate[mode + "_info"]) {
-                var modeTranslation = "<p style=\"padding-left: 2em; margin-block: unset;\">" + lib.translate[mode + "_info"] + "</p>";
-                page.insertAdjacentHTML('beforeend', modeTranslation);
+				var modeTranslation = '<p style="padding-left: 2em; margin-block: unset;">' + lib.translate[mode + "_info"] + "</p>";
+				page.insertAdjacentHTML("beforeend", modeTranslation);
 			}
 			var banCharacter = function (e) {
 				if (_status.clicked) {
@@ -259,7 +286,9 @@ export const characterPackMenu = function (connectMenu) {
 					for (var ii = 0; ii < list2.length; ii++) {
 						if (info.includes(list2[ii])) {
 							listx.add(list2[ii]);
-							if (!listb.includes(list2[ii])) boolx = true;
+							if (!listb.includes(list2[ii])) {
+								boolx = true;
+							}
 							list2.splice(ii--, 1);
 						}
 					}
@@ -276,8 +305,11 @@ export const characterPackMenu = function (connectMenu) {
 									if (modex && modex.mode) {
 										banned = lib.config["connect_" + modex.mode + "_banned"];
 									}
-								} else if (_status.connectMode) return;
-								else banned = lib.config[get.mode() + "_banned"] || [];
+								} else if (_status.connectMode) {
+									return;
+								} else {
+									banned = lib.config[get.mode() + "_banned"] || [];
+								}
 								var listx = lib.characterSort[mode][this._link.config._name];
 								if (bool) {
 									for (var i = 0; i < listx.length; i++) {
@@ -368,7 +400,9 @@ export const characterPackMenu = function (connectMenu) {
 				}
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 		return node;
 	};
 	if (lib.config.show_favourite_menu && !connectMenu && Array.isArray(lib.config.favouriteCharacter)) {
@@ -380,7 +414,9 @@ export const characterPackMenu = function (connectMenu) {
 			}
 		}
 		var favouriteCharacterNode = createModeConfig("mode_favourite", start.firstChild);
-		if (!favouriteCharacterNode.link) favouriteCharacterNode._initLink();
+		if (!favouriteCharacterNode.link) {
+			favouriteCharacterNode._initLink();
+		}
 		ui.favouriteCharacter = favouriteCharacterNode.link;
 		if (get.is.empty(lib.characterPack.mode_favourite)) {
 			ui.favouriteCharacter.node.style.display = "none";
@@ -409,12 +445,17 @@ export const characterPackMenu = function (connectMenu) {
 	for (var i = 0; i < characterlist.length; i++) {
 		createModeConfig(characterlist[i], start.firstChild);
 	}
-	if (!connectMenu)
+	if (!connectMenu) {
 		Object.keys(lib.characterPack).forEach(key => {
 			// 单机模式下显示不在lib.config.all.characters里的武将包
-			if (!characterlist.includes(key)) createModeConfig(key, start.firstChild);
-			if (connectMenu) lib.connectCharacterPack.add(key);
+			if (!characterlist.includes(key)) {
+				createModeConfig(key, start.firstChild);
+			}
+			if (connectMenu) {
+				lib.connectCharacterPack.add(key);
+			}
 		});
+	}
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
 		active = start.firstChild.firstChild;
@@ -427,7 +468,9 @@ export const characterPackMenu = function (connectMenu) {
 		active.classList.add("active");
 		updateActive(active);
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 
 	if (!connectMenu) {
@@ -453,11 +496,15 @@ export const characterPackMenu = function (connectMenu) {
 	 */
 	return function (packName) {
 		// 判断菜单栏有没有加载过这个武将包
-		if ([...start.firstChild.children].map(node => node.mode).includes(packName)) return;
+		if ([...start.firstChild.children].map(node => node.mode).includes(packName)) {
+			return;
+		}
 		// 显示不是无名杀自带的武将包
 		if (!lib.connectCharacterPack.includes(packName) && !lib.config.all.characters.includes(packName)) {
 			createModeConfig(packName, start.firstChild, node1);
-			if (connectMenu) lib.connectCharacterPack.add(packName);
+			if (connectMenu) {
+				lib.connectCharacterPack.add(packName);
+			}
 		}
 	};
 };

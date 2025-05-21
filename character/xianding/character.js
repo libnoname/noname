@@ -53,7 +53,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["dcsbbizuo", "dcsbshimou"],//, "dcsbxianshi"
+		skills: ["dcsbbizuo", "dcsbshimou"], //, "dcsbxianshi"
 	},
 	v_dongzhuo: {
 		sex: "male",

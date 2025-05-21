@@ -140,7 +140,7 @@ function core_md5(x, len) {
 		c = safe_add(c, oldc);
 		d = safe_add(d, oldd);
 	}
-	return Array(a, b, c, d);
+	return [a, b, c, d];
 }
 
 /*
@@ -167,7 +167,9 @@ function md5_ii(a, b, c, d, x, s, t) {
  */
 function core_hmac_md5(key, data) {
 	var bkey = str2binl(key);
-	if (bkey.length > 16) bkey = core_md5(bkey, key.length * chrsz);
+	if (bkey.length > 16) {
+		bkey = core_md5(bkey, key.length * chrsz);
+	}
 
 	var ipad = Array(16),
 		opad = Array(16);
@@ -202,10 +204,11 @@ function bit_rol(num, cnt) {
  * If chrsz is ASCII, characters >255 have their hi-byte silently ignored.
  */
 function str2binl(str) {
-	var bin = Array();
+	var bin = [];
 	var mask = (1 << chrsz) - 1;
-	for (var i = 0; i < str.length * chrsz; i += chrsz)
+	for (var i = 0; i < str.length * chrsz; i += chrsz) {
 		bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << i % 32;
+	}
 	return bin;
 }
 
@@ -215,8 +218,9 @@ function str2binl(str) {
 function binl2str(bin) {
 	var str = "";
 	var mask = (1 << chrsz) - 1;
-	for (var i = 0; i < bin.length * 32; i += chrsz)
+	for (var i = 0; i < bin.length * 32; i += chrsz) {
 		str += String.fromCharCode((bin[i >> 5] >>> i % 32) & mask);
+	}
 	return str;
 }
 
@@ -227,9 +231,7 @@ function binl2hex(binarray) {
 	var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
 	var str = "";
 	for (var i = 0; i < binarray.length * 4; i++) {
-		str +=
-			hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8 + 4)) & 0xf) +
-			hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8)) & 0xf);
+		str += hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8 + 4)) & 0xf) + hex_tab.charAt((binarray[i >> 2] >> ((i % 4) * 8)) & 0xf);
 	}
 	return str;
 }
@@ -241,13 +243,13 @@ function binl2b64(binarray) {
 	var tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	var str = "";
 	for (var i = 0; i < binarray.length * 4; i += 3) {
-		var triplet =
-			(((binarray[i >> 2] >> (8 * (i % 4))) & 0xff) << 16) |
-			(((binarray[(i + 1) >> 2] >> (8 * ((i + 1) % 4))) & 0xff) << 8) |
-			((binarray[(i + 2) >> 2] >> (8 * ((i + 2) % 4))) & 0xff);
+		var triplet = (((binarray[i >> 2] >> (8 * (i % 4))) & 0xff) << 16) | (((binarray[(i + 1) >> 2] >> (8 * ((i + 1) % 4))) & 0xff) << 8) | ((binarray[(i + 2) >> 2] >> (8 * ((i + 2) % 4))) & 0xff);
 		for (var j = 0; j < 4; j++) {
-			if (i * 8 + j * 6 > binarray.length * 32) str += b64pad;
-			else str += tab.charAt((triplet >> (6 * (3 - j))) & 0x3f);
+			if (i * 8 + j * 6 > binarray.length * 32) {
+				str += b64pad;
+			} else {
+				str += tab.charAt((triplet >> (6 * (3 - j))) & 0x3f);
+			}
 		}
 	}
 	return str;

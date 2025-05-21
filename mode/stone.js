@@ -134,7 +134,9 @@ export default () => {
 					var cardDialog = ui.create.cardDialog(
 						true,
 						function (name) {
-							if (lib.card[name].stonehidden) return true;
+							if (lib.card[name].stonehidden) {
+								return true;
+							}
 							var type = lib.card[name].type;
 							return type != "stonecard" && type != "stonecharacter";
 						},
@@ -245,7 +247,9 @@ export default () => {
 						updateCardDialog();
 					};
 					var clickButton = function () {
-						if (!deckContainer.classList.contains("shown")) return;
+						if (!deckContainer.classList.contains("shown")) {
+							return;
+						}
 						if (!this.classList.contains("unselectable")) {
 							var card = ui.create.card(null, "noclick").init(this.link).listen(clickCard);
 							deckContainer.insertBefore(card, deckContainer.firstChild);
@@ -320,8 +324,12 @@ export default () => {
 									editing.content.deck.push(deckContainer.childNodes[i].name);
 								}
 								editing.content.deck.sort(function (a, b) {
-									if (a > b) return 1;
-									if (a < b) return -1;
+									if (a > b) {
+										return 1;
+									}
+									if (a < b) {
+										return -1;
+									}
 									return 0;
 								});
 								if (editing.origin) {
@@ -357,7 +365,9 @@ export default () => {
 					if (ui.deckcontrol) {
 						ui.deckcontrol.show();
 						setTimeout(function () {
-							if (ui.deckcontrol) ui.deckcontrol.style.transition = "";
+							if (ui.deckcontrol) {
+								ui.deckcontrol.style.transition = "";
+							}
 						}, 500);
 					}
 				};
@@ -365,7 +375,9 @@ export default () => {
 				ui.deckcontrol = ui.create.system(
 					"卡组管理",
 					function () {
-						if (this.classList.contains("hidden")) return;
+						if (this.classList.contains("hidden")) {
+							return;
+						}
 						// if(lib.config.low_performance){
 						// 	ui.arena.style.transform='translateY('+ui.window.offsetHeight+'px)';
 						// }
@@ -644,8 +656,12 @@ export default () => {
 					}
 				},
 				changeRage: function (num) {
-					if (_status.mode != "deck") return;
-					if (!_status.rageEnabled) return;
+					if (_status.mode != "deck") {
+						return;
+					}
+					if (!_status.rageEnabled) {
+						return;
+					}
 					var popup = null;
 					if (this.side == game.me.side) {
 						if (_status.friendRage < 100) {
@@ -766,7 +782,9 @@ export default () => {
 				},
 				hasFellowSkill: function (skill, exclude) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (exclude && game.players[i] == this) continue;
+						if (exclude && game.players[i] == this) {
+							continue;
+						}
 						if (game.players[i].hasSkill(skill) && game.players[i].side == this.side) {
 							return true;
 						}
@@ -776,7 +794,9 @@ export default () => {
 				countFellowSkill: function (skill, exclude) {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
-						if (exclude && game.players[i] == this) continue;
+						if (exclude && game.players[i] == this) {
+							continue;
+						}
 						if (game.players[i].hasSkill(skill) && game.players[i].side == this.side) {
 							num++;
 						}
@@ -784,10 +804,16 @@ export default () => {
 					return num;
 				},
 				canAddFellow: function () {
-					if (!this.actcharacterlist) return false;
-					if (this.actcharacterlist.length < 4) return true;
+					if (!this.actcharacterlist) {
+						return false;
+					}
+					if (this.actcharacterlist.length < 4) {
+						return true;
+					}
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i] === null) return true;
+						if (this.actcharacterlist[i] === null) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -822,9 +848,13 @@ export default () => {
 					return this.side != game.me.side ? game.me : game.enemy;
 				},
 				hasFellow: function () {
-					if (!this.actcharacterlist) return false;
+					if (!this.actcharacterlist) {
+						return false;
+					}
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i]) return true;
+						if (this.actcharacterlist[i]) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -846,15 +876,21 @@ export default () => {
 					return list;
 				},
 				countFellow: function () {
-					if (!this.actcharacterlist) return 0;
+					if (!this.actcharacterlist) {
+						return 0;
+					}
 					var num = 0;
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i]) num++;
+						if (this.actcharacterlist[i]) {
+							num++;
+						}
 					}
 					return num;
 				},
 				addFellow: function (fellow) {
-					if (!this.actcharacterlist) return this;
+					if (!this.actcharacterlist) {
+						return this;
+					}
 					var i;
 					for (i = 0; i < this.actcharacterlist.length; i++) {
 						if (this.actcharacterlist[i] === null) {
@@ -876,7 +912,9 @@ export default () => {
 					next.setContent("addFellowAuto");
 				},
 				removeFellow: function (fellow) {
-					if (!this.actcharacterlist) return this;
+					if (!this.actcharacterlist) {
+						return this;
+					}
 					var index = this.actcharacterlist.indexOf(fellow);
 					if (index >= 0) {
 						this.actcharacterlist[index] = null;
@@ -2740,7 +2778,9 @@ export default () => {
 			reserveDead: true,
 			bannedcards: ["lebu", "guiyoujie", "xietianzi", "lingjiandai", "jiguanshu", "sifeizhenmian", "fengxueren", "chuansongmen"],
 			onwash: function () {
-				if (_status.mode != "deck") return;
+				if (_status.mode != "deck") {
+					return;
+				}
 				var list = [];
 				for (var i = 0; i < ui.discardPile.childElementCount; i++) {
 					var type = get.type(ui.discardPile.childNodes[i]);
@@ -2802,7 +2842,9 @@ export default () => {
 				var i, j, name;
 				for (var i in lib.characterPack.mode_stone) {
 					lib.character[i] = lib.characterPack.mode_stone[i];
-					if (lib.character[i].isSpecialInStoneMode) continue;
+					if (lib.character[i].isSpecialInStoneMode) {
+						continue;
+					}
 					lib.character[i].skills.add("stonesha");
 					lib.character[i].skills.add("stoneshan");
 					lib.character[i].skills.add("stonedraw");
@@ -2835,7 +2877,9 @@ export default () => {
 					lib.spells = [];
 					var spells = lib.cardPack.mode_stone;
 					for (var i = 0; i < spells.length; i++) {
-						if (lib.card[spells[i]].stonehidden) continue;
+						if (lib.card[spells[i]].stonehidden) {
+							continue;
+						}
 						if (lib.card[spells[i]].career) {
 							list4[lib.card[spells[i]].career].push(spells[i]);
 						} else {
@@ -2917,10 +2961,18 @@ export default () => {
 					var list = [];
 					event.list = list;
 					for (i in lib.character) {
-						if (lib.character[i].isMinskin) continue;
-						if (lib.character[i].isHiddenInStoneMode) continue;
-						if (lib.config.forbidstone.includes(i)) continue;
-						if (lib.filter.characterDisabled(i)) continue;
+						if (lib.character[i].isMinskin) {
+							continue;
+						}
+						if (lib.character[i].isHiddenInStoneMode) {
+							continue;
+						}
+						if (lib.config.forbidstone.includes(i)) {
+							continue;
+						}
+						if (lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						list.push(i);
 					}
 					list.randomSort();
@@ -2934,7 +2986,9 @@ export default () => {
 						return (get.config("double_character") ? 2 : 1) * get.config("battle_number");
 					};
 					next.custom.add.button = function () {
-						if (ui.cheat2 && ui.cheat2.backup) return;
+						if (ui.cheat2 && ui.cheat2.backup) {
+							return;
+						}
 						_status.event.dialog.content.childNodes[0].innerHTML = "按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : "");
 						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
 					};
@@ -3011,8 +3065,12 @@ export default () => {
 							ui.cheat2.classList.add("disabled");
 						}
 					};
-					if (!ui.cheat && get.config("change_choice")) ui.create.cheat();
-					if (!ui.cheat2 && get.config("free_choose")) ui.create.cheat2();
+					if (!ui.cheat && get.config("change_choice")) {
+						ui.create.cheat();
+					}
+					if (!ui.cheat2 && get.config("free_choose")) {
+						ui.create.cheat2();
+					}
 					"step 1";
 					if (ui.cheat) {
 						ui.cheat.close();
@@ -3050,7 +3108,9 @@ export default () => {
 							var buttons = ui.create.div(".buttons", event.dialog.content);
 							var currentNode = null;
 							var clickButton = function (click) {
-								if (!event.choosingDeck) return;
+								if (!event.choosingDeck) {
+									return;
+								}
 								if (click !== false) {
 									_status.deck.push(this.name);
 								}
@@ -3145,11 +3205,21 @@ export default () => {
 			stonecard: function (type, career) {
 				var list = [];
 				for (var i in lib.card) {
-					if (lib.card[i].stonehidden) continue;
-					if (lib.card[i].type != "stonecard" && lib.card[i].type != "stonecharacter") continue;
-					if (type == 1 && lib.card[i].type != "stonecard") continue;
-					if (type == 2 && lib.card[i].type != "stonecharacter") continue;
-					if (career && lib.card[i].career != career) continue;
+					if (lib.card[i].stonehidden) {
+						continue;
+					}
+					if (lib.card[i].type != "stonecard" && lib.card[i].type != "stonecharacter") {
+						continue;
+					}
+					if (type == 1 && lib.card[i].type != "stonecard") {
+						continue;
+					}
+					if (type == 2 && lib.card[i].type != "stonecharacter") {
+						continue;
+					}
+					if (career && lib.card[i].career != career) {
+						continue;
+					}
 					list.push(i);
 				}
 				return list;
@@ -3169,8 +3239,12 @@ export default () => {
 					deck = lib.storage.deckList[name].deck.slice(0);
 				}
 				deck.sort(function (a, b) {
-					if (a > b) return 1;
-					if (a == b) return 0;
+					if (a > b) {
+						return 1;
+					}
+					if (a == b) {
+						return 0;
+					}
 					return -1;
 				});
 				player.deck = name;
@@ -3180,7 +3254,9 @@ export default () => {
 					player.node.career.dataset.career = career;
 					lib.setIntro(player.node.career, null, true);
 				}
-				if (!player.deckCards) player.deckCards = [];
+				if (!player.deckCards) {
+					player.deckCards = [];
+				}
 				for (var i = 0; i < deck.length; i++) {
 					player.deckCards.push(game.createCard(deck[i]));
 				}
@@ -3303,7 +3379,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player) {
-							if (player.getEnemy().countFellow() >= 2) return 1;
+							if (player.getEnemy().countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -3411,9 +3489,13 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (player.hujia >= 2) return -1.5;
+							if (player.hujia >= 2) {
+								return -1.5;
+							}
 							if (player.hujia == 1) {
-								if (player.hp > 3) return -1.5;
+								if (player.hp > 3) {
+									return -1.5;
+								}
 								return 0;
 							}
 							return 0;
@@ -3429,7 +3511,9 @@ export default () => {
 				fullimage: true,
 				enable: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -3501,7 +3585,9 @@ export default () => {
 					useful: 3,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 2;
+							if (target.isTurnedOver()) {
+								return 2;
+							}
 							return 1;
 						},
 					},
@@ -3513,7 +3599,9 @@ export default () => {
 				career: "warrior",
 				enable: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -3540,7 +3628,9 @@ export default () => {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 									num++;
-									if (num >= 2) return -1.5;
+									if (num >= 2) {
+										return -1.5;
+									}
 								}
 							}
 							return 0;
@@ -3741,7 +3831,9 @@ export default () => {
 					useful: 4,
 					result: {
 						player: function (player) {
-							if (player.countFellow() >= 2) return 1;
+							if (player.countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -3805,7 +3897,9 @@ export default () => {
 				career: "priest",
 				recastable: true,
 				enable: function (event, player) {
-					if (player.career != "priest") return false;
+					if (player.career != "priest") {
+						return false;
+					}
 					return !player.storage.anyingxingtai || player.storage.anyingxingtai < 2;
 				},
 				fullimage: true,
@@ -3881,7 +3975,9 @@ export default () => {
 				},
 				selectTarget: -1,
 				content: function () {
-					if (!player.canAddFellow()) return;
+					if (!player.canAddFellow()) {
+						return;
+					}
 					var deck = player.getEnemy().deckCards;
 					if (deck) {
 						var list = [];
@@ -4073,7 +4169,9 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.countCards("h")) return -2;
+							if (target.countCards("h")) {
+								return -2;
+							}
 							return -1.5;
 						},
 					},
@@ -4140,7 +4238,9 @@ export default () => {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].isMin() && game.players[i].side == player.side && !game.players[i].hasSkill("druid_conglinzhihun")) {
 									num++;
-									if (num >= 2) return 1;
+									if (num >= 2) {
+										return 1;
+									}
 								}
 							}
 							return 0;
@@ -4206,7 +4306,9 @@ export default () => {
 						event.finish();
 					} else {
 						player.chooseControl("获得行动值", "摸牌").ai = function () {
-							if (player.countCards("h") <= 1) return "摸牌";
+							if (player.countCards("h") <= 1) {
+								return "摸牌";
+							}
 							return "获得行动值";
 						};
 					}
@@ -4266,7 +4368,9 @@ export default () => {
 					value: 5,
 					result: {
 						target: function (player, target) {
-							if (target == player.getEnemy()) return -2;
+							if (target == player.getEnemy()) {
+								return -2;
+							}
 							return -1;
 						},
 					},
@@ -4324,7 +4428,9 @@ export default () => {
 					"step 1";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter") {
 							list.push(i);
 						}
@@ -4484,7 +4590,9 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hasFellow()) return -1;
+							if (target.hasFellow()) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -4625,7 +4733,9 @@ export default () => {
 					useful: 3,
 					result: {
 						target: function (player, target) {
-							if (target.hp <= 2) return 3 - target.hp;
+							if (target.hp <= 2) {
+								return 3 - target.hp;
+							}
 							return 0;
 						},
 					},
@@ -4759,8 +4869,12 @@ export default () => {
 					useful: 4,
 					result: {
 						target: function (player, target) {
-							if (target.hasSkill("shaman_tuteng")) return 0;
-							if (target.hp > 1) return target.hp;
+							if (target.hasSkill("shaman_tuteng")) {
+								return 0;
+							}
+							if (target.hp > 1) {
+								return target.hp;
+							}
 							return 0;
 						},
 					},
@@ -4784,12 +4898,16 @@ export default () => {
 					useful: 4,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 0;
+							if (target.isTurnedOver()) {
+								return 0;
+							}
 							var num = 0;
 							if (target.hasSkill("shaman_fengnu")) {
 								num = 3;
 							}
-							if (target.isMin()) return target.hp + num;
+							if (target.isMin()) {
+								return target.hp + num;
+							}
 							return 1.1;
 						},
 					},
@@ -4836,14 +4954,20 @@ export default () => {
 							var hs = player.getCards("h", function (card) {
 								return get.type(card) == "stonecharacter";
 							});
-							if (hs.length == 0) return 0;
+							if (hs.length == 0) {
+								return 0;
+							}
 							var enemy = player.getEnemy();
-							if (enemy.countCards("h") <= 1) return 1;
+							if (enemy.countCards("h") <= 1) {
+								return 1;
+							}
 							var num = 0;
 							for (var i = 0; i < hs.length; i++) {
 								num += get.info(hs[i]).stoneact;
 							}
-							if (num / hs.length >= 3) return 1;
+							if (num / hs.length >= 3) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -4931,7 +5055,9 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("priest_hunwu") || target.side != player.side) return true;
+					if (player.hasFellowSkill("priest_hunwu") || target.side != player.side) {
+						return true;
+					}
 					return target.isDamaged();
 				},
 				selectTarget: -1,
@@ -4956,8 +5082,12 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (player.hasFellowSkill("priest_hunwu")) return -1;
-							if (player.side == target.side) return 1;
+							if (player.hasFellowSkill("priest_hunwu")) {
+								return -1;
+							}
+							if (player.side == target.side) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -5093,7 +5223,9 @@ export default () => {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return 1;
 							}
-							if (target.hp < target.maxHp - 1) return 2;
+							if (target.hp < target.maxHp - 1) {
+								return 2;
+							}
 							return 0;
 						},
 						target: function (player, target) {
@@ -5236,9 +5368,15 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hp == 1) return -1;
-							if (target.hp >= 4) return 1.5;
-							if (target.hp >= 3 && target.countCards("h") < target.hp) return 1;
+							if (target.hp == 1) {
+								return -1;
+							}
+							if (target.hp >= 4) {
+								return 1.5;
+							}
+							if (target.hp >= 3 && target.countCards("h") < target.hp) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -5280,7 +5418,9 @@ export default () => {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin()) {
 							num++;
-							if (num >= 2) return true;
+							if (num >= 2) {
+								return true;
+							}
 						}
 					}
 					return false;
@@ -5500,8 +5640,12 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hasSkill("warlock_yongsheng")) return 2;
-							if (target.hp == 1 && target.countCards("h") <= 2) return 1;
+							if (target.hasSkill("warlock_yongsheng")) {
+								return 2;
+							}
+							if (target.hp == 1 && target.countCards("h") <= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -5598,7 +5742,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player, target) {
-							if (player == target) return -10;
+							if (player == target) {
+								return -10;
+							}
 							var list = [];
 							var maxHp = 0;
 							for (var i = 0; i < game.players.length; i++) {
@@ -5609,9 +5755,15 @@ export default () => {
 									}
 								}
 							}
-							if (list.length < 2) return 0;
-							if (list.length == 2 && target.hp >= 4) return 0;
-							if (target.hp > maxHp) return 1;
+							if (list.length < 2) {
+								return 0;
+							}
+							if (list.length == 2 && target.hp >= 4) {
+								return 0;
+							}
+							if (target.hp > maxHp) {
+								return 1;
+							}
 							return target.hp;
 						},
 					},
@@ -5624,7 +5776,9 @@ export default () => {
 				stoneact: 0,
 				career: "warlock",
 				filterTarget: function (card, player, target) {
-					if (!target.isMin()) return false;
+					if (!target.isMin()) {
+						return false;
+					}
 					if (ui.selected.targets.length) {
 						return target.side != ui.selected.targets[0].side;
 					}
@@ -5668,7 +5822,9 @@ export default () => {
 					order: 6,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 1;
+							if (target.isTurnedOver()) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -5750,7 +5906,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player) {
-							if (player.countFellow() >= 2) return 1;
+							if (player.countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -5811,7 +5969,9 @@ export default () => {
 					var list = [];
 					var bool = result.control == "法术牌";
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (bool) {
 							if (lib.card[i].type == "stonecard") {
 								list.push(i);
@@ -6644,7 +6804,9 @@ export default () => {
 					result: {
 						target: -1,
 						player: function (player) {
-							if (player.hp < player.maxHp) return 1;
+							if (player.hp < player.maxHp) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -6666,8 +6828,12 @@ export default () => {
 					order: 9.1,
 					result: {
 						target: function (player, target) {
-							if (target.hp > 1) return -1;
-							if (target.maxHp > 1) return -0.1;
+							if (target.hp > 1) {
+								return -1;
+							}
+							if (target.maxHp > 1) {
+								return -0.1;
+							}
 							return 0;
 						},
 					},
@@ -6677,7 +6843,9 @@ export default () => {
 				fullimage: true,
 				type: "stonecard",
 				enable: function (event, player) {
-					if (player.isMin()) return false;
+					if (player.isMin()) {
+						return false;
+					}
 					return player.canAddFellow();
 				},
 				stoneact: 6,
@@ -6705,7 +6873,9 @@ export default () => {
 				type: "stonecard",
 				fullimage: true,
 				enable: function (event, player) {
-					if (player.isMin()) return false;
+					if (player.isMin()) {
+						return false;
+					}
 					return player.canAddFellow();
 				},
 				stoneact: 4,
@@ -6743,7 +6913,9 @@ export default () => {
 					order: 7,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 1;
+							if (target.isTurnedOver()) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -6864,8 +7036,12 @@ export default () => {
 					event.cards = [targets[0].getCards("e"), targets[1].getCards("e")];
 					targets[0].lose(event.cards[0], ui.special);
 					targets[1].lose(event.cards[1], ui.special);
-					if (event.cards[0].length) targets[0].$give(event.cards[0], targets[1]);
-					if (event.cards[1].length) targets[1].$give(event.cards[1], targets[0]);
+					if (event.cards[0].length) {
+						targets[0].$give(event.cards[0], targets[1]);
+					}
+					if (event.cards[1].length) {
+						targets[1].$give(event.cards[1], targets[0]);
+					}
 					"step 1";
 					var targets = [player, target];
 					for (var i = 0; i < event.cards[1].length; i++) {
@@ -6890,8 +7066,12 @@ export default () => {
 								ne2 = player.countCards("e");
 							var nh1 = target.countCards("h"),
 								nh2 = player.countCards("h");
-							if (nh1 < nh2) nh1 = nh2;
-							if (ne2 - ne1 < nh1 - nh2 + ne1 - ne2) return -1;
+							if (nh1 < nh2) {
+								nh1 = nh2;
+							}
+							if (ne2 - ne1 < nh1 - nh2 + ne1 - ne2) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -6921,7 +7101,9 @@ export default () => {
 					useful: 1,
 					result: {
 						target: function (player, target) {
-							if (target.countCards("he") >= player.countCards("h")) return -1;
+							if (target.countCards("he") >= player.countCards("h")) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -6973,7 +7155,9 @@ export default () => {
 				unique: false,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7102,17 +7286,25 @@ export default () => {
 				},
 				ai: {
 					threaten: function (player, target) {
-						if (target.hp < target.maxHp) return 2;
+						if (target.hp < target.maxHp) {
+							return 2;
+						}
 						return 0.5;
 					},
 					maixie: true,
 					effect: {
 						target: function (card, player, target) {
-							if (target.maxHp <= 3) return;
-							if (get.tag(card, "damage")) {
-								if (target.hp == target.maxHp) return [0, 1];
+							if (target.maxHp <= 3) {
+								return;
 							}
-							if (get.tag(card, "recover") && player.hp >= player.maxHp - 1) return [0, 0];
+							if (get.tag(card, "damage")) {
+								if (target.hp == target.maxHp) {
+									return [0, 1];
+								}
+							}
+							if (get.tag(card, "recover") && player.hp >= player.maxHp - 1) {
+								return [0, 0];
+							}
 						},
 					},
 				},
@@ -7157,7 +7349,9 @@ export default () => {
 					var next = target.chooseControl("召唤树人", "增强随从");
 					next.prompt = "召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌";
 					next.ai = function () {
-						if (target.countFellow() <= 2) return "召唤树人";
+						if (target.countFellow() <= 2) {
+							return "召唤树人";
+						}
 						return "增强随从";
 					};
 					"step 1";
@@ -7222,7 +7416,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter" || lib.card[i].type) {
 							if (lib.card[i].stoneact == 1) {
 								list.push(i);
@@ -7389,7 +7585,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) return true;
+						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7415,11 +7613,19 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					var target = event.player;
-					if (target.side == player.side) return false;
-					if (event.parent.name == "warrior_chuanci") return false;
-					if (!target.isMin()) return false;
+					if (target.side == player.side) {
+						return false;
+					}
+					if (event.parent.name == "warrior_chuanci") {
+						return false;
+					}
+					if (!target.isMin()) {
+						return false;
+					}
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != target && game.players[i].isMin() && game.players[i].side != player.side) return true;
+						if (game.players[i] != target && game.players[i].isMin() && game.players[i].side != player.side) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7454,7 +7660,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7482,7 +7690,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) return true;
+						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7492,11 +7702,19 @@ export default () => {
 					event.chooser.chooseTarget("缩小：令一名随从减少2点体力上限", function (card, playerx, target) {
 						return player != target && target.isMin() && target.maxHp > 1;
 					}).ai = function (target) {
-						if (get.attitude(player, target) >= 0) return 0;
-						if (target.hp == 1) return 0.01;
-						if (target.maxHp - target.hp >= 2) return 0.01;
+						if (get.attitude(player, target) >= 0) {
+							return 0;
+						}
+						if (target.hp == 1) {
+							return 0.01;
+						}
+						if (target.maxHp - target.hp >= 2) {
+							return 0.01;
+						}
 						if (target.maxHp - target.hp == 1) {
-							if (target.hp == 2) return 1;
+							if (target.hp == 2) {
+								return 1;
+							}
 							return 0.1;
 						}
 						switch (target.hp) {
@@ -7550,7 +7768,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 				},
 				content: function () {
@@ -7581,7 +7801,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -7897,7 +8119,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) return true;
+						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7928,7 +8152,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7998,7 +8224,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecard") {
 							list.push(i);
 						}
@@ -8017,7 +8245,9 @@ export default () => {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					if (event.num <= 1) return false;
+					if (event.num <= 1) {
+						return false;
+					}
 					return event.player == player.getLeader();
 				},
 				priority: -11,
@@ -8152,7 +8382,9 @@ export default () => {
 				content: function () {
 					"step 0";
 					player.getLeader().chooseControl("冲锋", "潜行").ai = function () {
-						if (Math.random() < 0.5) return "潜行";
+						if (Math.random() < 0.5) {
+							return "潜行";
+						}
 						return "冲锋";
 					};
 					"step 1";
@@ -8237,7 +8469,9 @@ export default () => {
 				filter: function (event, player) {
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
-						if (fellows[i].hasSkill("shaman_tuteng")) return true;
+						if (fellows[i].hasSkill("shaman_tuteng")) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -8245,7 +8479,9 @@ export default () => {
 					var num = 0;
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
-						if (fellows[i].hasSkill("shaman_tuteng")) num++;
+						if (fellows[i].hasSkill("shaman_tuteng")) {
+							num++;
+						}
 					}
 					player.maxHp += num;
 					player.hp += num;
@@ -8368,7 +8604,9 @@ export default () => {
 				filter: function (event, player) {
 					for (var i = 0; i < event.cards.length; i++) {
 						if (get.position(event.cards[i]) == "d") {
-							if (event.cards[i].name == "spell_zhumo") return true;
+							if (event.cards[i].name == "spell_zhumo") {
+								return true;
+							}
 						}
 					}
 					return false;
@@ -8380,7 +8618,9 @@ export default () => {
 					event.num = 0;
 					for (var i = 0; i < trigger.cards.length; i++) {
 						if (get.position(trigger.cards[i]) == "d") {
-							if (trigger.cards[i].name == "spell_zhumo") event.num++;
+							if (trigger.cards[i].name == "spell_zhumo") {
+								event.num++;
+							}
 						}
 					}
 					event.target = player.getEnemy();
@@ -8455,7 +8695,9 @@ export default () => {
 				forced: true,
 				popup: false,
 				filter: function (event, player) {
-					if (!player.storage.shaman_xianzuzhihun) return false;
+					if (!player.storage.shaman_xianzuzhihun) {
+						return false;
+					}
 					return event.player.hasSkill("shaman_xianzuzhihun");
 				},
 				content: function () {
@@ -8531,7 +8773,9 @@ export default () => {
 					effect: {
 						target: function (card, player, target) {
 							if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
-								if (target.hp <= 2) return 0;
+								if (target.hp <= 2) {
+									return 0;
+								}
 							}
 						},
 					},
@@ -8619,7 +8863,9 @@ export default () => {
 				},
 				content: function () {
 					var num = lib.card[trigger.card.name].stoneact;
-					if (num > 3) num = 3;
+					if (num > 3) {
+						num = 3;
+					}
 					player.actused -= num;
 					player.updateActCount();
 					player.removeSkill("spell_sijidaifa");
@@ -8648,7 +8894,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -8657,7 +8905,9 @@ export default () => {
 			mage_mianyang: {
 				mod: {
 					cardEnabled: function (card) {
-						if (card.name == "sha") return false;
+						if (card.name == "sha") {
+							return false;
+						}
 					},
 				},
 				ai: {
@@ -8724,7 +8974,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter") {
 							list.push(i);
 						}
@@ -8944,8 +9196,12 @@ export default () => {
 						return player != target && target.isMin();
 					}).ai = function (target) {
 						var att = get.attitude(event.chooser, target);
-						if (target.hp == 1) return -att;
-						if (target.hp == 2) return 0;
+						if (target.hp == 1) {
+							return -att;
+						}
+						if (target.hp == 2) {
+							return 0;
+						}
 						return att;
 					};
 					player.line(event.chooser);
@@ -9166,7 +9422,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player) return true;
+						if (game.players[i].side == player.side && game.players[i] != player) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -9175,7 +9433,9 @@ export default () => {
 					var target2 = player.getEnemy();
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecard") {
 							list.push(i);
 						}
@@ -9259,7 +9519,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -9398,7 +9660,9 @@ export default () => {
 					if (result.bool) {
 						event.target = result.targets[0];
 						event.chooser.chooseControl("造成伤害", "discard_card").ai = function () {
-							if (event.target.hp > 1) return "discard_card";
+							if (event.target.hp > 1) {
+								return "discard_card";
+							}
 							return "造成伤害";
 						};
 						event.chooser.line(event.target);
@@ -9569,18 +9833,28 @@ export default () => {
 			_priest_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "priest") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (player.storage.anyingxingtai) return false;
+					if (player.career != "priest") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (player.storage.anyingxingtai) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
 				prompt: function (event) {
-					if (event.player.hasFellowSkill("priest_hunwu")) return "令目标失去1点体力";
+					if (event.player.hasFellowSkill("priest_hunwu")) {
+						return "令目标失去1点体力";
+					}
 					return "回复1点体力";
 				},
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("priest_hunwu")) return true;
+					if (player.hasFellowSkill("priest_hunwu")) {
+						return true;
+					}
 					return target.hp < target.maxHp;
 				},
 				content: function () {
@@ -9612,9 +9886,15 @@ export default () => {
 			_priest_skillx: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "priest") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (!player.storage.anyingxingtai) return false;
+					if (player.career != "priest") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (!player.storage.anyingxingtai) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9644,8 +9924,12 @@ export default () => {
 			_mage_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "mage") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "mage") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9671,9 +9955,15 @@ export default () => {
 			_warlock_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.hasSkill("stone_lianyu")) return false;
-					if (player.career != "warlock") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.hasSkill("stone_lianyu")) {
+						return false;
+					}
+					if (player.career != "warlock") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9693,10 +9983,18 @@ export default () => {
 			_warlock_skillx: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (!player.hasSkill("stone_lianyu")) return false;
-					if (player.career != "warlock") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (!player.canAddFellow()) return false;
+					if (!player.hasSkill("stone_lianyu")) {
+						return false;
+					}
+					if (player.career != "warlock") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9724,21 +10022,31 @@ export default () => {
 			_hunter_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "hunter") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "hunter") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
 				prompt: function (event) {
-					if (event.player.hasFellowSkill("hunter_juji")) return "造成1点伤害";
+					if (event.player.hasFellowSkill("hunter_juji")) {
+						return "造成1点伤害";
+					}
 					return "对敌方主将造成1点伤害";
 				},
 				selectTarget: function () {
-					if (_status.event.player.hasFellowSkill("hunter_juji")) return 1;
+					if (_status.event.player.hasFellowSkill("hunter_juji")) {
+						return 1;
+					}
 					return -1;
 				},
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("hunter_juji")) return target != player;
+					if (player.hasFellowSkill("hunter_juji")) {
+						return target != player;
+					}
 					return target.career && target.side != player.side;
 				},
 				content: function () {
@@ -9759,9 +10067,15 @@ export default () => {
 			_warrior_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.hujia >= 3) return false;
-					if (player.career != "warrior") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.hujia >= 3) {
+						return false;
+					}
+					if (player.career != "warrior") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9781,8 +10095,12 @@ export default () => {
 			_rogue_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "rogue") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "rogue") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9828,7 +10146,9 @@ export default () => {
 					},
 					result: {
 						player: function (player) {
-							if (player.countCards("e") <= 2) return 1;
+							if (player.countCards("e") <= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -9837,8 +10157,12 @@ export default () => {
 			_druid_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "druid") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "druid") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return lib.filter.cardEnabled({ name: "sha" }, player);
 				},
 				usable: 1,
@@ -9873,7 +10197,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -9961,9 +10287,15 @@ export default () => {
 			_shaman_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "shaman") return false;
-					if (!player.canAddFellow()) return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "shaman") {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -9984,9 +10316,15 @@ export default () => {
 			_paladin_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "paladin") return false;
-					if (!player.canAddFellow()) return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "paladin") {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -10012,7 +10350,9 @@ export default () => {
 			_lschaofeng: {
 				mod: {
 					targetEnabled: function (card, player, target) {
-						if (target.hasSkill("lschaofeng")) return;
+						if (target.hasSkill("lschaofeng")) {
+							return;
+						}
 						if (card.name == "sha") {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == target.side && game.players[i].hasSkill("lschaofeng")) {
@@ -10173,7 +10513,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player) return true;
+						if (game.players[i].side == player.side && game.players[i] != player) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -10419,7 +10761,9 @@ export default () => {
 				forced: true,
 				unique: true,
 				filter: function (event, player) {
-					if (event.player != player.getLeader()) return false;
+					if (event.player != player.getLeader()) {
+						return false;
+					}
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							return true;
@@ -10448,12 +10792,16 @@ export default () => {
 						if (player.isMin()) {
 							return;
 						}
-						if (_status.currentPhase != player) return;
+						if (_status.currentPhase != player) {
+							return;
+						}
 						var stoneact = get.info(card).stoneact;
 						if (typeof stoneact != "number") {
 							stoneact = 1;
 						}
-						if (player.getActCount() + stoneact > player.actcount) return false;
+						if (player.getActCount() + stoneact > player.actcount) {
+							return false;
+						}
 					},
 				},
 				trigger: { player: "phaseBegin" },
@@ -10504,7 +10852,9 @@ export default () => {
 				unique: true,
 				mod: {
 					cardname: function (card) {
-						if (lib.card[card.name].type == "equip") return "sha";
+						if (lib.card[card.name].type == "equip") {
+							return "sha";
+						}
 					},
 				},
 			},
@@ -10512,7 +10862,9 @@ export default () => {
 				unique: true,
 				mod: {
 					cardname: function (card) {
-						if (lib.card[card.name].type.indexOf("stone") == 0) return "shan";
+						if (lib.card[card.name].type.indexOf("stone") == 0) {
+							return "shan";
+						}
 					},
 				},
 			},
@@ -10636,11 +10988,15 @@ export default () => {
 					}
 					player.chooseButton(dialog).ai = function (button) {
 						if (button.link == "stone_siwangzhiyi") {
-							if (heilong) return 3;
+							if (heilong) {
+								return 3;
+							}
 							return 0;
 						}
 						if (button.link == "stone_alaikesita") {
-							if (honglong) return 2;
+							if (honglong) {
+								return 2;
+							}
 							return 0;
 						}
 						return Math.random();

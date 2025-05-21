@@ -45,10 +45,11 @@ export class Card extends HTMLDivElement {
 				card.addEventListener("touchstart", ui.click.cardtouchstart);
 				card.addEventListener("touchmove", ui.click.cardtouchmove);
 			}
-			if (lib.cardSelectObserver)
+			if (lib.cardSelectObserver) {
 				lib.cardSelectObserver.observe(card, {
 					attributes: true,
 				});
+			}
 		}
 	}
 	buildProperty() {
@@ -72,7 +73,9 @@ export class Card extends HTMLDivElement {
 		this.node.intro.innerHTML = lib.config.intro;
 	}
 	buildIntro(noclick) {
-		if (!noclick) lib.setIntro(this);
+		if (!noclick) {
+			lib.setIntro(this);
+		}
 	}
 	/** @type { SMap<HTMLDivElement> } */
 	// eslint-disable-next-line no-unreachable
@@ -109,14 +112,22 @@ export class Card extends HTMLDivElement {
 	subtypes;
 	//执行销毁一张牌的钩子函数
 	selfDestroy(event) {
-		if (this._selfDestroyed) return;
+		if (this._selfDestroyed) {
+			return;
+		}
 		this._selfDestroyed = true;
 		this.fix();
 		this.delete();
 		const info = get.info(this, false);
-		if (!info) return;
-		if (info.destroyLog !== false) game.log(this, "被销毁了");
-		if (info.onDestroy) info.onDestroy(this, event);
+		if (!info) {
+			return;
+		}
+		if (info.destroyLog !== false) {
+			game.log(this, "被销毁了");
+		}
+		if (info.onDestroy) {
+			info.onDestroy(this, event);
+		}
 	}
 	//判断一张牌进入某个区域后是否会被销毁
 	willBeDestroyed(targetPosition, player, event) {
@@ -142,8 +153,9 @@ export class Card extends HTMLDivElement {
 	//只针对【杀】起效果
 	addNature(nature) {
 		let natures = [];
-		if (!this.nature) this.nature = "";
-		else {
+		if (!this.nature) {
+			this.nature = "";
+		} else {
 			natures.addArray(get.natureList(this.nature));
 		}
 		natures.addArray(get.natureList(nature));
@@ -155,7 +167,11 @@ export class Card extends HTMLDivElement {
 		do {
 			if (name == "sha") {
 				let _bg;
-				for (const n of natures) if (lib.natureBg.has(n)) _bg = n;
+				for (const n of natures) {
+					if (lib.natureBg.has(n)) {
+						_bg = n;
+					}
+				}
 				if (_bg) {
 					this.node.image.setBackgroundImage(lib.natureBg.get(_bg));
 					break;
@@ -166,11 +182,16 @@ export class Card extends HTMLDivElement {
 		return this.nature;
 	}
 	removeNature(nature) {
-		if (!this.nature) return;
+		if (!this.nature) {
+			return;
+		}
 		let natures = get.natureList(this.nature);
 		natures.remove(nature);
-		if (!natures.length) delete this.nature;
-		else this.nature = get.nature(natures);
+		if (!natures.length) {
+			delete this.nature;
+		} else {
+			this.nature = get.nature(natures);
+		}
 		this.classList.remove(nature);
 		let str = get.translation(this.nature) + "杀";
 		this.node.name.innerText = str;
@@ -178,7 +199,11 @@ export class Card extends HTMLDivElement {
 		do {
 			if (name == "sha") {
 				let _bg;
-				for (const n of natures) if (lib.natureBg.has(n)) _bg = n;
+				for (const n of natures) {
+					if (lib.natureBg.has(n)) {
+						_bg = n;
+					}
+				}
 				if (_bg) {
 					this.node.image.setBackgroundImage(lib.natureBg.get(_bg));
 					break;
@@ -191,23 +216,32 @@ export class Card extends HTMLDivElement {
 	addGaintag(gaintag) {
 		//目前无名杀支持永久标记，只要加上前缀“eternal_”（即eternal，永恒的）均视为永久标记
 		//然后就是永久标记的翻译问题，前缀是eternal_可以选择只看后面的子字符串的对应翻译
-		if (Array.isArray(gaintag)) this.gaintag = gaintag.slice(0);
-		else this.gaintag.add(gaintag);
+		if (Array.isArray(gaintag)) {
+			this.gaintag = gaintag.slice(0);
+		} else {
+			this.gaintag.add(gaintag);
+		}
 		var str = "";
 		for (var gi = 0; gi < this.gaintag.length; gi++) {
 			const tag = this.gaintag[gi];
 			var translate = get.translation(tag);
-			if (translate == tag && tag.startsWith("eternal_")) translate = get.translation(tag.slice(8));
+			if (translate == tag && tag.startsWith("eternal_")) {
+				translate = get.translation(tag.slice(8));
+			}
 			if (translate != "invisible") {
 				str += translate;
-				if (gi < this.gaintag.length - 1) str += " ";
+				if (gi < this.gaintag.length - 1) {
+					str += " ";
+				}
 			}
 		}
 		this.node.gaintag.innerHTML = str;
 	}
 	removeGaintag(tag) {
 		if (tag === true) {
-			if ((this.gaintag && this.gaintag.length) || this.node.gaintag.innerHTML.length) this.addGaintag([]);
+			if ((this.gaintag && this.gaintag.length) || this.node.gaintag.innerHTML.length) {
+				this.addGaintag([]);
+			}
 		} else if (this.hasGaintag(tag)) {
 			this.gaintag.remove(tag);
 			this.addGaintag(this.gaintag);
@@ -254,7 +288,9 @@ export class Card extends HTMLDivElement {
 			card = [card.suit, card.number, card.name, card.nature];
 		}
 		var cardnum = card[1] || "";
-		if (parseInt(cardnum) == cardnum) cardnum = parseInt(cardnum);
+		if (parseInt(cardnum) == cardnum) {
+			cardnum = parseInt(cardnum);
+		}
 
 		if (!lib.card[card[2]]) {
 			lib.card[card[2]] = {};
@@ -293,7 +329,9 @@ export class Card extends HTMLDivElement {
 				this.inits[i](this);
 			}
 		}
-		if (typeof info.init == "function") info.init();
+		if (typeof info.init == "function") {
+			info.init();
+		}
 
 		return this;
 	}
@@ -303,9 +341,13 @@ export class Card extends HTMLDivElement {
 	$init(card) {
 		var info = lib.card[card[2]];
 		var cardnum = card[1] || "";
-		if (parseInt(cardnum) == cardnum) cardnum = parseInt(cardnum);
+		if (parseInt(cardnum) == cardnum) {
+			cardnum = parseInt(cardnum);
+		}
 		cardnum = get.strNumber(cardnum, true) || cardnum;
-		if (typeof cardnum != "string") cardnum = "";
+		if (typeof cardnum != "string") {
+			cardnum = "";
+		}
 		if (this.name) {
 			this.classList.remove("epic");
 			this.classList.remove("legend");
@@ -364,7 +406,11 @@ export class Card extends HTMLDivElement {
 						if (bg == "sha" && typeof nature == "string") {
 							let natures = get.natureList(nature),
 								_bg;
-							for (const n of natures) if (lib.natureBg.has(n)) _bg = n;
+							for (const n of natures) {
+								if (lib.natureBg.has(n)) {
+									_bg = n;
+								}
+							}
 							if (_bg) {
 								this.node.image.setBackgroundImage(lib.natureBg.get(_bg));
 								break;
@@ -375,8 +421,11 @@ export class Card extends HTMLDivElement {
 				}
 			}
 		} else if (get.dynamicVariable(lib.card[bg].image, this) == "background") {
-			if (card[3]) this.node.background.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
-			else this.node.background.setBackground(bg, "card");
+			if (card[3]) {
+				this.node.background.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
+			} else {
+				this.node.background.setBackground(bg, "card");
+			}
 		} else if (lib.card[bg].fullimage) {
 			this.classList.add("fullimage");
 			if (img) {
@@ -438,8 +487,11 @@ export class Card extends HTMLDivElement {
 				}
 			}
 		} else if (get.dynamicVariable(lib.card[bg].image, this) == "card") {
-			if (card[3]) this.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
-			else this.setBackground(bg, "card");
+			if (card[3]) {
+				this.setBackground(bg + "_" + get.natureList(card[3])[0], "card");
+			} else {
+				this.setBackground(bg, "card");
+			}
 		} else if (typeof get.dynamicVariable(lib.card[bg].image, this) == "string" && !lib.card[bg].fullskin) {
 			if (img) {
 				if (img.startsWith("ext:")) {
@@ -454,8 +506,11 @@ export class Card extends HTMLDivElement {
 		} else {
 			this.node.background.innerHTML = lib.translate[bg + "_cbg"] || lib.translate[bg + "_bg"] || get.translation(bg)[0];
 			// this.node.background.style.fontFamily=lib.config.card_font;
-			if (this.node.background.innerHTML.length > 1) this.node.background.classList.add("tight");
-			else this.node.background.classList.remove("tight");
+			if (this.node.background.innerHTML.length > 1) {
+				this.node.background.classList.add("tight");
+			} else {
+				this.node.background.classList.remove("tight");
+			}
 		}
 		if (!lib.card[bg].fullborder && this.node.avatar && this.node.framebg) {
 			this.node.avatar.remove();
@@ -503,7 +558,9 @@ export class Card extends HTMLDivElement {
 				natures.sort(lib.sort.nature);
 				for (let nature of natures) {
 					name += lib.translate["nature_" + nature] || lib.translate[nature] || "";
-					if (nature != "stab") this.node.image.classList.add(nature);
+					if (nature != "stab") {
+						this.node.image.classList.add(nature);
+					}
 				}
 			}
 			name += "杀";
@@ -520,7 +577,9 @@ export class Card extends HTMLDivElement {
 		if (card[3]) {
 			let natures = get.natureList(card[3]);
 			natures.forEach(n => {
-				if (n) this.classList.add(n);
+				if (n) {
+					this.classList.add(n);
+				}
 			});
 			this.nature = natures
 				.filter(n => lib.nature.has(n))
@@ -530,7 +589,9 @@ export class Card extends HTMLDivElement {
 			this.classList.remove(this.nature);
 			delete this.nature;
 		}
-		if (info.subtype) this.classList.add(info.subtype);
+		if (info.subtype) {
+			this.classList.add(info.subtype);
+		}
 		this.node.range.innerHTML = "";
 		switch (get.subtype(this, false)) {
 			case "equip1":
@@ -638,7 +699,9 @@ export class Card extends HTMLDivElement {
 				that.updateTransform(that.classList.contains("selected"));
 			}, delay);
 		} else {
-			if (_status.event.player != game.me) return;
+			if (_status.event.player != game.me) {
+				return;
+			}
 			if (this._transform && this.parentNode && this.parentNode.parentNode && this.parentNode.parentNode.parentNode == ui.me && (!_status.mousedown || _status.mouseleft) && (!this.parentNode.parentNode.classList.contains("scrollh") || game.layout == "long2" || game.layout == "nova")) {
 				if (bool) {
 					this.style.transform = this._transform + " translateY(-20px)";
@@ -684,25 +747,39 @@ export class Card extends HTMLDivElement {
 	}
 	//清除此牌的知情者。
 	clearKnowers() {
-		if (this._knowers) delete this._knowers;
+		if (this._knowers) {
+			delete this._knowers;
+		}
 	}
 	//判断玩家对此牌是否知情。
 	isKnownBy(player) {
-		if (["e", "j"].includes(get.position(this))) return true; //装备区或者判定区的牌，必知情。
+		if (["e", "j"].includes(get.position(this))) {
+			return true;
+		} //装备区或者判定区的牌，必知情。
 		let owner = get.owner(this);
 		if (owner) {
-			if (owner == player) return true; //是牌主，必知情。
-			if (player.hasSkillTag("viewHandcard", null, owner, true)) return true; //有viewHandcard标签，必知情。
-			if (owner.isUnderControl(true, player)) return true; //被操控，必知情。
+			if (owner == player) {
+				return true;
+			} //是牌主，必知情。
+			if (player.hasSkillTag("viewHandcard", null, owner, true)) {
+				return true;
+			} //有viewHandcard标签，必知情。
+			if (owner.isUnderControl(true, player)) {
+				return true;
+			} //被操控，必知情。
 		}
-		if (get.is.shownCard(this)) return true; //此牌是明置牌，必知情。
+		if (get.is.shownCard(this)) {
+			return true;
+		} //此牌是明置牌，必知情。
 		if (this._knowers) {
 			return this._knowers.includes("everyone") || this._knowers.includes(player.playerid);
 		}
 		return false;
 	}
 	getSource(name) {
-		if (this.name == name) return true;
+		if (this.name == name) {
+			return true;
+		}
 		var info = lib.card[this.name];
 		if (info && Array.isArray(info.source)) {
 			return info.source.includes(name);
@@ -783,24 +860,39 @@ export class Card extends HTMLDivElement {
 		var clone = true;
 		var position;
 		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") node.classList.add(arguments[i]);
-			else if (["div", "fragment"].includes(get.objtype(arguments[i]))) position = arguments[i];
-			else if (typeof arguments[i] == "boolean") clone = arguments[i];
+			if (typeof arguments[i] == "string") {
+				node.classList.add(arguments[i]);
+			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
+				position = arguments[i];
+			} else if (typeof arguments[i] == "boolean") {
+				clone = arguments[i];
+			}
 		}
 		node.moveTo = lib.element.Card.prototype.moveTo;
 		node.moveDelete = lib.element.Card.prototype.moveDelete;
-		if (clone) this.clone = node;
-		if (position) position.appendChild(node);
+		if (clone) {
+			this.clone = node;
+		}
+		if (position) {
+			position.appendChild(node);
+		}
 		return node;
 	}
 	uncheck(skill) {
-		if (skill) this._uncheck.add(skill);
+		if (skill) {
+			this._uncheck.add(skill);
+		}
 		this.classList.add("uncheck");
 	}
 	recheck(skill) {
-		if (skill) this._uncheck.remove(skill);
-		else this._uncheck.length = 0;
-		if (this._uncheck.length == 0) this.classList.remove("uncheck");
+		if (skill) {
+			this._uncheck.remove(skill);
+		} else {
+			this._uncheck.length = 0;
+		}
+		if (this._uncheck.length == 0) {
+			this.classList.remove("uncheck");
+		}
 	}
 	/**
 	 * 判断此牌是否包含class样式，参数有多个时，只需一个满足。
@@ -829,8 +921,12 @@ export class Card extends HTMLDivElement {
 	 */
 	getCacheKey(similar) {
 		let prefix = "[object:";
-		if (similar !== false) prefix = "[card:";
-		if (this.cardid) return prefix + this.cardid + "]";
+		if (similar !== false) {
+			prefix = "[card:";
+		}
+		if (this.cardid) {
+			return prefix + this.cardid + "]";
+		}
 		return prefix + `${this.name}+${this.suit ? this.suit : "none"}+${this.number === undefined ? "none" : this.number}${this.nature ? "+" + this.nature : ""}]`;
 	}
 	discard(bool) {

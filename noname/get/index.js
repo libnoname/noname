@@ -25,8 +25,12 @@ export class Get extends GetCompatible {
 	 * @returns {GameEvent|string}
 	 */
 	cardsetion(player, sourceEvent) {
-		if (game.online) return;
-		if (!player && sourceEvent) player = game.me;
+		if (game.online) {
+			return;
+		}
+		if (!player && sourceEvent) {
+			player = game.me;
+		}
 		const info = lib.translate;
 		const { name, targets, judgestr } = _status.event;
 		const playername = get.slimName(player?.name);
@@ -67,12 +71,18 @@ export class Get extends GetCompatible {
 			evt2 = false;
 		}
 		if (name1 && !info[name1]) {
-			if (name1.indexOf("equip_") == 0) name1 = name1.slice(6);
-			else if (name1.indexOf("pre_") == 0) {
+			if (name1.indexOf("equip_") == 0) {
+				name1 = name1.slice(6);
+			} else if (name1.indexOf("pre_") == 0) {
 				name1 = name1.slice(4);
-				if (name1.indexOf("_backup") != -1 && !info[name1]) name1 = name1.slice(0, name1.indexOf("_backup"));
-			} else if (name1.indexOf("lose_") == 0) name1 = name1.slice(5);
-			else if (name1.indexOf("_lose") != -1 && name1.length - name1.indexOf("_lose") == 5) name1 = name1.slice(0, name1.length - 5);
+				if (name1.indexOf("_backup") != -1 && !info[name1]) {
+					name1 = name1.slice(0, name1.indexOf("_backup"));
+				}
+			} else if (name1.indexOf("lose_") == 0) {
+				name1 = name1.slice(5);
+			} else if (name1.indexOf("_lose") != -1 && name1.length - name1.indexOf("_lose") == 5) {
+				name1 = name1.slice(0, name1.length - 5);
+			}
 		}
 		if (name2 && !info[name2]) {
 			if ((name2 == "chooseToUse" || name2 == "chooseToRespond" || name2 == "_wuxie") && evt2.childEvents) {
@@ -90,39 +100,65 @@ export class Get extends GetCompatible {
 					name2 = evt2.name;
 				}
 			}
-			if (name2.indexOf("equip_") == 0) name2 = name2.slice(6);
-			else if (name2.indexOf("pre_") == 0) {
+			if (name2.indexOf("equip_") == 0) {
+				name2 = name2.slice(6);
+			} else if (name2.indexOf("pre_") == 0) {
 				name2 = name2.slice(4);
-				if (name2.indexOf("_backup") != -1) name2 = name2.slice(0, name2.indexOf("_backup"));
-			} else if (name2.indexOf("lose_") == 0) name2 = name2.slice(5);
-			else if (name2.indexOf("_lose") != -1 && name2.length - name2.indexOf("_lose") == 5) name2 = name2.slice(0, name2.length - 5);
+				if (name2.indexOf("_backup") != -1) {
+					name2 = name2.slice(0, name2.indexOf("_backup"));
+				}
+			} else if (name2.indexOf("lose_") == 0) {
+				name2 = name2.slice(5);
+			} else if (name2.indexOf("_lose") != -1 && name2.length - name2.indexOf("_lose") == 5) {
+				name2 = name2.slice(0, name2.length - 5);
+			}
 		}
-		if (name1 == "useSkill") name1 = get.sourceSkillFor(evt1.skill);
-		if (name2 == "useSkill") name2 = get.sourceSkillFor(evt2.skill);
+		if (name1 == "useSkill") {
+			name1 = get.sourceSkillFor(evt1.skill);
+		}
+		if (name2 == "useSkill") {
+			name2 = get.sourceSkillFor(evt2.skill);
+		}
 		if (_status.event.skill) {
 			let skill = _status.event.skill;
 			if (info[get.sourceSkillFor(skill)]) {
 				th_skill = true;
 				eventInfo += info[get.sourceSkillFor(skill)];
-				if (sourceEvent) return _status.event;
+				if (sourceEvent) {
+					return _status.event;
+				}
 			}
 		} else if ((name1 && info[name1]) || (evt1.skill && info[get.sourceSkillFor(evt1.skill)])) {
 			if (name1 && info[name1]) {
-				if (lib.card[name1] && evt1.card && evt1.card.nature && info[evt1.card.nature]) eventInfo += info[evt1.card.nature];
+				if (lib.card[name1] && evt1.card && evt1.card.nature && info[evt1.card.nature]) {
+					eventInfo += info[evt1.card.nature];
+				}
 				eventInfo += info[name1];
-			} else eventInfo += info[get.sourceSkillFor(evt1.skill)];
+			} else {
+				eventInfo += info[get.sourceSkillFor(evt1.skill)];
+			}
 			th_skill = true;
-			if (sourceEvent) return evt1;
+			if (sourceEvent) {
+				return evt1;
+			}
 		} else if ((name2 && info[name2]) || (evt2.skill && info[get.sourceSkillFor(evt2.skill)])) {
 			if (name2 && info[name2]) {
-				if (lib.card[name2] && evt2.card && evt2.card.nature && info[evt2.card.nature]) eventInfo += info[evt2.card.nature];
+				if (lib.card[name2] && evt2.card && evt2.card.nature && info[evt2.card.nature]) {
+					eventInfo += info[evt2.card.nature];
+				}
 				eventInfo += info[name2];
-			} else eventInfo += info[get.sourceSkillFor(evt2.skill)];
+			} else {
+				eventInfo += info[get.sourceSkillFor(evt2.skill)];
+			}
 			th_skill = true;
-			if (sourceEvent) return evt2;
+			if (sourceEvent) {
+				return evt2;
+			}
 		}
 		eventInfo += "</span>";
-		if (sourceEvent) return false;
+		if (sourceEvent) {
+			return false;
+		}
 		switch (name) {
 			case "chooseToCompare": {
 				eventInfo += "拼点";
@@ -141,13 +177,18 @@ export class Get extends GetCompatible {
 			case "lose": {
 				let event = _status.event,
 					evt = event.getParent();
-				if (event.type && event.type == "discard") eventInfo += "弃置";
-				else if (event.getParent(2).name == "recast" && event.getParent(3).name != "_recasting") eventInfo += "重铸";
+				if (event.type && event.type == "discard") {
+					eventInfo += "弃置";
+				} else if (event.getParent(2).name == "recast" && event.getParent(3).name != "_recasting") {
+					eventInfo += "重铸";
+				}
 				break;
 			}
 			case "loseAsync": {
 				let event = _status.event;
-				if (event.type && event.type == "discard") eventInfo += "弃置";
+				if (event.type && event.type == "discard") {
+					eventInfo += "弃置";
+				}
 				break;
 			}
 			case "useSkill": {
@@ -201,7 +242,9 @@ export class Get extends GetCompatible {
 				return skills;
 			}
 			const info = get.info(card, false);
-			if (info.skills) skills.addArray(info.skills);
+			if (info.skills) {
+				skills.addArray(info.skills);
+			}
 			return skills;
 		}, []);
 	}
@@ -211,7 +254,9 @@ export class Get extends GetCompatible {
 	 * @returns {import("../library/element/character").Character}
 	 */
 	convertedCharacter(data) {
-		if (!(data instanceof lib.element.Character)) return new lib.element.Character(data);
+		if (!(data instanceof lib.element.Character)) {
+			return new lib.element.Character(data);
+		}
 		return data;
 	}
 	/**
@@ -224,11 +269,15 @@ export class Get extends GetCompatible {
 		for (const name of lib.inpile) {
 			const type = get.type(name);
 			const info = [type, "", name];
-			if (!filter || filter(info)) list.push(info);
+			if (!filter || filter(info)) {
+				list.push(info);
+			}
 			if (name == "sha") {
 				for (const nature of lib.inpile_nature) {
 					const info = [type, "", name, nature];
-					if (!filter || filter(info)) list.push(info);
+					if (!filter || filter(info)) {
+						list.push(info);
+					}
 				}
 			}
 		}
@@ -240,7 +289,9 @@ export class Get extends GetCompatible {
 	 * @returns { string }
 	 */
 	seatTranslation(seat) {
-		if (get.itemtype(seat) === "player") seat = seat.getSeatNum() - 1;
+		if (get.itemtype(seat) === "player") {
+			seat = seat.getSeatNum() - 1;
+		}
 		return `${get.cnNumber(seat + 1, true)}号位`;
 	}
 	/**
@@ -255,7 +306,9 @@ export class Get extends GetCompatible {
 				const identityLists = identityConfig.identity;
 				if (identityLists) {
 					const identityList = identityLists[numberOfPlayers - 2];
-					if (Array.isArray(identityList)) return identityList.slice();
+					if (Array.isArray(identityList)) {
+						return identityList.slice();
+					}
 				}
 			}
 		}
@@ -290,7 +343,9 @@ export class Get extends GetCompatible {
 	 */
 	objectURL(octetStream) {
 		const objectURLMap = lib.objectURL;
-		if (objectURLMap.has(octetStream)) return objectURLMap.get(octetStream);
+		if (objectURLMap.has(octetStream)) {
+			return objectURLMap.get(octetStream);
+		}
 		const objectURL = URL.createObjectURL(new Blob([Uint8Array.from(atob(octetStream.replace(/^data:[\s\S]*\/[\s\S]*;base64,/, "")), character => character.charCodeAt())]));
 		objectURLMap.set(octetStream, objectURL);
 		return objectURL;
@@ -351,8 +406,12 @@ export class Get extends GetCompatible {
 	 */
 	priority(skill) {
 		const info = get.info(skill);
-		if (!info) return 0;
-		if ("_priority" in info) return info._priority;
+		if (!info) {
+			return 0;
+		}
+		if ("_priority" in info) {
+			return info._priority;
+		}
 		let priority = 0;
 		if (info.priority) {
 			priority = info.priority * 100;
@@ -360,9 +419,15 @@ export class Get extends GetCompatible {
 		if (info.silent) {
 			priority++;
 		}
-		if (info.equipSkill) priority -= 25;
-		if (info.cardSkill) priority -= 50;
-		if (info.ruleSkill) priority -= 75;
+		if (info.equipSkill) {
+			priority -= 25;
+		}
+		if (info.cardSkill) {
+			priority -= 50;
+		}
+		if (info.ruleSkill) {
+			priority -= 75;
+		}
 		info._priority = priority;
 		return priority;
 	}
@@ -378,13 +443,19 @@ export class Get extends GetCompatible {
 	 * @returns { string[] }
 	 */
 	subtypes(obj, player) {
-		if (typeof obj == "string") obj = { name: obj };
-		if (typeof obj != "object" || obj === null) return [];
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object" || obj === null) {
+			return [];
+		}
 		if (Array.isArray(obj.subtypes)) {
 			return get.copy(obj.subtypes);
 		}
 		var name = get.name(obj, player);
-		if (!lib.card[name]) return [];
+		if (!lib.card[name]) {
+			return [];
+		}
 		if (lib.card[name].subtypes) {
 			const subtypes = get.copy(lib.card[name].subtypes);
 			return subtypes;
@@ -410,7 +481,9 @@ export class Get extends GetCompatible {
 			result = pinyinPro.pinyin(chinese, { type: "array" });
 		}
 		//@ts-ignore
-		if (withTone === false) result = pinyinPro.convert(result, { format: "toneNone" });
+		if (withTone === false) {
+			result = pinyinPro.convert(result, { format: "toneNone" });
+		}
 		return result;
 	}
 	/**
@@ -427,7 +500,9 @@ export class Get extends GetCompatible {
 		for (let i of lib.pinyins._metadata.shengmu) {
 			if (str.startsWith(i)) {
 				str = str.slice(i.length);
-				if (str[0] == "u" && lib.pinyins._metadata.special_shengmu.includes(i)) str = "ü" + str.slice(1);
+				if (str[0] == "u" && lib.pinyins._metadata.special_shengmu.includes(i)) {
+					str = "ü" + str.slice(1);
+				}
 				break;
 			}
 		}
@@ -437,9 +512,13 @@ export class Get extends GetCompatible {
 				if (str[0] == i) {
 					let goon = false;
 					for (let j of lib.pinyins._metadata.feijiemu[i]) {
-						if (str.startsWith(j)) goon = true;
+						if (str.startsWith(j)) {
+							goon = true;
+						}
 					}
-					if (!goon) str = str.slice(1);
+					if (!goon) {
+						str = str.slice(1);
+					}
 					break;
 				}
 			}
@@ -482,13 +561,17 @@ export class Get extends GetCompatible {
 			for (let i of lib.pinyins._metadata.shengmu) {
 				if (str.startsWith(i)) {
 					str = str.slice(i.length);
-					if (str[0] == "u" && lib.pinyins._metadata.special_shengmu.includes(i)) str = "ü" + str.slice(1);
+					if (str[0] == "u" && lib.pinyins._metadata.special_shengmu.includes(i)) {
+						str = "ü" + str.slice(1);
+					}
 					break;
 				}
 			}
 		}
 		for (let i in lib.pinyins._metadata.yunjiao) {
-			if (lib.pinyins._metadata.yunjiao[i].includes(str)) return i;
+			if (lib.pinyins._metadata.yunjiao[i].includes(str)) {
+				return i;
+			}
 		}
 		return null;
 	}
@@ -500,28 +583,72 @@ export class Get extends GetCompatible {
 	skillCategoriesOf(skill, player) {
 		const list = [],
 			info = get.info(skill);
-		if (!info) return list;
-		if (get.is.locked(skill, player)) list.add("锁定技");
-		if (info.zhuSkill) list.add("主公技");
-		if (info.limited) list.add("限定技");
-		if (info.juexingji) list.add("觉醒技");
-		if (get.is.zhuanhuanji(skill, player)) list.add("转换技");
-		if (info.hiddenSkill) list.add("隐匿技");
-		if (info.clanSkill) list.add("宗族技");
-		if (info.groupSkill) list.add("势力技");
-		if (info.dutySkill) list.add("使命技");
-		if (info.chargeSkill) list.add("蓄力技");
-		if (info.zhenfa) list.add("阵法技");
-		if (info.mainSkill) list.add("主将技");
-		if (info.viceSkill) list.add("副将技");
-		if (info.lordSkill) list.add("君主技");
-		if (info.chargingSkill) list.add("蓄能技");
-		if (info.charlotte) list.add("Charlotte");
-		if (info.sunbenSkill) list.add("昂扬技");
-		if (info.persevereSkill) list.add("持恒技");
-		if (info.comboSkill) list.add("连招技");
-		if (info.feedPigSkill) list.add("威主技");
-		if (info.categories) list.addArray(info.categories(skill, player));
+		if (!info) {
+			return list;
+		}
+		if (get.is.locked(skill, player)) {
+			list.add("锁定技");
+		}
+		if (info.zhuSkill) {
+			list.add("主公技");
+		}
+		if (info.limited) {
+			list.add("限定技");
+		}
+		if (info.juexingji) {
+			list.add("觉醒技");
+		}
+		if (get.is.zhuanhuanji(skill, player)) {
+			list.add("转换技");
+		}
+		if (info.hiddenSkill) {
+			list.add("隐匿技");
+		}
+		if (info.clanSkill) {
+			list.add("宗族技");
+		}
+		if (info.groupSkill) {
+			list.add("势力技");
+		}
+		if (info.dutySkill) {
+			list.add("使命技");
+		}
+		if (info.chargeSkill) {
+			list.add("蓄力技");
+		}
+		if (info.zhenfa) {
+			list.add("阵法技");
+		}
+		if (info.mainSkill) {
+			list.add("主将技");
+		}
+		if (info.viceSkill) {
+			list.add("副将技");
+		}
+		if (info.lordSkill) {
+			list.add("君主技");
+		}
+		if (info.chargingSkill) {
+			list.add("蓄能技");
+		}
+		if (info.charlotte) {
+			list.add("Charlotte");
+		}
+		if (info.sunbenSkill) {
+			list.add("昂扬技");
+		}
+		if (info.persevereSkill) {
+			list.add("持恒技");
+		}
+		if (info.comboSkill) {
+			list.add("连招技");
+		}
+		if (info.feedPigSkill) {
+			list.add("威主技");
+		}
+		if (info.categories) {
+			list.addArray(info.categories(skill, player));
+		}
 		return list;
 	}
 	numOf(obj, item) {
@@ -537,10 +664,16 @@ export class Get extends GetCompatible {
 	 */
 	zhinangs(filter) {
 		var list = (_status.connectMode ? lib.configOL : lib.config).zhinang_tricks;
-		if (!list || !list.filter || !list.length) return get.inpile("trick", "trick").randomGets(3);
-		if (filter === false) return list.slice(0);
+		if (!list || !list.filter || !list.length) {
+			return get.inpile("trick", "trick").randomGets(3);
+		}
+		if (filter === false) {
+			return list.slice(0);
+		}
 		list = list.filter(card => lib.inpile.includes(card));
-		if (list.length) return list;
+		if (list.length) {
+			return list;
+		}
 		return get.inpile("trick", "trick").randomGets(3);
 	}
 	/**
@@ -581,7 +714,9 @@ export class Get extends GetCompatible {
 	sourceCharacter(str) {
 		if (str) {
 			for (var i in lib.characterReplace) {
-				if (lib.characterReplace[i].includes(str)) return i;
+				if (lib.characterReplace[i].includes(str)) {
+					return i;
+				}
 			}
 		}
 		return str;
@@ -592,13 +727,18 @@ export class Get extends GetCompatible {
 	 * @returns { boolean }
 	 */
 	isLuckyStar(player) {
-		if (player && player.hasSkillTag("luckyStar")) return true;
-		if (_status.connectMode) return false;
+		if (player && player.hasSkillTag("luckyStar")) {
+			return true;
+		}
+		if (_status.connectMode) {
+			return false;
+		}
 		return (!player || player == game.me || player.isUnderControl()) && lib.config.lucky_star == true;
 	}
 	infoHp(hp) {
-		if (typeof hp == "number") return hp;
-		else if (typeof hp == "string") {
+		if (typeof hp == "number") {
+			return hp;
+		} else if (typeof hp == "string") {
 			if (hp.includes("/")) {
 				const num = hp.split("/")[0];
 				if (num) {
@@ -608,13 +748,16 @@ export class Get extends GetCompatible {
 						return parseInt(num);
 					}
 				}
-			} else if (hp == "Infinity" || hp == "∞") return Infinity;
+			} else if (hp == "Infinity" || hp == "∞") {
+				return Infinity;
+			}
 		}
 		return 0;
 	}
 	infoMaxHp(hp) {
-		if (typeof hp == "number") return hp;
-		else if (typeof hp == "string") {
+		if (typeof hp == "number") {
+			return hp;
+		} else if (typeof hp == "string") {
 			if (hp.includes("/")) {
 				const num = hp.split("/")[1];
 				if (num) {
@@ -624,7 +767,9 @@ export class Get extends GetCompatible {
 						return parseInt(num);
 					}
 				}
-			} else if (hp == "Infinity" || hp == "∞") return Infinity;
+			} else if (hp == "Infinity" || hp == "∞") {
+				return Infinity;
+			}
 		}
 		return 0;
 	}
@@ -653,8 +798,12 @@ export class Get extends GetCompatible {
 			delete _status.waitingForCards;
 		}
 		var list = [];
-		if (typeof num != "number") num = 1;
-		if (num <= 0) return [];
+		if (typeof num != "number") {
+			num = 1;
+		}
+		if (num <= 0) {
+			return [];
+		}
 		while (num--) {
 			if (ui.cardPile.hasChildNodes() == false) {
 				game.washCard();
@@ -682,7 +831,9 @@ export class Get extends GetCompatible {
 	discarded() {
 		return game
 			.getGlobalHistory("everything", evt => {
-				if (!evt.cards?.length) return false;
+				if (!evt.cards?.length) {
+					return false;
+				}
 				return evt.name === "cardsDiscard" || evt.position == ui.discardPile;
 			})
 			.reduce((cards, evt) => cards.addArray(evt.cards), []);
@@ -721,15 +872,21 @@ export class Get extends GetCompatible {
 		} else {
 			if (str.startsWith("###")) {
 				var prompts = str.slice(3).split("###");
-				if (prompts[0]) next.set("prompt", prompts[0]);
-				if (prompts[1]) next.set("prompt2", prompts[1]);
+				if (prompts[0]) {
+					next.set("prompt", prompts[0]);
+				}
+				if (prompts[1]) {
+					next.set("prompt2", prompts[1]);
+				}
 			} else {
 				next.set("prompt", str);
 			}
 		}
 	}
 	autoViewAs(card, cards, owner) {
-		if (arguments.length === 1 && card instanceof lib.element.VCard) return card; //阻止无限嵌套
+		if (arguments.length === 1 && card instanceof lib.element.VCard) {
+			return card;
+		} //阻止无限嵌套
 		return new lib.element.VCard(card, cards, void 0, void 0, owner);
 	}
 	/**
@@ -773,8 +930,11 @@ export class Get extends GetCompatible {
 					storage: get.copy(card.storage),
 					cards: get.copy(card.cards),
 				};
-				if (get.itemtype(cards) == "cards" && !card.cards) next.cards = cards.slice(0);
-				else if (get.itemtype(card) == "card") next.cards = [card];
+				if (get.itemtype(cards) == "cards" && !card.cards) {
+					next.cards = cards.slice(0);
+				} else if (get.itemtype(card) == "card") {
+					next.cards = [card];
+				}
 				return next;
 			} else if (get.is.object(card) && get.itemtype(cards) == "cards" && !card.cards) {
 				card = get.copy(card);
@@ -849,19 +1009,29 @@ export class Get extends GetCompatible {
 		let info = lib.character[name];
 		if (!info) {
 			const pack = Object.keys(lib.characterPack).find(pack => name in lib.characterPack[pack]);
-			if (pack) info = lib.characterPack[pack][name];
+			if (pack) {
+				info = lib.characterPack[pack][name];
+			}
 		}
 		if (typeof num === "number") {
-			if (!info) info = [];
-			if (info[num]) return info[num];
-			if (num === 3 || num === 4) return [];
+			if (!info) {
+				info = [];
+			}
+			if (info[num]) {
+				return info[num];
+			}
+			if (num === 3 || num === 4) {
+				return [];
+			}
 			return;
 		}
 		return get.convertedCharacter(info || { isNull: true });
 	}
 	characterInitFilter(name) {
 		const info = get.character(name);
-		if (!info) return [];
+		if (!info) {
+			return [];
+		}
 		return info.initFilters || [];
 	}
 	/**
@@ -870,7 +1040,9 @@ export class Get extends GetCompatible {
 	 * @returns { string }
 	 */
 	characterIntro(name) {
-		if (lib.characterIntro[name]) return lib.characterIntro[name];
+		if (lib.characterIntro[name]) {
+			return lib.characterIntro[name];
+		}
 		var tags = get.character(name, 4);
 		if (tags) {
 			for (var i = 0; i < tags.length; i++) {
@@ -882,17 +1054,25 @@ export class Get extends GetCompatible {
 		while (name.includes("_") && !lib.characterIntro[name]) {
 			name = name.slice(name.indexOf("_") + 1);
 		}
-		if (lib.characterIntro[name]) return lib.characterIntro[name];
+		if (lib.characterIntro[name]) {
+			return lib.characterIntro[name];
+		}
 		return "暂无武将介绍";
 	}
 	bordergroup(info, raw) {
-		if (typeof info == "string") info = get.character(info);
-		if (info.groupBorder) return info.groupBorder;
+		if (typeof info == "string") {
+			info = get.character(info);
+		}
+		if (info.groupBorder) {
+			return info.groupBorder;
+		}
 		return raw ? "" : info.group || "";
 	}
 	groupnature(group, method) {
 		var nature = lib.groupnature[group];
-		if (!nature) return "";
+		if (!nature) {
+			return "";
+		}
 		if (method == "raw") {
 			return nature;
 		}
@@ -907,11 +1087,17 @@ export class Get extends GetCompatible {
 	 * @returns { string }
 	 */
 	sourceSkillFor(skill, text) {
-		if (!text) text = "sourceSkill";
-		if (typeof skill !== "string") skill = skill[text] || skill.skill;
+		if (!text) {
+			text = "sourceSkill";
+		}
+		if (typeof skill !== "string") {
+			skill = skill[text] || skill.skill;
+		}
 		let info = get.info(skill);
 		while (true) {
-			if (!info || typeof info[text] !== "string") break;
+			if (!info || typeof info[text] !== "string") {
+				break;
+			}
 			skill = info[text];
 			info = get.info(skill);
 		}
@@ -923,8 +1109,12 @@ export class Get extends GetCompatible {
 	 * @returns { 1 | -1 | 0 }
 	 */
 	sgn(num) {
-		if (num > 0) return 1;
-		if (num < 0) return -1;
+		if (num > 0) {
+			return 1;
+		}
+		if (num < 0) {
+			return -1;
+		}
 		return 0;
 	}
 	/**
@@ -965,8 +1155,12 @@ export class Get extends GetCompatible {
 		}
 	}
 	delayx(num, max) {
-		if (typeof num != "number") num = 1;
-		if (typeof max != "number") max = Infinity;
+		if (typeof num != "number") {
+			num = 1;
+		}
+		if (typeof max != "number") {
+			max = Infinity;
+		}
 		switch (lib.config.game_speed) {
 			case "vslow":
 				return Math.min(max, 2.5 * num);
@@ -996,7 +1190,9 @@ export class Get extends GetCompatible {
 	}
 	prompt2(skill, target, player) {
 		var str = get.prompt.apply(this, arguments);
-		if (!lib.translate[skill + "_info"]) return str;
+		if (!lib.translate[skill + "_info"]) {
+			return str;
+		}
 		return "###" + str + "###" + lib.translate[skill + "_info"];
 	}
 	url(master) {
@@ -1026,7 +1222,9 @@ export class Get extends GetCompatible {
 	benchmark(func1, func2, iteration, arg) {
 		var tic, toc;
 		var key1, key2;
-		if (!arg) arg = [];
+		if (!arg) {
+			arg = [];
+		}
 		if (Array.isArray(func2)) {
 			key1 = func2[0];
 			key2 = func2[1];
@@ -1068,14 +1266,18 @@ export class Get extends GetCompatible {
 	 */
 	stringify(obj, level = 0) {
 		let indent = "";
-		for (let i = 0; i < level; i++) indent += "    ";
+		for (let i = 0; i < level; i++) {
+			indent += "    ";
+		}
 		try {
 			if (get.objtype(obj) === "object" /*  || obj instanceof lib.element.GameEvent */) {
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
 					const valueString = get.stringify(obj[key], level + 1);
-					if (get.is.functionMethod(obj, key)) keyString = "";
+					if (get.is.functionMethod(obj, key)) {
+						keyString = "";
+					}
 					str += indent + "    " + keyString + valueString + ",\n";
 				}
 				str += indent + "}";
@@ -1085,8 +1287,11 @@ export class Get extends GetCompatible {
 				let lastLine = str.slice(str.lastIndexOf("\n"));
 				let originIndent = Math.floor((/\S/.exec(lastLine)?.index ?? lastLine.length) / 4);
 				for (let i = 0; i < Math.abs(originIndent - level); i++) {
-					if (originIndent >= level) str = str.replace(/\n {4}/g, "\n");
-					else str = str.replace(/\n/g, "\n    ");
+					if (originIndent >= level) {
+						str = str.replace(/\n {4}/g, "\n");
+					} else {
+						str = str.replace(/\n/g, "\n    ");
+					}
 				}
 				return str;
 			} else if (Array.isArray(obj)) {
@@ -1094,8 +1299,12 @@ export class Get extends GetCompatible {
 				obj = obj.map(i => (i === Infinity ? rand : i === -Infinity ? -rand : i));
 				return JSON.stringify(obj).replace(new RegExp(rand.toString(), "g"), "Infinity");
 			} else {
-				if (obj === Infinity) return "Infinity";
-				if (obj === -Infinity) return "-Infinity";
+				if (obj === Infinity) {
+					return "Infinity";
+				}
+				if (obj === -Infinity) {
+					return "-Infinity";
+				}
 				return JSON.stringify(obj);
 			}
 		} catch (e) {
@@ -1127,10 +1336,14 @@ export class Get extends GetCompatible {
 			"[object Date]": true,
 		};
 
-		if (typeof obj !== "object" || obj === null || !canTranverse[getType(obj)]) return obj;
+		if (typeof obj !== "object" || obj === null || !canTranverse[getType(obj)]) {
+			return obj;
+		}
 
 		// @ts-ignore
-		if (map.has(obj)) return map.get(obj);
+		if (map.has(obj)) {
+			return map.get(obj);
+		}
 
 		const constructor = obj.constructor;
 		// @ts-ignore
@@ -1140,13 +1353,15 @@ export class Get extends GetCompatible {
 		const target = constructor
 			? Array.isArray(obj) || obj instanceof Map || obj instanceof Set || constructor === Object
 				? // @ts-ignore
-				  new constructor()
+					new constructor()
 				: constructor.name in window && /\[native code\]/.test(constructor.toString())
-				? // @ts-ignore
-				  new constructor(obj)
-				: obj
+					? // @ts-ignore
+						new constructor(obj)
+					: obj
 			: Object.create(null);
-		if (target === obj) return target;
+		if (target === obj) {
+			return target;
+		}
 
 		map.set(obj, target);
 
@@ -1194,7 +1409,9 @@ export class Get extends GetCompatible {
 	 */
 	plainText(htmlContent) {
 		if (htmlContent.includes("<") || htmlContent.includes(">")) {
-			if (this.plainTextMap.has(htmlContent)) return this.plainTextMap.get(htmlContent);
+			if (this.plainTextMap.has(htmlContent)) {
+				return this.plainTextMap.get(htmlContent);
+			}
 			const parser = new DOMParser(),
 				doc = parser.parseFromString(htmlContent || "", "text/html");
 			const text = doc.body.textContent || doc.body.innerText;
@@ -1224,7 +1441,9 @@ export class Get extends GetCompatible {
 		var list = [];
 		if (filter == "trick") {
 			for (var i = 0; i < lib.inpile.length; i++) {
-				if (get.type(lib.inpile[i], "trick") == type) list.push(lib.inpile[i]);
+				if (get.type(lib.inpile[i], "trick") == type) {
+					list.push(lib.inpile[i]);
+				}
 			}
 		} else {
 			for (var i = 0; i < lib.inpile.length; i++) {
@@ -1233,11 +1452,17 @@ export class Get extends GetCompatible {
 						list.push(lib.inpile[i]);
 					}
 				} else {
-					if (typeof filter == "function" && !filter(lib.inpile[i])) continue;
+					if (typeof filter == "function" && !filter(lib.inpile[i])) {
+						continue;
+					}
 					if (type.startsWith("equip") && type.length == 6) {
-						if (get.subtype(lib.inpile[i]) == type) list.push(lib.inpile[i]);
+						if (get.subtype(lib.inpile[i]) == type) {
+							list.push(lib.inpile[i]);
+						}
 					} else {
-						if (get.type(lib.inpile[i]) == type) list.push(lib.inpile[i]);
+						if (get.type(lib.inpile[i]) == type) {
+							list.push(lib.inpile[i]);
+						}
 					}
 				}
 			}
@@ -1250,16 +1475,30 @@ export class Get extends GetCompatible {
 	typeCard(type, filter) {
 		var list = [];
 		for (var i in lib.card) {
-			if (lib.card[i].mode && lib.card[i].mode.includes(get.mode()) == false) continue;
+			if (lib.card[i].mode && lib.card[i].mode.includes(get.mode()) == false) {
+				continue;
+			}
 			// if(lib.card[i].vanish||lib.card[i].destroy) continue;
-			if (lib.card[i].destroy) continue;
-			if (typeof filter == "function" && !filter(i)) continue;
-			if (lib.config.bannedcards.includes(i)) continue;
-			if (!lib.translate[i + "_info"]) continue;
+			if (lib.card[i].destroy) {
+				continue;
+			}
+			if (typeof filter == "function" && !filter(i)) {
+				continue;
+			}
+			if (lib.config.bannedcards.includes(i)) {
+				continue;
+			}
+			if (!lib.translate[i + "_info"]) {
+				continue;
+			}
 			if ((type.startsWith("equip") && type.length == 6) || (type.startsWith("hslingjian") && type.length == 11) || type.startsWith("spell_")) {
-				if (get.subtype(i) == type) list.push(i);
+				if (get.subtype(i) == type) {
+					list.push(i);
+				}
 			} else {
-				if (get.type(i) == type) list.push(i);
+				if (get.type(i) == type) {
+					list.push(i);
+				}
 			}
 		}
 		return list;
@@ -1267,11 +1506,19 @@ export class Get extends GetCompatible {
 	libCard(filter) {
 		var list = [];
 		for (var i in lib.card) {
-			if (lib.card[i].mode && lib.card[i].mode.includes(get.mode()) == false) continue;
+			if (lib.card[i].mode && lib.card[i].mode.includes(get.mode()) == false) {
+				continue;
+			}
 			// if(lib.card[i].vanish||lib.card[i].destroy) continue;
-			if (lib.card[i].destroy) continue;
-			if (lib.config.bannedcards.includes(i)) continue;
-			if (!lib.translate[i + "_info"]) continue;
+			if (lib.card[i].destroy) {
+				continue;
+			}
+			if (lib.config.bannedcards.includes(i)) {
+				continue;
+			}
+			if (!lib.translate[i + "_info"]) {
+				continue;
+			}
 			if (filter(lib.card[i], i)) {
 				list.push(i);
 			}
@@ -1279,10 +1526,14 @@ export class Get extends GetCompatible {
 		return list;
 	}
 	ip() {
-		if (!require) return "";
+		if (!require) {
+			return "";
+		}
 		var interfaces = require("os").networkInterfaces();
 		for (var devName in interfaces) {
-			if (devName.includes("VMware")) continue;
+			if (devName.includes("VMware")) {
+				continue;
+			}
 			var iface = interfaces[devName];
 			for (var i = 0; i < iface.length; i++) {
 				var alias = iface[i];
@@ -1346,14 +1597,17 @@ export class Get extends GetCompatible {
 			}
 		}
 		if (config.mode == "guozhan") {
-			if (config.separatism) return "群雄割据";
-			if (config.guozhan_mode != "normal")
+			if (config.separatism) {
+				return "群雄割据";
+			}
+			if (config.guozhan_mode != "normal") {
 				switch (config.guozhan_mode) {
 					case "yingbian":
 						return "应变国战";
 					case "old":
 						return "怀旧国战";
 				}
+			}
 		}
 		if (server) {
 			return get.translation(get.plainText(config.mode)) + "模式";
@@ -1367,13 +1621,21 @@ export class Get extends GetCompatible {
 		for (var i = 0; i < lib.configOL.characterPack.length; i++) {
 			var pack = lib.characterPack[lib.configOL.characterPack[i]];
 			for (var j in pack) {
-				if (typeof func == "function" && func(j)) continue;
-				if (lib.connectBanned.includes(j)) continue;
-				if (lib.character[j]) libCharacter[j] = pack[j];
+				if (typeof func == "function" && func(j)) {
+					continue;
+				}
+				if (lib.connectBanned.includes(j)) {
+					continue;
+				}
+				if (lib.character[j]) {
+					libCharacter[j] = pack[j];
+				}
 			}
 		}
 		for (i in libCharacter) {
-			if (lib.filter.characterDisabled(i, libCharacter)) continue;
+			if (lib.filter.characterDisabled(i, libCharacter)) {
+				continue;
+			}
 			list.push(i);
 		}
 		return list;
@@ -1447,20 +1709,36 @@ export class Get extends GetCompatible {
 		var mode = get.mode();
 		if (mode == "identity") {
 			if (_status.mode == "purple") {
-				if (!player) return null;
+				if (!player) {
+					return null;
+				}
 				var zhu = game[player.identity.slice(0, 1) + "Zhu"];
-				if (!zhu) return null;
-				if (skill && !zhu.hasSkill(skill)) return null;
+				if (!zhu) {
+					return null;
+				}
+				if (skill && !zhu.hasSkill(skill)) {
+					return null;
+				}
 				return zhu;
 			}
-			if (!game.zhu) return null;
-			if (skill && !game.zhu.hasSkill(skill)) return null;
-			if (game.zhu.isZhu) return game.zhu;
+			if (!game.zhu) {
+				return null;
+			}
+			if (skill && !game.zhu.hasSkill(skill)) {
+				return null;
+			}
+			if (game.zhu.isZhu) {
+				return game.zhu;
+			}
 		} else if (mode == "versus" && (_status.mode == "four" || _status.mode == "guandu")) {
 			for (var i = 0; i < game.players.length; i++) {
 				if (game.players[i].isZhu) {
-					if (skill && !game.players[i].hasSkill(skill)) continue;
-					if (!player) return game.players[i];
+					if (skill && !game.players[i].hasSkill(skill)) {
+						continue;
+					}
+					if (!player) {
+						return game.players[i];
+					}
 					if (player.side == game.players[i].side) {
 						return game.players[i];
 					}
@@ -1469,8 +1747,12 @@ export class Get extends GetCompatible {
 		} else if (mode == "guozhan") {
 			for (var i = 0; i < game.players.length; i++) {
 				if (get.is.jun(game.players[i]) && !game.players[i].isUnseen()) {
-					if (skill && !game.players[i].hasSkill(skill)) continue;
-					if (!player) return game.players[i];
+					if (skill && !game.players[i].hasSkill(skill)) {
+						continue;
+					}
+					if (!player) {
+						return game.players[i];
+					}
 					if (player.identity == game.players[i].identity) {
 						return game.players[i];
 					} else if (group && group == game.players[i].identity) {
@@ -1483,7 +1765,9 @@ export class Get extends GetCompatible {
 	}
 	config(item, mode) {
 		mode = mode || lib.config.mode;
-		if (!lib.config.mode_config[mode]) return;
+		if (!lib.config.mode_config[mode]) {
+			return;
+		}
 		return lib.config.mode_config[mode][item];
 	}
 	coinCoeff(list) {
@@ -1525,7 +1809,9 @@ export class Get extends GetCompatible {
 		return num / list.length;
 	}
 	rank(name, num) {
-		if (typeof name === "object" && name.name) name = name.name;
+		if (typeof name === "object" && name.name) {
+			name = name.name;
+		}
 		num = num === true ? 9 : typeof num === "number" ? num : false;
 
 		if (name === _status.lord) {
@@ -1560,13 +1846,19 @@ export class Get extends GetCompatible {
 	skillRank(skill, type, grouped) {
 		var info = lib.skill[skill];
 		var player = _status.event.skillRankPlayer || _status.event.player;
-		if (!info) return 0;
+		if (!info) {
+			return 0;
+		}
 		if (info.ai) {
-			if (info.ai.halfneg) return 0;
+			if (info.ai.halfneg) {
+				return 0;
+			}
 			if (typeof info.ai.combo == "string" && player && !player.hasSkill(info.ai.combo)) {
 				return 0;
 			}
-			if (info.ai.neg) return -1;
+			if (info.ai.neg) {
+				return -1;
+			}
 		}
 		var num = 1;
 		var threaten = 1;
@@ -1578,7 +1870,9 @@ export class Get extends GetCompatible {
 			}
 		}
 		if (type && type.includes("in")) {
-			if (info.enable == "phaseUse") num += 0.5;
+			if (info.enable == "phaseUse") {
+				num += 0.5;
+			}
 			if (info.trigger && info.trigger.player) {
 				var list = Array.isArray(info.trigger.player) ? info.trigger.player : [info.trigger.player];
 				var add = false;
@@ -1595,7 +1889,9 @@ export class Get extends GetCompatible {
 							}
 						}
 					}
-					if (add) break;
+					if (add) {
+						break;
+					}
 				}
 			}
 			if (info.trigger && ((typeof info.trigger.player == "string" && info.trigger.player.startsWith("use")) || info.trigger.source)) {
@@ -1614,11 +1910,17 @@ export class Get extends GetCompatible {
 					var list = Array.isArray(info.trigger.global) ? info.trigger.global : [info.trigger.global];
 					num += Math.min(3, list.length) / 10;
 					for (var i of list) {
-						if (i.startsWith("lose") || i.startsWith("use")) num += 0.3;
-						if (i.startsWith("cardsDiscard")) num += 0.4;
+						if (i.startsWith("lose") || i.startsWith("use")) {
+							num += 0.3;
+						}
+						if (i.startsWith("cardsDiscard")) {
+							num += 0.4;
+						}
 					}
 				}
-				if (info.trigger.target || (typeof info.trigger.player == "string" && (info.trigger.player.startsWith("damage") || info.trigger.player.startsWith("lose")))) num += 0.1;
+				if (info.trigger.target || (typeof info.trigger.player == "string" && (info.trigger.player.startsWith("damage") || info.trigger.player.startsWith("lose")))) {
+					num += 0.1;
+				}
 			}
 			if (info.ai) {
 				if (info.ai.maixie || info.ai.maixie_hp || info.ai.maixie_defend) {
@@ -1664,22 +1966,30 @@ export class Get extends GetCompatible {
 		return Array.from(cards).map(get.cardInfo);
 	}
 	infoCard(info) {
-		if (!lib.cardOL) lib.cardOL = {};
+		if (!lib.cardOL) {
+			lib.cardOL = {};
+		}
 		let card;
 		try {
 			const id = info[4];
 			if (!id) {
 				card = ui.create.card();
-				if (info && info[2]) card.init(info);
+				if (info && info[2]) {
+					card.init(info);
+				}
 			} else if (lib.cardOL[id]) {
 				if (lib.cardOL[id].name != info[2]) {
-					if (info && info[2]) lib.cardOL[id].init(info);
+					if (info && info[2]) {
+						lib.cardOL[id].init(info);
+					}
 				}
 				card = lib.cardOL[id];
 			} else {
 				card = ui.create.card();
 				card.cardid = id;
-				if (info && info[2]) card.init(info);
+				if (info && info[2]) {
+					card.init(info);
+				}
 				lib.cardOL[id] = card;
 			}
 		} catch (e) {
@@ -1695,7 +2005,9 @@ export class Get extends GetCompatible {
 			const key = entry[0];
 			/*if (key === "cards") stringifying[key] = get.cardsInfo(entry[1]);
 else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
-			if (entry[1] !== void 0) stringifying[key] = JSON.stringify(get.stringifiedResult(entry[1]));
+			if (entry[1] !== void 0) {
+				stringifying[key] = JSON.stringify(get.stringifiedResult(entry[1]));
+			}
 			return stringifying;
 		}, {});
 	}
@@ -1704,17 +2016,24 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	infoVCard(card) {
 		// @ts-ignore
-		if (!lib.vcardOL) lib.vcardOL = {};
+		if (!lib.vcardOL) {
+			lib.vcardOL = {};
+		}
 		const datas = Object.entries(card).reduce((vcard, entry) => {
 			const key = entry[0];
-			if (key === "cards") vcard[key] = get.infoCards(entry[1]);
-			else if (entry[1] !== void 0) vcard[key] = JSON.parse(entry[1]);
+			if (key === "cards") {
+				vcard[key] = get.infoCards(entry[1]);
+			} else if (entry[1] !== void 0) {
+				vcard[key] = JSON.parse(entry[1]);
+			}
 			return vcard;
 		}, {});
 		// @ts-ignore
 		const vid = datas.vcardID;
 		// @ts-ignore
-		if (!vid || !lib.vcardOL) return new lib.element.VCard(datas);
+		if (!vid || !lib.vcardOL) {
+			return new lib.element.VCard(datas);
+		}
 		// @ts-ignore
 		if (vid in lib.vcardOL) {
 			// @ts-ignore
@@ -1725,7 +2044,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			});
 			Object.keys(datas).forEach(key => {
 				const value = datas[key];
-				if (Array.isArray(value)) vcard[key] = value.slice();
+				if (Array.isArray(value)) {
+					vcard[key] = value.slice();
+				}
 				vcard[key] = value;
 			});
 			return vcard;
@@ -1743,23 +2064,31 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return "_noname_card:" + JSON.stringify([card.cardid, card.suit, card.number, card.name, card.nature]);
 	}
 	infoCardOL(info) {
-		if (!lib.cardOL) return info;
+		if (!lib.cardOL) {
+			return info;
+		}
 		var card;
 		try {
 			var info = JSON.parse(info.slice(13));
 			var id = info.shift();
 			if (!id) {
 				card = ui.create.card();
-				if (info && info[2]) card.init(info);
+				if (info && info[2]) {
+					card.init(info);
+				}
 			} else if (lib.cardOL[id]) {
 				if (lib.cardOL[id].name != info[2]) {
-					if (info && info[2]) lib.cardOL[id].init(info);
+					if (info && info[2]) {
+						lib.cardOL[id].init(info);
+					}
 				}
 				card = lib.cardOL[id];
 			} else if (game.online) {
 				card = ui.create.card();
 				card.cardid = id;
-				if (info && info[2]) card.init(info);
+				if (info && info[2]) {
+					card.init(info);
+				}
 				lib.cardOL[id] = card;
 			}
 		} catch (e) {
@@ -1806,9 +2135,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { boolean }
 	 */
 	isFunctionParam(paramstr) {
-		if (paramstr.length == 0) return true;
+		if (paramstr.length == 0) {
+			return true;
+		}
 		const canCreateFunction = security.isSandboxRequired() && security.importSandbox().Marshal.canCreateFunction;
-		if (canCreateFunction) return canCreateFunction(paramstr, "");
+		if (canCreateFunction) {
+			return canCreateFunction(paramstr, "");
+		}
 		try {
 			new Function(paramstr, "");
 			return true;
@@ -1829,7 +2162,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	isFunctionBody(code, type = /* (function(){return null})() */ null) {
 		const canCreateFunction = security.isSandboxRequired() && security.importSandbox().Marshal.canCreateFunction;
-		if (canCreateFunction) return canCreateFunction("", code, type);
+		if (canCreateFunction) {
+			return canCreateFunction("", code, type);
+		}
 		if (type == "any") {
 			return (
 				["async", "generator", "agenerator", null]
@@ -1873,10 +2208,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		const specialMatch = get.#specialHeadPattern.exec(str);
 		if (specialMatch) {
 			let body = str.slice(specialMatch[0].length).trim();
-			if (body.startsWith("{") && body.endsWith("}")) body = body.slice(1, -1);
-			else body = `return ${body}`;
+			if (body.startsWith("{") && body.endsWith("}")) {
+				body = body.slice(1, -1);
+			} else {
+				body = `return ${body}`;
+			}
 			if (!get.isFunctionBody(body, "any")) {
-				if (log) console.warn("发现无法识别的远程代码:", str);
+				if (log) {
+					console.warn("发现无法识别的远程代码:", str);
+				}
 				return emptyFunction;
 			}
 			return `${specialMatch[0]}{${body}}`;
@@ -1884,12 +2224,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		// 匹配函数头
 		const functionHead = get.#functionHeadPattern.exec(str);
 		if (!functionHead) {
-			if (log) console.warn("发现无法识别的远程代码:", str);
+			if (log) {
+				console.warn("发现无法识别的远程代码:", str);
+			}
 			return emptyFunction;
 		}
 		// 检查非法函数头
 		if (get.#illegalFunctionHeadPattern.test(functionHead[0])) {
-			if (log) console.warn("发现无法识别的远程代码:", str);
+			if (log) {
+				console.warn("发现无法识别的远程代码:", str);
+			}
 			return emptyFunction;
 		}
 		// 遍历字符串来寻找参数列表的关闭括号
@@ -1907,14 +2251,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			start = foundClose + 1;
 		}
 		if (verifiedParams == null) {
-			if (log) console.warn("发现无法识别的远程代码:", str);
+			if (log) {
+				console.warn("发现无法识别的远程代码:", str);
+			}
 			return emptyFunction;
 		}
 		// 检查函数连接
 		const neckStart = str.slice(foundClose);
 		const neckMatch = get.#functionNeckPattern.exec(neckStart);
 		if (!neckMatch) {
-			if (log) console.warn("发现无法识别的远程代码:", str);
+			if (log) {
+				console.warn("发现无法识别的远程代码:", str);
+			}
 			return emptyFunction;
 		}
 		// 箭头函数分流检查
@@ -1923,7 +2271,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			let idMatch;
 			while ((idMatch = get.#identifierPattern.exec(funcHead))) {
 				if (idMatch[0] != "async") {
-					if (log) console.warn("发现无法识别的远程代码:", str);
+					if (log) {
+						console.warn("发现无法识别的远程代码:", str);
+					}
 					return emptyFunction;
 				}
 				funcHead = funcHead.slice(idMatch.index + idMatch[0].length);
@@ -1932,11 +2282,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			let funcHead = functionHead[0];
 			let idMatch;
 			while ((idMatch = get.#identifierPattern.exec(funcHead))) {
-				if (idMatch[0] != "async") break;
+				if (idMatch[0] != "async") {
+					break;
+				}
 				funcHead = funcHead.slice(idMatch.index + idMatch[0].length);
 			}
 			if (!idMatch) {
-				if (log) console.warn("发现无法识别的远程代码:", str);
+				if (log) {
+					console.warn("发现无法识别的远程代码:", str);
+				}
 				return emptyFunction;
 			}
 		}
@@ -1945,7 +2299,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let funcBody;
 		if (isBlock) {
 			if (!str.endsWith("}")) {
-				if (log) console.warn("发现无法识别的远程代码:", str);
+				if (log) {
+					console.warn("发现无法识别的远程代码:", str);
+				}
 				return emptyFunction;
 			}
 			funcBody = "{" + str.slice(foundClose + neckMatch[0].length);
@@ -1955,20 +2311,30 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		// 收集函数类型
 		let funcType = 0;
-		if (functionHead[0].includes("*")) funcType |= 1;
-		if (get.#asyncHeadPattern.test(functionHead[0])) funcType |= 2;
+		if (functionHead[0].includes("*")) {
+			funcType |= 1;
+		}
+		if (get.#asyncHeadPattern.test(functionHead[0])) {
+			funcType |= 2;
+		}
 		// 检查函数体
 		const checkType = [null, "generator", "async", "agenerator"][funcType];
 		// @ts-ignore
 		if (!get.isFunctionBody(funcBody, checkType)) {
-			if (log) console.warn("发现无法识别的远程代码:", str);
+			if (log) {
+				console.warn("发现无法识别的远程代码:", str);
+			}
 			return emptyFunction;
 		}
 		// 开始构造最终的函数
 		let finalStr = ` (${verifiedParams}) ${funcBody}`;
-		if (funcType & 1) finalStr = "*" + finalStr;
+		if (funcType & 1) {
+			finalStr = "*" + finalStr;
+		}
 		finalStr = "function" + finalStr;
-		if (funcType & 2) finalStr = "async " + finalStr;
+		if (funcType & 2) {
+			finalStr = "async " + finalStr;
+		}
 		return finalStr;
 	}
 	funcInfoOL(func) {
@@ -1981,23 +2347,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			const decompileFunction = security.isSandboxRequired() ? security.importSandbox().Marshal.decompileFunction : Function.prototype.call.bind(Function.prototype.toString);
 			const str = decompileFunction(func);
 			// js内置的函数
-			if (/\{\s*\[native code\]\s*\}/.test(str)) return "_noname_func:function () {}";
+			if (/\{\s*\[native code\]\s*\}/.test(str)) {
+				return "_noname_func:function () {}";
+			}
 			return "_noname_func:" + get.pureFunctionStr(str);
 		}
 		return "";
 	}
 	infoFuncOL(info) {
 		let func;
-		if ("sandbox" in window) console.log("[infoFuncOL] info:", info);
+		if ("sandbox" in window) {
+			console.log("[infoFuncOL] info:", info);
+		}
 		const str = get.pureFunctionStr(info.slice(13), true); // 清洗函数并阻止注入
-		if ("sandbox" in window) console.log("[infoFuncOL] pured:", str);
+		if ("sandbox" in window) {
+			console.log("[infoFuncOL] pured:", str);
+		}
 		try {
 			// js内置的函数
-			if (/\{\s*\[native code\]\s*\}/.test(str)) return function () {};
+			if (/\{\s*\[native code\]\s*\}/.test(str)) {
+				return function () {};
+			}
 			if (security.isSandboxRequired()) {
 				const loadStr = `return (${str});`;
 				const box = security.currentSandbox();
-				if (!box) throw new ReferenceError("没有找到当前沙盒");
+				if (!box) {
+					throw new ReferenceError("没有找到当前沙盒");
+				}
 				func = box.exec(loadStr);
 				ErrorManager.setCodeSnippet(func, new CodeSnippet(str, 5));
 			} else {
@@ -2019,11 +2395,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					Object.entries(item).reduce((stringifying, entry) => {
 						const key = entry[0];
 						if (key == "_trigger") {
-							if (noMore !== false) stringifying[key] = get.eventInfoOL(entry[1], null, false);
-						} else if (!lib.element.GameEvent.prototype[key] && key != "content" && get.itemtype(entry[1]) != "event") stringifying[key] = get.stringifiedResult(entry[1], null, false);
+							if (noMore !== false) {
+								stringifying[key] = get.eventInfoOL(entry[1], null, false);
+							}
+						} else if (!lib.element.GameEvent.prototype[key] && key != "content" && get.itemtype(entry[1]) != "event") {
+							stringifying[key] = get.stringifiedResult(entry[1], null, false);
+						}
 						return stringifying;
 					}, {})
-			  )}`
+				)}`
 			: "";
 	}
 	/**
@@ -2034,7 +2414,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		try {
 			Object.entries(JSON.parse(item.slice(14))).forEach(entry => {
 				const key = entry[0];
-				if (typeof evt[key] != "function") evt[key] = get.parsedResult(entry[1]);
+				if (typeof evt[key] != "function") {
+					evt[key] = get.parsedResult(entry[1]);
+				}
 			});
 		} catch (error) {
 			console.log(error);
@@ -2067,7 +2449,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 		const vid = datas.vcardID;
 		// @ts-ignore
-		if (!vid || !lib.vcardOL) return new lib.element.VCard(datas);
+		if (!vid || !lib.vcardOL) {
+			return new lib.element.VCard(datas);
+		}
 		// @ts-ignore
 		if (vid in lib.vcardOL) {
 			// @ts-ignore
@@ -2078,7 +2462,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			});
 			Object.keys(datas).forEach(key => {
 				const value = datas[key];
-				if (Array.isArray(value)) vcard[key] = value.slice();
+				if (Array.isArray(value)) {
+					vcard[key] = value.slice();
+				}
 				vcard[key] = value;
 			});
 			return vcard;
@@ -2093,7 +2479,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return Array.from(infos || []).map(get.infoVCardOL);
 	}
 	stringifiedResult(item, level, nomore) {
-		if (!item) return item;
+		if (!item) {
+			return item;
+		}
 		if (typeof item == "function") {
 			return get.funcInfoOL(item);
 		} else if (typeof item == "object") {
@@ -2111,7 +2499,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				case "players":
 					return get.playersInfoOL(item);
 				case "event":
-					if (nomore === false) return "";
+					if (nomore === false) {
+						return "";
+					}
 					return get.eventInfoOL(item);
 				default:
 					if (typeof level != "number") {
@@ -2146,7 +2536,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 	}
 	parsedResult(item) {
-		if (!item) return item;
+		if (!item) {
+			return item;
+		}
 		if (typeof item == "string") {
 			if (item.startsWith("_noname_func:")) {
 				return get.infoFuncOL(item);
@@ -2180,23 +2572,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 	}
 	verticalStr(str, sp) {
-		if (typeof str != "string") return "";
+		if (typeof str != "string") {
+			return "";
+		}
 		return Array.from(str)
 			.filter(value => value != "`")
 			.join("");
 	}
 	numStr(num, method) {
 		if (num == Infinity) {
-			if (method == "card") return get.selectableCards().length + ui.selected.cards.length;
-			if (method == "target") return get.selectableTargets().length + ui.selected.targets.length;
+			if (method == "card") {
+				return get.selectableCards().length + ui.selected.cards.length;
+			}
+			if (method == "target") {
+				return get.selectableTargets().length + ui.selected.targets.length;
+			}
 			return "∞";
 		}
 		return num.toString();
 	}
 	rawName(str) {
 		let str2 = lib.translate[str];
-		if (lib.translate[str + "_ab"]) str2 = lib.translate[str + "_ab"];
-		if (!str2) return "";
+		if (lib.translate[str + "_ab"]) {
+			str2 = lib.translate[str + "_ab"];
+		}
+		if (!str2) {
+			return "";
+		}
 		if (lib.translate[str + "_prefix"] && str2.startsWith(lib.translate[str + "_prefix"])) {
 			return str2.slice(lib.translate[str + "_prefix"].length);
 		}
@@ -2207,7 +2609,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	rawName2(str) {
 		let str2 = lib.translate[str];
-		if (!str2) return "";
+		if (!str2) {
+			return "";
+		}
 		if (lib.translate[str + "_prefix"] && str2.startsWith(lib.translate[str + "_prefix"])) {
 			return str2.slice(lib.translate[str + "_prefix"].length);
 		}
@@ -2215,11 +2619,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	slimNameHorizontal(str) {
 		const slimName = lib.translate[`${str}_ab`] || lib.translate[str];
-		if (!slimName) return "";
+		if (!slimName) {
+			return "";
+		}
 		const prefix = lib.translate[`${str}_prefix`];
 		if (prefix && slimName.startsWith(prefix)) {
 			//兼容版特化处理
-			if (lib.compatibleEdition) return `${get.prefixSpan(prefix, str)}<span>${slimName.slice(prefix.length)}　</span>`;
+			if (lib.compatibleEdition) {
+				return `${get.prefixSpan(prefix, str)}<span>${slimName.slice(prefix.length)}　</span>`;
+			}
 			return `${get.prefixSpan(prefix, str)}<span>${slimName.slice(prefix.length)}</span>`;
 		}
 		return slimName;
@@ -2231,7 +2639,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	prefixSpan(prefix, name) {
 		const config = lib.config.buttoncharacter_prefix;
-		if (config == "off") return "";
+		if (config == "off") {
+			return "";
+		}
 		if (config == "simple") {
 			const span = document.createElement("span");
 			span.innerHTML = prefix;
@@ -2239,13 +2649,23 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		const namePrefix = lib.namePrefix.get(prefix),
 			exists = Boolean(namePrefix);
-		if (exists && "getSpan" in namePrefix) return namePrefix.getSpan(prefix, name);
+		if (exists && "getSpan" in namePrefix) {
+			return namePrefix.getSpan(prefix, name);
+		}
 		const span = document.createElement("span");
 		if (exists) {
-			if ("color" in namePrefix) span.style.color = namePrefix.color;
-			if ("nature" in namePrefix) span.dataset.nature = namePrefix.nature;
-			if ("showName" in namePrefix) prefix = namePrefix.showName;
-		} else span.style.color = "#ffffff";
+			if ("color" in namePrefix) {
+				span.style.color = namePrefix.color;
+			}
+			if ("nature" in namePrefix) {
+				span.dataset.nature = namePrefix.nature;
+			}
+			if ("showName" in namePrefix) {
+				prefix = namePrefix.showName;
+			}
+		} else {
+			span.style.color = "#ffffff";
+		}
 		span.innerHTML = prefix;
 		return span.outerHTML;
 	}
@@ -2329,18 +2749,32 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						break;
 					}
 				}
-				if (bool) return "position";
+				if (bool) {
+					return "position";
+				}
 			}
-			if (obj.includes(lib.natureSeparator) && obj.split(lib.natureSeparator).every(n => lib.nature.has(n))) return "natures";
-			if (lib.nature.has(obj)) return "nature";
+			if (obj.includes(lib.natureSeparator) && obj.split(lib.natureSeparator).every(n => lib.nature.has(n))) {
+				return "natures";
+			}
+			if (lib.nature.has(obj)) {
+				return "nature";
+			}
 		}
 		if (Array.isArray(obj) && obj.length > 0) {
-			if (obj.every(p => p instanceof lib.element.Player)) return "players";
-			if (obj.every(p => p instanceof lib.element.Card)) return "cards";
-			if (obj.every(p => p instanceof lib.element.VCard)) return "vcards";
+			if (obj.every(p => p instanceof lib.element.Player)) {
+				return "players";
+			}
+			if (obj.every(p => p instanceof lib.element.Card)) {
+				return "cards";
+			}
+			if (obj.every(p => p instanceof lib.element.VCard)) {
+				return "vcards";
+			}
 			if (obj.length == 2) {
 				if (typeof obj[0] == "number" && typeof obj[1] == "number") {
-					if (obj[0] <= obj[1] || obj[1] <= -1) return "select";
+					if (obj[0] <= obj[1] || obj[1] <= -1) {
+						return "select";
+					}
 				}
 			}
 			if (obj.length == 4) {
@@ -2349,16 +2783,32 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 		}
-		if (obj instanceof lib.element.Button || (obj instanceof HTMLDivElement && obj.classList.contains("button"))) return "button";
-		if (obj instanceof lib.element.Card) return "card";
-		if (obj instanceof lib.element.VCard) return "vcard";
-		if (obj instanceof lib.element.Player) return "player";
-		if (obj instanceof lib.element.Dialog) return "dialog";
-		if (obj instanceof lib.element.GameEvent || obj instanceof lib.element.GameEventPromise) return "event";
+		if (obj instanceof lib.element.Button || (obj instanceof HTMLDivElement && obj.classList.contains("button"))) {
+			return "button";
+		}
+		if (obj instanceof lib.element.Card) {
+			return "card";
+		}
+		if (obj instanceof lib.element.VCard) {
+			return "vcard";
+		}
+		if (obj instanceof lib.element.Player) {
+			return "player";
+		}
+		if (obj instanceof lib.element.Dialog) {
+			return "dialog";
+		}
+		if (obj instanceof lib.element.GameEvent || obj instanceof lib.element.GameEventPromise) {
+			return "event";
+		}
 
-		if (typeof obj !== "object" || obj === null) return;
+		if (typeof obj !== "object" || obj === null) {
+			return;
+		}
 
-		if (lib.experimental.symbol.itemType in obj) return obj[lib.experimental.symbol.itemType];
+		if (lib.experimental.symbol.itemType in obj) {
+			return obj[lib.experimental.symbol.itemType];
+		}
 	}
 	equipNum(card) {
 		const subtypes = get.subtypes(card);
@@ -2402,14 +2852,30 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { 'fragment' }
 	 */
 	objtype(obj) {
-		if (Object.prototype.toString.call(obj) === "[object Array]") return "array";
-		if (Object.prototype.toString.call(obj) === "[object Object]") return "object";
-		if (Object.prototype.toString.call(obj) === "[object HTMLDivElement]") return "div";
-		if (Object.prototype.toString.call(obj) === "[object HTMLTableElement]") return "table";
-		if (Object.prototype.toString.call(obj) === "[object HTMLTableRowElement]") return "tr";
-		if (Object.prototype.toString.call(obj) === "[object HTMLTableCellElement]") return "td";
-		if (Object.prototype.toString.call(obj) === "[object HTMLBodyElement]") return "td";
-		if (Object.prototype.toString.call(obj) === "[object DocumentFragment]") return "fragment";
+		if (Object.prototype.toString.call(obj) === "[object Array]") {
+			return "array";
+		}
+		if (Object.prototype.toString.call(obj) === "[object Object]") {
+			return "object";
+		}
+		if (Object.prototype.toString.call(obj) === "[object HTMLDivElement]") {
+			return "div";
+		}
+		if (Object.prototype.toString.call(obj) === "[object HTMLTableElement]") {
+			return "table";
+		}
+		if (Object.prototype.toString.call(obj) === "[object HTMLTableRowElement]") {
+			return "tr";
+		}
+		if (Object.prototype.toString.call(obj) === "[object HTMLTableCellElement]") {
+			return "td";
+		}
+		if (Object.prototype.toString.call(obj) === "[object HTMLBodyElement]") {
+			return "td";
+		}
+		if (Object.prototype.toString.call(obj) === "[object DocumentFragment]") {
+			return "fragment";
+		}
 	}
 	/**
 	 * 返回牌的类型
@@ -2420,20 +2886,29 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { string }
 	 */
 	type(obj, method, player) {
-		if (typeof obj == "string") obj = { name: obj };
-		if (typeof obj != "object") return;
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object") {
+			return;
+		}
 		var name = get.name(obj, player);
 		if (!lib.card[name]) {
-			if (!name.startsWith("sha_")) return;
+			if (!name.startsWith("sha_")) {
+				return;
+			}
 			if (
 				name
 					.slice(4)
 					.split("_")
 					.every(n => lib.nature.has(n))
-			)
+			) {
 				return lib.card["sha"].type;
+			}
 		}
-		if (method == "trick" && lib.card[name].type == "delay") return "trick";
+		if (method == "trick" && lib.card[name].type == "delay") {
+			return "trick";
+		}
 		return lib.card[name].type;
 	}
 	type2(card, player) {
@@ -2446,16 +2921,24 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { string | undefined }
 	 */
 	subtype(obj, player) {
-		if (typeof obj == "string") obj = { name: obj };
-		if (typeof obj != "object") return;
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object") {
+			return;
+		}
 		const name = get.name(obj, player);
-		if (!lib.card[name]) return;
+		if (!lib.card[name]) {
+			return;
+		}
 		let subtype = lib.card[name].subtype;
 		return subtype;
 	}
 	equiptype(card, player) {
 		var subtype = get.subtype(card, player);
-		if (subtype.startsWith("equip")) return parseInt(subtype[5]);
+		if (subtype.startsWith("equip")) {
+			return parseInt(subtype[5]);
+		}
 		return 0;
 	}
 	/**
@@ -2480,9 +2963,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {string | undefined }
 	 */
 	suit(card, player) {
-		if (typeof card !== "object") return;
+		if (typeof card !== "object") {
+			return;
+		}
 		if (Array.isArray(card)) {
-			if (card.length == 1) return get.suit(card[0], player);
+			if (card.length == 1) {
+				return get.suit(card[0], player);
+			}
 			return "none";
 		} else if (!("suit" in card) && Array.isArray(card.cards)) {
 			return get.suit(card.cards, player);
@@ -2493,7 +2980,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					return game.checkMod(card, owner, game.checkMod(card, card.suit, "suit", owner), "cardsuit", owner);
 				}
 			}
-			if (card.suit === "unsure" || lib.suits.includes(card.suit)) return card.suit;
+			if (card.suit === "unsure" || lib.suits.includes(card.suit)) {
+				return card.suit;
+			}
 			return "none";
 		}
 	}
@@ -2504,13 +2993,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {string | undefined }
 	 */
 	color(card, player) {
-		if (typeof card !== "object") return;
+		if (typeof card !== "object") {
+			return;
+		}
 		if (Array.isArray(card)) {
-			if (!card.length) return "none";
+			if (!card.length) {
+				return "none";
+			}
 			const cards = card.slice(),
 				color = get.color(cards.shift(), player);
 			for (const anotherCard of cards) {
-				if (get.color(anotherCard, player) != color) return "none";
+				if (get.color(anotherCard, player) != color) {
+					return "none";
+				}
 			}
 			return color;
 		} else if (card.color === "unsure" || Object.keys(lib.color).includes(card.color)) {
@@ -2520,7 +3015,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		} else {
 			const suit = get.suit(card, player);
 			for (const entry of Object.entries(lib.color)) {
-				if (entry[1].includes(suit)) return entry[0];
+				if (entry[1].includes(suit)) {
+					return entry[0];
+				}
 			}
 			return "none";
 		}
@@ -2532,19 +3029,28 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {number | undefined | "unsure" | null}
 	 */
 	number(card, player) {
-		if (typeof card !== "object") return;
+		if (typeof card !== "object") {
+			return;
+		}
 		if (Array.isArray(card)) {
-			if (card.length == 1) return get.number(card[0], player);
+			if (card.length == 1) {
+				return get.number(card[0], player);
+			}
 			return null;
 		}
 		//狗卡你是真敢出啊
 		var number = null;
 		if ("number" in card) {
 			number = card.number;
-			if (number === "unsure") return number;
-			else if (typeof number != "number") number = null;
+			if (number === "unsure") {
+				return number;
+			} else if (typeof number != "number") {
+				number = null;
+			}
 		} else {
-			if (card.cards && card.cards.length == 1) number = get.number(card.cards[0], false);
+			if (card.cards && card.cards.length == 1) {
+				number = get.number(card.cards[0], false);
+			}
 		}
 		if (player !== false) {
 			var owner = player || get.owner(card);
@@ -2561,8 +3067,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {string}
 	 */
 	nature(card, player) {
-		if (typeof card == "string") return card.split(lib.natureSeparator).sort(lib.sort.nature).join(lib.natureSeparator);
-		if (Array.isArray(card)) return card.sort(lib.sort.nature).join(lib.natureSeparator);
+		if (typeof card == "string") {
+			return card.split(lib.natureSeparator).sort(lib.sort.nature).join(lib.natureSeparator);
+		}
+		if (Array.isArray(card)) {
+			return card.sort(lib.sort.nature).join(lib.natureSeparator);
+		}
 		var nature = card.nature;
 		if (get.itemtype(player) == "player" || (player !== false && get.position(card) == "h")) {
 			var owner = get.owner(card);
@@ -2579,11 +3089,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {string[]}
 	 */
 	natureList(card, player) {
-		if (!card) return [];
-		if (get.itemtype(card) == "natures") return card.split(lib.natureSeparator);
-		if (get.itemtype(card) == "nature") return [card];
+		if (!card) {
+			return [];
+		}
+		if (get.itemtype(card) == "natures") {
+			return card.split(lib.natureSeparator);
+		}
+		if (get.itemtype(card) == "nature") {
+			return [card];
+		}
 		const natures = get.nature(card, player);
-		if (typeof natures != "string") return [];
+		if (typeof natures != "string") {
+			return [];
+		}
 		return natures.split(lib.natureSeparator);
 	}
 	/**
@@ -2594,12 +3112,21 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	canRespond(card, player) {
 		let name;
-		if (typeof card == "object") name = get.name(card, player);
-		else name = card;
-		if (typeof name != "string") return [];
+		if (typeof card == "object") {
+			name = get.name(card, player);
+		} else {
+			name = card;
+		}
+		if (typeof name != "string") {
+			return [];
+		}
 		const filter = lib.respondMap[name];
-		if (Array.isArray(filter)) return filter;
-		if (typeof filter == "function") return [filter];
+		if (Array.isArray(filter)) {
+			return filter;
+		}
+		if (typeof filter == "function") {
+			return [filter];
+		}
 		return [];
 	}
 	/**
@@ -2614,8 +3141,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			delete _status.waitingForCards;
 		}
 		var list = [];
-		if (typeof num != "number") num = 1;
-		if (num <= 0) return [];
+		if (typeof num != "number") {
+			num = 1;
+		}
+		if (num <= 0) {
+			return [];
+		}
 		while (num--) {
 			if (ui.cardPile.hasChildNodes() == false) {
 				game.washCard();
@@ -2644,17 +3175,27 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return card.viewAs ? lib.card[card.viewAs].judge2 : get.info(card).judge2;
 	}
 	distance(from, to, method) {
-		if (from == to) return 0;
-		if (!game.players.includes(from) && !game.dead.includes(from)) return Infinity;
-		if (!game.players.includes(to) && !game.dead.includes(to)) return Infinity;
+		if (from == to) {
+			return 0;
+		}
+		if (!game.players.includes(from) && !game.dead.includes(from)) {
+			return Infinity;
+		}
+		if (!game.players.includes(to) && !game.dead.includes(to)) {
+			return Infinity;
+		}
 		let n = 1;
 		if (game.chess) {
 			let fxy = from.getXY(),
 				txy = to.getXY();
 			n = Math.abs(fxy[0] - txy[0]) + Math.abs(fxy[1] - txy[1]);
-			if (method == "raw" || method == "pure" || method == "absolute") return n;
+			if (method == "raw" || method == "pure" || method == "absolute") {
+				return n;
+			}
 		} else if (to.isMin(true) || from.isMin(true)) {
-			if (method == "raw" || method == "pure" || method == "absolute") return n;
+			if (method == "raw" || method == "pure" || method == "absolute") {
+				return n;
+			}
 		} else {
 			let player = from,
 				length = game.players.length;
@@ -2662,22 +3203,37 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			for (let iwhile = 0; iwhile < totalPopulation; iwhile++) {
 				if (player.nextSeat != to) {
 					player = player.nextSeat;
-					if (player.isAlive() && !player.isOut() && !player.hasSkill("undist") && !player.isMin(true)) n++;
+					if (player.isAlive() && !player.isOut() && !player.hasSkill("undist") && !player.isMin(true)) {
+						n++;
+					}
 				} else {
 					break;
 				}
 			}
 			for (let i = 0; i < game.players.length; i++) {
-				if (game.players[i].isOut() || game.players[i].hasSkill("undist") || game.players[i].isMin(true)) length--;
+				if (game.players[i].isOut() || game.players[i].hasSkill("undist") || game.players[i].isMin(true)) {
+					length--;
+				}
 			}
-			if (method == "absolute") return n;
-			if (from.isDead()) length++;
-			if (to.isDead()) length++;
+			if (method == "absolute") {
+				return n;
+			}
+			if (from.isDead()) {
+				length++;
+			}
+			if (to.isDead()) {
+				length++;
+			}
 			const left = from.hasSkillTag("left_hand"),
 				right = from.hasSkillTag("right_hand");
-			if (left === right) n = Math.min(n, length - n);
-			else if (left == true) n = length - n;
-			if (method == "raw" || method == "pure") return n;
+			if (left === right) {
+				n = Math.min(n, length - n);
+			} else if (left == true) {
+				n = length - n;
+			}
+			if (method == "raw" || method == "pure") {
+				return n;
+			}
 		}
 		n = game.checkMod(from, to, n, "globalFrom", from);
 		n = game.checkMod(from, to, n, "globalTo", to);
@@ -2693,14 +3249,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			});
 		for (let i = 0; i < equips1.length; i++) {
 			let info = get.info(equips1[i]).distance;
-			if (!info) continue;
+			if (!info) {
+				continue;
+			}
 			if (info.globalFrom) {
 				n += info.globalFrom;
 			}
 		}
 		for (let i = 0; i < equips2.length; i++) {
 			let info = get.info(equips2[i]).distance;
-			if (!info) continue;
+			if (!info) {
+				continue;
+			}
 			if (info.globalTo) {
 				n += info.globalTo;
 			}
@@ -2723,7 +3283,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			// 	}
 			// }
 			// return n;
-		} else if (method == "unchecked") return n;
+		} else if (method == "unchecked") {
+			return n;
+		}
 		return Math.max(1, n);
 	}
 	/**
@@ -2749,7 +3311,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (typeof item == "object") {
 			var name = item.name;
-			if (player !== false) name = get.name(item, player);
+			if (player !== false) {
+				name = get.name(item, player);
+			}
 			return lib.card[name];
 		}
 	}
@@ -2758,18 +3322,26 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { Select }
 	 */
 	select(select) {
-		if (typeof select == "function") return get.select(select());
-		else if (typeof select == "number") return [select, select];
-		else if (select && get.itemtype(select) == "select") return select;
+		if (typeof select == "function") {
+			return get.select(select());
+		} else if (typeof select == "number") {
+			return [select, select];
+		} else if (select && get.itemtype(select) == "select") {
+			return select;
+		}
 		return [1, 1];
 	}
 	card(original) {
 		if (_status.event.skill) {
 			const info = get.info(_status.event.skill);
 			let card = info.viewAs;
-			if (typeof card == "function") card = card(ui.selected.cards, _status.event.player);
+			if (typeof card == "function") {
+				card = card(ui.selected.cards, _status.event.player);
+			}
 			if (card) {
-				if (!ui.selected.cards.length) return get.autoViewAs(card, card.cards);
+				if (!ui.selected.cards.length) {
+					return get.autoViewAs(card, card.cards);
+				}
 				return get.autoViewAs(card, ui.selected.cards);
 			}
 		}
@@ -2777,7 +3349,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return _status.event._get_card;
 		}
 		var card = ui.selected.cards[0];
-		if (original) return card;
+		if (original) {
+			return card;
+		}
 		if (card) {
 			card = get.autoViewAs(card, ui.selected.cards);
 		}
@@ -2815,11 +3389,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	players(sort, dead, out) {
 		var players = game.players.slice(0);
 		if (sort != false) {
-			if (typeof sort == "function") players.sort(sort);
-			else players.sortBySeat(get.itemtype(sort) == "player" ? sort : _status.event.player);
+			if (typeof sort == "function") {
+				players.sort(sort);
+			} else {
+				players.sortBySeat(get.itemtype(sort) == "player" ? sort : _status.event.player);
+			}
 		}
-		if (dead) players = players.concat(game.dead);
-		if (!out) players = players.filter(current => !current.isOut());
+		if (dead) {
+			players = players.concat(game.dead);
+		}
+		if (!out) {
+			players = players.filter(current => !current.isOut());
+		}
 		return players;
 	}
 
@@ -2844,32 +3425,72 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 	position(card, ordering) {
 		//哪个大聪明在返回牌位置的函数写返回玩家位置的功能
-		if (get.itemtype(card) == "player") return parseInt(card.dataset.position);
-		if (!card) return null;
+		if (get.itemtype(card) == "player") {
+			return parseInt(card.dataset.position);
+		}
+		if (!card) {
+			return null;
+		}
 		if (get.itemtype(card) == "vcard") {
-			if (card.cards) return get.position(card.cards[0], ordering);
+			if (card.cards) {
+				return get.position(card.cards[0], ordering);
+			}
 			return null;
 		}
 		if (card.timeout && card.destiny && card.destiny.classList) {
-			if (card.destiny.classList.contains("equips")) return "e";
-			if (card.destiny.classList.contains("judges")) return "j";
-			if (card.destiny.classList.contains("expansions")) return "x";
-			if (card.destiny.classList.contains("handcards")) return card.classList.contains("glows") ? "s" : "h";
-			if (card.destiny.id == "cardPile") return "c";
-			if (card.destiny.id == "discardPile") return "d";
-			if (card.destiny.id == "special") return "s";
-			if (card.destiny.id == "ordering") return ordering ? "o" : "d";
+			if (card.destiny.classList.contains("equips")) {
+				return "e";
+			}
+			if (card.destiny.classList.contains("judges")) {
+				return "j";
+			}
+			if (card.destiny.classList.contains("expansions")) {
+				return "x";
+			}
+			if (card.destiny.classList.contains("handcards")) {
+				return card.classList.contains("glows") ? "s" : "h";
+			}
+			if (card.destiny.id == "cardPile") {
+				return "c";
+			}
+			if (card.destiny.id == "discardPile") {
+				return "d";
+			}
+			if (card.destiny.id == "special") {
+				return "s";
+			}
+			if (card.destiny.id == "ordering") {
+				return ordering ? "o" : "d";
+			}
 			return null;
 		}
-		if (!card.parentNode || !card.parentNode.classList) return;
-		if (card.parentNode.classList.contains("equips")) return "e";
-		if (card.parentNode.classList.contains("judges")) return "j";
-		if (card.parentNode.classList.contains("expansions")) return "x";
-		if (card.parentNode.classList.contains("handcards")) return card.classList.contains("glows") ? "s" : "h";
-		if (card.parentNode.id == "cardPile") return "c";
-		if (card.parentNode.id == "discardPile") return "d";
-		if (card.parentNode.id == "special") return "s";
-		if (card.parentNode.id == "ordering") return ordering ? "o" : "d";
+		if (!card.parentNode || !card.parentNode.classList) {
+			return;
+		}
+		if (card.parentNode.classList.contains("equips")) {
+			return "e";
+		}
+		if (card.parentNode.classList.contains("judges")) {
+			return "j";
+		}
+		if (card.parentNode.classList.contains("expansions")) {
+			return "x";
+		}
+		if (card.parentNode.classList.contains("handcards")) {
+			return card.classList.contains("glows") ? "s" : "h";
+		}
+		if (card.parentNode.id == "cardPile") {
+			return "c";
+		}
+		if (card.parentNode.id == "discardPile") {
+			return "d";
+		}
+		if (card.parentNode.id == "special") {
+			return "s";
+		}
+		if (card.parentNode.id == "ordering") {
+			return ordering ? "o" : "d";
+		}
 		return null;
 	}
 	/**
@@ -2906,13 +3527,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	skillInfoTranslation(name, player) {
 		let str = (() => {
-			if (player && lib.dynamicTranslate[name]) return lib.dynamicTranslate[name](player, name);
+			if (player && lib.dynamicTranslate[name]) {
+				return lib.dynamicTranslate[name](player, name);
+			}
 			const str = lib.translate[name + "_info"];
-			if (!str) return "";
+			if (!str) {
+				return "";
+			}
 			return str;
 		})();
-		if (typeof str === "string") return str;
-		else {
+		if (typeof str === "string") {
+			return str;
+		} else {
 			console.warn(`孩子，你${name}的翻译传的是什么？！`);
 			return "";
 		}
@@ -2929,7 +3555,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	translation(str, arg) {
 		if (str && typeof str == "object" && (str.name || str._tempTranslate)) {
-			if (str._tempTranslate) return str._tempTranslate;
+			if (str._tempTranslate) {
+				return str._tempTranslate;
+			}
 			var str2;
 			if (arg == "viewAs" && str.viewAs) {
 				str2 = get.translation(str.viewAs);
@@ -2987,26 +3615,42 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return str2;
 		}
 		if (arg == "skill") {
-			if (lib.translate[str + "_ab"]) return lib.translate[str + "_ab"];
-			if (lib.translate[str]) return lib.translate[str].slice(0, 2);
+			if (lib.translate[str + "_ab"]) {
+				return lib.translate[str + "_ab"];
+			}
+			if (lib.translate[str]) {
+				return lib.translate[str].slice(0, 2);
+			}
 			return str;
 		} else if (arg == "info") {
-			if (lib.translate[str + "_info"]) return lib.translate[str + "_info"];
+			if (lib.translate[str + "_info"]) {
+				return lib.translate[str + "_info"];
+			}
 			var str2 = str.slice(0, str.length - 1);
-			if (lib.translate[str2 + "_info"]) return lib.translate[str2 + "_info"];
+			if (lib.translate[str2 + "_info"]) {
+				return lib.translate[str2 + "_info"];
+			}
 			if (str.lastIndexOf("_") > 0) {
 				str2 = str.slice(0, str.lastIndexOf("_"));
-				if (lib.translate[str2 + "_info"]) return lib.translate[str2 + "_info"];
+				if (lib.translate[str2 + "_info"]) {
+					return lib.translate[str2 + "_info"];
+				}
 			}
 			str2 = str.slice(0, str.length - 2);
-			if (lib.translate[str2 + "_info"]) return lib.translate[str2 + "_info"];
-			if (lib.skill[str] && lib.skill[str].prompt) return lib.skill[str].prompt;
+			if (lib.translate[str2 + "_info"]) {
+				return lib.translate[str2 + "_info"];
+			}
+			if (lib.skill[str] && lib.skill[str].prompt) {
+				return lib.skill[str].prompt;
+			}
 		}
 		if (lib.translate[str]) {
 			return lib.translate[str];
 		}
 		if (typeof str == "string") {
-			if (lib.translate["nature_" + str]) return lib.translate["nature_" + str];
+			if (lib.translate["nature_" + str]) {
+				return lib.translate["nature_" + str];
+			}
 			return str;
 		}
 		if (typeof str == "number" || typeof str == "boolean") {
@@ -3030,9 +3674,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { string }
 	 */
 	strNumber(num, forced) {
-		if (typeof num !== "number") return;
+		if (typeof num !== "number") {
+			return;
+		}
 		let result = lib.numstrList.get(num);
-		if (result === undefined && forced !== false) result = num.toString();
+		if (result === undefined && forced !== false) {
+			result = num.toString();
+		}
 		return result;
 	}
 	/**
@@ -3042,12 +3690,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { number }
 	 */
 	numString(str, forced) {
-		if (typeof str !== "string") return;
+		if (typeof str !== "string") {
+			return;
+		}
 		let result = lib.numstrList.entries().reduce((map, list) => {
 			map[list[1]] = list[0];
 			return map;
 		}, {})[str];
-		if (result === undefined && forced !== false) result = parseInt(str);
+		if (result === undefined && forced !== false) {
+			result = parseInt(str);
+		}
 		return result;
 	}
 	/**
@@ -3057,18 +3709,28 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { string }
 	 */
 	cnNumber(num, ordinal) {
-		if (isNaN(num)) return "";
+		if (isNaN(num)) {
+			return "";
+		}
 		let numStr = "" + num;
-		if (numStr === "Infinity") return "∞";
-		if (numStr === "-Infinity") return "-∞";
-		if (!/^\d+$/.test(numStr)) return num;
+		if (numStr === "Infinity") {
+			return "∞";
+		}
+		if (numStr === "-Infinity") {
+			return "-∞";
+		}
+		if (!/^\d+$/.test(numStr)) {
+			return num;
+		}
 
 		const chars = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 		const units = ["", "十", "百", "千"];
 
 		if (numStr.length <= 2) {
 			//两位数以下单独处理保证效率
-			if (numStr.length === 1) return !ordinal && num === 2 ? "两" : chars[num];
+			if (numStr.length === 1) {
+				return !ordinal && num === 2 ? "两" : chars[num];
+			}
 			return `${numStr[0] === "1" ? "" : chars[numStr[0]]}十${numStr[1] === "0" ? "" : chars[numStr[1]]}`;
 		}
 
@@ -3078,19 +3740,27 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			.filter(Boolean);
 		const handleZero = str => {
 			let result = str.replace(/零{2,}/g, "零");
-			if (result.length > 1) result = result.replace(/零+$/g, "");
+			if (result.length > 1) {
+				result = result.replace(/零+$/g, "");
+			}
 			return result;
 		};
 		const _transform = str => {
-			if (str === "2" && !ordinal) return "两";
+			if (str === "2" && !ordinal) {
+				return "两";
+			}
 			let result = "";
 			for (let i = 0; i < str.length; i++) {
 				const part = str[str.length - 1 - i];
 				let char = chars[+part];
 				let unit = units[i];
-				if (char === "零") unit = "";
-				else if (char === "一" && i === 1 && str.length === 2) char = "";
-				else if (char === "二" && i > 1 && !ordinal) char = "两";
+				if (char === "零") {
+					unit = "";
+				} else if (char === "一" && i === 1 && str.length === 2) {
+					char = "";
+				} else if (char === "二" && i > 1 && !ordinal) {
+					char = "两";
+				}
 				result = char + unit + result;
 			}
 			result = handleZero(result);
@@ -3104,10 +3774,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			let unit = "";
 			if (i % 2) {
 				[unit, tempYi] = ["万" + tempYi, ""];
-				if (char === "零") unit = "";
+				if (char === "零") {
+					unit = "";
+				}
 			} else {
 				unit = "亿".repeat(i / 2);
-				if (char === "零") [unit, tempYi] = ["", unit];
+				if (char === "零") {
+					[unit, tempYi] = ["", unit];
+				}
 			}
 			result = char + unit + result;
 		}
@@ -3133,7 +3807,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { Button[] }
 	 */
 	selectableButtons(sort) {
-		if (!_status.event.player) return [];
+		if (!_status.event.player) {
+			return [];
+		}
 		var buttons = _status.event.dialog.buttons;
 		var selectable = [];
 		for (var i = 0; i < buttons.length; i++) {
@@ -3152,7 +3828,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { Card[] }
 	 */
 	selectableCards(sort) {
-		if (!_status.event.player) return [];
+		if (!_status.event.player) {
+			return [];
+		}
 		var cards = _status.event.player.getCards("hes");
 		var selectable = [];
 		for (var i = 0; i < cards.length; i++) {
@@ -3184,17 +3862,35 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	gainableSkills(func, player) {
 		var list = [];
 		for (var i in lib.character) {
-			if (lib.filter.characterDisabled(i)) continue;
-			if (lib.filter.characterDisabled2(i)) continue;
-			if (lib.character[i].isBoss) continue;
-			if (lib.character[i].isHiddenBoss) continue;
-			if (lib.character[i].isMinskin) continue;
-			if (lib.character[i].isUnseen) continue;
+			if (lib.filter.characterDisabled(i)) {
+				continue;
+			}
+			if (lib.filter.characterDisabled2(i)) {
+				continue;
+			}
+			if (lib.character[i].isBoss) {
+				continue;
+			}
+			if (lib.character[i].isHiddenBoss) {
+				continue;
+			}
+			if (lib.character[i].isMinskin) {
+				continue;
+			}
+			if (lib.character[i].isUnseen) {
+				continue;
+			}
 			for (var skill of lib.character[i].skills) {
 				var info = lib.skill[skill];
-				if (lib.filter.skillDisabled(skill)) continue;
-				if (func && !func(info, skill, i)) continue;
-				if (player && player.hasSkill && info.ai && info.ai.combo && !player.hasSkill(info.ai.combo)) continue;
+				if (lib.filter.skillDisabled(skill)) {
+					continue;
+				}
+				if (func && !func(info, skill, i)) {
+					continue;
+				}
+				if (player && player.hasSkill && info.ai && info.ai.combo && !player.hasSkill(info.ai.combo)) {
+					continue;
+				}
 				list.add(skill);
 			}
 		}
@@ -3203,14 +3899,26 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	gainableSkillsName(name, func) {
 		var list = [];
 		if (name && lib.character[name]) {
-			if (lib.character[name].isBoss) return list;
-			if (lib.character[name].isHiddenBoss) return list;
-			if (lib.character[name].isMinskin) return list;
-			if (lib.character[name].isUnseen) return list;
+			if (lib.character[name].isBoss) {
+				return list;
+			}
+			if (lib.character[name].isHiddenBoss) {
+				return list;
+			}
+			if (lib.character[name].isMinskin) {
+				return list;
+			}
+			if (lib.character[name].isUnseen) {
+				return list;
+			}
 			for (var skill of lib.character[name].skills) {
 				var info = lib.skill[skill];
-				if (lib.filter.skillDisabled(skill)) continue;
-				if (func && !func(info, skill, name)) continue;
+				if (lib.filter.skillDisabled(skill)) {
+					continue;
+				}
+				if (func && !func(info, skill, name)) {
+					continue;
+				}
 				list.add(skill);
 			}
 		}
@@ -3220,10 +3928,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		var list = [];
 		for (var i in lib.character) {
 			var info = lib.character[i];
-			if (!info) continue;
-			if (typeof func == "function" && !func(info, i)) continue;
-			if (lib.filter.characterDisabled(i)) continue;
-			if (lib.filter.characterDisabled2(i)) continue;
+			if (!info) {
+				continue;
+			}
+			if (typeof func == "function" && !func(info, i)) {
+				continue;
+			}
+			if (lib.filter.characterDisabled(i)) {
+				continue;
+			}
+			if (lib.filter.characterDisabled2(i)) {
+				continue;
+			}
 			list.push(i);
 		}
 		if (func === true) {
@@ -3244,7 +3960,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	selectableTargets(sort) {
 		var selectable = [];
 		var players = game.players.slice(0);
-		if (_status.event.deadTarget || (_status.event.skill && get.info(_status.event.skill)?.deadTarget)) players.addArray(game.dead);
+		if (_status.event.deadTarget || (_status.event.skill && get.info(_status.event.skill)?.deadTarget)) {
+			players.addArray(game.dead);
+		}
 		for (var i = 0; i < players.length; i++) {
 			if (players[i].classList.contains("selectable") && players[i].classList.contains("selected") == false) {
 				selectable.push(players[i]);
@@ -3257,56 +3975,92 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return selectable;
 	}
 	filter(filter, i) {
-		if (typeof filter == "function") return filter;
-		if (i == undefined) i = 0;
+		if (typeof filter == "function") {
+			return filter;
+		}
+		if (i == undefined) {
+			i = 0;
+		}
 		var result = function () {
-			if (filter == arguments[i]) return true;
+			if (filter == arguments[i]) {
+				return true;
+			}
 			for (var j in filter) {
 				if (Object.prototype.hasOwnProperty.call(filter, j)) {
 					if (get.itemtype(arguments[i]) == "card") {
 						if (j == "name") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.name(arguments[i])) == false) return false;
+								if (filter[j].includes(get.name(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.name(arguments[i]) != filter[j]) return false;
+								if (get.name(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (j == "type") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.type(arguments[i])) == false) return false;
+								if (filter[j].includes(get.type(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.type(arguments[i]) != filter[j]) return false;
+								if (get.type(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (j == "subtype") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.subtype(arguments[i])) == false) return false;
+								if (filter[j].includes(get.subtype(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.subtype(arguments[i]) != filter[j]) return false;
+								if (get.subtype(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (j == "color") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.color(arguments[i])) == false) return false;
+								if (filter[j].includes(get.color(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.color(arguments[i]) != filter[j]) return false;
+								if (get.color(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (j == "suit") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.suit(arguments[i])) == false) return false;
+								if (filter[j].includes(get.suit(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.suit(arguments[i]) != filter[j]) return false;
+								if (get.suit(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (j == "number") {
 							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.number(arguments[i])) == false) return false;
+								if (filter[j].includes(get.number(arguments[i])) == false) {
+									return false;
+								}
 							} else if (typeof filter[j] == "string") {
-								if (get.number(arguments[i]) != filter[j]) return false;
+								if (get.number(arguments[i]) != filter[j]) {
+									return false;
+								}
 							}
 						} else if (Array.isArray(filter[j])) {
-							if (filter[j].includes(arguments[i][j]) == false) return false;
+							if (filter[j].includes(arguments[i][j]) == false) {
+								return false;
+							}
 						} else if (typeof filter[j] == "string") {
-							if (arguments[i][j] != filter[j]) return false;
+							if (arguments[i][j] != filter[j]) {
+								return false;
+							}
 						}
 					} else {
-						if (arguments[i][j] != filter[j]) return false;
+						if (arguments[i][j] != filter[j]) {
+							return false;
+						}
 					}
 				}
 			}
@@ -3334,12 +4088,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	cardCount(card, player) {
 		var num;
-		if (player == undefined) player = _status.event.player;
+		if (player == undefined) {
+			player = _status.event.player;
+		}
 		if (card == true) {
 			num = 0;
 			var stat = player.getStat("card");
 			for (var i in stat) {
-				if (typeof stat[i] == "number") num += stat[i];
+				if (typeof stat[i] == "number") {
+					num += stat[i];
+				}
 			}
 			return num;
 		}
@@ -3347,7 +4105,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			card = card.name;
 		}
 		num = player.getStat("card")[card];
-		if (num == undefined) return 0;
+		if (num == undefined) {
+			return 0;
+		}
 		return num;
 	}
 	/**
@@ -3357,9 +4117,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { number }
 	 */
 	skillCount(skill, player) {
-		if (player == undefined) player = _status.event.player;
+		if (player == undefined) {
+			player = _status.event.player;
+		}
 		var num = player.getStat("skill")[skill];
-		if (num == undefined) return 0;
+		if (num == undefined) {
+			return 0;
+		}
 		return num;
 	}
 	/**
@@ -3370,7 +4134,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	owner(card, method) {
 		return game.players.concat(game.dead).find(current => {
-			if (current.judging[0] == card && method != "judge") return true;
+			if (current.judging[0] == card && method != "judge") {
+				return true;
+			}
 			if (card.timeout && card.destiny) {
 				const destiny = card.destiny;
 				if (destiny == current.node.handcards1 || destiny == current.node.handcards2) {
@@ -3419,7 +4185,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (get.info(item, bool) && get.info(item, bool).ai && get.info(item, bool).ai.tag) {
 			result = get.info(item, bool).ai.tag[tag];
 		}
-		if (typeof result == "function") return result(item, item2);
+		if (typeof result == "function") {
+			return result(item, item2);
+		}
 		return result;
 	}
 	sortCard(sort) {
@@ -3451,10 +4219,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			};
 		} else if (sort == "suit_sort") {
 			func = function (card) {
-				if (get.suit(card) == "heart") return 2;
-				if (get.suit(card) == "diamond") return 1;
-				if (get.suit(card) == "spade") return -1;
-				if (get.suit(card) == "club") return -2;
+				if (get.suit(card) == "heart") {
+					return 2;
+				}
+				if (get.suit(card) == "diamond") {
+					return 1;
+				}
+				if (get.suit(card) == "spade") {
+					return -1;
+				}
+				if (get.suit(card) == "club") {
+					return -2;
+				}
 			};
 		} else if (sort == "number_sort") {
 			func = function (card) {
@@ -3494,43 +4270,54 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	cardPile(name, position, start = "top") {
 		let filter,
 			create = null;
-		if (typeof name === "function")
+		if (typeof name === "function") {
 			filter = function (card) {
 				return name(card);
 			};
-		else if (name === true) filter = () => true;
-		else if (name) {
-			if (typeof name === "string") name = { name };
+		} else if (name === true) {
+			filter = () => true;
+		} else if (name) {
+			if (typeof name === "string") {
+				name = { name };
+			}
 			filter = function (card) {
 				for (let i in name) {
-					if (card[i] && card[i] !== name[i]) return false;
+					if (card[i] && card[i] !== name[i]) {
+						return false;
+					}
 				}
 				return true;
 			};
-			if (position === true) create = true;
+			if (position === true) {
+				create = true;
+			}
 		} else {
 			console.error("调用Get.cardPile()时未传入符合条件的参数name！");
 			return null;
 		}
 		if (start === "bottom") {
-			if (position !== "cardPile")
+			if (position !== "cardPile") {
 				for (let i = ui.discardPile.childNodes.length - 1; i >= 0; i--) {
 					if (filter(ui.discardPile.childNodes[i])) {
 						return ui.discardPile.childNodes[i];
 					}
 				}
-			if (position !== "discardPile")
+			}
+			if (position !== "discardPile") {
 				for (let i = ui.cardPile.childNodes.length - 1; i >= 0; i--) {
 					if (filter(ui.cardPile.childNodes[i])) {
 						return ui.cardPile.childNodes[i];
 					}
 				}
+			}
 			if (position === "field") {
 				let curs = game.filterPlayer(() => true);
 				for (let i = curs.length - 1; i >= 0; i--) {
 					const ej = curs[i].getCards("ej");
 					for (let j = ej.length - 1; j >= 0; j--) {
-						if (filter(ej[j])) return ej[j];
+						if (filter(ej[j])) {
+							return ej[j];
+						}
 					}
 				}
 			}
@@ -3541,9 +4328,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (position !== "discardPile") {
 			let j = 0;
-			if (start === "random") j = get.rand(0, ui.cardPile.childNodes.length - 1);
+			if (start === "random") {
+				j = get.rand(0, ui.cardPile.childNodes.length - 1);
+			}
 			for (let i = 0; i < ui.cardPile.childNodes.length; i++, j++) {
-				if (j >= ui.cardPile.childNodes.length) j -= ui.cardPile.childNodes.length;
+				if (j >= ui.cardPile.childNodes.length) {
+					j -= ui.cardPile.childNodes.length;
+				}
 				if (filter(ui.cardPile.childNodes[j])) {
 					return ui.cardPile.childNodes[j];
 				}
@@ -3551,9 +4342,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (position !== "cardPile") {
 			let j = 0;
-			if (start !== "random") j = get.rand(0, ui.discardPile.childNodes.length - 1);
+			if (start !== "random") {
+				j = get.rand(0, ui.discardPile.childNodes.length - 1);
+			}
 			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {
-				if (j >= ui.discardPile.childNodes.length) j -= ui.discardPile.childNodes.length;
+				if (j >= ui.discardPile.childNodes.length) {
+					j -= ui.discardPile.childNodes.length;
+				}
 				if (filter(ui.discardPile.childNodes[j])) {
 					return ui.discardPile.childNodes[j];
 				}
@@ -3564,7 +4359,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			for (let i = 0; i < curs.length; i++) {
 				const ej = curs[i].getCards("ej");
 				for (let j = 0; j < ej.length; j++) {
-					if (filter(ej[j])) return ej[j];
+					if (filter(ej[j])) {
+						return ej[j];
+					}
 				}
 			}
 		}
@@ -3760,10 +4557,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return uiintro;
 		}
 		var i, translation, intro, str;
-		if (node._nointro) return;
+		if (node._nointro) {
+			return;
+		}
 		if (typeof node._customintro == "function") {
-			if (node._customintro(uiintro, evt) === false) return;
-			if (evt) lib.placePoppedDialog(uiintro, evt);
+			if (node._customintro(uiintro, evt) === false) {
+				return;
+			}
+			if (evt) {
+				lib.placePoppedDialog(uiintro, evt);
+			}
 		} else if (Array.isArray(node._customintro)) {
 			var caption = node._customintro[0];
 			var content = node._customintro[1];
@@ -3782,9 +4585,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			let capt = get.translation(node.name);
 			const characterInfo = get.character(node.name),
 				sex = node.sex || characterInfo[0];
-			if (sex && sex != "unknown" && lib.config.show_sex) capt += `&nbsp;&nbsp;${sex == "none" ? "无" : get.translation(sex)}`;
+			if (sex && sex != "unknown" && lib.config.show_sex) {
+				capt += `&nbsp;&nbsp;${sex == "none" ? "无" : get.translation(sex)}`;
+			}
 			const group = node.group;
-			if (group && group != "unknown" && lib.config.show_group) capt += `&nbsp;&nbsp;${get.translation(group)}`;
+			if (group && group != "unknown" && lib.config.show_group) {
+				capt += `&nbsp;&nbsp;${get.translation(group)}`;
+			}
 			uiintro.add(capt);
 
 			if (lib.characterTitle[node.name]) {
@@ -3797,7 +4604,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 			if (get.characterInitFilter(node.name)) {
 				const initFilters = get.characterInitFilter(node.name).filter(tag => {
-					if (!lib.characterInitFilter[node.name]) return true;
+					if (!lib.characterInitFilter[node.name]) {
+						return true;
+					}
 					return lib.characterInitFilter[node.name](tag) !== false;
 				});
 				if (initFilters.length) {
@@ -3840,12 +4649,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 			for (i = 0; i < skills.length; i++) {
-				if (lib.skill[skills[i]] && (lib.skill[skills[i]].nopop || lib.skill[skills[i]].equipSkill)) continue;
+				if (lib.skill[skills[i]] && (lib.skill[skills[i]].nopop || lib.skill[skills[i]].equipSkill)) {
+					continue;
+				}
 				if (lib.translate[skills[i] + "_info"]) {
-					if (lib.translate[skills[i] + "_ab"]) translation = lib.translate[skills[i] + "_ab"];
-					else {
+					if (lib.translate[skills[i] + "_ab"]) {
+						translation = lib.translate[skills[i] + "_ab"];
+					} else {
 						translation = get.translation(skills[i]);
-						if (!lib.skill[skills[i]].nobracket) translation = `【${translation.slice(0, 2)}】`;
+						if (!lib.skill[skills[i]].nobracket) {
+							translation = `【${translation.slice(0, 2)}】`;
+						}
 					}
 
 					if (node.forbiddenSkills[skills[i]]) {
@@ -3866,7 +4680,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							}
 							underlinenode.link = skills[i];
 							underlinenode.listen(ui.click.hiddenskill);
-						} else uiintro.add('<div style="opacity:0.5"><div class="skill">' + translation + "</div><div>" + get.skillInfoTranslation(skills[i], node) + "</div></div>");
+						} else {
+							uiintro.add('<div style="opacity:0.5"><div class="skill">' + translation + "</div><div>" + get.skillInfoTranslation(skills[i], node) + "</div></div>");
+						}
 					} else if (lib.skill[skills[i]].temp || !node.skills.includes(skills[i]) || lib.skill[skills[i]].thundertext) {
 						if (lib.skill[skills[i]].frequent || lib.skill[skills[i]].subfrequent) {
 							uiintro.add('<div><div class="skill thundertext thunderauto">' + translation + '</div><div class="thundertext thunderauto">' + get.skillInfoTranslation(skills[i], node) + '<br><div class="underlinenode on gray" style="position:relative;padding-left:0;padding-top:7px">自动发动</div></div></div>');
@@ -3996,7 +4812,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				(function () {
 					num = 0;
 					for (var j = 0; j < node.stat.length; j++) {
-						if (typeof node.stat[j].damage == "number") num += node.stat[j].damage;
+						if (typeof node.stat[j].damage == "number") {
+							num += node.stat[j].damage;
+						}
 					}
 					td.innerHTML = num;
 				})();
@@ -4017,7 +4835,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						name = es[i].cards[0].name;
 					}
 					let carde = game.createCard(name, es[i].suit, es[i].number, es[i].nature);
-					if (name != es[i].name) ui.create.cardTempName(es[i], carde);
+					if (name != es[i].name) {
+						ui.create.cardTempName(es[i], carde);
+					}
 					let html = carde.outerHTML;
 					const special = [carde].concat(es[i].cards || []).find(j => j.name == es[i].name && lib.card[j.name]?.cardPrompt);
 					var str = special ? lib.card[special.name].cardPrompt(special, node) : lib.translate[es[i].name + "_info"];
@@ -4035,14 +4855,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						name = js[i].cards[0].name;
 					}
 					let cardj = game.createCard(name, js[i].suit, js[i].number, js[i].nature);
-					if (name != js[i].name) ui.create.cardTempName(js[i], cardj);
+					if (name != js[i].name) {
+						ui.create.cardTempName(js[i], cardj);
+					}
 					let html = cardj.outerHTML;
 					if (js[i].viewAs && js[i].viewAs != js[i].name) {
 						let cardInfo = lib.card[js[i].viewAs],
 							showCardIntro = true;
 						if (cardInfo.blankCard) {
 							var cardOwner = get.owner(js[i]);
-							if (cardOwner && !cardOwner.isUnderControl(true)) showCardIntro = false;
+							if (cardOwner && !cardOwner.isUnderControl(true)) {
+								showCardIntro = false;
+							}
 						}
 						if (!showCardIntro) {
 							html = ui.create.button(js[i], "blank").outerHTML;
@@ -4083,20 +4907,30 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				ui.throwEmotion = [];
 				uiintro.addText("发送交互表情");
 				var click = function () {
-					if (_status.dragged) return;
-					if (_status.justdragged) return;
-					if (_status.throwEmotionWait) return;
+					if (_status.dragged) {
+						return;
+					}
+					if (_status.justdragged) {
+						return;
+					}
+					if (_status.throwEmotionWait) {
+						return;
+					}
 					var emotion = this.link;
 					if (game.online) {
 						game.send("throwEmotion", node, emotion);
-					} else game.me.throwEmotion(node, emotion);
+					} else {
+						game.me.throwEmotion(node, emotion);
+					}
 					uiintro._close();
 					_status.throwEmotionWait = true;
 					setTimeout(
 						function () {
 							_status.throwEmotionWait = false;
 							if (ui.throwEmotion) {
-								for (var i of ui.throwEmotion) i.classList.remove("exclude");
+								for (var i of ui.throwEmotion) {
+									i.classList.remove("exclude");
+								}
 							}
 						},
 						emotion == "flower" || emotion == "egg" ? 500 : 5000
@@ -4112,7 +4946,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				for (var i = 0; i < listi.length; i++) {
 					td = ui.create.div(".menubutton.reduce_radius.pointerdiv.tdnode");
 					ui.throwEmotion.add(td);
-					if (_status.throwEmotionWait) td.classList.add("exclude");
+					if (_status.throwEmotionWait) {
+						td.classList.add("exclude");
+					}
 					td.link = listi[i];
 					table.appendChild(td);
 					td.innerHTML = "<span>" + get.translation(listi[i]) + "</span>";
@@ -4125,11 +4961,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				table.style.width = "100%";
 				table.style.position = "relative";
 				var listi = ["wine", "shoe"];
-				if (game.me.storage.zhuSkill_shanli) listi = ["yuxisx", "jiasuo"];
+				if (game.me.storage.zhuSkill_shanli) {
+					listi = ["yuxisx", "jiasuo"];
+				}
 				for (var i = 0; i < listi.length; i++) {
 					td = ui.create.div(".menubutton.reduce_radius.pointerdiv.tdnode");
 					ui.throwEmotion.add(td);
-					if (_status.throwEmotionWait) td.classList.add("exclude");
+					if (_status.throwEmotionWait) {
+						td.classList.add("exclude");
+					}
 					td.link = listi[i];
 					table.appendChild(td);
 					td.innerHTML = "<span>" + get.translation(listi[i]) + "</span>";
@@ -4182,11 +5022,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 								} else {
 									delete lib.config.skin[nameskin];
 									if (avatar2) {
-										if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) node.node.avatar2.setBackground(nameskin2, "character");
-										else node.node.avatar2.setBackground(nameskin, "character");
+										if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+											node.node.avatar2.setBackground(nameskin2, "character");
+										} else {
+											node.node.avatar2.setBackground(nameskin, "character");
+										}
 									} else {
-										if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) node.node.avatar.setBackground(nameskin2, "character");
-										else node.node.avatar.setBackground(nameskin, "character");
+										if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+											node.node.avatar.setBackground(nameskin2, "character");
+										} else {
+											node.node.avatar.setBackground(nameskin, "character");
+										}
 									}
 								}
 								game.saveConfig("skin", lib.config.skin);
@@ -4195,8 +5041,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							if (i) {
 								button.setBackgroundImage("image/skin/" + nameskin + "/" + i + ".jpg");
 							} else {
-								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) button.setBackground(nameskin2, "character", "noskin");
-								else button.setBackground(nameskin, "character", "noskin");
+								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+									button.setBackground(nameskin2, "character", "noskin");
+								} else {
+									button.setBackground(nameskin, "character", "noskin");
+								}
 							}
 						}
 						uiintro.add(buttons);
@@ -4335,7 +5184,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + item[1] + "</div>");
 					}
 				}
-				if (moded) return uiintro;
+				if (moded) {
+					return uiintro;
+				}
 			}
 			if (node.link && node.link.name && lib.card[node.link.name]) {
 				name = node.link.name;
@@ -4347,11 +5198,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					showCardIntro = true;
 				var cardOwner = get.owner(node);
 				if (cardInfo.blankCard) {
-					if (cardOwner && !cardOwner.isUnderControl(true)) showCardIntro = false;
+					if (cardOwner && !cardOwner.isUnderControl(true)) {
+						showCardIntro = false;
+					}
 				}
 				if (cardOwner) {
 					var sourceVCard = cardOwner.getVCards(cardPosition).find(card => card.cards?.includes(node));
-					if (showCardIntro && sourceVCard) uiintro.add('<div class="text center">（' + get.translation(get.translation(sourceVCard.cards)) + "）</div>");
+					if (showCardIntro && sourceVCard) {
+						uiintro.add('<div class="text center">（' + get.translation(get.translation(sourceVCard.cards)) + "）</div>");
+					}
 				}
 				// uiintro.add(get.translation(node.viewAs)+'<br><div class="text center" style="padding-top:5px;">（'+get.translation(node)+'）</div>');
 				uiintro.nosub = true;
@@ -4384,7 +5239,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				});
 				for (var i = 0; i < modeorder.length; i++) {
 					if (node._banning == "online") {
-						if (!lib.mode[modeorder[i]].connect) continue;
+						if (!lib.mode[modeorder[i]].connect) {
+							continue;
+						}
 					} else if (modeorder[i] == "connect" || modeorder[i] == "brawl") {
 						continue;
 					}
@@ -4392,7 +5249,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						list.push(modeorder[i]);
 					}
 				}
-				if (lib.card[name] && lib.card[name].type == "trick") list.push("zhinang_tricks");
+				if (lib.card[name] && lib.card[name].type == "trick") {
+					list.push("zhinang_tricks");
+				}
 				var page = ui.create.div(".menu-buttons.configpopped", uiintro.content);
 				var banall = false;
 				for (var i = 0; i < list.length; i++) {
@@ -4502,9 +5361,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						const yingbianEffects = get.yingbianEffects(node.link || node);
 						if (!yingbianEffects.length) {
 							const defaultYingbianEffect = get.defaultYingbianEffect(node.link || node);
-							if (lib.yingbian.prompt.has(defaultYingbianEffect)) yingbianEffects.push(defaultYingbianEffect);
+							if (lib.yingbian.prompt.has(defaultYingbianEffect)) {
+								yingbianEffects.push(defaultYingbianEffect);
+							}
 						}
-						if (yingbianEffects.length && showCardIntro) uiintro.add(`<div class="text" style="font-family: yuanli">应变：${yingbianEffects.map(value => lib.yingbian.prompt.get(value)).join("；")}</div>`);
+						if (yingbianEffects.length && showCardIntro) {
+							uiintro.add(`<div class="text" style="font-family: yuanli">应变：${yingbianEffects.map(value => lib.yingbian.prompt.get(value)).join("；")}</div>`);
+						}
 					}
 					if (lib.translate[name + "_append"]) {
 						uiintro.add('<div class="text" style="display:inline">' + lib.translate[name + "_append"] + "</div>");
@@ -4518,12 +5381,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			let capt = get.translation(character);
 			if (characterInfo) {
 				const infoSex = characterInfo[0];
-				if (infoSex && lib.config.show_sex) capt += `&nbsp;&nbsp;${infoSex == "none" ? "无" : lib.translate[infoSex]}`;
+				if (infoSex && lib.config.show_sex) {
+					capt += `&nbsp;&nbsp;${infoSex == "none" ? "无" : lib.translate[infoSex]}`;
+				}
 				const infoGroup = characterInfo[1];
 				if (infoGroup && lib.config.show_group) {
 					const group = get.is.double(character, true);
-					if (group) capt += `&nbsp;&nbsp;${group.map(value => get.translation(value)).join("/")}`;
-					else capt += `&nbsp;&nbsp;${lib.translate[infoGroup]}`;
+					if (group) {
+						capt += `&nbsp;&nbsp;${group.map(value => get.translation(value)).join("/")}`;
+					} else {
+						capt += `&nbsp;&nbsp;${lib.translate[infoGroup]}`;
+					}
 				}
 			}
 			uiintro.add(capt);
@@ -4538,7 +5406,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 			if (get.characterInitFilter(node.link)) {
 				const initFilters = get.characterInitFilter(node.link).filter(tag => {
-					if (!lib.characterInitFilter[node.link]) return true;
+					if (!lib.characterInitFilter[node.link]) {
+						return true;
+					}
 					return lib.characterInitFilter[node.link](tag) !== false;
 				});
 				if (initFilters.length) {
@@ -4572,7 +5442,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				});
 				for (var i = 0; i < modeorder.length; i++) {
 					if (node._banning == "online") {
-						if (!lib.mode[modeorder[i]].connect) continue;
+						if (!lib.mode[modeorder[i]].connect) {
+							continue;
+						}
 						if (!lib.config["connect_" + modeorder[i] + "_banned"]) {
 							lib.config["connect_" + modeorder[i] + "_banned"] = [];
 						}
@@ -4640,10 +5512,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				var skills = get.character(character, 3);
 				for (i = 0; i < skills.length; i++) {
 					if (lib.translate[skills[i] + "_info"]) {
-						if (lib.translate[skills[i] + "_ab"]) translation = lib.translate[skills[i] + "_ab"];
-						else {
+						if (lib.translate[skills[i] + "_ab"]) {
+							translation = lib.translate[skills[i] + "_ab"];
+						} else {
 							translation = get.translation(skills[i]);
-							if (!lib.skill[skills[i]].nobracket) translation = `【${translation.slice(0, 2)}】`;
+							if (!lib.skill[skills[i]].nobracket) {
+								translation = `【${translation.slice(0, 2)}】`;
+							}
 						}
 
 						uiintro.add('<div><div class="skill">' + translation + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
@@ -4687,7 +5562,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						gzbool = true;
 					}
 					var createButtons = function (num) {
-						if (!num) return;
+						if (!num) {
+							return;
+						}
 						if (!introadded) {
 							introadded = true;
 							uiintro.add('<div class="text center">更改皮肤</div>');
@@ -4702,8 +5579,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 									game.saveConfig("skin", lib.config.skin);
 								} else {
 									delete lib.config.skin[nameskin];
-									if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) node.setBackground(nameskin2, "character");
-									else node.setBackground(nameskin, "character");
+									if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+										node.setBackground(nameskin2, "character");
+									} else {
+										node.setBackground(nameskin, "character");
+									}
 									game.saveConfig("skin", lib.config.skin);
 								}
 							});
@@ -4711,8 +5591,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							if (i) {
 								button.setBackgroundImage("image/skin/" + nameskin + "/" + i + ".jpg");
 							} else {
-								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) button.setBackground(nameskin2, "character", "noskin");
-								else button.setBackground(nameskin, "character", "noskin");
+								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+									button.setBackground(nameskin2, "character", "noskin");
+								} else {
+									button.setBackground(nameskin, "character", "noskin");
+								}
 							}
 						}
 						uiintro.add(buttons);
@@ -4842,7 +5725,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				uiintro.content.firstChild.style.paddingTop = "3px";
 			}
 		} else if (node.classList.contains("nodeintro")) {
-			if (node.nodeTitle) uiintro.add(node.nodeTitle);
+			if (node.nodeTitle) {
+				uiintro.add(node.nodeTitle);
+			}
 			uiintro._place_text = uiintro.add('<div class="text">' + node.nodeContent + "</div>");
 		}
 		if (lib.config.touchscreen) {
@@ -4869,11 +5754,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	types() {
 		var types = [];
 		for (var i in lib.card) {
-			if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) continue;
-			if (lib.card[i].forbid && lib.card[i].forbid.includes(lib.config.mode)) continue;
+			if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) {
+				continue;
+			}
+			if (lib.card[i].forbid && lib.card[i].forbid.includes(lib.config.mode)) {
+				continue;
+			}
 			if (lib.card[i].type) {
-				if (lib.card[i].type == "delay") types.add("trick");
-				else types.add(lib.card[i].type);
+				if (lib.card[i].type == "delay") {
+					types.add("trick");
+				} else {
+					types.add(lib.card[i].type);
+				}
 			}
 		}
 		return types;
@@ -4881,7 +5773,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	links(buttons) {
 		var links = [];
 		for (var i = 0; i < buttons.length; i++) {
-			if (buttons[i].link != undefined) links.push(buttons[i].link);
+			if (buttons[i].link != undefined) {
+				links.push(buttons[i].link);
+			}
 		}
 		return links;
 	}
@@ -4941,18 +5835,28 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		var es = player.getCards("e");
 		for (var i = 0; i < es.length; i++) {
 			var val = get.equipValueNumber(es[i]);
-			if (val >= 7) num += 0.8;
-			if (val >= 5) num += 0.5;
-			if (val >= 3) num += 0.2;
+			if (val >= 7) {
+				num += 0.8;
+			}
+			if (val >= 5) {
+				num += 0.5;
+			}
+			if (val >= 3) {
+				num += 0.2;
+			}
 		}
 		return num;
 	}
 	attitude(from, to) {
-		if (!from || !to) return 0;
+		if (!from || !to) {
+			return 0;
+		}
 		from = from._trueMe || from;
 		arguments[0] = from;
 		var att = CacheContext.requireCacheContext().get.rawAttitude.apply(this, arguments);
-		if (from.isMad()) att = -att;
+		if (from.isMad()) {
+			att = -att;
+		}
 		if (to.isMad() && att > 0) {
 			if (to.identity == "zhu") {
 				att = 1;
@@ -4976,13 +5880,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return get.sgn(get.attitude.apply(this, arguments));
 	}
 	useful_raw(card, player) {
-		if (get.position(card) == "j") return -1;
-		if (get.position(card) == "e") return get.equipValue(card);
+		if (get.position(card) == "j") {
+			return -1;
+		}
+		if (get.position(card) == "e") {
+			return get.equipValue(card);
+		}
 		if (card._modUseful) {
 			return card._modUseful();
 		}
 		var i = 0;
-		if (!player) player = _status.event.player;
+		if (!player) {
+			player = _status.event.player;
+		}
 		if (player) {
 			if (_status.event.useCache) {
 				i = game
@@ -4997,20 +5907,29 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			} else {
 				i = player.getCards("h", card.name).indexOf(card);
 			}
-			if (i < 0) i = 0;
+			if (i < 0) {
+				i = 0;
+			}
 		}
 		var aii = get.info(card).ai;
 		var useful;
-		if (aii && aii.useful) useful = aii.useful;
-		else if (aii && aii.basic) useful = aii.basic.useful;
+		if (aii && aii.useful) {
+			useful = aii.useful;
+		} else if (aii && aii.basic) {
+			useful = aii.basic.useful;
+		}
 		var result;
-		if (useful == undefined) result = -1;
-		else if (typeof useful == "function") {
+		if (useful == undefined) {
+			result = -1;
+		} else if (typeof useful == "function") {
 			result = useful(card, i);
-		} else if (typeof useful == "number") result = useful;
-		else if (i < useful.length) {
+		} else if (typeof useful == "number") {
+			result = useful;
+		} else if (i < useful.length) {
 			result = useful[i];
-		} else result = useful[useful.length - 1];
+		} else {
+			result = useful[useful.length - 1];
+		}
 		result = game.checkMod(player, card, result, "aiUseful", player);
 		return result;
 	}
@@ -5027,14 +5946,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return 10 - get.useful(card);
 	}
 	unuseful3(card) {
-		if (card.name == "du") return 20;
+		if (card.name == "du") {
+			return 20;
+		}
 		return 10 - get.useful(card);
 	}
 	value(card, player, method) {
 		var result = 0;
 		var value;
 		if (Array.isArray(card)) {
-			if (!card.length) return 0;
+			if (!card.length) {
+				return 0;
+			}
 			value = 0;
 			for (var i = 0; i < card.length; i++) {
 				value += get.value(card[i], player, method);
@@ -5045,21 +5968,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return card._modValue(player, method);
 		}
 		var aii = get.info(card).ai;
-		if (aii && aii.value) value = aii.value;
-		else if (aii && aii.basic) value = aii.basic.value;
-		if (player == undefined || get.itemtype(player) != "player") player = _status.event.player;
+		if (aii && aii.value) {
+			value = aii.value;
+		} else if (aii && aii.basic) {
+			value = aii.basic.value;
+		}
+		if (player == undefined || get.itemtype(player) != "player") {
+			player = _status.event.player;
+		}
 		var geti = function () {
 			return player.getCardIndex("hs", card.name, card, 5);
 		};
 		if (typeof value == "function") {
 			result = value(card, player, geti(), method);
 		}
-		if (typeof value == "number") result = value;
+		if (typeof value == "number") {
+			result = value;
+		}
 		if (Array.isArray(value)) {
-			if (method == "raw") result = value[0];
+			if (method == "raw") {
+				result = value[0];
+			}
 			var num = geti();
-			if (num < value.length) result = value[Math.max(0, num)];
-			else result = value[value.length - 1];
+			if (num < value.length) {
+				result = value[Math.max(0, num)];
+			} else {
+				result = value[value.length - 1];
+			}
 		}
 		result = game.checkMod(player, card, result, "aiValue", player);
 		return result;
@@ -5077,7 +6012,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let value1 = get.equipValue(card, target),
 			value2 = 0;
 		if (!target.canEquip(card)) {
-			if (!target.canEquip(card, true)) return 0;
+			if (!target.canEquip(card, true)) {
+				return 0;
+			}
 			let current = target.getVEquip(card);
 			if (current && current != card) {
 				value2 = get.equipValue(current, target);
@@ -5090,25 +6027,39 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	equipValue(card, player) {
 		player = player ?? get.owner(card) ?? get.player();
-		if (get.itemtype(card) === "card") card = player.getVCards("e").find(vcard => vcard.cards?.includes(card)) ?? card;
+		if (get.itemtype(card) === "card") {
+			card = player.getVCards("e").find(vcard => vcard.cards?.includes(card)) ?? card;
+		}
 		var info = get.info(card, false);
-		if (!info.ai) return 0;
+		if (!info.ai) {
+			return 0;
+		}
 		var value = info.ai.equipValue;
 		if (value == undefined) {
 			if (info.ai.basic && info.ai.basic.equipValue != undefined) {
 				value = info.ai.basic.equipValue;
-			} else return 0;
+			} else {
+				return 0;
+			}
 		}
-		if (typeof value == "number") return value;
+		if (typeof value == "number") {
+			return value;
+		}
 		//此处是否需要将实体牌改为虚拟牌呢？暂时不确定
-		if (typeof value == "function") return value(card, player, null, "raw2");
+		if (typeof value == "function") {
+			return value(card, player, null, "raw2");
+		}
 		return 0;
 	}
 	equipValueNumber(card) {
 		var info = get.info(card);
 		if (info.ai) {
-			if (typeof info.ai.equipValue == "number") return info.ai.equipValue;
-			if (info.ai.basic && typeof info.ai.basic.equipValue == "number") return info.ai.basic.equipValue;
+			if (typeof info.ai.equipValue == "number") {
+				return info.ai.equipValue;
+			}
+			if (info.ai.basic && typeof info.ai.basic.equipValue == "number") {
+				return info.ai.basic.equipValue;
+			}
 		}
 		return 0;
 	}
@@ -5119,10 +6070,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return -get.value(card, player, "raw");
 	}
 	skillthreaten(skill, player, target) {
-		if (!lib.skill[skill]) return 1;
-		if (!lib.skill[skill].ai) return 1;
+		if (!lib.skill[skill]) {
+			return 1;
+		}
+		if (!lib.skill[skill].ai) {
+			return 1;
+		}
 		var threaten = lib.skill[skill].ai.threaten;
-		if (typeof threaten == "number") return threaten;
+		if (typeof threaten == "number") {
+			return threaten;
+		}
 		if (typeof threaten == "function") {
 			player = player || _status.event.player;
 			target = target || player;
@@ -5140,12 +6097,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	order(item, player = get.player() || game.me) {
 		let cache = CacheContext.requireCacheContext();
 		var info = get.info(item);
-		if (!info) return -1;
+		if (!info) {
+			return -1;
+		}
 		var aii = info.ai;
 		var order;
-		if (aii && aii.order) order = aii.order;
-		else if (aii && aii.basic) order = aii.basic.order;
-		if (order == undefined) return -1;
+		if (aii && aii.order) {
+			order = aii.order;
+		} else if (aii && aii.basic) {
+			order = aii.basic.order;
+		}
+		if (order == undefined) {
+			return -1;
+		}
 		var num = order;
 		if (typeof order == "function") {
 			num = order(item, player);
@@ -5158,9 +6122,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	result(item, skill) {
 		var result;
 		var info = get.info(item);
-		if (info.ai) result = get.copy(info.ai.result);
-		if (typeof result == "function") result = result(item);
-		if (!result) result = {};
+		if (info.ai) {
+			result = get.copy(info.ai.result);
+		}
+		if (typeof result == "function") {
+			result = result(item);
+		}
+		if (!result) {
+			result = {};
+		}
 		if (skill) {
 			var info2 = get.info(skill);
 			if (info2.ai) {
@@ -5180,12 +6150,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let cache = CacheContext.requireCacheContext();
 		var event = _status.event;
 		var eventskill = null;
-		if (player == undefined) player = _status.event.player;
-		if (card && typeof card == "object" && "name" in card) card = get.autoViewAs(card);
+		if (player == undefined) {
+			player = _status.event.player;
+		}
+		if (card && typeof card == "object" && "name" in card) {
+			card = get.autoViewAs(card);
+		}
 		if (typeof card != "string" && (typeof card != "object" || !card.name)) {
 			var skillinfo = get.info(event.skill);
-			if (event.skill && skillinfo.viewAs == undefined) card = _status.event.skill;
-			else {
+			if (event.skill && skillinfo.viewAs == undefined) {
+				card = _status.event.skill;
+			} else {
 				card = get.card();
 				if (skillinfo && skillinfo.viewAs && card.name === skillinfo.viewAs.name) {
 					eventskill = event.skill;
@@ -5205,11 +6180,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		var result = get.result(card, eventskill);
 		var result1 = result.player_use || result.player,
 			result2 = result.target_use || result.target;
-		if (typeof result1 == "function") result1 = result1(player, target, card, isLink);
-		if (typeof result2 == "function") result2 = result2(player, target, card, isLink);
+		if (typeof result1 == "function") {
+			result1 = result1(player, target, card, isLink);
+		}
+		if (typeof result2 == "function") {
+			result2 = result2(player, target, card, isLink);
+		}
 
-		if (typeof result1 != "number") result1 = 0;
-		if (typeof result2 != "number") result2 = 0;
+		if (typeof result1 != "number") {
+			result1 = 0;
+		}
+		if (typeof result2 != "number") {
+			result2 = 0;
+		}
 		var temp1,
 			temp2,
 			temp3,
@@ -5230,7 +6213,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				temp1 = cache.delegate(temp1.effect).player_use(card, player, target, result1, isLink);
 			} else if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player == "function") {
 				temp1 = cache.delegate(temp1.effect).player(card, player, target, result1, isLink);
-			} else temp1 = undefined;
+			} else {
+				temp1 = undefined;
+			}
 			if (typeof temp1 == "object") {
 				if (temp1.length == 2 || temp1.length == 4) {
 					result1 *= temp1[0];
@@ -5260,8 +6245,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					throw new Error(`${skills2[i]}不存在的技能`);
 				}
 				temp2 = info.ai;
-				if (temp2 && temp2.threaten) temp3 = temp2.threaten;
-				else temp3 = undefined;
+				if (temp2 && temp2.threaten) {
+					temp3 = temp2.threaten;
+				} else {
+					temp3 = undefined;
+				}
 				if (temp2 && typeof temp2.effect == "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
@@ -5270,9 +6258,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							skill: skills2[i],
 							isLink: isLink,
 						})
-					)
+					) {
 						temp2 = cache.delegate(temp2).effect(card, player, target, result2, isLink);
-					else temp2 = undefined;
+					} else {
+						temp2 = undefined;
+					}
 				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target_use == "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
@@ -5281,9 +6271,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							skill: skills2[i],
 							isLink: isLink,
 						})
-					)
+					) {
 						temp2 = cache.delegate(temp2.effect).target_use(card, player, target, result2, isLink);
-					else temp2 = undefined;
+					} else {
+						temp2 = undefined;
+					}
 				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target == "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
@@ -5292,10 +6284,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							skill: skills2[i],
 							isLink: isLink,
 						})
-					)
+					) {
 						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
-					else temp2 = undefined;
-				} else temp2 = undefined;
+					} else {
+						temp2 = undefined;
+					}
+				} else {
+					temp2 = undefined;
+				}
 				if (typeof temp2 == "object") {
 					if (temp2.length == 2 || temp2.length == 4) {
 						result2 *= temp2[0];
@@ -5333,8 +6329,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				} else {
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
-				if (target.hp == 1) result2 *= 2.5;
-				if (target.hp == 2) result2 *= 1.8;
+				if (target.hp == 1) {
+					result2 *= 2.5;
+				}
+				if (target.hp == 2) {
+					result2 *= 1.8;
+				}
 				let countTargetCards = target.countCards("h");
 				if (countTargetCards == 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
@@ -5342,38 +6342,59 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					} else {
 						result2 *= 1.5;
 					}
-				} else if (countTargetCards == 1) result2 *= 1.3;
-				else if (countTargetCards == 2) result2 *= 1.1;
-				else if (countTargetCards >= 3) result2 *= 0.5;
+				} else if (countTargetCards == 1) {
+					result2 *= 1.3;
+				} else if (countTargetCards == 2) {
+					result2 *= 1.1;
+				} else if (countTargetCards >= 3) {
+					result2 *= 0.5;
+				}
 
-				if (target.hp == 4) result2 *= 0.9;
-				else if (target.hp == 5) result2 *= 0.8;
-				else if (target.hp > 5) result2 *= 0.6;
+				if (target.hp == 4) {
+					result2 *= 0.9;
+				} else if (target.hp == 5) {
+					result2 *= 0.8;
+				} else if (target.hp > 5) {
+					result2 *= 0.6;
+				}
 			}
 		} else {
 			result2 += temp02;
 			result1 += temp01;
 		}
-		if (zeroplayer) result1 = 0;
-		if (zerotarget) result2 = 0;
+		if (zeroplayer) {
+			result1 = 0;
+		}
+		if (zerotarget) {
+			result2 = 0;
+		}
 		var final = 0;
 		if (player2) {
 			final = result1 * cache.get.attitude(player2, player) + (target ? result2 * cache.get.attitude(player2, target) : 0);
-		} else final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
+		} else {
+			final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
+		}
 		if (!isLink && get.tag(card, "natureDamage") && !zerotarget) {
 			var info = get.info(card);
 			if (!info || !info.ai || !info.ai.canLink) {
-				if (target.isLinked())
+				if (target.isLinked()) {
 					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, { source: target });
+						if (current != target && current.isLinked()) {
+							final += cache.get.effect(current, card, player, player2, { source: target });
+						}
 					});
+				}
 			} else {
 				let canLink = info.ai.canLink(player, target, card);
 				if (canLink) {
-					if (typeof canLink !== "object") canLink = {};
+					if (typeof canLink !== "object") {
+						canLink = {};
+					}
 					canLink.source = target;
 					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, canLink);
+						if (current != target && current.isLinked()) {
+							final += cache.get.effect(current, card, player, player2, canLink);
+						}
 					});
 				}
 			}
@@ -5388,12 +6409,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let cache = CacheContext.requireCacheContext();
 		var event = _status.event;
 		var eventskill = null;
-		if (player == undefined) player = _status.event.player;
-		if (card && typeof card == "object" && "name" in card) card = get.autoViewAs(card);
+		if (player == undefined) {
+			player = _status.event.player;
+		}
+		if (card && typeof card == "object" && "name" in card) {
+			card = get.autoViewAs(card);
+		}
 		if (typeof card != "string" && (typeof card != "object" || !card.name)) {
 			var skillinfo = get.info(event.skill);
-			if (event.skill && skillinfo.viewAs == undefined) card = _status.event.skill;
-			else {
+			if (event.skill && skillinfo.viewAs == undefined) {
+				card = _status.event.skill;
+			} else {
 				card = get.card();
 				if (skillinfo && skillinfo.viewAs && card.name === skillinfo.viewAs.name) {
 					eventskill = event.skill;
@@ -5403,11 +6429,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		var result = get.result(card, eventskill);
 		var result1 = result.player,
 			result2 = result.target;
-		if (typeof result1 == "function") result1 = result1(player, target, card, isLink);
-		if (typeof result2 == "function") result2 = result2(player, target, card, isLink);
+		if (typeof result1 == "function") {
+			result1 = result1(player, target, card, isLink);
+		}
+		if (typeof result2 == "function") {
+			result2 = result2(player, target, card, isLink);
+		}
 
-		if (typeof result1 != "number") result1 = 0;
-		if (typeof result2 != "number") result2 = 0;
+		if (typeof result1 != "number") {
+			result1 = 0;
+		}
+		if (typeof result2 != "number") {
+			result2 = 0;
+		}
 		var temp1,
 			temp2,
 			temp3,
@@ -5426,7 +6460,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			temp1 = info.ai;
 			if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player == "function") {
 				temp1 = temp1.effect.player(card, player, target, result1, isLink);
-			} else temp1 = undefined;
+			} else {
+				temp1 = undefined;
+			}
 			if (typeof temp1 == "object") {
 				if (temp1.length == 2 || temp1.length == 4) {
 					result1 *= temp1[0];
@@ -5456,9 +6492,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					throw new Error(`${skills2[i]}不存在的技能`);
 				}
 				temp2 = info.ai;
-				if (!temp2) continue;
-				if (temp2.threaten) temp3 = cache.delegate(temp2).threaten;
-				else temp3 = undefined;
+				if (!temp2) {
+					continue;
+				}
+				if (temp2.threaten) {
+					temp3 = cache.delegate(temp2).threaten;
+				} else {
+					temp3 = undefined;
+				}
 				if (typeof temp2.effect == "object" && typeof temp2.effect.target == "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
@@ -5467,10 +6508,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							skill: skills2[i],
 							isLink: isLink,
 						})
-					)
+					) {
 						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
-					else temp2 = undefined;
-				} else temp2 = undefined;
+					} else {
+						temp2 = undefined;
+					}
+				} else {
+					temp2 = undefined;
+				}
 				if (typeof temp2 == "object") {
 					if (temp2.length == 2 || temp2.length == 4) {
 						result2 *= temp2[0];
@@ -5511,8 +6556,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
 				// *** continue here ***
-				if (target.hp == 1) result2 *= 3;
-				if (target.hp == 2) result2 *= 1.8;
+				if (target.hp == 1) {
+					result2 *= 3;
+				}
+				if (target.hp == 2) {
+					result2 *= 1.8;
+				}
 				let targetCountCards = target.countCards("h");
 				if (targetCountCards == 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
@@ -5521,37 +6570,58 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						result2 *= 1.5;
 					}
 				}
-				if (targetCountCards == 1) result2 *= 1.3;
-				else if (targetCountCards == 2) result2 *= 1.1;
-				else if (targetCountCards > 3) result2 *= 0.5;
-				if (target.hp == 4) result2 *= 0.9;
-				else if (target.hp == 5) result2 *= 0.8;
-				else if (target.hp > 5) result2 *= 0.6;
+				if (targetCountCards == 1) {
+					result2 *= 1.3;
+				} else if (targetCountCards == 2) {
+					result2 *= 1.1;
+				} else if (targetCountCards > 3) {
+					result2 *= 0.5;
+				}
+				if (target.hp == 4) {
+					result2 *= 0.9;
+				} else if (target.hp == 5) {
+					result2 *= 0.8;
+				} else if (target.hp > 5) {
+					result2 *= 0.6;
+				}
 			}
 		} else {
 			result2 += temp02;
 			result1 += temp01;
 		}
-		if (zeroplayer) result1 = 0;
-		if (zerotarget) result2 = 0;
+		if (zeroplayer) {
+			result1 = 0;
+		}
+		if (zerotarget) {
+			result2 = 0;
+		}
 		var final = 0;
 		if (player2) {
 			final = result1 * cache.get.attitude(player2, player) + (target ? result2 * cache.get.attitude(player2, target) : 0);
-		} else final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
+		} else {
+			final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
+		}
 		if (!isLink && get.tag(card, "natureDamage") && !zerotarget) {
 			var info = get.info(card);
 			if (!info || !info.ai || !info.ai.canLink) {
-				if (target.isLinked())
+				if (target.isLinked()) {
 					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, { source: target });
+						if (current != target && current.isLinked()) {
+							final += cache.get.effect(current, card, player, player2, { source: target });
+						}
 					});
+				}
 			} else {
 				let canLink = info.ai.canLink(player, target, card);
 				if (canLink) {
-					if (typeof canLink !== "object") canLink = {};
+					if (typeof canLink !== "object") {
+						canLink = {};
+					}
 					canLink.source = target;
 					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) final += cache.get.effect(current, card, player, player2, canLink);
+						if (current != target && current.isLinked()) {
+							final += cache.get.effect(current, card, player, player2, canLink);
+						}
 					});
 				}
 			}
@@ -5578,7 +6648,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			name = "icedamage";
 		}
 		var eff = get.effect(target, { name: name }, player, viewer);
-		if (eff > 0 && target.hujia > 0) return eff / 1.3;
+		if (eff > 0 && target.hujia > 0) {
+			return eff / 1.3;
+		}
 		return eff;
 	}
 	/**
@@ -5593,7 +6665,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return source;
 	}
 	recoverEffect(target, player, viewer) {
-		if (target.hp == target.maxHp) return 0;
+		if (target.hp == target.maxHp) {
+			return 0;
+		}
 		if (!player) {
 			player = target;
 		}
@@ -5605,7 +6679,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	buttonValue(button) {
 		var card = button.link;
 		var player = get.owner(card);
-		if (!player) player = _status.event.player;
+		if (!player) {
+			player = _status.event.player;
+		}
 		if (player.getCards("j").includes(card)) {
 			var efff = get.effect(
 				player,
@@ -5616,8 +6692,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				player,
 				player
 			);
-			if (efff > 0) return 0.5;
-			if (efff == 0) return 0;
+			if (efff > 0) {
+				return 0.5;
+			}
+			if (efff == 0) {
+				return 0;
+			}
 			return -1.5;
 		}
 		if (player.getCards("e").includes(card)) {
@@ -5630,7 +6710,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			}
 			return evalue / 3;
 		}
-		if (player.hasSkillTag("noh")) return 0.1;
+		if (player.hasSkillTag("noh")) {
+			return 0.1;
+		}
 		var nh = player.countCards("h");
 		switch (nh) {
 			case 1:
@@ -5659,11 +6741,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns {number}
 	 */
 	zhuanhuanItemNum(skill, player) {
-		if (!get.is.zhuanhuanji(skill, player)) return 0;
+		if (!get.is.zhuanhuanji(skill, player)) {
+			return 0;
+		}
 		const info = lib.skill[skill];
 		if ("zhuanhuanLimit" in info) {
 			const { zhuanhuanLimit } = info;
-			if (typeof zhuanhuanLimit === "function") return parseInt(zhuanhuanLimit(skill, player));
+			if (typeof zhuanhuanLimit === "function") {
+				return parseInt(zhuanhuanLimit(skill, player));
+			}
 			return parseInt(zhuanhuanLimit);
 		}
 		return 2;
@@ -5750,7 +6836,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	async objectUrlAsync(dataUrl) {
 		let dataString = dataUrl instanceof URL ? dataUrl.href : dataUrl;
 		const objectURLMap = lib.objectURL;
-		if (objectURLMap.has(dataString)) return new URL(objectURLMap.get(dataString));
+		if (objectURLMap.has(dataString)) {
+			return new URL(objectURLMap.get(dataString));
+		}
 
 		let blob = await this.blobFromUrl(dataUrl);
 		const objectURL = URL.createObjectURL(blob);
@@ -5775,7 +6863,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 function freezeSlot(obj, key) {
 	const descriptor = Reflect.getOwnPropertyDescriptor(obj, key);
-	if (!descriptor) return;
+	if (!descriptor) {
+		return;
+	}
 	descriptor.writable = false;
 	descriptor.configurable = false;
 	Reflect.defineProperty(obj, key, descriptor);

@@ -2,7 +2,9 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	dcboxuan(player) {
-		if (player.storage.dcboxuan) return lib.translate["dcboxuan_rewrite_info"];
+		if (player.storage.dcboxuan) {
+			return lib.translate["dcboxuan_rewrite_info"];
+		}
 		return lib.translate["dcboxuan_info"];
 	},
 	cuijian(player) {
@@ -14,9 +16,13 @@ const dynamicTranslates = {
 		var list = ["sha", "shan", "tao", "jiu"];
 		for (var i of list) {
 			var strx = "【" + get.translation(i) + "】";
-			if (info && !info[0].includes(i)) strx = '<span style="text-decoration:line-through;">' + strx + "</span>";
+			if (info && !info[0].includes(i)) {
+				strx = '<span style="text-decoration:line-through;">' + strx + "</span>";
+			}
 			str += strx;
-			if (i != "jiu") str += "/";
+			if (i != "jiu") {
+				str += "/";
+			}
 		}
 		str += "，然后当前回合角色于本回合内下一次造成伤害时，你选择两项：⒈防止此伤害。系统从技能名中包含“仁/义/礼/智/信”字样的技能中随机选择三个其未拥有的技能，然后你令当前回合角色获得其中一个技能。⒉从〖遁世〗中删除你本次使用或打出的牌并获得一个“席”。⒊减1点体力上限并摸X张牌（X为你的“席”数）。";
 		return str;
@@ -34,7 +40,9 @@ const dynamicTranslates = {
 			}
 			str += list[i];
 		}
-		if (num < 4) str += "</span>";
+		if (num < 4) {
+			str += "</span>";
+		}
 		return str;
 	},
 	dcjianzhuan(player) {
@@ -43,21 +51,29 @@ const dynamicTranslates = {
 			info = get.info("dcjianzhuan").choices,
 			storage = player.getStorage("dcjianzhuan");
 		let choices = [];
-		for (const k in info) choices.push(k);
+		for (const k in info) {
+			choices.push(k);
+		}
 		for (let i = 0; i < list.length; i++) {
 			const j = i / 2,
 				goon = Array.from({ length: list.length })
 					.map((_, i) => i)
 					.includes(j);
-			if (goon && storage.includes(choices[j])) str += '<span style="text-decoration: line-through;">';
+			if (goon && storage.includes(choices[j])) {
+				str += '<span style="text-decoration: line-through;">';
+			}
 			str += list[i];
-			if (goon && storage.includes(choices[j])) str += "</span>";
+			if (goon && storage.includes(choices[j])) {
+				str += "</span>";
+			}
 		}
 		return str + "（X为此技能于本阶段的发动次数）。②出牌阶段结束时，若你本阶段执行过〖渐专①〗的所有选项，则你随机移除〖渐专①〗的一项。";
 	},
 	dcpingzhi(player) {
 		let str = "转换技。出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，";
-		if (!player.storage.dcpingzhi) return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
+		if (!player.storage.dcpingzhi) {
+			return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
+		}
 		return str + "阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过；<span class = 'bluetext'>阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。</span>";
 	},
 	dcmurui: player => {

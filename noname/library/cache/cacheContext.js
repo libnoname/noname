@@ -67,8 +67,12 @@ export class CacheContext {
 	 * @returns
 	 */
 	delegate(source) {
-		if (source === null || source === undefined) return source;
-		if (source._cacheDelegateSource) return source;
+		if (source === null || source === undefined) {
+			return source;
+		}
+		if (source._cacheDelegateSource) {
+			return source;
+		}
 		let proxy = this.sourceMap.get(source);
 		if (proxy) {
 			return proxy;
@@ -85,22 +89,20 @@ export class CacheContext {
 	 * @returns
 	 */
 	static inject(source, methods) {
-		if (source == null || source === undefined) return null;
+		if (source == null || source === undefined) {
+			return null;
+		}
 		for (let method of methods) {
 			let func = source[method];
-			if (typeof func != "function") continue;
+			if (typeof func != "function") {
+				continue;
+			}
 			source[method] = function () {
 				try {
 					if (!_status.cacheEnvironment) {
 						return func.call(this, ...arguments);
 					}
-					return CacheContext._getCacheValueFromObject(
-						CacheContext.requireCacheContext()._requireStorage(this),
-						method,
-						arguments,
-						this,
-						func
-					);
+					return CacheContext._getCacheValueFromObject(CacheContext.requireCacheContext()._requireStorage(this), method, arguments, this, func);
 				} catch (e) {
 					return func.call(this, ...arguments);
 				}
@@ -127,7 +129,9 @@ export class CacheContext {
 		const cacheStorage = {};
 		return new Proxy(delegateObject, {
 			get: (target, key) => {
-				if (key == "_cacheDelegateSource") return delegateObject;
+				if (key == "_cacheDelegateSource") {
+					return delegateObject;
+				}
 				let value = target[key];
 				if (key.indexOf("cache") == 0) {
 					return value;
@@ -142,12 +146,7 @@ export class CacheContext {
 					if (typeof wrapFunc != "function") {
 						wrapFunc = function () {
 							try {
-								return CacheContext._getCacheValueFromObject(
-									cacheStorage,
-									key,
-									arguments,
-									target
-								);
+								return CacheContext._getCacheValueFromObject(cacheStorage, key, arguments, target);
 							} catch (e) {
 								return value.call(target, ...arguments);
 							}
@@ -187,29 +186,41 @@ export class CacheContext {
 
 	static _wrapParametersToCacheKey(params) {
 		return Array.from(params)
-			.filter((p) => !(p instanceof CacheContext))
-			.map((param) => CacheContext._wrapParameterToCacheKey(param))
+			.filter(p => !(p instanceof CacheContext))
+			.map(param => CacheContext._wrapParameterToCacheKey(param))
 			.join("-");
 	}
 
 	static _wrapParameterToCacheKey(param) {
-		if (param === null) return "null";
-		if (param === undefined) return "undefined";
-		if (typeof param === "string") return `[str:${param}]`;
-		if (typeof param === "number") return `[d:${param}]`;
-		if (typeof param === "boolean") return `[bl:${param}]`;
-		if (typeof param.getCacheKey == "function") return param.getCacheKey();
+		if (param === null) {
+			return "null";
+		}
+		if (param === undefined) {
+			return "undefined";
+		}
+		if (typeof param === "string") {
+			return `[str:${param}]`;
+		}
+		if (typeof param === "number") {
+			return `[d:${param}]`;
+		}
+		if (typeof param === "boolean") {
+			return `[bl:${param}]`;
+		}
+		if (typeof param.getCacheKey == "function") {
+			return param.getCacheKey();
+		}
 		if (Array.isArray(param)) {
 			return `[arr:[${param
-				.filter((p) => !(p instanceof CacheContext))
-				.map((p) => CacheContext._wrapParameterToCacheKey(p))
+				.filter(p => !(p instanceof CacheContext))
+				.map(p => CacheContext._wrapParameterToCacheKey(p))
 				.join("-")}]]`;
 		}
-		if (typeof param === "function") return `[f:${hex_md5(param.toString())}]`;
+		if (typeof param === "function") {
+			return `[f:${hex_md5(param.toString())}]`;
+		}
 		let entries = Object.entries(param);
 		entries.sort((a, b) => (a[0] < b[0] ? -1 : 1));
-		return `[obj:{${entries
-			.map((e) => e[0] + ":" + CacheContext._wrapParameterToCacheKey(e[1]))
-			.join(",")}}]`;
+		return `[obj:{${entries.map(e => e[0] + ":" + CacheContext._wrapParameterToCacheKey(e[1])).join(",")}}]`;
 	}
 }

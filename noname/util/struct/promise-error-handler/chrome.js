@@ -78,18 +78,22 @@ export class ChromePromiseErrorHandler {
 	 * @param {PromiseRejectionEvent} event
 	 */
 	onHandle(event) {
-		event.promise.catch((error) => {
+		event.promise.catch(error => {
 			// 如果`error`是个错误，则继续处理
 			if (error instanceof Error) {
-				if (/Failed to fetch/.test(error.message) || /Failed to load because no supported source was found/.test(error.message)) return;
+				if (/Failed to fetch/.test(error.message) || /Failed to load because no supported source was found/.test(error.message)) {
+					return;
+				}
 				// 如果已经处理过该错误，则不再处理
-				if (this.#errorList.includes(error)) return;
+				if (this.#errorList.includes(error)) {
+					return;
+				}
 				this.#errorList.push(error);
 				// 如果`error`拥有字符串形式的报错栈堆，且报错栈堆确实符合v8的stack
 				if (typeof error.stack === "string" && this.#STACK_REGEXP.test(error.stack)) {
 					// 获取符合栈堆信息的字符串，一般来说就是从第二行开始的所有行
 					// 为了处理eval的情况，故必须获取完行数
-					let lines = error.stack.split("\n").filter((line) => this.#STACK_REGEXP.test(line));
+					let lines = error.stack.split("\n").filter(line => this.#STACK_REGEXP.test(line));
 
 					// 提供类型信息防止vscode报错
 					/**
@@ -109,7 +113,9 @@ export class ChromePromiseErrorHandler {
 
 					// 从第一条开始遍历，一直遍历到不存在eval的位置
 					for (let currentLine = 0; currentLine < lines.length; ++currentLine) {
-						if (/\(eval /.test(lines[currentLine])) continue;
+						if (/\(eval /.test(lines[currentLine])) {
+							continue;
+						}
 
 						let formatedLine = lines[currentLine]
 							.replace(/^\s+/, "")
@@ -117,13 +123,13 @@ export class ChromePromiseErrorHandler {
 							.replace(/^.*?\s+/, "");
 
 						const location = formatedLine.match(/ (\(.+\)$)/);
-						if (location) formatedLine = formatedLine.replace(location[0], "");
+						if (location) {
+							formatedLine = formatedLine.replace(location[0], "");
+						}
 
 						const locationParts = extractLocation(location ? location[1] : formatedLine);
 
-						fileName = ["eval", "<anonymous>"].includes(locationParts[0])
-							? void 0
-							: locationParts[0];
+						fileName = ["eval", "<anonymous>"].includes(locationParts[0]) ? void 0 : locationParts[0];
 						line = Number(locationParts[1]);
 						column = Number(locationParts[2]);
 						break;
@@ -136,10 +142,13 @@ export class ChromePromiseErrorHandler {
 				else {
 					try {
 						// @ts-ignore
-						let [_, src = void 0, line = void 0, column = void 0] =
-							/at\s+.*\s+\((.*):(\d*):(\d*)\)/i.exec(error.stack.split("\n")[1]);
-						if (typeof line == "string") line = Number(line);
-						if (typeof column == "string") column = Number(column);
+						let [_, src = void 0, line = void 0, column = void 0] = /at\s+.*\s+\((.*):(\d*):(\d*)\)/i.exec(error.stack.split("\n")[1]);
+						if (typeof line == "string") {
+							line = Number(line);
+						}
+						if (typeof column == "string") {
+							column = Number(column);
+						}
 						// @ts-ignore
 						window.onerror(error.message, src, line, column, error);
 					} catch (e) {

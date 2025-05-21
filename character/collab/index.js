@@ -19,19 +19,13 @@ game.import("character", function () {
 			collab: characterSort,
 		},
 		characterSubstitute: {
-			zhutiexiong: [
-				["wu_zhutiexiong", ["die:zhutiexiong"]]
-			],
-			liuxiecaojie: [
-				["liuxiecaojie_shadow", []]
-			],
+			zhutiexiong: [["wu_zhutiexiong", ["die:zhutiexiong"]]],
+			liuxiecaojie: [["liuxiecaojie_shadow", []]],
 			yuanshaoyuanshu: [
 				["yuanshaoyuanshu_shao", []],
 				["yuanshaoyuanshu_shu", []],
 			],
-			taipingsangong: [
-				["taipingsangong_ultimate", ["die:taipingsangong"]]
-			],
+			taipingsangong: [["taipingsangong_ultimate", ["die:taipingsangong"]]],
 		},
 		characterFilter: { ...characterFilters },
 		characterInitFilter: { ...characterInitFilters },

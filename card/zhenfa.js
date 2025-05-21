@@ -27,8 +27,12 @@ game.import("card", function () {
 				type: "zhenfa",
 				recastable: true,
 				enable(card, player) {
-					if (player.inline()) return true;
-					if (player.identity == "unknown" || player.identity == "ye") return false;
+					if (player.inline()) {
+						return true;
+					}
+					if (player.identity == "unknown" || player.identity == "ye") {
+						return false;
+					}
 					return game.hasPlayer(function (current) {
 						return current != player && current.isFriendOf(player);
 					});
@@ -203,8 +207,12 @@ game.import("card", function () {
 				type: "zhenfa",
 				recastable: true,
 				enable(card, player) {
-					if (player.identity == "unknown" || player.identity == "ye") return false;
-					if (get.population(player.identity) <= 1) return false;
+					if (player.identity == "unknown" || player.identity == "ye") {
+						return false;
+					}
+					if (get.population(player.identity) <= 1) {
+						return false;
+					}
 					return game.hasPlayer(function (current) {
 						return current != player && current.identity == player.identity && !player.inline(current);
 					});
@@ -235,7 +243,9 @@ game.import("card", function () {
 					return player.next.siege(player);
 				},
 				filterTarget(card, player, target) {
-					if (target.getCards("he").length == 0) return false;
+					if (target.getCards("he").length == 0) {
+						return false;
+					}
 					return target == player.next || target == player.previous;
 				},
 				selectTarget: -1,
@@ -283,8 +293,11 @@ game.import("card", function () {
 						player.useCard({ name: "sha" }, result.cards, target, false);
 					}
 					"step 2";
-					if (target == player.next) event.player2 = player.next.next;
-					else event.player2 = player.previous.previous;
+					if (target == player.next) {
+						event.player2 = player.next.next;
+					} else {
+						event.player2 = player.previous.previous;
+					}
 					event.player2.chooseCard("将一张非基本牌当作杀对" + get.translation(target) + "使用", "he", function (card) {
 						return get.type(card) != "basic";
 					}).ai = function (card) {
@@ -311,8 +324,12 @@ game.import("card", function () {
 				recastable: true,
 				enable: true,
 				filterTarget(card, player, target) {
-					if (player.identity == target.identity) return false;
-					if (target.identity == "unknown" || target.identity == "ye") return false;
+					if (player.identity == target.identity) {
+						return false;
+					}
+					if (target.identity == "unknown" || target.identity == "ye") {
+						return false;
+					}
 					return target.identity == target.next.identity || target.identity == target.previous.identity;
 				},
 				selectTarget: -1,
@@ -320,7 +337,9 @@ game.import("card", function () {
 					"step 0";
 					var next = target.chooseToRespond({ name: "shan" });
 					next.ai = function (card) {
-						if (get.damageEffect(target, player, target) >= 0) return 0;
+						if (get.damageEffect(target, player, target) >= 0) {
+							return 0;
+						}
 						return 1;
 					};
 					next.set("respondTo", [player, card]);

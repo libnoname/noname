@@ -6,7 +6,9 @@ export default class ArrayCompiler extends ContentCompilerBase {
 		return Array.isArray(content) && content.every(item => typeof item === "function");
 	}
 	compile(content) {
-		if (!Array.isArray(content)) throw new ReferenceError("content必须是一个数组");
+		if (!Array.isArray(content)) {
+			throw new ReferenceError("content必须是一个数组");
+		}
 		const compiler = this;
 		return async function (event) {
 			if (!Number.isInteger(event.step)) {

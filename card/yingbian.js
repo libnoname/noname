@@ -19,8 +19,12 @@ game.import("card", function () {
 				defaultYingbianEffect: "add",
 				content() {
 					var dist = get.distance(player, target);
-					if (dist > 1 || card.yingbian_all) player.discardPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.guohe.ai.button);
-					if (dist <= 1 || card.yingbian_all) player.gainPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.shunshou.ai.button);
+					if (dist > 1 || card.yingbian_all) {
+						player.discardPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.guohe.ai.button);
+					}
+					if (dist <= 1 || card.yingbian_all) {
+						player.gainPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.shunshou.ai.button);
+					}
 				},
 				fullskin: true,
 				postAi(targets) {
@@ -28,57 +32,68 @@ game.import("card", function () {
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
-						if (get.attitude(viewer, player._trueMe || player) > 0) return 0;
+						if (get.attitude(viewer, player._trueMe || player) > 0) {
+							return 0;
+						}
 						if (
 							!card.yingbian_all &&
 							get.distance(player, target) > 1 &&
 							!target.hasCard(i => {
 								let val = get.value(i, target),
 									subtypes = get.subtypes(i);
-								if (val < 8 && target.hp < 2 && !subtypes.includes("equip2") && !subtypes.includes("equip5")) return false;
+								if (val < 8 && target.hp < 2 && !subtypes.includes("equip2") && !subtypes.includes("equip5")) {
+									return false;
+								}
 								return val > 3 + Math.min(5, target.hp);
 							}, "e") &&
 							target.countCards("h") * _status.event.getRand("guohe_wuxie") > 1.57
-						)
+						) {
 							return 0;
+						}
 					},
 					yingbian(card, player, targets, viewer) {
-						if (get.attitude(viewer, player) <= 0) return 0;
+						if (get.attitude(viewer, player) <= 0) {
+							return 0;
+						}
 						var base = 0;
 						if (get.cardtag(card, "yingbian_all")) {
 							if (
 								targets.some(function (current) {
 									var att = get.attitude(player, current);
-									if (att <= 0)
+									if (att <= 0) {
 										return (
 											current.countCards("he", function (card) {
 												return get.value(card, current) > 0;
 											}) > 1
 										);
+									}
 									return (
 										current.countCards("ej", function (card) {
 											return get.position(card) == "j" || get.value(card, current) <= 0;
 										}) > 1
 									);
 								})
-							)
+							) {
 								base += 6;
+							}
 						}
 						if (get.cardtag(card, "yingbian_add")) {
 							if (
 								game.hasPlayer(function (current) {
 									return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 								})
-							)
+							) {
 								base += 5;
+							}
 						}
 						if (get.cardtag(card, "yingbian_hit")) {
 							if (
 								game.hasPlayer(function (current) {
 									return get.attitude(current, player) < 0 && current.hasWuxie();
 								})
-							)
+							) {
 								base += 3 * targets.length;
+							}
 						}
 						return base;
 					},
@@ -89,37 +104,50 @@ game.import("card", function () {
 							let max = 0;
 							game.countPlayer(cur => {
 								let dist = get.distance(player, cur);
-								if (dist > 1 || card.yingbian_all) max = Math.max(max, lib.card.shunshou.ai.result.target(player, cur) * get.attitude(player, cur));
-								else max = Math.max(max, lib.card.guohe.ai.result.target(player, cur) * get.attitude(player, cur));
+								if (dist > 1 || card.yingbian_all) {
+									max = Math.max(max, lib.card.shunshou.ai.result.target(player, cur) * get.attitude(player, cur));
+								} else {
+									max = Math.max(max, lib.card.guohe.ai.result.target(player, cur) * get.attitude(player, cur));
+								}
 							});
-							if (max <= 0) return 7;
-							if (card.yingbian_all) return 0.75 * max;
+							if (max <= 0) {
+								return 7;
+							}
+							if (card.yingbian_all) {
+								return 0.75 * max;
+							}
 							return 0.6 * max;
 						},
 					},
 					result: {
 						target(player, target) {
 							var discard = get.distance(player, target) > 1;
-							if (get.attitude(player, target) <= 0)
+							if (get.attitude(player, target) <= 0) {
 								return target.countCards("he", function (card) {
 									return get.value(card, target) > 0 && (discard || card != target.getEquip("jinhe"));
 								}) > 0
 									? -1.5
 									: 1.5;
+							}
 							var js = target.getCards("j");
 							if (
 								js.length &&
 								js.some(i => {
 									let cardj = i.viewAs ? { name: i.viewAs } : i;
-									if (cardj.name == "xumou_jsrg") return false;
+									if (cardj.name == "xumou_jsrg") {
+										return false;
+									}
 									return get.effect(target, cardj, target, player) < 0;
 								})
-							)
+							) {
 								return 3;
+							}
 							return -1.5;
 						},
 						player(player, target) {
-							if (get.distance(player, target) > 1) return 0;
+							if (get.distance(player, target) > 1) {
+								return 0;
+							}
 							if (
 								get.attitude(player, target) < 0 &&
 								!target.countCards("he", function (card) {
@@ -134,11 +162,14 @@ game.import("card", function () {
 									js.length &&
 									js.some(i => {
 										let cardj = i.viewAs ? { name: i.viewAs } : i;
-										if (cardj.name == "xumou_jsrg") return false;
+										if (cardj.name == "xumou_jsrg") {
+											return false;
+										}
 										return get.effect(target, cardj, target, player) < 0;
 									})
-								)
+								) {
 									return 1;
+								}
 								return 0;
 							}
 							return 1;
@@ -199,7 +230,9 @@ game.import("card", function () {
 					"step 1";
 					if (result.bool) {
 						target.showCards(result.cards);
-						if (get.suit(card) != get.suit(result.cards[0])) target.damage();
+						if (get.suit(card) != get.suit(result.cards[0])) {
+							target.damage();
+						}
 					}
 				},
 				ai: {
@@ -209,13 +242,16 @@ game.import("card", function () {
 						value: 6,
 					},
 					yingbian(card, player, targets, viewer) {
-						if (get.attitude(viewer, player) <= 0) return 0;
+						if (get.attitude(viewer, player) <= 0) {
+							return 0;
+						}
 						if (
 							game.hasPlayer(function (current) {
 								return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 							})
-						)
+						) {
 							return 6;
+						}
 						return 0;
 					},
 					result: {
@@ -228,16 +264,22 @@ game.import("card", function () {
 							target.getCards("h", i => {
 								if (i.isKnownBy(player)) {
 									if (suit !== get.suit(i)) {
-										if (view || get.is.shownCard(i)) return -2;
+										if (view || get.is.shownCard(i)) {
+											return -2;
+										}
 										fz++;
 										fm++;
-									} else if (!view && !get.is.shownCard(i)) fm++;
+									} else if (!view && !get.is.shownCard(i)) {
+										fm++;
+									}
 								} else {
 									fz += 0.75;
 									fm++;
 								}
 							});
-							if (!fm) return 0;
+							if (!fm) {
+								return 0;
+							}
 							return (-2 * fz) / fm;
 						},
 					},
@@ -311,11 +353,15 @@ game.import("card", function () {
 				loseDelay: false,
 				ai: {
 					value(card, player) {
-						if (player.countCards("h") > 3 || get.position(card) != "e") return 0.5;
+						if (player.countCards("h") > 3 || get.position(card) != "e") {
+							return 0.5;
+						}
 						return (player.countCards("h") - 4) * 5;
 					},
 					equipValue(card, player) {
-						if (player.countCards("h") > 3 || get.position(card) != "e") return 0.5;
+						if (player.countCards("h") > 3 || get.position(card) != "e") {
+							return 0.5;
+						}
 						return (player.countCards("h") - 4) * 5;
 					},
 					basic: {
@@ -341,10 +387,14 @@ game.import("card", function () {
 			suijiyingbian_skill: {
 				mod: {
 					cardname(card, player) {
-						if (card.name == "suijiyingbian" && player.storage.suijiyingbian) return player.storage.suijiyingbian;
+						if (card.name == "suijiyingbian" && player.storage.suijiyingbian) {
+							return player.storage.suijiyingbian;
+						}
 					},
 					cardnature(card, player) {
-						if (card.name == "suijiyingbian" && player.storage.suijiyingbian_nature) return player.storage.suijiyingbian_nature;
+						if (card.name == "suijiyingbian" && player.storage.suijiyingbian_nature) {
+							return player.storage.suijiyingbian_nature;
+						}
 					},
 				},
 				trigger: {
@@ -354,7 +404,9 @@ game.import("card", function () {
 				silent: true,
 				firstDo: true,
 				filter(event, player, name) {
-					if (name == "phaseBeginStart") return true;
+					if (name == "phaseBeginStart") {
+						return true;
+					}
 					var type = get.type(event.card);
 					return type == "basic" || type == "trick";
 				},
@@ -406,7 +458,9 @@ game.import("card", function () {
 				logTarget: "target",
 				content() {
 					var target = trigger.target;
-					if (!target.isLinked()) target.link();
+					if (!target.isLinked()) {
+						target.link();
+					}
 					//else player.viewHandcards(target);
 				},
 			},
@@ -416,21 +470,30 @@ game.import("card", function () {
 				forced: true,
 				audio: true,
 				filter(event, player) {
-					if (event.targets.length < 2) return false;
+					if (event.targets.length < 2) {
+						return false;
+					}
 					if (event.card.name != "sha") {
 						var type = get.type(event.card);
-						if (type != "trick") return false;
-						if (get.color(event.card) != "black" && !get.tag(event.card, "damage")) return false;
+						if (type != "trick") {
+							return false;
+						}
+						if (get.color(event.card) != "black" && !get.tag(event.card, "damage")) {
+							return false;
+						}
 					}
-					if (player.hasSkillTag("unequip2")) return false;
+					if (player.hasSkillTag("unequip2")) {
+						return false;
+					}
 					if (
 						event.player.hasSkillTag("unequip", false, {
 							name: event.card ? event.card.name : null,
 							target: player,
 							card: event.card,
 						})
-					)
+					) {
 						return false;
+					}
 					return true;
 				},
 				content() {
@@ -481,7 +544,9 @@ game.import("card", function () {
 							const lostCards = [];
 							evt.es.forEach(card => {
 								const VEquip = evt.vcard_map.get(card);
-								if (VEquip.name === "tianjitu") lostCards.add(VEquip);
+								if (VEquip.name === "tianjitu") {
+									lostCards.add(VEquip);
+								}
 							});
 							return lostCards.length;
 						},
@@ -551,14 +616,20 @@ game.import("card", function () {
 				ruleSkill: true,
 				forceLoad: true,
 				filter: (event, player) => {
-					if (event.card.yingbian) return false;
+					if (event.card.yingbian) {
+						return false;
+					}
 					const temporaryYingbian = event.temporaryYingbian || [],
 						card = event.card;
-					if (temporaryYingbian.includes("force") || get.cardtag(card, "yingbian_force")) return true;
+					if (temporaryYingbian.includes("force") || get.cardtag(card, "yingbian_force")) {
+						return true;
+					}
 					const forceYingbian = event.forceYingbian || player.hasSkillTag("forceYingbian");
 					for (const entry of lib.yingbian.condition.simple) {
 						const key = entry[0];
-						if ((temporaryYingbian.includes(key) || get.cardtag(card, `yingbian_${key}`)) && (forceYingbian || entry[1](event))) return true;
+						if ((temporaryYingbian.includes(key) || get.cardtag(card, `yingbian_${key}`)) && (forceYingbian || entry[1](event))) {
+							return true;
+						}
 					}
 					const complexYingbianConditions = get.complexYingbianConditions();
 					return temporaryYingbian.some(value => complexYingbianConditions.includes(value)) || get.is.complexlyYingbianConditional(card);
@@ -569,44 +640,68 @@ game.import("card", function () {
 					event.temporaryYingbian = trigger.temporaryYingbian || [];
 					var yingbianConditionSatisfied = false;
 					lib.yingbian.condition.simple.forEach((value, key) => {
-						if ((!event.temporaryYingbian.includes(key) && !get.cardtag(event.card, `yingbian_${key}`)) || !value(trigger)) return;
+						if ((!event.temporaryYingbian.includes(key) && !get.cardtag(event.card, `yingbian_${key}`)) || !value(trigger)) {
+							return;
+						}
 						player.popup(`yingbian_${key}_tag`, lib.yingbian.condition.color.get(key));
-						if (!yingbianConditionSatisfied) yingbianConditionSatisfied = true;
+						if (!yingbianConditionSatisfied) {
+							yingbianConditionSatisfied = true;
+						}
 					});
 					if (event.temporaryYingbian.includes("force") || get.cardtag(event.card, "yingbian_force") || trigger.forceYingbian || player.hasSkillTag("forceYingbian")) {
 						player.popup("yingbian_force_tag", lib.yingbian.condition.color.get("force"));
-						if (!yingbianConditionSatisfied) yingbianConditionSatisfied = true;
+						if (!yingbianConditionSatisfied) {
+							yingbianConditionSatisfied = true;
+						}
 					}
 					if (yingbianConditionSatisfied) {
 						game.log(player, "触发了", event.card, "的应变条件");
 						event.goto(4);
-					} else if ((event.num = 0) >= (event.yingbianConditions = get.complexYingbianConditions()).length) event.finish();
+					} else if ((event.num = 0) >= (event.yingbianConditions = get.complexYingbianConditions()).length) {
+						event.finish();
+					}
 					"step 1";
 					var yingbianCondition = event.yingbianConditions[num];
-					if (event.temporaryYingbian.includes(yingbianCondition) || get.cardtag(card, `yingbian_${yingbianCondition}`)) lib.yingbian.condition.complex.get(yingbianCondition)(trigger);
-					else event.goto(3);
+					if (event.temporaryYingbian.includes(yingbianCondition) || get.cardtag(card, `yingbian_${yingbianCondition}`)) {
+						lib.yingbian.condition.complex.get(yingbianCondition)(trigger);
+					} else {
+						event.goto(3);
+					}
 					"step 2";
-					if (result.bool) event.goto(4);
+					if (result.bool) {
+						event.goto(4);
+					}
 					"step 3";
 					event.num++;
-					if (event.num < event.yingbianConditions.length) event.goto(1);
-					else event.finish();
+					if (event.num < event.yingbianConditions.length) {
+						event.goto(1);
+					} else {
+						event.finish();
+					}
 					"step 4";
 					trigger.card.yingbian = true;
 					var yingbianEffectExecuted = false;
 					lib.yingbian.effect.forEach((value, key) => {
-						if (!event.temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) return;
+						if (!event.temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) {
+							return;
+						}
 						game.yingbianEffect(trigger, value);
-						if (!yingbianEffectExecuted) yingbianEffectExecuted = true;
+						if (!yingbianEffectExecuted) {
+							yingbianEffectExecuted = true;
+						}
 					});
 					if (!yingbianEffectExecuted) {
 						var defaultYingbianEffect = get.defaultYingbianEffect(card);
 						if (lib.yingbian.effect.has(defaultYingbianEffect)) {
 							game.yingbianEffect(trigger, lib.yingbian.effect.get(defaultYingbianEffect));
-							if (!yingbianEffectExecuted) yingbianEffectExecuted = true;
+							if (!yingbianEffectExecuted) {
+								yingbianEffectExecuted = true;
+							}
 						}
 					}
-					if (yingbianEffectExecuted) player.addTempSkill("yingbian_changeTarget");
+					if (yingbianEffectExecuted) {
+						player.addTempSkill("yingbian_changeTarget");
+					}
 				},
 			},
 			yingbian_changeTarget: {
@@ -615,10 +710,16 @@ game.import("card", function () {
 				popup: false,
 				charlotte: true,
 				filter(event, player) {
-					if (event.yingbian_removeTarget && event.targets && event.targets.length > 1) return true;
-					if (!event.yingbian_addTarget) return false;
+					if (event.yingbian_removeTarget && event.targets && event.targets.length > 1) {
+						return true;
+					}
+					if (!event.yingbian_addTarget) {
+						return false;
+					}
 					var info = get.info(event.card);
-					if (info.allowMultiple == false) return false;
+					if (info.allowMultiple == false) {
+						return false;
+					}
 					if (event.targets && !info.multitarget) {
 						if (
 							game.hasPlayer(function (current) {
@@ -632,7 +733,7 @@ game.import("card", function () {
 				},
 				content() {
 					"step 0";
-					if (trigger.yingbian_addTarget)
+					if (trigger.yingbian_addTarget) {
 						player
 							.chooseTarget("应变：是否为" + get.translation(trigger.card) + "增加一个目标？", function (card, player, target) {
 								var trigger = _status.event.getTrigger();
@@ -644,7 +745,9 @@ game.import("card", function () {
 								var card = _status.event.getTrigger().card;
 								return get.effect(target, card, player, player);
 							});
-					else event.goto(2);
+					} else {
+						event.goto(2);
+					}
 					"step 1";
 					if (result.bool) {
 						var target = result.targets[0];
@@ -653,7 +756,7 @@ game.import("card", function () {
 						trigger.targets.add(target);
 					}
 					"step 2";
-					if (trigger.yingbian_removeTarget && trigger.targets.length > 1)
+					if (trigger.yingbian_removeTarget && trigger.targets.length > 1) {
 						player
 							.chooseTarget("应变：是否为" + get.translation(trigger.card) + "减少一个目标？", function (card, player, target) {
 								var trigger = _status.event.getTrigger();
@@ -664,7 +767,9 @@ game.import("card", function () {
 								var card = _status.event.getTrigger().card;
 								return -get.effect(target, card, player, player);
 							});
-					else event.finish();
+					} else {
+						event.finish();
+					}
 					"step 3";
 					if (result.bool) {
 						var target = result.targets[0];
@@ -678,7 +783,9 @@ game.import("card", function () {
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (typeof card !== "object" || !target || (get.name(card) !== "sha" && (get.type(card) !== "trick" || (get.color(card) !== "black" && !get.tag(card, "damage"))))) return;
+							if (typeof card !== "object" || !target || (get.name(card) !== "sha" && (get.type(card) !== "trick" || (get.color(card) !== "black" && !get.tag(card, "damage"))))) {
+								return;
+							}
 							if (
 								!target.hasSkill("heiguangkai_skill") ||
 								target.hasSkillTag("unequip2") ||
@@ -692,38 +799,59 @@ game.import("card", function () {
 									target: target,
 									card: card,
 								})
-							)
+							) {
 								return;
+							}
 							let targets = [],
 								evt = _status.event.getParent("useCard");
 							targets.addArray(ui.selected.targets);
-							if (evt && evt.card == card) targets.addArray(evt.targets);
+							if (evt && evt.card == card) {
+								targets.addArray(evt.targets);
+							}
 							if (targets.length) {
-								if (targets.length > 1 || !targets.includes(target)) return "zeroplayertarget";
+								if (targets.length > 1 || !targets.includes(target)) {
+									return "zeroplayertarget";
+								}
 								return;
 							}
 							let info = get.info(card);
-							if (!info || info.notarget || !info.filterTarget) return;
+							if (!info || info.notarget || !info.filterTarget) {
+								return;
+							}
 							let range,
 								select = get.copy(info.selectTarget),
 								filter;
-							if (select === undefined) range = [1, 1];
-							else if (typeof select === "number") range = [select, select];
-							else if (get.itemtype(select) === "select") range = select;
-							else if (typeof select === "function") range = select(card, player);
-							if (info.singleCard) range = [1, 1];
+							if (select === undefined) {
+								range = [1, 1];
+							} else if (typeof select === "number") {
+								range = [select, select];
+							} else if (get.itemtype(select) === "select") {
+								range = select;
+							} else if (typeof select === "function") {
+								range = select(card, player);
+							}
+							if (info.singleCard) {
+								range = [1, 1];
+							}
 							game.checkMod(card, player, range, "selectTarget", player);
-							if (range[1] < -1) range = [1, 1];
-							else if (range[0] < 0) {
-								if (info.filterTarget === true) filter = game.players.length;
-								else
+							if (range[1] < -1) {
+								range = [1, 1];
+							} else if (range[0] < 0) {
+								if (info.filterTarget === true) {
+									filter = game.players.length;
+								} else {
 									filter = game.countPlayer(current => {
 										return info.filterTarget(card, player, current);
 									});
+								}
 								range = [filter, filter];
 							}
-							if (!range) return;
-							if (range[0] > 1 && range[1] > 1) return "zeroplayertarget";
+							if (!range) {
+								return;
+							}
+							if (range[0] > 1 && range[1] > 1) {
+								return "zeroplayertarget";
+							}
 							return [1, 0, 0.7, 0];
 						},
 					},

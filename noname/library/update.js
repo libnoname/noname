@@ -90,12 +90,12 @@ export function parseSize(limit) {
  * @throws {Error}
  */
 export function checkVersion(ver1, ver2) {
-	if (typeof ver1 !== "string") ver1 = String(ver1);
-	if (typeof ver2 !== "string") ver2 = String(ver2);
+	if (typeof ver1 !== "string") {ver1 = String(ver1);}
+	if (typeof ver2 !== "string") {ver2 = String(ver2);}
 
 	// 移除 'v' 开头
-	if (ver1.startsWith("v")) ver1 = ver1.slice(1);
-	if (ver2.startsWith("v")) ver2 = ver2.slice(1);
+	if (ver1.startsWith("v")) {ver1 = ver1.slice(1);}
+	if (ver2.startsWith("v")) {ver2 = ver2.slice(1);}
 
 	// 验证版本号格式
 	if (/[^0-9.-]/i.test(ver1) || /[^0-9.-]/i.test(ver2)) {
@@ -107,13 +107,13 @@ export function checkVersion(ver1, ver2) {
 		let part = "";
 		for (const char of str) {
 			if (char === "." || char === "-") {
-				if (part) yield Number(part);
+				if (part) {yield Number(part);}
 				part = "";
 			} else {
 				part += char;
 			}
 		}
-		if (part) yield Number(part);
+		if (part) {yield Number(part);}
 	}
 
 	const iterator1 = walk(ver1);
@@ -136,7 +136,7 @@ export function checkVersion(ver1, ver2) {
 		} else if (item1 < item2) {
 			return -1;
 		} else {
-			if (iter1.done && iter2.done) break;
+			if (iter1.done && iter2.done) {break;}
 		}
 	}
 
@@ -378,7 +378,7 @@ export async function request(url, onProgress, options = {}) {
 	let total = parseInt(response.headers.get("Content-Length"), 10);
 	// 如果服务器未返回Content-Length，则无法准确计算进度
 	// @ts-ignore
-	if (isNaN(total)) total = null;
+	if (isNaN(total)) {total = null;}
 	// @ts-ignore
 	const reader = response.body.getReader();
 	let filename;
@@ -535,7 +535,7 @@ export async function getLatestVersionFromGitHub(owner = "libnoname", repo = "no
 
 	for (const tag of tags) {
 		const tagName = tag.name;
-		if (tagName === "v1998") continue;
+		if (tagName === "v1998") {continue;}
 		try {
 			checkVersion(tagName, lib.version);
 			return tagName;
@@ -570,7 +570,7 @@ export async function getTreesFromGithub(directories, version, owner = "libnonam
 		headers: defaultHeaders,
 	});
 	await defaultResponse(treesResponse);
-	if (!treesResponse.ok) throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);
+	if (!treesResponse.ok) {throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);}
 	/**
 	 * @type {{
 	 * 	sha: string;

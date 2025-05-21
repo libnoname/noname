@@ -2,7 +2,9 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	rejiushi(player) {
-		if (player.storage.chengzhang) return "当你需要使用【酒】时，若你的武将牌正面向上，你可以翻面，视为使用一张【酒】。当你受到伤害后，若你的武将牌于受到伤害时背面向上，你可以翻面。当你翻面时，你获得牌堆中的一张随机锦囊牌。";
+		if (player.storage.chengzhang) {
+			return "当你需要使用【酒】时，若你的武将牌正面向上，你可以翻面，视为使用一张【酒】。当你受到伤害后，若你的武将牌于受到伤害时背面向上，你可以翻面。当你翻面时，你获得牌堆中的一张随机锦囊牌。";
+		}
 		return "当你需要使用【酒】时，若你的武将牌正面向上，你可以翻面，视为使用一张【酒】。当你受到伤害后，若你的武将牌于受到伤害时背面向上，你可以翻面并获得牌堆中的一张随机锦囊牌。";
 	},
 	rejiaozhao(player) {

@@ -25,7 +25,9 @@ export function loadCard(cardConfig) {
 	lib.cardPack[cardConfigName] ??= [];
 	if (cardConfig.card) {
 		for (let [cardPackName, cardPack2] of Object.entries(cardConfig.card)) {
-			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) continue;
+			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) {
+				continue;
+			}
 			lib.cardPack[cardConfigName].add(cardPackName);
 		}
 	}
@@ -240,7 +242,9 @@ export function loadCharacter(character) {
 }
 
 export async function loadExtension(extension) {
-	if (!extension[5] && lib.config.mode === "connect") return;
+	if (!extension[5] && lib.config.mode === "connect") {
+		return;
+	}
 
 	try {
 		_status.extension = extension[0];
@@ -252,7 +256,9 @@ export async function loadExtension(extension) {
 			} catch (e) {
 				console.log(`加载《${extension[0]}》扩展的content时出现错误。`, e);
 				// @ts-ignore
-				if (!lib.config.extension_alert) alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
+				if (!lib.config.extension_alert) {
+					alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
+				}
 			}
 		}
 
@@ -452,9 +458,15 @@ export function loadMode(mode) {
 export function loadPlay(playConfig) {
 	const i = playConfig.name;
 
-	if (lib.config.hiddenPlayPack.includes(i)) return;
-	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode)) return;
-	if (playConfig.mode && !playConfig.mode.includes(lib.config.mode)) return;
+	if (lib.config.hiddenPlayPack.includes(i)) {
+		return;
+	}
+	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode)) {
+		return;
+	}
+	if (playConfig.mode && !playConfig.mode.includes(lib.config.mode)) {
+		return;
+	}
 
 	// @ts-ignore
 	lib.element = mixinElement(playConfig, lib.element);
@@ -486,8 +498,12 @@ export function loadPlay(playConfig) {
 		}
 	}
 
-	if (typeof playConfig.init == "function") playConfig.init();
-	if (typeof playConfig.arenaReady == "function") lib.arenaReady?.push(playConfig.arenaReady);
+	if (typeof playConfig.init == "function") {
+		playConfig.init();
+	}
+	if (typeof playConfig.arenaReady == "function") {
+		lib.arenaReady?.push(playConfig.arenaReady);
+	}
 }
 
 function extSkillInject(extName, skillInfo) {
@@ -508,14 +524,18 @@ function extSkillInject(extName, skillInfo) {
  * @return {void}
  */
 function mixinGeneral(config, name, where) {
-	if (!config[name]) return;
+	if (!config[name]) {
+		return;
+	}
 
 	for (let [key, value] of Object.entries(config[name])) {
 		if (["ui", "ai"].includes(name)) {
 			if (typeof value == "object") {
 				// 我甚至不敢把这个双等于改了，怕了
 				// noinspection EqualityComparisonWithCoercionJS
-				if (where[key] == undefined) where[key] = {};
+				if (where[key] == undefined) {
+					where[key] = {};
+				}
 				for (let [key2, value2] of Object.entries(value)) {
 					where[key][key2] = value2;
 				}
@@ -547,8 +567,12 @@ function mixinLibrary(config, lib) {
 	Object.keys(window.noname_character_replace).forEach(i => (lib.characterReplace[i] = window.noname_character_replace[i]));
 
 	for (let name in config) {
-		if (KeptWords.includes(name)) continue;
-		if (lib[name] == null) lib[name] = Array.isArray(config[name]) ? [] : {};
+		if (KeptWords.includes(name)) {
+			continue;
+		}
+		if (lib[name] == null) {
+			lib[name] = Array.isArray(config[name]) ? [] : {};
+		}
 
 		Object.assign(lib[name], config[name]);
 	}
@@ -566,14 +590,18 @@ function mixinElement(config, element) {
 
 	if (config.element) {
 		for (let name in config.element) {
-			if (!newElement[name]) newElement[name] = [];
+			if (!newElement[name]) {
+				newElement[name] = [];
+			}
 
 			let source = config.element[name];
 			let target = newElement[name];
 
 			for (let key in source) {
 				if (key === "init") {
-					if (!target.inits) target.inits = [];
+					if (!target.inits) {
+						target.inits = [];
+					}
 					target.inits.push(source[key]);
 				} else {
 					target[key] = source[key];

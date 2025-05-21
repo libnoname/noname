@@ -22,8 +22,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -31,8 +32,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -61,8 +63,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -70,8 +73,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -101,8 +105,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -110,8 +115,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -141,8 +147,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -150,8 +157,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -181,8 +189,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -190,8 +199,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -221,8 +231,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			equipValue(card, player) {
@@ -230,8 +241,9 @@ const cards = {
 					game.hasPlayer(function (current) {
 						return lib.skill.changandajian_destroy.getEffect(player, current) > 0;
 					})
-				)
+				) {
 					return 0;
+				}
 				return 8;
 			},
 			basic: {
@@ -248,7 +260,7 @@ const cards = {
 		content() {
 			"step 0";
 			if (!event.qizheng_name) {
-				if (player.isIn())
+				if (player.isIn()) {
 					player
 						.chooseControl("奇兵", "正兵")
 						.set("prompt", "请选择" + get.translation(target) + "的标记")
@@ -257,31 +269,45 @@ const cards = {
 							(function () {
 								var e1 = 1.5 * get.sgn(get.damageEffect(target, player, target));
 								var e2 = 0;
-								if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) e2 = -1;
+								if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) {
+									e2 = -1;
+								}
 								var es = target.getGainableCards(player, "e");
-								if (es.length)
+								if (es.length) {
 									e2 = Math.min(
 										e2,
 										(function () {
 											var max = 0;
-											for (var i of es) max = Math.max(max, get.value(i, target));
+											for (var i of es) {
+												max = Math.max(max, get.value(i, target));
+											}
 											return -max / 4;
 										})()
 									);
-								if (Math.abs(e1 - e2) <= 0.3) return Math.random() < 0.5 ? "奇兵" : "正兵";
-								if (e1 < e2) return "奇兵";
+								}
+								if (Math.abs(e1 - e2) <= 0.3) {
+									return Math.random() < 0.5 ? "奇兵" : "正兵";
+								}
+								if (e1 < e2) {
+									return "奇兵";
+								}
 								return "正兵";
 							})()
 						)
 						.set("ai", function () {
 							return _status.event.choice;
 						});
-				else event.finish();
+				} else {
+					event.finish();
+				}
 			}
 			"step 1";
-			if (!event.qizheng_name && result && result.control) event.qizheng_name = result.control;
-			if (event.directHit) event._result = { bool: false };
-			else
+			if (!event.qizheng_name && result && result.control) {
+				event.qizheng_name = result.control;
+			}
+			if (event.directHit) {
+				event._result = { bool: false };
+			} else {
 				target
 					.chooseToRespond("请打出一张杀或闪响应奇正相生", function (card, player) {
 						var name = get.name(card);
@@ -290,50 +316,75 @@ const cards = {
 					.set("ai", function (card) {
 						if (_status.event.choice == "all") {
 							var rand = get.rand("qizhengxiangsheng");
-							if (rand > 0.5) return 0;
+							if (rand > 0.5) {
+								return 0;
+							}
 							return 1 + Math.random();
 						}
-						if (get.name(card) == _status.event.choice) return get.order(card);
+						if (get.name(card) == _status.event.choice) {
+							return get.order(card);
+						}
 						return 0;
 					})
 					.set("respondTo", [player, card])
 					.set(
 						"choice",
 						(function () {
-							if (target.hasSkillTag("useShan")) return "shan";
+							if (target.hasSkillTag("useShan")) {
+								return "shan";
+							}
 							if (typeof event.qizheng_aibuff == "boolean") {
 								var shas = target.getCards("h", "sha"),
 									shans = target.getCards("h", "shan");
 								if (event.qizheng_aibuff) {
-									if (shas.length >= Math.max(1, shans.length)) return "shan";
-									if (shans.length > shas.length) return "sha";
+									if (shas.length >= Math.max(1, shans.length)) {
+										return "shan";
+									}
+									if (shans.length > shas.length) {
+										return "sha";
+									}
 									return false;
 								}
-								if (!shas.length || !shans.length) return false;
+								if (!shas.length || !shans.length) {
+									return false;
+								}
 							}
 							var e1 = 1.5 * get.sgn(get.damageEffect(target, player, target));
 							var e2 = 0;
-							if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) e2 = -1;
+							if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) {
+								e2 = -1;
+							}
 							var es = target.getGainableCards(player, "e");
-							if (es.length)
+							if (es.length) {
 								e2 = Math.min(
 									e2,
 									(function () {
 										var max = 0;
-										for (var i of es) max = Math.max(max, get.value(i, target));
+										for (var i of es) {
+											max = Math.max(max, get.value(i, target));
+										}
 										return -max / 4;
 									})()
 								);
-							if (e1 - e2 >= 0.3) return "shan";
-							if (e2 - e1 >= 0.3) return "sha";
+							}
+							if (e1 - e2 >= 0.3) {
+								return "shan";
+							}
+							if (e2 - e1 >= 0.3) {
+								return "sha";
+							}
 							return "all";
 						})()
 					);
+			}
 			"step 2";
 			var name = result.bool ? result.card.name : null,
 				require = event.qizheng_name;
-			if (require == "奇兵" && name != "sha") target.damage();
-			else if (require == "正兵" && name != "shan" && target.countGainableCards(player, "he") > 0) player.gainPlayerCard(target, true, "he");
+			if (require == "奇兵" && name != "sha") {
+				target.damage();
+			} else if (require == "正兵" && name != "shan" && target.countGainableCards(player, "he") > 0) {
+				player.gainPlayerCard(target, true, "he");
+			}
 		},
 		ai: {
 			order: 5,
@@ -348,23 +399,29 @@ const cards = {
 				target(player, target) {
 					var e1 = 1.5 * get.sgn(get.damageEffect(target, player, target));
 					var e2 = 0;
-					if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) e2 = -1;
+					if (target.countGainableCards(player, "h") > 0 && !target.hasSkillTag("noh")) {
+						e2 = -1;
+					}
 					var es = target.getGainableCards(player, "e");
-					if (es.length)
+					if (es.length) {
 						e2 = Math.min(
 							e2,
 							(function () {
 								var max = 0;
-								for (var i of es) max = Math.max(max, get.value(i, target));
+								for (var i of es) {
+									max = Math.max(max, get.value(i, target));
+								}
 								return -max / 4;
 							})()
 						);
+					}
 					if (
 						game.hasPlayer(function (current) {
 							return current.hasSkill("tianzuo") && get.attitude(current, player) <= 0;
 						})
-					)
+					) {
 						return Math.max(e1, e2);
+					}
 					return Math.min(e1, e2);
 				},
 			},

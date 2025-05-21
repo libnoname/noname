@@ -147,7 +147,9 @@ game.import("card", function () {
 					result: {
 						player(player) {
 							return game.countPlayer(function (current) {
-								if (current == player) return;
+								if (current == player) {
+									return;
+								}
 								return -(current.countCards("e") - current.countCards("j") / 3) * get.sgn(get.attitude(player, current));
 							});
 						},
@@ -204,7 +206,9 @@ game.import("card", function () {
 							var enemies = player.getEnemies();
 							var players = game.filterPlayer();
 							var func = function (current) {
-								if (current) return current.hp;
+								if (current) {
+									return current.hp;
+								}
 								return 0;
 							};
 							var max1 = get.max(enemies, func);
@@ -424,7 +428,9 @@ game.import("card", function () {
 							var rank = get.rank(current, true);
 							if (current.maxHp >= 3) {
 								if (current.hp <= 1) {
-									if (att > 0) return att * 3 + 2;
+									if (att > 0) {
+										return att * 3 + 2;
+									}
 									return att * 3;
 								} else if (current.hp == 2) {
 									if (att > 0) {
@@ -643,7 +649,9 @@ game.import("card", function () {
 					useful: [6, 1],
 					result: {
 						player(player, target) {
-							if (player.hasUnknown()) return 0;
+							if (player.hasUnknown()) {
+								return 0;
+							}
 							return -game.countPlayer(function (current) {
 								return current.countCards("he") * get.sgn(get.attitude(player, current));
 							});
@@ -690,7 +698,9 @@ game.import("card", function () {
 					useful: [5, 1],
 					result: {
 						player(player, target) {
-							if (player.hasUnknown()) return 0;
+							if (player.hasUnknown()) {
+								return 0;
+							}
 							return game.countPlayer(function (current) {
 								var att = -get.sgn(get.attitude(player, current));
 								if (current.isHealthy()) {
@@ -774,11 +784,17 @@ game.import("card", function () {
 				subtype: "spell_gold",
 				vanish: true,
 				enable(event, player) {
-					if (player.maxHp == 1) return false;
+					if (player.maxHp == 1) {
+						return false;
+					}
 					var list = player.getEnemies();
 					for (var i = 0; i < list.length; i++) {
-						if (list[i].isMin()) continue;
-						if (list[i].getStockSkills().length) return true;
+						if (list[i].isMin()) {
+							continue;
+						}
+						if (list[i].getStockSkills().length) {
+							return true;
+						}
 					}
 				},
 				notarget: true,
@@ -818,7 +834,9 @@ game.import("card", function () {
 					useful: [6, 1],
 					result: {
 						player(player) {
-							if (player.hp <= 2) return 0;
+							if (player.hp <= 2) {
+								return 0;
+							}
 							return 1;
 						},
 					},
@@ -847,7 +865,9 @@ game.import("card", function () {
 						var type = get.type(event.hs[i], "trick");
 						var cardname = event.hs[i].name;
 						var list = game.findCards(function (name) {
-							if (cardname == name) return;
+							if (cardname == name) {
+								return;
+							}
 							if (get.type({ name: name }, "trick") == type) {
 								return true;
 							}
@@ -872,7 +892,9 @@ game.import("card", function () {
 						var subtype = get.subtype(event.es[i]);
 						var cardname = event.es[i].name;
 						var list = game.findCards(function (name) {
-							if (cardname == name) return;
+							if (cardname == name) {
+								return;
+							}
 							if (get.subtype({ name: name }) == subtype) {
 								return true;
 							}
@@ -933,7 +955,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.hasSkillTag("noh")) return 3;
+							if (target.hasSkillTag("noh")) {
+								return 3;
+							}
 							var num = -Math.sqrt(target.countCards("h"));
 							if (player.hasSha() && player.canUse("sha", target)) {
 								num -= 2;
@@ -968,7 +992,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.getEquip(4)) return -2;
+							if (target.getEquip(4)) {
+								return -2;
+							}
 							return -1;
 						},
 					},
@@ -1040,9 +1066,15 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					var list = [];
 					for (var i in lib.card) {
-						if (!lib.card[i].content) continue;
-						if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) continue;
-						if (lib.card[i].vanish) continue;
+						if (!lib.card[i].content) {
+							continue;
+						}
+						if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) {
+							continue;
+						}
+						if (lib.card[i].vanish) {
+							continue;
+						}
 						if (lib.card[i].type == "delay") {
 							list.push([event.card.suit, event.card.number, i]);
 						}
@@ -1054,7 +1086,9 @@ game.import("card", function () {
 							.chooseButton(dialog, true, function (button) {
 								if (get.effect(event.target, { name: button.link[2] }, player, player) > 0) {
 									if (button.link[2] == "bingliang") {
-										if (bing) return 2;
+										if (bing) {
+											return 2;
+										}
 										return 0.7;
 									}
 									if (button.link[2] == "lebu") {
@@ -1122,7 +1156,9 @@ game.import("card", function () {
 					list.push(get.cardPile2("nanman"));
 					list.push(get.cardPile2("huoshaolianying"));
 					for (var i = 0; i < list.length; i++) {
-						if (!list[i]) list.splice(i--, 1);
+						if (!list[i]) {
+							list.splice(i--, 1);
+						}
 					}
 					list = [list.randomGet()];
 					var sha = get.cardPile2("sha");
@@ -1178,8 +1214,12 @@ game.import("card", function () {
 					result: {
 						player(player) {
 							var num = player.countCards("he");
-							if (num <= 1) return 0;
-							if (num <= 3 && !player.needsToDiscard()) return 0;
+							if (num <= 1) {
+								return 0;
+							}
+							if (num <= 3 && !player.needsToDiscard()) {
+								return 0;
+							}
 							return 1;
 						},
 					},
@@ -1236,21 +1276,39 @@ game.import("card", function () {
 							var name = button.link[2];
 							switch (name) {
 								case "gw_ciguhanshuang":
-									if (nongwu2) return 3;
-									if (nongwu) return 1;
+									if (nongwu2) {
+										return 3;
+									}
+									if (nongwu) {
+										return 1;
+									}
 									return 0;
 								case "gw_baoxueyaoshui":
-									if (baoxue2) return 2;
-									if (baoxue) return 1.5;
-									if (baoxue3) return 0.5;
+									if (baoxue2) {
+										return 2;
+									}
+									if (baoxue) {
+										return 1.5;
+									}
+									if (baoxue3) {
+										return 0.5;
+									}
 									return 0;
 								case "gw_aozuzhilei":
-									if (aozu2) return 2.5;
-									if (aozu) return 1.2;
-									if (aozu3) return 0.2;
+									if (aozu2) {
+										return 2.5;
+									}
+									if (aozu) {
+										return 1.2;
+									}
+									if (aozu3) {
+										return 0.2;
+									}
 									return 0;
 								case "gw_yanziyaoshui":
-									if (yanzi) return 2;
+									if (yanzi) {
+										return 2;
+									}
 									return 0.6;
 							}
 							if (
@@ -1388,7 +1446,9 @@ game.import("card", function () {
 					useful: [3, 1],
 					result: {
 						target(player, target) {
-							if (target.hp <= 1 || target.hujia) return 0;
+							if (target.hp <= 1 || target.hujia) {
+								return 0;
+							}
 							return 1;
 						},
 					},
@@ -1416,7 +1476,9 @@ game.import("card", function () {
 					useful: [3, 1],
 					result: {
 						target(player, current) {
-							if (current.hasSkill("gw_qinpendayu")) return 0;
+							if (current.hasSkill("gw_qinpendayu")) {
+								return 0;
+							}
 							return Math.max(-1, -0.1 - 0.3 * current.needsToDiscard(2));
 						},
 					},
@@ -1444,7 +1506,9 @@ game.import("card", function () {
 					useful: [3, 1],
 					result: {
 						player(player, current) {
-							if (current.hasSkill("gw_birinongwu")) return 0;
+							if (current.hasSkill("gw_birinongwu")) {
+								return 0;
+							}
 							return -1;
 						},
 					},
@@ -1472,7 +1536,9 @@ game.import("card", function () {
 					useful: [3, 1],
 					result: {
 						target(player, target) {
-							if (target.hasSkill("gw_ciguhanshuang")) return 0;
+							if (target.hasSkill("gw_ciguhanshuang")) {
+								return 0;
+							}
 							return -1;
 						},
 					},
@@ -1496,7 +1562,9 @@ game.import("card", function () {
 					useful: [3, 1],
 					result: {
 						target(player, target) {
-							if (target.hasSkillTag("noh")) return 0.1;
+							if (target.hasSkillTag("noh")) {
+								return 0.1;
+							}
 							switch (target.countCards("h")) {
 								case 0:
 									return 0.5;
@@ -1708,7 +1776,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target == player) return get.threaten(target, player) / 1.5;
+							if (target == player) {
+								return get.threaten(target, player) / 1.5;
+							}
 							return get.threaten(target, player);
 						},
 					},
@@ -1735,7 +1805,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.isMinHandcard()) return 2;
+							if (target.isMinHandcard()) {
+								return 2;
+							}
 							return 1;
 						},
 					},
@@ -1765,7 +1837,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.countCards("h")) return -1;
+							if (target.countCards("h")) {
+								return -1;
+							}
 							return -2;
 						},
 					},
@@ -1886,7 +1960,9 @@ game.import("card", function () {
 					nodamage: true,
 					effect: {
 						target(card, player, target, current) {
-							if (get.tag(card, "damage") && !get.tag(card, "natureDamage")) return "zeroplayertarget";
+							if (get.tag(card, "damage") && !get.tag(card, "natureDamage")) {
+								return "zeroplayertarget";
+							}
 						},
 					},
 				},
@@ -1916,12 +1992,16 @@ game.import("card", function () {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					if (player.countCards("he") == 0) return false;
+					if (player.countCards("he") == 0) {
+						return false;
+					}
 					var type = get.type(event.card, "trick");
 					return type == "basic" || type == "trick";
 				},
 				content() {
-					if (!event.isMine()) game.delay(0.5);
+					if (!event.isMine()) {
+						game.delay(0.5);
+					}
 					player.chooseToDiscard(true, "he");
 				},
 				ai: {
@@ -1931,8 +2011,12 @@ game.import("card", function () {
 							return [
 								1,
 								player.needsToDiscard(0, (i, p) => {
-									if (p.canIgnoreHandcard(i)) return false;
-									if (i === card || (card.cards && card.cards.includes(i))) return false;
+									if (p.canIgnoreHandcard(i)) {
+										return false;
+									}
+									if (i === card || (card.cards && card.cards.includes(i))) {
+										return false;
+									}
 									return true;
 								})
 									? -0.4
@@ -2025,7 +2109,9 @@ game.import("card", function () {
 				},
 				mod: {
 					cardEnabled(card) {
-						if (card.name == "sha") return false;
+						if (card.name == "sha") {
+							return false;
+						}
 					},
 				},
 				ai: {
@@ -2104,7 +2190,9 @@ game.import("card", function () {
 				filter(event, player) {
 					var list = game.filterPlayer();
 					for (var i = 0; i < list.length; i++) {
-						if (list[i] != player && list[i].isMaxHandcard()) return true;
+						if (list[i] != player && list[i].isMaxHandcard()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -2156,10 +2244,18 @@ game.import("card", function () {
 				silent: true,
 				priority: -11,
 				filter(event, player) {
-					if (_status.connectMode) return false;
-					if (!lib.config.cards.includes("gwent")) return false;
-					if (player.isMin()) return false;
-					if (game.fixedPile) return false;
+					if (_status.connectMode) {
+						return false;
+					}
+					if (!lib.config.cards.includes("gwent")) {
+						return false;
+					}
+					if (player.isMin()) {
+						return false;
+					}
+					if (game.fixedPile) {
+						return false;
+					}
 					return event.num > 0 && event.parent.name == "phaseDraw";
 				},
 				content() {

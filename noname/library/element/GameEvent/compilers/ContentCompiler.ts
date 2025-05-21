@@ -27,9 +27,13 @@ class ContentCompiler {
 	addCompiler(compiler: IContentCompiler) {
 		const type = compiler.constructor as Class<IContentCompiler>;
 
-		if (typeof type !== "function") throw new TypeError("content编译器没有明确的类型");
+		if (typeof type !== "function") {
+			throw new TypeError("content编译器没有明确的类型");
+		}
 
-		if (this.#compilerTypes.has(type)) throw new TypeError("相同的content编译器类型不能重复注册");
+		if (this.#compilerTypes.has(type)) {
+			throw new TypeError("相同的content编译器类型不能重复注册");
+		}
 
 		this.#compilerTypes.add(type);
 		this.#compilers.add(compiler);
@@ -63,16 +67,22 @@ class ContentCompiler {
 	 */
 	compile(content: EventCompileable): EventCompiledContent {
 		//@ts-ignore
-		if (content.compiled) return content;
+		if (content.compiled) {
+			return content;
+		}
 
 		const target = this.regularize(content);
 
 		const cached = this.#compiledContent.get(target);
 
-		if (cached) return cached;
+		if (cached) {
+			return cached;
+		}
 
 		for (const compiler of this.#compilers) {
-			if (!compiler.filter(target)) continue;
+			if (!compiler.filter(target)) {
+				continue;
+			}
 			const compiled = compiler.compile(target) as EventCompiledContent;
 			compiled.compiled = true;
 			compiled.type = compiler.type;

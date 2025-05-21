@@ -62,8 +62,12 @@ const cards = {
 		ai: {
 			order: 9.5,
 			equipValue(card, player) {
-				if (player.hp == player.maxHp) return 5;
-				if (player.countCards("h", "rewrite_baiyin")) return 6;
+				if (player.hp == player.maxHp) {
+					return 5;
+				}
+				if (player.countCards("h", "rewrite_baiyin")) {
+					return 6;
+				}
 				return 0;
 			},
 			basic: {
@@ -106,18 +110,32 @@ const cards = {
 		subtype: "equip2",
 		ai: {
 			equipValue(card, player) {
-				if (player.hasSkillTag("maixie") && player.hp > 1) return 0;
-				if (player.hasSkillTag("noDirectDamage")) return 10;
-				if (get.damageEffect(player, player, player, "fire") >= 0) return 10;
+				if (player.hasSkillTag("maixie") && player.hp > 1) {
+					return 0;
+				}
+				if (player.hasSkillTag("noDirectDamage")) {
+					return 10;
+				}
+				if (get.damageEffect(player, player, player, "fire") >= 0) {
+					return 10;
+				}
 				var num =
 					3 -
 					game.countPlayer(function (current) {
 						return get.attitude(current, player) < 0;
 					});
-				if (player.hp == 1) num += 4;
-				if (player.hp == 2) num += 1;
-				if (player.hp == 3) num--;
-				if (player.hp > 3) num -= 4;
+				if (player.hp == 1) {
+					num += 4;
+				}
+				if (player.hp == 2) {
+					num += 1;
+				}
+				if (player.hp == 3) {
+					num--;
+				}
+				if (player.hp > 3) {
+					num -= 4;
+				}
 				return num;
 			},
 			basic: {
@@ -150,7 +168,9 @@ const cards = {
 					}
 				}
 				var num = player.countCards("h", "sha");
-				if (num > 1) return 6 + num;
+				if (num > 1) {
+					return 6 + num;
+				}
 				return 3 + num;
 			},
 			basic: {
@@ -173,7 +193,9 @@ const cards = {
 		distance: { attackFrom: -8 },
 		ai: { basic: { equipValue: 10 } },
 		cardPrompt(card) {
-			if (!card.storage || typeof card.storage.mbquchong != "number") return lib.translate["dagongche_attack_info"];
+			if (!card.storage || typeof card.storage.mbquchong != "number") {
+				return lib.translate["dagongche_attack_info"];
+			}
 			let str = "②此牌剩余" + parseFloat(card.storage.mbquchong) + "点耐久度，耐久度为0时销毁此牌。";
 			return str + "①当此牌进入你的装备区时，弃置你装备区里的其他牌。②其他装备区进入你的装备区前，改为将这些牌置于弃牌堆。③当你对一名角色造成伤害时，你可减少1点此牌的耐久度，令此伤害+X（X为游戏轮数且至多为3）。④当此牌不因〖渠冲〗离开装备区时，减少1点此牌的耐久度并防止之。";
 		},
@@ -189,7 +211,9 @@ const cards = {
 		distance: { attackFrom: -8 },
 		ai: { basic: { equipValue: 10 } },
 		cardPrompt(card) {
-			if (!card.storage || typeof card.storage.mbquchong != "number") return lib.translate["dagongche_defend_info"];
+			if (!card.storage || typeof card.storage.mbquchong != "number") {
+				return lib.translate["dagongche_defend_info"];
+			}
 			let str = "②此牌剩余" + parseFloat(card.storage.mbquchong) + "点耐久度，耐久度为0时销毁此牌。";
 			return str + "①当此牌进入你的装备区时，弃置你装备区里的其他牌。②其他装备区进入你的装备区前，改为将这些牌置于弃牌堆。③当你受到伤害时，减少X点此牌的耐久度，令此伤害-X（X为伤害值且至多为此牌耐久度）。④当此牌不因〖渠冲〗离开装备区时，减少1点此牌的耐久度并防止之。";
 		},
@@ -209,10 +233,14 @@ const cards = {
 			tag: { valueswap: 1 },
 		},
 		cardPrompt(card, player) {
-			if (!player?.hasSkill("friendxushugongli")) return lib.translate.xuanjian_info;
+			if (!player?.hasSkill("friendxushugongli")) {
+				return lib.translate.xuanjian_info;
+			}
 			return (
 				(() => {
-					if (!get.info("friendgongli").isFriendOf(player, "friend_zhugeliang")) return lib.translate.xuanjian_info;
+					if (!get.info("friendgongli").isFriendOf(player, "friend_zhugeliang")) {
+						return lib.translate.xuanjian_info;
+					}
 					return "你可以将一张手牌当作【杀】使用。";
 				})().slice(0, -1) +
 				(get.info("friendgongli").isFriendOf(player, "friend_pangtong") ? "（无距离限制）" : "") +

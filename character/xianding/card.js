@@ -18,8 +18,11 @@ const cards = {
 		},
 		content() {
 			target.damage("thunder");
-			if (target != event.getParent().shuiyanqijun_target) target.draw();
-			else target.chooseToDiscard("he", true);
+			if (target != event.getParent().shuiyanqijun_target) {
+				target.draw();
+			} else {
+				target.chooseToDiscard("he", true);
+			}
 		},
 		ai: {
 			order: 6,
@@ -33,7 +36,9 @@ const cards = {
 			},
 			result: {
 				target(player, target) {
-					if (!ui.selected.targets.length) return -1.5;
+					if (!ui.selected.targets.length) {
+						return -1.5;
+					}
 					return -0.5;
 				},
 			},
@@ -145,14 +150,22 @@ const cards = {
 		subtype: "equip5",
 		skills: ["dagongche_skill"],
 		cardPrompt(card) {
-			if (!card.storage) return "出牌阶段开始时，你可以视为使用一张【杀】，且当此【杀】因执行效果而对目标角色造成伤害后，你弃置其一张牌。若此【大攻车】未被强化，则其他角色无法弃置你装备区内的【大攻车】。当此牌离开你的装备区后，销毁之。";
+			if (!card.storage) {
+				return "出牌阶段开始时，你可以视为使用一张【杀】，且当此【杀】因执行效果而对目标角色造成伤害后，你弃置其一张牌。若此【大攻车】未被强化，则其他角色无法弃置你装备区内的【大攻车】。当此牌离开你的装备区后，销毁之。";
+			}
 			var str = "出牌阶段开始时，你可以视为使用一张";
-			if (card.storage.大攻车选项一) str += "无距离限制且无视防具的";
+			if (card.storage.大攻车选项一) {
+				str += "无距离限制且无视防具的";
+			}
 			str += "【杀】";
-			if (card.storage.大攻车选项二) str += "（此【杀】的目标上限+" + card.storage.大攻车选项二 + "）";
+			if (card.storage.大攻车选项二) {
+				str += "（此【杀】的目标上限+" + card.storage.大攻车选项二 + "）";
+			}
 			str += "，且当此【杀】因执行效果而对目标角色造成伤害后，你弃置其";
 			var num = 1;
-			if (card.storage.大攻车选项三) num += card.storage.大攻车选项三;
+			if (card.storage.大攻车选项三) {
+				num += card.storage.大攻车选项三;
+			}
 			str += get.cnNumber(num);
 			str += "张牌。当此牌离开你的装备区后，销毁之。";
 			return str;

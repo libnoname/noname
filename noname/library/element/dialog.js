@@ -63,15 +63,24 @@ export class Dialog extends HTMLDivElement {
 		dialog.bar2 = ui.create.div(".bar.bottom", dialog);
 		dialog.buttons = [];
 		Array.from(args).forEach(argument => {
-			if (typeof argument == "boolean") dialog.static = argument;
-			else if (argument == "hidden") hidden = true;
-			else if (argument == "notouchscroll") noTouchScroll = true;
-			else if (argument == "forcebutton") forceButton = true;
-			else if (argument == "noforcebutton") noForceButton = true;
-			else dialog.add(argument);
+			if (typeof argument == "boolean") {
+				dialog.static = argument;
+			} else if (argument == "hidden") {
+				hidden = true;
+			} else if (argument == "notouchscroll") {
+				noTouchScroll = true;
+			} else if (argument == "forcebutton") {
+				forceButton = true;
+			} else if (argument == "noforcebutton") {
+				noForceButton = true;
+			} else {
+				dialog.add(argument);
+			}
 		});
 		//if (!hidden) dialog.open();
-		if (!lib.config.touchscreen) dialog.contentContainer.onscroll = ui.update;
+		if (!lib.config.touchscreen) {
+			dialog.contentContainer.onscroll = ui.update;
+		}
 		if (!noTouchScroll) {
 			dialog.contentContainer.ontouchstart = ui.click.dialogtouchStart;
 			dialog.contentContainer.ontouchmove = ui.click.touchScroll;
@@ -79,8 +88,9 @@ export class Dialog extends HTMLDivElement {
 			dialog.contentContainer.style.webkitOverflowScrolling = "touch";
 			dialog.ontouchstart = ui.click.dragtouchdialog;
 		}
-		if (noForceButton) dialog.noforcebutton = true;
-		else if (forceButton) {
+		if (noForceButton) {
+			dialog.noforcebutton = true;
+		} else if (forceButton) {
 			dialog.forcebutton = true;
 			dialog.classList.add("forcebutton");
 		}
@@ -111,7 +121,9 @@ export class Dialog extends HTMLDivElement {
 		//设置比例字符串
 		let ratioStr = itemOptions.map(o => o.ratio || 1).join("fr ") + "fr";
 		//定义一个属性记录加入的所有的框，框的links是加入时真实数据，方便最后获取数据，这里可以设计一下别的数据格式向外暴露结果
-		if (!this.itemContainers) this.itemContainers = [];
+		if (!this.itemContainers) {
+			this.itemContainers = [];
+		}
 		let that = this;
 		//创建一个行的父容器
 		let rowContainer = createRowContainer(this);
@@ -127,7 +139,9 @@ export class Dialog extends HTMLDivElement {
 			//检查溢出处理的逻辑
 			checkOverflow(itemOption, itemContainer, addedItems);
 			//自定义添加元素
-			if (itemOption.custom) itemOption.custom(itemContainer);
+			if (itemOption.custom) {
+				itemOption.custom(itemContainer);
+			}
 			observeItemContainer(itemOption, itemContainer);
 			this.itemContainers.push(itemContainer);
 		}
@@ -146,7 +160,9 @@ export class Dialog extends HTMLDivElement {
 			let itemContainer = ui.create.div(".item-container", rowContainer);
 			itemContainer.originWidth = itemContainer.getBoundingClientRect().width;
 			itemContainer.links = itemOption.item;
-			if (itemOption.itemContainerCss) itemContainer.css(itemOption.itemContainerCss);
+			if (itemOption.itemContainerCss) {
+				itemContainer.css(itemOption.itemContainerCss);
+			}
 			return itemContainer;
 		}
 		function BindEvent(itemOption, addedItems, itemContainer) {
@@ -202,7 +218,9 @@ export class Dialog extends HTMLDivElement {
 			return itemOptions;
 		}
 		function isOption(obj) {
-			if (["card", "player", "cards", "players"].includes(get.itemtype(obj))) return false;
+			if (["card", "player", "cards", "players"].includes(get.itemtype(obj))) {
+				return false;
+			}
 			return typeof obj == "object" && "item" in obj;
 		}
 		function createRowContainer(dialog) {
@@ -228,7 +246,9 @@ export class Dialog extends HTMLDivElement {
 				itemContainer.classList.add("popup");
 				let button = ui.create.button(item, get.itemtype(item), itemContainer, itemOption.ItemNoclick);
 				button.css(itemOption.itemCss ?? {});
-				if (item._custom) item._custom(button);
+				if (item._custom) {
+					item._custom(button);
+				}
 				items.push(button);
 			} else {
 				for (let i of item) {
@@ -269,31 +289,41 @@ export class Dialog extends HTMLDivElement {
 		// @ts-ignore
 		else if (get.itemtype(item) == "cards") {
 			const buttons = ui.create.div(".buttons", this.content);
-			if (zoom) buttons.classList.add("smallzoom");
+			if (zoom) {
+				buttons.classList.add("smallzoom");
+			}
 			// @ts-ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item, "card", buttons, noclick));
 		}
 		// @ts-ignore
 		else if (get.itemtype(item) == "players") {
 			var buttons = ui.create.div(".buttons", this.content);
-			if (zoom) buttons.classList.add("smallzoom");
+			if (zoom) {
+				buttons.classList.add("smallzoom");
+			}
 			// @ts-ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item, "player", buttons, noclick));
 		} else if (item[1] == "textbutton") {
 			ui.create.textbuttons(item[0], this, noclick);
 		} else if (item[1] == "skill") {
 			var buttons = ui.create.div(".buttons", this.content);
-			if (zoom) buttons.classList.add("smallzoom");
+			if (zoom) {
+				buttons.classList.add("smallzoom");
+			}
 			// @ts-ignore
-			this.buttons = this.buttons.concat(ui.create.buttons(item[0], lib.skill.hsdianmo.$createButton, buttons, noclick));
+			this.buttons = this.buttons.concat(ui.create.buttons(item[0], "skill", buttons, noclick));
 		} else {
 			var buttons = ui.create.div(".buttons", this.content);
-			if (zoom) buttons.classList.add("smallzoom");
+			if (zoom) {
+				buttons.classList.add("smallzoom");
+			}
 			// @ts-ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item[0], item[1], buttons, noclick));
 		}
 		if (this.buttons.length) {
-			if (this.forcebutton !== false) this.forcebutton = true;
+			if (this.forcebutton !== false) {
+				this.forcebutton = true;
+			}
 			if (this.buttons.length > 3 || (zoom && this.buttons.length > 5)) {
 				this.classList.remove("forcebutton-auto");
 			} else if (!this.noforcebutton) {
@@ -308,8 +338,9 @@ export class Dialog extends HTMLDivElement {
 	 * @param { boolean } [center]
 	 */
 	addText(str, center) {
-		if (str && str.startsWith("<div")) this.add(str);
-		else if (center !== false) {
+		if (str && str.startsWith("<div")) {
+			this.add(str);
+		} else if (center !== false) {
 			this.add('<div class="text center">' + str + "</div>");
 		} else {
 			this.add('<div class="text">' + str + "</div>");
@@ -329,7 +360,9 @@ export class Dialog extends HTMLDivElement {
 		}
 	}
 	open() {
-		if (this.noopen) return;
+		if (this.noopen) {
+			return;
+		}
 		for (let i = 0; i < ui.dialogs.length; i++) {
 			if (ui.dialogs[i] == this) {
 				this.show();
@@ -339,8 +372,11 @@ export class Dialog extends HTMLDivElement {
 				ui.update();
 				return this;
 			}
-			if (ui.dialogs[i].static) ui.dialogs[i].unfocus();
-			else ui.dialogs[i].hide();
+			if (ui.dialogs[i].static) {
+				ui.dialogs[i].unfocus();
+			} else {
+				ui.dialogs[i].hide();
+			}
 		}
 		ui.dialog = this;
 		let translate;

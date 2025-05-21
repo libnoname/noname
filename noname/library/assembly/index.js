@@ -105,11 +105,15 @@ export class NonameAssembly extends Array {
 			// @ts-expect-error A
 			name = content.name;
 		}
-		if (typeof content !== "function") throw new Error("you can't add a non-function to assembly.");
+		if (typeof content !== "function") {
+			throw new Error("you can't add a non-function to assembly.");
+		}
 		// if (typeof name !== "string" || name.length === 0) throw new Error("you can't add a anonymous function to assembly.")
 
 		if (typeof name !== "string" || name.length === 0) {
-			if (!this.includes(content)) Array.prototype.push.call(this, content);
+			if (!this.includes(content)) {
+				Array.prototype.push.call(this, content);
+			}
 		} else if (!this.has(name)) {
 			this.#record.set(name, this.length);
 			Array.prototype.push.call(this, content);
@@ -143,7 +147,9 @@ export class NonameAssembly extends Array {
 	 * @returns {AssemblyType[Name][keyof AssemblyType[Name]] | undefined}
 	 */
 	get(name) {
-		if (!this.has(name)) return void 0;
+		if (!this.has(name)) {
+			return void 0;
+		}
 		// @ts-ignore
 		return this[this.#record.get(name)];
 	}
@@ -154,7 +160,9 @@ export class NonameAssembly extends Array {
 	 * @param {AssemblyType[Name][keyof AssemblyType[Name]]} content
 	 */
 	update(name, content) {
-		if (!this.has(name)) return false;
+		if (!this.has(name)) {
+			return false;
+		}
 
 		try {
 			// @ts-ignore
@@ -170,9 +178,9 @@ export class NonameAssembly extends Array {
 
 /**
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
- * 
+ *
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
- * 
+ *
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
 export const defaultHookcompatition = {

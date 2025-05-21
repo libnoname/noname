@@ -3,9 +3,14 @@ var fs = require("fs");
 var server = new http.Server();
 server.listen(80);
 server.on("request", function (request, response) {
+	if (!request.url) {
+		return;
+	}
+
 	var url = require("url").parse(request.url);
 	switch (url.pathname) {
-		case "" || "/":
+		case "":
+		case "/":
 			fs.readFile("./index.html", function (err, content) {
 				if (err) {
 					response.writeHead(404, {
@@ -23,7 +28,7 @@ server.on("request", function (request, response) {
 			});
 			break;
 		case "/test/delay":
-			var delay = parseInt(url.query) || 2000;
+			var delay = url.query ? parseInt(url.query) ?? 2000 : 2000;
 			response.writeHead(200, {
 				"Content-type": "text/plain; charset=UTF-8",
 			});
@@ -38,6 +43,7 @@ server.on("request", function (request, response) {
 				"Content-type": "text/plain; charset=UTF-8",
 			});
 			response.write(
+				// @ts-expect-error i don't know
 				request.mothod +
 					" " +
 					request.url +
@@ -64,7 +70,11 @@ server.on("request", function (request, response) {
 			response.end();
 			break;
 		default:
-			var filename = url.pathname.substring(1);
+			var filename = url.pathname?.substring(1);
+			if (!filename) {
+				break;
+			}
+
 			var type = getType(
 				filename.substring(filename.lastIndexOf(".") + 1)
 			);

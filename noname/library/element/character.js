@@ -186,11 +186,17 @@ export class Character {
 			this.maxHp = get.infoMaxHp(data[2]);
 			this.hujia = get.infoHujia(data[2]);
 			this.skills = get.copy(data[3] || []);
-			if (data[4]) this.setPropertiesFromTrash(data[4]);
-			if (data.length > 5) this.extraModeData = data[5];
+			if (data[4]) {
+				this.setPropertiesFromTrash(data[4]);
+			}
+			if (data.length > 5) {
+				this.extraModeData = data[5];
+			}
 		} else if (get.is.object(data)) {
 			Object.assign(this, data);
-			if (typeof this.maxHp !== "number") this.maxHp = this.hp;
+			if (typeof this.maxHp !== "number") {
+				this.maxHp = this.hp;
+			}
 		}
 	}
 	initializeTrashProperties() {
@@ -320,8 +326,11 @@ export class Character {
 	 * @deprecated
 	 */
 	get 2() {
-		if (this.hujia > 0) return `${this.hp}/${this.maxHp}/${this.hujia}`;
-		else if (this.hp !== this.maxHp) return `${this.hp}/${this.maxHp}`;
+		if (this.hujia > 0) {
+			return `${this.hp}/${this.maxHp}/${this.hujia}`;
+		} else if (this.hp !== this.maxHp) {
+			return `${this.hp}/${this.maxHp}`;
+		}
 		return this.hp;
 	}
 	set 2(hp) {

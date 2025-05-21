@@ -18,12 +18,16 @@ game.import("card", function () {
 				modTarget: true,
 				async content(event, trigger, player) {
 					const next = get.info("olzhouxi").content(event, trigger, event.target);
-					if (next) await next;
+					if (next) {
+						await next;
+					}
 				},
 				//用的无中的ai改的
 				ai: {
 					wuxie(target, card, player, viewer) {
-						if (get.attitude(viewer, player._trueMe || player) > 0) return 0;
+						if (get.attitude(viewer, player._trueMe || player) > 0) {
+							return 0;
+						}
 					},
 					basic: {
 						order: 7,
@@ -47,7 +51,9 @@ game.import("card", function () {
 					const target = event.target,
 						cards1 = player.getCards("h"),
 						cards2 = target.getCards("h");
-					if (!cards1.length && !cards2.length) return;
+					if (!cards1.length && !cards2.length) {
+						return;
+					}
 					await game
 						.loseAsync({
 							lose_list: [
@@ -89,8 +95,11 @@ game.import("card", function () {
 						await player.gain(result.moved[0], "draw");
 						await target.gain(result.moved[1], "draw");
 						const num = player.countCards("h") - target.countCards("h");
-						if (num > 0) await target.draw();
-						else if (num < 0) await player.draw();
+						if (num > 0) {
+							await target.draw();
+						} else if (num < 0) {
+							await player.draw();
+						}
 					}
 				},
 				ai: {
@@ -106,7 +115,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (get.attitude(player, target) <= 0) return 0;
+							if (get.attitude(player, target) <= 0) {
+								return 0;
+							}
 							return 1 + target.countCards("h");
 						},
 					},
@@ -124,10 +135,15 @@ game.import("card", function () {
 					const cards = [];
 					while (cards.length < 2) {
 						const card = get.cardPile(card => get.tag(card, "damage") > 0.5 && !cards.includes(card));
-						if (card) cards.add(card);
-						else break;
+						if (card) {
+							cards.add(card);
+						} else {
+							break;
+						}
 					}
-					if (cards.length) target.gain(cards, "gain2");
+					if (cards.length) {
+						target.gain(cards, "gain2");
+					}
 				},
 				//增兵减灶的ai
 				ai: {
@@ -139,7 +155,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.hasJudge("lebu")) return 0;
+							if (target.hasJudge("lebu")) {
+								return 0;
+							}
 							return Math.max(1, 2 - target.countCards("h") / 10);
 						},
 					},
@@ -158,7 +176,9 @@ game.import("card", function () {
 					const target = event.target;
 					const result = await target
 						.chooseToUse("劝酒：使用一张【酒】或点数为9的牌，否则失去1点体力", function (card) {
-							if (get.name(card) != "jiu" && get.number(card)!="unsure" && get.number(card) != 9) return false;
+							if (get.name(card) != "jiu" && get.number(card) != "unsure" && get.number(card) != 9) {
+								return false;
+							}
 							return lib.filter.filterCard.apply(this, arguments);
 						})
 						.set("ai2", function () {
@@ -168,13 +188,17 @@ game.import("card", function () {
 						.set("effect", get.effect(target, { name: "losehp" }, target, target))
 						.set("addCount", false)
 						.forResult();
-					if (!result.bool) await target.loseHp();
+					if (!result.bool) {
+						await target.loseHp();
+					}
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
 						let att = get.attitude(viewer, target),
 							eff = get.effect(target, card, player, target);
-						if (Math.abs(att) < 1 || status * eff * att >= 0) return 0;
+						if (Math.abs(att) < 1 || status * eff * att >= 0) {
+							return 0;
+						}
 						return 1;
 					},
 					basic: {
@@ -255,11 +279,17 @@ game.import("card", function () {
 						const cards = [];
 						while (cards.length < result.cards.length) {
 							const card = get.cardPile(card => get.suit(card) == "heart" && !cards.includes(card));
-							if (card) cards.add(card);
-							else break;
+							if (card) {
+								cards.add(card);
+							} else {
+								break;
+							}
 						}
-						if (cards.length) await target.gain(cards, "gain2", "log");
-						else target.chat("无事发生");
+						if (cards.length) {
+							await target.gain(cards, "gain2", "log");
+						} else {
+							target.chat("无事发生");
+						}
 					}
 				},
 				//修改树上开花的ai
@@ -276,11 +306,17 @@ game.import("card", function () {
 						target(player, target, card) {
 							var cards = ui.selected.cards.concat(card.cards || []);
 							var num = player.countCards("he", function (card) {
-								if (cards.includes(card)) return false;
+								if (cards.includes(card)) {
+									return false;
+								}
 								return 6 > get.value(card);
 							});
-							if (!num) return 0;
-							if (num < 2) return 0.5;
+							if (!num) {
+								return 0;
+							}
+							if (num < 2) {
+								return 0.5;
+							}
 							return 1.2;
 						},
 					},
@@ -335,13 +371,17 @@ game.import("card", function () {
 					const result = await target.judge(VCard).forResult();
 					ui.clear();
 					VCard.delete();
-					if (result.bool == false) await target.damage(3, "thunder", "nosource");
+					if (result.bool == false) {
+						await target.damage(3, "thunder", "nosource");
+					}
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
 						let att = get.attitude(viewer, target),
 							eff = get.effect(target, card, player, target);
-						if (Math.abs(att) < 1 || status * eff * att >= 0) return 0;
+						if (Math.abs(att) < 1 || status * eff * att >= 0) {
+							return 0;
+						}
 						return 1;
 					},
 					basic: {
@@ -375,14 +415,22 @@ game.import("card", function () {
 				},
 				reverseOrder: true,
 				content() {
-					if (!target.isLinked()) target.link(true);
+					if (!target.isLinked()) {
+						target.link(true);
+					}
 				},
 				//照搬铁索的ai
 				ai: {
 					wuxie: (target, card, player, viewer, status) => {
-						if (status * get.attitude(viewer, player._trueMe || player) > 0 || target.hasSkillTag("noLink") || target.hasSkillTag("nodamage") || target.hasSkillTag("nofire") || target.hasSkillTag("nothunder")) return 0;
-						if (get.damageEffect(target, player, viewer, "thunder") >= 0 || get.damageEffect(target, player, viewer, "fire") >= 0) return 0;
-						if (target.hp + target.hujia > 2 && target.mayHaveShan(viewer, "use")) return 0;
+						if (status * get.attitude(viewer, player._trueMe || player) > 0 || target.hasSkillTag("noLink") || target.hasSkillTag("nodamage") || target.hasSkillTag("nofire") || target.hasSkillTag("nothunder")) {
+							return 0;
+						}
+						if (get.damageEffect(target, player, viewer, "thunder") >= 0 || get.damageEffect(target, player, viewer, "fire") >= 0) {
+							return 0;
+						}
+						if (target.hp + target.hujia > 2 && target.mayHaveShan(viewer, "use")) {
+							return 0;
+						}
 					},
 					basic: {
 						order: 7.3,
@@ -391,20 +439,36 @@ game.import("card", function () {
 					},
 					result: {
 						target: (player, target) => {
-							if (target.hasSkillTag("link") || target.hasSkillTag("noLink")) return 0;
+							if (target.hasSkillTag("link") || target.hasSkillTag("noLink")) {
+								return 0;
+							}
 							let curs = game.filterPlayer(current => {
-								if (current.hasSkillTag("noLink") || current.hasSkillTag("nodamage")) return false;
+								if (current.hasSkillTag("noLink") || current.hasSkillTag("nodamage")) {
+									return false;
+								}
 								return !current.hasSkillTag("nofire") || !current.hasSkillTag("nothunder");
 							});
-							if (curs.length < 2) return 0;
+							if (curs.length < 2) {
+								return 0;
+							}
 							let f = target.hasSkillTag("nofire"),
 								t = target.hasSkillTag("nothunder"),
 								res = 0.9;
-							if ((f && t) || target.hasSkillTag("nodamage")) return 0;
-							if (f || t) res = 0.45;
-							if (!f && target.getEquip("tengjia")) res *= 2;
-							if (!target.isLinked()) res = -res;
-							if (ui.selected.targets.length) return res;
+							if ((f && t) || target.hasSkillTag("nodamage")) {
+								return 0;
+							}
+							if (f || t) {
+								res = 0.45;
+							}
+							if (!f && target.getEquip("tengjia")) {
+								res *= 2;
+							}
+							if (!target.isLinked()) {
+								res = -res;
+							}
+							if (ui.selected.targets.length) {
+								return res;
+							}
 							let fs = 0,
 								es = 0,
 								att = get.attitude(player, target),
@@ -414,14 +478,20 @@ game.import("card", function () {
 								let atti = get.attitude(player, i);
 								if (atti > 0) {
 									fs++;
-									if (i.isLinked()) linkf = true;
+									if (i.isLinked()) {
+										linkf = true;
+									}
 								} else if (atti < 0) {
 									es++;
-									if (!i.isLinked()) alink = false;
+									if (!i.isLinked()) {
+										alink = false;
+									}
 								}
 							});
 							if (es < 2 && !alink) {
-								if (att <= 0 || (att > 0 && linkf && fs < 2)) return 0;
+								if (att <= 0 || (att > 0 && linkf && fs < 2)) {
+									return 0;
+								}
 							}
 							return res;
 						},
@@ -440,9 +510,15 @@ game.import("card", function () {
 				firstDo: true,
 				silent: true,
 				filter(event, player) {
-					if (event.player == player) return false;
-					if (!lib.filter.targetEnabled({ name: "luojing" }, player, event.player)) return false;
-					if (event.player.hp > 0) return false;
+					if (event.player == player) {
+						return false;
+					}
+					if (!lib.filter.targetEnabled({ name: "luojing" }, player, event.player)) {
+						return false;
+					}
+					if (event.player.hp > 0) {
+						return false;
+					}
 					return player.hasUsableCard("luojing");
 				},
 				content() {
@@ -450,14 +526,18 @@ game.import("card", function () {
 						.chooseToUse(
 							get.prompt("luojing", trigger.player).replace(/发动/, "使用"),
 							function (card, player) {
-								if (get.name(card) != "luojing") return false;
+								if (get.name(card) != "luojing") {
+									return false;
+								}
 								return lib.filter.cardEnabled(card, player, "forceEnable");
 							},
 							-1
 						)
 						.set("sourcex", trigger.player)
 						.set("filterTarget", function (card, player, target) {
-							if (target != _status.event.sourcex) return false;
+							if (target != _status.event.sourcex) {
+								return false;
+							}
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
 						.set("targetRequired", true);
@@ -467,9 +547,15 @@ game.import("card", function () {
 				trigger: { global: "dying" },
 				silent: true,
 				filter(event, player) {
-					if (event.player == player) return false;
-					if (!lib.filter.targetEnabled({ name: "shengsi" }, player, event.player)) return false;
-					if (event.player.hp > 0) return false;
+					if (event.player == player) {
+						return false;
+					}
+					if (!lib.filter.targetEnabled({ name: "shengsi" }, player, event.player)) {
+						return false;
+					}
+					if (event.player.hp > 0) {
+						return false;
+					}
 					return player.hasUsableCard("shengsi");
 				},
 				content() {
@@ -477,14 +563,18 @@ game.import("card", function () {
 						.chooseToUse(
 							get.prompt("shengsi", trigger.player).replace(/发动/, "使用"),
 							function (card, player) {
-								if (get.name(card) != "shengsi") return false;
+								if (get.name(card) != "shengsi") {
+									return false;
+								}
 								return lib.filter.cardEnabled(card, player, "forceEnable");
 							},
 							-1
 						)
 						.set("sourcex", trigger.player)
 						.set("filterTarget", function (card, player, target) {
-							if (target != _status.event.sourcex) return false;
+							if (target != _status.event.sourcex) {
+								return false;
+							}
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
 						.set("targetRequired", true);
@@ -515,8 +605,10 @@ game.import("card", function () {
 					return event.card.name == "leigong";
 				},
 				content() {
-					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(4) == trigger && evt.notLink()));
-					if (num > 0) player.draw(num);
+					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
+					if (num > 0) {
+						player.draw(num);
+					}
 				},
 			},
 		},

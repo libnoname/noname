@@ -42354,7 +42354,7 @@ function convertToJson(sourceFile, rootExpression, errors, returnValue, jsonConv
         return false;
       case 106 /* NullKeyword */:
         return null;
-      // eslint-disable-line no-restricted-syntax
+       
       case 11 /* StringLiteral */:
         if (!isDoubleQuotedString(valueExpression)) {
           errors.push(createDiagnosticForNodeInSourceFile(sourceFile, valueExpression, Diagnostics.String_literal_with_double_quotes_expected));
@@ -119080,7 +119080,7 @@ function transformNodes(resolver, host, factory2, options, nodes, transformers, 
 }
 var nullTransformationContext = {
   factory,
-  // eslint-disable-line object-shorthand
+   
   getCompilerOptions: () => ({}),
   getEmitResolver: notImplemented,
   getEmitHost: notImplemented,
@@ -184188,7 +184188,7 @@ var TypingsInstaller = class {
     this.pendingRunRequests = [];
     this.installRunCount = 1;
     this.inFlightRequestCount = 0;
-    // eslint-disable-line @typescript-eslint/unified-signatures
+
     this.latestDistTag = "latest";
     const isLoggingEnabled = this.log.isEnabled();
     if (isLoggingEnabled) {
@@ -185364,7 +185364,7 @@ var ScriptInfo = class {
   lineToTextSpan(line) {
     return this.textStorage.lineToTextSpan(line);
   }
-  // eslint-disable-line @typescript-eslint/unified-signatures
+
   lineOffsetToPosition(line, offset, allowEdits) {
     return this.textStorage.lineOffsetToPosition(line, offset, allowEdits);
   }
@@ -188544,7 +188544,7 @@ var _ProjectService = class _ProjectService {
       this.legacySafelist.clear();
     }
   }
-  // eslint-disable-line @typescript-eslint/unified-signatures
+
   updateTypingsForProject(response) {
     const project = this.findProject(response.projectName);
     if (!project) {
@@ -191307,7 +191307,7 @@ Dynamic files must always be opened with service's current directory or service 
       scriptInfo.editContent(change.span.start, change.span.start + change.span.length, change.newText);
     }
   }
-  // eslint-disable-line @typescript-eslint/unified-signatures
+
   closeExternalProject(uncheckedFileName, cleanupAfter) {
     const fileName = toNormalizedPath(uncheckedFileName);
     const projects = this.externalProjectToConfiguredProjectMap.get(fileName);
@@ -191444,7 +191444,7 @@ Dynamic files must always be opened with service's current directory or service 
       excludedFiles.push(normalizedNames[index]);
     }
   }
-  // eslint-disable-line @typescript-eslint/unified-signatures
+
   openExternalProject(proj, cleanupAfter) {
     const existingExternalProject = this.findExternalProjectByProjectName(proj.projectFileName);
     let configuredProjects;
@@ -195211,7 +195211,6 @@ ${e.message}`;
     this.currentRequestId = void 0;
     this.cancellationToken.resetRequest(requestId);
   }
-  // eslint-disable-line @typescript-eslint/unified-signatures
   executeWithRequestId(requestId, f, perfomanceData) {
     const currentPerformanceData = this.performanceData;
     try {

@@ -23,12 +23,15 @@ const cards = {
 				.sortBySeat();
 			while (targets.length && player.countCards("he")) {
 				const target = targets.shift();
-				if (target.isIn())
+				if (target.isIn()) {
 					await player.chooseToGive(target, "he", true, `交给${get.translation(target)}一张牌`).set("ai", card => {
 						const { player, target } = get.event();
-						if (player.hasSkill("twyingjia") && player.countUsed("dz_mantianguohai") == 1 && card.name == "dz_mantianguohai") return -10;
+						if (player.hasSkill("twyingjia") && player.countUsed("dz_mantianguohai") == 1 && card.name == "dz_mantianguohai") {
+							return -10;
+						}
 						return -get.value(card, target);
 					});
+				}
 			}
 		},
 		ai: {

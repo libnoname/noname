@@ -56,9 +56,7 @@ export class DynamicStyle {
 	 */
 	translate(style) {
 		return Object.entries(style)
-			.map(
-				(item) => `${item[0].replace(/([A-Z])/g, (match) => `-${match.toLowerCase()}`)}: ${item[1]};`
-			)
+			.map(item => `${item[0].replace(/([A-Z])/g, match => `-${match.toLowerCase()}`)}: ${item[1]};`)
 			.join(" ");
 	}
 
@@ -82,7 +80,7 @@ export class DynamicStyle {
 	 * @returns {boolean}
 	 */
 	has(name) {
-		return this.#cache.rules.some((item) => item[0] === name);
+		return this.#cache.rules.some(item => item[0] === name);
 	}
 
 	/**
@@ -93,7 +91,7 @@ export class DynamicStyle {
 	 * @returns {?StyleObject}
 	 */
 	get(name) {
-		const result = this.find((item) => item[0] === name);
+		const result = this.find(item => item[0] === name);
 		return result ? result[1] : null;
 	}
 
@@ -138,7 +136,9 @@ export class DynamicStyle {
 	 */
 	indexOf(name) {
 		for (let i = 0; i < this.#cache.rules.length; ++i) {
-			if (name === this.#cache.rules[i][0]) return i;
+			if (name === this.#cache.rules[i][0]) {
+				return i;
+			}
 		}
 		return -1;
 	}
@@ -158,7 +158,7 @@ export class DynamicStyle {
 	 * @returns {boolean[]} 添加的结果，为`true`则添加成功，为`false`则添加失败
 	 */
 	addObject(object) {
-		return Object.entries(object).map((item) => this.add(item[0], item[1]));
+		return Object.entries(object).map(item => this.add(item[0], item[1]));
 	}
 
 	/**
@@ -166,7 +166,9 @@ export class DynamicStyle {
 	 * @returns {boolean} 移除的结果，为`true`则移除成功，为`false`则移除失败
 	 */
 	remove(name) {
-		if (!this.has(name)) return false;
+		if (!this.has(name)) {
+			return false;
+		}
 		try {
 			const index = this.indexOf(name);
 			this.#cache.rules.splice(index, 1);
@@ -184,9 +186,11 @@ export class DynamicStyle {
 	 * @returns {boolean} 移除的结果，为`true`则移除成功，为`false`则移除失败
 	 */
 	removeStyles(name, styles) {
-		if (!this.has(name)) return false;
+		if (!this.has(name)) {
+			return false;
+		}
 		const style = this.get(name);
-		styles.forEach((styleName) => {
+		styles.forEach(styleName => {
 			delete style[styleName];
 		});
 		return this.update(name, style);

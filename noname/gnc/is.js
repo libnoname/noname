@@ -22,12 +22,6 @@ export class Is {
 	 * @returns {boolean}
 	 */
 	generator(item) {
-		return (
-			typeof item == "object" &&
-			"constructor" in item &&
-			item.constructor &&
-			"constructor" in item.constructor &&
-			item.constructor.constructor === GeneratorFunction
-		);
+		return typeof item == "object" && "constructor" in item && item.constructor && "constructor" in item.constructor && item.constructor.constructor === GeneratorFunction;
 	}
 }

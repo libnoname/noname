@@ -2,7 +2,9 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	yizan_use(player) {
-		if (player.storage.yizan) return "你可以将一张基本牌当做任意基本牌使用或打出。";
+		if (player.storage.yizan) {
+			return "你可以将一张基本牌当做任意基本牌使用或打出。";
+		}
 		return "你可以将两张牌（其中至少一张为基本牌）当做任意基本牌使用或打出。";
 	},
 	miaojian(player) {
@@ -17,7 +19,9 @@ const dynamicTranslates = {
 	shoufa(player) {
 		const zhoufa = player.storage.zhoulin_zhoufa;
 		const nodoudizhu = get.mode() == "doudizhu" ? "与你距离不小于1的/距离不大于1的" : "与你距离不小于2的/距离不大于2的";
-		if (!zhoufa) return "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，令其随机执行以下一项：豹，令其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，令其摸一张牌。";
+		if (!zhoufa) {
+			return "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，令其随机执行以下一项：豹，令其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，令其摸一张牌。";
+		}
 		let str = "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，";
 		str += ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
 		return str + "。";
@@ -27,12 +31,16 @@ const dynamicTranslates = {
 			status = player.countMark("mbxuetu_status");
 		return (() => {
 			if (status === 0) {
-				if (!xuetu) return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以令一名角色回复1点体力；</span>阳：你可以令一名角色摸两张牌。';
+				if (!xuetu) {
+					return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以令一名角色回复1点体力；</span>阳：你可以令一名角色摸两张牌。';
+				}
 				return '转换技。出牌阶段限一次，阴：你可以令一名角色回复1点体力；<span class="bluetext">阳：你可以令一名角色摸两张牌。</span>';
 			} else if (status === 1) {
 				return lib.translate.mbxuetu_achieve_info;
 			} else {
-				if (!xuetu) return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；</span>阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。';
+				if (!xuetu) {
+					return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；</span>阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。';
+				}
 				return '转换技。出牌阶段限一次，阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；<span class="bluetext">阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。</span>';
 			}
 		})();
@@ -40,12 +48,16 @@ const dynamicTranslates = {
 	mbzuoyou(player) {
 		const mbzuoyou = player.storage.mbzuoyou,
 			versus = get.mode() == "versus" && _status.mode == "two" ? "角色" : "有手牌的角色弃置一张手牌，然后其";
-		if (mbzuoyou) return '转换技。出牌阶段限一次，阴：你可以令一名角色摸三张牌，然后其弃置两张牌；<span class="bluetext">阳：你可以令一名' + versus + "获得1点护甲。</span>";
+		if (mbzuoyou) {
+			return '转换技。出牌阶段限一次，阴：你可以令一名角色摸三张牌，然后其弃置两张牌；<span class="bluetext">阳：你可以令一名' + versus + "获得1点护甲。</span>";
+		}
 		return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以令一名角色摸三张牌，然后其弃置两张牌；</span>阳：你可以令一名' + versus + "获得1点护甲。";
 	},
 	pothanzhan(player) {
 		let str = lib.translate.pothanzhan_info;
-		if (!player.storage.pothanzhan) return str;
+		if (!player.storage.pothanzhan) {
+			return str;
+		}
 		return str.replace(
 			"X为各自体力上限",
 			"X为" +
@@ -58,7 +70,9 @@ const dynamicTranslates = {
 	},
 	potzhanlie(player) {
 		let str = lib.translate.potzhanlie_info;
-		if (!player.storage.potzhanlie) return str;
+		if (!player.storage.potzhanlie) {
+			return str;
+		}
 		return str.replace(
 			"X为你的攻击范围",
 			"X为" +
@@ -70,13 +84,17 @@ const dynamicTranslates = {
 		);
 	},
 	mbfunan(player) {
-		if (player.storage.mbfunan_rewrite) return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
+		if (player.storage.mbfunan_rewrite) {
+			return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
+		}
 		return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌。`;
 	},
 	mbxuehen(player) {
 		const storage = player.storage.mbxuehen;
 		let str = "当你每回合首次造成或受到伤害后，你可展示至多X张手牌（X为你已损失体力值），这些牌只能当不计入次数且无次数限制的【杀】使用或打出，直到你使用这些牌造成伤害";
-		if (storage) str += "，且你使用以此法转化的【杀】结算结束后摸一张牌";
+		if (storage) {
+			str += "，且你使用以此法转化的【杀】结算结束后摸一张牌";
+		}
 		str += "。";
 		return str;
 	},

@@ -8,13 +8,11 @@ const { copyFile, writeFile } = require("node:fs/promises");
 const { basename, dirname, join, sep } = require("node:path");
 // import { argv, exit } from "node:process";
 const { argv, exit } = require("node:process");
-// import { fileURLToPath } from "node:url";
-const { fileURLToPath } = require("node:url");
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(__filename);
 
-// @ts-ignore
+// @ts-expect-error core-js
 if (typeof Map.groupBy !== 'function') {
 	// await import('./core-js-bundle.js');
 	require('./core-js-bundle.js');
@@ -32,7 +30,7 @@ const assetSuffixFilter = {
 };
 
 if (typeof window == 'undefined') {
-	// @ts-ignore
+	// @ts-expect-error just set a global
 	globalThis.window = globalThis;
 }
 
@@ -70,7 +68,7 @@ async function main(argv) {
 	 */
 	const newAssetList = [];
 	for (const oldAsset of assetList) {
-		if (oldAsset.startsWith("v")) continue;
+		if (oldAsset.startsWith("v")) {continue;}
 		if (!newAssetList.includes(oldAsset)) {
 			newAssetList.push(oldAsset);
 		}
@@ -83,12 +81,12 @@ async function main(argv) {
 	newAssetList.sort();
 
 	// 对素材进行分组
-	// @ts-ignore
+	// @ts-expect-error core-js
 	const group = Map.groupBy(newAssetList, path => {
 		const [type, subtype] = splitCache.get(path) ?? path.split(sep);
 		splitCache.set(path, [type, subtype]);
 
-		if (["theme", "font"].includes(type)) return type;
+		if (["theme", "font"].includes(type)) {return type;}
 
 		return `${type}${sep}${subtype}`;
 	});
@@ -113,12 +111,12 @@ async function backup(filePath) {
  * @returns { Promise<string[]> }
  */
 async function importAsset() {
-	// @ts-ignore
+	// @ts-expect-error take it as a module
 	await import("./asset.js");
 	const assetList = window.noname_asset_list;
 	delete window.noname_asset_list;
 	delete window.noname_skin_list;
-	// @ts-ignore
+	// @ts-expect-error must be true
 	return assetList;
 }
 
@@ -143,9 +141,9 @@ async function loadDiffFiles(commitHash) {
 /**
  * @param { string } version 
  * @param { Map<string, string[]> } assetGroup 
- * @param { Map<string, [type: string, subtype: string]> } splitCache
+ * @param { Map<string, [type: string, subtype: string]> } _splitCache
  */
-async function genAssetSource(version, assetGroup, splitCache) {
+async function genAssetSource(version, assetGroup, _splitCache) {
 	const sourceLines = ["window.noname_asset_list = [", `\t"v${version}",`];
 	/**
 	 * @param { string[] } files 

@@ -26,8 +26,12 @@ game.import("card", function () {
 					order: 9.5,
 					basic: {
 						equipValue(card, player) {
-							if (!player.isTurnedOver()) return 6;
-							if (player.isTurnedOver()) return -10;
+							if (!player.isTurnedOver()) {
+								return 6;
+							}
+							if (player.isTurnedOver()) {
+								return -10;
+							}
 							return 0;
 						},
 					},
@@ -48,13 +52,14 @@ game.import("card", function () {
 						target.damage();
 						event.finish();
 					} else {
-						target.chooseToDiscard("he", { type: "equip" }, "弃置一张装备牌或受到1点伤害").ai =
-							function (card) {
-								var player = _status.event.player;
-								var source = _status.event.getParent().player;
-								if (get.damageEffect(player, source, player) > 0) return -1;
-								return 7 - get.value(card);
-							};
+						target.chooseToDiscard("he", { type: "equip" }, "弃置一张装备牌或受到1点伤害").ai = function (card) {
+							var player = _status.event.player;
+							var source = _status.event.getParent().player;
+							if (get.damageEffect(player, source, player) > 0) {
+								return -1;
+							}
+							return 7 - get.value(card);
+						};
 					}
 					"step 1";
 					if (!result.bool) {
@@ -129,14 +134,9 @@ game.import("card", function () {
 					var card = player.getEquip(5);
 					if (card) {
 						var name = card.name;
-						if (
-							name &&
-							name.indexOf("monkey") != -1 &&
-							event.name == "tao" &&
-							event.player != player &&
-							event.cards.filterInD().length > 0
-						)
+						if (name && name.indexOf("monkey") != -1 && event.name == "tao" && event.player != player && event.cards.filterInD().length > 0) {
 							return true;
+						}
 					}
 					return false;
 				},
@@ -168,7 +168,9 @@ game.import("card", function () {
 					noturnOver: true,
 					effect: {
 						target(card, player, target, current) {
-							if (get.tag(card, "turnOver")) return "zeroplayertarget";
+							if (get.tag(card, "turnOver")) {
+								return "zeroplayertarget";
+							}
 						},
 					},
 				},
@@ -181,13 +183,10 @@ game.import("card", function () {
 				forced: true,
 				equipSkill: true,
 				filter(event, player) {
-					if (event._notrigger.includes(event.player)) return false;
-					return (
-						event.card &&
-						event.card.name == "sha" &&
-						event.notLink() &&
-						event.player.countCards("he") > 0
-					);
+					if (event._notrigger.includes(event.player)) {
+						return false;
+					}
+					return event.card && event.card.name == "sha" && event.notLink() && event.player.countCards("he") > 0;
 				},
 				content() {
 					trigger.player.chooseToDiscard(true, "he");
@@ -231,18 +230,24 @@ game.import("card", function () {
 						const info = get.info(skill);
 						return info && !info.charlotte;
 					});
-					if (!skills.length) return;
+					if (!skills.length) {
+						return;
+					}
 					const links = await player
 						.chooseButton(["选择获得一个技能", [skills, "skill"]])
 						.set("displayIndex", false)
 						.set("ai", button => {
 							const player = get.player();
 							let info = get.info(button.link);
-							if (info?.ai?.neg || info?.ai?.halfneg) return 0;
+							if (info?.ai?.neg || info?.ai?.halfneg) {
+								return 0;
+							}
 							return get.skillRank(button.link, "inout");
 						})
 						.forResultLinks();
-					if (!links?.length) return;
+					if (!links?.length) {
+						return;
+					}
 					await player.addTempSkills(links[0]);
 				},
 			},
@@ -264,8 +269,7 @@ game.import("card", function () {
 		},
 		translate: {
 			monkey: "猴子",
-			monkey_info:
-				"猴子偷桃：当场上有其他角色使用【桃】时，你可以弃掉【猴子】，阻止【桃】的结算并将其收为手牌。",
+			monkey_info: "猴子偷桃：当场上有其他角色使用【桃】时，你可以弃掉【猴子】，阻止【桃】的结算并将其收为手牌。",
 			mianju: "漩涡面具",
 			mianju_info: "<font color=#f00>锁定技</font> 你的武将牌不能被翻面。",
 			shoulijian: "手里剑",

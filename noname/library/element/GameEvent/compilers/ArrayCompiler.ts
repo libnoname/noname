@@ -9,7 +9,9 @@ export default class ArrayCompiler extends ContentCompilerBase {
 	}
 
 	compile(content: EventContent) {
-		if (!Array.isArray(content)) throw new ReferenceError("content必须是一个数组");
+		if (!Array.isArray(content)) {
+			throw new ReferenceError("content必须是一个数组");
+		}
 
 		const compiler = this;
 		return async function (event: GameEvent) {

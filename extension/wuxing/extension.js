@@ -5,7 +5,9 @@ game.import("play", function () {
 	return {
 		name: "wuxing",
 		arenaReady() {
-			if (_status.connectMode) return;
+			if (_status.connectMode) {
+				return;
+			}
 			lib.card.list.splice(Math.floor(lib.card.list.length * Math.random()), 0, ["spade", 5, "wuxingpan"]);
 			if (!_status.video) {
 				lib.video.push({
@@ -31,7 +33,9 @@ game.import("play", function () {
 					if (player.node.wuxing) {
 						player.node.wuxing.remove();
 					}
-					if (_status.video || _status.connectMode) return;
+					if (_status.video || _status.connectMode) {
+						return;
+					}
 					let node = ui.create.div(".wunature", player);
 					let nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
 					player.wunature = nature;
@@ -42,10 +46,18 @@ game.import("play", function () {
 			},
 			card: {
 				init(card) {
-					if (_status.video || _status.connectMode) return;
-					if (card.name == "wuxingpan") return;
-					if (card.wunature) return;
-					if (Math.random() > (parseFloat(lib.config.wuxing_num_playpackconfig) || 0)) return;
+					if (_status.video || _status.connectMode) {
+						return;
+					}
+					if (card.name == "wuxingpan") {
+						return;
+					}
+					if (card.wunature) {
+						return;
+					}
+					if (Math.random() > (parseFloat(lib.config.wuxing_num_playpackconfig) || 0)) {
+						return;
+					}
 					let node = ui.create.div(".wunature", card);
 					let nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
 					card.wunature = nature;
@@ -66,7 +78,9 @@ game.import("play", function () {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					if (_status.connectMode) return false;
+					if (_status.connectMode) {
+						return false;
+					}
 					return event.card.wunature && player.wunature;
 				},
 				content() {
@@ -160,50 +174,70 @@ game.import("play", function () {
 								case "metal":
 									switch (target.wunature) {
 										case "wood":
-											if (current != 0) return [1, -0.3];
+											if (current != 0) {
+												return [1, -0.3];
+											}
 											return;
 										case "water":
-											if (current != 0) return [1, 0.3];
+											if (current != 0) {
+												return [1, 0.3];
+											}
 											return;
 									}
 									return;
 								case "wood":
 									switch (target.wunature) {
 										case "soil":
-											if (current != 0) return [1, -0.3];
+											if (current != 0) {
+												return [1, -0.3];
+											}
 											return;
 										case "fire":
-											if (current != 0) return [1, 0.3];
+											if (current != 0) {
+												return [1, 0.3];
+											}
 											return;
 									}
 									return;
 								case "water":
 									switch (target.wunature) {
 										case "fire":
-											if (current != 0) return [1, -0.3];
+											if (current != 0) {
+												return [1, -0.3];
+											}
 											return;
 										case "wood":
-											if (current != 0) return [1, 0.3];
+											if (current != 0) {
+												return [1, 0.3];
+											}
 											return;
 									}
 									return;
 								case "fire":
 									switch (target.wunature) {
 										case "metal":
-											if (current != 0) return [1, -0.3];
+											if (current != 0) {
+												return [1, -0.3];
+											}
 											return;
 										case "soil":
-											if (current != 0) return [1, 0.3];
+											if (current != 0) {
+												return [1, 0.3];
+											}
 											return;
 									}
 									return;
 								case "soil":
 									switch (target.wunature) {
 										case "water":
-											if (current != 0) return [1, -0.3];
+											if (current != 0) {
+												return [1, -0.3];
+											}
 											return;
 										case "metal":
-											if (current != 0) return [1, 0.3];
+											if (current != 0) {
+												return [1, 0.3];
+											}
 											return;
 									}
 									return;

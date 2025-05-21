@@ -13,9 +13,13 @@ const cards = {
 			target.draw();
 			"step 1";
 			var hs = target.getCards("he");
-			if (!hs.length) event.finish();
-			else if (hs.length == 1) event._result = { bool: true, cards: hs };
-			else target.chooseCard("he", true, "选择一张牌置入仁库");
+			if (!hs.length) {
+				event.finish();
+			} else if (hs.length == 1) {
+				event._result = { bool: true, cards: hs };
+			} else {
+				target.chooseCard("he", true, "选择一张牌置入仁库");
+			}
 			"step 2";
 			if (result.bool) {
 				var card = result.cards[0];
@@ -29,24 +33,35 @@ const cards = {
 				_status.renku.length &&
 				(function () {
 					var cards = _status.renku;
-					if (cards.length == 1) return true;
+					if (cards.length == 1) {
+						return true;
+					}
 					var color = get.color(cards[0], false),
 						type = get.type(cards[0], false);
 					for (var i = 1; i < cards.length; i++) {
-						if (color && get.color(cards[i], false) != color) color = false;
-						if (type && get.type(cards[i], false) != type) type = false;
-						if (!color && !type) return false;
+						if (color && get.color(cards[i], false) != color) {
+							color = false;
+						}
+						if (type && get.type(cards[i], false) != type) {
+							type = false;
+						}
+						if (!color && !type) {
+							return false;
+						}
 					}
 					return true;
 				})()
-			)
+			) {
 				player.draw();
+			}
 		},
 		ai: {
 			order: 1,
 			result: {
 				player(player, target) {
-					if (player.hasSkill("kano_poyu")) return 2;
+					if (player.hasSkill("kano_poyu")) {
+						return 2;
+					}
 					return 0;
 				},
 				target: 0.1,

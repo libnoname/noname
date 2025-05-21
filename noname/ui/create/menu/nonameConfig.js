@@ -18,11 +18,7 @@ export const NonameToggle = {
  */
 export const NonameConfig = {
 	template: html`
-		<div 
-			ref="node" 
-			:class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }" 
-			@click="nodeClick"
-			:style="nodeStyle">
+		<div ref="node" :class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }" @click="nodeClick" :style="nodeStyle">
 			<span>{{ config.name }}</span>
 			<div v-if="config.item">{{ config.item[config.init] }}</div>
 			<div v-else-if="config.range">
@@ -53,7 +49,9 @@ export const NonameConfig = {
 		},
 		clickToggle(node) {
 			console.log("clickToggle");
-			if (node.classList.contains("disabled")) return;
+			if (node.classList.contains("disabled")) {
+				return;
+			}
 			node.classList.toggle("on");
 			const config = this.config;
 			if (config.onclick) {
@@ -69,18 +67,18 @@ export const NonameConfig = {
 		nodeStyle() {
 			if (this.config.clear && this.$refs.node.innerHTML.length >= 15) {
 				return {
-					height: "auto"
+					height: "auto",
 				};
 			}
 			return {};
 		},
 		inputStyle() {
 			return {
-				webkitUserSelect: this.config.fixed ? 'text' : '',
+				webkitUserSelect: this.config.fixed ? "text" : "",
 				maxWidth: "60%",
 				overflow: "hidden",
 				whiteSpace: "nowrap",
-			}
+			};
 		},
 		inputKeydown(e) {
 			if (e.keyCode == 13) {
@@ -105,19 +103,18 @@ export const NonameConfig = {
 						config.intro = "设置" + config.name;
 					}
 					lib.setIntro(this.$refs.node, function (uiintro) {
-						if (lib.config.touchscreen) _status.dragged = true;
+						if (lib.config.touchscreen) {
+							_status.dragged = true;
+						}
 						uiintro.style.width = "170px";
 						let str = config.intro;
 						if (typeof str == "function") {
 							str = str();
 						}
-						uiintro._place_text = uiintro.add(
-							'<div class="text" style="display:inline">' + str + "</div>"
-						);
+						uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
 					});
 				}
-			}
-			else {
+			} else {
 				if (!config.nopointer) {
 					this.$refs.node.classList.add("pointerspan");
 				}
@@ -133,20 +130,15 @@ export const NonameConfig = {
 						});
 					}
 					if (typeof this.config.visualBar == "function" && this.$refs.visualBar) {
-						this.config.visualBar(this.$refs.visualBar, this.config.item, function (i, before) {
-		
-						}, this.$refs.root);
+						this.config.visualBar(this.$refs.visualBar, this.config.item, function (i, before) {}, this.$refs.root);
 					}
 					lib.setScroll(this.$refs.menu);
 				}
-			} 
-			else if (config.range) {
+			} else if (config.range) {
 				void 0;
-			}
-			else if (config.clear) {
+			} else if (config.clear) {
 				void 0;
-			}
-			else if (config.input) {
+			} else if (config.input) {
 				const input = this.$refs.input;
 				if (config.name == "联机昵称") {
 					input.innerHTML = config.init || "无名玩家";
@@ -159,8 +151,7 @@ export const NonameConfig = {
 						game.saveConfig("connect_nickname", input.innerHTML);
 						game.saveConfig("connect_nickname", input.innerHTML, "connect");
 					};
-				} 
-				else if (config.name == "联机大厅") {
+				} else if (config.name == "联机大厅") {
 					input.innerHTML = config.init || lib.hallURL;
 					input.onblur = function () {
 						if (!input.innerHTML) {
@@ -169,13 +160,11 @@ export const NonameConfig = {
 						input.innerHTML = input.innerHTML.replace(/<br>/g, "");
 						game.saveConfig("hall_ip", input.innerHTML, "connect");
 					};
-				} 
-				else {
+				} else {
 					input.innerHTML = config.init;
 					input.onblur = config.onblur;
 				}
-			}
-			else {
+			} else {
 				if (config.init == true) {
 					this.$refs.node.classList.add("on");
 				}
@@ -189,7 +178,7 @@ export const NonameConfig = {
 				config.item = config.item();
 			}
 		}
-	}
+	},
 };
 
 /**
@@ -233,9 +222,7 @@ export const menuConfigTemplate = {
 			}
 			visualMenu.update = this.updateVisual;
 		},
-		clickMenuItem() {
-
-		},
+		clickMenuItem() {},
 		visualBarClick() {
 			// todo: visualBar.parentNode.parentNode 是 popup-container
 			this.$refs.visualBar.parentNode.parentNode.noclose = true;

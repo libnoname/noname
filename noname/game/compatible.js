@@ -41,7 +41,9 @@ export class GameCompatible {
 	 * @returns {Promise<unknown>}
 	 */
 	tryUpdateClient(type, text = "") {
-		if (!compatibleEnvironment && type != UpdateReason.DEBUG) return Promise.resolve();
+		if (!compatibleEnvironment && type != UpdateReason.DEBUG) {
+			return Promise.resolve();
+		}
 
 		/**
 		 * @param {*} url
@@ -67,7 +69,9 @@ export class GameCompatible {
 						max = 1000;
 					}
 					received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-					if (received > max) max = received;
+					if (received > max) {
+						max = received;
+					}
 					progress.setProgressMax(max);
 					progress.setProgressValue(received);
 				})

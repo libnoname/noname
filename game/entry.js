@@ -30,7 +30,7 @@ waitUpdate
 				const url = sendUpdate();
 				if (typeof url == "string") {
 					if (typeof window.require == "function" && typeof window.process == "object") {
-						// @ts-ignore
+						// @ts-expect-error ignore
 						const remote = require("@electron/remote");
 						const thisWindow = remote.getCurrentWindow();
 						thisWindow.loadURL(url);
@@ -61,7 +61,7 @@ waitUpdate
 						console.error("升级失败:", e);
 					});
 			};
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (!lib.db) {
 				data = {};
 				for (let i in localStorage) {
@@ -91,13 +91,13 @@ waitUpdate
 						return /** @type {Promise<void>} */ (
 							// eslint-disable-next-line no-async-promise-executor
 							new Promise(async (resolve, reject) => {
-								if (!data) return reject(new Error("没有数据内容"));
+								if (!data) {return reject(new Error("没有数据内容"));}
 								try {
 									data = JSON.parse(lib.init.decode(data));
 									if (!data || typeof data != "object") {
 										throw "err";
 									}
-									// @ts-ignore
+									// @ts-expect-error ignore
 									if (lib.db && (!data.config || !data.data)) {
 										throw "err";
 									}
@@ -110,7 +110,7 @@ waitUpdate
 									}
 									return;
 								}
-								// @ts-ignore
+								// @ts-expect-error ignore
 								if (!lib.db) {
 									const noname_inited = localStorage.getItem("noname_inited");
 									const onlineKey = localStorage.getItem(lib.configprefix + "key");

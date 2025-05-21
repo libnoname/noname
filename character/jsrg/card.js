@@ -17,7 +17,9 @@ const cards = {
 				var cards = player.getCards("j", card => {
 					return (card.viewAs || card.name) == "xumou_jsrg";
 				});
-				if (cards.length > 0) player.loseToDiscardpile(cards);
+				if (cards.length > 0) {
+					player.loseToDiscardpile(cards);
+				}
 			} else {
 				player.addTempSkill("xumou_jsrg_temp", "phaseChange");
 				player.markAuto("xumou_jsrg_temp", [event.cards[0].name]);
@@ -33,7 +35,9 @@ const cards = {
 		destroy: "discardPile",
 		getYing(count) {
 			var cards = [];
-			if (typeof count != "number") count = 1;
+			if (typeof count != "number") {
+				count = 1;
+			}
 			while (count--) {
 				let card = game.createCard("ying", "spade", 1);
 				cards.push(card);

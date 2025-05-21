@@ -54,7 +54,9 @@ export function freezeButExtensible(record) {
 	const descriptors = Object.getOwnPropertyDescriptors(record);
 	if (descriptors) {
 		for (const [key, descriptor] of Object.entries(descriptors)) {
-			if ("value" in descriptor) descriptor.writable = false;
+			if ("value" in descriptor) {
+				descriptor.writable = false;
+			}
 			descriptor.configurable = false;
 			// @ts-ignore
 			Reflect.defineProperty(record, key, descriptor);
@@ -86,7 +88,9 @@ export function jumpToCatchBlock() {
  * @param {function} func
  */
 export function isClass(func) {
-	if (typeof func !== "function") return false;
+	if (typeof func !== "function") {
+		return false;
+	}
 	const fnStr = Function.prototype.toString.call(func);
 	return /^class\s/.test(fnStr);
 }

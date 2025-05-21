@@ -23,12 +23,9 @@ game.import("character", function () {
 			},
 		},
 		characterIntro: {
-			mtg_jiding:
-				"这名白色魔法的使用者极其注重忠诚，正义和荣誉。他曾全力追捕茜卓纳拉，如今已不可思议地与这位火焰法师成为伙伴。",
-			mtg_jiesi:
-				"杰斯贝连是使用蓝色法术的鹏洛客。他擅长心灵法术：读取心灵，幻影，知识，以及欺瞒的咒语。",
-			mtg_lilianna:
-				"莉莲娜维斯是一位精通死灵术的旅法师，她擅长用黑色法术力来复活死者，腐化生者，并从死亡中召唤力量。",
+			mtg_jiding: "这名白色魔法的使用者极其注重忠诚，正义和荣誉。他曾全力追捕茜卓纳拉，如今已不可思议地与这位火焰法师成为伙伴。",
+			mtg_jiesi: "杰斯贝连是使用蓝色法术的鹏洛客。他擅长心灵法术：读取心灵，幻影，知识，以及欺瞒的咒语。",
+			mtg_lilianna: "莉莲娜维斯是一位精通死灵术的旅法师，她擅长用黑色法术力来复活死者，腐化生者，并从死亡中召唤力量。",
 		},
 		skill: {
 			mduohun: {
@@ -43,13 +40,19 @@ game.import("character", function () {
 				},
 				ai: {
 					threaten(player, target) {
-						if (target.hp == 1) return 0.6;
+						if (target.hp == 1) {
+							return 0.6;
+						}
 						return 1;
 					},
 					effect: {
 						target(card, player, target, current) {
-							if (!target.hasFriend()) return;
-							if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -1];
+							if (!target.hasFriend()) {
+								return;
+							}
+							if (target.hp <= 1 && get.tag(card, "damage")) {
+								return [1, 0, 0, -1];
+							}
 						},
 					},
 				},
@@ -79,10 +82,7 @@ game.import("character", function () {
 						trigger: { global: "dieAfter" },
 						forced: true,
 						filter(event, player) {
-							return (
-								!event.player.isMin() &&
-								![player.name, player.name1, player.name2].includes(event.player.name)
-							);
+							return !event.player.isMin() && ![player.name, player.name1, player.name2].includes(event.player.name);
 						},
 						content() {
 							var skills = lib.character[trigger.player.name][3].slice(0);
@@ -153,20 +153,22 @@ game.import("character", function () {
 						onremove: true,
 						group: "mhuanyi_die",
 						filter(event, player) {
-							if (!player.storage.mhuanyi_target) return false;
-							if (event.player == player.storage.mhuanyi_target[0]) return false;
-							if (get.type(event.card) == "basic") {
-								if (player.storage.mhuanyi_target[1] != 0) return false;
-							} else {
-								if (player.storage.mhuanyi_target[1] != 1) return false;
+							if (!player.storage.mhuanyi_target) {
+								return false;
 							}
-							if (
-								!lib.filter.targetEnabled2(
-									event.card,
-									event.player,
-									player.storage.mhuanyi_target[0]
-								)
-							) {
+							if (event.player == player.storage.mhuanyi_target[0]) {
+								return false;
+							}
+							if (get.type(event.card) == "basic") {
+								if (player.storage.mhuanyi_target[1] != 0) {
+									return false;
+								}
+							} else {
+								if (player.storage.mhuanyi_target[1] != 1) {
+									return false;
+								}
+							}
+							if (!lib.filter.targetEnabled2(event.card, event.player, player.storage.mhuanyi_target[0])) {
 								return false;
 							}
 							return true;
@@ -183,7 +185,9 @@ game.import("character", function () {
 						trigger: { global: "dieAfter" },
 						silent: true,
 						filter(event, player) {
-							if (!player.storage.mhuanyi_target) return false;
+							if (!player.storage.mhuanyi_target) {
+								return false;
+							}
 							return event.player == player.storage.mhuanyi_target[0];
 						},
 						content() {
@@ -199,8 +203,12 @@ game.import("character", function () {
 				round: 1,
 				filter(event, player) {
 					if (get.type(event.card) == "trick" && event.card.isCard) {
-						if (event.player == player) return false;
-						if (!player.countCards("he", { suit: get.suit(event.card) })) return false;
+						if (event.player == player) {
+							return false;
+						}
+						if (!player.countCards("he", { suit: get.suit(event.card) })) {
+							return false;
+						}
 						return true;
 					}
 					return false;
@@ -233,7 +241,9 @@ game.import("character", function () {
 				filter(event, player) {
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
-						if (enemies[i].countCards("h")) return true;
+						if (enemies[i].countCards("h")) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -391,22 +401,17 @@ game.import("character", function () {
 			lingyong2: "灵俑",
 			lingyong3: "灵俑",
 			lingyong3_bg: "俑",
-			lingyong_info:
-				"锁定技，每当一名其他角色死亡，你获得一个与该角色同名且体力上限为1、初始手牌为2的随从；出牌阶段，你可以调遣以此法获得的随从（直到随从死亡不可再次切换）。",
+			lingyong_info: "锁定技，每当一名其他角色死亡，你获得一个与该角色同名且体力上限为1、初始手牌为2的随从；出牌阶段，你可以调遣以此法获得的随从（直到随从死亡不可再次切换）。",
 			mbaizhan: "百战",
 			mbaizhan_info: "锁定技，每当你造成1点伤害，你获得1点护甲。",
 			msilian: "祀炼",
-			msilian_info:
-				"结束阶段，若你有护甲，你可以移去全部护甲，然后进行一个额外回合；在额外回合中，你的摸牌阶段摸牌基数为你移去的护甲数；额外回合结束后，若你未造成伤害，你失去1点体力。",
+			msilian_info: "结束阶段，若你有护甲，你可以移去全部护甲，然后进行一个额外回合；在额外回合中，你的摸牌阶段摸牌基数为你移去的护甲数；额外回合结束后，若你未造成伤害，你失去1点体力。",
 			mtongnian: "通念",
-			mtongnian_info:
-				"锁定技，出牌阶段开始时，你获得一张替身牌，此牌对应一名随机敌人的一张随机手牌；每当你使用一张非替身牌，随机更换替身牌对应的牌；当你使用替身牌时，改为使用替身牌对应的牌；当出牌阶段结束，或替身牌离开手牌区，或敌方角色没有手牌时，销毁替身牌。",
+			mtongnian_info: "锁定技，出牌阶段开始时，你获得一张替身牌，此牌对应一名随机敌人的一张随机手牌；每当你使用一张非替身牌，随机更换替身牌对应的牌；当你使用替身牌时，改为使用替身牌对应的牌；当出牌阶段结束，或替身牌离开手牌区，或敌方角色没有手牌时，销毁替身牌。",
 			msuoling: "塑灵",
-			msuoling_info:
-				"每轮限一次，当一名其他角色使用一张非转化的普通锦囊牌时，你可以弃置一张与之花色相同的牌取消之，然后你视为使用该锦囊牌。",
+			msuoling_info: "每轮限一次，当一名其他角色使用一张非转化的普通锦囊牌时，你可以弃置一张与之花色相同的牌取消之，然后你视为使用该锦囊牌。",
 			mhuanyi: "幻逸",
-			mhuanyi_info:
-				"每两轮限一次，结束阶段，你可以选择一名其他角色和一种卡牌类型（选择结果对其他角色不可见），直到下一回合开始，当你首次成为该类型卡牌的惟一目标时，你将目标转移给你指定的角色（目标须合法）。",
+			mhuanyi_info: "每两轮限一次，结束阶段，你可以选择一名其他角色和一种卡牌类型（选择结果对其他角色不可见），直到下一回合开始，当你首次成为该类型卡牌的惟一目标时，你将目标转移给你指定的角色（目标须合法）。",
 		},
 	};
 });

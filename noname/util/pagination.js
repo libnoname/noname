@@ -75,7 +75,9 @@ export class Pagination {
 				// @ts-ignore
 				const currentPageEle = e.target;
 				// 点击的是当前页数不进行操作
-				if (this.hasClass(currentPageEle, state.activeCName)) return;
+				if (this.hasClass(currentPageEle, state.activeCName)) {
+					return;
+				}
 				let dataNumberAttr = currentPageEle.getAttribute(state.dataNumberAttr);
 				// 点击数字按钮
 				if (dataNumberAttr) {
@@ -114,7 +116,9 @@ export class Pagination {
 		if (state.pageNumber !== pageNumber) {
 			// 清除 active 样式
 			const active = this.selectorEle(`.${state.pCName}.${state.activeCName}`);
-			if (active) this.removeClass(active, state.activeCName);
+			if (active) {
+				this.removeClass(active, state.activeCName);
+			}
 			if (state.activePosition) {
 				let rEllipseSign = state.totalPageCount - (state.maxShowBtnCount - state.activePosition) - 1;
 				// 左边不需要出现省略符号占位
@@ -157,7 +161,9 @@ export class Pagination {
 						}
 					}
 					const active = Array.from(evaNumberLi).find(item => item.getAttribute(state.dataNumberAttr) === String(pageNumber));
-					if (active) this.addClass(active, state.activeCName);
+					if (active) {
+						this.addClass(active, state.activeCName);
+					}
 				}
 			} else {
 				// 不需要省略符号占位
@@ -252,12 +258,16 @@ export class Pagination {
 			if (ele.classList.contains("dialog")) {
 				// @ts-ignore
 				Array.from(this.element.children).forEach(item => {
-					if (item.classList.contains("number-ellipsis") || item.classList.contains("ellipsis-tail")) return;
+					if (item.classList.contains("number-ellipsis") || item.classList.contains("ellipsis-tail")) {
+						return;
+					}
 					item.classList.add("shadowed");
 				});
 				break;
 			}
-			if (ele === document.body) break;
+			if (ele === document.body) {
+				break;
+			}
 			// @ts-ignore
 			ele = ele.parentNode;
 		}
@@ -270,7 +280,9 @@ export class Pagination {
 	 */
 	isIllegal(pageNumber) {
 		let { state } = this;
-		if (state.pageRefuseChanged) return true;
+		if (state.pageRefuseChanged) {
+			return true;
+		}
 		return /*state.pageNumber === pageNumber || */ Math.ceil(pageNumber) !== pageNumber || pageNumber > state.totalPageCount || pageNumber < 1 || typeof pageNumber !== "number" || pageNumber !== pageNumber;
 	}
 	/**

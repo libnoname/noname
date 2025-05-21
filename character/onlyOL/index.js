@@ -23,9 +23,7 @@ game.import("character", function () {
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
 		characterSubstitute: {
-			ol_sb_yuanshao: [
-				["ol_sb_yuanshao_shadow", ["die:ol_sb_yuanshao"]],
-			],
+			ol_sb_yuanshao: [["ol_sb_yuanshao_shadow", ["die:ol_sb_yuanshao"]]],
 			ol_sb_dongzhuo: [
 				["ol_sb_dongzhuo_shadow1", ["tempname:ol_sb_dongzhuo", "die:ol_sb_dongzhuo"]],
 				["ol_sb_dongzhuo_shadow2", ["tempname:ol_sb_dongzhuo", "die:ol_sb_dongzhuo"]],

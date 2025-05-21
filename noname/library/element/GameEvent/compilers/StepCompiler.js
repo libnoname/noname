@@ -11,7 +11,9 @@ export default class StepCompiler extends ContentCompilerBase {
 		return typeof content === "function" && ![AsyncFunction, GeneratorFunction, AsyncGeneratorFunction].some(parent => content instanceof parent);
 	}
 	compile(content) {
-		if (typeof content != "function") throw new Error("StepCompiler只能接受函数");
+		if (typeof content != "function") {
+			throw new Error("StepCompiler只能接受函数");
+		}
 		return new StepParser(content).getResult();
 	}
 }
@@ -35,11 +37,15 @@ class StepParser {
 	contents = [];
 	originals = [];
 	constructor(func) {
-		if (typeof func !== "function") throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+		if (typeof func !== "function") {
+			throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+		}
 		// ModAsyncFunction
 		this.functionConstructor = security.getIsolatedsFrom(func)[2];
 		this.str = this.formatFunction(func);
-		if (lib.config.dev) this.replaceDebugger();
+		if (lib.config.dev) {
+			this.replaceDebugger();
+		}
 	}
 	getResult() {
 		this.parseStep();
@@ -112,7 +118,9 @@ class StepParser {
 		let debuggerSkip = 0;
 		let debuggerResult;
 		while ((debuggerResult = this.str.slice(debuggerSkip).match(regex)) != null) {
-			if (debuggerResult.index == null) throw new Error("匹配到了debugger但是没有索引值");
+			if (debuggerResult.index == null) {
+				throw new Error("匹配到了debugger但是没有索引值");
+			}
 			let debuggerCopy = this.str;
 			debuggerCopy = debuggerCopy.slice(0, debuggerSkip + debuggerResult.index) + insertDebugger + debuggerCopy.slice(debuggerSkip + debuggerResult.index + debuggerResult[0].length, -1);
 			try {

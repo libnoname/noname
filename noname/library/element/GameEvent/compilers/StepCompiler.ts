@@ -15,7 +15,9 @@ export default class StepCompiler extends ContentCompilerBase {
 	}
 
 	compile(content: EventContent) {
-		if (typeof content != "function") throw new Error("StepCompiler只能接受函数");
+		if (typeof content != "function") {
+			throw new Error("StepCompiler只能接受函数");
+		}
 
 		return new StepParser(content).getResult();
 	}
@@ -43,11 +45,15 @@ class StepParser {
 	originals: Function[] = [];
 
 	constructor(func: Function) {
-		if (typeof func !== "function") throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+		if (typeof func !== "function") {
+			throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+		}
 		// ModAsyncFunction
 		this.functionConstructor = security.getIsolatedsFrom(func)[2];
 		this.str = this.formatFunction(func);
-		if (lib.config.dev) this.replaceDebugger();
+		if (lib.config.dev) {
+			this.replaceDebugger();
+		}
 	}
 
 	getResult(): (e: GameEvent) => Promise<void> {
@@ -124,14 +130,16 @@ class StepParser {
 	}
 
 	replaceDebugger() {
-		let regex = /event\.debugger\(\)/;
+		const regex = /event\.debugger\(\)/;
 		// let hasDebugger = false;
-		let insertDebugger = `await event.debugger()`; // yield code=>eval(code) 唔唔不是我干的喵
+		const insertDebugger = `await event.debugger()`; // yield code=>eval(code) 唔唔不是我干的喵
 		let debuggerSkip = 0;
 		let debuggerResult: RegExpMatchArray | null;
 
 		while ((debuggerResult = this.str.slice(debuggerSkip).match(regex)) != null) {
-			if (debuggerResult.index == null) throw new Error("匹配到了debugger但是没有索引值");
+			if (debuggerResult.index == null) {
+				throw new Error("匹配到了debugger但是没有索引值");
+			}
 
 			let debuggerCopy = this.str;
 			debuggerCopy = debuggerCopy.slice(0, debuggerSkip + debuggerResult.index) + insertDebugger + debuggerCopy.slice(debuggerSkip + debuggerResult.index + debuggerResult[0].length, -1);

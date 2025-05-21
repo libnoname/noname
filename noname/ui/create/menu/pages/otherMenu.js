@@ -2,11 +2,13 @@ import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwi
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "../../../../library/update.js";
 import { createApp } from "../../../../../game/vue.esm-browser.js";
-import security from "../../../../util/security.js"
+import security from "../../../../util/security.js";
 import dedent from "../../../../../game/dedent.js";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
-	if (connectMenu) return;
+	if (connectMenu) {
+		return;
+	}
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
@@ -41,7 +43,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	 * @this { HTMLDivElement }
 	 */
 	var clickMode = function () {
-		if (this.classList.contains("off")) return;
+		if (this.classList.contains("off")) {
+			return;
+		}
 		var active = this.parentNode.querySelector(".active");
 		if (active === this) {
 			return;
@@ -52,8 +56,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		}
 		active = this;
 		this.classList.add("active");
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -185,7 +190,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							max = 1000;
 						}
 						received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-						if (received > max) max = received;
+						if (received > max) {
+							max = received;
+						}
 						progress.setProgressMax(max);
 						progress.setProgressValue(received);
 					})
@@ -205,7 +212,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								}
 								unZipProgress.setProgressValue(i++);
 								const fileName = typeof root == "string" && key.startsWith(root) ? key.replace(root, "") : key;
-								if (hiddenFileFlags.includes(fileName[0])) continue;
+								if (hiddenFileFlags.includes(fileName[0])) {
+									continue;
+								}
 								if (value.dir) {
 									await game.promises.createDir(fileName);
 									continue;
@@ -220,8 +229,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 											return new Promise((resolve, reject) => {
 												const cp = require("child_process");
 												cp.exec(`taskkill /IM noname-server.exe /F`, e => {
-													if (e) reject(e);
-													else
+													if (e) {
+														reject(e);
+													} else {
 														game.promises
 															.writeFile(value.asArrayBuffer(), path, name)
 															.then(() => {
@@ -232,18 +242,24 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 																	setTimeout(() => myAbortController.abort(), 2000);
 																	fetch(`http://localhost:8089/app.html`, { signal })
 																		.then(({ ok }) => {
-																			if (ok) resolve(null);
-																			else throw new Error("fetch加载失败");
+																			if (ok) {
+																				resolve(null);
+																			} else {
+																				throw new Error("fetch加载失败");
+																			}
 																		})
 																		.catch(() => loadURL());
 																}
 																loadURL();
 															})
 															.catch(reject);
+													}
 												});
 											});
 										}
-									} else throw e;
+									} else {
+										throw e;
+									}
 								});
 							}
 							unZipProgress.remove();
@@ -260,8 +276,12 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							refresh();
 						})
 						.catch(e => {
-							if (progress.parentNode) progress.remove();
-							if (unZipProgress && unZipProgress.parentNode) unZipProgress.remove();
+							if (progress.parentNode) {
+								progress.remove();
+							}
+							if (unZipProgress && unZipProgress.parentNode) {
+								unZipProgress.remove();
+							}
 							refresh();
 							throw e;
 						});
@@ -275,7 +295,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								/** @type { ReturnType<import('../../../../library/update.js').getRepoTagDescription> } */
 								const description = lib.config[`version_description_${tagName}`];
 								return description;
-							} else return getRepoTagDescription(tagName);
+							} else {
+								return getRepoTagDescription(tagName);
+							}
 						})
 						.then(description => {
 							// 保存版本信息
@@ -298,7 +320,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 									function (index) {
 										if (index == 1) {
 											download(description);
-										} else refresh();
+										} else {
+											refresh();
+										}
 									},
 									str,
 									["确定", "取消"]
@@ -306,7 +330,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							} else {
 								if (confirm(str + "\n" + str2)) {
 									download(description);
-								} else refresh();
+								} else {
+									refresh();
+								}
 							}
 						})
 						.catch(e => {
@@ -351,9 +377,15 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				};
 
 				const assetDirectories = [];
-				if (lib.config.asset_font) assetDirectories.push("font");
-				if (lib.config.asset_audio) assetDirectories.push("audio");
-				if (lib.config.asset_image) assetDirectories.push("image");
+				if (lib.config.asset_font) {
+					assetDirectories.push("font");
+				}
+				if (lib.config.asset_audio) {
+					assetDirectories.push("audio");
+				}
+				if (lib.config.asset_image) {
+					assetDirectories.push("image");
+				}
 				const version = await getLatestVersionFromGitHub().catch(e => {
 					refresh();
 					throw e;
@@ -392,7 +424,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 						.readFile(v.path)
 						.then(data => {
 							// 有设置就不进行对比直接返回false
-							if (lib.config.asset_notReplaceExistingFiles) return false;
+							if (lib.config.asset_notReplaceExistingFiles) {
+								return false;
+							}
 							return v.size != data.byteLength;
 							// 报错了就是没有文件
 						})
@@ -446,7 +480,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								max = 1000;
 							}
 							received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-							if (received > max) max = received;
+							if (received > max) {
+								max = received;
+							}
 							progress.setProgressMax(max);
 							progress.setProgressValue(received);
 						},
@@ -471,7 +507,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							for (const [key, value] of entries) {
 								unZipProgress.setProgressValue(i++);
 								const fileName = typeof root == "string" && key.startsWith(root) ? key.replace(root, "") : key;
-								if (hiddenFileFlags.includes(fileName[0])) continue;
+								if (hiddenFileFlags.includes(fileName[0])) {
+									continue;
+								}
 								if (value.dir) {
 									await game.promises.createDir(fileName);
 									continue;
@@ -485,8 +523,12 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							await finish();
 						})
 						.catch(e => {
-							if (progress.parentNode) progress.remove();
-							if (unZipProgress && unZipProgress.parentNode) unZipProgress.remove();
+							if (progress.parentNode) {
+								progress.remove();
+							}
+							if (unZipProgress && unZipProgress.parentNode) {
+								unZipProgress.remove();
+							}
 							refresh();
 							throw e;
 						});
@@ -783,7 +825,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	(function () {
 		var norow2 = function () {
 			var node = currentrow1;
-			if (!node) return false;
+			if (!node) {
+				return false;
+			}
 			return node.innerHTML == "横置" || node.innerHTML == "翻面" || node.innerHTML == "换人" || node.innerHTML == "复活";
 		};
 		var checkCheat = function () {
@@ -915,7 +959,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var currentrow1 = null;
 		var row1 = ui.create.div(".menu-cheat", page);
 		var clickrow1 = function () {
-			if (this.classList.contains("unselectable")) return;
+			if (this.classList.contains("unselectable")) {
+				return;
+			}
 			if (currentrow1 == this) {
 				this.classList.remove("selectedx");
 				currentrow1 = null;
@@ -948,7 +994,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var currentrow2 = null;
 		var row2 = ui.create.div(".menu-cheat", page);
 		var clickrow2 = function () {
-			if (this.classList.contains("unselectable")) return;
+			if (this.classList.contains("unselectable")) {
+				return;
+			}
 			if (currentrow2 == this) {
 				this.classList.remove("selectedx");
 				currentrow2 = null;
@@ -970,7 +1018,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var row3 = ui.create.div(".menu-buttons.leftbutton.commandbutton", page);
 		row3.style.marginTop = "3px";
 		var clickrow3 = function () {
-			if (this.classList.contains("unselectable")) return;
+			if (this.classList.contains("unselectable")) {
+				return;
+			}
 			this.classList.toggle("glow");
 			if (currentrow1 && currentrow1.innerHTML == "换人" && this.classList.contains("glow")) {
 				if (this.link == game.me) {
@@ -997,7 +1047,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 
 				page.remove();
 				cheatButton.remove();
-				if (_status.video) node.remove();
+				if (_status.video) {
+					node.remove();
+				}
 				return;
 			}
 			var list = [];
@@ -1063,7 +1115,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				node.classList.add("off");
 				if (node.classList.contains("active")) {
 					node.classList.remove("active");
-					if (node.link) node.link.remove();
+					if (node.link) {
+						node.link.remove();
+					}
 					active = start.firstChild.firstChild;
 					active.classList.add("active");
 					rightPane.appendChild(active.link);
@@ -1152,7 +1206,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 
 				for (const key of keys) {
 					const descriptor = Reflect.getOwnPropertyDescriptor(proxyWindow, key);
-					if (!descriptor) continue;
+					if (!descriptor) {
+						continue;
+					}
 					descriptor.writable = false;
 					descriptor.enumerable = true;
 					descriptor.configurable = false;
@@ -1249,7 +1305,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					if (!game.observe && !game.online) {
 						try {
 							let value = text2.value.trim();
-							if (value.endsWith(";")) value = value.slice(0, -1).trim();
+							if (value.endsWith(";")) {
+								value = value.slice(0, -1).trim();
+							}
 							game.print(fun(value));
 						} catch (e) {
 							game.print(e);
@@ -1304,7 +1362,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								let argi;
 								try {
 									argi = get.stringify(arg);
-									if (argi === "") argi = arg.toString();
+									if (argi === "") {
+										argi = arg.toString();
+									}
 								} catch (_) {
 									argi = arg.toString();
 								}
@@ -1320,8 +1380,11 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							}
 						} else {
 							const str = String(arg);
-							if (!/<[a-zA-Z]+[^>]*?\/?>.*?(?=<\/[a-zA-Z]+[^>]*?>|$)/.exec(str)) return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-							else return str;
+							if (!/<[a-zA-Z]+[^>]*?\/?>.*?(?=<\/[a-zA-Z]+[^>]*?>|$)/.exec(str)) {
+								return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+							} else {
+								return str;
+							}
 						}
 					})
 					.join(" ");
@@ -1341,7 +1404,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				game.print("<button onclick='window.noname_shijianInterfaces.showDevTools();'>开启DevTools</button>");
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	(function () {
 		var page = ui.create.div("");
@@ -1349,7 +1414,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		node._initLink = function () {
 			node.link = page;
 			page.classList.add("menu-sym");
-			
+
 			const coreInfo = get.coreInfo();
 
 			const agent = document.createElement("div");
@@ -1360,7 +1425,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			let agentText = dedent`浏览器内核: ${coreInfo[0]}<br/>
 			浏览器版本: ${coreInfo[1]}.${coreInfo[2]}.${coreInfo[3]}<br/>`;
 
-			if (lib.device === 'android') {
+			if (lib.device === "android") {
 				agentText += dedent`应用平台: 安卓<br/>`;
 
 				if (typeof window.NonameAndroidBridge?.getPackageName === "function") {
@@ -1376,11 +1441,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					安卓SDK版本: ${device.sdkVersion}<br/>
 					设备制造商: ${device.manufacturer}<br/>`;
 				}
-			}
-			else if (lib.device === 'ios') {
+			} else if (lib.device === "ios") {
 				agentText += dedent`应用平台: 苹果<br/>`;
-			}
-			else if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
+			} else if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
 				agentText += dedent`应用平台: Electron<br/>
 				Electron版本: ${process.versions.electron}<br/>`;
 			}
@@ -1395,14 +1458,15 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			button.addEventListener("click", function () {
 				if (typeof window.NonameAndroidBridge?.changeWebviewProvider === "function") {
 					window.NonameAndroidBridge.changeWebviewProvider();
-				}
-				else {
+				} else {
 					alert("此客户端不支持此功能");
 				}
 			});
 			page.appendChild(button);
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	(function () {
 		var page = ui.create.div("");
@@ -1426,7 +1490,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				}
 			};
 			for (var i = 0; i < lib.config.all.mode.length; i++) {
-				if (!lib.config.gameRecord[lib.config.all.mode[i]]) continue;
+				if (!lib.config.gameRecord[lib.config.all.mode[i]]) {
+					continue;
+				}
 				if (lib.config.gameRecord[lib.config.all.mode[i]].str) {
 					ui.create.div(".config.indent", lib.translate[lib.config.all.mode[i]], page).style.marginBottom = "-5px";
 					var item = ui.create.div(".config.indent", lib.config.gameRecord[lib.config.all.mode[i]].str + "<span>重置</span>", page);
@@ -1437,17 +1503,23 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				}
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	(function () {
-		if (!window.indexedDB || window.nodb) return;
+		if (!window.indexedDB || window.nodb) {
+			return;
+		}
 		var page = ui.create.div("");
 		var node = ui.create.div(".menubutton.large", "录像", start.firstChild, clickMode);
 		node.type = "video";
 		lib.videos = [];
 		ui.create.videoNode = (video, before) => {
 			lib.videos.remove(video);
-			if (_status.over) return;
+			if (_status.over) {
+				return;
+			}
 			lib.videos[before === true ? "unshift" : "push"](video);
 		};
 		node._initLink = function () {
@@ -1544,7 +1616,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 						var fileReader = new FileReader();
 						fileReader.onload = function (fileLoadedEvent) {
 							var data = fileLoadedEvent.target.result;
-							if (!data) return;
+							if (!data) {
+								return;
+							}
 							try {
 								data = JSON.parse(lib.init.decode(data));
 							} catch (e) {
@@ -1624,7 +1698,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				}
 			};
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 
 	// 创建各模式/扩展的帮助页面
@@ -1642,7 +1718,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		node.style.display = "none";
 		// 设置帮助页面的类名
 		page.classList.add("menu-help");
-		
+
 		// 若传递的内容为对象，则特殊处理
 		if (typeof content == "object") {
 			/** @type {object} */
@@ -1684,7 +1760,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				this.innerHTML = "返回";
 				for (var i = 0; i < start.firstChild.childElementCount; i++) {
 					var nodex = start.firstChild.childNodes[i];
-					if (nodex == node) continue;
+					if (nodex == node) {
+						continue;
+					}
 					if (nodex.type == "help") {
 						nodex.style.display = "";
 						if (activex && activex.type != "help") {
@@ -1702,7 +1780,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				this.innerHTML = "帮助";
 				for (var i = 0; i < start.firstChild.childElementCount; i++) {
 					var nodex = start.firstChild.childNodes[i];
-					if (nodex == node) continue;
+					if (nodex == node) {
+						continue;
+					}
 					if (nodex.type != "help") {
 						nodex.style.display = "";
 						if (activex && activex.type == "help") {
@@ -1724,6 +1804,8 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		active = start.firstChild.firstChild;
 		active.classList.add("active");
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 };

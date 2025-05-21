@@ -77,7 +77,9 @@ game.import("card", function () {
 						.set("prompt", "选择一项")
 						.set("ai", function () {
 							var player = _status.event.player;
-							if (player.hasShan("all")) return 0;
+							if (player.hasShan("all")) {
+								return 0;
+							}
 							return 1;
 						});
 					"step 1";
@@ -100,7 +102,9 @@ game.import("card", function () {
 				type: "land",
 				fullborder: "wood",
 				enable(card, player) {
-					if (!lib.cardPack.mode_derivation || !lib.cardPack.mode_derivation.length) return false;
+					if (!lib.cardPack.mode_derivation || !lib.cardPack.mode_derivation.length) {
+						return false;
+					}
 					return !player.hasSkill("land_used");
 				},
 				notarget: true,
@@ -113,7 +117,9 @@ game.import("card", function () {
 					for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 						var name = lib.cardPack.mode_derivation[i];
 						var info = lib.card[name];
-						if (info.gainable == false || info.destroy) continue;
+						if (info.gainable == false || info.destroy) {
+							continue;
+						}
 						if (info.derivationpack) {
 							var trans = lib.translate[info.derivationpack + "_card_config"] + "（卡牌包）";
 							if (!event.map[trans]) {
@@ -186,7 +192,9 @@ game.import("card", function () {
 					order: 9,
 					result: {
 						player(player) {
-							if (player.getEquip(1)) return 0;
+							if (player.getEquip(1)) {
+								return 0;
+							}
 							return 1;
 						},
 					},
@@ -204,7 +212,9 @@ game.import("card", function () {
 					var list = get.inpile("trick");
 					while (list.length) {
 						var name = list.randomRemove();
-						if (lib.card[name].multitarget) continue;
+						if (lib.card[name].multitarget) {
+							continue;
+						}
 						var targets = game.filterPlayer();
 						while (targets.length) {
 							var target = targets.randomRemove();
@@ -279,7 +289,9 @@ game.import("card", function () {
 						.set("prompt", "选择一个类型获得该类型的一张牌")
 						.set("ai", function () {
 							var player = _status.event.player;
-							if (!player.hasSha("all") || !player.hasShan("all") || player.hp == 1) return 0;
+							if (!player.hasSha("all") || !player.hasShan("all") || player.hp == 1) {
+								return 0;
+							}
 							return 1;
 						});
 					"step 1";
@@ -389,7 +401,9 @@ game.import("card", function () {
 					"step 0";
 					game.changeLand("mtg_duzhao", player);
 					player.chooseTarget("选择一名角色令其获得一张毒", true).set("ai", function (target) {
-						if (target.hasSkillTag("nodu")) return 0;
+						if (target.hasSkillTag("nodu")) {
+							return 0;
+						}
 						return -get.attitude(_status.event.player, target) / Math.sqrt(target.hp + 1);
 					});
 					"step 1";
@@ -407,11 +421,15 @@ game.import("card", function () {
 						player(player) {
 							if (
 								game.countPlayer(function (current) {
-									if (current.hasSkillTag("nodu")) return false;
+									if (current.hasSkillTag("nodu")) {
+										return false;
+									}
 									return get.attitude(player, current) < 0;
 								}) >
 								game.countPlayer(function (current) {
-									if (current.hasSkillTag("nodu")) return false;
+									if (current.hasSkillTag("nodu")) {
+										return false;
+									}
 									return get.attitude(player, current) > 0;
 								})
 							) {
@@ -451,7 +469,9 @@ game.import("card", function () {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					if (player.countCards("he") == 0) return false;
+					if (player.countCards("he") == 0) {
+						return false;
+					}
 					return event.card.name == "sha";
 				},
 				autodelay: true,
@@ -513,10 +533,16 @@ game.import("card", function () {
 						var cardsToGain = [];
 						for (var repetition = 0; repetition < cards.length; repetition++) {
 							var card = get.cardPile(card => get.type(card, "trick") == "trick");
-							if (card) cardsToGain.push(card);
+							if (card) {
+								cardsToGain.push(card);
+							}
 						}
-						if (cardsToGain.length) player.gain(cardsToGain, "draw");
-						if (cards.length - cardsToGain.length) player.draw(cards.length - cardsToGain.length).log = false;
+						if (cardsToGain.length) {
+							player.gain(cardsToGain, "draw");
+						}
+						if (cards.length - cardsToGain.length) {
+							player.draw(cards.length - cardsToGain.length).log = false;
+						}
 					});
 				},
 				ai: {
@@ -592,8 +618,12 @@ game.import("card", function () {
 				usable: 1,
 				viewAs: { name: "sha" },
 				viewAsFilter(player) {
-					if (!player.getEquip(1)) return false;
-					if (!player.countCards("h", { type: "basic" })) return false;
+					if (!player.getEquip(1)) {
+						return false;
+					}
+					if (!player.countCards("h", { type: "basic" })) {
+						return false;
+					}
 				},
 				prompt: "将一张基本牌当杀使用",
 				check(card) {
@@ -606,9 +636,15 @@ game.import("card", function () {
 						return get.order({ name: "sha" }) - 0.1;
 					},
 					skillTagFilter(player, tag, arg) {
-						if (arg != "use") return false;
-						if (!player.getEquip(1)) return false;
-						if (!player.countCards("h", { type: "basic" })) return false;
+						if (arg != "use") {
+							return false;
+						}
+						if (!player.getEquip(1)) {
+							return false;
+						}
+						if (!player.countCards("h", { type: "basic" })) {
+							return false;
+						}
 					},
 				},
 			},
@@ -621,7 +657,9 @@ game.import("card", function () {
 						for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 							var name = lib.cardPack.mode_derivation[i];
 							var info = lib.card[name];
-							if (info.gainable == false || info.destroy) continue;
+							if (info.gainable == false || info.destroy) {
+								continue;
+							}
 							list.push(name);
 						}
 						if (list.length) {
@@ -636,7 +674,9 @@ game.import("card", function () {
 			mtg_longlushanfeng_skill: {
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha") return num + 1;
+						if (card.name == "sha") {
+							return num + 1;
+						}
 					},
 				},
 				ai: {

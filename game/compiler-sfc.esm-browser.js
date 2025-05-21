@@ -713,9 +713,7 @@ const decodeMap = new Map([
 /**
  * Polyfill for `String.fromCodePoint`. It is used to create a string from a Unicode code point.
  */
-const fromCodePoint = 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, node/no-unsupported-features/es-builtins
-(_a$1 = String.fromCodePoint) !== null && _a$1 !== void 0 ? _a$1 : function (codePoint) {
+const fromCodePoint = (_a$1 = String.fromCodePoint) !== null && _a$1 !== void 0 ? _a$1 : function (codePoint) {
     let output = "";
     if (codePoint > 0xffff) {
         codePoint -= 0x10000;
@@ -27016,7 +27014,7 @@ var isArray$2 = Array.isArray || function (arr) {
  * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
-/* eslint-disable no-proto */
+ 
 
 
 var INSPECT_MAX_BYTES = 50;
@@ -28766,7 +28764,7 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 function isnan (val) {
-  return val !== val // eslint-disable-line no-self-compare
+  return val !== val  
 }
 
 
@@ -34865,7 +34863,7 @@ Document$3.registerProcessor = dependant => {
 var document = Document$3;
 Document$3.default = Document$3;
 
-/* eslint-disable no-console */
+ 
 
 let printed = {};
 
@@ -35962,7 +35960,7 @@ let LazyResult$2 = class LazyResult {
           let b = runtimeVer.split('.');
 
           if (a[0] !== b[0] || parseInt(a[1]) > parseInt(b[1])) {
-            // eslint-disable-next-line no-console
+             
             console.error(
               'Unknown error from PostCSS plugin. Your current PostCSS ' +
                 'version is ' +
@@ -35978,7 +35976,7 @@ let LazyResult$2 = class LazyResult {
       }
     } catch (err) {
       /* c8 ignore next 3 */
-      // eslint-disable-next-line no-console
+       
       if (console && console.error) console.error(err);
     }
     return error
@@ -36605,10 +36603,10 @@ function postcss(...plugins) {
 postcss.plugin = function plugin(name, initializer) {
   let warningPrinted = false;
   function creator(...args) {
-    // eslint-disable-next-line no-console
+     
     if (console && console.warn && !warningPrinted) {
       warningPrinted = true;
-      // eslint-disable-next-line no-console
+       
       console.warn(
         name +
           ': postcss.plugin was deprecated. Migration guide:\n' +
@@ -36616,7 +36614,7 @@ postcss.plugin = function plugin(name, initializer) {
       );
       if (browser$1.env.LANG && browser$1.env.LANG.startsWith('cn')) {
         /* c8 ignore next 7 */
-        // eslint-disable-next-line no-console
+         
         console.warn(
           name +
             ': 里面 postcss.plugin 被弃用. 迁移指南:\n' +
@@ -44627,7 +44625,7 @@ class MagicString {
 		if (!warned.insertLeft) {
 			console.warn(
 				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead',
-			); // eslint-disable-line no-console
+			);  
 			warned.insertLeft = true;
 		}
 
@@ -44638,7 +44636,7 @@ class MagicString {
 		if (!warned.insertRight) {
 			console.warn(
 				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead',
-			); // eslint-disable-line no-console
+			);  
 			warned.insertRight = true;
 		}
 
@@ -44706,7 +44704,7 @@ class MagicString {
 			if (!warned.storeName) {
 				console.warn(
 					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string',
-				); // eslint-disable-line no-console
+				);  
 				warned.storeName = true;
 			}
 

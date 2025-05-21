@@ -8,6 +8,7 @@
 		"worker": true
 	},
 	"rules": {
+		"no-class-assign": 0,
 		"no-console": 0,
 		"no-constant-condition": [
 			"error",
@@ -25,7 +26,8 @@
 		"no-redeclare": 0,
 		"no-undef": 0,
 		"no-unused-vars": 0,
-		"require-yield": 0
+		"require-yield": 0,
+		"curly": "error"
 	},
 	"parserOptions": {
 		"ecmaVersion": 13,

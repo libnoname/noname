@@ -226,9 +226,15 @@ const cards = {
 					num = Math.min(num, nh);
 					var nh1 = nh - num;
 					var nh2 = player.countCards("h") - 1 + num;
-					if (nh1 == nh2 && num == 0) return 0;
-					if (nh2 <= nh1) return -3;
-					if (player.hp == 1 || num == 1) return 0;
+					if (nh1 == nh2 && num == 0) {
+						return 0;
+					}
+					if (nh2 <= nh1) {
+						return -3;
+					}
+					if (player.hp == 1 || num == 1) {
+						return 0;
+					}
 					return -1;
 				},
 			},
@@ -246,7 +252,9 @@ const cards = {
 		content() {
 			"step 0";
 			var num = Math.min(5, target.maxHp - target.hp);
-			if (num) target.draw(num);
+			if (num) {
+				target.draw(num);
+			}
 			"step 1";
 			target.damage();
 		},
@@ -259,13 +267,17 @@ const cards = {
 				target(player, target) {
 					var num = Math.min(5, target.maxHp - target.hp);
 					if (target.hp == 1) {
-						if (num >= 3) return 0;
+						if (num >= 3) {
+							return 0;
+						}
 						if (!target.hasSkillTag("maixie_hp")) {
 							return -3;
 						}
 						return -1;
 					}
-					if (num == 2) return 0;
+					if (num == 2) {
+						return 0;
+					}
 					return -2 + num + (Math.pow(target.hp, 0.2) - 1);
 				},
 			},

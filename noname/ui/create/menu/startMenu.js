@@ -25,7 +25,9 @@ export const startMenuData = {
 		}
 		const leftPaneNames = modeorder.filter(mode => {
 			if (connectMenu) {
-				if (!lib.mode[mode].connect) return;
+				if (!lib.mode[mode].connect) {
+					return;
+				}
 				if (!lib.config["connect_" + mode + "_banned"]) {
 					lib.config["connect_" + mode + "_banned"] = [];
 				}
@@ -73,34 +75,42 @@ export const startMenuData = {
 		if (infoconfig) {
 			const config = lib.config.mode_config[mode] || {};
 			if (connectMenu) {
-				if (!infoconfig.connect_choose_timeout) infoconfig.connect_choose_timeout = {
-					name: "出牌时限",
-					init: "30",
-					item: {
-						10: "10秒",
-						15: "15秒",
-						30: "30秒",
-						60: "60秒",
-						90: "90秒",
-					},
-					connect: true,
-					frequent: true,
-				};
-				if (!infoconfig.connect_observe) infoconfig.connect_observe = {
-					name: "允许旁观",
-					init: true,
-					connect: true,
-				};
-				if (!infoconfig.connect_observe_handcard) infoconfig.connect_observe_handcard = {
-					name: "允许观看手牌",
-					init: false,
-					connect: true,
-				};
-				if (!infoconfig.connect_mount_combine) infoconfig.connect_mount_combine = {
-					name: "合并坐骑栏",
-					init: false,
-					connect: true,
-				};
+				if (!infoconfig.connect_choose_timeout) {
+					infoconfig.connect_choose_timeout = {
+						name: "出牌时限",
+						init: "30",
+						item: {
+							10: "10秒",
+							15: "15秒",
+							30: "30秒",
+							60: "60秒",
+							90: "90秒",
+						},
+						connect: true,
+						frequent: true,
+					};
+				}
+				if (!infoconfig.connect_observe) {
+					infoconfig.connect_observe = {
+						name: "允许旁观",
+						init: true,
+						connect: true,
+					};
+				}
+				if (!infoconfig.connect_observe_handcard) {
+					infoconfig.connect_observe_handcard = {
+						name: "允许观看手牌",
+						init: false,
+						connect: true,
+					};
+				}
+				if (!infoconfig.connect_mount_combine) {
+					infoconfig.connect_mount_combine = {
+						name: "合并坐骑栏",
+						init: false,
+						connect: true,
+					};
+				}
 			}
 			for (const key in infoconfig) {
 				if (key === "update") {
@@ -153,45 +163,53 @@ export const startMenuData = {
 		}
 		if (!isReactive(lib.mode[mode])) {
 			lib.mode[mode] = reactive(lib.mode[mode]);
-			watch(() => lib.mode[mode], () => {
-				console.log(`lib.mode[${mode}]初始化或更新`)
-				for (const [key, value] of Object.entries(infoconfig)) {
-					configData[key] = value;
-				}
-			}, { deep: true });
+			watch(
+				() => lib.mode[mode],
+				() => {
+					console.log(`lib.mode[${mode}]初始化或更新`);
+					for (const [key, value] of Object.entries(infoconfig)) {
+						configData[key] = value;
+					}
+				},
+				{ deep: true }
+			);
 		}
 		if (!this.configDatas.get(mode)) {
 			this.configDatas.set(mode, configData);
 		}
 	},
 	rightPaneTemplate: {
-		template: html`
-			<div ref="root">
-				<noname-config v-for="config in configsWithOutUpdate" :config="config"/>
-			</div>`,
+		template: html` <div ref="root">
+			<noname-config v-for="config in configsWithOutUpdate" :config="config" />
+		</div>`,
 		props: {
 			configs: Object,
 		},
 		data() {
 			return {
 				configsWithOutUpdate: {},
-			}
+			};
 		},
 		components: {
 			"noname-config": NonameConfig,
 		},
-		methods: {
-		},
+		methods: {},
 		beforeMount() {
 			const configs = this.configs;
-			watch(() => configs, (newVal) => {
-				console.log("config初始化或更新")
-				for (const [key, value] of Object.entries(toRaw(newVal))) {
-					if (key === "update") continue;
-					this.configsWithOutUpdate[key] = value;
-				}
-			}, { deep: true, immediate: true });
-		}
+			watch(
+				() => configs,
+				newVal => {
+					console.log("config初始化或更新");
+					for (const [key, value] of Object.entries(toRaw(newVal))) {
+						if (key === "update") {
+							continue;
+						}
+						this.configsWithOutUpdate[key] = value;
+					}
+				},
+				{ deep: true, immediate: true }
+			);
+		},
 	},
 };
 

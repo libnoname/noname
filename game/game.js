@@ -109,7 +109,7 @@
 				window.__dirname = path.join(path.resolve(), "resources/app");
 			}
 			const oldData = Object.entries(window.require);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			window.require = function (moduleId) {
 				try {
 					return module.require(moduleId);
@@ -123,15 +123,15 @@
 		}
 		// 增加导入ts的逻辑
 		window.require.extensions[".ts"] = function (module, filename) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const _compile = module._compile;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			module._compile = function (code, fileName) {
 				/**
 				 *
 				 * @type { import("typescript") }
 				 */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const ts = require("./game/typescript.js");
 				// 使用ts compiler对ts文件进行编译
 				const result = ts.transpile(
@@ -148,7 +148,7 @@
 				// 使用默认的js编译函数获取返回值
 				return _compile.call(this, result, fileName);
 			};
-			// @ts-ignore
+			// @ts-expect-error ignore
 			module._compile(require("fs").readFileSync(filename, "utf8"), filename);
 		};
 	}
@@ -168,7 +168,7 @@
 				scope,
 			});
 			// 初次加载worker，需要重新启动一次
-			if (!findServiceWorker) location.reload();
+			if (!findServiceWorker) {location.reload();}
 			// 接收消息，暂时没用到
 			navigator.serviceWorker.addEventListener("message", e => {
 				if (e.data?.type === "reload") {
@@ -241,14 +241,14 @@
 				//electron
 				if (typeof window.process == "object" && typeof window.require == "function") {
 					const versions = window.process.versions;
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const electronVersion = parseFloat(versions.electron);
 					let remote;
 					if (electronVersion >= 14) {
-						// @ts-ignore
+						// @ts-expect-error ignore
 						remote = require("@electron/remote");
 					} else {
-						// @ts-ignore
+						// @ts-expect-error ignore
 						remote = require("electron").remote;
 					}
 					const thisWindow = remote.getCurrentWindow();
@@ -270,7 +270,7 @@
 			 * @returns {Promise<unknown>}
 			 */
 			tryUpdateClient(type, text = "") {
-				if (!compatibleEnvironment && type != UpdateReason.DEBUG) return Promise.resolve();
+				if (!compatibleEnvironment && type != UpdateReason.DEBUG) {return Promise.resolve();}
 
 				/**
 				 * @param {*} url
@@ -281,7 +281,7 @@
 					let fileName = undefined;
 					let progress = createProgress("正在下载最新客户端");
 
-					// @ts-ignore
+					// @ts-expect-error ignore
 					return (
 						request(url, (receivedBytes, total, filename) => {
 							if (typeof filename == "string") {
@@ -296,12 +296,12 @@
 								max = 1000;
 							}
 							received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-							if (received > max) max = received;
+							if (received > max) {max = received;}
 							progress.setProgressMax(max);
 							progress.setProgressValue(received);
 						})
 							.then(result => (progress.remove(), result))
-							// @ts-ignore
+							// @ts-expect-error ignore
 							.then(blob => ((blob.name = fileName), blob))
 					);
 				}
@@ -427,7 +427,7 @@
 			 */
 			checkVersion(require, current) {
 				// 防止不存在的意外，提前截断当前版本号的长度
-				if (current.length > require.length) current.length = require.length;
+				if (current.length > require.length) {current.length = require.length;}
 
 				// 考虑到玄学的NaN情况，记录是否存在NaN
 				let flag = false;
@@ -439,11 +439,11 @@
 						continue;
 					}
 					// 如果此时flag为true且current[i]不为NaN，版本号则不合法，直接否
-					if (flag) return false;
+					if (flag) {return false;}
 					// 上位版本号未达到要求，直接否决
-					if (require[i] > current[i]) return false;
+					if (require[i] > current[i]) {return false;}
 					// 上位版本号已超过要求，直接可行
-					if (current[i] > require[i]) return true;
+					if (current[i] > require[i]) {return true;}
 				}
 				return true;
 			}
@@ -468,9 +468,9 @@
 
 				// Chrome/Chromium下的实验性特性，具体可参见
 				// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
-				// @ts-ignore
+				// @ts-expect-error ignore
 				if (typeof navigator.userAgentData != "undefined") {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const userAgentData = navigator.userAgentData;
 					if (userAgentData.brands && userAgentData.brands.length) {
 						const brand = userAgentData.brands.find(({ brand }) => {

@@ -67,7 +67,9 @@ const searchParams = ["raw", "worker", "sharedworker", "module", "url"];
 
 self.addEventListener("fetch", event => {
 	const request = event.request;
-	if (typeof request.url != "string") return;
+	if (typeof request.url != "string") {
+		return;
+	}
 	const url = new URL(request.url);
 	// 直接返回vue编译好的结果
 	if (vueFileMap.has(request.url)) {
@@ -81,20 +83,30 @@ self.addEventListener("fetch", event => {
 		event.respondWith(rep);
 		return;
 	}
-	if (!['.ts', '.json', '.vue', 'css', '.js'].some(ext => url.pathname.endsWith(ext)) && !request.url.replace(location.origin, '').startsWith('/noname-builtinModules/')) return;
+	if (!['.ts', '.json', '.vue', 'css', '.js'].some(ext => url.pathname.endsWith(ext)) && !request.url.replace(location.origin, '').startsWith('/noname-builtinModules/')) {
+		return;
+	}
 	// 普通js请求不处理
 	if (url.pathname.endsWith('.js')) {
-		if (url.searchParams.size == 0 || !Array.from(url.searchParams.keys()).some(key => searchParams.includes(key))) return;
+		if (url.searchParams.size == 0 || !Array.from(url.searchParams.keys()).some(key => searchParams.includes(key))) {
+			return;
+		}
 	}
 	if (url.pathname.endsWith('.ts')) {
 		// 不处理视频文件
-		if (request.headers.get('accept')?.includes('video/mp2t')) return;
+		if (request.headers.get('accept')?.includes('video/mp2t')) {
+			return;
+		}
 		// 不处理.d.ts文件
-		if (url.pathname.endsWith('.d.ts')) return;
+		if (url.pathname.endsWith('.d.ts')) {
+			return;
+		}
 	}
 	// 只处理import关键字发起的json和css请求
 	if (url.pathname.endsWith('.json') || url.pathname.endsWith('.css')) {
-		if (!event.request.headers.get('origin')) return;
+		if (!event.request.headers.get('origin')) {
+			return;
+		}
 	}
 	/**
 	 * 将nodejs的模块编译为js module模块，是在html中使用了如下代码:
@@ -141,7 +153,9 @@ self.addEventListener("fetch", event => {
 		// 修改请求结果
 		event.respondWith(
 			response.then(res => {
-				if (!res.ok) return res;
+				if (!res.ok) {
+					return res;
+				}
 				console.log('正在编译', request.url);
 				return res.text().then(text => {
 					const requestAcceptHeader = request.headers.get('accept');

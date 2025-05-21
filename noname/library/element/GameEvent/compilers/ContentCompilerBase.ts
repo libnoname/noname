@@ -36,9 +36,13 @@ export default abstract class ContentCompilerBase implements IContentCompiler {
 	isPrevented(event: GameEvent): boolean {
 		const { player } = event;
 
-		if (event.name === "phaseLoop") return false;
+		if (event.name === "phaseLoop") {
+			return false;
+		}
 
-		if (!player) return false;
+		if (!player) {
+			return false;
+		}
 		if (player.isDead() && !event.forceDie) {
 			//@ts-ignore
 			game.broadcastAll(function () {
@@ -48,9 +52,14 @@ export default abstract class ContentCompilerBase implements IContentCompiler {
 			});
 			event._oncancel?.();
 		} else if (player.isOut() && !event.includeOut) {
-			if (event.name == "phase" && player == _status.roundStart && !event.skill) _status.roundSkipped = true;
-		} else if (player.removed) void 0;
-		else return false;
+			if (event.name == "phase" && player == _status.roundStart && !event.skill) {
+				_status.roundSkipped = true;
+			}
+		} else if (player.removed) {
+			void 0;
+		} else {
+			return false;
+		}
 
 		event.finish();
 		return true;

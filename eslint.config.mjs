@@ -1,10 +1,31 @@
 import js from "@eslint/js";
+import ts from "typescript-eslint";
+import vue from "eslint-plugin-vue";
 import globals from "globals";
 
-export default [
-	js.configs.recommended,
+const ignores = ["node_modules/", "noname-server.js", "tsconfig.json", "game/codemirror.js", "game/jszip.js", "game/pressure.js", "game/compiler-sfc.esm-browser.js", "game/core-js-bundle.js", "game/dedent.js", "game/typescript.js", "game/vue.esm-browser.js", "game/NoSleep.js"];
+
+export default ts.config(
 	{
+		...js.configs.recommended,
+		ignores,
+	},
+	ts.configs.recommended.map(config => ({
+		...config,
+		ignores,
+	})),
+	vue.configs["flat/essential"].map(config => ({
+		...config,
+		ignores,
+	})),
+	{
+		ignores,
+		files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.vue"],
 		rules: {
+			"@typescript-eslint/no-require-imports": 0,
+			"@typescript-eslint/no-unused-vars": 0,
+			"@typescript-eslint/no-unused-expressions": 0,
+			"no-class-assign": 0,
 			"no-console": 0,
 			"no-constant-condition": [
 				"error",
@@ -24,6 +45,7 @@ export default [
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
+			curly: "error",
 		},
 		languageOptions: {
 			ecmaVersion: 13,
@@ -36,5 +58,5 @@ export default [
 				...globals.worker,
 			},
 		},
-	},
-];
+	}
+);

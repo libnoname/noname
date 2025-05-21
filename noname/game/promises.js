@@ -112,8 +112,11 @@ export class GamePromises {
 			new Promise((resolve, reject) => {
 				// @ts-ignore
 				game.removeFile(filename, err => {
-					if (err) reject(err);
-					else resolve();
+					if (err) {
+						reject(err);
+					} else {
+						resolve();
+					}
 				});
 			})
 		);
@@ -147,7 +150,9 @@ export class GamePromises {
 	 */
 	saveConfig(key, value, local) {
 		// @ts-ignore
-		if (_status.reloading) return Promise.resolve();
+		if (_status.reloading) {
+			return Promise.resolve();
+		}
 
 		// @ts-ignore
 		return new Promise(resolve => game.saveConfig(key, value, local, resolve));
