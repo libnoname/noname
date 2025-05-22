@@ -1140,7 +1140,7 @@ const skills = {
 							return origin_checkOnlineResult.apply(this, arguments);
 						};
 					}
-					//检测态度
+					/*/检测态度
 					if (typeof get.attitude === "function") {
 						const origin_attitude = get.attitude;
 						get.attitude = function (from, to) {
@@ -1158,14 +1158,14 @@ const skills = {
 							}
 							return origin_rawAttitude.apply(this, arguments);
 						};
-					}
+					}*/
 					//敌友判定
 					//实际上只是友方，敌方不用写
 					if (typeof lib.element.player.getFriends === "function") {
 						const origin_getFriends = lib.element.player.getFriends;
 						const getFriends = function (func, includeDie) {
 							const player = this;
-							return [origin_getFriends.apply(this, arguments), ...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => (target["zombieshibian"] || target) === (player["zombieshibian"] || player))]
+							return [...origin_getFriends.apply(this, arguments), ...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => (target["zombieshibian"] || target) === (player["zombieshibian"] || player))]
 								.filter(i => i !== player || func === true)
 								.unique()
 								.sortBySeat(player);
@@ -1188,6 +1188,18 @@ const skills = {
 				player,
 				target
 			);
+			target.ai.modAttitudeFrom = function (from, to) {
+				if (to == from["zombieshibian"]) {
+					return 114514;
+				}
+				return get.attitude((from["zombieshibian"] || from), (to["zombieshibian"] || to));
+			};
+			target.ai.modAttitudeTo = function (from, to, att) {
+				if (from == to["zombieshibian"]) {
+					return 7;
+				}
+				return get.attitude((from["zombieshibian"] || from), (to["zombieshibian"] || to));
+			};
 		},
 		mark: true,
 		intro: { content: (孩子们我复活了, player) => "made in " + (player?.["zombieshibian"] ? get.translation(player["zombieshibian"]) : "东汉") },
