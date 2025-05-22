@@ -1002,33 +1002,29 @@ const skills = {
 		subSkill: {
 			backup: {},
 			damage: {
-				audio: "olzhendan",
+				audio: "jsrgzhendan",
 				trigger: {
 					player: "damageEnd",
 					global: "roundEnd",
 				},
 				filter(event, player) {
-					let count = 0;
-					let roundCount = 1;
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
+					if (event.name === "damage" && !player.isTempBanned("olzhendan")) {
+						return true;
+					}
+					const history = _status.globalHistory;
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							) {
 								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (count >= 5 || roundCount <= 0) {
-							break;
+							}
+							if (history[i].isRound) {
+								break;
+							}
 						}
 					}
 					if (!player.storage.olzhendan_mark && count > 0) {
@@ -1039,35 +1035,21 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					let count = 0;
-					let roundCount = 1;
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
-								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (roundCount <= 0) {
-							break;
+					const history = _status.globalHistory;
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							}) && num++;
+							if (num === 5 || history[i].isRound) {
+								break;
+							}
 						}
 					}
-					if (count > 0) {
-						await player.draw(count);
-					}
-					if (trigger.name === "damage") {
-						player.tempBanSkill("olzhendan", "roundStart");
-					}
+					num > 0 && (await player.draw(num));
+					trigger.name === "damage" && player.tempBanSkill("olzhendan", "roundStart");
 				},
 			},
 		},
@@ -1307,7 +1289,7 @@ const skills = {
 				audio: "olsbchenzhi",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					if (game.roundNumber <= 1 || player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi", 1).length > 0) {
+					if (player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi").length > 0) {
 						return false;
 					}
 					return game.hasPlayer(target => {

@@ -577,19 +577,16 @@ const skills = {
 			});
 			cardsLost = cardsLost.filterInD("d");
 			let max = 0;
-			return cardsLost.reduce(
-				(maxCard, card) => {
-					const num = get.number(card, false);
-					if (num > max) {
-						max = num;
-						return card;
-					} else if (num === max) {
-						return void 0;
-					}
-					return maxCard;
-				},
-				void 0
-			);
+			return cardsLost.reduce((maxCard, card) => {
+				const num = get.number(card, false);
+				if (num > max) {
+					max = num;
+					return card;
+				} else if (num === max) {
+					return void 0;
+				}
+				return maxCard;
+			}, void 0);
 		},
 	},
 	jsrgyangge: {
@@ -1223,7 +1220,7 @@ const skills = {
 				target === player
 					? game.filterPlayer(current => {
 							return current !== source && current !== player && current.isDamaged() && current.countCards("he") >= 1;
-						})
+					  })
 					: [player]
 			).filter(current => current !== source && current !== target && current.countCards("he") >= 1);
 			targets.sortBySeat();
@@ -1860,7 +1857,6 @@ const skills = {
 										solver(result, current);
 									}
 								});
-								
 							}
 						});
 					})
@@ -2802,66 +2798,45 @@ const skills = {
 					global: "roundEnd",
 				},
 				filter(event, player) {
-					let count = 0;
-					let roundCount = 1;
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
-								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (roundCount <= 0) {
-							break;
-						}
-					}
-					if (!player.storage.jsrgzhendan_mark && count > 0) {
+					if (event.name === "damage" && !player.isTempBanned("olzhendan")) {
 						return true;
+					}
+					const history = _status.globalHistory;
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							) {
+								return true;
+							}
+							if (history[i].isRound) {
+								break;
+							}
+						}
 					}
 					return false;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					let count = 0;
-					let roundCount = 1;
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
-								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (count >= 5 || roundCount <= 0) {
-							break;
+					const history = _status.globalHistory;
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							}) && num++;
+							if (num === 5 || history[i].isRound) {
+								break;
+							}
 						}
 					}
-					if (count > 0) {
-						await player.draw(count);
-					}
-					if (trigger.name === "damage") {
-						player.tempBanSkill("jsrgzhendan", "roundStart");
-					}
+					num > 0 && (await player.draw(num));
+					trigger.name === "damage" && player.tempBanSkill("jsrgzhendan", "roundStart");
 				},
 			},
 		},
@@ -2954,10 +2929,7 @@ const skills = {
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					const curLen = player.actionHistory.length;
-					if (curLen <= 2) {
-						return false;
-					}
-					for (let i = curLen - 2; i >= 0; i--) {
+					for (let i = curLen - 1; i >= 0; i--) {
 						const history = player.actionHistory[i];
 						if (history.isMe && !history.isSkipped) {
 							return false;
@@ -12451,7 +12423,7 @@ const skills = {
 									return 20 - get.value(button.link);
 								}
 								return 0;
-							});
+						  });
 				if (!bool) {
 					return;
 				}

@@ -2417,42 +2417,9 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		var zoom;
-		switch (lib.config.ui_zoom) {
-			case "esmall":
-				zoom = 0.8;
-				break;
-			case "vsmall":
-				zoom = 0.9;
-				break;
-			case "small":
-				zoom = 0.93;
-				break;
-			case "big":
-				zoom = 1.05;
-				break;
-			case "vbig":
-				zoom = 1.1;
-				break;
-			case "ebig":
-				zoom = 1.2;
-				break;
-			case "eebig":
-				zoom = 1.5;
-				break;
-			case "eeebig":
-				zoom = 1.8;
-				break;
-			case "eeeebig":
-				zoom = 2;
-				break;
-			default:
-				zoom = 1;
-		}
+		var zoom = lib.config.ui_zoom || 1;
 		game.documentZoom = game.deviceZoom * zoom;
-		if (zoom != 1) {
-			ui.updatez();
-		}
+		zoom !== 1 && ui.updatez();
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);

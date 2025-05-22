@@ -408,7 +408,7 @@ export class Library {
 														return 0;
 													}
 													return 5 - get.value(cardx);
-												},
+											  },
 								});
 								if (!game.online) {
 									return;
@@ -1760,66 +1760,23 @@ export class Library {
 				// },
 				ui_zoom: {
 					name: "界面缩放",
-					unfrequent: true,
-					init: "normal",
-					item: {
-						esmall: "80%",
-						usmall: "85%",
-						vsmall: "90%",
-						small: "95%",
-						normal: "100%",
-						big: "105%",
-						vbig: "110%",
-						ebig: "120%",
-						eebig: "150%",
-						eeebig: "180%",
-						eeeebig: "200%",
-					},
-					onclick(zoom) {
-						game.saveConfig("ui_zoom", zoom);
-						switch (zoom) {
-							case "esmall":
-								zoom = 0.8;
-								break;
-							case "usmall":
-								zoom = 0.85;
-								break;
-							case "vsmall":
-								zoom = 0.9;
-								break;
-							case "small":
-								zoom = 0.93;
-								break;
-							case "big":
-								zoom = 1.05;
-								break;
-							case "vbig":
-								zoom = 1.1;
-								break;
-							case "ebig":
-								zoom = 1.2;
-								break;
-							case "eebig":
-								zoom = 1.5;
-								break;
-							case "eeebig":
-								zoom = 1.8;
-								break;
-							case "eeeebig":
-								zoom = 2;
-								break;
-							default:
-								zoom = 1;
+					intro: "填入0.5-3以内的数值作为界面缩放比例（最终结果系统会保留两位小数）",
+					init: 1,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							zoom = Number(text.innerText);
+						if (isNaN(zoom) || zoom < 0.5 || zoom > 3) {
+							alert("填入数值不符合规范！");
+							return;
 						}
+						zoom = parseInt(zoom.toFixed(2));
+						text.innerText = zoom;
+						game.saveConfig("ui_zoom", zoom);
 						game.documentZoom = game.deviceZoom * zoom;
 						ui.updatez();
-						if (Array.isArray(lib.onresize)) {
-							lib.onresize.forEach(fun => {
-								if (typeof fun == "function") {
-									fun();
-								}
-							});
-						}
+						Array.isArray(lib.onresize) && lib.onresize.forEach(fun => typeof fun === "function" && fun());
 					},
 				},
 				image_background: {
@@ -8726,7 +8683,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-				})()
+			  })()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -11808,7 +11765,7 @@ export class Library {
 								storage: {
 									stratagem_buffed: 1,
 								},
-							})
+						  })
 						: new lib.element.VCard();
 				}
 				return null;
