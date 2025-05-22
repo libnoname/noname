@@ -18619,7 +18619,7 @@ const skills = {
 				mod: {
 					attackRangeBase(player) {
 						var map = player.storage.shanduan_effect;
-						if (typeof map.range != "number") {
+						if (typeof map?.range != "number") {
 							return;
 						}
 						return Math.max(player.getEquipRange(player.getCards("e")), map.range);
@@ -18627,7 +18627,7 @@ const skills = {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
 							var map = player.storage.shanduan_effect;
-							if (typeof map.sha != "number") {
+							if (typeof map?.sha != "number") {
 								return;
 							}
 							return num - 1 + map.sha;
@@ -18635,7 +18635,7 @@ const skills = {
 					},
 					maxHandcardBase(player, num) {
 						var map = player.storage.shanduan_effect;
-						if (typeof map.limit != "number") {
+						if (typeof map?.limit != "number") {
 							return;
 						}
 						return map.limit;

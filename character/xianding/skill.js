@@ -1073,22 +1073,29 @@ const skills = {
 			return lib.skill.dcsbyingjia.logTarget(event, player).length;
 		},
 		logTarget(event, player) {
-			return event.targets?.filter(target => target != player && get.distance(player, target) != 1);
+			return event.targets?.filter(target => target != player);
 		},
 		async content(event, trigger, player) {
-			const targets = event.targets.sortBySeat();
+			const targets = event.targets.filter(target => get.distance(player, target) != 1).sortBySeat();
 			player.addTempSkill("dcsbyingjia_distance");
 			player.markAuto("dcsbyingjia_distance", targets);
-			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1 && target.countCards("h"))) {
+			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1)) {
+				if (!game.hasPlayer(target => {
+					return target != player && target.countCards("h") && !player.getStorage("dcsbyingjia_used").includes(target);
+				})) {
+					return;
+				}
 				const result = await player
 					.chooseTarget(`迎驾：你可以获得一名其他角色所有手牌，然后交给其等量张牌`, (card, player, target) => {
-						return player != target && target.countCards("h");
+						return player != target && target.countCards("h") && !player.getStorage("dcsbyingjia_used").includes(target);
 					})
 					.set("ai", target => -get.attitude(get.player(), target) * target.countCards("h"))
 					.forResult();
 				if (result?.bool && result?.targets?.length) {
 					const target = result.targets[0];
 					player.line(target);
+					player.addTempSkill("dcsbyingjia_used");
+					player.markAuto("dcsbyingjia_used", target);
 					const cards = target.getGainableCards(player, "h");
 					if (!cards.length) {
 						return;
@@ -1101,6 +1108,10 @@ const skills = {
 			}
 		},
 		subSkill: {
+			used: {
+				onremove: true,
+				charlotte: true,
+			},
 			distance: {
 				onremove: true,
 				charlotte: true,

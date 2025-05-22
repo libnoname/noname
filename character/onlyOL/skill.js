@@ -1003,75 +1003,71 @@ const skills = {
 			backup: {},
 			damage: {
 				audio: "olzhendan",
-				trigger: { player: "damageEnd" },
-				forced: true,
-				locked: false,
-				content() {
-					const history = _status.globalHistory;
-					if (!history[history.length - 1].isRound) {
-						let num = 0;
-						for (let i = history.length - 2; i >= 0; i--) {
-							if (
-								game.hasPlayer2(current => {
-									const actionHistory = current.actionHistory[i];
-									return actionHistory.isMe && !actionHistory.isSkipped;
-								})
-							) {
-								num++;
-							}
-							if (num === 5 || history[i].isRound) {
-								break;
-							}
-						}
-						player.draw(num);
-					}
-					player.tempBanSkill("olzhendan", "roundStart");
+				trigger: {
+					player: "damageEnd",
+					global: "roundEnd",
 				},
-			},
-			round: {
-				audio: "olzhendan",
-				trigger: { global: "roundStart" },
 				filter(event, player) {
-					if (game.roundNumber <= 1) {
-						return false;
-					}
-					if (player.getRoundHistory("useSkill", evt => evt.skill === "olzhendan_damage", 1).length > 0) {
-						return false;
-					}
-					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
+					let count = 0;
+					let roundCount = 1;
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
 						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) {
+									return false;
+								}
+								return true;
 							})
 						) {
-							return true;
+							count++;
 						}
-						if (history[i].isRound) {
+						if (player.actionHistory[i].isRound) {
+							roundCount--;
+						}
+						if (roundCount <= 0) {
 							break;
 						}
+					}
+					if (!player.storage.olzhendan_mark && count > 0) {
+						return true;
 					}
 					return false;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
+					let count = 0;
+					let roundCount = 1;
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
 						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) {
+									return false;
+								}
+								return true;
 							})
 						) {
-							num++;
+							count++;
 						}
-						if (num === 5 || history[i].isRound) {
+						if (player.actionHistory[i].isRound) {
+							roundCount--;
+						}
+						if (roundCount <= 0) {
 							break;
 						}
 					}
-					player.draw(num);
+					if (count > 0) {
+						await player.draw(count);
+					}
+					if (trigger.name === "damage") {
+						player.tempBanSkill("olzhendan", "roundStart");
+					}
 				},
 			},
 		},

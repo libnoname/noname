@@ -3534,11 +3534,11 @@ const skills = {
 				chooseButton: {
 					dialog(event, player) {
 						var list = [];
-						if (event.filterCard({ name: "sha" }, player, event)) {
+						if (event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event)) {
 							list.push(["基本", "", "sha"]);
 						}
 						for (var j of lib.inpile_nature) {
-							if (event.filterCard({ name: "sha", nature: j }, player, event)) {
+							if (event.filterCard(get.autoViewAs({ name: "sha", nature: j }, "unsure"), player, event)) {
 								list.push(["基本", "", "sha", j]);
 							}
 						}

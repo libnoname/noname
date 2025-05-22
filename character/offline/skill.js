@@ -2541,7 +2541,9 @@ const skills = {
 			const { player: target } = trigger;
 			player.addTempSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", [target]);
-			await player.give(get.cards(), target);
+			const gainEvent = target.gain(get.cards(), "draw");
+            gainEvent.giver = player;
+			await gainEvent;
 		},
 		subSkill: {
 			effect: {
@@ -2551,11 +2553,12 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const num = game.getGlobalHistory("everything", evt => evt.name == "psmiaoyu").length;
 					for (const target of player.getStorage(event.name)) {
 						if (!target.isIn()) {
 							continue;
 						}
+						const num = game.getGlobalHistory("everything", evt => evt.name == "psmiaoyu").length;
+						player.line(target, "green");
 						await target.loseHp(num);
 					}
 				},
