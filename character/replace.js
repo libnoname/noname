@@ -411,4 +411,5 @@ window.noname_character_replace = {
 	guanhai: ["ol_guanhai", "guanhai"],
 	zerong: ["zerong", "std_zerong"],
 	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
+	wufu: ["wufu", "ze_wufu"],
 };

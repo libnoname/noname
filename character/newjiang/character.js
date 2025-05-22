@@ -1,4 +1,18 @@
 const characters = {
+	wufu: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dchuairen", "dcchizei"],
+	},
+	ze_wufu: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dczhonge", "dcjuekai"],
+		dieAudios: ["wufu"],
+		img: "image/character/wufu.jpg",
+	},
 	yj_sb_guojia: {
 		sex: "male",
 		group: "wei",

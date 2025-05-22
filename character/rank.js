@@ -1063,6 +1063,8 @@ window.noname_character_rank = {
 		"ol_liwan",
 		"xin_zhangliang",
 		"junk_liuyan",
+		"wufu",
+		"ze_wufu",
 		"sunhuan",
 		"yue_caiyong",
 		"jsrg_gaoxiang",
@@ -3158,6 +3160,8 @@ window.noname_character_rank = {
 			"jsrg_yl_luzhi",
 			"std_lijue",
 			"junk_liuyan",
+			"wufu",
+			"ze_wufu",
 		],
 		rare: [
 			"std_baoxin",
