@@ -1764,6 +1764,7 @@ export class Library {
 					init: "normal",
 					item: {
 						esmall: "80%",
+						usmall: "85%",
 						vsmall: "90%",
 						small: "95%",
 						normal: "100%",
@@ -1779,6 +1780,9 @@ export class Library {
 						switch (zoom) {
 							case "esmall":
 								zoom = 0.8;
+								break;
+							case "usmall":
+								zoom = 0.85;
 								break;
 							case "vsmall":
 								zoom = 0.9;
