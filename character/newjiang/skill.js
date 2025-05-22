@@ -113,7 +113,9 @@ const skills = {
 							max = (temp > max) ? temp : max;
 						}
 					});
-					if (max > 0) max *= 0.9;
+					if (max > 0) {
+						max *= 0.9;
+					}
 					return max;
 				}
 				return 0.5;
@@ -210,7 +212,9 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result.control) map[player.playerid] = result.control;
+						if (result.control) {
+							map[player.playerid] = result.control;
+						}
 						resolve();
 					};
 				};
@@ -326,7 +330,9 @@ const skills = {
 			order: 1,
 			result: {
 				player(player) {
-					if (!player.getStat("skill")?.["dczhonge"]) return 0;
+					if (!player.getStat("skill")?.["dczhonge"]) {
+						return 0;
+					}
 					return 1;
 				},
 			},
