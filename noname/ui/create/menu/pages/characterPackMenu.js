@@ -10,7 +10,7 @@ export const characterPackMenu = function (connectMenu) {
 	const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	// 用于切换显示对应武将包所有武将的界面
 	var rightPane = start.lastChild;

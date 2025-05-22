@@ -78,7 +78,7 @@ export default () => {
 					case "old":
 						lib.card.list = lib.guozhanPile_old.slice(0);
 						break;
-					case "yingbian":
+					case "yingbian": {
 						lib.card.list = lib.guozhanPile_yingbian.slice(0);
 						delete lib.translate.shuiyanqijunx_info_guozhan;
 						const pack = lib.yingbian_guozhan;
@@ -94,6 +94,7 @@ export default () => {
 							}
 						}
 						break;
+					}
 					case "normal":
 						lib.card.list = lib.guozhanPile.slice(0);
 						break;
@@ -4901,7 +4902,7 @@ export default () => {
 							const {
 								result: { bool, targets },
 							} = await player.chooseTarget(get.prompt("fakexuanbei"), "令一名其他角色获得" + get.translation(event.cards), lib.filter.notMe).set("ai", target => {
-								const att = get.attitude(get.event("player"), target);
+								let att = get.attitude(get.event("player"), target);
 								if (att < 0) {
 									return 0;
 								}
@@ -26050,11 +26051,12 @@ export default () => {
 							} else {
 								c = 1;
 							}
-							if (targets.length == 1 && targets[0] == this) {
-							} else if (targets.length == 1) {
-								this.ai.shown += 0.2 * c;
-							} else {
-								this.ai.shown += 0.1 * c;
+							if (targets.length != 1 || targets[0] != this) {
+								if (targets.length == 1) {
+									this.ai.shown += 0.2 * c;
+								} else {
+									this.ai.shown += 0.1 * c;
+								}
 							}
 						}
 					}

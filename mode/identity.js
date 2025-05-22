@@ -3219,22 +3219,24 @@ export default () => {
 						}
 						if (effect > 0) {
 							if (effect < 1) {
-								c = 0.5;
+								c = 0.5
 							} else {
-								c = 1;
+								c = 1
 							}
-							if (targets.length == 1 && targets[0] == this) {
-							} else if (targets.length == 1) {
-								this.ai.shown += 0.2 * c;
-							} else {
-								this.ai.shown += 0.1 * c;
+							if (targets.length != 1 || targets[0] != this) {
+								if (targets.length == 1) {
+									this.ai.shown += 0.2 * c;
+								} else {
+									this.ai.shown += 0.1 * c;
+								}
 							}
 						} else if (effect < 0 && this == game.me && ["nei", "commoner", "rYe", "bYe"].includes(game.me.identity)) {
-							if (targets.length == 1 && targets[0] == this) {
-							} else if (targets.length == 1) {
-								this.ai.shown -= 0.2;
-							} else {
-								this.ai.shown -= 0.1;
+							if (targets.length != 1 || targets[0] != this) {
+								if (targets.length == 1) {
+									this.ai.shown -= 0.2;
+								} else {
+									this.ai.shown -= 0.1;
+								}
 							}
 						}
 					}

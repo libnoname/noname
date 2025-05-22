@@ -8,25 +8,22 @@ let SANDBOX_ENABLED = false;
 // 用于传递顶级execute context
 
 /** @type {(target: Function, thiz: Object, args: Array) => any} */
-// @ts-ignore
 const ContextInvoker1 = function (apply, target, thiz, args) {
 	return apply(target, thiz, args);
 }.bind(null, Reflect.apply);
 
 /** @type {(target: Function, args: Array, newTarget: Function) => any} */
-// @ts-ignore
 const ContextInvoker2 = function (construct, target, args, newTarget) {
 	return construct(target, args, newTarget);
 }.bind(null, Reflect.construct);
 
 /** @type {(closure: Object, target: Function) => ((...args: any[]) => any)} */
-// @ts-ignore
 const ContextInvokerCreator = function (apply, closure, target) {
 	return function (...args) {
 		return apply(
 			target,
 			closure,
-			// @ts-ignore
+			// @ts-expect-error ignore
 			[this === window ? null : this, args, new.target]
 		);
 	};
@@ -91,15 +88,15 @@ async function initializeSandboxRealms(enabled) {
 	});
 
 	// 传递顶级变量域、上下文执行器、错误管理器
-	// @ts-ignore
+	// @ts-expect-error ignore
 	iframe.contentWindow.replacedGlobal = window;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	iframe.contentWindow.replacedCI1 = ContextInvoker1;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	iframe.contentWindow.replacedCI2 = ContextInvoker2;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	iframe.contentWindow.replacedCIC = ContextInvokerCreator;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	iframe.contentWindow.replacedErrors = { CodeSnippet, ErrorReporter, ErrorManager };
 
 	// 重新以新的变量域载入当前脚本
@@ -114,18 +111,18 @@ async function initializeSandboxRealms(enabled) {
 	iframe.contentWindow.document.head.appendChild(script);
 	await promise; // Top Await Required Chrome 89
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete iframe.contentWindow.replacedGlobal;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete iframe.contentWindow.replacedCI1;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete iframe.contentWindow.replacedCI2;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete iframe.contentWindow.replacedCIC;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete iframe.contentWindow.replacedErrors;
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	Object.assign(SANDBOX_EXPORT, iframe.contentWindow.SANDBOX_EXPORT);
 	iframe.remove();
 }

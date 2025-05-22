@@ -1019,7 +1019,7 @@ const skills = {
 					if (_status._fengliao_check) {
 						return;
 					}
-					if (!typeof card !== "object" || !player || !target) {
+					if (!(typeof card !== "object") || !player || !target) {
 						return;
 					}
 					const select = get.info(card).selectTarget;
@@ -1371,7 +1371,7 @@ const skills = {
 						}
 					}
 					break;
-				case 2:
+				case 2: {
 					const cards = target
 						.getEquips(1)
 						.slice()
@@ -1381,16 +1381,18 @@ const skills = {
 						await target.discard(cards).set("discarder", player);
 					}
 					break;
+				}
 				case 3:
 					target.addTempSkill("dclieqiong_maxhand", { player: "phaseEnd" });
 					break;
-				case 4:
+				case 4: {
 					const cardx = target.getDiscardableCards(target, "h");
 					const num = Math.ceil(cardx.length / 2);
 					if (cardx.length) {
 						await target.discard(cardx.randomGets(num));
 					}
 					break;
+				}
 				case 5:
 					target.addTempSkill("dclieqiong_damage", { player: "phaseEnd" });
 					break;
@@ -1400,7 +1402,7 @@ const skills = {
 				case 7:
 					target.addTempSkill("dclieqiong_respond", { player: "phaseEnd" });
 					break;
-				case 8:
+				case 8: {
 					game.broadcastAll(
 						(player, sex) => {
 							player.sex = sex;
@@ -1416,11 +1418,12 @@ const skills = {
 					}
 					await target.gainMaxHp();
 					break;
+				}
 			}
 		},
 		marktext: "赤",
 		intro: { content: "mark" },
-		frequent: true,
+		// frequent: true,
 		derivation: ["dclieqiong_place1", "dclieqiong_place4", "dclieqiong_place5", "dclieqiong_place6", "dclieqiong_place7"],
 		subSkill: {
 			injury: {
@@ -10191,8 +10194,8 @@ const skills = {
 					if (cards.length > 2) {
 						return 1;
 					}
-					if (cards.length == 2 && player.storage.jilue > 1) {
-					}
+					// if (cards.length == 2 && player.storage.jilue > 1) {
+					// }
 					return 0;
 				},
 			},

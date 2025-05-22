@@ -28,14 +28,14 @@ export function canUseHttpProtocol() {
 		if (window.cordova) {
 			// 直接确定包名
 			// 因为懒人包作者不一定会改成什么版本
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 				// 每个app自定义能升级的渠道，比如判断版本
-				// @ts-ignore
+				// @ts-expect-error ignore
 				return window.noname_shijianInterfaces.getApkVersion() >= 16000;
 			}
 			// 由理版判断，后续所有app都通过此接口来升级协议
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 				return true;
 			}
@@ -46,7 +46,7 @@ export function canUseHttpProtocol() {
 			const fs = require("fs");
 			const path = require("path");
 			if (fs.existsSync(path.join(__dirname, "package.json"))) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const json = require("./package.json");
 				// 诗笺电脑版的判断
 				return json && Number(json.installerVersion) >= 1.7;
@@ -68,19 +68,19 @@ export function sendUpdate() {
 	// 手机端
 	if (window.cordova) {
 		// 直接确定包名
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 			// 给诗笺版apk的java层传递升级完成的信息
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const url = new URL(window.noname_shijianInterfaces.sendUpdate());
 			url.searchParams.set("sendUpdate", "true");
 			return url.toString();
 		}
 		// 由理版判断
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 			// 给由理版apk的java层传递升级完成的信息
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const url = new URL(window.NonameAndroidBridge.sendUpdate());
 			url.searchParams.set("sendUpdate", "true");
 			return url.toString();
@@ -92,7 +92,7 @@ export function sendUpdate() {
 		const fs = require("fs");
 		const path = require("path");
 		if (fs.existsSync(path.join(__dirname, "package.json"))) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const json = require("./package.json");
 			// 诗笺电脑版的判断
 			if (json && Number(json.installerVersion) >= 1.7) {
@@ -209,7 +209,7 @@ export async function boot() {
 						},
 					});
 				});
-				// @ts-ignore
+				// @ts-expect-error ignore
 				await window.initReadWriteFunction(g).catch(e => {
 					console.error("文件读写函数初始化失败:", e);
 				});
@@ -463,7 +463,7 @@ export async function boot() {
 				for (var i = 0; i < config.get("extensions").length; i++) {
 					game.saveConfig("extension_" + config.get("extensions")[i] + "_enable", false);
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				localStorage.setItem(lib.configprefix + "disable_extension", true);
 			});
 		}
@@ -520,7 +520,7 @@ export async function boot() {
 				}
 				list.push(name);
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.saveConfig("image_background", list.randomGet(lib.config.image_background));
 		}
 		lib.init.background();
@@ -632,7 +632,7 @@ export async function boot() {
 				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
 					return;
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
@@ -645,7 +645,7 @@ export async function boot() {
 				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
 					return;
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
@@ -667,7 +667,7 @@ export async function boot() {
 			.filter(name => game.hasExtension(name))
 			.forEach(name => {
 				lib.announce.publish("Noname.Init.Extension.onLoad", name);
-				// @ts-ignore
+				// @ts-expect-error ignore
 				lib.announce.publish(`Noname.Init.Extension.${name}.onLoad`, void 0);
 			});
 		delete _status.extensionLoading;
@@ -765,7 +765,7 @@ export async function boot() {
 		 */
 		let promises = lib.creation.array;
 		for (const type in _status.importing) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			promises.addArray(_status.importing[type]);
 		}
 		await Promise.allSettled(promises);
@@ -1079,11 +1079,11 @@ async function setOnError() {
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (evt.parent) {
 				str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (evt.parent && evt.parent.parent) {
 				str += `\nevent.parent.parent.name: ${evt.parent.parent.name}\nevent.parent.parent.step: ${evt.parent.parent.step}`;
 			}
@@ -1169,7 +1169,7 @@ async function setOnError() {
 						return false;
 					})
 				) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const codes = _status.event.content.originals[_status.event.step];
 					if (typeof codes == "function") {
 						const regex = /<anonymous>:(\d+):\d+/;
@@ -1249,7 +1249,7 @@ function setWindowListener() {
 			game.closePopped();
 			var dialogs = document.querySelectorAll("#window>.dialog.popped:not(.static)");
 			for (var i = 0; i < dialogs.length; i++) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				dialogs[i].delete();
 			}
 			if (e.keyCode == 32) {

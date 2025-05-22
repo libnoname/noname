@@ -24,13 +24,6 @@ export class ChromePromiseErrorHandler {
 	#errorList;
 
 	/**
-	 * @type {typeof Error.prepareStackTrace}
-	 *
-	 * @deprecated
-	 */
-	#_originErrorPrepareStackTrace;
-
-	/**
 	 * 判断是否是v8错误栈堆用到的正则
 	 */
 	#STACK_REGEXP = /^\s*at .*(\S+:\d+|\(native\))/m;
@@ -135,13 +128,13 @@ export class ChromePromiseErrorHandler {
 						break;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Chrome status
 					window.onerror(error.message, fileName, line, column, error);
 				}
 				// 反之我们只能不考虑报错文件信息，直接调用onerror
 				else {
 					try {
-						// @ts-ignore
+						// @ts-expect-error Maybe success in chrome
 						let [_, src = void 0, line = void 0, column = void 0] = /at\s+.*\s+\((.*):(\d*):(\d*)\)/i.exec(error.stack.split("\n")[1]);
 						if (typeof line == "string") {
 							line = Number(line);
@@ -149,9 +142,10 @@ export class ChromePromiseErrorHandler {
 						if (typeof column == "string") {
 							column = Number(column);
 						}
-						// @ts-ignore
+						// @ts-expect-error Chrome status
 						window.onerror(error.message, src, line, column, error);
 					} catch (e) {
+						// @ts-expect-error Chrome status
 						window.onerror(error.message, "", 0, 0, error);
 					}
 				}
@@ -201,7 +195,7 @@ export function extractLocation(urlLike) {
 	const regExp = /(.+?)(?::(\d+))?(?::(\d+))?$/;
 	const parts = regExp.exec(urlLike.replace(/[()]/g, ""));
 
-	// @ts-ignore
+	// @ts-expect-error Chrome status
 	return [parts[1], parts[2] || void 0, parts[3] || void 0];
 }
 

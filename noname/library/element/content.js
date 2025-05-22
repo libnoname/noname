@@ -963,7 +963,7 @@ export const Content = {
 				const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 				const next = owner.lose(map[i][0], ui.special).set("type", "equip").set("forceDie", true).set("getlx", false);
 				if (event.visible == true) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					next.visible = true;
 				}
 				await next;
@@ -973,7 +973,7 @@ export const Content = {
 		player.equiping = true;
 		const handleEquip = async card => {
 			let cards = [];
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (get.itemtype(card) === "card" && !card.isViewAsCard) {
 				cards = [card];
 				card = card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false);
@@ -996,10 +996,10 @@ export const Content = {
 			if (audioSubtype == "equip6") {
 				audioSubtype = "equip3";
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.broadcastAll(type => {
 				if (lib.config.background_audio) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					game.playAudio("effect", type);
 				}
 			}, audioSubtype);
@@ -1054,7 +1054,7 @@ export const Content = {
 				player.$draw(event.cards);
 				await game.delay(0, 300);
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				game.broadcast(
 					function (cards, player) {
 						cards.forEach(card => {
@@ -1077,13 +1077,13 @@ export const Content = {
 		//将多张装备牌的牌替换事件合并为一个，废弃卡牌的replaceEquip自定义事件属性（反正没人用）
 		const replaceEquipEvent = game.createEvent("replaceEquip");
 		replaceEquipEvent.player = player;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		replaceEquipEvent.card = event.card;
 		replaceEquipEvent.setContent("replaceEquip");
 		const result = await replaceEquipEvent.forResult();
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (get.itemtype(result?.cards) == "cards") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			event.swapped = true;
 			const loseEvent = player.lose(result.cards, "visible").set("type", "equip").set("getlx", false);
 			loseEvent.swapEquip = true;
@@ -1091,7 +1091,7 @@ export const Content = {
 				player.$throw(result.cards, 1000);
 			}
 			await loseEvent;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			for (let card of result.cards) {
 				if (card.willBeDestroyed("discardPile", player, event)) {
 					card.selfDestroy(event);
@@ -9002,7 +9002,6 @@ player.removeVirtualEquip(card);
 			next.cards = cards;
 			next.player = player;
 			return;
-			return;
 		}
 		if (targets.length == 0 && !info.notarget) {
 			return;
@@ -11217,7 +11216,7 @@ player.removeVirtualEquip(card);
 				const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 				const next = owner.lose(map[i][0], ui.special).set("type", "addJudge").set("forceDie", true).set("getlx", false);
 				if (event.visible == true) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					next.visible = true;
 				}
 				await next;
@@ -11559,7 +11558,8 @@ player.removeVirtualEquip(card);
 				switch (name) {
 					case "phaseJieshu":
 						target = target.next;
-					case "phaseZhunbei":
+						// [falls through]
+					case "phaseZhunbei": {
 						let att = get.sgn(get.attitude(player, target)),
 							judges = target.getCards("j"),
 							needs = 0,
@@ -11599,6 +11599,7 @@ player.removeVirtualEquip(card);
 							}
 						}
 						return [top, cards];
+					}
 					default:
 						cards.sort((a, b) => {
 							return get.value(b, target) - get.value(a, target);

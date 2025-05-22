@@ -2701,7 +2701,7 @@ const skills = {
 			const name = event.triggername;
 			const num1 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "clanyuzhi", name === "roundStart" ? 1 : 0).reduce((sum, evt) => sum + evt.cards.length, 0);
 			switch (name) {
-				case "roundStart":
+				case "roundStart": {
 					const { result } = await player
 						.chooseCard(
 							"迂志：请展示一张手牌",
@@ -2736,7 +2736,8 @@ const skills = {
 						player.addTempSkill("clanyuzhi_mark", "roundStart");
 					}
 					break;
-				case "roundEnd":
+				}
+				case "roundEnd": {
 					const cards = player.getCards("h", card => card.hasGaintag("clanyuzhi") && lib.filter.cardDiscardable(card, player));
 					if (cards.length) {
 						await player.discard(cards);
@@ -2762,6 +2763,7 @@ const skills = {
 							await player.damage(1, "thunder");
 						}
 					}
+				}
 			}
 		},
 		ai: {

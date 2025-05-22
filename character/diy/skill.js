@@ -62,207 +62,207 @@ const skills = {
 							game.ns_shijian = game.ns_shijian || {
 								skills: 0,
 								players: [],
-							};
-							game.ns_shijian.players.add(player);
-							break;
+							}
+							game.ns_shijian.players.add(player)
+							break
 						case "shijian_removeSkill":
-							player.addSkills(event.skill);
-							break;
-						case "shijian_addSkill":
+							player.addSkills(event.skill)
+							break
+						case "shijian_addSkill": {
 							/** @type ExSkillData 新技能内容 */
 							const newSkill = {
 								audio: "nspianwu",
-							};
+							}
 							/** 新技能描述 */
-							let newSkillTran = "";
+							let newSkillTran = ""
 							/** 新技能名(id) */
-							const skillName = "ns_shijian_createSkill_" + game.ns_shijian.skills++;
+							const skillName = "ns_shijian_createSkill_" + game.ns_shijian.skills++
 							/**
 							 * @type skillInit[] 获得技能时的效果列表
 							 */
-							const initList = lib.skill.nspianwu_global.initList;
+							const initList = lib.skill.nspianwu_global.initList
 							/**
 							 * @type skillInit 随机筛选出的“获得技能时的效果”
 							 */
-							let randomInit = null;
+							let randomInit = null
 							if (Math.random() <= 0.45) {
 								//随机选择
-								randomInit = initList.randomGet();
-								newSkillTran += "当你获得此技能时，" + randomInit.translate + "。";
-								newSkill.init = randomInit.init;
+								randomInit = initList.randomGet()
+								newSkillTran += "当你获得此技能时，" + randomInit.translate + "。"
+								newSkill.init = randomInit.init
 							}
 
 							/** 技能每回合的可用次数 */
-							let usable = Infinity;
+							let usable = Infinity
 							if (Math.random() <= 0.6) {
-								usable = [1, 2, 3].randomGet();
-								newSkill.usable = usable;
-								newSkillTran += `每回合限${usable}次，`;
+								usable = [1, 2, 3].randomGet()
+								newSkill.usable = usable
+								newSkillTran += `每回合限${usable}次，`
 							}
 
 							//随机决定是否是锁定技
 							if (Math.random() <= 0.35) {
-								newSkill.forced = true;
-								newSkillTran += "锁定技，";
+								newSkill.forced = true
+								newSkillTran += "锁定技，"
 							}
 
 							/**
 							 * @type skillTrigger[] 触发技能的时机
 							 */
-							const triggerList = lib.skill.nspianwu_global.triggerList;
+							const triggerList = lib.skill.nspianwu_global.triggerList
 							/** 随机取得时机名 */
-							const randomTrigger = triggerList[Math.floor(Math.random() * triggerList.length)];
+							const randomTrigger = triggerList[Math.floor(Math.random() * triggerList.length)]
 							if (randomTrigger.noUseable) {
-								delete newSkill.usable;
-								newSkillTran = newSkillTran.replace(`每回合限${usable}次，`, "");
+								delete newSkill.usable
+								newSkillTran = newSkillTran.replace(`每回合限${usable}次，`, "")
 							}
 							/**
 							 * @type triggerSource[] 时机触发者数组
 							 */
 							const triggerSource = lib.skill.nspianwu_global.triggerSource.filter(v => {
 								if (randomTrigger.noSource && v.target == "source") {
-									return false;
+									return false
 								}
-								return true;
-							});
+								return true
+							})
 							/** 随机取得时机触发者 */
-							const randomTriggerSource = triggerSource[Math.floor(Math.random() * triggerSource.length)];
+							const randomTriggerSource = triggerSource[Math.floor(Math.random() * triggerSource.length)]
 							/** @type triggerOpportunity[] 触发技的前，中，后，取消后，跳过后 */
 							const triggerOpportunity = lib.skill.nspianwu_global.triggerOpportunity.filter(v => {
 								if (randomTrigger.noCancel && Array.isArray(v.trigger) && v.trigger[0] == "Skipped") {
-									return false;
+									return false
 								}
-								return true;
-							});
+								return true
+							})
 							/** 随机取得发动时机的前，后，取消 */
-							let randomTriggerOpportunity = triggerOpportunity[Math.floor(Math.random() * triggerOpportunity.length)];
-							newSkillTran += `当${randomTriggerSource.translate}${randomTrigger.translate}${randomTriggerOpportunity.translate}，`;
-							newSkill.trigger = {};
+							let randomTriggerOpportunity = triggerOpportunity[Math.floor(Math.random() * triggerOpportunity.length)]
+							newSkillTran += `当${randomTriggerSource.translate}${randomTrigger.translate}${randomTriggerOpportunity.translate}，`
+							newSkill.trigger = {}
 							if (Object.prototype.toString.call(randomTriggerOpportunity.trigger) === "[object Object]") {
-								newSkill.trigger = randomTriggerOpportunity.trigger;
+								newSkill.trigger = randomTriggerOpportunity.trigger
 							} else if (Array.isArray(randomTriggerOpportunity.trigger)) {
-								const triggerArr = [];
+								const triggerArr = []
 								for (const trigger of randomTriggerOpportunity.trigger) {
-									triggerArr.push(randomTrigger.trigger + trigger);
+									triggerArr.push(randomTrigger.trigger + trigger)
 								}
-								newSkill.trigger[randomTriggerSource.target] = triggerArr;
+								newSkill.trigger[randomTriggerSource.target] = triggerArr
 							} else {
-								newSkill.trigger[randomTriggerSource.target] = randomTrigger.trigger + randomTriggerOpportunity.trigger;
+								newSkill.trigger[randomTriggerSource.target] = randomTrigger.trigger + randomTriggerOpportunity.trigger
 							}
 
 							/** @type skillFilter 获取随机的发动条件 */
-							let randomSkillFilter;
+							let randomSkillFilter
 
 							//有50%的几率有filter
 							if (Math.random() <= 0.45) {
 								/** @type skillFilter[] 获取发动条件数组 */
-								let filterList = lib.skill.nspianwu_global.skillFilterList_onlyPlayer;
+								let filterList = lib.skill.nspianwu_global.skillFilterList_onlyPlayer
 								if (randomTriggerSource.target != "player") {
-									filterList = filterList.concat(lib.skill.nspianwu_global.skillFilterList_onlyTarget);
+									filterList = filterList.concat(lib.skill.nspianwu_global.skillFilterList_onlyTarget)
 								}
 								if (randomTrigger.num) {
-									filterList = filterList.concat(lib.skill.nspianwu_global.skillFilterList_hasNum);
+									filterList = filterList.concat(lib.skill.nspianwu_global.skillFilterList_hasNum)
 								}
-								randomSkillFilter = filterList[Math.floor(Math.random() * filterList.length)];
+								randomSkillFilter = filterList[Math.floor(Math.random() * filterList.length)]
 								if (typeof randomSkillFilter.translate == "string") {
-									newSkillTran += randomSkillFilter.translate + "，";
+									newSkillTran += randomSkillFilter.translate + "，"
 								} else {
-									// @ts-ignore
-									newSkillTran += randomSkillFilter.translate(randomTrigger.translate) + "，";
+									// @ts-expect-error ignore
+									newSkillTran += randomSkillFilter.translate(randomTrigger.translate) + "，"
 								}
 							}
 
 							/** @type skillContent[] 技能发动条件 */
-							let contentList = lib.skill.nspianwu_global.skillContentList_onlyPlayer;
+							let contentList = lib.skill.nspianwu_global.skillContentList_onlyPlayer
 							if (randomTriggerSource.target != "player") {
-								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_onlyTarget);
+								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_onlyTarget)
 							}
 							/** End时机不能操作num */
 							if (randomTrigger.num && "End" != randomTriggerOpportunity.trigger && !Array.isArray(randomTriggerOpportunity.trigger)) {
-								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_hasNum);
+								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_hasNum)
 							}
 							/** End时机不取消 */
 							if (!randomTrigger.noCancel && "End" != randomTriggerOpportunity.trigger && !Array.isArray(randomTriggerOpportunity.trigger)) {
-								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_onlyCancel);
+								contentList = contentList.concat(lib.skill.nspianwu_global.skillContentList_onlyCancel)
 							}
 							// 排除类似摸牌时摸牌的效果
-							const exclude = ["摸牌", "伤害", "失去体力", "失去体力上限"];
-							const exclude2 = [/摸\S+牌/, /受到\S+伤害/, /失去\S+体力(?!上限)/, /失去\S+体力上限/];
+							const exclude = ["摸牌", "伤害", "失去体力", "失去体力上限"]
+							const exclude2 = [/摸\S+牌/, /受到\S+伤害/, /失去\S+体力(?!上限)/, /失去\S+体力上限/]
 							if (exclude.includes(randomTrigger.translate)) {
-								const index = exclude.indexOf(randomTrigger.translate);
-								contentList = contentList.filter(list => exclude2[index].test(list.translate) == false);
+								const index = exclude.indexOf(randomTrigger.translate)
+								contentList = contentList.filter(list => exclude2[index].test(list.translate) == false)
 							}
 							/**  @type skillContent 随机的发动效果 */
-							const randomSkillContent = contentList[Math.floor(Math.random() * contentList.length)];
+							const randomSkillContent = contentList[Math.floor(Math.random() * contentList.length)]
 
 							newSkill.filter = function (event, player, name) {
 								if (!event.player.isAlive()) {
-									return false;
+									return false
 								}
 								if (typeof randomTrigger.filter == "function") {
 									if (randomTrigger.filter(event, player, name) == false) {
-										return false;
+										return false
 									}
 								}
 								if (typeof randomSkillContent.filter == "function") {
 									if (randomSkillContent.filter(event, player, name) == false) {
-										return false;
+										return false
 									}
 								}
 								if (randomSkillFilter) {
-									return randomSkillFilter.filter(event, player, name);
+									return randomSkillFilter.filter(event, player, name)
 								}
-								return true;
-							};
+								return true
+							}
 
-							newSkillTran += randomSkillContent.translate;
-							newSkill.content = randomSkillContent.content;
+							newSkillTran += randomSkillContent.translate
+							newSkill.content = randomSkillContent.content
 
 							if (randomSkillContent.translate == "你额外进行一个回合(每轮限一次)") {
-								delete newSkill.usable;
-								newSkillTran = newSkillTran.replace(`每回合限${usable}次，`, "");
-								newSkill.round = 1;
+								delete newSkill.usable
+								newSkillTran = newSkillTran.replace(`每回合限${usable}次，`, "")
+								newSkill.round = 1
 							}
 
 							// ai是否发动
 							newSkill.check = function (event, player) {
 								/** 收益 */
-								let result = 0;
+								let result = 0
 								/** 技能content的效果 */
-								const contentResult = randomSkillContent.result;
+								const contentResult = randomSkillContent.result
 								// 对于加减数值的判断
 								if (randomTrigger.num && lib.skill.nspianwu_global.skillContentList_hasNum.includes(randomSkillContent)) {
-									result += contentResult.evtPlayer(event.player, event.name);
+									result += contentResult.evtPlayer(event.player, event.name)
 								}
 								// 对于是否取消此时机的判断
 								else if (lib.skill.nspianwu_global.skillContentList_onlyCancel.includes(randomSkillContent)) {
-									result += contentResult.evtPlayer(event.player, event.name);
+									result += contentResult.evtPlayer(event.player, event.name)
 								}
 								// 其他正常技能的判断
 								else {
 									if (contentResult.player) {
 										if (typeof contentResult.player == "function") {
-											result += contentResult.player(player, event.name);
+											result += contentResult.player(player, event.name)
 										} else {
-											result += contentResult.player;
+											result += contentResult.player
 										}
 									} else if (contentResult.evtPlayer) {
 										if (typeof contentResult.evtPlayer == "function") {
-											result += contentResult.evtPlayer(event.player, event.name);
+											result += contentResult.evtPlayer(event.player, event.name)
 										} else {
-											result += contentResult.evtPlayer;
+											result += contentResult.evtPlayer
 										}
 									}
 								}
 								if (get.attitude(player, event.player) < 0) {
 									/** 技能是对trigger.player还是player生效 */
-									const toPlayer = lib.skill.nspianwu_global.skillContentList_onlyPlayer.includes(randomSkillContent);
+									const toPlayer = lib.skill.nspianwu_global.skillContentList_onlyPlayer.includes(randomSkillContent)
 									if (!toPlayer) {
-										result = -result;
+										result = -result
 									}
 								}
-								return result > 0;
-							};
+								return result > 0
+							}
 
 							const skillNameList = [
 								"微尘",
@@ -420,167 +420,168 @@ const skills = {
 								"無言",
 								"兮颜",
 								"清欢",
-							];
+							]
 
 							if (!newSkill.trigger.player && !lib.skill.nspianwu_global.skillContentList_onlyPlayer.includes(randomSkillContent)) {
-								newSkill.logTarget = event => event.player;
+								newSkill.logTarget = event => event.player
 							}
 							if (!newSkill.usable && !newSkill.round) {
-								newSkill.usable = 5;
+								newSkill.usable = 5
 							}
 							if (!newSkillTran.endsWith("。")) {
-								newSkillTran += "。";
+								newSkillTran += "。"
 							}
 							game.broadcastAll(
 								(skill, info, newSkillTranslate, newSkillTran) => {
-									lib.skill[skill] = info;
-									lib.translate[skill] = newSkillTranslate;
-									lib.translate[skill + "_info"] = newSkillTran;
-									game.finishSkill(skill);
+									lib.skill[skill] = info
+									lib.translate[skill] = newSkillTranslate
+									lib.translate[skill + "_info"] = newSkillTran
+									game.finishSkill(skill)
 								},
 								skillName,
 								newSkill,
 								skillNameList.randomGet(),
 								newSkillTran
-							);
+							)
 
-							const next = player.chooseTarget();
-							next.set("filterTarget", lib.filter.notMe);
-							next.set("prompt", `是否将【${lib.translate[skillName]}】赠予其他角色？`);
-							next.set("prompt2", lib.translate[skillName + "_info"]);
+							const next = player.chooseTarget()
+							next.set("filterTarget", lib.filter.notMe)
+							next.set("prompt", `是否将【${lib.translate[skillName]}】赠予其他角色？`)
+							next.set("prompt2", lib.translate[skillName + "_info"])
 							next.set("ai", target => {
-								const player = _status.event.player;
-								const att = get.attitude(player, target);
-								let initResult = 0;
-								let initResultOfMe = 0;
+								const player = _status.event.player
+								const att = get.attitude(player, target)
+								let initResult = 0
+								let initResultOfMe = 0
 								if (randomInit) {
 									if (typeof randomInit.result.player == "function") {
-										initResult += randomInit.result.player(target);
-										initResult += randomInit.result.player(player);
+										initResult += randomInit.result.player(target)
+										initResult += randomInit.result.player(player)
 									} else if (typeof randomInit.result.player == "number") {
-										initResult += randomInit.result.player;
-										initResultOfMe += randomInit.result.player;
+										initResult += randomInit.result.player
+										initResultOfMe += randomInit.result.player
 									}
 								}
 								// 获得技能就死亡
 								if (initResult == -Infinity) {
-									return -att;
+									return -att
 								}
 								let contentResult = 0,
 									contentResultOfMe = 0,
 									rs = randomSkillContent.result,
 									rp = randomTriggerSource.target,
-									rtr = randomTrigger.result;
+									rtr = randomTrigger.result
 								/** 技能是对trigger.player还是target生效 */
-								const toTarget = lib.skill.nspianwu_global.skillContentList_onlyPlayer.includes(randomSkillContent);
+								const toTarget = lib.skill.nspianwu_global.skillContentList_onlyPlayer.includes(randomSkillContent)
 								if (rtr) {
 									if (typeof rtr.evtPlayer == "function") {
-										rtr = rtr.evtPlayer(target);
+										rtr = rtr.evtPlayer(target)
 									} else {
-										rtr = rtr.evtPlayer;
+										rtr = rtr.evtPlayer
 									}
 								} else {
-									rtr = 0;
+									rtr = 0
 								}
 								if (rs.player) {
 									if (typeof rs.player == "function") {
-										contentResult += rs.player(target);
-										contentResultOfMe += rs.player(player);
+										contentResult += rs.player(target)
+										contentResultOfMe += rs.player(player)
 									} else {
-										contentResult += rs.player;
-										contentResultOfMe += rs.player;
+										contentResult += rs.player
+										contentResultOfMe += rs.player
 									}
 								} else if (rs.evtPlayer) {
 									/** 对trigger.player的收益 */
-									let result = 0;
+									let result = 0
 									if (typeof rs.evtPlayer == "function") {
-										result += rs.evtPlayer(target);
+										result += rs.evtPlayer(target)
 										if (result > 0 && toTarget) {
-											contentResult += result;
+											contentResult += result
 										} else if (result > 0) {
-											contentResult += result + 1;
+											contentResult += result + 1
 										} else if (result <= 0 && toTarget) {
 											if (lib.skill[skillName].forced) {
-												contentResult += result - 3;
+												contentResult += result - 3
 											} else {
-												contentResult += result - 2;
+												contentResult += result - 2
 											}
 										} else if (result <= 0) {
 											if (lib.skill[skillName].forced) {
-												contentResult += result - 3;
+												contentResult += result - 3
 											} else {
-												contentResult -= result - 2;
+												contentResult -= result - 2
 											}
 										}
 										if (toTarget) {
-											contentResultOfMe += rs.evtPlayer(player);
+											contentResultOfMe += rs.evtPlayer(player)
 										}
 									} else {
 										if (toTarget) {
-											contentResult += rs.evtPlayer;
-											contentResultOfMe += rs.evtPlayer;
+											contentResult += rs.evtPlayer
+											contentResultOfMe += rs.evtPlayer
 										} else {
 											if (lib.skill[skillName].forced) {
 												if (rs.evtPlayer > 0) {
-													contentResult += rs.evtPlayer;
-													contentResultOfMe += rs.evtPlayer;
+													contentResult += rs.evtPlayer
+													contentResultOfMe += rs.evtPlayer
 												} else {
-													contentResult -= rs.evtPlayer;
-													contentResultOfMe -= rs.evtPlayer;
+													contentResult -= rs.evtPlayer
+													contentResultOfMe -= rs.evtPlayer
 												}
 											} else {
-												contentResult += rs.evtPlayer;
-												contentResultOfMe += rs.evtPlayer;
+												contentResult += rs.evtPlayer
+												contentResultOfMe += rs.evtPlayer
 											}
 										}
 									}
 								}
-								const mySkillLength = player.skills.filter(skill => skill.indexOf("ns_shijian_createSkill_") == 0).length;
+								const mySkillLength = player.skills.filter(skill => skill.indexOf("ns_shijian_createSkill_") == 0).length
 								if (contentResult > contentResultOfMe && att > 3 && initResult > 0) {
-									return 1000;
+									return 1000
 								}
 								if (contentResultOfMe > -2 && initResultOfMe > 2) {
-									return 0;
+									return 0
 								}
 								if (contentResultOfMe > 0 && initResult > -1) {
 									if (mySkillLength < 9) {
-										return 0;
+										return 0
 									}
 									if (game.countPlayer(current => get.attitude(player, current) > 3) > 0) {
-										return att;
+										return att
 									}
-									return 0;
+									return 0
 								}
 								if (rp != "player") {
 									if (rtr <= 0 && contentResult < 0 && !toTarget) {
 										if (mySkillLength < 9) {
-											return 0;
+											return 0
 										}
 										if (game.countPlayer(current => get.attitude(player, current) > 3) > 0) {
-											return att;
+											return att
 										}
-										return 0;
+										return 0
 									}
 								}
 								if (contentResult >= 0) {
 									if (mySkillLength < 9) {
-										return 0;
+										return 0
 									}
 									if (game.countPlayer(current => get.attitude(player, current) > 3) > 0) {
-										return att;
+										return att
 									}
-									return 0;
+									return 0
 								} else {
-									return 0 - att;
+									return 0 - att
 								}
-							});
-							const result = await next.forResult();
+							})
+							const result = await next.forResult()
 							if (result.bool) {
-								player.line(result.targets[0]);
-								await result.targets[0].addSkills(skillName);
+								player.line(result.targets[0])
+								await result.targets[0].addSkills(skillName)
 							} else {
-								await player.addSkills(skillName);
+								await player.addSkills(skillName)
 							}
+						}
 					}
 				},
 				/**

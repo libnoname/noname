@@ -2238,7 +2238,7 @@ const skills = {
 		subSkill: {
 			used: { charlotte: true },
 			effect: {
-				charlotte: true,
+				// charlotte: true,
 				charlotte: true,
 				onremove: true,
 				markimage: "image/card/handcard.png",
@@ -2768,7 +2768,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					filterCard: () => false,
+					// filterCard: () => false,
 					filterCard(card) {
 						return card === lib.skill.jycailve_backup.card;
 					},
@@ -5345,7 +5345,6 @@ const skills = {
 	},
 	//波才
 	hm_kunjun: {
-		forced: true,
 		trigger: {
 			player: "useCard",
 			target: "useCardToTargeted",
@@ -12586,8 +12585,8 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				intro: { content: "本回合手牌上限+#" },
-				charlotte: true,
-				onremove: true,
+				// charlotte: true,
+				// onremove: true,
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("jdjizhi_mark");
@@ -23965,6 +23964,7 @@ const skills = {
 
 				case "red":
 					evt._trigger.source.gain(card, "gain2");
+					break;
 				default:
 					break;
 			}

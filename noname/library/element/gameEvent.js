@@ -111,7 +111,7 @@ export class GameEvent {
 	/**
 	 * @type { Result }
 	 */
-	//@ts-ignore
+	// @ts-expect-error ignore
 	_result = {};
 	/**
 	 * @type { any[] }
@@ -1195,11 +1195,11 @@ export class GameEvent {
 		const event = this;
 		return new Proxy([], {
 			set(target, p, childEvent, receiver) {
-				//@ts-ignore
+				// @ts-expect-error ignore
 				if (childEvent instanceof GameEvent && !target.includes(childEvent)) {
 					childEvent.parent = event;
 					const type = childEvent.getDefaultNextHandlerType();
-					//@ts-ignore
+					// @ts-expect-error ignore
 					if (type) {
 						childEvent.pushHandler(...event.getHandler(type));
 					}
@@ -1341,7 +1341,7 @@ export class GameEvent {
 				} else if (this._triggered === 3) {
 					await trigger("After", 4);
 				}
-				//@ts-ignore
+				// @ts-expect-error ignore
 				else if (this.after.length) {
 					this.next.push(this.after.shift());
 				} else {

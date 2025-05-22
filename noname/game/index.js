@@ -611,10 +611,10 @@ export class Game extends GameCompatible {
 	 */
 	addCardKnower(cards, players) {
 		if (get.itemtype(cards) == "card") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			cards = [cards];
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		cards.forEach(card => card.addKnower(players));
 	}
 	/**
@@ -622,12 +622,12 @@ export class Game extends GameCompatible {
 	 * @param { Card[] | Card } cards
 	 */
 	clearCardKnowers(cards) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (get.itemtype(cards) == "card") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			cards = [cards];
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		cards.forEach(card => card.clearKnowers());
 	}
 	/**
@@ -940,13 +940,13 @@ export class Game extends GameCompatible {
 	 */
 	cardsDiscard(cards) {
 		/** @type { 'cards' | 'card' | void } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		var type = get.itemtype(cards);
 		if (type != "cards" && type != "card") {
 			return;
 		}
 		var next = game.createEvent("cardsDiscard");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (type == "card") {
 			cards = [cards];
 		}
@@ -997,7 +997,7 @@ export class Game extends GameCompatible {
 	 */
 	cardsGotoOrdering(cards) {
 		/** @type { 'cards' | 'card' | void } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		var type = get.itemtype(cards);
 		if (type != "cards" && type != "card") {
 			return;
@@ -1025,7 +1025,7 @@ export class Game extends GameCompatible {
 	 */
 	cardsGotoSpecial(cards, bool) {
 		/** @type { 'cards' | 'card' | void } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		var type = get.itemtype(cards);
 		if (type != "cards" && type != "card") {
 			return;
@@ -1059,7 +1059,7 @@ export class Game extends GameCompatible {
 		const next = game.createEvent("cardsGotoPile");
 		next.cards = cards;
 		for (let i = 0; i < args.length; i++) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			let arg = args[i],
 				itemtype = get.itemtype(arg);
 			if (itemtype == "cards") {
@@ -1152,7 +1152,7 @@ export class Game extends GameCompatible {
 	changeLand(url, player) {
 		game.addVideo("changeLand", player, url);
 		const parsedPath = lib.path.parse(url);
-		// @ts-ignore
+		// @ts-expect-error ignore
 		delete parsedPath.base;
 		if (!parsedPath.dir) {
 			parsedPath.dir = "image/card/";
@@ -1231,7 +1231,7 @@ export class Game extends GameCompatible {
 				lib.node.fs.access(__dirname + "/" + list[i], err => {
 					if (!err) {
 						let stat = lib.node.fs.statSync(__dirname + "/" + list[i]);
-						// @ts-ignore
+						// @ts-expect-error ignore
 						if (stat.size == 0) {
 							err = true;
 						}
@@ -1279,7 +1279,7 @@ export class Game extends GameCompatible {
 		} else {
 			next.players = [];
 			for (var i = 0; i < args.length; i++) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				if (get.itemtype(args[i]) == "player") {
 					next.players.push(args[i]);
 				}
@@ -1504,7 +1504,7 @@ export class Game extends GameCompatible {
 	 * @param { Function } [onEnd]
 	 */
 	countDown(time, onEnd) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		time = parseInt(time);
 		if (!time) {
 			return;
@@ -1785,7 +1785,7 @@ export class Game extends GameCompatible {
 		} = options;
 
 		// 为了能更美观的写代码，默认返回audio而不额外加一个void类型
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (_status.video && !video) {
 			return;
 		}
@@ -1801,7 +1801,7 @@ export class Game extends GameCompatible {
 			parsedPath = `audio/${path}`;
 		}
 
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!lib.config.repeat_audio && _status.skillaudio.includes(parsedPath)) {
 			return;
 		}
@@ -1894,11 +1894,11 @@ export class Game extends GameCompatible {
 		 * @returns {HTMLAudioElement}
 		 */
 		const play = () => {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			if (!check()) {
 				return;
 			}
-			//@ts-ignore
+			// @ts-expect-error ignore
 			audio = random ? list.randomRemove() : list.shift();
 			return game.playAudio({
 				path: audio,
@@ -2080,12 +2080,12 @@ export class Game extends GameCompatible {
 	 */
 	playCardAudio(card, sex) {
 		if (typeof card === "string") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			card = { name: card };
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (get.itemtype(sex) === "player") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			sex = sex.sex == "female" ? "female" : "male";
 		} else if (typeof sex == "string") {
 			sex = sex == "female" ? "female" : "male";
@@ -2676,7 +2676,7 @@ export class Game extends GameCompatible {
 				isTsFile = true;
 			}
 			/** @type { string } */
-			// @ts-ignore
+			// @ts-expect-error ignore
 			let str = extensionFile.asText();
 			if (str === "" || str === undefined) {
 				throw "你导入的不是扩展！请选择正确的文件";
@@ -2714,9 +2714,9 @@ export class Game extends GameCompatible {
 			} catch (error) {
 				// 是模块扩展
 				if (
-					// @ts-ignore
+					// @ts-expect-error ignore
 					error.message === "Cannot use import statement outside a module" ||
-					// @ts-ignore
+					// @ts-expect-error ignore
 					error.message === "await is only valid in async functions and the top level bodies of modules"
 				) {
 					// 改为用info.json判断扩展名
@@ -5427,9 +5427,9 @@ export class Game extends GameCompatible {
 			game.zsPlayLineAnimation(name, ui.arena, false, [from, to]);
 		}
 	}
-	zsJinlongLineXy(path) {
-		game.zsPlayLineAnimationByName("jinlonglinexy", path);
-	}
+	// zsJinlongLineXy(path) {
+	// 	game.zsPlayLineAnimationByName("jinlonglinexy", path);
+	// }
 	// 先攻指示线
 	zsXiangongLineXy(path) {
 		game.zsPlayLineAnimationByName("jianqilinexy", path);
@@ -9317,7 +9317,7 @@ export class Game extends GameCompatible {
 	 * @param { function(): void } [callback]
 	 */
 	saveConfig(key, value, local, callback) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (_status.reloading) {
 			return;
 		}

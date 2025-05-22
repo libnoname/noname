@@ -193,10 +193,11 @@ export class Get extends GetCompatible {
 			}
 			case "useSkill": {
 				let skill = _status.event.skill;
-				if (!skill || typeof skill != "string") {
-				} else if (skill == "_chongzhu") {
-					//eventInfo+="重铸"
-				}
+				// /-?
+				// if (!skill || typeof skill != "string") {
+				// } else if (skill == "_chongzhu") {
+				// 	//eventInfo+="重铸"
+				// }
 				break;
 			}
 			case "respond": {
@@ -235,9 +236,9 @@ export class Get extends GetCompatible {
 	 */
 	skillsFromEquips(cards) {
 		return cards.reduce((skills, card) => {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			if (Array.isArray(card.skills)) {
-				//@ts-ignore
+				// @ts-expect-error ignore
 				skills.addArray(card.skills);
 				return skills;
 			}
@@ -477,10 +478,10 @@ export class Get extends GetCompatible {
 		if (pinyins && pinyins[chinese] && Array.isArray(pinyins[chinese])) {
 			result = pinyins[chinese].slice(0);
 		} else {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			result = pinyinPro.pinyin(chinese, { type: "array" });
 		}
-		//@ts-ignore
+		// @ts-expect-error ignore
 		if (withTone === false) {
 			result = pinyinPro.convert(result, { format: "toneNone" });
 		}
@@ -492,7 +493,7 @@ export class Get extends GetCompatible {
 	 */
 	yunmu(str) {
 		//部分整体认读音节特化处理
-		//@ts-ignore
+		// @ts-expect-error ignore
 		if (lib.pinyins._metadata.zhengtirendu.includes(pinyinPro.convert(str, { format: "toneNone" }))) {
 			return "-" + str[str.length - 1];
 		}
@@ -553,7 +554,7 @@ export class Get extends GetCompatible {
 	 * @returns { string|null }
 	 */
 	yunjiao(str) {
-		//@ts-ignore
+		// @ts-expect-error ignore
 		str = pinyinPro.convert(str, { format: "toneNone" });
 		if (lib.pinyins._metadata.zhengtirendu.includes(str)) {
 			str = "-" + str[str.length - 1];
@@ -1340,22 +1341,22 @@ export class Get extends GetCompatible {
 			return obj;
 		}
 
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (map.has(obj)) {
 			return map.get(obj);
 		}
 
 		const constructor = obj.constructor;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		// 这四类数据处理单独处理
 		// （实际上需要处理的只有Map和Set）
 		// 除此之外的就只能祝愿有拷贝构造函数了
 		const target = constructor
 			? Array.isArray(obj) || obj instanceof Map || obj instanceof Set || constructor === Object
-				? // @ts-ignore
+				? // @ts-expect-error ignore
 					new constructor()
 				: constructor.name in window && /\[native code\]/.test(constructor.toString())
-					? // @ts-ignore
+					? // @ts-expect-error ignore
 						new constructor(obj)
 					: obj
 			: Object.create(null);
@@ -1379,9 +1380,9 @@ export class Get extends GetCompatible {
 		if (descriptors) {
 			for (const [key, descriptor] of Object.entries(descriptors)) {
 				const { enumerable, configurable } = descriptor;
-				if (obj.hasOwnProperty(key)) {
+				if (Object.prototype.hasOwnProperty.call(obj, key)) {
 					const result = { enumerable, configurable };
-					if (descriptor.hasOwnProperty("value")) {
+					if (Object.prototype.hasOwnProperty.call(descriptor, "value")) {
 						result.value = get.copy(descriptor.value, copyKeyDeep, map);
 						result.writable = descriptor.writable;
 					} else {
@@ -2015,7 +2016,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return Array.from(cards).map(get.vcardInfo);
 	}
 	infoVCard(card) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!lib.vcardOL) {
 			lib.vcardOL = {};
 		}
@@ -2028,15 +2029,15 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			}
 			return vcard;
 		}, {});
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const vid = datas.vcardID;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!vid || !lib.vcardOL) {
 			return new lib.element.VCard(datas);
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (vid in lib.vcardOL) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const vcard = lib.vcardOL[vid];
 			//TODO: 这里暂时偷懒 直接用了delete和直接赋值 不妥
 			Object.keys(vcard).forEach(entry => {
@@ -2052,7 +2053,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return vcard;
 		} else {
 			const card = new lib.element.VCard(datas);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			lib.vcardOL[vid] = card;
 			return card;
 		}
@@ -2125,7 +2126,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/** @type {RegExp} */
 	#identifierPattern = /\b[\w$]+\b/;
 	/** @type {RegExp} */
-	#asyncHeadPattern = /^async[\s\*\(]/;
+	#asyncHeadPattern = /^async[\s*(]/;
 	/**
 	 * ```plain
 	 * 测试一段代码是否为函数参数列表
@@ -2168,7 +2169,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (type == "any") {
 			return (
 				["async", "generator", "agenerator", null]
-					// @ts-ignore // 突然发现ts-ignore也挺方便的喵
+					// @ts-expect-error ignore // 突然发现ts-ignore也挺方便的喵
 					.some(t => get.isFunctionBody(code, t))
 			);
 		}
@@ -2319,7 +2320,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		// 检查函数体
 		const checkType = [null, "generator", "async", "agenerator"][funcType];
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!get.isFunctionBody(funcBody, checkType)) {
 			if (log) {
 				console.warn("发现无法识别的远程代码:", str);
@@ -2439,7 +2440,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return Array.from(cards || []).map(get.vcardInfoOL);
 	}
 	infoVCardOL(item) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const rawCard = JSON.parse(item.slice(14));
 		const datas = Object.entries(rawCard).reduce((vcard, entry) => {
 			const key = entry[0];
@@ -2448,13 +2449,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}, {});
 
 		const vid = datas.vcardID;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!vid || !lib.vcardOL) {
 			return new lib.element.VCard(datas);
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (vid in lib.vcardOL) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const vcard = lib.vcardOL[vid];
 			//TODO: 这里暂时偷懒 直接用了delete和直接赋值 不妥
 			Object.keys(vcard).forEach(entry => {
@@ -2470,7 +2471,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return vcard;
 		} else {
 			const card = new lib.element.VCard(datas);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			lib.vcardOL[vid] = card;
 			return card;
 		}

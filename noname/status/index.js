@@ -165,7 +165,7 @@ export let _status = new status();
 export let setStatus = instance => {
 	_status = instance || new status();
 	if (lib.config.dev) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		window._status = _status;
 	}
 };

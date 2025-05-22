@@ -81,11 +81,11 @@ export class Audio {
 				formatedPlayer.sex = sex;
 			}
 		}
-		//@ts-ignore
+		// @ts-expect-error ignore
 		else if (typeof player === "object" && player !== null) {
 			({
 				name: formatedPlayer.name,
-				//@ts-ignore
+				// @ts-expect-error ignore
 				sex: formatedPlayer.sex,
 				name1: formatedPlayer.name1,
 				name2: formatedPlayer.name2,

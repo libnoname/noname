@@ -468,17 +468,17 @@ const skills = {
 				if (!aliveTargets.length) {
 					break;
 				}
-				if (
-					current.isIn() &&
-					(current.countCards("e") > 0 ||
-						current.hasCard(card => {
-							if (_status.connectMode) {
-								return true;
-							}
-							return get.type(card) === "trick";
-						}, "hs"))
-				) {
-				}
+				// if (
+				// 	current.isIn() &&
+				// 	(current.countCards("e") > 0 ||
+				// 		current.hasCard(card => {
+				// 			if (_status.connectMode) {
+				// 				return true;
+				// 			}
+				// 			return get.type(card) === "trick";
+				// 		}, "hs"))
+				// ) {
+				// }
 				const result = await current
 					.chooseCardTarget({
 						prompt: `是否将一张装备牌当作【杀】对${get.translation(targets)}${targets.length > 1 ? "中的一名角色" : ""}使用？`,
@@ -1129,7 +1129,7 @@ const skills = {
 				};
 				await Promise.any(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, eventId, videoId, player);
 								current.wait(solve(resolve, reject));
@@ -1139,12 +1139,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -1258,7 +1259,7 @@ const skills = {
 				};
 				await Promise.any(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, target, source, current, eventId, trigger.num);
 								current.wait(solve(resolve, reject));
@@ -1268,12 +1269,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode && !cards) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode && !cards) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -1756,7 +1758,7 @@ const skills = {
 	},
 	jsrgtianyu: {
 		trigger: { global: ["loseAsyncAfter", "cardsDiscardAfter"] },
-		frequent: true,
+		// frequent: true,
 		getIndex(event) {
 			return lib.skill.jsrgtianyu.getCards(event);
 		},
@@ -1835,7 +1837,7 @@ const skills = {
 			if (humans.length) {
 				await Promise.all(
 					humans.map((current, index) => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, player);
 								current.wait((result, player) => {
@@ -1851,12 +1853,14 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
+								
 							}
 						});
 					})

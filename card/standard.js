@@ -4555,7 +4555,9 @@ game.import("card", function () {
 								};
 							} else {
 								return () => {
-									if (get.event().name == "_wuxie" && result.id == id) game.resume();
+									if (get.event().name == "_wuxie" && result.id == id) {
+										game.resume();
+									}
 								};
 							}
 						}

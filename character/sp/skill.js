@@ -6148,7 +6148,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, player, eventId);
 								current.wait(solve(resolve, reject));
@@ -6158,12 +6158,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -8959,7 +8960,7 @@ const skills = {
 		},
 		ai: { combo: "ollianju" },
 		subSkill: {
-			used: { charlotte: true, charlotte: true },
+			used: { charlotte: true },
 		},
 	},
 	relianju: {
@@ -9778,7 +9779,7 @@ const skills = {
 				.chooseTarget(get.prompt(event.skill), "令一名其他角色选择是否更换武将牌", lib.filter.notMe)
 				.set("ai", target => {
 					const att = get.attitude(get.player(), target);
-					const num = lib.skill.skill_zhangji_B.getNum(target.name);
+					let num = lib.skill.skill_zhangji_B.getNum(target.name);
 					if (target.name2 != undefined) {
 						num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
 					}
@@ -27879,7 +27880,7 @@ const skills = {
 					}
 					break;
 
-				case "red":
+				case "red": {
 					const next = player.chooseTarget("令一名角色摸一张牌");
 					if (player.storage.xianfu2?.length) {
 						next.set("prompt2", "（若目标为" + get.translation(player.storage.xianfu2) + "则改为摸两张牌）");
@@ -27897,6 +27898,7 @@ const skills = {
 					});
 					result2 = await next.forResult();
 					break;
+				}
 
 				default:
 					break;

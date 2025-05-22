@@ -8,7 +8,7 @@ import { checkVersion } from "../library/update.js";
 
 export function nodeReady() {
 	const versions = window.process.versions;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	const electronVersion = parseFloat(versions.electron);
 	lib.node = {
 		fs: require("fs"),
@@ -16,10 +16,10 @@ export function nodeReady() {
 		debug() {
 			let remote;
 			if (electronVersion >= 14) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("@electron/remote");
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("electron").remote;
 			}
 			remote.getCurrentWindow().toggleDevTools();

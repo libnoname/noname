@@ -75,9 +75,9 @@ export class NonameAssembly extends Array {
 		this.#record = new Map();
 
 		if (name in buildin) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			for (const [key, item] of Object.entries(buildin[name])) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				this.add(key, item);
 			}
 		}
@@ -97,12 +97,12 @@ export class NonameAssembly extends Array {
 	 * @param {AssemblyType[Name][keyof AssemblyType[Name]]} content
 	 * @override
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	add(name, content) {
 		if (!content) {
-			// @ts-expect-error A
+			// @ts-expect-error ignore
 			content = name;
-			// @ts-expect-error A
+			// @ts-expect-error ignore
 			name = content.name;
 		}
 		if (typeof content !== "function") {
@@ -128,7 +128,7 @@ export class NonameAssembly extends Array {
 	 * @param {AssemblyType[Name][keyof AssemblyType[Name]]} content
 	 * @override
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	push(name, content) {
 		return this.add(name, content).length;
 	}
@@ -150,7 +150,7 @@ export class NonameAssembly extends Array {
 		if (!this.has(name)) {
 			return void 0;
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return this[this.#record.get(name)];
 	}
 
@@ -165,7 +165,7 @@ export class NonameAssembly extends Array {
 		}
 
 		try {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this[this.#record.get(name)] = content;
 		} catch (e) {
 			console.error(e);

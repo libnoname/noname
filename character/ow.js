@@ -3191,6 +3191,7 @@ game.import("character", function () {
 								return current.hp == 1 && get.attitude(player, current) > 0;
 							})
 						) {
+							// /-???
 						}
 					} else if (suit == "spade") {
 						return 7 - get.value(card);

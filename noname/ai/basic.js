@@ -112,9 +112,9 @@ export class Basic {
 				return j > 0;
 			}
 			cards = get.selectableCards();
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (!_status.event.player._noSkill) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				cards = cards.concat(get.skills());
 			}
 			if (cards.length == 0) {

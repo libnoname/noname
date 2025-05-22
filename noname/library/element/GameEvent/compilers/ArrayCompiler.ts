@@ -29,7 +29,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 				let result: Result | undefined;
 				if (!compiler.isPrevented(event)) {
 					const original = content[event.step];
-					//@ts-ignore
+					// @ts-expect-error ignore
 					const next = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
 					result = next instanceof GameEvent ? next.result : next;
 				}

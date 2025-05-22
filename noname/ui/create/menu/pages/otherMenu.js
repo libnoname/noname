@@ -17,7 +17,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	// const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 	var cheatButton = ui.create.div(".menubutton.round.highlight", "作", start);
@@ -557,7 +557,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 
 		(function () {
 			/** @type { HTMLParagraphElement } */
-			// @ts-ignore
+			// @ts-expect-error ignore
 			var updatep1 = li1.querySelector("p");
 			var updatep2 = li2;
 			var updatep3 = li3;
@@ -772,7 +772,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			span5_check.checked = true;
 		}
 		span5_check.onchange = function () {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.saveConfig("asset_image", this.checked);
 		};
 		li2.lastChild.appendChild(span5_check);

@@ -44,7 +44,7 @@ export default abstract class ContentCompilerBase implements IContentCompiler {
 			return false;
 		}
 		if (player.isDead() && !event.forceDie) {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			game.broadcastAll(function () {
 				while (_status.dieClose.length) {
 					_status.dieClose.shift().close();

@@ -41,16 +41,16 @@ export const checkCard = {
  */
 export const checkTarget = {
 	updateInstance(target, event) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!target.instance) {
 			return;
 		}
 		["selected", "selectable"].forEach(className => {
 			if (target.classList.contains(className)) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				target.instance.classList.add(className);
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				target.instance.classList.remove(className);
 			}
 		});
@@ -77,17 +77,17 @@ export const checkEnd = {
 			return;
 		}
 		const skillinfo = get.info(event.skill) || {};
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (ok && auto && (autoConfirm || skillinfo.direct) && !_status.touchnocheck && !_status.mousedown && (!_status.mousedragging || !_status.mouseleft)) {
 			if (ui.confirm) {
 				ui.confirm.close();
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (event.skillDialog === true) {
 				event.skillDialog = false;
 			}
 			ui.click.ok();
-			// @ts-ignore
+			// @ts-expect-error ignore
 			_status.mousedragging = null;
 			if (skillinfo.preservecancel) {
 				ui.create.confirm("c");
@@ -112,13 +112,13 @@ export const uncheckBegin = {};
  */
 export const uncheckCard = {
 	removeTempname(card, event) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!card._tempName) {
 			return;
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		card._tempName.delete();
-		// @ts-ignore
+		// @ts-expect-error ignore
 		delete card._tempName;
 	},
 };
@@ -131,13 +131,13 @@ export const uncheckCard = {
  */
 export const uncheckTarget = {
 	removeInstance(target, event) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (!target.instance) {
 			return;
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		target.instance.classList.remove("selected");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		target.instance.classList.remove("selectable");
 	},
 };
@@ -168,22 +168,22 @@ export const checkOverflow = {
 	updateDialog(itemOption, itemContainer, addedItems, game) {
 		//计算压缩折叠的量
 		const gap = 3;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		function isEqual(a, b) {
 			return Math.abs(a - b) < 3;
 		}
 		let equal = isEqual(itemContainer.originWidth, itemContainer.getBoundingClientRect().width);
 		const L = (itemContainer.originWidth - 2 * gap) * (equal ? 0.8 : 1);
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const W = 90; //这里需要填卡的实际宽度，扩展中需要自行调整。
-		// @ts-ignore
+		// @ts-expect-error ignore
 		let n = addedItems.length;
 		const r = 16; //为偏移留出的空间，如果r为0，可能会把前面的卡牌全遮住
 		if (n * W + (n + 1) * gap < L) {
 			itemContainer.style.setProperty("--ml", gap + "px");
 			itemContainer.classList.remove("zoom");
 		} else {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const ml = Math.min((n * W - L + gap) / (n - 1), W - r);
 			itemContainer.style.setProperty("--ml", "-" + ml + "px");
 			itemContainer.classList.add("zoom");
@@ -229,13 +229,13 @@ export const checkTipBottom = {
  */
 export const checkDamage1 = {
 	kuanggu(event, player) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (get.distance(event.source, player) <= 1) {
 			event.checkKuanggu = true;
 		}
 	},
 	jyliezhou(event, player) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (event.player.isLinked()) {
 			event.checkJyliezhou = true;
 		}
@@ -258,7 +258,7 @@ export const checkDamage2 = {};
  */
 export const checkDamage3 = {
 	jiushi(event, player) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (player.isTurnedOver()) {
 			event.checkJiushi = true;
 		}

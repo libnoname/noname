@@ -73,13 +73,13 @@ const WeakRef =
 	};
 
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const GeneratorFunction = function* () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const AsyncFunction = async function () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const AsyncGeneratorFunction = async function* () {}.constructor;
 
 /**
@@ -585,7 +585,7 @@ class Globals {
 			}
 		}
 
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		return [obj, last];
 	}
 
@@ -600,7 +600,7 @@ class Globals {
 		if (!Globals.#globals.has(domain)) {
 			const window = domain[SandboxExposer](SandboxSignal_GetWindow);
 			const globals = [new WeakMap(), {}];
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Globals.#globals.set(domain, globals);
 
 			// 检查是否是顶级域
@@ -614,7 +614,7 @@ class Globals {
 				}
 			} else {
 				// 否则将 `MARSHALLED_LIST` 的对象保存
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				Globals.#topGlobals = globals;
 				globals.push({});
 
@@ -659,7 +659,7 @@ class Globals {
 	static findGlobalKey(domain, obj) {
 		Globals.ensureDomainGlobals(domain);
 		const globals = Globals.#globals.get(domain);
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		return globals[0].get(obj);
 	}
 
@@ -674,7 +674,7 @@ class Globals {
 	static findGlobalObject(domain, key) {
 		Globals.ensureDomainGlobals(domain);
 		const globals = Globals.#globals.get(domain);
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		return globals[1][key];
 	}
 
@@ -820,7 +820,7 @@ class NativeWrapper {
 		// 如: /a/b/c => [window.a.b, "c"]
 		while (pathes.length) {
 			/** @type {Array} */
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			const path = pathes.shift();
 
 			// 如果已经是长度为二了
@@ -884,7 +884,7 @@ class NativeWrapper {
 		}
 
 		// 根据索引进行封装
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		for (const index of indexes) {
 			NativeWrapper.wrapFunction(global, ...index, flags);
 		}
@@ -951,18 +951,18 @@ class NativeWrapper {
 	 * @returns {Function}
 	 */
 	static wrapApply(func, flags = 0) {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const prototype = NativeWrapper.#currentFunction.prototype;
 		// 根据是否装箱进行不同的封装
 		const wrapped =
 			flags & 2
 				? function (/** @type {any[]} */ ...args) {
 						const list = args.map(a => NativeWrapper.boxCallback(a, prototype));
-						// @ts-ignore
+						// @ts-expect-error Sandbox
 						return ContextInvoker1(func, this, list);
 					}
 				: function (/** @type {any[]} */ ...args) {
-						// @ts-ignore
+						// @ts-expect-error Sandbox
 						return ContextInvoker1(func, this, args);
 					};
 
@@ -981,7 +981,7 @@ class NativeWrapper {
 	 * @returns {Function}
 	 */
 	static wrapConstruct(func, flags = 0) {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const prototype = NativeWrapper.#currentFunction.prototype;
 		// 根据是否装箱进行不同的封装
 		const wrapped =
@@ -1008,10 +1008,10 @@ class NativeWrapper {
 	 * @returns {(...args: any[]) => any}
 	 */
 	static wrapGetter(func) {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const prototype = NativeWrapper.#currentFunction.prototype;
 		const wrapped = function () {
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			return NativeWrapper.unboxCallback(ContextInvoker1(func, this, []));
 		};
 
@@ -1029,10 +1029,10 @@ class NativeWrapper {
 	 * @returns {(...args: any[]) => any}
 	 */
 	static wrapSetter(func) {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const prototype = NativeWrapper.#currentFunction.prototype;
 		const wrapped = function (/** @type {ProxyConstructor} */ value) {
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			return ContextInvoker1(func, this, [NativeWrapper.boxCallback(value, prototype)]);
 		};
 
@@ -1066,9 +1066,9 @@ class NativeWrapper {
 				},
 				function (/** @type {any} */ thiz, /** @type {readonly any[]} */ args, /** @type {(new (...args: any) => any) | undefined} */ newTarget) {
 					return newTarget
-						? // @ts-ignore
+						? // @ts-expect-error Sandbox
 							Reflect.construct(this.unboxed, args, newTarget)
-						: // @ts-ignore
+						: // @ts-expect-error Sandbox
 							Reflect.apply(this.unboxed, thiz, args);
 				}
 			);
@@ -1111,15 +1111,15 @@ class NativeWrapper {
 // 用于传递顶级execute context
 
 /** @type {(target: Function, thiz: Object, args: Array) => any} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const ContextInvoker1 = window.replacedCI1;
 
 /** @type {(target: Function, args: Array, newTarget: Function) => any} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const ContextInvoker2 = window.replacedCI2;
 
 /** @type {(closure: Object, target: Function) => ((...args: any[]) => any)} */
-// @ts-ignore
+// @ts-expect-error Sandbox
 const ContextInvokerCreator = window.replacedCIC;
 
 /**
@@ -1148,7 +1148,7 @@ class DomainMonitors {
 	 */
 	static #installMonitor = function (thiz, monitor) {
 		// 解构 Monitor 相关条件
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
 
 		/**
@@ -1187,7 +1187,7 @@ class DomainMonitors {
 
 		if (!allowDomains) {
 			// 取运行域补集
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			const totalDomains = new Set(Domain[SandboxExposer2](SandboxSignal_ListDomain));
 			totalDomains.delete(monitor.domain);
 
@@ -1225,7 +1225,7 @@ class DomainMonitors {
 	 */
 	static #uninstallMonitor = function (thiz, monitor) {
 		// 解构 Monitor 相关条件
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
 
 		/**
@@ -1263,7 +1263,7 @@ class DomainMonitors {
 
 		if (!allowDomains) {
 			// 取运行域补集
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			const totalDomains = new Set(Domain[SandboxExposer2](SandboxSignal_ListDomain));
 
 			if (disallowDomains) {
@@ -1342,7 +1342,7 @@ class DomainMonitors {
 		let actionMap = thiz.#monitorsMap.get(domain);
 
 		// 遍历所有启用的 Monitor
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		for (const monitor of Monitor[SandboxExposer2](SandboxSignal_ListMonitor)) {
 			if (monitor.domain === domain) {
 				continue;
@@ -1389,7 +1389,7 @@ class DomainMonitors {
 	 * @param {Domain} newDomain
 	 */
 	static handleNewDomain(newDomain) {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		const totalDomains = new Set(Domain[SandboxExposer2](SandboxSignal_ListDomain));
 
 		for (const domain of totalDomains) {
@@ -2012,12 +2012,12 @@ class Monitor {
 	static [SandboxExposer2](signal, ...args) {
 		switch (signal) {
 			case SandboxSignal_DiapatchMonitor:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Monitor.#handle(...args);
 			case SandboxSignal_ListMonitor:
 				return Monitor.#monitorSet;
 			case SandboxSignal_ExposeInfo:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Monitor.#exposeInfo(...args);
 		}
 	}
@@ -2222,7 +2222,7 @@ class Marshal {
 		if (type == "any") {
 			return (
 				["async", "generator", "agenerator", null]
-					// @ts-ignore // 突然发现ts-ignore也挺方便的喵
+					// @ts-expect-error Sandbox // 突然发现ts-ignore也挺方便的喵
 					.some(t => Marshal.canCreateFunction(t, paramList, funcBody))
 			);
 		}
@@ -2465,7 +2465,7 @@ class Marshal {
 		// 创建封送代理
 		const proxy = new Proxy(pure, {
 			// 设置属性方便调试
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			$target: target,
 			$sourceDomain: sourceDomain,
 			$targetDomain: targetDomain,
@@ -2488,7 +2488,7 @@ class Marshal {
 							return Marshal.#marshal(dispatched.returnValue, targetDomain);
 						}
 
-						// @ts-ignore
+						// @ts-expect-error Sandbox
 						const result = Reflect.apply(...args);
 						return Marshal.#marshal(result, targetDomain);
 					});
@@ -2520,7 +2520,7 @@ class Marshal {
 						return Marshal.#marshal(dispatched.returnValue, targetDomain);
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					const result = Reflect.construct(...args);
 					return Marshal.#marshal(result, targetDomain);
 				});
@@ -2578,13 +2578,13 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					const success = Reflect.defineProperty(...args);
 
 					if (success && target === args[0]) {
 						// 为适配JavaScript对于代理的强制要求
 						// 我们要对空白对象模拟不可配置
-						// @ts-ignore
+						// @ts-expect-error Sandbox
 						attributes = Reflect.getOwnPropertyDescriptor(...args);
 
 						if (!attributes.configurable) {
@@ -2614,7 +2614,7 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					return Reflect.deleteProperty(...args);
 				});
 			},
@@ -2652,7 +2652,7 @@ class Marshal {
 					}
 
 					// 执行默认流程
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					const result = Reflect.get(...args);
 					return Marshal.#marshal(result, targetDomain);
 				});
@@ -2674,7 +2674,7 @@ class Marshal {
 						return dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					return Reflect.getOwnPropertyDescriptor(...args);
 				};
 
@@ -2702,7 +2702,7 @@ class Marshal {
 						return Marshal.#marshal(dispatched.returnValue, targetDomain);
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					const result = Reflect.getPrototypeOf(...args);
 					const marshalledResult = Marshal.#marshal(result, targetDomain);
 
@@ -2729,7 +2729,7 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					return Reflect.has(...args);
 				};
 
@@ -2763,7 +2763,7 @@ class Marshal {
 
 						keys = dispatched.returnValue;
 					}
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					else {
 						keys = Reflect.ownKeys(...args);
 					}
@@ -2786,7 +2786,7 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					const success = Reflect.preventExtensions(...args);
 
 					if (success && target === args[0]) {
@@ -2819,7 +2819,7 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					return Reflect.set(...args);
 				});
 			},
@@ -2844,7 +2844,7 @@ class Marshal {
 						return !!dispatched.returnValue;
 					}
 
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					return Reflect.setPrototypeOf(...args);
 				});
 			},
@@ -2862,16 +2862,16 @@ class Marshal {
 	static [SandboxExposer2](signal, ...args) {
 		switch (signal) {
 			case SandboxSignal_Marshal:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Marshal.#marshal(...args);
 			case SandboxSignal_MarshalArray:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Marshal.#marshalArray(...args);
 			case SandboxSignal_UnpackProxy:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Marshal.#revertProxy(...args);
 			case SandboxSignal_TrapDomain:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Marshal.#trapDomain(...args);
 		}
 	}
@@ -2928,9 +2928,6 @@ class Domain {
 	/** @type {WeakMap<Object, Proxy>} */
 	#marshalledCached = new WeakMap();
 
-	/** @type {(array: any) => boolean} */
-	#domainIsArray;
-
 	/**
 	 * ```plain
 	 * 创建运行域
@@ -2940,17 +2937,17 @@ class Domain {
 	 * ```
 	 */
 	constructor() {
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		let global = window.replacedGlobal || window;
 
 		if (Domain.#currentDomain) {
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			if (!window.createRealms) {
 				throw new ReferenceError("Sandbox 载入时处于不安全运行域");
 			}
 
 			// 创建新的运行变量域
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			global = createRealms();
 			this.#domainName = Math.random().toString(36).slice(2);
 		} else {
@@ -3121,7 +3118,7 @@ class Domain {
 			throw new ReferenceError("无法弹出更多的运行域");
 		}
 
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		Domain.#currentDomain = Domain.#domainStack.pop();
 	};
 
@@ -3143,7 +3140,7 @@ class Domain {
 			list.push(link);
 		}
 
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		return list;
 	};
 
@@ -3213,10 +3210,10 @@ class Domain {
 	[SandboxExposer](signal, ...args) {
 		switch (signal) {
 			case SandboxSignal_GetMarshalledProxy:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return this.#marshalledCached.get(...args);
 			case SandboxSignal_SetMarshalledProxy:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return void this.#marshalledCached.set(...args);
 			case SandboxSignal_GetWindow:
 				return this.#domainRoot;
@@ -3240,7 +3237,7 @@ class Domain {
 				Domain.#topDomain = Domain.#currentDomain;
 				return;
 			case SandboxSignal_EnterDomain:
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return Domain.#enterDomain(...args);
 			case SandboxSignal_ExitDomain:
 				return Domain.#exitDomain();
@@ -3285,9 +3282,9 @@ function trapMarshal(srcDomain, dstDomain, obj) {
  * ```
  */
 class Sandbox {
-	// @ts-ignore
+	// @ts-expect-error Sandbox
 	static #topWindow = window.replacedGlobal || window;
-	// @ts-ignore
+	// @ts-expect-error Sandbox
 	static #topWindowHTMLElement = (window.replacedGlobal || window).HTMLElement;
 	/** @type {WeakMap<Domain, Sandbox>} */
 	static #domainMap = new WeakMap();
@@ -3313,8 +3310,6 @@ class Sandbox {
 	#domainObject;
 	/** @type {typeof Function} */
 	#domainFunction;
-	/** @type {typeof Function} */
-	#domainEval;
 
 	/**
 	 * ```plain
@@ -3353,7 +3348,7 @@ class Sandbox {
 		this.#domainDocument = null; // 默认不开放DOM，而且我们也缺少BrowserContext
 		this.#domainObject = this.#domainWindow.Object;
 		this.#domainFunction = this.#domainWindow.Function;
-		this.#domainEval = this.#domainWindow.eval;
+		// this.#domainEval = this.#domainWindow.eval;
 		Sandbox.#domainMap.set(this.#domain, this);
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
 		Sandbox.#createScope(this);
@@ -3495,9 +3490,9 @@ class Sandbox {
 		if (!/[;\n\r]$/.test(code)) {
 			const newCode = `return (${code})`;
 			try {
-				new Function(newCode);
-				code = newCode;
-			} catch (e) {}
+				new Function(newCode)
+				code = newCode
+			} catch { }
 		}
 
 		return thiz.exec(code);
@@ -3853,7 +3848,7 @@ class Sandbox {
 					// 封送返回结果
 					return Marshal[SandboxExposer2](SandboxSignal_Marshal, result, prevDomain);
 				} catch (e) {
-					// @ts-ignore
+					// @ts-expect-error Sandbox
 					if (!Domain.isError(e)) {
 						throw e;
 					} // 非错误对象无法读取堆栈，继续向上抛出
@@ -4020,7 +4015,7 @@ class Sandbox {
 		// 定义三个超级变量
 		Reflect.defineProperty(rawScope, "window", {
 			get: function () {
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return this;
 			}.bind(thiz.#scope),
 			enumerable: false,
@@ -4028,7 +4023,7 @@ class Sandbox {
 		});
 		Reflect.defineProperty(rawScope, "self", {
 			get: function () {
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return this;
 			}.bind(thiz.#scope),
 			enumerable: false,
@@ -4036,7 +4031,7 @@ class Sandbox {
 		});
 		Reflect.defineProperty(rawScope, "document", {
 			get: function () {
-				// @ts-ignore
+				// @ts-expect-error Sandbox
 				return this.#domainDocument;
 			}.bind(thiz),
 			enumerable: false,
@@ -4096,7 +4091,7 @@ function sealClass(clazz) {
  * @param {any} obj
  */
 function sealObjectTree(obj) {
-	// @ts-ignore
+	// @ts-expect-error Sandbox
 	sealObject(obj, (/** @type {object} */ o) => {
 		if (!Reflect.isExtensible(o)) {
 			return;
@@ -4139,17 +4134,17 @@ if (SANDBOX_ENABLED) {
 	// 确保顶级运行域的原型链不暴露
 	if (window.top === window) {
 		({
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			AccessAction,
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Rule,
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Monitor,
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Marshal,
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Domain,
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			Sandbox,
 		} = SANDBOX_EXPORT);
 	} else {
@@ -4191,13 +4186,13 @@ if (SANDBOX_ENABLED) {
 		Domain[SandboxExposer2](SandboxSignal_InitDomain);
 
 		// 获取顶级域的错误管理器
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		({ CodeSnippet, ErrorReporter, ErrorManager } =
-			// @ts-ignore
+			// @ts-expect-error Sandbox
 			window.replacedErrors);
 
 		// 向顶级运行域暴露导出
-		// @ts-ignore
+		// @ts-expect-error Sandbox
 		window.SANDBOX_EXPORT = {
 			AccessAction,
 			Rule,

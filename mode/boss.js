@@ -7992,10 +7992,10 @@ export default () => {
 				forced: true,
 				mark: true,
 				sourceSkill: "mazui",
-				intro: {
-					content: "expansion",
-					markcount: "expansion",
-				},
+				// intro: {
+				// 	content: "expansion",
+				// 	markcount: "expansion",
+				// },
 				filter: function (event) {
 					return event.num > 0;
 				},

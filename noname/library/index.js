@@ -8139,7 +8139,7 @@ export class Library {
 	/**
 	 * @type {import('path')}
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	path = {};
 	getErrorTip(msg) {
 		if (typeof msg != "string") {

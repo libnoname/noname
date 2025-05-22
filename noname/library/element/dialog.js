@@ -38,11 +38,11 @@ export class Dialog extends HTMLDivElement {
 	 * @type { Map<keyof UI['create']['buttonPresets'], number> }
 	 */
 	paginationMaxCount;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(...args) {
 		if (args[0] instanceof Dialog) {
 			const other = args[0];
-			// @ts-ignore
+			// @ts-expect-error ignore
 			args = other._args;
 		}
 
@@ -51,7 +51,7 @@ export class Dialog extends HTMLDivElement {
 		let forceButton = false;
 		let noForceButton = false;
 		/** @type { this } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const dialog = ui.create.div(".dialog");
 		Object.setPrototypeOf(dialog, (lib.element.Dialog || Dialog).prototype);
 		dialog.supportsPagination = false;
@@ -84,7 +84,7 @@ export class Dialog extends HTMLDivElement {
 		if (!noTouchScroll) {
 			dialog.contentContainer.ontouchstart = ui.click.dialogtouchStart;
 			dialog.contentContainer.ontouchmove = ui.click.touchScroll;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			dialog.contentContainer.style.webkitOverflowScrolling = "touch";
 			dialog.ontouchstart = ui.click.dragtouchdialog;
 		}
@@ -94,7 +94,7 @@ export class Dialog extends HTMLDivElement {
 			dialog.forcebutton = true;
 			dialog.classList.add("forcebutton");
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		dialog._args = args;
 		return dialog;
 	}
@@ -281,27 +281,27 @@ export class Dialog extends HTMLDivElement {
 				item = ui.create.caption(item, this.content);
 			}
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		else if (["div", "fragment"].includes(get.objtype(item))) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.content.appendChild(item);
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		else if (get.itemtype(item) == "cards") {
 			const buttons = ui.create.div(".buttons", this.content);
 			if (zoom) {
 				buttons.classList.add("smallzoom");
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item, "card", buttons, noclick));
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		else if (get.itemtype(item) == "players") {
 			var buttons = ui.create.div(".buttons", this.content);
 			if (zoom) {
 				buttons.classList.add("smallzoom");
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item, "player", buttons, noclick));
 		} else if (item[1] == "textbutton") {
 			ui.create.textbuttons(item[0], this, noclick);
@@ -310,14 +310,14 @@ export class Dialog extends HTMLDivElement {
 			if (zoom) {
 				buttons.classList.add("smallzoom");
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item[0], "skill", buttons, noclick));
 		} else {
 			var buttons = ui.create.div(".buttons", this.content);
 			if (zoom) {
 				buttons.classList.add("smallzoom");
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item[0], item[1], buttons, noclick));
 		}
 		if (this.buttons.length) {
@@ -352,7 +352,7 @@ export class Dialog extends HTMLDivElement {
 		return this.add(item, noclick, true);
 	}
 	addAuto(content) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (content && content.length > 4 && !this._hovercustomed) {
 			this.addSmall(content);
 		} else {
@@ -422,7 +422,7 @@ export class Dialog extends HTMLDivElement {
 	 * @param { string } str
 	 */
 	setCaption(str) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		this.querySelector(".caption").innerHTML = str;
 		return this;
 	}

@@ -23,14 +23,14 @@ export class FirefoxPromiseErrorHandler {
 				}
 
 				// Firefox在大环境下默认情况必须要那么多ts-ignore
-				// @ts-ignore
+				// @ts-expect-error Firefox status
 				window.onerror(
 					error.message,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.fileName,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.lineNumber,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.columnNumber,
 					error
 				);

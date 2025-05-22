@@ -1705,7 +1705,7 @@ export class Create {
 		};
 		// 搜索框，by Curpond
 		/** @type { Element } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const container = dialog.querySelector(".content-container>.content");
 		const Searcher = ui.create.div(".searcher.caption");
 		const input = document.createElement("input").css({
@@ -1725,11 +1725,11 @@ export class Create {
 				const buttons = dialog.content.querySelector(".buttons");
 				const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");
 				/** @type { Pagination } */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const p = dialog.paginationMap.get(buttons);
 				if (p) {
 					p.state.data = array;
-					// @ts-ignore
+					// @ts-expect-error ignore
 					p.setTotalPageCount(Math.ceil(array.length / dialog.paginationMaxCount.get("character")));
 				}
 			}
@@ -1837,7 +1837,7 @@ export class Create {
 		}
 		if (dialog.paginationMaxCount.get("character")) {
 			/** @type { HTMLDivElement } */
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const buttons = dialog.content.querySelector(".buttons");
 			const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");
 			// 传入初始配置 + 渲染元素
@@ -2656,7 +2656,7 @@ export class Create {
 								}
 							})
 						);
-						// @ts-ignore
+						// @ts-expect-error ignore
 						delete suitResult[void 0];
 						for (let suit of lib.suit) {
 							if (!suitResult[suit]) {
@@ -2699,7 +2699,7 @@ export class Create {
 										return perfix + "杀";
 									})
 								);
-								// @ts-ignore
+								// @ts-expect-error ignore
 								delete result[void 0];
 								createColumnContainer(result, get.translation(key), typeResult[key].length);
 							} else {
@@ -2955,9 +2955,8 @@ export class Create {
 		lib.status.date = new Date();
 		lib.status.dateDelayed = 0;
 
-		// @ts-ignore
-		while (lib.arenaReady.length) {
-			lib.arenaReady.shift()();
+		while (lib.arenaReady?.length) {
+			lib.arenaReady?.shift()();
 		}
 		delete lib.arenaReady;
 		if (lib.config.auto_check_update && !sessionStorage.getItem("auto_check_update")) {

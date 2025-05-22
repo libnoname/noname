@@ -21,7 +21,8 @@ export default {
 	"#yui_takaramono2": "ほんとに…あたしが打ったの…？",
 	"#key_yui:die": "あたしの…幸せ、ぜんぶ奪っていったんだ…",
 	"#shiina_qingshen1": "あさはかなり…",
-	"#shiina_qingshen1": "哼——",
+	// /-????
+	// "#shiina_qingshen1": "哼——",
 	"#shiina_retieji1": "もうその必要はない",
 	"#key_shiina:die": "これは…悪夢か？",
 	"#shiorimiyuki_banyin1": "おふたり、おめでとうございまーす！！",

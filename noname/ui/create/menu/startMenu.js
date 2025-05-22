@@ -16,7 +16,7 @@ export const startMenuData = {
 	leftPaneData: [],
 	rightPaneApps: new Map(),
 	configDatas: new Map(),
-	// @ts-ignore
+	// @ts-expect-error ignore
 	initLeftPaneData(connectMenu) {
 		/** @type { string[] } */
 		const modeorder = lib.config.modeorder || [];
@@ -67,7 +67,7 @@ export const startMenuData = {
 	},
 	initConfigs(connectMenu, node, startButton) {
 		/** @type { string } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const mode = node.getAttribute("mode");
 		/** @type { { name: string, connect: { update: (config, map) => any; [key: string]: SelectConfigData }, config: { update: (config, map) => any; [key: string]: SelectConfigData } } } */
 		const info = lib.mode[mode];
@@ -118,7 +118,7 @@ export const startMenuData = {
 				}
 				const value = infoconfig[key];
 				value._name = key;
-				// @ts-ignore
+				// @ts-expect-error ignore
 				value.mode = mode;
 				if (key in config) {
 					value.init = config[key];
@@ -128,7 +128,7 @@ export const startMenuData = {
 				if (!value.onclick) {
 					value.onclick = function (result) {
 						// var value = this._link.config;
-						// @ts-ignore
+						// @ts-expect-error ignore
 						game.saveConfig(value._name, result, mode);
 						if (typeof value.onsave == "function") {
 							value.onsave.call(this, result);

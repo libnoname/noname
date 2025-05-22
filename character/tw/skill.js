@@ -2878,13 +2878,10 @@ const skills = {
 				switch (num) {
 					case 1:
 						return -get.sgn(att) * target.countCards("hs", { name: "sha" }) - 1;
-						break;
 					case 2:
 						return att;
-						break;
 					case 3:
 						return att * (target.hasJudge("lebu") ? 3 : 1);
-						break;
 				}
 			});
 			event.num = num;

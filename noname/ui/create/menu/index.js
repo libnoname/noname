@@ -431,15 +431,15 @@ export function menu(connectMenu) {
 		clickContainer.call(cacheMenuContainer, connectMenu);
 	}));
 	const cachePopupContainer = (popupContainer = ui.create.div(".popup-container.hidden", ui.window, function closeMenu() {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (cachePopupContainer.noclose) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			cachePopupContainer.noclose = false;
 			return;
 		}
 		cachePopupContainer.classList.add("hidden");
 		if (typeof cachePopupContainer.onclose == "function") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			cachePopupContainer.onclose();
 		}
 	}));

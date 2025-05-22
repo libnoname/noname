@@ -37,9 +37,7 @@ export default class YieldCompiler extends ContentCompilerBase {
 		const compiler = this;
 		const middleware = async function (event) {
 			const args = YieldCompiler.#mapArgs(event);
-			const generator =
-				//@ts-ignore
-				Reflect.apply(content, this, [event, args]);
+			const generator = Reflect.apply(content, this, [event, args]);
 
 			let result = null;
 			let done = false;

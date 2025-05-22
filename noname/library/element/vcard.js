@@ -30,7 +30,7 @@ export class VCard {
 			 */
 			this.nature = suitOrCard[3];
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		else if (get.itemtype(suitOrCard) == "card") {
 			this.name = get.name(suitOrCard, owner);
 			this.suit = get.suit(suitOrCard, owner);
@@ -64,7 +64,7 @@ export class VCard {
 				/**
 				 * @type { PropertyDescriptor }
 				 */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const propertyDescriptor = Object.getOwnPropertyDescriptor(suitOrCard, key),
 					value = propertyDescriptor.value;
 				if (Array.isArray(value)) {

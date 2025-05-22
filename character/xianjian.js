@@ -431,8 +431,7 @@ game.import("character", function () {
 					}
 					player.chooseToUse(get.prompt("xunying"), { name: "sha" }, trigger.target, -1).logSkill = "xunying";
 					"step 1";
-					if (result.bool) {
-					} else if (event.jiu) {
+					if (!result.bool && event.jiu) {
 						player.addSkill("jiu");
 					}
 				},

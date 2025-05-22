@@ -34,7 +34,7 @@ HTMLElement.prototype.setNodeIntro = function (title, content) {
 HTMLDivElement.prototype.animate = function (keyframes, options) {
 	if (typeof keyframes == "string") {
 		console.trace(this, "无名杀开发者修改的animate方法已废弃，请改为使用addTempClass方法");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return HTMLDivElement.prototype.addTempClass.call(this, keyframes, options);
 	} else {
 		return HTMLElement.prototype.animate.call(this, keyframes, options);
@@ -46,7 +46,7 @@ HTMLDivElement.prototype.animate = function (keyframes, options) {
  * @type { typeof HTMLDivElement['prototype']['addTempClass'] }
  */
 HTMLDivElement.prototype.addTempClass = function (name, time = 1000) {
-	// @ts-ignore
+	// @ts-expect-error ignore
 	let that = get.is.mobileMe(this) && name === "target" ? ui.mebg : this;
 	that.classList.add(name);
 	setTimeout(() => {
@@ -102,7 +102,7 @@ HTMLDivElement.prototype.delete = function (time = 500, callback) {
 			time = 500;
 		}
 		this.classList.add("removing");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		this.timeout = setTimeout(() => {
 			this.remove();
 			this.classList.remove("removing");
@@ -131,7 +131,7 @@ HTMLDivElement.prototype.goto = function (position, time) {
 	if (!this._selfDestroyed) {
 		position.appendChild(this);
 	}
-	// @ts-ignore
+	// @ts-expect-error ignore
 	this.timeout = setTimeout(() => {
 		this.classList.remove("removing");
 	}, time);
@@ -189,7 +189,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 						modeimage = mode;
 					}
 				} else if (name.includes("::")) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					name = name.split("::");
 					modeimage = name[0];
 					name = name[1];
@@ -322,7 +322,7 @@ HTMLDivElement.prototype.listenTransition = function (func, time) {
 	};
 	const timer = setTimeout(callback, time || 1000);
 	this.addEventListener("webkitTransitionEnd", callback);
-	// @ts-ignore
+	// @ts-expect-error ignore
 	return timer;
 };
 /**
@@ -376,7 +376,7 @@ HTMLElement.prototype.css = function (style) {
 // @ts-expect-error OnType
 HTMLTableElement.prototype.get = function (row, col) {
 	if (row < this.childNodes.length) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return /** @type {HTMLElement | void} */ this.childNodes[row].childNodes[col];
 	}
 };
@@ -476,7 +476,7 @@ Object.defineProperty(Array.prototype, "filterInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return this.filter(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -492,7 +492,7 @@ Object.defineProperty(Array.prototype, "someInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return this.some(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -508,7 +508,7 @@ Object.defineProperty(Array.prototype, "everyInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return this.every(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -527,7 +527,7 @@ Object.defineProperty(Array.prototype, "contains", {
 	 */
 	value(...args) {
 		console.warn(this, "Array的contains方法已废弃，请使用includes方法");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return this.includes(...args);
 	},
 });
@@ -627,7 +627,7 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
 	value() {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		for (const i of Array.from(arguments)) {
 			this.remove(...i);
 		}

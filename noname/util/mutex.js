@@ -41,7 +41,6 @@ export class Mutex {
 			// [falls through]
 			case "unlocked":
 				this.#status = "locked";
-				// @ts-ignore
 				({ promise: this.#promise, resolve: this.#resolve } = Promise.withResolvers());
 				break;
 		}

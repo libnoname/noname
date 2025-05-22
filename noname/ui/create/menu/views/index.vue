@@ -2,13 +2,13 @@
 	<div class="new-menu">
 		<!-- tab -->
 		<div class="new-menu-tab" ref="menuTabs">
-			<div v-for="[tabName] in tabDataMap" @click="toggleTabName">{{ tabName }}</div>
+			<div v-for="[tabName] in tabDataMap" :key="tabName" @click="toggleTabName">{{ tabName }}</div>
 		</div>
 		<!-- content -->
 		<div class="new-menu-content">
 			<div>
 				<div class="left pane" ref="leftPane">
-					<div v-for="data in leftPaneData" :mode="data.attrs.mode" @click="toggleLeftPaneName" class="new-menubutton large">{{ data.name }}</div>
+					<div v-for="data in leftPaneData" :key="data.name" :mode="data.attrs.mode" @click="toggleLeftPaneName" class="new-menubutton large">{{ data.name }}</div>
 				</div>
 				<div class="right pane" ref="rightPane"></div>
 				<div class="menubutton round highlight" ref="startButton">启</div>
@@ -32,6 +32,9 @@ export default {
 				element: null,
 				app: null,
 			},
+			/**
+			 * @type {{ name: string; attrs: SMap<any>; }[]}
+			 */
 			leftPaneData: [],
 			/**
 			 * @type { Map<string, menuData> }
@@ -65,8 +68,10 @@ export default {
 			/**
 			 * @type { menuData }
 			 */
+			// @ts-expect-error type transfer
 			const data = this.tabDataMap.get(target.innerText);
 			const leftPaneData = data?.initLeftPaneData?.(this.connectMenu);
+			// @ts-expect-error type transfer
 			this.leftPaneData = Array.isArray(leftPaneData) ? leftPaneData : [];
 			// 高亮默认元素
 			this.$nextTick(() => {
@@ -106,7 +111,7 @@ export default {
 				const rightPaneTemplate = data?.rightPaneTemplate || { template: html`<div>还未编写</div>` };
 				data?.initConfigs?.(this.connectMenu, target, this.$refs.startButton);
 				/** @type { string } */
-				// @ts-ignore
+				// @ts-expect-error transfer
 				const mode = target.getAttribute("mode");
 				const configs = data.configDatas.get(mode) || reactive({});
 				if (!data.configDatas.get(mode)) {

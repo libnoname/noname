@@ -42,7 +42,7 @@ const defaultResponse = async (/** @type {Response} */ response) => {
 	const reset = response.headers.get("X-RateLimit-Reset");
 	console.log(`请求总量限制`, limit);
 	console.log(`剩余请求次数`, remaining);
-	// @ts-ignore
+	// @ts-expect-error ignore
 	console.log(`限制重置时间`, new Date(reset * 1000).toLocaleString());
 	if ((Number(remaining) === 0 && !sessionStorage.getItem("noname_authorization") && confirm(`您达到了每小时${limit}次的访问限制，是否输入您github账号的token以获取更高的请求总量限制`)) || (response.status === 401 && (localStorage.removeItem("noname_authorization"), true) && (alert(`身份验证凭证错误，是否重新输入您github账号的token以获取更高的请求总量限制`), true))) {
 		return gainAuthorization();
@@ -374,16 +374,16 @@ export async function request(url, onProgress, options = {}) {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	let total = parseInt(response.headers.get("Content-Length"), 10);
 	// 如果服务器未返回Content-Length，则无法准确计算进度
-	// @ts-ignore
+	// @ts-expect-error ignore
 	if (isNaN(total)) {total = null;}
-	// @ts-ignore
+	// @ts-expect-error ignore
 	const reader = response.body.getReader();
 	let filename;
 	try {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		filename = response.headers.get("Content-Disposition").split(";")[1].split("=")[1];
 	} catch {
 		/* empty */
@@ -431,7 +431,7 @@ export async function request(url, onProgress, options = {}) {
  */
 export function createProgress(title, max, fileName, value) {
 	/** @type { progress } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	const parent = ui.create.div(ui.window, {
 		textAlign: "center",
 		width: "300px",
@@ -459,7 +459,7 @@ export function createProgress(title, max, fileName, value) {
 
 	container.ontouchstart = ui.click.dialogtouchStart;
 	container.ontouchmove = ui.click.touchScroll;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	container.style.WebkitOverflowScrolling = "touch";
 	parent.ontouchstart = ui.click.dragtouchdialog;
 

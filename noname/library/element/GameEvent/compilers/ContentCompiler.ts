@@ -66,8 +66,9 @@ class ContentCompiler {
 	 * @param content
 	 */
 	compile(content: EventCompileable): EventCompiledContent {
-		//@ts-ignore
+		// @ts-expect-error ignore
 		if (content.compiled) {
+			// @ts-expect-error ignore
 			return content;
 		}
 

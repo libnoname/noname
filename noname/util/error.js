@@ -106,7 +106,7 @@ class CodeSnippet {
 			throw new Error("代码片段栈为空");
 		}
 
-		// @ts-ignore // eslint好不智能哦
+		// @ts-expect-error Already checked
 		return this.#snippetStack.pop();
 	}
 }

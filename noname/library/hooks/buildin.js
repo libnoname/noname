@@ -66,22 +66,22 @@ export const addNature = [
 		/**
 		 * @type {boolean}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		let linked = config.linked;
 		/**
 		 * @type {number}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		let order = config.order;
 		/**
 		 * @type {string}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		let background = config.background;
 		/**
 		 * @type {number[]}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		let lineColor = config.lineColor;
 		if (typeof linked != "boolean") {
 			linked = true;
@@ -145,7 +145,7 @@ export const addNature = [
 				color: `rgba(${color1.join()})`,
 				border: cs.merge("1px", "solid", `rgba(${color2.join()})`),
 			};
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.dynamicStyle.addObject(result);
 
 			const g2 = cs.group(cs.of(cs.class("tempname", `${nature}`), ":not([data-nature])>", cs.class("span")));
@@ -153,7 +153,7 @@ export const addNature = [
 			result2[g2] = {
 				color: `rgba(${color1.join()})`,
 			};
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.dynamicStyle.addObject(result2);
 		}
 	},

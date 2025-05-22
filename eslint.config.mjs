@@ -25,8 +25,17 @@ export default ts.config(
 			"@typescript-eslint/no-require-imports": 0,
 			"@typescript-eslint/no-unused-vars": 0,
 			"@typescript-eslint/no-unused-expressions": 0,
+			"@typescript-eslint/no-this-alias": 0,
+			"@typescript-eslint/no-explicit-any": 0,
+			"vue/multi-word-component-names": 0,
 			"no-class-assign": 0,
 			"no-console": 0,
+			"@typescript-eslint/ban-ts-comment": [
+				"error",
+				{
+					"ts-nocheck": false,
+				},
+			],
 			"no-constant-condition": [
 				"error",
 				{
@@ -40,8 +49,15 @@ export default ts.config(
 					skipTemplates: true,
 				},
 			],
+			"prefer-const": 0,
 			"no-redeclare": 0,
 			"no-undef": 0,
+			"no-empty": [
+				"error",
+				{
+					allowEmptyCatch: true,
+				},
+			],
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],

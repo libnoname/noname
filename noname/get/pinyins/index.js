@@ -9683,7 +9683,7 @@ const matchAny = (text, pinyin$1, options) => {
 			type: "array",
 		});
 		let currentLength = 0;
-		//@ts-ignore
+		// @ts-expect-error ignore
 		ps.forEach(p => {
 			const length = getMatchLength(p, pinyin$1);
 			if (length > currentLength) {
@@ -9764,7 +9764,7 @@ const matchAboveStart = (text, pinyin$1, options) => {
 				// 剩余长度小于等于 MAX_PINYIN_LENGTH(6) 时，有可能是最后一个拼音了
 				if (pinyin$1.length - j <= MAX_PINYIN_LENGTH) {
 					// lastPrecision 参数处理
-					//@ts-ignore
+					// @ts-expect-error ignore
 					const last = muls.some(py => {
 						if (options.lastPrecision === "any") {
 							return py.includes(pinyin$1.slice(j - 1, pinyin$1.length));
@@ -9787,7 +9787,7 @@ const matchAboveStart = (text, pinyin$1, options) => {
 				const precision = options.precision;
 				// precision 为 start 时，匹配开头
 				if (precision === "start") {
-					//@ts-ignore
+					// @ts-expect-error ignore
 					muls.forEach(py => {
 						let end = j;
 						const matches = [...dp[i - 1][j - 1], i - 1];
@@ -9801,7 +9801,7 @@ const matchAboveStart = (text, pinyin$1, options) => {
 				}
 				// precision 为 first 时，匹配首字母
 				if (precision === "first") {
-					//@ts-ignore
+					// @ts-expect-error ignore
 					if (muls.some(py => py[0] === pinyin$1[j - 1])) {
 						const matches = [...dp[i - 1][j - 1], i - 1];
 						// 记录最长的可匹配下标数组
@@ -9811,7 +9811,7 @@ const matchAboveStart = (text, pinyin$1, options) => {
 					}
 				}
 				// 匹配当前汉字的完整拼音
-				//@ts-ignore
+				// @ts-expect-error ignore
 				const completeMatch = muls.find(py => py === pinyin$1.slice(j - 1, j - 1 + py.length));
 				if (completeMatch) {
 					const matches = [...dp[i - 1][j - 1], i - 1];
@@ -9850,7 +9850,7 @@ const html = (text, options) => {
 		toneType: completeOptions.toneType,
 		toneSandhi: options === null || options === void 0 ? void 0 : options.toneSandhi,
 	});
-	//@ts-ignore
+	// @ts-expect-error ignore
 	const result = pinyinArray.map(item => {
 		let additionalClass = "";
 		for (const classname in completeOptions.customClassMap) {

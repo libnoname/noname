@@ -4705,7 +4705,7 @@ const skills = {
 				case "phaseDraw":
 					event.result = await player.chooseBool(get.prompt(skillName), "跳过摸牌阶段，于下个准备阶段摸五张牌并回复1点体力").setHiddenSkill(skillName).forResult();
 					break;
-				case "phaseUse":
+				case "phaseUse": {
 					let next;
 					const num = player.countCards("h") - 6;
 					if (num <= 0) {
@@ -4724,12 +4724,13 @@ const skills = {
 					}
 					event.result = await next.forResult();
 					break;
+				}
 			}
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
 			switch (trigger.name) {
-				case "phaseJudge":
+				case "phaseJudge": {
 					const {
 						targets: [target],
 					} = event;
@@ -4748,6 +4749,7 @@ const skills = {
 						}
 					}
 					break;
+				}
 				case "phaseDraw":
 					game.log(player, "跳过了摸牌阶段");
 					player.addSkill("sbqiaobian_draw");

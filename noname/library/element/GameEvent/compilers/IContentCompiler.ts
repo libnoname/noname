@@ -1,8 +1,9 @@
 import { lib } from "../../../../../noname.js";
 import { GameEvent } from "../../gameEvent.js";
 
-export type EventContent = Function | Function[];
-export type EventCompileable = EventContent | Iterable<Function> | keyof typeof lib.element.content;
+type GeneralFunction = (...args: any[]) => any;
+export type EventContent = GeneralFunction | GeneralFunction[];
+export type EventCompileable = EventContent | Iterable<GeneralFunction> | keyof typeof lib.element.content;
 export { GameEvent };
 
 // 指示标准的事件content应该是只接受event一个参数的异步函数，同时有一个属性指示编译前的content类型
@@ -13,7 +14,7 @@ export type EventCompiledContent = ((e: GameEvent) => Promise<void>) & {
 	/**
 	 * array content的原始值
 	 */
-	originals?: Function[];
+	originals?: GeneralFunction[];
 };
 
 export default interface IContentCompiler {

@@ -5,11 +5,11 @@ import { _status } from "../../status/index.js";
 import { ui } from "../../ui/index.js";
 
 export class Control extends HTMLDivElement {
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(...args) {
 		if (args[0] instanceof Control) {
 			const other = args[0];
-			// @ts-ignore
+			// @ts-expect-error ignore
 			args = other._args;
 		}
 
@@ -18,7 +18,7 @@ export class Control extends HTMLDivElement {
 		/**
 		 * @type {this}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const control = ui.create.div(".control");
 		Object.setPrototypeOf(control, (lib.element.Control || Control).prototype);
 		ui.control.insertBefore(control, _status.createControl || ui.confirm);
@@ -72,7 +72,7 @@ export class Control extends HTMLDivElement {
 		}
 
 		ui.updatec();
-		// @ts-ignore
+		// @ts-expect-error ignore
 		control._args = args;
 		return control;
 	}

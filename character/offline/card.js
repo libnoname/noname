@@ -10,11 +10,11 @@ const cards = {
 		cardcolor: "heart",
 		type: "equip",
 		subtype: "equip5",
-		ai: {
-			basic: {
-				equipValue: 5,
-			},
-		},
+		// ai: {
+		// 	basic: {
+		// 		equipValue: 5,
+		// 	},
+		// },
 		skills: ["chunqiubi_skill"],
 		fullskin: true,
 		destroy: true,

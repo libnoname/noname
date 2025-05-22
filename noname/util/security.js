@@ -288,7 +288,6 @@ function _eval(x) {
 		return new Function(vars, `with(${vars}){${x}}`)(topVars);
 	}
 
-	// @ts-ignore
 	return defaultSandbox.exec(x);
 }
 
@@ -317,7 +316,6 @@ function _exec(x, scope = {}) {
 		return new Function(vars, name, `with(${vars}){with(${name}){${x}}}`)(topVars, scope);
 	}
 
-	// @ts-ignore
 	return defaultSandbox.exec(x, scope);
 }
 
@@ -382,7 +380,6 @@ function _exec2(x, scope = {}) {
 		return scope;
 	}
 
-	// @ts-ignore
 	const [result] = defaultSandbox.exec2(x, scope);
 	scope.return = result;
 	return scope;
@@ -435,7 +432,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
 		defaultEval,
 		localStorage.setItem,
 		window.require,
-		// @ts-ignore
+		// @ts-expect-error There's
 		window.define,
 	];
 
@@ -469,9 +466,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
 		window.module,
 		window.exports,
 		window.cordova,
-		// @ts-ignore
 		window.NonameAndroidBridge,
-		// @ts-ignore
 		window.noname_shijianInterfaces,
 		window,
 	]
@@ -692,16 +687,16 @@ function importSandbox() {
 
 // 原本的Function类型记录
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Make the type right
 const defaultFunction = function () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Make the type right
 const defaultGeneratorFunction = function* () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Make the type right
 const defaultAsyncFunction = async function () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error Make the type right
 const defaultAsyncGeneratorFunction = async function* () {}.constructor;
 
 /**
@@ -710,18 +705,15 @@ const defaultAsyncGeneratorFunction = async function* () {}.constructor;
  * ```
  */
 function initIsolatedEnvironment() {
-	// @ts-ignore
+	// @ts-expect-error Not be null
 	defaultSandbox = createSandbox(); // 所有 eval、parsex 代码全部丢进去喵
 
-	// @ts-ignore
 	// 对于 defaultSandbox 我们要补充一些东西喵
 	defaultSandbox.scope.localStorage = localStorage;
 
 	// 对Function类型进行包裹
 	/** @type {Array<typeof Function>} */
-	const [IsolatedFunction, IsolatedGeneratorFunction, IsolatedAsyncFunction, IsolatedAsyncGeneratorFunction] =
-		// @ts-ignore
-		getIsolateds(defaultSandbox);
+	const [IsolatedFunction, IsolatedGeneratorFunction, IsolatedAsyncFunction, IsolatedAsyncGeneratorFunction] = getIsolateds(defaultSandbox);
 
 	// 封装Function类型
 

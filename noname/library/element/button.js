@@ -15,11 +15,11 @@ export class Button extends HTMLDivElement {
 	 * @param {true} [noClick]
 	 * @param { Button } [button]
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(item, type, position, noClick, button) {
 		if (item instanceof Button) {
 			const other = item;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			[item, type, position, noClick, button] = other._args;
 		}
 		if (typeof type == "function") {
@@ -41,7 +41,7 @@ export class Button extends HTMLDivElement {
 			if (!button.buttonid) {
 				button.buttonid = get.id();
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			button._args = [item, type, position, noClick, button];
 			return button;
 		} else {

@@ -632,7 +632,7 @@ game.import("card", function () {
 				},
 				ai: {
 					basic: {
-						value: 9,
+						// value: 9,
 						useful: 4,
 						value: 7,
 					},

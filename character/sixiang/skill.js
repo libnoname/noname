@@ -342,7 +342,7 @@ const skills = {
 									await player.recover();
 								}
 								break;
-							case "damage":
+							case "damage": {
 								const result = await player
 									.chooseTarget(`明识：对一名角色造成一点伤害`, true)
 									.set("ai", target => get.damageEffect(target, player, player))
@@ -352,6 +352,7 @@ const skills = {
 									await result.targets[0].damage();
 								}
 								break;
+							}
 							case "move":
 								if (player.canMoveCard()) {
 									await player.moveCard(true);
@@ -4206,7 +4207,7 @@ const skills = {
 		},
 		filter(event, player, name) {
 			return !player.getStorage("stdjinjian_used").includes(name.slice(11));
-			return !player.hasSkill(`stdjinjian_effect${name.slice(11)}`);
+			// return !player.hasSkill(`stdjinjian_effect${name.slice(11)}`);
 		},
 		prompt2(event, player, name) {
 			return `防止即将${name == "damageBegin2" ? "造成" : "受到"}的伤害`;
@@ -4751,62 +4752,63 @@ const skills = {
 				);
 			});
 			// 下面是将判定区内的装备牌也考虑在内的
-			let e = 0,
-				fj = false;
-			game.countPlayer(target => {
-				let es = target.getDiscardableCards(player, "e"),
-					js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
-				if (es.length) {
-					e++;
-				}
-				e += js.length;
-				if (!fj && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) {
-					fj = true;
-				}
-			});
-			return fj && e >= 2;
+			// let e = 0,
+			// 	fj = false;
+			// game.countPlayer(target => {
+			// 	let es = target.getDiscardableCards(player, "e"),
+			// 		js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+			// 	if (es.length) {
+			// 		e++;
+			// 	}
+			// 	e += js.length;
+			// 	if (!fj && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) {
+			// 		fj = true;
+			// 	}
+			// });
+			// return fj && e >= 2;
 		},
 		filterTarget(card, player, target) {
 			if (!ui.selected.targets.length || ui.selected.targets[0].countDiscardableCards(player, "e", i => get.subtype(i) == "equip2")) {
 				return target.countDiscardableCards(player, "e");
 			}
 			return target.countDiscardableCards(player, "e", i => get.subtype(i) == "equip2");
-			let e = 0;
-			let es = target.getDiscardableCards(player, "e"),
-				js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
-			if (es.length) {
-				e++;
-			}
-			e += js.length;
-			if (!e) {
-				return false;
-			}
-			if (!ui.selected.targets.length) {
-				return true;
-			}
-			if (!ui.selected.targets[0].countDiscardableCards(player, "ej", i => get.subtype(i) == "equip2")) {
-				return es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2");
-			}
-			return true;
+			// let e = 0;
+			// let es = target.getDiscardableCards(player, "e"),
+			// 	js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+			// if (es.length) {
+			// 	e++;
+			// }
+			// e += js.length;
+			// if (!e) {
+			// 	return false;
+			// }
+			// if (!ui.selected.targets.length) {
+			// 	return true;
+			// }
+			// if (!ui.selected.targets[0].countDiscardableCards(player, "ej", i => get.subtype(i) == "equip2")) {
+			// 	return es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2");
+			// }
+			// return true;
 		},
 		selectTarget() {
 			return 2;
-			if (!ui.selected.targets.length) {
-				return [1, 2];
-			}
-			let e = 0,
-				player = get.event("player"),
-				target = ui.selected.targets[0];
-			let es = target.getDiscardableCards(player, "e"),
-				js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
-			if (es.length) {
-				e++;
-			}
-			e += js.length;
-			if (e >= 2 && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) {
-				return [1, 2];
-			}
-			return 2;
+			// /-?
+			// if (!ui.selected.targets.length) {
+			// 	return [1, 2];
+			// }
+			// let e = 0,
+			// 	player = get.event("player"),
+			// 	target = ui.selected.targets[0];
+			// let es = target.getDiscardableCards(player, "e"),
+			// 	js = target.getDiscardableCards(player, "j", i => get.type(i) == "equip");
+			// if (es.length) {
+			// 	e++;
+			// }
+			// e += js.length;
+			// if (e >= 2 && (es.some(card => get.subtype(card) == "equip2") || js.some(card => get.subtype(card) == "equip2"))) {
+			// 	return [1, 2];
+			// }
+			// return 2;
 		},
 		complexTarget: true,
 		multitarget: true,
@@ -4867,7 +4869,7 @@ const skills = {
 						if (get.event("fj")) {
 							return get.subtype(button.link) == "equip2";
 						}
-						return true;
+						// return true;
 						return get.type(button.link) == "equip";
 					})
 					.set("fj", canfj.length === 1 && canfj.includes(targets[i]))

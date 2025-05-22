@@ -584,7 +584,7 @@ var posix = {
 	posix: null,
 };
 
-// @ts-ignore
+// @ts-expect-error ignore
 posix.posix = posix;
 
 export default posix;

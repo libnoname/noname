@@ -93,7 +93,7 @@ const skills = {
 					game.log(player, "选择了", "#g【奔袭】", "的", "#y选项" + get.cnNumber(num + 1, true));
 					game.log(trigger.card, ["额外指定一个目标", "无视防具", "不能被抵消", "造成伤害后摸牌"][num]);
 					switch (num) {
-						case 0:
+						case 0: {
 							const result2 = await player
 								.chooseTarget("请选择" + get.translation(trigger.card) + "的额外目标", true, (card, player, target) => {
 									const event = get.event().getTrigger();
@@ -114,9 +114,11 @@ const skills = {
 								game.log(result2.targets, "成为了", trigger.card, "的额外目标");
 							}
 							break;
+						}
 						case 2:
 							trigger.nowuxie = true;
 							trigger.customArgs.default.directHit2 = true;
+							// [falls through]
 						default:
 							player.addTempSkill("olbenxi_effect");
 							player.storage["olbenxi_effect"][num - 1].add(trigger.card);

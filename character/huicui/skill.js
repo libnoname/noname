@@ -17441,7 +17441,7 @@ const skills = {
 		group: "dcmiyun_lose",
 		async content(event, trigger, player) {
 			switch (event.triggername) {
-				case "roundStart":
+				case "roundStart":{
 					const result = await player
 						.chooseTarget("密运：获得一名其他角色的一张牌，称为“安”", true, (card, player, target) => {
 							return target != player && target.countGainableCards(player, "he");
@@ -17458,7 +17458,8 @@ const skills = {
 						await next;
 					}
 					break;
-				case "roundEnd":
+				}
+				case "roundEnd": {
 					const result2 = await player
 						.chooseCardTarget({
 							prompt: "密运：将包括“安”在内的任意张手牌交给一名其他角色",
@@ -17501,6 +17502,7 @@ const skills = {
 						await player.drawTo(player.maxHp);
 					}
 					break;
+				}
 			}
 		},
 		mod: {

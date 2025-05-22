@@ -41,7 +41,7 @@ export const importMode = generateImportFunction("mode", name => `../../mode/${n
 function generateImportFunction(type, pathParser) {
 	return async name => {
 		if (type == "extension" && !game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			await game.import(type, await createEmptyExtension(name));
 			return;
 		}
@@ -107,7 +107,7 @@ function generateImportFunction(type, pathParser) {
 		if (modeContent.type !== type) {
 			throw new Error(`Loaded Content doesn't conform to "${type}" but "${modeContent.type}".`);
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		await game.import(type, modeContent.default);
 	};
 }

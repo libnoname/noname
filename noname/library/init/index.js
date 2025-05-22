@@ -147,7 +147,7 @@ export class LibInit {
 				if (!Array.isArray(message) || typeof lib.message.server[message[0]] !== "function") {
 					throw "err";
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				if (client.sandbox) {
 					security.enterSandbox(client.sandbox);
 				}
@@ -156,7 +156,7 @@ export class LibInit {
 						message[i] = get.parsedResult(message[i]);
 					}
 				} finally {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					if (client.sandbox) {
 						security.exitSandbox();
 					}
@@ -320,7 +320,7 @@ export class LibInit {
 		let data;
 		xmlHttpRequest.addEventListener("load", () => {
 			if (![0, 200].includes(xmlHttpRequest.status)) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				if (typeof onError == "function") {
 					onError(new Error(oReq.statusText || oReq.status));
 				}
@@ -383,7 +383,6 @@ export class LibInit {
 		if (typeof onload == "function") {
 			oReq.addEventListener("load", result => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
 					if (typeof onerror == "function") {
 						onerror(new Error(oReq.statusText || oReq.status));
 					}
@@ -428,7 +427,7 @@ export class LibInit {
 		if (typeof onload == "function") {
 			oReq.addEventListener("load", result => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					if (typeof onerror == "function") {
 						onerror(new Error(oReq.statusText || oReq.status));
 					}
@@ -452,7 +451,7 @@ export class LibInit {
 		if (typeof onload == "function") {
 			oReq.addEventListener("load", () => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					if (typeof onerror == "function") {
 						onerror(new Error(oReq.statusText || oReq.status));
 					}
@@ -497,7 +496,7 @@ export class LibInit {
 		if (typeof onload == "function") {
 			oReq.addEventListener("load", () => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					if (typeof onerror == "function") {
 						onerror(new Error(oReq.statusText || oReq.status));
 					}

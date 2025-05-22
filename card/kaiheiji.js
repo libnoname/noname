@@ -79,10 +79,12 @@ game.import("card", function () {
 								cardx2 = cards2.filter(card => card.name == "du"),
 								cardy2 = cards2.removeArray(cardx2);
 							switch (get.sgn(att)) {
-								case 1: //这里的ai写得很糙
-									const cards = cards1.concat(cards2),
-										cardsx = cards.filter(card => 8 - get.value(card, target));
+								case 1: {
+									//这里的ai写得很糙
+									const cards = cards1.concat(cards2);
+									const cardsx = cards.filter(card => 8 - get.value(card, target));
 									return [cardsx, cards.removeArray(cardsx)];
+								}
 								case 0:
 								case -1:
 									return [cardx1.concat(cardx2), cardy1.concat(cardy2)];

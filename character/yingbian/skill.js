@@ -1387,9 +1387,9 @@ const skills = {
 				return "将一张应变牌当做" + get.translation(links[0][2]) + "使用";
 			},
 		},
-		subSkill: { backup: {} },
 		ai: { order: 8, result: { player: 1 } },
 		subSkill: {
+			backup: {},
 			used: {
 				charlotte: true,
 				onremove: true,

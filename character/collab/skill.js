@@ -912,7 +912,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, eventId);
 								current.wait(solve(resolve, reject));
@@ -922,12 +922,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -1054,7 +1055,7 @@ const skills = {
 			const skill = event.name,
 				storage = player.storage[skill];
 			switch (trigger.name) {
-				case "damage":
+				case "damage": {
 					const list = ["摸牌数", "手牌上限", "体力上限"];
 					const choices = [0, 1, 2].filter(num => storage[num] === Math.min(...storage));
 					const result =
@@ -1081,6 +1082,7 @@ const skills = {
 						}
 					}
 					break;
+				}
 				case "phaseDraw":
 					trigger.num += storage[0];
 					break;
@@ -3203,7 +3205,7 @@ const skills = {
 				//等待第一位回答正确（兑现Promise）的玩家，若回答错误（Promise被拒绝）则继续等待
 				await Promise.any(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, question, current, eventId);
 								current.wait(solve(resolve, reject));
@@ -3213,12 +3215,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode && !answer_ok) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode && !answer_ok) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})

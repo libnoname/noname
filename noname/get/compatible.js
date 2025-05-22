@@ -62,9 +62,9 @@ export class GetCompatible {
 
 		// Chrome/Chromium下的实验性特性，具体可参见
 		// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (typeof navigator.userAgentData != "undefined") {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const userAgentData = navigator.userAgentData;
 			if (userAgentData.brands && userAgentData.brands.length) {
 				const brand = userAgentData.brands.find(({ brand }) => {

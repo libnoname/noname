@@ -381,12 +381,13 @@ const skills = {
 				next.ai = function (card) {
 					const player = get.player();
 					switch (get.sgn(player.countCards("h") - 5)) {
-						case 1:
+						case 1: {
 							const num = game.countPlayer(target => target !== player && get.damageEffect(target, player, player) > 0);
 							if (ui.selected.cards.length < num) {
 								return 8 - get.value(card);
 							}
 							return 0;
+						}
 						default:
 							return lib.skill.zhiheng.check(card) + (5 - player.countCards("h")) * get.effect(player, { name: "draw" }, player, player);
 					}
@@ -398,7 +399,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const num = event.cards.length - ((await player.drawTo(5).forResult()) || []).length;
 			switch (get.sgn(num)) {
-				case 1:
+				case 1: {
 					const result = await player
 						.chooseTarget("是否对至多" + num + "名其他角色各造成1点伤害？", lib.filter.notMe, [1, num])
 						.set("ai", target => {
@@ -414,6 +415,7 @@ const skills = {
 						}
 					}
 					break;
+				}
 				case 0:
 					player.addTempSkill("starzhiji_fuqi");
 					break;
@@ -5920,8 +5922,8 @@ const skills = {
 			event.result = await player
 				.chooseTarget(lib.filter.notMe, get.prompt("tuoxian"), "令一名其他角色获得" + get.translation(cards))
 				.set("ai", function (target) {
-					const player = _status.event.player,
-						att = get.attitude(player, target);
+					const player = _status.event.player;
+					let att = get.attitude(player, target);
 					if (att < 0) {
 						return 0;
 					}

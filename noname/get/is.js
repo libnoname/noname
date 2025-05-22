@@ -36,7 +36,7 @@ export class Is {
 	 * @returns
 	 */
 	emotion(str) {
-		let regExp = /^<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"\/]+)\/([^"\/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")(?!.*\b(?!src|width|height)\w+=)[^>]*\/?>$/i;
+		let regExp = /^<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"/]+)\/([^"/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")(?!.*\b(?!src|width|height)\w+=)[^>]*\/?>$/i;
 		return regExp.test(str);
 	}
 	/**
@@ -212,7 +212,6 @@ export class Is {
 	 * 是否是虚拟牌
 	 * @param { Card | VCard } card
 	 */
-	// @ts-ignore
 	virtualCard(card) {
 		return !("cards" in card) || !Array.isArray(card.cards) || card.cards.length === 0;
 	}
@@ -220,7 +219,6 @@ export class Is {
 	 * 是否是转化牌
 	 * @param { Card | VCard } card
 	 */
-	// @ts-ignore
 	convertedCard(card) {
 		return !card.isCard && "cards" in card && Array.isArray(card.cards) && card.cards.length > 0;
 	}
@@ -228,7 +226,6 @@ export class Is {
 	 * 是否是实体牌
 	 * @param { Card | VCard } card
 	 */
-	// @ts-ignore
 	ordinaryCard(card) {
 		return card.isCard && "cards" in card && Array.isArray(card.cards) && card.cards.length === 1;
 	}
@@ -384,7 +381,6 @@ export class Is {
 	/**
 	 * @param { GameEventPromise } event
 	 */
-	// @ts-ignore
 	converted(event) {
 		return !(event.card && event.card.isCard);
 	}
@@ -394,7 +390,6 @@ export class Is {
 	/**
 	 * @param { (Card | VCard)[]} cards
 	 */
-	// @ts-ignore
 	freePosition(cards) {
 		return !cards.some(card => !card.hasPosition || card.hasPosition());
 	}

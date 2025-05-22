@@ -112,7 +112,7 @@ export const defaultTemplate = {
 				const rightPaneTemplate = data?.rightPaneTemplate || { template: html`<div>还未编写</div>` };
 				data?.initConfigs?.(this.connectMenu, target, this.$refs.startButton);
 				/** @type { string } */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const mode = target.getAttribute("mode");
 				const configs = data.configDatas.get(mode) || reactive({});
 				if (!data.configDatas.get(mode)) {

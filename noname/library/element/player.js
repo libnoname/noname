@@ -14,7 +14,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @param {HTMLDivElement|DocumentFragment} [position]
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 
 	constructor(position) {
 		if (position instanceof Player) {
@@ -24,10 +24,10 @@ export class Player extends HTMLDivElement {
 		/**
 		 * @type {this}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const player = ui.create.div(".player", position);
 		Object.setPrototypeOf(player, (lib.element.Player || Player).prototype);
-		// @ts-ignore
+		// @ts-expect-error ignore
 		player._args = [position];
 		return player;
 	}
@@ -70,10 +70,10 @@ export class Player extends HTMLDivElement {
 					if (mutation.type === "childList") {
 						const addedNodes = Array.from(mutation.addedNodes);
 						const removedNodes = Array.from(mutation.removedNodes);
-						// @ts-ignore
+						// @ts-expect-error ignore
 						if (
 							addedNodes.some(card => !card.classList.contains("emptyequip")) ||
-							// @ts-ignore
+							// @ts-expect-error ignore
 							removedNodes.some(card => !card.classList.contains("emptyequip"))
 						) {
 							player.$handleEquipChange();
@@ -97,9 +97,9 @@ export class Player extends HTMLDivElement {
 		node.link = player.mark(" ", {
 			mark: get.linkintro,
 		});
-		// @ts-ignore
+		// @ts-expect-error ignore
 		node.link.firstChild.setBackgroundImage("image/card/tiesuo_mark.png");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		node.link.firstChild.style.backgroundSize = "cover";
 		ui.create.div(node.identity);
 	}
@@ -441,7 +441,7 @@ export class Player extends HTMLDivElement {
 				}
 				player.tips.get(index).innerHTML = message
 					.replace(/ /g, "&nbsp;")
-					.replace(/[♥︎♦︎]/g, '<span style="color: red; ">$&</span>')
+					.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>')
 					.replace(/\n/g, "<br>");
 				player.tips.get(index).css(css);
 
@@ -706,7 +706,7 @@ export class Player extends HTMLDivElement {
 
 				originals.push(compiled);
 				contents.push(function (event, trigger, player) {
-					//@ts-ignore
+					// @ts-expect-error ignore
 					return compiled.apply(this, [{ lib, game, ui, get, ai, _status }, event, trigger, player]);
 				});
 			};
@@ -908,7 +908,7 @@ export class Player extends HTMLDivElement {
 				if (security.isSandboxRequired()) {
 					console.warn("`player.when().apply()` 在沙盒模式下不推荐使用");
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				scope = _scope;
 				if (skill.contentFuns.length > 0) {
 					createContent();
@@ -1411,7 +1411,7 @@ export class Player extends HTMLDivElement {
 	getEquips(subtype) {
 		const VEquips = this.getVEquips(subtype);
 		return VEquips.reduce((cards, vcard) => {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			cards.addArray(vcard.cards || []);
 			return cards;
 		}, []);
@@ -1451,7 +1451,7 @@ export class Player extends HTMLDivElement {
 			return [];
 		}
 		return this.getVCards("e", card => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			return get.subtypes(card, false).includes(subtype);
 		});
 	}
@@ -1624,7 +1624,7 @@ export class Player extends HTMLDivElement {
 		);
 		const map2 = get.copy(map);
 		/** @type { Card[] } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const cards = Array.from(this.node.equips.childNodes);
 		for (const card of cards) {
 			if (card.name.startsWith("feichu_")) {
@@ -1891,14 +1891,14 @@ export class Player extends HTMLDivElement {
 				return;
 			}
 			const zhuanhuanLimit = get.zhuanhuanItemNum(skill, this);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (typeof mark.firstChild.reversed != "number") {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				mark.firstChild.reversed = 0;
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			mark.firstChild.reversed += 360 / zhuanhuanLimit;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			mark.firstChild.style.transform = "rotate(" + parseFloat(mark.firstChild.reversed) + "deg)";
 		}
 	}
@@ -2387,7 +2387,7 @@ export class Player extends HTMLDivElement {
 		}
 		emotion.style["z-index"] = 10;
 		emotion.style.transform = "translateY(" + (top2 - top) + "px) translateX(" + (left2 - left) + "px)";
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (["egg", "flower", "shoe"].includes(name) || rotate) {
 			emotion.firstElementChild.style.transform = "rotate(1440deg)";
 		}
@@ -2852,7 +2852,7 @@ export class Player extends HTMLDivElement {
 		if (!notmeisok && _status.currentPhase != this) {
 			return false;
 		}
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return _status.event.name == "phaseUse" || _status.event.getParent("phaseUse").name == "phaseUse";
 	}
 	/**
@@ -2904,7 +2904,7 @@ export class Player extends HTMLDivElement {
 		game.addVideo("$enableJudge", this);
 		this.storage._disableJudge = false;
 		for (let i = 0; i < this.node.judges.childNodes.length; i++) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (this.node.judges.childNodes[i].name == "disable_judge") {
 				this.node.judges.removeChild(this.node.judges.childNodes[i]);
 				break;

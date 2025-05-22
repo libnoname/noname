@@ -8,20 +8,20 @@ export class Card extends HTMLDivElement {
 	/**
 	 * @param {HTMLDivElement|DocumentFragment} [position]
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(position) {
 		if (position instanceof Card) {
 			const other = position;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			[position] = other._args;
 		}
 		/**
 		 * @type {this}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const card = ui.create.div(".card", position);
 		Object.setPrototypeOf(card, (lib.element.Card || Card).prototype);
-		// @ts-ignore
+		// @ts-expect-error ignore
 		card._args = [position];
 		return card;
 	}

@@ -41,7 +41,7 @@ export default class YieldCompiler extends ContentCompilerBase {
 		const middleware = async function (event: GameEvent) {
 			const args = YieldCompiler.#mapArgs(event);
 			const generator: Generator<any, void, any> =
-				//@ts-ignore
+				// @ts-expect-error ignore
 				Reflect.apply(content as GeneratorFunction, this, [event, args]);
 
 			let result: any = null;

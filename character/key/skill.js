@@ -9249,12 +9249,13 @@ const skills = {
 					await target.draw();
 					break;
 
-				case "black":
+				case "black": {
 					const source = _status.currentPhase;
 					if (source && source.isIn() && source.countCards("h") > 0) {
 						source.chooseToDiscard("he", true);
 					}
 					break;
+				}
 
 				default:
 					break;

@@ -4027,7 +4027,7 @@ const skills = {
 				case "phaseJudge":
 					check = player.countCards("j");
 					break;
-				case "phaseDraw":
+				case "phaseDraw": {
 					let i,
 						num = 0,
 						num2 = 0;
@@ -4045,6 +4045,7 @@ const skills = {
 					}
 					check = num >= 2 && num2 > 0;
 					break;
+				}
 				case "phaseUse":
 					if (!player.canMoveCard(true)) {
 						check = false;

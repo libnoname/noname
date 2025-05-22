@@ -2,7 +2,7 @@
 /**
  * @type { ServiceWorkerGlobalScope } 提供ServiceWorker的代码提示
  */
-// @ts-ignore
+// @ts-expect-error transfer type on force.
 var self = globalThis;
 // 以副作用导入typescript，以保证require也可以同步使用
 import './game/typescript.js';
