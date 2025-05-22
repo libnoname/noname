@@ -2554,7 +2554,7 @@ const skills = {
 			player.addTempSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", [target]);
 			const gainEvent = target.gain(get.cards(), "draw");
-            gainEvent.giver = player;
+			gainEvent.giver = player;
 			await gainEvent;
 		},
 		subSkill: {

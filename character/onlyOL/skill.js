@@ -1027,7 +1027,7 @@ const skills = {
 						if (player.actionHistory[i].isRound) {
 							roundCount--;
 						}
-						if (roundCount <= 0) {
+						if (count >= 5 || roundCount <= 0) {
 							break;
 						}
 					}
