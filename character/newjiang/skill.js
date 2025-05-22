@@ -220,7 +220,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
@@ -230,11 +230,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								}
-								else solver(result, current);
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -244,7 +246,9 @@ const skills = {
 			if (locals.length > 0) {
 				for (const current of locals) {
 					const result = await lib.skill.dczhonge.chooseControl(current, targets).forResult();
-					if (result.control) map[current.playerid] = result.control;
+					if (result.control) {
+						map[current.playerid] = result.control;
+					}
 				}
 			}
 			delete event._global_waiting;
