@@ -1767,16 +1767,23 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							zoom = Number(text.innerText);
+						const originalValue = text.innerText;
 						if (isNaN(zoom) || zoom < 0.5 || zoom > 3) {
 							alert("填入数值不符合规范！");
+							text.innerText = originalValue;
 							return;
 						}
-						zoom = Number(zoom.toFixed(2));
-						text.innerText = zoom;
-						game.saveConfig("ui_zoom", zoom);
-						game.documentZoom = game.deviceZoom * zoom;
-						ui.updatez();
-						Array.isArray(lib.onresize) && lib.onresize.forEach(fun => typeof fun === "function" && fun());
+						zoom = Number.parseFloat(zoom.toFixed(2));
+						const isConfirmed = confirm(`确定要将界面缩放比例修改为 ${zoom} 吗？`);
+						if (isConfirmed) {
+							text.innerText = zoom;
+							game.saveConfig("ui_zoom", zoom);
+							game.documentZoom = game.deviceZoom * zoom;
+							ui.updatez();
+							Array.isArray(lib.onresize) && lib.onresize.forEach(fun => typeof fun === "function" && fun());
+						} else {
+							text.innerText = originalValue;
+						}
 					},
 				},
 				image_background: {
