@@ -1771,7 +1771,7 @@ export class Library {
 							alert("填入数值不符合规范！");
 							return;
 						}
-						zoom = parseInt(zoom.toFixed(2));
+						zoom = Number(zoom.toFixed(2));
 						text.innerText = zoom;
 						game.saveConfig("ui_zoom", zoom);
 						game.documentZoom = game.deviceZoom * zoom;
