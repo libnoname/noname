@@ -2417,7 +2417,31 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		var zoom = lib.config.ui_zoom || 1;
+		const oldZoomMap = {
+			esmall: 0.8,
+			vsmall: 0.9,
+			small: 0.93,
+			normal: 1,
+			big: 1.05,
+			vbig: 1.1,
+			ebig: 1.2,
+			eebig: 1.5,
+			eeebig: 1.8,
+			eeeebig: 2,
+		};
+
+		let zoom;
+		let oldZoomVersion = false;
+		if (lib.config.ui_zoom in oldZoomMap) {
+			zoom = oldZoomMap[lib.config.ui_zoom];
+			oldZoomVersion = true;
+		} else {
+			zoom = Number.parseFloat(lib.config.ui_zoom);
+		}
+		if (oldZoomVersion) {
+			game.saveConfig("ui_zoom", zoom);
+		}
+
 		game.documentZoom = game.deviceZoom * zoom;
 		zoom !== 1 && ui.updatez();
 

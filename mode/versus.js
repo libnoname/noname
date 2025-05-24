@@ -4109,13 +4109,41 @@ export default () => {
 				next.setContent([
 					async (event, trigger, player) => {
 						//执行event.player的回合
-						lib.onphase.forEach(i => i());
-						const next = player.phase();
-						if (!game.players.some(current => current.classList.contains("acted"))) {
-							next._isThreeRound = true;
+						if (game.players.includes(event.player)) {
+							lib.onphase.forEach(i => i());
+							const phase = event.player.phase();
+							if (!game.players.some(current => current.classList.contains("acted"))) {
+								phase._isThreeRound = true;
+							}
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.player))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.player);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.player.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
+										}
+									}
+								} else if (event.player == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									for (let i = 0; i < game.players.length; i++) {
+										game.players[i].classList.remove("acted");
+									}
+									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
+									await event.trigger("roundEnd");
+								}
+							}
+							event.next.push(phase);
+							player.classList.add("acted");
+							await phase;
 						}
-						player.classList.add("acted");
-						await next;
 						await event.trigger("phaseOver");
 					},
 					async (event, trigger, player) => {
@@ -4123,9 +4151,40 @@ export default () => {
 						if (player.identity != "zhu") {
 							for (let i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == player.side && game.players[i].identity != "zhu" && game.players[i] != player && !game.players[i].classList.contains("acted")) {
+									event.player = game.players[i];
 									lib.onphase.forEach(i => i());
-									game.players[i].classList.add("acted");
-									await game.players[i].phase();
+									const phase = event.player.phase();
+									if (!game.players.some(current => current.classList.contains("acted"))) {
+										phase._isThreeRound = true;
+									}
+									event.next.remove(phase);
+									let isRoundEnd = false;
+									if (lib.onround.every(i => i(phase, event.player))) {
+										isRoundEnd = _status.roundSkipped;
+										if (_status.isRoundFilter) {
+											isRoundEnd = _status.isRoundFilter(phase, event.player);
+										} else if (_status.seatNumSettled) {
+											const seatNum = event.player.getSeatNum();
+											if (seatNum != 0) {
+												if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+													isRoundEnd = true;
+												}
+											}
+										} else if (event.player == _status.roundStart) {
+											isRoundEnd = true;
+										}
+										if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+											for (let i = 0; i < game.players.length; i++) {
+												game.players[i].classList.remove("acted");
+											}
+											game.log();
+											game.log("第" + game.roundNumber + "轮游戏结束了");
+											await event.trigger("roundEnd");
+										}
+									}
+									event.next.push(phase);
+									event.player.classList.add("acted");
+									await phase;
 									break;
 								}
 							}
@@ -4138,7 +4197,6 @@ export default () => {
 						let swap = [],
 							swap2 = [];
 						for (let i = 0; i < game.players.length; i++) {
-							//if (game.players[i].isOut()) continue;
 							if (!game.players[i].classList.contains("acted")) {
 								if (game.players[i].side == target.side) {
 									swap.push(game.players[i]);
@@ -4152,16 +4210,13 @@ export default () => {
 								target = event.swap(target);
 								swap = swap2;
 							} else {
-								//双方的角色都执行过回合后就触发轮次结束的时机
+								//双方的角色都执行过回合后开始新的对战轮次
 								for (let i = 0; i < game.players.length; i++) {
-									//if (game.players[i].isOut()) continue;
 									game.players[i].classList.remove("acted");
 								}
 								delete _status.roundStart;
 								event.redo();
 								await game.delay();
-								game.log();
-								await event.trigger("roundEnd");
 								return;
 							}
 						}
@@ -4208,17 +4263,46 @@ export default () => {
 				]);
 			},
 			versusPhaseLoop: function (player) {
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				next.player = player;
 				//已改为contents
 				next.setContent([
 					async (event, trigger, player) => {
 						//执行回合
-						lib.onphase.forEach(i => i());
-						if (lib.storage.zhu) {
-							player.classList.add("acted");
+						if (game.players.includes(event.player)) {
+							lib.onphase.forEach(i => i());
+							const phase = event.player.phase();
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.player))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.player);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.player.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
+										}
+									}
+								} else if (event.player == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									for (let i = 0; i < game.players.length; i++) {
+										game.players[i].classList.remove("acted");
+									}
+									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
+									await event.trigger("roundEnd");
+								}
+							}
+							event.next.push(phase);
+							if (lib.storage.zhu) {
+								player.classList.add("acted");
+							}
+							await phase;
 						}
-						await player.phase();
 						await event.trigger("phaseOver");
 					},
 					async (event, trigger, player) => {
@@ -4227,10 +4311,8 @@ export default () => {
 							_status.currentSide = !_status.currentSide;
 							_status.round++;
 							if (_status.round >= 2 * Math.max(game.friend.length, game.enemy.length)) {
-								//行动次数达到上限，触发轮次结束的时机
+								//行动次数达到上限
 								_status.round = 0;
-								game.log();
-								await event.trigger("roundEnd");
 								for (let i = 0; i < game.players.length; i++) {
 									game.players[i].classList.remove("acted");
 								}
@@ -4274,22 +4356,52 @@ export default () => {
 			phaseLoopJiange: function () {
 				const next = game.createEvent("phaseLoop");
 				next.num = 0;
+				next.player = _status.actlist[0];
 				next.setContent(async (event, trigger, player) => {
 					while (true) {
-						if (event.num >= 8) {
-							event.num -= 8;
-						}
-						const player = _status.actlist[event.num];
-						if (player.isAlive()) {
+						if (game.players.includes(event.player)) {
 							lib.onphase.forEach(i => i());
-							await player.phase();
+							const phase = event.player.phase();
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.player))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.player);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.player.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
+										}
+									}
+								} else if (event.player == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
+									await event.trigger("roundEnd");
+								}
+							}
+							event.next.push(phase);
+							await phase;
 						}
 						await event.trigger("phaseOver");
-						event.num++;
-						if (event.num == _status.actlist.length) {
-							game.log();
-							await event.trigger("roundEnd");
-						}
+						let findNext = current => {
+							let players = game.players
+								.slice(0)
+								.concat(game.dead)
+								.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+							let position = parseInt(current.dataset.position);
+							for (let i = 0; i < players.length; i++) {
+								if (parseInt(players[i].dataset.position) > position) {
+									return players[i];
+								}
+							}
+							return players[0];
+						};
+						event.player = findNext(event.player);
 					}
 				});
 			},

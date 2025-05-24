@@ -886,15 +886,12 @@ const skills = {
 			while (targets.length) {
 				const current = targets.shift();
 				const bool = await current
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"驱险：是否对" + get.translation(target) + "使用一张杀？"
-					)
+					.chooseToUse(function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "驱险：是否对" + get.translation(target) + "使用一张杀？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("filterTarget", function (card, player, target) {
@@ -3946,7 +3943,7 @@ const skills = {
 			});
 			if (len && !skills.length) {
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				let allList = _status.characterlist.slice(0);
 				allList.randomSort();
@@ -13046,23 +13043,7 @@ const skills = {
 	},
 	pingjian: {
 		initList() {
-			var list = [];
-			if (_status.connectMode) {
-				list = get.charactersOL();
-			} else {
-				var list = [];
-				for (var i in lib.character) {
-					if (!lib.filter.characterDisabled2(i) && !lib.filter.characterDisabled(i)) {
-						list.push(i);
-					}
-				}
-			}
-			game.countPlayer2(function (current) {
-				list.remove(current.name);
-				list.remove(current.name1);
-				list.remove(current.name2);
-			});
-			_status.characterlist = list;
+			game.initCharactertList();
 		},
 		init(player) {
 			player.addSkill("pingjian_check");
@@ -13076,7 +13057,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			var allList = _status.characterlist.slice(0);
 			game.countPlayer(function (current) {
@@ -13188,7 +13169,7 @@ const skills = {
 			var map = [];
 			var evt = event.getParent(2);
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			var allList = _status.characterlist.slice(0);
 			game.countPlayer(function (current) {

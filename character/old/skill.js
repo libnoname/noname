@@ -9,7 +9,7 @@ const skills = {
 			if (!_status.junkguixin) {
 				_status.junkguixin = [];
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				for (const name of _status.characterlist) {
 					if (!lib.character[name][3]) {

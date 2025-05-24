@@ -685,12 +685,9 @@ export default () => {
 				content: function () {
 					"step 0";
 					if (target.hasSha()) {
-						target.chooseToUse(
-							function (card, player, event) {
-								return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
-							},
-							"使用一张杀，或交给" + get.translation(player) + "两张牌"
-						);
+						target.chooseToUse(function (card, player, event) {
+							return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
+						}, "使用一张杀，或交给" + get.translation(player) + "两张牌");
 					} else {
 						event.directfalse = true;
 					}
@@ -1699,7 +1696,7 @@ export default () => {
 				return name;
 			},
 			bossPhaseLoop: function () {
-				var next = game.createEvent("phaseLoop");
+				const next = game.createEvent("phaseLoop");
 				//确定首次行动的角色
 				if (game.bossinfo.loopFirst) {
 					next.player = game.bossinfo.loopFirst();
@@ -1741,8 +1738,31 @@ export default () => {
 							if (player.identity == "zhu" && game.boss != player) {
 								player = game.boss;
 							}
-							lib.onphase.forEach(i => i());
-							await player.phase();
+							const phase = event.player.phase();
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.player))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.player);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.player.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
+										}
+									}
+								} else if (event.player == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
+									await event.trigger("roundEnd");
+								}
+							}
+							event.next.push(phase);
+							await phase;
 						}
 						//触发phaseOver时机
 						await event.trigger("phaseOver");
@@ -1756,8 +1776,6 @@ export default () => {
 									event.player = game.boss.nextSeat;
 									//如果当前角色为boss且下一个角色从头开始才触发每轮结束时的时机
 									delete _status.roundStart;
-									game.log();
-									await event.trigger("roundEnd");
 								} else {
 									event.player = _status.last.nextSeat;
 								}

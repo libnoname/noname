@@ -1702,12 +1702,9 @@ player.removeVirtualEquip(card);
 						addNode();
 					}, getTimeout());
 				} else {
-					setTimeout(
-						function () {
-							event.settle();
-						},
-						speed * 110 + 100
-					);
+					setTimeout(function () {
+						event.settle();
+					}, speed * 110 + 100);
 				}
 			};
 			//点击时的判断操作
@@ -1759,19 +1756,16 @@ player.removeVirtualEquip(card);
 
 			game.pause();
 			game.countChoose();
-			setTimeout(
-				() => {
-					if (!lib.config.background_audio) {
-						return;
-					}
-					if (beatmap.filename.startsWith("ext:")) {
-						game.playAudio(beatmap.filename);
-					} else {
-						game.playAudio("effect", beatmap.filename);
-					}
-				},
-				Math.floor(speed * 100 * (0.9 + beatmap.judgebar_height)) + beatmap.current
-			);
+			setTimeout(() => {
+				if (!lib.config.background_audio) {
+					return;
+				}
+				if (beatmap.filename.startsWith("ext:")) {
+					game.playAudio(beatmap.filename);
+				} else {
+					game.playAudio("effect", beatmap.filename);
+				}
+			}, Math.floor(speed * 100 * (0.9 + beatmap.judgebar_height)) + beatmap.current);
 			setTimeout(function () {
 				addNode();
 			}, getTimeout());
@@ -3644,31 +3638,49 @@ player.removeVirtualEquip(card);
 			num++;
 		}
 		while (true) {
-			let list = [];
-			while ([...game.players, ...game.dead].some(i => !list.includes(i))) {
-				list.push(event.player);
-				if (game.players.includes(event.player)) {
-					lib.onphase.forEach(i => i());
-					await event.player.phase();
-				}
-				await event.trigger("phaseOver");
-				let findNext = current => {
-					let players = game.players
-						.slice(0)
-						.concat(game.dead)
-						.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
-					let position = parseInt(current.dataset.position);
-					for (let i = 0; i < players.length; i++) {
-						if (parseInt(players[i].dataset.position) > position) {
-							return players[i];
+			if (game.players.includes(event.player)) {
+				lib.onphase.forEach(i => i());
+				const phase = event.player.phase();
+				event.next.remove(phase);
+				let isRoundEnd = false;
+				if (lib.onround.every(i => i(phase, event.player))) {
+					isRoundEnd = _status.roundSkipped;
+					if (_status.isRoundFilter) {
+						isRoundEnd = _status.isRoundFilter(phase, event.player);
+					} else if (_status.seatNumSettled) {
+						const seatNum = event.player.getSeatNum();
+						if (seatNum != 0) {
+							if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+								isRoundEnd = true;
+							}
 						}
+					} else if (event.player == _status.roundStart) {
+						isRoundEnd = true;
 					}
-					return players[0];
-				};
-				event.player = findNext(event.player);
+					if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+						game.log();
+						game.log("第" + game.roundNumber + "轮游戏结束了");
+						await event.trigger("roundEnd");
+					}
+				}
+				event.next.push(phase);
+				await phase;
 			}
-			game.log();
-			await event.trigger("roundEnd");
+			await event.trigger("phaseOver");
+			let findNext = current => {
+				let players = game.players
+					.slice(0)
+					.concat(game.dead)
+					.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+				let position = parseInt(current.dataset.position);
+				for (let i = 0; i < players.length; i++) {
+					if (parseInt(players[i].dataset.position) > position) {
+						return players[i];
+					}
+				}
+				return players[0];
+			};
+			event.player = findNext(event.player);
 		}
 	},
 	loadPackage: function () {
@@ -4641,7 +4653,7 @@ player.removeVirtualEquip(card);
 				}
 			}
 		}
-		("step 10");
+		"step 10";
 		if (event.currentPhase == "phaseUse") {
 			game.broadcastAll(function () {
 				if (ui.tempnowuxie) {
@@ -4652,7 +4664,7 @@ player.removeVirtualEquip(card);
 			delete player._noSkill;
 		}
 		event.num++;
-		("step 11");
+		"step 11";
 		if (event.num < event.phaseList.length) {
 			event.goto(8);
 		} else if (!event._phaseEndTriggered) {
@@ -4660,9 +4672,9 @@ player.removeVirtualEquip(card);
 			event.trigger("phaseEnd");
 			event.redo();
 		}
-		("step 12");
+		"step 12";
 		event.trigger("phaseAfter");
-		("step 13");
+		"step 13";
 		//删除当前回合角色 此时处于“不属于任何角色的回合”的阶段
 		game.broadcastAll(function (player) {
 			player.classList.remove("glow_phase");
@@ -6112,7 +6124,7 @@ player.removeVirtualEquip(card);
 		"step 9";
 		event.player = event.tempplayer;
 		event.trigger("compareFixing");
-		("step 10");
+		"step 10";
 		if (event.player) {
 			delete event.player;
 		}
@@ -6124,10 +6136,10 @@ player.removeVirtualEquip(card);
 		} else {
 			event.goto(12);
 		}
-		("step 11");
+		"step 11";
 		event.iwhile++;
 		event.goto(10);
-		("step 12");
+		"step 12";
 		var player = event.tempplayer;
 		event.player = player;
 		delete event.tempplayer;
@@ -6156,9 +6168,9 @@ player.removeVirtualEquip(card);
 			}, str);
 		}
 		game.delay(3);
-		("step 13");
+		"step 13";
 		game.broadcastAll(ui.clear);
-		("step 14");
+		"step 14";
 		event.cards.add(event.card1);
 	},
 	chooseToCompareMultiple: function () {
@@ -6339,7 +6351,7 @@ player.removeVirtualEquip(card);
 		delete event.forceWinner;
 		event.iwhile = event.iiwhile + 1;
 		event.goto(5);
-		("step 10");
+		"step 10";
 		event.cards.add(event.card1);
 	},
 	chooseToCompare: function () {
@@ -8428,7 +8440,7 @@ player.removeVirtualEquip(card);
 					? []
 					: targets[0].getCards("j", card => {
 							return event.filter(card) && targets[1].canAddJudge(card);
-						});
+					  });
 			if (es.length) {
 				dialogArgs.push(`<div class="text center">装备区</div>`);
 				dialogArgs.push([es, "vcard"]);
@@ -8524,7 +8536,7 @@ player.removeVirtualEquip(card);
 			owner.getCards("ej").forEach(card => {
 				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
 				if (!cardsx?.length) {
-					return
+					return;
 				}
 				cards.removeArray(cardsx);
 				cards.add(card);
@@ -8895,7 +8907,7 @@ player.removeVirtualEquip(card);
 			}
 			event.redo();
 		}
-		("step 10");
+		"step 10";
 		if (event.all_excluded) {
 			return;
 		}
@@ -8928,7 +8940,7 @@ player.removeVirtualEquip(card);
 			}
 			event.redo();
 		}
-		("step 11");
+		"step 11";
 		if (event.all_excluded) {
 			return;
 		}
@@ -8975,7 +8987,7 @@ player.removeVirtualEquip(card);
 				next.forceDie = true;
 			}
 		}
-		("step 12");
+		"step 12";
 		if (event.all_excluded) {
 			return;
 		}
@@ -9066,7 +9078,7 @@ player.removeVirtualEquip(card);
 				game.delayx(0.5);
 			}
 		}
-		("step 13");
+		"step 13";
 		if (event.all_excluded) {
 			return;
 		}
@@ -9074,7 +9086,7 @@ player.removeVirtualEquip(card);
 			event.num++;
 			event.goto(12);
 		}
-		("step 14");
+		"step 14";
 		if (event.all_excluded) {
 			return;
 		}
@@ -9092,7 +9104,7 @@ player.removeVirtualEquip(card);
 				next.forceDie = true;
 			}
 		}
-		("step 15");
+		"step 15";
 		if (event.all_excluded) {
 			return;
 		}
@@ -9104,7 +9116,7 @@ player.removeVirtualEquip(card);
 			}
 			event.goto(11);
 		}
-		("step 16");
+		"step 16";
 		if (event.postAi) {
 			event.player.logAi(event.targets, event.card);
 		}
@@ -9119,7 +9131,7 @@ player.removeVirtualEquip(card);
 		} else {
 			event.finish();
 		}
-		("step 17");
+		"step 17";
 		event._oncancel();
 	},
 	useSkill: function () {
@@ -9896,57 +9908,48 @@ player.removeVirtualEquip(card);
 			if (event.animate == "draw") {
 				player.$draw(cards.length);
 				game.pause();
-				setTimeout(
-					function () {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					broadcast();
+					game.resume();
+				}, get.delayx(500, 500));
 			} else if (event.animate == "gain") {
 				player.$gain(cards, event.log);
 				game.pause();
-				setTimeout(
-					function () {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(700, 700)
-				);
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					broadcast();
+					game.resume();
+				}, get.delayx(700, 700));
 			} else if (event.animate == "gain2" || event.animate == "draw2") {
 				var gain2t = 300;
 				if (player.$gain2(cards, event.log) && player == game.me) {
 					gain2t = 500;
 				}
 				game.pause();
-				setTimeout(
-					function () {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(gain2t, gain2t)
-				);
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					broadcast();
+					game.resume();
+				}, get.delayx(gain2t, gain2t));
 			} else if (event.animate == "give" || event.animate == "giveAuto") {
 				var evtmap = event.losing_map;
 				if (event.animate == "give") {
@@ -9966,37 +9969,31 @@ player.removeVirtualEquip(card);
 					}
 				}
 				game.pause();
-				setTimeout(
-					function () {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					broadcast();
+					game.resume();
+				}, get.delayx(500, 500));
 			} else if (typeof event.animate == "function") {
 				var time = event.animate(event);
 				game.pause();
-				setTimeout(
-					function () {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(time, time)
-				);
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					broadcast();
+					game.resume();
+				}, get.delayx(time, time));
 			} else {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
@@ -10097,45 +10094,36 @@ player.removeVirtualEquip(card);
 				game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
 			}
 			game.pause();
-			setTimeout(
-				function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				},
-				get.delayx(500, 500)
-			);
+			setTimeout(function () {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (var i of event.gaintag) {
+					player.markSkill(i);
+				}
+				game.resume();
+			}, get.delayx(500, 500));
 		} else if (event.animate == "gain") {
 			player.$gain(cards, false);
 			game.pause();
-			setTimeout(
-				function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				},
-				get.delayx(700, 700)
-			);
+			setTimeout(function () {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (var i of event.gaintag) {
+					player.markSkill(i);
+				}
+				game.resume();
+			}, get.delayx(700, 700));
 		} else if (event.animate == "gain2" || event.animate == "draw2") {
 			var gain2t = 300;
 			if (player.$gain2(cards) && player == game.me) {
 				gain2t = 500;
 			}
 			game.pause();
-			setTimeout(
-				function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				},
-				get.delayx(gain2t, gain2t)
-			);
+			setTimeout(function () {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (var i of event.gaintag) {
+					player.markSkill(i);
+				}
+				game.resume();
+			}, get.delayx(gain2t, gain2t));
 		} else if (event.animate == "give" || event.animate == "giveAuto") {
 			var evtmap = event.losing_map;
 			if (event.animate == "give") {
@@ -10164,29 +10152,23 @@ player.removeVirtualEquip(card);
 				}
 			}
 			game.pause();
-			setTimeout(
-				function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				},
-				get.delayx(500, 500)
-			);
+			setTimeout(function () {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (var i of event.gaintag) {
+					player.markSkill(i);
+				}
+				game.resume();
+			}, get.delayx(500, 500));
 		} else if (typeof event.animate == "function") {
 			var time = event.animate(event);
 			game.pause();
-			setTimeout(
-				function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				},
-				get.delayx(time, time)
-			);
+			setTimeout(function () {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (var i of event.gaintag) {
+					player.markSkill(i);
+				}
+				game.resume();
+			}, get.delayx(time, time));
 		} else {
 			player.$addToExpansion(cards, null, event.gaintag);
 			for (var i of event.gaintag) {
@@ -11558,7 +11540,7 @@ player.removeVirtualEquip(card);
 				switch (name) {
 					case "phaseJieshu":
 						target = target.next;
-						// [falls through]
+					// [falls through]
 					case "phaseZhunbei": {
 						let att = get.sgn(get.attitude(player, target)),
 							judges = target.getCards("j"),

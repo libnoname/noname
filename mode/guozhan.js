@@ -6052,7 +6052,7 @@ export default () => {
 												return 0;
 											}
 											return 5 - get.value(cardx);
-										},
+									  },
 						});
 						if (!game.online) {
 							return;
@@ -6736,12 +6736,9 @@ export default () => {
 						player.addTempSkill("gztongling_used", "phaseUseAfter");
 						player.line2([target, trigger.player]);
 						target
-							.chooseToUse(
-								function (card, player, event) {
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"通令：是否对" + get.translation(trigger.player) + "使用一张牌？"
-							)
+							.chooseToUse(function (card, player, event) {
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "通令：是否对" + get.translation(trigger.player) + "使用一张牌？")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
@@ -7579,15 +7576,12 @@ export default () => {
 					var target = targets.shift();
 					if (target.isIn() && (_status.connectMode || !lib.config.skip_shan || target.hasSha())) {
 						target
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
-										return false;
-									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"是否对" + get.translation(event.target) + "使用一张【杀】？"
-							)
+							.chooseToUse(function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "是否对" + get.translation(event.target) + "使用一张【杀】？")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("addCount", false)
@@ -12823,15 +12817,12 @@ export default () => {
 					if (target.isIn()) {
 						event.target = target;
 						target
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
-										return false;
-									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
-							)
+							.chooseToUse(function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
@@ -13108,15 +13099,12 @@ export default () => {
 				},
 				content() {
 					var next = player
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
 						.set("logSkill", "gzzhuhai")
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
@@ -18791,14 +18779,14 @@ export default () => {
 				ruleSkill: true,
 				enable: "phaseUse",
 				filter(event, player) {
-					return player.hasMark("yexinjia_mark") || player.hasMark("xianqu_mark") || player.hasMark("yinyang_mark") || player.hasMark("zhulianbihe_mark");
+					return ["yexinjia", "xianqu", "yinyang", "zhulianbihe"].some(mark => player.hasMark(`${mark}_mark`));
 				},
 				chooseButton: {
 					dialog(event, player) {
 						return ui.create.dialog("###国战标记###弃置一枚对应的标记，发动其对应的效果");
 					},
 					chooseControl(event, player) {
-						var list = [],
+						const list = [],
 							bool = player.hasMark("yexinjia_mark");
 						if (bool || player.hasMark("xianqu_mark")) {
 							list.push("先驱");
@@ -18816,13 +18804,14 @@ export default () => {
 						return list;
 					},
 					check() {
-						var player = _status.event.player,
-							bool = player.hasMark("yexinjia_mark");
+						const player = get.player(),
+							bool = player.hasMark("yexinjia_mark"),
+							evt = get.event().getParent();
 						if ((bool || player.hasMark("xianqu_mark")) && 4 - player.countCards("h") > 1) {
 							return "先驱";
 						}
 						if (bool || player.hasMark("zhulianbihe_mark")) {
-							if (_status.event.getParent().filterCard({ name: "tao", isCard: true }, player, event) && get.effect_use(player, { name: "tao" }, player) > 0) {
+							if (evt.filterCard({ name: "tao", isCard: true }, player, evt) && get.effect_use(player, { name: "tao" }, player) > 0) {
 								return "珠联(桃)";
 							}
 							if (
@@ -18845,15 +18834,15 @@ export default () => {
 								return get.copy(lib.skill._zhulianbihe_mark_tao);
 							case "珠联(摸牌)":
 								return {
-									content() {
-										player.draw(2);
+									async content(event, trigger, player) {
+										await player.draw(2);
 										player.removeMark(player.hasMark("zhulianbihe_mark") ? "zhulianbihe_mark" : "yexinjia_mark", 1);
 									},
 								};
 							case "阴阳鱼":
 								return {
-									content() {
-										player.draw();
+									async content(event, trigger, player) {
+										await player.draw();
 										player.removeMark(player.hasMark("yinyang_mark") ? "yinyang_mark" : "yexinjia_mark", 1);
 									},
 								};
@@ -18864,128 +18853,97 @@ export default () => {
 				},
 				ai: {
 					order: 1,
-					result: {
-						player: 1,
-					},
+					result: { player: 1 },
 				},
 			},
 			xianqu_mark: {
-				intro: {
-					content: "◇出牌阶段，你可以弃置此标记，然后将手牌摸至四张并观看一名其他角色的一张武将牌。",
-				},
-				content() {
-					"step 0";
+				intro: { content: "◇出牌阶段，你可以弃置此标记，然后将手牌摸至四张并观看一名其他角色的一张武将牌。" },
+				async content(event, trigger, player) {
 					player.removeMark(player.hasMark("xianqu_mark") ? "xianqu_mark" : "yexinjia_mark", 1);
-					var num = 4 - player.countCards("h");
-					if (num) {
-						player.draw(num);
-					}
-					"step 1";
+					await player.drawTo(4);
 					if (
-						game.hasPlayer(function (current) {
+						game.hasPlayer(current => {
 							return current != player && current.isUnseen(2);
 						})
 					) {
-						player
-							.chooseTarget("是否观看一名其他角色的一张暗置武将牌？", function (card, player, target) {
+						let result = await player
+							.chooseTarget("是否观看一名其他角色的一张暗置武将牌？", (card, player, target) => {
 								return target != player && target.isUnseen(2);
 							})
-							.set("ai", function (target) {
+							.set("ai", target => {
+								const player = get.player();
 								if (target.isUnseen()) {
-									var next = _status.event.player.getNext();
+									const next = player.getNext();
 									if (target != next) {
 										return 10;
 									}
 									return 9;
 								}
-								return -get.attitude(_status.event.player, target);
-							});
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.bool) {
-						event.target = result.targets[0];
-						player.line(event.target, "green");
-						var controls = [];
-						if (event.target.isUnseen(0)) {
-							controls.push("主将");
-						}
-						if (event.target.isUnseen(1)) {
-							controls.push("副将");
-						}
-						if (controls.length > 1) {
-							player.chooseControl(controls);
-						}
-						if (controls.length == 0) {
-							event.finish();
-						}
-					} else {
-						player.removeSkill("xianqu_mark");
-						event.finish();
-					}
-					"step 3";
-					if (result.control) {
-						if (result.control == "主将") {
-							player.viewCharacter(event.target, 0);
+								return -get.attitude(player, target);
+							})
+							.forResult();
+						if (result?.bool && result?.targets?.length) {
+							const [target] = result.targets;
+							const controls = [];
+							if (target.isUnseen(0)) {
+								controls.push("主将");
+							}
+							if (target.isUnseen(1)) {
+								controls.push("副将");
+							}
+							if (!controls.length) {
+								return;
+							}
+							player.line(target, "green");
+							result = controls.length == 1 ? { control: controls[0] } : await player.chooseControl(controls).forResult();
+							if (!result?.control) {
+								return;
+							}
+							await player.viewCharacter(target, result.control == "主将" ? 0 : 1);
 						} else {
-							player.viewCharacter(event.target, 1);
+							player.removeSkill("xianqu_mark");
 						}
-					} else if (target.isUnseen(0)) {
-						player.viewCharacter(event.target, 0);
-					} else {
-						player.viewCharacter(event.target, 1);
 					}
 				},
 			},
 			zhulianbihe_mark: {
-				intro: {
-					content: "◇出牌阶段，你可以弃置此标记 然后摸两张牌。<br>◇你可以将此标记当做【桃】使用。",
-				},
+				intro: { content: "◇出牌阶段，你可以弃置此标记，然后摸两张牌。<br>◇你可以将此标记当做【桃】使用。" },
 			},
 			yinyang_mark: {
-				intro: {
-					content: "◇出牌阶段，你可以弃置此标记，然后摸一张牌。<br>◇弃牌阶段，你可以弃置此标记，然后本回合手牌上限+2。",
-				},
+				intro: { content: "◇出牌阶段，你可以弃置此标记，然后摸一张牌。<br>◇弃牌阶段，你可以弃置此标记，然后本回合手牌上限+2。" },
 			},
 			_zhulianbihe_mark_tao: {
 				ruleSkill: true,
 				enable: "chooseToUse",
-				filter(event, player) {
-					return event.type != "phase" && (player.hasMark("zhulianbihe_mark") || player.hasMark("yexinjia_mark"));
-				},
 				viewAsFilter(player) {
-					return player.hasMark("zhulianbihe_mark") || player.hasMark("yexinjia_mark");
+					return ["yexinjia_mark", "zhulianbihe_mark"].some(mark => player.hasMark(mark));
 				},
 				viewAs: {
 					name: "tao",
 					isCard: true,
 				},
-				filterCard() {
-					return false;
-				},
+				filterCard: () => false,
 				selectCard: -1,
-				precontent() {
+				async precontent(event, trigger, player) {
 					player.removeMark(player.hasMark("zhulianbihe_mark") ? "zhulianbihe_mark" : "yexinjia_mark", 1);
 				},
 			},
 			_yinyang_mark_add: {
 				ruleSkill: true,
-				trigger: {
-					player: "phaseDiscardBegin",
-				},
+				trigger: { player: "phaseDiscardBegin" },
 				filter(event, player) {
-					return (player.hasMark("yinyang_mark") || player.hasMark("yexinjia_mark")) && player.needsToDiscard();
+					return ["yexinjia_mark", "yinyang_mark"].some(mark => player.hasMark(mark)) && player.needsToDiscard();
 				},
 				prompt(event, player) {
-					return "是否弃置一枚【" + (player.hasMark("yinyang_mark") ? "阴阳鱼" : "野心家") + "】标记，使本回合的手牌上限+2？";
+					return `是否弃置一枚【${player.hasMark("yinyang_mark") ? "阴阳鱼" : "野心家"}】标记，使本回合的手牌上限+2？`;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("yinyang_add", "phaseAfter");
 					player.removeMark(player.hasMark("yinyang_mark") ? "yinyang_mark" : "yexinjia_mark", 1);
 				},
 			},
 			yinyang_add: {
+				charlotte: true,
 				mod: {
 					maxHandcard(player, num) {
 						return num + 2;
@@ -22616,7 +22574,7 @@ export default () => {
 					? get.modetrans({
 							mode: lib.config.mode,
 							separatism: true,
-						})
+					  })
 					: get.cnNumber(parseInt(get.config("player_number"))) + "人" + get.translation(lib.config.mode);
 				if (game.me.identity == "ye") {
 					str2 += " - 野心家";

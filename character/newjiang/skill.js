@@ -62,7 +62,7 @@ const skills = {
 					async precontent(event, trigger, player) {
 						const cards = event.result.cards,
 							card = event.result.card,
-							strs = cards.map(i => lib.skill.shencai.getStr(i));
+							strs = cards.map(i => get.cardDescription(i));
 						event.getParent().addCount = false;
 						if (strs.some(str => str.includes(`【${get.translation(card.name)}】`))) {
 							await player.draw(2);

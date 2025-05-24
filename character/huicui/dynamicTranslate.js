@@ -72,9 +72,9 @@ const dynamicTranslates = {
 	dcpingzhi(player) {
 		let str = "转换技。出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，";
 		if (!player.storage.dcpingzhi) {
-			return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
+			return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
 		}
-		return str + "阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过；<span class = 'bluetext'>阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。</span>";
+		return str + "阳：你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害则此技能视为未发动过；<span class = 'bluetext'>阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。</span>";
 	},
 	dcmurui: player => {
 		let filters = [

@@ -642,7 +642,7 @@ const skills = {
 					for (let target of targets) {
 						if (storage.includes(0)) {
 							let count = 2;
-							while (target.countDiscardableCards(target, "he") && num > 0) {
+							while (target.countDiscardableCards(target, "he") && count > 0) {
 								await target.chooseToDiscard("he", true);
 								count--;
 							}
@@ -669,7 +669,7 @@ const skills = {
 								.set("ai", button => get.player().getUseValue(get.event().viewAs(button)))
 								.set("viewAs", button => get.autoViewAs({ name: button.link[2] }, hs))
 								.forResult();
-							if (result?.links) {
+							if (result?.links?.length) {
 								const name = result.links[0][2],
 									card = get.autoViewAs({ name: name }, hs);
 								await target.chooseUseTarget(card, hs, true, false);
@@ -1192,13 +1192,13 @@ const skills = {
 				if (to == from["zombieshibian"]) {
 					return 114514;
 				}
-				return get.attitude((from["zombieshibian"] || from), (to["zombieshibian"] || to));
+				return get.attitude(from["zombieshibian"] || from, to["zombieshibian"] || to);
 			};
 			target.ai.modAttitudeTo = function (from, to, att) {
 				if (from == to["zombieshibian"]) {
 					return 7;
 				}
-				return get.attitude((from["zombieshibian"] || from), (to["zombieshibian"] || to));
+				return get.attitude(from["zombieshibian"] || from, to["zombieshibian"] || to);
 			};
 		},
 		mark: true,
@@ -1320,15 +1320,21 @@ const skills = {
 		//初始化单张扑克
 		initPoker(suit = "none", number = "none") {
 			const card = game.createCard2("hschenzhi_poker", suit, number);
-			card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
-			//处理移出游戏的部分
-			card.destroyed = (card, position, player, event) => {
-				//如果要移入的位置是弃牌堆，直接转移到special
-				if (position == "discardPile") {
-					lib.skill.hschenzhi.discard(card, true);
-				}
-				return false;
-			};
+			game.broadcastAll(
+				(card, suit) => {
+					card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
+					//处理移出游戏的部分
+					card.destroyed = (card, position, player, event) => {
+						//如果要移入的位置是弃牌堆，直接转移到special
+						if (position == "discardPile") {
+							lib.skill.hschenzhi.discard(card, true);
+						}
+						return false;
+					};
+				},
+				card,
+				suit
+			);
 			return card;
 		},
 		//初始化牌堆
@@ -1487,7 +1493,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			//把key包和怀旧包的去了，太多没维护的了
 			const characters = _status.characterlist.slice(),
@@ -19504,7 +19510,7 @@ const skills = {
 	zyshilu: {
 		init() {
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 		},
 		audio: 2,

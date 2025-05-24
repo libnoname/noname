@@ -875,29 +875,27 @@ const skills = {
 		},
 		intro: {
 			content(storage) {
-				return "转换技，出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，" + (storage ? "然后其使用此牌，若此牌造成伤害" : "你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害") + "则此技能视为未发动过。";
+				return "转换技，出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，" + (storage ? "然后其使用此牌，若此牌造成伤害" : "你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害") + "则此技能视为未发动过。";
 			},
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.changeZhuanhuanji(event.name);
-			const cards = await player
-				.choosePlayerCard(target, true, `请选择${get.translation(target)}一张手牌展示`, "visible", "h")
-				.set("ai", button => {
-					const { player, target } = get.event(),
-						{ link } = button;
-					const att = get.attitude(player, target),
-						storage = player.storage.dcpingzhi,
-						huogong = get.autoViewAs({ name: "huogong", isCard: true });
-					if (att > 0) {
-						return storage ? 6 - get.value(link) : player.getUseValue(link);
-					}
-					return storage ? (get.value(link) + get.effect(player, huogong, target, player) < 0 && !player.hasCard(card => get.suit(card) == get.suit(link)) ? 2 : 0) : -target.getUseValue(link);
-				})
-				.forResultLinks();
-			if (!cards?.length) {
+			const { result } = await player.choosePlayerCard(target, true, `请选择${get.translation(target)}一张手牌展示`, "visible", "h").set("ai", button => {
+				const { player, target } = get.event(),
+					{ link } = button;
+				const att = get.attitude(player, target),
+					storage = player.storage.dcpingzhi,
+					huogong = get.autoViewAs({ name: "huogong", isCard: true });
+				if (att > 0) {
+					return storage ? 6 - get.value(link) : player.getUseValue(link);
+				}
+				return storage ? (get.value(link) + get.effect(player, huogong, target, player) < 0 && !player.hasCard(card => get.suit(card) == get.suit(link)) ? 2 : 0) : -target.getUseValue(link);
+			});
+			if (!result?.cards?.length) {
 				return;
 			}
+			const { cards } = result;
 			player.addTempSkill(event.name + "_check", "phaseUseAfter");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【评骘】`);
 			if (player.storage[event.name]) {
@@ -905,6 +903,9 @@ const skills = {
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
 				if (target.canUse(huogong, player, false)) {
 					await target.useCard(huogong, player, false);
+				} else if (player.getStat("skill")[event.name]) {
+					delete player.getStat("skill")[event.name];
+					game.log(player, "重置了", "#g【评骘】");
 				}
 			} else if (target.hasUseTarget(cards[0])) {
 				await target.chooseUseTarget(cards[0], true, false);
@@ -6518,15 +6519,12 @@ const skills = {
 			"step 2";
 			if (trigger.source && trigger.source.isIn() && player.hasHistory("gain", evt => evt.getParent(2) == event.recast && evt.cards.some(value => get.name(value) == "sha"))) {
 				player
-					.chooseToUse(
-						function (card) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"击逆：是否对" + get.translation(trigger.source) + "使用一张不可被响应的杀？"
-					)
+					.chooseToUse(function (card) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "击逆：是否对" + get.translation(trigger.source) + "使用一张不可被响应的杀？")
 					.set("complexSelect", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -6912,15 +6910,12 @@ const skills = {
 			player.removeSkill("dcmoyu_add");
 			const num = player.getStorage("dcmoyu_clear").length;
 			const result = await target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"是否对" + get.translation(player) + "使用一张无距离限制的【杀】？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -7069,15 +7064,12 @@ const skills = {
 			"step 1";
 			var num = player.getStorage("oldmoyu_clear").length;
 			target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"是否对" + get.translation(player) + "使用一张无距离限制的【杀】（伤害基数为" + num + "）？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】（伤害基数为" + num + "）？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -7953,19 +7945,16 @@ const skills = {
 							}
 						}
 					}
-					game.broadcastAll(
-						function (ind) {
-							var bgColor = lib.skill.dchuiling_hint.markColor[ind][0],
-								text = '<span style="color: ' + lib.skill.dchuiling_hint.markColor[ind][1] + '">灵</span>';
-							for (var player of game.players) {
-								if (player.marks.dchuiling) {
-									player.marks.dchuiling.firstChild.style.backgroundColor = bgColor;
-									player.marks.dchuiling.firstChild.innerHTML = text;
-								}
+					game.broadcastAll(function (ind) {
+						var bgColor = lib.skill.dchuiling_hint.markColor[ind][0],
+							text = '<span style="color: ' + lib.skill.dchuiling_hint.markColor[ind][1] + '">灵</span>';
+						for (var player of game.players) {
+							if (player.marks.dchuiling) {
+								player.marks.dchuiling.firstChild.style.backgroundColor = bgColor;
+								player.marks.dchuiling.firstChild.innerHTML = text;
 							}
-						},
-						Math.sign(black - red) + 1
-					);
+						}
+					}, Math.sign(black - red) + 1);
 				},
 			},
 		},
@@ -17441,7 +17430,7 @@ const skills = {
 		group: "dcmiyun_lose",
 		async content(event, trigger, player) {
 			switch (event.triggername) {
-				case "roundStart":{
+				case "roundStart": {
 					const result = await player
 						.chooseTarget("密运：获得一名其他角色的一张牌，称为“安”", true, (card, player, target) => {
 							return target != player && target.countGainableCards(player, "he");

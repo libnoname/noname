@@ -2830,7 +2830,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			_status.characterlist.randomSort();
 			let characters = [];

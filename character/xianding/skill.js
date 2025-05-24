@@ -1080,9 +1080,11 @@ const skills = {
 			player.addTempSkill("dcsbyingjia_distance");
 			player.markAuto("dcsbyingjia_distance", targets);
 			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1)) {
-				if (!game.hasPlayer(target => {
-					return target != player && target.countCards("h") && !player.getStorage("dcsbyingjia_used").includes(target);
-				})) {
+				if (
+					!game.hasPlayer(target => {
+						return target != player && target.countCards("h") && !player.getStorage("dcsbyingjia_used").includes(target);
+					})
+				) {
 					return;
 				}
 				const result = await player
@@ -1975,15 +1977,12 @@ const skills = {
 			player.line2(event.targets);
 			await game.delayx();
 			const result = await source
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？")
 				.set("filterTarget", function (card, player, target) {
 					const source = get.event().sourcex;
 					if (target !== source && !ui.selected.targets.includes(source)) {
@@ -2146,15 +2145,12 @@ const skills = {
 				}
 			} else {
 				result = await player
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.type(card) !== "basic") {
-								return false;
-							}
-							return lib.filter.cardEnabled.apply(this, arguments);
-						},
-						get.translation(event.name) + "：是否使用一张基本牌？"
-					)
+					.chooseToUse(function (card, player, event) {
+						if (get.type(card) !== "basic") {
+							return false;
+						}
+						return lib.filter.cardEnabled.apply(this, arguments);
+					}, get.translation(event.name) + "：是否使用一张基本牌？")
 					.set("logSkill", event.name)
 					.set("addCount", false)
 					.forResult();
@@ -2820,7 +2816,7 @@ const skills = {
 					if (cards.includes(card)) {
 						return false;
 					}
-					return card.name == "sha" || lib.skill.shencai.getStr(card).includes("【杀】");
+					return card.name == "sha" || get.cardDescription(card).includes("【杀】");
 				});
 				if (card) {
 					cards.push(card);
@@ -5926,9 +5922,7 @@ const skills = {
 	//谋汉尼拔
 	dcshizha: {
 		audio: 2,
-		trigger: {
-			global: "useCard",
-		},
+		trigger: { global: "useCard" },
 		usable: 1,
 		filter(event, player) {
 			if (event.player == player) {
@@ -5943,7 +5937,7 @@ const skills = {
 				if (evt.name == "useCard") {
 					return false;
 				}
-				if (evt.name == "changeHp") {
+				if (evt.name == "changeHp" && evt.num != 0) {
 					return true;
 				}
 			}
@@ -5966,7 +5960,7 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.targets.length = 0;
 			trigger.all_excluded = true;
-			if (trigger.cards && trigger.cards.someInD()) {
+			if (trigger.cards?.someInD()) {
 				await player.gain(trigger.cards.filterInD(), "gain2");
 			}
 		},
@@ -13318,7 +13312,7 @@ const skills = {
 										},
 										target,
 										target
-									))
+								  ))
 						);
 					})
 					.set("card", card);
@@ -13696,7 +13690,7 @@ const skills = {
 			"step 1";
 			var character = result.control;
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			player.reinitCharacter(get.character(player.name2, 3).includes("dcxunbie") ? player.name2 : player.name1, character);
 			"step 2";
@@ -14270,7 +14264,7 @@ const skills = {
 					switch (name) {
 						case "phaseJieshu":
 							target = target.next;
-							// [falls through]
+						// [falls through]
 						case "phaseZhunbei": {
 							let att = get.sgn(get.attitude(player, target)),
 								judges = target.getCards("j"),
@@ -19062,7 +19056,7 @@ const skills = {
 			}
 			game.delayx();
 			event.goto(1);
-			("step 10");
+			"step 10";
 			if (!game.hasPlayer(current => current != player)) {
 				event._result = { bool: false };
 			} else {
@@ -19081,7 +19075,7 @@ const skills = {
 						return att / 3;
 					});
 			}
-			("step 11");
+			"step 11";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("dcmengjie", target);
@@ -22931,7 +22925,7 @@ const skills = {
 			"step 0";
 			player.awakenSkill(event.name);
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			if (_status.characterlist.includes("xushi")) {
 				if (player.name2 && get.character(player.name2)[3].includes("syxiongyi")) {
@@ -25387,16 +25381,13 @@ const skills = {
 				if (!trigger.getParent().lvli6) {
 					trigger.getParent().goto(0);
 				}
-				game.broadcastAll(
-					function (str) {
-						var dialog = ui.create.dialog(str);
-						dialog.classList.add("center");
-						setTimeout(function () {
-							dialog.close();
-						}, 1000);
-					},
-					get.translation(player) + "声明的" + get.translation(trigger.card.name) + "并没有生效"
-				);
+				game.broadcastAll(function (str) {
+					var dialog = ui.create.dialog(str);
+					dialog.classList.add("center");
+					setTimeout(function () {
+						dialog.close();
+					}, 1000);
+				}, get.translation(player) + "声明的" + get.translation(trigger.card.name) + "并没有生效");
 				game.log("然而什么都没有发生");
 				game.delay(2);
 			}
@@ -26068,10 +26059,10 @@ const skills = {
 							return false;
 						}
 						return true;
-					}
+				  }
 				: current => {
 						return current.isEnemyOf(player);
-					};
+				  };
 			const list = [];
 			if (
 				game.hasPlayer(function (current) {

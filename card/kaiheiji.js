@@ -93,9 +93,13 @@ game.import("card", function () {
 						.set("cards1", cards1)
 						.set("cards2", cards2)
 						.forResult();
-					if (result?.bool) {
-						await player.gain(result.moved[0], "draw");
-						await target.gain(result.moved[1], "draw");
+					if (result?.bool && result?.moved?.length) {
+						if (result.moved[0]?.length) {
+							await player.gain(result.moved[0], "draw");
+						}
+						if (result.moved[1]?.length) {
+							await target.gain(result.moved[1], "draw");
+						}
 						const num = player.countCards("h") - target.countCards("h");
 						if (num > 0) {
 							await target.draw();

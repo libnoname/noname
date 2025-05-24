@@ -1804,108 +1804,163 @@ export default () => {
 			phaseLoopThree: function (player) {
 				const next = game.createEvent("phaseLoop");
 				next.player = player;
-				(next.swap = function (player) {
+				next.swap = function (player) {
 					if (player.side == game.me.side) {
 						return game.enemyZhu;
 					} else {
 						return game.me;
 					}
-				}),
-					next.setContent([
-						async (event, trigger, player) => {
+				};
+				next.setContent([
+					async (event, trigger, player) => {
+						if (game.players.includes(event.player)) {
 							lib.onphase.forEach(i => i());
-							player.classList.add("acted");
-							await player.phase();
-							await event.trigger("phaseOver");
-						},
-						async (event, trigger, player) => {
-							if (player != game.friendZhu && player != game.enemyZhu) {
-								for (let i = 0; i < game.players.length; i++) {
-									if (game.players[i].side == player.side && game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != player && !game.players[i].classList.contains("acted")) {
-										lib.onphase.forEach(i => i());
-										game.players[i].classList.add("acted");
-										await game.players[i].phase();
-										break;
-									}
-								}
-								await event.trigger("phaseOver");
-							}
-						},
-						async (event, trigger, player) => {
-							let target = event.swap(player);
-							let swap = [],
-								swap2 = [];
-							for (let i = 0; i < game.players.length; i++) {
-								if (game.players[i].isOut()) {
-									continue;
-								}
-								if (!game.players[i].classList.contains("acted")) {
-									if (game.players[i].side == target.side) {
-										swap.push(game.players[i]);
-									} else {
-										swap2.push(game.players[i]);
-									}
-								}
-							}
-							if (swap.length == 0) {
-								if (swap2.length) {
-									target = event.swap(target);
-									swap = swap2;
-								} else {
-									for (let i = 0; i < game.players.length; i++) {
-										if (game.players[i].isOut()) {
-											continue;
+							const phase = event.player.phase();
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.player))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.player);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.player.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
 										}
+									}
+								} else if (event.player == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									for (let i = 0; i < game.players.length; i++) {
 										game.players[i].classList.remove("acted");
 									}
-									delete _status.roundStart;
-									event.redo();
-									await game.delay();
 									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
 									await event.trigger("roundEnd");
-									return;
 								}
 							}
-							if (swap.length == 1) {
-								event.directresult = swap[0];
-							} else {
-								let rand = Math.random();
-								const next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
-									return target2.side == target.side && !target2.classList.contains("acted");
-								});
-								next._triggered = null;
-								next.includeOut = true;
-								next.ai = function (target2) {
-									let num = 0;
-									if (target2.countCards("j")) {
-										num -= 5;
-									}
-									if (target2 != game.friendZhu && target2 != game.enemyZhu) {
-										for (let i = 0; i < game.players.length; i++) {
-											if (game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
-												num -= 2;
+							event.next.push(phase);
+							player.classList.add("acted");
+							await phase;
+						}
+						await event.trigger("phaseOver");
+					},
+					async (event, trigger, player) => {
+						if (player != game.friendZhu && player != game.enemyZhu) {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side == player.side && game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != player && !game.players[i].classList.contains("acted")) {
+									event.player = game.players[i];
+									lib.onphase.forEach(i => i());
+									const phase = event.player.phase();
+									event.next.remove(phase);
+									let isRoundEnd = false;
+									if (lib.onround.every(i => i(phase, event.player))) {
+										isRoundEnd = _status.roundSkipped;
+										if (_status.isRoundFilter) {
+											isRoundEnd = _status.isRoundFilter(phase, event.player);
+										} else if (_status.seatNumSettled) {
+											const seatNum = event.player.getSeatNum();
+											if (seatNum != 0) {
+												if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+													isRoundEnd = true;
+												}
 											}
+										} else if (event.player == _status.roundStart) {
+											isRoundEnd = true;
+										}
+										if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+											for (let i = 0; i < game.players.length; i++) {
+												game.players[i].classList.remove("acted");
+											}
+											game.log();
+											game.log("第" + game.roundNumber + "轮游戏结束了");
+											await event.trigger("roundEnd");
 										}
 									}
-									if (rand < 1 / 3) {
-										num += 1 / (target2.hp + 1);
-									} else if (rand < 2 / 3) {
-										num += target2.countCards("h") / 5;
+									event.next.push(phase);
+									event.player.classList.add("acted");
+									await phase;
+									break;
+								}
+							}
+							await event.trigger("phaseOver");
+						}
+					},
+					async (event, trigger, player) => {
+						let target = event.swap(player);
+						let swap = [],
+							swap2 = [];
+						for (let i = 0; i < game.players.length; i++) {
+							if (game.players[i].isOut()) {
+								continue;
+							}
+							if (!game.players[i].classList.contains("acted")) {
+								if (game.players[i].side == target.side) {
+									swap.push(game.players[i]);
+								} else {
+									swap2.push(game.players[i]);
+								}
+							}
+						}
+						if (swap.length == 0) {
+							if (swap2.length) {
+								target = event.swap(target);
+								swap = swap2;
+							} else {
+								for (let i = 0; i < game.players.length; i++) {
+									if (game.players[i].isOut()) {
+										continue;
 									}
-									return num;
-								};
+									game.players[i].classList.remove("acted");
+								}
+								delete _status.roundStart;
+								event.redo();
+								await game.delay();
+								return;
 							}
-						},
-						async (event, trigger, player, result) => {
-							if (event.directresult) {
-								event.player = event.directresult;
-								delete event.directresult;
-							} else if (result.bool) {
-								event.player = result.targets[0];
-							}
-							event.goto(0);
-						},
-					]);
+						}
+						if (swap.length == 1) {
+							event.directresult = swap[0];
+						} else {
+							let rand = Math.random();
+							const next = target.chooseTarget("选择行动的角色", true, function (card, player, target2) {
+								return target2.side == target.side && !target2.classList.contains("acted");
+							});
+							next._triggered = null;
+							next.includeOut = true;
+							next.ai = function (target2) {
+								let num = 0;
+								if (target2.countCards("j")) {
+									num -= 5;
+								}
+								if (target2 != game.friendZhu && target2 != game.enemyZhu) {
+									for (let i = 0; i < game.players.length; i++) {
+										if (game.players[i] != game.friendZhu && game.players[i] != game.enemyZhu && game.players[i] != target2 && game.players[i].side == target2.side && game.players[i].countCards("j")) {
+											num -= 2;
+										}
+									}
+								}
+								if (rand < 1 / 3) {
+									num += 1 / (target2.hp + 1);
+								} else if (rand < 2 / 3) {
+									num += target2.countCards("h") / 5;
+								}
+								return num;
+							};
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (event.directresult) {
+							event.player = event.directresult;
+							delete event.directresult;
+						} else if (result.bool) {
+							event.player = result.targets[0];
+						}
+						event.goto(0);
+					},
+				]);
 			},
 			phaseLoopOrdered: function (player) {
 				const next = game.createEvent("phaseLoop");
@@ -1913,7 +1968,7 @@ export default () => {
 				next.setContent([
 					async (event, trigger, player) => {
 						if (
-							!game.hasPlayer(function (current) {
+							!game.hasPlayer(current => {
 								return current.side == player.side && !current.classList.contains("acted");
 							})
 						) {
@@ -1929,8 +1984,6 @@ export default () => {
 							}
 							if (_status.roundStart && _status.roundStart.side == player.side) {
 								delete _status.roundStart;
-								game.log();
-								await event.trigger("roundEnd");
 							}
 							let num2 = game.players.length - num1;
 							if (num2 > num1) {
@@ -2002,27 +2055,51 @@ export default () => {
 						} else if (players.length) {
 							event.decided = players[0];
 						} else {
-							event.player = game.findPlayer(function (current) {
+							event.player = game.findPlayer(current => {
 								return current.side != player.side;
 							});
 							event.goto(0);
 						}
 					},
 					async (event, trigger, player, result) => {
-						lib.onphase.forEach(i => i());
 						if (event.decided) {
-							await event.decided.phase();
 							event.justacted = event.decided;
 							delete event.decided;
 						} else {
-							var current = result.targets[0];
-							await current.phase();
-							event.justacted = current;
+							event.justacted = result.targets[0];
+						}
+						if (game.players.includes(event.justacted)) {
+							lib.onphase.forEach(i => i());
+							const phase = event.justacted.phase();
+							event.next.remove(phase);
+							let isRoundEnd = false;
+							if (lib.onround.every(i => i(phase, event.justacted))) {
+								isRoundEnd = _status.roundSkipped;
+								if (_status.isRoundFilter) {
+									isRoundEnd = _status.isRoundFilter(phase, event.justacted);
+								} else if (_status.seatNumSettled) {
+									const seatNum = event.justacted.getSeatNum();
+									if (seatNum != 0) {
+										if (get.itemtype(_status.lastPhasedPlayer) != "player" || seatNum < _status.lastPhasedPlayer.getSeatNum()) {
+											isRoundEnd = true;
+										}
+									}
+								} else if (event.justacted == _status.roundStart) {
+									isRoundEnd = true;
+								}
+								if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
+									game.log();
+									game.log("第" + game.roundNumber + "轮游戏结束了");
+									await event.trigger("roundEnd");
+								}
+							}
+							event.next.push(phase);
+							event.justacted.classList.add("acted");
+							await phase;
 						}
 						await event.trigger("phaseOver");
 					},
 					async (event, trigger, player) => {
-						event.justacted.classList.add("acted");
 						event.goto(0);
 						for (let i = 0; i < game.players.length; i++) {
 							if (game.players[i].side != event.justacted.side) {
@@ -3562,60 +3639,33 @@ export default () => {
 							};
 							node.listenTransition(onEnd);
 						};
-						setTimeout(
-							function () {
-								nodes[0].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[1].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[2].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[3].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[4].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[5].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[6].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[7].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[8].delete();
-							},
-							400 + Math.random() * 300
-						);
+						setTimeout(function () {
+							nodes[0].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[1].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[2].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[3].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[4].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[5].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[6].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[7].delete();
+						}, 400 + Math.random() * 300);
+						setTimeout(function () {
+							nodes[8].delete();
+						}, 400 + Math.random() * 300);
 						setTimeout(function () {
 							var prize = new Array(6);
 							var map = [1, 2, 3, 4, 5];

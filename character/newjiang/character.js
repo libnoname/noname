@@ -1,13 +1,13 @@
 const characters = {
 	wufu: {
 		sex: "male",
-		group: "shu",
+		group: "qun",
 		hp: 3,
 		skills: ["dchuairen", "dcchizei"],
 	},
 	ze_wufu: {
 		sex: "male",
-		group: "shu",
+		group: "qun",
 		hp: 3,
 		skills: ["dczhonge", "dcjuekai"],
 		dieAudios: ["wufu"],

@@ -19,6 +19,60 @@ export class Get extends GetCompatible {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 获取牌的牌面信息
+	 * @param { Card | VCard | CardBaseUIData } node
+	 * @returns { string }
+	 */
+	cardDescription(node) {
+		let str = "",
+			name = node.name;
+		if (lib.translate[name + "_info"]) {
+			if (lib.card[name].type && lib.translate[lib.card[name].type]) {
+				str += "" + get.translation(lib.card[name].type) + "牌|";
+			}
+			if (get.subtype(name)) {
+				str += "" + get.translation(get.subtype(name)) + "|";
+			}
+			if (lib.card[name] && lib.card[name].addinfomenu) {
+				str += "" + lib.card[name].addinfomenu + "|";
+			}
+			if (get.subtype(name) == "equip1") {
+				let added = false;
+				if (lib.card[node.name] && lib.card[node.name].distance) {
+					const dist = lib.card[node.name].distance;
+					if (dist.attackFrom) {
+						added = true;
+						str += "攻击范围：" + (-dist.attackFrom + 1) + "|";
+					}
+				}
+				if (!added) {
+					str += "攻击范围：1|";
+				}
+			}
+		}
+		if (lib.card[name].cardPrompt) {
+			str += "" + lib.card[name].cardPrompt(node) + "|";
+		} else if (lib.translate[name + "_info"]) {
+			str += "" + lib.translate[name + "_info"] + "|";
+		}
+		if (lib.translate[name + "_append"]) {
+			str += "" + lib.translate[name + "_append"] + "|";
+		}
+		if (get.is.yingbianConditional(node)) {
+			const yingbianEffects = get.yingbianEffects(node);
+			if (!yingbianEffects.length) {
+				const defaultYingbianEffect = get.defaultYingbianEffect(node);
+				if (lib.yingbian.prompt.has(defaultYingbianEffect)) {
+					yingbianEffects.push(defaultYingbianEffect);
+				}
+			}
+			if (yingbianEffects.length) {
+				str += `应变：${yingbianEffects.map(value => lib.yingbian.prompt.get(value)).join("；")}|`;
+			}
+		}
+		return str;
+	}
+	/**
 	 * 获取当前事件是由何skill/card事件衍生并生成相应的卡牌信息提示
 	 * @param {Player} player
 	 * @param {GameEventPromise} sourceEvent
@@ -1354,11 +1408,11 @@ export class Get extends GetCompatible {
 		const target = constructor
 			? Array.isArray(obj) || obj instanceof Map || obj instanceof Set || constructor === Object
 				? // @ts-expect-error ignore
-					new constructor()
+				  new constructor()
 				: constructor.name in window && /\[native code\]/.test(constructor.toString())
-					? // @ts-expect-error ignore
-						new constructor(obj)
-					: obj
+				? // @ts-expect-error ignore
+				  new constructor(obj)
+				: obj
 			: Object.create(null);
 		if (target === obj) {
 			return target;
@@ -2404,7 +2458,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						return stringifying;
 					}, {})
-				)}`
+			  )}`
 			: "";
 	}
 	/**

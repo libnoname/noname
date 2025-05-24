@@ -2755,7 +2755,7 @@ const skills = {
 			}
 			names = names.map(name => get.rawName(name));
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			_status.characterlist.randomSort();
 			let ownedSkills = target.getSkills(null, false, false),
@@ -2874,7 +2874,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					if (!_status.characterlist) {
-						lib.skill.pingjian.initList();
+						game.initCharactertList();
 					}
 					if (game.roundNumber * game.countPlayer() <= (1.5 * game.countPlayer2()) / Math.sqrt(player.getDamagedHp() + 1)) {
 						return 0;
@@ -3022,7 +3022,7 @@ const skills = {
 						if (get.name(card, event.player) == "sha") {
 							return true;
 						}
-						const str = lib.skill.shencai.getStr(card);
+						const str = get.cardDescription(card);
 						return str.includes("【杀】");
 					})
 				);
@@ -3086,7 +3086,7 @@ const skills = {
 								if (
 									!player.isPhaseUsing() ||
 									!player.hasCard(card => {
-										if (!lib.skill.shencai.getStr(card).includes("【杀】")) {
+										if (!get.cardDescription(card).includes("【杀】")) {
 											return false;
 										}
 										return player.hasValueTarget(get.autoViewAs({ name: "juedou" }, [card]));
@@ -4176,7 +4176,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			_status.characterlist.randomSort();
 			var list = [];
@@ -5366,7 +5366,7 @@ const skills = {
 				player.gain(card, "gain2");
 			}
 			var list = [],
-				str = lib.skill.shencai.getStr(card);
+				str = get.cardDescription(card);
 			for (var i in lib.skill.shencai.filterx) {
 				if (str.indexOf(lib.skill.shencai.filterx[i]) != -1) {
 					list.push("shencai_" + i);
