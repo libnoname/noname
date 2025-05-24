@@ -1,4 +1,40 @@
 const characters = {
+	ca_fanchou: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["caxingwei", "caqianmu"],
+	},
+	ca_zhangji: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["casilve", "casuibian"],
+	},
+	ca_guosi: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["casixi", "calvedao"],
+	},
+	ca_lijue: {
+		sex: "male",
+		group: "qun",
+		hp: 6,
+		skills: ["cacuixi", "cajujun"],
+	},
+	ca_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["wushuang", "caliyu"],
+	},
+	ca_wangyun: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["calianji", "camoucheng"],
+	},
 	hs_caohuan: {
 		sex: "male",
 		group: "wei",

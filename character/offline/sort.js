@@ -1,6 +1,7 @@
 const characterSort = {
 	offline_guansuo: ["drag_huaci", "drag_guansuo", "drag_guanyinping", "drag_guanping", "drag_zhoucang", "drag_liaohua", "drag_shendan", "drag_shenyi", "drag_luxun", "drag_xusheng", "she_lvmeng"],
 	offline_hanmo: ["hm_bairao", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
+	offline_changan: ["ca_wangyun", "ca_lvbu", "ca_lijue", "ca_guosi", "ca_zhangji", "ca_fanchou"],
 	offline_scl: ["scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
@@ -43,6 +44,7 @@ const characterSortTranslate = {
 	offline_others: "线下其他系列",
 	offline_longyutao: "山河煮酒·龙起襄樊",
 	offline_jingxiang: "风云志·荆襄风云",
+	offline_changan: "风云志·长安风云",
 	offline_taoyuan: "山河煮酒·桃园挽歌",
 	offline_guansuo: "山河煮酒·关索传",
 	offline_jiudin: "九鼎系列",
