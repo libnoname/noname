@@ -6954,13 +6954,11 @@ const skills = {
 		trigger: {
 			player: "phaseEnd",
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var list = lib.group.slice();
+		async cost(event, trigger, player) {
+			let list = lib.group.slice();
 			list.remove(player.group);
-			var getV = function (group) {
-				var val = 1;
+			let getV = function (group) {
+				let val = 1;
 				if (group == "wei" || group == "qun") {
 					val++;
 				}
@@ -6968,7 +6966,7 @@ const skills = {
 					if (current.group != group) {
 						return false;
 					}
-					var att = get.attitude(player, current);
+					let att = get.attitude(player, current);
 					if (att > 0) {
 						val++;
 					} else if (att == 0) {
@@ -6979,36 +6977,34 @@ const skills = {
 				});
 				return val;
 			};
-			var maxGroup = list.slice().sort((a, b) => {
+			let maxGroup = list.slice().sort((a, b) => {
 				return getV(b) - getV(a);
 			})[0];
 			list.push("cancel2");
-			player
+			const { result } = await player
 				.chooseControl(list)
-				.set("prompt", get.prompt("jsrglipan"))
+				.set("prompt", get.prompt(event.skill))
 				.set("prompt2", "变更为另一个势力")
 				.set("ai", () => {
 					return _status.event.choice;
 				})
 				.set("choice", maxGroup);
-			"step 1";
-			var group = result.control;
-			if (group == "cancel2") {
-				return;
-			}
-			player.logSkill("jsrglipan");
+			event.result = {
+				bool: result.control != "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const group = event.cost_data;
 			player.popup(group + "2", get.groupnature(group, "raw"));
-			player.changeGroup(group);
-			var num = game.countPlayer(current => {
+			await player.changeGroup(group);
+			let num = game.countPlayer(current => {
 				return current.group == group && current != player;
 			});
 			if (num > 0) {
 				player.draw(num);
 			}
-			var next = player.phaseUse();
-			next.jsrglipan = true;
-			event.next.remove(next);
-			trigger.next.push(next);
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 			player.addTempSkill("jsrglipan_backfire");
 		},
 		subSkill: {
@@ -7020,7 +7016,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return event.jsrglipan;
+					return event._extraPhaseReason == "jsrglipan";
 				},
 				content() {
 					"step 0";

@@ -3114,7 +3114,7 @@ const skills = {
 						target = event.target;
 					player.logSkill("stdxiemu", target);
 					await player.showCards(card, get.translation(player) + "发动了【协穆】");
-					await player.give(card, target);
+					await player.give(card, target, true);
 					player.addTempSkill("stdxiemu_range");
 					player.addMark("stdxiemu_range", 1, false);
 				},

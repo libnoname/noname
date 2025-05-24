@@ -4129,7 +4129,20 @@ const skills = {
 							}
 						}
 						const result = await player
-							.chooseButton(dialog, true)
+							.chooseButton(dialog)
+							.set("filterButton", button => {
+								const card = button.link,
+									{ player, useCard, targets } = get.event();
+								if (!targets) {
+									return true;
+								}
+								ui.selected.cards.add(card);
+								const bool = targets.some(target => player.canUse(useCard, target));
+								ui.selected.cards.remove(card);
+								return bool;
+							})
+							.set("useCard", event.result.card)
+							.set("targets", event.result.targets)
 							.set("ai", button => {
 								const player = get.player(),
 									source = get.owner(button.link);

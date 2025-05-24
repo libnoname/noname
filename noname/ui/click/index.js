@@ -3979,6 +3979,9 @@ export class Click {
 			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
 				continue;
 			}
+			if (skill.indexOf("_faq") != -1) {
+				continue;
+			}
 			let tran = get.translation(skill);
 			if (tran.startsWith("&nbsp;")) {
 				tran = tran.slice(6);
