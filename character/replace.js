@@ -165,6 +165,7 @@ window.noname_character_replace = {
 	liyan: ["liyan", "old_liyan"],
 	liwan: ["ol_liwan", "liwan"],
 	liwei: ["liwei", "tw_liwei"],
+	luji: ["luji", "clan_luji"],
 	lukai: ["ol_lukai", "lukai"],
 	lukang: ["lukang", "wu_lukang", "jsrg_lukang", "diy_lukang"],
 	luotong: ["dc_luotong", "luotong", "std_dc_luotong", "scl_luotong"],

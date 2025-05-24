@@ -100,6 +100,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["lkbushi", "lkzhongzhuang"],
+		clans: ["吴郡陆氏"],
 	},
 	linghuyu: {
 		sex: "male",

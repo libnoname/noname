@@ -242,6 +242,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["olxuanzhu", "oljiane"],
+		clans: ["吴郡陆氏"],
 	},
 	liupan: {
 		sex: "male",

@@ -5,7 +5,7 @@ const characterSort = {
 	clan_wang: ["clan_wangshen", "clan_wangling", "clan_wangyun", "clan_wanghun", "clan_wanglun", "clan_wangguang", "clan_wangmingshan", "clan_wangchang"],
 	clan_zhong: ["clan_zhongyan", "clan_zhonghui", "clan_zhongyu", "clan_zhongyao"],
 	clan_yang: ["clan_yangci", "clan_yangxiu", "clan_yangzhong", "clan_yangbiao"],
-	clan_lu: [],
+	clan_lu: ["clan_luji", "clan_lujing"],
 };
 
 const characterSortTranslate = {

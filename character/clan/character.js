@@ -1,4 +1,18 @@
 const characters = {
+	clan_luji: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["clangailan", "clanfennu", "clanzelie"],
+		clans: ["吴郡陆氏"],
+	},
+	clan_lujing: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["clantanfeng", "clanjuewei", "clanzelie"],
+		clans: ["吴郡陆氏"],
+	},
 	clan_yangbiao: {
 		sex: "male",
 		group: "qun",

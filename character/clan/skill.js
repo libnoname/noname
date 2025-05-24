@@ -2,6 +2,475 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族陆绩
+	clangailan: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		forced: true,
+		filter(event, player) {
+			return (event.name != "phase" || game.phaseNumber == 0) && !lib.inpile.includes("huntianyi");
+		},
+		async content(event, trigger, player) {
+			const cards = [];
+			for (const i of [1, 3, 10, 12]) {
+				cards.push(game.createCard2("huntianyi", "diamond", i));
+			}
+			game.broadcastAll(function () {
+				lib.inpile.add("huntianyi");
+			});
+			await game.cardsGotoPile(cards, () => {
+				return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
+			});
+		},
+		group: "clangailan_equip",
+		subSkill: {
+			equip: {
+				audio: "clangailan",
+				trigger: {
+					player: "phaseBegin",
+				},
+				filter(event, player) {
+					return lib.inpile.includes("huntianyi");
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const card = get.cardPile(card => card.name == "huntianyi");
+					if (card && player.canEquip(card, true)) {
+						player.$gain2(card);
+						await game.delayx();
+						await player.equip(card);
+					}
+				},
+			},
+		},
+	},
+	huntianyi_skill: {
+		equipSkill: true,
+		trigger: { player: "damageBegin2" },
+		filter(event, player) {
+			if (player.hasSkillTag("unequip2")) {
+				return false;
+			}
+			if (
+				event.source?.hasSkillTag("unequip", false, {
+					name: event.card ? event.card.name : null,
+					target: player,
+					card: event.card,
+				})
+			) {
+				return false;
+			}
+			return player.getEquip("huntianyi");
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const card = player.getEquip("huntianyi");
+			await player.lose(card, "visible", ui.ordering);
+			trigger.cancel();
+		},
+		subSkill: {
+			lose: {
+				audio: "huntianyi_skill",
+				forced: true,
+				charlotte: true,
+				equipSkill: true,
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				filter: (event, player, name, card) => {
+					if (!card || card.name != "huntianyi") {
+						return false;
+					}
+					return !player.hasSkillTag("unequip2");
+				},
+				getIndex(event, player) {
+					const evt = event.getl(player);
+					const lostCards = [];
+					evt.es.forEach(card => {
+						const VEquip = evt.vcard_map.get(card);
+						if (VEquip?.name === "huntianyi") {
+							lostCards.add(VEquip);
+						}
+					});
+					return lostCards;
+				},
+				async content(event, trigger, player) {
+					const num = get.number(event.indexedData, false),
+						cards = [];
+					while (cards.length < 2) {
+						const cardx = get.cardPile2(card => get.number(card, false) == num);
+						if (cardx) {
+							cards.push(cardx);
+						}
+						else {
+							break;
+						}
+					}
+					if (cards.length) {
+						await player.gain(cards, "gain2");
+					}
+				},
+			},
+		},
+	},
+	clanfennu: {
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current.countCards("he"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), [1, player.hp])
+				.set("filterTarget", (card, player, target) => {
+					return target.countCards("he");
+				})
+				.set("ai", target => {
+					const player = get.player();
+					if (target.hasSkill("clanzelie") && target.countCards("e") == 1 && !target.countCards("j")) {
+						return get.attitude(player, target);
+					}
+					return get.effect(target, { name: "guohe_copy2" }, player, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.filter(target => target.countDiscardableCards(target, "he"));
+			if (!targets?.length) {
+				return;
+			}
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
+			}
+			const { result } = await player
+				.chooseCardOL(targets, "he", true, 1, "奋驽：弃置一张牌", (card, player, target) => {
+					return lib.filter.cardDiscardable(card, player, "clanfennu");
+				})
+				.set("ai", card => {
+					return 7 - get.value(card);
+				});
+			const lose_list = [],
+				cards = [];
+			for (let i = 0; i < result.length; i++) {
+				const current = targets[i],
+					cards2 = result[i].cards;
+				cards.addArray(cards2);
+				lose_list.push([current, cards2]);
+			}
+			await game.loseAsync({
+				lose_list: lose_list,
+				discard: player,
+			}).setContent("discardMultiple");
+			const next = player.addToExpansion(cards, "gain2");
+			next.gaintag.add("clanfennu");
+			await next;
+		},
+		marktext: "逸",
+		intro: {
+			name: "逸",
+			mark(dialog, storage, player) {
+				const list = player.getExpansions("clanfennu");
+				if (!list.length) {
+					return "没有记录";
+				}
+				const num1 = list.reduce((sum, card) => sum += get.number(card, false), 0);
+				dialog.addText(`“逸”牌总点数：${num1}`);
+				dialog.addSmall(list);
+				const num2 = player.countMark("clanfennu_record");
+				dialog.addText(`已记录点数：${num2}`);
+
+			},
+			markcount(storage, player) {
+				const num = player.countMark("clanfennu_record");
+				return num || null;
+			},
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+			player.clearMark(`${skill}_record`, false);
+		},
+		group: ["clanfennu_record", "clanfennu_gain"],
+		subSkill: {
+			record: {
+				trigger: {
+					player: "useCardToPlayer",
+				},
+				filter(event, player) {
+					if (!player.getExpansions("clanfennu").length || !event.isFirstTarget) {
+						return false;
+					}
+					const num = get.number(event.card, false);
+					return num && typeof num == "number";
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					player.addMark(event.name, get.number(trigger.card), false);
+					player.markSkill("clanfennu");
+				},
+			},
+			gain: {
+				audio: "clanfennu",
+				trigger: {
+					player: "phaseZhunbeiBegin",
+				},
+				filter(event, player) {
+					if (!player.getExpansions("clanfennu").length || !player.countMark("clanfennu_record")) {
+						return false;
+					}
+					const num1 = player.getExpansions("clanfennu").reduce((sum, card) => sum += get.number(card, false), 0),
+						num2 = player.countMark("clanfennu_record");
+					return num1 < num2;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					player.clearMark("clanfennu_record", false);
+					await player.gain(player.getExpansions("clanfennu"), "gain2");
+				},
+			},
+		},
+	},
+	clanzelie: {
+		audio: 2,
+		audioname: ["clan_lujing"],
+		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+		getIndex(event, player) {
+			return game
+				.filterPlayer(current => {
+					if (current.countCards("ej") || !current.hasClan("吴郡陆氏")) {
+						return false;
+					}
+					const evt = event.getl(current);
+					return evt?.es?.length || evt?.js?.length;
+				})
+				.sortBySeat(_status.currentPhase);
+		},
+		filter: (event, player, name, target) => target?.isIn(),
+		clanSkill: true,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const player = get.player(),
+						att = get.attitude(player, target);
+					return att;
+					//相信后人智慧
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addTempSkill("clanzelie_effect");
+			target.addMark("clanzelie_effect", 1, false);
+		},
+		ai: {
+			noe: true,
+			skillTagFilter(player, tag, arg) {
+				return player.countCards("ej") == 1;
+			},
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: ["gainAfter", "loseAfter"],
+					global: "loseAsyncAfter",
+				},
+				charlotte: true,
+				direct: true,
+				firstDo: true,
+				onremove: true,
+				getIndex(event, player) {
+					return player.countMark("clanzelie_effect");
+				},
+				filter(event, player) {
+					if (!player.hasMark("clanzelie_effect")) {
+						return false;
+					}
+					if (event.name == "gain") {
+						return event.getParent().name == "draw";
+					}
+					return event.type == "discard" && event.getl(player).cards2.length && player.countCards("he");
+				},
+				intro: {
+					content: "本回合下$次摸牌/弃置牌后，摸一张牌/弃置一张牌",
+				},
+				async content(event, trigger, player) {
+					player.removeMark("clanzelie_effect", 1, false);
+					if (trigger.name == "gain") {
+						await player.draw();
+					}
+					else {
+						await player.chooseToDiscard("he", true);
+					}
+				},
+			},
+		},
+	},
+	//族陆景
+	clantanfeng: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		viewAs: {
+			name: "sha",
+			isCard: true,
+			storage: {
+				tanfeng: true,
+			},
+		},
+		async precontent(event, trigger, player) {
+			if (event.getParent().addCount !== false) {
+				event.getParent().addCount = false;
+			}
+			const target = event.result.targets[0];
+			player
+				.when({ player: "useCardAfter" })
+				.filter(evt => evt.getParent() == event.getParent())
+				.step(async (event, trigger, player) => {
+					if (player.getHistory("sourceDamage", evt => evt.card == trigger.card).length) {
+						const num = Math.abs(player.countCards("e") - target.countCards("e"));
+						if (num > 0) {
+							await player.draw(num);
+						}
+					}
+					else {
+						const sha = get.autoViewAs({ name: "sha", isCard: true });
+						if (!target.canUse(sha, player, false)) {
+							return;
+						}
+						const bool = await target
+							.chooseBool("探锋", `是否视为对${get.translation(player)}使用一张【杀】？`)
+							.set("choice", get.effect(player, sha, target, target) > 0)
+							.forResultBool();
+						if (bool) {
+							await target.useCard(sha, player, false);
+						}
+					}
+				})
+				.vars({
+					target: target,
+				});
+		},
+		selectCard: -1,
+		filterCard: () => false,
+		selectTarget: 1,
+		ai: {
+			order() {
+				return get.order({ name: "sha" }) + 0.1;
+			},
+			unequip: true,
+			unequip_ai: true,
+			skillTagFilter(player, tag, arg) {
+				const card = (tag == "unequip_ai") ? arg : arg?.card;
+				if (!card?.storage?.tanfeng) {
+					return false;
+				}
+			},
+		},
+	},
+	clanjuewei: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		filter(event, player, name) {
+			if (!event.card || !get.tag(event.card, "damage")) {
+				return false;
+			}
+			if (name == "useCardToPlayered" && !event.isFirstTarget) {
+				return false;
+			}
+			return player.countCards("he", card => {
+				if (get.type(card, player) != "equip") {
+					return false;
+				}
+				return lib.filter.cardDiscardable(card, player, "clanjuewei") || lib.filter.cardRecastable(card, player, "clanjuewei");
+			});
+		},
+		usable: 1,
+		async cost(event, trigger, player) {
+			const prompt1 = `重铸一张装备牌，于${get.translation(trigger.card)}结算完成后视为对一名不为你的角色使用此牌`,
+				prompt2 = `弃置一张装备牌，令${get.translation(trigger.card)}无效`;
+			const result = await player
+				.chooseButton([
+					get.prompt(event.skill),
+					[
+						[
+							["Recast", prompt1],
+							["Discard", prompt2],
+						],
+						"textbutton",
+					]
+				])
+				.set("filterButton", button => {
+					const player = get.player();
+					return player.countCards("he", card => {
+						if (get.type(card, player) != "equip") {
+							return false;
+						}
+						return lib.filter[`card${button.link}able`](card, player, "clanjuewei");
+					});
+				})
+				.set("ai", button => {
+					const player = get.player(),
+						trigger = get.event().getTrigger();
+					if (button.link == "Recast") {
+						const target = trigger.targets.maxBy(target => {
+							return get.effect(target, trigger.card, player, player);
+						}, target => target != player);
+						return get.effect(target, trigger.card, player, player);
+					}
+					return trigger.targets.reduce((sum, target) => {
+						sum -= get.effect(target, trigger.card, trigger.player, player);
+					}, 0) - 2;
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const link = result.links[0],
+				type = `card${link}able`;
+			event.result = await player
+				.chooseCard("绝围", link == "Recast" ? prompt1 : prompt2, card => {
+					const { player, actType: type } = get.event();
+					return get.type(card, player) == "equip" && lib.filter[type](card, player, "clanjuewei");
+				}, "he")
+				.set("actType", type)
+				.set("ai", card => {
+					return 8 - get.value(card);
+				})
+				.forResult();
+			event.result.cost_data = link;
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data == "Recast") {
+				await player.recast(event.cards);
+				player
+					.when({ global: "useCardAfter" })
+					.filter(evt => evt == trigger.getParent())
+					.step(async (event, trigger, player) => {
+						const targets = trigger.targets.filter(target => target != player && target.isIn());
+						if (targets?.length) {
+							await player.chooseUseTarget(trigger.card, false, true, targets, 1);
+						}
+					});
+			}
+			else {
+				await player.discard(event.cards);
+				trigger.getParent().all_excluded = true;
+				trigger.getParent().targets.length = 0;
+			}
+		},
+	},
 	//族杨彪
 	clanjiannan: {
 		trigger: {
