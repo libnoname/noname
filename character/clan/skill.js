@@ -426,6 +426,9 @@ const skills = {
 					const player = get.player(),
 						trigger = get.event().getTrigger();
 					if (button.link == "Recast") {
+						if (!trigger.targets || trigger.targets.every(target => target == player)) {
+							return 0;
+						}
 						const target = trigger.targets.maxBy(target => {
 							return get.effect(target, trigger.card, player, player);
 						}, target => target != player);

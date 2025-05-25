@@ -5452,7 +5452,11 @@ const skills = {
 			player.storage["hm_jigan"] = obj;
 		},
 		filter(event, player) {
-			const storage = player.storage["hm_jigan"];
+			let storage = player.storage["hm_jigan"];
+			if (!storage) {
+				lib.skill["hm_jigan"].setDistanceObj(player);
+				storage = player.storage["hm_jigan"];
+			}
 			let bool = false;
 			if (
 				game.getGlobalHistory("everything", event => {
