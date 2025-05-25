@@ -34,6 +34,8 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["calianji", "camoucheng"],
+		clans: ["太原王氏"],
+		img: "image/character/wangyun.jpg",
 	},
 	hs_caohuan: {
 		sex: "male",
