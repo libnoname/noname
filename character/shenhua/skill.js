@@ -7047,8 +7047,78 @@ const skills = {
 	shuangxiong: {
 		audio: 2,
 		audioname: ["re_yanwen"],
-		group: "shuangxiong1",
+		group: "shuangxiong_judge",
 		subSkill: {
+			judge: {
+				audio: "shuangxiong",
+				logAudio: () => 1,
+				trigger: { player: "phaseDrawBegin1" },
+				check(event, player) {
+					if (player.countCards("h") > player.hp) {
+						return true;
+					}
+					if (player.countCards("h") > 3) {
+						return true;
+					}
+					return false;
+				},
+				filter(event, player) {
+					return !event.numFixed;
+				},
+				preHidden: true,
+				prompt2: () => "进行一次判定，本回合可以将一张与此牌颜色不同的手牌当作【决斗】使用",
+				async content(event, trigger, player) {
+					trigger.changeToZero();
+					await player.judge().set("callback", lib.skill.shuangxiong_judge.callback);
+				},
+				async callback(event, trigger, player) {
+					await player.gain(event.card, "gain2");
+					player.addTempSkill("shuangxiong_viewas");
+					player.markAuto("shuangxiong_viewas", [event.judgeResult.color]);
+				},
+			},
+			viewas: {
+				charlotte: true,
+				onremove: true,
+				audio: "shuangxiong",
+				logAudio: () => "shuangxiong2.mp3",
+				enable: "chooseToUse",
+				viewAs: { name: "juedou" },
+				position: "hs",
+				viewAsFilter(player) {
+					return player.hasCard(card => lib.skill.shuangxiong_viewas.filterCard(card, player), "hs");
+				},
+				filterCard(card, player) {
+					const color = get.color(card),
+						colors = player.getStorage("shuangxiong_viewas");
+					for (const i of colors) {
+						if (color != i) {
+							return true;
+						}
+					}
+					return false;
+				},
+				prompt() {
+					const colors = _status.event.player.getStorage("shuangxiong_viewas");
+					let str = "将一张颜色";
+					for (let i = 0; i < colors.length; i++) {
+						if (i > 0) {
+							str += "或";
+						}
+						str += "不为";
+						str += get.translation(colors[i]);
+					}
+					str += "的手牌当做【决斗】使用";
+					return str;
+				},
+				check(card) {
+					const player = _status.event.player;
+					const raw = player.getUseValue(card, null, true);
+					const eff = player.getUseValue(get.autoViewAs({ name: "juedou" }, [card]));
+					return eff - raw;
+				},
+				ai: { order: 7 },
+			},
 			re_yanwen1: { audio: true },
 			re_yanwen2: { audio: true },
 		},

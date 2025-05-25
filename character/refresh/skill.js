@@ -13763,7 +13763,151 @@ const skills = {
 	reshuangxiong: {
 		audio: "shuangxiong",
 		audioname: ["re_yanwen"],
-		group: ["reshuangxiong1", "reshuangxiong2"],
+		group: ["reshuangxiong_judge", "reshuangxiong_gain"],
+		subSkill: {
+			judge: {
+				audio: "reshuangxiong",
+				logAudio: () => 1,
+				trigger: { player: "phaseDrawBegin1" },
+				check(event, player) {
+					if (player.countCards("h") > player.hp) {
+						return true;
+					}
+					if (player.countCards("h") > 3) {
+						return true;
+					}
+					return false;
+				},
+				filter(event, player) {
+					return !event.numFixed;
+				},
+				prompt2() {
+					return "放弃摸牌，然后亮出牌堆顶的两张牌并选择获得其中的一张。本回合内可以将与此牌颜色不同的一张手牌当做【决斗】使用";
+				},
+				content() {
+					"step 0";
+					trigger.changeToZero();
+					event.cards = get.cards(2);
+					event.videoId = lib.status.videoId++;
+					game.broadcastAll(
+						function (player, id, cards) {
+							var str;
+							if (player == game.me && !_status.auto) {
+								str = "【双雄】选择获得其中一张牌";
+							} else {
+								str = "双雄";
+							}
+							var dialog = ui.create.dialog(str, cards);
+							dialog.videoId = id;
+						},
+						player,
+						event.videoId,
+						event.cards
+					);
+					event.time = get.utc();
+					game.addVideo("showCards", player, ["双雄", get.cardsInfo(event.cards)]);
+					game.addVideo("delay", null, 2);
+					"step 1";
+					var next = player.chooseButton([1, 1], true);
+					next.set("dialog", event.videoId);
+					next.set("ai", function (button) {
+						var player = _status.event.player;
+						var color = get.color(button.link);
+						var value = get.value(button.link, player);
+						if (player.countCards("h", { color: color }) > player.countCards("h", ["red", "black"].remove(color)[0])) {
+							value += 5;
+						}
+						return value;
+					});
+					"step 2";
+					if (result.bool && result.links) {
+						var cards2 = [];
+						for (var i = 0; i < result.links.length; i++) {
+							cards2.push(result.links[i]);
+							cards.remove(result.links[i]);
+						}
+						game.cardsDiscard(cards);
+						event.card2 = cards2[0];
+					}
+					var time = 1000 - (get.utc() - event.time);
+					if (time > 0) {
+						game.delay(0, time);
+					}
+					"step 3";
+					game.broadcastAll("closeDialog", event.videoId);
+					var card2 = event.card2;
+					player.gain(card2, "gain2");
+					player.addTempSkill("reshuangxiong_viewas");
+					player.markAuto("reshuangxiong_viewas", [get.color(card2, false)]);
+				},
+			},
+			gain: {
+				trigger: {
+					player: "damageEnd",
+				},
+				audio: "reshuangxiong",
+				filter(event, player) {
+					var evt = event.getParent();
+					return (evt && evt.name == "juedou" && evt[player == evt.player ? "targetCards" : "playerCards"].length) > 0;
+				},
+				async cost(event, trigger, player) {
+					let evt = trigger.getParent();
+					let cards = evt[player == evt.player ? "targetCards" : "playerCards"].slice(0).filterInD("od");
+					if (!cards.length) {
+						return;
+					}
+					event.result = await player
+						.chooseBool("是否发动【双雄】，获得" + get.translation(cards) + "?")
+						.forResult();
+					event.result.cards = cards;
+				},
+				async content(event, trigger, player) {
+					await player.gain(event.cards, "gain2");
+				},
+			},
+			viewas: {
+				charlotte: true,
+				onremove: true,
+				audio: "reshuangxiong",
+				logAudio: () => "shuangxiong_re_yanwen2.mp3",
+				enable: "chooseToUse",
+				viewAs: { name: "juedou" },
+				position: "hs",
+				viewAsFilter(player) {
+					return player.hasCard(card => lib.skill.reshuangxiong_viewas.filterCard(card, player), "hs");
+				},
+				filterCard(card, player) {
+					const color = get.color(card),
+						colors = player.getStorage("reshuangxiong_viewas");
+					for (const i of colors) {
+						if (color != i) {
+							return true;
+						}
+					}
+					return false;
+				},
+				prompt() {
+					const colors = _status.event.player.getStorage("reshuangxiong_viewas");
+					let str = "将一张颜色";
+					for (let i = 0; i < colors.length; i++) {
+						if (i > 0) {
+							str += "或";
+						}
+						str += "不为";
+						str += get.translation(colors[i]);
+					}
+					str += "的手牌当做【决斗】使用";
+					return str;
+				},
+				check(card) {
+					const player = _status.event.player;
+					const raw = player.getUseValue(card, null, true);
+					const eff = player.getUseValue(get.autoViewAs({ name: "juedou" }, [card]));
+					return eff - raw;
+				},
+				ai: { order: 7 },
+			},
+		},
 	},
 	reshuangxiong1: {
 		audio: "shuangxiong1",

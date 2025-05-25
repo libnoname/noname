@@ -2331,7 +2331,7 @@ const skills = {
 					continue;
 				}
 				const str = get.plainText(get.skillInfoTranslation(skill));
-				if (!["当做", "当作"].some(s => str.includes(s))) {
+				if (!["当", "当做", "当作"].some(s => str.includes(s))) {
 					console.log(skill);
 					continue;
 				}
