@@ -2277,7 +2277,24 @@ const skills = {
 			}*/
 
 			//展开技能
-			game.expandSkills(skills);
+			skills.addArray(skills.reduce((previousValue, currentValue) => {
+				const info = get.info(currentValue);
+				if (info) {
+					if (info.group) {
+						const adds = (Array.isArray(info.group) ? info.group : [info.group]).filter(i => lib.skill[i]);
+						previousValue.push(...adds);
+					}
+					if (info.subSkill) {
+						const adds = Object.keys(info.subSkill)?.filter(i => lib.skill[`${currentValue}_${i}`]);
+						if (adds?.length) {
+							previousValue.push(...adds.map(i => `${currentValue}_${i}`));
+						}
+					}
+				} else {
+					console.log(currentValue);
+				}
+				return previousValue;
+			}, []));
 			//筛选技能
 			for (let skill of skills) {
 				let info = get.info(skill);
@@ -2311,6 +2328,11 @@ const skills = {
 				}
 				//去除有联动的技能和负面技能
 				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
+					continue;
+				}
+				const str = get.plainText(get.skillInfoTranslation(skill));
+				if (!["当做", "当作"].some(s => str.includes(s))) {
+					console.log(skill);
 					continue;
 				}
 				list.add(skill);
@@ -21560,7 +21582,7 @@ const skills = {
 		selectTarget: () => [1, game.roundNumber],
 		contentBefore() {
 			"step 0";
-			player.awakenSkill(event.name);
+			player.awakenSkill("yjweiquan");
 			player.chooseTarget("威权：选择获得牌的角色", true).set("ai", target => {
 				var att = get.attitude(_status.event.player, target),
 					num = target.needsToDiscard(targets.filter(i => i != target && i.countCards("h")).length);
