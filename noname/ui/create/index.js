@@ -2418,32 +2418,26 @@ export class Create {
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
 		const oldZoomMap = {
-			esmall: 0.8,
-			vsmall: 0.9,
-			small: 0.93,
-			normal: 1,
-			big: 1.05,
-			vbig: 1.1,
-			ebig: 1.2,
-			eebig: 1.5,
-			eeebig: 1.8,
-			eeeebig: 2,
+			esmall: 80,
+			vsmall: 90,
+			small: 93,
+			normal: 100,
+			big: 105,
+			vbig: 110,
+			ebig: 120,
+			eebig: 150,
+			eeebig: 180,
+			eeeebig: 200,
 		};
 
-		let zoom;
-		let oldZoomVersion = false;
-		if (lib.config.ui_zoom in oldZoomMap) {
-			zoom = oldZoomMap[lib.config.ui_zoom];
-			oldZoomVersion = true;
-		} else {
-			zoom = Number.parseFloat(lib.config.ui_zoom);
-		}
-		if (oldZoomVersion) {
-			game.saveConfig("ui_zoom", zoom);
+		let zoom = parseInt(lib.config.ui_zoom);
+		if (isNaN(zoom)) {
+			zoom = oldZoomMap[lib.config.ui_zoom] || 100;
+			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
 
-		game.documentZoom = game.deviceZoom * zoom;
-		zoom !== 1 && ui.updatez();
+		game.documentZoom = game.deviceZoom * zoom / 100;
+		zoom !== 100 && ui.updatez();
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);

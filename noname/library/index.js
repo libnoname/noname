@@ -1760,23 +1760,29 @@ export class Library {
 				// },
 				ui_zoom: {
 					name: "界面缩放",
-					intro: "填入0.5-3以内的数值作为界面缩放比例（最终结果系统会保留两位小数）",
-					init: 1,
+					intro: "填入0.5~3或50~300以内的数值作为界面缩放比例（系统会转换为对应缩放百分比）",
+					init: "100%",
 					input: true,
 					restart: true,
 					onblur(e) {
 						const text = e.target;
-						let zoom = Number.parseFloat(text.innerText);
+						let zoom = parseFloat(text.innerText);
+						const originalValue = lib.config.ui_zoom;
 
-						const originalValue = lib.config.ui_zoom.toFixed(2);
-						if (isNaN(zoom) || zoom < 0.5 || zoom > 3) {
-							alert("填入数值不符合规范！");
+						if (isNaN(zoom)) {
+							alert("请填写数值！");
+						}
+						if (zoom < 0.5 || zoom > 300 || zoom > 3 && zoom < 50) {
+							alert("填入数值不合法！");
 							text.innerText = originalValue;
 							return;
 						}
 
-						const zoomText = zoom.toFixed(2);
-						zoom = Number.parseFloat(zoomText);
+						if (zoom <= 3) {
+							zoom *= 100;
+						}
+						zoom = Math.round(zoom);
+						const zoomText = `${zoom}%`;
 
 						const confirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
 						if (!confirmed) {
@@ -1785,8 +1791,8 @@ export class Library {
 						}
 
 						text.innerText = zoomText;
-						game.saveConfig("ui_zoom", zoom);
-						game.documentZoom = game.deviceZoom * zoom;
+						game.saveConfig("ui_zoom", zoomText);
+						game.documentZoom = game.deviceZoom * zoom / 100;
 
 						ui.updatez();
 						if (Array.isArray(lib.onresize)) {
@@ -3743,10 +3749,6 @@ export class Library {
 						map.autoborder_count.hide();
 						map.autoborder_start.hide();
 					}
-
-					// ui_zoom
-					const zoomValue = map.ui_zoom.childNodes[1];
-					zoomValue.innerText = Number.parseFloat(zoomValue.innerText).toFixed(2);
 				},
 			},
 		},
