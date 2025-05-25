@@ -272,7 +272,7 @@ const characters = {
 		group: "shu",
 		hp: 5,
 		skills: ["psxiaofan", "psjiaohu", "psquanpan", "pshuoluan"],
-		doubleGroup: ["qun", "shu", "wu"],
+		//doubleGroup: ["qun", "shu", "wu"],
 	},
 	hm_guigu: {
 		sex: "male",

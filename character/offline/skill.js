@@ -2277,24 +2277,7 @@ const skills = {
 			}*/
 
 			//展开技能
-			skills.addArray(skills.reduce((previousValue, currentValue) => {
-				const info = get.info(currentValue);
-				if (info) {
-					if (info.group) {
-						const adds = (Array.isArray(info.group) ? info.group : [info.group]).filter(i => lib.skill[i]);
-						previousValue.push(...adds);
-					}
-					if (info.subSkill) {
-						const adds = Object.keys(info.subSkill)?.filter(i => lib.skill[`${currentValue}_${i}`]);
-						if (adds?.length) {
-							previousValue.push(...adds.map(i => `${currentValue}_${i}`));
-						}
-					}
-				} else {
-					console.log(currentValue);
-				}
-				return previousValue;
-			}, []));
+			game.expandSkills(skills, true);
 			//筛选技能
 			for (let skill of skills) {
 				let info = get.info(skill);

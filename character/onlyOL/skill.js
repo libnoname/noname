@@ -248,7 +248,7 @@ const skills = {
 				.flat()
 				.unique();
 			//展开技能
-			game.expandSkills(skills);
+			game.expandSkills(skills, true);
 			const list = [];
 			//筛选技能
 			for (let skill of skills) {
