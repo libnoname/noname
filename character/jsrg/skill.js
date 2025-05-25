@@ -6317,7 +6317,6 @@ const skills = {
 							if (!get.tag(card, "damage") || !targets.includes(player)) {
 								continue;
 							}
-							game.log(evt.player);
 							player.addTip(skill, `互雠 ${get.translation(evt.player)}`);
 							break round;
 						}

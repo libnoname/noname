@@ -106,10 +106,14 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
+		viewAs: {
+			name: "tiesuo",
+		},
+		prepare: () => true,
 		async precontent(event, trigger, player) {
 			const result = event.result;
-			if (result.targets.length > 0) {
-				result.card = get.autoViewAs({ name: "tiesuo" }, result.cards);
+			if (!result?.targets?.length) {
+				delete result.card;
 			}
 		},
 		async content(event, trigger, player) {

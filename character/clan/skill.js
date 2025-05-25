@@ -102,7 +102,9 @@ const skills = {
 					const num = get.number(event.indexedData, false),
 						cards = [];
 					while (cards.length < 2) {
-						const cardx = get.cardPile2(card => get.number(card, false) == num);
+						const cardx = get.cardPile2(card => {
+							return get.number(card, false) == num && !cards.includes(card) && get.type2(card, false) == "trick";
+						});
 						if (cardx) {
 							cards.push(cardx);
 						}

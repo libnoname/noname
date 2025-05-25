@@ -5967,16 +5967,21 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			if (targets.length) {
-				player.addTempSkill("sblianhuan_blocker", "phaseUseAfter");
-				var card = get.autoViewAs({ name: "tiesuo" }, cards);
-				player.useCard(card, cards, targets);
-			} else {
-				player.loseToDiscardpile(cards);
-				player.draw(cards.length);
+		viewAs: {
+			name: "tiesuo",
+		},
+		prepare: () => true,
+		async precontent(event, trigger, player) {
+			const result = event.result;
+			if (!result?.targets?.length) {
+				delete result.card;
 			}
+			else {
+				player.addTempSkill("sblianhuan_blocker", "phaseUseAfter");
+			}
+		},
+		async content(event, trigger, player) {
+			await player.recast(event.cards);
 		},
 		ai: {
 			order: 7,
