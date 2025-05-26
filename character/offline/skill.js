@@ -5859,13 +5859,13 @@ const skills = {
 						return current.hasSkill("hm_xiongshi");
 					});
 					if (list.length == 1 && list[0] == player) {
-						return "将一张牌置于其";
+						return "将一张牌置于你的武将牌上";
 					}
-					var str = "将一张牌置于" + get.translation(list);
+					let str = "将一张牌置于" + get.translation(list);
 					if (list.length > 1) {
-						str += "中的一人的武将牌上";
+						return str += "其中一人的武将牌上";
 					}
-					return str;
+					return str += "的武将牌上";
 				},
 				filterTarget(card, player, target) {
 					return target.hasSkill("hm_xiongshi");
@@ -5929,11 +5929,12 @@ const skills = {
 					source: "damageBegin1",
 				},
 				filter(event, player) {
-					return event.source?.isIn() && player.getExpansions("hm_xiongshi").length > 0;
+					return event.source?.isIn() && player.countCards("xs") > 0;
 				},
 				async cost(event, trigger, player) {
 					const { source } = trigger;
-					const next = source.chooseCardButton("弃置一张牌令此伤害+1", player.getExpansions("hm_xiongshi"));
+					let cards = player.getCards("xs", card => !card._cardid);
+					const next = source.chooseCardButton("弃置一张牌令此伤害+1", cards);
 					const result = await next.forResult();
 					event.result = {
 						bool: result.bool,
@@ -5942,8 +5943,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { cost_data } = event;
-					const { source } = trigger;
-					await source.loseToDiscardpile(cost_data);
+					await player.loseToDiscardpile(cost_data);
 					trigger.num++;
 				},
 			},
