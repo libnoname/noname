@@ -10423,6 +10423,9 @@ const skills = {
 	mutao: {
 		audio: "twmutao",
 		inherit: "twmutao",
+		filterTarget(card, player, target) {
+			return target.countCards("h");
+		},
 		async content(event, trigger, player) {
 			const source = event.target;
 			const cards = source.getCards("h", { name: "sha" });
@@ -10451,6 +10454,9 @@ const skills = {
 	},
 	yimou: {
 		audio: ["twyimou1.mp3", "yimou.mp3"],
+		filter(event, player) {
+			return event.player.isIn() && get.distance(event.player, player) <= 1;
+		},
 		inherit: "twyimou",
 		content() {
 			"step 0";

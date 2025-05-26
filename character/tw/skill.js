@@ -10853,7 +10853,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			return target.countCards("h");
+			return target.countCards("h") && target !== player;
 		},
 		usable: 1,
 		async content(event, trigger, player) {
@@ -10909,7 +10909,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			return event.player.isIn() && get.distance(event.player, player) <= 1;
+			return event.player.isIn() && event.player !== player && get.distance(event.player, player) <= 1;
 		},
 		logTarget: "player",
 		check(event, player) {

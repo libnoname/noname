@@ -1,11 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
-    huntianyi: {
+	huntianyi: {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip5",
-        derivation: "clan_luji",
+		derivation: "clan_luji",
 		cardcolor: "diamond",
 		ai: {
 			order: 9.5,
@@ -19,8 +19,8 @@ const cards = {
 				equipValue: 2,
 			},
 		},
-        onLose() {
-            player.addTempSkill("huntianyi_skill_lose");
+		onLose() {
+			player.addTempSkill("huntianyi_skill_lose");
 			if (event.getParent(2)?.name == "huntianyi_skill") {
 				cards.forEach(card => {
 					card.fix();
