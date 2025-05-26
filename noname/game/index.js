@@ -9656,8 +9656,9 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * @param { string[] } skills
+	 * @param { boolean } [subSkill]
 	 */
-	expandSkills(skills) {
+	expandSkills(skills, subSkill = false) {
 		return skills.addArray(
 			skills.reduce((previousValue, currentValue) => {
 				const info = get.info(currentValue);
@@ -9665,6 +9666,12 @@ export class Game extends GameCompatible {
 					if (info.group) {
 						const adds = (Array.isArray(info.group) ? info.group : [info.group]).filter(i => lib.skill[i]);
 						previousValue.push(...adds);
+					}
+					if (subSkill && info.subSkill) {
+						const adds = Object.keys(info.subSkill)?.filter(i => lib.skill[`${currentValue}_${i}`]);
+						if (adds?.length) {
+							previousValue.push(...adds.map(i => `${currentValue}_${i}`));
+						}
 					}
 				} else {
 					console.log(currentValue);

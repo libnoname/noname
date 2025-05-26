@@ -6317,7 +6317,6 @@ const skills = {
 							if (!get.tag(card, "damage") || !targets.includes(player)) {
 								continue;
 							}
-							game.log(evt.player);
 							player.addTip(skill, `互雠 ${get.translation(evt.player)}`);
 							break round;
 						}
@@ -6430,9 +6429,7 @@ const skills = {
 					}
 					return player.countCards("hes", card => get.color(card) == "black" && get.type2(card) != "trick") > 0;
 				},
-				viewAs: { name: "bingliang" },
 				position: "hes",
-				discard: false,
 				prompt() {
 					var list = game.filterPlayer(target => {
 						return target.hasSkill("jsrghuozhong");
@@ -6442,38 +6439,27 @@ const skills = {
 				filterCard(card, player, event) {
 					return get.color(card) == "black" && get.type2(card) != "trick" && player.canAddJudge({ name: "bingliang", cards: [card] });
 				},
-				selectTarget: -1,
+				selectTarget() {
+					const targets = game.filterPlayer(target => {
+						return target.hasSkill("jsrghuozhong");
+					});
+					if (targets.length > 1) {
+						return 1;
+					}
+					return -1;
+				},
 				filterTarget(card, player, target) {
-					return player == target;
+					return target.hasSkill("jsrghuozhong");
 				},
 				check(card) {
 					return 6 - get.value(card);
 				},
-				*precontent(event, map) {
-					var player = map.player;
-					var targets = game.filterPlayer(current => current.hasSkill("jsrghuozhong"));
-					var result;
-					if (targets.length) {
-						result = { bool: true, targets: targets };
-					} else {
-						result = yield player
-							.chooseTarget("请选择一名传教士，发动其的【惑众】", true, (card, player, target) => {
-								return get.event("targets").includes(target);
-							})
-							.set("targets", targets);
-					}
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("jsrghuozhong", target);
-						var next = game.createEvent("jsrghuozhong_draw", false);
-						next.set("player", player);
-						next.set("target", target);
-						event.next.remove(next);
-						event.getParent().after.push(next);
-						next.setContent(function () {
-							target.draw(2);
-						});
-					}
+				discard: false,
+				lose: false,
+				prepare: "throw",
+				async content(event, trigger, player) {
+					await player.addJudge({ name: "bingliang" }, event.cards);
+					await event.target.draw(2);
 				},
 				ai: {
 					result: {

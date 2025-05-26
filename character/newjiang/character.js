@@ -8,7 +8,7 @@ const characters = {
 	ze_wufu: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["dczhonge", "dcjuekai"],
 		dieAudios: ["wufu"],
 		img: "image/character/wufu.jpg",

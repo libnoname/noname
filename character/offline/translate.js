@@ -1049,7 +1049,7 @@ const translates = {
 	ty_fanjiang: "桃范疆",
 	ty_fanjiang_prefix: "桃",
 	tybianta: "鞭挞",
-	tybianta_info: "每回合限一次，当你成为伤害类牌的目标后，你可以将此牌置于你的武将牌上，称为“怨”。结束阶段，你可以依次使用所有“怨”。",
+	tybianta_info: "每回合限一次，你成为伤害类牌的目标后，你可以将此牌置于你的武将牌上，称为“怨”。结束阶段，你可以依次使用所有“怨”。",
 	tybenxiang: "奔降",
 	tybenxiang_info: "锁定技，你杀死一名角色后，你令一名其他角色摸三张牌。",
 	tyxiezhan: "协战",
