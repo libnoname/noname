@@ -2430,13 +2430,17 @@ export class Create {
 			eeeebig: 200,
 		};
 
-		let zoom = parseInt(lib.config.ui_zoom);
-		if (isNaN(zoom)) {
-			zoom = oldZoomMap[lib.config.ui_zoom] || 100;
+		let zoom = Number.parseInt(lib.config.ui_zoom);
+		if (isNaN(zoom) || zoom < 50 || zoom > 300) {
+			if (zoom < 3 && zoom > 0.5) {
+				zoom = Math.round(100 * zoom);
+			} else {
+				zoom = oldZoomMap[lib.config.ui_zoom] || 100;
+			}
 			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
 
-		game.documentZoom = game.deviceZoom * zoom / 100;
+		game.documentZoom = (game.deviceZoom * zoom) / 100;
 		zoom !== 100 && ui.updatez();
 
 		ui.system1 = ui.create.div("#system1", ui.system);

@@ -1760,28 +1760,24 @@ export class Library {
 				// },
 				ui_zoom: {
 					name: "界面缩放",
-					intro: "填入0.5~3或50~300以内的数值作为界面缩放比例（系统会转换为对应缩放百分比）",
+					intro: "填入50~300以内的整数作为界面缩放比例（系统会转换为对应缩放百分比）",
 					init: "100%",
 					input: true,
 					restart: true,
 					onblur(e) {
 						const text = e.target;
-						let zoom = parseFloat(text.innerText);
+						let zoom = Number.parseInt(text.innerText);
 						const originalValue = lib.config.ui_zoom;
 
 						if (isNaN(zoom)) {
 							alert("请填写数值！");
 						}
-						if (zoom < 0.5 || zoom > 300 || zoom > 3 && zoom < 50) {
-							alert("填入数值不合法！");
+						if (zoom < 50 || zoom > 300) {
+							alert("请填入50~300以内的整数！");
 							text.innerText = originalValue;
 							return;
 						}
 
-						if (zoom <= 3) {
-							zoom *= 100;
-						}
-						zoom = Math.round(zoom);
 						const zoomText = `${zoom}%`;
 
 						const confirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
@@ -1792,7 +1788,7 @@ export class Library {
 
 						text.innerText = zoomText;
 						game.saveConfig("ui_zoom", zoomText);
-						game.documentZoom = game.deviceZoom * zoom / 100;
+						game.documentZoom = (game.deviceZoom * zoom) / 100;
 
 						ui.updatez();
 						if (Array.isArray(lib.onresize)) {
