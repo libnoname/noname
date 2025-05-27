@@ -6361,7 +6361,7 @@ player.removeVirtualEquip(card);
 			event.finish();
 			return;
 		}
-		game.log(player, "对", target, "发起拼点");
+		game.log(player, "对", target, "发起", (event.isDelay ? "延时" : ""), "拼点");
 		if (!event.filterCard) {
 			event.filterCard = lib.filter.all;
 		}
@@ -6418,7 +6418,40 @@ player.removeVirtualEquip(card);
 			}).setContent("chooseToCompareLose");
 		}
 		"step 5";
-		event.trigger("compareCardShowBefore");
+		if (event.isDelay) {
+			let cards = [];
+			for (let current of event.lose_list) {
+				current[0].$giveAuto(current[1], current[0], false);
+				cards.addArray(current[1]);
+			}
+			game.cardsGotoSpecial(cards);
+			player
+				.when({
+					global: ["dieAfter", "phaseEnd"],
+				})
+				.assign({
+					forceDie: true,
+				})
+				.filter((event, player) => {
+					return event.name == "phase" || [player, target].includes(event.player);
+				})
+				.vars({
+					cards,
+					target,
+					evt: event,
+				})
+				.then(() => {
+					if (cards.some(card => get.position(card) == "s")) {
+						game.cardsDiscard(cards);
+						evt.isDestoryed = true;
+					}
+				});
+			event.untrigger();
+			event.finish();
+		}
+		else {
+			event.trigger("compareCardShowBefore");
+		}
 		"step 6";
 		game.broadcast(function () {
 			ui.arena.classList.add("thrownhighlight");
@@ -6495,6 +6528,93 @@ player.removeVirtualEquip(card);
 		} else if (event.preserve == "lose") {
 			event.preserve = !event.result.bool;
 		}
+	},
+	async chooseToCompareEffect(event, trigger, player) {
+		const evt = event.parentEvent;
+		for (const key of ["target", "card1", "card2", "lose_list", "forceWinner", "clear", "preserve"]) {
+			event[key] = evt[key];
+		}
+		if (evt.isDestoryed) {
+			event.untrigger();
+			return;
+		}
+		await game.cardsGotoOrdering([event.card1, event.card2]);
+		const target = event.target;
+		await event.trigger("compareCardShowBefore");
+		game.broadcast(function () {
+			ui.arena.classList.add("thrownhighlight");
+		});
+		ui.arena.classList.add("thrownhighlight");
+		game.addVideo("thrownhighlight1");
+		player.$compare(event.card1, target, event.card2);
+		game.log(player, "的拼点牌为", event.card1);
+		game.log(target, "的拼点牌为", event.card2);
+		let getNum = function (card) {
+			for (var i of event.lose_list) {
+				if (i[1].includes(card)) {
+					return get.number(card, i[0]);
+				}
+			}
+			return get.number(card, false);
+		};
+		event.num1 = getNum(event.card1);
+		event.num2 = getNum(event.card2);
+		await event.trigger("compare");
+		await game.delay(0, 1500);
+		event.result = {
+			player: event.card1,
+			target: event.card2,
+			num1: event.num1,
+			num2: event.num2,
+		};
+		await event.trigger("compareFixing");
+		let str;
+		if (event.forceWinner === player || (event.forceWinner !== target && event.num1 > event.num2)) {
+			event.result.bool = true;
+			event.result.winner = player;
+			str = get.translation(player) + "拼点成功";
+			player.popup("胜");
+			target.popup("负");
+		} else {
+			event.result.bool = false;
+			str = get.translation(player) + "拼点失败";
+			if (event.forceWinner !== target && event.num1 == event.num2) {
+				event.result.tie = true;
+				player.popup("平");
+				target.popup("平");
+			} else {
+				event.result.winner = target;
+				player.popup("负");
+				target.popup("胜");
+			}
+		}
+		game.broadcastAll(function (str) {
+			var dialog = ui.create.dialog(str);
+			dialog.classList.add("center");
+			setTimeout(function () {
+				dialog.close();
+			}, 1000);
+		}, str);
+		await game.delay(2);
+		if (typeof target.ai.shown == "number" && target.ai.shown <= 0.85 && event.addToAI) {
+			target.ai.shown += 0.1;
+		}
+		game.broadcastAll(function () {
+			ui.arena.classList.remove("thrownhighlight");
+		});
+		game.addVideo("thrownhighlight2");
+		if (event.clear !== false) {
+			game.broadcastAll(ui.clear);
+		}
+		if (typeof event.preserve == "function") {
+			event.preserve = event.preserve(event.result);
+		} else if (event.preserve == "win") {
+			event.preserve = event.result.bool;
+		} else if (event.preserve == "lose") {
+			event.preserve = !event.result.bool;
+		}
+		await event.trigger("chooseToCompareAfter");
+		await event.trigger("chooseToCompareEnd");
 	},
 	chooseSkill: function () {
 		"step 0";
