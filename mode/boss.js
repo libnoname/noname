@@ -199,6 +199,7 @@ export default () => {
 						}
 						delete _status.createControl;
 					}
+					game.Check.button(_status.event);
 				});
 			}
 			if (lib.config.test_game) {
@@ -1908,7 +1909,7 @@ export default () => {
 									return false;
 								}
 							} else if (typeof banrule === "function") {
-								return banrule();
+								return banrule(button);
 							}
 						}
 						return true;
@@ -2017,11 +2018,33 @@ export default () => {
 							event.list.remove(ui.selected.buttons[i].link);
 						}
 						while (event.enemy.length < 3) {
-							var name = event.list.randomRemove();
+							var name = event.list.filter(name => {
+								let { current } = get.event().getParent("game");
+								if (!current) {
+									return true;
+								}
+								let banrule = _status.banlist[current?.name];
+								if (!banrule) {
+									return true;
+								}
+								if (Array.isArray(banrule)) {
+									if (banrule.includes(name)) {
+										return false;
+									}
+								} else if (typeof banrule === "function") {
+									return banrule({ link: name });
+								}
+								return true;
+							}).randomRemove();
 							if (lib.boss[lib.storage.current] && lib.boss[lib.storage.current].randchoice) {
 								name = lib.boss[lib.storage.current].randchoice(name, event.enemy);
 							}
-							event.enemy.push(name);
+							if (name) {
+								event.enemy.push(name);
+							}
+							else {
+								break;
+							}
 						}
 						game.uncheck();
 						if (ui.confirm) {
