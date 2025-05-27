@@ -148,10 +148,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") && game.hasPlayer(current => current.countCards("h") > 1 && current != player);
+			return player.countCards("h") && game.hasPlayer(current => current.countCards("h") && current != player);
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 1;
+			return target != player && target.countCards("h");
 		},
 		filterCard: true,
 		discard: false,
@@ -164,7 +164,11 @@ const skills = {
 			if (!target.countCards("h")) {
 				return;
 			}
-			const result = await target.chooseCard("劲镞：展示两张手牌", 2, "h", true).forResult();
+			const result = target.countCards("h") > 2 ? await target
+				.chooseCard("劲镞：展示两张手牌", 2, "h", true).forResult() : {
+					bool: true,
+					cards: target.getCards("h"),
+				};
 			if (!result.bool) {
 				return;
 			}
@@ -194,7 +198,8 @@ const skills = {
 						delete stat.mbjinzu;
 					}
 				}
-			} else {
+			}
+			if (result.cards.some(cardx => get.number(cardx) <= number) && result.cards.some(cardx => get.number(cardx) >= number)) {
 				player.addTempSkill("mbjinzu_effect");
 				player.markAuto("mbjinzu_effect", target);
 			}
