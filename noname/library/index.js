@@ -14841,6 +14841,13 @@ export class Library {
 			},
 		],
 		[
+			"疑",
+			{
+				color: "#5a6968",
+				nature: "gray",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",

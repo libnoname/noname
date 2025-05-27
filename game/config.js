@@ -16,7 +16,7 @@ window.config = {
 	zhinang_tricks: ["guohe", "wuxie", "wuzhong", "dongzhuxianji"],
 	connect_zhinang_tricks: ["guohe", "wuxie", "wuzhong", "dongzhuxianji"],
 	all: {
-		sgscharacters: ["standard", "shenhua", "refresh", "yijiang", "newjiang", "sixiang", "sp", "sp2", "xianding", "huicui", "extra", "old", "mobile", "shiji", "tw", "yingbian", "offline", "jsrg", "sb", "clan", "collab", "onlyOL"],
+		sgscharacters: ["standard", "shenhua", "refresh", "yijiang", "newjiang", "sixiang", "sp", "sp2", "xianding", "huicui", "extra", "old", "mobile", "shiji", "tw", "yingbian", "offline", "jsrg", "sxrm", "sb", "clan", "collab", "onlyOL"],
 		sgscards: ["standard", "extra", "sp", "guozhan", "zhulu", "yingbian", "yongjian"],
 		sgsmodes: ["identity", "guozhan", "versus", "doudizhu", "single", "brawl", "connect"],
 		stockmode: ["identity", "guozhan", "versus", "boss", "doudizhu", "single", "chess", "stone", "connect", "brawl", "tafang"],
@@ -127,8 +127,8 @@ window.config = {
 	sort: "type_sort",
 
 	cards: ["standard", "extra"],
-	characters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "jsrg", "onlyOL"],
-	moderned_chracters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "onlyOL", "jsrg", "old", "diy", "ddd", "key"],
+	characters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "jsrg", "sxrm", "onlyOL"],
+	moderned_chracters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "onlyOL", "jsrg", "sxrm", "old", "diy", "ddd", "key"],
 	connect_characters: ["diy"],
 	connect_cards: ["huanlekapai", "guozhan", "sp", "zhulu", "yingbian", "yongjian", "xianxia"],
 	plays: [],
