@@ -74,7 +74,7 @@ const skills = {
 		},
 		popup: false,
 		async cost(event, trigger, player) {
-			event.result = await player.gainPlayerCard(get.prompt2("sbliyu"), trigger.player, "hej", [1, trigger.num]).set("chooseOnly", true).forResult();
+			event.result = await player.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num]).set("chooseOnly", true).forResult();
 		},
 		async content(event, trigger, player) {
 			const cards = event.cards;
@@ -148,7 +148,7 @@ const skills = {
 			const result = await player
 				.chooseButton(
 					[
-						get.prompt2("sbshensu"),
+						get.prompt2(event.skill),
 						[
 							list.map(item => {
 								return [
@@ -871,7 +871,7 @@ const skills = {
 			let {
 				result: { bool, cards },
 			} = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("sbhuanshi"), "hs", card => {
+				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hs", card => {
 					const player = _status.event.player;
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
@@ -1024,7 +1024,7 @@ const skills = {
 			const target = event.indexedData;
 			if (target == player) {
 				event.result = await player
-					.chooseTarget([1, 2], get.prompt("sbhongyuan"), "令至多两名角色各摸一张牌")
+					.chooseTarget([1, 2], get.prompt(event.skill), "令至多两名角色各摸一张牌")
 					.set("ai", target => {
 						const player = get.player();
 						return get.effect(target, { name: "draw" }, player, player);
@@ -1033,7 +1033,7 @@ const skills = {
 				event.result.cost_data = "gain";
 			} else {
 				event.result = await player
-					.chooseBool(get.prompt("sbhongyuan", target), "令其摸两张牌")
+					.chooseBool(get.prompt(event.skill, target), "令其摸两张牌")
 					.set("choice", get.effect(target, { name: "draw" }, player, player) > 0)
 					.forResult();
 				event.result.targets = [target];
@@ -1094,7 +1094,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("sbmingzhe"), true)
+				.chooseTarget(get.prompt2(event.skill), true)
 				.set("ai", target => {
 					const player = get.player();
 					let eff = get.effect(target, { name: "draw" }, player, player);
@@ -1451,12 +1451,10 @@ const skills = {
 	//韩当
 	sbgongqi: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseBegin",
-		},
+		trigger: { player: "phaseUseBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt("sbgongqi"), "你可以弃置一张牌，令你本阶段使用牌时，其他角色不能使用或打出与你弃置的牌颜色不同的手牌进行响应。", "he", "chooseonly")
+				.chooseToDiscard(get.prompt(event.skill), "你可以弃置一张牌，令你本阶段使用牌时，其他角色不能使用或打出与你弃置的牌颜色不同的手牌进行响应。", "he", "chooseonly")
 				.set("ai", card => {
 					const ind = get.event("colors").indexOf(get.color(card)) + 1;
 					if (ind <= 0) {
@@ -1733,7 +1731,7 @@ const skills = {
 			while (true) {
 				result = await player
 					.chooseControl(numbers, "cancel2")
-					.set("prompt", get.prompt("sbyicong"))
+					.set("prompt", get.prompt(event.skill))
 					.set("prompt2", "你可以消耗任意点蓄力值并选择一项：⒈你于本轮内至其他角色的距离-1，令系统选择牌堆中的X张【杀】；⒉其他角色于本轮内至你的距离+1，令系统选择牌堆中的X张【闪】（X为你消耗的蓄力值）。然后若你的“扈”数小于4，你将系统选择的牌置于武将牌上，称为“扈”。")
 					.set("ai", () => {
 						return get.event("choice");
@@ -1958,7 +1956,7 @@ const skills = {
 			}
 			const result = await player
 				.chooseControl(list)
-				.set("prompt", get.prompt("sbqiaomeng"))
+				.set("prompt", get.prompt(event.skill))
 				.set("choiceList", choiceList)
 				.set("ai", () => {
 					return get.event("choice");
@@ -2841,13 +2839,11 @@ const skills = {
 	},
 	sbjieming: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		async cost(event, trigger, player) {
 			const num = Math.max(1, player.getDamagedHp());
 			event.result = await player
-				.chooseTarget(get.prompt("sbjieming"), `令一名角色摸四张牌，然后其可以弃置任意张牌。若其弃置的牌数小于${get.cnNumber(num)}张，你失去1点体力。`)
+				.chooseTarget(get.prompt(event.skill), `令一名角色摸四张牌，然后其可以弃置任意张牌。若其弃置的牌数小于${get.cnNumber(num)}张，你失去1点体力。`)
 				.set("ai", target => {
 					if (get.event("nope")) {
 						return 0;
@@ -5975,8 +5971,7 @@ const skills = {
 			const result = event.result;
 			if (!result?.targets?.length) {
 				delete result.card;
-			}
-			else {
+			} else {
 				player.addTempSkill("sblianhuan_blocker", "phaseUseAfter");
 			}
 		},
@@ -6941,7 +6936,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("sbjijiang"), 2)
+				.chooseTarget(get.prompt2(event.skill), 2)
 				.set("filterTarget", (card, player, target) => {
 					if (!ui.selected.targets.length) {
 						return target.group == "shu" && target.hp >= player.hp && target != player;
@@ -7191,7 +7186,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(lib.filter.notMe, get.prompt("sbjizhu"), "和一名其他角色进行“协力”")
+				.chooseTarget(lib.filter.notMe, get.prompt(event.skill), "和一名其他角色进行“协力”")
 				.set("ai", function (target) {
 					return get.threaten(target) * Math.sqrt(1 + target.countCards("h")) * (target.isTurnedOver() || target.hasJudge("lebu") ? 0.1 : 1);
 				})
@@ -7327,7 +7322,7 @@ const skills = {
 		logAudio: () => 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(lib.filter.notMe, get.prompt("sbxieji"), "和一名其他角色进行“协力”")
+				.chooseTarget(lib.filter.notMe, get.prompt(event.skill), "和一名其他角色进行“协力”")
 				.set("ai", function (target) {
 					return get.threaten(target) * Math.sqrt(1 + target.countCards("h")) * (target.isTurnedOver() || target.hasJudge("lebu") ? 0.1 : 1);
 				})
@@ -10350,10 +10345,11 @@ const skills = {
 					});
 				},
 				async cost(event, trigger, player) {
-					const list = player.getStorage("sbqianxun").map(name => ["锦囊", "", name]);
+					const list = player.getStorage(event.skill).map(name => ["锦囊", "", name]);
 					const result = await player
-						.chooseButton([get.prompt("sbqianxun"), "移去一个记录的牌名，若为普通锦囊牌则可以视为使用之", [list, "vcard"]])
+						.chooseButton([get.prompt(event.skill), "移去一个记录的牌名，若为普通锦囊牌则可以视为使用之", [list, "vcard"]])
 						.set("ai", function (button) {
+							const player = get.player();
 							const card = { name: button.link[2], isCard: true };
 							return player.getUseValue(card);
 						})

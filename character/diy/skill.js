@@ -2171,7 +2171,7 @@ const skills = {
 				return get.value(card) <= 7;
 			}, "h");
 			event.result = await player
-				.chooseTarget([1, 3], get.prompt("nshanlang"), "和至多三名角色进行拼点", function (card, player, target) {
+				.chooseTarget([1, 3], get.prompt(event.skill), "和至多三名角色进行拼点", function (card, player, target) {
 					return target != player && player.canCompare(target);
 				})
 				.set("ai", function (target) {
@@ -2582,7 +2582,7 @@ const skills = {
 				str += "；若弃置♣牌则获得" + get.translation(cards);
 			}
 			str += "。";
-			var next = player.chooseToDiscard("he", get.prompt("nsshizui"), str, "chooseonly");
+			var next = player.chooseToDiscard("he", get.prompt(event.skill), str, "chooseonly");
 			next.set("val1", cards.length ? get.value(cards, player) : 0);
 			next.set("val2", -get.effect(player, trigger.card, trigger.player, player));
 			next.set("suit", suit);
@@ -2657,7 +2657,7 @@ const skills = {
 				}
 			}
 			const { result } = await player
-				.chooseButton([get.prompt("nsxiaoye"), [list, "vcard"]])
+				.chooseButton([get.prompt(event.skill), [list, "vcard"]])
 				.set("filterButton", function (button) {
 					return player.hasUseTarget({
 						name: button.link[2],
@@ -7937,7 +7937,7 @@ const skills = {
 			}
 			const result = await player
 				.chooseControlList(list, () => get.event().choice)
-				.set("prompt", get.prompt("nstaiping_nh"))
+				.set("prompt", get.prompt(event.skill))
 				.set("choice", choice)
 				.forResult();
 			event.result = {

@@ -302,7 +302,7 @@ const skills = {
 				trigger.set("twhuiyu_tyg", true);
 			}
 			event.result = await player
-				.chooseTarget(get.prompt2("twhuiyu"), 2)
+				.chooseTarget(get.prompt2(event.skill), 2)
 				.set("ai", target => {
 					const selected = ui.selected.targets;
 					if (!selected.length) {
@@ -1972,12 +1972,8 @@ const skills = {
 			return target.countCards("h") > 0;
 		},
 		async content({ target }, trigger, player) {
-			const {
-				result: result1,
-			} = await player.choosePlayerCard("h", target).set("forced", true).set("visible", true);
-			const {
-				result: result2,
-			} = await target.choosePlayerCard("h", player).set("forced", true).set("visible", true);
+			const { result: result1 } = await player.choosePlayerCard("h", target).set("forced", true).set("visible", true);
+			const { result: result2 } = await target.choosePlayerCard("h", player).set("forced", true).set("visible", true);
 			if (result1?.bool) {
 				await player.showCards(result1.links);
 			}
@@ -2091,7 +2087,7 @@ const skills = {
 							],
 						],
 						true
-					)
+				  )
 				: { result: { links: ["huogong"] } };
 			if (links[0] === "huogong") {
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
@@ -3433,7 +3429,7 @@ const skills = {
 							? choices[0]
 							: await player
 									.chooseControl(choices)
-									.set("prompt", get.prompt("twciyin"))
+									.set("prompt", get.prompt(event.skill))
 									.set("choiceList", choiceList)
 									.set("ai", () => {
 										const player = get.player(),
@@ -4131,7 +4127,7 @@ const skills = {
 			}
 			const control = await player
 				.chooseControl(choices, "cancel2")
-				.set("prompt", get.prompt("twzhihuan"))
+				.set("prompt", get.prompt(event.skill))
 				.set("choiceList", choiceList)
 				.set("ai", () => {
 					const choices = get.event("controls").slice();
@@ -4624,7 +4620,7 @@ const skills = {
 			const history = player.getAllHistory("useSkill", evt => evt.skill == "twzongquan"),
 				judgeEvent = game.getAllGlobalHistory("everything", evt => evt.name == "judge" && evt.player == player && evt.getParent().name == "twzongquan");
 			event.result = await player
-				.chooseTarget(get.prompt("twzongquan"), `选择一名角色，然后你进行判定，并令其执行相应效果` + (history.length > 0 ? `（上次选择的目标：${get.translation(history.at(-1).targets[0])}` : ``) + (judgeEvent.length > 0 ? `；上次判定的结果：${get.translation(judgeEvent.at(-1).result.color)}）` : ``))
+				.chooseTarget(get.prompt(event.skill), `选择一名角色，然后你进行判定，并令其执行相应效果` + (history.length > 0 ? `（上次选择的目标：${get.translation(history.at(-1).targets[0])}` : ``) + (judgeEvent.length > 0 ? `；上次判定的结果：${get.translation(judgeEvent.at(-1).result.color)}）` : ``))
 				.set("ai", target => {
 					const player = get.player(),
 						att = get.attitude(player, target);
@@ -4798,9 +4794,7 @@ const skills = {
 	//幻魏延
 	twqiji: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseBegin",
-		},
+		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return player.countCards("h") && game.hasPlayer(current => player.canUse({ name: "sha", isCard: true }, current, false));
 		},
@@ -4810,7 +4804,7 @@ const skills = {
 				.map(card => get.type2(card))
 				.toUniqued().length;
 			event.result = await player
-				.chooseTarget(get.prompt("twqiji"), `选择一名角色其他角色视为对其使用${get.cnNumber(num)}张无距离限制且不计入次数的【杀】`, (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), `选择一名角色其他角色视为对其使用${get.cnNumber(num)}张无距离限制且不计入次数的【杀】`, (card, player, target) => {
 					return player.canUse({ name: "sha", isCard: true }, target, false);
 				})
 				.set("ai", target => {
@@ -5101,7 +5095,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const maxLimit = player.countCards("h");
 			event.result = await player
-				.chooseTarget(get.prompt("twdaigui"), `选择至多${get.cnNumber(maxLimit)}名角色并亮出牌堆底等量的牌，令这些角色依次选择并获得其中一张。`, [1, maxLimit])
+				.chooseTarget(get.prompt(event.skill), `选择至多${get.cnNumber(maxLimit)}名角色并亮出牌堆底等量的牌，令这些角色依次选择并获得其中一张。`, [1, maxLimit])
 				.set("ai", target => {
 					const player = get.player();
 					return get.attitude(player, target) * (player === target && player.needsToDiscard(1) ? 0.4 : 1);
@@ -5334,7 +5328,7 @@ const skills = {
 			const {
 				result: { bool, cards },
 			} = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("chenjie"), "hes", function (card) {
+				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hes", function (card) {
 					if (get.suit(card) != _status.event.suit) {
 						return false;
 					}
@@ -5435,7 +5429,7 @@ const skills = {
 								}, "he")
 							);
 						})
-						.set("prompt", get.prompt("twduwang"))
+						.set("prompt", get.prompt(event.skill))
 						.set("ai", target => {
 							const player = get.event("player");
 							const num = game.countPlayer(current => {
@@ -7362,9 +7356,9 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { player: target } = trigger;
 			const list = get.inpileVCardList(info => {
-				return ["basic", "trick", "delay"].includes(info[0]) && !player.getStorage("twshenyi").includes(info[2]);
+				return ["basic", "trick", "delay"].includes(info[0]) && !player.getStorage(event.skill).includes(info[2]);
 			});
-			const dialog = [`###${get.prompt("twshenyi", target)}###<div class="text center">从牌堆中将一张牌作为“侠义”置于武将牌上${player != target && player.countCards("h") ? "，然后将任意张手牌交给其" : ""}</div>`, [list, "vcard"]];
+			const dialog = [`###${get.prompt(event.skill, target)}###<div class="text center">从牌堆中将一张牌作为“侠义”置于武将牌上${player != target && player.countCards("h") ? "，然后将任意张手牌交给其" : ""}</div>`, [list, "vcard"]];
 			const {
 				result: { bool, links },
 			} = await player.chooseButton(dialog).set("ai", button => {
@@ -10599,7 +10593,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("twxiongzheng"), "选择一名未选择过的角色，称为“雄争”角色", (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), "选择一名未选择过的角色，称为“雄争”角色", (card, player, target) => {
 					return !player.getStorage("twxiongzheng").includes(target);
 				})
 				.set("ai", target => {
@@ -15328,15 +15322,12 @@ const skills = {
 					var target2 = result.targets[0];
 					player.line(target2, "green");
 					target
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"对" + get.translation(target2) + "使用一张杀，否则本回合使用伤害牌指定" + get.translation(player) + "为目标时须交给" + get.translation(player) + "两张牌，否则此牌对" + get.translation(player) + "无效"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "对" + get.translation(target2) + "使用一张杀，否则本回合使用伤害牌指定" + get.translation(player) + "为目标时须交给" + get.translation(player) + "两张牌，否则此牌对" + get.translation(player) + "无效")
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
@@ -18143,7 +18134,7 @@ const skills = {
 		animationColor: "qun",
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("twchuanshu"))
+				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
 					if (!get.event("bool")) {
 						return 0;
@@ -18384,15 +18375,12 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"侠望：是否对" + get.translation(trigger.source) + "使用一张杀？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "侠望：是否对" + get.translation(trigger.source) + "使用一张杀？")
 				.set("logSkill", "twxiawang")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {

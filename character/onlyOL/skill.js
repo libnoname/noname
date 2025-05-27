@@ -1919,8 +1919,9 @@ const skills = {
 		trigger: { player: "phaseBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(lib.filter.notMe, get.prompt2("olsbchoulie"))
+				.chooseTarget(lib.filter.notMe, get.prompt2(event.skill))
 				.set("ai", target => {
+					const player = get.player();
 					return player.countDiscardableCards(player, "he") * get.effect(target, { name: "sha" }, player);
 				})
 				.forResult();
@@ -3917,7 +3918,7 @@ const skills = {
 				}
 			}
 			const result = (event.result = await player
-				.chooseButton([get.prompt2("olsbjinming"), [choiceList.slice(0, 2), "tdnodes"], [choiceList.slice(2, 4), "tdnodes"]])
+				.chooseButton([get.prompt2(event.skill), [choiceList.slice(0, 2), "tdnodes"], [choiceList.slice(2, 4), "tdnodes"]])
 				.set("filterButton", button => {
 					const player = get.player();
 					return player.getStorage("olsbjinming").includes(parseInt(button.link.slice(0, 1)));
@@ -4051,7 +4052,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const num = parseInt(player.storage.olsbjinming_used.slice(0, 1));
 			event.result = await player
-				.chooseTarget(get.prompt2("olsbxiaoshi"), function (card, player, target) {
+				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
 					const trigger = get.event().getTrigger();
 					if (trigger.targets.includes(target)) {
 						return false;
@@ -4845,7 +4846,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("oljuece"), function (card, player, target) {
+				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
 					return target !== player && player.countCards("h") >= target.countCards("h");
 				})
 				.set("ai", target => {
@@ -5240,7 +5241,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt("olsbqiwu"), `你可以弃置一张红色牌，防止${get.translation(trigger.source)}对你造成的${trigger.num}点伤害。`, "chooseonly", { color: "red" }, "he")
+				.chooseToDiscard(get.prompt(event.skill), `你可以弃置一张红色牌，防止${get.translation(trigger.source)}对你造成的${trigger.num}点伤害。`, "chooseonly", { color: "red" }, "he")
 				.set("ai", card => {
 					if (get.event("goon")) {
 						return 6 - get.value(card);
@@ -5283,7 +5284,7 @@ const skills = {
 			};
 			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt2("olxuanhuo"),
+					prompt: get.prompt2(event.skill),
 					filterCard: true,
 					selectCard: 2,
 					position: "he",
@@ -6302,11 +6303,11 @@ const skills = {
 					});
 					if (targets.length == 1) {
 						const target = targets[0];
-						const bool = await player.chooseBool(get.prompt("olxianzhen_effect", target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult("bool");
+						const bool = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult("bool");
 						event.result = { bool: bool, targets: targets };
 					} else {
 						event.result = await player
-							.chooseTarget(get.prompt("olxianzhen_effect"), "令任意名【陷阵】拼点成功的目标角色也成为" + get.translation(trigger.card) + "的目标", (card, player, target) => {
+							.chooseTarget(get.prompt(event.skill), "令任意名【陷阵】拼点成功的目标角色也成为" + get.translation(trigger.card) + "的目标", (card, player, target) => {
 								const trigger = get.event().getTrigger();
 								if (!player.getStorage("olxianzhen_effect").includes(target)) {
 									return false;
@@ -7205,7 +7206,7 @@ const skills = {
 		getIndex: () => 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("olxuanfeng"), "弃置一名其他角色的一张牌", (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), "弃置一名其他角色的一张牌", (card, player, target) => {
 					if (player == target) {
 						return false;
 					}

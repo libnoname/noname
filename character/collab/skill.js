@@ -199,13 +199,13 @@ const skills = {
 									return 2 * numx(player);
 								}
 								return numx(player);
-							}
+						  }
 						: function (player) {
 								if (player == me) {
 									return 2 * numx;
 								}
 								return numx;
-							};
+						  };
 				player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
 			}
 			if (!trigger.gaintag) {
@@ -749,7 +749,7 @@ const skills = {
 				result = player
 					.discardPlayerCard("he", trigger.player)
 					.set("chooseonly", true)
-					.set("prompt", get.prompt("olpimi"))
+					.set("prompt", get.prompt(event.skill))
 					.set("prompt2", "弃置" + get.translation(trigger.player) + str)
 					.set("ai", button => {
 						const player = get.player(),
@@ -1938,7 +1938,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard("h", 2, get.prompt2("xingzhou", trigger.source))
+				.chooseToDiscard("h", 2, get.prompt2(event.skill, trigger.source))
 				.set("chooseonly", true)
 				.set("ai", card => {
 					const player = get.player(),
@@ -2156,15 +2156,12 @@ const skills = {
 				target = event.targets[1];
 			await drawer.draw(2);
 			const result = await drawer
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -2347,7 +2344,7 @@ const skills = {
 			const target = player.getPrevious();
 			const cards = trigger.cards.filterInD("d").filter(card => get.tag(card, "damage"));
 			event.result = await player
-				.chooseButton([get.prompt2("oldingxi", target), cards])
+				.chooseButton([get.prompt2(event.skill, target), cards])
 				.set("filterButton", button => {
 					const player = get.player(),
 						target = get.event().target;
@@ -2677,7 +2674,7 @@ const skills = {
 				event.result = { bool: true };
 			} else {
 				const skills = get
-					.info("olhuyi")
+					.info(event.skill)
 					.getList()
 					.filter(skill => !player.hasSkill(skill, null, null, false))
 					.randomGets(3);
@@ -2939,7 +2936,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			let result = await player
-				.chooseButton([get.prompt2("dchuiwan"), [lib.skill.dchuiwan.gainCards(player), "vcard"]], [1, trigger.num])
+				.chooseButton([get.prompt2(event.skill), [lib.skill.dchuiwan.gainCards(player), "vcard"]], [1, trigger.num])
 				.set("ai", button => {
 					if (!get.cardPile2(button.link[2])) {
 						return 0;
@@ -5538,15 +5535,12 @@ const skills = {
 				return;
 			}
 			const result = await targets[0]
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {

@@ -2600,8 +2600,8 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseToDiscard("he", 2, get.prompt("feiyang"), "弃置两张牌，然后弃置判定区里的所有牌")
-						.set("logSkill", "feiyang")
+						.chooseToDiscard("he", 2, get.prompt(event.skill), "弃置两张牌，然后弃置判定区里的所有牌")
+						.set("logSkill", event.skill)
 						.set("ai", function (card) {
 							if (_status.event.goon) {
 								return 7 - get.value(card);

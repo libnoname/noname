@@ -1243,6 +1243,9 @@ window.noname_character_rank = {
 		"ol_maliang",
 	],
 	b: [
+		"ps_caocao",
+		"ps_liubei",
+		"ps_sunquan",
 		"hs_liuxuan",
 		"hs_caohuan",
 		"hs_liuxie",
@@ -3169,6 +3172,9 @@ window.noname_character_rank = {
 			"junk_liuyan",
 			"wufu",
 			"ze_wufu",
+			"ps_caocao",
+			"ps_liubei",
+			"ps_sunquan",
 		],
 		rare: [
 			"std_baoxin",

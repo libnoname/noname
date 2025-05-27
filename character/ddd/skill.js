@@ -2056,7 +2056,7 @@ const skills = {
 					result: { control },
 				} = await player
 					.chooseControl(list)
-					.set("prompt", get.prompt("dddzhengjun", trigger.player))
+					.set("prompt", get.prompt(event.skill, trigger.player))
 					.set("prompt2", "令" + get.translation(event.player) + "执行其中一项")
 					.set("ai", () => {
 						const player = get.event("player"),

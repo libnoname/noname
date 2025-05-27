@@ -22,6 +22,7 @@ const characterSort = {
 	offline_jingyang: ["jy_caocao", "jy_caoren", "jy_zhugeliang", "jy_pangtong", "jy_lusu", "jy_zhangzhao", "jy_zhouyu", "jy_huanggai"],
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
+	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	//offline_others: [],
 };
 
@@ -52,6 +53,7 @@ const characterSortTranslate = {
 	offline_jingyang: "荆扬对垒",
 	offline_qingshi: "特典·青史翰墨",
 	offline_shichangshi: "蛇年限定·十常侍",
+	offline_fengyun: "风云际会",
 };
 
 export { characterSort, characterSortTranslate };

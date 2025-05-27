@@ -357,7 +357,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const target = lib.skill.jsrgruzong.getTarget(player);
 			if (target !== player) {
-				const bool = await player.chooseBool(get.prompt("jsrgruzong", target), "将手牌数摸至与该角色相同").set("frequentSkill", "jsrgruzong");
+				const bool = await player.chooseBool(get.prompt(event.skill, target), "将手牌数摸至与该角色相同").set("frequentSkill", event.skill);
 				if (bool) {
 					event.result = {
 						bool,
@@ -368,7 +368,7 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseTarget(
-						get.prompt("jsrgruzong"),
+						get.prompt(event.skill),
 						"令任意名角色将手牌数摸至与你相同",
 						(card, player, target) => {
 							return target.countCards("h") < player.countCards("h");
@@ -454,7 +454,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("jsrgyansha"), "你可以选择任意名角色，视为对这些角色使用【五谷丰登】，然后未被选择的角色依次可以将一张装备牌当作【杀】对目标角色使用。", [1, Infinity], (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), "你可以选择任意名角色，视为对这些角色使用【五谷丰登】，然后未被选择的角色依次可以将一张装备牌当作【杀】对目标角色使用。", [1, Infinity], (card, player, target) => {
 					return player.canUse({ name: "wugu", isCard: true }, target);
 				})
 				.forResult();
@@ -547,7 +547,7 @@ const skills = {
 				});
 			});
 			const result = await player
-				.chooseTarget(get.prompt("jsrgzhushou"), `选择一名本回合内失去过${get.translation(card)}的角色，对其造成1点伤害。`, (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), `选择一名本回合内失去过${get.translation(card)}的角色，对其造成1点伤害。`, (card, player, target) => {
 					return get.event("targets").includes(target);
 				})
 				.set("targets", targets)
@@ -1367,7 +1367,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("jsrgjinglei"), "选择一名其他角色，令任意名手牌数之和小于其的角色各对其造成1点雷属性伤害", (card, player, target) => !target.isMinHandcard() && target != player)
+				.chooseTarget(get.prompt(event.skill), "选择一名其他角色，令任意名手牌数之和小于其的角色各对其造成1点雷属性伤害", (card, player, target) => !target.isMinHandcard() && target != player)
 				.set("ai", target => {
 					//AI写的比较简单：不打队友，根据手牌数平方根酌情打牌多的
 					const player = get.player();
@@ -3168,7 +3168,7 @@ const skills = {
 				event.result = { bool: true };
 			} else {
 				event.result = await player
-					.chooseBool(get.prompt("jsrgdaimou"), "你可以用牌堆顶的牌蓄谋")
+					.chooseBool(get.prompt(event.skill), "你可以用牌堆顶的牌蓄谋")
 					.set("ai", () => true)
 					.forResult();
 			}
@@ -8117,7 +8117,7 @@ const skills = {
 			} else {
 				event.asked = true;
 				result = await player
-					.chooseButton(["###" + get.prompt("jsrgjixiang", trigger.player) + '###<div class="text center">' + str + "</div>", [list, "vcard"]])
+					.chooseButton(["###" + get.prompt(event.skill, trigger.player) + '###<div class="text center">' + str + "</div>", [list, "vcard"]])
 					.set("ai", () => Math.random() + 1)
 					.forResult();
 			}
@@ -9435,7 +9435,7 @@ const skills = {
 		logAudio: () => ["jsrgjuelie3.mp3", "jsrgjuelie4.mp3"],
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt("jsrgjuelie", trigger.target), "当你使用【杀】指定一名角色为目标后，你可以弃置任意张牌，然后弃置其等量的牌", [1, Infinity], "he")
+				.chooseToDiscard(get.prompt(event.skill, trigger.target), "当你使用【杀】指定一名角色为目标后，你可以弃置任意张牌，然后弃置其等量的牌", [1, Infinity], "he")
 				.set("ai", card => {
 					if (ui.selected.cards.length >= _status.event.max) {
 						return 0;
@@ -11367,7 +11367,7 @@ const skills = {
 		logAudio: () => 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("jsrghuilie"), "移去一名角色的“猎”，然后你执行一个额外回合。若你在此额外回合内未造成伤害，则你失去1点体力。", (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), "移去一名角色的“猎”，然后你执行一个额外回合。若你在此额外回合内未造成伤害，则你失去1点体力。", (card, player, target) => {
 					return target.hasMark("jsrgzhenglve_mark");
 				})
 				.set("ai", target => {
@@ -11771,7 +11771,7 @@ const skills = {
 			return player.countCards("h") > 1;
 		},
 		async cost(event, trigger, player) {
-			event.result = await player.chooseCard(get.prompt("jsrgxiongbao"), 2, "本次议事你展示两张手牌").forResult();
+			event.result = await player.chooseCard(get.prompt(event.skill), 2, "本次议事你展示两张手牌").forResult();
 		},
 		async content(event, trigger, player) {
 			if (!trigger.fixedResult) {
@@ -11823,7 +11823,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseTarget(get.prompt("jsrgfuzhen"), "视为对至多三名其他角色使用一张雷【杀】（选择的第一名目标为秘密目标）")
+				.chooseTarget(get.prompt(event.skill), "视为对至多三名其他角色使用一张雷【杀】（选择的第一名目标为秘密目标）")
 				.set("filterTarget", function (card, player, target) {
 					return player.canUse({ name: "sha", nature: "thunder", isCard: true }, target, false);
 				})
@@ -12012,7 +12012,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("jsrgchengliu"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.countCards("e") < player.countCards("e");
 				})
 				.set("ai", target => {
@@ -12130,7 +12130,7 @@ const skills = {
 				});
 			});
 			const result = await player
-				.chooseButton([get.prompt2("jsrgjianlou"), cards])
+				.chooseButton([get.prompt2(event.skill), cards])
 				.set("ai", button => {
 					return get.equipValue(button.link, player);
 				})
@@ -12555,7 +12555,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("jsrgxiezheng"), [1, 3], function (card, player, target) {
+				.chooseTarget(get.prompt2(event.skill), [1, 3], function (card, player, target) {
 					return target.countCards("h");
 				})
 				.set(
@@ -12773,7 +12773,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseTarget([1, 2], lib.filter.notMe, get.prompt2("jsrgzuozhan"))
+				.chooseTarget([1, 2], lib.filter.notMe, get.prompt2(event.skill))
 				.set("ai", target => {
 					const player = get.player();
 					let val = target.hp;

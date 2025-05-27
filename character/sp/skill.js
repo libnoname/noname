@@ -29,7 +29,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("olkedi"), (card, player, target) => target.countCards("he"))
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => target.countCards("he"))
 				.set("ai", target => {
 					const player = get.player();
 					return get.attitude(player, target) * target.countCards("he");
@@ -574,9 +574,9 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseZhunbei") {
-				const max = Math.max(1, player.getExpansions("oljiyun").length);
+				const max = Math.max(1, player.getExpansions(event.skill).length);
 				event.result = await player
-					.chooseTarget(`###${get.prompt("oljiyun")}###令至多${get.cnNumber(max)}名角色各摸一张牌`, [1, max])
+					.chooseTarget(`###${get.prompt(event.skill)}###令至多${get.cnNumber(max)}名角色各摸一张牌`, [1, max])
 					.set("ai", target => {
 						const player = get.player();
 						return get.effect(target, { name: "draw" }, player, player);
@@ -590,8 +590,8 @@ const skills = {
 					}
 					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && !get.owner(card)));
 				});
-				if (cards.length > 3 - player.getExpansions("oljiyun").length) {
-					const num = 3 - player.getExpansions("oljiyun").length;
+				if (cards.length > 3 - player.getExpansions(event.skill).length) {
+					const num = 3 - player.getExpansions(event.skill).length;
 					const result = await player
 						.chooseCardButton(`集运：请将${num}张牌作为「粮」置于武将牌上`, cards, num, true)
 						.set("ai", button => {
@@ -1028,7 +1028,7 @@ const skills = {
 				["gain", "获得其一张牌"],
 			];
 			const result = await player
-				.chooseButton([get.prompt2("olfulve", target), [list, "textbutton"]], 1)
+				.chooseButton([get.prompt2(event.skill, target), [list, "textbutton"]], 1)
 				.set("filterButton", function (button) {
 					if (get.player().getStorage("olfulve_used").includes(button.link)) {
 						return false;
@@ -1087,15 +1087,12 @@ const skills = {
 						return;
 					}
 					player
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"复掠：是否对" + get.translation(sourcex) + "使用一张【杀】"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "复掠：是否对" + get.translation(sourcex) + "使用一张【杀】")
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
@@ -1340,15 +1337,12 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(3);
 			const bool = await player
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) !== "sha") {
-							return false;
-						}
-						return lib.filter.cardEnabled.apply(this, arguments);
-					},
-					get.translation(event.name) + "：是否使用一张【杀】？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) !== "sha") {
+						return false;
+					}
+					return lib.filter.cardEnabled.apply(this, arguments);
+				}, get.translation(event.name) + "：是否使用一张【杀】？")
 				.set("oncard", () => {
 					get.event().player?.chat("雪豹我们走");
 				})
@@ -4777,7 +4771,7 @@ const skills = {
 											return 1;
 										}
 										return player.getHp() + player.countCards("hs", { name: "tao" }) <= 2 ? 1 : 0;
-									})();
+								  })();
 						})
 						.set("prompt", "失去1点体力或将武将牌翻面")
 						.forResult();
@@ -5748,7 +5742,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("olyongzu"), lib.filter.notMe)
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
 				.set("ai", target => {
 					const player = get.event().player;
 					if (get.attitude(player, target) <= 0) {
@@ -6258,7 +6252,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget(
-							get.prompt("olhunjiang_addTarget"),
+							get.prompt(event.skill),
 							"令任意名【浑疆】选择成为额外目标的角色成为" + get.translation(trigger.card) + "的目标",
 							(card, player, target) => {
 								if (!player.getStorage("olhunjiang_addTarget").includes(target)) {
@@ -6727,7 +6721,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("oljingzhou"), [1, player.getHp()])
+				.chooseTarget(get.prompt2(event.skill), [1, player.getHp()])
 				.set("ai", target => {
 					const player = get.event("player"),
 						trigger = get.event().getTrigger();
@@ -7683,7 +7677,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const num = Math.max(1, player.getDamagedHp());
 			event.result = await player
-				.chooseTarget(get.prompt("olpijing"), [1, num], (card, player, target) => {
+				.chooseTarget(get.prompt(event.skill), [1, num], (card, player, target) => {
 					const trigger = get.event().getTrigger();
 					if (target == player) {
 						return false;
@@ -8973,7 +8967,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("relianju"), "令一名其他角色获得你本回合使用的且进入弃牌堆的至多两张颜色相同的牌", lib.filter.notMe)
+				.chooseTarget(get.prompt(event.skill), "令一名其他角色获得你本回合使用的且进入弃牌堆的至多两张颜色相同的牌", lib.filter.notMe)
 				.set("ai", target => {
 					const player = get.event("player");
 					let att = get.attitude(_status.event.player, target);
@@ -10642,7 +10636,7 @@ const skills = {
 						];
 					return res.indexOf(Math.max(...res));
 				})
-				.set("prompt", get.prompt("olrunwei", trigger.player))
+				.set("prompt", get.prompt(event.skill, trigger.player))
 				.forResult();
 			event.result = {
 				bool: result.control !== "cancel2",
@@ -18977,15 +18971,12 @@ const skills = {
 					var current = targets.shift();
 					if (current.isIn() && target.isIn() && current.canUse("sha", target, false) && (_status.connectMode || current.hasSha())) {
 						current
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
-										return false;
-									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"同协：是否对" + get.translation(target) + "使用一张杀？"
-							)
+							.chooseToUse(function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "同协：是否对" + get.translation(target) + "使用一张杀？")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
@@ -21292,7 +21283,7 @@ const skills = {
 				};
 			} else {
 				event.result = await player
-					.chooseTarget(get.prompt("zhuitao"), "令自己至一名其他角色的距离-1", (card, player, target) => {
+					.chooseTarget(get.prompt(event.skill), "令自己至一名其他角色的距离-1", (card, player, target) => {
 						return target != player && !player.getStorage("zhuitao").includes(target);
 					})
 					.set("ai", target => {
@@ -23489,15 +23480,12 @@ const skills = {
 			"step 0";
 			var target = trigger.targets[0];
 			target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"武娘：是否对" + get.translation(player) + "使用一张杀？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "武娘：是否对" + get.translation(player) + "使用一张杀？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -27705,7 +27693,7 @@ const skills = {
 					})(),
 					nh: nh,
 					cardname: trigger.card.name,
-					prompt: get.prompt2("qianya"),
+					prompt: get.prompt2(event.skill),
 				})
 				.forResult();
 		},
@@ -30926,7 +30914,7 @@ const skills = {
 		skillAnimation: "legend",
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("yongdi"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					if (player === target) {
 						return false;
 					}
@@ -35603,7 +35591,7 @@ const skills = {
 					}
 					return "cancel";
 				})
-				.set("prompt", get.prompt2("moukui", trigger.target))
+				.set("prompt", get.prompt2(event.skill, trigger.target))
 				.forResult();
 			event.result = {
 				bool: result.control != "cancel",
@@ -36446,7 +36434,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await trigger.player
-				.chooseBool(player == trigger.player ? get.prompt("rejunbing") : "是否响应" + get.translation(player) + "的【郡兵】？", "摸一张牌" + (player == trigger.player ? "" : "，将所有手牌交给" + get.translation(player) + "，然后其交给你等量张牌"))
+				.chooseBool(player == trigger.player ? get.prompt(event.skill) : "是否响应" + get.translation(player) + "的【郡兵】？", "摸一张牌" + (player == trigger.player ? "" : "，将所有手牌交给" + get.translation(player) + "，然后其交给你等量张牌"))
 				.set("ai", () => get.event("choice"))
 				.set(
 					"choice",
@@ -37751,7 +37739,7 @@ const skills = {
 					ai2(target) {
 						return get.attitude(_status.event.player, target) - 3;
 					},
-					prompt: get.prompt2("yuanhu"),
+					prompt: get.prompt2(event.skill),
 				})
 				.forResult();
 		},
@@ -39442,12 +39430,9 @@ const skills = {
 						}
 						player.$give(cards[0], target);
 						if (cards.length > 1) {
-							setTimeout(
-								function () {
-									target.$gain2(cards.slice(1));
-								},
-								get.delayx(200, 200)
-							);
+							setTimeout(function () {
+								target.$gain2(cards.slice(1));
+							}, get.delayx(200, 200));
 							game.log(target, "从牌堆获得了", cards.slice(1));
 						}
 						game.delay(0, get.delayx(500, 500));
@@ -40945,7 +40930,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("xinfu_xunxian"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					if (target === player) {
 						return false;
 					}

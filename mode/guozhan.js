@@ -1193,7 +1193,7 @@ export default () => {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseCard(
-							get.prompt("gzsidi"),
+							get.prompt(event.skill),
 							(card, player) => {
 								return !player.getExpansions("gzsidi").some(cardx => get.type2(cardx) === get.type2(card));
 							},
@@ -1232,7 +1232,7 @@ export default () => {
 						},
 						async cost(event, trigger, player) {
 							event.result = await player
-								.chooseButton(["###" + get.prompt("sidi", trigger.player) + '###<div class="text center">将至多三张“驭”置入弃牌堆，然后执行等量条效果</div>', player.getExpansions("gzsidi")], [1, 3])
+								.chooseButton(["###" + get.prompt(event.skill, trigger.player) + '###<div class="text center">将至多三张“驭”置入弃牌堆，然后执行等量条效果</div>', player.getExpansions("gzsidi")], [1, 3])
 								.set("ai", button => {
 									const player = get.player(),
 										target = get.event().getTrigger().player;
@@ -1365,12 +1365,12 @@ export default () => {
 				preHidden: true,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt2("gzshushen_new"), lib.filter.notMe)
+						.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
 						.set("ai", target => {
 							const player = get.player();
 							return get.effect(target, { name: "draw" }, player, player) * (1 + !target.countCards("h"));
 						})
-						.setHiddenSkill("gzshushen_new")
+						.setHiddenSkill(event.skill)
 						.forResult();
 				},
 				content() {
@@ -1490,7 +1490,7 @@ export default () => {
 				usable: 1,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt2("gzchengshang"), (card, player, target) => {
+						.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 							return get.event().getTrigger().targets.includes(target) && target.countCards("he");
 						})
 						.set("ai", target => {
@@ -1545,7 +1545,7 @@ export default () => {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseToDiscard(
-							get.prompt2("fakexiaoguo", trigger.player),
+							get.prompt2(event.skill, trigger.player),
 							(card, player) => {
 								return get.type(card) == "basic";
 							},
@@ -1565,8 +1565,8 @@ export default () => {
 							}
 							return 1 / (get.value(card) || 0.5);
 						})
-						.set("logSkill", ["fakexiaoguo", trigger.player])
-						.setHiddenSkill("fakexiaoguo")
+						.set("logSkill", [event.skill, trigger.player])
+						.setHiddenSkill(event.skill)
 						.forResult();
 				},
 				popup: false,
@@ -1752,7 +1752,7 @@ export default () => {
 						const aim = list[1 - list.indexOf(i)];
 						const {
 							result: { bool },
-						} = await i.chooseBool(get.prompt("fakehanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
+						} = await i.chooseBool(get.prompt(event.skill), "获得" + get.translation(aim) + "装备区的一张牌").set(
 							"choice",
 							aim.hasCard(card => {
 								return get.value(card, aim) * get.attitude(i, aim) < 0;
@@ -2304,7 +2304,7 @@ export default () => {
 						async cost(event, trigger, player) {
 							const {
 								result: { bool, links },
-							} = await player.chooseButton([get.prompt("fakejihun"), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fakeyigui"), "character"]], [1, 2]).set("ai", button => {
+							} = await player.chooseButton([get.prompt(event.skill), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fakeyigui"), "character"]], [1, 2]).set("ai", button => {
 								const getNum = character => {
 									return (
 										game.countPlayer(target => {
@@ -2347,7 +2347,7 @@ export default () => {
 						result: { control },
 					} = await player
 						.chooseControl("判定区", "装备区", "手牌区", "cancel2")
-						.set("prompt", "###" + get.prompt("fakejueyan") + '###<div class="text center">于本回合结束阶段弃置一个区域的所有牌，然后…</div>')
+						.set("prompt", "###" + get.prompt(event.skill) + '###<div class="text center">于本回合结束阶段弃置一个区域的所有牌，然后…</div>')
 						.set("choiceList", ["判定区：跳过判定阶段，获得〖集智〗直到回合结束", "装备区：摸三张牌，本回合手牌上限+3", "手牌区：本回合使用【杀】的额定次数+3"])
 						.set("ai", () => {
 							const player = get.event("player");
@@ -2983,23 +2983,25 @@ export default () => {
 					});
 				},
 				async cost(event, trigger, player) {
-					event.result = await player.chooseCardTarget({
-						prompt: get.prompt2("fakejujian"),
-						filterTarget(card, player, target) {
-							return target.isFriendOf(player);
-						},
-						filterCard(card, player) {
-							return get.type(card) != "basic" && lib.filter.cardDiscardable(card, player);
-						},
-						position: "he",
-						ai1(card) {
-							return 7.5 - get.value(card);
-						},
-						ai2(target) {
-							const player = get.event("player");
-							return Math.max(get.effect(target, { name: "wuzhong" }, player, player), get.recoverEffect(target, player, player));
-						},
-					});
+					event.result = await player
+						.chooseCardTarget({
+							prompt: get.prompt2(event.skill),
+							filterTarget(card, player, target) {
+								return target.isFriendOf(player);
+							},
+							filterCard(card, player) {
+								return get.type(card) != "basic" && lib.filter.cardDiscardable(card, player);
+							},
+							position: "he",
+							ai1(card) {
+								return 7.5 - get.value(card);
+							},
+							ai2(target) {
+								const player = get.event("player");
+								return Math.max(get.effect(target, { name: "wuzhong" }, player, player), get.recoverEffect(target, player, player));
+							},
+						})
+						.forResult();
 				},
 				async content(event, trigger, player) {
 					await player.discard(event.cards);
@@ -3436,14 +3438,14 @@ export default () => {
 					const {
 						result: { bool, links },
 					} = await player
-						.chooseButton([get.prompt2("fakeshuliang", trigger.player), player.getExpansions("faketunchu")])
+						.chooseButton([get.prompt2(event.skill, trigger.player), player.getExpansions("faketunchu")])
 						.set("ai", button => {
 							if (get.attitude(get.event("player"), get.event().getTrigger().player) <= 0) {
 								return 0;
 							}
 							return 1 + Math.random();
 						})
-						.setHiddenSkill("fakeshuliang");
+						.setHiddenSkill(event.skill);
 					event.result = { bool: bool, cost_data: links };
 				},
 				preHidden: true,
@@ -3998,7 +4000,7 @@ export default () => {
 				direct: false,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt2("fakeqizhi"), (card, player, target) => {
+						.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 							return !get.event().getTrigger().targets.includes(target) && target.countCards("he") > 0;
 						})
 						.set("ai", target => {
@@ -4169,7 +4171,7 @@ export default () => {
 						result: { control },
 					} = await player
 						.chooseControl(list)
-						.set("prompt", get.prompt2("fakedanshou", trigger.player))
+						.set("prompt", get.prompt2(event.skill, trigger.player))
 						.set("ai", () => {
 							const player = get.event().player,
 								controls = get.event().controls.slice();
@@ -4544,7 +4546,7 @@ export default () => {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget(
-							get.prompt2("fakejianhui"),
+							get.prompt2(event.skill),
 							(card, player, target) => {
 								const trigger = get.event().getTrigger();
 								if (!(trigger.source == target || trigger.player == target)) {
@@ -4783,7 +4785,7 @@ export default () => {
 					const {
 						result: { bool, moved },
 					} = await player
-						.chooseToMove(get.prompt2("fakequanbian"))
+						.chooseToMove(get.prompt2(event.skill))
 						.set("list", [
 							["牌堆顶", cards.slice(0, Math.min(player.maxHp, cards.length)), "fakequanbian_tag"],
 							["手牌", player.getCards("h")],
@@ -4901,7 +4903,7 @@ export default () => {
 							const cards = trigger.cards.filterInD();
 							const {
 								result: { bool, targets },
-							} = await player.chooseTarget(get.prompt("fakexuanbei"), "令一名其他角色获得" + get.translation(event.cards), lib.filter.notMe).set("ai", target => {
+							} = await player.chooseTarget(get.prompt(event.skill), "令一名其他角色获得" + get.translation(event.cards), lib.filter.notMe).set("ai", target => {
 								let att = get.attitude(get.event("player"), target);
 								if (att < 0) {
 									return 0;
@@ -4931,7 +4933,7 @@ export default () => {
 							const {
 								result: { bool, targets },
 							} = await player
-								.chooseTarget(get.prompt("fakexuanbei"), "令一名其他角色变更副将", lib.filter.notMe)
+								.chooseTarget(get.prompt(event.skill), "令一名其他角色变更副将", lib.filter.notMe)
 								.set("ai", target => {
 									const player = get.event("player");
 									const rank = get.guozhanRank(target.name2, target) <= 3;
@@ -5123,7 +5125,7 @@ export default () => {
 						async cost(event, trigger, player) {
 							event.result = await player
 								.chooseToDiscard(
-									get.prompt2("fakexijue_xiaoguo", trigger.player),
+									get.prompt2(event.skill, trigger.player),
 									(card, player) => {
 										return get.type(card) == "basic";
 									},
@@ -5143,8 +5145,8 @@ export default () => {
 									}
 									return 1 / (get.value(card) || 0.5);
 								})
-								.set("logSkill", ["fakexijue_xiaoguo", trigger.player])
-								.setHiddenSkill("fakexijue_xiaoguo")
+								.set("logSkill", [event.skill, trigger.player])
+								.setHiddenSkill(event.skill)
 								.forResult();
 						},
 						preHidden: true,
@@ -5302,7 +5304,7 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt("fakebaoqie"), "获得一名角色装备区里所有的宝物牌，然后你可以使用其中的一张牌", (card, player, target) => {
+						.chooseTarget(get.prompt(event.skill), "获得一名角色装备区里所有的宝物牌，然后你可以使用其中的一张牌", (card, player, target) => {
 							return target.getGainableCards(player, "e").some(card => get.subtype(card) == "equip5");
 						})
 						.set("ai", target => {
@@ -5374,7 +5376,7 @@ export default () => {
 						str += "，然后你获得此牌且你可以使用之";
 					}
 					event.result = await player
-						.chooseToDiscard(get.prompt("fakeciwei", trigger.player), str, "he")
+						.chooseToDiscard(get.prompt(event.skill, trigger.player), str, "he")
 						.set("ai", card => {
 							return _status.event.goon / 1.4 - get.value(card);
 						})
@@ -5391,8 +5393,8 @@ export default () => {
 								return num;
 							})()
 						)
-						.setHiddenSkill("fakeciwei")
-						.set("logSkill", ["fakeciwei", trigger.player])
+						.setHiddenSkill(event.skill)
+						.set("logSkill", [event.skill, trigger.player])
 						.forResult();
 				},
 				preHidden: true,
@@ -5460,7 +5462,7 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt("fakehuirong"), "令一名角色将手牌数摸至/弃置至与其体力值相同", (card, player, target) => {
+						.chooseTarget(get.prompt(event.skill), "令一名角色将手牌数摸至/弃置至与其体力值相同", (card, player, target) => {
 							return target.countCards("h") != target.getHp();
 						})
 						.set("ai", target => {
@@ -5623,7 +5625,7 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt("fakeshiren"), "发动一次【宴戏】", (card, player, target) => {
+						.chooseTarget(get.prompt(event.skill), "发动一次【宴戏】", (card, player, target) => {
 							return get.info("fakeyanxi").filterTarget(null, player, target);
 						})
 						.set("ai", target => {
@@ -5690,7 +5692,7 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					let str = "",
-						goon = get.info("fakecanmou").filter_add(trigger, player),
+						goon = get.info(event.skill).filter_add(trigger, player),
 						bool = trigger.targets.length > 1 && !player.getStorage("fakecanmou_used").includes("-");
 					if (goon) {
 						str += "增加";
@@ -5702,7 +5704,7 @@ export default () => {
 						str += "减少";
 					}
 					event.result = await player
-						.chooseTarget(get.prompt("fakecanmou"), (card, player, target) => {
+						.chooseTarget(get.prompt(event.skill), (card, player, target) => {
 							const trigger = get.event().getTrigger();
 							if (trigger.targets.length > 1 && !player.getStorage("fakecanmou_used").includes("-") && trigger.targets.includes(target)) {
 								return true;
@@ -5715,7 +5717,7 @@ export default () => {
 								trigger = get.event().getTrigger();
 							return get.effect(target, trigger.card, trigger.player, player) * (trigger.targets.includes(target) ? -1 : 1);
 						})
-						.setHiddenSkill("fakecanmou")
+						.setHiddenSkill(event.skill)
 						.forResult();
 				},
 				preHidden: true,
@@ -5980,7 +5982,7 @@ export default () => {
 						event.result = { bool: true };
 					} else {
 						event.result = await player
-							.chooseTarget(get.prompt("fakecaiwang"), "弃置一名其他角色的一张牌", (card, player, target) => {
+							.chooseTarget(get.prompt(event.skill), "弃置一名其他角色的一张牌", (card, player, target) => {
 								return target != player && target.countCards("he");
 							})
 							.set("ai", target => {
@@ -6310,7 +6312,7 @@ export default () => {
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseCardTarget({
-							prompt: get.prompt2("fakehuyuan"),
+							prompt: get.prompt2(event.skill),
 							filterCard(card) {
 								return get.type(card) == "equip";
 							},
@@ -6325,7 +6327,7 @@ export default () => {
 								return get.attitude(_status.event.player, target) - 3;
 							},
 						})
-						.setHiddenSkill("fakehuyuan")
+						.setHiddenSkill(event.skill)
 						.forResult();
 				},
 				preHidden: true,
@@ -6380,12 +6382,12 @@ export default () => {
 				preHidden: true,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseToDiscard(get.prompt("fakekeshou"), "弃置两张颜色相同的牌，令即将受到的伤害-1", "he", 2, card => {
+						.chooseToDiscard(get.prompt(event.skill), "弃置两张颜色相同的牌，令即将受到的伤害-1", "he", 2, card => {
 							return !ui.selected.cards.length || get.color(card) == get.color(ui.selected.cards[0]);
 						})
-						.set("logSkill", "fakekeshou")
+						.set("logSkill", event.skill)
 						.set("complexCard", true)
-						.setHiddenSkill("fakekeshou")
+						.setHiddenSkill(event.skill)
 						.set("ai", card => {
 							if (!_status.event.check) {
 								return 0;
@@ -6468,7 +6470,7 @@ export default () => {
 				frequent: true,
 				preHidden: true,
 				async cost(event, trigger, player) {
-					const next = player.chooseTarget(get.prompt2("gzdiaodu"), (_card, player, current) => current.isFriendOf(player) && current.countGainableCards(player, "e") > 0);
+					const next = player.chooseTarget(get.prompt2(event.skill), (_card, player, current) => current.isFriendOf(player) && current.countGainableCards(player, "e") > 0);
 
 					next.set("ai", target => {
 						let num = 0;
@@ -6486,7 +6488,7 @@ export default () => {
 						return num;
 					});
 
-					next.setHiddenSkill("gzdiaodu");
+					next.setHiddenSkill(event.skill);
 
 					event.result = await next.forResult();
 				},
@@ -6567,7 +6569,7 @@ export default () => {
 				frequent: true,
 				preHidden: true,
 				async cost(event, trigger, player) {
-					const next = player.chooseTarget(get.prompt2("gzdiaodu_backports"), (_card, player, current) => current.isFriendOf(player) && current.countGainableCards(player, "e") > 0);
+					const next = player.chooseTarget(get.prompt2(event.skill), (_card, player, current) => current.isFriendOf(player) && current.countGainableCards(player, "e") > 0);
 
 					next.set("ai", target => {
 						let num = 0;
@@ -6585,7 +6587,7 @@ export default () => {
 						return num;
 					});
 
-					next.setHiddenSkill("gzdiaodu_backports");
+					next.setHiddenSkill(event.skill);
 
 					event.result = await next.forResult();
 				},

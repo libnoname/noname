@@ -3219,9 +3219,9 @@ export default () => {
 						}
 						if (effect > 0) {
 							if (effect < 1) {
-								c = 0.5
+								c = 0.5;
 							} else {
-								c = 1
+								c = 1;
 							}
 							if (targets.length != 1 || targets[0] != this) {
 								if (targets.length == 1) {
@@ -3569,19 +3569,16 @@ export default () => {
 					}
 					aiTargets.randomSort();
 					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
-						var interval = setInterval(
-							() => {
-								aiTargets.shift();
-								if (aiTargets.length) {
-									return;
-								}
-								clearInterval(interval);
-								if (event.withAI) {
-									game.resume();
-								}
-							},
-							Math.ceil(500 + 500 * Math.random())
-						);
+						var interval = setInterval(() => {
+							aiTargets.shift();
+							if (aiTargets.length) {
+								return;
+							}
+							clearInterval(interval);
+							if (event.withAI) {
+								game.resume();
+							}
+						}, Math.ceil(500 + 500 * Math.random()));
 					});
 					"step 1";
 					if (event.withMe) {
@@ -5140,8 +5137,8 @@ export default () => {
 						info += "【兵粮寸断】";
 					}
 					event.result = await player
-						.chooseToDiscard("he", 2, get.prompt("sixiang_qinglong"), info)
-						.set("logSkill", "sixiang_qinglong")
+						.chooseToDiscard("he", 2, get.prompt(event.skill), info)
+						.set("logSkill", event.skill)
 						.set("ai", function (card) {
 							const goon = get.event("goon");
 							if (goon) {

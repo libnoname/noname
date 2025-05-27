@@ -118,7 +118,7 @@ const skills = {
 						case 2:
 							trigger.nowuxie = true;
 							trigger.customArgs.default.directHit2 = true;
-							// [falls through]
+						// [falls through]
 						default:
 							player.addTempSkill("olbenxi_effect");
 							player.storage["olbenxi_effect"][num - 1].add(trigger.card);
@@ -9125,7 +9125,7 @@ const skills = {
 				prompt += "无事发生";
 			}
 			event.result = await player
-				.chooseToDiscard("he", get.prompt("duodao", trigger.source), prompt)
+				.chooseToDiscard("he", get.prompt(event.skill, trigger.source), prompt)
 				.set("ai", function (card) {
 					let eff = get.event("eff");
 					if (typeof eff === "number") {
@@ -9275,7 +9275,7 @@ const skills = {
 				prompt += "无事发生";
 			}
 			event.result = await player
-				.chooseToDiscard("he", get.prompt("reduodao", trigger.player), prompt)
+				.chooseToDiscard("he", get.prompt(event.skill, trigger.player), prompt)
 				.set("ai", function (card) {
 					let eff = get.event("eff");
 					if (typeof eff === "number") {

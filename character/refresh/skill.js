@@ -421,7 +421,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await trigger.player
-				.chooseBool(player == trigger.player ? get.prompt("rejunbing") : "是否响应" + get.translation(player) + "的【郡兵】？", "摸一张牌" + (player == trigger.player ? "" : "，将所有手牌交给" + get.translation(player) + "，然后其可以交给你等量张牌"))
+				.chooseBool(player == trigger.player ? get.prompt(event.skill) : "是否响应" + get.translation(player) + "的【郡兵】？", "摸一张牌" + (player == trigger.player ? "" : "，将所有手牌交给" + get.translation(player) + "，然后其可以交给你等量张牌"))
 				.set("ai", () => get.event("choice"))
 				.set("choice", get.attitude(trigger.player, player) > 0)
 				.forResult();
@@ -6421,7 +6421,7 @@ const skills = {
 			if (asyncDraw) {
 				const num = player.countCards("h");
 				const result = await player
-					.chooseTarget(get.prompt("rebingyi"), `展示所有手牌，并选择至多${get.cnNumber(num)}名角色各摸一张牌${selfDraw ? "，然后你摸一张牌" : ""}`, [0, num])
+					.chooseTarget(get.prompt(event.skill), `展示所有手牌，并选择至多${get.cnNumber(num)}名角色各摸一张牌${selfDraw ? "，然后你摸一张牌" : ""}`, [0, num])
 					.set("ai", function (target) {
 						return get.attitude(get.player(), target);
 					})
@@ -9091,7 +9091,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(
-					get.prompt2("decadexuanfeng"),
+					get.prompt2(event.skill),
 					(card, player, target) => {
 						if (player == target) {
 							return false;
@@ -15707,7 +15707,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.choosePlayerCard(get.prompt("refankui", trigger.source), trigger.source, trigger.source != player ? "he" : "e")
+				.choosePlayerCard(get.prompt(event.skill, trigger.source), trigger.source, trigger.source != player ? "he" : "e")
 				.set("ai", button => {
 					let val = get.buttonValue(button);
 					if (get.event("att") > 0) {
@@ -16360,7 +16360,7 @@ const skills = {
 				result: { control },
 			} = await player
 				.chooseControl(list)
-				.set("prompt", get.prompt2("rejianxiong_old"))
+				.set("prompt", get.prompt2(event.skill))
 				.set("ai", () => {
 					const player = get.event("player"),
 						trigger = get.event().getTrigger();

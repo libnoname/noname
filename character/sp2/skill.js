@@ -141,7 +141,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { result } = await player
 				.chooseButton([
-					get.prompt2("starlianzhan"),
+					get.prompt2(event.skill),
 					[
 						[
 							["extraTarget", `使${get.translation(trigger.card)}增加一个目标`],
@@ -289,27 +289,42 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		async cost(event, trigger, player) {
-			const { result } = await player
-				.chooseTarget()
-				.set("filterTarget", function (card, player, target) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return player != target && target.countCards("he");
 				})
-				.set("prompt", get.prompt2("stardangchen"))
-				.set("ai", function (card, player, target) {
+				.set("ai", target => {
+					const player = get.player();
 					return -get.attitude(player, target);
-				});
-			event.result = result;
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await target.chooseToGive(player, "he", true, [1, Infinity]);
+			let result = await target
+				.chooseToGive(player, "he", true, [1, Infinity])
+				.set("ai", card => {
+					const { player, target } = get.event();
+					const att = get.attitude(player, target);
+					if (att <= 0) {
+						if (ui.selected.cards.length > 1) {
+							return 0;
+						}
+						return 6 - get.value(card);
+					}
+					if (ui.selected.cards.length) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				})
+				.forResult();
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.length;
 				const next = player.chooseToDiscard("he", num);
 				next.set("prompt", "荡尘：是否弃置" + get.cnNumber(num) + "张牌并获得后续效果？");
 				next.set("prompt2", "当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为" + num + "的倍数，则此牌额外结算一次");
-				const bool = await next.forResult("bool");
-				if (!bool) {
+				result = await next.forResult();
+				if (!result?.bool) {
 					return;
 				}
 				player.addTempSkill("stardangchen_buff");
@@ -375,7 +390,7 @@ const skills = {
 			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseToDiscard(get.prompt2("starzhiji"), [1, Infinity]).set("logSkill", "starzhiji");
+			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity]).set("logSkill", "starzhiji");
 			if (_status.auto || !(player === game.me || player.isOnline())) {
 				next.complexCard = true;
 				next.ai = function (card) {
@@ -540,7 +555,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "basic");
 			const result = await player
-				.chooseButton([get.prompt2("staranshu"), cards], [1, Infinity])
+				.chooseButton([get.prompt2(event.skill), cards], [1, Infinity])
 				.set("filterButton", button => {
 					if (ui.selected.buttons?.some(buttonx => buttonx.link.name == button.link.name)) {
 						return false;
@@ -863,12 +878,10 @@ const skills = {
 	},
 	dcquxian: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseBegin",
-		},
+		trigger: { player: "phaseUseBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("dcquxian"), "选择一名角色，攻击范围内包含其的角色可以对其使用【杀】")
+				.chooseTarget(get.prompt(event.skill), "选择一名角色，攻击范围内包含其的角色可以对其使用【杀】")
 				.set("ai", target => {
 					const player = get.player();
 					return -get.attitude(player, target);
@@ -1073,7 +1086,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
-			let result = await player.gainPlayerCard(target, "he", [1, game.roundNumber]).set("prompt", get.prompt2("dcpigua", target)).set("logSkill", ["dcpigua", target]).forResult();
+			let result = await player.gainPlayerCard(target, "he", [1, game.roundNumber]).set("prompt", get.prompt2(event.skill, target)).set("logSkill", [event.skill, target]).forResult();
 			result.bool = Boolean((result.cards || []).length);
 			event.result = result;
 		},
@@ -3960,7 +3973,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt2("longsong"),
+					prompt: get.prompt2(event.skill),
 					filterTarget(card, player, target) {
 						if (target === player) {
 							return false;
@@ -5917,7 +5930,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = trigger.cards.filterInD("d");
 			event.result = await player
-				.chooseTarget(lib.filter.notMe, get.prompt("tuoxian"), "令一名其他角色获得" + get.translation(cards))
+				.chooseTarget(lib.filter.notMe, get.prompt(event.skill), "令一名其他角色获得" + get.translation(cards))
 				.set("ai", function (target) {
 					const player = _status.event.player;
 					let att = get.attitude(player, target);
@@ -7091,7 +7104,7 @@ const skills = {
 					function (card, player) {
 						return get.color(card, player) == "black";
 					},
-					get.prompt("tianze", trigger.player),
+					get.prompt(event.skill, trigger.player),
 					"弃置一张黑色牌并对其造成1点伤害"
 				)
 				.set("ai", function (card) {
@@ -7172,7 +7185,7 @@ const skills = {
 			}
 			tricks.sort((a, b) => b[1] - a[1]);
 			let result = await player
-				.chooseToDiscard(get.prompt2("difa"), card => {
+				.chooseToDiscard(get.prompt2(event.skill), card => {
 					return get.event().cards.includes(card);
 				})
 				.set("ai", card => {
@@ -7736,7 +7749,7 @@ const skills = {
 			const result = await player
 				.chooseControl(choices, "cancel2")
 				.set("choiceList", choiceList)
-				.set("prompt", get.prompt("xinxingluan"))
+				.set("prompt", get.prompt(event.skill))
 				.set("ai", function () {
 					var player = _status.event.player;
 					if (
@@ -8913,7 +8926,7 @@ const skills = {
 							}) > 0
 						);
 					},
-					get.prompt("dangzai"),
+					get.prompt(event.skill),
 					"将一名其他角色判定区内的任意张牌移动到你的判定区内"
 				)
 				.forResult();
@@ -14625,7 +14638,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const result = await player
 				.chooseControl("一张", "两张", "三张", "cancel2")
-				.set("prompt", get.prompt2("xinfu_zhenxing"))
+				.set("prompt", get.prompt2(event.skill))
 				.set("ai", function () {
 					return 0;
 				})

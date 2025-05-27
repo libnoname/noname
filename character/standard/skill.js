@@ -69,7 +69,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("stdshushen"), lib.filter.notMe)
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
 				.set("ai", target => get.attitude(_status.event.player, target))
 				.forResult();
 		},
@@ -343,7 +343,7 @@ const skills = {
 			const {
 				result: { bool, cards },
 			} = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("guicai"), get.mode() == "guozhan" ? "hes" : "hs", card => {
+				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), get.mode() == "guozhan" ? "hes" : "hs", card => {
 					const player = _status.event.player;
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
@@ -376,7 +376,7 @@ const skills = {
 					return -result - val;
 				})
 				.set("judging", trigger.player.judging[0])
-				.setHiddenSkill("guicai");
+				.setHiddenSkill(event.skill);
 			if (bool) {
 				event.result = { bool, cost_data: { cards } };
 			}
@@ -469,7 +469,7 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		async cost(event, trigger, player) {
 			const { result } = await player
-				.chooseTarget(get.prompt2("ganglie_three"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.isEnemyOf(player);
 				})
 				.set("ai", target => {
@@ -479,7 +479,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			event.target = event.targets[0];
-			player.logSkill("ganglie_three", event.target);
 			const judgeEvent = player.judge(card => {
 				if (get.suit(card) == "heart") {
 					return -2;
@@ -532,7 +531,7 @@ const skills = {
 			let check = num >= 2;
 			const { result } = await player
 				.chooseTarget(
-					get.prompt("tuxi"),
+					get.prompt(event.skill),
 					"获得其他一至两名角色的各一张手牌",
 					[1, 2],
 					(card, player, target) => {
@@ -650,7 +649,7 @@ const skills = {
 									return 1;
 								}
 								return 0;
-							});
+						  });
 				if (!bool) {
 					return;
 				}
@@ -1689,21 +1688,22 @@ const skills = {
 					},
 					ai1: card => get.unuseful(card) + 9,
 					ai2: target => {
-						if (_status.event.player.countCards("h", "shan")) {
-							return -get.attitude(_status.event.player, target);
+						const player = get.player();
+						if (player.countCards("h", "shan")) {
+							return -get.attitude(player, target);
 						}
-						if (get.attitude(_status.event.player, target) < 5) {
-							return 6 - get.attitude(_status.event.player, target);
+						if (get.attitude(player, target) < 5) {
+							return 6 - get.attitude(player, target);
 						}
-						if (_status.event.player.hp == 1 && player.countCards("h", "shan") == 0) {
-							return 10 - get.attitude(_status.event.player, target);
+						if (player.hp == 1 && player.countCards("h", "shan") == 0) {
+							return 10 - get.attitude(player, target);
 						}
-						if (_status.event.player.hp == 2 && player.countCards("h", "shan") == 0) {
-							return 8 - get.attitude(_status.event.player, target);
+						if (player.hp == 2 && player.countCards("h", "shan") == 0) {
+							return 8 - get.attitude(player, target);
 						}
 						return -1;
 					},
-					prompt: get.prompt("liuli"),
+					prompt: get.prompt(event.skill),
 					prompt2: "弃置一张牌，将此【杀】转移给攻击范围内的一名其他角色",
 					source: trigger.player,
 					card: trigger.card,
@@ -2186,7 +2186,7 @@ const skills = {
 					}
 					return "cancel2";
 				})
-				.set("prompt", get.prompt2("new_jiangchi"))
+				.set("prompt", get.prompt2(event.skill))
 				.forResultControl();
 			if (control === "cancel2") {
 				event.result = { bool: false };

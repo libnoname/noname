@@ -1235,7 +1235,7 @@ const skills = {
 							["7", "3"],
 							["7", "6"],
 							["7", "8"],
-						]
+					  ]
 					: [
 							["7", "1"],
 							//["8", "3"],
@@ -1244,7 +1244,7 @@ const skills = {
 							["9", "13"],
 							["6", "3"],
 							["6", "6"],
-						];
+					  ];
 				let list = [];
 				for (let i = 0; i < position.length; i++) {
 					const num_px = document.createElement("div");
@@ -2422,9 +2422,7 @@ const skills = {
 	},
 	xinjilve: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseBegin",
-		},
+		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return player.countMark("xinrenjie");
 		},
@@ -9085,7 +9083,7 @@ const skills = {
 					? event.numFixed
 					: !game.hasPlayer(function (current) {
 							return current.hasEnabledSlot();
-						})
+					  })
 			) {
 				return false;
 			}

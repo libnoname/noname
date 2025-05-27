@@ -1,4 +1,22 @@
 const characters = {
+	ps_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["psjuebing", "psfengxie"],
+	},
+	ps_liubei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["pshuji", "pshoufa"],
+	},
+	ps_sunquan: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["pszhanlun", "psjueyi"],
+	},
 	ca_fanchou: {
 		sex: "male",
 		group: "qun",
