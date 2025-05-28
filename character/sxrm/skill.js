@@ -48,35 +48,21 @@ const skills = {
 			);
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(current => current !== player).sortBySeat();
+			return game.filterPlayer(current => current !== player).sortBySeat(_status.currentPhase);
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets,
 				showcards = [];
-			const next = player
-				.chooseCardOL(targets, "枯心：是否展示任意张手牌？", [1, Infinity], "h")
-				.set("targetx", player)
-				.set("ai", card => {
-					const { player, targetx } = get.event();
-					let att = get.attitude(player, targetx);
-					let val = get.value(card);
-					if (get.suit(card, false) === "heart") {
-						// 优先处理特殊逻辑
-						return att * 10086 - val;
-					}
-					if (att < 0) {
-						// 不情愿亮
-						val = -val;
-					} else if (att > 0) {
-						// 队友有增益的可以给
-						val = get.value(card, targetx) - val;
-					}
-					return val;
-				})
-				.set("aiCard", player => {
-					const { targetx } = get.event();
-					let att = get.attitude(player, targetx);
-					const cards = player.getCards("h", card => {
+			for (const target of targets) {
+				if (!target.countCards("h")) {
+					continue;
+				}
+				const result = await target
+					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true)
+					.set("targetx", player)
+					.set("ai", card => {
+						const { player, targetx } = get.event();
+						let att = get.attitude(player, targetx);
 						let val = get.value(card);
 						if (get.suit(card, false) === "heart") {
 							// 优先处理特殊逻辑
@@ -89,45 +75,14 @@ const skills = {
 							// 队友有增益的可以给
 							val = get.value(card, targetx) - val;
 						}
-						return val > 0;
-					});
-					return { bool: cards.length > 0, cards: cards };
-				});
-			next._args.remove("glow_result");
-			const result = await next.forResult();
-			for (let i = 0; i < targets.length; i++) {
-				if (result[i].bool) {
-					showcards.addArray(result[i].cards);
-					game.log(targets[i], "展示了", result[i].cards);
+						return val;
+					})
+					.forResult();
+				if (result.bool) {
+					showcards.addArray(result.cards);
+					await target.showCards(result.cards);
+					await game.delay();
 				}
-			}
-			if (showcards.length) {
-				let videoId = lib.status.videoId++;
-				game.broadcastAll(
-					(targets, cards, id, player) => {
-						let dialog = ui.create.dialog(get.translation(player) + "发动了【枯心】", cards);
-						dialog.videoId = id;
-						const getName = target => {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							let name = target?.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						};
-						for (let i = 0; i < targets.length; i++) {
-							dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + "|" +get.translation(cards[i].suit);
-						}
-					},
-					showcards.map(i => get.owner(i)),
-					showcards,
-					videoId,
-					player
-				);
-				await game.delay(4);
-				game.broadcastAll("closeDialog", videoId);
 			}
 			const next2 = player
 				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")
@@ -177,18 +132,16 @@ const skills = {
 			}
 			if (gaincards.length) {
 				await player.gain(gaincards, "giveAuto");
-				if (result2.control == "获得一名角色的未展示牌") {
-					await player.showCards(gaincards);
+				await player.showCards(gaincards);
+			}
+			if (!gaincards.some(card => get.suit(card, false) === "heart")) {
+				player.chat("孩子们，一张牌都拿不到力");
+				if (gaincards.length) {
+					await player.discard(gaincards);
 				}
-				if (!gaincards.some(card => get.suit(card, false) === "heart")) {
-					player.chat("孩子们，一张牌都拿不到力");
-					if (gaincards.length) {
-						await player.discard(gaincards);
-					}
-					await player.turnOver();
-				} else {
-					player.chat("保持富态");
-				}
+				await player.turnOver();
+			} else {
+				player.chat("保持富态");
 			}
 		},
 		//依旧归心改/.
