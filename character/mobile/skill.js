@@ -5,6 +5,7 @@ const skills = {
 	//手杀孟达
 	mbjili: {
 		audio: 9,
+		logAudio: () => ["mbjili1.mp3", "mbjili2.mp3", "mbjili3.mp3"],
 		trigger: {
 			global: "phaseBegin",
 		},
@@ -54,6 +55,18 @@ const skills = {
 				filter(event, player) {
 					const evt = event.getParent("phase", true);
 					return typeof evt?.mbjili?.[player.playerid] == "number";
+				},
+				logAudio(event, player) {
+					const evt = event.getParent("phase", true),
+						num = evt.mbjili[player.playerid],
+						count = evt.player.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
+					if (count < num) {
+						return ["mbjili4.mp3", "mbjili7.mp3"];
+					}
+					if (count > num) {
+						return ["mbjili5.mp3", "mbjili8.mp3"];
+					}
+					return ["mbjili6.mp3", "mbjili9.mp3"];
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {

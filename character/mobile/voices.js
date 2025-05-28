@@ -1,4 +1,9 @@
 export default {
+	"#mb_caoxing:die": "未想此子，竟恐怖如斯。",
+	"#mbanxian1": "今日让尔，知我箭术的厉害！",
+	"#mbanxian2": "暗挽雕弓，箭引霹雳之声！",
+	"#mbjinzu1": "此箭一出，必丧我流矢之下！",
+	"#mbjinzu2": "纵汝武艺通天，亦躲不过我穿心一箭。",
 	"#mb_zhangyan:die": "与其四下奔走，不如归降曹公。",
 	"#mbfeijing1": "我要看到赤地千里，荒无人烟！",
 	"#mbfeijing2": "可知我军中飞燕的厉害！",
