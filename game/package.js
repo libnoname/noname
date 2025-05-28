@@ -29,7 +29,7 @@ window.noname_package = {
 		//线下系列
 		offline: "线下武将",
 		jsrg: "江山如故",
-		sxrm: "蚀心如魔",
+		sxrm: "蚀心入魔",
 		sixiang: "四象封印",
 		//DIY系列
 		diy: "DIY",
