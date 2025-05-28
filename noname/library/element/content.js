@@ -6436,10 +6436,11 @@ player.removeVirtualEquip(card);
 					return event.name == "phase" || [player, target].includes(event.player);
 				})
 				.vars({
+					cardsx: cards,
 					evt: event,
 				})
 				.then(() => {
-					if (cards.some(card => get.position(card) == "s")) {
+					if (cardsx.some(card => get.position(card) == "s")) {
 						game.cardsDiscard(cards);
 						evt.isDestoryed = true;
 					}
