@@ -931,8 +931,20 @@ const skills = {
 						},
 						top = [];
 					switch (name) {
-						case "phaseJieshu":
+						case "phaseJieshu": {
 							target = target.next;
+							cards.sort((a, b) => {
+								return get.value(b, target) - get.value(a, target);
+							});
+							while (cards.length) {
+								if (get.value(cards[0], target) > 6) {
+									top.push(cards.shift());
+								} else {
+									break;
+								}
+							}
+							return [top, cards];
+						}
 						case "phaseZhunbei": {
 							let att = get.sgn(get.attitude(player, target)),
 								judges = target.getCards("j"),
