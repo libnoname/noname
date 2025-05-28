@@ -1,6 +1,6 @@
 const translates = {
-	sxrm: "蚀心如魔",
-	//蚀心如魔·疑
+	sxrm: "蚀心入魔",
+	//蚀心入魔·疑
 	sxrm_liubei: "疑刘备",
 	sxrm_liubei_prefix: "疑",
 	sxrmchengbian: "乘变",
@@ -11,6 +11,28 @@ const translates = {
 	sxrmzongheng_info: "准备阶段，你可以观看两名其他角色的手牌，展示并获得其中一张，然后你弃置另一名角色与你此法展示牌花色、点数、类型相同的手牌各一张。",
 	sxrmduibian: "对辩",
 	sxrmduibian_info: "你每回合首次受到伤害时，你可以与伤害来源延时拼点并防止此伤害，然后其可以令你弃置其一张牌并揭示拼点结果，若其赢则你失去1点体力。",
+	sxrm_huatuo: "疑华佗",
+	sxrm_huatuo_prefix: "疑",
+	sxrmmiehai: "灭害",
+	sxrmmiehai_info: "你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌且已受伤的角色摸两张牌并回复1点体力。",
+	sxrm_lvboshe: "疑吕伯奢",
+	sxrm_lvboshe_prefix: "疑",
+	sxrmqingjun: "请君",
+	sxrmqingjun_info: "每轮结束时，你可以选择一名其他角色，令你和攻击范围含有其的其他角色各摸两张牌并发动〖设伏〗；若如此做，其执行一个额外回合，此回合结束时，以此法发动〖设伏〗的角色移去“伏兵”，然后其中此回合未受伤的角色各视为对其使用一张【杀】。",
+	sxrm_fuhuanghou: "疑伏寿",
+	sxrm_fuhuanghou_prefix: "疑",
+	sxrmmitu: "密图",
+	sxrmmitu_info: "准备阶段，你可以令至多三名已受伤角色各摸一张牌并展示之，然后令这些角色依次选择是否与你指定的另一名角色拼点，拼点赢的角色视为对没赢的角色使用一张【杀】。每有一名角色未用以此法展示的牌进行拼点，你减少1点体力上限。",
+	sxrmqianliu: "潜流",
+	sxrmqianliu_info: "与你距离1以内的角色成为【杀】的目标后，你可以观看牌堆底四张牌并以任意顺序置于牌堆顶或牌堆底；若这些牌花色均不相同，你可以展示并获得这些牌。",
+	sxrm_xunyu: "疑荀彧",
+	sxrm_xunyu_prefix: "疑",
+	sxrmhuice: "迴策",
+	sxrmhuice_info: "出牌阶段限一次，你可以依次与两名角色拼点，于一次拼点中赢的角色对另一次拼点中没赢的角色各造成1点伤害。",
+	sxrmyihe: "异合",
+	sxrmyihe_info: "每回合各限一次，一名角色于你的回合内首次受到伤害时，若其与伤害来源的手牌数与体力值大小关系：相同，你可令其与伤害来源各摸两张牌；不同，你可令此伤害+1。",
+	sxrmjizhi: "赍志",
+	sxrmjizhi_info: "锁定技，其他角色不能对你使用【桃】；你每回合首次进入濒死时，回复1点体力。",
 };
 
 export default translates;

@@ -6436,8 +6436,6 @@ player.removeVirtualEquip(card);
 					return event.name == "phase" || [player, target].includes(event.player);
 				})
 				.vars({
-					cards,
-					target,
 					evt: event,
 				})
 				.then(() => {
@@ -6540,6 +6538,8 @@ player.removeVirtualEquip(card);
 		}
 		await game.cardsGotoOrdering([event.card1, event.card2]);
 		const target = event.target;
+		game.log(player, "揭示了和", target, "的延时拼点结果");
+		await game.delayx();
 		await event.trigger("compareCardShowBefore");
 		game.broadcast(function () {
 			ui.arena.classList.add("thrownhighlight");

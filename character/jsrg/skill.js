@@ -12598,7 +12598,7 @@ const skills = {
 					.set("ai", card => {
 						const { player, targetx } = get.event();
 						let att = 0;
-						if (player && target) {
+						if (player && targetx) {
 							att = get.sgnAttitude(player, targetx);
 						}
 						let val = 7 - get.value(card);
