@@ -1151,7 +1151,7 @@ export default () => {
 					}
 					var chooseGroup = false;
 					if (event.chosen.length) {
-						if (lib.character[event.chosen[0]][1] == "shen" || lib.character[event.chosen[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.chosen[0]][1])) {
 							chooseGroup = true;
 						}
 					} else if (event.modchosen) {
@@ -1163,12 +1163,12 @@ export default () => {
 					} else if (result.buttons.length == 2) {
 						event.choosed = [result.buttons[0].link, result.buttons[1].link];
 						game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
-						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
 							chooseGroup = true;
 						}
 					} else {
 						event.choosed = [result.buttons[0].link];
-						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
 							chooseGroup = true;
 						}
 						game.addRecentCharacter(result.buttons[0].link);

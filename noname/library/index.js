@@ -10109,6 +10109,7 @@ export class Library {
 		wu: "吴",
 		qun: "群",
 		shen: "神",
+		devil: "魔",
 		western: "西",
 		key: "键",
 		jin: "晋",
@@ -10119,6 +10120,7 @@ export class Library {
 		wu2: "吴国",
 		qun2: "群雄",
 		shen2: "神明",
+		devil2: "入魔",
 		western2: "西方",
 		key2: "KEY",
 		jin2: "晋朝",
@@ -10143,6 +10145,7 @@ export class Library {
 		westernColor: "#ffe14c",
 		jinColor: "#ffe14c",
 		keyColor: "#c9b1fd",
+		devilColor: "#9b2234",
 		basic: "基本",
 		equip: "装备",
 		trick: "锦囊",
@@ -11408,8 +11411,11 @@ export class Library {
 				if (group == "shen") {
 					return base + 7;
 				}
-				if (group == "double") {
+				if (group == "devil") {
 					return base + 7;
+				}
+				if (group == "double") {
+					return base + 8;
 				}
 				return base + 9;
 			};
@@ -11426,7 +11432,7 @@ export class Library {
 					base = 9;
 				}
 				const group = info[1];
-				if (group == "shen") {
+				if (group == "shen" || group == "devil") {
 					return base - 1;
 				}
 				if (group == "wei") {
@@ -15480,6 +15486,7 @@ export class Library {
 		key: "key",
 		jin: "thunder",
 		ye: "thunder",
+		devil: "devil",
 	};
 	lineColor = new Map([
 		["fire", [255, 146, 68]],
@@ -15494,6 +15501,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
+	selectGroup = ["shen", "western", "devil"];
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {

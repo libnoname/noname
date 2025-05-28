@@ -42,7 +42,7 @@ export default () => {
 				}
 			}
 			for (var i in lib.character) {
-				if (lib.character[i].group == "shen" || lib.character[i].group == "western") {
+				if (lib.selectGroup.includes(lib.character[i].group)) {
 					lib.character[i].group = lib.character[i].groupInGuozhan || "qun";
 				}
 			}
@@ -169,7 +169,7 @@ export default () => {
 							}
 						}
 						for (var i in lib.character) {
-							if (lib.character[i][1] == "shen" || lib.character[i][1] == "western") {
+							if (lib.selectGroup.includes(lib.character[i][1])) {
 								lib.character[i].group = lib.character[i].groupInGuozhan || "qun";
 							}
 						}
@@ -22501,7 +22501,7 @@ export default () => {
 					list.add("ye");
 					var str = "";
 					for (var i = 0; i < list.length; i++) {
-						if (list[i] != "shen" && list[i] != "western" && data[list[i]]) {
+						if (!lib.selectGroup.includes(list[i]) && data[list[i]]) {
 							str += lib.translate[list[i] + "2"] + "：" + data[list[i]][0] + "胜" + " " + data[list[i]][1] + "负<br>";
 						}
 					}
