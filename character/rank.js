@@ -105,6 +105,7 @@ window.noname_character_rank = {
 		"ps1059_guojia",
 		"diy_zhujun",
 		"diy_zhangfei",
+		"sxrm_caocao",
 	],
 	a: [
 		"chenshou",
@@ -1775,6 +1776,8 @@ window.noname_character_rank = {
 		"old_majun",
 	],
 	bm: [
+		"sxrm_caopi",
+		"sxrm_wanghou",
 		"std_baoxin",
 		"std_peixiu",
 		"std_yangbiao",
@@ -2685,6 +2688,7 @@ window.noname_character_rank = {
 			"diy_zhujun",
 			"diy_liaohua",
 			"diy_zhangfei",
+			"sxrm_caocao",
 		],
 		epic: [
 			"v_caopi",
@@ -3182,8 +3186,11 @@ window.noname_character_rank = {
 			"ps_liubei",
 			"ps_sunquan",
 			"sxrm_xunyu",
+			"sxrm_liubei",
 		],
 		rare: [
+			"sxrm_caopi",
+			"sxrm_wanghou",
 			"std_baoxin",
 			"std_peixiu",
 			"std_yangbiao",
@@ -3513,7 +3520,6 @@ window.noname_character_rank = {
 			"hs_sainaliusi",
 			"hs_lrhonin",
 			"yxs_diaochan",
-			"sxrm_liubei",
 			"sxrm_jianggan",
 			"sxrm_huatuo",
 			"sxrm_lvboshe",

@@ -1,5 +1,5 @@
 const characterSort = {
-	shixinrumo_yi: ["sxrm_liubei", "sxrm_jianggan", "sxrm_huatuo", "sxrm_lvboshe", "sxrm_fuhuanghou", "sxrm_xunyu"],
+	shixinrumo_yi: ["sxrm_caocao", "sxrm_liubei", "sxrm_jianggan", "sxrm_huatuo", "sxrm_lvboshe", "sxrm_fuhuanghou", "sxrm_xunyu", "sxrm_caopi", "sxrm_wanghou"],
 };
 
 const characterSortTranslate = {
