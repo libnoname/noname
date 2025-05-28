@@ -5,6 +5,7 @@ const characters = {
 		group: "devil",
 		hp: 4,
 		skills: ["sxrmkuxin", "sxrmsigu"],
+		groupInGuozhan: "wei",
 	},
 	sxrm_caopi: {
 		sex: "male",
