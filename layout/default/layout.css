@@ -4054,6 +4054,22 @@ span[data-nature="shenmm"] {
 	text-shadow: rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 2px,
 		rgba(243, 171, 27, 1) 0 0 2px, black 0 0 1px;
 }
+div[data-nature="devil"],
+span[data-nature="devil"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 5px, rgb(155, 34, 52) 0 0 10px,
+		rgb(155, 34, 52) 0 0 10px, rgb(155, 34, 52) 0 0 20px, rgb(155, 34, 52) 0 0 20px,
+		black 0 0 1px;
+}
+div[data-nature="devilm"],
+span[data-nature="devilm"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 5px, rgb(155, 34, 52) 0 0 5px,
+		rgb(155, 34, 52) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="devilmm"],
+span[data-nature="devilmm"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 2px,
+		rgb(155, 34, 52) 0 0 2px, black 0 0 1px;
+}
 div[data-nature="qun"],
 span[data-nature="qun"] {
 	text-shadow: rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 5px,
