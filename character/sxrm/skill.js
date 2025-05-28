@@ -3,9 +3,304 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//疑包
-	//曹操
-	sxrmkuxin: {},
+	//曹操 -by.柴油鹿鹿
+	sxrmkuxin: {
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return game.hasPlayer(cur => {
+				return cur !== player && cur.countCards("h") > 0;
+			});
+		},
+		check(event, player) {
+			if (player.isTurnedOver()) {
+				return true;
+			}
+			if (
+				game.countPlayer(current => {
+					if (current === player) {
+						return 0;
+					}
+					if (get.attitude(player, current) > 0) {
+						return current.countCards("h") >= 4;
+					}
+					return current.countCards("h");
+				}) <
+				4 / (1 + player.getHp())
+			) {
+				// 红桃牌很难获得
+				return false;
+			}
+			return (
+				game.countPlayer(current => {
+					if (current === player) {
+						return 0;
+					}
+					const att = get.attitude(player, current);
+					if (att > 0) {
+						return -1;
+					}
+					if (att < 0) {
+						return 1;
+					}
+					return 0.5;
+				}) >=
+				6 / (1 + player.getHp())
+			);
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(current => current !== player).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets,
+				showcards = [];
+			const next = player
+				.chooseCardOL(targets, "枯心：是否展示任意张手牌？", [1, Infinity], "h")
+				.set("targetx", player)
+				.set("ai", card => {
+					const { player, targetx } = get.event();
+					let att = get.attitude(player, targetx);
+					let val = get.value(card);
+					if (get.suit(card, false) === "heart") {
+						// 优先处理特殊逻辑
+						return att * 10086 - val;
+					}
+					if (att < 0) {
+						// 不情愿亮
+						val = -val;
+					} else if (att > 0) {
+						// 队友有增益的可以给
+						val = get.value(card, targetx) - val;
+					}
+					return val;
+				})
+				.set("aiCard", player => {
+					const { targetx } = get.event();
+					let att = get.attitude(player, targetx);
+					const cards = player.getCards("h", card => {
+						let val = get.value(card);
+						if (get.suit(card, false) === "heart") {
+							// 优先处理特殊逻辑
+							return att * 10086 - val;
+						}
+						if (att < 0) {
+							// 不情愿亮
+							val = -val;
+						} else if (att > 0) {
+							// 队友有增益的可以给
+							val = get.value(card, targetx) - val;
+						}
+						return val > 0;
+					});
+					return { bool: cards.length > 0, cards: cards };
+				});
+			next._args.remove("glow_result");
+			const result = await next.forResult();
+			for (let i = 0; i < targets.length; i++) {
+				if (result[i].bool) {
+					showcards.addArray(result[i].cards);
+					game.log(targets[i], "展示了", result[i].cards);
+				}
+			}
+			if (showcards.length) {
+				let videoId = lib.status.videoId++;
+				game.broadcastAll(
+					(targets, cards, id, player) => {
+						let dialog = ui.create.dialog(get.translation(player) + "发动了【枯心】", cards);
+						dialog.videoId = id;
+						const getName = target => {
+							if (target._tempTranslate) {
+								return target._tempTranslate;
+							}
+							let name = target?.name;
+							if (lib.translate[name + "_ab"]) {
+								return lib.translate[name + "_ab"];
+							}
+							return get.translation(name);
+						};
+						for (let i = 0; i < targets.length; i++) {
+							dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + "|" +get.translation(cards[i].suit);
+						}
+					},
+					showcards.map(i => get.owner(i)),
+					showcards,
+					videoId,
+					player
+				);
+				await game.delay(4);
+				game.broadcastAll("closeDialog", videoId);
+			}
+			const next2 = player
+				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")
+				.set("prompt", "枯心：请选择获得的牌")
+				.set("ai", () => {
+					const { player, num, cards } = get.event();
+					if (player.isTurnedOver() && cards.some(card => get.suit(card, false) === "heart")) {
+						return 1;
+					}
+					if (cards.length <= num && game.hasPlayer(current => current != player && current.countCards("h", cardx => !cards.includes(cardx)) > cards.length && get.attitude(player, current) < 0)) {
+						return 1;
+					}
+					if (cards.length <= num) {
+						return get.rand(0, 1);
+					}
+					if (cards.some(card => get.suit(card, false) === "heart")) {
+						return 0;
+					}
+					return 1;
+				})
+				.set("cards", showcards)
+				.set("num", trigger.num * 2);
+			if (showcards.length) {
+				next2.set("dialog", ["枯心：请选择获得的牌", showcards])
+			}
+			else {
+				next2.set("prompt2", "没有角色展示牌");
+			}
+			const result2 = await next2.forResult();
+			if (!result2.control) {
+				return;
+			}
+			game.log(player, "选择了", "#g【枯心】", "的", "#y" + result2.control);
+			let gaincards = [];
+			if (result2.control == "获得一名角色的未展示牌") {
+				const result3 = await player
+					.chooseTarget("枯心：选择一名其他角色获得其未展示的手牌", true, lib.filter.notMe)
+					.set("ai", target => {
+						const { player, cards } = get.event();
+						return -get.attitude(player, target) * target.countCards("h", cardx => !cards.includes(cardx));
+					})
+					.set("cards", showcards)
+					.forResult();
+				gaincards = result3?.targets?.[0].getCards("h", cardx => !showcards.includes(cardx));
+			} else {
+				gaincards = showcards;
+			}
+			if (gaincards.length) {
+				await player.gain(gaincards, "giveAuto");
+				if (result2.control == "获得一名角色的未展示牌") {
+					await player.showCards(gaincards);
+				}
+				if (!gaincards.some(card => get.suit(card, false) === "heart")) {
+					player.chat("孩子们，一张牌都拿不到力");
+					if (gaincards.length) {
+						await player.discard(gaincards);
+					}
+					await player.turnOver();
+				} else {
+					player.chat("保持富态");
+				}
+			}
+		},
+		//依旧归心改/.
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			threaten(player, target) {
+				if (target.getHp() == 1) {
+					return 2.5;
+				}
+				return 0.5;
+			},
+			effect: {
+				target(card, player, target) {
+					if (
+						!target._dekuxin_eff &&
+						get.tag(card, "damage") &&
+						target.getHp() >
+							(player.hasSkillTag("damageBonus", true, {
+								card: card,
+								target: target,
+							})
+								? 2
+								: 1)
+					) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						target._dekuxin_eff = true;
+						let gain = game.countPlayer(current => {
+							if (target == current) {
+								return 0;
+							}
+							if (get.attitude(target, current) > 0) {
+								return 0;
+							}
+							if (current.hasCard(cardx => lib.filter.canBeGained(cardx, target, current, "sxrmkuxin"), "h")) {
+								return 0.9;
+							}
+							return 0;
+						});
+						if (target.isTurnedOver()) {
+							gain += 2.3;
+						} else {
+							gain -= 2.3;
+						}
+						delete target._dekuxin_eff;
+						return [1, Math.max(0, gain)];
+					}
+				},
+			},
+		},
+	},
 	sxrmsigu: {
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+		    const target = event.targets[0];
+		    const result = await target.judge()
+		        .forResult();
+		    if (!result.number) {
+		        return;
+		    }
+		    const name = get.info(event.name).pasts[result.number],
+				skill = get.info(event.name).derivation[result.number];
+		    const mark = `desigu_${player.playerid}`;
+			if (name) {
+				await target.addAdditionalSkills(mark, [skill], true);
+				target.markAuto("desigu_taofen", [name]);
+				//写个标记吧
+				target.addTip(mark, `似故 ${get.translation(skill)}`);
+				//再加个动画
+				target.setAvatar(target.name, name);
+			} else {
+			    player.chat("孩子你是谁？");
+			}
+			await target.damage();
+			await target.damage();
+			if (name) {
+				target.removeAdditionalSkills(mark);
+				target.removeTip(mark);
+				target.setAvatar(target.name, target.name);
+			}
+		},
+		//不太会写ai，随便写了点简单的情况
+		ai: {
+		    order: 1,
+		    result: {
+		        target(player, target) {
+		            if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) < 0) {
+		                return 0;
+		            }
+		            if (get.attitude(player, target) < 0 && (target.getHp() + target.hujia) <= 1) {
+		                return -1;
+		            }
+		            if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) > 0 && (target.getHp() + target.hujia) >= 3) {
+		                return 2;
+		            }
+		            if (get.attitude(player, target) > 0 && (target.getHp() + target.hujia) >= 4) {
+		                return 1;
+		            }
+		            if (get.attitude(player, target) == 0 && (target.getHp() + target.hujia) >= 2) {
+		                return 1;
+		            }
+		            return 0;
+		        },
+		    },
+			tag: {
+				damage: 1,
+			},
+		},
 		pasts: ["chenggong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "shenpei", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
 	},
