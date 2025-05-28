@@ -55,6 +55,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["sxrmhuice", "sxrmyihe", "sxrmjizhi"],
+		clans: ["颍川荀氏"],
 	},
 };
 
