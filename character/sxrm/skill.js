@@ -258,7 +258,6 @@ const skills = {
 		    const mark = `desigu_${player.playerid}`;
 			if (name) {
 				await target.addAdditionalSkills(mark, [skill], true);
-				target.markAuto("desigu_taofen", [name]);
 				//写个标记吧
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				//再加个动画
