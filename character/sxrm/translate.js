@@ -25,6 +25,8 @@ const translates = {
 	sxrm_lvboshe_prefix: "疑",
 	sxrmqingjun: "请君",
 	sxrmqingjun_info: "每轮结束时，你可以选择一名其他角色，令你和攻击范围含有其的其他角色各摸两张牌并发动〖设伏〗；若如此做，其执行一个额外回合，此回合结束时，以此法发动〖设伏〗的角色移去“伏兵”，然后其中此回合未受伤的角色各视为对其使用一张【杀】。",
+	sxrmshefu: "设伏",
+	sxrmshefu_info: "结束阶段，你可以扣置一张牌为“伏兵”；其他角色于你的回合外使用手牌时，你可以移去一张颜色与类别均与此牌相同的“伏兵”，令此牌无效。",
 	sxrm_fuhuanghou: "疑伏寿",
 	sxrm_fuhuanghou_prefix: "疑",
 	sxrmmitu: "密图",
