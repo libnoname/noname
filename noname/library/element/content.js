@@ -6440,10 +6440,16 @@ player.removeVirtualEquip(card);
 					evt: event,
 				})
 				.then(() => {
-					if (cardsx.some(card => get.position(card) == "s")) {
-						game.cardsDiscard(cards);
+					if (cardsx?.some(card => get.position(card) == "s")) {
 						evt.isDestoryed = true;
+						game.cardsGotoOrdering(cardsx);
 					}
+					else {
+						event.finish();
+					}
+				})
+				.then(() => {
+					game.cardsDiscard(cardsx);
 				});
 			event.untrigger();
 			event.finish();
@@ -6533,6 +6539,7 @@ player.removeVirtualEquip(card);
 		for (const key of ["target", "card1", "card2", "lose_list", "forceWinner", "clear", "preserve"]) {
 			event[key] = evt[key];
 		}
+		event.result = {};
 		if (evt.isDestoryed) {
 			event.untrigger();
 			return;

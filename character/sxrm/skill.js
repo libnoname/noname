@@ -131,7 +131,7 @@ const skills = {
 				gaincards = showcards;
 			}
 			if (gaincards.length) {
-				await player.gain(gaincards, "giveAuto");
+				await player.gain(gaincards, "give");
 				await player.showCards(gaincards);
 			}
 			if (!gaincards.some(card => get.suit(card, false) === "heart")) {
@@ -253,7 +253,7 @@ const skills = {
 				damage: 1,
 			},
 		},
-		pasts: ["chenggong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "shenpei", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
+		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "shenpei", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
 	},
 	//刘备
@@ -287,7 +287,7 @@ const skills = {
 					player.removeSkill("sxrmchengbian_sha");
 					target.removeSkill("sxrmchengbian_sha");
 					const result = await game.createEvent("chooseToCompare", false).set("player", player).set("parentEvent", next).setContent("chooseToCompareEffect").forResult();
-					if (result.winner) {
+					if (result?.winner) {
 						await result.winner.drawTo(result.winner.maxHp);
 					}
 				});
@@ -494,7 +494,7 @@ const skills = {
 			if (result.bool) {
 				await player.discardPlayerCard(target, "he", true);
 				const result2 = await game.createEvent("chooseToCompare", false).set("player", player).set("parentEvent", next).setContent("chooseToCompareEffect").forResult();
-				if (result2.winner == target) {
+				if (result2?.winner == target) {
 					await player.loseHp();
 				}
 			} else {
