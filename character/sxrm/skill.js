@@ -421,12 +421,15 @@ const skills = {
 							}
 							return true;
 						}
-						if (moved[0].includes(from.link)) {
-							let num = [1, 2, 3].find(i => moved[i].includes(to.link));
-							return get[list[num]](from.link) == get.event(list[num]);
+						let num1 = [0, 1, 2, 3].find(i => moved[i].includes(from.link)),
+							num2 = [0, 1, 2, 3].find(i => moved[i].includes(to.link));
+						if (num1 != 0 && get[list[num1]](to.link) != get.event(list[num1])) {
+							return false;
 						}
-						let numx = [1, 2, 3].find(i => moved[i].includes(from.link));
-						return get[list[numx]](to.link) == get.event(list[numx]);
+						if (num2 != 0 && get[list[num2]](from.link) != get.event(list[num2])) {
+							return false;
+						}
+						return true;
 					})
 					.set("processAI", list => {
 						let cards = [],
@@ -602,7 +605,7 @@ const skills = {
 			for (let targetx of targets) {
 				await targetx.draw(2);
 				let skillName = `${event.name}_${player.playerid}`;
-				targetx.addAdditionalSkill(skillName, ["shefu2"], true);
+				targetx.addAdditionalSkill(skillName, ["sxrmshefu_effect"], true);
 				targetx
 					.when({
 						global: "phaseEnd",
@@ -613,69 +616,27 @@ const skills = {
 					})
 					.step(async (event, trigger, player) => {
 						player.removeAdditionalSkill(skillName);
-						let cards = player.getExpansions("shefu");
+						let cards = player.getExpansions("sxrmshefu_effect");
 						if (cards.length) {
 							await player.loseToDiscardpile(cards);
 						}
-						player.unmarkSkill("shefu");
 					});
 				if (targetx.countCards("he")) {
-					let list = get.inpileVCardList(info => ["basic", "trick"].includes(get.type2(info[2])));
 					const result = await targetx
-						.chooseButton(["设伏", [list, "vcard"]], true)
-						.set("filterButton", function (button) {
-							let player = _status.event.player;
-							if (player.storage?.shefu2?.includes(button.link[2])) {
-								return false;
+						.chooseCard(get.prompt2("sxrmshefu"), "he", true)
+						.set("ai", card => {
+							let val = get.value(card);
+							if (get.type(card) == "basic") {
+								val *= 0.5;
 							}
-							return true;
-						})
-						.set("ai", function (button) {
-							let rand = _status.event.rand;
-							switch (button.link[2]) {
-								case "sha":
-									return 5 + rand[1];
-								case "tao":
-									return 4 + rand[2];
-								case "lebu":
-									return 3 + rand[3];
-								case "shan":
-									return 4.5 + rand[4];
-								case "wuzhong":
-									return 4 + rand[5];
-								case "shunshou":
-									return 3 + rand[6];
-								case "nanman":
-									return 2 + rand[7];
-								case "wanjian":
-									return 2 + rand[8];
-								default:
-									return rand[0];
+							if (get.color(card) == "black") {
+								val *= 0.8;
 							}
+							return 6 - val;
 						})
-						.set("rand", [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()])
 						.forResult();
 					if (result.bool) {
-						const name = result.links[0][2];
-						targetx.logSkill("shefu");
-						const result2 = await targetx.chooseCard("he", "选择一张牌作为“伏兵”", true).forResult();
-						if (result2.bool) {
-							const card = result2.cards[0];
-							const next = targetx.addToExpansion(card, targetx, "give");
-							next.gaintag.add("shefu");
-							await next;
-							if (targetx.getExpansions("shefu").includes(card)) {
-								targetx.markAuto("shefu", card);
-								targetx.markAuto("shefu2", name);
-								if (targetx.isOnline2()) {
-									targetx.send(function (storage) {
-										game.me.storage.shefu2 = storage;
-									}, targetx.storage.shefu2);
-								}
-								targetx.syncStorage("shefu");
-								targetx.markSkill("shefu");
-							}
-						}
+						await targetx.useSkill("sxrmshefu", result.cards);
 					}
 				}
 			}
@@ -699,7 +660,121 @@ const skills = {
 				});
 			target.insertPhase(event.name);
 		},
-		derivation: "shefu",
+		derivation: "sxrmshefu",
+	},
+	sxrmshefu: {
+		audio: "shefu",
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		filter(event, player) {
+			return player.countCards("he");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), "he")
+				.set("ai", card => {
+					let val = get.value(card);
+					if (get.type(card) == "basic") {
+						val *= 0.5;
+					}
+					if (get.color(card) == "black") {
+						val *= 0.8;
+					}
+					return 6 - val;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const next = player.addToExpansion(event.cards, player, "giveAuto");
+			next.gaintag.add("sxrmshefu_effect");
+			await next;
+		},
+		onremove(player) {
+			let cards = player.getExpansions("sxrmshefu_effect");
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		group: "sxrmshefu_effect",
+		subSkill: {
+			effect: {
+				trigger: {
+    			    global: ["useCard"],
+    			},
+				filter(event, player) {
+    			    if (_status.currentPhase == player || event.player == player) {
+    			        return false;
+    			    }
+    			    return (
+    			        player.getExpansions("sxrmshefu_effect").some(card => {
+							return get.color(card) == get.color(event.card) && get.type2(card) == get.type2(event.card);
+						}) &&
+    			        event.player.getHistory("lose", function (evt) {
+    			            return evt.getParent() == event && evt.hs && evt.hs.length == event.cards.length;
+    			        }).length
+    			    );
+    			},
+    			async cost(event, trigger, player) {
+    			    let effect = 0;
+    			    if (trigger.card.name == "wuxie" || trigger.card.name == "shan") {
+    			        if (get.attitude(player, trigger.player) < -1) {
+    			            effect = -1;
+    			        }
+    			    } else if (trigger.targets?.length) {
+    			        for (let i = 0; i < trigger.targets.length; i++) {
+    			            effect += get.effect(trigger.targets[i], trigger.card, trigger.player, player);
+    			        }
+    			    }
+    			    let str = "设伏：是否令" + get.translation(trigger.player);
+    			    if (trigger.targets && trigger.targets.length) {
+    			        str += "对" + get.translation(trigger.targets);
+    			    }
+    			    str += "使用的" + get.translation(trigger.card) + "失效？";
+    			    const result = await player
+						.chooseButton([str, player.getExpansions("sxrmshefu_effect")])
+						.set("filterButton", button => {
+							const { used } = get.event();
+							return get.color(button.link) == get.color(used) && get.type2(button.link) == get.type2(used);
+						})
+						.set("ai", button => {
+							const { choice } = get.event();
+							if (choice) {
+								return Math.random();
+							}
+							return 0;
+						})
+						.set("used", trigger.card)
+						.set("choice", effect < 0)
+						.forResult();
+					event.result = {
+						bool: result.bool,
+						targets: [trigger.player],
+						cards: result.bool ? result.links : [],
+					};
+				},
+    			async content(event, trigger, player) {
+    			        await player.loseToDiscardpile(event.cards);
+    			        trigger.targets.length = 0;
+    			        trigger.all_excluded = true;
+    			},
+    			ai: {
+    			    threaten: 1.8,
+    			    expose: 0.3,
+    			},
+				intro: {
+        			mark(dialog, storage, player) {
+        			    var cards = player.getExpansions("sxrmshefu_effect");
+        			    if (player.isUnderControl(true)) {
+        			        dialog.addAuto(cards);
+        			    } else {
+        			        return "共有" + get.cnNumber(cards.length) + "张牌";
+        			    }
+        			},
+        			markcount: "expansion",
+    			},
+			},
+		},
 	},
 	//伏寿
 	sxrmmitu: {
@@ -720,7 +795,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			event.target.sortBySeat();
+			event.targets.sortBySeat();
 			for (const target of event.targets) {
 				const next = target.draw();
 				next.gaintag.add("sxrmmitu");
@@ -1247,6 +1322,9 @@ const skills = {
 			} else {
 				await player.gainMultiple(event.targets, "he");
 			}
+		},
+		ai: {
+			combo: "sxrmzhengsi",
 		},
 	},
 	//王垕

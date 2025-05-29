@@ -3,7 +3,7 @@ const characters = {
 	sxrm_caocao: {
 		sex: "male",
 		group: "devil",
-		hp: 4,
+		hp: 3,
 		skills: ["sxrmkuxin", "sxrmsigu"],
 		groupInGuozhan: "wei",
 	},
