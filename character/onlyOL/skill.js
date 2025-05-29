@@ -4309,6 +4309,7 @@ const skills = {
 	},
 	//OL界曹冲
 	olchengxiang: {
+		audioname: ["strong_caochong"],
 		inherit: "chengxiang",
 		getIndex(event, player) {
 			return event.num;

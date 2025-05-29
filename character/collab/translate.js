@@ -252,6 +252,13 @@ const translates = {
 	oldigong_info: "锁定技，你使用没有「地公」的牌时，若为伤害牌，此牌伤害+1，若不为伤害牌，结算后当前回合角色判定，若为红色，你摸一张牌。你获得牌时，标记为「地公」，本轮结束时移去此标记。",
 	olrengong: "人公",
 	olrengong_info: "锁定技，若你连续使用了两张类型不同的牌，此牌结算后，你弃置一张牌，然后从牌堆获得一张其余类型的牌。",
+	strong_caochong: "曹冲",
+	strong_caochong_ab: "冲儿",
+	strongduanti: "锻体",
+	strongduanti_info: "锁定技，①你从牌堆摸牌后，受到1点无来源伤害。②当你发动〖称象〗时，若你的体力值为全场最低，必定亮出一张【桃】或【酒】；若你的体力值为全场最高，必定亮出一张伤害牌或武器牌。",
+	strongduanti_append: "<span class='text' style='font-family: yuanli'>我要验牌！</span>",
+	strongxishu: "习术",
+	strongxishu_info: "你使用【杀】指定唯一目标或成为【杀】的唯一目标后，使用者每满足一项便可弃置目标角色的一张牌：1.装备了武器牌；2.此【杀】受到了【酒】的影响。",
 };
 
 export default translates;

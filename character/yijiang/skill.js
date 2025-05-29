@@ -13828,16 +13828,24 @@ const skills = {
 			return event.num > 0;
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			let mark = 0;
+		async content(event, trigger, player) {
+			let num = 4;
+			if (!event.showCards) {
+				event.showCards = [];
+			}
+			await event.trigger("chengxiangShowBegin");
 			if (event.name == "olchengxiang") {
-				mark += player.countMark("olchengxiang");
+				let mark = player.countMark("olchengxiang");
+				num += mark;
 				player.removeMark("olchengxiang", mark, false);
 			}
-			event.cards = get.cards(4 + mark);
-			game.cardsGotoOrdering(event.cards);
-			event.videoId = lib.status.videoId++;
+			const cards = [];
+			if (num > event.showCards.length) {
+				cards.addArray(get.cards(num - event.showCards.length));
+				await game.cardsGotoOrdering(cards);
+			}
+			cards.addArray(event.showCards);
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
 				function (player, id, cards, num) {
 					var str;
@@ -13850,19 +13858,18 @@ const skills = {
 					dialog.videoId = id;
 				},
 				player,
-				event.videoId,
-				event.cards,
+				videoId,
+				cards,
 				event.name == "oldchengxiang" ? 12 : 13
 			);
-			event.time = get.utc();
-			game.addVideo("showCards", player, ["称象", get.cardsInfo(event.cards)]);
+			const time = get.utc();
+			game.addVideo("showCards", player, ["称象", get.cardsInfo(cards)]);
 			game.addVideo("delay", null, 2);
-			"step 1";
-			var next = player.chooseButton([0, Infinity]);
-			next.set("dialog", event.videoId);
+			const next = player.chooseButton([0, Infinity]);
+			next.set("dialog", videoId);
 			next.set("filterButton", function (button) {
-				var num = 0;
-				for (var i = 0; i < ui.selected.buttons.length; i++) {
+				let num = 0;
+				for (let i = 0; i < ui.selected.buttons.length; i++) {
 					num += get.number(ui.selected.buttons[i].link);
 				}
 				return num + get.number(button.link) <= _status.event.maxNum;
@@ -13886,25 +13893,22 @@ const skills = {
 				}
 				return val;
 			});
-			"step 2";
+			const result = await next.forResult();
+			let cards2 = [];
 			if (result.bool && result.links) {
-				var cards2 = [];
-				for (var i = 0; i < result.links.length; i++) {
+				for (let i = 0; i < result.links.length; i++) {
 					cards2.push(result.links[i]);
 					cards.remove(result.links[i]);
 				}
-				event.cards2 = cards2;
 			} else {
-				event.finish();
+				return;
 			}
-			var time = 1000 - (get.utc() - event.time);
-			if (time > 0) {
-				game.delay(0, time);
+			let timex = 1000 - (get.utc() - time);
+			if (timex > 0) {
+				await game.delay(0, timex);
 			}
-			"step 3";
-			game.broadcastAll("closeDialog", event.videoId);
-			var cards2 = event.cards2;
-			player.gain(cards2, "gain2");
+			game.broadcastAll("closeDialog", videoId);
+			await player.gain(cards2, "gain2");
 			if (event.name == "olchengxiang") {
 				let num = cards2.reduce((num, i) => {
 					return num + get.number(i, player);

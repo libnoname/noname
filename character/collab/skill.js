@@ -2,6 +2,89 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//健美圈冲儿
+	strongduanti: {
+		audio: 2,
+		trigger: {
+			player: ["chengxiangShowBegin", "drawAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "draw") {
+				return true;
+			}
+			return player.isMaxHp() || player.isMinHp();
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (trigger.name == "draw") {
+				await player.damage("nosource");
+			}
+			else {
+				if (!trigger.showCards) {
+					trigger.showCards = [];
+				}
+				if (player.isMaxHp()) {
+					let card = get.cardPile(card => {
+						return get.subtype(card) == "equip1" || get.tag(card, "damage");
+					});
+					if (card) {
+						trigger.showCards.add(card);
+						await game.cardsGotoOrdering(card);
+					}
+				}
+				if (player.isMinHp()) {
+					let card = get.cardPile(card => {
+						return card.name == "tao" || card.name == "jiu";
+					});
+					if (card) {
+						trigger.showCards.add(card);
+						await game.cardsGotoOrdering(card);
+					}
+				}
+			}
+		},
+	},
+	strongxishu: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			if (event.card?.name != "sha" || event.targets.length != 1) {
+				return false;
+			}
+			if (!event.target.countCards("he")) {
+				return false;
+			}
+			return event.player.getEquips(1).length || event.getParent().jiu;
+		},
+		async cost(event, trigger, player) {
+			let num = 0;
+			if (trigger.player.getEquips(1).length) {
+				num++;
+			}
+			if (trigger.getParent().jiu) {
+				num++;
+			}
+			event.result = await trigger.player
+				.choosePlayerCard(get.prompt2(event.skill, trigger.target, trigger.player), [1, num], "he", trigger.target)
+				.set("ai", button => {
+					let val = get.buttonValue(button);
+					if (get.attitude(_status.event.player, get.owner(button.link)) > 0) {
+						return -val;
+					}
+					return val;
+				})
+				.forResult();
+			event.result.targets = [trigger[player == trigger.player ? "target" : "player"]];
+		},
+		async content(event, trigger, player) {
+			const next = trigger.target.discard(event.cards);
+			next.set("discarder", trigger.player);
+			await next;
+		},
+	},
 	//张角三兄弟
 	oltiangong: {
 		audio: 2,

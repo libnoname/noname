@@ -28,7 +28,7 @@ window.noname_character_replace = {
 	caoang: ["caoang", "dc_sb_caoang", "tw_caoang", "huan_caoang", "yj_caoang"],
 	caoanmin: ["caoanmin", "ns_caoanmin"],
 	caocao: ["caocao", "re_caocao", "sp_ol_caocao", "ol_jsrg_caocao", "dc_caocao", "sb_caocao", "tw_caocao", "jsrg_caocao", "jd_sb_caocao", "yj_caocao", "ns_caocao", "ns_caocaosp", "jy_caocao", "ps_caocao", "sxrm_caocao"],
-	caochong: ["caochong", "ol_caochong", "re_caochong", "huan_caochong", "old_caochong"],
+	caochong: ["caochong", "ol_caochong", "re_caochong", "huan_caochong", "old_caochong", "strong_caochong"],
 	caochun: ["caochun", "dc_caochun", "old_caochun"],
 	caofang: ["caofang", "jsrg_caofang"],
 	caohong: ["caohong", "dc_sb_caohong", "tw_re_caohong", "tw_caohong", "yj_caohong"],
