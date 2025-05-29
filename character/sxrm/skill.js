@@ -206,8 +206,8 @@ const skills = {
 		    if (!result.number) {
 		        return;
 		    }
-		    const name = get.info(event.name).pasts[result.number],
-				skill = get.info(event.name).derivation[result.number];
+		    const name = get.info(event.name).pasts[result.number - 1],
+				skill = get.info(event.name).derivation[result.number - 1];
 		    const mark = `desigu_${player.playerid}`;
 			if (name) {
 				await target.addAdditionalSkills(mark, [skill], true);

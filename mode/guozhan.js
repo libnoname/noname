@@ -3997,7 +3997,6 @@ export default () => {
 					}
 					return game.hasPlayer(target => !event.targets.includes(target) && target.countCards("he") > 0);
 				},
-				direct: false,
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
@@ -4925,7 +4924,6 @@ export default () => {
 					change: {
 						audio: "xuanbei",
 						trigger: { player: "die" },
-						direct: true,
 						forceDie: true,
 						skillAnimation: true,
 						animationColor: "thunder",
@@ -5279,7 +5277,6 @@ export default () => {
 				},
 			},
 			fakebaoqie: {
-				unique: true,
 				audio: "baoqie",
 				trigger: { player: "showCharacterEnd" },
 				filter(event, player) {
@@ -5437,7 +5434,6 @@ export default () => {
 				},
 			},
 			fakehuirong: {
-				unique: true,
 				audio: "huirong",
 				trigger: { player: "showCharacterEnd" },
 				filter(event, player) {

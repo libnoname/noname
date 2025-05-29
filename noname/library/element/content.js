@@ -4729,7 +4729,7 @@ player.removeVirtualEquip(card);
 		}
 		"step 1";
 		if (cards.length) {
-			event.card = cards.pop();
+			event.card = cards.shift();
 			var cardName = event.card.name,
 				cardInfo = lib.card[cardName];
 			var VJudge = event.card[event.card.cardSymbol];

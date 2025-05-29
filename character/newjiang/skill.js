@@ -329,6 +329,7 @@ const skills = {
 			}
 		},
 		ai: {
+			combo: "dczhonge",
 			order: 1,
 			result: {
 				player(player) {
@@ -670,7 +671,7 @@ const skills = {
 		usable: 1,
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseButton([get.prompt2(event.skill), [[3, 1].map(i => ["", "", "lukai_" + player.getStorage("chuanxie")[i]]), "vcard"]])
+				.chooseButton([get.prompt2(event.skill), [[3, 1].map(i => ["", "", "lukai_" + player.getStorage(event.skill)[i]]), "vcard"]])
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (result.bool) {

@@ -812,9 +812,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { result } = await player.choosePlayerCard("hej", get.prompt(event.skill), trigger.player).set("ai", function (button) {
-				return -get.attitude(player, trigger.player) + 1;
+				const { player, target } = get.event();
+				return -get.attitude(player, target) + 1;
 			});
-			if (result.bool && result.links && result.links.length) {
+			if (result?.bool && result.links?.length) {
 				event.result = result;
 				event.result.cards = result.links;
 			}
@@ -1855,6 +1856,7 @@ const skills = {
 						return target != player && target.countCards("h") > player.countCards("h");
 					});
 					next.ai = function (target) {
+						const player = get.player();
 						return get.attitude(player, target);
 					};
 					event.result = await next.forResult();
@@ -1862,7 +1864,6 @@ const skills = {
 				async content(event, trigger, player) {
 					await event.targets[0].draw();
 				},
-				sub: true,
 			},
 			2: {
 				trigger: {
@@ -1882,6 +1883,7 @@ const skills = {
 						return target != player && target.countCards("h") < player.countCards("h") && target.countCards("he") > 0;
 					});
 					next.ai = function (target) {
+						const player = get.player();
 						return -get.attitude(player, target);
 					};
 					event.result = await next.forResult();
@@ -1889,7 +1891,6 @@ const skills = {
 				async content(event, trigger, player) {
 					await event.targets[0].chooseToDiscard("he", 1, true);
 				},
-				sub: true,
 			},
 		},
 	},
@@ -1903,6 +1904,7 @@ const skills = {
 			event.result = await player
 				.chooseCard(get.prompt(event.skill), "将任意张牌置于武将牌上", "he", [1, player.countCards("he")])
 				.set("ai", function (card) {
+					const player = get.player();
 					if (get.position(card) == "e") {
 						return 1 - get.value(card);
 					}
@@ -2345,11 +2347,13 @@ const skills = {
 			const result = await player
 				.chooseControl("cancel2")
 				.set("ai", function () {
+					const player = get.player();
+					const { num } = get.event().getParent();
 					if (
 						game.countPlayer(function (current) {
-							return get.attitude(player, current) < 0 && current.hp == event.num;
+							return get.attitude(player, current) < 0 && current.hp == num;
 						}) > 0 &&
-						event.num <= 3
+						num <= 3
 					) {
 						return 1;
 					}
@@ -2372,6 +2376,7 @@ const skills = {
 						return num == _status.event.num;
 					})
 					.set("ai", function (target) {
+						const player = get.player();
 						if (ui.selected.targets[0] != undefined) {
 							return -1;
 						}
@@ -2386,6 +2391,7 @@ const skills = {
 			} else {
 				const next = player.chooseTarget("请选择〖溃诛〗摸牌的目标", [1, event.num]);
 				next.ai = function (target) {
+					const player = get.player();
 					return get.attitude(player, target);
 				};
 				event.result = await next.forResult();
@@ -2986,7 +2992,7 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.player != player;
+			return event.player != player && game.hasPlayer(current => current.isMinHandcard());
 		},
 		async cost(event, trigger, player) {
 			const next = player.chooseTarget(get.prompt(event.skill), "令场上手牌数最少的一名角色摸一张牌", function (card, player, target) {
@@ -3669,7 +3675,7 @@ const skills = {
 			next.set("ai", function () {
 				return _status.event.getParent().choice;
 			});
-			next.setHiddenSkill("xinkuanggu");
+			next.setHiddenSkill(event.skill);
 			const control = await next.forResultControl();
 			if (control == "cancel2") {
 				return;
@@ -3900,6 +3906,7 @@ const skills = {
 			event.result = await player
 				.chooseBool(get.prompt2(event.skill))
 				.set("ai", function () {
+					const player = get.player();
 					if (!_status.event.fang) {
 						return false;
 					}
@@ -3945,6 +3952,7 @@ const skills = {
 			}
 			const chooseTarget = player.chooseTarget(true, "请选择进行额外回合的目标角色", lib.filter.notMe);
 			chooseTarget.ai = function (target) {
+				const player = get.player();
 				if (target.hasJudge("lebu") || get.attitude(player, target) <= 0) {
 					return -1;
 				}
@@ -8136,6 +8144,7 @@ const skills = {
 				.chooseControl("spade", "heart", "diamond", "club")
 				.set("prompt", str)
 				.set("ai", function () {
+					const player = get.player();
 					const judging = _status.event.judging;
 					const trigger = _status.event.getTrigger();
 					const list = lib.suit.slice(0);
@@ -8590,7 +8599,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("guidao"), "hes", function (card) {
+				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hes", function (card) {
 					if (get.color(card) != "black") {
 						return false;
 					}

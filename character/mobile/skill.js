@@ -5075,6 +5075,7 @@ const skills = {
 			player.popup(storage[1]);
 			game.log(player, "的预测为", "#g" + get.translation(storage[1]));
 		},
+		ai: { combo: "friendyance" },
 	},
 	friendzhugelianggongli: {
 		audio: 2,
@@ -7224,7 +7225,7 @@ const skills = {
 					})
 					.set("used", used)
 					.forResult();
-				if (result.bool && result.targets.length) {
+				if (result?.bool && result.targets?.length) {
 					const id = result.targets[0].playerid,
 						map = give_map;
 					if (!map[id]) {

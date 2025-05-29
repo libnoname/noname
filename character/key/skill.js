@@ -4486,7 +4486,7 @@ const skills = {
 				}
 			}
 			var str = _status.renku.length ? "获得仁库中的所有牌" : "摸两张牌";
-			event.result = await player.chooseBool(get.prompt("kano_liezhen"), str).set("frequentSkill", "kano_liezhen").forResult();
+			event.result = await player.chooseBool(get.prompt(event.skill), str).set("frequentSkill", event.skill).forResult();
 		},
 		async content(event, trigger, player) {
 			const result = event.cost_data;
@@ -10360,7 +10360,8 @@ const skills = {
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), "令一名角色摸" + get.cnNumber(num) + "张牌。")
 				.set("ai", function (target) {
-					var att = get.attitude(player, target);
+					const player = get.player();
+					const att = get.attitude(player, target);
 					if (att <= 0) {
 						return 0;
 					}

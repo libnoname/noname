@@ -7114,7 +7114,7 @@ const skills = {
 					return 8 - get.value(card);
 				})
 				.set("goon", get.damageEffect(trigger.player, player, player) > 0)
-				.set("logSkill", ["tianze", trigger.player])
+				.set("logSkill", [event.skill, trigger.player])
 				.forResult();
 		},
 		popup: false,

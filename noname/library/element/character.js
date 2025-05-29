@@ -282,7 +282,7 @@ export class Character {
 			} else if (item.startsWith("doublegroup:")) {
 				this.doubleGroup = item.slice(12).split(":");
 			} else if (item.startsWith("clan:")) {
-				clans.push(item.slice(5));
+				clans.addArray(item.slice(5).split("|"));
 			} else if (item.startsWith("InitFilter:")) {
 				this.initFilters = item.slice(11).split(":");
 			} else if (item.startsWith("img:")) {

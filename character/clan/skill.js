@@ -227,7 +227,7 @@ const skills = {
 					if (!player.getExpansions("clanfennu").length || !player.countMark("clanfennu_record")) {
 						return false;
 					}
-					const num1 = player.getExpansions("clanfennu").reduce((sum, card) => (sum += get.number(card, false)), 0),
+					const num1 = player.getExpansions("clanfennu").reduce((sum, card) => sum + get.number(card, false), 0),
 						num2 = player.countMark("clanfennu_record");
 					return num1 < num2;
 				},
@@ -1385,7 +1385,7 @@ const skills = {
 				}
 			} else {
 				event.result = await player
-					.chooseTarget(get.prompt2(`clanquhuo`), (card, player, target) => {
+					.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 						return target.isDamaged() && target.hasClan("弘农杨氏");
 					})
 					.set("ai", target => {
@@ -1613,9 +1613,7 @@ const skills = {
 	//族王沈
 	clananran: {
 		audio: 2,
-		trigger: {
-			player: ["phaseUseBegin", "damageEnd"],
-		},
+		trigger: { player: ["phaseUseBegin", "damageEnd"] },
 		async cost(event, trigger, player) {
 			const count = Math.min(4, player.countMark("clananran_used") + 1);
 			const { result } = await player

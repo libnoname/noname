@@ -732,7 +732,7 @@ const skills = {
 			let result,
 				str = "的一张牌使此牌伤害或回复值+1，若使用者的手牌最多或最少，你摸一张牌且此技能本回合失效。";
 			if (player === trigger.player) {
-				result = player.chooseToDiscard("he", get.prompt("olpimi"), "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
+				result = player.chooseToDiscard("he", get.prompt(event.skill), "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
 					const player = get.player();
 					let val = player.getUseValue(card);
 					const evt = get.event().getTrigger();
@@ -2936,7 +2936,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			let result = await player
-				.chooseButton([get.prompt2(event.skill), [lib.skill.dchuiwan.gainCards(player), "vcard"]], [1, trigger.num])
+				.chooseButton([get.prompt2(event.skill), [get.info(event.skill).gainCards(player), "vcard"]], [1, trigger.num])
 				.set("ai", button => {
 					if (!get.cardPile2(button.link[2])) {
 						return 0;

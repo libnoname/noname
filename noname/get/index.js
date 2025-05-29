@@ -2646,46 +2646,59 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return num.toString();
 	}
-	rawName(str) {
+	rawName(str, noab = false) {
 		let str2 = lib.translate[str];
-		if (lib.translate[str + "_ab"]) {
+		if (noab !== true && lib.translate[str + "_ab"]) {
 			str2 = lib.translate[str + "_ab"];
 		}
-		if (!str2) {
-			return "";
+		if (str2) {
+			if (lib.translate[str + "_prefix"]) {
+				let prefixList = lib.translate[str + "_prefix"].split("|");
+				while (prefixList.length) {
+					const prefix = prefixList.shift();
+					if (str2.startsWith(prefix)) {
+						str2 = str2.slice(prefix.length);
+						continue;
+					}
+					break;
+				}
+			}
+			return str2;
 		}
-		if (lib.translate[str + "_prefix"] && str2.startsWith(lib.translate[str + "_prefix"])) {
-			return str2.slice(lib.translate[str + "_prefix"].length);
-		}
-		return str2;
+		return "";
 	}
 	/**
 	 * 作用修改：只读前缀 不读_ab
 	 */
 	rawName2(str) {
-		let str2 = lib.translate[str];
-		if (!str2) {
-			return "";
-		}
-		if (lib.translate[str + "_prefix"] && str2.startsWith(lib.translate[str + "_prefix"])) {
-			return str2.slice(lib.translate[str + "_prefix"].length);
-		}
-		return str2;
+		return get.rawName(str, true);
 	}
 	slimNameHorizontal(str) {
-		const slimName = lib.translate[`${str}_ab`] || lib.translate[str];
-		if (!slimName) {
-			return "";
-		}
-		const prefix = lib.translate[`${str}_prefix`];
-		if (prefix && slimName.startsWith(prefix)) {
-			//兼容版特化处理
-			if (lib.compatibleEdition) {
-				return `${get.prefixSpan(prefix, str)}<span>${slimName.slice(prefix.length)}　</span>`;
+		let slimName = lib.translate[`${str}_ab`] || lib.translate[str];
+		if (slimName) {
+			if (lib.translate[`${str}_prefix`]) {
+				let prefixList = lib.translate[str + "_prefix"].split("|");
+				let setPrefix = [];
+				while (prefixList.length) {
+					const prefix = prefixList.shift();
+					if (slimName.startsWith(prefix)) {
+						setPrefix.push(prefix);
+						slimName = slimName.slice(prefix.length);
+						continue;
+					}
+					break;
+				}
+				if (setPrefix.length) {
+					//兼容版特化处理
+					if (lib.compatibleEdition) {
+						return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}　</span>`;
+					}
+					return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}</span>`;
+				}
 			}
-			return `${get.prefixSpan(prefix, str)}<span>${slimName.slice(prefix.length)}</span>`;
+			return slimName;
 		}
-		return slimName;
+		return "";
 	}
 	/**
 	 * @param {string} prefix

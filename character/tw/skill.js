@@ -7412,8 +7412,9 @@ const skills = {
 				const skill = `${skillName}_${player.playerid}`;
 				game.broadcastAll(lib.skill[skillName].createGainTag, skill, player.name);
 				game.addVideo("skill", player, [skillName, [skill, player.name]]);
-				const { result } = await player
-					.chooseCard(`伸义：是否将任意张牌交给${get.translation(target)}？`, [1, player.countCards("h")])
+				player.addSkill(skillName + "_draw");
+				const next = player
+					.chooseToGive(target, `伸义：是否将任意张手牌交给${get.translation(target)}？`, [1, player.countCards("h")])
 					.set("ai", card => {
 						if (!_status.event.goon) {
 							return 0;
@@ -7421,13 +7422,8 @@ const skills = {
 						return 7 - get.value(card);
 					})
 					.set("goon", get.attitude(player, target) > 0);
-				if (!result.bool) {
-					return;
-				}
-				const next = player.give(result.cards, target);
 				next.gaintag.add(skill);
 				await next;
-				player.addSkill(skillName + "_draw");
 			}
 		},
 		video: (player, info) => lib.skill.twshenyi.createGainTag(info[0], info[1]),

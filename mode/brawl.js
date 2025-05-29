@@ -154,8 +154,39 @@ export default () => {
 							var stagesave = lib.storage.stage;
 							var stage = stagesave[active.link.slice(6)];
 							game.save("lastStage", level.index);
+							if (stage.mode == "loopTest") {
+								//console.log('关卡 lastStage: ', level.index, stage);
+								var SSS = localStorage.getItem("SSS");
+								if (!SSS) {
+									SSS = 1;
+								}
+								var NNN = ui.create.system("LV" + (level.index + 1) + "/" + SSS, null, true);
+							}
 							lib.onover.push(function (bool) {
 								_status.createControl = ui.controls[0];
+								//lib.storage.stage[stage.name] = stage;
+								//console.log('关卡 场景对局结果: ', bool, level.index + 1, stage.scenes.length);
+								if (stage.mode == "loopTest") {
+									//console.log('关卡 自动进入下一Scene场景', level.index, stage.scenes);
+									game.delay(1, 1500);
+									//next_level.click();
+									if (level.index + 1 < stage.scenes.length) {
+										game.save("directStage", [stage.name, level.index + 1], "brawl");
+									} else {
+										game.save("directStage", [stage.name, 0], "brawl");
+										var SSS = localStorage.getItem("SSS");
+										if (!SSS) {
+											SSS = 1;
+										} else {
+											SSS = Number(SSS) + 1;
+										}
+										//当前通关数
+										localStorage.setItem("SSS", SSS);
+									}
+									localStorage.setItem(lib.configprefix + "directstart", true);
+									game.reload();
+								}
+
 								if (bool && level.index + 1 < stage.scenes.length) {
 									ui.create.control("下一关", function () {
 										game.save("directStage", [stage.name, level.index + 1], "brawl");
@@ -240,6 +271,10 @@ export default () => {
 					game.switchMode(info.mode);
 					if (info.init) {
 						info.init();
+					}
+					if (stage && stage.mode == "loopTest") {
+						//console.log("关卡开局就托管：brawl", info, stage);
+						ui.click.auto();
 					}
 				}
 			};
@@ -5386,6 +5421,7 @@ export default () => {
 								["normal", "默认模式"],
 								["sequal", "连续闯关"],
 								["free", "自由选关"],
+								["loopTest", "循环测试"],
 							],
 							null,
 							line1

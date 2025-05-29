@@ -216,7 +216,7 @@ const skills = {
 					return 0;
 				})
 				.forResult();
-			if (result?.cards) {
+			if (result?.cards?.length) {
 				event.result = {
 					bool: true,
 					cost_data: result.cards,

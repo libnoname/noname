@@ -3597,15 +3597,12 @@ const skills = {
 				event.finish();
 			}
 			"step 2";
-			var next = targets[0].chooseToUse(
-				function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
-				},
-				"###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。"
-			);
+			var next = targets[0].chooseToUse(function (card, player, event) {
+				if (get.name(card) != "sha") {
+					return false;
+				}
+				return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
+			}, "###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。");
 			next.set("addCount", false);
 			next.set("complexSelect", true);
 			next.set("filterTarget", function (card, player, target) {
@@ -3646,12 +3643,9 @@ const skills = {
 						if (!slice) {
 							target.gain(cards, "gain2");
 						} else {
-							setTimeout(
-								function () {
-									target.$gain2(cards.slice(slice), true);
-								},
-								get.delayx(200, 200)
-							);
+							setTimeout(function () {
+								target.$gain2(cards.slice(slice), true);
+							}, get.delayx(200, 200));
 							target.gain(cards, player, "give");
 						}
 					}
@@ -6416,8 +6410,8 @@ const skills = {
 			return true;
 		},
 		async cost(event, trigger, player) {
-			const selfDraw = lib.skill.rebingyi.filterx(player) && lib.skill.rebingyi.filtery(player),
-				asyncDraw = lib.skill.rebingyi.filterx(player);
+			const selfDraw = get.info(event.skill).filterx(player) && get.info(event.skill).filtery(player),
+				asyncDraw = get.info(event.skill).filterx(player);
 			if (asyncDraw) {
 				const num = player.countCards("h");
 				const result = await player
@@ -6438,7 +6432,7 @@ const skills = {
 				}
 			} else {
 				event.result = await player
-					.chooseBool(get.prompt("rebingyi"), `展示所有手牌${selfDraw ? "，然后你摸一张牌" : ""}`)
+					.chooseBool(get.prompt(event.skill), `展示所有手牌${selfDraw ? "，然后你摸一张牌" : ""}`)
 					.set("choice", selfDraw)
 					.set("ai", () => get.event().choice)
 					.forResult();
@@ -7136,15 +7130,12 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const { result } = await target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -13847,18 +13838,13 @@ const skills = {
 				},
 				audio: "reshuangxiong",
 				filter(event, player) {
-					var evt = event.getParent();
-					return (evt && evt.name == "juedou" && evt[player == evt.player ? "targetCards" : "playerCards"].length) > 0;
+					const evt = event.getParent();
+					return evt?.name == "juedou" && evt[player == evt.player ? "targetCards" : "playerCards"]?.someInD("od");
 				},
 				async cost(event, trigger, player) {
 					let evt = trigger.getParent();
 					let cards = evt[player == evt.player ? "targetCards" : "playerCards"].slice(0).filterInD("od");
-					if (!cards.length) {
-						return;
-					}
-					event.result = await player
-						.chooseBool("是否发动【双雄】，获得" + get.translation(cards) + "?")
-						.forResult();
+					event.result = await player.chooseBool("是否发动【双雄】，获得" + get.translation(cards) + "?").forResult();
 					event.result.cards = cards;
 				},
 				async content(event, trigger, player) {
@@ -16848,15 +16834,12 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
 				.set("logSkill", "zhuhai")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {

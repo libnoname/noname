@@ -312,9 +312,12 @@ const skills = {
 					break;
 				}
 				const dialog = ["请选择一张牌预测（按取消重置预测）", [cards, "card"]];
-				const next = player.chooseButton(dialog).set("filterButton", button => {
-					return !gainMap.has(button.link);
-				});
+				const next = player
+					.chooseButton(dialog)
+					.set("filterButton", button => {
+						return !get.event().gainMap.has(button.link);
+					})
+					.set("gainMap", gainMap);
 				const {
 					result: { links, bool },
 				} = await next;
@@ -337,7 +340,7 @@ const skills = {
 						} = await player
 							.chooseTarget(`预测${get.translation(links[0])}被谁获得`)
 							.set("forced", true)
-							.set("ai", function (card, player, target) {
+							.set("ai", function (target) {
 								return Math.random();
 							});
 						gainMap.set(links[0], [target, i]);
@@ -7848,7 +7851,7 @@ const skills = {
 				target(player, target) {
 					if (
 						game.hasPlayer(current => {
-							return get.rawAttitude(player, current) > 0 && current != player && get.attitude(player, current) <= 0;
+							return (!get.rawAttitude || get.rawAttitude(player, current) > 0) && current != player && get.attitude(player, current) <= 0;
 						}) &&
 						game.countPlayer(current => {
 							return get.attitude(player, current) > 0;
@@ -10345,7 +10348,7 @@ const skills = {
 					});
 				},
 				async cost(event, trigger, player) {
-					const list = player.getStorage(event.skill).map(name => ["锦囊", "", name]);
+					const list = player.getStorage("sbqianxun").map(name => ["锦囊", "", name]);
 					const result = await player
 						.chooseButton([get.prompt(event.skill), "移去一个记录的牌名，若为普通锦囊牌则可以视为使用之", [list, "vcard"]])
 						.set("ai", function (button) {

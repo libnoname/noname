@@ -3995,7 +3995,7 @@ game.import("card", function () {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(get.prompt2(event.skill), [1, Infinity], (card, player, target) => {
+						.chooseTarget(get.prompt2("fangtian"), [1, Infinity], (card, player, target) => {
 							let { targets, cardx } = get.event();
 							if (!lib.filter.filterTarget(cardx, player, target)) {
 								return false;

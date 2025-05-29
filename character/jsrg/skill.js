@@ -12132,6 +12132,7 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), cards])
 				.set("ai", button => {
+					const player = get.player();
 					return get.equipValue(button.link, player);
 				})
 				.forResult();
@@ -12608,7 +12609,7 @@ const skills = {
 						return val;
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.cards?.length) {
 					target.$throw(1, 1000);
 					game.log(target, "将", "#y一张手牌", "置于了牌堆顶");
 					await target.lose(result.cards, ui.cardPile, "insert");

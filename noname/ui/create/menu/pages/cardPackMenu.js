@@ -258,8 +258,8 @@ export const cardPackMenu = function (connectMenu) {
 			} else {
 				page.style.paddingTop = "8px";
 			}
-			if (lib.translate[mode + "_info"]) {
-				var modeTranslation = "<p style=\"padding-left: 2em;\">" + lib.translate[mode + "_info"] + "</p>";
+			if (lib.translate[mode + "_cardsInfo"]) {
+				var modeTranslation = "<p style=\"padding-left: 2em;\">" + lib.translate[mode + "_cardsInfo"] + "</p>";
 				page.insertAdjacentHTML('beforeend', modeTranslation);
 			}
 			var banCard = function (e) {

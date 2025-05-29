@@ -2846,7 +2846,7 @@ const skills = {
 			if (!_status.viewAsSkills) {
 				lib.skill[event.skill].initList();
 			}
-			const list = _status.viewAsSkills.filter(skill => !player.hasSkill(skill));
+			const list = _status.viewAsSkills.filter(skill => !player.hasSkill(skill, null, null, false));
 			if (!list.length) {
 				return;
 			}
@@ -5979,7 +5979,7 @@ const skills = {
 			}
 			for (const i of game.players) {
 				for (const j of game.players) {
-					if (storage[i.playerid][j.playerid] != get.distance(i, j)) {
+					if (storage[i.playerid]?.[j.playerid] != get.distance(i, j)) {
 						bool = true;
 					}
 				}
@@ -6372,9 +6372,9 @@ const skills = {
 					}
 					let str = "将一张牌置于" + get.translation(list);
 					if (list.length > 1) {
-						return str += "其中一人的武将牌上";
+						return (str += "其中一人的武将牌上");
 					}
-					return str += "的武将牌上";
+					return (str += "的武将牌上");
 				},
 				filterTarget(card, player, target) {
 					return target.hasSkill("hm_xiongshi");
@@ -6922,15 +6922,14 @@ const skills = {
 		},
 	},
 	hm_dangjing: {
-		trigger: {
-			player: ["hm_zongfuAfter", "hm_dangjing_callback"],
-		},
+		trigger: { player: ["hm_zongfuAfter", "hm_dangjing_callback"] },
 		filter(event, player) {
 			return player.isMaxEquip();
 		},
 		async cost(event, trigger, player) {
 			const next = player.chooseTarget("令一名角色进行一次判定");
 			next.set("ai", function (target) {
+				const player = get.player();
 				return get.damageEffect(target, player, player, "thunder");
 			});
 			const { result } = await next;
@@ -6955,6 +6954,7 @@ const skills = {
 				event.trigger("hm_dangjing_callback");
 			}
 		},
+		ai: { combo: "hm_zongfu" },
 	},
 	//神张宝
 	hm_zhouyuan: {
@@ -9858,6 +9858,7 @@ const skills = {
 					return target.countDiscardableCards(player, "he") > 0;
 				})
 				.set("ai", target => {
+					const player = get.player();
 					let att = get.attitude(player, target);
 					if (att >= 0) {
 						return 0;
@@ -12280,7 +12281,8 @@ const skills = {
 						return target.getSeatNum() == 1 || get.nameList(target).some(name => get.rawName(name) == "刘备");
 					})
 					.set("ai", target => {
-						if (get.attitude(get.player(), target) <= 0) {
+						const player = get.player();
+						if (get.attitude(player, target) <= 0) {
 							return 0;
 						}
 						return player.hp + 1 - target.hp;
@@ -14236,7 +14238,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const result = await player
 						.chooseCardTarget({
-							prompt: get.prompt2(event.skill),
+							prompt: get.prompt2("jdqixi"),
 							prompt2: lib.translate.jdqixi_info.slice("出牌阶段限一次，你可以".length),
 							filterCard: lib.skill.jdqixi.filterCard,
 							filterTarget: lib.skill.jdqixi.filterTarget,
