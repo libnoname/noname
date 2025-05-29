@@ -104,7 +104,10 @@ const skills = {
 					if (!Array.isArray(button.link)) {
 						return ui.selected.buttons.length == 0;
 					}
-					const cardx = get.autoViewAs({ name: button.link[2] }, ui.selected.buttons);
+					if (ui.selected.buttons.length != 1) {
+						return false;
+					}
+					const cardx = get.autoViewAs({ name: button.link[2] }, ui.selected.buttons.map(i => i.link));
 					return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
 				.set("complexButton", true)
@@ -161,7 +164,10 @@ const skills = {
 						if (!Array.isArray(button.link)) {
 							return ui.selected.buttons.length == 0;
 						}
-						const cardx = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, ui.selected.buttons);
+						if (ui.selected.buttons.length != 1) {
+							return false;
+						}
+						const cardx = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, ui.selected.buttons.map(i => i.link));
 						return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 					})
 					.set("complexButton", true)

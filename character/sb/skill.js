@@ -7848,7 +7848,7 @@ const skills = {
 				target(player, target) {
 					if (
 						game.hasPlayer(current => {
-							return get.rawAttitude(player, current) > 0 && current != player && get.attitude(player, current) <= 0;
+							return (!get.rawAttitude || get.rawAttitude(player, current) > 0) && current != player && get.attitude(player, current) <= 0;
 						}) &&
 						game.countPlayer(current => {
 							return get.attitude(player, current) > 0;
