@@ -1,4 +1,11 @@
 export default {
+	"#strong_caochong:die": "哎呀！闪到腰了……",
+	"#strongduanti1": "饭前蹲一蹲，膂力破万均。",
+	"#strongduanti2": "饭后练一练，称象不打颤。",
+	"#strongxishu1": "爱笑的人，运气都不会差！",
+	"#strongxishu2": "这是，爱笑的大哥哥！",
+	"#olchengxiang_strong_caochong1": "大象，大象，你过来呀。",
+	"#olchengxiang_strong_caochong2": "那我问你，象重几何？",
 	"#oltiangong1": "此番受天书教化，当你我兄弟显名之时！",
 	"#oltiangong2": "天地人本同一元气，分为三体。你我兄弟亦然。",
 	"#oldigong1": "太平气出，今为元气纯纯之时！",
