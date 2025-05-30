@@ -858,7 +858,7 @@ game.import("card", function () {
 						_status.jinhe = jinhe;
 					}, _status.jinhe);
 					"step 1";
-					var hs = player.getCards("h");
+					let hs = player.getDiscardableCards(player, "h");
 					if (hs.length) {
 						player.discard(hs);
 					}
