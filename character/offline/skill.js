@@ -1796,7 +1796,7 @@ const skills = {
 									}
 									return 0;
 								})
-								.set("att", get.attitude(target, player) - 2)
+								.set("att", get.attitude(target, player) > 0)
 								.forResult();
 							if (resultx?.cards?.length) {
 								target.popup("响应");

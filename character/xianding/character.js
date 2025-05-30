@@ -164,7 +164,8 @@ const characters = {
 	wu_huangfusong: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 1,
+		maxHp: 4,
 		skills: ["dcchaozhen", "dclianjie", "dcjiangxian"],
 		names: "皇甫|嵩",
 	},
