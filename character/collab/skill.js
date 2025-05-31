@@ -48,7 +48,7 @@ const skills = {
 			halfneg: true,
 		},
 	},
-	strongxishu: {
+	strongchuanshu: {
 		audio: 2,
 		trigger: {
 			player: "useCardToPlayered",
