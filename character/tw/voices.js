@@ -1,4 +1,12 @@
 export default {
+	"#twchenxun1": "待我上马，拔得头筹！",
+	"#twchenxun2": "阵斩敌将，名扬四海！",
+	"#huan_liufeng:die": "断臂之犬，焉能挡我？……呃啊！",
+	"#twmiewei1": "龙骧、陷阵，焉挡我虎贲之师！",
+	"#twmiewei2": "汝等千军，今亦为吾一人所围！",
+	"#twmiyong1": "虎狼之躯，百战无败！",
+	"#twmiyong2": "铁戟亡魂无数，血甲锋迹犹存！",
+	"#huan_dianwei:die": "黄泉路上，某亦护主公左右……",
 	"#twqianxiong1": "暗伏甲士，待机而行。",
 	"#twqianxiong2": "明既不能取胜，不妨以暗箭诛之。",
 	"#twzhengshi1": "身陷王侯之门，自然有此一遭。",
