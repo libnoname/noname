@@ -185,6 +185,7 @@ export class Library {
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
 		maoshu_emotion: 18,
+		mobile_emotion: 16,
 	};
 	animate = {
 		skill: {},
@@ -10219,6 +10220,7 @@ export class Library {
 		chaijun_emotion: "柴郡表情",
 		huangdou_emotion: "黄豆表情",
 		maoshu_emotion: "猫鼠表情",
+		mobile_emotion: "手杀表情",
 
 		pause: "暂停",
 		config: "选项",
