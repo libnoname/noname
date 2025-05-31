@@ -2487,7 +2487,6 @@ const skills = {
 		popup: false,
 		async cost(event, trigger, player) {
 			//照搬谋曹操的清正（包括ai）
-			player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) {
@@ -2697,6 +2696,7 @@ const skills = {
 			const suit = get.suit(cards[0], player);
 			//官方结算是对比弃牌前的
 			const es = player.countCards("e");
+			player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
 			await player.modedDiscard(cards);
 			const card = get.cardPile(card => get.type(card) == "equip" && get.suit(card) == suit);
 			if (!card) {
