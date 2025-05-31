@@ -4151,7 +4151,7 @@ const skills = {
 							.set("filterButton", button => {
 								const card = button.link,
 									{ player, useCard, targets } = get.event();
-								if (!targets) {
+								if (!targets?.length) {
 									return true;
 								}
 								ui.selected.cards.add(card);

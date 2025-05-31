@@ -257,8 +257,8 @@ const translates = {
 	strongduanti: "锻体",
 	strongduanti_info: "锁定技，①你从牌堆摸牌后，受到1点无来源伤害。②当你发动〖称象〗时，若你的体力值为全场最低，必定亮出一张【桃】或【酒】；若你的体力值为全场最高，必定亮出一张伤害牌或武器牌。",
 	strongduanti_append: "<span class='text' style='font-family: yuanli'>我要验牌！</span>",
-	strongchuanshu: "传术",
-	strongchuanshu_info: "你使用【杀】指定唯一目标或成为【杀】的唯一目标后，使用者每满足一项便可弃置目标角色的一张牌：1.装备了武器牌；2.此【杀】受到了【酒】的影响。",
+	stronglianwu: "练武",
+	stronglianwu_info: "你使用【杀】指定唯一目标或成为【杀】的唯一目标后，使用者每满足一项便可弃置目标角色的一张牌：1.装备了武器牌；2.此【杀】受到了【酒】的影响。",
 };
 
 export default translates;

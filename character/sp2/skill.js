@@ -7335,7 +7335,7 @@ const skills = {
 				await player.addSkills(get.info(event.name).derivation);
 			}
 		},
-		derivation: ["ollongdan", "drlt_congjian", "chuanyun"],
+		derivation: ["chaofeng", "ollongdan", "drlt_congjian", "chuanyun"],
 		ai: {
 			maixie_hp: true,
 			effect: {

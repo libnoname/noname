@@ -24,21 +24,21 @@ const skills = {
 					trigger.showCards = [];
 				}
 				if (player.isMaxHp()) {
-					let card = get.cardPile(card => {
+					let card = get.cardPile2(card => {
 						return get.subtype(card) == "equip1" || get.tag(card, "damage");
 					});
 					if (card) {
 						trigger.showCards.add(card);
-						await game.cardsGotoOrdering(card);
+						await game.cardsGotoOrdering(card).set("relatedEvent", trigger);
 					}
 				}
 				if (player.isMinHp()) {
-					let card = get.cardPile(card => {
+					let card = get.cardPile2(card => {
 						return card.name == "tao" || card.name == "jiu";
 					});
 					if (card) {
 						trigger.showCards.add(card);
-						await game.cardsGotoOrdering(card);
+						await game.cardsGotoOrdering(card).set("relatedEvent", trigger);
 					}
 				}
 			}
@@ -48,7 +48,7 @@ const skills = {
 			halfneg: true,
 		},
 	},
-	strongchuanshu: {
+	stronglianwu: {
 		audio: 2,
 		trigger: {
 			player: "useCardToPlayered",
