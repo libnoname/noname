@@ -4546,16 +4546,20 @@ game.import("card", function () {
 							};
 						} else {
 							var evt = get.event();
+							//判断主机是否还在特殊框架内转化卡牌
 							if (evt.getParent().name == "chooseToUse") {
 								evt = evt.getParent();
 							}
 							if (evt.id == id && evt.name == "chooseToUse" && _status.paused) {
 								return function () {
+									//如果主机还在想要不要打无懈(包括chooseButton+backup框架)的情况下所有客机均完成响应执行的代码
 									event.resultOL = _status.event.resultOL;
 								};
 							} else {
+								//主机完成响应后所有客机完成响应后执行的代码
 								return () => {
-									if (get.event().name == "_wuxie" && result.id == id) {
+									//判断本次_wuxie事件是否在“暂停”状态
+									if (get.event().name == "_wuxie" && _status.paused && get.event().withol && get.event().step == 6) {
 										game.resume();
 									}
 								};

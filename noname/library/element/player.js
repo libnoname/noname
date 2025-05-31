@@ -8366,7 +8366,7 @@ export class Player extends HTMLDivElement {
 		if (!card.expired) {
 			let target = this.getNext();
 			const name = card.viewAs || card.name;
-			const cards = get.itemtype(card) == "card" ? [card] : (card.cards ?? []);
+			const cards = get.itemtype(card) == "card" ? [card] : card.cards ?? [];
 			//if (get.itemtype(cards) != "cards") return;
 			let bool = false;
 			if (
@@ -13603,10 +13603,15 @@ export class Player extends HTMLDivElement {
 					cardx.cards = cards || [];
 					cardx.viewAs = VCard.name;
 					//cardx.node.name2.innerHTML = `${suit}${number} [${get.translation(VCard.name)}]`;
-					if (cardx.classList.contains("fullskin") || cardx.classList.contains("fullborder")) {
+					if (cardx.classList.contains("fullskin") || cardx.classList.contains("fullborder") || cardx.classList.contains("fullimage")) {
+						cardx.classList.add("fakejudge");
+						if (cardx.classList.contains("fullimage")) {
+							cardx.classList.remove("fullimage");
+							cardx.classList.add("fullskin");
+							cardx.style.backgroundImage = "";
+						}
 						cardx.node.background.innerHTML = lib.translate[cardx.viewAs + "_bg"] || get.translation(cardx.viewAs)[0];
 					}
-					cardx.classList.add("fakejudge");
 				} else {
 					delete cardx.viewAs;
 					//cardx.node.name2.innerHTML = `${suit}${number} ${VCard.name}`;

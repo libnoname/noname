@@ -2689,10 +2689,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					break;
 				}
 				if (setPrefix.length) {
-					//兼容版特化处理
-					if (lib.compatibleEdition) {
-						return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}　</span>`;
-					}
 					return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}</span>`;
 				}
 			}
@@ -4896,38 +4892,22 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 			if (!simple || get.is.phoneLayout()) {
-				var es = node.getVCards("e");
+				var es = node.getCards("e");
 				for (var i = 0; i < es.length; i++) {
-					let name = es[i].name;
-					if (es[i]?.cards?.length == 1 && es[i].cards[0].name != name) {
-						name = es[i].cards[0].name;
-					}
-					let carde = game.createCard(name, es[i].suit, es[i].number, es[i].nature);
-					if (name != es[i].name) {
-						ui.create.cardTempName(es[i], carde);
-					}
-					let html = carde.outerHTML;
-					const special = [carde].concat(es[i].cards || []).find(j => j.name == es[i].name && lib.card[j.name]?.cardPrompt);
+					const special = [es[i]].concat(es[i].cards || []).find(j => j.name == es[i].name && lib.card[j.name]?.cardPrompt);
 					var str = special ? lib.card[special.name].cardPrompt(special, node) : lib.translate[es[i].name + "_info"];
-					uiintro.add('<div><div class="skill">' + html + "</div><div>" + str + "</div></div>");
+					uiintro.add('<div><div class="skill">' + es[i].outerHTML + "</div><div>" + str + "</div></div>");
 					uiintro.content.lastChild.querySelector(".skill>.card").style.transform = "";
 
 					if (lib.translate[es[i].name + "_append"]) {
 						uiintro.add('<div class="text">' + lib.translate[es[i].name + "_append"] + "</div>");
 					}
 				}
-				var js = node.getVCards("j");
+				var js = node.getCards("j");
 				for (var i = 0; i < js.length; i++) {
-					let name = js[i].name;
-					if (js[i]?.cards?.length == 1 && js[i].cards[0].name != name) {
-						name = js[i].cards[0].name;
-					}
-					let cardj = game.createCard(name, js[i].suit, js[i].number, js[i].nature);
-					if (name != js[i].name) {
-						ui.create.cardTempName(js[i], cardj);
-					}
-					let html = cardj.outerHTML;
-					if (js[i].viewAs && js[i].viewAs != js[i].name) {
+					const Vcard = js[i][js[i].cardSymbol];
+					if (js[i].viewAs && Vcard.cards.length == 1 && js[i].viewAs != Vcard.cards[0].name) {
+						let html = Vcard.cards[0].outerHTML;
 						let cardInfo = lib.card[js[i].viewAs],
 							showCardIntro = true;
 						if (cardInfo.blankCard) {
@@ -4941,7 +4921,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						uiintro.add('<div><div class="skill">' + html + "</div><div>" + lib.translate[js[i].viewAs] + "：" + lib.translate[js[i].viewAs + "_info"] + "</div></div>");
 					} else {
-						uiintro.add('<div><div class="skill">' + html + "</div><div>" + lib.translate[js[i].name + "_info"] + "</div></div>");
+						uiintro.add('<div><div class="skill">' + js[i].outerHTML + "</div><div>" + lib.translate[js[i].name + "_info"] + "</div></div>");
 					}
 					uiintro.content.lastChild.querySelector(".skill>.card").style.transform = "";
 				}
@@ -5241,7 +5221,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (ui.arena.classList.contains("observe") && node.parentNode.classList.contains("handcards")) {
 				return;
 			}
-			var name = node.name;
+			var name = node.name,
+				Vcard = node[node.cardSymbol] || false;
 			if (node.parentNode.cardMod) {
 				var moded = false;
 				for (var i in node.parentNode.cardMod) {
@@ -5260,7 +5241,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				name = node.link.name;
 			}
 			var cardPosition = get.position(node);
-			if ((cardPosition === "e" || cardPosition === "j") && node.viewAs && node.viewAs != name) {
+			if (((cardPosition === "e" || cardPosition === "j") && node.viewAs && node.viewAs != name) || (Vcard && (Vcard.cards.length != 1 || Vcard.cards[0].name != name))) {
 				uiintro.add(get.translation(node.viewAs));
 				var cardInfo = lib.card[node.viewAs],
 					showCardIntro = true;
@@ -5271,9 +5252,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					}
 				}
 				if (cardOwner) {
-					var sourceVCard = cardOwner.getVCards(cardPosition).find(card => card.cards?.includes(node));
+					var sourceVCard = Vcard;
 					if (showCardIntro && sourceVCard) {
-						uiintro.add('<div class="text center">（' + get.translation(get.translation(sourceVCard.cards)) + "）</div>");
+						uiintro.add('<div class="text center">（' + (sourceVCard?.cards?.length ? get.translation(get.translation(sourceVCard.cards)) : "这是一张虚拟牌") + "）</div>");
 					}
 				}
 				// uiintro.add(get.translation(node.viewAs)+'<br><div class="text center" style="padding-top:5px;">（'+get.translation(node)+'）</div>');

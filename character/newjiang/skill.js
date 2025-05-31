@@ -412,6 +412,8 @@ const skills = {
 			}
 			if (!storage.includes(number)) {
 				player.markAuto(event.name, [number]);
+				player.storage[event.name].sort((a, b) => a - b);
+				player.markSkill(event.name);
 				await player.draw();
 			}
 		},
