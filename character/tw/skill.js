@@ -402,6 +402,9 @@ const skills = {
 					.set("targets", targets)
 					.set("sourcex", target)
 					.forResult();
+				if (!result?.bool) {
+					return;
+				}
 				const gainer = result.targets[0];
 				player.line(gainer);
 				await gainer.gainPlayerCard(target, "h", true, "visible");

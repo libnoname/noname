@@ -18153,7 +18153,7 @@ const skills = {
 						1,
 						target
 							.getHistory("lose", evt => {
-								return evt.type == "discard" && evt.getParent(event.name) == event;
+								return evt.type == "discard" && evt.getParent(2) == event;
 							})
 							.reduce((sum, evt) => (sum += evt.getl(target)?.cards2?.length), 0)
 					);
