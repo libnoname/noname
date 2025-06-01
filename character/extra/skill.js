@@ -10555,65 +10555,87 @@ const skills = {
 	},
 	dawu: {
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.getExpansions("qixing").length;
 		},
 		audio: 2,
-		content() {
-			"step 0";
-			var num = Math.min(game.countPlayer(), player.getExpansions("qixing").length);
-			player
-				.chooseTarget(get.prompt("dawu"), "令至多" + get.cnNumber(num) + "名角色获得“大雾”标记", [1, num])
-				.set("ai", function (target) {
-					if (target.isMin()) {
+		async cost(event, trigger, player) {
+			const {
+				result: {
+					bool,
+					targets,
+					links: cost_data,
+				}
+			} = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt2(event.skill), player.getExpansions("qixing")],
+					selectButton: [1, game.countPlayer()],
+					filterTarget: true,
+					selectTarget() {
+						return ui.selected.buttons.length;
+					},
+					complexSelect: true,
+					ai1(button) {
+						const { player, allUse } = get.event();
+						const targets = game.filterPlayer(target => {
+							if (target.isMin() || target.hasSkill("biantian2") || target.hasSkill("dawu2")) {
+								return false;
+							}
+							let att = get.attitude(player, target);
+							if (att >= 4) {
+								if (target.hp > 2 && (target.isHealthy() || target.hasSkillTag("maixie"))) {
+									return false;
+								}
+								if (allUse || target.hp == 1) {
+									return true;
+								}
+								if (target.hp == 2 && target.countCards("he") <= 2) {
+									return true;
+								}
+							}
+							return false;
+						});
+						if (ui.selected.buttons.length < targets.length) {
+							return 1;
+						}
 						return 0;
-					}
-					if (target.hasSkill("biantian2") || target.hasSkill("dawu2")) {
-						return 0;
-					}
-					var att = get.attitude(player, target);
-					if (att >= 4) {
-						if (target.hp > 2 && (target.isHealthy() || target.hasSkillTag("maixie"))) {
+					},
+					ai2(target) {
+						const { player, allUse } = get.event();
+						if (target.isMin() || target.hasSkill("biantian2") || target.hasSkill("dawu2")) {
 							return 0;
 						}
-						if (_status.event.allUse) {
-							return att;
+						let att = get.attitude(player, target);
+						if (att >= 4) {
+							if (target.hp > 2 && (target.isHealthy() || target.hasSkillTag("maixie"))) {
+								return 0;
+							}
+							if (allUse || target.hp == 1) {
+								return att;
+							}
+							if (target.hp == 2 && target.countCards("he") <= 2) {
+								return att * 0.7;
+							}
+							return 0;
 						}
-						if (target.hp == 1) {
-							return att;
-						}
-						if (target.hp == 2 && target.countCards("he") <= 2) {
-							return att * 0.7;
-						}
-						return 0;
-					}
-					return -1;
+						return -1;
+					},
 				})
-				.set(
-					"allUse",
-					player.getExpansions("qixing").length >=
-						game.countPlayer(function (current) {
-							return get.attitude(player, current) > 4;
-						}) *
-							2
-				);
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.logSkill("dawu", targets, "thunder");
-				var length = targets.length;
-				targets.forEach(target => {
-					target.addAdditionalSkill(`dawu_${player.playerid}`, "dawu2");
-					target.markAuto("dawu2", [player]);
-				});
-				player.addTempSkill("dawu3", { player: "phaseBeginStart" });
-				player.chooseCardButton("选择弃置" + get.cnNumber(length) + "张“星”", length, player.getExpansions("qixing"), true);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			player.loseToDiscardpile(result.links);
+				.set("allUse", player.getExpansions("qixing").length >= game.countPlayer(current => get.attitude(player, current) > 4) * 2)
+			event.result = {
+				bool: bool,
+				targets: targets?.sortBySeat(),
+				cost_data: cost_data,
+			}		
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: cards } = event;
+			targets.forEach(target => {
+				target.addAdditionalSkill(`dawu_${player.playerid}`, "dawu2");
+				target.markAuto("dawu2", [player]);
+			});
+			player.addTempSkill("dawu3", { player: "phaseBeginStart" });
+			await player.loseToDiscardpile(cards);
 		},
 		ai: {
 			combo: "qixing",
@@ -10662,31 +10684,47 @@ const skills = {
 	kuangfeng: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.getExpansions("qixing").length;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("kuangfeng"), "令一名角色获得“狂风”标记").ai = function (target) {
-				return -1;
-			};
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.logSkill("kuangfeng", targets, "fire");
-				var length = targets.length;
-				targets.forEach(target => {
-					target.addAdditionalSkill(`kuangfeng_${player.playerid}`, "kuangfeng2");
-					target.markAuto("kuangfeng2", [player]);
+		async cost(event, trigger, player) {
+			const {
+				result: {
+					bool,
+					targets,
+					links: cost_data,
+				}
+			} = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt2(event.skill), player.getExpansions("qixing")],
+					selectButton: 1,
+					filterTarget: true,
+					ai1(button) {
+						if (game.hasPlayer(target => {
+							return get.attitude(get.player(), target) < 0;
+						})) {
+							return 1;
+						}
+						return 0;
+					},
+					ai2(target) {
+						return -get.attitude(get.player(), target);
+					},
 				});
-				player.addTempSkill("kuangfeng3", { player: "phaseBeginStart" });
-				player.chooseCardButton("选择弃置" + get.cnNumber(length) + "张“星”", length, player.getExpansions("qixing"), true);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			player.loseToDiscardpile(result.links);
+			event.result = {
+				bool: bool,
+				targets: targets?.sortBySeat(),
+				cost_data: cost_data,
+			}		
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: cards } = event;
+			targets.forEach(target => {
+				target.addAdditionalSkill(`kuangfeng_${player.playerid}`, "kuangfeng2");
+				target.markAuto("kuangfeng2", [player]);
+			});
+			player.addTempSkill("kuangfeng3", { player: "phaseBeginStart" });
+			await player.loseToDiscardpile(cards);
 		},
 		ai: {
 			combo: "qixing",

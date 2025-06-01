@@ -35451,103 +35451,91 @@ const skills = {
 			}
 			return false;
 		},
-		direct: true,
-		preHidden: true,
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
 			if (trigger.delay == false) {
-				game.delay();
+				await game.delay();
 			}
-			event.cards = [];
-			var cards2 = trigger.getl(player).cards2;
-			for (var i = 0; i < cards2.length; i++) {
-				if (get.position(cards2[i], true) == "d") {
-					event.cards.push(cards2[i]);
-				}
-			}
+			const cards = trigger.getl(player)?.cards2?.filterInD("od"),
+				give_map = {};
 			if (_status.connectMode) {
 				game.broadcastAll(function () {
 					_status.noclearcountdown = true;
 				});
 			}
-			event.given_map = {};
-			"step 1";
-			var goon = false;
-			for (var i = 0; i < event.cards.length; i++) {
-				if (event.cards[i].name == "du") {
-					goon = true;
+			do {
+				const { result } = cards.length > 1 ? await player
+					.chooseButtonTarget({
+						createDialog: [`礼让：是否分配本次弃置的牌？`, cards],
+						selectButton: [1, Infinity],
+						cardsx: cards,
+						filterTarget: lib.filter.notMe,
+						ai1(button) {
+							return get.value(button.link);
+						},
+						canHidden: true,
+						ai2(target) {
+							const player = get.player();
+							const card = ui.selected.buttons[0].link;
+							if (card) {
+								return get.value(card, target) * get.attitude(player, target);
+							}
+							return 1;
+						},
+					})
+					.setHiddenSkill("lirang") : await player
+						.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
+						.set("ai", target => {
+							const att = get.attitude(_status.event.player, target);
+							if (_status.event.enemy) {
+								return -att;
+							} else if (att > 0) {
+								return att / (1 + target.countCards("h"));
+							} else {
+								return att / 100;
+							}
+						})
+						.setHiddenSkill("lirang")
+						.set("enemy", get.value(cards[0], player, "raw") < 0);
+				if (result?.bool) {
+					if (!result.links?.length) {
+						result.links = cards.slice(0);
+					}
+					cards.removeArray(result.links);
+					let id = result.targets[0]?.playerid;
+					if (!give_map[id]) {
+						give_map[id] = [];
+					}
+					give_map[id].addArray(result.links);
+				}
+				else {
 					break;
 				}
-			}
-			if (!goon) {
-				goon = game.hasPlayer(function (current) {
-					return player != current && get.attitude(player, current) > 1;
-				});
-			}
-			player
-				.chooseButton(["礼让：是否分配本次弃置的牌？", event.cards], [1, event.cards.length])
-				.set("ai", function (button) {
-					if (_status.event.goon && ui.selected.buttons.length == 0) {
-						return 1 + Math.abs(get.value(button.link));
-					}
-					return 0;
-				})
-				.set("goon", goon)
-				.setHiddenSkill("lirang");
-			"step 2";
-			if (result.bool) {
-				event.cards.removeArray(result.links);
-				event.togive = result.links.slice(0);
-				player
-					.chooseTarget("选择一名其他角色获得" + get.translation(result.links), true, lib.filter.notMe)
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (_status.event.enemy) {
-							return -att;
-						} else if (att > 0) {
-							return att / (1 + target.countCards("h"));
-						} else {
-							return att / 100;
-						}
-					})
-					.set("enemy", get.value(event.togive[0], player, "raw") < 0);
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			if (result.targets.length) {
-				var id = result.targets[0].playerid,
-					map = event.given_map;
-				if (!map[id]) {
-					map[id] = [];
-				}
-				map[id].addArray(event.togive);
-			}
-			if (cards.length > 0) {
-				event.goto(1);
-			}
-			"step 4";
+			} while (cards.length > 0);
 			if (_status.connectMode) {
 				game.broadcastAll(function () {
 					delete _status.noclearcountdown;
 					game.stopCountChoose();
 				});
 			}
-			var list = [],
-				targets = [];
-			for (var i in event.given_map) {
-				var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				list.push([source, event.given_map[i]]);
+			const targets = [],
+				lose_list = [];
+			for (let i in give_map) {
+				let source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+				lose_list.push([source, give_map[i]]);
 				targets.push(source);
 			}
-			if (targets.length) {
-				player.logSkill("lirang", targets);
-				game.loseAsync({
-					gain_list: list,
-					giver: player,
-					animate: "gain2",
-				}).setContent("gaincardMultiple");
+			event.result = {
+				bool: targets.length > 0,
+				targets: targets?.sortBySeat(),
+				cost_data: lose_list,
 			}
+		},
+		async content(event, trigger, player) {
+			await game.loseAsync({
+				gain_list: event.cost_data,
+				giver: player,
+				animate: "gain2",
+			}).setContent("gaincardMultiple");
 		},
 		ai: {
 			expose: 0.1,

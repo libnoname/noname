@@ -80,7 +80,7 @@ game.import("card", function () {
 					}
 					if (target.isDying() || event.getParent(2).type == "dying") {
 						target.recover();
-						if (_status.currentPhase == target) {
+						if (_status.currentPhase == target && typeof target.getStat().card.jiu == "number") {
 							target.getStat().card.jiu--;
 						}
 					} else {

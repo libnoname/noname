@@ -10432,39 +10432,45 @@ const skills = {
 				return;
 			}
 			do {
-				const {
-					result: { bool, links },
-				} =
-					cards.length == 1
-						? { result: { links: cards.slice(0), bool: true } }
-						: await player.chooseCardButton("连营：请选择要分配的牌", true, cards, [1, cards.length]).set("ai", () => {
-								if (ui.selected.buttons.length == 0) {
-									return 1;
-								}
-								return 0;
-						  });
-				if (!bool) {
-					return;
-				}
-				cards.removeArray(links);
-				const togive = links.slice(0);
-				const {
-					result: { targets },
-				} = await player
-					.chooseTarget("选择一名角色获得" + get.translation(links), true)
-					.set("ai", target => {
-						const att = get.attitude(_status.event.player, target);
-						if (_status.event.enemy) {
-							return -att;
-						} else if (att > 0) {
-							return att / (1 + target.countCards("h"));
-						} else {
-							return att / 100;
-						}
-					})
-					.set("enemy", get.value(togive[0], player, "raw") < 0);
-				if (targets.length) {
-					await targets[0].gain(togive, "gain2");
+				const { result } = cards.length > 1 ? await player
+					.chooseButtonTarget({
+						createDialog: [`连营：请选择要分配的牌和目标`, cards],
+						forced: true,
+						selectButton: [1, Infinity],
+						cardsx: cards,
+						ai1(button) {
+							return get.value(button.link);
+						},
+						ai2(target) {
+							const player = get.player();
+							const card = ui.selected.buttons[0].link;
+							if (card) {
+								return get.value(card, target) * get.attitude(player, target);
+							}
+							return 1;
+						},
+					}) : await player
+						.chooseTarget("选择一名角色获得" + get.translation(cards), true)
+						.set("ai", target => {
+							const att = get.attitude(_status.event.player, target);
+							if (_status.event.enemy) {
+								return -att;
+							} else if (att > 0) {
+								return att / (1 + target.countCards("h"));
+							} else {
+								return att / 100;
+							}
+						})
+						.set("enemy", get.value(cards[0], player, "raw") < 0);
+				if (result.bool) {
+					if (!result.links?.length) {
+						result.links = cards.slice(0);
+					}
+					cards.removeArray(result.links);
+					player.line(result.targets, "green");
+					const gainEvent = result.targets[0].gain(result.links, "draw");
+					gainEvent.giver = player;
+					await gainEvent;
 				}
 			} while (cards.length > 0);
 		},
