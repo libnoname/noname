@@ -2545,8 +2545,7 @@ const skills = {
 		filter(event, player) {
 			return !player.storage.dcqixin_die;
 		},
-		filterCard: false,
-		selectCard: [0, 1],
+		manualConfirm: true,
 		prompt() {
 			const player = get.player();
 			return "将性别变更为" + (player.storage["dcqixin"] ? "刘协--男" : "曹节--女");

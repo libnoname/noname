@@ -8009,8 +8009,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		derivation: ["dctaji", "dcqinghuang"],
-		filterCard: () => false,
-		selectCard: [0, 1],
+		manualConfirm: true,
 		prompt() {
 			return "限定技。你可以失去〖汇灵〗，增加" + Math.min(game.countPlayer(), _status.event.player.countMark("dchuiling")) + "点体力上限，然后获得〖踏寂〗和〖清荒〗。";
 		},

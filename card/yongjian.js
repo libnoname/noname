@@ -197,6 +197,7 @@ game.import("card", function () {
 				subtype: "equip1",
 				distance: { attackFrom: -1 },
 				fullskin: true,
+				manualConfirm: true,
 				global: "qixingbaodao",
 				ai: {
 					order: 9,
@@ -234,7 +235,8 @@ game.import("card", function () {
 				subtype: "equip1",
 				fullskin: true,
 				distance: { attackFrom: 1 },
-				selectTarget: [-1, -2],
+				selectTarget: -1,
+				manualConfirm: true,
 				ai: {
 					order: 9,
 					equipValue(card, player) {
@@ -274,7 +276,8 @@ game.import("card", function () {
 				subtype: "equip2",
 				fullskin: true,
 				skills: ["serafuku"],
-				selectTarget: [-1, -2],
+				selectTarget: -1,
+				manualConfirm: true,
 				ai: {
 					order: 9,
 					equipValue(card, player) {
@@ -320,7 +323,8 @@ game.import("card", function () {
 				subtype: "equip2",
 				fullskin: true,
 				skills: ["yinfengyi"],
-				selectTarget: [-1, -2],
+				selectTarget: -1,
+				manualConfirm: true,
 				ai: {
 					order: 9,
 					equipValue(card, player) {
@@ -359,7 +363,8 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip4",
 				fullskin: true,
-				selectTarget: [-1, -2],
+				selectTarget: -1,
+				manualConfirm: true,
 				distance: {
 					globalFrom: -1,
 					globalTo: -Infinity,

@@ -6981,6 +6981,10 @@ export class Game extends GameCompatible {
 				}
 			}
 		}
+		const eventinfo = get.info(get.card() || {}) || skillinfo;
+		if (eventinfo?.manualConfirm === true) {
+			auto_confirm = false;
+		}
 
 		player.node.equips.classList.remove("popequip");
 		if (event.filterCard && lib.config.popequip && !_status.nopopequip && get.is.phoneLayout() && typeof event.position === "string" && event.position.includes("e") && player.node.equips.querySelector(".card.selectable")) {

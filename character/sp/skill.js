@@ -6790,8 +6790,7 @@ const skills = {
 			const count = lib.skill.olmaozhu.countSkill;
 			return player.countCards("h") < Math.max(...game.filterPlayer().map(i => count(i)));
 		},
-		filterCard: () => false,
-		selectCard: [0, 1],
+		manualConfirm: true,
 		prompt() {
 			const count = lib.skill.olmaozhu.countSkill;
 			return "将手牌数摸至" + get.cnNumber(Math.max(...game.filterPlayer().map(i => count(i)))) + "张";
