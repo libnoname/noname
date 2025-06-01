@@ -2,7 +2,7 @@ import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwi
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "../../../../library/update.js";
 import { createApp } from "../../../../../game/vue.esm-browser.js";
-import security from "../../../../util/security.js";
+import security from "../../../../util/security.js"
 import dedent from "../../../../../game/dedent.js";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
@@ -1703,7 +1703,6 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		}
 	})();
 
-	// 创建各模式/扩展的帮助页面
 	for (const [name, content] of Object.entries(lib.help)) {
 		// 创建帮助页面的内容元素
 		const page = ui.create.div("");

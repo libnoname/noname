@@ -946,7 +946,7 @@ const skills = {
 				.set("list", [["牌堆顶"], ["牌堆底", cards]])
 				.set("prompt", "点击或拖动将牌移动到牌堆顶或牌堆底")
 				.set("processAI", list => {
-					let cards = list[0][1],
+					let cards = list[1][1],
 						player = _status.event.player,
 						target = _status.currentPhase || player,
 						name = _status.event.getTrigger()?.name,

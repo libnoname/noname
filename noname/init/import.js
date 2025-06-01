@@ -29,7 +29,11 @@ export const importExtension = generateImportFunction("extension", name => `../.
  * @param {string} name - 模式名
  * @returns {Promise<void>}
  */
-export const importMode = generateImportFunction("mode", name => `../../mode/${name}.js`);
+export const importMode = generateImportFunction("mode", name => {
+	const alreadyModernMode = lib.config.moderned_modes || [];
+
+	return alreadyModernMode.includes(name) ? `../../mode/${name}/index.js` : `../../mode/${name}.js`;
+});
 
 /**
  * 生成导入

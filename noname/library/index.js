@@ -19,7 +19,7 @@ import { gnc } from "../gnc/index.js";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
 import { Channel } from "./channel/index.js";
-import { Experimental } from "./experimental/index.js";
+import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
@@ -30,6 +30,8 @@ import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
 import dedent from "../../game/dedent.js";
+
+const html = dedent;
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -185,6 +187,7 @@ export class Library {
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
 		maoshu_emotion: 18,
+		mobile_emotion: 16,
 	};
 	animate = {
 		skill: {},
@@ -196,7 +199,42 @@ export class Library {
 	/**
 	 * @type { Function[] | undefined }
 	 */
-	arenaReady = [];
+	arenaReady = [
+		//预处理技能拥有者
+		function () {
+			_status.skillOwner = {};
+			//武将包排序
+			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
+			packSort = packSort.reverse();
+			const packs = Object.keys(lib.characterPack).sort((a, b) => {
+				return packSort.indexOf(b) - packSort.indexOf(a);
+			});
+			for (let i of packs) {
+				for (let j in lib.characterPack[i]) {
+					const info = get.character(j);
+					if (!info || info[4]?.includes("unseen")) {
+						continue;
+					}
+					if (info[3]?.length > 0) {
+						let skills = info[3].slice(0);
+						for (const skill of skills) {
+							const skillInfo = get.info(skill);
+							if (!skillInfo) {
+								continue;
+							}
+							if (skillInfo.derivation) {
+								const der = skillInfo.derivation.slice(0);
+								Array.isArray(der) ? skills.addArray(der) : skills.add(der);
+							}
+							if (!_status.skillOwner[skill]) {
+								_status.skillOwner[skill] = j;
+							}
+						}
+					}
+				}
+			}
+		},
+	];
 	onfree = [];
 	inpile = [];
 	inpile_nature = [];
@@ -1251,6 +1289,26 @@ export class Library {
 					init: false,
 					async onclick(bool) {
 						await game.promises.saveConfig("extension_auto_import", bool);
+					},
+					unfrequent: true,
+				},
+				experimental_enable: {
+					name: "启用实验性功能",
+					init: false,
+					intro: html`
+						开启后将启用部分仍处于实验性质的功能，将改变无名杀现有的部分逻辑（重启后生效）
+						<br />
+						※ 实验性功能无法保证API稳定，如需使用请及时跟进本体进展
+						<br />
+						※ 以API为主的功能不提供具体实现，如需使用请自行实现
+						<br />
+						※ 部分功能将会作用于联机模式
+					`,
+					/**
+					 * @param {boolean} bool 
+					 */
+					async onclick(bool) {
+						await game.promises.saveConfig("experimental_enable", bool);
 					},
 					unfrequent: true,
 				},
@@ -10219,6 +10277,7 @@ export class Library {
 		chaijun_emotion: "柴郡表情",
 		huangdou_emotion: "黄豆表情",
 		maoshu_emotion: "猫鼠表情",
+		mobile_emotion: "手杀表情",
 
 		pause: "暂停",
 		config: "选项",
@@ -10320,7 +10379,7 @@ export class Library {
 		identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 	};
 
-	experimental = Experimental;
+	experimental = experimental;
 
 	element = {
 		content: Element.Content,

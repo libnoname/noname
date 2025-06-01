@@ -248,6 +248,7 @@ game.import("card", function () {
 					return player != target && target.isDying();
 				},
 				content() {
+					player.$skill(get.translation("luojing"), null, get.groupnature(player.group, "raw"));
 					const evt = event.getParent("dying");
 					if (evt.player == target) {
 						evt.set("skipTao", true);
@@ -589,6 +590,7 @@ game.import("card", function () {
 			shengsi_debuff: {
 				charlotte: true,
 				forced: true,
+				popup: false,
 				intro: {
 					content: "你与$生死与共",
 				},
@@ -599,6 +601,7 @@ game.import("card", function () {
 					return player.getStorage("shengsi_debuff").includes(event.player);
 				},
 				content() {
+					player.$skill(get.translation("shengsi"), null, get.groupnature(player.group, "raw"));
 					player.unmarkAuto(event.name, trigger.player);
 					player.die();
 				},

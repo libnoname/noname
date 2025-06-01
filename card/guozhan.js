@@ -12,6 +12,14 @@ game.import("card", function () {
 				subtype: "equip5",
 				skills: ["zhaoshu_skill"],
 				content() {
+					if (player.getStat().skill.zhaoshu_skill) {
+						delete player.getStat().skill.zhaoshu_skill;
+					}
+					game.countPlayer2(current => {
+						if (current.getStat().skill.zhaoshu_global) {
+							delete current.getStat().skill.zhaoshu_global;
+						}
+					});
 					cards = cards.filterInD();
 					if (cards.length && target.isAlive()) {
 						target.addToExpansion(cards, "gain2").gaintag.add("zhaoshu_skill");
@@ -20,6 +28,14 @@ game.import("card", function () {
 					}
 				},
 				onEquip() {
+					if (player.getStat().skill.zhaoshu_skill) {
+						delete player.getStat().skill.zhaoshu_skill;
+					}
+					game.countPlayer2(current => {
+						if (current.getStat().skill.zhaoshu_global) {
+							delete current.getStat().skill.zhaoshu_global;
+						}
+					});
 					if (player.isAlive()) {
 						player.addToExpansion(card, "giveAuto").gaintag.add("zhaoshu_skill");
 						player.markAuto("zhaoshu_skill", [card]);
@@ -487,6 +503,11 @@ game.import("card", function () {
 					basic: {
 						equipValue: 6.5,
 					},
+				},
+				onLose() {
+					if (player.getStat().skill.dinglanyemingzhu_skill) {
+						delete player.getStat().skill.dinglanyemingzhu_skill;
+					}
 				},
 			},
 			feilongduofeng: {

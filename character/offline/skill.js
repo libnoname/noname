@@ -1007,7 +1007,7 @@ const skills = {
 				videoId,
 				cardMap,
 				list,
-				num,
+				num
 			);
 			const result2 = await player.chooseBool(`是否令你的点数+${num}？`).set("dialog", get.idDialog(videoId)).forResult();
 			game.broadcastAll("closeDialog", videoId);
@@ -1795,7 +1795,7 @@ const skills = {
 									}
 									return 0;
 								})
-								.set("att", get.attitude(target, player) - 2)
+								.set("att", get.attitude(target, player) > 0)
 								.forResult();
 							if (resultx?.cards?.length) {
 								target.popup("响应");
@@ -2855,7 +2855,6 @@ const skills = {
 				}
 				const str = get.plainText(get.skillInfoTranslation(skill));
 				if (!["当", "当做", "当作"].some(s => str.includes(s))) {
-					console.log(skill);
 					continue;
 				}
 				list.add(skill);
@@ -5569,6 +5568,7 @@ const skills = {
 		},
 		subSkill: {
 			temp: {
+				charlotte: true,
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("hm_tuntian_temp");
@@ -5589,7 +5589,7 @@ const skills = {
 				},
 				onremove: true,
 				mark: true,
-				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次造成的伤害+#" },
+				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次受到的伤害+#" },
 			},
 		},
 	},
@@ -7048,7 +7048,6 @@ const skills = {
 					await player.gain(cards, "draw");
 				},
 				onremove: true,
-				mark: true,
 				intro: {
 					markcount: "expansion",
 					mark(dialog, storage, player) {
@@ -7076,14 +7075,14 @@ const skills = {
 			global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 		},
 		filter(event, player) {
-			return (player.countExpansions("hm_zhouyuan_expansion") && event.name != "die") ^ player.hasSkill("hm_zhaobing_in");
+			return (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && event.name != "die") ^ player.hasSkill("hm_zhaobing_in");
 		},
 		forced: true,
 		firstDo: true,
 		silent: true,
 		forceDie: true,
 		content() {
-			if (player.countExpansions("hm_zhouyuan_expansion") && trigger.name != "die") {
+			if (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && trigger.name != "die") {
 				const cards = game
 					.filterPlayer()
 					.map(target => target.getExpansions("hm_zhouyuan_expansion"))
@@ -7108,10 +7107,10 @@ const skills = {
 			in: {
 				charlotte: true,
 				trigger: {
-					player: "addToExpansionEnd",
+					global: ["addToExpansionEnd", "gainEnd", "loseEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd"],
 				},
 				filter(event, player) {
-					return event.gaintag.includes("hm_zhouyuan_expansion");
+					return event.gaintag?.includes("hm_zhouyuan_expansion") || Object.values(event.gaintag_map || {})?.flat().includes("hm_zhouyuan_expansion");
 				},
 				forced: true,
 				locked: false,

@@ -410,8 +410,11 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip2",
 				skills: ["mutoumianju_skill"],
-				ai: {
-					equipValue: 4,
+				ai: { equipValue: 4 },
+				onLose() {
+					if (player.getStat().skill.mutoumianju_skill) {
+						delete player.getStat().skill.mutoumianju_skill;
+					}
 				},
 			},
 			yuheng: { fullskin: true },
@@ -424,8 +427,11 @@ game.import("card", function () {
 				nomod: true,
 				unique: true,
 				skills: ["gjyuheng_skill"],
-				ai: {
-					equipValue: 6,
+				ai: { equipValue: 6 },
+				onLose() {
+					if (player.getStat().skill.gjyuheng_skill) {
+						delete player.getStat().skill.gjyuheng_skill;
+					}
 				},
 			},
 			gjyuheng_plus: {
@@ -438,8 +444,11 @@ game.import("card", function () {
 				epic: true,
 				cardimage: "yuheng",
 				skills: ["gjyuheng_plus_skill"],
-				ai: {
-					equipValue: 7,
+				ai: { equipValue: 7 },
+				onLose() {
+					if (player.getStat().skill.gjyuheng_plus_skill) {
+						delete player.getStat().skill.gjyuheng_plus_skill;
+					}
 				},
 			},
 			gjyuheng_pro: {
@@ -1892,7 +1901,7 @@ game.import("card", function () {
 			gjyuheng_pro_info: "由普通玉衡二次强化得到，将玉横技能描述中的“弃置一张黑桃手牌”改为“弃置一张黑色手牌”，并去掉使用次数限制。",
 			gjyuheng_skill_info: "出牌阶段限一次，若敌方角色有黑桃手牌，你可以弃置一张黑桃手牌，然后获得一名随机敌方角色的一张随机黑桃手牌。",
 			gjyuheng_plus_skill_info: "出牌阶段限一次，若敌方角色有黑桃手牌，你可以弃置一张黑色手牌，然后获得一名随机敌方角色的一张随机黑桃手牌。",
-			gjyuheng_pro_skill_info: "出牌阶段限，若敌方角色有黑桃手牌，你可以弃置一张黑色手牌，然后获得一名随机敌方角色的一张随机黑桃手牌。",
+			gjyuheng_pro_skill_info: "出牌阶段，若敌方角色有黑桃手牌，你可以弃置一张黑色手牌，然后获得一名随机敌方角色的一张随机黑桃手牌。",
 			shujinsan: "舒筋散",
 			shujinsan_info: "出牌阶段对任意角色使用，目标可弃置任意张牌，并摸等量的牌。",
 			mutoumianju: "木头面具",

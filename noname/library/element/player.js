@@ -11814,9 +11814,7 @@ export class Player extends HTMLDivElement {
 		if (typeof add === "number") {
 			num = add;
 		} else if (get.itemtype(add) === "cards") {
-			for (let i of add) {
-				cards.push(add);
-			}
+			cards.addArray(add);
 		} else if (get.itemtype(add) === "card") {
 			cards.push(add);
 		}

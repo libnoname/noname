@@ -25,6 +25,7 @@ Home
 jsconfig.json
 localStorage.json
 main.js
+!mode/**/src/main.js
 node_modules
 noname.ico
 package-lock.json

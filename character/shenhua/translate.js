@@ -284,14 +284,6 @@ const translates = {
 	re_huangzhong: "黄忠",
 	re_weiyan: "魏延",
 
-	gz_xiahouyuan: "夏侯渊",
-	gz_huangzhong: "黄忠",
-	gz_weiyan: "魏延",
-	gz_xuhuang: "徐晃",
-	gz_pangde: "庞德",
-	gz_caoren: "曹仁",
-	gz_zhoutai: "周泰",
-
 	old_zhoutai: "周泰",
 	old_caoren: "曹仁",
 	xuhuang: "旧徐晃",

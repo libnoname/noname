@@ -260,6 +260,7 @@ const skills = {
 	},
 	//新杀向宠 —— by 星の语
 	dcguying: {
+		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		async cost(event, trigger, player) {
 			const num = player.storage.dcguying_double ? 2 : 1;
@@ -321,6 +322,7 @@ const skills = {
 		},
 	},
 	dcmuzhen: {
+		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			const types = player

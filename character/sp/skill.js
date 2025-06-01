@@ -8261,9 +8261,8 @@ const skills = {
 		enable: "phaseUse",
 		filterTarget: lib.filter.notMe,
 		usable: 1,
-		*content(event, map) {
-			const player = map.player,
-				target = event.target;
+		async content(event, trigger, player) {
+			const { target } = event;
 			const choiceList = ["重铸一张牌", "使用一张【杀】", "弃置两张牌"],
 				list = ["重铸", "出杀", "弃牌", "无法选择"];
 			let result = [];
@@ -8299,7 +8298,7 @@ const skills = {
 					if (list1.length == 1) {
 						result.push(list.indexOf(list1[0]));
 					} else {
-						let result1 = yield current
+						let { result: result1 } = await current
 							.chooseControl(list1)
 							.set("ai", () => {
 								const current = _status.event.player;
@@ -8313,7 +8312,7 @@ const skills = {
 								return "弃牌";
 							})
 							.set("choiceList", choiceList1);
-						if (result1.control) {
+						if (result1?.control) {
 							result.push(list.indexOf(result1.control));
 						}
 					}
@@ -8324,19 +8323,22 @@ const skills = {
 			player.popup(list[result[0]]);
 			target.popup(list[result[1]]);
 			for (let current of [player, target]) {
+				if (!current.isIn()) {
+					continue;
+				}
 				switch (list[result[current == player ? 0 : 1]]) {
 					case "重铸": {
 						if (current.countCards("he", card => current.canRecast(card))) {
-							let result2 = yield current.chooseCard("he", "请重铸一张牌", (card, player) => player.canRecast(card), true);
-							if (result2.bool) {
-								current.recast(result2.cards);
+							let { result: result2 } = await current.chooseCard("he", "请重铸一张牌", (card, player) => player.canRecast(card), true);
+							if (result2?.bool && result2?.cards?.length) {
+								await current.recast(result2.cards);
 							}
 						}
 						break;
 					}
 					case "出杀": {
 						if (current.hasUsableCard("sha")) {
-							current.chooseToUse({
+							await current.chooseToUse({
 								prompt: "请使用一张【杀】",
 								filterCard(card, player) {
 									if (card.name != "sha") {
@@ -8355,7 +8357,7 @@ const skills = {
 					}
 					case "弃牌": {
 						if (current.countCards("he", card => lib.filter.cardDiscardable(card, current))) {
-							current.chooseToDiscard("he", 2, true);
+							await current.chooseToDiscard("he", 2, true);
 						}
 						break;
 					}
@@ -8398,44 +8400,43 @@ const skills = {
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
 					return (
-						player.getHistory("lose", evt => {
+						player.hasHistory("lose", evt => {
 							if (evt.type == "discard") {
 								var evtx = evt.getl(player);
 								return evtx && evtx.cards2.length == 2;
 							}
 							return evt.getParent(2).name == "recast";
-						}).length || player.getHistory("useCard", evt => evt.card.name == "sha").length
+						}) || player.hasHistory("useCard", evt => evt.card.name == "sha")
 					);
 				},
 				forced: true,
 				locked: false,
-				*content(event, map) {
-					let num = 0,
-						player = map.player;
-					if (player.getHistory("lose", evt => evt.getParent(2).name == "recast").length) {
+				async content(event, trigger, player) {
+					let num = 0;
+					if (player.hasHistory("lose", evt => evt.getParent(2).name == "recast")) {
 						num++;
 					}
-					if (player.getHistory("useCard", evt => evt.card.name == "sha").length) {
+					if (player.hasHistory("useCard", evt => evt.card.name == "sha")) {
 						num++;
 					}
 					if (
-						player.getHistory("lose", evt => {
+						player.hasHistory("lose", evt => {
 							if (evt.type == "discard") {
 								var evtx = evt.getl(player);
 								return evtx && evtx.cards2.length == 2;
 							}
-						}).length
+						})
 					) {
 						num++;
 					}
 					if (num && player.countCards("he", card => player.canRecast(card))) {
-						let result = yield player.chooseCard("he", "请重铸一张牌", (card, player) => player.canRecast(card), true);
-						if (result.bool) {
-							yield player.recast(result.cards);
+						let { result } = await player.chooseCard("he", "请重铸一张牌", (card, player) => player.canRecast(card), true);
+						if (result?.bool && result?.cards?.length) {
+							await player.recast(result.cards);
 						}
 					}
 					if (num > 1 && player.countCards("he", card => card.name == "sha" && player.hasUseTarget(card))) {
-						yield player.chooseToUse({
+						await player.chooseToUse({
 							prompt: "请使用一张【杀】",
 							filterCard(card, player) {
 								if (card.name != "sha") {
@@ -8450,7 +8451,7 @@ const skills = {
 						});
 					}
 					if (num > 2 && player.countCards("he", card => lib.filter.cardDiscardable(card, player))) {
-						yield player.chooseToDiscard("he", 2, true);
+						await player.chooseToDiscard("he", 2, true);
 					}
 				},
 			},

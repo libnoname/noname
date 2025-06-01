@@ -316,7 +316,7 @@ const skills = {
 				forced: true,
 				logTarget(event, player) {
 					return player
-						.getRoundHistory("sourceDamage", evt => evt.num > 0, 1)
+						.getRoundHistory("sourceDamage", evt => evt.num > 0)
 						?.map(evt => evt.player)
 						.unique()
 						.filter(target => target.isIn() && target.canUse({ name: "sha", isCard: true }, player, false, false))

@@ -1243,7 +1243,7 @@ export default () => {
 					_status.characterChoice[game.me.identity].removeArray(result.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(_status.mode == "changban" ? 2 : 1);
 					game.me.enemy.init(list[0], list[1]);
-					("step 10");
+					"step 10";
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);

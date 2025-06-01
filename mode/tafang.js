@@ -770,7 +770,7 @@ export default () => {
 					} else {
 						event.mechlist = game.treasures.slice(0);
 					}
-					("step 10");
+					"step 10";
 					if (event.mechlist.length) {
 						var mech = event.mechlist.shift();
 						var info = lib.skill[mech.name + "_skill"];
@@ -793,7 +793,7 @@ export default () => {
 						}
 						event.redo();
 					}
-					("step 11");
+					"step 11";
 					delete event.xingdong;
 					delete event.mechlist;
 					if (_status.turnCount >= _status.turnTotal) {

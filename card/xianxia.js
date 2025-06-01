@@ -35,7 +35,7 @@ game.import("card", function () {
 				},
 			},
 			lx_huoshaolianying: {
-				audio: true,
+				audio: "huoshaolianying",
 				fullskin: true,
 				type: "trick",
 				cardnature: "fire",
@@ -75,6 +75,7 @@ game.import("card", function () {
 					game.addVideo("cardDialog", null, [get.translation(target) + "展示的手牌", get.cardsInfo(result.cards), event.videoId]);
 					game.log(target, "展示了", result.cards);
 					game.addCardKnower(result.cards, "everyone");
+					await game.delay();
 					const result2 = await player
 						.chooseToDiscard({ suit: get.suit(result.cards[0]) }, function (card) {
 							var evt = _status.event.getParent();
@@ -85,7 +86,9 @@ game.import("card", function () {
 						})
 						.set("prompt", false)
 						.forResult();
-					await game.delay();
+					event.dialog.close();
+					game.addVideo("cardDialog", null, event.videoId);
+					game.broadcast("closeDialog", event.videoId);
 					if (result2.bool) {
 						let discards = result.cards.slice(0).filter(card => lib.filter.canBeDiscarded(card, player, target, event));
 						if (discards.length) {
@@ -98,9 +101,6 @@ game.import("card", function () {
 					} else {
 						target.addTempSkill("huogong2");
 					}
-					event.dialog.close();
-					game.addVideo("cardDialog", null, event.videoId);
-					game.broadcast("closeDialog", event.videoId);
 				},
 				ai: {
 					basic: {
@@ -286,12 +286,13 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip1",
 				distance: { attackFrom: -1 },
-				ai: {
-					basic: {
-						equipValue: 2,
-					},
-				},
+				ai: { basic: { equipValue: 2 } },
 				skills: ["ty_feilongduofeng_skill"],
+				onLose() {
+					if (player.storage.counttrigger?.ty_feilongduofeng_skill > 0) {
+						delete player.storage.counttrigger.ty_feilongduofeng_skill;
+					}
+				},
 			},
 			shangfangbaojian: {
 				fullskin: true,

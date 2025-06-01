@@ -933,7 +933,7 @@ const skills = {
 					let items = target.getCards("h");
 					let count = [...new Set(items.map(item => get.suit(item, target)))].length;
 					const player = get.player();
-					return (4 - count) * get.effect(target, { name: "draw" }, target, player);
+					return get.effect(target, { name: "draw" }, target, player) * items / (count + 1);
 				})
 				.forResult();
 		},
@@ -941,6 +941,9 @@ const skills = {
 			const target = event.targets[0];
 			player.markAuto(event.name + "_effect", target);
 			player.addSkill(event.name + "_effect");
+			target.addSkill(event.name + "_view");
+			const func = target => target.markSkill("clanjiewu_view", null, null, true);
+			event.isMine() ? func(target) : player.isOnline2() && player.send(func, target);
 			player
 				.when({ global: "phaseUseAfter" })
 				.filter(evt => evt === trigger)
@@ -949,10 +952,14 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
-				onremove: true,
-				trigger: {
-					player: "useCardToPlayered",
+				onremove(player, skill) {
+					if (player.storage[skill]) {
+						Array.isArray(player.storage[skill]) && player.storage[skill].forEach(i => i.removeSkill("clanjiewu_view"));
+						delete player.storage[skill];
+					}
 				},
+				audio: "clanjiewu",
+				trigger: { player: "useCardToPlayered" },
 				filter: (event, player) => event.isFirstTarget && event.targets.some(target => target != player),
 				async cost(event, trigger, player) {
 					event.result = await player
@@ -1014,6 +1021,16 @@ const skills = {
 					},
 				},
 			},
+			view: {
+				charlotte: true,
+				intro: {
+					markcount: (content, player) => player.countCards("h").toString(),
+					mark(dialog, content, player) {
+						const hs = player.getCards("h");
+						hs.length > 0 ? dialog.addSmall(hs) : dialog.addText("没有手牌");
+					},
+				},
+			},
 		},
 	},
 	clangaoshi: {
@@ -1070,7 +1087,7 @@ const skills = {
 					get.id()
 				);
 				game.log(player, "展示了牌堆顶的", card);
-				game.delay(2);
+				await game.delay(2);
 				game.broadcastAll(function (id) {
 					var dialog = get.idDialog(id);
 					if (dialog) {

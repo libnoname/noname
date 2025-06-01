@@ -57,10 +57,11 @@ const cards = {
 				delete _status.pyzhuren[card.name];
 			}
 		},
-		ai: {
-			basic: {
-				equipValue: 4,
-			},
+		ai: { basic: { equipValue: 4 } },
+		onLose() {
+			if (player.storage.counttrigger?.pyzhuren_heart > 0) {
+				delete player.storage.counttrigger.pyzhuren_heart;
+			}
 		},
 	},
 	pyzhuren_diamond: {
@@ -76,11 +77,12 @@ const cards = {
 				delete _status.pyzhuren[card.name];
 			}
 		},
-		ai: {
-			basic: {
-				equipValue: 3,
-			},
+		onLose() {
+			if (player.storage.counttrigger?.pyzhuren_diamond > 0) {
+				delete player.storage.counttrigger.pyzhuren_diamond;
+			}
 		},
+		ai: { basic: { equipValue: 3 } },
 	},
 	pyzhuren_club: {
 		fullskin: true,
@@ -95,13 +97,12 @@ const cards = {
 				delete _status.pyzhuren[card.name];
 			}
 		},
-		ai: {
-			basic: {
-				equipValue: 5,
-			},
-		},
+		ai: { basic: { equipValue: 5 } },
 		loseDelay: false,
 		onLose() {
+			if (player.storage.counttrigger?.pyzhuren_club > 0) {
+				delete player.storage.counttrigger.pyzhuren_club;
+			}
 			player.addTempSkill("pyzhuren_club_lose");
 		},
 	},

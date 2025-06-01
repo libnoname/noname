@@ -1396,7 +1396,7 @@ export class Game extends GameCompatible {
 			type == "hidden"
 		);
 		_status.mode = lib.configOL[lib.configOL.mode + "_mode"];
-		game.chooseCharacterOL();
+		return game.chooseCharacterOL();
 	}
 	closeMenu() {
 		if (ui.menuContainer && !ui.menuContainer.classList.contains("hidden")) {
@@ -1515,6 +1515,7 @@ export class Game extends GameCompatible {
 		var next = game.createEvent("waitForPlayer", false);
 		next.func = func;
 		next.setContent("waitForPlayer");
+		return next;
 	}
 	/**
 	 * @param { number } time
@@ -2289,19 +2290,37 @@ export class Game extends GameCompatible {
 			if (!lib.imported[type]) {
 				lib.imported[type] = {};
 			}
-			const promise = Promise.resolve((gnc.is.generator(content) ? gnc.of(content) : content)(lib, game, ui, get, ai, _status)).then(content2 => {
+
+			/** @type {Promise<any>} */
+			let promise;
+			if (typeof content === "function") {
+				if (gnc.is.generator(content)) {
+					promise = gnc.of(content)(lib, game, ui, get, ai, _status);
+				} else {
+					// @ts-expect-error no `Promise.try` type info
+					promise = Promise.try(content, lib, game, ui, get, ai, _status);
+				}
+			} else {
+				// 目前假定content是一个合法的对象
+				promise = Promise.resolve(content);
+			}
+
+			promise = promise.then(content2 => {
 				if (content2.name) {
 					lib.imported[type][content2.name] = content2;
 					// delete content2.name;
 				}
 			});
+
 			if (typeof _status.importing == "undefined") {
 				_status.importing = {};
 			}
 			if (!_status.importing[type]) {
 				_status.importing[type] = [];
 			}
+
 			_status.importing[type].add(promise);
+
 			return promise;
 		}
 	}
@@ -4567,13 +4586,14 @@ export class Game extends GameCompatible {
 		}
 	}
 	reloadCurrent() {
-		let names = [game.me.name1 || game.me.name, game.me.name2];
-		if (game.me.name1 != game.me.name) {
-			names = [game.me.name];
+		const me = Reflect.get(_status, "_startPlayerNames") ?? game.me;
+		let names = [me.name1 || me.name, me.name2];
+		if (me.name1 != me.name) {
+			names = [me.name];
 		}
 		game.saveConfig("continue_name", names);
 		game.saveConfig("mode", lib.config.mode);
-		localStorage.setItem(lib.configprefix + "directstart", true);
+		localStorage.setItem(lib.configprefix + "directstart", "true");
 		game.reload();
 	}
 	/**
@@ -7586,6 +7606,7 @@ export class Game extends GameCompatible {
 		next.player = player;
 		next._isStandardLoop = true;
 		next.setContent("phaseLoop");
+		return next;
 	}
 	/**
 	 * @param { Player } [player]

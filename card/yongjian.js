@@ -403,9 +403,12 @@ game.import("card", function () {
 				skills: ["xinge"],
 				ai: {
 					equipValue: 2,
-					basic: {
-						equipValue: 2,
-					},
+					basic: { equipValue: 2 },
+				},
+				onLose() {
+					if (player.getStat().skill.xinge) {
+						delete player.getStat().skill.xinge;
+					}
 				},
 			},
 		},

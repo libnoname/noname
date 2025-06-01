@@ -176,7 +176,7 @@ export class Character {
 	 */
 	isNull = false;
 	/**
-	 * @param { Object|[string, string, string|number, string[], any[]|undefined, any[]|undefined] } [data]
+	 * @param { [Sex | "", string, string|number, string[], any[]|undefined, any[]|undefined] | Partial<{ [key in keyof Character]: Character[key] }> } [data]
 	 */
 	constructor(data) {
 		if (Array.isArray(data)) {

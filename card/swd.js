@@ -811,11 +811,15 @@ game.import("card", function () {
 				},
 				onLose() {
 					player.unmarkSkill("lianyaohu_skill");
+					if (player.getStat().skill.lianhua) {
+						delete player.getStat().skill.lianhua;
+					}
+					if (player.getStat().skill.shouna) {
+						delete player.getStat().skill.shouna;
+					}
 				},
 				clearLose: true,
-				ai: {
-					equipValue: 6,
-				},
+				ai: { equipValue: 6 },
 				skills: ["lianhua", "shouna", "lianyaohu_skill"],
 			},
 			haotianta: {
@@ -838,8 +842,11 @@ game.import("card", function () {
 				nomod: true,
 				nopower: true,
 				unique: true,
-				ai: {
-					equipValue: 6,
+				ai: { equipValue: 6 },
+				onLose() {
+					if (player.getStat().skill.kongxin) {
+						delete player.getStat().skill.kongxin;
+					}
 				},
 			},
 			shennongding: {
@@ -850,8 +857,11 @@ game.import("card", function () {
 				nomod: true,
 				nopower: true,
 				unique: true,
-				ai: {
-					equipValue: 6,
+				ai: { equipValue: 6 },
+				onLose() {
+					if (player.getStat().skill.shennongding) {
+						delete player.getStat().skill.shennongding;
+					}
 				},
 			},
 			kongdongyin: {
@@ -885,8 +895,11 @@ game.import("card", function () {
 				nomod: true,
 				nopower: true,
 				unique: true,
-				ai: {
-					equipValue: 6,
+				ai: { equipValue: 6 },
+				onLose() {
+					if (player.getStat().skill.kunlunjingc) {
+						delete player.getStat().skill.kunlunjingc;
+					}
 				},
 			},
 			nvwashi: {
@@ -1630,10 +1643,11 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["shentou"],
-				ai: {
-					basic: {
-						equipValue: 7,
-					},
+				ai: { basic: { equipValue: 7 } },
+				onLose() {
+					if (player.getStat().skill.shentou) {
+						delete player.getStat().skill.shentou;
+					}
 				},
 			},
 			xianluhui: {
@@ -1873,10 +1887,11 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["longfan"],
-				ai: {
-					basic: {
-						equipValue: 7,
-					},
+				ai: { basic: { equipValue: 7 } },
+				onLose() {
+					if (player.getStat().skill.longfan) {
+						delete player.getStat().skill.longfan;
+					}
 				},
 			},
 			guiyoujie: {
@@ -2204,10 +2219,11 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["yiluan"],
-				ai: {
-					basic: {
-						equipValue: 6,
-					},
+				ai: { basic: { equipValue: 7 } },
+				onLose() {
+					if (player.getStat().skill.yiluan) {
+						delete player.getStat().skill.yiluan;
+					}
 				},
 			},
 			shuchui: {
@@ -2215,10 +2231,11 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["shuchui"],
-				ai: {
-					basic: {
-						equipValue: 5.5,
-					},
+				ai: { basic: { equipValue: 5.5 } },
+				onLose() {
+					if (player.getStat().skill.shuchui) {
+						delete player.getStat().skill.shuchui;
+					}
 				},
 			},
 			ximohu: {
@@ -5406,7 +5423,7 @@ game.import("card", function () {
 			xiayuncailing_info: "你的进攻距离-1，你的防御距离+2。",
 			shentoumianju: "神偷面具",
 			shentoumianju_bg: "偷",
-			shentoumianju_info: "出牌阶段，你可以指定一名手牌比你多的角色，弃置一张手牌并进行一次判定，若结果不为梅花，你获得其一张手牌。",
+			shentoumianju_info: "出牌阶段限一次，你可以指定一名手牌比你多的角色，弃置一张手牌并进行一次判定，若结果不为梅花，你获得其一张手牌。",
 			shentou: "神偷",
 			shentou_info: "出牌阶段，你可以进行一次判定，若结果不为梅花，你获得任意一名角色的一张手牌。",
 			xianluhui: "仙炉灰",

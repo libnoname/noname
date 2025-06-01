@@ -107,7 +107,10 @@ const skills = {
 					if (ui.selected.buttons.length != 1) {
 						return false;
 					}
-					const cardx = get.autoViewAs({ name: button.link[2] }, ui.selected.buttons.map(i => i.link));
+					const cardx = get.autoViewAs(
+						{ name: button.link[2] },
+						ui.selected.buttons.map(i => i.link)
+					);
 					return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
 				.set("complexButton", true)
@@ -167,7 +170,10 @@ const skills = {
 						if (ui.selected.buttons.length != 1) {
 							return false;
 						}
-						const cardx = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, ui.selected.buttons.map(i => i.link));
+						const cardx = get.autoViewAs(
+							{ name: button.link[2], nature: button.link[3] },
+							ui.selected.buttons.map(i => i.link)
+						);
 						return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 					})
 					.set("complexButton", true)
@@ -1073,6 +1079,7 @@ const skills = {
 	},
 	//谋曹洪
 	dcsbyingjia: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		forced: true,
 		filter(event, player) {
@@ -1136,6 +1143,7 @@ const skills = {
 		},
 	},
 	dcsbxianju: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -3503,9 +3511,11 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
-			let numx = player.getHistory("sourceDamage", evt => {
-				return evt.player === target && evt.getParent("phaseUse") === trigger;
-			}).reduce((num, evt) => num + evt.num, 0);
+			let numx = player
+				.getHistory("sourceDamage", evt => {
+					return evt.player === target && evt.getParent("phaseUse") === trigger;
+				})
+				.reduce((num, evt) => num + evt.num, 0);
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
 			while (numx--) {
 				if (player.canUse(sha, target, false)) {
@@ -17465,7 +17475,7 @@ const skills = {
 						if (storage.length) {
 							for (let i = 0; i < storage[0].length; i++) {
 								const target = storage[0][i];
-								if (target?.isIn()) {
+								if (target?.isIn?.()) {
 									if (target.hp != storage[1][i]) {
 										game.log(target, "将体力从", "#y" + target.hp, "改为", "#g" + storage[1][i]);
 										const next = target.changeHp(storage[1][i] - target.hp);

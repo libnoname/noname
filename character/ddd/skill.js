@@ -4644,7 +4644,7 @@ const skills = {
 			"step 9";
 			event.player = event.tempplayer;
 			event.trigger("compareFixing");
-			("step 10");
+			"step 10";
 			if (event.player) {
 				delete event.player;
 			}
@@ -4654,10 +4654,10 @@ const skills = {
 			} else {
 				event.goto(12);
 			}
-			("step 11");
+			"step 11";
 			event.iwhile++;
 			event.goto(10);
-			("step 12");
+			"step 12";
 			event.player = event.tempplayer;
 			delete event.tempplayer;
 			var str;
@@ -4692,9 +4692,9 @@ const skills = {
 				}, 1000);
 			}, str);
 			game.delay(3);
-			("step 13");
+			"step 13";
 			game.broadcastAll(ui.clear);
-			("step 14");
+			"step 14";
 			event.cards.add(event.card1);
 		},
 		contentx() {
