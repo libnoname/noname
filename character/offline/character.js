@@ -1,19 +1,4 @@
 const characters = {
-	pe_que: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["peyingzhen", "peyuanjue", "peaoyong"],
-		names: "null|null",
-	},
-	caocaoyuanshao: {
-		sex: "male",
-		group: "wei",
-		hp: 4,
-		skills: ["peguibei", "pejiechu", "pedaojue", "petuonan"],
-		doubleGroup: ["wei", "qun"],
-		names: "曹|操-袁|绍",
-	},
 	ps_caocao: {
 		sex: "male",
 		group: "wei",
