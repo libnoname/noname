@@ -15394,7 +15394,7 @@ export default {
 		audio: true,
 		unique: true,
 		forceunique: true,
-		derivation: ["wuziliangjiangdao", "new_retuxi", "qiaobian", "fakexiaoguo", "gz_jieyue", "new_duanliang"],
+		derivation: ["wuziliangjiangdao", "new_retuxi", "qiaobian", "gz_xiaoguo", "gz_jieyue", "gz_duanliang"],
 		lordSkill: true,
 		global: ["wuziliangjiangdao", "g_jianan"],
 		init(player) {
@@ -15430,7 +15430,7 @@ export default {
 				event.finish();
 				return;
 			}
-			var skills = ["new_retuxi", "qiaobian", "fakexiaoguo", "gz_jieyue", "new_duanliang"];
+			var skills = ["new_retuxi", "qiaobian", "gz_xiaoguo", "gz_jieyue", "gz_duanliang"];
 			game.countPlayer(function (current) {
 				if (current.hasSkill("new_retuxi")) {
 					skills.remove("new_retuxi");
@@ -15438,14 +15438,14 @@ export default {
 				if (current.hasSkill("qiaobian")) {
 					skills.remove("qiaobian");
 				}
-				if (current.hasSkill("fakexiaoguo")) {
-					skills.remove("fakexiaoguo");
+				if (current.hasSkill("gz_xiaoguo")) {
+					skills.remove("gz_xiaoguo");
 				}
-				if (current.hasSkill("gzjieyue")) {
-					skills.remove("gzjieyue");
+				if (current.hasSkill("gz_jieyue")) {
+					skills.remove("gz_jieyue");
 				}
-				if (current.hasSkill("new_duanliang")) {
-					skills.remove("new_duanliang");
+				if (current.hasSkill("gz_duanliang")) {
+					skills.remove("gz_duanliang");
 				}
 			});
 			if (!skills.length) {
@@ -15534,7 +15534,7 @@ export default {
 							return get.value(card) < 7;
 						})
 					) {
-						return "gzjieyue";
+						return "gz_jieyue";
 					}
 					if (skills.includes("new_retuxi")) {
 						return "new_retuxi";
@@ -15552,9 +15552,9 @@ export default {
 			var map = {
 				new_retuxi: "jianan_tuxi",
 				qiaobian: "jianan_qiaobian",
-				fakexiaoguo: "jianan_xiaoguo",
+				gz_xiaoguo: "jianan_xiaoguo",
 				gz_jieyue: "jianan_jieyue",
-				new_duanliang: "jianan_duanliang",
+				gz_duanliang: "jianan_duanliang",
 			};
 			var mapSkills = map[link];
 			game.broadcastAll(function () {

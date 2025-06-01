@@ -918,7 +918,7 @@ export async function showYexingsContent(event, _trigger, player) {
 					// @ts-expect-error 祖宗之法就是这么做的
 					player._showYexing = true;
 				},
-				player
+				target
 			);
 		}
 

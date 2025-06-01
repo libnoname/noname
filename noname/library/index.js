@@ -187,7 +187,7 @@ export class Library {
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
 		maoshu_emotion: 18,
-		mobile_emotion: 16,
+		mobile_emotion: 15,
 	};
 	animate = {
 		skill: {},

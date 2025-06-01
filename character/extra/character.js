@@ -10,6 +10,7 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["cazhaoshao", "caxiaoxiong"],
+		groupInGuozhan: "wei",
 	},
 	ca_shen_lijueguosi: {
 		sex: "male",
@@ -124,6 +125,7 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["dclinjie", "dcduzhang", "dcjianghuo"],
+		groupInGuozhan: "ye",
 	},
 	shen_pangtong: {
 		sex: "male",
@@ -131,6 +133,7 @@ const characters = {
 		hp: 1,
 		maxHp: 1,
 		skills: ["luansuo", "fengliao", "kunyu"],
+		groupInGuozhan: "shu",
 	},
 	junk_zhangjiao: {
 		sex: "male",
