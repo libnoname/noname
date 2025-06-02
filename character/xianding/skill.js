@@ -5036,7 +5036,7 @@ const skills = {
 					if (evt.getParent() != event.getParent()) {
 						return false;
 					}
-					return event.cards.some(card => (evt.hs || []).includes(card));
+					return event.cards?.some(card => (evt.hs || []).includes(card));
 				})
 			) {
 				return false;

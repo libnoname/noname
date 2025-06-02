@@ -73,7 +73,7 @@ const characters = {
 		skills: ["hm_shice", "hm_podai"],
 		names: "皇甫|嵩",
 	},
-	hm_shen_luzhi: {
+	hm_shen_yl_luzhi: {
 		sex: "male",
 		group: "shen",
 		hp: 4,

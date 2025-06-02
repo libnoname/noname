@@ -2746,9 +2746,14 @@ const skills = {
 							}
 							const result = await target
 								.chooseButton([`设座：将所有手牌当作一张普通锦囊牌使用`, [list, "vcard"]], true)
-								.set("filterButton", button => get.player().hasUseTarget(get.event().viewAs(button), true, false))
-								.set("ai", button => get.player().getUseValue(get.event().viewAs(button)))
-								.set("viewAs", button => get.autoViewAs({ name: button.link[2] }, hs))
+								.set("filterButton", button => {
+									const card = get.autoViewAs({ name: button.link[2] }, get.player().getCards("h"));
+									return get.player().hasUseTarget(card, true, false)
+								})
+								.set("ai", button => {
+									const card = get.autoViewAs({ name: button.link[2] }, get.player().getCards("h"));
+									return get.player().getUseValue(card)
+								})
 								.forResult();
 							if (result?.links?.length) {
 								const name = result.links[0][2],

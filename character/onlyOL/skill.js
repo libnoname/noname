@@ -496,7 +496,7 @@ const skills = {
 			const name = event.triggername;
 			if (name == "useCardToPlayer") {
 				event.result = await player
-					.chooseToDiscard(`###${get.prompt(event.skill, trigger.target)}###弃置任意张红色牌并令其弃置等量红色手牌，否则不能响应该牌`, [1, Infinity], "he", "chooseonly", card => get.color(card, player) == "red")
+					.chooseToDiscard(`###${get.prompt(event.skill, trigger.target)}###弃置任意张红色牌并令其弃置等量红色手牌，否则不能响应该牌`, [1, Infinity], "he", "chooseonly", card => get.color(card, get.player()) == "red")
 					.set("ai", card => {
 						const player = get.player(),
 							target = get.event().getTrigger().target,
@@ -512,7 +512,7 @@ const skills = {
 					.forResult();
 			} else {
 				event.result = await player
-					.chooseToDiscard(`###${get.prompt(event.skill)}###弃置一张黑色牌并视为使用一张【杀】`, "he", "chooseonly", card => get.color(card, player) == "black")
+					.chooseToDiscard(`###${get.prompt(event.skill)}###弃置一张黑色牌并视为使用一张【杀】`, "he", "chooseonly", card => get.color(card, get.player()) == "black")
 					.set("ai", card => {
 						if (!get.player().hasValueTarget({ name: "sha", isCard: true }, false, false)) {
 							return 0;
