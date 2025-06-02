@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["hm_shen_huangfusong", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["pe_que", "hm_shen_huangfusong", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"yj_caocaoyuanshao",
 		"strong_caochong",
@@ -2379,6 +2379,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"pe_que",
 			"chenshou",
 			"strong_caochong",
 			"dm_simayi",

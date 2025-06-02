@@ -1455,14 +1455,18 @@ const skills = {
 		filter(event, player) {
 			return player.getHistory("lose", evt => evt.cards2 && evt.cards2.length).length;
 		},
-		async cost(event, trigger, player) {
+		getNum(player) {
 			let num = 0;
 			player.getHistory("lose", evt => {
 				if (evt.cards2) {
 					num += evt.cards2.length;
 				}
 			});
-			if (player.storage.xianmou) {
+			return num;
+		},
+		async cost(event, trigger, player) {
+			let num = get.info(event.skill)?.getNum(player);
+			if (player.storage[event.skill]) {
 				event.result = await player
 					.chooseTarget(get.prompt(event.skill), `观看一名角色手牌并弃置其中至多${num}张牌`, function (card, player, target) {
 						return target.countCards("h");
@@ -1475,17 +1479,13 @@ const skills = {
 			} else {
 				event.result = await player.chooseBool(get.prompt(event.skill), `观看牌堆顶五张牌并获得至多${num}张牌`).forResult();
 			}
+			event.result.cost_data = num;
 		},
 		async content(event, trigger, player) {
-			let num = 0;
-			player.getHistory("lose", evt => {
-				if (evt.cards2) {
-					num += evt.cards2.length;
-				}
-			});
-			player.changeZhuanhuanji("xianmou");
-			if (player.storage.xianmou) {
-				player.addAdditionalSkills("xianmou", []);
+			let num = event.cost_data;
+			player.changeZhuanhuanji(event.name);
+			if (player.storage[event.name]) {
+				player.addAdditionalSkills(event.name, []);
 				let cards = game.cardsGotoOrdering(get.cards(5)).cards;
 				const result = await player
 					.chooseButton([`是否获得至多${num}张牌？`, cards], [1, num])
@@ -1506,7 +1506,7 @@ const skills = {
 					ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
 				}
 				if (!result.bool || result.links.length < num) {
-					await player.addAdditionalSkills("xianmou", "new_reyiji");
+					await player.addAdditionalSkills(event.name, get.info(event.name)?.derivation);
 				}
 			} else {
 				const target = event.targets[0];
@@ -1539,7 +1539,7 @@ const skills = {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
 				prompt2(event, player) {
-					return "切换【先谋】为状态" + (player.storage.dcsbyingmou ? "阳" : "阴");
+					return "切换【先谋】为状态" + (player.storage.xianmou ? "阳" : "阴");
 				},
 				check: () => Math.random() > 0.5,
 				content() {

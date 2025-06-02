@@ -1900,6 +1900,7 @@ const skills = {
 				player.addTempSkill("jsrgzhuni_effect");
 				player.markAuto("jsrgzhuni_effect", [target]);
 			}
+			event.getParent().maxTicket = maxTicket;
 		},
 		ai: {
 			order: 10,

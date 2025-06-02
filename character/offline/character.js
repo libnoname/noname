@@ -1,4 +1,11 @@
 const characters = {
+	pe_que: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["peyingzhen", "peyuanjue", "peaoyong"],
+		names: "null|null",
+	},
 	yj_caocaoyuanshao: {
 		sex: "male",
 		group: "wei",

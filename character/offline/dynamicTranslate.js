@@ -1,6 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	peyuanjue(player) {
+		const bool = player.storage.peyuanjue;
+		let yang = "阳：令所有角色的基本牌视为无次数限制的【杀】",
+			yin = "阴：令所有角色与你互相计算距离为1，且你视为拥有〖同忾〗";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		}
+		else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		return `转换技，摸牌阶段开始时，你可以跳过摸牌阶段，${yang}；${yin}。`;
+	},
+	yjjiechu(player) {
+		const bool = player.getStorage("yjjiechu", false);
+		let yang = "阳：出牌阶段，你可以视为使用一张【顺手牵羊】，结算结束后成为目标的角色可以对你使用一张【杀】",
+			yin = "阴：当你成为【杀】的目标时，你可以弃置一张手牌改变【杀】的花色和属性";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		}
+		else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		return `转换技，${yang}；${yin}。`;
+	},
 	scls_miaojian(player) {
 		if (player.hasMark("scls_miaojian")) {
 			return "出牌阶段限一次，你可视为使用一张刺【杀】或【无中生有】。";

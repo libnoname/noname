@@ -7,7 +7,7 @@ const characterSort = {
 	offline_yongjian: ["ns_chendao", "yj_caoang", "yj_caocao", "yj_liru", "yj_caohong", "yj_zhangfei", "yongjian_ganning", "yj_dongzhuo", "yj_xuyou", "yj_jiaxu", "yj_zhenji"],
 	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
-	offline_piracyE: ["yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
+	offline_piracyE: ["pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
 	offline_vtuber: ["vtb_xiaosha", "vtb_xiaoshan", "vtb_xiaotao", "vtb_xiaole", "vtb_xiaojiu"],
