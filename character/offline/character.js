@@ -1,4 +1,12 @@
 const characters = {
+	yj_caocaoyuanshao: {
+		sex: "male",
+		group: "wei",
+		doubleGroup: ["wei", "qun"],
+		hp: 4,
+		skills: ["yjguibei", "yjjiechu", "yjdaojue", "yjtuonan"],
+		names: "曹|操-袁|绍",
+	},
 	ps_caocao: {
 		sex: "male",
 		group: "wei",

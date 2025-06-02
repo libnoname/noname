@@ -50,6 +50,7 @@ game.import("character", function () {
 			yj_jiling: "E3005",
 			yj_yongkai: "E7006T",
 			yj_chezhou: "E7006T",
+			yj_caocaoyuanshao: "E15001T",
 		},
 		characterSubstitute: {
 			jd_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
