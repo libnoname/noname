@@ -5721,6 +5721,9 @@ const skills = {
 	rejijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
+		audioname2: {
+			pe_jun_liushan: "jijiang1_liushan",
+		},
 		group: ["rejijiang1", "rejijiang3"],
 		zhuSkill: true,
 		filter(event, player) {

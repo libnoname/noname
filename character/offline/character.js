@@ -1,4 +1,32 @@
 const characters = {
+	pe_jun_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		isZhugong: true,
+		skills: ["jun_cuanzun", "jun_liufang", "songwei"],
+	},
+	pe_jun_liushan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		isZhugong: true,
+		skills: ["jun_fuxiang", "jun_leling", "ruoyu"],
+	},
+	pe_jun_sunquan: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		isZhugong: true,
+		skills: ["jun_henglv", "jiuyuan"],
+	},
+	pe_jun_liuxie: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		isZhugong: true,
+		skills: ["jun_tianze", "jun_zhaoshou", "twzhuiting"],
+	},
 	pe_que: {
 		sex: "male",
 		group: "qun",
