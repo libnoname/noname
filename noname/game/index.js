@@ -7002,7 +7002,7 @@ export class Game extends GameCompatible {
 			}
 		}
 		const eventinfo = get.info(get.card() || {}) || skillinfo;
-		if (eventinfo?.manualConfirm === true) {
+		if (_status.event.name == "chooseToUse" && eventinfo?.manualConfirm === true) {
 			auto_confirm = false;
 		}
 
@@ -7014,7 +7014,8 @@ export class Game extends GameCompatible {
 
 		if (event.isMine() && game.chess && get.config("show_distance") && game.me) {
 			const players = game.players.slice();
-			if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget)) {
+			const card = get.card();
+			if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget) || (card && get.info(card)?.deadTarget)) {
 				players.addArray(game.dead);
 			}
 			players.forEach(player => {

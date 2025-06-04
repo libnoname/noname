@@ -378,7 +378,7 @@ const skills = {
 			}
 			if (result.control == "选项一") {
 				const resultx = await target
-					.chooseToDiscard(`睦阵：请弃置${num}张类型不为${get.translation(type)}的牌`, "he", num, true, card => get.event().cardsx.includes(card))
+					.chooseToDiscard(`睦阵：请弃置${num}张类型不为${get.translation(type)}的牌`, "he", num, true, card => get.event().cardsx?.includes(card))
 					.set(
 						"cardsx",
 						target.getCards("he", card => get.type2(card, target) != type)
@@ -3094,8 +3094,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		filterCard: () => false,
-		selectCard: [-2, -1],
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const cards = ["cardPile", "discardPile"].map(pos => Array.from(ui[pos].childNodes)).flat();
@@ -3119,8 +3118,8 @@ const skills = {
 			sishiList.addArray(cards.filter(isSishi));
 			player.gain(sishiList, "gain2");
 			player
-				.when("phaseEnd")
-				.filter(evt => evt === event.getParent("phase"))
+				.when("phaseUseEnd")
+				.filter(evt => evt === event.getParent("phaseUse"))
 				.vars({
 					sishiList,
 				})
@@ -3130,7 +3129,7 @@ const skills = {
 					players.forEach(current => {
 						const cards = current.getCards("hej").filter(card => sishiList.includes(card));
 						if (cards.length > 0) {
-							current.$throw(cards);
+							current.$throw(cards, 1000);
 							lose_list.push([current, cards]);
 						}
 					});
@@ -10036,22 +10035,17 @@ const skills = {
 		},
 		animationColor: "thunder",
 		skillAnimation: "legend",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			if (!target.isMaxMaxHp()) {
-				target.gainMaxHp();
+			const target = event.target;
+			if (target.isMinMaxHp() || target.isMinHp()) {
+				await target.gainMaxHp();
+				await target.recover();
 			}
-			"step 1";
-			if (target.isMinHp()) {
-				target.recover();
-			}
-			"step 2";
 			if (target.isMinHandcard()) {
-				target.draw(Math.min(5, target.maxHp));
+				await target.draw(Math.min(5, target.maxHp));
 			}
-			"step 3";
-			game.delayx();
+			await game.delayx();
 		},
 		ai: {
 			expose: 0.3,

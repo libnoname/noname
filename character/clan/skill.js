@@ -5487,7 +5487,7 @@ const skills = {
 			}
 		},
 		trigger: {
-			player: ["logSkill", "useSkillAfter"],
+			player: ["logSkillBegin", "useSkill"],
 		},
 		forced: true,
 		silent: true,

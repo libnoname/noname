@@ -38,12 +38,14 @@ const characters = {
 		group: "jin",
 		hp: 3,
 		skills: ["xinwanyi", "maihuo"],
+		clans: ["弘农杨氏"],
 	},
 	yangyan: {
 		sex: "female",
 		group: "jin",
 		hp: 3,
 		skills: ["xinxuanbei", "xianwan"],
+		clans: ["弘农杨氏"],
 	},
 	ol_huaxin: {
 		sex: "male",

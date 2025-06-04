@@ -122,6 +122,7 @@ const characters = {
 		group: "jin",
 		hp: 3,
 		skills: ["wanyi", "maihuo"],
+		clans: ["弘农杨氏"],
 		dieAudios: ["yangzhi"],
 	},
 	old_yangyan: {
@@ -129,6 +130,7 @@ const characters = {
 		group: "jin",
 		hp: 3,
 		skills: ["xuanbei", "xianwan"],
+		clans: ["弘农杨氏"],
 		dieAudios: ["yangyan"],
 	},
 	madai: {

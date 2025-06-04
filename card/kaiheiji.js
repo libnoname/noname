@@ -4,6 +4,192 @@ game.import("card", function () {
 		name: "kaiheiji",
 		connect: true,
 		card: {
+			//新杀的劝酒
+			khquanjiux: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: true,
+				reverseOrder: true,
+				multitarget: true,
+				multiline: true,
+				wuxieable: false,
+				async content(event, trigger, player) {
+					const { targets } = event;
+					for (const target of targets) {
+						const cards = target.getCards("h").randomGets(get.rand(1, target.countCards("h")));
+						if (!cards.length) {
+							continue;
+						}
+						target.addGaintag(cards, "khquanjiux_tag");
+						cards.forEach(card => {
+							game.broadcastAll(card => {
+								if (!card.storage?.origin_info) {
+									card.storage.origin_info = [card.suit, card.number, card.name, card.nature];
+								}
+								card.init([card.suit, card.number, "jiu"]);
+								//改回原来的牌名
+								card.destroyed = (card, position, player, event) => {
+									if (card.storage?.origin_info) {
+										card.init(card.storage.origin_info);
+										delete card.storage.origin_info;
+									}
+									return false;
+								};
+							}, card);
+						});
+					}
+					let count = 0;
+					while (true) {
+						const target = targets[count];
+						count++;
+						if (count >= targets.length) {
+							count = 0;
+						}
+						if (!target?.isAlive()) {
+							continue;
+						}
+						const { result } = await target
+							.chooseToUse("劝酒：使用一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
+								if (get.name(card) != "jiu") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							})
+							.set("ai1", () => 114514)
+							.set("ai2", function () {
+								return get.effect_use.apply(this, arguments) - get.event("effect") + 114514;
+							})
+							.set("targetRequired", true)
+							.set(
+								"effect",
+								game.filterPlayer(current => current != target).reduce((eff, current) => eff + get.damageEffect(target, current, target), 0)
+							)
+							.set("addCount", false);
+						if (!result?.bool) {
+							const damage = game.filterPlayer(current => current != target).sortBySeat();
+							if (damage.length) {
+								while (damage.length) {
+									const current = damage.shift();
+									current.line(target, "yellow");
+									await target.damage(current);
+								}
+							}
+							break;
+						}
+					}
+				},
+				ai: {
+					order: 1,
+					useful: 7.5,
+					value: 7.5,
+					result: {
+						target: -1,
+					},
+					tag: {
+						damage: 0.2,
+						multitarget: 1,
+						multineg: 1,
+					},
+				},
+			},
+			//你死我活 —— by 点点
+			nisiwohuo: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: lib.filter.notMe,
+				reverseOrder: true,
+				multitarget: true,
+				multiline: true,
+				wuxieable: false,
+				global: "nisiwohuo_end",
+				async content(event, trigger, player) {
+					player.$skill(get.translation(event.name), null, get.groupnature(player.group, "raw"));
+					const { targets } = event;
+					game.broadcastAll(event => {
+						if (!_status.nisiwohuo) {
+							_status.nisiwohuo = [];
+						}
+						_status.nisiwohuo.push(event);
+					}, event);
+					let count = 0;
+					const goon = function () {
+						if (!_status.nisiwohuo?.includes(event)) {
+							return false;
+						}
+						return true;
+					};
+					while (goon()) {
+						const target = targets[count];
+						count++;
+						if (count >= targets.length) {
+							count = 0;
+						}
+						if (!target.isAlive()) {
+							continue;
+						}
+						const { result } = await target
+							.chooseToUse(
+								"你死我活：对距离为1的角色使用一张【杀】或失去1点体力",
+								function (card) {
+									if (get.name(card) != "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								function (card, player, target) {
+									if (player == target) {
+										return false;
+									}
+									const dist = get.distance(player, target);
+									if (dist > 1) {
+										if (
+											game.hasPlayer(function (current) {
+												return current != player && get.distance(player, current) < dist;
+											})
+										) {
+											return false;
+										}
+									}
+									return lib.filter.filterTarget.apply(this, arguments);
+								}
+							)
+							.set("ai2", function () {
+								return get.effect_use.apply(this, arguments) - get.event("effect");
+							})
+							.set("effect", get.effect(target, { name: "losehp" }, target, target))
+							.set("addCount", false);
+						if (!goon()) {
+							break;
+						}
+						if (!result?.bool) {
+							await target.loseHp();
+							await game.delayx();
+							if (!goon()) {
+								break;
+							}
+						}
+					}
+				},
+				ai: {
+					order: 1,
+					useful: 9.5,
+					value: 10,
+					result: {
+						target: -1,
+					},
+					tag: {
+						//damage: 0.5,
+						multitarget: 1,
+						multineg: 1,
+					},
+				},
+			},
 			//无天无界照搬无中ai
 			wutian: {
 				audio: true,
@@ -512,6 +698,18 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			nisiwohuo_end: {
+				trigger: { global: "die" },
+				firstDo: true,
+				silent: true,
+				content() {
+					game.broadcastAll(() => {
+						if (_status.nisiwohuo?.length) {
+							delete _status.nisiwohuo;
+						}
+					});
+				},
+			},
 			luojing_skill: {
 				trigger: { global: "dying" },
 				firstDo: true,
@@ -622,6 +820,14 @@ game.import("card", function () {
 			},
 		},
 		translate: {
+			khquanjiux: "劝酒",
+			khquanjiux_tag: "劝酒",
+			khquanjiux_bg: "劝",
+			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次使用一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的一点伤害。此牌不能被【无懈可击】响应。",
+			nisiwohuo: "你死我活",
+			nisiwohuo_end: "你死我活",
+			nisiwohuo_bg: "死",
+			nisiwohuo_info: "出牌阶段，对其他所有角色使用，令目标依次对距离最近的角色使用一张【杀】，否则失去1点体力，重复效果直至有人死亡。此牌不能被【无懈可击】响应。",
 			wutian: "无天无界",
 			wutian_bg: "界",
 			wutian_info: "出牌阶段，对自己使用，从三个可造成伤害的技能中选择一个获得至你的下回合开始。",
@@ -655,6 +861,16 @@ game.import("card", function () {
 			leigong_info: "出牌阶段，对所有角色使用，令目标依次进行一次【闪电】判定，然后每有一名角色因此受到非传导伤害，你摸一张牌。",
 		},
 		list: [
+			["spade", 13, "khquanjiux"],
+			["diamond", 13, "khquanjiux"],
+			["heart", 13, "khquanjiux"],
+			["club", 13, "khquanjiux"],
+
+			["spade", 13, "nisiwohuo"],
+			["diamond", 13, "nisiwohuo"],
+			["heart", 13, "nisiwohuo"],
+			["club", 13, "nisiwohuo"],
+
 			["heart", 13, "wutian"],
 			["club", 13, "wutian"],
 

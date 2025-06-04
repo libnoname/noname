@@ -688,7 +688,7 @@ const skills = {
 			return player != target && target.canEquip(card, true);
 		},
 		async content(event, trigger, player) {
-			await target.equip(event.cards[0]);
+			await event.target.equip(event.cards[0]);
 			await player.draw();
 		},
 		discard: false,

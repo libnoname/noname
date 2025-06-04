@@ -12646,6 +12646,9 @@ const skills = {
 			await player.changeSkills(["jsrgweisi", "jsrgdangyi"], ["jsrgqiantun"]);
 		},
 		derivation: ["jsrgweisi", "jsrgdangyi"],
+		ai: {
+			combo: "jsrgxiezheng",
+		},
 	},
 	jsrgweisi: {
 		audio: 3,

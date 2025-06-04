@@ -16941,7 +16941,7 @@ const skills = {
 				})
 				.setHiddenSkill(event.name).ai = function (target) {
 				var num = 1;
-				if (target.hasSkill("gzxiaoji")) {
+				if (target.hasSkill("gz_xiaoji")) {
 					num += 2.5;
 				}
 				if (target.isDamaged() && target.getEquip("baiyin")) {

@@ -7,6 +7,7 @@ game.import("card", function () {
 			suijiyingbian: {
 				global: "suijiyingbian_skill",
 				fullskin: true,
+				notarget: true,
 				type: "trick",
 			},
 			zhujinqiyuan: {

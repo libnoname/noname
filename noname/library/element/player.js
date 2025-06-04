@@ -9332,9 +9332,9 @@ export class Player extends HTMLDivElement {
 	 */
 	hasUseTarget(card, distance, includecard) {
 		var player = this;
-		return game.hasPlayer(function (current) {
+		return game.hasPlayer2(function (current) {
 			return player.canUse(card, current, distance, includecard);
-		});
+		}, true);
 	}
 	/**
 	 * 场上是否存在收益为正的目标
@@ -9348,7 +9348,7 @@ export class Player extends HTMLDivElement {
 			card = { name: card, isCard: true };
 		}
 		var player = this;
-		var targets = game.filterPlayer();
+		var targets = game.filterPlayer2(null, null, true);
 		var value = [];
 		var min = 0;
 		var info = get.info(card);
@@ -9410,7 +9410,7 @@ export class Player extends HTMLDivElement {
 			card = { name: card, isCard: true };
 		}
 		var player = this;
-		var targets = game.filterPlayer();
+		var targets = game.filterPlayer2(null, null, true);
 		var value = [];
 		var min = 0;
 		var info = get.info(card);

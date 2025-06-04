@@ -6361,7 +6361,7 @@ player.removeVirtualEquip(card);
 			event.finish();
 			return;
 		}
-		game.log(player, "对", target, "发起", (event.isDelay ? "延时" : ""), "拼点");
+		game.log(player, "对", target, "发起", event.isDelay ? "延时" : "", "拼点");
 		if (!event.filterCard) {
 			event.filterCard = lib.filter.all;
 		}
@@ -6443,8 +6443,7 @@ player.removeVirtualEquip(card);
 					if (cardsx?.some(card => get.position(card) == "s")) {
 						evt.isDestoryed = true;
 						game.cardsGotoOrdering(cardsx);
-					}
-					else {
+					} else {
 						event.finish();
 					}
 				})
@@ -6453,8 +6452,7 @@ player.removeVirtualEquip(card);
 				});
 			event.untrigger();
 			event.finish();
-		}
-		else {
+		} else {
 			event.trigger("compareCardShowBefore");
 		}
 		"step 6";
@@ -9123,10 +9121,10 @@ player.removeVirtualEquip(card);
 		if (num == 0 && targets.length > 1) {
 			event.sortTarget(true, true);
 		}
-		if (targets[num] && targets[num].isDead()) {
+		if (targets[num] && targets[num].isDead() && !info?.deadTarget) {
 			return;
 		}
-		if (targets[num] && targets[num].isOut()) {
+		if (targets[num] && targets[num].isOut() && !info?.includeOut) {
 			return;
 		}
 		if (targets[num] && targets[num].removed) {

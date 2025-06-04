@@ -2334,7 +2334,7 @@ export default {
 	},
 
 	// gz_sunshangxiang
-	gzxiaoji: {
+	gz_xiaoji: {
 		inherit: "xiaoji",
 		audio: "xiaoji",
 		preHidden: true,

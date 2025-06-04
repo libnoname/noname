@@ -409,10 +409,8 @@ export default {
 				await player.loseMaxHp();
 			}
 			if (control == "背水！") {
-				const next = player.phaseDraw();
-				event.next.remove(next);
-				// @ts-expect-error 类型系统未来可期
-				trigger.getParent().next.push(next);
+				let num = trigger.getParent().num + 1;
+				trigger.getParent().phaseList.splice(num, 0, `phaseDraw|${event.name}`);
 			}
 		},
 	},

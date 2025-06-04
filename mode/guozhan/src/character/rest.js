@@ -338,7 +338,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["repolu"],
+		skills: ["repojun"],
 	}),
 	// 怎么还冒出来一个体力上限不一样的呢？
 	gz_ol_sb_sunjian: new Character({

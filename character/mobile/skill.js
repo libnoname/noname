@@ -2,6 +2,358 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//势魏延
+	potzhongao: {
+		dutySkill: true,
+		derivation: ["potkuanggu", "potkuanggu_rewrite", "kunfen"],
+		group: ["potzhongao_start", "potzhongao_achieve", "potzhongao_fail"],
+		subSkill: {
+			start: {
+				trigger: {
+					global: "phaseBefore",
+					player: "enterGame",
+				},
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.addSkills("potkuanggu");
+				},
+			},
+			achieve: {
+				trigger: {
+					source: "dieAfter",
+				},
+				forced: true,
+				locked: false,
+				skillAnimation: true,
+				animationColor: "fire",
+				async content(event, trigger, player) {
+					player.awakenSkill(event.name.slice(0, -8));
+					game.log(player, "成功完成使命");
+					player.setStorage("potkuanggu", 1);
+					const num = player.countMark("potzhuangshi_limit") + player.countMark("potzhuangshi_directHit");
+					if (num > 0) {
+						if (!player.isDamaged()) {
+							await player.draw(num);
+						}
+						else {
+							await player.recover(num);
+						}
+						await player.draw(num);
+					}
+				},
+			},
+			fail: {
+				trigger: {
+					player: ["dying", "phaseUseBegin"],
+				},
+				filter(event, player) {
+					return event.name == "dying" || !event.usedZhuangshi;
+				},
+				lastDo: true,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					player.awakenSkill(event.name.slice(0, -5));
+					game.log(player, "使命失败");
+					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
+					await player.recover();
+					await player.draw(2);
+				},
+			},
+		},
+	},
+	potzhuangshi: {
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButton([
+					get.prompt(event.skill),
+					[
+						[
+							["losehp", "失去任意点体力，令你此阶段使用的前等量张牌不计入次数限制"],
+							["discard", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应"],
+						],
+						"textbutton",
+					]
+				], [1, 2])
+				.set("filterButton", button => {
+					const player = get.player();
+					if (button.link == "discard") {
+						return player.countCards("h");
+					}
+					return true;
+				})
+				.set("ai", button => {
+					const player = get.player(),
+						num = Math.floor(player.countCards("h")/2);
+					if (button.link == "discard") {
+						return num;
+					}
+					return player.hp > 1;
+				})
+				.forResult();
+			event.result = {
+				bool: true,
+				cost_data: result.bool ? result.links : "nouse",
+			};
+		},
+		async content(event, trigger, player) {
+			const select = event.cost_data;
+			if (select == "nouse") {
+				await player.gainMaxHp();
+				await player.recover();
+			}
+			else {
+				if (select.includes("losehp")) {
+					const { result } = await player
+						.chooseNumbers(get.translation(event.name), [
+							{
+								prompt: "失去任意点体力值，令你此阶段使用的前等量张牌不计入次数限制",
+								min: 1,
+								max: player.getHp(),
+							}
+						], true)
+						.set("processAI", () => {
+						const player = get.player();
+						let num = Math.floor(player.countCards("h")/2);
+						return [num];
+					});
+					const number = result.numbers[0];
+					await player.loseHp(number);
+					player.addTempSkill("potzhuangshi_limit", "phaseChange");
+					player.addMark("potzhuangshi_limit", number, false);
+					player.addTip("potzhuangshi_limit", `不计次数 ${number}`);
+				}
+				if (select.includes("discard")) {
+					const { result } = await player
+						.chooseToDiscard(get.translation(event.name), [1, Infinity], "h", true)
+						.set("prompt2", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应")
+						.set("ai", card => {
+							const player = get.player();
+							let num = Math.floor(player.countCards("h")/2);
+							if (ui.selected.cards.length < num) {
+								return 7 - get.value(card);
+							}
+							return 0;
+						});
+					const number = result.cards.length;
+					player.addTempSkill("potzhuangshi_directHit", "phaseChange");
+					player.addMark("potzhuangshi_directHit", number, false);
+					player.addTip("potzhuangshi_directHit", `不可响应 ${number}`);
+				}
+				trigger.set("usedZhuangshi", true);
+			}
+		},
+		subSkill: {
+			limit: {
+				trigger: {
+					player: "useCard0",
+				},
+				charlotte: true,
+				filter(event, player) {
+					return player.hasMark("potzhuangshi_limit");
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (trigger.addCount !== false) {
+						trigger.addCount = false;
+						player.getStat("card")[trigger.card.name]--;
+					}
+					player.removeMark("potzhuangshi_limit", 1, false);
+					const num = player.countMark("potzhuangshi_limit");
+					if (num > 0) {
+						player.addTip("potzhuangshi_limit", `不计次数 ${num}`);
+					}
+					else {
+						player.removeTip("potzhuangshi_limit");
+					}
+				},
+				onremove(player, skill) {
+					player.clearMark(skill, false);
+					player.removeTip(skill);
+				},
+			},
+			directHit: {
+				trigger: {
+					player: "useCard0",
+				},
+				charlotte: true,
+				filter(event, player) {
+					return player.hasMark("potzhuangshi_directHit");
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					trigger.directHit.addArray(game.players);
+					player.removeMark("potzhuangshi_directHit", 1, false);
+					const num = player.countMark("potzhuangshi_directHit");
+					if (num > 0) {
+						player.addTip("potzhuangshi_directHit", `不可响应 ${num}`);
+					}
+					else {
+						player.removeTip("potzhuangshi_directHit");
+					}
+				},
+				onremove(player, skill) {
+					player.clearMark(skill, false);
+					player.removeTip(skill);
+				},
+				mod: {
+					targetInRange(card, player) {
+						if (player.hasMark("potzhuangshi_directHit")) {
+							return true;
+						}
+					},
+				},
+			},
+		},
+	},
+	potyinzhan: {
+		trigger: {
+			source: "damageBegin1",
+		},
+		forced: true,
+		filter(event, player) {
+			if (event.card?.name != "sha") {
+				return false;
+			}
+			const target = event.player;
+			if (player.hp <= target.hp || player.countCards("h") <= target.countCards("h")) {
+				return true;
+			}
+			return false;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player,
+				bool1 = target.hp >= player.hp,
+				bool2 = target.countCards("h") >= player.countCards("h");
+			if (bool1) {
+				trigger.num++;
+			}
+			if (bool2) {
+				if (bool1) {
+					player.popup("乘势", "fire");
+					await player.recover();
+				}
+				player
+					.when("useCardAfter")
+					.filter(evt => evt == trigger.getParent(2))
+					.step(async (event, trigger, player) => {
+						if (target.isIn() && target.countCards("he")) {
+							const { result: { cards }} = await player
+								.discardPlayerCard(target, "he", true);
+							if (bool1) {
+								await player.gain(cards.filterInD("od"), "gain2");
+							}
+						}
+					});
+			}
+		},
+	},
+	potkuanggu: {
+		trigger: {
+			source: "damageSource",
+		},
+		filter(event, player) {
+			return event.checkKuanggu && event.num > 0;
+		},
+		getIndex(event, player, triggername) {
+			return event.num;
+		},
+		frequent: true,
+		async cost(event, trigger, player) {
+			let choice,
+				list = ["draw_card"],
+				choiceList = ["选项一：回复1点体力", "选项二：摸一张牌"];
+			if (player.getStorage(event.skill, 0) && player.countCards("he")) {
+				list.push("背水！");
+				choiceList.push("背水：弃置一张牌并令你本阶段使用【杀】的次数+1");
+			}
+			if (player.isDamaged()) {
+				list.unshift("recover_hp")
+			}
+			else {
+				choiceList[0] = `<span class = 'transparent'>${choiceList[0]}</span>`;
+			}
+			if (list.length == 1) {
+				event.result = await player
+					.chooseBool(get.prompt(event.skill), "摸一张牌")
+					.set("frequentSkill", event.skill)
+					.forResult();
+				event.result.cost_data = "draw_card";
+			}
+			else {
+				list.push("cancel2");
+				if (
+					player.isDamaged() &&
+					get.recoverEffect(player) > 0 &&
+					player.countCards("hs", function (card) {
+						return card.name == "sha" && player.hasValueTarget(card);
+					}) >= player.getCardUsable("sha")
+				) {
+					if (player.countCards("he") > 1 && list.includes("背水！")) {
+						choice = "背水！";
+					}
+					else {
+						choice = "recover_hp";
+					}
+				} else {
+					choice = "draw_card";
+				}
+				const control = await player
+					.chooseControl(list)
+					.set("prompt", get.prompt(event.skill))
+					.set("choiceList", choiceList)
+					.set("displayIndex", false)
+					.set("choice", choice)
+					.set("ai", () => {
+						return get.event("choice");
+					})
+					.forResultControl();
+				event.result = {
+					bool: control != "cancel2",
+					cost_data: control,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const result = event.cost_data;
+			if (result == "背水！") {
+				await player.chooseToDiscard("he", true);
+				player.addTempSkill("potkuanggu_effect", "phaseChange");
+				player.addMark("potkuanggu_effect", 1, false);
+			}
+			if (result == "recover_hp" || result == "背水！") {
+				await player.recover();
+			}
+			if (result == "draw_card" || result == "背水！") {
+				await player.draw();
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardUsable(card, player, num) {
+						if (player.countMark("potkuanggu_effect") && card.name == "sha") {
+							return num + player.countMark("potkuanggu_effect");
+						}
+					},
+				},
+			},
+		},
+	},
 	//手杀孟达
 	mbjili: {
 		audio: 9,

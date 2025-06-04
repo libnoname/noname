@@ -1360,9 +1360,8 @@ export default {
 				await player.loseMaxHp();
 			}
 			if (control == "背水！") {
-				const next = player.phaseDraw();
-				event.next.remove(next);
-				trigger.getParent().next.push(next);
+				let num = trigger.getParent().num + 1;
+				trigger.getParent().phaseList.splice(num, 0, `phaseDraw|${event.name}`);
 			}
 		},
 	},
@@ -3540,9 +3539,13 @@ export default {
 			}
 			return true;
 		},
-		logTarget(event, player) {
-			const storage = player.storage.fakejuzhan;
-			return event[storage ? "target" : "player"];
+		async cost(event, trigger, player) {
+			const storage = player.storage.fakejuzhan,
+				target = trigger[storage ? "target" : "player"];
+			event.result = await player
+				.chooseBool(get.prompt2(event.skill, target))
+				.setHiddenSkill("fakejuzhan")
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const storage = player.storage.fakejuzhan;
@@ -6029,7 +6032,7 @@ export default {
 			next.set("ai", target => {
 				let num = 0;
 
-				if (target.hasSkill("gzxiaoji")) {
+				if (target.hasSkill("gz_xiaoji")) {
 					num += 2.5;
 				}
 				if (target.isDamaged() && target.getEquip("baiyin")) {
@@ -7419,19 +7422,15 @@ export default {
 		},
 		preHidden: true,
 		frequent: true,
-		content() {
-			var num1 = player.getHistory("useCard").length,
-				num2 = lib.skill.gzjingce.getDiscardNum();
-			var num3 = player.hp;
-			if (num2 >= num3) {
-				var next = player.phaseDraw();
-				event.next.remove(next);
-				trigger.after.push(next);
-			}
+		async content(event, trigger, player) {
+			let num1 = player.getHistory("useCard").length,
+				num2 = lib.skill.gzjingce.getDiscardNum(),
+				num3 = player.hp;
 			if (num1 >= num3) {
-				var next = player.phaseUse();
-				event.next.remove(next);
-				trigger.after.push(next);
+				trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+			}
+			if (num2 >= num3) {
+				trigger.phaseList.splice(trigger.num, 0, `phaseDraw|${event.name}`);
 			}
 		},
 		ai: { threaten: 2.6 },
@@ -9387,11 +9386,9 @@ export default {
 		preHidden: true,
 		audio: "dangxian",
 		audioname: ["guansuo"],
-		content() {
-			var next = player.phaseUse();
-			event.next.remove(next);
-			trigger.next.push(next);
-		},
+		async content(event, trigger, player) {
+    	    trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+    	},
 		group: "gzdangxian_show",
 		subSkill: {
 			show: {
@@ -15643,44 +15640,58 @@ export default {
 		subSkill: {
 			others: {
 				trigger: { global: "equipAfter" },
-				direct: true,
 				filter(event, player) {
 					if (event.player == player || !player.countCards("e", { subtype: ["equip3", "equip4"] })) {
 						return false;
 					}
 					return event.card.name == "liulongcanjia";
 				},
-				check(event, player) {
-					if (get.attitude(player, target) <= 0) {
-						return player.countCards("e", { subtype: ["equip4", "equip4"] }) < 2;
-					}
-					return true;
+				async cost(event, trigger, player) {
+					const target = trigger.player;
+					event.result = await player
+						.chooseBool("是否发动【总御】，与" + get.translation(target) + "交换装备区内坐骑牌？")
+						.set("ai", () => {
+							const { player, target } = get.event();
+							if (get.attitude(player, target) <= 0) {
+								return player.countCards("e", { subtype: ["equip4", "equip4"] }) < 2;
+							}
+							return true;
+						})
+						.set("target", target)
+						.setHiddenSkill("gzzongyu")
+						.forResult();
+					event.result.targets = [target];
 				},
-				content() {
-					"step 0";
-					player.chooseBool("是否发动【总御】，与" + get.translation(trigger.player) + "交换装备区内坐骑牌？");
-					"step 1";
-					if (result.bool) {
-						player.logSkill("gzzongyu", trigger.player);
-						event.cards = [player.getCards("e", { subtype: ["equip3", "equip4"] }), trigger.player.getCards("e", { name: "liulongcanjia" })];
-						player.lose(event.cards[0], ui.special);
-						trigger.player.lose(event.cards[1], ui.special);
-						if (event.cards[0].length) {
-							player.$give(event.cards[0], trigger.player);
+				async content(event, trigger, player) {
+					const target = trigger.player,
+						cards1 = player.getCards("e", { subtype: ["equip3", "equip4"] }),
+						cards2 = trigger.player.getCards("e", { name: "liulongcanjia" });
+					const next = game.createEvent("swapEquip");
+					next.player = player;
+					next.target = target;
+					next.cards1 = cards1;
+					next.cards2 = cards2;
+					next.setContent(async (event, trigger, player) => {
+						const { target, cards1, cards2 } = event;
+						game.log(player, "和", target, "交换了装备区中的坐骑牌");
+						await game.loseAsync({
+							player: player,
+							target: target,
+							cards1: cards1,
+							cards2: cards2,
+						}).setContent("swapHandcardsx");
+						for (let i of cards2) {
+							if (get.position(i, true) == "o") {
+								await player.equip(i);
+							}
 						}
-						if (event.cards[1].length) {
-							trigger.player.$give(event.cards[1], player);
+						for (let i of cards1) {
+							if (get.position(i, true) == "o") {
+								await target.equip(i);
+							}
 						}
-					} else {
-						event.finish();
-					}
-					"step 2";
-					for (var i = 0; i < event.cards[1].length; i++) {
-						player.equip(event.cards[1][i]);
-					}
-					for (var i = 0; i < event.cards[0].length; i++) {
-						trigger.player.equip(event.cards[0][i]);
-					}
+					});
+					await next;
 				},
 			},
 			player: {

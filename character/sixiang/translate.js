@@ -381,7 +381,9 @@ const translates = {
 	stdlingjian_info: "锁定技，当你每回合首次使用【杀】结算结束后，若此牌未造成伤害，你重置〖明识〗。",
 	stdmingshi: "明识",
 	stdmingshi_info: "限定技，出牌阶段，你可选择一项：①摸两张牌；②回复1点体力；③对一名角色造成1点伤害；④移动场上的一张牌。",
-	std_nanhualaoxian: "标南华老仙",
+	get std_nanhualaoxian() {
+		return Math.random() > 0.25 ? "标南华老仙" : "标南华小仙";
+	},
 	std_nanhualaoxian_prefix: "标",
 	stdxianlu: "仙箓",
 	stdxianlu_info: "出牌阶段限一次，你可以弃置一名角色场上的一张装备牌，若此牌为红色，你将此牌当【乐不思蜀】置于你的判定区内并对其造成1点伤害。",

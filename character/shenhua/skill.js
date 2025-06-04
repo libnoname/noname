@@ -4189,7 +4189,7 @@ const skills = {
 				mod: {
 					globalFrom(from, to, distance) {
 						let num = distance - from.getExpansions("tuntian").length;
-						if (_status.event.skill == "jixi_backup" || _status.event.skill == "gzjixi_backup") {
+						if (_status.event.skill == "jixi_backup" || _status.event.skill == "gz_jixi_backup") {
 							num++;
 						}
 						return num;
@@ -4310,7 +4310,7 @@ const skills = {
 					audioname: ["re_dengai", "gz_dengai", "ol_dengai"],
 					selectCard: -1,
 					position: "x",
-					filterCard: skill == "jixi" ? card => card == lib.skill.jixi_backup.card : card => card == lib.skill.gzjixi_backup.card,
+					filterCard: skill == "jixi" ? card => card == lib.skill.jixi_backup.card : card => card == lib.skill.gz_jixi_backup.card,
 					viewAs: { name: "shunshou" },
 					card: links[0],
 				};

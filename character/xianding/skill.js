@@ -472,13 +472,23 @@ const skills = {
 					if (!resulty?.cards) {
 						return;
 					}
-					const cardx = resulty.cards[0];
+					const cardx = resulty.cards[0],
+						name = skill + "_debuff";
 					await player.showCards(cardx, `${get.translation(player)}发动【肃纲】展示的牌`);
 					const range = [num, get.number(cardx, player)].sort((a, b) => a - b);
 					player.line(game.filterPlayer(), "yellow");
 					for (const target of game.filterPlayer()) {
-						target.storage[skill + "_debuff"] = range;
-						target.addTempSkill(skill + "_debuff");
+						let storage = target.getStorage(name);
+						if (!storage.length) {
+							storage = range;
+						} else {
+							storage = storage
+								.concat(range)
+								.sort((a, b) => a - b)
+								.slice(1, 3);
+						}
+						target.setStorage(name, storage);
+						target.addTempSkill(name);
 					}
 				}
 				if (links.includes("buff")) {
@@ -547,12 +557,19 @@ const skills = {
 				mark: true,
 				intro: {
 					markcount(storage, player) {
+						if (!storage) {
+							return;
+						}
 						return `${get.strNumber(storage[0])}${get.strNumber(storage[1])}`;
 					},
 					content(storage, player) {
+						if (!storage) {
+							return `无事发生`;
+						}
 						return `只能使用点数在[${storage[0]},${storage[1]}]区间的手牌`;
 					},
 				},
+				onremove: true,
 				mod: {
 					cardEnabled(card, player) {
 						const num = get.number(card, player),

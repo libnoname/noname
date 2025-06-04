@@ -1305,7 +1305,7 @@ export class Library {
 						※ 部分功能将会作用于联机模式
 					`,
 					/**
-					 * @param {boolean} bool 
+					 * @param {boolean} bool
 					 */
 					async onclick(bool) {
 						await game.promises.saveConfig("experimental_enable", bool);
@@ -11082,7 +11082,7 @@ export class Library {
 				return player.countUsed(card) < num;
 			}
 		},
-		cardUsable: function (card, player, event) {
+		cardUsable(card, player, event) {
 			card = get.autoViewAs(card);
 			var info = get.info(card);
 			event = event || _status.event;
@@ -11113,9 +11113,9 @@ export class Library {
 				return true;
 			}
 			if (
-				game.hasPlayer(function (current) {
+				game.hasPlayer2(function (current) {
 					return game.checkMod(card, player, current, false, "cardUsableTarget", player);
-				})
+				}, true)
 			) {
 				return true;
 			}
@@ -11183,7 +11183,7 @@ export class Library {
 			}
 			return _status.event._aiexclude.includes(card) == false;
 		},
-		filterCard: function (card, player, event) {
+		filterCard(card, player, event) {
 			var info = get.info(card);
 			//if(info.toself&&!lib.filter.targetEnabled(card,player,player)) return false;
 			if (player == undefined) {
@@ -11214,15 +11214,19 @@ export class Library {
 				return true;
 			}
 			var filterTarget = event && event.filterTarget ? event.filterTarget : lib.filter.filterTarget;
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer2(function (current) {
 				return filterTarget(card, player, current);
-			});
+			}, true);
 		},
-		targetEnabledx: function (card, player, target) {
-			if (!card) {
+		targetEnabledx(card, player, target) {
+			if (!card || !target || target.removed) {
 				return false;
 			}
-			if (!target || !target.isIn()) {
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
+				return false;
+			}
+			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
 			let event = _status.event,
@@ -11238,27 +11242,29 @@ export class Library {
 					return false;
 				}
 			}
-			var info = get.info(card);
 			if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
 				return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
 			}
 			return lib.filter.targetEnabled.apply(this, arguments);
 		},
-		targetEnabled: function (card, player, target) {
-			if (!card) {
+		targetEnabled(card, player, target) {
+			if (!card || !target || target.removed) {
 				return false;
 			}
-			if (!target || !target.isIn()) {
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
 				return false;
 			}
-			var info = get.info(card);
-			var filter = info.filterTarget;
+			if (!info?.includeOut && target.isOut()) {
+				return false;
+			}
+			const filter = info.filterTarget;
 			if (!info.singleCard || ui.selected.targets.length == 0) {
-				var mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
 				if (mod != "unchanged") {
 					return mod;
 				}
-				var mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
 				if (mod != "unchanged") {
 					return mod;
 				}
@@ -11270,11 +11276,15 @@ export class Library {
 				return Boolean(filter(card, player, target));
 			}
 		},
-		targetEnabled2: function (card, player, target) {
-			if (!card) {
+		targetEnabled2(card, player, target) {
+			if (!card || !target || target.removed) {
 				return false;
 			}
-			if (!target || !target.isIn()) {
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
+				return false;
+			}
+			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
 			if (lib.filter.targetEnabled(card, player, target)) {
@@ -11288,7 +11298,7 @@ export class Library {
 				return false;
 			}
 
-			var filter = get.info(card).modTarget;
+			const filter = get.info(card).modTarget;
 			if (typeof filter == "boolean") {
 				return filter;
 			}
@@ -11297,14 +11307,17 @@ export class Library {
 			}
 			return false;
 		},
-		targetEnabled3: function (card, player, target) {
-			if (!card) {
+		targetEnabled3(card, player, target) {
+			if (!card || !target || target.removed) {
 				return false;
 			}
-			if (!target || !target.isIn()) {
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
 				return false;
 			}
-			var info = get.info(card);
+			if (!info?.includeOut && target.isOut()) {
+				return false;
+			}
 
 			if (info.filterTarget == true) {
 				return true;

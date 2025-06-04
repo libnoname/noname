@@ -4024,7 +4024,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	selectableTargets(sort) {
 		var selectable = [];
 		var players = game.players.slice(0);
-		if (_status.event.deadTarget || (_status.event.skill && get.info(_status.event.skill)?.deadTarget)) {
+		if (_status.event.deadTarget || (_status.event.skill && get.info(_status.event.skill)?.deadTarget) || (get.card() && get.info(get.card())?.deadTarget)) {
 			players.addArray(game.dead);
 		}
 		for (var i = 0; i < players.length; i++) {

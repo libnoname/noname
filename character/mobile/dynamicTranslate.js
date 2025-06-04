@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	potkuanggu(player) {
+        if (player.getStorage("potkuanggu", 0)) {
+			return lib.translate["potkuanggu_rewrite_info"];
+		}
+		return lib.translate["potkuanggu_info"];
+    },
 	yizan_use(player) {
 		if (player.storage.yizan) {
 			return "你可以将一张基本牌当做任意基本牌使用或打出。";
