@@ -422,6 +422,63 @@ game.import("card", function () {
 					},
 				},
 			},
+			dajunyajing: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget: true,
+				async content(event, trigger, player) {
+					const target = event.target;
+					const targets = game
+						.filterPlayer(current => {
+							return current != target;
+						})
+						.sortBySeat(_status.currentPhase);
+					for (const current of targets) {
+						if (!target.isIn()) {
+							return;
+						}
+						if (!current.isIn() || !current.countCards("hes") || current.hasSkill("diaohulishan")) {
+							continue;
+						}
+						const next = current.chooseToUse();
+						next.set("openskilldialog", `大军压境：是否将一张牌当作【杀】对${get.translation(target)}使用？`);
+						next.set("norestore", true);
+						next.set("_backupevent", `dajunyajing_backup`);
+						next.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
+						next.backup(`dajunyajing_backup`);
+						next.set("targetRequired", true);
+						next.set("complexSelect", true);
+						next.set("filterTarget", function (card, player, target) {
+							const { sourcex } = get.event();
+							if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
+						});
+						next.set("sourcex", target);
+						next.set("addCount", false);
+						await next;
+					}
+				},
+				ai: {
+					order: 6,
+					value: 12,
+					useful: 10,
+					tag: {
+						damage: 1,
+					},
+					result: {
+						target(player, target) {
+							return -1 * (game.countPlayer() - 1);
+						},
+					},
+				},
+			},
 		},
 		skill: {
 			tiejili_skill: {
@@ -689,6 +746,20 @@ game.import("card", function () {
 					},
 				},
 			},
+			dajunyajing_backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				viewAs: {
+					name: "sha",
+				},
+				selectCard: 1,
+				position: "hes",
+				ai1(card) {
+					return 7 - get.value(card);
+				},
+				log: false,
+			},
 		},
 		translate: {
 			tiejili: "铁蒺藜骨朵",
@@ -718,6 +789,8 @@ game.import("card", function () {
 			mengchong_skill_info: "锁定技，当你使用牌结算结束后，你选择与其他角色互相计算距离+1或-1直到你的下个回合开始（至多+2/-2）。",
 			yidugongdu: "以毒攻毒",
 			yidugongdu_info: "出牌阶段，对一名已受伤的角色使用。你观看其所有手牌，然后若你与其手牌中均有【毒】，弃置其中一张【毒】并与其各摸两张牌，否则你与其依次受到1点无来源伤害。",
+			dajunyajing: "大军压境",
+			dajunyajing_info: "出牌阶段，对一名角色使用。其以外的所有角色依次选择是否将一张牌当无距离限制的【杀】对其使用。",
 		},
 		list: [
 			["diamond", 6, "suibozhuliu"],

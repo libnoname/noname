@@ -1,4 +1,37 @@
 const characters = {
+	wn_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		isZhugong: true,
+		skills: ["wn_dingluan", "wn_zhuijiang"],
+	},
+	wn_hansui: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 5,
+		isZhugong: true,
+		skills: ["wn_jubing", "wn_xiongju"],
+	},
+	wn_houxuan: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["wn_zhongtao", "mashu"],
+	},
+	wn_chengyi: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["wn_dutan"],
+	},
+	wn_yangqiú: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["wn_qifeng"],
+	},
 	pe_jun_caopi: {
 		sex: "male",
 		group: "wei",
@@ -26,6 +59,13 @@ const characters = {
 		hp: 3,
 		isZhugong: true,
 		skills: ["jun_tianze", "jun_zhaoshou", "twzhuiting"],
+	},
+	pe_jun_liuhong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		isZhugong: true,
+		skills: ["jun_gezhi", "jun_julian"],
 	},
 	pe_que: {
 		sex: "male",

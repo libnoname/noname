@@ -1713,9 +1713,8 @@ const skills = {
 				if (game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1)) {
 					return get.order({ name: "sha" }) + 0.2;
 				}
-				return 1;
+				return get.order({ name: "jiu" }) + 0.1;
 			},
-			result: { player: 1 },
 			nokeep: true,
 			skillTagFilter(player, tag, arg) {
 				if (tag === "nokeep") {
