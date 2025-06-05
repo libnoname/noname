@@ -1,10 +1,10 @@
 const characters = {
 	pot_weiyan: {
-        hp: 4,
-        sex: "male",
-        group: "shu",
-        skills: ["potzhongao", "potzhuangshi", "potyinzhan"],
-    },
+		hp: 4,
+		sex: "male",
+		group: "shu",
+		skills: ["potzhongao", "potzhuangshi", "potyinzhan"],
+	},
 	mb_mengda: {
 		sex: "male",
 		group: "qun",
@@ -86,6 +86,7 @@ const characters = {
 		hp: 4,
 		skills: ["mbtanfeng"],
 		dieAudios: ["tw_xiahoushang"],
+		img: "image/character/tw_xiahoushang.jpg",
 		names: "夏侯|尚",
 	},
 	sunsháo: {
