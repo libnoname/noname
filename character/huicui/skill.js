@@ -50,6 +50,7 @@ const skills = {
 		},
 		subSkill: {
 			red: {
+				audio: "dcgengdu",
 				enable: "chooseToUse",
 				charlotte: true,
 				filter(event, player) {
@@ -144,6 +145,7 @@ const skills = {
 				onremove: true,
 			},
 			black: {
+				audio: "dcgengdu",
 				trigger: {
 					player: "useCardAfter",
 				},
@@ -281,6 +283,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcguying",
 				charlotte: true,
 				forced: true,
 				intro: {
@@ -1742,6 +1745,7 @@ const skills = {
 		},
 		subSkill: {
 			add: {
+				audio: "dctanluan",
 				trigger: {
 					player: "useCard2",
 				},
@@ -8143,6 +8147,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
+				audio: "dctaji",
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				charlotte: true,
@@ -11599,6 +11604,7 @@ const skills = {
 				intro: { content: "手牌上限+#" },
 			},
 			eff2: {
+				audio: "dcyongbi",
 				trigger: { player: "damageBegin4" },
 				forced: true,
 				filter(event, player) {
@@ -11738,6 +11744,7 @@ const skills = {
 		group: "dcliehou_discard",
 		subSkill: {
 			discard: {
+				audio: "dcliehou",
 				trigger: { player: "phaseDrawEnd" },
 				forced: true,
 				filter(event, player) {
@@ -17631,6 +17638,7 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
+				audio: "dcdanying",
 				trigger: { target: "useCardToTargeted" },
 				charlotte: true,
 				forced: true,

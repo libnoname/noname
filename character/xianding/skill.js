@@ -859,6 +859,7 @@ const skills = {
 				},
 			},
 			init: {
+				audio: "dcdujun",
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
@@ -5217,6 +5218,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcjiangxian",
 				charlotte: true,
 				mark: true,
 				intro: {
@@ -6612,6 +6614,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dccilv",
 				charlotte: true,
 				trigger: { player: "damageBegin4" },
 				filter(event, player) {
@@ -9238,6 +9241,7 @@ const skills = {
 		group: "dcsbpingliao_hide",
 		subSkill: {
 			hide: {
+				audio: "dcsbpingliao",
 				trigger: { player: "useCard0" },
 				forced: true,
 				filter(event, player) {
@@ -12908,6 +12912,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "dcmianyao",
 				trigger: {
 					player: "phaseEnd",
 				},
@@ -13729,6 +13734,7 @@ const skills = {
 		},
 		subSkill: {
 			muteki: {
+				audio: "dcxunbie",
 				trigger: {
 					player: "damageBegin4",
 				},
@@ -14643,6 +14649,7 @@ const skills = {
 						}
 					},
 				},
+				audio: "dczhizhe",
 				trigger: { player: ["useCardAfter", "respondAfter"] },
 				charlotte: true,
 				forced: true,
@@ -14872,6 +14879,7 @@ const skills = {
 		},
 		subSkill: {
 			red: {
+				audio: "dchuayi",
 				trigger: { global: "phaseEnd" },
 				charlotte: true,
 				forced: true,
@@ -14885,6 +14893,7 @@ const skills = {
 				},
 			},
 			black: {
+				audio: "dchuayi",
 				trigger: { player: "damageEnd" },
 				charlotte: true,
 				forced: true,
@@ -16258,6 +16267,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "dccansi",
 				trigger: { global: "damageEnd" },
 				forced: true,
 				charlotte: true,
@@ -21594,6 +21604,7 @@ const skills = {
 		onremove: true,
 		subSkill: {
 			insert: {
+				audio: "guili",
 				mark: true,
 				intro: {
 					content: "players",

@@ -36,6 +36,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["fakeshilu", "fakexiongnve"],
+		dieAudios: ["pe_sunchen"],
 		hasSkinInGuozhan: false,
 	}),
 	// 分组2：谷爱凌
@@ -56,6 +57,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["qiuan", "liangfan"],
+		dieAudios: ["pe_mengda"],
 		doubleGroup: ["wei", "shu"],
 		hasSkinInGuozhan: false,
 	}),
@@ -193,6 +195,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gzjinfa"],
+		dieAudios: ["pe_wenqin"],
 		doubleGroup: ["wei", "wu"],
 		hasSkinInGuozhan: true,
 	}),

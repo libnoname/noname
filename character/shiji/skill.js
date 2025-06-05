@@ -1261,6 +1261,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "spyanjiao",
 				onremove: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
@@ -3047,6 +3048,7 @@ const skills = {
 		group: "dbzhuifeng_self",
 		subSkill: {
 			self: {
+				audio: "dbzhuifeng",
 				trigger: { player: "damageBegin2" },
 				forced: true,
 				filter(event, player) {
@@ -3228,6 +3230,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dbchongjian",
 				charlotte: true,
 				mod: {
 					targetInRange(card) {
@@ -4054,6 +4057,7 @@ const skills = {
 				},
 			},
 			add: {
+				audio: "mingfa",
 				trigger: { player: "compare", target: "compare" },
 				filter(event, player) {
 					if (event.player == player) {
@@ -5671,6 +5675,7 @@ const skills = {
 		group: "boming_draw",
 		subSkill: {
 			draw: {
+				audio: 'boming',
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				locked: false,
@@ -5918,6 +5923,7 @@ const skills = {
 		group: "debao_gain",
 		subSkill: {
 			gain: {
+				audio: "debao",
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				filter(event, player) {
@@ -5967,6 +5973,7 @@ const skills = {
 		group: "buqi_die",
 		subSkill: {
 			die: {
+				audio: "buqi",
 				trigger: { global: "dieAfter" },
 				forced: true,
 				filter(event, player) {

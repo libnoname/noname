@@ -3001,6 +3001,7 @@ const skills = {
 		},
 		subSkill: {
 			fullyReady: {
+				audio: "cibei",
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				locked: false,

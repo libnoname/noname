@@ -6354,184 +6354,202 @@ player.removeVirtualEquip(card);
 		"step 10";
 		event.cards.add(event.card1);
 	},
-	chooseToCompare: function () {
-		"step 0";
-		if (((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0) || ((!event.fixedResult || !event.fixedResult[target.playerid]) && target.countCards("h") == 0)) {
-			event.result = { cancelled: true, bool: false };
-			event.finish();
-			return;
-		}
-		game.log(player, "对", target, "发起", event.isDelay ? "延时" : "", "拼点");
-		if (!event.filterCard) {
-			event.filterCard = lib.filter.all;
-		}
-		"step 1";
-		event.list = [player, target].filter(function (current) {
-			return !event.fixedResult || !event.fixedResult[current.playerid];
-		});
-		if (event.list.length) {
-			player.chooseCardOL(event.list, "请选择拼点牌", true).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-				var hs = target.getCards("h");
-				var event = _status.event;
-				event.player = target;
-				hs.sort(function (a, b) {
-					return event.ai(b) - event.ai(a);
-				});
-				delete event.player;
-				return { bool: true, cards: [hs[0]] };
-			};
-		}
-		"step 2";
-		const lose_list = [];
-		if (event.fixedResult && event.fixedResult[player.playerid]) {
-			lose_list.push([player, [event.fixedResult[player.playerid]]]);
-		} else {
-			if (result[0].skill && lib.skill[result[0].skill] && lib.skill[result[0].skill].onCompare) {
-				player.logSkill(result[0].skill);
-				result[0].cards = lib.skill[result[0].skill].onCompare(player);
+	chooseToCompare: [
+		async (event, trigger, player) => {
+			const { target } = event;
+			if (((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0) || ((!event.fixedResult || !event.fixedResult[target.playerid]) && target.countCards("h") == 0)) {
+				event.result = { cancelled: true, bool: false };
+				event.finish();
+				return;
 			}
-			lose_list.push([player, result[0].cards]);
-		}
-		event.card1 = lose_list[0][1][0];
-		if (event.list.includes(target)) {
-			let index = event.list.indexOf(target);
-			if (result[index].skill && lib.skill[result[index].skill] && lib.skill[result[index].skill].onCompare) {
-				target.logSkill(result[index].skill);
-				result[index].cards = lib.skill[result[index].skill].onCompare(target);
+			game.log(player, "对", target, "发起", event.isDelay ? "延时" : "", "拼点");
+			if (!event.filterCard) {
+				event.filterCard = lib.filter.all;
 			}
-			lose_list.push([target, result[index].cards]);
-		} else if (event.fixedResult && event.fixedResult[target.playerid]) {
-			lose_list.push([target, [event.fixedResult[target.playerid]]]);
-		}
-		event.card2 = lose_list[1][1][0];
-		event.lose_list = lose_list;
-		"step 3";
-		if (event.card2.number >= 10 || event.card2.number <= 4) {
-			if (target.countCards("h") > 2) {
-				event.addToAI = true;
+		},
+		async (event, trigger, player) => {
+			const { target } = event;
+			event.list = [player, target].filter(function (current) {
+				return !event.fixedResult || !event.fixedResult[current.playerid];
+			});
+			if (event.list.length) {
+				player.chooseCardOL(event.list, "请选择拼点牌", true).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
+					var hs = target.getCards("h");
+					var event = _status.event;
+					event.player = target;
+					hs.sort(function (a, b) {
+						return event.ai(b) - event.ai(a);
+					});
+					delete event.player;
+					return { bool: true, cards: [hs[0]] };
+				};
 			}
-		}
-		"step 4";
-		if (event.lose_list.length) {
-			game.loseAsync({
-				lose_list: event.lose_list,
-			}).setContent("chooseToCompareLose");
-		}
-		"step 5";
-		if (event.isDelay) {
-			let cards = [];
-			for (let current of event.lose_list) {
-				current[0].$giveAuto(current[1], current[0], false);
-				cards.addArray(current[1]);
+		},
+		async (event, trigger, player, result) => {
+			const { target } = event;
+			const lose_list = [];
+			if (event.fixedResult && event.fixedResult[player.playerid]) {
+				lose_list.push([player, [event.fixedResult[player.playerid]]]);
+			} else {
+				if (result[0].skill && lib.skill[result[0].skill] && lib.skill[result[0].skill].onCompare) {
+					player.logSkill(result[0].skill);
+					result[0].cards = lib.skill[result[0].skill].onCompare(player);
+				}
+				lose_list.push([player, result[0].cards]);
 			}
-			game.cardsGotoSpecial(cards);
-			player
-				.when({
-					global: ["dieAfter", "phaseEnd"],
-				})
-				.assign({
-					forceDie: true,
-				})
-				.filter((event, player) => {
-					return event.name == "phase" || [player, target].includes(event.player);
-				})
-				.vars({
-					cardsx: cards,
-					evt: event,
-				})
-				.then(() => {
-					if (cardsx?.some(card => get.position(card) == "s")) {
-						evt.isDestoryed = true;
-						game.cardsGotoOrdering(cardsx);
-					} else {
-						event.finish();
-					}
-				})
-				.then(() => {
-					game.cardsDiscard(cardsx);
-				});
-			event.untrigger();
-			event.finish();
-		} else {
-			event.trigger("compareCardShowBefore");
-		}
-		"step 6";
-		game.broadcast(function () {
-			ui.arena.classList.add("thrownhighlight");
-		});
-		ui.arena.classList.add("thrownhighlight");
-		game.addVideo("thrownhighlight1");
-		player.$compare(event.card1, target, event.card2);
-		game.log(player, "的拼点牌为", event.card1);
-		game.log(target, "的拼点牌为", event.card2);
-		var getNum = function (card) {
-			for (var i of event.lose_list) {
-				if (i[1].includes(card)) {
-					return get.number(card, i[0]);
+			event.card1 = lose_list[0][1][0];
+			if (event.list.includes(target)) {
+				let index = event.list.indexOf(target);
+				if (result[index].skill && lib.skill[result[index].skill] && lib.skill[result[index].skill].onCompare) {
+					target.logSkill(result[index].skill);
+					result[index].cards = lib.skill[result[index].skill].onCompare(target);
+				}
+				lose_list.push([target, result[index].cards]);
+			} else if (event.fixedResult && event.fixedResult[target.playerid]) {
+				lose_list.push([target, [event.fixedResult[target.playerid]]]);
+			}
+			event.card2 = lose_list[1][1][0];
+			event.lose_list = lose_list;
+		},
+		async (event, trigger, player) => {
+			const { target } = event;
+			if (event.card2.number >= 10 || event.card2.number <= 4) {
+				if (target.countCards("h") > 2) {
+					event.addToAI = true;
 				}
 			}
-			return get.number(card, false);
-		};
-		event.num1 = getNum(event.card1);
-		event.num2 = getNum(event.card2);
-		event.trigger("compare");
-		game.delay(0, 1500);
-		"step 7";
-		event.result = {
-			player: event.card1,
-			target: event.card2,
-			num1: event.num1,
-			num2: event.num2,
-		};
-		event.trigger("compareFixing");
-		"step 8";
-		var str;
-		if (event.forceWinner === player || (event.forceWinner !== target && event.num1 > event.num2)) {
-			event.result.bool = true;
-			event.result.winner = player;
-			str = get.translation(player) + "拼点成功";
-			player.popup("胜");
-			target.popup("负");
-		} else {
-			event.result.bool = false;
-			str = get.translation(player) + "拼点失败";
-			if (event.forceWinner !== target && event.num1 == event.num2) {
-				event.result.tie = true;
-				player.popup("平");
-				target.popup("平");
-			} else {
-				event.result.winner = target;
-				player.popup("负");
-				target.popup("胜");
+		},
+		async (event, trigger, player) => {
+			if (event.lose_list.length) {
+				game.loseAsync({
+					lose_list: event.lose_list,
+				}).setContent("chooseToCompareLose");
 			}
-		}
-		game.broadcastAll(function (str) {
-			var dialog = ui.create.dialog(str);
-			dialog.classList.add("center");
-			setTimeout(function () {
-				dialog.close();
-			}, 1000);
-		}, str);
-		game.delay(2);
-		"step 9";
-		if (typeof event.target.ai.shown == "number" && event.target.ai.shown <= 0.85 && event.addToAI) {
-			event.target.ai.shown += 0.1;
-		}
-		game.broadcastAll(function () {
-			ui.arena.classList.remove("thrownhighlight");
-		});
-		game.addVideo("thrownhighlight2");
-		if (event.clear !== false) {
-			game.broadcastAll(ui.clear);
-		}
-		if (typeof event.preserve == "function") {
-			event.preserve = event.preserve(event.result);
-		} else if (event.preserve == "win") {
-			event.preserve = event.result.bool;
-		} else if (event.preserve == "lose") {
-			event.preserve = !event.result.bool;
-		}
-	},
+		},
+		async (event, trigger, player) => {
+			const { target } = event;
+			if (event.isDelay) {
+				let cards = [];
+				for (let current of event.lose_list) {
+					current[0].$giveAuto(current[1], current[0], false);
+					cards.addArray(current[1]);
+				}
+				game.cardsGotoSpecial(cards);
+				player
+					.when({
+						global: ["dieAfter", "phaseEnd"],
+					})
+					.assign({
+						forceDie: true,
+					})
+					.filter((event, player) => {
+						return event.name == "phase" || [player, target].includes(event.player);
+					})
+					.vars({
+						cardsx: cards,
+						evt: event,
+					})
+					.then(() => {
+						if (cardsx?.some(card => get.position(card) == "s")) {
+							evt.isDestoryed = true;
+							game.cardsGotoOrdering(cardsx);
+						} else {
+							event.finish();
+						}
+					})
+					.then(() => {
+						game.cardsDiscard(cardsx);
+					});
+				event.untrigger();
+				event.finish();
+			} else {
+				event.trigger("compareCardShowBefore");
+			}
+		},
+		async (event, trigger, player) => {
+			const { target } = event;
+			game.broadcast(function () {
+				ui.arena.classList.add("thrownhighlight");
+			});
+			ui.arena.classList.add("thrownhighlight");
+			game.addVideo("thrownhighlight1");
+			player.$compare(event.card1, target, event.card2);
+			game.log(player, "的拼点牌为", event.card1);
+			game.log(target, "的拼点牌为", event.card2);
+			var getNum = function (card) {
+				for (var i of event.lose_list) {
+					if (i[1].includes(card)) {
+						return get.number(card, i[0]);
+					}
+				}
+				return get.number(card, false);
+			};
+			event.num1 = getNum(event.card1);
+			event.num2 = getNum(event.card2);
+			event.trigger("compare");
+			game.delay(0, 1500);
+		},
+		async (event, trigger, player) => {
+			event.result = {
+				player: event.card1,
+				target: event.card2,
+				num1: event.num1,
+				num2: event.num2,
+			};
+			event.trigger("compareFixing");
+		},
+		async (event, trigger, player) => {
+			const { target } = event;
+			var str;
+			if (event.forceWinner === player || (event.forceWinner !== target && event.num1 > event.num2)) {
+				event.result.bool = true;
+				event.result.winner = player;
+				str = get.translation(player) + "拼点成功";
+				player.popup("胜");
+				target.popup("负");
+			} else {
+				event.result.bool = false;
+				str = get.translation(player) + "拼点失败";
+				if (event.forceWinner !== target && event.num1 == event.num2) {
+					event.result.tie = true;
+					player.popup("平");
+					target.popup("平");
+				} else {
+					event.result.winner = target;
+					player.popup("负");
+					target.popup("胜");
+				}
+			}
+			game.broadcastAll(function (str) {
+				var dialog = ui.create.dialog(str);
+				dialog.classList.add("center");
+				setTimeout(function () {
+					dialog.close();
+				}, 1000);
+			}, str);
+			game.delay(2);
+		},
+		async (event, trigger, player) => {
+			//const {target} = event;
+			if (typeof event.target.ai.shown == "number" && event.target.ai.shown <= 0.85 && event.addToAI) {
+				event.target.ai.shown += 0.1;
+			}
+			game.broadcastAll(function () {
+				ui.arena.classList.remove("thrownhighlight");
+			});
+			game.addVideo("thrownhighlight2");
+			if (event.clear !== false) {
+				game.broadcastAll(ui.clear);
+			}
+			if (typeof event.preserve == "function") {
+				event.preserve = event.preserve(event.result);
+			} else if (event.preserve == "win") {
+				event.preserve = event.result.bool;
+			} else if (event.preserve == "lose") {
+				event.preserve = !event.result.bool;
+			}
+		},
+	],
 	async chooseToCompareEffect(event, trigger, player) {
 		const evt = event.parentEvent;
 		for (const key of ["target", "card1", "card2", "lose_list", "forceWinner", "clear", "preserve"]) {
@@ -6619,8 +6637,8 @@ player.removeVirtualEquip(card);
 		} else if (event.preserve == "lose") {
 			event.preserve = !event.result.bool;
 		}
-		await event.trigger("chooseToCompareAfter");
 		await event.trigger("chooseToCompareEnd");
+		await event.trigger("chooseToCompareAfter");
 	},
 	chooseSkill: function () {
 		"step 0";
@@ -11254,6 +11272,73 @@ player.removeVirtualEquip(card);
 				}
 			}
 			source.classList.add("topcount");
+		}
+	},
+	//复活事件
+	revive: async function (event, trigger, player) {
+		const { hp, log } = event;
+		if (log !== false) {
+			game.log(player, "复活");
+		}
+		if (player.maxHp < 1) {
+			player.maxHp = 1;
+		}
+		player.hp = hp;
+		game.addVideo("revive", player);
+		player.classList.remove("dead");
+		player.removeAttribute("style");
+		player.node.avatar.style.transform = "";
+		player.node.avatar2.style.transform = "";
+		player.node.hp.show();
+		player.node.equips.show();
+		player.node.count.show();
+		player.update();
+		let playerx;
+		playerx = player.previousSeat;
+		while (playerx.isDead()) {
+			playerx = playerx.previousSeat;
+		}
+		playerx.next = player;
+		player.previous = playerx;
+		playerx = player.nextSeat;
+		while (playerx.isDead()) {
+			playerx = playerx.nextSeat;
+		}
+		playerx.previous = player;
+		player.next = playerx;
+		game.players.add(player);
+		game.dead.remove(player);
+		if (player == game.me) {
+			if (ui.auto) {
+				ui.auto.show();
+			}
+			if (ui.wuxie) {
+				ui.wuxie.show();
+			}
+			if (ui.revive) {
+				ui.revive.close();
+				delete ui.revive;
+			}
+			if (ui.exit) {
+				ui.exit.close();
+				delete ui.exit;
+			}
+			if (ui.swap) {
+				ui.swap.close();
+				delete ui.swap;
+			}
+			if (ui.restart) {
+				ui.restart.close();
+				delete ui.restart;
+			}
+			if (ui.continue_game) {
+				ui.continue_game.close();
+				delete ui.continue_game;
+			}
+			if (player.node.dieidentity) {
+				player.node.dieidentity.delete();
+				delete player.node.dieidentity;
+			}
 		}
 	},
 	//暂时还是只能一次加一张牌，需要后续跟进处理

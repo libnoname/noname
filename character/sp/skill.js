@@ -124,6 +124,7 @@ const skills = {
 				},
 			},
 			mark: {
+				audio: "olcunze",
 				onremove: true,
 				charlotte: true,
 				trigger: {
@@ -149,6 +150,9 @@ const skills = {
 	},
 	//OL张曼成 —— by 星の语
 	olkuangxin: {
+		init(player) {
+			player.addSkill("olkuangxin_record");
+		},
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		forced: true,
@@ -186,6 +190,42 @@ const skills = {
 		intro: {
 			content: "上次展示了#张牌",
 		},
+		group: ["olkuangxin_recover"],
+		subSkill: {
+			record: {
+				trigger: { player: ["phaseZhunbeiAfter", "phaseBefore", "enterGame"] },
+				lastDo: true,
+				charlotte: true,
+				forced: true,
+				popup: false,
+				forceDie: true,
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				content() {
+					if (!_status.olkuangxin) {
+						_status.olkuangxin = {};
+					}
+					_status.olkuangxin = player.hp;
+				},
+			},
+			recover: {
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					return _status.olkuangxin > 0;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					const num = _status.olkuangxin - player.hp;
+					if (num > 0) {
+						await player.recover(num);
+					} else if (num < 0) {
+						await player.loseHp(num);
+					}
+				},
+			},
+		},
 	},
 	olleishi: {
 		audio: 2,
@@ -221,9 +261,7 @@ const skills = {
 					return;
 				}
 				const resultx = await player
-					.chooseTarget(`雷噬：对一名目标角色造成一点雷电伤害`, true, (card, player, target) => {
-						return get.event().targets.includes(target);
-					})
+					.chooseTarget(`雷噬：对一名角色造成一点雷电伤害`, true)
 					.set("targets", targets)
 					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
 					.forResult();
@@ -253,6 +291,7 @@ const skills = {
 		},
 		subSkill: {
 			judge: {
+				audio: "olleishi",
 				onremove(player, skill) {
 					player.removeGaintag(skill);
 				},
@@ -1320,7 +1359,7 @@ const skills = {
 						.set("target", target)
 						.forResult("bool");
 					if (!bool) {
-						await player.damage(1, target);
+						await player.damage(1, target, "thunder");
 					}
 				},
 			},
@@ -5207,6 +5246,7 @@ const skills = {
 		subSkill: {
 			backup: {},
 			effect: {
+				audio: "olleiluan",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					return player.getRoundHistory("useCard", evt => get.type(evt.card) == "basic").length >= lib.skill.olleiluan.getNum(player);
@@ -6233,6 +6273,7 @@ const skills = {
 		},
 		subSkill: {
 			addTarget: {
+				audio: "olhunjiang",
 				charlotte: true,
 				onremove: true,
 				intro: { content: "本阶段使用【杀】可以额外指定$为目标" },
@@ -10787,6 +10828,7 @@ const skills = {
 		},
 		subSkill: {
 			buff: {
+				audio: "olgangshu",
 				init(player) {
 					let info = lib.skill.olgangshu.getInfo(player);
 					player.addTip("olgangshu_buff", "刚述 " + info.slice().join(" "));
@@ -14312,6 +14354,7 @@ const skills = {
 				},
 			},
 			gain: {
+				audio: "olmiuyan",
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -14347,6 +14390,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "olmiuyan",
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -16013,6 +16057,7 @@ const skills = {
 		},
 		subSkill: {
 			put: {
+				audio: "oltongduo",
 				trigger: { player: "phaseUseEnd" },
 				charlotte: true,
 				forced: true,
@@ -17083,6 +17128,7 @@ const skills = {
 		},
 		subSkill: {
 			lottery: {
+				audio: "olhuanfu",
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -28200,6 +28246,7 @@ const skills = {
 		group: "moucheng_awaken",
 		subSkill: {
 			awaken: {
+				audio: "moucheng",
 				trigger: { player: "mouchengAwaken" },
 				forced: true,
 				skillAnimation: true,
@@ -32561,6 +32608,7 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
+				audio: "yinbing",
 				trigger: { player: "damageEnd" },
 				forced: true,
 				filter(event, player) {
@@ -34319,6 +34367,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "canshi",
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
@@ -35463,39 +35512,42 @@ const skills = {
 				});
 			}
 			do {
-				const { result } = cards.length > 1 ? await player
-					.chooseButtonTarget({
-						createDialog: [`礼让：是否分配本次弃置的牌？`, cards],
-						selectButton: [1, Infinity],
-						cardsx: cards,
-						filterTarget: lib.filter.notMe,
-						ai1(button) {
-							return get.value(button.link);
-						},
-						canHidden: true,
-						ai2(target) {
-							const player = get.player();
-							const card = ui.selected.buttons[0].link;
-							if (card) {
-								return get.value(card, target) * get.attitude(player, target);
-							}
-							return 1;
-						},
-					})
-					.setHiddenSkill("lirang") : await player
-						.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
-						.set("ai", target => {
-							const att = get.attitude(_status.event.player, target);
-							if (_status.event.enemy) {
-								return -att;
-							} else if (att > 0) {
-								return att / (1 + target.countCards("h"));
-							} else {
-								return att / 100;
-							}
-						})
-						.setHiddenSkill("lirang")
-						.set("enemy", get.value(cards[0], player, "raw") < 0);
+				const { result } =
+					cards.length > 1
+						? await player
+								.chooseButtonTarget({
+									createDialog: [`礼让：是否分配本次弃置的牌？`, cards],
+									selectButton: [1, Infinity],
+									cardsx: cards,
+									filterTarget: lib.filter.notMe,
+									ai1(button) {
+										return get.value(button.link);
+									},
+									canHidden: true,
+									ai2(target) {
+										const player = get.player();
+										const card = ui.selected.buttons[0].link;
+										if (card) {
+											return get.value(card, target) * get.attitude(player, target);
+										}
+										return 1;
+									},
+								})
+								.setHiddenSkill("lirang")
+						: await player
+								.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
+								.set("ai", target => {
+									const att = get.attitude(_status.event.player, target);
+									if (_status.event.enemy) {
+										return -att;
+									} else if (att > 0) {
+										return att / (1 + target.countCards("h"));
+									} else {
+										return att / 100;
+									}
+								})
+								.setHiddenSkill("lirang")
+								.set("enemy", get.value(cards[0], player, "raw") < 0);
 				if (result?.bool) {
 					if (!result.links?.length) {
 						result.links = cards.slice(0);
@@ -35506,8 +35558,7 @@ const skills = {
 						give_map[id] = [];
 					}
 					give_map[id].addArray(result.links);
-				}
-				else {
+				} else {
 					break;
 				}
 			} while (cards.length > 0);
@@ -35528,14 +35579,16 @@ const skills = {
 				bool: targets.length > 0,
 				targets: targets?.sortBySeat(),
 				cost_data: lose_list,
-			}
+			};
 		},
 		async content(event, trigger, player) {
-			await game.loseAsync({
-				gain_list: event.cost_data,
-				giver: player,
-				animate: "gain2",
-			}).setContent("gaincardMultiple");
+			await game
+				.loseAsync({
+					gain_list: event.cost_data,
+					giver: player,
+					animate: "gain2",
+				})
+				.setContent("gaincardMultiple");
 		},
 		ai: {
 			expose: 0.1,
@@ -35798,6 +35851,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "qiluan2",
 				trigger: { global: "dieAfter" },
 				frequent: true,
 				filter(event, player) {

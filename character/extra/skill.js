@@ -904,12 +904,14 @@ const skills = {
 			const targets = game.filterPlayer(target => target != player);
 			player.line(targets);
 			if (choices.includes("fengyin")) {
+				game.log(player, "选择了", "#y准备阶段、结束阶段", "的效果");
 				for (const target of targets) {
 					target.when({ player: "phaseJieshuBefore" }).then(() => player.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
 					target.when({ player: "phaseZhunbeiBefore" }).then(() => player.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
 				}
 			}
 			if (choices.includes("judge")) {
+				game.log(player, "选择了", "#y判定阶段", "的效果");
 				for (const target of targets) {
 					target.when({ player: "phaseJudgeBegin" }).step(async (event, trigger, player) => {
 						const result = await player
@@ -929,44 +931,54 @@ const skills = {
 				}
 			}
 			if (choices.includes("discard")) {
-				game.addGlobalSkill("dclishi_discard");
+				game.log(player, "选择了", "#y摸牌阶段", "的效果");
 				for (const target of targets) {
-					target.when({ player: "phaseDrawBegin" }).then(() => trigger.set("dclishi", player.playerid));
+					target.addTempSkill("dclishi_discard", { player: "phaseDrawAfter" });
+					//target.when({ player: "phaseDrawBegin" }).then(() => trigger.set("dclishi", player.playerid));
 				}
 			}
 			if (choices.includes("use")) {
+				game.log(player, "选择了", "#y出牌阶段", "的效果");
 				for (const target of targets) {
-					target.when({ player: "phaseUseBegin" }).then(() => player.addTempSkill("dclishi_limit", ["phaseBefore", "phaseChange", "phaseAfter"]));
+					target.addTempSkill("dclishi_limit", { player: "phaseUseAfter" });
+					//target.when({ player: "phaseUseBegin" }).then(() => player.addTempSkill("dclishi_limit", ["phaseBefore", "phaseChange", "phaseAfter"]));
 				}
 			}
 			if (choices.includes("gain")) {
-				player.addSkill("dclishi_gain");
+				game.log(player, "选择了", "#y弃牌阶段", "的效果");
 				for (const target of targets) {
-					target.when({ player: "phaseDiscardBegin" }).then(() => trigger.set("dclishi", player.playerid));
+					target.addTempSkill("dclishi_gain", { player: "phaseDiscardAfter" });
+					target.markAuto("dclishi_gain", player);
+					//target.when({ player: "phaseDiscardBegin" }).then(() => trigger.set("dclishi", player.playerid));
 				}
 			}
 		},
 		subSkill: {
 			gain: {
 				trigger: {
-					global: ["loseAsyncAfter", "loseAfter"],
+					player: ["loseAfter"],
+					global: ["loseAsyncAfter"],
 				},
 				charlotte: true,
 				forced: true,
 				popup: false,
+				onremove: true,
 				filter(event, player) {
 					if (event.type !== "discard") {
 						return false;
 					}
 					const evt = event.getParent("phaseDiscard");
-					if (evt?.dclishi !== event.player.playerid) {
-						return false;
-					}
-					const evt2 = event.getl(event.player);
-					return evt?.name === "phaseDiscard" && evt?.player === event.player && evt2?.cards2?.filterInD("d");
+					const evt2 = event.getl(player);
+					return evt?.name === "phaseDiscard" && evt?.player === player && evt2?.cards2?.filterInD("d");
 				},
 				async content(event, trigger, player) {
-					await player.gain(trigger.getl(trigger.player).cards2.filterInD("d"), "gain2");
+					const gainer = player
+						.getStorage(event.name)
+						.sortBySeat()
+						.find(target => target.isIn());
+					if (gainer) {
+						await gainer.gain(trigger.getl(player).cards2.filterInD("d"), "gain2");
+					}
 				},
 			},
 			limit: {
@@ -974,6 +986,7 @@ const skills = {
 				onremove: true,
 				trigger: { player: "useCard1" },
 				silent: true,
+				firstDo: true,
 				filter(event, player) {
 					return player.isPhaseUsing();
 				},
@@ -1000,15 +1013,15 @@ const skills = {
 				forced: true,
 				popup: false,
 				trigger: {
-					global: ["gainAfter", "loseAsyncAfter"],
+					player: ["gainAfter"],
 				},
 				filter(event, player) {
 					const evt = event.getParent("phaseDraw");
-					const cards = event?.getg?.(player);
-					return event.getParent()?.name == "draw" && evt?.name === "phaseDraw" && evt?.dclishi === player.playerid && cards.map(card => get.color(card)).unique().length == 1;
+					const cards = event.getg?.(player);
+					return event.getParent()?.name == "draw" && evt?.name === "phaseDraw" && evt?.player === player && cards.map(card => get.color(card)).unique().length == 1;
 				},
 				async content(event, trigger, player) {
-					let cards = trigger.getg(player);
+					const cards = trigger.getg(player);
 					await player.modedDiscard(cards);
 				},
 			},
@@ -1246,6 +1259,7 @@ const skills = {
 		group: "kunyu_debuff",
 		subSkill: {
 			debuff: {
+				audio: "kunyu",
 				trigger: {
 					global: "phaseBefore",
 					player: ["gainMaxHpBegin", "loseMaxHpBegin", "enterGame"],
@@ -4862,6 +4876,7 @@ const skills = {
 						}
 					},
 				},
+				audio: "dctuoyu",
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
@@ -7167,6 +7182,7 @@ const skills = {
 		group: "yuheng_losehp",
 		subSkill: {
 			losehp: {
+				audio: "yuheng",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				locked: false,
@@ -7322,6 +7338,7 @@ const skills = {
 		intro: { content: "mark" },
 		subSkill: {
 			maxHp: {
+				audio: "tianren",
 				trigger: { player: ["tianrenAfter", "gainMaxHpAfter", "loseMaxHpAfter"] },
 				forced: true,
 				filter(event, player) {
@@ -10728,11 +10745,7 @@ const skills = {
 		audio: 2,
 		async cost(event, trigger, player) {
 			const {
-				result: {
-					bool,
-					targets,
-					links: cost_data,
-				}
+				result: { bool, targets, links: cost_data },
 			} = await player
 				.chooseButtonTarget({
 					createDialog: [get.prompt2(event.skill), player.getExpansions("qixing")],
@@ -10788,12 +10801,12 @@ const skills = {
 						return -1;
 					},
 				})
-				.set("allUse", player.getExpansions("qixing").length >= game.countPlayer(current => get.attitude(player, current) > 4) * 2)
+				.set("allUse", player.getExpansions("qixing").length >= game.countPlayer(current => get.attitude(player, current) > 4) * 2);
 			event.result = {
 				bool: bool,
 				targets: targets?.sortBySeat(),
 				cost_data: cost_data,
-			}		
+			};
 		},
 		async content(event, trigger, player) {
 			const { targets, cost_data: cards } = event;
@@ -10856,33 +10869,30 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const {
-				result: {
-					bool,
-					targets,
-					links: cost_data,
-				}
-			} = await player
-				.chooseButtonTarget({
-					createDialog: [get.prompt2(event.skill), player.getExpansions("qixing")],
-					selectButton: 1,
-					filterTarget: true,
-					ai1(button) {
-						if (game.hasPlayer(target => {
+				result: { bool, targets, links: cost_data },
+			} = await player.chooseButtonTarget({
+				createDialog: [get.prompt2(event.skill), player.getExpansions("qixing")],
+				selectButton: 1,
+				filterTarget: true,
+				ai1(button) {
+					if (
+						game.hasPlayer(target => {
 							return get.attitude(get.player(), target) < 0;
-						})) {
-							return 1;
-						}
-						return 0;
-					},
-					ai2(target) {
-						return -get.attitude(get.player(), target);
-					},
-				});
+						})
+					) {
+						return 1;
+					}
+					return 0;
+				},
+				ai2(target) {
+					return -get.attitude(get.player(), target);
+				},
+			});
 			event.result = {
 				bool: bool,
 				targets: targets?.sortBySeat(),
 				cost_data: cost_data,
-			}		
+			};
 		},
 		async content(event, trigger, player) {
 			const { targets, cost_data: cards } = event;

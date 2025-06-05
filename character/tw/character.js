@@ -1,4 +1,28 @@
 const characters = {
+	tw_sb_chengong: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["twmingce", "sbzhichi"],
+		dieAudios: ["sb_chengong"],
+		img: "image/character/sb_chengong.jpg",
+	},
+	tw_yanpu: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["twhuantu", "twbihuo"],
+		dieAudios: ["yanpu"],
+		img: "image/character/yanpu.jpg",
+	},
+	tw_zhuzhi: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["twanguo"],
+		dieAudios: ["xin_zhuzhi"],
+		img: "image/character/xin_zhuzhi.jpg",
+	},
 	huan_dianwei: {
 		sex: "male",
 		group: "wei",

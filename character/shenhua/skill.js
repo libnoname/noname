@@ -567,6 +567,7 @@ const skills = {
 		group: "olkongsheng_kessoku",
 		subSkill: {
 			kessoku: {
+				audio: "kongsheng",
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				locked: false,
@@ -1839,6 +1840,7 @@ const skills = {
 		group: ["liangyin_1", "liangyin_2"],
 		subSkill: {
 			1: {
+				audio: "liangyin",
 				trigger: {
 					global: ["loseAfter", "addToExpansionAfter", "cardsGotoSpecialAfter", "loseAsyncAfter"],
 				},
@@ -1866,6 +1868,7 @@ const skills = {
 				},
 			},
 			2: {
+				audio: "liangyin",
 				trigger: {
 					global: "gainAfter",
 				},

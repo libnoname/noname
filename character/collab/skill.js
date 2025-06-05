@@ -1362,6 +1362,7 @@ const skills = {
 		},
 		subSkill: {
 			temp: {
+				audio: "olchenlong",
 				charlotte: true,
 				trigger: { player: "dying" },
 				filter(event, player) {
@@ -1554,6 +1555,7 @@ const skills = {
 		group: "olxugou_buff",
 		subSkill: {
 			buff: {
+				audio: "olxugou",
 				trigger: { target: "shaBefore" },
 				filter(event, player) {
 					return get.color(event.card) == "red";
@@ -1711,6 +1713,7 @@ const skills = {
 		ai: { combo: "olfengzhu" },
 		subSkill: {
 			effect: {
+				audio: "olyuyu",
 				charlotte: true,
 				onremove: true,
 				intro: { content: "于$回合内受到1点伤害或失去一张牌后，其获得1枚“恨“标记" },
@@ -1885,6 +1888,7 @@ const skills = {
 		subSkill: {
 			backup: {},
 			jiese: {
+				audio: "oljiejiu",
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -4250,7 +4254,7 @@ const skills = {
 		},
 		subSkill: {
 			add: {
-				audio: "rezhiheng",
+				audio: "dczhiheng",
 				trigger: {
 					source: "damageSource",
 				},
@@ -4449,6 +4453,7 @@ const skills = {
 		group: "dctongliao_draw",
 		subSkill: {
 			draw: {
+				audio: "dctongliao",
 				trigger: {
 					player: ["loseAfter"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -5160,6 +5165,7 @@ const skills = {
 		group: "dcruyi_blocker",
 		subSkill: {
 			blocker: {
+				audio: "dcruyi",
 				trigger: {
 					player: ["loseBefore", "disableEquipBefore"],
 				},

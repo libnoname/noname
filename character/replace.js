@@ -49,7 +49,7 @@ window.noname_character_replace = {
 	chendao: ["chendao", "pot_chendao", "ns_chendao", "old_chendao"],
 	chendeng: ["chendeng", "ol_chendeng", "re_chendeng", "jsrg_chendeng"],
 	chendong: ["chendong", "sp_chendong", "tw_chendong"],
-	chengong: ["chengong", "re_chengong", "sb_chengong"],
+	chengong: ["chengong", "re_chengong", "sb_chengong", "tw_sb_chengong"],
 	chengpu: ["chengpu", "ol_chengpu", "xin_chengpu", "re_chengpu", "tw_chengpu", "std_chengpu", "ns_chengpu"],
 	chengui: ["chengui", "mb_chengui"],
 	chengyu: ["chengyu", "dc_sb_chengyu", "std_chengyu"],
@@ -357,7 +357,7 @@ window.noname_character_replace = {
 	zhuling: ["ol_zhuling", "dc_zhuling", "zhuling"],
 	zhuran: ["zhuran", "re_zhuran", "xin_zhuran", "old_zhuran"],
 	zhurong: ["zhurong", "ol_zhurong", "re_zhurong", "sb_zhurong", "dc_sp_zhurong"],
-	zhuzhi: ["zhuzhi", "re_zhuzhi", "xin_zhuzhi", "old_zhuzhi"],
+	zhuzhi: ["zhuzhi", "re_zhuzhi", "xin_zhuzhi", "tw_zhuzhi", "old_zhuzhi"],
 	zongyu: ["zongyu", "sp_zongyu", "tw_zongyu"],
 	zoushi: ["zoushi", "re_zoushi", "yue_zoushi", "jsrg_zoushi", "std_zoushi"],
 	zumao: ["zumao", "tw_zumao"],
@@ -416,4 +416,5 @@ window.noname_character_replace = {
 	zerong: ["zerong", "std_zerong"],
 	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
 	wufu: ["wufu", "hr_wufu"],
+	yanpu: ["yanpu", "tw_yanpu"],
 };

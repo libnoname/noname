@@ -1240,6 +1240,7 @@ const skills = {
 		},
 		subSkill: {
 			0: {
+				audio: "ybzhuiji",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,
@@ -1248,6 +1249,7 @@ const skills = {
 				},
 			},
 			1: {
+				audio: "ybzhuiji",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,

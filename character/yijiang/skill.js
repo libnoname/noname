@@ -8827,6 +8827,7 @@ const skills = {
 				},
 			},
 			list: {
+				audio: "qingxi",
 				trigger: { player: "phaseEnd" },
 				charlotte: true,
 				forced: true,

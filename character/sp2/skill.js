@@ -820,6 +820,7 @@ const skills = {
 		subSkill: {
 			backup: {},
 			use: {
+				audio: "starchengfeng",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					let colors = [];
@@ -4900,6 +4901,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcshizhao",
 				charlotte: true,
 				onremove: true,
 				trigger: { player: "damageBegin1" },
@@ -6451,6 +6453,7 @@ const skills = {
 		group: "yijiao_effect",
 		subSkill: {
 			effect: {
+				audio: "yijiao",
 				trigger: { global: "phaseJieshuBegin" },
 				forced: true,
 				filter(event, player) {
@@ -8273,6 +8276,7 @@ const skills = {
 		group: "xianwei_all",
 		subSkill: {
 			all: {
+				audio: "xianwei",
 				trigger: { player: "disableEquipAfter" },
 				forced: true,
 				filter(event, player) {
@@ -11641,6 +11645,7 @@ const skills = {
 		},
 		subSkill: {
 			gain: {
+				audio: "xiying",
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				charlotte: true,

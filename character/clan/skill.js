@@ -502,6 +502,7 @@ const skills = {
 				sub: true,
 			},
 			effect: {
+				audio: "clanjiannan",
 				trigger: {
 					global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
@@ -4706,6 +4707,7 @@ const skills = {
 		},
 		subSkill: {
 			remove: {
+				audio: "clanfangzhen",
 				trigger: { global: "roundStart" },
 				onremove: true,
 				forced: true,
@@ -5228,6 +5230,7 @@ const skills = {
 		},
 		subSkill: {
 			viewAs: {
+				audio: "clanshenjun",
 				trigger: { global: ["phaseZhunbeiEnd", "phaseJudgeEnd", "phaseDrawEnd", "phaseUseEnd", "phaseDiscardEnd", "phaseJieshuEnd"] },
 				filter(event, player) {
 					return player.countCards("h", card => card.hasGaintag("clanshenjun")) > 0;
