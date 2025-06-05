@@ -441,6 +441,19 @@ const translates = {
 	cayurong_info: "锁定技，你于一轮内首次成为一种伤害牌的目标时，取消之。",
 	cadingxi: "定西",
 	cadingxi_info: "蓄力技（4/∞）。当你连续使用一种类型的牌时，你可以消耗1点蓄力值并展示牌堆顶的一张牌，若类型相同，你使用之，否则你从牌堆底摸一张牌；若连续相同2/3次，你回复全部体力/对所有其他角色各造成1点伤害。",
+
+	wn_shen_machao: "渭南神马超",
+	wn_shen_machao_prefix: "渭南神",
+	wn_qiangshu: "枪术",
+	wn_qiangshu_info: "你使用【杀】或【决斗】造成伤害时，可以弃置X张牌，令此伤害+X（X为你的攻击范围-1）。",
+	wn_yuma: "御马",
+	wn_yuma_info: "每回合限一次，一张装备牌进入弃牌堆后，你可以将此牌置入一名角色装备区，然后获得其所有手牌。",
+	wn_shen_xuzhu: "渭南神许褚",
+	wn_shen_xuzhu_prefix: "渭南神",
+	wn_zhuanzhan: "转战",
+	wn_zhuanzhan_info: "其他角色的准备阶段，你可以废除一个装备栏并视为对其使用一张【决斗】。",
+	wn_huwei: "虎威",
+	wn_huwei_info: "锁定技，摸牌阶段你多摸X张牌（X为你已废除的装备栏数）。",
 };
 
 export default translates;

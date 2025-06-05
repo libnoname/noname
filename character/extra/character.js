@@ -1,4 +1,18 @@
 const characters = {
+	wn_shen_machao: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["wn_qiangshu", "wn_yuma"],
+		groupInGuozhan: "shu",
+	},
+	wn_shen_xuzhu: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["wn_zhuanzhan", "wn_huwei"],
+		groupInGuozhan: "wei",
+	},
 	ca_shen_wangyun: {
 		sex: "male",
 		group: "shen",

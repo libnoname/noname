@@ -15352,6 +15352,23 @@ export class Library {
 			},
 		],
 		[
+			"渭南",
+			{
+				showName: "渭",
+				color: "#2a17d5",
+				nature: "shenmm",
+			},
+		],
+		[
+			"渭南神",
+			{
+				/**
+				 * @returns {string}
+				 */
+				getSpan: () => `${get.prefixSpan("渭南")}${get.prefixSpan("神")}`,
+			},
+		],
+		[
 			"TW神",
 			{
 				/**

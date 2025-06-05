@@ -2,6 +2,173 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//渭南神马超
+	wn_qiangshu: {
+		trigger: {
+			source: "damageBegin1",
+		},
+		filter(event, player) {
+			if (!event.card || !["sha", "juedou"].includes(event.card.name)) {
+				return false;
+			}
+			const num = player.getAttackRange() - 1;
+			return num > 0 && player.countCards("he") >= num;
+		},
+		async cost(event, trigger, player) {
+			const num = player.getAttackRange() - 1;
+			event.result = await player
+				.chooseToDiscard("he", get.prompt2(event.skill), num)
+				.set("chooseonly", true)
+				.set("ai", card => {
+					const trigger = get.event().getTrigger(),
+						player = get.player();
+					if (get.damageEffect(trigger.player, trigger.source, player) <= 0) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				})
+				.forResult();
+			event.result.targets = [trigger.player];
+		},
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			trigger.num += event.cards.length;
+		},
+	},
+	wn_yuma: {
+		trigger: {
+			global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
+		},
+		usable: 1,
+		filter(event, player) {
+			if (!event.getd || !event.getl) {
+				return false;
+			}
+			let cards = event.getd();
+			return cards.some(card => {
+				if (get.position(card) != "d" || get.type(card) != "equip") {
+					return false;
+				}
+				if (card.willBeDestroyed("discardPile", get.owner(card), event)) {
+					return false;
+				}
+				return game.hasPlayer(current => {
+					return current.canEquip(card, true);
+				});
+			});
+		},
+		async cost(event, trigger, player) {
+			const cards = trigger.getd().filter(card => {
+				if (get.position(card) != "d" || get.type(card) != "equip") {
+					return false;
+				}
+				if (card.willBeDestroyed("discardPile", get.owner(card), trigger)) {
+					return false;
+				}
+				return true;
+			});
+			const { result: { bool, targets, links } } = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt2(event.skill), cards],
+					filterTarget(card, player, target) {
+						const buttons = ui.selected.buttons;
+						if (!buttons.length) {
+							return false;
+						}
+						return target.canEquip(buttons[0].link, true);
+					},
+					ai1(button) {
+						return 20 - get.value(button.link);
+					},
+					ai2(target) {
+						const player = get.player();
+						const card = ui.selected.buttons[0]?.link;
+						if (!target.countCards("h")) {
+							return get.value(card, target) * get.attitude(player, target);
+						}
+						return (get.value(card, target) - target.countCards("h")) * get.attitude(player, target);
+					},
+				});
+			event.result = {
+				bool: bool,
+				targets: targets,
+				cards: links,
+			};
+		},
+		async content(event, trigger, player) {
+			const { targets: [target], cards: [card] } = event;
+			target.$gain2(card);
+			await game.delay();
+			await target.equip(card);
+			const num = target.countCards("h");
+			if (num > 0 && target != player) {
+				await player.gainPlayerCard(target, true, "h", num);
+			}
+		},
+	},
+	//渭南神许褚
+	wn_zhuanzhan: {
+		trigger: {
+			global: "phaseZhunbeiBegin",
+		},
+		filter(event, player) {
+			if (event.player == player || !player.hasEnabledSlot()) {
+				return false;
+			}
+			const card = new lib.element.VCard({ name: "juedou" });
+			return player.canUse(card, event.player);
+		},
+		async cost(event, trigger, player) {
+			let list = [];
+			for (let i = 1; i <= 5; i++) {
+				const slot = `equip${i}`;
+				if (player.hasEnabledSlot(slot)) {
+					list.push("equip" + i);
+				}
+			}
+			list.push("cancel2");
+			let bool = "cancel2";
+			const card = new lib.element.VCard({ name: "juedou" });
+			if (get.effect(trigger.player, card, player, player) > 0) {
+				bool = list.filter(i => i != "cancel2").randomGet();
+			}
+			const result = await player
+				.chooseControl(list)
+				.set("prompt", get.prompt2(event.skill))
+				.set("ai", () => get.event("bool"))
+				.set("bool", bool)
+				.forResult();
+			event.result = {
+				bool: result.control != "cancel2",
+				targets: [trigger.player],
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const slot = event.cost_data;
+			await player.disableEquip([slot]);
+			const card = new lib.element.VCard({ name: "juedou" });
+			if (player.canUse(card, trigger.player)) {
+				await player.useCard(card, trigger.player);
+			}
+		},
+	},
+	wn_huwei: {
+		trigger: {
+			player: "phaseDrawBegin2",
+		},
+		forced: true,
+		filter(event, player) {
+			let list = Array.from({ length: 13 }).map((_, i) => "equip" + parseFloat(i + 1));
+			list = list.filter(i => player.hasDisabledSlot(i));
+			return !event.numFixed && list.length;
+		},
+		async content(event, trigger, player) {
+			let list = Array.from({ length: 13 }).map((_, i) => "equip" + parseFloat(i + 1));
+			let num = list.reduce((sum, slot) => sum + player.countDisabledSlot(slot), 0);
+			trigger.num += num;
+		},
+	},
 	//汉末神王允
 	caanchao: {
 		trigger: {

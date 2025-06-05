@@ -244,6 +244,16 @@ const skills = {
 		selectCard: [1, Infinity],
 		lose: false,
 		discard: false,
+		check(card) {
+			let player = _status.event.player;
+			if (get.position(card) == "e") {
+				let subs = get.subtypes(card);
+				if (subs.includes("equip2") || subs.includes("equip3")) {
+					return player.getHp() - get.value(card);
+				}
+			}
+			return 6 - get.value(card);
+		},
 		async content(event, trigger, player) {
 			const num = (player.getStat("skill")[event.name] || 1) - 1;
 			if (num > 0) {
@@ -299,6 +309,18 @@ const skills = {
 				}
 			}
 			await player.draw(event.cards.length + num);
+		},
+		ai: {
+			order: 1,
+			result: {
+				player(player, target) {
+					const num = player.getStat("jun_henglv") || 0;
+					if (num >= 1 || player.hp < 2 && !player.countCards("hs", "tao")) {
+						return 0;
+					}
+					return 1;
+				},
+			},
 		},
 	},
 	//君刘协

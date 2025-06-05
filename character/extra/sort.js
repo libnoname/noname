@@ -15,6 +15,7 @@ const characterSort = {
 	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao"],
 	extra_hanmo: ["hm_shen_yl_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun"],
 	extra_changan: ["ca_shen_wangyun", "ca_shen_caocao", "ca_shen_lijueguosi", "zombie_jiaxu", "zombie_zombie"],
+	extra_weinan: ["wn_shen_machao", "wn_shen_xuzhu"],
 	extra_taoyuan: ["ty_shen_zhangfei", "ty_shen_guanyu", "ty_shen_liubei"],
 	extra_jingxiang: ["jx_shen_caoren", "jx_shen_liubiao"],
 };
@@ -37,6 +38,7 @@ const characterSortTranslate = {
 	extra_mb: "移动版神将",
 	extra_hanmo: "风云志·汉末风云",
 	extra_changan: "风云志·长安风云",
+	extra_weinan: "风云志·渭南风云",
 	extra_taoyuan: "山河煮酒·桃园挽歌",
 	extra_jingxiang: "风云志·荆襄风云",
 };
