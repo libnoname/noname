@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["wn_shen_machao", "pe_que", "hm_shen_huangfusong", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"wn_shen_xuzhu",
 		"yj_caocaoyuanshao",
@@ -23,7 +23,6 @@ window.noname_character_rank = {
 		"hs_neptulon",
 		"hs_tyrande",
 		"hs_xsylvanas",
-		"pe_jun_caopi",
 		"pe_jun_liushan",
 		"pe_jun_sunquan",
 		"pe_jun_liuxie",
@@ -2485,6 +2484,7 @@ window.noname_character_rank = {
 			"shen_xunyu",
 			"fengfangnv",
 			"tw_zhangmancheng",
+			"pe_jun_caopi",
 			"guanning",
 			"shen_jiangwei",
 			"ol_puyuan",
@@ -2923,7 +2923,6 @@ window.noname_character_rank = {
 			"ns_zhangning",
 			"ns_yanghu",
 			"ol_huaxin",
-			"pe_jun_caopi",
 			"pe_jun_liushan",
 			"pe_jun_sunquan",
 			"pe_jun_liuxie",

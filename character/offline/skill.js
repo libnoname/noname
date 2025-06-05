@@ -177,7 +177,9 @@ const skills = {
 		},
 		logTarget(event, player) {
 			if (event.name == "changeGroup") {
-				if ([event.originGroup, event.group].includes(player.group)) return [event.player];
+				if ([event.originGroup, event.group].includes(player.group)) {
+					return [event.player];
+				}
 				return [];
 			}
 			return game.filterPlayer(current => {
