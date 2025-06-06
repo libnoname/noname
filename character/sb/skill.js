@@ -5,10 +5,6 @@ const skills = {
 	//谋吕布
 	sbwushuang: {
 		audio: 6,
-		inherit: "wushuang",
-		init(player) {
-			player.storage.sbwushuangCount = false;
-		},
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			const target = event.player;
@@ -18,22 +14,18 @@ const skills = {
 			if (!card || !["sha", "juedou"].includes(name)) {
 				return false;
 			}
-			if (target == player) {
-				return false;
-			}
 			if (name == "sha") {
 				return !target.hasHistory("useCard", evt => {
 					return evt.card.name == "shan" && evt.respondTo && evt.getParent(3) == evtx;
 				});
-			} else if (name == "juedou") {
-				return !target.hasHistory("respond", evt => {
-					return evt.card.name == "sha" && evt.respondTo && evt.getParent(3) == evtx;
-				});
 			}
-			return false;
+			return !target.hasHistory("respond", evt => {
+				return evt.card.name == "sha" && evt.respondTo && evt.getParent(3) == evtx;
+			});
 		},
 		forced: true,
 		logTarget: "player",
+		usable: 1,
 		logAudio: () => ["sbwushuang4.mp3", "sbwushuang5.mp3"],
 		content() {
 			trigger.num++;
@@ -43,24 +35,14 @@ const skills = {
 		subSkill: {
 			1: {
 				audio: "sbwushuang",
-				logAudio(event, player) {
-					const storage = player.storage.sbwushuangCount;
-					if (storage) {
-						return ["sbwushuang2.mp3", "sbwushuang3.mp3"];
-					}
-					return ["sbwushuang1.mp3", "sbwushuang6.mp3"];
-				},
+				sourceSkill: "sbwushuang",
+				logAudio: () => ["sbwushuang1.mp3", "sbwushuang6.mp3"],
 				inherit: "wushuang1",
 			},
 			2: {
 				audio: "sbwushuang",
-				logAudio(event, player) {
-					const storage = player.storage.sbwushuangCount;
-					if (storage) {
-						return ["sbwushuang2.mp3", "sbwushuang3.mp3"];
-					}
-					return ["sbwushuang1.mp3", "sbwushuang6.mp3"];
-				},
+				sourceSkill: "sbwushuang",
+				logAudio: () => ["sbwushuang1.mp3", "sbwushuang6.mp3"],
 				inherit: "wushuang2",
 			},
 		},
@@ -72,67 +54,96 @@ const skills = {
 		filter(event, player) {
 			return event.player != player && event?.card?.name == "sha" && event.player.countGainableCards(player, "hej") > 0 && event.player.isIn();
 		},
-		popup: false,
 		async cost(event, trigger, player) {
-			event.result = await player.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num]).set("chooseonly", true).forResult();
+			const target = trigger.player;
+			event.result = await player
+				.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num])
+				.set("logSkill", [event.skill, [target], null, null, [get.rand(1, 2)]])
+				.forResult();
 		},
+		popup: false,
 		async content(event, trigger, player) {
 			const cards = event.cards;
 			const target = trigger.player;
-			await player.gain(cards, target, "bySelf");
 			const draw = await target.draw(cards.length).forResult();
-			let types = [cards, draw]
-				.map(list => list.map(card => get.type2(card)))
-				.flat()
-				.unique();
-			player.logSkill("sbliyu", [target], null, null, [get.rand(1, 2)]);
-			if (types.length >= 3) {
-				let list = [`${get.translation(player)}视为对你指定的另一名其他角色使用一张【决斗】`, `你获得技能〖无双〗直至你下个回合结束`];
-				let result;
-				if (
-					!game.hasPlayer(function (current) {
-						return current != player && current != target && player.canUse("juedou", current);
-					})
-				) {
-					result = {
-						bool: true,
-						control: "选项二",
-					};
-				} else {
-					result = await target
-						.chooseControl()
-						.set("choiceList", list)
-						.set("ai", () => {
-							//ai待补充
-							return ["选项一", "选项二"].randomGet();
-						})
-						.forResult();
-				}
-				player.logSkill("sbliyu", null, null, null, [result.control == "选项一" ? get.rand(3, 4) : 5]);
-				if (result.control == "选项一") {
-					const result2 = await target
-						.chooseTarget(
-							true,
-							(card, player, target) => {
-								var evt = get.event().getParent();
-								return evt.player.canUse({ name: "juedou" }, target) && target != get.player();
-							},
-							"利驭：请选择一名角色，视为" + get.translation(player) + "对其使用【决斗】"
-						)
-						.set("ai", function (target) {
-							var evt = get.event().getParent();
-							return get.effect(target, { name: "juedou" }, evt.player, get.player()) - 2;
-						})
-						.forResult();
-					target.line(player);
-					await player.useCard({ name: "juedou", isCard: true }, result2.targets[0], "noai");
-				} else {
-					await target.addTempSkills("sbwushuang", { player: "phaseAfter" });
-					target.storage.sbwushuangCount = true;
+			if (Array.isArray(cards) && Array.isArray(draw)) {
+				let types = [cards, draw]
+					.map(list => list.map(card => get.type2(card)))
+					.flat()
+					.unique();
+				if (types.length >= 3) {
+					let list = [`${get.translation(player)}视为对你指定的另一名其他角色使用一张【决斗】`, `你获得技能〖无双〗直至你下个回合结束`];
+					let result;
+					const juedou = game.hasPlayer(current => current != player && current != target && player.canUse(new lib.element.VCard({ name: "juedou", isCard: true }), current, false));
+					const wushuang = !target.hasSkill("wushuang", null, false, false);
+					if (juedou || wushuang) {
+						if (!juedou) {
+							result = { control: "选项二" };
+						} else if (!wushuang) {
+							result = { control: "选项一" };
+						} else {
+							result = await target
+								.chooseControl()
+								.set("prompt", get.translation(event.name) + "：请选择一项")
+								.set("choiceList", list)
+								.set("ai", () => {
+									const player = get.player();
+									const source = get.event().getParent().player;
+									const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
+									return game.hasPlayer(target => {
+										return ![player, source].includes(target) && source.canUse(juedou, target, false) && get.effect(target, juedou, source, player) > 0;
+									})
+										? "选项一"
+										: "选项二";
+								})
+								.forResult();
+						}
+						player.logSkill("sbliyu", null, null, null, [result.control == "选项一" ? get.rand(3, 4) : 5]);
+						if (result.control == "选项一") {
+							const result2 = await target
+								.chooseTarget(
+									true,
+									(card, player, target) => {
+										var evt = get.event().getParent();
+										return evt.player.canUse({ name: "juedou" }, target) && target != get.player();
+									},
+									"利驭：请选择一名角色，视为" + get.translation(player) + "对其使用【决斗】"
+								)
+								.set("ai", function (target) {
+									var evt = get.event().getParent();
+									return get.effect(target, { name: "juedou" }, evt.player, get.player());
+								})
+								.set("animate", false)
+								.forResult();
+							if (result2?.bool && result2.targets?.length) {
+								target.line2([player, result2.targets[0]]);
+								await game.delayx();
+								await player.useCard(new lib.element.VCard({ name: "juedou", isCard: true }), result2.targets[0], false, "noai").set("animate", false);
+							}
+						} else {
+							const skill = event.name + "_effect";
+							await target.addAdditionalSkills(skill, "wushuang");
+							target.addTempSkill(skill, { player: "phaseAfter" });
+						}
+					}
 				}
 			}
 		},
-		derivation: "sbwushuang",
+		derivation: "wushuang",
+		subSkill: {
+			effect: {
+				charlotte: true,
+				init(player) {
+					game.broadcastAll(player => Array.isArray(player.tempname) && player.tempname.add("sb_lvbu"), player);
+				},
+				onremove(player) {
+					game.broadcastAll(player => Array.isArray(player.tempname) && player.tempname.remove("sb_lvbu"), player);
+				},
+				mark: true,
+				audio: ["sbwushuang2.mp3", "sbwushuang3.mp3"],
+				intro: { content: "这熟悉的力量！！！" },
+			},
+		},
 	},
 	//谋夏侯渊
 	sbshensu: {

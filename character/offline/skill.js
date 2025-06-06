@@ -4055,7 +4055,7 @@ const skills = {
 								.forResult()
 						: { control: names[0] };
 				if (result.control) {
-					await target.revive(2);
+					game.broadcastAll(player => player.revive(2), target);
 					let doubleDraw = false;
 					let num = (get.character("zombie_zombie").maxHp || get.character("zombie_zombie").hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
 					if (num !== 0) {
@@ -4333,7 +4333,7 @@ const skills = {
 								.forResult()
 						: { control: names[0] };
 				if (result.control) {
-					target.revive(2);
+					game.broadcastAll(player => player.revive(2), target);
 					let doubleDraw = false;
 					let num = (get.character("zombie_zombie").maxHp || get.character("zombie_zombie").hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
 					if (num !== 0) {

@@ -8054,6 +8054,74 @@ export class Player extends HTMLDivElement {
 	 * @param { boolean } [log]
 	 */
 	revive(hp, log) {
+		if (log !== false) {
+			game.log(this, "复活");
+		}
+		this.maxHp = Math.max(1, this.maxHp);
+		this.hp = hp || 1;
+		game.addVideo("revive", this);
+		this.classList.remove("dead");
+		this.removeAttribute("style");
+		this.node.avatar.style.transform = "";
+		this.node.avatar2.style.transform = "";
+		this.node.hp.show();
+		this.node.equips.show();
+		this.node.count.show();
+		this.update();
+		var player;
+		player = this.previousSeat;
+		while (player.isDead()) {
+			player = player.previousSeat;
+		}
+		player.next = this;
+		this.previous = player;
+		player = this.nextSeat;
+		while (player.isDead()) {
+			player = player.nextSeat;
+		}
+		player.previous = this;
+		this.next = player;
+		game.players.add(this);
+		game.dead.remove(this);
+		if (this == game.me) {
+			if (ui.auto) {
+				ui.auto.show();
+			}
+			if (ui.wuxie) {
+				ui.wuxie.show();
+			}
+			if (ui.revive) {
+				ui.revive.close();
+				delete ui.revive;
+			}
+			if (ui.exit) {
+				ui.exit.close();
+				delete ui.exit;
+			}
+			if (ui.swap) {
+				ui.swap.close();
+				delete ui.swap;
+			}
+			if (ui.restart) {
+				ui.restart.close();
+				delete ui.restart;
+			}
+			if (ui.continue_game) {
+				ui.continue_game.close();
+				delete ui.continue_game;
+			}
+			if (this.node.dieidentity) {
+				this.node.dieidentity.delete();
+				delete this.node.dieidentity;
+			}
+		}
+	}
+	/**
+	 * 令玩家复活--事件化
+	 * @param { number } [hp = 1]
+	 * @param { boolean } [log]
+	 */
+	reviveEvent(hp, log) {
 		const next = game.createEvent("revive");
 		next.player = this;
 		if (hp) {

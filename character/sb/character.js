@@ -263,7 +263,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["sbmingce", "sbzhichi"],
+		skills: ["twmingce", "sbzhichi"],
 	},
 	sb_diaochan: {
 		sex: "female",

@@ -3659,7 +3659,6 @@ player.removeVirtualEquip(card);
 					}
 					if (isRoundEnd && _status.globalHistory.some(i => i.isRound)) {
 						game.log();
-						game.log("第" + game.roundNumber + "轮游戏结束了");
 						await event.trigger("roundEnd");
 					}
 				}

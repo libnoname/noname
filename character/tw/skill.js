@@ -25299,7 +25299,6 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			await player.draw(10);
 			if (trigger.name == "phaseZhunbei") {
 				await player.chooseUseTarget(player.storage.twsidao, "nopopup", true);
 			} else {
