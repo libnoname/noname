@@ -5655,7 +5655,9 @@ const skills = {
 				.unique();
 			const gain = cards.slice(0, Math.min(cards.length, 9 - player.getExpansions("olchunlao").length));
 			if (gain.length) {
-				await player.addToExpansion(gain).gaintag.add("olchunlao");
+				const gainEvent =  player.addToExpansion(gain, "gain2");
+				gainEvent.gaintag.add("olchunlao");
+				await gainEvent;
 			}
 		},
 		ai: {

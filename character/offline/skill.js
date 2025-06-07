@@ -3113,7 +3113,7 @@ const skills = {
 				return;
 			}
 			const next = target.chooseToUse();
-			next.set("openskilldialog", `俟奋：将任意张牌当作【决斗】使用`);
+			next.set("openskilldialog", `俟奋：将任意张手牌当作【决斗】使用`);
 			next.set("norestore", true);
 			next.set("_backupevent", "hssifen_backup");
 			next.set("custom", {
@@ -3139,8 +3139,12 @@ const skills = {
 				viewAs: {
 					name: "juedou",
 				},
-				check(card) {
-					return 5 - get.value(card);
+				selectCard: [1, Infinity],
+				ai1(card) {
+					if (ui.selected.cards.length) {
+						return 0;
+					}
+ 					return 5 - get.value(card);
 				},
 				log: false,
 			},
@@ -3157,7 +3161,35 @@ const skills = {
 				filterCard: {
 					color: "red",
 				},
-				selectCard: [1, Infinity],
+				complexCard: true,
+				selectCard() {
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map && Object.keys(map)?.length) {
+						let maxCard = Object.keys(map).maxBy(i => map[i]),
+							minCard = Object.keys(map).minBy(i => map[i]);
+						if (maxCard && minCard) {
+							return [map[minCard], map[maxCard]];
+						}
+					}
+					return [1, Infinity];
+				},
+				prompt() {
+					let str = "将指定张红色牌当决斗对【俟奋】目标使用";
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map) {
+						let list = [];
+						for (const id in map) {
+							const target = game.findPlayer(current => current.playerid == id);
+							if (target) {
+								list.push(`${get.translation(target)}：${map[id]}`);
+							}
+						}
+						if (list.length) {
+							str += `<br><span class="text" style="font-family: yuanli">${list.join(" ")}</span>`;
+						}
+					}
+					return str;
+				},
 				filterTarget(card, player, target) {
 					const ids = Object.keys(player.storage.hssifen_viewAs);
 					if (!ids.includes(target.playerid)) {
