@@ -71,7 +71,7 @@ const characters = {
 	ol_guohuai: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["oljingce"],
 	},
 	ol_sunxiu: {

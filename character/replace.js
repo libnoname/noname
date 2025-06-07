@@ -208,6 +208,7 @@ window.noname_character_replace = {
 	qianzhao: ["ol_qianzhao", "qianzhao", "ddd_qianzhao"],
 	qiaogong: ["qiaogong", "tw_qiaogong"],
 	qiaorui: ["qiaorui", "tw_qiaorui"],
+	qiaoxuan: ["qiaoxuan", "jsrg_qiaoxuan"],
 	qiaozhou: ["yj_qiaozhou", "qiaozhou", "tw_qiaozhou"],
 	qinghegongzhu: ["qinghegongzhu", "dc_qinghegongzhu", "mb_qinghegongzhu"],
 	qinlang: ["ol_qinlang", "qinlang"],

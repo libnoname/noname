@@ -176,7 +176,7 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					event.target.addTempSkill("yinglang_skill", "roundEnd");
+					event.target.addTempSkill("yinglang_skill", "roundStart");
 				},
 				ai: {
 					wuxie() {
@@ -481,10 +481,7 @@ game.import("card", function () {
 						}
 						const { result } = await target
 							.chooseToRespond("劝酒：打出一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
-								if (get.name(card) != "jiu") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
+								return get.name(card) == "jiu";
 							})
 							.set("ai", () => 114514);
 						/*.set("ai1", () => 114514)
