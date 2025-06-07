@@ -1413,6 +1413,7 @@ const skills = {
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "你可对" + get.translation(player) + "使用一张杀")
 							.set("targetRequired", true)
+							.set("complexTarget", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
 								const sourcex = get.event("sourcex");
@@ -3843,6 +3844,7 @@ const skills = {
 				.set("sourcex", target)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.forResult();
 			if (!result?.bool) {
 				await source.loseHp();
@@ -12354,6 +12356,7 @@ const skills = {
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
 			next.set("complexSelect", true);
+			next.set("complexTarget", true)
 			next.set("filterTarget", function (card, player, target) {
 				const { sourcex } = get.event();
 				if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
@@ -13214,6 +13217,7 @@ const skills = {
 					}, "是否对" + get.translation(player) + "使用一张杀？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -15254,6 +15258,7 @@ const skills = {
 					}, `抚危：是否对${get.translation(trigger.source)}使用一张杀？（${num}/${trigger.num}）`)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -15660,6 +15665,7 @@ const skills = {
 							}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("filterTarget", function (card, player, target) {
 								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 									return false;
@@ -17137,6 +17143,7 @@ const skills = {
 				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其获得你一张牌")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -18548,6 +18555,7 @@ const skills = {
 							})
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("sourcex", player);
 					}
 				},
@@ -18582,6 +18590,7 @@ const skills = {
 				})
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("logSkill", ["psconghan", trigger.player])
 				.set("sourcex", trigger.player);
 		},
@@ -23638,6 +23647,7 @@ const skills = {
 						return lib.filter.filterCard.apply(this, arguments);
 					}, "耀令：对" + get.translation(targets[1]) + "使用一张杀，或令" + get.translation(player) + "弃置你的一张牌")
 					.set("targetRequired", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -24586,6 +24596,7 @@ const skills = {
 				}, "是否对" + get.translation(player) + "使用一张杀？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;

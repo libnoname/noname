@@ -13153,6 +13153,7 @@ const skills = {
 			});
 			next.backup("jsrgqinrao_backup");
 			next.set("targetRequired", true);
+			next.set("complexTarget", true);
 			next.set("complexSelect", true);
 			next.set("filterTarget", function (card, player, target) {
 				if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {

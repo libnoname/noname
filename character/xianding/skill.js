@@ -2071,6 +2071,7 @@ const skills = {
 					return lib.filter.filterTarget.apply(this, arguments);
 				})
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("sourcex", target)
 				.set("addCount", false)
