@@ -297,8 +297,10 @@ game.import("card", function () {
 						evt.finish();
 					}
 					await player.turnOver();
-					if (!_status.auto) {
+					if (player == game.me && !_status.auto) {
 						ui.click.auto();
+					} else if (player.isOnline2() && !player.isAuto) {
+						player.send(ui.click.auto);
 					}
 					target.when({ player: "phaseBegin" }).step(async (event, trigger, player) => {
 						const result = await player
@@ -419,7 +421,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
-					await target.revive();
+					await target.reviveEvent();
 					await target.draw(3);
 				},
 				ai: {

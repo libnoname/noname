@@ -12341,6 +12341,7 @@ const skills = {
 			},
 			threaten: 1.9,
 		},
+		subSkill: { backup: {} },
 	},
 	//赵忠
 	scschiyan: {

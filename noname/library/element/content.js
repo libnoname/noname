@@ -2420,9 +2420,13 @@ player.removeVirtualEquip(card);
 			}
 		} else {
 			if (event.filterTarget) {
-				var targets = game.filterPlayer(function (current) {
-					return event.filterTarget(card, player, current);
-				});
+				var targets = game.filterPlayer2(
+					function (current) {
+						return event.filterTarget(card, player, current);
+					},
+					null,
+					true
+				);
 				if (targets.length < range[0]) {
 					event._result = { bool: false };
 					return;
@@ -11279,66 +11283,72 @@ player.removeVirtualEquip(card);
 		if (log !== false) {
 			game.log(player, "复活");
 		}
-		if (player.maxHp < 1) {
-			player.maxHp = 1;
-		}
-		player.hp = hp;
-		game.addVideo("revive", player);
-		player.classList.remove("dead");
-		player.removeAttribute("style");
-		player.node.avatar.style.transform = "";
-		player.node.avatar2.style.transform = "";
-		player.node.hp.show();
-		player.node.equips.show();
-		player.node.count.show();
-		player.update();
-		let playerx;
-		playerx = player.previousSeat;
-		while (playerx.isDead()) {
-			playerx = playerx.previousSeat;
-		}
-		playerx.next = player;
-		player.previous = playerx;
-		playerx = player.nextSeat;
-		while (playerx.isDead()) {
-			playerx = playerx.nextSeat;
-		}
-		playerx.previous = player;
-		player.next = playerx;
-		game.players.add(player);
-		game.dead.remove(player);
-		if (player == game.me) {
-			if (ui.auto) {
-				ui.auto.show();
-			}
-			if (ui.wuxie) {
-				ui.wuxie.show();
-			}
-			if (ui.revive) {
-				ui.revive.close();
-				delete ui.revive;
-			}
-			if (ui.exit) {
-				ui.exit.close();
-				delete ui.exit;
-			}
-			if (ui.swap) {
-				ui.swap.close();
-				delete ui.swap;
-			}
-			if (ui.restart) {
-				ui.restart.close();
-				delete ui.restart;
-			}
-			if (ui.continue_game) {
-				ui.continue_game.close();
-				delete ui.continue_game;
-			}
-			if (player.node.dieidentity) {
-				player.node.dieidentity.delete();
-				delete player.node.dieidentity;
-			}
-		}
+		game.broadcastAll(
+			(player, hp) => {
+				if (player.maxHp < 1) {
+					player.maxHp = 1;
+				}
+				player.hp = hp;
+				game.addVideo("revive", player);
+				player.classList.remove("dead");
+				player.removeAttribute("style");
+				player.node.avatar.style.transform = "";
+				player.node.avatar2.style.transform = "";
+				player.node.hp.show();
+				player.node.equips.show();
+				player.node.count.show();
+				player.update();
+				let playerx;
+				playerx = player.previousSeat;
+				while (playerx.isDead()) {
+					playerx = playerx.previousSeat;
+				}
+				playerx.next = player;
+				player.previous = playerx;
+				playerx = player.nextSeat;
+				while (playerx.isDead()) {
+					playerx = playerx.nextSeat;
+				}
+				playerx.previous = player;
+				player.next = playerx;
+				game.players.add(player);
+				game.dead.remove(player);
+				if (player == game.me) {
+					if (ui.auto) {
+						ui.auto.show();
+					}
+					if (ui.wuxie) {
+						ui.wuxie.show();
+					}
+					if (ui.revive) {
+						ui.revive.close();
+						delete ui.revive;
+					}
+					if (ui.exit) {
+						ui.exit.close();
+						delete ui.exit;
+					}
+					if (ui.swap) {
+						ui.swap.close();
+						delete ui.swap;
+					}
+					if (ui.restart) {
+						ui.restart.close();
+						delete ui.restart;
+					}
+					if (ui.continue_game) {
+						ui.continue_game.close();
+						delete ui.continue_game;
+					}
+					if (player.node.dieidentity) {
+						player.node.dieidentity.delete();
+						delete player.node.dieidentity;
+					}
+				}
+			},
+			player,
+			hp
+		);
 	},
 	//暂时还是只能一次加一张牌，需要后续跟进处理
 	//一次加一张够用了

@@ -5980,6 +5980,9 @@ export class Player extends HTMLDivElement {
 				next.card = next.cards[0];
 			}
 		}
+		if (next.card && get.info(next.card)?.deadTarget) {
+			next.targets.addArray(game.dead);
+		}
 		next.setContent("chooseUseTarget");
 		next._args = Array.from(arguments);
 		return next;
