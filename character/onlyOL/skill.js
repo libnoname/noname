@@ -3273,64 +3273,46 @@ const skills = {
 				game.broadcastAll(() => (_status.noclearcountdown = true));
 			}
 			player.changeSkin({ characterName: "ol_sb_dongzhuo" }, "ol_sb_dongzhuo_shadow2");
-			const given_map = {};
-			event.given_map = given_map;
 			const cards = !trigger ? event.getParent(2).olfengshang_cards : get.info(event.name).getCards(player);
-			let result;
-			while (Object.keys(given_map).length < 2 && cards.length) {
-				if (cards.length > 1) {
-					result = await player
-						.chooseCardButton("封赏：请选择要分配的牌", cards, true)
-						.set("filterButton", button => {
-							const { link } = button,
-								map = get.event().getParent().given_map;
-							if (!Object.values(map).flat().length) {
-								return get.event("cards").filter(card => get.suit(card) == get.suit(link)).length > 1;
-							}
-							return get.suit(link) == get.suit(Object.values(map).flat()[0]);
-						})
-						.set("ai", button => {
-							return get.buttonValue(button);
-						})
-						.set("cards", cards)
-						.forResult();
-				} else if (cards.length === 1) {
-					result = { bool: true, links: cards.slice(0) };
-				} else {
-					return;
-				}
-				if (!result?.bool || !result?.links?.length) {
-					return;
-				}
-				const toGive = result.links;
-				result = await player
-					.chooseTarget("选择获得" + get.translation(toGive) + "的角色", true, (card, player, target) => {
-						return !get.event().getParent().given_map[target.playerid];
-					})
-					.set("ai", target => {
-						const att = get.attitude(get.player(), target);
-						if (get.event("toEnemy")) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: ["封赏：选择两张牌依次分配给两名角色", cards],
+					forced: true,
+					selectButton: 2,
+					cardx: cards,
+					filterButton(button) {
+						const { link } = button;
+						if (!ui.selected.buttons?.length) {
+							return get.event("cardx").filter(card => get.suit(card) == get.suit(link)).length > 1;
+						}
+						return get.suit(link) == get.suit(ui.selected.buttons[0].link);
+					},
+					ai1(button) {
+						return get.buttonValue(button);
+					},
+					complexSelect: true,
+					filterTarget: true,
+					selectTarget: 2,
+					ai2(target) {
+						const player = get.player(),
+							att = get.attitude(player, target);
+						let button = ui.selected.buttons[ui.selected.targets.length];
+						if (!button?.link) {
+							return 0;
+						}
+						if (get.value(button.link, player, "raw") < 0) {
 							return Math.max(0.01, 100 - att);
 						} else if (att > 0) {
 							if (player.getUseValue({ name: "jiu" }) && player != target) {
 								return 10;
 							}
-							return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event().getParent().given_map[target.playerid] || 0)));
+							return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h")));
 						} else {
 							return Math.max(0.01, (100 + att) / 200);
 						}
-					})
-					.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
-					.forResult();
-				if (result?.bool && result?.targets?.length) {
-					cards.removeArray(toGive);
-					const id = result.targets[0].playerid;
-					given_map[id] ??= [];
-					given_map[id].addArray(toGive);
-				} else {
-					return;
-				}
-			}
+					},
+				})
+				.forResult();
 			if (_status.connectMode) {
 				game.broadcastAll(() => {
 					delete _status.noclearcountdown;
@@ -3338,15 +3320,15 @@ const skills = {
 				});
 			}
 			player.addTempSkill("olfengshang_clear", "roundStart");
-			player.markAuto("olfengshang_clear", [get.suit(Object.values(given_map).flat()[0])]);
+			player.markAuto("olfengshang_clear", [get.suit(result.links[0])]);
 			player.storage["olfengshang_clear"].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 			player.addTip("olfengshang_clear", ["olfengshang", ...player.getStorage("olfengshang_clear")].map(i => get.translation(i)).join(""));
 			const gain_list = [];
-			for (const i in given_map) {
-				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+			for (let i = 0; i < result.links.length; i++) {
+				const source = result.targets[i];
 				player.line(source, "green");
-				game.log(source, "获得了", given_map[i]);
-				gain_list.push([source, given_map[i]]);
+				game.log(source, "获得了", result.links[i]);
+				gain_list.push([source, result.links[i]]);
 			}
 			await game
 				.loseAsync({
