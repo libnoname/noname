@@ -1148,30 +1148,30 @@ const skills = {
 			) {
 				return false;
 			}
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			return !player.getStorage("sxrmyihe_used").includes(bool1 == bool2);
 		},
 		logTarget: "player",
 		check(event, player) {
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			if (get.attitude(player, event.player) > 0) {
 				return bool1 == bool2 && get.attitude(player, event.source) >= 0;
 			}
 			return bool1 != bool2;
 		},
 		prompt2(event, player) {
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			if (bool1 == bool2) {
 				return `令其和${get.translation(event.source)}依次摸两张牌`;
 			}
 			return "令此伤害+1";
 		},
 		async content(event, trigger, player) {
-			let bool1 = get.sgn(trigger.player.countCards("h") - trigger.source.countCards("h")),
-				bool2 = get.sgn(trigger.player.hp - trigger.source.hp);
+			let bool1 = get.sgn(trigger.source.hp - trigger.source.countCards("h")),
+				bool2 = get.sgn(trigger.player.hp - trigger.player.countCards("h"));
 			player.addTempSkill("sxrmyihe_used");
 			player.markAuto("sxrmyihe_used", bool1 == bool2);
 			if (bool1 == bool2) {

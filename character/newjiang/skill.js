@@ -700,11 +700,11 @@ const skills = {
 			if (player.hasSkill("yuliao_used") || player.getExpansions("yuliao").length >= 8) {
 				return false;
 			}
-			return event.getd().length;
+			return event.getd()?.someInD("od");
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseButton(["###" + get.prompt(event.skill) + '###<div class="text center">将其中一张牌置于武将牌上', trigger.getd()])
+				.chooseButton(["###" + get.prompt(event.skill) + '###<div class="text center">将其中一张牌置于武将牌上', trigger.getd().filterInD("od")])
 				.set("ai", button => get.value(button.link))
 				.forResult();
 			if (result.bool) {
