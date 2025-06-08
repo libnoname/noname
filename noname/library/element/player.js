@@ -6220,7 +6220,7 @@ export class Player extends HTMLDivElement {
 			if (typeof argument == "string") {
 				get.evtprompt(next, argument);
 			} else if (typeof argument == "number") {
-				next.terminal = argument;
+				next.optionSum = argument;
 			} else if (typeof argument == "boolean") {
 				next.forced = argument;
 			} else if (typeof argument == "object" && Array.isArray(argument)) {
@@ -6232,20 +6232,26 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		if (!next.filterSelect) {
-			next.filterSelect = function (num, index, event) {
-				if (event.terminal) {
-					return num + event.numbers.reduce((sum, num) => sum + num, 0) - (event.numbers[index] || 0) <= event.terminal;
+			if (next.optionSum) {
+				next.filterSelect = function (num, index, event) {
+					return num + event.numbers.reduce((sum, num) => sum + num, 0) - (event.numbers[index] || 0) <= event.optionSum;
 				}
-				return true;
-			};
+			} else {
+				next.filterSelect = function () {
+					return true;
+				}
+			}
 		}
 		if (!next.filterOk) {
-			next.filterOk = function (event) {
-				if (event.terminal) {
-					return event.numbers.reduce((sum, num) => sum + num, 0) <= event.terminal;
+			if (next.optionSum) {
+				next.filterSelect = function (num, index, event) {
+					return event.numbers.reduce((sum, num) => sum + num, 0) <= event.optionSum;
 				}
-				return true;
-			};
+			} else {
+				next.filterSelect = function () {
+					return true;
+				}
+			}
 		}
 		if (!next.forced) {
 			next.forced = false;
