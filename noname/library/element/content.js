@@ -178,8 +178,8 @@ export const Content = {
 						thisNum = item.min || 0;
 						event.numbers.splice(index, 1, thisNum);
 					}
-					if (event.terminal) {
-						var actual = event.terminal - event.numbers.reduce((sum, num) => sum + num, 0) + thisNum;
+					if (event.optionSum) {
+						var actual = event.optionSum - event.numbers.reduce((sum, num) => sum + num, 0) + thisNum;
 					}
 					for (var num = item.min || 0; num <= Math.min(actual || max, max); num += item.base || 1) {
 						var option = document.createElement("option");
@@ -218,7 +218,11 @@ export const Content = {
 						optionUpdate(event.dialog.content.querySelector(`[id = 'select${index}']`));
 					}
 					if (event.filterOk(event)) {
-						ui.create.confirm("o");
+						if (event.forced) {
+							ui.create.confirm("o");
+						} else {
+							ui.create.confirm("oc");
+						}
 					} else {
 						if (!event.forced) {
 							ui.create.confirm("c");
@@ -246,7 +250,11 @@ export const Content = {
 				_status.imchoosing = false;
 			};
 			if (event.filterOk(event)) {
-				ui.create.confirm("o");
+				if (event.forced) {
+					ui.create.confirm("o");
+				} else {
+					ui.create.confirm("oc");
+				}
 			} else {
 				if (!event.forced) {
 					ui.create.confirm("c");
