@@ -521,6 +521,23 @@ export default {
 		skills: ["jianan", "huibian", "gzzongyu"],
 	}),
 	// 分组3：晋势力
+	gz_jun_jin_simayi: new Character({
+		sex: "male",
+		group: "jin",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_jiaping", "gz_guikuang", "gz_shujuan"],
+	}),
+	gz_wenyang: new Character({
+		sex: "male",
+		group: "jin",
+		hp: 5,
+		maxHp: 5,
+		hujia: 0,
+		skills: ["gz_duanqiu"],
+		hasSkinInGuozhan: true,
+	}),
 	gz_jin_zhangchunhua: new Character({
 		sex: "female",
 		group: "jin",
