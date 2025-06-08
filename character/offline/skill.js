@@ -7587,9 +7587,6 @@ const skills = {
 		trigger: {
 			global: "dyingAfter",
 		},
-		intro: {
-			content: "已对$发动过〖溃降〗",
-		},
 		prompt2(event, player) {
 			return `对${get.translation(event.player.name)}造成1点伤害`;
 		},
@@ -7597,14 +7594,19 @@ const skills = {
 			if (event.player == player || !event.player.isIn()) {
 				return false;
 			}
-			return !player.getStorage("hm_kuixiang").includes(event.player);
+			return !player.getStorage("hm_kuixiang_used").includes(event.player);
 		},
+		onremove(player) {
+			player.removeSkill("hm_kuixiang_used");
+		},
+		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) < 0;
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			player.markAuto("hm_kuixiang", [target]);
+			player.addSkill("hm_kuixiang_used");
+			player.markAuto("hm_kuixiang_used", [target]);
 			await target.damage(player);
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -7621,6 +7623,15 @@ const skills = {
 					await player.draw(3);
 				}
 			}
+		},
+		subSkill: {
+			used: {
+				intro: {
+					content: "已对$发动过〖溃降〗",
+				},
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//神皇甫嵩
