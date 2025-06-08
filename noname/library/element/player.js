@@ -6244,11 +6244,11 @@ export class Player extends HTMLDivElement {
 		}
 		if (!next.filterOk) {
 			if (next.optionSum) {
-				next.filterSelect = function (num, index, event) {
+				next.filterOk = function (num, index, event) {
 					return event.numbers.reduce((sum, num) => sum + num, 0) <= event.optionSum;
 				}
 			} else {
-				next.filterSelect = function () {
+				next.filterOk = function () {
 					return true;
 				}
 			}
