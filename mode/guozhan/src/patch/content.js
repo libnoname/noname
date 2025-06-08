@@ -1194,6 +1194,7 @@ export async function chooseJunlingFor(event, _trigger, player) {
 
 	const result = {
 		junling: chooseResult[0][2],
+		unchosenJunling: junlingNames.filter(i => i != chooseResult[0][2]),
 		/** @type {Player[]} */
 		targets: [],
 	};
