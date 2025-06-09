@@ -5460,13 +5460,13 @@ const skills = {
 					if (!event.card.storage?.twqiji || !event.targets.includes(player)) {
 						return false;
 					}
-					return event.isFirstTarget && game.hasPlayer(current => current != player && !player.getStorage("twqiji_used").includes(current) && lib.filter.targetEnabled2(event.card, player, current));
+					return event.isFirstTarget && game.hasPlayer(current => current != player && !player.getStorage("twqiji_used").includes(current) && lib.filter.targetEnabled2(event.card, event.player, current));
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget("令一名本回合未以此法选择的角色摸一张牌，然后其可以将此杀转移给自己", (card, player, target) => {
 							const event = get.event().getTrigger();
-							return target != player && !player.getStorage("twqiji_used").includes(target) && lib.filter.targetEnabled2(event.card, player, target);
+							return target != player && !player.getStorage("twqiji_used").includes(target) && lib.filter.targetEnabled2(event.card, event.player, target);
 						})
 						.set("ai", target => {
 							const player = get.player(),
