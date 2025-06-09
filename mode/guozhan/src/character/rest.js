@@ -1,4 +1,7 @@
 import { Character } from "../../../../noname/library/element/index.js";
+import { _status, get } from "../../../../noname.js";
+
+const bool = _status.connectMode ? lib.configOL.jinEx : get.config("jinEx");
 
 export default {
 	// 分组1：野心家
@@ -626,7 +629,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzsanchen", "gzpozhu"],
+		skills: bool ? ["gzsanchen", "gzpozhu"] : ["gz_sanchen", "gz_pozhu"],
 	}),
 	gz_zhanghuyuechen: new Character({
 		sex: "male",
@@ -634,7 +637,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["fakexijue"],
+		skills: bool ? ["fakexijue"] : ["gz_xijue", "gz_lvxian", "gz_yingwei"],
 	}),
 	gz_jin_yanghuiyu: new Character({
 		sex: "female",
@@ -921,7 +924,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["fakechongxin", "fakeweirong"],
+		skills: bool ? ["fakechongxin", "fakeweirong"] : ["gz_huaiyuan", "gz_fushou"],
 	}),
 };
 
