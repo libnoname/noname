@@ -572,6 +572,7 @@ const skills = {
 			if (num > 0) {
 				await player.loseHp(num);
 			}
+			event.cards = event.cards.filterInD("h");
 			await player.discard(event.cards);
 			let cards = event.cards.filter(card => card.name == "tao");
 			while (cards.length) {
@@ -13944,7 +13945,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
-			await player.removeSkills("huxiao");
+			await player.removeSkills(["huxiao", "draghuxiao"]);
 			const result = await player
 				.chooseControl("获得青龙刀", "摸两张牌")
 				.set("prompt", "武继：选择一项")
