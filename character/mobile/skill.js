@@ -140,6 +140,9 @@ const skills = {
 							let num = Math.floor(player.countCards("h") / 2);
 							return [num];
 						});
+					if (typeof result?.numbers?.[0] != "number") {
+						return;
+					}
 					const number = result.numbers[0];
 					await player.loseHp(number);
 					player.addTempSkill("potzhuangshi_limit", "phaseChange");
@@ -158,6 +161,9 @@ const skills = {
 							}
 							return 0;
 						});
+					if (!result?.cards?.length) {
+						return;
+					}
 					const number = result.cards.length;
 					player.addTempSkill("potzhuangshi_directHit", "phaseChange");
 					player.addMark("potzhuangshi_directHit", number, false);
