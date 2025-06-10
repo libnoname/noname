@@ -276,12 +276,4 @@ export default {
 		hujia: 0,
 		skills: ["fakeqizhi", "fakejinqu"],
 	}),
-	gz_yangyan: new Character({
-		sex: "female",
-		group: "jin",
-		hp: 3,
-		maxHp: 3,
-		hujia: 0,
-		skills: ["fakexuanbei", "xianwan"],
-	}),
 };
