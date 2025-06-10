@@ -1607,7 +1607,9 @@ export default {
 		filter(event, player) {
 			if (game.getGlobalHistory("everything", evt => {
 				return evt.name == "damage" && evt.player == player;
-			}, event).indexOf(event) !== 0) return false;
+			}, event).indexOf(event) !== 0) {
+				return false;
+			}
 			let num = _status.globalHistory.length;
 			if (num < 2) {
 				return false;
@@ -2455,7 +2457,9 @@ export default {
 			const next = player
 				.chooseCardOL([player, target], "内忌：请选择要展示的牌", true, 2)
 				.set("ai", card => {
-					if (card.name == "sha") return 7 - get.value(card);
+					if (card.name == "sha") {
+						return 7 - get.value(card);
+					}
 					return -get.value(card);
 				})
 				.set("source", player);
