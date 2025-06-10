@@ -4,11 +4,14 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//势魏延
 	potzhongao: {
+		audio: 5,
 		dutySkill: true,
-		derivation: ["potkuanggu", "potkuanggu_rewrite", "kunfen"],
+		derivation: ["potkuanggu", "potkuanggu_pot_weiyan_achieve", "kunfen"],
 		group: ["potzhongao_start", "potzhongao_achieve", "potzhongao_fail"],
 		subSkill: {
 			start: {
+				audio: "potzhongao",
+				logAudio: () => 1,
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -23,6 +26,8 @@ const skills = {
 				},
 			},
 			achieve: {
+				audio: "potzhongao",
+				logAudio: () => ["potzhongao2.mp3", "potzhongao3.mp3"],
 				trigger: {
 					source: "dieAfter",
 				},
@@ -33,6 +38,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.awakenSkill(event.name.slice(0, -8));
 					game.log(player, "成功完成使命");
+					player.changeSkin("potzhongao", "pot_weiyan_achieve");
 					player.setStorage("potkuanggu", 1);
 					const num = player.countMark("potzhuangshi_limit") + player.countMark("potzhuangshi_directHit");
 					if (num > 0) {
@@ -46,6 +52,8 @@ const skills = {
 				},
 			},
 			fail: {
+				audio: "potzhongao",
+				logAudio: () => ["potzhongao4.mp3", "potzhongao5.mp3"],
 				trigger: {
 					player: ["dying", "phaseUseBegin"],
 				},
@@ -58,6 +66,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.awakenSkill(event.name.slice(0, -5));
 					game.log(player, "使命失败");
+					player.changeSkin("potzhongao", "pot_weiyan_fail");
 					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
 					await player.recover();
 					await player.draw(2);
@@ -66,6 +75,8 @@ const skills = {
 		},
 	},
 	potzhuangshi: {
+		audio: 2,
+		audioname: ["pot_weiyan_achieve"],
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -221,6 +232,8 @@ const skills = {
 		},
 	},
 	potyinzhan: {
+		audio: 3,
+		audioname: ["pot_weiyan_achieve", "pot_weiyan_fail"],
 		trigger: {
 			source: "damageBegin1",
 		},
@@ -265,6 +278,11 @@ const skills = {
 		},
 	},
 	potkuanggu: {
+		audio: 2,
+		audioname: ["pot_weiyan_fail"],
+		audioname2: {
+			pot_weiyan_achieve: "potkuanggu_pot_weiyan_achieve",
+		},
 		trigger: {
 			source: "damageSource",
 		},
@@ -339,6 +357,9 @@ const skills = {
 			}
 		},
 		subSkill: {
+			pot_weiyan_achieve: {
+				audio: 4,
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,
@@ -352,6 +373,7 @@ const skills = {
 			},
 		},
 	},
+	kunfen_pot_weiyan: { audio: 2 },
 	//手杀孟达
 	mbjili: {
 		audio: 9,

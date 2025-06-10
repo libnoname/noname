@@ -34779,7 +34779,12 @@ const skills = {
 	},
 	kunfen: {
 		audio: 2,
-		audioname2: { ol_sb_jiangwei: "kunfen_ol_sb_jiangwei" },
+		audioname2: {
+			ol_sb_jiangwei: "kunfen_ol_sb_jiangwei",
+			pot_weiyan: "kunfen_pot_weiyan",
+			pot_weiyan_achieve: "kunfen_pot_weiyan",
+			pot_weiyan_fail: "kunfen_pot_weiyan",
+		},
 		trigger: { player: "phaseJieshuBegin" },
 		locked(skill, player) {
 			if (!player || !player.storage.kunfen) {
