@@ -18078,12 +18078,14 @@ const skills = {
 				.forResult();
 			if (result.bool) {
 				for (const current of game.players) {
-					await current.turnOver();
-					await current.draw(3);
+					if (current.isIn()) {
+						await current.turnOver();
+						await current.draw(3);
+					}
 				}
 				const lose_list = [];
 				for (const current of game.players) {
-					if (current.countCards("e")) {
+					if (current.countCards("e") && current.isIn()) {
 						lose_list.push([current, current.getCards("e")]);
 					}
 				}
@@ -18149,7 +18151,7 @@ const skills = {
 				return {
 					card: links[0],
 					filterTarget(card, player, target) {
-						return !player.getStorage("jxtuwei").includes(target);
+						return !player.getStorage("jxtuwei").includes(target) && target.canEquip(links[0], true);
 					},
 					check: () => 1,
 					async content(event, trigger, player) {

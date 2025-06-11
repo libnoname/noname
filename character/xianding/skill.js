@@ -3971,6 +3971,7 @@ const skills = {
 				target.markAuto("dcyuhui_buff", [player]);
 			}
 		},
+		derivation: "dcwoheng",
 		subSkill: {
 			buff: {
 				charlotte: true,
@@ -22793,7 +22794,7 @@ const skills = {
 				content() {
 					if (trigger.player == player.storage.wfyuyan) {
 						player.logSkill("wfyuyan", trigger.player);
-						player.addTempSkill("iwasawa_refenyin", { player: "phaseEnd" });
+						player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
 					}
 					player.removeSkill("wfyuyan_dying");
 				},
