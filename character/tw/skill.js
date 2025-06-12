@@ -24244,87 +24244,84 @@ const skills = {
 	cuijin: {
 		audio: 2,
 		trigger: { global: "useCard" },
-		direct: true,
 		filter(event, player) {
-			return event.card.name == "sha" && (event.player == player || player.inRange(event.player)) && player.countCards("he") > 0;
+			return event.card.name === "sha" && (event.player === player || player.inRange(event.player)) && player.countCards("he") > 0;
 		},
 		checkx(event, player) {
-			let d1 = false,
-				e = false;
+			const nature = get.nature(event.card);
+			const userDamage = get.damageEffect(event.player, player, player);
+			let damageBonus = 0,
+				mayDamage = 0,
+				odds = -1;
 			for (let tar of event.targets) {
-				if (event.card.name == "sha") {
-					if (
-						!tar.mayHaveShan(
-							player,
-							"use",
-							tar.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) ||
-						event.player.hasSkillTag(
-							"directHit_ai",
-							true,
-							{
-								target: tar,
-								card: event.card,
-							},
-							true
-						)
-					) {
-						if (
-							!event.player.hasSkillTag("jueqing", false, tar) &&
-							!tar.hasSkillTag("filterDamage", null, {
-								player: event.player,
-								card: event.card,
-							})
-						) {
-							d1 = true;
-							let att = get.attitude(_status.event.player, tar);
-							if (att > 0) {
-								return false;
-							}
-							if (att < 0) {
-								e = true;
-							}
-						}
-					}
+				if (
+					event.player.hasSkillTag("jueqing", false, tar) ||
+					tar.hasSkillTag("filterDamage", null, {
+						player: event.player,
+						card: event.card,
+					})
+				) {
+					continue;
+				}
+				const hitOdds = 1 - tar.mayHaveShan(
+					player,
+					"use",
+					tar.getCards("h", i => i.hasGaintag("sha_notshan")),
+					"odds"
+				);
+				if (
+					hitOdds >= 1 ||
+					event.player.hasSkillTag(
+						"directHit_ai",
+						true,
+						{
+							target: tar,
+							card: event.card,
+						},
+						true
+					)
+				) {
+					damageBonus += get.damageEffect(tar, event.player, player, nature);
 				} else {
-					e = true;
+					odds = Math.max(odds, hitOdds);
+					mayDamage += hitOdds * get.damageEffect(tar, event.player, player, nature);
 				}
 			}
-			if (e) {
-				return true;
+			if (damageBonus) {
+				return Math.sign(damageBonus) * Math.abs(Math.abs(damageBonus));
 			}
-			if (d1) {
-				return get.damageEffect(event.player, player, _status.event.player) > 0;
+			if (!mayDamage || odds < 0) {
+				return get.damageEffect(event.player, player, player) / 1;
 			}
-			return false;
+			return (mayDamage + (1 - odds) * get.damageEffect(event.player, player, player)) / 1;
 		},
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline()) {
-				game.delayx();
-			}
-			var target = trigger.player;
-			event.target = target;
-			player
-				.chooseToDiscard("he", get.prompt("cuijin", target), "弃置一张牌并令" + get.translation(trigger.player) + "使用的【杀】伤害+1，但若其未造成伤害，则你对其造成1点伤害。")
+		async cost(event, trigger, player) {
+			const skillName = event.name.slice(0, -5);
+			event.result = await player
+				.chooseToDiscard("he", get.prompt(skillName, trigger.player), "弃置一张牌并令" + get.translation(trigger.player) + "使用的【杀】伤害+1，但若其未造成伤害，则你对其造成1点伤害。")
 				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return 7 - get.value(card);
+					const goon = get.event().goon;
+					if (goon) {
+						return goon - get.value(card);
 					}
 					return 0;
 				})
-				.set("goon", lib.skill.cuijin.checkx(trigger, player)).logSkill = ["cuijin", target];
-			"step 1";
-			if (result.bool) {
-				if (typeof trigger.baseDamage != "number") {
-					trigger.baseDamage = 1;
-				}
-				trigger.baseDamage++;
-				player.addTempSkill("cuijin_damage");
-				player.markAuto("cuijin_damage", [trigger.card]);
+				.set("goon", (() => {
+					const num = lib.skill.cuijin.checkx(trigger, player) * player.countCards("he") / 10;
+					// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，TW乐就发动技能的收益为", num);
+					return num;
+				})())
+				.set("logSkill", [skillName, trigger.player])
+				.forResult();
+			event.result.skill_popup = false;
+		},
+		async content(event, trigger, player) {
+			if (typeof trigger.baseDamage === "number") {
+				trigger.baseDamage = 1;
 			}
+			trigger.baseDamage++;
+			player.addTempSkill("cuijin_damage");
+			player.markAuto("cuijin_damage", [trigger.card]);
 		},
 		subSkill: {
 			damage: {
@@ -24345,7 +24342,7 @@ const skills = {
 						trigger.player.isIn() &&
 						!game.hasPlayer2(function (current) {
 							return current.hasHistory("damage", function (evt) {
-								return evt.card == trigger.card;
+								return evt.card === trigger.card;
 							});
 						})
 					) {
