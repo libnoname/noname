@@ -10692,12 +10692,12 @@ const skills = {
 				}
 			}
 			if (damageBonus) {
-				return Math.sign(damageBonus) * Math.abs(Math.abs(damageBonus));
+				return damageBonus;
 			}
 			if (!mayDamage || odds > 1) {
-				return get.damageEffect(event.player, player, player) / 1 + get.effect(player, "draw", player, player) / 1;
+				return get.damageEffect(event.player, player, player) + 2 * get.effect(player, "draw", player, player);
 			}
-			return (mayDamage + (1 - odds) * (get.damageEffect(event.player, player, player) + 2 * get.effect(player, "draw", player, player))) / 1;
+			return mayDamage + (1 - odds) * (get.damageEffect(event.player, player, player) + 2 * get.effect(player, "draw", player, player));
 		},
 		async cost(event, trigger, player) {
 			const skillName = event.name.slice(0, -5);
