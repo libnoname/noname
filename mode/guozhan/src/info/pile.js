@@ -170,6 +170,7 @@ export const normal = [
 
 	["diamond", 6, "dinglanyemingzhu"],
 	["heart", 13, "liulongcanjia"],
+	["spade", 6, "jilinqianyi"],
 
 	//['spade',12,'gz_haolingtianxia'],
 	//['diamond',1,'gz_kefuzhongyuan'],
@@ -460,6 +461,7 @@ export const yingbian = [
 	["diamond", 4, "dinglanyemingzhu"],
 	["heart", 5, "liulongcanjia"],
 	["spade", 6, "feilongduofeng"],
+	["spade", 6, "jilinqianyi"],
 	["club", 12, "gz_wenheluanwu"],
 	["heart", 1, "gz_guguoanbang"],
 	["spade", 12, "gz_haolingtianxia"],

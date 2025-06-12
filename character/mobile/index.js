@@ -45,6 +45,10 @@ game.import("character", function () {
 				["pot_taishici_shadow3", ["die:pot_taishici"]],
 				["pot_taishici_shadow4", ["die:pot_taishici"]],
 			],
+			pot_weiyan: [
+				["pot_weiyan_achieve", ["die:pot_weiyan_achieve"]],
+				["pot_weiyan_fail", ["die:pot_weiyan_fail"]],
+			],
 			mb_simazhao: [["jin_jsrg_simazhao", []]],
 			pot_yuji: [["pot_yuji_shadow", []]],
 		},

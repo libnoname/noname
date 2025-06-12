@@ -5671,6 +5671,7 @@ const skills = {
 									prompt2
 								)
 								.set("targetRequired", true)
+								.set("complexTarget", true)
 								.set("complexSelect", true)
 								.set("filterTarget", function (card, player, target) {
 									if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -7031,6 +7032,7 @@ const skills = {
 					return lib.filter.filterCard.apply(this, arguments);
 				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】？")
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -7185,6 +7187,7 @@ const skills = {
 					return lib.filter.filterCard.apply(this, arguments);
 				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】（伤害基数为" + num + "）？")
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -10304,6 +10307,7 @@ const skills = {
 							return lib.filter.filterCard.apply(this, arguments);
 						})
 						.set("targetRequired", true)
+						.set("complexTarget", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
 							if (target != _status.event.source && !ui.selected.targets.includes(_status.event.source)) {

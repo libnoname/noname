@@ -572,6 +572,7 @@ const skills = {
 			if (num > 0) {
 				await player.loseHp(num);
 			}
+			event.cards = event.cards.filterInD("h");
 			await player.discard(event.cards);
 			let cards = event.cards.filter(card => card.name == "tao");
 			while (cards.length) {
@@ -1413,6 +1414,7 @@ const skills = {
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "你可对" + get.translation(player) + "使用一张杀")
 							.set("targetRequired", true)
+							.set("complexTarget", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
 								const sourcex = get.event("sourcex");
@@ -3112,7 +3114,7 @@ const skills = {
 				return;
 			}
 			const next = target.chooseToUse();
-			next.set("openskilldialog", `俟奋：将任意张牌当作【决斗】使用`);
+			next.set("openskilldialog", `俟奋：将任意张手牌当作【决斗】使用`);
 			next.set("norestore", true);
 			next.set("_backupevent", "hssifen_backup");
 			next.set("custom", {
@@ -3138,8 +3140,12 @@ const skills = {
 				viewAs: {
 					name: "juedou",
 				},
-				check(card) {
-					return 5 - get.value(card);
+				selectCard: [1, Infinity],
+				ai1(card) {
+					if (ui.selected.cards.length) {
+						return 0;
+					}
+ 					return 5 - get.value(card);
 				},
 				log: false,
 			},
@@ -3156,7 +3162,35 @@ const skills = {
 				filterCard: {
 					color: "red",
 				},
-				selectCard: [1, Infinity],
+				complexCard: true,
+				selectCard() {
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map && Object.keys(map)?.length) {
+						let maxCard = Object.keys(map).maxBy(i => map[i]),
+							minCard = Object.keys(map).minBy(i => map[i]);
+						if (maxCard && minCard) {
+							return [map[minCard], map[maxCard]];
+						}
+					}
+					return [1, Infinity];
+				},
+				prompt() {
+					let str = "将指定张红色牌当决斗对【俟奋】目标使用";
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map) {
+						let list = [];
+						for (const id in map) {
+							const target = game.findPlayer(current => current.playerid == id);
+							if (target) {
+								list.push(`${get.translation(target)}：${map[id]}`);
+							}
+						}
+						if (list.length) {
+							str += `<br><span class="text" style="font-family: yuanli">${list.join(" ")}</span>`;
+						}
+					}
+					return str;
+				},
 				filterTarget(card, player, target) {
 					const ids = Object.keys(player.storage.hssifen_viewAs);
 					if (!ids.includes(target.playerid)) {
@@ -3843,6 +3877,7 @@ const skills = {
 				.set("sourcex", target)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.forResult();
 			if (!result?.bool) {
 				await source.loseHp();
@@ -7553,9 +7588,6 @@ const skills = {
 		trigger: {
 			global: "dyingAfter",
 		},
-		intro: {
-			content: "已对$发动过〖溃降〗",
-		},
 		prompt2(event, player) {
 			return `对${get.translation(event.player.name)}造成1点伤害`;
 		},
@@ -7563,14 +7595,19 @@ const skills = {
 			if (event.player == player || !event.player.isIn()) {
 				return false;
 			}
-			return !player.getStorage("hm_kuixiang").includes(event.player);
+			return !player.getStorage("hm_kuixiang_used").includes(event.player);
 		},
+		onremove(player) {
+			player.removeSkill("hm_kuixiang_used");
+		},
+		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) < 0;
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			player.markAuto("hm_kuixiang", [target]);
+			player.addSkill("hm_kuixiang_used");
+			player.markAuto("hm_kuixiang_used", [target]);
 			await target.damage(player);
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -7587,6 +7624,15 @@ const skills = {
 					await player.draw(3);
 				}
 			}
+		},
+		subSkill: {
+			used: {
+				intro: {
+					content: "已对$发动过〖溃降〗",
+				},
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//神皇甫嵩
@@ -12354,6 +12400,7 @@ const skills = {
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
 			next.set("complexSelect", true);
+			next.set("complexTarget", true)
 			next.set("filterTarget", function (card, player, target) {
 				const { sourcex } = get.event();
 				if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
@@ -13214,6 +13261,7 @@ const skills = {
 					}, "是否对" + get.translation(player) + "使用一张杀？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -13897,7 +13945,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
-			await player.removeSkills("huxiao");
+			await player.removeSkills(["huxiao", "draghuxiao"]);
 			const result = await player
 				.chooseControl("获得青龙刀", "摸两张牌")
 				.set("prompt", "武继：选择一项")
@@ -15254,6 +15302,7 @@ const skills = {
 					}, `抚危：是否对${get.translation(trigger.source)}使用一张杀？（${num}/${trigger.num}）`)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -15660,6 +15709,7 @@ const skills = {
 							}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("filterTarget", function (card, player, target) {
 								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 									return false;
@@ -17137,6 +17187,7 @@ const skills = {
 				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其获得你一张牌")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -18027,12 +18078,14 @@ const skills = {
 				.forResult();
 			if (result.bool) {
 				for (const current of game.players) {
-					await current.turnOver();
-					await current.draw(3);
+					if (current.isIn()) {
+						await current.turnOver();
+						await current.draw(3);
+					}
 				}
 				const lose_list = [];
 				for (const current of game.players) {
-					if (current.countCards("e")) {
+					if (current.countCards("e") && current.isIn()) {
 						lose_list.push([current, current.getCards("e")]);
 					}
 				}
@@ -18098,7 +18151,7 @@ const skills = {
 				return {
 					card: links[0],
 					filterTarget(card, player, target) {
-						return !player.getStorage("jxtuwei").includes(target);
+						return !player.getStorage("jxtuwei").includes(target) && target.canEquip(links[0], true);
 					},
 					check: () => 1,
 					async content(event, trigger, player) {
@@ -18548,6 +18601,7 @@ const skills = {
 							})
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("sourcex", player);
 					}
 				},
@@ -18582,6 +18636,7 @@ const skills = {
 				})
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("logSkill", ["psconghan", trigger.player])
 				.set("sourcex", trigger.player);
 		},
@@ -23638,6 +23693,7 @@ const skills = {
 						return lib.filter.filterCard.apply(this, arguments);
 					}, "耀令：对" + get.translation(targets[1]) + "使用一张杀，或令" + get.translation(player) + "弃置你的一张牌")
 					.set("targetRequired", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -24586,6 +24642,7 @@ const skills = {
 				}, "是否对" + get.translation(player) + "使用一张杀？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;

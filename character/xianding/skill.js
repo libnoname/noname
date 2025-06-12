@@ -2071,6 +2071,7 @@ const skills = {
 					return lib.filter.filterTarget.apply(this, arguments);
 				})
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("sourcex", target)
 				.set("addCount", false)
@@ -3970,6 +3971,7 @@ const skills = {
 				target.markAuto("dcyuhui_buff", [player]);
 			}
 		},
+		derivation: "dcwoheng",
 		subSkill: {
 			buff: {
 				charlotte: true,
@@ -22792,7 +22794,7 @@ const skills = {
 				content() {
 					if (trigger.player == player.storage.wfyuyan) {
 						player.logSkill("wfyuyan", trigger.player);
-						player.addTempSkill("iwasawa_refenyin", { player: "phaseEnd" });
+						player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
 					}
 					player.removeSkill("wfyuyan_dying");
 				},

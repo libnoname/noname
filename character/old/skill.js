@@ -329,6 +329,7 @@ const skills = {
 				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.currentPhase && !ui.selected.targets.includes(_status.currentPhase)) {
 						return false;

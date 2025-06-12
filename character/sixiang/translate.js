@@ -337,7 +337,7 @@ const translates = {
 	stdhuoshui: "祸水",
 	stdhuoshui_info: "锁定技，判定区有牌的其他角色受到的伤害+1。",
 	stdqingcheng: "倾城",
-	stdqingcheng_info: "出牌阶段限一次，你可以将两张牌红色非锦囊牌当两张【乐不思蜀】对你和一名其他角色使用。",
+	stdqingcheng_info: "出牌阶段限一次，你可以将两张红色非锦囊牌当两张【乐不思蜀】对你和一名其他角色使用。",
 	std_sunluyu: "标孙鲁育",
 	std_sunluyu_prefix: "标",
 	stdmumu: "穆穆",

@@ -117,7 +117,7 @@ export default {
 	"#rerende_gz_jun_liubei2": "君才十倍于丕，必能安国成事。",
 	"#shouyue": "布德而昭仁，见旗如见朕！",
 	"#shouyue_wusheng1": "关将军雄姿，由你再现！",
-	"#shouyue_wusheng2": "再次威震华雄，必成汉兴佳话！",
+	"#shouyue_wusheng2": "再次威震华夏，必成汉兴佳话！",
 	"#shouyue_paoxiao1": "杀！把他捅成马蜂窝！",
 	"#shouyue_paoxiao2": "昔日长坂坡，今日再咆哮！",
 	"#shouyue_longdan1": "请收好，此乃子龙枪法。",
