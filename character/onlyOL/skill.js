@@ -634,7 +634,7 @@ const skills = {
 					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
 						return false;
 					}
-					return player.isPhaseUsing && event.card?.name == "sha";
+					return player.isPhaseUsing() && event.card?.name == "sha";
 				},
 				content() {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
@@ -1847,7 +1847,7 @@ const skills = {
 			const { card } = trigger;
 			const name = get.name(card),
 				type = get.type2(card);
-			const bool = await target
+			const { result } = await target
 				.chooseToGive(
 					(card, player) => {
 						const name = get.name(card, player);
@@ -1861,9 +1861,8 @@ const skills = {
 					return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card);
 				})
 				.set("namex", name)
-				.set("type", type)
-				.forResultBool();
-			if (!bool) {
+				.set("type", type);
+			if (!result?.bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
 				game.log(target, "成为了", card, "的额外目标");
@@ -2426,7 +2425,7 @@ const skills = {
 					if (event._extraPhaseReason !== "oldangxian") {
 						return false;
 					}
-					return name.endsWith("Begin") || !player.hasHistory("sourceDamage", evt => evt.getParent(event.name) === event);
+					return name.endsWith("Begin") || (event.oldangxian_draw && !player.hasHistory("sourceDamage", evt => evt.getParent(event.name) === event));
 				},
 				async cost(event, trigger, player) {
 					if (event.triggername.endsWith("Begin")) {
@@ -2442,14 +2441,15 @@ const skills = {
 						event.result = { bool: true };
 					}
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (event.triggername.endsWith("Begin")) {
+						trigger.set("oldangxian_draw", true);
 						const card = get.cardPile({ name: "sha" });
 						if (card) {
-							player.gain(card, "draw").gaintag.add("oldangxian");
+							await player.gain(card, "draw").gaintag.add("oldangxian");
 						}
 					} else {
-						player.damage();
+						await player.damage();
 					}
 				},
 			},
@@ -6403,7 +6403,7 @@ const skills = {
 				return ui.create.dialog("威临", [list, "vcard"]);
 			},
 			filter(button, player) {
-				return _status.event.getParent().filterCard({ name: button.link[2], nature: button.link[3] }, player, _status.event.getParent());
+				return _status.event.getParent().filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"), player, _status.event.getParent());
 			},
 			check(button) {
 				if (_status.event.getParent().type != "phase") {

@@ -176,7 +176,7 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					event.target.addTempSkill("yinglang_skill", "roundEnd");
+					event.target.addTempSkill("yinglang_skill", "roundStart");
 				},
 				ai: {
 					wuxie() {
@@ -297,8 +297,10 @@ game.import("card", function () {
 						evt.finish();
 					}
 					await player.turnOver();
-					if (!_status.auto) {
+					if (player == game.me && !_status.auto) {
 						ui.click.auto();
+					} else if (player.isOnline2() && !player.isAuto) {
+						player.send(ui.click.auto);
 					}
 					target.when({ player: "phaseBegin" }).step(async (event, trigger, player) => {
 						const result = await player
@@ -333,10 +335,19 @@ game.import("card", function () {
 				singleCard: true,
 				filterTarget: lib.filter.notMe,
 				filterAddedTarget(card, player, target, preTarget) {
-					return target != preTarget && target != player;
+					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
 				},
-				multicheck() {
-					return game.hasPlayer(target => target.countCards("h"));
+				multicheck(card, player) {
+					return (
+						game.hasPlayer(current => {
+							return (
+								current != player &&
+								game.hasPlayer(currentx => {
+									return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
+								})
+							);
+						}) > 1
+					);
 				},
 				complexSelect: true,
 				complexTarget: true,
@@ -379,7 +390,7 @@ game.import("card", function () {
 								list.sort(function (a, b) {
 									return b.countCards("h") - a.countCards("h");
 								});
-								if (from.countCards("h") >= list[0].countCards("h")) {
+								if (from.countCards("h") >= list[0]?.countCards("h")) {
 									return -get.attitude(player, target);
 								}
 								for (let i = 0; i < list.length && from.countCards("h") < list[i].countCards("h"); i++) {
@@ -419,7 +430,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
-					await target.revive();
+					await target.reviveEvent();
 					await target.draw(3);
 				},
 				ai: {
@@ -479,10 +490,7 @@ game.import("card", function () {
 						}
 						const { result } = await target
 							.chooseToRespond("劝酒：打出一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
-								if (get.name(card) != "jiu") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
+								return get.name(card) == "jiu";
 							})
 							.set("ai", () => 114514);
 						/*.set("ai1", () => 114514)
@@ -1128,15 +1136,12 @@ game.import("card", function () {
 				charlotte: true,
 				silent: true,
 				firstDo: true,
-				trigger: {
-					player: "loseBegin",
-					global: ["addToExpansionBegin", "equipBegin", "loseAsyncBegin", "addJudgeBegin", "gainBegin"],
-				},
+				trigger: { player: "loseBefore" },
 				filter(event, player) {
-					return event.getl(player)?.cards?.some(card => card.storage?.khquanjiux?.length);
+					return event.cards?.some(card => card.storage?.khquanjiux?.length);
 				},
 				async content(event, trigger, player) {
-					const cards = trigger.getl(player)?.cards?.filter(card => card.storage?.khquanjiux?.length);
+					const cards = trigger.cards.filter(card => card.storage?.khquanjiux?.length);
 					game.broadcastAll(cards => {
 						cards.forEach(card => {
 							if (card.storage?.khquanjiux?.length) {

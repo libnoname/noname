@@ -67,28 +67,32 @@ const skills = {
 				}
 				return true;
 			});
-			const { result: { bool, targets, links } } = await player
-				.chooseButtonTarget({
-					createDialog: [get.prompt2(event.skill), cards],
-					filterTarget(card, player, target) {
-						const buttons = ui.selected.buttons;
-						if (!buttons.length) {
-							return false;
-						}
-						return target.canEquip(buttons[0].link, true);
-					},
-					ai1(button) {
-						return 20 - get.value(button.link);
-					},
-					ai2(target) {
-						const player = get.player();
-						const card = ui.selected.buttons[0]?.link;
-						if (!target.countCards("h")) {
-							return get.value(card, target) * get.attitude(player, target);
-						}
-						return (get.value(card, target) - target.countCards("h")) * get.attitude(player, target);
-					},
-				});
+			const {
+				result: { bool, targets, links },
+			} = await player.chooseButtonTarget({
+				createDialog: [get.prompt2(event.skill), cards],
+				filterTarget(card, player, target) {
+					const buttons = ui.selected.buttons;
+					if (!buttons.length) {
+						return false;
+					}
+					return target.canEquip(buttons[0].link, true);
+				},
+				ai1(button) {
+					return 20 - get.value(button.link);
+				},
+				ai2(target) {
+					const player = get.player();
+					const card = ui.selected.buttons[0]?.link;
+					if (!card) {
+						return 0;
+					}
+					if (!target.countCards("h")) {
+						return get.value(card, target) * get.attitude(player, target);
+					}
+					return (get.value(card, target) - target.countCards("h")) * get.attitude(player, target);
+				},
+			});
 			event.result = {
 				bool: bool,
 				targets: targets,
@@ -96,7 +100,10 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { targets: [target], cards: [card] } = event;
+			const {
+				targets: [target],
+				cards: [card],
+			} = event;
 			target.$gain2(card);
 			await game.delay();
 			await target.equip(card);
@@ -3201,7 +3208,7 @@ const skills = {
 						if (get.name(card, event.player) == "sha") {
 							return true;
 						}
-						const str = get.cardDescription(card);
+						const str = get.cardDescription(card, event.player);
 						return str.includes("【杀】");
 					})
 				);
@@ -3265,7 +3272,7 @@ const skills = {
 								if (
 									!player.isPhaseUsing() ||
 									!player.hasCard(card => {
-										if (!get.cardDescription(card).includes("【杀】")) {
+										if (!get.cardDescription(card, player).includes("【杀】")) {
 											return false;
 										}
 										return player.hasValueTarget(get.autoViewAs({ name: "juedou" }, [card]));
@@ -5546,7 +5553,7 @@ const skills = {
 				player.gain(card, "gain2");
 			}
 			var list = [],
-				str = get.cardDescription(card);
+				str = get.cardDescription(card, player);
 			for (var i in lib.skill.shencai.filterx) {
 				if (str.indexOf(lib.skill.shencai.filterx[i]) != -1) {
 					list.push("shencai_" + i);

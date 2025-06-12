@@ -12341,6 +12341,7 @@ const skills = {
 			},
 			threaten: 1.9,
 		},
+		subSkill: { backup: {} },
 	},
 	//赵忠
 	scschiyan: {
@@ -19725,7 +19726,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { card } = trigger;
-			const bool = await target
+			const { result } = await target
 				.chooseToGive(
 					(card, player) => {
 						const name = get.name(card, player);
@@ -19737,9 +19738,8 @@ const skills = {
 				.set("ai", card => {
 					const { player, target } = get.event();
 					return get.attitude(player, target) >= 0 ? 1 : -1;
-				})
-				.forResultBool();
-			if (!bool) {
+				});
+			if (!result?.bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
 				game.log(target, "成为了", card, "的额外目标");

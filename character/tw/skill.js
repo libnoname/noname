@@ -9715,7 +9715,7 @@ const skills = {
 			return `${str2.length ? `失去${str2}，然后` : ""}${str1.length ? "获得" + str1 : "听一句技能配音"}`;
 		},
 		filter(event, player) {
-			return event.player != player;
+			return event.player != player && (player.hasAllHistory("sourceDamage", evt => evt.player == event.player) || player.hasAllHistory("damage", evt => evt.source == event.player)) && !event.reserveOut;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -25171,22 +25171,41 @@ const skills = {
 			dialog(event, player) {
 				return ui.create.dialog("灵宝", player.getExpansions("twdanfa"));
 			},
+			filter(button) {
+				const buttons = ui.selected.buttons;
+				if (!buttons.length) {
+					return true;
+				}
+				return get.suit(buttons[0].link) != get.suit(button.link);
+			},
+			complexSelect: true,
 			check(button) {
 				const card = button.link;
+				const suits = get
+					.player()
+					.getHistory("lose", evt => {
+						return evt.getParent().name == "discard" && evt.getParent(2).skill == "twlingbao_backup";
+					})
+					.map(evt => evt.cards.map(card => get.suit(card)))
+					.flat();
+				if (!suits.includes(get.suit(card))) {
+					return 2;
+				}
+				return 1;
 			},
 			select: 2,
 			backup(links, player) {
 				return {
 					audio: "twlingbao",
 					filterCard(card) {
-						return lib.skill.twlingbao_backup.cards.includes(card);
+						return links.includes(card);
 					},
-					cards: links,
 					selectCard: -1,
 					position: "x",
 					async content(event, trigger, player) {
-						const cards = lib.skill.twlingbao_backup.cards,
+						const cards = links,
 							colors = cards.map(card => get.color(card)).unique();
+						await player.draw(2);
 						if (colors.length == 1 && colors[0] == "red") {
 							const result = await player
 								.chooseTarget(`灵宝：令一名角色从牌堆中获得两张基本牌`, true)
@@ -25197,7 +25216,7 @@ const skills = {
 								player.line(target);
 								const gain = [];
 								while (gain.length < 2) {
-									const card = get.cardPile(cardx => get.type(cardx) == "basic" && !cards.includes(cardx));
+									const card = get.cardPile(cardx => get.type(cardx) == "basic" && !gain.includes(cardx));
 									if (card) {
 										gain.push(card);
 									} else {
@@ -25209,7 +25228,7 @@ const skills = {
 								}
 							}
 						}
-						if (colors.length == 1 && colors[0] == "black") {
+						if (colors.length == 1 && colors[0] == "black" && game.hasPlayer(target => target.countDiscardableCards(player, "hej"))) {
 							const result = await player
 								.chooseTarget(`灵宝：你弃置一名角色至多两个不同区域的共计至多两张牌`, true, (card, player, target) => {
 									return target.countDiscardableCards(player, "hej");
@@ -25223,13 +25242,15 @@ const skills = {
 							}
 						}
 						if (colors.length > 1) {
+							const canDiscard = game.hasPlayer(target => target.countDiscardableCards(target, "hej"));
 							const result = await player
-								.chooseTarget(`灵宝：你弃置一名角色至多两个不同区域的共计至多两张牌`, 2, true, (card, player, target) => {
+								.chooseTarget(`灵宝：你令一名角色摸两张牌` + (canDiscard ? `，另一名角色弃置一张牌` : ``), true, (card, player, target) => {
 									if (!ui.selected.targets.length) {
 										return true;
 									}
-									return target.countDiscardableCards(player, "hej");
+									return target.countDiscardableCards(target, "hej");
 								})
+								.set("selectTarget", canDiscard ? 2 : 1)
 								.set("ai", target => {
 									const player = get.player();
 									if (!ui.selected.targets.length) {
@@ -25246,7 +25267,9 @@ const skills = {
 									discard = result.targets[1];
 								player.line(result.targets);
 								await draw.draw(2);
-								await discard.chooseToDiscard("he", true);
+								if (discard) {
+									await discard.chooseToDiscard("he", true);
+								}
 							}
 						}
 						const suits = player

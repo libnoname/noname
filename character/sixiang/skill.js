@@ -107,7 +107,7 @@ const skills = {
 						if (!selected.length) {
 							return true;
 						}
-						return get.number(card, player) + selected.reduce((sum, card) => (sum + get.number(card, get.player())), 0) <= 13;
+						return get.number(card, player) + selected.reduce((sum, card) => sum + get.number(card, get.player()), 0) <= 13;
 					},
 					selectCard: [2, Infinity],
 					filterOk() {
@@ -115,7 +115,7 @@ const skills = {
 						if (!selected.length) {
 							return false;
 						}
-						return selected.reduce((sum, card) => (sum + get.number(card, get.player())), 0) == 13;
+						return selected.reduce((sum, card) => sum + get.number(card, get.player()), 0) == 13;
 					},
 					ai1(card) {
 						const player = get.player();
@@ -3614,14 +3614,11 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { card } = trigger;
-			const bool = await target
-				.chooseToGive(`交给${get.translation(player)}一张牌，或成为${get.translation(card)}的额外目标`, player)
-				.set("ai", card => {
-					const { player, target } = get.event();
-					return get.attitude(player, target) >= 0 ? 1 : -1;
-				})
-				.forResultBool();
-			if (!bool) {
+			const { result } = await target.chooseToGive(`交给${get.translation(player)}一张牌，或成为${get.translation(card)}的额外目标`, player).set("ai", card => {
+				const { player, target } = get.event();
+				return get.attitude(player, target) >= 0 ? 1 : -1;
+			});
+			if (!result?.bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
 				game.log(target, "成为了", card, "的额外目标");

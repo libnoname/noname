@@ -5110,7 +5110,273 @@ const skills = {
 			result: { player: 1 },
 		},
 	},
-	//孔淑
+	//桥玄 —— by 刘巴
+	oltingji: {
+		audio: 2,
+		mod: {
+			inRange(from, to) {
+				return !to.isDamaged();
+			},
+		},
+		trigger: { global: "useCardToTargeted" },
+		filter(event, player) {
+			return event.target !== player && event.target.isIn() && !event.target.isDamaged() && _status.currentPhase === player;
+		},
+		forced: true,
+		popup: false,
+		async content(event, trigger, player) {
+			trigger.getParent().directHit.add(trigger.target);
+		},
+	},
+	olxuanliu: {
+		audio: 2,
+		trigger: {
+			player: "phaseUseEnd",
+		},
+		filter(event, player) {
+			return player.getHistory("sourceDamage", evt => {
+				return evt.getParent("phaseUse") == event;
+			}).length;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target !== player;
+				})
+				.set("ai", target => {
+					return get.attitude(get.player(), target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			let target = event.targets[0];
+			while (true) {
+				await target.draw();
+				const { result } = await target.chooseToUse({
+					filterCard(card) {
+						if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					prompt: "是否使用一张手牌",
+					addCount: false,
+				});
+				if (
+					result?.bool &&
+					result.card &&
+					player.getHistory("useCard", evt => {
+						const card = evt.card;
+						return !player.getStorage(event.name + "_save").includes(get.name(result.card, target)) && get.name(result.card, target) === get.name(card, target) && evt.getParent("phaseUse") === trigger;
+					}).length
+				) {
+					player.markAuto(event.name + "_save", [get.name(result.card, target)]);
+					player.addTempSkill(event.name + "_save");
+				} else {
+					return;
+				}
+			}
+		},
+		subSkill: {
+			save: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	//孔淑 —— by 刘巴
+	leiluan: {
+		audio: 2,
+		onChooseToUse(event) {
+			if (!game.online && !event.leiluan) {
+				const player = event.player;
+				let basic = lib.inpile.filter(i => get.type(i) == "basic");
+				player.getRoundHistory("useCard", evt => {
+					if (get.type(evt.card) == "basic") {
+						basic.remove(evt.card.name);
+					}
+				});
+				event.set("leiluan", [basic, lib.skill.leiluan.getNum()]);
+			}
+		},
+		getNum() {
+			return Math.max(
+				1,
+				game.countPlayer(current => current.isLinked())
+			);
+		},
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (!event.leiluan || player.countCards("hes") < event.leiluan[1] || event.type == "wuxie") {
+				return false;
+			}
+			return get
+				.inpileVCardList(info => {
+					const name = info[2],
+						type = get.type(name);
+					return type == "basic" && event.leiluan[0].includes(name);
+				})
+				.some(card => {
+					return event.filterCard({ name: card[2], nature: card[3] }, player, event);
+				});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get
+					.inpileVCardList(info => {
+						const name = info[2],
+							type = get.type(name);
+						return type == "basic" && event.leiluan[0].includes(name);
+					})
+					.filter(card => {
+						return event.filterCard({ name: card[2], nature: card[3] }, player, event);
+					});
+				return ui.create.dialog("累卵", [list, "vcard"]);
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") {
+					return 1;
+				}
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			backup(links, player) {
+				return {
+					audio: "leiluan",
+					filterCard: true,
+					selectCard: () => get.event().leiluan[1],
+					check(card) {
+						return 1 / (get.value(card) || 0.5);
+					},
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+					},
+					position: "hes",
+					popname: true,
+					async precontent(event, trigger, player) {
+						player.addTempSkill("leiluan_effect");
+					},
+				};
+			},
+			prompt(links) {
+				return "将" + get.cnNumber(get.event().leiluan[1]) + "张牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】使用";
+			},
+		},
+		hiddenCard(player, name) {
+			if (player.getStat("skill").leiluan) {
+				return false;
+			}
+			let basic = lib.inpile.filter(i => get.type(i) == "basic");
+			player.getRoundHistory("useCard", evt => {
+				if (get.type(evt.card) == "basic") {
+					basic.remove(evt.card.name);
+				}
+			});
+			const num = lib.skill.leiluan.getNum();
+			return basic.includes(name) && player.countCards("he") >= num;
+		},
+		ai: {
+			order(item, player) {
+				if (player && get.event().type == "phase") {
+					let list = get
+						.inpileVCardList(info => {
+							return get.info("leiluan").hiddenCard(player, info[2]);
+						})
+						.map(card => {
+							return { name: card[2], nature: card[3] };
+						})
+						.filter(card => player.getUseValue(card, true, true) > 0);
+					if (!list.length) {
+						return 0;
+					}
+					list.sort((a, b) => {
+						return player.getUseValue(b, true, true) - player.getUseValue(a, true, true);
+					});
+					return get.order(list[0], player) * 1.01;
+				}
+				return 0.001;
+			},
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg === "respond") {
+					return false;
+				}
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return get.info("leiluan").hiddenCard(player, name);
+			},
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			backup: {},
+			effect: {
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				charlotte: true,
+				forced: true,
+				locked: false,
+				popup: false,
+				filter(event, player) {
+					if (event.getParent().skill !== "leiluan_backup" || player.countCards("h")) {
+						return false;
+					}
+					const evt = event.getl(player);
+					return evt && evt.player === player && evt.hs && evt.hs.length;
+				},
+				async content(event, trigger, player) {
+					await player.draw(2);
+					let card = get
+						.discarded()
+						.filter(c => get.type(c) === "trick")
+						.randomGet();
+					if (card) {
+						await player.gain(card, "gain2");
+					}
+					player.tempBanSkill("leiluan", { player: "damageEnd" });
+				},
+			},
+		},
+	},
+	fuchao: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+			global: "roundEnd",
+		},
+		filter(event, player) {
+			if (event.name == "useCard") {
+				return _status.currentPhase?.isIn() && !_status.currentPhase.isLinked() && get.type(event.card) === "basic";
+			}
+			return true;
+		},
+		forced: true,
+		logTarget(event, player) {
+			if (event.name == "useCard") {
+				return _status.currentPhase;
+			}
+			return game.filterPlayer(current => current.isLinked() || current === player).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			if (trigger.name === "useCard") {
+				await _status.currentPhase.link(true);
+			} else {
+				await game.asyncDraw([player].concat(game.filterPlayer(current => current.isLinked()).sortBySeat()));
+				if (game.hasPlayer(current => current.isLinked())) {
+					const num = lib.skill.leiluan.getNum();
+					for (const target of game.filterPlayer(current => current.isLinked()).sortBySeat()) {
+						if (!target.isIn() || !target.countDiscardableCards(target, "he")) {
+							continue;
+						}
+						await target.chooseToDiscard(num, "he", true);
+					}
+				}
+			}
+		},
+	},
 	olleiluan: {
 		audio: 2,
 		onChooseToUse(event) {

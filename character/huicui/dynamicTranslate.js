@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcyanxi(player) {
+		return lib.translate["dcyanxi_info"].replace(/零/, get.cnNumber(player.countMark("dcyanxi")));
+	},
 	dcboxuan(player) {
 		if (player.storage.dcboxuan) {
 			return lib.translate["dcboxuan_rewrite_info"];

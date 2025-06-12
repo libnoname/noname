@@ -2,6 +2,119 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//吉吉国王
+	dczouyi: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog(`###诹议###${get.translation("dczouyi_info")}`, [
+					[
+						["draw", "你摸2张牌并可弃置一名其他角色1张牌"],
+						["discard", "你弃置1张牌并可令一名其他角色摸2张牌"],
+					],
+					"textbutton",
+				]);
+			},
+			filter(button, player) {
+				if (button.link == "discard") {
+					return player.countDiscardableCards(player, "he");
+				}
+				return true;
+			},
+			check(button) {
+				if (button.link == "discard") {
+					return game.hasPlayer(target => get.effect(target, { name: "wuzhong" }, get.player(), get.player()) > 0);
+				}
+				return 1;
+			},
+			select: [1, 2],
+			backup(links, player) {
+				return {
+					audio: "dczouyi",
+					links: links,
+					async content(event, trigger, player) {
+						if (links.includes("draw")) {
+							await player.draw(2);
+							if (game.hasPlayer(target => target.countDiscardableCards(player, "he") && target != player)) {
+								const result = await player
+									.chooseTarget(`诹议：弃置一名其他角色一张牌`, (card, player, target) => {
+										return target.countDiscardableCards(player, "he") && target != player;
+									})
+									.set("ai", target => {
+										return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
+									})
+									.forResult();
+								if (result?.targets?.length) {
+									const target = result.targets[0];
+									player.line(target, "yellow");
+									await player.discardPlayerCard(target, "he", true);
+								}
+							}
+						}
+						if (links.includes("discard")) {
+							await player.chooseToDiscard("he", true);
+							const result = await player
+								.chooseTarget(`诹议：令一名其他角色摸两张牌`, lib.filter.notMe)
+								.set("ai", target => {
+									return get.effect(target, { name: "wuzhong" }, get.player(), get.player());
+								})
+								.forResult();
+							if (result?.targets?.length) {
+								const target = result.targets[0];
+								player.line(target, "green");
+								await target.draw(2);
+							}
+						}
+						const num = game.countPlayer(target => target.countCards("h") == player.countCards("h"));
+						player.addMark("dcyanxi", num, false);
+					},
+				};
+			},
+		},
+		ai: {
+			order: 7,
+			ai: {
+				result: {
+					player: 1,
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+		},
+	},
+	dcyanxi: {
+		trigger: { global: "phaseEnd" },
+		filter(event, player) {
+			return event.player != player && player.countMark("dcyanxi") > 0 && player.canUse({ name: "sha", isCard: true }, event.player, false, false);
+		},
+		logTarget: "player",
+		check(event, player) {
+			return get.effect(event.player, { name: "sha", isCard: true }, player, player) > 0;
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player,
+				card = get.autoViewAs({ name: "sha", isCard: true });
+			let isFirst = true;
+			while (player.countMark(event.name) > 0 && player.canUse(card, target, false, false) && target.isIn()) {
+				if (isFirst) {
+					isFirst = false;
+				} else {
+					player.logSkill(event.name, target);
+				}
+				player.removeMark(event.name, 1, false);
+				await player.useCard(card, target, false);
+			}
+		},
+		intro: {
+			content: "还可以发动#次",
+		},
+		ai: {
+			combo: "dczouyi",
+		},
+	},
 	//新杀诸葛均
 	dcgengdu: {
 		trigger: {

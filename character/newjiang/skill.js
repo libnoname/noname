@@ -62,7 +62,7 @@ const skills = {
 					async precontent(event, trigger, player) {
 						const cards = event.result.cards,
 							card = event.result.card,
-							strs = cards.map(i => get.cardDescription(i));
+							strs = cards.map(i => get.cardDescription(i, player));
 						event.getParent().addCount = false;
 						if (strs.some(str => str.includes(`【${get.translation(card.name)}】`))) {
 							await player.draw(2);
@@ -2413,34 +2413,40 @@ const skills = {
 			if (!player.hasCard(card => lib.filter.cardDiscardable(card, player), "he")) {
 				return false;
 			}
-			var history = game.getGlobalHistory("everything");
-			for (var evt of history) {
+			const history = game.getGlobalHistory("everything", evt => {
 				if (evt._neutralized || (evt.responded && (!evt.result || !evt.result.bool))) {
 					var evtx = evt.getParent();
-					return evtx.name == "useCard" && evtx.player == player && evt == event;
+					return evtx.name == "useCard" && evtx.player == player;
 				}
-			}
-			return false;
+			});
+			return history.length == 1;
 		},
-		forced: true,
-		direct: true,
-		content() {
-			"step 0";
-			var card = {
+		locked: true,
+		async cost(event, trigger, player) {
+			const card = {
 				name: trigger.card.name,
 				nature: trigger.card.nature,
 				isCard: true,
 				storage: { cuguo: true },
 			};
-			event.card = card;
-			player.chooseToDiscard("蹙国：请弃置一张牌", `视为你对${get.translation(trigger.target)}使用一张${get.translation(card.nature || "")}【${get.translation(card.name)}】`, "he", true).set("logSkill", ["cuguo", trigger.target]);
-			"step 1";
+			event.result = await player
+				.chooseToDiscard("蹙国：请弃置一张牌", `视为你对${get.translation(trigger.target)}使用一张${get.translation(card.nature || "")}【${get.translation(card.name)}】`, "he", true)
+				.set("logSkill", [event.skill, trigger.target])
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const card = {
+				name: trigger.card.name,
+				nature: trigger.card.nature,
+				isCard: true,
+				storage: { cuguo: true },
+			};
 			if (player.canUse(card, trigger.target, false)) {
-				player.useCard(card, trigger.target);
+				const next = player.useCard(card, trigger.target);
 				player
 					.when("useCardAfter")
 					.filter(event => {
-						return event.card.storage && event.card.storage.cuguo;
+						return event.card.storage?.cuguo && event == next;
 					})
 					.then(() => {
 						if (
@@ -2456,6 +2462,7 @@ const skills = {
 							player.loseHp();
 						}
 					});
+				await next;
 			}
 		},
 	},
