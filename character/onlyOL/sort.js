@@ -28,7 +28,7 @@ const characterSortTranslate = {
 	onlyOL_sb_shiren: "上兵伐谋·施仁布德",
 	onlyOL_sb_daquan: "上兵伐谋·达权通变",
 	onlyOL_sb_jichu: "上兵伐谋·计出万全",
-	onlyOL_demonized: "OL魔包",
+	onlyOL_demonized: "OL·魔",
 	onlyOL_waitingforsort: "等待分包",
 };
 
