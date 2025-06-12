@@ -1802,7 +1802,7 @@ window.noname_character_rank = {
 		"old_majun",
 	],
 	bm: [
-		"qiaoxuan",
+		"ol_qiaoxuan",
 		"sxrm_caopi",
 		"sxrm_wanghou",
 		"std_baoxin",

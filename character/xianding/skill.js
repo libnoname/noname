@@ -2901,7 +2901,7 @@ const skills = {
 					if (cards.includes(card)) {
 						return false;
 					}
-					return card.name == "sha" || get.cardDescription(card).includes("【杀】");
+					return card.name == "sha" || get.cardDescription(card, player).includes("【杀】");
 				});
 				if (card) {
 					cards.push(card);
@@ -3971,6 +3971,7 @@ const skills = {
 				target.markAuto("dcyuhui_buff", [player]);
 			}
 		},
+		derivation: "dcwoheng",
 		subSkill: {
 			buff: {
 				charlotte: true,
@@ -22793,7 +22794,7 @@ const skills = {
 				content() {
 					if (trigger.player == player.storage.wfyuyan) {
 						player.logSkill("wfyuyan", trigger.player);
-						player.addTempSkill("iwasawa_refenyin", { player: "phaseEnd" });
+						player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
 					}
 					player.removeSkill("wfyuyan_dying");
 				},

@@ -335,10 +335,19 @@ game.import("card", function () {
 				singleCard: true,
 				filterTarget: lib.filter.notMe,
 				filterAddedTarget(card, player, target, preTarget) {
-					return target != preTarget && target != player;
+					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
 				},
-				multicheck() {
-					return game.hasPlayer(target => target.countCards("h"));
+				multicheck(card, player) {
+					return (
+						game.hasPlayer(current => {
+							return (
+								current != player &&
+								game.hasPlayer(currentx => {
+									return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
+								})
+							);
+						}) > 1
+					);
 				},
 				complexSelect: true,
 				complexTarget: true,
@@ -381,7 +390,7 @@ game.import("card", function () {
 								list.sort(function (a, b) {
 									return b.countCards("h") - a.countCards("h");
 								});
-								if (from.countCards("h") >= list[0].countCards("h")) {
+								if (from.countCards("h") >= list[0]?.countCards("h")) {
 									return -get.attitude(player, target);
 								}
 								for (let i = 0; i < list.length && from.countCards("h") < list[i].countCards("h"); i++) {
@@ -1127,15 +1136,12 @@ game.import("card", function () {
 				charlotte: true,
 				silent: true,
 				firstDo: true,
-				trigger: {
-					player: "loseBegin",
-					global: ["addToExpansionBegin", "equipBegin", "loseAsyncBegin", "addJudgeBegin", "gainBegin"],
-				},
+				trigger: { player: "loseBefore" },
 				filter(event, player) {
-					return event.getl(player)?.cards?.some(card => card.storage?.khquanjiux?.length);
+					return event.cards?.some(card => card.storage?.khquanjiux?.length);
 				},
 				async content(event, trigger, player) {
-					const cards = trigger.getl(player)?.cards?.filter(card => card.storage?.khquanjiux?.length);
+					const cards = trigger.cards.filter(card => card.storage?.khquanjiux?.length);
 					game.broadcastAll(cards => {
 						cards.forEach(card => {
 							if (card.storage?.khquanjiux?.length) {

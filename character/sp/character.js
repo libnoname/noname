@@ -1,5 +1,5 @@
 const characters = {
-	qiaoxuan: {
+	ol_qiaoxuan: {
 		sex: "male",
 		group: "qun",
 		hp: 3,

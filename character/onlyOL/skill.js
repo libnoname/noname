@@ -634,7 +634,7 @@ const skills = {
 					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
 						return false;
 					}
-					return player.isPhaseUsing && event.card?.name == "sha";
+					return player.isPhaseUsing() && event.card?.name == "sha";
 				},
 				content() {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
@@ -1850,7 +1850,7 @@ const skills = {
 			const { card } = trigger;
 			const name = get.name(card),
 				type = get.type2(card);
-			const bool = await target
+			const { result } = await target
 				.chooseToGive(
 					(card, player) => {
 						const name = get.name(card, player);
@@ -1864,9 +1864,8 @@ const skills = {
 					return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card);
 				})
 				.set("namex", name)
-				.set("type", type)
-				.forResultBool();
-			if (!bool) {
+				.set("type", type);
+			if (!result?.bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
 				game.log(target, "成为了", card, "的额外目标");
@@ -5659,7 +5658,7 @@ const skills = {
 				.unique();
 			const gain = cards.slice(0, Math.min(cards.length, 9 - player.getExpansions("olchunlao").length));
 			if (gain.length) {
-				const gainEvent =  player.addToExpansion(gain, "gain2");
+				const gainEvent = player.addToExpansion(gain, "gain2");
 				gainEvent.gaintag.add("olchunlao");
 				await gainEvent;
 			}

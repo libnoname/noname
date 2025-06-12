@@ -434,8 +434,8 @@ export class Create {
 					if (lib.card[cardName].modeimage) {
 						bg.setBackgroundImage("image/mode/" + lib.card[cardName].modeimage + "/card/" + cardName + ".png");
 					} else {
-						if (cardName == "sha" && cardNature == "stab") {
-							bg.setBackgroundImage("image/card/cisha.png");
+						if (cardName == "sha" && lib.natureBg.has(cardNature)) {
+							bg.setBackgroundImage(lib.natureBg.get(cardNature));
 						} else {
 							bg.setBackgroundImage("image/card/" + cardName + ".png");
 						}

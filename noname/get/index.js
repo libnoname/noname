@@ -21,9 +21,10 @@ export class Get extends GetCompatible {
 	/**
 	 * 获取牌的牌面信息
 	 * @param { Card | VCard | CardBaseUIData } node
+	 * @param { Player } player
 	 * @returns { string }
 	 */
-	cardDescription(node) {
+	cardDescription(node, player) {
 		let str = "",
 			name = node.name;
 		if (lib.translate[name + "_info"]) {
@@ -51,7 +52,7 @@ export class Get extends GetCompatible {
 			}
 		}
 		if (lib.card[name].cardPrompt) {
-			str += "" + lib.card[name].cardPrompt(node) + "|";
+			str += "" + lib.card[name].cardPrompt(node, player) + "|";
 		} else if (lib.translate[name + "_info"]) {
 			str += "" + lib.translate[name + "_info"] + "|";
 		}
@@ -4919,9 +4920,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						if (!showCardIntro) {
 							html = ui.create.button(js[i], "blank").outerHTML;
 						}
-						uiintro.add('<div><div class="skill">' + html + "</div><div>" + lib.translate[js[i].viewAs] + "：" + lib.translate[js[i].viewAs + "_info"] + "</div></div>");
+						uiintro.add(`<div><div class="skill">${html}</div><div>${lib.translate[js[i].viewAs]}：${lib.card[js[i].viewAs]?.cardPrompt?.(js[i], node) || lib.translate[`${js[i].viewAs}_info`]}</div></div>`);
 					} else {
-						uiintro.add('<div><div class="skill">' + js[i].outerHTML + "</div><div>" + lib.translate[js[i].name + "_info"] + "</div></div>");
+						uiintro.add(`<div><div class="skill">${js[i].outerHTML}</div><div>${lib.translate[js[i].name]}：${lib.card[js[i].name]?.cardPrompt?.(js[i], node) || lib.translate[`${js[i].name}_info`]}</div></div>`);
 					}
 					uiintro.content.lastChild.querySelector(".skill>.card").style.transform = "";
 				}
