@@ -3219,6 +3219,7 @@ game.import("card", function () {
 									? 4.2
 									: 1;
 							}
+							return 1.3;
 						},
 						value: 8,
 					},

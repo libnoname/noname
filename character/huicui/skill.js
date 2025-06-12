@@ -10633,12 +10633,14 @@ const skills = {
 					) {
 						continue;
 					}
-					const hitOdds = 1 - tar.mayHaveShan(
-						player,
-						"use",
-						tar.getCards("h", i => i.hasGaintag("sha_notshan")),
-						"odds"
-					);
+					const hitOdds =
+						1 -
+						tar.mayHaveShan(
+							player,
+							"use",
+							tar.getCards("h", i => i.hasGaintag("sha_notshan")),
+							"odds"
+						);
 					if (
 						hitOdds >= 1 ||
 						event.player.hasSkillTag(
@@ -10708,11 +10710,14 @@ const skills = {
 					}
 					return 0;
 				})
-				.set("goon", (() => {
-					const num = lib.skill.dccuijin.checkx(trigger, player) * player.countCards("he") / 10;
-					// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，乐就发动技能的收益为", num);
-					return num;
-				})())
+				.set(
+					"goon",
+					(() => {
+						const num = (lib.skill.dccuijin.checkx(trigger, player) * player.countCards("he")) / 10;
+						// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，乐就发动技能的收益为", num);
+						return num;
+					})()
+				)
 				.set("logSkill", [skillName, trigger.player])
 				.forResult();
 			event.result.skill_popup = false;
