@@ -3768,7 +3768,6 @@ const skills = {
 		},
 	},
 	dczhanjiang: {
-		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => {

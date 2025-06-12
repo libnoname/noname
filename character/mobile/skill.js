@@ -11759,7 +11759,6 @@ const skills = {
 	},
 	//十常侍
 	mbdanggu: {
-		audio: 2,
 		trigger: {
 			player: "enterGame",
 			global: "phaseBefore",
@@ -11981,7 +11980,6 @@ const skills = {
 		},
 	},
 	mbmowang: {
-		audio: 2,
 		trigger: { player: "dieBefore" },
 		filter(event, player) {
 			return event.getParent().name != "giveup" && player.maxHp > 0;
@@ -26107,7 +26105,6 @@ const skills = {
 			player: ["phaseZhunbeiBefore", "phaseJieshuBefore"],
 		},
 		forced: true,
-		audio: 2,
 		group: "xinfu_pdgyingshi2",
 		content() {
 			trigger.cancel();

@@ -267,7 +267,7 @@ interface AudioBase {
 class SkillAudio implements AudioBase {
 	type = "skill";
 	defaultPath = "skill/";
-	defaultInfo: AudioInfo = [true, 2];
+	defaultInfo: AudioInfo = false;
 	isExist(name: string): boolean {
 		return !!get.info(name);
 	}

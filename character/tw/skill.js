@@ -11169,7 +11169,6 @@ const skills = {
 		},
 	},
 	twlinglu: {
-		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return game.hasPlayer(function (current) {
@@ -15241,7 +15240,6 @@ const skills = {
 		},
 	},
 	twsaotao: {
-		audio: 2,
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			return event.card.name == "sha" || get.type(event.card) == "trick";
@@ -15349,7 +15347,6 @@ const skills = {
 		},
 	},
 	twpingting: {
-		audio: 2,
 		trigger: { global: ["roundStart", "dying"] },
 		init(player, skill) {
 			if (player.getExpansions("twxingwu").length) {
@@ -21811,7 +21808,6 @@ const skills = {
 		},
 	},
 	twzhouhu: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -21894,7 +21890,6 @@ const skills = {
 		},
 	},
 	twharvestinori: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -21974,7 +21969,6 @@ const skills = {
 		},
 	},
 	twzuhuo: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -22079,7 +22073,6 @@ const skills = {
 		},
 	},
 	twzhouzu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		mahouSkill: true,
@@ -22164,7 +22157,6 @@ const skills = {
 		},
 	},
 	twhuangjin: {
-		audio: 2,
 		trigger: { target: "useCardToTarget" },
 		forced: true,
 		logTarget: "player",
@@ -22198,7 +22190,6 @@ const skills = {
 		},
 	},
 	twguimen: {
-		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: "loseAsyncAfter",
@@ -22269,7 +22260,6 @@ const skills = {
 		},
 	},
 	twdidao: {
-		audio: 2,
 		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes");
@@ -23032,7 +23022,6 @@ const skills = {
 		},
 	},
 	twfengqi: {
-		audio: 2,
 		locked: true,
 		zhuSkill: true,
 		trigger: { player: "twgezhi_buffAfter" },

@@ -837,7 +837,6 @@ const skills = {
 		},
 	},
 	startongyin: {
-		audio: 2,
 		trigger: {
 			player: "damageEnd",
 		},
@@ -12195,7 +12194,6 @@ const skills = {
 		locked: true,
 	},
 	zezhu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
