@@ -35,7 +35,9 @@ const dynamicTranslates = {
 	mbxuetu(player) {
 		const bool = player.storage.mbxuetu,
 			status = player.countMark("mbxuetu_status");
-		if (status === 1) return lib.translate.mbxuetu_achieve_info;
+		if (status === 1) {
+			return lib.translate.mbxuetu_achieve_info;
+		}
 		let yang = status === 0 ? "你可以令一名角色回复1点体力" : "你可以回复1点体力，然后令一名其他角色弃置两张牌",
 			yin = status === 0 ? "你可以令一名角色摸两张牌" : "你可以摸一张牌，然后对一名其他角色造成1点伤害";
 		if (bool) {
