@@ -2,6 +2,7 @@ import { lib } from "../index.js";
 import { ui } from "../../ui/index.js";
 import { get } from "../../get/index.js";
 import { _status } from "../../status/index.js";
+import { game } from "../../game/index.js";
 
 /**
  * @type {(NonameAssemblyType["checkBegin"])}
@@ -10,7 +11,31 @@ import { _status } from "../../status/index.js";
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const checkBegin = {};
+export const checkBegin = {
+	addTargetPrompt(event) {
+		if (!event.targetprompt2) {
+			return;
+		}
+		const player = get.player(),
+			card = get.card();
+		game.filterPlayer2(target => event.filterTarget?.(card, player, target), [], true).forEach(target => {
+			const str = event.targetprompt2(target) || "";
+			let node;
+			if (target.node.prompt2) {
+				node = target.node.prompt2;
+				node.innerHTML = "";
+				node.className = "damage normal-font damageadded";
+			} else {
+				node = ui.create.div(".damage.normal-font", target);
+				target.node.prompt2 = node;
+				ui.refresh(node);
+				node.classList.add("damageadded");
+			}
+			node.innerHTML = str;
+			node.dataset.nature = "soil";
+		});
+	},
+};
 
 /**
  * @type {(NonameAssemblyType["checkCard"])}
@@ -102,7 +127,16 @@ export const checkEnd = {
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const uncheckBegin = {};
+export const uncheckBegin = {
+	removeTargetPrompt(event) {
+		game.filterPlayer2(null, null, true).forEach(target => {
+			if (target.node.prompt2) {
+				target.node.prompt2.remove();
+				delete target.node.prompt2;
+			}
+		});
+	},
+};
 
 /**
  * @type {(NonameAssemblyType["uncheckCard"])}

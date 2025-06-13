@@ -11,6 +11,7 @@ const characterSort = {
 	onlyOL_sb_shiren: ["ol_sb_kongrong"],
 	onlyOL_sb_daquan: ["ol_sb_jushou", "ol_sb_yuanshu", "ol_sb_zhangrang"],
 	onlyOL_sb_jichu: ["ol_sb_huangyueying"],
+	onlyOL_sb_huahao: ["ol_sb_xiaoqiao"],
 	onlyOL_demonized: ["dm_simayi"],
 	onlyOL_waitingforsort: [],
 };
@@ -28,6 +29,7 @@ const characterSortTranslate = {
 	onlyOL_sb_shiren: "上兵伐谋·施仁布德",
 	onlyOL_sb_daquan: "上兵伐谋·达权通变",
 	onlyOL_sb_jichu: "上兵伐谋·计出万全",
+	onlyOL_sb_huahao: "上兵伐谋·花好月圆",
 	onlyOL_demonized: "OL魔包",
 	onlyOL_waitingforsort: "等待分包",
 };

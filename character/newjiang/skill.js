@@ -376,7 +376,6 @@ const skills = {
 	},
 	//修爵裴秀
 	xjzhitu: {
-		audio: 2,
 		mod: {
 			targetInRange(card, player, target) {
 				if (player.getStorage("xjzhitu").includes(get.number(card))) {
@@ -421,7 +420,6 @@ const skills = {
 		intro: { content: "已记录点数：$" },
 	},
 	dcxiujue: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -589,7 +587,6 @@ const skills = {
 	},
 	//传械马钧
 	chuanxie: {
-		audio: 2,
 		trigger: { global: "useCard" },
 		filter(event, player) {
 			return player.getStorage("chuanxie")[0] === get.suit(event.card);
@@ -662,7 +659,6 @@ const skills = {
 		},
 	},
 	yjqiaosi: {
-		audio: 2,
 		trigger: {
 			source: "damageSource",
 			player: "damageEnd",
@@ -694,7 +690,6 @@ const skills = {
 	},
 	//奇巧马钧
 	yuliao: {
-		audio: 2,
 		trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter"] },
 		filter(event, player) {
 			if (player.hasSkill("yuliao_used") || player.getExpansions("yuliao").length >= 8) {
@@ -752,7 +747,6 @@ const skills = {
 		},
 	},
 	qiqiao: {
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			if (player.getExpansions("yuliao").filter(card => ["basic", "trick", "equip"].includes(get.type2(card))).length < 2) {
@@ -941,7 +935,6 @@ const skills = {
 		},
 	},
 	yanxie: {
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			const cards = player.getExpansions("yuliao").map(i => get.type2(i));

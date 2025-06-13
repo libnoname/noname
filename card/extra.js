@@ -528,6 +528,7 @@ game.import("card", function () {
 									? 3.2
 									: 1;
 							}
+							return 0.6;
 						},
 						value: 4,
 					},

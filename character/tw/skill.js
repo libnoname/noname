@@ -775,7 +775,7 @@ const skills = {
 						}, 0);
 						if (num < 13) {
 							if (att > 0) {
-								8 - get.value(card);
+								return 8 - get.value(card);
 							}
 							return Math.ceil(get.number(card, player) / 4) * (6 - get.value(card));
 						}
@@ -8798,7 +8798,6 @@ const skills = {
 	//张绣
 	twjuxiang: {
 		global: "twjuxiang_global",
-		audio: 2,
 		zhuSkill: true,
 		subSkill: {
 			global: {
@@ -8881,7 +8880,6 @@ const skills = {
 	},
 	//孟获
 	twqiushou: {
-		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
 			if (event.card.name != "nanman") {
@@ -11170,7 +11168,6 @@ const skills = {
 		},
 	},
 	twlinglu: {
-		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return game.hasPlayer(function (current) {
@@ -15235,7 +15232,6 @@ const skills = {
 		},
 	},
 	twsaotao: {
-		audio: 2,
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			return event.card.name == "sha" || get.type(event.card) == "trick";
@@ -15343,7 +15339,6 @@ const skills = {
 		},
 	},
 	twpingting: {
-		audio: 2,
 		trigger: { global: ["roundStart", "dying"] },
 		init(player, skill) {
 			if (player.getExpansions("twxingwu").length) {
@@ -21806,7 +21801,6 @@ const skills = {
 		},
 	},
 	twzhouhu: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -21889,7 +21883,6 @@ const skills = {
 		},
 	},
 	twharvestinori: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -21969,7 +21962,6 @@ const skills = {
 		},
 	},
 	twzuhuo: {
-		audio: 2,
 		mahouSkill: true,
 		enable: "phaseUse",
 		usable: 1,
@@ -22074,7 +22066,6 @@ const skills = {
 		},
 	},
 	twzhouzu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		mahouSkill: true,
@@ -22159,7 +22150,6 @@ const skills = {
 		},
 	},
 	twhuangjin: {
-		audio: 2,
 		trigger: { target: "useCardToTarget" },
 		forced: true,
 		logTarget: "player",
@@ -22193,7 +22183,6 @@ const skills = {
 		},
 	},
 	twguimen: {
-		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: "loseAsyncAfter",
@@ -22264,7 +22253,6 @@ const skills = {
 		},
 	},
 	twdidao: {
-		audio: 2,
 		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes");
@@ -23027,7 +23015,6 @@ const skills = {
 		},
 	},
 	twfengqi: {
-		audio: 2,
 		locked: true,
 		zhuSkill: true,
 		trigger: { player: "twgezhi_buffAfter" },
@@ -24239,87 +24226,89 @@ const skills = {
 	cuijin: {
 		audio: 2,
 		trigger: { global: "useCard" },
-		direct: true,
 		filter(event, player) {
-			return event.card.name == "sha" && (event.player == player || player.inRange(event.player)) && player.countCards("he") > 0;
+			return event.card.name === "sha" && (event.player === player || player.inRange(event.player)) && player.countCards("he") > 0;
 		},
 		checkx(event, player) {
-			let d1 = false,
-				e = false;
+			const nature = get.nature(event.card);
+			const userDamage = get.damageEffect(event.player, player, player);
+			let damageBonus = 0,
+				mayDamage = 0,
+				odds = -1;
 			for (let tar of event.targets) {
-				if (event.card.name == "sha") {
-					if (
-						!tar.mayHaveShan(
-							player,
-							"use",
-							tar.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) ||
-						event.player.hasSkillTag(
-							"directHit_ai",
-							true,
-							{
-								target: tar,
-								card: event.card,
-							},
-							true
-						)
-					) {
-						if (
-							!event.player.hasSkillTag("jueqing", false, tar) &&
-							!tar.hasSkillTag("filterDamage", null, {
-								player: event.player,
-								card: event.card,
-							})
-						) {
-							d1 = true;
-							let att = get.attitude(_status.event.player, tar);
-							if (att > 0) {
-								return false;
-							}
-							if (att < 0) {
-								e = true;
-							}
-						}
-					}
+				if (
+					event.player.hasSkillTag("jueqing", false, tar) ||
+					tar.hasSkillTag("filterDamage", null, {
+						player: event.player,
+						card: event.card,
+					})
+				) {
+					continue;
+				}
+				const hitOdds =
+					1 -
+					tar.mayHaveShan(
+						player,
+						"use",
+						tar.getCards("h", i => i.hasGaintag("sha_notshan")),
+						"odds"
+					);
+				if (
+					hitOdds >= 1 ||
+					event.player.hasSkillTag(
+						"directHit_ai",
+						true,
+						{
+							target: tar,
+							card: event.card,
+						},
+						true
+					)
+				) {
+					damageBonus += get.damageEffect(tar, event.player, player, nature);
 				} else {
-					e = true;
+					odds = Math.max(odds, hitOdds);
+					mayDamage += hitOdds * get.damageEffect(tar, event.player, player, nature);
 				}
 			}
-			if (e) {
-				return true;
+			if (damageBonus) {
+				return damageBonus;
 			}
-			if (d1) {
-				return get.damageEffect(event.player, player, _status.event.player) > 0;
+			if (!mayDamage || odds < 0) {
+				return get.damageEffect(event.player, player, player);
 			}
-			return false;
+			return mayDamage + (1 - odds) * get.damageEffect(event.player, player, player);
 		},
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline()) {
-				game.delayx();
-			}
-			var target = trigger.player;
-			event.target = target;
-			player
-				.chooseToDiscard("he", get.prompt("cuijin", target), "弃置一张牌并令" + get.translation(trigger.player) + "使用的【杀】伤害+1，但若其未造成伤害，则你对其造成1点伤害。")
+		async cost(event, trigger, player) {
+			const skillName = event.name.slice(0, -5);
+			event.result = await player
+				.chooseToDiscard("he", get.prompt(skillName, trigger.player), "弃置一张牌并令" + get.translation(trigger.player) + "使用的【杀】伤害+1，但若其未造成伤害，则你对其造成1点伤害。")
 				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return 7 - get.value(card);
+					const goon = get.event().goon;
+					if (goon) {
+						return goon - get.value(card);
 					}
 					return 0;
 				})
-				.set("goon", lib.skill.cuijin.checkx(trigger, player)).logSkill = ["cuijin", target];
-			"step 1";
-			if (result.bool) {
-				if (typeof trigger.baseDamage != "number") {
-					trigger.baseDamage = 1;
-				}
-				trigger.baseDamage++;
-				player.addTempSkill("cuijin_damage");
-				player.markAuto("cuijin_damage", [trigger.card]);
+				.set(
+					"goon",
+					(() => {
+						const num = (lib.skill.cuijin.checkx(trigger, player) * player.countCards("he")) / 10;
+						// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，TW乐就发动技能的收益为", num);
+						return num;
+					})()
+				)
+				.set("logSkill", [skillName, trigger.player])
+				.forResult();
+			event.result.skill_popup = false;
+		},
+		async content(event, trigger, player) {
+			if (typeof trigger.baseDamage === "number") {
+				trigger.baseDamage = 1;
 			}
+			trigger.baseDamage++;
+			player.addTempSkill("cuijin_damage");
+			player.markAuto("cuijin_damage", [trigger.card]);
 		},
 		subSkill: {
 			damage: {
@@ -24340,7 +24329,7 @@ const skills = {
 						trigger.player.isIn() &&
 						!game.hasPlayer2(function (current) {
 							return current.hasHistory("damage", function (evt) {
-								return evt.card == trigger.card;
+								return evt.card === trigger.card;
 							});
 						})
 					) {
@@ -25329,7 +25318,6 @@ const skills = {
 		},
 	},
 	twrangyi: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -25403,7 +25391,6 @@ const skills = {
 		},
 	},
 	twbaimei: {
-		audio: 2,
 		trigger: {
 			player: "damageBegin4",
 		},
@@ -25437,7 +25424,6 @@ const skills = {
 		},
 	},
 	twhuzhu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(e, player) {
@@ -25480,7 +25466,6 @@ const skills = {
 		},
 	},
 	twliancai: {
-		audio: 2,
 		trigger: { player: ["turnOverEnd", "phaseJieshuBegin"] },
 		filter(card, player, target) {
 			return target == "phaseJieshuBegin" || player.countCards("h") < player.hp;
@@ -25532,7 +25517,6 @@ const skills = {
 	},
 	twqijia: {
 		//group:'twqijia_alka',
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.countCards("e", function (card) {
@@ -25613,7 +25597,6 @@ const skills = {
 		},
 	},
 	twxiaolian: {
-		audio: 2,
 		trigger: { global: "useCardToTarget" },
 		logTarget: "target",
 		filter(event, player) {
@@ -25682,7 +25665,6 @@ const skills = {
 		},
 	},
 	twtijin: {
-		audio: 2,
 		trigger: { global: "useCardToPlayer" },
 		filter(event, player) {
 			return event.card?.name == "sha" && event.player != player && event.target != player && event.targets.length == 1 && player.inRange(event.player);
@@ -25709,7 +25691,6 @@ const skills = {
 		},
 	},
 	twyanqin: {
-		audio: 2,
 		trigger: { player: "phaseBegin" },
 		direct: true,
 		content() {
@@ -25740,7 +25721,6 @@ const skills = {
 		},
 	},
 	twbaobian: {
-		audio: 2,
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
 			var card = event.card;

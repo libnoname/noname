@@ -6733,6 +6733,46 @@ export class Player extends HTMLDivElement {
 				next.card = next.cards[0];
 			}
 		}
+
+		const event = get.event(),
+			card = next.cards[0];
+		next.modSkill = {
+			cardname: null,
+			cardnature: null,
+			cardsuit: null,
+			cardnumber: null,
+		};
+		const keys = Object.keys(next.modSkill).flat();
+		if (event.name == "chooseToUse" && !next.skill && get.itemtype(card) == "card") {
+			let skills = [];
+			if (typeof this.getModableSkills === "function") {
+				skills = this.getModableSkills();
+			} else if (typeof this.getSkills === "function") {
+				skills = this.getSkills().concat(lib.skill.global);
+				game.expandSkills(skills);
+				skills = skills.filter(i => {
+					const info = get.info(i);
+					return info && info.mod;
+				});
+				skills.sort((a, b) => get.priority(a) - get.priority(b));
+			}
+			for (const skill of skills) {
+				for (const key of keys) {
+					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
+					if (mod) {
+						let arg = [card, this, event, "unchanged"];
+						const result = mod.call(game, ...arg);
+						if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
+							arg[arg.length - 1] = result;
+						}
+						if (arg[arg.length - 1]) {
+							next.modSkill[key] = skill;
+						}
+					}
+				}
+			}
+		}
+
 		if (!next.targets) {
 			next.targets = [];
 		}
@@ -7172,6 +7212,46 @@ export class Player extends HTMLDivElement {
 				next.card = next.cards[0];
 			}
 		}
+
+		const event = get.event(),
+			card = next.cards[0];
+		next.modSkill = {
+			cardname: null,
+			cardnature: null,
+			cardsuit: null,
+			cardnumber: null,
+		};
+		const keys = Object.keys(next.modSkill).flat();
+		if (event.name == "chooseToRespond" && !next.skill && get.itemtype(card) == "card") {
+			let skills = [];
+			if (typeof this.getModableSkills === "function") {
+				skills = this.getModableSkills();
+			} else if (typeof this.getSkills === "function") {
+				skills = this.getSkills().concat(lib.skill.global);
+				game.expandSkills(skills);
+				skills = skills.filter(i => {
+					const info = get.info(i);
+					return info && info.mod;
+				});
+				skills.sort((a, b) => get.priority(a) - get.priority(b));
+			}
+			for (const skill of skills) {
+				for (const key of keys) {
+					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
+					if (mod) {
+						let arg = [card, this, event, "unchanged"];
+						const result = mod.call(game, ...arg);
+						if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
+							arg[arg.length - 1] = result;
+						}
+						if (arg[arg.length - 1]) {
+							next.modSkill[key] = skill;
+						}
+					}
+				}
+			}
+		}
+
 		if (next.card) {
 			next.card = get.autoViewAs(next.card, next.cards);
 		}

@@ -10616,37 +10616,125 @@ const skills = {
 		filter(event, player) {
 			return (event.card.name == "sha" || event.card.name == "juedou") && (event.player == player || player.inRange(event.player)) && player.countCards("he") > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline()) {
-				game.delayx();
+		checkx(event, player) {
+			const userDamage = get.damageEffect(event.player, player, player);
+			let damageBonus = 0,
+				mayDamage = 0,
+				odds = 2;
+			if (event.card.name === "sha") {
+				const nature = get.nature(event.card);
+				for (let tar of event.targets) {
+					if (
+						event.player.hasSkillTag("jueqing", false, tar) ||
+						tar.hasSkillTag("filterDamage", null, {
+							player: event.player,
+							card: event.card,
+						})
+					) {
+						continue;
+					}
+					const hitOdds =
+						1 -
+						tar.mayHaveShan(
+							player,
+							"use",
+							tar.getCards("h", i => i.hasGaintag("sha_notshan")),
+							"odds"
+						);
+					if (
+						hitOdds >= 1 ||
+						event.player.hasSkillTag(
+							"directHit_ai",
+							true,
+							{
+								target: tar,
+								card: event.card,
+							},
+							true
+						)
+					) {
+						damageBonus += get.damageEffect(tar, event.player, player, nature);
+					} else {
+						odds = Math.min(odds, hitOdds);
+						mayDamage += hitOdds * get.damageEffect(tar, event.player, player, nature);
+					}
+				}
+			} else if (event.card.name === "juedou") {
+				const targets = event.targets.sortBySeat(_status.currentPhase);
+				let userSha = event.player.mayHaveSha(player, "respond", null, "count");
+				for (let tar of event.targets) {
+					if (
+						event.player.hasSkillTag("jueqing", false, tar) ||
+						tar.hasSkillTag("filterDamage", null, {
+							player: event.player,
+							card: event.card,
+						})
+					) {
+						continue;
+					}
+					// 检查使用者能否强命目标或者剩余【杀】够不够决斗
+					if (
+						event.player.hasSkillTag(
+							"directHit_ai",
+							true,
+							{
+								target: tar,
+								card: event.card,
+							},
+							true
+						) ||
+						(userSha -= tar.mayHaveSha(player, "respond", null, "count")) >= 0
+					) {
+						damageBonus += get.damageEffect(tar, event.player, player);
+					} else {
+						damageBonus += get.damageEffect(event.player, tar, player);
+					}
+				}
 			}
-			var target = trigger.player;
-			event.target = target;
-			player
-				.chooseToDiscard("he", get.prompt("dccuijin", target), "弃置一张牌并令" + get.translation(trigger.player) + "使用的" + get.translation(trigger.card) + "伤害+1，但若其未造成伤害，则你摸两张牌并对其造成1点伤害。")
+			if (damageBonus) {
+				return damageBonus;
+			}
+			if (!mayDamage || odds > 1) {
+				return get.damageEffect(event.player, player, player) + 2 * get.effect(player, "draw", player, player);
+			}
+			return mayDamage + (1 - odds) * (get.damageEffect(event.player, player, player) + 2 * get.effect(player, "draw", player, player));
+		},
+		async cost(event, trigger, player) {
+			const skillName = event.name.slice(0, -5);
+			event.result = await player
+				.chooseToDiscard("he", get.prompt(skillName, trigger.player), "弃置一张牌并令" + get.translation(trigger.player) + "使用的" + get.translation(trigger.card) + "伤害+1，但若其未造成伤害，则你摸两张牌并对其造成1点伤害。")
 				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return 7 - get.value(card);
+					const goon = get.event().goon;
+					if (goon) {
+						return goon - get.value(card);
 					}
 					return 0;
 				})
-				.set("goon", lib.skill.cuijin.checkx(trigger, player)).logSkill = ["dccuijin", target];
-			"step 1";
-			if (result.bool) {
-				if (typeof trigger.baseDamage != "number") {
-					trigger.baseDamage = 1;
-				}
-				trigger.baseDamage++;
-				player.addSkill("dccuijin_damage");
-				player.markAuto("dccuijin_damage", [trigger.card]);
-				if (!player.storage.dccuijin_map) {
-					player.storage.dccuijin_map = { cards: [], targets: [] };
-				}
-				player.storage.dccuijin_map.cards.push(trigger.card);
-				player.storage.dccuijin_map.targets.push(trigger.targets.slice());
+				.set(
+					"goon",
+					(() => {
+						const num = (lib.skill.dccuijin.checkx(trigger, player) * player.countCards("he")) / 10;
+						// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，乐就发动技能的收益为", num);
+						return num;
+					})()
+				)
+				.set("logSkill", [skillName, trigger.player])
+				.forResult();
+			event.result.skill_popup = false;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			if (typeof trigger.baseDamage !== "number") {
+				trigger.baseDamage = 1;
 			}
+			trigger.baseDamage++;
+			player.addSkill("dccuijin_damage");
+			player.markAuto("dccuijin_damage", [trigger.card]);
+			if (!player.storage.dccuijin_map) {
+				player.storage.dccuijin_map = { cards: [], targets: [] };
+			}
+			player.storage.dccuijin_map.cards.push(trigger.card);
+			player.storage.dccuijin_map.targets.push(trigger.targets.slice());
 		},
 		subSkill: {
 			damage: {

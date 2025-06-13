@@ -374,18 +374,22 @@ export const extensionMenu = function (connectMenu) {
 							//替换die audio，加上扩展名
 							//TODO: 创建扩展这部分更是重量级
 							character: (pack => {
-								var character = pack.character;
-								for (var key in character) {
-									var info = character[key];
-									if (Array.isArray(info[4])) {
-										var tag = info[4].find(tag => /^die:.+$/.test(tag));
+								const { character } = pack;
+								for (const [key, info] of Object.entries(character)) {
+									if (Array.isArray(info)) {
+										const tag = info[4]?.find(tag => /^die:.+$/.test(tag));
 										if (tag) {
 											info[4].remove(tag);
-											if (typeof game.readFile == "function") {
-												info[4].push("die:ext:" + page.currentExtension + "/audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
-											} else {
-												info[4].push("die:db:extension-" + page.currentExtension + ":audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
-											}
+											const audio = `die:${typeof game.readFile == "function" ? "ext:" : "db:extension-"}${page.currentExtension}/audio/die/${tag.slice(tag.lastIndexOf("/") + 1)}`;
+											info[4].push(audio);
+										}
+									} else if (Array.isArray(info.dieAudios)) {
+										const { dieAudios } = info;
+										const tag = dieAudios.find(tag => /^ext:.+$/.test(tag));
+										if (tag) {
+											dieAudios.remove(tag);
+											const audio = `${typeof game.readFile == "function" ? "ext:" : "db:extension-"}${page.currentExtension}/audio/die/${tag.slice(tag.lastIndexOf("/") + 1)}`;
+											dieAudios.push(audio);
 										}
 									}
 								}
@@ -684,15 +688,16 @@ export const extensionMenu = function (connectMenu) {
 						newCharacter.querySelector(".new_name").value = this.link;
 					}
 					var info = page.content.pack.character[this.link];
-					newCharacter.querySelector(".new_hp").value = info[2];
-					sexes.value = info[0];
-					groups.value = info[1];
-					if (info[4]) {
+					newCharacter.querySelector(".new_hp").value = get.character(this.link, 2);
+					sexes.value = get.character(this.link, 0);
+					groups.value = get.character(this.link, 1);
+					if (Array.isArray(info[4])) {
 						for (var i = 0; i < options.childNodes.length - 1; i++) {
-							if (options.childNodes[i].lastChild && info[4].includes(options.childNodes[i].lastChild.name)) {
-								options.childNodes[i].lastChild.checked = true;
-							} else if (options.childNodes[i].lastChild) {
-								options.childNodes[i].lastChild.checked = false;
+							const option = options.childNodes[i].lastChild;
+							if (info[4].includes(option?.name)) {
+								option.checked = true;
+							} else if (option) {
+								option.checked = false;
 							}
 						}
 						for (var i = 0; i < info[4].length; i++) {
@@ -732,9 +737,61 @@ export const extensionMenu = function (connectMenu) {
 								});
 							}
 						}
+					} else {
+						const optionMap = new Map([
+							["zhu", "isZhugong"],
+							["boss", "isBoss"],
+							["forbidai", "isAiForbidden"],
+							["hiddenSkill", "hasHiddenSkill"],
+						]);
+						for (var i = 0; i < options.childNodes.length - 1; i++) {
+							const option = options.childNodes[i].lastChild;
+							if (optionMap.has(option?.name) && info[optionMap.get(option.name)]) {
+								option.checked = true;
+							} else if (option) {
+								option.checked = false;
+							}
+						}
+						const description = info.trashBin?.find(item => item.startsWith("des:"));
+						if (description) {
+							newCharacter.querySelector(".new_des").value = description.slice(4);
+						}
+						const dieAudios = info.dieAudios || [];
+						for (var i = 0; i < dieAudios.length; i++) {
+							var dieaudionode = newCharacter.querySelector(".die_audio");
+							dieaudionode.file = {
+								name: dieAudios[i].slice(dieAudios[i].lastIndexOf("/") + 1),
+							};
+							await new Promise(resolve => {
+								if (typeof game.readFile == "function") {
+									game.readFile(
+										dieAudios[i].replace("ext:", "extension/"),
+										arraybuffer => {
+											dieaudionode.arrayBuffer = arraybuffer;
+											resolve();
+										},
+										() => {
+											console.warn(`未找到${dieAudios[i].replace("ext:", "extension/")}阵亡配音`);
+											resolve();
+										}
+									);
+								} else {
+									game.getDB("image", dieAudios[i].slice(3)).then(
+										octetStream => {
+											dieaudionode.arrayBuffer = octetStream;
+											resolve();
+										},
+										() => {
+											console.warn(`未找到${dieAudios[i]}阵亡配音`);
+											resolve();
+										}
+									);
+								}
+							});
+						}
 					}
 
-					var skills = info[3];
+					var skills = get.character(this.link, 3);
 					for (var i = 0; i < skills.length; i++) {
 						var node = document.createElement("button");
 						node.skill = skills[i];
@@ -753,7 +810,7 @@ export const extensionMenu = function (connectMenu) {
 					var button = ui.create.div(".button.character");
 					button.link = name;
 					button.image = image;
-					button.style.backgroundImage = "url(" + image + ")";
+					button.setBackground(name, "character");
 					button.style.backgroundSize = "cover";
 					button.listen(clickButton);
 					button.classList.add("noclick");
@@ -1123,13 +1180,13 @@ export const extensionMenu = function (connectMenu) {
 				var skillList = ui.create.div(".skill_list", newCharacter);
 				ui.create.div(skillList);
 				var editnode = ui.create.div(".menubutton.large.disabled", "创建武将", ui.create.div(skillList), function () {
-					var name = page.querySelector("input.new_name").value;
+					let name = page.querySelector("input.new_name").value;
 					if (!name) {
 						alert("请填写武将名\n提示：武将名格式为id+|+中文名，其中id必须惟一");
 						return;
 					}
 					name = name.split("|");
-					var translate = name[1] || name[0];
+					let translate = name[1] || name[0];
 					name = name[0];
 					if (currentButton) {
 						if (currentButton.link != name) {
@@ -1157,39 +1214,93 @@ export const extensionMenu = function (connectMenu) {
 							return;
 						}
 					}
-					var hp = page.querySelector("input.new_hp").value;
+					let hp = page.querySelector("input.new_hp").value;
 					//体力支持‘Infinity,∞,无限’表示无限
 					if (["Infinity", "∞", "无限"].includes(hp)) {
 						hp = Infinity;
 					} else if (hp.indexOf("/") == -1) {
 						hp = parseInt(hp) || 1;
 					}
-					var skills = [];
-					for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
-						skills.add(skillList.firstChild.childNodes[i].skill);
-					}
-					var tags = [];
-					for (var i = 0; i < options.childNodes.length - 1; i++) {
-						if (options.childNodes[i].lastChild && options.childNodes[i].lastChild.checked) {
-							tags.push(options.childNodes[i].lastChild.name);
+					const skills = Array.from(skillList.firstChild.childNodes).map(item => item.skill);
+					const oldCharacter = page.content.pack.character[name] || {};
+					const bool = !Array.isArray(oldCharacter);
+					const newCharacter = {
+						sex: sexes.value,
+						group: groups.value,
+						hp: get.infoHp(hp),
+						maxHp: get.infoMaxHp(hp),
+						hujia: get.infoHujia(hp),
+						skills,
+					};
+					const tags = Array.from(options.childNodes)
+						.slice(0, -1)
+						.reduce((list, node) => {
+							const child = node.lastChild;
+							if (child?.checked) {
+								list.push(child.name);
+							}
+							return list;
+						}, []);
+					const des = page.querySelector("input.new_des").value;
+					if (des) {
+						tags.add(`des:${des}`);
+						if (bool) {
+							oldCharacter.trashBin ??= [];
+							oldCharacter.trashBin = oldCharacter.trashBin.filter(tag => !tag.startsWith("des:"));
+							oldCharacter.trashBin.add(`des:${des}`);
 						}
+					} else if (bool && Array.isArray(oldCharacter.trashBin)) {
+						oldCharacter.trashBin = oldCharacter.trashBin.filter(tag => !tag.startsWith("des:"));
+						if (!oldCharacter.trashBin.length) {
+							delete oldCharacter.trashBin;
+						}
+					}
+					if (tags.includes("zhu")) {
+						newCharacter.isZhugong = true;
+					} else if (bool && "isZhugong" in oldCharacter) {
+						delete oldCharacter.isZhugong;
 					}
 					if (tags.includes("boss")) {
 						tags.add("bossallowed");
+						newCharacter.isBoss = true;
+						newCharacter.isBossAllowed = true;
+					} else if (bool) {
+						if ("isBoss" in oldCharacter) {
+							delete oldCharacter.isBoss;
+						}
+						if ("isBossAllowed" in oldCharacter) {
+							delete oldCharacter.isBossAllowed;
+						}
 					}
-					var des = page.querySelector("input.new_des").value;
-					if (des) {
-						tags.add("des:" + des);
+					if (tags.includes("forbidai")) {
+						newCharacter.isAiForbidden = true;
+					} else if (bool && "isAiForbidden" in oldCharacter) {
+						delete oldCharacter.isAiForbidden;
+					}
+					if (tags.includes("hiddenSkill")) {
+						newCharacter.hasHiddenSkill = true;
+					} else if (bool && "hasHiddenSkill" in oldCharacter) {
+						delete oldCharacter.hasHiddenSkill;
 					}
 					//阵亡配音
 					if (dieaudio.file && dieaudio.arrayBuffer) {
 						var audioname = name + dieaudio.file.name.slice(dieaudio.file.name.indexOf("."));
-						tags.add(`die:${typeof game.readFile == "function" ? "ext" : "db"}:audio/die/${audioname}`);
+						const dieAudio = `${typeof game.readFile == "function" ? "ext" : "db"}:audio/die/${audioname}`;
+						tags.add(`die:${dieAudio}`);
+						newCharacter.dieAudios = [];
+						newCharacter.dieAudios.add(dieAudio);
 						page.content.audio[audioname] = dieaudio.arrayBuffer;
+					} else if (bool && Array.isArray(oldCharacter.dieAudios)) {
+						delete oldCharacter.dieAudios;
 					}
-
 					page.content.pack.translate[name] = translate;
-					page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
+					if (!page.content.pack.character[name]) {
+						page.content.pack.character[name] = newCharacter;
+					} else if (Array.isArray(page.content.pack.character[name])) {
+						page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
+					} else {
+						Object.assign(page.content.pack.character[name], newCharacter);
+					}
 					if (this.innerHTML == "创建武将") {
 						createButton(name, fakeme.image64);
 					} else if (currentButton) {

@@ -296,7 +296,7 @@ export async function loadExtension(extension) {
 							character[4] = [];
 						}
 
-						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
+						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img|character):.+/.test(str))) {
 							const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
 							character[4].add(img);
 						}

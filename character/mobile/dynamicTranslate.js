@@ -33,31 +33,35 @@ const dynamicTranslates = {
 		return str + "。";
 	},
 	mbxuetu(player) {
-		const xuetu = player.storage.mbxuetu,
+		const bool = player.storage.mbxuetu,
 			status = player.countMark("mbxuetu_status");
-		return (() => {
-			if (status === 0) {
-				if (!xuetu) {
-					return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以令一名角色回复1点体力；</span>阳：你可以令一名角色摸两张牌。';
-				}
-				return '转换技。出牌阶段限一次，阴：你可以令一名角色回复1点体力；<span class="bluetext">阳：你可以令一名角色摸两张牌。</span>';
-			} else if (status === 1) {
-				return lib.translate.mbxuetu_achieve_info;
-			} else {
-				if (!xuetu) {
-					return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；</span>阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。';
-				}
-				return '转换技。出牌阶段限一次，阴：你可以回复1点体力，然后令一名其他角色弃置两张牌；<span class="bluetext">阳：你可以摸一张牌，然后对一名其他角色造成1点伤害。</span>';
-			}
-		})();
+		if (status === 1) {
+			return lib.translate.mbxuetu_achieve_info;
+		}
+		let yang = status === 0 ? "你可以令一名角色回复1点体力" : "你可以回复1点体力，然后令一名其他角色弃置两张牌",
+			yin = status === 0 ? "你可以令一名角色摸两张牌" : "你可以摸一张牌，然后对一名其他角色造成1点伤害";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。出牌阶段限一次，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	mbzuoyou(player) {
-		const mbzuoyou = player.storage.mbzuoyou,
+		const bool = player.storage.mbzuoyou,
 			versus = get.mode() == "versus" && _status.mode == "two" ? "角色" : "有手牌的角色弃置一张手牌，然后其";
-		if (mbzuoyou) {
-			return '转换技。出牌阶段限一次，阴：你可以令一名角色摸三张牌，然后其弃置两张牌；<span class="bluetext">阳：你可以令一名' + versus + "获得1点护甲。</span>";
+		let yang = "你可以令一名角色摸三张牌，然后其弃置两张牌",
+			yin = "你可以令一名" + versus + "获得1点护甲";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以令一名角色摸三张牌，然后其弃置两张牌；</span>阳：你可以令一名' + versus + "获得1点护甲。";
+		let start = "转换技。出牌阶段限一次，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	pothanzhan(player) {
 		let str = lib.translate.pothanzhan_info;

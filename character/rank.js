@@ -114,6 +114,7 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"dc_sb_jiangwei",
 		"chenshou",
 		"dc_xiahouxuan",
 		"yangbiao",
@@ -674,6 +675,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"cuilingyi",
 		"jimiaojimu",
 		"clan_yangzhong",
 		"ol_zhangmancheng",
@@ -1271,6 +1273,8 @@ window.noname_character_rank = {
 		"ol_maliang",
 	],
 	b: [
+		"ol_sb_xiaoqiao",
+		"dc_sb_hulie",
 		"pe_jun_liuhong",
 		"wn_houxuan",
 		"wn_chengyi",
@@ -2713,6 +2717,9 @@ window.noname_character_rank = {
 			"wn_shen_machao",
 		],
 		epic: [
+			"dc_sb_jiangwei",
+			"dc_sb_hulie",
+			"cuilingyi",
 			"jimiaojimu",
 			"yj_caocaoyuanshao",
 			"v_caopi",
@@ -3219,6 +3226,7 @@ window.noname_character_rank = {
 			"sxrm_liubei",
 		],
 		rare: [
+			"ol_sb_xiaoqiao",
 			"wn_houxuan",
 			"wn_chengyi",
 			"wn_yangqiú",

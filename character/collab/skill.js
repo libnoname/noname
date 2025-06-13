@@ -267,7 +267,6 @@ const skills = {
 	},
 	//烈袁绍袁术
 	dclieti: {
-		audio: 2,
 		trigger: {
 			//因为需要兼容联机，所以加上replaceHandcards的时机，该事件是联机时的手气卡事件
 			global: ["gameDrawBegin", "replaceHandcardsBegin"],
@@ -358,7 +357,6 @@ const skills = {
 		},
 	},
 	dcshigong: {
-		audio: 2,
 		locked: true,
 		direct: true,
 		trigger: { player: "useCard" },
@@ -413,7 +411,6 @@ const skills = {
 		},
 	},
 	dcluankui: {
-		audio: 2,
 		trigger: {
 			source: ["damageSource"],
 			player: ["gainAfter"],
@@ -875,7 +872,6 @@ const skills = {
 	},
 	//食岑昏
 	dcbaoshi: {
-		audio: 2,
 		trigger: { player: "phaseDrawEnd" },
 		async content(event, trigger, player) {
 			let cards = [];
@@ -902,7 +898,6 @@ const skills = {
 		},
 	},
 	dcxinggong: {
-		audio: 2,
 		enable: "phaseUse",
 		filter: event => event.dcshixinggong_cards?.length,
 		onChooseToUse: event => {
@@ -945,7 +940,6 @@ const skills = {
 	},
 	//年兽
 	olsuichong: {
-		audio: 2,
 		trigger: {
 			global: "phaseBefore",
 			player: ["phaseZhunbeiBegin", "enterGame"],
@@ -1119,7 +1113,6 @@ const skills = {
 		},
 	},
 	olshouhun: {
-		audio: 2,
 		trigger: {
 			global: "phaseBefore",
 			player: ["phaseDrawBegin2", "damageBegin4", "enterGame"],
@@ -1934,7 +1927,6 @@ const skills = {
 	},
 	//卫青
 	dcbeijin: {
-		audio: 2,
 		enable: "phaseUse",
 		content() {
 			player.addSkill("dcbeijin_effect");
@@ -2013,7 +2005,6 @@ const skills = {
 	},
 	//姜子牙
 	xingzhou: {
-		audio: 2,
 		usable: 1,
 		trigger: {
 			global: "damageEnd",
@@ -2065,7 +2056,6 @@ const skills = {
 		},
 	},
 	lieshen: {
-		audio: 2,
 		init(player) {
 			player.addSkill("lieshen_init");
 		},
@@ -2204,7 +2194,6 @@ const skills = {
 	},
 	//申公豹
 	zhuzhou: {
-		audio: 2,
 		usable: 1,
 		trigger: {
 			global: "damageSource",
@@ -2230,7 +2219,6 @@ const skills = {
 	yaoxian: {
 		enable: "phaseUse",
 		usable: 1,
-		audio: 2,
 		selectTarget: 2,
 		multitarget: true,
 		targetprompt: ["摸牌", "出杀目标"],
@@ -2295,7 +2283,6 @@ const skills = {
 	},
 	//寿星
 	xwshoufa: {
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.countCards("h", card => lib.suit.includes(get.suit(card, player)));
@@ -2378,7 +2365,6 @@ const skills = {
 		},
 	},
 	fuzhao: {
-		audio: 2,
 		trigger: {
 			global: "dying",
 		},
@@ -2537,7 +2523,6 @@ const skills = {
 	//刘协曹节
 	//我们意念合一×2
 	dcjuanlv: {
-		audio: 2,
 		equipSkill: false,
 		inherit: "cixiong_skill",
 		filter(event, player) {
@@ -2545,7 +2530,6 @@ const skills = {
 		},
 	},
 	dcqixin: {
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			return !player.storage.dcqixin_die;
@@ -3769,7 +3753,6 @@ const skills = {
 		},
 	},
 	dczhanjiang: {
-		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => {
@@ -4572,7 +4555,6 @@ const skills = {
 	},
 	//叶诗文
 	clbjisu: {
-		audio: 2,
 		trigger: { player: "phaseJudgeBefore" },
 		direct: true,
 		async content(event, trigger, player) {
@@ -4601,7 +4583,6 @@ const skills = {
 		},
 	},
 	clbshuiyong: {
-		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event) {
 			return event.hasNature("fire");
@@ -4623,7 +4604,6 @@ const skills = {
 	},
 	//孙杨
 	clbshuijian: {
-		audio: 2,
 		trigger: { player: "phaseDrawBegin2" },
 		frequent: true,
 		filter(event, player) {

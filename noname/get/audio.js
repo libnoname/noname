@@ -176,7 +176,7 @@ export class Audio {
 class SkillAudio {
 	type = "skill";
 	defaultPath = "skill/";
-	defaultInfo = [true, 2];
+	defaultInfo = false;
 	isExist(name) {
 		return !!get.info(name);
 	}

@@ -40,11 +40,13 @@ game.import("card", function () {
 						return;
 					}
 					for (let i = 0; i < targets.length; i++) {
+						const color = get.color(result[i].cards[0], targets[i]);
 						if (targets[i] != player) {
-							if (get.color(result[i].cards[0], targets[i]) == get.color(card, player)) {
+							if (color == get.color(card, player)) {
 								damage.push(targets[i]);
 							}
 						}
+						targets[i].popup(color);
 					}
 					if (damage.length) {
 						await player.modedDiscard(card);
@@ -60,7 +62,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6,
-					value: 6.5,
+					value: 5.5,
 					result: {
 						target: -1,
 					},
@@ -122,7 +124,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6.5,
-					value: 7,
+					value: 6.5,
 					result: {
 						player: 1,
 					},
@@ -159,8 +161,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 5,
-					useful: 7,
-					value: 7.2,
+					useful: 6,
+					value: 6.2,
 					result: {
 						target: 1,
 					},
@@ -214,8 +216,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 8,
-					useful: 6.5,
-					value: 7,
+					useful: 5.5,
+					value: 5,
 					result: {
 						target: 1,
 					},
@@ -260,7 +262,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6.5,
-					value: 7,
+					value: 6.5,
 					result: {
 						player: 1,
 					},
@@ -319,8 +321,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 1,
-					useful: 5.5,
-					value: 6,
+					useful: 5,
+					value: 5,
 					result: {
 						target: 1,
 					},
@@ -332,11 +334,17 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				singleCard: true,
-				filterTarget: lib.filter.notMe,
-				filterAddedTarget(card, player, target, preTarget) {
-					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
+				//singleCard: true,
+				filterTarget(card, player, target) {
+					if (!ui.selected.targets.length) {
+						return player != target;
+					}
+					return ui.selected.targets.concat([target]).some(target => target.countCards("h")) && player != target;
 				},
+				selectTarget: 2,
+				/*filterAddedTarget(card, player, target, preTarget) {
+					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
+				},*/
 				multicheck(card, player) {
 					return (
 						game.hasPlayer(current => {
@@ -351,13 +359,19 @@ game.import("card", function () {
 				},
 				complexSelect: true,
 				complexTarget: true,
+				multitarget: true,
+				modTarget: false,
 				async content(event, trigger, player) {
-					event.target.swapHandcards(event.addedTarget);
+					const { targets } = event;
+					if (targets.length != 2) {
+						return;
+					}
+					targets[0].swapHandcards(targets[1]);
 				},
 				ai: {
 					order: 6,
-					useful: 8,
-					value: 8.2,
+					useful: 7.5,
+					value: 8,
 					result: {
 						target(player, target) {
 							const list = [];
@@ -435,8 +449,8 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 10,
-					useful: 8.5,
-					value: 8.5,
+					useful: 7,
+					value: 7.5,
 					result: {
 						target: 1,
 					},
