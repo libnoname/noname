@@ -11675,7 +11675,13 @@ const skills = {
 		mark: true,
 		intro: { content: "本回合内不能使用或打出牌" },
 		mod: {
-			cardEnabled2(card) {
+			cardEnabled(card) {
+				return false;
+			},
+			cardSavable(card) {
+				return false;
+			},
+			cardRespondable(card) {
 				return false;
 			},
 		},

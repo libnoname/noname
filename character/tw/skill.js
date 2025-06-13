@@ -21309,7 +21309,13 @@ const skills = {
 				charlotte: true,
 				mark: true,
 				mod: {
-					cardEnabled2(card) {
+					cardEnabled(card) {
+						return false;
+					},
+					cardRespondable(card) {
+						return false;
+					},
+					cardSavable(card) {
 						return false;
 					},
 				},

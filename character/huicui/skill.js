@@ -6713,8 +6713,12 @@ const skills = {
 					},
 					position: "he",
 					filterTarget(card, player, target) {
+						if (_status.event.map?.[target.playerid]) {
+							target.prompt(`破锐${_status.event.map[target.playerid]}`);
+						}
 						return Object.keys(_status.event.map).includes(target.playerid);
 					},
+					complexTarget: true,
 					ai1(card) {
 						return 7 - get.value(card);
 					},
