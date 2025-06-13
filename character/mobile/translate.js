@@ -1110,8 +1110,8 @@ const translates = {
 	potyinzhan_info: "锁定技，你使用【杀】对一名角色造成伤害时，若：1.你的体力值小于等于其，此伤害+1；2.你的手牌数小于等于其，你于此【杀】结算结束后弃置其一张牌；乘势：前两项均符合，你回复1点体力，获得其弃置的牌。",
 	potkuanggu: "狂骨",
 	potkuanggu_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌。",
-	potkuanggu_rewrite: "狂骨·二级",
-	potkuanggu_rewrite_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌；3.背水，弃置一张牌并令你此阶段使用【杀】的次数+1。",
+	potkuanggu_pot_weiyan_achieve: "狂骨·二级",
+	potkuanggu_pot_weiyan_achieve_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌；3.背水，弃置一张牌并令你此阶段使用【杀】的次数+1。",
 };
 
 export default translates;

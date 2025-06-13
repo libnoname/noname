@@ -85,33 +85,32 @@ const skills = {
 				}
 			}
 			const videoId = lib.status.videoId++;
-        	game.broadcastAll(
-        	    function (id, cards) {
-        	        let dialog = ui.create.dialog("枯心：请选择获得的牌");
+			game.broadcastAll(
+				function (id, cards) {
+					let dialog = ui.create.dialog("枯心：请选择获得的牌");
 					if (cards.length) {
 						dialog.add(cards);
 						const getName = function (target) {
-        				    if (target._tempTranslate) {
-        				        return target._tempTranslate;
-        				    }
-        				    let name = target.name;
-        				    if (lib.translate[name + "_ab"]) {
-        				        return lib.translate[name + "_ab"];
-        				    }
-        				    return get.translation(name);
-        				};
-        				for (let i = 0; i < cards.length; i++) {
-        				    dialog.buttons[i].node.gaintag.innerHTML = getName(get.owner(cards[i]));
-        				}
-					}
-					else {
+							if (target._tempTranslate) {
+								return target._tempTranslate;
+							}
+							let name = target.name;
+							if (lib.translate[name + "_ab"]) {
+								return lib.translate[name + "_ab"];
+							}
+							return get.translation(name);
+						};
+						for (let i = 0; i < cards.length; i++) {
+							dialog.buttons[i].node.gaintag.innerHTML = getName(get.owner(cards[i]));
+						}
+					} else {
 						dialog.add("没有角色展示牌");
 					}
-        	        dialog.videoId = id;
-        	    },
-        	    videoId,
-        	    showcards,
-        	);
+					dialog.videoId = id;
+				},
+				videoId,
+				showcards
+			);
 			const next2 = player
 				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")
 				.set("dialog", get.idDialog(videoId))
@@ -223,15 +222,14 @@ const skills = {
 		usable: 1,
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
-		    const target = event.targets[0];
-		    const result = await target.judge()
-		        .forResult();
-		    if (!result.number) {
-		        return;
-		    }
-		    const name = get.info(event.name).pasts[result.number - 1],
+			const target = event.targets[0];
+			const result = await target.judge().forResult();
+			if (!result.number) {
+				return;
+			}
+			const name = get.info(event.name).pasts[result.number - 1],
 				skill = get.info(event.name).derivation[result.number - 1];
-		    const mark = `desigu_${player.playerid}`;
+			const mark = `desigu_${player.playerid}`;
 			if (name) {
 				await target.addAdditionalSkills(mark, [skill], true);
 				//写个标记吧
@@ -239,7 +237,7 @@ const skills = {
 				//再加个动画
 				target.setAvatar(target.name, name);
 			} else {
-			    player.chat("孩子你是谁？");
+				player.chat("孩子你是谁？");
 			}
 			await target.damage();
 			await target.damage();
@@ -251,27 +249,27 @@ const skills = {
 		},
 		//不太会写ai，随便写了点简单的情况
 		ai: {
-		    order: 1,
-		    result: {
-		        target(player, target) {
-		            if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) < 0) {
-		                return 0;
-		            }
-		            if (get.attitude(player, target) < 0 && (target.getHp() + target.hujia) <= 1) {
-		                return -1;
-		            }
-		            if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) > 0 && (target.getHp() + target.hujia) >= 3) {
-		                return 2;
-		            }
-		            if (get.attitude(player, target) > 0 && (target.getHp() + target.hujia) >= 4) {
-		                return 1;
-		            }
-		            if (get.attitude(player, target) == 0 && (target.getHp() + target.hujia) >= 2) {
-		                return 1;
-		            }
-		            return 0;
-		        },
-		    },
+			order: 1,
+			result: {
+				target(player, target) {
+					if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) < 0) {
+						return 0;
+					}
+					if (get.attitude(player, target) < 0 && target.getHp() + target.hujia <= 1) {
+						return -1;
+					}
+					if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) > 0 && target.getHp() + target.hujia >= 3) {
+						return 2;
+					}
+					if (get.attitude(player, target) > 0 && target.getHp() + target.hujia >= 4) {
+						return 1;
+					}
+					if (get.attitude(player, target) == 0 && target.getHp() + target.hujia >= 2) {
+						return 1;
+					}
+					return 0;
+				},
+			},
 			tag: {
 				damage: 1,
 			},
@@ -552,7 +550,7 @@ const skills = {
 					const targets = game.filterPlayer(current => {
 						return current.getHistory("lose", evt => {
 							const cards = evt.cards2;
-							if (evt.getParent("useCard", true, true) != trigger || !cards.some(card => get.suit(card) == "spade")) {
+							if (!evt.getParent(evt => evt == trigger, true, true) || !cards.some(card => get.suit(card) == "spade")) {
 								return false;
 							}
 							return evt.visible;
@@ -723,38 +721,38 @@ const skills = {
 		subSkill: {
 			effect: {
 				trigger: {
-    			    global: ["useCard"],
-    			},
+					global: ["useCard"],
+				},
 				filter(event, player) {
-    			    if (_status.currentPhase == player || event.player == player) {
-    			        return false;
-    			    }
-    			    return (
-    			        player.getExpansions("sxrmshefu_effect").some(card => {
+					if (_status.currentPhase == player || event.player == player) {
+						return false;
+					}
+					return (
+						player.getExpansions("sxrmshefu_effect").some(card => {
 							return get.color(card) == get.color(event.card) && get.type2(card) == get.type2(event.card);
 						}) &&
-    			        event.player.getHistory("lose", function (evt) {
-    			            return evt.getParent() == event && evt.hs && evt.hs.length == event.cards.length;
-    			        }).length
-    			    );
-    			},
-    			async cost(event, trigger, player) {
-    			    let effect = 0;
-    			    if (trigger.card.name == "wuxie" || trigger.card.name == "shan") {
-    			        if (get.attitude(player, trigger.player) < -1) {
-    			            effect = -1;
-    			        }
-    			    } else if (trigger.targets?.length) {
-    			        for (let i = 0; i < trigger.targets.length; i++) {
-    			            effect += get.effect(trigger.targets[i], trigger.card, trigger.player, player);
-    			        }
-    			    }
-    			    let str = "设伏：是否令" + get.translation(trigger.player);
-    			    if (trigger.targets && trigger.targets.length) {
-    			        str += "对" + get.translation(trigger.targets);
-    			    }
-    			    str += "使用的" + get.translation(trigger.card) + "失效？";
-    			    const result = await player
+						event.player.getHistory("lose", function (evt) {
+							return evt.getParent() == event && evt.hs && evt.hs.length == event.cards.length;
+						}).length
+					);
+				},
+				async cost(event, trigger, player) {
+					let effect = 0;
+					if (trigger.card.name == "wuxie" || trigger.card.name == "shan") {
+						if (get.attitude(player, trigger.player) < -1) {
+							effect = -1;
+						}
+					} else if (trigger.targets?.length) {
+						for (let i = 0; i < trigger.targets.length; i++) {
+							effect += get.effect(trigger.targets[i], trigger.card, trigger.player, player);
+						}
+					}
+					let str = "设伏：是否令" + get.translation(trigger.player);
+					if (trigger.targets && trigger.targets.length) {
+						str += "对" + get.translation(trigger.targets);
+					}
+					str += "使用的" + get.translation(trigger.card) + "失效？";
+					const result = await player
 						.chooseButton([str, player.getExpansions("sxrmshefu_effect")])
 						.set("filterButton", button => {
 							const { used } = get.event();
@@ -776,26 +774,26 @@ const skills = {
 						cards: result.bool ? result.links : [],
 					};
 				},
-    			async content(event, trigger, player) {
-    			        await player.loseToDiscardpile(event.cards);
-    			        trigger.targets.length = 0;
-    			        trigger.all_excluded = true;
-    			},
-    			ai: {
-    			    threaten: 1.8,
-    			    expose: 0.3,
-    			},
+				async content(event, trigger, player) {
+					await player.loseToDiscardpile(event.cards);
+					trigger.targets.length = 0;
+					trigger.all_excluded = true;
+				},
+				ai: {
+					threaten: 1.8,
+					expose: 0.3,
+				},
 				intro: {
-        			mark(dialog, storage, player) {
-        			    var cards = player.getExpansions("sxrmshefu_effect");
-        			    if (player.isUnderControl(true)) {
-        			        dialog.addAuto(cards);
-        			    } else {
-        			        return "共有" + get.cnNumber(cards.length) + "张牌";
-        			    }
-        			},
-        			markcount: "expansion",
-    			},
+					mark(dialog, storage, player) {
+						var cards = player.getExpansions("sxrmshefu_effect");
+						if (player.isUnderControl(true)) {
+							dialog.addAuto(cards);
+						} else {
+							return "共有" + get.cnNumber(cards.length) + "张牌";
+						}
+					},
+					markcount: "expansion",
+				},
 			},
 		},
 	},
@@ -1148,30 +1146,30 @@ const skills = {
 			) {
 				return false;
 			}
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			return !player.getStorage("sxrmyihe_used").includes(bool1 == bool2);
 		},
 		logTarget: "player",
 		check(event, player) {
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			if (get.attitude(player, event.player) > 0) {
 				return bool1 == bool2 && get.attitude(player, event.source) >= 0;
 			}
 			return bool1 != bool2;
 		},
 		prompt2(event, player) {
-			let bool1 = get.sgn(event.player.countCards("h") - event.source.countCards("h")),
-				bool2 = get.sgn(event.player.hp - event.source.hp);
+			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
+				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			if (bool1 == bool2) {
 				return `令其和${get.translation(event.source)}依次摸两张牌`;
 			}
 			return "令此伤害+1";
 		},
 		async content(event, trigger, player) {
-			let bool1 = get.sgn(trigger.player.countCards("h") - trigger.source.countCards("h")),
-				bool2 = get.sgn(trigger.player.hp - trigger.source.hp);
+			let bool1 = get.sgn(trigger.source.hp - trigger.source.countCards("h")),
+				bool2 = get.sgn(trigger.player.hp - trigger.player.countCards("h"));
 			player.addTempSkill("sxrmyihe_used");
 			player.markAuto("sxrmyihe_used", bool1 == bool2);
 			if (bool1 == bool2) {

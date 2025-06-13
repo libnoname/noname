@@ -581,6 +581,38 @@ game.import("card", function () {
 					player.addTempSkill("taipingyaoshu_lose");
 				},
 			},
+			jilinqianyi: {
+				audio: true,
+				mode: ["guozhan"],
+				fullskin: true,
+				type: "equip",
+				subtype: "equip1",
+				nomod: true,
+				nopower: true,
+				unique: true,
+				skills: ["jilinqianyi_skill"],
+				ai: {
+					equipValue(card, player) {
+						if (!player.getDamagedHp()) {
+							return 0;
+						}
+						if (player.hasSkill("gz_shujuan")) {
+							return 9;
+						}
+						if (
+							game.hasPlayer(function (current) {
+								return current.hasSkill("gz_shujuan") && get.attitude(player, current) <= 0 && player.getDamagedHp();
+							})
+						) {
+							return 1;
+						}
+						return 4;
+					},
+					basic: {
+						equipValue: 7,
+					},
+				},
+			},
 			yuxi: {
 				audio: true,
 				mode: ["guozhan"],
@@ -2327,6 +2359,68 @@ game.import("card", function () {
 					}
 				},
 			},
+			jilinqianyi_skill: {
+				equipSkill: true,
+				audio: true,
+				trigger: {
+					player: "useCard1",
+				},
+				forced: true,
+				firstDo: true,
+				filter(event, player) {
+					if (event.card.name != "sha") {
+						return false;
+					}
+					return game.hasPlayer(current => player.inRange(current) && !event.targets?.includes(current));
+				},
+				logTarget(event, player) {
+					return game.filterPlayer(current => player.inRange(current) && !event.targets?.includes(current));
+				},
+				async content(event, trigger, player) {},
+				global: "jilinqianyi_skill_global",
+				mod: {
+					attackRange(player, distance) {
+						let cards = player.getEquips("jilinqianyi");
+						if (player.hasSkill("jilinqianyi_skill", null, false) || cards.some(card => !ui.selected.cards.includes(card))) {
+							return distance + player.getDamagedHp() - 1;
+						}
+					},
+				},
+				subSkill: {
+					global: {
+						mod: {
+							cardEnabled(card, player) {
+								let evt = _status.event?.getParent("useCard", true, true);
+								while(evt) {
+									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
+										break;
+									}
+									else {
+										evt = evt.getParent("useCard", true);
+									}
+								}
+								if (evt && !evt.targets?.includes(player) && evt.player.inRange(player)) {
+									return false;
+								}
+							},
+							cardSavable(card, player) {
+								let evt = _status.event?.getParent("useCard", true, true);
+								while(evt) {
+									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
+										break;
+									}
+									else {
+										evt = evt.getParent("useCard", true);
+									}
+								}
+								if (evt && !evt.targets?.includes(player) && evt.player.inRange(player)) {
+									return false;
+								}
+							},
+						},
+					},
+				},
+			},
 		},
 		translate: {
 			liulongcanjia: "六龙骖驾",
@@ -2347,6 +2441,10 @@ game.import("card", function () {
 			taipingyaoshu: "太平要术",
 			taipingyaoshu_info: "锁定技。①当你即将受到属性伤害时，取消之。②你的手牌上限+X（X为场上势力数-1）。③当你失去装备区里的【太平要术】时，你摸两张牌，然后若你的体力值大于1，你失去1点体力。",
 			taipingyaoshu_info_guozhan: "锁定技。①当你即将受到属性伤害时，取消之。②你的手牌上限+X（X为与你势力相同的角色数）。③当你失去装备区里的【太平要术】时，你摸两张牌，然后若你的体力值大于1，你失去1点体力。",
+			jilinqianyi: "戢鳞潜翼",
+			jilinqianyi_info: "锁定技。①此武器的攻击范围为你已损失的体力值。②你使用【杀】的结算过程中，你攻击范围内的非目标角色不能使用牌。",
+			jilinqianyi_skill: "戢鳞潜翼",
+			jilinqianyi_skill_info: "你使用【杀】的结算过程中，你攻击范围内的非目标角色不能使用牌。",
 			yuxi_skill: "玉玺",
 			yuxi_skill2: "玉玺",
 			yuxi: "玉玺",

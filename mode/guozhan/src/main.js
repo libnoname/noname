@@ -4,7 +4,7 @@ import { broadcastAll } from "./patch/game.js";
 /**
  * @type {ContentFuncByAll}
  */
-export async function start(event, trigger, player) {
+export const start = async (event, trigger, player) => {
 	// 首先检查是否在播放录像
 	const playback = localStorage.getItem(lib.configprefix + "playback");
 
@@ -271,7 +271,7 @@ export async function start(event, trigger, player) {
 	await game.phaseLoop(playerFirst);
 }
 
-export function startBefore() {
+export const startBefore = () => {
 	const playback = localStorage.getItem(lib.configprefix + "playback");
 
 	// @ts-expect-error 祖宗之法就是这么写的
@@ -298,7 +298,7 @@ export function startBefore() {
 	}
 }
 
-export function onreinit() {
+export const onreinit = () => {
 	// @ts-expect-error 祖宗之法就是这么写的
 	const pack = lib.characterPack.mode_guozhan;
 

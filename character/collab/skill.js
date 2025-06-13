@@ -2254,6 +2254,7 @@ const skills = {
 					return lib.filter.filterCard.apply(this, arguments);
 				}, "邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力")
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
