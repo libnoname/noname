@@ -4570,7 +4570,6 @@ const skills = {
 	},
 	//叶诗文
 	clbjisu: {
-		audio: 2,
 		trigger: { player: "phaseJudgeBefore" },
 		direct: true,
 		async content(event, trigger, player) {
@@ -4599,7 +4598,6 @@ const skills = {
 		},
 	},
 	clbshuiyong: {
-		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event) {
 			return event.hasNature("fire");
@@ -4621,7 +4619,6 @@ const skills = {
 	},
 	//孙杨
 	clbshuijian: {
-		audio: 2,
 		trigger: { player: "phaseDrawBegin2" },
 		frequent: true,
 		filter(event, player) {

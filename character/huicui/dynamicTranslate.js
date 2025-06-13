@@ -73,11 +73,17 @@ const dynamicTranslates = {
 		return str + "（X为此技能于本阶段的发动次数）。②出牌阶段结束时，若你本阶段执行过〖渐专①〗的所有选项，则你随机移除〖渐专①〗的一项。";
 	},
 	dcpingzhi(player) {
-		let str = "转换技。出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，";
-		if (!player.storage.dcpingzhi) {
-			return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
+		const bool = player.storage.dcpingzhi;
+		let yang = "你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害则此技能视为未发动过",
+			yin = "然后其使用此牌，若此牌造成伤害则此技能视为未发动过";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		return str + "阳：你弃置此牌，然后其视为对你使用一张【火攻】，若其未因此造成伤害则此技能视为未发动过；<span class = 'bluetext'>阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。</span>";
+		let start = "转换技。出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	dcmurui: player => {
 		let filters = [

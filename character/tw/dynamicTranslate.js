@@ -2,23 +2,17 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	twfeifu(player) {
-		var str = "锁定技，转换技。";
-		if (!player.storage.twfeifu) {
-			str += '<span class="bluetext">';
+		const bool = player.storage.twfeifu;
+		let yang = "当你成为【杀】的唯一目标后",
+			yin = "当你使用【杀】指定唯一目标后";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		str += "阴：当你成为【杀】的唯一目标后；";
-		if (!player.storage.twfeifu) {
-			str += "</span>";
-		}
-		if (player.storage.twfeifu) {
-			str += '<span class="bluetext">';
-		}
-		str += "阳：当你使用【杀】指定唯一目标后；";
-		if (player.storage.twfeifu) {
-			str += "</span>";
-		}
-		str += "目标角色须交给使用者一张牌。若此牌为装备牌，则使用者可使用此牌。";
-		return str;
+		let start = "锁定技，转换技。",
+			end = "，目标角色须交给使用者一张牌。若此牌为装备牌，则使用者可使用此牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	twfengpo(player) {
 		if (player.storage.twfengpo) {
@@ -30,10 +24,17 @@ const dynamicTranslates = {
 		return lib.translate[player.hasSkill("funan_jiexun") ? "twjiexunx_info" : "twjiexun_info"];
 	},
 	twzhenliang(player) {
-		if (player.storage.twzhenliang) {
-			return '转换技。阴：出牌阶段限一次。你可以弃置一张牌并对攻击范围内的一名角色造成1点伤害。<span class="bluetext">阳：当你或你攻击范围内的一名角色于你的回合外受到伤害时，你可以弃置一张牌令此伤害-1。然后若你以此法弃置的牌颜色与“任”的颜色相同，你摸一张牌。</span>';
+		const bool = player.storage.twzhenliang;
+		let yang = "出牌阶段限一次。你可以弃置一张牌并对攻击范围内的一名角色造成1点伤害",
+			yin = "当你或你攻击范围内的一名角色于你的回合外受到伤害时，你可以弃置一张牌令此伤害-1。然后若你以此法弃置的牌颜色与“任”的颜色相同，你摸一张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		return '转换技。<span class="bluetext">阴：出牌阶段限一次。你可以弃置一张牌并对攻击范围内的一名角色造成1点伤害。</span>阳：当你或你攻击范围内的一名角色于你的回合外受到伤害时，你可以弃置一张牌令此伤害-1。<span class="bluetext">然后若你以此法弃置的牌颜色与“任”的颜色相同，你摸一张牌。</span>';
+		let start = "转换技。",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	twdengjian(player) {
 		let str = "①其他角色的弃牌阶段结束时，你可以随机获得本回合所有造成伤害的牌对应的实体牌的其中一张与你本轮以此法获得的牌的颜色均不同的【杀】，称为“剑法”。";

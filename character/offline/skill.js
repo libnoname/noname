@@ -14303,6 +14303,7 @@ const skills = {
 	},
 	//冯习
 	tyqingkou: {
+		audio: "twqingkou",
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
@@ -14366,6 +14367,7 @@ const skills = {
 	},
 	//张南
 	tyfenwu: {
+		audio: "twfenwu",
 		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
 		async content(event, trigger, player) {
@@ -23068,7 +23070,6 @@ const skills = {
 	},
 	//一战成名·群雄逐鹿·长安之战专属神贾诩
 	zybishi: {
-		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return event.card.name == "sha" && event.player != player;
@@ -23100,7 +23101,6 @@ const skills = {
 		},
 	},
 	zyjianbing: {
-		audio: 2,
 		trigger: { global: "damageBegin3" },
 		logTarget: "player",
 		filter(event, player) {
@@ -23215,6 +23215,7 @@ const skills = {
 		},
 	},
 	zymoucheng: {
+		audio: "moucheng",
 		enable: "phaseUse",
 		usable: 1,
 		viewAs: { name: "jiedao" },

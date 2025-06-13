@@ -29,23 +29,17 @@ const dynamicTranslates = {
 		return str;
 	},
 	sbzhenliang(player) {
-		var storage = player.storage.sbzhenliang;
-		var str = "转换技。";
-		if (!storage) {
-			str += '<span class="bluetext">';
+		const bool = player.storage.sbzhenliang;
+		let yang = "出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）",
+			yin = "你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		str += "阴：出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）。";
-		if (!storage) {
-			str += "</span>";
-		}
-		if (storage) {
-			str += '<span class="bluetext">';
-		}
-		str += "阳：你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌。";
-		if (storage) {
-			str += "</span>";
-		}
-		return str;
+		let start = "转换技。",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	sbwansha(player) {
 		const storage = player.storage.sbwansha;
@@ -65,10 +59,17 @@ const dynamicTranslates = {
 		return str;
 	},
 	sbtiandu(player) {
-		if (player.storage.sbtiandu) {
-			return '转换技，出牌阶段开始时，阴：你可以弃置两张手牌，然后视为使用一张普通锦囊牌；<span class="bluetext">阳：你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害</span>。';
+		const bool = player.storage.sbtiandu;
+		let yang = "你可以弃置两张手牌，然后视为使用一张普通锦囊牌",
+			yin = "你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		return '转换技，出牌阶段开始时，<span class="bluetext">阴：你可以弃置两张手牌，然后视为使用一张普通锦囊牌</span>；阳：你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害。';
+		let start = "转换技。出牌阶段开始时，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 };
 export default dynamicTranslates;

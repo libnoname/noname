@@ -1502,7 +1502,6 @@ const skills = {
 	},
 	//OL界黄忠
 	remoshi: {
-		audio: 2,
 		trigger: { source: "damageSource" },
 		forced: true,
 		filter(event, player) {

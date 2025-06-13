@@ -3973,7 +3973,6 @@ const skills = {
 	},
 	//神贾诩
 	jxlianpo: {
-		audio: 2,
 		init: () => {
 			game.addGlobalSkill("jxlianpo_global");
 		},
@@ -4217,7 +4216,6 @@ const skills = {
 		},
 	},
 	jxzhaoluan: {
-		audio: 2,
 		trigger: { global: "dieBegin" },
 		filter(event, player) {
 			return event.getParent().name == "dying" && event.player.isIn();

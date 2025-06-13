@@ -6695,7 +6695,6 @@ const skills = {
 	//江山如故·承
 	//404孙策
 	jsrgduxing: {
-		audio: 2,
 		enable: "phaseUse",
 		viewAs: {
 			name: "juedou",
@@ -6775,7 +6774,6 @@ const skills = {
 		},
 	},
 	jsrgzhiheng: {
-		audio: 2,
 		trigger: {
 			source: "damageBegin1",
 		},
@@ -6796,7 +6794,6 @@ const skills = {
 		},
 	},
 	jsrgzhasi: {
-		audio: 2,
 		trigger: {
 			player: "damageBegin4",
 		},
@@ -6841,7 +6838,6 @@ const skills = {
 		},
 	},
 	jsrgbashi: {
-		audio: 2,
 		trigger: { player: "chooseToRespondBefore" },
 		zhuSkill: true,
 		filter(event, player) {
@@ -7688,7 +7684,6 @@ const skills = {
 	},
 	//关羽
 	jsrgguanjue: {
-		audio: 2,
 		trigger: {
 			player: ["useCard", "respond"],
 		},
@@ -7735,7 +7730,6 @@ const skills = {
 		},
 	},
 	jsrgnianen: {
-		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		filter(event, player) {
 			if (!player.countCards("hes")) {
@@ -7861,7 +7855,6 @@ const skills = {
 	},
 	//生鱼片
 	jsrglunshi: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
@@ -7905,7 +7898,6 @@ const skills = {
 		},
 	},
 	jsrgguitu: {
-		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
@@ -8056,7 +8048,6 @@ const skills = {
 	},
 	//甄宓
 	jsrgjixiang: {
-		audio: 2,
 		trigger: {
 			global: ["chooseToUseBegin", "chooseToRespondBegin"],
 		},
@@ -8240,7 +8231,6 @@ const skills = {
 		},
 	},
 	jsrgchengxian: {
-		audio: 2,
 		getVCards(event, player) {
 			return get.inpileVCardList(info => {
 				if (info[0] != "trick") {
@@ -8524,7 +8514,6 @@ const skills = {
 	},
 	//许贡
 	jsrgbiaozhao: {
-		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.countPlayer(current => current != player) >= 2;
@@ -8633,7 +8622,6 @@ const skills = {
 		},
 	},
 	jsrgyechou: {
-		audio: 2,
 		trigger: { player: "die" },
 		forceDie: true,
 		direct: true,
@@ -9511,7 +9499,6 @@ const skills = {
 	},
 	//皇甫嵩
 	jsrgguanhuo: {
-		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
@@ -9598,7 +9585,6 @@ const skills = {
 		},
 	},
 	jsrgjuxia: {
-		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		usable: 1,
 		countSkill(player) {
@@ -9944,7 +9930,6 @@ const skills = {
 	},
 	//董白
 	jsrgshichong: {
-		audio: 2,
 		zhuanhuanji: true,
 		trigger: { player: "useCardToPlayered" },
 		direct: true,
@@ -9996,7 +9981,6 @@ const skills = {
 		},
 	},
 	jsrglianzhu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterCard: { color: "black" },
@@ -10046,7 +10030,6 @@ const skills = {
 	},
 	//桥玄
 	jsrgjuezhi: {
-		audio: 2,
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			if (_status.currentPhase != player || player.hasSkill("jsrgjuezhi_used", null, null, false)) {
@@ -10110,7 +10093,6 @@ const skills = {
 		},
 	},
 	jsrgjizhao: {
-		audio: 2,
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		direct: true,
 		content() {
@@ -10582,7 +10564,6 @@ const skills = {
 	},
 	//朱儁
 	jsrgfendi: {
-		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.targets.length == 1 && event.card.name == "sha" && event.targets[0].countCards("h") > 0;
@@ -10697,7 +10678,6 @@ const skills = {
 		},
 	},
 	jsrgjuxiang: {
-		audio: 2,
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -11404,7 +11384,6 @@ const skills = {
 	},
 	//南华老仙
 	jsrgshoushu: {
-		audio: 2,
 		forced: true,
 		trigger: {
 			//player:'enterGame',
@@ -11482,7 +11461,6 @@ const skills = {
 		},
 	},
 	jsrgxundao: {
-		audio: 2,
 		trigger: { player: "judge" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.countCards("he"));
@@ -11614,7 +11592,6 @@ const skills = {
 		},
 	},
 	jsrglinghua: {
-		audio: 2,
 		trigger: {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
