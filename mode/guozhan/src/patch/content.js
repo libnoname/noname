@@ -19,7 +19,7 @@ const html = String.raw;
  * @param {GameEvent} _trigger
  * @param {Player} _player
  */
-export async function chooseCharacterContent(event, _trigger, _player) {
+export const chooseCharacterContent = async (event, _trigger, _player) => {
 	ui.arena.classList.add("choose-character");
 
 	Reflect.set(event, "addSetting", addSetting);
@@ -555,7 +555,7 @@ export async function chooseCharacterContent(event, _trigger, _player) {
  * @param {GameEvent} _trigger
  * @param {Player} _player
  */
-export async function chooseCharacterOLContent(event, _trigger, _player) {
+export const chooseCharacterOLContent = async (event, _trigger, _player) => {
 	broadcastAll(() => {
 		ui.arena.classList.add("choose-character");
 		for (const player of game.players) {
@@ -887,7 +887,7 @@ export async function chooseCharacterOLContent(event, _trigger, _player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function showYexingsContent(event, _trigger, player) {
+export const showYexingsContent = async (event, _trigger, player) => {
 	/** @type {Player[]} */
 	// @ts-expect-error 祖宗之法就是这么做的
 	const yexingPlayers = game
@@ -1087,7 +1087,7 @@ export async function showYexingsContent(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function hideCharacter(event, _trigger, player) {
+export const hideCharacter = async (event, _trigger, player) => {
 	const { num } = event;
 
 	// @ts-expect-error 类型就是这么写的
@@ -1169,7 +1169,7 @@ export async function hideCharacter(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function chooseJunlingFor(event, _trigger, player) {
+export const chooseJunlingFor = async (event, _trigger, player) => {
 	const { num, target } = event;
 	let prompt = Reflect.get(event, "prompt", event);
 
@@ -1221,7 +1221,7 @@ export async function chooseJunlingFor(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function chooseJunlingControl(event, _trigger, player) {
+export const chooseJunlingControl = async (event, _trigger, player) => {
 	const dialog = [];
 	// @ts-expect-error 类型就是这么写的
 	const str1 = event.source == player ? "（你）" : "";
@@ -1267,7 +1267,7 @@ export async function chooseJunlingControl(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function carryOutJunling(event, _trigger, player) {
+export const carryOutJunling = async (event, _trigger, player) => {
 	const { source, targets } = event;
 
 	switch (event.junling) {
@@ -1353,7 +1353,7 @@ export async function carryOutJunling(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function doubleDraw(_event, _trigger, player) {
+export const doubleDraw = async (_event, _trigger, player) => {
 	if (!player.hasMark("yinyang_mark")) {
 		player.addMark("yinyang_mark", 1);
 	}
@@ -1364,7 +1364,7 @@ export async function doubleDraw(_event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function changeViceOnline(event, _trigger, player) {
+export const changeViceOnline = async (event, _trigger, player) => {
 	await player.showCharacter(2);
 	const group = lib.character[player.name1].group;
 	const characterlist = Reflect.get(_status, "characterlist");
@@ -1528,7 +1528,7 @@ export const changeVice = [
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function mayChangeVice(event, _trigger, player) {
+export const mayChangeVice = async (event, _trigger, player) => {
 	const result = await player
 		.chooseBool("是否变更副将？")
 		.set("ai", function () {
@@ -1558,7 +1558,7 @@ export async function mayChangeVice(event, _trigger, player) {
  * @param {GameEvent} _trigger
  * @param {Player} player
  */
-export async function zhulian(_event, _trigger, player) {
+export const zhulian = async (_event, _trigger, player) => {
 	player.popup("珠联璧合");
 	if (!player.hasMark("zhulianbihe_mark")) {
 		player.addMark("zhulianbihe_mark", 1);
