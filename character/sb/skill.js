@@ -599,9 +599,6 @@ const skills = {
 				cost_data: [control],
 				targets: [target],
 			} = event;
-			if (control == "all") {
-				await player.loseHp();
-			}
 			if (["equip", "all"].includes(control) && target.countCards("e")) {
 				const cards = await player.choosePlayerCard(target, true, "e", `选择${get.translation(target)}的一张装备牌令其获得之`).forResultCards();
 				if (cards?.length) {
@@ -613,6 +610,9 @@ const skills = {
 				if (card) {
 					await player.gain(card, "gain2");
 				}
+			}
+			if (control == "all") {
+				await player.loseHp();
 			}
 		},
 	},
@@ -1713,9 +1713,6 @@ const skills = {
 				)
 				.forResultControl();
 			game.log(target, "选择了", "#g" + control);
-			if (control === "背水！") {
-				player.tempBanSkill("sbjiefan", { source: "die" });
-			}
 			if (control !== "选项二") {
 				for (const current of targets) {
 					target.line(current, "thunder");
@@ -1724,6 +1721,9 @@ const skills = {
 			}
 			if (control !== "选项一") {
 				await target.draw(count);
+			}
+			if (control === "背水！") {
+				player.tempBanSkill("sbjiefan", { source: "die" });
 			}
 		},
 		ai: {

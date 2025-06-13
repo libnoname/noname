@@ -2972,9 +2972,6 @@ const skills = {
 		async content(event, trigger, player) {
 			const { cost_data: control } = event,
 				{ target } = trigger;
-			if (control == "背水！") {
-				await player.loseMaxHp();
-			}
 			if (["选项一", "背水！"].includes(control) && target.countGainableCards(player, "h") > 0) {
 				await player.gainPlayerCard(target, true, "h");
 			}
@@ -2983,6 +2980,9 @@ const skills = {
 				if (bool) {
 					trigger.getParent().baseDamage++;
 				}
+			}
+			if (control == "背水！") {
+				await player.loseMaxHp();
 			}
 		},
 		ai: {

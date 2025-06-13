@@ -1176,7 +1176,6 @@ const skills = {
 			const num = event.cost_data;
 			if (num == 3) {
 				player.popup("背水", "thunder");
-				await player.loseMaxHp();
 			}
 			if (num == 0 || num == 3) {
 				await player.draw();
@@ -1195,6 +1194,9 @@ const skills = {
 					prompt: "鏊勇：是否使用一张牌？",
 					addCount: false,
 				});
+			}
+			if (num == 3) {
+				await player.loseMaxHp();
 			}
 		},
 	},
@@ -27583,15 +27585,15 @@ const skills = {
 					const target = event.targets[0],
 						index = event.cost_data;
 					target.logSkill("shefujing", player);
-					if (index == 2) {
-						await target.loseHp();
-						await target.useSkill("gongxin", [player]);
-					}
 					if (index != 1) {
 						await target.draw();
 					}
 					if (index != 0) {
 						await target.changeHujia();
+					}
+					if (index == 2) {
+						await target.loseHp();
+						await target.useSkill("gongxin", [player]);
 					}
 				},
 			},
@@ -28152,15 +28154,15 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const index = event.cost_data;
-			if (index == 2) {
-				await player.loseMaxHp();
-			}
 			if (index != 1) {
 				await player.addTempSkills(["zhaxiang"]);
 			}
 			if (index != 0) {
 				await player.loseHp();
 				player.addTempSkill("dragzhawang_draw");
+			}
+			if (index == 2) {
+				await player.loseMaxHp();
 			}
 		},
 		derivation: "zhaxiang",

@@ -347,16 +347,16 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const result = event.cost_data;
-			if (result == "背水！") {
-				await player.chooseToDiscard("he", true);
-				player.addTempSkill("potkuanggu_effect", "phaseChange");
-				player.addMark("potkuanggu_effect", 1, false);
-			}
 			if (result == "recover_hp" || result == "背水！") {
 				await player.recover();
 			}
 			if (result == "draw_card" || result == "背水！") {
 				await player.draw();
+			}
+			if (result == "背水！" && player.countCards("he")) {
+				await player.chooseToDiscard("he", true);
+				player.addTempSkill("potkuanggu_effect", "phaseChange");
+				player.addMark("potkuanggu_effect", 1, false);
 			}
 		},
 		subSkill: {
@@ -1987,9 +1987,6 @@ const skills = {
 					choice: links[0],
 					async content(event, trigger, player) {
 						const choice = lib.skill.mbhuxiao_backup.choice;
-						if (choice == "both" && player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red")) {
-							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, (card, player) => get.color(card, player) == "red");
-						}
 						if (choice != "nodistance" && game.hasPlayer(target => target.hp >= player.hp)) {
 							const result = await player
 								.chooseTarget(`虎啸：对一名体力值大于等于你的角色造成1点火焰伤害`, true, (card, player, target) => {
@@ -2005,6 +2002,9 @@ const skills = {
 						}
 						if (choice != "damage") {
 							player.addTempSkill("mbhuxiao_effect");
+						}
+						if (choice == "both" && player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red")) {
+							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, (card, player) => get.color(card, player) == "red");
 						}
 					},
 				};

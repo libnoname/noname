@@ -7503,15 +7503,15 @@ const skills = {
 				.set("num", num)
 				.set("num2", num2);
 			if (control != "cancel2") {
-				if (control == "背水！") {
-					await player.loseHp(num2);
-					player.getHistory("custom").push({ twzhongyi: true });
-				}
 				if (control != "回血") {
 					await player.draw(num);
 				}
 				if (control != "摸牌") {
 					await player.recover(num);
+				}
+				if (control == "背水！") {
+					await player.loseHp(num2);
+					player.getHistory("custom").push({ twzhongyi: true });
 				}
 			}
 		},
@@ -11613,25 +11613,29 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const target = trigger.player,
+				name = get.translation(target);
 			if (trigger.player != player) {
 				player.addExpose(0.3);
 			}
-			var target = get.translation(trigger.player);
-			var choiceList = ["令" + target + "获得牌堆里的一张【杀】", "令" + target + "将一张手牌交给另一名角色，然后" + target + "摸两张牌", "背水！" + (trigger.player != player ? "将所有手牌交给" + target + "，然后" : "") + "依次执行以上所有选项"];
-			var list = ["选项一"];
-			if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player)) {
+			let choiceList = [
+				`令${name}获得牌堆里的一张【杀】`,
+				`令${name}将一张手牌交给另一名角色，然后${name}摸两张牌`,
+				`背水！${(target != player ? "将所有手牌交给" + name + "，然后" : "")}依次执行以上所有选项`,
+			];
+			let list = ["选项一"];
+			if (target.countCards("h") && game.hasPlayer(t => t !== target)) {
 				list.push("选项二");
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
-			if (player.countCards("h") && player !== trigger.player) {
+			if (player.countCards("h") && player !== target) {
 				list.push("背水！");
 			} else {
 				choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "</span>";
 			}
-			player
+			const { result: { control }} = await player
 				.chooseControl(list)
 				.set("prompt", "毅谋：请选择一项")
 				.set("choiceList", choiceList)
@@ -11649,57 +11653,48 @@ const skills = {
 					return "选项一";
 				})
 				.set("list", list);
-			"step 1";
-			event.choice = result.control;
-			if (event.choice == "背水！" && player != trigger.player) {
-				player.give(player.getCards("h"), trigger.player);
-			}
-			"step 2";
-			if (event.choice != "选项二") {
-				var card = get.cardPile2(function (card) {
+			if (control != "选项二") {
+				let card = get.cardPile2(function (card) {
 					return card.name == "sha";
 				});
 				if (card) {
-					trigger.player.gain(card, "gain2");
+					await target.gain(card, "gain2");
 				} else {
 					game.log("但牌堆里已经没有", "#y杀", "了！");
 				}
-				if (event.choice == "选项一") {
-					event.finish();
+			}
+			if (control != "选项一") {
+				if (target.countCards("h") && game.hasPlayer(t => t !== target)) {
+					const result = await target
+						.chooseCardTarget({
+							prompt: "将一张手牌交给另一名其他角色并摸两张牌",
+							filterCard: true,
+							forced: true,
+							filterTarget: lib.filter.notMe,
+							ai1(card) {
+								return 1 / Math.max(0.1, get.value(card));
+							},
+							ai2(target) {
+								var player = _status.event.player,
+									att = get.attitude(player, target);
+								if (target.hasSkillTag("nogain")) {
+									att /= 9;
+								}
+								return 4 + att;
+							},
+						})
+						.forResult();
+					if (result?.bool && result?.cards?.length && result?.targets?.length) {
+						const targetx = result.targets[0];
+						target.line(targetx);
+						await target.give(result.cards, targetx);
+						await target.draw(2);
+					}
 				}
 			}
-			"step 3";
-			if (event.choice != "选项一") {
-				if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player)) {
-					trigger.player.chooseCardTarget({
-						prompt: "将一张手牌交给另一名其他角色并摸两张牌",
-						filterCard: true,
-						forced: true,
-						filterTarget: lib.filter.notMe,
-						ai1(card) {
-							return 1 / Math.max(0.1, get.value(card));
-						},
-						ai2(target) {
-							var player = _status.event.player,
-								att = get.attitude(player, target);
-							if (target.hasSkillTag("nogain")) {
-								att /= 9;
-							}
-							return 4 + att;
-						},
-					});
-				} else {
-					event.finish();
-				}
+			if (control == "背水！" && player != target && player.countCards("h")) {
+				await player.give(player.getCards("h"), target);
 			}
-			"step 4";
-			if (!result?.bool || !result.cards?.length || !result.targets?.length) {
-				return;
-			}
-			var target = result.targets[0];
-			trigger.player.line(target);
-			trigger.player.give(result.cards, target);
-			trigger.player.draw(2);
 		},
 		ai: {
 			threaten: 2.5,
@@ -11765,21 +11760,19 @@ const skills = {
 						return target == lib.skill.twzhuidu_backup.target;
 					},
 					selectTarget: -1,
-					content() {
-						var target = lib.skill.twzhuidu_backup.target;
-						var choice = lib.skill.twzhuidu_backup.choice;
+					async content(event, trigger, player) {
+						const { target, choice } = lib.skill.twzhuidu_backup;
 						if (choice != "discard") {
-							target.damage();
+							await target.damage();
 						}
 						if (choice != "damage") {
-							player.discardPlayerCard(target, "e", true);
+							await player.discardPlayerCard(target, "e", true);
+						}
+						if (choice == "both") {
+							await player.chooseToDiscard("he", true);
 						}
 					},
 				};
-				if (links[0] == "both") {
-					backup.filterCard = true;
-					backup.position = "he";
-				}
 				return backup;
 			},
 			prompt(links) {
@@ -14245,14 +14238,14 @@ const skills = {
 			}
 			"step 2";
 			game.log(player, "选择了", "#y" + result.control);
-			if (result.control == "背水！" && !player.isLinked()) {
-				player.link(true);
-			}
 			if (result.control != "选项二") {
 				target.chooseToDiscard("he", true);
 			}
 			if (result.control != "选项一" && !target.isLinked()) {
 				target.link(true);
+			}
+			if (result.control == "背水！" && !player.isLinked()) {
+				player.link(true);
 			}
 		},
 	},
@@ -15548,14 +15541,14 @@ const skills = {
 			if (result.control != "cancel2") {
 				player.logSkill("twliechi", trigger.source);
 				game.log(player, "选择了", "#g【烈斥】", "的", "#y" + result.control);
-				if (result.control == "背水！") {
-					player.chooseToDiscard("he", { type: "equip" }, true);
-				}
 				if (result.control != "选项二") {
 					trigger.source.chooseToDiscard("h", num, true);
 				}
 				if (result.control != "选项一") {
 					player.discardPlayerCard(trigger.source, "he", true);
+				}
+				if (result.control == "背水！") {
+					player.chooseToDiscard("he", { type: "equip" }, true);
 				}
 			}
 		},
