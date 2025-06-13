@@ -1036,6 +1036,9 @@ export default {
 			let target = event.target;
 			while (true) {
 				await target.damage();
+				if (!target.isIn()) {
+					return;
+				}
 				const result = await player
 					.chooseBool(`是否与${get.translation(target)}交换装备区里的牌并重复此流程？`)
 					.set("choice", false)

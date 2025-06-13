@@ -4314,6 +4314,12 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
+		prompt(event, player) {
+			if (event.spolzhubei_num) {
+				return `出牌阶段各限一次，你可以令一名其他角色将至少${get.cnNumber(event.spolzhubei_num)}张牌当作无距离和任何次数限制的【杀】或【决斗】对你使用。`;
+			}
+			return "出牌阶段各限一次，你可以令一名其他角色将至少X张牌当作无距离和任何次数限制的【杀】或【决斗】对你使用（X为本回合所有角色本回合使用基本牌的次数+1）。";
+		},
 		async content(event, trigger, player) {
 			const { target } = event,
 				num = event.getParent(2).spolzhubei_num;

@@ -649,11 +649,9 @@ game.import("card", function () {
 					if (event.type != "discard" || player != _status.currentPhase) {
 						return false;
 					}
-					if (player.getHistory("lose", evt => evt.type == "discard").indexOf(event) != 0) {
-						return false;
-					}
-					var evt = event.getl(player);
-					return evt?.cards2?.length > 1;
+					return player.getHistory("lose", evt => {
+						return evt.type == "discard" && evt?.getl(player)?.cards2?.length > 1;
+					}).indexOf(event) == 0;
 				},
 				async cost(event, trigger, player) {
 					event.result = await player

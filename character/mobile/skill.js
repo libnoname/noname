@@ -295,9 +295,6 @@ const skills = {
 		filter(event, player) {
 			return event.checkKuanggu && event.num > 0;
 		},
-		getIndex(event, player, triggername) {
-			return event.num;
-		},
 		frequent: true,
 		async cost(event, trigger, player) {
 			let choice,
@@ -3149,6 +3146,7 @@ const skills = {
 			player.markAuto("mbkuangxiang_effect", [player, target]);
 			await player.swapHandcards(target);
 		},
+		derivation: "mbxuye",
 		//ai待补充
 		ai: {
 			order: 6,

@@ -7968,7 +7968,7 @@ const skills = {
 									return false;
 								}
 								return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
-							})
+							}, [1, player.getStorage("twchengxi_add").length])
 							.set("ai", target => {
 								const player = get.player(),
 									trigger = get.event().getTrigger();
