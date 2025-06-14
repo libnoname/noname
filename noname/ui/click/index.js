@@ -3363,332 +3363,268 @@ export class Click {
 			fav.classList.add("active");
 		}
 
-		// 样式二
-		if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
-			var nameinfo = get.character(name);
-			var intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
-			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
-				var charactername = get.rawName2(name);
-				var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
-				var charactersex = get.translation(nameinfo[0]);
-				const charactergroups = get.is.double(name, true);
-				let charactergroup;
-				if (charactergroups) {
-					charactergroup = charactergroups.map(i => get.translation(i)).join("/");
-				} else {
-					charactergroup = get.translation(nameinfo[1]);
+		let intro, list = [], clickSkill;
+		let skills = ui.create.div(".characterskill", uiintro);
+		const refreshIntro = function () {
+			if (intro?.firstChild) {
+				while (intro.firstChild) {
+					intro.removeChild(intro.lastChild);
 				}
-				var characterhp = nameinfo[2];
-				var characterintroinfo = get.characterIntro(name);
-				var spacemark = " | ";
-				if (charactername.length > 3) {
-					spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
-				}
-				intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
 			}
+			// 样式二
+			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
+				var nameinfo = get.character(name);
+				intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
+				if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
+					var charactername = get.rawName2(name);
+					var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
+					var charactersex = get.translation(nameinfo[0]);
+					const charactergroups = get.is.double(name, true);
+					let charactergroup;
+					if (charactergroups) {
+						charactergroup = charactergroups.map(i => get.translation(i)).join("/");
+					} else {
+						charactergroup = get.translation(nameinfo[1]);
+					}
+					var characterhp = nameinfo[2];
+					var characterintroinfo = get.characterIntro(name);
+					var spacemark = " | ";
+					if (charactername.length > 3) {
+						spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
+					}
+					intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
+				}
 
-			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName })
-				.audioList.map(i => i.text)
-				.filter(Boolean);
-			if (!dieAudios.length) {
-				dieAudios = get.Audio.die({ player: name })
+				// 添加台词部分
+				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-			}
-			const skillAudioMap = new Map();
-			nameinfo.skills.forEach(skill => {
-				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if (!voiceMap.length) {
-					voiceMap = get.Audio.skill({ skill, player: name }).textList;
+				if (!dieAudios.length) {
+					dieAudios = get.Audio.die({ player: name })
+						.audioList.map(i => i.text)
+						.filter(Boolean);
 				}
-				if (voiceMap.length) {
-					skillAudioMap.set(skill, voiceMap);
-				}
-			});
-			const derivationSkillAudioMap = new Map();
-			nameinfo.skills.forEach(skill => {
-				var info = get.info(skill);
-				if (info.derivation) {
-					var derivation = info.derivation;
-					if (typeof derivation == "string") {
-						derivation = [derivation];
+				const skillAudioMap = new Map();
+				nameinfo.skills.forEach(skill => {
+					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
+					if (!voiceMap.length) {
+						voiceMap = get.Audio.skill({ skill, player: name }).textList;
 					}
-					for (var i = 0; i < derivation.length; i++) {
-						if (derivation[i].indexOf("_faq") != -1) {
-							continue;
-						}
-						if (nameinfo.skills.includes(derivation[i])) {
-							continue;
-						}
-						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if (!derivationVoiceMap.length) {
-							derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						}
-						if (derivationVoiceMap.length) {
-							derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
-						}
+					if (voiceMap.length) {
+						skillAudioMap.set(skill, voiceMap);
 					}
-				}
-			});
-			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-				const eleHr = document.createElement("hr");
-				eleHr.style.marginTop = "11px";
-				intro.appendChild(eleHr);
-				if (skillAudioMap.size > 0) {
-					const skillNameSpan = document.createElement("span");
-					skillNameSpan.style.lineHeight = "1.7";
-					skillNameSpan.innerHTML = `• 技能台词<br>`;
-					intro.appendChild(skillNameSpan);
-					skillAudioMap.forEach((texts, skill) => {
-						const skillNameSpan1 = document.createElement("span"),
-							skillNameSpanStyle1 = skillNameSpan1.style;
-						skillNameSpanStyle1.fontWeight = "bold";
-						skillNameSpanStyle1.fontSize = "15.7px";
-						skillNameSpanStyle1.lineHeight = "1.4";
-						skillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-						intro.appendChild(skillNameSpan1);
-						texts.forEach((text, index) => {
-							const skillTextSpan = document.createElement("span");
-							skillTextSpan.style.fontSize = "15.2px";
-							skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							intro.appendChild(skillTextSpan);
-						});
-					});
-				}
-				if (derivationSkillAudioMap.size > 0) {
-					const derivationSkillNameSpan = document.createElement("span");
-					derivationSkillNameSpan.style.lineHeight = "1.7";
-					derivationSkillNameSpan.innerHTML = `• 衍生技能台词<br>`;
-					intro.appendChild(derivationSkillNameSpan);
-					derivationSkillAudioMap.forEach((texts, skill) => {
-						const derivationSkillNameSpan1 = document.createElement("span"),
-							derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-						derivationSkillNameSpanStyle1.fontWeight = "bold";
-						derivationSkillNameSpanStyle1.fontSize = "15.7px";
-						derivationSkillNameSpanStyle1.lineHeight = "1.4";
-						derivationSkillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-						intro.appendChild(derivationSkillNameSpan1);
-						texts.forEach((text, index) => {
-							const derivationSkillTextSpan = document.createElement("span");
-							derivationSkillTextSpan.style.fontSize = "15.2px";
-							derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							intro.appendChild(derivationSkillTextSpan);
-						});
-					});
-				}
-			}
-
-			var intro2 = ui.create.div(".characterintro.intro2", uiintro);
-			var list = get.character(name, 3) || [];
-			var skills = ui.create.div(".characterskill", uiintro);
-			if (lib.config.touchscreen) {
-				lib.setScroll(intro);
-				lib.setScroll(intro2);
-				lib.setScroll(skills);
-			}
-
-			if (lib.config.mousewheel) {
-				skills.onmousewheel = ui.click.mousewheel;
-			}
-			var clickSkill = function (e) {
-				while (intro2.firstChild) {
-					intro2.removeChild(intro2.lastChild);
-				}
-				var current = this.parentNode.querySelector(".active");
-				if (current) {
-					current.classList.remove("active");
-				}
-				this.classList.add("active");
-				if (this.link != "dieAudios") {
-					var skillname = get.translation(this.link);
-					var skilltranslationinfo = get.skillInfoTranslation(this.link);
-					if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && skillname != "阵亡") {
-						var skillpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? this.link : get.pinyin(skillname);
-						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + skillpinyin + "]" + "</span>" + "  " + skilltranslationinfo;
-					} else {
-						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + skilltranslationinfo;
-					}
-					var info = get.info(this.link);
-					var skill = this.link;
-					var playername = this.linkname;
-					let audioName = this.linkAudioName;
-					var skillnode = this;
+				});
+				const derivationSkillAudioMap = new Map();
+				nameinfo.skills.forEach(skill => {
+					var info = get.info(skill);
 					if (info.derivation) {
 						var derivation = info.derivation;
 						if (typeof derivation == "string") {
 							derivation = [derivation];
 						}
 						for (var i = 0; i < derivation.length; i++) {
-							var derivationname = get.translation(derivation[i]);
-							var derivationtranslationinfo = get.skillInfoTranslation(derivation[i]);
-							if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
-								var derivationpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? derivation[i] : get.pinyin(derivationname);
-								intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + derivationpinyin + "]" + "</span>" + "  " + derivationtranslationinfo;
-							} else {
-								intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + derivationtranslationinfo;
+							if (derivation[i].indexOf("_faq") != -1) {
+								continue;
+							}
+							if (nameinfo.skills.includes(derivation[i])) {
+								continue;
+							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
+							if (!derivationVoiceMap.length) {
+								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+							}
+							if (derivationVoiceMap.length) {
+								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}
 						}
 					}
-
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || audioName || playername;
-						if (!this.playAudio || name != this.audioName) {
-							const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
+				});
+				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
+					const eleHr = document.createElement("hr");
+					eleHr.style.marginTop = "11px";
+					intro.appendChild(eleHr);
+					if (skillAudioMap.size > 0) {
+						const skillNameSpan = document.createElement("span");
+						skillNameSpan.style.lineHeight = "1.7";
+						skillNameSpan.innerHTML = `• 技能台词<br>`;
+						intro.appendChild(skillNameSpan);
+						skillAudioMap.forEach((texts, skill) => {
+							const skillNameSpan1 = document.createElement("span"),
+								skillNameSpanStyle1 = skillNameSpan1.style;
+							skillNameSpanStyle1.fontWeight = "bold";
+							skillNameSpanStyle1.fontSize = "15.7px";
+							skillNameSpanStyle1.lineHeight = "1.4";
+							skillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
+							intro.appendChild(skillNameSpan1);
+							texts.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.style.fontSize = "15.2px";
+								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(skillTextSpan);
 							});
-							this.audioName = name;
-						}
-						this.playAudio();
+						});
 					}
-				} else {
-					let dieAudios = this.dieAudios;
-					intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-					dieAudios.forEach((text, index) => {
-						const dieTextSpan = document.createElement("span");
-						dieTextSpan.style.fontSize = "15.2px";
-						dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
-						intro2.appendChild(dieTextSpan);
-					});
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || this.linkname;
-						if (!this.playAudio || name != this.audioName) {
-							let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
+					if (derivationSkillAudioMap.size > 0) {
+						const derivationSkillNameSpan = document.createElement("span");
+						derivationSkillNameSpan.style.lineHeight = "1.7";
+						derivationSkillNameSpan.innerHTML = `• 衍生技能台词<br>`;
+						intro.appendChild(derivationSkillNameSpan);
+						derivationSkillAudioMap.forEach((texts, skill) => {
+							const derivationSkillNameSpan1 = document.createElement("span"),
+								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
+							derivationSkillNameSpanStyle1.fontWeight = "bold";
+							derivationSkillNameSpanStyle1.fontSize = "15.7px";
+							derivationSkillNameSpanStyle1.lineHeight = "1.4";
+							derivationSkillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
+							intro.appendChild(derivationSkillNameSpan1);
+							texts.forEach((text, index) => {
+								const derivationSkillTextSpan = document.createElement("span");
+								derivationSkillTextSpan.style.fontSize = "15.2px";
+								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(derivationSkillTextSpan);
 							});
-							this.audioName = name;
-						}
-						this.playAudio();
+						});
 					}
 				}
-			};
-		} else {
-			// 样式一
-			//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
-			const nameInfo = get.character(name);
-			const introduction = ui.create.div(".characterintro", uiintro),
-				showCharacterNamePinyin = lib.config.show_characternamepinyin;
-			if (showCharacterNamePinyin != "doNotShow") {
-				const characterIntroTable = ui.create.div(".character-intro-table", introduction),
-					span = document.createElement("span");
-				span.style.fontWeight = "bold";
-				const exInfo = nameInfo.trashBin,
-					characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
-				span.innerHTML = characterName;
-				const ruby = document.createElement("ruby");
-				ruby.appendChild(span);
-				const leftParenthesisRP = document.createElement("rp");
-				leftParenthesisRP.textContent = "（";
-				ruby.appendChild(leftParenthesisRP);
-				const rt = document.createElement("rt");
-				rt.innerHTML = showCharacterNamePinyin == "showCodeIdentifier" ? name : lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
-				ruby.appendChild(rt);
-				const rightParenthesisRP = document.createElement("rp");
-				rightParenthesisRP.textContent = "）";
-				ruby.appendChild(rightParenthesisRP);
-				characterIntroTable.appendChild(ruby);
-				const characterSexDiv = ui.create.div(".character-sex", characterIntroTable),
-					exInfoSex = exInfo && exInfo.find(value => value.startsWith("sex:")),
-					characterSex = exInfoSex ? exInfoSex.split(":").pop() : nameInfo[0];
-				new Promise((resolve, reject) => {
-					const imageName = `sex_${characterSex}`,
-						information = lib.card[imageName];
-					if (!information) {
-						resolve(`${lib.assetURL}image/card/${imageName}.png`);
-						return;
+
+				var intro2 = ui.create.div(".characterintro.intro2", uiintro);
+				list.addArray(get.character(name, 3) || []);
+				if (lib.config.touchscreen) {
+					lib.setScroll(intro);
+					lib.setScroll(intro2);
+					lib.setScroll(skills);
+				}
+
+				if (lib.config.mousewheel) {
+					skills.onmousewheel = ui.click.mousewheel;
+				}
+				clickSkill = function (e) {
+					while (intro2.firstChild) {
+						intro2.removeChild(intro2.lastChild);
 					}
-					const image = information.image;
-					if (!image) {
-						resolve(`${lib.assetURL}image/card/${imageName}.png`);
-					} else if (image.startsWith("db:")) {
-						game.getDB("image", image.slice(3)).then(resolve, reject);
-					} else if (image.startsWith("ext:")) {
-						resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
+					var current = this.parentNode.querySelector(".active");
+					if (current) {
+						current.classList.remove("active");
+					}
+					this.classList.add("active");
+					if (this.link != "dieAudios") {
+						var skillname = get.translation(this.link);
+						var skilltranslationinfo = get.skillInfoTranslation(this.link);
+						if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && skillname != "阵亡") {
+							var skillpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? this.link : get.pinyin(skillname);
+							intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + skillpinyin + "]" + "</span>" + "  " + skilltranslationinfo;
+						} else {
+							intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + skilltranslationinfo;
+						}
+						var info = get.info(this.link);
+						var skill = this.link;
+						var playername = this.linkname;
+						let audioName = this.linkAudioName;
+						var skillnode = this;
+						if (info.derivation) {
+							var derivation = info.derivation;
+							if (typeof derivation == "string") {
+								derivation = [derivation];
+							}
+							for (var i = 0; i < derivation.length; i++) {
+								var derivationname = get.translation(derivation[i]);
+								var derivationtranslationinfo = get.skillInfoTranslation(derivation[i]);
+								if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
+									var derivationpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? derivation[i] : get.pinyin(derivationname);
+									intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + derivationpinyin + "]" + "</span>" + "  " + derivationtranslationinfo;
+								} else {
+									intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + derivationtranslationinfo;
+								}
+							}
+						}
+
+						if (lib.config.background_speak && e !== "init") {
+							let name = bg.tempSkin || audioName || playername;
+							if (!this.playAudio || name != this.audioName) {
+								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
+						}
 					} else {
-						resolve(`${lib.assetURL}${image}`);
+						let name = bg.tempSkin || this.linkname;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+							.audioList.map(i => i.text)
+							.filter(Boolean);
+						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
+						dieAudios.forEach((text, index) => {
+							const dieTextSpan = document.createElement("span");
+							dieTextSpan.style.fontSize = "15.2px";
+							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							intro2.appendChild(dieTextSpan);
+						});
+						if (lib.config.background_speak && e !== "init") {
+							if (!this.playAudio || name != this.audioName) {
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
+						}
 					}
-				})
-					.then(
-						source =>
-							new Promise((resolve, reject) => {
-								const image = new Image();
-								image.onload = () => resolve(image);
-								image.onerror = reject;
-								image.src = source;
-							})
-					)
-					.then(image => characterSexDiv.appendChild(image))
-					.catch(() => (characterSexDiv.innerHTML = get.translation(characterSex)));
-				const characterGroupDiv = ui.create.div(".character-group", characterIntroTable),
-					characterGroups = get.is.double(name, true);
-				if (characterGroups) {
-					Promise.all(
-						characterGroups.map(characterGroup =>
-							Promise.resolve()
-								.then(async () => {
-									const imageName = `group_${characterGroup}`,
-										information = lib.card[imageName];
-									if (!information) {
-										return `${lib.assetURL}image/card/${imageName}.png`;
-									}
-									const image = information.image;
-									if (!image) {
-										return `${lib.assetURL}image/card/${imageName}.png`;
-									}
-									if (image.startsWith("db:")) {
-										return await game.getDB("image", image.slice(3));
-									}
-									if (image.startsWith("ext:")) {
-										return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-									}
-									return `${lib.assetURL}${image}`;
-								})
-								.then(
-									source =>
-										new Promise((resolve, reject) => {
-											const image = new Image();
-											image.onload = () => resolve(image);
-											image.onerror = reject;
-											image.src = source;
-										})
-								)
-						)
-					)
-						.then(images => {
-							let documentFragment = document.createDocumentFragment();
-							images.forEach(documentFragment.appendChild, documentFragment);
-							characterGroupDiv.appendChild(documentFragment);
-						})
-						.catch(() => (characterGroupDiv.innerHTML = characterGroups.map(characterGroup => get.translation(characterGroup)).join("/")));
-				} else {
-					const characterGroup = nameInfo[1];
-					Promise.resolve()
-						.then(async () => {
-							const imageName = `group_${characterGroup}`,
-								information = lib.card[imageName];
-							if (!information) {
-								return `${lib.assetURL}image/card/${imageName}.png`;
-							}
-							const image = information.image;
-							if (!image) {
-								return `${lib.assetURL}image/card/${imageName}.png`;
-							}
-							if (image.startsWith("db:")) {
-								return await game.getDB("image", image.slice(3));
-							}
-							if (image.startsWith("ext:")) {
-								return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-							}
-							return `${lib.assetURL}${image}`;
-						})
+				};
+			} else {
+				// 样式一
+				//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
+				const nameInfo = get.character(name),
+					showCharacterNamePinyin = lib.config.show_characternamepinyin;
+				intro = ui.create.div(".characterintro", uiintro);
+				if (showCharacterNamePinyin != "doNotShow") {
+					const characterIntroTable = ui.create.div(".character-intro-table", intro),
+						span = document.createElement("span");
+					span.style.fontWeight = "bold";
+					const exInfo = nameInfo.trashBin,
+						characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
+					span.innerHTML = characterName;
+					const ruby = document.createElement("ruby");
+					ruby.appendChild(span);
+					const leftParenthesisRP = document.createElement("rp");
+					leftParenthesisRP.textContent = "（";
+					ruby.appendChild(leftParenthesisRP);
+					const rt = document.createElement("rt");
+					rt.innerHTML = showCharacterNamePinyin == "showCodeIdentifier" ? name : lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
+					ruby.appendChild(rt);
+					const rightParenthesisRP = document.createElement("rp");
+					rightParenthesisRP.textContent = "）";
+					ruby.appendChild(rightParenthesisRP);
+					characterIntroTable.appendChild(ruby);
+					const characterSexDiv = ui.create.div(".character-sex", characterIntroTable),
+						exInfoSex = exInfo && exInfo.find(value => value.startsWith("sex:")),
+						characterSex = exInfoSex ? exInfoSex.split(":").pop() : nameInfo[0];
+					new Promise((resolve, reject) => {
+						const imageName = `sex_${characterSex}`,
+							information = lib.card[imageName];
+						if (!information) {
+							resolve(`${lib.assetURL}image/card/${imageName}.png`);
+							return;
+						}
+						const image = information.image;
+						if (!image) {
+							resolve(`${lib.assetURL}image/card/${imageName}.png`);
+						} else if (image.startsWith("db:")) {
+							game.getDB("image", image.slice(3)).then(resolve, reject);
+						} else if (image.startsWith("ext:")) {
+							resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
+						} else {
+							resolve(`${lib.assetURL}${image}`);
+						}
+					})
 						.then(
 							source =>
 								new Promise((resolve, reject) => {
@@ -3698,246 +3634,323 @@ export class Click {
 									image.src = source;
 								})
 						)
-						.then(image => characterGroupDiv.appendChild(image))
-						.catch(() => (characterGroupDiv.innerHTML = get.translation(characterGroup)));
+						.then(image => characterSexDiv.appendChild(image))
+						.catch(() => (characterSexDiv.innerHTML = get.translation(characterSex)));
+					const characterGroupDiv = ui.create.div(".character-group", characterIntroTable),
+						characterGroups = get.is.double(name, true);
+					if (characterGroups) {
+						Promise.all(
+							characterGroups.map(characterGroup =>
+								Promise.resolve()
+									.then(async () => {
+										const imageName = `group_${characterGroup}`,
+											information = lib.card[imageName];
+										if (!information) {
+											return `${lib.assetURL}image/card/${imageName}.png`;
+										}
+										const image = information.image;
+										if (!image) {
+											return `${lib.assetURL}image/card/${imageName}.png`;
+										}
+										if (image.startsWith("db:")) {
+											return await game.getDB("image", image.slice(3));
+										}
+										if (image.startsWith("ext:")) {
+											return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+										}
+										return `${lib.assetURL}${image}`;
+									})
+									.then(
+										source =>
+											new Promise((resolve, reject) => {
+												const image = new Image();
+												image.onload = () => resolve(image);
+												image.onerror = reject;
+												image.src = source;
+											})
+									)
+							)
+						)
+							.then(images => {
+								let documentFragment = document.createDocumentFragment();
+								images.forEach(documentFragment.appendChild, documentFragment);
+								characterGroupDiv.appendChild(documentFragment);
+							})
+							.catch(() => (characterGroupDiv.innerHTML = characterGroups.map(characterGroup => get.translation(characterGroup)).join("/")));
+					} else {
+						const characterGroup = nameInfo[1];
+						Promise.resolve()
+							.then(async () => {
+								const imageName = `group_${characterGroup}`,
+									information = lib.card[imageName];
+								if (!information) {
+									return `${lib.assetURL}image/card/${imageName}.png`;
+								}
+								const image = information.image;
+								if (!image) {
+									return `${lib.assetURL}image/card/${imageName}.png`;
+								}
+								if (image.startsWith("db:")) {
+									return await game.getDB("image", image.slice(3));
+								}
+								if (image.startsWith("ext:")) {
+									return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+								}
+								return `${lib.assetURL}${image}`;
+							})
+							.then(
+								source =>
+									new Promise((resolve, reject) => {
+										const image = new Image();
+										image.onload = () => resolve(image);
+										image.onerror = reject;
+										image.src = source;
+									})
+							)
+							.then(image => characterGroupDiv.appendChild(image))
+							.catch(() => (characterGroupDiv.innerHTML = get.translation(characterGroup)));
+					}
+					const hpDiv = ui.create.div(".hp", characterIntroTable),
+						nameInfoHP = nameInfo[2],
+						infoHP = get.infoHp(nameInfoHP);
+					hpDiv.dataset.condition = infoHP < 4 ? "mid" : "high";
+					ui.create.div(hpDiv);
+					const hpTextDiv = ui.create.div(".text", hpDiv),
+						infoMaxHP = get.infoMaxHp(nameInfoHP);
+					hpTextDiv.innerHTML = infoHP == infoMaxHP ? `×${infoHP}` : `×${infoHP}/${infoMaxHP}`;
+					const infoShield = get.infoHujia(nameInfoHP);
+					if (infoShield) {
+						ui.create.div(".shield", hpDiv);
+						const shieldTextDiv = ui.create.div(".text", hpDiv);
+						shieldTextDiv.innerHTML = `×${infoShield}`;
+					}
+					intro.appendChild(document.createElement("hr"));
 				}
-				const hpDiv = ui.create.div(".hp", characterIntroTable),
-					nameInfoHP = nameInfo[2],
-					infoHP = get.infoHp(nameInfoHP);
-				hpDiv.dataset.condition = infoHP < 4 ? "mid" : "high";
-				ui.create.div(hpDiv);
-				const hpTextDiv = ui.create.div(".text", hpDiv),
-					infoMaxHP = get.infoMaxHp(nameInfoHP);
-				hpTextDiv.innerHTML = infoHP == infoMaxHP ? `×${infoHP}` : `×${infoHP}/${infoMaxHP}`;
-				const infoShield = get.infoHujia(nameInfoHP);
-				if (infoShield) {
-					ui.create.div(".shield", hpDiv);
-					const shieldTextDiv = ui.create.div(".text", hpDiv);
-					shieldTextDiv.innerHTML = `×${infoShield}`;
-				}
-				introduction.appendChild(document.createElement("hr"));
-			}
-			const htmlParser = document.createElement("body");
-			htmlParser.innerHTML = get.characterIntro(name);
-			Array.from(htmlParser.childNodes).forEach(value => introduction.appendChild(value));
+				const htmlParser = document.createElement("body");
+				htmlParser.innerHTML = get.characterIntro(name);
+				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
-			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName })
-				.audioList.map(i => i.text)
-				.filter(Boolean);
-			if (!dieAudios.length) {
-				dieAudios = get.Audio.die({ player: name })
+				// 添加台词部分
+				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-			}
-			const skillAudioMap = new Map();
-			nameInfo.skills.forEach(skill => {
-				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if (!voiceMap.length) {
-					voiceMap = get.Audio.skill({ skill, player: name }).textList;
+				if (!dieAudios.length) {
+					dieAudios = get.Audio.die({ player: name })
+						.audioList.map(i => i.text)
+						.filter(Boolean);
 				}
-				if (voiceMap.length) {
-					skillAudioMap.set(skill, voiceMap);
-				}
-			});
-			const derivationSkillAudioMap = new Map();
-			nameInfo.skills.forEach(skill => {
-				var info = get.info(skill);
-				if (info.derivation) {
-					var derivation = info.derivation;
-					if (typeof derivation == "string") {
-						derivation = [derivation];
+				const skillAudioMap = new Map();
+				nameInfo.skills.forEach(skill => {
+					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
+					if (!voiceMap.length) {
+						voiceMap = get.Audio.skill({ skill, player: name }).textList;
 					}
-					for (var i = 0; i < derivation.length; i++) {
-						if (derivation[i].indexOf("_faq") != -1) {
-							continue;
+					if (voiceMap.length) {
+						skillAudioMap.set(skill, voiceMap);
+					}
+				});
+				const derivationSkillAudioMap = new Map();
+				nameInfo.skills.forEach(skill => {
+					var info = get.info(skill);
+					if (info.derivation) {
+						var derivation = info.derivation;
+						if (typeof derivation == "string") {
+							derivation = [derivation];
 						}
-						if (nameInfo.skills.includes(derivation[i])) {
-							continue;
-						}
-						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if (!derivationVoiceMap.length) {
-							derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						}
-						if (derivationVoiceMap.length) {
-							derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+						for (var i = 0; i < derivation.length; i++) {
+							if (derivation[i].indexOf("_faq") != -1) {
+								continue;
+							}
+							if (nameInfo.skills.includes(derivation[i])) {
+								continue;
+							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
+							if (!derivationVoiceMap.length) {
+								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+							}
+							if (derivationVoiceMap.length) {
+								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+							}
 						}
 					}
+				});
+				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
+					intro.appendChild(document.createElement("hr"));
+
+					if (skillAudioMap.size > 0) {
+						const skillNameSpan = document.createElement("span");
+						skillNameSpan.innerHTML = `技能台词<br>`;
+						intro.appendChild(skillNameSpan);
+
+						skillAudioMap.forEach((texts, skill) => {
+							const skillNameSpan = document.createElement("span"),
+								skillNameSpanStyle = skillNameSpan.style;
+							skillNameSpanStyle.fontWeight = "bold";
+							skillNameSpan.innerHTML = `<br>${get.translation(skill)}<br>`;
+							intro.appendChild(skillNameSpan);
+							texts.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(skillTextSpan);
+							});
+						});
+					}
+
+					if (derivationSkillAudioMap.size > 0) {
+						const derivationSkillNameSpan = document.createElement("span");
+						derivationSkillNameSpan.innerHTML = `<br>衍生技能台词<br>`;
+						intro.appendChild(derivationSkillNameSpan);
+						derivationSkillAudioMap.forEach((texts, skill) => {
+							const derivationSkillNameSpan1 = document.createElement("span"),
+								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
+							derivationSkillNameSpanStyle1.fontWeight = "bold";
+							derivationSkillNameSpan1.innerHTML = `<br>${get.translation(skill)}<br>`;
+							intro.appendChild(derivationSkillNameSpan1);
+							texts.forEach((text, index) => {
+								const derivationSkillTextSpan = document.createElement("span");
+								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(derivationSkillTextSpan);
+							});
+						});
+					}
 				}
-			});
-			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-				introduction.appendChild(document.createElement("hr"));
 
-				if (skillAudioMap.size > 0) {
-					const skillNameSpan = document.createElement("span");
-					skillNameSpan.innerHTML = `技能台词<br>`;
-					introduction.appendChild(skillNameSpan);
+				const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
+				list.addArray(get.character(name).skills || []);
+				if (lib.config.touchscreen) {
+					lib.setScroll(intro);
+					lib.setScroll(introduction2);
+					lib.setScroll(skills);
+				}
 
-					skillAudioMap.forEach((texts, skill) => {
+				if (lib.config.mousewheel) {
+					skills.onmousewheel = ui.click.mousewheel;
+				}
+				clickSkill = function (e) {
+					while (introduction2.firstChild) {
+						introduction2.removeChild(introduction2.lastChild);
+					}
+					var current = this.parentNode.querySelector(".active");
+					if (current) {
+						current.classList.remove("active");
+					}
+					this.classList.add("active");
+					if (this.link != "dieAudios") {
 						const skillNameSpan = document.createElement("span"),
 							skillNameSpanStyle = skillNameSpan.style;
 						skillNameSpanStyle.fontWeight = "bold";
-						skillNameSpan.innerHTML = `<br>${get.translation(skill)}<br>`;
-						introduction.appendChild(skillNameSpan);
-						texts.forEach((text, index) => {
-							const skillTextSpan = document.createElement("span");
-							skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							introduction.appendChild(skillTextSpan);
-						});
-					});
-				}
-
-				if (derivationSkillAudioMap.size > 0) {
-					const derivationSkillNameSpan = document.createElement("span");
-					derivationSkillNameSpan.innerHTML = `<br>衍生技能台词<br>`;
-					introduction.appendChild(derivationSkillNameSpan);
-					derivationSkillAudioMap.forEach((texts, skill) => {
-						const derivationSkillNameSpan1 = document.createElement("span"),
-							derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-						derivationSkillNameSpanStyle1.fontWeight = "bold";
-						derivationSkillNameSpan1.innerHTML = `<br>${get.translation(skill)}<br>`;
-						introduction.appendChild(derivationSkillNameSpan1);
-						texts.forEach((text, index) => {
-							const derivationSkillTextSpan = document.createElement("span");
-							derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							introduction.appendChild(derivationSkillTextSpan);
-						});
-					});
-				}
-			}
-
-			const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
-			var list = get.character(name).skills;
-			var skills = ui.create.div(".characterskill", uiintro);
-			if (lib.config.touchscreen) {
-				lib.setScroll(introduction);
-				lib.setScroll(introduction2);
-				lib.setScroll(skills);
-			}
-
-			if (lib.config.mousewheel) {
-				skills.onmousewheel = ui.click.mousewheel;
-			}
-			var clickSkill = function (e) {
-				while (introduction2.firstChild) {
-					introduction2.removeChild(introduction2.lastChild);
-				}
-				var current = this.parentNode.querySelector(".active");
-				if (current) {
-					current.classList.remove("active");
-				}
-				this.classList.add("active");
-				if (this.link != "dieAudios") {
-					const skillNameSpan = document.createElement("span"),
-						skillNameSpanStyle = skillNameSpan.style;
-					skillNameSpanStyle.fontWeight = "bold";
-					const link = this.link,
-						skillName = get.translation(link);
-					skillNameSpan.innerHTML = skillName;
-					const showSkillNamePinyin = lib.config.show_skillnamepinyin;
-					if (showSkillNamePinyin != "doNotShow" && skillName != "阵亡") {
-						const ruby = document.createElement("ruby");
-						ruby.appendChild(skillNameSpan);
-						const leftParenthesisRP = document.createElement("rp");
-						leftParenthesisRP.textContent = "（";
-						ruby.appendChild(leftParenthesisRP);
-						const rt = document.createElement("rt");
-						rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? link : lib.translate[`${link}_rt`] || get.pinyin(skillName).join(" ");
-						ruby.appendChild(rt);
-						const rightParenthesisRP = document.createElement("rp");
-						rightParenthesisRP.textContent = "）";
-						ruby.appendChild(rightParenthesisRP);
-						const div = ui.create.div(introduction2);
-						div.style.marginRight = "5px";
-						div.appendChild(ruby);
-					} else {
-						skillNameSpanStyle.marginRight = "5px";
-						introduction2.appendChild(skillNameSpan);
-					}
-					htmlParser.innerHTML = get.skillInfoTranslation(this.link);
-					Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
-					var info = get.info(this.link);
-					var skill = this.link;
-					var playername = this.linkname;
-					let audioName = this.linkAudioName;
-					var skillnode = this;
-					let derivations = info.derivation;
-					if (derivations) {
-						if (typeof derivations == "string") {
-							derivations = [derivations];
+						const link = this.link,
+							skillName = get.translation(link);
+						skillNameSpan.innerHTML = skillName;
+						const showSkillNamePinyin = lib.config.show_skillnamepinyin;
+						if (showSkillNamePinyin != "doNotShow" && skillName != "阵亡") {
+							const ruby = document.createElement("ruby");
+							ruby.appendChild(skillNameSpan);
+							const leftParenthesisRP = document.createElement("rp");
+							leftParenthesisRP.textContent = "（";
+							ruby.appendChild(leftParenthesisRP);
+							const rt = document.createElement("rt");
+							rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? link : lib.translate[`${link}_rt`] || get.pinyin(skillName).join(" ");
+							ruby.appendChild(rt);
+							const rightParenthesisRP = document.createElement("rp");
+							rightParenthesisRP.textContent = "）";
+							ruby.appendChild(rightParenthesisRP);
+							const div = ui.create.div(introduction2);
+							div.style.marginRight = "5px";
+							div.appendChild(ruby);
+						} else {
+							skillNameSpanStyle.marginRight = "5px";
+							introduction2.appendChild(skillNameSpan);
 						}
-						derivations.forEach(derivation => {
-							introduction2.appendChild(document.createElement("br"));
-							introduction2.appendChild(document.createElement("br"));
-							const derivationNameSpan = document.createElement("span"),
-								derivationNameSpanStyle = derivationNameSpan.style;
-							derivationNameSpanStyle.fontWeight = "bold";
-							const derivationName = get.translation(derivation);
-							derivationNameSpan.innerHTML = derivationName;
-							if (showSkillNamePinyin != "doNotShow" && derivationName.length <= 5 && derivation.indexOf("_faq") == -1) {
-								const ruby = document.createElement("ruby");
-								ruby.appendChild(derivationNameSpan);
-								const leftParenthesisRP = document.createElement("rp");
-								leftParenthesisRP.textContent = "（";
-								ruby.appendChild(leftParenthesisRP);
-								const rt = document.createElement("rt");
-								rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? derivation : lib.translate[`${derivation}_rt`] || get.pinyin(derivationName).join(" ");
-								ruby.appendChild(rt);
-								const rightParenthesisRP = document.createElement("rp");
-								rightParenthesisRP.textContent = "）";
-								ruby.appendChild(rightParenthesisRP);
-								const div = ui.create.div(introduction2);
-								div.style.marginRight = "5px";
-								div.appendChild(ruby);
-							} else {
-								derivationNameSpanStyle.marginRight = "5px";
-								introduction2.appendChild(derivationNameSpan);
+						htmlParser.innerHTML = get.skillInfoTranslation(this.link);
+						Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+						var info = get.info(this.link);
+						var skill = this.link;
+						var playername = this.linkname;
+						let audioName = this.linkAudioName;
+						var skillnode = this;
+						let derivations = info.derivation;
+						if (derivations) {
+							if (typeof derivations == "string") {
+								derivations = [derivations];
 							}
-							htmlParser.innerHTML = get.skillInfoTranslation(derivation);
-							Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
-						});
-					}
+							derivations.forEach(derivation => {
+								introduction2.appendChild(document.createElement("br"));
+								introduction2.appendChild(document.createElement("br"));
+								const derivationNameSpan = document.createElement("span"),
+									derivationNameSpanStyle = derivationNameSpan.style;
+								derivationNameSpanStyle.fontWeight = "bold";
+								const derivationName = get.translation(derivation);
+								derivationNameSpan.innerHTML = derivationName;
+								if (showSkillNamePinyin != "doNotShow" && derivationName.length <= 5 && derivation.indexOf("_faq") == -1) {
+									const ruby = document.createElement("ruby");
+									ruby.appendChild(derivationNameSpan);
+									const leftParenthesisRP = document.createElement("rp");
+									leftParenthesisRP.textContent = "（";
+									ruby.appendChild(leftParenthesisRP);
+									const rt = document.createElement("rt");
+									rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? derivation : lib.translate[`${derivation}_rt`] || get.pinyin(derivationName).join(" ");
+									ruby.appendChild(rt);
+									const rightParenthesisRP = document.createElement("rp");
+									rightParenthesisRP.textContent = "）";
+									ruby.appendChild(rightParenthesisRP);
+									const div = ui.create.div(introduction2);
+									div.style.marginRight = "5px";
+									div.appendChild(ruby);
+								} else {
+									derivationNameSpanStyle.marginRight = "5px";
+									introduction2.appendChild(derivationNameSpan);
+								}
+								htmlParser.innerHTML = get.skillInfoTranslation(derivation);
+								Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+							});
+						}
 
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || audioName || playername;
-						if (!this.playAudio || name != this.audioName) {
-							const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
-							});
-							this.audioName = name;
+						if (lib.config.background_speak && e !== "init") {
+							let name = bg.tempSkin || audioName || playername;
+							if (!this.playAudio || name != this.audioName) {
+								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
 						}
-						this.playAudio();
-					}
-				} else {
-					let dieAudios = this.dieAudios;
-					introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-					dieAudios.forEach((text, index) => {
-						const dieTextSpan = document.createElement("span");
-						dieTextSpan.style.fontSize = "15.2px";
-						dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
-						introduction2.appendChild(dieTextSpan);
-					});
-					if (lib.config.background_speak && e !== "init") {
+					} else {
 						let name = bg.tempSkin || this.linkname;
-						if (!this.playAudio || name != this.audioName) {
-							let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
-							});
-							this.audioName = name;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+							.audioList.map(i => i.text)
+							.filter(Boolean);
+						introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
+						dieAudios.forEach((text, index) => {
+							const dieTextSpan = document.createElement("span");
+							dieTextSpan.style.fontSize = "15.2px";
+							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							introduction2.appendChild(dieTextSpan);
+						});
+						if (lib.config.background_speak && e !== "init") {
+							if (!this.playAudio || name != this.audioName) {
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
 						}
-						this.playAudio();
 					}
-				}
-			};
-		}
+				};
+			}
+		};
+		refreshIntro();
+
 		var initskill = false;
 		let deri = [];
 		for (var i = 0; i < list.length; i++) {
@@ -3996,7 +4009,7 @@ export class Click {
 				clickSkill.call(currentx, "init");
 			}
 		}
-		let dieAudios = get.Audio.die({ player: audioName })
+		let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 			.audioList.map(i => i.text)
 			.filter(Boolean);
 		if (!dieAudios.length) {
@@ -4035,6 +4048,7 @@ export class Click {
 							playerbg.classList.remove("scroll");
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
+							refreshIntro();
 						});
 						let iSTemp = false;
 						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {
