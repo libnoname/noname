@@ -2398,7 +2398,7 @@ const skills = {
 						var num = 0,
 							sgn = effect == "wangsheng" ? 1.05 : -1;
 						game.countPlayer(function (current) {
-							if (!(current == player && sgn == -1)) {
+							if (!(current == player && sgn == -1) && current.group == group) {
 								num += get.sgn(get.attitude(player, current)) * sgn;
 							}
 						});

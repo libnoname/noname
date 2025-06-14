@@ -48,7 +48,7 @@ const skills = {
 					})
 					.set("complexTarget", true)
 					.set("complexSelect", true)
-					.set("targetprompt", ["弃牌", "被弃牌"])
+					.set("targetprompt", ["受到伤害", "被弃牌"])
 					.set("ai", target => {
 						const selected = ui.selected.targets,
 							player = get.player();

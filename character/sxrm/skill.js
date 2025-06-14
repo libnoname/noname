@@ -1446,14 +1446,13 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					let targets = [];
 					for (let i of trigger.jugu) {
 						let card = get.cardPile2(card => card == i[1]);
 						if (card) {
 							await i[0].gain(card, "gain2");
-							targets.push(i[0]);
 						}
 					}
+					const targets = trigger.jugu.map(i => i[0]).filter(i => i.isIn()).toUniqued();
 					if (targets.length) {
 						await game.asyncDraw(targets);
 					}
@@ -1480,7 +1479,7 @@ const skills = {
 					for (let i = evt.jugu.length - 1; i >= 0; i--) {
 						if (cards.includes(evt.jugu[i][1])) {
 							log.add(evt.jugu[i][1]);
-							evt.jugu.splice(i, 1);
+							//evt.jugu.splice(i, 1);
 						}
 					}
 					if (!trigger.visible) {
