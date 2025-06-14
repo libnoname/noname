@@ -928,6 +928,7 @@ const skills = {
 	//闪刘宏
 	olchaozheng: {
 		audio: "jsrgchaozheng",
+		logAudio: index => (typeof index === "number" ? "jsrgchaozheng" + index + ".mp3" : ["jsrgchaozheng1.mp3", "jsrgchaozheng2.mp3"]),
 		inherit: "jsrgchaozheng",
 		filter(event, player) {
 			if (!player.countCards("h")) {
@@ -973,7 +974,7 @@ const skills = {
 		group: "olchaozheng_debate",
 		subSkill: {
 			debate: {
-				audio: [1, 2].map(num => "jsrgchaozheng" + num + ".mp3"),
+				audio: "olchaozheng",
 				trigger: { global: "debateShowOpinion" },
 				filter(event, player) {
 					return event.targets.includes(player) && event.opinions.some(i => event[i].flat().includes(player));

@@ -12736,11 +12736,11 @@ export default {
 	jianan_eff: {
 		ai: { nomingzhi: true },
 	},
-	jianan_tuxi: { audio: true },
-	jianan_qiaobian: { audio: true },
-	jianan_xiaoguo: { audio: true },
-	jianan_jieyue: { audio: true },
-	jianan_duanliang: { audio: true },
+	jianan_tuxi: { audio: 2 },
+	jianan_qiaobian: { audio: 2 },
+	jianan_xiaoguo: { audio: 2 },
+	jianan_jieyue: { audio: 2 },
+	jianan_duanliang: { audio: 2 },
 	huibian: {
 		enable: "phaseUse",
 		audio: 2,
