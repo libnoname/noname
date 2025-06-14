@@ -114,6 +114,11 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"pe_jun_liubei",
+		"pe_jun_caocao",
+		"pe_jun_sunce",
+		"pe_jun_yuanshao",
+		"pe_jun_zhangjiao",
 		"dc_sb_jiangwei",
 		"chenshou",
 		"dc_xiahouxuan",
@@ -2717,6 +2722,11 @@ window.noname_character_rank = {
 			"wn_shen_machao",
 		],
 		epic: [
+			"pe_jun_liubei",
+			"pe_jun_caocao",
+			"pe_jun_sunce",
+			"pe_jun_yuanshao",
+			"pe_jun_zhangjiao",
 			"dc_sb_jiangwei",
 			"dc_sb_hulie",
 			"cuilingyi",

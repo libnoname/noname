@@ -4321,7 +4321,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
 	 * @param { string | boolean } [position] 筛选区域，默认牌堆+弃牌堆：
 	 *
-	 * cardPile: 仅牌堆；discardPile: 仅弃牌堆；filed: 牌堆+弃牌堆+场上
+	 * cardPile: 仅牌堆；discardPile: 仅弃牌堆；field: 牌堆+弃牌堆+场上
 	 *
 	 * 若为true且name为string | object类型，则在筛选区域内没有找到卡牌时创建一张name条件的牌
 	 *

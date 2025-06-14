@@ -4420,12 +4420,13 @@ const skills = {
 	zhiba: {
 		global: "zhiba_global",
 		audioname: ["re_sunben"],
-		audio: "zhiba2",
+		audioname2: {
+			pe_jun_sunce: "olzhiba",
+		},
+		audio: 2,
 		zhuSkill: true,
 		subSkill: {
 			global: {
-				audio: "zhiba2",
-				audioname: ["re_sunben"],
 				enable: "phaseUse",
 				prompt() {
 					const player = get.player();
@@ -7255,6 +7256,9 @@ const skills = {
 		trigger: { player: "phaseDiscardBefore" },
 		audio: 2,
 		audioname: ["re_yuanshao"],
+		audioname2: {
+			pe_jun_yuanshao: ["xueyi_re_yuanshao1.mp3", "xueyi_re_yuanshao2.mp3"],
+		},
 		forced: true,
 		firstDo: true,
 		filter(event, player) {
@@ -8731,6 +8735,9 @@ const skills = {
 	huangtian: {
 		audio: "huangtian2",
 		audioname: ["zhangjiao", "re_zhangjiao"],
+		audioname2: {
+			pe_jun_zhangjiao: ["xinhuangtian2_re_zhangjiao1.mp3", "xinhuangtian2_re_zhangjiao2.mp3"],
+		},
 		global: "huangtian2",
 		zhuSkill: true,
 	},

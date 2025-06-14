@@ -1,4 +1,6 @@
 export default {
+	"#yingyang1": "此战，我必取胜！",
+	"#yingyang2": "相斗之趣，吾常胜之！",
 	"#liegong_re_huangzhong1": "弓不离手，自有转机。",
 	"#liegong_re_huangzhong2": "箭阵开道，所向无敌！",
 	"#re_huangzhong:die": "把我的弓，拿来，呃。",

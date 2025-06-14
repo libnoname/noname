@@ -201,6 +201,9 @@ const skills = {
 	hujia: {
 		audio: 2,
 		audioname: ["re_caocao"],
+		audioname2: {
+			pe_jun_caocao: "sbhujia",
+		},
 		zhuSkill: true,
 		trigger: { player: ["chooseToRespondBefore", "chooseToUseBefore"] },
 		filter(event, player) {
@@ -960,6 +963,9 @@ const skills = {
 	jijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
+		audioname2: {
+			pe_jun_liubei: "sbjijiang",
+		},
 		group: ["jijiang1"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -989,6 +995,9 @@ const skills = {
 	jijiang1: {
 		audio: 2,
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
+		audioname2: {
+			pe_jun_liubei: "sbjijiang",
+		},
 		trigger: { player: ["useCardBegin", "respondBegin"] },
 		logTarget: "targets",
 		sourceSkill: "jijiang",
