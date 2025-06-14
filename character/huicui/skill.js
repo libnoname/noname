@@ -117,6 +117,7 @@ const skills = {
 	},
 	//新杀诸葛均
 	dcgengdu: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -322,6 +323,7 @@ const skills = {
 		},
 	},
 	dcgumai: {
+		audio: 2,
 		trigger: {
 			player: "damageBegin3",
 			source: "damageBegin1",
