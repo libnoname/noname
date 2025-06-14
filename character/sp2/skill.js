@@ -4424,6 +4424,7 @@ const skills = {
 		},
 		subSkill: {
 			animate: {
+				audio: "dccuichuan",
 				skillAnimation: true,
 				animationColor: "wood",
 			},
