@@ -644,6 +644,7 @@ game.import("card", function () {
 					}
 					return evt.type == "phase";
 				},
+				toself: true,
 				filterTarget(card, player, target) {
 					return player == target;
 				},

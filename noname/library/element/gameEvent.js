@@ -803,7 +803,8 @@ export class GameEvent {
 		if (typeof skills == "string") {
 			skills = [skills];
 		}
-		game.expandSkills(skills);
+		//手动addTrigger请自己展开
+		//game.expandSkills(skills);
 		while (true) {
 			evt = evt.getParent("arrangeTrigger");
 			if (!evt || evt.name != "arrangeTrigger" || !evt.doingList) {
