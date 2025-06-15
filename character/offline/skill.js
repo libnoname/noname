@@ -1318,7 +1318,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCard(get.prompt2(event.skill), 3, "he")
-				.set("filterCard", card => {
+				.set("filterCard", (card, player) => {
 					if (!lib.filter.cardRecastable(card, player)) {
 						return false;
 					}
