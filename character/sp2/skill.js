@@ -464,14 +464,8 @@ const skills = {
 	},
 	staranji: {
 		getUsed(player) {
-			let history = [],
+			let history = game.getRoundHistory("useCard"),
 				suits = lib.suit.slice();
-			for (let i = player.actionHistory.length - 1; i >= 0; i--) {
-				history.addArray(_status.globalHistory[i].everything.filter(evt => evt.name === "useCard"));
-				if (_status.globalHistory[i].isRound) {
-					break;
-				}
-			}
 			const map = history.reduce((map, evt) => {
 				const suit = get.suit(evt.card);
 				if (!map[suit]) {

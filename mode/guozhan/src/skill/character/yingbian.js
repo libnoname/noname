@@ -3432,7 +3432,7 @@ export default {
 					return get.attitude(player, target) / (Math.abs(player.countCards("h") + 2 - target.countCards("h")) + 1);
 				})
 				.setHiddenSkill("fakeqimei");
-			("step 1");
+			"step 1";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("fakeqimei", target);
@@ -3476,7 +3476,7 @@ export default {
 					if (trigger.delay === false) {
 						game.delayx();
 					}
-					("step 1");
+					"step 1";
 					var target = player.storage.fakeqimei_draw;
 					player.logSkill("fakeqimei_draw", target);
 					var drawer = [];
@@ -4317,11 +4317,11 @@ export default {
 				_status.event._resultid = id;
 				game.resume();
 			};
-			("step 1");
+			"step 1";
 			var type = get.type2(card);
 			event.list = game.filterPlayer(current => current.countCards("h") && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
 			event.id = get.id();
-			("step 2");
+			"step 2";
 			if (!event.list.length) {
 				event.finish();
 			} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
@@ -4329,7 +4329,7 @@ export default {
 			} else {
 				event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 			}
-			("step 3");
+			"step 3";
 			if (result.bool) {
 				event.zhuzhanresult = event.current;
 				event.zhuzhanresult2 = result;
@@ -4340,7 +4340,7 @@ export default {
 			} else {
 				event.goto(2);
 			}
-			("step 4");
+			"step 4";
 			var id = event.id,
 				sendback = (result, player) => {
 					if (result && result.id == id && !event.zhuzhanresult && result.bool) {
@@ -4387,20 +4387,20 @@ export default {
 				});
 			}
 			event.withol = withol;
-			("step 5");
+			"step 5";
 			if (!result || !result.bool || event.zhuzhanresult) {
 				return;
 			}
 			game.broadcast("cancel", event.id);
 			event.zhuzhanresult = game.me;
 			event.zhuzhanresult2 = result;
-			("step 6");
+			"step 6";
 			if (event.withol && !event.resultOL) {
 				game.pause();
 			}
-			("step 7");
+			"step 7";
 			game.players.forEach(value => value.hideTimer());
-			("step 8");
+			"step 8";
 			if (event.zhuzhanresult) {
 				var target = event.zhuzhanresult;
 				if (target == player && player.hasSkill("fakecaiwang")) {
@@ -4521,7 +4521,7 @@ export default {
 						};
 						lib.yingbian.condition.complex.get("zhuzhan")(trigger);
 					}
-					("step 1");
+					"step 1";
 					if (!result.bool) {
 						return;
 					}

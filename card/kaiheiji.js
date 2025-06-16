@@ -61,8 +61,8 @@ game.import("card", function () {
 						return Math.random() > 0.75;
 					},
 					order: 7,
-					useful: 6,
-					value: 5.5,
+					useful: 2,
+					value: 6.5,
 					result: {
 						target: -1,
 					},
@@ -123,7 +123,7 @@ game.import("card", function () {
 						return 0;
 					},
 					order: 7,
-					useful: 6.5,
+					useful: 1.5,
 					value: 6.5,
 					result: {
 						player: 1,
@@ -161,7 +161,7 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 5,
-					useful: 6,
+					useful: 1.5,
 					value: 6.2,
 					result: {
 						target: 1,
@@ -185,7 +185,7 @@ game.import("card", function () {
 						return 0;
 					},
 					order: 9,
-					useful: 8.5,
+					useful: 2.5,
 					value: 8.5,
 					result: {
 						target: 1,
@@ -216,7 +216,7 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 8,
-					useful: 5.5,
+					useful: 0.5,
 					value: 5,
 					result: {
 						target: 1,
@@ -261,7 +261,7 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 7,
-					useful: 6.5,
+					useful: 1.5,
 					value: 6.5,
 					result: {
 						player: 1,
@@ -321,7 +321,7 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 1,
-					useful: 5,
+					useful: 0.5,
 					value: 5,
 					result: {
 						target: 1,
@@ -346,39 +346,33 @@ game.import("card", function () {
 					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
 				},*/
 				multicheck(card, player) {
-					return (
-						game.hasPlayer(current => {
-							return (
-								current != player &&
-								game.hasPlayer(currentx => {
-									return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
-								})
-							);
-						}) > 1
-					);
+					return game.hasPlayer(current => {
+						return (
+							current != player &&
+							game.hasPlayer(currentx => {
+								return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
+							})
+						);
+					});
 				},
 				complexSelect: true,
 				complexTarget: true,
 				multitarget: true,
-				modTarget: false,
 				async content(event, trigger, player) {
 					const { targets } = event;
-					if (targets.length != 2) {
+					if (targets.length < 2) {
 						return;
 					}
 					targets[0].swapHandcards(targets[1]);
 				},
 				ai: {
 					order: 6,
-					useful: 7.5,
+					useful: 1.2,
 					value: 8,
 					result: {
 						target(player, target) {
 							const list = [];
 							let targets = ui.selected.targets.slice();
-							if (_status.event.preTarget) {
-								targets.add(_status.event.preTarget);
-							}
 							//const num = player.countCards("he");
 							const players = game.filterPlayer();
 							if (targets.length == 0) {
@@ -449,7 +443,7 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 10,
-					useful: 7,
+					useful: 3.5,
 					value: 7.5,
 					result: {
 						target: 1,
@@ -531,7 +525,7 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 1,
-					useful: 7.5,
+					useful: 3,
 					value: 7.5,
 					result: {
 						player: 1,
@@ -626,7 +620,7 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 1,
-					useful: 9.5,
+					useful: 5.5,
 					value: 10,
 					result: {
 						player: 1,
@@ -665,7 +659,7 @@ game.import("card", function () {
 					},
 					basic: {
 						order: 7,
-						useful: 4.5,
+						useful: 3.5,
 						value: 9.5,
 					},
 					result: {
@@ -788,7 +782,7 @@ game.import("card", function () {
 				//增兵减灶的ai
 				ai: {
 					order: 7,
-					useful: 4,
+					useful: 3.5,
 					value: 9,
 					tag: {
 						draw: 2,
@@ -872,7 +866,7 @@ game.import("card", function () {
 				type: "trick",
 				ai: {
 					order: 1,
-					useful: 6,
+					useful: 7,
 					value: 9,
 					result: {
 						target: -1,
@@ -985,7 +979,7 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 1,
-					useful: 6,
+					useful: 4,
 					value: 6,
 					result: { target: 1 },
 					tag: { recover: 2 },

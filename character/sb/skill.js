@@ -526,68 +526,78 @@ const skills = {
 			return game.hasPlayer(current => player != current);
 		},
 		async cost(event, trigger, player) {
-			const { result: { bool, targets, links }} = await player
-				.chooseButtonTarget({
-					createDialog: [`###${get.prompt(event.skill)}###选择一名其他角色并执行一项`, [
+			const {
+				result: { bool, targets, links },
+			} = await player.chooseButtonTarget({
+				createDialog: [
+					`###${get.prompt(event.skill)}###选择一名其他角色并执行一项`,
+					[
 						[
 							["equip", "令一名其他角色获得其装备区里的一张牌"],
 							["sha", "获得牌堆里的一张【杀】"],
 							["all", "背水！失去1点体力并执行所有选项"],
 						],
 						"textbutton",
-					]],
-					complexSelect: true,
-					filterButton(button) {
-						if (button.link != "sha" && !game.hasPlayer(current => {
+					],
+				],
+				complexSelect: true,
+				filterButton(button) {
+					if (
+						button.link != "sha" &&
+						!game.hasPlayer(current => {
 							return current != get.player() && current.countCards("e");
-						})) {
-							return false;
-						}
-						return true;
-					},
-					filterTarget(card, player, target) {
-						if (ui.selected.buttons[0]?.link != "sha") {
-							return target.countCards("e") && target != player;
-						}
-						return target != player;
-					},
-					ai1(button) {
-						const { player } = get.event();
-						const bool1 = game.hasPlayer(current => {
-							const es = current.getCards("e"),
-								att = get.attitude(player, current);
-							return current != player && es.some(card => {
+						})
+					) {
+						return false;
+					}
+					return true;
+				},
+				filterTarget(card, player, target) {
+					if (ui.selected.buttons[0]?.link != "sha") {
+						return target.countCards("e") && target != player;
+					}
+					return target != player;
+				},
+				ai1(button) {
+					const { player } = get.event();
+					const bool1 = game.hasPlayer(current => {
+						const es = current.getCards("e"),
+							att = get.attitude(player, current);
+						return (
+							current != player &&
+							es.some(card => {
 								if (att > 0) {
 									return get.equipValue(card, current) <= 4;
 								}
 								return get.equipValue(card, current) > 7;
-							});
-						});
-						let num = 0;
-						if (bool1 && ["all", "equip"].includes(button.link)) {
-							num++;
+							})
+						);
+					});
+					let num = 0;
+					if (bool1 && ["all", "equip"].includes(button.link)) {
+						num++;
+					}
+					const bool2 = !player.countCards("hs", { name: "sha" }) || player.hasSkill("sbtuxi");
+					if (bool2 && ["all", "sha"].includes(button.link)) {
+						num++;
+					}
+					if (player.getHp() <= 2 && get.effect(player, { name: "losehp" }, player, player) <= 0) {
+						if (button.link == "all") {
+							num = 0;
 						}
-						const bool2 = !player.countCards("hs", { name: "sha" }) || player.hasSkill("sbtuxi");
-						if (bool2 && ["all", "sha"].includes(button.link)) {
-							num++;
-						}
-						if (player.getHp() <= 2 && get.effect(player, { name: "losehp" }, player, player) <= 0) {
-							if (button.link == "all") {
-								num = 0;
-							}
-						}
-						return num;
-					},
-					ai2(target) {
-						const player = get.player();
-						const att = get.attitude(player, target);
-						const es = target.getCards("e");
-						if ((es.some(card => get.equipValue(card, target) <= 4) && att > 0) || (es.some(card => get.equipValue(card, target) > 7) && att < 0)) {
-							return 10;
-						}
-						return 1;
-					},
-				});
+					}
+					return num;
+				},
+				ai2(target) {
+					const player = get.player();
+					const att = get.attitude(player, target);
+					const es = target.getCards("e");
+					if ((es.some(card => get.equipValue(card, target) <= 4) && att > 0) || (es.some(card => get.equipValue(card, target) > 7) && att < 0)) {
+						return 10;
+					}
+					return 1;
+				},
+			});
 			event.result = {
 				bool: bool,
 				targets: targets,
@@ -754,19 +764,7 @@ const skills = {
 			if (event.name == "damage") {
 				return event.num > 0;
 			}
-			const history = game.getAllGlobalHistory();
-			for (let i = history.length - 1; i >= 0; i--) {
-				const evt = history[i]["everything"];
-				for (let j = evt.length - 1; j >= 0; j--) {
-					if (evt[j].name == "dying" && evt[j].player == player && evt[j] != event) {
-						return false;
-					}
-				}
-				if (history[i].isRound) {
-					break;
-				}
-			}
-			return true;
+			return game.getRoundHistory("everything", evt => evt.name == "dying" && evt.player == player).indexOf(event) == 0;
 		},
 		frequent: true,
 		async content(event, trigger, player) {
@@ -2397,27 +2395,26 @@ const skills = {
 					do {
 						const { result } =
 							expansions.length > 1
-								? await player
-										.chooseButtonTarget({
-											createDialog: [`清俭：请选择要分配的牌`, expansions],
-											selectButton: [1, Infinity],
-											filterTarget: true,
-											ai1(button) {
-												return get.value(button.link);
-											},
-											canHidden: true,
-											complexSelect: true,
-											ai2(target) {
-												const att = get.attitude(get.player(), target);
-												if (get.value(ui.selected.buttons[0]?.link, player, "raw") < 0) {
-													return Math.max(0.01, 100 - att);
-												} else if (att > 0) {
-													return Math.max(0.1, att / Math.sqrt(2 + target.countCards("h")));
-												} else {
-													return Math.max(0.01, (100 + att) / 200);
-												}
-											},
-										})
+								? await player.chooseButtonTarget({
+										createDialog: [`清俭：请选择要分配的牌`, expansions],
+										selectButton: [1, Infinity],
+										filterTarget: true,
+										ai1(button) {
+											return get.value(button.link);
+										},
+										canHidden: true,
+										complexSelect: true,
+										ai2(target) {
+											const att = get.attitude(get.player(), target);
+											if (get.value(ui.selected.buttons[0]?.link, player, "raw") < 0) {
+												return Math.max(0.01, 100 - att);
+											} else if (att > 0) {
+												return Math.max(0.1, att / Math.sqrt(2 + target.countCards("h")));
+											} else {
+												return Math.max(0.01, (100 + att) / 200);
+											}
+										},
+								  })
 								: await player
 										.chooseTarget(`清俭：是否令一名角色获得${get.translation(expansions)}？`)
 										.set("ai", target => {
@@ -2459,7 +2456,8 @@ const skills = {
 					};
 				},
 				async content(event, trigger, player) {
-					const gain_list = [], given_map = event.cost_data;
+					const gain_list = [],
+						given_map = event.cost_data;
 					for (const i in given_map) {
 						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 						gain_list.push([source, given_map[i]]);

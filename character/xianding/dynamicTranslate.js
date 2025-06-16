@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技，游戏开始时可自选阴阳状态。你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}你可以:`,
+		const start = `转换技，游戏开始时可自选阴阳状态。你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}你可以：`,
 			end = "。若你因此技能进入濒死，你将体力值回复至1点。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

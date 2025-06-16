@@ -1,10 +1,4 @@
 const characters = {
-	diy_wu_lvmeng:{
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		skills: ["diyjuxian", "diyshiji", "diyzhanxian"],
-	},
 	noname: {
 		sex: "female",
 		group: "key",

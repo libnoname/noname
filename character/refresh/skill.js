@@ -1382,6 +1382,10 @@ const skills = {
 					await player.useCard({ name: "jiu", isCard: true }, player);
 				},
 				ai: {
+					save: true,
+					skillTagFilter(player, tag, arg) {
+						return !player.isTurnedOver();
+					},
 					order: 5,
 					result: {
 						player(player) {
@@ -11113,15 +11117,19 @@ const skills = {
 			}
 			return event.filterCard({ name: "jiu", isCard: true }, player, event);
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (_status.event.getParent(2).type == "dying") {
 				event.dying = player;
 				event.type = "dying";
 			}
-			player.turnOver();
-			player.useCard({ name: "jiu", isCard: true }, player);
+			await player.turnOver();
+			await player.useCard({ name: "jiu", isCard: true }, player);
 		},
 		ai: {
+			save: true,
+			skillTagFilter(player, tag, arg) {
+				return !player.isTurnedOver();
+			},
 			order: 5,
 			result: {
 				player(player) {

@@ -16,9 +16,9 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}对自己造成1点伤害并摸已损失体力值数张牌。`;
+					return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可对自己造成1点伤害并摸已损失体力值数张牌。`;
 				}
-				return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
+				return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
 			},
 		},
 		trigger: {
@@ -34,7 +34,7 @@ const skills = {
 			const storage = player.storage.dcsbjuemou;
 			if (!storage) {
 				event.result = await player
-					.chooseBool(`###${get.prompt(event.skill)}###对自己造成1点伤害并摸已损失体力值张张牌`)
+					.chooseBool(`###${get.prompt(event.skill)}###对自己造成1点伤害并摸已损失体力值张牌`)
 					.set("ai", () => true)
 					.forResult();
 			} else {
@@ -78,7 +78,6 @@ const skills = {
 					target = event.targets[1];
 				player.line2([source, target], "green");
 				await source.discardPlayerCard(target, "he", true);
-				target.line(source, "yellow");
 				source.damage(target);
 			}
 		},
@@ -92,7 +91,7 @@ const skills = {
 				audioname: ["dc_sb_jiangwei_shadow"],
 				trigger: { player: "dying" },
 				filter(event, player) {
-					return event.reason?.name == "damage" && event.reason.getParent().name == "dcsbjuemou";
+					return event.reason?.name == "damage" && event.reason.getParent()?.name == "dcsbjuemou";
 				},
 				forced: true,
 				locked: false,
@@ -203,7 +202,7 @@ const skills = {
 				if (result?.bool) {
 					const cards = result.cards,
 						target = result.targets[0];
-					console.log(event.name);
+					player.line(target);
 					player.markAuto(event.name, target);
 					//player.markAuto(event.name+"_card",cards);
 					if (target == player) {
@@ -259,8 +258,8 @@ const skills = {
 					if (evt2.name != "useCard") {
 						return [];
 					}
-					const lose = evt2.childEvents[0],
-						cards = event.getd?.()?.filter(card => lose?.gaintag_map[card.cardid]?.includes("dcsbchuanyu_tag"));
+					const lose = evt2.childEvents.find(evtx => evtx.type == "use"),
+						cards = event.getd?.()?.filter(card => lose?.gaintag_map?.[card.cardid]?.includes("dcsbchuanyu_tag"));
 					return cards;
 				},
 				async cost(event, trigger, player) {
@@ -19341,12 +19340,7 @@ const skills = {
 			"step 1";
 			if (result.control) {
 				var skill = result.control;
-				var func = lib.skill.dctongguan.localMark;
-				if (event.player == game.me) {
-					func(skill, trigger.player);
-				} else if (event.isOnline()) {
-					player.send(func, skill, trigger.player);
-				}
+				player.localMarkSkill(skill, trigger.player, event);
 				// game.log(player,'为',trigger.player,'选择了','#g「'+get.translation(skill)+'」','属性');
 				game.log(player, "为", trigger.player, "选择了", "#g一个属性");
 				// player.popup(skill);

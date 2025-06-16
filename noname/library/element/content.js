@@ -7708,7 +7708,9 @@ player.removeVirtualEquip(card);
 				}
 			}
 			if (result?.control == "draw_card") {
-				await target.draw(event.num1);
+				const next = target.draw(event.num1);
+				next.gaintag.addArray(event.gaintag);
+				await next;
 			} else if (result?.control == "recover_hp") {
 				await target.recover(event.num2);
 			}
@@ -11102,7 +11104,7 @@ player.removeVirtualEquip(card);
 			var start = false;
 			var starts = [_status.currentPhase, event.source, event.player, game.me, game.players[0]];
 			for (var i = 0; i < starts.length; i++) {
-				if (get.itemtype(starts[i]) == "player") {
+				if (get.itemtype(starts[i]) == "player" && game.players.concat(game.dead).includes(starts[i])) {
 					start = starts[i];
 					break;
 				}

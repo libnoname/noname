@@ -329,7 +329,7 @@ const skills = {
 			player: "damageBegin3",
 			source: "damageBegin1",
 		},
-		usable: 1,
+		round: 1,
 		filter(event, player) {
 			return player.countCards("h");
 		},
@@ -371,7 +371,8 @@ const skills = {
 					.set("eff", player.countCards("hs", card => player.hasValueTarget(card) && get.tag(card, "damage")) > 0)
 					.forResult();
 				if (result2.bool) {
-					player.storage.counttrigger.dcgumai--;
+					delete player.storage[event.name + "_roundcount"];
+					player.unmarkSkill(event.name + "_roundcount");
 				}
 			}
 		},
@@ -604,7 +605,7 @@ const skills = {
 	},
 	dcyizheng: {
 		audio: 2,
-		trigger: { player: ["phaseBegin", "phaseEnd"] },
+		trigger: { player: ["phaseBegin"] },//, "phaseEnd"
 		filter(event, player) {
 			return (
 				player.countCards("h") &&
@@ -615,7 +616,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), [1, Infinity], (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), [1, player.maxHp], (card, player, target) => {
 					return target != player && target.countCards("h");
 				})
 				.set("ai", target => {
@@ -750,7 +751,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			const num = player.getDamagedHp();
 			await player.recover(num);
-			await player.draw(num);
+			//await player.draw(num);
 			await player.removeSkills("dcyizheng");
 			if (player.hasSkill("dcboxuan")) {
 				player.storage.dcboxuan = true;
@@ -2692,18 +2693,13 @@ const skills = {
 						player.storage.dcshicao_record = cards.slice();
 						player.storage.dcshicao_aiRecord = cards.slice();
 						player.storage.dcshicao_bottom = !bottom;
-						const func = lib.skill.dctongguan.localMark,
-							skill = "dcshicao";
-						if (event.player.isUnderControl(true)) {
-							func(skill, player);
-						} else if (event.isOnline()) {
-							player.send(func, skill, player);
-						}
+						const skill = "dcshicao";
+						player.localMarkSkill(skill, player, event);
 						if (bottom) {
 							cards.reverse();
 						}
 						await game.cardsGotoPile(cards, bottom ? "insert" : null);
-						player.tempBanSkill("dcshicao");
+						player.tempBanSkill(skill);
 					},
 					ai: {
 						result: { player: 1 },
@@ -5158,7 +5154,7 @@ const skills = {
 				cards = [];
 			const len = get.cardNameLength(trigger.card) + (evt ? get.cardNameLength(evt.card) : 0);
 			while (cards.length < 2) {
-				const card = get.cardPile2(cardx => get.cardNameLength(cardx, false) === len && !cards.includes(cardx));
+				const card = get.cardPile(cardx => get.cardNameLength(cardx, false) === len && !cards.includes(cardx));
 				if (!card) {
 					break;
 				}
@@ -5169,7 +5165,7 @@ const skills = {
 					.chooseCardButton(`飞白：获得一张牌`, cards, true)
 					.set("ai", button => get.value(button.link, player))
 					.forResult();
-				if (result?.links) {
+				if (result?.links?.length) {
 					await player.gain(result.links, "gain");
 				}
 			} else {

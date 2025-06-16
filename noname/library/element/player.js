@@ -6210,6 +6210,7 @@ export class Player extends HTMLDivElement {
 		if (next.target == undefined) {
 			next.target = this;
 		}
+		next.gaintag = [];
 		next.setContent("chooseDrawRecover");
 		return next;
 	}
@@ -9131,6 +9132,38 @@ export class Player extends HTMLDivElement {
 			this.unmarkSkill(name);
 		}
 		return true;
+	}
+	/**
+	 * target特定技能标记内容仅对player可见的一个方法，具体用法请看【统观】和【识草】这两个技能
+	 * @param {string} skill
+	 * @param {Player} target
+	 * @param {GameEventPromise} event
+	 */
+	localMarkSkill(skill, target, event) {
+		const func = (skill, player) => {
+			var name = skill,
+				info;
+			if (player.marks[name]) {
+				player.updateMarks();
+			}
+			if (lib.skill[name]) {
+				info = lib.skill[name].intro;
+			}
+			if (!info) {
+				return;
+			}
+			if (player.marks[name]) {
+				player.marks[name].info = info;
+			} else {
+				player.marks[name] = player.mark(name, info);
+			}
+			player.updateMarks();
+		};
+		if (event.player == game.me) {
+			func(skill, target);
+		} else if (event.isOnline()) {
+			this.send(func, skill, target);
+		}
 	}
 	markSkill(name, info, card, nobroadcast) {
 		if (info === true) {
