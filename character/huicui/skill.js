@@ -117,6 +117,7 @@ const skills = {
 	},
 	//新杀诸葛均
 	dcgengdu: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -163,7 +164,6 @@ const skills = {
 		},
 		subSkill: {
 			red: {
-				audio: "dcgengdu",
 				enable: "chooseToUse",
 				charlotte: true,
 				filter(event, player) {
@@ -206,6 +206,7 @@ const skills = {
 					},
 					backup(links, player) {
 						return {
+							audio: "dcgengdu",
 							filterCard(card, player) {
 								return get.color(card) === "red";
 							},
@@ -319,9 +320,11 @@ const skills = {
 					},
 				},
 			},
+			red_backup: {},
 		},
 	},
 	dcgumai: {
+		audio: 2,
 		trigger: {
 			player: "damageBegin3",
 			source: "damageBegin1",

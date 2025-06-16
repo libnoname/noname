@@ -1,4 +1,9 @@
 export default {
+	"#dcgengdu1": "荷锄载露归，古卷伴青灯。",
+	"#dcgengdu2": "阡陌桑麻入目，不羡长安万户。",
+	"#dcgumai1": "松柏入青云，野菊守霜晨。",
+	"#dcgumai2": "兄别之言在耳，不敢使田亩荒芜。",
+	"#dc_zhugejun:die": "这田中禾黍，已熟二十八载矣。",
 	"#dcjiaowei1": "古木为薪，来煎琴音。",
 	"#dcjiaowei2": "天雷击焦木，弦动如天籁仙鸣。",
 	"#dcfeibai1": "顺笔若枯丝平行，转折如青锋突起。",

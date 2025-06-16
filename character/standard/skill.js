@@ -2067,7 +2067,6 @@ const skills = {
 	},
 	shenji: {
 		audio: 2,
-		audioname: ["ol_jsrg_lvbu"],
 		mod: {
 			selectTarget(card, player, range) {
 				if (range[1] == -1) {

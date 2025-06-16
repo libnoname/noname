@@ -2523,6 +2523,7 @@ const skills = {
 	//刘协曹节
 	//我们意念合一×2
 	dcjuanlv: {
+		audio: false,
 		equipSkill: false,
 		inherit: "cixiong_skill",
 		filter(event, player) {
