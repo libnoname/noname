@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const dynamicTranslates = {
 	potkuanggu(player) {
         if (player.getStorage("potkuanggu", 0)) {
-			return lib.translate["potkuanggu_rewrite_info"];
+			return lib.translate["potkuanggu_pot_weiyan_achieve_info"];
 		}
 		return lib.translate["potkuanggu_info"];
     },

@@ -286,7 +286,7 @@ window.noname_character_replace = {
 	xunyu: ["xunyu", "ol_xunyu", "dc_sb_xunyu", "star_xunyu", "re_xunyu", "sb_xunyu", "sxrm_xunyu"],
 	xushao: ["xushao", "jsrg_xushao"],
 	xusheng: ["xusheng", "xin_xusheng", "re_xusheng", "old_xusheng", "drag_xusheng"],
-	xushu: ["xin_xushu", "re_xushu", "dc_xushu", "friend_xushu", "xia_xushu", "std_xushu", "xushu"],
+	xushu: ["xin_xushu", "re_xushu", "dc_xushu", "friend_xushu", "xia_xushu", "std_xushu", "xushu", "xk_shanfu"],
 	xuyou: ["xuyou", "sp_xuyou", "jsrg_xuyou", "yj_xuyou", "junk_xuyou"],
 	xuzhu: ["xuzhu", "re_xuzhu"],
 	yangbiao: ["dc_yangbiao", "yangbiao", "jsrg_yangbiao", "clan_yangbiao", "std_yangbiao"],
@@ -417,4 +417,5 @@ window.noname_character_replace = {
 	zerong: ["zerong", "std_zerong"],
 	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
 	wufu: ["wufu", "hr_wufu"],
+	zhangyao: ["zhangyao", "std_zhangyao"],
 };

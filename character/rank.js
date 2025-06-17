@@ -1812,8 +1812,8 @@ window.noname_character_rank = {
 		"old_majun",
 	],
 	bm: [
-		"std_zhangmeiren",
-		"std_wangmeiren",
+		"std_zhangyao",
+		"std_wangfuren",
 		"std_panglin",
 		"std_huangchong",
 		"std_caoxiong",
@@ -3246,8 +3246,8 @@ window.noname_character_rank = {
 			"sxrm_liubei",
 		],
 		rare: [
-			"std_zhangmeiren",
-			"std_wangmeiren",
+			"std_zhangyao",
+			"std_wangfuren",
 			"std_panglin",
 			"std_huangchong",
 			"std_caoxiong",
