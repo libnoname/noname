@@ -39,7 +39,7 @@ const characters = {
 		names: "毛|null",
 	},
 	std_zhengcong: {
-		sex: "male",
+		sex: "female",
 		group: "qun",
 		hp: 4,
 		skills: ["stdqiyue", "stdjieji"],

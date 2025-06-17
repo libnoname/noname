@@ -531,6 +531,7 @@ const characters = {
 		hp: 3,
 		skills: ["xkbimeng", "xkzhue", "xkfuzhu"],
 		doubleGroup: ["shu", "qun"],
+		names: "徐|庶",
 	},
 	xk_pengqi: {
 		sex: "female",
