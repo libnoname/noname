@@ -5676,8 +5676,8 @@ const skills = {
 			}
 			player.line(targets, "green");
 			game.log(player, "选择了", targets, "作为自己的同心角色");
+			player.setStorage("beOfOneHeartWith", targets);
 			player.markSkill("beOfOneHeart");
-			player.storage.beOfOneHeartWith = targets;
 			player
 				.when({ player: "phaseBegin" }, false)
 				.assign({ firstDo: true })

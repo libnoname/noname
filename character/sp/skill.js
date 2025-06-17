@@ -5337,12 +5337,17 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					await player.draw(2);
-					let card = get
+					let cards = get
 						.discarded()
-						.filter(c => get.type(c) === "trick")
-						.randomGet();
-					if (card) {
-						await player.gain(card, "gain2");
+						.filter(c => get.type(c) === "trick");
+					if (cards?.length) {
+						const result = await player
+							.chooseButton(["累卵：获得一张普通锦囊牌", cards], true)
+							.set("ai", button => get.buttonValue(button))
+							.forResult();
+						if (result?.bool && result?.links?.length) {
+							await player.gain(result.links, "gain2");
+						}
 					}
 					player.tempBanSkill("leiluan", { player: "damageEnd" });
 				},

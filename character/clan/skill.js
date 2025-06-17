@@ -393,7 +393,7 @@ const skills = {
 				if (get.type(card, player) != "equip") {
 					return false;
 				}
-				return lib.filter.cardDiscardable(card, player, "clanjuewei") || lib.filter.cardRecastable(card, player, "clanjuewei");
+				return lib.filter.cardDiscardable(card, player, "clanjuewei") || lib.filter.cardRecastable(card, player);
 			});
 		},
 		usable: 1,
@@ -412,12 +412,13 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					const player = get.player();
+					const player = get.player(),
+						source = button.link == "Recast" ? null : "clanjuewei";
 					return player.countCards("he", card => {
 						if (get.type(card, player) != "equip") {
 							return false;
 						}
-						return lib.filter[`card${button.link}able`](card, player, "clanjuewei");
+						return lib.filter[`card${button.link}able`](card, player, source);
 					});
 				})
 				.set("ai", button => {
@@ -452,8 +453,9 @@ const skills = {
 					"绝围",
 					link == "Recast" ? prompt1 : prompt2,
 					card => {
-						const { player, actType: type } = get.event();
-						return get.type(card, player) == "equip" && lib.filter[type](card, player, "clanjuewei");
+						const { player, actType: type } = get.event(),
+							source = type == "Recast" ? null : "clanjuewei";
+						return get.type(card, player) == "equip" && lib.filter[type](card, player, source);
 					},
 					"he"
 				)
