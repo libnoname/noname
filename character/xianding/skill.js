@@ -3,6 +3,139 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//任婉
+	dcjuanji: {
+		trigger: {
+			player: ["phaseUseBegin", "phaseDrawBegin", "phaseDiscardBegin"],
+		},
+		filter(event, player) {
+			if (event.name == "phaseUse") {
+				const card = new lib.element.VCard({ name: "sha" });
+				return player.hasUseTarget(card, false);
+			}
+			if (event.name == "phaseDiscard") {
+				return player.countCards("h") != player.getHandcardLimit();
+			}
+			return true;
+		},
+		audio: 2,
+		async cost(event, trigger, player) {
+			const name = trigger.name.slice(5);
+			event.result = name == "Draw" ? await player
+				.chooseBool(get.prompt(event.skill))
+				.set("prompt2", "摸体力上限张牌")
+				.forResult() : name == "Use" ? await player
+					.chooseTarget(get.prompt(event.skill))
+					.set("prompt2", "失去1点体力并视为对一名角色使用一张【杀】")
+					.set("filterTarget", (event, player, target) => {
+						const card = new lib.element.VCard({ name: "sha" });
+						return player.canUse(card, target, false);
+					})
+					.set("ai", target => {
+						const card = new lib.element.VCard({ name: "sha" }),
+							player = get.player(),
+							eff1 = get.effect(target, card, player, player),
+							eff2 = get.effect(player, { name: "losehp" }, player, player);
+						return Math.max(0, eff1 - eff2);
+					})
+					.forResult() : await player
+						.chooseCardTarget({
+							filterCard(card, player) {
+								const num = get.event("numx");
+								return num > 0 && lib.filter.cardDiscardable(card, player, "dcjuanji");
+							},
+							prompt: get.prompt(event.skill),
+							prompt2: "将手牌调整至手牌上限，然后弃置一名角色区域里至多两张牌",
+							numx: player.countCards("h") - player.getHandcardLimit(),
+							selectCard() {
+								const num = get.event("numx");
+								if (num > 0) {
+									return num;
+								}
+								return -1;
+							},
+							filterTarget(card, player, target) {
+								return player == target || target.countCards("hej");
+							},
+							ai1(card) {
+								return 10 - get.value(card);
+							},
+							ai2(target) {
+								const player = get.player();
+								return get.effect(target, { name: "guohe" }, player, player);
+							},
+						})
+						.forResult();
+		},
+		async content(event, trigger, player) {
+			const name = trigger.name.slice(5);
+			if (name == "Draw") {
+				await player.draw(player.maxHp);
+			}
+			else if (name == "Use") {
+				const { targets: [target] } = event;
+				const card = new lib.element.VCard({ name: "sha" });
+				await player.loseHp();
+				await player.useCard(card, target, false);
+			}
+			else {
+				const { cards, targets: [target] } = event;
+				if (cards?.length) {
+					await player.discard(cards);
+				}
+				else {
+					await player.drawTo(player.getHandcardLimit());
+				}
+				if (target.countCards("hej")) {
+					await player.discardPlayerCard(target, "hej", [1, 2], true);
+				}
+			}
+		},
+	},
+	dcrenshuang: {
+		trigger: {
+			player: ["dying", "dyingAfter"],
+		},
+		audio: 2,
+		filter(event, player, name) {
+			if (name == "dyingAfter") {
+				return player.isIn();
+			}
+			return game.getRoundHistory("everything", evt => evt.name == "dying" && evt.player == player).indexOf(event) == 0;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (event.triggername == "dying") {
+				await player.recoverTo(1);
+				if (player.getAllHistory("custom", evt => evt.dcrenshuang).length < 3) {
+					player.getHistory("custom").push({
+						dcrenshuang: true,
+					});
+					await player.gainMaxHp();
+				}
+			}
+			else {
+				await player.link(false);
+				await player.turnOver(false);
+				const cards = get.inpileVCardList(info => info[0] == "trick" && player.hasUseTarget(info[2]));
+				if (!cards?.length) {
+					return;
+				}
+				const result = await player
+					.chooseButton(["纫霜：选择要视为使用的牌", [cards, "vcard"]], true)
+					.set("ai", button => {
+						return get.player().getUseValue(button.link[2]);
+					})
+					.forResult();
+				if (result?.bool) {
+					const card = new lib.element.VCard({ name: result.links[0][2] });
+					if (player.hasUseTarget(card)) {
+						await player.chooseUseTarget(card, true);
+					}
+				}
+			}
+		},
+	},
 	//谋姜维
 	dcsbjuemou: {
 		audio: 2,
