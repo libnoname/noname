@@ -2077,17 +2077,18 @@ const skills = {
 			player.awakenSkill(event.name);
 			const target = event.targets[0];
 			const next = target.insertPhase();
-			next.set("dcsbbizuo", player);
 			target
-				.when({ player: "phaseBefore" })
+				.when({ player: "phaseBegin" })
 				.filter(evt => {
-					return evt?.dcsbbizuo;
+					return evt?.skill == "dcsbbizuo";
 				})
 				.assign({
 					firstDo: true,
 				})
+				.vars({
+					source: player,
+				})
 				.then(() => {
-					const source = trigger.dcsbbizuo;
 					player.addTempSkill("dcsbbizuo_mark", "phaseAfter");
 					game.filterPlayer(target => {
 						return target !== player && target !== source;
@@ -2098,7 +2099,7 @@ const skills = {
 			player
 				.when({ global: "phaseEnd" })
 				.filter(evt => {
-					return evt?.dcsbbizuo;
+					return evt?.skill == "dcsbbizuo";
 				})
 				.step(async (event, trigger, player) => {
 					let cards = game
@@ -18119,6 +18120,7 @@ const skills = {
 				}
 				const evt = player.insertPhase();
 				evt.wumei_phase = true;
+				evt.phaseList = trigger.phaseList;
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
 				evt._noTurnOver = true;

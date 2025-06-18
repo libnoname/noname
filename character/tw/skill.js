@@ -3814,8 +3814,8 @@ const skills = {
 					const next = player.insertPhase();
 					next.set("phaseList", ["phaseUse"]);
 					player
-						.when({ global: "phaseBefore" })
-						.filter(evt => evt == next)
+						.when({ global: "phaseBegin" })
+						.filter(evt => evt.skill == "twrenxian_phase")
 						.then(() => {
 							player.addTempSkill("twrenxian_mark", "phaseAfter");
 							player.markAuto("twrenxian_mark", cardsx);

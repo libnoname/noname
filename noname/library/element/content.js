@@ -4616,7 +4616,8 @@ player.removeVirtualEquip(card);
 			}
 		}
 		game.log();
-		game.log(player, "的回合开始");
+		const skill = event.skill && get.sourceSkillFor(event.skill);
+		game.log(player, "的", skill ? `#y【${get.translation(skill)}】`: "", "回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
 			var num;
