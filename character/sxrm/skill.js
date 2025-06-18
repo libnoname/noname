@@ -724,7 +724,7 @@ const skills = {
 					global: ["useCard"],
 				},
 				filter(event, player) {
-					if (_status.currentPhase == player || event.player == player) {
+					if (_status.currentPhase == player || event.player == player || event.all_excluded) {
 						return false;
 					}
 					return (

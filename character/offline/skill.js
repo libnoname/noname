@@ -551,14 +551,14 @@ const skills = {
 			) {
 				return 0;
 			}
-			return 5 - get.value(card);
+			return 7 - get.value(card);
 		},
 		position: "hs",
 		onuse(links, player) {
 			_status.event.addCount = false;
 		},
 		ai: {
-			order: () => get.order({ name: "sha" }) + 0.2,
+			order: () => get.order({ name: "sha" }) - 0.1,
 		},
 		locked: false,
 		group: "jun_hefa_draw",

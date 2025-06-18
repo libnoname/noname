@@ -166,9 +166,9 @@ const skills = {
 				.set("prompt", "###狂信###你失去任意点体力，摸等量的牌并展示已损失体力值+1张手牌。")
 				.set("ai", () => {
 					if (get.player().hp < 3) {
-						return 1;
+						return 0;
 					}
-					return get.player().hp - 1;
+					return get.player().hp - 2;
 				})
 				.forResult();
 			if (!result?.control) {
@@ -31761,7 +31761,7 @@ const skills = {
 		audio: "shefu",
 		sourceSkill: "shefu",
 		filter(event, player) {
-			if (_status.currentPhase == player || event.player == player) {
+			if (_status.currentPhase == player || event.player == player || event.all_excluded) {
 				return false;
 			}
 			return (

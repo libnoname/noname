@@ -8725,7 +8725,7 @@ const skills = {
 					return event.hasNature("fire");
 				},
 				content() {
-					player.tempBanSkill("jsrgshishou", { player: "phaseEnd" });
+					player.tempBanSkill("jsrgcangchu", { player: "phaseEnd" });
 					player.addTempSkill("jsrgshishou_blocker", { player: "phaseEnd" });
 				},
 			},
