@@ -1,3 +1,1 @@
-export default {
-	wujing: ["sunce", "sunben", "wuguotai"],
-};
+export default {};
