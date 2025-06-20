@@ -27,7 +27,7 @@ export default () => {
 			}
 			"step 1";
 			for (var i in lib.skill) {
-				if (lib.skill[i].seatRelated) {
+				if (lib.skill[i].seatRelated === true) {
 					lib.skill[i] = {};
 					if (lib.translate[i + "_info"]) {
 						lib.translate[i + "_info"] = "此模式下不可用";

@@ -2986,16 +2986,14 @@ const skills = {
 		hiddenSkill: true,
 		filter(event, player) {
 			return (
-				event.toShow &&
-				event.toShow.some(name => {
+				event.toShow?.some(name => {
 					return get.character(name, 3).includes("nsbizhao");
-				}) &&
-				player != _status.currentPhase
+				}) && player != _status.currentPhase
 			);
 		},
 		async content(event, trigger, player) {
-			player.addTempSkill(event.nam + "_effect", { player: "phaseBeginStart" });
-			player.addMark(event.nam + "_effect", 1, false);
+			player.addTempSkill(event.name + "_effect", { player: "phaseBeginStart" });
+			player.addMark(event.name + "_effect", 1, false);
 		},
 		subSkill: {
 			effect: {

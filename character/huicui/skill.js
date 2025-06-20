@@ -605,7 +605,7 @@ const skills = {
 	},
 	dcyizheng: {
 		audio: 2,
-		trigger: { player: ["phaseBegin"] },//, "phaseEnd"
+		trigger: { player: ["phaseBegin"] }, //, "phaseEnd"
 		filter(event, player) {
 			return (
 				player.countCards("h") &&
@@ -753,7 +753,7 @@ const skills = {
 			await player.recover(num);
 			//await player.draw(num);
 			await player.removeSkills("dcyizheng");
-			if (player.hasSkill("dcboxuan")) {
+			if (player.hasSkill("dcboxuan", null, null, false)) {
 				player.storage.dcboxuan = true;
 			}
 			game.log(player, `修改了〖博玄〗`);
@@ -1963,9 +1963,6 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			if (!player.isPhaseUsing()) {
-				return false;
-			}
 			if (event.card.name != "sha" && get.type(event.card) != "trick") {
 				return false;
 			}

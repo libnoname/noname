@@ -1080,8 +1080,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		changeSeat: true,
-		seatRelated: true,
+		seatRelated: "changeSeat",
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -5676,7 +5675,7 @@ const skills = {
 		group: "boming_draw",
 		subSkill: {
 			draw: {
-				audio: 'boming',
+				audio: "boming",
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				locked: false,

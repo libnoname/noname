@@ -2928,8 +2928,8 @@ export default () => {
 				}
 
 				lib.skill._recasting.usable = 3;
-				for (i in lib.skill) {
-					if (lib.skill[i].seatRelated) {
+				for (var i in lib.skill) {
+					if (lib.skill[i].seatRelated === true) {
 						lib.skill[i] = {};
 						if (lib.translate[i + "_info"]) {
 							lib.translate[i + "_info"] = "此模式下不可用";

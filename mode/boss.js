@@ -31,7 +31,7 @@ export default () => {
 				lib.character[i] = lib.characterPack.mode_boss[i];
 			}
 			for (var i in lib.skill) {
-				if (lib.skill[i].seatRelated) {
+				if (lib.skill[i].seatRelated === true) {
 					lib.skill[i] = {};
 					if (lib.translate[i + "_info"]) {
 						lib.translate[i + "_info"] = "此模式下不可用";

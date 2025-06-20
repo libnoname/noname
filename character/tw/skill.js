@@ -7962,13 +7962,18 @@ const skills = {
 						event.result = { bool: bool, targets: targets };
 					} else {
 						event.result = await player
-							.chooseTarget(get.prompt(event.skill), "令任意名【承袭】的目标角色也成为" + get.translation(trigger.card) + "的目标", (card, player, target) => {
-								const trigger = get.event().getTrigger();
-								if (!player.getStorage("twchengxi_add").includes(target)) {
-									return false;
-								}
-								return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
-							}, [1, player.getStorage("twchengxi_add").length])
+							.chooseTarget(
+								get.prompt(event.skill),
+								"令任意名【承袭】的目标角色也成为" + get.translation(trigger.card) + "的目标",
+								(card, player, target) => {
+									const trigger = get.event().getTrigger();
+									if (!player.getStorage("twchengxi_add").includes(target)) {
+										return false;
+									}
+									return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+								},
+								[1, player.getStorage("twchengxi_add").length]
+							)
 							.set("ai", target => {
 								const player = get.player(),
 									trigger = get.event().getTrigger();
@@ -10350,9 +10355,9 @@ const skills = {
 		},
 		onChooseToUse(event) {
 			if (event.type == "phase" && !game.online) {
-				var map = {};
+				const map = {};
 				event.player.getHistory("useCard", evt => {
-					var evtx = evt.getParent("phaseUse"),
+					const evtx = evt.getParent("phaseUse"),
 						suit = get.suit(evt.card);
 					if (!lib.suit.includes(suit)) {
 						return;
@@ -10370,12 +10375,12 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var str = get.translation("twbingde_info"),
+				let str = get.translation("twbingde_info"),
 					str2 = "";
 				if (event.twbingde_map) {
 					str2 = '<div class="text center">本回合使用牌对应花色数：</div>';
 					str2 += '<div class="text center">';
-					for (var suit of lib.suit) {
+					for (const suit of lib.suit) {
 						str2 += get.translation(suit) + "：" + get.cnNumber(event.twbingde_map[suit] || 0) + "张；";
 					}
 					str2 = str2.slice(0, str2.length - 1) + "</div>";
@@ -10383,15 +10388,15 @@ const skills = {
 				return ui.create.dialog("###秉德###" + str, str2);
 			},
 			chooseControl(event, player) {
-				var list = lib.suit.slice();
+				const list = lib.suit.slice();
 				list.removeArray(player.getStorage("twbingde_clear"));
 				list.push("cancel2");
 				return list;
 			},
 			check(event, player) {
-				var map = event.twbingde_map;
-				var suit = lib.suit
-					.filter(i => !player.getStorage("twbingde_clear").includes(i))
+				const map = event.twbingde_map;
+				const suit = lib.suit
+					.filter(suit => !player.getStorage("twbingde_clear").includes(suit) && player.hasCard(card => get.suit(card) == suit, "he"))
 					.sort((a, b) => {
 						return map[b] - map[a];
 					})[0];
@@ -10403,21 +10408,19 @@ const skills = {
 			backup(result, player) {
 				return {
 					audio: "twbingde",
-					filterCard: true,
-					selectCard: 1,
+					filterCard: lib.filter.cardDiscardable,
 					position: "he",
 					suit: result.control,
 					check(card) {
-						var suit = lib.skill.twbingde.suit;
+						const suit = lib.skill.twbingde_backup.suit;
 						if (get.suit(card) == suit) {
 							return 10 - get.value(card);
 						}
 						return 6 - get.value(card);
 					},
-					content() {
-						"step 0";
-						var suit = lib.skill.twbingde_backup.suit,
-							num = 0;
+					async content(event, trigger, player) {
+						const { suit } = get.info(event.name);
+						let num = 0;
 						player.popup(suit + 2);
 						game.log(player, "选择了", "#y" + suit + 2);
 						player.addTempSkill("twbingde_clear", "phaseUseAfter");
@@ -10431,18 +10434,14 @@ const skills = {
 							num++;
 						});
 						if (num > 0) {
-							player.draw(num);
+							await player.draw(num);
 						}
-						"step 1";
-						if (get.suit(cards[0], player) == lib.skill.twbingde_backup.suit) {
+						if (get.suit(event.cards[0], player) == suit && player.getStat("skill").twbingde) {
 							delete player.getStat("skill").twbingde;
+							game.log(player, "重置了", "#g【秉德】");
 						}
 					},
-					ai: {
-						result: {
-							player: 1,
-						},
-					},
+					ai: { result: { player: 1 } },
 				};
 			},
 			prompt: () => "秉德：弃置一张牌",
@@ -10461,43 +10460,33 @@ const skills = {
 	},
 	twqingtao: {
 		audio: 2,
-		trigger: { player: "phaseDrawEnd" },
+		trigger: { player: ["phaseDrawEnd", "phaseJieshuBegin"] },
 		filter(event, player) {
-			return player.countCards("he");
-		},
-		direct: true,
-		group: "twqingtao_jieshu",
-		content() {
-			"step 0";
-			player.chooseCard(get.prompt2("twqingtao"), "he", lib.filter.cardRecastable).set("ai", function (card) {
-				if (card.name == "jiu" || get.type(card) != "basic") {
-					return 10 - get.value(card);
-				}
-				return 6 - get.value(card);
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twqingtao");
-				player.recast(result.cards);
-				if (get.name(result.cards[0]) == "jiu" || get.type(result.cards[0], false, player) != "basic") {
-					player.draw();
-				}
+			if (!player.countCards("he")) {
+				return false;
 			}
+			return event.name == "phaseDraw" || !player.hasHistory("custom", evt => evt.twqingtao);
 		},
-		subSkill: {
-			jieshu: {
-				audio: "twqingtao",
-				trigger: { player: "phaseJieshuBegin" },
-				filter(event, player) {
-					return player.countCards("he") > 0 && !player.hasHistory("useSkill", evt => evt.skill == "twqingtao");
-				},
-				direct: true,
-				content() {
-					var next = game.createEvent("twqingtao");
-					next.player = player;
-					next.setContent(lib.skill.twqingtao.content);
-				},
-			},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), "he", lib.filter.cardRecastable)
+				.set("ai", function (card) {
+					if (card.name == "jiu" || get.type(card) != "basic") {
+						return 10 - get.value(card);
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.recast(cards);
+			if (trigger.name == "phaseDraw") {
+				player.getHistory("custom").push({ [event.name]: true });
+			}
+			if (get.name(cards[0]) == "jiu" || get.type(cards[0], false, player) != "basic") {
+				await player.draw();
+			}
 		},
 	},
 	//牛董
@@ -11616,11 +11605,7 @@ const skills = {
 			if (trigger.player != player) {
 				player.addExpose(0.3);
 			}
-			let choiceList = [
-				`令${name}获得牌堆里的一张【杀】`,
-				`令${name}将一张手牌交给另一名角色，然后${name}摸两张牌`,
-				`背水！${(target != player ? "将所有手牌交给" + name + "，然后" : "")}依次执行以上所有选项`,
-			];
+			let choiceList = [`令${name}获得牌堆里的一张【杀】`, `令${name}将一张手牌交给另一名角色，然后${name}摸两张牌`, `背水！${target != player ? "将所有手牌交给" + name + "，然后" : ""}依次执行以上所有选项`];
 			let list = ["选项一"];
 			if (target.countCards("h") && game.hasPlayer(t => t !== target)) {
 				list.push("选项二");
@@ -11632,7 +11617,9 @@ const skills = {
 			} else {
 				choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "</span>";
 			}
-			const { result: { control }} = await player
+			const {
+				result: { control },
+			} = await player
 				.chooseControl(list)
 				.set("prompt", "毅谋：请选择一项")
 				.set("choiceList", choiceList)

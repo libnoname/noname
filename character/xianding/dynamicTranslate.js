@@ -82,9 +82,6 @@ const dynamicTranslates = {
 		}
 		return str;
 	},
-	rezhongjian(player) {
-		return "出牌阶段限" + (player.hasSkill("recaishi2") ? "两" : "一") + "次，你可以选择一名本回合内未选择过的角色。你令其获得一项效果直至你的下回合开始：①其下次造成伤害后弃置两张牌，然后你摸一张牌。②其下次受到伤害后摸两张牌，然后你摸一张牌。";
-	},
 	bazhan(player) {
 		const bool = player.storage.bazhan;
 		let yang = "你可以将至多两张手牌交给一名其他角色",

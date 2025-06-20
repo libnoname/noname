@@ -414,9 +414,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const list = [];
 			for (let positon of ["c", "d", "ej"]) {
-				const card = get.cardPile(card => {
-					return get.tag(card, "damage") && positon.includes(get.position(card, true));
-				}, "field", "random");
+				const card = get.cardPile(
+					card => {
+						return get.tag(card, "damage") && positon.includes(get.position(card, true));
+					},
+					"field",
+					"random"
+				);
 				if (card) {
 					if (positon == "ej") {
 						const owner = get.owner(card);
@@ -429,9 +433,11 @@ const skills = {
 					list.push(card);
 				}
 			}
-			const cards = Array.from(ui.ordering.childNodes).slice(0).filter(card => {
-				return card && get.tag(card, "damage") && get.position(card, true) == "o";
-			});
+			const cards = Array.from(ui.ordering.childNodes)
+				.slice(0)
+				.filter(card => {
+					return card && get.tag(card, "damage") && get.position(card, true) == "o";
+				});
 			if (cards.length) {
 				list.push(cards.randomGet());
 			}
@@ -629,8 +635,7 @@ const skills = {
 			const { result } = await next;
 			if (result?.suit == "spade") {
 				await target.damage(2, "thunder");
-			}
-			else if (target.countCards("h")){
+			} else if (target.countCards("h")) {
 				await player.gainPlayerCard(target, "h", true);
 			}
 		},
@@ -7925,8 +7930,7 @@ const skills = {
 	hm_qianjun: {
 		limited: true,
 		enable: "phaseUse",
-		seatRelated: true,
-		changeSeat: true,
+		seatRelated: "changeSeat",
 		skillAnimation: true,
 		animationColor: "orange",
 		derivation: "olluanji",

@@ -20416,8 +20416,7 @@ const skills = {
 		},
 		multitarget: true,
 		multiline: true,
-		changeSeat: true,
-		seatRelated: true,
+		seatRelated: "changeSeat",
 		contentBefore() {
 			player.$fullscreenpop("败移", "thunder");
 		},

@@ -312,14 +312,6 @@ export default () => {
 					}
 				}
 
-				for (var i in lib.skill) {
-					if (lib.skill[i].changeSeat) {
-						lib.skill[i] = {};
-						if (lib.translate[i + "_info"]) {
-							lib.translate[i + "_info"] = "固定位置时不可用";
-						}
-					}
-				}
 
 				var side = Math.random() < 0.5;
 				var num = Math.floor(Math.random() * 8);
@@ -767,7 +759,7 @@ export default () => {
 					lib.characterIntro.boss_fuweizilong = lib.characterIntro.zhaoyun;
 					"step 1";
 					for (var i in lib.skill) {
-						if (lib.skill[i].seatRelated) {
+						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
 							if (lib.translate[i + "_info"]) {
 								lib.translate[i + "_info"] = "此模式下不可用";
@@ -1578,7 +1570,7 @@ export default () => {
 					"step 0";
 					ui.arena.classList.add("choose-character");
 					for (var i in lib.skill) {
-						if (lib.skill[i].seatRelated) {
+						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
 							if (lib.translate[i + "_info"]) {
 								lib.translate[i + "_info"] = "此模式下不可用";
@@ -2133,7 +2125,7 @@ export default () => {
 					game.enemy = [];
 
 					for (var i in lib.skill) {
-						if (lib.skill[i].seatRelated) {
+						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
 							if (lib.translate[i + "_info"]) {
 								lib.translate[i + "_info"] = "此模式下不可用";
@@ -2578,7 +2570,7 @@ export default () => {
 						}
 					} else {
 						for (var i in lib.skill) {
-							if (lib.skill[i].seatRelated) {
+							if (lib.skill[i].seatRelated === true) {
 								lib.skill[i] = {};
 								if (lib.translate[i + "_info"]) {
 									lib.translate[i + "_info"] = "此模式下不可用";

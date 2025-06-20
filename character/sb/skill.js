@@ -10063,12 +10063,10 @@ const skills = {
 		filter(event, player) {
 			return event.card.name == "sha" && player.countMark("splveying") > 1;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.removeMark("splveying", 2);
-			player.draw();
-			"step 1";
-			player.chooseUseTarget("guohe");
+			await player.draw();
+			await player.chooseUseTarget("guohe");
 		},
 		marktext: "椎",
 		intro: {
@@ -10082,13 +10080,18 @@ const skills = {
 				audio: "splveying",
 				trigger: { player: "useCardToPlayered" },
 				forced: true,
-				usable: 2,
 				filter(event, player) {
-					return event.card.name == "sha" && player.isPhaseUsing();
+					return event.card.name == "sha" && player.isPhaseUsing() && player.countMark("splveying_used") < 2;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("splveying", 1);
+					player.addTempSkill("splveying_used", "phaseUseEnd");
+					player.addMark("splveying_used", 1);
 				},
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
 			},
 		},
 	},
@@ -10101,10 +10104,10 @@ const skills = {
 		filter(event, player) {
 			return player.hasSkill("splveying", null, null, false) && get.type(event.card) == "trick" && !get.tag(event.card, "damage") && player.countMark("splveying") > 1;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeMark("splveying", 2);
-			player.draw();
-			player.chooseUseTarget("sha", false);
+			await player.draw();
+			await player.chooseUseTarget("sha", false);
 		},
 		ai: { combo: "splveying" },
 		subSkill: {
@@ -10113,13 +10116,18 @@ const skills = {
 				trigger: { player: "useCardToPlayered" },
 				forced: true,
 				locked: false,
-				usable: 2,
 				filter(event, player) {
-					return player.hasSkill("splveying") && get.type(event.card) == "trick" && !get.tag(event.card, "damage") && player.isPhaseUsing();
+					return player.hasSkill("splveying") && get.type(event.card) == "trick" && !get.tag(event.card, "damage") && player.isPhaseUsing() && player.countMark("spyingwu_used") < 2;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("splveying", 1);
+					player.addTempSkill("spyingwu_used", "phaseUseEnd");
+					player.addMark("spyingwu_used", 1);
 				},
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
 			},
 		},
 	},

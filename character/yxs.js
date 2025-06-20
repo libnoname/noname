@@ -2724,8 +2724,7 @@ game.import("character", function () {
 			qiandu: {
 				enable: "phaseUse",
 				usable: 1,
-				changeSeat: true,
-				seatRelated: true,
+				seatRelated: "changeSeat",
 				filterTarget(card, player, target) {
 					return player != target && player.next != target;
 				},
