@@ -1112,6 +1112,18 @@ const translates = {
 	potkuanggu_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌。",
 	potkuanggu_pot_weiyan_achieve: "狂骨·二级",
 	potkuanggu_pot_weiyan_achieve_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌；3.背水，弃置一张牌并令你此阶段使用【杀】的次数+1。",
+	pot_lusu: "势鲁肃",
+	pot_lusu_prefix: "势",
+	pothaoshi: "好施",
+	pothaoshi_info: "结束阶段，你可以选择一名体力值小于等于你的其他角色：直到你的下个回合开始，其可以如手牌般使用或打出你的手牌。你因此失去最后的手牌时，你将手牌摸至等同于体力上限数张。",
+	potdimeng: "缔盟",
+	potdimeng_info: "出牌阶段限一次，你可以选择两名手牌数之差小于等于X的角色（X为你已损失的体力值），令他们交换手牌。然后你选择一项：弃置X张牌（不足则全弃）：交换后手牌较少的角色摸X张牌。",
+	mb_sunjun: "手杀孙峻",
+	mb_sunjun_prefix: "手杀",
+	mbxiongtu: "凶图",
+	mbxiongtu_info: "出牌阶段限一次，你可以展示一名其他角色的一张手牌并选择一项：1.弃置此牌：2.弃置X张牌并对其造成1点伤害（X为本回合未进入过弃牌堆的花色数）。",
+	mbxianshuai: "先率",
+	mbxianshuai_info: "锁定技，你于回合内使用手牌中每个花色的首张牌不计入次数限制且无次数限制。",
 };
 
 export default translates;

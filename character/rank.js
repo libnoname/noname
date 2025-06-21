@@ -390,6 +390,8 @@ window.noname_character_rank = {
 		"renwan",
 	],
 	am: [
+		"pot_lusu",
+		"mb_sunjun",
 		"dc_zhaoxiang",
 		"xia_guanyu",
 		"caoxian",
@@ -2732,6 +2734,8 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"pot_lusu",
+			"mb_sunjun",
 			"pe_jun_liubei",
 			"pe_jun_caocao",
 			"pe_jun_sunce",

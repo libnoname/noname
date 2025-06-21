@@ -17894,21 +17894,30 @@ const skills = {
 				},
 				audio: "sbwusheng",
 				trigger: {
-					player: "useCardAfter",
+					player: ["useCardAfter", "useCard1"],
 				},
-				filter(event, player) {
-					if (event.card.name != "sha") {
+				filter(event, player, name) {
+					if (event.card.name != "sha" || (name == "useCard1" && event.addCount == false)) {
 						return false;
 					}
 					return event.targets.some(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					const targets = trigger.targets.filter(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
-					player.line(targets);
-					await player.draw(targets.length);
-					for (const target of targets) {
-						player.storage.jdsbwusheng_effect[target.playerid]--;
+					if (event.triggername == "useCard1") {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
+					} else {
+						const targets = trigger.targets.filter(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
+						player.line(targets);
+						await player.draw(targets.length);
+						for (const target of targets) {
+							player.storage.jdsbwusheng_effect[target.playerid]--;
+						}
 					}
 				},
 			},

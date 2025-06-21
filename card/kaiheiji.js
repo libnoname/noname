@@ -67,7 +67,9 @@ game.import("card", function () {
 						target: -1,
 					},
 					tag: {
-						damage: 0.5,
+						damage: 1,
+						fireDamage: 1,
+						natureDamage: 1,
 						multitarget: 1,
 						multineg: 1,
 					},

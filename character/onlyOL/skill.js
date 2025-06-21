@@ -86,7 +86,7 @@ const skills = {
 							return get.effect(target, { name: "loseHp" }, player, player);
 						})
 						.set("targetprompt2", target => {
-							if (!target.isIn()) {
+							if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
 								return false;
 							}
 							return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
@@ -1728,7 +1728,7 @@ const skills = {
 				event.set("olsblunzhan", player.getHistory("useCard"));
 			}
 			event.set("targetprompt2", target => {
-				if (!target.isIn() || get.event().skill != "olsblunzhan") {
+				if (!target.isIn() || get.event().skill != "olsblunzhan" || !get.event().filterTarget(get.card(), get.player(), target)) {
 					return false;
 				}
 				const player = get.player(),

@@ -376,7 +376,7 @@ window.noname_character_replace = {
 	ol_pengyang: ["ol_pengyang", "sp_pengyang"],
 	ol_wenqin: ["ol_wenqin", "mb_wenqin", "pe_wenqin"],
 	re_lidian: ["re_lidian", "old_re_lidian", "junk_lidian"],
-	re_lusu: ["re_lusu", "ol_lusu", "dc_sb_lusu", "xia_lusu", "jy_lusu"],
+	re_lusu: ["re_lusu", "ol_lusu", "dc_sb_lusu", "pot_lusu", "xia_lusu", "jy_lusu"],
 	re_yuanshao: ["re_yuanshao", "ol_yuanshao", "ol_sb_yuanshao", "star_yuanshao", "xin_yuanshao", "sb_yuanshao", "jsrg_yuanshao", "jd_sb_yuanshao", "yy_yuanshao", "pe_jun_yuanshao"],
 	sp_chenzhen: ["sp_chenzhen", "tw_chenzhen"],
 	sp_jiangwan: ["ol_jiangwan", "sp_jiangwan", "std_jiangwan"],
@@ -418,4 +418,5 @@ window.noname_character_replace = {
 	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
 	wufu: ["wufu", "hr_wufu"],
 	zhangyao: ["zhangyao", "std_zhangyao"],
+	sunjun: ["mb_sunjun", "jsrg_sunjun"],
 };

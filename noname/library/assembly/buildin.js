@@ -16,9 +16,7 @@ export const checkBegin = {
 		if (!event.targetprompt2) {
 			return;
 		}
-		const player = get.player(),
-			card = get.card();
-		game.filterPlayer2(target => event.filterTarget?.(card, player, target), [], true).forEach(target => {
+		game.filterPlayer2(() => true, [], true).forEach(target => {
 			const str = event.targetprompt2(target) || "";
 			let node;
 			if (target.node.prompt2) {

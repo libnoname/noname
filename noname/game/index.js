@@ -9920,6 +9920,87 @@ export class Game extends GameCompatible {
 			await Promise.resolve(asyncFunc(target, i));
 		}
 	}
+	/**
+	 * 用于玩家使用非自己手牌时生成的可以选择的假牌（其实就是复制一份出来）。
+	 *
+	 * @param { Card[] | Card } cards 需要被复制的真牌，允许传入单张卡牌或者卡牌数组
+	 * @param { Boolean } isBlank 是否生成只有牌背没有其他牌面信息的牌
+	 * @param { string } tempname 生成的假牌的临时名字，只有isBlank为true才会用到
+	 * @returns { Card[] }
+	 */
+	createFakeCards(cards, isBlank = false, tempname) {
+		if (!Array.isArray(cards)) {
+			cards = [cards];
+		}
+		const cardsx = cards.map(card => {
+			const cardx = ui.create.card();
+			cardx.isFake = true;
+			cardx._cardid = card.cardid;
+			if (isBlank) {
+				//没有tempname默认就是白板
+				cardx.init([null, null, tempname || "猜猜看啊", null]);
+				game.broadcastAll(cardx => {
+					cardx.classList.add("infohidden");
+					cardx.classList.add("infoflip");
+				}, cardx);
+			} else {
+				cardx.init(get.cardInfo(card));
+			}
+			return cardx;
+		});
+		return cardsx;
+	}
+	/**
+	 * 用于删除createFakeCards生成的假牌。
+	 *
+	 * @param { Card[] | Card } cards 需要被删除的假牌，允许传入单张卡牌或者卡牌数组
+	 * @returns { Card[] } 返回那些不是假牌的牌
+	 */
+	deleteFakeCards(cards) {
+		if (!Array.isArray(cards)) {
+			cards = [cards];
+		}
+		const fake = cards.filter(card => card.isFake && card._cardid),
+			other = cards.removeArray(fake),
+			wild = [],
+			map = {};
+		fake.forEach(card => {
+			const owner = get.owner(card);
+			if (!owner) {
+				wild.push(card);
+				return;
+			}
+			if (!map[owner.playerid]) {
+				map[owner.playerid] = [];
+			}
+			map[owner.playerid].push(card);
+		});
+		wild.forEach(i => i.delete());
+		for (const id in map) {
+			const target = game.findPlayer2(i => i.playerid == id);
+			if (!target) {
+				continue;
+			}
+			const cards = map[id];
+			if (target.isOnline2()) {
+				target.send(
+					function (cards, player) {
+						cards.forEach(i => i.delete());
+						if (player == game.me) {
+							ui.updatehl();
+						}
+					},
+					cards,
+					target
+				);
+			}
+			cards.forEach(i => i.delete());
+			if (target == game.me) {
+				ui.updatehl();
+			}
+		}
+		return other;
+	}
 }
 
 export let game = new Game();

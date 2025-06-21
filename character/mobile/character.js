@@ -1,4 +1,16 @@
 const characters = {
+	pot_lusu: {
+		sex: "male",
+		hp: 3,
+		group: "wu",
+		skills: ["pothaoshi", "potdimeng"],
+	},
+	mb_sunjun: {
+		sex: "male",
+		hp: 3,
+		group: "wu",
+		skills: ["mbxiongtu", "mbxianshuai"],
+	},
 	pot_weiyan: {
 		hp: 4,
 		sex: "male",

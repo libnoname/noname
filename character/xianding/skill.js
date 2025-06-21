@@ -1711,7 +1711,7 @@ const skills = {
 							await target.chooseToDiscard(-numx, "h", true);
 						}
 						if (target.hasHistory("gain", evt => evt.getParent(2) == event)) {
-							await target.chooseToDiscard(3, "h", true);
+							await target.chooseToDiscard(3, "he", true);
 						} else if (target.hasHistory("lose", evt => evt.type == "discard" && evt.getlx !== false && evt.getParent(3) == event)) {
 							await target.draw(3, "nodelay");
 						} else {
@@ -3338,13 +3338,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return get.cardPile2(card => {
-				const suit = get.suit(card);
-				if (player.getStorage("dcyuxian").includes(suit)) {
-					return true;
-				}
-				return event.card && suit === get.suit(event.card);
-			});
+			return event.num > 0;
 		},
 		getIndex: event => event.num,
 		async cost(event, trigger, player) {
@@ -3358,22 +3352,27 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let cards = [];
-			while (cards.length < 2) {
-				let card = get.cardPile2(card => {
-					if (cards.includes(card)) {
+			if (player.getStorage("dcyuxian").length) {
+				while (cards.length < 2) {
+					let card = get.cardPile2(card => {
+						if (cards.includes(card)) {
+							return false;
+						}
+						const suit = get.suit(card);
+						if (player.getStorage("dcyuxian").includes(suit)) {
+							return true;
+						}
 						return false;
+					});
+					if (card) {
+						cards.push(card);
+					} else {
+						break;
 					}
-					const suit = get.suit(card);
-					if (player.getStorage("dcyuxian").includes(suit)) {
-						return true;
-					}
-					return trigger.card && suit === get.suit(trigger.card);
-				});
-				if (card) {
-					cards.push(card);
-				} else {
-					break;
 				}
+			}
+			if (cards.length < 2) {
+				cards.addArray(get.cards(2 - cards.length));
 			}
 			if (cards.length) {
 				await event.targets[0].gain(cards, "draw");
@@ -18124,6 +18123,7 @@ const skills = {
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
 				evt._noTurnOver = true;
+				evt.set("phaseList", trigger.phaseList);
 				evt.pushHandler("dcwumei_phase", (event, option) => {
 					if (event.step === 0 && option.state === "begin") {
 						event.step = 4;
