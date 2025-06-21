@@ -2192,6 +2192,7 @@ const skills = {
 						lib.skill.olsiqi_backup.viewAs = card;
 						lib.skill.olsiqi_backup.viewAs.cards = [card];
 					}, card);
+					player.addTempSkill("olsiqi_target");
 					const next = player.chooseToUse();
 					next.set("openskilldialog", `思泣：请选择${get.translation(card)}的目标`);
 					next.set("forced", true);
@@ -2208,6 +2209,7 @@ const skills = {
 						.filter(evt => evt === next)
 						.then(() => (trigger.filterCard = () => false));
 					const { result: result3 } = await next;
+					player.removeSkill("olsiqi_target");
 					if (result3.bool) {
 						cards.remove(card);
 						continue;
@@ -2219,74 +2221,6 @@ const skills = {
 				await player.draw(cards.length);
 			}
 		},
-		mod: {
-			selectTarget(card, player, range) {
-				if (_status._olsiqi_check) {
-					return;
-				}
-				const event = get.event();
-				if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
-					return;
-				}
-				_status._olsiqi_check = true;
-				const bool = game.countPlayer(target => lib.filter.targetEnabled2(card, player, target)) > 1;
-				delete _status._olsiqi_check;
-				if (bool) {
-					if (range[0] !== 1) {
-						range[0] = 1;
-					}
-					if (range[1] !== 1) {
-						range[1] = 1;
-					}
-				}
-			},
-			cardEnabled2(card, player) {
-				if (_status._olsiqi_check) {
-					return;
-				}
-				const event = get.event();
-				if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
-					return;
-				}
-				_status._olsiqi_check = true;
-				const bool = game.hasPlayer(target => lib.filter.targetEnabled2(card, player, target));
-				delete _status._olsiqi_check;
-				if (bool) {
-					return true;
-				}
-			},
-			cardEnabled(card, player) {
-				if (_status._olsiqi_check) {
-					return;
-				}
-				const event = get.event();
-				if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
-					return;
-				}
-				_status._olsiqi_check = true;
-				const bool = game.hasPlayer(target => lib.filter.targetEnabled2(card, player, target));
-				delete _status._olsiqi_check;
-				if (bool) {
-					return true;
-				}
-			},
-			playerEnabled(card, player, target) {
-				if (_status._olsiqi_check) {
-					return;
-				}
-				const event = get.event();
-				if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
-					return;
-				}
-				_status._olsiqi_check = true;
-				const bool = lib.filter.targetEnabled2(card, player, target);
-				delete _status._olsiqi_check;
-				if (bool) {
-					return true;
-				}
-			},
-		},
-		locked: false,
 		group: "olsiqi_lose",
 		subSkill: {
 			backup: {
@@ -2318,6 +2252,76 @@ const skills = {
 					await game.cardsGotoPile(list);
 					game.log(player, "将", list, "置入了牌堆底");
 				},
+			},
+			target: {
+				mod: {
+					selectTarget(card, player, range) {
+						if (_status._olsiqi_check) {
+							return;
+						}
+						const event = get.event();
+						if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
+							return;
+						}
+						_status._olsiqi_check = true;
+						const bool = game.countPlayer(target => lib.filter.targetEnabled2(card, player, target)) > 1;
+						delete _status._olsiqi_check;
+						if (bool) {
+							if (range[0] !== 1) {
+								range[0] = 1;
+							}
+							if (range[1] !== 1) {
+								range[1] = 1;
+							}
+						}
+					},
+					cardEnabled2(card, player) {
+						if (_status._olsiqi_check) {
+							return;
+						}
+						const event = get.event();
+						if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
+							return;
+						}
+						_status._olsiqi_check = true;
+						const bool = game.hasPlayer(target => lib.filter.targetEnabled2(card, player, target));
+						delete _status._olsiqi_check;
+						if (bool) {
+							return true;
+						}
+					},
+					cardEnabled(card, player) {
+						if (_status._olsiqi_check) {
+							return;
+						}
+						const event = get.event();
+						if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
+							return;
+						}
+						_status._olsiqi_check = true;
+						const bool = game.hasPlayer(target => lib.filter.targetEnabled2(card, player, target));
+						delete _status._olsiqi_check;
+						if (bool) {
+							return true;
+						}
+					},
+					playerEnabled(card, player, target) {
+						if (_status._olsiqi_check) {
+							return;
+						}
+						const event = get.event();
+						if (!event || event.name !== "chooseToUse" || event.getParent().name !== "olsiqi") {
+							return;
+						}
+						_status._olsiqi_check = true;
+						const bool = lib.filter.targetEnabled2(card, player, target);
+						delete _status._olsiqi_check;
+						if (bool) {
+							return true;
+						}
+					},
+				},
+				charlotte: false,
 			},
 		},
 	},
@@ -36109,14 +36113,14 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
-			return /*(get.mode()!='guozhan'||event.player!=player)&&*/ event.player.isIn() && player.countCards("h") > 0 && event.player.hasUseTarget({ name: "jiu" }, null, true);
+			return /*(get.mode()!='guozhan'||event.player!=player)&&*/ event.player.isIn() && player.countCards("h") > 0 && event.player.hasUseTarget({ name: "jiu" }, null, event);
 		},
 		direct: true,
 		preHidden: true,
 		content() {
 			"step 0";
 			var nono = Math.abs(get.attitude(player, trigger.player)) < 3;
-			if (player == trigger.player || get.damageEffect(trigger.player, player, player) <= 0 || !trigger.player.hasUseTarget({ name: "jiu" }, null, true)) {
+			if (player == trigger.player || get.damageEffect(trigger.player, player, player) <= 0 || !trigger.player.hasUseTarget({ name: "jiu" }, null, trigger)) {
 				nono = true;
 			} else if (trigger.player.hp > 2) {
 				nono = true;

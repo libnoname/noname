@@ -11101,7 +11101,7 @@ export class Library {
 			if (event.type == "chooseToUse_button") {
 				event = event.getParent();
 			}
-			if (player != _status.event.player) {
+			if (player != event.player) {
 				return true;
 			}
 			if (info.updateUsable == "phaseUse") {
