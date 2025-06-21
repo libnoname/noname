@@ -2278,7 +2278,7 @@ const skills = {
 			if (result.bool) {
 				target.line(player);
 				player.logSkill("starhaoshou");
-				player.recover();
+				player.recover(target);
 			}
 		},
 		//global:'starhaoshou_global',

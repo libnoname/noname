@@ -17560,7 +17560,12 @@ const skills = {
 							.set("att", get.attitude(target, player))
 							.forResultBool();
 				target.line(player);
-				await player[bool ? "recover" : "draw"]();
+				if (bool) {
+					await player.recover(target);
+				}
+				else {
+					await player.draw();
+				}
 			}
 		},
 	},

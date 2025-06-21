@@ -597,7 +597,7 @@ const skills = {
 						damages.push(event.current);
 						current.line(player, "green");
 						game.log(current, "令", player, "回复1点体力");
-						await player.recover();
+						await player.recover(current);
 					}
 				}
 			}
@@ -15059,7 +15059,7 @@ const skills = {
 				player.logSkill("rejiuyuan");
 				trigger.player.line(player, "green");
 				trigger.cancel();
-				player.recover();
+				player.recover(trigger.player);
 				trigger.player.draw();
 			}
 		},
@@ -17561,7 +17561,7 @@ const skills = {
 			"step 3";
 			if (result.index == 1) {
 				event.current.line(player);
-				player.recover();
+				player.recover(event.current);
 			} else {
 				event.current.draw();
 			}

@@ -4947,7 +4947,7 @@ const skills = {
 			"step 3";
 			target.line(player);
 			if (result.bool) {
-				player.recover();
+				player.recover(target);
 			} else {
 				player.draw();
 			}
@@ -8391,7 +8391,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { source, num } = trigger;
 			source.line(player, "green");
-			await player.recover(num);
+			await player.recover(num, source);
 			await source.draw(2);
 		},
 		ai: {

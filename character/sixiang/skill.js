@@ -4932,7 +4932,7 @@ const skills = {
 					.forResult("bool");
 				if (bool) {
 					target.line(player);
-					await player.recover();
+					await player.recover(target);
 				}
 			}
 		},

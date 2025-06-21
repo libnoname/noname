@@ -8870,7 +8870,7 @@ const skills = {
 				event.damages.push(event.current);
 				event.current.line(player, "green");
 				game.log(event.current, "令", player, "回复1点体力");
-				player.recover();
+				player.recover(event.current);
 			}
 			if (event.targets.length) {
 				event.goto(1);
@@ -11334,7 +11334,7 @@ const skills = {
 				event.targets = result.targets;
 				event.num2 = 0;
 			} else {
-				player.recover(event.num);
+				player.recover(event.num, target);
 				event.finish();
 			}
 			"step 3";
@@ -14020,7 +14020,7 @@ const skills = {
 			}
 			"step 2";
 			if (event.recover || !result.bool) {
-				player.recover();
+				player.recover(event.recover ? null : trigger.source);
 			}
 		},
 		ai: {
