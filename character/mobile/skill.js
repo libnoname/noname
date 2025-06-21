@@ -13,9 +13,12 @@ const skills = {
 		},
 		isMax(player, name) {
 			let count = current => {
-				let history = _status.globalHistory?.[_status.globalHistory.length - 1],
+				let history = _status.globalHistory?.[_status.globalHistory.length - 1]?.everything,
 					count = 0;
-				for (let evt of history?.everything) {
+				if (!history?.length) {
+					return count;
+				}
+				for (let evt of history) {
 					if (evt._cancelled || evt.name != name) {
 						continue;
 					}
