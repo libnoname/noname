@@ -26,20 +26,20 @@ const skills = {
 				}
 				return count;
 			};
-			return count(player) > 0 && !game.hasPlayer(current => count(current) > count(player));
+			return count(player) >= 0 && !game.hasPlayer(current => count(current) > count(player));
 		},
 		marktext: "业",
 		intro: {
 			name: "业",
-			"name2": "业",
+			name2: "业",
 			content: "expansion",
 			markcount: "expansion",
 		},
 		async cost(event, trigger, player) {
 			let list = ["damage", "recover"].filter(name => get.info(event.skill)?.isMax(player, name)),
 				map = {
-					"damage": "black",
-					"recover": "red",
+					damage: "black",
+					recover: "red",
 				};
 			list = list.map(i => map[i]);
 			if (list.length > 1) {
@@ -54,8 +54,7 @@ const skills = {
 					bool: result.control != "cancel2",
 					cost_data: result.control,
 				};
-			}
-			else {
+			} else {
 				event.result = await player
 					.chooseBool(get.prompt(event.skill))
 					.set("prompt2", `将牌堆顶首张${get.translation(list[0])}牌置于武将牌上，称为“业”`)
@@ -27131,10 +27130,11 @@ const skills = {
 			game.broadcastAll(
 				function (card, bool) {
 					card.init([card.suit, card.number, "rewrite_" + card.name]);
-					if (bool && card.card && player.vcardsMap?.equips) {
-						const cardx = game.createCard("rewrite_" + card.card.name, card.card.suit, card.card.number);
-						player.vcardsMap.equips[player.vcardsMap.equips.indexOf(card.card)] = cardx;
-						card.card = cardx;
+					let vcard = card[card.cardSymbol];
+					if (bool && vcard && player.vcardsMap?.equips) {
+						const cardx = get.autoViewAs(card, void 0, false);
+						player.vcardsMap.equips[player.vcardsMap.equips.indexOf(vcard)] = cardx;
+						vcard = cardx;
 					}
 				},
 				card,
