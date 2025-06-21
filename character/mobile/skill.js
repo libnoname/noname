@@ -1,8 +1,385 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import { LibInitPromises } from "../../noname/library/init/promises.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//笮融
+	mbfutu: {
+		audio: 8,
+		trigger: {
+			global: "phaseEnd",
+		},
+		filter(event, player) {
+			return ["damage", "recover"].some(name => get.info("mbfutu")?.isMax(player, name));
+		},
+		isMax(player, name) {
+			let count = current => {
+				let history = _status.globalHistory?.[_status.globalHistory.length - 1],
+					count = 0;
+				for (let evt of history?.everything) {
+					if (evt._cancelled || evt.name != name) {
+						continue;
+					}
+					if (evt?.source != current || typeof evt.num != "number") {
+						continue;
+					}
+					count += evt.num;
+				}
+				return count;
+			};
+			return count(player) > 0 && !game.hasPlayer(current => count(current) > count(player));
+		},
+		marktext: "业",
+		intro: {
+			name: "业",
+			"name2": "业",
+			content: "expansion",
+			markcount: "expansion",
+		},
+		async cost(event, trigger, player) {
+			let list = ["damage", "recover"].filter(name => get.info(event.skill)?.isMax(player, name)),
+				map = {
+					"damage": "black",
+					"recover": "red",
+				};
+			list = list.map(i => map[i]);
+			if (list.length > 1) {
+				list.push("cancel2");
+				const result = await player
+					.chooseControl(list)
+					.set("prompt", get.prompt(event.skill))
+					.set("prompt2", "将牌堆顶一种颜色的首张牌置于武将牌上，称为“业”")
+					.set("ai", () => [0, 1].randomGet())
+					.forResult();
+				event.result = {
+					bool: result.control != "cancel2",
+					cost_data: result.control,
+				};
+			}
+			else {
+				event.result = await player
+					.chooseBool(get.prompt(event.skill))
+					.set("prompt2", `将牌堆顶首张${get.translation(list[0])}牌置于武将牌上，称为“业”`)
+					.forResult();
+				event.result.cost_data = list[0];
+			}
+		},
+		async content(event, trigger, player) {
+			const color = event.cost_data,
+				card = get.cardPile2(card => get.color(card) == color);
+			if (card) {
+				const next = player.addToExpansion(card, "gain2");
+				next.gaintag.add(event.name);
+				await next;
+			}
+		},
+		group: "mbfutu_defend",
+		subSkill: {
+			defend: {
+				trigger: {
+					player: "damageBegin3",
+				},
+				audio: "mbfutu",
+				filter(event, player) {
+					return player.hasExpansions("mbfutu");
+				},
+				async cost(event, trigger, player) {
+					const { bool, links } = await player
+						.chooseButton([`###${get.prompt("mbfutu")}###弃置一张业并防止此伤害`, player.getExpansions("mbfutu")])
+						.set("eff", get.damageEffect(player, trigger.source, player))
+						.set("ai", button => {
+							const { player, eff } = get.event();
+							if (eff >= 0) {
+								return 0;
+							}
+							return player.getExpansions("mbfutu")?.filter(card => {
+								return get.color(card) == get.color(button.link);
+							})?.length;
+						})
+						.forResult();
+					event.result = {
+						bool: bool,
+						cards: links,
+					};
+				},
+				async content(event, trigger, player) {
+					await player.loseToDiscardpile(event.cards);
+					trigger.cancel();
+				},
+			},
+		},
+	},
+	mbjingtu: {
+		audio: 6,
+		enable: "phaseUse",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "gray",
+		filter(event, player) {
+			return player.countExpansions("mbfutu") > 0;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				let dialog = ui.create.dialog("净土：选择一项", "hidden");
+				dialog.add([
+					[
+						["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
+						["black", "获得所有红色“业”，然后令一名角色增加1点体力上限并恢复等量体力"],
+						["all", "背水！同时执行两项"],
+					],
+					"textbutton",
+				]);
+				return dialog;
+			},
+			filter(button) {
+				const player = get.player(),
+					{ link } = button,
+					count = color => player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) != color);
+				if (link != "all") {
+					return count(link) > 0;
+				}
+				return count("red") > 1 && count("red") == count("black");
+			},
+			check(button) {
+				switch (button.link) {
+					case "black":
+						return 5;
+					case "red":
+						return 10;
+					case "all":
+						return 15;
+				}
+			},
+			backup(links, player) {
+				return {
+					audio: "mbjingtu",
+					choice: links[0],
+					skillAnimation: true,
+					animationColor: "gray",
+					async content(event, trigger, player) {
+						player.awakenSkill("mbjingtu");
+						const choice = get.info(event.name)?.choice;
+						const cards = player.getCards("x", card => card.hasGaintag("mbfutu") && get.color(card) != choice);
+						if (!cards?.length) {
+							return;
+						}
+						await player.gain(cards, "gain2");
+						const count = color => cards?.filter(card => get.color(card) == color)?.length,
+							black = count("black"),
+							red = count("red");
+						if (choice != "black" && black > 0) {
+							const result = await player
+								.chooseTarget(`净土：对一名角色造成${black}点伤害`)
+								.set("ai", target => {
+									const player = get.player();
+									return get.damageEffect(target, player, player);
+								})
+								.forResult();
+							if (result.bool) {
+								const target = result.targets[0];
+								player.line(target, "green");
+								await target.damage(player, black);
+							}
+						}
+						if (choice != "red" && red > 0) {
+							const result = await player
+								.chooseTarget(`净土：令一名角色增加1点体力上限并恢复${red}点体力`)
+								.set("ai", target => {
+									const player = get.player();
+									return get.recoverEffect(target, player, player);
+								})
+								.forResult();
+							if (result.bool) {
+								const target = result.targets[0];
+								player.line(target, "green");
+								await target.gainMaxHp();
+								await target.recover(player, red);
+							}
+						}
+						await player.changeSkills(["mbfozong"], ["mbfutu"]);
+						const colors = cards.slice(0).map(i => get.color(i)).toUniqued();
+						player.markAuto("mbfozong", colors);
+					},
+				};
+			},
+		},
+		derivation: "mbfozong",
+		ai: {
+			combo: "mbfutu",
+			order: 3,
+			result: {
+				player(player) {
+					const count = color = player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color);
+					if (count("red") > 1 && count("red") == count("black")) {
+						return 1;
+					}
+					if (player.hp < 2 && count("red") > 1) {
+						return 1;
+					}
+					return 0;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+		},
+	},
+	mbjiebian: {
+		audio: 2,
+		trigger: {
+			global: "phaseUseEnd",
+		},
+		filter(event, player) {
+			if (game.hasPlayer2(current => current.getHistory("damage", evt => {
+				return evt.getParent(event.name) == event;
+			}).length > 0, true)) {
+				return false;
+			}
+			return game.hasPlayer(current => {
+				if (current != _status.currentPhase && !current.isMinHp()) {
+					return false;
+				}
+				return player.canCompare(current, player.hasExpansions("mbfutu"));
+			});
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("filterTarget", (card, player, target) => {
+					if (target != _status.currentPhase && !target.isMinHp()) {
+						return false;
+					}
+					return player.canCompare(target, player.hasExpansions("mbfutu"));
+				})
+				.set("ai", target => {
+					const player = get.player(),
+						eff1 = get.damageEffect(target, player, player),
+						eff2 = get.recoverEffect(target, player, player);
+					if (target.countCards("h") > 2) {
+						return Math.max(eff1, eff2);
+					}
+					return eff1;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { targets: [target] } = event;
+			player.addTempSkill("mbjiebian_fake");
+			const cards = game.createFakeCards(player.getExpansions("mbfutu"));
+			player.directgains(cards, null, "mbjiebian");
+			const result = await player.chooseToCompare(target).set("mbjiebian", true).set("position", "hs").forResult();
+			if (result.tie || !result.winner) {
+				return;
+			}
+			const winner = result.winner,
+				loser = winner == player ? target : player;
+			const result2 = await winner
+				.chooseButton(["劫辩：选择一项", [
+					[
+						["damage", `对${get.translation(loser)}造成1点伤害`],
+						["recover", `获得${get.translation(loser)}两张牌，然后令其恢复1点体力并摸一张牌`],
+					],
+					"textbutton",
+				]], true)
+				.set("ai", button => {
+					const { player, loser } = get.event(),
+						{ link } = button;
+					return get[`${link}Effect`](loser, player, player);
+				})
+				.set("loser", loser)
+				.forResult();
+			if (result2?.bool) {
+				if (result2?.links[0] == "damage") {
+					await loser.damage(winner);
+				}
+				else {
+					await winner.gainPlayerCard(loser, "he", 2, true);
+					await loser.recover(winner);
+					await loser.draw();
+				}
+			}
+		},
+		subSkill: {
+			fake: {
+				charlotte: true,
+				trigger: {
+					global: ["chooseCardOLBegin", "chooseCardOLEnd"],
+				},
+				filter(event, player) {
+					return event.type == "compare" && !event.directresult && event.getParent().mbjiebian;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (event.triggername == "chooseCardOLBegin") {
+						//牌的检测也得重写，毕竟都选到s区域去了
+						trigger._set.push(["position", "hs"]);
+						const originalFilter = trigger.filterCard;
+						trigger._set.push([
+							"filterCard",
+							function (card) {
+								if (typeof originalFilter === "function" && !originalFilter(card)) {
+									return false;
+								}
+								if (get.position(card) == "s") {
+									return card.hasGaintag("mbjiebian");
+								}
+								return true;
+							},
+						]);
+					} else {
+						const cards = player.getCards("s", card => card.hasGaintag("mbjiebian"));
+						if (cards?.length) {
+							game.deleteFakeCards(cards);
+						}
+						const card = trigger.result[trigger.targets.indexOf(player)].cards[0],
+							precard = player.getExpansions("mbfutu").find(cardx => cardx.cardid == card._cardid);
+						if (precard) {
+							trigger.result[trigger.targets.indexOf(player)].cards = [precard];
+						}
+					}
+				},
+			},
+		},
+	},
+	mbfozong: {
+		audio: 6,
+		forced: true,
+		onremove: true,
+		trigger: {
+			source: "damageBegin1",
+			player: "recoverBegin",
+		},
+		filter(event, player) {
+			const list = player.getStorage("mbfozong");
+			let evt = event.getParent(),
+				card = event.card;
+			if (evt.player != player || !card) {
+				return false;
+			}
+			return list?.includes(get.color(card, player));
+		},
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+		mod: {
+			ignoredHandcard(card, player) {
+				const list = player.getStorage("mbfozong");
+				if (list?.includes(get.color(card, player))) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				const list = player.getStorage("mbfozong");
+				if (name == "phaseDiscard" && list?.includes(get.color(card, player))) {
+					return false;
+				}
+			},
+		},
+		ai: {
+			combo: "mbjingtu",
+		},
+	},
 	//势鲁肃
 	pothaoshi: {
 		trigger: { player: "phaseJieshuBegin" },

@@ -114,6 +114,7 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"mb_zerong",
 		"pe_jun_liubei",
 		"pe_jun_caocao",
 		"pe_jun_sunce",
@@ -3248,6 +3249,7 @@ window.noname_character_rank = {
 			"ps_sunquan",
 			"sxrm_xunyu",
 			"sxrm_liubei",
+			"mb_zerong",
 		],
 		rare: [
 			"std_zhangyao",

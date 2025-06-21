@@ -6404,7 +6404,10 @@ player.removeVirtualEquip(card);
 	chooseToCompare: [
 		async (event, trigger, player) => {
 			const { target } = event;
-			if (((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0) || ((!event.fixedResult || !event.fixedResult[target.playerid]) && target.countCards("h") == 0)) {
+			if (!event.position || typeof event.position != "string") {
+				event.position = "h";
+			}
+			if (((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards(event.position) == 0) || ((!event.fixedResult || !event.fixedResult[target.playerid]) && target.countCards(event.position) == 0)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
@@ -6420,7 +6423,7 @@ player.removeVirtualEquip(card);
 				return !event.fixedResult || !event.fixedResult[current.playerid];
 			});
 			if (event.list.length) {
-				player.chooseCardOL(event.list, "请选择拼点牌", true).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
+				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
 					var hs = target.getCards("h");
 					var event = _status.event;
 					event.player = target;

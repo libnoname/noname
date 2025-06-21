@@ -414,7 +414,7 @@ window.noname_character_replace = {
 	chezhou: ["chezhou", "yj_chezhou"],
 	clan_zhongyu: ["clan_zhongyu", "dc_zhongyu"],
 	guanhai: ["ol_guanhai", "guanhai"],
-	zerong: ["zerong", "std_zerong"],
+	zerong: ["zerong", "std_zerong", "mb_zerong"],
 	tw_zhugejun: ["tw_zhugejun", "dc_zhugejun"],
 	wufu: ["wufu", "hr_wufu"],
 	zhangyao: ["zhangyao", "std_zhangyao"],

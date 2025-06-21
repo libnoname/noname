@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	mbfozong(player) {
+		const list = player.getStorage("mbfozong");
+		if (!list?.length) {
+			return lib.translate["mbfozong"];
+		}
+		const colors = list?.map(i => get.translation(i))?.join("和");
+		return `锁定技，你的${colors}手牌不计入手牌上限，造成的伤害值和恢复值+1。`;
+	},
 	potkuanggu(player) {
         if (player.getStorage("potkuanggu", 0)) {
 			return lib.translate["potkuanggu_pot_weiyan_achieve_info"];
