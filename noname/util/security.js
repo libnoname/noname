@@ -447,11 +447,32 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
 		Marshal.setRule(o, callRule);
 	});
 
+	// 构造暴露类型的使用规则
+	// 对于要使用instanceof的类型应该限制沙盒如何使用
+	const exposedClassRule = new Rule();
+
+	exposedClassRule.canMarshal = true; // 允许获取这些类对象
+	exposedClassRule.setGranted(AccessAction.NEW, false); // 禁止不安全代码创建这些类的对象
+	exposedClassRule.setGranted(AccessAction.WRITE, false); // 禁止不安全代码更改这些类的属性
+	exposedClassRule.setGranted(AccessAction.DELETE, false); // 禁止不安全代码删除这些类的属性
+	exposedClassRule.setGranted(AccessAction.DEFINE, false); // 禁止不安全代码重定义这些类的属性
+	exposedClassRule.setGranted(AccessAction.DESCRIBE, false); // 禁止不安全代码获取这些类的属性描述符
+	exposedClassRule.setGranted(AccessAction.TRACE, false); // 禁止不安全代码获取这些类的原型
+	exposedClassRule.setGranted(AccessAction.META, false); // 禁止不安全代码更改这些类的原型
+
+	// 为所有Event类型应用上面的规则
+	Reflect.ownKeys(globalThis)
+		.filter(key => typeof key == "string")
+		.filter(key => /^\w*?Event$/.test(key))
+		.map(key => globalThis[key])
+		.forEach(o => Marshal.setRule(o, exposedClassRule));
+
 	// 构造禁止访问的规则
 	const bannedRule = new Rule();
 	bannedRule.canMarshal = false; // 禁止获取
 	bannedRule.setGranted(AccessAction.READ, false); // 禁止读取属性
-	bannedRule.setGranted(AccessAction.WRITE, false); // 禁止读取属性
+	bannedRule.setGranted(AccessAction.WRITE, false); // 禁止写入属性
+	bannedRule.setGranted(AccessAction.DELETE, false); // 禁止删除属性
 	bannedRule.setGranted(AccessAction.DEFINE, false); // 禁止定义属性
 	bannedRule.setGranted(AccessAction.DESCRIBE, false); // 禁止描述属性
 	bannedRule.setGranted(AccessAction.TRACE, false); // 禁止获取原型
@@ -569,14 +590,15 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
  * 创建一个新的沙盒
  * ```
  *
+ * @param {string} persistId 
  * @returns {Sandbox?}
  */
-function createSandbox() {
+function createSandbox(persistId) {
 	if (!SANDBOX_ENABLED) {
 		return null;
 	}
 
-	const box = new Sandbox();
+	const box = new Sandbox(persistId);
 	box.freeAccess = true;
 	box.domAccess = true;
 	box.initBuiltins();

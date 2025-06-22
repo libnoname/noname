@@ -23,7 +23,7 @@ export class Client {
 		this.closed = false;
 
 		if (!temp) {
-			this.sandbox = security.createSandbox();
+			this.sandbox = security.createSandbox(this.id);
 			if (this.sandbox) {
 				Reflect.defineProperty(this, "sandbox", {
 					value: this.sandbox,

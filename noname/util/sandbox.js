@@ -203,7 +203,7 @@ class Rule {
 	 *
 	 * @param {Rule} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Rule 所属的运行域");
 		}
@@ -391,6 +391,110 @@ class Rule {
 
 /**
  * ```plain
+ * 将全局索引函数单独提取了出来
+ * 
+ * 解析全局索引集合
+ * 将类似于 "/Object/assign" 的索引解析为 [Object, "assign"] 的索引
+ * 支持以下几种情况:
+ * "/Object/assign" -> [[window.Object, "assign"]]
+ * "/Event/prototype/preventDefault" -> [[window.Event.prototype, "preventDefault"]]
+ * ["Event", "prototype", "preventDefault"] -> [[window.Event.prototype, "preventDefault"]]
+ * [/^\w*?Event$/, "prototype", "preventDefault"] -> [
+ *     [window.Event.prototype, "preventDefault"],
+ *     [window.UIEvent.prototype, "preventDefault"],
+ *     [window.MouseEvent.prototype, "preventDefault"],
+ *     [window.KeyEvent.prototype, "preventDefault"],
+ *     ...
+ * ]
+ * ```
+ * 
+ * @param {Window} window
+ * @param {string|Array<string|symbol|RegExp>} selector
+ * @returns {Array<[any, string|symbol]>}
+ */
+function buildGlobalIndexes(window, selector) {
+	/** @type {Array<string|symbol|RegExp>} */
+	const items = Array.isArray(selector) ? selector : selector.split("/").filter(Boolean);
+
+	items.unshift(window);
+
+	const pathes = [items];
+
+	/** @type {Array<[any, string|symbol]>} */
+	const indexes = [];
+
+	// 将所有路径转换为索引
+	// 如: /a/b/c => [window.a.b, "c"]
+	while (pathes.length) {
+		/** @type {Array} */
+		// @ts-expect-error Sandbox
+		const path = pathes.shift();
+
+		// 如果已经是长度为二了
+		if (path.length == 2) {
+			// 最后一项如果不是正则表达式直接添加为索引
+			if (!(path[1] instanceof RegExp)) {
+				if (path[1] in path[0]) {
+					// @ts-expect-error Sandbox
+					indexes.push(path);
+				}
+
+				continue;
+			}
+
+			// 否则需要遍历添加索引
+			const root = path[0];
+			const pattern = path[1];
+			indexes.push(
+				// @ts-expect-error Sandbox
+				...Reflect.ownKeys(root)
+					.filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`))
+					.map(k => [root, k])
+			);
+
+			continue;
+		}
+
+		// 如果下一个键不是正则表达式
+		if (!(path[1] instanceof RegExp)) {
+			const root = path.shift();
+
+			// 向下索引，并将 `__proto__` 改为原型获取
+			if (path[0] === "__proto__") {
+				path[0] = Reflect.getPrototypeOf(root);
+			} else {
+				path[0] = root[path[0]];
+			}
+
+			if (!path[0]) {
+				continue;
+			}
+
+			// 添加新的路径
+			pathes.push(path);
+			continue;
+		}
+
+		// 如果下一个键是正则表达式
+		// 此时需要遍历向下索引
+		const root = path.shift();
+		const pattern = path.shift();
+		const keys = Reflect.ownKeys(root)
+			.filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`));
+
+		if (!keys.length) {
+			continue;
+		}
+
+		// 添加新的路径
+		pathes.push(...keys.map(k => [root[k], ...path]));
+	}
+
+	return indexes;
+}
+
+/**
+ * ```plain
  * 全局变量映射表
  *
  * 在下表中标记的全局变量，
@@ -410,7 +514,7 @@ class Rule {
  * 因为只有内建对象才会在所有运行域同时都有
  * ```
  */
-const GLOBAL_PATHES = Object.freeze([
+const MAPPING_GLOBALS = Object.freeze([
 	"/Object",
 	"/Array",
 	"/Promise",
@@ -485,6 +589,12 @@ const GLOBAL_PATHES = Object.freeze([
  *
  * 这些函数的成功执行依赖于browser context
  * 必须要顶级域来提供给其他运行域
+ * 
+ * 补充:
+ * 对于需要异步执行函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
+ * 这时候我们需要借助顶级域的对应功能，将它们包装（封送）到沙盒的运行域中，保证异步函数正常执行
+ * 
+ * 另外需要判断原型链的类也需要从顶级域给出，否则会导致检查失败的问题
  * ```
  */
 const MARSHALLED_LIST = Object.freeze([
@@ -506,6 +616,12 @@ const MARSHALLED_LIST = Object.freeze([
 	// 另外补充这两个可能的函数哦
 	"/alert",
 	"/confirm",
+	// 补充所有的事件喵
+	// 因为需要判断原型链，所以这里要让顶级域把它的事件类传过来喵
+	...Reflect.ownKeys(globalThis)
+		.filter(key => typeof key == "string")
+		.filter(key => /^\w*?Event$/.test(key))
+		.map(key => `/${key}`),
 ]);
 
 /**
@@ -635,7 +751,7 @@ class Globals {
 			}
 
 			// 构建全局变量映射
-			for (const path of GLOBAL_PATHES) {
+			for (const path of MAPPING_GLOBALS) {
 				const [key, obj] = Globals.parseFrom(path, window);
 
 				if (obj == null) {
@@ -704,9 +820,13 @@ class Globals {
  *
  * 根据HTML现有函数设置
  * 请不要改动下面的列表
+ * 
+ * 补充:
+ * 对于需要执行回调函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
+ * 这时候我们需要借助顶级域的执行上下文，将回调函数包装（封送）到顶级的运行域中，保证回调函数正常执行
  * ```
  */
-const wrappingFunctions = [
+const WRAPPING_LIST = [
 	"/setTimeout",
 	"/setInterval",
 	"/setImmediate",
@@ -785,7 +905,7 @@ class NativeWrapper {
 		NativeWrapper.#currentFunction = global.Function;
 
 		// 封装所有函数
-		for (const selector of wrappingFunctions) {
+		for (const selector of WRAPPING_LIST) {
 			NativeWrapper.wrapFunctions(global, selector);
 		}
 
@@ -801,90 +921,21 @@ class NativeWrapper {
 	 * @param {string|Array<string|symbol|RegExp>} selector
 	 */
 	static wrapFunctions(global, selector) {
-		/** @type {Array} */
-		const items = Array.isArray(selector) ? selector : selector.split("/").filter(Boolean);
-
 		let flags = 2; // 默认装箱了喵
 
-		if (items[items.length - 1] === "*") {
+		if(Array.isArray(selector)) {
+			if (selector.length > 1 && selector[selector.length - 1] === '*') {
+				flags |= 1;
+				selector.splice(selector.length - 1, 1);
+			}
+		} else if (selector.length > 2 && selector.slice(-2) === "/*") {
 			flags |= 1;
-			items.pop();
+			selector = selector.slice(0, -2);
 		}
 
-		items.unshift(global);
-
-		const pathes = [items];
-		const indexes = [];
-
-		// 将所有路径转换为索引
-		// 如: /a/b/c => [window.a.b, "c"]
-		while (pathes.length) {
-			/** @type {Array} */
-			// @ts-expect-error Sandbox
-			const path = pathes.shift();
-
-			// 如果已经是长度为二了
-			if (path.length == 2) {
-				// 最后一项如果不是正则表达式直接添加为索引
-				if (!(path[1] instanceof RegExp)) {
-					if (path[1] in path[0]) {
-						indexes.push(path);
-					}
-
-					continue;
-				}
-
-				// 否则需要遍历添加索引
-				const root = path[0];
-				const pattern = path[1];
-				indexes.push(
-					...Reflect.ownKeys(root)
-						.filter(k => pattern.test(typeof k == "string" ? k : `@${k.description}`))
-						.filter(k => k in root)
-						.map(k => [root, k])
-				);
-
-				continue;
-			}
-
-			// 如果下一个键不是正则表达式
-			if (!(path[1] instanceof RegExp)) {
-				const root = path.shift();
-
-				// 向下索引，并将 `__proto__` 改为原型获取
-				if (path[0] === "__proto__") {
-					path[0] = Reflect.getPrototypeOf(root);
-				} else {
-					path[0] = root[path[0]];
-				}
-
-				if (!path[0]) {
-					continue;
-				}
-
-				// 添加新的路径
-				pathes.push(path);
-				continue;
-			}
-
-			// 如果下一个键是正则表达式
-			// 此时需要遍历向下索引
-			const root = path.shift();
-			const pattern = path.shift();
-			const keys = Reflect.ownKeys(root)
-				.filter(k => pattern.test(typeof k == "string" ? k : `@${k.description}`))
-				.filter(k => root[k]);
-
-			if (!keys.length) {
-				continue;
-			}
-
-			// 添加新的路径
-			pathes.push(...keys.map(k => [root[k], ...path]));
-		}
+		const indexes = buildGlobalIndexes(global, selector);
 
 		// 根据索引进行封装
-		// @ts-expect-error Sandbox
 		for (const index of indexes) {
 			NativeWrapper.wrapFunction(global, ...index, flags);
 		}
@@ -1146,7 +1197,7 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Monitor} monitor
 	 */
-	static #installMonitor = function (thiz, monitor) {
+	static #installMonitor(thiz, monitor) {
 		// 解构 Monitor 相关条件
 		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
@@ -1223,9 +1274,8 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Monitor} monitor
 	 */
-	static #uninstallMonitor = function (thiz, monitor) {
+	static #uninstallMonitor(thiz, monitor) {
 		// 解构 Monitor 相关条件
-		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
 
 		/**
@@ -1301,7 +1351,7 @@ class DomainMonitors {
 	 * @param {Object} target
 	 * @returns {Array<Monitor>?}
 	 */
-	static #getMonitorsBy = function (sourceDomain, targetDomain, action, target) {
+	static #getMonitorsBy(sourceDomain, targetDomain, action, target) {
 		const instance = DomainMonitors.#domainMonitors.get(sourceDomain);
 
 		if (!instance) {
@@ -1338,11 +1388,10 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Domain} domain
 	 */
-	static #handleNewDomain = function (thiz, domain) {
+	static #handleNewDomain(thiz, domain) {
 		let actionMap = thiz.#monitorsMap.get(domain);
 
 		// 遍历所有启用的 Monitor
-		// @ts-expect-error Sandbox
 		for (const monitor of Monitor[SandboxExposer2](SandboxSignal_ListMonitor)) {
 			if (monitor.domain === domain) {
 				continue;
@@ -1633,7 +1682,7 @@ class Monitor {
 	 *
 	 * @param {Monitor} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Monitor 所属的运行域");
 		}
@@ -1954,7 +2003,7 @@ class Monitor {
 	 *
 	 * @param {Monitor} thiz
 	 */
-	static #exposeInfo = function (thiz) {
+	static #exposeInfo(thiz) {
 		return [thiz.#actions, thiz.#allowDomains, thiz.#disallowDomains, thiz.#checkInfo["target"]];
 	};
 
@@ -1966,7 +2015,7 @@ class Monitor {
 	 * @param {Record<string, any>} nameds
 	 * @param {Record<string, Set>} checkInfo
 	 */
-	static #check = function (nameds, checkInfo) {
+	static #check(nameds, checkInfo) {
 		for (const [key, value] of Object.entries(nameds)) {
 			if (key in checkInfo) {
 				if (!checkInfo[key].has(value)) {
@@ -1988,7 +2037,7 @@ class Monitor {
 	 * @param {Nameds} nameds
 	 * @param {Control} control
 	 */
-	static #handle = function (thiz, access, nameds, control) {
+	static #handle(thiz, access, nameds, control) {
 		if (!Monitor.#check(nameds, thiz.#checkInfo)) {
 			return;
 		}
@@ -2047,7 +2096,7 @@ class Marshal {
 	 * @param {any} obj
 	 * @returns {boolean}
 	 */
-	static #shouldMarshal = function (obj) {
+	static #shouldMarshal(obj) {
 		if (obj === Marshal || obj === Rule || obj === AccessAction || obj === Domain || obj === Sandbox || obj instanceof Domain) {
 			return false;
 		}
@@ -2063,7 +2112,7 @@ class Marshal {
 	 * @param {any} obj
 	 * @returns {boolean}
 	 */
-	static #strictMarshal = function (obj) {
+	static #strictMarshal(obj) {
 		return obj instanceof Sandbox || obj instanceof Rule || obj instanceof Monitor;
 	};
 
@@ -2080,7 +2129,7 @@ class Marshal {
 	 * @param {any} proxy
 	 * @returns {Reverted}
 	 */
-	static #revertProxy = function (proxy) {
+	static #revertProxy(proxy) {
 		return [proxy[Marshal.#sourceDomain], proxy[Marshal.#revertTarget]];
 	};
 
@@ -2093,7 +2142,7 @@ class Marshal {
 	 * @param {Domain} domain
 	 * @returns {Object?}
 	 */
-	static #cacheProxy = function (obj, domain) {
+	static #cacheProxy(obj, domain) {
 		return domain[SandboxExposer](SandboxSignal_GetMarshalledProxy, obj);
 	};
 
@@ -2105,7 +2154,7 @@ class Marshal {
 	 * @param {Object} obj
 	 * @returns {{rule: Rule}}
 	 */
-	static #ensureRuleRef = function (obj) {
+	static #ensureRuleRef(obj) {
 		let rule = Marshal.#marshalRules.get(obj);
 
 		if (!rule) {
@@ -2257,7 +2306,7 @@ class Marshal {
 	 * @param {Domain} domain
 	 * @param {() => any} action
 	 */
-	static #trapDomain = function (domain, action) {
+	static #trapDomain(domain, action) {
 		const prevDomain = Domain.current;
 
 		// 如果可能，应该尽量避免陷入相同运行域
@@ -2285,7 +2334,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Array}
 	 */
-	static #marshalArray = function (array, targetDomain) {
+	static #marshalArray(array, targetDomain) {
 		if (isPrimitive(array)) {
 			return array;
 		}
@@ -2310,7 +2359,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Object}
 	 */
-	static #marshalObject = function (object, targetDomain) {
+	static #marshalObject(object, targetDomain) {
 		if (isPrimitive(object)) {
 			return object;
 		}
@@ -2334,7 +2383,7 @@ class Marshal {
 	 * @param {Object} src
 	 * @returns {any}
 	 */
-	static #clonePureObject = function (src) {
+	static #clonePureObject(src) {
 		let cloned;
 
 		if (typeof src === "function") {
@@ -2363,7 +2412,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Object}
 	 */
-	static #marshal = function (obj, targetDomain) {
+	static #marshal(obj, targetDomain) {
 		// 基元封送
 		if (isPrimitive(obj)) {
 			return obj;
@@ -2763,8 +2812,8 @@ class Marshal {
 
 						keys = dispatched.returnValue;
 					}
-					// @ts-expect-error Sandbox
 					else {
+						// @ts-expect-error Sandbox
 						keys = Reflect.ownKeys(...args);
 					}
 
@@ -2976,7 +3025,7 @@ class Domain {
 	}
 
 	// 实装这个要代理Object喵
-	// static #hasInstanceMarshalled = function (obj) {
+	// static #hasInstanceMarshalled(obj) {
 	//     if (Marshal.isMarshalled(obj))
 	//         [, obj] = Marshal[SandboxExposer2]
 	//             (SandboxSignal_UnpackProxy, obj);
@@ -3108,12 +3157,12 @@ class Domain {
 	/**
 	 * @param {Domain} domain
 	 */
-	static #enterDomain = function (domain) {
+	static #enterDomain(domain) {
 		Domain.#domainStack.push(Domain.#currentDomain);
 		Domain.#currentDomain = domain;
 	};
 
-	static #exitDomain = function () {
+	static #exitDomain() {
 		if (Domain.#domainStack.length < 1) {
 			throw new ReferenceError("无法弹出更多的运行域");
 		}
@@ -3125,7 +3174,7 @@ class Domain {
 	/**
 	 * @returns {Array<Domain>}
 	 */
-	static #listDomain = function () {
+	static #listDomain() {
 		const links = Domain.#domainLinks;
 		const list = [];
 
@@ -3293,6 +3342,11 @@ class Sandbox {
 	/** @type {WeakMap<Function, string>} */
 	static #functionRefCodes = new WeakMap();
 
+	/** @type {string?} */
+	#persistId;
+	/** @type {Storage?} */
+	#proxyStorage;
+
 	/** @type {Object} */
 	#scope;
 	/** @type {Array<Object>} */
@@ -3339,9 +3393,18 @@ class Sandbox {
 	#domAccess = false;
 
 	/**
+	 * ```plain
 	 * 创建一个新的沙盒
+	 * 
+	 * 并指定沙盒使用的持久化ID
+	 * 当服务器需要使用`localStorage`时必须指定持久化ID来确保每次访问的持久化数据的一致性
+	 * ```
+	 * 
+	 * @param {string} persistId 
 	 */
-	constructor() {
+	constructor(persistId) {
+		this.#persistId = typeof persistId == "string" && persistId.length > 0 ? persistId : null;
+
 		this.#sourceDomain = Domain.current;
 		this.#domain = new Domain();
 		this.#domainWindow = this.#domain[SandboxExposer](SandboxSignal_GetWindow);
@@ -3350,6 +3413,9 @@ class Sandbox {
 		this.#domainFunction = this.#domainWindow.Function;
 		// this.#domainEval = this.#domainWindow.eval;
 		Sandbox.#domainMap.set(this.#domain, this);
+		
+		this.#proxyStorage = persistId ? this.#createSandboxStorage() : null;
+
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
 		Sandbox.#createScope(this);
 	}
@@ -3361,7 +3427,7 @@ class Sandbox {
 	 *
 	 * @param {Sandbox} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#sourceDomain !== Domain.current) {
 			throw new TypeError("当前运行域不是沙盒的所有运行域");
 		}
@@ -3375,7 +3441,7 @@ class Sandbox {
 	 * @param {Sandbox} thiz
 	 * @param {Window} global
 	 */
-	static #initDomainFunctions = function (thiz, global) {
+	static #initDomainFunctions(thiz, global) {
 		/** @type {typeof Function} */
 		const defaultFunction = global.Function;
 		/** @type {typeof Function} */
@@ -3457,7 +3523,7 @@ class Sandbox {
 	//  * @param {Window} global
 	//  * @param {any} x
 	//  */
-	// static #wrappedEval = function (trueWindow, _eval, intercepter, global, x) {
+	// static #wrappedEval(trueWindow, _eval, intercepter, global, x) {
 	// 	const intercepterName = Sandbox.#makeName("_", trueWindow);
 	// 	const evalName = Sandbox.#makeName("_", global);
 	// 	const codeName = Sandbox.#makeName("_", global);
@@ -3480,7 +3546,7 @@ class Sandbox {
 	 * @param {any} x
 	 * @returns
 	 */
-	static #wrappedEval = function (thiz, x) {
+	static #wrappedEval(thiz, x) {
 		let code = String(x).trim();
 
 		while (code.endsWith(";")) {
@@ -3625,6 +3691,8 @@ class Sandbox {
 		/**
 		 * ```plain
 		 * 如果要扩充沙盒的内建函数或类，请在此增加喵
+		 * 
+		 * 沙盒中模拟window提供的全局变量全部在这里喵
 		 * ```
 		 */
 		const builtins = {
@@ -3674,14 +3742,38 @@ class Sandbox {
 			parseFloat: this.#domainWindow.parseFloat,
 			isFinite: this.#domainWindow.isFinite,
 			isNaN: this.#domainWindow.isNaN,
+
+			ArrayBuffer: this.#domainWindow.ArrayBuffer,
+			performance: this.#domainWindow.performance,
+			localStorage: this.#createSandboxStorageProxy(),
+
 			Domain: Domain,
 		};
+
+		// 将事件类型暴露到沙盒的模拟window里面喵
+		const patternBuiltins = [
+			/^\w*?Event$/, // 让模拟window里面可以访问上面封送过来的事件类型
+		];
 
 		const hardBuiltins = {
 			NaN: NaN,
 			Infinity: Infinity,
 			undefined: undefined,
 		};
+
+		// 先从沙盒运行域实际的window中得到所有的全局属性名
+		const globalKeys = Reflect.ownKeys(this.#domainWindow)
+			.filter(key => typeof key == "string");
+
+		// 我们遍历 `patternBuiltins` 并将符合条件的属性放到 `builtins` 中
+		for (const key of globalKeys) {
+			for (const pattern of patternBuiltins) {
+				if (pattern.test(key)) {
+					builtins[key] = this.#domainWindow[key];
+					break;
+				}
+			}
+		}
 
 		// 放置内建函数或类
 		Marshal[SandboxExposer2](SandboxSignal_TrapDomain, this.#domain, () => {
@@ -3696,6 +3788,10 @@ class Sandbox {
 				}
 			}
 		});
+
+		// 防止MD5报错
+		builtins.exports = undefined; 
+		builtins.define = undefined;
 
 		Object.assign(this.#scope, builtins);
 
@@ -3750,7 +3846,7 @@ class Sandbox {
 	 * @param {"exists"|"extend"|"all"} writeContext 当执行的代码尝试为未声明的变量赋值时，应该 根据context与window的变量写入(默认行为)|默认行为并且新的变量写入context|全部写入context
 	 * @returns
 	 */
-	static #compileCore = function (thiz, code, context = null, paramList = null, inheritScope = false, writeContext = "exists") {
+	static #compileCore(thiz, code, context = null, paramList = null, inheritScope = false, writeContext = "exists") {
 		if (typeof code != "string") {
 			throw new TypeError("代码需要是一个字符串");
 		}
@@ -3774,7 +3870,8 @@ class Sandbox {
 		let argumentList;
 		let wrappedEval;
 
-		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){"use strict";\n// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
+		// 必须使用严格模式否则会导致this逃逸
+		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){"use strict";// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
 		const snippet = new CodeSnippet(code, 5); // 错误信息的行号从 5 开始 (即错误信息的前 5 行是不属于 `code` 的范围)
 
 		const domain = thiz.#domain;
@@ -3963,7 +4060,7 @@ class Sandbox {
 	 *
 	 * @param {Sandbox} thiz
 	 */
-	static #createScope = function (thiz) {
+	static #createScope(thiz) {
 		let baseScope = thiz.#scope;
 		const rawScope = new thiz.#domainObject();
 
@@ -4050,7 +4147,7 @@ class Sandbox {
 		Object.defineProperties(rawScope, descriptors);
 	};
 
-	static #makeName = function (/** @type {string} */ prefix, /** @type {any} */ conflict) {
+	static #makeName(/** @type {string} */ prefix, /** @type {any} */ conflict) {
 		let builtName;
 
 		do {
@@ -4059,6 +4156,134 @@ class Sandbox {
 
 		return builtName;
 	};
+
+	/**
+	 * 创建沙盒的`localStorage`原型
+	 * 
+	 * @returns {Storage}
+	 */
+	#createSandboxStorage() {
+		/** @type {Storage} */
+		// @ts-expect-error 因为必须要使用new创建对象而不是`{}`语法
+		const prototype = new this.#domainObject();
+		const prefix = `SANDBOX[${this.#persistId}]_`;
+
+		/** @type {Storage} */
+		const localStorage = Sandbox.#topWindow.localStorage;
+		/** @type {Array<string>} */
+		const keys = Object.keys(localStorage)
+			.filter(key => key.startsWith(prefix));
+
+		Sandbox.#topWindow.addEventListener("storage", function(e) {
+			if (e.storageArea !== localStorage) {
+				return;
+			}
+
+			if (e.key == null) {
+				keys.length = 0;
+				return;
+			}
+			
+			if (!e.key.startsWith(prefix)) {
+				return;
+			}
+
+			const adding = e.oldValue == null;
+			const removing = e.newValue == null;
+
+			if (adding === removing) {
+				return;
+			}
+
+			if (adding) {
+				keys.push(e.key);
+			} else {
+				delete keys[keys.indexOf(e.key)];
+			}
+		});
+
+		prototype.clear = function() {
+			const removingKeys = Object.assign([], keys);
+			keys.length = 0;
+
+			for (const key of removingKeys) {
+				delete localStorage[key];
+			}
+		};
+
+		prototype.getItem = function(key) {
+			return localStorage[prefix + key];
+		};
+
+		prototype.key = function(index) {
+			return keys[index] || null;
+		};
+
+		prototype.removeItem = function(key) {
+			delete localStorage[prefix + key];
+		};
+
+		prototype.setItem = function(key, value) {
+			localStorage[prefix + key] = value;
+		};
+
+		Object.defineProperty(prototype, "length", {
+			get() {
+				return keys.length;
+			},
+			enumerable: false,
+		});
+
+		Object.freeze(prototype);
+		return prototype;
+	}
+
+	/**
+	 * 创建`localStorage`实例 (简单模拟了一下`localStorage`)
+	 * 
+	 * @returns {Storage?}
+	 */
+	#createSandboxStorageProxy() {
+		const prototype = this.#proxyStorage;
+
+		if (prototype == null) {
+			return null;
+		}
+
+		const storage = this.#domainObject.create(prototype);
+
+		return new Proxy(storage, {
+			get(target, p, receiver) {
+				if (typeof p != "string") {
+					return undefined;
+				}
+				if (p in prototype) {
+					return prototype[p];
+				}
+
+				return prototype.getItem(p);
+			},
+			set(target, p, newValue, receiver) {
+				if (typeof p != "string") {
+					return true;
+				}
+				if (p in prototype) {
+					return true;
+				}
+				
+				prototype.setItem(p, String(newValue));
+				return true;
+			},
+			deleteProperty(target, p) {
+				if (typeof p != "string") {
+					return true;
+				}
+
+				prototype.removeItem(p);
+				return true;
+			}
+		});
+	}
 
 	/**
 	 * @param {Symbol} signal
@@ -4148,6 +4373,9 @@ if (SANDBOX_ENABLED) {
 			Sandbox,
 		} = SANDBOX_EXPORT);
 	} else {
+		// 这里是沙盒核心类初始化时所在的独立运行域
+		// 这里的全局对象不会直接暴露
+
 		// 防止被不信任代码更改
 		sealClass(AccessAction);
 		sealClass(Rule);
@@ -4186,7 +4414,6 @@ if (SANDBOX_ENABLED) {
 		Domain[SandboxExposer2](SandboxSignal_InitDomain);
 
 		// 获取顶级域的错误管理器
-		// @ts-expect-error Sandbox
 		({ CodeSnippet, ErrorReporter, ErrorManager } =
 			// @ts-expect-error Sandbox
 			window.replacedErrors);

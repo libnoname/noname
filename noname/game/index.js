@@ -1758,7 +1758,7 @@ export class Game extends GameCompatible {
 			return;
 		}
 
-		game.sandbox = security.createSandbox();
+		game.sandbox = security.createSandbox(ip);
 		game.ws.onopen = lib.element.ws.onopen;
 		game.ws.onmessage = lib.element.ws.onmessage;
 		game.ws.onerror = lib.element.ws.onerror;
