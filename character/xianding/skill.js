@@ -214,7 +214,7 @@ const skills = {
 					target = event.targets[1];
 				player.line2([source, target], "green");
 				await source.discardPlayerCard(target, "he", true);
-				source.damage(target);
+				await source.damage(target);
 			}
 		},
 		ai: {

@@ -188,6 +188,13 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.cancel();
 		},
+		mod: {
+			cardGiftable(card, player, target) {
+				if (player != target && get.type(card, null, false) != "equip") {
+					return false;
+				}
+			},
+		},
 		ai: {
 			effect: {
 				target(card, player, target) {

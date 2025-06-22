@@ -1977,7 +1977,7 @@ const skills = {
 			}
 			await player.showCards(cards, get.translation(player) + "发动了【乘烟】");
 			const card = cards[0];
-			if (card.name == "sha" || (get.type(card) == "trick" && get.info(card).filterTarget)) {
+			if (card.name == "sha" || (get.type(card, false) == "trick" && get.info(card, false).filterTarget)) {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			} else {

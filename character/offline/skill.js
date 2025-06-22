@@ -18560,14 +18560,14 @@ const skills = {
 				.set("choice", eff > 0)
 				.forResult();
 			if (result.bool) {
-				for (const current of game.players) {
+				for (const current of game.players.sortBySeat(player)) {
 					if (current.isIn()) {
 						await current.turnOver();
 						await current.draw(3);
 					}
 				}
 				const lose_list = [];
-				for (const current of game.players) {
+				for (const current of game.players.sortBySeat(player)) {
 					if (current.countCards("e") && current.isIn()) {
 						lose_list.push([current, current.getCards("e")]);
 					}
