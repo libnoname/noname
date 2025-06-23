@@ -4556,7 +4556,7 @@ const skills = {
 			return card.hasGaintag("eternal_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
 		},
 		filterTarget: (card, player, target) => {
-			return target != player && target.countCards("he");
+			return target != player && target.countCards("hej");
 		},
 		position: "h",
 		check: card => {

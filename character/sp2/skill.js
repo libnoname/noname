@@ -2645,7 +2645,9 @@ const skills = {
 				if (event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
 					list.push(["锦囊", "", "wuxie"]);
 				}
-				return ui.create.dialog("砺锋", [list, "vcard"]);
+				const dialog = ui.create.dialog("砺锋", [list, "vcard"]);
+				dialog.direct = true;
+				return dialog;
 			},
 			check(button) {
 				var player = _status.event.player;

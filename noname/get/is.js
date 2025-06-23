@@ -50,6 +50,10 @@ export class Is {
 		if (subtype == "equip4") {
 			return true;
 		} else if (subtype == "equip6") {
+			const subtypes = get.subtypes(card, player);
+			if (subtypes.includes("equip4")) {
+				return true;
+			}
 			const info = get.info(card, player),
 				distance = info.distance;
 			if (!distance) {
@@ -72,6 +76,10 @@ export class Is {
 		if (subtype == "equip3") {
 			return true;
 		} else if (subtype == "equip6") {
+			const subtypes = get.subtypes(card, player);
+			if (subtypes.includes("equip3")) {
+				return true;
+			}
 			const info = get.info(card, player),
 				distance = info.distance;
 			if (!distance) {

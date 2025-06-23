@@ -1001,8 +1001,16 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					const target = event.target,
-						cardname = "shandian";
+					//摩斯码全责
+					const target = event.target;
+					target
+						.when("damageBefore")
+						.filter(evt => evt.getParent(event.name) == event && evt.card?.name == "shandian")
+						.step(async (evt, trigger, player) => {
+							trigger.card = event.card;
+						});
+					await target.executeDelayCardEffect("shandian");
+					/*	cardname = "shandian";
 					const VCard = ui.create.card();
 					VCard._destroy = true;
 					VCard.expired = true;
@@ -1015,7 +1023,7 @@ game.import("card", function () {
 					VCard.delete();
 					if (result.bool == false) {
 						await target.damage(3, "thunder", "nosource");
-					}
+					}*/
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
