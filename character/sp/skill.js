@@ -20932,9 +20932,10 @@ const skills = {
 					return typeof button.link == "number";
 				},
 				choice: choice,
-				targets: storage1[1],
+				targetx: storage1[1],
+				complexTarget: true,
 				filterTarget(card, player, target) {
-					const { targets } = get.event(),
+					const { targetx: targets } = get.event(),
 						buttons = ui.selected.buttons;
 					if (!buttons?.length || typeof buttons[0].link != "number") {
 						return false;
