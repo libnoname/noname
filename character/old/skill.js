@@ -462,13 +462,13 @@ const skills = {
 			if (!player.countCards("hs")) {
 				return false;
 			}
-			for (var i of lib.inpile) {
-				var type = get.type(i);
+			for (const i of lib.inpile) {
+				const type = get.type(i);
 				if ((type == "basic" || type == "trick") && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
 					return true;
 				}
 				if (i == "sha") {
-					for (var j of lib.inpile_nature) {
+					for (const j of lib.inpile_nature) {
 						if (event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) {
 							return true;
 						}
@@ -479,79 +479,41 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				for (var i of lib.inpile) {
+				const list = [];
+				for (const i of lib.inpile) {
 					if (event.type != "phase") {
 						if (!event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
 							continue;
 						}
 					}
-					var type = get.type(i);
+					const type = get.type(i);
 					if (type == "basic" || type == "trick") {
 						list.push([type, "", i]);
 					}
 					if (i == "sha") {
-						if (event.type != "phase") {
-							if (!event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) {
-								continue;
+						for (const j of lib.inpile_nature) {
+							if (event.type != "phase") {
+								if (!event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) {
+									continue;
+								}
 							}
-						}
-						for (var j of lib.inpile_nature) {
 							list.push(["基本", "", "sha", j]);
 						}
 					}
 				}
 				return ui.create.dialog("蛊惑", [list, "vcard"]);
 			},
+			filter(button, player) {
+				const evt = _status.event.getParent();
+				return evt.filterCard({ name: button.link[2], nature: button.link[3] }, player, evt);
+			},
 			check(button) {
-				var player = _status.event.player;
-				var order = Math.max(0, get.order(card) + 1);
-				var enemyNum = game.countPlayer(function (current) {
-					return current != player && (get.realAttitude || get.attitude)(current, player) < 0 && current.hp > 0;
+				const player = _status.event.player;
+				const enemyNum = game.countPlayer(function (current) {
+					return current != player && current.hp != 0 && (get.realAttitude || get.attitude)(current, player) < 0;
 				});
-				var card = { name: button.link[2], nature: button.link[3] };
-				if (
-					player.isDying() &&
-					!player.hasCard(function (cardx) {
-						if (get.suit(cardx) != "heart") {
-							return false;
-						}
-						var mod2 = game.checkMod(cardx, player, "unchanged", "cardEnabled2", player);
-						if (mod2 != "unchanged") {
-							return mod2;
-						}
-						var mod = game.checkMod(cardx, player, player, "unchanged", "cardSavable", player);
-						if (mod != "unchanged") {
-							return mod;
-						}
-						var savable = get.info(cardx).savable;
-						if (typeof savable == "function") {
-							savable = savable(card, player, player);
-						}
-						return savable;
-					}, "hs")
-				) {
-					if (!player.getStorage("old_guhuo_cheated").includes(card.name + card.nature) && Math.random() < 0.4) {
-						return 1;
-					}
-					return 0;
-				}
-				var val = _status.event.getParent().type == "phase" ? player.getUseValue(card) : 1;
-				if (
-					player.getStorage("old_guhuo_cheated").includes(card.name + card.nature) &&
-					!player.hasCard(function (cardx) {
-						if (card.name == cardx.name) {
-							if (card.name != "sha") {
-								return true;
-							}
-							return get.is.sameNature(card, cardx);
-						}
-						return false;
-					}, "hs") &&
-					Math.random() < 0.7
-				) {
-					return 0;
-				}
+				const card = { name: button.link[2], nature: button.link[3] };
+				const val = _status.event.getParent().type == "phase" ? player.getUseValue(card) : 1;
 				if (val <= 0) {
 					return 0;
 				}
@@ -571,23 +533,23 @@ const skills = {
 							return Math.sqrt(val) * (0.25 + Math.random() / 1.5);
 						}
 						if (enemyNum <= 2) {
-							return Math.sqrt(val) / 1.5 + order * 10;
+							return Math.sqrt(val) / 1.5;
 						}
 						return 0;
 					}
-					return 3 * val + order * 10;
+					return 3 * val;
 				}
-				return val + order * 10;
+				return val;
 			},
 			backup(links, player) {
 				return {
 					filterCard(card, player, target) {
-						var result = true;
-						var suit = card.suit,
+						let result = true;
+						const suit = card.suit,
 							number = card.number;
 						card.suit = "none";
 						card.number = null;
-						var mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+						const mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 						if (mod != "unchanged") {
 							result = mod;
 						}
@@ -606,36 +568,31 @@ const skills = {
 						number: null,
 					},
 					ai1(card) {
-						var player = _status.event.player;
-						var enemyNum = game.countPlayer(function (current) {
-							return current != player && (get.realAttitude || get.attitude)(current, player) < 0 && current.hp > 0;
+						const player = _status.event.player;
+						const enemyNum = game.countPlayer(function (current) {
+							return current != player && current.hp != 0 && (get.realAttitude || get.attitude)(current, player) < 0;
 						});
-						var cardx = lib.skill.old_guhuo_backup.viewAs;
+						const cardx = lib.skill.old_guhuo_backup.viewAs;
 						if (enemyNum) {
-							if ((card.name == cardx.name && (card.name != "sha" || get.is.sameNature(card, cardx))) || player.getStorage("old_guhuo_cheated").includes(card.name + card.nature)) {
-								return (get.suit(card) == "heart" ? 8 : 4) + Math.random() * 3;
+							if (card.name == cardx.name && (card.name != "sha" || get.is.sameNature(card, cardx))) {
+								return 2 + Math.random() * 3;
 							} else if (lib.skill.old_guhuo_backup.aiUse < 0.5 && !player.isDying()) {
 								return 0;
 							}
 						}
-						return get.value(cardx) - get.value(card);
+						return 6 - get.value(card);
 					},
 					async precontent(event, trigger, player) {
 						player.logSkill("old_guhuo");
-						//player.addTempSkill("old_guhuo_guess");
-						let card = event.result.cards[0];
+						player.addTempSkill("old_guhuo_guess");
+						const [card] = event.result.cards;
 						event.result.card.suit = get.suit(card);
 						event.result.card.number = get.number(card);
-						const guess_Event = game.createEvent("old_guhuo_guess");
-						guess_Event.player = player;
-						guess_Event.set("result", event.result);
-						guess_Event.setContent(lib.skill.old_guhuo_guess.content);
-						await guess_Event;
 					},
 				};
 			},
 			prompt(links, player) {
-				return "将一张手牌当做" + (links[0][3] ? get.translation(links[0][3]) : "") + "【" + get.translation(links[0][2]) + "】" + (_status.event.name == "chooseToRespond" ? "打出" : "使用");
+				return "将一张手牌当做" + get.translation(links[0][2]) + (_status.event.name == "chooseToRespond" ? "打出" : "使用");
 			},
 		},
 		ai: {
@@ -649,10 +606,164 @@ const skills = {
 				}
 			},
 			threaten: 1.2,
-			order: 10,
-			result: { player: 1 },
+			order: 8.1,
+			result: {
+				player: 1,
+			},
 		},
 		subSkill: {
+			guess: {
+				trigger: {
+					player: ["useCardBefore", "respondBefore"],
+				},
+				forced: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				charlotte: true,
+				filter(event, player) {
+					return event.skill && event.skill.indexOf("old_guhuo_") == 0;
+				},
+				async content(event, trigger, player) {
+					event.fake = false;
+					event.betrayer = [];
+					const [card] = trigger.cards;
+					if (card.name != trigger.card.name || (card.name == "sha" && !get.is.sameNature(trigger.card, card))) {
+						event.fake = true;
+					}
+					player.popup(trigger.card.name, "metal");
+					const next = player.lose(card, ui.ordering);
+					next.relatedEvent = trigger;
+					await next;
+					// player.line(trigger.targets,trigger.card.nature);
+					trigger.throw = false;
+					trigger.skill = "old_guhuo_backup";
+					game.log(player, "声明", trigger.targets && trigger.targets.length ? "对" : "", trigger.targets || "", trigger.name == "useCard" ? "使用" : "打出", trigger.card);
+					event.prompt = get.translation(player) + "声明" + (trigger.targets && trigger.targets.length ? "对" + get.translation(trigger.targets) : "") + (trigger.name == "useCard" ? "使用" : "打出") + (get.translation(trigger.card.nature) || "") + get.translation(trigger.card.name) + "，是否质疑？";
+					event.targets = game
+						.filterPlayer(function (current) {
+							return current != player && current.hp != 0;
+						})
+						.sortBySeat(_status.currentPhase);
+					game.broadcastAll(
+						function (card, player) {
+							_status.old_guhuoNode = card.copy("thrown");
+							if (lib.config.cardback_style != "default") {
+								_status.old_guhuoNode.style.transitionProperty = "none";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.classList.add("infohidden");
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transitionProperty = "";
+							} else {
+								_status.old_guhuoNode.classList.add("infohidden");
+							}
+							_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+							player.$throwordered2(_status.old_guhuoNode);
+						},
+						trigger.cards[0],
+						player
+					);
+					event.onEnd01 = function () {
+						_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", _status.event.onEnd01);
+						setTimeout(function () {
+							_status.old_guhuoNode.style.transition = "all ease-in 0.3s";
+							_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(270deg)";
+							const onEnd = function () {
+								_status.old_guhuoNode.classList.remove("infohidden");
+								_status.old_guhuoNode.style.transition = "all 0s";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(-90deg)";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transition = "";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transform = "";
+								_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", onEnd);
+							};
+							_status.old_guhuoNode.listenTransition(onEnd);
+						}, 300);
+					};
+					for (const target of event.targets) {
+						const links = await target
+							.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true)
+							.set("ai", function (button) {
+								const player = _status.event.player;
+								const evt = _status.event.getParent("old_guhuo_guess"),
+									evtx = evt.getTrigger();
+								if (!evt) {
+									return Math.random();
+								}
+								const card = { name: evtx.card.name, nature: evtx.card.nature, isCard: true };
+								const ally = button.link[2] == "reguhuo_ally";
+								if (ally && (player.hp <= 1 || get.attitude(player, evt.player) >= 0)) {
+									return 1.1;
+								}
+								if (!ally && get.attitude(player, evt.player) < 0 && evtx.name == "useCard") {
+									let eff = 0;
+									const targetsx = evtx.targets || [];
+									for (const target of targetsx) {
+										const isMe = target == evt.player;
+										eff += get.effect(target, card, evt.player, player) / (isMe ? 1.5 : 1);
+									}
+									eff /= 1.5 * targetsx.length || 1;
+									if (eff > 0) {
+										return 0;
+									}
+									if (eff < -7) {
+										return Math.random() + Math.pow(-(eff + 7) / 8, 2);
+									}
+									return Math.pow((get.value(card, evt.player, "raw") - 4) / (eff == 0 ? 5 : 10), 2);
+								}
+								return Math.random();
+							})
+							.forResultLinks();
+						if (links[0][2] == "reguhuo_betray") {
+							target.addExpose(0.2);
+							game.log(target, "#y质疑");
+							target.popup("质疑！", "fire");
+							event.betrayer.add(target);
+						} else {
+							game.log(target, "#g不质疑");
+							target.popup("不质疑", "wood");
+						}
+					}
+					await game.delayx();
+					game.broadcastAll(function (onEnd) {
+						_status.event.onEnd01 = onEnd;
+						if (_status.old_guhuoNode) {
+							_status.old_guhuoNode.listenTransition(onEnd, 300);
+						}
+					}, event.onEnd01);
+					await game.delay(2);
+					if (!event.betrayer.length) {
+						return;
+					}
+					if (event.fake) {
+						event.betrayer.forEach(target => target.popup("质疑正确", "wood"));
+						await game.asyncDraw(event.betrayer);
+						game.log(player, "声明的", trigger.card, "作废了");
+						trigger.cancel();
+						trigger.getParent().goto(0);
+						trigger.line = false;
+						event.clearUI = true;
+					} else {
+						event.betrayer.forEach(target => target.popup("质疑错误", "fire"));
+						for (let target of event.betrayer) {
+							await target.loseHp();
+						}
+						if (get.suit(card) != "heart") {
+							game.log(player, "声明的", trigger.card, "作废了");
+							trigger.cancel();
+							trigger.getParent().goto(0);
+							trigger.line = false;
+							event.clearUI = true;
+						}
+					}
+					await game.delay(2);
+					if (event.clearUI) {
+						game.broadcastAll(() => ui.clear());
+					} // game.broadcastAll(ui.clear); 原来的代码抽象喵
+				},
+			},
 			cheated: {
 				trigger: {
 					player: "gainAfter",
@@ -687,181 +798,6 @@ const skills = {
 					player.removeSkill("old_guhuo_cheated");
 				},
 			},
-		},
-	},
-	old_guhuo_guess: {
-		audio: "old_guhuo",
-		trigger: {
-			player: ["useCardBefore", "respondBefore"],
-		},
-		forced: true,
-		silent: true,
-		popup: false,
-		firstDo: true,
-		charlotte: true,
-		sourceSkill: "old_guhuo",
-		filter(event, player) {
-			return event.skill && event.skill.indexOf("old_guhuo_") == 0;
-		},
-		content() {
-			"step 0";
-			event.fake = false;
-			event.goon = true;
-			event.betrayers = [];
-			var card = event.result.cards[0];
-			if (card.name != event.result.card.name || (card.name == "sha" && !get.is.sameNature(event.result.card, card))) {
-				event.fake = true;
-			}
-			if (event.fake) {
-				player.addSkill("old_guhuo_cheated");
-				player.markAuto("old_guhuo_cheated", [event.result.card.name + event.result.card.nature]);
-			}
-			player.popup(event.result.card.name, "metal");
-			player.lose(card, ui.ordering);
-			game.log(player, "声明", event.result.targets && event.result.targets.length ? "对" : "", event.result.targets || "", event.getParent(2).name != "chooseToRespond" ? "使用" : "打出", event.result.card);
-			event.prompt = get.translation(player) + "声明" + (event.result.targets && event.result.targets.length ? "对" + get.translation(event.result.targets) : "") + (event.getParent(2).name != "chooseToRespond" ? "使用" : "打出") + (get.translation(event.result.card.nature) || "") + get.translation(event.result.card.name) + "，是否质疑？";
-			event.targets = game.filterPlayer(i => i != player && i.hp > 0).sortBySeat(_status.currentPhase);
-			game.broadcastAll(
-				function (card, player) {
-					_status.old_guhuoNode = card.copy("thrown");
-					if (lib.config.cardback_style != "default") {
-						_status.old_guhuoNode.style.transitionProperty = "none";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.classList.add("infohidden");
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transitionProperty = "";
-					} else {
-						_status.old_guhuoNode.classList.add("infohidden");
-					}
-					_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
-					player.$throwordered2(_status.old_guhuoNode);
-				},
-				event.result.cards[0],
-				player
-			);
-			event.onEnd01 = function () {
-				_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", _status.event.onEnd01);
-				setTimeout(function () {
-					_status.old_guhuoNode.style.transition = "all ease-in 0.3s";
-					_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(270deg)";
-					var onEnd = function () {
-						_status.old_guhuoNode.classList.remove("infohidden");
-						_status.old_guhuoNode.style.transition = "all 0s";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(-90deg)";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transition = "";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transform = "";
-						_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", onEnd);
-					};
-					_status.old_guhuoNode.listenTransition(onEnd);
-				}, 300);
-			};
-			if (!event.targets.length) {
-				event.goto(3);
-			}
-			"step 1";
-			event.target = event.targets.shift();
-			event.target.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true).set("ai", function (button) {
-				var player = _status.event.player;
-				var evt = _status.event.getParent("old_guhuo_guess"),
-					evtx = evt.result;
-				if (!evt) {
-					return Math.random();
-				}
-				var card = evtx.card;
-				var ally = button.link[2] == "reguhuo_ally";
-				if (ally && (player.hp <= 1 || get.attitude(player, evt.player) >= 0)) {
-					return 1.1;
-				}
-				if (!ally && get.effect(player, { name: "losehp" }, player, player) >= 0) {
-					return 10;
-				}
-				if (!ally && get.attitude(player, evt.player) < 0) {
-					if (["chooseToUse", "_wuxie"].includes(evt.getParent(2).name)) {
-						var eff = 0;
-						var targetsx = evtx.targets || [];
-						for (var target of targetsx) {
-							var isMe = target == evt.player;
-							eff += get.effect(target, card, evt.player, player) / (isMe ? 1.35 : 1);
-						}
-						eff /= 1.5 * targetsx.length || 1;
-						if (eff > 0) {
-							return 0;
-						}
-						if (eff < -7) {
-							return (Math.random() + Math.pow(-(eff + 7) / 8, 2)) / Math.sqrt(evt.betrayers.length + 1) + (player.hp - 3) * 0.05 + Math.max(0, 4 - evt.player.hp) * 0.05 - (player.hp == 1 && !get.tag(card, "damage") ? 0.2 : 0);
-						}
-						return Math.pow((get.value(card, evt.player, "raw") - 4) / (eff == 0 ? 3.1 : 10), 2) / Math.sqrt(evt.betrayers.length || 1) + (player.hp - 3) * 0.05 + Math.max(0, 4 - evt.player.hp) * 0.05;
-					}
-					if (evt.player.getStorage("old_guhuo_cheated").includes(card.name + card.nature)) {
-						return Math.random() + 0.3;
-					}
-				}
-				return Math.random();
-			});
-			"step 2";
-			if (result.links[0][2] == "reguhuo_betray") {
-				target.addExpose(0.2);
-				game.log(target, "#y质疑");
-				target.popup("质疑！", "fire");
-				event.betrayers.push(target);
-			} else {
-				game.log(target, "#g不质疑");
-				target.popup("不质疑", "wood");
-			}
-			if (targets.length) {
-				event.goto(1);
-			}
-			"step 3";
-			game.delayx();
-			game.broadcastAll(function (onEnd) {
-				_status.event.onEnd01 = onEnd;
-				if (_status.old_guhuoNode) {
-					_status.old_guhuoNode.listenTransition(onEnd, 300);
-				}
-			}, event.onEnd01);
-			"step 4";
-			game.delay(2);
-			"step 5";
-			if (!event.betrayers.length) {
-				event.goto(7);
-			}
-			"step 6";
-			if (event.fake) {
-				for (var target of event.betrayers) {
-					target.popup("质疑正确", "wood");
-				}
-				event.goon = false;
-			} else {
-				for (var target of event.betrayers) {
-					target.popup("质疑错误", "fire");
-					target.loseHp();
-				}
-				if (get.suit(event.result.cards[0], player) != "heart") {
-					event.goon = false;
-				}
-			}
-			"step 7";
-			if (!event.goon) {
-				game.log(player, "声明的", event.result.card, "作废了");
-				event.result.cancel = true;
-			}
-			"step 8";
-			game.delay();
-			"step 9";
-			if (!event.goon) {
-				if (event.fake) {
-					game.asyncDraw(event.betrayers);
-				}
-			}
-			game.broadcastAll(function () {
-				if (_status.old_guhuoNode) {
-					_status.old_guhuoNode.delete();
-					delete _status.old_guhuoNode;
-				}
-			});
 		},
 	},
 	old_zuilun: {
