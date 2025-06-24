@@ -18413,21 +18413,23 @@ const skills = {
 			}
 		},
 		group: "xuxie_add",
-	},
-	xuxie_add: {
-		audio: "xuxie",
-		trigger: { player: "phaseUseEnd" },
-		forced: true,
-		locked: false,
-		sourceSkill: "xuxie",
-		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.maxHp > player.maxHp;
-			});
-		},
-		content() {
-			player.gainMaxHp();
-			player.chooseDrawRecover(2, true);
+		subSkill: {
+			add: {
+				audio: "xuxie",
+				trigger: { player: "phaseUseEnd" },
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					return game.hasPlayer(function (current) {
+						return current.maxHp > player.maxHp;
+					});
+				},
+				content() {
+					player.gainMaxHp();
+					player.chooseDrawRecover(2, true);
+				},
+
+			},
 		},
 	},
 	//新潘凤

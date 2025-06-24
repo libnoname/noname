@@ -20995,7 +20995,7 @@ const skills = {
 			}
 			let num = player.storage.counttrigger[event.name];
 			if (typeof num == "number" && num > 0) {
-				num--;
+				player.storage.counttrigger[event.name] = 0;
 			}
 			const bool = await player
 				.chooseBool(`是否令${get.translation(trigger.card)}对自己无效？`)

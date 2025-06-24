@@ -10018,7 +10018,12 @@ const skills = {
 	mbxuetu: {
 		audio: 4,
 		enable: "phaseUse",
-		usable: 2,
+		usable(skill, player) {
+			if (player.countMark("mbxuetu_status") !== 1) {
+				return 1;
+			}
+			return 2;
+		},
 		filter(event, player) {
 			if (player.countMark("mbxuetu_status") == 2 && !game.hasPlayer(current => current != player)) {
 				return false;
@@ -10030,9 +10035,6 @@ const skills = {
 				if (player.countMark("mbxuetu_status") == 0 && !player.storage.mbxuetu) {
 					return false;
 				}
-			}
-			if (player.countMark("mbxuetu_status") !== 1 && player.getStat("skill").mbxuetu) {
-				return false;
 			}
 			return true;
 		},
@@ -10270,6 +10272,9 @@ const skills = {
 					game.log(player, "使命失败");
 					player.awakenSkill("mbweiming");
 					player.storage.mbxuetu_status = 2;
+					if (player.getStat("skill").mbxuetu) {
+						delete player.getStat("skill").mbxuetu;
+					}
 					await game.delayx();
 				},
 			},
