@@ -1206,7 +1206,7 @@ game.import("card", function () {
 				ai: {
 					effect: {
 						player_use(card, player, target) {
-							if (target.countCards("h") || !target.countCards("e")) {
+							if (!target || target.countCards("h") || !target.countCards("e")) {
 								return;
 							}
 							const filter = card => get.type(card) == "equip" && get.info(card)?.toself === false;

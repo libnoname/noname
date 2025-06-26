@@ -8475,9 +8475,7 @@ const skills = {
 			}
 			const playerMap = new Map();
 			while (true) {
-				if (!player.countCards("he", card => playerMap.every(cards => {
-					return !cards.includes(card);
-				}))) {
+				if (!player.countCards("he")) {
 					break;
 				}
 				const next = player.chooseCardTarget({
@@ -8501,7 +8499,6 @@ const skills = {
 				next.set("forced", true);
 				const { result } = await next;
 				playerMap.set(result.targets[0], result.cards);
-				player.addGaintag(result.cards, result.targets[0].name);
 				if (playerMap.size >= cards.length || playerMap.size >= game.countPlayer(target => target != player)) {
 					break;
 				}
@@ -8509,19 +8506,14 @@ const skills = {
 			for (const target of playerMap.keys()) {
 				await player.give(playerMap.get(target), target);
 				target.addTempSkill("hm_weizhu_buff", { global: "roundStart" });
-				target.addMark("hm_weizhu_buff", 1, false);
 			}
 		},
 		subSkill: {
 			buff: {
 				charlotte: true,
-				onremove: true,
-				intro: {
-					content: "计算距离-#",
-				},
 				mod: {
 					globalFrom(from, to, distance) {
-						return distance - from.countMark("hm_weizhu_buff");
+						return distance - 1;
 					},
 				},
 			},
