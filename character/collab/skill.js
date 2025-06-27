@@ -358,7 +358,7 @@ const skills = {
 									return false;
 								}
 								return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
-							})
+							}, true)
 							.set("autodelay", true)
 							.set("ai", target => {
 								const event = get.event(),

@@ -419,4 +419,5 @@ window.noname_character_replace = {
 	wufu: ["wufu", "hr_wufu"],
 	zhangyao: ["zhangyao", "std_zhangyao"],
 	sunjun: ["mb_sunjun", "jsrg_sunjun"],
+	zhangqiying: ["zhangqiying", "x_dc_zhangqiying", "y_dc_zhangqiying"],
 };
