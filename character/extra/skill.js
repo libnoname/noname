@@ -3401,9 +3401,6 @@ const skills = {
 		},
 		getTargets() {
 			return game.filterPlayer(current => {
-				if (get.mode() === "doudizhu") {
-					return current.getSeatNum() !== 3;
-				}
 				return !current.isZhu2();
 			});
 		},

@@ -435,18 +435,18 @@ export class Library {
 										typeof yingbianZhuzhanAI == "function"
 											? yingbianZhuzhanAI(player, card, source, targets)
 											: cardx => {
-													var info = get.info(card);
-													if (info && info.ai && info.ai.yingbian) {
-														var ai = info.ai.yingbian(card, source, targets, player);
-														if (!ai) {
-															return 0;
-														}
-														return ai - get.value(cardx);
-													} else if (get.attitude(player, source) <= 0) {
+												var info = get.info(card);
+												if (info && info.ai && info.ai.yingbian) {
+													var ai = info.ai.yingbian(card, source, targets, player);
+													if (!ai) {
 														return 0;
 													}
-													return 5 - get.value(cardx);
-											  },
+													return ai - get.value(cardx);
+												} else if (get.attitude(player, source) <= 0) {
+													return 0;
+												}
+												return 5 - get.value(cardx);
+											},
 								});
 								if (!game.online) {
 									return;
@@ -7214,8 +7214,12 @@ export class Library {
 					}
 					if (config.connect_doudizhu_mode != "normal") {
 						map.connect_double_character.hide();
+						map.connect_enhance_dizhu.hide();
+						map.connect_feiyang_version.hide();
 					} else {
 						map.connect_double_character.show();
+						map.connect_enhance_dizhu.show();
+						map.connect_feiyang_version.show();
 					}
 				},
 				connect_doudizhu_mode: {
@@ -7243,6 +7247,26 @@ export class Library {
 					frequent: true,
 					restart: true,
 				},
+				connect_enhance_dizhu: {
+					name: "加强地主",
+					init: "disabled",
+					restart: true,
+					item: {
+						disabled: "禁用",
+						kaihei: "获得〖强易〗",
+						yinfu: "获得〖殷富〗",
+					},
+				},
+				connect_feiyang_version: {
+					name: "〖飞扬〗版本",
+					init: "online",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
+					},
+				},
 			},
 			config: {
 				update: function (config, map) {
@@ -7265,6 +7289,8 @@ export class Library {
 						map.choice_zhu.hide();
 						map.choice_fan.hide();
 						map.revive.hide();
+						map.enhance_dizhu.hide();
+						map.feiyang_version.hide();
 					} else {
 						map.double_character.show();
 						map.free_choose.show();
@@ -7275,6 +7301,8 @@ export class Library {
 						map.choice_zhu.show();
 						map.choice_fan.show();
 						map.revive.show();
+						map.enhance_dizhu.show();
+						map.feiyang_version.show();
 					}
 					if (config.double_character && config.doudizhu_mode == "normal") {
 						map.double_hp.show();
@@ -7423,6 +7451,26 @@ export class Library {
 							ui.revive.close();
 							delete ui.revive;
 						}
+					},
+				},
+				enhance_dizhu: {
+					name: "加强地主",
+					init: "disabled",
+					restart: true,
+					item: {
+						disabled: "禁用",
+						kaihei: "获得〖强易〗",
+						yinfu: "获得〖殷富〗",
+					},
+				},
+				feiyang_version: {
+					name: "〖飞扬〗版本",
+					init: "online",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
 					},
 				},
 				choice_zhu: {
@@ -8795,10 +8843,10 @@ export class Library {
 	genAwait(item) {
 		return gnc.is.generator(item)
 			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-			  })()
+				for (const content of item) {
+					yield content;
+				}
+			})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -11895,16 +11943,16 @@ export class Library {
 					const cardName = get.name(cards[0], player);
 					return cardName
 						? new lib.element.VCard({
-								name: cardName,
-								nature: get.nature(cards[0], player),
-								suit: get.suit(cards[0], player),
-								number: get.number(cards[0], player),
-								isCard: true,
-								cards: [cards[0]],
-								storage: {
-									stratagem_buffed: 1,
-								},
-						  })
+							name: cardName,
+							nature: get.nature(cards[0], player),
+							suit: get.suit(cards[0], player),
+							number: get.number(cards[0], player),
+							isCard: true,
+							cards: [cards[0]],
+							storage: {
+								stratagem_buffed: 1,
+							},
+						})
 						: new lib.element.VCard();
 				}
 				return null;
@@ -14195,7 +14243,7 @@ export class Library {
 								navigator.clipboard
 									.readText()
 									.then(read)
-									.catch(_ => {});
+									.catch(_ => { });
 							} else {
 								var input = ui.create.node("textarea", ui.window, { opacity: "0" });
 								input.select();

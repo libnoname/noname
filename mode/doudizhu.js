@@ -119,7 +119,23 @@ export default () => {
 					break;
 				default:
 					if (!game.zhu.isInitFilter("noZhuSkill")) {
-						game.zhu.addSkill(["feiyang", "bahu"]);
+						const list = [];
+						const version = _status.connectMode ? lib.configOL.feiyang_version : get.config("feiyang_version");
+						if (version === "online") {
+							list.push("feiyang");
+						} else if (version === "mobile") {
+							list.push("mbfeiyang");
+						} else if (version === "decade") {
+							list.push("dcfeiyang");
+						}
+						list.push("bahu");
+						const enhance = _status.connectMode ? lib.configOL.enhance_dizhu : get.config("enhance_dizhu");
+						if (enhance === "kaihei") {
+							list.push("kaihei");
+						} else if (enhance === "yinfu") {
+							list.push("yinfu");
+						}
+						game.zhu.addSkill(list);
 					}
 			}
 			game.addGlobalSkill("doudizhu_viewHandcard");
@@ -2046,6 +2062,12 @@ export default () => {
 			bahu_info: "锁定技，准备阶段开始时，你摸一张牌。出牌阶段，你出【杀】次数+1。",
 			kaihei: "强易",
 			kaihei_info: "出牌阶段，你可以获得一名其他角色的至多两张牌，然后交给其等量的牌。每名角色每局游戏限一次。",
+			dcfeiyang: "飞扬",
+			dcfeiyang_info: "判定阶段开始时，若你的判定区有牌，则你可以弃置两张手牌，然后弃置你判定区的所有牌。",
+			mbfeiyang: "飞扬",
+			mbfeiyang_info: "判定阶段开始时，若你的判定区有牌，则你可以弃置两张手牌，然后弃置你判定区的一张牌。",
+			yinfu: "殷富",
+			yinfu_info: "锁定技。①回合开始时，若你的已损失体力值小于游戏轮次，你回复1点体力。②当你发动〖殷富①〗至少3次后，你失去〖殷富〗。",
 			doudizhu_cardPile: "底牌",
 			online_gongshoujintui: "攻守进退",
 			gongshoujianbei: "攻守兼备",
@@ -2592,6 +2614,7 @@ export default () => {
 					},
 				},
 			},
+			// OL飞扬
 			feiyang: {
 				trigger: { player: "phaseJudgeBegin" },
 				charlotte: true,
@@ -2639,6 +2662,102 @@ export default () => {
 					await player.discardPlayerCard(player, "j", true, player.countCards("j"));
 				},
 			},
+			// 十周年飞扬
+			dcfeiyang: {
+				trigger: { player: "phaseJudgeBegin" },
+				charlotte: true,
+				filter: function (event, player) {
+					return _status.mode != "online" && _status.mode != "binglin" && player == game.zhu && player.countCards("j") && player.countCards("h") > 1;
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToDiscard("h", 2, get.prompt(event.skill), "弃置两张手牌，然后弃置判定区里的所有牌")
+						.set("logSkill", event.skill)
+						.set("ai", function (card) {
+							if (_status.event.goon) {
+								return 7 - get.value(card);
+							}
+							return 0;
+						})
+						.set(
+							"goon",
+							(() => {
+								if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
+									return false;
+								}
+								return player.hasCard(function (card) {
+									if (get.tag(card, "damage") && get.damageEffect(player, player, _status.event.player, get.natureList(card)) >= 0) {
+										return false;
+									}
+									return (
+										get.effect(
+											player,
+											{
+												name: card.viewAs || card.name,
+												cards: [card],
+											},
+											player,
+											player
+										) < 0
+									);
+								}, "j");
+							})()
+						)
+						.forResult();
+					event.result.skill_popup = false;
+				},
+				async content(event, trigger, player) {
+					await player.discardPlayerCard(player, "j", true, player.countCards("j"));
+				},
+			},
+			// 手杀飞扬
+			mbfeiyang: {
+				trigger: { player: "phaseJudgeBegin" },
+				charlotte: true,
+				filter: function (event, player) {
+					return _status.mode != "online" && _status.mode != "binglin" && player == game.zhu && player.countCards("j") && player.countCards("h") > 1;
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToDiscard("h", 2, get.prompt(event.skill), "弃置两张手牌，然后弃置判定区里的一张牌")
+						.set("logSkill", event.skill)
+						.set("ai", function (card) {
+							if (_status.event.goon) {
+								return 7 - get.value(card);
+							}
+							return 0;
+						})
+						.set(
+							"goon",
+							(() => {
+								if (player.hasSkillTag("rejudge")) {
+									return false;
+								}
+								return player.hasCard(function (card) {
+									if (get.tag(card, "damage") && get.damageEffect(player, player, _status.event.player, get.natureList(card)) >= 0) {
+										return false;
+									}
+									return (
+										get.effect(
+											player,
+											{
+												name: card.viewAs || card.name,
+												cards: [card],
+											},
+											player,
+											player
+										) < 0
+									);
+								}, "j");
+							})()
+						)
+						.forResult();
+					event.result.skill_popup = false;
+				},
+				async content(event, trigger, player) {
+					await player.discardPlayerCard(player, "j", true);
+				},
+			},
 			bahu: {
 				trigger: { player: "phaseZhunbeiBegin" },
 				charlotte: true,
@@ -2655,6 +2774,21 @@ export default () => {
 							return num + 1;
 						}
 					},
+				},
+			},
+			// 殷富
+			yinfu: {
+				charlotte: true,
+				trigger: { player: "phaseBegin" },
+				filter(event, player) {
+					return player.isDamaged() && player.getDamagedHp() >= game.roundNumber;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.recover();
+					if (player.getAllHistory("useSkill", evt => evt.skill == event.name).length > 2) {
+						await player.removeSkills(event.name);
+					}
 				},
 			},
 			diqi_skill: {

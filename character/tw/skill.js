@@ -20955,7 +20955,7 @@ const skills = {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
 			choices.push("cancel2");
-			const control = await player
+			const { result } = await player
 				.chooseControl(choices)
 				.set("choiceList", choiceList)
 				.set(
@@ -20966,12 +20966,11 @@ const skills = {
 						}
 						return 0;
 					})()
-				)
-				.forResultControl();
+				);
 			event.result = {
-				bool: control != "cancel2",
+				bool: result?.control !== "cancel2",
 				targets: [target],
-				cost_data: control,
+				cost_data: result?.control,
 			};
 		},
 		async content(event, trigger, player) {
@@ -20982,29 +20981,26 @@ const skills = {
 			if (cost_data == "选项一") {
 				await player.draw();
 			} else {
-				const links = await player.choosePlayerCard(target, "hej", true).forResultLinks();
-				if (links?.length) {
-					const card = links[0];
+				const { result } = await player.choosePlayerCard(target, "hej", true);
+				if (result?.links?.length) {
+					const card = result.links[0];
 					target.$throw(get.position(card) == "h" ? 1 : card, 1000);
 					await target.lose(card, ui.cardPile, "insert");
 				}
 			}
 			await game.delayx();
-			if (!target.isIn() || player.countCards("h") !== target.countCards("h")) {
+			if (player.countCards("h") !== target.countCards("h")) {
 				return;
 			}
-			let num = player.storage.counttrigger[event.name];
+			const num = player.storage.counttrigger?.[event.name];
 			if (typeof num == "number" && num > 0) {
 				player.storage.counttrigger[event.name]--;
 			}
-			const bool = await player
-				.chooseBool(`是否令${get.translation(trigger.card)}对自己无效？`)
-				.set("ai", () => {
-					const evt = _status.event.getTrigger();
-					return get.effect(evt.target, evt.card, evt.player, evt.target) < 0;
-				})
-				.forResultBool();
-			if (bool) {
+			const { result } = await player.chooseBool(`是否令${get.translation(trigger.card)}对自己无效？`).set("ai", () => {
+				const evt = _status.event.getTrigger();
+				return get.effect(evt.target, evt.card, evt.player, evt.target) < 0;
+			});
+			if (result?.bool) {
 				trigger.excluded.add(player);
 			}
 		},

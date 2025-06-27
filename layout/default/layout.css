@@ -2204,13 +2204,24 @@ div:not(.handcards) > .card > .info > span,
 .player > div {
 	z-index: 2;
 }
+
 .player.dead,
-.player.likedead,
+.player.likedead {
+	z-index: 1;
+}
+
+.player.dead *,
+.player.likedead * {
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+
 .grayscale1 {
 	z-index: 1;
 	filter: grayscale(1);
 	-webkit-filter: grayscale(1);
 }
+
 .grayscale {
 	filter: grayscale(1);
 	-webkit-filter: grayscale(1);
@@ -3715,6 +3726,9 @@ div:not(.handcards) > .card > .info > span,
 .turnedover > .marks,
 .turnedover > .judges {
 	opacity: 0.7;
+}
+.turnedover > .timerbar {
+	opacity: 1;
 }
 .intro:not(.showintro) {
 	opacity: 0;

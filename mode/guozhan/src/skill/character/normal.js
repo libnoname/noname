@@ -768,7 +768,7 @@ export default {
 			if (player == target) {
 				return false;
 			}
-			if (target.hasSkill("reqiangxi_off")) {
+			if (target.hasSkill("gz_qiangxi_off")) {
 				return false;
 			}
 			return player.inRange(target);
@@ -1583,7 +1583,6 @@ export default {
 				trigger: {
 					player: "shaMiss",
 				},
-				direct: true,
 				filter(event, player) {
 					return event.skill == "gz_longdan_sha";
 				},
@@ -2586,12 +2585,10 @@ export default {
 		audioname2: {
 			gz_lvlingqi: "wushuang_lvlingqi",
 		},
-		forced: true,
 		locked: true,
 		group: ["wushuang1", "wushuang2"],
 		preHidden: ["wushuang1", "wushuang2", "gz_wushuang"],
 		trigger: { player: "useCard1" },
-		direct: true,
 		filter(event, player) {
 			if (event.card.name != "juedou" || !event.card.isCard) {
 				return false;
