@@ -256,7 +256,7 @@ const skills = {
 			},
 		},
 	},
-	starwenming: {
+	starweiming: {
 		audio: 2,
 		trigger: { global: "useCard" },
 		filter(event, player) {

@@ -1,4 +1,9 @@
 export default {
+	"#starlianzhan1": " 敌虽众，于我如浮云！",  
+	"#starlianzhan2": " 先斩那白马，再擒他公孙瓒！",  
+	"#starweiming1": " 既知本将在此，安敢引兵来犯！",  
+	"#starweiming2": " 前番饶过尔等，此番却又来找死！",  
+	"#star_wenchou:die": " 今日之败，实在是天意弄人啊！",
 	"#starduhai1": "朝堂好似大染缸，进来了，休想清白出去！",
 	"#starduhai2": "后生，你也配打咱家主意？",
 	"#starlingse1": "陛下尚唤咱家一声阿耶，你怎得张不开嘴？",
