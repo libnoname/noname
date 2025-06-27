@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	y_dc_dianhua(player) {
+		let num = get.cnNumber(1 + player.countMark("y_dc_zhenyi"));
+		return `准备阶段或结束阶段，你可以观看牌堆顶${num}张牌，然后获得其中一张牌，将其余牌以任意顺序放回牌堆顶。`;
+	},
 	dcsbjuemou(player) {
 		const bool = player.storage.dcsbjuemou;
 		let yang = "对自己造成1点伤害并摸已损失体力值数张牌",
