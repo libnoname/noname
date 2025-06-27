@@ -259,6 +259,18 @@ const translates = {
 	strongduanti_append: "<span class='text' style='font-family: yuanli'>我要验牌！</span>",
 	stronglianwu: "练武",
 	stronglianwu_info: "你使用【杀】指定唯一目标或成为【杀】的唯一目标后，使用者每满足一项便可弃置目标角色的一张牌：1.装备了武器牌；2.此【杀】受到了【酒】的影响。",
+	ren_jiangwei: "忍姜维",
+	ren_jiangwei_prefix: "忍",
+	ren_dengai: "忍邓艾",
+	ren_dengai_prefix: "忍",
+	renneyan: "讷言",
+	renneyan_info: "转换技，锁定技，你使用非装备牌时，阳：弃置一张牌并令此牌额外结算一次，否则此牌无效；阴：此牌无次数限制。",
+	renqianyao: "潜曜",
+	renqianyao_info: "限定技，回合开始时，你可以摸X张牌，视为使用一张【杀】并依次执行前X项：1.此【杀】额外指定一个目标；2.此【杀】伤害+1；3.此【杀】不可被响应。（X为游戏轮数）",
+	renhuoluan: "惑乱",
+	renhuoluan_info: "出牌阶段限一次，你可以与至多两名其他角色共同拼点并记录你的拼点牌，你可将拼点牌更改为任意点数。点数唯一最小的角色视为被参与拼点的其余角色各使用一张【杀】，点数唯一最大的角色摸体力值张牌，若均不为你，你重置〖惑乱〗。",
+	renguxing: "孤星",
+	renguxing_info: "限定技，回合开始时，你可以依次执行前X项，从牌堆或弃牌堆中：1.获得〖惑乱〗记录的牌；2.获得与〖惑乱〗记录牌点数花色均相同的所有牌；3.获得与〖惑乱〗记录牌牌名相同的牌。（X为游戏轮数，相同牌名的牌至多获得五张）",
 };
 
 export default translates;

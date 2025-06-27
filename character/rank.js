@@ -389,6 +389,8 @@ window.noname_character_rank = {
 		"ps2063_zhaoyun",
 		"shen_jiaxu",
 		"renwan",
+		"ren_jiangwei",
+		"ren_dengai",
 	],
 	am: [
 		"pot_lusu",
@@ -3250,6 +3252,8 @@ window.noname_character_rank = {
 			"sxrm_xunyu",
 			"sxrm_liubei",
 			"mb_zerong",
+			"ren_jiangwei",
+			"ren_dengai",
 		],
 		rare: [
 			"std_zhangyao",

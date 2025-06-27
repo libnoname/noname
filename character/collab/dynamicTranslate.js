@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	renneyan(player) {
+		const bool = player.getStorage("renneyan", false);
+		let yang = "弃置一张牌并令此牌额外结算一次，否则此牌无效",
+			yin = "此牌无次数限制";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，锁定技，你使用非装备牌时",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	dcjianxiong(player) {
 		return "当你受到伤害后，你可以摸" + get.cnNumber(player.countMark("dcjianxiong") + 1) + "张牌并获得对你造成伤害的牌，然后你令此技能摸牌数+1（至多为5）。";
 	},

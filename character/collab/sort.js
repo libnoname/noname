@@ -3,7 +3,7 @@ const characterSort = {
 	collab_tongque: ["sp_fuwan", "sp_fuhuanghou", "sp_jiben", "old_lingju", "sp_mushun"],
 	collab_duanwu_2023: ["sunwukong", "longwang", "taoshen"],
 	collab_decade: ["libai", "xiaoyuehankehan", "zhutiexiong", "wu_zhutiexiong"],
-	collab_remake: ["dc_caocao", "dc_liubei", "dc_sunquan", "nezha", "dc_sunce", "dc_zhaoyun", "dc_wuyi"],
+	collab_remake: ["dc_caocao", "dc_liubei", "dc_sunquan", "nezha", "dc_sunce", "dc_zhaoyun", "dc_wuyi", "ren_jiangwei", "ren_dengai"],
 	collab_duanwu_2024: ["quyuan"],
 	collab_dcdoudizhui: ["yuanshaoyuanshu", "tianji", "dc_noname", "xin_sunquan", "liuxiecaojie", "weiqing", "shi_cenhun"],
 	collab_oldoudizhu: ["strong_caochong", "taipingsangong", "wuhujiang", "ol_jsrg_caocao", "ol_jsrg_lvbu", "ol_nianshou", "hanshiwuhu", "ol_xiahouen"],

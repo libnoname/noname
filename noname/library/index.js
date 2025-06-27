@@ -15798,6 +15798,13 @@ export class Library {
 				},
 			},
 		],
+		[
+			"忍",
+			{
+				color: "#180a29",
+				nature: "thunder",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
