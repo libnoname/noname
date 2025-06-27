@@ -2508,7 +2508,7 @@ export default {
 				const aim = list[1 - list.indexOf(i)];
 				const {
 					result: { bool },
-				} = await i.chooseBool(get.prompt("fakehanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
+				} = await i.chooseBool(get.prompt("gz_hanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
 					"choice",
 					aim.hasCard(card => {
 						return get.value(card, aim) * get.attitude(i, aim) < 0;

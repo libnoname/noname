@@ -11,14 +11,14 @@ const characterSort = {
 	mobile_sp12: ["hujinding", "lifeng", "zhaotongzhaoguang", "wangyuanji", "yanghuiyu", "liuye", "simazhao", "zhuling", "yangbiao"],
 	mobile_sp13: ["sp_caosong", "sp_pengyang", "liwei", "xin_guozhao", "qianzhao", "peixiu", "yanxiang", "xin_hansui", "yangfu"],
 	mobile_sp14: ["mb_ganfuren", "xin_huojun", "laimin", "xin_wuban", "mb_huban", "sp_jianggan", "baoxin", "mb_chengui", "muludawang", "yangfeng"],
-	mobile_sp_default: ["mb_mengda", "mb_caoxing", "mb_zhangyan", "mb_qinghegongzhu", "mb_wangjing", "mb_sp_zhenji", "mb_xianglang", "jiangji", "zhangbu", "wuke", "mb_xingdaorong"],
+	mobile_sp_default: ["mb_mengda", "mb_caoxing", "mb_qinghegongzhu", "mb_wangjing", "mb_sp_zhenji", "mb_xianglang", "jiangji", "zhangbu", "wuke", "mb_xingdaorong"],
 	mobile_xlqk1: ["lingcao", "sunru", "liuzan"],
 	mobile_xlqk2: ["pangdegong", "miheng"],
 	mobile_xlqk3: ["majun", "zhengxuan", "simashi"],
 	mobile_xlqk4: ["nanhualaoxian", "shichangshi", "sunhanhua"],
 	mobile_xlqk5: ["mb_zhangfen", "mb_zerong"],
 	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_jiachong"],
-	mobile_bingshiPack: ["mb_sunjun", "pot_lusu", "pot_weiyan", "guoyuan", "mb_huangzu", "mb_tianfeng", "mb_luyusheng", "pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	mobile_bingshiPack: ["mb_sunjun", "pot_lusu", "pot_weiyan", "guoyuan", "mb_huangzu", "mb_tianfeng", "mb_luyusheng", "pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao", "mb_zhangyan"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
