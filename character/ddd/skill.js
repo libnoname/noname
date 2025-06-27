@@ -6200,7 +6200,7 @@ const skills = {
 						var bottom = result.moved[1];
 						top.reverse();
 						player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
-						var cards = top.addArray(bottom);
+						var cards = top.concat(bottom);
 						player.$throw(cards.length, 1000);
 						player.lose(cards, ui.cardPile).set("top", top).insert_index = function (event, card) {
 							if (event.top.includes(card)) {
