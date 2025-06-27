@@ -3432,13 +3432,10 @@ const skills = {
 			await next;
 		},
 		init(player, skill) {
-			const evt = lib.skill.dcbaguan.getUsed(player, true);
-			if (evt && !evt.dcbaguan) {
-				player.addTip(skill, "霸关 可连击");
-			}
+			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			player.removeSkill(skill + "_mark");
 		},
 		getUsed(player, first) {
 			let history;
@@ -3479,9 +3476,18 @@ const skills = {
 				}
 			},
 		},
-		group: "dcbaguan_mark",
+		//group: "dcbaguan_mark",
 		subSkill: {
 			mark: {
+				init(player, skill) {
+					const evt = lib.skill.dcbaguan.getUsed(player, true);
+					if (evt && !evt.dcbaguan) {
+						player.addTip(skill, "霸关 可连击");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
 				charlotte: true,
 				trigger: { player: "useCard" },
 				forced: true,
@@ -5025,13 +5031,10 @@ const skills = {
 			trigger.effectCount++;
 		},
 		init(player, skill) {
-			const evt = lib.skill.dcjianying.getLastUsed(player);
-			if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt[skill]) {
-				player.addTip(skill, "破戎 可连击");
-			}
+			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			player.removeSkill(skill + "_mark");
 		},
 		ai: {
 			directHit_ai: true,
@@ -5043,9 +5046,18 @@ const skills = {
 				return evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong;
 			},
 		},
-		group: "dcporong_mark",
+		//group: "dcporong_mark",
 		subSkill: {
 			mark: {
+				init(player, skill) {
+					const evt = lib.skill.dcjianying.getLastUsed(player);
+					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt[skill]) {
+						player.addTip(skill, "破戎 可连击");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
 				charlotte: true,
 				trigger: { player: ["useCard1", "useCardAfter"] },
 				forced: true,

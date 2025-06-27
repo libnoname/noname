@@ -9600,7 +9600,7 @@ const skills = {
 				ai: {
 					save: true,
 					skillTagFilter(player, tag, arg) {
-						return !player.isTurnedOver();
+						return !player.isTurnedOver() && _status.event?.dying == player;
 					},
 					order: 5,
 					result: {

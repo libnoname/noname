@@ -5255,7 +5255,7 @@ const skills = {
 				return {
 					audio: "leiluan",
 					filterCard: true,
-					selectCard: () => get.event().leiluan[1],
+					selectCard: get.event().leiluan[1],
 					check(card) {
 						return 1 / (get.value(card) || 0.5);
 					},
@@ -5285,7 +5285,7 @@ const skills = {
 				}
 			});
 			const num = lib.skill.leiluan.getNum();
-			return basic.includes(name) && player.countCards("he") >= num;
+			return basic.includes(name) && player.countCards("hes") >= num;
 		},
 		ai: {
 			order(item, player) {

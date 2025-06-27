@@ -636,7 +636,6 @@ game.import("card", function () {
 			yinyueqiang: {
 				equipSkill: true,
 				trigger: { player: ["useCard", "respondAfter"] },
-				direct: true,
 				filter(event, player) {
 					if (_status.currentPhase == player) {
 						return false;
@@ -650,24 +649,33 @@ game.import("card", function () {
 					if (lib.filter.autoRespondSha.call({ player: player })) {
 						return false;
 					}
-					return get.color(event.cards[0]) == "black";
+					return get.color(event.cards[0]) == "black" && player.hasHistory("lose", evt => evt.getParent() == event && evt.hs?.length == 1);
 				},
-				content() {
-					"step 0";
-					const next = player.chooseToUse(get.prompt("yinyueqiang"));
-					next.set("filterCard", function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToUse(`###${get.prompt(event.skill)}###对你攻击范围内的一名角色使用一张【杀】`)
+						.set("filterCard", function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						})
+						.set("addCount", false)
+						.set("chooseonly", true)
+						.set("logSkill", event.name.slice(0, -5))
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { ResultEvent, logSkill } = event.cost_data;
+					event.next.push(ResultEvent);
+					/*if (logSkill) {
+						if (typeof logSkill == "string") {
+							ResultEvent.player.logSkill(logSkill);
+						} else if (Array.isArray(logSkill)) {
+							ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
 						}
-						return lib.filter.filterCard.apply(this, arguments);
-					});
-					next.aidelay = true;
-					next.logSkill = "yinyueqiang";
-					next.noButton = true;
-					"step 1";
-					if (result.bool) {
-						game.delay();
-					}
+					}*/
+					await ResultEvent;
 				},
 			},
 			caomu_skill: {

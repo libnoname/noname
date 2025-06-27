@@ -246,7 +246,8 @@ export default {
 						let evt = trigger.getParent("phase");
 						if (evt && evt.player == player) {
 							game.log(player, "结束了回合");
-							evt.finish();
+							evt.num = evt.phaseList.length;
+							evt.goto(11);
 						}
 						break;
 					}

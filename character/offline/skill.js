@@ -8473,42 +8473,77 @@ const skills = {
 					await player.gain(result.links);
 				}
 			}
-			const playerMap = new Map();
-			while (true) {
-				if (!player.countCards("he")) {
-					break;
-				}
-				const next = player.chooseCardTarget({
+			if (_status.connectMode) {
+				game.broadcastAll(() => (_status.noclearcountdown = true));
+			}
+			const map = new Map();
+			while (player.countCards("he")) {
+				const { result } = await player.chooseCardTarget({
+					forced: true,
+					map: map,
+					position: "he",
+					prompt: "围铸：请选择要分配的卡牌和目标",
 					filterTarget(card, player, target) {
-						if (player == target) {
-							return false;
-						}
-						return !playerMap.has(target);
+						return player != target && !get.event().map.has(target);
 					},
 					filterCard(card) {
-						let bool = true;
-						playerMap.forEach(cards => {
-							if (cards[0] == card) {
-								bool = false;
-							}
-						});
-						return bool;
+						return !card.hasGaintag("hm_weizhu_tag");
 					},
-					prompt: "交给一名其他角色一张牌",
+					ai1(card) {
+						const { player, map } = get.event();
+						return Math.max(
+							...game.filterPlayer().map(target => {
+								return [...ui.selected.cards, card, ...(map.get(target) || [])].reduce((sum, cardx) => {
+									return sum + get.value(cardx, target) * get.attitude(player, target);
+								}, 0);
+							})
+						);
+					},
+					ai2(target) {
+						const player = get.player();
+						const card = ui.selected.cards[0];
+						if (card) {
+							return get.value(card, target) * get.attitude(player, target);
+						}
+						return 0;
+					},
 				});
-				next.set("forced", true);
-				const { result } = await next;
-				playerMap.set(result.targets[0], result.cards);
-				if (playerMap.size >= cards.length || playerMap.size >= game.countPlayer(target => target != player)) {
+				if (result?.bool && result.targets?.length && result.cards?.length) {
+					const target = result.targets[0];
+					player.addGaintag(result.cards, "hm_weizhu_tag");
+					map.set(target, result.cards);
+					if (map.size >= cards.length || map.size >= game.countPlayer(target => target != player)) {
+						break;
+					}
+				} else {
 					break;
 				}
 			}
-			for (const target of playerMap.keys()) {
-				await player.give(playerMap.get(target), target);
-				target.addTempSkill("hm_weizhu_buff", { global: "roundStart" });
+			if (_status.connectMode) {
+				game.broadcastAll(() => {
+					delete _status.noclearcountdown;
+					game.stopCountChoose();
+				});
+			}
+			if (map.size) {
+				const gain_list = [];
+				map.forEach((cards, source) => {
+					player.line(source, "green");
+					gain_list.push([source, cards]);
+					source.addTempSkill("hm_weizhu_buff", "roundStart");
+				});
+				await game
+					.loseAsync({
+						gain_list: gain_list,
+						player: player,
+						giver: player,
+						animate: "giveAuto",
+					})
+					.setContent("gaincardMultiple");
 			}
 		},
 		subSkill: {
+			tag: {},
 			buff: {
 				charlotte: true,
 				mod: {

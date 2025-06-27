@@ -2549,7 +2549,8 @@ const skills = {
 			const evt = event.getParent("phase", true);
 			if (evt) {
 				game.log(player, "结束了回合");
-				evt.finish();
+				evt.num = evt.phaseList.length;
+				evt.goto(11);
 			}
 			const evtx = event.getParent("phaseUse", true);
 			if (evtx) {

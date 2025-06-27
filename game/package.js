@@ -53,7 +53,7 @@ window.noname_package = {
 		sp: "忠胆英杰",
 		zhulu: "逐鹿天下",
 		yunchou: "运筹帷幄",
-		kaiheiji: "开黑季",
+		huodong: "活动卡牌",
 		zhenfa: "阵法",
 		swd: "轩辕剑",
 		gujian: "古剑奇谭",

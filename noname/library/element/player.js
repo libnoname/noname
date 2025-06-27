@@ -10170,6 +10170,7 @@ export class Player extends HTMLDivElement {
 					}
 				}
 			}
+			this.disabledSkills[skills] ??= [];
 			this.disabledSkills[skills].add(skill);
 			var group = lib.skill[skills].group;
 			if (typeof group == "string" || Array.isArray(group)) {

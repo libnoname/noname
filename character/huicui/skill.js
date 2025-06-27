@@ -1019,7 +1019,7 @@ const skills = {
 			player.addTempSkill(event.name + "_check", "phaseUseAfter");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【评骘】`);
 			if (player.storage[event.name]) {
-				await target.discard(cards).set("discarder", player);
+				await target.modedDiscard(cards).set("discarder", player);
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
 				if (target.canUse(huogong, player, false)) {
 					await target.useCard(huogong, player, false);

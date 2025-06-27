@@ -318,15 +318,12 @@ const skills = {
 		content() {
 			const list = [event.name, trigger.dying];
 			player
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					get.prompt2(...list)
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, get.prompt2(...list))
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -377,61 +374,57 @@ const skills = {
 	},
 	oldmingjian: {
 		audio: "mingjian",
-		trigger: { player: "phaseUseBefore" },
+		trigger: { player: "phaseZhunbeiBefore" },
 		filter(event, player) {
 			return player.countCards("h");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("oldmingjian"), "跳过出牌阶段并将所有手牌交给一名其他角色，你结束此回合，然后其于此回合后获得一个额外的出牌阶段", lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player,
-					att = get.attitude(player, target);
-				if (target.hasSkillTag("nogain")) {
-					return 0.01 * att;
-				}
-				if (player.countCards("h") == player.countCards("h", "du")) {
-					return -att;
-				}
-				if (target.hasJudge("lebu")) {
-					att *= 1.25;
-				}
-				if (get.attitude(player, target) > 3) {
-					var basis = get.threaten(target) * att;
-					if (
-						player == get.zhu(player) &&
-						player.hp <= 2 &&
-						player.countCards("h", "shan") &&
-						!game.hasPlayer(function (current) {
-							return get.attitude(current, player) > 3 && current.countCards("h", "tao") > 0;
-						})
-					) {
-						return 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "跳过出牌阶段并将所有手牌交给一名其他角色，你结束此回合，然后其于此回合后获得一个额外的出牌阶段", lib.filter.notMe)
+				.set("ai", target => {
+					var player = _status.event.player,
+						att = get.attitude(player, target);
+					if (target.hasSkillTag("nogain")) {
+						return 0.01 * att;
 					}
-					if (target.countCards("h") + player.countCards("h") > target.hp + 2) {
-						return basis * 0.8;
+					if (player.countCards("h") == player.countCards("h", "du")) {
+						return -att;
 					}
-					return basis;
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("oldmingjian", target);
-				player.give(player.getCards("h"), target);
-				trigger.cancel();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var evt = trigger.getParent("phase");
+					if (target.hasJudge("lebu")) {
+						att *= 1.25;
+					}
+					if (get.attitude(player, target) > 3) {
+						var basis = get.threaten(target) * att;
+						if (
+							player == get.zhu(player) &&
+							player.hp <= 2 &&
+							player.countCards("h", "shan") &&
+							!game.hasPlayer(function (current) {
+								return get.attitude(current, player) > 3 && current.countCards("h", "tao") > 0;
+							})
+						) {
+							return 0;
+						}
+						if (target.countCards("h") + player.countCards("h") > target.hp + 2) {
+							return basis * 0.8;
+						}
+						return basis;
+					}
+					return 0;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.give(player.getCards("h"), target);
+			trigger.cancel();
+			const evt = trigger.getParent("phase", true);
 			if (evt) {
 				game.log(player, "结束了回合");
-				evt.finish();
+				evt.num = evt.phaseList.length;
+				evt.goto(11);
 			}
-			var next = target.insertPhase();
+			const next = target.insertPhase();
 			next._noTurnOver = true;
 			next.phaseList = ["phaseUse"];
 			//next.setContent(lib.skill.oldmingjian.phase);
