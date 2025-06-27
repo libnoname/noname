@@ -63,13 +63,7 @@ const skills = {
 										const current = trigger[role];
 										if (current == player) {
 											player.logSkill("renhuoluan");
-											const map = {
-												1: "A",
-												11: "J",
-												12: "Q",
-												13: "K",
-											};
-											game.log(current, "拼点牌点数视为", `#y${map[num] ?? num}`);
+											game.log(current, "拼点牌点数视为", `#y${get.strNumber(num, false)}`);
 											trigger[`num${ind}`] = num;
 										}
 									}
@@ -142,16 +136,10 @@ const skills = {
 				};
 			},
 			prompt(result, player) {
-				const map = {
-						1: "A",
-						11: "J",
-						12: "Q",
-						13: "K",
-					},
-					num = result.control;
+				const num = result.control;
 				let str = `###${get.prompt("renhuoluan")}###与至多两名其他角色共同拼点`;
 				if (typeof num == "number") {
-					str += `且你的拼点牌点数视为${map[num] ?? num}`;
+					str += `且你的拼点牌点数视为${get.strNumber(num, false)}`;
 				}
 				return str;
 			},
@@ -189,6 +177,9 @@ const skills = {
 				count++;
 			}
 			return `${str}（同名牌至多获得五张）`;
+		},
+		check(event, player) {
+			return game.roundNumber >= 3 || player.hp <= 1;
 		},
 		limited: true,
 		skillAnimation: true,
@@ -284,6 +275,29 @@ const skills = {
 			}
 		},
 		mod: {
+			aiOrder(player, card, order) {
+				if (get.type(card) == "equip") {
+					return order;
+				}
+				const bool = player.getStorage("renneyan", false);
+				if (bool && card.name == "sha") {
+					order += 7;
+				}
+				if (!bool) {
+					if (player.countCards("he", cardx => {
+						const type = get.type(card, player);
+						return type == get.type(cardx, player) && cardx != card;
+					})) {
+						if (get.tag(card, "gain") || get.tag(card, "draw")) {
+							order += 9;
+						}
+					}
+					else {
+						order = 0;
+					}
+				}
+				return order;
+			},
 			cardUsable(card, player, num) {
 				const bool = player.getStorage("renneyan", false),
 					type = get.type2(card, player);
@@ -304,6 +318,9 @@ const skills = {
 				return false;
 			}
 			return true;
+		},
+		check(event, player) {
+			return game.roundNumber >= 3 || player.hp <= 2;
 		},
 		limited: true,
 		skillAnimation: true,
