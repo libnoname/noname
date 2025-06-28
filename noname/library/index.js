@@ -15154,7 +15154,7 @@ export class Library {
 			"疑",
 			{
 				color: "#5a6968",
-				nature: "gray",
+				nature: "graymm",
 			},
 		],
 		[
@@ -15198,28 +15198,28 @@ export class Library {
 			"旧",
 			{
 				color: "#a4a4a4",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
 			"旧界",
 			{
 				color: "#a4a4a4",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
 			"节钺",
 			{
 				color: "#a4a4a4",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
 			"毅重",
 			{
 				color: "#a4a4a4",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
@@ -15664,7 +15664,7 @@ export class Library {
 			"牢",
 			{
 				color: "#EEEE00",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
@@ -15680,7 +15680,7 @@ export class Library {
 			"友",
 			{
 				color: "#AAABFF",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
@@ -15688,7 +15688,7 @@ export class Library {
 			{
 				showName: "鼎",
 				color: "#ffccff",
-				nature: "black",
+				nature: "blackmm",
 			},
 		],
 		[
@@ -15703,7 +15703,7 @@ export class Library {
 			"忠",
 			{
 				color: "#ffd700",
-				nature: "metal",
+				nature: "metalmm",
 			},
 		],
 		[
@@ -15718,7 +15718,7 @@ export class Library {
 			{
 				showName: "幽",
 				color: "#ff6a6a",
-				nature: "red",
+				nature: "redmm",
 			},
 		],
 		[
@@ -15771,7 +15771,7 @@ export class Library {
 			"魔",
 			{
 				color: "#2e002e",
-				nature: "fire",
+				nature: "firemm",
 			},
 		],
 		[
@@ -15800,7 +15800,7 @@ export class Library {
 			"忍",
 			{
 				color: "#180a29",
-				nature: "thunder",
+				nature: "thundermm",
 			},
 		],
 	]);

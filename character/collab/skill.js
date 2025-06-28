@@ -225,6 +225,9 @@ const skills = {
 				await player.gain(cards, "gain2");
 			}
 		},
+		ai: {
+			combo: "renhuoluan",
+		},
 	},
 	renneyan: {
 		audio: 2,

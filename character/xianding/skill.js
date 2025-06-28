@@ -285,6 +285,9 @@ const skills = {
 				}
 			}
 		},
+		ai: {
+			combo: "x_dc_falu",
+		},
 		subSkill: {
 			A: {
 				intro: {
@@ -559,6 +562,9 @@ const skills = {
 				player.markAuto("y_dc_zhenyi_record", trigger.suit);
 				player.markSkill(event.name);
 			}
+		},
+		ai: {
+			combo: "y_dc_falu",
 		},
 		mod: {
 			targetInRange(card, player) {
@@ -27204,7 +27210,16 @@ const skills = {
 		},
 		usable: 1,
 		async cost(event, trigger, player) {
-			event.result = await player.chooseToDiscard(get.prompt(event.skill, trigger.source), `是否弃置一张牌，令${get.translation(trigger.source)}对${get.translation(trigger.player)}的伤害+1，且你与其各摸两张牌？`, "he", "chooseonly").forResult();
+			event.result = await player
+				.chooseToDiscard(get.prompt(event.skill, trigger.source), `是否弃置一张牌，令${get.translation(trigger.source)}对${get.translation(trigger.player)}的伤害+1，且你与其各摸两张牌？`, "he", "chooseonly")
+				.set("ai", card => {
+					if (get.event("eff") > 0) {
+						return 7 - get.value(card);
+					}
+					return 0;
+				})
+				.set("eff", get.damageEffect(trigger.player, trigger.source, player) + 0.2 * get.attitude(player, trigger.source))
+				.forResult();
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
