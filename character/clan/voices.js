@@ -1,4 +1,11 @@
 export default {
+	"#clanjiannan1": "上既临危遘难，臣当尽节卫主。",
+	"#clanjiannan2": "事君不避难，凛身危困间。",
+	"#clanyichi1": "黎民重迁，动易安难，遑论宗庙社稷！",
+	"#clanyichi2": "捐宗庙，弃园陵，岂是为国事者所为！",
+	"#clanquhuo_clan_yangbiao1": "君子曰，臣治烦去惑者，是以伏死而争。",
+	"#clanquhuo_clan_yangbiao2": "杨氏累世清德，当守家风，去三惑。",
+	"#clan_yangbiao:die": "见华岳松枯，闻五色鸟啼。",
 	"#clanqieyi1": "张角将成祸患，何不庙胜先分之弱之。",
 	"#clanqieyi2": "昔授《尚书》于华光，今剖时弊于朝堂！",
 	"#clanjianzhi1": "昔虹贯牛山，管仲谏桓公无近妃宫。",

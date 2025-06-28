@@ -487,6 +487,7 @@ const skills = {
 	},
 	//族杨彪
 	clanjiannan: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -625,6 +626,7 @@ const skills = {
 		},
 	},
 	clanyichi: {
+		audio: 2,
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
@@ -697,6 +699,7 @@ const skills = {
 	},
 	//族杨众 —— by 星の语
 	clanjuetu: {
+		audio: 2,
 		trigger: { player: "phaseDiscardBefore" },
 		forced: true,
 		content() {
@@ -786,6 +789,7 @@ const skills = {
 		],
 	},
 	clankudu: {
+		audio: 2,
 		limited: true,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -1341,7 +1345,7 @@ const skills = {
 	clanquhuo: {
 		audio: 2,
 		clanSkill: true,
-		audioname: ["clan_yangci", "clan_yangxiu"],
+		audioname: ["clan_yangci", "clan_yangxiu", "clan_yangbiao", "clan_yangzhong"],
 		trigger: {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
