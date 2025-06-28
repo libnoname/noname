@@ -213,7 +213,7 @@ const skills = {
 			order: 3,
 			result: {
 				player(player) {
-					const count = (color = player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color));
+					const count = color => player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color);
 					if (count("red") > 1 && count("red") == count("black")) {
 						return 1;
 					}
