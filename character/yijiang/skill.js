@@ -59,16 +59,7 @@ const skills = {
 						if (
 							event.card.name === "sha" &&
 							event.targets.filter(current => {
-								if (
-									current.mayHaveShan(
-										player,
-										"use",
-										current.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									) &&
-									get.attitude(player, current) <= 0
-								) {
+								if (current.mayHaveShan(player, "use") && get.attitude(player, current) <= 0) {
 									if (current.hasSkillTag("useShan")) {
 										num = 1.9;
 									}
@@ -948,16 +939,7 @@ const skills = {
 						if (
 							event.card.name == "sha" &&
 							event.targets.filter(function (current) {
-								if (
-									current.mayHaveShan(
-										player,
-										"use",
-										current.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									) &&
-									get.attitude(player, current) <= 0
-								) {
+								if (current.mayHaveShan(player, "use") && get.attitude(player, current) <= 0) {
 									if (current.hasSkillTag("useShan")) {
 										num = 1.9;
 									}
@@ -9859,13 +9841,10 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.recover(game.countGroup() - player.hp);
-			"step 1";
-			player.turnOver();
-			player.storage.fuli = true;
+			await player.recoverTo(game.countGroup());
+			await player.turnOver();
 		},
 		ai: {
 			save: true,

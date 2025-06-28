@@ -6267,13 +6267,7 @@ const skills = {
 			let extra_num = 0;
 			for (const target of targets) {
 				if (
-					target.mayHaveShan(
-						player,
-						"use",
-						target.getCards("h", i => {
-							return i.hasGaintag("sha_notshan");
-						})
-					) &&
+					target.mayHaveShan(player, "use") &&
 					!player.hasSkillTag(
 						"directHit_ai",
 						true,

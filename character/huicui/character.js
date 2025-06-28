@@ -711,7 +711,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["dcshengxi", "dcshoucheng"],
+		skills: ["reshengxi", "dcshoucheng"],
 		names: "蒋|琬-费|祎",
 	},
 };

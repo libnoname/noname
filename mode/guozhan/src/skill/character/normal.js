@@ -1858,8 +1858,7 @@ export default {
 					return 2;
 				}
 
-				const cards = target.getCards("h", card => card.hasGaintag("sha_notshan"));
-				return target.mayHaveShan(player, "use", cards) ? 1 : 0;
+				return target.mayHaveShan(player, "use") ? 1 : 0;
 			}
 		},
 		logTarget: "targets",

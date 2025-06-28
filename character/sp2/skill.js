@@ -8701,13 +8701,7 @@ const skills = {
 						return Math.sqrt(target.countCards("he"));
 					}
 					if (
-						target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) &&
+						target.mayHaveShan(player, "use") &&
 						player.countCards("hs", function (card) {
 							return !ui.selected.cards.includes(card) && get.name(card) == "sha" && player.canUse(card, target) && get.effect(target, card, player, player) != 0;
 						})
@@ -9123,13 +9117,7 @@ const skills = {
 					get.attitude(player, target) >= 0 ||
 					!player.canUse(cards[0], target, false) ||
 					(!player.hasJudge("lebu") &&
-						target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) &&
+						target.mayHaveShan(player, "use") &&
 						!player.hasSkillTag(
 							"directHit_ai",
 							true,

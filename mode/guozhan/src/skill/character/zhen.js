@@ -455,16 +455,7 @@ export default {
 						if (["tiesuo", "diaohulishan", "lianjunshengyan", "zhibi", "chiling", "lulitongxin"].includes(trigger.card.name)) {
 							goon = false;
 						} else if (trigger.card.name == "sha") {
-							if (
-								trigger.target.mayHaveShan(
-									player,
-									"use",
-									trigger.target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								) ||
-								trigger.target.hp >= 3
-							) {
+							if (trigger.target.mayHaveShan(player, "use") || trigger.target.hp >= 3) {
 								goon = false;
 							}
 						} else if (trigger.card.name == "guohe") {

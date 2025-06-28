@@ -62,10 +62,10 @@ export default () => {
 						e.preventDefault();
 					}
 					const ip = node.textContent;
+					game.requireSandboxOn(ip);
 					game.saveConfig("last_ip", ip);
 					game.connect(ip, function (success) {
 						if (success) {
-							game.requireSandboxOn(ip);
 							var info = lib.config.reconnect_info;
 							if (info && info[0] == _status.ip) {
 								game.onlineID = info[1];

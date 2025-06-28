@@ -9745,7 +9745,7 @@ export class Player extends HTMLDivElement {
 					continue;
 				}
 				this.initedSkills.push(skill);
-				if (info.init && !_status.video) {
+				if (info.init /* && !_status.video */) {
 					info.init(this, skill);
 				}
 			}
@@ -9924,7 +9924,7 @@ export class Player extends HTMLDivElement {
 				this.awakenSkill(skill);
 				return;
 			}
-			if (info.init2 && !_status.video) {
+			if (info.init2 /** && !_status.video */) {
 				info.init2(this, skill);
 			}
 			if (info.mark) {
@@ -12315,9 +12315,9 @@ export class Player extends HTMLDivElement {
 	 * 以viewer视角猜测Player手里的闪
 	 * @param { Player } [viewer]
 	 * @param { "use" | "respond" } [type] 此闪用途："use"/"respond"，无则均加入
-	 * @param { Card[] | Card | null } [ignore] 此牌/这些牌不纳入考量
+	 * @param { Card[] | Card | boolean } [ignore] 此牌/这些牌不纳入考量。若 type 为"use"且此项不为false，则使用 this.getCards("h", i => i.hasGaintag("sha_notshan"))
 	 * @param { "bool" | "count" | "odds" } [rvt]
-	 * @returns { boolean | number } 返回值：rvt:"bool"(默认)是否可能有闪，"count"推测有多少张闪，"odds"有闪的概率
+	 * @returns { boolean | number } 返回值：rvt: "bool"(默认)是否可能有闪，"count"推测有多少张闪，"odds"有闪的概率
 	 */
 	mayHaveShan(viewer, type, ignore, rvt) {
 		let count = 0;
@@ -12339,6 +12339,10 @@ export class Player extends HTMLDivElement {
 			selected.addArray(ignore);
 		} else if (get.itemtype(ignore) === "card") {
 			selected.add(ignore);
+		} else if (ignore !== false) {
+			if (type === "use") {
+				ignore = this.getCards("h", i => i.hasGaintag("sha_notshan"));
+			}
 		}
 		if (this === viewer || get.itemtype(viewer) == "player") {
 			cards = this.getKnownCards(viewer);

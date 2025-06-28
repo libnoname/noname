@@ -435,18 +435,18 @@ export class Library {
 										typeof yingbianZhuzhanAI == "function"
 											? yingbianZhuzhanAI(player, card, source, targets)
 											: cardx => {
-												var info = get.info(card);
-												if (info && info.ai && info.ai.yingbian) {
-													var ai = info.ai.yingbian(card, source, targets, player);
-													if (!ai) {
+													var info = get.info(card);
+													if (info && info.ai && info.ai.yingbian) {
+														var ai = info.ai.yingbian(card, source, targets, player);
+														if (!ai) {
+															return 0;
+														}
+														return ai - get.value(cardx);
+													} else if (get.attitude(player, source) <= 0) {
 														return 0;
 													}
-													return ai - get.value(cardx);
-												} else if (get.attitude(player, source) <= 0) {
-													return 0;
-												}
-												return 5 - get.value(cardx);
-											},
+													return 5 - get.value(cardx);
+											  },
 								});
 								if (!game.online) {
 									return;
@@ -7146,6 +7146,23 @@ export class Library {
 					},
 					clear: true,
 				},
+				reset_grantedServers: {
+					name: "重置受信任的服务器列表",
+					onclick() {
+						if (this.firstChild.innerHTML != "已重置") {
+							this.firstChild.innerHTML = "已重置";
+							security.resetGrantedServers();
+							setTimeout(() => {
+								if (confirm("是否重置游戏让改变的列表生效?")) {
+									game.reload();
+									return;
+								}
+								this.firstChild.innerHTML = "重置受信任的服务器列表";
+							}, 0);
+						}
+					},
+					clear: true,
+				},
 			},
 		},
 		boss: {
@@ -8843,10 +8860,10 @@ export class Library {
 	genAwait(item) {
 		return gnc.is.generator(item)
 			? gnc.of(function* () {
-				for (const content of item) {
-					yield content;
-				}
-			})()
+					for (const content of item) {
+						yield content;
+					}
+			  })()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -11885,17 +11902,7 @@ export class Library {
 								}
 								const storage = player.storage,
 									zhibi = storage.zhibi;
-								return (
-									((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
-									current.mayHaveShan(
-										player,
-										"use",
-										current.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									) &&
-									player.hasSkill("jiu")
-								);
+								return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use") && player.hasSkill("jiu");
 							})
 						) {
 							return 1;
@@ -11943,16 +11950,16 @@ export class Library {
 					const cardName = get.name(cards[0], player);
 					return cardName
 						? new lib.element.VCard({
-							name: cardName,
-							nature: get.nature(cards[0], player),
-							suit: get.suit(cards[0], player),
-							number: get.number(cards[0], player),
-							isCard: true,
-							cards: [cards[0]],
-							storage: {
-								stratagem_buffed: 1,
-							},
-						})
+								name: cardName,
+								nature: get.nature(cards[0], player),
+								suit: get.suit(cards[0], player),
+								number: get.number(cards[0], player),
+								isCard: true,
+								cards: [cards[0]],
+								storage: {
+									stratagem_buffed: 1,
+								},
+						  })
 						: new lib.element.VCard();
 				}
 				return null;
@@ -12005,16 +12012,7 @@ export class Library {
 										}
 										const storage = player.storage,
 											zhibi = storage.zhibi;
-										return (
-											((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
-											current.mayHaveShan(
-												player,
-												"use",
-												current.getCards("h", i => {
-													return i.hasGaintag("sha_notshan");
-												})
-											)
-										);
+										return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use");
 									})
 								) {
 									return get.order(card, player) + 0.5;
@@ -14243,7 +14241,7 @@ export class Library {
 								navigator.clipboard
 									.readText()
 									.then(read)
-									.catch(_ => { });
+									.catch(_ => {});
 							} else {
 								var input = ui.create.node("textarea", ui.window, { opacity: "0" });
 								input.select();

@@ -1,6 +1,8 @@
 // 声明：沙盒维护的是服务器秩序，让服务器秩序不会因为非房主的玩家以及旁观者的影响，并在此基础上维护玩家设备不受危险代码攻击
 // 但沙盒不会也没有办法维护恶意服务器/房主对于游戏规则的破坏，请玩家尽量选择官方或其他安全的服务器，同时选择一个受信任的玩家作为房主
 
+import { hex_md5 } from "../library/crypt/md5.js";
+
 // 是否强制所有模式下使用沙盒
 const SANDBOX_FORCED = false;
 // 是否启用自动测试
@@ -12,7 +14,13 @@ const SANDBOX_AUTOTEST_NODELAY = false;
 const SANDBOX_DEV = false;
 
 const WSURL_FOR_IP = /ws:\/\/(\d+.\d+.\d+.\d+):\d+\//;
-const TRUSTED_IPS = Object.freeze([]);
+
+/** @type {readonly string[]} */
+const TRUSTED_IPS = Object.freeze([]); // 标记哪些服务器IP是可信任的
+/** @type {readonly string[]} */
+const TRUSTED_IP_MD5 = Object.freeze([
+	// 被拷打了喵 > <
+]); // 标记哪些服务器IP的MD5是可信任的，MD5计算方式是`md5("noname_server" + ip)`
 
 // 声明导入类
 /** @type {boolean} */
@@ -214,15 +222,91 @@ function requireSandbox() {
 	sandBoxRequired = true;
 }
 
+const GRANTED_LIST_KEY = "security_grantedServers";
+
+/**
+ * @param {string} key 
+ * @returns {Record<string,boolean>}
+ */
+function readStorage(key) {
+	const value = localStorage.getItem(key);
+
+	if (!value) {
+		return {};
+	}
+
+	const mayArray = JSON.parse(value);
+
+	if (!mayArray || typeof mayArray != "object") {
+		return {};
+	}
+
+	return mayArray;
+}
+
+/**
+ * 重置受信任的服务器列表
+ */
+function resetGrantedServers() {
+	localStorage.removeItem(GRANTED_LIST_KEY);
+}
+
+/**
+ * @param {string} ip 
+ * @returns {boolean}
+ */
+function alertForServer(ip) {
+	const grantedList = readStorage(GRANTED_LIST_KEY);
+	const granted = grantedList[ip];
+
+	if (granted != null) {
+		return !!granted;
+	}
+
+	const newResult = alertForNewServer();
+	grantedList[ip] = newResult;
+	localStorage.setItem(GRANTED_LIST_KEY, JSON.stringify(grantedList));
+	return newResult;
+}
+
+/**
+ * @returns {boolean}
+ */
+function alertForNewServer() {
+	const tips = [
+		"您登录的服务器不在受信任的列表中，是否要开启隔离沙盒来运行服务器的代码?",
+		"请注意：开启隔离沙盒可能会让服务器部分功能受限，以此换取更安全的执行环境。",
+		"\n如果您信任此服务器则可以选择“取消”，否则您应该选择“确定”避免服务器在您的设备上执行恶意代码。",
+		"另外，您无论如何选择都可以随时通过点击“联机模式选项-更多-重置受信任的服务器列表”来重置您的选择。"
+	];
+
+	return !confirm(tips.join("\n"));
+}
+
 /**
  * ```plain
- * 进入沙盒运行模式
+ * 检查服务器地址并请求进入沙盒运行模式
  * ```
  *
  * @param {string} ip
  */
 function requireSandboxOn(ip) {
-	if (!TRUSTED_IPS.includes(ip)) {
+	let isTrusted = false;
+
+	if (ip) {
+		isTrusted = TRUSTED_IPS.includes(ip);
+
+		if (!isTrusted && TRUSTED_IP_MD5.length > 0) {
+			const md5 = hex_md5("noname_server" + ip);
+			isTrusted = TRUSTED_IP_MD5.includes(md5);
+		}
+
+		if (!isTrusted) {
+			isTrusted = alertForServer(ip);
+		}
+	}
+
+	if (!isTrusted) {
 		sandBoxRequired = true;
 		return;
 	}
@@ -985,6 +1069,7 @@ const exports = {
 	importSandbox,
 	requireSandbox,
 	requireSandboxOn,
+	resetGrantedServers,
 	isSandboxRequired,
 	initSecurity,
 	eval: _eval,

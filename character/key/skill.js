@@ -240,16 +240,7 @@ const skills = {
 								if (list.includes("不计入次数") && player.hasSha()) {
 									return "不计入次数";
 								}
-								if (
-									list.includes("不可被响应") &&
-									trigger.target.mayHaveShan(
-										player,
-										"use",
-										trigger.target.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									)
-								) {
+								if (list.includes("不可被响应") && trigger.target.mayHaveShan(player, "use")) {
 									return "不可被响应";
 								}
 								if (list.includes("伤害+1")) {

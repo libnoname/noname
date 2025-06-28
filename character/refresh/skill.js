@@ -6953,7 +6953,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				event.target = target;
-				var num = Math.max(target.countDiscardableCards(player, "h") - target.hp, 1);
+				var num = Math.min(Math.max(target.countCards("h") - target.hp, 1), target.countDiscardableCards(player, "he"));
 				player.logSkill("decadezhenjun", target);
 				player.discardPlayerCard(num, target, true);
 			}
@@ -13229,15 +13229,7 @@ const skills = {
 							return 1;
 						}
 						if (name === "sha") {
-							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (!target.mayHaveShan(player, "use")) {
 								return;
 							}
 						} else if (!target.mayHaveShan(player)) {

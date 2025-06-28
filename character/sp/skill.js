@@ -15074,16 +15074,7 @@ const skills = {
 							true
 						)
 					) {
-						odds -=
-							0.7 *
-							target.mayHaveShan(
-								player,
-								"use",
-								target.getCards("h", i => {
-									return i.hasGaintag("sha_notshan");
-								}),
-								"odds"
-							);
+						odds -= 0.7 * target.mayHaveShan(player, "use", true, "odds");
 					}
 					_status.event.putTempCache("sha_result", "eff", {
 						bool: target.hp > num && get.attitude(player, target) > 0,
@@ -17369,16 +17360,7 @@ const skills = {
 							}
 						} else {
 							var target = trigger.target;
-							if (
-								trigger.targets.length > 1 ||
-								target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (trigger.targets.length > 1 || target.mayHaveShan(player, "use")) {
 								return 0;
 							}
 						}
@@ -20978,7 +20960,10 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { targets: [target], cost_data: [index] } = event;
+			const {
+				targets: [target],
+				cost_data: [index],
+			} = event;
 			if (player != target) {
 				player.addExpose(0.2);
 			}
@@ -26964,15 +26949,7 @@ const skills = {
 					} else if (get.tag(card, "respondShan") > 0) {
 						if (current < 0 && used == target.getAttackRange() - 1) {
 							if (card.name === "sha") {
-								if (
-									!target.mayHaveShan(
-										player,
-										"use",
-										target.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									)
-								) {
+								if (!target.mayHaveShan(player, "use")) {
 									return;
 								}
 							} else if (!target.mayHaveShan(player)) {

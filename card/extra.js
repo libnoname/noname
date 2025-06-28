@@ -231,13 +231,7 @@ game.import("card", function () {
 									) ||
 									//(Math.min(target.getCardUsable("sha"), target.mayHaveSha(player, "use", item, "count")) === 1 && (
 									target.needsToDiscard() > Math.max(0, 3 - target.hp) ||
-									!effs[i].target.mayHaveShan(
-										player,
-										"use",
-										effs[i].target.getCards(i => {
-											return i.hasGaintag("sha_notshan");
-										})
-									)
+									!effs[i].target.mayHaveShan(player, "use")
 									//))
 								) {
 									delete target._jiu_temp;

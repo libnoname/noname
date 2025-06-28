@@ -198,7 +198,10 @@ const skills = {
 							}
 						}
 						await player.changeSkills(["mbfozong"], ["mbfutu"]);
-						const colors = cards.slice(0).map(i => get.color(i)).toUniqued();
+						const colors = cards
+							.slice(0)
+							.map(i => get.color(i))
+							.toUniqued();
 						player.markAuto("mbfozong", colors);
 					},
 				};
@@ -210,7 +213,7 @@ const skills = {
 			order: 3,
 			result: {
 				player(player) {
-					const count = color = player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color);
+					const count = (color = player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color));
 					if (count("red") > 1 && count("red") == count("black")) {
 						return 1;
 					}
@@ -231,9 +234,15 @@ const skills = {
 			global: "phaseUseEnd",
 		},
 		filter(event, player) {
-			if (game.hasPlayer2(current => current.getHistory("damage", evt => {
-				return evt.getParent(event.name) == event;
-			}).length > 0, true)) {
+			if (
+				game.hasPlayer2(
+					current =>
+						current.getHistory("damage", evt => {
+							return evt.getParent(event.name) == event;
+						}).length > 0,
+					true
+				)
+			) {
 				return false;
 			}
 			return game.hasPlayer(current => {
@@ -264,7 +273,9 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 			player.addTempSkill("mbjiebian_fake");
 			const cards = game.createFakeCards(player.getExpansions("mbfutu"));
 			player.directgains(cards, null, "mbjiebian");
@@ -275,13 +286,19 @@ const skills = {
 			const winner = result.winner,
 				loser = winner == player ? target : player;
 			const result2 = await winner
-				.chooseButton(["劫辩：选择一项", [
+				.chooseButton(
 					[
-						["damage", `对${get.translation(loser)}造成1点伤害`],
-						["recover", `获得${get.translation(loser)}两张牌，然后令其恢复1点体力并摸一张牌`],
+						"劫辩：选择一项",
+						[
+							[
+								["damage", `对${get.translation(loser)}造成1点伤害`],
+								["recover", `获得${get.translation(loser)}两张牌，然后令其恢复1点体力并摸一张牌`],
+							],
+							"textbutton",
+						],
 					],
-					"textbutton",
-				]], true)
+					true
+				)
 				.set("ai", button => {
 					const { player, loser } = get.event(),
 						{ link } = button;
@@ -292,8 +309,7 @@ const skills = {
 			if (result2?.bool) {
 				if (result2?.links[0] == "damage") {
 					await loser.damage(winner);
-				}
-				else {
+				} else {
 					await winner.gainPlayerCard(loser, "he", 2, true);
 					await loser.recover(winner);
 					await loser.draw();
@@ -20571,15 +20587,7 @@ const skills = {
 				.set("ai", function () {
 					var target = _status.event.getTrigger().target;
 					var player = _status.event.player;
-					var num = target.mayHaveShan(
-						player,
-						"use",
-						target.getCards("h", i => {
-							return i.hasGaintag("sha_notshan");
-						})
-					)
-						? 0
-						: 1;
+					var num = target.mayHaveShan(player, "use") ? 0 : 1;
 					if (get.attitude(player, target) > 0) {
 						num = 1 - num;
 					}

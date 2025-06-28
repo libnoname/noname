@@ -3539,10 +3539,7 @@ export default {
 		async cost(event, trigger, player) {
 			const storage = player.storage.fakejuzhan,
 				target = trigger[storage ? "target" : "player"];
-			event.result = await player
-				.chooseBool(get.prompt2(event.skill, target))
-				.setHiddenSkill("fakejuzhan")
-				.forResult();
+			event.result = await player.chooseBool(get.prompt2(event.skill, target)).setHiddenSkill("fakejuzhan").forResult();
 		},
 		async content(event, trigger, player) {
 			const storage = player.storage.fakejuzhan;
@@ -4384,12 +4381,9 @@ export default {
 				player.addTempSkill("gztongling_used", "phaseUseAfter");
 				player.line2([target, trigger.player]);
 				target
-					.chooseToUse(
-						function (card, player, event) {
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"通令：是否对" + get.translation(trigger.player) + "使用一张牌？"
-					)
+					.chooseToUse(function (card, player, event) {
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "通令：是否对" + get.translation(trigger.player) + "使用一张牌？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -5228,15 +5222,12 @@ export default {
 			var target = targets.shift();
 			if (target.isIn() && (_status.connectMode || !lib.config.skip_shan || target.hasSha())) {
 				target
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"是否对" + get.translation(event.target) + "使用一张【杀】？"
-					)
+					.chooseToUse(function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "是否对" + get.translation(event.target) + "使用一张【杀】？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -6718,8 +6709,8 @@ export default {
 		audio: "dangxian",
 		audioname: ["guansuo"],
 		async content(event, trigger, player) {
-    	    trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
-    	},
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+		},
 		group: "gzdangxian_show",
 		subSkill: {
 			show: {
@@ -6955,15 +6946,7 @@ export default {
 					if (get.attitude(player, target) > 0) {
 						return 2;
 					}
-					return target.mayHaveShan(
-						player,
-						"use",
-						target.getCards("h", i => {
-							return i.hasGaintag("sha_notshan");
-						})
-					)
-						? 1
-						: 0;
+					return target.mayHaveShan(player, "use") ? 1 : 0;
 				});
 			"step 1";
 			if (result.control != "cancel2") {
@@ -9088,11 +9071,11 @@ export default {
 					.set("ai", function () {
 						var evt = _status.event.getParent(2);
 						var junlingEff = get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current);
-    					var damageEff = get.damageEffect(evt.current, evt.player, evt.current);
-					    var attitudeSelf = get.attitude(evt.current, evt.current);
+						var damageEff = get.damageEffect(evt.current, evt.player, evt.current);
+						var attitudeSelf = get.attitude(evt.current, evt.current);
 						var drawEff = get.effect(evt.player, { name: "draw" }, evt.player, evt.current);
 
-    					return junlingEff > damageEff / attitudeSelf + drawEff ? 0 : 1;
+						return junlingEff > damageEff / attitudeSelf + drawEff ? 0 : 1;
 					});
 			} else {
 				event.goto(4);
@@ -9613,15 +9596,12 @@ export default {
 			if (target.isIn()) {
 				event.target = target;
 				target
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
-					)
+					.chooseToUse(function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -9738,15 +9718,12 @@ export default {
 		},
 		content() {
 			var next = player
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
 				.set("logSkill", "gzzhuhai")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -12850,12 +12827,14 @@ export default {
 					next.setContent(async (event, trigger, player) => {
 						const { target, cards1, cards2 } = event;
 						game.log(player, "和", target, "交换了装备区中的坐骑牌");
-						await game.loseAsync({
-							player: player,
-							target: target,
-							cards1: cards1,
-							cards2: cards2,
-						}).setContent("swapHandcardsx");
+						await game
+							.loseAsync({
+								player: player,
+								target: target,
+								cards1: cards1,
+								cards2: cards2,
+							})
+							.setContent("swapHandcardsx");
 						for (let i of cards2) {
 							if (get.position(i, true) == "o") {
 								await player.equip(i);
@@ -15785,16 +15764,7 @@ export default {
 						if (["tiesuo", "diaohulishan", "lianjunshengyan", "zhibi", "chiling", "lulitongxin"].includes(trigger.card.name)) {
 							goon = false;
 						} else if (trigger.card.name == "sha") {
-							if (
-								trigger.target.mayHaveShan(
-									player,
-									"use",
-									trigger.target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								) ||
-								trigger.target.hp >= 3
-							) {
+							if (trigger.target.mayHaveShan(player, "use") || trigger.target.hp >= 3) {
 								goon = false;
 							}
 						} else if (trigger.card.name == "guohe") {

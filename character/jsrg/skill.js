@@ -7135,15 +7135,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					var eff = get.effect(target, { name: "sha", nature: "fire" }, player, target) / 30;
-					if (
-						!target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						)
-					) {
+					if (!target.mayHaveShan(player, "use")) {
 						eff *= 2;
 					}
 					var del = target.countCards("h") - player.countCards("h") + 1.5;
@@ -10536,16 +10528,7 @@ const skills = {
 					}
 					return Math.random();
 				})
-				.set(
-					"all",
-					!target.mayHaveShan(
-						player,
-						"use",
-						target.getCards("h", i => {
-							return i.hasGaintag("sha_notshan");
-						})
-					) && Math.random() < 0.75
-				)
+				.set("all", !target.mayHaveShan(player, "use") && Math.random() < 0.75)
 				.set("forceAuto", true)
 				.forResult();
 		},
@@ -11765,7 +11748,7 @@ const skills = {
 						return 0;
 					}
 					let eff = get.effect(target, { name: "sha", nature: "thunder", isCard: true }, player, player);
-					if (!ui.selected.targets.length && target.mayHaveShan(player, null, null, "odds") > 0.5) {
+					if (!ui.selected.targets.length && !target.mayHaveShan(player, "use")) {
 						eff *= 2;
 					}
 					return eff;
