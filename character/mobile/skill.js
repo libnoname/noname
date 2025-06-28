@@ -365,17 +365,18 @@ const skills = {
 		forced: true,
 		onremove: true,
 		trigger: {
-			source: "damageBegin1",
-			player: "recoverBegin",
+			global: ["damageBegin1", "recoverBegin"],
 		},
 		filter(event, player) {
 			const list = player.getStorage("mbfozong");
-			let evt = event.getParent(),
+			let evt = event.getParent("useCard", true),
 				card = event.card;
-			if (evt.player != player || !card) {
+			if (evt.player != player || !card || evt.card != card) {
 				return false;
 			}
-			return list?.includes(get.color(card, player));
+			return list?.includes(get.color(card, player)) && player.hasHistory("lose", evtx => {
+				return evtx.hs?.length && evtx.getParent() == evt;
+			});
 		},
 		async content(event, trigger, player) {
 			trigger.num++;

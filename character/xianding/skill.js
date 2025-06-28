@@ -249,7 +249,9 @@ const skills = {
 						})
 						.forResult();
 					if (result.bool && result.targets) {
-						trigger[type == "A" ? "targets" : "excluded"].addArray(result.targets);
+						player.line(result.targets, "green");
+						game.log(player, "令", result.targets, type == "A" ? "成为了" : "移出了", trigger.card, "的目标");
+						trigger.targets[type == "A" ? "addArray" : "removeArray"](result.targets);
 					}
 					break;
 				}
@@ -267,11 +269,14 @@ const skills = {
 							map[id].extraDamage += type == "A" ? 1 : -1;
 						}
 					}
+					game.log(player, "令", trigger.card, "造成的伤害", type == "A" ? "+1" : "-1");
 					break;
 				}
 				case "spade": {
 					trigger.player.addTempSkill(`x_dc_zhenyi_${type}`);
-					trigger.player.markAuto(`x_dc_zhenyi_${type}`, get.suit(trigger.card));
+					const suit = get.suit(trigger.card);
+					trigger.player.markAuto(`x_dc_zhenyi_${type}`, suit);
+					game.log(player, "令", trigger.player, type == "A" ? "使用" : "无法使用", suit, type == "A" ? "牌时摸一张牌" : "牌");
 					break;
 				}
 				case "club": {
@@ -281,6 +286,7 @@ const skills = {
 						trigger.targets.length = 0;
 						trigger.all_excluded = true;
 					}
+					game.log(player, "令", trigger.card, type == "A" ? "额外结算一次" : "无效");
 					break;
 				}
 			}
