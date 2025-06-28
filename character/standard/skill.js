@@ -1976,7 +1976,10 @@ const skills = {
 	wushuang1: {
 		audio: "wushuang",
 		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
-		audioname2: { sb_lvbu: "sbliyu_effect" },
+		audioname2: {
+			sb_lvbu: "sbliyu_effect",
+			gz_lvlingqi: "wushuang_lvlingqi",
+		},
 		trigger: { player: "useCardToPlayered" },
 		forced: true,
 		sourceSkill: "wushuang",
@@ -2009,7 +2012,10 @@ const skills = {
 	wushuang2: {
 		audio: "wushuang",
 		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
-		audioname2: { sb_lvbu: "sbliyu_effect" },
+		audioname2: {
+			sb_lvbu: "sbliyu_effect",
+			gz_lvlingqi: "wushuang_lvlingqi",
+		},
 		trigger: { player: "useCardToPlayered", target: "useCardToTargeted" },
 		forced: true,
 		sourceSkill: "wushuang",

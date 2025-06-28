@@ -4739,7 +4739,11 @@ const skills = {
 					break;
 				}
 			}
-			const result2 = await player.chooseUseTarget("sha", true, false, "nodistance").forResult();
+			const card = new lib.element.VCard({ name: "sha" });
+			if (!player.hasUseTarget(card, false)) {
+				return;
+			}
+			const result2 = await player.chooseUseTarget(card, true, false, "nodistance").forResult();
 			if (result2.bool && !player.storage.dcbianzhuang_inited) {
 				player.addMark("dcbianzhuang", 1, false);
 				if (player.countMark("dcbianzhuang") > 2) {

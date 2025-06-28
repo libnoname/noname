@@ -7172,7 +7172,7 @@ export default {
 			return get.type2(card, player) == "trick";
 		},
 		content() {
-			player.addTempSkill("gz_wushuang", "phaseUseEnd");
+			player.addTempSkills("gz_wushuang", "phaseUseEnd");
 		},
 		derivation: "gz_wushuang",
 	},
