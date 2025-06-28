@@ -2154,7 +2154,7 @@ export default {
 			const groups = get.info("fakeshilu").getGroups(player);
 			const goon = event.card && event.card.name == "sha";
 			if (num != 4) {
-				return goon && groups.includes(event.source.identity);
+				return goon && (groups.includes(event.source.identity) || groups.includes(event.player.identity));
 			}
 			return !goon && groups.includes(event.source.identity);
 		},

@@ -3678,12 +3678,13 @@ const skills = {
 			next.set("ai", function () {
 				return _status.event.getParent().choice;
 			});
+			next.set("logSkill", event.skill);
 			next.setHiddenSkill(event.skill);
 			const control = await next.forResultControl();
 			if (control == "cancel2") {
 				return;
 			}
-			event.result = { bool: true }; // 好像在content里面不能中断getIndex喵
+			event.result = { bool: true, skill_popup: false }; // 好像在content里面不能中断getIndex喵
 		},
 		async content(event, trigger, player) {},
 	},
