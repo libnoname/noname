@@ -1963,6 +1963,7 @@ const skills = {
 					list.addArray(evt.cards);
 					return list;
 				}, []);
+				await player.showCards(cards).setContent(() => {});
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:
