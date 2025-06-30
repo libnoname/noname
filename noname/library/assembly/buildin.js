@@ -13,11 +13,14 @@ import { game } from "../../game/index.js";
  */
 export const checkBegin = {
 	addTargetPrompt(event) {
-		if (!event.targetprompt2) {
+		if (!event.targetprompt2?.length) {
 			return;
 		}
 		game.filterPlayer2(() => true, [], true).forEach(target => {
-			const str = event.targetprompt2(target) || "";
+			const str = event.targetprompt2
+				.map(func => func(target) || "")
+				.filter(prompt => prompt.length)
+				.join("<br>");
 			let node;
 			if (target.node.prompt2) {
 				node = target.node.prompt2;

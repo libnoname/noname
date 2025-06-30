@@ -3274,31 +3274,32 @@ const skills = {
 				cardMap.addArray(cards);
 				nums.push(get.number(cards[0], false));
 			}
+
 			const videoId = lib.status.videoId++;
-			game.broadcastAll(
-				function (id, cards, list, num) {
-					const dialog = ui.create.dialog(`【摧袭】：是否令你的点数+${num}？`, cards);
-					const getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						let name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (let i = 0; i < list.length; i++) {
-						dialog.buttons[i].node.gaintag.innerHTML = getName(list[i]);
+			const func = (id, cards, list, num) => {
+				const dialog = ui.create.dialog(`【摧袭】：是否令你的点数+${num}？`, cards);
+				const getName = function (target) {
+					if (target._tempTranslate) {
+						return target._tempTranslate;
 					}
-					dialog.videoId = id;
-				},
-				videoId,
-				cardMap,
-				list,
-				num
-			);
-			const result2 = await player.chooseBool(`是否令你的点数+${num}？`).set("dialog", get.idDialog(videoId)).forResult();
+					let name = target.name;
+					if (lib.translate[name + "_ab"]) {
+						return lib.translate[name + "_ab"];
+					}
+					return get.translation(name);
+				};
+				for (let i = 0; i < list.length; i++) {
+					dialog.buttons[i].node.gaintag.innerHTML = getName(list[i]);
+				}
+				dialog.videoId = id;
+				return dialog;
+			};
+			if (player.isOnline2()) {
+				player.send(func, videoId, cardMap, list, num);
+			} else {
+				func(videoId, cardMap, list, num);
+			}
+			const result2 = await player.chooseBool().set("dialog", get.idDialog(videoId)).forResult();
 			game.broadcastAll("closeDialog", videoId);
 			if (result2.bool) {
 				nums[0] += num;
@@ -8165,7 +8166,7 @@ const skills = {
 				const { target, card } = trigger;
 				if (target.countCards("e")) {
 					await target
-						.chooseToDiscard("e", [1, Infinity])
+						.chooseToDiscard("e", [1, Infinity], "弃置装备区任意张牌，然后" + get.translation(card) + "额外结算X次（X为你装备区的牌数）")
 						.set("ai", card => {
 							if (get.event("goon")) {
 								return 0;

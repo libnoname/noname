@@ -12638,6 +12638,15 @@ const skills = {
 	jsrgdangyi: {
 		init(player, skill) {
 			player.setMark(skill, player.getDamagedHp() + 1, false);
+			game.broadcastAll(
+				function (player) {
+					if (!player.node.jiu_dangyi) {
+    					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
+    					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
+					}
+				},
+				player
+			);
 		},
 		zhuSkill: true,
 		trigger: {
@@ -12660,6 +12669,18 @@ const skills = {
 			player.addSkill(event.name + "_used");
 			player.addMark(event.name + "_used", 1, false);
 			trigger.num++;
+			game.broadcastAll(
+				function (player, name) {
+    				if (player.countMark(name + "_used") >= player.countMark(name) && player.node.jiu_dangyi) {
+    					player.node.jiu_dangyi.delete();
+    					player.node.jiu_dangyi2.delete();
+    					delete player.node.jiu_dangyi;
+    					delete player.node.jiu_dangyi2;
+    				}
+				},
+				player,
+				event.name
+			);
 		},
 		audio: 2,
 		mark: true,
@@ -12668,7 +12689,20 @@ const skills = {
 				return `剩余可发动次数为${player.countMark("jsrgdangyi") - player.countMark("jsrgdangyi_used")}`;
 			},
 		},
-		onremove: true,
+		onremove(player, skill) {
+			delete player.storage[skill];
+			game.broadcastAll(
+				function (player) {
+    				if (player.node.jiu_dangyi) {
+    					player.node.jiu_dangyi.delete();
+    					player.node.jiu_dangyi2.delete();
+    					delete player.node.jiu_dangyi;
+    					delete player.node.jiu_dangyi2;
+    				}
+				},
+				player
+			);
+		},
 		subSkill: {
 			used: {
 				charlotte: true,

@@ -1214,7 +1214,7 @@ export class Library {
 					},
 					onclick(item) {
 						game.saveConfig("max_loadtime", item);
-						if (item == "5000") {
+						if (item === "5000") {
 							localStorage.removeItem(lib.configprefix + "loadtime");
 						} else {
 							localStorage.setItem(lib.configprefix + "loadtime", item);
@@ -1744,7 +1744,7 @@ export class Library {
 				// },
 				player_height: {
 					name: "角色高度",
-					init: "long",
+					init: "default",
 					// unfrequent:true,
 					item: {
 						short: "矮",
@@ -2386,7 +2386,7 @@ export class Library {
 				},
 				hp_style: {
 					name: "体力条样式",
-					init: "ol",
+					init: "default",
 					item: {
 						default: "默认",
 						// official:'勾玉',
@@ -3350,7 +3350,7 @@ export class Library {
 				glow_phase: {
 					name: "当前回合角色高亮",
 					unfrequent: true,
-					init: "yellow",
+					init: "green",
 					intro: "设置当前回合角色的边框颜色",
 					item: {
 						none: "无",
@@ -4268,7 +4268,7 @@ export class Library {
 				show_ban_menu: {
 					name: "显示禁将菜单",
 					intro: "在选项-武将中显示禁将一栏",
-					init: true,
+					init: false,
 					unfrequent: true,
 				},
 				right_range: {
@@ -4402,7 +4402,7 @@ export class Library {
 				},
 				show_cardpile_number: {
 					name: "显示剩余牌数",
-					init: false,
+					init: true,
 					unfrequent: true,
 					onclick(bool) {
 						game.saveConfig("show_cardpile_number", bool);
@@ -4515,7 +4515,7 @@ export class Library {
 				show_characternamepinyin: {
 					name: "显示武将名注解",
 					intro: "在武将资料卡显示武将名及其注解、性别、势力、体力等信息",
-					init: "showPinyin",
+					init: "showCodeIdentifier",
 					unfrequent: true,
 					item: {
 						doNotShow: "不显示",
@@ -5523,7 +5523,7 @@ export class Library {
 				},
 				connect_enhance_zhu: {
 					name: "加强主公",
-					init: "sixiang",
+					init: "off",
 					item: {
 						sixiang: "四象标记",
 						specific: "专属技能",
@@ -5815,16 +5815,16 @@ export class Library {
 				},
 				auto_mark_identity: {
 					name: "自动标记身份",
-					init: true,
+					init: false,
 					intro: "根据角色的出牌行为自动标记可能的身份",
 				},
 				enhance_zhu: {
 					name: "加强主公",
-					init: "sixiang",
+					init: "off",
 					item: {
+						off: "关闭",
 						sixiang: "四象标记",
 						specific: "专属技能",
-						off: "关闭",
 					},
 					restart: true,
 					intro: "为主公增加一个额外技能。<br><li>四象标记：主公随机获得一个四象标记（限发动一次）；每个回合结束时，若场上没有反贼，主公失去此标记。<br><li>专属技能：至少三名反贼的身份场，主公获得一个专属技能（无则改为〖天命〗）；一名角色阵亡后，若存活反贼数小于3，主公失去此技能。",
@@ -6664,7 +6664,7 @@ export class Library {
 				},
 				versus_mode: {
 					name: "游戏模式",
-					init: "four",
+					init: "two",
 					item: {
 						four: "对抗",
 						three: "统率",
@@ -7112,18 +7112,23 @@ export class Library {
 				wss_mode: {
 					name: "使用WSS协议",
 					init: false,
-					frequent: true,
 					intro: "在用户填写的IP地址没有直接指定使用WS/WSS协议的情况下，默认使用WSS协议，而非WS协议来连接到联机服务器。<br>请不要轻易勾选此项！",
+					onclick(bool) {
+						if (bool && !confirm("此为开发者选项，开启后将无法直接联机。您确定要开启WSS模式吗？")) {
+							return;
+						}
+						game.saveConfig("wss_mode", bool, "connect");
+					},
 				},
 				read_clipboard: {
 					name: "读取邀请链接",
-					init: false,
+					init: true,
 					frequent: true,
 					intro: "读取剪贴板以解析邀请链接自动加入联机房间",
 				},
 				check_versionLocal: {
 					name: "禁止不同版本玩家进房",
-					init: false,
+					init: true,
 					intro: "禁止与自己版本不同的玩家进入房间",
 				},
 				check_extension: {
@@ -7229,12 +7234,21 @@ export class Library {
 					} else {
 						map.connect_change_card.show();
 					}
-					if (config.connect_doudizhu_mode != "normal") {
+					if (config.connect_doudizhu_mode !== "normal") {
 						map.connect_double_character.hide();
+						if (config.connect_doudizhu_mode !== "kaihei") {
+							map.connect_choice_zhu.hide();
+							map.connect_choice_fan.hide();
+						} else {
+							map.connect_choice_zhu.show();
+							map.connect_choice_fan.show();
+						}
 						map.connect_enhance_dizhu.hide();
 						map.connect_feiyang_version.hide();
 					} else {
 						map.connect_double_character.show();
+						map.connect_choice_zhu.show();
+						map.connect_choice_fan.show();
 						map.connect_enhance_dizhu.show();
 						map.connect_feiyang_version.show();
 					}
@@ -7257,6 +7271,40 @@ export class Library {
 					init: false,
 					frequent: true,
 					restart: true,
+				},
+				connect_choice_zhu: {
+					name: "地主候选武将数",
+					init: 5,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 5;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("connect_choice_zhu", num, "doudizhu");
+					},
+				},
+				connect_choice_fan: {
+					name: "农民候选武将数",
+					init: 3,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 3;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("connect_choice_fan", num, "doudizhu");
+					},
 				},
 				connect_change_card: {
 					name: "启用手气卡",
@@ -7296,27 +7344,32 @@ export class Library {
 						map.edit_character.hide();
 						map.reset_character.hide();
 					}
-					if (config.doudizhu_mode != "normal") {
+					if (config.doudizhu_mode !== "normal") {
+						if (config.doudizhu_mode === "kaihei") {
+							map.choice_zhu.show();
+							map.choice_fan.show();
+						} else {
+							map.choice_zhu.hide();
+							map.choice_fan.hide();
+						}
 						map.double_character.hide();
 						map.free_choose.hide();
 						map.change_identity.hide();
 						map.change_choice.hide();
 						map.continue_game.hide();
 						map.dierestart.hide();
-						map.choice_zhu.hide();
-						map.choice_fan.hide();
 						map.revive.hide();
 						map.enhance_dizhu.hide();
 						map.feiyang_version.hide();
 					} else {
 						map.double_character.show();
+						map.choice_zhu.show();
+						map.choice_fan.show();
 						map.free_choose.show();
 						map.change_identity.show();
 						map.change_choice.show();
 						map.continue_game.show();
 						map.dierestart.show();
-						map.choice_zhu.show();
-						map.choice_fan.show();
 						map.revive.show();
 						map.enhance_dizhu.show();
 						map.feiyang_version.show();
@@ -7357,6 +7410,40 @@ export class Library {
 						zonghe: "相加",
 					},
 					restart: true,
+				},
+				choice_zhu: {
+					name: "地主候选武将数",
+					init: 5,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 5;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("choice_zhu", num, "doudizhu");
+					},
+				},
+				choice_fan: {
+					name: "农民候选武将数",
+					init: 3,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 3;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("choice_fan", num, "doudizhu");
+					},
 				},
 				free_choose: {
 					name: "自由选将",
@@ -7488,32 +7575,6 @@ export class Library {
 						online: "OL版本",
 						mobile: "手杀版本",
 						decade: "十周年版本",
-					},
-				},
-				choice_zhu: {
-					name: "地主候选武将数",
-					init: "3",
-					restart: true,
-					item: {
-						3: "三",
-						4: "四",
-						5: "五",
-						6: "六",
-						8: "八",
-						10: "十",
-					},
-				},
-				choice_fan: {
-					name: "农民候选武将数",
-					init: "3",
-					restart: true,
-					item: {
-						3: "三",
-						4: "四",
-						5: "五",
-						6: "六",
-						8: "八",
-						10: "十",
 					},
 				},
 				edit_character: {

@@ -9977,12 +9977,9 @@ export class Game extends GameCompatible {
 		});
 		wild.forEach(i => i.delete());
 		for (const id in map) {
-			const target = game.findPlayer2(i => i.playerid == id);
-			if (!target) {
-				continue;
-			}
+			const target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
 			const cards = map[id];
-			if (target.isOnline2()) {
+			if (target?.isOnline2()) {
 				target.send(
 					function (cards, player) {
 						cards.forEach(i => i.delete());

@@ -17375,7 +17375,7 @@ const skills = {
 					}
 					player
 						.chooseCard("h", "除害：将其中一张得到的牌置入弃牌堆", true, function (card) {
-							return _status.event.cards.includes(card);
+							return _status.event.cards?.includes(card);
 						})
 						.set("ai", function (card) {
 							return -get.value(card);

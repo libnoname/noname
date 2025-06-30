@@ -509,12 +509,6 @@ const characters = {
 		hp: 4,
 		skills: ["xinfu_xionghuo", "xinfu_shajue"],
 	},
-	zhangqiying: {
-		sex: "female",
-		group: "qun",
-		hp: 3,
-		skills: ["xinfu_falu", "xinfu_dianhua", "xinfu_zhenyi"],
-	},
 	dc_shixie: {
 		sex: "male",
 		group: "qun",

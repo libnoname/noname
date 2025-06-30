@@ -85,32 +85,34 @@ const skills = {
 				}
 			}
 			const videoId = lib.status.videoId++;
-			game.broadcastAll(
-				function (id, cards) {
-					let dialog = ui.create.dialog("枯心：请选择获得的牌");
-					if (cards.length) {
-						dialog.add(cards);
-						const getName = function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							let name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						};
-						for (let i = 0; i < cards.length; i++) {
-							dialog.buttons[i].node.gaintag.innerHTML = getName(get.owner(cards[i]));
+			const func = (id, cards) => {
+				const dialog = ui.create.dialog("枯心：请选择获得的牌");
+				if (cards.length) {
+					dialog.add(cards);
+					const getName = function (target) {
+						if (target._tempTranslate) {
+							return target._tempTranslate;
 						}
-					} else {
-						dialog.add("没有角色展示牌");
+						let name = target.name;
+						if (lib.translate[name + "_ab"]) {
+							return lib.translate[name + "_ab"];
+						}
+						return get.translation(name);
+					};
+					for (let i = 0; i < cards.length; i++) {
+						dialog.buttons[i].node.gaintag.innerHTML = getName(get.owner(cards[i]));
 					}
-					dialog.videoId = id;
-				},
-				videoId,
-				showcards
-			);
+				} else {
+					dialog.add("没有角色展示牌");
+				}
+				dialog.videoId = id;
+				return dialog;
+			};
+			if (player.isOnline2()) {
+				player.send(func, videoId, showcards);
+			} else {
+				func(videoId, showcards);
+			}
 			const next2 = player
 				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")
 				.set("dialog", get.idDialog(videoId))
@@ -133,10 +135,10 @@ const skills = {
 				.set("cards", showcards)
 				.set("num", trigger.num * 2);
 			const result2 = await next2.forResult();
-			if (!result2.control) {
+			game.broadcastAll("closeDialog", videoId);
+			if (!result2?.control) {
 				return;
 			}
-			game.broadcastAll("closeDialog", videoId);
 			game.log(player, "选择了", "#g【枯心】", "的", "#y" + result2.control);
 			let gaincards = [];
 			if (result2.control == "获得一名角色的未展示牌") {
@@ -1452,7 +1454,10 @@ const skills = {
 							await i[0].gain(card, "gain2");
 						}
 					}
-					const targets = trigger.jugu.map(i => i[0]).filter(i => i.isIn()).toUniqued();
+					const targets = trigger.jugu
+						.map(i => i[0])
+						.filter(i => i.isIn())
+						.toUniqued();
 					if (targets.length) {
 						await game.asyncDraw(targets);
 					}

@@ -725,7 +725,7 @@ export default () => {
 					event.list.randomSort();
 					_status.characterlist = event.list.slice(0);
 					for (var player of game.players) {
-						player._characterChoice = event.list.randomRemove(player.identity == "zhu" ? 5 : 3);
+						player._characterChoice = event.list.randomRemove(get.config("choice_" + player.identity));
 						if (player.identity == "fan") {
 							player._friend = player.next.identity == "fan" ? player.next : player.previous;
 						}
@@ -1285,7 +1285,7 @@ export default () => {
 
 					var map = {};
 					for (var player of game.players) {
-						player._characterChoice = event.list.randomRemove(player.identity == "zhu" ? 5 : 3);
+						player._characterChoice = event.list.randomRemove(lib.configOL["choice_" + player.identity]);
 						if (player.identity == "fan") {
 							player._friend = player.next.identity == "fan" ? player.next : player.previous;
 						}
@@ -1962,24 +1962,12 @@ export default () => {
 					var list = [];
 					var selectButton = lib.configOL.double_character ? 2 : 1;
 
-					var num,
-						num2 = 0;
-					num = Math.floor(event.list.length / game.players.length);
-					num2 = event.list.length - num * game.players.length;
-					if (num > 5) {
-						num = 5;
-					}
-					if (num2 > 2) {
-						num2 = 2;
-					}
+					var num = Math.floor(event.list.length / game.players.length);
 
 					for (var i = 0; i < game.players.length; i++) {
-						var num3 = 0;
-						if (game.players[i] == game.zhu) {
-							num3 = 3;
-						}
+						var num3 = Math.min(num, lib.configOL["choice_" + game.players[i].identity]);
 						var str = "选择角色";
-						list.push([game.players[i], [str, [event.list.randomRemove(num + num3), "characterx"]], selectButton, true]);
+						list.push([game.players[i], [str, [event.list.randomRemove(num3), "characterx"]], selectButton, true]);
 					}
 					game.me.chooseButtonOL(list, function (player, result) {
 						if (game.online || player == game.me) {

@@ -209,6 +209,10 @@ export class GameEvent {
 	 */
 	includeOut;
 	/**
+	 * @type { function[] }
+	 */
+	targetprompt2 = [];
+	/**
 	 * @param {keyof this} key
 	 * @param {number} [value]
 	 * @param {number} [baseValue]
@@ -1239,7 +1243,7 @@ export class GameEvent {
 								},
 							})
 						);
-					}
+				  }
 				: onfulfilled,
 			onrejected
 		);

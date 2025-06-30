@@ -168,7 +168,9 @@
 				scope,
 			});
 			// 初次加载worker，需要重新启动一次
-			if (!findServiceWorker) {location.reload();}
+			if (!findServiceWorker) {
+				location.reload();
+			}
 			// 接收消息，暂时没用到
 			navigator.serviceWorker.addEventListener("message", e => {
 				if (e.data?.type === "reload") {
@@ -270,7 +272,9 @@
 			 * @returns {Promise<unknown>}
 			 */
 			tryUpdateClient(type, text = "") {
-				if (!compatibleEnvironment && type != UpdateReason.DEBUG) {return Promise.resolve();}
+				if (!compatibleEnvironment && type != UpdateReason.DEBUG) {
+					return Promise.resolve();
+				}
 
 				/**
 				 * @param {*} url
@@ -296,7 +300,9 @@
 								max = 1000;
 							}
 							received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-							if (received > max) {max = received;}
+							if (received > max) {
+								max = received;
+							}
 							progress.setProgressMax(max);
 							progress.setProgressValue(received);
 						})
@@ -336,7 +342,9 @@
 					case UpdateReason.DEBUG: {
 						// 测试环境
 						let url = "https://ghproxy.cc/https://github.com/libnoname/noname/releases/download/chromium85-client/Noname-linux-x64.zip";
-						return import("../library/update.js").then(module => update(url, module)).then(open);
+						return import("../library/update.js")
+							.then(module => update(url, module))
+							.then(open);
 					}
 					case UpdateReason.FALLBACK: {
 						// 不支持module的平台
@@ -427,7 +435,9 @@
 			 */
 			checkVersion(require, current) {
 				// 防止不存在的意外，提前截断当前版本号的长度
-				if (current.length > require.length) {current.length = require.length;}
+				if (current.length > require.length) {
+					current.length = require.length;
+				}
 
 				// 考虑到玄学的NaN情况，记录是否存在NaN
 				let flag = false;
@@ -439,11 +449,17 @@
 						continue;
 					}
 					// 如果此时flag为true且current[i]不为NaN，版本号则不合法，直接否
-					if (flag) {return false;}
+					if (flag) {
+						return false;
+					}
 					// 上位版本号未达到要求，直接否决
-					if (require[i] > current[i]) {return false;}
+					if (require[i] > current[i]) {
+						return false;
+					}
 					// 上位版本号已超过要求，直接可行
-					if (current[i] > require[i]) {return true;}
+					if (current[i] > require[i]) {
+						return true;
+					}
 				}
 				return true;
 			}
@@ -550,7 +566,7 @@
 
 		const nonameInitialized = localStorage.getItem("noname_inited");
 		const assetURL = "";
-		const userAgent = navigator.userAgent
+		const userAgent = navigator.userAgent;
 		const userAgentLowerCase = userAgent.toLowerCase();
 
 		return {

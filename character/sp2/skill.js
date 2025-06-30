@@ -7,7 +7,7 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.player != player && event.player.getStorage("starduhai_debuff").length < 4;
+			return event.player != player && event.player.isIn() && event.player.getStorage("starduhai_debuff").length < 4;
 		},
 		logTarget: "player",
 		async cost(event, trigger, player) {

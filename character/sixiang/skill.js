@@ -421,7 +421,7 @@ const skills = {
 		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
 			const card = event.card;
-			if (card.name != "sha") {
+			if (card.name != "sha" || !event.isFirstTarget) {
 				return false;
 			}
 			return game.hasPlayer(target => get.distance(target, event.target) == 1 && lib.filter.targetInRange(card, player, target) && lib.filter.targetEnabled2(card, player, target) && !event.targets.includes(target));

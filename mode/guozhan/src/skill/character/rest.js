@@ -1872,8 +1872,10 @@ export default {
 					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num).forResult();
 				}
 				if (result?.bool) {
-					const cs = result.cards;
-					await player.addToExpansion(cs, player, "give").gaintag.add("fakequanji");
+					const cards = result.cards;
+					const next = player.addToExpansion(cards, player, "give");
+					next.gaintag.add("fakequanji");
+					await next;
 				}
 			}
 		},

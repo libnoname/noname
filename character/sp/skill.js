@@ -153,6 +153,9 @@ const skills = {
 		init(player) {
 			player.addSkill("olkuangxin_record");
 		},
+		onremove(player) {
+			player.removeSkill("olkuangxin_record");
+		},
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		forced: true,
@@ -203,25 +206,23 @@ const skills = {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
 				content() {
-					if (!_status.olkuangxin) {
-						_status.olkuangxin = {};
-					}
-					_status.olkuangxin = player.hp;
+					_status.olkuangxin ??= {};
+					_status.olkuangxin[player.playerid] = player.hp;
 				},
 			},
 			recover: {
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return _status.olkuangxin > 0;
+					return _status.olkuangxin[player.playerid] > 0;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const num = _status.olkuangxin - player.hp;
+					const num = _status.olkuangxin[player.playerid] - player.hp;
 					if (num > 0) {
 						await player.recover(num);
 					} else if (num < 0) {
-						await player.loseHp(num);
+						await player.loseHp(-num);
 					}
 				},
 			},
@@ -28279,7 +28280,7 @@ const skills = {
 			player: "useCard",
 		},
 		onChooseToUse(event) {
-			event.set("targetprompt2", target => {
+			event.targetprompt2.add(target => {
 				if (!target.isIn()) {
 					return false;
 				}

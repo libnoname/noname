@@ -2061,8 +2061,9 @@ const skills = {
 						await player.gain(card, "gain2");
 						const skill = "dcjiesi_used";
 						player.addTempSkill(skill, "phaseUseAfter");
+						const bool = !player.getStorage(skill).some(cardx => cardx.name == card.name);
 						player.markAuto(skill, card);
-						if (!player.getStorage(skill).some(cardx => card != cardx && cardx.name == card.name)) {
+						if (bool) {
 							const result = await player
 								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
 								.set("ai", card => (get.event().goon ? 6.5 - get.value(card) : 0))
@@ -12187,15 +12188,13 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(current => current.countCards("e") > 0);
+			return game.hasPlayer();
 		},
 		direct: true,
 		*content(event, map) {
 			const player = map.player;
 			let result = yield player
-				.chooseTarget(get.prompt("dcnuanhui"), "选择一名装备区有牌的角色，该角色可以依次使用X张基本牌（X为其装备区牌数且至少为1）", (card, player, target) => {
-					return target.countCards("e") > 0;
-				})
+				.chooseTarget(get.prompt("dcnuanhui"), "选择一名角色，该角色可以依次使用X张基本牌（X为其装备区牌数且至少为1）")
 				.set("ai", target => {
 					return get.event("aiTarget") == target ? 10 : 0;
 				})
