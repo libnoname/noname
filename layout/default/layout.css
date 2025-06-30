@@ -12,6 +12,7 @@ html {
 	-webkit-font-smoothing: subpixel-antialiased;
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 	background-color: rgb(60, 60, 60);
+	color: red;
 }
 
 body {
