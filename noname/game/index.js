@@ -138,20 +138,29 @@ export class Game extends GameCompatible {
 	})();
 	/**
 	 * 初始化角色列表
+	 *
+	 * 仅无参时修改_status.characterlist
+	 * @param { boolean } [filter] 筛选逻辑：false跳过移除逻辑，否则执行默认移除逻辑
+	 * @returns { string[] }
 	 */
-	initCharactertList() {
-		let list = [];
+	initCharactertList(filter) {
+		let list;
 		if (_status.connectMode) {
 			list = get.charactersOL();
 		} else {
 			list = Object.keys(lib.character).filter(name => !lib.filter.characterDisabled2(name) && !lib.filter.characterDisabled(name));
 		}
-		if (list?.length) {
-			game.countPlayer2(current => {
-				list.removeArray(get.nameList(current));
-			});
+		if (filter !== false) {
+			if (list.length) {
+				game.countPlayer2(current => {
+					list.removeArray(get.nameList(current));
+				});
+			}
+			if (filter === undefined) {
+				_status.characterlist = list;
+			}
 		}
-		_status.characterlist = list;
+		return list;
 	}
 	/**
 	 * 交换任意两个元素的位置，附带过渡动画

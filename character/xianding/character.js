@@ -144,18 +144,6 @@ const characters = {
 		skills: ["dcshenduan", "dckegou", "dcdixian"],
 		clans: ["吴郡陆氏"],
 	},
-	two_dc_sp_machao: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["twodcspzhuiji", "twodcspshichou"],
-	},
-	one_dc_sp_machao: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["onedcspzhuiji", "onedcspshichou"],
-	},
 	sunba: {
 		sex: "male",
 		group: "wu",
@@ -520,7 +508,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["zhuiji", "dc_olshichou"],
+		skills: ["twodcspzhuiji", "twodcspshichou"],
 		dieAudios: ["sp_machao"],
 	},
 	old_huangfusong: {

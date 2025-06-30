@@ -157,28 +157,12 @@ const characters = {
 		groupInGuozhan: "qun",
 		dieAudios: ["shen_zhangjiao"],
 	},
-	junk_sunquan: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["dili", "yuheng"],
-		groupInGuozhan: "wu",
-		dieAudios: ["shen_sunquan"],
-	},
 	shen_huangzhong: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
 		skills: ["new_dclieqiong", "dczhanjue"],
 		groupInGuozhan: "shu",
-	},
-	new_simayi: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["jilin", "yingyou", "yingtian"],
-		groupInGuozhan: "wei",
-		names: "司马|懿",
 	},
 	xin_simayi: {
 		sex: "male",

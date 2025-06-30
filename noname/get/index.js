@@ -1671,12 +1671,17 @@ export class Get extends GetCompatible {
 			return get.cnNumber(parseInt(config.number)) + "人" + get.translation(get.plainText(config.mode));
 		}
 	}
+	/**
+	 * 获取联机可用武将列表
+	 * @param { (name: string) => boolean } [func] 自定义筛选方法，符合条件的排除
+	 * @returns { string[] }
+	 */
 	charactersOL(func) {
-		var list = [];
-		var libCharacter = {};
-		for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-			var pack = lib.characterPack[lib.configOL.characterPack[i]];
-			for (var j in pack) {
+		let list = [];
+		let libCharacter = {};
+		for (let i = 0; i < lib.configOL.characterPack.length; i++) {
+			const pack = lib.characterPack[lib.configOL.characterPack[i]];
+			for (let j in pack) {
 				if (typeof func == "function" && func(j)) {
 					continue;
 				}
@@ -1688,7 +1693,7 @@ export class Get extends GetCompatible {
 				}
 			}
 		}
-		for (i in libCharacter) {
+		for (let i in libCharacter) {
 			if (lib.filter.characterDisabled(i, libCharacter)) {
 				continue;
 			}

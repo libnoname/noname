@@ -809,7 +809,6 @@ const characters = {
 		hp: 3,
 		skills: ["weicheng", "daoshu"],
 	},
-
 	caoying: {
 		sex: "female",
 		group: "wei",
@@ -827,9 +826,8 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 4,
-		skills: ["olwuniang", "olxushen"],
+		skills: ["newwuniang", "newzhennan", "newxushen"],
 	},
-
 	yangxiu: {
 		sex: "male",
 		group: "wei",
