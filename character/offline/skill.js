@@ -3692,9 +3692,9 @@ const skills = {
 	hsfunan: {
 		zhuSkill: true,
 		enable: ["chooseToUse", "chooseToRespond"],
-		usable: 1,
 		filter(event, player) {
 			if (
+				player.hasSkill("hsfunan_used") ||
 				!player.hasZhuSkill("hsfunan") ||
 				!game.hasPlayer(function (current) {
 					return current != player && current.group == "shu";
@@ -3710,8 +3710,43 @@ const skills = {
 		group: ["hsfunan_2"],
 		derivation: "rejijiang",
 		ai: {
-			order() {
-				return get.order({ name: "sha" }) + 0.3;
+			order(item, player) {
+				const order = get.order({ name: "sha" });
+				_status.debugger = _status.event;
+				if (order <= 0) {
+					return order;
+				}
+				const losehp = get.effect(player, { name: "losehp" }, player, player);
+				if (losehp > 0) {
+					return order + 0.3;
+				}
+				if (player.hp <= 1) {
+					// 避免苦肉死
+					return 0;
+				}
+				const draw = 2 * get.effect(player, { name: "draw" }, player, player);
+				if (losehp + draw > 0) {
+					// 即使不出杀收益也够了
+					return order + 0.1;
+				}
+				const eff = player.getUseValue({ name: "sha" }, null, true);
+				if (eff <= 0) {
+					return 0;
+				}
+				const maySha = Math.max(
+					...game
+						.filterPlayer(current => {
+							return player !== current && current.group === "shu" && get.attitude(player, current) > 0;
+						})
+						.map(current => {
+							return current.mayHaveSha(player, _status.event?.name === "chooseToUse" ? "use" : "respond", null, "count");
+						})
+				);
+				if (maySha < 1 && (1 - maySha) * losehp + draw < 0) {
+					// 有概率出杀但不值得崩血
+					return 0;
+				}
+				return order + 0.3;
 			},
 			respondSha: true,
 			skillTagFilter(player) {
@@ -3732,8 +3767,9 @@ const skills = {
 					return event.skill == "hsfunan";
 				},
 				forced: true,
-				log: false,
+				popup: false,
 				async content(event, trigger, player) {
+					player.addSkill("hsfunan_used");
 					const targets = game.filterPlayer(target => target != player && target.group == "shu");
 					if (!targets.length) {
 						return;
@@ -3774,6 +3810,9 @@ const skills = {
 						trigger.getParent().goto(0);
 					}
 				},
+			},
+			used: {
+				charlotte: true,
 			},
 		},
 	},

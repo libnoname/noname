@@ -54,6 +54,7 @@ const skills = {
 			}
 			suits = suits.filter(suit => lib.suit.includes(suit) && !player.getStorage(event.name).includes(suit));
 			player.markAuto(event.name, suits);
+			player.storage[event.name].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 			game.log(player, "记录了", suits.map(i => get.translation(i)).join(""));
 			const tip = player
 				.getStorage(event.name)
@@ -64,20 +65,12 @@ const skills = {
 	},
 	x_dc_zhenyi: {
 		audio: "xinfu_zhenyi",
-		trigger: {
-			global: "useCard",
-		},
+		trigger: { global: "useCard" },
 		filter(event, player) {
 			if (event.player != _status.currentPhase || !player.getStorage("x_dc_falu").length) {
 				return false;
 			}
-			return (
-				event.player
-					.getHistory("useCard", evt => {
-						return get.type(evt.card) != "equip";
-					})
-					.indexOf(event) == 0
-			);
+			return event.player.getHistory("useCard", evt => get.type(evt.card) != "equip").indexOf(event) == 0;
 		},
 		filterx: {
 			heartA: event => {
@@ -224,7 +217,7 @@ const skills = {
 				.getStorage("x_dc_falu")
 				.map(i => get.translation(i))
 				.join("");
-			player.addTip("x_dc_falu", `法箓${tip}`);
+			tip.length > 0 ? player.addTip("x_dc_falu", `法箓${tip}`) : player.removeTip("x_dc_falu");
 			switch (suit) {
 				case "heart": {
 					const result = await player
@@ -291,9 +284,7 @@ const skills = {
 				}
 			}
 		},
-		ai: {
-			combo: "x_dc_falu",
-		},
+		ai: { combo: "x_dc_falu" },
 		subSkill: {
 			A: {
 				intro: {
@@ -309,9 +300,7 @@ const skills = {
 				},
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					player: "useCard",
-				},
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					return player.getStorage("x_dc_zhenyi_A").includes(get.suit(event.card));
 				},
@@ -352,9 +341,7 @@ const skills = {
 	},
 	x_dc_dianhua: {
 		audio: "xinfu_dianhua",
-		trigger: {
-			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
-		},
+		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		frequent: true,
 		async content(event, trigger, player) {
 			const cards = get.cards(4);
@@ -408,7 +395,7 @@ const skills = {
 	y_dc_falu: {
 		audio: "xinfu_falu",
 		trigger: {
-			player: ["loseAfter"],
+			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		forced: true,
@@ -431,12 +418,18 @@ const skills = {
 				list = list.slice(-3);
 			}
 			player.setStorage(event.name, list, true);
+			const tip = player
+				.getStorage(event.name)
+				.map(i => get.translation(i))
+				.join("");
+			player.addTip(event.name, `法箓${tip}`);
 			if (list.length < 3) {
 				return;
 			}
 			if (list.toUniqued().length == 1) {
 				const suit = list[0];
 				player.setStorage(event.name, [], true);
+				player.removeTip(event.name);
 				const next = game.createEvent("removeFaluRecord", false);
 				next.player = player;
 				next.type = "same";
@@ -517,6 +510,7 @@ const skills = {
 					return;
 				}
 				player.setStorage(event.name, [], true);
+				player.removeTip(event.name);
 				const next = game.createEvent("removeFaluRecord", false);
 				next.player = player;
 				next.type = "diff";
@@ -528,12 +522,14 @@ const skills = {
 				await target[link](1, player);
 			}
 		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+			delete player.storage[skill];
+		},
 	},
 	y_dc_zhenyi: {
 		audio: "xinfu_zhenyi",
-		trigger: {
-			player: ["removeFaluRecord", "useCard"],
-		},
+		trigger: { player: ["removeFaluRecord", "useCard"] },
 		filter(event, player) {
 			if (event.name == "useCard") {
 				return player.getStorage("y_dc_zhenyi_record").includes(get.suit(event.card));
@@ -556,22 +552,25 @@ const skills = {
 					dialog.addText("未发动过〖真仪〗");
 				}
 			},
+			markcount: (storage, player) => `${player.getStorage("y_dc_zhenyi_record").length}/${(storage || 0).toString()}`,
 		},
-		onremove: ["y_dc_zhenyi", "y_dc_zhenyi_record"],
 		forced: true,
 		async content(event, trigger, player) {
 			if (trigger.name == "useCard") {
 				trigger.directHit.addArray(game.players);
-			} else if (trigger.type == "diff") {
-				player.addMark(event.name);
 			} else {
-				player.markAuto("y_dc_zhenyi_record", trigger.suit);
-				player.markSkill(event.name);
+				if (trigger.type == "diff") {
+					player.addMark(event.name, 1, false);
+					player.addTip("y_dc_dianhua", "点化+" + player.countMark(event.name));
+				} else {
+					player.markAuto("y_dc_zhenyi_record", trigger.suit);
+					player.storage["y_dc_zhenyi_record"].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+					player.markSkill(event.name);
+					player.addTip(event.name, "真仪" + player.storage["y_dc_zhenyi_record"].map(i => get.translation(i)).join(""));
+				}
 			}
 		},
-		ai: {
-			combo: "y_dc_falu",
-		},
+		ai: { combo: "y_dc_falu" },
 		mod: {
 			targetInRange(card, player) {
 				if (player.getStorage("y_dc_zhenyi_record").includes(get.suit(card))) {
@@ -579,12 +578,16 @@ const skills = {
 				}
 			},
 		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+			player.removeTip("y_dc_dianhua");
+			delete player.storage[skill];
+			delete player.storage[skill + "_record"];
+		},
 	},
 	y_dc_dianhua: {
 		audio: "xinfu_dianhua",
-		trigger: {
-			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
-		},
+		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		frequent: true,
 		async content(event, trigger, player) {
 			const cards = get.cards(1 + player.countMark("y_dc_zhenyi"));

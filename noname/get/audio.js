@@ -249,7 +249,7 @@ class SkillAudio {
 		} else if (this.info.logAudio && args) {
 			const result = this.info.logAudio(...args);
 			if (typeof result === "number" && typeof this.info.audio === "string") {
-				return Array.from({ length: result }, (_, i) => `${this.info.audio}${i + 1}`);
+				return Array.from({ length: result }, (_, i) => `${this.info.audio}${i + 1}.mp3`);
 			}
 			return result;
 		} else if (this.info.audio != void 0) {
