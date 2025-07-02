@@ -435,18 +435,18 @@ export class Library {
 										typeof yingbianZhuzhanAI == "function"
 											? yingbianZhuzhanAI(player, card, source, targets)
 											: cardx => {
-													var info = get.info(card);
-													if (info && info.ai && info.ai.yingbian) {
-														var ai = info.ai.yingbian(card, source, targets, player);
-														if (!ai) {
-															return 0;
-														}
-														return ai - get.value(cardx);
-													} else if (get.attitude(player, source) <= 0) {
+												var info = get.info(card);
+												if (info && info.ai && info.ai.yingbian) {
+													var ai = info.ai.yingbian(card, source, targets, player);
+													if (!ai) {
 														return 0;
 													}
-													return 5 - get.value(cardx);
-											  },
+													return ai - get.value(cardx);
+												} else if (get.attitude(player, source) <= 0) {
+													return 0;
+												}
+												return 5 - get.value(cardx);
+											},
 								});
 								if (!game.online) {
 									return;
@@ -1289,6 +1289,47 @@ export class Library {
 					init: false,
 					async onclick(bool) {
 						await game.promises.saveConfig("extension_auto_import", bool);
+					},
+					unfrequent: true,
+				},
+				extension_auto_removeConfig: {
+					name: "自动删除配置",
+					intro: dedent`
+						开启后无名杀会检查lib.config.extensions中的扩展是否在extension文件夹中存在，若不存在则删除该扩展的config配置信息（默认关闭）
+						<br />
+						※ 该选项为点击后执行一次代码，不会一直打开
+						<br />
+						※ 该选项仅能检测lib.config["extension_extensionName_"]的配置，扩展直接使用lib.config.xx储存的没有办法
+					`,
+					init: false,
+					async onclick() {
+						let config = lib.config;
+						if (get.is.object(config)) {
+							let extensionList = config.extensions;
+							for (let name of extensionList) {
+								let num = await game.promises.checkDir(`extension/${name}`);
+								if (num !== 1) {
+									game.removeExtension(name);
+								}
+								else {
+									let all = await game.promises.getFileList(`extension/${name}`);
+									if (Boolean(all?.[1].length)) {
+										const hasExtensionJs = all[1].includes("extension.js");
+										const hasInfoJson = all[1].includes("info.json");
+
+										if (!hasExtensionJs) {
+											const message = hasInfoJson
+												? `扩展${name}有 info.json 但缺少 extension.js 文件`
+												: `扩展${name}缺少必须的 extension.js 文件`;
+											console.error(message);
+											game.removeExtension(name);
+										}
+									}
+								}
+							}
+						}
+						let ret = confirm(`检测完成，已为你清除无效配置，是否重启？`);
+						if (ret) game.reload();
 					},
 					unfrequent: true,
 				},
@@ -8921,10 +8962,10 @@ export class Library {
 	genAwait(item) {
 		return gnc.is.generator(item)
 			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-			  })()
+				for (const content of item) {
+					yield content;
+				}
+			})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -12011,16 +12052,16 @@ export class Library {
 					const cardName = get.name(cards[0], player);
 					return cardName
 						? new lib.element.VCard({
-								name: cardName,
-								nature: get.nature(cards[0], player),
-								suit: get.suit(cards[0], player),
-								number: get.number(cards[0], player),
-								isCard: true,
-								cards: [cards[0]],
-								storage: {
-									stratagem_buffed: 1,
-								},
-						  })
+							name: cardName,
+							nature: get.nature(cards[0], player),
+							suit: get.suit(cards[0], player),
+							number: get.number(cards[0], player),
+							isCard: true,
+							cards: [cards[0]],
+							storage: {
+								stratagem_buffed: 1,
+							},
+						})
 						: new lib.element.VCard();
 				}
 				return null;
@@ -14302,7 +14343,7 @@ export class Library {
 								navigator.clipboard
 									.readText()
 									.then(read)
-									.catch(_ => {});
+									.catch(_ => { });
 							} else {
 								var input = ui.create.node("textarea", ui.window, { opacity: "0" });
 								input.select();
