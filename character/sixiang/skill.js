@@ -1298,6 +1298,9 @@ const skills = {
 			if (event.player == player || event.player == get.zhu(player)) {
 				return true;
 			}
+			if (get.recoverEffect(event.player, player, player) <= 0) {
+				return false;
+			}
 			return !player.hasUnknown();
 		},
 		async content(event, trigger, player) {

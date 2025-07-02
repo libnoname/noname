@@ -2596,10 +2596,10 @@ const skills = {
 				charlotte: true,
 				silent: true,
 				trigger: {
-					global: "phaseAfter",
+					global: ["phaseAfter", "die"],
 				},
 				filter(event, player) {
-					return event.player == player.storage.olsbxieyong_jiu[0];
+					return player.getStorage("olsbxieyong_jiu").includes(event.player);
 				},
 				async content(event, trigger, player) {
 					game.broadcastAll(function (player) {
@@ -2611,21 +2611,24 @@ const skills = {
 				ai: {
 					jiuSustain: true,
 				},
+				onremove: true,
+				intro: {
+					content: "已选择$",
+				},
 			},
 			buff: {
 				charlotte: true,
 				trigger: {
-					global: "useCard",
+					global: "useCardAfter",
 				},
 				filter(event, player) {
-					if (event.player != player.storage.olsbxieyong_jiu[0]) {
+					if (!player.getStorage("olsbxieyong_jiu").includes(event.player)) {
 						return false;
 					}
-					return !event.targets || !event.targets.includes(event.player);
+					return !event.targets?.includes(event.player);
 				},
-				direct: true,
-				async content(event, trigger, player) {
-					const target = player.storage.olsbxieyong_jiu[0];
+				async cost(event, trigger, player) {
+					const target = trigger.player;
 					const next = player.chooseToUse();
 					next.set("prompt", `【狭勇】:是否对${get.translation(target)}使用一张【杀】？`);
 					next.set("targetx", target);
@@ -2645,7 +2648,23 @@ const skills = {
 							target.markSkill("qinggang2");
 						}
 					});
-					await next;
+					next.set("addCount", false);
+					next.set("chooseonly", true);
+					next.set("logSkill", event.name.slice(0, -5));
+					event.result = await next.forResult();
+				},
+				popup: false,
+				async content(event, trigger, player) {
+					const { ResultEvent, logSkill } = event.cost_data;
+					event.next.push(ResultEvent);
+					if (logSkill) {
+						if (typeof logSkill == "string") {
+							ResultEvent.player.logSkill(logSkill);
+						} else if (Array.isArray(logSkill)) {
+							ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
+						}
+					}
+					await ResultEvent;
 				},
 			},
 		},

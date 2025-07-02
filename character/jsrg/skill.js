@@ -12081,7 +12081,7 @@ const skills = {
 			if (!player.countCards("hes") || player.hasSkill("jsrgciyin_used")) {
 				return false;
 			}
-			if (!event.ciyin_suits || player.countCards("h") < Math.max(4 - event.ciyin_suits.length, 1)) {
+			if (!event.ciyin_suits || player.countCards("hes") < Math.max(4 - event.ciyin_suits.length, 1)) {
 				return false;
 			}
 			for (var i of lib.inpile) {

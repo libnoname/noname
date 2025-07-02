@@ -669,7 +669,7 @@ const skills = {
 		usable: 1,
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseButton([get.prompt2(event.skill), [[3, 1].map(i => ["", "", "lukai_" + player.getStorage(event.skill)[i]]), "vcard"]])
+				.chooseButton([get.prompt2(event.skill), [[3, 1].map(i => ["", "", "lukai_" + player.getStorage("chuanxie")[i]]), "vcard"]])
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (result.bool) {
@@ -4834,10 +4834,8 @@ const skills = {
 		filterCard: true,
 		selectCard: -1,
 		position: "h",
+		usable: 1,
 		filter(event, player) {
-			if (player.hasSkill("mbguli_used")) {
-				return false;
-			}
 			var hs = player.getCards("h");
 			if (!hs.length) {
 				return false;
@@ -4855,7 +4853,7 @@ const skills = {
 			storage: { mbguli: true },
 		},
 		onuse(links, player) {
-			player.addTempSkill("mbguli_used", "phaseUseAfter");
+			player.addTempSkill("mbguli_effect", "phaseUseAfter");
 		},
 		ai: {
 			order: 1,
@@ -4869,7 +4867,7 @@ const skills = {
 			},
 		},
 		subSkill: {
-			used: {
+			effect: {
 				audio: "mbguli",
 				trigger: { global: "useCardAfter" },
 				charlotte: true,
@@ -4887,11 +4885,9 @@ const skills = {
 						})
 					);
 				},
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					player.drawTo(player.maxHp);
+				async content(event,trigger,player) {
+					await player.loseHp();
+					await player.drawTo(player.maxHp);
 				},
 				group: "mbguli_unequip",
 			},
@@ -4905,7 +4901,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				logTarget: "target",
-				content() {
+				async content(event,trigger,player) {
 					trigger.target.addTempSkill("qinggang2");
 					trigger.target.storage.qinggang2.add(trigger.card);
 					trigger.target.markSkill("qinggang2");

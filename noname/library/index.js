@@ -209,6 +209,7 @@ export class Library {
 			const packs = Object.keys(lib.characterPack).sort((a, b) => {
 				return packSort.indexOf(b) - packSort.indexOf(a);
 			});
+			const map = new Map();
 			for (let i of packs) {
 				for (let j in lib.characterPack[i]) {
 					const info = get.character(j);
@@ -218,19 +219,31 @@ export class Library {
 					if (info[3]?.length > 0) {
 						let skills = info[3].slice(0);
 						for (const skill of skills) {
-							const skillInfo = get.info(skill);
+							const skillInfo = lib.skill[skill];
 							if (!skillInfo) {
 								continue;
-							}
-							if (skillInfo.derivation) {
-								const der = skillInfo.derivation.slice(0);
-								Array.isArray(der) ? skills.addArray(der) : skills.add(der);
 							}
 							if (!_status.skillOwner[skill]) {
 								_status.skillOwner[skill] = j;
 							}
+							if (skillInfo.derivation) {
+								const der = skillInfo.derivation.slice(0);
+								for (const skillx of Array.isArray(der) ? der : [der]) {
+									if (!_status.skillOwner[skillx]) {
+										if (!map.has(skillx)) {
+											map.set(skillx, []);
+										}
+										map.get(skillx).add(j);
+									}
+								}
+							}
 						}
 					}
+				}
+			}
+			for (const skill of map.keys()) {
+				if (!_status.skillOwner[skill]) {
+					_status.skillOwner[skill] = map.get(skill)[0];
 				}
 			}
 		},

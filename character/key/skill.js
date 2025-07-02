@@ -2717,7 +2717,7 @@ const skills = {
 		filter: (event, player) => player.group == "key" && !event.card.yingbian && lib.yingbian.condition.complex.has("zhuzhan"),
 		content: () => {
 			"step 0";
-			trigger.yingbianZhuzhanAI = (player, card, source, targets) => cardx => {
+			trigger.yingbianZhuzhanAI = (player, card, source, targets) => {
 				if (get.attitude(player, source) <= 0) {
 					return 0;
 				}

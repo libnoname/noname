@@ -813,7 +813,7 @@ const skills = {
 			const list = player.getStorage("mbfozong");
 			let evt = event.getParent("useCard", true),
 				card = event.card;
-			if (evt.player != player || !card || evt.card != card) {
+			if (evt?.player != player || !card || evt.card != card) {
 				return false;
 			}
 			return (
@@ -902,6 +902,7 @@ const skills = {
 				filter(event, player) {
 					return event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
 				},
+				forceDie: true,
 				async content(event, trigger, player) {
 					const toAdd = trigger.getg?.(player) || [],
 						toRemove = trigger.getl?.(player)?.hs || [];
@@ -4509,6 +4510,7 @@ const skills = {
 	},
 	mbqiantun: {
 		audio: "jsrgqiantun",
+		logAudio: index => `jsrgqiantun${typeof index == "number" ? index : get.rand(1, 2)}.mp3`,
 		inherit: "jsrgqiantun",
 		filter(event, player) {
 			return player.group === "wei" && game.hasPlayer(target => get.info("mbqiantun").filterTarget(null, player, target));
@@ -4626,6 +4628,7 @@ const skills = {
 	},
 	mbweisi: {
 		audio: "jsrgweisi",
+		logAudio: index => `jsrgweisi${typeof index == "number" ? index : get.rand(1, 2)}.mp3`,
 		inherit: "jsrgweisi",
 		filter(event, player) {
 			return player.group === "qun" && game.hasPlayer(target => get.info("mbweisi").filterTarget(null, player, target));
@@ -5150,7 +5153,7 @@ const skills = {
 				.getCards("h", i => target.hasCard({ name: get.name(i) }, "h"))
 				.map(i => get.name(i))
 				.unique();
-			const goon = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).some(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+			const goon = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).some(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 			if (!goon && !allNames.length) {
 				return;
 			}
@@ -5169,7 +5172,7 @@ const skills = {
 								.map(i => "【" + get.translation(i) + "】")
 								.join("、") +
 							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的牌" : "") +
-							"（无距离和次数限制）",
+							"（不计入次数且无次数限制）",
 						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且这些牌不计入各自手牌上限直到各自结束阶段",
 					])
 					.set("ai", () => {
@@ -5177,7 +5180,7 @@ const skills = {
 							player,
 							list: [target, names, allNames],
 						} = get.event();
-						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3] }), false))) >
 							(() => {
 								let sum = 0;
@@ -5193,8 +5196,9 @@ const skills = {
 					.forResult();
 			}
 			if (result.index === 0) {
+				const used = [];
 				for (let i = 0; i < 2; i++) {
-					let list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+					let list = get.inpileVCardList(info => !used.includes(info[2]) && names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 					if (!list.length) {
 						break;
 					}
@@ -5206,7 +5210,8 @@ const skills = {
 									.forResult("links")
 							: list;
 					if (choice) {
-						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false, "nodistance");
+						used.add(choice[2]);
+						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
 					}
 				}
 			} else {
@@ -5254,7 +5259,7 @@ const skills = {
 					}
 				}
 			}
-			if (names.length && target.isIn()) {
+			if (names.length && target.isIn() && !Object.values(target.storage["mbzengou_debuff"] || {}).some(num => num > 0)) {
 				const choose =
 					names.length > 1
 						? await player
@@ -21577,29 +21582,27 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "e", true).set("ai", function (button) {
-				var card = button.link;
-				var player = _status.event.player;
-				if (get.subtype(card) == "equip1" && get.damageEffect(_status.event.target, player, player) > 0) {
-					return 6 + get.value(card);
-				}
-				return get.value(card);
-			});
-			"step 1";
-			if (!result || !result.bool || !result.cards || !result.cards.length) {
-				event.finish();
+		async content(event, trigger, player) {
+			const result = await player
+				.gainPlayerCard(target, "e", true)
+				.set("ai", function (button) {
+					const card = button.link;
+					const player = _status.event.player;
+					if (get.subtype(card) == "equip1" && get.damageEffect(_status.event.target, player, player) > 0) {
+						return 6 + get.value(card);
+					}
+					return get.value(card);
+				})
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
 				return;
 			}
-			var card = result.cards[0];
-			event.card = card;
+			const card = result.cards[0];
 			if (player.getCards("h").includes(card) && get.type(card) == "equip") {
-				player.chooseUseTarget(card, true).nopopup = true;
+				await player.chooseUseTarget(card, true, "nopopup");
 			}
-			"step 2";
 			if (get.subtype(card, false) == "equip1") {
-				target.damage();
+				await target.damage();
 			}
 		},
 		ai: {
@@ -24933,6 +24936,9 @@ const skills = {
 				return true;
 			}
 			if (_status.currentPhase && get.damageEffect(_status.currentPhase, player, player) < 0) {
+				return false;
+			}
+			if (get.recoverEffect(event.player, player, player) <= 0) {
 				return false;
 			}
 			return !player.hasUnknown();
