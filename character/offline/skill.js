@@ -1101,8 +1101,8 @@ const skills = {
 			order: 1,
 			result: {
 				player(player, target) {
-					const num = player.getStat("jun_henglv") || 0;
-					if (num >= 1 || (player.hp < 2 && !player.countCards("hs", "tao"))) {
+					const num = player.getStat("skill").jun_henglv || 0;
+					if (num > 1 || (player.hp < 2 && !player.countCards("hs", "tao"))) {
 						return 0;
 					}
 					return 1;
