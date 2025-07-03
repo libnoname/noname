@@ -12092,7 +12092,7 @@ export class Player extends HTMLDivElement {
 				}
 				if (info.ai[tag] === true) {
 					if (typeof arg === "object" && arg && !info.ai.skillTagFilter) {
-						console.warn(`是不是忘给lib.skill.${skills[i]}.ai.${tag}加skillTagFilter了\nhasSkillTag：`, arg);
+						console.log(`疑似忘给lib.skill.${skills[i]}.ai.${tag}加skillTagFilter了\nhasSkillTag：`, arg);
 					}
 					return true;
 				} else if (typeof info.ai[tag] !== "undefined") {

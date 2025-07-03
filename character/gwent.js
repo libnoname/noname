@@ -2920,6 +2920,7 @@ game.import("character", function () {
 								player.hasSkillTag("freeShan", false, {
 									player: target,
 									card: new lib.element.VCard({ name: "sha" }),
+									type: "use",
 								})
 							) {
 								return -1;

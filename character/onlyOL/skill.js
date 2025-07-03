@@ -653,6 +653,7 @@ const skills = {
 							{
 								player: player,
 								card: arg.card,
+								type: "use",
 							},
 							true
 						) ||

@@ -525,8 +525,10 @@ const skills = {
 		},
 		ai: {
 			noh: true,
+			freeSha: true,
+			freeShan: true,
 			skillTagFilter(player, tag) {
-				if (tag == "noh" && player.maxHp - player.hp < player.countCards("h")) {
+				if (player.maxHp - player.hp < player.countCards("h")) {
 					return false;
 				}
 			},
@@ -2666,6 +2668,7 @@ const skills = {
 							{
 								player: player,
 								card: arg.card,
+								type: "use",
 							},
 							true
 						) ||
@@ -6702,6 +6705,7 @@ const skills = {
 							trigger.player.hasSkillTag("freeShan", false, {
 								player: _status.event.player,
 								card: new lib.element.VCard({ name: "sha", isCard: true }),
+								type: "use",
 							}) ||
 							trigger.player.countCards("h", "shan"))
 					) {
@@ -6763,6 +6767,7 @@ const skills = {
 							trigger.player.hasSkillTag("freeShan", false, {
 								player: _status.event.player,
 								card: new lib.element.VCard({ name: "sha", isCard: true }),
+								type: "use",
 							}) ||
 							trigger.player.countCards("h", "shan"))
 					) {
@@ -9911,6 +9916,7 @@ const skills = {
 							{
 								player: player,
 								card: arg.card,
+								type: "use",
 							},
 							true
 						) ||
@@ -12648,8 +12654,10 @@ const skills = {
 		},
 		ai: {
 			noh: true,
+			freeSha: true,
+			freeShan: true,
 			skillTagFilter(player, tag) {
-				if (tag == "noh" && player.maxHp - player.hp < player.countCards("h")) {
+				if (player.maxHp - player.hp < player.countCards("h")) {
 					return false;
 				}
 			},

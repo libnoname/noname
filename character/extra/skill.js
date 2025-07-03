@@ -8736,6 +8736,13 @@ const skills = {
 				player.chooseToDiscard("h", true, -num);
 			}
 		},
+		ai: {
+			freeSha: true,
+			freeShan: true,
+			skillTagFilter() {
+				return true;
+			},
+		},
 	},
 	dcjuejing: { audio: 2 },
 	meihun: {

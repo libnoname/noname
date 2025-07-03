@@ -2999,6 +2999,7 @@ const skills = {
 						!arg.target.hasSkillTag("freeShan", false, {
 							player: player,
 							card: arg.card,
+							type: "use",
 						}) ||
 						player.hasSkillTag("unequip", false, {
 							name: arg.card ? arg.card.name : null,

@@ -16012,6 +16012,11 @@ const skills = {
 				},
 			},
 			noh: true,
+			freeSha: true,
+			freeShan: true,
+			skillTagFilter(player) {
+				return player.countCards("h") === 1;
+			},
 		},
 	},
 	retishen: {

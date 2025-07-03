@@ -9837,6 +9837,11 @@ export default () => {
 						},
 					},
 					noh: true,
+					freeSha: true,
+					freeShan: true,
+					skillTagFilter() {
+						return true;
+					},
 				},
 			},
 			xiuluo: {

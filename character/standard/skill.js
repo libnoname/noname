@@ -1801,11 +1801,11 @@ const skills = {
 				},
 			},
 			noh: true,
+			freeSha: true,
+			freeShan: true,
 			skillTagFilter(player, tag) {
-				if (tag == "noh") {
-					if (player.countCards("h") != 1) {
-						return false;
-					}
+				if (player.countCards("h") !== 1) {
+					return false;
 				}
 			},
 		},

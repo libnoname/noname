@@ -2290,6 +2290,7 @@ game.import("character", function () {
 							{
 								player: player,
 								card: trigger.card,
+								type: "use",
 							},
 							true
 						) ||

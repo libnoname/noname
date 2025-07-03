@@ -195,7 +195,11 @@ game.import("card", function () {
 								if (!game.hasNature(event.card, "ice") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
 									return false;
 								}
-								if (event.shanRequired > 1 && target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)) {
+								if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
+									player: player,
+									card: event.card,
+									type: "use",
+								}) && target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)) {
 									return false;
 								}
 								return true;
@@ -1342,7 +1346,11 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shaRequired > 1 && event.shaRequired > target.mayHaveSha(target, "respond", null, "count")) {
+									if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
+										player: player,
+										card: event.card,
+										type: "respond",
+									}) && event.shaRequired > target.mayHaveSha(target, "respond", null, "count")) {
 										return false;
 									}
 									// if (target.hasSkill("naman")) {
@@ -1725,7 +1733,11 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shanRequired > 1 && event.shanRequired > target.mayHaveShan(target, "respond", null, "count")) {
+									if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
+										player: player,
+										card: event.card,
+										type: "respond",
+									}) && event.shanRequired > target.mayHaveShan(target, "respond", null, "count")) {
 										return false;
 									}
 									return true;
@@ -2182,7 +2194,11 @@ game.import("card", function () {
 										if (damage >= 0) {
 											return false;
 										}
-										if (event.shaRequired > 1 && event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")) {
+										if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
+											player: player,
+											card: event.card,
+											type: "respond",
+										}) && event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")) {
 											return false;
 										}
 										if (get.attitude(responder, opposite._trueMe || opposite) > 0 && damage >= get.damageEffect(opposite, responder, responder)) {

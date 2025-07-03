@@ -23571,6 +23571,7 @@ const skills = {
 						false,
 						{
 							player: _status.event.player,
+							type: "use",
 						},
 						true
 					)
