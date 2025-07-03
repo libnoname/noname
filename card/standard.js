@@ -1749,6 +1749,7 @@ game.import("card", function () {
 						}
 						if (result.bool === false) {
 							await target.damage();
+							break;
 						} else {
 							event.shanRequired--;
 						}
