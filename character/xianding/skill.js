@@ -12115,7 +12115,7 @@ const skills = {
 			nofire: true,
 			nothunder: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.card) {
+				if (!arg?.card) {
 					return false;
 				}
 				if (tag === "filterDamage") {

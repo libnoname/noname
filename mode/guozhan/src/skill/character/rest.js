@@ -8468,7 +8468,7 @@ export default {
 			halfneg: true,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.card) {
+				if (!arg?.card) {
 					return false;
 				}
 				var type = get.type2(arg.card);
