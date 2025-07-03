@@ -8260,10 +8260,10 @@ game.import("character", function () {
 							if (get.damageEffect(event.current, player, event.current, "thunder") >= 0) {
 								return 0;
 							}
-							if (player.hasSkillTag("notricksource")) {
+							if (player.hasSkillTag("notricksource", null, event)) {
 								return 0;
 							}
-							if (event.current.hasSkillTag("notrick")) {
+							if (event.current.hasSkillTag("notrick", null, event)) {
 								return 0;
 							}
 							return 11 - get.value(card);
