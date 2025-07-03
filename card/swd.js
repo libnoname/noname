@@ -2091,7 +2091,7 @@ game.import("card", function () {
 						if (target.hasSkillTag("notrick")) {
 							return 0;
 						}
-						if (target.hasSkillTag("noShan")) {
+						if (target.hasSkillTag("noShan", null, "respond")) {
 							return -1;
 						}
 						return 11 - get.value(card);

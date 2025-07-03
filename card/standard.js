@@ -157,19 +157,19 @@ game.import("card", function () {
 							next.set("prompt2", "（在此之后仍需弃置一张手牌）");
 						}
 						next.set("ai1", function (card) {
-							if (_status.event.useShan) {
+							if (get.event().toUse) {
 								return get.order(card);
 							}
 							return 0;
 						}).set("shanRequired", event.shanRequired);
 						next.set("respondTo", [player, card]);
 						next.set(
-							"useShan",
+							"toUse",
 							(() => {
-								if (target.hasSkillTag("noShan", null, event)) {
+								if (target.hasSkillTag("noShan", null, "use")) {
 									return false;
 								}
-								if (target.hasSkillTag("useShan", null, event)) {
+								if (target.hasSkillTag("useShan", null, "use")) {
 									return true;
 								}
 								if (
@@ -1296,51 +1296,70 @@ game.import("card", function () {
 					return target !== player;
 				},
 				reverseOrder: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const target = event.target;
 					if (typeof event.shaRequired !== "number" || !event.shaRequired || event.shaRequired < 0) {
 						event.shaRequired = 1;
 					}
 					if (typeof event.baseDamage !== "number") {
 						event.baseDamage = 1;
 					}
-					"step 1";
-					if (event.directHit) {
-						event._result = { bool: false };
-					} else {
-						var next = target.chooseToRespond();
-						next.set("filterCard", function (card, player) {
-							if (get.name(card) !== "sha") {
-								return false;
+					while (event.shaRequired > 0) {
+						let result = { bool: false };
+						if (!event.directHit) {
+							const next = target.chooseToRespond();
+							next.set("filterCard", function (card, player) {
+								if (get.name(card) !== "sha") {
+									return false;
+								}
+								return lib.filter.cardRespondable(card, player);
+							});
+							if (event.shaRequired > 1) {
+								next.set("prompt2", "共需打出" + event.shaRequired + "张【杀】");
 							}
-							return lib.filter.cardRespondable(card, player);
-						});
-						if (event.shaRequired > 1) {
-							next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
+							next.set("ai", function (card) {
+								if (get.event().toRespond) {
+									return get.order(card);
+								}
+								return -1;
+							});
+							next.set(
+								"toRespond",
+								(() => {
+									if (target.hasSkillTag("noSha", null, "respond")) {
+										return false;
+									}
+									if (target.hasSkillTag("useSha", null, "respond")) {
+										return true;
+									}
+									if (event.baseDamage <= 0 || player.hasSkillTag("notricksource", null, event) || target.hasSkillTag("notrick", null, event)) {
+										return false;
+									}
+									if (event.baseDamage >= target.hp + (player.hasSkillTag("jueqing", false, target) || target.hasSkill("gangzhi") ? 0 : target.hujia)) {
+										return true;
+									}
+									const damage = get.damageEffect(target, player, target);
+									if (damage >= 0) {
+										return false;
+									}
+									if (event.shaRequired > 1 && event.shaRequired > target.mayHaveSha(target, "respond", null, "count")) {
+										return false;
+									}
+									// if (target.hasSkill("naman")) {
+									// 	return true;
+									// }
+									return true;
+								})()
+							);
+							next.set("respondTo", [player, event.card]);
+							next.autochoose = lib.filter.autoRespondSha;
+							result = await next.forResult();
 						}
-						next.set("ai", function (card) {
-							var evt = _status.event.getParent();
-							if (get.damageEffect(evt.target, evt.player, evt.target) >= 0) {
-								return 0;
-							}
-							if (evt.player.hasSkillTag("notricksource")) {
-								return 0;
-							}
-							if (evt.target.hasSkillTag("notrick")) {
-								return 0;
-							}
-							return get.order(card);
-						});
-						next.set("respondTo", [player, card]);
-						next.autochoose = lib.filter.autoRespondSha;
-					}
-					"step 2";
-					if (result.bool === false) {
-						target.damage();
-					} else {
-						event.shaRequired--;
-						if (event.shaRequired > 0) {
-							event.goto(1);
+						if (result.bool === false) {
+							await target.damage();
+							break;
+						} else {
+							event.shaRequired--;
 						}
 					}
 				},
@@ -1660,54 +1679,66 @@ game.import("card", function () {
 				filterTarget(card, player, target) {
 					return target !== player;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const target = event.target;
 					if (typeof event.shanRequired !== "number" || !event.shanRequired || event.shanRequired < 0) {
 						event.shanRequired = 1;
 					}
 					if (typeof event.baseDamage !== "number") {
 						event.baseDamage = 1;
 					}
-					"step 1";
-					if (event.directHit) {
-						event._result = { bool: false };
-					} else {
-						var next = target.chooseToRespond();
-						next.set("filterCard", function (card, player) {
-							if (get.name(card) !== "shan") {
-								return false;
+					while (event.shanRequired > 0) {
+						let result = { bool: false };
+						if (!event.directHit) {
+							const next = target.chooseToRespond();
+							next.set("filterCard", function (card, player) {
+								if (get.name(card) !== "shan") {
+									return false;
+								}
+								return lib.filter.cardRespondable(card, player);
+							});
+							if (event.shanRequired > 1) {
+								next.set("prompt2", "共需打出" + event.shanRequired + "张闪");
 							}
-							return lib.filter.cardRespondable(card, player);
-						});
-						if (event.shanRequired > 1) {
-							next.set("prompt2", "共需打出" + event.shanRequired + "张闪");
-						}
-						next.set("ai", function (card) {
-							var evt = _status.event.getParent();
-							if (get.damageEffect(evt.target, evt.player, evt.target) >= 0) {
-								return 0;
-							}
-							if (evt.player.hasSkillTag("notricksource")) {
-								return 0;
-							}
-							if (evt.target.hasSkillTag("notrick")) {
-								return 0;
-							}
-							if (evt.target.hasSkillTag("noShan")) {
+							next.set("ai", function (card) {
+								if (get.event().toRespond) {
+									return get.order(card);
+								}
 								return -1;
-							}
-							return get.order(card);
-						});
-						next.set("respondTo", [player, card]);
-						next.autochoose = lib.filter.autoRespondShan;
-					}
-					"step 2";
-					if (result.bool === false) {
-						target.damage();
-					} else {
-						event.shanRequired--;
-						if (event.shanRequired > 0) {
-							event.goto(1);
+							});
+							next.set(
+								"toRespond",
+								(() => {
+									if (target.hasSkillTag("noShan", null, "respond")) {
+										return false;
+									}
+									if (target.hasSkillTag("useShan", null, "respond")) {
+										return true;
+									}
+									if (event.baseDamage <= 0 || player.hasSkillTag("notricksource", null, event) || target.hasSkillTag("notrick", null, event)) {
+										return false;
+									}
+									if (event.baseDamage >= target.hp + (player.hasSkillTag("jueqing", false, target) || target.hasSkill("gangzhi") ? 0 : target.hujia)) {
+										return true;
+									}
+									const damage = get.damageEffect(target, player, target);
+									if (damage >= 0) {
+										return false;
+									}
+									if (event.shanRequired > 1 && event.shanRequired > target.mayHaveShan(target, "respond", null, "count")) {
+										return false;
+									}
+									return true;
+								})()
+							);
+							next.set("respondTo", [player, event.card]);
+							next.autochoose = lib.filter.autoRespondShan;
+							result = await next.forResult();
+						}
+						if (result.bool === false) {
+							await target.damage();
+						} else {
+							event.shanRequired--;
 						}
 					}
 				},
@@ -2084,8 +2115,9 @@ game.import("card", function () {
 					return target !== player;
 				},
 				async content(event, trigger, player) {
+					const target = event.target;
 					if (event.turn === undefined) {
-						event.turn = event.target;
+						event.turn = target;
 					}
 					event.source = player;
 					if (typeof event.baseDamage !== "number") {
@@ -2109,7 +2141,7 @@ game.import("card", function () {
 						await event.trigger("juedou");
 						event.shaRequired = event.shaReq[event.turn.playerid];
 						let damaged = false;
-						while (true) {
+						while (event.shaRequired > 0) {
 							let result = { bool: false };
 							if (!event.directHit) {
 								const next = event.turn.chooseToRespond();
@@ -2123,21 +2155,21 @@ game.import("card", function () {
 									next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
 								}
 								next.set("ai", function (card) {
-									if (get.event().useSha) {
+									if (get.event().toRespond) {
 										return get.order(card);
 									}
 									return -1;
 								});
 								next.set("shaRequired", event.shaRequired);
 								next.set(
-									"useSha",
+									"toRespond",
 									(() => {
 										const responder = event.turn;
 										const opposite = event.source;
-										if (responder.hasSkillTag("noSha", null, event)) {
+										if (responder.hasSkillTag("noSha", null, "respond")) {
 											return false;
 										}
-										if (responder.hasSkillTag("useSha", null, event)) {
+										if (responder.hasSkillTag("useSha", null, "respond")) {
 											return true;
 										}
 										if (event.baseDamage + event.extraDamage <= 0 || player.hasSkillTag("notricksource", null, event) || responder.hasSkillTag("notrick", null, event)) {
@@ -2150,15 +2182,15 @@ game.import("card", function () {
 										if (damage >= 0) {
 											return false;
 										}
-										if (event.shaRequired > 1 && (event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count"))) {
+										if (event.shaRequired > 1 && event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")) {
 											return false;
 										}
 										if (get.attitude(responder, opposite._trueMe || opposite) > 0 && damage >= get.damageEffect(opposite, responder, responder)) {
 											return false;
 										}
-										if (responder.hasSkill("naman")) {
-											return false;
-										}
+										// if (responder.hasSkill("naman")) {
+										// 	return true;
+										// }
 										return true;
 									})()
 								);
@@ -2180,10 +2212,6 @@ game.import("card", function () {
 										event.playerCards.addArray(result.cards);
 									}
 								}
-								if (event.shaRequired <= 0) {
-									[event.source, event.turn] = [event.turn, event.source];
-									break;
-								}
 							} else {
 								await event.turn.damage(event.source);
 								damaged = true;
@@ -2193,6 +2221,7 @@ game.import("card", function () {
 						if (damaged) {
 							break;
 						}
+						[event.source, event.turn] = [event.turn, event.source];
 					}
 				},
 				ai: {
@@ -4103,11 +4132,12 @@ game.import("card", function () {
 						_status.event = tmp;
 						return result > 0;
 					}
+					const type = event.name === "chooseToRespond" ? "respond" : "use";
 					let evt = event.getParent();
-					if (player.hasSkillTag("noShan", null, evt)) {
+					if (player.hasSkillTag("noShan", null, type)) {
 						return false;
 					}
-					if (!evt || !evt.card || !evt.player || player.hasSkillTag("useShan", null, evt)) {
+					if (!evt || !evt.card || !evt.player || player.hasSkillTag("useShan", null, type)) {
 						return true;
 					}
 					if (evt.card && evt.player && player.isLinked() && game.hasNature(evt.card) && get.attitude(player, evt.player._trueMe || evt.player) > 0) {

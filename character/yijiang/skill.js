@@ -60,7 +60,7 @@ const skills = {
 							event.card.name === "sha" &&
 							event.targets.filter(current => {
 								if (current.mayHaveShan(player, "use") && get.attitude(player, current) <= 0) {
-									if (current.hasSkillTag("useShan")) {
+									if (current.hasSkillTag("useShan", null, "use")) {
 										num = 1.9;
 									}
 									return true;
@@ -940,7 +940,7 @@ const skills = {
 							event.card.name == "sha" &&
 							event.targets.filter(function (current) {
 								if (current.mayHaveShan(player, "use") && get.attitude(player, current) <= 0) {
-									if (current.hasSkillTag("useShan")) {
+									if (current.hasSkillTag("useShan", null, "use")) {
 										num = 1.9;
 									}
 									return true;
