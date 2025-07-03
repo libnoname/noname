@@ -8468,6 +8468,9 @@ export default {
 			halfneg: true,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
+				if (tag === "halfneg") {
+					return true;
+				}
 				if (!arg?.card) {
 					return false;
 				}
@@ -8503,7 +8506,7 @@ export default {
 				ai: {
 					directHit_ai: true,
 					skillTagFilter(playerx, tag, arg) {
-						if (!arg.card) {
+						if (!arg?.card) {
 							return false;
 						}
 						var type = get.type2(arg.card);
