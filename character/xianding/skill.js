@@ -6407,12 +6407,13 @@ const skills = {
 						return false;
 					}
 					return event.cards?.some(card => (evt.hs || []).includes(card));
-				})
+				}) ||
+				!player.countCards("h")
 			) {
 				return false;
 			}
-			const num = get.number(event.card, player) || 0;
-			if (player.hasCard(card => get.number(card, player) < num, "h")) {
+			const num = get.number(event.card, player);
+			if (typeof num !== "number" || player.hasCard(card => get.number(card, player) < num, "h")) {
 				return false;
 			}
 			return event.isFirstTarget;

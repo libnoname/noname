@@ -232,7 +232,7 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				return get.event().type === "phase" ? (get.order({ name: "sha" }, player) + 0.1) : 1;
+				return get.event().type === "phase" ? get.order({ name: "sha" }, player) + 0.1 : 1;
 			},
 			respondSha: true,
 			respondShan: true,
@@ -356,9 +356,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			const target = event.target;
-			const next = player
-				.chooseCardOL([player, target], "h", true, "栗索：请展示任意张手牌", [1, Infinity])
-				.set("ai", () => -0.5 + Math.random());
+			const next = player.chooseCardOL([player, target], "h", true, "栗索：请展示任意张手牌", [1, Infinity]).set("ai", () => -0.5 + Math.random());
 			next._args.remove("glow_result");
 			const result2 = await next.forResult();
 			const [playerCards, targetCards] = result2.map(i => i.cards);
@@ -406,7 +404,7 @@ const skills = {
 			}
 		},
 		ai: {
-			order:10,
+			order: 10,
 			result: { target: -1 },
 		},
 		subSkill: {
@@ -3674,7 +3672,7 @@ const skills = {
 		filter: (event, player) => player.hasCard(true, "h"),
 		filterTarget(card, player, target) {
 			if (ui.selected.targets.length) {
-				return ui.selected.targets[0].canCompare(target) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
+				return ui.selected.targets[0].canCompare(target, true, true) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
 			}
 			return true;
 		},
@@ -3704,7 +3702,72 @@ const skills = {
 			player.addGaintag(card, "mbjianji");
 			player.addTempSkill(event.name + "_put");
 			event.targets.forEach(target => target.addTempSkill(event.name + "_fake"));
-			const result = await target1.chooseToCompare(target2).set("mbjianji", true).forResult();
+			const result = await target1
+				.chooseToCompare(target2, function (card) {
+					if (typeof card == "string" && lib.skill[card]) {
+						var ais =
+							lib.skill[card].check ||
+							function () {
+								return 0;
+							};
+						return ais();
+					}
+					var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -3 : 0;
+					if (card.name == "du") {
+						addi -= 3;
+					}
+					var source = _status.event.source;
+					var player = _status.event.player;
+					var event = _status.event.getParent();
+					var getn = function (card) {
+						//会赢吗？会赢的！
+						if (card.hasGaintag("mbjianji")) {
+							if (
+								!player.hasCard(function (card) {
+									var val = get.value(card);
+									//对秦宓天辩的ai做了点小修改
+									return val < 0 || (val <= 5 && get.number(card) >= 10);
+								}, "h")
+							) {
+								return 10 + Math.random() * 3;
+							}
+						}
+						if (player.hasSkillTag("forceWin", null, { card })) {
+							return 13 * (event.small ? -1 : 1);
+						}
+						return get.number(card) * (event.small ? -1 : 1);
+					};
+					if (source && source != player) {
+						if (get.attitude(player, source) > 1) {
+							if (event.small) {
+								return getn(card) - get.value(card) / 3 + addi;
+							}
+							return -getn(card) - get.value(card) / 3 + addi;
+						}
+						if (event.small) {
+							return -getn(card) - get.value(card) / 5 + addi;
+						}
+						return getn(card) - get.value(card) / 5 + addi;
+					} else {
+						if (event.small) {
+							return -getn(card) - get.value(card) / 5 + addi;
+						}
+						return getn(card) - get.value(card) / 5 + addi;
+					}
+				})
+				.set("mbjianji", true)
+				.set("mbjianji_card", card)
+				.set("position", "hs")
+				.set("filterCard", function (card) {
+					/*if (typeof originalFilter === "function" && !originalFilter(card)) {
+						return false;
+					}*/
+					if (get.position(card) == "s") {
+						return card.hasGaintag("mbjianji");
+					}
+					return true;
+				})
+				.forResult();
 			const sha = async function sha(target, victim) {
 				if (!target.canUse({ name: "sha", isCard: true }, victim, false, false)) {
 					return;
@@ -3748,7 +3811,7 @@ const skills = {
 					global: ["chooseCardOLBegin", "chooseCardOLEnd"],
 				},
 				filter(event, player) {
-					return event.type == "compare" && !event.directresult && event.getParent().mbjianji;
+					return event.type == "compare" && event.getParent().mbjianji;
 				},
 				forced: true,
 				popup: false,
@@ -3762,78 +3825,6 @@ const skills = {
 					if (event.triggername == "chooseCardOLBegin") {
 						const cardx = game.createFakeCards(card, true, "mbjianji_card")[0];
 						player.directgains([cardx], null, "mbjianji");
-						trigger._set.push(["mbjianji_card", card]);
-						trigger._set.push(["position", "hs"]);
-						//牌的检测也得重写，毕竟都选到s区域去了
-						const originalFilter = trigger.filterCard;
-						trigger._set.push([
-							"filterCard",
-							function (card) {
-								if (typeof originalFilter === "function" && !originalFilter(card)) {
-									return false;
-								}
-								if (get.position(card) == "s") {
-									return card.hasGaintag("mbjianji");
-								}
-								return true;
-							},
-						]);
-						//修改一下chooseCard的ai，因为这张假牌是没有number属性的，没法用原先的ai让人机选
-						trigger._set.push([
-							"ai",
-							function (card) {
-								if (typeof card == "string" && lib.skill[card]) {
-									var ais =
-										lib.skill[card].check ||
-										function () {
-											return 0;
-										};
-									return ais();
-								}
-								var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -3 : 0;
-								if (card.name == "du") {
-									addi -= 3;
-								}
-								var source = _status.event.source;
-								var player = _status.event.player;
-								var event = _status.event.getParent();
-								var getn = function (card) {
-									//会赢吗？会赢的！
-									if (card._cardid === get.event().mbjianji_card.cardid) {
-										if (
-											!player.hasCard(function (card) {
-												var val = get.value(card);
-												//对秦宓天辩的ai做了点小修改
-												return val < 0 || (val <= 5 && get.number(card) >= 10);
-											}, "h")
-										) {
-											return 10 + Math.random() * 3;
-										}
-									}
-									if (player.hasSkillTag("forceWin", null, { card })) {
-										return 13 * (event.small ? -1 : 1);
-									}
-									return get.number(card) * (event.small ? -1 : 1);
-								};
-								if (source && source != player) {
-									if (get.attitude(player, source) > 1) {
-										if (event.small) {
-											return getn(card) - get.value(card) / 3 + addi;
-										}
-										return -getn(card) - get.value(card) / 3 + addi;
-									}
-									if (event.small) {
-										return -getn(card) - get.value(card) / 5 + addi;
-									}
-									return getn(card) - get.value(card) / 5 + addi;
-								} else {
-									if (event.small) {
-										return -getn(card) - get.value(card) / 5 + addi;
-									}
-									return getn(card) - get.value(card) / 5 + addi;
-								}
-							},
-						]);
 					} else {
 						const cards = player.getCards("s", card => card.hasGaintag("mbjianji"));
 						game.deleteFakeCards(cards);
@@ -3842,22 +3833,6 @@ const skills = {
 						}
 					}
 				},
-				/*trigger: { global: "chooseToCompareBegin" },
-				filter(event, player) {
-					return (player === event.player || player === event.target) && event?.mbjianji;
-				},
-				check(event, player) {
-					return !player.hasCard(card => {
-						let val = get.value(card);
-						return val < 0 || (val <= 4 && get.number(card) >= 11);
-					}, "h");
-				},
-				prompt: event => "是否用" + get.translation(event.getParent()?.player) + "秘密选择的牌拼点？",
-				popup: false,
-				async content(event, trigger, player) {
-					if (!trigger.fixedResult) trigger.fixedResult = {};
-					trigger.fixedResult[player.playerid] = trigger.getParent().cards[0];
-				},*/
 			},
 			put: {
 				charlotte: true,
