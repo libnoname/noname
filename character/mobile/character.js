@@ -1,4 +1,17 @@
 const characters = {
+	sy_baosanniang: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["meiyong", "mbxushen", "mbzhennan"],
+		dieAudios: ["baosanniang"],
+	},
+	fx_baosanniang: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["mbfangxu", "mbzhuguan", "mblisuo"],
+	},
 	mb_zerong: {
 		sex: "male",
 		hp: 4,

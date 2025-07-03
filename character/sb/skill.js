@@ -1177,17 +1177,19 @@ const skills = {
 		trigger: { global: "dying" },
 		filter(event, player) {
 			const position = player.storage.sbwansha ? "hej" : "h";
-			return event.player.countCards(position);
+			return event.player.countCards(position) && player.countMark("sbwansha_used") < 2;
 		},
 		check(event, player) {
 			return get.attitude(player, event.player) <= 0;
 		},
 		logTarget: "player",
-		round: 1,
+		//round: 1,
 		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_used", "roundStart");
+			player.addMark(event.name + "_used", 1, false);
 			const target = trigger.player,
 				position = player.storage.sbwansha ? "hej" : "h";
-			const num = 2,
+			const num = 3,
 				prompt = `选择其中〇至${get.cnNumber(num)}张牌`;
 			let result;
 			result = await player.choosePlayerCard(target, position, [0, num], true, prompt).set("visible", true).forResult();
@@ -1300,6 +1302,13 @@ const skills = {
 		},
 		global: "sbwansha_global",
 		subSkill: {
+			used: {
+				onremove: true,
+				charlotte: true,
+				intro: {
+					content: "本轮已发动#次",
+				},
+			},
 			global: {
 				mod: {
 					cardEnabled(card, player) {
@@ -1424,17 +1433,18 @@ const skills = {
 			if (event.name == "addJudge") {
 				return get.color(event.card) == "black";
 			}
-			if (!player.storage.sbweimu || game.roundNumber < 2) {
+			if (!player.storage.sbweimu) {
+				// || game.roundNumber < 2
 				return false;
 			}
-			let num = 0;
+			/*let num = 0;
 			game.countPlayer2(current => {
 				if (player == current) {
 					return false;
 				}
 				num += current.getRoundHistory("useCard", evt => evt.targets?.includes(player), 1).length;
-			});
-			return num <= 1 && Array.from(ui.discardPile.childNodes).some(card => get.info("sbweimu").filterCardx(card));
+			});*/
+			return Array.from(ui.discardPile.childNodes).some(card => get.info("sbweimu").filterCardx(card)); //num <= 1 &&
 		},
 		filterCardx(card) {
 			return get.subtype(card) == "equip2" || (get.type(card) == "trick" && get.color(card) == "black");

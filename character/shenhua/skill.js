@@ -7496,7 +7496,7 @@ const skills = {
 		sourceSkill: "shensu",
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.name.slice(0, -"_cost".length)), "跳过判定阶段和摸牌阶段，视为对一名其他角色使用一张【杀】", function (card, player, target) {
+				.chooseTarget(get.prompt(event.skill), "跳过判定阶段和摸牌阶段，视为对一名其他角色使用一张【杀】", function (card, player, target) {
 					if (player == target) {
 						return false;
 					}
@@ -7509,7 +7509,7 @@ const skills = {
 					}
 					return get.effect(target, { name: "sha" }, _status.event.player);
 				})
-				.setHiddenSkill(event.name.slice(0, -"_cost".length))
+				.setHiddenSkill(event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -7536,7 +7536,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt(event.name.slice(0, -"_cost".length)),
+					prompt: get.prompt(event.skill),
 					prompt2: "弃置一张装备牌并跳过出牌阶段，视为对一名其他角色使用一张【杀】",
 					filterCard(card, player) {
 						return get.type(card) == "equip" && lib.filter.cardDiscardable(card, player);
@@ -7566,7 +7566,7 @@ const skills = {
 						}) >
 						player.hp - 1,
 				})
-				.setHiddenSkill(event.name.slice(0, -"_cost".length))
+				.setHiddenSkill(event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -7583,7 +7583,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const check = player.needsToDiscard() || player.isTurnedOver() || (player.hasSkill("shebian") && player.canMoveCard(true, true));
 			event.result = await player
-				.chooseTarget(get.prompt(event.name.slice(0, -"_cost".length)), "跳过弃牌阶段并将武将牌翻面，视为对一名其他角色使用一张【杀】", function (card, player, target) {
+				.chooseTarget(get.prompt(event.skill), "跳过弃牌阶段并将武将牌翻面，视为对一名其他角色使用一张【杀】", function (card, player, target) {
 					if (player == target) {
 						return false;
 					}
@@ -7596,7 +7596,7 @@ const skills = {
 					}
 					return get.effect(target, { name: "sha" }, _status.event.player, _status.event.player);
 				})
-				.setHiddenSkill(event.name.slice(0, -"_cost".length))
+				.setHiddenSkill(event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {

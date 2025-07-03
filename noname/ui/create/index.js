@@ -2442,6 +2442,15 @@ export class Create {
 		game.documentZoom = (game.deviceZoom * zoom) / 100;
 		zoom !== 100 && ui.updatez();
 
+		// if (get.mode() === "doudizhu") {
+		if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
+			game.saveConfig("choice_zhu", 5, "doudizhu");
+		}
+		if (typeof get.config("choice_fan", "doudizhu") !== "number") {
+			game.saveConfig("choice_fan", 3, "doudizhu");
+		}
+		// }
+
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);
 

@@ -2288,35 +2288,60 @@ const skills = {
 			check(button) {
 				const player = get.player(),
 					link = button.link,
-					nums = [link],
-					values = [];
+					hs = player.countCards("h"),
+					nums = [],
+					effs = [];
+				let mine = [];
 				if (link < 0) {
-					nums.addArray([-2, -3]);
+					// 考虑人机可能弃装备牌
+					let discard = player
+						.getCards("he")
+						.sort((a, b) => get.value(a, player) - get.value(b, player))
+						.slice(0, 3);
+					let num = -discard.length;
+					for (let card of discard) {
+						if (get.position(card) === "e") {
+							num++;
+						} else {
+							// 计算弃牌收益
+							mine.push((mine.at(-1) || 0) - get.value(card, player));
+						}
+					}
+					if (!num) {
+						return 0;
+					}
+					while (num < 0) {
+						// 枚举可能弃牌情况
+						nums.push(hs + num);
+						num++;
+					}
+				} else {
+					nums.push(hs + link);
+					mine.push(link * get.effect(player, { name: "draw" }, player, player));
 				}
-				for (let num of nums) {
-					const value = game
-						.filterPlayer(targetx => targetx != player)
+				for (const num of nums) {
+					// 自己的摸弃牌收益+其他人的
+					let eff = mine.pop();
+					eff += game
+						.filterPlayer(targetx => targetx !== player)
 						.reduce((sum, targetx) => {
-							num = player.countCards("h") + num;
-							const numx = num - targetx.countCards("h"),
-								att = get.sgnAttitude(player, targetx);
+							const numx = num - targetx.countCards("h");
 							let val;
 							if (numx > 0) {
-								val = numx - 3;
+								val = (numx - 3) * get.effect(targetx, { name: "draw" }, player, player);
 							} else if (numx < 0) {
-								val = numx + 3;
+								val = (numx + 3) * get.effect(targetx, { name: "draw" }, player, player);
 							} else {
-								val = -2;
+								val = get.damageEffect(targetx, player, player);
 							}
-							val = val == 0 ? 0.5 : val;
-							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val * att < 0) {
+							if (val < 0 && player.hasZhuSkill("dcsbtiancheng", targetx)) {
 								return sum;
 							}
-							return sum + val * att;
+							return sum + val;
 						}, 0);
-					values.push(value);
+					effs.push(eff);
 				}
-				return values.sort((a, b) => b - a)[0];
+				return Math.max(...effs);
 			},
 			backup(links) {
 				return {
@@ -12190,14 +12215,9 @@ const skills = {
 	dcnuanhui: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		filter(event, player) {
-			return game.hasPlayer();
-		},
-		direct: true,
-		*content(event, map) {
-			const player = map.player;
-			let result = yield player
-				.chooseTarget(get.prompt("dcnuanhui"), "选择一名角色，该角色可以依次使用X张基本牌（X为其装备区牌数且至少为1）")
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2("dcnuanhui"))
 				.set("ai", target => {
 					return get.event("aiTarget") == target ? 10 : 0;
 				})
@@ -12264,12 +12284,11 @@ const skills = {
 						}
 						return playerList[0][0];
 					})()
-				);
-			if (!result.bool) {
-				return event.finish();
-			}
-			const target = result.targets[0];
-			player.logSkill("dcnuanhui", target);
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
 			if (!target.isUnderControl(true) && !target.isOnline()) {
 				game.delayx();
 			}
@@ -12287,14 +12306,17 @@ const skills = {
 					break;
 				}
 				const str = forced ? "视为使用一张基本牌" : "是否视为使用一张基本牌？";
-				const result = yield target.chooseButton([str, [basicList, "vcard"]], forced).set("ai", button => {
-					return get.player().getUseValue({
-						name: button.link[2],
-						nature: button.link[3],
-						isCard: true,
-					});
-				});
-				if (!result.bool) {
+				const result = await target
+					.chooseButton([str, [basicList, "vcard"]], forced)
+					.set("ai", button => {
+						return get.player().getUseValue({
+							name: button.link[2],
+							nature: button.link[3],
+							isCard: true,
+						});
+					})
+					.forResult();
+				if (!result?.bool) {
 					game.log("但是", target, "不愿出牌！");
 					break;
 				}
@@ -12304,8 +12326,8 @@ const skills = {
 					nature: result.links[0][3],
 					isCard: true,
 				});
-				const result2 = yield target.chooseUseTarget(card, true, false);
-				if (!discard && result2.bool) {
+				const result2 = await target.chooseUseTarget(card, true, false).forResult();
+				if (!discard && result2?.bool) {
 					if (used.includes(result.links[0][2])) {
 						discard = true;
 					} else {
@@ -12319,7 +12341,7 @@ const skills = {
 					return lib.filter.cardDiscardable(card, target, "dcnuanhui");
 				});
 				if (cards.length) {
-					target.discard(cards).discarder = target;
+					await target.discard(cards).set("discarder", target);
 				}
 			}
 		},

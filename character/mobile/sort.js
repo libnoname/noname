@@ -5,7 +5,7 @@ const characterSort = {
 	mobile_sp6: ["dongcheng", "re_weiwenzhugezhi"],
 	mobile_sp7: ["taoqian", "yangyi"],
 	mobile_sp8: ["shenpei", "re_wangyun"],
-	mobile_sp9: ["jiakui", "sp_sufei", "re_baosanniang", "re_zhanggong", "re_xugong"],
+	mobile_sp9: ["jiakui", "sp_sufei", "re_baosanniang", "re_zhanggong", "re_xugong", "sy_baosanniang", "fx_baosanniang"],
 	mobile_sp10: ["furong", "zhouqun", "zhangyì", "dengzhi", "gongsunkang", "hucheer", "chendeng", "dingyuan"],
 	mobile_sp11: ["fuqian", "qiaozhou", "ruanhui", "sp_maojie", "wangjun", "yanpu", "mayuanyi", "xin_mamidi"],
 	mobile_sp12: ["hujinding", "lifeng", "zhaotongzhaoguang", "wangyuanji", "yanghuiyu", "liuye", "simazhao", "zhuling", "yangbiao"],

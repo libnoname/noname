@@ -3182,15 +3182,8 @@ const skills = {
 			},
 		},
 		ai: {
-			unequip: true,
 			respondSha: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag == "unequip") {
-					if (player.group != "wu" || !arg || !arg.card || !arg.card.storage || !arg.card.storage.dbchongjian) {
-						return false;
-					}
-					return true;
-				}
 				if (arg === "respond") {
 					return false;
 				}
@@ -3247,6 +3240,17 @@ const skills = {
 				},
 				content() {
 					player.gainPlayerCard(trigger.player, "e", true, trigger.num);
+				},
+				ai: {
+					unequip: true,
+					skillTagFilter(player, tag, arg) {
+						if (tag == "unequip") {
+							if (player.group != "wu" || !arg || !arg.card || !arg.card.storage || !arg.card.storage.dbchongjian) {
+								return false;
+							}
+							return true;
+						}
+					},
 				},
 			},
 		},
