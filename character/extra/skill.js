@@ -6361,7 +6361,12 @@ const skills = {
 							if (!get.tag(card, "damage")) {
 								return;
 							}
-							if (target.hasSkillTag("nodamage") || target.hasSkillTag("nothunder")) {
+							if (
+								target.hasSkillTag("nodamage", null, {
+									natures: ["thunder"],
+								}) ||
+								target.hasSkillTag("nothunder")
+							) {
 								return "zeroplayertarget";
 							}
 							if (

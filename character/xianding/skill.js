@@ -12109,6 +12109,23 @@ const skills = {
 			}
 		},
 		ai: {
+			filterDamage: true,
+			damageBonus: true,
+			nodamage: true,
+			nofire: true,
+			nothunder: true,
+			skillTagFilter(player, tag, arg) {
+				if (!arg.card) {
+					return false;
+				}
+				if (tag === "filterDamage") {
+					return true;
+				}
+				if (typeof get.number(card) === "number") {
+					return tag === "damageBonus";
+				}
+				return tag !== "damageBonus";
+			},
 			effect: {
 				target(card, player, target, current) {
 					if (get.tag(card, "damage") && typeof get.number(card) != "number") {
@@ -23538,7 +23555,12 @@ const skills = {
 				if (att <= 0) {
 					return att;
 				}
-				if (target.hasSkillTag("nodamage") || target.getEquip("qimenbagua")) {
+				if (
+					target.hasSkillTag("nodamage", null, {
+						source: player,
+					}) ||
+					target.getEquip("qimenbagua")
+				) {
 					return 0.01 * att;
 				}
 				if (target.getEquip("tengjia") || target.getEquip("renwang")) {

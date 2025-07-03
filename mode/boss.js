@@ -2017,31 +2017,32 @@ export default () => {
 							event.list.remove(ui.selected.buttons[i].link);
 						}
 						while (event.enemy.length < 3) {
-							var name = event.list.filter(name => {
-								let { current } = get.event().getParent("game");
-								if (!current) {
-									return true;
-								}
-								let banrule = _status.banlist[current?.name];
-								if (!banrule) {
-									return true;
-								}
-								if (Array.isArray(banrule)) {
-									if (banrule.includes(name)) {
-										return false;
+							var name = event.list
+								.filter(name => {
+									let { current } = get.event().getParent("game");
+									if (!current) {
+										return true;
 									}
-								} else if (typeof banrule === "function") {
-									return banrule({ link: name });
-								}
-								return true;
-							}).randomRemove();
+									let banrule = _status.banlist[current?.name];
+									if (!banrule) {
+										return true;
+									}
+									if (Array.isArray(banrule)) {
+										if (banrule.includes(name)) {
+											return false;
+										}
+									} else if (typeof banrule === "function") {
+										return banrule({ link: name });
+									}
+									return true;
+								})
+								.randomRemove();
 							if (lib.boss[lib.storage.current] && lib.boss[lib.storage.current].randchoice) {
 								name = lib.boss[lib.storage.current].randchoice(name, event.enemy);
 							}
 							if (name) {
 								event.enemy.push(name);
-							}
-							else {
+							} else {
 								break;
 							}
 						}
@@ -7510,7 +7511,11 @@ export default () => {
 						var cnum = get.cnNumber(num);
 						event.num = num;
 						trigger.source.chooseToDiscard("he", "章武：弃置" + cnum + "张牌，或取消并受到" + cnum + "点伤害", num).set("ai", function (card) {
-							if (!trigger.source.hasSkillTag("nodamage")) {
+							if (
+								!trigger.source.hasSkillTag("nodamage", null, {
+									source: player,
+								})
+							) {
 								return 10 - get.value(card);
 							}
 							return 0;

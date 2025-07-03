@@ -8273,7 +8273,14 @@ const skills = {
 				if (link == "disable") {
 					return -(get.threaten(target, player) * get.attitude(player, target));
 				} else {
-					if (get.attitude(player, target) > 0 && (target.hasSkillTag("nofire") || target.hasSkillTag("nodamage"))) {
+					if (
+						get.attitude(player, target) > 0 &&
+						(target.hasSkillTag("nofire") ||
+							target.hasSkillTag("nodamage", null, {
+								source: player,
+								natures: ["fire"],
+							}))
+					) {
 						return 1;
 					}
 					return get.damageEffect(target, player, player, "fire") + get.effect(target, { name: "draw" }, player, player) * 3;
@@ -20885,7 +20892,12 @@ const skills = {
 							if (!get.tag(card, "damage")) {
 								return;
 							}
-							if (target.hasSkillTag("nodamage") || target.hasSkillTag("nothunder")) {
+							if (
+								target.hasSkillTag("nodamage", null, {
+									natures: ["thunder"],
+								}) ||
+								target.hasSkillTag("nothunder")
+							) {
 								return "zeroplayertarget";
 							}
 							if (

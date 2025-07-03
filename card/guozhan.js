@@ -1270,8 +1270,15 @@ game.import("card", function () {
 						fireDamage: 1,
 					},
 					result: {
-						target(player, target) {
-							if (target.hasSkillTag("nofire") || target.hasSkillTag("nodamage")) {
+						target(player, target, card) {
+							if (
+								target.hasSkillTag("nofire") ||
+								target.hasSkillTag("nodamage", null, {
+									source: player,
+									card: card,
+									natures: ["fire"],
+								})
+							) {
 								return 0;
 							}
 							if (target.hasSkill("xuying") && target.countCards("h") == 0) {
@@ -2392,11 +2399,10 @@ game.import("card", function () {
 						mod: {
 							cardEnabled(card, player) {
 								let evt = _status.event?.getParent("useCard", true, true);
-								while(evt) {
+								while (evt) {
 									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
 										break;
-									}
-									else {
+									} else {
 										evt = evt.getParent("useCard", true);
 									}
 								}
@@ -2406,11 +2412,10 @@ game.import("card", function () {
 							},
 							cardSavable(card, player) {
 								let evt = _status.event?.getParent("useCard", true, true);
-								while(evt) {
+								while (evt) {
 									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
 										break;
-									}
-									else {
+									} else {
 										evt = evt.getParent("useCard", true);
 									}
 								}
