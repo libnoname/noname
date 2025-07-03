@@ -3469,11 +3469,25 @@ game.import("card", function () {
 					if (eff <= 0) {
 						return true;
 					}
-					if (target.hp === 1) {
+					if (target.hp === 1 || player.hasSkill("tianxianjiu")) {
 						return false;
 					}
-					if (event.num > 1 || player.hasSkill("tianxianjiu") || player.hasSkill("luoyi2") || player.hasSkill("reluoyi2")) {
-						return false;
+					if (
+						!target.hasSkillTag("filterDamage", null, {
+							player: player,
+							card: event.card,
+							jiu: player.hasSkill("jiu"),
+						})
+					) {
+						if (
+							event.num > 1 ||
+							player.hasSkillTag("damageBonus", true, {
+								player: player,
+								card: event.card,
+							})
+						) {
+							return false;
+						}
 					}
 					if (target.countCards("he") < 2) {
 						return false;

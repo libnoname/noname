@@ -12100,7 +12100,7 @@ const skills = {
 			return event.getParent().type == "card";
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			var num = get.number(trigger.card);
 			if (typeof num == "number" && num > 0) {
 				trigger.num = num;
@@ -12110,7 +12110,6 @@ const skills = {
 		},
 		ai: {
 			filterDamage: true,
-			damageBonus: true,
 			nodamage: true,
 			nofire: true,
 			nothunder: true,
@@ -12121,10 +12120,7 @@ const skills = {
 				if (tag === "filterDamage") {
 					return true;
 				}
-				if (typeof get.number(card) === "number") {
-					return tag === "damageBonus";
-				}
-				return tag !== "damageBonus";
+				return typeof get.number(card) !== "number";
 			},
 			effect: {
 				target(card, player, target, current) {
