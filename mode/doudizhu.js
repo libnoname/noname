@@ -2055,7 +2055,7 @@ export default () => {
 			mbfeiyang: "飞扬",
 			mbfeiyang_info: "判定阶段开始时，若你的判定区有牌，则你可以弃置两张手牌，然后弃置你判定区的一张牌。",
 			yinfu: "殷富",
-			yinfu_info: "锁定技。①回合开始时，若你的已损失体力值小于游戏轮次，你回复1点体力。②当你发动〖殷富①〗至少3次后，你失去〖殷富〗。",
+			yinfu_info: "锁定技。①回合开始时，若你的已损失体力值不小于游戏轮次，你回复1点体力。②当你发动〖殷富①〗至少3次后，你失去〖殷富〗。",
 			doudizhu_cardPile: "底牌",
 			online_gongshoujintui: "攻守进退",
 			gongshoujianbei: "攻守兼备",
