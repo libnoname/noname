@@ -398,11 +398,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player,
-				skill = event.name + "_effect";
+				skill = event.name + "_effect",
+				num = Math.max(3, game.countPlayer());
 			player.awakenSkill(event.name);
-			await target.draw(3);
+			await target.draw(num);
 			target.addTempSkill(skill, "roundStart");
-			target.addMark(skill, Math.max(3, game.countPlayer()), false);
+			target.addMark(skill, num, false);
 		},
 		subSkill: {
 			effect: {
