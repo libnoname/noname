@@ -2655,7 +2655,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						if (level == 0) {
 							return {};
 						}
-						
+
 						const type = Object.prototype.toString.call(item).slice(8, -1);
 
 						switch(type) {
@@ -2663,12 +2663,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 								return get.mapInfoOL(item, level - 1, nomore);
 							case "Set":
 								return get.setInfoOL(item, level - 1, nomore);
-							case "Object":
+							case "Object": {
 								const result = {};
 								for (const i in item) {
 									result[i] = get.stringifiedResult(item[i], level - 1, nomore);
 								}
 								return result;
+							}
 							default:
 								return {};
 						}
