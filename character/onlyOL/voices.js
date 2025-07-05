@@ -1,4 +1,9 @@
 export default {
+	"#olzishou1": "九州烽烟起，此地犹姓刘。",
+	"#olzishou2": "守一方水土，定乱世太平。",
+	"#olzongshi1": "非刘姓者，不可为王。",
+	"#olzongshi2": "万千志士，皆为一姓天下。",
+	"#ol_liubiao:die": "乱世无义，尽是失德之徒。",
 	"#oldangxian1": "老将临战，亦可一马当先。",
 	"#oldangxian2": "我乃昭烈旧将，岂能居小辈之后！",
 	"#olfuli1": "廉颇尚能古稀挂帅，我如何不能？",
