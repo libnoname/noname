@@ -7859,6 +7859,9 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (trigger.result.suit == "spade") {
+				if (get.position(trigger.result.card, true) == "o") {
+					await player.gain(trigger.result.card, "gain2");
+				}
 				const control = await player
 					.chooseControl("baonue_hp", "baonue_maxHp", function (event, player) {
 						if (player.hp == player.maxHp) {
