@@ -12753,16 +12753,16 @@ const skills = {
 						list.push(event.player.getNext());
 					}
 					if (event.player.getPrevious().isIn()) {
-						list.push(event.player.getPrevious());
+						list.add(event.player.getPrevious());
 					}
 					return list.sortBySeat(_status.currentPhase);
 				},
-				content() {
+				async content(event, trigger, player) {
 					var targets = lib.skill.oltianhou_spade.logTarget(trigger);
 					for (var i of targets) {
-						i.loseHp();
+						await i.loseHp();
 					}
-					game.delayex();
+					await game.delayex();
 				},
 				group: "oltianhou_miehuo",
 				global: "oltianhou_spade_ai",
