@@ -12085,15 +12085,24 @@ export class Player extends HTMLDivElement {
 		for (var i = 0; i < skills.length; i++) {
 			var info = lib.skill[skills[i]];
 			if (info && info.ai) {
-				if (info.ai.skillTagFilter && info.ai[tag] && info.ai.skillTagFilter(this, tag, arg) === false) {
-					continue;
+				if (info.ai.skillTagFilter && info.ai[tag]) {
+					if (info.ai.skillTagFilter(this, tag, arg) === false) {
+						continue;
+					}
 				}
-				if (typeof info.ai[tag] == "string") {
+				if (info.ai[tag] === true) {
+					if (typeof arg === "object" && arg && !info.ai.skillTagFilter) {
+						console.log(`疑似忘给lib.skill.${skills[i]}.ai.${tag}加skillTagFilter了\nhasSkillTag：`, arg);
+					}
+					return true;
+				} else if (typeof info.ai[tag] !== "undefined") {
+					if (typeof arg !== typeof info.ai[tag]) {
+						console.warn(`lib.skill.${skills[i]}.ai.${tag}类型不符\nhasSkillTag：`, arg);
+					}
 					if (info.ai[tag] == arg) {
+						// 全凭"=="大人的包容
 						return true;
 					}
-				} else if (info.ai[tag]) {
-					return true;
 				}
 			}
 		}

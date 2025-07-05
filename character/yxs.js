@@ -1401,6 +1401,7 @@ game.import("character", function () {
 							{
 								player: player,
 								card: event.card,
+								type: "respond",
 							},
 							true
 						)

@@ -4879,6 +4879,47 @@ export class Library {
 					},
 					clear: true,
 				},
+				remove_extension_onfig: {
+					name: "重置无效扩展",
+					clear: true,
+					async onclick() {
+						if (this.firstChild.innerHTML != "已重置") {
+							let config = lib.config;
+							if (get.is.object(config)) {
+								let extensionList = config.extensions;
+								for (let name of extensionList) {
+									let num = await game.promises.checkDir(`extension/${name}`);
+									if (num !== 1) {
+										game.removeExtension(name);
+									} else {
+										let all = await game.promises.getFileList(`extension/${name}`);
+										if (all?.[1].length) {
+											const hasExtensionJs = all[1].includes("extension.js");
+											const hasInfoJson = all[1].includes("info.json");
+
+											if (!hasExtensionJs) {
+												const message = hasInfoJson ? `扩展${name}有 info.json 但缺少 extension.js 文件` : `扩展${name}缺少必须的 extension.js 文件`;
+												console.error(message);
+												game.removeExtension(name);
+											}
+										}
+									}
+								}
+							}
+							this.firstChild.innerHTML = "已重置";
+							const that = this;
+							setTimeout(function () {
+								that.firstChild.innerHTML = "重置无效扩展";
+								setTimeout(function () {
+									let ret = confirm(`检测完成，已为你清除无效配置，是否重启？`);
+									if (ret) {
+										game.reload();
+									}
+								});
+							}, 500);
+						}
+					},
+				},
 				redownload_game: {
 					name: "重新下载游戏",
 					onclick() {

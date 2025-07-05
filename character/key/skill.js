@@ -9260,18 +9260,18 @@ const skills = {
 		locked: true,
 		intro: {
 			content(s) {
-				return "计算与其他角色的距离时始终从" + (s ? "逆" : "顺") + "时针计算";
+				return "计算与其他角色的距离时始终从" + (s ? "顺" : "逆") + "时针计算";
 			},
 		},
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 			player.storage.tomoya_shangxian = !player.storage.tomoya_shangxian;
 		},
 		ai: {
 			left_hand: true,
 			right_hand: true,
 			skillTagFilter(player, tag) {
-				return (player.storage.tomoya_shangxian == true) == (tag == "left_hand");
+				return Boolean(player.storage.tomoya_shangxian) === Boolean(tag === "left_hand");
 			},
 		},
 	},

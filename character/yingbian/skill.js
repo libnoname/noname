@@ -3398,7 +3398,11 @@ const skills = {
 			return player != event.player && event.num < event.player.hp;
 		},
 		check(event, player) {
-			if (event.player.hasSkillTag("nodamage")) {
+			if (event.player.hasSkillTag("nodamage", null, {
+				source: player,
+				card: event.card,
+				natures: get.natureList(event),
+			})) {
 				return false;
 			}
 			let tj = player.countCards("hs", function (card) {

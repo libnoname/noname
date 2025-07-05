@@ -488,7 +488,7 @@ game.import("card", function () {
 						if (player.hasSkill("jubao")) {
 							return 8;
 						}
-						if (player.hasSkill("gzzhiheng")) {
+						if (player.hasSkill("gz_zhiheng")) {
 							return 6;
 						}
 						if (
@@ -1270,8 +1270,15 @@ game.import("card", function () {
 						fireDamage: 1,
 					},
 					result: {
-						target(player, target) {
-							if (target.hasSkillTag("nofire") || target.hasSkillTag("nodamage")) {
+						target(player, target, card) {
+							if (
+								target.hasSkillTag("nofire") ||
+								target.hasSkillTag("nodamage", null, {
+									source: player,
+									card: card,
+									natures: ["fire"],
+								})
+							) {
 								return 0;
 							}
 							if (target.hasSkill("xuying") && target.countCards("h") == 0) {
@@ -1746,7 +1753,7 @@ game.import("card", function () {
 				equipSkill: true,
 				inherit: "zhiheng",
 				filter(event, player) {
-					return !player.hasSkill("gzzhiheng", true);
+					return !player.hasSkill("gz_zhiheng", true);
 				},
 				selectCard() {
 					var player = _status.event.player;
@@ -2392,11 +2399,10 @@ game.import("card", function () {
 						mod: {
 							cardEnabled(card, player) {
 								let evt = _status.event?.getParent("useCard", true, true);
-								while(evt) {
+								while (evt) {
 									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
 										break;
-									}
-									else {
+									} else {
 										evt = evt.getParent("useCard", true);
 									}
 								}
@@ -2406,11 +2412,10 @@ game.import("card", function () {
 							},
 							cardSavable(card, player) {
 								let evt = _status.event?.getParent("useCard", true, true);
-								while(evt) {
+								while (evt) {
 									if (evt?.card?.name == "sha" && evt.player?.getEquips("jilinqianyi").length) {
 										break;
-									}
-									else {
+									} else {
 										evt = evt.getParent("useCard", true);
 									}
 								}

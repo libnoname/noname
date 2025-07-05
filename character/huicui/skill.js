@@ -5585,6 +5585,7 @@ const skills = {
 							false,
 							{
 								player: player,
+								type: "use",
 							},
 							true
 						)

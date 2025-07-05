@@ -386,7 +386,7 @@ const translates = {
 	junklangmie: "狼灭",
 	junklangmie_info: "其他角色的结束阶段开始时，你可以选择一项：⒈若其本回合内使用过某种类型的牌超过一张，则你弃置一张牌并摸两张牌。⒉若其本回合累计造成过的伤害大于1，则你弃置一张牌，然后对其造成1点伤害。",
 	junkshicai: "恃才",
-	junkshicai_info: "当你使用牌结束完毕后，若此牌与你本回合使用的牌类型均不同，则你可以将此牌置于牌堆顶，然后摸一张牌。",
+	junkshicai_info: "当你使用牌结算完毕后，若此牌与你本回合使用的牌类型均不同，则你可以将此牌置于牌堆顶，然后摸一张牌。",
 
 	junk_zhangrang: "新杀张让",
 	junk_zhangrang_prefix: "新杀",

@@ -14,6 +14,11 @@ import { CodeSnippet, ErrorManager } from "../util/error.js";
 
 import { GetCompatible } from "./compatible.js";
 
+// 用于标识Map、Set等对象在序列化中的类型
+// 使用了md5("__noname_type")的值作为键
+// 尽可能减少碰撞喵（应该不会碰撞的吧）
+const TYPE_KEY = "a60e024487f63a67c634d782aaaf1127";
+
 export class Get extends GetCompatible {
 	is = new Is();
 	promises = new Promises();
@@ -2539,6 +2544,75 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	infoVCardsOL(infos) {
 		return Array.from(infos || []).map(get.infoVCardOL);
 	}
+	/**
+	 * @param {Map} map 要序列化的Map
+	 * @param {number} [level] 最大的序列化嵌套层级
+	 * @param {false | null} [nomore] 传递false取消内部事件的序列化
+	 */
+	mapInfoOL(map, level, nomore) {
+		const info = {};
+
+		for (const [key, value] of map.entries()) {
+			Array.prototype.push.call(info, [
+				get.stringifiedResult(key, level, nomore),
+				get.stringifiedResult(value, level, nomore),
+			]);
+		}
+
+		info[TYPE_KEY] = "map";
+		return info;
+	}
+	/**
+	 * @param {Set} set 要序列化的Set
+	 * @param {number} [level] 最大的序列化嵌套层级
+	 * @param {false | null} [nomore] 传递false取消内部事件的序列化
+	 */
+	setInfoOL(set, level, nomore) {
+		const info = {};
+
+		for (const value of set) {
+			Array.prototype.push.call(info,
+				get.stringifiedResult(value, level, nomore));
+		}
+
+		info[TYPE_KEY] = "set";
+		return info;
+	}
+	infoMapOL(item) {
+		const map = new Map();
+
+		for (const index in item) {
+			if (!isFinite(Number(index))) {
+				break;
+			}
+
+			const pair = item[index];
+
+			if (!Array.isArray(pair) || pair.length !== 2) {
+				continue;
+			}
+
+			map.set(
+				get.parsedResult(pair[0]),
+				get.parsedResult(pair[1])
+			);
+		}
+
+		return map;
+	}
+	infoSetOL(item) {
+		const set = new Set();
+
+		for (const index in item) {
+			if (!isFinite(Number(index))) {
+				break;
+			}
+
+			set.add(get.parsedResult(item[index]));
+		}
+
+		return set;
+	}
 	stringifiedResult(item, level, nomore) {
 		if (!item) {
 			return item;
@@ -2572,22 +2646,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						if (level == 0) {
 							return [];
 						}
-						var item2 = [];
-						for (var i = 0; i < item.length; i++) {
-							item2.push(get.stringifiedResult(item[i], level - 1, nomore));
+						const result = [];
+						for (let i = 0; i < item.length; i++) {
+							result.push(get.stringifiedResult(item[i], level - 1, nomore));
 						}
-						return item2;
-					} else if (Object.prototype.toString.call(item) == "[object Object]") {
+						return result;
+					} else {
 						if (level == 0) {
 							return {};
 						}
-						var item2 = {};
-						for (var i in item) {
-							item2[i] = get.stringifiedResult(item[i], level - 1, nomore);
+
+						const type = Object.prototype.toString.call(item).slice(8, -1);
+
+						switch(type) {
+							case "Map":
+								return get.mapInfoOL(item, level - 1, nomore);
+							case "Set":
+								return get.setInfoOL(item, level - 1, nomore);
+							case "Object": {
+								const result = {};
+								for (const i in item) {
+									result[i] = get.stringifiedResult(item[i], level - 1, nomore);
+								}
+								return result;
+							}
+							default:
+								return {};
 						}
-						return item2;
-					} else {
-						return {};
 					}
 			}
 		} else if (item === Infinity) {
@@ -2617,17 +2702,25 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				return item;
 			}
 		} else if (Array.isArray(item)) {
-			var item2 = [];
-			for (var i = 0; i < item.length; i++) {
-				item2.push(get.parsedResult(item[i]));
+			const result = [];
+			for (let i = 0; i < item.length; i++) {
+				result.push(get.parsedResult(item[i]));
 			}
-			return item2;
+			return result;
 		} else if (typeof item == "object") {
-			var item2 = {};
-			for (var i in item) {
-				item2[i] = get.parsedResult(item[i]);
+			if (TYPE_KEY in item) {
+				switch (item[TYPE_KEY]) {
+					case "map":
+						return get.infoMapOL(item);
+					case "set":
+						return get.infoSetOL(item);
+				}
 			}
-			return item2;
+			const result = {};
+			for (const i in item) {
+				result[i] = get.parsedResult(item[i]);
+			}
+			return result;
 		} else {
 			return item;
 		}

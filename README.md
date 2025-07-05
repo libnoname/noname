@@ -18,7 +18,7 @@ https://github.com/nonameShijian/noname-server
 
 GitHub： https://github.com/libnoname/noname/releases/tag/chromium91-client
 
-网页端推荐使用 Chrome 系内核浏览器游玩，不推荐使用低版本 Firefox 浏览器
+网页端推荐使用 Chrome 系内核浏览器游玩，暂不支持 Firefox 浏览器
 
 请尽量保证游玩的 Chrome 系浏览器或手机 Webview 的`内核版本大于等于91`
 

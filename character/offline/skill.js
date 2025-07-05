@@ -1101,8 +1101,8 @@ const skills = {
 			order: 1,
 			result: {
 				player(player, target) {
-					const num = player.getStat("jun_henglv") || 0;
-					if (num >= 1 || (player.hp < 2 && !player.countCards("hs", "tao"))) {
+					const num = player.getStat("skill").jun_henglv || 0;
+					if (num > 1 || (player.hp < 2 && !player.countCards("hs", "tao"))) {
 						return 0;
 					}
 					return 1;
@@ -7859,6 +7859,9 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (trigger.result.suit == "spade") {
+				if (get.position(trigger.result.card, true) == "o") {
+					await player.gain(trigger.result.card, "gain2");
+				}
 				const control = await player
 					.chooseControl("baonue_hp", "baonue_maxHp", function (event, player) {
 						if (player.hp == player.maxHp) {
@@ -8273,7 +8276,14 @@ const skills = {
 				if (link == "disable") {
 					return -(get.threaten(target, player) * get.attitude(player, target));
 				} else {
-					if (get.attitude(player, target) > 0 && (target.hasSkillTag("nofire") || target.hasSkillTag("nodamage"))) {
+					if (
+						get.attitude(player, target) > 0 &&
+						(target.hasSkillTag("nofire") ||
+							target.hasSkillTag("nodamage", null, {
+								source: player,
+								natures: ["fire"],
+							}))
+					) {
 						return 1;
 					}
 					return get.damageEffect(target, player, player, "fire") + get.effect(target, { name: "draw" }, player, player) * 3;
@@ -20885,7 +20895,12 @@ const skills = {
 							if (!get.tag(card, "damage")) {
 								return;
 							}
-							if (target.hasSkillTag("nodamage") || target.hasSkillTag("nothunder")) {
+							if (
+								target.hasSkillTag("nodamage", null, {
+									natures: ["thunder"],
+								}) ||
+								target.hasSkillTag("nothunder")
+							) {
 								return "zeroplayertarget";
 							}
 							if (
@@ -28389,11 +28404,11 @@ const skills = {
 				},
 			},
 			noh: true,
+			freeSha: true,
+			freeShan: true,
 			skillTagFilter(player, tag) {
-				if (tag == "noh") {
-					if (player.countCards("h") != 1) {
-						return false;
-					}
+				if (player.countCards("h") !== 1) {
+					return false;
 				}
 			},
 		},

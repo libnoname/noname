@@ -5018,6 +5018,11 @@ game.import("character", function () {
 						},
 					},
 					noh: true,
+					freeSha: true,
+					freeShan: true,
+					skillTagFilter(player) {
+						return player.countCards("h") === 1;
+					},
 				},
 			},
 			zhanlu: {
@@ -8636,6 +8641,7 @@ game.import("character", function () {
 							{
 								player: player,
 								card: trigger.card,
+								type: "use",
 							},
 							true
 						) ||

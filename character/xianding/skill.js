@@ -6407,12 +6407,13 @@ const skills = {
 						return false;
 					}
 					return event.cards?.some(card => (evt.hs || []).includes(card));
-				})
+				}) ||
+				!player.countCards("h")
 			) {
 				return false;
 			}
-			const num = get.number(event.card, player) || 0;
-			if (player.hasCard(card => get.number(card, player) < num, "h")) {
+			const num = get.number(event.card, player);
+			if (typeof num !== "number" || player.hasCard(card => get.number(card, player) < num, "h")) {
 				return false;
 			}
 			return event.isFirstTarget;
@@ -12100,7 +12101,7 @@ const skills = {
 			return event.getParent().type == "card";
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			var num = get.number(trigger.card);
 			if (typeof num == "number" && num > 0) {
 				trigger.num = num;
@@ -12109,6 +12110,19 @@ const skills = {
 			}
 		},
 		ai: {
+			filterDamage: true,
+			nodamage: true,
+			nofire: true,
+			nothunder: true,
+			skillTagFilter(player, tag, arg) {
+				if (!arg?.card) {
+					return false;
+				}
+				if (tag === "filterDamage") {
+					return true;
+				}
+				return typeof get.number(card) !== "number";
+			},
 			effect: {
 				target(card, player, target, current) {
 					if (get.tag(card, "damage") && typeof get.number(card) != "number") {
@@ -18688,27 +18702,36 @@ const skills = {
 			order: 4,
 			result: {
 				target(player, target) {
-					if (game.countPlayer() == 2) {
+					if (game.countPlayer() === 2) {
 						return -3;
 					}
-					if (!target.getEquip(1)) {
-						if (
-							game.hasPlayer(function (current) {
-								return current != target && !current.hasSkillTag("nogain") && get.attitude(current, target) > 0;
-							})
-						) {
-							return 3;
-						}
-						return -3;
+					let val = 0;
+					let ev = target
+						.getEquips(1)
+						.map(card => get.value(card, target))
+						.sort((a, b) => a - b);
+					if (target.hasEquipableSlot(1) && !target.hasEmptySlot(1)) {
+						// 要顶掉原来的武器
+						val -= ev[0] || 0;
 					}
-					if (
-						!game.hasPlayer(function (current) {
-							return current != target && !current.hasSkillTag("nogain") && get.attitude(current, target) > 0;
-						})
-					) {
-						return -6;
+					let nouse = get.effect(target, { name: "sha", isCard: true }, player, target);
+					if (!player.hasSkillTag("nogain")) {
+						nouse += get.sgnAttitude(target, player) * get.value({ name: "qinggang" }, player);
 					}
-					return 4 - get.value(target.getEquip(1));
+					if (target.mayHaveSha(player, "use")) {
+						const use =
+							game
+								.filterPlayer(current => current !== player && current !== target)
+								.reduce((max, current) => {
+									let eff = get.effect(current, { name: "sha" }, target, target);
+									if (!current.hasSkillTag("nogain")) {
+										eff += get.sgnAttitude(target, current) * get.value({ name: "qinggang" }, current);
+									}
+									return Math.max(max, eff);
+								}, 0) - get.value({ name: "sha" }, target);
+						return Math.max(use, nouse);
+					}
+					return nouse;
 				},
 			},
 		},
@@ -23538,7 +23561,12 @@ const skills = {
 				if (att <= 0) {
 					return att;
 				}
-				if (target.hasSkillTag("nodamage") || target.getEquip("qimenbagua")) {
+				if (
+					target.hasSkillTag("nodamage", null, {
+						source: player,
+					}) ||
+					target.getEquip("qimenbagua")
+				) {
 					return 0.01 * att;
 				}
 				if (target.getEquip("tengjia") || target.getEquip("renwang")) {
@@ -23553,6 +23581,7 @@ const skills = {
 						false,
 						{
 							player: _status.event.player,
+							type: "use",
 						},
 						true
 					)

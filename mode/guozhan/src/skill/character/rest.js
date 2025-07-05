@@ -8468,7 +8468,10 @@ export default {
 			halfneg: true,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.card) {
+				if (tag === "halfneg") {
+					return true;
+				}
+				if (!arg?.card) {
 					return false;
 				}
 				var type = get.type2(arg.card);
@@ -8503,7 +8506,7 @@ export default {
 				ai: {
 					directHit_ai: true,
 					skillTagFilter(playerx, tag, arg) {
-						if (!arg.card) {
+						if (!arg?.card) {
 							return false;
 						}
 						var type = get.type2(arg.card);
@@ -18276,38 +18279,6 @@ export default {
 		silent: true,
 		content() {
 			player.storage.gzrende = 0;
-		},
-	},
-	gzzhiheng: {
-		inherit: "zhiheng",
-		audio: "zhiheng",
-		selectCard() {
-			var player = _status.event.player;
-			var range1 = [1, player.maxHp];
-			if (player.hasSkill("dinglanyemingzhu_skill")) {
-				for (var i = 0; i < ui.selected.cards.length; i++) {
-					if (ui.selected.cards[i] == player.getEquip("dinglanyemingzhu")) {
-						return range1;
-					}
-				}
-				return [1, Infinity];
-			}
-			return range1;
-		},
-		filterCard(card, player) {
-			if (ui.selected.cards.length < player.maxHp || !player.hasSkill("dinglanyemingzhu_skill")) {
-				return true;
-			}
-			return card != player.getEquip("dinglanyemingzhu");
-		},
-		complexCard: true,
-		complexSelect: true,
-		prompt() {
-			var player = _status.event.player;
-			if (player.hasSkill("dinglanyemingzhu_skill")) {
-				return "出牌阶段限一次，你可以弃置任意张牌，然后摸等量的牌";
-			}
-			return "出牌阶段限一次，你可以弃置至多X张牌（X为你的体力上限），然后摸等量的牌";
 		},
 	},
 	duoshi: {
