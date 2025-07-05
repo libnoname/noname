@@ -18702,27 +18702,36 @@ const skills = {
 			order: 4,
 			result: {
 				target(player, target) {
-					if (game.countPlayer() == 2) {
+					if (game.countPlayer() === 2) {
 						return -3;
 					}
-					if (!target.getEquip(1)) {
-						if (
-							game.hasPlayer(function (current) {
-								return current != target && !current.hasSkillTag("nogain") && get.attitude(current, target) > 0;
-							})
-						) {
-							return 3;
-						}
-						return -3;
+					let val = 0;
+					let ev = target
+						.getEquips(1)
+						.map(card => get.value(card, target))
+						.sort((a, b) => a - b);
+					if (target.hasEquipableSlot(1) && !target.hasEmptySlot(1)) {
+						// 要顶掉原来的武器
+						val -= ev[0] || 0;
 					}
-					if (
-						!game.hasPlayer(function (current) {
-							return current != target && !current.hasSkillTag("nogain") && get.attitude(current, target) > 0;
-						})
-					) {
-						return -6;
+					let nouse = get.effect(target, { name: "sha", isCard: true }, player, target);
+					if (!player.hasSkillTag("nogain")) {
+						nouse += get.sgnAttitude(target, player) * get.value({ name: "qinggang" }, player);
 					}
-					return 4 - get.value(target.getEquip(1));
+					if (target.mayHaveSha(player, "use")) {
+						const use =
+							game
+								.filterPlayer(current => current !== player && current !== target)
+								.reduce((max, current) => {
+									let eff = get.effect(current, { name: "sha" }, target, target);
+									if (!current.hasSkillTag("nogain")) {
+										eff += get.sgnAttitude(target, current) * get.value({ name: "qinggang" }, current);
+									}
+									return Math.max(max, eff);
+								}, 0) - get.value({ name: "sha" }, target);
+						return Math.max(use, nouse);
+					}
+					return nouse;
 				},
 			},
 		},
