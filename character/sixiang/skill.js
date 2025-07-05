@@ -4416,7 +4416,7 @@ const skills = {
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			return (
-				event.card.name == "sha" &&
+				event.card?.name == "sha" &&
 				[player, event.player].some(target => {
 					return target.isIn() && target.countCards("he");
 				})
