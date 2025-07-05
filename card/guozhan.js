@@ -488,7 +488,7 @@ game.import("card", function () {
 						if (player.hasSkill("jubao")) {
 							return 8;
 						}
-						if (player.hasSkill("gzzhiheng")) {
+						if (player.hasSkill("gz_zhiheng")) {
 							return 6;
 						}
 						if (
@@ -1753,7 +1753,7 @@ game.import("card", function () {
 				equipSkill: true,
 				inherit: "zhiheng",
 				filter(event, player) {
-					return !player.hasSkill("gzzhiheng", true);
+					return !player.hasSkill("gz_zhiheng", true);
 				},
 				selectCard() {
 					var player = _status.event.player;
