@@ -12,11 +12,11 @@ const skills = {
 		},
 		intro: {
 			mark(dialog, storage, player) {
-				if (!storage || get.itemtype(storage) != "card") {
+				if (!storage || get.itemtype(storage) != "cards") {
 					return "未记录";
 				}
 				dialog.addText("当前〖惑乱〗记录牌");
-				dialog.addSmall([storage]);
+				dialog.addSmall(storage);
 			},
 		},
 		onremove: true,
@@ -63,7 +63,7 @@ const skills = {
 										const current = trigger[role];
 										if (current == player) {
 											player.logSkill("renhuoluan");
-											game.log(current, "拼点牌点数视为", `#y${get.strNumber(num, false)}`);
+											game.log(current, "拼点牌点数视为", `#y${get.strNumber(num, true)}`);
 											trigger[`num${ind}`] = num;
 										}
 									}
@@ -78,7 +78,7 @@ const skills = {
 								return get.number(card);
 							})
 							.setContent("chooseToCompareMeanwhile");
-						player.setStorage("renhuoluan", card, true);
+						player.markAuto("renhuoluan", card);
 						let max = 0,
 							min = 14,
 							maxPlayer,
@@ -139,7 +139,7 @@ const skills = {
 				const num = result.control;
 				let str = `###${get.prompt("renhuoluan")}###与至多两名其他角色共同拼点`;
 				if (typeof num == "number") {
-					str += `且你的拼点牌点数视为${get.strNumber(num, false)}`;
+					str += `且你的拼点牌点数视为${get.strNumber(num, true)}`;
 				}
 				return str;
 			},
@@ -161,20 +161,26 @@ const skills = {
 		},
 		filter(event, player) {
 			const num = game.roundNumber,
-				card = player.getStorage("renhuoluan", false);
+				cards = player.getStorage("renhuoluan");
 			if (typeof num != "number" || num <= 0) {
 				return false;
 			}
-			return card && get.itemtype(card) == "card";
+			return cards && get.itemtype(cards) == "cards";
 		},
 		prompt2(event, player) {
 			const num = Math.min(3, game.roundNumber),
-				card = player.getStorage("renhuoluan", false);
-			let str = "从牌堆或弃牌堆中获得",
-				count = 0;
-			while (count < num) {
-				str += [`：${get.translation(card)}`, `、点数为${get.translation(get.number(card))}且花色为${get.translation(get.suit(card))}的所有牌`, `、牌名为${get.translation(get.name(card))}的牌`][count];
-				count++;
+				cards = player.getStorage("renhuoluan");
+			let str = "从牌堆或弃牌堆中获得：";
+			if (num >= 1) {
+				str += get.translation(cards);
+			}
+			if (num >= 2) {
+				const list = cards.map(card => `${get.translation(get.suit(card))}${get.translation(get.number(card))}`).toUniqued();
+				str += `；点数花色组合为${list.join("、")}的所有牌`;
+			}
+			if (num >= 3) {
+				const list = cards.map(card => get.translation(get.name(card))).toUniqued();
+					str += `；牌名为${list.join("、")}的所有牌`;
 			}
 			return `${str}（同名牌至多获得五张）`;
 		},
@@ -187,21 +193,21 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const num = Math.min(3, game.roundNumber),
-				card = player.getStorage("renhuoluan", false),
+				cardsx = player.getStorage("renhuoluan"),
 				filter = [
-					(cardx, cards) => {
+					(cardx, card, cards) => {
 						if (cards.includes(cardx) || cards.filter(cardxx => get.name(cardxx) == get.name(cardx)).length >= 5) {
 							return false;
 						}
 						return cardx == card;
 					},
-					(cardx, cards) => {
+					(cardx, card, cards) => {
 						if (cards.includes(cardx) || cards.filter(cardxx => get.name(cardxx) == get.name(cardx)).length >= 5) {
 							return false;
 						}
 						return get.number(cardx) == get.number(card) && get.suit(cardx) == get.suit(card);
 					},
-					(cardx, cards) => {
+					(cardx, card, cards) => {
 						if (cards.includes(cardx) || cards.filter(cardxx => get.name(cardxx) == get.name(cardx)).length >= 5) {
 							return false;
 						}
@@ -211,12 +217,14 @@ const skills = {
 			let count = 0;
 			const cards = [];
 			while (count < num) {
-				while (true) {
-					const cardx = get.cardPile(cardx => filter[count](cardx, cards), null, "bottom");
-					if (cardx) {
-						cards.push(cardx);
-					} else {
-						break;
+				for (let card of cardsx) {
+					while (true) {
+						const cardx = get.cardPile(cardx => filter[count](cardx, card, cards), null, "bottom");
+						if (cardx) {
+							cards.push(cardx);
+						} else {
+							break;
+						}
 					}
 				}
 				count++;
