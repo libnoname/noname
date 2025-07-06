@@ -18,7 +18,7 @@ const characterSort = {
 	offline_hanmo: ["hm_bairao", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
 	offline_jingxiang: ["jx_zhouyu", "jx_guanyu"],
 	offline_changan: ["ca_wangyun", "ca_lvbu", "ca_lijue", "ca_guosi", "ca_zhangji", "ca_fanchou"],
-	offline_weinan: ["wn_caocao", "wn_hansui", "wn_houxuan", "wn_chengyi", "wn_yangqiú"],
+	offline_weinan: ["wn_caocao", "wn_hansui", "wn_houxuan", "wn_chengyi", "wn_yangqiú", "wn_zhanghe", "wn_jiaxu", "wn_xuhuang"],
 	offline_jiudin: ["jd_jin_wangyuanji", "jd_ol_huaxin", "jd_sp_yangwan", "jd_sb_huangyueying", "jd_sb_zhaoyun", "jd_sb_ganning", "jd_sb_pangtong", "jd_hanlong", "jd_jin_xiahouhui", "jd_jin_simazhao", "jd_sb_caocao", "jd_sb_sp_zhugeliang", "jd_simayan", "jd_sb_sunquan", "jd_sb_xiaoqiao", "jd_sb_guanyu", "jd_sb_jiangwei", "jd_sb_daqiao", "jd_sb_menghuo", "jd_sb_yuanshao", "jd_sb_yujin", "jd_sb_sunshangxiang", "jd_sb_liubei", "jd_sb_fazheng", "jd_sb_zhangfei", "jd_jin_simashi", "jd_sb_xuhuang"],
 	offline_yanyou: ["yy_quyi", "yy_gongsunzan", "yy_wenchou", "yy_gongsunyuan", "yy_yuanshao", "yy_simayi", "yy_caorui", "yy_zhaoyun", "yy_quancong"],
 	offline_jingyang: ["jy_caocao", "jy_caoren", "jy_zhugeliang", "jy_pangtong", "jy_lusu", "jy_zhangzhao", "jy_zhouyu", "jy_huanggai"],

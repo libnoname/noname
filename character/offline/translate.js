@@ -1459,6 +1459,22 @@ const translates = {
 	wn_yangqiú: "杨秋",
 	wn_qifeng: "齐锋",
 	wn_qifeng_info: "一名角色的回合结束时，若你本回合失去过牌，你可以视为对其使用一张伤害为X的【杀】（X为你本回合失去的牌数）。",
+	wn_zhanghe: "渭南张郃",
+	wn_zhanghe_prefix: "渭南",
+	wn_qiaobian: "巧变",
+	wn_qiaobian_info: "其他角色的准备阶段，你可以将一张牌置于武将牌上，称为“巧”。本回合其使用牌时，你展示一张“巧”，若这两张牌类型：相同，其获得“巧”，然后若此时在其出牌阶段内，结束此阶段；不同，你摸一张牌，其的结束阶段，你获得所有“巧”。",
+	wn_jiaxu: "渭南贾诩",
+	wn_jiaxu_prefix: "渭南",
+	wn_jianshu: "见书",
+	wn_jianshu_info: "出牌阶段限一次，你可以交给一名其他角色一张牌，令其与你指定的另一名角色拼点，赢的角色弃置两张牌，没赢的角色失去1点体力。",
+	wn_zhenlve: "缜略",
+	wn_zhenlve_info: "一名角色使用【无懈可击】时，你可以弃置一张牌，令此牌无效并获得之。",
+	wn_xuhuang: "渭南徐晃",
+	wn_xuhuang_prefix: "渭南",
+	wn_zhuying: "驻营",
+	wn_zhuying_info: "一名角色的结束阶段，若其本回合未使用牌指定你为目标，你获得一个“驻”。",
+	wn_chiyuan: "驰援",
+	wn_chiyuan_info: "①出牌阶段，你可以交给任意名角色各一个“驻”。②有“驻”的角色受到伤害时，你可以弃置一张牌并选择一项：1.防止此伤害，移去其一个“驻”；2.对伤害来源造成1点伤害。",
 };
 
 export default translates;
