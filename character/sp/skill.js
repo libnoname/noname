@@ -30713,25 +30713,24 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.give(cards, target);
-			if (get.color(cards[0]) == "black") {
-				target
-					.chooseToDiscard(2, "he", "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
-					.set("ai", function (card) {
-						if (_status.event.goon) {
-							return 7 - get.value(card);
-						}
-						return 0;
-					})
-					.set("goon", get.attitude(target, player) < 0);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.give(cards, target, true);
+			if (get.color(cards[0], player) == "red") {
+				return;
 			}
-			"step 1";
+			const result = await target
+				.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
+				.set("goon", get.attitude(target, player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return -get.value(card);
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
 			if (!result.bool) {
-				player.draw(2);
+				await player.draw(2);
 			}
 		},
 		ai: {

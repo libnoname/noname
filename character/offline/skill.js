@@ -1987,7 +1987,7 @@ const skills = {
 				locked: false,
 				filter(event, player) {
 					return (
-						get.itemtype(event.cards) == "cards" &&
+						lib.suit.includes(get.suit(event.card)) &&
 						game.getAllGlobalHistory(
 							"everything",
 							evt => {
@@ -2006,7 +2006,7 @@ const skills = {
 								.getAllGlobalHistory(
 									"everything",
 									evt => {
-										return evt.name == "damage" && evt.player == player && get.suit(evt?.card, player);
+										return evt.name == "damage" && evt.player == player && lib.suit.includes(get.suit(evt?.card, player));
 									},
 									trigger
 								)
@@ -2016,26 +2016,23 @@ const skills = {
 					);
 					const card = trigger.cards.filter(c => get.position(c, true) === "o");
 					if (!card.length) {
-						if (player.hasUsableCard("sha", "use")) {
-							await player
-								.chooseToUse(
-									function (card, player, event) {
-										if (get.name(card) !== "sha") {
-											return false;
-										}
-										return lib.filter.filterCard.apply(this, arguments);
-									},
-									"对所有角色使用一张杀",
-									true
-								)
-								.set("targetRequired", true)
-								.set("complexSelect", true)
-								.set("selectTarget", -1)
-								.set("filterTarget", function (card, player, target) {
-									return lib.filter.targetEnabled.apply(this, arguments);
-								});
-							return;
-						}
+						await player
+							.chooseToUse(
+								function (card, player, event) {
+									if (get.name(card) !== "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								"是否对所有角色使用一张杀？",
+							)
+							.set("targetRequired", true)
+							.set("complexSelect", true)
+							.set("selectTarget", -1)
+							.set("filterTarget", function (card, player, target) {
+								return lib.filter.targetEnabled.apply(this, arguments);
+							});
+						return;
 					}
 					const result = await player
 						.chooseControlList(get.prompt(event.name), ["获得" + get.translation(card), "使用一张指定所有其他角色的【杀】。"], true)

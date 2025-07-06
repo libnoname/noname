@@ -9939,7 +9939,7 @@ const skills = {
 			"step 0";
 			player.showCards(cards, get.translation(player) + "发动了【连诛】");
 			"step 1";
-			player.give(cards, target);
+			player.give(cards, target, true);
 			"step 2";
 			event.targets = game
 				.filterPlayer(current => {

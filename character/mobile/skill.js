@@ -5728,7 +5728,12 @@ const skills = {
 									return true;
 								}
 								ui.selected.cards.add(card);
-								const bool = targets.some(target => player.canUse(useCard, target));
+								const bool = targets.some(target => {
+									if (!lib.filter.cardEnabled(useCard, player, "forceEnable")) {
+										return false;
+									}
+									return lib.filter.targetEnabled2(useCard, player, target) && lib.filter.targetInRange(useCard, player, target);
+								});
 								ui.selected.cards.remove(card);
 								return bool;
 							})
