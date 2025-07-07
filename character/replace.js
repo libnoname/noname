@@ -100,7 +100,7 @@ window.noname_character_replace = {
 	guanyu: ["guanyu", "re_guanyu", "jsp_guanyu", "ol_sb_guanyu", "wu_guanyu", "dc_jsp_guanyu", "sb_guanyu", "tw_jsp_guanyu", "xia_guanyu", "jsrg_guanyu", "jd_sb_guanyu", "drag_guanyu", "ty_guanyu", "jx_guanyu", "ps_guanyu", "old_guanyu", "junk_guanyu"],
 	guanzhang: ["guanzhang", "ol_guanzhang", "re_guanzhang", "old_guanzhang"],
 	guohuai: ["guohuai", "re_guohuai", "ol_guohuai", "xin_guohuai", "sb_guohuai", "tw_guohuai"],
-	guohuanghou: ["guohuanghou", "ol_guohuanghou", "re_guohuanghou", "std_guohuanghou"],
+	guohuanghou: ["guohuanghou", "ol_guohuanghou", "re_guohuanghou", "std_guohuanghou", "ol_guohuanghou"],
 	guojia: ["guojia", "re_guojia", "yj_sb_guojia", "sb_guojia", "jsrg_guojia", "ps1059_guojia", "ps2070_guojia"],
 	guosi: ["guosi", "ca_guosi"],
 	guotufengji: ["guotufengji", "re_guotufengji"],

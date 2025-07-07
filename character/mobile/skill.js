@@ -2730,20 +2730,17 @@ const skills = {
 					}
 				})
 				.set("ai", button => {
-					if (button.link == "draw") {
-						const target = _status.currentPhase;
-						if (target?.isIn() && get.attitude(get.player(), target) > 0) {
-							return 2;
-						}
-						return 0;
+					if (button.link == "discard") {
+						return 1;
 					}
-					if (button.link == "both") {
-						if (get.event().count > 1) {
-							return 0;
+					const target = _status.currentPhase;
+					if (target?.isIn() && get.attitude(get.player(), target) > 0) {
+						if (button.link == "both") {
+							return get.event("count") > 1 ? 0 : 3;
 						}
-						return 3;
+						return 2;
 					}
-					return 1;
+					return 0;
 				})
 				.set("count", count)
 				.forResult();

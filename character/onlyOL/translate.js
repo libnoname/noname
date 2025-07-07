@@ -286,6 +286,16 @@ const translates = {
 	olmiluo_info: "出牌阶段限一次，你可展示并交给至多两名其他角色各一张牌，这些牌本轮称为“迷落”牌。每轮结束时，你可令其中一名手牌中没有“迷落”牌的角色失去1点体力，或令其中一名手牌中有“迷落”牌的角色回复1点体力。",
 	oljueyan: "绝颜",
 	oljueyan_info: "每轮限一次，当你需要使用手牌中一张普通锦囊牌或红桃基本牌时，可改为展示并视为使用之；你每轮首次展示一种花色的手牌后摸一张牌。",
+	ol_guohuanghou: "OL界郭皇后",
+	ol_guohuanghou_prefix: "OL界",
+	oljiaozhao: "矫诏",
+	oljiaozhao_info: "出牌阶段限一次，你可以展示一张手牌并声明一种未以此法声明过的基本牌或普通锦囊牌，你本回合可以将展示牌当声明的牌使用（不能对自己使用）。",
+	oljiaozhao_lv1: "矫诏·升级lv1",
+	oljiaozhao_lv1_info: "出牌阶段限一次，你可以展示一张手牌并声明一种基本牌或普通锦囊牌，你本回合可以将展示牌当声明的牌使用（不能对自己使用）。",
+	oljiaozhao_lv2: "矫诏·升级lv2",
+	oljiaozhao_lv2_info: "出牌阶段限一次，你可以视为使用一张基本牌或普通锦囊牌（不能对自己使用）。",
+	oldanxin: "殚心",
+	oldanxin_info: "当你受到伤害后，你可以摸一张牌并升级〖矫诏〗。",
 };
 
 export default translates;

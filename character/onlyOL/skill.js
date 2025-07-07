@@ -2,6 +2,259 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//界郭皇后 ——by 阿巴阿巴
+	oljiaozhao: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
+				}
+				if (player.countMark("oldanxin") > 1) {
+					return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3], storage: { oljiaozhao: player } }), player, event);
+				}
+				return player.countMark("oldanxin") || !player.getStorage("oljiaozhao_used").includes(info[2]);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					if (player.countMark("oldanxin") > 1) {
+						return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3], storage: { oljiaozhao: player } }), player, event);
+					}
+					return player.countMark("oldanxin") || !player.getStorage("oljiaozhao_used").includes(info[2]);
+				});
+				const dialog = ui.create.dialog("矫诏", [list, "vcard"]);
+				dialog.direct = true;
+				return dialog;
+			},
+			check(button) {
+				return (
+					get.player().getUseValue({
+						name: button.link[2],
+						nature: button?.link[2],
+						storage: { oljiaozhao: get.player() },
+					}) || 0.1
+				);
+			},
+			backup(links, player) {
+				if (player.countMark("oldanxin") > 1) {
+					return {
+						audio: "oljiaozhao",
+						viewAs: {
+							name: links[0][2],
+							nature: links[0][3],
+							storage: { oljiaozhao: player },
+							isCard: true,
+						},
+						filterCard: () => false,
+						selectCard: -1,
+						popname: true,
+					};
+				} else {
+					return {
+						ai1(card) {
+							return 8 - get.value(card);
+						},
+						viewasCard: {
+							name: links[0][2],
+							nature: links[0][3],
+							storage: { oljiaozhao: player },
+						},
+						filterCard: true,
+						discard: false,
+						lose: false,
+						delay: false,
+						async content(event, trigger, player) {
+							const card = event.cards[0];
+							await player.showCards(card);
+							const fakecard = get.info(event.name)?.viewasCard;
+							game.broadcastAll(card => {
+								card.addGaintag("oljiaozhao");
+							}, card);
+							player.addSkill("oljiaozhao_used");
+							player.markAuto("oljiaozhao_used", fakecard.name);
+							player.chat(get.translation(fakecard));
+							game.log(player, "声明了", "#g" + get.translation(fakecard));
+							player.addTempSkill("oljiaozhao_viewas");
+							const map = player.getStorage("oljiaozhao_viewas", new Map());
+							map.set(card, (map.get(card) || []).concat([fakecard]));
+							player.setStorage("oljiaozhao_viewas", map);
+						},
+						ai: {
+							order: 9,
+							result: {
+								player: 8,
+							},
+						},
+					};
+				}
+			},
+			prompt(links, player) {
+				let card = `${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}`;
+				if (player.countMark("oldanxin") > 1) {
+					return `###矫诏###视为使用一张${card}（你不是此牌的合法目标）`;
+				}
+				return `###矫诏###展示一张手牌，本回合你可将此牌当做${card}使用（你不是此牌的合法目标）。`;
+			},
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 8,
+			},
+		},
+		locked: false,
+		mod: {
+			targetEnabled(card, player, target) {
+				if (card.storage?.oljiaozhao == target) {
+					return false;
+				}
+			},
+		},
+		derivation: ["oljiaozhao_lv1", "oljiaozhao_lv2"],
+		subSkill: {
+			backup: {},
+			viewas_backup: {},
+			used: {
+				onremove: true,
+				charlotte: true,
+			},
+			viewas: {
+				enable: "chooseToUse",
+				charlotte: true,
+				locked: false,
+				mod: {
+					targetEnabled(card, player, target) {
+						if (card.storage?.oljiaozhao == target) {
+							return false;
+						}
+					},
+				},
+				onChooseToUse(event) {
+					if (game.online || event.oljiaozhao_record) {
+						return;
+					}
+					event.set("oljiaozhao_record", event.player.getStorage("oljiaozhao_viewas", new Map()));
+				},
+				filter(event, player) {
+					const map = event.oljiaozhao_record;
+					return (
+						map &&
+						player.countCards("h", card => {
+							if (!map.has(card)) {
+								return false;
+							}
+							return map.get(card)?.some(vcard => {
+								return event.filterCard(get.autoViewAs(vcard, [card]), player, event);
+							});
+						})
+					);
+				},
+				chooseButton: {
+					dialog(event, player) {
+						const map = event.oljiaozhao_record,
+							list = [],
+							names = [];
+						map.forEach((vcards, card) => {
+							if (!player.getCards("h").includes(card)) {
+								return false;
+							}
+							for (let vcard of vcards) {
+								if (event.filterCard(get.autoViewAs(vcard, [card]), player, event)) {
+									list.push(vcard);
+									names.push(card);
+								}
+							}
+						});
+						const dialog = ui.create.dialog("矫诏", [list, "vcard"]);
+						for (let i = 0; i < dialog.buttons?.length; i++) {
+							dialog.buttons[i].node.gaintag.innerHTML = get.translation(names[i]);
+						}
+						dialog.direct = true;
+						return dialog;
+					},
+					check(button) {
+						return get.player().getUseValue({
+							name: button.link[2],
+							nature: button.link[3],
+							storage: { oljiaozhao: get.player() },
+						});
+					},
+					backup(links, player) {
+						return {
+							audio: "oljiaozhao",
+							viewAs: links[0],
+							record: get.event("oljiaozhao_record"),
+							filterCard(card) {
+								const { viewAs, record } = get.info("oljiaozhao_viewas_backup");
+								return card.hasGaintag("oljiaozhao") && record?.has(card) && record.get(card)?.includes(viewAs);
+							},
+							popname: true,
+						};
+					},
+					prompt(links, player) {
+						return `###矫诏###将对应“矫诏”牌当做${get.translation(get.translation(links[0]))}使用`;
+					},
+				},
+				hiddenCard(player, name) {
+					if (!lib.inpile.includes(name)) {
+						return false;
+					}
+					const map = player.getStorage("oljiaozhao_viewas", new Map());
+					return map.some((vcards, card) => {
+						return player.getCards("h").includes(card) && vcards.some(vcard => vcard.name == name);
+					});
+				},
+				onremove(player, skill) {
+					player.removeGaintag("oljiaozhao");
+					player.removeStorage(skill);
+				},
+				ai: {
+					order: 8,
+					result: {
+						player: 1,
+					},
+				},
+			},
+		},
+	},
+	oldanxin: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		frequent: true,
+		intro: { content: "当前升级等级：Lv#" },
+		async content(event, trigger, player) {
+			await player.draw();
+			if (player.countMark("oldanxin") < 2) {
+				player.addMark("oldanxin", 1, false);
+			}
+		},
+		ai: {
+			maixie: true,
+			effect: {
+				target: (card, player, target) => {
+					if (!get.tag(card, "damage")) {
+						return;
+					}
+					if (target.hp + target.hujia < 2 || player.hasSkillTag("jueqing", false, target)) {
+						return 2;
+					}
+					if (!target.hasSkill("oljiaozhao") || target.countMark("oldanxin") > 1) {
+						return [1, 1];
+					}
+					return [1, 0.8 * target.hp - 0.4];
+				},
+			},
+		},
+	},
 	//谋小乔 —— by 星の语
 	//洗脚女将，再添一员（？）
 	olmiluo: {

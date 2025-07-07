@@ -5106,7 +5106,7 @@ const skills = {
 				player.addMark("redanxin", 1, false);
 			}
 		},
-		intro: { content: "当前升级等级。：Lv#" },
+		intro: { content: "当前升级等级：Lv#" },
 		ai: {
 			maixie: true,
 			effect: {
