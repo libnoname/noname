@@ -7052,11 +7052,10 @@ export class Game extends GameCompatible {
 				}
 			}
 		}
-		const eventinfo = get.info(get.card() || {}) || skillinfo;
-		if (_status.event.name == "chooseToUse" && eventinfo?.manualConfirm === true) {
+		const cardinfo = get.info(get.card()) || {};
+		if (_status.event.name == "chooseToUse" && (skillinfo?.manualConfirm === true || cardinfo?.manualConfirm === true)) {
 			auto_confirm = false;
 		}
-
 		player.node.equips.classList.remove("popequip");
 		if (event.filterCard && lib.config.popequip && !_status.nopopequip && get.is.phoneLayout() && typeof event.position === "string" && event.position.includes("e") && player.node.equips.querySelector(".card.selectable")) {
 			player.node.equips.classList.add("popequip");

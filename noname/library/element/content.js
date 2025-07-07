@@ -4996,8 +4996,9 @@ player.removeVirtualEquip(card);
 				}
 			}
 			var ok = game.check();
-			const eventinfo = get.info(get.card() || {}) || get.info(event.skill) || {};
-			if (!ok || !lib.config.auto_confirm || eventinfo?.manualConfirm) {
+			const cardinfo = get.info(get.card()) || {},
+				skillinfo = get.info(event.skill) || {};
+			if (!ok || !lib.config.auto_confirm || cardinfo?.manualConfirm || skillinfo?.manualConfirm) {
 				game.pause();
 				if (lib.config.enable_vibrate && player._noVibrate) {
 					delete player._noVibrate;
@@ -5275,8 +5276,9 @@ player.removeVirtualEquip(card);
 					return;
 				}
 				var ok = game.check();
-				const eventinfo = get.info(get.card() || {}) || get.info(event.skill) || {};
-				if (!ok || !lib.config.auto_confirm || eventinfo?.manualConfirm) {
+				const cardinfo = get.info(get.card()) || {},
+					skillinfo = get.info(event.skill) || {};
+				if (!ok || !lib.config.auto_confirm || cardinfo?.manualConfirm || skillinfo?.manualConfirm) {
 					game.pause();
 					if (event.openskilldialog) {
 						event.skillDialog = ui.create.dialog(event.openskilldialog);

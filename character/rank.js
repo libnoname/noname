@@ -1287,6 +1287,7 @@ window.noname_character_rank = {
 		"diy_hanlong",
 		"ns_liuzhang",
 		"ol_maliang",
+		"dc_sb_dengai",
 	],
 	b: [
 		"ol_sb_xiaoqiao",
@@ -2753,6 +2754,7 @@ window.noname_character_rank = {
 			"pe_jun_zhangjiao",
 			"dc_sb_jiangwei",
 			"dc_sb_hulie",
+			"dc_sb_dengai",
 			"cuilingyi",
 			"jimiaojimu",
 			"yj_caocaoyuanshao",
