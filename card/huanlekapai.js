@@ -242,7 +242,7 @@ game.import("card", function () {
 							if (info?.ai?.neg || info?.ai?.halfneg) {
 								return 0;
 							}
-							return get.skillRank(button.link, "inout");
+							return get.skillRank(button.link, "in");
 						})
 						.forResultLinks();
 					if (!links?.length) {

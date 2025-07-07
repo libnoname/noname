@@ -24434,7 +24434,7 @@ const skills = {
 	},
 	//张宝
 	xinzhoufu: {
-		audio: "zhoufu",
+		audio: "rezhoufu",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -24468,7 +24468,7 @@ const skills = {
 		},
 		subSkill: {
 			judge: {
-				audio: "zhoufu",
+				audio: "xinzhoufu",
 				trigger: { player: "judgeBefore" },
 				forced: true,
 				charlotte: true,
@@ -24489,7 +24489,7 @@ const skills = {
 		},
 	},
 	xinyingbing: {
-		audio: "yingbing",
+		audio: "reyingbing",
 		trigger: { player: "useCardToPlayered" },
 		forced: true,
 		logTarget: "target",

@@ -183,7 +183,7 @@ const skills = {
 					}
 					const ranks = target.getSkills(null, false, false).reduce((sum, name) => {
 						_status.event.skillRankPlayer = target;
-						sum += get.skillRank(name, true);
+						sum += get.skillRank(name);
 						delete _status.event.skillRankPlayer;
 						return sum;
 					}, 1);
@@ -35619,7 +35619,7 @@ const skills = {
 		},
 	},
 	rezhoufu: {
-		audio: "zhoufu",
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -35649,7 +35649,7 @@ const skills = {
 		group: ["rezhoufu_losehp"],
 		subSkill: {
 			judge: {
-				audio: "zhoufu",
+				audio: "rezhoufu",
 				init: player => {
 					player.storage.rezhoufu_judge_markcount = 0;
 				},
@@ -35675,7 +35675,7 @@ const skills = {
 				},
 			},
 			losehp: {
-				audio: "zhoufu",
+				audio: "rezhoufu",
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				filter(event, player) {
@@ -35734,7 +35734,7 @@ const skills = {
 		},
 	},
 	reyingbing: {
-		audio: "yingbing",
+		audio: 2,
 		trigger: { global: "useCard" },
 		forced: true,
 		filter(event, player) {
