@@ -2,13 +2,13 @@
 	<div class="new-menu">
 		<!-- tab -->
 		<div class="new-menu-tab" ref="menuTabs">
-			<div v-for="[tabName] in tabDataMap" @click="toggleTabName">{{ tabName }}</div>
+			<div v-for="[tabName] in tabDataMap" :key="tabName" @click="toggleTabName">{{ tabName }}</div>
 		</div>
 		<!-- content -->
 		<div class="new-menu-content">
 			<div>
 				<div class="left pane" ref="leftPane">
-					<div v-for="data in leftPaneData" :mode="data.attrs.mode" @click="toggleLeftPaneName" class="new-menubutton large">{{ data.name }}</div>
+					<div v-for="data in leftPaneData" :key="data.name" :mode="data.attrs.mode" @click="toggleLeftPaneName" class="new-menubutton large">{{ data.name }}</div>
 				</div>
 				<div class="right pane" ref="rightPane"></div>
 				<div class="menubutton round highlight" ref="startButton">启</div>
@@ -18,8 +18,8 @@
 </template>
 
 <script>
-import {startMenuData, startMenutabName} from "../startMenu.js";
-import {createApp, reactive} from "../../../../../game/vue.esm-browser.js";
+import { startMenuData, startMenutabName } from "../startMenu.js";
+import { createApp, reactive } from "../../../../../game/vue.esm-browser.js";
 
 export default {
 	props: {
@@ -32,15 +32,15 @@ export default {
 				element: null,
 				app: null,
 			},
+			/**
+			 * @type {{ name: string; attrs: SMap<any>; }[]}
+			 */
 			leftPaneData: [],
 			/**
 			 * @type { Map<string, menuData> }
 			 */
 			tabDataMap: new Map([
-				[
-					startMenutabName,
-					startMenuData,
-				],
+				[startMenutabName, startMenuData],
 				["选项", startMenuData],
 				["武将", startMenuData],
 				["卡牌", startMenuData],
@@ -54,8 +54,12 @@ export default {
 		 * @param { { target: HTMLElement } } param0
 		 */
 		toggleTabName({ target }) {
-			if (!target) return console.warn(`target不存在`);
-			if (target.classList.contains("active")) return;
+			if (!target) {
+				return console.warn(`target不存在`);
+			}
+			if (target.classList.contains("active")) {
+				return;
+			}
 			Array.from(target.parentElement?.children || []).forEach(node => {
 				node.classList?.remove("active");
 			});
@@ -64,14 +68,14 @@ export default {
 			/**
 			 * @type { menuData }
 			 */
+			// @ts-expect-error type transfer
 			const data = this.tabDataMap.get(target.innerText);
 			const leftPaneData = data?.initLeftPaneData?.(this.connectMenu);
+			// @ts-expect-error type transfer
 			this.leftPaneData = Array.isArray(leftPaneData) ? leftPaneData : [];
 			// 高亮默认元素
 			this.$nextTick(() => {
-				const ele =
-					data?.getDefaultActive(this.connectMenu, Array.from(this.$refs.leftPane.children)) ||
-					this.$refs.leftPane.firstElementChild;
+				const ele = data?.getDefaultActive(this.connectMenu, Array.from(this.$refs.leftPane.children)) || this.$refs.leftPane.firstElementChild;
 				this.toggleLeftPaneName({ target: ele });
 			});
 		},
@@ -79,8 +83,12 @@ export default {
 		 * @param { { target: HTMLElement } } param0
 		 */
 		toggleLeftPaneName({ target }) {
-			if (!target) return console.warn(`target不存在`);
-			if (target.classList.contains("active")) return;
+			if (!target) {
+				return console.warn(`target不存在`);
+			}
+			if (target.classList.contains("active")) {
+				return;
+			}
 			Array.from(target.parentElement?.children || []).forEach(node => {
 				node.classList?.remove("active");
 			});
@@ -99,12 +107,11 @@ export default {
 				this.$refs.rightPane.appendChild(parentElement);
 				this.rightPaneData.element = parentElement;
 				this.rightPaneData.app = rightPaneAppData.app;
-			}
-			else {
+			} else {
 				const rightPaneTemplate = data?.rightPaneTemplate || { template: html`<div>还未编写</div>` };
 				data?.initConfigs?.(this.connectMenu, target, this.$refs.startButton);
 				/** @type { string } */
-					// @ts-ignore
+				// @ts-expect-error transfer
 				const mode = target.getAttribute("mode");
 				const configs = data.configDatas.get(mode) || reactive({});
 				if (!data.configDatas.get(mode)) {
@@ -124,6 +131,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

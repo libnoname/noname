@@ -1,21 +1,4 @@
-import {
-	menuContainer,
-	popupContainer,
-	updateActive,
-	setUpdateActive,
-	updateActiveCard,
-	setUpdateActiveCard,
-	menux,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 
 export const startMenu = function (connectMenu) {
@@ -27,7 +10,7 @@ export const startMenu = function (connectMenu) {
 	// const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 
@@ -42,7 +25,9 @@ export const startMenu = function (connectMenu) {
 				if (_status.waitingForPlayer) {
 					var config = {};
 					for (var i in lib.mode[lib.configOL.mode].connect) {
-						if (i == "update") continue;
+						if (i == "update") {
+							continue;
+						}
 						config[i.slice(8)] = get.config(i, lib.configOL.mode);
 					}
 					config.zhinang_tricks = lib.config.connect_zhinang_tricks;
@@ -56,11 +41,7 @@ export const startMenu = function (connectMenu) {
 								lib.configOL[i] = config[i];
 							}
 						}, config);
-						if (
-							lib.configOL.mode == "identity" &&
-							lib.configOL.identity_mode == "zhong" &&
-							game.connectPlayers
-						) {
+						if (lib.configOL.mode == "identity" && lib.configOL.identity_mode == "zhong" && game.connectPlayers) {
 							for (var i = 0; i < game.connectPlayers.length; i++) {
 								game.connectPlayers[i].classList.remove("unselectable2");
 							}
@@ -79,7 +60,9 @@ export const startMenu = function (connectMenu) {
 
 						var config = {};
 						for (var i in lib.mode[lib.configOL.mode].connect) {
-							if (i == "update") continue;
+							if (i == "update") {
+								continue;
+							}
 							config[i.slice(8)] = get.config(i, lib.configOL.mode);
 						}
 						config.zhinang_tricks = lib.config.connect_zhinang_tricks;
@@ -94,23 +77,9 @@ export const startMenu = function (connectMenu) {
 						}
 						config.banned = lib.config["connect_" + active.mode + "_banned"];
 						config.bannedcards = lib.config["connect_" + active.mode + "_bannedcards"];
-						game.send(
-							"server",
-							"create",
-							game.onlineKey,
-							get.connectNickname(),
-							lib.config.connect_avatar,
-							config,
-							active.mode
-						);
+						game.send("server", "create", game.onlineKey, get.connectNickname(), lib.config.connect_avatar, config, active.mode);
 					} else {
-						game.send(
-							"server",
-							"create",
-							game.onlineKey,
-							get.connectNickname(),
-							lib.config.connect_avatar
-						);
+						game.send("server", "create", game.onlineKey, get.connectNickname(), lib.config.connect_avatar);
 					}
 				} else {
 					localStorage.setItem(lib.configprefix + "directstart", true);
@@ -137,7 +106,9 @@ export const startMenu = function (connectMenu) {
 	});
 
 	var clickMode = function () {
-		if (this.classList.contains("unselectable")) return;
+		if (this.classList.contains("unselectable")) {
+			return;
+		}
 		var active = this.parentNode.querySelector(".active");
 		if (active === this) {
 			return;
@@ -146,14 +117,19 @@ export const startMenu = function (connectMenu) {
 		active.link.remove();
 		active = this;
 		this.classList.add("active");
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
 		if (connectMenu) {
-			if (updateActive) updateActive();
-			if (updateActiveCard) updateActiveCard();
+			if (updateActive) {
+				updateActive();
+			}
+			if (updateActiveCard) {
+				updateActiveCard();
+			}
 		}
 	};
 
@@ -269,10 +245,7 @@ export const startMenu = function (connectMenu) {
 					}
 				}
 				if (!connectMenu) {
-					var move = ui.create.div(
-						".auto-hide.config",
-						'<div style="margin-right:10px" class="pointerdiv">上移↑</div><div class="pointerdiv">下移↓</div>'
-					);
+					var move = ui.create.div(".auto-hide.config", '<div style="margin-right:10px" class="pointerdiv">上移↑</div><div class="pointerdiv">下移↓</div>');
 					move.firstChild.listen(function () {
 						if (node.previousSibling) {
 							node.parentNode.insertBefore(node, node.previousSibling);
@@ -304,8 +277,12 @@ export const startMenu = function (connectMenu) {
 				if (hiddenNodes.length) {
 					if (lib.config.fold_mode) {
 						var clickmore = function (type) {
-							if (type === "expand" && expanded) return;
-							if (type === "unexpand" && !expanded) return;
+							if (type === "expand" && expanded) {
+								return;
+							}
+							if (type === "unexpand" && !expanded) {
+								return;
+							}
 							if (expanded) {
 								this.classList.remove("on");
 								this.parentNode.classList.remove("expanded");
@@ -332,25 +309,20 @@ export const startMenu = function (connectMenu) {
 					hasexpand = false;
 				}
 				if (!connectMenu) {
-					var hidemode = ui.create.div(
-						".config.pointerspan",
-						"<span>隐藏此模式</span>",
-						page,
-						function () {
-							if (this.firstChild.innerHTML == "隐藏此模式") {
-								this.firstChild.innerHTML = "此模式将在重启后隐藏";
-								lib.config.hiddenModePack.add(mode);
-								if (!lib.config.prompt_hidepack) {
-									alert("隐藏的扩展包可通过选项-其它-重置隐藏内容恢复");
-									game.saveConfig("prompt_hidepack", true);
-								}
-							} else {
-								this.firstChild.innerHTML = "隐藏此模式";
-								lib.config.hiddenModePack.remove(mode);
+					var hidemode = ui.create.div(".config.pointerspan", "<span>隐藏此模式</span>", page, function () {
+						if (this.firstChild.innerHTML == "隐藏此模式") {
+							this.firstChild.innerHTML = "此模式将在重启后隐藏";
+							lib.config.hiddenModePack.add(mode);
+							if (!lib.config.prompt_hidepack) {
+								alert("隐藏的扩展包可通过选项-其它-重置隐藏内容恢复");
+								game.saveConfig("prompt_hidepack", true);
 							}
-							game.saveConfig("hiddenModePack", lib.config.hiddenModePack);
+						} else {
+							this.firstChild.innerHTML = "隐藏此模式";
+							lib.config.hiddenModePack.remove(mode);
 						}
-					);
+						game.saveConfig("hiddenModePack", lib.config.hiddenModePack);
+					});
 					if (hasexpand) {
 						hidemode.classList.add("auto-hide");
 					}
@@ -368,7 +340,9 @@ export const startMenu = function (connectMenu) {
 				updateConnectDisplayMap();
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 		return node;
 	};
 	var modeorder = lib.config.modeorder || [];
@@ -377,7 +351,9 @@ export const startMenu = function (connectMenu) {
 	}
 	for (var i = 0; i < modeorder.length; i++) {
 		if (connectMenu) {
-			if (!lib.mode[modeorder[i]].connect) continue;
+			if (!lib.mode[modeorder[i]].connect) {
+				continue;
+			}
 			if (!lib.config["connect_" + modeorder[i] + "_banned"]) {
 				lib.config["connect_" + modeorder[i] + "_banned"] = [];
 			}
@@ -394,7 +370,9 @@ export const startMenu = function (connectMenu) {
 		active = start.firstChild.firstChild;
 		active.classList.add("active");
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 	if (lib.config.fold_mode) {
 		rightPane.addEventListener(

@@ -5,11 +5,11 @@ import { _status } from "../../status/index.js";
 import { ui } from "../../ui/index.js";
 
 export class Control extends HTMLDivElement {
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(...args) {
 		if (args[0] instanceof Control) {
 			const other = args[0];
-			// @ts-ignore
+			// @ts-expect-error ignore
 			args = other._args;
 		}
 
@@ -18,25 +18,34 @@ export class Control extends HTMLDivElement {
 		/**
 		 * @type {this}
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const control = ui.create.div(".control");
 		Object.setPrototypeOf(control, (lib.element.Control || Control).prototype);
 		ui.control.insertBefore(control, _status.createControl || ui.confirm);
-		controls.forEach((argument) => {
-			if (argument == "nozoom") return;
-			if (typeof argument == "function") control.custom = argument;
-			else if (argument == "stayleft") {
+		controls.forEach(argument => {
+			if (argument == "nozoom") {
+				return;
+			}
+			if (typeof argument == "function") {
+				control.custom = argument;
+			} else if (argument == "stayleft") {
 				control.stayleft = true;
 				control.classList.add("stayleft");
-			} else control.add(argument);
+			} else {
+				control.add(argument);
+			}
 		});
 		ui.controls.unshift(control);
-		if (nc) ui.control.addTempClass("nozoom", 100);
+		if (nc) {
+			ui.control.addTempClass("nozoom", 100);
+		}
 		if (control.childNodes.length) {
 			control.style.transition = "opacity 0.5s";
 			control.addTempClass("controlpressdownx", 500);
 			ui.refresh(control);
-			if (!control.stayleft) control.style.transform = `translateX(-${control.offsetWidth / 2}px)`;
+			if (!control.stayleft) {
+				control.style.transform = `translateX(-${control.offsetWidth / 2}px)`;
+			}
 			control.style.opacity = 1;
 			ui.refresh(control);
 			control.style.transition = "";
@@ -46,19 +55,24 @@ export class Control extends HTMLDivElement {
 
 		if (lib.config.button_press) {
 			control.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", function () {
-				if (this.classList.contains("disabled")) return;
+				if (this.classList.contains("disabled")) {
+					return;
+				}
 				this.classList.add("controlpressdown");
-				if (typeof this._offset == "number")
+				if (typeof this._offset == "number") {
 					this.style.transform = `translateX(${this._offset}px) scale(0.97)`;
+				}
 			});
 			control.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", function () {
 				this.classList.remove("controlpressdown");
-				if (typeof this._offset == "number") this.style.transform = `translateX(${this._offset}px)`;
+				if (typeof this._offset == "number") {
+					this.style.transform = `translateX(${this._offset}px)`;
+				}
 			});
 		}
 
 		ui.updatec();
-		// @ts-ignore
+		// @ts-expect-error ignore
 		control._args = args;
 		return control;
 	}
@@ -93,10 +107,18 @@ export class Control extends HTMLDivElement {
 
 		setTimeout(ui.updatec, 100);
 
-		if (ui.confirm == this) delete ui.confirm;
-		if (ui.skills == this) delete ui.skills;
-		if (ui.skills2 == this) delete ui.skills2;
-		if (ui.skills3 == this) delete ui.skills3;
+		if (ui.confirm == this) {
+			delete ui.confirm;
+		}
+		if (ui.skills == this) {
+			delete ui.skills;
+		}
+		if (ui.skills2 == this) {
+			delete ui.skills2;
+		}
+		if (ui.skills3 == this) {
+			delete ui.skills3;
+		}
 	}
 	replace() {
 		// this.addTempClass('controlpressdownx',500);
@@ -105,10 +127,15 @@ export class Control extends HTMLDivElement {
 			ui.refresh(this);
 		}
 
-		while (this.childNodes.length) this.firstChild.remove();
+		while (this.childNodes.length) {
+			this.firstChild.remove();
+		}
 		var i, controls;
-		if (Array.isArray(arguments[0])) controls = arguments[0];
-		else controls = arguments;
+		if (Array.isArray(arguments[0])) {
+			controls = arguments[0];
+		} else {
+			controls = arguments;
+		}
 		delete this.custom;
 		for (i = 0; i < controls.length; i++) {
 			if (typeof controls[i] == "function") {
@@ -119,7 +146,9 @@ export class Control extends HTMLDivElement {
 		}
 		if (this.childNodes.length) {
 			var width = 0;
-			for (i = 0; i < this.childNodes.length; i++) width += this.childNodes[i].offsetWidth;
+			for (i = 0; i < this.childNodes.length; i++) {
+				width += this.childNodes[i].offsetWidth;
+			}
 			ui.refresh(this);
 			this.style.width = width + "px";
 		}

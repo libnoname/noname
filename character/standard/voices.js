@@ -1,6 +1,5 @@
 export default {
 	"#ganfuren:die": "请替我照顾好阿斗……",
-	"#std_panfeng:die": "潘凤又被华雄斩了……",
 	"#jianxiong1": "宁教我负天下人，休教天下人负我！",
 	"#jianxiong2": "吾好梦中杀人！",
 	"#hujia1": "魏将何在？",
@@ -48,6 +47,8 @@ export default {
 	"#zhugeliang:die": "将星陨落，天命难违……",
 	"#longdan_sha1": "能进能退，乃真正法器！",
 	"#longdan_sha2": "吾乃常山赵子龙也！",
+	"#longdan_sha_sp_zhaoyun1": "大将军，岂可有勇无谋？",
+	"#longdan_sha_sp_zhaoyun2": "一技闯天下，何有所惧!",
 	"#zhaoyun:die": "这，就是失败的滋味吗？",
 	"#tieji1": "全军突击！",
 	"#tieji2": "（马蹄声，马叫声）",

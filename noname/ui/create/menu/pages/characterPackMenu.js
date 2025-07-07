@@ -1,21 +1,4 @@
-import {
-	menuContainer,
-	popupContainer,
-	updateActive,
-	setUpdateActive,
-	updateActiveCard,
-	setUpdateActiveCard,
-	menux,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 
 export const characterPackMenu = function (connectMenu) {
@@ -27,7 +10,7 @@ export const characterPackMenu = function (connectMenu) {
 	const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	// 用于切换显示对应武将包所有武将的界面
 	var rightPane = start.lastChild;
@@ -43,8 +26,9 @@ export const characterPackMenu = function (connectMenu) {
 		}
 		this.classList.add("active");
 		updateActive(this);
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -73,33 +57,49 @@ export const characterPackMenu = function (connectMenu) {
 					// 扩展武将包开启逻辑
 					if (node.mode.startsWith("mode_extension")) {
 						const extName = node.mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) continue;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							continue;
+						}
 						if (lib.config[`extension_${extName}_characters_enable`] == true) {
 							node.classList.remove("off");
-							if (node.link) node.link.firstChild.classList.add("on");
+							if (node.link) {
+								node.link.firstChild.classList.add("on");
+							}
 						} else {
 							node.classList.add("off");
-							if (node.link) node.link.firstChild.classList.remove("on");
+							if (node.link) {
+								node.link.firstChild.classList.remove("on");
+							}
 						}
 					}
 					continue;
 				}
-				if (node.mode == "custom") continue;
+				if (node.mode == "custom") {
+					continue;
+				}
 				if (connectMenu) {
 					if (!lib.config.connect_characters.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				} else {
 					if (lib.config.characters.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				}
 			}
@@ -110,7 +110,9 @@ export const characterPackMenu = function (connectMenu) {
 		// 扩展武将包开启逻辑
 		if (name.startsWith("mode_extension")) {
 			const extName = name.slice(15);
-			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+				return false;
+			}
 			game.saveExtensionConfig(extName, "characters_enable", bool);
 		}
 		// 原逻辑
@@ -137,12 +139,7 @@ export const characterPackMenu = function (connectMenu) {
 	var createModeConfig = function (mode, position, position2) {
 		var _info = lib.characterPack[mode];
 		var page = ui.create.div("");
-		var node = ui.create.div(
-			".menubutton.large",
-			lib.translate[mode + "_character_config"],
-			position,
-			clickMode
-		);
+		var node = ui.create.div(".menubutton.large", lib.translate[mode + "_character_config"], position, clickMode);
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
 		}
@@ -155,29 +152,24 @@ export const characterPackMenu = function (connectMenu) {
 			page.node = node;
 			var list = [];
 			var boolAI = true;
-			var alterableSkills = [];
-			var alterableCharacters = [];
-			var charactersToAlter = [];
 			for (var i in _info) {
 				const characterInfo = _info[i];
-				if (characterInfo.isUnseen) continue;
-				if (connectMenu && lib.connectBanned.includes(i)) continue;
+				if (characterInfo.isUnseen) {
+					continue;
+				}
+				if (connectMenu && lib.connectBanned.includes(i)) {
+					continue;
+				}
 				list.push(i);
-				if (boolAI && !lib.config.forbidai_user.includes(i)) boolAI = false;
+				if (boolAI && !lib.config.forbidai_user.includes(i)) {
+					boolAI = false;
+				}
 				for (var j = 0; j < characterInfo.skills.length; j++) {
 					if (!lib.skill[characterInfo.skills[j]]) {
 						continue;
 					}
-					if (lib.skill[characterInfo.skills[j]].alter) {
-						alterableSkills.add(characterInfo.skills[j]);
-						alterableCharacters.add(i);
-						if (lib.config.vintageSkills.includes(characterInfo.skills[j])) {
-							charactersToAlter.add(i);
-						}
-					}
 				}
 			}
-			alterableCharacters.sort();
 			list.sort(lib.sort.character);
 			var list2 = list.slice(0);
 			var cfgnode = createConfig({
@@ -187,7 +179,9 @@ export const characterPackMenu = function (connectMenu) {
 					// 扩展武将包开启逻辑
 					if (mode.startsWith("mode_extension")) {
 						const extName = mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							return false;
+						}
 						// 这块或许应该在加载扩展时候写
 						if (lib.config[`extension_${extName}_characters_enable`] === undefined) {
 							game.saveExtensionConfig(extName, "characters_enable", true);
@@ -196,9 +190,7 @@ export const characterPackMenu = function (connectMenu) {
 					}
 					// 原逻辑
 					else {
-						return connectMenu
-							? !lib.config.connect_characters.includes(mode)
-							: lib.config.characters.includes(mode);
+						return connectMenu ? !lib.config.connect_characters.includes(mode) : lib.config.characters.includes(mode);
 					}
 				})(),
 				onclick: togglePack,
@@ -225,39 +217,10 @@ export const characterPackMenu = function (connectMenu) {
 				cfgnodeAI.style.marginTop = "0px";
 				page.appendChild(cfgnode);
 				page.appendChild(cfgnodeAI);
-				if (alterableCharacters.length) {
-					var cfgnode2 = createConfig({
-						name: "新版替换",
-						_name: mode,
-						init: charactersToAlter.length == 0,
-						intro: "以下武将将被修改：" + get.translation(alterableCharacters),
-						onclick(bool) {
-							if (bool) {
-								for (var i = 0; i < alterableSkills.length; i++) {
-									lib.config.vintageSkills.remove(alterableSkills[i]);
-									lib.translate[alterableSkills[i] + "_info"] =
-										lib.translate[alterableSkills[i] + "_info_alter"];
-								}
-							} else {
-								for (var i = 0; i < alterableSkills.length; i++) {
-									lib.config.vintageSkills.add(alterableSkills[i]);
-									lib.translate[alterableSkills[i] + "_info"] =
-										lib.translate[alterableSkills[i] + "_info_origin"];
-								}
-							}
-							game.saveConfig("vintageSkills", lib.config.vintageSkills);
-						},
-					});
-					cfgnode2.style.marginTop = "0px";
-					page.appendChild(cfgnode2);
-				}
 			} else if (mode.startsWith("mode_extension")) {
-				// 排除4个基本扩展，再排除剑阁武将包
+				// 排除4个基本扩展
 				// 给扩展的武将包加一个开启关闭的功能
-				if (
-					!lib.config.all.stockextension.includes(mode.slice(15)) &&
-					mode != "mode_extension_jiange"
-				) {
+				if (!lib.config.all.stockextension.includes(mode.slice(15))) {
 					page.appendChild(cfgnode);
 					cfgnodeAI.style.marginTop = "0px";
 				}
@@ -265,17 +228,16 @@ export const characterPackMenu = function (connectMenu) {
 			} else {
 				page.style.paddingTop = "8px";
 			}
+			if (lib.translate[mode + "_charactersInfo"]) {
+				var modeTranslation = '<p style="padding-left: 2em; margin-block: unset;">' + lib.translate[mode + "_charactersInfo"] + "</p>";
+				page.insertAdjacentHTML("beforeend", modeTranslation);
+			}
 			var banCharacter = function (e) {
 				if (_status.clicked) {
 					_status.clicked = false;
 					return;
 				}
-				if (
-					mode.startsWith("mode_") &&
-					!mode.startsWith("mode_extension_") &&
-					mode != "mode_favourite" &&
-					mode != "mode_banned"
-				) {
+				if (mode.startsWith("mode_") && !mode.startsWith("mode_extension_") && mode != "mode_favourite" && mode != "mode_banned") {
 					if (!connectMenu && lib.config.show_charactercard) {
 						ui.click.charactercard(this.link, this, mode == "mode_guozhan" ? "guozhan" : true);
 					}
@@ -324,14 +286,16 @@ export const characterPackMenu = function (connectMenu) {
 					for (var ii = 0; ii < list2.length; ii++) {
 						if (info.includes(list2[ii])) {
 							listx.add(list2[ii]);
-							if (!listb.includes(list2[ii])) boolx = true;
+							if (!listb.includes(list2[ii])) {
+								boolx = true;
+							}
 							list2.splice(ii--, 1);
 						}
 					}
 					if (listx.length) {
 						var cfgnodeY = {
 							name: lib.translate[pak],
-							intro: lib.translate[pak + '_info'] || false,
+							intro: lib.translate[pak + "_info"] || false,
 							_name: pak,
 							init: boolx,
 							onclick(bool) {
@@ -341,8 +305,11 @@ export const characterPackMenu = function (connectMenu) {
 									if (modex && modex.mode) {
 										banned = lib.config["connect_" + modex.mode + "_banned"];
 									}
-								} else if (_status.connectMode) return;
-								else banned = lib.config[get.mode() + "_banned"] || [];
+								} else if (_status.connectMode) {
+									return;
+								} else {
+									banned = lib.config[get.mode() + "_banned"] || [];
+								}
 								var listx = lib.characterSort[mode][this._link.config._name];
 								if (bool) {
 									for (var i = 0; i < listx.length; i++) {
@@ -353,20 +320,11 @@ export const characterPackMenu = function (connectMenu) {
 										banned.add(listx[i]);
 									}
 								}
-								game.saveConfig(
-									connectMenu
-										? "connect_" + modex.mode + "_banned"
-										: get.mode() + "_banned",
-									banned
-								);
+								game.saveConfig(connectMenu ? "connect_" + modex.mode + "_banned" : get.mode() + "_banned", banned);
 								updateActive();
 							},
 						};
-						if (
-							mode.startsWith("mode_") &&
-							!mode.startsWith("mode_extension_") &&
-							!mode.startsWith("mode_guozhan")
-						) {
+						if (mode.startsWith("mode_") && !mode.startsWith("mode_extension_") && !mode.startsWith("mode_guozhan")) {
 							cfgnodeY.clear = true;
 							delete cfgnodeY.onclick;
 						}
@@ -421,21 +379,11 @@ export const characterPackMenu = function (connectMenu) {
 			page.classList.add("leftbutton");
 			if (!connectMenu) {
 				if (lib.config.all.sgscharacters.includes(mode)) {
-					ui.create.div(
-						".config.pointerspan",
-						'<span style="opacity:0.5">该武将包不可被隐藏</span>',
-						page
-					);
+					ui.create.div(".config.pointerspan", '<span style="opacity:0.5">该武将包不可被隐藏</span>', page);
 				} else if (!mode.startsWith("mode_")) {
 					ui.create.div(".config.pointerspan", "<span>隐藏武将包</span>", page, function () {
 						if (this.firstChild.innerHTML == "隐藏武将包") {
-							if (
-								confirm(
-									"真的要隐藏“" +
-										get.translation(mode + "_character_config") +
-										"”武将包吗？\n建议使用“关闭”而不是“隐藏”功能，否则将会影响其他相关武将包的正常运行！"
-								)
-							) {
+							if (confirm("真的要隐藏“" + get.translation(mode + "_character_config") + "”武将包吗？\n建议使用“关闭”而不是“隐藏”功能，否则将会影响其他相关武将包的正常运行！")) {
 								this.firstChild.innerHTML = "武将包将在重启后隐藏";
 								lib.config.hiddenCharacterPack.add(mode);
 								if (!lib.config.prompt_hidepack) {
@@ -452,7 +400,9 @@ export const characterPackMenu = function (connectMenu) {
 				}
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 		return node;
 	};
 	if (lib.config.show_favourite_menu && !connectMenu && Array.isArray(lib.config.favouriteCharacter)) {
@@ -464,7 +414,9 @@ export const characterPackMenu = function (connectMenu) {
 			}
 		}
 		var favouriteCharacterNode = createModeConfig("mode_favourite", start.firstChild);
-		if (!favouriteCharacterNode.link) favouriteCharacterNode._initLink();
+		if (!favouriteCharacterNode.link) {
+			favouriteCharacterNode._initLink();
+		}
 		ui.favouriteCharacter = favouriteCharacterNode.link;
 		if (get.is.empty(lib.characterPack.mode_favourite)) {
 			ui.favouriteCharacter.node.style.display = "none";
@@ -493,12 +445,17 @@ export const characterPackMenu = function (connectMenu) {
 	for (var i = 0; i < characterlist.length; i++) {
 		createModeConfig(characterlist[i], start.firstChild);
 	}
-	if (!connectMenu)
-		Object.keys(lib.characterPack).forEach((key) => {
+	if (!connectMenu) {
+		Object.keys(lib.characterPack).forEach(key => {
 			// 单机模式下显示不在lib.config.all.characters里的武将包
-			if (!characterlist.includes(key)) createModeConfig(key, start.firstChild);
-			if (connectMenu) lib.connectCharacterPack.add(key);
+			if (!characterlist.includes(key)) {
+				createModeConfig(key, start.firstChild);
+			}
+			if (connectMenu) {
+				lib.connectCharacterPack.add(key);
+			}
 		});
+	}
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
 		active = start.firstChild.firstChild;
@@ -511,7 +468,9 @@ export const characterPackMenu = function (connectMenu) {
 		active.classList.add("active");
 		updateActive(active);
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 
 	if (!connectMenu) {
@@ -537,11 +496,15 @@ export const characterPackMenu = function (connectMenu) {
 	 */
 	return function (packName) {
 		// 判断菜单栏有没有加载过这个武将包
-		if ([...start.firstChild.children].map((node) => node.mode).includes(packName)) return;
+		if ([...start.firstChild.children].map(node => node.mode).includes(packName)) {
+			return;
+		}
 		// 显示不是无名杀自带的武将包
 		if (!lib.connectCharacterPack.includes(packName) && !lib.config.all.characters.includes(packName)) {
 			createModeConfig(packName, start.firstChild, node1);
-			if (connectMenu) lib.connectCharacterPack.add(packName);
+			if (connectMenu) {
+				lib.connectCharacterPack.add(packName);
+			}
 		}
 	};
 };

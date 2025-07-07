@@ -1,29 +1,24 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import html from "../../game/dedent.js";
+
 game.import("play", function () {
 	return {
 		name: "coin",
-		init: function () {
-			if (
-				lib.config.mode != "chess" ||
-				get.config("chess_mode") != "leader"
-			) {
+		init() {
+			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
 				_status.coin = 0;
 			}
 		},
-		arenaReady: function () {
-			if (_status.video || _status.connectMode) return;
-			if (
-				lib.config.mode != "chess" ||
-				get.config("chess_mode") != "leader"
-			) {
+		arenaReady() {
+			if (_status.video || _status.connectMode) {
+				return;
+			}
+			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
 				var str;
 				if (lib.config.coin_display_playpackconfig == "text") {
 					str = "<span>" + lib.config.coin + "</span><span>金</span>";
 				} else {
-					str =
-						'<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' +
-						lib.config.coin +
-						"</span>";
+					str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
 				}
 				if (lib.config.coin_canvas_playpackconfig) {
 					ui.window.classList.add("canvas_top");
@@ -35,129 +30,97 @@ game.import("play", function () {
 						game.haveFun.snow();
 					}, 500);
 				}
-				lib.setPopped(
-					ui.coin,
-					function () {
-						var uiintro = ui.create.dialog("hidden");
-						uiintro.classList.add("coin_menu");
-						uiintro.add("商店");
-						uiintro.listen(function (e) {
-							e.stopPropagation();
-						});
-						var clickBuy = function () {
-							if (this.innerHTML == "停止") {
-								game.haveFun[this.name + "Stop"]();
-							} else if (this.innerHTML == "开始") {
+				lib.setPopped(ui.coin, function () {
+					var uiintro = ui.create.dialog("hidden");
+					uiintro.classList.add("coin_menu");
+					uiintro.add("商店");
+					uiintro.listen(function (e) {
+						e.stopPropagation();
+					});
+					var clickBuy = function () {
+						if (this.innerHTML == "停止") {
+							game.haveFun[this.name + "Stop"]();
+						} else if (this.innerHTML == "开始") {
+							game.haveFun[this.name]();
+						} else if (this.innerHTML.indexOf("金") != -1) {
+							if (lib.config.coin >= this.content.cost) {
+								this.content.bought = true;
+								game.changeCoin(-this.content.cost);
 								game.haveFun[this.name]();
-							} else if (this.innerHTML.indexOf("金") != -1) {
-								if (lib.config.coin >= this.content.cost) {
-									this.content.bought = true;
-									game.changeCoin(-this.content.cost);
-									game.haveFun[this.name]();
-									if (this.content.onbuy) {
-										this.content.onbuy.call(this);
-									}
-								} else {
-									return;
+								if (this.content.onbuy) {
+									this.content.onbuy.call(this);
 								}
+							} else {
+								return;
 							}
-							ui.click.window();
-						};
-						for (var i in game.haveFun.list) {
-							var item = game.haveFun.list[i];
-							uiintro.add(
-								'<div class="coin_buy">' +
-									item.name +
-									'<div class="menubutton">' +
-									item.cost +
-									"金</span></div></div>"
-							);
-							var buy =
-								uiintro.content.lastChild.lastChild.lastChild;
-							if (lib.config.coin < item.cost && !item.bought) {
-								buy.classList.add("disabled");
-							}
-							if (item.bought) {
-								if (item.running) {
-									buy.innerHTML = "停止";
-									if (item.control) {
-										var node = item.control();
-										if (node) {
-											buy.parentNode.appendChild(
-												node,
-												buy
-											);
-										}
-									}
-								} else {
-									buy.innerHTML = "开始";
-								}
-							}
-							buy.name = i;
-							buy.content = item;
-							buy.listen(clickBuy);
 						}
+						ui.click.window();
+					};
+					for (var i in game.haveFun.list) {
+						var item = game.haveFun.list[i];
+						uiintro.add('<div class="coin_buy">' + item.name + '<div class="menubutton">' + item.cost + "金</span></div></div>");
+						var buy = uiintro.content.lastChild.lastChild.lastChild;
+						if (lib.config.coin < item.cost && !item.bought) {
+							buy.classList.add("disabled");
+						}
+						if (item.bought) {
+							if (item.running) {
+								buy.innerHTML = "停止";
+								if (item.control) {
+									var node = item.control();
+									if (node) {
+										buy.parentNode.appendChild(node, buy);
+									}
+								}
+							} else {
+								buy.innerHTML = "开始";
+							}
+						}
+						buy.name = i;
+						buy.content = item;
+						buy.listen(clickBuy);
+					}
 
-						if (!game.phaseNumber && !game.online) {
-							uiintro.add("下注");
-							uiintro.add(
-								'<div class="coin_buy">本局获胜<div class="menubutton">20金</span></div></div>'
-							);
-							var bet =
-								uiintro.content.lastChild.lastChild.lastChild;
-							bet.listen(function () {
-								if (_status.betWin) return;
-								_status.betWin = true;
-								game.changeCoin(-20);
-								this.innerHTML = "已下注";
-							});
+					if (!game.phaseNumber && !game.online) {
+						uiintro.add("下注");
+						uiintro.add('<div class="coin_buy">本局获胜<div class="menubutton">20金</span></div></div>');
+						var bet = uiintro.content.lastChild.lastChild.lastChild;
+						bet.listen(function () {
 							if (_status.betWin) {
-								bet.innerHTML = "已下注";
+								return;
 							}
-						} else if (_status.betWin) {
-							uiintro.add("下注");
-							uiintro.add(
-								'<div class="coin_buy">本局获胜<div class="menubutton">已下注</span></div></div>'
-							);
+							_status.betWin = true;
+							game.changeCoin(-20);
+							this.innerHTML = "已下注";
+						});
+						if (_status.betWin) {
+							bet.innerHTML = "已下注";
 						}
-
-						uiintro.classList.add("noleave");
-
-						return uiintro;
-					},
-					220,
-					400
-				);
+					} else if (_status.betWin) {
+						uiintro.add("下注");
+						uiintro.add('<div class="coin_buy">本局获胜<div class="menubutton">已下注</span></div></div>');
+					}
+					uiintro.classList.add("noleave");
+					return uiintro;
+				}, 220, 400);
 			}
 		},
+
 		game: {
-			changeCoin: function (num, toast, audio) {
+			changeCoin(num, toast, audio) {
 				if (typeof num == "number" && ui.coin) {
 					if (num != 0 && toast !== false) {
-						ui.create.toast(
-							`${num > 0 ? "获得" : "花费"}&nbsp;${Math.abs(
-								num
-							)}&nbsp;金币`
-						);
+						ui.create.toast(`${num > 0 ? "获得" : "花费"}&nbsp;${Math.abs(num)}&nbsp;金币`);
 					}
 					if (audio !== false) {
-						game.playAudio(
-							"effect",
-							num > 0 ? "coin" : "coin_cost"
-						);
+						game.playAudio("effect", num > 0 ? "coin" : "coin_cost");
 					}
 					game.saveConfig("coin", lib.config.coin + num);
 					var str;
 					if (lib.config.coin_display_playpackconfig == "text") {
-						str =
-							"<span>" +
-							lib.config.coin +
-							"</span><span>金</span>";
+						str = "<span>" + lib.config.coin + "</span><span>金</span>";
 					} else {
-						str =
-							'<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' +
-							lib.config.coin +
-							"</span>";
+						str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
 					}
 					ui.coin.innerHTML = str;
 				}
@@ -172,7 +135,7 @@ game.import("play", function () {
 						name: "下雪",
 						cost: 20,
 						size: "large",
-						control: function () {
+						control() {
 							var size = ui.create.div(".menubutton");
 							if (game.haveFun.list.snow.size == "small") {
 								size.innerHTML = "大雪";
@@ -192,12 +155,14 @@ game.import("play", function () {
 						cost: 10,
 					},
 				},
-				alwaysSnow: function () {
+				alwaysSnow() {
 					game.saveConfig("snowFall", !lib.config.snowFall);
 					game.reload();
 				},
-				blink: function () {
-					if (game.haveFun.list.blink.running) return;
+				blink() {
+					if (game.haveFun.list.blink.running) {
+						return;
+					}
 					game.haveFun.list.blink.running = true;
 					if (game.haveFun.blinkLoop) {
 						game.haveFun.blinkLoop();
@@ -213,7 +178,7 @@ game.import("play", function () {
 							H = ui.window.offsetHeight;
 						canvas.width = W;
 						canvas.height = H;
-						lib.onresize.push(function () {
+						lib.onresize.push(() => {
 							var W = ui.window.offsetWidth,
 								H = ui.window.offsetHeight;
 							canvas.width = W;
@@ -237,37 +202,47 @@ game.import("play", function () {
 							mouse.x = e.touches[0].clientX / game.documentZoom;
 							mouse.y = e.touches[0].clientY / game.documentZoom;
 						});
-
-						var particle = function () {
-							//speed, life, location, life, colors
-							//speed.x range = -2.5 to 2.5
-							//speed.y range = -15 to -5 to make it move upwards
-							//lets change the Y speed to make it look like a flame
-							this.speed = {
-								x: -2.5 + Math.random() * 5,
-								y: -5 + Math.random() * 10,
-							};
-							this.speed.x /= 4;
-							this.speed.y /= 4;
-							//location = mouse coordinates
-							//Now the flame follows the mouse coordinates
-							if (mouse.x && mouse.y) {
-								this.location = { x: mouse.x, y: mouse.y };
-							} else {
-								this.location = { x: W / 2, y: H / 2 };
+						class particle {
+							constructor() {
+								// speed, life, location, life, colors
+								// speed.x range = -2.5 to 2.5
+								// speed.y range = -15 to -5 to make it move upwards
+								// lets change the Y speed to make it look like a flame
+								this.speed = {
+									x: -2.5 + Math.random() * 5,
+									y: -5 + Math.random() * 10,
+								};
+								this.speed.x /= 4;
+								this.speed.y /= 4;
+								
+								// location = mouse coordinates
+								// Now the flame follows the mouse coordinates
+								if (mouse.x && mouse.y) {
+									this.location = {
+										x: mouse.x,
+										y: mouse.y
+									};
+								} else {
+									this.location = {
+										x: W / 2,
+										y: H / 2
+									};
+								}
+								
+								// radius range = 10-30
+								this.radius = 10 + Math.random() * 20;
+								// life range = 20-30
+								this.radius /= 4;
+								this.life = 20 + Math.random() * 10;
+								this.life *= 4;
+								this.remaining_life = this.life;
+								
+								// colors
+								this.r = Math.round(Math.random() * 255);
+								this.g = Math.round(Math.random() * 255);
+								this.b = Math.round(Math.random() * 255);
 							}
-							//radius range = 10-30
-							this.radius = 10 + Math.random() * 20;
-							//life range = 20-30
-							this.radius /= 4;
-							this.life = 20 + Math.random() * 10;
-							this.life *= 4;
-							this.remaining_life = this.life;
-							//colors
-							this.r = Math.round(Math.random() * 255);
-							this.g = Math.round(Math.random() * 255);
-							this.b = Math.round(Math.random() * 255);
-						};
+						}
 						for (var i = 0; i < particle_count; i++) {
 							particles.push(new particle());
 						}
@@ -291,61 +266,14 @@ game.import("play", function () {
 								ctx.beginPath();
 								//changing opacity according to the life.
 								//opacity goes to 0 at the end of life of a particle
-								p.opacity =
-									Math.round(
-										(p.remaining_life / p.life) * 100
-									) / 100;
+								p.opacity = Math.round((p.remaining_life / p.life) * 100) / 100;
 								//a gradient instead of white fill
-								var gradient = ctx.createRadialGradient(
-									p.location.x,
-									p.location.y,
-									0,
-									p.location.x,
-									p.location.y,
-									p.radius
-								);
-								gradient.addColorStop(
-									0,
-									"rgba(" +
-										p.r +
-										", " +
-										p.g +
-										", " +
-										p.b +
-										", " +
-										p.opacity +
-										")"
-								);
-								gradient.addColorStop(
-									0.5,
-									"rgba(" +
-										p.r +
-										", " +
-										p.g +
-										", " +
-										p.b +
-										", " +
-										p.opacity +
-										")"
-								);
-								gradient.addColorStop(
-									1,
-									"rgba(" +
-										p.r +
-										", " +
-										p.g +
-										", " +
-										p.b +
-										", 0)"
-								);
+								var gradient = ctx.createRadialGradient(p.location.x, p.location.y, 0, p.location.x, p.location.y, p.radius);
+								gradient.addColorStop(0, "rgba(" + p.r + ", " + p.g + ", " + p.b + ", " + p.opacity + ")");
+								gradient.addColorStop(0.5, "rgba(" + p.r + ", " + p.g + ", " + p.b + ", " + p.opacity + ")");
+								gradient.addColorStop(1, "rgba(" + p.r + ", " + p.g + ", " + p.b + ", 0)");
 								ctx.fillStyle = gradient;
-								ctx.arc(
-									p.location.x,
-									p.location.y,
-									p.radius,
-									Math.PI * 2,
-									false
-								);
+								ctx.arc(p.location.x, p.location.y, p.radius, Math.PI * 2, false);
 								ctx.fill();
 
 								//lets move the particles
@@ -370,8 +298,10 @@ game.import("play", function () {
 						};
 					}
 				},
-				star: function () {
-					if (game.haveFun.list.star.running) return;
+				star() {
+					if (game.haveFun.list.star.running) {
+						return;
+					}
 					game.haveFun.list.star.running = true;
 					if (game.haveFun.starLoop) {
 						game.haveFun.starLoop();
@@ -400,255 +330,228 @@ game.import("play", function () {
 
 						//-------------------------------------------------------
 						// Vectors, and not the kind you put stuff in
-						var Vector = function (x, y, z) {
-							this.x = x || 0;
-							this.y = y || 0;
-							this.z = z || 0;
-						};
-						Vector.prototype = {
-							add: function (vector) {
+						class Vector {
+							constructor(x = 0, y = 0, z = 0) {
+								this.x = x;
+								this.y = y;
+								this.z = z;
+							}
+
+							add(vector) {
 								this.x += vector.x;
 								this.y += vector.y;
 								this.z += vector.z;
 								return this;
-							},
-							subtract: function (vector) {
+							}
+
+							subtract(vector) {
 								this.x -= vector.x;
 								this.y -= vector.y;
 								this.z -= vector.z;
 								return this;
-							},
-							multiply: function (another) {
+							}
+
+							multiply(another) {
 								this.x /= another.x;
 								this.y /= another.y;
 								this.z /= another.z;
 								return this;
-							},
-							divide: function (another) {
+							}
+
+							divide(another) {
 								this.x /= another.x;
 								this.y /= another.y;
 								this.z /= another.z;
 								return this;
-							},
-							scale: function (factor) {
+							}
+
+							scale(factor) {
 								this.x *= factor;
 								this.y *= factor;
 								this.z *= factor;
 								return this;
-							},
-							magnitude: function () {
+							}
+
+							magnitude() {
 								return sqrt(sqr(this.x + this.y));
-							},
-							distance: function (another) {
-								return abs(
-									sqrt(
-										sqr(this.x - another.x) +
-											sqr(this.y - another.y)
-									)
-								);
-							},
-							angle: function (angle, magnitude) {
-								if (angle && magnitude)
+							}
+
+							distance(another) {
+								return abs(sqrt(sqr(this.x - another.x) + sqr(this.y - another.y)));
+							}
+
+							angle(angle, magnitude) {
+								if (angle && magnitude) {
 									return Vector.fromAngle(angle, magnitude);
+								}
 								return atan2(this.y, this.x);
-							},
-							clone: function () {
+							}
+
+							clone() {
 								return new Vector(this.x, this.y, this.z);
-							},
-							equals: function (another) {
-								return (
-									this.x === another.x &&
-									this.y === another.y &&
-									this.z === another.z
-								);
-							},
-							random: function (r) {
+							}
+
+							equals(another) {
+								return (this.x === another.x && this.y === another.y && this.z === another.z);
+							}
+
+							random(r) {
 								this.x += random() * r * 2 - r;
 								this.y += random() * r * 2 - r;
 								return this;
-							},
-						};
-						Vector.fromAngle = function (angle, magnitude) {
-							return new Vector(
-								magnitude * cos(angle),
-								magnitude * sin(angle),
-								magnitude * sin(angle)
-							);
-						};
+							}
 
+							static fromAngle(angle, magnitude) {
+								return new Vector(magnitude * cos(angle), magnitude * sin(angle), magnitude * sin(angle));
+							}
+						}
 						//******************************************************
 						// A thing with mass, position, and velocity - like your mom
-						var Particle = function (pt, vc, ac, mass) {
-							this.pos = pt || new Vector(0, 0);
-							this.vc = vc || new Vector(0, 0);
-							this.ac = ac || new Vector(0, 0);
-							this.mass = mass || 1;
-							this.alive = true;
-						};
-						Particle.prototype.move = function () {
-							this.vc.add(this.ac);
-							this.pos.add(this.vc);
-						};
-						Particle.prototype.reactToForces = function (fields) {
-							var totalAccelerationX = 0;
-							var totalAccelerationY = 0;
-
-							for (var i = 0; i < fields.length; i++) {
-								var field = fields[i];
-								var vectorX = field.pos.x - this.pos.x;
-								var vectorY = field.pos.y - this.pos.y;
-								var distance = this.pos.distance(field.pos);
-								if (distance < 1) field.grow(this);
-								if (distance < 100) this.doubleSize = true;
-								var force = G(
-									this.forceBetween(field, distance)
-								);
-								totalAccelerationX += vectorX * force;
-								totalAccelerationY += vectorY * force;
+						class Particle {
+							constructor(pt = new Vector(0, 0), vc = new Vector(0, 0), ac = new Vector(0, 0), mass = 1) {
+								this.pos = pt;
+								this.vc = vc;
+								this.ac = ac;
+								this.mass = mass;
+								this.alive = true;
 							}
-							this.ac = new Vector(
-								totalAccelerationX,
-								totalAccelerationY
-							);
 
-							totalAccelerationX = 0;
-							totalAccelerationY = 0;
-							for (var i = 0; i < particles.length; i++) {
-								var field = particles[i];
-								if (field === this || !field.alive) continue;
-								var vectorX = field.pos.x - this.pos.x;
-								var vectorY = field.pos.y - this.pos.y;
-								var distance = this.pos.distance(field.pos);
-								if (distance < 1) {
-									if (this.mass >= field.mass) {
-										var massRatio = this.mass / field.mass;
-										if (
-											particles.length <= maxParticles &&
-											this.mass > 40
-										) {
+							move() {
+								this.vc.add(this.ac);
+								this.pos.add(this.vc);
+							}
+
+							reactToForces(fields) {
+								let totalAccelerationX = 0;
+								let totalAccelerationY = 0;
+
+								for (let i = 0; i < fields.length; i++) {
+									const field = fields[i];
+									const vectorX = field.pos.x - this.pos.x;
+									const vectorY = field.pos.y - this.pos.y;
+									const distance = this.pos.distance(field.pos);
+									if (distance < 1) {
+										field.grow(this);
+									}
+									if (distance < 100) {
+										this.doubleSize = true;
+									}
+									const force = G(this.forceBetween(field, distance));
+									totalAccelerationX += vectorX * force;
+									totalAccelerationY += vectorY * force;
+								}
+								this.ac = new Vector(totalAccelerationX, totalAccelerationY);
+
+								totalAccelerationX = 0;
+								totalAccelerationY = 0;
+								for (let i = 0; i < particles.length; i++) {
+									const field = particles[i];
+									if (field === this || !field.alive) {
+										continue;
+									}
+									const vectorX = field.pos.x - this.pos.x;
+									const vectorY = field.pos.y - this.pos.y;
+									const distance = this.pos.distance(field.pos);
+									if (distance < 1) {
+										if (this.mass >= field.mass) {
+											const massRatio = this.mass / field.mass;
+											if (particles.length <= maxParticles && this.mass > 40) {
+												this.alive = false;
+												this.nova = true;
+												collidedMass += this.mass;
+											} else {
+												this.grow(field);
+											}
+										} else {
 											this.alive = false;
-											this.nova = true;
-											collidedMass += this.mass;
-										} else this.grow(field);
-									} else this.alive = false;
+										}
+									}
+									if (this.alive) {
+										const force = G(this.forceBetween(field, distance));
+										totalAccelerationX += vectorX * G(force);
+										totalAccelerationY += vectorY * G(force);
+									}
 								}
-								if (this.alive) {
-									var force = G(
-										this.forceBetween(field, distance)
-									);
-									totalAccelerationX += vectorX * G(force);
-									totalAccelerationY += vectorY * G(force);
-								}
+
+								const travelDist = this.pos.distance(this.lastPos ? this.lastPos : this.pos);
+								this.velocity = travelDist - (this.lastDistance ? this.lastDistance : travelDist);
+								this.lastDistance = travelDist;
+								this.lastPos = this.pos.clone();
+
+								this.ac.add(new Vector(totalAccelerationX, totalAccelerationY));
+								this.lastPos = this.pos.clone();
 							}
 
-							var travelDist = this.pos.distance(
-								this.lastPos ? this.lastPos : this.pos
-							);
-							this.velocity =
-								travelDist -
-								(this.lastDistance
-									? this.lastDistance
-									: travelDist);
-							this.lastDistance = travelDist;
-							this.lastPos = this.pos.clone();
-
-							this.ac.add(
-								new Vector(
-									totalAccelerationX,
-									totalAccelerationY
-								)
-							);
-							this.lastPos = this.pos.clone();
-							// if(this.mass > 20) {
-							//   var chance = 1 / (this.mass - 20);
-							//   if(Math.random()>chance) {
-							//     this.supernova = true;
-							//     this.supernovaDur = 10;
-							//     this.alive = false;
-							//     if(particles.length <= maxParticles) collidedMass += this.mass;
-							//     delete this.size;
-							//   }
-							// }
-						};
-						Particle.prototype.grow = function (another) {
-							this.mass += another.mass;
-							this.nova = true;
-							another.alive = false;
-							delete this.size;
-						};
-						Particle.prototype.breakApart = function (
-							minMass,
-							maxParts
-						) {
-							if (!minMass) minMass = 1;
-							if (!maxParts) maxParts = 2;
-							var remainingMass = this.mass;
-							var num = 0;
-							while (remainingMass > 0) {
-								var np = new Particle(
-									this.pos.clone().random(this.mass),
-									new Vector(0, 0)
-								);
-								np.mass =
-									1 + Math.random() * (remainingMass - 1);
-								if (num >= maxParts - 1)
-									np.mass = remainingMass;
-								np.mass = np.mass < minMass ? minMass : np.mass;
-								remainingMass -= np.mass;
-								num++;
+							grow(another) {
+								this.mass += another.mass;
+								this.nova = true;
+								another.alive = false;
+								delete this.size;
 							}
-							this.nova = true;
-							delete this.size;
-							this.alive = false;
-						};
-						Particle.prototype.forceBetween = function (
-							another,
-							distance
-						) {
-							var distance = distance
-								? distance
-								: this.pos.distance(another.pos);
-							return (this.mass * another.mass) / sqr(distance);
-						};
+
+							breakApart(minMass, maxParts) {
+								if (!minMass) {
+									minMass = 1;
+								}
+								if (!maxParts) {
+									maxParts = 2;
+								}
+								let remainingMass = this.mass;
+								let num = 0;
+								while (remainingMass > 0) {
+									const np = new Particle(this.pos.clone().random(this.mass), new Vector(0, 0));
+									np.mass = 1 + Math.random() * (remainingMass - 1);
+									if (num >= maxParts - 1) {
+										np.mass = remainingMass;
+									}
+									np.mass = np.mass < minMass ? minMass : np.mass;
+									remainingMass -= np.mass;
+									num++;
+								}
+								this.nova = true;
+								delete this.size;
+								this.alive = false;
+							}
+
+							forceBetween(another, distance) {
+								const dist = distance ? distance : this.pos.distance(another.pos);
+								return (this.mass * another.mass) / sqr(dist);
+							}
+						}
 
 						//******************************************************
 						//This certainly doesn't *sub*mit to particles, that's for sure
-						var ParticleEmitter = function (pos, vc, ang) {
-							// to do config options for emitter - random, static, show emitter, emitter color, etc
-							this.pos = pos;
-							this.vc = vc;
-							this.ang = ang || 0.09;
-							this.color = "#999";
-						};
-						ParticleEmitter.prototype.emit = function () {
-							var angle =
-								this.vc.angle() +
-								this.ang -
-								Math.random() * this.ang * 2;
-							var magnitude = this.vc.magnitude();
-							var position = this.pos.clone();
-							position.add(
-								new Vector(
-									~~(Math.random() * 100 - 50) * drawScale,
-									~~(Math.random() * 100 - 50) * drawScale
-								)
-							);
-							var velocity = Vector.fromAngle(angle, magnitude);
-							return new Particle(position, velocity);
-						};
+						class ParticleEmitter {
+							constructor(pos, vc, ang = 0.09) {
+								// to do config options for emitter - random, static, show emitter, emitter color, etc
+								this.pos = pos;
+								this.vc = vc;
+								this.ang = ang;
+								this.color = "#999";
+							}
 
-						//******************************************************
-						// Use it, Luke
-						// to do collapse functionality into particle
-						var Force = function (pos, m) {
-							this.pos = pos;
-							this.mass = m || 100;
-						};
-						Force.prototype.grow = function (another) {
-							this.mass += another.mass;
-							this.burp = true;
-							another.alive = false;
-						};
+							emit() {
+								const angle = this.vc.angle() + this.ang - Math.random() * this.ang * 2;
+								const magnitude = this.vc.magnitude();
+								const position = this.pos.clone();
+								position.add(new Vector(~~(Math.random() * 100 - 50) * drawScale, ~~(Math.random() * 100 - 50) * drawScale));
+								const velocity = Vector.fromAngle(angle, magnitude);
+								return new Particle(position, velocity);
+							}
+						}
+
+						class Force {
+							constructor(pos, m = 100) {
+								this.pos = pos;
+								this.mass = m;
+							}
+
+							grow(another) {
+								this.mass += another.mass;
+								this.burp = true;
+								another.alive = false;
+							}
+						}
 
 						var G = function (data) {
 							return 0.00674 * data;
@@ -670,11 +573,7 @@ game.import("play", function () {
 							canvasHeight = canvas.height;
 						});
 
-						var renderToCanvas = function (
-							width,
-							height,
-							renderFunction
-						) {
+						var renderToCanvas = function (width, height, renderFunction) {
 							var buffer = document.createElement("canvas");
 							buffer.width = width;
 							buffer.height = height;
@@ -686,53 +585,8 @@ game.import("play", function () {
 						emissionRate = 1;
 						drawScale = 1.3;
 						minParticleSize = 2;
-						emitters = [
-							//br
-							new ParticleEmitter(
-								new Vector(
-									(canvasWidth / 2) * drawScale + 400,
-									(canvasHeight / 2) * drawScale
-								),
-								Vector.fromAngle(2, 5),
-								1
-							),
-							//   // bl
-							//   new ParticleEmitter(
-							//   new Vector(
-							//     canvasWidth / 2 * drawScale - 400,
-							//     canvasHeight / 2 * drawScale + 400
-							//     ),
-							//   Vector.fromAngle(1.5, 1),
-							//   1
-							// ),
-							// tl
-							new ParticleEmitter(
-								new Vector(
-									(canvasWidth / 2) * drawScale - 400,
-									(canvasHeight / 2) * drawScale
-								),
-								Vector.fromAngle(5, 5),
-								1
-							),
-							//   // tr
-							//   new ParticleEmitter(
-							//   new Vector(
-							//     canvasWidth / 2 * drawScale + 400,
-							//     canvasHeight / 2 * drawScale - 400
-							//     ),
-							//   Vector.fromAngle(4.5, 1),
-							//   1
-							// )
-						];
-						forces = [
-							new Force(
-								new Vector(
-									(canvasWidth / 2) * drawScale,
-									(canvasHeight / 2) * drawScale
-								),
-								1800
-							),
-						];
+						emitters = [new ParticleEmitter(new Vector((canvasWidth / 2) * drawScale + 400, (canvasHeight / 2) * drawScale), Vector.fromAngle(2, 5), 1), new ParticleEmitter(new Vector((canvasWidth / 2) * drawScale - 400, (canvasHeight / 2) * drawScale), Vector.fromAngle(5, 5), 1)];
+						forces = [new Force(new Vector((canvasWidth / 2) * drawScale, (canvasHeight / 2) * drawScale), 1800)];
 
 						var loop = function () {
 							if (!game.haveFun.list.star.running) {
@@ -755,12 +609,7 @@ game.import("play", function () {
 						};
 
 						var ctr = 0;
-						var c = [
-							"rgba(255,255,255,",
-							"rgba(0,150,255,",
-							"rgba(255,255,128,",
-							"rgba(255,255,255,",
-						];
+						var c = ["rgba(255,255,255,", "rgba(0,150,255,", "rgba(255,255,128,", "rgba(255,255,255,"];
 						var rndc = function () {
 							return c[~~(Math.random() * c.length - 1)];
 						};
@@ -771,12 +620,7 @@ game.import("play", function () {
 								for (var i = 0; i < emitters.length; i++) {
 									for (var j = 0; j < emissionRate; j++) {
 										var p = emitters[i].emit();
-										p.color =
-											ctr % 10 === 0
-												? Math.random() * 5 <= 1
-													? c2
-													: rndc()
-												: rndc();
+										p.color = ctr % 10 === 0 ? (Math.random() * 5 <= 1 ? c2 : rndc()) : rndc();
 										p.mass = ~~(Math.random() * 5);
 										particles.push(p);
 										ret += p.mass;
@@ -788,11 +632,12 @@ game.import("play", function () {
 							if (collidedMass !== 0) {
 								while (collidedMass !== 0) {
 									collidedMass -= _emit();
-									collidedMass =
-										collidedMass < 0 ? 0 : collidedMass;
+									collidedMass = collidedMass < 0 ? 0 : collidedMass;
 								}
 							}
-							if (particles.length > maxParticles) return;
+							if (particles.length > maxParticles) {
+								return;
+							}
 							_emit();
 						};
 
@@ -800,32 +645,8 @@ game.import("play", function () {
 							BUFFEROFFSCREEN = 2,
 							LOOPSCREEN = 3;
 
-						var isPositionAliveAndAdjust = function (
-							particle,
-							check
-						) {
+						var isPositionAliveAndAdjust = function (particle, check) {
 							return true;
-							//   var pos = particle.pos;
-							//   if(!check) check = BUFFEROFFSCREEN;
-							//   if(check === CLIPOFFSCREEN) {
-							//     return !(!particle.alive ||
-							//              pos.x < 0 ||
-							//              (pos.x / drawScale) > boundsX ||
-							//              pos.y < 0 ||
-							//              (pos.y / drawScale) > boundsY);
-							//   } else if(check === BUFFEROFFSCREEN) {
-							//     return !(!particle.alive ||
-							//              pos.x < -boundsX * drawScale ||
-							//              pos.x > 2 * boundsX * drawScale ||
-							//              pos.y < -boundsY * drawScale ||
-							//              pos.y > 2 * boundsY * drawScale);
-							//   } else if(check === LOOPSCREEN) {
-							//     if (pos.x < 0) pos.x = boundsX * drawScale;
-							//     if ((pos.x / drawScale) > boundsX) pos.x = 0;
-							//     if (pos.y < 0) pos.y = boundsY * drawScale;
-							//     if ((pos.y / drawScale) > boundsY) pos.y = 0;
-							//     return true;
-							//   }
 						};
 
 						var plotParticles = function (boundsX, boundsY) {
@@ -833,8 +654,9 @@ game.import("play", function () {
 							for (var i = 0; i < particles.length; i++) {
 								var particle = particles[i];
 								particle.reactToForces(forces);
-								if (!isPositionAliveAndAdjust(particle))
+								if (!isPositionAliveAndAdjust(particle)) {
 									continue;
+								}
 								particle.move();
 								currentParticles.push(particle);
 							}
@@ -843,20 +665,27 @@ game.import("play", function () {
 						var offscreenCache = {};
 						var renderParticle = function (p) {
 							var position = p.pos;
-							if (!p.size) p.size = Math.floor(p.mass / 100);
-
-							if (!p.opacity) p.opacity = 0.05;
-							if (p.velocity > 0) {
-								if (p.opacity <= 0.18) p.opacity += 0.04;
+							if (!p.size) {
+								p.size = Math.floor(p.mass / 100);
 							}
-							if (p.opacity > 0.08) p.opacity -= 0.02;
+
+							if (!p.opacity) {
+								p.opacity = 0.05;
+							}
+							if (p.velocity > 0) {
+								if (p.opacity <= 0.18) {
+									p.opacity += 0.04;
+								}
+							}
+							if (p.opacity > 0.08) {
+								p.opacity -= 0.02;
+							}
 
 							var actualSize = p.size / drawScale;
-							actualSize =
-								actualSize < minParticleSize
-									? minParticleSize
-									: actualSize;
-							if (p.mass > 8) actualSize *= 2;
+							actualSize = actualSize < minParticleSize ? minParticleSize : actualSize;
+							if (p.mass > 8) {
+								actualSize *= 2;
+							}
 							if (p.nova) {
 								actualSize *= 4;
 								p.nova = false;
@@ -865,66 +694,39 @@ game.import("play", function () {
 								p.doubleSize = false;
 								actualSize *= 2;
 							}
-							// if(p.supernova) {
-							//   actualSize *= 6;
-							//   opacity = 0.15;
-							//   p.supernovaDur = p.supernovaDur - 1;
-							//   if(p.supernovaDur === 0)
-							//     p.supernova = false;
-							// }
-							var cacheKey =
-								actualSize + "_" + p.opacity + "_" + p.color;
+							var cacheKey = actualSize + "_" + p.opacity + "_" + p.color;
 							var cacheValue = offscreenCache[cacheKey];
 							if (!cacheValue) {
-								cacheValue = renderToCanvas(
-									actualSize * 32,
-									actualSize * 32,
-									function (ofsContext) {
-										var opacity = p.opacity;
-										var fills = [
-											{
-												size: actualSize / 2,
-												opacity: 1,
-											},
-											{
-												size: actualSize,
-												opacity: opacity,
-											},
-											{
-												size: actualSize * 2,
-												opacity: opacity / 2,
-											},
-											{
-												size: actualSize * 4,
-												opacity: opacity / 3,
-											},
-											{
-												size: actualSize * 8,
-												opacity: opacity / 5,
-											},
-											{
-												size: actualSize * 16,
-												opacity: opacity / 16,
-											},
-										];
-										ofsContext.beginPath();
-										for (var f in fills) {
-											f = fills[f];
-											ofsContext.fillStyle =
-												p.color + f.opacity + ")";
-											ofsContext.arc(
-												actualSize * 16,
-												actualSize * 16,
-												f.size,
-												0,
-												Math.PI * 2,
-												true
-											);
-											ofsContext.fill();
-										}
-										ofsContext.closePath();
+								cacheValue = renderToCanvas(actualSize * 32, actualSize * 32, function (ofsContext) {
+									var opacity = p.opacity;
+									var fills = [{
+										size: actualSize / 2,
+										opacity: 1,
+									}, {
+										size: actualSize,
+										opacity: opacity,
+									}, {
+										size: actualSize * 2,
+										opacity: opacity / 2,
+									}, {
+										size: actualSize * 4,
+										opacity: opacity / 3,
+									}, {
+										size: actualSize * 8,
+										opacity: opacity / 5,
+									}, {
+										size: actualSize * 16,
+										opacity: opacity / 16,
+									}];
+									ofsContext.beginPath();
+									for (var f in fills) {
+										f = fills[f];
+										ofsContext.fillStyle = p.color + f.opacity + ")";
+										ofsContext.arc(actualSize * 16, actualSize * 16, f.size, 0, Math.PI * 2, true);
+										ofsContext.fill();
 									}
-								);
+									ofsContext.closePath();
+								});
 								offscreenCache[cacheKey] = cacheValue;
 							}
 							var posX = p.pos.x / drawScale;
@@ -937,7 +739,6 @@ game.import("play", function () {
 							{ size: 25, opacity: 0.3 },
 							{ size: 50, opacity: 0.1 },
 						];
-
 						var renderScene = function (ofsContext) {
 							for (var i = 0; i < forces.length; i++) {
 								var p = forces[i];
@@ -949,11 +750,6 @@ game.import("play", function () {
 									f = fills[f];
 									var o = p.burp === true ? 1 : f.opacity;
 									p.burp = false;
-									// ofsContext.fillStyle = 'rgba(255,255,255,' + o + ')';
-									// ofsContext.arc(position.x / drawScale,
-									//   position.y / drawScale,
-									//   f.size / drawScale, 0, Math.PI*2, true);
-									// ofsContext.fill();
 								}
 								ofsContext.closePath();
 							}
@@ -980,11 +776,17 @@ game.import("play", function () {
 						loop();
 					}
 				},
-				snow: function () {
+				snow() {
 					game.haveFun.list.snow.running = true;
 					if (game.haveFun.snowStart) {
 						game.haveFun.snowStart();
 					} else {
+						// 兼容写法
+						var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (callback) {
+								setTimeout(callback, 1000 / 60);
+							};
+						var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame || window.oCancelAnimationFrame;
+
 						/*
 						 * 自由下雪 snowFall
 						 * author：xuanfeng
@@ -992,85 +794,65 @@ game.import("play", function () {
 						 */
 						// 控制下雪
 						var canvas;
-						var snowFall = function (snow) {
-							// 可配置属性
-							snow = snow || {};
-							this.maxFlake = snow.maxFlake || 200; //最多片数
-							this.flakeSize = snow.flakeSize || 10; //雪花形状
-							this.fallSpeed = snow.fallSpeed || 2; //坠落速度
-							this.status = 0; //0-初始化、1-开始下雪、2-停止下雪、3-暂停下雪、4-继续下雪
-						};
-
-						// 兼容写法
-						var requestAnimationFrame =
-							window.requestAnimationFrame ||
-							window.mozRequestAnimationFrame ||
-							window.webkitRequestAnimationFrame ||
-							window.msRequestAnimationFrame ||
-							window.oRequestAnimationFrame ||
-							function (callback) {
-								setTimeout(callback, 1000 / 60);
-							};
-						var cancelAnimationFrame =
-							window.cancelAnimationFrame ||
-							window.mozCancelAnimationFrame ||
-							window.webkitCancelAnimationFrame ||
-							window.msCancelAnimationFrame ||
-							window.oCancelAnimationFrame;
-
-						// 开始下雪
-						snowFall.prototype.start = function () {
-							if (this.status == 1 || this.status == 4) {
-								// 已经在下雪则不作处理
-								return false;
+						class snowFall {
+							constructor(snow = {}) {
+								// 可配置属性
+								this.maxFlake = snow.maxFlake || 200; //最多片数
+								this.flakeSize = snow.flakeSize || 10; //雪花形状
+								this.fallSpeed = snow.fallSpeed || 2; //坠落速度
+								this.status = 0; //0-初始化、1-开始下雪、2-停止下雪、3-暂停下雪、4-继续下雪
 							}
-							this.status = 1;
 
-							// 创建画布
-							snowCanvas.apply(this);
-							// 创建雪花形状
-							createFlakes.apply(this);
-							// 画雪
-							drawSnow.apply(this);
-						};
+							// 开始下雪
+							start() {
+								if (this.status == 1 || this.status == 4) {
+									// 已经在下雪则不作处理
+									return false;
+								}
+								this.status = 1;
 
-						// 停止下雪
-						snowFall.prototype.stop = function () {
-							if (
-								this.status == 2 ||
-								this.status == 0 ||
-								!this.canvas
-							) {
-								return false;
+								// 创建画布
+								snowCanvas.apply(this);
+								// 创建雪花形状
+								createFlakes.apply(this);
+								// 画雪
+								drawSnow.apply(this);
 							}
-							// 停止动画循环
-							this.pause();
-							this.status = 2;
-							// 删除画布
-							this.canvas.parentNode.removeChild(this.canvas);
-							this.canvas = null;
-						};
 
-						// 暂停下雪
-						snowFall.prototype.pause = function () {
-							if (this.status == 3) {
-								return false;
+							// 停止下雪
+							stop() {
+								if (this.status == 2 || this.status == 0 || !this.canvas) {
+									return false;
+								}
+								// 停止动画循环
+								this.pause();
+								this.status = 2;
+								// 删除画布
+								this.canvas.parentNode.removeChild(this.canvas);
+								this.canvas = null;
 							}
-							this.status = 3;
-							cancelAnimationFrame(this.loop);
-						};
-						// 继续下雪
-						snowFall.prototype.resume = function () {
-							if (this.status == 3 && this.canvas) {
-								this.status = 4;
-								// 动画的计时控制
-								var that = this;
-								this.loop = requestAnimationFrame(function () {
-									drawSnow.apply(that);
-								});
-							}
-						};
 
+							// 暂停下雪
+							pause() {
+								if (this.status == 3) {
+									return false;
+								}
+								this.status = 3;
+								cancelAnimationFrame(this.loop);
+							}
+
+							// 继续下雪
+							resume() {
+								if (this.status == 3 && this.canvas) {
+									this.status = 4;
+									// 动画的计时控制
+									const that = this;
+									this.loop = requestAnimationFrame(function () {
+										drawSnow.apply(that);
+									});
+								}
+							}
+						}
 						// 创建画布
 						var snowCanvas = function () {
 							// 添加Dom结点
@@ -1091,100 +873,70 @@ game.import("play", function () {
 						};
 
 						// 雪运动对象
-						var flakeMove = function (
-							canvasWidth,
-							canvasHeight,
-							flakeSize,
-							fallSpeed
-						) {
-							this.x = Math.floor(Math.random() * canvasWidth); //x坐标
-							this.y = Math.floor(Math.random() * canvasHeight); //y坐标
-							this.size = Math.random() * flakeSize + 2; //形状
-							this.maxSize = flakeSize; //最大形状
-							this.speed = Math.random() * 1 + fallSpeed; //坠落速度
-							this.fallSpeed = fallSpeed; //坠落速度
-							this.velY = this.speed; //Y方向速度
-							this.velX = 0; //X方向速度
-							this.stepSize = Math.random() / 30; //步长
-							this.step = 0; //步数
-						};
+						class flakeMove {
+							constructor(canvasWidth, canvasHeight, flakeSize, fallSpeed) {
+								this.x = Math.floor(Math.random() * canvasWidth); // x坐标
+								this.y = Math.floor(Math.random() * canvasHeight); // y坐标
+								this.size = Math.random() * flakeSize + 2; // 形状
+								this.maxSize = flakeSize; // 最大形状
+								this.speed = Math.random() * 1 + fallSpeed; // 坠落速度
+								this.fallSpeed = fallSpeed; // 坠落速度
+								this.velY = this.speed; // Y方向速度
+								this.velX = 0; // X方向速度
+								this.stepSize = Math.random() / 30; // 步长
+								this.step = 0; // 步数
+							}
 
-						flakeMove.prototype.update = function () {
-							var x = this.x,
-								y = this.y;
+							update() {
+								const x = this.x;
+								const y = this.y;
 
-							// 左右摆动(余弦)
-							this.velX *= 0.98;
-							if (this.velY <= this.speed) {
+								// 左右摆动(余弦)
+								this.velX *= 0.98;
+								if (this.velY <= this.speed) {
+									this.velY = this.speed;
+								}
+								this.velX += Math.cos((this.step += 0.05)) * this.stepSize;
+
+								this.y += this.velY;
+								this.x += this.velX;
+								// 飞出边界的处理
+								if (this.x >= canvas.width || this.x <= 0 || this.y >= canvas.height || this.y <= 0) {
+									this.reset(canvas.width, canvas.height);
+								}
+							}
+
+							// 飞出边界-放置最顶端继续坠落
+							reset(width, height) {
+								this.x = Math.floor(Math.random() * width);
+								this.y = 0;
+								this.size = Math.random() * snow.flakeSize + 2;
+								this.speed = Math.random() * 1 + snow.fallSpeed;
 								this.velY = this.speed;
+								this.velX = 0;
 							}
-							this.velX +=
-								Math.cos((this.step += 0.05)) * this.stepSize;
 
-							this.y += this.velY;
-							this.x += this.velX;
-							// 飞出边界的处理
-							if (
-								this.x >= canvas.width ||
-								this.x <= 0 ||
-								this.y >= canvas.height ||
-								this.y <= 0
-							) {
-								this.reset(canvas.width, canvas.height);
+							// 渲染雪花-随机形状
+							render(ctx) {
+								const snowFlake = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+								snowFlake.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+								snowFlake.addColorStop(0.5, "rgba(255, 255, 255, 0.5)");
+								snowFlake.addColorStop(1, "rgba(255, 255, 255, 0)");
+								ctx.save();
+								ctx.fillStyle = snowFlake;
+								ctx.beginPath();
+								ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+								ctx.fill();
+								ctx.restore();
 							}
-						};
-
-						// 飞出边界-放置最顶端继续坠落
-						flakeMove.prototype.reset = function (width, height) {
-							this.x = Math.floor(Math.random() * width);
-							this.y = 0;
-							this.size = Math.random() * snow.flakeSize + 2;
-							this.speed = Math.random() * 1 + snow.fallSpeed;
-							this.velY = this.speed;
-							this.velX = 0;
-						};
-
-						// 渲染雪花-随机形状
-						flakeMove.prototype.render = function (ctx) {
-							var snowFlake = ctx.createRadialGradient(
-								this.x,
-								this.y,
-								0,
-								this.x,
-								this.y,
-								this.size
-							);
-							snowFlake.addColorStop(
-								0,
-								"rgba(255, 255, 255, 0.9)"
-							);
-							snowFlake.addColorStop(
-								0.5,
-								"rgba(255, 255, 255, 0.5)"
-							);
-							snowFlake.addColorStop(1, "rgba(255, 255, 255, 0)");
-							ctx.save();
-							ctx.fillStyle = snowFlake;
-							ctx.beginPath();
-							ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-							ctx.fill();
-							ctx.restore();
-						};
-
+						}
 						// 创建雪花-定义形状
 						var createFlakes = function () {
 							var maxFlake = this.maxFlake,
 								flakes = (this.flakes = []),
 								canvas = this.canvas;
 							for (var i = 0; i < 200; i++) {
-								flakes.push(
-									new flakeMove(
-										canvas.width,
-										canvas.height,
-										this.flakeSize,
-										this.fallSpeed
-									)
-								);
+								flakes.push(new flakeMove(canvas.width, canvas.height, this.flakeSize, this.fallSpeed));
 							}
 						};
 
@@ -1222,7 +974,7 @@ game.import("play", function () {
 								snow.maxFlake = 80;
 								snow.flakeSize = 3;
 								snow.fallSpeed = 1;
-								if (this && this.innerHTML) {
+								if (this?.innerHTML) {
 									this.innerHTML = "大雪";
 								}
 								game.saveConfig("coinSnowSize", true);
@@ -1231,7 +983,7 @@ game.import("play", function () {
 								snow.maxFlake = 200;
 								snow.flakeSize = 10;
 								snow.fallSpeed = 2;
-								if (this && this.innerHTML) {
+								if (this?.innerHTML) {
 									this.innerHTML = "小雪";
 								}
 								game.saveConfig("coinSnowSize", false);
@@ -1243,8 +995,10 @@ game.import("play", function () {
 						snow.start();
 					}
 				},
-				firework: function () {
-					if (game.haveFun.list.firework.running) return;
+				firework() {
+					if (game.haveFun.list.firework.running) {
+						return;
+					}
 					game.haveFun.list.firework.running = true;
 					if (game.haveFun.fireworkLoop) {
 						game.haveFun.fireworkLoop();
@@ -1252,14 +1006,9 @@ game.import("play", function () {
 						// when animating on canvas, it is best to use requestAnimationFrame instead of setTimeout or setInterval
 						// not supported in all browsers though and sometimes needs a prefix, so we need a shim
 						var requestAnimFrame = (function () {
-							return (
-								window.requestAnimationFrame ||
-								window.webkitRequestAnimationFrame ||
-								window.mozRequestAnimationFrame ||
-								function (callback) {
-									window.setTimeout(callback, 1000 / 60);
-								}
-							);
+							return (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
+								window.setTimeout(callback, 1000 / 60);
+							});
 						})();
 
 						// now we will setup our basic variables for the demo
@@ -1309,186 +1058,9 @@ game.import("play", function () {
 						var calculateDistance = function (p1x, p1y, p2x, p2y) {
 							var xDistance = p1x - p2x,
 								yDistance = p1y - p2y;
-							return Math.sqrt(
-								Math.pow(xDistance, 2) + Math.pow(yDistance, 2)
-							);
+							return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
 						};
 
-						// create firework
-						var Firework = function (sx, sy, tx, ty) {
-							// actual coordinates
-							this.x = sx;
-							this.y = sy;
-							// starting coordinates
-							this.sx = sx;
-							this.sy = sy;
-							// target coordinates
-							this.tx = tx;
-							this.ty = ty;
-							// distance from starting point to target
-							this.distanceToTarget = calculateDistance(
-								sx,
-								sy,
-								tx,
-								ty
-							);
-							this.distanceTraveled = 0;
-							// track the past coordinates of each firework to create a trail effect, increase the coordinate count to create more prominent trails
-							this.coordinates = [];
-							this.coordinateCount = 3;
-							// populate initial coordinate collection with the current coordinates
-							while (this.coordinateCount--) {
-								this.coordinates.push([this.x, this.y]);
-							}
-							this.angle = Math.atan2(ty - sy, tx - sx);
-							this.speed = 2;
-							this.acceleration = 1.05;
-							this.brightness = random(50, 70);
-							// circle target indicator radius
-							this.targetRadius = 1;
-						};
-
-						// update firework
-						Firework.prototype.update = function (index) {
-							// remove last item in coordinates array
-							this.coordinates.pop();
-							// add current coordinates to the start of the array
-							this.coordinates.unshift([this.x, this.y]);
-
-							// cycle the circle target indicator radius
-							if (this.targetRadius < 8) {
-								this.targetRadius += 0.3;
-							} else {
-								this.targetRadius = 1;
-							}
-
-							// speed up the firework
-							this.speed *= this.acceleration;
-
-							// get the current velocities based on angle and speed
-							var vx = Math.cos(this.angle) * this.speed,
-								vy = Math.sin(this.angle) * this.speed;
-							// how far will the firework have traveled with velocities applied?
-							this.distanceTraveled = calculateDistance(
-								this.sx,
-								this.sy,
-								this.x + vx,
-								this.y + vy
-							);
-
-							// if the distance traveled, including velocities, is greater than the initial distance to the target, then the target has been reached
-							if (
-								this.distanceTraveled >= this.distanceToTarget
-							) {
-								createParticles(this.tx, this.ty);
-								// remove the firework, use the index passed into the update function to determine which to remove
-								fireworks.splice(index, 1);
-							} else {
-								// target not reached, keep traveling
-								this.x += vx;
-								this.y += vy;
-							}
-						};
-
-						// draw firework
-						Firework.prototype.draw = function () {
-							ctx.beginPath();
-							// move to the last tracked coordinate in the set, then draw a line to the current x and y
-							ctx.moveTo(
-								this.coordinates[
-									this.coordinates.length - 1
-								][0],
-								this.coordinates[this.coordinates.length - 1][1]
-							);
-							ctx.lineTo(this.x, this.y);
-							ctx.strokeStyle =
-								"hsl(" +
-								hue +
-								", 100%, " +
-								this.brightness +
-								"%)";
-							ctx.stroke();
-
-							ctx.beginPath();
-							// draw the target for this firework with a pulsing circle
-							ctx.arc(
-								this.tx,
-								this.ty,
-								this.targetRadius,
-								0,
-								Math.PI * 2
-							);
-							ctx.stroke();
-						};
-
-						// create particle
-						var Particle = function (x, y) {
-							this.x = x;
-							this.y = y;
-							// track the past coordinates of each particle to create a trail effect, increase the coordinate count to create more prominent trails
-							this.coordinates = [];
-							this.coordinateCount = 5;
-							while (this.coordinateCount--) {
-								this.coordinates.push([this.x, this.y]);
-							}
-							// set a random angle in all possible directions, in radians
-							this.angle = random(0, Math.PI * 2);
-							this.speed = random(1, 10);
-							// friction will slow the particle down
-							this.friction = 0.95;
-							// gravity will be applied and pull the particle down
-							this.gravity = 1;
-							// set the hue to a random number +-20 of the overall hue variable
-							this.hue = random(hue - 20, hue + 20);
-							this.brightness = random(50, 80);
-							this.alpha = 1;
-							// set how fast the particle fades out
-							this.decay = random(0.015, 0.03);
-						};
-
-						// update particle
-						Particle.prototype.update = function (index) {
-							// remove last item in coordinates array
-							this.coordinates.pop();
-							// add current coordinates to the start of the array
-							this.coordinates.unshift([this.x, this.y]);
-							// slow down the particle
-							this.speed *= this.friction;
-							// apply velocity
-							this.x += Math.cos(this.angle) * this.speed;
-							this.y +=
-								Math.sin(this.angle) * this.speed +
-								this.gravity;
-							// fade out the particle
-							this.alpha -= this.decay;
-
-							// remove the particle once the alpha is low enough, based on the passed in index
-							if (this.alpha <= this.decay) {
-								particles.splice(index, 1);
-							}
-						};
-
-						// draw particle
-						Particle.prototype.draw = function () {
-							ctx.beginPath();
-							// move to the last tracked coordinates in the set, then draw a line to the current x and y
-							ctx.moveTo(
-								this.coordinates[
-									this.coordinates.length - 1
-								][0],
-								this.coordinates[this.coordinates.length - 1][1]
-							);
-							ctx.lineTo(this.x, this.y);
-							ctx.strokeStyle =
-								"hsla(" +
-								this.hue +
-								", 100%, " +
-								this.brightness +
-								"%, " +
-								this.alpha +
-								")";
-							ctx.stroke();
-						};
 
 						// create particle group/explosion
 						var createParticles = function (x, y) {
@@ -1498,16 +1070,145 @@ game.import("play", function () {
 								particles.push(new Particle(x, y));
 							}
 						};
+						// Firework class
+						class Firework {
+							constructor(sx, sy, tx, ty) {
+								// actual coordinates
+								this.x = sx;
+								this.y = sy;
+								// starting coordinates
+								this.sx = sx;
+								this.sy = sy;
+								// target coordinates
+								this.tx = tx;
+								this.ty = ty;
+								// distance from starting point to target
+								this.distanceToTarget = calculateDistance(sx, sy, tx, ty);
+								this.distanceTraveled = 0;
+								// track the past coordinates of each firework to create a trail effect
+								this.coordinates = [];
+								this.coordinateCount = 3;
+								// populate initial coordinate collection with the current coordinates
+								while (this.coordinateCount--) {
+									this.coordinates.push([this.x, this.y]);
+								}
+								this.angle = Math.atan2(ty - sy, tx - sx);
+								this.speed = 2;
+								this.acceleration = 1.05;
+								this.brightness = random(50, 70);
+								// circle target indicator radius
+								this.targetRadius = 1;
+							}
 
+							// update firework
+							update(index) {
+								// remove last item in coordinates array
+								this.coordinates.pop();
+								// add current coordinates to the start of the array
+								this.coordinates.unshift([this.x, this.y]);
+
+								// cycle the circle target indicator radius
+								if (this.targetRadius < 8) {
+									this.targetRadius += 0.3;
+								} else {
+									this.targetRadius = 1;
+								}
+
+								// speed up the firework
+								this.speed *= this.acceleration;
+
+								// get the current velocities based on angle and speed
+								const vx = Math.cos(this.angle) * this.speed;
+								const vy = Math.sin(this.angle) * this.speed;
+								// how far will the firework have traveled with velocities applied?
+								this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
+
+								// if the distance traveled is greater than the initial distance to the target
+								if (this.distanceTraveled >= this.distanceToTarget) {
+									createParticles(this.tx, this.ty);
+									// remove the firework
+									fireworks.splice(index, 1);
+								} else {
+									// target not reached, keep traveling
+									this.x += vx;
+									this.y += vy;
+								}
+							}
+
+							// draw firework
+							draw() {
+								ctx.beginPath();
+								// move to the last tracked coordinate in the set
+								ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+								ctx.lineTo(this.x, this.y);
+								ctx.strokeStyle = "hsl(" + hue + ", 100%, " + this.brightness + "%)";
+								ctx.stroke();
+
+								ctx.beginPath();
+								// draw the target for this firework with a pulsing circle
+								ctx.arc(this.tx, this.ty, this.targetRadius, 0, Math.PI * 2);
+								ctx.stroke();
+							}
+						}
+
+						// Particle class
+						class Particle {
+							constructor(x, y) {
+								this.x = x;
+								this.y = y;
+								// track the past coordinates of each particle to create a trail effect
+								this.coordinates = [];
+								this.coordinateCount = 5;
+								while (this.coordinateCount--) {
+									this.coordinates.push([this.x, this.y]);
+								}
+								// set a random angle in all possible directions, in radians
+								this.angle = random(0, Math.PI * 2);
+								this.speed = random(1, 10);
+								// friction will slow the particle down
+								this.friction = 0.95;
+								// gravity will be applied and pull the particle down
+								this.gravity = 1;
+								// set the hue to a random number +-20 of the overall hue variable
+								this.hue = random(hue - 20, hue + 20);
+								this.brightness = random(50, 80);
+								this.alpha = 1;
+								// set how fast the particle fades out
+								this.decay = random(0.015, 0.03);
+							}
+
+							// update particle
+							update(index) {
+								// remove last item in coordinates array
+								this.coordinates.pop();
+								// add current coordinates to the start of the array
+								this.coordinates.unshift([this.x, this.y]);
+								// slow down the particle
+								this.speed *= this.friction;
+								// apply velocity
+								this.x += Math.cos(this.angle) * this.speed;
+								this.y += Math.sin(this.angle) * this.speed + this.gravity;
+								// fade out the particle
+								this.alpha -= this.decay;
+
+								// remove the particle once the alpha is low enough
+								if (this.alpha <= this.decay) {
+									particles.splice(index, 1);
+								}
+							}
+
+							// draw particle
+							draw() {
+								ctx.beginPath();
+								// move to the last tracked coordinates in the set
+								ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+								ctx.lineTo(this.x, this.y);
+								ctx.strokeStyle = "hsla(" + this.hue + ", 100%, " + this.brightness + "%, " + this.alpha + ")";
+								ctx.stroke();
+							}
+						}
 						// main demo loop
 						var loop = function () {
-							// if(lib.config.coin_free_playpackconfig&&!_status.imchoosing){
-							// 	canvas.style.display='none';
-							// }
-							// else{
-							// 	canvas.style.display='';
-							// }
-							// this function will run endlessly with requestAnimationFrame
 							if (!game.haveFun.list.firework.running) {
 								canvas.width = cw;
 								canvas.height = ch;
@@ -1548,14 +1249,7 @@ game.import("play", function () {
 							if (timerTick >= timerTotal) {
 								if (!mousedown) {
 									// start the firework at the bottom middle of the screen, then set the random target coordinates, the random y coordinates will be set within the range of the top half of the screen
-									fireworks.push(
-										new Firework(
-											cw / 2,
-											ch,
-											random(0, cw),
-											random(0, ch / 2)
-										)
-									);
+									fireworks.push(new Firework(cw / 2, ch, random(0, cw), random(0, ch / 2)));
 									timerTick = 0;
 								}
 							} else {
@@ -1566,9 +1260,7 @@ game.import("play", function () {
 							if (limiterTick >= limiterTotal) {
 								if (mousedown) {
 									// start the firework at the bottom middle of the screen, then set the current mouse coordinates as the target
-									fireworks.push(
-										new Firework(cw / 2, ch, mx, my)
-									);
+									fireworks.push(new Firework(cw / 2, ch, mx, my));
 									limiterTick = 0;
 								}
 							} else {
@@ -1577,54 +1269,29 @@ game.import("play", function () {
 						};
 
 						if (lib.config.touchscreen) {
-							ui.window.addEventListener(
-								"touchmove",
-								function (e) {
-									mx =
-										e.touches[0].clientX /
-											game.documentZoom -
-										canvas.offsetLeft;
-									my =
-										e.touches[0].clientY /
-											game.documentZoom -
-										canvas.offsetTop;
-								}
-							);
-							ui.window.addEventListener(
-								"touchstart",
-								function (e) {
-									mousedown = true;
-								}
-							);
-							ui.window.addEventListener(
-								"touchend",
-								function (e) {
-									mousedown = false;
-								}
-							);
+							ui.window.addEventListener("touchmove", function (e) {
+								mx = e.touches[0].clientX / game.documentZoom - canvas.offsetLeft;
+								my = e.touches[0].clientY / game.documentZoom - canvas.offsetTop;
+							});
+							ui.window.addEventListener("touchstart", function (e) {
+								mousedown = true;
+							});
+							ui.window.addEventListener("touchend", function (e) {
+								mousedown = false;
+							});
 						} else {
 							// mouse event bindings
 							// update the mouse coordinates on mousemove
-							ui.window.addEventListener(
-								"mousemove",
-								function (e) {
-									mx =
-										e.pageX / game.documentZoom -
-										canvas.offsetLeft;
-									my =
-										e.pageY / game.documentZoom -
-										canvas.offsetTop;
-								}
-							);
+							ui.window.addEventListener("mousemove", function (e) {
+								mx = e.pageX / game.documentZoom - canvas.offsetLeft;
+								my = e.pageY / game.documentZoom - canvas.offsetTop;
+							});
 
 							// toggle mousedown state and prevent canvas from being selected
-							ui.window.addEventListener(
-								"mousedown",
-								function (e) {
-									e.preventDefault();
-									mousedown = true;
-								}
-							);
+							ui.window.addEventListener("mousedown", function (e) {
+								e.preventDefault();
+								mousedown = true;
+							});
 
 							ui.window.addEventListener("mouseup", function (e) {
 								e.preventDefault();
@@ -1637,21 +1304,67 @@ game.import("play", function () {
 						(game.haveFun.fireworkStop = function () {
 							game.haveFun.list.firework.running = false;
 						}),
-							loop();
+						loop();
 					}
 				},
 			},
 		},
 		help: {
-			富甲天下:
-				"<ul><li>每完成一次对局，可获得一定数量的金币" +
-				"<li>战斗胜利可额外获得20金币，每杀死一个敌人可获得10金币（托管无效）" +
-				"<li>使用的武将越强，获得的金币数越少" +
-				"<li>执行以下操作时，将扣除金币：<ul><li>作弊：20金币<li>换将卡：3金币<li>" +
-				"自由选将：10金币<li>手气卡：3金币<li>换人：10金币</ul>" +
-				"<li>金币可用于购买烟花等游戏特效（点击右上角的金币按钮）" +
-				"<li>修改金币：<br>game.changCoin" +
-				"<li>默认下雪：<br>game.haveFun.alwaysSnow",
+			// 虽然好像没必要，但是为了规范还是用jsdoc写一个注释罢
+			"富甲天下": {
+				/**
+				 * HTML 模板字符串，用于显示“富甲天下”模式的帮助信息喵～ 
+				 * @type {string}
+				 */
+				template: html`
+					<div style="margin:20px; font-size:1.3rem">富甲天下模式说明</div>
+					<ul style="margin-top:0; list-style: disc; padding-left: 20px;">
+						<li>
+							<strong>金币获取:</strong>
+							<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
+								<li>每完成一次对局，可获得一定数量的基础金币。</li>
+								<li>战斗胜利可额外获得 <strong>20</strong> 金币。</li>
+								<li>每击败一个敌人可额外获得 <strong>10</strong> 金币 (AI托管或托管状态下无效)。</li>
+								<li>使用的武将强度越高，获得的基础金币数量会相应减少。</li>
+							</ul>
+						</li>
+						<li>
+							<strong>金币消耗 (执行以下操作时扣除):</strong>
+							<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
+								<li>作弊: <strong>20</strong> 金币</li>
+								<li>使用换将卡: <strong>3</strong> 金币</li>
+								<li>自由选将: <strong>10</strong> 金币</li>
+								<li>使用手气卡: <strong>3</strong> 金币</li>
+								<li>换人/更换操作者: <strong>10</strong> 金币</li>
+							</ul>
+						</li>
+						<li>
+							<strong>金币用途:</strong><br/>
+							金币可用于购买游戏特效（如烟花等）。通常可以通过点击界面右上角的金币按钮进行购买。
+						</li>
+						<li>
+							<strong>开发者/调试命令:</strong>
+							<ul style="list-style: none; padding-left: 0; margin-top: 5px;">
+								<li>修改金币数量:
+									<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.changeCoin(数量)</code>
+									<span style="font-size: 0.9em; color: #666;"> (例如 game.changeCoin(100) 增加100金币)</span>
+								</li>
+								<li>设置默认开启下雪特效:
+									<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.haveFun.alwaysSnow = true</code>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				`,
+				/**
+				 * 设置函数（当前没有动态数据，给你返回一个空对象罢）
+				 * @returns {object} 返回一个空对象，因为模板中没有使用动态绑定喵~ 
+				 */
+				setup() {
+					// 目前，没有需要从 setup 传递到模板的动态数据喵～
+					return {};
+				}
+			}
 		},
 	};
 });

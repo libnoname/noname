@@ -20,7 +20,7 @@ export class NonameHook extends Array {
 		this.#name = name;
 
 		if (name in buildin) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			for (const item of buildin[name]) {
 				this.push(item);
 			}

@@ -1,26 +1,11 @@
-import {
-	menuContainer,
-	popupContainer,
-	updateActive,
-	setUpdateActive,
-	updateActiveCard,
-	setUpdateActiveCard,
-	menux,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { nonameInitialized } from "../../../../util/index.js";
 
 export const optionsMenu = function (connectMenu) {
-	if (connectMenu) return;
+	if (connectMenu) {
+		return;
+	}
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
@@ -29,7 +14,7 @@ export const optionsMenu = function (connectMenu) {
 	// const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 
@@ -42,8 +27,9 @@ export const optionsMenu = function (connectMenu) {
 		active.link.remove();
 		active = this;
 		active.classList.add("active");
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -61,7 +47,9 @@ export const optionsMenu = function (connectMenu) {
 	};
 	var skilllistexpanded = game.expandSkills(lib.skilllist);
 	for (var i in lib.skill) {
-		if (!skilllistexpanded.includes(i)) continue;
+		if (!skilllistexpanded.includes(i)) {
+			continue;
+		}
 		if (lib.skill[i].frequent && lib.translate[i]) {
 			lib.configMenu.skill.config[i] = {
 				name: lib.translate[i + "_noconf"] || lib.translate[i],
@@ -103,7 +91,9 @@ export const optionsMenu = function (connectMenu) {
 				str3 += '<div class="placeholder slim" style="display:block;height:8px"></div>';
 			}
 		}
-		if (skip) continue;
+		if (skip) {
+			continue;
+		}
 		str = str.slice(0, str.length - 1);
 		str2 = str2.slice(0, str2.length - 1);
 
@@ -165,14 +155,9 @@ export const optionsMenu = function (connectMenu) {
 					banskillexpanded = !banskillexpanded;
 				});
 
-				var banskilladd = ui.create.div(
-					".config.indent",
-					'<span class="pointerdiv">添加...</span>',
-					page,
-					function () {
-						this.nextSibling.classList.toggle("hidden");
-					}
-				);
+				var banskilladd = ui.create.div(".config.indent", '<span class="pointerdiv">添加...</span>', page, function () {
+					this.nextSibling.classList.toggle("hidden");
+				});
 				banskilladd.style.display = "none";
 				banskillNodes.push(banskilladd);
 
@@ -181,9 +166,13 @@ export const optionsMenu = function (connectMenu) {
 				banskillNodes.push(banskilladdNode);
 
 				var matchBanSkill = function (skills1, skills2) {
-					if (skills1.length != skills2.length) return false;
+					if (skills1.length != skills2.length) {
+						return false;
+					}
 					for (var i = 0; i < skills1.length; i++) {
-						if (!skills2.includes(skills1[i])) return false;
+						if (!skills2.includes(skills1[i])) {
+							return false;
+						}
 					}
 					return true;
 				};
@@ -222,9 +211,13 @@ export const optionsMenu = function (connectMenu) {
 				(function () {
 					var list = [];
 					for (var i in lib.character) {
-						if (lib.character[i][3].length) list.push([i, lib.translate[i]]);
+						if (lib.character[i][3].length) {
+							list.push([i, lib.translate[i]]);
+						}
 					}
-					if (!list.length) return;
+					if (!list.length) {
+						return;
+					}
 					list.sort(function (a, b) {
 						a = a[0];
 						b = b[0];
@@ -290,9 +283,13 @@ export const optionsMenu = function (connectMenu) {
 						if (skills[0] == skills[1]) {
 							skills.shift();
 						}
-						if (!lib.config.customforbid) return;
+						if (!lib.config.customforbid) {
+							return;
+						}
 						for (var i = 0; i < lib.config.customforbid.length; i++) {
-							if (matchBanSkill(lib.config.customforbid[i], skills)) return;
+							if (matchBanSkill(lib.config.customforbid[i], skills)) {
+								return;
+							}
 						}
 						lib.config.customforbid.push(skills);
 						game.saveConfig("customforbid", lib.config.customforbid);
@@ -370,7 +367,9 @@ export const optionsMenu = function (connectMenu) {
 							var fileReader = new FileReader();
 							fileReader.onload = function (fileLoadedEvent) {
 								var data = fileLoadedEvent.target.result;
-								if (!data) return;
+								if (!data) {
+									return;
+								}
 								try {
 									data = JSON.parse(lib.init.decode(data));
 									if (!data || typeof data != "object") {
@@ -415,11 +414,15 @@ export const optionsMenu = function (connectMenu) {
 					};
 				} else if (j == "import_music") {
 					cfgnode.querySelector("button").onclick = function () {
-						if (_status.music_importing) return;
+						if (_status.music_importing) {
+							return;
+						}
 						_status.music_importing = true;
 						var fileToLoad = this.previousSibling.files[0];
 						if (fileToLoad) {
-							if (!lib.config.customBackgroundMusic) lib.config.customBackgroundMusic = {};
+							if (!lib.config.customBackgroundMusic) {
+								lib.config.customBackgroundMusic = {};
+							}
 							var name = fileToLoad.name;
 							if (name.includes(".")) {
 								name = name.slice(0, name.indexOf("."));
@@ -443,27 +446,22 @@ export const optionsMenu = function (connectMenu) {
 								var nodezz = nodexx._link.config;
 								var musicname = link.slice(link.indexOf("_") + 1);
 								game.prompt("###请输入音乐的名称###" + musicname, true, function (str) {
-									if (str) musicname = str;
+									if (str) {
+										musicname = str;
+									}
 									lib.config.customBackgroundMusic[link] = musicname;
 									lib.config.background_music = link;
 									lib.config.all.background_music.add(link);
 									game.saveConfig("background_music", link);
-									game.saveConfig(
-										"customBackgroundMusic",
-										lib.config.customBackgroundMusic
-									);
+									game.saveConfig("customBackgroundMusic", lib.config.customBackgroundMusic);
 									nodezz.item[link] = lib.config.customBackgroundMusic[link];
-									var textMenu = ui.create.div(
-										"",
-										lib.config.customBackgroundMusic[link],
-										nodeyy,
-										clickMenuItem,
-										nodeyy.childElementCount - 2
-									);
+									var textMenu = ui.create.div("", lib.config.customBackgroundMusic[link], nodeyy, clickMenuItem, nodeyy.childElementCount - 2);
 									textMenu._link = link;
 									nodezz.updatex.call(nodexx, []);
 									_status.music_importing = false;
-									if (!_status._aozhan) game.playBackgroundMusic();
+									if (!_status._aozhan) {
+										game.playBackgroundMusic();
+									}
 								});
 							};
 							if (game.writeFile) {
@@ -519,10 +517,14 @@ export const optionsMenu = function (connectMenu) {
 	};
 
 	for (var i in lib.configMenu) {
-		if (i != "others") createModeConfig(i, start.firstChild);
+		if (i != "others") {
+			createModeConfig(i, start.firstChild);
+		}
 	}
 	(function () {
-		if (!game.download && !lib.device) return;
+		if (!game.download && !lib.device) {
+			return;
+		}
 		var page = ui.create.div("#create-extension");
 		var node = ui.create.div(".menubutton.large", "文件", start.firstChild, clickMode);
 		node.mode = "create";
@@ -532,21 +534,16 @@ export const optionsMenu = function (connectMenu) {
 
 			var importextensionexpanded = false;
 			var importExtension;
-			var extensionnode = ui.create.div(
-				".config.more",
-				"导入素材包 <div>&gt;</div>",
-				pageboard,
-				function () {
-					if (importextensionexpanded) {
-						this.classList.remove("on");
-						importExtension.style.display = "none";
-					} else {
-						this.classList.add("on");
-						importExtension.style.display = "";
-					}
-					importextensionexpanded = !importextensionexpanded;
+			var extensionnode = ui.create.div(".config.more", "导入素材包 <div>&gt;</div>", pageboard, function () {
+				if (importextensionexpanded) {
+					this.classList.remove("on");
+					importExtension.style.display = "none";
+				} else {
+					this.classList.add("on");
+					importExtension.style.display = "";
 				}
-			);
+				importextensionexpanded = !importextensionexpanded;
+			});
 			extensionnode.style.padding = "13px 33px 4px";
 			extensionnode.style.left = "0px";
 			importExtension = ui.create.div(".new_character.export.import", pageboard);
@@ -554,19 +551,13 @@ export const optionsMenu = function (connectMenu) {
 			importExtension.style.display = "none";
 			importExtension.style.width = "100%";
 			importExtension.style.textAlign = "left";
-			ui.create.div(
-				"",
-				'<input type="file" accept="application/zip" style="width:153px"><button>确定</button>',
-				importExtension
-			);
-			var promptnode = ui.create.div(
-				"",
-				'<div style="width:153px;font-size:small;margin-top:8px">',
-				importExtension
-			);
+			ui.create.div("", '<input type="file" accept="application/zip" style="width:153px"><button>确定</button>', importExtension);
+			var promptnode = ui.create.div("", '<div style="width:153px;font-size:small;margin-top:8px">', importExtension);
 			promptnode.style.display = "none";
 			importExtension.firstChild.lastChild.onclick = function () {
-				if (promptnode.style.display != "none") return;
+				if (promptnode.style.display != "none") {
+					return;
+				}
 				var fileToLoad = this.previousSibling.files[0];
 				if (fileToLoad) {
 					promptnode.style.display = "";
@@ -582,23 +573,19 @@ export const optionsMenu = function (connectMenu) {
 								fonts = [],
 								directories = {},
 								directoryList = [];
-							Object.keys(zip.files).forEach((file) => {
+							Object.keys(zip.files).forEach(file => {
 								const parsedPath = lib.path.parse(file),
 									directory = parsedPath.dir,
 									fileExtension = parsedPath.ext.toLowerCase();
-								if (
-									directory.startsWith("audio") &&
-									(fileExtension == ".mp3" || fileExtension == ".ogg")
-								)
+								if (directory.startsWith("audio") && (fileExtension == ".mp3" || fileExtension == ".ogg")) {
 									audios.push(file);
-								else if (directory.startsWith("font") && fileExtension == ".woff2")
+								} else if (directory.startsWith("font") && fileExtension == ".woff2") {
 									fonts.push(file);
-								else if (
-									directory.startsWith("image") &&
-									(fileExtension == ".jpg" || fileExtension == ".png")
-								)
+								} else if (directory.startsWith("image") && (fileExtension == ".jpg" || fileExtension == ".png")) {
 									images.push(file);
-								else return;
+								} else {
+									return;
+								}
 								if (!directories[directory]) {
 									directories[directory] = [];
 									directoryList.push(directory);
@@ -611,11 +598,15 @@ export const optionsMenu = function (connectMenu) {
 									str += audios.length + "个音频文件";
 								}
 								if (fonts.length) {
-									if (str.length) str += "、";
+									if (str.length) {
+										str += "、";
+									}
 									str += fonts.length + "个字体文件";
 								}
 								if (images.length) {
-									if (str.length) str += "、";
+									if (str.length) {
+										str += "、";
+									}
 									str += images.length + "个图片文件";
 								}
 								var filelist = audios.concat(fonts).concat(images);
@@ -623,29 +614,21 @@ export const optionsMenu = function (connectMenu) {
 									str += "，导入时间可能较长";
 								}
 								var assetLoaded = function () {
-									promptnode.firstChild.innerHTML =
-										'导入成功。<span class="hrefnode">重新启动</span><span class="closenode">×</span>';
+									promptnode.firstChild.innerHTML = '导入成功。<span class="hrefnode">重新启动</span><span class="closenode">×</span>';
 									promptnode.firstChild.querySelectorAll("span")[0].onclick = game.reload;
 									promptnode.firstChild.querySelectorAll("span")[1].onclick = function () {
 										promptnode.style.display = "none";
 									};
 								};
 								if (confirm("本次将导入" + str + "，是否继续？")) {
-									promptnode.firstChild.innerHTML =
-										'正在导入... <span class="hrefnode">详细信息</span>';
-									promptnode.firstChild.querySelector("span.hrefnode").onclick =
-										ui.click.consoleMenu;
+									promptnode.firstChild.innerHTML = '正在导入... <span class="hrefnode">详细信息</span>';
+									promptnode.firstChild.querySelector("span.hrefnode").onclick = ui.click.consoleMenu;
 									if (lib.node && lib.node.fs) {
 										var writeFile = function () {
 											if (filelist.length) {
 												var str = filelist.shift();
 												game.print(str.slice(str.lastIndexOf("/") + 1));
-												lib.node.fs.writeFile(
-													__dirname + "/" + str,
-													zip.files[str].asNodeBuffer(),
-													null,
-													writeFile
-												);
+												lib.node.fs.writeFile(__dirname + "/" + str, zip.files[str].asNodeBuffer(), null, writeFile);
 											} else {
 												assetLoaded();
 											}
@@ -656,44 +639,26 @@ export const optionsMenu = function (connectMenu) {
 											if (directoryList.length) {
 												var dir = directoryList.shift();
 												var filelist = directories[dir];
-												window.resolveLocalFileSystemURL(
-													nonameInitialized + dir,
-													function (entry) {
-														var writeFile = function () {
-															if (filelist.length) {
-																var filename = filelist.shift();
-																game.print(filename);
-																entry.getFile(
-																	filename,
-																	{ create: true },
-																	function (fileEntry) {
-																		fileEntry.createWriter(function (
-																			fileWriter
-																		) {
-																			fileWriter.onwriteend = writeFile;
-																			fileWriter.onerror = function (
-																				e
-																			) {
-																				game.print(
-																					"Write failed: " +
-																						e.toString()
-																				);
-																			};
-																			fileWriter.write(
-																				zip.files[
-																					dir + "/" + filename
-																				].asArrayBuffer()
-																			);
-																		});
-																	}
-																);
-															} else {
-																getDirectory();
-															}
-														};
-														writeFile();
-													}
-												);
+												window.resolveLocalFileSystemURL(nonameInitialized + dir, function (entry) {
+													var writeFile = function () {
+														if (filelist.length) {
+															var filename = filelist.shift();
+															game.print(filename);
+															entry.getFile(filename, { create: true }, function (fileEntry) {
+																fileEntry.createWriter(function (fileWriter) {
+																	fileWriter.onwriteend = writeFile;
+																	fileWriter.onerror = function (e) {
+																		game.print("Write failed: " + e.toString());
+																	};
+																	fileWriter.write(zip.files[dir + "/" + filename].asArrayBuffer());
+																});
+															});
+														} else {
+															getDirectory();
+														}
+													};
+													writeFile();
+												});
 											} else {
 												assetLoaded();
 											}
@@ -761,13 +726,9 @@ export const optionsMenu = function (connectMenu) {
 					window.resolveLocalFileSystemURL(nonameInitialized + page.currentpath, function (entry) {
 						var unlink = function () {
 							if (selected.length) {
-								entry.getFile(
-									selected.shift().filename,
-									{ create: false },
-									function (fileEntry) {
-										fileEntry.remove(unlink);
-									}
-								);
+								entry.getFile(selected.shift().filename, { create: false }, function (fileEntry) {
+									fileEntry.remove(unlink);
+								});
 							} else {
 								enterDirectory(page, page.currentpath);
 							}
@@ -777,7 +738,9 @@ export const optionsMenu = function (connectMenu) {
 				}
 			};
 			var clickDirectory = function () {
-				if (_status.dragged) return;
+				if (_status.dragged) {
+					return;
+				}
 				var page = this.parentNode.parentNode.parentNode;
 				if (page.deletebutton.classList.contains("active")) {
 					if (confirm("确认删除" + this.innerHTML + "文件夹？（此操作不可撤销）")) {
@@ -824,7 +787,9 @@ export const optionsMenu = function (connectMenu) {
 				enterDirectory(page, this.path);
 			};
 			var clickFile = function () {
-				if (_status.dragged) return;
+				if (_status.dragged) {
+					return;
+				}
 				var page = this.parentNode.parentNode.parentNode;
 				if (page.deletebutton.classList.contains("active")) {
 					if (confirm("确认删除" + this.innerHTML + "？（此操作不可撤销）")) {
@@ -863,7 +828,9 @@ export const optionsMenu = function (connectMenu) {
 				}
 			};
 			var clickFileList = function () {
-				if (!this.parentNode) return;
+				if (!this.parentNode) {
+					return;
+				}
 				if (this.parentNode.clicked) {
 					this.parentNode.clicked = false;
 				} else {
@@ -949,13 +916,13 @@ export const optionsMenu = function (connectMenu) {
 				addbutton.style.bottom = "80px";
 
 				var deletebutton = ui.create.div(".menubutton.round", "删", page, function () {
-					if (!this.parentNode) return;
+					if (!this.parentNode) {
+						return;
+					}
 					if (!this.classList.contains("active")) {
 						var selected = Array.from(filelist.querySelectorAll("span.thundertext"));
 						if (selected.length) {
-							if (
-								confirm("一共要删除" + selected.length + "个文件，此操作不可撤销，是否确定？")
-							) {
+							if (confirm("一共要删除" + selected.length + "个文件，此操作不可撤销，是否确定？")) {
 								removeFile(selected, page);
 							}
 						} else {
@@ -978,8 +945,12 @@ export const optionsMenu = function (connectMenu) {
 				lib.setScroll(filelist);
 				game.getFileList(path, function (folders, files) {
 					var sort = function (a, b) {
-						if (a > b) return 1;
-						if (a < b) return -1;
+						if (a > b) {
+							return 1;
+						}
+						if (a < b) {
+							return -1;
+						}
 						return 0;
 					};
 					folders.sort(sort);
@@ -989,25 +960,27 @@ export const optionsMenu = function (connectMenu) {
 						parent += "/";
 					}
 					for (var i = 0; i < folders.length; i++) {
-						if (!page.path && folders[i] == "app") continue;
+						if (!page.path && folders[i] == "app") {
+							continue;
+						}
 						var entry = ui.create.div("", "<span>" + folders[i], filelist);
-						entry.firstChild.addEventListener(
-							lib.config.touchscreen ? "touchend" : "click",
-							clickDirectory
-						);
+						entry.firstChild.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickDirectory);
 						entry.firstChild.path = parent + folders[i];
 					}
 					for (var i = 0; i < files.length; i++) {
 						if (!page.path) {
-							if (files[i] == "app.html") continue;
-							if (files[i] == "main.js") continue;
-							if (files[i] == "package.json") continue;
+							if (files[i] == "app.html") {
+								continue;
+							}
+							if (files[i] == "main.js") {
+								continue;
+							}
+							if (files[i] == "package.json") {
+								continue;
+							}
 						}
 						var entry = ui.create.div("", "<span>" + files[i], filelist);
-						entry.firstChild.addEventListener(
-							lib.config.touchscreen ? "touchend" : "click",
-							clickFile
-						);
+						entry.firstChild.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickFile);
 						entry.firstChild.ext = files[i].slice(files[i].lastIndexOf(".") + 1);
 						entry.firstChild.path = parent + files[i];
 						entry.firstChild.filename = files[i];
@@ -1099,7 +1072,9 @@ export const optionsMenu = function (connectMenu) {
 			createDash("字", "字体文件", dash3);
 			createDash("全", "全部文件", dash4);
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	createModeConfig("others", start.firstChild);
 
@@ -1108,6 +1083,8 @@ export const optionsMenu = function (connectMenu) {
 		active = start.firstChild.firstChild;
 		active.classList.add("active");
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 };

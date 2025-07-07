@@ -80,7 +80,9 @@ export class Basic {
 	 */
 	chooseCard(check) {
 		const event = _status.event;
-		if (event.filterCard == undefined) return check() > 0;
+		if (event.filterCard == undefined) {
+			return check() > 0;
+		}
 		let i, j, range, cards, cards2, skills, effect;
 		let ok = false,
 			forced = event.forced;
@@ -91,23 +93,28 @@ export class Basic {
 				ok = true;
 			}
 			if (range[1] <= -1) {
-				if (ui.selected.cards.length == 0) return true;
+				if (ui.selected.cards.length == 0) {
+					return true;
+				}
 				j = 0;
 				CacheContext.setCacheContext(new CacheContext());
 				CacheContext.setInCacheEnvironment(true);
 				for (i = 0; i < ui.selected.cards.length; i++) {
 					effect = check(ui.selected.cards[i]);
-					if (effect < 0) j -= Math.sqrt(-effect);
-					else j += Math.sqrt(effect);
+					if (effect < 0) {
+						j -= Math.sqrt(-effect);
+					} else {
+						j += Math.sqrt(effect);
+					}
 				}
 				CacheContext.setInCacheEnvironment(false);
 				CacheContext.removeCacheContext();
 				return j > 0;
 			}
 			cards = get.selectableCards();
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (!_status.event.player._noSkill) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				cards = cards.concat(get.skills());
 			}
 			if (cards.length == 0) {
@@ -167,7 +174,9 @@ export class Basic {
 	 */
 	chooseTarget(check) {
 		const event = _status.event;
-		if (event.filterTarget == undefined) return check() > 0;
+		if (event.filterTarget == undefined) {
+			return check() > 0;
+		}
 		let i, j, range, targets, targets2, effect;
 		let ok = false,
 			forced = event.forced;
@@ -183,8 +192,11 @@ export class Basic {
 				CacheContext.setInCacheEnvironment(true);
 				for (i = 0; i < ui.selected.targets.length; i++) {
 					effect = check(ui.selected.targets[i]);
-					if (effect < 0) j -= Math.sqrt(-effect);
-					else j += Math.sqrt(effect);
+					if (effect < 0) {
+						j -= Math.sqrt(-effect);
+					} else {
+						j += Math.sqrt(effect);
+					}
 				}
 				CacheContext.setInCacheEnvironment(false);
 				CacheContext.removeCacheContext();

@@ -35,7 +35,7 @@ export class Channel {
 					/**
 					 * @type {PromiseResolve<T>}
 					 */
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const buffer = this._buffer;
 					this._buffer = null;
 					buffer(value);
@@ -67,7 +67,7 @@ export class Channel {
 					/**
 					 * @type {[T, PromiseResolve<void>]}
 					 */
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const buffer = this._buffer;
 					this._buffer = null;
 					resolve(buffer[0]);
@@ -77,7 +77,7 @@ export class Channel {
 				}
 				case "active":
 					this.status = "receiving";
-					// @ts-ignore
+					// @ts-expect-error ignore
 					this._buffer = resolve;
 					break;
 			}

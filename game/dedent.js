@@ -71,7 +71,7 @@ function createDedent(options) {
 			}
 			result += next;
 			if (i < values.length) {
-				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
 				result += values[i];
 			}
 		}
@@ -95,7 +95,7 @@ function createDedent(options) {
 			const m = mindent; // appease TypeScript
 			result = lines
 				// https://github.com/typescript-eslint/typescript-eslint/issues/7140
-				// eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
+
 				.map(l => (l[0] === " " || l[0] === "\t" ? l.slice(m) : l))
 				.join("\n");
 		}

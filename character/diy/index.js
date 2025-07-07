@@ -7,14 +7,15 @@ import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterTitles from "./characterTitles.js";
 import characterFilters from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import perfectPairs from "./perfectPairs.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
 
 game.import("character", function () {
-	if (lib.config.characters.includes("diy")) lib.group.add("key");
+	if (lib.config.characters.includes("diy")) {
+		lib.group.add("key");
+	}
 	return {
 		name: "diy",
 		connect: true,
@@ -27,7 +28,6 @@ game.import("character", function () {
 		characterTitle: { ...characterTitles },
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
 		card: { ...cards },
 		skill: { ...skills },
 		perfectPair: { ...perfectPairs },

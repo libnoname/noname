@@ -25,7 +25,9 @@ export function loadCard(cardConfig) {
 	lib.cardPack[cardConfigName] ??= [];
 	if (cardConfig.card) {
 		for (let [cardPackName, cardPack2] of Object.entries(cardConfig.card)) {
-			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) continue;
+			if (!(!cardPack2.hidden && cardConfig.translate[`${cardPackName}_info`])) {
+				continue;
+			}
 			lib.cardPack[cardConfigName].add(cardPackName);
 		}
 	}
@@ -37,14 +39,14 @@ export function loadCard(cardConfig) {
 			case "forbid":
 				break;
 			case "connect":
-				// @ts-ignore
+				// @ts-expect-error ignore
 				lib.connectCardPack.push(cardConfigName);
 				break;
 			case "list":
 				if (lib.config.mode === "connect") {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					lib.cardPackList[cardConfigName] ??= [];
-					// @ts-ignore
+					// @ts-expect-error ignore
 					lib.cardPackList[cardConfigName].addArray(configItem);
 				} else if (lib.config.cards.includes(cardConfigName)) {
 					/**
@@ -82,7 +84,7 @@ export function loadCard(cardConfig) {
 									derivation: item.derivation,
 								};
 							} else {
-								// @ts-ignore
+								// @ts-expect-error ignore
 								Object.defineProperty(lib[configName], itemName, Object.getOwnPropertyDescriptor(configItem, itemName));
 							}
 						} else {
@@ -90,9 +92,9 @@ export function loadCard(cardConfig) {
 						}
 
 						if (configName === "card" && lib[configName][itemName].derivation) {
-							// @ts-ignore
+							// @ts-expect-error ignore
 							lib.cardPack.mode_derivation ??= [];
-							// @ts-ignore
+							// @ts-expect-error ignore
 							lib.cardPack.mode_derivation.push(itemName);
 						}
 					}
@@ -107,7 +109,7 @@ export function loadCard(cardConfig) {
  */
 export function loadCardPile() {
 	if (lib.config.mode === "connect") {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		lib.cardPackList = {};
 	} else {
 		let pilecfg = lib.config.customcardpile[get.config("cardpilename") || "当前牌堆"];
@@ -148,14 +150,14 @@ export function loadCharacter(character) {
 			case "forbid":
 				break;
 			case "connect":
-				// @ts-ignore
+				// @ts-expect-error ignore
 				lib.connectCharacterPack.push(name);
 				break;
 			case "character":
 				if (!lib.config.characters.includes(name) && lib.config.mode !== "connect") {
 					if (lib.config.mode === "chess" && get.config("chess_mode") === "leader" && get.config("chess_leader_allcharacter")) {
 						for (const charaName in value) {
-							// @ts-ignore
+							// @ts-expect-error ignore
 							lib.hiddenCharacters.push(charaName);
 						}
 					} else if (lib.config.mode !== "boss" || name !== "boss") {
@@ -214,16 +216,16 @@ export function loadCharacter(character) {
 							} else if (key === "character") {
 								lib.character[key2] = value2;
 							} else {
-								// @ts-ignore
+								// @ts-expect-error ignore
 								Object.defineProperty(lib[key], key2, Object.getOwnPropertyDescriptor(character[key], key2));
 							}
 							if (key === "card" && lib[key][key2].derivation) {
-								// @ts-ignore
+								// @ts-expect-error ignore
 								if (!lib.cardPack.mode_derivation) {
-									// @ts-ignore
+									// @ts-expect-error ignore
 									lib.cardPack.mode_derivation = [key2];
 								} else {
-									// @ts-ignore
+									// @ts-expect-error ignore
 									lib.cardPack.mode_derivation.push(key2);
 								}
 							}
@@ -240,19 +242,23 @@ export function loadCharacter(character) {
 }
 
 export async function loadExtension(extension) {
-	if (!extension[5] && lib.config.mode === "connect") return;
+	if (!extension[5] && lib.config.mode === "connect") {
+		return;
+	}
 
 	try {
 		_status.extension = extension[0];
-		// @ts-ignore
+		// @ts-expect-error ignore
 		_status.evaluatingExtension = extension[3];
 		if (typeof extension[1] == "function") {
 			try {
 				await (gnc.is.coroutine(extension[1]) ? gnc.of(extension[1]) : extension[1]).call(extension, extension[2], extension[4]);
 			} catch (e) {
 				console.log(`加载《${extension[0]}》扩展的content时出现错误。`, e);
-				// @ts-ignore
-				if (!lib.config.extension_alert) alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
+				// @ts-expect-error ignore
+				if (!lib.config.extension_alert) {
+					alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
+				}
 			}
 		}
 
@@ -290,7 +296,7 @@ export async function loadExtension(extension) {
 							character[4] = [];
 						}
 
-						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):.+/.test(str))) {
+						if (!character[4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img|character):.+/.test(str))) {
 							const img = extension[3] ? `db:extension-${extension[0]}:${charaName}.jpg` : `ext:${extension[0]}/${charaName}.jpg`;
 							character[4].add(img);
 						}
@@ -409,7 +415,7 @@ export async function loadExtension(extension) {
 			}
 		}
 		delete _status.extension;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		delete _status.evaluatingExtension;
 	} catch (e) {
 		console.error(e);
@@ -428,8 +434,12 @@ export function loadMode(mode) {
 	mixinGeneral(mode, "get", get);
 	mixinGeneral(mode, "ai", ai);
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	delete window.noname_character_rank;
+	// @ts-expect-error ignore
+	delete window.noname_character_replace;
+	// @ts-expect-error ignore
+	delete window.noname_character_perfectPairs;
 
 	["onwash", "onover"].forEach(name => {
 		if (game[name]) {
@@ -451,11 +461,17 @@ export function loadMode(mode) {
 export function loadPlay(playConfig) {
 	const i = playConfig.name;
 
-	if (lib.config.hiddenPlayPack.includes(i)) return;
-	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode)) return;
-	if (playConfig.mode && !playConfig.mode.includes(lib.config.mode)) return;
+	if (lib.config.hiddenPlayPack.includes(i)) {
+		return;
+	}
+	if (playConfig.forbid && playConfig.forbid.includes(lib.config.mode)) {
+		return;
+	}
+	if (playConfig.mode && !playConfig.mode.includes(lib.config.mode)) {
+		return;
+	}
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	lib.element = mixinElement(playConfig, lib.element);
 	mixinGeneral(playConfig, "game", game);
 	mixinGeneral(playConfig, "ui", ui);
@@ -485,8 +501,12 @@ export function loadPlay(playConfig) {
 		}
 	}
 
-	if (typeof playConfig.init == "function") playConfig.init();
-	if (typeof playConfig.arenaReady == "function") lib.arenaReady?.push(playConfig.arenaReady);
+	if (typeof playConfig.init == "function") {
+		playConfig.init();
+	}
+	if (typeof playConfig.arenaReady == "function") {
+		lib.arenaReady?.push(playConfig.arenaReady);
+	}
 }
 
 function extSkillInject(extName, skillInfo) {
@@ -507,14 +527,18 @@ function extSkillInject(extName, skillInfo) {
  * @return {void}
  */
 function mixinGeneral(config, name, where) {
-	if (!config[name]) return;
+	if (!config[name]) {
+		return;
+	}
 
 	for (let [key, value] of Object.entries(config[name])) {
 		if (["ui", "ai"].includes(name)) {
 			if (typeof value == "object") {
 				// 我甚至不敢把这个双等于改了，怕了
 				// noinspection EqualityComparisonWithCoercionJS
-				if (where[key] == undefined) where[key] = {};
+				if (where[key] == undefined) {
+					where[key] = {};
+				}
 				for (let [key2, value2] of Object.entries(value)) {
 					where[key][key2] = value2;
 				}
@@ -537,16 +561,24 @@ function mixinGeneral(config, name, where) {
 function mixinLibrary(config, lib) {
 	const KeptWords = ["name", "element", "game", "ai", "ui", "get", "config", "onreinit", "start", "startBefore"];
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	lib.element = mixinElement(config, lib.element);
 	lib.config.banned = lib.config[`${lib.config.mode}_banned`] || [];
 	lib.config.bannedcards = lib.config[`${lib.config.mode}_bannedcards`] || [];
-	// @ts-ignore
+	// @ts-expect-error ignore
 	lib.rank = window.noname_character_rank;
+	// @ts-expect-error ignore
+	Object.keys(window.noname_character_replace).forEach(i => (lib.characterReplace[i] = window.noname_character_replace[i]));
+	// @ts-expect-error ignore
+	Object.keys(window.noname_character_perfectPairs).forEach(i => (lib.perfectPair[i] = window.noname_character_perfectPairs[i]));
 
 	for (let name in config) {
-		if (KeptWords.includes(name)) continue;
-		if (lib[name] == null) lib[name] = Array.isArray(config[name]) ? [] : {};
+		if (KeptWords.includes(name)) {
+			continue;
+		}
+		if (lib[name] == null) {
+			lib[name] = Array.isArray(config[name]) ? [] : {};
+		}
 
 		Object.assign(lib[name], config[name]);
 	}
@@ -564,14 +596,18 @@ function mixinElement(config, element) {
 
 	if (config.element) {
 		for (let name in config.element) {
-			if (!newElement[name]) newElement[name] = [];
+			if (!newElement[name]) {
+				newElement[name] = [];
+			}
 
 			let source = config.element[name];
 			let target = newElement[name];
 
 			for (let key in source) {
 				if (key === "init") {
-					if (!target.inits) target.inits = [];
+					if (!target.inits) {
+						target.inits = [];
+					}
 					target.inits.push(source[key]);
 				} else {
 					target[key] = source[key];

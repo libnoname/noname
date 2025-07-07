@@ -1,17 +1,1 @@
-export default {
-	xiahoudun: ["xiahouyuan"],
-	zhenji: ["caopi"],
-	caocao: ["xuzhu", "dianwei", "bianfuren"],
-	huangzhong: ["weiyan"],
-	zhugeliang: ["jiangwei", "jiangfei", "huangyueying"],
-	liubei: ["guanyu", "zhangfei", "ganfuren"],
-	zhaoyun: ["liushan"],
-	daqiao: ["xiaoqiao"],
-	zhouyu: ["huanggai", "xiaoqiao", "zhouyi"],
-	sunquan: ["zhoutai"],
-	lvbu: ["diaochan", "lvlingqi"],
-	machao: ["madai", "mayunlu", "yangwan"],
-	zhangliao: ["zangba"],
-	ganning: ["lingtong", "xf_sufei"],
-	guanyu: ["zhangfei", "liaohua"],
-};
+export default {};

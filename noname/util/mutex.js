@@ -41,7 +41,6 @@ export class Mutex {
 			// [falls through]
 			case "unlocked":
 				this.#status = "locked";
-				// @ts-ignore
 				({ promise: this.#promise, resolve: this.#resolve } = Promise.withResolvers());
 				break;
 		}
@@ -53,10 +52,14 @@ export class Mutex {
 	 * 请不要在未上锁的情况下解锁
 	 */
 	unlock() {
-		if (this.#status === "unlocked") throw new Error("This Mutex is not locked.");
+		if (this.#status === "unlocked") {
+			throw new Error("This Mutex is not locked.");
+		}
 
 		this.#status = "unlocked";
-		if (this.#resolve) this.#resolve();
+		if (this.#resolve) {
+			this.#resolve();
+		}
 	}
 
 	/**

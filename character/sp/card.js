@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	//曹婴三种类型
+	caoying_basic: { fullskin: true },
+	caoying_trick: { fullskin: true },
+	caoying_equip: { fullskin: true },
 	//蒲元衍生
 	sanlve: {
 		derivation: "ol_puyuan",
@@ -175,10 +179,10 @@ const cards = {
 		derivation: "wangyun",
 		type: "trick",
 		enable: true,
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target.countCards("h") && target != player && target.hasSex("male");
 		},
-		content: function () {
+		content() {
 			"step 0";
 			event.list = game
 				.filterPlayer(function (current) {
@@ -214,7 +218,7 @@ const cards = {
 		ai: {
 			order: 6,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					var num = game.countPlayer(function (current) {
 						return current != player && current != target && current.hasSex("female");
 					});
@@ -222,9 +226,15 @@ const cards = {
 					num = Math.min(num, nh);
 					var nh1 = nh - num;
 					var nh2 = player.countCards("h") - 1 + num;
-					if (nh1 == nh2 && num == 0) return 0;
-					if (nh2 <= nh1) return -3;
-					if (player.hp == 1 || num == 1) return 0;
+					if (nh1 == nh2 && num == 0) {
+						return 0;
+					}
+					if (nh2 <= nh1) {
+						return -3;
+					}
+					if (player.hp == 1 || num == 1) {
+						return 0;
+					}
 					return -1;
 				},
 			},
@@ -236,13 +246,15 @@ const cards = {
 		derivation: "wangyun",
 		type: "trick",
 		enable: true,
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content: function () {
+		content() {
 			"step 0";
 			var num = Math.min(5, target.maxHp - target.hp);
-			if (num) target.draw(num);
+			if (num) {
+				target.draw(num);
+			}
 			"step 1";
 			target.damage();
 		},
@@ -252,16 +264,20 @@ const cards = {
 				damage: 1,
 			},
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					var num = Math.min(5, target.maxHp - target.hp);
 					if (target.hp == 1) {
-						if (num >= 3) return 0;
+						if (num >= 3) {
+							return 0;
+						}
 						if (!target.hasSkillTag("maixie_hp")) {
 							return -3;
 						}
 						return -1;
 					}
-					if (num == 2) return 0;
+					if (num == 2) {
+						return 0;
+					}
 					return -2 + num + (Math.pow(target.hp, 0.2) - 1);
 				},
 			},
@@ -276,7 +292,7 @@ const cards = {
 		subtype: "equip5",
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -304,7 +320,7 @@ const cards = {
 		subtype: "equip5",
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -327,7 +343,7 @@ const cards = {
 		skills: ["zhuangshu_equip"],
 		forceDie: true,
 		inherit: "zhuangshu_basic",
-		onLose: function () {
+		onLose() {
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();

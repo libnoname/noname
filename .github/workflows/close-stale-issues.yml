@@ -1,0 +1,33 @@
+name: Close Stale Issues
+on:
+  schedule:
+    - cron: "0 11 * * *" # 每天的 11:00 运行
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  close_stale_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Stale Issues
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-issue-stale: 60                # 60天未活动的议题将被标记为【过时】
+          days-before-pr-stale: 90                   # 90天未活动的PR将被标记为【过时】
+          days-before-issue-close: 7                 # 7天未活动的过时议题将被关闭
+          days-before-pr-close: 30                   # 30天未活动的过时PR将被关闭
+          exempt-all-assignees: true                 # 无视所有拥有指派人的议题/PR
+          exempt-all-milestones: true                # 无视所有里程碑下的议题/PR
+          stale-issue-label: "Note:Legacy"           # 标记为 "Note:Legacy" 的议题视为过时议题
+          stale-pr-label: "Note:Legacy"              # 标记为 "Note:Legacy" 的PR视为过时PR
+          any-of-labels: "Note:Pending,Note:Unclear" # 只有标记为 "Note:Pending" 或 "Note:Unclear" 的议题/PR会被关闭
+          exempt-issue-labels: "Status:Preparing"    # 标记为 "Status:Preparing" 的议题不会被关闭
+          exempt-pr-labels: "Status:Preparing"       # 标记为 "Status:Preparing" 的PR不会被关闭
+          stale-issue-message: "该issue已经超过60天未活动，现已被标记为【过时】，请在7天内进行活动，否则将被关闭！"
+          close-issue-message: "该过时issue已经超过7天未活动，现已被关闭！"
+          stale-pr-message: "该PR已经超过90天未活动，现已被标记为【过时】，请在30天内进行活动，否则将被关闭！"
+          close-pr-message: "该过时PR已经超过30天未活动，现已被关闭！"

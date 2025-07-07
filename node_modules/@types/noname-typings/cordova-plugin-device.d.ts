@@ -30,6 +30,8 @@ interface Device {
     isVirtual: boolean;
     /** Get the device hardware serial number. */
     serial: string;
+    /** Get the Android device's SDK version. (Android-only) */
+    sdkVersion?: string;
 }
 
 declare var device: Device;

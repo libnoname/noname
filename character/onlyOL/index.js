@@ -6,7 +6,6 @@ import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
@@ -23,14 +22,11 @@ game.import("character", function () {
 		characterTitle: {},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
 		characterSubstitute: {
-			ol_sb_yuanshao: [
-				["ol_sb_yuanshao_shadow", ["die:ol_sb_yuanshao"]],
-			],
+			ol_sb_yuanshao: [["ol_sb_yuanshao_shadow", ["die:ol_sb_yuanshao"]]],
 			ol_sb_dongzhuo: [
-				["ol_sb_dongzhuo_shadow1", ["tempname:ol_sb_dongzhuo", "die:ol_sb_dongzhuo"]],
-				["ol_sb_dongzhuo_shadow2", ["tempname:ol_sb_dongzhuo", "die:ol_sb_dongzhuo"]],
+				["ol_sb_dongzhuo_shadow1", ["die:ol_sb_dongzhuo"]],
+				["ol_sb_dongzhuo_shadow2", ["die:ol_sb_dongzhuo"]],
 			],
 		},
 		card: { ...cards },

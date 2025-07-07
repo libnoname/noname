@@ -15,12 +15,16 @@ const cards = {
 			return lib.filter.judge(card, player, target) && player == target;
 		},
 		judge(card) {
-			if (get.color(card) == "red") return 0;
+			if (get.color(card) == "red") {
+				return 0;
+			}
 			return -4;
 		},
 		effect() {
 			var source = cards[0].storage.nsfuzhou_source;
-			if (!source || !source.isIn()) return;
+			if (!source || !source.isIn()) {
+				return;
+			}
 			source.line(player, "thunder");
 			switch (result.color) {
 				case "black":
@@ -29,12 +33,16 @@ const cards = {
 					break;
 				case "red":
 					source.draw(2);
-					if (typeof player.storage.nsfuzhou_num != "number") player.storage.nsfuzhou_num = 0;
+					if (typeof player.storage.nsfuzhou_num != "number") {
+						player.storage.nsfuzhou_num = 0;
+					}
 					if (source.storage.nsfuzhou_draw) {
 						player.recover();
 						player.draw();
 						player.storage.nsfuzhou_num++;
-					} else player.storage.nsfuzhou_num--;
+					} else {
+						player.storage.nsfuzhou_num--;
+					}
 					player.addTempSkill("nsfuzhou_num");
 					player.markSkill("nsfuzhou_num");
 					break;
@@ -53,9 +61,9 @@ const cards = {
 				target: -1,
 			},
 			tag: {
-				// damage:1,
-				// natureDamage:1,
-				// thunderDamage:1,
+				damage: 0.5,
+				natureDamage: 0.5,
+				thunderDamage: 0.5,
 			},
 		},
 	},

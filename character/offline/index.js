@@ -6,7 +6,6 @@ import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
@@ -44,13 +43,20 @@ game.import("character", function () {
 			ps2080_zhouyu: "S2080",
 			ps_caozhi: "S2081",
 			ps_shen_machao: "SX015",
+			yj_tianchuan: "E1002T",
+			yj_zhouji: "E14001T",
+			yj_ehuan: "E9003T",
+			yj_zhonghui: "E7005T",
+			yj_jiling: "E3005",
+			yj_yongkai: "E7006T",
+			yj_chezhou: "E7006T",
+			yj_caocaoyuanshao: "E15001T",
 		},
 		characterSubstitute: {
 			jd_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
 		card: { ...cards },
 		skill: { ...skills },
 		translate: { ...translates, ...voices, ...characterSortTranslate },

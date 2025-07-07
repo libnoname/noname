@@ -1,9 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 game.import("play", function () {
 	return {
 		name: "cardpile",
-		arenaReady: function () {
-			var data = {
+		arenaReady() {
+			const data = {
 				total: 160,
 				sha: {
 					diamond: 6,
@@ -59,44 +60,36 @@ game.import("play", function () {
 					club: 4,
 				},
 			};
-			var rand = function () {
+			const rand = function () {
 				return Math.ceil(Math.random() * 13);
 			};
-			var getn = function (i, j) {
-				return Math.round(
-					data[i][j] *
-						parseFloat(
-							lib.config["cardpile_" + i + "_playpackconfig"]
-						)
-				);
+			const getn = function (i, j) {
+				return Math.round(data[i][j] * parseFloat(lib.config[`cardpile_${i}_playpackconfig`]));
 			};
-			var num = 0;
-			for (var i in data) {
-				for (var j in data[i]) {
+			let num = 0;
+			for (const i in data) {
+				for (const j in data[i]) {
 					num += getn(i, j);
 				}
 			}
-			var dn =
-				(num * (lib.card.list.length - data.total)) /
-				(data.total - num);
-			if (dn > 1000) dn = 1000;
+			let dn = (num * (lib.card.list.length - data.total)) / (data.total - num);
+			if (dn > 1000) {
+				dn = 1000;
+			}
 			if (dn > 0) {
-				var p = 0;
-				for (var i in data) {
-					for (var j in data[i]) {
-						var n = Math.round((dn * getn(i, j)) / num);
+				for (const i in data) {
+					for (const j in data[i]) {
+						let n = Math.round((dn * getn(i, j)) / num);
 						while (n--) {
-							if (i == "huosha") {
-								lib.card.list.push([j, rand(), "sha", "fire"]);
-							} else if (i == "leisha") {
-								lib.card.list.push([
-									j,
-									rand(),
-									"sha",
-									"thunder",
-								]);
-							} else {
-								lib.card.list.push([j, rand(), i]);
+							switch(i) {
+								case "huosha":
+									lib.card.list.push([j, rand(), "sha", "fire"]);
+									break;
+								case "leisha":
+									lib.card.list.push([j, rand(), "sha", "thunder"]);
+									break;
+								default:
+									lib.card.list.push([j, rand(), i]);
 							}
 						}
 					}

@@ -29,7 +29,7 @@ function collectFilesSync(paths, filter = (_path) => true) {
 			for (const entry of entries) {
 				const fullPath = path.join(directoryPath, entry.name);
 				// 添加过滤函数
-				if (!filter(fullPath)) continue;
+				if (!filter(fullPath)) {continue;}
 
 				if (entry.isDirectory()) {
 					// 如果是目录，则递归进入
@@ -87,8 +87,8 @@ function compareFilesWithCommit(commitHash = "HEAD") {
 		filesArray.push(...collectFilesSync([joinRootPath("extension")], path => nonameExtensions.some(extPath => path.startsWith(extPath))));
 
 		filesArray = [...new Set(filesArray.map(v => v.replace(/\\/g, "/")))].sort((a, b) => {
-			if (a > b) return 1;
-			if (a < b) return -1;
+			if (a > b) {return 1;}
+			if (a < b) {return -1;}
 			return 0;
 		});
 

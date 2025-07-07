@@ -6,7 +6,6 @@ import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import { characterFilters, characterInitFilters } from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
@@ -20,19 +19,19 @@ game.import("character", function () {
 			collab: characterSort,
 		},
 		characterSubstitute: {
-			zhutiexiong: [
-				["wu_zhutiexiong", ["die:zhutiexiong"]],
+			zhutiexiong: [["wu_zhutiexiong", ["die:zhutiexiong"]]],
+			liuxiecaojie: [["liuxiecaojie_shadow", []]],
+			yuanshaoyuanshu: [
+				["yuanshaoyuanshu_shao", []],
+				["yuanshaoyuanshu_shu", []],
 			],
-			liuxiecaojie: [
-				["liuxiecaojie_shadow", []],
-			],
+			taipingsangong: [["taipingsangong_ultimate", ["die:taipingsangong"]]],
 		},
 		characterFilter: { ...characterFilters },
 		characterInitFilter: { ...characterInitFilters },
 		characterTitle: {},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
 		card: { ...cards },
 		skill: { ...skills },
 		translate: { ...translates, ...voices, ...characterSortTranslate },

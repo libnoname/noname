@@ -1,8 +1,9 @@
 import { lib, get } from "../../../noname.js";
 import { ref, onMounted } from "../../../game/vue.esm-browser.js";
 import { delay } from "../../util/index.js";
+import dedent from "../../../game/dedent.js";
 
-const html = (strings, ...values) => String.raw({ raw: strings }, ...values);
+const html = dedent;
 /**
  * @type {import("vue").Component}
  */

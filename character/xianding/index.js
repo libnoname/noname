@@ -5,8 +5,8 @@ import pinyins from "./pinyin.js";
 import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
+import perfectPairs from "./perfectPairs.js";
 import characterFilters from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
@@ -20,18 +20,12 @@ game.import("character", function () {
 			xianding: characterSort,
 		},
 		characterSubstitute: {
-			dc_sb_simayi: [
-				["dc_sb_simayi_shadow", []],
-			],
-			dc_sb_zhouyu: [
-				["dc_sb_zhouyu_shadow", []],
-			],
-			dc_sb_lusu: [
-				["dc_sb_lusu_shadow", []],
-			],
-			dc_sb_jiaxu: [
-				["dc_sb_jiaxu_shadow", []],
-			],
+			dc_sb_simayi: [["dc_sb_simayi_shadow", []]],
+			dc_sb_zhouyu: [["dc_sb_zhouyu_shadow", []]],
+			dc_sb_lusu: [["dc_sb_lusu_shadow", []]],
+			dc_sb_jiaxu: [["dc_sb_jiaxu_shadow", []]],
+			dc_sb_xunyu: [["dc_sb_xunyu_shadow", []]],
+			dc_sb_jiangwei: [["dc_sb_jiangwei_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {
@@ -40,7 +34,7 @@ game.import("character", function () {
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
+		perfectPair: { ...perfectPairs },
 		card: { ...cards },
 		skill: { ...skills },
 		translate: { ...translates, ...voices, ...characterSortTranslate },

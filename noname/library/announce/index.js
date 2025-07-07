@@ -87,12 +87,15 @@ export class Announce {
 	 */
 	subscribe(name, method) {
 		let subscriber;
-		if (this.#records.has(method)) subscriber = this.#records.get(method);
-		else {
+		if (this.#records.has(method)) {
+			subscriber = this.#records.get(method);
+		} else {
 			subscriber = new this.#SubscriberType(method, this.#eventTarget);
 			this.#records.set(method, subscriber);
 		}
-		if (!subscriber) throw new Error();
+		if (!subscriber) {
+			throw new Error();
+		}
 		subscriber.subscribe(name);
 		return method;
 	}
@@ -110,9 +113,13 @@ export class Announce {
 	unsubscribe(name, method) {
 		if (this.#records.has(method)) {
 			const subscriber = this.#records.get(method);
-			if (!subscriber) throw new Error();
+			if (!subscriber) {
+				throw new Error();
+			}
 			subscriber.unsubscribe(name);
-			if (subscriber.isEmpty) this.#records.delete(method);
+			if (subscriber.isEmpty) {
+				this.#records.delete(method);
+			}
 		}
 		return method;
 	}
@@ -122,7 +129,7 @@ export class Announce {
  * @template T
  */
 /**
- * 
+ *
  * 订阅者类，该类的构造函数需要一个处理函数和一个事件目标对象作为参数
  * @example
  * let subscriber = new AnnounceSubscriber(()=>{console.log('我被点击了')},div)

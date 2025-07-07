@@ -1,16 +1,18 @@
 import { lib } from "../library/index.js";
 import PauseManager from "../game/PauseManager.js";
+import { GameEvent } from "../library/element/gameEvent.js";
 import { GameEventManager } from "../library/element/gameEvent.js";
 
 export class status {
 	imchoosing = false;
 	clicked = false;
 	auto = false;
-	eventManager= new GameEventManager();
+	eventManager = new GameEventManager();
 	/**
-	 * @type { GameEvent | undefined }
+	 * @type { GameEvent }
 	 */
 	get event() {
+		// @ts-expect-error 除开局外，必然存在当前事件
 		return this.eventManager.getStatusEvent();
 	}
 	set event(event) {
@@ -117,29 +119,41 @@ export class status {
 		return this.pauseManager.pause.isStarted;
 	}
 	set paused(bool) {
-		if (bool) this.pauseManager.pause.start();
-		else this.pauseManager.pause.resolve();
+		if (bool) {
+			this.pauseManager.pause.start();
+		} else {
+			this.pauseManager.pause.resolve();
+		}
 	}
 	get paused2() {
 		return this.pauseManager.pause2.isStarted;
 	}
 	set paused2(bool) {
-		if (bool) this.pauseManager.pause2.start();
-		else this.pauseManager.pause2.resolve();
+		if (bool) {
+			this.pauseManager.pause2.start();
+		} else {
+			this.pauseManager.pause2.resolve();
+		}
 	}
 	get paused3() {
 		return this.pauseManager.pause3.isStarted;
 	}
 	set paused3(bool) {
-		if (bool) this.pauseManager.pause3.start();
-		else this.pauseManager.pause3.resolve();
+		if (bool) {
+			this.pauseManager.pause3.start();
+		} else {
+			this.pauseManager.pause3.resolve();
+		}
 	}
 	get over() {
 		return this.pauseManager.over.isStarted;
 	}
 	set over(bool) {
-		if (bool) this.pauseManager.over.start();
-		else this.pauseManager.over.resolve();
+		if (bool) {
+			this.pauseManager.over.start();
+		} else {
+			this.pauseManager.over.resolve();
+		}
 	}
 }
 
@@ -151,7 +165,7 @@ export let _status = new status();
 export let setStatus = instance => {
 	_status = instance || new status();
 	if (lib.config.dev) {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		window._status = _status;
 	}
 };

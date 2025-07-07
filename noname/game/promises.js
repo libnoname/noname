@@ -30,11 +30,11 @@ export class GamePromises {
 	 * @returns { Promise<string> }
 	 *
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	prompt(alertOption, title, forced) {
 		return new Promise((resolve, reject) => {
 			if (alertOption !== "alert") {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				forced = title || false;
 				title = alertOption;
 				game.prompt(title, forced, resolve);
@@ -61,7 +61,7 @@ export class GamePromises {
 	// 读写函数promises化(不用考虑其对应函数是否存在)
 	download(url, folder, dev, onprogress) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.download(url, folder, resolve, reject, dev, onprogress);
 		});
 	}
@@ -71,19 +71,19 @@ export class GamePromises {
 	 */
 	readFile(filename) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.readFile(filename, resolve, reject);
 		});
 	}
 	readFileAsText(filename) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.readFileAsText(filename, resolve, reject);
 		});
 	}
 	writeFile(data, path, name) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.writeFile(data, path, name, resolve);
 		}).then(result => {
 			return new Promise((resolve, reject) => {
@@ -97,23 +97,26 @@ export class GamePromises {
 	}
 	ensureDirectory(list, callback, file) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.ensureDirectory(list, resolve, file);
 		});
 	}
 	createDir(directory) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.createDir(directory, resolve, reject);
 		});
 	}
 	removeFile(filename) {
 		return /** @type {Promise<void>} */ (
 			new Promise((resolve, reject) => {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				game.removeFile(filename, err => {
-					if (err) reject(err);
-					else resolve();
+					if (err) {
+						reject(err);
+					} else {
+						resolve();
+					}
 				});
 			})
 		);
@@ -121,7 +124,7 @@ export class GamePromises {
 	removeDir(directory) {
 		return /** @type {Promise<void>} */ (
 			new Promise((resolve, reject) => {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				game.removeDir(directory, resolve, reject);
 			})
 		);
@@ -135,7 +138,7 @@ export class GamePromises {
 	 */
 	getFileList(dir) {
 		return new Promise((resolve, reject) => {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.getFileList(dir, (folders, files) => resolve([folders, files]), reject);
 		});
 	}
@@ -146,10 +149,12 @@ export class GamePromises {
 	 * @param { string | boolean } [local]
 	 */
 	saveConfig(key, value, local) {
-		// @ts-ignore
-		if (_status.reloading) return Promise.resolve();
+		// @ts-expect-error ignore
+		if (_status.reloading) {
+			return Promise.resolve();
+		}
 
-		// @ts-ignore
+		// @ts-expect-error ignore
 		return new Promise(resolve => game.saveConfig(key, value, local, resolve));
 	}
 	/**

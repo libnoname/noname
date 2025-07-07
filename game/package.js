@@ -29,6 +29,7 @@ window.noname_package = {
 		//线下系列
 		offline: "线下武将",
 		jsrg: "江山如故",
+		sxrm: "蚀心入魔",
 		sixiang: "四象封印",
 		//DIY系列
 		diy: "DIY",
@@ -52,6 +53,7 @@ window.noname_package = {
 		sp: "忠胆英杰",
 		zhulu: "逐鹿天下",
 		yunchou: "运筹帷幄",
+		huodong: "活动卡牌",
 		zhenfa: "阵法",
 		swd: "轩辕剑",
 		gujian: "古剑奇谭",

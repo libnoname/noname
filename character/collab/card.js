@@ -16,9 +16,16 @@ const cards = {
 			},
 		},
 		onEquip() {
-			if (!card.storage.ruyijingubang_skill) card.storage.ruyijingubang_skill = 3;
+			if (!card.storage.ruyijingubang_skill) {
+				card.storage.ruyijingubang_skill = 3;
+			}
 			player.storage.ruyijingubang_skill = card.storage.ruyijingubang_skill;
 			player.markSkill("ruyijingubang_skill");
+		},
+		onLose() {
+			if (player.getStat().skill.ruyijingubang_skill) {
+				delete player.getStat().skill.ruyijingubang_skill;
+			}
 		},
 	},
 };

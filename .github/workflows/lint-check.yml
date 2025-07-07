@@ -1,0 +1,21 @@
+name: Lint Check
+
+on:
+  pull_request:
+    branches: [PR-Branch]
+
+jobs:
+  eslint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install modules
+        run: |
+          yarn add -D eslint @eslint/js globals typescript typescript-eslint eslint-plugin-vue vue-eslint-parser
+          yarn global add eslint
+
+      - name: Run ESLint
+        run: yarn exec eslint card/ character/ extension/ game/game.js game/entry.js mode/ noname/ noname.js noname-compatible.js service-worker.js

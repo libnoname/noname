@@ -32,12 +32,12 @@ export class GNC {
 					return;
 				}
 				if (!result.done) {
-					nexts = (item) => {
+					nexts = item => {
 						gen.state = item;
 						gen.status = "next";
 						callback(resolve, reject);
 					};
-					throws = (err) => {
+					throws = err => {
 						gen.state = err;
 						gen.status = "throw";
 						callback(resolve, reject);
@@ -49,7 +49,9 @@ export class GNC {
 			return new Promise(callback);
 		}
 
-		if (!this.is.generatorFunc(fn)) throw new TypeError("gnc.of needs a GeneratorFunction.");
+		if (!this.is.generatorFunc(fn)) {
+			throw new TypeError("gnc.of needs a GeneratorFunction.");
+		}
 
 		return genCoroutine;
 	}
@@ -61,6 +63,6 @@ export let gnc = new GNC();
 /**
  * @param { InstanceType<typeof GNC> } [instance]
  */
-export let setGNC = (instance) => {
+export let setGNC = instance => {
 	gnc = instance || new GNC();
 };

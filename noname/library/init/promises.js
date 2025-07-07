@@ -72,7 +72,9 @@ export class LibInitPromises {
 	 * @returns {Promise<URL>}
 	 */
 	parseResourceAddress(link, defaultHandle = null, forceLoadAsDataUrl = false) {
-		if (!forceLoadAsDataUrl) return Promise.resolve(lib.init.parseResourceAddress(link, defaultHandle));
+		if (!forceLoadAsDataUrl) {
+			return Promise.resolve(lib.init.parseResourceAddress(link, defaultHandle));
+		}
 		let { promise, resolve } = Promise.withResolvers();
 
 		lib.init.parseResourceAddress(link, defaultHandle, result => resolve(result));

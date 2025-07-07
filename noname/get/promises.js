@@ -5,6 +5,6 @@ export class Promises {
 	 * @returns { Promise<JSZip> }
 	 */
 	zip() {
-		return new Promise((resolve) => get.zip(resolve));
+		return new Promise(resolve => get.zip(resolve));
 	}
 }

@@ -5,8 +5,12 @@ const characterFilters = {
 		return mode == "identity" || mode == "doudizhu" || mode == "single" || (mode == "versus" && _status.mode != "standard" && _status.mode != "three");
 	},
 	shen_dengai(mode) {
-		if (["boss", "chess", "tafang", "stone"].includes(mode)) return false;
-		if (mode == "versus") return _status.mode != "three";
+		if (["boss", "chess", "tafang", "stone"].includes(mode)) {
+			return false;
+		}
+		if (mode == "versus") {
+			return _status.mode != "three";
+		}
 		return true;
 	},
 	le_shen_jiaxu(mode) {

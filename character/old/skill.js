@@ -5,14 +5,16 @@ const skills = {
 	//魏武帝
 	junkguixin: {
 		forbid: ["guozhan"],
-		init: function () {
+		init() {
 			if (!_status.junkguixin) {
 				_status.junkguixin = [];
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				for (const name of _status.characterlist) {
-					if (!lib.character[name][3]) continue;
+					if (!lib.character[name][3]) {
+						continue;
+					}
 					_status.junkguixin.addArray(
 						lib.character[name][3].filter(skill => {
 							var info = get.info(skill);
@@ -22,14 +24,15 @@ const skills = {
 				}
 			}
 		},
-		unique: true,
 		audio: "guixin",
 		trigger: { player: "phaseEnd" },
 		direct: true,
-		content: function () {
+		content() {
 			"step 0";
 			var controls = ["获得技能", "修改势力", "cancel2"];
-			if (!_status.junkguixin.some(skill => !player.hasSkill(skill, null, false, false))) controls.shift();
+			if (!_status.junkguixin.some(skill => !player.hasSkill(skill, null, false, false))) {
+				controls.shift();
+			}
 			player
 				.chooseControl(controls)
 				.set("prompt", get.prompt2("junkguixin"))
@@ -41,7 +44,7 @@ const skills = {
 				next.setContent(lib.skill.junkguixin["content_" + result.control]);
 			}
 		},
-		content_获得技能: function () {
+		content_获得技能() {
 			"step 0";
 			var list = _status.junkguixin.slice().filter(skill => !player.hasSkill(skill, null, false, false));
 			if (!list.length) {
@@ -58,7 +61,7 @@ const skills = {
 				player.addSkills(result.links[0]);
 			}
 		},
-		content_修改势力: function () {
+		content_修改势力() {
 			"step 0";
 			player.chooseTarget("请选择【归心】的目标", "更改一名其他角色的势力", lib.filter.notMe, true).set("ai", target => 1 + Math.random());
 			"step 1";
@@ -72,7 +75,9 @@ const skills = {
 					.chooseControl(list)
 					.set("prompt", "请选择" + get.translation(target) + "变更的势力")
 					.set("ai", () => _status.event.controls.randomGet());
-			} else event.finish();
+			} else {
+				event.finish();
+			}
 			"step 2";
 			if (result.control) {
 				player.popup(get.translation(result.control + "2"));
@@ -83,20 +88,26 @@ const skills = {
 	oldqinqing: {
 		audio: "qinqing",
 		mode: ["identity", "versus"],
-		available: function (mode) {
-			if (mode == "versus" && _status.mode != "four") return false;
-			if (mode == "identity" && _status.mode == "purple") return false;
+		available(mode) {
+			if (mode == "versus" && _status.mode != "four") {
+				return false;
+			}
+			if (mode == "identity" && _status.mode == "purple") {
+				return false;
+			}
 		},
 		trigger: { player: "phaseJieshuBegin" },
 		direct: true,
-		filter: function (event, player) {
+		filter(event, player) {
 			var zhu = get.zhu(player);
-			if (!zhu || !zhu.isZhu) return false;
+			if (!zhu || !zhu.isZhu) {
+				return false;
+			}
 			return game.hasPlayer(function (current) {
 				return current != zhu && current != player && current.inRange(zhu);
 			});
 		},
-		content: function () {
+		content() {
 			"step 0";
 			player
 				.chooseTarget(get.prompt2("dcqinqing"), function (card, player, target) {
@@ -107,10 +118,16 @@ const skills = {
 					var zhu = get.zhu(player);
 					var he = target.countCards("he");
 					if (get.attitude(_status.event.player, target) > 0) {
-						if (target.countCards("h") > zhu.countCards("h") + 1) return 0.1;
+						if (target.countCards("h") > zhu.countCards("h") + 1) {
+							return 0.1;
+						}
 					} else {
-						if (he > zhu.countCards("h") + 1) return 2;
-						if (he > 0) return 1;
+						if (he > zhu.countCards("h") + 1) {
+							return 2;
+						}
+						if (he > 0) {
+							return 1;
+						}
 					}
 					return 0;
 				});
@@ -119,7 +136,9 @@ const skills = {
 				var target = result.targets[0];
 				event.target = target;
 				player.logSkill("dcqinqing", target);
-				if (target.countDiscardableCards(player, "he")) player.discardPlayerCard(target, "he", true);
+				if (target.countDiscardableCards(player, "he")) {
+					player.discardPlayerCard(target, "he", true);
+				}
 				target.draw();
 			} else {
 				event.finish();
@@ -127,7 +146,9 @@ const skills = {
 			"step 2";
 			var zhu = get.zhu(player);
 			if (zhu && zhu.isIn()) {
-				if (target.countCards("h") > zhu.countCards("h")) player.draw();
+				if (target.countCards("h") > zhu.countCards("h")) {
+					player.draw();
+				}
 			}
 		},
 	},
@@ -135,18 +156,28 @@ const skills = {
 		audio: "huisheng",
 		trigger: { player: "damageBegin4" },
 		direct: true,
-		filter: function (event, player) {
-			if (!player.countCards("he")) return false;
-			if (!event.source || event.source == player || !event.source.isIn()) return false;
-			if (player.storage.oldhuisheng && player.storage.oldhuisheng.includes(event.source)) return false;
+		filter(event, player) {
+			if (!player.countCards("he")) {
+				return false;
+			}
+			if (!event.source || event.source == player || !event.source.isIn()) {
+				return false;
+			}
+			if (player.storage.oldhuisheng && player.storage.oldhuisheng.includes(event.source)) {
+				return false;
+			}
 			return true;
 		},
-		init: function (player) {
-			if (player.storage.oldhuisheng) player.storage.oldhuisheng = [];
+		init(player) {
+			if (player.storage.oldhuisheng) {
+				player.storage.oldhuisheng = [];
+			}
 		},
-		content: function () {
+		content() {
 			"step 0";
-			if (!player.storage.oldhuisheng) player.storage.oldhuisheng = [];
+			if (!player.storage.oldhuisheng) {
+				player.storage.oldhuisheng = [];
+			}
 			player.storage.oldhuisheng.push(trigger.source);
 			var att = get.attitude(player, trigger.source) > 0;
 			var goon = false;
@@ -223,13 +254,13 @@ const skills = {
 		audio: "zishou",
 		audioname: ["re_liubiao"],
 		trigger: { player: "phaseDrawBegin2" },
-		check: function (event, player) {
+		check(event, player) {
 			return (player.countCards("h") <= 2 && player.getDamagedHp() >= 2) || player.skipList.includes("phaseUse");
 		},
-		filter: function (event, player) {
+		filter(event, player) {
 			return !event.numFixed && player.isDamaged();
 		},
-		content: function () {
+		content() {
 			trigger.num += player.getDamagedHp();
 			player.skip("phaseUse");
 		},
@@ -247,47 +278,62 @@ const skills = {
 			name: "sha",
 			storage: { oldgongji: true },
 		},
-		viewAsFilter: function (player) {
-			if (!player.countCards("hes", { type: "equip" })) return false;
+		viewAsFilter(player) {
+			if (!player.countCards("hes", { type: "equip" })) {
+				return false;
+			}
 		},
 		prompt: "将一张装备牌当无距离限制的【杀】使用或打出",
-		check: function (card) {
+		check(card) {
 			var val = get.value(card);
-			if (_status.event.name == "chooseToRespond") return 1 / Math.max(0.1, val);
+			if (_status.event.name == "chooseToRespond") {
+				return 1 / Math.max(0.1, val);
+			}
 			return 5 - val;
 		},
 		mod: {
-			targetInRange: function (card) {
-				if (card.storage && card.storage.oldgongji) return true;
+			targetInRange(card) {
+				if (card.storage && card.storage.oldgongji) {
+					return true;
+				}
 			},
 		},
 		ai: {
 			respondSha: true,
-			skillTagFilter: function (player) {
-				if (!player.countCards("hes", { type: "equip" })) return false;
+			skillTagFilter(player) {
+				if (!player.countCards("hes", { type: "equip" })) {
+					return false;
+				}
 			},
 		},
 	},
 	oldjiefan: {
 		audio: "jiefan",
-		enable: "chooseToUse",
-		filter: function (event, player) {
-			return event.type == "dying" && _status.currentPhase && _status.currentPhase.isIn();
+		trigger: { player: "chooseToUseBegin" },
+		filter(event, player) {
+			return event.type == "dying" && _status.currentPhase !== player;
 		},
 		direct: true,
-		content: function () {
+		clearTime: true,
+		content() {
+			const list = [event.name, trigger.dying];
 			player
 				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") return false;
+					if (get.name(card) != "sha") {
+						return false;
+					}
 					return lib.filter.filterCard.apply(this, arguments);
-				}, get.prompt2("oldjiefan"))
+				}, get.prompt2(...list))
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
-					if (target != _status.currentPhase && !ui.selected.targets.includes(_status.currentPhase)) return false;
+					if (target != _status.currentPhase && !ui.selected.targets.includes(_status.currentPhase)) {
+						return false;
+					}
 					return lib.filter.filterTarget.apply(this, arguments);
 				})
-				.set("logSkill", "oldjiefan")
+				.set("logSkill", list)
 				.set("oncard", function () {
 					_status.event.player.addTempSkill("oldjiefan_recover");
 				})
@@ -309,13 +355,13 @@ const skills = {
 			recover: {
 				// audio:'jiefan',
 				trigger: { source: "damageBegin2" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.getParent(4).name == "oldjiefan";
 				},
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content: function () {
+				content() {
 					trigger.cancel();
 					var evt = event.getParent("_save");
 					var card = { name: "tao", isCard: true };
@@ -328,55 +374,62 @@ const skills = {
 	},
 	oldmingjian: {
 		audio: "mingjian",
-		trigger: { player: "phaseUseBefore" },
-		filter: function (event, player) {
+		trigger: { player: "phaseZhunbeiBefore" },
+		filter(event, player) {
 			return player.countCards("h");
 		},
-		direct: true,
-		content: function () {
-			"step 0";
-			player.chooseTarget(get.prompt("oldmingjian"), "跳过出牌阶段并将所有手牌交给一名其他角色，你结束此回合，然后其于此回合后获得一个额外的出牌阶段", lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player,
-					att = get.attitude(player, target);
-				if (target.hasSkillTag("nogain")) return 0.01 * att;
-				if (player.countCards("h") == player.countCards("h", "du")) return -att;
-				if (target.hasJudge("lebu")) att *= 1.25;
-				if (get.attitude(player, target) > 3) {
-					var basis = get.threaten(target) * att;
-					if (
-						player == get.zhu(player) &&
-						player.hp <= 2 &&
-						player.countCards("h", "shan") &&
-						!game.hasPlayer(function (current) {
-							return get.attitude(current, player) > 3 && current.countCards("h", "tao") > 0;
-						})
-					)
-						return 0;
-					if (target.countCards("h") + player.countCards("h") > target.hp + 2) return basis * 0.8;
-					return basis;
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("oldmingjian", target);
-				player.give(player.getCards("h"), target);
-				trigger.cancel();
-			} else event.finish();
-			"step 2";
-			var evt = trigger.getParent("phase");
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "跳过出牌阶段并将所有手牌交给一名其他角色，你结束此回合，然后其于此回合后获得一个额外的出牌阶段", lib.filter.notMe)
+				.set("ai", target => {
+					var player = _status.event.player,
+						att = get.attitude(player, target);
+					if (target.hasSkillTag("nogain")) {
+						return 0.01 * att;
+					}
+					if (player.countCards("h") == player.countCards("h", "du")) {
+						return -att;
+					}
+					if (target.hasJudge("lebu")) {
+						att *= 1.25;
+					}
+					if (get.attitude(player, target) > 3) {
+						var basis = get.threaten(target) * att;
+						if (
+							player == get.zhu(player) &&
+							player.hp <= 2 &&
+							player.countCards("h", "shan") &&
+							!game.hasPlayer(function (current) {
+								return get.attitude(current, player) > 3 && current.countCards("h", "tao") > 0;
+							})
+						) {
+							return 0;
+						}
+						if (target.countCards("h") + player.countCards("h") > target.hp + 2) {
+							return basis * 0.8;
+						}
+						return basis;
+					}
+					return 0;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.give(player.getCards("h"), target);
+			trigger.cancel();
+			const evt = trigger.getParent("phase", true);
 			if (evt) {
 				game.log(player, "结束了回合");
-				evt.finish();
+				evt.num = evt.phaseList.length;
+				evt.goto(11);
 			}
-			var next = target.insertPhase();
+			const next = target.insertPhase();
 			next._noTurnOver = true;
 			next.phaseList = ["phaseUse"];
 			//next.setContent(lib.skill.oldmingjian.phase);
 		},
-		phase: function () {
+		phase() {
 			"step 0";
 			player.phaseUse();
 			"step 1";
@@ -395,101 +448,104 @@ const skills = {
 	old_guhuo: {
 		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
-		hiddenCard: function (player, name) {
+		hiddenCard(player, name) {
 			return lib.inpile.includes(name) && player.countCards("hs") > 0;
 		},
-		filter: function (event, player) {
-			if (!player.countCards("hs")) return false;
-			for (var i of lib.inpile) {
-				var type = get.type(i);
-				if ((type == "basic" || type == "trick") && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) return true;
+		filter(event, player) {
+			if (!player.countCards("hs")) {
+				return false;
+			}
+			for (const i of lib.inpile) {
+				const type = get.type(i);
+				if ((type == "basic" || type == "trick") && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
+					return true;
+				}
 				if (i == "sha") {
-					for (var j of lib.inpile_nature) {
-						if (event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) return true;
+					for (const j of lib.inpile_nature) {
+						if (event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) {
+							return true;
+						}
 					}
 				}
 			}
 			return false;
 		},
 		chooseButton: {
-			dialog: function (event, player) {
-				var list = [];
-				for (var i of lib.inpile) {
-					if (event.type != "phase") if (!event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) continue;
-					var type = get.type(i);
-					if (type == "basic" || type == "trick") list.push([type, "", i]);
+			dialog(event, player) {
+				const list = [];
+				for (const i of lib.inpile) {
+					if (event.type != "phase") {
+						if (!event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
+							continue;
+						}
+					}
+					const type = get.type(i);
+					if (type == "basic" || type == "trick") {
+						list.push([type, "", i]);
+					}
 					if (i == "sha") {
-						if (event.type != "phase") if (!event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) continue;
-						for (var j of lib.inpile_nature) list.push(["基本", "", "sha", j]);
+						for (const j of lib.inpile_nature) {
+							if (event.type != "phase") {
+								if (!event.filterCard(get.autoViewAs({ name: i, nature: j }, "unsure"), player, event)) {
+									continue;
+								}
+							}
+							list.push(["基本", "", "sha", j]);
+						}
 					}
 				}
 				return ui.create.dialog("蛊惑", [list, "vcard"]);
 			},
-			check: function (button) {
-				var player = _status.event.player;
-				var order = Math.max(0, get.order(card) + 1);
-				var enemyNum = game.countPlayer(function (current) {
-					return current != player && (get.realAttitude || get.attitude)(current, player) < 0 && current.hp > 0;
+			filter(button, player) {
+				const evt = _status.event.getParent();
+				return evt.filterCard({ name: button.link[2], nature: button.link[3] }, player, evt);
+			},
+			check(button) {
+				const player = _status.event.player;
+				const enemyNum = game.countPlayer(function (current) {
+					return current != player && current.hp != 0 && (get.realAttitude || get.attitude)(current, player) < 0;
 				});
-				var card = { name: button.link[2], nature: button.link[3] };
-				if (
-					player.isDying() &&
-					!player.hasCard(function (cardx) {
-						if (get.suit(cardx) != "heart") return false;
-						var mod2 = game.checkMod(cardx, player, "unchanged", "cardEnabled2", player);
-						if (mod2 != "unchanged") return mod2;
-						var mod = game.checkMod(cardx, player, player, "unchanged", "cardSavable", player);
-						if (mod != "unchanged") return mod;
-						var savable = get.info(cardx).savable;
-						if (typeof savable == "function") savable = savable(card, player, player);
-						return savable;
-					}, "hs")
-				) {
-					if (!player.getStorage("old_guhuo_cheated").includes(card.name + card.nature) && Math.random() < 0.4) return 1;
+				const card = { name: button.link[2], nature: button.link[3] };
+				const val = _status.event.getParent().type == "phase" ? player.getUseValue(card) : 1;
+				if (val <= 0) {
 					return 0;
 				}
-				var val = _status.event.getParent().type == "phase" ? player.getUseValue(card) : 1;
-				if (
-					player.getStorage("old_guhuo_cheated").includes(card.name + card.nature) &&
-					!player.hasCard(function (cardx) {
-						if (card.name == cardx.name) {
-							if (card.name != "sha") return true;
-							return get.is.sameNature(card, cardx);
-						}
-						return false;
-					}, "hs") &&
-					Math.random() < 0.7
-				)
-					return 0;
-				if (val <= 0) return 0;
 				if (enemyNum) {
 					if (
 						!player.hasCard(function (cardx) {
 							if (card.name == cardx.name) {
-								if (card.name != "sha") return true;
+								if (card.name != "sha") {
+									return true;
+								}
 								return get.is.sameNature(card, cardx);
 							}
 							return false;
 						}, "hs")
 					) {
-						if (get.value(card, player, "raw") < 6) return Math.sqrt(val) * (0.25 + Math.random() / 1.5);
-						if (enemyNum <= 2) return Math.sqrt(val) / 1.5 + order * 10;
+						if (get.value(card, player, "raw") < 6) {
+							return Math.sqrt(val) * (0.25 + Math.random() / 1.5);
+						}
+						if (enemyNum <= 2) {
+							return Math.sqrt(val) / 1.5;
+						}
 						return 0;
 					}
-					return 3 * val + order * 10;
+					return 3 * val;
 				}
-				return val + order * 10;
+				return val;
 			},
-			backup: function (links, player) {
+			backup(links, player) {
 				return {
-					filterCard: function (card, player, target) {
-						var result = true;
-						var suit = card.suit,
+					filterCard(card, player, target) {
+						let result = true;
+						const suit = card.suit,
 							number = card.number;
 						card.suit = "none";
 						card.number = null;
-						var mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-						if (mod != "unchanged") result = mod;
+						const mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+						if (mod != "unchanged") {
+							result = mod;
+						}
 						card.suit = suit;
 						card.number = number;
 						return result;
@@ -504,29 +560,32 @@ const skills = {
 						suit: "none",
 						number: null,
 					},
-					ai1: function (card) {
-						var player = _status.event.player;
-						var enemyNum = game.countPlayer(function (current) {
-							return current != player && (get.realAttitude || get.attitude)(current, player) < 0 && current.hp > 0;
+					ai1(card) {
+						const player = _status.event.player;
+						const enemyNum = game.countPlayer(function (current) {
+							return current != player && current.hp != 0 && (get.realAttitude || get.attitude)(current, player) < 0;
 						});
-						var cardx = lib.skill.old_guhuo_backup.viewAs;
+						const cardx = lib.skill.old_guhuo_backup.viewAs;
 						if (enemyNum) {
-							if ((card.name == cardx.name && (card.name != "sha" || get.is.sameNature(card, cardx))) || player.getStorage("old_guhuo_cheated").includes(card.name + card.nature)) return (get.suit(card) == "heart" ? 8 : 4) + Math.random() * 3;
-							else if (lib.skill.old_guhuo_backup.aiUse < 0.5 && !player.isDying()) return 0;
+							if (card.name == cardx.name && (card.name != "sha" || get.is.sameNature(card, cardx))) {
+								return 2 + Math.random() * 3;
+							} else if (lib.skill.old_guhuo_backup.aiUse < 0.5 && !player.isDying()) {
+								return 0;
+							}
 						}
-						return get.value(cardx) - get.value(card);
+						return 6 - get.value(card);
 					},
-					precontent: function () {
+					async precontent(event, trigger, player) {
 						player.logSkill("old_guhuo");
 						player.addTempSkill("old_guhuo_guess");
-						var card = event.result.cards[0];
+						const [card] = event.result.cards;
 						event.result.card.suit = get.suit(card);
 						event.result.card.number = get.number(card);
 					},
 				};
 			},
-			prompt: function (links, player) {
-				return "将一张手牌当做" + (links[0][3] ? get.translation(links[0][3]) : "") + "【" + get.translation(links[0][2]) + "】" + (_status.event.name == "chooseToRespond" ? "打出" : "使用");
+			prompt(links, player) {
+				return "将一张手牌当做" + get.translation(links[0][2]) + (_status.event.name == "chooseToRespond" ? "打出" : "使用");
 			},
 		},
 		ai: {
@@ -534,14 +593,170 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			fireAttack: true,
-			skillTagFilter: function (player) {
-				if (!player.countCards("hs")) return false;
+			skillTagFilter(player) {
+				if (!player.countCards("hs")) {
+					return false;
+				}
 			},
 			threaten: 1.2,
-			order: 10,
-			result: { player: 1 },
+			order: 8.1,
+			result: {
+				player: 1,
+			},
 		},
 		subSkill: {
+			guess: {
+				trigger: {
+					player: ["useCardBefore", "respondBefore"],
+				},
+				forced: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				charlotte: true,
+				filter(event, player) {
+					return event.skill && event.skill.indexOf("old_guhuo_") == 0;
+				},
+				async content(event, trigger, player) {
+					event.fake = false;
+					event.betrayer = [];
+					const [card] = trigger.cards;
+					if (card.name != trigger.card.name || (card.name == "sha" && !get.is.sameNature(trigger.card, card))) {
+						event.fake = true;
+					}
+					player.popup(trigger.card.name, "metal");
+					const next = player.lose(card, ui.ordering);
+					next.relatedEvent = trigger;
+					await next;
+					// player.line(trigger.targets,trigger.card.nature);
+					trigger.throw = false;
+					trigger.skill = "old_guhuo_backup";
+					game.log(player, "声明", trigger.targets && trigger.targets.length ? "对" : "", trigger.targets || "", trigger.name == "useCard" ? "使用" : "打出", trigger.card);
+					event.prompt = get.translation(player) + "声明" + (trigger.targets && trigger.targets.length ? "对" + get.translation(trigger.targets) : "") + (trigger.name == "useCard" ? "使用" : "打出") + (get.translation(trigger.card.nature) || "") + get.translation(trigger.card.name) + "，是否质疑？";
+					event.targets = game
+						.filterPlayer(function (current) {
+							return current != player && current.hp != 0;
+						})
+						.sortBySeat(_status.currentPhase);
+					game.broadcastAll(
+						function (card, player) {
+							_status.old_guhuoNode = card.copy("thrown");
+							if (lib.config.cardback_style != "default") {
+								_status.old_guhuoNode.style.transitionProperty = "none";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.classList.add("infohidden");
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transitionProperty = "";
+							} else {
+								_status.old_guhuoNode.classList.add("infohidden");
+							}
+							_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+							player.$throwordered2(_status.old_guhuoNode);
+						},
+						trigger.cards[0],
+						player
+					);
+					event.onEnd01 = function () {
+						_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", _status.event.onEnd01);
+						setTimeout(function () {
+							_status.old_guhuoNode.style.transition = "all ease-in 0.3s";
+							_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(270deg)";
+							const onEnd = function () {
+								_status.old_guhuoNode.classList.remove("infohidden");
+								_status.old_guhuoNode.style.transition = "all 0s";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(-90deg)";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transition = "";
+								ui.refresh(_status.old_guhuoNode);
+								_status.old_guhuoNode.style.transform = "";
+								_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", onEnd);
+							};
+							_status.old_guhuoNode.listenTransition(onEnd);
+						}, 300);
+					};
+					for (const target of event.targets) {
+						const links = await target
+							.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true)
+							.set("ai", function (button) {
+								const player = _status.event.player;
+								const evt = _status.event.getParent("old_guhuo_guess"),
+									evtx = evt.getTrigger();
+								if (!evt) {
+									return Math.random();
+								}
+								const card = { name: evtx.card.name, nature: evtx.card.nature, isCard: true };
+								const ally = button.link[2] == "reguhuo_ally";
+								if (ally && (player.hp <= 1 || get.attitude(player, evt.player) >= 0)) {
+									return 1.1;
+								}
+								if (!ally && get.attitude(player, evt.player) < 0 && evtx.name == "useCard") {
+									let eff = 0;
+									const targetsx = evtx.targets || [];
+									for (const target of targetsx) {
+										const isMe = target == evt.player;
+										eff += get.effect(target, card, evt.player, player) / (isMe ? 1.5 : 1);
+									}
+									eff /= 1.5 * targetsx.length || 1;
+									if (eff > 0) {
+										return 0;
+									}
+									if (eff < -7) {
+										return Math.random() + Math.pow(-(eff + 7) / 8, 2);
+									}
+									return Math.pow((get.value(card, evt.player, "raw") - 4) / (eff == 0 ? 5 : 10), 2);
+								}
+								return Math.random();
+							})
+							.forResultLinks();
+						if (links[0][2] == "reguhuo_betray") {
+							target.addExpose(0.2);
+							game.log(target, "#y质疑");
+							target.popup("质疑！", "fire");
+							event.betrayer.add(target);
+						} else {
+							game.log(target, "#g不质疑");
+							target.popup("不质疑", "wood");
+						}
+					}
+					await game.delayx();
+					game.broadcastAll(function (onEnd) {
+						_status.event.onEnd01 = onEnd;
+						if (_status.old_guhuoNode) {
+							_status.old_guhuoNode.listenTransition(onEnd, 300);
+						}
+					}, event.onEnd01);
+					await game.delay(2);
+					if (!event.betrayer.length) {
+						return;
+					}
+					if (event.fake) {
+						event.betrayer.forEach(target => target.popup("质疑正确", "wood"));
+						await game.asyncDraw(event.betrayer);
+						game.log(player, "声明的", trigger.card, "作废了");
+						trigger.cancel();
+						trigger.getParent().goto(0);
+						trigger.line = false;
+						event.clearUI = true;
+					} else {
+						event.betrayer.forEach(target => target.popup("质疑错误", "fire"));
+						for (let target of event.betrayer) {
+							await target.loseHp();
+						}
+						if (get.suit(card) != "heart") {
+							game.log(player, "声明的", trigger.card, "作废了");
+							trigger.cancel();
+							trigger.getParent().goto(0);
+							trigger.line = false;
+							event.clearUI = true;
+						}
+					}
+					await game.delay(2);
+					if (event.clearUI) {
+						game.broadcastAll(() => ui.clear());
+					} // game.broadcastAll(ui.clear); 原来的代码抽象喵
+				},
+			},
 			cheated: {
 				trigger: {
 					player: "gainAfter",
@@ -553,174 +768,29 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				onremove: true,
-				filter: function (event, player) {
-					if (event.getParent().name == "draw") return true;
+				filter(event, player) {
+					if (event.getParent().name == "draw") {
+						return true;
+					}
 					var cards = event.getg(player);
-					if (!cards.length) return false;
+					if (!cards.length) {
+						return false;
+					}
 					return game.hasPlayer(current => {
-						if (current == player) return false;
+						if (current == player) {
+							return false;
+						}
 						var evt = event.getl(current);
-						if (evt && evt.cards && evt.cards.length) return true;
+						if (evt && evt.cards && evt.cards.length) {
+							return true;
+						}
 						return false;
 					});
 				},
-				content: function () {
+				content() {
 					player.removeSkill("old_guhuo_cheated");
 				},
 			},
-		},
-	},
-	old_guhuo_guess: {
-		audio: "old_guhuo",
-		trigger: {
-			player: ["useCardBefore", "respondBefore"],
-		},
-		forced: true,
-		silent: true,
-		popup: false,
-		firstDo: true,
-		charlotte: true,
-		sourceSkill: "old_guhuo",
-		filter: function (event, player) {
-			return event.skill && event.skill.indexOf("old_guhuo_") == 0;
-		},
-		content: function () {
-			"step 0";
-			event.fake = false;
-			event.goon = true;
-			event.betrayers = [];
-			var card = trigger.cards[0];
-			if (card.name != trigger.card.name || (card.name == "sha" && !get.is.sameNature(trigger.card, card))) event.fake = true;
-			if (event.fake) {
-				player.addSkill("old_guhuo_cheated");
-				player.markAuto("old_guhuo_cheated", [trigger.card.name + trigger.card.nature]);
-			}
-			player.popup(trigger.card.name, "metal");
-			player.lose(card, ui.ordering).relatedEvent = trigger;
-			trigger.throw = false;
-			trigger.skill = "old_guhuo_backup";
-			game.log(player, "声明", trigger.targets && trigger.targets.length ? "对" : "", trigger.targets || "", trigger.name == "useCard" ? "使用" : "打出", trigger.card);
-			event.prompt = get.translation(player) + "声明" + (trigger.targets && trigger.targets.length ? "对" + get.translation(trigger.targets) : "") + (trigger.name == "useCard" ? "使用" : "打出") + (get.translation(trigger.card.nature) || "") + get.translation(trigger.card.name) + "，是否质疑？";
-			event.targets = game.filterPlayer(i => i != player && i.hp > 0).sortBySeat(_status.currentPhase);
-
-			game.broadcastAll(
-				function (card, player) {
-					_status.old_guhuoNode = card.copy("thrown");
-					if (lib.config.cardback_style != "default") {
-						_status.old_guhuoNode.style.transitionProperty = "none";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.classList.add("infohidden");
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transitionProperty = "";
-					} else {
-						_status.old_guhuoNode.classList.add("infohidden");
-					}
-					_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
-					player.$throwordered2(_status.old_guhuoNode);
-				},
-				trigger.cards[0],
-				player
-			);
-			event.onEnd01 = function () {
-				_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", _status.event.onEnd01);
-				setTimeout(function () {
-					_status.old_guhuoNode.style.transition = "all ease-in 0.3s";
-					_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(270deg)";
-					var onEnd = function () {
-						_status.old_guhuoNode.classList.remove("infohidden");
-						_status.old_guhuoNode.style.transition = "all 0s";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transform = "perspective(600px) rotateY(-90deg)";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transition = "";
-						ui.refresh(_status.old_guhuoNode);
-						_status.old_guhuoNode.style.transform = "";
-						_status.old_guhuoNode.removeEventListener("webkitTransitionEnd", onEnd);
-					};
-					_status.old_guhuoNode.listenTransition(onEnd);
-				}, 300);
-			};
-			if (!event.targets.length) event.goto(3);
-			"step 1";
-			event.target = event.targets.shift();
-			event.target.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true).set("ai", function (button) {
-				var player = _status.event.player;
-				var evt = _status.event.getParent("old_guhuo_guess"),
-					evtx = evt.getTrigger();
-				if (!evt) return Math.random();
-				var card = { name: evtx.card.name, nature: evtx.card.nature, isCard: true };
-				var ally = button.link[2] == "reguhuo_ally";
-				if (ally && (player.hp <= 1 || get.attitude(player, evt.player) >= 0)) return 1.1;
-				if (!ally && get.effect(player, { name: "losehp" }, player, player) >= 0) return 10;
-				if (!ally && get.attitude(player, evt.player) < 0) {
-					if (evtx.name == "useCard") {
-						var eff = 0;
-						var targetsx = evtx.targets || [];
-						for (var target of targetsx) {
-							var isMe = target == evt.player;
-							eff += get.effect(target, card, evt.player, player) / (isMe ? 1.35 : 1);
-						}
-						eff /= 1.5 * targetsx.length || 1;
-						if (eff > 0) return 0;
-						if (eff < -7) return (Math.random() + Math.pow(-(eff + 7) / 8, 2)) / Math.sqrt(evt.betrayers.length + 1) + (player.hp - 3) * 0.05 + Math.max(0, 4 - evt.player.hp) * 0.05 - (player.hp == 1 && !get.tag(card, "damage") ? 0.2 : 0);
-						return Math.pow((get.value(card, evt.player, "raw") - 4) / (eff == 0 ? 3.1 : 10), 2) / Math.sqrt(evt.betrayers.length || 1) + (player.hp - 3) * 0.05 + Math.max(0, 4 - evt.player.hp) * 0.05;
-					}
-					if (evt.player.getStorage("old_guhuo_cheated").includes(card.name + card.nature)) return Math.random() + 0.3;
-				}
-				return Math.random();
-			});
-			"step 2";
-			if (result.links[0][2] == "reguhuo_betray") {
-				target.addExpose(0.2);
-				game.log(target, "#y质疑");
-				target.popup("质疑！", "fire");
-				event.betrayers.push(target);
-			} else {
-				game.log(target, "#g不质疑");
-				target.popup("不质疑", "wood");
-			}
-			if (targets.length) event.goto(1);
-			"step 3";
-			game.delayx();
-			game.broadcastAll(function (onEnd) {
-				_status.event.onEnd01 = onEnd;
-				if (_status.old_guhuoNode) _status.old_guhuoNode.listenTransition(onEnd, 300);
-			}, event.onEnd01);
-			"step 4";
-			game.delay(2);
-			"step 5";
-			if (!event.betrayers.length) {
-				event.goto(7);
-			}
-			"step 6";
-			if (event.fake) {
-				for (var target of event.betrayers) {
-					target.popup("质疑正确", "wood");
-				}
-				event.goon = false;
-			} else {
-				for (var target of event.betrayers) {
-					target.popup("质疑错误", "fire");
-					target.loseHp();
-				}
-				if (get.suit(trigger.cards[0], player) != "heart") {
-					event.goon = false;
-				}
-			}
-			"step 7";
-			if (!event.goon) {
-				game.log(player, "声明的", trigger.card, "作废了");
-				trigger.cancel();
-				trigger.getParent().goto(0);
-				trigger.line = false;
-			}
-			"step 8";
-			game.delay();
-			"step 9";
-			if (!event.goon) {
-				if (event.fake) game.asyncDraw(event.betrayers);
-				game.broadcastAll(ui.clear);
-			}
 		},
 	},
 	old_zuilun: {
@@ -731,24 +801,36 @@ const skills = {
 		},
 		enable: "phaseUse",
 		usable: 2,
-		filterTarget: function (card, player, target) {
-			if (player == target) return false;
+		filterTarget(card, player, target) {
+			if (player == target) {
+				return false;
+			}
 			var pos = "he";
-			if (player.hasSkill("old_zuilun_h")) pos = "e";
-			if (player.hasSkill("old_zuilun_e")) pos = "h";
+			if (player.hasSkill("old_zuilun_h")) {
+				pos = "e";
+			}
+			if (player.hasSkill("old_zuilun_e")) {
+				pos = "h";
+			}
 			return target.countGainableCards(player, pos) > 0;
 		},
-		content: function () {
+		content() {
 			"step 0";
 			var pos = "he";
-			if (player.hasSkill("old_zuilun_h")) pos = "e";
-			if (player.hasSkill("old_zuilun_e")) pos = "h";
+			if (player.hasSkill("old_zuilun_h")) {
+				pos = "e";
+			}
+			if (player.hasSkill("old_zuilun_e")) {
+				pos = "h";
+			}
 			player.gainPlayerCard(target, pos, true);
 			"step 1";
 			if (result.bool && result.cards && result.cards.length) {
 				target.draw();
 				var pos = result.cards[0].original;
-				if (pos == "h" || pos == "e") player.addTempSkill("old_zuilun_" + pos, "phaseUseAfter");
+				if (pos == "h" || pos == "e") {
+					player.addTempSkill("old_zuilun_" + pos, "phaseUseAfter");
+				}
 			}
 		},
 		ai: {
@@ -759,9 +841,12 @@ const skills = {
 		},
 	},
 	old_fuyin: {
+		audio: "xinfu_fuyin",
 		mod: {
-			targetEnabled: function (card, player, target) {
-				if ((card.name == "juedou" || card.name == "sha" || card.name == "huogong") && player != target && player.countCards("h") >= target.countCards("h") && target.hasEmptySlot(2)) return false;
+			targetEnabled(card, player, target) {
+				if ((card.name == "juedou" || card.name == "sha" || card.name == "huogong") && player != target && player.countCards("h") >= target.countCards("h") && target.hasEmptySlot(2)) {
+					return false;
+				}
 			},
 		},
 	},
@@ -772,24 +857,28 @@ const skills = {
 			content: "expansion",
 			markcount: "expansion",
 		},
-		onremove: function (player, skill) {
+		onremove(player, skill) {
 			var cards = player.getExpansions(skill);
-			if (cards.length) player.loseToDiscardpile(cards);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
 		},
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: [1, Infinity],
-		filter: function (event, player) {
+		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		check: function (card) {
+		check(card) {
 			var player = _status.event.player;
-			if (36 - player.getExpansions("old_jijun").length <= player.countCards("h")) return 1;
+			if (36 - player.getExpansions("old_jijun").length <= player.countCards("h")) {
+				return 1;
+			}
 			return 5 - get.value(card);
 		},
 		discard: false,
 		lose: false,
-		content: function () {
+		content() {
 			player.addToExpansion(cards, player, "give").gaintag.add("old_jijun");
 		},
 		ai: {
@@ -808,10 +897,10 @@ const skills = {
 		forced: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		filter: function (event, player) {
+		filter(event, player) {
 			return player.getExpansions("old_jijun").length > 35;
 		},
-		content: function () {
+		content() {
 			var winners = player.getFriends();
 			game.over(player == game.me || winners.includes(game.me));
 		},
@@ -824,20 +913,24 @@ const skills = {
 		usable: 1,
 		multitarget: true,
 		audio: 2,
-		filterTarget: function (card, player, target) {
-			if (player == target) return false;
+		filterTarget(card, player, target) {
+			if (player == target) {
+				return false;
+			}
 			var num = target.countCards("h");
 			if (ui.selected.targets.length) {
 				return num < ui.selected.targets[0].countCards("h");
 			}
 			var players = game.filterPlayer();
 			for (var i = 0; i < players.length; i++) {
-				if (num > players[i].countCards("h")) return true;
+				if (num > players[i].countCards("h")) {
+					return true;
+				}
 			}
 			return false;
 		},
 		selectTarget: 2,
-		content: function () {
+		content() {
 			"step 0";
 			var gainner, giver;
 			if (targets[0].countCards("h") < targets[1].countCards("h")) {
@@ -857,16 +950,20 @@ const skills = {
 			order: 10.5,
 			threaten: 2,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					var num = target.countCards("h");
 					var att = get.attitude(player, target);
 					if (ui.selected.targets.length == 0) {
-						if (att > 0) return -1;
+						if (att > 0) {
+							return -1;
+						}
 						var players = game.filterPlayer();
 						for (var i = 0; i < players.length; i++) {
 							var num2 = players[i].countCards("h");
 							var att2 = get.attitude(player, players[i]);
-							if (att2 >= 0 && num2 < num) return -1;
+							if (att2 >= 0 && num2 < num) {
+								return -1;
+							}
 						}
 						return 0;
 					} else {
@@ -880,15 +977,17 @@ const skills = {
 	oldfaen: {
 		audio: "faen",
 		trigger: { global: ["turnOverAfter", "linkAfter"] },
-		filter: function (event, player) {
-			if (event.name == "link") return event.player.isLinked();
+		filter(event, player) {
+			if (event.name == "link") {
+				return event.player.isLinked();
+			}
 			return true;
 		},
-		check: function (event, player) {
+		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
 		logTarget: "player",
-		content: function () {
+		content() {
 			trigger.player.draw();
 		},
 		ai: {
@@ -903,15 +1002,17 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		direct: true,
-		filter: function (event, player) {
+		filter(event, player) {
 			var evt = event.getl(player);
 			return evt && evt.es && evt.es.length > 0;
 		},
-		content: function () {
+		content() {
 			"step 0";
 			player
 				.chooseTarget(get.prompt("oldxuanfeng"), function (card, player, target) {
-					if (target == player) return false;
+					if (target == player) {
+						return false;
+					}
 					return get.distance(player, target) <= 1 || player.canUse("sha", target, false);
 				})
 				.set("ai", function (target) {
@@ -953,8 +1054,10 @@ const skills = {
 		},
 		ai: {
 			effect: {
-				target: function (card, player, target, current) {
-					if (get.type(card) == "equip") return [1, 3];
+				target(card, player, target, current) {
+					if (get.type(card) == "equip") {
+						return [1, 3];
+					}
 				},
 			},
 			reverseEquip: true,

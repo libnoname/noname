@@ -3,45 +3,63 @@ game.import("character", function () {
 	return {
 		name: "mtg",
 		character: {
-			mtg_jiding: ["male", "qun", 4, ["mbaizhan", "msilian"]],
-			mtg_jiesi: ["male", "wei", 3, ["mtongnian", "msuoling", "mhuanyi"]],
-			mtg_lilianna: ["female", "qun", 3, ["lingyong", "mduohun"]],
+			mtg_jiding: {
+				sex: "male",
+				group: "qun",
+				hp: 4,
+				skills: ["mbaizhan", "msilian"],
+			},
+			mtg_jiesi: {
+				sex: "male",
+				group: "wei",
+				hp: 3,
+				skills: ["mtongnian", "msuoling", "mhuanyi"],
+			},
+			mtg_lilianna: {
+				sex: "female",
+				group: "qun",
+				hp: 3,
+				skills: ["lingyong", "mduohun"],
+			},
 		},
 		characterIntro: {
-			mtg_jiding:
-				"这名白色魔法的使用者极其注重忠诚，正义和荣誉。他曾全力追捕茜卓纳拉，如今已不可思议地与这位火焰法师成为伙伴。",
-			mtg_jiesi:
-				"杰斯贝连是使用蓝色法术的鹏洛客。他擅长心灵法术：读取心灵，幻影，知识，以及欺瞒的咒语。",
-			mtg_lilianna:
-				"莉莲娜维斯是一位精通死灵术的旅法师，她擅长用黑色法术力来复活死者，腐化生者，并从死亡中召唤力量。",
+			mtg_jiding: "这名白色魔法的使用者极其注重忠诚，正义和荣誉。他曾全力追捕茜卓纳拉，如今已不可思议地与这位火焰法师成为伙伴。",
+			mtg_jiesi: "杰斯贝连是使用蓝色法术的鹏洛客。他擅长心灵法术：读取心灵，幻影，知识，以及欺瞒的咒语。",
+			mtg_lilianna: "莉莲娜维斯是一位精通死灵术的旅法师，她擅长用黑色法术力来复活死者，腐化生者，并从死亡中召唤力量。",
 		},
 		skill: {
 			mduohun: {
 				trigger: { player: "dyingAfter" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source.isIn() && event.source.hp > 0;
 				},
 				logTarget: "source",
-				content: function () {
+				content() {
 					trigger.source.loseHp();
 				},
 				ai: {
-					threaten: function (player, target) {
-						if (target.hp == 1) return 0.6;
+					threaten(player, target) {
+						if (target.hp == 1) {
+							return 0.6;
+						}
 						return 1;
 					},
 					effect: {
-						target: function (card, player, target, current) {
-							if (!target.hasFriend()) return;
-							if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -1];
+						target(card, player, target, current) {
+							if (!target.hasFriend()) {
+								return;
+							}
+							if (target.hp <= 1 && get.tag(card, "damage")) {
+								return [1, 0, 0, -1];
+							}
 						},
 					},
 				},
 			},
 			lingyong: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.hasSkill("subplayer") && player.getSubPlayers("lingyong_get").length > 0;
 				},
 				nosub: true,
@@ -50,31 +68,23 @@ game.import("character", function () {
 				delay: 0,
 				skillAnimation: true,
 				animationColor: "thunder",
-				content: function () {
+				content() {
 					player.callSubPlayer().set("tag", "lingyong_get");
 				},
 				ai: {
 					order: 1,
 					result: {
-						player: function (player, target) {
-							return 1;
-							// if(player.hp<=1) return 1;
-							// if(!player.needsToDiscard(player.hp-1)) return 1;
-							// return 0;
-						},
+						player: 1,
 					},
 				},
 				subSkill: {
 					get: {
 						trigger: { global: "dieAfter" },
 						forced: true,
-						filter: function (event, player) {
-							return (
-								!event.player.isMin() &&
-								![player.name, player.name1, player.name2].includes(event.player.name)
-							);
+						filter(event, player) {
+							return !event.player.isMin() && ![player.name, player.name1, player.name2].includes(event.player.name);
 						},
-						content: function () {
+						content() {
 							var skills = lib.character[trigger.player.name][3].slice(0);
 							for (var i = 0; i < skills.length; i++) {
 								if (lib.skill[skills[i]].nosub) {
@@ -95,13 +105,13 @@ game.import("character", function () {
 				round: 2,
 				trigger: { player: "phaseEnd" },
 				direct: true,
-				addintro: function (storage, player) {
+				addintro(storage, player) {
 					if (player.hasSkill("mhuanyi_target")) {
 						return "直到下一回合开始，当成为某类型的卡牌的惟一目标时，将目标转移给某名其他角色；";
 					}
 					return "";
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var rand = Math.random();
 					player
@@ -142,29 +152,31 @@ game.import("character", function () {
 						forced: true,
 						onremove: true,
 						group: "mhuanyi_die",
-						filter: function (event, player) {
-							if (!player.storage.mhuanyi_target) return false;
-							if (event.player == player.storage.mhuanyi_target[0]) return false;
-							if (get.type(event.card) == "basic") {
-								if (player.storage.mhuanyi_target[1] != 0) return false;
-							} else {
-								if (player.storage.mhuanyi_target[1] != 1) return false;
+						filter(event, player) {
+							if (!player.storage.mhuanyi_target) {
+								return false;
 							}
-							if (
-								!lib.filter.targetEnabled2(
-									event.card,
-									event.player,
-									player.storage.mhuanyi_target[0]
-								)
-							) {
+							if (event.player == player.storage.mhuanyi_target[0]) {
+								return false;
+							}
+							if (get.type(event.card) == "basic") {
+								if (player.storage.mhuanyi_target[1] != 0) {
+									return false;
+								}
+							} else {
+								if (player.storage.mhuanyi_target[1] != 1) {
+									return false;
+								}
+							}
+							if (!lib.filter.targetEnabled2(event.card, event.player, player.storage.mhuanyi_target[0])) {
 								return false;
 							}
 							return true;
 						},
-						logTarget: function (event, player) {
+						logTarget(event, player) {
 							return player.storage.mhuanyi_target[0];
 						},
-						content: function () {
+						content() {
 							trigger.target = player.storage.mhuanyi_target[0];
 							player.removeSkill("mhuanyi_target");
 						},
@@ -172,11 +184,13 @@ game.import("character", function () {
 					die: {
 						trigger: { global: "dieAfter" },
 						silent: true,
-						filter: function (event, player) {
-							if (!player.storage.mhuanyi_target) return false;
+						filter(event, player) {
+							if (!player.storage.mhuanyi_target) {
+								return false;
+							}
 							return event.player == player.storage.mhuanyi_target[0];
 						},
-						content: function () {
+						content() {
 							player.removeSkill("mhuanyi_target");
 						},
 					},
@@ -187,15 +201,19 @@ game.import("character", function () {
 				direct: true,
 				priority: 5.5,
 				round: 1,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (get.type(event.card) == "trick" && event.card.isCard) {
-						if (event.player == player) return false;
-						if (!player.countCards("he", { suit: get.suit(event.card) })) return false;
+						if (event.player == player) {
+							return false;
+						}
+						if (!player.countCards("he", { suit: get.suit(event.card) })) {
+							return false;
+						}
 						return true;
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var att = get.attitude(player, trigger.player);
 					var suit = get.suit(trigger.card);
@@ -220,14 +238,16 @@ game.import("character", function () {
 			mtongnian: {
 				trigger: { player: "phaseUseBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
-						if (enemies[i].countCards("h")) return true;
+						if (enemies[i].countCards("h")) {
+							return true;
+						}
 					}
 					return false;
 				},
-				getList: function (player) {
+				getList(player) {
 					var list = [];
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
@@ -235,7 +255,7 @@ game.import("character", function () {
 					}
 					return list;
 				},
-				content: function () {
+				content() {
 					var list = lib.skill.mtongnian.getList(player);
 					if (list.length) {
 						var card = list.randomGet();
@@ -251,12 +271,12 @@ game.import("character", function () {
 					change: {
 						trigger: { player: "useCard" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return player.hasCard(function (card) {
 								return card.mtongnian_link ? true : false;
 							}, "h");
 						},
-						content: function () {
+						content() {
 							var list = lib.skill.mtongnian.getList(player);
 							var hs = player.getCards("h", function (card) {
 								return card.mtongnian_link ? true : false;
@@ -274,10 +294,10 @@ game.import("character", function () {
 					use: {
 						trigger: { player: "useCardBefore" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return event.card.mtongnian_link ? true : false;
 						},
-						content: function () {
+						content() {
 							var link = trigger.card.mtongnian_link;
 							var target = get.owner(link);
 							if (target && target != player) {
@@ -299,13 +319,13 @@ game.import("character", function () {
 					lose: {
 						trigger: { player: "phaseUseEnd", global: "loseEnd" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							if (event.name == "lose") {
 								return lib.skill.mtongnian.getList(player).length == 0;
 							}
 							return true;
 						},
-						content: function () {
+						content() {
 							var hs = player.getCards("h", function (card) {
 								return card.mtongnian_link ? true : false;
 							});
@@ -322,10 +342,10 @@ game.import("character", function () {
 			mbaizhan: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				filter: function (event) {
+				filter(event) {
 					return event.num > 0;
 				},
-				content: function () {
+				content() {
 					player.changeHujia(trigger.num);
 				},
 				ai: {
@@ -334,13 +354,13 @@ game.import("character", function () {
 			},
 			msilian: {
 				trigger: { player: "phaseEnd" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hujia > 0;
 				},
-				check: function (event, player) {
+				check(event, player) {
 					return player.hujia > 1 && player.hp > 1;
 				},
-				content: function () {
+				content() {
 					player.storage.msilian = player.hujia;
 					player.changeHujia(-player.hujia);
 					player.insertPhase();
@@ -350,20 +370,20 @@ game.import("character", function () {
 					hp: {
 						trigger: { player: "phaseAfter" },
 						silent: true,
-						filter: function (event, player) {
+						filter(event, player) {
 							return event.skill == "msilian" && !player.getStat("damage");
 						},
-						content: function () {
+						content() {
 							player.loseHp();
 						},
 					},
 					draw: {
 						trigger: { player: "phaseDrawBegin" },
-						filter: function (event) {
+						filter(event) {
 							return event.getParent("phase").skill == "msilian";
 						},
 						silent: true,
-						content: function () {
+						content() {
 							trigger.num += player.storage.msilian - 2;
 						},
 					},
@@ -381,22 +401,17 @@ game.import("character", function () {
 			lingyong2: "灵俑",
 			lingyong3: "灵俑",
 			lingyong3_bg: "俑",
-			lingyong_info:
-				"锁定技，每当一名其他角色死亡，你获得一个与该角色同名且体力上限为1、初始手牌为2的随从；出牌阶段，你可以调遣以此法获得的随从（直到随从死亡不可再次切换）。",
+			lingyong_info: "锁定技，每当一名其他角色死亡，你获得一个与该角色同名且体力上限为1、初始手牌为2的随从；出牌阶段，你可以调遣以此法获得的随从（直到随从死亡不可再次切换）。",
 			mbaizhan: "百战",
 			mbaizhan_info: "锁定技，每当你造成1点伤害，你获得1点护甲。",
 			msilian: "祀炼",
-			msilian_info:
-				"结束阶段，若你有护甲，你可以移去全部护甲，然后进行一个额外回合；在额外回合中，你的摸牌阶段摸牌基数为你移去的护甲数；额外回合结束后，若你未造成伤害，你失去1点体力。",
+			msilian_info: "结束阶段，若你有护甲，你可以移去全部护甲，然后进行一个额外回合；在额外回合中，你的摸牌阶段摸牌基数为你移去的护甲数；额外回合结束后，若你未造成伤害，你失去1点体力。",
 			mtongnian: "通念",
-			mtongnian_info:
-				"锁定技，出牌阶段开始时，你获得一张替身牌，此牌对应一名随机敌人的一张随机手牌；每当你使用一张非替身牌，随机更换替身牌对应的牌；当你使用替身牌时，改为使用替身牌对应的牌；当出牌阶段结束，或替身牌离开手牌区，或敌方角色没有手牌时，销毁替身牌。",
+			mtongnian_info: "锁定技，出牌阶段开始时，你获得一张替身牌，此牌对应一名随机敌人的一张随机手牌；每当你使用一张非替身牌，随机更换替身牌对应的牌；当你使用替身牌时，改为使用替身牌对应的牌；当出牌阶段结束，或替身牌离开手牌区，或敌方角色没有手牌时，销毁替身牌。",
 			msuoling: "塑灵",
-			msuoling_info:
-				"每轮限一次，当一名其他角色使用一张非转化的普通锦囊牌时，你可以弃置一张与之花色相同的牌取消之，然后你视为使用该锦囊牌。",
+			msuoling_info: "每轮限一次，当一名其他角色使用一张非转化的普通锦囊牌时，你可以弃置一张与之花色相同的牌取消之，然后你视为使用该锦囊牌。",
 			mhuanyi: "幻逸",
-			mhuanyi_info:
-				"每两轮限一次，结束阶段，你可以选择一名其他角色和一种卡牌类型（选择结果对其他角色不可见），直到下一回合开始，当你首次成为该类型卡牌的惟一目标时，你将目标转移给你指定的角色（目标须合法）。",
+			mhuanyi_info: "每两轮限一次，结束阶段，你可以选择一名其他角色和一种卡牌类型（选择结果对其他角色不可见），直到下一回合开始，当你首次成为该类型卡牌的惟一目标时，你将目标转移给你指定的角色（目标须合法）。",
 		},
 	};
 });

@@ -11,17 +11,19 @@ export class Client {
 	 * @param {boolean} temp
 	 */
 	constructor(ws, temp = false) {
-		if (ws instanceof Client) throw new Error("Client cannot copy.");
+		if (ws instanceof Client) {
+			throw new Error("Client cannot copy.");
+		}
 		this.ws = ws;
 		/**
 		 * @type { string }
 		 */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		this.id = ws.wsid || get.id();
 		this.closed = false;
 
 		if (!temp) {
-			this.sandbox = security.createSandbox();
+			this.sandbox = security.createSandbox(this.id);
 			if (this.sandbox) {
 				Reflect.defineProperty(this, "sandbox", {
 					value: this.sandbox,
@@ -37,7 +39,9 @@ export class Client {
 		}
 	}
 	send() {
-		if (this.closed) return this;
+		if (this.closed) {
+			return this;
+		}
 		var args = Array.from(arguments);
 		if (typeof args[0] == "function") {
 			args.unshift("exec");
@@ -74,7 +78,7 @@ export class Client {
 		} else if (lib.playerOL[this.id]) {
 			var player = lib.playerOL[this.id];
 			player.setNickname(player.nickname + " - 离线");
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.broadcast(function (player) {
 				player.setNickname(player.nickname + " - 离线");
 			}, player);
@@ -82,7 +86,7 @@ export class Client {
 		}
 
 		if (window.isNonameServer) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			document.querySelector("#server_count").innerHTML = lib.node.clients.length;
 		}
 		return this;

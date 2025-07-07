@@ -11,7 +11,9 @@ export default () => {
 			ui.create.menu(true);
 			event.textnode = ui.create.div("", "输入联机地址");
 			var createNode = function () {
-				if (event.created) return;
+				if (event.created) {
+					return;
+				}
 				if (directstartmode && lib.node) {
 					ui.exitroom = ui.create.system(
 						"退出房间",
@@ -56,16 +58,20 @@ export default () => {
 				var connect = function (e) {
 					event.textnode.textContent = "正在连接...";
 					clearTimeout(event.timeout);
-					if (e) e.preventDefault();
+					if (e) {
+						e.preventDefault();
+					}
 					const ip = node.textContent;
+					game.requireSandboxOn(ip);
 					game.saveConfig("last_ip", ip);
 					game.connect(ip, function (success) {
 						if (success) {
-							game.requireSandboxOn(ip);
 							var info = lib.config.reconnect_info;
 							if (info && info[0] == _status.ip) {
 								game.onlineID = info[1];
-								if (typeof (game.roomId = info[2]) == "string") game.roomIdServer = true;
+								if (typeof (game.roomId = info[2]) == "string") {
+									game.roomIdServer = true;
+								}
 							}
 							return;
 						}
@@ -122,7 +128,9 @@ export default () => {
 				lib.setPopped(
 					ui.recentIP,
 					function () {
-						if (!lib.config.recentIP.length) return;
+						if (!lib.config.recentIP.length) {
+							return;
+						}
 						var uiintro = ui.create.dialog("hidden");
 						uiintro.listen(function (e) {
 							e.stopPropagation();
@@ -160,7 +168,9 @@ export default () => {
 										alert("邀请链接解析失败");
 										event.textnode.innerHTML = "输入联机地址";
 									}
-									if (success) _status.read_clipboard_text = text;
+									if (success) {
+										_status.read_clipboard_text = text;
+									}
 								});
 							}
 						} catch (e) {
@@ -179,11 +189,14 @@ export default () => {
 						var result = document.execCommand("paste");
 						input.blur();
 						ui.window.removeChild(input);
-						if (result || input.value.length > 0) read(input.value);
-						else if (confirm("是否输入邀请链接以进入联机地址和房间？")) {
+						if (result || input.value.length > 0) {
+							read(input.value);
+						} else if (confirm("是否输入邀请链接以进入联机地址和房间？")) {
 							ced = true;
 							var text = prompt("请输入邀请链接");
-							if (typeof text == "string" && text.length > 0) read(text);
+							if (typeof text == "string" && text.length > 0) {
+								read(text);
+							}
 						}
 					}
 				}

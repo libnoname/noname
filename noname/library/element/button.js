@@ -15,40 +15,33 @@ export class Button extends HTMLDivElement {
 	 * @param {true} [noClick]
 	 * @param { Button } [button]
 	 */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	constructor(item, type, position, noClick, button) {
 		if (item instanceof Button) {
 			const other = item;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			[item, type, position, noClick, button] = other._args;
 		}
-		if (typeof type == "function")
+		if (typeof type == "function") {
 			button = type(item, type, position, noClick, button);
-		else if (ui.create.buttonPresets[type])
-			button = ui.create.buttonPresets[type](
-				item,
-				type,
-				position,
-				noClick,
-				button
-			);
+		} else if (ui.create.buttonPresets[type]) {
+			button = ui.create.buttonPresets[type](item, type, position, noClick, button);
+		}
 		if (button) {
-			Object.setPrototypeOf(
-				button,
-				(lib.element.Button || Button).prototype
-			);
-			if (!noClick)
-				button.addEventListener(
-					lib.config.touchscreen ? "touchend" : "click",
-					ui.click.button
-				);
-			else {
+			Object.setPrototypeOf(button, (lib.element.Button || Button).prototype);
+			if (!noClick) {
+				button.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.button);
+			} else {
 				button.classList.add("noclick");
 				const intro = button.querySelector(".intro");
-				if (intro) intro.remove();
+				if (intro) {
+					intro.remove();
+				}
 			}
-			if (!button.buttonid) button.buttonid = get.id();
-			// @ts-ignore
+			if (!button.buttonid) {
+				button.buttonid = get.id();
+			}
+			// @ts-expect-error ignore
 			button._args = [item, type, position, noClick, button];
 			return button;
 		} else {

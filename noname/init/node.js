@@ -8,7 +8,7 @@ import { checkVersion } from "../library/update.js";
 
 export function nodeReady() {
 	const versions = window.process.versions;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	const electronVersion = parseFloat(versions.electron);
 	lib.node = {
 		fs: require("fs"),
@@ -16,10 +16,10 @@ export function nodeReady() {
 		debug() {
 			let remote;
 			if (electronVersion >= 14) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("@electron/remote");
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("electron").remote;
 			}
 			remote.getCurrentWindow().toggleDevTools();
@@ -40,8 +40,12 @@ export function nodeReady() {
 				}
 				lib.config.brokenFile.add(folder);
 				game.saveConfigValue("brokenFile");
-				if (!lib.node.http) lib.node.http = require("http");
-				if (!lib.node.https) lib.node.https = require("https");
+				if (!lib.node.http) {
+					lib.node.http = require("http");
+				}
+				if (!lib.node.https) {
+					lib.node.https = require("https");
+				}
 				var opts = require("url").parse(encodeURI(url));
 				opts.headers = { "User-Agent": "AppleWebkit" };
 				(url.startsWith("https") ? lib.node.https : lib.node.http).get(opts, function (response) {
@@ -92,15 +96,19 @@ export function nodeReady() {
 		lib.node.fs.stat(filePath, (err, stat) => {
 			if (err) {
 				// 如果是无法访问的情况，则按照函数需求返回-1
-				if (err.code === "EACCES") callback?.(-1);
+				if (err.code === "EACCES") {
+					callback?.(-1);
+				}
 				// 反之则直接将err传入onerror
-				else onerror?.(err);
+				else {
+					onerror?.(err);
+				}
 				return;
 			}
 
 			callback?.(stat.isFile() ? 1 : 0);
 		});
-	}
+	};
 
 	/**
 	 * 检查指定的路径是否是一个目录
@@ -125,15 +133,19 @@ export function nodeReady() {
 		lib.node.fs.stat(dirPath, (err, stat) => {
 			if (err) {
 				// 如果是无法访问的情况，则按照函数需求返回-1
-				if (err.code === "EACCES") callback?.(-1);
+				if (err.code === "EACCES") {
+					callback?.(-1);
+				}
 				// 反之则直接将err传入onerror
-				else onerror?.(err);
+				else {
+					onerror?.(err);
+				}
 				return;
 			}
 
 			callback?.(stat.isDirectory() ? 1 : 0);
 		});
-	}
+	};
 
 	game.readFile = function (filename, callback, onerror) {
 		lib.node.fs.readFile(__dirname + "/" + filename, function (err, data) {
@@ -164,12 +176,7 @@ export function nodeReady() {
 			} else {
 				get.zip(function (zip) {
 					zip.file("i", data);
-					lib.node.fs.writeFile(
-						__dirname + "/" + path + "/" + name,
-						zip.files.i.asNodeBuffer(),
-						null,
-						callback
-					);
+					lib.node.fs.writeFile(__dirname + "/" + path + "/" + name, zip.files.i.asNodeBuffer(), null, callback);
 				});
 			}
 		});
@@ -182,7 +189,7 @@ export function nodeReady() {
 			folders = [];
 		dir = __dirname + "/" + dir;
 		if (typeof failure == "undefined") {
-			failure = (err) => {
+			failure = err => {
 				throw err;
 			};
 		} else if (failure == null) {
@@ -220,28 +227,36 @@ export function nodeReady() {
 				path += `/${directory.pop()}`;
 				const fullPath = `${__dirname}${path}`;
 				return new Promise((resolve, reject) =>
-					lib.node.fs.access(fullPath, (errnoException) => {
-						if (errnoException) reject();
-						else resolve();
+					lib.node.fs.access(fullPath, errnoException => {
+						if (errnoException) {
+							reject();
+						} else {
+							resolve();
+						}
 					})
 				)
 					.catch(
 						() =>
 							new Promise((resolve, reject) =>
-								lib.node.fs.mkdir(fullPath, (errnoException) => {
-									if (errnoException) reject(errnoException);
-									else resolve();
+								lib.node.fs.mkdir(fullPath, errnoException => {
+									if (errnoException) {
+										reject(errnoException);
+									} else {
+										resolve();
+									}
 								})
 							)
 					)
 					.then(() => access(path, directory, createDirectory), console.log);
 			};
-		new Promise((resolve) => {
+		new Promise(resolve => {
 			const createDirectory = () => {
-				if (directoryList.length)
+				if (directoryList.length) {
 					access("", directoryList.pop().split("/").reverse(), createDirectory);
-				else {
-					if (typeof callback == "function") callback();
+				} else {
+					if (typeof callback == "function") {
+						callback();
+					}
 					resolve();
 				}
 			};
@@ -252,18 +267,27 @@ export function nodeReady() {
 		const target = lib.node.path.join(__dirname, directory);
 		if (lib.node.fs.existsSync(target)) {
 			// 修改逻辑，路径存在且是文件才会报错
-			if (!lib.node.fs.lstatSync(target).isDirectory()){
-				if (typeof errorCallback == "function") errorCallback(new Error(`${target}文件已存在`)); 
-				else if (typeof successCallback == "function") successCallback();
-			} 
-			else if (typeof successCallback == "function") successCallback();
+			if (!lib.node.fs.lstatSync(target).isDirectory()) {
+				if (typeof errorCallback == "function") {
+					errorCallback(new Error(`${target}文件已存在`));
+				} else if (typeof successCallback == "function") {
+					successCallback();
+				}
+			} else if (typeof successCallback == "function") {
+				successCallback();
+			}
 		} else if (checkVersion(process.versions.node, "10.12.0") > -1) {
-			lib.node.fs.mkdir(target, { recursive: true }, (e) => {
+			lib.node.fs.mkdir(target, { recursive: true }, e => {
 				if (e) {
-					if (typeof errorCallback == "function") errorCallback(e);
-					else throw e;
+					if (typeof errorCallback == "function") {
+						errorCallback(e);
+					} else {
+						throw e;
+					}
 				} else {
-					if (typeof successCallback == "function") successCallback();
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
 				}
 			});
 		} else {
@@ -272,17 +296,26 @@ export function nodeReady() {
 			const redo = () => {
 				path = lib.node.path.join(path, paths.pop());
 				const exists = lib.node.fs.existsSync(path);
-				const callback = (e) => {
+				const callback = e => {
 					if (e) {
-						if (typeof errorCallback != "function") throw e;
+						if (typeof errorCallback != "function") {
+							throw e;
+						}
 						errorCallback(e);
 						return;
 					}
-					if (paths.length) return redo();
-					if (typeof successCallback == "function") successCallback();
+					if (paths.length) {
+						return redo();
+					}
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
 				};
-				if (!exists) lib.node.fs.mkdir(path, callback);
-				else callback();
+				if (!exists) {
+					lib.node.fs.mkdir(path, callback);
+				} else {
+					callback();
+				}
 			};
 			redo();
 		}
@@ -298,21 +331,31 @@ export function nodeReady() {
 				errorCallback(new Error(`${target}不是文件夹`));
 			}
 		} else if (checkVersion(process.versions.node, "12.10.0") > -1) {
-			lib.node.fs.rmdir(target, { recursive: true }, (e) => {
+			lib.node.fs.rmdir(target, { recursive: true }, e => {
 				if (e) {
-					if (typeof errorCallback == "function") errorCallback(e);
-					else throw e;
+					if (typeof errorCallback == "function") {
+						errorCallback(e);
+					} else {
+						throw e;
+					}
 				} else {
-					if (typeof successCallback == "function") successCallback();
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
 				}
 			});
 		} else {
-			const deleteFolderRecursive = (path) => {
-				if (!lib.node.fs.existsSync(path)) return;
-				lib.node.fs.readdirSync(path).forEach((file) => {
+			const deleteFolderRecursive = path => {
+				if (!lib.node.fs.existsSync(path)) {
+					return;
+				}
+				lib.node.fs.readdirSync(path).forEach(file => {
 					const currentPath = `${path}/${file}`;
-					if (lib.node.fs.lstatSync(currentPath).isDirectory()) deleteFolderRecursive(currentPath);
-					else lib.node.fs.unlinkSync(currentPath);
+					if (lib.node.fs.lstatSync(currentPath).isDirectory()) {
+						deleteFolderRecursive(currentPath);
+					} else {
+						lib.node.fs.unlinkSync(currentPath);
+					}
 				});
 				lib.node.fs.rmdirSync(path);
 				if (path === target && typeof successCallback == "function") {
@@ -322,8 +365,11 @@ export function nodeReady() {
 			try {
 				deleteFolderRecursive(target);
 			} catch (e) {
-				if (typeof errorCallback == "function") errorCallback(e);
-				else throw e;
+				if (typeof errorCallback == "function") {
+					errorCallback(e);
+				} else {
+					throw e;
+				}
 			}
 		}
 	};

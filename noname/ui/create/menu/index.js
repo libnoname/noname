@@ -37,7 +37,9 @@ export function openMenu(node, e, onclose) {
 	popupContainer.onclose = onclose;
 }
 export function clickToggle() {
-	if (this.classList.contains("disabled")) return;
+	if (this.classList.contains("disabled")) {
+		return;
+	}
 	this.classList.toggle("on");
 	var config = this._link.config;
 	if (config.onclick) {
@@ -50,7 +52,9 @@ export function clickToggle() {
 	}
 }
 export function clickSwitcher() {
-	if (this.classList.contains("disabled")) return;
+	if (this.classList.contains("disabled")) {
+		return;
+	}
 	var node = this;
 	this.classList.add("on");
 	if (this._link.menu) {
@@ -154,18 +158,16 @@ export function createMenu(connectMenu, tabs, config) {
 	}
 	var menuContent = ui.create.div(".menu-content", menu);
 	var clickTab = function () {
-		if (this.classList.contains("disabled")) return;
+		if (this.classList.contains("disabled")) {
+			return;
+		}
 		var active = this.parentNode.querySelector(".active");
 		if (active) {
 			active.classList.remove("active");
 			active._link.remove();
 		}
 		this.classList.add("active");
-		menuTabBar.style.transform =
-			"translateX(" +
-			(this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) /
-				get.menuZoom() +
-			"px)";
+		menuTabBar.style.transform = "translateX(" + (this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) / get.menuZoom() + "px)";
 		menuContent.appendChild(this._link);
 	};
 	ui.click.menuTab = function (tab) {
@@ -200,15 +202,15 @@ export function createConfig(config, position) {
 				config.intro = "设置" + config.name;
 			}
 			lib.setIntro(node, function (uiintro) {
-				if (lib.config.touchscreen) _status.dragged = true;
+				if (lib.config.touchscreen) {
+					_status.dragged = true;
+				}
 				uiintro.style.width = "170px";
 				var str = config.intro;
 				if (typeof str == "function") {
 					str = str();
 				}
-				uiintro._place_text = uiintro.add(
-					'<div class="text" style="display:inline">' + str + "</div>"
-				);
+				uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
 			});
 		}
 	} else {
@@ -297,7 +299,9 @@ export function createConfig(config, position) {
 	} else if (config.range) {
 		void 0;
 	} else if (config.clear) {
-		if (node.innerHTML.length >= 15) node.style.height = "auto";
+		if (node.innerHTML.length >= 15) {
+			node.style.height = "auto";
+		}
 		node.listen(clickToggle);
 	} else if (config.input) {
 		node.classList.add("switcher");
@@ -426,23 +430,19 @@ export function menu(connectMenu) {
 	const cacheMenuContainer = (menuContainer = ui.create.div(".menu-container.hidden", ui.window, () => {
 		clickContainer.call(cacheMenuContainer, connectMenu);
 	}));
-	const cachePopupContainer = (popupContainer = ui.create.div(
-		".popup-container.hidden",
-		ui.window,
-		function closeMenu() {
-			// @ts-ignore
-			if (cachePopupContainer.noclose) {
-				// @ts-ignore
-				cachePopupContainer.noclose = false;
-				return;
-			}
-			cachePopupContainer.classList.add("hidden");
-			if (typeof cachePopupContainer.onclose == "function") {
-				// @ts-ignore
-				cachePopupContainer.onclose();
-			}
+	const cachePopupContainer = (popupContainer = ui.create.div(".popup-container.hidden", ui.window, function closeMenu() {
+		// @ts-expect-error ignore
+		if (cachePopupContainer.noclose) {
+			// @ts-expect-error ignore
+			cachePopupContainer.noclose = false;
+			return;
 		}
-	));
+		cachePopupContainer.classList.add("hidden");
+		if (typeof cachePopupContainer.onclose == "function") {
+			// @ts-expect-error ignore
+			cachePopupContainer.onclose();
+		}
+	}));
 
 	if (!connectMenu) {
 		ui.menuContainer = cacheMenuContainer;
@@ -476,12 +476,16 @@ export function menu(connectMenu) {
 						if (start.childNodes[i].mode != lib.configOL.mode) {
 							start.childNodes[i].classList.add("unselectable");
 							start.childNodes[i].classList.remove("active");
-							if (start.childNodes[i].link) start.childNodes[i].link.remove();
+							if (start.childNodes[i].link) {
+								start.childNodes[i].link.remove();
+							}
 						} else {
 							start.childNodes[i].classList.add("active");
-							if (start.childNodes[i].link)
+							if (start.childNodes[i].link) {
 								start.nextSibling.appendChild(start.childNodes[i].link);
-							else console.log(start.nextSibling, start.childNodes[i]);
+							} else {
+								console.log(start.nextSibling, start.childNodes[i]);
+							}
 						}
 					}
 				}

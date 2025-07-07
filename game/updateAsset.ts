@@ -39,7 +39,7 @@ async function main(argv: string[]): Promise<number> {
 
 	const newAssetList: string[] = [];
 	for (const oldAsset of assetList) {
-		if (oldAsset.startsWith("v")) continue;
+		if (oldAsset.startsWith("v")) {continue;}
 		if (!newAssetList.includes(oldAsset)) {
 			newAssetList.push(oldAsset);
 		}
@@ -52,11 +52,12 @@ async function main(argv: string[]): Promise<number> {
 	newAssetList.sort();
 
 	// 对素材进行分组
+	// @ts-expect-error must be here.
 	const group = Map.groupBy(newAssetList, path => {
 		const [type, subtype] = splitCache.get(path) ?? path.split(sep);
 		splitCache.set(path, [type, subtype]);
 
-		if (["theme", "font"].includes(type)) return type;
+		if (["theme", "font"].includes(type)) {return type;}
 
 		return `${type}${sep}${subtype}`;
 	});

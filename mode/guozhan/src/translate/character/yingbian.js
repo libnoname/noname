@@ -1,0 +1,17 @@
+export default {
+	gz_jun_jin_simayi: "君司马懿",
+	gz_jun_jin_simayi_prefix: "君",
+	gz_jin_jiachong: "贾充",
+	gz_jin_yanghu: "羊祜",
+	gz_sp_duyu: "杜预",
+	gz_jin_guohuai: "郭槐",
+	gz_wangjun: "王濬",
+	gz_malong: "马隆",
+	gz_simalun: "司马伦",
+	gz_simaliang: "司马亮",
+	gz_wangxiang: "王祥",
+	gz_yangjun: "杨骏",
+	gz_sunxiù: "孙秀",
+	gz_bailingyun: "柏夫人",
+	gz_wenyang: "文鸯",
+};

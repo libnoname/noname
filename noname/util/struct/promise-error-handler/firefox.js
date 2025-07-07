@@ -16,19 +16,21 @@ export class FirefoxPromiseErrorHandler {
 	 * @param {PromiseRejectionEvent} event
 	 */
 	onHandle(event) {
-		event.promise.catch((error) => {
+		event.promise.catch(error => {
 			if (typeof error === "object" && error instanceof Error) {
-				if (/Failed to fetch/.test(error.message) || /The media resource indicated by the src attribute or assigned media provider object was not suitable/.test(error.message)) return;
+				if (/Failed to fetch/.test(error.message) || /The media resource indicated by the src attribute or assigned media provider object was not suitable/.test(error.message)) {
+					return;
+				}
 
 				// Firefox在大环境下默认情况必须要那么多ts-ignore
-				// @ts-ignore
+				// @ts-expect-error Firefox status
 				window.onerror(
 					error.message,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.fileName,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.lineNumber,
-					// @ts-ignore
+					// @ts-expect-error Firefox status
 					error.columnNumber,
 					error
 				);

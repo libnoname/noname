@@ -176,7 +176,7 @@ export class Character {
 	 */
 	isNull = false;
 	/**
-	 * @param { Object|[string, string, string|number, string[], any[]|undefined, any[]|undefined] } [data]
+	 * @param { [Sex | "", string, string|number, string[], any[]|undefined, any[]|undefined] | Partial<{ [key in keyof Character]: Character[key] }> } [data]
 	 */
 	constructor(data) {
 		if (Array.isArray(data)) {
@@ -186,11 +186,17 @@ export class Character {
 			this.maxHp = get.infoMaxHp(data[2]);
 			this.hujia = get.infoHujia(data[2]);
 			this.skills = get.copy(data[3] || []);
-			if (data[4]) this.setPropertiesFromTrash(data[4]);
-			if (data.length > 5) this.extraModeData = data[5];
+			if (data[4]) {
+				this.setPropertiesFromTrash(data[4]);
+			}
+			if (data.length > 5) {
+				this.extraModeData = data[5];
+			}
 		} else if (get.is.object(data)) {
 			Object.assign(this, data);
-			if (typeof this.maxHp !== "number") this.maxHp = this.hp;
+			if (typeof this.maxHp !== "number") {
+				this.maxHp = this.hp;
+			}
 		}
 	}
 	initializeTrashProperties() {
@@ -276,7 +282,7 @@ export class Character {
 			} else if (item.startsWith("doublegroup:")) {
 				this.doubleGroup = item.slice(12).split(":");
 			} else if (item.startsWith("clan:")) {
-				clans.push(item.slice(5));
+				clans.addArray(item.slice(5).split("|"));
 			} else if (item.startsWith("InitFilter:")) {
 				this.initFilters = item.slice(11).split(":");
 			} else if (item.startsWith("img:")) {
@@ -320,8 +326,11 @@ export class Character {
 	 * @deprecated
 	 */
 	get 2() {
-		if (this.hujia > 0) return `${this.hp}/${this.maxHp}/${this.hujia}`;
-		else if (this.hp !== this.maxHp) return `${this.hp}/${this.maxHp}`;
+		if (this.hujia > 0) {
+			return `${this.hp}/${this.maxHp}/${this.hujia}`;
+		} else if (this.hp !== this.maxHp) {
+			return `${this.hp}/${this.maxHp}`;
+		}
 		return this.hp;
 	}
 	set 2(hp) {
@@ -399,7 +408,7 @@ export class Character {
 			trashes.push(`border:${character.groupBorder}`);
 		}
 		if (character.dualSideCharacter) {
-			trashes.push(`duaslside:${character.dualSideCharacter}`);
+			trashes.push(`dualside:${character.dualSideCharacter}`);
 		}
 		if (character.doubleGroup.length > 0) {
 			trashes.push(`doublegroup:${character.doubleGroup.join(":")}`);

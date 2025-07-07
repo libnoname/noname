@@ -5,9 +5,9 @@ const characterSort = {
 	diy_tieba: ["ns_zuoci", "ns_lvzhi", "ns_wangyun", "ns_nanhua", "ns_nanhua_left", "ns_nanhua_right", "ns_huamulan", "ns_huangzu", "ns_jinke", "ns_yanliang", "ns_wenchou", "ns_caocao", "ns_caocaosp", "ns_zhugeliang", "ns_wangyue", "ns_yuji", "ns_xinxianying", "ns_guanlu", "ns_simazhao", "ns_sunjian", "ns_duangui", "ns_zhangbao", "ns_masu", "ns_zhangxiu", "ns_lvmeng", "ns_shenpei", "ns_yujisp", "ns_yangyi", "ns_liuzhang", "ns_xinnanhua", "ns_luyusheng"],
 	diy_fakenews: ["diy_wenyang", "ns_zhangwei", "ns_caimao", "ns_chengpu", "ns_sundeng", "ns_duji", "ns_mengyou"],
 	diy_xushi: ["diy_feishi", "diy_hanlong", "diy_liufu", "diy_liuyan", "diy_liuzan", "diy_tianyu", "diy_xizhenxihong", "diy_yangyi", "diy_zaozhirenjun"],
-	diy_default: ["diy_yuji", "diy_caiwenji", "diy_lukang", "diy_zhenji", "old_majun"],
+	diy_default: ["diy_luxun", "diy_yuji", "diy_zhouyu", "diy_caiwenji", "diy_lukang", "diy_zhenji", "old_majun"],
 	diy_noname: ["noname", "ns_shijian"],
-	diy_trashbin: ["diy_zhujun", "diy_zhangfei", "diy_liaohua", "junk_guanyu", "junk_zhangrang", "old_bulianshi", "ol_maliang", "junk_liubei", "junk_huangyueying", "junk_lidian", "junk_duanwei", "junk_xuyou", "junk_liuyan"],
+	diy_trashbin: ["junk_guanyu", "junk_zhangrang", "old_bulianshi", "ol_maliang", "junk_liubei", "junk_huangyueying", "junk_lidian", "junk_duanwei", "junk_xuyou", "junk_liuyan", "zhangren"],
 };
 
 const characterSortTranslate = {

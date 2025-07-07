@@ -8,7 +8,7 @@ game.import("card", function () {
 				recastable: true,
 				enable: true,
 				notarget: true,
-				content: function () {
+				content() {
 					var targets = game.filterPlayer();
 					var n = targets.length;
 					while (n--) {
@@ -26,15 +26,19 @@ game.import("card", function () {
 			changshezhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function (card, player) {
-					if (player.inline()) return true;
-					if (player.identity == "unknown" || player.identity == "ye") return false;
+				enable(card, player) {
+					if (player.inline()) {
+						return true;
+					}
+					if (player.identity == "unknown" || player.identity == "ye") {
+						return false;
+					}
 					return game.hasPlayer(function (current) {
 						return current != player && current.isFriendOf(player);
 					});
 				},
 				notarget: true,
-				content: function () {
+				content() {
 					if (player.inline()) {
 						var targets = game.filterPlayer(function (current) {
 							return player.inline(current);
@@ -68,16 +72,16 @@ game.import("card", function () {
 			tianfuzhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function () {
+				enable() {
 					return game.hasPlayer(function (current) {
 						return current.isMajor();
 					});
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMajor() && target.countCards("he") > 0;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.chooseToDiscard("he", true).delay = false;
 				},
 				mode: ["guozhan"],
@@ -94,16 +98,16 @@ game.import("card", function () {
 			dizaizhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function () {
+				enable() {
 					return game.hasPlayer(function (current) {
 						return current.isNotMajor();
 					});
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isNotMajor();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.draw(false);
 					target.$draw();
 				},
@@ -122,11 +126,11 @@ game.import("card", function () {
 				type: "zhenfa",
 				recastable: true,
 				enable: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.sieged();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.addTempSkill("feiying", { player: "damageAfter" });
 					target.popup("feiying");
 					game.log(target, "获得了技能", "【飞影】");
@@ -143,11 +147,11 @@ game.import("card", function () {
 				type: "zhenfa",
 				recastable: true,
 				enable: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.siege();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.addTempSkill("wushuang", { source: "damageAfter" });
 					target.popup("wushuang");
 					game.log(target, "获得了技能", "【无双】");
@@ -163,14 +167,14 @@ game.import("card", function () {
 			qixingzhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.siege() || player.sieged();
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					event.targets = game.filterPlayer(function (current) {
 						return current.siege(player);
@@ -202,15 +206,19 @@ game.import("card", function () {
 			shepanzhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function (card, player) {
-					if (player.identity == "unknown" || player.identity == "ye") return false;
-					if (get.population(player.identity) <= 1) return false;
+				enable(card, player) {
+					if (player.identity == "unknown" || player.identity == "ye") {
+						return false;
+					}
+					if (get.population(player.identity) <= 1) {
+						return false;
+					}
 					return game.hasPlayer(function (current) {
 						return current != player && current.identity == player.identity && !player.inline(current);
 					});
 				},
 				notarget: true,
-				content: function () {
+				content() {
 					var targets = game.filterPlayer(function (current) {
 						return current.identity == player.identity;
 					});
@@ -231,15 +239,17 @@ game.import("card", function () {
 			longfeizhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.next.siege(player);
 				},
-				filterTarget: function (card, player, target) {
-					if (target.getCards("he").length == 0) return false;
+				filterTarget(card, player, target) {
+					if (target.getCards("he").length == 0) {
+						return false;
+					}
 					return target == player.next || target == player.previous;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					player.choosePlayerCard(target, "he", true);
 					"step 1";
@@ -261,14 +271,14 @@ game.import("card", function () {
 			huyizhen: {
 				type: "zhenfa",
 				recastable: true,
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.siege(player.next) || player.siege(player.previous);
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player.siege(target);
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseCard("将一张非基本牌当作杀对" + get.translation(target) + "使用", "he", function (card) {
 						return get.type(card) != "basic";
@@ -283,8 +293,11 @@ game.import("card", function () {
 						player.useCard({ name: "sha" }, result.cards, target, false);
 					}
 					"step 2";
-					if (target == player.next) event.player2 = player.next.next;
-					else event.player2 = player.previous.previous;
+					if (target == player.next) {
+						event.player2 = player.next.next;
+					} else {
+						event.player2 = player.previous.previous;
+					}
 					event.player2.chooseCard("将一张非基本牌当作杀对" + get.translation(target) + "使用", "he", function (card) {
 						return get.type(card) != "basic";
 					}).ai = function (card) {
@@ -310,17 +323,23 @@ game.import("card", function () {
 				type: "zhenfa",
 				recastable: true,
 				enable: true,
-				filterTarget: function (card, player, target) {
-					if (player.identity == target.identity) return false;
-					if (target.identity == "unknown" || target.identity == "ye") return false;
+				filterTarget(card, player, target) {
+					if (player.identity == target.identity) {
+						return false;
+					}
+					if (target.identity == "unknown" || target.identity == "ye") {
+						return false;
+					}
 					return target.identity == target.next.identity || target.identity == target.previous.identity;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					var next = target.chooseToRespond({ name: "shan" });
 					next.ai = function (card) {
-						if (get.damageEffect(target, player, target) >= 0) return 0;
+						if (get.damageEffect(target, player, target) >= 0) {
+							return 0;
+						}
 						return 1;
 					};
 					next.set("respondTo", [player, card]);

@@ -1,21 +1,4 @@
-import {
-	menuContainer,
-	popupContainer,
-	updateActive,
-	setUpdateActive,
-	updateActiveCard,
-	setUpdateActiveCard,
-	menux,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 
 export const cardPackMenu = function (connectMenu) {
@@ -27,7 +10,7 @@ export const cardPackMenu = function (connectMenu) {
 	const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 	var pileCreated = false;
@@ -51,8 +34,9 @@ export const cardPackMenu = function (connectMenu) {
 		if (this.mode == "cardpile") {
 			this.create();
 		}
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -64,7 +48,9 @@ export const cardPackMenu = function (connectMenu) {
 				return;
 			}
 		}
-		if (!node.link) node._initLink();
+		if (!node.link) {
+			node._initLink();
+		}
 		for (var i = 0; i < node.link.childElementCount; i++) {
 			if (node.link.childNodes[i].updateBanned) {
 				node.link.childNodes[i].updateBanned();
@@ -79,34 +65,50 @@ export const cardPackMenu = function (connectMenu) {
 					// 扩展卡牌包开启逻辑
 					if (node.mode.startsWith("mode_extension")) {
 						const extName = node.mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) continue;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							continue;
+						}
 						if (lib.config[`extension_${extName}_cards_enable`] == true) {
 							node.classList.remove("off");
-							node.link?.firstChild?.classList.add('on');
+							node.link?.firstChild?.classList.add("on");
 						} else {
 							node.classList.add("off");
-							if (node.link) node.link.firstChild.classList.remove("on");
+							if (node.link) {
+								node.link.firstChild.classList.remove("on");
+							}
 						}
 					}
 					continue;
 				}
-				if (node.mode == "custom") continue;
-				if (node.mode == "cardpile") continue;
+				if (node.mode == "custom") {
+					continue;
+				}
+				if (node.mode == "cardpile") {
+					continue;
+				}
 				if (connectMenu) {
 					if (!lib.config.connect_cards.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				} else {
 					if (lib.config.cards.includes(node.mode)) {
 						node.classList.remove("off");
-						if (node.link) node.link.firstChild.classList.add("on");
+						if (node.link) {
+							node.link.firstChild.classList.add("on");
+						}
 					} else {
 						node.classList.add("off");
-						if (node.link) node.link.firstChild.classList.remove("on");
+						if (node.link) {
+							node.link.firstChild.classList.remove("on");
+						}
 					}
 				}
 			}
@@ -117,7 +119,9 @@ export const cardPackMenu = function (connectMenu) {
 		// 扩展卡牌包开启逻辑
 		if (name.startsWith("mode_extension")) {
 			const extName = name.slice(15);
-			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+			if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+				return false;
+			}
 			game.saveExtensionConfig(extName, "cards_enable", bool);
 		}
 		// 原逻辑
@@ -157,15 +161,11 @@ export const cardPackMenu = function (connectMenu) {
 	var createModeConfig = function (mode, position) {
 		var info = lib.cardPack[mode];
 		let cardPack = lib.cardPackInfo[mode];
-		if (!lib.cardPile[mode] && cardPack && cardPack.list && Array.isArray(cardPack.list))
+		if (!lib.cardPile[mode] && cardPack && cardPack.list && Array.isArray(cardPack.list)) {
 			lib.cardPile[mode] = cardPack.list;
+		}
 		var page = ui.create.div("");
-		var node = ui.create.div(
-			".menubutton.large",
-			lib.translate[mode + "_card_config"],
-			position,
-			clickMode
-		);
+		var node = ui.create.div(".menubutton.large", lib.translate[mode + "_card_config"], position, clickMode);
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
 		}
@@ -174,7 +174,9 @@ export const cardPackMenu = function (connectMenu) {
 			node.link = page;
 			var list = [];
 			for (var i = 0; i < info.length; i++) {
-				if (!lib.card[info[i]]) continue;
+				if (!lib.card[info[i]]) {
+					continue;
+				}
 				list.push([get.translation(get.type(info[i], "trick")), "", info[i]]);
 			}
 			var sortCard = function (card) {
@@ -235,7 +237,9 @@ export const cardPackMenu = function (connectMenu) {
 					// 扩展卡牌包开启逻辑
 					if (mode.startsWith("mode_extension")) {
 						const extName = mode.slice(15);
-						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) return false;
+						if (!game.hasExtension(extName) || !game.hasExtensionLoaded(extName)) {
+							return false;
+						}
 						// 这块或许应该在加载扩展时候写
 						if (lib.config[`extension_${extName}_cards_enable`] === undefined) {
 							game.saveExtensionConfig(extName, "cards_enable", true);
@@ -243,7 +247,9 @@ export const cardPackMenu = function (connectMenu) {
 						return lib.config[`extension_${extName}_cards_enable`] === true;
 					}
 					// 原逻辑
-					else return lib.config.cards.includes(mode);
+					else {
+						return lib.config.cards.includes(mode);
+					}
 				})(),
 				onclick: togglePack,
 			});
@@ -252,16 +258,16 @@ export const cardPackMenu = function (connectMenu) {
 			} else {
 				page.style.paddingTop = "8px";
 			}
+			if (lib.translate[mode + "_cardsInfo"]) {
+				var modeTranslation = "<p style=\"padding-left: 2em;\">" + lib.translate[mode + "_cardsInfo"] + "</p>";
+				page.insertAdjacentHTML('beforeend', modeTranslation);
+			}
 			var banCard = function (e) {
 				if (_status.clicked) {
 					_status.clicked = false;
 					return;
 				}
-				if (
-					mode.startsWith("mode_") &&
-					!mode.startsWith("mode_extension_") &&
-					mode != "mode_banned"
-				) {
+				if (mode.startsWith("mode_") && !mode.startsWith("mode_extension_") && mode != "mode_banned") {
 					return;
 				}
 				ui.click.touchpop();
@@ -341,20 +347,14 @@ export const cardPackMenu = function (connectMenu) {
 				});
 				var cfgbancard = ui.create.node("button", "", "全部关闭", cfgnode, function () {
 					for (var i = 0; i < cardpileNodes.length; i++) {
-						if (
-							cardpileNodes[i].type == "defaultcards" &&
-							cardpileNodes[i].classList.contains("on")
-						) {
+						if (cardpileNodes[i].type == "defaultcards" && cardpileNodes[i].classList.contains("on")) {
 							clickToggle.call(cardpileNodes[i]);
 						}
 					}
 				});
 				var cfgenablecard = ui.create.node("button", "", "全部开启", cfgnode, function () {
 					for (var i = 0; i < cardpileNodes.length; i++) {
-						if (
-							cardpileNodes[i].type == "defaultcards" &&
-							!cardpileNodes[i].classList.contains("on")
-						) {
+						if (cardpileNodes[i].type == "defaultcards" && !cardpileNodes[i].classList.contains("on")) {
 							clickToggle.call(cardpileNodes[i]);
 						}
 					}
@@ -371,7 +371,9 @@ export const cardPackMenu = function (connectMenu) {
 				var cardpileadd = ui.create.div(".config.toggle.hidden.cardpilecfg.cardpilecfgadd", page);
 				var pileaddlist = [];
 				for (var i = 0; i < lib.config.cards.length; i++) {
-					if (!lib.cardPack[lib.config.cards[i]]) continue;
+					if (!lib.cardPack[lib.config.cards[i]]) {
+						continue;
+					}
 					for (var j = 0; j < lib.cardPack[lib.config.cards[i]].length; j++) {
 						var cname = lib.cardPack[lib.config.cards[i]][j];
 						pileaddlist.push([cname, get.translation(cname)]);
@@ -399,11 +401,7 @@ export const cardPackMenu = function (connectMenu) {
 				);
 				cardpileaddsuit.style.width = "53px";
 				cardpileaddsuit.style.marginRight = "2px";
-				var cardpileaddnumber = ui.create.selectlist(
-					[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-					null,
-					cardpileadd
-				);
+				var cardpileaddnumber = ui.create.selectlist([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], null, cardpileadd);
 				cardpileaddnumber.style.width = "43px";
 				cardpileaddnumber.style.marginRight = "2px";
 				var button = document.createElement("button");
@@ -427,8 +425,7 @@ export const cardPackMenu = function (connectMenu) {
 					recreatePile();
 					var cfgnode = ui.create.div(".config.toggle.cardpilecfg");
 					cfgnode._info = card;
-					cfgnode.innerHTML =
-						get.translation(card[2]) + " " + get.translation(card[0]) + get.strNumber(card[1]);
+					cfgnode.innerHTML = get.translation(card[2]) + " " + get.translation(card[0]) + get.strNumber(card[1]);
 					var cfgnodedelete = document.createElement("span");
 					cfgnodedelete.classList.add("cardpiledelete");
 					cfgnodedelete.innerHTML = "删除";
@@ -444,12 +441,7 @@ export const cardPackMenu = function (connectMenu) {
 					var card = lib.config.addedpile[mode][i];
 					var cfgnode = ui.create.div(".config.toggle.cardpilecfg");
 					cfgnode._info = card;
-					cfgnode.innerHTML =
-						(card[2] === "sha" && card[3] ? get.translation(card[3]) : "") +
-						get.translation(card[2]) +
-						" " +
-						get.translation(card[0]) +
-						card[1];
+					cfgnode.innerHTML = (card[2] === "sha" && card[3] ? get.translation(card[3]) : "") + get.translation(card[2]) + " " + get.translation(card[0]) + card[1];
 					var cfgnodedelete = document.createElement("span");
 					cfgnodedelete.classList.add("cardpiledelete");
 					cfgnodedelete.innerHTML = "删除";
@@ -463,12 +455,7 @@ export const cardPackMenu = function (connectMenu) {
 				for (var i = 0; i < lib.cardPile[mode].length; i++) {
 					var card = lib.cardPile[mode][i];
 					var cfgnode = createConfig({
-						name:
-							(card[2] == "sha" && card[3] ? get.translation(card[3]) : "") +
-							get.translation(card[2]) +
-							" " +
-							get.translation(card[0]) +
-							get.strNumber(card[1]),
+						name: (card[2] == "sha" && card[3] ? get.translation(card[3]) : "") + get.translation(card[2]) + " " + get.translation(card[0]) + get.strNumber(card[1]),
 						_number: i,
 						_name: mode,
 						init: !lib.config.bannedpile[mode].includes(i),
@@ -483,7 +470,9 @@ export const cardPackMenu = function (connectMenu) {
 				ui.create.div(".menuplaceholder", page);
 			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 		return node;
 	};
 	if (!connectMenu && lib.config.show_ban_menu) {
@@ -503,14 +492,21 @@ export const cardPackMenu = function (connectMenu) {
 		delete lib.cardPack.mode_banned;
 	}
 	for (var i = 0; i < lib.config.all.cards.length; i++) {
-		if (connectMenu && !lib.connectCardPack.includes(lib.config.all.cards[i])) continue;
+		if (connectMenu && !lib.connectCardPack.includes(lib.config.all.cards[i])) {
+			continue;
+		}
 		createModeConfig(lib.config.all.cards[i], start.firstChild);
 	}
-	if (!connectMenu)
-		Object.keys(lib.cardPack).forEach((key) => {
-			if (!lib.config.all.cards.includes(key)) createModeConfig(key, start.firstChild);
-			if (connectMenu) lib.connectCardPack.add(key);
+	if (!connectMenu) {
+		Object.keys(lib.cardPack).forEach(key => {
+			if (!lib.config.all.cards.includes(key)) {
+				createModeConfig(key, start.firstChild);
+			}
+			if (connectMenu) {
+				lib.connectCardPack.add(key);
+			}
 		});
+	}
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
 		active = start.firstChild.firstChild;
@@ -520,18 +516,24 @@ export const cardPackMenu = function (connectMenu) {
 		active.classList.add("active");
 		updateActiveCard(active);
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 
 	(function () {
-		if (connectMenu) return;
+		if (connectMenu) {
+			return;
+		}
 		var page = ui.create.div(".menu-buttons");
 		var node = ui.create.div(".menubutton.large", "牌堆", clickMode);
 		start.firstChild.insertBefore(node, start.firstChild.querySelector(".lefttext"));
 		node.link = page;
 		node.mode = "cardpile";
 		node.create = function () {
-			if (pileCreated) return;
+			if (pileCreated) {
+				return;
+			}
 			pileCreated = true;
 			page.innerHTML = "";
 
@@ -569,7 +571,9 @@ export const cardPackMenu = function (connectMenu) {
 				this.parentNode.remove();
 				game.saveConfig("customcardpile", lib.config.customcardpile);
 				for (var i in lib.config.mode_config) {
-					if (i == "global") continue;
+					if (i == "global") {
+						continue;
+					}
 					if (lib.config.mode_config[i].cardpilename == this.parentNode.link) {
 						game.saveConfig("cardpilename", null, i);
 					}
@@ -626,11 +630,7 @@ export const cardPackMenu = function (connectMenu) {
 				lib.config.customcardpile[name] = [lib.config.bannedpile, lib.config.addedpile];
 				delete lib.config.customcardpile["当前牌堆"];
 				for (var i in lib.mode) {
-					if (
-						lib.config.mode_config[i] &&
-						(lib.config.mode_config[i].cardpilename == "当前牌堆" ||
-							!lib.config.mode_config[i].cardpilename)
-					) {
+					if (lib.config.mode_config[i] && (lib.config.mode_config[i].cardpilename == "当前牌堆" || !lib.config.mode_config[i].cardpilename)) {
 						game.saveConfig("cardpilename", name, i);
 					}
 				}
@@ -670,13 +670,17 @@ export const cardPackMenu = function (connectMenu) {
 	 */
 	return function (packName) {
 		// 判断菜单栏有没有加载过这个卡牌包
-		if ([...start.firstChild.children].map((node) => node.mode).includes(packName)) return;
+		if ([...start.firstChild.children].map(node => node.mode).includes(packName)) {
+			return;
+		}
 		// 显示不是无名杀自带的卡牌包
 		if (!lib.connectCardPack.includes(packName) && !lib.config.all.cards.includes(packName)) {
 			if (!(connectMenu && ["mode_derivation", "mode_banned"].includes(packName))) {
 				createModeConfig(packName, start.firstChild, node1);
 			}
-			if (connectMenu) lib.connectCardPack.add(packName);
+			if (connectMenu) {
+				lib.connectCardPack.add(packName);
+			}
 		}
 	};
 };

@@ -21,7 +21,9 @@ export class LibInit {
 	}
 
 	reset() {
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (window.resetExtension) {
 			if (confirm("游戏似乎未正常载入，有可能因为部分扩展未正常载入，或者因为部分扩展未载入完毕。\n是否禁用扩展并重新打开？")) {
 				window.resetExtension();
@@ -46,7 +48,9 @@ export class LibInit {
 								if (onlineKey) {
 									localStorage.setItem(lib.configprefix + "key", onlineKey);
 								}
-								if (indexedDB) indexedDB.deleteDatabase(lib.configprefix + "data");
+								if (indexedDB) {
+									indexedDB.deleteDatabase(lib.configprefix + "data");
+								}
 								setTimeout(function () {
 									window.location.reload();
 								}, 200);
@@ -68,7 +72,9 @@ export class LibInit {
 					if (onlineKey) {
 						localStorage.setItem(lib.configprefix + "key", onlineKey);
 					}
-					if (indexedDB) indexedDB.deleteDatabase(lib.configprefix + "data");
+					if (indexedDB) {
+						indexedDB.deleteDatabase(lib.configprefix + "data");
+					}
 					setTimeout(function () {
 						window.location.reload();
 					}, 200);
@@ -122,7 +128,9 @@ export class LibInit {
 				}
 			};
 			setTimeout(loop, 500);
-			if (!_status.new_tutorial) game.saveConfig("menu_loadondemand", true, lib.config.mode);
+			if (!_status.new_tutorial) {
+				game.saveConfig("menu_loadondemand", true, lib.config.mode);
+			}
 		}
 	}
 
@@ -139,15 +147,19 @@ export class LibInit {
 				if (!Array.isArray(message) || typeof lib.message.server[message[0]] !== "function") {
 					throw "err";
 				}
-				// @ts-ignore
-				if (client.sandbox) security.enterSandbox(client.sandbox);
+				// @ts-expect-error ignore
+				if (client.sandbox) {
+					security.enterSandbox(client.sandbox);
+				}
 				try {
 					for (var i = 1; i < message.length; i++) {
 						message[i] = get.parsedResult(message[i]);
 					}
 				} finally {
-					// @ts-ignore
-					if (client.sandbox) security.exitSandbox();
+					// @ts-expect-error ignore
+					if (client.sandbox) {
+						security.exitSandbox();
+					}
 				}
 			} catch (e) {
 				console.log(e);
@@ -177,15 +189,22 @@ export class LibInit {
 		const style = document.createElement("link");
 		style.rel = "stylesheet";
 		if (path) {
-			if (path[path.length - 1] == "/") path = path.slice(0, path.length - 1);
-			if (file) path = `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.css`;
+			if (path[path.length - 1] == "/") {
+				path = path.slice(0, path.length - 1);
+			}
+			if (file) {
+				path = `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.css`;
+			}
 			(path.startsWith("db:") ? game.getDB("image", path.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(path))).then(resolvedPath => {
 				style.href = resolvedPath;
 				if (typeof before == "function") {
 					style.addEventListener("load", before);
 					document.head.appendChild(style);
-				} else if (before) document.head.insertBefore(style, before);
-				else document.head.appendChild(style);
+				} else if (before) {
+					document.head.insertBefore(style, before);
+				} else {
+					document.head.appendChild(style);
+				}
 			});
 		}
 		return style;
@@ -195,7 +214,9 @@ export class LibInit {
 	//If any of the parameters is an Array, corresponding files will be loaded in order
 	//如果任意参数为数组，则按顺序加载加载相应的文件
 	jsForExtension(path, file, onLoad, onError) {
-		if (!_status.javaScriptExtensions) _status.javaScriptExtensions = [];
+		if (!_status.javaScriptExtensions) {
+			_status.javaScriptExtensions = [];
+		}
 		_status.javaScriptExtensions.push({
 			path: path,
 			file: file,
@@ -205,7 +226,9 @@ export class LibInit {
 	}
 
 	js(path, file, onLoad, onError) {
-		if (path[path.length - 1] == "/") path = path.slice(0, path.length - 1);
+		if (path[path.length - 1] == "/") {
+			path = path.slice(0, path.length - 1);
+		}
 		if (path == `${lib.assetURL}mode` && lib.config.all.stockmode.indexOf(file) == -1) {
 			lib.genAwait(lib.init[`setMode_${file}`]()).then(onLoad);
 			return;
@@ -215,35 +238,47 @@ export class LibInit {
 			return;
 		}
 		let scriptSource = file ? `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.js` : path;
-		if (path.startsWith("http")) scriptSource += `?rand=${get.id()}`;
-		else if (lib.config.fuck_sojson && !_status.connectMode && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
+		if (path.startsWith("http")) {
+			scriptSource += `?rand=${get.id()}`;
+		} else if (lib.config.fuck_sojson && !_status.connectMode && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
 			const pathToRead = scriptSource.slice(lib.assetURL.length);
 			const alertMessage = `检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`;
-			if (typeof game.readFileAsText == "function")
+			if (typeof game.readFileAsText == "function") {
 				game.readFileAsText(
 					pathToRead,
 					result => {
-						if (result.includes("sojson") || result.includes("jsjiami") || result.includes("var _0x")) alert(alertMessage);
+						if (result.includes("sojson") || result.includes("jsjiami") || result.includes("var _0x")) {
+							alert(alertMessage);
+						}
 					},
 					() => void 0
 				);
-			else if (location.origin != "file://")
+			} else if (location.origin != "file://") {
 				lib.init.reqSync(
 					pathToRead,
 					function () {
 						const result = this.responseText;
-						if (result.includes("sojson") || result.includes("jsjiami") || result.includes("var _0x")) alert(alertMessage);
+						if (result.includes("sojson") || result.includes("jsjiami") || result.includes("var _0x")) {
+							alert(alertMessage);
+						}
 					},
 					() => void 0
 				);
+			}
 		}
 		const script = document.createElement("script");
 		(scriptSource.startsWith("db:") ? game.getDB("image", scriptSource.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(scriptSource))).then(resolvedScriptSource => {
 			script.src = resolvedScriptSource;
-			if (path.startsWith("http")) script.addEventListener("load", () => script.remove());
+			if (path.startsWith("http")) {
+				script.addEventListener("load", () => script.remove());
+			}
 			document.head.appendChild(script);
-			if (typeof onLoad == "function") script.addEventListener("load", onLoad);
-			if (typeof onError == "function") script.addEventListener("error", onError);
+			if (typeof onLoad == "function") {
+				script.addEventListener("load", onLoad);
+			}
+			if (typeof onError == "function") {
+				script.addEventListener("error", onError);
+			}
 		});
 		return script;
 	}
@@ -255,11 +290,16 @@ export class LibInit {
 	jsSync(path, file, onLoad, onError) {
 		if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
 			const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
-			if (typeof onError == "function") onError(e);
-			else throw e;
+			if (typeof onError == "function") {
+				onError(e);
+			} else {
+				throw e;
+			}
 			return;
 		}
-		if (path[path.length - 1] == "/") path = path.slice(0, path.length - 1);
+		if (path[path.length - 1] == "/") {
+			path = path.slice(0, path.length - 1);
+		}
 		if (path == `${lib.assetURL}mode` && lib.config.all.stockmode.indexOf(file) == -1) {
 			lib.genAwait(lib.init[`setMode_${file}`]()).then(onLoad);
 			return;
@@ -268,65 +308,92 @@ export class LibInit {
 			return file.forEach(value => lib.init.jsSync(path, value, onLoad, onError));
 		}
 		let scriptSource;
-		if (!file) scriptSource = path;
-		else scriptSource = `${path}/${file}.js`;
-		if (path.startsWith("http")) scriptSource += `?rand=${get.id()}`;
+		if (!file) {
+			scriptSource = path;
+		} else {
+			scriptSource = `${path}/${file}.js`;
+		}
+		if (path.startsWith("http")) {
+			scriptSource += `?rand=${get.id()}`;
+		}
 		const xmlHttpRequest = new XMLHttpRequest();
 		let data;
 		xmlHttpRequest.addEventListener("load", () => {
 			if (![0, 200].includes(xmlHttpRequest.status)) {
-				// @ts-ignore
-				if (typeof onError == "function") onError(new Error(oReq.statusText || oReq.status));
+				// @ts-expect-error ignore
+				if (typeof onError == "function") {
+					onError(new Error(oReq.statusText || oReq.status));
+				}
 				return;
 			}
 			data = xmlHttpRequest.responseText;
 			if (!data) {
-				if (typeof onError == "function") onError(new Error(`${scriptSource}加载失败！`));
+				if (typeof onError == "function") {
+					onError(new Error(`${scriptSource}加载失败！`));
+				}
 				return;
 			}
 			if (lib.config.fuck_sojson && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
 				const pathToRead = scriptSource.slice(lib.assetURL.length);
-				if (data.includes("sojson") || data.includes("jsjiami") || data.includes("var _0x")) alert(`检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`);
+				if (data.includes("sojson") || data.includes("jsjiami") || data.includes("var _0x")) {
+					alert(`检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`);
+				}
 			}
 			try {
 				security.eval(data);
-				if (typeof onLoad == "function") onLoad();
+				if (typeof onLoad == "function") {
+					onLoad();
+				}
 			} catch (error) {
-				if (typeof onError == "function") onError(error);
+				if (typeof onError == "function") {
+					onError(error);
+				}
 			}
 		});
-		if (typeof onError == "function") xmlHttpRequest.addEventListener("error", onError);
+		if (typeof onError == "function") {
+			xmlHttpRequest.addEventListener("error", onError);
+		}
 		xmlHttpRequest.open("GET", scriptSource, false);
 		xmlHttpRequest.send();
 	}
 
 	req(str, onload, onerror, master) {
 		let sScriptURL;
-		if (str.startsWith("http")) sScriptURL = str;
-		else if (str.startsWith("local:")) {
+		if (str.startsWith("http")) {
+			sScriptURL = str;
+		} else if (str.startsWith("local:")) {
 			if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
 				const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
-				if (typeof onerror == "function") onerror(e);
-				else throw e;
+				if (typeof onerror == "function") {
+					onerror(e);
+				} else {
+					throw e;
+				}
 				return;
 			}
 			sScriptURL = lib.assetURL + str.slice(6);
 		} else {
 			let url = get.url(master);
-			if (url[url.length - 1] != "/") url += "/";
+			if (url[url.length - 1] != "/") {
+				url += "/";
+			}
 			sScriptURL = url + str;
 		}
 		const oReq = new XMLHttpRequest();
-		if (typeof onload == "function")
+		if (typeof onload == "function") {
 			oReq.addEventListener("load", result => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
-					if (typeof onerror == "function") onerror(new Error(oReq.statusText || oReq.status));
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
 					return;
 				}
 				onload.call(oReq, result);
 			});
-		if (typeof onerror == "function") oReq.addEventListener("error", onerror);
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
 		oReq.open("GET", sScriptURL);
 		oReq.send();
 	}
@@ -336,56 +403,78 @@ export class LibInit {
 	 */
 	reqSync(str, onload, onerror, master) {
 		let sScriptURL;
-		if (str.startsWith("http")) sScriptURL = str;
-		else if (str.startsWith("local:")) {
+		if (str.startsWith("http")) {
+			sScriptURL = str;
+		} else if (str.startsWith("local:")) {
 			if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
 				const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
-				if (typeof onerror == "function") onerror(e);
-				else throw e;
+				if (typeof onerror == "function") {
+					onerror(e);
+				} else {
+					throw e;
+				}
 				return;
 			}
 			sScriptURL = lib.assetURL + str.slice(6);
 		} else {
 			let url = get.url(master);
-			if (url[url.length - 1] != "/") url += "/";
+			if (url[url.length - 1] != "/") {
+				url += "/";
+			}
 			sScriptURL = url + str;
 		}
 		const oReq = new XMLHttpRequest();
-		if (typeof onload == "function")
+		if (typeof onload == "function") {
 			oReq.addEventListener("load", result => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
-					if (typeof onerror == "function") onerror(new Error(oReq.statusText || oReq.status));
+					// @ts-expect-error ignore
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
 					return;
 				}
 				onload(result);
 			});
-		if (typeof onerror == "function") oReq.addEventListener("error", onerror);
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
 		oReq.open("GET", sScriptURL, false);
 		oReq.send();
-		if (typeof onload !== "function") return oReq.responseText;
+		if (typeof onload !== "function") {
+			return oReq.responseText;
+		}
 	}
 
 	json(url, onload, onerror) {
 		const oReq = new XMLHttpRequest();
-		if (typeof onload == "function")
+		if (typeof onload == "function") {
 			oReq.addEventListener("load", () => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
-					if (typeof onerror == "function") onerror(new Error(oReq.statusText || oReq.status));
+					// @ts-expect-error ignore
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
 					return;
 				}
 				let result;
 				try {
 					result = JSON.parse(oReq.responseText);
-					if (!result) throw "err";
+					if (!result) {
+						throw "err";
+					}
 				} catch (e) {
-					if (typeof onerror == "function") onerror(e);
+					if (typeof onerror == "function") {
+						onerror(e);
+					}
 					return;
 				}
 				onload(result);
 			});
-		if (typeof onerror == "function") oReq.addEventListener("error", onerror);
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
 		oReq.open("GET", url);
 		oReq.send();
 	}
@@ -396,29 +485,41 @@ export class LibInit {
 	jsonSync(url, onload, onerror) {
 		if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
 			const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
-			if (typeof onerror == "function") onerror(e);
-			else throw e;
+			if (typeof onerror == "function") {
+				onerror(e);
+			} else {
+				throw e;
+			}
 			return;
 		}
 		const oReq = new XMLHttpRequest();
-		if (typeof onload == "function")
+		if (typeof onload == "function") {
 			oReq.addEventListener("load", () => {
 				if (![0, 200].includes(oReq.status)) {
-					// @ts-ignore
-					if (typeof onerror == "function") onerror(new Error(oReq.statusText || oReq.status));
+					// @ts-expect-error ignore
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
 					return;
 				}
 				let result;
 				try {
 					result = JSON.parse(oReq.responseText);
-					if (!result) throw "err";
+					if (!result) {
+						throw "err";
+					}
 				} catch (e) {
-					if (typeof onerror == "function") onerror(e);
+					if (typeof onerror == "function") {
+						onerror(e);
+					}
 					return;
 				}
 				onload(result);
 			});
-		if (typeof onerror == "function") oReq.addEventListener("error", onerror);
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
 		oReq.open("GET", url, false);
 		oReq.send();
 	}
@@ -458,8 +559,12 @@ export class LibInit {
 		loadingScreenStyle.animationDuration = "1s";
 		loadingScreenStyle.animationFillMode = "forwards";
 		loadingScreenStyle.animationName = "opacity-0-1";
-		if (layout == "default") layout = "mobile";
-		if (!nosave) game.saveConfig("layout", layout);
+		if (layout == "default") {
+			layout = "mobile";
+		}
+		if (!nosave) {
+			game.saveConfig("layout", layout);
+		}
 		game.layout = layout;
 		ui.arena.hide();
 		new Promise(resolve => setTimeout(resolve, 500))
@@ -550,7 +655,9 @@ export class LibInit {
 			})
 			.then(() => {
 				ui.arena.show();
-				if (game.me) game.me.update();
+				if (game.me) {
+					game.me.update();
+				}
 				return new Promise(resolve => setTimeout(resolve, 500));
 			})
 			.then(() => {
@@ -569,7 +676,9 @@ export class LibInit {
 		if (lib.config.image_background_random) {
 			var list = [];
 			for (var i in lib.configMenu.appearence.config.image_background.item) {
-				if (i == "default") continue;
+				if (i == "default") {
+					continue;
+				}
 				list.push(i);
 			}
 			list.remove(lib.config.image_background);
@@ -590,7 +699,9 @@ export class LibInit {
 	 * @returns
 	 */
 	parsex(item, scope) {
-		if (scope) throw new Error("parsex已经被拆分，不再支持scope的使用");
+		if (scope) {
+			throw new Error("parsex已经被拆分，不再支持scope的使用");
+		}
 		// parsex 的 Legacy 主体移动到 noname/library/event/compilers/StepCompiler.ts
 		return ContentCompiler.compile(item);
 	}
@@ -691,14 +802,18 @@ export class LibInit {
 	 */
 	parseResourceAddress(link, defaultHandle = null, loadAsDataUrlCallback = null, dbNow = false) {
 		// 适当的摆了，中文错误应该没人会反对
-		if (!link) throw new Error(dbNow ? "传入的数据库链接中不存在内容" : "请传入需要解析的链接");
+		if (!link) {
+			throw new Error(dbNow ? "传入的数据库链接中不存在内容" : "请传入需要解析的链接");
+		}
 
 		let linkString = link instanceof URL ? link.href : link;
 
 		// 如果传入值为Data URL，经过分析可知无需处理，故直接返回成品URL
 		if (linkString.startsWith("data:")) {
 			let result = new URL(linkString);
-			if (loadAsDataUrlCallback) loadAsDataUrlCallback(result);
+			if (loadAsDataUrlCallback) {
+				loadAsDataUrlCallback(result);
+			}
 			return result;
 		}
 

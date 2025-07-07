@@ -2,15 +2,41 @@ import { lib } from "../index.js";
 import { ui } from "../../ui/index.js";
 import { get } from "../../get/index.js";
 import { _status } from "../../status/index.js";
+import { game } from "../../game/index.js";
 
 /**
  * @type {(NonameAssemblyType["checkBegin"])}
- * 
+ *
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const checkBegin = {};
+export const checkBegin = {
+	addTargetPrompt(event) {
+		if (!event.targetprompt2?.length) {
+			return;
+		}
+		game.filterPlayer2(() => true, [], true).forEach(target => {
+			const str = event.targetprompt2
+				.map(func => func(target) || "")
+				.filter(prompt => prompt.length)
+				.join("<br>");
+			let node;
+			if (target.node.prompt2) {
+				node = target.node.prompt2;
+				node.innerHTML = "";
+				node.className = "damage normal-font damageadded";
+			} else {
+				node = ui.create.div(".damage.normal-font", target);
+				target.node.prompt2 = node;
+				ui.refresh(node);
+				node.classList.add("damageadded");
+			}
+			node.innerHTML = str;
+			node.dataset.nature = "soil";
+		});
+	},
+};
 
 /**
  * @type {(NonameAssemblyType["checkCard"])}
@@ -20,10 +46,16 @@ export const checkBegin = {};
  */
 export const checkCard = {
 	updateTempname(card, event) {
-		if (lib.config.cardtempname === "off") return;
-		if (get.name(card) === card.name && get.is.sameNature(get.nature(card), card.nature, true)) return;
+		if (lib.config.cardtempname === "off") {
+			return;
+		}
+		if (get.name(card) === card.name && get.is.sameNature(get.nature(card), card.nature, true)) {
+			return;
+		}
 		const node = ui.create.cardTempName(card);
-		if (lib.config.cardtempname !== "default") node.classList.remove("vertical");
+		if (lib.config.cardtempname !== "default") {
+			node.classList.remove("vertical");
+		}
 	},
 };
 
@@ -35,14 +67,16 @@ export const checkCard = {
  */
 export const checkTarget = {
 	updateInstance(target, event) {
-		// @ts-ignore
-		if (!target.instance) return;
+		// @ts-expect-error ignore
+		if (!target.instance) {
+			return;
+		}
 		["selected", "selectable"].forEach(className => {
 			if (target.classList.contains(className)) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				target.instance.classList.add(className);
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				target.instance.classList.remove(className);
 			}
 		});
@@ -65,17 +99,25 @@ export const checkButton = {};
  */
 export const checkEnd = {
 	autoConfirm(event, { ok, auto, autoConfirm }) {
-		if (!event.isMine()) return;
+		if (!event.isMine()) {
+			return;
+		}
 		const skillinfo = get.info(event.skill) || {};
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (ok && auto && (autoConfirm || skillinfo.direct) && !_status.touchnocheck && !_status.mousedown && (!_status.mousedragging || !_status.mouseleft)) {
-			if (ui.confirm) ui.confirm.close();
-			// @ts-ignore
-			if (event.skillDialog === true) event.skillDialog = false;
+			if (ui.confirm) {
+				ui.confirm.close();
+			}
+			// @ts-expect-error ignore
+			if (event.skillDialog === true) {
+				event.skillDialog = false;
+			}
 			ui.click.ok();
-			// @ts-ignore
+			// @ts-expect-error ignore
 			_status.mousedragging = null;
-			if (skillinfo.preservecancel) ui.create.confirm("c");
+			if (skillinfo.preservecancel) {
+				ui.create.confirm("c");
+			}
 		}
 	},
 };
@@ -86,7 +128,16 @@ export const checkEnd = {
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const uncheckBegin = {};
+export const uncheckBegin = {
+	removeTargetPrompt(event) {
+		game.filterPlayer2(null, null, true).forEach(target => {
+			if (target.node.prompt2) {
+				target.node.prompt2.remove();
+				delete target.node.prompt2;
+			}
+		});
+	},
+};
 
 /**
  * @type {(NonameAssemblyType["uncheckCard"])}
@@ -96,11 +147,13 @@ export const uncheckBegin = {};
  */
 export const uncheckCard = {
 	removeTempname(card, event) {
-		// @ts-ignore
-		if (!card._tempName) return;
-		// @ts-ignore
+		// @ts-expect-error ignore
+		if (!card._tempName) {
+			return;
+		}
+		// @ts-expect-error ignore
 		card._tempName.delete();
-		// @ts-ignore
+		// @ts-expect-error ignore
 		delete card._tempName;
 	},
 };
@@ -113,11 +166,13 @@ export const uncheckCard = {
  */
 export const uncheckTarget = {
 	removeInstance(target, event) {
-		// @ts-ignore
-		if (!target.instance) return;
-		// @ts-ignore
+		// @ts-expect-error ignore
+		if (!target.instance) {
+			return;
+		}
+		// @ts-expect-error ignore
 		target.instance.classList.remove("selected");
-		// @ts-ignore
+		// @ts-expect-error ignore
 		target.instance.classList.remove("selectable");
 	},
 };
@@ -148,25 +203,25 @@ export const checkOverflow = {
 	updateDialog(itemOption, itemContainer, addedItems, game) {
 		//计算压缩折叠的量
 		const gap = 3;
-		// @ts-ignore
+		// @ts-expect-error ignore
 		function isEqual(a, b) {
 			return Math.abs(a - b) < 3;
 		}
 		let equal = isEqual(itemContainer.originWidth, itemContainer.getBoundingClientRect().width);
 		const L = (itemContainer.originWidth - 2 * gap) * (equal ? 0.8 : 1);
-		// @ts-ignore
-		const W = 90;//这里需要填卡的实际宽度，扩展中需要自行调整。
-		// @ts-ignore
+		// @ts-expect-error ignore
+		const W = 90; //这里需要填卡的实际宽度，扩展中需要自行调整。
+		// @ts-expect-error ignore
 		let n = addedItems.length;
 		const r = 16; //为偏移留出的空间，如果r为0，可能会把前面的卡牌全遮住
 		if (n * W + (n + 1) * gap < L) {
 			itemContainer.style.setProperty("--ml", gap + "px");
-			itemContainer.classList.remove('zoom');
+			itemContainer.classList.remove("zoom");
 		} else {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const ml = Math.min((n * W - L + gap) / (n - 1), W - r);
 			itemContainer.style.setProperty("--ml", "-" + ml + "px");
-			itemContainer.classList.add('zoom');
+			itemContainer.classList.add("zoom");
 		}
 	},
 };
@@ -175,14 +230,15 @@ export const checkOverflow = {
  */
 export const checkTipBottom = {
 	undateTipBottom(player) {
-
-		if (!player.node.tipContainer) return;
-		if ((lib.config.layout == "mobile" || lib.config.layout == "long") && player.dataset.position == '0') {
-			player.style.removeProperty('--bottom');
+		if (!player.node.tipContainer) {
+			return;
+		}
+		if ((lib.config.layout == "mobile" || lib.config.layout == "long") && player.dataset.position == "0") {
+			player.style.removeProperty("--bottom");
 		} else {
 			//如果全是空的装备栏
-			if (Array.from(player.node.equips.children).every(e => e.classList.contains('emptyequip'))) {
-				player.style.removeProperty('--bottom');
+			if (Array.from(player.node.equips.children).every(e => e.classList.contains("emptyequip"))) {
+				player.style.removeProperty("--bottom");
 			} else {
 				let eqipContainerTop = player.node.equips.offsetTop;
 				let equipTop = 0;
@@ -194,11 +250,10 @@ export const checkTipBottom = {
 				}
 				let top = equipTop + eqipContainerTop;
 				const bottom = player.getBoundingClientRect().height - top;
-				player.style.setProperty('--bottom', bottom + 'px');
+				player.style.setProperty("--bottom", bottom + "px");
 			}
-
 		}
-	}
+	},
 };
 
 /**
@@ -209,8 +264,16 @@ export const checkTipBottom = {
  */
 export const checkDamage1 = {
 	kuanggu(event, player) {
-		// @ts-ignore
-		if (get.distance(event.source, player) <= 1) event.checkKuanggu = true;
+		// @ts-expect-error ignore
+		if (get.distance(event.source, player) <= 1) {
+			event.checkKuanggu = true;
+		}
+	},
+	jyliezhou(event, player) {
+		// @ts-expect-error ignore
+		if (event.player.isLinked()) {
+			event.checkJyliezhou = true;
+		}
 	},
 };
 
@@ -230,8 +293,10 @@ export const checkDamage2 = {};
  */
 export const checkDamage3 = {
 	jiushi(event, player) {
-		// @ts-ignore
-		if (player.isTurnedOver()) event.checkJiushi = true;
+		// @ts-expect-error ignore
+		if (player.isTurnedOver()) {
+			event.checkJiushi = true;
+		}
 	},
 };
 
@@ -243,10 +308,27 @@ export const checkDamage3 = {
  */
 export const checkDamage4 = {};
 
+/**
+ * @type {(NonameAssemblyType["checkDie"])}
+ */
+export const checkDie = {};
+
+/**
+ * @type {(NonameAssemblyType["checkUpdate"])}
+ */
+export const checkUpdate = {};
+
+/**
+ * @type {(NonameAssemblyType["checkSkillAnimate"])}
+ */
+export const checkSkillAnimate = {};
+
 export const addSkillCheck = {};
 
 export const removeSkillCheck = {
 	checkCharge(skill, player) {
-		if (player.countCharge(true) < 0) player.removeCharge(-player.countCharge(true));
+		if (player.countCharge(true) < 0) {
+			player.removeCharge(-player.countCharge(true));
+		}
 	},
 };

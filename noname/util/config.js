@@ -8,7 +8,9 @@ import { jumpToCatchBlock } from "./index.js";
  */
 export function get(name) {
 	const config = Reflect.get(lib, "config");
-	if (!config) return null;
+	if (!config) {
+		return null;
+	}
 	return Reflect.get(config, name);
 }
 
@@ -19,7 +21,9 @@ export function get(name) {
  */
 export function set(name, value) {
 	const config = Reflect.get(lib, "config");
-	if (!config) return;
+	if (!config) {
+		return;
+	}
 	Reflect.set(config, name, value);
 }
 
@@ -29,7 +33,9 @@ export function set(name, value) {
  */
 export function has(name) {
 	const config = Reflect.get(lib, "config");
-	if (!config) return false;
+	if (!config) {
+		return false;
+	}
 	return Reflect.has(config, name);
 }
 
@@ -59,12 +65,18 @@ export function load(name, type, reinitLocalStorage = true, reinitIndexedDB = un
 	let config;
 	try {
 		let json = localStorage.getItem(`${lib.configprefix}${type === "data" ? name : type}`);
-		if (!json) jumpToCatchBlock();
+		if (!json) {
+			jumpToCatchBlock();
+		}
 		config = JSON.parse(json);
-		if (typeof config != "object" || config == null) jumpToCatchBlock();
+		if (typeof config != "object" || config == null) {
+			jumpToCatchBlock();
+		}
 	} catch (err) {
 		config = {};
-		if (reinitLocalStorage) localStorage.setItem(`${lib.configprefix}${name}`, "{}");
+		if (reinitLocalStorage) {
+			localStorage.setItem(`${lib.configprefix}${name}`, "{}");
+		}
 	}
 	return Promise.resolve(type === "data" ? config : config[name]);
 }
@@ -101,15 +113,22 @@ export function save(name, type, value) {
 	} else {
 		try {
 			let json = localStorage.getItem(`${lib.configprefix}${key}`);
-			if (!json) jumpToCatchBlock();
+			if (!json) {
+				jumpToCatchBlock();
+			}
 			config = JSON.parse(json);
-			if (typeof config != "object" || config == null) jumpToCatchBlock();
+			if (typeof config != "object" || config == null) {
+				jumpToCatchBlock();
+			}
 		} catch (err) {
 			config = {};
 		}
 
-		if (noValue) delete config[name];
-		else config[name] = value;
+		if (noValue) {
+			delete config[name];
+		} else {
+			config[name] = value;
+		}
 	}
 
 	localStorage.setItem(`${lib.configprefix}${key}`, JSON.stringify(config));

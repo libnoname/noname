@@ -10291,7 +10291,7 @@ https://github.com/nodeca/pako/blob/master/LICENSE
 					//   misrepresented as being the original software.
 					// 3. This notice may not be removed or altered from any source distribution.
 
-					/* eslint-disable space-unary-ops */
+					 
 
 					var utils = require("../utils/common");
 
@@ -10378,7 +10378,7 @@ https://github.com/nodeca/pako/blob/master/LICENSE
 					var REPZ_11_138 = 18;
 					/* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-					/* eslint-disable comma-spacing,array-bracket-spacing */
+					 
 					var extra_lbits =
 						/* extra bits for each length code */
 						[
@@ -10404,7 +10404,7 @@ https://github.com/nodeca/pako/blob/master/LICENSE
 						16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2,
 						14, 1, 15,
 					];
-					/* eslint-enable comma-spacing,array-bracket-spacing */
+					 
 
 					/* The lengths of the bit length codes are sent in order of decreasing
 					 * probability, to avoid transmitting the lengths for unused bit length codes.

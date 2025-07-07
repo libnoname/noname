@@ -8,7 +8,9 @@ const characterFilters = {
 
 const characterInitFilters = {
 	dc_zhaoyun(tag) {
-		if (tag == "noZhuSkill" && (get.mode() != "doudizhu" || _status.mode != "normal")) return false;
+		if (tag == "noZhuSkill" && (get.mode() != "doudizhu" || _status.mode != "normal")) {
+			return false;
+		}
 	},
 };
 

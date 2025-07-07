@@ -5,32 +5,37 @@ import { game } from "../game/index.js";
 import { _status } from "../status/index.js";
 import { ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
-import { userAgent, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
+import { userAgentLowerCase, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
 import * as config from "../util/config.js";
 import { promiseErrorHandlerMap } from "../util/browser.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { initializeSandboxRealms } from "../util/initRealms.js";
 import { ErrorManager } from "../util/error.js";
+import { rootURL } from "../../noname.js";
 
 // 判断是否从file协议切换到http/s协议
 export function canUseHttpProtocol() {
 	// 如果是http了就不用
-	if (location.protocol.startsWith("http")) return false;
+	if (location.protocol.startsWith("http")) {
+		return false;
+	}
 	// 首次启动不更新(即还没进行过新手教程)
-	if (!config.get("new_tutorial")) return false;
+	if (!config.get("new_tutorial")) {
+		return false;
+	}
 	if (typeof nonameInitialized == "string") {
 		// 手机端
 		if (window.cordova) {
 			// 直接确定包名
 			// 因为懒人包作者不一定会改成什么版本
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 				// 每个app自定义能升级的渠道，比如判断版本
-				// @ts-ignore
+				// @ts-expect-error ignore
 				return window.noname_shijianInterfaces.getApkVersion() >= 16000;
 			}
 			// 由理版判断，后续所有app都通过此接口来升级协议
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 				return true;
 			}
@@ -41,7 +46,7 @@ export function canUseHttpProtocol() {
 			const fs = require("fs");
 			const path = require("path");
 			if (fs.existsSync(path.join(__dirname, "package.json"))) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const json = require("./package.json");
 				// 诗笺电脑版的判断
 				return json && Number(json.installerVersion) >= 1.7;
@@ -63,19 +68,19 @@ export function sendUpdate() {
 	// 手机端
 	if (window.cordova) {
 		// 直接确定包名
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 			// 给诗笺版apk的java层传递升级完成的信息
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const url = new URL(window.noname_shijianInterfaces.sendUpdate());
 			url.searchParams.set("sendUpdate", "true");
 			return url.toString();
 		}
 		// 由理版判断
-		// @ts-ignore
+		// @ts-expect-error ignore
 		if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
 			// 给由理版apk的java层传递升级完成的信息
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const url = new URL(window.NonameAndroidBridge.sendUpdate());
 			url.searchParams.set("sendUpdate", "true");
 			return url.toString();
@@ -87,7 +92,7 @@ export function sendUpdate() {
 		const fs = require("fs");
 		const path = require("path");
 		if (fs.existsSync(path.join(__dirname, "package.json"))) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const json = require("./package.json");
 			// 诗笺电脑版的判断
 			if (json && Number(json.installerVersion) >= 1.7) {
@@ -133,6 +138,7 @@ export async function boot() {
 		delete window.cordovaLoadTimeout;
 	}
 
+	// @ts-expect-error 类型系统未来可期
 	for (const link of document.head.querySelectorAll("link")) {
 		if (link.href.includes("app/color.css")) {
 			link.remove();
@@ -159,7 +165,9 @@ export async function boot() {
 	const waitDomLoad = new Promise(resolve => {
 		if (document.readyState !== "complete") {
 			window.onload = resolve;
-		} else resolve(void 0);
+		} else {
+			resolve(void 0);
+		}
 	}).then(onWindowReady.bind(window));
 
 	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
@@ -201,7 +209,7 @@ export async function boot() {
 						},
 					});
 				});
-				// @ts-ignore
+				// @ts-expect-error ignore
 				await window.initReadWriteFunction(g).catch(e => {
 					console.error("文件读写函数初始化失败:", e);
 				});
@@ -223,8 +231,12 @@ export async function boot() {
 	const config2 = await loadConfigPromise;
 
 	// 读取模式
-	if (config2.mode) config.set("mode", config2.mode);
-	if (config.get("mode_config")[config.get("mode")] === undefined) config.get("mode_config")[config.get("mode")] = {};
+	if (config2.mode) {
+		config.set("mode", config2.mode);
+	}
+	if (config.get("mode_config")[config.get("mode")] === undefined) {
+		config.get("mode_config")[config.get("mode")] = {};
+	}
 
 	// 复制共有模式设置
 	for (const name in config.get("mode_config").global) {
@@ -233,13 +245,19 @@ export async function boot() {
 		}
 	}
 
-	if (config.get("characters")) config.set("defaultcharacters", config.get("characters").slice(0));
-	if (config.get("cards")) config.set("defaultcards", config.get("cards").slice(0));
+	if (config.get("characters")) {
+		config.set("defaultcharacters", config.get("characters").slice(0));
+	}
+	if (config.get("cards")) {
+		config.set("defaultcards", config.get("cards").slice(0));
+	}
 
 	for (const name in config2) {
 		if (name.includes("_mode_config")) {
 			var thismode = name.substr(name.indexOf("_mode_config") + 13);
-			if (!config.get("mode_config")[thismode]) config.get("mode_config")[thismode] = {};
+			if (!config.get("mode_config")[thismode]) {
+				config.get("mode_config")[thismode] = {};
+			}
 			config.get("mode_config")[thismode][name.substr(0, name.indexOf("_mode_config"))] = config2[name];
 		} else {
 			config.set(name, config2[name]);
@@ -255,7 +273,9 @@ export async function boot() {
 	config.get("all").plays = [];
 	config.get("all").mode = [];
 
-	if (config.get("compatiblemode")) _status.withError = true;
+	if (config.get("compatiblemode")) {
+		_status.withError = true;
+	}
 	if (config.get("debug")) {
 		await lib.init.promises.js(`${lib.assetURL}game`, "asset");
 		if (window.noname_skin_list) {
@@ -283,7 +303,9 @@ export async function boot() {
 		gnc,
 	});
 
-	if (Reflect.get(window, "isNonameServer")) config.set("mode", "connect");
+	if (Reflect.get(window, "isNonameServer")) {
+		config.set("mode", "connect");
+	}
 
 	var pack = Reflect.get(window, "noname_package");
 	Reflect.deleteProperty(window, "noname_package");
@@ -309,22 +331,30 @@ export async function boot() {
 		}
 	}
 
-	if (!config.get("gameRecord")) config.set("gameRecord", {});
+	if (!config.get("gameRecord")) {
+		config.set("gameRecord", {});
+	}
 	for (const name in pack.mode) {
 		if (config.get("hiddenModePack").indexOf(name) == -1) {
 			config.get("all").mode.push(name);
 			lib.translate[name] = pack.mode[name];
-			if (!config.get("gameRecord")[name]) config.get("gameRecord")[name] = { data: {} };
+			if (!config.get("gameRecord")[name]) {
+				config.get("gameRecord")[name] = { data: {} };
+			}
 		}
 	}
 	if (config.get("all").mode.length == 0) {
 		config.get("all").mode.push("identity");
 		lib.translate.identity = "身份";
-		if (!config.get("gameRecord").identity) config.get("gameRecord").identity = { data: {} };
+		if (!config.get("gameRecord").identity) {
+			config.get("gameRecord").identity = { data: {} };
+		}
 	}
 	if (pack.background) {
 		for (const name in pack.background) {
-			if (config.get("hiddenBackgroundPack").includes(name)) continue;
+			if (config.get("hiddenBackgroundPack").includes(name)) {
+				continue;
+			}
 			lib.configMenu.appearence.config.image_background.item[name] = pack.background[name];
 		}
 		for (let i = 0; i < config.get("customBackgroundPack").length; i++) {
@@ -374,16 +404,20 @@ export async function boot() {
 			appearenceConfig.cardtext_font.item[value] = font;
 			appearenceConfig.global_font.item[value] = font;
 			fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
-			if (suitsFont) fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+			if (suitsFont) {
+				fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+			}
 		});
-		if (suitsFont) fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+		if (suitsFont) {
+			fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+		}
 		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
 		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}
 
-	const ua = userAgent;
+	const ua = userAgentLowerCase;
 	if ("ontouchstart" in document) {
 		if (!config.get("totouched")) {
 			game.saveConfig("totouched", true);
@@ -429,7 +463,7 @@ export async function boot() {
 				for (var i = 0; i < config.get("extensions").length; i++) {
 					game.saveConfig("extension_" + config.get("extensions")[i] + "_enable", false);
 				}
-				// @ts-ignore
+				// @ts-expect-error ignore
 				localStorage.setItem(lib.configprefix + "disable_extension", true);
 			});
 		}
@@ -438,6 +472,7 @@ export async function boot() {
 				extensionlist.push(config.get("plays")[name]);
 			}
 		}
+
 		for (var name = 0; name < config.get("extensions").length; name++) {
 			if (Reflect.get(window, "bannedExtensions").includes(config.get("extensions")[name])) {
 				continue;
@@ -459,6 +494,10 @@ export async function boot() {
 		}
 	}
 
+	// 自动导入扩展
+	// 其实个人觉得直接加到这里会有问题，但至少现在能跑
+	const importExtensionPromise = autoImportExtensions(extensionlist);
+
 	let layout = config.get("layout");
 	if (layout == "default" || lib.layoutfixed.indexOf(config.get("mode")) !== -1) {
 		layout = "mobile";
@@ -476,10 +515,12 @@ export async function boot() {
 		} else {
 			const list = [];
 			for (const name in lib.configMenu.appearence.config.image_background.item) {
-				if (name == "default") continue;
+				if (name == "default") {
+					continue;
+				}
 				list.push(name);
 			}
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.saveConfig("image_background", list.randomGet(lib.config.image_background));
 		}
 		lib.init.background();
@@ -569,6 +610,7 @@ export async function boot() {
 		Reflect.get(ui, "css")[stylesName[i]] = stylesLoaded[i];
 	}
 
+	await importExtensionPromise;
 	if (extensionlist.length) {
 		_status.extensionLoading = [];
 		_status.extensionLoaded = [];
@@ -577,7 +619,9 @@ export async function boot() {
 
 		const extensionsLoading = [];
 		for (const name of extensionlist) {
-			if (bannedExtensions.includes(name)) continue;
+			if (bannedExtensions.includes(name)) {
+				continue;
+			}
 			extensionsLoading.push(importExtension(name));
 		}
 
@@ -585,17 +629,23 @@ export async function boot() {
 		for (const promise of extensionsLoading) {
 			await promise.catch(async error => {
 				extErrorList.add(error);
-				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) return;
-				// @ts-ignore
+				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
+					return;
+				}
+				// @ts-expect-error ignore
 				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
 		for (const promise of _status.extensionLoading) {
 			await promise.catch(async error => {
-				if (extErrorList.includes(error)) return;
+				if (extErrorList.includes(error)) {
+					return;
+				}
 				extErrorList.add(error);
-				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) return;
-				// @ts-ignore
+				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
+					return;
+				}
+				// @ts-expect-error ignore
 				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
@@ -617,7 +667,7 @@ export async function boot() {
 			.filter(name => game.hasExtension(name))
 			.forEach(name => {
 				lib.announce.publish("Noname.Init.Extension.onLoad", name);
-				// @ts-ignore
+				// @ts-expect-error ignore
 				lib.announce.publish(`Noname.Init.Extension.${name}.onLoad`, void 0);
 			});
 		delete _status.extensionLoading;
@@ -627,7 +677,9 @@ export async function boot() {
 	if (isArray(lib.onprepare) && lib.onprepare.length) {
 		_status.onprepare = Object.freeze(
 			lib.onprepare.map(fn => {
-				if (typeof fn !== "function") return;
+				if (typeof fn !== "function") {
+					return;
+				}
 				return (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn)();
 			})
 		);
@@ -635,8 +687,11 @@ export async function boot() {
 
 	const toLoad = [];
 
-	if (localStorage.getItem(`${lib.configprefix}playback`)) toLoad.push(importMode(config.get("mode")));
-	else if ((localStorage.getItem(`${lib.configprefix}directstart`) || !show_splash) && config.get("all").mode.includes(config.get("mode"))) toLoad.push(importMode(config.get("mode")));
+	if (localStorage.getItem(`${lib.configprefix}playback`)) {
+		toLoad.push(importMode(config.get("mode")));
+	} else if ((localStorage.getItem(`${lib.configprefix}directstart`) || !show_splash) && config.get("all").mode.includes(config.get("mode"))) {
+		toLoad.push(importMode(config.get("mode")));
+	}
 
 	for (const cardPack of config.get("all").cards) {
 		toLoad.push(importCardPack(cardPack));
@@ -645,32 +700,52 @@ export async function boot() {
 		toLoad.push(importCharacterPack(characterPack));
 	}
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "rank"));
+	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "replace"));
+	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "perfectPairs"));
 
 	if (_status.javaScriptExtensions) {
 		const loadJavaScriptExtension = async (javaScriptExtension, pathArray, fileArray, onLoadArray, onErrorArray, index) => {
 			if (!pathArray && !fileArray && !onLoadArray && !onErrorArray) {
 				try {
 					await lib.init.promises.js(javaScriptExtension.path, javaScriptExtension.file);
-					if (typeof javaScriptExtension.onload == "function") javaScriptExtension.onload();
+					if (typeof javaScriptExtension.onload == "function") {
+						javaScriptExtension.onload();
+					}
 				} catch {
-					if (typeof javaScriptExtension.onerror == "function") javaScriptExtension.onerror();
+					if (typeof javaScriptExtension.onerror == "function") {
+						javaScriptExtension.onerror();
+					}
 				}
 				return;
 			}
-			if (typeof index != "number") index = 0;
-			if (pathArray && index >= javaScriptExtension.path.length) return;
-			if (fileArray && index >= javaScriptExtension.file.length) return;
-			if (onLoadArray && index >= javaScriptExtension.onload.length) return;
-			if (onErrorArray && index >= javaScriptExtension.onerror.length) return;
+			if (typeof index != "number") {
+				index = 0;
+			}
+			if (pathArray && index >= javaScriptExtension.path.length) {
+				return;
+			}
+			if (fileArray && index >= javaScriptExtension.file.length) {
+				return;
+			}
+			if (onLoadArray && index >= javaScriptExtension.onload.length) {
+				return;
+			}
+			if (onErrorArray && index >= javaScriptExtension.onerror.length) {
+				return;
+			}
 			const path = pathArray ? javaScriptExtension.path[index] : javaScriptExtension.path;
 			const file = fileArray ? javaScriptExtension.file[index] : javaScriptExtension.file;
 			const onLoad = onLoadArray ? javaScriptExtension.onload[index] : javaScriptExtension.onload;
 			const onError = onErrorArray ? javaScriptExtension.onerror[index] : javaScriptExtension.onerror;
 			try {
 				await lib.init.promises.js(path, file);
-				if (typeof onLoad == "function") onLoad();
+				if (typeof onLoad == "function") {
+					onLoad();
+				}
 			} catch {
-				if (typeof onError == "function") onError();
+				if (typeof onError == "function") {
+					onError();
+				}
 			}
 			await loadJavaScriptExtension(javaScriptExtension, pathArray, fileArray, onLoadArray, onErrorArray, index + 1);
 		};
@@ -691,7 +766,7 @@ export async function boot() {
 		 */
 		let promises = lib.creation.array;
 		for (const type in _status.importing) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			promises.addArray(_status.importing[type]);
 		}
 		await Promise.allSettled(promises);
@@ -702,6 +777,43 @@ export async function boot() {
 }
 
 export { onload } from "./onload.js";
+
+async function autoImportExtensions(extensionlist) {
+	const configValue = config.get("extension_auto_import");
+	const fsAccess = typeof game.getFileList == "function" && typeof game.checkFile == "function";
+
+	if (!configValue || !fsAccess) {
+		return;
+	}
+
+	const includedPlays = config.get("all").plays;
+	const savedExtensions = config.get("extensions");
+	const extensionPath = new URL("./extension/", rootURL);
+	const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
+	let changed = false;
+
+	const unimportedExtensions = extFolders.filter(folder => !includedPlays.includes(folder) && !savedExtensions.includes(folder));
+
+	const promises = unimportedExtensions.map(async ext => {
+		const path = new URL(`./${ext}/`, extensionPath);
+		const file = new URL("./extension.js", path);
+		const tsFile = new URL("./extension.ts", path);
+
+		if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
+			extensionlist.push(ext);
+			savedExtensions.push(ext);
+			changed = true;
+			if (!config.has(`extension_${ext}_enable`)) {
+				await game.promises.saveConfig(`extension_${ext}_enable`, false);
+			}
+		}
+	});
+	await Promise.allSettled(promises);
+
+	if (changed) {
+		await game.promises.saveConfig("extensions", savedExtensions);
+	}
+}
 
 function initSheet(libConfig) {
 	if (libConfig.player_style && libConfig.player_style != "default" && libConfig.player_style != "custom") {
@@ -781,7 +893,9 @@ async function loadConfig() {
 	Reflect.deleteProperty(window, "config");
 
 	let result;
-	if (localStorage.getItem(`${lib.configprefix}nodb`)) Reflect.set(window, "nodb", true);
+	if (localStorage.getItem(`${lib.configprefix}nodb`)) {
+		Reflect.set(window, "nodb", true);
+	}
 	if (window.indexedDB && !Reflect.get(window, "nodb")) {
 		const event = await new Promise((resolve, reject) => {
 			const idbOpenDBRequest = window.indexedDB.open(`${lib.configprefix}data`, 4);
@@ -790,14 +904,23 @@ async function loadConfig() {
 			idbOpenDBRequest.onupgradeneeded = idbVersionChangeEvent => {
 				// @ts-expect-error MaybeHave
 				const idbDatabase = idbVersionChangeEvent.target.result;
-				if (!idbDatabase.objectStoreNames.contains("video"))
+				if (!idbDatabase.objectStoreNames.contains("video")) {
 					idbDatabase.createObjectStore("video", {
 						keyPath: "time",
 					});
-				if (!idbDatabase.objectStoreNames.contains("image")) idbDatabase.createObjectStore("image");
-				if (!idbDatabase.objectStoreNames.contains("audio")) idbDatabase.createObjectStore("audio");
-				if (!idbDatabase.objectStoreNames.contains("config")) idbDatabase.createObjectStore("config");
-				if (!idbDatabase.objectStoreNames.contains("data")) idbDatabase.createObjectStore("data");
+				}
+				if (!idbDatabase.objectStoreNames.contains("image")) {
+					idbDatabase.createObjectStore("image");
+				}
+				if (!idbDatabase.objectStoreNames.contains("audio")) {
+					idbDatabase.createObjectStore("audio");
+				}
+				if (!idbDatabase.objectStoreNames.contains("config")) {
+					idbDatabase.createObjectStore("config");
+				}
+				if (!idbDatabase.objectStoreNames.contains("data")) {
+					idbDatabase.createObjectStore("data");
+				}
 			};
 		});
 		Reflect.set(lib, "db", event.target.result);
@@ -807,9 +930,13 @@ async function loadConfig() {
 		if (!object.storageImported) {
 			try {
 				const item = localStorage.getItem(`${lib.configprefix}config`);
-				if (!item) throw "err";
+				if (!item) {
+					throw "err";
+				}
 				result = JSON.parse(item);
-				if (!result || typeof result != "object") throw "err";
+				if (!result || typeof result != "object") {
+					throw "err";
+				}
 			} catch (err) {
 				result = {};
 			}
@@ -817,25 +944,37 @@ async function loadConfig() {
 			Object.keys(lib.mode).forEach(key => {
 				try {
 					const item = localStorage.getItem(`${lib.configprefix}${key}`);
-					if (!item) throw "err";
+					if (!item) {
+						throw "err";
+					}
 					result = JSON.parse(item);
-					if (!result || typeof result != "object" || get.is.empty(result)) throw "err";
+					if (!result || typeof result != "object" || get.is.empty(result)) {
+						throw "err";
+					}
 				} catch (err) {
 					result = false;
 				}
 				localStorage.removeItem(`${lib.configprefix}${key}`);
-				if (result) game.putDB("data", key, result);
+				if (result) {
+					game.putDB("data", key, result);
+				}
 			});
 			game.saveConfig("storageImported", true);
 			lib.init.background();
 			localStorage.removeItem(`${lib.configprefix}config`);
-		} else result = object;
+		} else {
+			result = object;
+		}
 	} else {
 		try {
 			const item = localStorage.getItem(lib.configprefix + "config");
-			if (!item) throw "err";
+			if (!item) {
+				throw "err";
+			}
 			result = JSON.parse(item);
-			if (!result || typeof result != "object") throw "err";
+			if (!result || typeof result != "object") {
+				throw "err";
+			}
 		} catch (err) {
 			result = {};
 			localStorage.setItem(lib.configprefix + "config", JSON.stringify({}));
@@ -869,7 +1008,9 @@ function setBackground() {
 		if (htmlbg[0] == "[") {
 			try {
 				htmlbg = JSON.parse(htmlbg);
-				if (!htmlbg) throw new Error();
+				if (!htmlbg) {
+					throw new Error();
+				}
 				htmlbg = htmlbg[get.rand(htmlbg.length)];
 				if (htmlbg.startsWith("custom_")) {
 					throw "err";
@@ -906,65 +1047,95 @@ async function setOnError() {
 
 	const promiseErrorHandler = new (core in promiseErrorHandlerMap ? promiseErrorHandlerMap[core] : promiseErrorHandlerMap.other)();
 
-	if (promiseErrorHandler.onLoad) await promiseErrorHandler.onLoad();
+	if (promiseErrorHandler.onLoad) {
+		await promiseErrorHandler.onLoad();
+	}
 
 	window.onunhandledrejection = async event => {
-		if (promiseErrorHandler.onHandle) await promiseErrorHandler.onHandle(event);
+		if (promiseErrorHandler.onHandle) {
+			await promiseErrorHandler.onHandle(event);
+		}
 	};
 
 	window.onerror = function (msg, src, line, column, err) {
-		if (promiseErrorHandler.onErrorPrepare) promiseErrorHandler.onErrorPrepare();
+		if (promiseErrorHandler.onErrorPrepare) {
+			promiseErrorHandler.onErrorPrepare();
+		}
 		const winPath = window.__dirname ? "file:///" + (__dirname.replace(new RegExp("\\\\", "g"), "/") + "/") : "";
 		let str = `错误文件: ${typeof src == "string" ? decodeURI(src).replace(lib.assetURL, "").replace(winPath, "") : "未知文件"}`;
 		str += `\n错误信息: ${msg}`;
 		const tip = lib.getErrorTip(msg);
-		if (tip) str += `\n错误提示: ${tip}`;
+		if (tip) {
+			str += `\n错误提示: ${tip}`;
+		}
 		str += `\n行号: ${line}`;
 		str += `\n列号: ${column}`;
 		const version = typeof lib.version != "undefined" ? lib.version : "";
 		const reg = /[^\d.]/;
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
-		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		if (match) {
+			str += "\n⚠️您使用的游戏代码不是源于libnoname/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		}
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;
-			// @ts-ignore
-			if (evt.parent) str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;
-			// @ts-ignore
-			if (evt.parent && evt.parent.parent) str += `\nevent.parent.parent.name: ${evt.parent.parent.name}\nevent.parent.parent.step: ${evt.parent.parent.step}`;
+			// @ts-expect-error ignore
+			if (evt.parent) {
+				str += `\nevent.parent.name: ${evt.parent.name}\nevent.parent.step: ${evt.parent.step}`;
+			}
+			// @ts-expect-error ignore
+			if (evt.parent && evt.parent.parent) {
+				str += `\nevent.parent.parent.name: ${evt.parent.parent.name}\nevent.parent.parent.step: ${evt.parent.parent.step}`;
+			}
 			if (evt.player || evt.target || evt.source || evt.skill || evt.card) {
 				str += "\n-------------";
 			}
 			if (evt.player) {
-				if (lib.translate[evt.player.name]) str += `\nplayer: ${lib.translate[evt.player.name]}[${evt.player.name}]`;
-				else str += "\nplayer: " + evt.player.name;
+				if (lib.translate[evt.player.name]) {
+					str += `\nplayer: ${lib.translate[evt.player.name]}[${evt.player.name}]`;
+				} else {
+					str += "\nplayer: " + evt.player.name;
+				}
 				let distance = get.distance(_status.roundStart, evt.player, "absolute");
 				if (distance != Infinity) {
 					str += `\n座位号: ${distance + 1}`;
 				}
 			}
 			if (evt.target) {
-				if (lib.translate[evt.target.name]) str += `\ntarget: ${lib.translate[evt.target.name]}[${evt.target.name}]`;
-				else str += "\ntarget: " + evt.target.name;
+				if (lib.translate[evt.target.name]) {
+					str += `\ntarget: ${lib.translate[evt.target.name]}[${evt.target.name}]`;
+				} else {
+					str += "\ntarget: " + evt.target.name;
+				}
 			}
 			if (evt.source) {
-				if (lib.translate[evt.source.name]) str += `\nsource: ${lib.translate[evt.source.name]}[${evt.source.name}]`;
-				else str += "\nsource: " + evt.source.name;
+				if (lib.translate[evt.source.name]) {
+					str += `\nsource: ${lib.translate[evt.source.name]}[${evt.source.name}]`;
+				} else {
+					str += "\nsource: " + evt.source.name;
+				}
 			}
 			if (evt.skill) {
-				if (lib.translate[evt.skill]) str += `\nskill: ${lib.translate[evt.skill]}[${evt.skill}]`;
-				else str += "\nskill: " + evt.skill;
+				if (lib.translate[evt.skill]) {
+					str += `\nskill: ${lib.translate[evt.skill]}[${evt.skill}]`;
+				} else {
+					str += "\nskill: " + evt.skill;
+				}
 			}
 			if (evt.card) {
-				if (lib.translate[evt.card.name]) str += `\ncard: ${lib.translate[evt.card.name]}[${evt.card.name}]`;
-				else str += "\ncard: " + evt.card.name;
+				if (lib.translate[evt.card.name]) {
+					str += `\ncard: ${lib.translate[evt.card.name]}[${evt.card.name}]`;
+				} else {
+					str += "\ncard: " + evt.card.name;
+				}
 			}
 		}
 		str += "\n-------------";
 		const errorReporter = ErrorManager.getErrorReporter(err);
-		if (errorReporter) game.print(errorReporter.report(str + "\n代码出现错误"));
-		else {
+		if (errorReporter) {
+			game.print(errorReporter.report(str + "\n代码出现错误"));
+		} else {
 			if (typeof line == "number" && (typeof Reflect.get(game, "readFile") == "function" || location.origin != "file://")) {
 				/**
 				 * @param { string[] } lines 代码分割行数
@@ -999,7 +1170,7 @@ async function setOnError() {
 						return false;
 					})
 				) {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const codes = _status.event.content.originals[_status.event.step];
 					if (typeof codes == "function") {
 						const regex = /<anonymous>:(\d+):\d+/;
@@ -1022,7 +1193,9 @@ async function setOnError() {
 					}
 				}
 			}
-			if (err && err.stack) str += "\n" + decodeURI(err.stack).replace(new RegExp(lib.assetURL, "g"), "").replace(new RegExp(winPath, "g"), "");
+			if (err && err.stack) {
+				str += "\n" + decodeURI(err.stack).replace(new RegExp(lib.assetURL, "g"), "").replace(new RegExp(winPath, "g"), "");
+			}
 			alert(str);
 			game.print(str);
 		}
@@ -1031,7 +1204,9 @@ async function setOnError() {
 		Reflect.set(window, "el", line);
 		Reflect.set(window, "ec", column);
 		Reflect.set(window, "eo", err);
-		if (promiseErrorHandler.onErrorFinish) promiseErrorHandler.onErrorFinish();
+		if (promiseErrorHandler.onErrorFinish) {
+			promiseErrorHandler.onErrorFinish();
+		}
 	};
 
 	return promiseErrorHandler;
@@ -1052,7 +1227,9 @@ function setWindowListener() {
 						if (onlineKey) {
 							localStorage.setItem(lib.configprefix + "key", onlineKey);
 						}
-						if (indexedDB) indexedDB.deleteDatabase(lib.configprefix + "data");
+						if (indexedDB) {
+							indexedDB.deleteDatabase(lib.configprefix + "data");
+						}
 						game.reload();
 						return;
 					}
@@ -1073,7 +1250,7 @@ function setWindowListener() {
 			game.closePopped();
 			var dialogs = document.querySelectorAll("#window>.dialog.popped:not(.static)");
 			for (var i = 0; i < dialogs.length; i++) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				dialogs[i].delete();
 			}
 			if (e.keyCode == 32) {
@@ -1084,7 +1261,9 @@ function setWindowListener() {
 					ui.click.pause();
 				}
 			} else if (e.keyCode == 65) {
-				if (typeof ui.auto != "undefined") ui.auto.click();
+				if (typeof ui.auto != "undefined") {
+					ui.auto.click();
+				}
 			} else if (e.keyCode == 87) {
 				if (typeof ui.wuxie != "undefined" && ui.wuxie.style.display != "none") {
 					ui.wuxie.classList.toggle("glow");
@@ -1103,7 +1282,9 @@ function setWindowListener() {
 						if (onlineKey) {
 							localStorage.setItem(lib.configprefix + "key", onlineKey);
 						}
-						if (indexedDB) indexedDB.deleteDatabase(lib.configprefix + "data");
+						if (indexedDB) {
+							indexedDB.deleteDatabase(lib.configprefix + "data");
+						}
 						game.reload();
 						return;
 					}

@@ -134,7 +134,9 @@ export default () => {
 					var cardDialog = ui.create.cardDialog(
 						true,
 						function (name) {
-							if (lib.card[name].stonehidden) return true;
+							if (lib.card[name].stonehidden) {
+								return true;
+							}
 							var type = lib.card[name].type;
 							return type != "stonecard" && type != "stonecharacter";
 						},
@@ -245,7 +247,9 @@ export default () => {
 						updateCardDialog();
 					};
 					var clickButton = function () {
-						if (!deckContainer.classList.contains("shown")) return;
+						if (!deckContainer.classList.contains("shown")) {
+							return;
+						}
 						if (!this.classList.contains("unselectable")) {
 							var card = ui.create.card(null, "noclick").init(this.link).listen(clickCard);
 							deckContainer.insertBefore(card, deckContainer.firstChild);
@@ -320,8 +324,12 @@ export default () => {
 									editing.content.deck.push(deckContainer.childNodes[i].name);
 								}
 								editing.content.deck.sort(function (a, b) {
-									if (a > b) return 1;
-									if (a < b) return -1;
+									if (a > b) {
+										return 1;
+									}
+									if (a < b) {
+										return -1;
+									}
 									return 0;
 								});
 								if (editing.origin) {
@@ -357,7 +365,9 @@ export default () => {
 					if (ui.deckcontrol) {
 						ui.deckcontrol.show();
 						setTimeout(function () {
-							if (ui.deckcontrol) ui.deckcontrol.style.transition = "";
+							if (ui.deckcontrol) {
+								ui.deckcontrol.style.transition = "";
+							}
 						}, 500);
 					}
 				};
@@ -365,7 +375,9 @@ export default () => {
 				ui.deckcontrol = ui.create.system(
 					"卡组管理",
 					function () {
-						if (this.classList.contains("hidden")) return;
+						if (this.classList.contains("hidden")) {
+							return;
+						}
 						// if(lib.config.low_performance){
 						// 	ui.arena.style.transform='translateY('+ui.window.offsetHeight+'px)';
 						// }
@@ -644,8 +656,12 @@ export default () => {
 					}
 				},
 				changeRage: function (num) {
-					if (_status.mode != "deck") return;
-					if (!_status.rageEnabled) return;
+					if (_status.mode != "deck") {
+						return;
+					}
+					if (!_status.rageEnabled) {
+						return;
+					}
 					var popup = null;
 					if (this.side == game.me.side) {
 						if (_status.friendRage < 100) {
@@ -766,7 +782,9 @@ export default () => {
 				},
 				hasFellowSkill: function (skill, exclude) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (exclude && game.players[i] == this) continue;
+						if (exclude && game.players[i] == this) {
+							continue;
+						}
 						if (game.players[i].hasSkill(skill) && game.players[i].side == this.side) {
 							return true;
 						}
@@ -776,7 +794,9 @@ export default () => {
 				countFellowSkill: function (skill, exclude) {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
-						if (exclude && game.players[i] == this) continue;
+						if (exclude && game.players[i] == this) {
+							continue;
+						}
 						if (game.players[i].hasSkill(skill) && game.players[i].side == this.side) {
 							num++;
 						}
@@ -784,10 +804,16 @@ export default () => {
 					return num;
 				},
 				canAddFellow: function () {
-					if (!this.actcharacterlist) return false;
-					if (this.actcharacterlist.length < 4) return true;
+					if (!this.actcharacterlist) {
+						return false;
+					}
+					if (this.actcharacterlist.length < 4) {
+						return true;
+					}
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i] === null) return true;
+						if (this.actcharacterlist[i] === null) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -822,9 +848,13 @@ export default () => {
 					return this.side != game.me.side ? game.me : game.enemy;
 				},
 				hasFellow: function () {
-					if (!this.actcharacterlist) return false;
+					if (!this.actcharacterlist) {
+						return false;
+					}
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i]) return true;
+						if (this.actcharacterlist[i]) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -846,15 +876,21 @@ export default () => {
 					return list;
 				},
 				countFellow: function () {
-					if (!this.actcharacterlist) return 0;
+					if (!this.actcharacterlist) {
+						return 0;
+					}
 					var num = 0;
 					for (var i = 0; i < this.actcharacterlist.length; i++) {
-						if (this.actcharacterlist[i]) num++;
+						if (this.actcharacterlist[i]) {
+							num++;
+						}
 					}
 					return num;
 				},
 				addFellow: function (fellow) {
-					if (!this.actcharacterlist) return this;
+					if (!this.actcharacterlist) {
+						return this;
+					}
 					var i;
 					for (i = 0; i < this.actcharacterlist.length; i++) {
 						if (this.actcharacterlist[i] === null) {
@@ -876,7 +912,9 @@ export default () => {
 					next.setContent("addFellowAuto");
 				},
 				removeFellow: function (fellow) {
-					if (!this.actcharacterlist) return this;
+					if (!this.actcharacterlist) {
+						return this;
+					}
 					var index = this.actcharacterlist.indexOf(fellow);
 					if (index >= 0) {
 						this.actcharacterlist[index] = null;
@@ -1153,192 +1191,1586 @@ export default () => {
 		},
 		characterPack: {
 			mode_stone: {
-				stone_tutengyongshi: ["male", "wei", 4, ["shaman_jili"], ["minskin", "stone"], [4, 2, "shaman"]],
-				stone_xuejuren: ["male", "wei", 2, ["shaman_xueju"], ["minskin", "stone"], [1, 1, "shaman"]],
-				stone_tuyuansu: ["male", "qun", 5, ["lschaofeng"], ["minskin", "stone"], [5, 4, "shaman"]],
-				stone_huoyuansu: ["male", "shu", 3, ["shaman_huoxi"], ["minskin", "stone"], [4, 3, "shaman"]],
-				stone_fachao: ["male", "wei", 3, ["shaman_tuteng", "shaman_fachao"], ["minskin", "stone"], [3, 0, "shaman"]],
-				stone_huoshe: ["male", "shu", 3, ["shaman_tuteng", "shaman_huoshe"], ["minskin", "stone"], [3, 0, "shaman"]],
-				stone_huoli: ["male", "wei", 3, ["shaman_tuteng", "shaman_huoli"], ["minskin", "stone"], [2, 0, "shaman"]],
-				stone_huoyanweishi: ["male", "shu", 4, ["shaman_zhuhuo"], ["minskin", "stone"], [4, 1, "shaman"]],
-				stone_tutengshi: ["female", "wei", 2, ["shaman_peiyu"], ["minskin", "stone"], [3, 3, "shaman"]],
-				stone_shachuisaman: ["male", "qun", 3, ["shaman_fengnu"], ["minskin", "stone"], [4, 4, "shaman"]],
-				stone_wanshiyuansu: ["male", "qun", 3, ["shaman_zoushi"], ["minskin", "stone"], [3, 1, "shaman"]],
-				stone_shalinxingzhe: ["male", "qun", 4, ["shaman_anhun"], ["minskin", "stone"], [4, 2, "shaman"]],
+				stone_tutengyongshi: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["shaman_jili"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "shaman"],
+				},
+				stone_xuejuren: {
+					sex: "male",
+					group: "wei",
+					hp: 2,
+					skills: ["shaman_xueju"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "shaman"],
+				},
+				stone_tuyuansu: {
+					sex: "male",
+					group: "qun",
+					hp: 5,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "shaman"],
+				},
+				stone_huoyuansu: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["shaman_huoxi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "shaman"],
+				},
+				stone_fachao: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["shaman_tuteng", "shaman_fachao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 0, "shaman"],
+				},
+				stone_huoshe: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["shaman_tuteng", "shaman_huoshe"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 0, "shaman"],
+				},
+				stone_huoli: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["shaman_tuteng", "shaman_huoli"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 0, "shaman"],
+				},
+				stone_huoyanweishi: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["shaman_zhuhuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 1, "shaman"],
+				},
+				stone_tutengshi: {
+					sex: "female",
+					group: "wei",
+					hp: 2,
+					skills: ["shaman_peiyu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "shaman"],
+				},
+				stone_shachuisaman: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["shaman_fengnu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "shaman"],
+				},
+				stone_wanshiyuansu: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["shaman_zoushi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "shaman"],
+				},
+				stone_shalinxingzhe: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["shaman_anhun"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "shaman"],
+				},
 
-				stone_kuangyedoushi: ["male", "wu", 3, ["druid_nuhuo"], ["minskin", "stone"], [4, 2, "druid"]],
-				stone_conglinshouwei: ["male", "wu", 3, ["druid_huwei"], ["minskin", "stone"], [4, 2, "druid"]],
-				stone_baohuzhishu: ["male", "qun", 6, ["lschaofeng"], ["minskin", "stone"], [6, 4, "druid"]],
-				stone_liebao: ["male", "wei", 3, ["stone_chongfeng"], ["minskin", "stone"], [3, 2, "druid"]],
-				stone_zongxiong: ["male", "shu", 4, ["lschaofeng"], ["minskin", "stone"], [4, 2, "druid"]],
-				stone_baoqishi: ["female", "wei", 2, ["druid_chengzhang"], ["minskin", "stone"], [2, 2, "druid"]],
-				stone_renyaqishi: ["female", "wei", 1, ["druid_renya"], ["minskin", "stone"], [1, 1, "druid"]],
-				stone_huangyeqishi: ["male", "wei", 4, ["druid_chicheng"], ["minskin", "stone"], [5, 2, "druid"]],
-				stone_huoshanxiemu: ["male", "wei", 3, ["druid_juhuo", "lschaofeng"], ["minskin", "stone"], [5, 6, "druid"]],
-				stone_conglinxiaoshou: ["male", "wei", 3, ["druid_yuehuo"], ["minskin", "stone"], [4, 4, "druid"]],
-				stone_lindishuyao: ["female", "wei", 3, ["druid_yeyou"], ["minskin", "stone"], [3, 3, "druid"]],
-				stone_xunmenglong: ["male", "wei", 2, ["druid_qicheng"], ["minskin", "stone"], [3, 3, "druid"]],
+				stone_kuangyedoushi: {
+					sex: "male",
+					group: "wu",
+					hp: 3,
+					skills: ["druid_nuhuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "druid"],
+				},
+				stone_conglinshouwei: {
+					sex: "male",
+					group: "wu",
+					hp: 3,
+					skills: ["druid_huwei"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "druid"],
+				},
+				stone_baohuzhishu: {
+					sex: "male",
+					group: "qun",
+					hp: 6,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [6, 4, "druid"],
+				},
+				stone_liebao: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "druid"],
+				},
+				stone_zongxiong: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "druid"],
+				},
+				stone_baoqishi: {
+					sex: "female",
+					group: "wei",
+					hp: 2,
+					skills: ["druid_chengzhang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "druid"],
+				},
+				stone_renyaqishi: {
+					sex: "female",
+					group: "wei",
+					hp: 1,
+					skills: ["druid_renya"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "druid"],
+				},
+				stone_huangyeqishi: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["druid_chicheng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 2, "druid"],
+				},
+				stone_huoshanxiemu: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["druid_juhuo", "lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 6, "druid"],
+				},
+				stone_conglinxiaoshou: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["druid_yuehuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "druid"],
+				},
+				stone_lindishuyao: {
+					sex: "female",
+					group: "wei",
+					hp: 3,
+					skills: ["druid_yeyou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "druid"],
+				},
+				stone_xunmenglong: {
+					sex: "male",
+					group: "wei",
+					hp: 2,
+					skills: ["druid_qicheng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "druid"],
+				},
 
-				stone_caoyuanshi: ["male", "qun", 5, ["hunter_nuhou"], ["minskin", "stone"], [5, 2, "hunter"]],
-				stone_leiouke: ["male", "shu", 2, ["hunter_zhanhuo"], ["minskin", "stone"], [3, 1, "hunter"]],
-				stone_huofu: ["male", "qun", 2, ["stone_chongfeng"], ["minskin", "stone"], [3, 4, "hunter"]],
-				stone_misha: ["male", "shu", 3, ["lschaofeng"], ["minskin", "stone"], [3, 3, "hunter"]],
-				stone_jiewangzhu: ["male", "wu", 1, ["hunter_jiewang"], ["minskin", "stone"], [1, 2, "hunter"]],
-				stone_xunshoushi: ["male", "qun", 2, ["hunter_xunshou"], ["minskin", "stone"], [4, 3, "hunter"]],
-				stone_senlinlang: ["male", "qun", 1, ["hunter_qunxi"], ["minskin", "stone"], [1, 2, "hunter"]],
-				stone_tujiu: ["male", "qun", 3, ["hunter_mishi"], ["minskin", "stone"], [3, 2, "hunter"]],
-				stone_muyangren: ["male", "qun", 3, ["hunter_muyang"], ["minskin", "stone"], [4, 3, "hunter"]],
-				stone_jujishou: ["male", "qun", 2, ["hunter_juji"], ["minskin", "stone"], [2, 2, "hunter"]],
-				stone_damoshatuo: ["male", "qun", 3, ["hunter_dusha"], ["minskin", "stone"], [3, 3, "hunter"]],
-				stone_huangjialeixiang: ["male", "qun", 2, ["hunter_chuanlin"], ["minskin", "stone"], [2, 3, "hunter"]],
+				stone_caoyuanshi: {
+					sex: "male",
+					group: "qun",
+					hp: 5,
+					skills: ["hunter_nuhou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 2, "hunter"],
+				},
+				stone_leiouke: {
+					sex: "male",
+					group: "shu",
+					hp: 2,
+					skills: ["hunter_zhanhuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "hunter"],
+				},
+				stone_huofu: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 4, "hunter"],
+				},
+				stone_misha: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "hunter"],
+				},
+				stone_jiewangzhu: {
+					sex: "male",
+					group: "wu",
+					hp: 1,
+					skills: ["hunter_jiewang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2, "hunter"],
+				},
+				stone_xunshoushi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["hunter_xunshou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "hunter"],
+				},
+				stone_senlinlang: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["hunter_qunxi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2, "hunter"],
+				},
+				stone_tujiu: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["hunter_mishi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "hunter"],
+				},
+				stone_muyangren: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["hunter_muyang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "hunter"],
+				},
+				stone_jujishou: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["hunter_juji"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "hunter"],
+				},
+				stone_damoshatuo: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["hunter_dusha"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "hunter"],
+				},
+				stone_huangjialeixiang: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["hunter_chuanlin"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 3, "hunter"],
+				},
 
-				stone_shuiyuansu: ["male", "wei", 4, ["mage_bingdong"], ["minskin", "stone"], [4, 2, "mage"]],
-				stone_wushixuetu: ["female", "wu", 1, ["mage_zhufa"], ["minskin", "stone"], [1, 2, "mage"]],
-				stone_huoyao: ["male", "shu", 3, ["mage_lieyan"], ["minskin", "stone"], [3, 1, "mage"]],
-				stone_falifulong: ["male", "shu", 2, ["mage_tunfa"], ["minskin", "stone"], [1, 1, "mage"]],
-				stone_yingxiongzhihun: ["male", "wei", 1, ["mage_minghuo"], ["minskin", "stone"], [1, 2, "mage"]],
-				stone_shifazhe: ["male", "qun", 3, ["mage_shifa"], ["minskin", "stone"], [3, 3, "mage"]],
-				stone_aoshushi: ["male", "qun", 3, ["mage_aoshu"], ["minskin", "stone"], [3, 2, "mage"]],
-				stone_faqishi: ["male", "qun", 4, ["mage_jili"], ["minskin", "stone"], [4, 2, "mage"]],
-				stone_fuhuokaijia: ["male", "qun", 3, ["mage_gushou"], ["minskin", "stone"], [3, 3, "mage"]],
-				stone_kaodalalong: ["male", "qun", 4, ["mage_yufa"], ["minskin", "stone"], [5, 4, "mage"]],
-				stone_yanshushi: ["male", "qun", 2, ["mage_yanshu"], ["minskin", "stone"], [4, 4, "mage"]],
-				stone_xulingwushi: ["male", "qun", 2, ["mage_pingxu"], ["minskin", "stone"], [3, 3, "mage"]],
+				stone_shuiyuansu: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["mage_bingdong"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "mage"],
+				},
+				stone_wushixuetu: {
+					sex: "female",
+					group: "wu",
+					hp: 1,
+					skills: ["mage_zhufa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2, "mage"],
+				},
+				stone_huoyao: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["mage_lieyan"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "mage"],
+				},
+				stone_falifulong: {
+					sex: "male",
+					group: "shu",
+					hp: 2,
+					skills: ["mage_tunfa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "mage"],
+				},
+				stone_yingxiongzhihun: {
+					sex: "male",
+					group: "wei",
+					hp: 1,
+					skills: ["mage_minghuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2, "mage"],
+				},
+				stone_shifazhe: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["mage_shifa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "mage"],
+				},
+				stone_aoshushi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["mage_aoshu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "mage"],
+				},
+				stone_faqishi: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["mage_jili"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "mage"],
+				},
+				stone_fuhuokaijia: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["mage_gushou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "mage"],
+				},
+				stone_kaodalalong: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["mage_yufa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "mage"],
+				},
+				stone_yanshushi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["mage_yanshu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "mage"],
+				},
+				stone_xulingwushi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["mage_pingxu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "mage"],
+				},
 
-				stone_hudunren: ["male", "qun", 2, ["paladin_hudun"], ["minskin", "stone"], [2, 2, "paladin"]],
-				stone_junxuguan: ["male", "qun", 3, ["paladin_buji"], ["minskin", "stone"], [4, 1, "paladin"]],
-				stone_yurenqishi: ["male", "qun", 2, ["paladin_zhaochao"], ["minskin", "stone"], [4, 2, "paladin"]],
-				stone_chidunweishi: ["male", "qun", 3, ["paladin_chidun"], ["minskin", "stone"], [3, 2, "paladin"]],
-				stone_liewangshouwei: ["male", "qun", 5, ["paladin_shouwei"], ["minskin", "stone"], [5, 2, "paladin"]],
-				stone_longwangpeiou: ["female", "qun", 4, ["paladin_zhaohuan"], ["minskin", "stone"], [5, 4, "paladin"]],
-				stone_baoweizhe: ["male", "qun", 2, ["paladin_baowei"], ["minskin", "stone"], [2, 1, "paladin"]],
-				stone_guiqishi: ["male", "qun", 5, ["paladin_tuxi"], ["minskin", "stone"], [5, 4, "paladin"]],
-				stone_shenmiqishou: ["male", "qun", 4, ["paladin_miying"], ["minskin", "stone"], [5, 4, "paladin"]],
-				stone_shixiangweishi: ["female", "qun", 3, ["paladin_huashi"], ["minskin", "stone"], [3, 3, "paladin"]],
-				stone_xuefanzhanshi: ["male", "qun", 3, ["paladin_jinghua"], ["minskin", "stone"], [4, 4, "paladin"]],
-				stone_xunmashi: ["male", "qun", 3, ["paladin_moma"], ["minskin", "stone"], [3, 2, "paladin"]],
+				stone_hudunren: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["paladin_hudun"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "paladin"],
+				},
+				stone_junxuguan: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_buji"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 1, "paladin"],
+				},
+				stone_yurenqishi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["paladin_zhaochao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "paladin"],
+				},
+				stone_chidunweishi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_chidun"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "paladin"],
+				},
+				stone_liewangshouwei: {
+					sex: "male",
+					group: "qun",
+					hp: 5,
+					skills: ["paladin_shouwei"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 2, "paladin"],
+				},
+				stone_longwangpeiou: {
+					sex: "female",
+					group: "qun",
+					hp: 4,
+					skills: ["paladin_zhaohuan"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "paladin"],
+				},
+				stone_baoweizhe: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["paladin_baowei"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1, "paladin"],
+				},
+				stone_guiqishi: {
+					sex: "male",
+					group: "qun",
+					hp: 5,
+					skills: ["paladin_tuxi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "paladin"],
+				},
+				stone_shenmiqishou: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["paladin_miying"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "paladin"],
+				},
+				stone_shixiangweishi: {
+					sex: "female",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_huashi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "paladin"],
+				},
+				stone_xuefanzhanshi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_jinghua"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "paladin"],
+				},
+				stone_xunmashi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_moma"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "paladin"],
+				},
 
-				stone_lieyanxiaogui: ["male", "qun", 2, ["warlock_nonghuo"], ["minskin", "stone"], [1, 4, "warlock"]],
-				stone_xiaoguishouling: ["male", "qun", 3, ["warlock_zhaogui"], ["minskin", "stone"], [3, 1, "warlock"]],
-				stone_xiaogui: ["male", "qun", 1, [], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_kongjuzhanma: ["male", "qun", 1, ["warlock_yongsheng"], ["minskin", "stone"], [3, 1, "warlock"]],
-				stone_morishouwei: ["male", "qun", 4, ["stone_chongfeng", "warlock_zaihuo"], ["minskin", "stone"], [4, 4, "warlock"]],
-				stone_xukongxingzhe: ["male", "qun", 2, ["lschaofeng"], ["minskin", "stone"], [1, 1, "warlock"]],
-				stone_diyuhuo: ["male", "qun", 4, ["warlock_yuhuo"], ["minskin", "stone"], [5, 4, "warlock"]],
-				stone_diyuhuox: ["male", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 2, "warlock"]],
-				stone_heishitanfan: ["male", "qun", 2, ["warlock_anyu"], ["minskin", "stone"], [2, 2, "warlock"]],
-				stone_zhaohuanzhe: ["male", "qun", 3, ["warlock_zhaohuan"], ["minskin", "stone"], [4, 2, "warlock"]],
-				stone_meimo: ["male", "qun", 3, ["warlock_huanmeng"], ["minskin", "stone"], [2, 3, "warlock"]],
-				stone_tongkunvwang: ["male", "qun", 2, ["warlock_tongku"], ["minskin", "stone"], [2, 1, "warlock"]],
-				stone_xukongkongmo: ["male", "qun", 3, ["warlock_tunshi"], ["minskin", "stone"], [3, 3, "warlock"]],
-				stone_fukongmoyan: ["male", "qun", 4, ["warlock_shijie"], ["minskin", "stone"], [5, 4, "warlock"]],
+				stone_lieyanxiaogui: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warlock_nonghuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 4, "warlock"],
+				},
+				stone_xiaoguishouling: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["warlock_zhaogui"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "warlock"],
+				},
+				stone_xiaogui: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_kongjuzhanma: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["warlock_yongsheng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "warlock"],
+				},
+				stone_morishouwei: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_chongfeng", "warlock_zaihuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "warlock"],
+				},
+				stone_xukongxingzhe: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "warlock"],
+				},
+				stone_diyuhuo: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["warlock_yuhuo"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "warlock"],
+				},
+				stone_diyuhuox: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2, "warlock"],
+				},
+				stone_heishitanfan: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warlock_anyu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "warlock"],
+				},
+				stone_zhaohuanzhe: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["warlock_zhaohuan"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "warlock"],
+				},
+				stone_meimo: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["warlock_huanmeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 3, "warlock"],
+				},
+				stone_tongkunvwang: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warlock_tongku"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1, "warlock"],
+				},
+				stone_xukongkongmo: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["warlock_tunshi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "warlock"],
+				},
+				stone_fukongmoyan: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["warlock_shijie"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "warlock"],
+				},
 
-				stone_zhihuiguan: ["female", "qun", 2, ["warrior_tongling"], ["minskin", "stone"], [3, 2, "warrior"]],
-				stone_kuangzhanshi: ["male", "qun", 2, ["warrior_baoluan"], ["minskin", "stone"], [3, 1, "warrior"]],
-				stone_zhujiashi: ["male", "qun", 2, ["warrior_zhujia"], ["minskin", "stone"], [2, 1, "warrior"]],
-				stone_jiangong: ["male", "qun", 2, ["warrior_jiangong"], ["minskin", "stone"], [2, 2, "warrior"]],
-				stone_chidunshinv: ["female", "qun", 4, ["warrior_tidun"], ["minskin", "stone"], [5, 4, "warrior"]],
-				stone_yuanhou: ["male", "qun", 2, ["lschaofeng"], ["minskin", "stone"], [2, 3, "warrior"]],
-				stone_heiyaoyaoshou: ["male", "qun", 4, ["warrior_heiyao"], ["minskin", "stone"], [5, 4, "warrior"]],
-				stone_honglongyongshi: ["male", "qun", 2, ["warrior_fenyong"], ["minskin", "stone"], [2, 3, "warrior"]],
-				stone_peilianshi: ["male", "qun", 2, ["lschaofeng", "warrior_peilian"], ["minskin", "stone"], [2, 2, "warrior"]],
-				stone_jingyingweishi: ["male", "qun", 3, ["stone_chongfeng"], ["minskin", "stone"], [4, 3, "warrior"]],
-				stone_mengmaren: ["male", "qun", 3, ["warrior_chuanci"], ["minskin", "stone"], [4, 4, "warrior"]],
-				stone_zhifuzhe: ["male", "qun", 2, ["warrior_zhifu"], ["minskin", "stone"], [3, 1, "warrior"]],
+				stone_zhihuiguan: {
+					sex: "female",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_tongling"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "warrior"],
+				},
+				stone_kuangzhanshi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_baoluan"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "warrior"],
+				},
+				stone_zhujiashi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_zhujia"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1, "warrior"],
+				},
+				stone_jiangong: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_jiangong"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "warrior"],
+				},
+				stone_chidunshinv: {
+					sex: "female",
+					group: "qun",
+					hp: 4,
+					skills: ["warrior_tidun"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "warrior"],
+				},
+				stone_yuanhou: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 3, "warrior"],
+				},
+				stone_heiyaoyaoshou: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["warrior_heiyao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "warrior"],
+				},
+				stone_honglongyongshi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_fenyong"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 3, "warrior"],
+				},
+				stone_peilianshi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["lschaofeng", "warrior_peilian"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "warrior"],
+				},
+				stone_jingyingweishi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "warrior"],
+				},
+				stone_mengmaren: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["warrior_chuanci"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "warrior"],
+				},
+				stone_zhifuzhe: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["warrior_zhifu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1, "warrior"],
+				},
 
-				stone_daomufeizei: ["male", "qun", 3, ["rogue_xunbao"], ["minskin", "stone"], [4, 3, "rogue"]],
-				stone_qiezei: ["male", "qun", 2, ["rogue_touqie"], ["minskin", "stone"], [2, 2, "rogue"]],
-				stone_heitieairen: ["male", "qun", 2, ["rogue_qiancang"], ["minskin", "stone"], [4, 3, "rogue"]],
-				stone_tegong: ["male", "qun", 2, ["rogue_touxi"], ["minskin", "stone"], [3, 3, "rogue"]],
-				stone_haidaotoumu: ["male", "qun", 2, ["rogue_zhaomu"], ["minskin", "stone"], [2, 2, "rogue"]],
-				stone_haidao: ["male", "qun", 1, [], ["minskin", "stone", "stonehidden"], [1, 2, "rogue"]],
-				stone_cike: ["male", "qun", 1, ["rogue_cisha", "stone_qianxing"], ["minskin", "stone"], [1, 1, "rogue"]],
-				stone_duyanhaidao: ["male", "qun", 2, ["rogue_duxing"], ["minskin", "stone"], [3, 4, "rogue"]],
-				stone_gangtiewushi: ["male", "qun", 2, ["rogue_shoudao"], ["minskin", "stone"], [3, 2, "rogue"]],
-				stone_lifaji: ["male", "qun", 2, ["rogue_lifa"], ["minskin", "stone"], [2, 2, "rogue"]],
-				stone_shihualong: ["male", "qun", 1, ["rogue_fusheng"], ["minskin", "stone"], [3, 2, "rogue"]],
-				stone_xiushuihaidao: ["male", "qun", 1, ["rogue_jielue"], ["minskin", "stone"], [1, 2, "rogue"]],
-				stone_zousishangfan: ["male", "qun", 3, ["rogue_jiaoyi"], ["minskin", "stone"], [4, 3, "rogue"]],
+				stone_daomufeizei: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["rogue_xunbao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "rogue"],
+				},
+				stone_qiezei: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_touqie"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "rogue"],
+				},
+				stone_heitieairen: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_qiancang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "rogue"],
+				},
+				stone_tegong: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_touxi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 3, "rogue"],
+				},
+				stone_haidaotoumu: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_zhaomu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "rogue"],
+				},
+				stone_haidao: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 2, "rogue"],
+				},
+				stone_cike: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["rogue_cisha", "stone_qianxing"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "rogue"],
+				},
+				stone_duyanhaidao: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_duxing"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 4, "rogue"],
+				},
+				stone_gangtiewushi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_shoudao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "rogue"],
+				},
+				stone_lifaji: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["rogue_lifa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "rogue"],
+				},
+				stone_shihualong: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["rogue_fusheng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "rogue"],
+				},
+				stone_xiushuihaidao: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["rogue_jielue"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2, "rogue"],
+				},
+				stone_zousishangfan: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["rogue_jiaoyi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "rogue"],
+				},
 
-				stone_beijunmushi: ["male", "qun", 2, ["priest_shengliao"], ["minskin", "stone"], [1, 1, "priest"]],
-				stone_guanliyuan: ["male", "qun", 2, ["priest_faxian"], ["minskin", "stone"], [2, 1, "priest"]],
-				stone_linghunjisi: ["female", "qun", 4, ["priest_hunwu"], ["minskin", "stone"], [4, 2, "priest"]],
-				stone_heianjiaotu: ["male", "qun", 3, ["priest_zhufu"], ["minskin", "stone"], [3, 2, "priest"]],
-				stone_guangyaozhizi: ["male", "qun", 3, ["priest_guangyao"], ["minskin", "stone"], [5, 3, "priest"]],
-				stone_longmianjiaoguan: ["male", "qun", 2, ["priest_xundao"], ["minskin", "stone"], [2, 2, "priest"]],
-				stone_shengdianzhishi: ["male", "qun", 4, ["priest_puzhao"], ["minskin", "stone"], [5, 4, "priest"]],
-				stone_suoxiaojishi: ["male", "qun", 2, ["priest_suoxiao"], ["minskin", "stone"], [2, 2, "priest"]],
-				stone_anyingzisi: ["male", "qun", 3, ["priest_shixin"], ["minskin", "stone"], [4, 4, "priest"]],
-				stone_guangmingquan: ["male", "qun", 3, ["priest_shengshui"], ["minskin", "stone"], [2, 0, "priest"]],
-				stone_muguangchulong: ["male", "qun", 2, ["priest_muguang"], ["minskin", "stone"], [1, 1, "priest"]],
-				stone_shenshengyongshi: ["male", "qun", 3, ["priest_shengguang"], ["minskin", "stone"], [4, 3, "priest"]],
+				stone_beijunmushi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_shengliao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "priest"],
+				},
+				stone_guanliyuan: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_faxian"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1, "priest"],
+				},
+				stone_linghunjisi: {
+					sex: "female",
+					group: "qun",
+					hp: 4,
+					skills: ["priest_hunwu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 2, "priest"],
+				},
+				stone_heianjiaotu: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["priest_zhufu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2, "priest"],
+				},
+				stone_guangyaozhizi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["priest_guangyao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 3, "priest"],
+				},
+				stone_longmianjiaoguan: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_xundao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "priest"],
+				},
+				stone_shengdianzhishi: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["priest_puzhao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [5, 4, "priest"],
+				},
+				stone_suoxiaojishi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_suoxiao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2, "priest"],
+				},
+				stone_anyingzisi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["priest_shixin"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 4, "priest"],
+				},
+				stone_guangmingquan: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["priest_shengshui"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 0, "priest"],
+				},
+				stone_muguangchulong: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_muguang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1, "priest"],
+				},
+				stone_shenshengyongshi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["priest_shengguang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [4, 3, "priest"],
+				},
 
-				stone_zhongshi: ["male", "wei", 1, ["stone_zhongshi1"], ["minskin", "stone"], [1, 2]],
-				stone_zhucangzhe: ["male", "wei", 1, ["stone_zhucangzhe1"], ["minskin", "stone"], [1, 2]],
-				stone_huoqiangshou: ["male", "wei", 3, ["stone_huoqiangshou1"], ["minskin", "stone"], [3, 1]],
+				stone_zhongshi: {
+					sex: "male",
+					group: "wei",
+					hp: 1,
+					skills: ["stone_zhongshi1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_zhucangzhe: {
+					sex: "male",
+					group: "wei",
+					hp: 1,
+					skills: ["stone_zhucangzhe1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_huoqiangshou: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["stone_huoqiangshou1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1],
+				},
 
-				stone_lansaizhanshi: ["male", "shu", 1, ["stone_chongfeng"], ["minskin", "stone"], [1, 2]],
-				stone_kutongsiseng: ["male", "shu", 1, ["stone_kutongsiseng1"], ["minskin", "stone"], [1, 2]],
-				stone_yuanguanying: ["male", "shu", 3, ["stone_yuanguanying1"], ["minskin", "stone"], [3, 1]],
+				stone_lansaizhanshi: {
+					sex: "male",
+					group: "shu",
+					hp: 1,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_kutongsiseng: {
+					sex: "male",
+					group: "shu",
+					hp: 1,
+					skills: ["stone_kutongsiseng1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_yuanguanying: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["stone_yuanguanying1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1],
+				},
 
-				stone_dijieshicong: ["male", "wu", 2, ["stone_dijieshicong1"], ["minskin", "stone"], [1, 1]],
-				stone_yaosaishouwei: ["male", "wu", 2, ["stone_yaosaishouwei1"], ["minskin", "stone"], [1, 1]],
-				stone_famingjia: ["male", "wu", 3, ["stone_famingjia1"], ["minskin", "stone"], [3, 1]],
+				stone_dijieshicong: {
+					sex: "male",
+					group: "wu",
+					hp: 2,
+					skills: ["stone_dijieshicong1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_yaosaishouwei: {
+					sex: "male",
+					group: "wu",
+					hp: 2,
+					skills: ["stone_yaosaishouwei1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_famingjia: {
+					sex: "male",
+					group: "wu",
+					hp: 3,
+					skills: ["stone_famingjia1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1],
+				},
 
-				stone_chilundashi: ["male", "qun", 2, ["stone_chilundashi1"], ["minskin", "stone"], [1, 1]],
-				stone_hanguangzhizhe: ["male", "qun", 2, ["stone_hanguangzhizhe1"], ["minskin", "stone"], [2, 2]],
-				stone_aihaozhihun: ["male", "qun", 3, ["stone_aihaozhihun1"], ["minskin", "stone"], [3, 1]],
+				stone_chilundashi: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_chilundashi1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_hanguangzhizhe: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_hanguangzhizhe1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_aihaozhihun: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["stone_aihaozhihun1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1],
+				},
 
-				stone_fennuxiaoji: ["male", "qun", 1, ["stone_fennuxiaoji1"], ["minskin", "stone"], [1, 2]],
-				stone_juxingchanchu: ["male", "qun", 2, ["stone_juxingchanchu1"], ["minskin", "stone"], [2, 1]],
-				stone_wuyi: ["male", "qun", 1, ["jijiu"], ["minskin", "stone", "die:wuyi"], [2, 2]],
-				stone_langren: ["male", "qun", 1, ["stone_qianxing"], ["minskin", "stone"], [1, 2]],
-				stone_shishigui: ["male", "qun", 2, ["stone_shishigui1"], ["minskin", "stone"], [2, 1]],
+				stone_fennuxiaoji: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["stone_fennuxiaoji1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_juxingchanchu: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_juxingchanchu1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1],
+				},
+				stone_wuyi: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["jijiu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					dieAudios: ["wuyi"],
+					extraModeData: [2, 2],
+				},
+				stone_langren: {
+					sex: "male",
+					group: "qun",
+					hp: 1,
+					skills: ["stone_qianxing"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_shishigui: {
+					sex: "male",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_shishigui1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1],
+				},
 
-				stone_fatiaozhuru: ["female", "qun", 1, ["stone_fatiaozhuru1"], ["minskin", "stone"], [1, 2]],
-				stone_mingguangjisi: ["female", "wu", 2, ["shushen"], ["minskin", "stone"], [2, 1]],
-				stone_nianqingjisi: ["female", "wei", 2, ["stone_zhufu"], ["minskin", "stone"], [2, 1]],
-				stone_aomishouwei: ["female", "qun", 1, ["biyue"], ["minskin", "stone"], [2, 2]],
-				stone_yanjingshe: ["female", "qun", 2, ["stone_yanjingshe1"], ["minskin", "stone"], [3, 2]],
-				stone_zhiyuzhe: ["female", "qun", 3, ["stone_zhiyu"], ["minskin", "stone"], [3, 1]],
-				stone_mafengzhuru: ["female", "qun", 1, ["stone_mafengzhuru1"], ["minskin", "stone"], [1, 2]],
+				stone_fatiaozhuru: {
+					sex: "female",
+					group: "qun",
+					hp: 1,
+					skills: ["stone_fatiaozhuru1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_mingguangjisi: {
+					sex: "female",
+					group: "wu",
+					hp: 2,
+					skills: ["shushen"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1],
+				},
+				stone_nianqingjisi: {
+					sex: "female",
+					group: "wei",
+					hp: 2,
+					skills: ["stone_zhufu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 1],
+				},
+				stone_aomishouwei: {
+					sex: "female",
+					group: "qun",
+					hp: 1,
+					skills: ["biyue"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_yanjingshe: {
+					sex: "female",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_yanjingshe1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 2],
+				},
+				stone_zhiyuzhe: {
+					sex: "female",
+					group: "qun",
+					hp: 3,
+					skills: ["stone_zhiyu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [3, 1],
+				},
+				stone_mafengzhuru: {
+					sex: "female",
+					group: "qun",
+					hp: 1,
+					skills: ["stone_mafengzhuru1"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					extraModeData: [1, 2],
+				},
 
-				stone_shumiao: ["none", "wu", 1, [], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_shuren: ["none", "wu", 2, ["stone_chongfeng", "stone_zibao"], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_shurenx: ["none", "wu", 2, [], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_shurenxx: ["none", "wu", 2, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_youlinglang: ["none", "qun", 2, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_xiaojingling: ["none", "qun", 1, ["xuying"], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_zhumo: ["none", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 2]],
-				stone_jingxiang: ["none", "qun", 2, ["stone_jingxiang", "lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 0]],
-				stone_shengguanghuwei: ["female", "qun", 2, ["priest_shengguang"], ["minskin", "stone", "stonehidden"], [1, 1]],
-				stone_liegou: ["none", "qun", 1, ["stone_chongfeng"], ["minskin", "stone", "stonehidden"], [1, 2]],
-				stone_mianyang: ["none", "qun", 1, ["mage_mianyang"], ["minskin", "stone", "stonehidden"], [1, 0]],
-				stone_qingwa: ["none", "wu", 1, ["shaman_qingwa"], ["minskin", "stone", "stonehidden"], [1, 0]],
-				stone_shengjiachong: ["none", "qun", 1, ["lschaofeng"], ["minskin", "stone", "stonehidden"], [1, 1]],
+				stone_shumiao: {
+					sex: "none",
+					group: "wu",
+					hp: 1,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_shuren: {
+					sex: "none",
+					group: "wu",
+					hp: 2,
+					skills: ["stone_chongfeng", "stone_zibao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_shurenx: {
+					sex: "none",
+					group: "wu",
+					hp: 2,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_shurenxx: {
+					sex: "none",
+					group: "wu",
+					hp: 2,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_youlinglang: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_xiaojingling: {
+					sex: "none",
+					group: "qun",
+					hp: 1,
+					skills: ["xuying"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_zhumo: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 2],
+				},
+				stone_jingxiang: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["stone_jingxiang", "lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
+				stone_shengguanghuwei: {
+					sex: "female",
+					group: "qun",
+					hp: 2,
+					skills: ["priest_shengguang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 1],
+				},
+				stone_liegou: {
+					sex: "none",
+					group: "qun",
+					hp: 1,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 2],
+				},
+				stone_mianyang: {
+					sex: "none",
+					group: "qun",
+					hp: 1,
+					skills: ["mage_mianyang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 0],
+				},
+				stone_qingwa: {
+					sex: "none",
+					group: "wu",
+					hp: 1,
+					skills: ["shaman_qingwa"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 0],
+				},
+				stone_shengjiachong: {
+					sex: "none",
+					group: "qun",
+					hp: 1,
+					skills: ["lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [1, 1],
+				},
 
-				stone_tuteng1: ["none", "qun", 2, ["shaman_tuteng", "lschaofeng"], ["minskin", "stone", "stonehidden"], [2, 0]],
-				stone_tuteng2: ["none", "qun", 2, ["shaman_tuteng", "shaman_zhuore"], ["minskin", "stone", "stonehidden"], [2, 0]],
-				stone_tuteng3: ["none", "qun", 2, ["shaman_tuteng", "shaman_fali"], ["minskin", "stone", "stonehidden"], [2, 0]],
-				stone_tuteng4: ["none", "qun", 2, ["shaman_tuteng", "shaman_zhiliao"], ["minskin", "stone", "stonehidden"], [2, 0]],
-				stone_xinbing: ["none", "qun", 2, [], ["minskin", "stone", "stonehidden"], [2, 0]],
+				stone_tuteng1: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["shaman_tuteng", "lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
+				stone_tuteng2: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["shaman_tuteng", "shaman_zhuore"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
+				stone_tuteng3: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["shaman_tuteng", "shaman_fali"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
+				stone_tuteng4: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: ["shaman_tuteng", "shaman_zhiliao"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
+				stone_xinbing: {
+					sex: "none",
+					group: "qun",
+					hp: 2,
+					skills: [],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					extraModeData: [2, 0],
+				},
 
-				stone_siwangzhiyi: ["male", "qun", 4, ["stone_mieshi"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
-				stone_alaikesita: ["female", "qun", 4, ["stone_fushi"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
-				stone_yisela: ["female", "qun", 4, ["stone_chenshui"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 2]],
-				stone_nuoziduomu: ["male", "qun", 4, ["stone_shixu"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 4]],
-				stone_maligousi: ["male", "qun", 4, ["stone_mowang"], ["minskin", "stone", "stonehidden", "stonelegend"], [6, 2]],
+				stone_siwangzhiyi: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_mieshi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend"],
+					extraModeData: [6, 4],
+				},
+				stone_alaikesita: {
+					sex: "female",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_fushi"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend"],
+					extraModeData: [6, 4],
+				},
+				stone_yisela: {
+					sex: "female",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_chenshui"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend"],
+					extraModeData: [6, 2],
+				},
+				stone_nuoziduomu: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_shixu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend"],
+					extraModeData: [6, 4],
+				},
+				stone_maligousi: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_mowang"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend"],
+					extraModeData: [6, 2],
+				},
 
-				stone_aolajier: ["male", "qun", 4, ["stone_chongfeng", "shaman_fengnu", "paladin_hudun", "lschaofeng"], ["minskin", "stone", "stonehidden", "stonelegend_shaman"], [6, 4]],
-				stone_andongni: ["male", "qun", 4, ["stone_zhiyin"], ["minskin", "stone", "stonehidden", "stonelegend_mage"], [6, 4]],
-				stone_jialakesi: ["male", "qun", 6, ["stone_bianshen"], ["minskin", "stone", "stonehidden", "stonelegend_warlock"], [6, 0]],
-				stone_jialakesix: ["male", "qun", 6, ["stone_lianyu"], ["modeimage", "stonehidden", "stonespecial"]],
-				stone_kelushi: ["male", "qun", 5, ["stone_chongfeng"], ["minskin", "stone", "stonehidden", "stonelegend_hunter"], [6, 5]],
-				stone_geluomashi: ["male", "qun", 4, ["stone_chongfeng", "stone_jinu"], ["minskin", "stone", "stonehidden", "stonelegend_warrior"], [6, 4]],
-				stone_aidewen: ["male", "qun", 3, ["stone_lianji"], ["minskin", "stone", "stonehidden", "stonelegend_rogue"], [6, 3]],
-				stone_sainaliusi: ["male", "qun", 3, ["stone_shenyu"], ["minskin", "stone", "stonehidden", "stonelegend_druid"], [6, 3]],
-				stone_fuding: ["male", "qun", 3, ["paladin_hudun", "lschaofeng", "stone_fuchou"], ["minskin", "stone", "stonehidden", "stonelegend_paladin"], [6, 3]],
-				stone_weilun: ["male", "qun", 4, ["stone_shenyou"], ["minskin", "stone", "stonehidden", "stonelegend_priest"], [6, 6]],
+				stone_aolajier: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_chongfeng", "shaman_fengnu", "paladin_hudun", "lschaofeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_shaman"],
+					extraModeData: [6, 4],
+				},
+				stone_andongni: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_zhiyin"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_mage"],
+					extraModeData: [6, 4],
+				},
+				stone_jialakesi: {
+					sex: "male",
+					group: "qun",
+					hp: 6,
+					skills: ["stone_bianshen"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_warlock"],
+					extraModeData: [6, 0],
+				},
+				stone_jialakesix: {
+					sex: "male",
+					group: "qun",
+					hp: 6,
+					skills: ["stone_lianyu"],
+					trashBin: ["modeimage"],
+					isHiddenInStoneMode: true,
+					isSpecialInStoneMode: true,
+				},
+				stone_kelushi: {
+					sex: "male",
+					group: "qun",
+					hp: 5,
+					skills: ["stone_chongfeng"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_hunter"],
+					extraModeData: [6, 5],
+				},
+				stone_geluomashi: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_chongfeng", "stone_jinu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_warrior"],
+					extraModeData: [6, 4],
+				},
+				stone_aidewen: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["stone_lianji"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_rogue"],
+					extraModeData: [6, 3],
+				},
+				stone_sainaliusi: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["stone_shenyu"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_druid"],
+					extraModeData: [6, 3],
+				},
+				stone_fuding: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["paladin_hudun", "lschaofeng", "stone_fuchou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_paladin"],
+					extraModeData: [6, 3],
+				},
+				stone_weilun: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["stone_shenyou"],
+					isMinskin: true,
+					isFellowInStoneMode: true,
+					isHiddenInStoneMode: true,
+					trashBin: ["stonelegend_priest"],
+					extraModeData: [6, 6],
+				},
 			},
 		},
 		careerList: ["mage", "shaman", "druid", "paladin", "rogue", "priest", "hunter", "warrior", "warlock"],
@@ -1346,7 +2778,9 @@ export default () => {
 			reserveDead: true,
 			bannedcards: ["lebu", "guiyoujie", "xietianzi", "lingjiandai", "jiguanshu", "sifeizhenmian", "fengxueren", "chuansongmen"],
 			onwash: function () {
-				if (_status.mode != "deck") return;
+				if (_status.mode != "deck") {
+					return;
+				}
 				var list = [];
 				for (var i = 0; i < ui.discardPile.childElementCount; i++) {
 					var type = get.type(ui.discardPile.childNodes[i]);
@@ -1408,7 +2842,9 @@ export default () => {
 				var i, j, name;
 				for (var i in lib.characterPack.mode_stone) {
 					lib.character[i] = lib.characterPack.mode_stone[i];
-					if (lib.character[i].isSpecialInStoneMode) continue;
+					if (lib.character[i].isSpecialInStoneMode) {
+						continue;
+					}
 					lib.character[i].skills.add("stonesha");
 					lib.character[i].skills.add("stoneshan");
 					lib.character[i].skills.add("stonedraw");
@@ -1441,7 +2877,9 @@ export default () => {
 					lib.spells = [];
 					var spells = lib.cardPack.mode_stone;
 					for (var i = 0; i < spells.length; i++) {
-						if (lib.card[spells[i]].stonehidden) continue;
+						if (lib.card[spells[i]].stonehidden) {
+							continue;
+						}
 						if (lib.card[spells[i]].career) {
 							list4[lib.card[spells[i]].career].push(spells[i]);
 						} else {
@@ -1490,8 +2928,8 @@ export default () => {
 				}
 
 				lib.skill._recasting.usable = 3;
-				for (i in lib.skill) {
-					if (lib.skill[i].seatRelated) {
+				for (var i in lib.skill) {
+					if (lib.skill[i].seatRelated === true) {
 						lib.skill[i] = {};
 						if (lib.translate[i + "_info"]) {
 							lib.translate[i + "_info"] = "此模式下不可用";
@@ -1523,10 +2961,18 @@ export default () => {
 					var list = [];
 					event.list = list;
 					for (i in lib.character) {
-						if (lib.character[i].isMinskin) continue;
-						if (lib.character[i].isHiddenInStoneMode) continue;
-						if (lib.config.forbidstone.includes(i)) continue;
-						if (lib.filter.characterDisabled(i)) continue;
+						if (lib.character[i].isMinskin) {
+							continue;
+						}
+						if (lib.character[i].isHiddenInStoneMode) {
+							continue;
+						}
+						if (lib.config.forbidstone.includes(i)) {
+							continue;
+						}
+						if (lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						list.push(i);
 					}
 					list.randomSort();
@@ -1540,7 +2986,9 @@ export default () => {
 						return (get.config("double_character") ? 2 : 1) * get.config("battle_number");
 					};
 					next.custom.add.button = function () {
-						if (ui.cheat2 && ui.cheat2.backup) return;
+						if (ui.cheat2 && ui.cheat2.backup) {
+							return;
+						}
 						_status.event.dialog.content.childNodes[0].innerHTML = "按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : "");
 						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
 					};
@@ -1617,8 +3065,12 @@ export default () => {
 							ui.cheat2.classList.add("disabled");
 						}
 					};
-					if (!ui.cheat && get.config("change_choice")) ui.create.cheat();
-					if (!ui.cheat2 && get.config("free_choose")) ui.create.cheat2();
+					if (!ui.cheat && get.config("change_choice")) {
+						ui.create.cheat();
+					}
+					if (!ui.cheat2 && get.config("free_choose")) {
+						ui.create.cheat2();
+					}
 					"step 1";
 					if (ui.cheat) {
 						ui.cheat.close();
@@ -1656,7 +3108,9 @@ export default () => {
 							var buttons = ui.create.div(".buttons", event.dialog.content);
 							var currentNode = null;
 							var clickButton = function (click) {
-								if (!event.choosingDeck) return;
+								if (!event.choosingDeck) {
+									return;
+								}
 								if (click !== false) {
 									_status.deck.push(this.name);
 								}
@@ -1751,11 +3205,21 @@ export default () => {
 			stonecard: function (type, career) {
 				var list = [];
 				for (var i in lib.card) {
-					if (lib.card[i].stonehidden) continue;
-					if (lib.card[i].type != "stonecard" && lib.card[i].type != "stonecharacter") continue;
-					if (type == 1 && lib.card[i].type != "stonecard") continue;
-					if (type == 2 && lib.card[i].type != "stonecharacter") continue;
-					if (career && lib.card[i].career != career) continue;
+					if (lib.card[i].stonehidden) {
+						continue;
+					}
+					if (lib.card[i].type != "stonecard" && lib.card[i].type != "stonecharacter") {
+						continue;
+					}
+					if (type == 1 && lib.card[i].type != "stonecard") {
+						continue;
+					}
+					if (type == 2 && lib.card[i].type != "stonecharacter") {
+						continue;
+					}
+					if (career && lib.card[i].career != career) {
+						continue;
+					}
 					list.push(i);
 				}
 				return list;
@@ -1775,8 +3239,12 @@ export default () => {
 					deck = lib.storage.deckList[name].deck.slice(0);
 				}
 				deck.sort(function (a, b) {
-					if (a > b) return 1;
-					if (a == b) return 0;
+					if (a > b) {
+						return 1;
+					}
+					if (a == b) {
+						return 0;
+					}
 					return -1;
 				});
 				player.deck = name;
@@ -1786,7 +3254,9 @@ export default () => {
 					player.node.career.dataset.career = career;
 					lib.setIntro(player.node.career, null, true);
 				}
-				if (!player.deckCards) player.deckCards = [];
+				if (!player.deckCards) {
+					player.deckCards = [];
+				}
 				for (var i = 0; i < deck.length; i++) {
 					player.deckCards.push(game.createCard(deck[i]));
 				}
@@ -1909,7 +3379,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player) {
-							if (player.getEnemy().countFellow() >= 2) return 1;
+							if (player.getEnemy().countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -2017,9 +3489,13 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (player.hujia >= 2) return -1.5;
+							if (player.hujia >= 2) {
+								return -1.5;
+							}
 							if (player.hujia == 1) {
-								if (player.hp > 3) return -1.5;
+								if (player.hp > 3) {
+									return -1.5;
+								}
 								return 0;
 							}
 							return 0;
@@ -2035,7 +3511,9 @@ export default () => {
 				fullimage: true,
 				enable: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -2107,7 +3585,9 @@ export default () => {
 					useful: 3,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 2;
+							if (target.isTurnedOver()) {
+								return 2;
+							}
 							return 1;
 						},
 					},
@@ -2119,7 +3599,9 @@ export default () => {
 				career: "warrior",
 				enable: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -2146,7 +3628,9 @@ export default () => {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 									num++;
-									if (num >= 2) return -1.5;
+									if (num >= 2) {
+										return -1.5;
+									}
 								}
 							}
 							return 0;
@@ -2347,7 +3831,9 @@ export default () => {
 					useful: 4,
 					result: {
 						player: function (player) {
-							if (player.countFellow() >= 2) return 1;
+							if (player.countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -2411,7 +3897,9 @@ export default () => {
 				career: "priest",
 				recastable: true,
 				enable: function (event, player) {
-					if (player.career != "priest") return false;
+					if (player.career != "priest") {
+						return false;
+					}
 					return !player.storage.anyingxingtai || player.storage.anyingxingtai < 2;
 				},
 				fullimage: true,
@@ -2487,7 +3975,9 @@ export default () => {
 				},
 				selectTarget: -1,
 				content: function () {
-					if (!player.canAddFellow()) return;
+					if (!player.canAddFellow()) {
+						return;
+					}
 					var deck = player.getEnemy().deckCards;
 					if (deck) {
 						var list = [];
@@ -2679,7 +4169,9 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.countCards("h")) return -2;
+							if (target.countCards("h")) {
+								return -2;
+							}
 							return -1.5;
 						},
 					},
@@ -2746,7 +4238,9 @@ export default () => {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].isMin() && game.players[i].side == player.side && !game.players[i].hasSkill("druid_conglinzhihun")) {
 									num++;
-									if (num >= 2) return 1;
+									if (num >= 2) {
+										return 1;
+									}
 								}
 							}
 							return 0;
@@ -2812,7 +4306,9 @@ export default () => {
 						event.finish();
 					} else {
 						player.chooseControl("获得行动值", "摸牌").ai = function () {
-							if (player.countCards("h") <= 1) return "摸牌";
+							if (player.countCards("h") <= 1) {
+								return "摸牌";
+							}
 							return "获得行动值";
 						};
 					}
@@ -2872,7 +4368,9 @@ export default () => {
 					value: 5,
 					result: {
 						target: function (player, target) {
-							if (target == player.getEnemy()) return -2;
+							if (target == player.getEnemy()) {
+								return -2;
+							}
 							return -1;
 						},
 					},
@@ -2930,7 +4428,9 @@ export default () => {
 					"step 1";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter") {
 							list.push(i);
 						}
@@ -3090,7 +4590,9 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hasFellow()) return -1;
+							if (target.hasFellow()) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -3231,7 +4733,9 @@ export default () => {
 					useful: 3,
 					result: {
 						target: function (player, target) {
-							if (target.hp <= 2) return 3 - target.hp;
+							if (target.hp <= 2) {
+								return 3 - target.hp;
+							}
 							return 0;
 						},
 					},
@@ -3365,8 +4869,12 @@ export default () => {
 					useful: 4,
 					result: {
 						target: function (player, target) {
-							if (target.hasSkill("shaman_tuteng")) return 0;
-							if (target.hp > 1) return target.hp;
+							if (target.hasSkill("shaman_tuteng")) {
+								return 0;
+							}
+							if (target.hp > 1) {
+								return target.hp;
+							}
 							return 0;
 						},
 					},
@@ -3390,12 +4898,16 @@ export default () => {
 					useful: 4,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 0;
+							if (target.isTurnedOver()) {
+								return 0;
+							}
 							var num = 0;
 							if (target.hasSkill("shaman_fengnu")) {
 								num = 3;
 							}
-							if (target.isMin()) return target.hp + num;
+							if (target.isMin()) {
+								return target.hp + num;
+							}
 							return 1.1;
 						},
 					},
@@ -3442,14 +4954,20 @@ export default () => {
 							var hs = player.getCards("h", function (card) {
 								return get.type(card) == "stonecharacter";
 							});
-							if (hs.length == 0) return 0;
+							if (hs.length == 0) {
+								return 0;
+							}
 							var enemy = player.getEnemy();
-							if (enemy.countCards("h") <= 1) return 1;
+							if (enemy.countCards("h") <= 1) {
+								return 1;
+							}
 							var num = 0;
 							for (var i = 0; i < hs.length; i++) {
 								num += get.info(hs[i]).stoneact;
 							}
-							if (num / hs.length >= 3) return 1;
+							if (num / hs.length >= 3) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -3537,7 +5055,9 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("priest_hunwu") || target.side != player.side) return true;
+					if (player.hasFellowSkill("priest_hunwu") || target.side != player.side) {
+						return true;
+					}
 					return target.isDamaged();
 				},
 				selectTarget: -1,
@@ -3562,8 +5082,12 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (player.hasFellowSkill("priest_hunwu")) return -1;
-							if (player.side == target.side) return 1;
+							if (player.hasFellowSkill("priest_hunwu")) {
+								return -1;
+							}
+							if (player.side == target.side) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -3699,7 +5223,9 @@ export default () => {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return 1;
 							}
-							if (target.hp < target.maxHp - 1) return 2;
+							if (target.hp < target.maxHp - 1) {
+								return 2;
+							}
 							return 0;
 						},
 						target: function (player, target) {
@@ -3842,9 +5368,15 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hp == 1) return -1;
-							if (target.hp >= 4) return 1.5;
-							if (target.hp >= 3 && target.countCards("h") < target.hp) return 1;
+							if (target.hp == 1) {
+								return -1;
+							}
+							if (target.hp >= 4) {
+								return 1.5;
+							}
+							if (target.hp >= 3 && target.countCards("h") < target.hp) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -3886,7 +5418,9 @@ export default () => {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin()) {
 							num++;
-							if (num >= 2) return true;
+							if (num >= 2) {
+								return true;
+							}
 						}
 					}
 					return false;
@@ -4106,8 +5640,12 @@ export default () => {
 					useful: 5,
 					result: {
 						target: function (player, target) {
-							if (target.hasSkill("warlock_yongsheng")) return 2;
-							if (target.hp == 1 && target.countCards("h") <= 2) return 1;
+							if (target.hasSkill("warlock_yongsheng")) {
+								return 2;
+							}
+							if (target.hp == 1 && target.countCards("h") <= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -4204,7 +5742,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player, target) {
-							if (player == target) return -10;
+							if (player == target) {
+								return -10;
+							}
 							var list = [];
 							var maxHp = 0;
 							for (var i = 0; i < game.players.length; i++) {
@@ -4215,9 +5755,15 @@ export default () => {
 									}
 								}
 							}
-							if (list.length < 2) return 0;
-							if (list.length == 2 && target.hp >= 4) return 0;
-							if (target.hp > maxHp) return 1;
+							if (list.length < 2) {
+								return 0;
+							}
+							if (list.length == 2 && target.hp >= 4) {
+								return 0;
+							}
+							if (target.hp > maxHp) {
+								return 1;
+							}
 							return target.hp;
 						},
 					},
@@ -4230,7 +5776,9 @@ export default () => {
 				stoneact: 0,
 				career: "warlock",
 				filterTarget: function (card, player, target) {
-					if (!target.isMin()) return false;
+					if (!target.isMin()) {
+						return false;
+					}
 					if (ui.selected.targets.length) {
 						return target.side != ui.selected.targets[0].side;
 					}
@@ -4274,7 +5822,9 @@ export default () => {
 					order: 6,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 1;
+							if (target.isTurnedOver()) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -4356,7 +5906,9 @@ export default () => {
 					useful: 5,
 					result: {
 						player: function (player) {
-							if (player.countFellow() >= 2) return 1;
+							if (player.countFellow() >= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -4417,7 +5969,9 @@ export default () => {
 					var list = [];
 					var bool = result.control == "法术牌";
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (bool) {
 							if (lib.card[i].type == "stonecard") {
 								list.push(i);
@@ -5250,7 +6804,9 @@ export default () => {
 					result: {
 						target: -1,
 						player: function (player) {
-							if (player.hp < player.maxHp) return 1;
+							if (player.hp < player.maxHp) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -5272,8 +6828,12 @@ export default () => {
 					order: 9.1,
 					result: {
 						target: function (player, target) {
-							if (target.hp > 1) return -1;
-							if (target.maxHp > 1) return -0.1;
+							if (target.hp > 1) {
+								return -1;
+							}
+							if (target.maxHp > 1) {
+								return -0.1;
+							}
 							return 0;
 						},
 					},
@@ -5283,7 +6843,9 @@ export default () => {
 				fullimage: true,
 				type: "stonecard",
 				enable: function (event, player) {
-					if (player.isMin()) return false;
+					if (player.isMin()) {
+						return false;
+					}
 					return player.canAddFellow();
 				},
 				stoneact: 6,
@@ -5311,7 +6873,9 @@ export default () => {
 				type: "stonecard",
 				fullimage: true,
 				enable: function (event, player) {
-					if (player.isMin()) return false;
+					if (player.isMin()) {
+						return false;
+					}
 					return player.canAddFellow();
 				},
 				stoneact: 4,
@@ -5349,7 +6913,9 @@ export default () => {
 					order: 7,
 					result: {
 						target: function (player, target) {
-							if (target.isTurnedOver()) return 1;
+							if (target.isTurnedOver()) {
+								return 1;
+							}
 							return -1;
 						},
 					},
@@ -5470,8 +7036,12 @@ export default () => {
 					event.cards = [targets[0].getCards("e"), targets[1].getCards("e")];
 					targets[0].lose(event.cards[0], ui.special);
 					targets[1].lose(event.cards[1], ui.special);
-					if (event.cards[0].length) targets[0].$give(event.cards[0], targets[1]);
-					if (event.cards[1].length) targets[1].$give(event.cards[1], targets[0]);
+					if (event.cards[0].length) {
+						targets[0].$give(event.cards[0], targets[1]);
+					}
+					if (event.cards[1].length) {
+						targets[1].$give(event.cards[1], targets[0]);
+					}
 					"step 1";
 					var targets = [player, target];
 					for (var i = 0; i < event.cards[1].length; i++) {
@@ -5496,8 +7066,12 @@ export default () => {
 								ne2 = player.countCards("e");
 							var nh1 = target.countCards("h"),
 								nh2 = player.countCards("h");
-							if (nh1 < nh2) nh1 = nh2;
-							if (ne2 - ne1 < nh1 - nh2 + ne1 - ne2) return -1;
+							if (nh1 < nh2) {
+								nh1 = nh2;
+							}
+							if (ne2 - ne1 < nh1 - nh2 + ne1 - ne2) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -5527,7 +7101,9 @@ export default () => {
 					useful: 1,
 					result: {
 						target: function (player, target) {
-							if (target.countCards("he") >= player.countCards("h")) return -1;
+							if (target.countCards("he") >= player.countCards("h")) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -5579,7 +7155,9 @@ export default () => {
 				unique: false,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -5708,17 +7286,25 @@ export default () => {
 				},
 				ai: {
 					threaten: function (player, target) {
-						if (target.hp < target.maxHp) return 2;
+						if (target.hp < target.maxHp) {
+							return 2;
+						}
 						return 0.5;
 					},
 					maixie: true,
 					effect: {
 						target: function (card, player, target) {
-							if (target.maxHp <= 3) return;
-							if (get.tag(card, "damage")) {
-								if (target.hp == target.maxHp) return [0, 1];
+							if (target.maxHp <= 3) {
+								return;
 							}
-							if (get.tag(card, "recover") && player.hp >= player.maxHp - 1) return [0, 0];
+							if (get.tag(card, "damage")) {
+								if (target.hp == target.maxHp) {
+									return [0, 1];
+								}
+							}
+							if (get.tag(card, "recover") && player.hp >= player.maxHp - 1) {
+								return [0, 0];
+							}
 						},
 					},
 				},
@@ -5763,7 +7349,9 @@ export default () => {
 					var next = target.chooseControl("召唤树人", "增强随从");
 					next.prompt = "召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌";
 					next.ai = function () {
-						if (target.countFellow() <= 2) return "召唤树人";
+						if (target.countFellow() <= 2) {
+							return "召唤树人";
+						}
 						return "增强随从";
 					};
 					"step 1";
@@ -5828,7 +7416,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter" || lib.card[i].type) {
 							if (lib.card[i].stoneact == 1) {
 								list.push(i);
@@ -5995,7 +7585,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) return true;
+						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6021,11 +7613,19 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					var target = event.player;
-					if (target.side == player.side) return false;
-					if (event.parent.name == "warrior_chuanci") return false;
-					if (!target.isMin()) return false;
+					if (target.side == player.side) {
+						return false;
+					}
+					if (event.parent.name == "warrior_chuanci") {
+						return false;
+					}
+					if (!target.isMin()) {
+						return false;
+					}
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != target && game.players[i].isMin() && game.players[i].side != player.side) return true;
+						if (game.players[i] != target && game.players[i].isMin() && game.players[i].side != player.side) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6060,7 +7660,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6088,7 +7690,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) return true;
+						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6098,11 +7702,19 @@ export default () => {
 					event.chooser.chooseTarget("缩小：令一名随从减少2点体力上限", function (card, playerx, target) {
 						return player != target && target.isMin() && target.maxHp > 1;
 					}).ai = function (target) {
-						if (get.attitude(player, target) >= 0) return 0;
-						if (target.hp == 1) return 0.01;
-						if (target.maxHp - target.hp >= 2) return 0.01;
+						if (get.attitude(player, target) >= 0) {
+							return 0;
+						}
+						if (target.hp == 1) {
+							return 0.01;
+						}
+						if (target.maxHp - target.hp >= 2) {
+							return 0.01;
+						}
 						if (target.maxHp - target.hp == 1) {
-							if (target.hp == 2) return 1;
+							if (target.hp == 2) {
+								return 1;
+							}
 							return 0.1;
 						}
 						switch (target.hp) {
@@ -6156,7 +7768,9 @@ export default () => {
 				forced: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) return true;
+						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+							return true;
+						}
 					}
 				},
 				content: function () {
@@ -6187,7 +7801,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -6503,7 +8119,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) return true;
+						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6534,7 +8152,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6604,7 +8224,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecard") {
 							list.push(i);
 						}
@@ -6623,7 +8245,9 @@ export default () => {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				filter: function (event, player) {
-					if (event.num <= 1) return false;
+					if (event.num <= 1) {
+						return false;
+					}
 					return event.player == player.getLeader();
 				},
 				priority: -11,
@@ -6758,7 +8382,9 @@ export default () => {
 				content: function () {
 					"step 0";
 					player.getLeader().chooseControl("冲锋", "潜行").ai = function () {
-						if (Math.random() < 0.5) return "潜行";
+						if (Math.random() < 0.5) {
+							return "潜行";
+						}
 						return "冲锋";
 					};
 					"step 1";
@@ -6843,7 +8469,9 @@ export default () => {
 				filter: function (event, player) {
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
-						if (fellows[i].hasSkill("shaman_tuteng")) return true;
+						if (fellows[i].hasSkill("shaman_tuteng")) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -6851,7 +8479,9 @@ export default () => {
 					var num = 0;
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
-						if (fellows[i].hasSkill("shaman_tuteng")) num++;
+						if (fellows[i].hasSkill("shaman_tuteng")) {
+							num++;
+						}
 					}
 					player.maxHp += num;
 					player.hp += num;
@@ -6974,7 +8604,9 @@ export default () => {
 				filter: function (event, player) {
 					for (var i = 0; i < event.cards.length; i++) {
 						if (get.position(event.cards[i]) == "d") {
-							if (event.cards[i].name == "spell_zhumo") return true;
+							if (event.cards[i].name == "spell_zhumo") {
+								return true;
+							}
 						}
 					}
 					return false;
@@ -6986,7 +8618,9 @@ export default () => {
 					event.num = 0;
 					for (var i = 0; i < trigger.cards.length; i++) {
 						if (get.position(trigger.cards[i]) == "d") {
-							if (trigger.cards[i].name == "spell_zhumo") event.num++;
+							if (trigger.cards[i].name == "spell_zhumo") {
+								event.num++;
+							}
 						}
 					}
 					event.target = player.getEnemy();
@@ -7061,7 +8695,9 @@ export default () => {
 				forced: true,
 				popup: false,
 				filter: function (event, player) {
-					if (!player.storage.shaman_xianzuzhihun) return false;
+					if (!player.storage.shaman_xianzuzhihun) {
+						return false;
+					}
 					return event.player.hasSkill("shaman_xianzuzhihun");
 				},
 				content: function () {
@@ -7137,7 +8773,9 @@ export default () => {
 					effect: {
 						target: function (card, player, target) {
 							if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
-								if (target.hp <= 2) return 0;
+								if (target.hp <= 2) {
+									return 0;
+								}
 							}
 						},
 					},
@@ -7225,7 +8863,9 @@ export default () => {
 				},
 				content: function () {
 					var num = lib.card[trigger.card.name].stoneact;
-					if (num > 3) num = 3;
+					if (num > 3) {
+						num = 3;
+					}
 					player.actused -= num;
 					player.updateActCount();
 					player.removeSkill("spell_sijidaifa");
@@ -7254,7 +8894,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -7263,7 +8905,9 @@ export default () => {
 			mage_mianyang: {
 				mod: {
 					cardEnabled: function (card) {
-						if (card.name == "sha") return false;
+						if (card.name == "sha") {
+							return false;
+						}
 					},
 				},
 				ai: {
@@ -7330,7 +8974,9 @@ export default () => {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecharacter") {
 							list.push(i);
 						}
@@ -7550,8 +9196,12 @@ export default () => {
 						return player != target && target.isMin();
 					}).ai = function (target) {
 						var att = get.attitude(event.chooser, target);
-						if (target.hp == 1) return -att;
-						if (target.hp == 2) return 0;
+						if (target.hp == 1) {
+							return -att;
+						}
+						if (target.hp == 2) {
+							return 0;
+						}
 						return att;
 					};
 					player.line(event.chooser);
@@ -7772,7 +9422,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player) return true;
+						if (game.players[i].side == player.side && game.players[i] != player) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -7781,7 +9433,9 @@ export default () => {
 					var target2 = player.getEnemy();
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) continue;
+						if (lib.card[i].stonehidden) {
+							continue;
+						}
 						if (lib.card[i].type == "stonecard") {
 							list.push(i);
 						}
@@ -7865,7 +9519,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) return true;
+						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -8004,7 +9660,9 @@ export default () => {
 					if (result.bool) {
 						event.target = result.targets[0];
 						event.chooser.chooseControl("造成伤害", "discard_card").ai = function () {
-							if (event.target.hp > 1) return "discard_card";
+							if (event.target.hp > 1) {
+								return "discard_card";
+							}
 							return "造成伤害";
 						};
 						event.chooser.line(event.target);
@@ -8175,18 +9833,28 @@ export default () => {
 			_priest_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "priest") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (player.storage.anyingxingtai) return false;
+					if (player.career != "priest") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (player.storage.anyingxingtai) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
 				prompt: function (event) {
-					if (event.player.hasFellowSkill("priest_hunwu")) return "令目标失去1点体力";
+					if (event.player.hasFellowSkill("priest_hunwu")) {
+						return "令目标失去1点体力";
+					}
 					return "回复1点体力";
 				},
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("priest_hunwu")) return true;
+					if (player.hasFellowSkill("priest_hunwu")) {
+						return true;
+					}
 					return target.hp < target.maxHp;
 				},
 				content: function () {
@@ -8218,9 +9886,15 @@ export default () => {
 			_priest_skillx: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "priest") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (!player.storage.anyingxingtai) return false;
+					if (player.career != "priest") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (!player.storage.anyingxingtai) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8250,8 +9924,12 @@ export default () => {
 			_mage_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "mage") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "mage") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8277,9 +9955,15 @@ export default () => {
 			_warlock_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.hasSkill("stone_lianyu")) return false;
-					if (player.career != "warlock") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.hasSkill("stone_lianyu")) {
+						return false;
+					}
+					if (player.career != "warlock") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8299,10 +9983,18 @@ export default () => {
 			_warlock_skillx: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (!player.hasSkill("stone_lianyu")) return false;
-					if (player.career != "warlock") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
-					if (!player.canAddFellow()) return false;
+					if (!player.hasSkill("stone_lianyu")) {
+						return false;
+					}
+					if (player.career != "warlock") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8330,21 +10022,31 @@ export default () => {
 			_hunter_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "hunter") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "hunter") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
 				prompt: function (event) {
-					if (event.player.hasFellowSkill("hunter_juji")) return "造成1点伤害";
+					if (event.player.hasFellowSkill("hunter_juji")) {
+						return "造成1点伤害";
+					}
 					return "对敌方主将造成1点伤害";
 				},
 				selectTarget: function () {
-					if (_status.event.player.hasFellowSkill("hunter_juji")) return 1;
+					if (_status.event.player.hasFellowSkill("hunter_juji")) {
+						return 1;
+					}
 					return -1;
 				},
 				filterTarget: function (card, player, target) {
-					if (player.hasFellowSkill("hunter_juji")) return target != player;
+					if (player.hasFellowSkill("hunter_juji")) {
+						return target != player;
+					}
 					return target.career && target.side != player.side;
 				},
 				content: function () {
@@ -8365,9 +10067,15 @@ export default () => {
 			_warrior_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.hujia >= 3) return false;
-					if (player.career != "warrior") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.hujia >= 3) {
+						return false;
+					}
+					if (player.career != "warrior") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8387,8 +10095,12 @@ export default () => {
 			_rogue_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "rogue") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "rogue") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8434,7 +10146,9 @@ export default () => {
 					},
 					result: {
 						player: function (player) {
-							if (player.countCards("e") <= 2) return 1;
+							if (player.countCards("e") <= 2) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -8443,8 +10157,12 @@ export default () => {
 			_druid_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "druid") return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "druid") {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return lib.filter.cardEnabled({ name: "sha" }, player);
 				},
 				usable: 1,
@@ -8479,7 +10197,9 @@ export default () => {
 				ai: {
 					effect: {
 						target: function (card) {
-							if (card.name == "bingliang") return [0, 0];
+							if (card.name == "bingliang") {
+								return [0, 0];
+							}
 						},
 					},
 					noPhaseDelay: 1,
@@ -8567,9 +10287,15 @@ export default () => {
 			_shaman_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "shaman") return false;
-					if (!player.canAddFellow()) return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "shaman") {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8590,9 +10316,15 @@ export default () => {
 			_paladin_skill: {
 				enable: "phaseUse",
 				filter: function (event, player) {
-					if (player.career != "paladin") return false;
-					if (!player.canAddFellow()) return false;
-					if (player.getActCount() + 2 > player.actcount) return false;
+					if (player.career != "paladin") {
+						return false;
+					}
+					if (!player.canAddFellow()) {
+						return false;
+					}
+					if (player.getActCount() + 2 > player.actcount) {
+						return false;
+					}
 					return true;
 				},
 				usable: 1,
@@ -8618,7 +10350,9 @@ export default () => {
 			_lschaofeng: {
 				mod: {
 					targetEnabled: function (card, player, target) {
-						if (target.hasSkill("lschaofeng")) return;
+						if (target.hasSkill("lschaofeng")) {
+							return;
+						}
 						if (card.name == "sha") {
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == target.side && game.players[i].hasSkill("lschaofeng")) {
@@ -8779,7 +10513,9 @@ export default () => {
 				unique: true,
 				filter: function (event, player) {
 					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player) return true;
+						if (game.players[i].side == player.side && game.players[i] != player) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -9025,7 +10761,9 @@ export default () => {
 				forced: true,
 				unique: true,
 				filter: function (event, player) {
-					if (event.player != player.getLeader()) return false;
+					if (event.player != player.getLeader()) {
+						return false;
+					}
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							return true;
@@ -9054,12 +10792,16 @@ export default () => {
 						if (player.isMin()) {
 							return;
 						}
-						if (_status.currentPhase != player) return;
+						if (_status.currentPhase != player) {
+							return;
+						}
 						var stoneact = get.info(card).stoneact;
 						if (typeof stoneact != "number") {
 							stoneact = 1;
 						}
-						if (player.getActCount() + stoneact > player.actcount) return false;
+						if (player.getActCount() + stoneact > player.actcount) {
+							return false;
+						}
 					},
 				},
 				trigger: { player: "phaseBegin" },
@@ -9110,7 +10852,9 @@ export default () => {
 				unique: true,
 				mod: {
 					cardname: function (card) {
-						if (lib.card[card.name].type == "equip") return "sha";
+						if (lib.card[card.name].type == "equip") {
+							return "sha";
+						}
 					},
 				},
 			},
@@ -9118,7 +10862,9 @@ export default () => {
 				unique: true,
 				mod: {
 					cardname: function (card) {
-						if (lib.card[card.name].type.indexOf("stone") == 0) return "shan";
+						if (lib.card[card.name].type.indexOf("stone") == 0) {
+							return "shan";
+						}
 					},
 				},
 			},
@@ -9242,11 +10988,15 @@ export default () => {
 					}
 					player.chooseButton(dialog).ai = function (button) {
 						if (button.link == "stone_siwangzhiyi") {
-							if (heilong) return 3;
+							if (heilong) {
+								return 3;
+							}
 							return 0;
 						}
 						if (button.link == "stone_alaikesita") {
-							if (honglong) return 2;
+							if (honglong) {
+								return 2;
+							}
 							return 0;
 						}
 						return Math.random();
@@ -9961,7 +11711,6 @@ export default () => {
 			stone_huoshe: "火舌图腾",
 			stone_huoyuansu: "火元素",
 			stone_tuyuansu: "土元素",
-			stone_wujiyuansu: "无羁元素",
 			stone_xuejuren: "穴居人",
 			stone_huoli: "活力图腾",
 			stone_tutengshi: "图腾师",
