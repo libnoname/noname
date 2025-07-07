@@ -68,16 +68,16 @@ const skills = {
 					case "选项二": {
 						const card = new lib.element.VCard({ name: "shunshou" });
 						if (player.hasUseTarget(card)) {
-							await player.chooseUseTarget(card, [1, count], true);
 							count++;
+							await player.chooseUseTarget(card, [1, count], true);
 						}
 						break;
 					}
 					case "选项三": {
 						const card = new lib.element.VCard({ name: "sha" });
 						if (player.hasUseTarget(card)) {
-							await player.chooseUseTarget(card, [1, count], true, false);
 							count++;
+							await player.chooseUseTarget(card, [1, count], true, false);
 						}
 						break;
 					}
@@ -8667,8 +8667,7 @@ const skills = {
 	dcsbfengmin: {
 		audio: 2,
 		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
-		filter(event, player) {
-			const target = _status.currentPhase;
+		filter(event, player, name, target) {
 			if (
 				!target ||
 				!target.isIn() ||
@@ -8679,25 +8678,134 @@ const skills = {
 				return false;
 			}
 			const evt = event.getl(target);
-			return evt && evt.player == target && (evt.es || []).length;
+			return evt?.es?.length;
 		},
+		usable: 1,
 		forced: true,
-		logTarget: () => _status.currentPhase,
+		getIndex(event, player) {
+			return game.filterPlayer(target => {
+				if (
+					!target ||
+					!target.isIn() ||
+					!Array.from({ length: 5 })
+						.map((_, i) => i + 1)
+						.reduce((sum, i) => sum + target.countEmptySlot(i), 0)
+				) {
+					return false;
+				}
+				const evt = event.getl(target);
+				return evt?.es?.length;
+			});
+		},
+		logTarget: (_1, _2, _3, target) => target,
 		async content(event, trigger, player) {
 			player.addMark("dcsbfengmin", 1, false);
-			const target = _status.currentPhase;
+			const target = event.indexedData;
 			await player.draw(
 				Array.from({ length: 5 })
 					.map((_, i) => i + 1)
 					.reduce((sum, i) => sum + target.countEmptySlot(i), 0)
 			);
-			if (player.countMark("dcsbfengmin") > player.getDamagedHp()) {
+			/*if (player.countMark("dcsbfengmin") > player.getDamagedHp()) {
 				player.tempBanSkill("dcsbfengmin");
-			}
+			}*/
 		},
-		intro: { content: "本局游戏已发动过#次此技能" },
+		//intro: { content: "本局游戏已发动过#次此技能" },
 	},
 	dcsbzhiwang: {
+		audio: 2,
+		trigger: { player: "phaseJieshuBegin" },
+		forced: true,
+		async content(event, trigger, player) {
+			await player.discardPlayerCard("e", player, player.countCards("e"), true);
+			if (
+				player.hasHistory("lose", evt => {
+					return evt.type == "discard" && evt.getParent(3) == event && evt?.es?.length;
+				})
+			) {
+				const cards = Array.from(ui.discardPile.childNodes).filter(
+					card =>
+						get.tag(card, "damage") &&
+						game.hasPlayer(current => {
+							return current != player && current.hasUseTarget(card, true);
+						})
+				);
+				if (!cards?.length) {
+					return;
+				}
+				const result = await player
+					.chooseButtonTarget({
+						createDialog: ["质亡：令一名其他角色使用一张牌", cards],
+						forced: true,
+						filterTarget(card, player, target) {
+							if (player == target) {
+								return false;
+							}
+							const buttons = ui.selected.buttons;
+							return buttons?.length && target.hasUseTarget(buttons[0].link, true);
+						},
+						ai1(button) {
+							let max = 0;
+							game.filterPlayer(current => {
+								if (current == player || !current.hasUseTarget(button.link, true)) {
+									return false;
+								}
+								max = Math.max(max, current.getUseValue(button.link, true));
+							});
+							return max;
+						},
+						ai2(target) {
+							const buttons = ui.selected.buttons;
+							if (!buttons?.length) {
+								return 0;
+							}
+							return target.getUseValue(buttons[0].link, true);
+						},
+					})
+					.forResult();
+				if (result?.bool) {
+					const {
+						links: [card],
+						targets: [target],
+					} = result;
+					target.addTempSkill("dcsbzhiwang_nosource");
+					const map = target.getStorage("dcsbzhiwang_nosource", new Map());
+					map.set(player, card);
+					target.setStorage("dcsbzhiwang_nosource", map);
+					if (target.hasUseTarget(card, true)) {
+						await target.chooseUseTarget(card, true, false).set("oncard", (card, target) => {
+							const map = target.getStorage("dcsbzhiwang_nosource", new Map());
+							map.forEach((cardx, player) => {
+								if (card.cards?.includes(cardx)) {
+									map.set(player, card);
+								}
+							});
+							target.setStorage("dcsbzhiwang_nosource", map);
+						});
+					}
+				}
+			}
+		},
+		subSkill: {
+			nosource: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					source: "damageBefore",
+				},
+				silent: true,
+				filter(event, player) {
+					const list = player.getStorage("dcsbzhiwang_nosource", new Map());
+					const card = list.get(event.player);
+					return event.source && card && get.autoViewAs(card) == event.card;
+				},
+				async content(event, trigger, player) {
+					delete trigger.source;
+				},
+			},
+		},
+	},
+	/*dcsbzhiwang: {
 		audio: 2,
 		trigger: { player: "dying" },
 		filter(event, player) {
@@ -8772,7 +8880,7 @@ const skills = {
 				intro: { content: "本回合结束时，可以使用令$进入濒死的牌" },
 			},
 		},
-	},
+	},*/
 	//典韦
 	dcsbkuangzhan: {
 		audio: 2,

@@ -4237,7 +4237,7 @@ const skills = {
 			const result = await player
 				.chooseControl(list)
 				.set("prompt", `默然：你选择于一至三个回合结束后（包含此回合）摸两倍所选回合数量的牌，在此期间中你的所有技能失效。`)
-				.set("ai", () => Math.random())
+				.set("ai", () => get.rand(0, 2))
 				.forResult();
 			if (result?.control) {
 				const skill = event.name + "_draw",
