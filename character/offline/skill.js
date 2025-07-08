@@ -236,6 +236,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addMark(event.name, 1);
 		},
+		ai: { combo: "wn_chiyuan" },
 	},
 	wn_chiyuan: {
 		audio: 2,
@@ -255,6 +256,7 @@ const skills = {
 			game.log(player, "将一个“驻”标记交给了", target);
 		},
 		ai: {
+			combo: "wn_zhuying",
 			order: 9,
 			result: {
 				target(player, target) {

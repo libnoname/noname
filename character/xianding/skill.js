@@ -5,6 +5,7 @@ import cards from "../sp2/card.js";
 const skills = {
 	//谋邓艾
 	dcsbzhouxi: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterCard(card, player, event) {
@@ -133,6 +134,7 @@ const skills = {
 		},
 	},
 	dcsbshijin: {
+		audio: 2,
 		enable: "phaseUse",
 		manualConfirm: true,
 		limited: true,
@@ -270,6 +272,7 @@ const skills = {
 				.join("");
 			player.addTip(event.name, `法箓${tip}`);
 		},
+		ai: { combo: "x_dc_zhenyi" },
 	},
 	x_dc_zhenyi: {
 		audio: "xinfu_zhenyi",
