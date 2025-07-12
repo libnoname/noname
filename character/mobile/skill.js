@@ -7326,10 +7326,10 @@ const skills = {
 								if (changeList[0]) {
 									switch (changeList[0]) {
 										case "hp":
-											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow2");
+											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow3");
 											break;
 										case "damagedHp":
-											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow3");
+											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow2");
 											break;
 										case "countplayer":
 											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow4");
