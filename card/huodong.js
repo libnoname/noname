@@ -240,7 +240,7 @@ game.import("card", function () {
 						for (const card of cards) {
 							let tag = card.gaintag?.find(tag => tag.startsWith(name));
 							if (tag) {
-								player.removeGaintag(tag, [card]);
+								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
 							if (!lib.skill[tag]) {
@@ -253,7 +253,7 @@ game.import("card", function () {
 									tag.slice(name.length)
 								);
 							}
-							player.addGaintag([card], tag);
+							target.addGaintag([card], tag);
 						}
 					}
 				},
@@ -281,48 +281,46 @@ game.import("card", function () {
 				selectTarget: -1,
 				toself: true,
 				modTarget: true,
-				async contentBefore(event, trigger, player) {
-					const evt = event.getParent();
-					if (!evt.haoyun) {
-						const result = await player
-							.chooseControl("black", "red")
-							.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
-							.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
-							.forResult();
-						if (result?.control) {
-							game.log(player, "选择了", "#y" + result.control);
-							player.popup(result.control);
-							evt.haoyun = result.control;
-						}
-					}
-				},
 				async content(event, trigger, player) {
 					event.cards ??= [];
-					const evt = event.getParent(),
-						{ target } = event,
-						color = evt.haoyun;
-					if (!color) {
-						return;
-					}
-					while (true) {
-						const judgeEvent = target.judge(card => {
-							if (get.color(card) == get.event().haoyun_color) {
-								return 1.5;
+					const { target } = event;
+					const result = await target
+						.chooseControl("black", "red")
+						.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
+						.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
+						.forResult();
+					if (result?.control) {
+						const color = result.control;
+						game.log(player, "选择了", "#y" + color);
+						player.popup(color);
+						while (true) {
+							const judgeEvent = target.judge(card => {
+								if (get.color(card) == get.event().haoyun_color) {
+									return 1.5;
+								}
+								return -1.5;
+							});
+							judgeEvent.set("haoyun_color", color);
+							judgeEvent.judge2 = result => result.bool;
+							if (!player.hasSkillTag("rejudge")) {
+								judgeEvent.set("callback", async event => {
+									if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
+										await event.player.gain(event.card, "gain2");
+									}
+								});
+							} else {
+								judgeEvent.set("callback", async event => {
+									if (event.judgeResult.color == event.getParent().haoyun_color) {
+										event.getParent().orderingCards.remove(event.card);
+									}
+								});
 							}
-							return -1.5;
-						});
-						judgeEvent.set("haoyun_color", color);
-						judgeEvent.judge2 = result => result.bool;
-						judgeEvent.set("callback", async event => {
-							if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
-								await event.player.gain(event.card, "gain2");
+							const result = await judgeEvent.forResult();
+							if (result?.bool && result?.card) {
+								event.cards.push(result.card);
+							} else {
+								break;
 							}
-						});
-						const result = await judgeEvent.forResult();
-						if (result?.bool && result?.card) {
-							event.cards.push(result.card);
-						} else {
-							break;
 						}
 					}
 				},
@@ -2002,7 +2000,7 @@ game.import("card", function () {
 					return event.card.name == "leigong";
 				},
 				async content(event, trigger, player) {
-					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
+					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(4) == trigger && evt.notLink()));
 					if (num > 0) {
 						await player.draw(num);
 					}

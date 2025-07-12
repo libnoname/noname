@@ -540,10 +540,11 @@ const skills = {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx != event) {
 					return false;
 				}
-				return evt.getl(player)?.hs?.some(card => event.cards.includes(card));
+				return evt.getl(player)?.hs?.length;
 			});
 		},
 		frequent: true,
@@ -1259,7 +1260,8 @@ const skills = {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx != event) {
 					return false;
 				}
 				return Object.keys(evt.gaintag_map).some(i => evt.gaintag_map[i].includes("dctanban"));
@@ -3759,7 +3761,8 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -5623,7 +5626,8 @@ const skills = {
 							return false;
 						}
 						return player.hasHistory("lose", evt => {
-							if (evt.getParent() != event) {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx != event) {
 								return false;
 							}
 							return Object.values(evt.gaintag_map).flat().includes("dclvecheng_xiongluan");

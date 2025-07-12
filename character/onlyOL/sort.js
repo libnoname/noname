@@ -13,7 +13,7 @@ const characterSort = {
 	onlyOL_sb_daquan: ["ol_sb_jushou", "ol_sb_yuanshu", "ol_sb_zhangrang"],
 	onlyOL_sb_jichu: ["ol_sb_huangyueying"],
 	onlyOL_sb_huahao: ["ol_sb_xiaoqiao"],
-	onlyOL_demonized: ["dm_simayi"],
+	onlyOL_demonized: ["dm_simayi", "dm_diaochan","dm_lvbu"],
 	onlyOL_waitingforsort: [],
 };
 

@@ -224,47 +224,101 @@ const skills = {
 	cadingxi: {
 		chargeSkill: Infinity,
 		locked: false,
-		trigger: { player: "useCard" },
-		filter(event, player) {
-			if (!player.countCharge()) {
-				return false;
-			}
-			let evt = lib.skill.dcjianying.getLastUsed(player, event);
-			if (!evt || !evt.card) {
-				return false;
-			}
-			return get.type2(evt.card) == get.type2(event.card);
+		enable: "chooseToUse",
+		getCanUse(event, player) {
+			return lib.inpile.filter(i => event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event));
 		},
-		async content(event, trigger, player) {
-			player.removeCharge();
-			let cards = get.cards(1, true);
-			await player.showCards(cards, `${get.translation(player)}发动了【定西】`).set("delay_time", 5);
-			if (get.type2(cards[0]) == get.type2(trigger.card)) {
-				if (player.hasUseTarget(cards[0], true, true)) {
-					await player.chooseUseTarget(cards[0], true, false);
-				}
-				player.getHistory("custom").push({ [event.name]: "same" });
-				let history = player.getAllHistory("custom", evt => evt.cadingxi),
-					num = history.length;
-				if (num < 1 || history[num - 1]?.cadingxi == "diff") {
-					return;
-				}
-				if (num > 2 && history[num - 2]?.cadingxi == "same") {
-					let targets = game.players.sortBySeat().slice();
-					for (let target of targets) {
-						if (target != player) {
-							await target.damage();
-						}
-					}
-				} else {
-					if (player.isDamaged()) {
-						await player.recoverTo(player.maxHp);
-					}
-				}
-			} else {
-				await player.draw("bottom");
-				player.getHistory("custom").push({ [event.name]: "diff" });
+		hiddenCard(player, name) {
+			if (lib.inpile.includes(name)) {
+				return true;
 			}
+		},
+		filter(event, player) {
+			if (event.responded || !player.countCharge()) {
+				return false;
+			}
+			return lib.skill["cadingxi"].getCanUse(event, player).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = lib.skill["cadingxi"]
+					.getCanUse(event, player)
+					.map(name => get.type2(name))
+					.unique();
+				const dialog = ui.create.dialog("定西", [list.map(type => ["", "", "caoying_" + type]), "vcard"]);
+				dialog.direct = true;
+				return dialog;
+			},
+			check(event, player) {
+				return Math.random();
+			},
+			backup(links, player) {
+				const type = links[0][2].slice(8);
+				return {
+					type: type,
+					filterCard: () => false,
+					selectCard: -1,
+					popname: true,
+					async content(event, trigger, player) {
+						const type = lib.skill[event.name].type,
+							evt = event.getParent(2),
+							filterCard = evt.name == "_wuxie" ? (card, player, event) => card.name == "wuxie" : evt.filterCard;
+						player.removeCharge();
+						const cards = get.cards(1, true),
+							card = cards[0];
+						await player.showCards(cards, `${get.translation(player)}发动了【定西】`);
+						let key;
+						switch (evt.name) {
+							case "_wuxie":
+								key = "wuxieresult2";
+								break;
+							default:
+								key = "result";
+						}
+						if (get.type2(card) == type) {
+							event.getParent().set("cadingxi_result", true);
+							const history = player.getAllHistory("useSkill", evt => evt.skill == event.name);
+							const list = history.slice(-Math.min(3, history.length)).map(evt => evt.event.cadingxi_result);
+							if (list.slice(-2).length >= 2 && !list.slice(-2).some(i => !i)) {
+								await player.recoverTo(player.maxHp);
+							}
+							if (list.length >= 3 && !list.some(i => !i)) {
+								const damage = async target => {
+									await target.damage();
+								};
+								const targets = game.filterPlayer(target => target != player);
+								player.line(targets);
+								await game.doAsyncInOrder(targets, damage);
+							}
+							if (filterCard(get.autoViewAs(card), player, evt)) {
+								if (evt.name == "chooseToUse") {
+									game.broadcastAll(
+										(result, name) => {
+											lib.skill.cadingxi_backup2.viewAs = { name: name, cards: [result], isCard: true };
+										},
+										card,
+										card.name
+									);
+									evt.set("_backupevent", "cadingxi_backup2");
+									evt.set("openskilldialog", "请选择" + get.translation(card) + "的目标");
+									evt.backup("cadingxi_backup2");
+								} else {
+									delete evt[key].used;
+									evt[key].card = get.autoViewAs(card);
+									evt[key].cards = [card];
+									delete evt[key].skill;
+									evt.redo();
+									return;
+								}
+							}
+						} else {
+							event.getParent().set("cadingxi_result", false);
+							await player.draw("bottom");
+						}
+						evt.goto(0);
+					},
+				};
+			},
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -278,6 +332,25 @@ const skills = {
 		},
 		group: "cadingxi_init",
 		subSkill: {
+			backup2: {
+				precontent() {
+					var name = event.result.card.name,
+						cards = event.result.card.cards.slice(0);
+					event.result.cards = cards;
+					var rcard = cards[0],
+						card;
+					if (rcard.name == name) {
+						card = get.autoViewAs(rcard);
+					} else {
+						card = get.autoViewAs({ name, isCard: true });
+					}
+					event.result.card = card;
+				},
+				filterCard: () => false,
+				selectCard: -1,
+				log: false,
+			},
+			backup: {},
 			init: {
 				trigger: {
 					player: "enterGame",
@@ -4864,14 +4937,15 @@ const skills = {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					var tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
+					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
 						card = event.card;
 					return player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
-							for (var tag of evt.gaintag_map[i]) {
+						for (const i in evt.gaintag_map) {
+							for (const tag of evt.gaintag_map[i]) {
 								if (tags.includes(tag)) {
 									return true;
 								}
@@ -4881,13 +4955,14 @@ const skills = {
 					});
 				},
 				content() {
-					var tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
+					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
 						card = trigger.card;
 					player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != trigger) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != trigger) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
+						for (const i in evt.gaintag_map) {
 							tags.removeArray(evt.gaintag_map[i]);
 						}
 						return tags.length == 0;
@@ -4901,7 +4976,7 @@ const skills = {
 					if (!tags.includes("dctuoyu_qingqu_tag")) {
 						if (trigger.addCount !== false) {
 							trigger.addCount = false;
-							var stat = player.getStat("card");
+							let stat = player.getStat("card");
 							if (stat[card.name] && stat[card.name] > 0) {
 								stat[card.name]--;
 							}

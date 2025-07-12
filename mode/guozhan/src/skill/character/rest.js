@@ -6682,7 +6682,7 @@ export default {
 				return (
 					get.color(event.card, false) == "red" &&
 					player.hasHistory("lose", function (evt) {
-						return evt.getParent() == event && evt.hs && evt.hs.length > 0;
+						return (evt.relatedEvent || evt.getParent()) == event && evt.hs && evt.hs.length > 0;
 					})
 				);
 			}
@@ -10867,7 +10867,7 @@ export default {
 				filter(event, player) {
 					return (
 						player.getHistory("lose", function (evt) {
-							if (evt.getParent() != event) {
+							if ((evt.relatedEvent || evt.getParent()) != event) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {
@@ -17211,10 +17211,10 @@ export default {
 					global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 				},
 				filter(event, player) {
-					if (event.name == "lose" && event.getParent().name == "useCard") {
+					if (event.getParent().name == "useCard") {
 						return false;
 					}
-					var evt = event.getl(player);
+					const evt = event.getl(player);
 					return (
 						evt &&
 						evt.player == player &&
@@ -17224,18 +17224,17 @@ export default {
 					);
 				},
 				forced: true,
-				content() {
-					"step 0";
-					var cards = [],
+				async content(event, trigger, player) {
+					const cards = [],
 						evt = trigger.getl(player);
 					cards.addArray(
 						evt.cards2.filter(function (i) {
 							return i.name == "feilongduofeng" && get.owner(i) != player;
 						})
 					);
-					player.showCards(cards, get.translation(player) + "发动了【章武】");
-					for (var i of cards) {
-						var owner = get.owner(i);
+					await player.showCards(cards, get.translation(player) + "发动了【章武】");
+					for (const i of cards) {
+						const owner = get.owner(i);
 						if (owner) {
 							owner.lose(i, ui.cardPile)._triggered = null;
 						} else {
@@ -17243,8 +17242,7 @@ export default {
 							ui.cardPile.appendChild(i);
 						}
 					}
-					"step 1";
-					player.draw(2);
+					await player.draw(2);
 				},
 			},
 		},
