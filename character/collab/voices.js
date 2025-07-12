@@ -1,4 +1,9 @@
 export default {
+	"#wild_liru:die": "点到为止，你已经输了！",
+	"#olhuaquan1": "避无可避，拳从八方来！",
+	"#olhuaquan2": "轻拳打脸，重拳取命！",
+	"#olsanou1": "初平元年，第一次在洛阳打自由搏击，便一举夺魁！",
+	"#olsanou2": "扫腿直拳十字锁，裸绞肘击断头台！",
 	"#strong_caochong:die": "哎呀！闪到腰了……",
 	"#strongduanti1": "饭前蹲一蹲，膂力破万均。",
 	"#strongduanti2": "饭后练一练，称象不打颤。",
