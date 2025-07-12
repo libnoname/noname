@@ -1939,9 +1939,6 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			if (target == player) {
-				return false;
-			}
 			if (ui.selected.targets.length) {
 				const source = ui.selected.targets[0];
 				return !source.isFriendOf(target) && source.canCompare(target);

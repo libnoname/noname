@@ -1865,7 +1865,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			let targets = game.filterPlayer(current => current != player);
+			let targets = game.filterPlayer(current => current != player).sortBySeat();
 			player.line(targets);
 			for (const target of targets) {
 				await target.damage("fire");

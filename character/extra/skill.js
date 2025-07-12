@@ -41,7 +41,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			if (!event.getd || !event.getl) {
+			if (!event.getd) {
 				return false;
 			}
 			let cards = event.getd();
@@ -90,7 +90,7 @@ const skills = {
 					if (!target.countCards("h")) {
 						return get.value(card, target) * get.attitude(player, target);
 					}
-					return (get.value(card, target) - target.countCards("h")) * get.attitude(player, target);
+					return (get.value(card, target) - 2 * target.countCards("h")) * get.attitude(player, target);
 				},
 			});
 			event.result = {

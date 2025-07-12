@@ -3490,171 +3490,117 @@ const skills = {
 				return current.countCards("h") < current.hp;
 			});
 		},
-		content() {
-			"step 0";
-			event.list = game
+		async content(event, trigger, player) {
+			const list = game
 				.filterPlayer(function (current) {
 					return current.countCards("h") < current.hp;
 				})
 				.sortBySeat();
-			player.draw(event.list.length);
-			"step 1";
-			player
-				.chooseTarget(
-					true,
-					function (card, player, target) {
-						var list = _status.event.list;
-						return list.includes(target);
+			await player.draw(list.length);
+			const result = await player
+				.chooseCardTarget({
+					prompt: "惠民",
+					prompt2: "选择要分配的牌和分牌起点",
+					selectCard: Math.min(list.length, player.countCards("h")),
+					forced: true,
+					list: list,
+					filterTarget(card, player, target) {
+						return get.event("list").includes(target);
 					},
-					"选择一名角色作为分牌起点"
-				)
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					if (att <= 0) {
-						return att;
-					}
-					var list = _status.event.list;
-					var index = list.indexOf(target);
-					var prev;
-					if (index == 0) {
-						prev = list[list.length - 1];
-					} else {
-						prev = list[index - 1];
-					}
-					if (get.attitude(player, prev) < 0) {
-						return att;
-					}
-					return 0;
+					ai1(card) {
+						return 6 - get.value(card);
+					},
+					ai2(target) {
+						const { player, list } = get.event();
+						const att = get.attitude(player, target),
+							index = list.indexOf(target);
+						if (att <= 0) {
+							return att;
+						}
+						let prev = list[(index ? index : list.length) - 1];
+						if (get.attitude(player, prev) < 0) {
+							return att;
+						}
+						return 0;
+					},
 				})
-				.set("list", event.list);
-			"step 2";
-			var index = event.list.indexOf(result.targets[0]);
-			if (index < 0) {
-				index = 0;
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
 			}
-			var tmp = event.list.splice(index);
-			event.list = tmp.concat(event.list);
-			player.line(result.targets, "green");
-			player.chooseCard("h", "选择要分配的手牌", event.list.length, true);
-			"step 3";
-			var cards = result.cards;
-			player.lose(cards, ui.ordering);
-			event.togain = cards;
-			if (result.bool && cards.length) {
-				var dialog = ui.create.dialog("惠民", cards, true);
-				_status.dieClose.push(dialog);
-				dialog.videoId = lib.status.videoId++;
-				event.dialogID = dialog.videoId;
-				game.addVideo("cardDialog", null, ["惠民", get.cardsInfo(cards), dialog.videoId]);
-				game.broadcast(
-					function (cards, id) {
-						var dialog = ui.create.dialog("惠民", cards, true);
-						_status.dieClose.push(dialog);
-						dialog.videoId = id;
-					},
-					cards,
-					dialog.videoId
-				);
-			} else {
-				event.finish();
-			}
-			"step 4";
-			game.delay();
-			"step 5";
-			if (event.list.length && event.togain.length) {
-				event.current = event.list.shift();
-				var next = event.current.chooseButton(true, function (button) {
+			const { cards, targets } = result;
+			await player.showCards(cards).setContent(() => {});
+			list.sortBySeat(targets[0]);
+			player.line(list, "green");
+			await player.lose(cards, ui.ordering);
+			const dialog = ui.create.dialog("惠民", cards, true);
+			_status.dieClose.push(dialog);
+			dialog.videoId = lib.status.videoId++;
+			game.addVideo("cardDialog", null, ["惠民", get.cardsInfo(cards), dialog.videoId]);
+			game.broadcast(
+				function (cards, id) {
+					const dialog = ui.create.dialog("惠民", cards, true);
+					_status.dieClose.push(dialog);
+					dialog.videoId = id;
+				},
+				cards,
+				dialog.videoId
+			);
+			await game.delay();
+			while (list.length && cards.length) {
+				const current = list.shift();
+				const next = current.chooseButton(true, function (button) {
 					return get.value(button.link, _status.event.player);
 				});
-				next.set("dialog", event.dialogID);
+				next.set("dialog", dialog.videoId);
 				next.set("closeDialog", false);
 				next.set("dialogdisplay", true);
-				next.set("cardFilter", event.togain.slice(0));
+				next.set("cardFilter", cards.slice(0));
 				next.set("filterButton", function (button) {
 					return _status.event.cardFilter.includes(button.link);
 				});
-			} else {
-				for (var i = 0; i < ui.dialogs.length; i++) {
-					if (ui.dialogs[i].videoId == event.dialogID) {
-						var dialog = ui.dialogs[i];
-						dialog.close();
-						_status.dieClose.remove(dialog);
-						break;
-					}
+				const result2 = await next.forResult();
+				if (!result2.bool || !result2.links?.length) {
+					continue;
 				}
-				if (event.togain.length) {
-					game.cardsDiscard(event.togain);
-				}
-				game.broadcast(function (id) {
-					var dialog = get.idDialog(id);
-					if (dialog) {
-						dialog.close();
-						_status.dieClose.remove(dialog);
-					}
-				}, event.dialogID);
-				game.addVideo("cardDialog", null, event.dialogID);
-				event.finish();
-			}
-			"step 6";
-			var card = result.links[0],
-				target = event.current;
-			if (card) {
-				target.gain(card, "gain2");
-				event.togain.remove(card);
-			}
-			var capt = get.translation(target) + "选择了" + get.translation(card);
-			game.broadcastAll(
-				function (card, id, name, capt) {
-					var dialog = get.idDialog(id);
-					if (dialog) {
-						dialog.content.firstChild.innerHTML = capt;
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							if (dialog.buttons[i].link == card) {
-								dialog.buttons[i].querySelector(".info").innerHTML = name;
-								break;
+				await current.gain(result2.links, "gain2");
+				cards.removeArray(result2.links);
+				let capt = get.translation(current) + "选择了" + get.translation(result2.links);
+				game.broadcastAll(
+					function (card, id, name, capt) {
+						var dialog = get.idDialog(id);
+						if (dialog) {
+							dialog.content.firstChild.innerHTML = capt;
+							for (var i = 0; i < dialog.buttons.length; i++) {
+								if (dialog.buttons[i].link == card) {
+									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									break;
+								}
 							}
+							game.addVideo("dialogCapt", null, [dialog.videoId, dialog.content.firstChild.innerHTML]);
 						}
-						game.addVideo("dialogCapt", null, [dialog.videoId, dialog.content.firstChild.innerHTML]);
-					}
-				},
-				card,
-				event.dialogID,
-				(function (target) {
-					if (target._tempTranslate) {
-						return target._tempTranslate;
-					}
-					var name = target.name;
-					if (lib.translate[name + "_ab"]) {
-						return lib.translate[name + "_ab"];
-					}
-					return get.translation(name);
-				})(target),
-				capt
-			);
-			if (event.togain.length) {
-				event.goto(5);
-			} else {
-				for (var i = 0; i < ui.dialogs.length; i++) {
-					if (ui.dialogs[i].videoId == event.dialogID) {
-						var dialog = ui.dialogs[i];
-						dialog.close();
-						_status.dieClose.remove(dialog);
-						break;
-					}
-				}
-				if (event.togain.length) {
-					game.cardsDiscard(event.togain);
-				}
-				game.broadcast(function (id) {
-					var dialog = get.idDialog(id);
-					if (dialog) {
-						dialog.close();
-						_status.dieClose.remove(dialog);
-					}
-				}, event.dialogID);
-				game.addVideo("cardDialog", null, event.dialogID);
-				event.finish();
+					},
+					result2.links[0],
+					dialog.videoId,
+					(function (target) {
+						if (target._tempTranslate) {
+							return target._tempTranslate;
+						}
+						var name = target.name;
+						if (lib.translate[name + "_ab"]) {
+							return lib.translate[name + "_ab"];
+						}
+						return get.translation(name);
+					})(current),
+					capt
+				);
+			}
+			game.broadcastAll("closeDialog", dialog.videoId);
+			game.broadcastAll(dialog => {
+				_status.dieClose.remove(dialog);
+			}, dialog);
+			if (cards.length) {
+				game.cardsDiscard(cards);
 			}
 		},
 	},
