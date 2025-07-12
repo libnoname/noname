@@ -114,6 +114,7 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"pe_xiahouxuan",
 		"mb_zerong",
 		"pe_jun_liubei",
 		"pe_jun_caocao",
@@ -687,6 +688,9 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"dm_lvbu",
+		"dm_diaochan",
+		"wild_liru",
 		"ol_qiaogong",
 		"yj_zhangyan",
 		"yj_zhanghuan",
@@ -2430,6 +2434,10 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"dm_diaochan",
+			"dm_lvbu",
+			"wild_liru",
+			"pe_xiahouxuan",
 			"pe_que",
 			"chenshou",
 			"strong_caochong",

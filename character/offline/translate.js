@@ -1,4 +1,7 @@
 const translates = {
+	pe_xiahouxuan: "夏侯玄",
+	pehuanfu: "宦浮",
+	pehuanfu_info: "当你使用【杀】指定目标后或成为【杀】的目标后，你可以弃置至多体力上限张牌，然后摸2X张牌，若如此做，此【杀】对目标角色造成的伤害改为X(X为你弃置的牌数)。",
 	drag_huaci: "龙华雌",
 	drag_huaci_prefix: "龙",
 	dragshiyao: "试药",

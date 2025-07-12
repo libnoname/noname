@@ -1,4 +1,10 @@
 const characters = {
+	wild_liru: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olhuaquan", "olsanou"],
+	},
 	ren_jiangwei: {
 		sex: "male",
 		group: "shu",

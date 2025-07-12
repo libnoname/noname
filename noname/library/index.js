@@ -15918,6 +15918,13 @@ export class Library {
 				nature: "thundermm",
 			},
 		],
+		[
+			"狂",
+			{
+				color: "#8B00FF",
+				nature: "firemm",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

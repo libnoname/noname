@@ -2138,7 +2138,7 @@ export default {
 				firstDo: true,
 				filter(event, player) {
 					return event.player.hasHistory("lose", evt => {
-						return evt.hs.length > 0 && evt.getParent() == event;
+						return evt.hs.length > 0 && (evt.relatedEvent || evt.getParent()) == event;
 					});
 				},
 				direct: true,
@@ -5478,7 +5478,7 @@ export default {
 			}
 			return (
 				player.getHistory("lose", function (evt) {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					for (var i in evt.gaintag_map) {

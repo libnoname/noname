@@ -343,6 +343,14 @@ export default {
 		hujia: 0,
 		skills: ["repojun"],
 	}),
+	gz_liuyan: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["xinfu_tushe", "xinfu_limu"],
+	}),
 	// 怎么还冒出来一个体力上限不一样的呢？
 	gz_ol_sb_sunjian: new Character({
 		sex: "male",

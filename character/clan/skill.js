@@ -1418,7 +1418,7 @@ const skills = {
 				if (event.type === "discard") {
 					return false;
 				}
-				if (event.name == "lose" && ["useCard", "respond"].includes(event?.getParent()?.name)) {
+				if (["useCard", "respond"].includes(event.getParent()?.name)) {
 					return false;
 				}
 			}
@@ -1427,7 +1427,8 @@ const skills = {
 					if (evtx.type == "discard") {
 						return false;
 					}
-					if (["useCard", "respond"].includes(evtx.getParent().name)) {
+					const evt2 = evtx.relatedEvent || evtx.getParent();
+					if (["useCard", "respond"].includes(evt2?.name)) {
 						return false;
 					}
 					return evtx?.hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu");
@@ -4375,7 +4376,8 @@ const skills = {
 					return false;
 				}
 				return current.hasHistory("lose", evt => {
-					return evt.getParent() == event && evt.hs.length > 0;
+					const evtx = evt.relatedEvent || evt.getParent()
+					return evtx == event && evt.hs.length > 0;
 				});
 			});
 		},
