@@ -2066,7 +2066,7 @@ game.import("card", function () {
 					}
 					trigger._chadaox_skill_players.add(player);
 					trigger.player = target;
-					const dbi = [
+					/*const dbi = [
 						["皇帝的新文案", "皇帝的新文案"],
 						["兄啊，有个事情你能不能帮我一下", "死叛恶艹"],
 						["替我挡着！", "你咋这么自私呢，呸！"],
@@ -2084,7 +2084,7 @@ game.import("card", function () {
 						await game.asyncDelayx();
 						target.throwEmotion(player, ["egg", "shoe"].randomGet(), false);
 						target.chat(str[1]);
-					}
+					}*/
 				},
 			},
 			yifu_skill: {
@@ -2241,8 +2241,9 @@ game.import("card", function () {
 			chadaox_bg: "插",
 			//致敬传奇啥比光环描述
 			chadaox_info: "出牌阶段，令场上获得“两肋插刀”光环效果。",
+			chadaox_append: "<span style='font-family:yuanli'>当你受到伤害或失去体力时，将此效果转移给一名本次事件中未被选择过的队友（没有则不转移）。</span>",
 			chadaox_skill: "两肋插刀",
-			chadaox_skill_info: "当你受到伤害或失去体力时，将此效果转移给你一名未以此法转移过伤害的队友（没有则不转移）。",
+			chadaox_skill_info: "当你受到伤害或失去体力时，将此效果转移给一名本次事件中未被选择过的队友（没有则不转移）。",
 			yifu: "义父",
 			yifu_bg: "父",
 			get yifu_info() {
