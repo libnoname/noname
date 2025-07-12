@@ -1970,6 +1970,7 @@ game.import("card", function () {
 							}
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
+						.set("dying", trigger.player)
 						.set("targetRequired", true);
 				},
 			},
