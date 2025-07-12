@@ -312,7 +312,6 @@ export default () => {
 					}
 				}
 
-
 				var side = Math.random() < 0.5;
 				var num = Math.floor(Math.random() * 8);
 				list = list.splice(8 - num).concat(list);
@@ -4377,17 +4376,8 @@ export default () => {
 						}
 						await event.trigger("phaseOver");
 						let findNext = current => {
-							let players = game.players
-								.slice(0)
-								.concat(game.dead)
-								.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
-							let position = parseInt(current.dataset.position);
-							for (let i = 0; i < players.length; i++) {
-								if (parseInt(players[i].dataset.position) > position) {
-									return players[i];
-								}
-							}
-							return players[0];
+							const index = _status.actlist.indexOf(current);
+							return _status.actlist[(index + 1) % _status.actlist.length];
 						};
 						event.player = findNext(event.player);
 					}

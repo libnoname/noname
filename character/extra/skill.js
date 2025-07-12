@@ -2942,7 +2942,7 @@ const skills = {
 			}
 			names = names.map(name => get.rawName(name));
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			_status.characterlist.randomSort();
 			let ownedSkills = target.getSkills(null, false, false),
@@ -3061,7 +3061,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					if (!_status.characterlist) {
-						game.initCharactertList();
+						game.initCharacterList();
 					}
 					if (game.roundNumber * game.countPlayer() <= (1.5 * game.countPlayer2()) / Math.sqrt(player.getDamagedHp() + 1)) {
 						return 0;
@@ -4351,7 +4351,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			_status.characterlist.randomSort();
 			var list = [];
@@ -6307,6 +6307,7 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
+					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -6433,6 +6434,7 @@ const skills = {
 					"step 0";
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
+					event.result._apply_args = { addSkillCount: false };
 					var owner = get.owner(cards[0]);
 					event.target = owner;
 					owner.$give(cards[0], player, false);

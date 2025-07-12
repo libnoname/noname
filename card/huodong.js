@@ -4,6 +4,349 @@ game.import("card", function () {
 		name: "huodong",
 		connect: true,
 		card: {
+			//见好就收
+			jianhao: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget(card, player, target) {
+					return target == player;
+				},
+				selectTarget: -1,
+				toself: true,
+				modTarget: true,
+				async content(event, trigger, player) {
+					const { target } = event;
+					const gain = [];
+					let num,
+						choice,
+						putback = false;
+					do {
+						const {
+							cards: [card],
+						} = await game.cardsGotoOrdering(get.cards());
+						const numx = get.number(card, false);
+						gain.push(card);
+						await target.showCards(card, get.translation(target) + "使用了【见好就收】");
+						if (gain.length > 1) {
+							if ((choice == "大于" && numx > num) || (choice == "小于" && numx < num)) {
+								num = numx;
+							} else {
+								putback = true;
+								target.popup("杯具");
+								break;
+							}
+						} else {
+							num = numx;
+						}
+						const str = get.strNumber(numx);
+						const choices = ["大于" + str, "小于" + str];
+						if (gain.length > 1) {
+							choices.push("cancel2");
+						}
+						const { result } = await target
+							.chooseControl(choices)
+							.set("prompt", "见好就收：猜测下一张牌的点数大于或小于，或者取消获得所有展示过的牌")
+							.set("ai", () => {
+								if (get.event().gain.length > 2) {
+									return "cancel2";
+								}
+								return get.event().num < 7 ? 0 : 1;
+							})
+							.set("gain", gain)
+							.set("num", numx);
+						if (result.control == "cancel2") {
+							await target.gain(gain, "gain2");
+							break;
+						} else {
+							choice = result.index == 0 ? "大于" : "小于";
+							target.popup(choice, "water");
+							game.log(target, "猜测", "#y" + choice);
+						}
+					} while (true);
+					if (putback) {
+						while (gain.length) {
+							ui.cardPile.insertBefore(gain.pop().fix(), ui.cardPile.firstChild);
+						}
+					}
+				},
+				ai: {
+					wuxie(target, card, player, viewer) {
+						if (target.countCards("h") * Math.max(target.hp, 5) > 6) {
+							return 0;
+						}
+					},
+					basic: {
+						order: 7,
+						useful: 4.5,
+						value(card, player) {
+							if (player.hp > 2) {
+								return 9.2;
+							}
+							return 9.2 - 0.7 * Math.min(3, player.countCards("hs"));
+						},
+					},
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//望梅止渴
+			wangmei: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget: true,
+				async content(event, trigger, player) {
+					const { target } = event;
+					target.addTempSkill(`${event.name}_skill`, { player: "phaseAfter" });
+				},
+				ai: {
+					wuxie(target, card, player, viewer) {
+						if (target.countCards("h", { suit: "club" }) > 0 && target.isDamaged()) {
+							return 0;
+						}
+					},
+					basic: {
+						order: 7,
+						useful: 2.5,
+						value(card, player) {
+							if (player.isDamaged()) {
+								return 8.5;
+							}
+							return 7.2;
+						},
+					},
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//至死方休
+			zhisi: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget(card, player, target) {
+					return target == player && player.maxHp > 1;
+				},
+				selectTarget: -1,
+				toself: true,
+				modTarget(card, player, target) {
+					return target.maxHp > 1;
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					const num = target.maxHp - 1;
+					if (!num) {
+						return;
+					}
+					await target.loseMaxHp(num);
+					const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true });
+					for (let i = 0; i < Math.min(9, num); i++) {
+						if (!target.hasUseTarget(card, true, false) || !target?.isIn()) {
+							break;
+						}
+						const result = await target.chooseUseTarget(`###是否使用${get.translation(card)}###当前次数：${i + 1 + "/" + Math.min(9, num)}`, card, false).forResult();
+						if (!result?.bool) {
+							break;
+						}
+					}
+				},
+				ai: {
+					wuxie(target, card, player, viewer) {
+						const cardx = get.autoViewAs({ name: "sha", nature: "fire", isCard: true });
+						if (target.maxHp - 1 > 2 && target.hasValueTarget(cardx, true, false)) {
+							return 0;
+						}
+					},
+					basic: {
+						order: 7,
+						useful: 2,
+						value(card, player) {
+							if (player.getDamagedHp() >= 2) {
+								return 8 - player.hp;
+							}
+							return 1;
+						},
+					},
+					result: {
+						target(player, target) {
+							const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true });
+							if (target.getDamagedHp() > 2 && target.hasValueTarget(card, true, false)) {
+								return target.getDamagedHp();
+							}
+							return 0;
+						},
+					},
+				},
+			},
+			//青蒜
+			qingsuan: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				global: ["qingsuan_record"],
+				filterTarget(card, player, target) {
+					return player.getStorage("qingsuan_record").includes(target);
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					const num = get.rand(0, 2);
+					player.popup(num, "fire");
+					await target.damage(num);
+				},
+				ai: {
+					wuxie(target, card, player, viewer) {
+						if (Math.random() > 0.5) {
+							return 0;
+						}
+					},
+					basic: {
+						order: 6,
+						useful: 2,
+						value: 7,
+					},
+					result: {
+						target(player, target) {
+							return get.damageEffect(target, player, target);
+						},
+					},
+					tag: {
+						damage: 0.75,
+					},
+				},
+			},
+			//火上浇油
+			jiaoyou: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: true,
+				reverseOrder: true,
+				global: ["jiaoyou_skill"],
+				async content(event, trigger, player) {
+					const { target } = event;
+					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
+						name = event.name;
+					if (cards.length) {
+						await target.showCards(cards);
+						for (const card of cards) {
+							let tag = card.gaintag?.find(tag => tag.startsWith(name));
+							if (tag) {
+								player.removeGaintag(tag, [card]);
+							}
+							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
+							if (!lib.skill[tag]) {
+								game.broadcastAll(
+									(tag, str) => {
+										lib.skill[tag] = {};
+										lib.translate[tag] = "浇油+" + str;
+									},
+									tag,
+									tag.slice(name.length)
+								);
+							}
+							player.addGaintag([card], tag);
+						}
+					}
+				},
+				ai: {
+					wuxie() {
+						return 0;
+					},
+					order: 9,
+					useful: 2.5,
+					value: 7.5,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//好运
+			haoyun: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget(card, player, target) {
+					return target == player;
+				},
+				selectTarget: -1,
+				toself: true,
+				modTarget: true,
+				async contentBefore(event, trigger, player) {
+					const evt = event.getParent();
+					if (!evt.haoyun) {
+						const result = await player
+							.chooseControl("black", "red")
+							.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
+							.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
+							.forResult();
+						if (result?.control) {
+							game.log(player, "选择了", "#y" + result.control);
+							player.popup(result.control);
+							evt.haoyun = result.control;
+						}
+					}
+				},
+				async content(event, trigger, player) {
+					event.cards ??= [];
+					const evt = event.getParent(),
+						{ target } = event,
+						color = evt.haoyun;
+					if (!color) {
+						return;
+					}
+					while (true) {
+						const judgeEvent = target.judge(card => {
+							if (get.color(card) == get.event().haoyun_color) {
+								return 1.5;
+							}
+							return -1.5;
+						});
+						judgeEvent.set("haoyun_color", color);
+						judgeEvent.judge2 = result => result.bool;
+						judgeEvent.set("callback", async event => {
+							if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
+								await event.player.gain(event.card, "gain2");
+							}
+						});
+						const result = await judgeEvent.forResult();
+						if (result?.bool && result?.card) {
+							event.cards.push(result.card);
+						} else {
+							break;
+						}
+					}
+				},
+				ai: {
+					wuxie(target, card, player, viewer) {
+						if (target.countCards("h") * Math.max(target.hp, 5) > 6) {
+							return 0;
+						}
+					},
+					basic: {
+						order: 7,
+						useful: 3,
+						value(card, player) {
+							if (player.hp > 2) {
+								return 7;
+							}
+							return 7 - 0.5 * Math.min(3, player.countCards("hs"));
+						},
+					},
+					result: {
+						target: 1,
+					},
+				},
+			},
 			//义父
 			//时光时光曼些巴，不要再让你变牢了
 			yifu: {
@@ -510,7 +853,10 @@ game.import("card", function () {
 						const result = await player
 							.chooseControl("摸牌阶段", "出牌阶段")
 							.set("prompt", "躺赢：选择要执行的额外阶段")
-							.set("ai", () => (Math.random() > 0.5 ? "摸牌阶段" : "出牌阶段"))
+							.set("ai", () => {
+								const player = get.player();
+								return player.countCards("hs", card => player.hasValueTarget(card)) < 2 ? "摸牌阶段" : "出牌阶段";
+							})
 							.forResult();
 						if (result?.control) {
 							const name = result.control == "摸牌阶段" ? "phaseDraw" : "phaseUse";
@@ -1353,6 +1699,69 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			qingsuan_record: {
+				silent: true,
+				charlotte: true,
+				trigger: { player: "damageEnd" },
+				firstDo: true,
+				filter(event, player) {
+					return event.source && !player.getStorage("qingsuan_record").includes(event.source);
+				},
+				async content(event, trigger, player) {
+					player.markAuto(event.name, trigger.source);
+				},
+			},
+			jiaoyou_skill: {
+				charlotte: true,
+				silent: true,
+				trigger: { source: "damageBegin1" },
+				filter(event, player) {
+					if (!event.card) {
+						return false;
+					}
+					const evt = event.getParent("useCard");
+					if (evt?.card !== event.card || evt.cards?.length !== 1) {
+						return false;
+					}
+					return player.hasHistory(
+						"lose",
+						evtx =>
+							evtx.getParent() === evt &&
+							Object.keys(evtx.gaintag_map).some(i => {
+								return evtx.gaintag_map[i].some(tag => tag.startsWith("jiaoyou"));
+							})
+					);
+				},
+				async content(event, trigger, player) {
+					const skill = "jiaoyou",
+						evt = trigger.getParent("useCard");
+					const evtx = player.getHistory(
+						"lose",
+						evtx =>
+							evtx.getParent() === evt &&
+							Object.keys(evtx.gaintag_map).some(i => {
+								return evtx.gaintag_map[i].some(tag => tag.startsWith(skill));
+							})
+					)[0];
+					trigger.num += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
+						const tag = evtx.gaintag_map[i].find(tag => tag.startsWith(skill));
+						if (tag) {
+							sum += parseInt(tag.slice(skill.length));
+						}
+						return sum;
+					}, 0);
+				},
+			},
+			wangmei_skill: {
+				charlotte: true,
+				mod: {
+					cardname(card, player, name) {
+						if (get.suit(card, player) == "club") {
+							return "tao";
+						}
+					},
+				},
+			},
 			khquanjiux_skill: {
 				charlotte: true,
 				silent: true,
@@ -1719,6 +2128,28 @@ game.import("card", function () {
 			},
 		},
 		translate: {
+			jianhao: "见好就收",
+			jianhao_bg: "收",
+			jianhao_info: "出牌阶段，对你使用。你展示牌堆顶一张牌，猜测牌堆顶的下张牌点数大于或小于此牌并展示。若猜对，你可选择一项：1.获得所有展示牌;2.再次猜测",
+			wangmei: "望梅止渴",
+			wangmei_bg: "梅",
+			wangmei_skill: "望梅止渴",
+			wangmei_info: "出牌阶段，对一名角色使用。直到该角色的回合结束，他所有梅花手牌均视为【桃】。",
+			zhisi: "至死方休",
+			zhisi_bg: "休",
+			zhisi_info: "出牌阶段，对你使用。目标将体力上限减少至1。每减少一点，可以视为使用一张火【杀】。（最多9张）",
+			get qingsuan() {
+				return Math.random() > 0.05 ? "清算" : "青蒜";
+			},
+			qingsuan_bg: "算",
+			qingsuan_info: "出牌阶段，对一名对你造成过伤害的角色使用。对其随机造成0~2点伤害。",
+			jiaoyou: "火上浇油",
+			jiaoyou_skill: "火上浇油",
+			jiaoyou_bg: "油",
+			jiaoyou_info: "出牌阶段，对所有角色使用。目标依次展示手牌中的伤害牌，这些牌造成的伤害+1直到离开手牌区。",
+			haoyun: "好运",
+			haoyun_bg: "运",
+			haoyun_info: "出牌阶段，对你使用。你选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。",
 			liehuo: "烈火",
 			liehuo_bg: "烈",
 			liehuo_info: "出牌阶段，对所有其他角色使用，令你和目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成一点火焰伤害。",
@@ -1822,6 +2253,24 @@ game.import("card", function () {
 			yifu_skill_info: "你的“义子”于准备阶段须交给你一张牌。",
 		},
 		list: [
+			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
+			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "jiaoyou"],
+			[lib.suit.randomGet(), get.rand(1, 13), "jiaoyou"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "qingsuan"],
+			[lib.suit.randomGet(), get.rand(1, 13), "qingsuan"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "zhisi"],
+			[lib.suit.randomGet(), get.rand(1, 13), "zhisi"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "wangmei"],
+			[lib.suit.randomGet(), get.rand(1, 13), "wangmei"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "jianhao"],
+			[lib.suit.randomGet(), get.rand(1, 13), "jianhao"],
+
 			[lib.suit.randomGet(), get.rand(1, 13), "tianlei"],
 			[lib.suit.randomGet(), get.rand(1, 13), "tianlei"],
 

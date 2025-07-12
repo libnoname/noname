@@ -1070,13 +1070,23 @@ export const Content = {
 			}
 		};
 		//检查实体牌会不会被销毁
-		for (let cardx of event.cards) {
+		let stop = false;
+		const list = [];
+		for (const cardx of event.cards) {
 			if (cardx.willBeDestroyed("equip", player, event)) {
 				cardx.selfDestroy(event);
-				return;
+				stop = true;
 			} else if ("hejx".includes(get.position(cardx, true))) {
-				return;
+				stop = true;
+			} else {
+				list.add(cardx);
 			}
+		}
+		if (stop) {
+			if (list.length) {
+				await game.cardsDiscard(list);
+			}
+			return;
 		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
@@ -3923,7 +3933,7 @@ player.removeVirtualEquip(card);
 		if (hidden.includes(event.skill)) {
 			if (!info.silent && player.hasSkillTag("nomingzhi", false, null, true)) {
 				event.finish();
-			} else if (!info.direct && typeof info.cost !== "function") {
+			} else if ((!info.direct && typeof info.cost !== "function") || (get.is.locked(event.skill, player) && typeof info.cost == "function")) {
 				event.trigger("triggerHidden");
 			} else {
 				event.skillHidden = true;
@@ -4617,7 +4627,7 @@ player.removeVirtualEquip(card);
 		}
 		game.log();
 		const skill = event.skill && get.sourceSkillFor(event.skill);
-		game.log(player, "的", skill ? `#y【${get.translation(skill)}】`: "", "回合开始");
+		game.log(player, "的", skill ? `#y【${get.translation(skill)}】` : "", "回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
 			var num;
@@ -5485,6 +5495,11 @@ player.removeVirtualEquip(card);
 				if (event.noOrdering) {
 					next.noOrdering = true;
 				}
+				if (event.result._apply_args) {
+					for (var i in event.result._apply_args) {
+						next[i] = event.result._apply_args[i];
+					}
+				}
 			}
 		} else if (event._sendskill) {
 			event.result._sendskill = event._sendskill;
@@ -6134,7 +6149,8 @@ player.removeVirtualEquip(card);
 			game.log(targets[index], "的拼点牌为", card);
 		});
 		player.addTempClass("target");
-		game.delay(0, 1000);
+		//共同拼点延时修改
+		game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1000);
 		"step 5";
 		event.target = null;
 		event.trigger("compare");
@@ -6333,7 +6349,8 @@ player.removeVirtualEquip(card);
 			player.line(event.target);
 			player.$compare(event.card1, event.target, event.card2);
 			event.trigger("compare");
-			game.delay(0, 1500);
+			//多元拼点延时调整
+			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		} else {
 			event.goto(10);
 		}
@@ -6539,7 +6556,8 @@ player.removeVirtualEquip(card);
 			event.num1 = getNum(event.card1);
 			event.num2 = getNum(event.card2);
 			event.trigger("compare");
-			game.delay(0, 1500);
+			//普通拼点延迟时间修改
+			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		},
 		async (event, trigger, player) => {
 			event.result = {
@@ -6636,7 +6654,8 @@ player.removeVirtualEquip(card);
 		event.num1 = getNum(event.card1);
 		event.num2 = getNum(event.card2);
 		await event.trigger("compare");
-		await game.delay(0, 1500);
+		//延时拼点延迟时间修改 if(lib.config.game_speed == "vvfast")
+		await game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		event.result = {
 			player: event.card1,
 			target: event.card2,
@@ -8811,7 +8830,7 @@ player.removeVirtualEquip(card);
 				player.stat[player.stat.length - 1].card[card.name]++;
 			}
 		}
-		if (event.skill) {
+		if (event.skill && event.addSkillCount !== false) {
 			if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 				player.stat[player.stat.length - 1].skill[event.skill] = 1;
 			} else {
@@ -9779,7 +9798,7 @@ player.removeVirtualEquip(card);
 				card
 			);
 		}
-		if (event.skill) {
+		if (event.skill && event.addSkillCount !== false) {
 			if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 				player.stat[player.stat.length - 1].skill[event.skill] = 1;
 			} else {
@@ -11632,6 +11651,10 @@ player.removeVirtualEquip(card);
 			} else {
 				cardj = get.cards()[0];
 			}
+		}
+		if (!cardj) {
+			event.finish();
+			return;
 		}
 		var owner = get.owner(cardj);
 		if (owner) {

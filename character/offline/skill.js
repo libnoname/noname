@@ -5502,7 +5502,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			const characters = _status.characterlist.slice();
 			//获取各个角色的技能并去重
@@ -21181,6 +21181,7 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
+					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -21361,7 +21362,7 @@ const skills = {
 			backup: {
 				precontent() {
 					"step 0";
-					event.result._apply_args = { throw: false };
+					event.result._apply_args = { throw: false, addSkillCount: false };
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
@@ -23576,7 +23577,7 @@ const skills = {
 	zyshilu: {
 		init() {
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 		},
 		audio: 2,

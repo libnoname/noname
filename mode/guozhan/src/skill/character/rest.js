@@ -18488,17 +18488,19 @@ export default {
 		forceDie: true,
 		popup: false,
 		priority: 10,
-		content() {
-			"step 0";
-			if (get.info(trigger.skill).silent) {
+		async content(event, trigger, player) {
+			const { skill } = trigger;
+			if (get.info(skill).silent) {
 				event.finish();
 			} else {
 				event.skillHidden = true;
-				var bool1 = game.expandSkills(lib.character[player.name1][3]).includes(trigger.skill);
-				var bool2 = game.expandSkills(lib.character[player.name2][3]).includes(trigger.skill);
-				var nai = function () {
-					var player = _status.event.player;
-					if (!_status.event.yes) {
+				const bool1 = game.expandSkills(lib.character[player.name1][3]).includes(skill);
+				const bool2 = game.expandSkills(lib.character[player.name2][3]).includes(skill);
+				const info = get.info(skill);
+				const isLockedCost = get.is.locked(skill, player) && typeof info?.cost == "function";
+				const choice = (() => {
+					const yes = !info?.check || info?.check?.(trigger._trigger, player, trigger.triggername, trigger.indexedData);
+					if (!yes) {
 						return false;
 					}
 					if (player.hasSkillTag("mingzhi_no")) {
@@ -18513,23 +18515,22 @@ export default {
 					if (Math.random() < 0.5) {
 						return true;
 					}
-					var info = get.info(_status.event.hsskill);
-					if (info && info.ai && info.ai.mingzhi == true) {
+					if (info?.ai?.mingzhi === true) {
 						return true;
 					}
-					if (info && info.ai && info.ai.maixie) {
+					if (info?.ai?.maixie) {
 						return true;
 					}
-					var group = lib.character[player.name1][1];
-					var popu = get.population(lib.character[player.name1][1]);
+					const group = lib.character[player.name1][1];
+					const popu = get.population(lib.character[player.name1][1]);
 					if (popu >= 2 || (popu == 1 && game.players.length <= 4)) {
 						return true;
 					}
 					if (get.population(group) > 0 && player.wontYe()) {
 						return Math.random() < 0.2 ? true : false;
 					}
-					var nming = 0;
-					for (var i = 0; i < game.players.length; i++) {
+					let nming = 0;
+					for (let i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].identity != "unknown") {
 							nming++;
 						}
@@ -18538,48 +18539,43 @@ export default {
 						return Math.random() < 0.5 ? true : false;
 					}
 					return Math.random() < (0.1 * nming) / game.players.length ? true : false;
-				};
+				})();
 				if (bool1 && bool2) {
-					event.name = player.name1;
+					event.name1 = player.name1;
 					event.name2 = player.name2;
+					const { result } = await player
+						.chooseButton([`明置：请选择你要明置以发动【${get.translation(skill)}】的角色`, [[event.name1, event.name2], "character"]])
+						.set("ai", button => {
+							const { player, choice } = get.event();
+							if (!choice) {
+								return 0;
+							}
+							return 1;
+						})
+						.set("choice", choice);
+					if (result?.links?.length) {
+						const index = event.name1 == result.links[0] ? 0 : 1;
+						await player.showCharacter(index);
+						if (!isLockedCost) {
+							trigger.revealed = true;
+						}
+					} else {
+						trigger.untrigger();
+						trigger.cancelled = true;
+					}
 				} else {
-					event.name = bool1 ? player.name1 : player.name2;
-				}
-				var info = get.info(trigger.skill);
-				var next = player.chooseBool("是否明置" + get.translation(event.name) + "以发动【" + get.translation(trigger.skill) + "】？");
-				next.set("yes", !info.check || info.check(trigger._trigger, player, trigger.triggername, trigger.indexedData));
-				next.set("hsskill", trigger.skill);
-				next.set("ai", nai);
-			}
-			"step 1";
-			if (result.bool) {
-				if (event.name == player.name1) {
-					player.showCharacter(0);
-				} else {
-					player.showCharacter(1);
-				}
-				trigger.revealed = true;
-				event.finish();
-			} else if (event.name2) {
-				var info = get.info(trigger.skill);
-				var next = player.chooseBool("是否明置" + get.translation(event.name2) + "以发动【" + get.translation(trigger.skill) + "】？");
-				next.set("yes", !info.check || info.check(trigger._trigger, player));
-				next.set("ai", function () {
-					return _status.event.yes;
-				});
-			} else {
-				event.finish();
-				trigger.untrigger();
-				trigger.cancelled = true;
-			}
-			"step 2";
-			if (event.name2) {
-				if (result.bool) {
-					player.showCharacter(1);
-					trigger.revealed = true;
-				} else {
-					trigger.untrigger();
-					trigger.cancelled = true;
+					event.name1 = bool1 ? player.name1 : player.name2;
+					const { result } = await player.chooseBool(`是否明置${get.translation(event.name1)}以发动【${get.translation(skill)}】？`).set("choice", choice);
+					if (result?.bool) {
+						const index = bool1 ? 0 : 1;
+						await player.showCharacter(index);
+						if (!isLockedCost) {
+							trigger.revealed = true;
+						}
+					} else {
+						trigger.untrigger();
+						trigger.cancelled = true;
+					}
 				}
 			}
 		},

@@ -195,6 +195,18 @@ const translates = {
 	dczhonge_info: "出牌阶段限一次，你可以将手牌调整至体力上限，与一名其他角色同时选择一项：1.你与其依次摸一张牌；2.你与其依次视为对对方使用一张【杀】。若其选择的项与你不同，你执行每项操作时额外执行一次。",
 	dcjuekai: "绝忾",
 	dcjuekai_info: "限定技，出牌阶段，你可以重置〖忠锷〗，然后直到出牌阶段结束，此阶段获得过牌的角色无法再使用手牌。",
+	yj_zhanghuan: "新杀张奂",
+	yj_zhanghuan_prefix: "新杀",
+	dcyiju: "义拒",
+	dcyiju_info: "锁定技，其他角色使用牌指定你为唯一目标后，你弃置一张牌。",
+	dcshuguo: "戍国",
+	dcshuguo_info: "每回合结束时，你可以依次使用本回合因弃置而置入弃牌堆的牌直到你使用了其他角色弃置的牌。若你的手牌数不为全场唯一最多，每有一张本回合弃置的牌没有使用，你摸一张牌。",
+	yj_zhangyan: "新杀张燕",
+	yj_zhangyan_prefix: "新杀",
+	dcqiaolve: "趫掠",
+	dcqiaolve_info: "你使用牌指定其他角色为目标后，若目标角色本局游戏第一次成为该牌名的目标，你可以获得其一张牌。",
+	dchanjie: "悍捷",
+	dchanjie_info: "其他角色的回合开始时，若其为全场体力值最多的角色，你可以将所有黑色手牌当一张伤害牌对其使用。",
 };
 
 export default translates;

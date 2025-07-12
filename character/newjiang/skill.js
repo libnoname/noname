@@ -2,6 +2,171 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//张奂
+	dcyiju: {
+		trigger: { target: "useCardToPlayered" },
+		forced: true,
+		filter(event, player) {
+			return event.player != player && event.targets.length == 1 && player.countDiscardableCards(player, "he");
+		},
+		async content(event, trigger, player) {
+			await player.chooseToDiscard(`义拒：请弃置一张牌`, "he", true).set("ai", card => {
+				const player = get.player();
+				if (player.hasSkill("dcshuguoi", null, false, false)) {
+					return Math.max(...game.filterPlayer2(target => player.canUse(card, target, true, false)).map(target => get.effect_use(target, card, player, player)));
+				}
+				return 6 - get.value(card);
+			});
+		},
+		ai: {
+			neg: true,
+			combo: "dcshuguo",
+		},
+	},
+	dcshuguo: {
+		trigger: { global: "phaseEnd" },
+		filter(event, player) {
+			return game.hasGlobalHistory("cardMove", evt => {
+				if (evt.type != "discard" || evt.getlx === false) {
+					return false;
+				}
+				return evt.getd().someInD("d");
+			});
+		},
+		async content(event, trigger, player) {
+			const history = game.getGlobalHistory("cardMove", evt => {
+				if (evt.type != "discard" || evt.getlx === false) {
+					return false;
+				}
+				return evt.getd().someInD("d");
+			});
+			const map = {};
+			for (const evt of history) {
+				game.filterPlayer2().forEach(target => {
+					const cards = evt.getd(target, "cards2").filterInD("d");
+					if (cards.length) {
+						map[target.playerid] ??= [];
+						map[target.playerid].addArray(cards);
+					}
+				});
+			}
+			const cards = Object.values(map).flat().unique();
+			const goon = () => cards.some(card => player.hasUseTarget(card, true, false));
+			while (goon()) {
+				const videoId = lib.status.videoId++;
+				const func = (id, map, cards) => {
+					const dialog = ui.create.dialog("戍国：请选择要使用的牌");
+					dialog.add(cards);
+					const getName = function (target) {
+						if (target._tempTranslate) {
+							return target._tempTranslate;
+						}
+						let name = target.name;
+						if (lib.translate[name + "_ab"]) {
+							return lib.translate[name + "_ab"];
+						}
+						return get.translation(name) + `[${target.getSeatNum()}]`;
+					};
+					for (const id in map) {
+						const target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+						for (const card of map[id]) {
+							const button = dialog.buttons.find(i => i.link == card);
+							if (button) {
+								if (!button.node.gaintag.innerHTML) {
+									button.node.gaintag.innerHTML = "";
+								}
+								button.node.gaintag.innerHTML += `${getName(target)}<br>`;
+							}
+						}
+					}
+					dialog.videoId = id;
+					return dialog;
+				};
+				if (player.isOnline2()) {
+					player.send(func, videoId, map, cards);
+				} else {
+					func(videoId, map, cards);
+				}
+				const result = await player
+					.chooseButton(true)
+					.set("dialog", get.idDialog(videoId))
+					.set("filterButton", button => get.player().hasUseTarget(button.link, true, false))
+					.set("ai", button => {
+						return player.getUseValue(button.link);
+					})
+					.forResult();
+				game.broadcastAll("closeDialog", videoId);
+				if (result?.links) {
+					const card = result.links[0];
+					cards.remove(card);
+					await player.chooseUseTarget(card, true);
+					if (Object.keys(map).some(id => player.playerid != id && map[id].includes(card))) {
+						break;
+					}
+				}
+			}
+			if (!player.isMaxHandcard(true)) {
+				await player.draw(cards.length);
+			}
+		},
+	},
+	//张燕
+	dcqiaolve: {
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			if (player == event.target) {
+				return false;
+			}
+			return game.getAllGlobalHistory("useCard", evt => evt.targets.includes(event.target) && evt.card.name == event.card.name).indexOf(event.getParent()) == 0;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player.gainPlayerCard(get.prompt2(event.skill, trigger.target), trigger.target, "he").set("chooseonly", true).forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.gain(cards).set("log", false);
+		},
+	},
+	dchanjie: {
+		trigger: { global: "phaseBegin" },
+		filter(event, player) {
+			return player != event.player && event.player.isMaxHp() && player.countCards("h", { color: "black" });
+		},
+		async cost(event, trigger, player) {
+			const list = get.inpileVCardList(info => {
+				const card = get.autoViewAs({ name: info[2], nature: info[3] }, player.getCards("h", { color: "black" }));
+				return get.tag({ name: info[2] }, "damage") > 0.5 && player.canUse(card, trigger.player, false, false);
+			});
+			if (!list.length) {
+				return;
+			}
+			const result = await player
+				.chooseButton([get.prompt2(event.skill, trigger.player), [list, "vcard"]])
+				.set("ai", button => {
+					const player = get.player();
+					const card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, player.getCards("h", { color: "black" }));
+					return get.effect_use(get.event().sourcex, card, player, player);
+				})
+				.set("sourcex", trigger.player)
+				.forResult();
+			if (result?.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+					targets: [trigger.player],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const info = event.cost_data,
+				cards = player.getCards("h", { color: "black" }),
+				card = get.autoViewAs({ name: info[2], nature: info[3] }, cards),
+				target = trigger.player;
+			if (player.canUse(card, target, false, false)) {
+				await player.useCard(card, cards, target, false);
+			}
+		},
+	},
 	//伍孚
 	dchuairen: {
 		enable: "chooseToUse",
@@ -2319,7 +2484,7 @@ const skills = {
 					mod: {
 						aiOrder(player, card, num) {
 							var number = get.number(card);
-							if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+							if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 								return num + 10;
 							}
 						},
@@ -2332,7 +2497,7 @@ const skills = {
 					var number = get.number(trigger.card);
 					var numbers = get.info(event.name).numbers;
 					event.playerx = get.info(event.name).playerx;
-					if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+					if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 						event.finish();
 					}
 				})
@@ -4885,7 +5050,7 @@ const skills = {
 						})
 					);
 				},
-				async content(event,trigger,player) {
+				async content(event, trigger, player) {
 					await player.loseHp();
 					await player.drawTo(player.maxHp);
 				},
@@ -4901,7 +5066,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				logTarget: "target",
-				async content(event,trigger,player) {
+				async content(event, trigger, player) {
 					trigger.target.addTempSkill("qinggang2");
 					trigger.target.storage.qinggang2.add(trigger.card);
 					trigger.target.markSkill("qinggang2");

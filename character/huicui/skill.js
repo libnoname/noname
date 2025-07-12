@@ -3425,7 +3425,8 @@ const skills = {
 			const toKeepCount = player
 				.getCards("h")
 				.map(card => get.name(card))
-				.unique();
+				.unique()
+				.length;
 			if (count > toKeepCount) {
 				const [bool, cards] = await player
 					.chooseCard("自缚：选择要保留的手牌", "选择不同牌名的手牌各一张，然后弃置其余手牌", toKeepCount)

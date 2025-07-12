@@ -2825,7 +2825,7 @@ const skills = {
 						if (
 							used &&
 							!game.hasPlayer(target => {
-								return !target.hasHistory("gain", evt => evt.cards.length);
+								return !target.hasHistory("gain", evt => evt.cards?.length);
 							})
 						) {
 							return;
@@ -2866,17 +2866,18 @@ const skills = {
 								black: black,
 								red: red,
 								used: used,
+								targetsx: game.filterPlayer(target=>!target.hasHistory("gain", evt => evt.cards?.length)),
 								filterButton(button) {
-									return get.event()[button.link].length;
+									return get.event()[button.link]?.length;
 								},
 								filterTarget(card, player, target) {
 									if (get.event().used) {
-										return !target.hasHistory("gain", evt => evt.cards.length);
+										return get.event().targetsx.includes(target);
 									}
 									return true;
 								},
 								ai1(button) {
-									return get.event()[button.link].length;
+									return get.event()[button.link]?.length;
 								},
 								ai2(target) {
 									if (!get.event().used && get.player() == target) {
@@ -3916,7 +3917,7 @@ const skills = {
 					[
 						[
 							["discard", "弃置一名角色至多两张牌，然后若其手牌数小于等于你,你跳过摸牌阶段"],
-							["damage", "对一名角色造成1点无属性伤害，然后若其体力值小于等于你，你跳过出牌阶段。"],
+							["damage", "对一名角色造成1点火焰伤害，然后若其体力值小于等于你，你跳过出牌阶段。"],
 						],
 						"textbutton",
 					],
@@ -3934,7 +3935,7 @@ const skills = {
 						}
 						return 1;
 					} else if (button.link === "damage") {
-						if (!game.hasPlayer(target => target.getHp() - 1 > player.getHp() && get.damageEffect(target, player, player))) {
+						if (!game.hasPlayer(target => target.getHp() - 1 > player.getHp() && get.damageEffect(target, player, player, "fire"))) {
 							return 0;
 						}
 						return 1;
@@ -3966,14 +3967,14 @@ const skills = {
 			}
 			if (choices.includes("damage")) {
 				const result = await player
-					.chooseTarget("探锋：对一名角色造成1点无属性伤害", true)
+					.chooseTarget("探锋：对一名角色造成1点火焰伤害", true)
 					.set("ai", target => {
 						const player = get.player();
-						return get.damageEffect(target, player, player);
+						return get.damageEffect(target, player, player, "fire");
 					})
 					.forResult();
 				player.line(result.targets);
-				await result.targets[0].damage();
+				await result.targets[0].damage("fire");
 				if (result.targets[0].getHp() <= player.getHp()) {
 					player.skip("phaseUse");
 				}
@@ -4666,25 +4667,11 @@ const skills = {
 	mbdangyi: {
 		audio: "jsrgdangyi",
 		inherit: "jsrgdangyi",
-		init(player, skill) {
-			player.setMark(skill, 2, false);
-			game.broadcastAll(function (player) {
-				if (!player.node.jiu_dangyi) {
-					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
-					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
-				}
-			}, player);
-		},
 		filter(event, player) {
 			return player.countMark("mbdangyi_used") < player.countMark("mbdangyi");
 		},
 		usable: 1,
 		persevereSkill: true,
-		intro: {
-			content(storage = 0, player) {
-				return `剩余可发动次数为${storage - player.countMark("mbdangyi_used")}`;
-			},
-		},
 	},
 	//牢又寄双雄
 	//友崔均
@@ -21560,6 +21547,7 @@ const skills = {
 			return 5 - get.value(card);
 		},
 		async content(event, trigger, player) {
+			const {target} = event;
 			const result = await player
 				.gainPlayerCard(target, "e", true)
 				.set("ai", function (button) {

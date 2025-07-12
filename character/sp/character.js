@@ -1,4 +1,18 @@
 const characters = {
+	ol_fanyufeng: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["olzhuoyue", "olqiaowu"],
+		names: "樊|玉凤",
+	},
+	ol_qiaogong: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["olmeiyan", "olshuoyu", "olzuobao"],
+		names: "桥|null",
+	},
 	zhangqiying: {
 		sex: "female",
 		group: "qun",

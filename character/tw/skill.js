@@ -2923,7 +2923,10 @@ const skills = {
 				};
 			} else {
 				const storage = player.getStorage("twhuangzhu_effect");
-				const storage2 = player.getStorage("twhuangzhu_equip").slice().map(equip => equip[2]);
+				const storage2 = player
+					.getStorage("twhuangzhu_equip")
+					.slice()
+					.map(equip => equip[2]);
 				let virtualList = {};
 				let disabled = [1, 2, 3, 4, 5].filter(num => player.countDisabledSlot(num)).map(num => "equip" + num);
 				for (let i of disabled) {
@@ -2947,14 +2950,15 @@ const skills = {
 					}
 					chooseList.push(str);
 					let equips = storage.slice().filter(name => get.subtypes(name).includes(i));
-					let list = [equips, "vcard"]
+					let list = [equips, "vcard"];
 					if (equips.length) {
 						chooseList.push(list);
 					}
 				}
 				const {
 					result: { bool, links },
-				} = await player.chooseButton(chooseList, [1, 2])
+				} = await player
+					.chooseButton(chooseList, [1, 2])
 					.set("filterButton", button => {
 						let storage2 = get.event("storage2");
 						if (storage2.includes(button.link[2])) {
@@ -4276,7 +4280,7 @@ const skills = {
 					while (storage.length) {
 						const name = storage.shift(),
 							card = get.autoViewAs({ name: name[0].name, nature: name[0].nature, isCard: true });
-						if (!player.hasUseTarget(card, false)) {
+						if ((!get.info(card).notarget || !lib.filter.cardEnabled(card, player)) && !player.hasUseTarget(card, false)) {
 							continue;
 						}
 						const targets = await player.chooseUseTarget(`请选择${get.translation(card)}的目标，若此牌的目标不包含${get.translation(target)}，则其摸一张牌`, card, true, false, "nodistance").forResultTargets();

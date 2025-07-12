@@ -195,11 +195,15 @@ game.import("card", function () {
 								if (!game.hasNature(event.card, "ice") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
 									return false;
 								}
-								if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
-									player: player,
-									card: event.card,
-									type: "use",
-								}) && target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)) {
+								if (
+									event.shanRequired > 1 &&
+									!target.hasSkillTag("freeShan", null, {
+										player: player,
+										card: event.card,
+										type: "use",
+									}) &&
+									target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)
+								) {
 									return false;
 								}
 								return true;
@@ -1346,11 +1350,15 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
-										player: player,
-										card: event.card,
-										type: "respond",
-									}) && event.shaRequired > target.mayHaveSha(target, "respond", null, "count")) {
+									if (
+										event.shaRequired > 1 &&
+										!target.hasSkillTag("freeSha", null, {
+											player: player,
+											card: event.card,
+											type: "respond",
+										}) &&
+										event.shaRequired > target.mayHaveSha(target, "respond", null, "count")
+									) {
 										return false;
 									}
 									// if (target.hasSkill("naman")) {
@@ -1733,11 +1741,15 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
-										player: player,
-										card: event.card,
-										type: "respond",
-									}) && event.shanRequired > target.mayHaveShan(target, "respond", null, "count")) {
+									if (
+										event.shanRequired > 1 &&
+										!target.hasSkillTag("freeShan", null, {
+											player: player,
+											card: event.card,
+											type: "respond",
+										}) &&
+										event.shanRequired > target.mayHaveShan(target, "respond", null, "count")
+									) {
 										return false;
 									}
 									return true;
@@ -2195,11 +2207,15 @@ game.import("card", function () {
 										if (damage >= 0) {
 											return false;
 										}
-										if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
-											player: player,
-											card: event.card,
-											type: "respond",
-										}) && event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")) {
+										if (
+											event.shaRequired > 1 &&
+											!target.hasSkillTag("freeSha", null, {
+												player: player,
+												card: event.card,
+												type: "respond",
+											}) &&
+											event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")
+										) {
 											return false;
 										}
 										if (get.attitude(responder, opposite._trueMe || opposite) > 0 && damage >= get.damageEffect(opposite, responder, responder)) {
@@ -2220,9 +2236,9 @@ game.import("card", function () {
 								}
 								result = await next.forResult();
 							}
-							if (result.bool) {
+							if (result?.bool) {
 								event.shaRequired--;
-								if (result.cards) {
+								if (result.cards?.length) {
 									if (event.turn === target) {
 										event.targetCards.addArray(result.cards);
 									} else {
@@ -3636,7 +3652,7 @@ game.import("card", function () {
 								return;
 							}
 							_status.zhuge_temp = card;
-							var bool = lib.filter.cardUsable(get.autoViewAs({ name: "sha" }, ui.selected.cards.concat([card])), player);
+							var bool = lib.filter.cardUsable(get.autoViewAs(cardz, ui.selected.cards.concat([card])), player);
 							delete _status.zhuge_temp;
 							if (!bool) {
 								return false;

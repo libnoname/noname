@@ -9530,8 +9530,8 @@ const skills = {
 			},
 		},
 	},
-	wusheng_guanzhang: { audio: 1 },
-	paoxiao_guanzhang: { audio: 1 },
+	wusheng_guanzhang: { audio: 2 },
+	paoxiao_guanzhang: { audio: 2 },
 	fencheng: {
 		skillAnimation: "epic",
 		animationColor: "gray",

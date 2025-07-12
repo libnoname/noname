@@ -453,7 +453,7 @@ const skills = {
 					const history = game.getAllGlobalHistory(),
 						map = {};
 					if (history.length <= 1) {
-						return list;
+						return map;
 					}
 					for (let i = history.length - 1; i >= 0; i--) {
 						const evts = history[i]["everything"].filter(evt => {
@@ -738,7 +738,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			//获取各个角色的技能并去重
 			const skills = _status.characterlist
@@ -838,12 +838,13 @@ const skills = {
 	olrumo: {
 		charlotte: true,
 		trigger: { global: "roundEnd" },
+		filter(event, player) {
+			return !player.getRoundHistory("sourceDamage", evt => evt.num > 0).length;
+		},
 		forced: true,
 		popup: false,
 		content() {
-			if (!player.getRoundHistory("sourceDamage", evt => evt.num > 0)?.length) {
-				player.loseHp();
-			}
+			player.loseHp();
 		},
 		mark: true,
 		marktext: "魔",
@@ -852,14 +853,13 @@ const skills = {
 	//OL界马岱
 	olqianxi: {
 		audio: 2,
-		trigger: { player: "phaseZhunbeiBegin" },
-		async content(event, trigger, player) {
-			await player.draw();
-			if (!player.countCards("he")) {
-				return;
-			}
-			const result = await player
-				.chooseCard(`潜袭：请展示一张牌`, "he", true)
+		trigger: { player: "phaseUseBegin" },
+		filter(event, player) {
+			return player.countCards("he") > 0;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), "he")
 				.set("ai", card => {
 					const player = get.player();
 					let value = 0;
@@ -870,20 +870,19 @@ const skills = {
 					return value;
 				})
 				.forResult();
-			if (result?.cards) {
-				const card = result.cards[0],
-					color = get.color(card, player);
-				await player.showCards(card, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`);
-				player.addTempSkill(event.name + "_damage");
-				player.addGaintag(card, event.name + "_damage");
-				const targets = game
-					.filterPlayer(target => {
-						return player != target && get.distance(player, target) == 1;
-					})
-					.sortBySeat();
-				if (!targets.length) {
-					return;
-				}
+		},
+		async content(event, trigger, player) {
+			const card = event.cards[0],
+				color = get.color(card, player);
+			await player.showCards(card, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`);
+			player.addTempSkill(event.name + "_damage");
+			player.addGaintag(card, event.name + "_damage");
+			const targets = game
+				.filterPlayer(target => {
+					return player != target && get.distance(player, target) == 1;
+				})
+				.sortBySeat();
+			if (targets.length) {
 				player.line(targets, "green");
 				targets.forEach(target => {
 					target.addTempSkill(event.name + "_effect");
@@ -1169,10 +1168,12 @@ const skills = {
 						}
 						if (Array.isArray(card.cards)) {
 							cards.addArray(card.cards);
+						} else {
+							return false;
 						}
 						if (color1 != color2 || !cards.containsSome(...hs)) {
 							return false;
-						} //
+						}
 					},
 				},
 				charlotte: true,
@@ -4502,7 +4503,7 @@ const skills = {
 						return;
 					}
 					player.popup("失败", "fire");
-					player.storage.olsbjinming.remove(num);
+					player.storage.olsbjinming?.remove(num);
 					game.log(player, "删除了", "#g【矜名】", "的选项", `#y${choice.slice(2)}`);
 				},
 				intro: {

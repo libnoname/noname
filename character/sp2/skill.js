@@ -3953,7 +3953,7 @@ const skills = {
 			});
 			if (len && !skills.length) {
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				let allList = _status.characterlist.slice(0);
 				allList.randomSort();
@@ -13051,7 +13051,7 @@ const skills = {
 	},
 	pingjian: {
 		initList() {
-			game.initCharactertList();
+			game.initCharacterList();
 		},
 		init(player) {
 			player.addSkill("pingjian_check");
@@ -13065,7 +13065,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			var allList = _status.characterlist.slice(0);
 			game.countPlayer(function (current) {
@@ -13177,7 +13177,7 @@ const skills = {
 			var map = [];
 			var evt = event.getParent(2);
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			var allList = _status.characterlist.slice(0);
 			game.countPlayer(function (current) {

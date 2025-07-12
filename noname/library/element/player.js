@@ -4322,7 +4322,7 @@ export class Player extends HTMLDivElement {
 			this.marks[i].classList.add("overflowmark");
 			var num = 0;
 			if (typeof lib.skill[i].intro.markcount == "function") {
-				num = lib.skill[i].intro.markcount(this.storage[i], this);
+				num = lib.skill[i].intro.markcount(this.storage[i], this, i);
 			} else if (lib.skill[i].intro.markcount == "expansion") {
 				num = this.countCards("x", card => card.hasGaintag(i));
 			} else if (typeof this.storage[i + "_markcount"] == "number") {
@@ -9937,7 +9937,7 @@ export class Player extends HTMLDivElement {
 				} else if (info.mark == "character") {
 					var intro = info.intro.content;
 					if (typeof intro == "function") {
-						intro = intro(this.storage[skill], this);
+						intro = intro(this.storage[skill], this, skill);
 					} else if (typeof intro == "string") {
 						intro = intro.replace(/#/g, this.storage[skill]);
 						intro = intro.replace(/&/g, get.cnNumber(this.storage[skill]));
@@ -9945,7 +9945,7 @@ export class Player extends HTMLDivElement {
 					}
 					var caption;
 					if (typeof info.intro.name == "function") {
-						caption = info.intro.name(this.storage[skill], this);
+						caption = info.intro.name(this.storage[skill], this, skill);
 					} else if (typeof info.intro.name == "string") {
 						caption = info.name;
 					} else {

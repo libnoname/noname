@@ -166,7 +166,7 @@ const skills = {
 			await game
 				.loseAsync({
 					lose_list: lose_list,
-					discard: player,
+					discarder: player,
 				})
 				.setContent("discardMultiple");
 			const next = player.addToExpansion(cards, "gain2");

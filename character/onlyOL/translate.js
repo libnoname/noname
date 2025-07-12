@@ -2,7 +2,7 @@ const translates = {
 	ol_madai: "OL界马岱",
 	ol_madai_prefix: "OL界",
 	olqianxi: "潜袭",
-	olqianxi_info: "准备阶段，你可以摸一张牌并展示一张牌。若如此做，距离为1的其他角色本回合不能使用或打出与“潜袭”牌颜色相同的手牌，你本回合使用“潜袭”牌造成的伤害+1。",
+	olqianxi_info: "出牌阶段开始时，你可以展示一张牌，本回合距离为1的其他角色不能使用或打出与此牌颜色相同的手牌，且你本回合使用此牌造成的伤害+1。",
 	ol_sb_yl_luzhi: "OL谋卢植",
 	ol_sb_yl_luzhi_prefix: "OL谋",
 	olsibing: "司兵",
