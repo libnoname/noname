@@ -2320,6 +2320,7 @@ const skills = {
 	},
 	//夏侯徽
 	dcdujun: {
+		audio: 2,
 		trigger: {
 			global: ["damageSource", "damageEnd"],
 		},
@@ -2410,6 +2411,7 @@ const skills = {
 		},
 	},
 	dcjikun: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: ["addToExpansionAfter", "gainAfter", "addJudgeAfter", "loseAsyncAfter", "equipAfter"],

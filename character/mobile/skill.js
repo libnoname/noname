@@ -445,6 +445,9 @@ const skills = {
 	//笮融
 	mbfutu: {
 		audio: 8,
+		logAudio: (event, player, name, target, costResult) => {
+			return (costResult.cost_data == "black" ? [1, 2] : [3, 4]).map(i => `mbfutu${i}.mp3`);
+		},
 		trigger: {
 			global: "phaseEnd",
 		},
@@ -521,6 +524,7 @@ const skills = {
 					player: "damageBegin3",
 				},
 				audio: "mbfutu",
+				logAudio: () => [5, 6, 7, 8].map(i => `mbfutu${i}.mp3`),
 				filter(event, player) {
 					return player.hasExpansions("mbfutu");
 				},
@@ -594,6 +598,17 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "mbjingtu",
+					logAudio: (event, player) => {
+						const choice = get.info("mbjingtu_backup")?.choice;
+						switch (choice) {
+							case "black":
+								return ["mbjingtu1.mp3", "mbjingtu2.mp3"];
+							case "red":
+								return ["mbjingtu3.mp3", "mbjingtu4.mp3"];
+							default:
+								return ["mbjingtu5.mp3", "mbjingtu6.mp3"];
+						}
+					},
 					choice: links[0],
 					skillAnimation: true,
 					animationColor: "gray",
@@ -802,6 +817,11 @@ const skills = {
 	},
 	mbfozong: {
 		audio: 6,
+		logAudio: (event, player) => {
+			const list = player.getStorage("mbfozong");
+			let audios = list.length > 1 ? [5, 6] : list.includes("red") ? [3, 4] : [1, 2];
+			return `mbfozong${audios[["recover", "damage"].indexOf(event.name)]}.mp3`;
+		},
 		forced: true,
 		onremove: true,
 		trigger: {
@@ -844,6 +864,8 @@ const skills = {
 	},
 	//势鲁肃
 	pothaoshi: {
+		audio: 3,
+		logAudio: () => 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => target.hp <= player.hp && target != player); //
@@ -870,6 +892,8 @@ const skills = {
 		subSkill: {
 			tag: {},
 			draw: {
+				audio: "pothaoshi",
+				logAudio: () => "pothaoshi3.mp3",
 				trigger: { player: "loseAfter" },
 				forced: true,
 				locked: false,
@@ -969,6 +993,7 @@ const skills = {
 		},
 	},
 	potdimeng: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -1064,6 +1089,8 @@ const skills = {
 	},
 	//孙峻
 	mbxiongtu: {
+		audio: 4,
+		logAudio: index => (typeof index === "number" ? `mbxiongtu${index}.mp3` : 2),
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -1101,6 +1128,7 @@ const skills = {
 					.set("num", num)
 					.forResult();
 				if (resultx?.bool) {
+					player.logSkill("mbxiongtu", [target], null, null, [get.rand(3, 4)]);
 					await target.damage();
 				} else {
 					await target.modedDiscard(card).set("discarder", player);
@@ -1115,6 +1143,7 @@ const skills = {
 		},
 	},
 	mbxianshuai: {
+		audio: 2,
 		init(player, skill) {
 			player.addSkill(skill + "_record");
 		},
