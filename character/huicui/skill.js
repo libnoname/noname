@@ -1320,7 +1320,7 @@ const skills = {
 	dcshuangrui: {
 		onChooseTarget(event, player) {
 			event.targetprompt2.add(target => {
-				if (event.getParent().skill !== "dcshuangrui") {
+				if (event.getParent().skill !== "dcshuangrui" || !target.classList.contains("selectable")) {
 					return;
 				}
 				if (player.inRange(target)) {

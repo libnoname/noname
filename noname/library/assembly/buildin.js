@@ -57,11 +57,12 @@ export const checkTarget = {
 		});
 	},
 	addTargetPrompt(target, event) {
-		if (!event.targetprompt2?.length || !target.classList.contains("selectable")) {
+		if (!event.targetprompt2?.length) {
 			return;
 		}
 		const str = event.targetprompt2
 			.map(func => func(target) || "")
+			.flat()
 			.filter(prompt => prompt.length)
 			.toUniqued()
 			.join("<br>");

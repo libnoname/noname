@@ -230,7 +230,7 @@ const skills = {
 		},
 		hiddenCard(player, name) {
 			if (lib.inpile.includes(name)) {
-				return true;
+				return player.countCharge();
 			}
 		},
 		filter(event, player) {
@@ -944,7 +944,7 @@ const skills = {
 						[
 							[
 								["fengyin", "令所有其他角色于下个准备和结束阶段期间非锁定技失效"],
-								["judge", "令所有其他角色于下个判定阶段开始时在【闪电】.【乐不思蜀】和【兵粮寸断】中选择两个个并依次进行判定。"],
+								["judge", "令所有其他角色于下个判定阶段开始时在【闪电】.【乐不思蜀】和【兵粮寸断】中选择两个并依次进行判定。"],
 								["discard", "令所有其他角色于下个摸牌阶段期间内摸到的牌若颜色相同，则全部弃置。"],
 								["use", "令所有其他角色于下个出牌阶段每种类型的牌仅能使用一张"],
 								["gain", "令所有其他角色于下个弃牌阶段期间内弃置牌后你获得之"],
@@ -8592,7 +8592,7 @@ const skills = {
 	resghuishi: {
 		onChooseToUse(event) {
 			event.targetprompt2.add(target => {
-				if (event.skill !== "resghuishi") {
+				if (event.skill !== "resghuishi" || !target.classList.contains("selectable")) {
 					return;
 				}
 				if (
@@ -8689,7 +8689,7 @@ const skills = {
 	sghuishi: {
 		onChooseToUse(event) {
 			event.targetprompt2.add(target => {
-				if (event.skill !== "sghuishi") {
+				if (event.skill !== "sghuishi" || !target.classList.contains("selectable")) {
 					return;
 				}
 				if (
