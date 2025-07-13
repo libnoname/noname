@@ -1278,14 +1278,17 @@ const skills = {
 					game.log(player, "成功完成使命");
 					player.changeSkin("potzhongao", "pot_weiyan_achieve");
 					player.setStorage("potkuanggu", 1);
-					const num = player.countMark("potzhuangshi_limit") + player.countMark("potzhuangshi_directHit");
-					if (num > 0) {
+					const num1 = player.countMark("potzhuangshi_limit"),
+						num2 = player.countMark("potzhuangshi_directHit");
+					if (num1 > 0) {
+						await player.draw();
+					}
+					if (num2 > 0) {
 						if (!player.isDamaged()) {
-							await player.draw(num);
+							await player.draw();
 						} else {
-							await player.recover(num);
+							await player.recover();
 						}
-						await player.draw(num);
 					}
 				},
 			},
@@ -1305,8 +1308,6 @@ const skills = {
 					game.log(player, "使命失败");
 					player.changeSkin("potzhongao", "pot_weiyan_fail");
 					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
-					await player.recover();
-					await player.draw(2);
 				},
 			},
 		},
@@ -1318,95 +1319,64 @@ const skills = {
 			player: "phaseUseBegin",
 		},
 		async cost(event, trigger, player) {
-			const result = await player
-				.chooseButton(
-					[
-						get.prompt(event.skill),
-						[
-							[
-								["losehp", "失去任意点体力，令你此阶段使用的前等量张牌不计入次数限制"],
-								["discard", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应"],
-							],
-							"textbutton",
-						],
-					],
-					[1, 2]
-				)
-				.set("filterButton", button => {
+			const { bool: bool1, cards } = await player
+				.chooseToDiscard(get.prompt(event.skill), [1, Infinity], "h")
+				.set("prompt2", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应")
+				.set("ai", card => {
 					const player = get.player();
-					if (button.link == "discard") {
-						return player.countCards("h");
+					let num = Math.floor(player.countCards("h") / 2);
+					if (ui.selected.cards.length < num) {
+						return 7 - get.value(card);
 					}
-					return true;
+					return 0;
 				})
-				.set("ai", button => {
-					const player = get.player(),
-						num = Math.floor(player.countCards("h") / 2);
-					if (button.link == "discard") {
-						return num;
+				.set("chooseonly", true)
+				.forResult();
+			if (bool1 && cards.length) {
+				game.broadcastAll(cards => {
+					cards.forEach(card => card.addGaintag("potzhuangshi_tag"));
+				}, cards);
+			}
+			const { bool: bool2, numbers } = await player
+				.chooseNumbers(get.prompt(event.skill), [
+					{
+						prompt: "失去任意点体力值，令你此阶段使用的前等量张牌不计入次数限制",
+						min: 1,
+						max: player.getHp(),
+					},
+				])
+				.set("processAI", () => {
+					const player = get.player();
+					if (player.hp < 2) {
+						return false;
 					}
-					return player.hp > 1;
+					let num = Math.min(Math.floor(player.countCards("h") / 2), player.hp - 1);
+					return [num];
 				})
 				.forResult();
 			event.result = {
-				bool: true,
-				cost_data: result.bool ? result.links : "nouse",
+				bool: bool1 || bool2,
+				cards: cards,
+				cost_data: numbers,
 			};
+			player.removeGaintag("potzhuangshi_tag");
 		},
 		async content(event, trigger, player) {
-			const select = event.cost_data;
-			if (select == "nouse") {
-				await player.gainMaxHp();
-				await player.recover();
-			} else {
-				if (select.includes("losehp")) {
-					const { result } = await player
-						.chooseNumbers(
-							get.translation(event.name),
-							[
-								{
-									prompt: "失去任意点体力值，令你此阶段使用的前等量张牌不计入次数限制",
-									min: 1,
-									max: player.getHp(),
-								},
-							],
-							true
-						)
-						.set("processAI", () => {
-							const player = get.player();
-							let num = Math.floor(player.countCards("h") / 2);
-							return [num];
-						});
-					if (typeof result?.numbers?.[0] != "number") {
-						return;
-					}
-					const number = result.numbers[0];
-					await player.loseHp(number);
-					player.addTempSkill("potzhuangshi_limit", "phaseChange");
-					player.addMark("potzhuangshi_limit", number, false);
-					player.addTip("potzhuangshi_limit", `不计次数 ${number}`);
-				}
-				if (select.includes("discard")) {
-					const { result } = await player
-						.chooseToDiscard(get.translation(event.name), [1, Infinity], "h", true)
-						.set("prompt2", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应")
-						.set("ai", card => {
-							const player = get.player();
-							let num = Math.floor(player.countCards("h") / 2);
-							if (ui.selected.cards.length < num) {
-								return 7 - get.value(card);
-							}
-							return 0;
-						});
-					if (!result?.cards?.length) {
-						return;
-					}
-					const number = result.cards.length;
-					player.addTempSkill("potzhuangshi_directHit", "phaseChange");
-					player.addMark("potzhuangshi_directHit", number, false);
-					player.addTip("potzhuangshi_directHit", `不可响应 ${number}`);
-				}
-				trigger.set("usedZhuangshi", true);
+			trigger.set("usedZhuangshi", true);
+			const { cards, cost_data: numbers } = event;
+			if (cards) {
+				await player.modedDiscard(cards);
+				const number = cards.length;
+				player.addTempSkill("potzhuangshi_directHit", "phaseChange");
+				player.addMark("potzhuangshi_directHit", number, false);
+				player.addTip("potzhuangshi_directHit", `不可响应 ${number}`);
+			}
+			if (numbers) {
+				const number = numbers[0];
+				await player.loseHp(number);
+				player.addTempSkill("potzhuangshi_limit", "phaseChange");
+				player.addMark("potzhuangshi_limit", number, false);
+				player.addTip("potzhuangshi_limit", `不计次数 ${number}`);
 			}
 		},
 		subSkill: {
@@ -1486,7 +1456,7 @@ const skills = {
 				return false;
 			}
 			const target = event.player;
-			if (player.hp <= target.hp || player.countCards("h") <= target.countCards("h")) {
+			if (player.hp <= target.hp || player.countCards("he") <= target.countCards("he")) {
 				return true;
 			}
 			return false;
@@ -1497,7 +1467,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.player,
 				bool1 = target.hp >= player.hp,
-				bool2 = target.countCards("h") >= player.countCards("h");
+				bool2 = target.countCards("he") >= player.countCards("he");
 			player.logSkill("potyinzhan", null, null, null, [player, bool1 && bool2 ? 3 : get.rand(1, 2)]);
 			if (bool1) {
 				trigger.num++;
