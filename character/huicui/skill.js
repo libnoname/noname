@@ -2645,18 +2645,18 @@ const skills = {
 		onremove: ["dcshicao_aiRecord"],
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["basic", "trick", "equip"], "vcard"], [["牌堆顶", "牌堆底"], "tdnodes"]);
+				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["caoying_basic", "caoying_trick", "caoying_equip"], "vcard"], [["牌堆顶", "牌堆底"], "tdnodes"]);
 			},
 			check(button) {
 				const player = get.player();
 				const bottom = player.storage.dcshicao_bottom,
 					aiStorage = player.getStorage("dcshicao_aiRecord");
 				if (bottom && aiStorage.length > 0 && ui.cardPile.lastChild && get.name(ui.cardPile.lastChild, false) === get.name(aiStorage.lastItem, false)) {
-					if (button.link === "牌堆底" || button.link[2] === get.type2(aiStorage.lastItem, false)) {
+					if (button.link === "牌堆底" || button.link[2].slice(8) === get.type2(aiStorage.lastItem, false)) {
 						return 20;
 					}
 				}
-				if (button.link === "牌堆顶" || button.link[2] === "basic") {
+				if (button.link === "牌堆顶" || button.link[2].slice(8) === "basic") {
 					return 10;
 				}
 				return 5 + Math.random();
@@ -2674,7 +2674,7 @@ const skills = {
 				}
 				return {
 					audio: "dcshicao",
-					type: links[0][2],
+					type: links[0][2].slice(8),
 					pos: links[1],
 					filterCard: () => false,
 					selectCard: -1,
@@ -2729,6 +2729,7 @@ const skills = {
 					if (player.isUnderControl(true)) {
 						dialog.addText(`上一次观看的${player.storage.dcshicao_bottom ? "牌堆底" : "牌堆顶"}的牌：`);
 						dialog.addAuto(cards);
+						dialog.addText("（牌堆顶——牌堆底）");
 					} else {
 						return "不给看";
 					}

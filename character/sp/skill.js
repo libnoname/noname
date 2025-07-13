@@ -35485,44 +35485,42 @@ const skills = {
 	jilei: {
 		trigger: { player: "damageEnd" },
 		audio: 2,
-		direct: true,
 		filter(event) {
 			return event.source && event.source.isIn();
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl("basic", "trick", "equip", "cancel2", function () {
-					var source = _status.event.source;
-					if (get.attitude(_status.event.player, source) > 0) {
-						return "cancel2";
+		async cost(event, trigger, player) {
+			const types = ["basic", "trick", "equip"].map(i => `caoying_${i}`);
+			const { bool, links } = await player
+				.chooseButton([get.prompt2(event.skill, trigger.source), [types, "vcard"]])
+				.set("ai", button => {
+					const type = button.link[2].slice(8),
+						{ player, source } = get.event();
+					if (get.attitude(player, source) > 0) {
+						return 0;
 					}
-					var list = ["basic", "trick", "equip"].filter(function (name) {
-						return !source.storage.jilei2 || !source.storage.jilei2.includes(name);
-					});
-					if (!list.length) {
-						return "cancel2";
+					if (source.getStorage("jilei2").includes(type)) {
+						return 0;
 					}
-					if (
-						list.includes("trick") &&
-						source.countCards("h", function (card) {
-							return get.type(card, null, source) == "trick" && source.hasValueTarget(card);
-						}) > 1
-					) {
-						return "trick";
+					if (type == "trick" && source.countCards("h", card => {
+						return get.type(card, null, source) == "trick" && source.hasValueTarget(card);
+					})) {
+						return 3;
 					}
-					return list[0];
+					return ["equip", "trick", "basic"].indexOf(type);
 				})
-				.set("prompt", get.prompt2("jilei", trigger.source))
-				.set("source", trigger.source);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("jilei", trigger.source);
-				player.popup(get.translation(result.control) + "牌");
-				trigger.source.addTempSkill("jilei2", { player: "phaseBegin" });
-				trigger.source.storage.jilei2.add(result.control);
-				trigger.source.updateMarks("jilei2");
-			}
+				.set("source", trigger.source)
+				.forResult();
+			event.result = {
+				bool: bool,
+				targets: [trigger.source],
+				cost_data: links,
+			};
+		},
+		async content(event, trigger, player) {
+			const type = event.cost_data[0][2].slice(8);
+			player.popup(get.translation(type) + "牌");
+			trigger.source.addTempSkill("jilei2", { player: "phaseBegin" });
+			trigger.source.markAuto("jilei2", type);
 		},
 		ai: {
 			maixie_defend: true,

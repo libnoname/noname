@@ -12786,9 +12786,10 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const { result } = await player
-				.chooseButton(["凌人：猜测其有哪些类别的手牌", [["basic", "trick", "equip"], "vcard"]], [0, 3], true)
+				.chooseButton(["凌人：猜测其有哪些类别的手牌", [["basic", "trick", "equip"].map(i => `caoying_${i}`), "vcard"]], [0, 3], true)
 				.set("ai", button => {
-					return get.event("choice").includes(button.link[2]);
+					const type = button.link[2].slice(8);
+					return get.event("choice").includes(type);
 				})
 				.set(
 					"choice",
@@ -12817,7 +12818,7 @@ const skills = {
 			if (!result?.bool) {
 				return;
 			}
-			const choices = result.links.map(i => i[2]);
+			const choices = result.links.map(i => i[2].slice(8));
 			await target.showHandcards();
 			let num = 0;
 			["basic", "trick", "equip"].forEach(type => {

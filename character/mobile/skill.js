@@ -6274,15 +6274,17 @@ const skills = {
 			const { name: skillName } = event;
 			player.markAuto(skillName, [get.type2(trigger.card)]);
 			if (player.getStorage(skillName).length >= 3) {
+				const types = player.getStorage(skillName).map(i => `caoying_${i}`);
 				const {
 					result: { links },
-				} = await player.chooseButton(["选择你要移去的“启诲”标记", [player.getStorage(skillName), "vcard"]], [2, 2], true).set("ai", button => {
-					const player = get.player();
+				} = await player.chooseButton(["选择你要移去的“启诲”标记", [types, "vcard"]], [2, 2], true).set("ai", button => {
+					const player = get.player(),
+						type = button.link[2].slice(8);
 					return (
 						1 +
 						Math.random() +
 						player.countCards("he", card => {
-							return get.type2(card) === button.link[2] && player.hasValueTarget(card);
+							return get.type2(card) === type && player.hasValueTarget(card);
 						})
 					);
 				});
@@ -6291,7 +6293,7 @@ const skills = {
 				}
 				player.unmarkAuto(
 					skillName,
-					links.map(link => link[2])
+					links.map(link => link[2].slice(8))
 				);
 				const { result } = await player
 					.chooseButton(
