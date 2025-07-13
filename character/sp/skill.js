@@ -38335,7 +38335,7 @@ const skills = {
 	songci: {
 		onChooseToUse(event) {
 			event.targetprompt2.add(target => {
-				if (event.skill !== "songci") {
+				if (event.skill !== "songci" || !target.classList.contains("selectable")) {
 					return;
 				}
 				if (target.countCards("h") > target.hp) {
