@@ -10589,7 +10589,7 @@ const skills = {
 	olpaoxiao: {
 		audio: "paoxiao",
 		audioname: ["re_zhangfei", "xiahouba", "re_guanzhang"],
-		audioname2: { guanzhang: "paoxiao_guanzhang" },
+		audioname2: { guanzhang: "paoxiao_guanzhang", ol_guanzhang: "paoxiao_ol_guanzhang" },
 		trigger: { player: "shaMiss" },
 		forced: true,
 		content() {
@@ -10609,7 +10609,7 @@ const skills = {
 		forced: true,
 		audio: "paoxiao",
 		audioname: ["re_zhangfei", "xiahouba", "re_guanzhang"],
-		audioname2: { guanzhang: "paoxiao_guanzhang" },
+		audioname2: { guanzhang: "paoxiao_guanzhang", ol_guanzhang: "paoxiao_ol_guanzhang" },
 		sourceSkill: "olpaoxiao",
 		filter(event, player) {
 			return event.card && event.card.name == "sha" && player.countMark("olpaoxiao2") > 0;
@@ -10621,6 +10621,7 @@ const skills = {
 		},
 		intro: { content: "本回合内下一次使用【杀】造成伤害时令伤害值+#" },
 	},
+	paoxiao_ol_guanzhang: { audio: 1 },
 	oltishen: {
 		audio: "retishen",
 		skillAnimation: true,
@@ -14321,6 +14322,7 @@ const skills = {
 			gz_jun_liubei: "shouyue_wusheng",
 			std_guanxing: "wusheng_guanzhang",
 			ty_guanxing: "wusheng_guanzhang",
+			ol_guanzhang: "wusheng_ol_guanzhang",
 		},
 		enable: ["chooseToRespond", "chooseToUse"],
 		filterCard(card, player) {
@@ -14367,6 +14369,7 @@ const skills = {
 			},
 		},
 	},
+	wusheng_ol_guanzhang: { audio: 1 },
 	new_yijue: {
 		initSkill(skill) {
 			if (!lib.skill[skill]) {

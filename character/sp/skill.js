@@ -28790,24 +28790,25 @@ const skills = {
 		},
 	},
 	fuqi: {
+		targetprompt2: target => {
+			const player = get.player(),
+				card = get.card();
+			if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
+				if (target !== player && get.distance(target, player) <= 1) {
+					return "不可响应";
+				}
+			}
+		},
+		onChooseToUse(event) {
+			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
+		},
+		onChooseTarget(event) {
+			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
+		},
 		audio: 2,
 		forced: true,
 		trigger: {
 			player: "useCard",
-		},
-		onChooseToUse(event) {
-			event.targetprompt2.add(target => {
-				if (!target.isIn()) {
-					return false;
-				}
-				const player = get.player(),
-					card = get.card();
-				if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
-					if (target.isIn() && target !== player && get.distance(target, player) <= 1) {
-						return "不可响应";
-					}
-				}
-			});
 		},
 		filter(event, player) {
 			return (
@@ -38334,15 +38335,22 @@ const skills = {
 		},
 	},
 	songci: {
+		onChooseToUse(event) {
+			event.targetprompt2.add(target => {
+				if (event.skill !== "songci") {
+					return;
+				}
+				if (target.countCards("h") > target.hp) {
+					return "弃牌";
+				} else {
+					return "摸牌";
+				}
+			});
+		},
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			if (!player.storage.songci) {
-				return true;
-			}
-			return game.hasPlayer(function (current) {
-				return !player.getStorage("songci").includes(current);
-			});
+			return game.hasPlayer(current => get.info("songci").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
 			return !player.getStorage("songci").includes(target);
@@ -38353,18 +38361,16 @@ const skills = {
 			return goon ? "songci2.mp3" : "songci1.mp3";
 		},
 		async content(event, trigger, player) {
-			const target = event.target,
+			const { target } = event,
 				goon = target.countCards("h") > target.hp;
-			player.markAuto("songci", [target]);
+			player.markAuto(event.name, [target]);
 			if (goon) {
 				await target.chooseToDiscard(2, "he", true);
 			} else {
 				await target.draw(2);
 			}
 		},
-		intro: {
-			content: "已对$发动过〖颂词〗",
-		},
+		intro: { content: "已对$发动过〖颂词〗" },
 		ai: {
 			order: 7,
 			threaten: 1.6,
@@ -38380,22 +38386,20 @@ const skills = {
 			},
 		},
 		group: "songci_draw",
-	},
-	songci_draw: {
-		audio: "songci",
-		trigger: { player: "phaseDiscardEnd" },
-		forced: true,
-		sourceSkill: "songci",
-		filter(event, player) {
-			if (!player.storage.songci) {
-				return false;
-			}
-			return !game.hasPlayer(function (current) {
-				return !player.storage.songci.includes(current);
-			});
-		},
-		content() {
-			player.draw();
+		subSkill: {
+			draw: {
+				audio: "songci",
+				trigger: { player: "phaseDiscardEnd" },
+				forced: true,
+				filter(event, player) {
+					return !game.hasPlayer(current => {
+						return !player.getStorage("songci").includes(current);
+					});
+				},
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
 		},
 	},
 	baobian: {

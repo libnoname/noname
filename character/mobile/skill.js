@@ -1784,6 +1784,7 @@ const skills = {
 		},
 	},
 	mbjinzu: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -1890,6 +1891,7 @@ const skills = {
 		},
 	},
 	mbanxian: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: "loseAsyncAfter",

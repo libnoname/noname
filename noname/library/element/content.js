@@ -7183,6 +7183,14 @@ player.removeVirtualEquip(card);
 	},
 	chooseTarget: function () {
 		"step 0";
+		const skills = player.getSkills("invisible").concat(lib.skill.global);
+		game.expandSkills(skills);
+		for (let i = 0; i < skills.length; i++) {
+			const info = lib.skill[skills[i]];
+			if (info?.onChooseTarget) {
+				info.onChooseTarget(event, player);
+			}
+		}
 		if (event.isMine()) {
 			if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
 				ui.click.cancel();
@@ -11645,13 +11653,23 @@ player.removeVirtualEquip(card);
 				await next;
 				event.relatedLose = next;
 			}
-			for (let card of loseCards) {
-				if (card.willBeDestroyed("judge", player, event)) {
-					card.selfDestroy(event);
-					return;
-				} else if ("hejx".includes(get.position(card, true))) {
-					return;
+			let stop = false;
+			const list = [];
+			for (const cardx of loseCards) {
+				if (cardx.willBeDestroyed("judge", player, event)) {
+					cardx.selfDestroy(event);
+					stop = true;
+				} else if ("hejx".includes(get.position(cardx, true))) {
+					stop = true;
+				} else {
+					list.add(cardx);
 				}
+			}
+			if (stop) {
+				if (list.length) {
+					await game.cardsDiscard(list);
+				}
+				return;
 			}
 		}
 		if (!cardInfo.effect && !cardInfo.noEffect) {
