@@ -36,12 +36,16 @@ const skills = {
 			1: {
 				audio: "sbwushuang",
 				sourceSkill: "sbwushuang",
+				audioname: undefined,
+				audioname2: undefined,
 				logAudio: () => ["sbwushuang1.mp3", "sbwushuang6.mp3"],
 				inherit: "wushuang1",
 			},
 			2: {
 				audio: "sbwushuang",
 				sourceSkill: "sbwushuang",
+				audioname: undefined,
+				audioname2: undefined,
 				logAudio: () => ["sbwushuang1.mp3", "sbwushuang6.mp3"],
 				inherit: "wushuang2",
 			},
