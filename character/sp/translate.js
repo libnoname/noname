@@ -504,7 +504,6 @@ const translates = {
 	bifa: "笔伐",
 	bifa2: "笔伐",
 	songci: "颂词",
-	songci_draw: "颂词",
 	baobian: "豹变",
 	lihun: "离魂",
 	lihun2: "离魂",

@@ -161,7 +161,7 @@ const skills = {
 	},
 	olkuangmo: {
 		group: "olkuangmo_point",
-		audio: 2,
+		audio: 3,
 		enable: "phaseUse",
 		skillAnimation: "epic",
 		animationColor: "metal",

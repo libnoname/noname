@@ -16117,11 +16117,7 @@ const skills = {
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
-			if (player.hp > 0) {
-				choices.push("选项三");
-			} else {
-				choiceList[2] = '<span style="opacity:0.5">' + choiceList[1] + "(体力值为0)</span>";
-			}
+			choices.push("选项三");
 			player
 				.chooseControl(choices, "cancel2")
 				.set("choiceList", choiceList)

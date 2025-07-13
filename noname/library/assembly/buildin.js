@@ -11,32 +11,7 @@ import { game } from "../../game/index.js";
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const checkBegin = {
-	addTargetPrompt(event) {
-		if (!event.targetprompt2?.length) {
-			return;
-		}
-		game.filterPlayer2(() => true, [], true).forEach(target => {
-			const str = event.targetprompt2
-				.map(func => func(target) || "")
-				.filter(prompt => prompt.length)
-				.join("<br>");
-			let node;
-			if (target.node.prompt2) {
-				node = target.node.prompt2;
-				node.innerHTML = "";
-				node.className = "damage normal-font damageadded";
-			} else {
-				node = ui.create.div(".damage.normal-font", target);
-				target.node.prompt2 = node;
-				ui.refresh(node);
-				node.classList.add("damageadded");
-			}
-			node.innerHTML = str;
-			node.dataset.nature = "soil";
-		});
-	},
-};
+export const checkBegin = {};
 
 /**
  * @type {(NonameAssemblyType["checkCard"])}
@@ -80,6 +55,29 @@ export const checkTarget = {
 				target.instance.classList.remove(className);
 			}
 		});
+	},
+	addTargetPrompt(target, event) {
+		if (!event.targetprompt2?.length || !target.classList.contains("selectable")) {
+			return;
+		}
+		const str = event.targetprompt2
+			.map(func => func(target) || "")
+			.filter(prompt => prompt.length)
+			.toUniqued()
+			.join("<br>");
+		let node;
+		if (target.node.prompt2) {
+			node = target.node.prompt2;
+			node.innerHTML = "";
+			node.className = "damage normal-font damageadded";
+		} else {
+			node = ui.create.div(".damage.normal-font", target);
+			target.node.prompt2 = node;
+			ui.refresh(node);
+			node.classList.add("damageadded");
+		}
+		node.innerHTML = str;
+		node.dataset.nature = "soil";
 	},
 };
 
@@ -128,16 +126,7 @@ export const checkEnd = {
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const uncheckBegin = {
-	removeTargetPrompt(event) {
-		game.filterPlayer2(null, null, true).forEach(target => {
-			if (target.node.prompt2) {
-				target.node.prompt2.remove();
-				delete target.node.prompt2;
-			}
-		});
-	},
-};
+export const uncheckBegin = {};
 
 /**
  * @type {(NonameAssemblyType["uncheckCard"])}
@@ -174,6 +163,12 @@ export const uncheckTarget = {
 		target.instance.classList.remove("selected");
 		// @ts-expect-error ignore
 		target.instance.classList.remove("selectable");
+	},
+	removeTargetPrompt(target, event) {
+		if (target.node.prompt2) {
+			target.node.prompt2.remove();
+			delete target.node.prompt2;
+		}
 	},
 };
 

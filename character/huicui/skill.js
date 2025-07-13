@@ -1318,6 +1318,18 @@ const skills = {
 	},
 	//黄舞蝶
 	dcshuangrui: {
+		onChooseTarget(event, player) {
+			event.targetprompt2.add(target => {
+				if (event.getParent().skill !== "dcshuangrui") {
+					return;
+				}
+				if (player.inRange(target)) {
+					return "加伤";
+				} else {
+					return "不可响应";
+				}
+			});
+		},
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -1335,6 +1347,7 @@ const skills = {
 						card = { name: "sha", isCard: true };
 					return get.effect(target, card, player, player);
 				})
+				.set("_get_card", { name: "sha", isCard: true })
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -3427,8 +3440,7 @@ const skills = {
 			const toKeepCount = player
 				.getCards("h")
 				.map(card => get.name(card))
-				.unique()
-				.length;
+				.unique().length;
 			if (count > toKeepCount) {
 				const [bool, cards] = await player
 					.chooseCard("自缚：选择要保留的手牌", "选择不同牌名的手牌各一张，然后弃置其余手牌", toKeepCount)
