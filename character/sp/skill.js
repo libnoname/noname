@@ -9393,8 +9393,11 @@ const skills = {
 				return false;
 			}
 			return !game.hasPlayer(current => {
-				var history = current.actionHistory;
-				for (var num = history.length - 1; num >= 0; num--) {
+				let history = current.actionHistory;
+				if (history.length < 2) {
+					return false;
+				}
+				for (let num = history.length - 2; num >= 0; num--) {
 					if (history[num].isRound) {
 						break;
 					}
