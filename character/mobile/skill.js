@@ -40,12 +40,16 @@ const skills = {
 			if (game.players.every(target => !event.getl(target)?.cards?.length) || evt.getParent("phaseDiscard", true)) {
 				return false;
 			}
-			return game.getGlobalHistory("everything", evt => {
-				if (!["lose", "loseAsync"].includes(evt.name) || evt.type != "discard" || evt.getParent("phaseDiscard", true)) {
-					return false;
-				}
-				return game.players.some(target => evt.getl(target)?.cards?.length);
-			}).indexOf(event) == 0;
+			return (
+				game
+					.getGlobalHistory("everything", evt => {
+						if (!["lose", "loseAsync"].includes(evt.name) || evt.type != "discard" || evt.getParent("phaseDiscard", true)) {
+							return false;
+						}
+						return game.players.some(target => evt.getl(target)?.cards?.length);
+					})
+					.indexOf(event) == 0
+			);
 		},
 		async cost(event, trigger, player) {
 			const { bool, links, targets } = await player
@@ -106,8 +110,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets, cost_data: choice } = event;
 			if (choice.includes("draw")) {
-				if (player == _status.currentPhase);
-				targets.push(player);
+				if (player == _status.currentPhase) {
+					targets.push(player);
+				}
 				await game.asyncDraw(targets);
 			} else {
 				await player.discardPlayerCard(event.targets[0], "he", true);
