@@ -3527,12 +3527,12 @@ const skills = {
 				.set("choiceList", list)
 				.set("num", num)
 				.set("ai", () => {
+					return 1;
 					const { player, num } = get.event();
 					//const card = new lib.element.VCard({ name: "sha", isCard: true });
 					if (num < get.info("pothongyi").maxMark()) {
 						return 0;
 					} // || !player.hasValueTarget(card)
-					return 1;
 				})
 				.forResult();
 			event.result = { bool: true, cost_data: result.index };
@@ -3558,15 +3558,12 @@ const skills = {
 			player
 				.when({ player: "phaseJieshuBegin" })
 				.filter(evt => evt.getParent("phase") == trigger.getParent("phase"))
-				.then(() => {
-					if (control === 0) {
-						player.draw(player.countMark("pothongyi"));
-					} else if (control === 1) {
+				.step(async (event, trigger, player) => {
+					if (control === 1) {
+						player.draw(num);
+					} else if (control === 0) {
 						player.clearMark("pothongyi");
 					}
-				})
-				.vars({
-					control: control == 0 ? 1 : 0,
 				});
 		},
 		marktext: "毅",
@@ -6070,6 +6067,18 @@ const skills = {
 				trigger: {
 					player: ["useCard", "useCardAfter"],
 					source: "damageBegin1",
+				},
+				mark: true,
+				marktext: "符",
+				intro: {
+					mark(dialog, content, player) {
+						const cards = player.getCards("h", card => card.hasGaintag("potfuji"));
+						if (cards?.length) {
+							dialog.addAuto(cards);
+						} else {
+							dialog.addText("无符济牌");
+						}
+					},
 				},
 				filter(event, player, name) {
 					const ori_event = event.name === "damage" ? event.getParent("useCard") : event;
