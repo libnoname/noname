@@ -1298,6 +1298,7 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"mb_chenzhi",
 		"ol_sb_xiaoqiao",
 		"dc_sb_hulie",
 		"pe_jun_liuhong",
@@ -3281,6 +3282,7 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"mb_chenzhi",
 			"ol_qiaogong",
 			"std_zhangyao",
 			"std_wangfuren",

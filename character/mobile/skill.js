@@ -2,6 +2,118 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//陈祇
+	mbquanchong: {
+		audio: 4,
+		logAudio: index => (typeof index == "number" ? `mbquanchong${index}.mp3` : 2),
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		forced: true,
+		round: 1,
+		filter(event, player) {
+			return player.countDiscardableCards(player, "he");
+		},
+		async content(event, trigger, player) {
+			if (player.countDiscardableCards(player, "he")) {
+				await player.modedDiscard(player.getCards("he"));
+				player.insertPhase();
+				if (!player.isMaxHp(true)) {
+					player
+						.when({ player: "phaseBegin" })
+						.filter(evt => evt.skill == event.name)
+						.step(async (event, trigger, player) => {
+							player.logSkill("mbquanchong", null, null, null, [get.rand(1, 2)]);
+							await player.loseHp();
+						})
+						.assign({ firstDo: true });
+				}
+			}
+		},
+	},
+	mbrenxing: {
+		audio: 2,
+		trigger: {
+			global: ["loseAfter", "loseAsyncAfter"],
+		},
+		filter(event, player) {
+			if (game.players.every(target => !event.getl(target)?.cards?.length) || evt.getParent("phaseDiscard", true)) {
+				return false;
+			}
+			return game.getGlobalHistory("everything", evt => {
+				if (!["lose", "loseAsync"].includes(evt.name) || evt.type != "discard" || evt.getParent("phaseDiscard", true)) {
+					return false;
+				}
+				return game.players.some(target => evt.getl(target)?.cards?.length);
+			}).indexOf(event) == 0;
+		},
+		async cost(event, trigger, player) {
+			const { bool, links, targets } = await player
+				.chooseButtonTarget({
+					createDialog: [
+						"任行：你可选择一项",
+						[
+							[
+								["draw", "你与当前回合角色各摸一张牌"],
+								["discard", "弃置一名本回合未使用或打出过【杀】的角色一张牌"],
+							],
+							"textbutton",
+						],
+					],
+					noShas: (() => {
+						return game.filterPlayer(current => {
+							return ["useCard", "respond"].every(key => !current.getHistory(key, evt => evt.card?.name == "sha").length);
+						});
+					})(),
+					filterButton(button) {
+						if (button.link == "discard") {
+							return get.event("noShas")?.length;
+						}
+						return true;
+					},
+					selectTarget() {
+						const link = ui.selected.buttons?.[0]?.link;
+						return link == "discard" ? 1 : -1;
+					},
+					filterTarget(card, player, target) {
+						const link = ui.selected.buttons?.[0]?.link;
+						if (link == "discard") {
+							return get.event("noShas")?.includes(target);
+						}
+						return target == _status.currentPhase || target == player;
+					},
+					ai1(button) {
+						const player = get.player();
+						const target = _status?.currentPhase;
+						if (button.link === "draw") {
+							return get.effect(target, { name: "draw" }, target, player) + get.effect(player, { name: "draw" }, player, player);
+						} else {
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player, player)));
+						}
+					},
+					ai2(target) {
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy2" }, player, player);
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: bool,
+				targets: targets,
+				cost_data: links,
+			};
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: choice } = event;
+			if (choice.includes("draw")) {
+				if (player == _status.currentPhase);
+				targets.push(player);
+				await game.asyncDraw(targets);
+			} else {
+				await player.discardPlayerCard(event.targets[0], "he", true);
+			}
+		},
+	},
 	//三娘
 	mbxushen: {
 		limited: true,
@@ -3466,7 +3578,7 @@ const skills = {
 					source: "damageSource",
 					player: ["enterGame", "damageEnd"],
 				},
-				getIndex: event => (event.name === "damage" ? event.num : 1),
+				//getIndex: event => (event.name === "damage" ? event.num : 1),
 				filter(event, player) {
 					if (player.countMark("pothongyi") >= get.info("pothongyi").maxMark()) {
 						return false;
@@ -4281,7 +4393,46 @@ const skills = {
 			});
 			player.logSkill("mbzhuji", null, null, null, [num >= es ? get.rand(1, 2) : get.rand(3, 4)]);
 			if (num >= es) {
-				await player.chooseDrawRecover(2, true);
+				const result = await player
+					.chooseButton(["筑墼：选择一项执行", [[
+						["draw", "摸两张牌"],
+						["recover", "回复1点体力"],
+						["hujia", "获得1点护甲"],
+					], "textbutton"]], true)
+					.set("filterButton", button => {
+						const player = get.player();
+						if (button.link == "recover") {
+							return player.isDamaged();
+						}
+						if (button.link == "hujia") {
+							return player.hujia < 5;
+						}
+						return true;
+					})
+					.set("ai", button => {
+						if (button.link == "recover") {
+							return get.recoverEffect(player, player, player) > 0 ? 1 : 0;
+						}
+						return Math.random();
+					})
+					.forResult();
+				if (!result?.bool || !result.links?.length) {
+					return;
+				}
+				switch(result.links[0]) {
+					case "draw": {
+						await player.draw(2);
+						break;
+					}
+					case "recover": {
+						await player.recover();
+						break;
+					}
+					case "hujia": {
+						await player.changeHujia(1, null, true);
+						break;
+					}
+				}
 			}
 		},
 	},
@@ -4292,6 +4443,7 @@ const skills = {
 		filter(event, player) {
 			return event.player.isMinHandcard() && event.player.isAlive();
 		},
+		usable: 1,
 		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
@@ -4302,9 +4454,9 @@ const skills = {
 			const isMax = target.isMaxHandcard();
 			await target.draw(2);
 			//player.logSkill("mbxuye", [target], null, null, !isMax && target.isMaxHandcard() && target.countCards("ej") > 0 ? [1] : [get.rand(2, 3)]);
-			if (!isMax && target.isMaxHandcard() && target.countCards("ej") > 0) {
+			if (!isMax && target.isMaxHandcard() && target.countCards("hej") > 0) {
 				player.logSkill("mbxuye", target, null, null, [2]);
-				const result = await player.choosePlayerCard(`蓄业：将${get.translation(target)}场上一张牌置于牌堆顶`, target, "ej", true).forResult();
+				const result = await player.choosePlayerCard(`蓄业：将${get.translation(target)}场上一张牌置于牌堆顶`, target, "hej", true).forResult();
 				const card = result.cards[0];
 				target.$throw(card, 1000);
 				game.log(player, "将", card, "置于牌堆顶");
@@ -4319,11 +4471,11 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(target => {
-				return target != player && target.countCards("h") < player.countCards("h");
+				return target != player && target.countCards("h") <= player.countCards("h");
 			});
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") < player.countCards("h");
+			return target != player && target.countCards("h") <= player.countCards("h");
 		},
 		usable: 1,
 		logAudio: index => "mbkuangxiang" + [1, 3].randomGet() + ".mp3",
