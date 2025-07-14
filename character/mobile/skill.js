@@ -3528,11 +3528,6 @@ const skills = {
 				.set("num", num)
 				.set("ai", () => {
 					return 1;
-					const { player, num } = get.event();
-					//const card = new lib.element.VCard({ name: "sha", isCard: true });
-					if (num < get.info("pothongyi").maxMark()) {
-						return 0;
-					} // || !player.hasValueTarget(card)
 				})
 				.forResult();
 			event.result = { bool: true, cost_data: result.index };
