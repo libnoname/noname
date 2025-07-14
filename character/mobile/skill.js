@@ -37,7 +37,7 @@ const skills = {
 			global: ["loseAfter", "loseAsyncAfter"],
 		},
 		filter(event, player) {
-			if (game.players.every(target => !event.getl(target)?.cards?.length) || evt.getParent("phaseDiscard", true)) {
+			if (game.players.every(target => !event.getl(target)?.cards?.length) || event.getParent("phaseDiscard", true)) {
 				return false;
 			}
 			return (
