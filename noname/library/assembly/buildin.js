@@ -118,6 +118,25 @@ export const checkEnd = {
 			}
 		}
 	},
+	createChooseAll(event, _) {
+		// 仅在chooseToUse里面生效喵
+		if (event.name === "chooseToUse" && event.isMine() && !(event.cardChooseAll instanceof lib.element.Control)) {
+			// 判断技能是否可以使用全选按钮喵
+			const skill = event.skill;
+			if (!skill || !get.info(skill)) {
+				return;
+			}
+			const info = get.info(skill);
+			if (!info.filterCard || !info.selectCard) {
+				return;
+			}
+			if (info.complexSelect || info.complexCard || info.noChooseAll) {
+				return;
+			}
+			// 调用函数创建全选按钮喵
+			ui.create.cardChooseAll();
+		}
+	},
 };
 
 /**
@@ -126,7 +145,19 @@ export const checkEnd = {
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  * 要加接口去node_modules/@types/noname-typings/NonameAssemblyType.d.ts里把类型补了
  */
-export const uncheckBegin = {};
+export const uncheckBegin = {
+	destroyChooseAll(event, _) {
+		// 仅在chooseToUse里面生效喵
+		if (event.name !== "chooseToUse") {
+			return;
+		}
+		// 清理全选按钮喵
+		if (event.cardChooseAll instanceof lib.element.Control) {
+			event.cardChooseAll.close();
+			delete event.cardChooseAll;
+		}
+	},
+};
 
 /**
  * @type {(NonameAssemblyType["uncheckCard"])}
