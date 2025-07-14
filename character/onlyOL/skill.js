@@ -308,6 +308,22 @@ const skills = {
 		hiddenCard(player, name) {
 			return (name == "juedou" && player.hasCard(card => get.type2(card) == "trick", "hes")) || (name == "sha" && player.hasCard(card => get.type2(card) == "equip", "hes"));
 		},
+		locked: false,
+		mod: {
+			playerEnabled(card, player, target) {
+				if (!card.storage?.olgangquan || get.name(card) != "sha" || player._olgangquanCheck) {
+					return;
+				}
+				player._olgangquanCheck = true;
+				const bool = [player.getNext(), player.getPrevious()].some(target => {
+					return target?.isIn() && !player.canUse(get.card(), target, null, true);
+				});
+				delete player._olgangquanCheck;
+				if (bool) {
+					return false;
+				}
+			},
+		},
 		onChooseToUse(event) {
 			if (game.online || event?.olgangquan) {
 				return;
@@ -380,22 +396,6 @@ const skills = {
 			order: 9,
 			result: {
 				player: 8,
-			},
-		},
-		locked: false,
-		mod: {
-			playerEnabled(card, player, target) {
-				if (!card.storage?.olgangquan || get.name(card) != "sha" || player._olgangquanCheck) {
-					return;
-				}
-				player._olgangquanCheck = true;
-				const bool = [player.getNext(), player.getPrevious()].some(target => {
-					return target?.isIn() && !player.canUse(get.card(), target, null, true);
-				});
-				delete player._olgangquanCheck;
-				if (bool) {
-					return false;
-				}
 			},
 		},
 		subSkill: {
