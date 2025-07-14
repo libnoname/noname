@@ -29,18 +29,33 @@ const skills = {
 			return killGain ? [cards, lose_list] : cards;
 		},
 		filter(event, player) {
-			if (event?.olduoqi_phase) {
+			if (event.player.getSeatNum() != 1 || _status?.olduoqi_record?.includes(player) || event.finished) {
 				return false;
 			}
-			return event.player.getSeatNum() == 1 && event.player.phaseNumber == 0 && !event?.olduoqi_record?.includes(player);
+			let history = event.player.actionHistory;
+			if (history.length > 1) {
+				for (let i = 0; i < history.length - 2; i++) {
+					if (!history[i].isMe || history[i].isSkipped) {
+						continue;
+					}
+					return false;
+				}
+			}
+			return !player.isTurnedOver() || event._noTurnOver;
 		},
 		onRound(event) {
 			return !event.olduoqi_phase;
 		},
 		async content(event, trigger, player) {
+			if (!_status.olduoqi_record) {
+				_status.olduoqi_record = [];
+			}
+			_status.olduoqi_record.add(player);
+			game.broadcastAll(record => {
+				_status.olduoqi_record = record;
+			}, _status.olduoqi_record)
 			const next = player.insertPhase();
 			next._noTurnOver = true;
-			next.set("olduoqi_phase", true);
 			next.set("phaseList", ["phaseUse"]);
 			player
 				.when({ player: "phaseBegin" })
@@ -57,7 +72,6 @@ const skills = {
 					lib.onround.push(get.info("olduoqi").onRound);
 				}
 				const evt = trigger.player.insertPhase();
-				evt.set("olduoqi_record", trigger?.olduoqi_record?.concat(player) || [player]);
 				evt.set("olduoqi_phase", true);
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
@@ -91,6 +105,19 @@ const skills = {
 						}
 					}
 				});
+			}
+			const nexts = trigger.getParent()?.next;
+			if (nexts?.length) {
+				for (let evt of nexts.slice(0)) {
+					if (evt.finished) {
+						continue;
+					}
+					if (evt == next) {
+						break;
+					}
+					nexts.remove(evt);
+					nexts.push(evt);
+				}
 			}
 		},
 		subSkill: {
@@ -312,6 +339,9 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
+						storage: {
+							olgangquan: true,
+						},
 					},
 					choice: links[0][2],
 					filterCard(card) {
@@ -329,6 +359,13 @@ const skills = {
 						return lib.filter.filterTarget.apply(this, arguments);
 					},
 					selectTarget() {
+						if (get.card()?.name == "sha") {
+							if ([player.getNext(), player.getPrevious()].some(target => {
+								return target?.isIn() && !player.canUse(get.card(), target, null, true);
+							})) {
+								return 1;
+							}
+						}
 						return get.info("olgangquan_backup").choice != "sha" ? 1 : -1;
 					},
 					popname: true,
@@ -345,17 +382,22 @@ const skills = {
 				player: 8,
 			},
 		},
-		/*locked: false,
+		locked: false,
 		mod: {
 			playerEnabled(card, player, target) {
-				if (!card.storage?.olgangquan || get.name(card) != "sha") {
+				if (!card.storage?.olgangquan || get.name(card) != "sha" || player._olgangquanCheck) {
 					return;
 				}
-				if (player.getNext() !== target && player.getPrevious() !== target) {
+				player._olgangquanCheck = true;
+				const bool = [player.getNext(), player.getPrevious()].some(target => {
+					return target?.isIn() && !player.canUse(get.card(), target, null, true);
+				});
+				delete player._olgangquanCheck;
+				if (bool) {
 					return false;
 				}
 			},
-		},*/
+		},
 		subSkill: {
 			backup: {},
 		},

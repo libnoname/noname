@@ -19082,6 +19082,9 @@ const skills = {
 		round: 1,
 		trigger: { player: "phaseBeforeEnd" },
 		filter(event, player) {
+			if (event.finished) {
+				return false;
+			}
 			return !player.isTurnedOver() || event._noTurnOver; //笑点解析：回合开始前，但是翻面不能发动
 		},
 		async cost(event, trigger, player) {
@@ -19140,6 +19143,19 @@ const skills = {
 						}
 					}
 				});
+			}
+			const nexts = trigger.getParent()?.next;
+			if (nexts?.length) {
+				for (let evt of nexts.slice(0)) {
+					if (evt.finished) {
+						continue;
+					}
+					if (evt == next) {
+						break;
+					}
+					nexts.remove(evt);
+					nexts.push(evt);
+				}
 			}
 		},
 		subSkill: {
