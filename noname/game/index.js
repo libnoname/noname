@@ -7288,6 +7288,11 @@ export class Game extends GameCompatible {
 		}
 		if (event.isMine()) {
 			game.Check.confirm(event, confirm);
+
+			const cardChooseAll = event.cardChooseAll;
+			if (cardChooseAll instanceof HTMLElement) {
+				cardChooseAll.firstElementChild.innerHTML = ui.selected.cards.length ? "反选" : "全选";
+			}
 		}
 
 		game.callHook("checkEnd", [event, { ok, auto, auto_confirm, autoConfirm: auto_confirm }]);

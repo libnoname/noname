@@ -2096,6 +2096,62 @@ export class Create {
 		ui.skills3.skills = skills;
 		return ui.skills3;
 	}
+	/**
+	 * 向当前事件注入牌的全选/反选按钮喵
+	 * 这个函数一般在“AI代选”的位置前面调用喵
+	 */
+	cardChooseAll() {
+		const event = get.event();
+		// 如果不是当前玩家、不允许全选或者使用complexSelect，则取消注入喵
+		if (!event.isMine() || event.noChooseAll || event.complexSelect) {
+			return;
+		}
+		// 这里的条件用的是“AI代选”按钮的条件喵
+		const selectCard = event.selectCard;
+		if (typeof selectCard == "function") {
+			return;
+		}
+		const range = get.select(selectCard);
+		if (range[1] <= 1) {
+			return; // 只选一张牌就不使用全选哦喵
+		}
+		event.cardChooseAll = ui.create.control("全选", function () {
+			// 这个反选要封装喵？
+			// 好像就只有这里用哦
+			const event = get.event();
+			const selecteds = [...ui.selected.cards];
+
+			// 清空选择的牌喵
+			ui.selected.cards.length = 0;
+			game.check();
+			
+			const selectables = get.selectableCards();
+			// @ts-expect-error 啊至少垫片函数是接受数组的喵
+			const cards = selecteds.length ? [...new Set(selectables).difference(selecteds)] : selectables;
+			
+			if (cards.length <= range[1]) {
+				// 如果可以就全选喵
+				ui.selected.cards.push(...cards);
+			} else {
+				// 否则随机选择几张喵
+				ui.selected.cards.push(...cards.randomGets(range[1]));
+			}
+
+			// 更新UI喵
+			for (const card of ui.selected.cards) {
+				card.classList.add("selected");
+				card.updateTransform(true, 0);
+			}
+			for (const card of selecteds) {
+				card.classList.remove("selected");
+				card.updateTransform(false, 0);
+			}
+			game.check();
+			if (typeof event.custom?.add?.card == "function") {
+				_status.event.custom.add.card();
+			}
+		});
+	}
 	arena() {
 		var i, j;
 		ui.window = ui.create.div("#window.hidden", document.body);

@@ -5640,6 +5640,7 @@ player.removeVirtualEquip(card);
 			}
 			game.pause();
 			if (range[1] > 1 && typeof event.selectCard != "function") {
+				ui.create.cardChooseAll();
 				event.aiChoose = ui.create.control("AI代选", function () {
 					ai.basic.chooseCard(event.ai);
 					if (_status.event.custom && _status.event.custom.add.card) {
@@ -5813,6 +5814,7 @@ player.removeVirtualEquip(card);
 					}
 					game.pause();
 					if (range[1] > 1 && typeof event.selectCard != "function") {
+						ui.create.cardChooseAll();
 						event.promptdiscard = ui.create.control("AI代选", function () {
 							ai.basic.chooseCard(event.ai);
 							if (_status.event.custom && _status.event.custom.add.card) {
@@ -7198,6 +7200,7 @@ player.removeVirtualEquip(card);
 					ui.click.cancel();
 					return;
 				}
+				ui.create.cardChooseAll();
 				if (event.prompt != false) {
 					var str;
 					if (typeof event.prompt == "string") {
