@@ -2352,15 +2352,20 @@ player.removeVirtualEquip(card);
 					currentElement = null;
 				};
 
+				// 检查当前事件是否允许全选喵
+				const noChooseAll = event.noChooseAll;
+
 				// 根据数据创建区域
 				for (var i = 0; i < list.length; i++) {
 					var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
 					tex.classList.add("choosetomove");
-					var selectAll = ui.create.div(".select-all.popup.pointerdiv", event.dialog.content);
-					selectAll.innerHTML = "全选";
-					selectAll.listen(e => {
-						revertSelection(e.target.nextElementSibling);
-					});
+					if (!noChooseAll) {
+						const selectAll = ui.create.div(".select-all.popup.pointerdiv", event.dialog.content);
+						selectAll.innerHTML = "全选";
+						selectAll.listen(e => {
+							revertSelection(e.target.nextElementSibling);
+						});
+					}
 					var buttons = ui.create.div(".buttons.popup.guanxing", event.dialog.content);
 					buttons.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", dragStart, true);
 					event.dialog.addEventListener(lib.config.touchscreen ? "touchmove" : "mousemove", onDrag, true);
@@ -5707,6 +5712,9 @@ player.removeVirtualEquip(card);
 		}
 		"step 2";
 		event.resume();
+		if (event.cardChooseAll) {
+			event.cardChooseAll.close();
+		}
 		if (event.aiChoose) {
 			event.aiChoose.close();
 		}
@@ -5895,6 +5903,9 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			event.resume();
+			if (event.cardChooseAll) {
+				event.cardChooseAll.close();
+			}
 			if (typeof event.promptdiscard?.close == "function") {
 				event.promptdiscard.close();
 			}
@@ -6968,6 +6979,7 @@ player.removeVirtualEquip(card);
 				};
 				event.dialog.close();
 			} else {
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 			}
@@ -7263,6 +7275,9 @@ player.removeVirtualEquip(card);
 		}
 		"step 2";
 		event.resume();
+		if (event.cardChooseAll) {
+			event.cardChooseAll.close();
+		}
 		if (event.glow_result && event.result.cards && !event.directresult) {
 			for (var i = 0; i < event.result.cards.length; i++) {
 				event.result.cards[i].classList.add("glow");
@@ -7981,6 +7996,7 @@ player.removeVirtualEquip(card);
 					return;
 				}
 				event.dialog.open();
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 				if (expand_length > 2) {
@@ -8163,6 +8179,7 @@ player.removeVirtualEquip(card);
 		} else {
 			if (event.isMine()) {
 				event.dialog.open();
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 				if (expand_length > 2) {
@@ -8375,6 +8392,7 @@ player.removeVirtualEquip(card);
 		} else {
 			if (event.isMine()) {
 				event.dialog.open();
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 				if (expand_length > 2) {

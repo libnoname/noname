@@ -7290,8 +7290,13 @@ export class Game extends GameCompatible {
 			game.Check.confirm(event, confirm);
 
 			const cardChooseAll = event.cardChooseAll;
-			if (cardChooseAll instanceof HTMLElement) {
+			if (cardChooseAll instanceof HTMLDivElement) {
 				cardChooseAll.firstElementChild.innerHTML = ui.selected.cards.length ? "反选" : "全选";
+			}
+
+			const buttonChooseAll = event.buttonChooseAll;
+			if (buttonChooseAll instanceof HTMLDivElement) {
+				buttonChooseAll.innerHTML = ui.selected.buttons.length ? "反选" : "全选";
 			}
 		}
 
