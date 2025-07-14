@@ -227,75 +227,269 @@ export class Game extends GameCompatible {
 		});
 	}
 	/**
-	 * 元素去到某个父元素的某个位置，附带过度动画
-	 * @param {HTMLDivElement} element
-	 * @param {HTMLDivElement} Parent
+	 * 交换两个元素的位置，并附带动画
+	 * 封装了game.$elementGoto函数，特化对于两个元素交换位置的情况喵
+	 * 
+	 * @param {HTMLElement} elementA 
+	 * @param {HTMLElement} elementB 
+	 * @param {number} duration 
+	 * @param {'linear'|'ease-in-out'} timefun 
+	 */
+	async $elementSwap(elementA, elementB, duration = 400, timefun = "linear") {
+		if (!document.contains(elementA) || !document.contains(elementB)) {
+			throw new Error("元素未添加到页面喵"); // AI说话也带喵哦
+		}
+
+		const parentA = elementA.parentElement;
+		const parentB = elementB.parentElement;
+
+		if (!parentA || !parentB) {
+			throw new Error("元素未添加到页面喵");
+		}
+
+		if (parentA === parentB && elementB.compareDocumentPosition(elementA) & Node.DOCUMENT_POSITION_FOLLOWING) {
+			// 如果A元素是B元素的后面的元素喵
+			// 此时需要特殊处理喵，是的交换顺序就好哦喵
+			await game.$elementSwap(elementB, elementA, duration, timefun);
+		} else {
+			// 否则我们直接入队交换就好哦喵
+			await Promise.all([
+				game.$elementGoto(elementA, parentB, elementB.nextElementSibling || "last", duration, timefun),
+				game.$elementGoto(elementB, parentA, elementA.nextElementSibling || "last", duration, timefun),
+			]);
+		}
+	}
+	/**
+	 * 用于保存$elementGoto的状态信息喵
+	 */
+	$elementGotoAnimData = {
+		/**
+		 * 给定元素动画的Promise的resolve函数
+		 */
+		animationResolver: new Map(),
+		/**
+		 * 给定元素的移动起始位置
+		 */
+		startPosition: new Map(),
+		/**
+		 * 给定元素的移动结束位置
+		 */
+		endPosition: new Map(),
+		/**
+		 * 给定元素的移动动画
+		 */
+		invertingAnimations: new Map(),
+	};
+	/**
+	 * 带动画的将元素移动到某个父元素的某个位置喵
+	 * 允许元素附带变换（位移旋转什么的都可以），甚至本身还处于上一次$elementGoto的动画中也可以喵（不过我没测试哦）
+	 * 
+	 * @param {HTMLElement} element
+	 * @param {HTMLElement} parent
 	 * @param {number|'first'|'last'|Node} position 新的父容器中元素去的位置
-	 * @param {number} duration 动画完成的时间 ms
-	 * @param {'linear'|'ease-in-out'} timefun 动画过度的时间曲线,很多，这里只列举两个
+	 * @param {number} [duration=500] 动画完成的时间 ms
+	 * @param {'linear'|'ease-in-out'} [timefun="linear"] 动画过度的时间曲线,很多，这里只列举两个
 	 * @returns {Promise<void>}
 	 * @author Curpond
 	 */
-	$elementGoto(element, Parent, position = "last", duration = 400, timefun = "linear") {
-		return new Promise(resolve => {
-			let e1p = element.parentElement;
-			let e2p = Parent;
-			let old1_overflow = e1p.style.overflow;
-			let old2_overflow = e2p.style.overflow;
-			/**@type {HTMLDivElement[]} */
-			let watchedElements = [...e1p.children, ...e2p.children].unique();
+	async $elementGoto(element, parent, position = "last", duration = 500, timefun = "linear") {
+		if (!document.contains(element) || !document.contains(parent)) {
+			throw new Error("无效的参数或者元素没有添加到页面喵");
+		}
 
-			//first
-			let originalPosition = new Map(watchedElements.map(e => [e, e.getBoundingClientRect()]));
-			//last
-			if (position == "first") {
-				e2p.insertBefore(element, e2p.firstChild);
-			} else if (position == "last") {
-				e2p.appendChild(element);
-			} else if (typeof position == "number") {
-				e2p.insertBefore(element, e2p.children[position]);
-			} else if (e2p.contains(position)) {
-				e2p.insertBefore(element, position);
+		/**
+		 * 从element的transform字符串中解析位移喵
+		 * 
+		 * @param {HTMLElement} element 
+		 * @returns {[number, number]} 当前元素实际变换的坐标喵
+		 */
+		function parseTranslate(element) {
+			const matrix = getComputedStyle(element).transform;
+
+			if (matrix.startsWith("matrix(")) {
+				// @ts-expect-error 样式计算结果给出的值一定包含x与y喵
+				return matrix.slice(7, -1).split(",").slice(4, 6).map(Number);
+			} else if (matrix.startsWith("matrix3d(")) {
+				// @ts-expect-error 样式计算结果给出的值一定包含x与y喵
+				return matrix.slice(9, -1).split(",").slice(12, 14).map(Number);
 			} else {
-				e2p.appendChild(element);
+				return [0, 0];
 			}
-			let newPosition = new Map(watchedElements.map(e => [e, e.getBoundingClientRect()]));
-			let change = new Map(
-				watchedElements.map(e => {
-					return [
-						e,
-						{
-							dx: originalPosition.get(e).x - newPosition.get(e).x,
-							dy: originalPosition.get(e).y - newPosition.get(e).y,
-						},
-					];
-				})
-			);
+		}
 
-			//invert
-			e2p.style.overflow = "visible";
-			e1p.style.overflow = "visible";
-			change.forEach(({ dx, dy }, e) => {
-				e.style.transition = `none`;
-				e.style.transform = `translate(${dx / game.documentZoom}px, ${dy / game.documentZoom}px)`;
-			});
-			element.offsetHeight;
+		/**
+		 * 计算element当前的位置喵
+		 * 包括变换效果和动画效果当前的位置哦喵
+		 * 
+		 * @param {HTMLElement} element 
+		 * @returns {[number, number]} 当前元素相对于视口的实际位置喵
+		 */
+		function getCurrentPosition(element) {
+			const { x, y } = element.getBoundingClientRect();
+			const animation = game.$elementGotoAnimData.invertingAnimations.get(element);
 
-			//play
-			requestAnimationFrame(() => {
-				change.forEach(({ dx, dy }, e) => {
-					e.style.transition = `${duration}ms ${timefun}`;
-					e.style.removeProperty("transform");
+			if (animation) {
+				const oldTransform = animation.style.transform;
+				animation.commitStyles(); // 我们要获取动画当前的位置喵
+				animation.cancel();
+				element.getBoundingClientRect(); // 迫使回流来重新计算CSS喵
+				const [fx, fy] = parseTranslate(element);
+				element.style.transform = oldTransform;
+				return [x + fx, y + fy];
+			}
+
+			const [tx, ty] = parseTranslate(element);
+			return [x + tx, y + ty];
+		}
+
+		/**
+		 * 将元素当前位置记录为开始位置
+		 * 
+		 * @param {HTMLElement} element 
+		 */
+		function recordAsFirstPosition(element) {
+			const startPosition = game.$elementGotoAnimData.startPosition;
+
+			if (startPosition.has(element)) {
+				return; // 元素开始位置以最早的为主喵
+			}
+
+			const position = getCurrentPosition(element);
+			startPosition.set(element, position);
+		}
+
+		/**
+		 * 将元素当前位置记录为结束位置
+		 * 
+		 * @param {HTMLElement} element 
+		 */
+		function recordAsLastPosition(element) {
+			const position = getCurrentPosition(element);
+			game.$elementGotoAnimData.endPosition.set(element, position); // 元素结束位置以最晚的为主喵
+		}
+
+		// 首先是FIRST喵，记录起始位置哦喵
+		const parentFrom = element.parentElement;
+		const parentTo = parent;
+
+		if (!parentFrom) {
+			throw new Error("要移动的元素没有父元素");
+		}
+
+		// @ts-expect-error childNodes是可迭代的
+		const elements = new Set(parentFrom.childNodes).union(parentTo.childNodes);
+
+		for (const element of elements) {
+			recordAsFirstPosition(element);
+		}
+
+		// 我们等待所有动画入队再更改节点结构喵
+		// 这样对于多重动画我们可以同时处理而不会导致节点位置异常喵
+		// 啊如果你await了这个函数那就没有作用了喵
+		// 如果你需要并发多个动画应该**同步的**调用多次然后使用Promise.all()一起等待哦喵
+		await new Promise(resolve => resolve(null));
+
+		// 依照参数选择添加的位置喵
+		// 此时将更改实际的DOM结构喵
+		if (position === "first") {
+			parent.insertBefore(element, parent.firstChild);
+		} else if (position === "last") {
+			parent.appendChild(element);
+		} else if(typeof position == "number") {
+			parent.insertBefore(element, parent.children[position]);
+		} else if (parent.contains(position)) {
+			parent.insertBefore(element, position);
+		} else {
+			parent.appendChild(element);
+		}
+
+		// 我们再次等待所有节点结构调整完毕喵
+		await new Promise(resolve => resolve(null));
+
+		// @ts-expect-error childNodes是可迭代的
+		const elements2 = new Set(parentFrom.childNodes).union(parentTo.childNodes);
+
+		for (const element of elements2) {
+			recordAsLastPosition(element);
+		}
+
+		/**
+		 * 获取元素的动画起始和结束位置
+		 * 
+		 * @param {HTMLElement} element
+		 * @returns {[number, number, number, number] | null} [起始位置X, 起始位置Y, 结束位置X, 结束位置Y]
+		 */
+		function getAnimationPosition(element) {
+			const start = game.$elementGotoAnimData.startPosition.get(element);
+			const end = game.$elementGotoAnimData.endPosition.get(element);
+			game.$elementGotoAnimData.startPosition.delete(element);
+			game.$elementGotoAnimData.endPosition.delete(element);
+
+			if (!start || !end) {
+				return null;
+			}
+
+			const [sx, sy] = start;
+			const [ex, ey] = end;
+
+			if (Math.abs(sx - ex) < 2 && Math.abs(sy - ey) < 2) {
+				return null;
+			}
+
+			return [sx, sy, ex, ey];
+		}
+
+		/**
+		 * 执行所有记录了起始和结束位置的动画喵（发射函数）
+		 */
+		function emitAllPendingAnimations() {
+			const elements = game.$elementGotoAnimData.startPosition.keys();
+			
+			for (const element of elements) {
+				const position = getAnimationPosition(element);
+				
+				if (!position) {
+					continue;
+				}
+				
+				// 接下来是INVERT喵，我们要计算偏移量并将其作为动画参数喵
+				const [sx, sy, ex, ey] = position;
+				const invertingX = sx - ex;
+				const invertingY = sy - ey;
+
+				// 最后是PLAY喵，开始动画并等待结束喵
+				const animation = element.animate([
+					{
+						transform: `translate(${invertingX}px, ${invertingY}px)`,
+					},
+					{
+						transform: `translate(0, 0)`,
+					},
+				], {
+					duration: duration,
+					easing: timefun,
+					composite: "accumulate",
 				});
-				let transitionEndHandler = () => {
-					change.forEach(({ dx, dy }, e) => e.removeEventListener("transitionend", transitionEndHandler));
-					e1p.style.overflow = old1_overflow;
-					e2p.style.overflow = old2_overflow;
-					resolve();
-				};
-				change.forEach(({ dx, dy }, e) => e.addEventListener("transitionend", transitionEndHandler, { once: true }));
-			});
-		});
+
+				// game.$elementGoto占用单独的动画通道喵
+				animation.persist();
+
+				// 如果可能，我们要尝试resolve动画的等待者喵
+				const resolve = game.$elementGotoAnimData.animationResolver.get(element);
+
+				if (resolve) {
+					game.$elementGotoAnimData.animationResolver.delete(element);
+					animation.addEventListener("finish", resolve);
+					animation.addEventListener("cancel", resolve);
+				}
+			}
+		}
+
+		// 剩下的东西交给发射函数就好哦喵
+		const { promise, resolve } = Promise.withResolvers();
+		game.$elementGotoAnimData.animationResolver.set(element, resolve);
+		requestAnimationFrame(emitAllPendingAnimations);
+		await promise;
 	}
 	//Stratagem
 	//谋攻

@@ -1492,16 +1492,24 @@ div:not(.handcards) > .card > .info > span,
 	-webkit-animation: playerflip 0.3s ease-out;
 }
 
+div.select-all:not(.card):not(.player) {
+	right: 0px;
+	position: absolute;
+	background: rgba(0, 0, 0, 0.6);
+	font-size: 16px;
+	z-index: 7;
+	padding: 6px 8px;
+}
 .button.card.button > .intro {
 	top: 69px;
 }
 .buttons {
 	width: 100%;
 }
-.buttons.guanxing {
-	min-height: 106px !important;
-	margin: 0px;
-	width: 90% !important;
+.buttons.guanxing:not(.pointerdiv) {
+	min-height: 106px;
+	width: calc(100% - var(--contentdiv-margin-left) - var(--contentdiv-margin-right));
+	box-sizing: border-box;
 }
 .buttons.smallzoom {
 	display: block;
@@ -1782,10 +1790,14 @@ div:not(.handcards) > .card > .info > span,
 	width: 100%;
 }
 .content > div {
-	margin-top: 8px;
-	margin-bottom: 8px;
-	margin-left: 4px;
-	margin-right: 4px;
+	--contentdiv-margin-left: 4px;
+	--contentdiv-margin-right: 4px;
+	--contentdiv-margin-top: 8px;
+	--contentdiv-margin-bottom: 8px;
+	margin-top: var(--contentdiv-margin-top);
+	margin-bottom: var(--contentdiv-margin-bottom);
+	margin-left: var(--contentdiv-margin-left);
+	margin-right: var(--contentdiv-margin-right);
 	position: relative;
 }
 .content > div:not(.pointerdiv) {
@@ -3814,11 +3826,12 @@ div:hover > .intro {
 	transform: translateX(-5px);
 }
 .popup {
+	--popup-padding: 50px;
 	background: rgba(0, 0, 0, 0.2);
 	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
 	border-radius: 4px;
-	padding-left: 30px;
-	padding-right: 30px;
+	padding-left: var(--popup-padding);
+	padding-right: var(--popup-padding);
 }
 
 .tdnode {

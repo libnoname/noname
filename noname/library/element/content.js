@@ -1913,7 +1913,7 @@ player.removeVirtualEquip(card);
 		let result;
 		if (event.isMine()) {
 			result = await new Promise(resolve => {
-				delete ui.selected.guanxing_button;
+				ui.selected.buttons.length = 0;
 
 				const list = event.list;
 				const filterMove = event.filterMove;
@@ -1975,8 +1975,6 @@ player.removeVirtualEquip(card);
 				var elementOffsetX = 0;
 				var elementOffsetY = 0;
 				var currentElement;
-				// 首次触发move事件的元素
-				var firstOnDragElement;
 				/**
 				 * 每次移动后更新数据
 				 */
@@ -1998,6 +1996,91 @@ player.removeVirtualEquip(card);
 							ui.confirm.close();
 						}
 					}
+				};
+
+				var updateSelectAllButtons = function() {
+					const buttons = Array.from(event.dialog.querySelectorAll(".select-all"));
+
+					for (const button of buttons) {
+						const hasSelected = button.nextElementSibling.querySelector(".glow2");
+						button.innerHTML = hasSelected ? "反选" : "全选";
+					}
+				};
+
+				/**
+				 * 移除所有符合条件的选中按钮
+				 * 
+				 * @param { ((button: HTMLDivElement) => boolean)? } filter 
+				 */
+				var clearSelected = function (filter) {
+					for(let i = ui.selected.buttons.length; i--; ) {
+						const button = ui.selected.buttons[i];
+
+						if (!filter || filter(button)) {
+							ui.selected.buttons.splice(i, 1);
+							button.classList.remove("glow2");
+						}
+					}
+
+					updateSelectAllButtons();
+				};
+
+				/**
+				 * 选中所有传入的按钮
+				 * 只能多选相同容器的按钮
+				 * 
+				 * @param { HTMLDivElement[] } button 
+				 */
+				var selectButtons = function (...buttons) {
+					if (!buttons.length) {
+						return;
+					}
+
+					const container = buttons[0].parentElement;
+					clearSelected(button => button.parentElement !== container);
+					buttons = buttons.filter(button => button.parentElement === container);
+
+					buttons.forEach(button => {
+						button.classList.add("glow2");
+					});
+
+					ui.selected.buttons.addArray(buttons);
+					updateSelectAllButtons();
+				};
+
+				/**
+				 * 切换按钮的选中状态
+				 * 
+				 * @param {HTMLElement} button 
+				 * @returns {boolean}
+				 */
+				var toggleButton = function(button) {
+					const nextState = !button.classList.contains("glow2");
+
+					if (!nextState) {
+						button.classList.remove("glow2");
+						ui.selected.buttons.remove(button);
+						updateSelectAllButtons();
+					} else {
+						selectButtons(button); // 这里要使用selectButtons排除其他容器的按钮喵
+					}
+
+					return nextState;
+				};
+
+				/**
+				 * 反转容器中所有按钮的选择状态
+				 * 
+				 * @param { HTMLDivElement } container 
+				 */
+				var revertSelection = function (container) {
+					const selecteds = new Set(ui.selected.buttons.filter(button => button.parentElement === container));
+					const nextSelecteds = Array.prototype.filter.call(container.childNodes, button => {
+						return !selecteds.has(button);
+					});
+
+					clearSelected();
+					selectButtons(...nextSelecteds);
 				};
 
 				/**
@@ -2023,6 +2106,8 @@ player.removeVirtualEquip(card);
 						if (e.touches.length != 1) {
 							return;
 						}
+
+						e = e.touches[0];
 					}
 					// 判断按下的元素是否是card
 					var cards = Array.from(this.children);
@@ -2036,8 +2121,8 @@ player.removeVirtualEquip(card);
 							target.copy.style.opacity = "0.75";
 							target.copy.style.pointerEvents = "none";
 						}
-						touchStartX = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) / game.documentZoom;
-						touchStartY = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY) / game.documentZoom;
+						touchStartX = e.clientX / game.documentZoom;
+						touchStartY = e.clientY / game.documentZoom;
 						elementOffsetX = target.getBoundingClientRect().x / game.documentZoom - touchStartX;
 						elementOffsetY = target.getBoundingClientRect().y / game.documentZoom - touchStartY;
 						currentElement = target;
@@ -2066,25 +2151,29 @@ player.removeVirtualEquip(card);
 						if (e.touches.length != 1) {
 							return;
 						}
+
+						e = e.touches[0];
 					}
 					if (!currentElement || !currentElement.copy) {
 						return;
 					}
-					if (!firstOnDragElement) {
-						if (!currentElement.contains(e.target)) {
+
+					// 获取点击位置
+					const ex = e.clientX / game.documentZoom;
+					const ey = e.clientY / game.documentZoom;
+
+					// 如果是首次移动距离
+					if (!document.contains(currentElement.copy)) {
+						// 检查过小的移动距离，防止误触
+						if (Math.abs(ex - touchStartX) < 10 && Math.abs(ey - touchStartY) < 10) {
+							// 我们取消本次移动
 							return;
-						} else {
-							firstOnDragElement = currentElement;
 						}
 					}
-					// 拖动离开了这个牌的区域，进行赋值
-					// if (!currentElement.contains(e.target)) {
 
-					// }
-					// 移除高亮
-					ui.selected.guanxing_button?.classList.remove("glow2");
-					ui.selected.guanxing_button = currentElement;
-					ui.selected.guanxing_button.classList.add("glow2");
+					// 选中单个按钮
+					clearSelected();
+					selectButtons(currentElement);
 					// 显示拖拽的元素
 					/**
 					 * @type { HTMLDivElement }
@@ -2099,12 +2188,23 @@ player.removeVirtualEquip(card);
 						});
 						ui.window.appendChild(copy);
 					}
-					e = e instanceof MouseEvent ? e : e.touches[0];
 
-					const ex = e.clientX / game.documentZoom;
-					const ey = e.clientY / game.documentZoom;
 					copy.style.left = `${ex + elementOffsetX}px`;
 					copy.style.top = `${ey + elementOffsetY}px`;
+
+					// 当拖动到对话框最上面或者最下面我们滚动内容
+					const bounds = event.dialog.getBoundingClientRect();
+					const relY = e.clientY - bounds.top;
+					const minY = bounds.height * 0.1;
+					const maxY = bounds.height * 0.9;
+
+					if (relY < minY) {
+						// 让event.dialog.content向上滚动
+						event.dialog.content.parentElement.scrollTop -= 15;
+					} else if (relY > maxY) {
+						// 让event.dialog.content向下滚动
+						event.dialog.content.parentElement.scrollTop += 15;
+					}
 				};
 
 				var dragEnd = function (e) {
@@ -2120,8 +2220,12 @@ player.removeVirtualEquip(card);
 						if (e.changedTouches.length != 1) {
 							return;
 						}
+
+						e = e.changedTouches[0];
 					}
-					firstOnDragElement = null;
+
+					const isDragging = ui.selected.buttons.length === 1 && document.contains(ui.selected.buttons[0]?.copy);
+					
 					buttonss.forEach(btn => {
 						Array.from(btn.children).forEach(element => {
 							if (element.copy && ui.window.contains(element.copy)) {
@@ -2129,146 +2233,139 @@ player.removeVirtualEquip(card);
 							}
 						});
 					});
-					if (!ui.selected.guanxing_button?.copy) {
+
+					// 如果点击的是全选按钮我们不处理喵
+					if (e.target.classList.contains("select-all")) {
 						return;
 					}
-					var clientX = (e instanceof MouseEvent ? e.clientX : e.changedTouches[0].clientX) / game.documentZoom;
-					var clientY = (e instanceof MouseEvent ? e.clientY : e.changedTouches[0].clientY) / game.documentZoom;
-					// 鼠标当前处于哪个元素上
-					var target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
-					// 相当于没移动，让它自己触发后续的click
-					if (ui.selected.guanxing_button.contains(target)) {
-						return;
-					}
-					// 停止拖拽的目标处于哪个button区域中
-					var button = buttonss.find(b => {
-						// Node.contains()
-						return b.contains(target);
-					});
-					// 不能拖拽到区域外
-					if (!button) {
-						return;
-					}
-					var children = Array.from(button.children);
-					// 与card交换位置
-					var card = children.find(element => element.contains(target));
-					// 判断是否可以移动
-					if (!card) {
-						if (!filterMove(ui.selected.guanxing_button, button._link, event.moved)) {
+
+					// 获取鼠标位置喵
+					const clientX = e.clientX / game.documentZoom;
+					const clientY = e.clientY / game.documentZoom;
+					let aniamtionPromise = null;
+
+					// 如果是拖动移动，我们走原来的代码喵
+					if (isDragging) {
+						const curCard = ui.selected.buttons[0];
+						// 鼠标当前处于哪个元素上
+						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
+						// 相当于没移动，让它自己触发后续的click
+						if (curCard.contains(target)) {
 							return;
 						}
-					} else {
-						if (!filterMove(card, ui.selected.guanxing_button, event.moved)) {
-							return;
-						}
-					}
-					//后续这里可以增加拖动到空白位置的效果
-					/*
-
-				 if (拖动到空白) {
-					game.$elementGoto().then(){
-						delete ui.selected.guanxing_button;
-						event.isPlayingAnimation = false;
-						updateButtons();
-					}
-					return
-
-				
-				}
-				
-				*/
-					// FLIP动画
-					// first
-					buttonss.forEach(btn => {
-						Array.from(btn.children).forEach(element => {
-							element.style.transition = "none";
-							element._rect = element.getBoundingClientRect();
+						// 停止拖拽的目标处于哪个buttons区域中
+						const buttons = buttonss.find(b => {
+							// Node.contains()
+							return b.contains(target);
 						});
-					});
-					// last
-					// 如果拖拽到一个空区域内
-					if (!button.hasChildNodes()) {
-						button.appendChild(ui.selected.guanxing_button);
-					} else if (!card) {
-						// 判断是加在第一个还是最后一个
-						if (children.length > 0) {
-							var firstChild = children[0];
-							if (clientX < firstChild.getBoundingClientRect().left / game.documentZoom) {
-								button.insertBefore(ui.selected.guanxing_button, firstChild);
-							} else {
-								button.appendChild(ui.selected.guanxing_button);
+						// 不能拖拽到区域外
+						if (!buttons) {
+							return;
+						}
+						const children = Array.from(buttons.children);
+						// 与card交换位置
+						const card = children.find(element => element.contains(target));
+						// 判断是否可以移动
+						if (!card) {
+							if (!filterMove(curCard, buttons._link, event.moved)) {
+								return;
 							}
 						} else {
-							button.appendChild(ui.selected.guanxing_button);
+							if (!filterMove(card, curCard, event.moved)) {
+								return;
+							}
 						}
-					} else {
-						// 是交换而不是到card前面
-						var par1 = ui.selected.guanxing_button.parentNode,
-							ind1 = ui.selected.guanxing_button.nextSibling,
-							par2 = card.parentNode,
-							ind2 = card.nextSibling;
-						ui.selected.guanxing_button.classList.remove("glow2");
-						par1.insertBefore(card, ind1);
-						par2.insertBefore(ui.selected.guanxing_button, ind2);
-					}
-					// invert
-					buttonss.forEach(btn => {
-						Array.from(btn.children).forEach(element => {
-							element._rect2 = element.getBoundingClientRect();
-							element.style.transform = `translateX(${(element._rect.left - element._rect2.left) / game.documentZoom}px) translateY(${(element._rect.top - element._rect2.top) / game.documentZoom}px)`;
+
+						// 用flip动画移动过去喵
+						if (!card) {
+							// 如果拖动在按钮区域而不是按钮
+							// 那么我们计算应该拖动到最前面还是最后面喵
+							let position = null;
+
+							if (buttons.hasChildNodes()) {
+								const firstChild = children[0];
+								if (clientX < firstChild.getBoundingClientRect().left / game.documentZoom) {
+									position = "first";
+								}
+							} else {
+								position = "last";
+							}
+
+							// 执行动画喵
+							aniamtionPromise = game.$elementGoto(curCard, buttons, position);
+						} else {
+							// 如果拖动到按钮上面，我们交换两个按钮喵
+							const buttons2 = curCard.parentElement;
+							const pos1 = card.nextElementSibling || "last";
+							const pos2 = curCard.nextElementSibling || "last";
+							
+							// 执行动画喵
+							aniamtionPromise = game.$elementSwap(curCard, card);
+						}
+
+						clearSelected();
+					} else if (ui.selected.buttons.length) {
+						// 获取当前点击的节点喵
+						const target = e.target;
+						// 寻找点击的是那个区域哦喵
+						const buttons = buttonss.find(b => {
+							return b.contains(target);
 						});
-					});
-					// play
-					event.isPlayingAnimation = true;
-					setTimeout(() => {
-						Promise.race([
-							new Promise(resolve => setTimeout(resolve, 700)),
-							Promise.all(
-								buttonss
-									.map(btn => Array.from(btn.children))
-									.flat(1)
-									.map(element => {
-										return new Promise(resolve => {
-											element.classList.remove("glow2");
-											element.style.transition = "";
-											const transformValue = element.style.transform;
-											if (transformValue !== "translateX(0px) translateY(0px)" && transformValue !== "") {
-												element.style.transform = "translateX(0px) translateY(0px)";
-												element.addEventListener(
-													"transitionend",
-													event => {
-														// 确保 transitionend 事件是针对当前元素的 transform 属性
-														if (event.propertyName === "transform") {
-															resolve();
-														}
-													},
-													{ once: true }
-												);
-											} else {
-												resolve();
-											}
-										});
-									})
-							),
-						]).then(() => {
-							delete ui.selected.guanxing_button;
+
+						if (buttons !== target) {
+							// 如果点击的是按钮或者区域外喵
+							return; // 不产生任何效果喵，点击选中由其他位置实现喵，此处仅负责移动哦
+						}
+
+						// 判断一下要移动到哪里去哦喵
+						let position = null;
+
+						if (buttons.hasChildNodes()) {
+							const firstChild = buttons.childNodes[0];
+
+							if (clientX < firstChild.getBoundingClientRect().left / game.documentZoom) {
+								position = firstChild; // 此处不可以使用"first"喵，会导致倒序哦喵
+							}
+						} else {
+							position = "last";
+						}
+
+						const subPromises = [];
+
+						for (const element of ui.selected.buttons) {
+							subPromises.push(game.$elementGoto(element, buttons, position));
+						}
+
+						aniamtionPromise = Promise.all(subPromises);
+						clearSelected();
+					}
+
+					if (aniamtionPromise) {
+						event.isPlayingAnimation = true;
+
+						aniamtionPromise.then(() => {
 							event.isPlayingAnimation = false;
 							updateButtons();
 						});
-					}, 0);
+					}
+
+					currentElement = null;
 				};
 
 				// 根据数据创建区域
 				for (var i = 0; i < list.length; i++) {
 					var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
 					tex.classList.add("choosetomove");
-					var buttons = ui.create.div(".buttons", event.dialog.content);
+					var selectAll = ui.create.div(".select-all.popup.pointerdiv", event.dialog.content);
+					selectAll.innerHTML = "全选";
+					selectAll.listen(e => {
+						revertSelection(e.target.nextElementSibling);
+					});
+					var buttons = ui.create.div(".buttons.popup.guanxing", event.dialog.content);
 					buttons.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", dragStart, true);
 					event.dialog.addEventListener(lib.config.touchscreen ? "touchmove" : "mousemove", onDrag, true);
 					event.dialog.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", dragEnd, true);
 					buttonss.push(buttons);
-					buttons.classList.add("popup");
-					buttons.classList.add("guanxing");
 					buttons._link = i;
 					if (list[i][1]) {
 						if (get.itemtype(list[i][1]) == "cards") {
@@ -2300,16 +2397,7 @@ player.removeVirtualEquip(card);
 					if (!buttonss.includes(node)) {
 						return;
 					}
-					if (!ui.selected.guanxing_button) {
-						ui.selected.guanxing_button = button;
-						button.classList.add("glow2");
-						return;
-					}
-					if (ui.selected.guanxing_button == button) {
-						button.classList.remove("glow2");
-						delete ui.selected.guanxing_button;
-						return;
-					}
+					toggleButton(button);
 				};
 				event.custom.replace.confirm = function (bool) {
 					if (event.isPlayingAnimation) {
