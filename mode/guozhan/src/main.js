@@ -115,7 +115,7 @@ export const start = async (event, trigger, player) => {
 					}
 				}
 				for (const character in lib.character) {
-					if (lib.character[character][1] == "shen" || lib.character[character][1] == "western") {
+					if (lib.selectGroup.includes(lib.character[character][1]) || lib.character[character].groupInGuozhan) {
 						lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 					}
 				}
@@ -292,7 +292,7 @@ export const startBefore = () => {
 		}
 	}
 	for (const character in lib.character) {
-		if (lib.character[character].group == "shen") {
+		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}
@@ -314,7 +314,7 @@ export const onreinit = () => {
 	}
 
 	for (const character in lib.character) {
-		if (lib.character[character].group == "shen" || lib.character[character].group == "western") {
+		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}
