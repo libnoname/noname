@@ -680,7 +680,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "将至少两张点数和不小于13的牌当作" + get.translation(links[0][2]) + "使用";
+				return "将至少两张点数和等于13的牌当作" + get.translation(links[0][2]) + "使用";
 			},
 		},
 		ai: {
