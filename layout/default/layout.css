@@ -1208,6 +1208,19 @@ body > .background.land {
 	pointer-events: none;
 }
 
+/* game.$elementGoto使用的喵 */
+/* 这些可能作用于任何元素上面，为了确保动画效果，我们要尽可能提升优先级喵 */
+.cloned-visual:not(.visual-subject) {
+	pointer-events: none !important;
+	translate: -1000000px -1000000px !important;
+	overflow: visible !important;
+	transition: none !important;
+}
+.facade-replacing {
+	visibility: hidden !important;
+	scale: 0 !important;
+}
+
 #system > div > div.hidden {
 	opacity: 0.5 !important;
 }

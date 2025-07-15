@@ -234,6 +234,7 @@ export class Game extends GameCompatible {
 	 * @param {HTMLElement} elementB 
 	 * @param {number} duration 
 	 * @param {'linear'|'ease-in-out'} timefun 
+	 * @returns {Promise<void>}
 	 */
 	async $elementSwap(elementA, elementB, duration = 400, timefun = "linear") {
 		if (!document.contains(elementA) || !document.contains(elementB)) {
@@ -329,12 +330,23 @@ export class Game extends GameCompatible {
 			const animation = game.$elementGotoAnimData.invertingAnimations.get(element);
 
 			if (animation) {
-				const oldTransform = element.style.transform;
-				animation.commitStyles(); // 我们要获取动画当前的位置喵
-				animation.cancel();
-				element.getBoundingClientRect(); // 迫使回流来重新计算CSS喵
-				const [fx, fy] = parseTranslate(element);
-				element.style.transform = oldTransform;
+				let fx, fy;
+
+				if (animation.actualVisual) {
+					// 如果动画是使用了复制节点喵
+					const actualVisual = animation.actualVisual;
+					animation.commitStyles(); // 我们要获取动画当前的位置喵
+					animation.cancel();
+					[fx, fy] = parseTranslate(element);
+				} else {
+					// 否则我们要保存原来的样式哦喵
+					const oldTransform = element.style.transform;
+					animation.commitStyles(); // 我们要获取动画当前的位置喵
+					animation.cancel();
+					[fx, fy] = parseTranslate(element);
+					element.style.transform = oldTransform;
+				}
+
 				return [x + fx, y + fy];
 			}
 
@@ -395,7 +407,7 @@ export class Game extends GameCompatible {
 			parent.insertBefore(element, parent.firstChild);
 		} else if (position === "last") {
 			parent.appendChild(element);
-		} else if(typeof position == "number") {
+		} else if (typeof position == "number") {
 			parent.insertBefore(element, parent.children[position]);
 		} else if (parent.contains(position)) {
 			parent.insertBefore(element, position);
@@ -441,40 +453,121 @@ export class Game extends GameCompatible {
 		}
 
 		/**
+		 * 克隆可视动画元素
+		 * 将克隆整个element以及所有不包含id的连续的祖先节点
+		 * 
+		 * @param {HTMLElement} element 
+		 * @returns {[HTMLElement, HTMLElement]} [subject, clonedRoot] 复制的主元素与复制树的根节点喵
+		 */
+		function cloneVisualElement(element) {
+			if (!document.body.contains(element) || document.body === element) {
+				throw new Error("被复制的节点必须是body的子元素喵");
+			}
+
+			/** @type {HTMLElement} */
+			// @ts-expect-error 忽略类型检查喵
+			const clone = element.cloneNode(true);
+			clone.classList.add("visual-subject");
+			let current = clone;
+			let target = element.parentElement;
+
+			// 这是不可能出现的情况喵，但是eslint会报错喵
+			if (!target) {
+				throw "impossible";
+			}
+
+			while (!target.id && target !== document.body) {
+				/** @type {HTMLElement} */
+				// @ts-expect-error 忽略类型检查喵
+				const clonedTarget = target.cloneNode(false);
+				clonedTarget.classList.add("cloned-visual");
+				clonedTarget.appendChild(current);
+				current = clonedTarget;
+				target = target.parentElement;
+
+				if (!target) {
+					throw "impossible";
+				}
+			}
+
+			target.appendChild(current);
+			return [clone, current];
+		}
+
+		/**
 		 * 执行所有记录了起始和结束位置的动画喵（发射函数）
 		 */
 		function emitAllPendingAnimations() {
 			const elements = game.$elementGotoAnimData.startPosition.keys();
-			
+
 			for (const element of elements) {
 				const position = getAnimationPosition(element);
-				
-				if (!position) {
+				const parent = element.parentElement;
+
+				if (!position || !parent) {
 					continue;
 				}
-				
+
 				const [sx, sy, ex, ey] = position;
+				const canOverflow = getComputedStyle(parent).overflow === 'visible';
 				let animation;
 
-				// 接下来是INVERT喵，我们要计算偏移量并将其作为动画参数喵
-				const invertingX = sx - ex;
-				const invertingY = sy - ey;
+				if (canOverflow) {
+					// 如果允许overflow的情况下，我们直接播放动画就好哦喵
+					// 接下来是INVERT喵，我们要计算偏移量并将其作为动画参数喵
+					const invertingX = sx - ex;
+					const invertingY = sy - ey;
 
-				// 最后是PLAY喵，开始动画并等待结束喵
-				animation = element.animate([
-					{
-						transform: `translate(${invertingX}px, ${invertingY}px)`,
-					},
-					{
-						transform: `translate(0px, 0px)`,
-					},
-				], {
-					duration: duration,
-					easing: timefun,
-					composite: "accumulate",
-				});
+					// 最后是PLAY喵，开始动画并等待结束喵
+					animation = element.animate([
+						{
+							transform: `translate(${invertingX}px, ${invertingY}px)`,
+						},
+						{
+							transform: `translate(0px, 0px)`,
+						},
+					], {
+						duration: duration,
+						easing: timefun,
+						composite: "accumulate",
+					});
+				} else {
+					// 否则我们需要复制动画元素喵
+					const [subject, stage] = cloneVisualElement(element);
+					const bounds = subject.getBoundingClientRect();
+					const startX = sx - bounds.x;
+					const startY = sy - bounds.y;
+					const endX = ex - bounds.x;
+					const endY = ey - bounds.y;
 
-				// 溢出问题要下次commit解决喵 _(:з」∠)_
+					// 隐藏原来的元素喵
+					element.classList.add("facade-replacing");
+
+					animation = subject.animate([
+						{
+							transform: `translate(${startX}px, ${startY}px)`,
+						},
+						{
+							transform: `translate(${endX}px, ${endY}px)`,
+						},
+					], {
+						duration: duration,
+						easing: timefun,
+						composite: "accumulate",
+						fill: "forwards",
+					});
+					// @ts-expect-error 我们需要给Animation添加一个属性喵
+					animation.actualVisual = subject; // 标记实际节点喵
+
+					// 清理复制的元素并显示原来的元素喵
+					function onAnimationEnd() {
+						element.classList.remove("facade-replacing");
+						stage.remove();
+					}
+
+					animation.addEventListener("finish", onAnimationEnd);
+					animation.addEventListener("cancel", onAnimationEnd);
+				}
 
 				// game.$elementGoto占用单独的动画通道喵
 				animation.persist();
@@ -484,9 +577,18 @@ export class Game extends GameCompatible {
 
 				if (resolve) {
 					game.$elementGotoAnimData.animationResolver.delete(element);
-					animation.addEventListener("finish", resolve);
-					animation.addEventListener("cancel", resolve);
 				}
+
+				function onAnimationEnd() {
+					if (typeof resolve == "function") {
+						resolve();
+					}
+
+					game.$elementGotoAnimData.invertingAnimations.delete(element);
+				}
+
+				animation.addEventListener("finish", onAnimationEnd);
+				animation.addEventListener("cancel", onAnimationEnd);
 
 				// 标记当前节点的动画喵
 				game.$elementGotoAnimData.invertingAnimations.set(element, animation);
@@ -9443,26 +9545,26 @@ export class Game extends GameCompatible {
 					};
 			  })
 			: game.getDB(storeName).then(object => {
-					const keys = Object.keys(object);
-					lib.status.reload += keys.length;
-					const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
-					return Promise.allSettled(
-						keys.map(
-							key =>
-								new Promise((resolve, reject) => {
-									const request = store.delete(key);
-									request.onerror = event => {
-										game.reload2();
-										reject(event);
-									};
-									request.onsuccess = event => {
-										game.reload2();
-										resolve(event);
-									};
-								})
-						)
-					);
-			  });
+				const keys = Object.keys(object);
+				lib.status.reload += keys.length;
+				const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
+				return Promise.allSettled(
+					keys.map(
+						key =>
+							new Promise((resolve, reject) => {
+								const request = store.delete(key);
+								request.onerror = event => {
+									game.reload2();
+									reject(event);
+								};
+								request.onsuccess = event => {
+									game.reload2();
+									resolve(event);
+								};
+							})
+					)
+				);
+			});
 	}
 	/**
 	 * @param { string } key
