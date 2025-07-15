@@ -2261,6 +2261,9 @@ export default {
 			order: 8,
 			result: {
 				player(player) {
+					if (player.needsToDiscard(3) && !player.hasValueTarget({ name: "sha" })) {
+						return -1;
+					}
 					if (player.hp <= 2) {
 						return player.countCards("h") == 0 ? 1 : 0;
 					}

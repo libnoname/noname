@@ -5210,46 +5210,6 @@ export class Library {
 				},
 			},
 		},
-		wuxing: {
-			enable: {
-				name: "开启",
-				init: false,
-				restart: true,
-			},
-			intro: {
-				name: "每名角色和部分卡牌在游戏开始时随机获得一个属性",
-				clear: true,
-				nopointer: true,
-			},
-			num: {
-				name: "带属性卡牌",
-				init: "0.3",
-				item: {
-					0.1: "10%",
-					0.2: "20%",
-					0.3: "30%",
-					0.5: "50%",
-				},
-			},
-			hide: {
-				name: "隐藏此扩展",
-				clear: true,
-				onclick() {
-					if (this.firstChild.innerHTML == "隐藏此扩展") {
-						this.firstChild.innerHTML = "此扩展将在重启后隐藏";
-						lib.config.hiddenPlayPack.add("wuxing");
-						if (!lib.config.prompt_hidepack) {
-							alert("隐藏的扩展包可通过选项-其它-重置隐藏内容恢复");
-							game.saveConfig("prompt_hidepack", true);
-						}
-					} else {
-						this.firstChild.innerHTML = "隐藏此扩展";
-						lib.config.hiddenPlayPack.remove("wuxing");
-					}
-					game.saveConfig("hiddenPlayPack", lib.config.hiddenPlayPack);
-				},
-			},
-		},
 		coin: {
 			enable: {
 				name: "开启",

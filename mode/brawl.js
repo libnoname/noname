@@ -604,7 +604,7 @@ export default () => {
 								card: {
 									hhzz_toulianghuanzhu: {
 										enable: true,
-										cardimage: "toulianghuanzhu",
+										fullskin: true,
 										recastable: true,
 										type: "trick",
 										filterTarget: function (card, player, target) {
@@ -632,7 +632,7 @@ export default () => {
 									},
 									hhzz_fudichouxin: {
 										enable: true,
-										cardimage: "fudichouxin",
+										fullskin: true,
 										type: "trick",
 										filterTarget: function (card, player, target) {
 											return target.skillH.length > 0;
@@ -1305,10 +1305,10 @@ export default () => {
 											},
 											card: {
 												hhzz_toulianghuanzhu: {
-													cardimage: "toulianghuanzhu",
+													fullskin: true,
 												},
 												hhzz_fudichouxin: {
-													cardimage: "fudichouxin",
+													fullskin: true,
 												},
 											},
 											character: {

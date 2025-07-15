@@ -115,8 +115,6 @@ const translates = {
 	yizan_count_info: "",
 	xinfu_jingxie: "精械",
 	xinfu_jingxie_info: "出牌阶段，你可以展示一张未强化过的【诸葛连弩】或标准包/军争包/SP包中的防具牌，然后对其进行强化。当你处于濒死状态时，你可以重铸一张防具牌，然后将体力回复至1点。",
-	xinfu_qiaosi: "巧思",
-	xinfu_qiaosi_info: "出牌阶段限一次，你可以投掷一枚六面骰子，亮出牌堆顶的X张牌并获得之。然后，你选择一项：1.交给一名其他角色X张牌。2.弃置X张牌。（X为骰子的点数）",
 	xin_xiahoudun: "手杀界夏侯惇",
 	xin_xiahoudun_prefix: "手杀界",
 	xinqingjian: "清俭",

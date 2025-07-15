@@ -25158,7 +25158,7 @@ const skills = {
 	//表演测试
 	qiaosi_map: { charlotte: true },
 	qiaosi: {
-		audio: "xinfu_qiaosi",
+		audio: 2,
 		derivation: "qiaosi_map",
 		enable: "phaseUse",
 		usable: 1,
@@ -27697,72 +27697,6 @@ const skills = {
 						},
 					},
 				},
-			},
-		},
-	},
-	xinfu_qiaosi: {
-		audio: 2,
-		enable: "phaseUse",
-		usable: 1,
-		content() {
-			"step 0";
-			if (get.isLuckyStar(player)) {
-				event.num = 6;
-				player.throwDice(6);
-			} else {
-				player.throwDice();
-			}
-			"step 1";
-			event.cards = get.cards(event.num);
-			player.showCards(event.cards);
-			"step 2";
-			player.gain(event.cards, "gain2");
-			player
-				.chooseControl()
-				.set("choiceList", ["将" + get.cnNumber(event.num) + "张牌交给一名其他角色", "弃置" + get.cnNumber(event.num) + "张牌"])
-				.set("ai", function () {
-					if (
-						game.hasPlayer(function (current) {
-							return current != player && get.attitude(player, current) > 2;
-						})
-					) {
-						return 0;
-					}
-					return 1;
-				});
-			"step 3";
-			if (result.index == 0) {
-				player.chooseCardTarget({
-					position: "he",
-					filterCard: true,
-					selectCard: event.num,
-					filterTarget(card, player, target) {
-						return player != target;
-					},
-					ai1(card) {
-						return 1;
-					},
-					ai2(target) {
-						var att = get.attitude(_status.event.player, target);
-						return att;
-					},
-					prompt: "请选择要送人的卡牌",
-					forced: true,
-				});
-			} else {
-				player.chooseToDiscard(event.num, true, "he");
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.give(result.cards, target);
-			}
-		},
-		ai: {
-			order: 7.5,
-			result: {
-				player: 1,
 			},
 		},
 	},

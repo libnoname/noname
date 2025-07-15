@@ -811,7 +811,10 @@ game.import("card", function () {
 				subtype: "equip3",
 				distance: { globalTo: 1 },
 				battleOfWancheng() {
-					//宛城之战
+					// 宛城之战
+					if (get.mode() !== "doudizhu") {
+						return false;
+					}
 					const date = new Date();
 					if (date.getMonth() !== 6) {
 						return false;
@@ -4260,7 +4263,12 @@ game.import("card", function () {
 					player: "damageBegin4",
 				},
 				filter(event, player) {
-					return player.getEquips("jueying").length && lib.card.jueying.battleOfWancheng();
+					return (
+						lib.card.jueying.battleOfWancheng() &&
+						player.hasCard(card => {
+							return get.name(card, player) === "jueying";
+						}, "e")
+					);
 				},
 				check(event, player) {
 					if (event.num <= 0) {
@@ -4273,11 +4281,20 @@ game.import("card", function () {
 					if (event.num >= player.hp + (event.source && event.source.hasSkillTag("jueqing", false, player) ? 0 : player.hujia)) {
 						return true;
 					}
-					return eff + player.getEquips("jueying").reduce((acc, i) => acc + get.value(i, player), 0) < 0;
+					return (
+						player
+							.getCards("e", card => {
+								return get.name(card, player) === "jueying";
+							})
+							.reduce((acc, i) => acc - get.value(i, player), 0) >
+						eff * event.num
+					);
 				},
 				prompt: "是否发动〖绝影〗，将装备区内的【绝影】置入弃牌堆并防止此伤害？",
 				async content(event, trigger, player) {
-					var e3 = player.getEquips("jueying");
+					var e3 = player.getCards("e", card => {
+						return get.name(card, player) === "jueying";
+					});
 					if (e3.length) {
 						await player.loseToDiscardpile(e3);
 					}

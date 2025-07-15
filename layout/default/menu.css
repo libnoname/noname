@@ -1274,14 +1274,6 @@ input.fileinput::-webkit-file-upload-button {
 	height: 100px;
 }
 
-.menu-buttons > .new_character > .card:not(.fullskin) {
-	color: white;
-	text-shadow: black 0px 0px 2px;
-	transform: translateX(0px);
-	background-image: url("image/card/hslingjian_jinjilengdong.jpg");
-	background-size: cover;
-}
-
 .menu-buttons > .new_character > .avatar > input,
 .menu-buttons > .new_character > .card > input {
 	z-index: 3;

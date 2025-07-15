@@ -79,7 +79,7 @@ function compareFilesWithCommit(commitHash = "HEAD") {
 
 		});
 
-		const nonameExtensions = ["boss", "cardpile", "coin", "wuxing"].map(name => joinRootPath(`extension/${name}`));
+		const nonameExtensions = ["boss", "cardpile", "coin"].map(name => joinRootPath(`extension/${name}`));
 
 		filesArray.push(...collectFilesSync([joinRootPath("card"), joinRootPath("character"), joinRootPath("game"), joinRootPath("layout"), joinRootPath("mode"), joinRootPath("noname"), joinRootPath("theme"), joinRootPath("index.html"), joinRootPath("LICENSE"), joinRootPath("noname-compatible.js"), joinRootPath("noname.js"), joinRootPath("README.md"), joinRootPath("service-worker.js"), joinRootPath("tsconfig.json")]));
 
