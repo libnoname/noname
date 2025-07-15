@@ -3695,7 +3695,8 @@ const skills = {
 				await target.recover();
 			}
 			//按描述来说是因此成为，所以必须得是调整前不是最多，而且还必须要有摸牌且最后是最多，共三个条件（官方实际的结算也是这么回事）
-			if (!isMax && isDraw && target.isMaxHandcard()) {
+			//描述删掉力
+			if (target.isMaxHandcard()) {
 				const result = await player
 					.chooseTarget("助国：选择一名其他角色，令" + get.translation(target) + "选择是否对其使用一张无距离限制的【杀】", (card, player, targetx) => ![player, get.event("target")].includes(targetx))
 					.set("ai", targetz => {
@@ -3735,7 +3736,7 @@ const skills = {
 	mbanda: {
 		audio: 2,
 		trigger: { global: "dying" },
-		usable: 1,
+		round: 1,
 		check: (event, player) => get.attitude(player, event.player) > 0,
 		filter: event => event.getParent().name == "damage" && event.getParent().source?.isIn(),
 		logTarget: "player",
