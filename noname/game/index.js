@@ -329,7 +329,7 @@ export class Game extends GameCompatible {
 			const animation = game.$elementGotoAnimData.invertingAnimations.get(element);
 
 			if (animation) {
-				const oldTransform = animation.style.transform;
+				const oldTransform = element.style.transform;
 				animation.commitStyles(); // 我们要获取动画当前的位置喵
 				animation.cancel();
 				element.getBoundingClientRect(); // 迫使回流来重新计算CSS喵
@@ -406,6 +406,7 @@ export class Game extends GameCompatible {
 		// 我们再次等待所有节点结构调整完毕喵
 		await new Promise(resolve => resolve(null));
 
+		// 然后是LAST喵，记录结束位置哦喵
 		// @ts-expect-error childNodes是可迭代的
 		const elements2 = new Set(parentFrom.childNodes).union(parentTo.childNodes);
 
@@ -452,24 +453,28 @@ export class Game extends GameCompatible {
 					continue;
 				}
 				
-				// 接下来是INVERT喵，我们要计算偏移量并将其作为动画参数喵
 				const [sx, sy, ex, ey] = position;
+				let animation;
+
+				// 接下来是INVERT喵，我们要计算偏移量并将其作为动画参数喵
 				const invertingX = sx - ex;
 				const invertingY = sy - ey;
 
 				// 最后是PLAY喵，开始动画并等待结束喵
-				const animation = element.animate([
+				animation = element.animate([
 					{
 						transform: `translate(${invertingX}px, ${invertingY}px)`,
 					},
 					{
-						transform: `translate(0, 0)`,
+						transform: `translate(0px, 0px)`,
 					},
 				], {
 					duration: duration,
 					easing: timefun,
 					composite: "accumulate",
 				});
+
+				// 溢出问题要下次commit解决喵 _(:з」∠)_
 
 				// game.$elementGoto占用单独的动画通道喵
 				animation.persist();
@@ -482,6 +487,9 @@ export class Game extends GameCompatible {
 					animation.addEventListener("finish", resolve);
 					animation.addEventListener("cancel", resolve);
 				}
+
+				// 标记当前节点的动画喵
+				game.$elementGotoAnimData.invertingAnimations.set(element, animation);
 			}
 		}
 
