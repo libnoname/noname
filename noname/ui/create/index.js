@@ -2417,39 +2417,23 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		let zoom = Number.parseFloat(lib.config.ui_zoom);
+		let zoom = Number.parseInt(lib.config.ui_zoom);
 		if (isNaN(zoom) || zoom < 50 || zoom > 300) {
-			if (zoom < 3 && zoom > 0.5) {
-				zoom = Math.round(100 * zoom);
-			} else {
-				const oldZoomMap = {
-					esmall: 80,
-					vsmall: 90,
-					small: 93,
-					normal: 100,
-					big: 105,
-					vbig: 110,
-					ebig: 120,
-					eebig: 150,
-					eeebig: 180,
-					eeeebig: 200,
-				};
-				zoom = oldZoomMap[lib.config.ui_zoom] || 100;
-			}
+			zoom = 100;
 			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
 
 		game.documentZoom = (game.deviceZoom * zoom) / 100;
 		zoom !== 100 && ui.updatez();
 
-		// if (get.mode() === "doudizhu") {
-		if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
-			game.saveConfig("choice_zhu", 5, "doudizhu");
+		if (get.mode() === "doudizhu") {
+			if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
+				game.saveConfig("choice_zhu", 5, "doudizhu");
+			}
+			if (typeof get.config("choice_fan", "doudizhu") !== "number") {
+				game.saveConfig("choice_fan", 3, "doudizhu");
+			}
 		}
-		if (typeof get.config("choice_fan", "doudizhu") !== "number") {
-			game.saveConfig("choice_fan", 3, "doudizhu");
-		}
-		// }
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);

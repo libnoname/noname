@@ -19,7 +19,7 @@ game.import("character", function () {
 	return {
 		name: "diy",
 		connect: true,
-		connectBanned: ["diy_tianyu", "diy_yangyi", "diy_lukang", "ns_huamulan", "ns_yuji", "ns_duangui", "ns_liuzhang", "key_yuu"],
+		connectBanned: ["ns_huamulan", "ns_yuji", "ns_duangui", "ns_liuzhang", "key_yuu"],
 		character: { ...characters },
 		characterSort: {
 			diy: characterSort,

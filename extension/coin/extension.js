@@ -5,7 +5,7 @@ game.import("play", function () {
 	return {
 		name: "coin",
 		init() {
-			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
+			if (lib.config.mode !== "chess" || get.config("chess_mode") !== "leader") {
 				_status.coin = 0;
 			}
 		},
@@ -13,9 +13,9 @@ game.import("play", function () {
 			if (_status.video || _status.connectMode) {
 				return;
 			}
-			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
+			if (lib.config.mode !== "chess" || get.config("chess_mode") !== "leader") {
 				var str;
-				if (lib.config.coin_display_playpackconfig == "text") {
+				if (lib.config.coin_display_playpackconfig === "text") {
 					str = "<span>" + lib.config.coin + "</span><span>金</span>";
 				} else {
 					str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
@@ -38,11 +38,11 @@ game.import("play", function () {
 						e.stopPropagation();
 					});
 					var clickBuy = function () {
-						if (this.innerHTML == "停止") {
+						if (this.innerHTML === "停止") {
 							game.haveFun[this.name + "Stop"]();
-						} else if (this.innerHTML == "开始") {
+						} else if (this.innerHTML === "开始") {
 							game.haveFun[this.name]();
-						} else if (this.innerHTML.indexOf("金") != -1) {
+						} else if (this.innerHTML.indexOf("金") !== -1) {
 							if (lib.config.coin >= this.content.cost) {
 								this.content.bought = true;
 								game.changeCoin(-this.content.cost);
@@ -108,8 +108,8 @@ game.import("play", function () {
 
 		game: {
 			changeCoin(num, toast, audio) {
-				if (typeof num == "number" && ui.coin) {
-					if (num != 0 && toast !== false) {
+				if (typeof num === "number" && ui.coin) {
+					if (num !== 0 && toast !== false) {
 						ui.create.toast(`${num > 0 ? "获得" : "花费"}&nbsp;${Math.abs(num)}&nbsp;金币`);
 					}
 					if (audio !== false) {
@@ -117,7 +117,7 @@ game.import("play", function () {
 					}
 					game.saveConfig("coin", lib.config.coin + num);
 					var str;
-					if (lib.config.coin_display_playpackconfig == "text") {
+					if (lib.config.coin_display_playpackconfig === "text") {
 						str = "<span>" + lib.config.coin + "</span><span>金</span>";
 					} else {
 						str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
@@ -137,7 +137,7 @@ game.import("play", function () {
 						size: "large",
 						control() {
 							var size = ui.create.div(".menubutton");
-							if (game.haveFun.list.snow.size == "small") {
+							if (game.haveFun.list.snow.size === "small") {
 								size.innerHTML = "大雪";
 							} else {
 								size.innerHTML = "小雪";
@@ -805,7 +805,7 @@ game.import("play", function () {
 
 							// 开始下雪
 							start() {
-								if (this.status == 1 || this.status == 4) {
+								if (this.status === 1 || this.status === 4) {
 									// 已经在下雪则不作处理
 									return false;
 								}
@@ -821,7 +821,7 @@ game.import("play", function () {
 
 							// 停止下雪
 							stop() {
-								if (this.status == 2 || this.status == 0 || !this.canvas) {
+								if (this.status === 2 || this.status === 0 || !this.canvas) {
 									return false;
 								}
 								// 停止动画循环
@@ -834,7 +834,7 @@ game.import("play", function () {
 
 							// 暂停下雪
 							pause() {
-								if (this.status == 3) {
+								if (this.status === 3) {
 									return false;
 								}
 								this.status = 3;
@@ -843,7 +843,7 @@ game.import("play", function () {
 
 							// 继续下雪
 							resume() {
-								if (this.status == 3 && this.canvas) {
+								if (this.status === 3 && this.canvas) {
 									this.status = 4;
 									// 动画的计时控制
 									const that = this;
@@ -969,7 +969,7 @@ game.import("play", function () {
 							snow.stop();
 						};
 						game.haveFun.snowSize = function () {
-							if (game.haveFun.list.snow.size == "large") {
+							if (game.haveFun.list.snow.size === "large") {
 								game.haveFun.list.snow.size = "small";
 								snow.maxFlake = 80;
 								snow.flakeSize = 3;

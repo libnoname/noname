@@ -8781,76 +8781,6 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			if (event.animate != false) {
-				if (event.throw !== false) {
-					let throw_cards = event.cards;
-					let virtualCard_str = false;
-					if (!throw_cards.length && lib.config.card_animation_info) {
-						const virtualCard = ui.create.card();
-						virtualCard._destroy = true;
-						virtualCard.expired = true;
-						const info = lib.card[card.name],
-							number = card.number;
-						virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
-						virtualCard_str = virtualCard.querySelector(".info").innerHTML;
-						throw_cards = [virtualCard];
-						event.lose_map.noowner.add(virtualCard);
-					}
-					for (let id in event.lose_map) {
-						if (id == "noowner") {
-							continue;
-						}
-						const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-						let throws = event.lose_map[id];
-						if (owner == player) {
-							throws.addArray(event.lose_map.noowner);
-						}
-						if (throws.length) {
-							owner.$throw(throws);
-						}
-					}
-					if (lib.config.card_animation_info) {
-						game.broadcastAll(
-							function (cards, card, card_cards, str) {
-								for (let nodex of cards) {
-									let node = nodex.clone;
-									if (nodex._tempName) {
-										nodex._tempName.delete();
-										delete nodex._tempName;
-									}
-									if (!node) {
-										continue;
-									}
-									if (str) {
-										node.querySelector(".info").innerHTML = str;
-									}
-									if (cards.length > 1 || !card.isCard || card.name != node.name || card.nature != node.nature || !card.cards.length) {
-										ui.create.cardTempName(card, node);
-										if (node._tempName && card_cards?.length <= 0) {
-											node._tempName.innerHTML = node._tempName.innerHTML.slice(0, node._tempName.innerHTML.indexOf("<span", -1));
-											node._tempName.innerHTML += "<span style='color:black'>虚拟</span></span>";
-										}
-									}
-								}
-							},
-							throw_cards,
-							event.card,
-							event.cards,
-							virtualCard_str
-						);
-					}
-					if (lib.config.sync_speed && throw_cards[0] && throw_cards[0].clone) {
-						let waitingForTransition = get.time();
-						event.waitingForTransition = waitingForTransition;
-						throw_cards[0].clone.listenTransition(function () {
-							if (_status.waitingForTransition == waitingForTransition && _status.paused) {
-								game.resume();
-							}
-							delete event.waitingForTransition;
-						});
-					}
-				}
-			}
 			if (event.cards.length) {
 				const ownerCards = event.cards.filter(card => get.owner(card)),
 					directDiscard = event.cards.filter(card => !get.owner(card));
@@ -8890,6 +8820,100 @@ player.removeVirtualEquip(card);
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
 					await game.cardsGotoOrdering(directDiscard);
+				}
+			}
+			if (event.animate != false && event.throw !== false) {
+				let throw_cards = event.cards;
+				let virtualCard_str = false;
+				for (let id in event.lose_map) {
+					if (id == "noowner") {
+						continue;
+					}
+					const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+					let throws = event.lose_map[id];
+					if (owner == player) {
+						if (!throw_cards.length && lib.config.card_animation_info) {
+							const virtualCard = ui.create.card();
+							virtualCard._destroy = true;
+							virtualCard.expired = true;
+							const info = lib.card[card.name],
+								number = card.number;
+							virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
+							virtualCard_str = virtualCard.querySelector(".info").innerHTML;
+							throw_cards = [virtualCard];
+							throws.add(virtualCard);
+						}
+					}
+					if (throws.length) {
+						owner.$throw(throws);
+					}
+				}
+				if (event.lose_map.noowner.length) {
+					for (const card of event.lose_map.noowner) {
+						game.broadcastAll(
+							function (player, card, cardid) {
+								var event;
+								if (game.online) {
+									event = {};
+								} else {
+									event = _status.event;
+								}
+								if (game.chess) {
+									event.node = card.copy("thrown", "center", ui.arena).addTempClass("start");
+								} else {
+									event.node = player.$throwordered(card.copy(), true);
+								}
+								if (lib.cardOL) {
+									lib.cardOL[cardid] = event.node;
+								}
+								event.node.cardid = cardid;
+								event.node.classList.add("thrownhighlight");
+							},
+							player,
+							card,
+							get.id()
+						);
+					}
+				}
+				if (lib.config.card_animation_info) {
+					game.broadcastAll(
+						function (cards, card, card_cards, str) {
+							for (let nodex of cards) {
+								let node = nodex.clone;
+								if (nodex._tempName) {
+									nodex._tempName.delete();
+									delete nodex._tempName;
+								}
+								if (!node) {
+									continue;
+								}
+								if (str) {
+									node.querySelector(".info").innerHTML = str;
+								}
+								if (cards.length > 1 || !card.isCard || card.name != node.name || card.nature != node.nature || !card.cards.length) {
+									ui.create.cardTempName(card, node);
+									if (node._tempName && card_cards?.length <= 0) {
+										node._tempName.innerHTML = node._tempName.innerHTML.slice(0, node._tempName.innerHTML.indexOf("<span", -1));
+										node._tempName.innerHTML += "<span style='color:black'>虚拟</span></span>";
+									}
+								}
+							}
+						},
+						throw_cards,
+						event.card,
+						event.cards,
+						virtualCard_str
+					);
+				}
+				if (lib.config.sync_speed && throw_cards[0] && throw_cards[0].clone) {
+					let waitingForTransition = get.time();
+					event.waitingForTransition = waitingForTransition;
+					throw_cards[0].clone.listenTransition(function () {
+						if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+							game.resume();
+						}
+						delete event.waitingForTransition;
+					});
 				}
 			}
 			//player.using=cards;
@@ -9388,12 +9412,12 @@ player.removeVirtualEquip(card);
 					next.target.addTempClass("target");
 				}
 			}
-			event._result = await next.forResult();
 			if (!info.nodelay && num > 0) {
 				if (event.targetDelay !== false) {
-					game.delayx(0.5);
+					await game.delayx(0.5);
 				}
 			}
+			event._result = await next.forResult();
 		},
 		async (event, trigger, player) => {
 			let { cards, card, targets, num } = event;
@@ -9946,20 +9970,50 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
+			if (cards.length) {
+				const ownerCards = cards.filter(card => get.owner(card)),
+					directDiscard = cards.filter(card => !get.owner(card));
+				if (ownerCards.length) {
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) {
+								return false;
+							}
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
+							}
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
+				}
+				if (directDiscard.length) {
+					event.lose_map.noowner.addArray(directDiscard);
+					await game.cardsGotoOrdering(directDiscard);
+				}
+			}
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = cards;
 				let virtualCard_str = false;
-				if (!throw_cards.length && lib.config.card_animation_info) {
-					const virtualCard = ui.create.card();
-					virtualCard._destroy = true;
-					virtualCard.expired = true;
-					const info = lib.card[card.name],
-						number = card.number;
-					virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
-					virtualCard_str = virtualCard.querySelector(".info").innerHTML;
-					throw_cards = [virtualCard];
-					event.lose_map.noowner.add(virtualCard);
-				}
 				for (let id in event.lose_map) {
 					if (id == "noowner") {
 						continue;
@@ -9967,10 +10021,47 @@ player.removeVirtualEquip(card);
 					const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
 					let throws = event.lose_map[id];
 					if (owner == player) {
-						throws.addArray(event.lose_map.noowner);
+						if (!throw_cards.length && lib.config.card_animation_info) {
+							const virtualCard = ui.create.card();
+							virtualCard._destroy = true;
+							virtualCard.expired = true;
+							const info = lib.card[card.name],
+								number = card.number;
+							virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
+							virtualCard_str = virtualCard.querySelector(".info").innerHTML;
+							throw_cards = [virtualCard];
+							throws.add(virtualCard);
+						}
 					}
 					if (throws.length) {
 						owner.$throw(throws);
+					}
+				}
+				if (event.lose_map.noowner.length) {
+					for (const card of event.lose_map.noowner) {
+						game.broadcastAll(
+							function (player, card, cardid) {
+								var event;
+								if (game.online) {
+									event = {};
+								} else {
+									event = _status.event;
+								}
+								if (game.chess) {
+									event.node = card.copy("thrown", "center", ui.arena).addTempClass("start");
+								} else {
+									event.node = player.$throwordered(card.copy(), true);
+								}
+								if (lib.cardOL) {
+									lib.cardOL[cardid] = event.node;
+								}
+								event.node.cardid = cardid;
+								event.node.classList.add("thrownhighlight");
+							},
+							player,
+							card,
+							get.id()
+						);
 					}
 				}
 				if (lib.config.card_animation_info) {
@@ -10018,48 +10109,6 @@ player.removeVirtualEquip(card);
 							}
 						}
 					}, throw_cards);
-				}
-			}
-			if (cards.length) {
-				let { cards } = event;
-				const ownerCards = cards.filter(card => get.owner(card)),
-					directDiscard = cards.filter(card => !get.owner(card));
-				if (ownerCards.length) {
-					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
-					if (
-						cards.some(card => {
-							const owner = get.owner(card);
-							if (owner === false) {
-								return false;
-							}
-							return owner != ownerx;
-						})
-					) {
-						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-							let cards = event.cards;
-							let cards_noowner = [];
-							while (cards.length) {
-								const owner = get.owner(cards[0]);
-								if (!owner) {
-									cards_noowner.add(cards.shift());
-								} else {
-									const id = owner.playerid;
-									let onLoseCards = cards.filter(card => get.owner(card) == owner);
-									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
-								}
-							}
-							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-							}
-						});
-					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
-					}
-				}
-				if (directDiscard.length) {
-					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
 			await event.trigger("respond");

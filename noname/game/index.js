@@ -7401,24 +7401,27 @@ export class Game extends GameCompatible {
 			window.game = game;
 			let exports;
 			let isESM = true;
-			try {
+			// try {
+			if (name === "guozhan") {
 				exports = await import(`../../mode/${name}/index.js`);
-			} catch (e1) {
+			} else {
+			// } catch (e1) {
 				try {
 					exports = await import(`../../mode/${name}.js`);
 				} catch (e2) {
 					isESM = false;
-					await new Promise((resolve, reject) => {
-						let script = lib.init.js(
-							`${lib.assetURL}mode`,
-							name,
-							() => {
-								script?.remove();
-								resolve(null);
-							},
-							e => reject(e.error)
-						);
-					});
+					await lib.init.promises.js(`${lib.assetURL}mode`, name);
+					// await new Promise((resolve, reject) => {
+					// 	let script = lib.init.js(
+					// 		`${lib.assetURL}mode`,
+					// 		name,
+					// 		() => {
+					// 			script?.remove();
+					// 			resolve(null);
+					// 		},
+					// 		e => reject(e.error)
+					// 	);
+					// });
 				}
 			}
 			if (isESM) {

@@ -1553,6 +1553,7 @@ export class Get extends GetCompatible {
 				continue;
 			}
 			if ((type.startsWith("equip") && type.length == 6) || (type.startsWith("hslingjian") && type.length == 11) || type.startsWith("spell_")) {
+				// hslingjian 是『轩辕剑』里面的
 				if (get.subtype(i) == type) {
 					list.push(i);
 				}

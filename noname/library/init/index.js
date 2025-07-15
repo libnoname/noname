@@ -702,7 +702,7 @@ export class LibInit {
 		if (scope) {
 			throw new Error("parsex已经被拆分，不再支持scope的使用");
 		}
-		// parsex 的 Legacy 主体移动到 noname/library/event/compilers/StepCompiler.ts
+		// parsex 的 Legacy 主体移动到 noname/library/element/GameEvent/compilers/StepCompiler.ts
 		return ContentCompiler.compile(item);
 	}
 
