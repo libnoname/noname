@@ -1007,6 +1007,7 @@ export default () => {
 				boss_yandi: {
 					sex: "male",
 					group: "shen",
+					names: "姜|null",
 					hp: 6,
 					skills: ["boss_shenyi", "boss_shenen", "boss_chiyi"],
 					groupInGuozhan: "shu",
@@ -1097,6 +1098,7 @@ export default () => {
 				boss_zhuanxu: {
 					sex: "male",
 					group: "shen",
+					names: "姬|null",
 					hp: 6,
 					skills: ["boss_shenyi", "boss_shenen", "boss_zaoyi"],
 					groupInGuozhan: "wei",
@@ -1166,6 +1168,7 @@ export default () => {
 				boss_baiwuchang: {
 					sex: "male",
 					group: "shen",
+					names: "谢|必安",
 					hp: 9,
 					skills: ["boss_baolian", "boss_qiangzheng", "boss_zuijiu", "juece", "boss_bianshen4"],
 					groupInGuozhan: "shu",
@@ -1175,6 +1178,7 @@ export default () => {
 				boss_heiwuchang: {
 					sex: "male",
 					group: "shen",
+					names: "范|无救",
 					hp: 9,
 					skills: ["boss_guiji", "boss_taiping", "boss_suoming", "boss_xixing", "boss_bianshen4"],
 					groupInGuozhan: "shu",
@@ -1358,6 +1362,7 @@ export default () => {
 				boss_mengpo: {
 					sex: "female",
 					group: "qun",
+					names: "孟|null",
 					hp: 3,
 					skills: ["boss_shiyou", "boss_wanghun", "boss_wangshi"],
 					groupInGuozhan: "shu",
@@ -1558,6 +1563,7 @@ export default () => {
 				boss_diaochan: {
 					sex: "female",
 					group: "shen",
+					names: "貂|蝉",
 					hp: 4,
 					skills: ["fengwu", "yunshen", "lianji", "boss_wange", "yuehun"],
 					groupInGuozhan: "qun",
