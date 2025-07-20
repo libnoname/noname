@@ -4005,7 +4005,7 @@ player.removeVirtualEquip(card);
 						if (role === "global" || player === event[role]) {
 							return list;
 							const checkList = Array.isArray(info.trigger[role]) ? info.trigger[role] : [info.trigger[role]];
-							list.push(...checkList.filter(name => nameList.includes(name)));
+							list.push(...checkList.filter(name => event.nameList.includes(name)));
 						}
 						return list;
 					}, []);
@@ -4226,7 +4226,7 @@ player.removeVirtualEquip(card);
 		next.player = player;
 		next._trigger = trigger;
 		next.triggername = event.triggername;
-		next.nameList = nameList;
+		next.nameList = event.nameList;
 		next.setContent(info.content);
 
 		next.skillHidden = event.skillHidden;

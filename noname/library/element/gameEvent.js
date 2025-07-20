@@ -936,7 +936,7 @@ export class GameEvent {
 		if (nameList.includes("gameStart")) {
 			lib.announce.publish("Noname.Game.Event.GameStart", {});
 			lib.announce.publish("gameStart", {});
-			if (_status.brawl && _status.brawl.gameStart) {
+			if (_status.brawl?.gameStart) {
 				_status.brawl.gameStart();
 			}
 			if (lib.config.show_cardpile) {
@@ -945,7 +945,7 @@ export class GameEvent {
 			_status.gameStarted = true;
 			game.showHistory();
 		}
-		if (!lib.hookmap[name] && !lib.config.compatiblemode) {
+		if (nameList.every(name => !lib.hookmap[name]) && !lib.config.compatiblemode) {
 			return;
 		}
 		if (!game.players?.length) {
@@ -998,7 +998,7 @@ export class GameEvent {
 					const info = lib.skill[skill];
 					const list = info.firstDo ? firstDo.todoList : info.lastDo ? lastDo.todoList : this.todoList;
 					if (typeof info.getIndex === "function") {
-						const indexedResult = info.getIndex(event, player, name);
+						const indexedResult = info.getIndex(event, player, nameList[0], nameList);
 						if (Array.isArray(indexedResult)) {
 							indexedResult.forEach(indexedData => {
 								list.push({
@@ -1047,10 +1047,13 @@ export class GameEvent {
 					}
 					const expire = player.tempSkills[skill];
 					if (typeof expire === "function") {
-						return expire(event, player, name);
+						return expire(event, player, nameList[0], nameList);
 					}
 					if (get.objtype(expire) === "object") {
 						return roles.some(role => {
+							if (role !== "global" && player !== event[role]) {
+								return false;
+							}
 							const checkList = Array.isArray(expire[role]) ? expire[role] : [expire[role]];
 							return checkList.containsSome(...nameList);
 						});
@@ -1311,7 +1314,7 @@ export class GameEvent {
 			if (this.type == "card") {
 				await this.trigger("useCardTo" + trigger);
 			}
-			await this.trigger(...this.name.split("|").map(name => `${name}${trigger}`));
+			await this.trigger(...this.nameList.map(name => `${name}${trigger}`));
 		};
 		if (await this.checkSkipped()) {
 			return;
@@ -1328,7 +1331,7 @@ export class GameEvent {
 					let next = this.content(this);
 					if (_status.withError || (_status.connectMode && !lib.config.debug)) {
 						next = next.catch(error => {
-							game.print("游戏出错：" + this.name);
+							game.print("游戏出错：" + this.nameList);
 							game.print(error.toString());
 							console.error(error);
 						});

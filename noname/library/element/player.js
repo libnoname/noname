@@ -7424,7 +7424,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEventPromise }
 	 */
 	gain() {
-		var next = game.createEvent("gain");
+		var next = game.createEvent("gain|loseAsync");
 		next.player = this;
 		for (var i = 0; i < arguments.length; i++) {
 			if (get.itemtype(arguments[i]) == "player") {
@@ -7527,7 +7527,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEventPromise }
 	 */
 	addToExpansion() {
-		var next = game.createEvent("addToExpansion");
+		var next = game.createEvent("addToExpansion|loseAsync");
 		next.player = this;
 		for (var i = 0; i < arguments.length; i++) {
 			if (get.itemtype(arguments[i]) == "player") {
@@ -7629,7 +7629,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	lose() {
-		var next = game.createEvent("lose");
+		var next = game.createEvent("lose|loseAsync");
 		next.player = this;
 		next.forceDie = true;
 		for (var i = 0; i < arguments.length; i++) {
@@ -8262,7 +8262,7 @@ export class Player extends HTMLDivElement {
 		return this;
 	}
 	equip(card, draw) {
-		var next = game.createEvent("equip");
+		var next = game.createEvent("equip|loseAsync");
 		//next.card = card;
 		next.player = this;
 		next.setContent(lib.element.content.equip);
@@ -8356,7 +8356,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEventPromise }
 	 */
 	addJudge(card, cards) {
-		var next = game.createEvent("addJudge");
+		var next = game.createEvent("addJudge|loseAsync");
 		if (get.itemtype(card) == "card") {
 			next.card = card;
 			if (card.isViewAsCard) {
