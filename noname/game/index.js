@@ -5983,7 +5983,7 @@ export class Game extends GameCompatible {
 		next.includeOut = true;
 		next._trigger = event;
 		next.indexedData = indexedData;
-		next.nameList = nameList;
+		next.triggernameList = nameList;
 		next.setContent("createTrigger");
 		return next;
 	}

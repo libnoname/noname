@@ -1101,7 +1101,7 @@ export class GameEvent {
 			next.doingList = doingList;
 			next._trigger = event;
 			next.triggername = nameList[0];
-			next.nameList = nameList;
+			next.triggernameList = nameList;
 			next.playerMap = playerMap;
 			event._triggering = next;
 			next.then(() => (event._triggering = void 0));
