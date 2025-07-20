@@ -1,0 +1,10 @@
+{
+  "author": {
+    "name": "Evan You"
+  },
+  "license": "MIT",
+  "module": "dist/compiler-core.esm-bundler.js",
+  "name": "@vue/compiler-core",
+  "types": "dist/compiler-core.d.ts",
+  "version": "3.5.17"
+}

@@ -7,24 +7,6 @@
 	<meta name="viewport" content="user-scalable=no, viewport-fit=cover" />
 	<title>无名杀</title>
 	<script>
-		if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
-			// 使importMap解析node内置模块
-			const builtinModules = require("module").builtinModules;
-			if (Array.isArray(builtinModules)) {
-				const importMap = {
-					imports: {},
-				};
-				for (const module of builtinModules) {
-					importMap.imports[module] = importMap.imports[`node:${module}`] = `./noname-builtinModules/${module}`;
-				}
-				const im = document.createElement("script");
-				im.type = "importmap";
-				im.textContent = JSON.stringify(importMap);
-				document.currentScript.after(im);
-			}
-		}
-	</script>
-	<script>
 		"use strict";
 		(() => {
 			window.onerror = function (msg, src, line, column, err) {
@@ -353,6 +335,7 @@
 			};
 		}
 	</script>
+	<script src="game/importmap.js"></script>
 	<script src="game/update.js"></script>
 	<script src="game/config.js"></script>
 	<script src="game/package.js"></script>

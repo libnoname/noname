@@ -1278,7 +1278,7 @@ const translates = {
 	chenshou_prefix: "青史",
 	//eternal_poker: "invisible",
 	hschenzhi_poker: "扑克",
-	hschenzhi_poker_info: "扑克牌，无效果且类型为poker的牌",
+	hschenzhi_poker_info: "扑克牌，牌名为扑克，无效果且类型为poker的牌",
 	hschenzhi: "沉滞",
 	hschenzhi_info: "锁定技，你摸牌改为从一副扑克牌中摸牌（包含初始手牌）；扑克牌拥有独立的弃牌堆。",
 	hsdianmo: "点墨",

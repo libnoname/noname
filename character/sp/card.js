@@ -2,9 +2,18 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
 	//曹婴三种类型
-	caoying_basic: { fullskin: true },
-	caoying_trick: { fullskin: true },
-	caoying_equip: { fullskin: true },
+	caoying_basic: { 
+		fullskin: true,
+		noname: true, 
+	},
+	caoying_trick: { 
+		fullskin: true,
+		noname: true, 
+	},
+	caoying_equip: { 
+		fullskin: true,
+		noname: true, 
+	},
 	//蒲元衍生
 	sanlve: {
 		derivation: "ol_puyuan",

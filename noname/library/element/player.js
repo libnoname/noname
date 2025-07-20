@@ -366,6 +366,20 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
+	 * 获取一名角色的名字翻译
+	 * @returns { string }
+	 */
+	getName() {
+		if (this._tempTranslate) {
+			return this._tempTranslate;
+		}
+		const name = this.name;
+		if (lib.translate[name + "_ab"]) {
+			return lib.translate[name + "_ab"];
+		}
+		return get.translation(name);
+	}
+	/**
 	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌，需要添加新卡牌的可以到lib.respondMap按格式添加
 	 * 请注意，该函数只能粗略判断，有些情况是没法判断的
 	 * @param {GameEvent} event 需要判断能否响应的事件，目前只能为useCard或者它的下一级衍生事件，其他全部返回undefined
@@ -6452,23 +6466,35 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEventPromise }
 	 */
 	showHandcards(str) {
-		var next = game.createEvent("showHandcards");
+		/*var next = game.createEvent("showHandcards");
 		next.player = this;
 		if (typeof str == "string") {
 			next.prompt = str;
 		}
 		next.setContent("showHandcards");
 		next._args = Array.from(arguments);
-		return next;
+		return next;*/
+		const cards = this.getCards("h");
+		if (cards.length) {
+			if (typeof str !== "string") {
+				str = get.translation(this) + "的手牌";
+			}
+			const next = this.showCards(cards, str);
+			next._args = Array.from(arguments);
+			return next;
+		} else {
+			return false;
+		}
 	}
 	/**
-	 * 玩家展示一些牌
-	 * @param { Card[] } cards
-	 * @param { string } str
+	 * 玩家展示/亮出一些牌
+	 * @param { Card[] } cards 要亮出或展示的牌
+	 * @param { string } str 对话框的提示
+	 * @param { boolean } [isFlash] 是否是亮出牌（会改变动画效果）
 	 * @returns { GameEventPromise }
 	 */
-	showCards(cards, str) {
-		var next = game.createEvent("showCards");
+	showCards(cards, str, isFlash = false) {
+		const next = game.createEvent("showCards");
 		next.player = this;
 		next.str = str;
 		if (typeof cards == "string") {
@@ -6484,6 +6510,22 @@ export class Player extends HTMLDivElement {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
+		next.isFlash = isFlash;
+		next.getShown = function (player, key) {
+			const event = this;
+			if (get.itemtype(player) != "player") {
+				if (player == "others" && typeof key == "string") {
+					return this.show_map.get("others")[key];
+				} else if (typeof player == "string") {
+					return this.show_map.get("others")[player];
+				}
+				return null;
+			}
+			if (!key) {
+				return event.show_map.get(player) || {};
+			}
+			return event.show_map.get(player)?.[key] || [];
+		};
 		next.setContent("showCards");
 		next._args = Array.from(arguments);
 		return next;
@@ -6947,10 +6989,10 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	randomDiscard() {
-		var position = "he",
+		let position = "he",
 			num = 1,
 			delay = null;
-		for (var i = 0; i < arguments.length; i++) {
+		for (let i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "number") {
 				num = arguments[i];
 			} else if (get.itemtype(arguments[i]) == "position") {
@@ -6959,14 +7001,12 @@ export class Player extends HTMLDivElement {
 				delay = arguments[i];
 			}
 		}
-		var cards = this.getCards(position).randomGets(num);
-		if (cards.length) {
-			var next = this.discard(cards, "notBySelf");
-			if (typeof delay == "boolean") {
-				next.delay = delay;
-			}
+		const cards = this.getDiscardableCards(this, position).randomGets(num);
+		const next = this.discard(cards, "notBySelf");
+		if (typeof delay == "boolean") {
+			next.delay = delay;
 		}
-		return cards;
+		return next;
 	}
 	randomGain() {
 		var position = "he",
@@ -7020,7 +7060,7 @@ export class Player extends HTMLDivElement {
 				next.notBySelf = true;
 			}
 		}
-		if (next.cards == undefined) {
+		if (get.itemtype(next.cards) !== "cards") {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
@@ -8126,17 +8166,20 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 令玩家死亡
-	 * @param { GameEvent | GameEventPromise } reason
+	 * 令玩家死亡或进入休整状态
+	 * @param { GameEvent | GameEventPromise } reason 导致角色死亡的事件
+	 * @param { Boolean } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"代表在你的回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合；audio是休整播放的语音）
 	 * @returns { GameEventPromise }
 	 */
-	die(reason) {
+	die(reason, restMap = { type: null, count: null, audio: null }) {
 		var next = game.createEvent("die");
 		next.player = this;
 		next.reason = reason;
+		next.restMap = restMap;
 		if (reason) {
 			next.source = reason.source;
 		}
+		next.excludeMark = [];
 		next.setContent("die");
 		return next;
 	}

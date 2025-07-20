@@ -18807,7 +18807,7 @@ const skills = {
 							return result.winner.canUse(card, target, false, false);
 						});
 						if (targetsx.length) {
-							result.winner.useCard(card, targetsx, "noai").set("addCount", false);
+							await result.winner.useCard(card, targetsx, "noai").set("addCount", false);
 						}
 					}
 				},
@@ -18889,11 +18889,14 @@ const skills = {
 					player: "compare",
 					target: "compare",
 				},
-				direct: true,
 				forced: true,
+				popup: false,
 				charlotte: true,
-				nopop: true,
 				mark: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.clearMark("twchuanshu_mark", false);
+				},
 				intro: {
 					content(storage, player) {
 						var shisyou = player.getStorage("twchuanshu_effect").filter(i => i.isIn());

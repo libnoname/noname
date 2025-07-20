@@ -2130,13 +2130,11 @@ const skills = {
 					videoId,
 					player
 				);
-				await game.delay(4);
-				game.broadcastAll("closeDialog", videoId);
 				let cards = result.reduce((list, evt) => {
 					list.addArray(evt.cards);
 					return list;
 				}, []);
-				await player.showCards(cards).setContent(() => {});
+				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("showers", targets);
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:

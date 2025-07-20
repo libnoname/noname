@@ -1208,6 +1208,19 @@ body > .background.land {
 	pointer-events: none;
 }
 
+/* game.$elementGoto使用的喵 */
+/* 这些可能作用于任何元素上面，为了确保动画效果，我们要尽可能提升优先级喵 */
+.cloned-visual:not(.visual-subject) {
+	pointer-events: none !important;
+	translate: -1000000px -1000000px !important;
+	overflow: visible !important;
+	transition: none !important;
+}
+.facade-replacing {
+	visibility: hidden !important;
+	scale: 0 !important;
+}
+
 #system > div > div.hidden {
 	opacity: 0.5 !important;
 }
@@ -1492,16 +1505,24 @@ div:not(.handcards) > .card > .info > span,
 	-webkit-animation: playerflip 0.3s ease-out;
 }
 
+div.select-all:not(.card):not(.player) {
+	right: 0px;
+	position: absolute;
+	background: rgba(0, 0, 0, 0.6);
+	font-size: 16px;
+	z-index: 7;
+	padding: 6px 8px;
+}
 .button.card.button > .intro {
 	top: 69px;
 }
 .buttons {
 	width: 100%;
 }
-.buttons.guanxing {
-	min-height: 106px !important;
-	margin: 0px;
-	width: 90% !important;
+.buttons.guanxing:not(.pointerdiv) {
+	min-height: 106px;
+	width: calc(100% - var(--contentdiv-margin-left) - var(--contentdiv-margin-right));
+	box-sizing: border-box;
 }
 .buttons.smallzoom {
 	display: block;
@@ -1782,10 +1803,14 @@ div:not(.handcards) > .card > .info > span,
 	width: 100%;
 }
 .content > div {
-	margin-top: 8px;
-	margin-bottom: 8px;
-	margin-left: 4px;
-	margin-right: 4px;
+	--contentdiv-margin-left: 4px;
+	--contentdiv-margin-right: 4px;
+	--contentdiv-margin-top: 8px;
+	--contentdiv-margin-bottom: 8px;
+	margin-top: var(--contentdiv-margin-top);
+	margin-bottom: var(--contentdiv-margin-bottom);
+	margin-left: var(--contentdiv-margin-left);
+	margin-right: var(--contentdiv-margin-right);
 	position: relative;
 }
 .content > div:not(.pointerdiv) {
@@ -3814,11 +3839,12 @@ div:hover > .intro {
 	transform: translateX(-5px);
 }
 .popup {
+	--popup-padding: 50px;
 	background: rgba(0, 0, 0, 0.2);
 	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
 	border-radius: 4px;
-	padding-left: 30px;
-	padding-right: 30px;
+	padding-left: var(--popup-padding);
+	padding-right: var(--popup-padding);
 }
 
 .tdnode {

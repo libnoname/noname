@@ -209,7 +209,7 @@ export class GameEvent {
 	 */
 	includeOut;
 	/**
-	 * @type { function[] }
+	 * @type { Function[] }
 	 */
 	targetprompt2 = [];
 	/**

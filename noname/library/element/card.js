@@ -518,7 +518,7 @@ export class Card extends HTMLDivElement {
 			delete this.node.avatar;
 			delete this.node.framebg;
 		}
-		if (info.noname && !this.classList.contains("button")) {
+		if (info.noname) {
 			this.node.name.style.display = "none";
 		}
 		if (info.color) {

@@ -2443,7 +2443,12 @@ const skills = {
 				await gainer.gain(card, gainee, "giveAuto", "bySelf");
 			}
 		},
-		group: ["dcjikun_mark"],
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		subSkill: {
 			mark: {
 				charlotte: true,

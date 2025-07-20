@@ -7651,6 +7651,9 @@ const skills = {
 		},
 		content() {
 			"step 0";
+			trigger.cancel();
+			player.loseMaxHp();
+			"step 1";
 			player.chooseCardTarget({
 				prompt: "请选择【冯河】的牌和目标",
 				prompt2: "将一张手牌交给一名其他角色并防止伤害" + (player.hasSkill("yingba") ? "，然后令伤害来源获得一个“平定”标记" : ""),
@@ -7677,14 +7680,12 @@ const skills = {
 					return 4 + att;
 				},
 			});
-			"step 1";
+			"step 2";
 			if (result.bool) {
 				var target = result.targets[0];
 				//player.logSkill('pinghe',target);
 				player.line(target, "green");
 				player.give(result.cards, target);
-				trigger.cancel();
-				player.loseMaxHp();
 				if (player.hasSkill("yingba")) {
 					trigger.source.addMark("yingba_mark", 1);
 				}

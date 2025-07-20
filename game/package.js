@@ -123,6 +123,9 @@ window.noname_package = {
 		music_danji: "千里走单骑",
 		music_jifeng: "祭风",
 		music_jilve: "极略",
+		effect_caomaoBJM: "向死存魏",
+		effect_yinzhanBGM: "势魏延饮战",
+		effect_tuishouBGM: "势魏延退守",
 	},
 	font: {
 		xiaozhuan: "方正小篆体",

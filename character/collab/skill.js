@@ -7,7 +7,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.targets.some(target => target != player) && get.color(event.card) == "black" && event.isFirstTarget;
+			return event.targets.some(target => target != player) && event.isFirstTarget; //&& get.color(event.card) == "black"
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -16,7 +16,7 @@ const skills = {
 				["", "", "olhuaquan_light"],
 			];
 			const result = await player
-				.chooseButton([`###花拳###${get.skillInfoTranslation(event.skill)}`, [list, "vcard"]], true)
+				.chooseButton([`###花拳###${get.skillInfoTranslation(event.name)}`, [list, "vcard"]], true)
 				.set("ai", button => {
 					const card = get.event().card;
 					const bool = button.link == "olhuaquan_heavy";
@@ -91,6 +91,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
+			await player.draw();
 			target.addMark(event.name);
 			if (target.countMark(event.name) >= 3 && !target.hasSkill(event.name + "_debuff")) {
 				target.clearMark(event.name);
@@ -162,7 +163,7 @@ const skills = {
 				},
 				onremove(player, skill) {
 					delete player.storage[skill];
-					game.log(player, "站立了过来");
+					game.log("读秒结束，", player, "站立了过来");
 				},
 				marktext: "💫",
 				intro: {

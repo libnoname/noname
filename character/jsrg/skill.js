@@ -4947,27 +4947,22 @@ const skills = {
 			}
 			return event.targets.some(i => i.isIn() && i.hasHistory("lose", evt => evt.cards2.length)) && player.getExpansions("jsrgshacheng").length;
 		},
-		direct: true,
 		group: "jsrgshacheng_build",
-		content() {
-			"step 0";
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					_status.noclearcountdown = true;
-				});
-			}
-			var targets = trigger.targets.filter(i => i.isIn() && i.hasHistory("lose", evt => evt.cards2.length));
-			player
-				.chooseTarget(get.prompt("jsrgshacheng"), "令一名目标角色摸X张牌，然后移去一张“城”（X为对应角色本回合失去过的牌数且至多为5）", (card, player, target) => {
-					return get.event("targets").includes(target);
-				})
-				.set("targets", targets)
-				.set("ai", target => {
-					return target == get.event("targetx") ? 1 : 0;
-				})
-				.set(
-					"targetx",
-					(() => {
+		async cost(event, trigger, player) {
+			const cards = player.getExpansions("jsrgshacheng");
+			const targets = trigger.targets.filter(i => i.isIn() && i.hasHistory("lose", evt => evt.cards2.length));
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: [`###${get.prompt(event.skill)}###移去一张“城”，令一名目标角色摸X张牌（X为该角色本回合失去过的牌数且至多为5）`, cards],
+					targets: targets,
+					filterButton: true,
+					filterTarget(card, player, target) {
+						return get.event().targets.includes(target);
+					},
+					ai2(target) {
+						return target == get.event("targetx") ? 1 : 0;
+					},
+					targetx: (() => {
 						let info = [];
 						targets.filter(target => {
 							let att = get.attitude(player, target);
@@ -4997,46 +4992,30 @@ const skills = {
 							return null;
 						}
 						return info[0];
-					})()
-				);
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				var cards = player.getExpansions("jsrgshacheng");
-				if (cards.length == 1) {
-					event._result = { bool: true, links: cards };
-				} else {
-					player.chooseButton([`沙城：移去一张“城”`, cards], true);
-				}
-			} else {
-				if (_status.connectMode) {
-					game.broadcastAll(function () {
-						delete _status.noclearcountdown;
-						game.stopCountChoose();
-					});
-				}
-				event.finish();
+					})(),
+				})
+				.forResult();
+			if (result?.links?.length && result.targets?.length) {
+				event.result = {
+					bool: true,
+					targets: result.targets,
+					cost_data: result.links,
+				};
 			}
-			"step 2";
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					delete _status.noclearcountdown;
-					game.stopCountChoose();
-				});
-			}
-			if (result.bool) {
-				player.logSkill("jsrgshacheng", target);
-				player.loseToDiscardpile(result.links);
-				target.draw(
-					Math.min(
-						5,
-						target
-							.getHistory("lose")
-							.map(evt => evt.cards2.length)
-							.reduce((p, c) => p + c, 0)
-					)
-				);
-			}
+		},
+		async content(event, trigger, player) {
+			const cards = event.cost_data,
+				[target] = event.targets;
+			await player.loseToDiscardpile(cards);
+			await target.draw(
+				Math.min(
+					5,
+					target
+						.getHistory("lose")
+						.map(evt => evt.cards2.length)
+						.reduce((p, c) => p + c, 0)
+				)
+			);
 		},
 		marktext: "城",
 		intro: {
@@ -5074,9 +5053,11 @@ const skills = {
 			return event.hasNature("ice") && event.cards?.someInD();
 		},
 		forced: true,
-		content() {
-			var cards = trigger.cards.filterInD();
-			player.addToExpansion(cards, "gain2").gaintag.add("jsrgshacheng");
+		async content(event, trigger, player) {
+			const cards = trigger.cards.filterInD();
+			const next = player.addToExpansion(cards, "gain2");
+			next.gaintag.add("jsrgshacheng");
+			await next;
 		},
 		global: "jsrgninghan_frozen",
 		subSkill: {

@@ -279,7 +279,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		async content(event, trigger, player) {
-			await trigger.player.randomDiscard();
+			await trigger.player.randomDiscard("h");
 			if (
 				trigger.player.getHp() < player.getHp() &&
 				player.getRoundHistory("sourceDamage", evt => {
@@ -347,10 +347,10 @@ const skills = {
 					if (!lib.skill.dcshixian.filterx(event) || !player.hasMark("stardangchen_buff")) {
 						return false;
 					}
-					return typeof get.number(event.card) === "number";
+					return true;
 				},
 				check(event, player) {
-					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(event.card, i, player, player), 0) < 0);
+					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(i, event.card, player, player), 0) < 0);
 				},
 				prompt2(event, player) {
 					return "进行一次判定，若判定结果为" + player.countMark("stardangchen_buff") + "的倍数，则" + get.translation(event.card) + "额外结算一次";
@@ -7088,7 +7088,7 @@ const skills = {
 			return (
 				get.color(event.card) === "black" &&
 				event.player.hasHistory("lose", event2 => {
-					return event2 && event2.hs.length && (event2.relatedEvent || evevt2.getParent()) === event;
+					return event2 && event2.hs.length && (event2.relatedEvent || event2.getParent()) === event;
 				}) &&
 				event.player
 					.getHistory("useCard", event2 => {
@@ -10924,196 +10924,83 @@ const skills = {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		direct: true,
 		filter(event, player) {
-			if (player == _status.currentPhase || event.getParent()?.name == "useCard") {
+			if (player == _status.currentPhase || (event.relatedEvent || event.getParent())?.name == "useCard") {
 				return false;
 			}
 			if (event.name == "gain" && event.player == player) {
 				return false;
 			}
-			var evt = event.getl(player);
-			return evt && evt.cards2 && evt.cards2.length == 1 && ["equip", "trick"].includes(get.type2(evt.cards2[0], evt.type == "discard" && evt.hs.includes(evt.cards2[0]) ? player : false)) && !player.hasSkill("moying2");
+			const evt = event.getl(player);
+			return evt && evt.cards2 && evt.cards2.length == 1 && ["equip", "trick"].includes(get.type2(evt.cards2[0], evt.type == "discard" && evt.hs.includes(evt.cards2[0]) ? player : false));
 		},
-		content() {
-			"step 0";
-			var number = trigger.getl(player).cards2[0].number;
-			var numbers = [number - 2, number - 1, number, number + 1, number + 2].filter(function (number) {
+		usable: 1,
+		async cost(event, trigger, player) {
+			const number = trigger.getl(player).cards2[0].number;
+			const numbers = [number - 2, number - 1, number, number + 1, number + 2].filter(function (number) {
 				return number >= 1 && number <= 13;
 			});
-			if (player.isUnderControl()) {
-				game.swapPlayerAuto(player);
-			}
-			var switchToAuto = function () {
-				_status.imchoosing = false;
-				event._result = {
+			const suits = lib.suit.slice();
+			const result = await player
+				.chooseButton([get.prompt2("moying"), `<div class="text center">花色</div>`, [suits.map(suit => [suit, get.translation(suit)]), "tdnodes"], `<div class="text center">点数</div>`, [numbers, "tdnodes"]], 2)
+				.set("filterButton", button => {
+					const selected = ui.selected.buttons;
+					if (!selected.length) {
+						return true;
+					}
+					return typeof button.link != typeof selected[0].link;
+				})
+				.set("ai", button => {
+					return Math.random();
+				})
+				.forResult();
+			if (result?.links?.length) {
+				const links = result.links;
+				if (!suits.includes(links[0])) {
+					links.reverse();
+				}
+				event.result = {
 					bool: true,
-					suit: lib.suit.randomGet(),
-					number: numbers.randomGet(),
+					cost_data: [links[0], links[1]],
 				};
-				if (event.dialog) {
-					event.dialog.close();
-				}
-				if (event.control) {
-					event.control.close();
-				}
-			};
-			var chooseButton = function (player, numbers) {
-				var event = _status.event;
-				player = player || event.player;
-				if (!event._result) {
-					event._result = {};
-				}
-				var dialog = ui.create.dialog("是否发动【墨影】？", "forcebutton", "hidden");
-				event.dialog = dialog;
-				dialog.addText("花色");
-				var table = document.createElement("div");
-				table.classList.add("add-setting");
-				table.style.margin = "0";
-				table.style.width = "100%";
-				table.style.position = "relative";
-				var listi = ["spade", "heart", "club", "diamond"];
-				for (var i = 0; i < listi.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.link = listi[i];
-					table.appendChild(td);
-					td.innerHTML = "<span>" + get.translation(listi[i]) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) {
-							return;
-						}
-						if (_status.justdragged) {
-							return;
-						}
-						_status.tempNoButton = true;
-						setTimeout(function () {
-							_status.tempNoButton = false;
-						}, 500);
-						var link = this.link;
-						var current = this.parentNode.querySelector(".bluebg");
-						if (current) {
-							current.classList.remove("bluebg");
-						}
-						this.classList.add("bluebg");
-						event._result.suit = link;
-					});
-				}
-				dialog.content.appendChild(table);
-				dialog.addText("点数");
-				var table2 = document.createElement("div");
-				table2.classList.add("add-setting");
-				table2.style.margin = "0";
-				table2.style.width = "100%";
-				table2.style.position = "relative";
-				for (var i = 0; i < numbers.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.link = numbers[i];
-					table2.appendChild(td);
-					td.innerHTML = "<span>" + get.strNumber(numbers[i]) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) {
-							return;
-						}
-						if (_status.justdragged) {
-							return;
-						}
-						_status.tempNoButton = true;
-						setTimeout(function () {
-							_status.tempNoButton = false;
-						}, 500);
-						var link = this.link;
-						var current = this.parentNode.querySelector(".bluebg");
-						if (current) {
-							current.classList.remove("bluebg");
-						}
-						this.classList.add("bluebg");
-						event._result.number = link;
-					});
-				}
-				dialog.content.appendChild(table2);
-				dialog.add("　　");
-				event.dialog.open();
-
-				event.switchToAuto = function () {
-					event._result = {
-						bool: true,
-						number: numbers.randomGet(),
-						suit: lib.suit.randomGet(),
-					};
-					event.dialog.close();
-					event.control.close();
-					game.resume();
-					_status.imchoosing = false;
-				};
-				event.control = ui.create.control("ok", "cancel2", function (link) {
-					var result = event._result;
-					if (link == "cancel2") {
-						result.bool = false;
-					} else {
-						if (!result.number || !result.suit) {
-							return;
-						}
-						result.bool = true;
-					}
-					event.dialog.close();
-					event.control.close();
-					game.resume();
-					_status.imchoosing = false;
-				});
-				for (var i = 0; i < event.dialog.buttons.length; i++) {
-					event.dialog.buttons[i].classList.add("selectable");
-				}
-				game.pause();
-				game.countChoose();
-			};
-			if (event.isMine()) {
-				chooseButton(player, numbers);
-			} else if (event.isOnline()) {
-				event.player.send(chooseButton, event.player, numbers);
-				event.player.wait();
-				game.pause();
-			} else {
-				switchToAuto();
 			}
-			"step 1";
-			var map = event.result || result;
-			if (map.bool) {
-				player.logSkill("moying");
-				player.addTempSkill("moying2");
-				var cards = [];
-				for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-					var card = ui.cardPile.childNodes[i];
-					if (get.suit(card) == map.suit && get.number(card) == map.number) {
-						cards.push(card);
-					}
+		},
+		async content(event, trigger, player) {
+			const {
+				cost_data: [suit, number],
+			} = event;
+			const cards = [];
+			for (let i = 0; i < ui.cardPile.childNodes.length; i++) {
+				const card = ui.cardPile.childNodes[i];
+				if (get.suit(card) == suit && get.number(card) == number) {
+					cards.push(card);
 				}
-				if (cards.length) {
-					player.gain(cards, "gain2", "log");
-				}
+			}
+			if (cards.length) {
+				player.gain(cards, "gain2");
 			}
 		},
 	},
-	moying2: {},
+	//moying2: {},
 	juanhui: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("juanhui"), lib.filter.notMe, "选择记录一名其他角色使用过的牌").set("ai", function (target) {
-				if (target.isTurnedOver() || target.hasJudge("lebu")) {
-					return Math.random();
-				}
-				return (1 + target.countCards("h")) * 2 + Math.random();
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("juanhui", target);
-				player.storage.juanhui2 = target;
-				player.storage.juanhui3 = [];
-				player.addSkill("juanhui2");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt("juanhui"), lib.filter.notMe, "选择记录一名其他角色使用过的牌")
+				.set("ai", function (target) {
+					if (target.isTurnedOver() || target.hasJudge("lebu")) {
+						return Math.random();
+					}
+					return (1 + target.countCards("h")) * 2 + Math.random();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.storage.juanhui2 = target;
+			player.storage.juanhui3 = [];
+			player.addSkill("juanhui2");
 		},
 	},
 	juanhui2: {
@@ -11272,12 +11159,12 @@ const skills = {
 				}).length == 0
 			);
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.name == "phaseUse") {
 				player.removeSkill("juanhui2");
 			} else if (event.triggername == "useCardAfter") {
-				player.recover();
-				player.drawTo(3);
+				await player.recover();
+				await player.drawTo(3);
 			} else {
 				var vcard = [get.type(trigger.card), "", trigger.card.name];
 				if (game.hasNature(trigger.card)) {

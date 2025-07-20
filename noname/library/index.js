@@ -3894,11 +3894,11 @@ export class Library {
 						map.show_time.show();
 						map.watchface.hide();
 					}
-					if (lib.config.show_deckMonitor) {
+					/*if (lib.config.show_deckMonitor) {
 						map.show_deckMonitor_online.show();
 					} else {
 						map.show_deckMonitor_online.hide();
-					}
+					}*/
 					if (lib.config.show_extensionmaker) {
 						map.show_extensionshare.show();
 					} else {
@@ -4473,7 +4473,7 @@ export class Library {
 						}
 					},
 				},
-				show_deckMonitor_online: {
+				/*show_deckMonitor_online: {
 					name: "联机显示记牌器",
 					intro: "如果你是房主，此设置对所有人生效",
 					init: false,
@@ -4490,7 +4490,7 @@ export class Library {
 							game.saveConfig("show_deckMonitor_online", bool);
 						}
 					},
-				},
+				},*/
 				show_wuxie: {
 					name: "显示无懈按钮",
 					intro: "在右上角显示不询问无懈",
@@ -6307,6 +6307,7 @@ export class Library {
 					name: "鏖战背景音乐",
 					item: {
 						disabled: "不启用",
+						shousha: "逐鹿天下",
 						online: "Online",
 						rewrite: "Rewrite",
 						chaoming: "潮鸣",
@@ -6909,7 +6910,7 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_three") || lib.choiceThree;
 						var str = "character=[\n    ";
@@ -6920,16 +6921,10 @@ export class Library {
 							}
 						}
 						str += "\n];";
-						node.code = str;
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
@@ -6939,44 +6934,22 @@ export class Library {
 								var tip = lib.getErrorTip(e) || "";
 								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_three", character, "versus");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create.editor2(container, {
+							language: "javascript",
+							value: str,
+							saveInput,
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
+						});
 					},
 				},
 				reset_character_three: {
@@ -6998,7 +6971,7 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_four") || lib.choiceFour;
 						var str = "character=[\n    ";
@@ -7009,16 +6982,10 @@ export class Library {
 							}
 						}
 						str += "\n];";
-						node.code = str;
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
@@ -7028,44 +6995,22 @@ export class Library {
 								var tip = lib.getErrorTip(e) || "";
 								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_four", character, "versus");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create.editor2(container, {
+							language: "javascript",
+							value: str,
+							saveInput,
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
+						});;
 					},
 				},
 				reset_character_four: {
@@ -7599,19 +7544,14 @@ export class Library {
 							alert("请进入斗地主模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_online") || lib.characterOnline;
-						node.code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
+						var code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!get.is.object(character)) {
@@ -7641,44 +7581,22 @@ export class Library {
 									alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								}
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_online", character, "doudizhu");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create.editor2(container, {
+							language: "javascript",
+							value: code,
+							saveInput,
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
+						});;
 					},
 				},
 				reset_character: {
@@ -10415,6 +10333,7 @@ export class Library {
 		fengyin: "封印",
 		baiban: "白板",
 		_disableJudge: "判定区",
+		_rest_return: "休整",
 
 		xiaowu_emotion: "小无表情",
 		wanglang_emotion: "王朗表情",
@@ -13484,6 +13403,48 @@ export class Library {
 				}
 			},
 		},
+		//休整
+		_rest_return: {
+			trigger: { global: "phaseBefore" },
+			forced: true,
+			charlotte: true,
+			silent: true,
+			forceDie: true,
+			forceOut: true,
+			filter(event, player) {
+				const map = _status._rest_return?.[player.playerid];
+				if (map?.count < 0) {
+					return false;
+				}
+				if (map?.type == "round" && event.player != player) {
+					return false;
+				}
+				return !event._rest_return && player.isOut();
+			},
+			async content(event, trigger, player) {
+				const map = _status._rest_return?.[player.playerid];
+				if (map?.count > 0) {
+					game.broadcastAll(map => {
+						map.count--;
+					}, map);
+				}
+				trigger._rest_return = true;
+				if (!map.count) {
+					//trigger._rest_return = true;
+					game.broadcastAll(function (player) {
+						player.classList.remove("out");
+					}, player);
+					game.log(player, "移回了游戏");
+					delete _status._rest_return[player.playerid];
+					await player.recoverTo(player.maxHp);
+					//生成restEnd时机
+					const next = game.createEvent("restEnd", false);
+					next.setContent("emptyEvent");
+					next.player = player;
+					await next;
+				}
+			},
+		},
 		/**
 		 * @deprecated
 		 */
@@ -13689,7 +13650,7 @@ export class Library {
 			 */
 			init(version, config, banned_info) {
 				var show_deckMonitor = false;
-				if (lib.config.show_deckMonitor && lib.config.show_deckMonitor_online) {
+				if (lib.config.show_deckMonitor) {// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
 				}
 				this.send(function (show_deckMonitor) {

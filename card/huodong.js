@@ -130,6 +130,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
+				manualConfirm: true,
 				filterTarget(card, player, target) {
 					return target == player && player.maxHp > 1;
 				},
@@ -232,6 +233,19 @@ game.import("card", function () {
 				reverseOrder: true,
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
+					if (!_status.postReconnect.jiaoyou) {
+						_status.postReconnect.jiaoyou = [
+							function (list) {
+								for (const tag of list) {
+									if (!lib.skill[tag]) {
+										lib.skill[tag] = {};
+										lib.translate[tag] = "浇油+" + tag.slice(7);
+									}
+								}
+							},
+							[],
+						];
+					}
 					const { target } = event;
 					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
 						name = event.name;
@@ -243,6 +257,7 @@ game.import("card", function () {
 								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
+							_status.postReconnect.jiaoyou[1].add(tag);
 							if (!lib.skill[tag]) {
 								game.broadcastAll(
 									(tag, str) => {
@@ -282,18 +297,18 @@ game.import("card", function () {
 				toself: true,
 				modTarget: true,
 				async content(event, trigger, player) {
-					event.cards ??= [];
+					const cards = [];
 					const { target } = event;
-					const result = await target
-						.chooseControl("black", "red")
-						.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
-						.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
-						.forResult();
-					if (result?.control) {
-						const color = result.control;
-						game.log(player, "选择了", "#y" + color);
-						player.popup(color);
-						while (true) {
+					while (true) {
+						const result = await target
+							.chooseControl("black", "red")
+							.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
+							.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
+							.forResult();
+						if (result?.control) {
+							const color = result.control;
+							game.log(player, "选择了", "#y" + color);
+							player.popup(color);
 							const judgeEvent = target.judge(card => {
 								if (get.color(card) == get.event().haoyun_color) {
 									return 1.5;
@@ -302,26 +317,23 @@ game.import("card", function () {
 							});
 							judgeEvent.set("haoyun_color", color);
 							judgeEvent.judge2 = result => result.bool;
-							if (!player.hasSkillTag("rejudge")) {
-								judgeEvent.set("callback", async event => {
-									if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
-										await event.player.gain(event.card, "gain2");
-									}
-								});
+							judgeEvent.set("callback", async event => {
+								if (event.judgeResult.color == event.getParent().haoyun_color) {
+									event.getParent().orderingCards.remove(event.card);
+								}
+							});
+							judgeEvent.set("clearArena", false);
+							const resultx = await judgeEvent.forResult();
+							if (resultx?.bool && resultx?.card) {
+								cards.push(resultx.card);
 							} else {
-								judgeEvent.set("callback", async event => {
-									if (event.judgeResult.color == event.getParent().haoyun_color) {
-										event.getParent().orderingCards.remove(event.card);
-									}
-								});
-							}
-							const result = await judgeEvent.forResult();
-							if (result?.bool && result?.card) {
-								event.cards.push(result.card);
-							} else {
+								game.broadcastAll(ui.clear);
 								break;
 							}
 						}
+					}
+					if (cards.length) {
+						await player.gain(cards, "gain2");
 					}
 				},
 				ai: {
@@ -914,7 +926,7 @@ game.import("card", function () {
 				ai: {
 					order: 6,
 					useful: 1.2,
-					value: 8,
+					value: 7,
 					result: {
 						target(player, target) {
 							const list = [];
@@ -1060,12 +1072,14 @@ game.import("card", function () {
 							)
 							.set("addCount", false);*/
 						if (!result?.bool) {
-							const damage = game.filterPlayer(current => current != target).sortBySeat();
+							const damage = game.filterPlayer2(current => current != target).sortBySeat();
 							if (damage.length) {
 								while (damage.length && target.isIn()) {
 									const current = damage.shift();
-									current.line(target, "yellow");
-									await target.damage(current);
+									if (current.isIn()) {
+										current.line(target, "yellow");
+										await target.damage(current);
+									}
 								}
 							}
 							break;
@@ -1098,8 +1112,8 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					player.$skill(get.translation(event.name), null, "thunder", null, "shen_jiaxu");
 					await game.delayx();
-					const targets = game.filterPlayer(target => target != player).sortBySeat();
-					player.line(targets);
+					const targets = game.filterPlayer2(target => target != player).sortBySeat();
+					player.line(targets.filter(target => target.isIn()));
 					game.broadcastAll(event => {
 						if (!_status.nisiwohuo) {
 							_status.nisiwohuo = [];
@@ -1332,7 +1346,7 @@ game.import("card", function () {
 				ai: {
 					order: 7,
 					useful: 3.5,
-					value: 9,
+					value: 8,
 					tag: {
 						draw: 2,
 					},

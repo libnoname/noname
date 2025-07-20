@@ -120,6 +120,30 @@ const skills = {
 		},
 	},
 	//三娘
+	mbshuyong: {
+		audio: "xinfu_xushen",
+		trigger: {
+			player: ["useCard", "respond"],
+		},
+		filter(event, player) {
+			return event.card.name == "sha";
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target.countGainableCards(player, "hej") && target != player;
+				})
+				.set("ai", target => get.effect(target, { name: "shunshou_copy" }, get.player(), get.player()))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await player.gainPlayerCard(target, "hej", true);
+			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name && evt.getParent(2).targets.includes(target)).length > 1) {
+				await target.draw();
+			}
+		},
+	},
 	mbxushen: {
 		limited: true,
 		audio: "xinfu_xushen",
@@ -190,6 +214,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				forced: true,
 				trigger: { player: "dyingAfter" },
 				filter(event, player) {
 					const evt2 = event.getParent(2);
@@ -1394,6 +1419,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -8));
 					game.log(player, "成功完成使命");
 					player.changeSkin("potzhongao", "pot_weiyan_achieve");
+					game.broadcastAll(() => {
+						_status.tempMusic = "effect_yinzhanBGM";
+						game.playBackgroundMusic();
+					});
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
@@ -1424,6 +1453,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -5));
 					game.log(player, "使命失败");
 					player.changeSkin("potzhongao", "pot_weiyan_fail");
+					game.broadcastAll(() => {
+						_status.tempMusic = "effect_tuishouBGM";
+						game.playBackgroundMusic();
+					});
 					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
 				},
 			},
@@ -4352,10 +4385,10 @@ const skills = {
 				return { bool: true, cards: suits.slice(0, limit).reduce((list, suit) => list.addArray(player.getCards("h", { suit: suit })), []) };
 			};
 			if (event.isMine()) {
-				next = chooseOneSuitCard(player, player, null, limit, str, ai);
+				next = chooseOneSuitCard(player, player, null, limit, str, ai());
 			} else if (player.isOnline()) {
 				let { promise, resolve } = Promise.withResolvers();
-				player.send(chooseOneSuitCard, player, player, null, limit, str, ai);
+				player.send(chooseOneSuitCard, player, player, null, limit, str, ai());
 				player.wait(result => {
 					if (result == "ai") {
 						result = ai();
@@ -4392,11 +4425,20 @@ const skills = {
 			player.logSkill("mbzhuji", null, null, null, [num >= es ? get.rand(1, 2) : get.rand(3, 4)]);
 			if (num >= es) {
 				const result = await player
-					.chooseButton(["筑墼：选择一项执行", [[
-						["draw", "摸两张牌"],
-						["recover", "回复1点体力"],
-						["hujia", "获得1点护甲"],
-					], "textbutton"]], true)
+					.chooseButton(
+						[
+							"筑墼：选择一项执行",
+							[
+								[
+									["draw", "摸两张牌"],
+									["recover", "回复1点体力"],
+									["hujia", "获得1点护甲"],
+								],
+								"textbutton",
+							],
+						],
+						true
+					)
 					.set("filterButton", button => {
 						const player = get.player();
 						if (button.link == "recover") {
@@ -4417,7 +4459,7 @@ const skills = {
 				if (!result?.bool || !result.links?.length) {
 					return;
 				}
-				switch(result.links[0]) {
+				switch (result.links[0]) {
 					case "draw": {
 						await player.draw(2);
 						break;
@@ -8246,7 +8288,7 @@ const skills = {
 				result: { index },
 			} = await player
 				.chooseControl()
-				.set("choiceList", [`摸两张牌，然后令${str}视为对自己使用【杀】或弃置自己场上一张牌`, `令${str}摸两张牌，然后视为对其使用【杀】或弃置其场上一张牌`])
+				.set("choiceList", [`摸两张牌，然后令${str}视为对自己使用【杀】或获得自己场上一张牌`, `令${str}摸两张牌，然后视为对其使用【杀】或获得其场上一张牌`])
 				.set("ai", () => {
 					const evt = _status.event.getParent(),
 						player = evt.player,
@@ -12492,12 +12534,12 @@ const skills = {
 			}
 			return "laishou3.mp3";
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				player.gainMaxHp(trigger.num);
+				await player.gainMaxHp(trigger.num);
 				trigger.cancel();
 			} else {
-				player.die();
+				await player.die();
 			}
 		},
 	},
@@ -12511,11 +12553,9 @@ const skills = {
 		contentBefore() {
 			player.line(game.filterPlayer(current => current.countCards("h")));
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(current => current.countCards("h")).sortBySeat();
-			event.targets = targets;
-			var next = player
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => current.countCards("h")).sortBySeat();
+			const next = player
 				.chooseCardOL(targets, "乱群：请选择要展示的牌", true)
 				.set("ai", function (card) {
 					return -get.value(card);
@@ -12526,45 +12566,23 @@ const skills = {
 				return { bool: true, cards: [hs.randomGet()] };
 			};
 			next._args.remove("glow_result");
-			"step 1";
-			var cards = [];
-			event.videoId = lib.status.videoId++;
-			for (var i = 0; i < targets.length; i++) {
-				cards.push(result[i].cards[0]);
-			}
-			event.cards = cards;
-			game.log(player, "展示了", targets, "的", cards);
-			game.broadcastAll(
-				function (targets, cards, id, player) {
-					var dialog = ui.create.dialog(get.translation(player) + "发动了【乱群】", cards);
-					dialog.videoId = id;
-					var getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (var i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(cards[i].suit);
+			const result = await next.forResult();
+			const cards = result.map(i => i.cards[0]);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【乱群】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						button.node.gaintag.innerHTML = target.getName();
 					}
-				},
-				targets,
-				cards,
-				event.videoId,
-				player
-			);
-			game.delay(4);
-			"step 2";
-			game.broadcastAll("closeDialog", event.videoId);
-			var card = cards[targets.indexOf(player)];
-			var cardx = cards.filter(cardy => cardy != card && get.color(cardy, targets[cards.indexOf(cardy)]) == get.color(card, player));
+				})
+				.set("delay_time", 4)
+				.set("showers", targets);
+			const card = cards[targets.indexOf(player)];
+			const cardx = cards.filter(cardy => cardy != card && get.color(cardy, targets[cards.indexOf(cardy)]) == get.color(card, player));
 			if (cardx.length) {
 				const num = get.mode() == "identity" ? 4 : 2;
-				player
+				const result = await player
 					.chooseButton(["乱群：是否获得其中至多" + get.cnNumber(num) + "张牌", cardx])
 					.set("forceAuto", true)
 					.set("ai", function (button) {
@@ -12577,20 +12595,16 @@ const skills = {
 						return get.value(button.link, player);
 					})
 					.set("selectButton", [1, num])
-					.set("list", [cards, targets]);
-			} else {
-				event.goto(4);
+					.set("list", [cards, targets])
+					.forResult();
+				if (result?.links?.length) {
+					await player.gain(result.links, "give");
+				}
 			}
-			"step 3";
-			if (result.bool) {
-				player.gain(result.links, "give");
-			}
-			"step 4";
-			var card = cards[targets.indexOf(player)];
-			targets = targets.filter(target => get.color(cards[targets.indexOf(target)], target) != get.color(card, player));
-			if (targets.length) {
-				player.line(targets);
-				targets.forEach(target => {
+			const targetsx = targets.filter(target => get.color(cards[targets.indexOf(target)], target) != get.color(card, player));
+			if (targetsx.length) {
+				player.line(targetsx);
+				targetsx.forEach(target => {
 					target.addTempSkill("luanqun_effect", { player: "phaseUseAfter" });
 					target.markAuto("luanqun_effect", [player]);
 					target.addTempSkill("luanqun_directHit", { player: "phaseEnd" });
@@ -13223,15 +13237,14 @@ const skills = {
 			}
 			return _status.changshiMap;
 		},
-		content() {
-			"step 0";
-			var list = lib.skill.mbdanggu.changshi.map(i => i[0]);
+		async content(event, trigger, player) {
+			const list = lib.skill.mbdanggu.changshi.map(i => i[0]);
 			player.markAuto("mbdanggu", list);
 			game.broadcastAll(
 				function (player, list) {
-					var cards = [];
-					for (var i = 0; i < list.length; i++) {
-						var cardname = "huashen_card_" + list[i];
+					const cards = [];
+					for (let i = 0; i < list.length; i++) {
+						const cardname = "huashen_card_" + list[i];
 						lib.card[cardname] = {
 							fullimage: true,
 							image: "character/" + list[i],
@@ -13244,37 +13257,36 @@ const skills = {
 				player,
 				list
 			);
-			"step 1";
-			var next = game.createEvent("mbdanggu_clique");
+			const next = game.createEvent("mbdanggu_clique");
 			next.player = player;
 			next.setContent(lib.skill.mbdanggu.contentx);
+			await next;
 		},
-		contentx() {
-			"step 0";
-			var list = player.getStorage("mbdanggu").slice();
-			var first = list.randomRemove();
-			event.first = first;
-			var others = list.randomGets(4);
+		async contentx(event, trigger, player) {
+			let list = player.getStorage("mbdanggu").slice();
+			const first = list.randomRemove();
+			const others = list.randomGets(4);
+			let result;
 			if (others.length == 1) {
-				event._result = { bool: true, links: others };
+				result = { bool: true, links: others };
 			} else {
-				var map = {
+				const map = {
 						scs_bilan: "scs_hankui",
 						scs_hankui: "scs_bilan",
 						scs_duangui: "scs_guosheng",
 						scs_guosheng: "scs_duangui",
 					},
 					map2 = lib.skill.mbdanggu.conflictMap(player);
-				var conflictList = others.filter(changshi => {
-						if (map[first] && others.some(changshi2 => map[first] == changshi2)) {
-							return map[first] == changshi;
-						} else {
-							return map2[first].includes(changshi);
-						}
-					}),
-					list = others.slice();
+				const conflictList = others.filter(changshi => {
+					if (map[first] && others.some(changshi2 => map[first] == changshi2)) {
+						return map[first] == changshi;
+					} else {
+						return map2[first].includes(changshi);
+					}
+				});
+				list = others.slice();
 				if (conflictList.length) {
-					var conflict = conflictList.randomGet();
+					const conflict = conflictList.randomGet();
 					list.remove(conflict);
 					game.broadcastAll(
 						function (changshi, player) {
@@ -13288,25 +13300,24 @@ const skills = {
 						player
 					);
 				}
-				player
+				result = await player
 					.chooseButton(["党锢：请选择结党对象", [[first], "character"], '<div class="text center">可选常侍</div>', [others, "character"]], true)
 					.set("filterButton", button => {
 						return _status.event.canChoose.includes(button.link);
 					})
 					.set("canChoose", list)
-					.set("ai", button => Math.random() * 10);
+					.set("ai", button => Math.random() * 10)
+					.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				var first = event.first;
-				var chosen = result.links[0];
-				var skills = [];
-				var list = lib.skill.mbdanggu.changshi;
-				var changshis = [first, chosen];
+			if (result?.bool) {
+				const chosen = result.links[0];
+				const skills = [];
+				list = lib.skill.mbdanggu.changshi;
+				const changshis = [first, chosen];
 				player.unmarkAuto("mbdanggu", changshis);
 				player.storage.mbdanggu_current = changshis;
-				for (var changshi of changshis) {
-					for (var cs of list) {
+				for (const changshi of changshis) {
+					for (const cs of list) {
 						if (changshi == cs[0]) {
 							skills.push(cs[1]);
 						}
@@ -13337,8 +13348,8 @@ const skills = {
 				game.log(player, "选择了常侍", "#y" + get.translation(changshis));
 				if (skills.length) {
 					player.addAdditionalSkill("mbdanggu", skills);
-					var str = "";
-					for (var i of skills) {
+					let str = "";
+					for (const i of skills) {
 						str += "【" + get.translation(i) + "】、";
 						player.popup(i);
 					}
@@ -13377,137 +13388,27 @@ const skills = {
 		},
 	},
 	mbmowang: {
-		trigger: { player: "dieBefore" },
-		filter(event, player) {
+		trigger: {
+			player: ["dieBefore", "rest"],
+		},
+		filter(event, player, name) {
+			if (name == "rest") {
+				return true;
+			}
 			return event.getParent().name != "giveup" && player.maxHp > 0;
 		},
 		derivation: "mbmowang_faq",
 		forced: true,
+		forceDie: true,
+		forceOut: true,
 		direct: true,
 		priority: 15,
 		group: ["mbmowang_die", "mbmowang_return"],
-		content() {
-			if (_status.mbmowang_return && _status.mbmowang_return[player.playerid]) {
-				trigger.cancel();
-			} else {
-				if (player.getStorage("mbdanggu").length) {
-					player.logSkill("mbmowang");
-					game.broadcastAll(function () {
-						if (lib.config.background_speak) {
-							game.playAudio("die", "shichangshiRest");
-						}
-					});
-					trigger.setContent(lib.skill.mbmowang.dieContent);
-					trigger.includeOut = true;
-				} else {
-					player.changeSkin("mbmowang", "shichangshi_dead");
-				}
-			}
-		},
-		ai: {
-			combo: "mbdanggu",
-			neg: true,
-		},
-		dieContent() {
-			"step 0";
-			event.forceDie = true;
-			if (source) {
-				game.log(player, "被", source, "杀害");
-				if (source.stat[source.stat.length - 1].kill == undefined) {
-					source.stat[source.stat.length - 1].kill = 1;
-				} else {
-					source.stat[source.stat.length - 1].kill++;
-				}
-			} else {
-				game.log(player, "阵亡");
-			}
-			if (player.isIn() && (!_status.mbmowang_return || !_status.mbmowang_return[player.playerid])) {
-				event.reserveOut = true;
-				game.log(player, "进入了修整状态");
-				game.log(player, "移出了游戏");
-				//game.addGlobalSkill('mbmowang_return');
-				if (!_status.mbmowang_return) {
-					_status.mbmowang_return = {};
-				}
-				_status.mbmowang_return[player.playerid] = 1;
-			} else {
-				event.finish();
-			}
-			if (!game.countPlayer()) {
-				game.over();
-			} else if (player.hp != 0) {
-				player.changeHp(0 - player.hp, false).forceDie = true;
-			}
-			game.broadcastAll(function (player) {
-				if (player.isLinked()) {
-					if (get.is.linked2(player)) {
-						player.classList.toggle("linked2");
-					} else {
-						player.classList.toggle("linked");
-					}
-				}
-				if (player.isTurnedOver()) {
-					player.classList.toggle("turnedover");
-				}
-			}, player);
-			game.addVideo("link", player, player.isLinked());
-			game.addVideo("turnOver", player, player.classList.contains("turnedover"));
-			"step 1";
-			event.trigger("die");
-			"step 2";
-			if (event.reserveOut) {
-				if (!game.reserveDead) {
-					for (var mark in player.marks) {
-						if (mark == "mbdanggu") {
-							continue;
-						}
-						player.unmarkSkill(mark);
-					}
-					var count = 1;
-					var list = Array.from(player.node.marks.childNodes);
-					if (list.some(i => i.name == "mbdanggu")) {
-						count++;
-					}
-					while (player.node.marks.childNodes.length > count) {
-						var node = player.node.marks.lastChild;
-						if (node.name == "mbdanggu") {
-							node = node.previousSibling;
-						}
-						node.remove();
-					}
-					game.broadcast(
-						function (player, count) {
-							while (player.node.marks.childNodes.length > count) {
-								var node = player.node.marks.lastChild;
-								if (node.name == "mbdanggu") {
-									node = node.previousSibling;
-								}
-								node.remove();
-							}
-						},
-						player,
-						count
-					);
-				}
-				for (var i in player.tempSkills) {
-					player.removeSkill(i);
-				}
-				var skills = player.getSkills();
-				for (var i = 0; i < skills.length; i++) {
-					if (lib.skill[skills[i]].temp) {
-						player.removeSkill(skills[i]);
-					}
-				}
-				event.cards = player.getCards("hejsx");
-				if (event.cards.length) {
-					player.discard(event.cards).forceDie = true;
-				}
-			}
-			"step 3";
-			if (event.reserveOut) {
+		async content(event, trigger, player) {
+			if (event.triggername == "rest") {
 				game.broadcastAll(
 					function (player, list) {
-						player.classList.add("out");
+						//player.classList.add("out");
 						if (list.includes(player.name1) || player.name1 == "shichangshi") {
 							player.smoothAvatar(false);
 							player.skin.name = player.name1 + "_dead";
@@ -13522,49 +13423,35 @@ const skills = {
 					player,
 					lib.skill.mbdanggu.changshi.map(i => i[0])
 				);
+				return;
 			}
-			if (source && lib.config.border_style == "auto" && (lib.config.autoborder_count == "kill" || lib.config.autoborder_count == "mix")) {
-				switch (source.node.framebg.dataset.auto) {
-					case "gold":
-					case "silver":
-						source.node.framebg.dataset.auto = "gold";
-						break;
-					case "bronze":
-						source.node.framebg.dataset.auto = "silver";
-						break;
-					default:
-						source.node.framebg.dataset.auto = lib.config.autoborder_start || "bronze";
-				}
-				if (lib.config.autoborder_count == "kill") {
-					source.node.framebg.dataset.decoration = source.node.framebg.dataset.auto;
-				} else {
-					var dnum = 0;
-					for (var j = 0; j < source.stat.length; j++) {
-						if (source.stat[j].damage != undefined) {
-							dnum += source.stat[j].damage;
+			if (_status._rest_return?.[player.playerid]) {
+				trigger.cancel();
+			} else {
+				if (player.getStorage("mbdanggu").length) {
+					player.logSkill("mbmowang");
+					/*game.broadcastAll(function () {
+						if (lib.config.background_speak) {
+							game.playAudio("die", "shichangshiRest");
 						}
-					}
-					source.node.framebg.dataset.decoration = "";
-					switch (source.node.framebg.dataset.auto) {
-						case "bronze":
-							if (dnum >= 4) {
-								source.node.framebg.dataset.decoration = "bronze";
-							}
-							break;
-						case "silver":
-							if (dnum >= 8) {
-								source.node.framebg.dataset.decoration = "silver";
-							}
-							break;
-						case "gold":
-							if (dnum >= 12) {
-								source.node.framebg.dataset.decoration = "gold";
-							}
-							break;
-					}
+					});*/
+					//煞笔十常侍
+					trigger.restMap = {
+						type: "round",
+						count: 1,
+						audio: "shichangshiRest",
+					};
+					trigger.excludeMark.add("mbdanggu");
+					//trigger.noDieAudio = true;
+					trigger.includeOut = true;
+				} else {
+					player.changeSkin("mbmowang", "shichangshi_dead");
 				}
-				source.classList.add("topcount");
 			}
+		},
+		ai: {
+			combo: "mbdanggu",
+			neg: true,
 		},
 		subSkill: {
 			die: {
@@ -13572,8 +13459,7 @@ const skills = {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				forceDie: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (lib.skill.mbdanggu.isSingleShichangshi(player)) {
 						if (!player.getStorage("mbdanggu").length) {
 							game.broadcastAll(function (player) {
@@ -13594,31 +13480,22 @@ const skills = {
 						}
 					}
 					if (!player.getStorage("mbdanggu").length) {
-						game.delay();
+						await game.delay();
 					}
-					"step 1";
-					player.die();
+					await player.die();
 				},
 			},
 			return: {
-				trigger: { player: "phaseBefore" },
+				trigger: { player: "restEnd" },
 				forced: true,
 				charlotte: true,
 				silent: true,
 				forceDie: true,
 				forceOut: true,
 				filter(event, player) {
-					return !event._mbmowang_return && event.player.isOut() && _status.mbmowang_return[event.player.playerid];
+					return event.player == player && player.hasSkill("mbdanggu", null, null, false);
 				},
-				content() {
-					"step 0";
-					trigger._mbmowang_return = true;
-					game.broadcastAll(function (player) {
-						player.classList.remove("out");
-					}, trigger.player);
-					game.log(trigger.player, "移回了游戏");
-					delete _status.mbmowang_return[trigger.player.playerid];
-					trigger.player.recover(trigger.player.maxHp - trigger.player.hp);
+				async content(event, trigger, player) {
 					game.broadcastAll(function (player) {
 						if (player.name1 == "shichangshi") {
 							player.smoothAvatar(false);
@@ -13634,13 +13511,7 @@ const skills = {
 								player.skin.name2 = player.name2;
 							}
 						}
-					}, trigger.player);
-					"step 1";
-					event.trigger("restEnd");
-					if (!player.hasSkill("mbdanggu", null, null, false)) {
-						event.finish();
-					}
-					"step 2";
+					}, player);
 					delete player.storage.mbdanggu_current;
 					if (lib.skill.mbdanggu.isSingleShichangshi(player)) {
 						game.broadcastAll(function (player) {
@@ -13659,12 +13530,11 @@ const skills = {
 							}
 						}, player);
 					}
-					"step 3";
-					var next = game.createEvent("mbdanggu_clique");
+					const next = game.createEvent("mbdanggu_clique");
 					next.player = player;
 					next.setContent(lib.skill.mbdanggu.contentx);
-					"step 4";
-					player.draw();
+					await next;
+					await player.draw();
 				},
 			},
 		},

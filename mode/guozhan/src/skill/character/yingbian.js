@@ -3104,7 +3104,7 @@ export default {
 			const cards = Array.from(ui.cardPile.childNodes).slice(0, Math.min(player.maxHp, Array.from(ui.cardPile.childNodes).length));
 			await game.cardsGotoOrdering(cards);
 			for (const card of cards) {
-				if (player.hasUseTarget(card, false, false)) {
+				if (player.hasUseTarget(card, false, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
 					await player.chooseUseTarget(card, true, false, "nodistance");
 				} else {
 					gains.push(card);

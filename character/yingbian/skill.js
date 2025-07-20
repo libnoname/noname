@@ -2197,7 +2197,7 @@ const skills = {
 			var card = get.cards()[0];
 			event.card = card;
 			player.showCards(card);
-			if (!player.hasUseTarget(card)) {
+			if ((!get.info(card).notarget || !lib.filter.cardEnabled(card, player)) && !player.hasUseTarget(card)) {
 				card.fix();
 				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
 				game.updateRoundNumber();

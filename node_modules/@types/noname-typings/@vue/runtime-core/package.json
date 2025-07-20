@@ -1,0 +1,7 @@
+{
+  "name": "@vue/runtime-core",
+  "version": "3.5.17",
+  "types": "dist/runtime-core.d.ts",
+  "author": "Evan You",
+  "license": "MIT"
+}

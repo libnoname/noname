@@ -5176,7 +5176,12 @@ game.import("card", function () {
 			bagua_info: "当你需要使用或打出一张【闪】时，你可以进行判定。若结果为红色，则你视为使用或打出一张【闪】。",
 			bagua_skill_info: "当你需要使用或打出一张【闪】时，你可以进行判定。若结果为红色，则你视为使用或打出一张【闪】。",
 			jueying_info: "锁定技，其他角色计算与你的距离+1。",
-			jueying_append: '<span class="text" style="font-family: yuanli">【绝影】于7月5日8时-7月21日24时位于装备区时，可以将【绝影】置入弃牌堆防止一次伤害。</span>',
+			get jueying_append() {
+				if (get.mode() == "doudizhu") {
+					return '<span class="text" style="font-family: yuanli">【绝影】于7月5日8时-7月21日24时位于装备区时，可以将【绝影】置入弃牌堆防止一次伤害。</span>';
+				}
+				return "";
+			},
 			dilu_info: "锁定技，其他角色计算与你的距离+1。",
 			zhuahuang_info: "锁定技，其他角色计算与你的距离+1。",
 			chitu_info: "锁定技，你计算与其他角色的距离-1。",
