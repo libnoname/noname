@@ -420,12 +420,13 @@ export class GameEvent {
 	cancel(all, player, notrigger) {
 		this.untrigger(all, player);
 		let next;
+		const nameList = this.nameList;
 		if (!notrigger) {
-			if (this.player && lib.phaseName.includes(this.name)) {
-				this.player.getHistory("skipped").add(this.name);
+			if (this.player && lib.phaseName.containsSome(...nameList)) {
+				this.player.getHistory("skipped").addArray(lib.phaseName.filter(skip => nameList.includes(skip)));
 			}
 			this._cancelled = true;
-			next = this.trigger(this.name + "Cancelled");
+			next = this.trigger(...nameList.map(skip => `${skip}Cancelled`));
 		}
 		this.finish();
 		return next;
@@ -1357,15 +1358,17 @@ export class GameEvent {
 	}
 
 	async checkSkipped() {
-		if (!this.player || !this.player.skipList.includes(this.name)) {
+		const player = this?.player;
+		if (!player || !player.skipList?.containsSome(...this.nameList)) {
 			return false;
 		}
-		this.player.skipList.remove(this.name);
-		if (lib.phaseName.includes(this.name)) {
-			this.player.getHistory("skipped").add(this.name);
+		const skips = player.skipList.filter(name => this.nameList.includes(name));
+		player.skipList.removeArray(skips);
+		if (lib.phaseName.containsSome(...skips)) {
+			player.getHistory("skipped").addArray(lib.phaseName.filter(skip => skips.includes(skip)));
 		}
 		this.finish();
-		await this.trigger(this.name + "Skipped");
+		await this.trigger(...skips.map(skip => `${skip}Skipped`));
 		return true;
 	}
 
