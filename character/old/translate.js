@@ -149,6 +149,8 @@ const translates = {
 	junk_sunquan_prefix: "牢|神",
 	ol_baosanniang: "牢鲍三娘",
 	ol_baosanniang_prefix: "牢",
+	x_dc_zhangqiying: "牢张琪瑛",
+	x_dc_zhangqiying_prefix: "牢",
 };
 
 export default translates;
