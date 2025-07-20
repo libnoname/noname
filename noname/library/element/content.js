@@ -3954,11 +3954,11 @@ player.removeVirtualEquip(card);
 		while (doingList.length > 0) {
 			event.doing = doingList.shift();
 			while (true) {
-				if (trigger.filterStop && trigger.filterStop()) {
+				if (trigger.filterStop?.()) {
 					return;
 				}
 				const usableSkills = event.doing.todoList.filter(info => {
-					return lib.filter.filterTrigger(trigger, info.player, event.triggername, info.skill, info.indexedData);
+					return lib.filter.filterTrigger(trigger, info.player, event.triggername, info.skill, info.indexedData, event.nameList);
 				});
 				if (usableSkills.length == 0) {
 					break;
@@ -4000,7 +4000,16 @@ player.removeVirtualEquip(card);
 					}
 					event.doing.doneList.push(event.current);
 					event.doing.todoList.remove(event.current);
-					const result = await game.createTrigger(event.triggername, event.current.skill, event.current.player, trigger, event.current.indexedData).forResult();
+					const info = get.info(event.current.skill);
+					const nameList = Object.keys(info.trigger).reduce((list, role) => {
+						if (role === "global" || player === event[role]) {
+							return list;
+							const checkList = Array.isArray(info.trigger[role]) ? info.trigger[role] : [info.trigger[role]];
+							list.push(...checkList.filter(name => nameList.includes(name)));
+						}
+						return list;
+					}, []);
+					const result = await game.createTrigger(event.triggername, event.current.skill, event.current.player, trigger, event.current.indexedData, nameList).forResult();
 					if (get.itemtype(event.doing.player) === "player" && result === "cancelled") {
 						for (let i = 0; i < event.doing.todoList.length; i++) {
 							if (event.current.skill === event.doing.todoList[i].skill) {
@@ -4060,7 +4069,7 @@ player.removeVirtualEquip(card);
 				return info.frequent;
 			}
 			if (typeof info.frequent == "function") {
-				return info.frequent(trigger, player, event.triggername, event.indexedData);
+				return info.frequent(trigger, player, event.triggername, event.indexedData, event.nameList);
 			}
 			if (info.frequent == "check" && typeof info.check == "function") {
 				return info.check(trigger, player);
@@ -4095,6 +4104,7 @@ player.removeVirtualEquip(card);
 			next.triggername = event.triggername;
 			next.skillHidden = event.skillHidden;
 			next.indexedData = event.indexedData;
+			next.nameList = event.nameList;
 			if (info.forceDie) {
 				next.forceDie = true;
 			}
@@ -4114,7 +4124,7 @@ player.removeVirtualEquip(card);
 			} else if (typeof info.logTarget == "string") {
 				str = get.prompt(event.skill, trigger[info.logTarget], player);
 			} else if (typeof info.logTarget == "function") {
-				const logTarget = info.logTarget(trigger, player, event.triggername, event.indexedData);
+				const logTarget = info.logTarget(trigger, player, event.triggername, event.indexedData, event.nameList);
 				if (get.itemtype(logTarget).startsWith("player")) {
 					str = get.prompt(event.skill, logTarget, player);
 				}
@@ -4131,10 +4141,10 @@ player.removeVirtualEquip(card);
 			}
 			next.set("forceDie", true);
 			next.set("includeOut", true);
-			next.ai = () => !check || check(trigger, player, event.triggername, event.indexedData);
+			next.ai = () => !check || check(trigger, player, event.triggername, event.indexedData, event.nameList);
 
 			if (typeof info.prompt2 == "function") {
-				next.set("prompt2", info.prompt2(trigger, player, event.triggername, event.indexedData));
+				next.set("prompt2", info.prompt2(trigger, player, event.triggername, event.indexedData, event.nameList));
 			} else if (typeof info.prompt2 == "string") {
 				next.set("prompt2", info.prompt2);
 			} else if (info.prompt2 != false) {
@@ -4216,6 +4226,7 @@ player.removeVirtualEquip(card);
 		next.player = player;
 		next._trigger = trigger;
 		next.triggername = event.triggername;
+		next.nameList = nameList;
 		next.setContent(info.content);
 
 		next.skillHidden = event.skillHidden;
@@ -4249,7 +4260,7 @@ player.removeVirtualEquip(card);
 		if (
 			player._hookTrigger.some(i => {
 				const info = lib.skill[i].hookTrigger;
-				return info && info.after && info.after(event, player, event.triggername);
+				return info && info.after && info.after(event, player, event.triggername, event.nameList);
 			})
 		) {
 			event.trigger("triggerAfter");

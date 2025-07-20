@@ -10803,7 +10803,7 @@ export class Library {
 		 * @param {string} skill
 		 * @returns {boolean}
 		 */
-		filterTrigger: function (event, player, triggername, skill, indexedData) {
+		filterTrigger: function (event, player, triggername, skill, indexedData, nameList) {
 			if (
 				player._hookTrigger &&
 				player._hookTrigger.some(i => {
@@ -10844,15 +10844,13 @@ export class Library {
 					if (role != "global" && player != event[role]) {
 						return false;
 					}
-					if (Array.isArray(info.trigger[role])) {
-						return info.trigger[role].includes(triggername);
-					}
-					return info.trigger[role] == triggername;
+					const checkList = Array.isArray(info.trigger[role]) ? info.trigger[role] : [info.trigger[role]];
+					return checkList.containsSome(...nameList);
 				})
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggername, indexedData)) {
+			if (info.filter && !info.filter(event, player, triggername, indexedData, nameList)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {

@@ -5964,7 +5964,7 @@ export class Game extends GameCompatible {
 	 * @param { GameEventPromise } event
 	 * @returns { GameEventPromise }
 	 */
-	createTrigger(name, skill, player, event, indexedData) {
+	createTrigger(name, skill, player, event, indexedData, nameList) {
 		let info = get.info(skill);
 		if (!info) {
 			return false;
@@ -5983,6 +5983,7 @@ export class Game extends GameCompatible {
 		next.includeOut = true;
 		next._trigger = event;
 		next.indexedData = indexedData;
+		next.nameList = nameList;
 		next.setContent("createTrigger");
 		return next;
 	}

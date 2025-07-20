@@ -22,7 +22,9 @@ export class GameEvent {
 			trigger = other._triggered !== null;
 		}
 
-		this.name = name;
+		const nameList = name.split("|");
+		this.name = nameList[0];
+		this.nameList = nameList;
 		this.manager = manager;
 		if (trigger && !game.online) {
 			this._triggered = 0;
@@ -921,17 +923,17 @@ export class GameEvent {
 	 * @param { string } name
 	 * @returns { GameEvent }
 	 */
-	trigger(name) {
+	trigger(...nameList) {
 		if (_status.video) {
 			return;
 		}
-		if (!_status.gameDrawed && ["lose", "gain", "loseAsync", "equip", "addJudge", "addToExpansion"].includes(this.name)) {
+		if (!_status.gameDrawed && ["lose", "gain", "loseAsync", "equip", "addJudge", "addToExpansion"].containsSome(...this.nameList)) {
 			return;
 		}
-		if (name === "gameDrawEnd") {
+		if (nameList.includes("gameDrawEnd")) {
 			_status.gameDrawed = true;
 		}
-		if (name === "gameStart") {
+		if (nameList.includes("gameStart")) {
 			lib.announce.publish("Noname.Game.Event.GameStart", {});
 			lib.announce.publish("gameStart", {});
 			if (_status.brawl && _status.brawl.gameStart) {
@@ -946,7 +948,7 @@ export class GameEvent {
 		if (!lib.hookmap[name] && !lib.config.compatiblemode) {
 			return;
 		}
-		if (!game.players || !game.players.length) {
+		if (!game.players?.length) {
 			return;
 		}
 		const event = this;
@@ -1049,13 +1051,8 @@ export class GameEvent {
 					}
 					if (get.objtype(expire) === "object") {
 						return roles.some(role => {
-							if (role !== "global" && player !== event[role]) {
-								return false;
-							}
-							if (Array.isArray(expire[role])) {
-								return expire[role].includes(name);
-							}
-							return expire[role] === name;
+							const checkList = Array.isArray(expire[role]) ? expire[role] : [expire[role]];
+							return checkList.containsSome(...nameList);
 						});
 					}
 				})
@@ -1072,19 +1069,17 @@ export class GameEvent {
 							return false;
 						}
 						return roles.some(role => {
-							if (info.trigger[role] === name) {
-								return true;
-							}
-							if (Array.isArray(info.trigger[role]) && info.trigger[role].includes(name)) {
-								return true;
-							}
+							const checkList = Array.isArray(info.trigger[role]) ? info.trigger[role] : [info.trigger[role]];
+							return checkList.containsSome(...nameList);
 						});
 					})
 				);
 			} else {
 				roles.forEach(role => {
-					doing.addList(lib.hook.globalskill[role + "_" + name]);
-					doing.addList(lib.hook[player.playerid + "_" + role + "_" + name]);
+					nameList.forEach(name => {
+						doing.addList(lib.hook.globalskill[role + "_" + name]);
+						doing.addList(lib.hook[player.playerid + "_" + role + "_" + name]);
+					});
 				});
 			}
 			delete doing.listAdded;
@@ -1101,7 +1096,8 @@ export class GameEvent {
 			next.setContent("arrangeTrigger");
 			next.doingList = doingList;
 			next._trigger = event;
-			next.triggername = name;
+			next.triggername = nameList[0];
+			next.nameList = nameList;
 			next.playerMap = playerMap;
 			event._triggering = next;
 			next.then(() => (event._triggering = void 0));
@@ -1315,7 +1311,7 @@ export class GameEvent {
 			if (this.type == "card") {
 				await this.trigger("useCardTo" + trigger);
 			}
-			await this.trigger(this.name + trigger);
+			await this.trigger(...this.name.split("|").map(name => `${name}${trigger}`));
 		};
 		if (await this.checkSkipped()) {
 			return;
