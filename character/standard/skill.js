@@ -1774,17 +1774,10 @@ const skills = {
 	},
 	lianying: {
 		audio: 2,
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		trigger: { global: "loseAsyncAfter" },
 		frequent: true,
 		filter(event, player) {
-			if (player.countCards("h")) {
-				return false;
-			}
-			const evt = event.getl(player);
-			return evt && evt.player == player && evt.hs && evt.hs.length > 0;
+			return !player.countCards("h") && (event.getl(player)?.hs ?? []).length > 0;
 		},
 		async content(event, trigger, player) {
 			player.draw();
@@ -1816,17 +1809,10 @@ const skills = {
 	xiaoji: {
 		audio: 2,
 		audioname: ["sp_sunshangxiang", "re_sunshangxiang"],
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		trigger: { global: "loseAsyncAfter" },
 		frequent: true,
 		getIndex(event, player) {
-			const evt = event.getl(player);
-			if (evt && evt.player === player && evt.es) {
-				return evt.es.length;
-			}
-			return false;
+			return (event.getl(player)?.es ?? []).length;
 		},
 		async content(event, trigger, player) {
 			player.draw(2);
