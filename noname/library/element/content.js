@@ -4003,7 +4003,6 @@ player.removeVirtualEquip(card);
 					const info = get.info(event.current.skill);
 					const nameList = Object.keys(info.trigger).reduce((list, role) => {
 						if (role === "global" || player === event[role]) {
-							return list;
 							const checkList = Array.isArray(info.trigger[role]) ? info.trigger[role] : [info.trigger[role]];
 							list.push(...checkList.filter(name => event.nameList.includes(name)));
 						}
