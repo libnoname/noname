@@ -4451,7 +4451,7 @@ export class Player extends HTMLDivElement {
 			max += info.chargeSkill;
 		}
 		max = game.checkMod(this, max, "maxCharge", this);
-		return max;
+		return typeof max == "number" ? max : Infinity;
 	}
 	/**
 	 * @deprecated

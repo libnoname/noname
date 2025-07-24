@@ -452,7 +452,7 @@ game.import("card", function () {
 							i.popup("不抢", "wood");
 						}
 					}
-					await game.asyncDelay();
+					await game.delayx();
 					if (!fathers.length) {
 						return;
 					}
@@ -460,15 +460,11 @@ game.import("card", function () {
 					if (first && first.isIn()) {
 						game.log(first, "第一个抢到了“义父”标记");
 						const son = targets.find(targetx => targetx != first);
-						await game.asyncDelay();
+						await game.delayx();
 						game.log(first, "成为了", son, "的义父");
 						game.log(son, "成为了", first, "的义子");
-						first.chat("儿啊！");
-						first.throwEmotion(son, ["flower", "wine"].randomGet(), false);
-						first.addSkill("yifu_skill");
+						first.addTempSkill("yifu_skill", "neverEnd");
 						first.markAuto("yifu_skill", son);
-						son.chat("我吃柠檬");
-						son.throwEmotion(first, ["egg", "shoe"].randomGet(), false);
 						son.markAuto("yifu_skill_son", first);
 					}
 				},
@@ -2110,24 +2106,15 @@ game.import("card", function () {
 				mark: true,
 				trigger: { global: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return player.getStorage("yifu_skill").includes(event.player);
+					return player.getStorage("yifu_skill").includes(event.player) && event.player.countCards("he");
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
 					const target = trigger.player;
-					if (!target.countCards("he")) {
-						player.chat("你这个不孝子！");
-						player.throwEmotion(target, ["egg", "shoe"].randomGet(), false);
-						return;
-					}
-					const result = await target
+					await target
 						.chooseToGive(true, "he", player)
 						.set("prompt", "义父：选择一张牌孝敬给" + get.translation(player))
 						.forResult();
-					if (!result.bool) {
-						return;
-					}
-					player.chat(`不愧是我的好孩子${target.nickname || get.translation(target)}，真是孝顺啊！`);
 				},
 				subSkill: {
 					son: {
