@@ -150,7 +150,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			let cards = [];
+			await player.draw(2);
+			/*let cards = [];
 			while (true) {
 				const card = get.cardPile(card => cards.every(cardx => get.type2(cardx) != get.type2(card)));
 				if (card) {
@@ -161,7 +162,7 @@ const skills = {
 			}
 			if (cards.length) {
 				await player.gain(cards, "gain2");
-			}
+			}*/
 			player.addTempSkill("dcsbshijin_defend", { player: "phaseBeginStart" });
 			player
 				.when({

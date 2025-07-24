@@ -3460,7 +3460,7 @@ const skills = {
 				);
 			"step 3";
 			if (result.bool) {
-				target.damage(result.cards.length);
+				target.damage(result.cards.length, "nocard");
 			} else {
 				var cards = target.getCards("h", { suit: get.suit(card) });
 				if (cards.length) {

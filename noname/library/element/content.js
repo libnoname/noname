@@ -366,7 +366,18 @@ export const Content = {
 			_status.characterlist.addArray(rawPairs);
 		}
 		//变更一下获得前后的技能
-		await player.changeSkills(addSkills, removeSkills);
+		const next =  player.changeSkills(addSkills, removeSkills);
+		if (event.log === false) {
+			next.$handle = (current, add, remove, evt) => {
+				if (add.length) {
+					current.addSkill(add);
+				}
+				if (remove.length) {
+					current.removeSkill(remove);
+				}
+			};
+		}
+		await next;
 		//变更角色的所属势力。如果新将是双势力，重选一下势力。
 		if (event.changeGroup !== false) {
 			let newGroups = [];

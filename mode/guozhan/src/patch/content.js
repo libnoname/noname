@@ -1505,11 +1505,6 @@ export const changeVice = [
 		if (event.change) {
 			event.trigger("removeCharacterBefore");
 		}
-		if (event.hidden) {
-			if (!player.isUnseen(1)) {
-				player.hideCharacter(1);
-			}
-		}
 	},
 	async (event, _trigger, player) => {
 		var name = event.toChange;
@@ -1520,6 +1515,11 @@ export const changeVice = [
 		}
 		player.viceChanged = true;
 		player.reinitCharacter(player.name2, name, false);
+		if (event.hidden) {
+			if (!player.isUnseen(1)) {
+				player.hideCharacter(1, false);
+			}
+		}
 	},
 ];
 
