@@ -848,6 +848,222 @@ const skills = {
 	},
 	//任婉
 	dcjuanji: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.getStorage("dcjuanji_used").length < 3 && event.juanji_record > 0;
+		},
+		onChooseToUse(event) {
+			if (!game.online && !event.juanji_record) {
+				const num = event.player.getStat("skill")["dcjuanji"] ?? 0;
+				event.set("juanji_record", num + 1);
+			}
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const dialog = ui.create.dialog("狷急"),
+					num = event.juanji_record;
+				const list = [
+					["damage", `令你与一名其他角色各回复${num}点体力，然后对你与其各造成${num}点伤害`],
+					["discard", `弃置至多${num}名其他角色各一张牌，然后你翻面`],
+					["draw", `摸${num}张牌，然后你弃置等量张牌`],
+				];
+				dialog.add([list, "textbutton"]);
+				dialog.direct = true;
+				return dialog;
+			},
+			filter(button, player) {
+				if (player.getStorage("dcjuanji_used").includes(button.link)) {
+					return false;
+				}
+				return button.link == "draw" || game.hasPlayer(current => {
+					if (current == player) {
+						return false;
+					}
+					return button.link == "damage" || current.countCards("he");
+				});
+			},
+			check(button) {
+				const player = get.player(),
+					num = get.event("juanji_record");
+				switch(button.link) {
+					case "damage": {
+						let eff = current => {
+							const recover =  Math.min(current.getDamagedHp(), num);
+							return recover * get.recoverEffect(current, player, player) + num * get.damageEffect(current, player, player)
+						};
+						const target = game.filterPlayer().maxBy(current => eff(current), current => current != player);
+						return eff(player) + target ? eff(target) : 0;
+					}
+					case "discard": {
+						const targets = game.filterPlayer(current => {
+							return current != player && get.effect(current, { name: "guohe_copy2" }, player, player) > 0;
+						});
+						return Math.min(targets.length, num) * 0.2;
+					}
+					default: {
+						return num * 0.3;
+					}
+				}
+			},
+			backup(links, player) {
+				return {
+					audio: "dcjuanji",
+					numx: get.event("juanji_record"),
+					choice: links[0],
+					filterTarget(card, player, target) {
+						const { choice } = get.info("dcjuanji_backup");
+						switch(choice) {
+							case "damage": {
+								return true;
+							}
+							case "discard": {
+								return target.countCards("he");
+							}
+							default: {
+								return false;
+							}
+						}
+					},
+					selectTarget() {
+						const { choice, numx } = get.info("dcjuanji_backup");
+						switch(choice) {
+							case "damage": {
+								return 1;
+							}
+							case "discard": {
+								return [1, numx];
+							}
+							default: {
+								return -1;
+							}
+						}
+					},
+					multiline: true,
+					multitarget: true,
+					async content(event, trigger, player) {
+						const { choice, numx } = get.info(event.name);
+						player.addTempSkill("dcjuanji_used", "phaseChange");
+						player.markAuto("dcjuanji_used", choice);
+						switch(choice) {
+							case "damage": {
+								for (const method of ["recover", "damage"]) {
+									for (const current of [player, ...event.targets]) {
+										if (current.isIn()) {
+											await current[method](numx);
+										}
+									}
+								}
+								break;
+							}
+							case "discard": {
+								for (const target of event.targets) {
+									await player.discardPlayerCard(target, "he", true);
+								}
+								await player.turnOver();
+								break;
+							}
+							default: {
+								await player.draw(numx);
+								await player.chooseToDiscard("he", numx, true);
+								break;
+							}
+						}
+					},
+					ai1() {
+						return 1;
+					},
+					ai2(target) {
+						const { choice, numx } = get.info("dcjuanji_backup"),
+							player = get.player();
+						switch(choice) {
+							case "damage": {
+								let eff = current => {
+									const recover =  Math.min(current.getDamagedHp(), numx);
+									return recover * get.recoverEffect(current, player, player) + numx * get.damageEffect(current, player, player)
+								};
+								return eff(player) +eff(target);
+							}
+							case "discard": {
+								return get.effect(target, { name: "guohe_copy2" }, player, player);
+							}
+							default: {
+								return 1;
+							}
+						}
+					}
+				};
+			},
+			prompt(links, player) {
+				const { choice, numx: num } = get.info("dcjuanji_backup");
+				switch(choice) {
+					case "damage": {
+						return `令你与一名其他角色各回复${num}点体力，然后对你与其各造成${num}点伤害`;
+					}
+					case "discard": {
+						return `弃置至多${num}名其他角色各一张牌，然后你翻面`;
+					}
+					default: {
+						return `摸${num}张牌，然后你弃置等量张牌`;
+					}
+				}
+			},
+		},
+		ai: {
+			order: 7,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+			backup: {},
+		},
+	},
+	dcrenshuang: {
+		trigger: {
+			player: ["changeHpAfter"],
+		},
+		audio: 2,
+		forced: true,
+		filter(event, player) {
+			return player.hp == 1 && event.num != 0;
+		},
+		async content(event, trigger, player) {
+			await player.link(false);
+			await player.turnOver(false);
+			const cards = get.inpileVCardList(info => {
+				return info[0] == "trick" && player.hasUseTarget(info[2]) && !player.getStorage("dcrenshuang_used").includes(info[2]);
+			});
+			if (!cards?.length) {
+				return;
+			}
+			const result = await player
+				.chooseButton(["纫霜：选择要视为使用的牌", [cards, "vcard"]], true)
+				.set("ai", button => {
+					return get.player().getUseValue(button.link[2]);
+				})
+				.forResult();
+			if (result?.bool) {
+				player.addTempSkill("dcrenshuang_used", "roundEnd");
+				player.markAuto("dcrenshuang_used", result.links[0][2]);
+				const card = new lib.element.VCard({ name: result.links[0][2] });
+				if (player.hasUseTarget(card)) {
+					await player.chooseUseTarget(card, true);
+				}
+			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	old_dcjuanji: {
 		trigger: {
 			player: ["phaseUseBegin", "phaseDrawBegin", "phaseDiscardBegin"],
 		},
@@ -939,7 +1155,7 @@ const skills = {
 			}
 		},
 	},
-	dcrenshuang: {
+	old_dcrenshuang: {
 		trigger: {
 			player: ["dying", "dyingAfter"],
 		},
@@ -1279,7 +1495,7 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			player.addTempSkill(event.name + "_effect", { player: "phaseBegin" });
+			player.addTempSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", target);
 			await player.give(player.getCards("h"), target);
 		},
@@ -1732,15 +1948,26 @@ const skills = {
 	dcjilie: {
 		enable: "phaseUse",
 		filterCard(card, player) {
-			return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+			return true;
+			//return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
 		},
 		position: "he",
-		selectCard: [1, 4],
+		selectCard() {
+			return get.player().getHp();
+		},
 		complexCard: true,
 		complexSelect: true,
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he");
+			return player.getHp() > 0 && player.countCards("he") >= player.getHp();
+		},
+		check(card) {
+			const player = get.player(),
+				value = get.value(card);
+			if (ui.selected.cards?.some(cardx => get.suit(cardx, player) == get.suit(card, player))) {
+				return 3 - value;
+			}
+			return 7 - value;
 		},
 		async content(event, trigger, player) {
 			let num = event.cards.map(i => get.suit(i, player)).toUniqued().length * 2;
