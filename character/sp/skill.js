@@ -6517,32 +6517,31 @@ const skills = {
 							}
 						}
 					},
-					ai: {
-						result: {
-							target(player, target) {
-								let max = 0;
-								if (get.attitude(player, target) > 0 && (target == player || target.hasDisabledSlot())) {
-									max++;
-								}
-								if (get.recoverEffect(target, player, player) > 0) {
-									max++;
-								}
-								if (
-									target.countCards("h") > 0 &&
-									target
-										.getCards("h", card => {
-											return lib.filter.cardDiscardable(card, target);
-										})
-										.reduce((sum, card) => {
-											return sum + get.value(card, target);
-										}, 0) <=
-										get.effect(target, { name: "draw" }, player, player) * 4
-								) {
-									max++;
-								}
-								return max;
-							},
-						},
+					ai1: () => 1,
+					ai2(target) {
+						game.log(target);
+						let max = 0,
+							player = get.player();
+						if (get.attitude(player, target) > 0 && (target == player || target.hasDisabledSlot())) {
+							max++;
+						}
+						if (get.recoverEffect(target, player, player) > 0) {
+							max++;
+						}
+						if (
+							target.countCards("h") > 0 &&
+							target
+								.getCards("h", card => {
+									return lib.filter.cardDiscardable(card, target);
+								})
+								.reduce((sum, card) => {
+									return sum + get.value(card, target);
+								}, 0) <=
+								get.effect(target, { name: "draw" }, player, player) * 4
+						) {
+							max++;
+						}
+						return max;
 					},
 				};
 			},

@@ -1128,42 +1128,17 @@ const skills = {
 		trigger: { global: ["roundStart", "roundEnd"] },
 		filter(event, player, name) {
 			if (name == "roundStart") {
-				return true;
+				return player.countCards("he");
 			}
 			return player.getStorage("dcsbchuanyu").some(target => target.isIn());
 		},
 		async cost(event, trigger, player) {
 			if (event.triggername == "roundStart") {
 				event.result = await player
-					.chooseBool(`###${get.prompt(event.skill)}###摸一张牌然后交给一名角色一张牌，称为「舆」`)
-					.set("ai", () => true)
-					.forResult();
-			} else {
-				event.result = await player
-					.chooseTarget(`###${get.prompt(event.skill)}###本轮所有获得过「舆」的角色依次视为对你指定的一名角色使用【杀】(不限距离），然后弃置所有「舆」`)
-					.set("ai", target => {
-						return get.effect(target, { name: "sha" }, get.player(), get.player());
-					})
-					.forResult();
-			}
-		},
-		async content(event, trigger, player) {
-			if (event.triggername == "roundStart") {
-				await player.draw();
-				if (!player.storage[event.name]) {
-					player
-						.when({ global: "roundStart" })
-						.filter(evt => evt != trigger)
-						.then(() => {
-							player.unmarkSkill("dcsbchuanyu");
-							delete player.storage.dcsbchuanyu;
-						});
-				}
-				const result = await player
 					.chooseCardTarget({
-						prompt: "传舆：将一张牌交给一名角色",
+						prompt: get.prompt(event.skill),
+						prompt2: "将一张牌交给一名角色",
 						filterCard: true,
-						forced: true,
 						filterTarget: true,
 						ai1(card) {
 							return 1 / Math.max(0.1, get.value(card));
@@ -1178,17 +1153,34 @@ const skills = {
 						},
 					})
 					.forResult();
-				if (result?.bool) {
-					const cards = result.cards,
-						target = result.targets[0];
-					player.line(target);
-					player.markAuto(event.name, target);
-					//player.markAuto(event.name+"_card",cards);
-					if (target == player) {
-						player.addGaintag(cards, event.name + "_tag");
-					} else {
-						await player.give(cards, target).set("gaintag", [event.name + "_tag"]);
-					}
+			} else {
+				event.result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###本轮所有获得过「舆」的角色依次视为对你指定的一名角色使用【杀】(不限距离），然后弃置所有「舆」`)
+					.set("ai", target => {
+						return get.effect(target, { name: "sha" }, get.player(), get.player());
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.triggername == "roundStart") {
+				if (!player.storage[event.name]) {
+					player
+						.when({ global: "roundStart" })
+						.filter(evt => evt != trigger)
+						.then(() => {
+							player.unmarkSkill("dcsbchuanyu");
+							delete player.storage.dcsbchuanyu;
+						});
+				}
+				const { cards, targets: [target] } = event;
+				player.line(target);
+				player.markAuto(event.name, target);
+				//player.markAuto(event.name+"_card",cards);
+				if (target == player) {
+					player.addGaintag(cards, event.name + "_tag");
+				} else {
+					await player.give(cards, target).set("gaintag", [event.name + "_tag"]);
 				}
 			} else {
 				const use = player
@@ -1234,12 +1226,18 @@ const skills = {
 						return [];
 					}
 					const evt2 = evt.relatedEvent || evt.getParent();
-					if (evt2.name != "useCard") {
+					if (evt2.name != "useCard" || !event.getd?.()?.length) {
 						return [];
 					}
-					const lose = evt2.childEvents.find(evtx => evtx.type == "use"),
-						cards = event.getd?.()?.filter(card => lose?.gaintag_map?.[card.cardid]?.includes("dcsbchuanyu_tag"));
-					return cards;
+					const historys = game.getGlobalHistory("everything", evt => {
+						if (evt.name != "lose" || evt.getParent() != evt2) {
+							return false;
+						}
+						return Object.values(evt.gaintag_map).flat().includes("dcsbchuanyu_tag");
+					});
+					return event.getd().filter(card => {
+						return historys.some(evt => evt.gaintag_map[card.cardid].includes("dcsbchuanyu_tag"));
+					});
 				},
 				async cost(event, trigger, player) {
 					const cards = lib.skill.dcsbchuanyu_give.getCards(trigger, player);
@@ -19886,7 +19884,7 @@ const skills = {
 			if (event.name == "link") {
 				return !player.isLinked();
 			}
-			return event.hasNature();
+			return !event.hasNature();
 		},
 		content() {
 			if (trigger.name == "link") {

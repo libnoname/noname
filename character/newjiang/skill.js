@@ -669,20 +669,20 @@ const skills = {
 			if (get.type(card) != "basic" && (!info || info.type != "trick" || info.notarget || (info.selectTarget && info.selectTarget != 1))) {
 				return false;
 			}
-			if (targets && !info.multitarget) {
-				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.distance(player, current) == get.distance(current, player));
+			if (targets && targets.length == 1 && !info.multitarget) {
+				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.distance(player, current) == get.distance(player, targets[0]));
 			}
 			return false;
 		},
 		async cost(event, trigger, player) {
 			const { card, targets } = trigger;
-			const prompt2 = "为" + get.translation(card) + "增加任意个你与其距离相等的目标";
+			const prompt2 = `为${get.translation(card)}增加任意个你与其距离为${get.distance(player, targets[0])}的目标`;
 			event.result = await player
 				.chooseTarget(
-					get.prompt(event.name.slice(0, -5)),
+					get.prompt(event.skill),
 					(card, player, target) => {
 						const { card: cardx, targets } = get.event();
-						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, get.player(), target) && get.distance(player, target) == get.distance(target, player);
+						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, get.player(), target) && get.distance(player, target) == get.distance(player, targets[0]);
 					},
 					[1, Infinity]
 				)
