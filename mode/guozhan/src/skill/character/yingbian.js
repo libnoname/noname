@@ -2466,40 +2466,38 @@ export default {
 					const evt = event.getParent(2);
 					return evt?.name === "useCard" && evt.player === player && evt.skill == "gz_yinsha";
 				},
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
+				async cost(event, trigger, player) {
 					const target = trigger.player;
-					target.addTempSkill("gz_yinsha_viewas");
-					trigger.set("forced", true);
-				},
-			},
-			viewas: {
-				enable: "chooseToUse",
-				filterCard: true,
-				selectCard: -1,
-				position: "h",
-				viewAs(cards, player) {
-					let card = { name: "sha" };
-					if (!cards.length) {
-						card.isCard = true;
+					if (target.countCards("h", "sha")) {
+						const backup = _status.event;
+						_status.event = trigger;
+						const bool = target.countCards("h", card => {
+							return trigger.filterCard(card, player, trigger) && game.hasPlayer(current => {
+								return current !== target && trigger.filterTarget(card, target, current);
+							});
+						}) > 0;
+						_status.event = backup;
+						trigger.set("forced", bool);
+					} else if (target.countCards("h")) {
+						const card = get.autoViewAs({ name: "sha" }, target.getCards("h"));
+						const backup = _status.event;
+						_status.event = trigger;
+						const bool = trigger.filterCard(card, player, trigger);
+						const targets = game.filterPlayer(current => {
+							return current !== target && trigger.filterTarget(card, target, current);
+						});
+						_status.event = backup;
+						if (bool && targets.length) {
+							trigger.result = {
+								bool: true,
+								card: card,
+								cards: target.getCards("h"),
+								targets: targets,
+							};
+							trigger.untrigger();
+							trigger.set("responded", true);
+						}
 					}
-					return card;
-				},
-				filter(event, player) {
-					const evt = event?.getParent(2);
-					return !player.countCards("h", "sha") && evt?.skill == "gz_yinsha";
-				},
-				viewAsFilter(player) {
-					const evt = get.event()?.getParent(2);
-					return !player.countCards("h", "sha") && evt?.skill == "gz_yinsha";
-				},
-				prompt: "将所有手牌当杀使用",
-				check(card) {
-					return 1;
-				},
-				ai: {
-					order: 0.1,
 				},
 			},
 		},
