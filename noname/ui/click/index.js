@@ -4049,6 +4049,7 @@ export class Click {
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
 							refreshIntro();
+							game.callHook("refreshSkin", [list[0], this.name]);
 						});
 						let iSTemp = false;
 						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {

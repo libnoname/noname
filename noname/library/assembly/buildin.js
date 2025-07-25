@@ -359,3 +359,5 @@ export const removeSkillCheck = {
 		}
 	},
 };
+
+export const refreshSkin = {};
