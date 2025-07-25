@@ -322,14 +322,6 @@ export default {
 		hujia: 0,
 		skills: ["gzsidi"],
 	}),
-	gz_caoang: new Character({
-		sex: "male",
-		group: "wei",
-		hp: 4,
-		maxHp: 4,
-		hujia: 0,
-		skills: ["kaikang"],
-	}),
 	gz_bulianshi: new Character({
 		sex: "female",
 		group: "wu",

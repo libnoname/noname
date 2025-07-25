@@ -1947,7 +1947,9 @@ const skills = {
 				game.log(trigger.card, "被无效了");
 				const card = { name: "jiu", isCard: true };
 				if (trigger.player.hasUseTarget(card)) {
-					await trigger.player.chooseUseTarget(card, false, true);
+					const next = trigger.player.chooseUseTarget(card, false, true);
+					event.next.remove(next);
+					trigger.after.push(next);
 				}
 			} else {
 				await player.draw();

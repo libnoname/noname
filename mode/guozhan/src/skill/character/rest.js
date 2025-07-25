@@ -64,14 +64,18 @@ export default {
 							if (player.hp < 2) {
 								return 1;
 							}
-							if (!game.hasPlayer(current => {
-								if (get.attitude(player, current) >= 0) {
-									return false;
-								}
-								return player.countCards("h", card => {
-									return player.canUse(card, current) && get.effect(current, card, player, player) > 0;
-								}) >= player.getHandcardLimit();
-							})) {
+							if (
+								!game.hasPlayer(current => {
+									if (get.attitude(player, current) >= 0) {
+										return false;
+									}
+									return (
+										player.countCards("h", card => {
+											return player.canUse(card, current) && get.effect(current, card, player, player) > 0;
+										}) >= player.getHandcardLimit()
+									);
+								})
+							) {
 								return 1;
 							}
 							return 0;
@@ -194,7 +198,7 @@ export default {
 						if (map.has(target) && map.get(target) > 0) {
 							return true;
 						}
-					}
+					},
 				},
 			},
 		},
@@ -213,12 +217,22 @@ export default {
 			if (!get.info("dcshixian")?.filterx(event) || get.tag(event.card, "norepeat")) {
 				return false;
 			}
-			return player.getCards("h").map(card => get.color(card))?.toUniqued()?.length == 1;
+			return (
+				player
+					.getCards("h")
+					.map(card => get.color(card))
+					?.toUniqued()?.length == 1
+			);
 		},
 		preHidden: true,
 		async content(event, trigger, player) {
 			await player.showHandcards();
-			if (player.getCards("h").map(card => get.color(card))?.toUniqued()?.length != 1) {
+			if (
+				player
+					.getCards("h")
+					.map(card => get.color(card))
+					?.toUniqued()?.length != 1
+			) {
 				return;
 			}
 			if (!get.info("dcshixian")?.filterx(trigger)) {
@@ -235,9 +249,13 @@ export default {
 		},
 		frequent: true,
 		filter(event, player) {
-			return game.getAllGlobalHistory("everything", evt => {
-				return evt.name == "dying" && evt.player == player;
-			}).indexOf(event) == 0;
+			return (
+				game
+					.getAllGlobalHistory("everything", evt => {
+						return evt.name == "dying" && evt.player == player;
+					})
+					.indexOf(event) == 0
+			);
 		},
 		async content(event, trigger, player) {
 			await player.draw(4);
@@ -302,10 +320,7 @@ export default {
 					.setHiddenSkill(event.skill)
 					.forResult();
 			} else {
-				event.result = await player
-					.chooseBool(get.prompt2(event.skill, targets))
-					.setHiddenSkill(event.skill)
-					.forResult();
+				event.result = await player.chooseBool(get.prompt2(event.skill, targets)).setHiddenSkill(event.skill).forResult();
 				event.result.targets = targets;
 			}
 		},
@@ -313,12 +328,15 @@ export default {
 			const target = event.targets[0];
 			const result = await player
 				.chooseBool(`令${get.translation(trigger.card)}对${get.translation(target)}造成的伤害+1，或点取消摸两张牌`)
-				.set("choice", (() => {
-					if (get.damageEffect(target, player, player) <= 0) {
-						return false;
-					}
-					return Math.random() > 0.6;
-				})())
+				.set(
+					"choice",
+					(() => {
+						if (get.damageEffect(target, player, player) <= 0) {
+							return false;
+						}
+						return Math.random() > 0.6;
+					})()
+				)
 				.forResult();
 			if (result.bool) {
 				const map = trigger.getParent()?.customArgs;
@@ -393,20 +411,23 @@ export default {
 					if (!targets?.length) {
 						return;
 					}
-					const result = targets.length > 1 ? await player
-						.chooseTarget("清忠：与一名手牌数最少且和你势力相同或未确定势力的其他角色交换手牌", true, (card, player, current) => {
-							if (!current.isMinHandcard() || current == player) {
-								return false;
-							}
-							return player.isFriendOf(current) || current.isUnseen();
-						})
-						.set("ai", target => {
-							return get.attitude(get.player(), target);
-						})
-						.forResult() : {
-							bool: true,
-							targets: targets,
-						};
+					const result =
+						targets.length > 1
+							? await player
+									.chooseTarget("清忠：与一名手牌数最少且和你势力相同或未确定势力的其他角色交换手牌", true, (card, player, current) => {
+										if (!current.isMinHandcard() || current == player) {
+											return false;
+										}
+										return player.isFriendOf(current) || current.isUnseen();
+									})
+									.set("ai", target => {
+										return get.attitude(get.player(), target);
+									})
+									.forResult()
+							: {
+									bool: true,
+									targets: targets,
+							  };
 					if (result?.bool) {
 						const [target] = result.targets;
 						player.logSkill("gz_qingzhong", [target]);
@@ -518,12 +539,12 @@ export default {
 			const result = await player.judge(card => 1 / get.number(card)).forResult();
 			if (typeof result.number == "number") {
 				for (let eff of ["limit", "distance"]) {
-					const skill = `${event.name}_${eff}`
+					const skill = `${event.name}_${eff}`;
 					player.addTempSkill(skill);
 					player.setStorage(skill, result.number);
 					player.addTip(skill, `${eff == "limit" ? "不计次数 >" : "无视距离 <"}${result.number}`);
 				}
-			} 
+			}
 		},
 		subSkill: {
 			limit: {
@@ -661,7 +682,7 @@ export default {
 		},
 		frequent: true,
 		filter(event, player, name) {
-			if (event.card.name != "sha" || name == "useCardToPlayered" && event.targets?.length != 1) {
+			if (event.card.name != "sha" || (name == "useCardToPlayered" && event.targets?.length != 1)) {
 				return false;
 			}
 			return event.player.hp == event.target.hp;
@@ -3701,6 +3722,9 @@ export default {
 				player.storage.fakezhiwei_effect = target;
 				player.addSkill("fakezhiwei_effect");
 			}
+		},
+		onremove(player) {
+			player.removeSkill("fakezhiwei_effect");
 		},
 		subSkill: {
 			effect: {
