@@ -345,7 +345,7 @@ export class PlayerGuozhan extends Player {
 		});
 	}
 	checkViceSkill(skill, disable) {
-		if (game.expandSkills(lib.character[this.name2][3].slice(0)).includes(skill)) {
+		if (game.expandSkills(lib.character[this.name2][3].slice(0)).includes(skill) || this.hasSkillTag("alwaysViceSkill")) {
 			return true;
 		} else {
 			if (disable !== false) {
@@ -355,7 +355,7 @@ export class PlayerGuozhan extends Player {
 		}
 	}
 	checkMainSkill(skill, disable) {
-		if (game.expandSkills(lib.character[this.name1][3].slice(0)).includes(skill)) {
+		if (game.expandSkills(lib.character[this.name1][3].slice(0)).includes(skill) || this.hasSkillTag("alwaysMainSkill")) {
 			return true;
 		} else {
 			if (disable !== false) {

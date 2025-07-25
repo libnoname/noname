@@ -104,6 +104,15 @@ export default {
 		doubleGroup: ["wei", "qun"],
 		hasSkinInGuozhan: true,
 	}),
+	gz_db_wenyang: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_quedi", "gz_zhuifeng", "gz_chongjian"],
+		doubleGroup: ["wei", "wu"],
+	}),
 	gz_dongzhao: new Character({
 		sex: "male",
 		group: "wei",
@@ -683,7 +692,7 @@ export default {
 		group: "key",
 		hp: 3,
 		maxHp: 3,
-		hujia: 999,
+		//hujia: 999,
 		skills: ["ushio_huanxin", "ushio_xilv"],
 		// 就你势力多
 		doubleGroup: ["key", "wei", "shu", "wu", "qun", "jin"],

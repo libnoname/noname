@@ -546,6 +546,14 @@ export default {
 
 	gzchengshang: "承赏",
 	gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
+	//官盗 国战无双
+	gz_db_wenyang: "文鸯",
+	gz_quedi: "却敌",
+	gz_quedi_info: "①你使用【杀】或【决斗】指定唯一目标时，可以选择一项：1.获得其一张手牌；2.弃置一张基本牌并令此牌造成伤害+1。②你杀死一名角色后，可以交换主副将。",
+	gz_zhuifeng: "椎锋",
+	gz_zhuifeng_info: "主将技，出牌阶段限一次，你可以视为使用一张【决斗】。",
+	gz_chongjian: "冲坚",
+	gz_chongjian_info: "副将技，你可以将一张装备牌当作无次数限制的【杀】或【酒】使用或打出。",
 
 	guozhan_jun: "君主武将",
 	guozhan_jin: "文德武备",
@@ -560,4 +568,5 @@ export default {
 	guozhan_qunxiong: "群雄割据",
 	guozhan_decade: "十年踪迹十年心",
 	guozhan_others: "国战限定",
+	guozhan_wushuang: "国战无双",
 };

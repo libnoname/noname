@@ -1530,6 +1530,20 @@ export default {
 				}
 			}
 		},
+		global: "gz_fushou_global",
+		subSkill: {
+			global: {
+				ai: {
+					alwaysViceSkill: true,
+					alwaysMainSkill: true,
+					skillTagFilter(player, tag, arg) {
+						if (!game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gz_fushou"))) {
+							return false;
+						}
+					}
+				},
+			},
+		},
 	},
 	gz_xijue: {
 		audio: "xijue",
