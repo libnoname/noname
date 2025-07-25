@@ -876,23 +876,29 @@ const skills = {
 				if (player.getStorage("dcjuanji_used").includes(button.link)) {
 					return false;
 				}
-				return button.link == "draw" || game.hasPlayer(current => {
-					if (current == player) {
-						return false;
-					}
-					return button.link == "damage" || current.countCards("he");
-				});
+				return (
+					button.link == "draw" ||
+					game.hasPlayer(current => {
+						if (current == player) {
+							return false;
+						}
+						return button.link == "damage" || current.countCards("he");
+					})
+				);
 			},
 			check(button) {
 				const player = get.player(),
 					num = get.event("juanji_record");
-				switch(button.link) {
+				switch (button.link) {
 					case "damage": {
 						let eff = current => {
-							const recover =  Math.min(current.getDamagedHp(), num);
-							return recover * get.recoverEffect(current, player, player) + num * get.damageEffect(current, player, player)
+							const recover = Math.min(current.getDamagedHp(), num);
+							return recover * get.recoverEffect(current, player, player) + num * get.damageEffect(current, player, player);
 						};
-						const target = game.filterPlayer().maxBy(current => eff(current), current => current != player);
+						const target = game.filterPlayer().maxBy(
+							current => eff(current),
+							current => current != player
+						);
 						return eff(player) + target ? eff(target) : 0;
 					}
 					case "discard": {
@@ -913,7 +919,7 @@ const skills = {
 					choice: links[0],
 					filterTarget(card, player, target) {
 						const { choice } = get.info("dcjuanji_backup");
-						switch(choice) {
+						switch (choice) {
 							case "damage": {
 								return true;
 							}
@@ -927,7 +933,7 @@ const skills = {
 					},
 					selectTarget() {
 						const { choice, numx } = get.info("dcjuanji_backup");
-						switch(choice) {
+						switch (choice) {
 							case "damage": {
 								return 1;
 							}
@@ -945,7 +951,7 @@ const skills = {
 						const { choice, numx } = get.info(event.name);
 						player.addTempSkill("dcjuanji_used", "phaseChange");
 						player.markAuto("dcjuanji_used", choice);
-						switch(choice) {
+						switch (choice) {
 							case "damage": {
 								for (const method of ["recover", "damage"]) {
 									for (const current of [player, ...event.targets]) {
@@ -976,13 +982,13 @@ const skills = {
 					ai2(target) {
 						const { choice, numx } = get.info("dcjuanji_backup"),
 							player = get.player();
-						switch(choice) {
+						switch (choice) {
 							case "damage": {
 								let eff = current => {
-									const recover =  Math.min(current.getDamagedHp(), numx);
-									return recover * get.recoverEffect(current, player, player) + numx * get.damageEffect(current, player, player)
+									const recover = Math.min(current.getDamagedHp(), numx);
+									return recover * get.recoverEffect(current, player, player) + numx * get.damageEffect(current, player, player);
 								};
-								return eff(player) +eff(target);
+								return eff(player) + eff(target);
 							}
 							case "discard": {
 								return get.effect(target, { name: "guohe_copy2" }, player, player);
@@ -991,12 +997,12 @@ const skills = {
 								return 1;
 							}
 						}
-					}
+					},
 				};
 			},
 			prompt(links, player) {
 				const { choice, numx: num } = get.info("dcjuanji_backup");
-				switch(choice) {
+				switch (choice) {
 					case "damage": {
 						return `令你与一名其他角色各回复${num}点体力，然后对你与其各造成${num}点伤害`;
 					}
@@ -1389,7 +1395,10 @@ const skills = {
 							delete player.storage.dcsbchuanyu;
 						});
 				}
-				const { cards, targets: [target] } = event;
+				const {
+					cards,
+					targets: [target],
+				} = event;
 				player.line(target);
 				player.markAuto(event.name, target);
 				//player.markAuto(event.name+"_card",cards);

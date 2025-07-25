@@ -9263,9 +9263,9 @@ const skills = {
 			await player.discard(hs);
 			const result =
 				target.countCards("he") < num
-					? { bool: true }
+					? { bool: false }
 					: await target
-							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并受到1点伤害；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
+							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并受到1点伤害；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, num, "he")
 							.set("ai", card => {
 								if (get.event().goon) {
 									return 0;
