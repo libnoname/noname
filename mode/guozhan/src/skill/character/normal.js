@@ -1334,6 +1334,7 @@ export default {
 		audio: "wusheng",
 		audioname: ["re_guanyu", "jsp_guanyu", "re_guanzhang", "dc_jsp_guanyu"],
 		audioname2: {
+			gz_guansuo: "wusheng_guansuo",
 			dc_guansuo: "wusheng_guansuo",
 			guanzhang: "wusheng_guanzhang",
 			guansuo: "wusheng_guansuo",

@@ -9909,6 +9909,7 @@ const skills = {
 		audio: 2,
 		audioname2: {
 			guansuo: "zhiman_guansuo",
+			gz_guansuo: "zhiman_guansuo",
 		},
 		trigger: { source: "damageBegin2" },
 		check(event, player) {

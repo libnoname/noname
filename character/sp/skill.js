@@ -36221,6 +36221,7 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
 		},
+		preHidden: true,
 		logTarget: "target",
 		content() {
 			"step 0";
@@ -36584,6 +36585,7 @@ const skills = {
 			return false;
 		},
 		frequent: true,
+		preHidden: true,
 		content() {
 			"step 0";
 			if (trigger.delay == false) {
