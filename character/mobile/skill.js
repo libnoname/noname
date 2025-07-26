@@ -630,31 +630,23 @@ const skills = {
 					recover: "red",
 				};
 			list = list.map(i => map[i]);
-			if (list.length > 1) {
-				list.push("cancel2");
-				const result = await player
-					.chooseControl(list)
-					.set("prompt", get.prompt(event.skill))
-					.set("prompt2", "将牌堆顶一种颜色的首张牌置于武将牌上，称为“业”")
-					.set("ai", () => [0, 1].randomGet())
-					.forResult();
-				event.result = {
-					bool: result.control != "cancel2",
-					cost_data: result.control,
-				};
-			} else {
-				event.result = await player
-					.chooseBool(get.prompt(event.skill))
-					.set("prompt2", `将牌堆顶首张${get.translation(list[0])}牌置于武将牌上，称为“业”`)
-					.forResult();
-				event.result.cost_data = list[0];
-			}
+			event.result = await player
+				.chooseBool(get.prompt(event.skill))
+				.set("prompt2", `将牌堆顶首张${list.map(i => get.translation(i)).join("和")}牌置于武将牌上，称为“业”`)
+				.forResult();
+			event.result.cost_data = list;
 		},
 		async content(event, trigger, player) {
-			const color = event.cost_data,
-				card = get.cardPile2(card => get.color(card) == color);
-			if (card) {
-				const next = player.addToExpansion(card, "gain2");
+			const colors = event.cost_data,
+				cards = [];
+			for (let color of colors) {
+				const card = get.cardPile2(card => get.color(card) == color);
+				if (card) {
+					cards.push(card);
+				}
+			}
+			if (cards?.length) {
+				const next = player.addToExpansion(cards, "gain2");
 				next.gaintag.add(event.name);
 				await next;
 			}
@@ -980,7 +972,7 @@ const skills = {
 			return (
 				list?.includes(get.color(card, player)) &&
 				player.hasHistory("lose", evtx => {
-					const evt2 = evt.relatedEvent || evt.getParent();
+					const evt2 = evtx.relatedEvent || evtx.getParent();
 					return evtx.hs?.length && evt2 == evt;
 				})
 			);
