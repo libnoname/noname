@@ -1635,7 +1635,7 @@ const skills = {
 	},
 	//赵忠
 	olpengbi: {
-		audio: 2,
+		audio: 1,
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
 			if (get.info("olpengbi").derivation.every(i => player.hasSkill(i, null, false, false))) {
@@ -1696,7 +1696,7 @@ const skills = {
 		derivation: ["olyintian", "olbiri"],
 	},
 	olyintian: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: "recoverEnd" },
 		filter(event, player) {
 			if (player.hasSkill("olyintian_effect")) {

@@ -1,4 +1,9 @@
 export default {
+	"#dczhidui1": "酒以成礼，不敢不拜。",
+	"#dczhidui2": "乞儿乘小车，一何驶乎？",
+	"#dcjiesi1": "古之懿士，当为我辈行履之师。",
+	"#dcjiesi2": "	君子周而不比，群而不党。",
+	"#dc_zhongyu:die": "吾弟挟术难保，不可专任。",
 	"#dcdujun1": "吾心如明月，只照君一人。",
 	"#dcdujun2": "情既起，无所终。",
 	"#dcjikun1": "夫妻结发，焉有辕辙异向之理？",
