@@ -1635,7 +1635,7 @@ const skills = {
 	},
 	//赵忠
 	olpengbi: {
-		audio: 1,
+		audio: 2,
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
 			if (get.info("olpengbi").derivation.every(i => player.hasSkill(i, null, false, false))) {
@@ -1729,7 +1729,7 @@ const skills = {
 		},
 	},
 	olbiri: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 		filter(event, player) {
 			return (
