@@ -18730,7 +18730,7 @@ const skills = {
 			compare: {
 				audio: "twchaofeng",
 				trigger: { player: "useCardAfter" },
-				usable: 1,
+				usable: 2,
 				filter(event, player) {
 					return event.card?.storage?.twchaofeng;
 				},
@@ -18900,10 +18900,10 @@ const skills = {
 				intro: {
 					content(storage, player) {
 						var shisyou = player.getStorage("twchuanshu_effect").filter(i => i.isIn());
-						var str = "<li>拼点牌点数+3；";
+						var str = "<li>拼点牌点数+5；";
 						if (player.hasMark("twchuanshu_mark")) {
 							str += "<li>使用的下一张【杀】对除" + get.translation(shisyou) + "外的角色造成伤害时，此伤害+" + player.countMark("twchuanshu_mark") + "；";
-							str += "<li>使用的下一张【杀】造成伤害时，" + get.translation(shisyou) + "摸等同于伤害值的牌；";
+							str += "<li>使用的下一张【杀】造成伤害时，" + get.translation(shisyou) + "摸等同于伤害值+1的牌；";
 						}
 						str = str.slice(0, -1) + "。";
 						return str;
@@ -18916,11 +18916,11 @@ const skills = {
 					return (player == event.player ? event.num1 : event.num2) < 13;
 				},
 				async content(event, trigger, player) {
-					game.log(player, "的拼点牌点数+3");
+					game.log(player, "的拼点牌点数+5");
 					if (player == trigger.player) {
-						trigger.num1 = Math.min(13, trigger.num1 + 3);
+						trigger.num1 = Math.min(13, trigger.num1 + 5);
 					} else {
-						trigger.num2 = Math.min(13, trigger.num2 + 3);
+						trigger.num2 = Math.min(13, trigger.num2 + 5);
 					}
 				},
 				group: "twchuanshu_damage",
@@ -18975,9 +18975,9 @@ const skills = {
 							return;
 						}
 						if (targets.length == 1) {
-							await targets[0].draw(num1 * trigger.num);
+							await targets[0].draw(num1 * (trigger.num + 1));
 						} else {
-							await game.asyncDraw(targets, num1 * trigger.num);
+							await game.asyncDraw(targets, num1 * (trigger.num + 1));
 						}
 					}
 				},

@@ -367,6 +367,10 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
+	//共联时机的map
+	relatedTrigger = {
+		loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
+	};
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
 	 */
@@ -6923,7 +6927,7 @@ export class Library {
 						str += "\n];";
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
 							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
@@ -6943,13 +6947,15 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						ui.create.editor2(container, {
-							language: "javascript",
-							value: str,
-							saveInput,
-						}).then(editor => {
-							window.saveNonameInput = () => saveInput(editor);
-						});
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: str,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character_three: {
@@ -6984,7 +6990,7 @@ export class Library {
 						str += "\n];";
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
 							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
@@ -7004,13 +7010,15 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						ui.create.editor2(container, {
-							language: "javascript",
-							value: str,
-							saveInput,
-						}).then(editor => {
-							window.saveNonameInput = () => saveInput(editor);
-						});;
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: str,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character_four: {
@@ -7550,7 +7558,7 @@ export class Library {
 						var code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
 							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
@@ -7590,13 +7598,15 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						ui.create.editor2(container, {
-							language: "javascript",
-							value: code,
-							saveInput,
-						}).then(editor => {
-							window.saveNonameInput = () => saveInput(editor);
-						});;
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: code,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character: {
@@ -10844,10 +10854,25 @@ export class Library {
 					if (role != "global" && player != event[role]) {
 						return false;
 					}
-					if (Array.isArray(info.trigger[role])) {
-						return info.trigger[role].includes(triggername);
+					const list = [];
+					if (typeof info.trigger[role] == "string") {
+						list.add(info.trigger[role]);
+					} else if (Array.isArray(info.trigger[role])) {
+						list.addArray(info.trigger[role]);
 					}
-					return info.trigger[role] == triggername;
+					if (list.includes(triggername)) {
+						return true;
+					}
+					const map = lib.relatedTrigger,
+						names = Object.keys(map);
+					for (const trigger of list.slice()) {
+						for (const name of names) {
+							if (trigger.startsWith(name)) {
+								list.addArray(map[name].map(i => i + trigger.slice(name.length)));
+							}
+						}
+					}
+					return list.includes(triggername);
 				})
 			) {
 				return false;
@@ -13413,24 +13438,26 @@ export class Library {
 			forceOut: true,
 			filter(event, player) {
 				const map = _status._rest_return?.[player.playerid];
-				if (map?.count < 0) {
+				if (!map?.count || map?.count < 0) {
 					return false;
 				}
 				if (map?.type == "round" && event.player != player) {
 					return false;
 				}
+				if (player.isIn()) {
+					delete _status._rest_return?.[player.playerid];
+				}
 				return !event._rest_return && player.isOut();
 			},
 			async content(event, trigger, player) {
 				const map = _status._rest_return?.[player.playerid];
-				if (map?.count > 0) {
+				if (map?.count && map?.count > 0) {
 					game.broadcastAll(map => {
 						map.count--;
 					}, map);
 				}
 				trigger._rest_return = true;
 				if (!map.count) {
-					//trigger._rest_return = true;
 					game.broadcastAll(function (player) {
 						player.classList.remove("out");
 					}, player);
@@ -13650,7 +13677,8 @@ export class Library {
 			 */
 			init(version, config, banned_info) {
 				var show_deckMonitor = false;
-				if (lib.config.show_deckMonitor) {// && lib.config.show_deckMonitor_online
+				if (lib.config.show_deckMonitor) {
+					// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
 				}
 				this.send(function (show_deckMonitor) {

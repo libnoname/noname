@@ -7653,6 +7653,9 @@ export class Player extends HTMLDivElement {
 			});
 			return map;
 		};
+		next.getg = function (player) {
+			return [];
+		};
 		next.gaintag = [];
 		return next;
 	}
@@ -7738,6 +7741,9 @@ export class Player extends HTMLDivElement {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
+		};
+		next.getg = function (player) {
+			return [];
 		};
 		next.vcard_map = new Map();
 		return next;
@@ -8387,6 +8393,9 @@ export class Player extends HTMLDivElement {
 			});
 			return map;
 		};
+		next.getg = function (player) {
+			return [];
+		};
 		return next;
 	}
 	/**
@@ -8471,6 +8480,9 @@ export class Player extends HTMLDivElement {
 				}
 			});
 			return map;
+		};
+		next.getg = function (player) {
+			return [];
 		};
 		return next;
 	}
@@ -9801,12 +9813,24 @@ export class Player extends HTMLDivElement {
 					lib.hook[name].add(skill);
 					lib.hookmap[evt] = true;
 				};
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				for (const role in info.trigger) {
 					let evts = info.trigger[role];
 					if (!Array.isArray(evts)) {
 						evts = [evts];
 					}
-					evts.forEach(evt => setTrigger(role, evt));
+					evts.forEach(evt => {
+						names
+							.reduce((list, i) => {
+								if (evt.startsWith(i)) {
+									return list.addArray(map[i].map(j => j + evt.slice(i.length)));
+								}
+								return list;
+							}, [])
+							.forEach(evtx => setTrigger(role, evtx));
+						setTrigger(role, evt);
+					});
 				}
 			}
 			if (info.hookTrigger) {
@@ -10377,12 +10401,24 @@ export class Player extends HTMLDivElement {
 						delete lib.hook[name];
 					}
 				};
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				for (const role in info.trigger) {
 					let evts = info.trigger[role];
 					if (!Array.isArray(evts)) {
 						evts = [evts];
 					}
-					evts.forEach(evt => removeTrigger(role, evt));
+					evts.forEach(evt => {
+						names
+							.reduce((list, i) => {
+								if (evt.startsWith(i)) {
+									return list.addArray(map[i].map(j => j + evt.slice(i.length)));
+								}
+								return list;
+							}, [])
+							.forEach(evtx => removeTrigger(role, evtx));
+						removeTrigger(role, evt);
+					});
 				}
 			}
 			if (info.hookTrigger && this._hookTrigger) {

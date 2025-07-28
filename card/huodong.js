@@ -1043,14 +1043,10 @@ game.import("card", function () {
 							}, card);
 						});
 					}
-					let count = 0;
+					let target;
 					while (true) {
-						const target = targets[count];
-						count++;
-						if (count >= targets.length) {
-							count = 0;
-						}
-						if (!target?.isAlive()) {
+						target = target?.getNext() || player;
+						if (!target?.isIn()) {
 							continue;
 						}
 						const { result } = await target
@@ -1116,22 +1112,18 @@ game.import("card", function () {
 						}
 						_status.nisiwohuo.push(event);
 					}, event);
-					let count = 0,
-						num = 0;
+					let count = 0;
 					const goon = function () {
 						if (!_status.nisiwohuo?.includes(event)) {
 							return false;
 						}
 						return true;
 					};
+					let target = player;
 					while (goon() && count < 100) {
-						const target = targets[num];
 						count++;
-						num++;
-						if (num >= targets.length) {
-							num = 0;
-						}
-						if (!target?.isIn()) {
+						target = target.getNext();
+						if (!target?.isIn() || target == player) {
 							continue;
 						}
 						const { result } = await target

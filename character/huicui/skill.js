@@ -427,7 +427,7 @@ const skills = {
 					const target = trigger.player;
 					player.storage["dcguying_effect_target"].remove(target);
 					target.unmarkAuto(event.name, player);
-					await target.draw(target.maxHp);
+					await target.draw(Math.min(5, target.maxHp));
 					const num = target.countCards("h") - target.maxHp;
 					if (num > 0 && target != player) {
 						await target

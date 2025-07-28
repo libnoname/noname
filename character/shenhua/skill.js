@@ -1971,7 +1971,7 @@ const skills = {
 		},
 	},
 	nzry_juzhan: {
-		audio: ["skill/nzry_juzhan_11.mp3", "skill/nzry_juzhan_12.mp3"],
+		audio: ["nzry_juzhan_11.mp3", "nzry_juzhan_12.mp3"],
 		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
@@ -2902,7 +2902,7 @@ const skills = {
 		},
 	},
 	nzry_zhenliang: {
-		audio: ["nzry_zhenliang_1", 2],
+		audio: ["nzry_zhenliang_11.mp3", "nzry_zhenliang_12.mp3"],
 		drawNum: 1,
 		mark: true,
 		zhuanhuanji: true,
@@ -3012,7 +3012,7 @@ const skills = {
 		},
 	},
 	nzry_shenshi: {
-		audio: ["skill/nzry_shenshi_11.mp3", "skill/nzry_shenshi_12.mp3"],
+		audio: ["nzry_shenshi_11.mp3", "nzry_shenshi_12.mp3"],
 		mark: true,
 		locked: false,
 		zhuanhuanji: true,

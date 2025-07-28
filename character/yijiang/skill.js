@@ -1041,7 +1041,7 @@ const skills = {
 			damage: {
 				sub: true,
 				trigger: { global: "damageBegin1" },
-				audio: 2,
+				audio: "xinbenxi",
 				forced: true,
 				filter(event, player) {
 					return event.card && player.storage.xinbenxi_damage.includes(event.card);

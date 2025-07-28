@@ -1,6 +1,7 @@
 window.noname_character_rank = {
 	s: ["pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
+		"dc_sb_lunxun",
 		"wn_shen_xuzhu",
 		"yj_caocaoyuanshao",
 		"strong_caochong",
@@ -2368,6 +2369,7 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"dc_sb_lunxun",
 			"yj_zhangyan",
 			"yj_zhanghuan",
 			"pot_lusu",

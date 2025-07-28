@@ -1105,12 +1105,17 @@ const skills = {
 							}
 							return get.effect(target, { name: "loseHp" }, player, player);
 						});
-					next.targetprompt2.add(target => {
-						if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
-							return false;
-						}
-						return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
-					});
+					next.set(
+						"targetprompt2",
+						next.targetprompt2.concat([
+							target => {
+								if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+									return false;
+								}
+								return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
+							},
+						])
+					);
 					event.result = await next.forResult();
 				},
 				async content(event, trigger, player) {

@@ -1,4 +1,10 @@
 const characters = {
+	dc_sb_luxun: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["dcsbjunmou", "dcsbzhanyan"],
+	},
 	dc_sb_dengai: {
 		sex: "male",
 		group: "wei",

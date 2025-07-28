@@ -229,11 +229,11 @@ export class Game extends GameCompatible {
 	/**
 	 * 交换两个元素的位置，并附带动画
 	 * 封装了game.$elementGoto函数，特化对于两个元素交换位置的情况喵
-	 * 
-	 * @param {HTMLElement} elementA 
-	 * @param {HTMLElement} elementB 
-	 * @param {number} duration 
-	 * @param {'linear'|'ease-in-out'} timefun 
+	 *
+	 * @param {HTMLElement} elementA
+	 * @param {HTMLElement} elementB
+	 * @param {number} duration
+	 * @param {'linear'|'ease-in-out'} timefun
 	 * @returns {Promise<void>}
 	 */
 	async $elementSwap(elementA, elementB, duration = 400, timefun = "linear") {
@@ -254,10 +254,7 @@ export class Game extends GameCompatible {
 			await game.$elementSwap(elementB, elementA, duration, timefun);
 		} else {
 			// 否则我们直接入队交换就好哦喵
-			await Promise.all([
-				game.$elementGoto(elementA, parentB, elementB.nextElementSibling || "last", duration, timefun),
-				game.$elementGoto(elementB, parentA, elementA.nextElementSibling || "last", duration, timefun),
-			]);
+			await Promise.all([game.$elementGoto(elementA, parentB, elementB.nextElementSibling || "last", duration, timefun), game.$elementGoto(elementB, parentA, elementA.nextElementSibling || "last", duration, timefun)]);
 		}
 	}
 	/**
@@ -284,7 +281,7 @@ export class Game extends GameCompatible {
 	/**
 	 * 带动画的将元素移动到某个父元素的某个位置喵
 	 * 允许元素附带变换（位移旋转什么的都可以），甚至本身还处于上一次$elementGoto的动画中也可以喵（不过我没测试哦）
-	 * 
+	 *
 	 * @param {HTMLElement} element
 	 * @param {HTMLElement} parent
 	 * @param {number|'first'|'last'|Node} position 新的父容器中元素去的位置
@@ -300,8 +297,8 @@ export class Game extends GameCompatible {
 
 		/**
 		 * 从element的transform字符串中解析位移喵
-		 * 
-		 * @param {HTMLElement} element 
+		 *
+		 * @param {HTMLElement} element
 		 * @returns {[number, number]} 当前元素实际变换的坐标喵
 		 */
 		function parseTranslate(element) {
@@ -321,8 +318,8 @@ export class Game extends GameCompatible {
 		/**
 		 * 计算element当前的位置喵
 		 * 包括变换效果和动画效果当前的位置哦喵
-		 * 
-		 * @param {HTMLElement} element 
+		 *
+		 * @param {HTMLElement} element
 		 * @returns {[number, number]} 当前元素相对于视口的实际位置喵
 		 */
 		function getCurrentPosition(element) {
@@ -356,8 +353,8 @@ export class Game extends GameCompatible {
 
 		/**
 		 * 将元素当前位置记录为开始位置
-		 * 
-		 * @param {HTMLElement} element 
+		 *
+		 * @param {HTMLElement} element
 		 */
 		function recordAsFirstPosition(element) {
 			const startPosition = game.$elementGotoAnimData.startPosition;
@@ -372,8 +369,8 @@ export class Game extends GameCompatible {
 
 		/**
 		 * 将元素当前位置记录为结束位置
-		 * 
-		 * @param {HTMLElement} element 
+		 *
+		 * @param {HTMLElement} element
 		 */
 		function recordAsLastPosition(element) {
 			const position = getCurrentPosition(element);
@@ -428,7 +425,7 @@ export class Game extends GameCompatible {
 
 		/**
 		 * 获取元素的动画起始和结束位置
-		 * 
+		 *
 		 * @param {HTMLElement} element
 		 * @returns {[number, number, number, number] | null} [起始位置X, 起始位置Y, 结束位置X, 结束位置Y]
 		 */
@@ -455,8 +452,8 @@ export class Game extends GameCompatible {
 		/**
 		 * 克隆可视动画元素
 		 * 将克隆整个element以及所有不包含id的连续的祖先节点
-		 * 
-		 * @param {HTMLElement} element 
+		 *
+		 * @param {HTMLElement} element
 		 * @returns {[HTMLElement, HTMLElement]} [subject, clonedRoot] 复制的主元素与复制树的根节点喵
 		 */
 		function cloneVisualElement(element) {
@@ -509,7 +506,7 @@ export class Game extends GameCompatible {
 				}
 
 				const [sx, sy, ex, ey] = position;
-				const canOverflow = getComputedStyle(parent).overflow === 'visible';
+				const canOverflow = getComputedStyle(parent).overflow === "visible";
 				let animation;
 
 				if (canOverflow) {
@@ -519,18 +516,21 @@ export class Game extends GameCompatible {
 					const invertingY = sy - ey;
 
 					// 最后是PLAY喵，开始动画并等待结束喵
-					animation = element.animate([
+					animation = element.animate(
+						[
+							{
+								transform: `translate(${invertingX}px, ${invertingY}px)`,
+							},
+							{
+								transform: `translate(0px, 0px)`,
+							},
+						],
 						{
-							transform: `translate(${invertingX}px, ${invertingY}px)`,
-						},
-						{
-							transform: `translate(0px, 0px)`,
-						},
-					], {
-						duration: duration,
-						easing: timefun,
-						composite: "accumulate",
-					});
+							duration: duration,
+							easing: timefun,
+							composite: "accumulate",
+						}
+					);
 				} else {
 					// 否则我们需要复制动画元素喵
 					const [subject, stage] = cloneVisualElement(element);
@@ -543,19 +543,22 @@ export class Game extends GameCompatible {
 					// 隐藏原来的元素喵
 					element.classList.add("facade-replacing");
 
-					animation = subject.animate([
+					animation = subject.animate(
+						[
+							{
+								transform: `translate(${startX}px, ${startY}px)`,
+							},
+							{
+								transform: `translate(${endX}px, ${endY}px)`,
+							},
+						],
 						{
-							transform: `translate(${startX}px, ${startY}px)`,
-						},
-						{
-							transform: `translate(${endX}px, ${endY}px)`,
-						},
-					], {
-						duration: duration,
-						easing: timefun,
-						composite: "accumulate",
-						fill: "forwards",
-					});
+							duration: duration,
+							easing: timefun,
+							composite: "accumulate",
+							fill: "forwards",
+						}
+					);
 					// @ts-expect-error 我们需要给Animation添加一个属性喵
 					animation.actualVisual = subject; // 标记实际节点喵
 
@@ -6296,14 +6299,26 @@ export class Game extends GameCompatible {
 				lib.hook.globalskill[name].add(skill);
 				lib.hookmap[evt] = true;
 			};
+			const map = lib.relatedTrigger,
+				names = Object.keys(map);
 			for (let i in info.trigger) {
+				const evts = [];
 				if (typeof info.trigger[i] == "string") {
-					setTrigger(i, info.trigger[i]);
+					evts.add(info.trigger[i]);
 				} else if (Array.isArray(info.trigger[i])) {
-					for (let j = 0; j < info.trigger[i].length; j++) {
-						setTrigger(i, info.trigger[i][j]);
-					}
+					evts.addArray(info.trigger[i]);
 				}
+				evts.forEach(evt => {
+					names
+						.reduce((list, name) => {
+							if (evt.startsWith(name)) {
+								return list.addArray(map[name].map(j => j + evt.slice(name.length)));
+							}
+							return list;
+						}, [])
+						.forEach(evtx => setTrigger(i, evtx));
+					setTrigger(i, evt);
+				});
 			}
 		}
 		return true;
@@ -7719,7 +7734,7 @@ export class Game extends GameCompatible {
 			if (name === "guozhan") {
 				exports = await import(`../../mode/${name}/index.js`);
 			} else {
-			// } catch (e1) {
+				// } catch (e1) {
 				try {
 					exports = await import(`../../mode/${name}.js`);
 				} catch (e2) {
@@ -9548,26 +9563,26 @@ export class Game extends GameCompatible {
 					};
 			  })
 			: game.getDB(storeName).then(object => {
-				const keys = Object.keys(object);
-				lib.status.reload += keys.length;
-				const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
-				return Promise.allSettled(
-					keys.map(
-						key =>
-							new Promise((resolve, reject) => {
-								const request = store.delete(key);
-								request.onerror = event => {
-									game.reload2();
-									reject(event);
-								};
-								request.onsuccess = event => {
-									game.reload2();
-									resolve(event);
-								};
-							})
-					)
-				);
-			});
+					const keys = Object.keys(object);
+					lib.status.reload += keys.length;
+					const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
+					return Promise.allSettled(
+						keys.map(
+							key =>
+								new Promise((resolve, reject) => {
+									const request = store.delete(key);
+									request.onerror = event => {
+										game.reload2();
+										reject(event);
+									};
+									request.onsuccess = event => {
+										game.reload2();
+										resolve(event);
+									};
+								})
+						)
+					);
+			  });
 	}
 	/**
 	 * @param { string } key

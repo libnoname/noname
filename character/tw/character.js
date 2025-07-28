@@ -272,7 +272,7 @@ const characters = {
 	xia_xiahousone: {
 		sex: "female",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["twchengxi"],
 		names: "夏侯|子萼",
 	},

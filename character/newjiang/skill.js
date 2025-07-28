@@ -36,61 +36,47 @@ const skills = {
 			});
 		},
 		async content(event, trigger, player) {
-			const history = game.getGlobalHistory("cardMove", evt => {
+			const cards = [],
+				cards2 = [];
+			game.checkGlobalHistory("cardMove", evt => {
 				if (evt.type != "discard" || evt.getlx === false) {
 					return false;
 				}
-				return evt.getd().someInD("d");
-			});
-			const map = {};
-			for (const evt of history) {
 				game.filterPlayer2().forEach(target => {
-					const cards = evt.getd(target, "cards2").filterInD("d");
-					if (cards.length) {
-						map[target.playerid] ??= [];
-						map[target.playerid].addArray(cards);
+					const cardsx = evt.getd(target, "cards2").filterInD("d");
+					if (cardsx.length) {
+						cards.addArray(cardsx);
+						if (target != player) {
+							cards2.addArray(cardsx);
+						}
 					}
 				});
-			}
-			const cards = Object.values(map).flat().unique();
-			const goon = () => cards.some(card => player.hasUseTarget(card, true, false));
+			});
+			const goon = () => cards.some(card => player.hasUseTarget(card, true, false) && get.position(card) == "d");
 			while (goon()) {
 				const videoId = lib.status.videoId++;
-				const func = (id, map, cards) => {
+				const func = (id, cards, cards2) => {
 					const dialog = ui.create.dialog("戍国：请选择要使用的牌");
 					dialog.add(cards);
-					const getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
+					for (const button of dialog.buttons) {
+						if (!cards2.includes(button.link)) {
+							continue;
 						}
-						let name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
+						if (!button.node.gaintag.innerHTML) {
+							button.node.gaintag.innerHTML = "";
 						}
-						return get.translation(name) + `[${target.getSeatNum()}]`;
-					};
-					for (const id in map) {
-						const target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-						for (const card of map[id]) {
-							const button = dialog.buttons.find(i => i.link == card);
-							if (button) {
-								if (!button.node.gaintag.innerHTML) {
-									button.node.gaintag.innerHTML = "";
-								}
-								button.node.gaintag.innerHTML += `${getName(target)}<br>`;
-							}
-						}
+						button.node.gaintag.innerHTML += `其他角色`;
 					}
 					dialog.videoId = id;
 					return dialog;
 				};
 				if (player.isOnline2()) {
-					player.send(func, videoId, map, cards);
+					player.send(func, videoId, cards, cards2);
 				} else {
-					func(videoId, map, cards);
+					func(videoId, cards, cards2);
 				}
 				const result = await player
-					.chooseButton(true)
+					.chooseButton()
 					.set("dialog", get.idDialog(videoId))
 					.set("filterButton", button => get.player().hasUseTarget(button.link, true, false))
 					.set("ai", button => {
@@ -98,13 +84,15 @@ const skills = {
 					})
 					.forResult();
 				game.broadcastAll("closeDialog", videoId);
-				if (result?.links) {
+				if (result?.bool && result.links?.length) {
 					const card = result.links[0];
 					cards.remove(card);
 					await player.chooseUseTarget(card, true);
-					if (Object.keys(map).some(id => player.playerid != id && map[id].includes(card))) {
+					if (cards2.includes(card)) {
 						break;
 					}
+				} else {
+					break;
 				}
 			}
 			if (!player.isMaxHandcard(true)) {

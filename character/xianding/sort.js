@@ -13,7 +13,7 @@ const characterSort = {
 	sp2_qifu: ["dc_guansuo", "xin_baosanniang", "dc_zhaoxiang", "xurong", "x_dc_zhangqiying", "y_dc_zhangqiying"],
 	sp2_gaoshan: ["wanglang", "liuhui", "zhangjian"],
 	sp2_wumiao: ["wu_zhugeliang", "wu_luxun", "wu_guanyu", "wu_huangfusong", "wu_lukang"],
-	sp2_mouding: ["dc_sb_jiangwei", "dc_sb_jiaxu", "dc_sb_lusu", "dc_sb_zhouyu", "dc_sb_simayi", "dc_sb_xunyu"],
+	sp2_mouding: ["dc_sb_luxun", "dc_sb_jiangwei", "dc_sb_jiaxu", "dc_sb_lusu", "dc_sb_zhouyu", "dc_sb_simayi", "dc_sb_xunyu"],
 	sp2_zhonghu: ["dc_jiangji", "dc_wangling", "dc_simashi", "dc_caoshuang"],
 	sp2_zijing: ["dc_sb_zhugejin", "dc_sb_guanping"],
 	sp2_dushi: ["dc_sb_caoang", "dc_sb_zhangxiu", "dc_sb_dianwei", "dc_sb_hucheer"],

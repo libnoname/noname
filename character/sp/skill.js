@@ -1696,7 +1696,7 @@ const skills = {
 		derivation: ["olyintian", "olbiri"],
 	},
 	olyintian: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: "recoverEnd" },
 		filter(event, player) {
 			if (player.hasSkill("olyintian_effect")) {
@@ -1729,7 +1729,7 @@ const skills = {
 		},
 	},
 	olbiri: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 		filter(event, player) {
 			return (
