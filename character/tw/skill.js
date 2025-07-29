@@ -357,10 +357,11 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = trigger.player,
-						str = get.translation(target);
+						str = get.translation(target),
+						list = ["令" + str + "回复1点体力并摸两张牌", "摸三张牌，然后交给" + str + "两张手牌"];
 					const result = await player
 						.chooseControl()
-						.set("choiceList", ["令" + str + "回复1点体力并摸两张牌", "摸三张牌，然后交给" + str + "两张手牌"])
+						.set("choiceList", list)
 						.set("choice", target.isDamaged() ? 0 : 1)
 						.forResult();
 					const funcs = [
@@ -377,7 +378,15 @@ const skills = {
 					];
 					await funcs[result?.index]?.();
 					if (!target.hasHistory("sourceDamage", evt => evt.num) && player.inRange(target)) {
-						await funcs[[1, 0][result?.index]]?.();
+						const index = 1 - result.index;
+						const result2 = await player
+							.chooseBool("缓图：是否执行另一项？", list[index])
+							.set("choice", get.attitude(player, target) > 0)
+							.forResult();
+						if (!result2.bool) {
+							return;
+						}
+						await funcs[index]?.();
 					}
 				},
 			},
