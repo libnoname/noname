@@ -10021,22 +10021,28 @@ const skills = {
 	},
 	jsrgjizhao: {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("jsrgjizhao")).set("ai", target => {
-				var player = _status.event.player;
-				if (player.countCards("j")) {
-					return player == target ? 10 : 0.1;
-				}
-				return 6 - get.attitude(player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("jsrgjizhao", target);
-				target.chooseToUse({
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const player = get.player(),
+						att = get.attitude(player, target);
+					if (target.countCards("ej", card => get.effect(target, card, target, player) <= 0)) {
+						return 4 + att;
+					}
+					if (target.countCards("ej") && !target.countCards("h")) {
+						return 6 - att;
+					}
+					return target.countCards("h") * get.sgn(att);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const result = await target
+				.chooseToUse({
 					filterCard(card, player, event) {
 						if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
 							return false;
@@ -10045,158 +10051,104 @@ const skills = {
 					},
 					prompt: "急召：使用一张手牌，否则" + get.translation(player) + "可以移动你区域里的一张牌",
 					addCount: false,
-					goon: target != player || !player.countCards("j"),
+					goon: !target.countCards("ej", card => get.effect(target, card, target, player)) && get.attitude(target, player) > 0,
 					ai1(card) {
 						if (_status.event.goon) {
 							return get.order(card);
 						}
 						return 0;
 					},
-				});
-			} else {
-				event.finish();
+				})
+				.forResult();
+			if (result.bool) {
 				return;
 			}
-			"step 2";
-			if (result.bool) {
-				event.finish();
-				return;
-			}
-			var targets = game.filterPlayer(current => {
-				if (current == target) {
-					return false;
-				}
-				var hs = target.getCards("h");
-				if (hs.length) {
-					return true;
-				}
-				var js = target.getCards("j");
-				for (var i = 0; i < js.length; i++) {
-					if (current.canAddJudge(js[i])) {
+			const result2 = await player
+				.chooseTarget(`急召：是否移动${get.translation(target)}的一张牌？`, (cardx, player, target) => {
+					const { from } = get.event();
+					if (from == target) {
+						return false;
+					}
+					if (from.countCards("h")) {
 						return true;
 					}
-				}
-				if (current.isMin()) {
-					return false;
-				}
-				var es = target.getCards("e");
-				for (var i = 0; i < es.length; i++) {
-					if (current.canEquip(es[i])) {
+					if (from.countCards("e", card => target.canEquip(card))) {
 						return true;
 					}
-				}
-				return false;
-			});
-			if (targets.length) {
-				var next = player.chooseTarget(function (card, player, target) {
-					return _status.event.targets.includes(target);
-				});
-				next.set("from", target);
-				next.set("targets", targets);
-				next.set("ai", function (target) {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					var sgnatt = get.sgn(att);
-					var from = _status.event.from;
-					var es = from.getCards("e");
-					var i;
-					var att2 = get.sgn(get.attitude(player, from));
-					for (i = 0; i < es.length; i++) {
-						if (sgnatt != 0 && att2 != 0 && sgnatt != att2 && get.sgn(get.value(es[i], from)) == -att2 && get.sgn(get.effect(target, es[i], player, target)) == sgnatt && target.canEquip(es[i])) {
-							return Math.abs(att);
-						}
-					}
-					if (
-						i == es.length &&
-						(!from.countCards("j", function (card) {
-							return target.canAddJudge(card);
-						}) ||
-							att2 <= 0)
-					) {
-						if (from.countCards("h") > 0) {
-							return att;
-						}
-						return 0;
-					}
-					return -att * att2;
-				});
-				next.set("targetprompt", "移动目标");
-				next.set("prompt", "急召：是否移动" + get.translation(target) + "的一张牌？");
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				var target2 = result.targets[0];
-				event.targets = [target, target2];
-				player.line2(event.targets, "green");
-			} else {
-				event.finish();
-			}
-			"step 4";
-			game.delay();
-			"step 5";
-			if (targets.length == 2) {
-				player
-					.choosePlayerCard(
-						"hej",
-						true,
-						function (button) {
-							var player = _status.event.player;
-							var targets0 = _status.event.targets0;
-							var targets1 = _status.event.targets1;
-							if (get.attitude(player, targets0) > 0 && get.attitude(player, targets1) < 0) {
-								if (get.position(button.link) == "j") {
-									return 12;
+					return from.countCards("j", card => target.canAddJudge(card));
+				})
+				.set("from", target)
+				.set("ai", target => {
+					const { player, from } = get.event(),
+						att = get.attitude(player, target),
+						att2 = get.attitude(player, from),
+						getE = card => get.effect(target, card, player, player) - get.effect(from, card, player, player),
+						getEffect = card => {
+							const pos = get.position(card);
+							switch (pos) {
+								case "h": {
+									return att2 > 0 ? 0 : get.sgn(att);
 								}
-								if (get.value(button.link, targets0) < 0 && get.effect(targets1, button.link, player, targets1) > 0) {
-									return 10;
+								case "e": {
+									return target.canEquip(card) ? getE(card) : 0;
 								}
-								return 0;
-							} else {
-								if (get.position(button.link) == "j") {
-									return -10;
+								case "j": {
+									return target.canAddJudge(card) ? getE(card) : 0;
 								}
-								if (get.position(button.link) == "h") {
-									return 10;
-								}
-								return get.value(button.link) * get.effect(targets1, button.link, player, targets1);
 							}
-						},
-						targets[0]
-					)
-					.set("targets0", targets[0])
-					.set("targets1", targets[1])
-					.set("filterButton", function (button) {
-						var targets1 = _status.event.targets1;
-						if (get.position(button.link) == "h") {
-							return true;
-						} else if (get.position(button.link) == "j") {
-							return targets1.canAddJudge(button.link);
-						} else {
-							return targets1.canEquip(button.link);
-						}
-					});
-			} else {
-				event.finish();
+							return 0;
+						};
+					const card = from.getCards("hej").maxBy(getEffect);
+					return card ? getEffect(card) : 0;
+				})
+				.set("targetprompt", "移动目标")
+				.forResult();
+			if (!result2.bool || !result2.targets?.length) {
+				return;
 			}
-			"step 6";
-			if (result.bool && result.links.length) {
-				var link = result.links[0];
-				if (get.position(link) == "h") {
-					event.targets[1].gain(link, event.targets[0], "giveAuto");
-				} else {
-					event.targets[0].$give(link, event.targets[1], false);
-					if (get.position(link) == "e") {
-						event.targets[1].equip(link);
-					} else if (link.viewAs) {
-						event.targets[1].addJudge({ name: link.viewAs }, [link]);
+			const targetx = result2.targets[0];
+			await game.delay();
+			const result3 = await player
+				.choosePlayerCard("hej", true, target, button => {
+					const { player, from, to } = get.event(),
+						card = button.link,
+						eff1 = get.effect(from, card, from, player),
+						eff2 = get.effect(to, card, to, player);
+					if (get.position(card) != "h") {
+						return eff2 - eff1;
+					}
+					return 2 + get.value(card) * get.sgnAttitude(player, to);
+				})
+				.set("from", target)
+				.set("to", targetx)
+				.set("filterButton", function (button) {
+					const { player, from, to } = get.event(),
+						card = button.link;
+					if (get.position(card) == "h") {
+						return true;
+					} else if (get.position(card) == "j") {
+						return to.canAddJudge(card);
 					} else {
-						event.targets[1].addJudge(link);
+						return to.canEquip(card);
+					}
+				})
+				.forResult();
+			if (result3.bool && result3.links.length) {
+				const link = result3.links[0];
+				if (get.position(link) == "h") {
+					await targetx.gain(link, target, "giveAuto");
+				} else {
+					target.$give(link, targetx, false);
+					if (get.position(link) == "e") {
+						await targetx.equip(link);
+					} else if (link.viewAs) {
+						await targetx.addJudge({ name: link.viewAs }, [link]);
+					} else {
+						await targetx.addJudge(link);
 					}
 				}
-				game.log(event.targets[0], "的", get.position(link) == "h" ? "一张手牌" : link, "被移动给了", event.targets[1]);
-				game.delay();
+				game.log(target, "的", get.position(link) == "h" ? "一张手牌" : link, "被移动给了", targetx);
+				await game.delay();
 			}
 		},
 		ai: {

@@ -574,6 +574,9 @@ export class PlayerGuozhan extends Player {
 		this.identityShown = true;
 		// @ts-expect-error 类型就是这么写的
 		for (var i = 0; i < skills.length; i++) {
+			if (!this.hiddenSkills.includes(skills[i])) {
+				continue;
+			}
 			// @ts-expect-error 类型就是这么写的
 			this.hiddenSkills.remove(skills[i]);
 			// @ts-expect-error 类型就是这么写的

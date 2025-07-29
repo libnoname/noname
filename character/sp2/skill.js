@@ -14985,15 +14985,14 @@ const skills = {
 			global: "phaseBefore",
 			player: "enterGame",
 		},
-		forced: true,
+		locked: true,
 		filter(event, player) {
 			return game.hasPlayer(current => current != player) && (event.name != "phase" || game.phaseNumber == 0);
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseTarget("选择【点虎】的目标", lib.translate.xinfu_dianhu_info, true, function (card, player, target) {
-					return target != player && !target.hasSkill("xinfu_dianhu2");
+					return target != player;
 				})
 				.set("ai", function (target) {
 					var att = get.attitude(_status.event.player, target);
@@ -15001,18 +15000,51 @@ const skills = {
 						return -att + 3;
 					}
 					return Math.random();
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				game.log(target, "成为了", "【点虎】", "的目标");
-				if (get.mode() != "identity" || player.identity != "nei") {
-					player.addExpose(0.25);
-				}
-				target.storage.xinfu_dianhu2 = player;
-				target.addTempSkill("xinfu_dianhu2", { player: "die" });
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			game.log(target, "成为了", "【点虎】", "的目标");
+			if (get.mode() != "identity" || player.identity != "nei") {
+				player.addExpose(0.25);
 			}
+			target.addSkill("xinfu_dianhu_effect");
+			target.markAuto("xinfu_dianhu_effect", player);
+		},
+		subSkill: {
+			effect: {
+				mark: "characters",
+				intro: {
+					content: "当你受到来自$的伤害或回复体力后，$摸一张牌",
+				},
+				trigger: {
+					player: ["damageEnd", "recoverEnd"],
+				},
+				charlotte: true,
+				forceDie: true,
+				filter(event, player) {
+					const targets = player.getStorage("xinfu_dianhu_effect");
+					if (targets?.length) {
+						if (event.name == "damage") {
+							return event.source?.isIn() && targets.includes(event.source);
+						}
+						return targets.some(target => target.isIn());
+					}
+				},
+				async cost(event, trigger, player) {
+					const targets = player.getStorage(event.skill);
+					for (const target of targets.sortBySeat(_status.currentPhase)) {
+						if (!target.isIn() || trigger.name == "damage" && target != trigger.source) {
+							continue;
+						}
+						await target.useSkill(event.skill, [player]);
+					}
+				},
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
 		},
 	},
 	xinfu_dianhu2: {
