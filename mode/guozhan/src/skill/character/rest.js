@@ -290,7 +290,7 @@ export default {
 			}
 		},
 		ai: { threaten: 2 },
-		derivation: ["gz_wusheng", "gzdangxian", "gzzhiman"],
+		derivation: ["gz_wusheng", "gzdangxian", "gz_zhiman"],
 	},
 	//曹婴
 	gz_lingren: {
@@ -8437,7 +8437,7 @@ export default {
 				event.finish();
 			}
 			"step 1";
-			player.drawTo(Math.min(5, player.maxHp));
+			player.drawTo(player.maxHp);
 		},
 	},
 	gzlianyou: {

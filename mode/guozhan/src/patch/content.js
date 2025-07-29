@@ -1470,7 +1470,7 @@ export const changeVice = [
 			if (goon) {
 				// @ts-expect-error 类型就是这么写的
 				event.tochange.push(_status.characterlist[i]);
-				if (event.tochange.length == 300) {
+				if (event.tochange.length == event.num) {
 					break;
 				}
 			}
