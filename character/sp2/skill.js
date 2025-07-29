@@ -15014,9 +15014,8 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				mark: "characters",
 				intro: {
-					content: "当你受到来自$的伤害或回复体力后，$摸一张牌",
+					content: "当你受到来自$的伤害或回复体力后，其摸一张牌",
 				},
 				trigger: {
 					player: ["damageEnd", "recoverEnd"],

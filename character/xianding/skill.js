@@ -6344,7 +6344,7 @@ const skills = {
 						return false;
 					}
 					return lib.filter.filterCard.apply(this, arguments);
-				}, "宛蝉：是使用一张基本牌或普通锦囊牌？")
+				}, "宛蝉：是否使用一张基本牌或普通锦囊牌？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {

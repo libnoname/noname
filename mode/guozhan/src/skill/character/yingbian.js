@@ -2121,6 +2121,9 @@ export default {
 			const card = new lib.element.VCard({ name: "juedou" }),
 				targets = event.targets.filter(target => player.canUse(card, target));
 			await player.useCard(card, targets);
+			if (!player.isIn()) {
+				return;
+			}
 			let num = 0;
 			game.filterPlayer(current => {
 				current.checkHistory("respond", evt => {

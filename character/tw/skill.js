@@ -18933,10 +18933,10 @@ const skills = {
 						return event.card.name == "sha" && player.hasMark("twchuanshu_mark");
 					}
 					if (name == "damageBegin1") {
-						return event.card && event.card.twchuanshu_mark && !player.getStorage("twchuanshu_effect").includes(event.player);
+						return event.card?.twchuanshu_mark && !player.getStorage("twchuanshu_effect").includes(event.player);
 					}
 					return (
-						event.card.twchuanshu_mark &&
+						event.card?.twchuanshu_mark &&
 						player.getStorage("twchuanshu_effect").some(function (target) {
 							return target.isIn(); // && target != player
 						})

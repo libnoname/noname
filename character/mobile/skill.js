@@ -942,7 +942,7 @@ const skills = {
 						}
 						const card = trigger.result[trigger.targets.indexOf(player)].cards[0],
 							precard = player.getExpansions("mbfutu").find(cardx => cardx.cardid == card._cardid);
-						if (precard) {
+						if (precard && !trigger.result[trigger.targets.indexOf(player)].skill) {
 							trigger.result[trigger.targets.indexOf(player)].cards = [precard];
 						}
 					}
@@ -3980,8 +3980,10 @@ const skills = {
 					} else {
 						const cards = player.getCards("s", card => card.hasGaintag("mbjianji"));
 						game.deleteFakeCards(cards);
-						if (trigger.result[trigger.targets.indexOf(player)].cards[0]._cardid === card.cardid) {
-							trigger.result[trigger.targets.indexOf(player)].cards = [card];
+						if (!trigger.result[trigger.targets.indexOf(player)].skill) {
+							if (trigger.result[trigger.targets.indexOf(player)].cards[0]._cardid === card.cardid) {
+								trigger.result[trigger.targets.indexOf(player)].cards = [card]; 
+							}
 						}
 					}
 				},
