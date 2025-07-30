@@ -9532,7 +9532,7 @@ const skills = {
 						return 2;
 					}
 					if (att < 0 && target.countCards("e") > 0 && !target.hasSkillTag("noe")) {
-						return -1;
+						return 1;
 					}
 					return 0;
 				});
