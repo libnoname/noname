@@ -446,6 +446,17 @@ const translates = {
 	wn_zhuanzhan_info: "其他角色的准备阶段，你可以废除一个装备栏并视为对其使用一张【决斗】。",
 	wn_huwei: "虎威",
 	wn_huwei_info: "锁定技，摸牌阶段你多摸X张牌（X为你已废除的装备栏数）。",
+	mark_shen_machao: "骏骊神马超",
+	mark_shen_machao_prefix: "骏骊|神",
+	mark_shouli: "狩骊",
+	mark_shouli_info: "①游戏开始时，所有其他角色随机获得1枚“狩骊”（包含3枚“骏”和4枚“骊”）②每回合各限一次，你可以选择一项：1.移动一名其他角色的所有“骊”至其的上家或下家，视为使用或打出一张【闪】；2.移动一名其他角色的所有“骏”至其的上家或下家，视为使用或打出一张无距离次数限制的【杀】",
+	mark_shouli_append: "<span style='font-family: yuanli'>狩猎开始……</span>",
+	mark_shouli_jun: "骏",
+	mark_shouli_jun_info: "若你持有的“骏”数量大于：0，你计算与其他角色的距离-1；1，摸牌阶段你额外摸一张牌；2，你使用【杀】指定目标时，令其本回合非锁定技失效。",
+	mark_shouli_li: "骊",
+	mark_shouli_li_info: "若你持有的“骊”数量大于：0，其他角色计算与你的距离+1；1，摸牌阶段你额外摸一张牌；2，你造成或受到的伤害视为雷电伤害；3，你造成或受到的伤害+1。",
+	mark_hengwu: "横骛",
+	mark_hengwu_info: "锁定技，有“骏”/“骊”的角色获得“骏”/“骊”后，你摸X张牌（X为其拥有的“骏”/“骊”数）。",
 };
 
 export default translates;

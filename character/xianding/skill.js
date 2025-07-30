@@ -13043,7 +13043,7 @@ const skills = {
 				if (tag === "filterDamage") {
 					return true;
 				}
-				return typeof get.number(card) !== "number";
+				return typeof get.number(arg.card) !== "number";
 			},
 			effect: {
 				target(card, player, target, current) {
