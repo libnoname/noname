@@ -194,6 +194,35 @@ export const start = async (event, trigger, player) => {
 			game.players[i].getId();
 		}
 
+		const groups = lib.group.slice().remove("shen");
+		const chosen = lib.config.continue_name || [];
+		if (get.config("banGroup") && groups?.length && !chosen?.length) {
+			const group = groups.randomGet();
+			_status.bannedGroup = group;
+			event.videoId = lib.status.videoId++;
+			let createDialog = function (group, id) {
+				var dialog = ui.create.dialog(`本局禁用势力：${get.translation(group)}`, [[["", "", group]], "vcard"], "forcebutton");
+				dialog.videoId = id;
+			};
+			game.log("本局", `<span data-nature=${get.groupnature(group, "raw")}m>${get.translation(group)}势力</span>`, "遭到了禁用");
+			game.broadcastAll(createDialog, `group_${group}`, event.videoId);
+			for (const character in lib.character) {
+				const info = get.character(character);
+				if (info?.doubleGroup?.includes(group)) {
+					info.doubleGroup.remove(group);
+					if (info.doubleGroup.length == 1) {
+						info.group = info.doubleGroup[0];
+						info.doubleGroup = [];
+					}
+				}
+				if (info.group == group) {
+					info.isUnseen = true;
+				}
+			}
+			await game.delay(5);
+			game.broadcastAll("closeDialog", event.videoId);
+		}
+
 		if (_status.brawl && _status.brawl.chooseCharacterBefore) {
 			await _status.brawl.chooseCharacterBefore();
 		}

@@ -2135,12 +2135,12 @@ export default {
 		preHidden: true,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("gzshushen_new"), lib.filter.notMe)
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
 				.set("ai", target => {
 					const player = get.player();
 					return get.effect(target, { name: "draw" }, player, player) * (1 + (target.countCards("h") == 0 ? 1 : 0));
 				})
-				.setHiddenSkill("gzshushen_new")
+				.setHiddenSkill(event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {

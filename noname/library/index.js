@@ -6276,6 +6276,13 @@ export class Library {
 					restart: true,
 					intro: "开放不同势力组合，以优先亮出的武将牌作为自己的势力，双势力武将则使用列表的第一个势力",
 				},
+				banGroup: {
+					name: "势力禁用",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "选将前将随机禁用一个势力",
+				},
 				initshow_draw: {
 					name: "首亮奖励",
 					item: {
