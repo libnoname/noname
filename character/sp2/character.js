@@ -27,7 +27,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["dczhuiwang", "dcquxian"],
+		skills: ["twodcspzhuiji", "dcquxian"],
 	},
 	hansong: {
 		sex: "male",

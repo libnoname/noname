@@ -1929,6 +1929,8 @@ player.removeVirtualEquip(card);
 				const list = event.list;
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
+				// 如果只有一行那么多选一般来说就没什么意义喵
+				const canMultiselect = list.length > 1 || !lib.config.choose_all_button || event.noChooseAll;
 
 				//_status.imchoosing = true;
 				event.settleed = false;
@@ -2009,6 +2011,63 @@ player.removeVirtualEquip(card);
 					}
 				};
 
+				/**
+				 * 计算可以批量移动的按钮
+				 * 
+				 * @param {Button[]} buttonList 
+				 * @param {HTMLDivElement} buttonsDiv 
+				 * @param {"first"|"last"} position
+				 */
+				var filterBatchMove = function (buttonList, buttonsDiv, position) {
+					const parent = buttonList[0]?.parentElement;
+
+					if (!parent) {
+						return [];
+					}
+
+					const original = Array.from(parent.children);
+					const filtered = [];
+					const movedButtons = new Set();
+					const eventMoved = Object.assign({}, event.moved);
+					const addChildren = position === "first" ? b => buttonsDiv.insertBefore(b, buttonsDiv.firstChild) : b => buttonsDiv.appendChild(b);
+					const addMovedList = position === "first" ? l => event.moved[buttonsDiv._link].unshift(l) : l => event.moved[buttonsDiv._link].push(l);
+
+					for (const button of buttonList) {
+						if (button.parentElement !== parent) {
+							continue;
+						}
+
+						if (!filterMove(button, buttonsDiv._link, event.moved)) {
+							continue;
+						}
+
+						filtered.push(button);
+						movedButtons.add(button);
+						addChildren(button);
+						addMovedList(button.link);
+					}
+
+					let previous = null;
+
+					for (const button of original) {
+						if (!movedButtons.has(button)) {
+							previous = button;
+							continue;
+						}
+
+						if (!previous) {
+							parent.insertBefore(button, parent.firstChild);
+						} else {
+							parent.insertBefore(button, previous.nextSibling);
+						}
+
+						previous = button;
+					}
+
+					Object.assign(event.moved, eventMoved);
+					return filtered;
+				};
+
 				var updateSelectAllButtons = function () {
 					const buttons = Array.from(event.dialog.querySelectorAll(".select-all"));
 
@@ -2073,6 +2132,9 @@ player.removeVirtualEquip(card);
 						ui.selected.buttons.remove(button);
 						updateSelectAllButtons();
 					} else {
+						if (!canMultiselect) {
+							clearSelected(); // 对于不能多选就要清空之前的选择喵
+						}
 						selectButtons(button); // 这里要使用selectButtons排除其他容器的按钮喵
 					}
 
@@ -2255,8 +2317,8 @@ player.removeVirtualEquip(card);
 					const clientY = e.clientY / game.documentZoom;
 					let aniamtionPromise = null;
 
-					// 如果是拖动移动，我们走原来的代码喵
-					if (isDragging) {
+					// 如果是拖动移动或者非多选的情况下，我们走原来的代码喵
+					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1)) {
 						const curCard = ui.selected.buttons[0];
 						// 鼠标当前处于哪个元素上
 						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
@@ -2341,9 +2403,10 @@ player.removeVirtualEquip(card);
 							position = "last";
 						}
 
+						const selected = filterBatchMove(ui.selected.buttons, buttons, position !== "last" ? "first" : "last");
 						const subPromises = [];
 
-						for (const element of ui.selected.buttons) {
+						for (const element of selected) {
 							subPromises.push(game.$elementGoto(element, buttons, position));
 						}
 
@@ -2363,14 +2426,11 @@ player.removeVirtualEquip(card);
 					currentElement = null;
 				};
 
-				// 检查当前事件是否允许全选喵
-				const noChooseAll = event.noChooseAll;
-
 				// 根据数据创建区域
 				for (var i = 0; i < list.length; i++) {
 					var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
 					tex.classList.add("choosetomove");
-					if (!noChooseAll) {
+					if (canMultiselect) {
 						const selectAll = ui.create.div(".select-all.popup.pointerdiv", event.dialog.content);
 						selectAll.innerHTML = "全选";
 						selectAll.listen(e => {
@@ -11761,7 +11821,7 @@ player.removeVirtualEquip(card);
 				player.classList.remove("unseen");
 				unseen = true;
 			}
-			//加载侧边的历史记录烂关于这次死亡事件的信息
+			//加载侧边的历史记录栏关于这次死亡事件的信息
 			const logvid = game.logv(player, "die", source);
 			event.logvid = logvid;
 			if (unseen) {
@@ -11839,9 +11899,10 @@ player.removeVirtualEquip(card);
 				}
 			}
 			//将体力值修改为0
-			if (!game.countPlayer()) {
+			/*if (event.reserveOut && !game.countPlayer()) {
 				game.over();
-			} else if (player.hp != 0) {
+			} else */
+			if (player.hp != 0) {
 				await player.changeHp(0 - player.hp, false).set("forceDie", true);
 			}
 			//休整时解除连环和翻面状态

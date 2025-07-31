@@ -120,6 +120,10 @@ export const checkEnd = {
 		}
 	},
 	createChooseAll(event, _) {
+		// 如果配置中关闭了那么就不生效哦喵
+		if (!lib.config.choose_all_button) {
+			return;
+		}
 		// 仅在chooseToUse里面生效喵
 		if (event.name === "chooseToUse" && event.isMine() && !(event.cardChooseAll instanceof lib.element.Control)) {
 			// 判断技能是否可以使用全选按钮喵
@@ -148,6 +152,10 @@ export const checkEnd = {
  */
 export const uncheckBegin = {
 	destroyChooseAll(event, _) {
+		// 如果配置中关闭了那么就不生效哦喵
+		if (!lib.config.choose_all_button) {
+			return;
+		}
 		// 仅在chooseToUse里面生效喵
 		if (event.name !== "chooseToUse") {
 			return;

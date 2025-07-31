@@ -32,6 +32,7 @@ window.config = {
 	duration: 500,
 	hoveration: 1000,
 	doubleclick_intro: true,
+	choose_all_button: true,
 	cheat: false,
 	volumn_background: 8,
 	volumn_audio: 8,

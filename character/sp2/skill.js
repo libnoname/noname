@@ -878,56 +878,77 @@ const skills = {
 	},
 	dcquxian: {
 		audio: 2,
-		trigger: { player: "phaseUseBegin" },
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "选择一名角色，攻击范围内包含其的角色可以对其使用【杀】")
-				.set("ai", target => {
-					const player = get.player();
-					return -get.attitude(player, target);
-				})
-				.forResult();
-		},
+		enable: "phaseUse",
+		usable: 1,
 		async content(event, trigger, player) {
-			const target = event.targets[0],
-				targets = game.filterPlayer(current => current != player && current.inRange(target)).sortBySeat();
-			if (!targets.length) {
-				return;
+			const card = get.cardPile2("sha");
+			if (card) {
+				await player.gain(card, "gain2");
 			}
-			const sha = [],
-				nosha = [];
-			while (targets.length) {
-				const current = targets.shift();
-				const bool = await current
-					.chooseToUse(function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
+			const next = player.chooseTarget(true, "驱险：选择一名角色，攻击范围内包含其的角色可以对其使用【杀】").set("ai", target => {
+				const player = get.player();
+				return -get.attitude(player, target);
+			});
+			next.set(
+				"targetprompt2",
+				next.targetprompt2.concat([
+					target => {
+						if (!target.isIn() || !target.classList.contains("selectable")) {
+							return;
 						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "驱险：是否对" + get.translation(target) + "使用一张杀？")
-					.set("targetRequired", true)
-					.set("complexSelect", true)
-					.set("complexTarget", true)
-					.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-							return false;
-						}
-						return lib.filter.targetEnabled.apply(this, arguments);
-					})
-					.set("sourcex", target)
-					.set("addCount", false)
-					.forResultBool();
-				if (bool) {
-					sha.push(current);
-				} else {
-					nosha.push(current);
+						return `驱险${game.countPlayer(current => target.inRangeOf(current))}`;
+					},
+				])
+			);
+			const result = await next.forResult();
+			if (result?.targets?.length) {
+				const target = result.targets[0];
+				player.line(target);
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();//current != player && 
+				if (!targets.length) {
+					return;
+				}
+				const sha = [],
+					nosha = [];
+				while (targets.length) {
+					const current = targets.shift();
+					const bool = await current
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "驱险：是否对" + get.translation(target) + "使用一张杀？")
+						.set("targetRequired", true)
+						.set("complexSelect", true)
+						.set("complexTarget", true)
+						.set("filterTarget", function (card, player, target) {
+							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
+						})
+						.set("sourcex", target)
+						.set("addCount", false)
+						.forResultBool();
+					if (bool) {
+						sha.push(current);
+					} else {
+						nosha.push(current);
+					}
+				}
+				if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
+					for (const i of nosha) {
+						await i.loseHp(sha.length);
+					}
 				}
 			}
-			if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
-				for (const i of nosha) {
-					await i.loseHp(sha.length);
-				}
-			}
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
+			},
 		},
 	},
 	//韩嵩
@@ -7107,6 +7128,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard(
 					"he",
+					"chooseonly",
 					function (card, player) {
 						return get.color(card, player) == "black";
 					},
@@ -7125,6 +7147,7 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			player.addTempSkill("tianze_block");
 			if (get.mode() != "identity" || player.identity != "nei") {
 				player.addExpose(0.2);
@@ -7211,14 +7234,17 @@ const skills = {
 					})()
 				)
 				.set("cards", cards)
+				.set("chooseonly", true)
 				.forResult();
 			event.result = {
 				bool: result.bool,
+				cards: result.cards,
 				cost_data: tricks,
 			};
 		},
 		usable: 1,
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			let list = lib.inpile.filter(function (i) {
 				return get.type2(i, false) == "trick";
 			});

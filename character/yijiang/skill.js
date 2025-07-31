@@ -2361,8 +2361,8 @@ const skills = {
 			return 6 + num - get.value(card);
 		},
 		position: "he",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target, cards } = event;
 			if (!player.storage.pindi_target) {
 				player.storage.pindi_target = [];
 			}
@@ -2371,10 +2371,10 @@ const skills = {
 			}
 			player.storage.pindi_target.push(target);
 			player.storage.pindi_type.push(get.type2(cards[0], cards[0].original == "h" ? player : false));
-			event.num = player.getStat("skill").pindi;
-			var evt = _status.event.getParent("phase");
+			const num = player.getStat("skill").pindi;
+			const evt = _status.event.getParent("phase");
 			if (evt && evt.name == "phase" && !evt.pindi) {
-				var next = game.createEvent("rerende_clear");
+				const next = game.createEvent("rerende_clear");
 				_status.event.next.remove(next);
 				evt.after.push(next);
 				evt.pindi = true;
@@ -2382,24 +2382,24 @@ const skills = {
 				next.setContent(lib.skill.pindi_clear.content);
 			}
 			player.syncStorage();
+			let result;
 			if (target.countCards("he") == 0) {
-				event._result = { index: 0 };
+				result = { index: 0 };
 			} else {
-				player
-					.chooseControlList(["令" + get.translation(target) + "摸" + get.cnNumber(event.num) + "张牌", "令" + get.translation(target) + "弃置" + get.cnNumber(event.num) + "张牌"], function () {
+				result = await player
+					.chooseControlList(true, ["令" + get.translation(target) + "摸" + get.cnNumber(num) + "张牌", "令" + get.translation(target) + "弃置" + get.cnNumber(num) + "张牌"], function () {
 						return _status.event.choice;
 					})
-					.set("choice", get.attitude(player, target) > 0 ? 0 : 1);
+					.set("choice", get.attitude(player, target) > 0 ? 0 : 1)
+					.forResult();
 			}
-			"step 1";
 			if (result.index == 0) {
-				target.draw(event.num);
+				await target.draw(num);
 			} else {
-				target.chooseToDiscard(event.num, "he", true);
+				await target.chooseToDiscard(num, "he", true);
 			}
-			"step 2";
 			if (target.isDamaged()) {
-				player.link(true);
+				await player.link(true);
 			}
 		},
 		ai: {

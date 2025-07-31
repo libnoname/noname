@@ -2,6 +2,131 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//欧陆凯撒
+	eu_ducai: {
+		init(player, skill) {
+			if (_status?.currentPhase !== player) {
+				return;
+			}
+			const targets = game.filterPlayer(current => current !== player);
+			for (const target of targets) {
+				target.addTempSkill(skill + "_block");
+			}
+		},
+		onremove(player, skill) {
+			if (_status?.currentPhase !== player) {
+				return;
+			}
+			const targets = game.filterPlayer(current => current !== player);
+			for (const target of targets) {
+				target.removeSkill(skill + "_block");
+			}
+		},
+		trigger: {
+			player: "phaseBegin",
+		},
+		persevereSkill: true,
+		forced: true,
+		async content(event, trigger, player) {
+			get.info(event.name).init(player, event.name);
+		},
+		mod: {
+			targetInRange(card, player) {
+				if (player == _status.currentPhase) {
+					return true;
+				}
+			},
+			cardUsable(card, player) {
+				if (player == _status.currentPhase) {
+					return Infinity;
+				}
+			},
+		},
+		subSkill: {
+			block: {
+				inherit: "baiban",
+				intro: {
+					content(storage, player, skill) {
+						let str = "<li>不能使用牌";
+						const list = player.getSkills(null, false, false).filter(function (i) {
+							return lib.skill.baiban.skillBlocker(i, player);
+						});
+						if (list.length) {
+							str += "<br><li>" + get.translation(list) + "失效";
+						}
+						return str;
+					},
+				},
+				mod: {
+					cardEnabled(card) {
+						return false;
+					},
+					cardSavable(card) {
+						return false;
+					},
+				},
+			},
+		},
+	},
+	eu_zhitong: {
+		mark: true,
+		zhuanhuanji: true,
+		marktext: "☯",
+		intro: {
+			content(storage, player, skill) {
+				if (storage) {
+					return "转换技，当你使用牌时，若目标包含其他角色，你依次获得这些角色装备区的所有牌并对其造成1点伤害。";
+				}
+				return "转换技，当你使用牌时，若目标包含自己，摸两张牌且回复1点体力。";
+			},
+		},
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			if (!event?.targets?.length) {
+				return false;
+			}
+			const bool = player.storage?.eu_zhitong;
+			return (bool && event.targets.some(current => current !== player)) || (!bool && event.targets.includes(player));
+		},
+		check(event, player) {
+			if (!player.storage?.eu_zhitong) {
+				return true;
+			}
+			return event.targets.filter(target => target != player).reduce((eff, target) => eff + get.damageEffect(target, player, player), 0) > 0;
+		},
+		async content(event, trigger, player) {
+			player.changeZhuanhuanji(event.name);
+			if (player.storage?.eu_zhitong) {
+				await player.draw(2);
+				await player.recover();
+			} else {
+				const targets = trigger.targets.filter(current => current !== player).sortBySeat();
+				for (const target of targets) {
+					const cards = target.getGainableCards(player, "e");
+					if (cards.length) {
+						await player.gain(cards, target, "give", "bySelf");
+					}
+					await target.damage();
+				}
+			}
+		},
+	},
+	eu_jiquan: {
+		trigger: {
+			global: "phaseBegin",
+		},
+		zhuSkill: true,
+		forced: true,
+		filter(event, player) {
+			return event.player?.group === "western" && event.player?.isIn();
+		},
+		async content(event, trigger, player) {
+			await player.recover();
+			await player.draw();
+		},
+	},
 	//夏侯玄
 	pehuanfu: {
 		trigger: {

@@ -13136,10 +13136,10 @@ const skills = {
 							att = get.attitude(_status.event.player, target);
 						for (let i in target.skills) {
 							let info = get.info(i);
-							if (!info || info.shaRelated === false) {
+							if (!info) {
 								continue;
 							}
-							if (info.shaRelated || get.skillInfoTranslation(i, target).includes("【杀】")) {
+							if (get.skillInfoTranslation(i, target).includes("【杀】")) {
 								return Math.abs(att);
 							}
 						}

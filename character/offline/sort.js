@@ -25,6 +25,7 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
+	offline_Europe: ["eu_kaisa"],
 	//offline_others: [],
 };
 
@@ -58,6 +59,7 @@ const characterSortTranslate = {
 	offline_qingshi: "特典·青史翰墨",
 	offline_shichangshi: "蛇年限定·十常侍",
 	offline_fengyun: "风云际会",
+	offline_Europe: "欧陆风云",
 };
 
 export { characterSort, characterSortTranslate };

@@ -96,7 +96,7 @@ const skills = {
 				}
 			}
 			if (!player.isMaxHandcard(true)) {
-				await player.draw(cards.length);
+				await player.draw(Math.min(cards.length, 5));
 			}
 		},
 	},
@@ -5082,7 +5082,20 @@ const skills = {
 			player.addTempSkill("mbaosi_inf", "phaseUseAfter");
 			player.markAuto("mbaosi_inf", [trigger.player]);
 		},
+		group: ["mbaosi_directHit"],
 		subSkill: {
+			directHit: {
+				forced: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					const evt = event.getParent("phaseUse");
+					return evt?.player == player && player.getHistory("useCard", evtx => evtx.getParent("phaseUse") == evt).indexOf(event) == game.roundNumber - 1;
+				},
+				async content(event, trigger, player) {
+					trigger.directHit.addArray(game.players);
+					game.log(trigger.card, "不可被响应");
+				},
+			},
 			inf: {
 				charlotte: true,
 				onremove: true,

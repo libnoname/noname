@@ -7730,11 +7730,9 @@ export class Game extends GameCompatible {
 			window.game = game;
 			let exports;
 			let isESM = true;
-			// try {
-			if (name === "guozhan") {
+			try {
 				exports = await import(`../../mode/${name}/index.js`);
-			} else {
-				// } catch (e1) {
+			} catch (e1) {
 				try {
 					exports = await import(`../../mode/${name}.js`);
 				} catch (e2) {

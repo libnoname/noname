@@ -367,9 +367,9 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
-	//共联时机的map
+	//共联时机的map（目前有很大的兼容问题，请不要使用）
 	relatedTrigger = {
-		loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
+		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
@@ -1189,6 +1189,12 @@ export class Library {
 					init: true,
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
+				},
+				choose_all_button: {
+					name: "启用全选/反选按钮",
+					init: true,
+					unfrequent: true,
+					intro: "在选择大量的牌时提供全选/反选功能<br><br>对于部分技能可能会因为其主动限制或者存在复杂的选择情况而失效",
 				},
 				video: {
 					name: "保存录像",
@@ -15892,6 +15898,20 @@ export class Library {
 				nature: "firemm",
 			},
 		],
+		[
+			"欧陆",
+			{
+				getSpan: () => {
+					const span = document.createElement("span"),
+						style = span.style;
+					style.writingMode = style.webkitWritingMode = "horizontal-tb";
+					style.fontFamily = "MotoyaLMaru";
+					style.transform = "scaleY(0.85)";
+					span.textContent = "EU";
+					return span.outerHTML;
+				},
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
@@ -15918,7 +15938,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
-	selectGroup = ["shen", "western", "devil"];
+	selectGroup = ["shen", "devil"];//"western", 
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {

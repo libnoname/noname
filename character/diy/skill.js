@@ -5762,9 +5762,6 @@ const skills = {
 					if (!info) {
 						continue;
 					}
-					if (info.shaRelated) {
-						return true;
-					}
 					if (info && info.trigger) {
 						for (var j in info.trigger) {
 							var cond = info.trigger[j];
@@ -5795,9 +5792,6 @@ const skills = {
 								}
 							}
 						}
-					}
-					if (info.shaRelated === false) {
-						return false;
 					}
 					if (get.plainText(get.skillInfoTranslation(list[i], player)).includes("【杀】")) {
 						return true;

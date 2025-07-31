@@ -7452,34 +7452,34 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets.sortBySeat();
 			const cards = targets.slice().map(i => i.getCards("h").randomGet());
-			const videoId = lib.status.videoId++;
-			game.broadcastAll(
-				(targets, cards, id, player) => {
-					let dialog = ui.create.dialog(get.translation(player) + "发动了【佐练】", cards);
-					dialog.videoId = id;
-					const getName = target => {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (let i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]);
-					}
-				},
-				targets,
-				cards,
-				videoId,
-				player
-			);
-			await game.delay(3);
-			game.broadcastAll("closeDialog", videoId);
-			const result = await player.chooseBool("是否将这些牌与牌堆或弃牌堆中的属性杀交换？").forResult();
-			if (!result.bool) {
+			const next = player
+				.showCards(cards, get.translation(player) + "发动了【佐练】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					button.querySelector(".info").innerHTML = target.getName();
+				})
+				.set("log", (cards, player) => [player, "展示了", cards.map(card => get.owner(card)), "的", cards])
+				.set("delay_time", Math.min(targets.length * 2.5, 7.5))
+				.set("closeDialog", false);
+			await next;
+			//videoId只有执行了事件才会有！
+			const id = next.videoId;
+			const update = id => {
+				const dialog = get.idDialog(id);
+				if (dialog) {
+					const div = dialog.querySelector(".caption");
+					div.innerHTML = "是否将这些牌与牌堆或弃牌堆中的属性杀交换？";
+					ui.update();
+				}
+			};
+			if (player.isOnline2()) {
+				player.send(update, id);
+			} else {
+				update(id);
+			}
+			const result = await player.chooseBool().set("dialog", get.idDialog(id)).forResult();
+			game.broadcastAll("closeDialog", id);
+			if (!result?.bool) {
 				return;
 			}
 			const cards_cardPile = Array.from(ui.cardPile.childNodes).filter(i => i.name == "sha" && get.nature(i, false));
@@ -7515,7 +7515,9 @@ const skills = {
 				if (!cardx) {
 					return;
 				}
+				let position;
 				if (cards_cardPile.includes(cardx)) {
+					position = "牌堆";
 					target.$throw([card], 1000);
 					await target
 						.lose([card], ui.cardPile)
@@ -7524,9 +7526,11 @@ const skills = {
 						})
 						.set("num", cards_cardPile.indexOf(cardx));
 				} else if (cards_discardPile.includes(cardx)) {
+					position = "弃牌堆";
 					await target.loseToDiscardpile(card);
 				}
-				await target.gain(cardx, "gain2");
+				game.log(target, "将", cards[i], `与${position}的`, cardx, "交换");
+				await target.gain(cardx, "gain2").set("log", false);
 			}
 		},
 		ai: {
@@ -37061,12 +37065,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		check(event, player) {
-			var num = game.countPlayer(function (current) {
+			const num = game.countPlayer(function (current) {
 				if (current.isLinked() && current.countCards("he")) {
 					return get.effect(current, { name: "guohe_copy2" }, player, player);
 				}
 			});
-			return num < 0;
+			return num > 0;
 		},
 		filter(event, player) {
 			return player.isLinked();
@@ -38601,7 +38605,7 @@ const skills = {
 			await player.gainPlayerCard(target, true, "h", target.countCards("h"));
 			await player.turnOver();
 			player.addSkill("lihun2");
-			player.markAuto("lihun2",target);
+			player.markAuto("lihun2", target);
 		},
 		check(card) {
 			return 8 - get.value(card);
@@ -39108,18 +39112,18 @@ const skills = {
 		audio: "xinfu_fujian",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		filter(event, player) {
-			return game.hasPlayer(target => target != player && target.countCards("h") && !target.isMaxHandcard());
+			return game.hasPlayer(target => target != player && target.countCards("h") && !target.isMaxHandcard(true, current => current != player));
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const target = game
 				.filterPlayer(target => {
-					return target != player && target.countCards("h") && !target.isMaxHandcard();
+					return target != player && target.countCards("h") && !target.isMaxHandcard(true, current => current != player);
 				})
 				.randomGet();
 			player.line(target);
 			game.log(player, "观看了", target, "的手牌");
-			player.viewHandcards(target);
+			await player.viewHandcards(target);
 		},
 	},
 	xinfu_xionghuo: {

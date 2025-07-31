@@ -11496,12 +11496,16 @@ export class Player extends HTMLDivElement {
 		return this.hp >= this.maxHp || this.storage.nohp;
 	}
 	/**
-	 * 判断玩家是否是场上体力上限最大的玩家
+	 * 判断玩家是否是场上/某些角色中体力上限最大的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMaxMaxHp(only) {
-		return game.players.every(value => {
+	isMaxMaxHp(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11509,12 +11513,16 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上体力上限最少的玩家
+	 * 判断玩家是否是场上/某些角色中体力上限最少的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMinMaxHp(only) {
-		return game.players.every(value => {
+	isMinMaxHp(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11522,13 +11530,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上体力最大的玩家
+	 * 判断玩家是否是场上/某些角色中体力最大的玩家
 	 * @param { boolean } [only] 是否唯一
 	 * @param { boolean } [raw]
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMaxHp(only, raw) {
-		return game.players.every(value => {
+	isMaxHp(only, raw, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11536,13 +11548,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上体力最少的玩家
+	 * 判断玩家是否是场上/某些角色中体力最少的玩家
 	 * @param { boolean } [only] 是否唯一
 	 * @param { boolean } [raw]
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMinHp(only, raw) {
-		return game.players.every(value => {
+	isMinHp(only, raw, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11550,13 +11566,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上牌最多的玩家
+	 * 判断玩家是否是场上/某些角色中牌最多的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMaxCard(only) {
+	isMaxCard(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfCards = this.countCards("he");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11564,13 +11584,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上牌最少的玩家
+	 * 判断玩家是否是场上/某些角色中牌最少的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMinCard(only) {
+	isMinCard(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfCards = this.countCards("he");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11578,13 +11602,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上手牌最多的玩家
+	 * 判断玩家是否是场上/某些角色中手牌最多的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMaxHandcard(only) {
+	isMaxHandcard(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfHandCards = this.countCards("h");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11592,13 +11620,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上手牌最少的玩家
+	 * 判断玩家是否是场上/某些角色中手牌最少的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMinHandcard(only) {
+	isMinHandcard(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfHandCards = this.countCards("h");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11606,13 +11638,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上装备区牌最多的玩家
+	 * 判断玩家是否是场上/某些角色中装备区牌最多的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMaxEquip(only) {
+	isMaxEquip(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfEquipAreaCards = this.countCards("e");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}
@@ -11620,13 +11656,17 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 判断玩家是否是场上装备区牌最少的玩家
+	 * 判断玩家是否是场上/某些角色中装备区牌最少的玩家
 	 * @param { boolean } [only] 是否唯一
+	 * @param { (player: Player) => boolean } [filter] 过滤要判断的角色
 	 * @returns { boolean }
 	 */
-	isMinEquip(only) {
+	isMinEquip(only, filter) {
+		if (typeof filter !== "function") {
+			filter = lib.filter.all;
+		}
 		const numberOfEquipAreaCards = this.countCards("e");
-		return game.players.every(value => {
+		return game.filterPlayer(filter).every(value => {
 			if (value.isOut() || value == this) {
 				return true;
 			}

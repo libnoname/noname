@@ -2,6 +2,27 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//TW甄姬
+	twjiwei: {
+		inherit: "mbjiwei",
+		audio: "mbjiwei",
+		getNum(event, player) {
+			let num = 0;
+			if (game.countPlayer2(current => current.hasHistory("lose")) >= 1) {
+				num++;
+			}
+			if (game.countPlayer2(current => current.hasHistory("damage")) >= 1) {
+				num++;
+			}
+			if (event.name == "phase") {
+				return num * 2;
+			}
+			if (game.hasPlayer2(current => !current.isAlive())) {
+				return 114514;
+			}
+			return 5;
+		},
+	},
 	//TW朱治
 	twanguo: {
 		audio: "sbanguo",
@@ -451,29 +472,34 @@ const skills = {
 				{ target } = event,
 				name = "twmingce_used",
 				storage = player.getStorage(name);
+			const extra = storage.length < 1 ? 1 : 0;
 			await player.give(cards, target);
 			let choices = ["选项一", "选项二"],
-				choiceList = ["失去1点体力，令" + get.translation(player) + "摸两张牌并获得1枚“策”", "摸一张牌"];
+				choiceList = [`失去1点体力，令${get.translation(player)}摸${get.cnNumber(2 + extra)}张牌并获得1枚“策”`, `摸${get.cnNumber(1 + extra)}张牌`];
 			storage.forEach(num => {
-				choices.remove(`选项${get.cnNumber(num + 1)}`);
+				choices.remove(`选项${get.cnNumber(num + 1, true)}`);
 				choiceList[num] = '<span style="opacity:0.5">' + choiceList[num] + "</span>";
 			});
-			const result = await target
-				.chooseControl(choices)
-				.set("choiceList", choiceList)
-				.set("prompt", get.translation(player) + "对你发动了【明策】，请选择一项")
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set("choice", target.hp <= 0 || (((target.hp + target.countCards("hs", "tao") > 2 && get.attitude(target, player) > 0) || get.effect(target, { name: "losehp" }, target, target) > 0) && target.hp > 0) ? 0 : 1)
-				.forResult();
-			if (!result) {
+			let result;
+			if (choices.length == 1) {
+				result = { index: storage[0] == 0 ? 1 : 0 };
+			} else {
+				result = await target
+					.chooseControl(choices)
+					.set("choiceList", choiceList)
+					.set("prompt", get.translation(player) + "对你发动了【明策】，请选择一项")
+					.set("ai", () => {
+						return _status.event.choice;
+					})
+					.set("choice", target.hp <= 0 || (((target.hp + target.countCards("hs", "tao") > 2 && get.attitude(target, player) > 0) || get.effect(target, { name: "losehp" }, target, target) > 0) && target.hp > 0) ? 0 : 1)
+					.forResult();
+			}
+			if (typeof result?.index !== "number") {
 				return;
 			}
-			const extra = storage.length < 1 ? 1 : 0;
 			player.addTempSkill(name, ["phaseChange", "phaseUseAfter"]);
-			player.markAuto(name, ["选项一", "选项二"].indexOf(result.control));
-			if (result.control == "选项一") {
+			player.markAuto(name, result.index);
+			if (result.index == 0) {
 				await target.loseHp();
 				await player.draw(2 + extra);
 				player.addMark(event.name, 1);
