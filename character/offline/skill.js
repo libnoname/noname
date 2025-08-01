@@ -4950,12 +4950,13 @@ const skills = {
 				.inpileVCardList(info => {
 					return info[0] === "basic" || info[0] === "trick";
 				})
-				.some(card =>
+				.some(info =>
 					player.hasCard(cardx => {
 						if (get.type2(cardx) !== "trick") {
 							return false;
 						}
-						return event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event);
+						const card = get.autoViewAs({ name: info[2], nature: info[3], storage: { zombiechuce: true }, cards: [cardx] }, [cardx]);
+						return event.filterCard(card, player, event);
 					}, "hes")
 				);
 		},
@@ -4970,14 +4971,15 @@ const skills = {
 					if (get.type2(cardx) !== "trick") {
 						return false;
 					}
-					return event.filterCard({ name: button.link[2], nature: button.link[3], cards: [cardx] }, player, event);
+					const card = get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { zombiechuce: true }, cards: [cardx] }, [cardx]);
+					return event.filterCard(card, player, event);
 				}, "hes");
 			},
 			check(button) {
 				if (get.event().getParent().type != "phase") {
 					return 1;
 				}
-				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] }, false);
 			},
 			prompt(links, player) {
 				return "将一张锦囊牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】使用";
@@ -4992,7 +4994,16 @@ const skills = {
 						return 6 - get.value(card);
 					},
 					position: "hes",
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					async precontent(event, trigger, player) {
+						event.getParent().addCount = false;
+					},
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						storage: {
+							zombiechuce: true,
+						},
+					},
 				};
 			},
 		},
@@ -5006,6 +5017,19 @@ const skills = {
 				}
 				return get.type2(card) === "trick";
 			}, "hes");
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.zombiechuce) {
+					return Infinity;
+				}
+			},
+			targetInRange(card, player) {
+				if (card?.storage?.zombiechuce) {
+					return true;
+				}
+			},
 		},
 		ai: {
 			fireAttack: true,
