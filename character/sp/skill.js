@@ -9388,22 +9388,23 @@ const skills = {
 			if (!player.countCards("he")) {
 				return false;
 			}
-			return !game.hasPlayer(current => {
-				let history = current.actionHistory;
-				if (history.length < 2) {
-					return false;
+			let history = player.actionHistory,
+				isRound = false;
+			history.forEach((evt, index) => {
+				if (evt.isRound) {
+					isRound = index;
 				}
-				for (let num = history.length - 2; num >= 0; num--) {
-					if (history[num].isRound) {
-						break;
-					}
-					if (history[num].isSkipped) {
-						continue;
-					}
-					return true;
-				}
-				return false;
 			});
+			if (isRound === false) {
+				return false;
+			}
+			for (let num = 0; num < history.length - 1; num++) {
+				if (num < isRound || history[num].isSkipped) {
+					continue;
+				}
+				return num == history.length - 1;
+			}
+			return true;
 		},
 		direct: true,
 		async content(event, trigger, player) {

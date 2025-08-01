@@ -561,7 +561,6 @@ const skills = {
 				.chooseCardTarget({
 					prompt: get.prompt2(event.skill),
 					filterCard: true,
-					forced: true,
 					position: "he",
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
