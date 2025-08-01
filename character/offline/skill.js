@@ -2140,7 +2140,7 @@ const skills = {
 		},
 		persevereSkill: true,
 		filter(event, player) {
-			return !event.getParent("peaoyong", true) && event.getg(player)?.length;
+			return event.getParent(2, true)?.name != "peaoyong" && event.getg(player)?.length;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -5143,6 +5143,7 @@ const skills = {
 				return info && !info.charlotte;
 			});
 		},
+		forceDie: true,
 		forced: true,
 		logTarget: "player",
 		async content(event, trigger, player) {
