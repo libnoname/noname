@@ -5141,12 +5141,14 @@ const skills = {
 		audio: "benyu",
 		trigger: { global: "dying" },
 		filter(event, player) {
-			return event.player != player && event.player.countCards("h");
+			return event.player != player && event.player.countCards("eh");
 		},
-		direct: true,
-		content() {
-			const target = trigger.player;
-			player.gainPlayerCard(target, "h", true).set("prompt", get.prompt("stdyibing", target)).logSkill = ["stdyibing", target];
+		logTarget: "player",
+		check(event, player) {
+			return get.effect(event.player, { name: "shunshou_copy2" }, player, player) > 0;
+		},
+		async content(event, trigger, player) {
+			await player.gainPlayerCard(trigger.player, "he", `获得${get.translation(trigger.player)}一张牌`, true);
 		},
 	},
 	//樊玉凤

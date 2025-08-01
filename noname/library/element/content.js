@@ -2838,7 +2838,7 @@ player.removeVirtualEquip(card);
 		target.$compare(game.createCard(event.tes, "", ""), player, game.createCard(event.mes, "", ""));
 		game.log(target, "选择的策略为", "#g" + get.translation(event.tes));
 		game.log(player, "选择的策略为", "#g" + get.translation(event.mes));
-		game.delay(0, 1500);
+		game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		"step 5";
 		var mes = event.mes.slice(6);
 		var tes = event.tes.slice(6);

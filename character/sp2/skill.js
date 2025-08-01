@@ -1087,8 +1087,15 @@ const skills = {
 					if (target == player || !get.tag(card, "damage")) {
 						return;
 					}
-					if (!(card.cards || []).length) {
-						return "zeroplayertarget";
+					//临时补丁，等有缘人重写卡牌ai吧
+					if (card.name?.endsWith("damage") && lib.card[_status.event?.name]) {
+						if (!(_status.event?.cards || []).length) {
+							return "zerotarget";
+						}
+					} else {
+						if (!(card.cards || []).length) {
+							return "zerotarget";
+						}
 					}
 				},
 				player() {
