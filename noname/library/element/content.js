@@ -378,8 +378,8 @@ export const Content = {
 			};
 		}
 		await next;
-		//变更角色的所属势力。如果新将是双势力，重选一下势力。
-		if (event.changeGroup !== false) {
+		//变更角色的所属势力。如果新将是双势力，重选一下势力。 国战不因换将而重选势力
+		if (event.changeGroup !== false && get.mode() != "guozhan") {
 			let newGroups = [];
 			if (!player.isUnseen(1)) {
 				newGroups = get.is.double(player.name1, true) || [get.character(player.name1, 1)];

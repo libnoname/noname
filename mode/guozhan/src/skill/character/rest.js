@@ -822,6 +822,7 @@ export default {
 				trigger: { source: "dieAfter" },
 				prompt2: "交换主副将",
 				async content(event, trigger, player) {
+					await player.showCharacter(2);
 					game.broadcastAll(
 						(player, name1, name2) => {
 							player.name = name2;
