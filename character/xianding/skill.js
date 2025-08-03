@@ -88,7 +88,7 @@ const skills = {
 						});
 					};
 					player.addTempSkill("dczhendu_draw");
-					while (cards.some(card => player.hasUseTarget(func(card), false, false) || (get.info(func(card)).notarget && lib.filter.cardEnabled(func(card), player)))) {
+					while (cards.some(card => ["basic", "trick"].includes(get.type(card)) && (player.hasUseTarget(func(card), false, false) || (get.info(func(card)).notarget && lib.filter.cardEnabled(func(card), player))))) {
 						const result = await player
 							.chooseButton([`酖毒：视为使用一张牌`, [cards, "vcard"]], true)
 							.set("ai", button => get.order(get.event().func(button.link)))

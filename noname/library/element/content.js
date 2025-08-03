@@ -5842,7 +5842,16 @@ player.removeVirtualEquip(card);
 					return filterCard.call(this, card, player);
 				};
 			})(event);
-			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
+			const skills = player.getSkills("invisible").concat(lib.skill.global);
+			game.expandSkills(skills);
+			const hasSkill = skills.some(skill=> {
+				const info = lib.skill[skill];
+				return info?.enable?.includes(event.name) || info?.enable == event.name;
+			})
+			if (_status.noclearcountdown !== "direct") {
+				_status.noclearcountdown = true;
+			}
+			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
 				event.result = {
 					bool: false,
 					cards: [],
@@ -5980,6 +5989,21 @@ player.removeVirtualEquip(card);
 			if (typeof event.promptdiscard?.close == "function") {
 				event.promptdiscard.close();
 			}
+			if (event.result) {
+				/*if (event.result._sendskill) {
+					lib.skill[event.result._sendskill[0]] = event.result._sendskill[1];
+				}*/
+				if (event.result.skill) {
+					const info = get.info(event.result.skill);
+					if (info && info.content && !game.online) {
+						const next = game.createEvent(event.result.skill);
+						next.setContent(info.content);
+						next.set("result", event.result);
+						next.set("player", player);
+						await next;
+					}
+				}
+			}
 		},
 		async (event, trigger, player) => {
 			if (event.result.bool && event.result.cards?.length && !game.online && event.autodelay && !event.isMine()) {
@@ -5991,6 +6015,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			delete _status.noclearcountdown;
 			if (typeof event.dialog?.close == "function") {
 				event.dialog.close();
 			}
@@ -6001,13 +6026,19 @@ player.removeVirtualEquip(card);
 					player.logSkill.apply(player, event.logSkill);
 				}
 			}
+			/*if (event._sendskill) {
+				event.result._sendskill = event._sendskill;
+			}*/
 			if (!game.online && !event.chooseonly) {
-				event.done = player.discard(event.result.cards);
+				event.done ??= player.discard(event.result.cards);
 				if (typeof event.delay == "boolean") {
 					event.done.delay = event.delay;
 				}
 				event.done.discarder = player;
 				await event.done;
+			}
+			if (!_status.noclearcountdown) {
+				game.stopCountChoose();
 			}
 		},
 	],
@@ -9222,47 +9253,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			if (event.cards.length) {
-				const ownerCards = event.cards.filter(card => get.owner(card)),
-					directDiscard = event.cards.filter(card => !get.owner(card));
-				if (ownerCards.length) {
-					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
-					if (
-						cards.some(card => {
-							const owner = get.owner(card);
-							if (owner === false) {
-								return false;
-							}
-							return owner != ownerx;
-						})
-					) {
-						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-							let cards = event.cards;
-							let cards_noowner = [];
-							while (cards.length) {
-								const owner = get.owner(cards[0]);
-								if (!owner) {
-									cards_noowner.add(cards.shift());
-								} else {
-									const id = owner.playerid;
-									let onLoseCards = cards.filter(card => get.owner(card) == owner);
-									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
-								}
-							}
-							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-							}
-						});
-					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
-					}
-				}
-				if (directDiscard.length) {
-					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
-				}
-			}
+			player.useCardAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = event.cards;
 				let virtualCard_str = false;
@@ -9355,6 +9346,47 @@ player.removeVirtualEquip(card);
 						}
 						delete event.waitingForTransition;
 					});
+				}
+			}
+			if (event.cards.length) {
+				const ownerCards = event.cards.filter(card => get.owner(card)),
+					directDiscard = event.cards.filter(card => !get.owner(card));
+				if (ownerCards.length) {
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) {
+								return false;
+							}
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
+							}
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
+				}
+				if (directDiscard.length) {
+					event.lose_map.noowner.addArray(directDiscard);
+					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
 			//player.using=cards;
@@ -10413,47 +10445,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			if (cards.length) {
-				const ownerCards = cards.filter(card => get.owner(card)),
-					directDiscard = cards.filter(card => !get.owner(card));
-				if (ownerCards.length) {
-					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
-					if (
-						cards.some(card => {
-							const owner = get.owner(card);
-							if (owner === false) {
-								return false;
-							}
-							return owner != ownerx;
-						})
-					) {
-						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-							let cards = event.cards;
-							let cards_noowner = [];
-							while (cards.length) {
-								const owner = get.owner(cards[0]);
-								if (!owner) {
-									cards_noowner.add(cards.shift());
-								} else {
-									const id = owner.playerid;
-									let onLoseCards = cards.filter(card => get.owner(card) == owner);
-									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
-								}
-							}
-							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-							}
-						});
-					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
-					}
-				}
-				if (directDiscard.length) {
-					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
-				}
-			}
+			player.respondAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = cards;
 				let virtualCard_str = false;
@@ -10552,6 +10544,47 @@ player.removeVirtualEquip(card);
 							}
 						}
 					}, throw_cards);
+				}
+			}
+			if (cards.length) {
+				const ownerCards = cards.filter(card => get.owner(card)),
+					directDiscard = cards.filter(card => !get.owner(card));
+				if (ownerCards.length) {
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) {
+								return false;
+							}
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
+							}
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
+				}
+				if (directDiscard.length) {
+					event.lose_map.noowner.addArray(directDiscard);
+					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
 			await event.trigger("respond");

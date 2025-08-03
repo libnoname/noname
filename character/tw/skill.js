@@ -22,6 +22,13 @@ const skills = {
 			}
 			return 5;
 		},
+		filter(event, player) {
+			const num = get.info("twjiwei").getNum(event, player);
+			if (event.name == "phaseZhunbei") {
+				return player.countCards("h") >= num && game.hasPlayer(current => current != player);
+			}
+			return event.player != player && num > 0;
+		},
 	},
 	//TW朱治
 	twanguo: {

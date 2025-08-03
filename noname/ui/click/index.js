@@ -3363,7 +3363,9 @@ export class Click {
 			fav.classList.add("active");
 		}
 
-		let intro, list = [], clickSkill;
+		let intro,
+			list = [],
+			clickSkill;
 		let skills = ui.create.div(".characterskill", uiintro);
 		const refreshIntro = function () {
 			if (intro?.firstChild) {
@@ -4113,6 +4115,7 @@ export class Click {
 			}
 			delete ui.throwEmotion;
 			delete _status.removePop;
+			game.closePoptipDialog();
 			uiintro.delete();
 			this.remove();
 			ui.historybar.style.zIndex = "";
@@ -4145,11 +4148,14 @@ export class Click {
 			}
 		}
 		uiintro.style.zIndex = 21;
-		var clickintro = function () {
-			if (_status.touchpopping) {
+		var clickintro = function (e) {
+			const poptip = e.relatedTarget?.parentNode?.parentNode;
+			const isPoptip = e.target?.matches("poptip") || (poptip && poptip === _status.poptip?.[0]);
+			if (_status.touchpopping || isPoptip) {
 				return;
 			}
 			delete _status.removePop;
+			game.closePoptipDialog();
 			layer.remove();
 			this.delete();
 			ui.historybar.style.zIndex = "";

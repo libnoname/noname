@@ -151,7 +151,7 @@ export const characterPackMenu = function (connectMenu) {
 			node.link = page;
 			page.node = node;
 			var list = [];
-			var boolAI = true;
+			var boolAI = lib.config[`forbidai_user_${mode}`];
 			for (var i in _info) {
 				const characterInfo = _info[i];
 				if (characterInfo.isUnseen) {
@@ -161,8 +161,9 @@ export const characterPackMenu = function (connectMenu) {
 					continue;
 				}
 				list.push(i);
-				if (boolAI && !lib.config.forbidai_user.includes(i)) {
-					boolAI = false;
+				if (Boolean(boolAI) !== lib.config.forbidai_user.includes(i)) {
+					lib.config.forbidai_user[boolAI ? "add" : "remove"](i);
+					game.saveConfig("forbidai_user", lib.config.forbidai_user);
 				}
 				for (var j = 0; j < characterInfo.skills.length; j++) {
 					if (!lib.skill[characterInfo.skills[j]]) {
@@ -201,15 +202,8 @@ export const characterPackMenu = function (connectMenu) {
 				init: boolAI,
 				intro: "将该武将包内的武将全部设置为仅点将可用",
 				onclick(bool) {
-					if (bool) {
-						for (var i = 0; i < list.length; i++) {
-							lib.config.forbidai_user.add(list[i]);
-						}
-					} else {
-						for (var i = 0; i < list.length; i++) {
-							lib.config.forbidai_user.remove(list[i]);
-						}
-					}
+					game.saveConfig(`forbidai_user_${mode}`, bool);
+					lib.config.forbidai_user[bool ? "addArray" : "removeArray"](list);
 					game.saveConfig("forbidai_user", lib.config.forbidai_user);
 				},
 			});
@@ -479,12 +473,17 @@ export const characterPackMenu = function (connectMenu) {
 			game.saveConfig("characters", lib.config.all.characters);
 			updateNodes();
 		});
+		var node3 = ui.create.div(".lefttext", "全部关闭", start.firstChild, function () {
+			game.saveConfig("characters", []);
+			updateNodes();
+		});
 		var node2 = ui.create.div(".lefttext", "恢复默认", start.firstChild, function () {
 			game.saveConfig("characters", lib.config.defaultcharacters);
 			updateNodes();
 		});
 		node1.style.marginTop = "12px";
-		node2.style.marginTop = "7px";
+		node3.style.marginTop = "7px";
+		node2.style.marginTop = "2px";
 	}
 
 	updateNodes();

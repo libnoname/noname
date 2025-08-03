@@ -200,6 +200,23 @@ export class Library {
 	 * @type { Function[] | undefined }
 	 */
 	arenaReady = [
+		//增加ui.window的监听
+		function () {
+			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
+				const target = event.target.closest("poptip");
+				if (!target) {
+					return;
+				}
+				const id = target.getAttribute("id");
+				const index = parseInt(target.getAttribute("tip-index"));
+				//清除原来的对话框
+				game.closePoptipDialog();
+				if (id && typeof index == "number") {
+					return get.poptipIntro(id, index, event);
+				}
+				return;
+			});
+		},
 		//预处理技能拥有者
 		function () {
 			_status.skillOwner = {};
@@ -368,9 +385,12 @@ export class Library {
 	objectURL = new Map();
 	hookmap = {};
 	//共联时机的map（目前有很大的兼容问题，请不要使用）
-	relatedTrigger = {
+	#relatedTrigger = {
 		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
+	get relatedTrigger() {
+		return this.#relatedTrigger;
+	}
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
 	 */
@@ -811,6 +831,28 @@ export class Library {
 		//也可以放函数
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
+
+	/**
+	 * the map of pop tips
+	 *
+	 * 为特殊名词进行解释的map
+	 * 要添加请用game.addPoptip添加
+	 */
+	#poptipMap = new Map([
+		["乘势", "乘势：若达成所有选项，则可以执行后续效果"],
+		["背水", "背水：依次执行所有选项，然后支付代价"],
+	]);
+	get poptipMap() {
+		return this.#poptipMap;
+	}
+	set poptipMap(map) {
+		if (map instanceof Map) {
+			for (const [key, value] of map) {
+				this.#poptipMap.set(key, value);
+			}
+		}
+	}
+
 	characterDialogGroup = {
 		收藏: function (name, capt) {
 			return lib.config.favouriteCharacter.includes(name) ? capt : null;
@@ -10226,252 +10268,298 @@ export class Library {
 			game.zhu.update();
 		},
 	};
-	translate = {
-		flower: "鲜花",
-		egg: "鸡蛋",
-		wine: "酒杯",
-		shoe: "拖鞋",
-		yuxisx: "玉玺",
-		jiasuo: "枷锁",
-		junk: "平凡",
-		common: "普通",
-		rare: "精品",
-		epic: "史诗",
-		legend: "传说",
-		default: "默认",
-		special: "特殊",
-		zhenfa: "阵法",
-		aozhan: "鏖战",
-		mode_derivation_card_config: "衍生",
-		mode_banned_card_config: "禁卡",
-		mode_favourite_character_config: "收藏",
-		mode_banned_character_config: "禁将",
-		heart: "♥︎",
-		diamond: "♦︎",
-		spade: "♠︎",
-		club: "♣︎",
-		none: "◈",
-		ghujia: "护甲",
-		ghujia_bg: "甲",
-		heart2: "红桃",
-		diamond2: "方片",
-		spade2: "黑桃",
-		club2: "梅花",
-		none2: "无色",
-		red: "红色",
-		black: "黑色",
-		red2: "红色",
-		black2: "黑色",
-		ok: "确定",
-		ok2: "确定",
-		cancel: "取消",
-		cancel2: "取消",
-		restart: "重新开始",
-		setting: "设置",
-		start: "开始",
-		random: "随机",
-		_out: "无效",
-		agree: "同意",
-		refuse: "拒绝",
-		fire: "火",
-		thunder: "雷",
-		poison: "毒",
-		kami: "神",
-		ice: "冰",
-		stab: "刺",
-		wei: "魏",
-		shu: "蜀",
-		wu: "吴",
-		qun: "群",
-		shen: "神",
-		devil: "魔",
-		western: "西",
-		key: "键",
-		jin: "晋",
-		ye: "野",
-		double: "双",
-		wei2: "魏国",
-		shu2: "蜀国",
-		wu2: "吴国",
-		qun2: "群雄",
-		shen2: "神明",
-		devil2: "入魔",
-		western2: "西方",
-		key2: "KEY",
-		jin2: "晋朝",
-		ye2: "野心家",
-		double2: "双势力",
-		male: "男",
-		female: "女",
-		mad: "混乱",
-		mad_bg: "疯",
-		draw_card: "摸牌",
-		discard_card: "弃牌",
-		take_damage: "受伤害",
-		reset_character: "复原武将牌",
-		recover_hp: "回复体力",
-		lose_hp: "失去体力",
-		get_damage: "受伤害",
-		weiColor: "#b0d0e2",
-		shuColor: "#ffddb9",
-		wuColor: "#b2d9a9",
-		qunColor: "#f6f6f6",
-		shenColor: "#ffe14c",
-		westernColor: "#ffe14c",
-		jinColor: "#ffe14c",
-		keyColor: "#c9b1fd",
-		devilColor: "#9b2234",
-		basic: "基本",
-		equip: "装备",
-		trick: "锦囊",
-		delay: "延时锦囊",
-		special_delay: "技能机制",
-		character: "角色",
-		revive: "复活",
-		equip1: "武器",
-		equip2: "防具",
-		equip3: "防御马",
-		equip3_4: "坐骑",
-		equip4: "攻击马",
-		equip5: "宝物",
-		equip6: "特殊装备",
-		zero: "零",
-		one: "一",
-		two: "二",
-		three: "三",
-		four: "四",
-		five: "五",
-		six: "六",
-		seven: "七",
-		eight: "八",
-		nine: "九",
-		ten: "十",
-		_recasting: "重铸",
-		_lianhuan: "连环",
-		_lianhuan2: "连环",
-		_kamisha: "神杀",
-		_icesha: "冰杀",
-		qianxing: "潜行",
-		mianyi: "免疫",
-		fengyin: "封印",
-		baiban: "白板",
-		_disableJudge: "判定区",
-		_rest_return: "休整",
+	translate = new Proxy(
+		{
+			flower: "鲜花",
+			egg: "鸡蛋",
+			wine: "酒杯",
+			shoe: "拖鞋",
+			yuxisx: "玉玺",
+			jiasuo: "枷锁",
+			junk: "平凡",
+			common: "普通",
+			rare: "精品",
+			epic: "史诗",
+			legend: "传说",
+			default: "默认",
+			special: "特殊",
+			zhenfa: "阵法",
+			aozhan: "鏖战",
+			mode_derivation_card_config: "衍生",
+			mode_banned_card_config: "禁卡",
+			mode_favourite_character_config: "收藏",
+			mode_banned_character_config: "禁将",
+			heart: "♥︎",
+			diamond: "♦︎",
+			spade: "♠︎",
+			club: "♣︎",
+			none: "◈",
+			ghujia: "护甲",
+			ghujia_bg: "甲",
+			heart2: "红桃",
+			diamond2: "方片",
+			spade2: "黑桃",
+			club2: "梅花",
+			none2: "无色",
+			red: "红色",
+			black: "黑色",
+			red2: "红色",
+			black2: "黑色",
+			ok: "确定",
+			ok2: "确定",
+			cancel: "取消",
+			cancel2: "取消",
+			restart: "重新开始",
+			setting: "设置",
+			start: "开始",
+			random: "随机",
+			_out: "无效",
+			agree: "同意",
+			refuse: "拒绝",
+			fire: "火",
+			thunder: "雷",
+			poison: "毒",
+			kami: "神",
+			ice: "冰",
+			stab: "刺",
+			wei: "魏",
+			shu: "蜀",
+			wu: "吴",
+			qun: "群",
+			shen: "神",
+			devil: "魔",
+			western: "西",
+			key: "键",
+			jin: "晋",
+			ye: "野",
+			double: "双",
+			wei2: "魏国",
+			shu2: "蜀国",
+			wu2: "吴国",
+			qun2: "群雄",
+			shen2: "神明",
+			devil2: "入魔",
+			western2: "西方",
+			key2: "KEY",
+			jin2: "晋朝",
+			ye2: "野心家",
+			double2: "双势力",
+			male: "男",
+			female: "女",
+			mad: "混乱",
+			mad_bg: "疯",
+			draw_card: "摸牌",
+			discard_card: "弃牌",
+			take_damage: "受伤害",
+			reset_character: "复原武将牌",
+			recover_hp: "回复体力",
+			lose_hp: "失去体力",
+			get_damage: "受伤害",
+			weiColor: "#b0d0e2",
+			shuColor: "#ffddb9",
+			wuColor: "#b2d9a9",
+			qunColor: "#f6f6f6",
+			shenColor: "#ffe14c",
+			westernColor: "#ffe14c",
+			jinColor: "#ffe14c",
+			keyColor: "#c9b1fd",
+			devilColor: "#9b2234",
+			basic: "基本",
+			equip: "装备",
+			trick: "锦囊",
+			delay: "延时锦囊",
+			special_delay: "技能机制",
+			character: "角色",
+			revive: "复活",
+			equip1: "武器",
+			equip2: "防具",
+			equip3: "防御马",
+			equip3_4: "坐骑",
+			equip4: "攻击马",
+			equip5: "宝物",
+			equip6: "特殊装备",
+			zero: "零",
+			one: "一",
+			two: "二",
+			three: "三",
+			four: "四",
+			five: "五",
+			six: "六",
+			seven: "七",
+			eight: "八",
+			nine: "九",
+			ten: "十",
+			_recasting: "重铸",
+			_lianhuan: "连环",
+			_lianhuan2: "连环",
+			_kamisha: "神杀",
+			_icesha: "冰杀",
+			qianxing: "潜行",
+			mianyi: "免疫",
+			fengyin: "封印",
+			baiban: "白板",
+			_disableJudge: "判定区",
+			_rest_return: "休整",
 
-		xiaowu_emotion: "小无表情",
-		wanglang_emotion: "王朗表情",
-		guojia_emotion: "郭嘉表情",
-		zhenji_emotion: "甄姬表情",
-		shibing_emotion: "士兵表情",
-		xiaosha_emotion: "小杀表情",
-		xiaotao_emotion: "小桃表情",
-		xiaojiu_emotion: "小酒表情",
-		xiaokuo_emotion: "小扩表情",
-		biexiao_emotion: "憋笑表情",
-		chaijun_emotion: "柴郡表情",
-		huangdou_emotion: "黄豆表情",
-		maoshu_emotion: "猫鼠表情",
-		mobile_emotion: "手杀表情",
+			xiaowu_emotion: "小无表情",
+			wanglang_emotion: "王朗表情",
+			guojia_emotion: "郭嘉表情",
+			zhenji_emotion: "甄姬表情",
+			shibing_emotion: "士兵表情",
+			xiaosha_emotion: "小杀表情",
+			xiaotao_emotion: "小桃表情",
+			xiaojiu_emotion: "小酒表情",
+			xiaokuo_emotion: "小扩表情",
+			biexiao_emotion: "憋笑表情",
+			chaijun_emotion: "柴郡表情",
+			huangdou_emotion: "黄豆表情",
+			maoshu_emotion: "猫鼠表情",
+			mobile_emotion: "手杀表情",
 
-		pause: "暂停",
-		config: "选项",
-		auto: "托管",
+			pause: "暂停",
+			config: "选项",
+			auto: "托管",
 
-		unknown: "未知",
-		unknown0: "一号位",
-		unknown1: "二号位",
-		unknown2: "三号位",
-		unknown3: "四号位",
-		unknown4: "五号位",
-		unknown5: "六号位",
-		unknown6: "七号位",
-		unknown7: "八号位",
-		unknown8: "九号位",
-		unknown9: "十号位",
-		unknown10: "十一号位",
-		unknown11: "十二号位",
+			unknown: "未知",
+			unknown0: "一号位",
+			unknown1: "二号位",
+			unknown2: "三号位",
+			unknown3: "四号位",
+			unknown4: "五号位",
+			unknown5: "六号位",
+			unknown6: "七号位",
+			unknown7: "八号位",
+			unknown8: "九号位",
+			unknown9: "十号位",
+			unknown10: "十一号位",
+			unknown11: "十二号位",
 
-		feichu_equip1: "已废除",
-		feichu_equip1_info: "武器栏已废除",
-		feichu_equip2: "已废除",
-		feichu_equip2_info: "防具栏已废除",
-		feichu_equip3: "已废除",
-		feichu_equip3_info: "防御坐骑栏已废除",
-		feichu_equip4: "已废除",
-		feichu_equip4_info: "攻击坐骑栏已废除",
-		feichu_equip5: "已废除",
-		feichu_equip5_info: "宝物栏已废除",
-		feichu_equip6: "已废除",
-		feichu_equip6_info: "特殊装备栏已废除",
-		feichu_equip1_bg: "废",
-		feichu_equip2_bg: "废",
-		feichu_equip3_bg: "废",
-		feichu_equip4_bg: "废",
-		feichu_equip5_bg: "废",
-		feichu_equip6_bg: "废",
-		disable_judge: "已废除",
-		disable_judge_info: "判定区已废除",
-		disable_judge_bg: "废",
-		pss: "手势",
-		pss_paper: "布",
-		pss_scissor: "剪刀",
-		pss_stone: "石头",
-		pss_paper_info: "石头剪刀布时的一种手势。克制石头，但被剪刀克制。",
-		pss_scissor_info: "石头剪刀布时的一种手势。克制布，但被石头克制。",
-		pss_stone_info: "石头剪刀布时的一种手势。克制剪刀，但被布克制。",
-		renku: "仁库",
-		group_wei: "魏势力",
-		group_shu: "蜀势力",
-		group_wu: "吴势力",
-		group_qun: "群势力",
-		group_key: "键势力",
-		group_jin: "晋势力",
-		group_wei_bg: "魏",
-		group_shu_bg: "蜀",
-		group_wu_bg: "吴",
-		group_qun_bg: "群",
-		group_key_bg: "键",
-		group_jin_bg: "晋",
-		zhengsu: "整肃",
-		zhengsu_leijin: "擂进",
-		zhengsu_bianzhen: "变阵",
-		zhengsu_mingzhi: "鸣止",
-		zhengsu_leijin_info: "回合内所有于出牌阶段使用的牌点数递增且不少于三张。",
-		zhengsu_bianzhen_info: "回合内所有于出牌阶段使用的牌花色相同且不少于两张。",
-		zhengsu_mingzhi_info: "回合内所有于弃牌阶段弃置的牌花色均不相同且不少于两张。",
-		db_atk: "策略",
-		db_atk1: "全军出击",
-		db_atk2: "分兵围城",
-		db_def: "策略",
-		db_def1: "奇袭粮道",
-		db_def2: "开城诱敌",
-		cooperation_damage: "同仇",
-		cooperation_damage_info: "双方累计造成至少4点伤害",
-		cooperation_draw: "并进",
-		cooperation_draw_info: "双方累计摸至少八张牌",
-		cooperation_discard: "疏财",
-		cooperation_discard_info: "双方累计弃置至少4种花色的牌",
-		cooperation_use: "戮力",
-		cooperation_use_info: "双方累计使用至少4种花色的牌",
-		charge: "蓄力值",
-		expandedSlots: "扩展装备栏",
-		stratagem_fury: "怒气",
-		_stratagem_add_buff: "强化",
+			feichu_equip1: "已废除",
+			feichu_equip1_info: "武器栏已废除",
+			feichu_equip2: "已废除",
+			feichu_equip2_info: "防具栏已废除",
+			feichu_equip3: "已废除",
+			feichu_equip3_info: "防御坐骑栏已废除",
+			feichu_equip4: "已废除",
+			feichu_equip4_info: "攻击坐骑栏已废除",
+			feichu_equip5: "已废除",
+			feichu_equip5_info: "宝物栏已废除",
+			feichu_equip6: "已废除",
+			feichu_equip6_info: "特殊装备栏已废除",
+			feichu_equip1_bg: "废",
+			feichu_equip2_bg: "废",
+			feichu_equip3_bg: "废",
+			feichu_equip4_bg: "废",
+			feichu_equip5_bg: "废",
+			feichu_equip6_bg: "废",
+			disable_judge: "已废除",
+			disable_judge_info: "判定区已废除",
+			disable_judge_bg: "废",
+			pss: "手势",
+			pss_paper: "布",
+			pss_scissor: "剪刀",
+			pss_stone: "石头",
+			pss_paper_info: "石头剪刀布时的一种手势。克制石头，但被剪刀克制。",
+			pss_scissor_info: "石头剪刀布时的一种手势。克制布，但被石头克制。",
+			pss_stone_info: "石头剪刀布时的一种手势。克制剪刀，但被布克制。",
+			renku: "仁库",
+			group_wei: "魏势力",
+			group_shu: "蜀势力",
+			group_wu: "吴势力",
+			group_qun: "群势力",
+			group_key: "键势力",
+			group_jin: "晋势力",
+			group_wei_bg: "魏",
+			group_shu_bg: "蜀",
+			group_wu_bg: "吴",
+			group_qun_bg: "群",
+			group_key_bg: "键",
+			group_jin_bg: "晋",
+			zhengsu: "整肃",
+			zhengsu_leijin: "擂进",
+			zhengsu_bianzhen: "变阵",
+			zhengsu_mingzhi: "鸣止",
+			zhengsu_leijin_info: "回合内所有于出牌阶段使用的牌点数递增且不少于三张。",
+			zhengsu_bianzhen_info: "回合内所有于出牌阶段使用的牌花色相同且不少于两张。",
+			zhengsu_mingzhi_info: "回合内所有于弃牌阶段弃置的牌花色均不相同且不少于两张。",
+			db_atk: "策略",
+			db_atk1: "全军出击",
+			db_atk2: "分兵围城",
+			db_def: "策略",
+			db_def1: "奇袭粮道",
+			db_def2: "开城诱敌",
+			cooperation_damage: "同仇",
+			cooperation_damage_info: "双方累计造成至少4点伤害",
+			cooperation_draw: "并进",
+			cooperation_draw_info: "双方累计摸至少八张牌",
+			cooperation_discard: "疏财",
+			cooperation_discard_info: "双方累计弃置至少4种花色的牌",
+			cooperation_use: "戮力",
+			cooperation_use_info: "双方累计使用至少4种花色的牌",
+			charge: "蓄力值",
+			expandedSlots: "扩展装备栏",
+			stratagem_fury: "怒气",
+			_stratagem_add_buff: "强化",
 
-		phaseZhunbei: "准备阶段",
-		phaseJudge: "判定阶段",
-		phaseDraw: "摸牌阶段",
-		phaseUse: "出牌阶段",
-		phaseDiscard: "弃牌阶段",
-		phaseJieshu: "结束阶段",
+			phaseZhunbei: "准备阶段",
+			phaseJudge: "判定阶段",
+			phaseDraw: "摸牌阶段",
+			phaseUse: "出牌阶段",
+			phaseDiscard: "弃牌阶段",
+			phaseJieshu: "结束阶段",
 
-		dongcha: "洞察",
-		dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
-		sheshen: "舍身",
-		sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
-		identity_mingcha: "明察",
-		identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
-	};
+			dongcha: "洞察",
+			dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
+			sheshen: "舍身",
+			sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
+			identity_mingcha: "明察",
+			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
+		},
+		{
+			get(target, prop, receiver) {
+				return Reflect.get(target, prop, receiver);
+			},
+			set(target, prop, newValue) {
+				if (typeof prop == "string" && typeof newValue == "string") {
+					const list = newValue.split("&");
+					if (list.length > 1) {
+						const newList = list.slice();
+						for (let i = 0; i < list.length; i++) {
+							const str = list[i];
+							const listx = str.split("=");
+							if (listx.length == 2) {
+								if (listx[0] == "poptip") {
+									newList[i] = get.poptipLink(...listx[1].split("|"));
+								}
+							}
+						}
+						newValue = newList.join("");
+					}
+				}
+				return Reflect.set(target, prop, newValue);
+			},
+			defineProperty(target, prop, descriptor) {
+				const newValue = descriptor.value;
+				if (typeof prop == "string" && typeof newValue == "string") {
+					const list = newValue.split("&");
+					if (list.length > 1) {
+						const newList = list.slice();
+						for (let i = 0; i < list.length; i++) {
+							const str = list[i];
+							const listx = str.split("=");
+							if (listx.length == 2) {
+								if (listx[0] == "poptip") {
+									newList[i] = get.poptipLink(...listx[1].split("|"));
+								}
+							}
+						}
+						descriptor.value = newList.join("");
+					}
+				}
+				return Reflect.defineProperty(target, prop, descriptor);
+			},
+		}
+	);
 
 	experimental = experimental;
 
@@ -14030,6 +14118,55 @@ export class Library {
 				// }
 			},
 			/**
+			 * 用于代替exec进行主机许可的请求喵
+			 *
+			 * @this {import("./element/client.js").Client}
+			 * @param {{ type: "card" | "skill", name: string, key: string, args: [], timeout: number|null }} subject 从`get.info(type == "card" ? { name } : name).sync.key`调用函数
+			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应
+			 */
+			dataSync(subject, id) {
+				if (lib.node.observing.includes(this)) {
+					return;
+				}
+
+				function parseSubject(subject) {
+					switch (subject.type) {
+						default:
+							return null;
+						case "card":
+							return get.info({ name: subject.name }, false)?.sync?.[subject.key];
+						case "skill":
+							return get.info(subject.name, false)?.sync?.[subject.key];
+					}
+				}
+
+				const parsed = parseSubject(subject);
+
+				if (typeof parsed === "function") {
+					const args = Array.isArray(subject.args) ? subject.args : [];
+					const timeout = Number.isFinite(subject.timeout) && subject.timeout >= 0 ? subject.timeout : 5000;
+					const result = parsed.call(null, lib.playerOL[this.id], ...args, timeout);
+
+					if (!id) {
+						return;
+					}
+
+					// 简单检查一下异步结果喵
+					if (result instanceof Promise) {
+						result.then(result => {
+							this.send("dataReply", { ok: true, id, result });
+						});
+					}
+
+					this.send("dataReply", { ok: true, id, result });
+					return;
+				}
+
+				if (id) {
+					this.send("dataReply", { ok: false, id });
+				}
+			},
+			/**
 			 * @this {import("./element/client.js").Client}
 			 */
 			log() {
@@ -14902,6 +15039,22 @@ export class Library {
 				if (key) {
 					game.onlineKey = key;
 					localStorage.setItem(lib.configprefix + "key", game.onlineKey);
+				}
+			},
+			/**
+			 * 当服务器响应通过dataSync发送的请求时走这里喵
+			 *
+			 * @param {{ ok: boolean, id: string|null, result: any }} data
+			 */
+			dataReply(data) {
+				// 需要提前注册响应回调喵
+				if (data.id && game.requestMap && data.id in game.requestMap) {
+					const callback = game.requestMap[data.id];
+					delete game.requestMap[data.id];
+
+					if (typeof callback === "function") {
+						callback(data.ok, data.result);
+					}
 				}
 			},
 			denied: function (reason) {
@@ -15938,7 +16091,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
-	selectGroup = ["shen", "devil"];//"western", 
+	selectGroup = ["shen", "devil"]; //"western",
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {

@@ -252,6 +252,8 @@ window.noname_character_rank = {
 		"ren_dengai",
 	],
 	am: [
+		"ol_sb_lusu",
+		"ol_sb_zhugeliang",
 		"pot_lusu",
 		"mb_sunjun",
 		"dc_zhaoxiang",
@@ -2373,6 +2375,8 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"ol_sb_lusu",
+			"ol_sb_zhugeliang",
 			"mark_shen_machao",
 			"tw_zhenji",
 			"dc_sb_lunxun",

@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	olsbzhijue(player) {
+		const bool = player.storage.olsbzhijue;
+		let yang = "出牌阶段，你可将牌堆顶的一张牌当【火攻】使用",
+			yin = "你可将手牌中一种颜色的手牌当【无懈可击】使用（须与上一次阳状态使用牌的颜色不同）";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，",
+			end = "。若你以此法使用的牌未造成伤害，你令〖知天〗可见牌与观看牌数-1（至少减至1），然后你摸两张牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	olsbjinming(player) {
 		let str = "回合开始时，你可以选择一项：";
 		for (let i of ["1.回复过1点体力；", "2.弃置过两张牌；", "3.使用过三种类型的牌；", "4.造成过4点伤害。"]) {

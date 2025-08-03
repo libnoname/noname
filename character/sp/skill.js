@@ -3715,7 +3715,7 @@ const skills = {
 				name: "你可以摸一张牌",
 				effect: {
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.draw();
 					},
 				},
@@ -3739,7 +3739,7 @@ const skills = {
 							.forResult();
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.discardPlayerCard(event.targets[0], "hej", true);
 					},
 				},
@@ -3749,7 +3749,7 @@ const skills = {
 				name: "你可以观看牌堆顶三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
 				effect: {
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.chooseToGuanxing(3);
 					},
 				},
@@ -3772,7 +3772,7 @@ const skills = {
 					},
 					popup: false,
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.discard(event.cards);
 						player.draw(event.cards.length);
 					},
@@ -3790,7 +3790,7 @@ const skills = {
 						return "获得" + get.translation(event.cards.filterInD());
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.gain(trigger.cards.filterInD(), "gain2");
 					},
 				},
@@ -3810,7 +3810,7 @@ const skills = {
 							.chooseUseTarget(get.prompt2(event.name), card, false, "nodistance")
 							.set("oncard", () => {
 								const event = _status.event.getParent(2);
-								get.info("olhedao").tianshuClear(event.name, event.player);
+								lib.skill.olhedao.tianshuClear(event.name, event.player);
 							})
 							.set("logSkill", event.name)
 							.forResult();
@@ -3836,7 +3836,7 @@ const skills = {
 							.forResult();
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.gainPlayerCard(event.targets[0], "hej", true);
 					},
 				},
@@ -3852,7 +3852,7 @@ const skills = {
 						return get.recoverEffect(player, player, player) > 0;
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.recover();
 					},
 				},
@@ -3862,7 +3862,7 @@ const skills = {
 				name: "你可以摸三张牌，然后弃置一张牌",
 				effect: {
 					async content(event, trigger, player) {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						await player.draw(3);
 						await player.chooseToDiscard("he", true);
 					},
@@ -3876,7 +3876,7 @@ const skills = {
 						return player.countCards("h") < player.maxHp;
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.drawTo(Math.min(player.maxHp, player.countCards("h") + 5));
 					},
 				},
@@ -3908,7 +3908,7 @@ const skills = {
 					},
 					content() {
 						const target = event.targets[0];
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						target.addTempSkill("fengyin", { player: "phaseBegin" });
 					},
 				},
@@ -3954,7 +3954,7 @@ const skills = {
 					},
 					content() {
 						const target = event.targets[0];
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						target.draw(2);
 						target.turnOver();
 					},
@@ -3972,7 +3972,7 @@ const skills = {
 						return get.effect(player, event.card, event.player, player) < 0;
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						trigger.getParent().excluded.add(player);
 						game.log(trigger.card, "对", player, "无效");
 					},
@@ -3999,7 +3999,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						const result = await target
 							.judge(card => {
 								return get.suit(card) === "spade" ? -4 : 0;
@@ -4059,7 +4059,7 @@ const skills = {
 					popup: false,
 					async content(event, trigger, player) {
 						const chooseCardResultCards = event.cost_data.cards;
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						await player.respond(chooseCardResultCards, event.name, "highlight", "noOrdering");
 						if (trigger.player.judging[0].clone) {
 							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
@@ -4095,7 +4095,7 @@ const skills = {
 						return get.value(event.result.card) > 0;
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.gain(trigger.result.card, "gain2");
 					},
 				},
@@ -4109,7 +4109,7 @@ const skills = {
 						return game.hasPlayer(t => t.maxHp > player.maxHp);
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.gainMaxHp();
 					},
 				},
@@ -4153,7 +4153,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						const result = await player.chooseToCompare(target).forResult();
 						if (result.bool) {
 							await player.gainPlayerCard(target, 2, "he", true);
@@ -4176,7 +4176,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						const { targets } = event;
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						if (targets.length === 1) {
 							await targets[0].draw();
 						} else {
@@ -4201,7 +4201,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						target.addTempSkill("olhedao_hand", { player: "phaseEnd" });
 						target.addMark("olhedao_hand", 2, false);
 					},
@@ -4212,7 +4212,7 @@ const skills = {
 				name: "你可以获得两张非基本牌",
 				effect: {
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						let list = [];
 						while (list.length < 2) {
 							const card = get.cardPile(card => get.type(card) !== "basic" && !list.includes(card));
@@ -4233,7 +4233,7 @@ const skills = {
 				name: "你可以获得两张锦囊牌",
 				effect: {
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						let list = [];
 						while (list.length < 2) {
 							const card = get.cardPile(card => get.type2(card) === "trick" && !list.includes(card));
@@ -4250,11 +4250,11 @@ const skills = {
 				},
 			},
 			{
-				toIndex: 2,
+				toIndex: 3,
 				name: "你可以摸三张牌并将武将牌翻面",
 				effect: {
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.draw(3);
 						player.turnOver();
 					},
@@ -4279,7 +4279,7 @@ const skills = {
 							.forResult();
 					},
 					async content(event, trigger, player) {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.addTempSkill("olhedao_effect", { player: "phaseEnd" });
 						player.markAuto("olhedao_effect", event.targets);
 					},
@@ -4320,7 +4320,7 @@ const skills = {
 					async content(event, trigger, player) {
 						const { targets, cards } = event,
 							[target] = targets;
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						await player.discard(cards);
 						await player.recover();
 						await target.recover();
@@ -4338,7 +4338,7 @@ const skills = {
 						return get.damageEffect(target, event.source, player) > 0 && !target.hasSkillTag("filterDamage", null, { player: event.source, card: event.card });
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						trigger.num++;
 						game.log(trigger.player, "受到的伤害", "#y+1");
 					},
@@ -4352,7 +4352,7 @@ const skills = {
 						return player.countCards("hs", card => player.canSaveCard(card, player)) + player.getHp() - 1 > 0;
 					},
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						player.loseHp();
 						player.draw(3);
 					},
@@ -4386,7 +4386,7 @@ const skills = {
 					},
 					content() {
 						const { targets } = event;
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						targets[0].swapHandcards(targets[1]);
 					},
 				},
@@ -4419,7 +4419,7 @@ const skills = {
 					},
 					content() {
 						const { targets } = event;
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						targets[0].swapEquip(targets[1]);
 					},
 				},
@@ -4443,7 +4443,7 @@ const skills = {
 					},
 					logTarget: "source",
 					content() {
-						get.info("olhedao").tianshuClear(event.name, player);
+						lib.skill.olhedao.tianshuClear(event.name, player);
 						trigger.cancel();
 						trigger.source.draw(3);
 					},
@@ -4529,7 +4529,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const FromItems = get.info("olhedao").tianshuTrigger.slice();
+			const FromItems = lib.skill.olhedao.tianshuTrigger.slice();
 			const froms = await player
 				.chooseButton(['###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>', [FromItems.randomGets(3).map(item => [item, "（触发等级：" + item.fromIndex + "）" + item.name]), "textbutton"]], true)
 				.set("ai", () => 1 + Math.random())
@@ -4538,7 +4538,7 @@ const skills = {
 				return;
 			}
 			const [from] = froms.links;
-			if (!get.info("olhedao").tianshuContent.some(item => (!item.filter || item.filter(from.name)) && from.fromIndex === item.toIndex)) {
+			if (!lib.skill.olhedao.tianshuContent.some(item => (!item.filter || item.filter(from.name)) && from.fromIndex === item.toIndex)) {
 				return;
 			}
 			const tos = await player
@@ -4547,11 +4547,13 @@ const skills = {
 						'###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>",
 						[
 							(() => {
-								const ToItems = get.info("olhedao").tianshuContent.filter(item => !item.filter || item.filter(from.name));
+								const ToItems = lib.skill.olhedao.tianshuContent.filter(item => !item.filter || item.filter(from.name));
 								let items = ToItems.filter(item => from.fromIndex === item.toIndex).randomGets(3);
-								let levelItem = ToItems.filter(item => from.fromIndex + 1 === item.toIndex).randomGet();
-								if (levelItem && (get.isLuckyStar(player) || Math.random() > 0.5)) {
-									items[get.rand(0, items.length - 1)] = levelItem;
+								if (get.isLuckyStar(player) || Math.random() > 0.5) {
+									let levelItem = ToItems.filter(item => from.fromIndex + 1 === item.toIndex).randomGet();
+									if (levelItem) {
+										items[get.rand(0, items.length - 1)] = levelItem;
+									}
 								}
 								return items;
 							})().map(item => [item, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]),
@@ -4577,34 +4579,43 @@ const skills = {
 				(skill, from, to) => {
 					const { filter: filterFrom, ...otherFrom } = from.effect;
 					const { filter: filterTo, ...otherTo } = to.effect;
-					lib.skill[skill] = { nopop: true, olhedao: true, charlotte: true, onremove: true, ...otherFrom, ...otherTo };
-					lib.skill[skill].filter = function (...args) {
-						return (filterFrom ? filterFrom(...args) : true) && (filterTo ? filterTo(...args) : true);
-					};
-					lib.skill[skill].init = (player, skill) => (player.storage[skill] = player.storage[skill] || [0, skill]);
-					lib.skill[skill].intro = {
-						markcount: (storage = [0]) => storage[0],
-						content(storage, player) {
-							const book = storage?.[1];
-							if (!book) {
-								return "查无此书";
-							}
-							return [
-								"此书还可使用" + storage[0] + "次",
-								(() => {
-									if (!player.isUnderControl(true) && get.info(book)?.nopop) {
-										return "此书仍是个秘密";
-									}
-									return lib.translate[book + "_info"];
-								})(),
-							]
-								.map(str => "<li>" + str)
-								.join("<br>");
+					lib.skill[skill] = {
+						nopop: true,
+						olhedao: true,
+						charlotte: true,
+						init(player, skill) {
+							player.storage[skill] ??= [0, []];
 						},
+						onremove: true,
+						filter(...args) {
+							return (filterFrom ? filterFrom(...args) : true) && (filterTo ? filterTo(...args) : true);
+						},
+						markimage: "image/card/tianshu2.png",
+						intro: {
+							markcount: (storage = [0]) => storage[0],
+							content(storage = [0, []], player, book) {
+								const [count, targets] = storage;
+								if (!book) {
+									return "查无此书";
+								}
+								return [
+									`此书还可使用${count}次`,
+									(() => {
+										if (!get.info(book)?.nopop || [player, ...targets].some(i => i.isUnderControl(true))) {
+											return lib.translate[`${book}_info`];
+										}
+										return "此书仍是个秘密";
+									})(),
+								]
+									.map(str => `<li>${str}`)
+									.join("<br>");
+							},
+						},
+						...otherFrom,
+						...otherTo,
 					};
-					lib.skill[skill].markimage = "image/card/tianshu2.png";
 					lib.translate[skill] = "天书";
-					lib.translate[skill + "_info"] = from.name + "，" + to.name + "。";
+					lib.translate[`${skill}_info`] = `${from.name}，${to.name}。`;
 					game.finishSkill(skill);
 				},
 				skill,
@@ -4612,9 +4623,9 @@ const skills = {
 				to
 			);
 			player.addSkill(skill);
-			get.info("olhedao").tianshuClear(skill, player, -2);
+			lib.skill.olhedao.tianshuClear(skill, player, -2);
 			const skills = player.getSkills(null, false, false).filter(skill => get.info(skill)?.olhedao);
-			const num = skills.length - get.info("olhedao").getLimit(player);
+			const num = skills.length - lib.skill.olhedao.getLimit(player);
 			if (num > 0) {
 				const result =
 					num < skills.length
@@ -4662,9 +4673,10 @@ const skills = {
 				const [skill] = result.links;
 				player.removeSkill(skill);
 				target.addSkill(skill);
-				get.info("olhedao").tianshuClear(skill, target, -1);
+				target.storage[skill][1].add(player);
+				lib.skill.olhedao.tianshuClear(skill, target, -1);
 				let skills = target.getSkills(null, false, false).filter(skill => get.info(skill)?.olhedao);
-				const num = skills.length - get.info("olhedao").getLimit(target);
+				const num = skills.length - lib.skill.olhedao.getLimit(target);
 				skills = skills.slice(0, Math.max(0, num));
 				if (skills.length) {
 					target.removeSkill(skills);
