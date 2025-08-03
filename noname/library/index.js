@@ -1186,6 +1186,16 @@ export class Library {
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
 				},
+				recent_character_clear: {
+					name: "清除最近选将",
+					intro: "点击此按钮清除最近选将记录",
+					clear: true,
+					unfrequent: true,
+					onclick: function () {
+						game.saveConfig("recentCharacter", [], true);
+						alert("最近选将记录已清除！");
+					}
+				},
 				video: {
 					name: "保存录像",
 					init: "20",
