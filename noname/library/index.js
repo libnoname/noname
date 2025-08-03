@@ -15089,9 +15089,9 @@ export class Library {
 			 */
 			dataReply(data) {
 				// 需要提前注册响应回调喵
-				if (data.id && game.requestMap && data.id in game.requestMap) {
-					const callback = game.requestMap[data.id];
-					delete game.requestMap[data.id];
+				if (data.id && game.dataRequestMap && data.id in game.dataRequestMap) {
+					const callback = game.dataRequestMap[data.id];
+					delete game.dataRequestMap[data.id];
 
 					if (typeof callback === "function") {
 						callback(data.ok, data.result);
