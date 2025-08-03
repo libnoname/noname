@@ -4237,15 +4237,6 @@ export class Library {
 					},
 					unfrequent: true,
 				},
-				recent_character_clear: {
-					name: "清除最近选将",
-					intro: "点击此按钮清除最近选将记录",
-					clear: true,
-					onclick: function () {
-						game.saveConfig("recentCharacter", [], true);
-						alert("最近选将记录已清除！");
-					}
-				},
 				showMax_character_number: {
 					name: "最大武将数显示",
 					intro: "设置自由选将对话框一页显示的最大武将数<br><span class=firetext>注意事项：<br><li>更改此选项后，需要重启游戏以使用新选项配置<br><li>推荐将此选项设置为偏小数值，可降低加载过多武将时导致的性能损耗</span>",
