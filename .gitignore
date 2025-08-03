@@ -4,6 +4,11 @@ image/*.TXT
 !extension/cardpile
 !extension/coin
 !extension/wuxing
+!extension/3D精选
+!extension/杀海拾遗
+!extension/欢乐卡牌
+!extension/玩点论杀
+!extension/英雄杀
 !node_modules/@types
 !node_modules/noname-typings
 !node_modules/options

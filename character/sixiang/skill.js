@@ -561,7 +561,6 @@ const skills = {
 				.chooseCardTarget({
 					prompt: get.prompt2(event.skill),
 					filterCard: true,
-					forced: true,
 					position: "he",
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
@@ -680,7 +679,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "将至少两张点数和不小于13的牌当作" + get.translation(links[0][2]) + "使用";
+				return "将至少两张点数和等于13的牌当作" + get.translation(links[0][2]) + "使用";
 			},
 		},
 		ai: {
@@ -5142,12 +5141,14 @@ const skills = {
 		audio: "benyu",
 		trigger: { global: "dying" },
 		filter(event, player) {
-			return event.player != player && event.player.countCards("h");
+			return event.player != player && event.player.countCards("eh");
 		},
-		direct: true,
-		content() {
-			const target = trigger.player;
-			player.gainPlayerCard(target, "h", true).set("prompt", get.prompt("stdyibing", target)).logSkill = ["stdyibing", target];
+		logTarget: "player",
+		check(event, player) {
+			return get.effect(event.player, { name: "shunshou_copy2" }, player, player) > 0;
+		},
+		async content(event, trigger, player) {
+			await player.gainPlayerCard(trigger.player, "he", `获得${get.translation(trigger.player)}一张牌`, true);
 		},
 	},
 	//樊玉凤

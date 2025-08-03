@@ -3,6 +3,7 @@ import { lib } from "../../library/index.js";
 import { game } from "../../game/index.js";
 import { get } from "../../get/index.js";
 import { _status } from "../../status/index.js";
+import { ai } from "../../ai/index.js";
 import { menu } from "./menu/index.js";
 import { cardPackMenu } from "./menu/pages/cardPackMenu.js";
 import { characterPackMenu } from "./menu/pages/characterPackMenu.js";
@@ -87,7 +88,7 @@ export class Create {
 		}, 50);
 	}
 	/**
-	 * 创建codemirror编辑器
+	 * 创建codemirror5编辑器
 	 * @param {HTMLDivElement} container
 	 * @param {Function} saveInput
 	 */
@@ -301,6 +302,217 @@ export class Create {
 		});
 		const editor = ui.create.div(editorpage);
 		return editor;
+	}
+	/**
+	 * 创建codemirror6编辑器
+	 * @param {HTMLDivElement} container
+	 * @param {{ value?: string, language?: string, saveInput?:(view: import("@codemirror/view").EditorView) => any }} config
+	 */
+	async editor2(container, config = {}) {
+		const {
+			value = "",
+			language = "javascript",
+			saveInput = view => {
+				ui.window.classList.remove("shortcutpaused");
+				ui.window.classList.remove("systempaused");
+				view.dom.parentElement?.parentElement?.parentElement?.remove();
+			},
+		} = config;
+
+		const { basicSetup } = await import("codemirror");
+		const { EditorView } = await import("@codemirror/view");
+		const { linter, lintGutter } = await import("@codemirror/lint");
+		const { search, highlightSelectionMatches, openSearchPanel } = await import("@codemirror/search");
+
+		// 在editorpage中添加功能按钮等
+		const editorpage = ui.create.div(container);
+		editorpage.addEventListener("keydown", function (e) {
+			e.stopPropagation();
+		});
+		editorpage.addEventListener("keyup", function (e) {
+			e.stopPropagation();
+		});
+
+		const discardConfig = ui.create.div(".editbutton", "取消", editorpage, () => {
+			ui.window.classList.remove("shortcutpaused");
+			ui.window.classList.remove("systempaused");
+			container.delete();
+		});
+
+		const saveConfig = ui.create.div(".editbutton", "保存", editorpage, () => {
+			saveInput(view);
+		});
+
+		const fontSize = ui.create.div(".editbutton", "字号", editorpage, () => {
+			game.promises.prompt(`###请输入字号###${lib.config.codeMirror_fontSize || "16px"}`).then(size => {
+				if (size === false) {
+					return;
+				}
+				container.style.fontSize = Number(size.slice(0, -2)) / game.documentZoom + "px";
+				game.saveConfig("codeMirror_fontSize", size);
+			});
+		});
+
+		container.style.fontSize = Number((lib.config.codeMirror_fontSize || "16px").slice(0, -2)) / game.documentZoom + "px";
+
+		const searchPanel = ui.create.div(".editbutton", "搜索", editorpage, () => {
+			openSearchPanel(view);
+		});
+
+		const editor = ui.create.div(editorpage);
+
+		const extensions = [
+			basicSetup,
+			lintGutter(), // 显示lint信息的gutter
+			search({ top: true }), // 启用搜索面板
+			highlightSelectionMatches(), // 高亮匹配的选择项
+		];
+
+		if (language === "javascript" || language === "typescript") {
+			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
+			const { default: security } = await import("@/noname/util/security.js");
+			let proxyWindow = Object.assign({}, window, {
+				_status: _status,
+				lib: lib,
+				game: game,
+				ui: ui,
+				get: get,
+				ai: ai,
+				player: lib.element.player,
+				card: lib.element.card,
+				event: lib.element.event,
+				dialog: lib.element.dialog,
+			});
+			if (security.isSandboxRequired()) {
+				const { Monitor, AccessAction } = security.importSandbox();
+				new Monitor()
+					.action(AccessAction.DEFINE)
+					.action(AccessAction.WRITE)
+					.action(AccessAction.DELETE)
+					.require("target", proxyWindow)
+					.require("property", "_status", "lib", "game", "ui", "get", "ai", "player", "card", "event", "dialog")
+					.then((access, nameds, control) => {
+						if (access.action == AccessAction.DEFINE) {
+							control.preventDefault();
+							control.stopPropagation();
+							control.setReturnValue(false);
+							return;
+						}
+
+						//
+						control.overrideParameter("target", window);
+					})
+					.start();
+			} else {
+				const keys = ["_status", "lib", "game", "ui", "get", "ai", "player", "card", "event", "dialog"];
+
+				for (const key of keys) {
+					const descriptor = Reflect.getOwnPropertyDescriptor(proxyWindow, key);
+					if (!descriptor) {
+						continue;
+					}
+					descriptor.writable = false;
+					descriptor.enumerable = true;
+					descriptor.configurable = false;
+					Reflect.defineProperty(proxyWindow, key, descriptor);
+				}
+
+				proxyWindow = new Proxy(proxyWindow, {
+					set(target, propertyKey, value, receiver) {
+						if (typeof propertyKey == "string" && keys.includes(propertyKey)) {
+							return Reflect.set(target, propertyKey, value, receiver);
+						}
+
+						return Reflect.set(window, propertyKey, value);
+					},
+				});
+			}
+
+			extensions.push(
+				javascript({ typescript: true }),
+				javascriptLanguage.data.of({
+					autocomplete: scopeCompletionSource(proxyWindow),
+				})
+			);
+			if (language === "javascript") {
+				const { Linter } = await import("@/game/eslint-linter-browserify.js");
+				extensions.push(
+					linter(
+						esLint(new Linter(), {
+							rules: {
+								"no-class-assign": 0,
+								"no-console": 0,
+								"no-constant-condition": [
+									"error",
+									{
+										checkLoops: false,
+									},
+								],
+								"no-irregular-whitespace": [
+									"error",
+									{
+										skipStrings: true,
+										skipTemplates: true,
+									},
+								],
+								"prefer-const": 0,
+								"no-redeclare": 0,
+								"no-undef": 0,
+								"no-empty": [
+									"error",
+									{
+										allowEmptyCatch: true,
+									},
+								],
+								"no-unused-vars": 1,
+								"require-yield": 0,
+								"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
+								curly: "error",
+							},
+							languageOptions: {
+								ecmaVersion: 13,
+								sourceType: "module",
+							},
+						})
+					)
+				);
+			}
+		} else if (language === "css") {
+			const { css } = await import("@codemirror/lang-css");
+			extensions.push(css());
+		} else if (language === "json") {
+			const { json, jsonParseLinter } = await import("@codemirror/lang-json");
+			extensions.push(json(), linter(jsonParseLinter()));
+		} else if (language === "html") {
+			const { html } = await import("@codemirror/lang-html");
+			const { parser: htmlParser } = await import("@lezer/html");
+			const { parser: jsParser } = await import("@lezer/javascript");
+			const { parseMixed } = await import("@lezer/common");
+			const { LRLanguage } = await import("@codemirror/language");
+
+			const mixedHTMLParser = htmlParser.configure({
+				wrap: parseMixed(node => {
+					return node.name == "ScriptText" ? { parser: jsParser } : null;
+				}),
+			});
+
+			const mixedHTML = LRLanguage.define({ parser: mixedHTMLParser });
+			extensions.push(html());
+		} else if (language === "markdown") {
+			const { markdown } = await import("@codemirror/lang-markdown");
+			extensions.push(markdown());
+		} else if (language === "vue") {
+			const { vue } = await import("@codemirror/lang-vue");
+			extensions.push(vue());
+		}
+
+		const view = new EditorView({
+			doc: value,
+			parent: editor,
+			extensions,
+		});
+		lib.setScroll(view.scrollDOM);
+		return view;
 	}
 	/**
 	 * 弹出提示。
@@ -2096,6 +2308,126 @@ export class Create {
 		ui.skills3.skills = skills;
 		return ui.skills3;
 	}
+	/**
+	 * 向当前事件注入牌的全选/反选按钮喵
+	 * 这个函数一般在“AI代选”的位置前面调用喵
+	 */
+	cardChooseAll() {
+		const event = get.event();
+		// 如果不是当前玩家、当前配置或者事件不允许全选或者使用complexCard与complexSelect，则取消注入喵
+		if (!event.isMine() || event.noChooseAll || event.complexCard || event.complexSelect || !lib.config.choose_all_button) {
+			return null;
+		}
+		// 这里的条件用的是“AI代选”按钮的条件喵
+		const selectCard = event.selectCard;
+		if (typeof selectCard == "function") {
+			return null;
+		}
+		const range = get.select(selectCard);
+		if (range[1] <= 1) {
+			return null; // 只选一张牌就不使用全选哦喵
+		}
+		return event.cardChooseAll = ui.create.control("全选", function () {
+			// 这个反选要封装喵？
+			// 好像就只有这里用哦
+			const event = get.event();
+			const selecteds = [...ui.selected.cards];
+
+			// 清空选择的牌喵
+			ui.selected.cards.length = 0;
+			game.check();
+
+			const selectables = get.selectableCards();
+			// @ts-expect-error 啊至少垫片函数是接受数组的喵
+			const cards = selecteds.length ? [...new Set(selectables).difference(selecteds)] : selectables;
+			
+			if (cards.length <= range[1]) {
+				// 如果可以就全选喵
+				ui.selected.cards.push(...cards);
+			} else {
+				// 否则随机选择几张喵
+				ui.selected.cards.push(...cards.randomGets(range[1]));
+			}
+
+			// 更新UI喵
+			for (const card of ui.selected.cards) {
+				card.classList.add("selected");
+				card.updateTransform(true, 0);
+			}
+			for (const card of selecteds) {
+				card.classList.remove("selected");
+				card.updateTransform(false, 0);
+			}
+			game.check();
+			if (typeof event.custom?.add?.card == "function") {
+				_status.event.custom.add.card();
+			}
+		});
+	}
+	/**
+	 * 向当前事件注入按钮的全选/反选按钮喵
+	 */
+	buttonChooseAll() {
+		const event = get.event();
+		// 如果不是当前玩家、当前配置或者事件不允许全选或者使用complexSelect，则取消注入喵
+		if (!event.isMine() || !(event.dialog instanceof lib.element.Dialog) || event.noChooseAll || event.complexSelect || !lib.config.choose_all_button) {
+			return null;
+		}
+		// 这里的条件用的是“AI代选”按钮的条件喵
+		const selectButton = event.selectButton;
+		if (typeof selectButton == "function") {
+			return null;
+		}
+		const range = get.select(selectButton);
+		if (range[1] <= 1) {
+			return null; // 只选一个按钮就不使用全选哦喵
+		}
+		// 获取标题来作为按钮的定位喵
+		const caption = event.dialog.content.querySelector(".caption");
+		if (!event.dialog.content.contains(caption)) {
+			return null; // 没有标题那么全选按钮就没有位置添加哦喵
+		}
+		// 创建全选按钮喵
+		const buttonChooseAll = ui.create.div(".select-all.popup.pointerdiv");
+		event.buttonChooseAll = buttonChooseAll;
+		buttonChooseAll.listen(function (e) {
+			const event = get.event();
+			const selecteds = [...ui.selected.buttons];
+
+			// 清空选择的按钮喵
+			ui.selected.buttons.length = 0;
+			game.check();
+			
+			const selectables = get.selectableButtons();
+			// @ts-expect-error 啊至少垫片函数是接受数组的喵
+			const buttons = selecteds.length ? [...new Set(selectables).difference(selecteds)] : selectables;
+			
+			if (buttons.length <= range[1]) {
+				// 如果可以就全选喵
+				ui.selected.buttons.push(...buttons);
+			} else {
+				// 否则随机选择几个喵
+				ui.selected.buttons.push(...buttons.randomGets(range[1]));
+			}
+
+			// 更新UI喵
+			for (const button of ui.selected.buttons) {
+				button.classList.add("selected");
+			}
+			for (const button of selecteds) {
+				button.classList.remove("selected");
+			}
+			game.check();
+			if (typeof event.custom?.add?.button == "function") {
+				_status.event.custom.add.button();
+			}
+
+			// 取消冒泡防止被uncheck喵
+			e.stopPropagation();
+		});
+		event.dialog.content.insertBefore(buttonChooseAll, caption);
+		return buttonChooseAll;
+	}
 	arena() {
 		var i, j;
 		ui.window = ui.create.div("#window.hidden", document.body);
@@ -2417,39 +2749,28 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		let zoom = Number.parseFloat(lib.config.ui_zoom);
+		let zoom = Number.parseInt(lib.config.ui_zoom);
 		if (isNaN(zoom) || zoom < 50 || zoom > 300) {
-			if (zoom < 3 && zoom > 0.5) {
-				zoom = Math.round(100 * zoom);
-			} else {
-				const oldZoomMap = {
-					esmall: 80,
-					vsmall: 90,
-					small: 93,
-					normal: 100,
-					big: 105,
-					vbig: 110,
-					ebig: 120,
-					eebig: 150,
-					eeebig: 180,
-					eeeebig: 200,
-				};
-				zoom = oldZoomMap[lib.config.ui_zoom] || 100;
-			}
+			zoom = 100;
 			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
 
 		game.documentZoom = (game.deviceZoom * zoom) / 100;
 		zoom !== 100 && ui.updatez();
 
-		// if (get.mode() === "doudizhu") {
-		if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
-			game.saveConfig("choice_zhu", 5, "doudizhu");
+		if (get.mode() === "doudizhu") {
+			if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
+				game.saveConfig("choice_zhu", 5, "doudizhu");
+			}
+			if (typeof get.config("choice_fan", "doudizhu") !== "number") {
+				game.saveConfig("choice_fan", 3, "doudizhu");
+			}
 		}
-		if (typeof get.config("choice_fan", "doudizhu") !== "number") {
-			game.saveConfig("choice_fan", 3, "doudizhu");
+		
+		// 根据157的要求移除掉本体的五行扩展哦喵
+		if (game.hasExtension("wuxing")) {
+			game.removeExtension("wuxing");
 		}
-		// }
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);

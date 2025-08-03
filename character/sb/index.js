@@ -11,6 +11,7 @@ import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
 
 game.import("character", function () {
+	//strategy and battle, "sb" in short ——Spmario233
 	return {
 		name: "sb",
 		connect: true,

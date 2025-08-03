@@ -1,0 +1,10 @@
+{
+  "author": {
+    "name": "Evan You"
+  },
+  "license": "MIT",
+  "module": "dist/compiler-sfc.esm-browser.js",
+  "name": "@vue/compiler-sfc",
+  "types": "dist/compiler-sfc.d.ts",
+  "version": "3.5.17"
+}

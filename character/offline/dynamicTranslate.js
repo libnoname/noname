@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	eu_zhitong(player) {
+		const bool = player.storage.eu_zhitong;
+		let yang = "自己，摸两张牌且回复1点体力",
+			yin = "其他角色，你获得其装备区所有牌并对其造成1点伤害";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，当你使用牌时，若目标包含，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	peyuanjue(player) {
 		const bool = player.storage.peyuanjue;
 		let yang = "令所有角色的基本牌视为无次数限制的【杀】",

@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	olhuaquan_heavy: {
+		fullskin: true,
+		noname: true,
+	},
+	olhuaquan_light: {
+		fullskin: true,
+		noname: true,
+	},
 	ruyijingubang: {
 		fullskin: true,
 		derivation: "sunwukong",

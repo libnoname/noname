@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Evan You"
+  },
+  "license": "MIT",
+  "name": "@vue/runtime-dom",
+  "types": "dist/runtime-dom.d.ts",
+  "version": "3.5.17"
+}

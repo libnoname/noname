@@ -1,0 +1,7 @@
+{
+  "name": "@vue/shared",
+  "version": "3.5.17",
+  "types": "dist/shared.d.ts",
+  "author": "Evan You",
+  "license": "MIT"
+}

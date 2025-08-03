@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const cards = {
 	//武关羽的兵临城下水淹七军
 	shuiyanqijuny: {
-		audio: "shuiyanqijun",
+		audio: "shuiyanqijunx",
 		fullskin: true,
 		cardimage: "shuiyanqijunx",
 		enable: true,

@@ -166,7 +166,7 @@ const skills = {
 			await game
 				.loseAsync({
 					lose_list: lose_list,
-					discard: player,
+					discarder: player,
 				})
 				.setContent("discardMultiple");
 			const next = player.addToExpansion(cards, "gain2");
@@ -1418,7 +1418,7 @@ const skills = {
 				if (event.type === "discard") {
 					return false;
 				}
-				if (event.name == "lose" && ["useCard", "respond"].includes(event?.getParent()?.name)) {
+				if (["useCard", "respond"].includes(event.getParent()?.name)) {
 					return false;
 				}
 			}
@@ -1427,7 +1427,8 @@ const skills = {
 					if (evtx.type == "discard") {
 						return false;
 					}
-					if (["useCard", "respond"].includes(evtx.getParent().name)) {
+					const evt2 = evtx.relatedEvent || evtx.getParent();
+					if (["useCard", "respond"].includes(evt2?.name)) {
 						return false;
 					}
 					return evtx?.hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu");
@@ -4115,19 +4116,9 @@ const skills = {
 								nature: get.nature(card, get.owner(card)),
 								cards: [card],
 							};
-							var next = player.chooseUseTarget(cardx, [card], true, false).set("oncard", card => {
-								var owner = _status.event.getParent().owner;
-								if (owner) {
-									owner.$throw(card.cards);
-								}
-							});
+							var next = player.chooseUseTarget(cardx, [card], true, false);
 							if (card.name === cardx.name && get.is.sameNature(card, cardx, true)) {
 								next.viewAs = false;
-							}
-							var owner = get.owner(card);
-							if (owner != player && get.position(card) == "h") {
-								next.throw = false;
-								next.set("owner", owner);
 							}
 						}
 					},
@@ -4375,7 +4366,8 @@ const skills = {
 					return false;
 				}
 				return current.hasHistory("lose", evt => {
-					return evt.getParent() == event && evt.hs.length > 0;
+					const evtx = evt.relatedEvent || evt.getParent()
+					return evtx == event && evt.hs.length > 0;
 				});
 			});
 		},

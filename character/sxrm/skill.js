@@ -734,7 +734,7 @@ const skills = {
 							return get.color(card) == get.color(event.card) && get.type2(card) == get.type2(event.card);
 						}) &&
 						event.player.getHistory("lose", function (evt) {
-							return evt.getParent() == event && evt.hs && evt.hs.length == event.cards.length;
+							return (evt.relatedEvent || evt.getParent()) == event && evt.hs && evt.hs.length == event.cards.length;
 						}).length
 					);
 				},

@@ -1,5 +1,5 @@
 const characterSort = {
-	tw_sp: ["tw_simashi", "tw_beimihu", "tw_qiaozhou", "old_jiakui", "tw_jsp_guanyu", "tw_mazhong", "licuilianzhaoquanding", "simafu", "tw_zhugejun", "tw_yanliang", "tw_wenchou", "tw_yuantan", "tw_zhangzhao", "tw_zhanghong", "tw_fuwan", "tw_yujin", "tw_zhaoxiang", "tw_hucheer", "tw_hejin", "tw_mayunlu", "tw_re_caohong", "tw_zangba", "tw_liuhong", "tw_tianyu", "jiachong", "duosidawang", "wuban", "yuejiu", "tw_caocao", "tw_zhangmancheng", "tw_caozhao", "tw_wangchang", "tw_puyangxing", "tw_jiangji", "tw_niujin", "tw_xiahouen", "tw_xiahoushang", "tw_zhangji", "tw_zhangnan", "tw_fengxí", "tw_furong", "tw_liwei", "tw_yangyi", "tw_daxiaoqiao", "tw_dengzhi", "tw_baoxin", "tw_bingyuan", "tw_fanchou", "tw_haomeng", "tw_huchuquan", "tw_jianshuo", "tw_jiling", "tw_liufuren", "tw_mateng", "tw_niufudongxie", "tw_qiaorui", "tw_weixu", "tw_yanxiang", "tw_yufuluo", "tw_zhangning", "tw_dengzhi", "tw_yangyi", "tw_yangang", "tw_gongsunfan"],
+	tw_sp: ["tw_zhenji", "tw_zhangyun", "tw_simashi", "tw_beimihu", "tw_qiaozhou", "old_jiakui", "tw_jsp_guanyu", "tw_mazhong", "licuilianzhaoquanding", "simafu", "tw_zhugejun", "tw_yanliang", "tw_wenchou", "tw_yuantan", "tw_zhangzhao", "tw_zhanghong", "tw_fuwan", "tw_yujin", "tw_zhaoxiang", "tw_hucheer", "tw_hejin", "tw_mayunlu", "tw_re_caohong", "tw_zangba", "tw_liuhong", "tw_tianyu", "jiachong", "duosidawang", "wuban", "yuejiu", "tw_caocao", "tw_zhangmancheng", "tw_caozhao", "tw_wangchang", "tw_puyangxing", "tw_jiangji", "tw_niujin", "tw_xiahouen", "tw_xiahoushang", "tw_zhangji", "tw_zhangnan", "tw_fengxí", "tw_furong", "tw_liwei", "tw_yangyi", "tw_daxiaoqiao", "tw_dengzhi", "tw_baoxin", "tw_bingyuan", "tw_fanchou", "tw_haomeng", "tw_huchuquan", "tw_jianshuo", "tw_jiling", "tw_liufuren", "tw_mateng", "tw_niufudongxie", "tw_qiaorui", "tw_weixu", "tw_yanxiang", "tw_yufuluo", "tw_zhangning", "tw_dengzhi", "tw_yangyi", "tw_yangang", "tw_gongsunfan"],
 	tw_yunchouzhi: ["tw_wangcan", "tw_dongzhao", "tw_bianfuren", "tw_feiyi", "tw_chenzhen", "tw_xunchen"],
 	tw_yunchouxin: ["tw_wangling", "tw_huojun", "tw_wujing", "tw_zhouchu"],
 	tw_yunchouren: ["tw_liuzhang", "tw_xujing", "tw_qiaogong"],
@@ -21,7 +21,7 @@ const characterSort = {
 	tw_yijiang7: ["tw_xuezong"],
 	tw_yijiang: ["tw_caoang", "tw_caohong", "tw_zumao", "tw_dingfeng", "tw_maliang", "tw_xiahouba"],
 	tw_english: ["kaisa"],
-	tw_waitingforsort: ["tw_zhangyun"],
+	tw_waitingforsort: [],
 };
 
 const characterSortTranslate = {

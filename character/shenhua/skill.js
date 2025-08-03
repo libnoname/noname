@@ -1971,7 +1971,7 @@ const skills = {
 		},
 	},
 	nzry_juzhan: {
-		audio: ["skill/nzry_juzhan_11.mp3", "skill/nzry_juzhan_12.mp3"],
+		audio: ["nzry_juzhan_11.mp3", "nzry_juzhan_12.mp3"],
 		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
@@ -2423,7 +2423,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (get.tag(card, "damage") && !player.inRangeOf(target)) {
+					if (target && get.tag(card, "damage") && !player.inRangeOf(target)) {
 						return "zeroplayertarget";
 					}
 				},
@@ -2902,7 +2902,7 @@ const skills = {
 		},
 	},
 	nzry_zhenliang: {
-		audio: ["nzry_zhenliang_1", 2],
+		audio: ["nzry_zhenliang_11.mp3", "nzry_zhenliang_12.mp3"],
 		drawNum: 1,
 		mark: true,
 		zhuanhuanji: true,
@@ -3012,7 +3012,7 @@ const skills = {
 		},
 	},
 	nzry_shenshi: {
-		audio: ["skill/nzry_shenshi_11.mp3", "skill/nzry_shenshi_12.mp3"],
+		audio: ["nzry_shenshi_11.mp3", "nzry_shenshi_12.mp3"],
 		mark: true,
 		locked: false,
 		zhuanhuanji: true,
@@ -3702,6 +3702,28 @@ const skills = {
 					}
 				}
 			},
+		},
+		targetprompt2: target => {
+			const player = get.player(),
+				card = get.card(),
+				list = [];
+			if (card?.name != "sha" || !target.classList.contains("selectable")) {
+				return list;
+			}
+			const num = card.cards?.length ?? 0;
+			if (target.countCards("h") <= (player.countCards("h") - num)) {
+				list.add("不可响应");
+			}
+			if (target.hp >= player.hp) {
+				list.add("加伤");
+			}
+			return list;
+		},
+		onChooseToUse(event) {
+			event.targetprompt2.add(lib.skill.xinliegong.targetprompt2);
+		},
+		onChooseTarget(event) {
+			event.targetprompt2.add(lib.skill.xinliegong.targetprompt2);
 		},
 		audio: "liegong",
 		audioname: ["re_huangzhong", "ol_huangzhong"],
@@ -4882,7 +4904,7 @@ const skills = {
 				return;
 			}
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			_status.characterlist.randomSort();
 			for (let i = 0; i < _status.characterlist.length; i++) {

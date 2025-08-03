@@ -2197,7 +2197,7 @@ const skills = {
 			var card = get.cards()[0];
 			event.card = card;
 			player.showCards(card);
-			if (!player.hasUseTarget(card)) {
+			if ((!get.info(card).notarget || !lib.filter.cardEnabled(card, player)) && !player.hasUseTarget(card)) {
 				card.fix();
 				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
 				game.updateRoundNumber();
@@ -2245,7 +2245,7 @@ const skills = {
 		trigger: { player: ["useCard", "respond"] },
 		hasHand(event) {
 			var evts = event.player.getHistory("lose", function (evt) {
-				return evt.getParent() == event;
+				return (evt.relatedEvent || evt.getParent()) == event;
 			});
 			return evts && evts.length == 1 && evts[0].hs.length > 0;
 		},
@@ -3106,7 +3106,7 @@ const skills = {
 			}
 			return (
 				player.getHistory("lose", function (evt) {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					for (var i in evt.gaintag_map) {

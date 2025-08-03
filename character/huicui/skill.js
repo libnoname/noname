@@ -427,7 +427,7 @@ const skills = {
 					const target = trigger.player;
 					player.storage["dcguying_effect_target"].remove(target);
 					target.unmarkAuto(event.name, player);
-					await target.draw(target.maxHp);
+					await target.draw(Math.min(5, target.maxHp));
 					const num = target.countCards("h") - target.maxHp;
 					if (num > 0 && target != player) {
 						await target
@@ -540,17 +540,18 @@ const skills = {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx != event) {
 					return false;
 				}
-				return evt.getl(player)?.hs?.some(card => event.cards.includes(card));
+				return evt.getl(player)?.hs?.length;
 			});
 		},
 		frequent: true,
 		check: () => true,
 		async content(event, trigger, player) {
 			const cards = get.bottomCards(3, true);
-			await player.showCards(cards, `${get.translation(player)}发动了〖博玄〗`);
+			await player.showCards(cards, `${get.translation(player)}发动了【博玄】`).set("log", (cards, player) => [player, "展示了牌堆底的", cards]);
 			const list = ["cardNameLength", "suit", "type2"].map(attri => cards.some(card => get[attri](trigger.card) == get[attri](card)));
 			if (list[0]) {
 				await player.draw();
@@ -646,53 +647,16 @@ const skills = {
 			for (var i = 0; i < targets.length; i++) {
 				cards.push(result[i].cards[0]);
 			}
-			//新建showCards事件，不然没法兼容庞宏、OL罗宪这些角色的技能
-			let next = game.createEvent("showCards");
-			next.set("player", player);
-			next.set("targets", targets);
-			next.set("cards", cards);
-			next.set("skill", event.name);
-			next.setContent(() => {
-				//照搬showCards的事件然后改动了一下dialog
-				"step 0";
-				event.dialog = ui.create.dialog(`${get.translation(player)} 发动了〖${get.translation(event.skill)}〗`, cards);
-				event.dialogid = lib.status.videoId++;
-				event.dialog.videoId = event.dialogid;
-				game.broadcastAll(
-					function (skill, targets, cards, id, player) {
-						let dialog = ui.create.dialog(`${get.translation(player)} 发动了〖${get.translation(skill)}〗`, cards);
-						dialog.videoId = id;
-						const getName = function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							const name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						};
-						for (let i = 0; i < targets.length; i++) {
-							dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(cards[i].suit) + cards[i].number;
-						}
-					},
-					event.skill,
-					targets,
-					cards,
-					event.dialogid,
-					player
-				);
-				for (let i = 0; i < targets.length; i++) {
-					game.log(targets[i], "展示了", cards[i]);
-				}
-				game.addCardKnower(cards, "everyone");
-				game.delay(4);
-				game.addVideo("showCards", player, [get.translation(player) + "发动了〖议政〗", get.cardsInfo(cards)]);
-				"step 1";
-				game.broadcastAll("closeDialog", event.dialogid);
-				event.dialog.close();
-			});
-			await next;
+			await player
+				.showCards(cards, `${get.translation(player)} 发动了【${get.translation(event.name)}】`, false)
+				.set("showers", targets)
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						button.node.gaintag.innerHTML = target.getName();
+					}
+				})
+				.set("delay_time", targets.length * 1.5);
 			if (cards.map(card => get.type2(card)).unique().length == 1) {
 				player.popup("洗具");
 				const result = await player
@@ -1259,7 +1223,8 @@ const skills = {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx != event) {
 					return false;
 				}
 				return Object.keys(evt.gaintag_map).some(i => evt.gaintag_map[i].includes("dctanban"));
@@ -1316,6 +1281,18 @@ const skills = {
 	},
 	//黄舞蝶
 	dcshuangrui: {
+		onChooseTarget(event, player) {
+			event.targetprompt2.add(target => {
+				if (event.getParent().skill !== "dcshuangrui" || !target.classList.contains("selectable")) {
+					return;
+				}
+				if (player.inRange(target)) {
+					return "加伤";
+				} else {
+					return "不可响应";
+				}
+			});
+		},
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -1333,6 +1310,7 @@ const skills = {
 						card = { name: "sha", isCard: true };
 					return get.effect(target, card, player, player);
 				})
+				.set("_get_card", { name: "sha", isCard: true })
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -2630,18 +2608,18 @@ const skills = {
 		onremove: ["dcshicao_aiRecord"],
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["basic", "trick", "equip"], "vcard"], [["牌堆顶", "牌堆底"], "tdnodes"]);
+				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["caoying_basic", "caoying_trick", "caoying_equip"], "vcard"], [["牌堆顶", "牌堆底"], "tdnodes"]);
 			},
 			check(button) {
 				const player = get.player();
 				const bottom = player.storage.dcshicao_bottom,
 					aiStorage = player.getStorage("dcshicao_aiRecord");
 				if (bottom && aiStorage.length > 0 && ui.cardPile.lastChild && get.name(ui.cardPile.lastChild, false) === get.name(aiStorage.lastItem, false)) {
-					if (button.link === "牌堆底" || button.link[2] === get.type2(aiStorage.lastItem, false)) {
+					if (button.link === "牌堆底" || button.link[2].slice(8) === get.type2(aiStorage.lastItem, false)) {
 						return 20;
 					}
 				}
-				if (button.link === "牌堆顶" || button.link[2] === "basic") {
+				if (button.link === "牌堆顶" || button.link[2].slice(8) === "basic") {
 					return 10;
 				}
 				return 5 + Math.random();
@@ -2659,7 +2637,7 @@ const skills = {
 				}
 				return {
 					audio: "dcshicao",
-					type: links[0][2],
+					type: links[0][2].slice(8),
 					pos: links[1],
 					filterCard: () => false,
 					selectCard: -1,
@@ -2714,6 +2692,7 @@ const skills = {
 					if (player.isUnderControl(true)) {
 						dialog.addText(`上一次观看的${player.storage.dcshicao_bottom ? "牌堆底" : "牌堆顶"}的牌：`);
 						dialog.addAuto(cards);
+						dialog.addText("（牌堆顶——牌堆底）");
 					} else {
 						return "不给看";
 					}
@@ -3425,7 +3404,7 @@ const skills = {
 			const toKeepCount = player
 				.getCards("h")
 				.map(card => get.name(card))
-				.unique();
+				.unique().length;
 			if (count > toKeepCount) {
 				const [bool, cards] = await player
 					.chooseCard("自缚：选择要保留的手牌", "选择不同牌名的手牌各一张，然后弃置其余手牌", toKeepCount)
@@ -3758,7 +3737,8 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -5622,7 +5602,8 @@ const skills = {
 							return false;
 						}
 						return player.hasHistory("lose", evt => {
-							if (evt.getParent() != event) {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx != event) {
 								return false;
 							}
 							return Object.values(evt.gaintag_map).flat().includes("dclvecheng_xiongluan");
@@ -15503,67 +15484,46 @@ const skills = {
 		selectTarget: -1,
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { targets } = event;
 			targets.sortBySeat();
-			var next = player
+			const next = player
 				.chooseCardOL(targets, "请选择要展示的牌", true)
 				.set("ai", function (card) {
 					return -get.value(card);
 				})
 				.set("source", player);
 			next.aiCard = function (target) {
-				var hs = target.getCards("h");
+				const hs = target.getCards("h");
 				return { bool: true, cards: [hs.randomGet()] };
 			};
 			next._args.remove("glow_result");
-			"step 1";
-			var cards = [];
-			event.videoId = lib.status.videoId++;
-			for (var i = 0; i < targets.length; i++) {
-				cards.push(result[i].cards[0]);
-			}
-			event.cards = cards;
-			game.log(player, "展示了", targets, "的", cards);
-			game.broadcastAll(
-				function (targets, cards, id, player) {
-					var dialog = ui.create.dialog(get.translation(player) + "发动了【清谈】", cards);
-					dialog.videoId = id;
-					var getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (var i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(cards[i].suit);
+			const result = await next.forResult();
+			const cards = result.map(i => i.cards[0]);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【清谈】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						button.node.gaintag.innerHTML = target.getName();
 					}
-				},
-				targets,
-				cards,
-				event.videoId,
-				player
-			);
-			game.delay(4);
-			"step 2";
-			game.broadcastAll("closeDialog", event.videoId);
-			var list = [],
+				})
+				.set("delay_time", 4)
+				.set("showers", targets);
+
+			const list = [],
 				map = {};
-			for (var i of cards) {
-				var suit = get.suit(i);
+			for (const i of cards) {
+				const suit = get.suit(i);
 				if (!map[suit]) {
 					map[suit] = [];
 				}
 				map[suit].push(i);
 			}
-			var dialog = ["选择获得一种花色的所有牌"];
-			for (var suit of lib.suit) {
+			const dialog = ["选择获得一种花色的所有牌"];
+			for (const suit of lib.suit) {
 				if (map[suit]) {
-					var targetsx = map[suit].map(function (card) {
+					const targetsx = map[suit].map(function (card) {
 						return targets[cards.indexOf(card)];
 					});
 					dialog.push('<div class="text center">' + get.translation(targetsx) + "</div>");
@@ -15572,7 +15532,7 @@ const skills = {
 				}
 			}
 			if (list.length) {
-				player
+				const resultx = await player
 					.chooseControl(list, "cancel2")
 					.set("dialog", dialog)
 					.set("list", list)
@@ -15599,38 +15559,32 @@ const skills = {
 							}
 						}
 						return res;
+					})
+					.forResult();
+				if (resultx?.control != "cancel2") {
+					const cards2 = cards.filter(function (i) {
+						return get.suit(i) == resultx.control;
 					});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.control != "cancel2") {
-				event.cards2 = cards.filter(function (i) {
-					return get.suit(i) == result.control;
-				});
-				for (var i = 0; i < cards.length; i++) {
-					if (event.cards2.includes(cards[i])) {
-						targets[i].$give(cards[i], player, false);
+					for (let i = 0; i < cards.length; i++) {
+						if (cards2.includes(cards[i])) {
+							targets[i].$give(cards[i], player, false);
+						}
 					}
+					await player.gain(cards2, "log");
+					const draws = [];
+					for (let i = 0; i < cards.length; i++) {
+						if (!cards2.includes(cards[i])) {
+							await targets[i].discard(cards[i]).set("delay", false).set("discarder", player);
+						} else {
+							draws.push(targets[i]);
+						}
+					}
+					if (draws.length) {
+						await game.asyncDraw(draws);
+					}
+					await game.delayx();
 				}
-				player.gain(event.cards2, "log");
-			} else {
-				event.finish();
 			}
-			"step 4";
-			var draws = [];
-			for (var i = 0; i < cards.length; i++) {
-				if (!event.cards2.includes(cards[i])) {
-					targets[i].discard(cards[i]).delay = false;
-				} else {
-					draws.push(targets[i]);
-				}
-			}
-			if (draws.length) {
-				game.asyncDraw(draws);
-			}
-			"step 5";
-			game.delayx();
 		},
 		ai: {
 			order: 7,
@@ -17477,27 +17431,25 @@ const skills = {
 				return 7 - num;
 			}
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.give(cards, target, true);
 			if (get.color(cards[0], player) == "red") {
-				player.draw();
-				event.finish();
-			} else {
-				target
-					.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
-					.set("goon", get.attitude(target, player) < 0)
-					.set("ai", function (card) {
-						if (!_status.event.goon) {
-							return -get.value(card);
-						}
-						return 6 - get.value(card);
-					});
+				await player.draw();
+				return;
 			}
-			"step 2";
+			const result = await target
+				.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
+				.set("goon", get.attitude(target, player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return -get.value(card);
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
 			if (!result.bool) {
-				player.draw(2);
+				await player.draw(2);
 			}
 		},
 		ai: {

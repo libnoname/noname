@@ -653,12 +653,17 @@ export const cardPackMenu = function (connectMenu) {
 			game.saveConfig("cards", lib.config.all.cards);
 			updateNodes();
 		});
+		var node3 = ui.create.div(".lefttext", "全部关闭", start.firstChild, function () {
+			game.saveConfig("cards", []);
+			updateNodes();
+		});
 		var node2 = ui.create.div(".lefttext", "恢复默认", start.firstChild, function () {
 			game.saveConfig("cards", lib.config.defaultcards);
 			updateNodes();
 		});
 		node1.style.marginTop = "12px";
-		node2.style.marginTop = "7px";
+		node3.style.marginTop = "7px";
+		node2.style.marginTop = "2px";
 	}
 
 	updateNodes();

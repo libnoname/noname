@@ -1558,6 +1558,9 @@ const skills = {
 			},
 			result: {
 				player(player) {
+					if (player.needsToDiscard(3) && !player.hasValueTarget({ name: "sha" }, false)) {
+						return -1;
+					}
 					if (player.countCards("h") >= player.hp - 1) {
 						return -1;
 					}

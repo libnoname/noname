@@ -1,4 +1,36 @@
 const characters = {
+	eu_kaisa: {
+		sex: "male",
+		group: "western",
+		hp: 4,
+		skills: ["eu_ducai", "eu_zhitong", "eu_jiquan"],
+		isZhugong: true,
+		names: "尤利乌斯|盖乌斯",
+	},
+	pe_xiahouxuan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["pehuanfu", "olqingyi", "olzeyue"],
+	},
+	wn_zhanghe: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["wn_qiaobian"],
+	},
+	wn_jiaxu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["wn_jianshu", "wn_zhenlve"],
+	},
+	wn_xuhuang: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["wn_zhuying", "wn_chiyuan"],
+	},
 	wn_caocao: {
 		sex: "male",
 		group: "wei",

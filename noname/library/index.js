@@ -200,6 +200,23 @@ export class Library {
 	 * @type { Function[] | undefined }
 	 */
 	arenaReady = [
+		//增加ui.window的监听
+		function () {
+			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
+				const target = event.target.closest("poptip");
+				if (!target) {
+					return;
+				}
+				const id = target.getAttribute("id");
+				const index = parseInt(target.getAttribute("tip-index"));
+				//清除原来的对话框
+				game.closePoptipDialog();
+				if (id && typeof index == "number") {
+					return get.poptipIntro(id, index, event);
+				}
+				return;
+			});
+		},
 		//预处理技能拥有者
 		function () {
 			_status.skillOwner = {};
@@ -367,6 +384,13 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
+	//共联时机的map（目前有很大的兼容问题，请不要使用）
+	#relatedTrigger = {
+		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
+	};
+	get relatedTrigger() {
+		return this.#relatedTrigger;
+	}
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
 	 */
@@ -807,6 +831,28 @@ export class Library {
 		//也可以放函数
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
+
+	/**
+	 * the map of pop tips
+	 *
+	 * 为特殊名词进行解释的map
+	 * 要添加请用game.addPoptip添加
+	 */
+	#poptipMap = new Map([
+		["乘势", "乘势：若达成所有选项，则可以执行后续效果"],
+		["背水", "背水：依次执行所有选项，然后支付代价"],
+	]);
+	get poptipMap() {
+		return this.#poptipMap;
+	}
+	set poptipMap(map) {
+		if (map instanceof Map) {
+			for (const [key, value] of map) {
+				this.#poptipMap.set(key, value);
+			}
+		}
+	}
+
 	characterDialogGroup = {
 		收藏: function (name, capt) {
 			return lib.config.favouriteCharacter.includes(name) ? capt : null;
@@ -1195,6 +1241,12 @@ export class Library {
 						game.saveConfig("recentCharacter", [], true);
 						alert("最近选将记录已清除！");
 					}
+				},
+				choose_all_button: {
+					name: "启用全选/反选按钮",
+					init: true,
+					unfrequent: true,
+					intro: "在选择大量的牌时提供全选/反选功能<br><br>对于部分技能可能会因为其主动限制或者存在复杂的选择情况而失效",
 				},
 				video: {
 					name: "保存录像",
@@ -3904,11 +3956,11 @@ export class Library {
 						map.show_time.show();
 						map.watchface.hide();
 					}
-					if (lib.config.show_deckMonitor) {
+					/*if (lib.config.show_deckMonitor) {
 						map.show_deckMonitor_online.show();
 					} else {
 						map.show_deckMonitor_online.hide();
-					}
+					}*/
 					if (lib.config.show_extensionmaker) {
 						map.show_extensionshare.show();
 					} else {
@@ -4483,7 +4535,7 @@ export class Library {
 						}
 					},
 				},
-				show_deckMonitor_online: {
+				/*show_deckMonitor_online: {
 					name: "联机显示记牌器",
 					intro: "如果你是房主，此设置对所有人生效",
 					init: false,
@@ -4500,7 +4552,7 @@ export class Library {
 							game.saveConfig("show_deckMonitor_online", bool);
 						}
 					},
-				},
+				},*/
 				show_wuxie: {
 					name: "显示无懈按钮",
 					intro: "在右上角显示不询问无懈",
@@ -5215,46 +5267,6 @@ export class Library {
 					} else {
 						this.firstChild.innerHTML = "隐藏此扩展";
 						lib.config.hiddenPlayPack.remove("boss");
-					}
-					game.saveConfig("hiddenPlayPack", lib.config.hiddenPlayPack);
-				},
-			},
-		},
-		wuxing: {
-			enable: {
-				name: "开启",
-				init: false,
-				restart: true,
-			},
-			intro: {
-				name: "每名角色和部分卡牌在游戏开始时随机获得一个属性",
-				clear: true,
-				nopointer: true,
-			},
-			num: {
-				name: "带属性卡牌",
-				init: "0.3",
-				item: {
-					0.1: "10%",
-					0.2: "20%",
-					0.3: "30%",
-					0.5: "50%",
-				},
-			},
-			hide: {
-				name: "隐藏此扩展",
-				clear: true,
-				onclick() {
-					if (this.firstChild.innerHTML == "隐藏此扩展") {
-						this.firstChild.innerHTML = "此扩展将在重启后隐藏";
-						lib.config.hiddenPlayPack.add("wuxing");
-						if (!lib.config.prompt_hidepack) {
-							alert("隐藏的扩展包可通过选项-其它-重置隐藏内容恢复");
-							game.saveConfig("prompt_hidepack", true);
-						}
-					} else {
-						this.firstChild.innerHTML = "隐藏此扩展";
-						lib.config.hiddenPlayPack.remove("wuxing");
 					}
 					game.saveConfig("hiddenPlayPack", lib.config.hiddenPlayPack);
 				},
@@ -6322,6 +6334,13 @@ export class Library {
 					restart: true,
 					intro: "开放不同势力组合，以优先亮出的武将牌作为自己的势力，双势力武将则使用列表的第一个势力",
 				},
+				banGroup: {
+					name: "势力禁用",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "选将前将随机禁用一个势力",
+				},
 				initshow_draw: {
 					name: "首亮奖励",
 					item: {
@@ -6357,6 +6376,7 @@ export class Library {
 					name: "鏖战背景音乐",
 					item: {
 						disabled: "不启用",
+						shousha: "逐鹿天下",
 						online: "Online",
 						rewrite: "Rewrite",
 						chaoming: "潮鸣",
@@ -6959,7 +6979,7 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_three") || lib.choiceThree;
 						var str = "character=[\n    ";
@@ -6970,16 +6990,10 @@ export class Library {
 							}
 						}
 						str += "\n];";
-						node.code = str;
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
@@ -6989,44 +7003,24 @@ export class Library {
 								var tip = lib.getErrorTip(e) || "";
 								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_three", character, "versus");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: str,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character_three: {
@@ -7048,7 +7042,7 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_four") || lib.choiceFour;
 						var str = "character=[\n    ";
@@ -7059,16 +7053,10 @@ export class Library {
 							}
 						}
 						str += "\n];";
-						node.code = str;
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
@@ -7078,44 +7066,24 @@ export class Library {
 								var tip = lib.getErrorTip(e) || "";
 								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_four", character, "versus");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: str,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character_four: {
@@ -7649,19 +7617,14 @@ export class Library {
 							alert("请进入斗地主模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor");
+						var container = ui.create.div(".popup-container.editor2", ui.window);
 						var node = container;
 						var map = get.config("character_online") || lib.characterOnline;
-						node.code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
+						var code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
 						ui.window.classList.add("shortcutpaused");
 						ui.window.classList.add("systempaused");
-						var saveInput = function () {
-							var code;
-							if (container.editor) {
-								code = container.editor.getValue();
-							} else if (container.textarea) {
-								code = container.textarea.value;
-							}
+						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
+							var code = view.state.doc.toString();
 							try {
 								var { character } = security.exec2(code);
 								if (!get.is.object(character)) {
@@ -7691,44 +7654,24 @@ export class Library {
 									alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
 								}
 								window.focus();
-								if (container.editor) {
-									container.editor.focus();
-								} else if (container.textarea) {
-									container.textarea.focus();
-								}
+								view.dom.focus();
 								return;
 							}
 							game.saveConfig("character_online", character, "doudizhu");
 							ui.window.classList.remove("shortcutpaused");
 							ui.window.classList.remove("systempaused");
 							container.delete();
-							container.code = code;
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
-						var editor = ui.create.editor(container, saveInput);
-						if (node.aced) {
-							ui.window.appendChild(node);
-							node.editor.setValue(node.code, 1);
-						} else if (lib.device == "ios") {
-							ui.window.appendChild(node);
-							if (!node.textarea) {
-								var textarea = document.createElement("textarea");
-								editor.appendChild(textarea);
-								node.textarea = textarea;
-								lib.setScroll(textarea);
-							}
-							node.textarea.value = node.code;
-						} else {
-							if (!window.CodeMirror) {
-								import("../../game/codemirror.js").then(() => {
-									lib.codeMirrorReady(node, editor);
-								});
-								lib.init.css(lib.assetURL + "layout/default", "codemirror");
-							} else {
-								lib.codeMirrorReady(node, editor);
-							}
-						}
+						ui.create
+							.editor2(container, {
+								language: "javascript",
+								value: code,
+								saveInput,
+							})
+							.then(editor => {
+								window.saveNonameInput = () => saveInput(editor);
+							});
 					},
 				},
 				reset_character: {
@@ -10335,251 +10278,298 @@ export class Library {
 			game.zhu.update();
 		},
 	};
-	translate = {
-		flower: "鲜花",
-		egg: "鸡蛋",
-		wine: "酒杯",
-		shoe: "拖鞋",
-		yuxisx: "玉玺",
-		jiasuo: "枷锁",
-		junk: "平凡",
-		common: "普通",
-		rare: "精品",
-		epic: "史诗",
-		legend: "传说",
-		default: "默认",
-		special: "特殊",
-		zhenfa: "阵法",
-		aozhan: "鏖战",
-		mode_derivation_card_config: "衍生",
-		mode_banned_card_config: "禁卡",
-		mode_favourite_character_config: "收藏",
-		mode_banned_character_config: "禁将",
-		heart: "♥︎",
-		diamond: "♦︎",
-		spade: "♠︎",
-		club: "♣︎",
-		none: "◈",
-		ghujia: "护甲",
-		ghujia_bg: "甲",
-		heart2: "红桃",
-		diamond2: "方片",
-		spade2: "黑桃",
-		club2: "梅花",
-		none2: "无色",
-		red: "红色",
-		black: "黑色",
-		red2: "红色",
-		black2: "黑色",
-		ok: "确定",
-		ok2: "确定",
-		cancel: "取消",
-		cancel2: "取消",
-		restart: "重新开始",
-		setting: "设置",
-		start: "开始",
-		random: "随机",
-		_out: "无效",
-		agree: "同意",
-		refuse: "拒绝",
-		fire: "火",
-		thunder: "雷",
-		poison: "毒",
-		kami: "神",
-		ice: "冰",
-		stab: "刺",
-		wei: "魏",
-		shu: "蜀",
-		wu: "吴",
-		qun: "群",
-		shen: "神",
-		devil: "魔",
-		western: "西",
-		key: "键",
-		jin: "晋",
-		ye: "野",
-		double: "双",
-		wei2: "魏国",
-		shu2: "蜀国",
-		wu2: "吴国",
-		qun2: "群雄",
-		shen2: "神明",
-		devil2: "入魔",
-		western2: "西方",
-		key2: "KEY",
-		jin2: "晋朝",
-		ye2: "野心家",
-		double2: "双势力",
-		male: "男",
-		female: "女",
-		mad: "混乱",
-		mad_bg: "疯",
-		draw_card: "摸牌",
-		discard_card: "弃牌",
-		take_damage: "受伤害",
-		reset_character: "复原武将牌",
-		recover_hp: "回复体力",
-		lose_hp: "失去体力",
-		get_damage: "受伤害",
-		weiColor: "#b0d0e2",
-		shuColor: "#ffddb9",
-		wuColor: "#b2d9a9",
-		qunColor: "#f6f6f6",
-		shenColor: "#ffe14c",
-		westernColor: "#ffe14c",
-		jinColor: "#ffe14c",
-		keyColor: "#c9b1fd",
-		devilColor: "#9b2234",
-		basic: "基本",
-		equip: "装备",
-		trick: "锦囊",
-		delay: "延时锦囊",
-		special_delay: "技能机制",
-		character: "角色",
-		revive: "复活",
-		equip1: "武器",
-		equip2: "防具",
-		equip3: "防御马",
-		equip3_4: "坐骑",
-		equip4: "攻击马",
-		equip5: "宝物",
-		equip6: "特殊装备",
-		zero: "零",
-		one: "一",
-		two: "二",
-		three: "三",
-		four: "四",
-		five: "五",
-		six: "六",
-		seven: "七",
-		eight: "八",
-		nine: "九",
-		ten: "十",
-		_recasting: "重铸",
-		_lianhuan: "连环",
-		_lianhuan2: "连环",
-		_kamisha: "神杀",
-		_icesha: "冰杀",
-		qianxing: "潜行",
-		mianyi: "免疫",
-		fengyin: "封印",
-		baiban: "白板",
-		_disableJudge: "判定区",
+	translate = new Proxy(
+		{
+			flower: "鲜花",
+			egg: "鸡蛋",
+			wine: "酒杯",
+			shoe: "拖鞋",
+			yuxisx: "玉玺",
+			jiasuo: "枷锁",
+			junk: "平凡",
+			common: "普通",
+			rare: "精品",
+			epic: "史诗",
+			legend: "传说",
+			default: "默认",
+			special: "特殊",
+			zhenfa: "阵法",
+			aozhan: "鏖战",
+			mode_derivation_card_config: "衍生",
+			mode_banned_card_config: "禁卡",
+			mode_favourite_character_config: "收藏",
+			mode_banned_character_config: "禁将",
+			heart: "♥︎",
+			diamond: "♦︎",
+			spade: "♠︎",
+			club: "♣︎",
+			none: "◈",
+			ghujia: "护甲",
+			ghujia_bg: "甲",
+			heart2: "红桃",
+			diamond2: "方片",
+			spade2: "黑桃",
+			club2: "梅花",
+			none2: "无色",
+			red: "红色",
+			black: "黑色",
+			red2: "红色",
+			black2: "黑色",
+			ok: "确定",
+			ok2: "确定",
+			cancel: "取消",
+			cancel2: "取消",
+			restart: "重新开始",
+			setting: "设置",
+			start: "开始",
+			random: "随机",
+			_out: "无效",
+			agree: "同意",
+			refuse: "拒绝",
+			fire: "火",
+			thunder: "雷",
+			poison: "毒",
+			kami: "神",
+			ice: "冰",
+			stab: "刺",
+			wei: "魏",
+			shu: "蜀",
+			wu: "吴",
+			qun: "群",
+			shen: "神",
+			devil: "魔",
+			western: "西",
+			key: "键",
+			jin: "晋",
+			ye: "野",
+			double: "双",
+			wei2: "魏国",
+			shu2: "蜀国",
+			wu2: "吴国",
+			qun2: "群雄",
+			shen2: "神明",
+			devil2: "入魔",
+			western2: "西方",
+			key2: "KEY",
+			jin2: "晋朝",
+			ye2: "野心家",
+			double2: "双势力",
+			male: "男",
+			female: "女",
+			mad: "混乱",
+			mad_bg: "疯",
+			draw_card: "摸牌",
+			discard_card: "弃牌",
+			take_damage: "受伤害",
+			reset_character: "复原武将牌",
+			recover_hp: "回复体力",
+			lose_hp: "失去体力",
+			get_damage: "受伤害",
+			weiColor: "#b0d0e2",
+			shuColor: "#ffddb9",
+			wuColor: "#b2d9a9",
+			qunColor: "#f6f6f6",
+			shenColor: "#ffe14c",
+			westernColor: "#ffe14c",
+			jinColor: "#ffe14c",
+			keyColor: "#c9b1fd",
+			devilColor: "#9b2234",
+			basic: "基本",
+			equip: "装备",
+			trick: "锦囊",
+			delay: "延时锦囊",
+			special_delay: "技能机制",
+			character: "角色",
+			revive: "复活",
+			equip1: "武器",
+			equip2: "防具",
+			equip3: "防御马",
+			equip3_4: "坐骑",
+			equip4: "攻击马",
+			equip5: "宝物",
+			equip6: "特殊装备",
+			zero: "零",
+			one: "一",
+			two: "二",
+			three: "三",
+			four: "四",
+			five: "五",
+			six: "六",
+			seven: "七",
+			eight: "八",
+			nine: "九",
+			ten: "十",
+			_recasting: "重铸",
+			_lianhuan: "连环",
+			_lianhuan2: "连环",
+			_kamisha: "神杀",
+			_icesha: "冰杀",
+			qianxing: "潜行",
+			mianyi: "免疫",
+			fengyin: "封印",
+			baiban: "白板",
+			_disableJudge: "判定区",
+			_rest_return: "休整",
 
-		xiaowu_emotion: "小无表情",
-		wanglang_emotion: "王朗表情",
-		guojia_emotion: "郭嘉表情",
-		zhenji_emotion: "甄姬表情",
-		shibing_emotion: "士兵表情",
-		xiaosha_emotion: "小杀表情",
-		xiaotao_emotion: "小桃表情",
-		xiaojiu_emotion: "小酒表情",
-		xiaokuo_emotion: "小扩表情",
-		biexiao_emotion: "憋笑表情",
-		chaijun_emotion: "柴郡表情",
-		huangdou_emotion: "黄豆表情",
-		maoshu_emotion: "猫鼠表情",
-		mobile_emotion: "手杀表情",
+			xiaowu_emotion: "小无表情",
+			wanglang_emotion: "王朗表情",
+			guojia_emotion: "郭嘉表情",
+			zhenji_emotion: "甄姬表情",
+			shibing_emotion: "士兵表情",
+			xiaosha_emotion: "小杀表情",
+			xiaotao_emotion: "小桃表情",
+			xiaojiu_emotion: "小酒表情",
+			xiaokuo_emotion: "小扩表情",
+			biexiao_emotion: "憋笑表情",
+			chaijun_emotion: "柴郡表情",
+			huangdou_emotion: "黄豆表情",
+			maoshu_emotion: "猫鼠表情",
+			mobile_emotion: "手杀表情",
 
-		pause: "暂停",
-		config: "选项",
-		auto: "托管",
+			pause: "暂停",
+			config: "选项",
+			auto: "托管",
 
-		unknown: "未知",
-		unknown0: "一号位",
-		unknown1: "二号位",
-		unknown2: "三号位",
-		unknown3: "四号位",
-		unknown4: "五号位",
-		unknown5: "六号位",
-		unknown6: "七号位",
-		unknown7: "八号位",
-		unknown8: "九号位",
-		unknown9: "十号位",
-		unknown10: "十一号位",
-		unknown11: "十二号位",
+			unknown: "未知",
+			unknown0: "一号位",
+			unknown1: "二号位",
+			unknown2: "三号位",
+			unknown3: "四号位",
+			unknown4: "五号位",
+			unknown5: "六号位",
+			unknown6: "七号位",
+			unknown7: "八号位",
+			unknown8: "九号位",
+			unknown9: "十号位",
+			unknown10: "十一号位",
+			unknown11: "十二号位",
 
-		feichu_equip1: "已废除",
-		feichu_equip1_info: "武器栏已废除",
-		feichu_equip2: "已废除",
-		feichu_equip2_info: "防具栏已废除",
-		feichu_equip3: "已废除",
-		feichu_equip3_info: "防御坐骑栏已废除",
-		feichu_equip4: "已废除",
-		feichu_equip4_info: "攻击坐骑栏已废除",
-		feichu_equip5: "已废除",
-		feichu_equip5_info: "宝物栏已废除",
-		feichu_equip6: "已废除",
-		feichu_equip6_info: "特殊装备栏已废除",
-		feichu_equip1_bg: "废",
-		feichu_equip2_bg: "废",
-		feichu_equip3_bg: "废",
-		feichu_equip4_bg: "废",
-		feichu_equip5_bg: "废",
-		feichu_equip6_bg: "废",
-		disable_judge: "已废除",
-		disable_judge_info: "判定区已废除",
-		disable_judge_bg: "废",
-		pss: "手势",
-		pss_paper: "布",
-		pss_scissor: "剪刀",
-		pss_stone: "石头",
-		pss_paper_info: "石头剪刀布时的一种手势。克制石头，但被剪刀克制。",
-		pss_scissor_info: "石头剪刀布时的一种手势。克制布，但被石头克制。",
-		pss_stone_info: "石头剪刀布时的一种手势。克制剪刀，但被布克制。",
-		renku: "仁库",
-		group_wei: "魏势力",
-		group_shu: "蜀势力",
-		group_wu: "吴势力",
-		group_qun: "群势力",
-		group_key: "键势力",
-		group_jin: "晋势力",
-		group_wei_bg: "魏",
-		group_shu_bg: "蜀",
-		group_wu_bg: "吴",
-		group_qun_bg: "群",
-		group_key_bg: "键",
-		group_jin_bg: "晋",
-		zhengsu: "整肃",
-		zhengsu_leijin: "擂进",
-		zhengsu_bianzhen: "变阵",
-		zhengsu_mingzhi: "鸣止",
-		zhengsu_leijin_info: "回合内所有于出牌阶段使用的牌点数递增且不少于三张。",
-		zhengsu_bianzhen_info: "回合内所有于出牌阶段使用的牌花色相同且不少于两张。",
-		zhengsu_mingzhi_info: "回合内所有于弃牌阶段弃置的牌花色均不相同且不少于两张。",
-		db_atk: "策略",
-		db_atk1: "全军出击",
-		db_atk2: "分兵围城",
-		db_def: "策略",
-		db_def1: "奇袭粮道",
-		db_def2: "开城诱敌",
-		cooperation_damage: "同仇",
-		cooperation_damage_info: "双方累计造成至少4点伤害",
-		cooperation_draw: "并进",
-		cooperation_draw_info: "双方累计摸至少八张牌",
-		cooperation_discard: "疏财",
-		cooperation_discard_info: "双方累计弃置至少4种花色的牌",
-		cooperation_use: "戮力",
-		cooperation_use_info: "双方累计使用至少4种花色的牌",
-		charge: "蓄力值",
-		expandedSlots: "扩展装备栏",
-		stratagem_fury: "怒气",
-		_stratagem_add_buff: "强化",
+			feichu_equip1: "已废除",
+			feichu_equip1_info: "武器栏已废除",
+			feichu_equip2: "已废除",
+			feichu_equip2_info: "防具栏已废除",
+			feichu_equip3: "已废除",
+			feichu_equip3_info: "防御坐骑栏已废除",
+			feichu_equip4: "已废除",
+			feichu_equip4_info: "攻击坐骑栏已废除",
+			feichu_equip5: "已废除",
+			feichu_equip5_info: "宝物栏已废除",
+			feichu_equip6: "已废除",
+			feichu_equip6_info: "特殊装备栏已废除",
+			feichu_equip1_bg: "废",
+			feichu_equip2_bg: "废",
+			feichu_equip3_bg: "废",
+			feichu_equip4_bg: "废",
+			feichu_equip5_bg: "废",
+			feichu_equip6_bg: "废",
+			disable_judge: "已废除",
+			disable_judge_info: "判定区已废除",
+			disable_judge_bg: "废",
+			pss: "手势",
+			pss_paper: "布",
+			pss_scissor: "剪刀",
+			pss_stone: "石头",
+			pss_paper_info: "石头剪刀布时的一种手势。克制石头，但被剪刀克制。",
+			pss_scissor_info: "石头剪刀布时的一种手势。克制布，但被石头克制。",
+			pss_stone_info: "石头剪刀布时的一种手势。克制剪刀，但被布克制。",
+			renku: "仁库",
+			group_wei: "魏势力",
+			group_shu: "蜀势力",
+			group_wu: "吴势力",
+			group_qun: "群势力",
+			group_key: "键势力",
+			group_jin: "晋势力",
+			group_wei_bg: "魏",
+			group_shu_bg: "蜀",
+			group_wu_bg: "吴",
+			group_qun_bg: "群",
+			group_key_bg: "键",
+			group_jin_bg: "晋",
+			zhengsu: "整肃",
+			zhengsu_leijin: "擂进",
+			zhengsu_bianzhen: "变阵",
+			zhengsu_mingzhi: "鸣止",
+			zhengsu_leijin_info: "回合内所有于出牌阶段使用的牌点数递增且不少于三张。",
+			zhengsu_bianzhen_info: "回合内所有于出牌阶段使用的牌花色相同且不少于两张。",
+			zhengsu_mingzhi_info: "回合内所有于弃牌阶段弃置的牌花色均不相同且不少于两张。",
+			db_atk: "策略",
+			db_atk1: "全军出击",
+			db_atk2: "分兵围城",
+			db_def: "策略",
+			db_def1: "奇袭粮道",
+			db_def2: "开城诱敌",
+			cooperation_damage: "同仇",
+			cooperation_damage_info: "双方累计造成至少4点伤害",
+			cooperation_draw: "并进",
+			cooperation_draw_info: "双方累计摸至少八张牌",
+			cooperation_discard: "疏财",
+			cooperation_discard_info: "双方累计弃置至少4种花色的牌",
+			cooperation_use: "戮力",
+			cooperation_use_info: "双方累计使用至少4种花色的牌",
+			charge: "蓄力值",
+			expandedSlots: "扩展装备栏",
+			stratagem_fury: "怒气",
+			_stratagem_add_buff: "强化",
 
-		phaseZhunbei: "准备阶段",
-		phaseJudge: "判定阶段",
-		phaseDraw: "摸牌阶段",
-		phaseUse: "出牌阶段",
-		phaseDiscard: "弃牌阶段",
-		phaseJieshu: "结束阶段",
+			phaseZhunbei: "准备阶段",
+			phaseJudge: "判定阶段",
+			phaseDraw: "摸牌阶段",
+			phaseUse: "出牌阶段",
+			phaseDiscard: "弃牌阶段",
+			phaseJieshu: "结束阶段",
 
-		dongcha: "洞察",
-		dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
-		sheshen: "舍身",
-		sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
-		identity_mingcha: "明察",
-		identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
-	};
+			dongcha: "洞察",
+			dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
+			sheshen: "舍身",
+			sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
+			identity_mingcha: "明察",
+			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
+		},
+		{
+			get(target, prop, receiver) {
+				return Reflect.get(target, prop, receiver);
+			},
+			set(target, prop, newValue) {
+				if (typeof prop == "string" && typeof newValue == "string") {
+					const list = newValue.split("&");
+					if (list.length > 1) {
+						const newList = list.slice();
+						for (let i = 0; i < list.length; i++) {
+							const str = list[i];
+							const listx = str.split("=");
+							if (listx.length == 2) {
+								if (listx[0] == "poptip") {
+									newList[i] = get.poptipLink(...listx[1].split("|"));
+								}
+							}
+						}
+						newValue = newList.join("");
+					}
+				}
+				return Reflect.set(target, prop, newValue);
+			},
+			defineProperty(target, prop, descriptor) {
+				const newValue = descriptor.value;
+				if (typeof prop == "string" && typeof newValue == "string") {
+					const list = newValue.split("&");
+					if (list.length > 1) {
+						const newList = list.slice();
+						for (let i = 0; i < list.length; i++) {
+							const str = list[i];
+							const listx = str.split("=");
+							if (listx.length == 2) {
+								if (listx[0] == "poptip") {
+									newList[i] = get.poptipLink(...listx[1].split("|"));
+								}
+							}
+						}
+						descriptor.value = newList.join("");
+					}
+				}
+				return Reflect.defineProperty(target, prop, descriptor);
+			},
+		}
+	);
 
 	experimental = experimental;
 
@@ -10975,10 +10965,25 @@ export class Library {
 					if (role != "global" && player != event[role]) {
 						return false;
 					}
-					if (Array.isArray(info.trigger[role])) {
-						return info.trigger[role].includes(triggername);
+					const list = [];
+					if (typeof info.trigger[role] == "string") {
+						list.add(info.trigger[role]);
+					} else if (Array.isArray(info.trigger[role])) {
+						list.addArray(info.trigger[role]);
 					}
-					return info.trigger[role] == triggername;
+					if (list.includes(triggername)) {
+						return true;
+					}
+					const map = lib.relatedTrigger,
+						names = Object.keys(map);
+					for (const trigger of list.slice()) {
+						for (const name of names) {
+							if (trigger.startsWith(name)) {
+								list.addArray(map[name].map(i => i + trigger.slice(name.length)));
+							}
+						}
+					}
+					return list.includes(triggername);
 				})
 			) {
 				return false;
@@ -13534,6 +13539,50 @@ export class Library {
 				}
 			},
 		},
+		//休整
+		_rest_return: {
+			trigger: { global: "phaseBefore" },
+			forced: true,
+			charlotte: true,
+			silent: true,
+			forceDie: true,
+			forceOut: true,
+			filter(event, player) {
+				const map = _status._rest_return?.[player.playerid];
+				if (!map?.count || map?.count < 0) {
+					return false;
+				}
+				if (map?.type == "round" && event.player != player) {
+					return false;
+				}
+				if (player.isIn()) {
+					delete _status._rest_return?.[player.playerid];
+				}
+				return !event._rest_return && player.isOut();
+			},
+			async content(event, trigger, player) {
+				const map = _status._rest_return?.[player.playerid];
+				if (map?.count && map?.count > 0) {
+					game.broadcastAll(map => {
+						map.count--;
+					}, map);
+				}
+				trigger._rest_return = true;
+				if (!map.count) {
+					game.broadcastAll(function (player) {
+						player.classList.remove("out");
+					}, player);
+					game.log(player, "移回了游戏");
+					delete _status._rest_return[player.playerid];
+					await player.recoverTo(player.maxHp);
+					//生成restEnd时机
+					const next = game.createEvent("restEnd", false);
+					next.setContent("emptyEvent");
+					next.player = player;
+					await next;
+				}
+			},
+		},
 		/**
 		 * @deprecated
 		 */
@@ -13739,7 +13788,8 @@ export class Library {
 			 */
 			init(version, config, banned_info) {
 				var show_deckMonitor = false;
-				if (lib.config.show_deckMonitor && lib.config.show_deckMonitor_online) {
+				if (lib.config.show_deckMonitor) {
+					// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
 				}
 				this.send(function (show_deckMonitor) {
@@ -15416,6 +15466,17 @@ export class Library {
 			},
 		],
 		[
+			"骏骊",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "🐎";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
 			"SP",
 			{
 				getSpan: () => {
@@ -15928,6 +15989,27 @@ export class Library {
 				nature: "thundermm",
 			},
 		],
+		[
+			"狂",
+			{
+				color: "#8B00FF",
+				nature: "firemm",
+			},
+		],
+		[
+			"欧陆",
+			{
+				getSpan: () => {
+					const span = document.createElement("span"),
+						style = span.style;
+					style.writingMode = style.webkitWritingMode = "horizontal-tb";
+					style.fontFamily = "MotoyaLMaru";
+					style.transform = "scaleY(0.85)";
+					span.textContent = "EU";
+					return span.outerHTML;
+				},
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
@@ -15954,7 +16036,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
-	selectGroup = ["shen", "western", "devil"];
+	selectGroup = ["shen", "devil"]; //"western",
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {

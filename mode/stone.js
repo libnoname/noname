@@ -2629,17 +2629,6 @@ export default () => {
 					trashBin: ["stonelegend"],
 					extraModeData: [6, 4],
 				},
-				stone_yisela: {
-					sex: "female",
-					group: "qun",
-					hp: 4,
-					skills: ["stone_chenshui"],
-					isMinskin: true,
-					isFellowInStoneMode: true,
-					isHiddenInStoneMode: true,
-					trashBin: ["stonelegend"],
-					extraModeData: [6, 2],
-				},
 				stone_nuoziduomu: {
 					sex: "male",
 					group: "qun",
@@ -2776,7 +2765,7 @@ export default () => {
 		careerList: ["mage", "shaman", "druid", "paladin", "rogue", "priest", "hunter", "warrior", "warlock"],
 		game: {
 			reserveDead: true,
-			bannedcards: ["lebu", "guiyoujie", "xietianzi", "lingjiandai", "jiguanshu", "sifeizhenmian", "fengxueren", "chuansongmen"],
+			bannedcards: ["lebu", "xietianzi"],
 			onwash: function () {
 				if (_status.mode != "deck") {
 					return;
@@ -7172,20 +7161,6 @@ export default () => {
 					player.line(list, "green");
 				},
 			},
-			stone_chenshui: {
-				trigger: { player: "phaseEnd" },
-				forced: true,
-				content: function () {
-					var list = ["hsmengjing_feicuiyoulong", "hsmengjing_huanxiaojiemei", "hsmengjing_suxing", "hsmengjing_mengye", "hsmengjing_mengjing"];
-					var target = player.getLeader();
-					target.gain(game.createCard(list.randomGet()));
-					target.$draw();
-					player.line(target, "green");
-				},
-				ai: {
-					threaten: 2,
-				},
-			},
 			stone_shixu: {
 				trigger: { source: "fellow" },
 				forced: true,
@@ -11056,7 +11031,6 @@ export default () => {
 
 			stone_siwangzhiyi: "死亡之翼",
 			stone_alaikesita: "阿莱克萨",
-			stone_yisela: "伊瑟拉",
 			stone_nuoziduomu: "诺兹多姆",
 			stone_maligousi: "玛里苟斯",
 			stone_aolajier: "奥拉基尔",
@@ -11076,8 +11050,6 @@ export default () => {
 			stone_mieshi_info: "你出场时，对所有其他随从造成2点伤害，然后弃置己方主将的所有手牌。",
 			stone_shixu: "时序",
 			stone_shixu_info: "你出场的回合内，己方主将获得4点行动值。",
-			stone_chenshui: "沉睡",
-			stone_chenshui_info: "在你的结束阶段，令己方主将获得一张梦境牌。",
 			stone_mowang: "魔网",
 			stone_mowang_info: "己方法术对主将伤害+2，对随从伤害+4。",
 

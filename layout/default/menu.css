@@ -1274,14 +1274,6 @@ input.fileinput::-webkit-file-upload-button {
 	height: 100px;
 }
 
-.menu-buttons > .new_character > .card:not(.fullskin) {
-	color: white;
-	text-shadow: black 0px 0px 2px;
-	transform: translateX(0px);
-	background-image: url("image/card/hslingjian_jinjilengdong.jpg");
-	background-size: cover;
-}
-
 .menu-buttons > .new_character > .avatar > input,
 .menu-buttons > .new_character > .card > input {
 	z-index: 3;
@@ -1933,7 +1925,26 @@ div.popup-container.editor,
 div.popup-container.editor div {
 	transition: none;
 }
-.popup-container.editor > div {
+
+.cm-editor {
+	height: 100%;
+}
+
+div.popup-container.editor2,
+div.popup-container.editor2 div,
+.cm-editor, .cm-editor * {
+	text-shadow: none;
+	transition: none;
+}
+
+.cm-editor, .cm-editor div {
+	color: black;
+	display: block;
+    position: relative;
+}
+
+.popup-container.editor > div,
+div.popup-container.editor2 > div {
 	width: 80%;
 	height: 90%;
 	position: absolute;
@@ -1945,7 +1956,8 @@ div.popup-container.editor div {
 	overflow: hidden;
 }
 
-.popup-container.editor > div > .editbutton {
+.popup-container.editor > div > .editbutton,
+.popup-container.editor2 > div > .editbutton {
 	font-family: "lishu";
 	font-size: 18px;
 	color: rgb(60, 60, 60);
@@ -1957,16 +1969,19 @@ div.popup-container.editor div {
 	cursor: pointer;
 }
 
-.popup-container.editor > div > .editbutton:not(:first-child) {
+.popup-container.editor > div > .editbutton:not(:first-child),
+.popup-container.editor2 > div > .editbutton:not(:first-child) {
 	position: relative;
 }
 
-.popup-container.editor > div > .editbutton:first-child {
+.popup-container.editor > div > .editbutton:first-child,
+.popup-container.editor2 > div > .editbutton:first-child {
 	left: auto;
 	right: 0;
 }
 
-.popup-container.editor > div > div:last-child {
+.popup-container.editor > div > div:last-child,
+.popup-container.editor2 > div > div:last-child {
 	width: 100%;
 	height: calc(100% - 40px);
 	position: absolute;
@@ -1976,7 +1991,8 @@ div.popup-container.editor div {
 	border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.popup-container.editor > div > div:last-child > textarea {
+.popup-container.editor > div > div:last-child > textarea,
+.popup-container.editor2 > div > div:last-child > textarea {
 	width: 100%;
 	height: 100%;
 	border: none;

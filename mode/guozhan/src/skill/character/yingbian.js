@@ -322,8 +322,9 @@ export default {
 				.set(
 					"value",
 					(() => {
-						const targets = game.filterPlayer(current => current != target && current.isUnseen());
-						if (Math.random() * 10 < targets.length) {
+						const targets = game.filterPlayer(current => current != target && current.isUnseen()),
+							jins = game.filterPlayer(current => current.identity == player.identity && current.isUnseen(2));
+						if (Math.random() * 10 < targets.length || jins.length) {
 							return get.damageEffect(target, player, target) > 0 ? 1 : 0;
 						}
 						return 1;
@@ -649,15 +650,20 @@ export default {
 			}
 			const names = [];
 			for (const target of targets) {
+				const prompt = `宴戏：声明一个牌名（你被选择的牌为${get.translation(cards[targets.indexOf(target)])}）`;
 				const result = await target
-					.chooseButton(["宴戏：声明一个牌名", [get.inpileVCardList(i => !i[3]), "vcard"]], true)
+					.chooseButton([prompt, [get.inpileVCardList(i => !i[3]), "vcard"]], true)
 					.set("ai", button => {
-						const player = get.player();
+						const { player, chosenCard: card } = get.event();
+						if (Math.random() > 0.5 && button.link[2] == card.name) {
+							return 24;
+						}
 						return player.countCards("he", button.link[2]);
 					})
+					.set("chosenCard", cards[targets.indexOf(target)])
 					.forResult();
 				if (result?.bool && result.links?.length) {
-					names.add(result.links[0][2]);
+					names.push(result.links[0][2]);
 					target.chat(get.translation(result.links[0][2]));
 					game.log(target, "声明了", `#y${get.translation(result.links[0][2])}`);
 				}
@@ -808,7 +814,7 @@ export default {
 					return target.countCards("h");
 				})
 				.set("ai", target => {
-					return get.attitude(get.player(), target) * target.countCards("h");
+					return -get.attitude(get.player(), target) * target.countCards("h");
 				})
 				.setHiddenSkill(event.skill)
 				.forResult();
@@ -1524,6 +1530,20 @@ export default {
 				}
 			}
 		},
+		global: "gz_fushou_global",
+		subSkill: {
+			global: {
+				ai: {
+					alwaysViceSkill: true,
+					alwaysMainSkill: true,
+					skillTagFilter(player, tag, arg) {
+						if (!game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gz_fushou"))) {
+							return false;
+						}
+					}
+				},
+			},
+		},
 	},
 	gz_xijue: {
 		audio: "xijue",
@@ -1561,7 +1581,11 @@ export default {
 		},
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
-			const result = await player.chooseToDiscard(get.prompt2("gz_xijue_xiaoguo", trigger.player), "he", { type: "basic" }).set("logSkill", ["gz_xijue_xiaoguo", trigger.player]).forResult();
+			const result = await player
+				.chooseToDiscard(get.prompt2("gz_xijue_xiaoguo", trigger.player), "he", { type: "basic" })
+				.set("logSkill", ["gz_xijue_xiaoguo", trigger.player])
+				.set("ai", card => 9 - get.value(card))
+				.forResult();
 			if (result.bool) {
 				let nono = get.damageEffect(trigger.player, player, trigger.player) >= 0;
 				const result2 = await trigger.player
@@ -1929,9 +1953,6 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			if (target == player) {
-				return false;
-			}
 			if (ui.selected.targets.length) {
 				const source = ui.selected.targets[0];
 				return !source.isFriendOf(target) && source.canCompare(target);
@@ -2100,6 +2121,9 @@ export default {
 			const card = new lib.element.VCard({ name: "juedou" }),
 				targets = event.targets.filter(target => player.canUse(card, target));
 			await player.useCard(card, targets);
+			if (!player.isIn()) {
+				return;
+			}
 			let num = 0;
 			game.filterPlayer(current => {
 				current.checkHistory("respond", evt => {
@@ -2131,7 +2155,7 @@ export default {
 				firstDo: true,
 				filter(event, player) {
 					return event.player.hasHistory("lose", evt => {
-						return evt.hs.length > 0 && evt.getParent() == event;
+						return evt.hs.length > 0 && (evt.relatedEvent || evt.getParent()) == event;
 					});
 				},
 				direct: true,
@@ -2445,40 +2469,38 @@ export default {
 					const evt = event.getParent(2);
 					return evt?.name === "useCard" && evt.player === player && evt.skill == "gz_yinsha";
 				},
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
+				async cost(event, trigger, player) {
 					const target = trigger.player;
-					target.addTempSkill("gz_yinsha_viewas");
-					trigger.set("forced", true);
-				},
-			},
-			viewas: {
-				enable: "chooseToUse",
-				filterCard: true,
-				selectCard: -1,
-				position: "h",
-				viewAs(cards, player) {
-					let card = { name: "sha" };
-					if (!cards.length) {
-						card.isCard = true;
+					if (target.countCards("h", "sha")) {
+						const backup = _status.event;
+						_status.event = trigger;
+						const bool = target.countCards("h", card => {
+							return trigger.filterCard(card, player, trigger) && game.hasPlayer(current => {
+								return current !== target && trigger.filterTarget(card, target, current);
+							});
+						}) > 0;
+						_status.event = backup;
+						trigger.set("forced", bool);
+					} else if (target.countCards("h")) {
+						const card = get.autoViewAs({ name: "sha" }, target.getCards("h"));
+						const backup = _status.event;
+						_status.event = trigger;
+						const bool = trigger.filterCard(card, player, trigger);
+						const targets = game.filterPlayer(current => {
+							return current !== target && trigger.filterTarget(card, target, current);
+						});
+						_status.event = backup;
+						if (bool && targets.length) {
+							trigger.result = {
+								bool: true,
+								card: card,
+								cards: target.getCards("h"),
+								targets: targets,
+							};
+							trigger.untrigger();
+							trigger.set("responded", true);
+						}
 					}
-					return card;
-				},
-				filter(event, player) {
-					const evt = event?.getParent(2);
-					return !player.countCards("h", "sha") && evt?.skill == "gz_yinsha";
-				},
-				viewAsFilter(player) {
-					const evt = get.event()?.getParent(2);
-					return !player.countCards("h", "sha") && evt?.skill == "gz_yinsha";
-				},
-				prompt: "将所有手牌当杀使用",
-				check(card) {
-					return 1;
-				},
-				ai: {
-					order: 0.1,
 				},
 			},
 		},
@@ -3097,7 +3119,7 @@ export default {
 			const cards = Array.from(ui.cardPile.childNodes).slice(0, Math.min(player.maxHp, Array.from(ui.cardPile.childNodes).length));
 			await game.cardsGotoOrdering(cards);
 			for (const card of cards) {
-				if (player.hasUseTarget(card, false, false)) {
+				if (player.hasUseTarget(card, false, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
 					await player.chooseUseTarget(card, true, false, "nodistance");
 				} else {
 					gains.push(card);
@@ -5471,7 +5493,7 @@ export default {
 			}
 			return (
 				player.getHistory("lose", function (evt) {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					for (var i in evt.gaintag_map) {

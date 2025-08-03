@@ -212,6 +212,7 @@ export const defaultHookcompatition = {
 
 	addSkillCheck: new NonameAssembly("addSkillCheck"),
 	removeSkillCheck: new NonameAssembly("removeSkillCheck"),
+	refreshSkin: new NonameAssembly("refreshSkin"),
 };
 
 export const defaultAssemblys = {

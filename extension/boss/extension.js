@@ -4,7 +4,7 @@ game.import("play", function () {
 	return {
 		name: "boss",
 		init() {
-			if (get.mode() == "tafang") {
+			if (get.mode() === "tafang") {
 				return;
 			}
 			let storage = localStorage.getItem("boss_storage_playpackconfig");
@@ -13,12 +13,12 @@ game.import("play", function () {
 			} catch (e) {
 				storage = {};
 			}
-			if (get.mode() != "boss") {
+			if (get.mode() !== "boss") {
 				lib.characterPack.boss = storage.boss || {};
 				for (const i in lib.characterPack.boss) {
 					lib.characterPack.boss[i].img = `image/mode/boss/character/${i}.jpg`;
 					lib.character[i] = lib.characterPack.boss[i];
-					if (typeof lib.character[i][2] != "number" && (typeof lib.character[i][2] != "string" || lib.character[i][2].indexOf("/") == -1)) {
+					if (typeof lib.character[i][2] !== "number" && (typeof lib.character[i][2] !== "string" || lib.character[i][2].indexOf("/") === -1)) {
 						lib.character[i][2] = Infinity;
 					}
 					if (!lib.config.boss_enableai_playpackconfig) {
@@ -27,12 +27,12 @@ game.import("play", function () {
 				}
 			}
 			let list2 = storage.versus || {};
-			if (get.mode() != "versus" || get.config("versus_mode") != "jiange") {
+			if (get.mode() !== "versus" || get.config("versus_mode") !== "jiange") {
 				lib.characterPack.jiange = list2;
 				for (const i in lib.characterPack.jiange) {
 					lib.characterPack.jiange[i].img = `image/mode/versus/character/${i}.jpg`;
 					lib.character[i] = lib.characterPack.jiange[i];
-					if (typeof lib.character[i][2] != "number") {
+					if (typeof lib.character[i][2] !== "number") {
 						lib.character[i][2] = Infinity;
 					}
 					if (!lib.config.boss_enableai_playpackconfig) {
@@ -47,7 +47,7 @@ game.import("play", function () {
 				lib.characterIntro.boss_jiarenzidan = lib.characterIntro.caozhen;
 				lib.characterIntro.boss_duanyuzhongda = lib.characterIntro.simayi;
 				lib.characterIntro.boss_juechenmiaocai = lib.characterIntro.xiahouyuan;
-			} else if (_status.mode != "jiange") {
+			} else if (_status.mode !== "jiange") {
 				for (const i in list2) {
 					lib.character[i] = list2[i];
 					if (!lib.config.boss_enableai_playpackconfig) {
@@ -64,7 +64,7 @@ game.import("play", function () {
 			}
 		},
 		arenaReady() {
-			if (get.mode() == "tafang") {
+			if (get.mode() === "tafang") {
 				return;
 			}
 			let storage = localStorage.getItem("boss_storage_playpackconfig");
@@ -77,7 +77,7 @@ game.import("play", function () {
 				storage.translate = {};
 			}
 			const loadversus = function () {
-				if (get.mode() != "versus") {
+				if (get.mode() !== "versus") {
 					game.loadModeAsync("versus", function (mode) {
 						for (const i in mode.translate) {
 							lib.translate[i] ||= mode.translate[i];
@@ -87,12 +87,12 @@ game.import("play", function () {
 							if (lib.skill[i]) {
 								console.log(i);
 							}
-							if (i != "versus_ladder") {
+							if (i !== "versus_ladder") {
 								lib.skill[i] = mode.skill[i];
 							}
 						}
 						for (const ii in mode.skill) {
-							if (ii != "versus_ladder") {
+							if (ii !== "versus_ladder") {
 								game.finishSkill(ii);
 							}
 						}
@@ -108,7 +108,7 @@ game.import("play", function () {
 					localStorage.setItem("boss_storage_playpackconfig", JSON.stringify(storage));
 				}
 			};
-			if (get.mode() != "boss") {
+			if (get.mode() !== "boss") {
 				game.loadModeAsync("boss", function (mode) {
 					for (const i in mode.translate) {
 						lib.translate[i] ||= mode.translate[i];
@@ -121,7 +121,7 @@ game.import("play", function () {
 						lib.skill[i] = mode.skill[i];
 					}
 					for (const ii in mode.skill) {
-						if (ii != "versus_ladder") {
+						if (ii !== "versus_ladder") {
 							game.finishSkill(ii);
 						}
 					}
