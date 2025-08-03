@@ -1238,8 +1238,10 @@ export class Library {
 					clear: true,
 					unfrequent: true,
 					onclick: function () {
-						game.saveConfig("recentCharacter", [], true);
-						alert("最近选将记录已清除！");
+						if (confirm("确定要清除最近选将记录吗？")) {
+							game.saveConfig("recentCharacter", [], true);
+							alert("最近选将记录已清除！");
+						}
 					}
 				},
 				choose_all_button: {
