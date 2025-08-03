@@ -14118,6 +14118,52 @@ export class Library {
 				// }
 			},
 			/**
+			 * 用于代替exec进行主机许可的请求喵
+			 * 
+			 * @this {import("./element/client.js").Client}
+			 * @param {{ type: string }} subject 请求附带的载荷，必须是对象并且包含类型为字符串的`type`属性喵
+			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应喵
+			 */
+			dataSync(subject, id) {
+				if (lib.node.observing.includes(this)) {
+					return;
+				}
+
+				void (async () => {
+					let ok = false;
+					let result = null;
+
+					try {
+						if (!subject || typeof subject !== "object" || typeof subject.type !== "string") {
+							return;
+						}
+
+						const type = subject.type;
+						const requester = lib.playerOL?.[this.id] ?? null;
+						let directResult = null;
+
+						if (!requester) {
+							return;
+						}
+
+						switch (type) {
+							// 如果要增加类型请走这里喵
+							case "skill":
+								directResult = await game.respondSkillData(id, requester, subject);
+								break;
+						}
+
+						if (directResult != null) {
+							[ok, result] = directResult;
+						}
+					} finally {
+						if (id) {
+							this.send("dataReply", { ok, id, result });
+						}
+					}
+				})();
+			},
+			/**
 			 * @this {import("./element/client.js").Client}
 			 */
 			log() {
@@ -15034,6 +15080,22 @@ export class Library {
 				game.ws.close();
 				if (_status.connectDenied) {
 					_status.connectDenied();
+				}
+			},
+			/**
+			 * 当服务器响应通过dataSync发送的请求时走这里喵
+			 * 
+			 * @param {{ ok: boolean, id: string|null, result: any }} data 
+			 */
+			dataReply(data) {
+				// 需要提前注册响应回调喵
+				if (data.id && game.requestMap && data.id in game.requestMap) {
+					const callback = game.requestMap[data.id];
+					delete game.requestMap[data.id];
+
+					if (typeof callback === "function") {
+						callback(data.ok, data.result);
+					}
 				}
 			},
 			cancel: function (id) {

@@ -44,6 +44,10 @@ export class Game extends GameCompatible {
 	 * @type { { [key: string]: Player } }
 	 */
 	playerMap = {};
+	/**
+	 * @type { { [key: string]: function } }
+	 */
+	requestMap = {};
 	phaseNumber = 0;
 	roundNumber = 0;
 	shuffleNumber = 0;
@@ -2092,6 +2096,182 @@ export class Game extends GameCompatible {
 			}
 			game.ws.send(JSON.stringify(get.stringifiedResult(args)));
 		}
+	}
+	/**
+	 * @type { WeakMap<Player, { [skill: string]: { [sync: string]: number } }> }
+	 */
+	#skillSyncTicks = new WeakMap();
+	/**
+	 * ```plain
+	 * 在客机发出同步信号，要求主机通过广播或单播更新数据喵
+	 * 此函数会要求主机调用指定的`get.info(skill).sync[sync]`函数但不会等待结果返回喵
+	 * 
+	 * 具体调用请参考@see requestSkillData 函数的文档喵
+	 * ```
+	 * 
+	 * @param { Card | VCard | string } skill 
+	 * @param { string } sync 
+	 * @param  { ...any } args 
+	 * @returns 
+	 */
+	syncSkillData(skill, sync, ...args) {
+		if ("observe" in game && game.observe) {
+			return;
+		}
+
+		// @ts-expect-error 重载函数可以接受所有类型参数喵
+		const info = get.info(name, false);
+
+		if (!info) {
+			throw new Error("没有在客机上找到对应的牌或技能，syncSkillData应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
+		}
+
+		const id = Date.now().toString();
+		const { promise, resolve } = Promise.withResolvers();
+
+		game.requestMap[id] = (ok, result) => resolve([ok, result]);
+		game.send("dataSync", { type: "skill", name: skill, key: sync, args }, id);
+	}
+	/**
+	 * ```plain
+	 * 在客机发出请求，要求主机响应并返回特定的数据
+	 * 此函数会要求主机调用指定的`get.info(skill).sync[sync]`函数
+	 * 并通过Promise返回主机的给出的数据
+	 * 
+	 * 具体调用例子:
+	 * ```
+	 * ```js
+	 * lib.skill["testSkill"] = {
+	 *     async content() {
+	 *         if (player.isOnline()) {
+	 *             // 如果是客机玩家喵
+	 *             player.send(() => {
+	 *                 // 调用主机的lib.skill.testSkill.iWannaTopCards(game.me, 3, 5000);
+	 *                 const cards = game.requestSkillData("testSkill", "iWannaTopCards", 5000, 3);
+	 *                 // 调用主机的lib.skill.testSkill.iWannaTopCards2(game.me, 3, 5, 5000);
+	 *                 const cards2 = game.requestSkillData("testSkill", "iWannaTopCards2", 5000, 3, 5);
+	 *                 console.log(cards);
+	 *                 console.log(cards2);
+	 *             });
+	 *         } else {
+	 *             // 托管、AI或主机玩家的处理喵
+	 *         }
+	 *     },
+	 *     sync: {
+	 *         // 函数分别获得参数: 请求的客机玩家、参数、超时时间，对应player、3、5000
+	 *         async iWannaTopCards(player, num, timeout) { // 可以是async喵，但是请在超时时间前完成喵
+	 *             return Array.prototype.slice.call(ui.cardPile.childNodes, 0, num);
+	 *         },
+	 *         // 函数分别获得参数: 请求的客机玩家、参数、超时时间，对应player、3与5、5000
+	 *         async iWannaTopCards2(player, start, end, timeout) {
+	 *             return Array.prototype.slice.call(ui.cardPile.childNodes, start, end);
+	 *         },
+	 *     },
+	 * }
+	 * ```
+	 * 
+	 * @param { string } skill 
+	 * @param { string } sync 
+	 * @param { number | null } timeout 
+	 * @param  { ...any } args 
+	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
+	 */
+	requestSkillData(skill, sync, timeout, ...args) {
+		if ("observe" in game && game.observe) {
+			return Promise.resolve([false, null]);
+		}
+
+		// 也许客机检查是不必要的喵
+		// // @ts-expect-error 重载函数可以接受所有类型参数喵
+		// const info = get.info(name);
+
+		// if (!info) {
+		// 	throw new Error("没有在客机上找到对应的牌或技能，requestSkillData应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
+		// }
+
+		if (!timeout || !Number.isFinite(timeout) || timeout <= 0) {
+			timeout = 5000;
+		}
+
+		const id = (function () {
+			while (true) {
+				const id = Math.random().toString(36).slice(2);
+				if (!(id in game.requestMap)) {
+					return id;
+				}
+			}
+		})();
+		const { promise, resolve } = Promise.withResolvers();
+
+		game.requestMap[id] = (ok, result) => resolve([ok, result]);
+		game.send("dataSync", { type: "skill", name: skill, key: sync, args, timeout }, id);
+
+		const timeoutPromise = new Promise((resolve) => {
+			setTimeout(() => {
+				delete game.requestMap[id];
+				resolve([false, game.SKILL_SYNC_RESULTS.REQUEST_TIMEOUT]);
+			}, timeout);
+		});
+
+		return Promise.any([promise, timeoutPromise]);
+	}
+	SKILL_SYNC_RESULTS = Object.freeze({
+		INVALID_ARGUMENT: "参数不符合要求喵",
+		MISSING_SKILL: "技能没有找到喵",
+		SKILL_NOT_GRANTED: "请求的技能不被许可喵",
+		MISSING_SKILL_SYNC: "请求的sync函数没有找到喵",
+		TOO_MANY_REQUESTS: "请求过于频繁了喵",
+		REQUEST_TIMEOUT: "请求超时喵",
+	});
+	/**
+	 * 由联机接口调用来处理客机请求逻辑喵
+	 * 请不要手动调用此函数喵！！！
+	 * 
+	 * @param {string} id 
+	 * @param {Player} player 
+	 * @param {*} subject
+	 * @returns { Promise<[boolean, any] | undefined> }
+	 */
+	async respondSkillData(id, player, { name: skill, key: sync, args, timeout }) {
+		// 检查合法性喵
+		if (typeof skill !== "string" || typeof sync !== "string" || !Array.isArray(args) || typeof timeout !== "number") {
+			return [false, game.SKILL_SYNC_RESULTS.INVALID_ARGUMENT];
+		}
+
+		const info = get.info(skill);
+
+		if (!info) {
+			return [false, game.SKILL_SYNC_RESULTS.MISSING_SKILL];
+		}
+		
+		if (!lib.skill.global.includes(skill) && !player.hasSkill(skill, true, true, false)) { // 失效技能也有技权喵
+			return [false, game.SKILL_SYNC_RESULTS.SKILL_NOT_GRANTED];
+		}
+
+		const syncList = info.sync;
+		const targetFunction = syncList?.[sync];
+
+		if (typeof targetFunction !== "function") {
+			return [false, game.SKILL_SYNC_RESULTS.MISSING_SKILL_SYNC];
+		}
+
+		// 小小的风控喵
+		const ticksMap = game.#skillSyncTicks.get(player);
+		const lastTicks = ticksMap?.[skill]?.[sync] ?? NaN;
+
+		if (!isNaN(lastTicks)) {
+			if (lastTicks > Date.now() - 500) {
+				return [false, game.SKILL_SYNC_RESULTS.TOO_MANY_REQUESTS];
+			}
+		}
+
+		const newTicksMap = ticksMap ?? {};
+		const newSkillTicks = newTicksMap[skill] ?? (newTicksMap[skill] = {});
+		newSkillTicks[sync] ??= Date.now();
+		game.#skillSyncTicks.set(player, newTicksMap);
+
+		// 执行并返回喵
+		return [true, await targetFunction.call(syncList, player, ...args, timeout)];
 	}
 	/**
 	 * @param { string } id
