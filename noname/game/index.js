@@ -25,6 +25,7 @@ import { Check } from "./check.js";
 import security from "../util/security.js";
 import { GameCompatible } from "./compatible.js";
 import { save } from "../util/config.js";
+import { debonuce } from "../util/utils.js";
 
 export class Game extends GameCompatible {
 	documentZoom;
@@ -2101,7 +2102,6 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * 对于技能请求我们应该记录每个lib.skill.xxx.sync函数上次的调用时间，间隔500ms内的重复调用主机应该拒绝喵
-	 * 啊最后还是没有使用防抖喵，因为防抖此场景不合适喵，无论是从主机校验和函数签名的角度都不合适喵
 	 * 
 	 * @type { WeakMap<Player, { [skill: string]: { [sync: string]: number } }> }
 	 */
@@ -2119,7 +2119,7 @@ export class Game extends GameCompatible {
 	 * @param  { ...any } args 
 	 * @returns 
 	 */
-	syncSkillData(skill, sync, ...args) {
+	syncSkillData = debonuce(function (skill, sync, ...args) {
 		if ("observe" in game && game.observe) {
 			return;
 		}
@@ -2133,7 +2133,7 @@ export class Game extends GameCompatible {
 		// }
 
 		game.send("dataSync", { type: "skill", name: skill, key: sync, args }, null);
-	}
+	});
 	/**
 	 * ```plain
 	 * 在客机发出请求，要求主机响应并返回特定的数据
@@ -2178,7 +2178,7 @@ export class Game extends GameCompatible {
 	 * @param  { ...any } args 
 	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
 	 */
-	requestSkillData(skill, sync, timeout, ...args) {
+	requestSkillData = debonuce(function (skill, sync, timeout, ...args) {
 		if ("observe" in game && game.observe) {
 			return Promise.resolve([false, null]);
 		}
@@ -2216,7 +2216,7 @@ export class Game extends GameCompatible {
 		});
 
 		return Promise.any([promise, timeoutPromise]);
-	}
+	}, 500);
 	/**
 	 * 失败结果常量表喵
 	 * 
