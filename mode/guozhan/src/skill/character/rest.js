@@ -31,7 +31,7 @@ export default {
 			}
 		},
 		ai: {
-			threaten: 2,
+			threaten: 114514,
 		},
 	},
 	//辛宪英

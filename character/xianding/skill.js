@@ -27754,7 +27754,7 @@ const skills = {
 					if (!target.hasFriend()) {
 						return 1;
 					}
-					return [1, 0.8 * ds];
+					return [1, 0.5 * ds];
 				},
 			},
 		},

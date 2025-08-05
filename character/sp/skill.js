@@ -34565,6 +34565,8 @@ const skills = {
 					if (!result?.bool) {
 						break;
 					}
+				} else {
+					break;
 				}
 			}
 		},

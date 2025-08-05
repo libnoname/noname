@@ -12141,6 +12141,7 @@ const skills = {
 		},
 		content() {
 			player.addMark("mbzhixi", 1, false);
+			player.addTempSkill("mbzhixi_clear", "phaseChange");
 			if (get.type2(trigger.card) == "trick") {
 				var evt = trigger.getParent("phaseUse");
 				if (evt && evt.player == player) {
@@ -12148,6 +12149,14 @@ const skills = {
 					game.log(player, "结束了出牌阶段");
 				}
 			}
+		},
+		subSkill: {
+			clear: {
+				charlotte: true,
+				onremove(player) {
+					player.clearMark("mbzhixi", false);
+				},
+			},
 		},
 		ai: {
 			presha: true,
