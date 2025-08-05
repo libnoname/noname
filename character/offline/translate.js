@@ -61,7 +61,7 @@ const translates = {
 	dragzhawang: "诈亡",
 	dragzhawang_info: "回合开始时，你可选择一项：1.本回合获得〖诈降〗；2.失去1点体力，将本回合准备阶段和结束阶段改为摸牌阶段；3.&poptip=背水&，减少1点体力上限。",
 	dragxigui: "西归",
-	dragxigui_info: "限定技，你进入濒死或每轮结束时，你可以将体力值回复至体力上限。若如此做，下一轮结束时，你失去〖诈亡〗并获得〖当先〗。",
+	dragxigui_info: "限定技，你进入濒死或每轮结束时，你可以将体力值回复至体力上限。若如此做，下一个轮次结束时，你失去〖诈亡〗并获得〖当先〗。",
 	drag_shendan: "龙申耽",
 	drag_shendan_prefix: "龙",
 	drag_shenyi: "龙申仪",

@@ -624,13 +624,13 @@ export default {
 			player: "phaseZhunbeiBegin",
 		},
 		filter(event, player) {
-			return game.hasPlayer(current => !player.isFriendOf(current) && current.countCards("he"));
+			return game.hasPlayer(current => !player.isFriendOf(current) && current.countCards("h"));
 		},
 		preHidden: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), [1, 3], (card, player, target) => {
-					return !player.isFriendOf(target) && target.countCards("he");
+					return !player.isFriendOf(target) && target.countCards("h");
 				})
 				.set("ai", target => {
 					const att = get.attitude(get.player(), target);
@@ -643,7 +643,7 @@ export default {
 			const cards = [],
 				targets = event.targets.sortBySeat();
 			for (const target of targets) {
-				const result = await player.choosePlayerCard(target, "he", true).forResult();
+				const result = await player.choosePlayerCard(target, "h", true).forResult();
 				if (result?.bool && result.cards?.length) {
 					cards.addArray(result.cards);
 				}
@@ -658,7 +658,7 @@ export default {
 						if (Math.random() > 0.5 && button.link[2] == card.name) {
 							return 24;
 						}
-						return player.countCards("he", button.link[2]);
+						return player.countCards("h", button.link[2]);
 					})
 					.set("chosenCard", cards[targets.indexOf(target)])
 					.forResult();
@@ -856,22 +856,22 @@ export default {
 		},
 		filter(event, player) {
 			return event.targets?.some(target => {
-				return game.hasPlayer2(current => current.isDead() && current.identity == target.identity);
+				return game.hasPlayer2(current => current.isDead() && current.isFriendOf(target));
 			});
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const targets = [];
 			trigger.targets.filter(target => {
-				if (game.hasPlayer2(current => current.isDead() && current.identity == target.identity)) {
-					targets.addArray(game.filterPlayer(current => current.identity == target.identity));
+				if (game.hasPlayer2(current => current.isDead() && current.isFriendOf(target))) {
+					targets.addArray(game.filterPlayer(current => current.isFriendOf(target)));
 				}
 			});
 			trigger.directHit.addArray(targets);
 		},
 		mod: {
 			cardUsableTarget(card, player, target) {
-				if (game.hasPlayer2(current => current.isDead() && current.identity == target.identity)) {
+				if (game.hasPlayer2(current => current.isDead() && current.isFriendOf(target))) {
 					return Infinity;
 				}
 			},

@@ -1468,9 +1468,12 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					let num = Math.floor(player.countCards("h") / 2);
-					if (ui.selected.cards.length < num) {
+					if (!game.hasPlayer(current => get.attitude(player, current) < 0)) {
+						num = 1;
+					}
+					if (ui.selected.cards.length < num && card.name != "du") {
 						if (get.tag(card, "damage")) {
-							return 0.1;
+							return 0.1 - ui.selected.cards.length;
 						}
 						return 7 - get.value(card);
 					}
@@ -1493,7 +1496,7 @@ const skills = {
 				])
 				.set("processAI", () => {
 					const player = get.player();
-					if (player.hp < 2) {
+					if (player.hp < 2 || !game.hasPlayer(current => get.attitude(player, current) < 0)) {
 						return false;
 					}
 					let num = Math.min(Math.floor(player.countCards("h") / 2), player.hp - 1);
@@ -1629,19 +1632,19 @@ const skills = {
 			if (bool2) {
 				if (bool1) {
 					player.popup("乘势", "fire");
-					await player.recover();
 				}
 				player
 					.when("useCardAfter")
 					.filter(evt => evt == trigger.getParent(2))
 					.step(async (event, trigger, player) => {
-						if (target.isIn() && target.countCards("he")) {
-							const {
-								result: { cards },
-							} = await player.discardPlayerCard(target, "he", true);
-							if (bool1) {
-								await player.gain(cards.filterInD("od"), "gain2");
+						if (target.isIn() && target.countDiscardableCards(player, "he")) {
+							const result = await player.discardPlayerCard(target, "he", true).forResult();
+							if (bool1 && result?.cards?.length) {
+								await player.gain(result.cards.filterInD("od"), "gain2");
 							}
+						}
+						if (bool1) {
+							await player.recover();
 						}
 					});
 			}
@@ -9088,7 +9091,12 @@ const skills = {
 				},
 				prompt2: "将此牌转移给自己",
 				check(event, player) {
-					return get.effect(player, event.card, event.player, player) >= get.effect(event.targets[0], event.card, event.player, player);
+					let eff1 = get.effect(player, event.card, event.player, player),
+						eff2 = get.effect(event.targets[0], event.card, event.player, player);
+					if (eff2 > 0) {
+						eff2 *= 1.7;
+					}
+					return eff1 >= eff2;
 				},
 				logTarget: "target",
 				async content(event, trigger, player) {
@@ -16957,7 +16965,7 @@ const skills = {
 						var card = cards.find(card => lib.card.list.some(cardx => cardx[2] == card.name) && !lib.card.list.some(cardx => cardx[2] == card.name && cardx[0] == get.suit(card, false) && cardx[0] == get.number(card, false)));
 						return {
 							bool: true,
-							links: card ? card : cards.randomGet(),
+							links: [card ? card : cards.randomGet()],
 						};
 					})
 					.set("cards", cards);

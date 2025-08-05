@@ -29494,12 +29494,19 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.recoverTo(player.maxHp);
-			player
-				.when({ global: "roundEnd" })
-				.filter(evt => evt != trigger)
-				.step(async (event, trigger, player) => {
-					await player.changeSkills(["tydangxian"], ["dragzhawang"]);
-				});
+			const next = game.createEvent("xiguiContent", false);
+			next.player = player;
+			next.setContent(() => {
+				player
+					.when({ global: "roundEnd" })
+					.step(async (event, trigger, player) => {
+						await player.changeSkills(["tydangxian"], ["dragzhawang"]);
+					});
+			});
+			if (trigger.name != "dying") {
+				event.next.remove(next);
+				trigger.next.push(next);
+			}
 		},
 		derivation: ["tydangxian"],
 	},
