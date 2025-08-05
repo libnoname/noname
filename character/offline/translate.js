@@ -1,4 +1,12 @@
 const translates = {
+	xia_caopi: "侠曹丕",
+	xia_caopi_prefix: "侠",
+	peqinyi: "勤艺",
+	peqinyi_info: "当你每回合首次造成或受到伤害后，你可以视为使用一张未以此法使用过的基本牌或普通锦囊牌。",
+	pejixin: "技新",
+	pejixin_info: "当你于本局游戏首次使用一种牌名的牌后，你可以摸X张牌并展示之，令这些牌无距离和任何次数且不计入手牌上限（X为本轮发动〖技新〗的次数）。",
+	pejiwei: "继魏",
+	pejiwei_info: "觉醒技，每回合结束时，若本轮〖技新〗发动次数不小于一号位的体力值，则你增加1点体力上限并回复所有体力，然后你可以从武将牌堆中选择获得五个魏势力主公技。",
 	eu_kaisa: "欧陆凯撒",
 	eu_kaisa_prefix: "欧陆",
 	eu_ducai: "独裁",

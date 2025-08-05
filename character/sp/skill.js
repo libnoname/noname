@@ -4601,7 +4601,7 @@ const skills = {
 								return [
 									`此书还可使用${count}次`,
 									(() => {
-										if (!get.info(book)?.nopop || [player, ...targets].some(i => i.isUnderControl(true))) {
+										if (!get.info(book)?.nopop || [player, ...targets].some(i => i.isUnderControl(true) || i.isFriendOf(game.me))) {
 											return lib.translate[`${book}_info`];
 										}
 										return "此书仍是个秘密";

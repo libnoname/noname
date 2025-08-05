@@ -1,4 +1,10 @@
 const characters = {
+	xia_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["peqinyi", "pejixin", "pejiwei"],
+	},
 	eu_kaisa: {
 		sex: "male",
 		group: "western",

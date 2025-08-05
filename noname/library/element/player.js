@@ -2018,14 +2018,12 @@ export class Player extends HTMLDivElement {
 			toStorage: true,
 			target: target || this,
 		});
-		next.setContent(function () {
-			"step 0";
-			player.lose(cards, ui.special).set("getlx", false);
-			"step 1";
-			var cards = event.cards.slice(0);
+		next.setContent(async function (event, trigger, player) {
+			await player.lose(event.cards, ui.special).set("getlx", false);
+			let cards = event.cards.slice();
 			cards.removeArray(player.getCards("hejsx"));
 			if (cards.length) {
-				target.directgains(cards, null, event.tag);
+				event.target.directgains(cards, null, event.tag);
 			}
 		});
 		return next;
@@ -7158,8 +7156,7 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		next.setContent(function () {
-			"step 0";
+		next.setContent(async function (event, trigger, player) {
 			if (event.skills.length && event.log) {
 				for (let i of event.skills) {
 					if (typeof player[event.log] === "function") {
@@ -7167,18 +7164,17 @@ export class Player extends HTMLDivElement {
 					}
 				}
 			}
-			if (!cards.length) {
-				event.finish();
+			const cards = event.cards;
+			if (cards.length) {
+				game.log(player, "弃置了", cards);
+				event.done = player.lose(cards, event.position, "visible");
+				event.done.type = "discard";
+				if (event.discarder) {
+					event.done.discarder = event.discarder;
+				}
+				await event.done;
+				await event.trigger("discard");
 			}
-			"step 1";
-			game.log(player, "弃置了", cards);
-			event.done = player.lose(cards, event.position, "visible");
-			event.done.type = "discard";
-			if (event.discarder) {
-				event.done.discarder = event.discarder;
-			}
-			"step 2";
-			event.trigger("discard");
 		});
 		return next;
 	}
@@ -7313,8 +7309,18 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	directequip(cards) {
-		for (var i = 0; i < cards.length; i++) {
-			this.addVirtualEquip(cards[i], cards[i].cards);
+		if (get.itemtype(cards) === "card") {
+			cards = [cards];
+		}
+		for (const card of cards) {
+			this.addVirtualEquip(
+				...(() => {
+					if (get.itemtype(card) === "vcard") {
+						return [card, card.cards ?? []];
+					}
+					return [card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false), [card]];
+				})()
+			);
 		}
 		if (!_status.video) {
 			game.addVideo("directequip", this, get.cardsInfo(cards));
@@ -11767,6 +11773,9 @@ export class Player extends HTMLDivElement {
 			return this.side == me.side;
 		}
 		return false;
+	}
+	isMine() {
+		return this == game.me && !_status.auto && !this.isMad() && !game.notMe;
 	}
 	isOnline() {
 		if (this.ws && lib.node && !this.ws.closed && this.ws.inited && !this.isAuto) {

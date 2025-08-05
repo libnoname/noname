@@ -14118,55 +14118,6 @@ export class Library {
 				// }
 			},
 			/**
-			 * 用于代替exec进行主机许可的请求喵
-			 *
-			 * @this {import("./element/client.js").Client}
-			 * @param {{ type: "card" | "skill", name: string, key: string, args: [], timeout: number|null }} subject 从`get.info(type == "card" ? { name } : name).sync.key`调用函数
-			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应
-			 */
-			dataSync(subject, id) {
-				if (lib.node.observing.includes(this)) {
-					return;
-				}
-
-				function parseSubject(subject) {
-					switch (subject.type) {
-						default:
-							return null;
-						case "card":
-							return get.info({ name: subject.name }, false)?.sync?.[subject.key];
-						case "skill":
-							return get.info(subject.name, false)?.sync?.[subject.key];
-					}
-				}
-
-				const parsed = parseSubject(subject);
-
-				if (typeof parsed === "function") {
-					const args = Array.isArray(subject.args) ? subject.args : [];
-					const timeout = Number.isFinite(subject.timeout) && subject.timeout >= 0 ? subject.timeout : 5000;
-					const result = parsed.call(null, lib.playerOL[this.id], ...args, timeout);
-
-					if (!id) {
-						return;
-					}
-
-					// 简单检查一下异步结果喵
-					if (result instanceof Promise) {
-						result.then(result => {
-							this.send("dataReply", { ok: true, id, result });
-						});
-					}
-
-					this.send("dataReply", { ok: true, id, result });
-					return;
-				}
-
-				if (id) {
-					this.send("dataReply", { ok: false, id });
-				}
-			},
-			/**
 			 * @this {import("./element/client.js").Client}
 			 */
 			log() {
@@ -15039,22 +14990,6 @@ export class Library {
 				if (key) {
 					game.onlineKey = key;
 					localStorage.setItem(lib.configprefix + "key", game.onlineKey);
-				}
-			},
-			/**
-			 * 当服务器响应通过dataSync发送的请求时走这里喵
-			 *
-			 * @param {{ ok: boolean, id: string|null, result: any }} data
-			 */
-			dataReply(data) {
-				// 需要提前注册响应回调喵
-				if (data.id && game.requestMap && data.id in game.requestMap) {
-					const callback = game.requestMap[data.id];
-					delete game.requestMap[data.id];
-
-					if (typeof callback === "function") {
-						callback(data.ok, data.result);
-					}
 				}
 			},
 			denied: function (reason) {

@@ -254,22 +254,29 @@ const skills = {
 	//谋诸葛亮
 	olsbzhitian: {
 		audio: 2,
-		init(player, skill) {
-			if (player == _status.currentPhase) {
-				player.addTempSkill(skill + "_view");
+		clickableFilter(player) {
+			return _status.currentPhase === player;
+		},
+		clickable(player) {
+			if (player.isUnderControl(true)) {
+				const cards = lib.skill.olsbzhitian.getCards(player);
+				function createDialogWithControl(result) {
+					const dialog = ui.create.dialog("知天");
+					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
+					const control = ui.create.control("确定", () => dialog.close());
+					dialog._close = dialog.close;
+					dialog.hide = dialog.close = function (...args) {
+						control.close();
+						return dialog._close(...args);
+					};
+					dialog.open();
+				}
+				if (cards instanceof Promise) {
+					cards.then(([ok, result]) => createDialogWithControl(result));
+				} else {
+					createDialogWithControl(cards);
+				}
 			}
-		},
-		onremove(player, skill) {
-			player.removeSkill(skill + "_view");
-		},
-		intro: {
-			content: "观看牌数-#",
-		},
-		trigger: { player: ["phaseBegin"] }, //"chooseToDiscardBegin"
-		forced: true,
-		locked: false,
-		async content(event, trigger, player) {
-			player.addTempSkill(event.name + "_view");
 		},
 		getCards(player) {
 			let cards = [];
@@ -289,6 +296,25 @@ const skills = {
 					return Array.from(ui.cardPile.childNodes).slice(0, num);
 				}
 				return [];
+			},
+		},
+		mark: true,
+		marktext: "牌",
+		intro: {
+			mark(dialog, count = 0, player, event, skill) {
+				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
+					if (!this.classList.contains("disabled")) {
+						this.classList.add("disabled");
+						this.style.opacity = 0.5;
+						lib.skill[skill].clickable(player);
+					}
+				});
+				if (!_status.gameStarted || !player.isUnderControl(true) || !lib.skill[skill].clickableFilter(player)) {
+					intronode.classList.add("disabled");
+					intronode.style.opacity = 0.5;
+				}
+				dialog.addText(`观看牌数-${count}`);
+				dialog.add(intronode);
 			},
 		},
 		group: ["olsbzhitian_huogong"],
@@ -331,30 +357,6 @@ const skills = {
 				},
 			},
 			tag: {},
-			view: {
-				mark: true,
-				intro: {
-					mark(dialog, content, player, event) {
-						if (player !== game.me) {
-							return get.translation(player) + "观看牌堆中...";
-						}
-						const cards = get.info("olsbzhitian").getCards(player);
-						if (cards instanceof Promise) {
-							return cards.then(([ok, result]) => {
-								if (!result.length) {
-									dialog.addText("牌堆顶无牌");
-								} else {
-									dialog.add(result);
-								}
-							});
-						}
-						if (!cards.length) {
-							return "牌堆顶无牌";
-						}
-						dialog.add(cards);
-					},
-				},
-			},
 		},
 	},
 	olsbliwu: {

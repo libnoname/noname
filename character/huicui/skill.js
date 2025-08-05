@@ -126,10 +126,11 @@ const skills = {
 			const { cards } = await game.cardsGotoOrdering(get.cards(4));
 			await player.showCards(cards, `${get.translation(player)}发动了【耕读】`);
 			const list = cards.map(card => get.color(card)).toUniqued();
-			let result = { control: list[0] };
-			if (list.length > 1) {
+			const list2 = Object.keys(lib.color);
+			let result = { control: list2[0] };
+			if (list2.length > 1) {
 				result = await player
-					.chooseControl(list)
+					.chooseControl(list2)
 					.set("prompt", "耕读：选择一种颜色的牌获得")
 					.set(
 						"choiceList",
@@ -156,7 +157,9 @@ const skills = {
 			}
 			const color = result.control,
 				gains = cards.filter(card => get.color(card) == color);
-			await player.gain(gains, "gain2");
+			if (gains?.length) {
+    			await player.gain(gains, "gain2");
+			}
 			if (["red", "black"].includes(color)) {
 				player.addTempSkill(`dcgengdu_${color}`, "phaseChange");
 				player.setStorage(`dcgengdu_${color}`, cards.length - gains.length, true);
@@ -337,23 +340,11 @@ const skills = {
 			const suit = get.suit(player.getCards("h")[0], player),
 				bool = player.getCards("h").every(i => get.suit(i, player) == suit);
 			await player.showHandcards(`${get.translation(player)}发动了【孤脉】`);
-			const result = await player
-				.chooseControl("+1", "-1")
-				.set("prompt", "令此伤害+1或-1")
-				.set("ai", () => {
-					if (_status.event.eff < 0) {
-						return 1;
-					}
-					return 0;
-				})
-				.set("eff", get.damageEffect(trigger.player, trigger.source, player))
-				.forResult();
-			if (result.index == 0) {
+			if (event.triggername == "damageBegin1") {
 				trigger.num++;
 				player.popup(" +1 ", "fire");
 				game.log(player, "令此伤害+1");
-			}
-			if (result.index == 1) {
+			} else {
 				trigger.num--;
 				player.popup(" -1 ", "water");
 				game.log(player, "令此伤害-1");

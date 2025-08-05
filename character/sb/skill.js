@@ -665,7 +665,8 @@ const skills = {
 							if (info[0] != "trick") {
 								return false;
 							}
-							return player.hasUseTarget({ name: info[2], nature: info[3], isCard: true });
+							const cardx = { name: info[2], nature: info[3], isCard: true };
+							return player.hasUseTarget(cardx) || (get.info(cardx).notarget && lib.filter.cardEnabled(cardx, player));
 						});
 						if (!list.length) {
 							return 0;
@@ -700,14 +701,15 @@ const skills = {
 					if (info[0] != "trick") {
 						return false;
 					}
-					return player.hasUseTarget({ name: info[2], nature: info[3], isCard: true });
+					const card = { name: info[2], nature: info[3], isCard: true };
+					return player.hasUseTarget(card) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
 				});
 				if (!list.length) {
 					return;
 				}
 				const {
 					result: { bool, links },
-				} = await player.chooseButton([`遗计：视为使用其中一张锦囊牌`, [list, "vcard"]]).set("ai", button => {
+				} = await player.chooseButton([`天妒：视为使用其中一张锦囊牌`, [list, "vcard"]]).set("ai", button => {
 					const player = get.player(),
 						{ link } = button;
 					return player.getUseValue({ name: link[2], nature: link[3] });

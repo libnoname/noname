@@ -44,10 +44,6 @@ export class Game extends GameCompatible {
 	 * @type { { [key: string]: Player } }
 	 */
 	playerMap = {};
-	/**
-	 * @type { { [key: string]: function } }
-	 */
-	requestMap = {};
 	phaseNumber = 0;
 	roundNumber = 0;
 	shuffleNumber = 0;
@@ -2096,79 +2092,6 @@ export class Game extends GameCompatible {
 			}
 			game.ws.send(JSON.stringify(get.stringifiedResult(args)));
 		}
-	}
-	/**
-	 * ```plain
-	 * 在客机发出同步信号，要求主机通过广播或单播更新数据喵
-	 * 此函数会要求主机调用指定的`get.info(name).sync[action]`函数
-	 * ```
-	 *
-	 * @param { Card | VCard | string } name
-	 * @param { string } action
-	 * @param  { ...any } args
-	 * @returns
-	 */
-	dataSync(name, action, ...args) {
-		if ("observe" in game && game.observe) {
-			return;
-		}
-
-		// @ts-expect-error 重载函数可以接受所有类型参数喵
-		const info = get.info(name, false);
-
-		if (!info) {
-			throw new Error("没有在客机上找到对应的牌或技能，dataSync应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
-		}
-
-		const type = typeof name == "object" ? "card" : "skill";
-		const contentName = typeof name == "object" ? name.name : name;
-		game.send("dataSync", { type, name: contentName, key: action });
-	}
-	/**
-	 * ```plain
-	 * 在客机发出请求，要求主机响应并返回特定的数据
-	 * 此函数会要求主机调用指定的`get.info(name).sync[action]`函数
-	 * 并通过Promise返回主机的给出的数据
-	 * ```
-	 *
-	 * @param { Card | VCard | string } name
-	 * @param { string } action
-	 * @param { number | null } action
-	 * @param  { ...any } args
-	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
-	 */
-	dataRequest(name, action, timeout, ...args) {
-		if ("observe" in game && game.observe) {
-			return Promise.resolve([false, null]);
-		}
-
-		// @ts-expect-error 重载函数可以接受所有类型参数喵
-		const info = get.info(name, false);
-
-		if (!info) {
-			throw new Error("没有在客机上找到对应的牌或技能，dataSync应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
-		}
-
-		if (!Number.isFinite(timeout) || timeout <= 0) {
-			timeout = 5000;
-		}
-
-		const id = Date.now().toString();
-		const type = typeof name == "object" ? "card" : "skill";
-		const contentName = typeof name == "object" ? name.name : name;
-		const { promise, resolve } = Promise.withResolvers();
-
-		game.requestMap[id] = (ok, result) => resolve([ok, result]);
-		game.send("dataSync", { type, name: contentName, key: action, args: args, timeout }, id);
-
-		const timeoutPromise = new Promise(resolve => {
-			setTimeout(() => {
-				delete game.requestMap[id];
-				resolve([false, null]);
-			}, timeout);
-		});
-
-		return Promise.any([promise, timeoutPromise]);
 	}
 	/**
 	 * @param { string } id

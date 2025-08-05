@@ -4105,7 +4105,13 @@ const skills = {
 					[
 						lib.skill.wuling.wuqinxi,
 						(item, type, position, noclick, node) => {
-							node = ui.create.buttonPresets.vcard(item, type, position, noclick);
+							node = ui.create.buttonPresets.vcard(lib.skill.wuling.wuqinxiMap2[item][0], type, position, noclick);
+							node.node.range.innerHTML = lib.skill.wuling.wuqinxiMap2[item][1];
+							node.node.range.style.bottom = "2.5px";
+							node.node.range.style.width = "100%";
+							node.node.range.style.right = "0%";
+							node.node.range.style.textAlign = "center";
+							node._link = node.link = [null, null, item];
 							node._customintro = [node => `五禽戏：${node.link[2]}`, node => lib.skill.wuling.wuqinxiMap[lib.skill.wuling.wuqinxi.indexOf(node.link[2])].slice(2)];
 							return node;
 						},
@@ -4161,6 +4167,13 @@ const skills = {
 		},
 		wuqinxi: ["虎", "鹿", "熊", "猿", "鹤"],
 		wuqinxiMap: ["虎：当你使用指定唯一目标的牌对目标角色造成伤害时，此伤害+1。", "鹿：①当你获得此效果时，你回复1点体力并弃置判定区的所有牌。②你不能成为延时锦囊牌的目标。", "熊：每回合限一次，当你受到伤害时，此伤害-1。", "猿：当你获得此效果时，你选择一名其他角色，获得其装备区里的一张牌。", "鹤：当你获得此效果时，你摸三张牌。"],
+		wuqinxiMap2: {
+    		"虎": ["wuqinxi_hu", "用牌加伤"],
+    		"鹿": ["wuqinxi_lu", "弃判定回血"],
+    		"熊": ["wuqinxi_xiong", "减伤"],
+    		"猿": ["wuqinxi_yuan", "偷装备牌"],
+    		"鹤": ["wuqinxi_he", "摸三张牌"],
+		},
 		updateMark(player) {
 			var wuqinxi = player.storage.wuling_wuqinxi;
 			if (!wuqinxi) {
