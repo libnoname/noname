@@ -2153,7 +2153,7 @@ const skills = {
 			if (player.isUnderControl(true)) {
 				const cards = lib.skill.smyyingshi.getCards(player);
 				function createDialogWithControl(result) {
-					const dialog = ui.create.dialog("鹰视");
+					const dialog = ui.create.dialog("鹰视", "peaceDialog");
 					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
 					const control = ui.create.control("确定", () => dialog.close());
 					dialog._close = dialog.close;

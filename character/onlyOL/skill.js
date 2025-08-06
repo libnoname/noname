@@ -261,7 +261,7 @@ const skills = {
 			if (player.isUnderControl(true)) {
 				const cards = lib.skill.olsbzhitian.getCards(player);
 				function createDialogWithControl(result) {
-					const dialog = ui.create.dialog("知天");
+					const dialog = ui.create.dialog("知天", "peaceDialog");
 					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
 					const control = ui.create.control("确定", () => dialog.close());
 					dialog._close = dialog.close;

@@ -1232,6 +1232,18 @@ export class Library {
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
 				},
+				recent_character_clear: {
+					name: "清除最近选将",
+					intro: "点击此按钮清除最近选将记录",
+					clear: true,
+					unfrequent: true,
+					onclick: function () {
+						if (confirm("确定要清除最近选将记录吗？")) {
+							game.saveConfig("recentCharacter", [], true);
+							alert("最近选将记录已清除！");
+						}
+					}
+				},
 				choose_all_button: {
 					name: "启用全选/反选按钮",
 					init: true,
