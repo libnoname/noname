@@ -5906,15 +5906,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 *
 	 * 弹出特殊名词的解释窗口
-	 * @param {string} id poptip链接的id
-	 * @param {Number} index 对应解释在lib.poptipMap的索引
+	 * @param {string} linkId poptip链接的id
+	 * @param {string} id 对应解释在lib.poptipMap的键
 	 * @param {PointerEvent} event 点击事件
 	 */
-	poptipIntro(id, index, event) {
+	poptipIntro(linkId, id, event) {
 		const uiintro = ui.create.dialog("hidden", "notouchscroll");
 		uiintro.style.zIndex = 21;
 		uiintro.setAttribute("id", "poptip");
-		const str = get.poptip(index);
+		uiintro.videoId = linkId;
+		const str = get.poptipInfo(id);
 		uiintro._place_text = uiintro.add(`<div class = "text">${str}</div>`);
 		uiintro.classList.add("popped");
 		uiintro.classList.add("static");
@@ -5944,7 +5945,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		const clickintro = function (e) {
 			layer.remove();
 			this.delete();
-			delete _status.poptip;
 			/*if (e?.stopPropagation) {
 				e.stopPropagation();
 			}*/
@@ -6980,45 +6980,42 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	/**
 	 *
-	 * 获取一个特殊名词的对应解释
-	 * @param {string | Number} name 特殊名词的名字或者它在lib.poptipMap的索引
-	 * @returns {string}
+	 * 根据id获取一个特殊名词的翻译
+	 * @param {string} id 特殊名词在lib.poptipMap的id
+	 * @returns {Object}
 	 */
-	poptip(name) {
-		let str = "";
-		if (typeof name == "number") {
-			const key = Array.from(lib.poptipMap.keys())[name];
-			str = lib.poptipMap.get(key) || "";
-		} else if (typeof name == "string" && lib.poptipMap.has(name)) {
-			str = lib.poptipMap.get(name) || "";
-		}
-		return str;
+	poptipName(id) {
+		return lib.poptipMap.getName(id);
+	}
+	/**
+	 *
+	 * 根据id获取一个特殊名词的解释
+	 * @param {string} id 特殊名词在lib.poptipMap的id
+	 * @returns {Object}
+	 */
+	poptipInfo(id) {
+		return lib.poptipMap.getInfo(id);
 	}
 	/**
 	 *
 	 * 生成一个特殊名词的超链接格式用于dialog中点击查看解释
-	 * @param {string} name 特殊名词
-	 * @param {string} explain 对应解释，可不填，不填的话需要在lib.poptipMap中添加；若lib.poptipMap不存在命名为name的键，会自动添加
+	 * @param {string} id 该特殊名词的id
+	 * @param {string} name 特殊名词，可不填，会通过id从lib.poptipMap获取的
+	 * @param {string} info 对应解释，可不填，不填的话需要在lib.poptipMap中添加；若lib.poptipMap不存在名为id的键，会自动添加
 	 * @param {string} style 字体的样式，可不填，默认为"color:unset"
 	 * @returns {string}
 	 */
-	poptipLink(name, explain, style = "color:unset") {
-		let index = -1;
-		const id = get.id();
-		const keys = Array.from(lib.poptipMap.keys());
-		if (explain?.length && explain !== "null") {
-			const str = get.poptip(name) || get.poptip(`${name}|${id}`);
-			if ((str.length && str != explain) || !str.length) {
-				const key = str.length ? `${name}|${id}` : name;
-				game.addPoptip([key, explain]);
-				index = Array.from(lib.poptipMap.keys()).indexOf(key);
-			} else {
-				index = keys.indexOf(name);
-			}
-		} else if (lib.poptipMap.has(name)) {
-			index = keys.indexOf(name);
+	poptipLink(id, name, info, style = "color:unset") {
+		const linkId = get.id();
+		if (!id || !id?.length) {
+			do {
+				id = "" + Math.random().toString(36).slice(-8);
+			} while (lib.poptipMap.has(id));
+			game.addPoptip(id, name, info);
 		}
-		return `<poptip id = "${id}" style = "${style}" tip-index = ${index}>${name}</poptip>`;
+		name ??= get.poptipName(id);
+		info ??= get.poptipInfo(id);
+		return `<poptip id = "${linkId}" style = "${style}" tip-id = ${id}>${name}</poptip>`;
 	}
 	/**
 	 * 将URL转换成相对于无名杀根目录的路径

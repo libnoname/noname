@@ -10345,20 +10345,15 @@ export class Game extends GameCompatible {
 	/**
 	 * 用于向lib.poptipMap添加名词解释便于调用
 	 *
-	 * @param { String[] | Map } map 需要添加的名词解释对，可以是单独一个一/二维数组，也可以是Map，不管哪种格式都应该遵循先键后值的写法
-	 * @returns { Map } 返回最后添加进lib.poptipMap的map
+	 * @param { string } id 该poptip的在map中的id
+	 * @param { string } name 该poptip的id的翻译，最终显示在tip上的文字
+	 * @param { string } info 该poptip的名词解释
 	 */
-	addPoptip(map) {
-		if (Array.isArray(map)) {
-			if (!Array.isArray(map[0])) {
-				map = [map];
-			}
-			map = new Map(map);
-		} else if (!(map instanceof Map)) {
-			return new Map();
-		}
-		lib.poptipMap = map;
-		return map;
+	addPoptip(id, name, info) {
+		id ??= Math.random().toString(36).slice(-8);
+		name ??= "※";
+		info ??= "";
+		lib.poptipMap.add(id, name, info);
 	}
 	/**
 	 * 删除当前的poptip对话框
