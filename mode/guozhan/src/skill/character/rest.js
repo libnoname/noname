@@ -3019,10 +3019,10 @@ export default {
 				return false;
 			}
 			const skills = get.character(player.name2, 3).filter(i => !get.is.locked(i, player));
-			return !player.hasHistory("useSkill", evt => evt.event.getParent("phaseUse") == event && skills.includes(evt.sourceSkill || evt.skill));
+			return !player.hasHistory("useSkill", evt => skills.includes(evt.sourceSkill || evt.skill));
 		},
 		forced: true,
-		locked: false,
+		//locked: false,
 		async content(event, trigger, player) {
 			if (trigger.name == "phaseZhunbei") {
 				const num = player.getStorage("fakeshilu").length;
@@ -3188,7 +3188,7 @@ export default {
 			return !goon && groups.includes(event.source.identity);
 		},
 		forced: true,
-		locked: false,
+		//locked: false,
 		logTarget(event, player) {
 			return event.source == player ? event.player : event.source;
 		},

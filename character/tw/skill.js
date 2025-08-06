@@ -7928,7 +7928,10 @@ const skills = {
 		trigger: { source: "damageBegin2", player: "damageBegin4" },
 		filter(event, player, name) {
 			if (name == "damageBegin2") {
-				return !event.hasNature() && player.countCards("h") >= event.player.countCards("h");
+				if (event.hasNature() || event.player == player) {
+					return false;
+				}
+				return player.countCards("h") >= event.player.countCards("h");
 			}
 			return event.hasNature();
 		},
