@@ -124,6 +124,7 @@ const characters = {
 		hp: 3,
 		isZhugong: true,
 		skills: ["jun_fuxiang", "jun_leling", "ruoyu"],
+		tempname: ["re_liushan"],
 		dieAudios: ["re_liushan"],
 	},
 	pe_jun_sunquan: {

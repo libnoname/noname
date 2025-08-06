@@ -5563,6 +5563,9 @@ const skills = {
 	songwei2: {
 		audio: 2,
 		audioname: ["re_caopi"],
+		audioname2: {
+			pe_jun_caopi: "sbsongwei",
+		},
 		forceaudio: true,
 		trigger: { global: "judgeEnd" },
 		sourceSkill: "songwei",
