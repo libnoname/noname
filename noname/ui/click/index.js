@@ -3398,14 +3398,9 @@ export class Click {
 				}
 
 				// 添加台词部分
-				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
+				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: bg.tempSkin || audioName } } })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-				if (!dieAudios.length) {
-					dieAudios = get.Audio.die({ player: name })
-						.audioList.map(i => i.text)
-						.filter(Boolean);
-				}
 				const skillAudioMap = new Map();
 				nameinfo.skills.forEach(skill => {
 					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
@@ -3733,14 +3728,9 @@ export class Click {
 				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
 				// 添加台词部分
-				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
+				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: bg.tempSkin || audioName } } })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-				if (!dieAudios.length) {
-					dieAudios = get.Audio.die({ player: name })
-						.audioList.map(i => i.text)
-						.filter(Boolean);
-				}
 				const skillAudioMap = new Map();
 				nameInfo.skills.forEach(skill => {
 					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
@@ -4011,14 +4001,9 @@ export class Click {
 				clickSkill.call(currentx, "init");
 			}
 		}
-		let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
+		let dieAudios = get.Audio.die({ player: { name: name, skin: { name: bg.tempSkin || audioName } } })
 			.audioList.map(i => i.text)
 			.filter(Boolean);
-		if (!dieAudios.length) {
-			dieAudios = get.Audio.die({ player: name })
-				.audioList.map(i => i.text)
-				.filter(Boolean);
-		}
 		if (dieAudios.length) {
 			let dieaudio = ui.create.div(".menubutton.large", skills, clickSkill, "阵亡");
 			dieaudio.style.backgroundColor = "rgb(0, 0, 0, 1)";
