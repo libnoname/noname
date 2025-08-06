@@ -10070,13 +10070,18 @@ export default () => {
 					}
 					player.discard(player.getCards("j"));
 					"step 3";
-					while (_status.event.name != "phaseLoop") {
-						_status.event = _status.event.parent;
+					let evt = _status.event.getParent("phaseLoop");
+					if (evt) {
+						game.resetSkills();
+						let evtx = _status.event;
+						while (evtx != evt) {
+							evtx.finish();
+							evtx.untrigger(true);
+							evtx = evtx.getParent();
+						}
+						evtx.player = player;
+						evtx.step = 0;
 					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = player;
-					_status.event.step = 0;
 					if (game.bossinfo) {
 						game.bossinfo.loopType = 1;
 						_status.roundStart = game.boss;
