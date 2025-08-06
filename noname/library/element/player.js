@@ -64,26 +64,24 @@ export class Player extends HTMLDivElement {
 		});
 		player.node.handcards1._childNodesWatcher = new ChildNodesWatcher(player.node.handcards1);
 		player.node.handcards2._childNodesWatcher = new ChildNodesWatcher(player.node.handcards2);
-		if (lib.config.equip_span) {
-			let observer = new MutationObserver(mutationsList => {
-				for (let mutation of mutationsList) {
-					if (mutation.type === "childList") {
-						const addedNodes = Array.from(mutation.addedNodes);
-						const removedNodes = Array.from(mutation.removedNodes);
+		let observer = new MutationObserver(mutationsList => {
+			for (let mutation of mutationsList) {
+				if (mutation.type === "childList") {
+					const addedNodes = Array.from(mutation.addedNodes);
+					const removedNodes = Array.from(mutation.removedNodes);
+					// @ts-expect-error ignore
+					if (
+						addedNodes.some(card => !card.classList.contains("emptyequip")) ||
 						// @ts-expect-error ignore
-						if (
-							addedNodes.some(card => !card.classList.contains("emptyequip")) ||
-							// @ts-expect-error ignore
-							removedNodes.some(card => !card.classList.contains("emptyequip"))
-						) {
-							player.$handleEquipChange();
-						}
+						removedNodes.some(card => !card.classList.contains("emptyequip"))
+					) {
+						player.$handleEquipChange();
 					}
 				}
-			});
-			const config = { childList: true };
-			observer.observe(node.equips, config);
-		}
+			}
+		});
+		const config = { childList: true };
+		observer.observe(node.equips, config);
 		node.expansions.style.display = "none";
 		const chainLength = game.layout == "default" ? 64 : 40;
 		for (let repetition = 0; repetition < chainLength; repetition++) {
@@ -10330,9 +10328,7 @@ export class Player extends HTMLDivElement {
 			player.removeEquipTrigger(VCard, true);
 			cards.remove(VCard);
 		}
-		if (lib.config.equip_span) {
-			player.$handleEquipChange();
-		}
+		player.$handleEquipChange();
 	}
 	removeEquipTrigger(card, hasMove) {
 		if (_status.video) {

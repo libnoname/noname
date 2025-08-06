@@ -264,6 +264,68 @@ export class Library {
 				}
 			}
 		},
+		//fullimage卡背css属性载入（决定卡背）
+		function () {
+			let url = "";
+			switch (lib.config.cardback_style) {
+				case "official":
+					url = "theme/style/cardback/image/official.png";
+					break;
+				case "feicheng":
+					url = "theme/style/cardback/image/feicheng.png";
+					break;
+				case "liusha":
+					url = "theme/style/cardback/image/liusha.png";
+					break;
+				case "ol":
+					url = "theme/style/cardback/image/ol.png";
+					break;
+				case "new":
+					url = "theme/style/cardback/image/new.png";
+					break;
+				case "wood":
+					url = "theme/woodden/wood.jpg";
+					break;
+				case "music":
+					url = "theme/music/wood3.png";
+					break;
+				case "custom":
+					game.getDB("image", "cardback_style", function (fileToLoad) {
+						if (!fileToLoad) {
+							return;
+						}
+						var fileReader = new FileReader();
+						fileReader.onload = function (fileLoadedEvent) {
+							if (ui.css.cardback_stylesheet) {
+								ui.css.cardback_stylesheet.remove();
+							}
+							ui.css.cardback_stylesheet = lib.init.sheet(".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}");
+							document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
+							game.getDB("image", "cardback_style2", function (fileToLoad) {
+								if (!fileToLoad) {
+									return;
+								}
+								var fileReader = new FileReader();
+								fileReader.onload = function (fileLoadedEvent) {
+									if (ui.css.cardback_stylesheet2) {
+										ui.css.cardback_stylesheet2.remove();
+									}
+									ui.css.cardback_stylesheet2 = lib.init.sheet(".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}");
+									document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
+								};
+								fileReader.readAsDataURL(fileToLoad, "UTF-8");
+							});
+						};
+						fileReader.readAsDataURL(fileToLoad, "UTF-8");
+					});
+					return;
+				case "default":
+				default:
+					document.documentElement.style.removeProperty("--cardback-url");
+					return;
+			}
+			document.documentElement.style.setProperty("--cardback-url", `url(${lib.assetURL}/${url})`);
+		},
 	];
 	onfree = [];
 	inpile = [];
@@ -1232,17 +1294,66 @@ export class Library {
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
 				},
-				recent_character_clear: {
-					name: "清除最近选将",
-					intro: "点击此按钮清除最近选将记录",
+				clear_FavoriteCharacter: {
+					name: "清除已收藏武将",
 					clear: true,
 					unfrequent: true,
-					onclick: function () {
-						if (confirm("确定要清除最近选将记录吗？")) {
-							game.saveConfig("recentCharacter", [], true);
-							alert("最近选将记录已清除！");
+					onclick() {
+						if (this.innerHTML == "<span>确认清除</span>") {
+							game.saveConfig("favouriteCharacter", [], true);
+							alert("已清除所有收藏武将");
+						} else {
+							this.innerHTML = "<span>确认清除</span>";
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = "<span>清除已收藏武将</span>";
+							}, 1000);
 						}
-					}
+					},
+				},
+				clear_BanCharacter: {
+					name: "清除已禁用武将",
+					clear: true,
+					unfrequent: true,
+					onclick() {
+						if (this.innerHTML == "<span>确认清除</span>") {
+							if (confirm("点击确定清除全模式禁用武将，否则清除当前模式禁用武将")) {
+								lib.config.all.mode.forEach(mode => game.saveConfig(`${mode}_banned`, [], mode));
+								alert("全模式禁用武将已清除！");
+								return;
+							}
+							game.saveConfig(`${get.mode()}_banned`, [], true);
+							alert(`${lib.mode[get.mode()]?.name ?? "本"}模式禁用武将已清除！`);
+						} else {
+							this.innerHTML = "<span>确认清除</span>";
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = "<span>清除已禁用武将</span>";
+							}, 1000);
+						}
+					},
+				},
+				clear_RecentCharacter: {
+					name: "清除最近使用武将",
+					clear: true,
+					unfrequent: true,
+					onclick() {
+						if (this.innerHTML == "<span>确认清除</span>") {
+							if (confirm("点击确定清除全模式最近选将记录，否则清除当前模式最近选将记录")) {
+								lib.config.all.mode.forEach(mode => game.saveConfig("recentCharacter", [], mode));
+								alert("全模式最近选将记录已清除！");
+								return;
+							}
+							game.saveConfig("recentCharacter", [], true);
+							alert(`${lib.mode[get.mode()]?.name ?? "本"}模式最近选将记录已清除！`);
+						} else {
+							this.innerHTML = "<span>确认清除</span>";
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = "<span>清除最近使用武将</span>";
+							}, 1000);
+						}
+					},
 				},
 				choose_all_button: {
 					name: "启用全选/反选按钮",
@@ -2299,7 +2410,7 @@ export class Library {
 						custom: "自定",
 						default: "默认",
 					},
-					visualBar: function (node, item, create, switcher) {
+					visualBar(node, item, create, switcher) {
 						if (node.created) {
 							return;
 						}
@@ -2313,7 +2424,6 @@ export class Library {
 							return;
 						}
 						node.created = true;
-						var deletepic;
 						ui.create.filediv(".menubutton", "添加图片", node, function (file) {
 							if (file) {
 								game.putDB("image", "cardback_style", file, function () {
@@ -2340,7 +2450,7 @@ export class Library {
 								});
 							}
 						}).inputNode.accept = "image/*";
-						deletepic = ui.create.div(".menubutton.deletebutton", "删除图片", node, function () {
+						ui.create.div(".menubutton.deletebutton", "删除图片", node, function () {
 							if (confirm("确定删除自定义图片？（此操作不可撤销）")) {
 								game.deleteDB("image", "cardback_style");
 								game.deleteDB("image", "cardback_style2");
@@ -2356,15 +2466,14 @@ export class Library {
 							}
 						});
 					},
-					visualMenu: function (node, link, name, config) {
+					visualMenu(node, link, name, config) {
 						node.style.backgroundSize = "100% 100%";
 						switch (link) {
 							case "default":
-							case "custom": {
+							case "custom":
 								node.style.backgroundImage = "none";
 								node.className = "button character dashedmenubutton";
 								break;
-							}
 							case "new":
 								node.className = "button character";
 								node.setBackgroundImage("theme/style/cardback/image/new.png");
@@ -2430,34 +2539,65 @@ export class Library {
 							ui.css.cardback_stylesheet2.remove();
 							delete ui.css.cardback_stylesheet2;
 						}
-						if (layout == "custom") {
-							game.getDB("image", "cardback_style", function (fileToLoad) {
-								if (!fileToLoad) {
-									return;
-								}
-								var fileReader = new FileReader();
-								fileReader.onload = function (fileLoadedEvent) {
-									if (ui.css.cardback_stylesheet) {
-										ui.css.cardback_stylesheet.remove();
+						let url = "";
+						switch (layout) {
+							case "official":
+								url = "theme/style/cardback/image/official.png";
+								break;
+							case "feicheng":
+								url = "theme/style/cardback/image/feicheng.png";
+								break;
+							case "liusha":
+								url = "theme/style/cardback/image/liusha.png";
+								break;
+							case "ol":
+								url = "theme/style/cardback/image/ol.png";
+								break;
+							case "new":
+								url = "theme/style/cardback/image/new.png";
+								break;
+							case "wood":
+								url = "theme/woodden/wood.jpg";
+								break;
+							case "music":
+								url = "theme/music/wood3.png";
+								break;
+							case "custom":
+								game.getDB("image", "cardback_style", function (fileToLoad) {
+									if (!fileToLoad) {
+										return;
 									}
-									ui.css.cardback_stylesheet = lib.init.sheet(".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}");
-									game.getDB("image", "cardback_style2", function (fileToLoad) {
-										if (!fileToLoad) {
-											return;
+									var fileReader = new FileReader();
+									fileReader.onload = function (fileLoadedEvent) {
+										if (ui.css.cardback_stylesheet) {
+											ui.css.cardback_stylesheet.remove();
 										}
-										var fileReader = new FileReader();
-										fileReader.onload = function (fileLoadedEvent) {
-											if (ui.css.cardback_stylesheet2) {
-												ui.css.cardback_stylesheet2.remove();
+										ui.css.cardback_stylesheet = lib.init.sheet(".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}");
+										document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
+										game.getDB("image", "cardback_style2", function (fileToLoad) {
+											if (!fileToLoad) {
+												return;
 											}
-											ui.css.cardback_stylesheet2 = lib.init.sheet(".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}");
-										};
-										fileReader.readAsDataURL(fileToLoad, "UTF-8");
-									});
-								};
-								fileReader.readAsDataURL(fileToLoad, "UTF-8");
-							});
+											var fileReader = new FileReader();
+											fileReader.onload = function (fileLoadedEvent) {
+												if (ui.css.cardback_stylesheet2) {
+													ui.css.cardback_stylesheet2.remove();
+												}
+												ui.css.cardback_stylesheet2 = lib.init.sheet(".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}");
+												document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
+											};
+											fileReader.readAsDataURL(fileToLoad, "UTF-8");
+										});
+									};
+									fileReader.readAsDataURL(fileToLoad, "UTF-8");
+								});
+								return;
+							case "default":
+							default:
+								document.documentElement.style.removeProperty("--cardback-url");
+								return;
 						}
+						document.documentElement.style.setProperty("--cardback-url", `url(${lib.assetURL}/${url})`);
 					},
 					unfrequent: true,
 				},
@@ -3439,12 +3579,6 @@ export class Library {
 						game.saveConfig("glow_phase", bool);
 						lib.init.cssstyles();
 					},
-				},
-				equip_span: {
-					name: "装备牌占位",
-					intro: "打开后，没有装备的装备区将在装备栏占据空白位置。",
-					init: false,
-					unfrequent: false,
 				},
 				fold_card: {
 					name: "折叠手牌",
