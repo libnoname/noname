@@ -23547,7 +23547,7 @@ const skills = {
 				case "equip6":
 					await target.recover();
 					break;
-				case "equip5":
+				case "equip5": {
 					const result = await player
 						.chooseButton(["获得一种类型的牌", [["basic", "trick"].map(i => ["", "", `caoying_${i}`]), "vcard"]], true)
 						.set("ai", () => Math.random())
@@ -23565,6 +23565,7 @@ const skills = {
 						}
 					}
 					break;
+				}
 			}
 			if (target.hp <= player.hp || target.countCards("h") <= player.countCards("h")) {
 				const bool = await player.chooseBool("援护：是否摸一张牌？").forResultBool();
