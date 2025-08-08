@@ -1447,7 +1447,7 @@ const translates = {
 	ol_liuzhang: "OL刘璋",
 	ol_liuzhang_prefix: "OL",
 	olfengwei: "奉蔚",
-	olfengwei_info: "锁定技，每轮开始时，你摸至多四张牌。若你有本轮获得的“奉蔚”牌，则你受到牌造成的伤害+1。",
+	olfengwei_info: "锁定技，每轮开始时，你摸至多三张牌。若你有本轮获得的“奉蔚”牌，则你跳过摸牌阶段且受到牌造成的伤害+1。",
 	olzonghu: "宗护",
 	olzonghu_info: "每回合限一次，当你需要使用【杀】或【闪】时，你可以将X张牌交给一名其他角色，视为使用之（X为游戏轮数且至多为3）。",
 	sp_ol_liubei: "SP刘备",

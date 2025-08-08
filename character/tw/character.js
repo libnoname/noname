@@ -812,7 +812,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["twyuanhu", "twjuezhu"],
+		skills: ["twyuanhu"],
 		dieAudios: ["caohong"],
 	},
 	tw_mayunlu: {

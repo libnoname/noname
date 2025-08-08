@@ -2406,7 +2406,7 @@ const skills = {
 		filter(event, player) {
 			const bool1 = event.getg && event.getg(player)?.length,
 				bool2 = event.getl && event.getl(player)?.hs?.length;
-			return (bool1 || bool2) && player.isMinHandcard() && player.countCards("h") < player.maxHp && !player.getStorage("olliance_used").includes(_status.currentPhase == player ? "isMe" : "notMe");
+			return (bool1 || bool2) && player.isMinHandcard() && player.countCards("h") < player.maxHp && !player.getStorage("olliance_used").length;
 		},
 		check(event, player) {
 			return player.countCards("h") < player.maxHp;

@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	drlt_jueyan(player) {
+		if (player.hasSkill("drlt_jueyan_effect")) {
+			return lib.translate["drlt_jueyan_rewrite_info"];
+		}
+		return lib.translate["drlt_jueyan_info"];
+	},
 	nzry_juzhan(player) {
 		const bool = player.storage.nzry_juzhan;
 		let yang = "当你成为其他角色【杀】的目标后，你可以与其各摸一张牌，然后其本回合内不能再对你使用牌",

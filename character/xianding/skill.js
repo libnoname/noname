@@ -1724,7 +1724,7 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool) {
-				player.addTempSkill("dcrenshuang_used", "roundEnd");
+				player.addTempSkill("dcrenshuang_used", "roundStart");
 				player.markAuto("dcrenshuang_used", result.links[0][2]);
 				const card = new lib.element.VCard({ name: result.links[0][2] });
 				if (player.hasUseTarget(card)) {
