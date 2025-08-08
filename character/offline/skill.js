@@ -18986,7 +18986,26 @@ const skills = {
 	//九鼎-孙权
 	jdsbzhiheng: {
 		audio: "sbzhiheng",
-		inherit: "sbzhiheng",
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (num <= 0 || get.itemtype(card) !== "card" || get.type(card) !== "equip") {
+					return num;
+				}
+				let eq = player.getEquip(get.subtype(card));
+				if (eq && get.equipValue(card) - get.equipValue(eq) < Math.max(1.2, 6 - player.hp)) {
+					return 0;
+				}
+			},
+		},
+		enable: "phaseUse",
+		usable: 1,
+		position: "he",
+		filterCard: lib.filter.cardDiscardable,
+		discard: false,
+		lose: false,
+		delay: false,
+		selectCard: [1, Infinity],
 		check(card) {
 			let player = _status.event.player;
 			if (get.position(card) == "e") {
@@ -19013,6 +19032,24 @@ const skills = {
 			const num = cards.some(card => player.getCards("e").includes(card)) ? 1 : 0;
 			await player.discard(cards);
 			await player.draw(cards.length + num);
+		},
+		ai: {
+			order(item, player) {
+				if (player.hasCard(i => get.value(i) > Math.max(6, 9 - player.hp), "he")) {
+					return 1;
+				}
+				return 10;
+			},
+			result: {
+				player: 1,
+			},
+			nokeep: true,
+			skillTagFilter(player, tag, arg) {
+				if (tag === "nokeep") {
+					return (!arg || (arg && arg.card && get.name(arg.card) === "tao")) && player.isPhaseUsing() && !player.getStat().skill.sbzhiheng && player.hasCard(card => get.name(card) !== "tao", "h");
+				}
+			},
+			threaten: 1.56,
 		},
 	},
 	jdsbtongye: {
