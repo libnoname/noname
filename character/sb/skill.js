@@ -6502,6 +6502,15 @@ const skills = {
 					},
 				};
 			},
+			prompt(links, player) {
+				let list = [
+					"1.其需将一张手牌当作【决斗】对你使用，否则本回合不能使用或打出牌",
+					"2.其需对你使用一张【杀】，否则你弃置其一张牌",
+					"3.本回合你与其受到的伤害+1",
+				],
+					control = links[0];
+				return `###挑衅：选择一名其他角色###${control == "all" ? list.join("<br>") : list[control == "sha" ? 1 : 0].slice(2)}`;
+			},
 		},
 		getEffect(event, player) {
 			if (!event.tiaoxinEffect) {

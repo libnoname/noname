@@ -251,6 +251,112 @@ const skills = {
 			},
 		},
 	},
+	//界大虎
+	olzenhui: {
+		audio: 2,
+		trigger: { player: "useCardToPlayer" },
+		filter(event, player) {
+			if (!event.targets.length || !event.isFirstTarget) {
+				return false;
+			}
+			const card = event.card,
+				info = get.info(card);
+			if (card.name != "sha" && info.type != "trick" || info.singleCard) {
+				return false;
+			}
+			if (!player.isPhaseUsing() || player.hasSkill("olzenhui_used")) {
+				return false;
+			}
+			return game.hasPlayer(function (current) {
+				return current != player && !event.targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && lib.filter.targetInRange(card, player, current);
+			});
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
+					if (player == target) {
+						return false;
+					}
+					const evt = _status.event.getTrigger();
+					return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+				})
+				.set("ai", function (target) {
+					const trigger = _status.event.getTrigger(),
+						player = _status.event.player;
+					return Math.max(target.countGainableCards(player, "he") ? get.effect(target, { name: "shunshou_copy2" }, player, player) : 0, get.effect(target, trigger.card, player, player));
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("olzenhui_used", "phaseUseAfter");
+			const target = event.targets[0];
+			const result = target.countGainableCards(player, "he") ? await target
+				.chooseControl()
+				.set("choiceList", [
+					`交给${get.translation(player)}一张牌，然后代替其成为${get.translation(trigger.card)}的使用者`,
+					`成为${get.translation(trigger.card)}的额外目标`,
+				])
+				.set("ai", function () {
+					const trigger = _status.event.getTrigger(),
+						{ player, source } = get.event();
+					if (!player.countGainableCards(source, "he")) {
+						return 0;
+					}
+					return get.effect(player, { name: "shunshou_copy2" }, source, source) > get.effect(player, trigger.card, source, source) ? 1 : 0;
+				})
+				.set("source", player)
+				.forResult() : {
+					bool: true,
+					index: 1,
+				};
+			if (result.index == 1) {
+				trigger.untrigger();
+				trigger.getParent().player = target;
+				game.log(target, "成为了", trigger.card, "的使用者");
+				await target.chooseToGive(player, "he", true);
+			} else {
+				game.log(target, "成为了", trigger.card, "的额外目标");
+				trigger.getParent().targets.push(target);
+			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+			},
+		},
+	},
+	oljiaojin: {
+		audio: 2,
+		trigger: { player: "damageBegin4" },
+		filter(event, player) {
+			return player.countCards("he", { type: "equip" });
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard("he", get.prompt2(event.skill), function (card, player) {
+					return get.type(card) == "equip";
+				}).set("ai", function (card) {
+					let player = _status.event.player;
+					if (player.hp == 1 || _status.event.getTrigger().num > 1) {
+						return 9 - get.value(card);
+					}
+					if (player.hp == 2) {
+						return 8 - get.value(card);
+					}
+					return 7 - get.value(card);
+				})
+				.set("chooseonly", true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.modedDiscard(event.cards);
+			game.delay(0.5);
+			trigger.cancel();
+			if (trigger.cards?.someInD("od")) {
+				await player.gain(trigger.cards.filterInD("od"), "gain2");
+			}
+		},
+	},
 	//谋诸葛亮
 	olsbzhitian: {
 		audio: 2,
