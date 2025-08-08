@@ -25,7 +25,7 @@ import { Check } from "./check.js";
 import security from "../util/security.js";
 import { GameCompatible } from "./compatible.js";
 import { save } from "../util/config.js";
-import { debonuce } from "../util/utils.js";
+import { debounce } from "../util/utils.js";
 
 export class Game extends GameCompatible {
 	documentZoom;
@@ -2119,7 +2119,7 @@ export class Game extends GameCompatible {
 	 * @param  { ...any } args 
 	 * @returns 
 	 */
-	syncSkillData = debonuce(function (skill, sync, ...args) {
+	syncSkillData = debounce(function (skill, sync, ...args) {
 		if ("observe" in game && game.observe) {
 			return;
 		}
@@ -2178,7 +2178,7 @@ export class Game extends GameCompatible {
 	 * @param  { ...any } args 
 	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
 	 */
-	requestSkillData = debonuce(function (skill, sync, timeout, ...args) {
+	requestSkillData = debounce(function (skill, sync, timeout, ...args) {
 		if ("observe" in game && game.observe) {
 			return Promise.resolve([false, null]);
 		}

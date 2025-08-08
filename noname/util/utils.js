@@ -10,9 +10,13 @@
  * @param {number} [delay=500]
  * @returns {import('./utils.d.ts').Asynchronized<T>}
  */
-export function debonuce(sourceFunction, delay = 500) {
+export function debounce(sourceFunction, delay = 500) {
     let lastTimerId = null;
 
+    /** 
+     * @this {any}
+     * @param {...any} args
+     */
     // @ts-expect-error 还是TS好用喵
     return function(...args) {
         if (lastTimerId != null) {
@@ -22,7 +26,7 @@ export function debonuce(sourceFunction, delay = 500) {
         return new Promise(resolve => {
             lastTimerId = setTimeout(() => {
                 lastTimerId = null;
-                resolve(sourceFunction(...args));
+                resolve(sourceFunction.apply(this, args));
             }, delay);
         });
     };
@@ -39,6 +43,10 @@ export function debonuce(sourceFunction, delay = 500) {
 export function throttle(sourceFunction, delay = 500) {
     let lastTimerId = null;
 
+    /** 
+     * @this {any}
+     * @param {...any} args
+     */
     // @ts-expect-error 还是TS好用喵
     return function(...args) {
         if (lastTimerId != null) {
@@ -48,7 +56,7 @@ export function throttle(sourceFunction, delay = 500) {
         return new Promise(resolve => {
             lastTimerId = setTimeout(() => {
                 lastTimerId = null;
-                resolve(sourceFunction(...args));
+                resolve(sourceFunction.apply(this, args));
             }, delay);
         });
     };
