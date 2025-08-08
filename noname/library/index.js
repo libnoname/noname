@@ -16133,6 +16133,13 @@ export class Library {
 			},
 		],
 		[
+			"绶",
+			{
+				color: "#8B00FF",
+				nature: "shenmm",
+			},
+		],
+		[
 			"欧陆",
 			{
 				getSpan: () => {

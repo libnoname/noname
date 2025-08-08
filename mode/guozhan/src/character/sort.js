@@ -18,7 +18,7 @@ export default {
 	guozhan_yexinjia: ["gz_zhonghui", "gz_simazhao", "gz_gongsunyuan", "gz_sunchen", "gz_zhugedan"],
 	// 晋势力
 	guozhan_jin: ["gz_jin_simayi", "gz_jin_simazhao", "gz_jin_simashi", "gz_jin_zhangchunhua", "gz_jin_wangyuanji", "gz_jin_xiahouhui", "gz_duyu", "gz_zhanghuyuechen", "gz_jin_yanghuiyu", "gz_simazhou", "gz_shibao", "gz_weiguan", "gz_zhongyan", "gz_yangyan", "gz_zuofen", "gz_xinchang", "gz_xuangongzhu", "gz_yangzhi"],
-	guozhan_jinEX1: ["gz_simaliang", "gz_simalun", "gz_jin_guohuai", "gz_wangjun", "gz_malong"],
+	guozhan_jinEX1: ["gz_simaliang", "gz_simalun", "gz_jin_guohuai", "gz_wangjun", "gz_malong", "gz_new_jin_simayi", "gz_new_jin_zhangchunhua"],
 	guozhan_jinEX2: ["gz_wenyang", "gz_bailingyun", "gz_sunxiù", "gz_yangjun", "gz_wangxiang"],
 	guozhan_zongheng: ["gz_huaxin", "gz_luyusheng", "gz_zongyu", "gz_miheng", "gz_fengxi", "gz_dengzhi", "gz_re_xunchen", "gz_dc_yanghu"],
 	guozhan_decade: ["gz_wangling", "gz_wangji", "gz_yanyan", "gz_xin_zhuran", "gz_gaoshun", "gz_jin_jiachong", "gz_jin_yanghu"],

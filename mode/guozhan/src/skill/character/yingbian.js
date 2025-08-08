@@ -1816,7 +1816,7 @@ export default {
 				chooseButton: {
 					dialog(event, player) {
 						let list = [
-							["gz_shunfu", "gz_jin_simayi"],
+							["gz_shunfu", "gz_new_jin_simayi"],
 							["luanwu", "gz_jiaxu"],
 							["jianglue", "gz_wangping"],
 							["yongjin", "gz_lingtong"],

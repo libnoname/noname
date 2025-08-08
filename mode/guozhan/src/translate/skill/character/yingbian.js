@@ -97,6 +97,11 @@ export default {
 	gz_xunji: "勋济",
 	gz_xunji_info: "你使用【杀】可以额外指定两名目标，结算完成后若对所有目标角色均造成伤害，此【杀】不计入次数限制。",
 
+	gz_new_jin_simayi: "绶司马懿",
+	gz_new_jin_simayi_prefix: "绶",
+	gz_new_jin_zhangchunhua: "绶张春华",
+	gz_new_jin_zhangchunhua_prefix: "绶",
+
 	gznaxiang: "纳降",
 	gznaxiang_info: "锁定技，当你受到其他角色造成的伤害后，或你对其他角色造成伤害后，你对其发动〖才望〗时的“弃置”改为“获得”直到你的下回合开始。",
 	fakecaiwang: "才望",

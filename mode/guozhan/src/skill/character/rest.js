@@ -19380,73 +19380,68 @@ export default {
 		filter(event, player) {
 			return player.isUnseen(2) && !player.hasSkillTag("nomingzhi", false, null, true);
 		},
-		content() {
-			"step 0";
-			if (player.phaseNumber == 1 && player.isUnseen(0) && (_status.connectMode ? lib.configOL.junzhu : get.config("junzhu"))) {
-				var name = player.name1;
-				if (name.indexOf("gz_") != 0 || !lib.junList.includes(name.slice(3))) {
-					event.goto(3);
-				} else {
-					event.junzhu_name = "gz_jun_" + name.slice(3);
-					player.chooseBool("是否将主武将牌替换为“" + get.translation(event.junzhu_name) + "”？");
-				}
-			} else {
-				event.goto(3);
-			}
-			"step 1";
-			if (result.bool) {
-				var to = event.junzhu_name;
-				event.maxHp = player.maxHp;
-				player.reinit(player.name1, to, 4);
-
-				// 修改君主亮将配音播放
-				var map = {
-					gz_jun_liubei: "shouyue",
-					gz_jun_zhangjiao: "hongfa",
-					gz_jun_sunquan: "jiahe",
-					gz_jun_caocao: "jianan",
-				};
-				game.trySkillAudio(map[to], player);
-
-				player.showCharacter(0);
-				var group = lib.character[to][1];
-				var yelist = game.filterPlayer(function (current) {
-					if (current.identity != "ye") {
-						return false;
+		async content(event, trigger, player) {
+			const junzhu = _status.connectMode ? lib.configOL.junzhu : get.config("junzhu");
+			if (player.phaseNumber == 1 && player.isUnseen(0) && junzhu) {
+				let name = player.name1;
+				if (name.indexOf("gz_") == 0 && lib.junList.includes(name.slice(3))) {
+					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`;
+					const notChange = game.hasPlayer(current => get.nameList(current).includes(junzhu_name));
+					const result = notChange ? {
+						bool: false,
+					} : await player
+						.chooseBool("是否将主武将牌替换为“" + get.translation(junzhu_name) + "”？")
+						.set("createDialog", [`是否替换主武将牌为君主武将“${get.translation(junzhu_name)}”`, [[junzhu_name], "character"]])
+						.forResult();
+					if (result.bool) {
+						const maxHp = player.maxHp;
+						player.reinit(name, junzhu_name, 4);
+						const map = {
+							gz_jun_liubei: "shouyue",
+							gz_jun_zhangjiao: "hongfa",
+							gz_jun_sunquan: "jiahe",
+							gz_jun_caocao: "jianan",
+							gz_jun_jin_simayi: "smyyingshi",
+						};
+						game.trySkillAudio(map[junzhu_name], player);
+					
+						await player.showCharacter(0);
+						const group = lib.character[junzhu_name][1],
+							yelist = game.filterPlayer(function (current) {
+								if (current.identity != "ye") {
+									return false;
+								}
+								if (current == player) {
+									return true;
+								}
+								return current.group == group;
+							});
+						if (yelist.length > 0) {
+							player.line(yelist, "green");
+							game.log(yelist, "失去了野心家身份");
+							game.broadcastAll(
+								function (list, group) {
+									for (let i = 0; i < list.length; i++) {
+										list[i].identity = group;
+										list[i].group = group;
+										list[i].setIdentity();
+									}
+								},
+								yelist,
+								player.group
+							);
+						}
+						game.tryResult();
+						if (player.maxHp > maxHp) {
+							await player.recover(player.maxHp - maxHp);
+						}
 					}
-					if (current == player) {
-						return true;
-					}
-					return current.group == group;
-				});
-				if (yelist.length > 0) {
-					player.line(yelist, "green");
-					game.log(yelist, "失去了野心家身份");
-					game.broadcastAll(
-						function (list, group) {
-							for (var i = 0; i < list.length; i++) {
-								list[i].identity = group;
-								list[i].group = group;
-								list[i].setIdentity();
-							}
-						},
-						yelist,
-						player.group
-					);
 				}
-				game.tryResult();
-			} else {
-				event.goto(3);
 			}
-			"step 2";
-			if (player.maxHp > event.maxHp) {
-				player.recover(player.maxHp - event.maxHp);
-			}
-			"step 3";
-			var choice = 1;
-			for (var i = 0; i < player.hiddenSkills.length; i++) {
+			let choice = 1;
+			for (let i = 0; i < player.hiddenSkills.length; i++) {
 				if (lib.skill[player.hiddenSkills[i]].ai) {
-					var mingzhi = lib.skill[player.hiddenSkills[i]].ai.mingzhi;
+					let mingzhi = lib.skill[player.hiddenSkills[i]].ai.mingzhi;
 					if (mingzhi == false) {
 						choice = 0;
 						break;
@@ -19457,58 +19452,70 @@ export default {
 					}
 				}
 			}
+			let control;
 			if (player.isUnseen()) {
-				var group = lib.character[player.name1][1];
-				player.chooseControl("bumingzhi", "明置" + get.translation(player.name1), "明置" + get.translation(player.name2), "tongshimingzhi", true).ai = function (event, player) {
-					if (player.hasSkillTag("mingzhi_yes")) {
-						return get.rand(1, 2);
-					}
-					if (player.hasSkillTag("mingzhi_no")) {
-						return 0;
-					}
-					var popu = get.population(lib.character[player.name1][1]);
-					if (popu >= 2 || (popu == 1 && game.players.length <= 4)) {
-						return Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1;
-					}
-					if (choice == 0) {
-						return 0;
-					}
-					if (get.population(group) > 0 && player.wontYe()) {
-						return Math.random() < 0.2 ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
-					}
-					var nming = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].identity != "unknown") {
-							nming++;
+				let group = lib.character[player.name1][1];
+				const result = await player
+					.chooseControl("bumingzhi", "明置" + get.translation(player.name1), "明置" + get.translation(player.name2), "tongshimingzhi", true)
+					.set("ai", (event, player) => {
+						if (player.hasSkillTag("mingzhi_yes")) {
+							return get.rand(1, 2);
 						}
-					}
-					if (nming == game.players.length - 1) {
-						return Math.random() < 0.5 ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
-					}
-					return Math.random() < (0.1 * nming) / game.players.length ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
-				};
+						if (player.hasSkillTag("mingzhi_no")) {
+							return 0;
+						}
+						var popu = get.population(lib.character[player.name1][1]);
+						if (popu >= 2 || (popu == 1 && game.players.length <= 4)) {
+							return Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1;
+						}
+						if (choice == 0) {
+							return 0;
+						}
+						if (get.population(group) > 0 && player.wontYe()) {
+							return Math.random() < 0.2 ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
+						}
+						var nming = 0;
+						for (var i = 0; i < game.players.length; i++) {
+							if (game.players[i] != player && game.players[i].identity != "unknown") {
+								nming++;
+							}
+						}
+						if (nming == game.players.length - 1) {
+							return Math.random() < 0.5 ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
+						}
+						return Math.random() < (0.1 * nming) / game.players.length ? (Math.random() < 0.5 ? 3 : Math.random() < 0.5 ? 2 : 1) : 0;
+					})
+					.forResult();
+				control = result.control;
 			} else {
 				if (Math.random() < 0.5) {
 					choice = 0;
 				}
 				if (player.isUnseen(0)) {
-					player.chooseControl("bumingzhi", "明置" + get.translation(player.name1), true).choice = choice;
+					const result = await player
+						.chooseControl("bumingzhi", "明置" + get.translation(player.name1), true)
+						.set("choice", choice)
+						.forResult();
+					control = result.control;
 				} else if (player.isUnseen(1)) {
-					player.chooseControl("bumingzhi", "明置" + get.translation(player.name2), true).choice = choice;
+					const result = await player
+						.chooseControl("bumingzhi", "明置" + get.translation(player.name2), true)
+						.set("choice", choice)
+						.forResult();
+					control = result.control;
 				} else {
-					event.finish();
+					return;
 				}
 			}
-			"step 4";
-			switch (result.control) {
+			switch (control) {
 				case "明置" + get.translation(player.name1):
-					player.showCharacter(0);
+					await player.showCharacter(0);
 					break;
 				case "明置" + get.translation(player.name2):
-					player.showCharacter(1);
+					await player.showCharacter(1);
 					break;
 				case "tongshimingzhi":
-					player.showCharacter(2);
+					await player.showCharacter(2);
 					break;
 			}
 		},
