@@ -460,7 +460,7 @@ const skills = {
 			} else {
 				await target.addSkills("newzhennan");
 			}
-			await player.recoverTo(1);
+			await player.recoverTo(2);
 		},
 	},
 	//OL蔡贞姬

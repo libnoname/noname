@@ -23653,7 +23653,7 @@ const skills = {
 				},
 			},
 			end: {
-				trigger: { player: "phaseEnd" },
+				trigger: { player: "phaseJieshuBegin" },
 				charlotte: true,
 				filter(event, player) {
 					return player.hasSkill("twyuanhu") && player.hasCard({ type: "equip" }, "eh");

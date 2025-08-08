@@ -9305,7 +9305,7 @@ const skills = {
 	},
 	sbtongye: {
 		audio: 2,
-		trigger: { player: "phaseEnd" },
+		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
 			return ["h", "e", "j"].every(pos => {
@@ -9319,14 +9319,15 @@ const skills = {
 			if (!list?.length) {
 				return;
 			}
-			const result = await player
+			const name = list.randomGet();
+			/*const result = await player
 				.chooseButton(["统业：选择一个牌名获得", [list, "vcard"]], true)
 				.set("ai", button => get.value(button.link))
 				.forResult();
 			if (!result.bool) {
 				return;
-			}
-			const card = get.cardPile(card => card.name == result.links[0][2]);
+			}*/
+			const card = get.cardPile(card => card.name == name[2]);
 			if (card) {
 				player.addSkill("sbtongye_used");
 				player.markAuto("sbtongye_used", card.name);
