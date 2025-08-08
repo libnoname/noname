@@ -2101,6 +2101,22 @@ export class Game extends GameCompatible {
 		}
 	}
 	/**
+	 * 对于客户端syncSkillData使用防抖函数喵
+	 * 
+	 * 用Map存储特定sync函数的防抖版本喵
+	 * 
+	 * @type {{ [key: string]: { [key: string]: Function } }}
+	 */
+	#skillSyncDebounceMap = {};
+	/**
+	 * 对于客户端requestSkillData使用防抖函数喵
+	 * 
+	 * 用Map存储特定sync函数的防抖版本喵
+	 * 
+	 * @type {{ [key: string]: { [key: string]: Function } }}
+	 */
+	#skillRequestDebounceMap = {};
+	/**
 	 * 对于技能请求我们应该记录每个lib.skill.xxx.sync函数上次的调用时间，间隔500ms内的重复调用主机应该拒绝喵
 	 * 
 	 * @type { WeakMap<Player, { [skill: string]: { [sync: string]: number } }> }
@@ -2114,12 +2130,12 @@ export class Game extends GameCompatible {
 	 * 具体调用请参考@see requestSkillData 函数的文档喵
 	 * ```
 	 * 
-	 * @param { Card | VCard | string } skill 
+	 * @param { string } skill 
 	 * @param { string } sync 
 	 * @param  { ...any } args 
 	 * @returns 
 	 */
-	syncSkillData = debounce(function (skill, sync, ...args) {
+	syncSkillData(skill, sync, ...args) {
 		if ("observe" in game && game.observe) {
 			return;
 		}
@@ -2132,8 +2148,12 @@ export class Game extends GameCompatible {
 		// 	throw new Error("没有在客机上找到对应的牌或技能，syncSkillData应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
 		// }
 
-		game.send("dataSync", { type: "skill", name: skill, key: sync, args }, null);
-	});
+		game.#skillSyncDebounceMap[skill] ??= {};
+
+		(game.#skillSyncDebounceMap[skill][sync] ??= debounce((...args) => {
+			game.send("dataSync", { type: "skill", name: skill, key: sync, args }, null);
+		}))(...args);
+	}
 	/**
 	 * ```plain
 	 * 在客机发出请求，要求主机响应并返回特定的数据
@@ -2178,9 +2198,13 @@ export class Game extends GameCompatible {
 	 * @param  { ...any } args 
 	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
 	 */
-	requestSkillData = debounce(function (skill, sync, timeout, ...args) {
+	requestSkillData(skill, sync, timeout, ...args) {
 		if ("observe" in game && game.observe) {
 			return Promise.resolve([false, null]);
+		}
+		
+		if (!timeout || !Number.isFinite(timeout) || timeout <= 0) {
+			timeout = 5000;
 		}
 
 		// 也许客机检查是不必要的喵
@@ -2191,36 +2215,37 @@ export class Game extends GameCompatible {
 		// 	throw new Error("没有在客机上找到对应的牌或技能，requestSkillData应该用在双方拥有的牌或技能上，或者由主机另行注册喵");
 		// }
 
-		if (!timeout || !Number.isFinite(timeout) || timeout <= 0) {
-			timeout = 5000;
-		}
+		game.#skillRequestDebounceMap[skill] ??= {};
 
-		const id = (function () {
-			while (true) {
-				const id = Math.random().toString(36).slice(2);
-				if (!(id in game.dataRequestMap)) {
-					return id;
+		return (game.#skillRequestDebounceMap[skill][sync] ??= debounce((timeout, ...args) => {
+			const id = (function () {
+				while (true) {
+					const id = Math.random().toString(36).slice(2);
+					if (!(id in game.dataRequestMap)) {
+						return id;
+					}
 				}
-			}
-		})();
-		const { promise, resolve } = Promise.withResolvers();
+			})();
+			const { promise, resolve } = Promise.withResolvers();
 
-		game.dataRequestMap[id] = (ok, result) => resolve([ok, result]);
-		game.send("dataSync", { type: "skill", name: skill, key: sync, args, timeout }, id);
+			game.dataRequestMap[id] = (ok, result) => resolve([ok, result]);
+			game.send("dataSync", { type: "skill", name: skill, key: sync, args, timeout }, id);
 
-		const timeoutPromise = new Promise((resolve) => {
-			setTimeout(() => {
-				delete game.dataRequestMap[id];
-				resolve([false, game.SKILL_SYNC_RESULTS.REQUEST_TIMEOUT]);
-			}, timeout);
-		});
+			const timeoutPromise = new Promise((resolve) => {
+				setTimeout(() => {
+					delete game.dataRequestMap[id];
+					resolve([false, game.SKILL_SYNC_RESULTS.REQUEST_TIMEOUT]);
+				}, timeout);
+			});
 
-		return Promise.any([promise, timeoutPromise]);
-	}, 500);
+			return Promise.any([promise, timeoutPromise]);
+		}, {
+			delay: 500,
+			failResult: [false, game.SKILL_SYNC_RESULTS.TOO_MANY_CALLS],
+		}))(timeout, ...args);
+	}
 	/**
 	 * 失败结果常量表喵
-	 * 
-	 * @type { { [key: string]: string } }
 	 */
 	SKILL_SYNC_RESULTS = Object.freeze({
 		INVALID_ARGUMENT: "参数不符合要求喵",
@@ -2228,6 +2253,7 @@ export class Game extends GameCompatible {
 		SKILL_NOT_GRANTED: "请求的技能不被许可喵",
 		MISSING_SKILL_SYNC: "请求的sync函数没有找到喵",
 		TOO_MANY_REQUESTS: "请求过于频繁了喵",
+		TOO_MANY_CALLS: "调用请求次数过于频繁喵",
 		REQUEST_TIMEOUT: "请求超时喵",
 	});
 	/**
