@@ -9305,7 +9305,7 @@ const skills = {
 	},
 	sbtongye: {
 		audio: 2,
-		trigger: { global: "phaseEnd" },
+		trigger: { player: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
 			return ["h", "e", "j"].every(pos => {
@@ -9315,22 +9315,36 @@ const skills = {
 			});
 		},
 		async content(event, trigger, player) {
-			const list = get.inpileVCardList(info => !info[3] && !player.getStorage("sbtongye_used").includes(info[2]));
+			const cards = Array.from(ui.discardPile.childNodes).slice().concat(Array.from(ui.cardPile.childNodes).slice());
+			const list = cards
+				.filter(card => !player.getStorage("sbtongye_used").includes(card))
+				.map(card => card.name)
+				.toUniqued();
 			if (!list?.length) {
 				return;
 			}
-			const name = list.randomGet();
-			/*const result = await player
-				.chooseButton(["统业：选择一个牌名获得", [list, "vcard"]], true)
+			const result = await player
+				.chooseButton(["统业：选择一个牌名获得", [list.map(card => ["", "", card]), "vcard"]], true)
 				.set("ai", button => get.value(button.link))
 				.forResult();
 			if (!result.bool) {
 				return;
-			}*/
-			const card = get.cardPile(card => card.name == name[2]);
+			}
+			const gains = cards.filter(card => card.name == result.links[0][2] && !player.getStorage("sbtongye_used").includes(card));
+			if (!gains?.length) {
+				return;
+			}
+			const result2 = gains.length > 1 ? await player
+				.chooseButton(["统业：选择一张牌获得", gains], true)
+				.set("ai", button => get.value(button.link))
+				.forResult() : {
+					bool: true,
+					links: gains,
+				};
+			const card = result2.links[0];
 			if (card) {
 				player.addSkill("sbtongye_used");
-				player.markAuto("sbtongye_used", card.name);
+				player.markAuto("sbtongye_used", card);
 				await player.gain(card, "gain2");
 			}
 		},
