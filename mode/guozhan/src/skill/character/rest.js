@@ -8,6 +8,352 @@ const get = cast(_get);
 
 export default {
 	//国战无双
+	//张媱
+	gz_yuanyu: {
+		audio: "yuanyu",
+		enable: "phaseUse",
+		usable: 1,
+		async content(event, trigger, player) {
+			await player.draw();
+			if (player.countCards("h") > 0) {
+				const result = await player
+					.chooseCard("怨语：将一张手牌当作“怨”置于武将牌上", "h", true)
+					.set("ai", card => {
+						const player = get.player(),
+							cards = player.getExpansions("gz_yuanyu");
+						if (cards?.length && cards.some(cardx => get.color(cardx) == get.color(card))) {
+							return 5 - get.value(card);
+						}
+						return 8 - get.value(card);
+					})
+					.forResult();
+				const gainEvent = player.addToExpansion(result.cards, player, "give");
+				gainEvent.gaintag.add("gz_yuanyu");
+				await gainEvent;
+			}
+		},
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			var cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		ai: {
+			order: 7,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	gz_xiyan: {
+		audio: "xiyan",
+		trigger: {
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			if (!event.card || !player.countExpansions("gz_yuanyu")) {
+				return false;
+			}
+			return event.source?.isIn() && player.getExpansions("gz_yuanyu").some(card => {
+				return get.color(card) == get.color(event.card);
+			});
+		},
+		logTarget: "source",
+		check(event, player) {
+			return get.attitude(player, event.source) <= 0;
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await target
+				.chooseControl()
+				.set("choiceList", [
+					"本回合手牌上限-4",
+					"本回合不能使用基本牌",
+				])
+				.set("prompt", "夕颜：请选择一项")
+				.set("ai", () => {
+					const player = get.player();
+					if (player.hasSkill("gz_xiyan_basic")) {
+						return 1;
+					}
+					if (player.countCards("h", card => {
+						return get.type(card) == "basic" && player.hasValueTarget(card);
+					}) >= (player.countCards("h") / 2)) {
+						return 0;
+					}
+					return 1;
+				})
+				.forResult();
+			if (result.index == 0) {
+				target.addTempSkill("gz_xiyan_limit");
+				target.addMark("gz_xiyan_limit", 4, false);
+			} else {
+				target.addTempSkill("gz_xiyan_basic");
+			}
+		},
+		subSkill: {
+			limit: {
+				intro: { content: "本回合手牌上限-#" },
+				onremove: true,
+				charlotte: true,
+				mod: {
+					maxHandcard(player, num) {
+						return num - player.countMark("gz_xiyan_limit");
+					},
+				},
+			},
+			basic: {
+				intro: { content: "本回合不能使用基本牌" },
+				mark: true,
+				charlotte: true,
+				mod: {
+					cardEnabled(card, player) {
+						if (get.type(card) == "basic") {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (get.type(card) == "basic") {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
+	//曹纯
+	gz_shanjia: {
+		audio: "shanjia",
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		filter(event, player) {
+			const num = game.countPlayer(current => current.isFriendOf(player));
+			return num > 0;
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const num = game.countPlayer(current => current.isFriendOf(player));
+			await player.draw(num);
+			const result = await player
+				.chooseToDiscard("he", true)
+				.set("ai", card => {
+					if (get.type(card) == "equip") {
+						return 10 - get.value(card);
+					}
+					return 7 - get.value(card);
+				})
+				.forResult();
+			if (result.bool && get.type(result.cards[0]) == "equip") {
+				const card = new lib.element.VCard({ name: "sha" });
+				if (player.hasUseTarget(card)) {
+					await player.chooseUseTarget(card, true, false);
+				}
+			}
+		},
+	},
+	//糜竺
+	gz_ziyuan: {
+		audio: "ziyuan",
+		enable: "phaseUse",
+		usable: 1,
+		filterCard(card) {
+			let num = 0;
+			for (let i = 0; i < ui.selected.cards.length; i++) {
+				num += get.number(ui.selected.cards[i]);
+			}
+			return get.number(card) + num <= 13;
+		},
+		complexCard: true,
+		selectCard() {
+			let num = 0;
+			for (let i = 0; i < ui.selected.cards.length; i++) {
+				num += get.number(ui.selected.cards[i]);
+			}
+			if (num == 13) {
+				return ui.selected.cards.length;
+			}
+			return ui.selected.cards.length + 2;
+		},
+		discard: false,
+		lose: false,
+		delay: false,
+		filterTarget(card, player, target) {
+			return player != target && target.isFriendOf(player);
+		},
+		check(card) {
+			let num = 0;
+			for (let i = 0; i < ui.selected.cards.length; i++) {
+				num += get.number(ui.selected.cards[i]);
+			}
+			if (num + get.number(card) == 13) {
+				return 9 - get.value(card);
+			}
+			if (ui.selected.cards.length == 0) {
+				let cards = _status.event.player.getCards("h");
+				for (let i = 0; i < cards.length; i++) {
+					for (let j = i + 1; j < cards.length; j++) {
+						if (cards[i].number + cards[j].number == 13) {
+							if (cards[i] == card || cards[j] == card) {
+								return 8.5 - get.value(card);
+							}
+						}
+					}
+				}
+			}
+			return 0;
+		},
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.showCards(cards, `${get.translation(player)}发动了【资援】`);
+			await player.give(cards, target, true);
+			await target.recover();
+		},
+		ai: {
+			order(skill, player) {
+				if (
+					game.hasPlayer(function (current) {
+						return current.hp < current.maxHp && current != player && get.recoverEffect(current, player, player) > 0;
+					})
+				) {
+					return 10;
+				}
+				return 1;
+			},
+			result: {
+				player(player, target) {
+					if (get.attitude(player, target) < 0) {
+						return -1;
+					}
+					let eff = get.recoverEffect(target, player, player);
+					if (eff < 0) {
+						return 0;
+					}
+					if (eff > 0) {
+						if (target.hp == 1) {
+							return 3;
+						}
+						return 2;
+					}
+					if (player.needsToDiscard()) {
+						return 1;
+					}
+					return 0;
+				},
+			},
+			threaten: 1.3,
+		},
+	},
+	gz_jugu: {
+		audio: "jugu",
+		trigger: {
+			player: "showCharacterAfter",
+		},
+		forced: true,
+		filter(event, player) {
+			return event.toShow.some(name => {
+				return get.character(name, 3).includes("gz_jugu");
+			});
+		},
+		async content(event, trigger, player) {
+			await player.draw(player.maxHp);
+		},
+		mod: {
+			maxHandcard(player, num) {
+				return num + player.maxHp;
+			},
+		},
+	},
+	//群张郃
+	gz_zhilve: {
+		audio: "zhilve",
+		enable: "phaseUse",
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				var list = ["移动场上的一张牌", "摸一张牌并视为使用一张【杀】"];
+				var choiceList = ui.create.dialog("知略：失去1点体力并选择一项", "forcebutton", "hidden");
+				choiceList.add([
+					list.map((item, i) => {
+						return [i, item];
+					}),
+					"textbutton",
+				]);
+				return choiceList;
+			},
+			filter(button, player) {
+				if (button.link == 0) {
+					return player.canMoveCard();
+				}
+				return player.hasUseTarget({ name: "sha", isCard: true }, false);
+			},
+			check(button) {
+				return button.link;
+			},
+			backup(links) {
+				if (links[0] == 1) {
+					return {
+						audio: "gz_zhilve",
+						async content(event, trigger, player) {
+							await player.loseHp();
+							player.addTempSkill("gz_zhilve_limit");
+							player.addMark("gz_zhilve_limit", 1, false);
+							await player.draw();
+							const card = new lib.element.VCard({ name: "sha" });
+							if (player.hasUseTarget(card, false)) {
+								await player.chooseUseTarget(card, true, false, "nodistance");
+							}
+						},
+					};
+				} else {
+					return { 
+						audio: "gz_zhilve",
+						async content(event, trigger, player) {
+							await player.loseHp();
+							player.addTempSkill("gz_zhilve_limit");
+							player.addMark("gz_zhilve_limit", 1, false);
+							if (player.canMoveCard()) {
+								await player.moveCard(true);
+							}
+						},
+					};
+				}
+			},
+			prompt() {
+				return "请选择【杀】的目标";
+			},
+		},
+		ai: {
+			order(item, player) {
+				return get.order({ name: "sha" }) + 0.1;
+			},
+			result: {
+				player(player) {
+					if (player.hp > 2 && player.hasValueTarget({ name: "sha" })) {
+						return 1;
+					}
+					return 0;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+			limit: {
+				intro: { content: "本回合手牌上限+#" },
+				onremove: true,
+				charlotte: true,
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("gz_zhilve_limit");
+					},
+				},
+			},
+		},
+	},
 	//十常侍
 	gz_danggu: {
 		trigger: {
@@ -1482,13 +1828,23 @@ export default {
 			player: "useCardToPlayered",
 		},
 		filter(event, player) {
+			if (!get.info("gz_tongli")?.filterx(event) || get.tag(event.card, "norepeat")) {
+				return false;
+			}
 			return event.isFirstTarget && player.countCards("h");
+		},
+		filterx(event) {
+			if (event.targets.length == 0) {
+				return false;
+			}
+			var type = get.type(event.card);
+			if (type != "basic" && type != "trick") {
+				return false;
+			}
+			return true;
 		},
 		usable: 1,
 		check(event, player) {
-			if (!get.info("dcshixian")?.filterx(event) || get.tag(event.card, "norepeat")) {
-				return false;
-			}
 			return (
 				player
 					.getCards("h")
@@ -1507,7 +1863,7 @@ export default {
 			) {
 				return;
 			}
-			if (!get.info("dcshixian")?.filterx(trigger)) {
+			if (!get.info("gz_tongli")?.filterx(trigger)) {
 				return;
 			}
 			trigger.getParent().effectCount++;

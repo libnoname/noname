@@ -24,6 +24,7 @@ const skills = {
 					prompt2: prompt2,
 					filterCard: true,
 					selectCard: [1, 2],
+					position: "he",
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
 						if (get.event("val")) {

@@ -940,6 +940,14 @@ export default {
 		hujia: 0,
 		skills: ["gz_tongli", "gz_shezang"],
 	}),
+	gz_zhangyao: new Character({
+		sex: "female",
+		group: "wu",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_yuanyu", "gz_xiyan"],
+	}),
 	gz_guanyinping: new Character({
 		sex: "female",
 		group: "shu",
@@ -955,6 +963,30 @@ export default {
 		maxHp: 3,
 		hujia: 0,
 		skills: ["gz_caishi"],
+	}),
+	gz_yj_zhanghe: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_zhilve"],
+	}),
+	gz_mizhu: new Character({
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["gz_ziyuan", "gz_jugu"],
+	}),
+	gz_caochun: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_shanjia"],
 	}),
 };
 

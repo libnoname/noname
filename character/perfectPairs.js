@@ -17,7 +17,7 @@ window.noname_character_perfectPairs = {
 	dongzhuo: ["liru", "dongbai", "xurong"],
 	fuhuanghou: ["liuxie"],
 	fuwan: ["fuhuanghou"],
-	gaolan: ["zhanghe"],
+	gaolan: ["yj_zhanghe"],
 	ganning: ["lingtong", "xf_sufei"],
 	guanping: ["guanyu"],
 	guanqiujian: ["wenqin"],
