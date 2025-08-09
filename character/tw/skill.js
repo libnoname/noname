@@ -23544,34 +23544,12 @@ const skills = {
 					break;
 				case "equip3":
 				case "equip4":
+				case "equip5":
 				case "equip6":
 					await target.recover();
 					break;
-				case "equip5": {
-					const result = await player
-						.chooseButton(["获得一种类型的牌", [["basic", "trick"].map(i => ["", "", `caoying_${i}`]), "vcard"]], true)
-						.set("ai", () => Math.random())
-						.forResult();
-					if (result.bool) {
-						const type = result.links[0][2].slice(8),
-							type2 = ["basic", "trick"].find(i => i != type);
-						const card1 = get.cardPile2(card => get.type(card) == type);
-						if (card1) {
-							await player.gain(card1, "gain2");
-						}
-						const card2 = get.cardPile2(card => get.type(card) == type2);
-						if (card2) {
-							await target.gain(card2, "gain2");
-						}
-					}
-					break;
-				}
 			}
 			if (target.hp <= player.hp || target.countCards("h") <= player.countCards("h")) {
-				const bool = await player.chooseBool("援护：是否摸一张牌？").forResultBool();
-				if (!bool) {
-					return;
-				}
 				await player.draw();
 				player.addTempSkill("twyuanhu_end");
 			}
@@ -23636,23 +23614,7 @@ const skills = {
 				},
 			},
 		},
-		group: "twyuanhu_init",
-		derivation: ["twjuezhu", "feiying"],
 		subSkill: {
-			init: {
-				trigger: {
-					global: "phaseBefore",
-					player: "enterGame",
-				},
-				filter(event, player) {
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					await player.addSkills("twjuezhu");
-				},
-			},
 			end: {
 				trigger: { player: "phaseJieshuBegin" },
 				charlotte: true,
@@ -23692,51 +23654,64 @@ const skills = {
 		audio: 2,
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.hasEnabledSlot(3) || player.hasEnabledSlot(4);
 		},
 		skillAnimation: true,
 		animationColor: "water",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twjuezhu"), [1, 2], function (card, player, target) {
-					return !ui.selected.targets.length && !target.hasSkill("feiying");
-				})
-				.set("multitarget", true)
-				.set("promptbar", "none")
-				.set("ai", function (target) {
-					if (player.hasUnknown()) {
-						return false;
-					}
-					return get.attitude(player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				var list = [];
-				if (player.hasEnabledSlot(3)) {
-					list.push("equip3");
-				}
-				if (player.hasEnabledSlot(4)) {
-					list.push("equip4");
-				}
-				if (list.length == 1) {
-					event._result = { control: list[0] };
-				} else {
-					player.chooseControl(list).set("prompt", "选择废除一个坐骑栏");
+		async cost(event, trigger, player) {
+			let list = [3, 4].filter(num => player.hasEmptySlot(num)).map(num => `equip${num}`);
+			if (list.length > 1) {
+				const prompt = `###${get.prompt(event.skill)}###废除一个装备栏并选择一名角色，令其获得〖飞影〗并废除判定区`;
+				const { bool, targets, links } = await player
+					.chooseButtonTarget({
+						createDialog: [prompt, [list.map(i => [i, get.translation(i)]), "tdnodes"]],
+						filterTarget(card, player, target) {
+							return !target.hasSkill("feiying");
+						},
+						ai1(button) {
+							return Math.random();
+						},
+						ai2(target) {
+							if (player.hasUnknown()) {
+								return 0;
+							}
+							return get.attitude(player, target);
+						},
+					})
+					.forResult();
+				if (bool) {
+					event.result = {
+						bool: true,
+						targets: targets,
+						cost_data: links[0],
+					};
 				}
 			} else {
-				event.finish();
+				const prompt = `###${get.prompt(event.skill)}###废除${get.translation(list[0])}栏并选择一名角色，令其获得〖飞影〗并废除判定区`;
+				event.result = await player
+					.chooseTarget(prompt, [1, 2], function (card, player, target) {
+						return !ui.selected.targets.length && !target.hasSkill("feiying");
+					})
+					.set("multitarget", true)
+					.set("promptbar", "none")
+					.set("ai", function (target) {
+						if (player.hasUnknown()) {
+							return 0;
+						}
+						return get.attitude(player, target);
+					})
+					.forResult();
+				event.result.cost_data = list[0];
 			}
-			"step 2";
-			player.logSkill("twjuezhu", target);
+		},
+		async content(event, trigger, player) {
+			const { targets: [target], cost_data: equip } = event;
 			player.awakenSkill(event.name);
-			player.disableEquip(result.control);
-			target.disableJudge();
-			player.markAuto("twjuezhu_restore", [[target, result.control]]);
-			player.addSkill("twjuezhu_restore");
+			await player.disableEquip(equip);
+			await target.disableJudge();
+			player.addSkill(`${event.name}_restore`);
+			player.markAuto(`${event.name}_restore`, [[target, equip]]);
 			target.addSkills("feiying");
 		},
 		subSkill: {
@@ -23746,21 +23721,21 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					for (var i of player.getStorage("twjuezhu_restore")) {
+					for (let i of player.getStorage("twjuezhu_restore")) {
 						if (i[0] == event.player && player.hasDisabledSlot(i[1])) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i of player.getStorage("twjuezhu_restore")) {
+				async content(event, trigger, player) {
+					let list = [];
+					for (let i of player.getStorage("twjuezhu_restore")) {
 						if (i[0] == trigger.player && player.hasDisabledSlot(i[1])) {
 							list.push(i[1]);
 						}
 					}
-					player.enableEquip(list);
+					await player.enableEquip(list);
 				},
 			},
 		},

@@ -2,6 +2,214 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//手杀曹洪
+	mbyuanhu: {
+		audio: "yuanhu",
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.hasCard({ type: "equip" }, "eh");
+		},
+		filterCard: { type: "equip" },
+		filterTarget(card, player, target) {
+			var card = ui.selected.cards[0];
+			return target.canEquip(card);
+		},
+		discard: false,
+		lose: false,
+		prepare: "give",
+		position: "he",
+		check(card) {
+			if (get.position(card) == "h") {
+				return 9 - get.value(card);
+			}
+			return 7 - get.value(card);
+		},
+		logAudio(event, player) {
+			const num = Math.min(get.equipNum(event.cards[0]), 3);
+			return "yuanhu" + num + ".mp3";
+		},
+		async content(event, trigger, player) {
+			const {
+				target,
+				cards: [card],
+			} = event;
+			await target.equip(card);
+			switch (get.subtype(card)) {
+				case "equip1":
+					if (
+						game.hasPlayer(function (current) {
+							return current != target && get.distance(target, current) == 1 && current.countCards("hej") > 0;
+						})
+					) {
+						const result = await player
+							.chooseTarget(true, "弃置一名距离" + get.translation(target) + "为1的角色区域内的一张牌", function (card, player, target) {
+								var current = _status.event.current;
+								return current != target && get.distance(current, target) == 1 && current.countCards("hej") > 0;
+							})
+							.set("current", target)
+							.set("ai", function (target) {
+								var player = _status.event.player;
+								return get.effect(target, { name: "guohe_copy" }, player, player);
+							})
+							.forResult();
+						if (result?.bool) {
+							const targetx = result.targets[0];
+							player.line(targetx);
+							await player.discardPlayerCard(targetx, true, "hej");
+						}
+					}
+					break;
+				case "equip2":
+					await target.draw();
+					break;
+				case "equip3":
+				case "equip4":
+				case "equip6":
+					await target.recover();
+					break;
+				case "equip5": {
+					const result = await player
+						.chooseButton(["获得一种类型的牌", [["basic", "trick"].map(i => ["", "", `caoying_${i}`]), "vcard"]], true)
+						.set("ai", () => Math.random())
+						.forResult();
+					if (result.bool) {
+						const type = result.links[0][2].slice(8),
+							type2 = ["basic", "trick"].find(i => i != type);
+						const card1 = get.cardPile2(card => get.type(card) == type);
+						if (card1) {
+							await player.gain(card1, "gain2");
+						}
+						const card2 = get.cardPile2(card => get.type(card) == type2);
+						if (card2) {
+							await target.gain(card2, "gain2");
+						}
+					}
+					break;
+				}
+			}
+			if (target.hp <= player.hp || target.countCards("h") <= player.countCards("h")) {
+				const bool = await player.chooseBool("援护：是否摸一张牌？").forResultBool();
+				if (!bool) {
+					return;
+				}
+				await player.draw();
+				player.addTempSkill("mbyuanhu_end");
+			}
+		},
+		ai: {
+			order: 10,
+			result: {
+				player(player, target) {
+					if (get.attitude(player, target) == 0) {
+						return 0;
+					}
+					if (!ui.selected.cards.length) {
+						return;
+					}
+					var eff = get.effect(target, ui.selected.cards[0], player, player),
+						sub = get.subtype(ui.selected.cards[0], false);
+					if (target == player) {
+						eff += 4;
+					} else {
+						var hp = player.hp,
+							hs = player.countCards("h", card => card != ui.selected.cards[0]);
+						var tp = target.hp,
+							ts = target.countCards("h");
+						if (sub == "equip2") {
+							ts++;
+						}
+						if (tp < target.maxHp && (sub == "equip3" || sub == "equip4" || sub == "equip5" || sub == "equip6")) {
+							tp++;
+						}
+						if (tp <= hp || ts <= hs) {
+							eff += 2;
+						}
+					}
+					if (sub == "equip1") {
+						var list = game
+							.filterPlayer(function (current) {
+								return current != target && get.distance(target, current) == 1 && current.countCards("hej") < 0;
+							})
+							.map(function (i) {
+								return get.effect(i, { name: "guohe_copy" }, player, player);
+							})
+							.sort((a, b) => b - a);
+						if (list.length) {
+							eff += list[0];
+						}
+					}
+					return eff;
+				},
+				target(player, target) {
+					if (!ui.selected.cards.length) {
+						return 0;
+					}
+					var sub = get.subtype(ui.selected.cards[0], false);
+					var eff = get.effect(target, ui.selected.cards[0], player, target);
+					if (sub == "equip2") {
+						eff += get.effect(target, { name: "draw" }, target, target);
+					}
+					if (target.isDamaged() && (sub == "equip3" || sub == "equip4" || sub == "equip5" || sub == "equip6")) {
+						eff += get.recoverEffect(target, player, player);
+					}
+					return eff;
+				},
+			},
+		},
+		group: "mbyuanhu_init",
+		derivation: ["twjuezhu", "feiying"],
+		subSkill: {
+			init: {
+				audio: ["mbyuanhu", 1],
+				trigger: {
+					global: "phaseBefore",
+					player: "enterGame",
+				},
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.addSkills("twjuezhu");
+				},
+			},
+			end: {
+				trigger: { player: "phaseJieshuBegin" },
+				charlotte: true,
+				filter(event, player) {
+					return player.hasSkill("mbyuanhu") && player.hasCard({ type: "equip" }, "eh");
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseCardTarget({
+							prompt: get.prompt("mbyuanhu"),
+							prompt2: "将一张装备牌置入一名角色的装备区内。若此牌为：武器牌，你弃置与其距离为1的另一名角色区域的一张牌；防具牌，其摸一张牌；坐骑牌，其回复1点体力；宝物牌，你选择基本牌或普通锦囊牌从牌堆中获得一张，其获得另一类型的一张牌。然后若其体力值或手牌数不大于你，则你可摸一张牌。",
+							filterCard: lib.skill.mbyuanhu.filterCard,
+							filterTarget: lib.skill.mbyuanhu.filterTarget,
+							position: "he",
+							ai1: lib.skill.mbyuanhu.check,
+							ai2(target) {
+								var player = _status.event.player;
+								return get.effect(target, "mbyuanhu", player, player);
+							},
+						})
+						.forResult();
+					event.result.skill_popup = false;
+				},
+				async content(event, trigger, player) {
+					const { cards, targets } = event;
+					const result = {
+						cards: cards,
+						targets: targets,
+						skill: "mbyuanhu",
+					};
+					await player.useResult(result, event);
+				},
+			},
+		},
+	},
 	//势辛宪英
 	potchengjie: {
 		global: "potchengjie_global",

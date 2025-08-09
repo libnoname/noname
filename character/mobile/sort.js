@@ -1,6 +1,6 @@
 const characterSort = {
 	mobile_sp2: ["mb_sunluyu"],
-	mobile_sp3: ["mb_guanyinping"],
+	mobile_sp3: ["mb_guanyinping", "mb_caohong"],
 	mobile_sp4: ["re_heqi"],
 	mobile_sp6: ["dongcheng", "re_weiwenzhugezhi"],
 	mobile_sp7: ["taoqian", "yangyi"],
