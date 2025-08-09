@@ -6737,7 +6737,7 @@ const skills = {
 			benghuai: {
 				audio: "sbbeifa",
 				trigger: {
-					player: ["damageEnd", "rebeifaRecord"],
+					player: ["damageEnd", "sbbeifaRecord"],
 				},
 				forced: true,
 				locked: false,

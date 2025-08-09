@@ -21012,7 +21012,7 @@ export default {
 			const junzhu = _status.connectMode ? lib.configOL.junzhu : get.config("junzhu");
 			if (player.phaseNumber == 1 && player.isUnseen(0) && junzhu) {
 				let name = player.name1;
-				if (name.indexOf("gz_") == 0 && lib.junList.includes(name.slice(3))) {
+				if (name.indexOf("gz_") == 0 && (lib.junList.includes(name.slice(3)) || get.character(name)?.junName)) {
 					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`;
 					const notChange = game.hasPlayer(current => get.nameList(current).includes(junzhu_name));
 					const result = notChange

@@ -1270,14 +1270,14 @@ const skills = {
 					}
 					break;
 				case "equip2":
-					player.draw(3);
+					await player.draw(3);
 					player[bool ? "addSkill" : "addTempSkill"]("drlt_jueyan3");
 					break;
 				case "equip3_4":
 					player[bool ? "addSkill" : "addTempSkill"]("drlt_jueyan2");
 					break;
 				case "equip5":
-					player[bool ? "addSkills" : "addTempSkills"]("rejizhi");
+					await player[bool ? "addSkills" : "addTempSkills"]("rejizhi");
 					break;
 			}
 			if (bool) {
