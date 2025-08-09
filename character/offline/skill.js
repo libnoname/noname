@@ -5174,7 +5174,7 @@ const skills = {
 		filter(event, player) {
 			return get
 				.inpileVCardList(info => {
-					return info[0] === "basic" || info[0] === "trick";
+					return ["basic", "trick", "delay"].includes(info[0]);
 				})
 				.some(info =>
 					player.hasCard(cardx => {
@@ -5188,7 +5188,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const list = get.inpileVCardList(info => info[0] === "basic" || info[0] === "trick");
+				const list = get.inpileVCardList(info => ["basic", "trick", "delay"].includes(info[0]));
 				return ui.create.dialog("出策", [list, "vcard"]);
 			},
 			filter(button, player) {
@@ -5234,7 +5234,7 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			if (!lib.inpile.includes(name) || !["basic", "trick"].includes(get.type(name))) {
+			if (!lib.inpile.includes(name) || !["basic", "trick", "delay"].includes(get.type(name))) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -5264,7 +5264,7 @@ const skills = {
 				if (arg == "respond") {
 					return false;
 				}
-				if (player.getStat("skill").olsbweilin || !player.countCards("hes")) {
+				if (!player.countCards("hes")) {
 					return false;
 				}
 			},
