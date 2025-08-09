@@ -15,7 +15,7 @@ export default {
 	// 谷爱凌
 	guozhan_double: ["gz_db_wenyang", "gz_tangzi", "gz_liuqi", "gz_mengda", "gz_mifangfushiren", "gz_zhanglu", "gz_shixie", "gz_xuyou", "gz_xiahouba", "gz_panjun", "gz_xf_sufei", "gz_wenqin", "gz_pengyang"],
 	// 野心家
-	guozhan_yexinjia: ["gz_zhonghui", "gz_simazhao", "gz_gongsunyuan", "gz_sunchen", "gz_zhugedan"],
+	guozhan_yexinjia: ["gz_zhonghui", "gz_simazhao", "gz_gongsunyuan", "gz_sunchen", "gz_zhugedan", "gz_pot_weiyan", "gz_re_lvbu", "gz_yl_yuanshu", "gz_jsrg_liuyan"],
 	// 晋势力
 	guozhan_jin: ["gz_jin_simayi", "gz_jin_simazhao", "gz_jin_simashi", "gz_jin_zhangchunhua", "gz_jin_wangyuanji", "gz_jin_xiahouhui", "gz_duyu", "gz_zhanghuyuechen", "gz_jin_yanghuiyu", "gz_simazhou", "gz_shibao", "gz_weiguan", "gz_zhongyan", "gz_yangyan", "gz_zuofen", "gz_xinchang", "gz_xuangongzhu", "gz_yangzhi"],
 	guozhan_jinEX1: ["gz_simaliang", "gz_simalun", "gz_jin_guohuai", "gz_wangjun", "gz_malong", "gz_new_jin_simayi", "gz_new_jin_zhangchunhua"],

@@ -50,6 +50,38 @@ export default {
 		hujia: 0,
 		skills: ["gz_gongao"],
 	}),
+	gz_pot_weiyan: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_new_kuanggu"],
+	}),
+	gz_re_lvbu: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 5,
+		maxHp: 5,
+		hujia: 0,
+		skills: ["gz_wuchang", "gz_liyu"],
+	}),
+	gz_yl_yuanshu: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["gz_new_yongsi", "gz_new_weidi"],
+	}),
+	gz_jsrg_liuyan: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["gz_tushe", "gz_limu"],
+	}),
 	// 分组2：谷爱凌
 	gz_tangzi: new Character({
 		sex: "male",
