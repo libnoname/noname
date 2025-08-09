@@ -285,7 +285,16 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
+		skills: ["gz_wuku", "gz_miewu"],
+	}),
+	gz_pk_sp_duyu: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
 		skills: ["fakezhufu"],
+		dieAudios: ["sp_duyu"],
 	}),
 	gz_wangji: new Character({
 		sex: "male",

@@ -101,6 +101,10 @@ export default {
 	gz_new_jin_simayi_prefix: "绶",
 	gz_new_jin_zhangchunhua: "绶张春华",
 	gz_new_jin_zhangchunhua_prefix: "绶",
+	gz_wuku: "武库",
+	gz_wuku_info: "锁定技，当一名与你势力不同的角色使用装备牌时，若你的“武库”标记数小于2，你获得1个“武库”标记。",
+	gz_miewu: "灭吴",
+	gz_miewu_info: "每回合限一次，你可以移去1个“武库”标记，将一张牌当任意一张非装备牌使用或打出，然后你摸一张牌。",
 
 	gznaxiang: "纳降",
 	gznaxiang_info: "锁定技，当你受到其他角色造成的伤害后，或你对其他角色造成伤害后，你对其发动〖才望〗时的“弃置”改为“获得”直到你的下回合开始。",

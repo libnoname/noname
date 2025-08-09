@@ -14,4 +14,6 @@ export default {
 	gz_sunxiù: "孙秀",
 	gz_bailingyun: "柏夫人",
 	gz_wenyang: "文鸯",
+	gz_pk_sp_duyu: "经典杜预",
+	gz_pk_sp_duyu_prefix: "经典",
 };
