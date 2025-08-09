@@ -264,7 +264,7 @@ const skills = {
 			if (card.name != "sha" && info.type != "trick" || info.singleCard) {
 				return false;
 			}
-			if (!player.isPhaseUsing() || player.hasSkill("olzenhui_used")) {
+			if (!player.isPhaseUsing() || player.getStorage("olzenhui_used")?.length > 1) {
 				return false;
 			}
 			return game.hasPlayer(function (current) {
@@ -290,7 +290,10 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addTempSkill("olzenhui_used", "phaseUseAfter");
 			const target = event.targets[0];
-			const result = target.countGainableCards(player, "he") ? await target
+			const result = player.getStorage("olzenhui_used").length ? {
+				bool: true,
+				index: 1- player.getStorage("olzenhui_used")[0],
+			} : target.countGainableCards(player, "he") ? await target
 				.chooseControl()
 				.set("choiceList", [
 					`交给${get.translation(player)}一张牌，然后代替其成为${get.translation(trigger.card)}的使用者`,
@@ -309,19 +312,26 @@ const skills = {
 					bool: true,
 					index: 1,
 				};
-			if (result.index == 1) {
+			player.markAuto("olzenhui_used", [result.index]);
+			const evt = trigger.getParent();
+			if (result.index == 0) {
 				trigger.untrigger();
-				trigger.getParent().player = target;
+				if (evt.addCount !== false) {
+					evt.addCount = false;
+					evt.player.getStat().card[trigger.card.name]--;
+				}
+				evt.player = target;
 				game.log(target, "成为了", trigger.card, "的使用者");
 				await target.chooseToGive(player, "he", true);
 			} else {
 				game.log(target, "成为了", trigger.card, "的额外目标");
-				trigger.getParent().targets.push(target);
+				evt.targets.push(target);
 			}
 		},
 		subSkill: {
 			used: {
 				charlotte: true,
+				onremove: true,
 			},
 		},
 	},

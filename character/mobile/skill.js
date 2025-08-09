@@ -2,6 +2,170 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//势辛宪英
+	potchengjie: {
+		global: "potchengjie_global",
+		audio: 2,
+		subSkill: {
+			global: {
+				audio: "potchengjie",
+				enable: "phaseUse",
+				filter(event, player) {
+					if (player != _status.currentPhase) {
+						return false;
+					}
+					if (!player.countCards("h") || player.hasSkill("potchengjie_used")) {
+						return false;
+					}
+					return game.hasPlayer(current => current.hasSkill("potchengjie"));
+				},
+				filterTarget(card, player, target) {
+					return target.hasSkill("potchengjie");
+				},
+				selectTarget() {
+					if (
+						game.countPlayer(current => {
+							return current.hasSkill("potchengjie");
+						}) > 1
+					) {
+						return 1;
+					}
+					return -1;
+				},
+				prompt() {
+					const player = get.player(),
+						targets = game.filterPlayer(current => {
+							return current.hasSkill("potchengjie");
+						});
+					let list = get.translation(targets);
+					if (targets.length > 1) {
+						list += "中的一人";
+					}
+					if (targets.length == 1 && targets[0] == player) {
+						return "观看自己手牌并选择花色执行对应效果";
+					}
+					return `令${list}观看你的手牌并选择花色执行效果`;
+				},
+				prepare(cards, player, targets) {
+					targets[0].logSkill("potchengjie", [player]);
+				},
+				log: false,
+				manualConfirm: true,
+				async content(event, trigger, player) {
+					const target = event.target;
+					player.addTempSkill("potchengjie_used", "phaseUseAfter");
+					//await target.viewHandcards(player);
+					game.addCardKnower(player.getCards("h"), target);
+					player.getHistory("custom").push({
+						potchengjie: true,
+						suits: player.getCards("h").map(card => get.suit(card, player)).toUniqued(),
+						target: target,
+					});
+					const result = await target
+						.chooseControl(lib.suit.slice(0).reverse())
+						.set("dialog", ["请选择一个花色", player.getCards("h")])
+						.set("ai", () => {
+							const target = get.event("target");
+							const player = get.player();
+							const att = get.attitude(player, target);
+							if (att > 0) {
+								const lack = lib.suit.slice(0).filter(suit => !target.hasCard(card => get.suit(card, target) == suit, "h"));
+								if (lack.length) {
+									return lack.randomGet();
+								}
+							} else if (att <= 0 && target.hasCard(true, "h")) {
+								return lib.suit.filter(suit => target.hasCard(card => get.suit(card, target) == suit, "h")).reduce((min, current) => (target.countCards("h", { suit: current }) < target.countCards("h", { suit: min }) ? current : min));
+							}
+							return lib.suit.randomGet();
+						})
+						.set("target", player)
+						.forResult();
+					const choice = result.control;
+					game.log(target, "选择了" + get.translation(choice));
+					target.popup(choice);
+					if (player.hasCard(card => get.suit(card, player) == choice, "h")) {
+						const skill = "potchengjie_effect";
+						player.markAuto(skill, [choice]);
+						player.addTip(skill, `诚节${player.getStorage(skill).map(suit => get.translation(suit)).join("")}`);
+						player.addTempSkill(skill);
+						await player.modedDiscard(player.getCards("h", card => get.suit(card, player) != choice));
+					} else {
+						const card = get.cardPile2(card => {
+							return get.suit(card) == choice;
+						});
+						if (card) {
+							await player.gain(card, "gain2");
+						}
+					}
+					let getSuits = current => current.getRoundHistory("custom", evt => {
+						return evt?.potchengjie && evt.target == target;
+					}).reduce((arr, evt) => arr.addArray(evt?.suits || []), []);
+					const num = getSuits(player).length;
+					if (!game.hasPlayer(current => current != player && getSuits(current).length >= num)) {
+						await target.useSkill("potqingshi", [player]);
+					}
+				},
+				ai: {
+					order: 5,
+					result: {
+						player(player, target) {
+							return get.attitude(player, target);
+						},
+					},
+				},
+			},
+			used: {
+				charlotte: true,
+			},
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				mark: true,
+				intro: {
+					content: storage => `本回合使用${get.translation(storage)}牌无次数限制`,
+				},
+				mod: {
+					cardUsable(card, player) {
+						const list = player.getStorage("potchengjie_effect");
+						const suit = get.suit(card);
+						if (suit === "unsure" || list.includes(suit)) {
+							return Infinity;
+						}
+					},
+				},
+			},
+		},
+	},
+	potqingshi: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const player = get.player();
+					if (player.getFriends().includes(target)) {
+						return get.effect(player, { name: "draw" }, player, player) + get.effect(target, { name: "draw" }, player, player) > 0;
+					}
+					return get.effect(target, { name: "guohe_copy2" }, target, player) + get.effect(player, { name: "guohe_copy2" }, player, player) > 0;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (player.getFriends().includes(target)) {
+				await game.asyncDraw([player, target]);
+			} else {
+				await player.chooseToDiscard(true, "he");
+				await target.chooseToDiscard(true, "he");
+			}
+		},
+	},
 	//陈祇
 	mbquanchong: {
 		audio: 4,

@@ -213,7 +213,7 @@ const skills = {
 					if (target !== targetx && !ui.selected.targets.includes(targetx)) {
 						return false;
 					}
-					return lib.filter.filterTarget.apply(this, arguments);
+					return lib.filter.targetEnabled.apply(this, arguments);
 				})
 				.set("targetRequired", true)
 				.set("complexTarget", true)
