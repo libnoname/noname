@@ -2860,6 +2860,7 @@ const skills = {
 	},
 	//朱铄
 	dczsshuhe: {
+		audio: 2,
 		trigger: {
 			global: "useCard",
 		},
@@ -2916,6 +2917,7 @@ const skills = {
 		},
 	},
 	dcjilie: {
+		audio: 2,
 		enable: "phaseUse",
 		filterCard(card, player) {
 			return true;

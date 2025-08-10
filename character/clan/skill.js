@@ -119,6 +119,7 @@ const skills = {
 		},
 	},
 	clanfennu: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},

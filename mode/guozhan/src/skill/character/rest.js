@@ -496,15 +496,12 @@ export default {
 		group: ["gz_mowang_die", "gz_mowang_return"],
 		async content(event, trigger, player) {
 			if (event.triggername == "rest") {
-				game.broadcastAll(player => {
-					if (player.name1 == "gz_shichangshi") {
-						player.node.name.innerHTML = get.slimName(player.name1);
-					}
-					if (player.name2 == "gz_shichangshi") {
-						player.node.name2.innerHTML = get.slimName(player.name2);
-					}
-				}, player);
-				player.changeSkin("gz_mowang", "gz_shichangshi_dead");
+				if (player.name1 == "gz_shichangshi") {
+					player.changeSkin("gz_mowang", `${player.skin.name}_dead`);
+				}
+				if (player.name2 == "gz_shichangshi") {
+					player.changeSkin("gz_mowang", `${player.skin.name}_dead2`);
+				}
 				return;
 			}
 			if (_status._rest_return?.[player.playerid]) {
@@ -543,16 +540,16 @@ export default {
 				forced: true,
 				forceDie: true,
 				async content(event, trigger, player) {
-					player.changeSkin("gz_mowang", "gz_shichangshi_dead");
-					game.broadcastAll(player => {
-						if (player.name1 == "gz_shichangshi") {
-							player.node.name.innerHTML = get.slimName(player.name1);
-						}
-						if (player.name2 == "gz_shichangshi") {
-							player.node.name2.innerHTML = get.slimName(player.name2);
-						}
-					}, player);
 					if (!player.getStorage("gz_danggu").length) {
+						player.changeSkin("gz_mowang", "gz_shichangshi_dead");
+						game.broadcastAll(player => {
+							if (player.name1 == "gz_shichangshi") {
+								player.node.name.innerHTML = get.slimName(player.name1);
+							}
+							if (player.name2 == "gz_shichangshi") {
+								player.node.name2.innerHTML = get.slimName(player.name2);
+							}
+						}, player);
 						await game.delay();
 					}
 					await player.die();

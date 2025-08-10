@@ -1891,6 +1891,12 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
+		const next = game.createEvent("changeZhuanhuanji", false, get.event());
+		next.player = this;
+		next.skill = skill;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -4229,7 +4235,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this[this.storage[i] || (lib.skill[i] && lib.skill[i].mark) ? "markSkill" : "unmarkSkill"](i);
-		const next = game.createEvent("removeMark", false);
+		const next = game.createEvent("removeMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
@@ -4266,7 +4272,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this.markSkill(i);
-		const next = game.createEvent("addMark", false);
+		const next = game.createEvent("addMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
@@ -8904,7 +8910,7 @@ export class Player extends HTMLDivElement {
 			player.getHistory("useSkill").push(logInfo);
 			//尽可能别往这写插入结算
 			//不能用来终止技能发动！！！
-			var next2 = game.createEvent("logSkillBegin", false);
+			var next2 = game.createEvent("logSkillBegin", false, get.event());
 			next2.player = player;
 			next2.forceDie = true;
 			next2.includeOut = true;
