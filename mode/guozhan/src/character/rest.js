@@ -379,32 +379,6 @@ export default {
 		skills: ["qiaoyan", "xianzhu"],
 	}),
 
-	gz_re_xusheng: new Character({
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		maxHp: 4,
-		hujia: 0,
-		skills: ["repojun"],
-	}),
-	gz_liuyan: new Character({
-		sex: "male",
-		group: "qun",
-		hp: 3,
-		maxHp: 3,
-		hujia: 0,
-		skills: ["xinfu_tushe", "xinfu_limu"],
-	}),
-	// 怎么还冒出来一个体力上限不一样的呢？
-	gz_ol_sb_sunjian: new Character({
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		maxHp: 5,
-		hujia: 0,
-		skills: ["olsbhulie", "olsbyipo"],
-	}),
-
 	gz_jun_liubei: new Character({
 		sex: "male",
 		group: "shu",
@@ -987,6 +961,65 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_shanjia"],
+	}),
+	//OL限时武将
+	gz_re_xusheng: new Character({
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["repojun"],
+	}),
+	// 怎么还冒出来一个体力上限不一样的呢？
+	gz_ol_sb_sunjian: new Character({
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 5,
+		hujia: 0,
+		skills: ["olsbhulie", "olsbyipo"],
+	}),
+	gz_liuyan: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["xinfu_tushe", "xinfu_limu"],
+	}),
+	gz_re_huanggai: new Character({
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["rekurou", "zhaxiang"],
+	}),
+	gz_re_xuzhu: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["new_reluoyi"],
+	}),
+	gz_ol_weiyan: new Character({
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["xinkuanggu", "reqimou"],
+	}),
+	gz_ol_yanwen: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["olshuangxiong"],
+		names: "颜|良-文|丑",
 	}),
 };
 

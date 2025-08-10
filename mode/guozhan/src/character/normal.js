@@ -251,6 +251,7 @@ export default {
 		skills: ["xiangle", "fangquan"],
 	}),
 	gz_menghuo: new Character({
+		doubleGroup: ["shu", "qun"],
 		sex: "male",
 		group: "shu",
 		hp: 4,
@@ -258,6 +259,7 @@ export default {
 		skills: ["huoshou", "rezaiqi"],
 	}),
 	gz_zhurong: new Character({
+		doubleGroup: ["shu", "qun"],
 		sex: "female",
 		group: "shu",
 		hp: 4,

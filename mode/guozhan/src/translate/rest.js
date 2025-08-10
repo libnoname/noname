@@ -444,7 +444,6 @@ export default {
 	ushio_xilv_info: "锁定技，此武将牌可作为任意单势力武将牌的副将。当你进行判定后，你令你的手牌上限+1直至你的下个结束阶段。",
 
 	//官盗2023
-
 	fakeduoshi: "度势",
 	fakeduoshi_info: "每轮限一次，友方角色可以将一张红色手牌当作【以逸待劳】使用，然后若你为小势力角色，你可以令一名友方角色将X张手牌当作不可被响应的【火烧连营】使用（X为此【以逸待劳】指定的目标数）。",
 	fakeyicheng: "疑城",
@@ -514,8 +513,12 @@ export default {
 	fakekeshou_info: "①当你受到伤害时，你可以弃置两张颜色相同的牌并令此伤害-1。②当你因弃置而一次性失去至少两张牌后，若你的势力已确定且场上没有与你势力相同的其他角色，则你可以进行判定，若结果判定为红色，你摸一张牌。",
 	gz_re_xusheng: "界徐盛",
 	gz_re_xusheng_prefix: "界",
-	gz_ol_sb_sunjian: "OL谋孙坚",
 	gz_ol_sb_sunjian_prefix: "OL谋",
+	gz_re_huanggai_prefix: "界",
+	gz_re_xuzhu_prefix: "界",
+	gz_ol_weiyan_prefix: "界",
+	gz_ol_yanwen_prefix: "界",
+	gz_zhoutai: "周泰",
 	gzguishu: "鬼术",
 	gzguishu_info: "出牌阶段，你可以将一张黑桃手牌当作【知己知彼】或【远交近攻】使用（不能与本回合上次以此法使用的牌名相同）。",
 	gzyuanyu: "远域",
@@ -659,8 +662,9 @@ export default {
 	guozhan_double: "双势力武将",
 	guozhan_yexinjia: "野心家武将",
 	guozhan_zongheng: "纵横捭阖",
+	guozhan_online: "Online专属",
 	guozhan_tw: "海外服专属",
-	guozhan_mobile: "移动版",
+	guozhan_mobile: "移动版专属",
 	guozhan_qunxiong: "群雄割据",
 	guozhan_decade: "十年踪迹十年心",
 	guozhan_others: "国战限定",

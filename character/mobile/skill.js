@@ -14281,7 +14281,7 @@ const skills = {
 			} else {
 				player
 					.chooseControl()
-					.set("choiceList", ["将两张牌交给一名其他角色", "弃置两张牌"])
+					.set("choiceList", ["将两张手牌交给一名其他角色", "弃置两张手牌"])
 					.set("ai", function () {
 						if (
 							game.hasPlayer(function (current) {
