@@ -1490,7 +1490,7 @@ const skills = {
 					delay: false,
 					prepare: "throw",
 					async content(event, trigger, player) {
-						const card = get.autoViewAs(event.cards[0]);
+						const card = get.autoViewAs({ name: `gongqiao_${get.type2(event.cards[0])}` }, event.cards);
 						card.subtypes = [lib.skill.gongqiao_backup.slot];
 						await player.equip(card);
 					},
@@ -1562,15 +1562,24 @@ const skills = {
 		audio: 2,
 		trigger: { player: "equipAfter" },
 		forced: true,
-		filter(event, player) {
-			const subtypes = get.subtypes(event?.card || event?.cards[0]);
-			return event.cards?.length > 0 && !player.getStorage("jingyi_used").some(i => subtypes.includes(i));
+		filter(event, player, name, card) {
+			const subtypes = get.subtypes(card);
+			return !player.getStorage("jingyi_used").some(i => subtypes.includes(i));
+		},
+		getIndex(event, player) {
+			return event.cards ?? [];
 		},
 		async content(event, trigger, player) {
-			const subtypes = get.subtypes(trigger.card || trigger.cards?.[0]);
+			const card = event.indexedData,
+				subtypes = get.subtypes(card);
 			player.addTempSkill(event.name + "_used");
-			player.markAuto(event.name + "_used", subtypes);
-			const num = player.countCards("e");
+			if (subtypes?.length) {
+				player.markAuto(event.name + "_used", subtypes);
+			}
+			const num = player.getCards("e").reduce((sum, card) => {
+				const num = card.viewAs ? card.cards.length : 1;
+				return sum + num;
+			}, 0);
 			if (num > 0) {
 				await player.draw(num);
 			}
