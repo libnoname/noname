@@ -5906,17 +5906,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 *
 	 * 弹出特殊名词的解释窗口
-	 * @param {string} linkId poptip链接的id
-	 * @param {string} id 对应解释在lib.poptipMap的键
-	 * @param {PointerEvent} event 点击事件
+	 * @param {string} info 对应解释在lib.poptipMap的键
+	 * @param {PointerEvent|TouchEvent} event 点击事件
 	 */
-	poptipIntro(linkId, id, event) {
+	poptipIntro(info, event) {
 		const uiintro = ui.create.dialog("hidden", "notouchscroll");
-		uiintro.style.zIndex = 21;
+		uiintro.style.zIndex = "21";
 		uiintro.setAttribute("id", "poptip");
-		uiintro.videoId = linkId;
-		const str = get.poptipInfo(id);
-		uiintro._place_text = uiintro.add(`<div class = "text">${str}</div>`);
+		uiintro._place_text = uiintro.add(`<div class = "text">${info}</div>`);
 		uiintro.classList.add("popped");
 		uiintro.classList.add("static");
 		ui.window.appendChild(uiintro);
@@ -6978,44 +6975,43 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return 2;
 	}
+	// /**
+	//  *
+	//  * 根据id获取一个特殊名词的翻译
+	//  * @param {string} id 特殊名词在lib.poptipMap的id
+	//  * @returns {string}
+	//  */
+	// poptipName(id) {
+	// 	return lib.poptip.getName(id);
+	// }
+	// /**
+	//  *
+	//  * 根据id获取一个特殊名词的解释
+	//  * @param {string} id 特殊名词在lib.poptipMap的id
+	//  * @returns {string}
+	//  */
+	// poptipInfo(id) {
+	// 	return lib.poptip.getInfo(id);
+	// }
 	/**
-	 *
-	 * 根据id获取一个特殊名词的翻译
-	 * @param {string} id 特殊名词在lib.poptipMap的id
-	 * @returns {Object}
-	 */
-	poptipName(id) {
-		return lib.poptipMap.getName(id);
-	}
-	/**
-	 *
-	 * 根据id获取一个特殊名词的解释
-	 * @param {string} id 特殊名词在lib.poptipMap的id
-	 * @returns {Object}
-	 */
-	poptipInfo(id) {
-		return lib.poptipMap.getInfo(id);
-	}
-	/**
-	 *
-	 * 生成一个特殊名词的超链接格式用于dialog中点击查看解释
-	 * @param {string} id 该特殊名词的id
-	 * @param {string} name 特殊名词，可不填，会通过id从lib.poptipMap获取的
-	 * @param {string} info 对应解释，可不填，不填的话需要在lib.poptipMap中添加；若lib.poptipMap不存在名为id的键，会自动添加
-	 * @param {string} style 字体的样式，可不填，默认为"color:unset"
+	 * @overload
+	 * @param {string} poptip 特殊名词的id/技能id/卡牌id
 	 * @returns {string}
 	 */
-	poptipLink(id, name, info, style = "color:unset") {
-		const linkId = get.id();
-		if (!id || !id?.length) {
-			do {
-				id = "" + Math.random().toString(36).slice(-8);
-			} while (lib.poptipMap.has(id));
-			game.addPoptip(id, name, info);
-		}
-		name ??= get.poptipName(id);
-		info ??= get.poptipInfo(id);
-		return `<poptip id = "${linkId}" style = "${style}" tip-id = ${id}>${name}</poptip>`;
+	/**
+	 * @overload
+	 * @param {object} poptip
+	 * @param {string} poptip.name 特殊名词
+	 * @param {string} poptip.info 对应解释
+	 * @returns {string}
+	 */
+	/**
+	 * 生成一个超链接格式用于查看特殊名词的解释
+	 * @param {string | object} poptip
+	 * @returns {string}
+	 */
+	poptip(poptip) {
+		return lib.poptip.getElement(poptip);
 	}
 	/**
 	 * 将URL转换成相对于无名杀根目录的路径

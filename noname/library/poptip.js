@@ -1,5 +1,11 @@
+import { lib } from "../library/index.js";
+import { game } from "../game/index.js";
+import { get } from "../get/index.js";
+
+/**
+ * @type {Map<string, {name: string, info: string}>}
+ */
 const _poptipMap = new Map([
-	//["",{name:"",info:""}],
 	["hujia", { name: "护甲", info: "和体力类似，每点护甲可抵挡1点伤害，但不影响手牌上限。" }],
 	["suicong", { name: "随从", info: "通过技能获得，拥有独立的技能、手牌区和装备区（共享判定区），出场时替代主武将的位置；随从死亡时自动切换回主武将。" }],
 	["faxian", { name: "发现", info: "从三张随机亮出的牌中选择一张，若无特殊说明，则获得此牌。" }],
@@ -21,56 +27,190 @@ const _poptipMap = new Map([
 	["beishui", { name: "背水", info: "背水是一种特殊的选项。发动技能时，若无法执行背水的后果，则无法选择背水。选择背水时，可将该技能的其余选项依次执行，再执行背水的后果。" }],
 ]);
 
-export default class Poptip {
+/**
+ * @todo
+ * 添加注册type的方法
+ * 注册不同type对应的style
+ */
+export class PoptipManager {
+	#inited = false;
 	/**
-	 * @type {Map}
+	 * @type {Record<string, {
+	 * 	idList: string[],
+	 * 	add: (id: string) => void,
+	 *  [p: string]: any
+	 * }>}
 	 */
-	#poptipMap;
+	#poptip = {};
+
+	/**
+	 * id => {name, info}
+	 * @type {Map<string, {name: string, info: string}>}
+	 */
+	#customPoptip = new Map();
 
 	constructor() {
-		this.#poptipMap = _poptipMap;
+		this.#poptip["rules"] = {
+			idList: Array.from(_poptipMap.keys()),
+			add(id) {
+				this.idList.add(id);
+			},
+		};
+		this.#poptip["skills"] = {
+			custom: [],
+			get idList() {
+				return Object.keys(lib.skill).concat(this.custom);
+			},
+			add(id) {
+				this.custom.add(id);
+			},
+		};
+		this.#poptip["cards"] = {
+			custom: [],
+			get idList() {
+				return Object.keys(lib.card).concat(this.custom);
+			},
+			add(id) {
+				this.custom.add(id);
+			},
+		};
 	}
-	getIdList() {
-		return Array.from(this.#poptipMap.keys());
+
+	init() {
+		if (this.#inited) return;
+		this.#inited = true;
+		window.customElements.define("noname-poptip", HTMLPoptipElement);
+		_poptipMap.forEach((value, key) => {
+			lib.translate[key] = value.name;
+			lib.translate[key + "_info"] = value.info;
+		});
 	}
 	/**
-	 * @param {string} id
+	 * 获取指定类别所有具有id的poptip id
+	 * 目前的类别有：rules
+	 * @param {string} type
+	 * @returns {string[]}
 	 */
-	get(id) {
-		return this.#poptipMap.get(id);
+	getIdList(type) {
+		if (!this.#poptip[type]) return [];
+		return this.#poptip[type].idList.filter(i => !this.#customPoptip.has(i));
 	}
+
 	/**
-	 * @param {string} id
+	 * @overload
+	 * @param {string} poptip 特殊名词的id
+	 * @returns {string}
 	 */
-	has(id) {
-		return this.#poptipMap.has(id);
-	}
 	/**
+	 * @overload
+	 * @param {object} poptip
+	 * @param {string} [poptip.type] 类型
+	 * @param {string} poptip.name 特殊名词
+	 * @param {string} poptip.info 对应解释
+	 * @returns {string}
+	 */
+	/**
+	 * 生成一个超链接格式用于dialog中点击查看解释
+	 * @param {string | object} poptip
+	 * @returns {string}
+	 */
+	getElement(poptip) {
+		let id;
+		if (typeof poptip === "object") {
+			id = lib.poptip.add(poptip);
+		} else {
+			id = poptip;
+		}
+		return `<noname-poptip poptip = ${id}></noname-poptip>`;
+	}
+
+	/**
+	 * 获取id对应的类型
+	 * @param {string} id
+	 * @returns {string | null}
+	 */
+	getType(id) {
+		for (const type in this.#poptip) {
+			if (this.#poptip[type].idList.includes(id)) {
+				return type;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 获取一个特殊名词的名字
 	 * @param {string} id
 	 */
 	getName(id) {
-		// @ts-ignore
-		return this.#poptipMap?.get(id).name || "";
+		return this.#customPoptip.get(id)?.name || get.translation(id);
 	}
 	/**
+	 * 获取一个特殊名词的解释
 	 * @param {string} id
 	 */
 	getInfo(id) {
-		// @ts-ignore
-		return this.#poptipMap?.get(id).info || "";
+		return this.#customPoptip.get(id)?.info || get.translation(id + "_info");
 	}
 	/**
-	 * @param {string} id
-	 * @param {string} name
-	 * @param {string} info
+	 * 添加名词解释
+	 * @param {object} poptip
+	 * @param {string} [poptip.type] 名词类型
+	 * @param {string} [poptip.id]
+	 * @param {string} poptip.name 名字，最终显示在translate上的文字
+	 * @param {string} [poptip.info] 解释，最终显示在弹窗里的文字
+	 * @returns {string} 生成的id
 	 */
-	add(id, name, info) {
-		this.#poptipMap.set(id, { name: name, info: info });
+	add(poptip) {
+		let { type = "rules", id, name, info = "" } = poptip;
+		if (!this.#poptip[type]) {
+			throw new Error(`未注册的poptip类型: ${type}`);
+		} else if (id && (type === "skills" || type === "cards")) {
+			console.warn("请于lib.skill/lib.card中显式注册技能/卡牌。");
+		}
+
+		if (id) {
+			lib.translate[id] = name;
+			lib.translate[id + "_info"] = info;
+		} else {
+			do {
+				id = Math.random().toString(36).slice(-8);
+			} while (this.#customPoptip.has(id));
+			this.#customPoptip.set(id, { name, info });
+		}
+
+		this.#poptip[type].idList.add(id);
+		return id;
 	}
-	/**
-	 * @param {string} id
-	 */
-	remove(id) {
-		this.#poptipMap.delete(id);
+	// /**
+	//  * @param {string} id
+	//  */
+	// remove(id) {
+	// 	this.#poptipMap.delete(id);
+	// }
+}
+
+export class HTMLPoptipElement extends HTMLElement {
+	#inited = false;
+
+	connectedCallback() {
+		if (this.#inited) {
+			return;
+		}
+		this.#inited = true;
+
+		this.textContent = this.name;
+		this.addEventListener(lib.config.touchscreen ? "touchstart" : "click", e => {
+			//清除原来的对话框
+			game.closePoptipDialog();
+			return get.poptipIntro(this.info, e);
+		});
+	}
+
+	get name() {
+		return lib.poptip.getName(this.getAttribute("poptip") || "");
+	}
+	get info() {
+		return lib.poptip.getInfo(this.getAttribute("poptip") || "");
 	}
 }

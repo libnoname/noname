@@ -10342,19 +10342,16 @@ export class Game extends GameCompatible {
 		}
 		return other;
 	}
-	/**
-	 * 用于向lib.poptipMap添加名词解释便于调用
-	 *
-	 * @param { string } id 该poptip的在map中的id
-	 * @param { string } name 该poptip的id的翻译，最终显示在tip上的文字
-	 * @param { string } info 该poptip的名词解释
-	 */
-	addPoptip(id, name, info) {
-		id ??= Math.random().toString(36).slice(-8);
-		name ??= "※";
-		info ??= "";
-		lib.poptipMap.add(id, name, info);
-	}
+	// /**
+	//  * 用于向lib.poptipMap添加名词解释便于调用
+	//  *
+	//  * @param { string } id 该poptip的在map中的id
+	//  * @param { string } name 该poptip的id的翻译，最终显示在tip上的文字
+	//  * @param { string } info 该poptip的名词解释
+	//  */
+	// addPoptip(id, name, info) {
+	// 	return lib.poptip.add({id, name, info});
+	// }
 	/**
 	 * 删除当前的poptip对话框
 	 */

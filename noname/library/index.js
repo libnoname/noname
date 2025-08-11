@@ -30,7 +30,7 @@ import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
 import dedent from "../../game/dedent.js";
-import Poptip from "./element/poptip.js";
+import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 
 const html = dedent;
 
@@ -203,20 +203,7 @@ export class Library {
 	arenaReady = [
 		//增加ui.window的监听
 		function () {
-			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
-				const target = event.target.closest("poptip");
-				if (!target) {
-					return;
-				}
-				const id = target.getAttribute("id");
-				const tipId = target.getAttribute("tip-id");
-				//清除原来的对话框
-				game.closePoptipDialog();
-				if (id && typeof tipId == "string") {
-					return get.poptipIntro(id, tipId, event);
-				}
-				return;
-			});
+			lib.poptip.init();
 		},
 		//预处理技能拥有者
 		function () {
@@ -833,15 +820,9 @@ export class Library {
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
 
-	/**
-	 * the map of pop tips
-	 *
-	 * 为特殊名词进行解释的map
-	 * 要添加请用game.addPoptip添加
-	 */
-	#poptipMap = new Poptip();
-	get poptipMap (){
-		return this.#poptipMap;
+	#poptip = new PoptipManager();
+	get poptip (){
+		return this.#poptip;
 	};
 
 	characterDialogGroup = {
@@ -8305,11 +8286,12 @@ export class Library {
 		get 游戏名词() {
 			return (
 				"<ul>" +
-				lib.poptipMap
-					.getIdList()
-					.map(id => `<li>${lib.poptipMap.getName(id)}：${lib.poptipMap.getInfo(id)}`)
+				lib.poptip
+					.getIdList("rules")
+					.map(id => `<li>${lib.poptip.getName(id)}：${lib.poptip.getInfo(id)}</li>`)
 					.unique()
 					.join("")
+					+ "</ul>"
 			);
 		},
 	};
@@ -10498,48 +10480,48 @@ export class Library {
 			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 		},
 		{
-			get(target, prop, receiver) {
-				return Reflect.get(target, prop, receiver);
-			},
-			set(target, prop, newValue) {
-				if (typeof prop == "string" && typeof newValue == "string") {
-					const list = newValue.split("&");
-					if (list.length > 1) {
-						const newList = list.slice();
-						for (let i = 0; i < list.length; i++) {
-							const str = list[i];
-							const listx = str.split("=");
-							if (listx.length == 2) {
-								if (listx[0] == "poptip") {
-									newList[i] = get.poptipLink(...listx[1].split("|").map(value => (value === "" || value === "null" ? null : value)));
-								}
-							}
-						}
-						newValue = newList.join("");
-					}
-				}
-				return Reflect.set(target, prop, newValue);
-			},
-			defineProperty(target, prop, descriptor) {
-				const newValue = descriptor.value;
-				if (typeof prop == "string" && typeof newValue == "string") {
-					const list = newValue.split("&");
-					if (list.length > 1) {
-						const newList = list.slice();
-						for (let i = 0; i < list.length; i++) {
-							const str = list[i];
-							const listx = str.split("=");
-							if (listx.length == 2) {
-								if (listx[0] == "poptip") {
-									newList[i] = get.poptipLink(...listx[1].split("|").map(value => (value === "" || value === "null" ? null : value)));
-								}
-							}
-						}
-						descriptor.value = newList.join("");
-					}
-				}
-				return Reflect.defineProperty(target, prop, descriptor);
-			},
+			// get(target, prop, receiver) {
+			// 	return Reflect.get(target, prop, receiver);
+			// },
+			// set(target, prop, newValue) {
+			// 	if (typeof prop == "string" && typeof newValue == "string") {
+			// 		const list = newValue.split("&");
+			// 		if (list.length > 1) {
+			// 			const newList = list.slice();
+			// 			for (let i = 0; i < list.length; i++) {
+			// 				const str = list[i];
+			// 				const listx = str.split("=");
+			// 				if (listx.length == 2) {
+			// 					if (listx[0] == "poptip") {
+			// 						newList[i] = get.poptip(listx[1]);
+			// 					}
+			// 				}
+			// 			}
+			// 			newValue = newList.join("");
+			// 		}
+			// 	}
+			// 	return Reflect.set(target, prop, newValue);
+			// },
+			// defineProperty(target, prop, descriptor) {
+			// 	const newValue = descriptor.value;
+			// 	if (typeof prop == "string" && typeof newValue == "string") {
+			// 		const list = newValue.split("&");
+			// 		if (list.length > 1) {
+			// 			const newList = list.slice();
+			// 			for (let i = 0; i < list.length; i++) {
+			// 				const str = list[i];
+			// 				const listx = str.split("=");
+			// 				if (listx.length == 2) {
+			// 					if (listx[0] == "poptip") {
+			// 						newList[i] = get.poptip(listx[1]);
+			// 					}
+			// 				}
+			// 			}
+			// 			descriptor.value = newList.join("");
+			// 		}
+			// 	}
+			// 	return Reflect.defineProperty(target, prop, descriptor);
+			// },
 		}
 	);
 
