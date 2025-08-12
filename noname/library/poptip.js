@@ -77,7 +77,9 @@ export class PoptipManager {
 	}
 
 	init() {
-		if (this.#inited) return;
+		if (this.#inited){
+			return;
+		}
 		this.#inited = true;
 		window.customElements.define("noname-poptip", HTMLPoptipElement);
 		_poptipMap.forEach((value, key) => {
@@ -92,7 +94,9 @@ export class PoptipManager {
 	 * @returns {string[]}
 	 */
 	getIdList(type) {
-		if (!this.#poptip[type]) return [];
+		if (!this.#poptip[type]){
+			return [];
+		}
 		return this.#poptip[type].idList.filter(i => !this.#customPoptip.has(i));
 	}
 
