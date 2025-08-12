@@ -4,6 +4,7 @@ import shi from "./shi.js";
 import bian from "./bian.js";
 import quan from "./quan.js";
 import yingbian from "./yingbian.js";
+import wushuang from "./wushuang.js";
 
 export default {
 	...normal,
@@ -12,4 +13,5 @@ export default {
 	...bian,
 	...quan,
 	...yingbian,
+	...wushuang,
 };

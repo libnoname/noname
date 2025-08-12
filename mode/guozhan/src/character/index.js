@@ -6,6 +6,7 @@ import shi from "./shi.js";
 import bian from "./bian.js";
 import quan from "./quan.js";
 import yingbian from "./yingbian.js";
+import wushuang from "./wushuang.js";
 
 import restCharacter from "./rest.js";
 
@@ -145,6 +146,7 @@ export const pack = {
 	...bian,
 	...quan,
 	...yingbian,
+	...wushuang,
 };
 
 export { default as intro } from "./intro.js";
