@@ -1812,6 +1812,27 @@ export default {
 		},
 	},
 
+	/** @type {Skill} */
+	gz_mashu: {
+		mod: {
+			globalFrom(from, to, distance) {
+				return distance - 1;
+			},
+		},
+	},
+	/** @type {Skill} */
+	gz_md_mashu: {
+		inherit: "gz_mashu",
+	},
+	/** @type {Skill} */
+	gz_mt_mashu: {
+		inherit: "gz_mashu",
+	},
+	/** @type {Skill} */
+	gz_pd_mashu: {
+		inherit: "gz_mashu",
+	},
+
 	// gz_huangzhong
 	/** @type {Skill} */
 	gz_liegong: {

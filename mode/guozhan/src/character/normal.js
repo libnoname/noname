@@ -196,7 +196,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["mashu", "gz_tieji"],
+		skills: ["gz_mashu", "gz_tieji"],
 		dieAudios: ["machao"],
 	}),
 	gz_huangyueying: new Character({
@@ -462,7 +462,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["mashu", "jianchu"],
+		skills: ["gz_pd_mashu", "jianchu"],
 	}),
 	gz_zhangjiao: new Character({
 		sex: "male",
@@ -486,7 +486,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["mashu", "xiongyi"],
+		skills: ["gz_mt_mashu", "xiongyi"],
 	}),
 	gz_kongrong: new Character({
 		sex: "male",

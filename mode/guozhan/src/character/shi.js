@@ -24,7 +24,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["mashu", "qianxi"],
+		skills: ["gz_md_mashu", "qianxi"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_mifuren: new Character({
