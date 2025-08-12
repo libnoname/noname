@@ -114,8 +114,12 @@ export const start = async (event, trigger, player) => {
 						lib.translate[character] = lib.translate[character.slice(3)];
 					}
 				}
+				const shenInGuozhan = _status.connectMode ? lib.configOL.shenInGuozhan : get.config("shenInGuozhan");
 				for (const character in lib.character) {
-					if (lib.selectGroup.includes(lib.character[character][1]) || lib.character[character].groupInGuozhan) {
+					if (shenInGuozhan && lib.selectGroup.includes(lib.character[character][1])) {
+						continue;
+					}
+					if (lib.character[character].groupInGuozhan) {
 						lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 					}
 				}
@@ -325,8 +329,12 @@ export const startBefore = () => {
 			lib.translate[character] = lib.translate[character.slice(3)];
 		}
 	}
+	const shenInGuozhan = _status.connectMode ? lib.configOL.shenInGuozhan : get.config("shenInGuozhan");
 	for (const character in lib.character) {
-		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
+		if (shenInGuozhan && lib.selectGroup.includes(lib.character[character].group)) {
+			continue;
+		}
+		if (lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}
@@ -347,8 +355,12 @@ export const onreinit = () => {
 		}
 	}
 
+	const shenInGuozhan = _status.connectMode ? lib.configOL.shenInGuozhan : get.config("shenInGuozhan");
 	for (const character in lib.character) {
-		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
+		if (shenInGuozhan && lib.selectGroup.includes(lib.character[character].group)) {
+			continue;
+		}
+		if (lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}

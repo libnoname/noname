@@ -6376,6 +6376,9 @@ export class Library {
 				get connect_separatism() {
 					return lib.mode.guozhan.config.separatism;
 				},
+				get connect_shenInGuozhan() {
+					return lib.mode.guozhan.config.shenInGuozhan;
+				},
 				connect_initshow_draw: {
 					name: "首亮奖励",
 					item: {
@@ -6476,6 +6479,16 @@ export class Library {
 					frequent: true,
 					restart: true,
 					intro: "选将前将随机禁用一个势力",
+				},
+				shenInGuozhan: {
+					name: "神武将选择势力",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: `线下拓展包【国战无双】的机制，启用后神将势力规则改为：<span style="font-family:xinwei">
+						<br>①神势力武将牌单独明置时，若当前势力为神或由神势力提供，可自选势力
+						<br>②两张神势力武将牌同时明置时，可自选势力
+						<br>③神势力武将牌和确定势力的武将牌A同时明置时，势力为A武将牌的势力`,
 				},
 				initshow_draw: {
 					name: "首亮奖励",

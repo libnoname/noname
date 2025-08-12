@@ -15,6 +15,10 @@ export class PlayerGuozhan extends Player {
 	 */
 	getGuozhanGroup(num = 0) {
 		if (this.trueIdentity) {
+			const group = lib.character[this[num == 1 ? "name2" : "name1"]][1];
+			if (num != 2 && lib.selectGroup.includes(group)) {
+				return group;
+			}
 			if (lib.character[this.name1][1] != "ye" || num == 1) {
 				return this.trueIdentity;
 			}
@@ -24,6 +28,9 @@ export class PlayerGuozhan extends Player {
 			return lib.character[this.name1].group;
 		}
 		if (num == 1) {
+			return lib.character[this.name2].group;
+		}
+		if (num == 2 && lib.selectGroup.includes(lib.character[this.name1][1])) {
 			return lib.character[this.name2].group;
 		}
 		return lib.character[this.name1].group;

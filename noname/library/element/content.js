@@ -2537,13 +2537,12 @@ player.removeVirtualEquip(card);
 
 		event.result = result;
 	},
-	showCharacter: function () {
-		"step 0";
-		event.trigger("showCharacterEnd");
-		"step 1";
-		event.trigger("showCharacterAfter");
+	async showCharacter(event, trigger, player) {
+		await event.trigger("showCharacterBegin");
+		await event.trigger("showCharacterEnd");
+		await event.trigger("showCharacterAfter");
 		if (get.mode() == "identity" && player.isZhu) {
-			event.trigger("zhuUpdate");
+			await event.trigger("zhuUpdate");
 		}
 	},
 	removeCharacter: function () {

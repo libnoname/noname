@@ -1450,7 +1450,7 @@ export default {
 					}
 					return event.fromGroups?.some(group => {
 						return !game.hasPlayer(current => current.identity == group);
-					});
+					}) && !game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup);
 				},
 				locked: true,
 				async cost(event, trigger, player) {
@@ -21265,6 +21265,80 @@ export default {
 						trigger.cancelled = true;
 					}
 				}
+			}
+		},
+	},
+	_mingzhiSelectGroup: {
+		trigger: { player: "showCharacterBegin" },
+		forced: true,
+		forceDie: true,
+		popup: false,
+		priority: 11,
+		async content(event, trigger, player) {
+			const checkChange = name => lib.selectGroup.includes(lib.character[name][1]);
+			if (trigger.toShow?.every(name => !checkChange(name))) {
+				return;
+			}
+			if (!lib.selectGroup.includes(player.identity) && !get.nameList(player).every(name => checkChange(name))) {
+				return;
+			}
+			const groups = ["wei", "shu", "wu", "qun", "jin"];
+			if (_status.bannedGroup) {
+				groups.remove(_status.bannedGroup);
+			}
+			const willBeYe = groups.filter(group => {
+				if (_status.yeidentity && _status.yeidentity.includes(group)) {
+					return true;
+				}
+				if (get.zhu(player, null, group)) {
+					return false;
+				}
+				const num = player.identity == group ? 0 : 1;
+				// @ts-expect-error 类型就是这么写的
+				return get.totalPopulation(group) + num > (_status.separatism ? Math.max(get.population() / 2 - 1, 1) : get.population() / 2);
+			});
+			if (willBeYe?.length) {
+				groups.removeArray(willBeYe);
+				groups.add("ye");
+			}
+			if (!groups?.length) {
+				return;
+			}
+			const newGroup = await player
+				.chooseControl(groups)
+				.set("prompt", "请选择一个新的势力")
+				.set("ai", (event, player) => {
+					const { groups } = get.event();
+					const getn = group => {
+						const targets = game.filterPlayer(current => current.identity == group);
+						if (!targets.length || group == "ye") {
+							return 1;
+						}
+						return targets.reduce((sum, current) => sum + current.hp, 0) / targets.length;
+					};
+					return groups.maxBy(getn);
+				})
+				.set("groups", groups)
+				.forResult("control");
+			if (newGroup != player.identity) {
+				const next = game.createEvent("changeGroupInGuozhan", false);
+				next.player = player;
+				next.targets = [player];
+				next.fromGroups = [player.identity];
+				next.toGroup = newGroup;
+				next.setContent("emptyEvent");
+				game.log(player, "变更了势力为", `<span data-nature=${get.groupnature(newGroup, "raw")}m>${get.translation(newGroup)}</span>`);
+				game.broadcastAll(
+					function (player, group) {
+						player.identity = group;
+						player.group = group;
+						player.setIdentity();
+					},
+					player,
+					newGroup
+				);
+				await next;
+				game.tryResult();
 			}
 		},
 	},
