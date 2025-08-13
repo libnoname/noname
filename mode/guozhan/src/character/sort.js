@@ -21,6 +21,7 @@ export default {
 	guozhan_jinEX1: ["gz_simaliang", "gz_simalun", "gz_jin_guohuai", "gz_wangjun", "gz_malong", "gz_new_jin_simayi", "gz_new_jin_zhangchunhua", "gz_wenyang", "gz_bailingyun", "gz_sunxiù", "gz_yangjun", "gz_wangxiang"],
 	guozhan_decade: ["gz_pk_sp_duyu", "gz_wangling", "gz_wangji", "gz_yanyan", "gz_xin_zhuran", "gz_gaoshun", "gz_jin_jiachong", "gz_jin_yanghu"],
 	guozhan_wushuang: ["gz_zhangyao", "gz_caochun","gz_mizhu" ,"gz_shichangshi", "gz_yj_zhanghe", "gz_gaolan", "gz_caoang", "gz_zhangxingcai", "gz_luzhi", "gz_quyi", "gz_caoying", "gz_guansuo", "gz_zhangxuan", "gz_guanyinping", "gz_xinxianying"],
+	guozhan_shen: ["gz_shen_zhugeliang", "gz_shen_liubei", "gz_shen_zhangliao", "gz_shen_ganning", "gz_shen_luxun", "gz_shen_simayi", "gz_shen_zhouyu", "gz_shen_caocao", "gz_shen_lvbu", "gz_shen_lvmeng", "gz_shen_guanyu", "gz_shen_zhaoyun"],
 	guozhan_qunxiong: ["gz_xf_huangquan", "gz_guohuai", "gz_guanqiujian", "gz_zhujun", "gz_chengong", "gz_re_xugong"],
 	guozhan_mobile: ["gz_sp_duyu"],
 	guozhan_online: ["gz_caochong", "gz_liuyan", "gz_re_xusheng", "gz_ol_sb_sunjian", "gz_re_huanggai", "gz_re_xuzhu", "gz_ol_weiyan", "gz_ol_yanwen"],

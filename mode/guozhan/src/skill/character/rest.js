@@ -1849,7 +1849,10 @@ export default {
 	},
 	fakejizhi: {
 		audio: "rejizhi",
-		audioname2: { gz_lukang: "rejizhi_lukang" },
+		audioname2: {
+			gz_lukang: "rejizhi_lukang",
+			new_simayi: "rejizhi_new_simayi",
+		},
 		inherit: "jizhi",
 	},
 	fakequanji: {

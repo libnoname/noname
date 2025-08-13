@@ -1002,6 +1002,9 @@ export default {
 	/** @type {Skill} */
 	gz_fangzhu: {
 		audio: "fangzhu",
+		audioname2: {
+			new_simayi: "refangzhu_new_simayi",
+		},
 		trigger: {
 			player: "damageEnd",
 		},
@@ -2177,6 +2180,9 @@ export default {
 	gz_zhiheng: {
 		inherit: "zhiheng",
 		audio: "zhiheng",
+		audioname2: {
+			new_simayi: "rezhiheng_new_simayi",
+		},
 		selectCard() {
 			const player = get.player();
 			const range1 = [1, player.maxHp];

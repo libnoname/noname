@@ -1,6 +1,26 @@
 import { lib, game, ui, get as _get, ai, _status } from "../../../../noname.js";
 
 export default {
+	gz_longnu(player) {
+		let storage = player.getStorage("gz_longnu", false),
+			start = "转换技，锁定技，出牌阶段开始时，",
+			yang = "你摸一张牌并失去1点体力，本回合红色手牌视为无距离限制的火【杀】",
+			yin = "你减少1点体力上限并摸一张牌，本回合锦囊手牌视为无次数限制的雷【杀】";
+		if (storage) {
+			if (player.hasSkill("gz_longnu_fire")) {
+				yang = `<span class="legendtext">${yang}</span>`;
+			} else {
+				yin = `<span class="bluetext">${yin}</span>`;
+			}
+		} else {
+			if (player.hasSkill("gz_longnu_thunder")) {
+				yin = `<span class="legendtext">${yin}</span>`;
+			} else {
+				yang = `<span class="firetext">${yang}</span>`;
+			}
+		}
+		return `${start}阳：${yang}；阴：${yin}。`
+	},
 	gzzhaosong(player) {
 		var storage = player.getStorage("gzzhaosong");
 		var list1 = ["效果①", "效果②", "效果③"];

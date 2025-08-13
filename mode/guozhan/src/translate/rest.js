@@ -565,4 +565,5 @@ export default {
 	guozhan_decade: "十年踪迹十年心",
 	guozhan_others: "国战限定",
 	guozhan_wushuang: "国战无双",
+	guozhan_shen: "国战·神将",
 };

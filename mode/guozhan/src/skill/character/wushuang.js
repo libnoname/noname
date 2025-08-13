@@ -8,6 +8,1864 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
+	//神将进攻国战
+	//神赵云
+	gz_juejing: {
+		audio: "juejing",
+		mod: {
+			maxHandcard(player, num) {
+				return 2 + num;
+			},
+			aiOrder(player, card, num) {
+				if (num <= 0 || !player.isPhaseUsing() || !get.tag(card, "recover")) {
+					return num;
+				}
+				if (player.needsToDiscard() > 1) {
+					return num;
+				}
+				return 0;
+			},
+		},
+		trigger: { player: "dying" },
+		forced: true,
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (target.getHp() > 1) {
+						return;
+					}
+					if (get.tag(card, "damage") || get.tag(card, "losehp")) {
+						return [1, 0.5];
+					}
+				},
+			},
+		},
+	},
+	gz_longhun: {
+		audio: "longhun",
+		mod: {
+			aiOrder(player, card, num) {
+				if (num <= 0 || !player.isPhaseUsing() || player.needsToDiscard() < 2) {
+					return num;
+				}
+				let suit = get.suit(card, player);
+				if (suit === "heart") {
+					return num - 3.6;
+				}
+			},
+			aiValue(player, card, num) {
+				if (num <= 0) {
+					return num;
+				}
+				let suit = get.suit(card, player);
+				if (suit === "heart") {
+					return num + 3.6;
+				}
+				if (suit === "club") {
+					return num + 1;
+				}
+				if (suit === "spade") {
+					return num + 1.8;
+				}
+			},
+			aiUseful(player, card, num) {
+				if (num <= 0) {
+					return num;
+				}
+				let suit = get.suit(card, player);
+				if (suit === "heart") {
+					return num + 3;
+				}
+				if (suit === "club") {
+					return num + 1;
+				}
+				if (suit === "spade") {
+					return num + 1;
+				}
+			},
+		},
+		locked: false,
+		enable: ["chooseToUse", "chooseToRespond"],
+		prompt: "将♦牌当做杀，♥牌当做桃，♣牌当做闪，♠牌当做无懈可击使用或打出",
+		viewAs(cards, player) {
+			if (cards.length) {
+				let name = false,
+					nature = null;
+				switch (get.suit(cards[0], player)) {
+					case "club":
+						name = "shan";
+						break;
+					case "diamond":
+						name = "sha";
+						nature = "fire";
+						break;
+					case "spade":
+						name = "wuxie";
+						break;
+					case "heart":
+						name = "tao";
+						break;
+				}
+				if (name) {
+					return { name: name, nature: nature };
+				}
+			}
+			return null;
+		},
+		async precontent(event, trigger, player) {
+			player.addTempSkill("gz_longhun_used");
+			player.markAuto("gz_longhun_used", get.suit(event.result.card, player));
+		},
+		logAudio(event, player) {
+			return "longhun" + (4 - lib.suit.indexOf(get.suit(event.cards[0], player))) + ".mp3";
+		},
+		check(card) {
+			let player = _status.event.player;
+			if (_status.event.type == "phase") {
+				let max = 0;
+				let name2;
+				let list = ["sha", "tao"];
+				let map = { sha: "diamond", tao: "heart" };
+				for (let i = 0; i < list.length; i++) {
+					let name = list[i];
+					if (
+						player.countCards("hes", function (card) {
+							return (name != "sha" || get.value(card) < 5) && get.suit(card, player) == map[name];
+						}) > 0 &&
+						player.getUseValue({ name: name, nature: name == "sha" ? "fire" : null }) > 0
+					) {
+						let temp = get.order({ name: name, nature: name == "sha" ? "fire" : null });
+						if (temp > max) {
+							max = temp;
+							name2 = map[name];
+						}
+					}
+				}
+				if (name2 == get.suit(card, player)) {
+					return name2 == "diamond" ? 5 - get.value(card) : 20 - get.value(card);
+				}
+				return 0;
+			}
+			return 1;
+		},
+		selectCard: 1,
+		position: "hes",
+		filterCard(card, player, event) {
+			event = event || _status.event;
+			let filter = event._backup.filterCard;
+			let name = get.suit(card, player);
+			if (player.getStorage("gz_longhun_used").includes(name)) {
+				return false;
+			}
+			if (name == "club" && filter(get.autoViewAs({ name: "shan" }, "unsure"), player, event)) {
+				return true;
+			}
+			if (name == "diamond" && filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event)) {
+				return true;
+			}
+			if (name == "spade" && filter(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+				return true;
+			}
+			if (name == "heart" && filter(get.autoViewAs({ name: "tao" }, "unsure"), player, event)) {
+				return true;
+			}
+			return false;
+		},
+		filter(event, player) {
+			let filter = event.filterCard;
+			if (filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event) && player.countCards("hes", { suit: "diamond" })) {
+				if (!player.getStorage("gz_longhun_used").includes("diamond")) {
+					return true;
+				}
+			}
+			if (filter(get.autoViewAs({ name: "shan" }, "unsure"), player, event) && player.countCards("hes", { suit: "club" })) {
+				if (!player.getStorage("gz_longhun_used").includes("club")) {
+					return true;
+				}
+			}
+			if (filter(get.autoViewAs({ name: "tao" }, "unsure"), player, event) && player.countCards("hes", { suit: "heart" })) {
+				if (!player.getStorage("gz_longhun_used").includes("heart")) {
+					return true;
+				}
+			}
+			if (filter(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event) && player.countCards("hes", { suit: "spade" })) {
+				if (!player.getStorage("gz_longhun_used").includes("spade")) {
+					return true;
+				}
+			}
+			return false;
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			save: true,
+			skillTagFilter(player, tag) {
+				let name;
+				switch (tag) {
+					case "respondSha":
+						name = "sha";
+						break;
+					case "respondShan":
+						name = "shan";
+						break;
+					case "save":
+						name = "tao";
+						break;
+				}
+				if (!get.info("gz_longhun").hiddenCard(player, name)) {
+					return false;
+				}
+			},
+			order(item, player) {
+				if (player && _status.event.type == "phase") {
+					let max = 0;
+					let list = ["sha", "tao"];
+					let map = { sha: "diamond", tao: "heart" };
+					for (let i = 0; i < list.length; i++) {
+						let name = list[i];
+						if (
+							player.countCards("hes", function (card) {
+								return (name != "sha" || get.value(card) < 5) && get.suit(card, player) == map[name];
+							}) > 0 &&
+							player.getUseValue({
+								name: name,
+								nature: name == "sha" ? "fire" : null,
+							}) > 0
+						) {
+							let temp = get.order({
+								name: name,
+								nature: name == "sha" ? "fire" : null,
+							});
+							if (temp > max) {
+								max = temp;
+							}
+						}
+					}
+					max /= 1.1;
+					return max;
+				}
+				return 2;
+			},
+		},
+		hiddenCard(player, name) {
+			const map = {
+				wuxie: "spade",
+				tao: "heart",
+				shan: "club",
+				sha: "diamond",
+			}
+			if (player.getStorage("gz_longhun_used").includes(map[name])) {
+				return false;
+			}
+			if (name == "wuxie" && _status.connectMode && player.countCards("hs") > 0) {
+				return true;
+			}
+			return player.countCards("hes", { suit: map[name] });
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	//神关羽
+	gz_wushen: {
+		audio: "wushen",
+		mod: {
+			cardname(card, player, name) {
+				if (get.suit(card) == "heart" && lib.card[card.name].type != "basic") {
+					return "sha";
+				}
+			},
+			cardnature(card, player) {
+				if (get.suit(card) == "heart" && lib.card[card.name].type != "basic") {
+					return false;
+				}
+			},
+			targetInRange(card) {
+				if (card.name === "sha") {
+					const suit = get.suit(card);
+					if (suit === "heart" || suit === "unsure") {
+						return true;
+					}
+				}
+			},
+			cardUsable(card) {
+				if (card.name === "sha") {
+					const suit = get.suit(card);
+					if (suit === "heart" || suit === "unsure") {
+						return Infinity;
+					}
+				}
+			},
+		},
+		trigger: {
+			player: "useCard",
+		},
+		forced: true,
+		filter(event, player) {
+			return event.card.name == "sha" && get.suit(event.card) == "heart";
+		},
+		content() {
+			if (trigger.addCount !== false) {
+				trigger.addCount = false;
+				if (player.stat[player.stat.length - 1].card.sha > 0) {
+					player.stat[player.stat.length - 1].card.sha--;
+				}
+			}
+		},
+		ai: {
+			effect: {
+				target(card, player, target, current) {
+					if (get.tag(card, "respondSha") && current < 0) {
+						return 0.6;
+					}
+				},
+			},
+		},
+	},
+	gz_wuhun: {
+		audio: "wuhun2",
+		trigger: {
+			player: ["useCard","respond"],
+		},
+		filter(event, player) {
+			return lib.suit.includes(get.suit(event.card));
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => current != player),
+				suit = get.suit(trigger.card);
+			for (const target of targets) {
+				target.addTempSkill("gz_wuhun_ban");
+				target.markAuto("gz_wuhun_ban", [suit]);
+			}
+		},
+		subSkill: {
+			ban: {
+				onremove: true,
+				charlotte: true,
+				mod: {
+					cardEnabled(card, player) {
+						if (player.getStorage("gz_wuhun_ban").includes(get.suit(card))) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						if (player.getStorage("gz_wuhun_ban").includes(get.suit(card))) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (player.getStorage("gz_wuhun_ban").includes(get.suit(card))) {
+							return false;
+						}
+					},
+				},
+				mark: true,
+				marktext: "绝",
+				intro: {
+					content: "本回合内不能使用或打出$的牌",
+				},
+			},
+		},
+	},
+	//神吕蒙
+	gz_shelie: {
+		audio: "shelie",
+		trigger: { player: "phaseDrawBegin1" },
+		filter(event, player) {
+			return !event.numFixed;
+		},
+		async content(event, trigger, player) {
+			trigger.changeToZero();
+			const cards = get.cards(5);
+			await game.cardsGotoOrdering(cards);
+			const videoId = lib.status.videoId++;
+			game.broadcastAll(
+				function (player, id, cards) {
+					let str;
+					if (player == game.me && !_status.auto) {
+						str = "涉猎：获取花色各不相同的牌";
+					} else {
+						str = "涉猎";
+					}
+					const dialog = ui.create.dialog(str, cards);
+					dialog.videoId = id;
+				},
+				player,
+				videoId,
+				cards
+			);
+			let time = get.utc();
+			game.addVideo("showCards", player, ["涉猎", get.cardsInfo(cards)]);
+			game.addVideo("delay", null, 2);
+			const list = [];
+			for (const card of cards) {
+				list.add(get.suit(card, false));
+			}
+			const next = player.chooseButton(list.length, true);
+			next.set("dialog", event.videoId);
+			next.set("filterButton", function (button) {
+				for (let i = 0; i < ui.selected.buttons.length; i++) {
+					if (get.suit(ui.selected.buttons[i].link) == get.suit(button.link)) {
+						return false;
+					}
+				}
+				return true;
+			});
+			next.set("ai", function (button) {
+				return get.value(button.link, _status.event.player);
+			});
+			const result = await next.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			time = 1000 - (get.utc() - time);
+			if (time > 0) {
+				await game.delay(0, time);
+			}
+			game.broadcastAll("closeDialog", videoId);
+			await player.gain(result.links, "log", "gain2");
+		},
+		ai: {
+			threaten: 1.2,
+		},
+	},
+	gz_gongxin: {
+		audio: "gongxin",
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget(card, player, target) {
+			return target != player && target.countCards("h");
+		},
+		async content(event, trigger, player) {
+			const target = event.target,
+				cards = target.getCards("h"),
+				next = player.chooseToMove_new("攻心");
+			next.set("list", [
+				[get.translation(target) + "的手牌", cards],
+				[["弃置"], ["置于牌堆顶"]],
+			]);
+			next.set("filterOk", moved => {
+				return (
+					moved[1]
+						.slice()
+						.concat(moved[2])
+						.filter(card => get.suit(card) == "heart").length == 1
+				);
+			});
+			next.set("filterMove", (from, to, moved) => {
+				if (moved[0].includes(from.link) && moved[1].length + moved[2].length >= 1 && [1, 2].includes(to)) {
+					return false;
+				}
+				return get.suit(from) == "heart";
+			});
+			next.set("processAI", list => {
+				let card = list[0][1]
+					.slice()
+					.filter(card => {
+						return get.suit(card) == "heart";
+					})
+					.sort((a, b) => {
+						return get.value(b) - get.value(a);
+					})[0];
+				if (!card) {
+					return false;
+				}
+				return [list[0][1].slice().remove(card), [card], []];
+			});
+			const result = await next.forResult();
+			if (result.bool) {
+				if (result.moved[1].length) {
+					await target.discard(result.moved[1]);
+				} else {
+					await player.showCards(result.moved[2], get.translation(player) + "对" + get.translation(target) + "发动了【攻心】");
+					await target.lose(result.moved[2], ui.cardPile, "visible", "insert");
+				}
+			}
+		},
+		ai: {
+			threaten: 1.5,
+			result: {
+				target(player, target) {
+					return -target.countCards("h");
+				},
+			},
+			order: 10,
+			expose: 0.4,
+		},
+	},
+	//神吕布
+	gz_wuqian: {
+		audio: "ol_wuqian",
+		locked: true,
+		ai: {
+			directHit_ai: true,
+			unequip: true,
+			unequip_ai: true,
+			skillTagFilter(player, tag, arg) {
+				if (!["sha", "juedou"].includes(arg.card.name)) {
+					return false;
+				}
+				const history = player.getHistory("useCard", evt => ["sha", "juedou"].includes(evt.card?.name));
+				if (tag == "unequip_ai") {
+					return !history.length;
+				} else {
+					if (tag.startsWith("directHit")) {
+						const name = arg.card.name == "juedou" ? "sha" : "shan";
+						if (Math.floor(arg.target.countCards("h", name) / 2) > player.countCards("h", name)) {
+							return false;
+						}
+					}
+					if (history.length && history[0].card == arg.card) {
+						return true;
+					}
+					return false;
+				}
+			}
+		},
+		group: ["gz_wuqian_add", "gz_wuqian_wushuang"],
+		derivation: "gz_wushuang",
+		subSkill: {
+			add: {
+				audio: "gz_wuqian",
+				trigger: {
+					player: "useCard1",
+				},
+				filter(event, player) {
+					if (event.card.name != "juedou" || !event.card.isCard) {
+						return false;
+					}
+					const history = player.getHistory("useCard", evt => ["sha", "juedou"].includes(evt.card?.name));
+					if (history.indexOf(event) != 0) {
+						return false;
+					}
+					if (event.targets) {
+						if (
+							game.hasPlayer(function (current) {
+								return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current);
+							})
+						) {
+							return true;
+						}
+					}
+					return false;
+				},
+				async cost(event, trigger, player) {
+					const num = game.countPlayer(current => !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current));
+
+					event.result = await player
+						.chooseTarget("无双：是否为" + get.translation(trigger.card) + "增加" + (num > 1 ? "至多两个" : "一个") + "目标？", [1, Math.min(2, num)], (card, player, target) => {
+							const trigger = get.event().getTrigger();
+							const cardx = trigger.card;
+							return !trigger.targets.includes(target) && lib.filter.targetEnabled2(cardx, player, target);
+						})
+						.set("ai", target => {
+							const player = get.event().player;
+							const card = get.event().getTrigger().card;
+							return get.effect(target, card, player, player);
+						})
+						.setHiddenSkill("gz_wuqian")
+						.forResult();
+
+					if (event.result.bool && player != game.me && !player.isOnline()) {
+						await game.delayx();
+					}
+				},
+				logTarget: "targets",
+				async content(event, trigger, player) {
+					const targets = event.targets.sortBySeat();
+					trigger.targets.addArray(targets);
+				},
+			},
+			wushuang: {
+				audio: "gz_wuqian",
+				trigger: {
+					player: "useCardToPlayered",
+					target: "useCardToTargeted",
+				},
+				forced: true,
+				logTarget(trigger, player) {
+					return player == trigger.player ? trigger.target : trigger.player;
+				},
+				filter(event, player, name) {
+					if (name == "useCardToTargeted" && event.card.name == "sha") {
+						return false;
+					}
+					const history = player.getHistory("useCard", evt => ["sha", "juedou"].includes(evt.card?.name));
+					return history.indexOf(event.getParent()) == 0;
+				},
+				async content(event, trigger, player) {
+					const id = (player == trigger.player ? trigger.target : trigger.player)["playerid"];
+					const idt = trigger.target.playerid;
+					const map = trigger.getParent().customArgs;
+					if (!map[idt]) {
+						map[idt] = {};
+					}
+					if (trigger.card.name == "sha") {
+						if (typeof map[id].shanRequired != "number") {
+							map[id].shanRequired = 1;
+						}
+						map[id].shanRequired++;
+					} else {
+						if (!map[idt].shaReq) {
+							map[idt].shaReq = {};
+						}
+						if (!map[idt].shaReq[id]) {
+							map[idt].shaReq[id] = 1;
+						}
+						map[idt].shaReq[id]++;
+					}
+				},
+			},
+		},
+	},
+	gz_shenfen: {
+		audio: "ol_shenfen",
+		enable: "phaseUse",
+		skillAnimation: true,
+		animationColor: "metal",
+		filter(event, player) {
+			/** @type {PlayerGuozhan} */
+			const playerRef = cast(player);
+			return playerRef.checkMainSkill("gz_shenfen", false) || playerRef.checkViceSkill("gz_shenfen", false);
+		},
+		limited: true,
+		manualConfirm: true,
+		filterTarget: lib.filter.notMe,
+		selectTarget: -1,
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const targets = event.targets.sortBySeat();
+			const damage = target => target.damage(),
+				equip = target => {
+					if (target.countDiscardableCards(target, "e")) {
+						target.chooseToDiscard("e", true, target.countDiscardableCards(target, "e"));
+					}
+				},
+				discard = target => {
+					if (target.countDiscardableCards(target, "h")) {
+						target.chooseToDiscard("h", true, 4);
+					}
+				};
+			await game.doAsyncInOrder(targets, damage);
+			await game.doAsyncInOrder(targets, equip);
+			await game.doAsyncInOrder(targets, discard);
+			/** @type {PlayerGuozhan} */
+			const playerRef = cast(player);
+			if (playerRef.checkMainSkill(event.name, false)) {
+				await playerRef.removeCharacter(0);
+			} else {
+				await playerRef.removeCharacter(1);
+			}
+		},
+		ai: {
+			order: 10,
+			result: {
+				player(player) {
+					let num = -10;
+					game.countPlayer(current => {
+						if (current != player) {
+							num += get.damageEffect(current, player, player);
+						}
+					});
+					return num;
+				},
+			},
+		},
+	},
+	//神曹操
+	gz_guixin: {
+		audio: "guixin",
+		trigger: {
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.countGainableCards(player, "hej"));
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+		},
+		async content(event, trigger, player) {
+			await player.gainMultiple(event.targets, "hej");
+			player.tempBanSkill(event.name, { player: "phaseBegin" });
+		},
+	},
+	gz_feiying: {
+		mod: {
+			globalTo(from, to, distance) {
+				return distance + 1;
+			},
+		},
+	},
+	//神周瑜
+	gz_qinyin: {
+		audio: "qinyin",
+		trigger: { player: "phaseDiscardEnd" },
+		logAudio(event) {
+			const num = event.cost_data;
+			if (typeof num == "number") {
+				return `qinyin${num + 1}.mp3`;
+			}
+			return 2;
+		},
+		filter(event, player) {
+			const cards = [];
+			player.getHistory("lose", function (evt) {
+				if (evt.type == "discard" && evt.getParent("phaseDiscard") == event) {
+					cards.addArray(evt.cards2);
+				}
+			});
+			return cards.length > 1;
+		},
+		async cost(event, trigger, player) {
+			let recover = 0,
+				lose = 0,
+				players = game.filterPlayer();
+			for (let i = 0; i < players.length; i++) {
+				if (players[i].hp < players[i].maxHp) {
+					if (get.attitude(player, players[i]) > 0) {
+						if (players[i].hp < 2) {
+							lose--;
+							recover += 0.5;
+						}
+						lose--;
+						recover++;
+					} else if (get.attitude(player, players[i]) < 0) {
+						if (players[i].hp < 2) {
+							lose++;
+							recover -= 0.5;
+						}
+						lose++;
+						recover--;
+					}
+				} else {
+					if (get.attitude(player, players[i]) > 0) {
+						lose--;
+					} else if (get.attitude(player, players[i]) < 0) {
+						lose++;
+					}
+				}
+			}
+			const result = await player
+				.chooseControl("失去体力", "回复体力", "cancel2")
+				.set("prompt", get.prompt2(event.skill))
+				.set("ai",function () {
+					const { lose, recover } = get.event();
+					if (lose > recover && lose > 0) {
+						return 0;
+					}
+					if (lose < recover && recover > 0) {
+						return 1;
+					}
+					return 2;
+				})
+				.set("lose", lose)
+				.set("recover", recover)
+				.forResult();
+			if (result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.index,
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			const doThing = [
+				target => target.loseHp(),
+				target => target.recover(),
+			][event.cost_data],
+				targets = game.filterPlayer();
+			await game.doAsyncInOrder(targets, doThing);
+		},
+		ai: {
+			expose: 0.1,
+			threaten: 2,
+		},
+	},
+	gz_yeyan: {
+		audio: "yeyan",
+		enable: "phaseUse",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "fire",
+		filterTarget: true,
+		selectTarget: [1, 3],
+		line: "fire",
+		multiline: true,
+		multitarget: true,
+		forceDie: true,
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const damage = target => target.damage("fire");
+			await game.doAsyncInOrder(event.targets.sortBySeat(), damage);
+		},
+		ai: {
+			order: 1,
+			result: {
+				target(player, target) {
+					return get.damageEffect(target, player, target);
+				},
+			},
+		},
+	},
+	//神司马
+	gz_jilve: {
+		audio: "jilue",
+		trigger: {
+			global: "changeGroupInGuozhan",
+			player: "showCharacterAfter",
+		},
+		filter(event, player) {
+			const skills = get.info("gz_jilve").getSkills(event, player);
+			return skills?.some(skill => !player.hasSkill(skill, null, false, false));
+		},
+		getSkills(event, player) {
+			const skills = [];
+			if (event.name == "showCharacter" && event.toShow?.some(name => {
+				return get.character(name, 3).includes("gz_jilve");
+			})) {
+				skills.add("guicai");
+			}
+			const groups = ["ye", "wei", "shu", "wu", "qun"];
+			if (!groups.includes(player.identity)) {
+				return skills;
+			}
+			if (event.name != "showCharacter") {
+				const index = event.targets?.indexOf(player);
+				if (index < 0 || event.fromGroups[index] == "shen" || event.fromGroups[index] == event.toGroup) {
+					return skills;
+				}
+			} else {
+				if (event.num != 2 && !player.isUnseen(1 - event.num)) {
+					return skills;
+				}
+			}
+			const index = groups.indexOf(player.identity);
+			if (index == 0) {
+				skills.addArray(get.info("gz_jilve").derivation.slice(1));
+			} else {
+				skills.add(get.info("gz_jilve").derivation[index]);
+			}
+			return skills;
+		},
+		async cost(event, trigger, player) {
+			const skills = get.info(event.skill).getSkills(trigger, player);
+			let prompt = `获得${skills.map(i => `【${get.translation(i)}】`)}`;
+			if (player.identity == "ye" && skills.length > 1) {
+				prompt = `减少1个阴阳鱼并${prompt}`;
+			}
+			event.result = {
+				bool: true,
+				cost_data: skills,
+			};
+		},
+		async content(event, trigger, player) {
+			const skills = event.cost_data;
+			if (player.identity == "ye" && skills.length > 1) {
+				if (typeof player.singleHp == "boolean") {
+					if (player.hasMark("yinyang_mark")) {
+						player.removeMark("yinyang_mark", 1);
+					} else {
+						player.addMark("yinyang_mark", 1);
+						player.maxHp--;
+					}
+					player.singleHp = !player.singleHp;
+				} else {
+					player.maxHp--;
+				}
+				player.update();
+			}
+			await player.addSkills(skills);
+		},
+		derivation: ["guicai", "gz_fangzhu", "fakejizhi", "gz_zhiheng", "wansha"],
+	},
+	gz_lianpo: {
+		audio: "lianpo",
+		trigger: {
+			global: "phaseAfter",
+		},
+		frequent: true,
+		filter(event, player) {
+			return player.getStat("kill") > 0;
+		},
+		async content(event, trigger, player) {
+			player.insertPhase();
+		},
+	},
+	//神陆逊
+	gz_junlve: {
+		audio: "nzry_junlve",
+		trigger: {
+			player: "damageEnd",
+			source: "damageSource",
+		},
+		forced: true,
+		getIndex(event) {
+			return event.num;
+		},
+		intro: {
+			content: "mark",
+		},
+		onremove: true,
+		async content(event, trigger, player) {
+			player.addMark(event.name, 1);
+		},
+		ai: {
+			combo: "gz_cuike",
+		},
+	},
+	gz_cuike: {
+		audio: "nzry_cuike",
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		async cost(event, trigger, player) {
+			const prompt = player.countMark("gz_junlve") % 2 == 1 ? "对一名角色造成1点伤害" : "横置一名角色并弃置其区域里一张牌";
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), prompt)
+				.set("ai", target => {
+					const player = get.player(),
+						bool = player.countMark("gz_junlve") % 2 == 1;
+					if (bool) {
+						return get.damageEffect(target, player, player);
+					}
+					return get.effect(target, { name: "guohe" }, player, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (player.countMark("gz_junlve") % 2 == 1) {
+				await target.damage();
+			} else {
+				await target.link(true);
+				await player.discardPlayerCard(target, 1, "hej", true);
+			}
+		},
+	},
+	gz_zhanhuo: {
+		audio: "nzry_dinghuo",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "metal",
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.countMark("gz_junlve") > 0;
+		},
+		check(event, player) {
+			let num = game.countPlayer(function (current) {
+				return get.attitude(player, current) < 0 && current.isLinked();
+			});
+			return (
+				player.countMark("gz_junlve") >= num &&
+				num ==
+					game.countPlayer(function (current) {
+						return get.attitude(player, current) < 0;
+					})
+			);
+		},
+		filterTarget(card, player, target) {
+			return target.isLinked();
+		},
+		selectTarget() {
+			return [1, _status.event.player.countMark("gz_junlve")];
+		},
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player.clearMark("gz_junlve");
+			const lose_list = [];
+			for (const target of event.targets) {
+				if (target.countDiscardableCards(player, "e")) {
+					lose_list.add([target, target.getDiscardableCards(player, "e")]);
+				}
+			}
+			if (lose_list?.length) {
+				await game
+					.loseAsync({
+						lose_list: lose_list,
+						discarder: player,
+					})
+					.setContent("discardMultiple");
+			}
+			const result = await player
+				.chooseTarget("绽火：对一名目标角色造成1点火焰伤害", true, (card, player, target) => {
+					return get.event("targets").includes(target);
+				})
+				.set("targets", event.targets)
+				.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(target, player, player, "fire");
+				})
+				.forResult();
+			if (result?.bool) {
+				const target = result.targets[0];
+				await target.damage("fire", "nocard");
+			}
+		},
+		ai: {
+			order: 1,
+			fireAttack: true,
+			combo: "gz_junlve",
+			result: {
+				target(player, target) {
+					if (target.hasSkillTag("nofire")) {
+						return 0;
+					}
+					if (player.hasUnknown()) {
+						return 0;
+					}
+					return get.damageEffect(target, player) - target.countCards("e");
+				},
+			},
+		},
+	},
+	//神甘宁
+	gz_poxi: {
+		inherit: "gz_kuiji",
+		audio: "drlt_poxi",
+	},
+	gz_gn_jieying: {
+		audio: "drlt_jieying",
+		trigger: {
+			global: "phaseBefore",
+			player: ["enterGame", "phaseBegin"],
+		},
+		filter(event, player, name) {
+			if (name == "phaseBefore" && game.phaseNumber != 0) {
+				return false;
+			}
+			return !game.hasPlayer(current => current.hasMark("gz_gn_jieying_mark"));
+		},
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
+			player.addMark("gz_gn_jieying_mark", 1);
+		},
+		global: "gz_gn_jieying_mark",
+		group: ["gz_gn_jieying_effect"],
+		subSkill: {
+			effect: {
+				audio: "gz_gn_jieying",
+				trigger: {
+					global: ["phaseEnd", "phaseAfter"],
+				},
+				filter(event, player, name) {
+					if ((name == "phaseAfter") === (player == event.player)) {
+						return false;
+					}
+					return event.player?.isIn() && event.player.hasMark("gz_gn_jieying_mark");
+				},
+				async cost(event, trigger, player) {
+					if (event.triggername == "phaseEnd") {
+						event.result = await player
+							.chooseTarget(get.prompt(event.skill), "将“营”交给一名角色", (card, player, target) => {
+								return target != player && !target.hasMark("gz_gn_jieying_mark");
+							})
+							.set("ai", target => {
+								let th = target.countCards("h"),
+									att = get.attitude(_status.event.player, target);
+								for (let i in target.skills) {
+									let info = get.info(i);
+									if (!info) {
+										continue;
+									}
+									if (get.skillInfoTranslation(i, target).includes("【杀】")) {
+										return Math.abs(att);
+									}
+								}
+								if (att > 0) {
+									if (th > 3 && target.hp > 2) {
+										return 0.6 * th;
+									}
+								}
+								if (att < 1) {
+									if (target.countCards("j", { name: "lebu" })) {
+										return 1 + Math.min((1.5 + th) * 0.8, target.getHandcardLimit() * 0.7);
+									}
+									if (!th || target.getEquip("zhangba") || target.getEquip("guanshi")) {
+										return 0;
+									}
+									if (!target.inRange(player) || player.countCards("hs", { name: "shan" }) > 1) {
+										return Math.min((1 + th) * 0.3, target.getHandcardLimit() * 0.2);
+									}
+								}
+								return 0;
+							})
+							.forResult();
+					} else {
+						event.result = {
+							bool: true,
+							targets: [trigger.player],
+						}
+					}
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					if (event.triggername == "phaseEnd") {
+						const num = player.countMark("gz_gn_jieying_mark");
+						player.removeMark("gz_gn_jieying_mark", num, false);
+						target.addMark("gz_gn_jieying_mark", num, false);
+						game.log(player, "将", "#g“营”", "移动给了", target);
+					} else {
+						const cards = target.getGainableCards(player, "h");
+						if (cards?.length) {
+							await target.give(cards, player);
+						}
+						const num = target.countMark("gz_gn_jieying_mark");
+						target.removeMark("gz_gn_jieying_mark", num, false);
+						player.addMark("gz_gn_jieying_mark", num, false);
+						game.log(player, "收回了", target, "的", "#g“营”");
+					}
+				},
+			},
+			mark: {
+				marktext: "营",
+				intro: {
+					name2: "营",
+					content: "mark",
+				},
+				trigger: {
+					player: "phaseDrawBegin2",
+				},
+				filter(event, player) {
+					if (!game.hasPlayer(current => current.hasSkill("gz_gn_jieying"))) {
+						return false;
+					}
+					return !event.numFixed && player.hasMark("gz_gn_jieying_mark");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					const num = game.countPlayer(current => {
+						return current.hasSkill("gz_gn_jieying");
+					});
+					trigger.num += num;
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						if (player.hasMark("gz_gn_jieying_mark") && card.name == "sha") {
+							return (
+								num +
+								game.countPlayer(function (current) {
+									return current.hasSkill("gz_gn_jieying");
+								})
+							);
+						}
+					},
+					maxHandcard(player, num) {
+						if (player.hasMark("gz_gn_jieying_mark")) {
+							return (
+								num +
+								game.countPlayer(function (current) {
+									return current.hasSkill("gz_gn_jieying");
+								})
+							);
+						}
+					},
+					aiOrder(player, card, num) {
+						if (
+							player.hasMark("gz_gn_jieying_mark") &&
+							game.hasPlayer(current => {
+								return current.hasSkill("gz_gn_jieying") && get.attitude(player, current) <= 0;
+							})
+						) {
+							return Math.max(num, 0) + 1;
+						}
+					},
+				},
+				ai: {
+					nokeep: true,
+					skillTagFilter(player) {
+						return (
+							player.hasMark("gz_gn_jieying_mark") &&
+							game.hasPlayer(current => {
+								return current.hasSkill("gz_gn_jieying") && get.attitude(player, current) <= 0;
+							})
+						);
+					},
+				},
+			},
+		},
+	},
+	//神张辽
+	gz_duorui: {
+		audio: "drlt_duorui",
+		trigger: {
+			source: "damageSource",
+		},
+		filter(event, player) {
+			if (!player.isPhaseUsing() || player == event.player) {
+				return false;
+			}
+			return event.player?.isIn() && event.player.countGainableCards(player, "hej");
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const pos = trigger.player.getGainableCards(player, "hej").map(card => get.position(card)).toUniqued();
+			if (!pos?.length) {
+				return;
+			}
+			await player
+				.gainPlayerCard(trigger.player, "hej", pos.length, true)
+				.set("filterButton", button => {
+					return !ui.selected.buttons?.some(but => get.position(but.link) == get.position(button.link));
+				})
+				.set("complexSelect", true);
+			const num = player.getHistory("gain", evt => {
+				return evt.getParent(2)?.name == event.name && evt.getParent(2).player == player;
+			}).reduce((sum, evt) => sum + evt?.cards?.length, 0);
+			if (num <= 2) {
+				return;
+			}
+			const targets = game.filterPlayer(current => {
+				if (!current.hasHistory("damage")) {
+					return false;
+				}
+				return current.getSkills(null, false, false).filter(skill => {
+					let info = get.info(skill);
+					if (!info || info.charlotte || get.skillInfoTranslation(skill, current).length == 0) {
+						return false;
+					}
+					return !current.getStorage("gz_duorui_tieqi").includes(skill);
+				}).length > 0;
+			});
+			if (!targets?.length) {
+				return;
+			}
+			const result = await player
+				.chooseTarget("夺锐：是否令一名本回合受过伤的角色失效一个技能？", (card, player, target) => {
+					return get.event("selectTarget").includes(target);
+				})
+				.set("selectTarget", targets)
+				.set("ai", target => {
+					const player = get.player();
+					return -get.attitude(player, target) * target.hp;
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			const skills = target.getSkills(null, false, false).filter(skill => {
+				let info = get.info(skill);
+				if (!info || info.charlotte || get.skillInfoTranslation(skill, target).length == 0) {
+					return false;
+				}
+				return !target.getStorage("gz_duorui_tieqi").includes(skill);
+			});
+			if (!skills?.length) {
+				return;
+			}
+			const result2 = skills.length > 1 ? await player
+				.chooseButton([`令${get.translation(target)}失效一个技能直到其回合结束`, [skills, "skill"]], true)
+				.forResult() : {
+					bool: true,
+					links: skills,
+				};
+			if (result2?.bool) {
+				const skill = result2.links[0],
+					name = "gz_duorui_tieqi";
+				target.markAuto(name, skill);
+				target.addTempSkill(name, { player: "phaseEnd" });
+				get.info(name).init(target, name);
+			}
+		},
+		subSkill: {
+			tieqi: {
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+					player.getStorage(skill).forEach(name => {
+						player.addTip(`${skill}_${name}`, `夺锐 ${get.translation(name)}失效`);
+					})
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+					player.getStorage(skill).forEach(name => {
+						player.removeTip(`${skill}_${name}`);
+					});
+					player.setStorage(skill, [], true);
+				},
+				charlotte: true,
+				skillBlocker(skill, player) {
+					if (lib.skill[skill].persevereSkill || lib.skill[skill].charlotte) {
+						return false;
+					}
+					return player.getStorage("gz_duorui_tieqi").includes(skill);
+				},
+				mark: true,
+				intro: {
+					content(storage, player, skill) {
+						let list = player.getSkills(null, false, false).filter(function (i) {
+							return lib.skill.gz_duorui_tieqi.skillBlocker(i, player);
+						});
+						if (list.length) {
+							return "失效技能：" + get.translation(list);
+						}
+						return "无失效技能";
+					},
+				},
+			},
+		},
+	},
+	gz_zhiti: {
+		audio: "drlt_zhiti",
+		trigger: {
+			player: "phaseDrawBegin2",
+		},
+		filter(event, player) {
+			return game.countPlayer(current => current.isDamaged()) > 1 && !event.numFixed;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name == "sha" && game.countPlayer(current => current.isDamaged()) > 2) {
+					return num + 1;
+				}
+			},
+		},
+	},
+	//神刘备
+	gz_longnu: {
+		audio: "nzry_longnu",
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		zhuanhuanji: true,
+		forced: true,
+		marktext: "☯",
+		intro: {
+			content(storage, player) {
+				if (storage === true) {
+					return "锁定技，出牌阶段开始时，你减少1点体力上限并摸一张牌，然后本回合你的锦囊手牌均视为无次数限制的雷杀";
+				}
+				return "锁定技，出牌阶段开始时，你摸一张牌并失去1点体力，然后本回合你的红色手牌均视为无距离限制的火杀";
+			},
+		},
+		async content(event, trigger, player) {
+			player.changeZhuanhuanji(event.name);
+			if (player.getStorage(event.name, false)) {
+				await player.draw();
+				await player.loseHp();
+				player.addTempSkill("gz_longnu_fire");
+			} else {
+				await player.loseMaxHp();
+				await player.draw();
+				player.addTempSkill("gz_longnu_thunder");
+			}
+		},
+		init(player, skill) {
+			player.addSkill("gz_longnu_mark");
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				trigger: { player: ["hideCharacterBegin", "showCharacterEnd"] },
+				filter(event, player) {
+					if (event.name == "hideCharacter") {
+						return get.character(event.toHide, 3).includes("gz_longnu");
+					}
+					return event.toShow?.some(name => {
+						return get.character(name, 3).includes("gz_longnu");
+					});
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					player[(trigger.name == "hideCharacter" ? "un" : "") + "markSkill"]("gz_longnu");
+				},
+			},
+			fire: {
+				charlotte: true,
+				mod: {
+					cardname(card, player) {
+						if (get.color(card) == "red" && get.position(card) == "h") {
+							return "sha";
+						}
+					},
+					cardnature(card, player) {
+						if (get.color(card) == "red" && get.position(card) == "h") {
+							return "fire";
+						}
+					},
+					targetInRange(card) {
+						if (get.color(card) == "red" && get.position(card) == "h") {
+							return true;
+						}
+					},
+				},
+				ai: {
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "respondSha") && current < 0) {
+								return 0.6;
+							}
+						},
+					},
+					respondSha: true,
+				},
+			},
+			thunder: {
+				charlotte: true,
+				mod: {
+					cardname(card, player) {
+						if (["trick", "delay"].includes(lib.card[card.name].type) && get.position(card) == "h") {
+							return "sha";
+						}
+					},
+					cardnature(card, player) {
+						if (["trick", "delay"].includes(lib.card[card.name].type) && get.position(card) == "h") {
+							return "thunder";
+						}
+					},
+					cardUsable(card) {
+						if (["trick", "delay"].includes(lib.card[card.name].type) && get.position(card) == "h") {
+							return Infinity;
+						}
+					},
+				},
+				ai: {
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "respondSha") && current < 0) {
+								return 0.6;
+							}
+						},
+					},
+					respondSha: true,
+				},
+			},
+		},
+	},
+	gz_jieying: {
+		audio: "nzry_jieying",
+		trigger: {
+			player: ["linkBefore", "enterGame", "phaseEnd"],
+			global: "phaseBefore",
+		},
+		forced: true,
+		filter(event, player, name) {
+			if (name == "phaseEnd") {
+				return game.hasPlayer(current => !current.isLinked());
+			}
+			if (event.name == "link") {
+				return player.isLinked();
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async content(event, trigger, player) {
+			switch (event.triggername) {
+				case "phaseEnd": {
+					const targets = game.filterPlayer(current => !current.isLinked());
+					if (!targets?.length) {
+						return;
+					}
+					const result = targets.length > 1 ? await player
+						.chooseTarget("结营：横置一名角色", true, (card, player, target) => {
+							return !target.isLinked();
+						})
+						.set("ai", target => {
+							const player = get.player();
+							return get.effect(target, { name: "tiesuo" }, player, player);
+						})
+						.forResult() : {
+							bool: true,
+							targets: targets,
+						};
+					if (result.bool) {
+						player.line(result.targets, "green");
+						await result.targets[0].link(true);
+					}
+					break;
+				}
+				case "linkBefore": {
+					trigger.cancel();
+					break;
+				}
+				default: {
+					await player.link(true);
+					break;
+				}
+			}
+		},
+		global: "gz_jieying_global",
+		subSkill: {
+			global: {
+				mod: {
+					maxHandcard(player, num) {
+						const count = game.countPlayer(function (current) {
+							return current.hasSkill("gz_jieying");
+						});
+						if (count > 0 && player.isLinked()) {
+							return num + 2 * count;
+						}
+					},
+				},
+			},
+		},
+	},
+	//神诸葛
+	gz_qixing: {
+		audio: "qixing",
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		forced: true,
+		locked: false,
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async content(event, trigger, player) {
+			const gainEvent = player.addToExpansion(get.cards(7), "draw");
+			gainEvent.gaintag.add("gz_qixing");
+			await gainEvent;
+			const next = game.createEvent("qixingChose", false);
+			next.player = player;
+			next.setContent(get.info("gz_qixing_draw").cost);
+			const { bool, cost_data } = await next.forResult();
+			if (bool) {
+				const next = game.createEvent("qixingChange", false);
+				next.player = player;
+				next.cost_data = cost_data;
+				next.setContent(get.info("gz_qixing_draw").content);
+				await next;
+			}
+		},
+		intro: {
+			markcount: "expansion",
+			mark(dialog, storage, player) {
+				let cards = player.getExpansions("gz_qixing");
+				if (cards?.length) {
+					if (player == game.me || player.isUnderControl()) {
+						dialog.addAuto(cards);
+					} else {
+						return "共有" + get.cnNumber(cards.length) + "张星";
+					}
+				}
+			},
+			content(storage, player) {
+				let cards = player.getExpansions("gz_qixing");
+				if (cards?.length) {
+					if (player == game.me || player.isUnderControl()) {
+						return get.translation(cards);
+					}
+					return "共有" + get.cnNumber(cards.length) + "张星";
+				}
+			},
+		},
+		group: ["gz_qixing_draw"],
+		ai: {
+			mingzhi: true,
+			notemp: true,
+		},
+		subSkill: {
+			draw: {
+				audio: "gz_qixing",
+				trigger: { player: "phaseDrawEnd" },
+				filter(event, player) {
+					return player.getExpansions("gz_qixing").length > 0 && player.countCards("h") > 0;
+				},
+				async cost(event, trigger, player) {
+					const cards = player.getExpansions("gz_qixing");
+					if (!cards?.length || !player.countCards("h")) {
+						event.result = {
+							bool: false,
+						}
+						return;
+					}
+					const { moved } = await player
+						.chooseToMove("七星：是否交换“星”和手牌？")
+							.set("list", [
+								[get.translation(player) + "（你）的星", cards],
+								["手牌区", player.getCards("h")],
+							])
+							.set("filterMove", function (from, to) {
+								return typeof to != "number";
+							})
+							.set("processAI", function (list) {
+								let player = _status.event.player,
+									cards = list[0][1].concat(list[1][1]).sort(function (a, b) {
+										return get.value(a) - get.value(b);
+									}),
+									cards2 = cards.splice(0, player.getExpansions("gz_qixing").length);
+								return [cards2, cards];
+							})
+							.forResult();
+					const [pushs, gains] = moved;
+					pushs.removeArray(player.getExpansions("gz_qixing"));
+					gains.removeArray(player.getCards("h"));
+					if (!pushs.length || pushs.length != gains.length) {
+						event.result = {
+							bool: false,
+						}
+						return;
+					}
+					event.result = {
+						bool: true,
+						cost_data: [pushs, gains],
+					}
+				},
+				async content(event, trigger, player) {
+					const [pushs, gains] = event.cost_data;
+					const gainEvent = player.addToExpansion(pushs, player, "giveAuto");
+					gainEvent.gaintag.add("gz_qixing");
+					await gainEvent;
+					await player.gain(gains, "draw");
+				},
+			},
+		},
+	},
+	gz_kuangfeng: {
+		audio: "kuangfeng",
+		trigger: { player: "phaseJieshuBegin" },
+		filter(event, player) {
+			return player.getExpansions("gz_qixing").length;
+		},
+		async cost(event, trigger, player) {
+			const groups = ["wei", "shu", "wu", "qun", "jin", "ye"];
+			if (_status.bannedGroup) {
+				groups.remove(_status.bannedGroup);
+			}
+			game.filterPlayer(current => {
+				if (current.identity != "unknown") {
+					groups.add(current.identity);
+				}
+			});
+			const { bool, links } = await player
+				.chooseButton([
+					get.prompt2(event.skill),
+					[groups.map(i => [i, get.translation(i)]), "tdnodes"],
+					player.getExpansions("gz_qixing"),
+				], 2)
+				.set("filterButton", button => {
+					const check = button => typeof button.link == "string";
+					if (ui.selected.buttons?.length) {
+						game.filterPlayer(current => {
+							if (current.identity == ui.selected.buttons[0].link) {
+								current.prompt("狂风", "fire");
+								current.classList.add("selected");
+							}
+						});
+						return check(button) != check(ui.selected.buttons[0]);
+					}
+					return true;
+				})
+				.set("complexSelect", true)
+				.set("ai", button => {
+					if (!ui.selected.buttons?.length) {
+						if (typeof button.link != "string") {
+							return 0;
+						}
+						let num = 0;
+						game.filterPlayer(current => {
+							if (current.identity != button.link) {
+								return false;
+							}
+							num -= get.attitude(get.player(), current);
+						});
+						return num;
+					}
+					return 1;
+				})
+				.forResult();
+			if (bool) {
+				event.result = {
+					bool: true,
+					cards: [links[1]],
+					cost_data: links[0],
+				};
+				const targets = game.filterPlayer(current => current.identity == links[0]);
+				if (targets?.length) {
+					event.result.targets = targets;
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			const { cost_data: group, cards } = event;
+			player.addTempSkill("gz_kuangfeng_effect", { player: "phaseZhunbeiBegin" });
+			player.markAuto("gz_kuangfeng_effect", group);
+			await player.loseToDiscardpile(cards);
+		},
+		ai: {
+			combo: "gz_qixing",
+		},
+		global: "gz_kuangfeng_ai",
+		subSkill: {
+			ai: {
+				ai: {
+					effect: {
+						target(card, player, target, current) {
+							if (!game.hasPlayer(owner => owner.getStorage("gz_kuangfeng_effect").includes(target.identity))) {
+								return;
+							}
+							if (get.tag(card, "fireDamage") && current < 0) {
+								return 1.5;
+							}
+						},
+					},
+				},
+			},
+			effect: {
+				intro: {
+					markcount: () => null,
+					content: "狂风令<span class = 'firetext'>$</span>势力受到的火焰伤害+1",
+				},
+				trigger: { global: "damageBegin3" },
+				filter(event, player) {
+					return event.hasNature("fire") && player.getStorage("gz_kuangfeng_effect").includes(event.player.identity);
+				},
+				charlotte: true,
+				forced: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					trigger.num++;
+				},
+				onremove: true,
+			},
+		},
+	},
+	gz_dawu: {
+		trigger: { player: "phaseJieshuBegin" },
+		filter(event, player) {
+			return player.getExpansions("gz_qixing").length;
+		},
+		audio: "dawu",
+		async cost(event, trigger, player) {
+			const {
+				result: { bool, targets, links: cost_data },
+			} = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt2(event.skill), player.getExpansions("gz_qixing")],
+					selectButton: [1, game.countPlayer()],
+					filterTarget(card, player, target) {
+						return player.isFriendOf(target);
+					},
+					selectTarget() {
+						return ui.selected.buttons.length;
+					},
+					complexSelect: true,
+					ai1(button) {
+						const { player, allUse } = get.event();
+						const targets = game.filterPlayer(target => {
+							if (target.isMin() || target.hasSkill("biantian2") || target.hasSkill("gz_dawu_mark")) {
+								return false;
+							}
+							let att = get.attitude(player, target);
+							if (att >= 4) {
+								if (target.hp > 2 && (target.isHealthy() || target.hasSkillTag("maixie"))) {
+									return false;
+								}
+								if (allUse || target.hp == 1) {
+									return true;
+								}
+								if (target.hp == 2 && target.countCards("he") <= 2) {
+									return true;
+								}
+							}
+							return false;
+						});
+						if (ui.selected.buttons.length < targets.length) {
+							return 1;
+						}
+						return 0;
+					},
+					ai2(target) {
+						const { player, allUse } = get.event();
+						if (target.isMin() || target.hasSkill("biantian2") || target.hasSkill("gz_dawu_mark")) {
+							return 0;
+						}
+						let att = get.attitude(player, target);
+						if (att >= 4) {
+							if (target.hp > 2 && (target.isHealthy() || target.hasSkillTag("maixie"))) {
+								return 0;
+							}
+							if (allUse || target.hp == 1) {
+								return att;
+							}
+							if (target.hp == 2 && target.countCards("he") <= 2) {
+								return att * 0.7;
+							}
+							return 0;
+						}
+						return -1;
+					},
+				})
+				.set("allUse", player.getExpansions("gz_qixing").length >= game.countPlayer(current => {
+					return player.isFriendOf(current) && get.attitude(player, current) > 4;
+				}) * 2);
+			event.result = {
+				bool: bool,
+				targets: targets?.sortBySeat(),
+				cost_data: cost_data,
+			};
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: cards } = event;
+			targets.forEach(target => {
+				target.addAdditionalSkill(`gz_dawu_${player.playerid}`, "gz_dawu_mark");
+				target.markAuto("gz_dawu_mark", [player]);
+			});
+			player.addTempSkill("gz_dawu_effect", { player: "phaseBeginStart" });
+			await player.loseToDiscardpile(cards);
+		},
+		ai: {
+			combo: "gz_qixing",
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				ai: {
+					nodamage: true,
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "damage") && !get.tag(card, "natureDamage")) {
+								return "zeroplayertarget";
+							}
+						},
+					},
+				},
+				intro: {
+					content: "<span class = 'thundertext'>$</span>令大雾保护了你",
+				},
+			},
+			effect: {
+				trigger: { global: "damageBegin4" },
+				filter(event, player) {
+					return !event.hasNature() && event.player.getStorage("gz_dawu_mark").includes(player);
+				},
+				forced: true,
+				charlotte: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					trigger.num--;
+				},
+				onremove(player) {
+					game.countPlayer2(current => {
+						if (current.getStorage("gz_dawu_mark").includes(player)) {
+							current.unmarkAuto("gz_dawu_mark", [player]);
+							current.removeAdditionalSkill(`gz_dawu_${player.playerid}`);
+						}
+					}, true);
+				},
+			},
+		},
+	},
+
 	//张媱
 	gz_yuanyu: {
 		audio: "yuanyu",
@@ -1450,7 +3308,7 @@ export default {
 					}
 					return event.fromGroups?.some(group => {
 						return !game.hasPlayer(current => current.identity == group);
-					}) && !game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup);
+					}) && game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup);
 				},
 				locked: true,
 				async cost(event, trigger, player) {
