@@ -37,47 +37,29 @@ export class PoptipManager {
 	/**
 	 * @type {Record<string, {
 	 * 	idList: string[],
-	 * 	add: (id: string) => void,
 	 *  [p: string]: any
 	 * }>}
 	 */
 	#poptip = {};
 
-	/**
-	 * id => {name, info}
-	 * @type {Map<string, {name: string, info: string}>}
-	 */
-	#customPoptip = new Map();
-
 	constructor() {
 		this.#poptip["rules"] = {
 			idList: Array.from(_poptipMap.keys()),
-			add(id) {
-				this.idList.add(id);
-			},
 		};
 		this.#poptip["skills"] = {
-			custom: [],
 			get idList() {
-				return Object.keys(lib.skill).concat(this.custom);
-			},
-			add(id) {
-				this.custom.add(id);
+				return Object.keys(lib.skill);
 			},
 		};
 		this.#poptip["cards"] = {
-			custom: [],
 			get idList() {
 				return Object.keys(lib.card).concat(this.custom);
-			},
-			add(id) {
-				this.custom.add(id);
 			},
 		};
 	}
 
 	init() {
-		if (this.#inited){
+		if (this.#inited) {
 			return;
 		}
 		this.#inited = true;
@@ -94,10 +76,10 @@ export class PoptipManager {
 	 * @returns {string[]}
 	 */
 	getIdList(type) {
-		if (!this.#poptip[type]){
+		if (!this.#poptip[type]) {
 			return [];
 		}
-		return this.#poptip[type].idList.filter(i => !this.#customPoptip.has(i));
+		return this.#poptip[type].idList.slice();
 	}
 
 	/**
@@ -119,13 +101,12 @@ export class PoptipManager {
 	 * @returns {string}
 	 */
 	getElement(poptip) {
-		let id;
 		if (typeof poptip === "object") {
-			id = lib.poptip.add(poptip);
+			const { name, info, type = "rules" } = poptip;
+			return `<noname-poptip name = "${name}" info = "${info} type = "${type}"></noname-poptip>`;
 		} else {
-			id = poptip;
+			return `<noname-poptip tip = ${poptip}></noname-poptip>`;
 		}
-		return `<noname-poptip poptip = ${id}></noname-poptip>`;
 	}
 
 	/**
@@ -135,6 +116,21 @@ export class PoptipManager {
 	 */
 	getType(id) {
 		for (const type in this.#poptip) {
+			// 优化速度，后期如果有需求可删
+			if (type === "skills") {
+				if (id in lib.skill) {
+					return type;
+				} else {
+					continue;
+				}
+			} else if (type === "cards") {
+				if (id in lib.card) {
+					return type;
+				} else {
+					continue;
+				}
+			}
+
 			if (this.#poptip[type].idList.includes(id)) {
 				return type;
 			}
@@ -147,44 +143,35 @@ export class PoptipManager {
 	 * @param {string} id
 	 */
 	getName(id) {
-		return this.#customPoptip.get(id)?.name || get.translation(id);
+		return get.translation(id);
 	}
 	/**
 	 * 获取一个特殊名词的解释
 	 * @param {string} id
 	 */
 	getInfo(id) {
-		return this.#customPoptip.get(id)?.info || get.translation(id + "_info");
+		return get.translation(id + "_info");
 	}
 	/**
 	 * 添加名词解释
+	 * @param {string} id 名词id，用于在`noname-poptip`标签内引用
 	 * @param {object} poptip
 	 * @param {string} [poptip.type] 名词类型
-	 * @param {string} [poptip.id]
 	 * @param {string} poptip.name 名字，最终显示在translate上的文字
 	 * @param {string} [poptip.info] 解释，最终显示在弹窗里的文字
-	 * @returns {string} 生成的id
 	 */
-	add(poptip) {
-		let { type = "rules", id, name, info = "" } = poptip;
+	add(id, poptip) {
+		let { type = "rules", name, info = "" } = poptip;
 		if (!this.#poptip[type]) {
 			throw new Error(`未注册的poptip类型: ${type}`);
-		} else if (id && (type === "skills" || type === "cards")) {
+		} else if (type === "skills" || type === "cards") {
 			console.warn("请于lib.skill/lib.card中显式注册技能/卡牌。");
 		}
 
-		if (id) {
-			lib.translate[id] = name;
-			lib.translate[id + "_info"] = info;
-		} else {
-			do {
-				id = Math.random().toString(36).slice(-8);
-			} while (this.#customPoptip.has(id));
-			this.#customPoptip.set(id, { name, info });
-		}
+		lib.translate[id] = name;
+		lib.translate[id + "_info"] = info;
 
 		this.#poptip[type].idList.add(id);
-		return id;
 	}
 	// /**
 	//  * @param {string} id
@@ -212,9 +199,12 @@ export class HTMLPoptipElement extends HTMLElement {
 	}
 
 	get name() {
-		return lib.poptip.getName(this.getAttribute("poptip") || "");
+		return this.getAttribute("name") || lib.poptip.getName(this.getAttribute("tip") || "");
 	}
 	get info() {
-		return lib.poptip.getInfo(this.getAttribute("poptip") || "");
+		return this.getAttribute("info") || lib.poptip.getInfo(this.getAttribute("tip") || "");
+	}
+	get type() {
+		return this.getAttribute("type") || lib.poptip.getType(this.getAttribute("tip") || "rules");
 	}
 }
