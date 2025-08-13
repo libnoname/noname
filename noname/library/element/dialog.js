@@ -22,6 +22,8 @@ export class Dialog extends HTMLDivElement {
 	/** @type { boolean } */
 	noforcebutton;
 	/** @type { boolean } */
+	peaceDialog;
+	/** @type { boolean } */
 	noopen;
 	/**
 	 * dialog添加数据是否支持分页
@@ -50,6 +52,7 @@ export class Dialog extends HTMLDivElement {
 		let noTouchScroll = false;
 		let forceButton = false;
 		let noForceButton = false;
+		let peaceDialog = false;
 		/** @type { this } */
 		// @ts-expect-error ignore
 		const dialog = ui.create.div(".dialog");
@@ -73,6 +76,8 @@ export class Dialog extends HTMLDivElement {
 				forceButton = true;
 			} else if (argument == "noforcebutton") {
 				noForceButton = true;
+			} else if (argument == "peaceDialog") {
+				peaceDialog = true;
 			} else {
 				dialog.add(argument);
 			}
@@ -93,6 +98,9 @@ export class Dialog extends HTMLDivElement {
 		} else if (forceButton) {
 			dialog.forcebutton = true;
 			dialog.classList.add("forcebutton");
+		}
+		if (peaceDialog) {
+			dialog.peaceDialog = true;
 		}
 		// @ts-expect-error ignore
 		dialog._args = args;
@@ -372,10 +380,12 @@ export class Dialog extends HTMLDivElement {
 				ui.update();
 				return this;
 			}
-			if (ui.dialogs[i].static) {
-				ui.dialogs[i].unfocus();
-			} else {
-				ui.dialogs[i].hide();
+			if (!this.peaceDialog) {
+				if (ui.dialogs[i].static) {
+					ui.dialogs[i].unfocus();
+				} else {
+					ui.dialogs[i].hide();
+				}
 			}
 		}
 		ui.dialog = this;

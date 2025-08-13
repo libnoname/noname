@@ -228,13 +228,15 @@ class SkillAudio {
 				this.filteredLogAudio2 = logAudio2;
 				this.useCache = false;
 			}
-		} else if (this.info.audioname2) {
+		}
+		if (this.info.audioname2) {
 			const key = this.getName(name => !!this.info.audioname2?.[name]);
 			const audioname2 = this.info.audioname2[key];
 			if (audioname2 != void 0) {
 				this.filteredAudioName2 = audioname2;
 			}
-		} else if (this.info.logAudio) {
+		}
+		if (this.info.logAudio) {
 			this.useCache = false;
 		}
 	}

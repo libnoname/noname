@@ -83,11 +83,14 @@ const skills = {
 		audio: "xinkuangfu",
 		trigger: { source: "damageSource" },
 		forced: true,
-		usable: 1,
 		filter(event, player) {
+			if (player.hasSkill("stdkuangfu_used")) {
+				return false;
+			}
 			return player.isPhaseUsing() && event.card && event.card.name == "sha" && event.player != player && event.player.isIn();
 		},
 		async content(event, trigger, player) {
+			player.addTempSkill("stdkuangfu_used", "phaseChange");
 			if (trigger.player.hp < player.hp) {
 				player.draw(2);
 			} else {
@@ -96,6 +99,11 @@ const skills = {
 		},
 		ai: {
 			halfneg: true,
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+			},
 		},
 	},
 	rewangzun: {
@@ -1558,6 +1566,9 @@ const skills = {
 			},
 			result: {
 				player(player) {
+					if (player.needsToDiscard(3) && !player.hasValueTarget({ name: "sha" }, false)) {
+						return -1;
+					}
 					if (player.countCards("h") >= player.hp - 1) {
 						return -1;
 					}

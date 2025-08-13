@@ -1,4 +1,40 @@
 const characters = {
+	dc_sb_huangquan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dcsbqiaodui", "dcsbtuicheng"],
+	},
+	dc_sb_luotong: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["dcsbjuce", "dcsbkangming"],
+	},
+	dongxu: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["dcqingleng", "dczhendu"],
+	},
+	v_machao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dczhongtao", "dcjizhan"],
+	},
+	dc_sb_luxun: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["dcsbjunmou", "dcsbzhanyan"],
+	},
+	dc_sb_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcsbzhouxi", "dcsbshijin"],
+	},
 	x_dc_zhangqiying: {
 		sex: "female",
 		group: "qun",

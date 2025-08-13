@@ -195,11 +195,15 @@ game.import("card", function () {
 								if (!game.hasNature(event.card, "ice") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
 									return false;
 								}
-								if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
-									player: player,
-									card: event.card,
-									type: "use",
-								}) && target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)) {
+								if (
+									event.shanRequired > 1 &&
+									!target.hasSkillTag("freeShan", null, {
+										player: player,
+										card: event.card,
+										type: "use",
+									}) &&
+									target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)
+								) {
 									return false;
 								}
 								return true;
@@ -807,7 +811,10 @@ game.import("card", function () {
 				subtype: "equip3",
 				distance: { globalTo: 1 },
 				battleOfWancheng() {
-					//宛城之战
+					// 宛城之战
+					if (get.mode() !== "doudizhu") {
+						return false;
+					}
 					const date = new Date();
 					if (date.getMonth() !== 6) {
 						return false;
@@ -1346,11 +1353,15 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
-										player: player,
-										card: event.card,
-										type: "respond",
-									}) && event.shaRequired > target.mayHaveSha(target, "respond", null, "count")) {
+									if (
+										event.shaRequired > 1 &&
+										!target.hasSkillTag("freeSha", null, {
+											player: player,
+											card: event.card,
+											type: "respond",
+										}) &&
+										event.shaRequired > target.mayHaveSha(target, "respond", null, "count")
+									) {
 										return false;
 									}
 									// if (target.hasSkill("naman")) {
@@ -1733,11 +1744,15 @@ game.import("card", function () {
 									if (damage >= 0) {
 										return false;
 									}
-									if (event.shanRequired > 1 && !target.hasSkillTag("freeShan", null, {
-										player: player,
-										card: event.card,
-										type: "respond",
-									}) && event.shanRequired > target.mayHaveShan(target, "respond", null, "count")) {
+									if (
+										event.shanRequired > 1 &&
+										!target.hasSkillTag("freeShan", null, {
+											player: player,
+											card: event.card,
+											type: "respond",
+										}) &&
+										event.shanRequired > target.mayHaveShan(target, "respond", null, "count")
+									) {
 										return false;
 									}
 									return true;
@@ -2195,11 +2210,15 @@ game.import("card", function () {
 										if (damage >= 0) {
 											return false;
 										}
-										if (event.shaRequired > 1 && !target.hasSkillTag("freeSha", null, {
-											player: player,
-											card: event.card,
-											type: "respond",
-										}) && event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")) {
+										if (
+											event.shaRequired > 1 &&
+											!target.hasSkillTag("freeSha", null, {
+												player: player,
+												card: event.card,
+												type: "respond",
+											}) &&
+											event.shaRequired > responder.mayHaveSha(responder, "respond", null, "count")
+										) {
 											return false;
 										}
 										if (get.attitude(responder, opposite._trueMe || opposite) > 0 && damage >= get.damageEffect(opposite, responder, responder)) {
@@ -2220,9 +2239,9 @@ game.import("card", function () {
 								}
 								result = await next.forResult();
 							}
-							if (result.bool) {
+							if (result?.bool) {
 								event.shaRequired--;
-								if (result.cards) {
+								if (result.cards?.length) {
 									if (event.turn === target) {
 										event.targetCards.addArray(result.cards);
 									} else {
@@ -3636,7 +3655,7 @@ game.import("card", function () {
 								return;
 							}
 							_status.zhuge_temp = card;
-							var bool = lib.filter.cardUsable(get.autoViewAs({ name: "sha" }, ui.selected.cards.concat([card])), player);
+							var bool = lib.filter.cardUsable(get.autoViewAs(cardz, ui.selected.cards.concat([card])), player);
 							delete _status.zhuge_temp;
 							if (!bool) {
 								return false;
@@ -4244,7 +4263,12 @@ game.import("card", function () {
 					player: "damageBegin4",
 				},
 				filter(event, player) {
-					return player.getEquips("jueying").length && lib.card.jueying.battleOfWancheng();
+					return (
+						lib.card.jueying.battleOfWancheng() &&
+						player.hasCard(card => {
+							return get.name(card, player) === "jueying";
+						}, "e")
+					);
 				},
 				check(event, player) {
 					if (event.num <= 0) {
@@ -4257,11 +4281,20 @@ game.import("card", function () {
 					if (event.num >= player.hp + (event.source && event.source.hasSkillTag("jueqing", false, player) ? 0 : player.hujia)) {
 						return true;
 					}
-					return eff + player.getEquips("jueying").reduce((acc, i) => acc + get.value(i, player), 0) < 0;
+					return (
+						player
+							.getCards("e", card => {
+								return get.name(card, player) === "jueying";
+							})
+							.reduce((acc, i) => acc - get.value(i, player), 0) >
+						eff * event.num
+					);
 				},
 				prompt: "是否发动〖绝影〗，将装备区内的【绝影】置入弃牌堆并防止此伤害？",
 				async content(event, trigger, player) {
-					var e3 = player.getEquips("jueying");
+					var e3 = player.getCards("e", card => {
+						return get.name(card, player) === "jueying";
+					});
 					if (e3.length) {
 						await player.loseToDiscardpile(e3);
 					}
@@ -5143,7 +5176,12 @@ game.import("card", function () {
 			bagua_info: "当你需要使用或打出一张【闪】时，你可以进行判定。若结果为红色，则你视为使用或打出一张【闪】。",
 			bagua_skill_info: "当你需要使用或打出一张【闪】时，你可以进行判定。若结果为红色，则你视为使用或打出一张【闪】。",
 			jueying_info: "锁定技，其他角色计算与你的距离+1。",
-			jueying_append: '<span class="text" style="font-family: yuanli">【绝影】于7月5日8时-7月21日24时位于装备区时，可以将【绝影】置入弃牌堆防止一次伤害。</span>',
+			get jueying_append() {
+				if (get.mode() == "doudizhu") {
+					return '<span class="text" style="font-family: yuanli">【绝影】于7月5日8时-7月21日24时位于装备区时，可以将【绝影】置入弃牌堆防止一次伤害。</span>';
+				}
+				return "";
+			},
 			dilu_info: "锁定技，其他角色计算与你的距离+1。",
 			zhuahuang_info: "锁定技，其他角色计算与你的距离+1。",
 			chitu_info: "锁定技，你计算与其他角色的距离-1。",

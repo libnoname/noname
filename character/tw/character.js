@@ -1,4 +1,11 @@
 const characters = {
+	tw_zhenji: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["mbbojian", "twjiwei"],
+		dieAudios: ["mb_sp_zhenji"],
+	},
 	tw_zhuzhi: {
 		sex: "male",
 		group: "wu",
@@ -272,7 +279,7 @@ const characters = {
 	xia_xiahousone: {
 		sex: "female",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["twchengxi"],
 		names: "夏侯|子萼",
 	},

@@ -1,0 +1,26 @@
+const translate = {
+	caochuanjiejian: "草船借箭",
+	caochuanjiejian_info: "出牌阶段对一名有手牌的其他角色使用，目标选择一项：将手牌中的所有杀（至少一张）交给你，并视为对你使用一张杀；或展示手牌并令你弃置任意张。",
+	shezhanqunru: "舌战群儒",
+	shezhanqunru_info: "出牌阶段，对你使用。你请求所有有手牌的其他角色响应，然后同时与响应的角色拼点。若有角色响应且结果中你赢的次数更多，或若没有角色响应，你摸三张牌。",
+	suolianjia: "锁链甲",
+	suolianjia_info: "锁定技，你防止即将受到的属性伤害，当装备时进入连环状态，当卸下时解除连环状态。",
+	suolianjia_bg: "链",
+	geanguanhuo: "隔岸观火",
+	geanguanhuo_info: "出牌阶段对一名其他角色使用，令目标与一名你指定的另一名角色拼点，赢的角色获得对方的一张牌；若点数相同，目标可弃置你一张牌（存活角色不超过2时可重铸）。",
+	toulianghuanzhu: "偷梁换柱",
+	toulianghuanzhu_info: "出牌阶段对一名其他角色使用，你观看其手牌，然后可以用一张手牌替牌其中的一张；若两张牌颜色相同，你摸一张牌。",
+	toulianghuanzhu_bg: "柱",
+	fudichouxin: "釜底抽薪",
+	fudichouxin_info: "与一名角色进行拼点，若成功则获得双方拼点牌。",
+	shuigong: "水攻",
+	shuigong_info: "令所有有装备的角色各弃置一张装备牌。",
+	chenhuodajie: "趁火打劫",
+	chenhuodajie_info: "任意一名其他角色受到伤害时对其使用，获得其一张牌。",
+	huoshan: "火山",
+	huoshan_info: "出牌阶段，对自己使用。若判定结果为红桃2~9，则目标角色受到2点火焰伤害，距离目标1以内的其他角色受到1点火焰伤害。若判定结果不为红桃2~9，将之移动到下家的判定区里。",
+	hongshui: "洪水",
+	hongshui_info: "出牌阶段，对自己使用。若判定结果为梅花2~9，该角色随机弃置三张牌，距离该角色为X的角色随机弃置3-X张牌，若没有牌则失去1点体力。若判定结果不为梅花2~9，将之移动到下家的判定区里。",
+};
+
+export default translate;

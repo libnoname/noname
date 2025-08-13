@@ -209,7 +209,7 @@ export class GameEvent {
 	 */
 	includeOut;
 	/**
-	 * @type { function[] }
+	 * @type { Function[] }
 	 */
 	targetprompt2 = [];
 	/**
@@ -784,10 +784,10 @@ export class GameEvent {
 		return this;
 	}
 	isMine() {
-		return this.player && this.player == game.me && !_status.auto && !this.player.isMad() && !game.notMe;
+		return this.player?.isMine();
 	}
 	isOnline() {
-		return this.player && this.player.isOnline();
+		return this.player?.isOnline();
 	}
 	notLink() {
 		return this.getParent().name != "_lianhuan" && this.getParent().name != "_lianhuan2";
@@ -1065,6 +1065,8 @@ export class GameEvent {
 				});
 
 			if (lib.config.compatiblemode) {
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				doing.addList(
 					game.expandSkills(player.getSkills("invisible").concat(lib.skill.global)).filter(skill => {
 						const info = get.info(skill);
@@ -1072,12 +1074,29 @@ export class GameEvent {
 							return false;
 						}
 						return roles.some(role => {
-							if (info.trigger[role] === name) {
+							const list = [];
+							if (typeof info.trigger[role] == "string") {
+								list.add(info.trigger[role]);
+							} else if (Array.isArray(info.trigger[role])) {
+								list.addArray(info.trigger[role]);
+							}
+							if (list.includes(name)) {
+								return true;
+							}
+							for (const trigger of list.slice()) {
+								for (const name of names) {
+									if (trigger.startsWith(name)) {
+										list.addArray(map[name].map(i => i + trigger.slice(name.length)));
+									}
+								}
+							}
+							return list.includes(name);
+							/*if (info.trigger[role] === name) {
 								return true;
 							}
 							if (Array.isArray(info.trigger[role]) && info.trigger[role].includes(name)) {
 								return true;
-							}
+							}*/
 						});
 					})
 				);

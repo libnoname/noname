@@ -1,9 +1,28 @@
 const characters = {
+	mb_caohong: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["mbyuanhu"],
+		dieAudios: ["caohong"],
+	},
+	pot_xinxianying: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["potchengjie", "potqingshi"],
+	},
+	mb_chenzhi: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["mbquanchong", "mbrenxing"],
+	},
 	sy_baosanniang: {
 		sex: "female",
 		group: "shu",
 		hp: 3,
-		skills: ["meiyong", "mbxushen", "mbzhennan"],
+		skills: ["mbshuyong", "mbxushen", "mbzhennan"],
 		dieAudios: ["baosanniang"],
 	},
 	fx_baosanniang: {

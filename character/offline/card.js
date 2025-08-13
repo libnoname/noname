@@ -4,6 +4,7 @@ const cards = {
 	hschenzhi_poker: {
 		type: "poker",
 		fullskin: true,
+		noname: true,
 	},
 	chunqiubi: {
 		derivation: "chenshou",

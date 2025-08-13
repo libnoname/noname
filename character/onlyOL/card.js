@@ -7,8 +7,18 @@ const cards = {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip1",
-		get destroy() {
+		/*get destroy() {
 			return !lib.card.sizhaojian.inShanShanFestival();
+		},*/
+		onLose() {
+			if (!lib.card.sizhaojian.inShanShanFestival() && (!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
+				cards.forEach(card => {
+					card.fix();
+					card.remove();
+					card.destroyed = true;
+					game.log(card, "被销毁了");
+				});
+			}
 		},
 		inShanShanFestival() {
 			//闪闪节外离开装备区会销毁

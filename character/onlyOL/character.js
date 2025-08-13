@@ -1,4 +1,43 @@
 const characters = {
+	ol_sb_lusu: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["olsbduduan", "olsbyinglve", "olsbmengshi"],
+	},
+	ol_sb_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["olsbzhitian", "olsbliwu", "olsbzhijue"],
+		names: "诸葛|亮",
+	},
+	ol_sunluban: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["olzenhui", "oljiaojin"],
+	},
+	dm_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olduoqi", "olkuangmo", "olgangquan"],
+	},
+	dm_diaochan: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["olhuanhuo", "olqingshi"],
+		names: "null|null",
+	},
+	ol_guohuanghou: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["oljiaozhao", "oldanxin"],
+		names: "郭|null",
+	},
 	ol_sb_xiaoqiao: {
 		sex: "female",
 		group: "wu",

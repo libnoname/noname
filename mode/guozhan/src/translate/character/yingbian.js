@@ -14,4 +14,6 @@ export default {
 	gz_sunxiù: "孙秀",
 	gz_bailingyun: "柏夫人",
 	gz_wenyang: "文鸯",
+	gz_pk_sp_duyu: "杜预",
+	gz_pk_sp_duyu_ab: "应变杜预",
 };

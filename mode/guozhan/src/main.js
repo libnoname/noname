@@ -115,7 +115,7 @@ export const start = async (event, trigger, player) => {
 					}
 				}
 				for (const character in lib.character) {
-					if (lib.character[character][1] == "shen" || lib.character[character][1] == "western") {
+					if (lib.selectGroup.includes(lib.character[character][1]) || lib.character[character].groupInGuozhan) {
 						lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 					}
 				}
@@ -192,6 +192,40 @@ export const start = async (event, trigger, player) => {
 			game.players[i].node.name.hide();
 			game.players[i].node.name2.hide();
 			game.players[i].getId();
+		}
+
+		const groups = ["wei", "shu", "wu", "qun", "jin"];
+		const chosen = lib.config.continue_name || [];
+		if (get.config("banGroup") && groups?.length && !chosen?.length) {
+			const group = groups.randomGet();
+			event.videoId = lib.status.videoId++;
+			let createDialog = function (group, id) {
+				_status.bannedGroup = group;
+				var dialog = ui.create.dialog(`本局禁用势力：${get.translation(group)}`, [[["", "", group]], "vcard"], "forcebutton");
+				dialog.videoId = id;
+			};
+			game.log("本局", `<span data-nature=${get.groupnature(group, "raw")}m>${get.translation(group)}势力</span>`, "遭到了禁用");
+			game.broadcastAll(createDialog, `group_${group}`, event.videoId);
+			for (const character in lib.character) {
+				const info = get.character(character);
+				if (info?.doubleGroup?.includes(group)) {
+					info.doubleGroup.remove(group);
+					if (info.group == group && info.doubleGroup?.length) {
+						info.group = info.doubleGroup[0];
+					}
+					if (info.doubleGroup.length == 1) {
+						info.doubleGroup = [];
+					}
+				}
+				if (info.group == group) {
+					info.isUnseen = true;
+				}
+				game.broadcast((name, info) => {
+					get.character(name) = info;
+				}, character, info);
+			}
+			await game.delay(5);
+			game.broadcastAll("closeDialog", event.videoId);
 		}
 
 		if (_status.brawl && _status.brawl.chooseCharacterBefore) {
@@ -292,7 +326,7 @@ export const startBefore = () => {
 		}
 	}
 	for (const character in lib.character) {
-		if (lib.character[character].group == "shen") {
+		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}
@@ -314,7 +348,7 @@ export const onreinit = () => {
 	}
 
 	for (const character in lib.character) {
-		if (lib.character[character].group == "shen" || lib.character[character].group == "western") {
+		if (lib.selectGroup.includes(lib.character[character].group) || lib.character[character].groupInGuozhan) {
 			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
 		}
 	}

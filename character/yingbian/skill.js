@@ -2135,7 +2135,7 @@ const skills = {
 		hiddenSkill: true,
 		filter(event, player) {
 			var target = _status.currentPhase;
-			return event.toShow?.some(i => get.character(i).skills?.includes("buchen")) && target && target != player && target.countGainableCards(player, "he") > 0;
+			return event.toShow?.some(i => get.character(i).skills?.includes("buchen")) && target?.isIn() && target != player && target.countGainableCards(player, "he") > 0;
 		},
 		direct: true,
 		content() {
@@ -2145,42 +2145,60 @@ const skills = {
 	},
 	smyyingshi: {
 		audio: 2,
-		enable: "phaseUse",
 		locked: true,
-		filter(event, player) {
-			return Array.isArray(event.smyyingshi);
+		clickableFilter(player) {
+			return player.isPhaseUsing();
 		},
-		onChooseToUse(event) {
-			if (game.online || !event.player.hasSkill("smyyingshi")) {
-				return;
-			}
-			var cards = [];
-			for (var i = 0; i < event.player.maxHp; i++) {
-				var card = ui.cardPile.childNodes[i];
-				if (card) {
-					cards.push(card);
+		clickable(player) {
+			if (player.isUnderControl(true)) {
+				const cards = lib.skill.smyyingshi.getCards(player);
+				function createDialogWithControl(result) {
+					const dialog = ui.create.dialog("鹰视", "peaceDialog");
+					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
+					const control = ui.create.control("确定", () => dialog.close());
+					dialog._close = dialog.close;
+					dialog.hide = dialog.close = function (...args) {
+						control.close();
+						return dialog._close(...args);
+					};
+					dialog.open();
+				}
+				if (cards instanceof Promise) {
+					cards.then(([ok, result]) => createDialogWithControl(result));
 				} else {
-					break;
+					createDialogWithControl(cards);
 				}
 			}
-			event.set("smyyingshi", cards);
 		},
-		chooseButton: {
-			dialog(event) {
-				var dialog = ui.create.dialog("鹰视", "hidden");
-				if (event.smyyingshi && event.smyyingshi.length) {
-					dialog.add(event.smyyingshi);
+		getCards(player) {
+			const num = player.maxHp;
+			if (num > 0) {
+				if (game.online) {
+					return game.dataRequest("olsbzhitian", "getTopCards", 10000, num);
 				} else {
-					dialog.addText("牌堆无牌");
+					if (ui.cardPile.hasChildNodes !== false) {
+						return Array.from(ui.cardPile.childNodes).slice(0, num);
+					}
 				}
-				for (var i of dialog.buttons) {
-					i.classList.add("noclick");
+			}
+			return [];
+		},
+		mark: true,
+		marktext: "牌",
+		intro: {
+			mark(dialog, content, player, event, skill) {
+				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
+					if (!this.classList.contains("disabled")) {
+						this.classList.add("disabled");
+						this.style.opacity = 0.5;
+						lib.skill[skill].clickable(player);
+					}
+				});
+				if (!_status.gameStarted || !player.isUnderControl(true) || !lib.skill[skill].clickableFilter(player)) {
+					intronode.classList.add("disabled");
+					intronode.style.opacity = 0.5;
 				}
-				dialog.buttons.length = 0;
-				return dialog;
-			},
-			filter() {
-				return false;
+				dialog.add(intronode);
 			},
 		},
 	},
@@ -2190,31 +2208,20 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			"step 1";
-			var card = get.cards()[0];
-			event.card = card;
-			player.showCards(card);
-			if (!player.hasUseTarget(card)) {
-				card.fix();
-				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
-				game.updateRoundNumber();
-				event.finish();
-			}
-			"step 2";
-			var next = player.chooseUseTarget(card, true);
-			if (get.info(card).updateUsable == "phaseUse") {
-				next.addCount = false;
-			}
-			"step 3";
-			if (result.bool) {
-				event.goto(1);
-			} else {
-				card.fix();
-				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
-				game.updateRoundNumber();
+			while (true) {
+				const card = get.cards()[0];
+				const content = ["牌堆顶", [card]];
+				game.log(player, "观看了牌堆顶的一张牌");
+				await player.chooseControl("ok").set("dialog", content);
+				if (player.hasUseTarget(card, null, card.name === "sha") || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
+					const result = await player.chooseUseTarget(card, true).forResult();
+					if (result?.bool) {
+						continue;
+					}
+				}
+				break;
 			}
 		},
 		ai: {
@@ -2224,7 +2231,6 @@ const skills = {
 					if (!player.hasSkill("smyyingshi")) {
 						return 1;
 					}
-					var cards = [];
 					for (var i = 0; i < Math.min(2, player.maxHp); i++) {
 						var card = ui.cardPile.childNodes[i];
 						if (card) {
@@ -2245,7 +2251,7 @@ const skills = {
 		trigger: { player: ["useCard", "respond"] },
 		hasHand(event) {
 			var evts = event.player.getHistory("lose", function (evt) {
-				return evt.getParent() == event;
+				return (evt.relatedEvent || evt.getParent()) == event;
 			});
 			return evts && evts.length == 1 && evts[0].hs.length > 0;
 		},
@@ -3106,7 +3112,7 @@ const skills = {
 			}
 			return (
 				player.getHistory("lose", function (evt) {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					for (var i in evt.gaintag_map) {
@@ -3398,11 +3404,13 @@ const skills = {
 			return player != event.player && event.num < event.player.hp;
 		},
 		check(event, player) {
-			if (event.player.hasSkillTag("nodamage", null, {
-				source: player,
-				card: event.card,
-				natures: get.natureList(event),
-			})) {
+			if (
+				event.player.hasSkillTag("nodamage", null, {
+					source: player,
+					card: event.card,
+					natures: get.natureList(event),
+				})
+			) {
 				return false;
 			}
 			let tj = player.countCards("hs", function (card) {

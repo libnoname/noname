@@ -436,6 +436,7 @@ __export(typescript_exports, {
   createPrinterWithRemoveCommentsNeverAsciiEscape: () => createPrinterWithRemoveCommentsNeverAsciiEscape,
   createPrinterWithRemoveCommentsOmitTrailingSemicolon: () => createPrinterWithRemoveCommentsOmitTrailingSemicolon,
   createProgram: () => createProgram,
+  createProgramDiagnostics: () => createProgramDiagnostics,
   createProgramHost: () => createProgramHost,
   createPropertyNameNodeForIdentifierOrLiteral: () => createPropertyNameNodeForIdentifierOrLiteral,
   createQueue: () => createQueue,
@@ -605,6 +606,8 @@ __export(typescript_exports, {
   forEachLeadingCommentRange: () => forEachLeadingCommentRange,
   forEachNameInAccessChainWalkingLeft: () => forEachNameInAccessChainWalkingLeft,
   forEachNameOfDefaultExport: () => forEachNameOfDefaultExport,
+  forEachOptionsSyntaxByName: () => forEachOptionsSyntaxByName,
+  forEachProjectReference: () => forEachProjectReference,
   forEachPropertyAssignment: () => forEachPropertyAssignment,
   forEachResolvedProjectReference: () => forEachResolvedProjectReference,
   forEachReturnStatement: () => forEachReturnStatement,
@@ -844,6 +847,8 @@ __export(typescript_exports, {
   getLeadingCommentRangesOfNode: () => getLeadingCommentRangesOfNode,
   getLeftmostAccessExpression: () => getLeftmostAccessExpression,
   getLeftmostExpression: () => getLeftmostExpression,
+  getLibFileNameFromLibReference: () => getLibFileNameFromLibReference,
+  getLibNameFromLibReference: () => getLibNameFromLibReference,
   getLibraryNameFromLibFileName: () => getLibraryNameFromLibFileName,
   getLineAndCharacterOfPosition: () => getLineAndCharacterOfPosition,
   getLineInfo: () => getLineInfo,
@@ -916,6 +921,8 @@ __export(typescript_exports, {
   getOptionFromName: () => getOptionFromName,
   getOptionsForLibraryResolution: () => getOptionsForLibraryResolution,
   getOptionsNameMap: () => getOptionsNameMap,
+  getOptionsSyntaxByArrayElementValue: () => getOptionsSyntaxByArrayElementValue,
+  getOptionsSyntaxByValue: () => getOptionsSyntaxByValue,
   getOrCreateEmitNode: () => getOrCreateEmitNode,
   getOrUpdate: () => getOrUpdate,
   getOriginalNode: () => getOriginalNode,
@@ -952,7 +959,6 @@ __export(typescript_exports, {
   getPrivateIdentifier: () => getPrivateIdentifier,
   getProperties: () => getProperties,
   getProperty: () => getProperty,
-  getPropertyArrayElementValue: () => getPropertyArrayElementValue,
   getPropertyAssignmentAliasLikeExpression: () => getPropertyAssignmentAliasLikeExpression,
   getPropertyNameForPropertyNameNode: () => getPropertyNameForPropertyNameNode,
   getPropertyNameFromType: () => getPropertyNameFromType,
@@ -1863,6 +1869,7 @@ __export(typescript_exports, {
   moduleResolutionUsesNodeModules: () => moduleResolutionUsesNodeModules,
   moduleSpecifierToValidIdentifier: () => moduleSpecifierToValidIdentifier,
   moduleSpecifiers: () => ts_moduleSpecifiers_exports,
+  moduleSupportsImportAttributes: () => moduleSupportsImportAttributes,
   moduleSymbolToValidIdentifier: () => moduleSymbolToValidIdentifier,
   moveEmitHelpers: () => moveEmitHelpers,
   moveRangeEnd: () => moveRangeEnd,
@@ -2277,8 +2284,8 @@ __export(typescript_exports, {
 module.exports = __toCommonJS(typescript_exports);
 
 // src/compiler/corePublic.ts
-var versionMajorMinor = "5.7";
-var version = "5.7.3";
+var versionMajorMinor = "5.8";
+var version = "5.8.3";
 var Comparison = /* @__PURE__ */ ((Comparison3) => {
   Comparison3[Comparison3["LessThan"] = -1] = "LessThan";
   Comparison3[Comparison3["EqualTo"] = 0] = "EqualTo";
@@ -6727,6 +6734,7 @@ var ModuleKind = /* @__PURE__ */ ((ModuleKind3) => {
   ModuleKind3[ModuleKind3["ES2022"] = 7] = "ES2022";
   ModuleKind3[ModuleKind3["ESNext"] = 99] = "ESNext";
   ModuleKind3[ModuleKind3["Node16"] = 100] = "Node16";
+  ModuleKind3[ModuleKind3["Node18"] = 101] = "Node18";
   ModuleKind3[ModuleKind3["NodeNext"] = 199] = "NodeNext";
   ModuleKind3[ModuleKind3["Preserve"] = 200] = "Preserve";
   return ModuleKind3;
@@ -7141,8 +7149,9 @@ var OuterExpressionKinds = /* @__PURE__ */ ((OuterExpressionKinds2) => {
   OuterExpressionKinds2[OuterExpressionKinds2["NonNullAssertions"] = 4] = "NonNullAssertions";
   OuterExpressionKinds2[OuterExpressionKinds2["PartiallyEmittedExpressions"] = 8] = "PartiallyEmittedExpressions";
   OuterExpressionKinds2[OuterExpressionKinds2["ExpressionsWithTypeArguments"] = 16] = "ExpressionsWithTypeArguments";
-  OuterExpressionKinds2[OuterExpressionKinds2["Assertions"] = 6] = "Assertions";
-  OuterExpressionKinds2[OuterExpressionKinds2["All"] = 31] = "All";
+  OuterExpressionKinds2[OuterExpressionKinds2["Satisfies"] = 32] = "Satisfies";
+  OuterExpressionKinds2[OuterExpressionKinds2["Assertions"] = 38] = "Assertions";
+  OuterExpressionKinds2[OuterExpressionKinds2["All"] = 63] = "All";
   OuterExpressionKinds2[OuterExpressionKinds2["ExcludeJSDocTypeAssertion"] = -2147483648] = "ExcludeJSDocTypeAssertion";
   return OuterExpressionKinds2;
 })(OuterExpressionKinds || {});
@@ -8871,23 +8880,105 @@ function resolvePath(path, ...paths) {
 function getNormalizedPathComponents(path, currentDirectory) {
   return reducePathComponents(getPathComponents(path, currentDirectory));
 }
-function getNormalizedAbsolutePath(fileName, currentDirectory) {
-  return getPathFromPathComponents(getNormalizedPathComponents(fileName, currentDirectory));
+function getNormalizedAbsolutePath(path, currentDirectory) {
+  let rootLength = getRootLength(path);
+  if (rootLength === 0 && currentDirectory) {
+    path = combinePaths(currentDirectory, path);
+    rootLength = getRootLength(path);
+  } else {
+    path = normalizeSlashes(path);
+  }
+  const simpleNormalized = simpleNormalizePath(path);
+  if (simpleNormalized !== void 0) {
+    return simpleNormalized.length > rootLength ? removeTrailingDirectorySeparator(simpleNormalized) : simpleNormalized;
+  }
+  const length2 = path.length;
+  const root = path.substring(0, rootLength);
+  let normalized;
+  let index = rootLength;
+  let segmentStart = index;
+  let normalizedUpTo = index;
+  let seenNonDotDotSegment = rootLength !== 0;
+  while (index < length2) {
+    segmentStart = index;
+    let ch = path.charCodeAt(index);
+    while (ch === 47 /* slash */ && index + 1 < length2) {
+      index++;
+      ch = path.charCodeAt(index);
+    }
+    if (index > segmentStart) {
+      normalized ?? (normalized = path.substring(0, segmentStart - 1));
+      segmentStart = index;
+    }
+    let segmentEnd = path.indexOf(directorySeparator, index + 1);
+    if (segmentEnd === -1) {
+      segmentEnd = length2;
+    }
+    const segmentLength = segmentEnd - segmentStart;
+    if (segmentLength === 1 && path.charCodeAt(index) === 46 /* dot */) {
+      normalized ?? (normalized = path.substring(0, normalizedUpTo));
+    } else if (segmentLength === 2 && path.charCodeAt(index) === 46 /* dot */ && path.charCodeAt(index + 1) === 46 /* dot */) {
+      if (!seenNonDotDotSegment) {
+        if (normalized !== void 0) {
+          normalized += normalized.length === rootLength ? ".." : "/..";
+        } else {
+          normalizedUpTo = index + 2;
+        }
+      } else if (normalized === void 0) {
+        if (normalizedUpTo - 2 >= 0) {
+          normalized = path.substring(0, Math.max(rootLength, path.lastIndexOf(directorySeparator, normalizedUpTo - 2)));
+        } else {
+          normalized = path.substring(0, normalizedUpTo);
+        }
+      } else {
+        const lastSlash = normalized.lastIndexOf(directorySeparator);
+        if (lastSlash !== -1) {
+          normalized = normalized.substring(0, Math.max(rootLength, lastSlash));
+        } else {
+          normalized = root;
+        }
+        if (normalized.length === rootLength) {
+          seenNonDotDotSegment = rootLength !== 0;
+        }
+      }
+    } else if (normalized !== void 0) {
+      if (normalized.length !== rootLength) {
+        normalized += directorySeparator;
+      }
+      seenNonDotDotSegment = true;
+      normalized += path.substring(segmentStart, segmentEnd);
+    } else {
+      seenNonDotDotSegment = true;
+      normalizedUpTo = segmentEnd;
+    }
+    index = segmentEnd + 1;
+  }
+  return normalized ?? (length2 > rootLength ? removeTrailingDirectorySeparator(path) : path);
 }
 function normalizePath(path) {
   path = normalizeSlashes(path);
+  let normalized = simpleNormalizePath(path);
+  if (normalized !== void 0) {
+    return normalized;
+  }
+  normalized = getNormalizedAbsolutePath(path, "");
+  return normalized && hasTrailingDirectorySeparator(path) ? ensureTrailingDirectorySeparator(normalized) : normalized;
+}
+function simpleNormalizePath(path) {
   if (!relativePathSegmentRegExp.test(path)) {
     return path;
   }
-  const simplified = path.replace(/\/\.\//g, "/").replace(/^\.\//, "");
+  let simplified = path.replace(/\/\.\//g, "/");
+  if (simplified.startsWith("./")) {
+    simplified = simplified.slice(2);
+  }
   if (simplified !== path) {
     path = simplified;
     if (!relativePathSegmentRegExp.test(path)) {
       return path;
     }
   }
-  const normalized = getPathFromPathComponents(reducePathComponents(getPathComponents(path)));
-  return normalized && hasTrailingDirectorySeparator(path) ? ensureTrailingDirectorySeparator(normalized) : normalized;
+  return void 0;
 }
 function getPathWithoutRoot(pathComponents2) {
   if (pathComponents2.length === 0) return "";
@@ -9315,6 +9406,7 @@ var Diagnostics = {
   _0_resolves_to_a_type_and_must_be_marked_type_only_in_this_file_before_re_exporting_when_1_is_enabled_Consider_using_import_type_where_0_is_imported: diag(1291, 1 /* Error */, "_0_resolves_to_a_type_and_must_be_marked_type_only_in_this_file_before_re_exporting_when_1_is_enable_1291", "'{0}' resolves to a type and must be marked type-only in this file before re-exporting when '{1}' is enabled. Consider using 'import type' where '{0}' is imported."),
   _0_resolves_to_a_type_and_must_be_marked_type_only_in_this_file_before_re_exporting_when_1_is_enabled_Consider_using_export_type_0_as_default: diag(1292, 1 /* Error */, "_0_resolves_to_a_type_and_must_be_marked_type_only_in_this_file_before_re_exporting_when_1_is_enable_1292", "'{0}' resolves to a type and must be marked type-only in this file before re-exporting when '{1}' is enabled. Consider using 'export type { {0} as default }'."),
   ESM_syntax_is_not_allowed_in_a_CommonJS_module_when_module_is_set_to_preserve: diag(1293, 1 /* Error */, "ESM_syntax_is_not_allowed_in_a_CommonJS_module_when_module_is_set_to_preserve_1293", "ESM syntax is not allowed in a CommonJS module when 'module' is set to 'preserve'."),
+  This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled: diag(1294, 1 /* Error */, "This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled_1294", "This syntax is not allowed when 'erasableSyntaxOnly' is enabled."),
   with_statements_are_not_allowed_in_an_async_function_block: diag(1300, 1 /* Error */, "with_statements_are_not_allowed_in_an_async_function_block_1300", "'with' statements are not allowed in an async function block."),
   await_expressions_are_only_allowed_within_async_functions_and_at_the_top_levels_of_modules: diag(1308, 1 /* Error */, "await_expressions_are_only_allowed_within_async_functions_and_at_the_top_levels_of_modules_1308", "'await' expressions are only allowed within async functions and at the top levels of modules."),
   The_current_file_is_a_CommonJS_module_and_cannot_use_await_at_the_top_level: diag(1309, 1 /* Error */, "The_current_file_is_a_CommonJS_module_and_cannot_use_await_at_the_top_level_1309", "The current file is a CommonJS module and cannot use 'await' at the top level."),
@@ -9329,8 +9421,8 @@ var Diagnostics = {
   Type_of_await_operand_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member: diag(1320, 1 /* Error */, "Type_of_await_operand_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member_1320", "Type of 'await' operand must either be a valid promise or must not contain a callable 'then' member."),
   Type_of_yield_operand_in_an_async_generator_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member: diag(1321, 1 /* Error */, "Type_of_yield_operand_in_an_async_generator_must_either_be_a_valid_promise_or_must_not_contain_a_cal_1321", "Type of 'yield' operand in an async generator must either be a valid promise or must not contain a callable 'then' member."),
   Type_of_iterated_elements_of_a_yield_Asterisk_operand_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member: diag(1322, 1 /* Error */, "Type_of_iterated_elements_of_a_yield_Asterisk_operand_must_either_be_a_valid_promise_or_must_not_con_1322", "Type of iterated elements of a 'yield*' operand must either be a valid promise or must not contain a callable 'then' member."),
-  Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd_system_umd_node16_or_nodenext: diag(1323, 1 /* Error */, "Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd__1323", "Dynamic imports are only supported when the '--module' flag is set to 'es2020', 'es2022', 'esnext', 'commonjs', 'amd', 'system', 'umd', 'node16', or 'nodenext'."),
-  Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_nodenext_or_preserve: diag(1324, 1 /* Error */, "Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_nodene_1324", "Dynamic imports only support a second argument when the '--module' option is set to 'esnext', 'node16', 'nodenext', or 'preserve'."),
+  Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd_system_umd_node16_node18_or_nodenext: diag(1323, 1 /* Error */, "Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd__1323", "Dynamic imports are only supported when the '--module' flag is set to 'es2020', 'es2022', 'esnext', 'commonjs', 'amd', 'system', 'umd', 'node16', 'node18', or 'nodenext'."),
+  Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_node18_nodenext_or_preserve: diag(1324, 1 /* Error */, "Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_node18_1324", "Dynamic imports only support a second argument when the '--module' option is set to 'esnext', 'node16', 'node18', 'nodenext', or 'preserve'."),
   Argument_of_dynamic_import_cannot_be_spread_element: diag(1325, 1 /* Error */, "Argument_of_dynamic_import_cannot_be_spread_element_1325", "Argument of dynamic import cannot be spread element."),
   This_use_of_import_is_invalid_import_calls_can_be_written_but_they_must_have_parentheses_and_cannot_have_type_arguments: diag(1326, 1 /* Error */, "This_use_of_import_is_invalid_import_calls_can_be_written_but_they_must_have_parentheses_and_cannot__1326", "This use of 'import' is invalid. 'import()' calls can be written, but they must have parentheses and cannot have type arguments."),
   String_literal_with_double_quotes_expected: diag(1327, 1 /* Error */, "String_literal_with_double_quotes_expected_1327", "String literal with double quotes expected."),
@@ -9347,7 +9439,7 @@ var Diagnostics = {
   Module_0_does_not_refer_to_a_value_but_is_used_as_a_value_here: diag(1339, 1 /* Error */, "Module_0_does_not_refer_to_a_value_but_is_used_as_a_value_here_1339", "Module '{0}' does not refer to a value, but is used as a value here."),
   Module_0_does_not_refer_to_a_type_but_is_used_as_a_type_here_Did_you_mean_typeof_import_0: diag(1340, 1 /* Error */, "Module_0_does_not_refer_to_a_type_but_is_used_as_a_type_here_Did_you_mean_typeof_import_0_1340", "Module '{0}' does not refer to a type, but is used as a type here. Did you mean 'typeof import('{0}')'?"),
   Class_constructor_may_not_be_an_accessor: diag(1341, 1 /* Error */, "Class_constructor_may_not_be_an_accessor_1341", "Class constructor may not be an accessor."),
-  The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system_node16_or_nodenext: diag(1343, 1 /* Error */, "The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system__1343", "The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'."),
+  The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system_node16_node18_or_nodenext: diag(1343, 1 /* Error */, "The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system__1343", "The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', or 'nodenext'."),
   A_label_is_not_allowed_here: diag(1344, 1 /* Error */, "A_label_is_not_allowed_here_1344", "'A label is not allowed here."),
   An_expression_of_type_void_cannot_be_tested_for_truthiness: diag(1345, 1 /* Error */, "An_expression_of_type_void_cannot_be_tested_for_truthiness_1345", "An expression of type 'void' cannot be tested for truthiness."),
   This_parameter_is_not_allowed_with_use_strict_directive: diag(1346, 1 /* Error */, "This_parameter_is_not_allowed_with_use_strict_directive_1346", "This parameter is not allowed with 'use strict' directive."),
@@ -9377,7 +9469,7 @@ var Diagnostics = {
   await_expressions_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_this_file_has_no_imports_or_exports_Consider_adding_an_empty_export_to_make_this_file_a_module: diag(1375, 1 /* Error */, "await_expressions_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_this_fi_1375", "'await' expressions are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module."),
   _0_was_imported_here: diag(1376, 3 /* Message */, "_0_was_imported_here_1376", "'{0}' was imported here."),
   _0_was_exported_here: diag(1377, 3 /* Message */, "_0_was_exported_here_1377", "'{0}' was exported here."),
-  Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(1378, 1 /* Error */, "Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_n_1378", "Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
+  Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(1378, 1 /* Error */, "Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_n_1378", "Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
   An_import_alias_cannot_reference_a_declaration_that_was_exported_using_export_type: diag(1379, 1 /* Error */, "An_import_alias_cannot_reference_a_declaration_that_was_exported_using_export_type_1379", "An import alias cannot reference a declaration that was exported using 'export type'."),
   An_import_alias_cannot_reference_a_declaration_that_was_imported_using_import_type: diag(1380, 1 /* Error */, "An_import_alias_cannot_reference_a_declaration_that_was_imported_using_import_type_1380", "An import alias cannot reference a declaration that was imported using 'import type'."),
   Unexpected_token_Did_you_mean_or_rbrace: diag(1381, 1 /* Error */, "Unexpected_token_Did_you_mean_or_rbrace_1381", "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?"),
@@ -9428,7 +9520,7 @@ var Diagnostics = {
   File_redirects_to_file_0: diag(1429, 3 /* Message */, "File_redirects_to_file_0_1429", "File redirects to file '{0}'"),
   The_file_is_in_the_program_because_Colon: diag(1430, 3 /* Message */, "The_file_is_in_the_program_because_Colon_1430", "The file is in the program because:"),
   for_await_loops_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_this_file_has_no_imports_or_exports_Consider_adding_an_empty_export_to_make_this_file_a_module: diag(1431, 1 /* Error */, "for_await_loops_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_this_file_1431", "'for await' loops are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module."),
-  Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(1432, 1 /* Error */, "Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_nod_1432", "Top-level 'for await' loops are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
+  Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(1432, 1 /* Error */, "Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_nod_1432", "Top-level 'for await' loops are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
   Neither_decorators_nor_modifiers_may_be_applied_to_this_parameters: diag(1433, 1 /* Error */, "Neither_decorators_nor_modifiers_may_be_applied_to_this_parameters_1433", "Neither decorators nor modifiers may be applied to 'this' parameters."),
   Unexpected_keyword_or_identifier: diag(1434, 1 /* Error */, "Unexpected_keyword_or_identifier_1434", "Unexpected keyword or identifier."),
   Unknown_keyword_or_identifier_Did_you_mean_0: diag(1435, 1 /* Error */, "Unknown_keyword_or_identifier_Did_you_mean_0_1435", "Unknown keyword or identifier. Did you mean '{0}'?"),
@@ -10070,9 +10162,9 @@ var Diagnostics = {
   Duplicate_identifier_0_Compiler_reserves_name_1_when_emitting_super_references_in_static_initializers: diag(2818, 1 /* Error */, "Duplicate_identifier_0_Compiler_reserves_name_1_when_emitting_super_references_in_static_initializer_2818", "Duplicate identifier '{0}'. Compiler reserves name '{1}' when emitting 'super' references in static initializers."),
   Namespace_name_cannot_be_0: diag(2819, 1 /* Error */, "Namespace_name_cannot_be_0_2819", "Namespace name cannot be '{0}'."),
   Type_0_is_not_assignable_to_type_1_Did_you_mean_2: diag(2820, 1 /* Error */, "Type_0_is_not_assignable_to_type_1_Did_you_mean_2_2820", "Type '{0}' is not assignable to type '{1}'. Did you mean '{2}'?"),
-  Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve: diag(2821, 1 /* Error */, "Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve_2821", "Import assertions are only supported when the '--module' option is set to 'esnext', 'nodenext', or 'preserve'."),
+  Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_preserve: diag(2821, 1 /* Error */, "Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_pres_2821", "Import assertions are only supported when the '--module' option is set to 'esnext', 'node18', 'nodenext', or 'preserve'."),
   Import_assertions_cannot_be_used_with_type_only_imports_or_exports: diag(2822, 1 /* Error */, "Import_assertions_cannot_be_used_with_type_only_imports_or_exports_2822", "Import assertions cannot be used with type-only imports or exports."),
-  Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve: diag(2823, 1 /* Error */, "Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve_2823", "Import attributes are only supported when the '--module' option is set to 'esnext', 'nodenext', or 'preserve'."),
+  Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_preserve: diag(2823, 1 /* Error */, "Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_pres_2823", "Import attributes are only supported when the '--module' option is set to 'esnext', 'node18', 'nodenext', or 'preserve'."),
   Cannot_find_namespace_0_Did_you_mean_1: diag(2833, 1 /* Error */, "Cannot_find_namespace_0_Did_you_mean_1_2833", "Cannot find namespace '{0}'. Did you mean '{1}'?"),
   Relative_import_paths_need_explicit_file_extensions_in_ECMAScript_imports_when_moduleResolution_is_node16_or_nodenext_Consider_adding_an_extension_to_the_import_path: diag(2834, 1 /* Error */, "Relative_import_paths_need_explicit_file_extensions_in_ECMAScript_imports_when_moduleResolution_is_n_2834", "Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path."),
   Relative_import_paths_need_explicit_file_extensions_in_ECMAScript_imports_when_moduleResolution_is_node16_or_nodenext_Did_you_mean_0: diag(2835, 1 /* Error */, "Relative_import_paths_need_explicit_file_extensions_in_ECMAScript_imports_when_moduleResolution_is_n_2835", "Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '{0}'?"),
@@ -10092,7 +10184,7 @@ var Diagnostics = {
   The_initializer_of_an_await_using_declaration_must_be_either_an_object_with_a_Symbol_asyncDispose_or_Symbol_dispose_method_or_be_null_or_undefined: diag(2851, 1 /* Error */, "The_initializer_of_an_await_using_declaration_must_be_either_an_object_with_a_Symbol_asyncDispose_or_2851", "The initializer of an 'await using' declaration must be either an object with a '[Symbol.asyncDispose]()' or '[Symbol.dispose]()' method, or be 'null' or 'undefined'."),
   await_using_statements_are_only_allowed_within_async_functions_and_at_the_top_levels_of_modules: diag(2852, 1 /* Error */, "await_using_statements_are_only_allowed_within_async_functions_and_at_the_top_levels_of_modules_2852", "'await using' statements are only allowed within async functions and at the top levels of modules."),
   await_using_statements_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_this_file_has_no_imports_or_exports_Consider_adding_an_empty_export_to_make_this_file_a_module: diag(2853, 1 /* Error */, "await_using_statements_are_only_allowed_at_the_top_level_of_a_file_when_that_file_is_a_module_but_th_2853", "'await using' statements are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module."),
-  Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(2854, 1 /* Error */, "Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_sys_2854", "Top-level 'await using' statements are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
+  Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher: diag(2854, 1 /* Error */, "Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_sys_2854", "Top-level 'await using' statements are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', 'node18', 'nodenext', or 'preserve', and the 'target' option is set to 'es2017' or higher."),
   Class_field_0_defined_by_the_parent_class_is_not_accessible_in_the_child_class_via_super: diag(2855, 1 /* Error */, "Class_field_0_defined_by_the_parent_class_is_not_accessible_in_the_child_class_via_super_2855", "Class field '{0}' defined by the parent class is not accessible in the child class via super."),
   Import_attributes_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls: diag(2856, 1 /* Error */, "Import_attributes_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls_2856", "Import attributes are not allowed on statements that compile to CommonJS 'require' calls."),
   Import_attributes_cannot_be_used_with_type_only_imports_or_exports: diag(2857, 1 /* Error */, "Import_attributes_cannot_be_used_with_type_only_imports_or_exports_2857", "Import attributes cannot be used with type-only imports or exports."),
@@ -10118,6 +10210,7 @@ var Diagnostics = {
   This_import_uses_a_0_extension_to_resolve_to_an_input_TypeScript_file_but_will_not_be_rewritten_during_emit_because_it_is_not_a_relative_path: diag(2877, 1 /* Error */, "This_import_uses_a_0_extension_to_resolve_to_an_input_TypeScript_file_but_will_not_be_rewritten_duri_2877", "This import uses a '{0}' extension to resolve to an input TypeScript file, but will not be rewritten during emit because it is not a relative path."),
   This_import_path_is_unsafe_to_rewrite_because_it_resolves_to_another_project_and_the_relative_path_between_the_projects_output_files_is_not_the_same_as_the_relative_path_between_its_input_files: diag(2878, 1 /* Error */, "This_import_path_is_unsafe_to_rewrite_because_it_resolves_to_another_project_and_the_relative_path_b_2878", "This import path is unsafe to rewrite because it resolves to another project, and the relative path between the projects' output files is not the same as the relative path between its input files."),
   Using_JSX_fragments_requires_fragment_factory_0_to_be_in_scope_but_it_could_not_be_found: diag(2879, 1 /* Error */, "Using_JSX_fragments_requires_fragment_factory_0_to_be_in_scope_but_it_could_not_be_found_2879", "Using JSX fragments requires fragment factory '{0}' to be in scope, but it could not be found."),
+  Import_assertions_have_been_replaced_by_import_attributes_Use_with_instead_of_assert: diag(2880, 1 /* Error */, "Import_assertions_have_been_replaced_by_import_attributes_Use_with_instead_of_assert_2880", "Import assertions have been replaced by import attributes. Use 'with' instead of 'assert'."),
   Import_declaration_0_is_using_private_name_1: diag(4e3, 1 /* Error */, "Import_declaration_0_is_using_private_name_1_4000", "Import declaration '{0}' is using private name '{1}'."),
   Type_parameter_0_of_exported_class_has_or_is_using_private_name_1: diag(4002, 1 /* Error */, "Type_parameter_0_of_exported_class_has_or_is_using_private_name_1_4002", "Type parameter '{0}' of exported class has or is using private name '{1}'."),
   Type_parameter_0_of_exported_interface_has_or_is_using_private_name_1: diag(4004, 1 /* Error */, "Type_parameter_0_of_exported_interface_has_or_is_using_private_name_1_4004", "Type parameter '{0}' of exported interface has or is using private name '{1}'."),
@@ -10227,6 +10320,8 @@ var Diagnostics = {
   Compiler_option_0_of_value_1_is_unstable_Use_nightly_TypeScript_to_silence_this_error_Try_updating_with_npm_install_D_typescript_next: diag(4124, 1 /* Error */, "Compiler_option_0_of_value_1_is_unstable_Use_nightly_TypeScript_to_silence_this_error_Try_updating_w_4124", "Compiler option '{0}' of value '{1}' is unstable. Use nightly TypeScript to silence this error. Try updating with 'npm install -D typescript@next'."),
   Each_declaration_of_0_1_differs_in_its_value_where_2_was_expected_but_3_was_given: diag(4125, 1 /* Error */, "Each_declaration_of_0_1_differs_in_its_value_where_2_was_expected_but_3_was_given_4125", "Each declaration of '{0}.{1}' differs in its value, where '{2}' was expected but '{3}' was given."),
   One_value_of_0_1_is_the_string_2_and_the_other_is_assumed_to_be_an_unknown_numeric_value: diag(4126, 1 /* Error */, "One_value_of_0_1_is_the_string_2_and_the_other_is_assumed_to_be_an_unknown_numeric_value_4126", "One value of '{0}.{1}' is the string '{2}', and the other is assumed to be an unknown numeric value."),
+  This_member_cannot_have_an_override_modifier_because_its_name_is_dynamic: diag(4127, 1 /* Error */, "This_member_cannot_have_an_override_modifier_because_its_name_is_dynamic_4127", "This member cannot have an 'override' modifier because its name is dynamic."),
+  This_member_cannot_have_a_JSDoc_comment_with_an_override_tag_because_its_name_is_dynamic: diag(4128, 1 /* Error */, "This_member_cannot_have_a_JSDoc_comment_with_an_override_tag_because_its_name_is_dynamic_4128", "This member cannot have a JSDoc comment with an '@override' tag because its name is dynamic."),
   The_current_host_does_not_support_the_0_option: diag(5001, 1 /* Error */, "The_current_host_does_not_support_the_0_option_5001", "The current host does not support the '{0}' option."),
   Cannot_find_the_common_subdirectory_path_for_the_input_files: diag(5009, 1 /* Error */, "Cannot_find_the_common_subdirectory_path_for_the_input_files_5009", "Cannot find the common subdirectory path for the input files."),
   File_specification_cannot_end_in_a_recursive_directory_wildcard_Asterisk_Asterisk_Colon_0: diag(5010, 1 /* Error */, "File_specification_cannot_end_in_a_recursive_directory_wildcard_Asterisk_Asterisk_Colon_0_5010", "File specification cannot end in a recursive directory wildcard ('**'): '{0}'."),
@@ -10799,11 +10894,13 @@ var Diagnostics = {
   Specify_emit_Slashchecking_behavior_for_imports_that_are_only_used_for_types: diag(6718, 3 /* Message */, "Specify_emit_Slashchecking_behavior_for_imports_that_are_only_used_for_types_6718", "Specify emit/checking behavior for imports that are only used for types."),
   Require_sufficient_annotation_on_exports_so_other_tools_can_trivially_generate_declaration_files: diag(6719, 3 /* Message */, "Require_sufficient_annotation_on_exports_so_other_tools_can_trivially_generate_declaration_files_6719", "Require sufficient annotation on exports so other tools can trivially generate declaration files."),
   Built_in_iterators_are_instantiated_with_a_TReturn_type_of_undefined_instead_of_any: diag(6720, 3 /* Message */, "Built_in_iterators_are_instantiated_with_a_TReturn_type_of_undefined_instead_of_any_6720", "Built-in iterators are instantiated with a 'TReturn' type of 'undefined' instead of 'any'."),
+  Do_not_allow_runtime_constructs_that_are_not_part_of_ECMAScript: diag(6721, 3 /* Message */, "Do_not_allow_runtime_constructs_that_are_not_part_of_ECMAScript_6721", "Do not allow runtime constructs that are not part of ECMAScript."),
   Default_catch_clause_variables_as_unknown_instead_of_any: diag(6803, 3 /* Message */, "Default_catch_clause_variables_as_unknown_instead_of_any_6803", "Default catch clause variables as 'unknown' instead of 'any'."),
   Do_not_transform_or_elide_any_imports_or_exports_not_marked_as_type_only_ensuring_they_are_written_in_the_output_file_s_format_based_on_the_module_setting: diag(6804, 3 /* Message */, "Do_not_transform_or_elide_any_imports_or_exports_not_marked_as_type_only_ensuring_they_are_written_i_6804", "Do not transform or elide any imports or exports not marked as type-only, ensuring they are written in the output file's format based on the 'module' setting."),
   Disable_full_type_checking_only_critical_parse_and_emit_errors_will_be_reported: diag(6805, 3 /* Message */, "Disable_full_type_checking_only_critical_parse_and_emit_errors_will_be_reported_6805", "Disable full type checking (only critical parse and emit errors will be reported)."),
   Check_side_effect_imports: diag(6806, 3 /* Message */, "Check_side_effect_imports_6806", "Check side effect imports."),
   This_operation_can_be_simplified_This_shift_is_identical_to_0_1_2: diag(6807, 1 /* Error */, "This_operation_can_be_simplified_This_shift_is_identical_to_0_1_2_6807", "This operation can be simplified. This shift is identical to `{0} {1} {2}`."),
+  Enable_lib_replacement: diag(6808, 3 /* Message */, "Enable_lib_replacement_6808", "Enable lib replacement."),
   one_of_Colon: diag(6900, 3 /* Message */, "one_of_Colon_6900", "one of:"),
   one_or_more_Colon: diag(6901, 3 /* Message */, "one_or_more_Colon_6901", "one or more:"),
   type_Colon: diag(6902, 3 /* Message */, "type_Colon_6902", "type:"),
@@ -16771,6 +16868,9 @@ var getScriptTargetFeatures = /* @__PURE__ */ memoize(
         "trunc",
         "fround",
         "cbrt"
+      ],
+      esnext: [
+        "f16round"
       ]
     })),
     Map: new Map(Object.entries({
@@ -16940,6 +17040,10 @@ var getScriptTargetFeatures = /* @__PURE__ */ memoize(
         "setBigUint64",
         "getBigInt64",
         "getBigUint64"
+      ],
+      esnext: [
+        "setFloat16",
+        "getFloat16"
       ]
     })),
     BigInt: new Map(Object.entries({
@@ -17042,6 +17146,9 @@ var getScriptTargetFeatures = /* @__PURE__ */ memoize(
         "toSpliced",
         "with"
       ]
+    })),
+    Float16Array: new Map(Object.entries({
+      esnext: emptyArray
     })),
     Float32Array: new Map(Object.entries({
       es2022: [
@@ -17222,7 +17329,7 @@ function getNonAugmentationDeclaration(symbol) {
   return (_a = symbol.declarations) == null ? void 0 : _a.find((d) => !isExternalModuleAugmentation(d) && !(isModuleDeclaration(d) && isGlobalScopeAugmentation(d)));
 }
 function isCommonJSContainingModuleKind(kind) {
-  return kind === 1 /* CommonJS */ || kind === 100 /* Node16 */ || kind === 199 /* NodeNext */;
+  return kind === 1 /* CommonJS */ || 100 /* Node16 */ <= kind && kind <= 199 /* NodeNext */;
 }
 function isEffectiveExternalModule(node, compilerOptions) {
   return isExternalModule(node) || isCommonJSContainingModuleKind(getEmitModuleKind(compilerOptions)) && !!node.commonJsModuleIndicator;
@@ -17935,9 +18042,6 @@ function forEachPropertyAssignment(objectLiteral, key, callback, key2) {
     const propName = tryGetTextOfPropertyName(property.name);
     return key === propName || key2 && key2 === propName ? callback(property) : void 0;
   });
-}
-function getPropertyArrayElementValue(objectLiteral, propKey, elementValue) {
-  return forEachPropertyAssignment(objectLiteral, propKey, (property) => isArrayLiteralExpression(property.initializer) ? find(property.initializer.elements, (element) => isStringLiteral(element) && element.text === elementValue) : void 0);
 }
 function getTsConfigObjectLiteralExpression(tsConfigSourceFile) {
   if (tsConfigSourceFile && tsConfigSourceFile.statements.length) {
@@ -21767,7 +21871,7 @@ var _computedOptions = createComputedCompilerOptions({
     dependencies: ["module"],
     computeValue: (compilerOptions) => {
       const target = compilerOptions.target === 0 /* ES3 */ ? void 0 : compilerOptions.target;
-      return target ?? (compilerOptions.module === 100 /* Node16 */ && 9 /* ES2022 */ || compilerOptions.module === 199 /* NodeNext */ && 99 /* ESNext */ || 1 /* ES5 */);
+      return target ?? (compilerOptions.module === 100 /* Node16 */ && 9 /* ES2022 */ || compilerOptions.module === 101 /* Node18 */ && 9 /* ES2022 */ || compilerOptions.module === 199 /* NodeNext */ && 99 /* ESNext */ || 1 /* ES5 */);
     }
   },
   module: {
@@ -21786,6 +21890,7 @@ var _computedOptions = createComputedCompilerOptions({
             moduleResolution = 2 /* Node10 */;
             break;
           case 100 /* Node16 */:
+          case 101 /* Node18 */:
             moduleResolution = 3 /* Node16 */;
             break;
           case 199 /* NodeNext */:
@@ -21805,7 +21910,11 @@ var _computedOptions = createComputedCompilerOptions({
   moduleDetection: {
     dependencies: ["module", "target"],
     computeValue: (compilerOptions) => {
-      return compilerOptions.moduleDetection || (_computedOptions.module.computeValue(compilerOptions) === 100 /* Node16 */ || _computedOptions.module.computeValue(compilerOptions) === 199 /* NodeNext */ ? 3 /* Force */ : 2 /* Auto */);
+      if (compilerOptions.moduleDetection !== void 0) {
+        return compilerOptions.moduleDetection;
+      }
+      const moduleKind = _computedOptions.module.computeValue(compilerOptions);
+      return 100 /* Node16 */ <= moduleKind && moduleKind <= 199 /* NodeNext */ ? 3 /* Force */ : 2 /* Auto */;
     }
   },
   isolatedModules: {
@@ -21822,6 +21931,7 @@ var _computedOptions = createComputedCompilerOptions({
       }
       switch (_computedOptions.module.computeValue(compilerOptions)) {
         case 100 /* Node16 */:
+        case 101 /* Node18 */:
         case 199 /* NodeNext */:
         case 200 /* Preserve */:
           return true;
@@ -22014,6 +22124,9 @@ function unusedLabelIsError(options) {
 }
 function moduleResolutionSupportsPackageJsonExportsAndImports(moduleResolution) {
   return moduleResolution >= 3 /* Node16 */ && moduleResolution <= 99 /* NodeNext */ || moduleResolution === 100 /* Bundler */;
+}
+function moduleSupportsImportAttributes(moduleKind) {
+  return 101 /* Node18 */ <= moduleKind && moduleKind <= 199 /* NodeNext */ || moduleKind === 200 /* Preserve */ || moduleKind === 99 /* ESNext */;
 }
 function getStrictOptionValue(compilerOptions, flag) {
   return compilerOptions[flag] === void 0 ? !!compilerOptions.strict : !!compilerOptions[flag];
@@ -22765,7 +22878,7 @@ function isValidBigIntString(s, roundTripOnly) {
   return success && result === 10 /* BigIntLiteral */ && scanner2.getTokenEnd() === s.length + 1 && !(flags & 512 /* ContainsSeparator */) && (!roundTripOnly || s === pseudoBigIntToString({ negative, base10Value: parsePseudoBigInt(scanner2.getTokenValue()) }));
 }
 function isValidTypeOnlyAliasUseSite(useSite) {
-  return !!(useSite.flags & 33554432 /* Ambient */) || isPartOfTypeQuery(useSite) || isIdentifierInNonEmittingHeritageClause(useSite) || isPartOfPossiblyValidTypeOrAbstractComputedPropertyName(useSite) || !(isExpressionNode(useSite) || isShorthandPropertyNameUseSite(useSite));
+  return !!(useSite.flags & 33554432 /* Ambient */) || isInJSDoc(useSite) || isPartOfTypeQuery(useSite) || isIdentifierInNonEmittingHeritageClause(useSite) || isPartOfPossiblyValidTypeOrAbstractComputedPropertyName(useSite) || !(isExpressionNode(useSite) || isShorthandPropertyNameUseSite(useSite));
 }
 function isShorthandPropertyNameUseSite(useSite) {
   return isIdentifier(useSite) && isShorthandPropertyAssignment(useSite.parent) && useSite.parent.name === useSite;
@@ -23936,6 +24049,64 @@ function getNodeAtPosition(sourceFile, position, includeJSDoc) {
 }
 function isNewScopeNode(node) {
   return isFunctionLike(node) || isJSDocSignature(node) || isMappedTypeNode(node);
+}
+function getLibNameFromLibReference(libReference) {
+  return toFileNameLowerCase(libReference.fileName);
+}
+function getLibFileNameFromLibReference(libReference) {
+  const libName = getLibNameFromLibReference(libReference);
+  return libMap.get(libName);
+}
+function forEachResolvedProjectReference(resolvedProjectReferences, cb) {
+  return forEachProjectReference(
+    /*projectReferences*/
+    void 0,
+    resolvedProjectReferences,
+    (resolvedRef, parent2) => resolvedRef && cb(resolvedRef, parent2)
+  );
+}
+function forEachProjectReference(projectReferences, resolvedProjectReferences, cbResolvedRef, cbRef) {
+  let seenResolvedRefs;
+  return worker(
+    projectReferences,
+    resolvedProjectReferences,
+    /*parent*/
+    void 0
+  );
+  function worker(projectReferences2, resolvedProjectReferences2, parent2) {
+    if (cbRef) {
+      const result = cbRef(projectReferences2, parent2);
+      if (result) return result;
+    }
+    let skipChildren;
+    return forEach(
+      resolvedProjectReferences2,
+      (resolvedRef, index) => {
+        if (resolvedRef && (seenResolvedRefs == null ? void 0 : seenResolvedRefs.has(resolvedRef.sourceFile.path))) {
+          (skipChildren ?? (skipChildren = /* @__PURE__ */ new Set())).add(resolvedRef);
+          return void 0;
+        }
+        const result = cbResolvedRef(resolvedRef, parent2, index);
+        if (result || !resolvedRef) return result;
+        (seenResolvedRefs || (seenResolvedRefs = /* @__PURE__ */ new Set())).add(resolvedRef.sourceFile.path);
+      }
+    ) || forEach(
+      resolvedProjectReferences2,
+      (resolvedRef) => resolvedRef && !(skipChildren == null ? void 0 : skipChildren.has(resolvedRef)) ? worker(resolvedRef.commandLine.projectReferences, resolvedRef.references, resolvedRef) : void 0
+    );
+  }
+}
+function getOptionsSyntaxByArrayElementValue(optionsObject, name, value) {
+  return optionsObject && getPropertyArrayElementValue(optionsObject, name, value);
+}
+function getPropertyArrayElementValue(objectLiteral, propKey, elementValue) {
+  return forEachPropertyAssignment(objectLiteral, propKey, (property) => isArrayLiteralExpression(property.initializer) ? find(property.initializer.elements, (element) => isStringLiteral(element) && element.text === elementValue) : void 0);
+}
+function getOptionsSyntaxByValue(optionsObject, name, value) {
+  return forEachOptionsSyntaxByName(optionsObject, name, (property) => isStringLiteral(property.initializer) && property.initializer.text === value ? property.initializer : void 0);
+}
+function forEachOptionsSyntaxByName(optionsObject, name, callback) {
+  return forEachPropertyAssignment(optionsObject, name, callback);
 }
 
 // src/compiler/factory/baseNodeFactory.ts
@@ -26554,6 +26725,8 @@ function createNodeFactory(flags, baseFactory2) {
     node.colonToken = colonToken ?? createToken(59 /* ColonToken */);
     node.whenFalse = parenthesizerRules().parenthesizeBranchOfConditionalExpression(whenFalse);
     node.transformFlags |= propagateChildFlags(node.condition) | propagateChildFlags(node.questionToken) | propagateChildFlags(node.whenTrue) | propagateChildFlags(node.colonToken) | propagateChildFlags(node.whenFalse);
+    node.flowNodeWhenFalse = void 0;
+    node.flowNodeWhenTrue = void 0;
     return node;
   }
   function updateConditionalExpression(node, condition, questionToken, whenTrue, colonToken, whenFalse) {
@@ -28357,7 +28530,7 @@ function createNodeFactory(flags, baseFactory2) {
   function isIgnorableParen(node) {
     return isParenthesizedExpression(node) && nodeIsSynthesized(node) && nodeIsSynthesized(getSourceMapRange(node)) && nodeIsSynthesized(getCommentRange(node)) && !some(getSyntheticLeadingComments(node)) && !some(getSyntheticTrailingComments(node));
   }
-  function restoreOuterExpressions(outerExpression, innerExpression, kinds = 31 /* All */) {
+  function restoreOuterExpressions(outerExpression, innerExpression, kinds = 63 /* All */) {
     if (outerExpression && isOuterExpression(outerExpression, kinds) && !isIgnorableParen(outerExpression)) {
       return updateOuterExpression(
         outerExpression,
@@ -28403,7 +28576,7 @@ function createNodeFactory(flags, baseFactory2) {
     }
   }
   function createCallBinding(expression, recordTempVariable, languageVersion, cacheIdentifiers = false) {
-    const callee = skipOuterExpressions(expression, 31 /* All */);
+    const callee = skipOuterExpressions(expression, 63 /* All */);
     let thisArg;
     let target;
     if (isSuperProperty(callee)) {
@@ -31406,7 +31579,7 @@ function getJSDocTypeAssertionType(node) {
   Debug.assertIsDefined(type);
   return type;
 }
-function isOuterExpression(node, kinds = 31 /* All */) {
+function isOuterExpression(node, kinds = 63 /* All */) {
   switch (node.kind) {
     case 217 /* ParenthesizedExpression */:
       if (kinds & -2147483648 /* ExcludeJSDocTypeAssertion */ && isJSDocTypeAssertion(node)) {
@@ -31415,8 +31588,9 @@ function isOuterExpression(node, kinds = 31 /* All */) {
       return (kinds & 1 /* Parentheses */) !== 0;
     case 216 /* TypeAssertionExpression */:
     case 234 /* AsExpression */:
-    case 238 /* SatisfiesExpression */:
       return (kinds & 2 /* TypeAssertions */) !== 0;
+    case 238 /* SatisfiesExpression */:
+      return (kinds & (2 /* TypeAssertions */ | 32 /* Satisfies */)) !== 0;
     case 233 /* ExpressionWithTypeArguments */:
       return (kinds & 16 /* ExpressionsWithTypeArguments */) !== 0;
     case 235 /* NonNullExpression */:
@@ -31426,13 +31600,13 @@ function isOuterExpression(node, kinds = 31 /* All */) {
   }
   return false;
 }
-function skipOuterExpressions(node, kinds = 31 /* All */) {
+function skipOuterExpressions(node, kinds = 63 /* All */) {
   while (isOuterExpression(node, kinds)) {
     node = node.expression;
   }
   return node;
 }
-function walkUpOuterExpressions(node, kinds = 31 /* All */) {
+function walkUpOuterExpressions(node, kinds = 63 /* All */) {
   let parent2 = node.parent;
   while (isOuterExpression(parent2, kinds)) {
     parent2 = parent2.parent;
@@ -39308,6 +39482,7 @@ var Parser;
         const node = factory2.createExpressionWithTypeArguments(expression, typeArguments);
         const res = finishNode(node, pos);
         if (usedBrace) {
+          skipWhitespace();
           parseExpected(20 /* CloseBraceToken */);
         }
         return res;
@@ -40353,6 +40528,8 @@ var libEntries = [
   ["esnext.regexp", "lib.es2024.regexp.d.ts"],
   ["esnext.string", "lib.es2024.string.d.ts"],
   ["esnext.iterator", "lib.esnext.iterator.d.ts"],
+  ["esnext.promise", "lib.esnext.promise.d.ts"],
+  ["esnext.float16", "lib.esnext.float16.d.ts"],
   ["decorators", "lib.decorators.d.ts"],
   ["decorators.legacy", "lib.decorators.legacy.d.ts"]
 ];
@@ -40679,6 +40856,7 @@ var moduleOptionDeclaration = {
     es2022: 7 /* ES2022 */,
     esnext: 99 /* ESNext */,
     node16: 100 /* Node16 */,
+    node18: 101 /* Node18 */,
     nodenext: 199 /* NodeNext */,
     preserve: 200 /* Preserve */
   })),
@@ -40930,6 +41108,23 @@ var commandOptionsWithoutBuild = [
     defaultValueDescription: false,
     affectsBuildInfo: true,
     affectsSemanticDiagnostics: true
+  },
+  {
+    name: "erasableSyntaxOnly",
+    type: "boolean",
+    category: Diagnostics.Interop_Constraints,
+    description: Diagnostics.Do_not_allow_runtime_constructs_that_are_not_part_of_ECMAScript,
+    defaultValueDescription: false,
+    affectsBuildInfo: true,
+    affectsSemanticDiagnostics: true
+  },
+  {
+    name: "libReplacement",
+    type: "boolean",
+    affectsProgramStructure: true,
+    category: Diagnostics.Language_and_Environment,
+    description: Diagnostics.Enable_lib_replacement,
+    defaultValueDescription: true
   },
   // Strict Type Checks
   {
@@ -42354,7 +42549,7 @@ function convertToJson(sourceFile, rootExpression, errors, returnValue, jsonConv
         return false;
       case 106 /* NullKeyword */:
         return null;
-       
+      // eslint-disable-line no-restricted-syntax
       case 11 /* StringLiteral */:
         if (!isDoubleQuotedString(valueExpression)) {
           errors.push(createDiagnosticForNodeInSourceFile(sourceFile, valueExpression, Diagnostics.String_literal_with_double_quotes_expected));
@@ -45101,9 +45296,7 @@ function tryFileLookup(fileName, onlyRecordFailures, state) {
 }
 function loadNodeModuleFromDirectory(extensions, candidate, onlyRecordFailures, state, considerPackageJson = true) {
   const packageInfo = considerPackageJson ? getPackageJsonInfo(candidate, onlyRecordFailures, state) : void 0;
-  const packageJsonContent = packageInfo && packageInfo.contents.packageJsonContent;
-  const versionPaths = packageInfo && getVersionPathsOfPackageJsonInfo(packageInfo, state);
-  return withPackageId(packageInfo, loadNodeModuleFromDirectoryWorker(extensions, candidate, onlyRecordFailures, state, packageJsonContent, versionPaths), state);
+  return withPackageId(packageInfo, loadNodeModuleFromDirectoryWorker(extensions, candidate, onlyRecordFailures, state, packageInfo), state);
 }
 function getEntrypointsFromPackageJsonInfo(packageJsonInfo, options, host, cache, resolveJs) {
   if (!resolveJs && packageJsonInfo.contents.resolvedEntrypoints !== void 0) {
@@ -45121,8 +45314,7 @@ function getEntrypointsFromPackageJsonInfo(packageJsonInfo, options, host, cache
     /*onlyRecordFailures*/
     false,
     loadPackageJsonMainState,
-    packageJsonInfo.contents.packageJsonContent,
-    getVersionPathsOfPackageJsonInfo(packageJsonInfo, loadPackageJsonMainState)
+    packageJsonInfo
   );
   entrypoints = append(entrypoints, mainResolution == null ? void 0 : mainResolution.path);
   if (features & 8 /* Exports */ && packageJsonInfo.contents.packageJsonContent.exports) {
@@ -45325,13 +45517,14 @@ function getPackageJsonInfo(packageDirectory, onlyRecordFailures, state) {
     (_f = state.failedLookupLocations) == null ? void 0 : _f.push(packageJsonPath);
   }
 }
-function loadNodeModuleFromDirectoryWorker(extensions, candidate, onlyRecordFailures, state, jsonContent, versionPaths) {
+function loadNodeModuleFromDirectoryWorker(extensions, candidate, onlyRecordFailures, state, packageJson) {
+  const versionPaths = packageJson && getVersionPathsOfPackageJsonInfo(packageJson, state);
   let packageFile;
-  if (jsonContent) {
+  if (packageJson && arePathsEqual(packageJson == null ? void 0 : packageJson.packageDirectory, candidate, state.host)) {
     if (state.isConfigLookup) {
-      packageFile = readPackageJsonTSConfigField(jsonContent, candidate, state);
+      packageFile = readPackageJsonTSConfigField(packageJson.contents.packageJsonContent, packageJson.packageDirectory, state);
     } else {
-      packageFile = extensions & 4 /* Declaration */ && readPackageJsonTypesFields(jsonContent, candidate, state) || extensions & (3 /* ImplementationFiles */ | 4 /* Declaration */) && readPackageJsonMainField(jsonContent, candidate, state) || void 0;
+      packageFile = extensions & 4 /* Declaration */ && readPackageJsonTypesFields(packageJson.contents.packageJsonContent, packageJson.packageDirectory, state) || extensions & (3 /* ImplementationFiles */ | 4 /* Declaration */) && readPackageJsonMainField(packageJson.contents.packageJsonContent, packageJson.packageDirectory, state) || void 0;
     }
   }
   const loader = (extensions2, candidate2, onlyRecordFailures2, state2) => {
@@ -45350,7 +45543,7 @@ function loadNodeModuleFromDirectoryWorker(extensions, candidate, onlyRecordFail
     const features = state2.features;
     const candidateIsFromPackageJsonField = state2.candidateIsFromPackageJsonField;
     state2.candidateIsFromPackageJsonField = true;
-    if ((jsonContent == null ? void 0 : jsonContent.type) !== "module") {
+    if ((packageJson == null ? void 0 : packageJson.contents.packageJsonContent.type) !== "module") {
       state2.features &= ~32 /* EsmMode */;
     }
     const result = nodeLoadModuleByRelativeName(
@@ -45621,6 +45814,7 @@ function hasOneAsterisk(patternKey) {
 function getLoadModuleFromTargetExportOrImport(extensions, state, cache, redirectedReference, moduleName, scope, isImports) {
   return loadModuleFromTargetExportOrImport;
   function loadModuleFromTargetExportOrImport(target, subpath, pattern, key) {
+    var _a, _b;
     if (typeof target === "string") {
       if (!pattern && subpath.length > 0 && !endsWith(target, "/")) {
         if (state.traceEnabled) {
@@ -45649,6 +45843,8 @@ function getLoadModuleFromTargetExportOrImport(extensions, state, cache, redirec
             redirectedReference,
             state.conditions
           );
+          (_a = state.failedLookupLocations) == null ? void 0 : _a.push(...result.failedLookupLocations ?? emptyArray);
+          (_b = state.affectingLocations) == null ? void 0 : _b.push(...result.affectingLocations ?? emptyArray);
           return toSearchResult(
             result.resolvedModule ? {
               path: result.resolvedModule.resolvedFileName,
@@ -45758,20 +45954,20 @@ function getLoadModuleFromTargetExportOrImport(extensions, state, cache, redirec
       void 0
     );
     function toAbsolutePath(path) {
-      var _a, _b;
+      var _a2, _b2;
       if (path === void 0) return path;
-      return getNormalizedAbsolutePath(path, (_b = (_a = state.host).getCurrentDirectory) == null ? void 0 : _b.call(_a));
+      return getNormalizedAbsolutePath(path, (_b2 = (_a2 = state.host).getCurrentDirectory) == null ? void 0 : _b2.call(_a2));
     }
     function combineDirectoryPath(root, dir) {
       return ensureTrailingDirectorySeparator(combinePaths(root, dir));
     }
     function tryLoadInputFileForPath(finalPath, entry, packagePath, isImports2) {
-      var _a, _b, _c, _d;
+      var _a2, _b2, _c, _d;
       if (!state.isConfigLookup && (state.compilerOptions.declarationDir || state.compilerOptions.outDir) && !finalPath.includes("/node_modules/") && (state.compilerOptions.configFile ? containsPath(scope.packageDirectory, toAbsolutePath(state.compilerOptions.configFile.fileName), !useCaseSensitiveFileNames(state)) : true)) {
         const getCanonicalFileName = hostGetCanonicalFileName({ useCaseSensitiveFileNames: () => useCaseSensitiveFileNames(state) });
         const commonSourceDirGuesses = [];
         if (state.compilerOptions.rootDir || state.compilerOptions.composite && state.compilerOptions.configFilePath) {
-          const commonDir = toAbsolutePath(getCommonSourceDirectory(state.compilerOptions, () => [], ((_b = (_a = state.host).getCurrentDirectory) == null ? void 0 : _b.call(_a)) || "", getCanonicalFileName));
+          const commonDir = toAbsolutePath(getCommonSourceDirectory(state.compilerOptions, () => [], ((_b2 = (_a2 = state.host).getCurrentDirectory) == null ? void 0 : _b2.call(_a2)) || "", getCanonicalFileName));
           commonSourceDirGuesses.push(commonDir);
         } else if (state.requestContainingDirectory) {
           const requestingFile = toAbsolutePath(combinePaths(state.requestContainingDirectory, "index.ts"));
@@ -45827,8 +46023,8 @@ function getLoadModuleFromTargetExportOrImport(extensions, state, cache, redirec
       }
       return void 0;
       function getOutputDirectoriesForBaseDirectory(commonSourceDirGuess) {
-        var _a2, _b2;
-        const currentDir = state.compilerOptions.configFile ? ((_b2 = (_a2 = state.host).getCurrentDirectory) == null ? void 0 : _b2.call(_a2)) || "" : commonSourceDirGuess;
+        var _a3, _b3;
+        const currentDir = state.compilerOptions.configFile ? ((_b3 = (_a3 = state.host).getCurrentDirectory) == null ? void 0 : _b3.call(_a3)) || "" : commonSourceDirGuess;
         const candidateDirectories = [];
         if (state.compilerOptions.declarationDir) {
           candidateDirectories.push(toAbsolutePath(combineDirectoryPath(currentDir, state.compilerOptions.declarationDir)));
@@ -45875,7 +46071,7 @@ function loadModuleFromNearestNodeModulesDirectoryTypesScope(moduleName, directo
   );
 }
 function loadModuleFromNearestNodeModulesDirectoryWorker(extensions, moduleName, directory, state, typesScopeOnly, cache, redirectedReference) {
-  const mode = state.features === 0 ? void 0 : state.features & 32 /* EsmMode */ ? 99 /* ESNext */ : 1 /* CommonJS */;
+  const mode = state.features === 0 ? void 0 : state.features & 32 /* EsmMode */ || state.conditions.includes("import") ? 99 /* ESNext */ : 1 /* CommonJS */;
   const priorityExtensions = extensions & (1 /* TypeScript */ | 4 /* Declaration */);
   const secondaryExtensions = extensions & ~(1 /* TypeScript */ | 4 /* Declaration */);
   if (priorityExtensions) {
@@ -45953,8 +46149,7 @@ function loadModuleFromSpecificNodeModulesDirectory(extensions, moduleName, node
       candidate,
       !nodeModulesDirectoryExists,
       state,
-      packageInfo.contents.packageJsonContent,
-      getVersionPathsOfPackageJsonInfo(packageInfo, state)
+      packageInfo
     );
     return withPackageId(packageInfo, fromDirectory, state);
   }
@@ -45964,10 +46159,9 @@ function loadModuleFromSpecificNodeModulesDirectory(extensions, moduleName, node
       candidate2,
       onlyRecordFailures,
       state2,
-      packageInfo && packageInfo.contents.packageJsonContent,
-      packageInfo && getVersionPathsOfPackageJsonInfo(packageInfo, state2)
+      packageInfo
     );
-    if (!pathAndExtension && packageInfo && (packageInfo.contents.packageJsonContent.exports === void 0 || packageInfo.contents.packageJsonContent.exports === null) && state2.features & 32 /* EsmMode */) {
+    if (!pathAndExtension && !rest && packageInfo && (packageInfo.contents.packageJsonContent.exports === void 0 || packageInfo.contents.packageJsonContent.exports === null) && state2.features & 32 /* EsmMode */) {
       pathAndExtension = loadModuleFromFile(extensions2, combinePaths(candidate2, "index.js"), onlyRecordFailures, state2);
     }
     return withPackageId(packageInfo, pathAndExtension, state2);
@@ -46413,6 +46607,7 @@ function createBinder() {
   var preSwitchCaseFlow;
   var activeLabelList;
   var hasExplicitReturn;
+  var inReturnPosition;
   var hasFlowEffects;
   var emitFlags;
   var inStrictMode;
@@ -46485,6 +46680,7 @@ function createBinder() {
     currentExceptionTarget = void 0;
     activeLabelList = void 0;
     hasExplicitReturn = false;
+    inReturnPosition = false;
     hasFlowEffects = false;
     inAssignmentPattern = false;
     emitFlags = 0 /* None */;
@@ -46721,6 +46917,8 @@ function createBinder() {
     const saveContainer = container;
     const saveThisParentContainer = thisParentContainer;
     const savedBlockScopeContainer = blockScopeContainer;
+    const savedInReturnPosition = inReturnPosition;
+    if (node.kind === 219 /* ArrowFunction */ && node.body.kind !== 241 /* Block */) inReturnPosition = true;
     if (containerFlags & 1 /* IsContainer */) {
       if (node.kind !== 219 /* ArrowFunction */) {
         thisParentContainer = container;
@@ -46798,6 +46996,7 @@ function createBinder() {
     } else {
       bindChildren(node);
     }
+    inReturnPosition = savedInReturnPosition;
     container = saveContainer;
     thisParentContainer = saveThisParentContainer;
     blockScopeContainer = savedBlockScopeContainer;
@@ -46819,6 +47018,9 @@ function createBinder() {
     const saveInAssignmentPattern = inAssignmentPattern;
     inAssignmentPattern = false;
     if (checkUnreachable(node)) {
+      if (canHaveFlowNode(node) && node.flowNode) {
+        node.flowNode = void 0;
+      }
       bindEachChild(node);
       bindJSDoc(node);
       inAssignmentPattern = saveInAssignmentPattern;
@@ -47014,7 +47216,9 @@ function createBinder() {
       case 36 /* ExclamationEqualsToken */:
       case 37 /* EqualsEqualsEqualsToken */:
       case 38 /* ExclamationEqualsEqualsToken */:
-        return isNarrowableOperand(expr.left) || isNarrowableOperand(expr.right) || isNarrowingTypeofOperands(expr.right, expr.left) || isNarrowingTypeofOperands(expr.left, expr.right) || (isBooleanLiteral(expr.right) && isNarrowingExpression(expr.left) || isBooleanLiteral(expr.left) && isNarrowingExpression(expr.right));
+        const left = skipParentheses(expr.left);
+        const right = skipParentheses(expr.right);
+        return isNarrowableOperand(left) || isNarrowableOperand(right) || isNarrowingTypeofOperands(right, left) || isNarrowingTypeofOperands(left, right) || (isBooleanLiteral(right) && isNarrowingExpression(left) || isBooleanLiteral(left) && isNarrowingExpression(right));
       case 104 /* InstanceOfKeyword */:
         return isNarrowableOperand(expr.left);
       case 103 /* InKeyword */:
@@ -47206,13 +47410,16 @@ function createBinder() {
   function bindForStatement(node) {
     const preLoopLabel = setContinueTarget(node, createLoopLabel());
     const preBodyLabel = createBranchLabel();
+    const preIncrementorLabel = createBranchLabel();
     const postLoopLabel = createBranchLabel();
     bind(node.initializer);
     addAntecedent(preLoopLabel, currentFlow);
     currentFlow = preLoopLabel;
     bindCondition(node.condition, preBodyLabel, postLoopLabel);
     currentFlow = finishFlowLabel(preBodyLabel);
-    bindIterativeStatement(node.statement, postLoopLabel, preLoopLabel);
+    bindIterativeStatement(node.statement, postLoopLabel, preIncrementorLabel);
+    addAntecedent(preIncrementorLabel, currentFlow);
+    currentFlow = finishFlowLabel(preIncrementorLabel);
     bind(node.incrementor);
     addAntecedent(preLoopLabel, currentFlow);
     currentFlow = finishFlowLabel(postLoopLabel);
@@ -47249,7 +47456,10 @@ function createBinder() {
     currentFlow = finishFlowLabel(postIfLabel);
   }
   function bindReturnOrThrow(node) {
+    const savedInReturnPosition = inReturnPosition;
+    inReturnPosition = true;
     bind(node.expression);
+    inReturnPosition = savedInReturnPosition;
     if (node.kind === 253 /* ReturnStatement */) {
       hasExplicitReturn = true;
       if (currentReturnTarget) {
@@ -47610,10 +47820,16 @@ function createBinder() {
     hasFlowEffects = false;
     bindCondition(node.condition, trueLabel, falseLabel);
     currentFlow = finishFlowLabel(trueLabel);
+    if (inReturnPosition) {
+      node.flowNodeWhenTrue = currentFlow;
+    }
     bind(node.questionToken);
     bind(node.whenTrue);
     addAntecedent(postExpressionLabel, currentFlow);
     currentFlow = finishFlowLabel(falseLabel);
+    if (inReturnPosition) {
+      node.flowNodeWhenFalse = currentFlow;
+    }
     bind(node.colonToken);
     bind(node.whenFalse);
     addAntecedent(postExpressionLabel, currentFlow);
@@ -50887,6 +51103,7 @@ function createTypeChecker(host) {
     getNumberLiteralType,
     getBigIntType: () => bigintType,
     getBigIntLiteralType,
+    getUnknownType: () => unknownType,
     createPromiseType,
     createArrayType,
     getElementTypeOfArrayType,
@@ -51003,8 +51220,13 @@ function createTypeChecker(host) {
     getMemberOverrideModifierStatus,
     isTypeParameterPossiblyReferenced,
     typeHasCallOrConstructSignatures,
-    getSymbolFlags
+    getSymbolFlags,
+    getTypeArgumentsForResolvedSignature
   };
+  function getTypeArgumentsForResolvedSignature(signature) {
+    if (signature.mapper === void 0) return void 0;
+    return instantiateTypes((signature.target || signature).typeParameters, signature.mapper);
+  }
   function getCandidateSignaturesForStringLiteralCompletions(call, editingArgument) {
     const candidatesSet = /* @__PURE__ */ new Set();
     const candidates = [];
@@ -52426,9 +52648,9 @@ function createTypeChecker(host) {
           const containerKind = grandparent.parent.kind;
           if (containerKind === 264 /* InterfaceDeclaration */ && heritageKind === 96 /* ExtendsKeyword */) {
             error2(errorLocation, Diagnostics.An_interface_cannot_extend_a_primitive_type_like_0_It_can_only_extend_other_named_object_types, unescapeLeadingUnderscores(name));
-          } else if (containerKind === 263 /* ClassDeclaration */ && heritageKind === 96 /* ExtendsKeyword */) {
+          } else if (isClassLike(grandparent.parent) && heritageKind === 96 /* ExtendsKeyword */) {
             error2(errorLocation, Diagnostics.A_class_cannot_extend_a_primitive_type_like_0_Classes_can_only_extend_constructable_values, unescapeLeadingUnderscores(name));
-          } else if (containerKind === 263 /* ClassDeclaration */ && heritageKind === 119 /* ImplementsKeyword */) {
+          } else if (isClassLike(grandparent.parent) && heritageKind === 119 /* ImplementsKeyword */) {
             error2(errorLocation, Diagnostics.A_class_cannot_implement_a_primitive_type_like_0_It_can_only_implement_other_named_object_types, unescapeLeadingUnderscores(name));
           }
         } else {
@@ -53604,7 +53826,7 @@ function createTypeChecker(host) {
             moduleReference
           );
         }
-        if (errorNode && (moduleResolutionKind === 3 /* Node16 */ || moduleResolutionKind === 99 /* NodeNext */)) {
+        if (errorNode && (moduleKind === 100 /* Node16 */ || moduleKind === 101 /* Node18 */)) {
           const isSyncImport = currentSourceFile.impliedNodeFormat === 1 /* CommonJS */ && !findAncestor(location, isImportCall) || !!findAncestor(location, isImportEqualsDeclaration);
           const overrideHost = findAncestor(location, (l) => isImportTypeNode(l) || isExportDeclaration(l) || isImportDeclaration(l) || isJSDocImportTag(l));
           if (isSyncImport && sourceFile.impliedNodeFormat === 99 /* ESNext */ && !hasResolutionModeOverride(overrideHost)) {
@@ -54793,10 +55015,11 @@ function createTypeChecker(host) {
       serializeExistingTypeNode(context, typeNode, addUndefined) {
         return serializeExistingTypeNode(context, typeNode, !!addUndefined);
       },
-      serializeReturnTypeForSignature(syntacticContext, signatureDeclaration) {
+      serializeReturnTypeForSignature(syntacticContext, signatureDeclaration, symbol) {
         const context = syntacticContext;
         const signature = getSignatureFromDeclaration(signatureDeclaration);
-        const returnType = context.enclosingSymbolTypes.get(getSymbolId(getSymbolOfDeclaration(signatureDeclaration))) ?? instantiateType(getReturnTypeOfSignature(signature), context.mapper);
+        symbol ?? (symbol = getSymbolOfDeclaration(signatureDeclaration));
+        const returnType = context.enclosingSymbolTypes.get(getSymbolId(symbol)) ?? instantiateType(getReturnTypeOfSignature(signature), context.mapper);
         return serializeInferredReturnTypeForSignature(context, signature, returnType);
       },
       serializeTypeOfExpression(syntacticContext, expr) {
@@ -54810,7 +55033,7 @@ function createTypeChecker(host) {
         symbol ?? (symbol = getSymbolOfDeclaration(declaration));
         let type = (_a = context.enclosingSymbolTypes) == null ? void 0 : _a.get(getSymbolId(symbol));
         if (type === void 0) {
-          type = symbol && !(symbol.flags & (2048 /* TypeLiteral */ | 131072 /* Signature */)) ? instantiateType(getWidenedLiteralType(getTypeOfSymbol(symbol)), context.mapper) : errorType;
+          type = symbol.flags & 98304 /* Accessor */ && declaration.kind === 178 /* SetAccessor */ ? instantiateType(getWriteTypeOfSymbol(symbol), context.mapper) : symbol && !(symbol.flags & (2048 /* TypeLiteral */ | 131072 /* Signature */)) ? instantiateType(getWidenedLiteralType(getTypeOfSymbol(symbol)), context.mapper) : errorType;
         }
         const addUndefinedForParameter = declaration && (isParameter(declaration) || isJSDocParameterTag(declaration)) && requiresAddingImplicitUndefined(declaration, context.enclosingDeclaration);
         if (addUndefinedForParameter) {
@@ -54845,12 +55068,7 @@ function createTypeChecker(host) {
       enterNewScope(context, node) {
         if (isFunctionLike(node) || isJSDocSignature(node)) {
           const signature = getSignatureFromDeclaration(node);
-          const expandedParams = getExpandedParameters(
-            signature,
-            /*skipUnionExpanding*/
-            true
-          )[0];
-          return enterNewScope(context, node, expandedParams, signature.typeParameters);
+          return enterNewScope(context, node, signature.parameters, signature.typeParameters);
         } else {
           const typeParameters = isConditionalTypeNode(node) ? getInferTypeParameters(node) : [getDeclaredTypeOfTypeParameter(getSymbolOfDeclaration(node.typeParameter))];
           return enterNewScope(
@@ -54875,6 +55093,7 @@ function createTypeChecker(host) {
         const context = syntacticContext;
         if (context.bundled || context.enclosingFile !== getSourceFileOfNode(lit)) {
           let name = lit.text;
+          const originalName = name;
           const nodeSymbol = getNodeLinks(parent2).resolvedSymbol;
           const meaning = parent2.isTypeOf ? 111551 /* Value */ : 788968 /* Type */;
           const parentSymbol = nodeSymbol && isSymbolAccessible(
@@ -54904,7 +55123,9 @@ function createTypeChecker(host) {
               context.tracker.reportLikelyUnsafeImportRequiredError(name);
             }
           }
-          return name;
+          if (name !== originalName) {
+            return name;
+          }
         }
       },
       canReuseTypeNode(context, typeNode) {
@@ -55503,7 +55724,7 @@ function createTypeChecker(host) {
         function shouldWriteTypeOfFunctionSymbol() {
           var _a3;
           const isStaticMethodSymbol = !!(symbol.flags & 8192 /* Method */) && // typeof static method
-          some(symbol.declarations, (declaration) => isStatic(declaration));
+          some(symbol.declarations, (declaration) => isStatic(declaration) && !isLateBindableIndexSignature(getNameOfDeclaration(declaration)));
           const isNonLocalFunctionSymbol = !!(symbol.flags & 16 /* Function */) && (symbol.parent || // is exported function symbol
           forEach(symbol.declarations, (declaration) => declaration.parent.kind === 307 /* SourceFile */ || declaration.parent.kind === 268 /* ModuleBlock */));
           if (isStaticMethodSymbol || isNonLocalFunctionSymbol) {
@@ -55806,6 +56027,38 @@ function createTypeChecker(host) {
         ids.unshift(state);
         return ids;
       }
+      function indexInfoToObjectComputedNamesOrSignatureDeclaration(indexInfo, context2, typeNode) {
+        if (indexInfo.components) {
+          const allComponentComputedNamesSerializable = every(indexInfo.components, (e) => {
+            var _a2;
+            return !!(e.name && isComputedPropertyName(e.name) && isEntityNameExpression(e.name.expression) && context2.enclosingDeclaration && ((_a2 = isEntityNameVisible(
+              e.name.expression,
+              context2.enclosingDeclaration,
+              /*shouldComputeAliasToMakeVisible*/
+              false
+            )) == null ? void 0 : _a2.accessibility) === 0 /* Accessible */);
+          });
+          if (allComponentComputedNamesSerializable) {
+            const newComponents = filter(indexInfo.components, (e) => {
+              return !hasLateBindableName(e);
+            });
+            return map(newComponents, (e) => {
+              trackComputedName(e.name.expression, context2.enclosingDeclaration, context2);
+              return setTextRange2(
+                context2,
+                factory.createPropertySignature(
+                  indexInfo.isReadonly ? [factory.createModifier(148 /* ReadonlyKeyword */)] : void 0,
+                  e.name,
+                  (isPropertySignature(e) || isPropertyDeclaration(e) || isMethodSignature(e) || isMethodDeclaration(e) || isGetAccessor(e) || isSetAccessor(e)) && e.questionToken ? factory.createToken(58 /* QuestionToken */) : void 0,
+                  typeNode || typeToTypeNodeHelper(getTypeOfSymbol(e.symbol), context2)
+                ),
+                e
+              );
+            });
+          }
+        }
+        return [indexInfoToIndexSignatureDeclarationHelper(indexInfo, context2, typeNode)];
+      }
       function createTypeNodesFromResolvedType(resolvedType) {
         if (checkTruncationLength(context)) {
           if (context.flags & 1 /* NoTruncation */) {
@@ -55830,7 +56083,7 @@ function createTypeChecker(host) {
           typeElements.push(signatureToSignatureDeclarationHelper(signature, 180 /* ConstructSignature */, context));
         }
         for (const info of resolvedType.indexInfos) {
-          typeElements.push(indexInfoToIndexSignatureDeclarationHelper(info, context, resolvedType.objectFlags & 1024 /* ReverseMapped */ ? createElidedInformationPlaceholder(context) : void 0));
+          typeElements.push(...indexInfoToObjectComputedNamesOrSignatureDeclaration(info, context, resolvedType.objectFlags & 1024 /* ReverseMapped */ ? createElidedInformationPlaceholder(context) : void 0));
         }
         const properties = resolvedType.properties;
         if (!properties) {
@@ -55929,12 +56182,13 @@ function createTypeChecker(host) {
       if (propertySymbol.flags & 98304 /* Accessor */) {
         const writeType = getWriteTypeOfSymbol(propertySymbol);
         if (propertyType !== writeType && !isErrorType(propertyType) && !isErrorType(writeType)) {
+          const symbolMapper = getSymbolLinks(propertySymbol).mapper;
           const getterDeclaration = getDeclarationOfKind(propertySymbol, 177 /* GetAccessor */);
           const getterSignature = getSignatureFromDeclaration(getterDeclaration);
           typeElements.push(
             setCommentRange2(
               context,
-              signatureToSignatureDeclarationHelper(getterSignature, 177 /* GetAccessor */, context, { name: propertyName }),
+              signatureToSignatureDeclarationHelper(symbolMapper ? instantiateSignature(getterSignature, symbolMapper) : getterSignature, 177 /* GetAccessor */, context, { name: propertyName }),
               getterDeclaration
             )
           );
@@ -55943,7 +56197,7 @@ function createTypeChecker(host) {
           typeElements.push(
             setCommentRange2(
               context,
-              signatureToSignatureDeclarationHelper(setterSignature, 178 /* SetAccessor */, context, { name: propertyName }),
+              signatureToSignatureDeclarationHelper(symbolMapper ? instantiateSignature(setterSignature, symbolMapper) : setterSignature, 178 /* SetAccessor */, context, { name: propertyName }),
               setterDeclaration
             )
           );
@@ -56519,7 +56773,7 @@ function createTypeChecker(host) {
       if (!context.tracker.canTrackSymbol) return;
       const firstIdentifier = getFirstIdentifier(accessExpression);
       const name = resolveName(
-        firstIdentifier,
+        enclosingDeclaration,
         firstIdentifier.escapedText,
         111551 /* Value */ | 1048576 /* ExportValue */,
         /*nameNotFoundMessage*/
@@ -56529,6 +56783,19 @@ function createTypeChecker(host) {
       );
       if (name) {
         context.tracker.trackSymbol(name, enclosingDeclaration, 111551 /* Value */);
+      } else {
+        const fallback = resolveName(
+          firstIdentifier,
+          firstIdentifier.escapedText,
+          111551 /* Value */ | 1048576 /* ExportValue */,
+          /*nameNotFoundMessage*/
+          void 0,
+          /*isUse*/
+          true
+        );
+        if (fallback) {
+          context.tracker.trackSymbol(fallback, enclosingDeclaration, 111551 /* Value */);
+        }
       }
     }
     function lookupSymbolChain(symbol, context, meaning, yieldModuleSymbol) {
@@ -57073,13 +57340,13 @@ function createTypeChecker(host) {
       const addUndefinedForParameter = declaration && (isParameter(declaration) || isJSDocParameterTag(declaration)) && requiresAddingImplicitUndefined(declaration, context.enclosingDeclaration);
       const decl = declaration ?? symbol.valueDeclaration ?? getDeclarationWithTypeAnnotation(symbol) ?? ((_a = symbol.declarations) == null ? void 0 : _a[0]);
       if (decl) {
+        const restore = addSymbolTypeToContext(context, symbol, type);
         if (isAccessor(decl)) {
           result = syntacticNodeBuilder.serializeTypeOfAccessor(decl, symbol, context);
         } else if (hasInferredType(decl) && !nodeIsSynthesized(decl) && !(getObjectFlags(type) & 196608 /* RequiresWidening */)) {
-          const restore = addSymbolTypeToContext(context, symbol, type);
           result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, symbol, context);
-          restore();
         }
+        restore();
       }
       if (!result) {
         if (addUndefinedForParameter) {
@@ -57233,10 +57500,7 @@ function createTypeChecker(host) {
           /*context*/
           void 0
         );
-        if (updated !== node2) {
-          setTextRange2(context, updated, node2);
-        }
-        return updated;
+        return setTextRange2(context, updated, node2);
       }
     }
     function serializeTypeName(context, node, isTypeOf, typeArguments) {
@@ -63343,8 +63607,8 @@ function createTypeChecker(host) {
   function getIndexSymbolFromSymbolTable(symbolTable) {
     return symbolTable.get("__index" /* Index */);
   }
-  function createIndexInfo(keyType, type, isReadonly, declaration) {
-    return { keyType, type, isReadonly, declaration };
+  function createIndexInfo(keyType, type, isReadonly, declaration, components) {
+    return { keyType, type, isReadonly, declaration, components };
   }
   function getIndexInfosOfSymbol(symbol) {
     const indexSymbol = getIndexSymbol(symbol);
@@ -63857,6 +64121,9 @@ function createTypeChecker(host) {
         case "Number":
           checkNoTypeArguments(node);
           return numberType;
+        case "BigInt":
+          checkNoTypeArguments(node);
+          return bigintType;
         case "Boolean":
           checkNoTypeArguments(node);
           return booleanType;
@@ -66410,7 +66677,7 @@ function createTypeChecker(host) {
     return result;
   }
   function getIndexInfoWithReadonly(info, readonly) {
-    return info.isReadonly !== readonly ? createIndexInfo(info.keyType, info.type, readonly, info.declaration) : info;
+    return info.isReadonly !== readonly ? createIndexInfo(info.keyType, info.type, readonly, info.declaration, info.components) : info;
   }
   function createLiteralType(flags, value, symbol, regularType) {
     const type = createTypeWithSymbol(flags, symbol);
@@ -67169,7 +67436,7 @@ function createTypeChecker(host) {
     return type.restrictiveInstantiation;
   }
   function instantiateIndexInfo(info, mapper) {
-    return createIndexInfo(info.keyType, instantiateType(info.type, mapper), info.isReadonly, info.declaration);
+    return createIndexInfo(info.keyType, instantiateType(info.type, mapper), info.isReadonly, info.declaration, info.components);
   }
   function isContextSensitive(node) {
     Debug.assert(node.kind !== 174 /* MethodDeclaration */ || isObjectLiteralMethod(node));
@@ -71300,7 +71567,7 @@ function createTypeChecker(host) {
         }
       }
     }
-    const result = createAnonymousType(type.symbol, members, emptyArray, emptyArray, sameMap(getIndexInfosOfType(type), (info) => createIndexInfo(info.keyType, getWidenedType(info.type), info.isReadonly)));
+    const result = createAnonymousType(type.symbol, members, emptyArray, emptyArray, sameMap(getIndexInfosOfType(type), (info) => createIndexInfo(info.keyType, getWidenedType(info.type), info.isReadonly, info.declaration, info.components)));
     result.objectFlags |= getObjectFlags(type) & (4096 /* JSLiteral */ | 262144 /* NonInferrableType */);
     return result;
   }
@@ -72742,6 +73009,7 @@ function createTypeChecker(host) {
         return target.kind === 108 /* SuperKeyword */;
       case 235 /* NonNullExpression */:
       case 217 /* ParenthesizedExpression */:
+      case 238 /* SatisfiesExpression */:
         return isMatchingReference(source.expression, target);
       case 211 /* PropertyAccessExpression */:
       case 212 /* ElementAccessExpression */:
@@ -74592,6 +74860,7 @@ function createTypeChecker(host) {
         if (checkDerived) {
           return filterType(type, (t) => !isTypeDerivedFrom(t, candidate));
         }
+        type = type.flags & 2 /* Unknown */ ? unknownUnionType : type;
         const trueType2 = getNarrowedType(
           type,
           candidate,
@@ -74600,7 +74869,7 @@ function createTypeChecker(host) {
           /*checkDerived*/
           false
         );
-        return filterType(type, (t) => !isTypeSubsetOf(t, trueType2));
+        return recombineUnknownType(filterType(type, (t) => !isTypeSubsetOf(t, trueType2)));
       }
       if (type.flags & 3 /* AnyOrUnknown */) {
         return candidate;
@@ -74698,6 +74967,7 @@ function createTypeChecker(host) {
           return narrowTypeByCallExpression(type, expr, assumeTrue);
         case 217 /* ParenthesizedExpression */:
         case 235 /* NonNullExpression */:
+        case 238 /* SatisfiesExpression */:
           return narrowType(type, expr.expression, assumeTrue);
         case 226 /* BinaryExpression */:
           return narrowTypeByBinaryExpression(type, expr, assumeTrue);
@@ -75081,8 +75351,9 @@ function createTypeChecker(host) {
       }
       if (isJsxOpeningFragment(node)) {
         const file = getSourceFileOfNode(node);
-        const localJsxNamespace = getLocalJsxNamespace(file);
-        if (localJsxNamespace) {
+        const entity = getJsxFactoryEntity(file);
+        if (entity) {
+          const localJsxNamespace = getFirstIdentifier(entity).escapedText;
           resolveName(
             jsxFactoryLocation,
             localJsxNamespace,
@@ -77320,16 +77591,33 @@ function createTypeChecker(host) {
     const firstDecl = (_a = symbol.declarations) == null ? void 0 : _a[0];
     return isKnownSymbol(symbol) || firstDecl && isNamedDeclaration(firstDecl) && isComputedPropertyName(firstDecl.name) && isTypeAssignableToKind(checkComputedPropertyName(firstDecl.name), 4096 /* ESSymbol */);
   }
+  function isSymbolWithComputedName(symbol) {
+    var _a;
+    const firstDecl = (_a = symbol.declarations) == null ? void 0 : _a[0];
+    return firstDecl && isNamedDeclaration(firstDecl) && isComputedPropertyName(firstDecl.name);
+  }
   function getObjectLiteralIndexInfo(isReadonly, offset, properties, keyType) {
+    var _a;
     const propTypes = [];
+    let components;
     for (let i = offset; i < properties.length; i++) {
       const prop = properties[i];
       if (keyType === stringType && !isSymbolWithSymbolName(prop) || keyType === numberType && isSymbolWithNumericName(prop) || keyType === esSymbolType && isSymbolWithSymbolName(prop)) {
         propTypes.push(getTypeOfSymbol(properties[i]));
+        if (isSymbolWithComputedName(properties[i])) {
+          components = append(components, (_a = properties[i].declarations) == null ? void 0 : _a[0]);
+        }
       }
     }
     const unionType = propTypes.length ? getUnionType(propTypes, 2 /* Subtype */) : undefinedType;
-    return createIndexInfo(keyType, unionType, isReadonly);
+    return createIndexInfo(
+      keyType,
+      unionType,
+      isReadonly,
+      /*declaration*/
+      void 0,
+      components
+    );
   }
   function getImmediateAliasedSymbol(symbol) {
     Debug.assert((symbol.flags & 2097152 /* Alias */) !== 0, "Should only get Alias here.");
@@ -77864,6 +78152,9 @@ function createTypeChecker(host) {
     return getNameFromJsxElementAttributesContainer(JsxNames.ElementAttributesPropertyNameContainer, jsxNamespace);
   }
   function getJsxElementChildrenPropertyName(jsxNamespace) {
+    if (compilerOptions.jsx === 4 /* ReactJSX */ || compilerOptions.jsx === 5 /* ReactJSXDev */) {
+      return "children";
+    }
     return getNameFromJsxElementAttributesContainer(JsxNames.ElementChildrenAttributeNameContainer, jsxNamespace);
   }
   function getUninstantiatedJsxSignaturesOfType(elementType, caller) {
@@ -79422,8 +79713,8 @@ function createTypeChecker(host) {
     }
   }
   function getEffectiveCheckNode(argument) {
-    argument = skipParentheses(argument);
-    return isSatisfiesExpression(argument) ? skipParentheses(argument.expression) : argument;
+    const flags = isInJSFile(argument) ? 1 /* Parentheses */ | 32 /* Satisfies */ | -2147483648 /* ExcludeJSDocTypeAssertion */ : 1 /* Parentheses */ | 32 /* Satisfies */;
+    return skipOuterExpressions(argument, flags);
   }
   function getSignatureApplicabilityError(node, args, signature, relation, checkMode, reportErrors2, containingMessageChain, inferenceContext) {
     const errorOutputContainer = { errors: void 0, skipLogging: true };
@@ -79848,11 +80139,16 @@ function createTypeChecker(host) {
     if (!result) {
       result = chooseOverload(candidates, assignableRelation, isSingleNonGenericCandidate, signatureHelpTrailingComma);
     }
+    const links = getNodeLinks(node);
+    if (links.resolvedSignature !== resolvingSignature && !candidatesOutArray) {
+      Debug.assert(links.resolvedSignature);
+      return links.resolvedSignature;
+    }
     if (result) {
       return result;
     }
     result = getCandidateForOverloadFailure(node, candidates, args, !!candidatesOutArray, checkMode);
-    getNodeLinks(node).resolvedSignature = result;
+    links.resolvedSignature = result;
     if (reportErrors2) {
       if (!headMessage && isInstanceof) {
         headMessage = Diagnostics.The_left_hand_side_of_an_instanceof_expression_must_be_assignable_to_the_first_argument_of_the_right_hand_side_s_Symbol_hasInstance_method;
@@ -80738,12 +81034,9 @@ function createTypeChecker(host) {
       resolutionStart = resolutionTargets.length;
     }
     links.resolvedSignature = resolvingSignature;
-    let result = resolveSignature(node, candidatesOutArray, checkMode || 0 /* Normal */);
+    const result = resolveSignature(node, candidatesOutArray, checkMode || 0 /* Normal */);
     resolutionStart = saveResolutionStart;
     if (result !== resolvingSignature) {
-      if (links.resolvedSignature !== resolvingSignature) {
-        result = links.resolvedSignature;
-      }
       links.resolvedSignature = flowLoopStart === flowLoopCount ? result : cached;
     }
     return result;
@@ -81100,6 +81393,11 @@ function createTypeChecker(host) {
       if (file && fileExtensionIsOneOf(file.fileName, [".cts" /* Cts */, ".mts" /* Mts */])) {
         grammarErrorOnNode(node, Diagnostics.This_syntax_is_reserved_in_files_with_the_mts_or_cts_extension_Use_an_as_expression_instead);
       }
+      if (compilerOptions.erasableSyntaxOnly) {
+        const start = skipTrivia(file.text, node.pos);
+        const end = node.expression.pos;
+        diagnostics.add(createFileDiagnostic(file, start, end - start, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled));
+      }
     }
     return checkAssertionWorker(node, checkMode);
   }
@@ -81322,12 +81620,12 @@ function createTypeChecker(host) {
     }
   }
   function checkImportMetaProperty(node) {
-    if (moduleKind === 100 /* Node16 */ || moduleKind === 199 /* NodeNext */) {
+    if (100 /* Node16 */ <= moduleKind && moduleKind <= 199 /* NodeNext */) {
       if (getSourceFileOfNode(node).impliedNodeFormat !== 99 /* ESNext */) {
         error2(node, Diagnostics.The_import_meta_meta_property_is_not_allowed_in_files_which_will_build_into_CommonJS_output);
       }
     } else if (moduleKind < 6 /* ES2020 */ && moduleKind !== 4 /* System */) {
-      error2(node, Diagnostics.The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system_node16_or_nodenext);
+      error2(node, Diagnostics.The_import_meta_meta_property_is_only_allowed_when_the_module_option_is_es2020_es2022_esnext_system_node16_node18_or_nodenext);
     }
     const file = getSourceFileOfNode(node);
     Debug.assert(!!(file.flags & 8388608 /* PossiblyContainsImportMeta */), "Containing file is missing import meta node flag.");
@@ -82156,7 +82454,7 @@ function createTypeChecker(host) {
       }
       return !someType(operandConstraint, (t) => getTypeFacts(t, notEqualFacts) === notEqualFacts);
     }
-    const type = checkExpressionCached(node.expression);
+    const type = getBaseConstraintOrType(checkExpressionCached(node.expression));
     if (!isLiteralType(type)) {
       return false;
     }
@@ -82419,19 +82717,7 @@ function createTypeChecker(host) {
         const exprType = checkExpression(node.body);
         const returnOrPromisedType = returnType && unwrapReturnType(returnType, functionFlags);
         if (returnOrPromisedType) {
-          const effectiveCheckNode = getEffectiveCheckNode(node.body);
-          if ((functionFlags & 3 /* AsyncGenerator */) === 2 /* Async */) {
-            const awaitedType = checkAwaitedType(
-              exprType,
-              /*withAlias*/
-              false,
-              effectiveCheckNode,
-              Diagnostics.The_return_type_of_an_async_function_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member
-            );
-            checkTypeAssignableToAndOptionallyElaborate(awaitedType, returnOrPromisedType, effectiveCheckNode, effectiveCheckNode);
-          } else {
-            checkTypeAssignableToAndOptionallyElaborate(exprType, returnOrPromisedType, effectiveCheckNode, effectiveCheckNode);
-          }
+          checkReturnExpression(node, returnOrPromisedType, node.body, node.body, exprType);
         }
       }
     }
@@ -82485,7 +82771,7 @@ function createTypeChecker(host) {
     }
     if (isReadonlySymbol(symbol)) {
       if (symbol.flags & 4 /* Property */ && isAccessExpression(expr) && expr.expression.kind === 110 /* ThisKeyword */) {
-        const ctor = getContainingFunction(expr);
+        const ctor = getControlFlowContainer(expr);
         if (!(ctor && (ctor.kind === 176 /* Constructor */ || isJSConstructor(ctor)))) {
           return true;
         }
@@ -82514,7 +82800,7 @@ function createTypeChecker(host) {
     return false;
   }
   function checkReferenceExpression(expr, invalidReferenceMessage, invalidOptionalChainMessage) {
-    const node = skipOuterExpressions(expr, 6 /* Assertions */ | 1 /* Parentheses */);
+    const node = skipOuterExpressions(expr, 38 /* Assertions */ | 1 /* Parentheses */);
     if (node.kind !== 80 /* Identifier */ && !isAccessExpression(node)) {
       error2(expr, invalidReferenceMessage);
       return false;
@@ -82581,6 +82867,7 @@ function createTypeChecker(host) {
           }
           switch (moduleKind) {
             case 100 /* Node16 */:
+            case 101 /* Node18 */:
             case 199 /* NodeNext */:
               if (sourceFile.impliedNodeFormat === 1 /* CommonJS */) {
                 span ?? (span = getSpanOfTokenAtPosition(sourceFile, node.pos));
@@ -82601,7 +82888,7 @@ function createTypeChecker(host) {
             // fallthrough
             default:
               span ?? (span = getSpanOfTokenAtPosition(sourceFile, node.pos));
-              const message = isAwaitExpression(node) ? Diagnostics.Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher : Diagnostics.Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher;
+              const message = isAwaitExpression(node) ? Diagnostics.Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher : Diagnostics.Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher;
               diagnostics.add(createFileDiagnostic(sourceFile, span.start, span.length, message));
               hasError = true;
               break;
@@ -83165,7 +83452,7 @@ function createTypeChecker(host) {
       if (isBinaryExpression(right) && (right.operatorToken.kind === 57 /* BarBarToken */ || right.operatorToken.kind === 56 /* AmpersandAmpersandToken */)) {
         grammarErrorOnNode(right, Diagnostics._0_and_1_operations_cannot_be_mixed_without_parentheses, tokenToString(right.operatorToken.kind), tokenToString(operatorToken.kind));
       }
-      const leftTarget = skipOuterExpressions(left, 31 /* All */);
+      const leftTarget = skipOuterExpressions(left, 63 /* All */);
       const nullishSemantics = getSyntacticNullishnessSemantics(leftTarget);
       if (nullishSemantics !== 3 /* Sometimes */) {
         if (node.parent.kind === 226 /* BinaryExpression */) {
@@ -84384,6 +84671,9 @@ function createTypeChecker(host) {
     checkVariableLikeDeclaration(node);
     const func = getContainingFunction(node);
     if (hasSyntacticModifier(node, 31 /* ParameterPropertyModifier */)) {
+      if (compilerOptions.erasableSyntaxOnly) {
+        error2(node, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled);
+      }
       if (!(func.kind === 176 /* Constructor */ && nodeIsPresent(func.body))) {
         error2(node, Diagnostics.A_parameter_property_is_only_allowed_in_a_constructor_implementation);
       }
@@ -87657,7 +87947,6 @@ function createTypeChecker(host) {
     }
     const signature = getSignatureFromDeclaration(container);
     const returnType = getReturnTypeOfSignature(signature);
-    const functionFlags = getFunctionFlags(container);
     if (strictNullChecks || node.expression || returnType.flags & 131072 /* Never */) {
       const exprType = node.expression ? checkExpressionCached(node.expression) : undefinedType;
       if (container.kind === 178 /* SetAccessor */) {
@@ -87665,25 +87954,56 @@ function createTypeChecker(host) {
           error2(node, Diagnostics.Setters_cannot_return_a_value);
         }
       } else if (container.kind === 176 /* Constructor */) {
-        if (node.expression && !checkTypeAssignableToAndOptionallyElaborate(exprType, returnType, node, node.expression)) {
+        const exprType2 = node.expression ? checkExpressionCached(node.expression) : undefinedType;
+        if (node.expression && !checkTypeAssignableToAndOptionallyElaborate(exprType2, returnType, node, node.expression)) {
           error2(node, Diagnostics.Return_type_of_constructor_signature_must_be_assignable_to_the_instance_type_of_the_class);
         }
       } else if (getReturnTypeFromAnnotation(container)) {
-        const unwrappedReturnType = unwrapReturnType(returnType, functionFlags) ?? returnType;
-        const unwrappedExprType = functionFlags & 2 /* Async */ ? checkAwaitedType(
-          exprType,
-          /*withAlias*/
-          false,
-          node,
-          Diagnostics.The_return_type_of_an_async_function_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member
-        ) : exprType;
-        if (unwrappedReturnType) {
-          checkTypeAssignableToAndOptionallyElaborate(unwrappedExprType, unwrappedReturnType, node, node.expression);
-        }
+        const unwrappedReturnType = unwrapReturnType(returnType, getFunctionFlags(container)) ?? returnType;
+        checkReturnExpression(container, unwrappedReturnType, node, node.expression, exprType);
       }
     } else if (container.kind !== 176 /* Constructor */ && compilerOptions.noImplicitReturns && !isUnwrappedReturnTypeUndefinedVoidOrAny(container, returnType)) {
       error2(node, Diagnostics.Not_all_code_paths_return_a_value);
     }
+  }
+  function checkReturnExpression(container, unwrappedReturnType, node, expr, exprType, inConditionalExpression = false) {
+    const excludeJSDocTypeAssertions = isInJSFile(node);
+    const functionFlags = getFunctionFlags(container);
+    if (expr) {
+      const unwrappedExpr = skipParentheses(expr, excludeJSDocTypeAssertions);
+      if (isConditionalExpression(unwrappedExpr)) {
+        checkReturnExpression(
+          container,
+          unwrappedReturnType,
+          node,
+          unwrappedExpr.whenTrue,
+          checkExpression(unwrappedExpr.whenTrue),
+          /*inConditionalExpression*/
+          true
+        );
+        checkReturnExpression(
+          container,
+          unwrappedReturnType,
+          node,
+          unwrappedExpr.whenFalse,
+          checkExpression(unwrappedExpr.whenFalse),
+          /*inConditionalExpression*/
+          true
+        );
+        return;
+      }
+    }
+    const inReturnStatement = node.kind === 253 /* ReturnStatement */;
+    const unwrappedExprType = functionFlags & 2 /* Async */ ? checkAwaitedType(
+      exprType,
+      /*withAlias*/
+      false,
+      node,
+      Diagnostics.The_return_type_of_an_async_function_must_either_be_a_valid_promise_or_must_not_contain_a_callable_then_member
+    ) : exprType;
+    const effectiveExpr = expr && getEffectiveCheckNode(expr);
+    const errorNode = inReturnStatement && !inConditionalExpression ? node : effectiveExpr;
+    checkTypeAssignableToAndOptionallyElaborate(unwrappedExprType, unwrappedReturnType, errorNode, effectiveExpr);
   }
   function checkWithStatement(node) {
     if (!checkGrammarStatementInAmbientContext(node)) {
@@ -87816,7 +88136,7 @@ function createTypeChecker(host) {
     const typeDeclaration = symbol.valueDeclaration;
     if (typeDeclaration && isClassLike(typeDeclaration)) {
       for (const member of typeDeclaration.members) {
-        if (!isStatic(member) && !hasBindableName(member)) {
+        if ((!isStaticIndex && !isStatic(member) || isStaticIndex && isStatic(member)) && !hasBindableName(member)) {
           const symbol2 = getSymbolOfDeclaration(member);
           checkIndexConstraintForProperty(type, symbol2, getTypeOfExpression(member.name.expression), getNonMissingTypeOfSymbol(symbol2));
         }
@@ -88267,6 +88587,13 @@ function createTypeChecker(host) {
   function checkMemberForOverrideModifier(node, staticType, baseStaticType, baseWithThis, type, typeWithThis, memberHasOverrideModifier, memberHasAbstractModifier, memberIsStatic, memberIsParameterProperty, member, errorNode) {
     const isJs = isInJSFile(node);
     const nodeInAmbientContext = !!(node.flags & 33554432 /* Ambient */);
+    if (memberHasOverrideModifier && (member == null ? void 0 : member.valueDeclaration) && isClassElement(member.valueDeclaration) && member.valueDeclaration.name && isNonBindableDynamicName(member.valueDeclaration.name)) {
+      error2(
+        errorNode,
+        isJs ? Diagnostics.This_member_cannot_have_a_JSDoc_comment_with_an_override_tag_because_its_name_is_dynamic : Diagnostics.This_member_cannot_have_an_override_modifier_because_its_name_is_dynamic
+      );
+      return 2 /* HasInvalidOverride */;
+    }
     if (baseWithThis && (memberHasOverrideModifier || compilerOptions.noImplicitOverride)) {
       const thisType = memberIsStatic ? staticType : typeWithThis;
       const baseType = memberIsStatic ? baseStaticType : baseWithThis;
@@ -88859,6 +89186,9 @@ function createTypeChecker(host) {
     checkCollisionsForDeclarationName(node, node.name);
     checkExportsOnMergedDeclarations(node);
     node.members.forEach(checkEnumMember);
+    if (compilerOptions.erasableSyntaxOnly && !(node.flags & 33554432 /* Ambient */)) {
+      error2(node, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled);
+    }
     computeEnumMemberValues(node);
     const enumSymbol = getSymbolOfDeclaration(node);
     const firstDeclaration = getDeclarationOfKind(enumSymbol, node.kind);
@@ -88960,6 +89290,9 @@ function createTypeChecker(host) {
       checkExportsOnMergedDeclarations(node);
       const symbol = getSymbolOfDeclaration(node);
       if (symbol.flags & 512 /* ValueModule */ && !inAmbientContext && isInstantiatedModule(node, shouldPreserveConstEnums(compilerOptions))) {
+        if (compilerOptions.erasableSyntaxOnly) {
+          error2(node.name, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled);
+        }
         if (getIsolatedModules(compilerOptions) && !getSourceFileOfNode(node).externalModuleIndicator) {
           error2(node.name, Diagnostics.Namespaces_are_not_allowed_in_global_script_files_when_0_is_enabled_If_this_file_is_not_intended_to_be_a_global_script_set_moduleDetection_to_force_or_add_an_empty_export_statement, isolatedModulesLikeFlagName);
         }
@@ -89273,10 +89606,20 @@ function createTypeChecker(host) {
       if (validForTypeAttributes && override) {
         return;
       }
-      const mode = moduleKind === 199 /* NodeNext */ && declaration.moduleSpecifier && getEmitSyntaxForModuleSpecifierExpression(declaration.moduleSpecifier);
-      if (mode !== 99 /* ESNext */ && moduleKind !== 99 /* ESNext */ && moduleKind !== 200 /* Preserve */) {
-        const message = isImportAttributes2 ? moduleKind === 199 /* NodeNext */ ? Diagnostics.Import_attributes_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls : Diagnostics.Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve : moduleKind === 199 /* NodeNext */ ? Diagnostics.Import_assertions_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls : Diagnostics.Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_nodenext_or_preserve;
-        return grammarErrorOnNode(node, message);
+      if (!moduleSupportsImportAttributes(moduleKind)) {
+        return grammarErrorOnNode(
+          node,
+          isImportAttributes2 ? Diagnostics.Import_attributes_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_preserve : Diagnostics.Import_assertions_are_only_supported_when_the_module_option_is_set_to_esnext_node18_nodenext_or_preserve
+        );
+      }
+      if (moduleKind === 199 /* NodeNext */ && !isImportAttributes2) {
+        return grammarErrorOnFirstToken(node, Diagnostics.Import_assertions_have_been_replaced_by_import_attributes_Use_with_instead_of_assert);
+      }
+      if (declaration.moduleSpecifier && getEmitSyntaxForModuleSpecifierExpression(declaration.moduleSpecifier) === 1 /* CommonJS */) {
+        return grammarErrorOnNode(
+          node,
+          isImportAttributes2 ? Diagnostics.Import_attributes_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls : Diagnostics.Import_assertions_are_not_allowed_on_statements_that_compile_to_CommonJS_require_calls
+        );
       }
       const isTypeOnly = isJSDocImportTag(declaration) || (isImportDeclaration(declaration) ? (_a = declaration.importClause) == null ? void 0 : _a.isTypeOnly : declaration.isTypeOnly);
       if (isTypeOnly) {
@@ -89317,7 +89660,7 @@ function createTypeChecker(host) {
             }
           }
         }
-        if (!importClause.isTypeOnly && moduleKind === 199 /* NodeNext */ && isOnlyImportableAsDefault(node.moduleSpecifier, resolvedModule) && !hasTypeJsonImportAttribute(node)) {
+        if (!importClause.isTypeOnly && 101 /* Node18 */ <= moduleKind && moduleKind <= 199 /* NodeNext */ && isOnlyImportableAsDefault(node.moduleSpecifier, resolvedModule) && !hasTypeJsonImportAttribute(node)) {
           error2(node.moduleSpecifier, Diagnostics.Importing_a_JSON_file_into_an_ECMAScript_module_requires_a_type_Colon_json_import_attribute_when_module_is_set_to_0, ModuleKind[moduleKind]);
         }
       } else if (noUncheckedSideEffectImports && !importClause) {
@@ -89337,6 +89680,9 @@ function createTypeChecker(host) {
       return;
     }
     checkGrammarModifiers(node);
+    if (compilerOptions.erasableSyntaxOnly && !(node.flags & 33554432 /* Ambient */)) {
+      error2(node, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled);
+    }
     if (isInternalModuleImportEqualsDeclaration(node) || checkExternalImportOrExportDeclaration(node)) {
       checkImportBinding(node);
       markLinkedReferences(node, 6 /* ExportImportEquals */);
@@ -89456,6 +89802,9 @@ function createTypeChecker(host) {
     const illegalContextMessage = node.isExportEquals ? Diagnostics.An_export_assignment_must_be_at_the_top_level_of_a_file_or_module_declaration : Diagnostics.A_default_export_must_be_at_the_top_level_of_a_file_or_module_declaration;
     if (checkGrammarModuleElementContext(node, illegalContextMessage)) {
       return;
+    }
+    if (compilerOptions.erasableSyntaxOnly && node.isExportEquals && !(node.flags & 33554432 /* Ambient */)) {
+      error2(node, Diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled);
     }
     const container = node.parent.kind === 307 /* SourceFile */ ? node.parent : node.parent.parent;
     if (container.kind === 267 /* ModuleDeclaration */ && !isAmbientModule(container)) {
@@ -90454,7 +90803,7 @@ function createTypeChecker(host) {
         name,
         meaning,
         /*ignoreErrors*/
-        false,
+        true,
         /*dontResolveAlias*/
         true
       );
@@ -90464,7 +90813,9 @@ function createTypeChecker(host) {
       return resolveEntityName(
         name,
         /*meaning*/
-        1 /* FunctionScopedVariable */
+        1 /* FunctionScopedVariable */,
+        /*ignoreErrors*/
+        true
       );
     }
     return void 0;
@@ -90649,7 +91000,12 @@ function createTypeChecker(host) {
   }
   function getShorthandAssignmentValueSymbol(location) {
     if (location && location.kind === 304 /* ShorthandPropertyAssignment */) {
-      return resolveEntityName(location.name, 111551 /* Value */ | 2097152 /* Alias */);
+      return resolveEntityName(
+        location.name,
+        111551 /* Value */ | 2097152 /* Alias */,
+        /*ignoreErrors*/
+        true
+      );
     }
     return void 0;
   }
@@ -90658,10 +91014,20 @@ function createTypeChecker(host) {
       const name = node.propertyName || node.name;
       return node.parent.parent.moduleSpecifier ? getExternalModuleMember(node.parent.parent, node) : name.kind === 11 /* StringLiteral */ ? void 0 : (
         // Skip for invalid syntax like this: export { "x" }
-        resolveEntityName(name, 111551 /* Value */ | 788968 /* Type */ | 1920 /* Namespace */ | 2097152 /* Alias */)
+        resolveEntityName(
+          name,
+          111551 /* Value */ | 788968 /* Type */ | 1920 /* Namespace */ | 2097152 /* Alias */,
+          /*ignoreErrors*/
+          true
+        )
       );
     } else {
-      return resolveEntityName(node, 111551 /* Value */ | 788968 /* Type */ | 1920 /* Namespace */ | 2097152 /* Alias */);
+      return resolveEntityName(
+        node,
+        111551 /* Value */ | 788968 /* Type */ | 1920 /* Namespace */ | 2097152 /* Alias */,
+        /*ignoreErrors*/
+        true
+      );
     }
   }
   function getTypeOfNode(node) {
@@ -91602,6 +91968,35 @@ function createTypeChecker(host) {
           for (const info of infoList) {
             if (info.declaration) continue;
             if (info === anyBaseTypeIndexInfo) continue;
+            if (info.components) {
+              const allComponentComputedNamesSerializable = every(info.components, (e) => {
+                var _a;
+                return !!(e.name && isComputedPropertyName(e.name) && isEntityNameExpression(e.name.expression) && enclosing && ((_a = isEntityNameVisible(
+                  e.name.expression,
+                  enclosing,
+                  /*shouldComputeAliasToMakeVisible*/
+                  false
+                )) == null ? void 0 : _a.accessibility) === 0 /* Accessible */);
+              });
+              if (allComponentComputedNamesSerializable) {
+                const newComponents = filter(info.components, (e) => {
+                  return !hasLateBindableName(e);
+                });
+                result.push(...map(newComponents, (e) => {
+                  trackComputedName(e.name.expression);
+                  const mods = infoList === staticInfos ? [factory.createModifier(126 /* StaticKeyword */)] : void 0;
+                  return factory.createPropertyDeclaration(
+                    append(mods, info.isReadonly ? factory.createModifier(148 /* ReadonlyKeyword */) : void 0),
+                    e.name,
+                    (isPropertySignature(e) || isPropertyDeclaration(e) || isMethodSignature(e) || isMethodDeclaration(e) || isGetAccessor(e) || isSetAccessor(e)) && e.questionToken ? factory.createToken(58 /* QuestionToken */) : void 0,
+                    nodeBuilder.typeToTypeNode(getTypeOfSymbol(e.symbol), enclosing, flags, internalFlags, tracker),
+                    /*initializer*/
+                    void 0
+                  );
+                }));
+                continue;
+              }
+            }
             const node = nodeBuilder.indexInfoToIndexSignatureDeclaration(info, enclosing, flags, internalFlags, tracker);
             if (node && infoList === staticInfos) {
               (node.modifiers || (node.modifiers = factory.createNodeArray())).unshift(factory.createModifier(126 /* StaticKeyword */));
@@ -91612,6 +92007,22 @@ function createTypeChecker(host) {
           }
         }
         return result;
+        function trackComputedName(accessExpression) {
+          if (!tracker.trackSymbol) return;
+          const firstIdentifier = getFirstIdentifier(accessExpression);
+          const name = resolveName(
+            firstIdentifier,
+            firstIdentifier.escapedText,
+            111551 /* Value */ | 1048576 /* ExportValue */,
+            /*nameNotFoundMessage*/
+            void 0,
+            /*isUse*/
+            true
+          );
+          if (name) {
+            tracker.trackSymbol(name, enclosing, 111551 /* Value */);
+          }
+        }
       }
     };
     function isImportRequiredByAugmentation(node) {
@@ -92693,6 +93104,7 @@ function createTypeChecker(host) {
             }
             switch (moduleKind) {
               case 100 /* Node16 */:
+              case 101 /* Node18 */:
               case 199 /* NodeNext */:
                 if (sourceFile.impliedNodeFormat === 1 /* CommonJS */) {
                   diagnostics.add(
@@ -92711,7 +93123,7 @@ function createTypeChecker(host) {
               // fallthrough
               default:
                 diagnostics.add(
-                  createDiagnosticForNode(forInOrOfStatement.awaitModifier, Diagnostics.Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher)
+                  createDiagnosticForNode(forInOrOfStatement.awaitModifier, Diagnostics.Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher)
                 );
                 break;
             }
@@ -92855,7 +93267,7 @@ function createTypeChecker(host) {
     }
   }
   function checkGrammarForInvalidDynamicName(node, message) {
-    if (isNonBindableDynamicName(node)) {
+    if (isNonBindableDynamicName(node) && !isEntityNameExpression(isElementAccessExpression(node) ? skipParentheses(node.argumentExpression) : node.expression)) {
       return grammarErrorOnNode(node, message);
     }
   }
@@ -93314,17 +93726,17 @@ function createTypeChecker(host) {
       return grammarErrorOnNode(node, Diagnostics.ESM_syntax_is_not_allowed_in_a_CommonJS_module_when_verbatimModuleSyntax_is_enabled);
     }
     if (moduleKind === 5 /* ES2015 */) {
-      return grammarErrorOnNode(node, Diagnostics.Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd_system_umd_node16_or_nodenext);
+      return grammarErrorOnNode(node, Diagnostics.Dynamic_imports_are_only_supported_when_the_module_flag_is_set_to_es2020_es2022_esnext_commonjs_amd_system_umd_node16_node18_or_nodenext);
     }
     if (node.typeArguments) {
       return grammarErrorOnNode(node, Diagnostics.This_use_of_import_is_invalid_import_calls_can_be_written_but_they_must_have_parentheses_and_cannot_have_type_arguments);
     }
     const nodeArguments = node.arguments;
-    if (moduleKind !== 99 /* ESNext */ && moduleKind !== 199 /* NodeNext */ && moduleKind !== 100 /* Node16 */ && moduleKind !== 200 /* Preserve */) {
+    if (!(100 /* Node16 */ <= moduleKind && moduleKind <= 199 /* NodeNext */) && moduleKind !== 99 /* ESNext */ && moduleKind !== 200 /* Preserve */) {
       checkGrammarForDisallowedTrailingComma(nodeArguments);
       if (nodeArguments.length > 1) {
         const importAttributesArgument = nodeArguments[1];
-        return grammarErrorOnNode(importAttributesArgument, Diagnostics.Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_nodenext_or_preserve);
+        return grammarErrorOnNode(importAttributesArgument, Diagnostics.Dynamic_imports_only_support_a_second_argument_when_the_module_option_is_set_to_esnext_node16_node18_nodenext_or_preserve);
       }
     }
     if (nodeArguments.length === 0 || nodeArguments.length > 2) {
@@ -97841,7 +98253,7 @@ function transformTypeScript(context) {
     return updated;
   }
   function visitParenthesizedExpression(node) {
-    const innerExpression = skipOuterExpressions(node.expression, ~(6 /* Assertions */ | 16 /* ExpressionsWithTypeArguments */));
+    const innerExpression = skipOuterExpressions(node.expression, ~(38 /* Assertions */ | 16 /* ExpressionsWithTypeArguments */));
     if (isAssertionExpression(innerExpression) || isSatisfiesExpression(innerExpression)) {
       const expression = visitNode(node.expression, visitor, isExpression);
       Debug.assert(expression);
@@ -116263,7 +116675,7 @@ function transformECMAScriptModule(context) {
         if (node === (importsAndRequiresToRewriteOrShim == null ? void 0 : importsAndRequiresToRewriteOrShim[0])) {
           return visitImportOrRequireCall(importsAndRequiresToRewriteOrShim.shift());
         }
-        break;
+      // fallthrough
       default:
         if ((importsAndRequiresToRewriteOrShim == null ? void 0 : importsAndRequiresToRewriteOrShim.length) && rangeContainsRange(node, importsAndRequiresToRewriteOrShim[0])) {
           return visitEachChild(node, visitor, context);
@@ -117000,11 +117412,7 @@ function createGetIsolatedDeclarationErrors(resolver) {
     if (isSetAccessor(node.parent)) {
       return createAccessorTypeError(node.parent);
     }
-    const addUndefined = resolver.requiresAddingImplicitUndefined(
-      node,
-      /*enclosingDeclaration*/
-      void 0
-    );
+    const addUndefined = resolver.requiresAddingImplicitUndefined(node, node.parent);
     if (!addUndefined && node.initializer) {
       return createExpressionError(node.initializer);
     }
@@ -118688,6 +119096,7 @@ function getModuleTransformer(moduleKind) {
     case 6 /* ES2020 */:
     case 5 /* ES2015 */:
     case 100 /* Node16 */:
+    case 101 /* Node18 */:
     case 199 /* NodeNext */:
     case 1 /* CommonJS */:
       return transformImpliedNodeFormatDependentModule;
@@ -119080,7 +119489,7 @@ function transformNodes(resolver, host, factory2, options, nodes, transformers, 
 }
 var nullTransformationContext = {
   factory,
-   
+  // eslint-disable-line object-shorthand
   getCompilerOptions: () => ({}),
   getEmitResolver: notImplemented,
   getEmitHost: notImplemented,
@@ -125247,45 +125656,6 @@ function loadWithModeAwareCache(entries, containingFile, redirectedReference, op
   }
   return resolutions;
 }
-function forEachResolvedProjectReference(resolvedProjectReferences, cb) {
-  return forEachProjectReference(
-    /*projectReferences*/
-    void 0,
-    resolvedProjectReferences,
-    (resolvedRef, parent2) => resolvedRef && cb(resolvedRef, parent2)
-  );
-}
-function forEachProjectReference(projectReferences, resolvedProjectReferences, cbResolvedRef, cbRef) {
-  let seenResolvedRefs;
-  return worker(
-    projectReferences,
-    resolvedProjectReferences,
-    /*parent*/
-    void 0
-  );
-  function worker(projectReferences2, resolvedProjectReferences2, parent2) {
-    if (cbRef) {
-      const result = cbRef(projectReferences2, parent2);
-      if (result) return result;
-    }
-    let skipChildren;
-    return forEach(
-      resolvedProjectReferences2,
-      (resolvedRef, index) => {
-        if (resolvedRef && (seenResolvedRefs == null ? void 0 : seenResolvedRefs.has(resolvedRef.sourceFile.path))) {
-          (skipChildren ?? (skipChildren = /* @__PURE__ */ new Set())).add(resolvedRef);
-          return void 0;
-        }
-        const result = cbResolvedRef(resolvedRef, parent2, index);
-        if (result || !resolvedRef) return result;
-        (seenResolvedRefs || (seenResolvedRefs = /* @__PURE__ */ new Set())).add(resolvedRef.sourceFile.path);
-      }
-    ) || forEach(
-      resolvedProjectReferences2,
-      (resolvedRef) => resolvedRef && !(skipChildren == null ? void 0 : skipChildren.has(resolvedRef)) ? worker(resolvedRef.commandLine.projectReferences, resolvedRef.references, resolvedRef) : void 0
-    );
-  }
-}
 var inferredTypesContainingFile = "__inferred type names__.ts";
 function getInferredLibraryNameResolveFrom(options, currentDirectory, libFileName) {
   const containingDirectory = options.configFilePath ? getDirectoryPath(options.configFilePath) : currentDirectory;
@@ -125300,13 +125670,6 @@ function getLibraryNameFromLibFileName(libFileName) {
     i++;
   }
   return "@typescript/lib-" + path;
-}
-function getLibNameFromLibReference(libReference) {
-  return toFileNameLowerCase(libReference.fileName);
-}
-function getLibFileNameFromLibReference(libReference) {
-  const libName = getLibNameFromLibReference(libReference);
-  return libMap.get(libName);
 }
 function isReferencedFile(reason) {
   switch (reason == null ? void 0 : reason.kind) {
@@ -125525,11 +125888,13 @@ function createCreateProgramOptions(rootNames, options, host, oldProgram, config
     typeScriptVersion: typeScriptVersion3
   };
 }
-function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _configFileParsingDiagnostics) {
+function createProgram(_rootNamesOrOptions, _options, _host, _oldProgram, _configFileParsingDiagnostics) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-  const createProgramOptions = isArray(rootNamesOrOptions) ? createCreateProgramOptions(rootNamesOrOptions, _options, _host, _oldProgram, _configFileParsingDiagnostics) : rootNamesOrOptions;
-  const { rootNames, options, configFileParsingDiagnostics, projectReferences, typeScriptVersion: typeScriptVersion3 } = createProgramOptions;
-  let { oldProgram } = createProgramOptions;
+  let _createProgramOptions = isArray(_rootNamesOrOptions) ? createCreateProgramOptions(_rootNamesOrOptions, _options, _host, _oldProgram, _configFileParsingDiagnostics) : _rootNamesOrOptions;
+  const { rootNames, options, configFileParsingDiagnostics, projectReferences, typeScriptVersion: typeScriptVersion3, host: createProgramOptionsHost } = _createProgramOptions;
+  let { oldProgram } = _createProgramOptions;
+  _createProgramOptions = void 0;
+  _rootNamesOrOptions = void 0;
   for (const option of commandLineOptionOfCustomType) {
     if (hasProperty(options, option.name)) {
       if (typeof options[option.name] === "string") {
@@ -125542,16 +125907,12 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   let processingOtherFiles;
   let files;
   let symlinks;
-  let commonSourceDirectory;
   let typeChecker;
   let classifiableNames;
-  let fileReasons = createMultiMap();
   let filesWithReferencesProcessed;
-  let fileReasonsToChain;
-  let reasonToRelatedInfo;
   let cachedBindAndCheckDiagnosticsForFile;
   let cachedDeclarationDiagnosticsForFile;
-  let fileProcessingDiagnostics;
+  const programDiagnostics = createProgramDiagnostics(getCompilerOptionsObjectLiteralSyntax);
   let automaticTypeDirectiveNames;
   let automaticTypeDirectiveResolutions;
   let resolvedLibReferences;
@@ -125573,13 +125934,12 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     true
   );
   mark("beforeProgram");
-  const host = createProgramOptions.host || createCompilerHost(options);
+  const host = createProgramOptionsHost || createCompilerHost(options);
   const configParsingHost = parseConfigHostFromCompilerHostLike(host);
   let skipDefaultLib = options.noLib;
   const getDefaultLibraryFileName = memoize(() => host.getDefaultLibFileName(options));
   const defaultLibraryPath = host.getDefaultLibLocation ? host.getDefaultLibLocation() : getDirectoryPath(getDefaultLibraryFileName());
-  const programDiagnostics = createDiagnosticCollection();
-  let lazyProgramDiagnosticExplainingFile = [];
+  let skipVerifyCompilerOptions = false;
   const currentDirectory = host.getCurrentDirectory();
   const supportedExtensions = getSupportedExtensions(options);
   const supportedExtensionsWithJsonIfResolveJsonModule = getSupportedExtensionsWithJsonIfResolveJsonModule(options, supportedExtensions);
@@ -125857,7 +126217,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     getTypeCount: () => getTypeChecker().getTypeCount(),
     getInstantiationCount: () => getTypeChecker().getInstantiationCount(),
     getRelationCacheSizes: () => getTypeChecker().getRelationCacheSizes(),
-    getFileProcessingDiagnostics: () => fileProcessingDiagnostics,
+    getFileProcessingDiagnostics: () => programDiagnostics.getFileProcessingDiagnostics(),
     getAutomaticTypeDirectiveNames: () => automaticTypeDirectiveNames,
     getAutomaticTypeDirectiveResolutions: () => automaticTypeDirectiveResolutions,
     isSourceFileFromExternalLibrary,
@@ -125873,6 +126233,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     resolvedModules,
     resolvedTypeReferenceDirectiveNames,
     resolvedLibReferences,
+    getProgramDiagnosticsContainer: () => programDiagnostics,
     getResolvedModule,
     getResolvedModuleFromModuleSpecifier,
     getResolvedTypeReferenceDirective,
@@ -125905,70 +126266,19 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     realpath: (_o = host.realpath) == null ? void 0 : _o.bind(host),
     useCaseSensitiveFileNames: () => host.useCaseSensitiveFileNames(),
     getCanonicalFileName,
-    getFileIncludeReasons: () => fileReasons,
+    getFileIncludeReasons: () => programDiagnostics.getFileReasons(),
     structureIsReused,
     writeFile: writeFile2,
     getGlobalTypingsCacheLocation: maybeBind(host, host.getGlobalTypingsCacheLocation)
   };
   onProgramCreateComplete();
-  verifyCompilerOptions();
+  if (!skipVerifyCompilerOptions) {
+    verifyCompilerOptions();
+  }
   mark("afterProgram");
   measure("Program", "beforeProgram", "afterProgram");
   (_p = tracing) == null ? void 0 : _p.pop();
   return program;
-  function updateAndGetProgramDiagnostics() {
-    if (lazyProgramDiagnosticExplainingFile) {
-      fileProcessingDiagnostics == null ? void 0 : fileProcessingDiagnostics.forEach((diagnostic) => {
-        switch (diagnostic.kind) {
-          case 1 /* FilePreprocessingFileExplainingDiagnostic */:
-            return programDiagnostics.add(
-              createDiagnosticExplainingFile(
-                diagnostic.file && getSourceFileByPath(diagnostic.file),
-                diagnostic.fileProcessingReason,
-                diagnostic.diagnostic,
-                diagnostic.args || emptyArray
-              )
-            );
-          case 0 /* FilePreprocessingLibReferenceDiagnostic */:
-            return programDiagnostics.add(filePreprocessingLibreferenceDiagnostic(diagnostic));
-          case 2 /* ResolutionDiagnostics */:
-            return diagnostic.diagnostics.forEach((d) => programDiagnostics.add(d));
-          default:
-            Debug.assertNever(diagnostic);
-        }
-      });
-      lazyProgramDiagnosticExplainingFile.forEach(
-        ({ file, diagnostic, args }) => programDiagnostics.add(
-          createDiagnosticExplainingFile(
-            file,
-            /*fileProcessingReason*/
-            void 0,
-            diagnostic,
-            args
-          )
-        )
-      );
-      lazyProgramDiagnosticExplainingFile = void 0;
-      fileReasonsToChain = void 0;
-      reasonToRelatedInfo = void 0;
-    }
-    return programDiagnostics;
-  }
-  function filePreprocessingLibreferenceDiagnostic({ reason }) {
-    const { file, pos, end } = getReferencedFileLocation(program, reason);
-    const libReference = file.libReferenceDirectives[reason.index];
-    const libName = getLibNameFromLibReference(libReference);
-    const unqualifiedLibName = removeSuffix(removePrefix(libName, "lib."), ".d.ts");
-    const suggestion = getSpellingSuggestion(unqualifiedLibName, libs, identity);
-    return createFileDiagnostic(
-      file,
-      Debug.checkDefined(pos),
-      Debug.checkDefined(end) - pos,
-      suggestion ? Diagnostics.Cannot_find_lib_definition_for_0_Did_you_mean_1 : Diagnostics.Cannot_find_lib_definition_for_0,
-      libName,
-      suggestion
-    );
-  }
   function getResolvedModule(file, moduleName, mode) {
     var _a2;
     return (_a2 = resolvedModules == null ? void 0 : resolvedModules.get(file.path)) == null ? void 0 : _a2.get(moduleName, mode);
@@ -126017,7 +126327,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   function addResolutionDiagnostics(resolution) {
     var _a2;
     if (!((_a2 = resolution.resolutionDiagnostics) == null ? void 0 : _a2.length)) return;
-    (fileProcessingDiagnostics ?? (fileProcessingDiagnostics = [])).push({
+    programDiagnostics.addFileProcessingDiagnostic({
       kind: 2 /* ResolutionDiagnostics */,
       diagnostics: resolution.resolutionDiagnostics
     });
@@ -126111,16 +126421,19 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     return toPath(fileName, currentDirectory, getCanonicalFileName);
   }
   function getCommonSourceDirectory2() {
-    if (commonSourceDirectory === void 0) {
-      const emittedFiles = filter(files, (file) => sourceFileMayBeEmitted(file, program));
-      commonSourceDirectory = getCommonSourceDirectory(
-        options,
-        () => mapDefined(emittedFiles, (file) => file.isDeclarationFile ? void 0 : file.fileName),
-        currentDirectory,
-        getCanonicalFileName,
-        (commonSourceDirectory2) => checkSourceFilesBelongToPath(emittedFiles, commonSourceDirectory2)
-      );
+    let commonSourceDirectory = programDiagnostics.getCommonSourceDirectory();
+    if (commonSourceDirectory !== void 0) {
+      return commonSourceDirectory;
     }
+    const emittedFiles = filter(files, (file) => sourceFileMayBeEmitted(file, program));
+    commonSourceDirectory = getCommonSourceDirectory(
+      options,
+      () => mapDefined(emittedFiles, (file) => file.isDeclarationFile ? void 0 : file.fileName),
+      currentDirectory,
+      getCanonicalFileName,
+      (commonSourceDirectory2) => checkSourceFilesBelongToPath(emittedFiles, commonSourceDirectory2)
+    );
+    programDiagnostics.setCommonSourceDirectory(commonSourceDirectory);
     return commonSourceDirectory;
   }
   function getClassifiableNames() {
@@ -126431,9 +126744,10 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       }
       filesByName.set(path, filesByName.get(oldFile.path));
     });
+    const isConfigIdentical = oldOptions.configFile && oldOptions.configFile === options.configFile || !oldOptions.configFile && !options.configFile && !optionsHaveChanges(oldOptions, options, optionDeclarations);
+    programDiagnostics.reuseStateFromOldProgram(oldProgram.getProgramDiagnosticsContainer(), isConfigIdentical);
+    skipVerifyCompilerOptions = isConfigIdentical;
     files = newSourceFiles;
-    fileReasons = oldProgram.getFileIncludeReasons();
-    fileProcessingDiagnostics = oldProgram.getFileProcessingDiagnostics();
     automaticTypeDirectiveNames = oldProgram.getAutomaticTypeDirectiveNames();
     automaticTypeDirectiveResolutions = oldProgram.getAutomaticTypeDirectiveResolutions();
     sourceFileToPackageName = oldProgram.sourceFileToPackageName;
@@ -126649,7 +126963,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     if (skipTypeChecking(sourceFile, options, program)) {
       return emptyArray;
     }
-    const programDiagnosticsInFile = updateAndGetProgramDiagnostics().getDiagnostics(sourceFile.fileName);
+    const programDiagnosticsInFile = programDiagnostics.getCombinedDiagnostics(program).getDiagnostics(sourceFile.fileName);
     if (!((_a2 = sourceFile.commentDirectives) == null ? void 0 : _a2.length)) {
       return programDiagnosticsInFile;
     }
@@ -127007,15 +127321,15 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   }
   function getOptionsDiagnostics() {
     return sortAndDeduplicateDiagnostics(concatenate(
-      updateAndGetProgramDiagnostics().getGlobalDiagnostics(),
+      programDiagnostics.getCombinedDiagnostics(program).getGlobalDiagnostics(),
       getOptionsDiagnosticsOfConfigFile()
     ));
   }
   function getOptionsDiagnosticsOfConfigFile() {
     if (!options.configFile) return emptyArray;
-    let diagnostics = updateAndGetProgramDiagnostics().getDiagnostics(options.configFile.fileName);
+    let diagnostics = programDiagnostics.getCombinedDiagnostics(program).getDiagnostics(options.configFile.fileName);
     forEachResolvedProjectReference2((resolvedRef) => {
-      diagnostics = concatenate(diagnostics, updateAndGetProgramDiagnostics().getDiagnostics(resolvedRef.sourceFile.fileName));
+      diagnostics = concatenate(diagnostics, programDiagnostics.getCombinedDiagnostics(program).getDiagnostics(resolvedRef.sourceFile.fileName));
     });
     return diagnostics;
   }
@@ -127222,7 +127536,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     );
   }
   function reportFileNamesDifferOnlyInCasingError(fileName, existingFile, reason) {
-    const hasExistingReasonToReportErrorOn = !isReferencedFile(reason) && some(fileReasons.get(existingFile.path), isReferencedFile);
+    const hasExistingReasonToReportErrorOn = !isReferencedFile(reason) && some(programDiagnostics.getFileReasons().get(existingFile.path), isReferencedFile);
     if (hasExistingReasonToReportErrorOn) {
       addFilePreprocessingFileExplainingDiagnostic(existingFile, reason, Diagnostics.Already_included_file_name_0_differs_from_file_name_1_only_in_casing, [existingFile.fileName, fileName]);
     } else {
@@ -127409,7 +127723,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   }
   function addFileIncludeReason(file, reason, checkExisting) {
     if (file && (!checkExisting || !isReferencedFile(reason) || !(filesWithReferencesProcessed == null ? void 0 : filesWithReferencesProcessed.has(reason.file)))) {
-      fileReasons.add(file.path, reason);
+      programDiagnostics.getFileReasons().add(file.path, reason);
       return true;
     }
     return false;
@@ -127561,6 +127875,16 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     var _a2, _b2, _c2, _d2, _e2;
     const existing = resolvedLibProcessing == null ? void 0 : resolvedLibProcessing.get(libFileName);
     if (existing) return existing;
+    if (options.libReplacement === false) {
+      const result2 = {
+        resolution: {
+          resolvedModule: void 0
+        },
+        actual: combinePaths(defaultLibraryPath, libFileName)
+      };
+      (resolvedLibProcessing ?? (resolvedLibProcessing = /* @__PURE__ */ new Map())).set(libFileName, result2);
+      return result2;
+    }
     if (structureIsReused !== 0 /* Not */ && oldProgram && !hasInvalidatedLibResolutions(libFileName)) {
       const oldResolution = (_a2 = oldProgram.resolvedLibReferences) == null ? void 0 : _a2.get(libFileName);
       if (oldResolution) {
@@ -127608,7 +127932,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
           { kind: 7 /* LibReferenceDirective */, file: file.path, index }
         );
       } else {
-        (fileProcessingDiagnostics || (fileProcessingDiagnostics = [])).push({
+        programDiagnostics.addFileProcessingDiagnostic({
           kind: 0 /* FilePreprocessingLibReferenceDiagnostic */,
           reason: { kind: 7 /* LibReferenceDirective */, file: file.path, index }
         });
@@ -127671,10 +127995,11 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       if (!sourceFile.isDeclarationFile) {
         const absoluteSourceFilePath = host.getCanonicalFileName(getNormalizedAbsolutePath(sourceFile.fileName, currentDirectory));
         if (absoluteSourceFilePath.indexOf(absoluteRootDirectoryPath) !== 0) {
-          addLazyProgramDiagnosticExplainingFile(
+          programDiagnostics.addLazyConfigDiagnostic(
             sourceFile,
             Diagnostics.File_0_is_not_under_rootDir_1_rootDir_is_expected_to_contain_all_source_files,
-            [sourceFile.fileName, rootDirectory]
+            sourceFile.fileName,
+            rootDirectory
           );
           allFilesBelongToPath = false;
         }
@@ -127789,7 +128114,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     }
     const outputFile = options.outFile;
     if (!options.tsBuildInfoFile && options.incremental && !outputFile && !options.configFilePath) {
-      programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_incremental_can_only_be_specified_using_tsconfig_emitting_to_single_file_or_when_option_tsBuildInfoFile_is_specified));
+      programDiagnostics.addConfigDiagnostic(createCompilerDiagnostic(Diagnostics.Option_incremental_can_only_be_specified_using_tsconfig_emitting_to_single_file_or_when_option_tsBuildInfoFile_is_specified));
     }
     verifyDeprecatedCompilerOptions();
     verifyProjectReferences();
@@ -127797,10 +128122,11 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       const rootPaths = new Set(rootNames.map(toPath3));
       for (const file of files) {
         if (sourceFileMayBeEmitted(file, program) && !rootPaths.has(file.path)) {
-          addLazyProgramDiagnosticExplainingFile(
+          programDiagnostics.addLazyConfigDiagnostic(
             file,
             Diagnostics.File_0_is_not_listed_within_the_file_list_of_project_1_Projects_must_list_all_files_or_use_an_include_pattern,
-            [file.fileName, options.configFilePath || ""]
+            file.fileName,
+            options.configFilePath || ""
           );
         }
       }
@@ -127891,14 +128217,14 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       }
     } else if (firstNonAmbientExternalModuleSourceFile && languageVersion < 2 /* ES2015 */ && options.module === 0 /* None */) {
       const span = getErrorSpanForNode(firstNonAmbientExternalModuleSourceFile, typeof firstNonAmbientExternalModuleSourceFile.externalModuleIndicator === "boolean" ? firstNonAmbientExternalModuleSourceFile : firstNonAmbientExternalModuleSourceFile.externalModuleIndicator);
-      programDiagnostics.add(createFileDiagnostic(firstNonAmbientExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_use_imports_exports_or_module_augmentations_when_module_is_none));
+      programDiagnostics.addConfigDiagnostic(createFileDiagnostic(firstNonAmbientExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_use_imports_exports_or_module_augmentations_when_module_is_none));
     }
     if (outputFile && !options.emitDeclarationOnly) {
       if (options.module && !(options.module === 2 /* AMD */ || options.module === 4 /* System */)) {
         createDiagnosticForOptionName(Diagnostics.Only_amd_and_system_modules_are_supported_alongside_0, "outFile", "module");
       } else if (options.module === void 0 && firstNonAmbientExternalModuleSourceFile) {
         const span = getErrorSpanForNode(firstNonAmbientExternalModuleSourceFile, typeof firstNonAmbientExternalModuleSourceFile.externalModuleIndicator === "boolean" ? firstNonAmbientExternalModuleSourceFile : firstNonAmbientExternalModuleSourceFile.externalModuleIndicator);
-        programDiagnostics.add(createFileDiagnostic(firstNonAmbientExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_modules_using_option_0_unless_the_module_flag_is_amd_or_system, "outFile"));
+        programDiagnostics.addConfigDiagnostic(createFileDiagnostic(firstNonAmbientExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_modules_using_option_0_unless_the_module_flag_is_amd_or_system, "outFile"));
       }
     }
     if (getResolveJsonModule(options)) {
@@ -127987,7 +128313,8 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     }
     if (ModuleKind[moduleKind] && (100 /* Node16 */ <= moduleKind && moduleKind <= 199 /* NodeNext */) && !(3 /* Node16 */ <= moduleResolution && moduleResolution <= 99 /* NodeNext */)) {
       const moduleKindName = ModuleKind[moduleKind];
-      createOptionValueDiagnostic("moduleResolution", Diagnostics.Option_moduleResolution_must_be_set_to_0_or_left_unspecified_when_option_module_is_set_to_1, moduleKindName, moduleKindName);
+      const moduleResolutionName = ModuleResolutionKind[moduleKindName] ? moduleKindName : "Node16";
+      createOptionValueDiagnostic("moduleResolution", Diagnostics.Option_moduleResolution_must_be_set_to_0_or_left_unspecified_when_option_module_is_set_to_1, moduleResolutionName, moduleKindName);
     } else if (ModuleResolutionKind[moduleResolution] && (3 /* Node16 */ <= moduleResolution && moduleResolution <= 99 /* NodeNext */) && !(100 /* Node16 */ <= moduleKind && moduleKind <= 199 /* NodeNext */)) {
       const moduleResolutionName = ModuleResolutionKind[moduleResolution];
       createOptionValueDiagnostic("module", Diagnostics.Option_module_must_be_set_to_0_when_option_moduleResolution_is_set_to_1, moduleResolutionName, moduleResolutionName);
@@ -128149,189 +128476,14 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       }
     });
   }
-  function createDiagnosticExplainingFile(file, fileProcessingReason, diagnostic, args) {
-    let seenReasons;
-    const reasons = file && fileReasons.get(file.path);
-    let fileIncludeReasons;
-    let relatedInfo;
-    let locationReason = isReferencedFile(fileProcessingReason) ? fileProcessingReason : void 0;
-    let fileIncludeReasonDetails;
-    let redirectInfo;
-    let cachedChain = file && (fileReasonsToChain == null ? void 0 : fileReasonsToChain.get(file.path));
-    let chain;
-    if (cachedChain) {
-      if (cachedChain.fileIncludeReasonDetails) {
-        seenReasons = new Set(reasons);
-        reasons == null ? void 0 : reasons.forEach(populateRelatedInfo);
-      } else {
-        reasons == null ? void 0 : reasons.forEach(processReason);
-      }
-      redirectInfo = cachedChain.redirectInfo;
-    } else {
-      reasons == null ? void 0 : reasons.forEach(processReason);
-      redirectInfo = file && explainIfFileIsRedirectAndImpliedFormat(file, getCompilerOptionsForFile(file));
-    }
-    if (fileProcessingReason) processReason(fileProcessingReason);
-    const processedExtraReason = (seenReasons == null ? void 0 : seenReasons.size) !== (reasons == null ? void 0 : reasons.length);
-    if (locationReason && (seenReasons == null ? void 0 : seenReasons.size) === 1) seenReasons = void 0;
-    if (seenReasons && cachedChain) {
-      if (cachedChain.details && !processedExtraReason) {
-        chain = chainDiagnosticMessages(cachedChain.details, diagnostic, ...args || emptyArray);
-      } else if (cachedChain.fileIncludeReasonDetails) {
-        if (!processedExtraReason) {
-          if (!cachedFileIncludeDetailsHasProcessedExtraReason()) {
-            fileIncludeReasonDetails = cachedChain.fileIncludeReasonDetails;
-          } else {
-            fileIncludeReasons = cachedChain.fileIncludeReasonDetails.next.slice(0, reasons.length);
-          }
-        } else {
-          if (!cachedFileIncludeDetailsHasProcessedExtraReason()) {
-            fileIncludeReasons = [...cachedChain.fileIncludeReasonDetails.next, fileIncludeReasons[0]];
-          } else {
-            fileIncludeReasons = append(cachedChain.fileIncludeReasonDetails.next.slice(0, reasons.length), fileIncludeReasons[0]);
-          }
-        }
-      }
-    }
-    if (!chain) {
-      if (!fileIncludeReasonDetails) fileIncludeReasonDetails = seenReasons && chainDiagnosticMessages(fileIncludeReasons, Diagnostics.The_file_is_in_the_program_because_Colon);
-      chain = chainDiagnosticMessages(
-        redirectInfo ? fileIncludeReasonDetails ? [fileIncludeReasonDetails, ...redirectInfo] : redirectInfo : fileIncludeReasonDetails,
-        diagnostic,
-        ...args || emptyArray
-      );
-    }
-    if (file) {
-      if (cachedChain) {
-        if (!cachedChain.fileIncludeReasonDetails || !processedExtraReason && fileIncludeReasonDetails) {
-          cachedChain.fileIncludeReasonDetails = fileIncludeReasonDetails;
-        }
-      } else {
-        (fileReasonsToChain ?? (fileReasonsToChain = /* @__PURE__ */ new Map())).set(file.path, cachedChain = { fileIncludeReasonDetails, redirectInfo });
-      }
-      if (!cachedChain.details && !processedExtraReason) cachedChain.details = chain.next;
-    }
-    const location = locationReason && getReferencedFileLocation(program, locationReason);
-    return location && isReferenceFileLocation(location) ? createFileDiagnosticFromMessageChain(location.file, location.pos, location.end - location.pos, chain, relatedInfo) : createCompilerDiagnosticFromMessageChain(chain, relatedInfo);
-    function processReason(reason) {
-      if (seenReasons == null ? void 0 : seenReasons.has(reason)) return;
-      (seenReasons ?? (seenReasons = /* @__PURE__ */ new Set())).add(reason);
-      (fileIncludeReasons ?? (fileIncludeReasons = [])).push(fileIncludeReasonToDiagnostics(program, reason));
-      populateRelatedInfo(reason);
-    }
-    function populateRelatedInfo(reason) {
-      if (!locationReason && isReferencedFile(reason)) {
-        locationReason = reason;
-      } else if (locationReason !== reason) {
-        relatedInfo = append(relatedInfo, getFileIncludeReasonToRelatedInformation(reason));
-      }
-    }
-    function cachedFileIncludeDetailsHasProcessedExtraReason() {
-      var _a2;
-      return ((_a2 = cachedChain.fileIncludeReasonDetails.next) == null ? void 0 : _a2.length) !== (reasons == null ? void 0 : reasons.length);
-    }
-  }
   function addFilePreprocessingFileExplainingDiagnostic(file, fileProcessingReason, diagnostic, args) {
-    (fileProcessingDiagnostics || (fileProcessingDiagnostics = [])).push({
+    programDiagnostics.addFileProcessingDiagnostic({
       kind: 1 /* FilePreprocessingFileExplainingDiagnostic */,
       file: file && file.path,
       fileProcessingReason,
       diagnostic,
       args
     });
-  }
-  function addLazyProgramDiagnosticExplainingFile(file, diagnostic, args) {
-    lazyProgramDiagnosticExplainingFile.push({ file, diagnostic, args });
-  }
-  function getFileIncludeReasonToRelatedInformation(reason) {
-    let relatedInfo = reasonToRelatedInfo == null ? void 0 : reasonToRelatedInfo.get(reason);
-    if (relatedInfo === void 0) (reasonToRelatedInfo ?? (reasonToRelatedInfo = /* @__PURE__ */ new Map())).set(reason, relatedInfo = fileIncludeReasonToRelatedInformation(reason) ?? false);
-    return relatedInfo || void 0;
-  }
-  function fileIncludeReasonToRelatedInformation(reason) {
-    if (isReferencedFile(reason)) {
-      const referenceLocation = getReferencedFileLocation(program, reason);
-      let message2;
-      switch (reason.kind) {
-        case 3 /* Import */:
-          message2 = Diagnostics.File_is_included_via_import_here;
-          break;
-        case 4 /* ReferenceFile */:
-          message2 = Diagnostics.File_is_included_via_reference_here;
-          break;
-        case 5 /* TypeReferenceDirective */:
-          message2 = Diagnostics.File_is_included_via_type_library_reference_here;
-          break;
-        case 7 /* LibReferenceDirective */:
-          message2 = Diagnostics.File_is_included_via_library_reference_here;
-          break;
-        default:
-          Debug.assertNever(reason);
-      }
-      return isReferenceFileLocation(referenceLocation) ? createFileDiagnostic(
-        referenceLocation.file,
-        referenceLocation.pos,
-        referenceLocation.end - referenceLocation.pos,
-        message2
-      ) : void 0;
-    }
-    if (!options.configFile) return void 0;
-    let configFileNode;
-    let message;
-    switch (reason.kind) {
-      case 0 /* RootFile */:
-        if (!options.configFile.configFileSpecs) return void 0;
-        const fileName = getNormalizedAbsolutePath(rootNames[reason.index], currentDirectory);
-        const matchedByFiles = getMatchedFileSpec(program, fileName);
-        if (matchedByFiles) {
-          configFileNode = getTsConfigPropArrayElementValue(options.configFile, "files", matchedByFiles);
-          message = Diagnostics.File_is_matched_by_files_list_specified_here;
-          break;
-        }
-        const matchedByInclude = getMatchedIncludeSpec(program, fileName);
-        if (!matchedByInclude || !isString(matchedByInclude)) return void 0;
-        configFileNode = getTsConfigPropArrayElementValue(options.configFile, "include", matchedByInclude);
-        message = Diagnostics.File_is_matched_by_include_pattern_specified_here;
-        break;
-      case 1 /* SourceFromProjectReference */:
-      case 2 /* OutputFromProjectReference */:
-        const referencedResolvedRef = Debug.checkDefined(resolvedProjectReferences == null ? void 0 : resolvedProjectReferences[reason.index]);
-        const referenceInfo = forEachProjectReference(
-          projectReferences,
-          resolvedProjectReferences,
-          (resolvedRef, parent2, index2) => resolvedRef === referencedResolvedRef ? { sourceFile: (parent2 == null ? void 0 : parent2.sourceFile) || options.configFile, index: index2 } : void 0
-        );
-        if (!referenceInfo) return void 0;
-        const { sourceFile, index } = referenceInfo;
-        const referencesSyntax = forEachTsConfigPropArray(sourceFile, "references", (property) => isArrayLiteralExpression(property.initializer) ? property.initializer : void 0);
-        return referencesSyntax && referencesSyntax.elements.length > index ? createDiagnosticForNodeInSourceFile(
-          sourceFile,
-          referencesSyntax.elements[index],
-          reason.kind === 2 /* OutputFromProjectReference */ ? Diagnostics.File_is_output_from_referenced_project_specified_here : Diagnostics.File_is_source_from_referenced_project_specified_here
-        ) : void 0;
-      case 8 /* AutomaticTypeDirectiveFile */:
-        if (!options.types) return void 0;
-        configFileNode = getOptionsSyntaxByArrayElementValue("types", reason.typeReference);
-        message = Diagnostics.File_is_entry_point_of_type_library_specified_here;
-        break;
-      case 6 /* LibFile */:
-        if (reason.index !== void 0) {
-          configFileNode = getOptionsSyntaxByArrayElementValue("lib", options.lib[reason.index]);
-          message = Diagnostics.File_is_library_specified_here;
-          break;
-        }
-        const target = getNameOfScriptTarget(getEmitScriptTarget(options));
-        configFileNode = target ? getOptionsSyntaxByValue("target", target) : void 0;
-        message = Diagnostics.File_is_default_library_for_target_specified_here;
-        break;
-      default:
-        Debug.assertNever(reason);
-    }
-    return configFileNode && createDiagnosticForNodeInSourceFile(
-      options.configFile,
-      configFileNode,
-      message
-    );
   }
   function verifyProjectReferences() {
     const buildInfoPath = !options.suppressOutputPathCheck ? getTsBuildInfoEmitOutputFilePath(options) : void 0;
@@ -128368,7 +128520,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
         forEachPropertyAssignment(pathProp.initializer, key, (keyProps) => {
           const initializer = keyProps.initializer;
           if (isArrayLiteralExpression(initializer) && initializer.elements.length > valueIndex) {
-            programDiagnostics.add(createDiagnosticForNodeInSourceFile(options.configFile, initializer.elements[valueIndex], message, ...args));
+            programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeInSourceFile(options.configFile, initializer.elements[valueIndex], message, ...args));
             needCompilerDiagnostic = false;
           }
         });
@@ -128397,18 +128549,8 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
       createCompilerOptionsDiagnostic(message, ...args);
     }
   }
-  function forEachOptionsSyntaxByName(name, callback) {
-    return forEachPropertyAssignment(getCompilerOptionsObjectLiteralSyntax(), name, callback);
-  }
   function forEachOptionPathsSyntax(callback) {
-    return forEachOptionsSyntaxByName("paths", callback);
-  }
-  function getOptionsSyntaxByValue(name, value) {
-    return forEachOptionsSyntaxByName(name, (property) => isStringLiteral(property.initializer) && property.initializer.text === value ? property.initializer : void 0);
-  }
-  function getOptionsSyntaxByArrayElementValue(name, value) {
-    const compilerOptionsObjectLiteralSyntax = getCompilerOptionsObjectLiteralSyntax();
-    return compilerOptionsObjectLiteralSyntax && getPropertyArrayElementValue(compilerOptionsObjectLiteralSyntax, name, value);
+    return forEachOptionsSyntaxByName(getCompilerOptionsObjectLiteralSyntax(), "paths", callback);
   }
   function createDiagnosticForOptionName(message, option1, option2, option3) {
     createDiagnosticForOption(
@@ -128436,9 +128578,9 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   function createDiagnosticForReference(sourceFile, index, message, ...args) {
     const referencesSyntax = forEachTsConfigPropArray(sourceFile || options.configFile, "references", (property) => isArrayLiteralExpression(property.initializer) ? property.initializer : void 0);
     if (referencesSyntax && referencesSyntax.elements.length > index) {
-      programDiagnostics.add(createDiagnosticForNodeInSourceFile(sourceFile || options.configFile, referencesSyntax.elements[index], message, ...args));
+      programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeInSourceFile(sourceFile || options.configFile, referencesSyntax.elements[index], message, ...args));
     } else {
-      programDiagnostics.add(createCompilerDiagnostic(message, ...args));
+      programDiagnostics.addConfigDiagnostic(createCompilerDiagnostic(message, ...args));
     }
   }
   function createDiagnosticForOption(onKey, option1, option2, message, ...args) {
@@ -128452,14 +128594,14 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     const compilerOptionsProperty = getCompilerOptionsPropertySyntax();
     if (compilerOptionsProperty) {
       if ("messageText" in message) {
-        programDiagnostics.add(createDiagnosticForNodeFromMessageChain(options.configFile, compilerOptionsProperty.name, message));
+        programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeFromMessageChain(options.configFile, compilerOptionsProperty.name, message));
       } else {
-        programDiagnostics.add(createDiagnosticForNodeInSourceFile(options.configFile, compilerOptionsProperty.name, message, ...args));
+        programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeInSourceFile(options.configFile, compilerOptionsProperty.name, message, ...args));
       }
     } else if ("messageText" in message) {
-      programDiagnostics.add(createCompilerDiagnosticFromMessageChain(message));
+      programDiagnostics.addConfigDiagnostic(createCompilerDiagnosticFromMessageChain(message));
     } else {
-      programDiagnostics.add(createCompilerDiagnostic(message, ...args));
+      programDiagnostics.addConfigDiagnostic(createCompilerDiagnostic(message, ...args));
     }
   }
   function getCompilerOptionsObjectLiteralSyntax() {
@@ -128483,9 +128625,9 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
     let needsCompilerDiagnostic = false;
     forEachPropertyAssignment(objectLiteral, key1, (prop) => {
       if ("messageText" in message) {
-        programDiagnostics.add(createDiagnosticForNodeFromMessageChain(options.configFile, onKey ? prop.name : prop.initializer, message));
+        programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeFromMessageChain(options.configFile, onKey ? prop.name : prop.initializer, message));
       } else {
-        programDiagnostics.add(createDiagnosticForNodeInSourceFile(options.configFile, onKey ? prop.name : prop.initializer, message, ...args));
+        programDiagnostics.addConfigDiagnostic(createDiagnosticForNodeInSourceFile(options.configFile, onKey ? prop.name : prop.initializer, message, ...args));
       }
       needsCompilerDiagnostic = true;
     }, key2);
@@ -128493,7 +128635,7 @@ function createProgram(rootNamesOrOptions, _options, _host, _oldProgram, _config
   }
   function blockEmittingOfFile(emitFileName, diag2) {
     hasEmitBlockingDiagnostics.set(toPath3(emitFileName), true);
-    programDiagnostics.add(diag2);
+    programDiagnostics.addConfigDiagnostic(diag2);
   }
   function isEmittedFile(file) {
     if (options.noEmit) {
@@ -128814,6 +128956,293 @@ function getModuleNameStringLiteralAt({ imports, moduleAugmentations }, index) {
     }
   }
   Debug.fail("should never ask for module name at index higher than possible module name");
+}
+
+// src/compiler/programDiagnostics.ts
+function createProgramDiagnostics(getCompilerOptionsObjectLiteralSyntax) {
+  let computedDiagnostics;
+  let fileReasons = createMultiMap();
+  let fileProcessingDiagnostics;
+  let commonSourceDirectory;
+  let configDiagnostics;
+  let lazyConfigDiagnostics;
+  let fileReasonsToChain;
+  let reasonToRelatedInfo;
+  return {
+    addConfigDiagnostic(diag2) {
+      Debug.assert(computedDiagnostics === void 0, "Cannot modify program diagnostic state after requesting combined diagnostics");
+      (configDiagnostics ?? (configDiagnostics = createDiagnosticCollection())).add(diag2);
+    },
+    addLazyConfigDiagnostic(file, message, ...args) {
+      Debug.assert(computedDiagnostics === void 0, "Cannot modify program diagnostic state after requesting combined diagnostics");
+      (lazyConfigDiagnostics ?? (lazyConfigDiagnostics = [])).push({ file, diagnostic: message, args });
+    },
+    addFileProcessingDiagnostic(diag2) {
+      Debug.assert(computedDiagnostics === void 0, "Cannot modify program diagnostic state after requesting combined diagnostics");
+      (fileProcessingDiagnostics ?? (fileProcessingDiagnostics = [])).push(diag2);
+    },
+    setCommonSourceDirectory(directory) {
+      commonSourceDirectory = directory;
+    },
+    reuseStateFromOldProgram(oldProgramDiagnostics, isConfigIdentical) {
+      fileReasons = oldProgramDiagnostics.getFileReasons();
+      fileProcessingDiagnostics = oldProgramDiagnostics.getFileProcessingDiagnostics();
+      if (isConfigIdentical) {
+        commonSourceDirectory = oldProgramDiagnostics.getCommonSourceDirectory();
+        configDiagnostics = oldProgramDiagnostics.getConfigDiagnostics();
+        lazyConfigDiagnostics = oldProgramDiagnostics.getLazyConfigDiagnostics();
+      }
+    },
+    getFileProcessingDiagnostics() {
+      return fileProcessingDiagnostics;
+    },
+    getFileReasons() {
+      return fileReasons;
+    },
+    getCommonSourceDirectory() {
+      return commonSourceDirectory;
+    },
+    getConfigDiagnostics() {
+      return configDiagnostics;
+    },
+    getLazyConfigDiagnostics() {
+      return lazyConfigDiagnostics;
+    },
+    getCombinedDiagnostics(program) {
+      if (computedDiagnostics) {
+        return computedDiagnostics;
+      }
+      computedDiagnostics = createDiagnosticCollection();
+      configDiagnostics == null ? void 0 : configDiagnostics.getDiagnostics().forEach((d) => computedDiagnostics.add(d));
+      fileProcessingDiagnostics == null ? void 0 : fileProcessingDiagnostics.forEach((diagnostic) => {
+        switch (diagnostic.kind) {
+          case 1 /* FilePreprocessingFileExplainingDiagnostic */:
+            return computedDiagnostics.add(
+              createDiagnosticExplainingFile(
+                program,
+                diagnostic.file && program.getSourceFileByPath(diagnostic.file),
+                diagnostic.fileProcessingReason,
+                diagnostic.diagnostic,
+                diagnostic.args || emptyArray
+              )
+            );
+          case 0 /* FilePreprocessingLibReferenceDiagnostic */:
+            return computedDiagnostics.add(filePreprocessingLibreferenceDiagnostic(program, diagnostic));
+          case 2 /* ResolutionDiagnostics */:
+            return diagnostic.diagnostics.forEach((d) => computedDiagnostics.add(d));
+          default:
+            Debug.assertNever(diagnostic);
+        }
+      });
+      lazyConfigDiagnostics == null ? void 0 : lazyConfigDiagnostics.forEach(
+        ({ file, diagnostic, args }) => computedDiagnostics.add(
+          createDiagnosticExplainingFile(
+            program,
+            file,
+            /*fileProcessingReason*/
+            void 0,
+            diagnostic,
+            args
+          )
+        )
+      );
+      fileReasonsToChain = void 0;
+      reasonToRelatedInfo = void 0;
+      return computedDiagnostics;
+    }
+  };
+  function filePreprocessingLibreferenceDiagnostic(program, { reason }) {
+    const { file, pos, end } = getReferencedFileLocation(program, reason);
+    const libReference = file.libReferenceDirectives[reason.index];
+    const libName = getLibNameFromLibReference(libReference);
+    const unqualifiedLibName = removeSuffix(removePrefix(libName, "lib."), ".d.ts");
+    const suggestion = getSpellingSuggestion(unqualifiedLibName, libs, identity);
+    return createFileDiagnostic(
+      file,
+      Debug.checkDefined(pos),
+      Debug.checkDefined(end) - pos,
+      suggestion ? Diagnostics.Cannot_find_lib_definition_for_0_Did_you_mean_1 : Diagnostics.Cannot_find_lib_definition_for_0,
+      libName,
+      suggestion
+    );
+  }
+  function createDiagnosticExplainingFile(program, file, fileProcessingReason, diagnostic, args) {
+    let seenReasons;
+    let fileIncludeReasons;
+    let relatedInfo;
+    let fileIncludeReasonDetails;
+    let redirectInfo;
+    let chain;
+    const reasons = file && fileReasons.get(file.path);
+    let locationReason = isReferencedFile(fileProcessingReason) ? fileProcessingReason : void 0;
+    let cachedChain = file && (fileReasonsToChain == null ? void 0 : fileReasonsToChain.get(file.path));
+    if (cachedChain) {
+      if (cachedChain.fileIncludeReasonDetails) {
+        seenReasons = new Set(reasons);
+        reasons == null ? void 0 : reasons.forEach(populateRelatedInfo);
+      } else {
+        reasons == null ? void 0 : reasons.forEach(processReason);
+      }
+      redirectInfo = cachedChain.redirectInfo;
+    } else {
+      reasons == null ? void 0 : reasons.forEach(processReason);
+      redirectInfo = file && explainIfFileIsRedirectAndImpliedFormat(file, program.getCompilerOptionsForFile(file));
+    }
+    if (fileProcessingReason) processReason(fileProcessingReason);
+    const processedExtraReason = (seenReasons == null ? void 0 : seenReasons.size) !== (reasons == null ? void 0 : reasons.length);
+    if (locationReason && (seenReasons == null ? void 0 : seenReasons.size) === 1) seenReasons = void 0;
+    if (seenReasons && cachedChain) {
+      if (cachedChain.details && !processedExtraReason) {
+        chain = chainDiagnosticMessages(cachedChain.details, diagnostic, ...args ?? emptyArray);
+      } else if (cachedChain.fileIncludeReasonDetails) {
+        if (!processedExtraReason) {
+          if (!cachedFileIncludeDetailsHasProcessedExtraReason()) {
+            fileIncludeReasonDetails = cachedChain.fileIncludeReasonDetails;
+          } else {
+            fileIncludeReasons = cachedChain.fileIncludeReasonDetails.next.slice(0, reasons.length);
+          }
+        } else {
+          if (!cachedFileIncludeDetailsHasProcessedExtraReason()) {
+            fileIncludeReasons = [...cachedChain.fileIncludeReasonDetails.next, fileIncludeReasons[0]];
+          } else {
+            fileIncludeReasons = append(cachedChain.fileIncludeReasonDetails.next.slice(0, reasons.length), fileIncludeReasons[0]);
+          }
+        }
+      }
+    }
+    if (!chain) {
+      if (!fileIncludeReasonDetails) fileIncludeReasonDetails = seenReasons && chainDiagnosticMessages(fileIncludeReasons, Diagnostics.The_file_is_in_the_program_because_Colon);
+      chain = chainDiagnosticMessages(
+        redirectInfo ? fileIncludeReasonDetails ? [fileIncludeReasonDetails, ...redirectInfo] : redirectInfo : fileIncludeReasonDetails,
+        diagnostic,
+        ...args || emptyArray
+      );
+    }
+    if (file) {
+      if (cachedChain) {
+        if (!cachedChain.fileIncludeReasonDetails || !processedExtraReason && fileIncludeReasonDetails) {
+          cachedChain.fileIncludeReasonDetails = fileIncludeReasonDetails;
+        }
+      } else {
+        (fileReasonsToChain ?? (fileReasonsToChain = /* @__PURE__ */ new Map())).set(file.path, cachedChain = { fileIncludeReasonDetails, redirectInfo });
+      }
+      if (!cachedChain.details && !processedExtraReason) cachedChain.details = chain.next;
+    }
+    const location = locationReason && getReferencedFileLocation(program, locationReason);
+    return location && isReferenceFileLocation(location) ? createFileDiagnosticFromMessageChain(location.file, location.pos, location.end - location.pos, chain, relatedInfo) : createCompilerDiagnosticFromMessageChain(chain, relatedInfo);
+    function processReason(reason) {
+      if (seenReasons == null ? void 0 : seenReasons.has(reason)) return;
+      (seenReasons ?? (seenReasons = /* @__PURE__ */ new Set())).add(reason);
+      (fileIncludeReasons ?? (fileIncludeReasons = [])).push(fileIncludeReasonToDiagnostics(program, reason));
+      populateRelatedInfo(reason);
+    }
+    function populateRelatedInfo(reason) {
+      if (!locationReason && isReferencedFile(reason)) {
+        locationReason = reason;
+      } else if (locationReason !== reason) {
+        relatedInfo = append(relatedInfo, getFileIncludeReasonToRelatedInformation(program, reason));
+      }
+    }
+    function cachedFileIncludeDetailsHasProcessedExtraReason() {
+      var _a;
+      return ((_a = cachedChain.fileIncludeReasonDetails.next) == null ? void 0 : _a.length) !== (reasons == null ? void 0 : reasons.length);
+    }
+  }
+  function getFileIncludeReasonToRelatedInformation(program, reason) {
+    let relatedInfo = reasonToRelatedInfo == null ? void 0 : reasonToRelatedInfo.get(reason);
+    if (relatedInfo === void 0) (reasonToRelatedInfo ?? (reasonToRelatedInfo = /* @__PURE__ */ new Map())).set(reason, relatedInfo = fileIncludeReasonToRelatedInformation(program, reason) ?? false);
+    return relatedInfo || void 0;
+  }
+  function fileIncludeReasonToRelatedInformation(program, reason) {
+    if (isReferencedFile(reason)) {
+      const referenceLocation = getReferencedFileLocation(program, reason);
+      let message2;
+      switch (reason.kind) {
+        case 3 /* Import */:
+          message2 = Diagnostics.File_is_included_via_import_here;
+          break;
+        case 4 /* ReferenceFile */:
+          message2 = Diagnostics.File_is_included_via_reference_here;
+          break;
+        case 5 /* TypeReferenceDirective */:
+          message2 = Diagnostics.File_is_included_via_type_library_reference_here;
+          break;
+        case 7 /* LibReferenceDirective */:
+          message2 = Diagnostics.File_is_included_via_library_reference_here;
+          break;
+        default:
+          Debug.assertNever(reason);
+      }
+      return isReferenceFileLocation(referenceLocation) ? createFileDiagnostic(
+        referenceLocation.file,
+        referenceLocation.pos,
+        referenceLocation.end - referenceLocation.pos,
+        message2
+      ) : void 0;
+    }
+    const currentDirectory = program.getCurrentDirectory();
+    const rootNames = program.getRootFileNames();
+    const options = program.getCompilerOptions();
+    if (!options.configFile) return void 0;
+    let configFileNode;
+    let message;
+    switch (reason.kind) {
+      case 0 /* RootFile */:
+        if (!options.configFile.configFileSpecs) return void 0;
+        const fileName = getNormalizedAbsolutePath(rootNames[reason.index], currentDirectory);
+        const matchedByFiles = getMatchedFileSpec(program, fileName);
+        if (matchedByFiles) {
+          configFileNode = getTsConfigPropArrayElementValue(options.configFile, "files", matchedByFiles);
+          message = Diagnostics.File_is_matched_by_files_list_specified_here;
+          break;
+        }
+        const matchedByInclude = getMatchedIncludeSpec(program, fileName);
+        if (!matchedByInclude || !isString(matchedByInclude)) return void 0;
+        configFileNode = getTsConfigPropArrayElementValue(options.configFile, "include", matchedByInclude);
+        message = Diagnostics.File_is_matched_by_include_pattern_specified_here;
+        break;
+      case 1 /* SourceFromProjectReference */:
+      case 2 /* OutputFromProjectReference */:
+        const resolvedProjectReferences = program.getResolvedProjectReferences();
+        const projectReferences = program.getProjectReferences();
+        const referencedResolvedRef = Debug.checkDefined(resolvedProjectReferences == null ? void 0 : resolvedProjectReferences[reason.index]);
+        const referenceInfo = forEachProjectReference(
+          projectReferences,
+          resolvedProjectReferences,
+          (resolvedRef, parent2, index2) => resolvedRef === referencedResolvedRef ? { sourceFile: (parent2 == null ? void 0 : parent2.sourceFile) || options.configFile, index: index2 } : void 0
+        );
+        if (!referenceInfo) return void 0;
+        const { sourceFile, index } = referenceInfo;
+        const referencesSyntax = forEachTsConfigPropArray(sourceFile, "references", (property) => isArrayLiteralExpression(property.initializer) ? property.initializer : void 0);
+        return referencesSyntax && referencesSyntax.elements.length > index ? createDiagnosticForNodeInSourceFile(
+          sourceFile,
+          referencesSyntax.elements[index],
+          reason.kind === 2 /* OutputFromProjectReference */ ? Diagnostics.File_is_output_from_referenced_project_specified_here : Diagnostics.File_is_source_from_referenced_project_specified_here
+        ) : void 0;
+      case 8 /* AutomaticTypeDirectiveFile */:
+        if (!options.types) return void 0;
+        configFileNode = getOptionsSyntaxByArrayElementValue(getCompilerOptionsObjectLiteralSyntax(), "types", reason.typeReference);
+        message = Diagnostics.File_is_entry_point_of_type_library_specified_here;
+        break;
+      case 6 /* LibFile */:
+        if (reason.index !== void 0) {
+          configFileNode = getOptionsSyntaxByArrayElementValue(getCompilerOptionsObjectLiteralSyntax(), "lib", options.lib[reason.index]);
+          message = Diagnostics.File_is_library_specified_here;
+          break;
+        }
+        const target = getNameOfScriptTarget(getEmitScriptTarget(options));
+        configFileNode = target ? getOptionsSyntaxByValue(getCompilerOptionsObjectLiteralSyntax(), "target", target) : void 0;
+        message = Diagnostics.File_is_default_library_for_target_specified_here;
+        break;
+      default:
+        Debug.assertNever(reason);
+    }
+    return configFileNode && createDiagnosticForNodeInSourceFile(
+      options.configFile,
+      configFileNode,
+      message
+    );
+  }
 }
 
 // src/compiler/builderState.ts
@@ -136407,9 +136836,11 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
         if (!resolver.canReuseTypeNode(context, node)) {
           return resolver.serializeExistingTypeNode(context, node);
         }
+        const specifier = rewriteModuleSpecifier2(node, node.argument.literal);
+        const literal = specifier === node.argument.literal ? reuseNode(context, node.argument.literal) : specifier;
         return factory.updateImportTypeNode(
           node,
-          factory.updateLiteralTypeNode(node.argument, rewriteModuleSpecifier2(node, node.argument.literal)),
+          literal === node.argument.literal ? reuseNode(context, node.argument) : factory.createLiteralTypeNode(literal),
           visitNode(node.attributes, visitExistingNodeTreeSymbols, isImportAttributes),
           visitNode(node.qualifier, visitExistingNodeTreeSymbols, isEntityName),
           visitNodes2(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
@@ -136564,10 +136995,7 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
       }
       function rewriteModuleSpecifier2(parent2, lit) {
         const newName = resolver.getModuleSpecifierOverride(context, parent2, lit);
-        if (newName) {
-          return setOriginalNode(factory.createStringLiteral(newName), lit);
-        }
-        return visitNode(lit, visitExistingNodeTreeSymbols, isStringLiteral);
+        return newName ? setOriginalNode(factory.createStringLiteral(newName), lit) : lit;
       }
     }
   }
@@ -136734,12 +137162,7 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
       return withNewScope(context, node, () => serializeTypeAnnotationOfDeclaration(accessorType, context, node, symbol) ?? inferTypeOfDeclaration(node, symbol, context));
     }
     if (accessorDeclarations.getAccessor) {
-      return withNewScope(context, accessorDeclarations.getAccessor, () => createReturnFromSignature(
-        accessorDeclarations.getAccessor,
-        /*symbol*/
-        void 0,
-        context
-      ));
+      return withNewScope(context, accessorDeclarations.getAccessor, () => createReturnFromSignature(accessorDeclarations.getAccessor, symbol, context));
     }
     return void 0;
   }
@@ -136849,14 +137272,14 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
     }
     return resolver.serializeTypeOfExpression(context, node) ?? factory.createKeywordTypeNode(133 /* AnyKeyword */);
   }
-  function inferReturnTypeOfSignatureSignature(node, context, reportFallback) {
+  function inferReturnTypeOfSignatureSignature(node, context, symbol, reportFallback) {
     if (reportFallback) {
       context.tracker.reportInferenceFallback(node);
     }
     if (context.noInferenceFallback === true) {
       return factory.createKeywordTypeNode(133 /* AnyKeyword */);
     }
-    return resolver.serializeReturnTypeForSignature(context, node) ?? factory.createKeywordTypeNode(133 /* AnyKeyword */);
+    return resolver.serializeReturnTypeForSignature(context, node, symbol) ?? factory.createKeywordTypeNode(133 /* AnyKeyword */);
   }
   function inferAccessorType(node, allAccessors, context, symbol, reportFallback = true) {
     if (node.kind === 177 /* GetAccessor */) {
@@ -136971,18 +137394,21 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
     return failed;
   }
   function typeFromFunctionLikeExpression(fnNode, context) {
-    const oldNoInferenceFallback = context.noInferenceFallback;
-    context.noInferenceFallback = true;
-    createReturnFromSignature(
+    const returnType = createReturnFromSignature(
       fnNode,
       /*symbol*/
       void 0,
       context
     );
-    reuseTypeParameters(fnNode.typeParameters, context);
-    fnNode.parameters.map((p) => ensureParameter(p, context));
-    context.noInferenceFallback = oldNoInferenceFallback;
-    return notImplemented2;
+    const typeParameters = reuseTypeParameters(fnNode.typeParameters, context);
+    const parameters = fnNode.parameters.map((p) => ensureParameter(p, context));
+    return syntacticResult(
+      factory.createFunctionTypeNode(
+        typeParameters,
+        parameters,
+        returnType
+      )
+    );
   }
   function canGetTypeFromArrayLiteral(arrayLiteral, context, isConstContext) {
     if (!isConstContext) {
@@ -137143,18 +137569,17 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
     );
   }
   function reuseTypeParameters(typeParameters, context) {
-    return typeParameters == null ? void 0 : typeParameters.map(
-      (tp) => {
-        var _a;
-        return factory.updateTypeParameterDeclaration(
-          tp,
-          (_a = tp.modifiers) == null ? void 0 : _a.map((m) => reuseNode(context, m)),
-          reuseNode(context, tp.name),
-          serializeExistingTypeNodeWithFallback(tp.constraint, context),
-          serializeExistingTypeNodeWithFallback(tp.default, context)
-        );
-      }
-    );
+    return typeParameters == null ? void 0 : typeParameters.map((tp) => {
+      var _a;
+      const { node: tpName } = resolver.trackExistingEntityName(context, tp.name);
+      return factory.updateTypeParameterDeclaration(
+        tp,
+        (_a = tp.modifiers) == null ? void 0 : _a.map((m) => reuseNode(context, m)),
+        tpName,
+        serializeExistingTypeNodeWithFallback(tp.constraint, context),
+        serializeExistingTypeNodeWithFallback(tp.default, context)
+      );
+    });
   }
   function typeFromObjectLiteralMethod(method, name, context, isConstContext) {
     const returnType = createReturnFromSignature(
@@ -137289,7 +137714,7 @@ function createSyntacticTypeNodeBuilder(options, resolver) {
     } else if (isValueSignatureDeclaration(fn)) {
       returnType = typeFromSingleReturnExpression(fn, context);
     }
-    return returnType.type !== void 0 ? returnType.type : inferReturnTypeOfSignatureSignature(fn, context, reportFallback && returnType.reportFallback && !returnTypeNode);
+    return returnType.type !== void 0 ? returnType.type : inferReturnTypeOfSignatureSignature(fn, context, symbol, reportFallback && returnType.reportFallback && !returnTypeNode);
   }
   function typeFromSingleReturnExpression(declaration, context) {
     let candidateExpr;
@@ -140538,7 +140963,7 @@ function moduleSymbolToValidIdentifier(moduleSymbol, target, forceCapitalize) {
   return moduleSpecifierToValidIdentifier(removeFileExtension(stripQuotes(moduleSymbol.name)), target, forceCapitalize);
 }
 function moduleSpecifierToValidIdentifier(moduleSpecifier, target, forceCapitalize) {
-  const baseName = getBaseFileName(removeSuffix(moduleSpecifier, "/index"));
+  const baseName = getBaseFileName(removeSuffix(removeFileExtension(moduleSpecifier), "/index"));
   let res = "";
   let lastCharWasValid = true;
   const firstCharCode = baseName.charCodeAt(0);
@@ -146443,7 +146868,7 @@ function getUsageInfo(oldFile, toMove, checker, existingTargetLocals = /* @__PUR
   const unusedImportsFromOldFile = /* @__PURE__ */ new Set();
   for (const statement of toMove) {
     forEachReference(statement, checker, enclosingRange, (symbol, isValidTypeOnlyUseSite) => {
-      if (!symbol.declarations) {
+      if (!some(symbol.declarations)) {
         return;
       }
       if (existingTargetLocals.has(skipAlias(symbol, checker))) {
@@ -156855,6 +157280,7 @@ var errorCodes19 = [
   Diagnostics.Cannot_find_name_0_Do_you_need_to_install_type_definitions_for_node_Try_npm_i_save_dev_types_Slashnode.code,
   Diagnostics.Cannot_find_name_0_Do_you_need_to_install_type_definitions_for_node_Try_npm_i_save_dev_types_Slashnode_and_then_add_node_to_the_types_field_in_your_tsconfig.code,
   Diagnostics.Cannot_find_namespace_0_Did_you_mean_1.code,
+  Diagnostics.Cannot_extend_an_interface_0_Did_you_mean_implements.code,
   Diagnostics.This_JSX_tag_requires_0_to_be_in_scope_but_it_could_not_be_found.code
 ];
 registerCodeFix({
@@ -157958,6 +158384,7 @@ function getUmdImportKind(importingFile, program, forceImportKeyword) {
     case 200 /* Preserve */:
       return 2 /* Namespace */;
     case 100 /* Node16 */:
+    case 101 /* Node18 */:
     case 199 /* NodeNext */:
       return getImpliedNodeFormatForEmit(importingFile, program) === 99 /* ESNext */ ? 2 /* Namespace */ : 3 /* CommonJS */;
     default:
@@ -159369,7 +159796,8 @@ var errorCodes28 = [
   Diagnostics.Type_0_is_missing_the_following_properties_from_type_1_Colon_2.code,
   Diagnostics.Type_0_is_missing_the_following_properties_from_type_1_Colon_2_and_3_more.code,
   Diagnostics.Argument_of_type_0_is_not_assignable_to_parameter_of_type_1.code,
-  Diagnostics.Cannot_find_name_0.code
+  Diagnostics.Cannot_find_name_0.code,
+  Diagnostics.Type_0_does_not_satisfy_the_expected_type_1.code
 ];
 registerCodeFix({
   errorCodes: errorCodes28,
@@ -159406,9 +159834,9 @@ registerCodeFix({
     return createCombinedCodeActions(ts_textChanges_exports.ChangeTracker.with(context, (changes) => {
       eachDiagnostic(context, errorCodes28, (diag2) => {
         const info = getInfo10(diag2.file, diag2.start, diag2.code, checker, context.program);
-        if (!info || !addToSeen(seen, getNodeId(info.parentDeclaration) + "#" + (info.kind === 3 /* ObjectLiteral */ ? info.identifier : info.token.text))) {
-          return;
-        }
+        if (info === void 0) return;
+        const nodeId = getNodeId(info.parentDeclaration) + "#" + (info.kind === 3 /* ObjectLiteral */ ? info.identifier || getNodeId(info.token) : info.token.text);
+        if (!addToSeen(seen, nodeId)) return;
         if (fixId56 === fixMissingFunctionDeclaration && (info.kind === 2 /* Function */ || info.kind === 5 /* Signature */)) {
           addFunctionDeclaration(changes, context, info);
         } else if (fixId56 === fixMissingProperties && info.kind === 3 /* ObjectLiteral */) {
@@ -159452,7 +159880,7 @@ registerCodeFix({
   }
 });
 function getInfo10(sourceFile, tokenPos, errorCode, checker, program) {
-  var _a, _b, _c;
+  var _a, _b;
   const token = getTokenAtPosition(sourceFile, tokenPos);
   const parent2 = token.parent;
   if (errorCode === Diagnostics.Argument_of_type_0_is_not_assignable_to_parameter_of_type_1.code) {
@@ -159474,23 +159902,25 @@ function getInfo10(sourceFile, tokenPos, errorCode, checker, program) {
     if (!length(properties)) return void 0;
     return { kind: 3 /* ObjectLiteral */, token: param.name, identifier: param.name.text, properties, parentDeclaration: parent2 };
   }
-  if (token.kind === 19 /* OpenBraceToken */ && isObjectLiteralExpression(parent2)) {
-    const targetType = (_a = checker.getContextualType(parent2) || checker.getTypeAtLocation(parent2)) == null ? void 0 : _a.getNonNullableType();
-    const properties = arrayFrom(checker.getUnmatchedProperties(
-      checker.getTypeAtLocation(parent2),
-      targetType,
-      /*requireOptionalProperties*/
-      false,
-      /*matchDiscriminantProperties*/
-      false
-    ));
-    if (!length(properties)) return void 0;
-    const identifier = "";
-    return { kind: 3 /* ObjectLiteral */, token: parent2, identifier, properties, parentDeclaration: parent2 };
+  if (token.kind === 19 /* OpenBraceToken */ || isSatisfiesExpression(parent2) || isReturnStatement(parent2)) {
+    const expression = (isSatisfiesExpression(parent2) || isReturnStatement(parent2)) && parent2.expression ? parent2.expression : parent2;
+    if (isObjectLiteralExpression(expression)) {
+      const targetType = isSatisfiesExpression(parent2) ? checker.getTypeFromTypeNode(parent2.type) : checker.getContextualType(expression) || checker.getTypeAtLocation(expression);
+      const properties = arrayFrom(checker.getUnmatchedProperties(
+        checker.getTypeAtLocation(parent2),
+        targetType.getNonNullableType(),
+        /*requireOptionalProperties*/
+        false,
+        /*matchDiscriminantProperties*/
+        false
+      ));
+      if (!length(properties)) return void 0;
+      return { kind: 3 /* ObjectLiteral */, token: parent2, identifier: void 0, properties, parentDeclaration: expression, indentation: isReturnStatement(expression.parent) || isYieldExpression(expression.parent) ? 0 : void 0 };
+    }
   }
   if (!isMemberName(token)) return void 0;
   if (isIdentifier(token) && hasInitializer(parent2) && parent2.initializer && isObjectLiteralExpression(parent2.initializer)) {
-    const targetType = (_b = checker.getContextualType(token) || checker.getTypeAtLocation(token)) == null ? void 0 : _b.getNonNullableType();
+    const targetType = (_a = checker.getContextualType(token) || checker.getTypeAtLocation(token)) == null ? void 0 : _a.getNonNullableType();
     const properties = arrayFrom(checker.getUnmatchedProperties(
       checker.getTypeAtLocation(parent2.initializer),
       targetType,
@@ -159509,7 +159939,7 @@ function getInfo10(sourceFile, tokenPos, errorCode, checker, program) {
     return { kind: 4 /* JsxAttributes */, token, attributes, parentDeclaration: token.parent };
   }
   if (isIdentifier(token)) {
-    const type = (_c = checker.getContextualType(token)) == null ? void 0 : _c.getNonNullableType();
+    const type = (_b = checker.getContextualType(token)) == null ? void 0 : _b.getNonNullableType();
     if (type && getObjectFlags(type) & 16 /* Anonymous */) {
       const signature = firstOrUndefined(checker.getSignaturesOfType(type, 0 /* Call */));
       if (signature === void 0) return void 0;
@@ -160512,9 +160942,9 @@ function getSuggestion(messageText) {
 // src/services/codefixes/fixModuleAndTargetOptions.ts
 registerCodeFix({
   errorCodes: [
-    Diagnostics.Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code,
-    Diagnostics.Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code,
-    Diagnostics.Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code
+    Diagnostics.Top_level_await_expressions_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code,
+    Diagnostics.Top_level_await_using_statements_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code,
+    Diagnostics.Top_level_for_await_loops_are_only_allowed_when_the_module_option_is_set_to_es2022_esnext_system_node16_node18_nodenext_or_preserve_and_the_target_option_is_set_to_es2017_or_higher.code
   ],
   getCodeActions: function getCodeActionsToFixModuleAndTarget(context) {
     const compilerOptions = context.program.getCompilerOptions();
@@ -160983,6 +161413,8 @@ registerCodeFix({
             break;
           } else if (canDeleteEntireVariableStatement(sourceFile, token)) {
             deleteEntireVariableStatement(changes, sourceFile, token.parent);
+          } else if (isIdentifier(token) && isFunctionDeclaration(token.parent)) {
+            deleteFunctionLikeDeclaration(changes, sourceFile, token.parent);
           } else {
             tryDeleteDeclaration(
               sourceFile,
@@ -163950,12 +164382,10 @@ function typeToAutoImportableTypeNode(checker, importAdder, type, contextNode, s
   return typeNodeToAutoImportableTypeNode(typeNode, importAdder, scriptTarget);
 }
 function typeNodeToAutoImportableTypeNode(typeNode, importAdder, scriptTarget) {
-  if (typeNode && isImportTypeNode(typeNode)) {
-    const importableReference = tryGetAutoImportableReferenceFromTypeNode(typeNode, scriptTarget);
-    if (importableReference) {
-      importSymbols(importAdder, importableReference.symbols);
-      typeNode = importableReference.typeNode;
-    }
+  const importableReference = tryGetAutoImportableReferenceFromTypeNode(typeNode, scriptTarget);
+  if (importableReference) {
+    importSymbols(importAdder, importableReference.symbols);
+    typeNode = importableReference.typeNode;
   }
   return getSynthesizedDeepClone(typeNode);
 }
@@ -172474,7 +172904,7 @@ var Core;
         } else {
           addIfImplementation(body);
         }
-      } else if (isAssertionExpression(typeHavingNode)) {
+      } else if (isAssertionExpression(typeHavingNode) || isSatisfiesExpression(typeHavingNode)) {
         addIfImplementation(typeHavingNode.expression);
       }
     }
@@ -172913,7 +173343,10 @@ function getDefinitionAtPosition(program, sourceFile, position, searchOtherFiles
   const { parent: parent2 } = node;
   const typeChecker = program.getTypeChecker();
   if (node.kind === 164 /* OverrideKeyword */ || isIdentifier(node) && isJSDocOverrideTag(parent2) && parent2.tagName === node) {
-    return getDefinitionFromOverriddenMember(typeChecker, node) || emptyArray;
+    const def = getDefinitionFromOverriddenMember(typeChecker, node);
+    if (def !== void 0 || node.kind !== 164 /* OverrideKeyword */) {
+      return def || emptyArray;
+    }
   }
   if (isJumpStatementTarget(node)) {
     const label = getTargetLabel(node.parent, node.text);
@@ -172927,9 +173360,6 @@ function getDefinitionAtPosition(program, sourceFile, position, searchOtherFiles
     )] : void 0;
   }
   switch (node.kind) {
-    case 107 /* ReturnKeyword */:
-      const functionDeclaration = findAncestor(node.parent, (n) => isClassStaticBlockDeclaration(n) ? "quit" : isFunctionLikeDeclaration(n));
-      return functionDeclaration ? [createDefinitionFromSignatureDeclaration(typeChecker, functionDeclaration)] : void 0;
     case 90 /* DefaultKeyword */:
       if (!isDefaultClause(node.parent)) {
         break;
@@ -172942,15 +173372,14 @@ function getDefinitionAtPosition(program, sourceFile, position, searchOtherFiles
       }
       break;
   }
-  if (node.kind === 135 /* AwaitKeyword */) {
-    const functionDeclaration = findAncestor(node, (n) => isFunctionLikeDeclaration(n));
-    const isAsyncFunction2 = functionDeclaration && some(functionDeclaration.modifiers, (node2) => node2.kind === 134 /* AsyncKeyword */);
-    return isAsyncFunction2 ? [createDefinitionFromSignatureDeclaration(typeChecker, functionDeclaration)] : void 0;
-  }
-  if (node.kind === 127 /* YieldKeyword */) {
-    const functionDeclaration = findAncestor(node, (n) => isFunctionLikeDeclaration(n));
-    const isGeneratorFunction = functionDeclaration && functionDeclaration.asteriskToken;
-    return isGeneratorFunction ? [createDefinitionFromSignatureDeclaration(typeChecker, functionDeclaration)] : void 0;
+  let findFunctionDecl;
+  switch (node.kind) {
+    case 107 /* ReturnKeyword */:
+    case 135 /* AwaitKeyword */:
+    case 127 /* YieldKeyword */:
+      findFunctionDecl = isFunctionLikeDeclaration;
+      const functionDeclaration = findAncestor(node, findFunctionDecl);
+      return functionDeclaration ? [createDefinitionFromSignatureDeclaration(typeChecker, functionDeclaration)] : void 0;
   }
   if (isStaticModifier(node) && isClassStaticBlockDeclaration(node.parent)) {
     const classDecl = node.parent.parent;
@@ -172999,6 +173428,9 @@ function getDefinitionAtPosition(program, sourceFile, position, searchOtherFiles
         unverified: fallbackNode !== node
       }];
     }
+  }
+  if (isModifier(node) && (isClassElement(parent2) || isNamedDeclaration(parent2))) {
+    symbol = parent2.symbol;
   }
   if (!symbol) {
     return concatenate(fileReferenceDefinition, getDefinitionInfoForIndexSignatures(node, typeChecker));
@@ -173196,12 +173628,16 @@ function getTypeDefinitionAtPosition(typeChecker, sourceFile, position) {
       false
     );
   }
-  const { symbol, failedAliasResolution } = getSymbol(
+  let { symbol, failedAliasResolution } = getSymbol(
     node,
     typeChecker,
     /*stopAtAlias*/
     false
   );
+  if (isModifier(node) && (isClassElement(node.parent) || isNamedDeclaration(node.parent))) {
+    symbol = node.parent.symbol;
+    failedAliasResolution = false;
+  }
   if (!symbol) return void 0;
   const typeAtLocation = typeChecker.getTypeOfSymbolAtLocation(symbol, node);
   const returnType = tryGetReturnTypeOfFunction(symbol, typeAtLocation, typeChecker);
@@ -173706,21 +174142,23 @@ function provideInlayHints(context) {
     if (!signature) {
       return;
     }
-    for (let i = 0; i < node.parameters.length && i < signature.parameters.length; ++i) {
-      const param = node.parameters[i];
-      if (!isHintableDeclaration(param)) {
+    let pos = 0;
+    for (const param of node.parameters) {
+      if (isHintableDeclaration(param)) {
+        addParameterTypeHint(param, parameterIsThisKeyword(param) ? signature.thisParameter : signature.parameters[pos]);
+      }
+      if (parameterIsThisKeyword(param)) {
         continue;
       }
-      const effectiveTypeAnnotation = getEffectiveTypeAnnotationNode(param);
-      if (effectiveTypeAnnotation) {
-        continue;
-      }
-      const typeHints = getParameterDeclarationTypeHints(signature.parameters[i]);
-      if (!typeHints) {
-        continue;
-      }
-      addTypeHints(typeHints, param.questionToken ? param.questionToken.end : param.name.end);
+      pos++;
     }
+  }
+  function addParameterTypeHint(node, symbol) {
+    const effectiveTypeAnnotation = getEffectiveTypeAnnotationNode(node);
+    if (effectiveTypeAnnotation || symbol === void 0) return;
+    const typeHints = getParameterDeclarationTypeHints(symbol);
+    if (typeHints === void 0) return;
+    addTypeHints(typeHints, node.questionToken ? node.questionToken.end : node.name.end);
   }
   function getParameterDeclarationTypeHints(symbol) {
     const valueDeclaration = symbol.valueDeclaration;
@@ -182080,6 +182518,7 @@ __export(ts_exports2, {
   createPrinterWithRemoveCommentsNeverAsciiEscape: () => createPrinterWithRemoveCommentsNeverAsciiEscape,
   createPrinterWithRemoveCommentsOmitTrailingSemicolon: () => createPrinterWithRemoveCommentsOmitTrailingSemicolon,
   createProgram: () => createProgram,
+  createProgramDiagnostics: () => createProgramDiagnostics,
   createProgramHost: () => createProgramHost,
   createPropertyNameNodeForIdentifierOrLiteral: () => createPropertyNameNodeForIdentifierOrLiteral,
   createQueue: () => createQueue,
@@ -182249,6 +182688,8 @@ __export(ts_exports2, {
   forEachLeadingCommentRange: () => forEachLeadingCommentRange,
   forEachNameInAccessChainWalkingLeft: () => forEachNameInAccessChainWalkingLeft,
   forEachNameOfDefaultExport: () => forEachNameOfDefaultExport,
+  forEachOptionsSyntaxByName: () => forEachOptionsSyntaxByName,
+  forEachProjectReference: () => forEachProjectReference,
   forEachPropertyAssignment: () => forEachPropertyAssignment,
   forEachResolvedProjectReference: () => forEachResolvedProjectReference,
   forEachReturnStatement: () => forEachReturnStatement,
@@ -182488,6 +182929,8 @@ __export(ts_exports2, {
   getLeadingCommentRangesOfNode: () => getLeadingCommentRangesOfNode,
   getLeftmostAccessExpression: () => getLeftmostAccessExpression,
   getLeftmostExpression: () => getLeftmostExpression,
+  getLibFileNameFromLibReference: () => getLibFileNameFromLibReference,
+  getLibNameFromLibReference: () => getLibNameFromLibReference,
   getLibraryNameFromLibFileName: () => getLibraryNameFromLibFileName,
   getLineAndCharacterOfPosition: () => getLineAndCharacterOfPosition,
   getLineInfo: () => getLineInfo,
@@ -182560,6 +183003,8 @@ __export(ts_exports2, {
   getOptionFromName: () => getOptionFromName,
   getOptionsForLibraryResolution: () => getOptionsForLibraryResolution,
   getOptionsNameMap: () => getOptionsNameMap,
+  getOptionsSyntaxByArrayElementValue: () => getOptionsSyntaxByArrayElementValue,
+  getOptionsSyntaxByValue: () => getOptionsSyntaxByValue,
   getOrCreateEmitNode: () => getOrCreateEmitNode,
   getOrUpdate: () => getOrUpdate,
   getOriginalNode: () => getOriginalNode,
@@ -182596,7 +183041,6 @@ __export(ts_exports2, {
   getPrivateIdentifier: () => getPrivateIdentifier,
   getProperties: () => getProperties,
   getProperty: () => getProperty,
-  getPropertyArrayElementValue: () => getPropertyArrayElementValue,
   getPropertyAssignmentAliasLikeExpression: () => getPropertyAssignmentAliasLikeExpression,
   getPropertyNameForPropertyNameNode: () => getPropertyNameForPropertyNameNode,
   getPropertyNameFromType: () => getPropertyNameFromType,
@@ -183507,6 +183951,7 @@ __export(ts_exports2, {
   moduleResolutionUsesNodeModules: () => moduleResolutionUsesNodeModules,
   moduleSpecifierToValidIdentifier: () => moduleSpecifierToValidIdentifier,
   moduleSpecifiers: () => ts_moduleSpecifiers_exports,
+  moduleSupportsImportAttributes: () => moduleSupportsImportAttributes,
   moduleSymbolToValidIdentifier: () => moduleSymbolToValidIdentifier,
   moveEmitHelpers: () => moveEmitHelpers,
   moveRangeEnd: () => moveRangeEnd,
@@ -184188,7 +184633,7 @@ var TypingsInstaller = class {
     this.pendingRunRequests = [];
     this.installRunCount = 1;
     this.inFlightRequestCount = 0;
-
+    // eslint-disable-line @typescript-eslint/unified-signatures
     this.latestDistTag = "latest";
     const isLoggingEnabled = this.log.isEnabled();
     if (isLoggingEnabled) {
@@ -184881,6 +185326,7 @@ var ModuleKind2 = /* @__PURE__ */ ((ModuleKind3) => {
   ModuleKind3["ES2022"] = "es2022";
   ModuleKind3["ESNext"] = "esnext";
   ModuleKind3["Node16"] = "node16";
+  ModuleKind3["Node18"] = "node18";
   ModuleKind3["NodeNext"] = "nodenext";
   ModuleKind3["Preserve"] = "preserve";
   return ModuleKind3;
@@ -185364,7 +185810,7 @@ var ScriptInfo = class {
   lineToTextSpan(line) {
     return this.textStorage.lineToTextSpan(line);
   }
-
+  // eslint-disable-line @typescript-eslint/unified-signatures
   lineOffsetToPosition(line, offset, allowEdits) {
     return this.textStorage.lineOffsetToPosition(line, offset, allowEdits);
   }
@@ -188544,7 +188990,7 @@ var _ProjectService = class _ProjectService {
       this.legacySafelist.clear();
     }
   }
-
+  // eslint-disable-line @typescript-eslint/unified-signatures
   updateTypingsForProject(response) {
     const project = this.findProject(response.projectName);
     if (!project) {
@@ -191307,7 +191753,7 @@ Dynamic files must always be opened with service's current directory or service 
       scriptInfo.editContent(change.span.start, change.span.start + change.span.length, change.newText);
     }
   }
-
+  // eslint-disable-line @typescript-eslint/unified-signatures
   closeExternalProject(uncheckedFileName, cleanupAfter) {
     const fileName = toNormalizedPath(uncheckedFileName);
     const projects = this.externalProjectToConfiguredProjectMap.get(fileName);
@@ -191444,7 +191890,7 @@ Dynamic files must always be opened with service's current directory or service 
       excludedFiles.push(normalizedNames[index]);
     }
   }
-
+  // eslint-disable-line @typescript-eslint/unified-signatures
   openExternalProject(proj, cleanupAfter) {
     const existingExternalProject = this.findExternalProjectByProjectName(proj.projectFileName);
     let configuredProjects;
@@ -194910,20 +195356,19 @@ Project '${project.projectName}' (${ProjectKind[project.projectKind]}) ${counter
     try {
       codeActions = project.getLanguageService().getCodeFixesAtPosition(file, startPosition, endPosition, args.errorCodes, this.getFormatOptions(file), this.getPreferences(file));
     } catch (e) {
+      const error2 = e instanceof Error ? e : new Error(e);
       const ls = project.getLanguageService();
       const existingDiagCodes = [
         ...ls.getSyntacticDiagnostics(file),
         ...ls.getSemanticDiagnostics(file),
         ...ls.getSuggestionDiagnostics(file)
-      ].map(
-        (d) => decodedTextSpanIntersectsWith(startPosition, endPosition - startPosition, d.start, d.length) && d.code
-      );
+      ].filter((d) => decodedTextSpanIntersectsWith(startPosition, endPosition - startPosition, d.start, d.length)).map((d) => d.code);
       const badCode = args.errorCodes.find((c) => !existingDiagCodes.includes(c));
       if (badCode !== void 0) {
-        e.message = `BADCLIENT: Bad error code, ${badCode} not found in range ${startPosition}..${endPosition} (found: ${existingDiagCodes.join(", ")}); could have caused this error:
-${e.message}`;
+        error2.message += `
+Additional information: BADCLIENT: Bad error code, ${badCode} not found in range ${startPosition}..${endPosition} (found: ${existingDiagCodes.join(", ")})`;
       }
-      throw e;
+      throw error2;
     }
     return simplifiedResult ? codeActions.map((codeAction) => this.mapCodeFixAction(codeAction)) : codeActions;
   }
@@ -195211,6 +195656,7 @@ ${e.message}`;
     this.currentRequestId = void 0;
     this.cancellationToken.resetRequest(requestId);
   }
+  // eslint-disable-line @typescript-eslint/unified-signatures
   executeWithRequestId(requestId, f, perfomanceData) {
     const currentPerformanceData = this.performanceData;
     try {
@@ -196825,6 +197271,7 @@ if (typeof console !== "undefined") {
   createPrinterWithRemoveCommentsNeverAsciiEscape,
   createPrinterWithRemoveCommentsOmitTrailingSemicolon,
   createProgram,
+  createProgramDiagnostics,
   createProgramHost,
   createPropertyNameNodeForIdentifierOrLiteral,
   createQueue,
@@ -196994,6 +197441,8 @@ if (typeof console !== "undefined") {
   forEachLeadingCommentRange,
   forEachNameInAccessChainWalkingLeft,
   forEachNameOfDefaultExport,
+  forEachOptionsSyntaxByName,
+  forEachProjectReference,
   forEachPropertyAssignment,
   forEachResolvedProjectReference,
   forEachReturnStatement,
@@ -197233,6 +197682,8 @@ if (typeof console !== "undefined") {
   getLeadingCommentRangesOfNode,
   getLeftmostAccessExpression,
   getLeftmostExpression,
+  getLibFileNameFromLibReference,
+  getLibNameFromLibReference,
   getLibraryNameFromLibFileName,
   getLineAndCharacterOfPosition,
   getLineInfo,
@@ -197305,6 +197756,8 @@ if (typeof console !== "undefined") {
   getOptionFromName,
   getOptionsForLibraryResolution,
   getOptionsNameMap,
+  getOptionsSyntaxByArrayElementValue,
+  getOptionsSyntaxByValue,
   getOrCreateEmitNode,
   getOrUpdate,
   getOriginalNode,
@@ -197341,7 +197794,6 @@ if (typeof console !== "undefined") {
   getPrivateIdentifier,
   getProperties,
   getProperty,
-  getPropertyArrayElementValue,
   getPropertyAssignmentAliasLikeExpression,
   getPropertyNameForPropertyNameNode,
   getPropertyNameFromType,
@@ -198252,6 +198704,7 @@ if (typeof console !== "undefined") {
   moduleResolutionUsesNodeModules,
   moduleSpecifierToValidIdentifier,
   moduleSpecifiers,
+  moduleSupportsImportAttributes,
   moduleSymbolToValidIdentifier,
   moveEmitHelpers,
   moveRangeEnd,
@@ -198664,6 +199117,7 @@ if (typeof console !== "undefined") {
   zipWith
 });
 })({ get exports() { return ts; }, set exports(v) { ts = v; if (typeof module !== "undefined" && module.exports) { module.exports = v; } } })
+//# sourceMappingURL=typescript.js.map
 if (typeof globalThis !== "undefined") {
   globalThis.ts = ts;
 }

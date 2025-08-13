@@ -1409,11 +1409,6 @@ export const changeViceOnline = async (event, _trigger, player) => {
 	if (change) {
 		event.trigger("removeCharacterBefore");
 	}
-	if (event.hidden) {
-		if (!player.isUnseen(1)) {
-			await player.hideCharacter(1);
-		}
-	}
 
 	if (event.hidden) {
 		game.log(player, "替换了副将", "#g" + get.translation(player.name2));
@@ -1423,6 +1418,11 @@ export const changeViceOnline = async (event, _trigger, player) => {
 	// @ts-expect-error 类型就是这么写的
 	player.viceChanged = true;
 	await player.reinitCharacter(player.name2, name, false);
+	if (event.hidden) {
+		if (!player.isUnseen(1)) {
+			await player.hideCharacter(1, false);
+		}
+	}
 }
 
 export const changeVice = [
@@ -1505,11 +1505,6 @@ export const changeVice = [
 		if (event.change) {
 			event.trigger("removeCharacterBefore");
 		}
-		if (event.hidden) {
-			if (!player.isUnseen(1)) {
-				player.hideCharacter(1);
-			}
-		}
 	},
 	async (event, _trigger, player) => {
 		var name = event.toChange;
@@ -1520,6 +1515,11 @@ export const changeVice = [
 		}
 		player.viceChanged = true;
 		player.reinitCharacter(player.name2, name, false);
+		if (event.hidden) {
+			if (!player.isUnseen(1)) {
+				player.hideCharacter(1, false);
+			}
+		}
 	},
 ];
 

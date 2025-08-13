@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Evan You"
+  },
+  "license": "MIT",
+  "name": "@vue/compiler-ssr",
+  "types": "dist/compiler-ssr.d.ts",
+  "version": "3.5.17"
+}

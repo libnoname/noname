@@ -671,7 +671,7 @@ game.import("card", function () {
 				},
 			},
 			shuiyanqijunx: {
-				audio: "shuiyanqijun",
+				audio: true,
 				fullskin: true,
 				type: "trick",
 				cardnature: "thunder",

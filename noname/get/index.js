@@ -1553,6 +1553,7 @@ export class Get extends GetCompatible {
 				continue;
 			}
 			if ((type.startsWith("equip") && type.length == 6) || (type.startsWith("hslingjian") && type.length == 11) || type.startsWith("spell_")) {
+				// hslingjian 是『轩辕剑』里面的
 				if (get.subtype(i) == type) {
 					list.push(i);
 				}
@@ -2553,10 +2554,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		const info = {};
 
 		for (const [key, value] of map.entries()) {
-			Array.prototype.push.call(info, [
-				get.stringifiedResult(key, level, nomore),
-				get.stringifiedResult(value, level, nomore),
-			]);
+			Array.prototype.push.call(info, [get.stringifiedResult(key, level, nomore), get.stringifiedResult(value, level, nomore)]);
 		}
 
 		info[TYPE_KEY] = "map";
@@ -2571,8 +2569,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		const info = {};
 
 		for (const value of set) {
-			Array.prototype.push.call(info,
-				get.stringifiedResult(value, level, nomore));
+			Array.prototype.push.call(info, get.stringifiedResult(value, level, nomore));
 		}
 
 		info[TYPE_KEY] = "set";
@@ -2592,10 +2589,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				continue;
 			}
 
-			map.set(
-				get.parsedResult(pair[0]),
-				get.parsedResult(pair[1])
-			);
+			map.set(get.parsedResult(pair[0]), get.parsedResult(pair[1]));
 		}
 
 		return map;
@@ -2658,7 +2652,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 						const type = Object.prototype.toString.call(item).slice(8, -1);
 
-						switch(type) {
+						switch (type) {
 							case "Map":
 								return get.mapInfoOL(item, level - 1, nomore);
 							case "Set":
@@ -4716,6 +4710,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	nodeintro(node, simple, evt) {
 		var uiintro = ui.create.dialog("hidden", "notouchscroll");
+		uiintro.setAttribute("id", "nodeintro");
 		if (node.classList.contains("player") && !node.name) {
 			return uiintro;
 		}
@@ -4899,6 +4894,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							intronode.link = node;
 							intronode.func = lib.skill[skills[i]].clickable;
 							intronode.classList.add("pointerdiv");
+							intronode.listen(() => uiintro.close());
 							intronode.listen(ui.click.skillbutton);
 						}
 					} else {
@@ -5282,8 +5278,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 			if (typeof info.mark == "function") {
-				var stint = info.mark(uiintro, player.storage[node.skill], player);
-				if (stint) {
+				var stint = info.mark(uiintro, player.storage[node.skill], player, evt, node.skill);
+				if (stint instanceof Promise) {
+					uiintro.hide();
+					stint.then(() => {
+						uiintro.show();
+						if (evt) {
+							lib.placePoppedDialog(uiintro, evt);
+						}
+					});
+				} else if (stint) {
 					var placetext = uiintro.add('<div class="text" style="display:inline">' + stint + "</div>");
 					if (!stint.startsWith('<div class="skill"')) {
 						uiintro._place_text = placetext;
@@ -5295,6 +5299,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					// 	uiintro.add('<div class="text">'+stint+'</div>');
 					// }
 				}
+				/*if (evt) {
+					lib.placePoppedDialog(uiintro, evt);
+				}*/
 			} else {
 				var stint = get.storageintro(info.content, player.storage[node.skill], player, uiintro, node.skill);
 				if (stint) {
@@ -5895,6 +5902,69 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (list.length) {
 			dialog.add(list, true, true);
 		}
+	}
+	/**
+	 *
+	 * 弹出特殊名词的解释窗口
+	 * @param {string} id poptip链接的id
+	 * @param {Number} index 对应解释在lib.poptipMap的索引
+	 * @param {PointerEvent} event 点击事件
+	 */
+	poptipIntro(id, index, event) {
+		const uiintro = ui.create.dialog("hidden", "notouchscroll");
+		uiintro.style.zIndex = 21;
+		uiintro.setAttribute("id", "poptip");
+		const str = get.poptip(index);
+		uiintro._place_text = uiintro.add(`<div class = "text">${str}</div>`);
+		uiintro.classList.add("popped");
+		uiintro.classList.add("static");
+		ui.window.appendChild(uiintro);
+
+		if (lib.config.touchscreen) {
+			lib.setScroll(uiintro.contentContainer);
+		}
+
+		uiintro.style.maxHeight = "15%";
+		lib.placePoppedDialog(uiintro, event);
+		const layer = ui.create.div(".poplayer", ui.window);
+		_status.poptip = [uiintro, layer];
+		const clicklayer = function (e) {
+			uiintro.delete();
+			this.remove();
+			delete _status.poptip;
+			if (e?.stopPropagation) {
+				e.stopPropagation();
+			}
+			if (uiintro._onclose) {
+				uiintro._onclose();
+			}
+		};
+		layer.addEventListener(lib.config.touchscreen ? "touchend" : "click", clicklayer);
+
+		const clickintro = function (e) {
+			layer.remove();
+			this.delete();
+			delete _status.poptip;
+			/*if (e?.stopPropagation) {
+				e.stopPropagation();
+			}*/
+			if (uiintro._onclose) {
+				uiintro._onclose();
+			}
+		};
+		if (uiintro.clickintro) {
+			uiintro.listen(function () {
+				_status.clicked = true;
+			});
+			uiintro._clickintro = clicklayer;
+		} else if (!lib.config.touchscreen) {
+			uiintro.addEventListener("mouseleave", clickintro);
+			uiintro.addEventListener("click", clickintro);
+		} else if (uiintro.touchclose) {
+			uiintro.listen(clickintro);
+		}
+		uiintro._close = clicklayer;
+		return uiintro;
 	}
 	groups() {
 		return ["wei", "shu", "wu", "qun", "jin", "western", "key"];
@@ -6907,6 +6977,48 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return parseInt(zhuanhuanLimit);
 		}
 		return 2;
+	}
+	/**
+	 *
+	 * 获取一个特殊名词的对应解释
+	 * @param {string | Number} name 特殊名词的名字或者它在lib.poptipMap的索引
+	 * @returns {string}
+	 */
+	poptip(name) {
+		let str = "";
+		if (typeof name == "number") {
+			const key = Array.from(lib.poptipMap.keys())[name];
+			str = lib.poptipMap.get(key) || "";
+		} else if (typeof name == "string" && lib.poptipMap.has(name)) {
+			str = lib.poptipMap.get(name) || "";
+		}
+		return str;
+	}
+	/**
+	 *
+	 * 生成一个特殊名词的超链接格式用于dialog中点击查看解释
+	 * @param {string} name 特殊名词
+	 * @param {string} explain 对应解释，可不填，不填的话需要在lib.poptipMap中添加；若lib.poptipMap不存在命名为name的键，会自动添加
+	 * @param {string} style 字体的样式，可不填，默认为"color:unset"
+	 * @returns {string}
+	 */
+	poptipLink(name, explain, style = "color:unset") {
+		let index = -1;
+		const id = get.id();
+		const keys = Array.from(lib.poptipMap.keys());
+		if (explain?.length && explain !== "null") {
+			const str = get.poptip(name) || get.poptip(`${name}|${id}`);
+			if ((str.length && str != explain) || !str.length) {
+				const key = str.length ? `${name}|${id}` : name;
+				game.addPoptip([key, explain]);
+				index = Array.from(lib.poptipMap.keys()).indexOf(key);
+			} else {
+				index = keys.indexOf(name);
+			}
+		} else if (lib.poptipMap.has(name)) {
+			index = keys.indexOf(name);
+		}
+		return `<poptip id = "${id}" style = "${style}" tip-index = ${index}>${name}</poptip>`;
 	}
 	/**
 	 * 将URL转换成相对于无名杀根目录的路径

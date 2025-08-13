@@ -9,7 +9,7 @@ const skills = {
 			if (!_status.junkguixin) {
 				_status.junkguixin = [];
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				for (const name of _status.characterlist) {
 					if (!lib.character[name][3]) {

@@ -1235,6 +1235,9 @@ const skills = {
 			const { control } = await player
 				.chooseToDisable(true)
 				.set("ai", function (event, player, list) {
+					if (list.includes("equip5") && !player.hasSkill("drlt_jueyan_effect")) {
+						return "equip5";
+					}
 					if (list.includes("equip2")) {
 						return "equip2";
 					}
@@ -1258,20 +1261,27 @@ const skills = {
 					}
 				})
 				.forResult();
+			const bool = !player.hasSkill("drlt_jueyan_effect");
 			switch (control) {
 				case "equip1":
 					player.addTempSkill("drlt_jueyan1");
+					if (bool) {
+						player.addSkill("drlt_jueyan_sha");
+					}
 					break;
 				case "equip2":
-					player.draw(3);
-					player.addTempSkill("drlt_jueyan3");
+					await player.draw(3);
+					player[bool ? "addSkill" : "addTempSkill"]("drlt_jueyan3");
 					break;
 				case "equip3_4":
-					player.addTempSkill("drlt_jueyan2");
+					player[bool ? "addSkill" : "addTempSkill"]("drlt_jueyan2");
 					break;
 				case "equip5":
-					player.addTempSkills("rejizhi");
+					await player[bool ? "addSkills" : "addTempSkills"]("rejizhi");
 					break;
+			}
+			if (bool) {
+				player.addSkill("drlt_jueyan_effect");
 			}
 		},
 		ai: {
@@ -1303,7 +1313,27 @@ const skills = {
 				},
 			},
 		},
-		derivation: "rejizhi",
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+			},
+			sha: {
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num + 1;
+						}
+					},
+				},
+				mark: true,
+				marktext: "决",
+				charlotte: true,
+				locked: false,
+				intro: { name: "决堰 - 武器", content: "本局游戏可以多使用一张【杀】" },
+			},
+		},
+		derivation: ["drlt_jueyan_rewrite", "rejizhi"],
 	},
 	rejizhi_lukang: { audio: 1 },
 	drlt_jueyan1: {
@@ -1316,6 +1346,8 @@ const skills = {
 		},
 		mark: true,
 		marktext: "决",
+		charlotte: true,
+		locked: false,
 		intro: { name: "决堰 - 武器", content: "本回合内可以多使用三张【杀】" },
 	},
 	drlt_jueyan2: {
@@ -1326,7 +1358,9 @@ const skills = {
 		},
 		mark: true,
 		marktext: "决",
-		intro: { name: "决堰 - 坐骑", content: "本回合内使用牌没有距离限制" },
+		charlotte: true,
+		locked: false,
+		intro: { name: "决堰 - 坐骑", content: "使用牌没有距离限制" },
 	},
 	drlt_jueyan3: {
 		mod: {
@@ -1336,7 +1370,9 @@ const skills = {
 		},
 		mark: true,
 		marktext: "决",
-		intro: { name: "决堰 - 防具", content: "本回合内手牌上限+3" },
+		charlotte: true,
+		locked: false,
+		intro: { name: "决堰 - 防具", content: "手牌上限+3" },
 	},
 	drlt_poshi: {
 		audio: 2,
@@ -1971,7 +2007,7 @@ const skills = {
 		},
 	},
 	nzry_juzhan: {
-		audio: ["skill/nzry_juzhan_11.mp3", "skill/nzry_juzhan_12.mp3"],
+		audio: ["nzry_juzhan_11.mp3", "nzry_juzhan_12.mp3"],
 		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
@@ -2423,7 +2459,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (get.tag(card, "damage") && !player.inRangeOf(target)) {
+					if (target && get.tag(card, "damage") && !player.inRangeOf(target)) {
 						return "zeroplayertarget";
 					}
 				},
@@ -2902,7 +2938,7 @@ const skills = {
 		},
 	},
 	nzry_zhenliang: {
-		audio: ["nzry_zhenliang_1", 2],
+		audio: ["nzry_zhenliang_11.mp3", "nzry_zhenliang_12.mp3"],
 		drawNum: 1,
 		mark: true,
 		zhuanhuanji: true,
@@ -3012,7 +3048,7 @@ const skills = {
 		},
 	},
 	nzry_shenshi: {
-		audio: ["skill/nzry_shenshi_11.mp3", "skill/nzry_shenshi_12.mp3"],
+		audio: ["nzry_shenshi_11.mp3", "nzry_shenshi_12.mp3"],
 		mark: true,
 		locked: false,
 		zhuanhuanji: true,
@@ -3702,6 +3738,28 @@ const skills = {
 					}
 				}
 			},
+		},
+		targetprompt2: target => {
+			const player = get.player(),
+				card = get.card(),
+				list = [];
+			if (card?.name != "sha" || !target.classList.contains("selectable")) {
+				return list;
+			}
+			const num = card.cards?.length ?? 0;
+			if (target.countCards("h") <= player.countCards("h") - num) {
+				list.add("不可响应");
+			}
+			if (target.hp >= player.hp) {
+				list.add("加伤");
+			}
+			return list;
+		},
+		onChooseToUse(event) {
+			event.targetprompt2.add(lib.skill.xinliegong.targetprompt2);
+		},
+		onChooseTarget(event) {
+			event.targetprompt2.add(lib.skill.xinliegong.targetprompt2);
 		},
 		audio: "liegong",
 		audioname: ["re_huangzhong", "ol_huangzhong"],
@@ -4882,7 +4940,7 @@ const skills = {
 				return;
 			}
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			_status.characterlist.randomSort();
 			for (let i = 0; i < _status.characterlist.length; i++) {
@@ -5541,6 +5599,9 @@ const skills = {
 	songwei2: {
 		audio: 2,
 		audioname: ["re_caopi"],
+		audioname2: {
+			pe_jun_caopi: "sbsongwei",
+		},
 		forceaudio: true,
 		trigger: { global: "judgeEnd" },
 		sourceSkill: "songwei",

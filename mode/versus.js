@@ -312,7 +312,6 @@ export default () => {
 					}
 				}
 
-
 				var side = Math.random() < 0.5;
 				var num = Math.floor(Math.random() * 8);
 				list = list.splice(8 - num).concat(list);
@@ -4377,17 +4376,8 @@ export default () => {
 						}
 						await event.trigger("phaseOver");
 						let findNext = current => {
-							let players = game.players
-								.slice(0)
-								.concat(game.dead)
-								.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
-							let position = parseInt(current.dataset.position);
-							for (let i = 0; i < players.length; i++) {
-								if (parseInt(players[i].dataset.position) > position) {
-									return players[i];
-								}
-							}
-							return players[0];
+							const index = _status.actlist.indexOf(current);
+							return _status.actlist[(index + 1) % _status.actlist.length];
 						};
 						event.player = findNext(event.player);
 					}
@@ -7884,292 +7874,318 @@ export default () => {
 		},
 		element: {
 			content: {
-				replacePlayer: function () {
-					"step 0";
-					var cards = source.getCards("hej");
-					if (cards.length) {
-						source.$throw(cards, 1000);
-						game.cardsDiscard(cards);
-					}
-					"step 1";
-					var list = source.side == game.me.side ? _status.friend : _status.enemy;
-					if (list.length == 0) {
-						// if(game.friend.includes(source)){
-						// 	game.over(false);
-						// }
-						// else{
-						// 	game.over(true);
-						// }
-						game.friend.remove(source);
-						game.enemy.remove(source);
-						if (game.friend.length == 0) {
-							game.over(false);
-						} else if (game.enemy.length == 0) {
-							game.over(true);
+				replacePlayer: [
+					async (event, trigger, player) => {
+						const { source } = event;
+						if (source.removed) {
+							return event.finish();
 						}
-						if (game.friendZhu && game.friendZhu.classList.contains("dead") && game.friend.length) {
-							game.friendZhu = game.friend[0];
-							game.friendZhu.setIdentity(_status.color + "Zhu");
+						const cards = source.getCards("hej");
+						if (cards.length) {
+							source.$throw(cards, 1000);
+							await game.cardsDiscard(cards);
 						}
-						if (game.enemyZhu && game.enemyZhu.classList.contains("dead") && game.enemy.length) {
-							game.enemyZhu = game.enemy[0];
-							game.enemyZhu.setIdentity(!_status.color + "Zhu");
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						const list = source.side == game.me.side ? _status.friend : _status.enemy;
+						if (list.length == 0) {
+							// if(game.friend.includes(source)){
+							// 	game.over(false);
+							// }
+							// else{
+							// 	game.over(true);
+							// }
+							game.friend.remove(source);
+							game.enemy.remove(source);
+							if (game.friend.length == 0) {
+								game.over(false);
+							} else if (game.enemy.length == 0) {
+								game.over(true);
+							}
+							if (game.friendZhu && game.friendZhu.classList.contains("dead") && game.friend.length) {
+								game.friendZhu = game.friend[0];
+								game.friendZhu.setIdentity(_status.color + "Zhu");
+							}
+							if (game.enemyZhu && game.enemyZhu.classList.contains("dead") && game.enemy.length) {
+								game.enemyZhu = game.enemy[0];
+								game.enemyZhu.setIdentity(!_status.color + "Zhu");
+							}
+							return event.finish();
 						}
-						event.finish();
-						return;
-					}
-					if (source.side == game.me.side && list.length > 1 && (game.me == game.friendZhu || (lib.storage.zhu && lib.storage.single_control)) && !_status.auto) {
-						event.dialog = ui.create.dialog("选择替补角色", [list, "character"]);
-						event.filterButton = function () {
-							return true;
-						};
-						event.player = game.me;
-						event.forced = true;
-						event.custom.replace.confirm = function () {
-							event.character = ui.selected.buttons[0].link;
-							event.dialog.close();
-							if (ui.confirm) {
-								ui.confirm.close();
-							}
-							delete event.player;
-							game.resume();
-						};
-						game.check();
-						game.pause();
-					} else {
-						event.character = list[Math.floor(Math.random() * list.length)];
-					}
-					"step 2";
-					game.uncheck();
-					_status.friend.remove(event.character);
-					_status.enemy.remove(event.character);
-					source.revive(null, false);
-					game.additionaldead.push({
-						name: source.name,
-						stat: source.stat,
-					});
-					game.addVideo("reinit", source, [event.character, get.translation(source.side + "Color")]);
-					source.uninit();
-					source.init(event.character);
-					game.log(source, "出场");
-					source.node.identity.dataset.color = get.translation(source.side + "Color");
-					source.draw(4);
-					var evt = event.getParent("dying");
-					if (evt && evt.parent) {
-						evt = evt.parent;
-						evt.untrigger(false, source);
-						for (var i = 0; i < 100; i++) {
-							evt = evt.parent;
-							if (evt.player == source) {
-								evt.finish();
-							}
-							if (evt.name == "phase") {
-								break;
-							}
-						}
-					}
-					if (lib.storage.single_control) {
-						game.onSwapControl();
-					}
-					game.triggerEnter(source);
-					"step 3";
-					// if(_status.currentPhase==source){
-					// 	source.skip('phase');
-					// }
-				},
-				replacePlayerTwo: function () {
-					"step 0";
-					var cards = source.getCards("hej");
-					if (cards.length) {
-						source.$throw(cards, 1000);
-						game.cardsDiscard(cards);
-					}
-					game.delay();
-					"step 1";
-					source.revive(null, false);
-					game.additionaldead.push({
-						name: source.name,
-						stat: source.stat,
-					});
-					game.addVideo("reinit", source, [event.character, get.translation(source.side + "Color")]);
-					source.uninit();
-					source.init(event.character);
-					game.log(source, "出场");
-					// source.node.identity.dataset.color=source.side+'zhu';
-					source.draw(4);
-					var evt = event.getParent("dying");
-					if (evt && evt.parent) {
-						evt = evt.parent;
-						evt.untrigger(false, source);
-						for (var i = 0; i < 100; i++) {
-							evt = evt.parent;
-							if (evt.player == source) {
-								evt.finish();
-							}
-							if (evt.name == "phase") {
-								break;
-							}
-						}
-					}
-					game.triggerEnter(source);
-				},
-				replacePlayerOL: function () {
-					"step 0";
-					var cards = source.getCards("hej");
-					if (cards.length) {
-						source.$throw(cards, 1000);
-						game.cardsDiscard(cards);
-					}
-					game.delay();
-					"step 1";
-					if (event.source.side == game.me.side) {
-						if (_status.friend.length == 1) {
-							event.directresult = _status.friend[0];
-						} else if (event.source == game.me) {
-							if (_status.auto) {
-								event.directresult = _status.friend.randomGet();
-							}
-						} else {
-							if (!event.source.isOnline()) {
-								event.directresult = _status.friend.randomGet();
-							}
-						}
-					} else {
-						if (_status.enemy.length == 1) {
-							event.directresult = _status.enemy[0];
-						} else {
-							if (!event.source.isOnline()) {
-								event.directresult = _status.enemy.randomGet();
-							}
-						}
-					}
-					if (!event.directresult) {
-						if (event.source == game.me) {
-							event.dialog = ui.create.dialog("选择替补角色", [_status.friend, "character"]);
+						if (source.side == game.me.side && list.length > 1 && (game.me == game.friendZhu || (lib.storage.zhu && lib.storage.single_control)) && !_status.auto) {
+							event.dialog = ui.create.dialog("选择替补角色", [list, "character"]);
 							event.filterButton = function () {
 								return true;
 							};
 							event.player = game.me;
 							event.forced = true;
 							event.custom.replace.confirm = function () {
-								event.directresult = ui.selected.buttons[0].link;
+								event.character = ui.selected.buttons[0].link;
 								event.dialog.close();
 								if (ui.confirm) {
 									ui.confirm.close();
 								}
 								delete event.player;
 								game.resume();
-							};
-							event.switchToAuto = function () {
-								event.directresult = _status.friend.randomGet();
-								event.dialog.close();
-								if (ui.confirm) {
-									ui.confirm.close();
-								}
-								delete event.player;
 							};
 							game.check();
 							game.pause();
 						} else {
-							event.source.send(function (player) {
-								if (_status.auto) {
-									_status.event._result = _status.friend.randomGet();
-								} else {
-									var next = game.createEvent("replacePlayer");
-									next.source = player;
-									next.setContent(function () {
-										event.dialog = ui.create.dialog("选择替补角色", [_status.friend, "character"]);
-										event.filterButton = function () {
-											return true;
-										};
-										event.player = event.source;
-										event.forced = true;
-										event.custom.replace.confirm = function () {
-											event.result = ui.selected.buttons[0].link;
-											event.dialog.close();
-											if (ui.confirm) {
-												ui.confirm.close();
-											}
-											delete event.player;
-											game.resume();
-											game.uncheck();
-										};
-										event.switchToAuto = function () {
-											event.result = _status.friend.randomGet();
-											event.dialog.close();
-											if (ui.confirm) {
-												ui.confirm.close();
-											}
-											delete event.player;
-											game.uncheck();
-										};
-										game.check();
-										game.pause();
-									});
-								}
-								game.resume();
-							}, event.source);
-							event.source.wait();
-							game.pause();
+							event.character = list[Math.floor(Math.random() * list.length)];
 						}
-					}
-					"step 2";
-					game.uncheck();
-					if (!event.directresult) {
-						if (event.resultOL) {
-							event.directresult = event.resultOL[source.playerid];
-						}
-						if (!event.directresult || event.directresult == "ai") {
-							if (source.side == game.me.side) {
-								event.directresult = _status.friend.randomGet();
-							} else {
-								event.directresult = _status.enemy.randomGet();
-							}
-						}
-					}
-					var name = event.directresult;
-					var color = source.node.identity.dataset.color;
-					game.additionaldead.push({
-						name: source.name,
-						stat: source.stat,
-					});
-
-					game.broadcastAll(
-						function (source, name, color) {
-							_status.friend.remove(name);
-							_status.enemy.remove(name);
-							source.revive(null, false);
-							source.uninit();
-							source.init(name);
-							source.node.identity.dataset.color = color;
-							if (source == game.me) {
-								ui.arena.classList.remove("selecting");
-							}
-						},
-						source,
-						name,
-						color
-					);
-					game.log(source, "出场");
-
-					source.draw(4);
-					var evt = event.getParent("dying");
-					if (evt && evt.parent) {
-						evt = evt.parent;
-						evt.untrigger(false, source);
-						for (var i = 0; i < 100; i++) {
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						game.uncheck();
+						_status.friend.remove(event.character);
+						_status.enemy.remove(event.character);
+						source.revive(null, false);
+						game.additionaldead.push({
+							name: source.name,
+							stat: source.stat,
+						});
+						game.addVideo("reinit", source, [event.character, get.translation(source.side + "Color")]);
+						source.uninit();
+						source.init(event.character);
+						game.log(source, "出场");
+						source.node.identity.dataset.color = get.translation(source.side + "Color");
+						await source.draw(4);
+						var evt = event.getParent("dying");
+						if (evt && evt.parent) {
 							evt = evt.parent;
-							if (evt.player == source) {
-								evt.finish();
-							}
-							if (evt.name == "phase") {
-								break;
+							evt.untrigger(false, source);
+							for (var i = 0; i < 100; i++) {
+								evt = evt.parent;
+								if (evt.player == source) {
+									evt.finish();
+								}
+								if (evt.name == "phase") {
+									break;
+								}
 							}
 						}
-					}
-					game.addVideo("reinit", source, [name, color]);
-					game.triggerEnter(source);
-				},
+						if (lib.storage.single_control) {
+							game.onSwapControl();
+						}
+						await game.triggerEnter(source);
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						/*if(_status.currentPhase==source){
+							source.skip('phase');
+						}*/
+					},
+				],
+				replacePlayerTwo: [
+					async (event, trigger, player) => {
+						const { source } = event;
+						if (source.removed) {
+							return event.finish();
+						}
+						const cards = source.getCards("hej");
+						if (cards.length) {
+							source.$throw(cards, 1000);
+							await game.cardsDiscard(cards);
+						}
+						await game.delay();
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						source.revive(null, false);
+						game.additionaldead.push({
+							name: source.name,
+							stat: source.stat,
+						});
+						game.addVideo("reinit", source, [event.character, get.translation(source.side + "Color")]);
+						source.uninit();
+						source.init(event.character);
+						game.log(source, "出场");
+						// source.node.identity.dataset.color=source.side+'zhu';
+						await source.draw(4);
+						var evt = event.getParent("dying");
+						if (evt && evt.parent) {
+							evt = evt.parent;
+							evt.untrigger(false, source);
+							for (var i = 0; i < 100; i++) {
+								evt = evt.parent;
+								if (evt.player == source) {
+									evt.finish();
+								}
+								if (evt.name == "phase") {
+									break;
+								}
+							}
+						}
+						await game.triggerEnter(source);
+					},
+				],
+				replacePlayerOL: [
+					async (event, trigger, player) => {
+						const { source } = event;
+						if (source.removed) {
+							return event.finish();
+						}
+						const cards = source.getCards("hej");
+						if (cards.length) {
+							source.$throw(cards, 1000);
+							await game.cardsDiscard(cards);
+						}
+						await game.delay();
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						if (event.source.side == game.me.side) {
+							if (_status.friend.length == 1) {
+								event.directresult = _status.friend[0];
+							} else if (event.source == game.me) {
+								if (_status.auto) {
+									event.directresult = _status.friend.randomGet();
+								}
+							} else {
+								if (!event.source.isOnline()) {
+									event.directresult = _status.friend.randomGet();
+								}
+							}
+						} else {
+							if (_status.enemy.length == 1) {
+								event.directresult = _status.enemy[0];
+							} else {
+								if (!event.source.isOnline()) {
+									event.directresult = _status.enemy.randomGet();
+								}
+							}
+						}
+						if (!event.directresult) {
+							if (event.source == game.me) {
+								event.dialog = ui.create.dialog("选择替补角色", [_status.friend, "character"]);
+								event.filterButton = function () {
+									return true;
+								};
+								event.player = game.me;
+								event.forced = true;
+								event.custom.replace.confirm = function () {
+									event.directresult = ui.selected.buttons[0].link;
+									event.dialog.close();
+									if (ui.confirm) {
+										ui.confirm.close();
+									}
+									delete event.player;
+									game.resume();
+								};
+								event.switchToAuto = function () {
+									event.directresult = _status.friend.randomGet();
+									event.dialog.close();
+									if (ui.confirm) {
+										ui.confirm.close();
+									}
+									delete event.player;
+								};
+								game.check();
+								game.pause();
+							} else {
+								event.source.send(function (player) {
+									if (_status.auto) {
+										_status.event._result = _status.friend.randomGet();
+									} else {
+										var next = game.createEvent("replacePlayer");
+										next.source = player;
+										next.setContent(function () {
+											event.dialog = ui.create.dialog("选择替补角色", [_status.friend, "character"]);
+											event.filterButton = function () {
+												return true;
+											};
+											event.player = event.source;
+											event.forced = true;
+											event.custom.replace.confirm = function () {
+												event.result = ui.selected.buttons[0].link;
+												event.dialog.close();
+												if (ui.confirm) {
+													ui.confirm.close();
+												}
+												delete event.player;
+												game.resume();
+												game.uncheck();
+											};
+											event.switchToAuto = function () {
+												event.result = _status.friend.randomGet();
+												event.dialog.close();
+												if (ui.confirm) {
+													ui.confirm.close();
+												}
+												delete event.player;
+												game.uncheck();
+											};
+											game.check();
+											game.pause();
+										});
+									}
+									game.resume();
+								}, event.source);
+								event.source.wait();
+								game.pause();
+							}
+						}
+					},
+					async (event, trigger, player) => {
+						const { source } = event;
+						game.uncheck();
+						if (!event.directresult) {
+							if (event.resultOL) {
+								event.directresult = event.resultOL[source.playerid];
+							}
+							if (!event.directresult || event.directresult == "ai") {
+								if (source.side == game.me.side) {
+									event.directresult = _status.friend.randomGet();
+								} else {
+									event.directresult = _status.enemy.randomGet();
+								}
+							}
+						}
+						var name = event.directresult;
+						var color = source.node.identity.dataset.color;
+						game.additionaldead.push({
+							name: source.name,
+							stat: source.stat,
+						});
+	
+						game.broadcastAll(
+							function (source, name, color) {
+								_status.friend.remove(name);
+								_status.enemy.remove(name);
+								source.revive(null, false);
+								source.uninit();
+								source.init(name);
+								source.node.identity.dataset.color = color;
+								if (source == game.me) {
+									ui.arena.classList.remove("selecting");
+								}
+							},
+							source,
+							name,
+							color
+						);
+						game.log(source, "出场");
+	
+						await source.draw(4);
+						var evt = event.getParent("dying");
+						if (evt && evt.parent) {
+							evt = evt.parent;
+							evt.untrigger(false, source);
+							for (var i = 0; i < 100; i++) {
+								evt = evt.parent;
+								if (evt.player == source) {
+									evt.finish();
+								}
+								if (evt.name == "phase") {
+									break;
+								}
+							}
+						}
+						game.addVideo("reinit", source, [name, color]);
+						await game.triggerEnter(source);
+					},
+				],
 			},
 			player: {
 				gainZhibao: function (num, source) {
