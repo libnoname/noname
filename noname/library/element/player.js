@@ -2182,11 +2182,13 @@ export class Player extends HTMLDivElement {
 		next._args = Array.from(arguments);
 		next.setContent("showCharacter");
 		var evt = _status.event;
-		evt.next.remove(next);
-		if (evt.logSkill) {
-			evt = evt.getParent();
+		if (!["useSkill", "trigger"].includes(evt.name)) {
+			evt.next.remove(next);
+			if (evt.logSkill) {
+				evt = evt.getParent();
+			}
+			evt.after.push(next);
 		}
-		evt.after.push(next);
 		return next;
 	}
 	/**
