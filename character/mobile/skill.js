@@ -357,7 +357,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
 					const player = get.player();
-					if (player.getFriends().includes(target)) {
+					if (player.getFriends(true).includes(target)) {
 						return get.effect(player, { name: "draw" }, player, player) + get.effect(target, { name: "draw" }, player, player) > 0;
 					}
 					return get.effect(target, { name: "guohe_copy2" }, target, player) + get.effect(player, { name: "guohe_copy2" }, player, player) > 0;
@@ -366,7 +366,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			if (player.getFriends().includes(target)) {
+			if (player.getFriends(true).includes(target)) {
 				await game.asyncDraw([player, target]);
 			} else {
 				await player.chooseToDiscard(true, "he");
@@ -4994,7 +4994,6 @@ const skills = {
 	//若为？若为！若为~
 	mbxiezheng: {
 		audio: "jsrgxiezheng",
-		audioname2: { mb_simazhao_shadow: [1, 2].map(i => `jsrgxiezheng_jin_jsrg_simazhao${i}.mp3`) },
 		inherit: "jsrgxiezheng",
 		async cost(event, trigger, player) {
 			const mode = get.mode();
@@ -7493,11 +7492,13 @@ const skills = {
 					return get.event().eff * get.sgn(att) + att / 114514;
 				})
 				.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1);
-			player.line(target);
-			await target.draw(num1);
-			await target.chooseToDiscard("he", true, num2);
-			if (target.countCards("h") === 0) {
-				player.addSkill("mbfunan_rewrite");
+			if (target) {
+				player.line(target);
+				await target.draw(num1);
+				await target.chooseToDiscard("he", true, num2);
+				if (target.countCards("h") === 0) {
+					player.addSkill("mbfunan_rewrite");
+				}
 			}
 		},
 		subSkill: {

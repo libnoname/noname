@@ -3226,10 +3226,11 @@ export class Player extends HTMLDivElement {
 								player.skin[name] = character;
 								const goon = !lib.character[character];
 								if (goon) {
-									lib.character[character] = ["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]];
+									lib.character[character] = get.convertedCharacter(["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]]);
 								}
 								player.smoothAvatar(name == "name2");
-								player.node["avatar" + name.slice(4)].setBackground(character, "character");
+								const skinImg = lib.character[character].img;
+								skinImg ? player.node["avatar" + name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(character, "character");
 								player.node["avatar" + name.slice(4)].show();
 								if (goon) {
 									delete lib.character[character];

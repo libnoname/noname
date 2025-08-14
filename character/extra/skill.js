@@ -6287,7 +6287,7 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return get.color(event.card) == "none";
+			return event.card.suit == "none";
 		},
 		content() {
 			"step 0";

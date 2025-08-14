@@ -11,7 +11,7 @@ const skills = {
 		},
 		filter(event, player, name) {
 			const evt = name === "damageSource" ? "sourceDamage" : "damage";
-			return player.getHistory(evt).indexOf(event) == 0 || get.info("peqinyi").getList(player).length > 0;
+			return player.getHistory(evt).indexOf(event) == 0 && get.info("peqinyi").getList(player).length > 0;
 		},
 		getList(player) {
 			const list = get.inpileVCardList(info => {
@@ -14090,7 +14090,7 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return get.color(event.card) == "none";
+			return event.card.suit == "none";
 		},
 		content() {
 			"step 0";

@@ -14477,9 +14477,12 @@ const skills = {
 				await target.draw(2);
 			} else {
 				const card = new lib.element.VCard({ name: "sha", nature: "thunder" });
-				if (player.canUse(card, target, false)) {
-					for (let i = 1; i <= 2; i++) {
+				for (let i = 1; i <= 2; i++) {
+					if (player.canUse(card, target, false)) {
 						await player.useCard(card, target, false);
+					}
+					else {
+						break;
 					}
 				}
 			}

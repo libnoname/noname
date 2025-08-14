@@ -3403,10 +3403,7 @@ export class Click {
 					.filter(Boolean);
 				const skillAudioMap = new Map();
 				nameinfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
-					if (!voiceMap.length) {
-						voiceMap = get.Audio.skill({ skill, player: name }).textList;
-					}
+					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
 					if (voiceMap.length) {
 						skillAudioMap.set(skill, voiceMap);
 					}
@@ -3426,10 +3423,7 @@ export class Click {
 							if (nameinfo.skills.includes(derivation[i])) {
 								continue;
 							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
-							if (!derivationVoiceMap.length) {
-								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
 							if (derivationVoiceMap.length) {
 								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}
@@ -3733,10 +3727,7 @@ export class Click {
 					.filter(Boolean);
 				const skillAudioMap = new Map();
 				nameInfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
-					if (!voiceMap.length) {
-						voiceMap = get.Audio.skill({ skill, player: name }).textList;
-					}
+					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
 					if (voiceMap.length) {
 						skillAudioMap.set(skill, voiceMap);
 					}
@@ -3756,10 +3747,7 @@ export class Click {
 							if (nameInfo.skills.includes(derivation[i])) {
 								continue;
 							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
-							if (!derivationVoiceMap.length) {
-								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
 							if (derivationVoiceMap.length) {
 								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}

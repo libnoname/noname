@@ -25262,7 +25262,7 @@ const skills = {
 					"gain2"
 				)
 				.set("gaintag", [event.name]);
-			await player.draw();
+			//await player.draw();
 		},
 	},
 	twlingbao: {

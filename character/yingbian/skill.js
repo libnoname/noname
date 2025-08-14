@@ -2174,7 +2174,7 @@ const skills = {
 			const num = player.maxHp;
 			if (num > 0) {
 				if (game.online) {
-					return game.dataRequest("olsbzhitian", "getTopCards", 10000, num);
+					return game.dataRequest("smyyingshi", "getTopCards", 10000);
 				} else {
 					if (ui.cardPile.hasChildNodes !== false) {
 						return Array.from(ui.cardPile.childNodes).slice(0, num);
@@ -2182,6 +2182,14 @@ const skills = {
 				}
 			}
 			return [];
+		},
+		sync: {
+			getTopCards(client) {
+				if (ui.cardPile.hasChildNodes !== false) {
+					return Array.from(ui.cardPile.childNodes).slice(0, client.maxHp);
+				}
+				return [];
+			},
 		},
 		mark: true,
 		marktext: "牌",

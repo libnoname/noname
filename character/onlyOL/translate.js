@@ -1,4 +1,12 @@
 const translates = {
+	ol_sb_xuyou: "OL谋许攸",
+	ol_sb_xuyou_prefix: "OL谋",
+	olsbqianfu: "迁附",
+	olsbqianfu_info: "转换技，出牌阶段，阳：你可以将一张黑色牌当【过河拆桥】使用：阴：你可以将一张红色牌当【火攻】使用。结算后，你可将因此弃置的牌置于牌堆顶。",
+	olsbyushi: "驭势",
+	olsbyushi_info: "你造成或受到伤害后，你可令一名：有转换技的角色切换其一个转换技的状态：无转换技的角色获得出牌阶段各限一次的〖迁附〗，直到其失去最后的手牌。每轮前X次，有转换技切换状态后，你摸一张牌（X为你的体力上限）。",
+	olsbfenchao: "焚巢",
+	olsbfenchao_info: "限定技，结束阶段，你可以令一名角色获得弃牌堆中的伤害牌（不超过存活人数）且令这些牌造成伤害时改为火焰伤害。",
 	ol_sb_lusu: "OL谋鲁肃",
 	ol_sb_lusu_prefix: "OL谋",
 	olsbduduan: "独断",
