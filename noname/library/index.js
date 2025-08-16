@@ -30,7 +30,7 @@ import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
 import dedent from "../../game/dedent.js";
-import { PoptipManager } from "./poptip.js";
+import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 
 const html = dedent;
 
@@ -8287,7 +8287,7 @@ export class Library {
 			return (
 				"<ul>" +
 				lib.poptip
-					.getIdList("rules")
+					.getIdList("rule")
 					.map(id => `<li>${lib.poptip.getName(id)}：${lib.poptip.getInfo(id)}</li>`)
 					.unique()
 					.join("")

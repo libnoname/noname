@@ -13,6 +13,7 @@ import security from "../util/security.js";
 import { CodeSnippet, ErrorManager } from "../util/error.js";
 
 import { GetCompatible } from "./compatible.js";
+import { HTMLPoptipElement } from "../library/poptip.js";
 
 // 用于标识Map、Set等对象在序列化中的类型
 // 使用了md5("__noname_type")的值作为键
@@ -1475,6 +1476,14 @@ export class Get extends GetCompatible {
 			}
 			const parser = new DOMParser(),
 				doc = parser.parseFromString(htmlContent || "", "text/html");
+			
+			// 初始化poptip名称
+			doc.querySelectorAll("noname-poptip").forEach((poptip) => {
+				Object.setPrototypeOf(poptip, HTMLPoptipElement.prototype);
+				//@ts-expect-error ignore
+				poptip.createdCallback();
+			});
+
 			const text = doc.body.textContent || doc.body.innerText;
 			this.plainTextMap.set(htmlContent, text);
 			return text;
