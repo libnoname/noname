@@ -519,6 +519,8 @@ export default {
 	gz_ol_weiyan_prefix: "界",
 	gz_ol_yanwen_prefix: "界",
 	gz_zhoutai: "周泰",
+	gz_pangde: "庞德",
+	gz_ganfuren: "甘夫人",
 	gzguishu: "鬼术",
 	gzguishu_info: "出牌阶段，你可以将一张黑桃手牌当作【知己知彼】或【远交近攻】使用（不能与本回合上次以此法使用的牌名相同）。",
 	gzyuanyu: "远域",

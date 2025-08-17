@@ -493,7 +493,7 @@ const skills = {
 	},
 	//三娘
 	mbshuyong: {
-		audio: "xinfu_xushen",
+		audio: "meiyong",
 		trigger: {
 			player: ["useCard", "respond"],
 		},

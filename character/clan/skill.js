@@ -825,17 +825,7 @@ const skills = {
 				if (player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
 					const guohe = get.autoViewAs({ name: "guohe" }, [card]);
 					if (player.hasUseTarget(guohe, null, false)) {
-						let next = player.chooseUseTarget(guohe, [card], true, false);
-						if (target != player) {
-							next.throw = false;
-							next.set("owner", get.owner(card));
-							next.set("oncard", card => {
-								const owner = get.event().getParent().owner;
-								if (owner) {
-									owner.$throw(card.cards);
-								}
-							});
-						}
+						player.chooseUseTarget(guohe, [card], true, false);
 					}
 				} else {
 					target.damage();
@@ -1087,8 +1077,8 @@ const skills = {
 						}).length > 1
 					) {
 						let cardsx;
-						if ((target.countCards("h") !== player.countCards("h") && target !== player) || target === player) {
-							const putee = player.countCards("h") > target.countCards("h") || target === player ? player : target;
+						if (target.countCards("h") !== player.countCards("h")) {
+							const putee = player.countCards("h") > target.countCards("h") ? player : target;
 							if (!putee.countCards("he")) {
 								return;
 							}

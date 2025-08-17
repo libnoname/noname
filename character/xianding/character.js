@@ -40,12 +40,14 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["x_dc_falu", "x_dc_zhenyi", "x_dc_dianhua"],
+		dieAudios: ["zhangqiying"],
 	},
 	y_dc_zhangqiying: {
 		sex: "female",
 		group: "qun",
 		hp: 3,
 		skills: ["y_dc_falu", "y_dc_zhenyi", "y_dc_dianhua"],
+		dieAudios: ["zhangqiying"],
 	},
 	renwan: {
 		sex: "female",

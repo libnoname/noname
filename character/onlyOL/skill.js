@@ -7362,17 +7362,7 @@ const skills = {
 					},
 					[card]
 				);
-				const owner = get.owner(card);
-				const next = target
-					.chooseUseTarget(cardx, [card], true, false)
-					.set("throw", false)
-					.set("owner", owner)
-					.set("oncard", card => {
-						const owner = get.event().getParent().owner;
-						if (owner) {
-							owner.$throw(card.cards);
-						}
-					});
+				const next = target.chooseUseTarget(cardx, [card], true, false);
 				if (card.name === cardx.name && get.is.sameNature(card, cardx, true)) {
 					next.set("viewAs", false);
 				}

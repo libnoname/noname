@@ -1,4 +1,9 @@
 export default {
+	"#olzhenlie1": "女子有节，宁死不折！",
+	"#olzhenlie2": "伤在我身，痛在谁心？",
+	"#olmiji1": "身入虎穴，但谋虎子。",
+	"#olmiji2": "以身为饵，必擒马儿。",
+	"#ol_wangyi:die": "匹夫，还我儿命来！",
 	"#olduoqi1": "你的脊梁，不堪一击！",
 	"#olduoqi2": "你的胆气，一文不值！",
 	"#olkuangmo1": "草芥，也配呼吸？",

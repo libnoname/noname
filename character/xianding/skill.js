@@ -13659,7 +13659,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin2" },
 		filter(event, player) {
-			return event.getParent().type == "card";
+			return event.card;
 		},
 		forced: true,
 		async content(event, trigger, player) {
