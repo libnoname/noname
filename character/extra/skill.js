@@ -871,8 +871,8 @@ const skills = {
 							equips = target.getCards("e", card => list[1].includes(card));
 						if (equips.length) {
 							await target.loseToDiscardpile(equips);
-							await lib.skill.cazhaoshao.closeEquip(target, target, list[0]);
-							target.setStorage("cazhaoshao_equip", []);
+							//await lib.skill.cazhaoshao.closeEquip(target, target, list[0]);
+							//target.setStorage("cazhaoshao_equip", []);
 						}
 					}
 					const subtypes = get.subtypes(equip);
