@@ -41,6 +41,7 @@ export default {
 		...voices,
 	},
 	dynamicTranslate: dynamic,
+	characterSubstitute: info.substitute,
 
 	// 模式的其余内容（诸如武将等级）
 	aozhanRank: info.rank.aozhan,

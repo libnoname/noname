@@ -1,4 +1,11 @@
 export default {
+	"#clangailan1": "春秋几梦聃周事，遘难而今注子云。",
+	"#clangailan2": "顽石哪比经籍重，满船学问压川河。",
+	"#clanfennu1": "殚意儒学，功在不舍。",
+	"#clanfennu2": "驽牛致远，驽马逸足，赖凤雏之前翱。",
+	"#clanzelie1": "遍览日月星辰，泽其光，沐其烈。",
+	"#clanzelie2": "为政以德，如北宸之烈烈。",
+	"#clan_luji:die": "郁林远花开正茂，何日魂归吴郡家……",
 	"#clanjiannan1": "上既临危遘难，臣当尽节卫主。",
 	"#clanjiannan2": "事君不避难，凛身危困间。",
 	"#clanyichi1": "黎民重迁，动易安难，遑论宗庙社稷！",

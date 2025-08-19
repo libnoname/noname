@@ -8,6 +8,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_jianxiong"],
+		dieAudios: ["caocao"],
 	}),
 	gz_simayi: new Character({
 		sex: "male",
@@ -16,6 +17,7 @@ export default {
 		maxHp: 3,
 		hujia: 0,
 		skills: ["guicai", "fankui"],
+		dieAudios: ["simayi"],
 	}),
 	gz_xiahoudun: new Character({
 		sex: "male",
@@ -24,6 +26,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_ganglie"],
+		dieAudios: ["xiahoudun"],
 	}),
 	gz_zhangliao: new Character({
 		sex: "male",
@@ -32,6 +35,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_tuxi"],
+		dieAudios: ["zhangliao"],
 	}),
 	gz_xuzhu: new Character({
 		sex: "male",
@@ -40,6 +44,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_luoyi"],
+		dieAudios: ["xuzhu"],
 	}),
 	gz_guojia: new Character({
 		sex: "male",
@@ -49,6 +54,7 @@ export default {
 		hujia: 0,
 		skills: ["tiandu", "gz_yiji"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["guojia"],
 	}),
 	gz_zhenji: new Character({
 		sex: "female",
@@ -58,6 +64,7 @@ export default {
 		hujia: 0,
 		skills: ["luoshen", "qingguo"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["zhenji"],
 	}),
 	gz_xiahouyuan: new Character({
 		sex: "male",
@@ -67,6 +74,7 @@ export default {
 		hujia: 0,
 		skills: ["gz_shensu"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["xiahouyuan"],
 	}),
 	gz_zhanghe: new Character({
 		sex: "male",
@@ -75,6 +83,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_qiaobian"],
+		dieAudios: ["zhanghe"],
 	}),
 	gz_xuhuang: new Character({
 		sex: "male",
@@ -83,6 +92,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_duanliang"],
+		dieAudios: ["xuhuang"],
 	}),
 	gz_caoren: new Character({
 		sex: "male",
@@ -91,6 +101,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_jushou"],
+		dieAudios: ["caoren"],
 	}),
 	gz_dianwei: new Character({
 		sex: "male",
@@ -100,6 +111,7 @@ export default {
 		hujia: 0,
 		skills: ["gz_qiangxi"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["dianwei"],
 	}),
 	gz_xunyu: new Character({
 		sex: "male",
@@ -108,6 +120,7 @@ export default {
 		maxHp: 3,
 		hujia: 0,
 		skills: ["gz_quhu", "gz_jieming"],
+		dieAudios: ["xunyu"],
 	}),
 	gz_caopi: new Character({
 		sex: "male",
@@ -117,6 +130,7 @@ export default {
 		hujia: 0,
 		skills: ["gz_xingshang", "gz_fangzhu"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["caopi"],
 	}),
 	gz_yuejin: new Character({
 		sex: "male",
@@ -126,6 +140,7 @@ export default {
 		hujia: 0,
 		skills: ["gz_xiaoguo"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["yuejin"],
 	}),
 
 	gz_liubei: new Character({
@@ -135,6 +150,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_rende"],
+		dieAudios: ["liubei"],
 	}),
 	gz_guanyu: new Character({
 		sex: "male",
@@ -144,6 +160,7 @@ export default {
 		hujia: 0,
 		skills: ["gz_wusheng"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["guanyu"],
 	}),
 	gz_zhangfei: new Character({
 		sex: "male",
@@ -152,6 +169,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_paoxiao"],
+		dieAudios: ["zhangfei"],
 	}),
 	gz_zhugeliang: new Character({
 		sex: "male",
@@ -161,6 +179,7 @@ export default {
 		hujia: 0,
 		skills: ["guanxing", "gz_kongcheng"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["zhugeliang"],
 	}),
 	gz_zhaoyun: new Character({
 		sex: "male",
@@ -169,6 +188,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_longdan"],
+		dieAudios: ["zhaoyun"],
 	}),
 	gz_machao: new Character({
 		sex: "male",
@@ -177,6 +197,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["mashu", "gz_tieji"],
+		dieAudios: ["machao"],
 	}),
 	gz_huangyueying: new Character({
 		sex: "female",
@@ -185,6 +206,7 @@ export default {
 		maxHp: 3,
 		skills: ["jizhi", "qicai"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["huangyueying"],
 	}),
 	gz_huangzhong: new Character({
 		sex: "male",
@@ -193,6 +215,7 @@ export default {
 		maxHp: 4,
 		skills: ["gz_liegong"],
 		hasSkinInGuozhan: true,
+		dieAudios: ["huangzhong"],
 	}),
 	gz_weiyan: new Character({
 		sex: "male",
@@ -200,6 +223,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		skills: ["gz_kuanggu"],
+		dieAudios: ["weiyan"],
 	}),
 	gz_pangtong: new Character({
 		sex: "male",
@@ -207,6 +231,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		skills: ["gz_lianhuan", "gz_niepan"],
+		dieAudios: ["pangtong"],
 	}),
 	// 后续的武将如果不是本身拥有国战的技能，暂时都摆了，解耦时记得把技能从原来的包拿过来
 	// 描述也是
@@ -226,6 +251,7 @@ export default {
 		skills: ["xiangle", "fangquan"],
 	}),
 	gz_menghuo: new Character({
+		doubleGroup: ["shu", "qun"],
 		sex: "male",
 		group: "shu",
 		hp: 4,
@@ -233,6 +259,7 @@ export default {
 		skills: ["huoshou", "rezaiqi"],
 	}),
 	gz_zhurong: new Character({
+		doubleGroup: ["shu", "qun"],
 		sex: "female",
 		group: "shu",
 		hp: 4,

@@ -422,6 +422,10 @@ export class PlayerGuozhan extends Player {
 		}
 		var to = "gz_shibing" + (info[0] == "male" ? 1 : 2) + info[1];
 		game.log(this, "移除了" + (num ? "副将" : "主将"), "#b" + name);
+		if (!lib.character[to]) {
+			lib.character[to] = [info[0], info[1], 0, [], [`character:${to.slice(3, 11)}`, "unseen"]];
+			lib.translate[to] = `${get.translation(info[1])}兵`;
+		}
 		this.reinit(name, to, false);
 		this.showCharacter(num, false);
 		// @ts-expect-error 类型就是这么写的

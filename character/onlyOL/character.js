@@ -1,4 +1,10 @@
 const characters = {
+	ol_sb_xuyou: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["olsbqianfu", "olsbyushi", "olsbfenchao"],
+	},
 	ol_sb_lusu: {
 		sex: "male",
 		group: "wu",
@@ -11,6 +17,12 @@ const characters = {
 		hp: 3,
 		skills: ["olsbzhitian", "olsbliwu", "olsbzhijue"],
 		names: "诸葛|亮",
+	},
+	ol_sunluban: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["olzenhui", "oljiaojin"],
 	},
 	dm_lvbu: {
 		sex: "male",

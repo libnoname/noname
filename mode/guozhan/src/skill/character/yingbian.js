@@ -7,6 +7,152 @@ import { PlayerGuozhan } from "../../patch/player.js";
 const get = cast(_get);
 
 export default {
+	//手杀杜预
+	gz_wuku: {
+		audio: "spwuku",
+		trigger: { global: "useCard" },
+		forced: true,
+		preHidden: true,
+		filter(event, player) {
+			if (get.type(event.card) != "equip") {
+				return false;
+			}
+			if (player.isFriendOf(event.player)) {
+				return false;
+			}
+			return player.countMark("gz_wuku") < 2;
+		},
+		async content(event, trigger, player) {
+			player.addMark("gz_wuku", 1);
+		},
+		marktext: "库",
+		intro: {
+			content: "mark",
+		},
+		ai: {
+			combo: "gz_miewu",
+		},
+	},
+	gz_miewu: {
+		audio: "spmiewu",
+		enable: ["chooseToUse", "chooseToRespond"],
+		filter(event, player) {
+			if (!player.countMark("gz_wuku") || !player.countCards("hse") || player.hasSkill("gz_miewu_used")) {
+				return false;
+			}
+			for (let i of lib.inpile) {
+				let type = get.type2(i);
+				if ((type == "basic" || type == "trick") && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				let list = [];
+				for (let i = 0; i < lib.inpile.length; i++) {
+					let name = lib.inpile[i];
+					if (name == "sha") {
+						if (event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
+							list.push(["基本", "", "sha"]);
+						}
+						for (let nature of lib.inpile_nature) {
+							if (event.filterCard(get.autoViewAs({ name, nature }, "unsure"), player, event)) {
+								list.push(["基本", "", "sha", nature]);
+							}
+						}
+					} else if (get.type2(name) == "trick" && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
+						list.push(["锦囊", "", name]);
+					} else if (get.type(name) == "basic" && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
+						list.push(["基本", "", name]);
+					}
+				}
+				return ui.create.dialog("灭吴", [list, "vcard"]);
+			},
+			check(button) {
+				if (_status.event.getParent().type != "phase") {
+					return 1;
+				}
+				let player = _status.event.player;
+				if (["wugu", "zhulu_card", "yiyi", "lulitongxin", "lianjunshengyan", "diaohulishan"].includes(button.link[2])) {
+					return 0;
+				}
+				return player.getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+				});
+			},
+			backup(links, player) {
+				return {
+					filterCard: true,
+					audio: "gz_miewu",
+					popname: true,
+					check(card) {
+						return 8 - get.value(card);
+					},
+					position: "hse",
+					viewAs: { name: links[0][2], nature: links[0][3] },
+					onuse(result, player) {
+						const next = game.createEvent("miewuDraw", false, _status.event.getParent());
+						next.player = player;
+						next.setContent(async (event, trigger, player) => {
+							await player.draw();
+						});
+					},
+					onrespond(result, player) {
+						const next = game.createEvent("miewuDraw", false, _status.event.getParent());
+						next.player = player;
+						next.setContent(async (event, trigger, player) => {
+							await player.draw();
+						});
+					},
+					precontent() {
+						player.addTempSkill("gz_miewu_used");
+						player.removeMark("gz_wuku", 1);
+					},
+				};
+			},
+			prompt(links, player) {
+				return "将一张牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用";
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name)) {
+				return false;
+			}
+			var type = get.type2(name);
+			return (type == "basic" || type == "trick") && player.countMark("gz_wuku") > 0 && player.countCards("she") > 0 && !player.hasSkill("gz_miewu_used");
+		},
+		ai: {
+			combo: "gz_wuku",
+			fireAttack: true,
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player) {
+				if (!player.countMark("gz_wuku") || !player.countCards("hse") || player.hasSkill("gz_miewu_used")) {
+					return false;
+				}
+			},
+			order: 1,
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+			},
+			backup: {
+				audio: "gz_miewu",
+			},
+		},
+	},
 	//紫气东来
 	gz_yingshi: {
 		audio: "smyyingshi",
@@ -624,13 +770,13 @@ export default {
 			player: "phaseZhunbeiBegin",
 		},
 		filter(event, player) {
-			return game.hasPlayer(current => !player.isFriendOf(current) && current.countCards("he"));
+			return game.hasPlayer(current => !player.isFriendOf(current) && current.countCards("h"));
 		},
 		preHidden: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), [1, 3], (card, player, target) => {
-					return !player.isFriendOf(target) && target.countCards("he");
+					return !player.isFriendOf(target) && target.countCards("h");
 				})
 				.set("ai", target => {
 					const att = get.attitude(get.player(), target);
@@ -643,7 +789,7 @@ export default {
 			const cards = [],
 				targets = event.targets.sortBySeat();
 			for (const target of targets) {
-				const result = await player.choosePlayerCard(target, "he", true).forResult();
+				const result = await player.choosePlayerCard(target, "h", true).forResult();
 				if (result?.bool && result.cards?.length) {
 					cards.addArray(result.cards);
 				}
@@ -658,7 +804,7 @@ export default {
 						if (Math.random() > 0.5 && button.link[2] == card.name) {
 							return 24;
 						}
-						return player.countCards("he", button.link[2]);
+						return player.countCards("h", button.link[2]);
 					})
 					.set("chosenCard", cards[targets.indexOf(target)])
 					.forResult();
@@ -856,22 +1002,22 @@ export default {
 		},
 		filter(event, player) {
 			return event.targets?.some(target => {
-				return game.hasPlayer2(current => current.isDead() && current.identity == target.identity);
+				return game.hasPlayer2(current => current.isDead() && current.isFriendOf(target));
 			});
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const targets = [];
 			trigger.targets.filter(target => {
-				if (game.hasPlayer2(current => current.isDead() && current.identity == target.identity)) {
-					targets.addArray(game.filterPlayer(current => current.identity == target.identity));
+				if (game.hasPlayer2(current => current.isDead() && current.isFriendOf(target))) {
+					targets.addArray(game.filterPlayer(current => current.isFriendOf(target)));
 				}
 			});
 			trigger.directHit.addArray(targets);
 		},
 		mod: {
 			cardUsableTarget(card, player, target) {
-				if (game.hasPlayer2(current => current.isDead() && current.identity == target.identity)) {
+				if (game.hasPlayer2(current => current.isDead() && current.isFriendOf(target))) {
 					return Infinity;
 				}
 			},
@@ -1816,7 +1962,7 @@ export default {
 				chooseButton: {
 					dialog(event, player) {
 						let list = [
-							["gz_shunfu", "gz_jin_simayi"],
+							["gz_shunfu", "gz_new_jin_simayi"],
 							["luanwu", "gz_jiaxu"],
 							["jianglue", "gz_wangping"],
 							["yongjin", "gz_lingtong"],

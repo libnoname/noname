@@ -4387,7 +4387,7 @@ const skills = {
 					return i.group == "qun";
 				}),
 				card => {
-					return [3, 4, 6].includes(parseInt(get.subtype(card).slice("equip".length)));
+					return [3, 4, 6].includes(parseInt(get.subtype(card)?.slice("equip".length)));
 				},
 				"nojudge"
 			);
@@ -4401,7 +4401,7 @@ const skills = {
 						return i.group == "qun";
 					}),
 					card => {
-						return [3, 4, 6].includes(parseInt(get.subtype(card).slice("equip".length)));
+						return [3, 4, 6].includes(parseInt(get.subtype(card)?.slice("equip".length)));
 					}
 				)
 				.set("prompt", get.prompt2("stdyouji"))

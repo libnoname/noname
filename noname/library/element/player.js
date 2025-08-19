@@ -64,26 +64,24 @@ export class Player extends HTMLDivElement {
 		});
 		player.node.handcards1._childNodesWatcher = new ChildNodesWatcher(player.node.handcards1);
 		player.node.handcards2._childNodesWatcher = new ChildNodesWatcher(player.node.handcards2);
-		if (lib.config.equip_span) {
-			let observer = new MutationObserver(mutationsList => {
-				for (let mutation of mutationsList) {
-					if (mutation.type === "childList") {
-						const addedNodes = Array.from(mutation.addedNodes);
-						const removedNodes = Array.from(mutation.removedNodes);
+		let observer = new MutationObserver(mutationsList => {
+			for (let mutation of mutationsList) {
+				if (mutation.type === "childList") {
+					const addedNodes = Array.from(mutation.addedNodes);
+					const removedNodes = Array.from(mutation.removedNodes);
+					// @ts-expect-error ignore
+					if (
+						addedNodes.some(card => !card.classList.contains("emptyequip")) ||
 						// @ts-expect-error ignore
-						if (
-							addedNodes.some(card => !card.classList.contains("emptyequip")) ||
-							// @ts-expect-error ignore
-							removedNodes.some(card => !card.classList.contains("emptyequip"))
-						) {
-							player.$handleEquipChange();
-						}
+						removedNodes.some(card => !card.classList.contains("emptyequip"))
+					) {
+						player.$handleEquipChange();
 					}
 				}
-			});
-			const config = { childList: true };
-			observer.observe(node.equips, config);
-		}
+			}
+		});
+		const config = { childList: true };
+		observer.observe(node.equips, config);
 		node.expansions.style.display = "none";
 		const chainLength = game.layout == "default" ? 64 : 40;
 		for (let repetition = 0; repetition < chainLength; repetition++) {
@@ -1893,6 +1891,12 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
+		const next = game.createEvent("changeZhuanhuanji", false, get.event());
+		next.player = this;
+		next.skill = skill;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -2018,14 +2022,12 @@ export class Player extends HTMLDivElement {
 			toStorage: true,
 			target: target || this,
 		});
-		next.setContent(function () {
-			"step 0";
-			player.lose(cards, ui.special).set("getlx", false);
-			"step 1";
-			var cards = event.cards.slice(0);
+		next.setContent(async function (event, trigger, player) {
+			await player.lose(event.cards, ui.special).set("getlx", false);
+			let cards = event.cards.slice();
 			cards.removeArray(player.getCards("hejsx"));
 			if (cards.length) {
-				target.directgains(cards, null, event.tag);
+				event.target.directgains(cards, null, event.tag);
 			}
 		});
 		return next;
@@ -3187,7 +3189,7 @@ export class Player extends HTMLDivElement {
 			if (i == "name" && get.mode() == "guozhan") {
 				continue;
 			}
-			if (i == "name1" && this.name === this.name1) {
+			if (i == "name1" && this.name === this.name1 && get.mode() != "guozhan") {
 				continue;
 			}
 			const list = lib.characterSubstitute[this[i]];
@@ -3222,10 +3224,11 @@ export class Player extends HTMLDivElement {
 								player.skin[name] = character;
 								const goon = !lib.character[character];
 								if (goon) {
-									lib.character[character] = ["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]];
+									lib.character[character] = get.convertedCharacter(["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]]);
 								}
 								player.smoothAvatar(name == "name2");
-								player.node["avatar" + name.slice(4)].setBackground(character, "character");
+								const skinImg = lib.character[character].img;
+								skinImg ? player.node["avatar" + name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(character, "character");
 								player.node["avatar" + name.slice(4)].show();
 								if (goon) {
 									delete lib.character[character];
@@ -4233,7 +4236,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this[this.storage[i] || (lib.skill[i] && lib.skill[i].mark) ? "markSkill" : "unmarkSkill"](i);
-		const next = game.createEvent("removeMark", false);
+		const next = game.createEvent("removeMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
@@ -4270,7 +4273,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this.markSkill(i);
-		const next = game.createEvent("addMark", false);
+		const next = game.createEvent("addMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
@@ -4451,7 +4454,7 @@ export class Player extends HTMLDivElement {
 			max += info.chargeSkill;
 		}
 		max = game.checkMod(this, max, "maxCharge", this);
-		return typeof max == "number" ? max : Infinity;
+		return typeof max == "number" ? Math.max(0, max) : Infinity;
 	}
 	/**
 	 * @deprecated
@@ -7158,8 +7161,7 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		next.setContent(function () {
-			"step 0";
+		next.setContent(async function (event, trigger, player) {
 			if (event.skills.length && event.log) {
 				for (let i of event.skills) {
 					if (typeof player[event.log] === "function") {
@@ -7167,18 +7169,17 @@ export class Player extends HTMLDivElement {
 					}
 				}
 			}
-			if (!cards.length) {
-				event.finish();
+			const cards = event.cards;
+			if (cards.length) {
+				game.log(player, "弃置了", cards);
+				event.done = player.lose(cards, event.position, "visible");
+				event.done.type = "discard";
+				if (event.discarder) {
+					event.done.discarder = event.discarder;
+				}
+				await event.done;
+				await event.trigger("discard");
 			}
-			"step 1";
-			game.log(player, "弃置了", cards);
-			event.done = player.lose(cards, event.position, "visible");
-			event.done.type = "discard";
-			if (event.discarder) {
-				event.done.discarder = event.discarder;
-			}
-			"step 2";
-			event.trigger("discard");
 		});
 		return next;
 	}
@@ -7313,8 +7314,18 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	directequip(cards) {
-		for (var i = 0; i < cards.length; i++) {
-			this.addVirtualEquip(cards[i], cards[i].cards);
+		if (get.itemtype(cards) === "card") {
+			cards = [cards];
+		}
+		for (const card of cards) {
+			this.addVirtualEquip(
+				...(() => {
+					if (get.itemtype(card) === "vcard") {
+						return [card, card.cards ?? []];
+					}
+					return [card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false), [card]];
+				})()
+			);
 		}
 		if (!_status.video) {
 			game.addVideo("directequip", this, get.cardsInfo(cards));
@@ -8900,7 +8911,7 @@ export class Player extends HTMLDivElement {
 			player.getHistory("useSkill").push(logInfo);
 			//尽可能别往这写插入结算
 			//不能用来终止技能发动！！！
-			var next2 = game.createEvent("logSkillBegin", false);
+			var next2 = game.createEvent("logSkillBegin", false, get.event());
 			next2.player = player;
 			next2.forceDie = true;
 			next2.includeOut = true;
@@ -10324,9 +10335,7 @@ export class Player extends HTMLDivElement {
 			player.removeEquipTrigger(VCard, true);
 			cards.remove(VCard);
 		}
-		if (lib.config.equip_span) {
-			player.$handleEquipChange();
-		}
+		player.$handleEquipChange();
 	}
 	removeEquipTrigger(card, hasMove) {
 		if (_status.video) {
@@ -11767,6 +11776,9 @@ export class Player extends HTMLDivElement {
 			return this.side == me.side;
 		}
 		return false;
+	}
+	isMine() {
+		return this == game.me && !_status.auto && !this.isMad() && !game.notMe;
 	}
 	isOnline() {
 		if (this.ws && lib.node && !this.ws.closed && this.ws.inited && !this.isAuto) {

@@ -2389,8 +2389,6 @@ const skills = {
 		audioname: ["ol_liru"],
 		audioname2: {
 			ol_sb_dongzhuo: "dcfencheng_ol_sb_dongzhuo",
-			ol_sb_dongzhuo_shadow1: "dcfencheng_ol_sb_dongzhuo",
-			ol_sb_dongzhuo_shadow2: "dcfencheng_ol_sb_dongzhuo",
 		},
 		enable: "phaseUse",
 		filterTarget: lib.filter.notMe,
@@ -5733,9 +5731,6 @@ const skills = {
 	rejijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		audioname2: {
-			pe_jun_liushan: "jijiang1_liushan",
-		},
 		group: ["rejijiang1", "rejijiang3"],
 		zhuSkill: true,
 		filter(event, player) {

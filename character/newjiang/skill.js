@@ -52,7 +52,7 @@ const skills = {
 					}
 				});
 			});
-			const goon = () => cards.some(card => player.hasUseTarget(card, true, false) && get.position(card) == "d");
+			const goon = () => cards.some(card => player.hasUseTarget(card) && get.position(card) == "d");
 			while (goon()) {
 				const videoId = lib.status.videoId++;
 				const func = (id, cards, cards2) => {
@@ -78,7 +78,7 @@ const skills = {
 				const result = await player
 					.chooseButton()
 					.set("dialog", get.idDialog(videoId))
-					.set("filterButton", button => get.player().hasUseTarget(button.link, true, false))
+					.set("filterButton", button => get.player().hasUseTarget(button.link))
 					.set("ai", button => {
 						return player.getUseValue(button.link);
 					})

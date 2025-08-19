@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	olsbqianfu(player) {
+		const bool = player.storage.olsbqianfu;
+		let yang = "你可以将一张黑色牌当【过河拆桥】使用",
+			yin = "你可以将一张红色牌当【火攻】使用";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = `转换技，出牌阶段${player.hasSkill("olsbqianfu_remove") ? "各限一次" : ""}，`,
+			end = "。结算后，你可将因此弃置的牌置于牌堆顶。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	olsbzhijue(player) {
 		const bool = player.storage.olsbzhijue;
 		let yang = "出牌阶段，你可将牌堆顶的一张牌当【火攻】使用",

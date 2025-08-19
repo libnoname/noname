@@ -62,6 +62,7 @@ export default {
 		maxHp: 3,
 		hujia: 0,
 		skills: ["gz_sanyao", "gz_zhiman"],
+		dieAudios: ["xin_masu"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_shamoke: new Character({

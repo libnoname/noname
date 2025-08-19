@@ -119,6 +119,7 @@ const skills = {
 		},
 	},
 	clanfennu: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -824,17 +825,7 @@ const skills = {
 				if (player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
 					const guohe = get.autoViewAs({ name: "guohe" }, [card]);
 					if (player.hasUseTarget(guohe, null, false)) {
-						let next = player.chooseUseTarget(guohe, [card], true, false);
-						if (target != player) {
-							next.throw = false;
-							next.set("owner", get.owner(card));
-							next.set("oncard", card => {
-								const owner = get.event().getParent().owner;
-								if (owner) {
-									owner.$throw(card.cards);
-								}
-							});
-						}
+						player.chooseUseTarget(guohe, [card], true, false);
 					}
 				} else {
 					target.damage();
@@ -900,61 +891,95 @@ const skills = {
 	clanyangji: {
 		trigger: {
 			player: "phaseZhunbeiBegin",
-			global: "phaseEnd",
+			global: lib.phaseName.map(name => name + "End"),
 		},
-		filter(event, player) {
-			if (event.name === "phase" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0)) {
+		filter(event, player, name) {
+			if (name !== "phaseZhunbeiBegin" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0 && evt.getParent(event.name) === event)) {
 				return false;
 			}
-			return player.countCards("h");
+			return true;
 		},
+		async cost(event, trigger, player) {
+			event.result = await player.chooseToUse(get.prompt2(event.skill)).set("chooseonly", true).set("logSkill", event.name.slice(0, -5)).forResult();
+		},
+		popup: false,
 		async content(event, trigger, player) {
-			let cards = player.getCards("h").filter(card => get.color(card, player) == "black" && player.hasUseTarget(card)),
-				lastCard;
-			await player.showHandcards(`${get.translation(player)}发动了〖佯疾〗`);
-			while (!player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.getCards("h").some(card => cards.includes(card) && player.hasUseTarget(card))) {
-				const { result } = await player
-					.chooseToUse(function (card, player, event) {
-						if (get.itemtype(card) != "card" || !get.event("cardsx").includes(card) || get.position(card) != "h") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "佯疾：请使用一张黑色手牌")
-					.set("targetRequired", true)
-					.set("complexSelect", true)
-					.set("filterTarget", function (card, player, target) {
-						return lib.filter.filterTarget.apply(this, arguments);
-					})
-					.set("cardsx", cards)
-					.set("forced", true)
-					.set("addCount", false);
-				if (result?.cards?.length) {
-					const card = result.cards[0];
-					lastCard = card;
-					cards.remove(card);
-				} else {
-					break;
+			const { ResultEvent, logSkill } = event.cost_data;
+			event.next.push(ResultEvent);
+			if (logSkill) {
+				if (typeof logSkill == "string") {
+					ResultEvent.player.logSkill(logSkill);
+				} else if (Array.isArray(logSkill)) {
+					ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
 				}
 			}
+			await ResultEvent;
+			const card = ResultEvent.card;
 			const target = _status.currentPhase;
-			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(lastCard) || get.position(lastCard) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) {
-				await target.addJudge({ name: "lebu" }, lastCard);
+			if (!player.hasHistory("sourceDamage", evt => evt.card == card) && target?.canAddJudge("lebu")) {
+				await player
+					.chooseToUse()
+					.set("openskilldialog", `佯疾：是否将一张黑桃牌当作【乐不思蜀】对${get.translation(target)}使用？`)
+					.set("norestore", true)
+					.set("_backupevent", `${event.name}_backup`)
+					.set("custom", {
+						add: {},
+						replace: { window() {} },
+					})
+					.backup(`${event.name}_backup`)
+					.set("targetRequired", true)
+					.set("complexTarget", true)
+					.set("complexSelect", true)
+					.set("addCount", false)
+					.set("targetx", target);
 			}
+		},
+		subSkill: {
+			backup: {
+				filterCard(card, player) {
+					if (get.itemtype(card) !== "card") {
+						return;
+					}
+					return get.suit(card, player) == "spade";
+				},
+				filterTarget(card, player, target) {
+					return target.canAddJudge(card) && target === get.event().targetx;
+				},
+				filterOk() {
+					return ui.selected.targets.length === 1;
+				},
+				selectTarget: -1,
+				viewAs: {
+					name: "lebu",
+				},
+				selectCard: 1,
+				position: "hes",
+				ai1(card) {
+					return 7 - get.value(card);
+				},
+				ai2(target) {
+					if (target == get.player() && get.player().hasSkill("clandandao")) {
+						return true;
+					}
+					return get.effect_use.apply(this, arguments);
+				},
+				log: false,
+			},
 		},
 	},
 	clandandao: {
 		trigger: { player: "judgeAfter" },
 		forced: true,
 		filter(event, player) {
-			return _status.currentPhase?.isIn();
+			return _status.currentPhase?.isIn() && game.getGlobalHistory("everything", evt => evt.name == "judge" && evt.player == player).indexOf(event) == 0;
 		},
 		content() {
 			const target = _status.currentPhase;
 			if (!target?.isIn()) {
 				return;
 			}
-			target.addTempSkill(event.name + "_add");
-			//target.addMark(event.name + "_add", 3, false);
+			target.addSkill(event.name + "_add");
+			target.addMark(event.name + "_add", 1, false);
 		},
 		subSkill: {
 			add: {
@@ -963,10 +988,9 @@ const skills = {
 				mark: true,
 				markimage: "image/card/handcard.png",
 				intro: {
-					markcount: () => 3,
-					content: "手牌上限+3",
+					content: "手牌上限+#",
 				},
-				mod: { maxHandcard: (player, num) => num + 3 },
+				mod: { maxHandcard: (player, num) => num + player.countMark("clandandao_add") },
 			},
 		},
 	},
@@ -974,13 +998,10 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
-			return player.countCards("h") < player.getHandcardLimit();
+			return player.countCards("h") < Math.min(5, player.getHandcardLimit());
 		},
 		async content(event, trigger, player) {
-			const num = Math.min(player.getHandcardLimit() - player.countCards("h"), 5);
-			if (num > 0) {
-				await player.draw(num);
-			}
+			await player.drawTo(Math.min(player.getHandcardLimit(), 5));
 		},
 	},
 	//族杨修 —— by 刘巴
@@ -1056,8 +1077,8 @@ const skills = {
 						}).length > 1
 					) {
 						let cardsx;
-						if ((target.countCards("h") !== player.countCards("h") && target !== player) || target === player) {
-							const putee = player.countCards("h") > target.countCards("h") || target === player ? player : target;
+						if (target.countCards("h") !== player.countCards("h")) {
+							const putee = player.countCards("h") > target.countCards("h") ? player : target;
 							if (!putee.countCards("he")) {
 								return;
 							}
@@ -4366,7 +4387,7 @@ const skills = {
 					return false;
 				}
 				return current.hasHistory("lose", evt => {
-					const evtx = evt.relatedEvent || evt.getParent()
+					const evtx = evt.relatedEvent || evt.getParent();
 					return evtx == event && evt.hs.length > 0;
 				});
 			});

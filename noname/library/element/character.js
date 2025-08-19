@@ -294,6 +294,8 @@ export class Character {
 				dieAudios.addArray(item.slice(10).split(":"));
 			} else if (item.startsWith("tempname:")) {
 				this.tempname = item.slice(9).split(":");
+			} else if (item.startsWith("junName:")) {
+				this.junName = item.slice(8);
 			} else {
 				keptTrashes.push(item);
 			}
@@ -358,6 +360,9 @@ export class Character {
 			character = this;
 		if (character.groupInGuozhan && lib.group.includes(character.groupInGuozhan)) {
 			trashes.push(`gzgroup:${character.groupInGuozhan}`);
+		}
+		if (character.junName) {
+			trashes.push(`junName:${character.junName}`);
 		}
 		if (character.isZhugong) {
 			trashes.push("zhu");

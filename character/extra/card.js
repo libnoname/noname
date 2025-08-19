@@ -1,6 +1,27 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	//神肘不疑的五灵卡牌
+	wuqinxi_hu: {
+		fullskin: true,
+		noname: true,
+	},
+	wuqinxi_lu: {
+		fullskin: true,
+		noname: true,
+	},
+	wuqinxi_xiong: {
+		fullskin: true,
+		noname: true,
+	},
+	wuqinxi_yuan: {
+		fullskin: true,
+		noname: true,
+	},
+	wuqinxi_he: {
+		fullskin: true,
+		noname: true,
+	},
 	changandajian_equip1: {
 		fullskin: true,
 		derivation: "shen_sunquan",

@@ -460,7 +460,7 @@ const skills = {
 			} else {
 				await target.addSkills("newzhennan");
 			}
-			await player.recoverTo(1);
+			await player.recoverTo(2);
 		},
 	},
 	//OL蔡贞姬
@@ -2323,11 +2323,11 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		async content(event, trigger, player) {
-			const nums = Array.from({ length: 4 }).map((_, i) => get.cnNumber(i + 1) + "张");
+			const nums = Array.from({ length: 3 }).map((_, i) => get.cnNumber(i + 1) + "张");
 			const { result } = await player
 				.chooseControl(nums)
 				.set("prompt", "奉蔚：请选择摸牌数")
-				.set("ai", () => 3);
+				.set("ai", () => 2);
 			const next = player.draw(result.index + 1);
 			next.gaintag.add("olfengwei_debuff");
 			await next;
@@ -2336,16 +2336,22 @@ const skills = {
 		subSkill: {
 			debuff: {
 				charlotte: true,
-				trigger: { player: "damageBegin2" },
+				trigger: {
+					player: ["damageBegin3", "phaseDrawBefore"],
+				},
 				filter(event, player) {
-					if (!event.card) {
+					if (event.name == "damage" && !event.card) {
 						return false;
 					}
 					return player.hasCard(card => card.hasGaintag("olfengwei_debuff"), "h");
 				},
-				silent: true,
-				content() {
-					trigger.num++;
+				forced: true,
+				async content(event, trigger, player) {
+					if (trigger.name == "damage") {
+						trigger.num++;
+					} else {
+						trigger.cancel();
+					}
 				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
@@ -4601,7 +4607,7 @@ const skills = {
 								return [
 									`此书还可使用${count}次`,
 									(() => {
-										if (!get.info(book)?.nopop || [player, ...targets].some(i => i.isUnderControl(true))) {
+										if (!get.info(book)?.nopop || [player, ...targets].some(i => i.isUnderControl(true) || i.isFriendOf(game.me))) {
 											return lib.translate[`${book}_info`];
 										}
 										return "此书仍是个秘密";
@@ -14471,9 +14477,12 @@ const skills = {
 				await target.draw(2);
 			} else {
 				const card = new lib.element.VCard({ name: "sha", nature: "thunder" });
-				if (player.canUse(card, target, false)) {
-					for (let i = 1; i <= 2; i++) {
+				for (let i = 1; i <= 2; i++) {
+					if (player.canUse(card, target, false)) {
 						await player.useCard(card, target, false);
+					}
+					else {
+						break;
 					}
 				}
 			}
@@ -34565,6 +34574,8 @@ const skills = {
 					if (!result?.bool) {
 						break;
 					}
+				} else {
+					break;
 				}
 			}
 		},

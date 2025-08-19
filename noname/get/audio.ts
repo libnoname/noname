@@ -81,7 +81,6 @@ export class Audio {
 				formatedPlayer.sex = sex;
 			}
 		}
-		// @ts-expect-error ignore
 		else if (typeof player === "object" && player !== null) {
 			({
 				name: formatedPlayer.name,
@@ -308,6 +307,18 @@ class SkillAudio implements AudioBase {
 		}
 
 		this.player = player;
+		if (this.player) {
+			const rawName = this.player.name;
+			const skinName = this.player.skin.name;
+			if (skinName && lib.characterSubstitute[rawName]?.find(i => i[0] === skinName)) {
+				const skin = lib.characterSubstitute[rawName].find(i => i[0] === skinName);
+				const tempCharacter = get.convertedCharacter(["", "", 0, [], skin[1]]);
+				// 如果配置的皮肤设置了tempname，会进行覆盖
+				if (tempCharacter.tempname.length) {
+					this.player.tempname = tempCharacter.tempname;
+				}
+			}
+		}
 
 		if (!audioname) {
 			this.audioname = [];

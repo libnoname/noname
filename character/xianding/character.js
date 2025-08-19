@@ -1,4 +1,16 @@
 const characters = {
+	dc_sb_huangquan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dcsbqiaodui", "dcsbtuicheng"],
+	},
+	dc_sb_luotong: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["dcsbjuce", "dcsbkangming"],
+	},
 	dongxu: {
 		sex: "female",
 		group: "qun",
@@ -28,12 +40,14 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["x_dc_falu", "x_dc_zhenyi", "x_dc_dianhua"],
+		dieAudios: ["zhangqiying"],
 	},
 	y_dc_zhangqiying: {
 		sex: "female",
 		group: "qun",
 		hp: 3,
 		skills: ["y_dc_falu", "y_dc_zhenyi", "y_dc_dianhua"],
+		dieAudios: ["zhangqiying"],
 	},
 	renwan: {
 		sex: "female",

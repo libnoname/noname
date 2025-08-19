@@ -1,4 +1,10 @@
 const characters = {
+	xia_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["peqinyi", "pejixin", "pejiwei"],
+	},
 	eu_kaisa: {
 		sex: "male",
 		group: "western",
@@ -118,6 +124,7 @@ const characters = {
 		hp: 3,
 		isZhugong: true,
 		skills: ["jun_fuxiang", "jun_leling", "ruoyu"],
+		tempname: ["re_liushan"],
 		dieAudios: ["re_liushan"],
 	},
 	pe_jun_sunquan: {
