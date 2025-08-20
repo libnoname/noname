@@ -6402,9 +6402,10 @@ const skills = {
 	},
 	//姜维
 	sbtiaoxin: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		usable: 1,
+		logAudio: index => (typeof index === "number" ? "sbtiaoxin" + index + ".mp3" : 2),
 		filter(event, player) {
 			return game.hasPlayer(current => current != player);
 		},
@@ -6425,6 +6426,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "sbtianxin",
 					control: links[0],
 					filterTarget: lib.filter.notMe,
 					async content(event, trigger, player) {
@@ -6432,6 +6434,7 @@ const skills = {
 							{ target } = event;
 						if (control == "all") {
 							player.popup("背水", "fire");
+							player.logSkill("sbtiaoxin", null, null, null, [get.rand(3, 4)]);
 							player.addTempSkill("sbtiaoxin_damage");
 							player.addMark("sbtiaoxin_damage", 1, false);
 							target.addTempSkill("sbtiaoxin_damage");
@@ -6503,11 +6506,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				let list = [
-					"1.其需将一张手牌当作【决斗】对你使用，否则本回合不能使用或打出牌",
-					"2.其需对你使用一张【杀】，否则你弃置其一张牌",
-					"3.本回合你与其受到的伤害+1",
-				],
+				let list = ["1.其需将一张手牌当作【决斗】对你使用，否则本回合不能使用或打出牌", "2.其需对你使用一张【杀】，否则你弃置其一张牌", "3.本回合你与其受到的伤害+1"],
 					control = links[0];
 				return `###挑衅：选择一名其他角色###${control == "all" ? list.join("<br>") : list[control == "sha" ? 1 : 0].slice(2)}`;
 			},
@@ -6644,8 +6643,9 @@ const skills = {
 		derivation: "sbbeifa",
 	},
 	sbbeifa: {
-		audio: 2,
+		audio: 5,
 		chargeSkill: 9,
+		logAudio: index => (typeof index === "number" ? "sbbeifa" + index + ".mp3" : 2),
 		init(player, skill) {
 			player.addCharge(3, false);
 		},
@@ -6735,7 +6735,7 @@ const skills = {
 			},
 			backup: {},
 			benghuai: {
-				audio: "sbbeifa",
+				audio: ["sbbeifa5.mp3"],
 				trigger: {
 					player: ["damageEnd", "sbbeifaRecord"],
 				},
@@ -6764,7 +6764,7 @@ const skills = {
 				},
 			},
 			backflow: {
-				audio: "sbbeifa",
+				audio: ["sbbeifa3.mp3", "sbbeifa4.mp3"],
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "useCard", "respond"],
 				},
@@ -9334,13 +9334,16 @@ const skills = {
 			if (!gains?.length) {
 				return;
 			}
-			const result2 = gains.length > 1 ? await player
-				.chooseButton(["统业：选择一张牌获得", gains], true)
-				.set("ai", button => get.value(button.link))
-				.forResult() : {
-					bool: true,
-					links: gains,
-				};
+			const result2 =
+				gains.length > 1
+					? await player
+							.chooseButton(["统业：选择一张牌获得", gains], true)
+							.set("ai", button => get.value(button.link))
+							.forResult()
+					: {
+							bool: true,
+							links: gains,
+					  };
 			const card = result2.links[0];
 			if (card) {
 				player.addSkill("sbtongye_used");

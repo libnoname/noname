@@ -2744,7 +2744,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const hidden = player.getExpansions("jilin").filter(card => !card.storage.jilin);
-					const next = player.chooseToMove("戢鳞：是否交换“志”和手牌？");
+					const next = player.chooseToMove("戢鳞：是否交换“志”和手牌？", "noChooseAll");
 					next.set("list", [
 						[get.translation(player) + "（你）的未明之“志”", hidden],
 						["手牌区", player.getCards("h")],
@@ -4988,7 +4988,7 @@ const skills = {
 					subtype: "equip1",
 					enable: true,
 					selectTarget: -1,
-					filterCard(card, player, target) {
+					filterTarget(card, player, target) {
 						if (player != target) {
 							return false;
 						}
@@ -6287,7 +6287,7 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return event.card.suit == "none";
+			return get.suit(event.card) == "none";
 		},
 		content() {
 			"step 0";
@@ -11148,7 +11148,7 @@ const skills = {
 				event.finish();
 				return;
 			}
-			var next = player.chooseToMove("七星：是否交换“星”和手牌？");
+			var next = player.chooseToMove("七星：是否交换“星”和手牌？", "noChooseAll");
 			next.set("list", [
 				[get.translation(player) + "（你）的星", cards],
 				["手牌区", player.getCards("h")],
@@ -11218,7 +11218,7 @@ const skills = {
 				event.finish();
 				return;
 			}
-			var next = player.chooseToMove("七星：是否交换“星”和手牌？");
+			var next = player.chooseToMove("七星：是否交换“星”和手牌？", "noChooseAll");
 			next.set("list", [
 				[get.translation(player) + "（你）的星", cards],
 				["手牌区", player.getCards("h")],

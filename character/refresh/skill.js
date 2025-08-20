@@ -1928,7 +1928,7 @@ const skills = {
 			return player.getExpansions("rebizhuan").length > 0 && player.countCards("he") > 0;
 		},
 		async content(event, trigger, player) {
-			const next = player.chooseToMove("通博：是否交换“书”和手牌？");
+			const next = player.chooseToMove("通博：是否交换“书”和手牌？", "noChooseAll");
 			next.set("list", [
 				[get.translation(player) + "（你）的“书”", player.getExpansions("rebizhuan")],
 				["你的牌", player.getCards("he")],
@@ -10693,7 +10693,14 @@ const skills = {
 				.set("choiceList", list)
 				.set("prompt", get.prompt(event.skill))
 				.set("ai", function () {
-					if (lib.skill.rexuanfeng.canMoveCard(player, true)) {
+					if (
+						get.player().canMoveCard(
+							null,
+							true,
+							game.filterPlayer(target => target != player),
+							game.filterPlayer(target => target != player)
+						)
+					) {
 						return 1;
 					}
 					return 0;

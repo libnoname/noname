@@ -70,10 +70,11 @@ const skills = {
 					dialog.videoId = id;
 					return dialog;
 				};
-				if (player.isOnline2()) {
-					player.send(func, videoId, cards, cards2);
-				} else {
+				if (player == game.me) {
 					func(videoId, cards, cards2);
+				}
+				else if (player.isOnline()) {
+					player.send(func, videoId, cards, cards2);
 				}
 				const result = await player
 					.chooseButton()

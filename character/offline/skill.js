@@ -3336,7 +3336,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			if (target.countCards("h")) {
-				const { result } = target.countCards("h") == 1 ? { bool: true, cards: target.getcards("h") } : await target.chooseCard(true, "h", `选择一张手牌赠予${get.translation(player)}`);
+				const { result } = target.countCards("h") == 1 ? { bool: true, cards: target.getCards("h") } : await target.chooseCard(true, "h", `选择一张手牌赠予${get.translation(player)}`);
 				if (result?.bool && result?.cards?.length) {
 					await target.gift(result.cards, player);
 				}
@@ -4027,10 +4027,11 @@ const skills = {
 				dialog.videoId = id;
 				return dialog;
 			};
-			if (player.isOnline2()) {
-				player.send(func, videoId, cardMap, list, num);
-			} else {
+			if (event.isMine()) {
 				func(videoId, cardMap, list, num);
+			}
+			else if (player.isOnline2()) {
+				player.send(func, videoId, cardMap, list, num);
 			}
 			const result2 = await player.chooseBool().set("dialog", get.idDialog(videoId)).forResult();
 			game.broadcastAll("closeDialog", videoId);
@@ -7733,9 +7734,10 @@ const skills = {
 				const func = (player, target, skill) => {
 					player.markSkill(skill, null, null, true);
 				};
-				if (event.isMine()) {
+				if (player == game.me) {
 					func(player, target, skill);
-				} else if (player.isOnline2()) {
+				}
+				else if (event.isOnline()) {
 					player.send(func, player, target, skill);
 				}
 				target.addSkill(skill);
@@ -14090,7 +14092,7 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return event.card.suit == "none";
+			return get.suit(event.card) == "none";
 		},
 		content() {
 			"step 0";

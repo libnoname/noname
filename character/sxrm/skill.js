@@ -108,10 +108,11 @@ const skills = {
 				dialog.videoId = id;
 				return dialog;
 			};
-			if (player.isOnline2()) {
-				player.send(func, videoId, showcards);
-			} else {
+			if (event.isMine()) {
 				func(videoId, showcards);
+			}
+			else if (player.isOnline2()) {
+				player.send(func, videoId, showcards);
 			}
 			const next2 = player
 				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")

@@ -4123,7 +4123,7 @@ export class Click {
 		uiintro.style.zIndex = 21;
 		var clickintro = function (e) {
 			const poptip = e.relatedTarget?.parentNode?.parentNode;
-			const isPoptip = e.target?.matches("poptip") || (poptip && poptip === _status.poptip?.[0]);
+			const isPoptip = e.target?.matches("noname-poptip") || (poptip && poptip === _status.poptip?.[0]);
 			if (_status.touchpopping || isPoptip) {
 				return;
 			}

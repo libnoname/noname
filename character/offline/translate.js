@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	xia_caopi: "侠曹丕",
 	xia_caopi_prefix: "侠",
@@ -59,7 +61,7 @@ const translates = {
 	drag_liaohua: "龙廖化",
 	drag_liaohua_prefix: "龙",
 	dragzhawang: "诈亡",
-	dragzhawang_info: "回合开始时，你可选择一项：1.本回合获得〖诈降〗；2.失去1点体力，将本回合准备阶段和结束阶段改为摸牌阶段；3.&poptip=背水&，减少1点体力上限。",
+	dragzhawang_info: `回合开始时，你可选择一项：1.本回合获得〖诈降〗；2.失去1点体力，将本回合准备阶段和结束阶段改为摸牌阶段；3.${get.poptip("beishui")}：减少1点体力上限。`,
 	dragxigui: "西归",
 	dragxigui_info: "限定技，你进入濒死或每轮结束时，你可以将体力值回复至体力上限。若如此做，下一个轮次结束时，你失去〖诈亡〗并获得〖当先〗。",
 	drag_shendan: "龙申耽",
@@ -87,7 +89,7 @@ const translates = {
 	shefujing: "蝜荆",
 	shefujing_info: "锁定技，首轮开始时，你翻面并摸三张牌，然后令一名其他角色获得“伏”标记。",
 	shefujing_fu: "伏",
-	shefujing_fu_info: "你每回合首次造成/受到伤害后，令你获得此标记的角色可以：1.摸一张牌；2.获得1点护甲；3.&poptip=背水&，失去1点体力并对你发动一次〖攻心〗。",
+	shefujing_fu_info: `你每回合首次造成/受到伤害后，令你获得此标记的角色可以：1.摸一张牌；2.获得1点护甲；3.${get.poptip("beishui")}：失去1点体力并对你发动一次〖攻心〗。`,
 	shefujiang: "浮江",
 	shefujiang_info: "每回合限一次，一名角色受到伤害后，你可以令其上家和下家依次选择是否对其使用一张【杀】。",
 	shetonglu: "通陆",
@@ -166,7 +168,7 @@ const translates = {
 	hm_xianxiang: "献降",
 	hm_xianxiang_info: "锁定技，当你杀死一名角色时，你令另一名其他角色获得死亡角色区域内的所有牌。",
 	hm_juedian: "决巅",
-	hm_juedian_info: "锁定技。当你每回合首次使用目标唯一的牌造成伤害后，你选择一项并视为对受伤角色使用一张【决斗】：①失去1点体力。②减1点体力上限。③&poptip=背水&：你令此牌的伤害值基数+1。",
+	hm_juedian_info: `锁定技。当你每回合首次使用目标唯一的牌造成伤害后，你选择一项并视为对受伤角色使用一张【决斗】：①失去1点体力。②减1点体力上限。③${get.poptip("beishui")}：你令此牌的伤害值基数+1。`,
 	hm_nitian: "逆天",
 	hm_nitian_info: "限定技，出牌阶段，你可以获得以下效果直到回合结束：1.你使用的牌不能被抵消；2.结束阶段，若你本回合未杀死角色，你死亡。",
 	hm_xiongshi: "凶势",
@@ -1401,7 +1403,7 @@ const translates = {
 	peyuanjue: "援绝",
 	peyuanjue_info: "转换技，摸牌阶段开始时，你可以跳过摸牌阶段，阳：令所有角色的基本牌视为无次数限制的【杀】；阴：令所有角色与你互相计算距离为1，且你视为拥有〖同忾〗。",
 	peaoyong: "鏊勇",
-	peaoyong_info: "持恒技，你不因此技能获得牌时，可以选择一项：1.摸一张牌；2.回复1点体力；3.使用一张牌；&poptip=背水&，减少1点体力上限。",
+	peaoyong_info: `持恒技，你不因此技能获得牌时，可以选择一项：1.摸一张牌；2.回复1点体力；3.使用一张牌；${get.poptip("beishui")}：减少1点体力上限。`,
 	petongkai: "同忾",
 	petongkai_info: "一名角色成为伤害牌的目标时，若你与其的距离不大于1，你可以摸一张牌，然后展示并交给其一张牌；若此牌为装备牌，其可使用之。",
 	pe_jun_caopi: "君曹丕",

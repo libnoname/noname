@@ -158,7 +158,7 @@ const skills = {
 			const color = result.control,
 				gains = cards.filter(card => get.color(card) == color);
 			if (gains?.length) {
-    			await player.gain(gains, "gain2");
+				await player.gain(gains, "gain2");
 			}
 			if (["red", "black"].includes(color)) {
 				player.addTempSkill(`dcgengdu_${color}`, "phaseChange");
@@ -13691,7 +13691,7 @@ const skills = {
 						event.finish();
 						return;
 					}
-					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？");
+					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？", "noChooseAll");
 					next.set("list", [
 						[get.translation(player) + "（你）的疠", cards],
 						["手牌区", player.getCards("h", card => get.color(card, player) == "black")],
@@ -15346,16 +15346,15 @@ const skills = {
 			}
 			return event.source.countCards("h") < Math.sqrt(event.source.getHp());
 		},
-		content() {
-			"step 0";
-			var target = trigger.source,
+		async content(event, trigger, player) {
+			const target = trigger.source,
 				str = get.translation(player);
-			event.target = target;
-			var th = target.countCards("h");
+			const th = target.countCards("h");
+			const num = Math.ceil(th / 2);
+			let result;
 			if (th > 0) {
-				event.num = Math.ceil(th / 2);
-				var list = ["本回合不能使用手牌，然后" + str + "摸两张牌", "展示所有手牌，并将其中一种花色的所有牌交给" + str, "弃置" + get.cnNumber(event.num) + "张手牌"];
-				target
+				const list = ["本回合不能使用手牌，然后" + str + "摸两张牌", "展示所有手牌，并将其中一种花色的所有牌交给" + str, "弃置" + get.cnNumber(num) + "张手牌"];
+				result = await target
 					.chooseControl()
 					.set("choiceList", list)
 					.set("ai", () => get.event("idx"))
@@ -15380,53 +15379,50 @@ const skills = {
 							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -event.num];
 							return res.indexOf(Math.max(...res));
 						})()
-					);
+					)
+					.forResult();
 			} else {
-				event._result = { index: 0 };
+				result = { index: 0 };
 			}
-			"step 1";
-			switch (result.index) {
-				case 0:
-					target.addTempSkill("yachai_block");
-					player.draw(2);
-					event.finish();
-					break;
-				case 1:
-					target.showHandcards();
-					break;
-				case 2:
-					event.goto(4);
-					break;
-			}
-			"step 2";
-			var map = {},
-				hs = target.getCards("h");
-			for (var i of hs) {
-				map[get.suit(i, target)] = true;
-			}
-			var list = [];
-			for (var i of lib.suit) {
-				if (map[i]) {
-					list.push(i);
+			if (result?.control) {
+				switch (result.index) {
+					case 0:
+						target.addTempSkill("yachai_block");
+						await player.draw(2);
+						return;
+					case 1: {
+						await target.showHandcards();
+						const map = {},
+							hs = target.getCards("h");
+						for (const i of hs) {
+							map[get.suit(i, target)] = true;
+						}
+						const list = Object.keys(map).filter(i => lib.suit.includes(i));
+						let result2;
+						if (!list.length) {
+							return;
+						} else if (list.length == 1) {
+							result2 = { control: list[0] };
+						} else {
+							result2 = await target
+								.chooseControl(list)
+								.set("prompt", "将一种花色的牌交给" + get.translation(player))
+								.forResult();
+						}
+						if (result2?.control) {
+							const cards = target.getCards("h", function (card) {
+								return get.suit(card, target) == result2.control && lib.filter.canBeGained(card, player, target, "yachai");
+							});
+							if (cards.length) {
+								await target.give(cards, player, "give");
+							}
+						}
+						return;
+					}
+					case 2:
+						await target.chooseToDiscard("h", true, num);
 				}
 			}
-			if (!list.length) {
-				event.finish();
-			} else if (list.length == 1) {
-				event._result = { control: list[0] };
-			} else {
-				target.chooseControl(list).set("prompt", "将一种花色的牌交给" + get.translation(player));
-			}
-			"step 3";
-			var cards = target.getCards("h", function (card) {
-				return get.suit(card, target) == result.control && lib.filter.cardDiscardable(card, target, "yachai");
-			});
-			if (cards.length) {
-				target.give(cards, player, "give");
-			}
-			event.finish();
-			"step 4";
-			target.chooseToDiscard("h", true, num);
 		},
 		subSkill: {
 			block: {

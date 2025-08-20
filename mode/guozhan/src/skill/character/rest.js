@@ -18293,6 +18293,7 @@ export default {
 		},
 	},
 	duoshi: {
+		audio: 2,
 		enable: "chooseToUse",
 		viewAs: { name: "yiyi" },
 		usable: 4,

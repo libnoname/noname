@@ -15273,7 +15273,7 @@ const skills = {
 			if (player.countCards("h") == 0) {
 				event.goto(3);
 			} else {
-				var next = player.chooseToMove("鸿举：请选择要交换的手牌和“荣”");
+				var next = player.chooseToMove("鸿举：请选择要交换的手牌和“荣”", "noChooseAll");
 				next.set("list", [
 					[get.translation(player) + "（你）的“荣”", player.getExpansions("twzhengrong"), "twzhengrong_tag"],
 					["手牌区", player.getCards("h")],

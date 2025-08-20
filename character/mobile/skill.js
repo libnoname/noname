@@ -211,29 +211,29 @@ const skills = {
 		},
 	},
 	//势辛宪英
-	potchengjie: {
-		global: "potchengjie_global",
+	potjiejie: {
+		global: "potjiejie_global",
 		audio: 2,
 		subSkill: {
 			global: {
-				audio: "potchengjie",
+				audio: "potjiejie",
 				enable: "phaseUse",
 				filter(event, player) {
 					if (player != _status.currentPhase) {
 						return false;
 					}
-					if (!player.countCards("h") || player.hasSkill("potchengjie_used")) {
+					if (!player.countCards("h") || player.hasSkill("potjiejie_used")) {
 						return false;
 					}
-					return game.hasPlayer(current => current.hasSkill("potchengjie"));
+					return game.hasPlayer(current => current.hasSkill("potjiejie"));
 				},
 				filterTarget(card, player, target) {
-					return target.hasSkill("potchengjie");
+					return target.hasSkill("potjiejie");
 				},
 				selectTarget() {
 					if (
 						game.countPlayer(current => {
-							return current.hasSkill("potchengjie");
+							return current.hasSkill("potjiejie");
 						}) > 1
 					) {
 						return 1;
@@ -243,7 +243,7 @@ const skills = {
 				prompt() {
 					const player = get.player(),
 						targets = game.filterPlayer(current => {
-							return current.hasSkill("potchengjie");
+							return current.hasSkill("potjiejie");
 						});
 					let list = get.translation(targets);
 					if (targets.length > 1) {
@@ -255,18 +255,21 @@ const skills = {
 					return `令${list}观看你的手牌并选择花色执行效果`;
 				},
 				prepare(cards, player, targets) {
-					targets[0].logSkill("potchengjie", [player]);
+					targets[0].logSkill("potjiejie", [player]);
 				},
 				log: false,
 				manualConfirm: true,
 				async content(event, trigger, player) {
 					const target = event.target;
-					player.addTempSkill("potchengjie_used", "phaseUseAfter");
+					player.addTempSkill("potjiejie_used", "phaseUseAfter");
 					//await target.viewHandcards(player);
 					game.addCardKnower(player.getCards("h"), target);
 					player.getHistory("custom").push({
-						potchengjie: true,
-						suits: player.getCards("h").map(card => get.suit(card, player)).toUniqued(),
+						potjiejie: true,
+						suits: player
+							.getCards("h")
+							.map(card => get.suit(card, player))
+							.toUniqued(),
 						target: target,
 					});
 					const result = await target
@@ -292,9 +295,15 @@ const skills = {
 					game.log(target, "选择了" + get.translation(choice));
 					target.popup(choice);
 					if (player.hasCard(card => get.suit(card, player) == choice, "h")) {
-						const skill = "potchengjie_effect";
+						const skill = "potjiejie_effect";
 						player.markAuto(skill, [choice]);
-						player.addTip(skill, `诚节${player.getStorage(skill).map(suit => get.translation(suit)).join("")}`);
+						player.addTip(
+							skill,
+							`诫节${player
+								.getStorage(skill)
+								.map(suit => get.translation(suit))
+								.join("")}`
+						);
 						player.addTempSkill(skill);
 						await player.modedDiscard(player.getCards("h", card => get.suit(card, player) != choice));
 					} else {
@@ -305,9 +314,12 @@ const skills = {
 							await player.gain(card, "gain2");
 						}
 					}
-					let getSuits = current => current.getRoundHistory("custom", evt => {
-						return evt?.potchengjie && evt.target == target;
-					}).reduce((arr, evt) => arr.addArray(evt?.suits || []), []);
+					let getSuits = current =>
+						current
+							.getRoundHistory("custom", evt => {
+								return evt?.potjiejie && evt.target == target;
+							})
+							.reduce((arr, evt) => arr.addArray(evt?.suits || []), []);
 					const num = getSuits(player).length;
 					if (!game.hasPlayer(current => current != player && getSuits(current).length >= num)) {
 						await target.useSkill("potqingshi", [player]);
@@ -337,7 +349,7 @@ const skills = {
 				},
 				mod: {
 					cardUsable(card, player) {
-						const list = player.getStorage("potchengjie_effect");
+						const list = player.getStorage("potjiejie_effect");
 						const suit = get.suit(card);
 						if (suit === "unsure" || list.includes(suit)) {
 							return Infinity;
@@ -520,43 +532,46 @@ const skills = {
 		limited: true,
 		audio: "xinfu_xushen",
 		enable: "phaseUse",
-		direct: true,
-		delay: false,
-		skillAnimation: true,
-		animationColor: "fire",
-		async content(event, trigger, player) {
-			const choice = [...[1, 2, 3].map(i => get.cnNumber(i) + "点"), "cancel2"];
-			const result = await player
-				.chooseControl(choice)
-				.set("ai", () => {
-					const player = get.player();
-					const num = game
-						.filterPlayer(
-							target =>
-								get.attitude(target, player) > 0 &&
-								target.hasCard(card => {
-									return lib.filter.cardSavable(card, player);
-								}, "hs")
-						)
-						.reduce((sum, target) => {
-							const cards = target.getCards("hs", card => lib.filter.cardSavable(card, player));
-							return sum + cards.reduce((sum2, card) => sum2 + (get.tag(card, "recover") || 0), 0);
-						}, 0);
-					const minHp = player.getHp() + num;
-					return minHp <= 1 ? "cancel2" : Math.min(2, Math.max(0, minHp - 1));
-				})
-				.set("prompt", lib.translate[event.name])
-				.set("prompt2", lib.translate[event.name + "_info"])
-				.forResult();
-			if (result.control !== "cancel2") {
-				player.logSkill(event.name);
-				player.awakenSkill(event.name);
-				player.addTempSkill(event.name + "_effect");
-				await player.draw(result.index + 1);
-				await player.loseHp(result.index + 1);
-			} else {
-				player.tempBanSkill(event.name, { player: ["useCard1", "useSkillBegin", "phaseUseEnd"] });
-			}
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("###许身###" + get.skillInfoTranslation("mbxushen"));
+			},
+			chooseControl(event, player) {
+				const choices = [...[1, 2, 3].map(i => get.cnNumber(i) + "点"), "cancel2"];
+				return choices;
+			},
+			check() {
+				const player = get.player();
+				const num = game
+					.filterPlayer(
+						target =>
+							get.attitude(target, player) > 0 &&
+							target.hasCard(card => {
+								return lib.filter.cardSavable(card, player);
+							}, "hs")
+					)
+					.reduce((sum, target) => {
+						const cards = target.getCards("hs", card => lib.filter.cardSavable(card, player));
+						return sum + cards.reduce((sum2, card) => sum2 + (get.tag(card, "recover") || 0), 0);
+					}, 0);
+				const minHp = player.getHp() + num;
+				return minHp <= 1 ? "cancel2" : Math.min(2, Math.max(0, minHp - 1));
+			},
+			backup(result, player) {
+				return {
+					audio: "xinfu_xushen",
+					index: result.index,
+					skillAnimation: true,
+					animationColor: "orange",
+					async content(event, trigger, player) {
+						const index = get.info(event.name).index;
+						player.awakenSkill(event.name.slice(0, -7));
+						player.addTempSkill(event.name.slice(0, -7) + "_effect");
+						await player.draw(index + 1);
+						await player.loseHp(index + 1);
+					},
+				};
+			},
 		},
 		ai: {
 			order: 10,
@@ -584,13 +599,14 @@ const skills = {
 		},
 		derivation: ["new_rewusheng", "redangxian", "rezhiman"],
 		subSkill: {
+			backup: {},
 			effect: {
 				charlotte: true,
 				forced: true,
 				trigger: { player: "dyingAfter" },
 				filter(event, player) {
 					const evt2 = event.getParent(2);
-					if (!(evt2.name === "mbxushen" && evt2.player === player)) {
+					if (!(evt2.name === "mbxushen_backup" && evt2.player === player)) {
 						return false;
 					}
 					const skills = lib.skill.mbxushen.derivation;
@@ -2865,7 +2881,7 @@ const skills = {
 					filterTarget(card, player, target) {
 						return lib.filter.targetEnabled.apply(this, arguments);
 					},
-					prompt: "清蹈：使用一张手牌",
+					prompt: "清蹈：使用一张手牌（无距离限制）",
 					addCount: false,
 					forced: true,
 				});
@@ -3382,10 +3398,11 @@ const skills = {
 							dialog.videoId = id;
 							return dialog;
 						};
-						if (player.isOnline2()) {
-							player.send(func, event.videoId, red, black);
-						} else {
+						if (player == game.me) {
 							func(event.videoId, red, black);
+						}
+						else if (player.isOnline()) {
+							player.send(func, event.videoId, red, black);
 						}
 						const result = await player
 							.chooseButtonTarget({

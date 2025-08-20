@@ -688,7 +688,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			const cards = player.getExpansions("zhengrong");
 			if (cards.length && player.countCards("h")) {
-				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？");
+				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？", "noChooseAll");
 				next.set("list", [
 					[get.translation(player) + "（你）的“荣”", cards],
 					["手牌区", player.getCards("h")],
@@ -845,7 +845,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			const cards = player.getExpansions("drlt_zhenrong");
 			if (cards.length && player.countCards("h")) {
-				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？");
+				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？", "noChooseAll");
 				next.set("list", [
 					[get.translation(player) + "（你）的“荣”", cards],
 					["手牌区", player.getCards("h")],

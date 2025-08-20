@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	sb_zhanghe_prefix: "谋",
 	sb_yujin_prefix: "谋",
@@ -280,7 +282,7 @@ const translates = {
 	sbgongqi: "弓骑",
 	sbgongqi_info: "①出牌阶段开始时，你可以弃置一张牌，然后本阶段你获得如下效果：当你使用牌时，你令所有其他角色不能使用或打出与你弃置牌颜色不同的手牌响应此牌。②你的攻击范围+4。",
 	sbjiefan: "解烦",
-	sbjiefan_info: "出牌阶段限一次，你可以令一名角色选择一项：⒈令所有攻击范围内含有其的角色依次弃置一张牌；⒉其摸等同于攻击范围内含有其的角色数的牌；⒊&poptip=背水&：依次执行上述所有选项，然后此技能失效直到你杀死一名角色。",
+	sbjiefan_info: `出牌阶段限一次，你可以令一名角色选择一项：⒈令所有攻击范围内含有其的角色依次弃置一张牌；⒉其摸等同于攻击范围内含有其的角色数的牌；⒊${get.poptip("beishui")}：此技能失效直到你杀死一名角色。`,
 	sb_gongsunzan: "谋公孙瓒",
 	sb_gongsunzan_prefix: "谋",
 	sbyicong: "义从",
@@ -328,7 +330,7 @@ const translates = {
 	sbtuxi_info: "你的回合限一次，当你不因此技能获得牌后，你可以将其中任意张牌置入弃牌堆，然后获得至多X名其他角色各一张手牌（X为你以此法置入弃牌堆的牌数）。",
 	sbtuxi_info_identity: "你的回合限两次，当你不因此技能获得牌后，你可以将其中任意张牌置入弃牌堆，然后获得至多X名其他角色各一张手牌（X为你以此法置入弃牌堆的牌数）。",
 	sbdengfeng: "登锋",
-	sbdengfeng_info: "准备阶段，你可以选择一名其他角色并选择一项：①令其获得其装备区的一张牌。②你获得牌堆中的一张【杀】。③&poptip=背水&：你失去1点体力。",
+	sbdengfeng_info: `准备阶段，你可以选择一名其他角色并选择一项：①令其获得其装备区的一张牌。②你获得牌堆中的一张【杀】。③${get.poptip("beishui")}：你失去1点体力。`,
 	sb_guohuai: "谋郭淮",
 	sb_guohuai_prefix: "谋",
 	sbjingce: "精策",

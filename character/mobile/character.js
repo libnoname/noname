@@ -10,7 +10,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 3,
-		skills: ["potchengjie", "potqingshi"],
+		skills: ["potjiejie", "potqingshi"],
 	},
 	mb_chenzhi: {
 		sex: "male",

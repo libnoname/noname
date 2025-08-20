@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	re_zhangliao: "界张辽",
 	re_zhangliao_prefix: "界",
@@ -346,7 +348,7 @@ const translates = {
 	yujin_yujin: "界于禁",
 	yujin_yujin_prefix: "界",
 	rexuanfeng: "旋风",
-	rexuanfeng_info: "当你失去装备区内的牌时，或于弃牌阶段弃置了两张或更多的手牌后，你可以选择一项：1.依次弃置一至两名其他角色的共计两张牌；2.将一名其他角色装备区内的一张牌移动到另一名其他角色的装备区内。&poptip=背水&：废除你的一个装备栏",
+	rexuanfeng_info: `当你失去装备区内的牌时，或于弃牌阶段弃置了两张或更多的手牌后，你可以选择一项：1.依次弃置一至两名其他角色的共计两张牌；2.将一名其他角色装备区内的一张牌移动到另一名其他角色的装备区内。${get.poptip("beishui")}：废除你的一个装备栏`,
 	olpaoxiao: "咆哮",
 	olpaoxiao2: "咆哮",
 	olpaoxiao_info: "①锁定技，你使用【杀】无次数限制。②锁定技，当你使用的【杀】被【闪】抵消时，你获得一枚“咆”（→）当你因【杀】造成伤害时，你弃置所有“咆”并令伤害值+X（X为“咆”数）。回合结束后，你弃置所有“咆”。",

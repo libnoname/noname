@@ -30,6 +30,7 @@ import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
 import dedent from "../../game/dedent.js";
+import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 
 const html = dedent;
 
@@ -202,20 +203,7 @@ export class Library {
 	arenaReady = [
 		//增加ui.window的监听
 		function () {
-			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
-				const target = event.target.closest("poptip");
-				if (!target) {
-					return;
-				}
-				const id = target.getAttribute("id");
-				const index = parseInt(target.getAttribute("tip-index"));
-				//清除原来的对话框
-				game.closePoptipDialog();
-				if (id && typeof index == "number") {
-					return get.poptipIntro(id, index, event);
-				}
-				return;
-			});
+			lib.poptip.init();
 		},
 		//预处理技能拥有者
 		function () {
@@ -894,26 +882,10 @@ export class Library {
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
 
-	/**
-	 * the map of pop tips
-	 *
-	 * 为特殊名词进行解释的map
-	 * 要添加请用game.addPoptip添加
-	 */
-	#poptipMap = new Map([
-		["乘势", "乘势：若达成所有选项，则可以执行后续效果"],
-		["背水", "背水：依次执行所有选项，然后支付代价"],
-	]);
-	get poptipMap() {
-		return this.#poptipMap;
-	}
-	set poptipMap(map) {
-		if (map instanceof Map) {
-			for (const [key, value] of map) {
-				this.#poptipMap.set(key, value);
-			}
-		}
-	}
+	#poptip = new PoptipManager();
+	get poptip (){
+		return this.#poptip;
+	};
 
 	characterDialogGroup = {
 		收藏: function (name, capt) {
@@ -8470,25 +8442,17 @@ export class Library {
 			"<li>使用卡牌<br>player.useCard(card,<br>targets)<li>死亡<br>player.die()<li>复活<br>player.revive(hp)</ul>" +
 			'<div style="margin:10px">游戏操作</div><ul style="margin-top:0"><li>在命令框中输出结果<br>game.print(str)<li>清除命令框中的内容<br>cls<li>上一条/下一条输入的内容<br>up/down<li>游戏结束<br>game.over(bool)' +
 			"<li>角色资料<br>lib.character<li>卡牌资料<br>lib.card</ul>",
-		游戏名词:
-			"<ul><li>智囊：无名杀默认为过河拆桥/无懈可击/无中生有/洞烛先机。牌堆中没有的智囊牌会被过滤。可在卡牌设置中自行增减。若没有可用的智囊，则改为随机选取的三种锦囊牌的牌名。" +
-			"<li>仁库：部分武将使用的游戏外共通区域。至多包含六张牌。当有新牌注入后，若牌数超过上限，则将最早进入仁库的溢出牌置入弃牌堆。" +
-			"<li>护甲：和体力类似，每点护甲可抵挡1点伤害，但不影响手牌上限。" +
-			"<li>随从：通过技能获得，拥有独立的技能、手牌区和装备区（共享判定区），出场时替代主武将的位置；随从死亡时自动切换回主武将。" +
-			"<li>发现：从三张随机亮出的牌中选择一张，若无特殊说明，则获得此牌。" +
-			"<li>蓄能技：发动时可以增大黄色的数字。若如此做，红色数字于技能的结算过程中改为原来的两倍。" +
-			"<li>施法：若技能的拥有者未拥有等待执行的同名“施法”效果，则其可以发动“施法”技能。其须选择声明一个数字X（X∈[1, 3]），在此之后的第X个回合结束时，其执行“施法”效果，且效果中的数字X视为与技能发动者声明的X相同。" +
-			"<li>共同拼点：一种特殊的拼点结算。发起者与被指定的拼点目标同时亮出拼点牌，进行一次决算：其中拼点牌点数唯一最大的角色赢，其他角色均没赢；若没有点数唯一最大的拼点牌，则所有角色拼点均没赢。" +
-			"<li>强令：若一名角色拥有带有“强令”的技能，则该技能的发动时机为“出牌阶段开始时”。若技能拥有者发动该技能，其须发布“强令”给一名其他角色，并在对应技能的时间节点加以判断目标角色是否成功完成该强令所要求的任务条件。成功或失败则会根据技能效果执行不同结算流程。" +
-			"<li>摧坚：若一名角色拥有带有“摧坚”的技能，则该技能的发动时机为“当你使用伤害牌指定第一个目标后”。你可以对其中一个目标发动“摧坚”技能，然后执行后续效果。其中，后续效果里的X等于该目标的非charlotte技能的数量。" +
-			"<li>妄行：一种特殊的选项。若一名角色拥有带有“妄行”的技能，则该技能触发时，你须选择声明一个数字X（X∈{1,2,3,4}），技能后续中的X即为你选择的数字。选择完毕后，你获得如下效果：回合结束时，你选择一项：1.弃置X张牌；2.减1点体力上限。" +
-			"<li>搏击：若一名角色拥有带有“搏击”的技能，则当该搏击技能触发时，若本次技能的目标角色在你攻击范围内，且你在其攻击范围内，则你执行技能主体效果时，同时额外执行“搏击”后的额外效果。" +
-			"<li>游击：若一名角色拥有带有“游击”的技能，则当该游击技能执行至“游击”处时，若本次技能的目标角色在你的攻击范围内，且你不在其攻击范围内，则你可以执行“游击”后的额外效果。" +
-			"<li>激昂：一名角色发动“昂扬技”标签技能后，此技能失效，直至从此刻至满足此技能“激昂”条件后。" +
-			"<li>历战：一名角色的回合结束时，若本回合发动过拥有历战效果的技能，则对此技能效果的进行等同于发动次数的永久可叠加式升级或修改。" +
-			"<li>同心：若技能拥有同心效果，则拥有该技能的角色可在回合开始时与其他角色同心直到自己下回合开始（默认为选择一名角色同心），选择的角色称为“同心角色”。拥有同心效果的技能发动后，技能发动者先执行同心效果。然后若有与其同心的角色，这些角色也依次执行同心效果。" +
-			"<li>持恒技：拥有此标签的技能不会被其他技能无效。" +
-			"",
+		get 游戏名词() {
+			return (
+				"<ul>" +
+				lib.poptip
+					.getIdList("rule")
+					.map(id => `<li>${lib.poptip.getName(id)}：${lib.poptip.getInfo(id)}</li>`)
+					.unique()
+					.join("")
+					+ "</ul>"
+			);
+		},
 	};
 	/**
 	 * @type {import('path')}
@@ -10675,48 +10639,48 @@ export class Library {
 			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 		},
 		{
-			get(target, prop, receiver) {
-				return Reflect.get(target, prop, receiver);
-			},
-			set(target, prop, newValue) {
-				if (typeof prop == "string" && typeof newValue == "string") {
-					const list = newValue.split("&");
-					if (list.length > 1) {
-						const newList = list.slice();
-						for (let i = 0; i < list.length; i++) {
-							const str = list[i];
-							const listx = str.split("=");
-							if (listx.length == 2) {
-								if (listx[0] == "poptip") {
-									newList[i] = get.poptipLink(...listx[1].split("|"));
-								}
-							}
-						}
-						newValue = newList.join("");
-					}
-				}
-				return Reflect.set(target, prop, newValue);
-			},
-			defineProperty(target, prop, descriptor) {
-				const newValue = descriptor.value;
-				if (typeof prop == "string" && typeof newValue == "string") {
-					const list = newValue.split("&");
-					if (list.length > 1) {
-						const newList = list.slice();
-						for (let i = 0; i < list.length; i++) {
-							const str = list[i];
-							const listx = str.split("=");
-							if (listx.length == 2) {
-								if (listx[0] == "poptip") {
-									newList[i] = get.poptipLink(...listx[1].split("|"));
-								}
-							}
-						}
-						descriptor.value = newList.join("");
-					}
-				}
-				return Reflect.defineProperty(target, prop, descriptor);
-			},
+			// get(target, prop, receiver) {
+			// 	return Reflect.get(target, prop, receiver);
+			// },
+			// set(target, prop, newValue) {
+			// 	if (typeof prop == "string" && typeof newValue == "string") {
+			// 		const list = newValue.split("&");
+			// 		if (list.length > 1) {
+			// 			const newList = list.slice();
+			// 			for (let i = 0; i < list.length; i++) {
+			// 				const str = list[i];
+			// 				const listx = str.split("=");
+			// 				if (listx.length == 2) {
+			// 					if (listx[0] == "poptip") {
+			// 						newList[i] = get.poptip(listx[1]);
+			// 					}
+			// 				}
+			// 			}
+			// 			newValue = newList.join("");
+			// 		}
+			// 	}
+			// 	return Reflect.set(target, prop, newValue);
+			// },
+			// defineProperty(target, prop, descriptor) {
+			// 	const newValue = descriptor.value;
+			// 	if (typeof prop == "string" && typeof newValue == "string") {
+			// 		const list = newValue.split("&");
+			// 		if (list.length > 1) {
+			// 			const newList = list.slice();
+			// 			for (let i = 0; i < list.length; i++) {
+			// 				const str = list[i];
+			// 				const listx = str.split("=");
+			// 				if (listx.length == 2) {
+			// 					if (listx[0] == "poptip") {
+			// 						newList[i] = get.poptip(listx[1]);
+			// 					}
+			// 				}
+			// 			}
+			// 			descriptor.value = newList.join("");
+			// 		}
+			// 	}
+			// 	return Reflect.defineProperty(target, prop, descriptor);
+			// },
 		}
 	);
 
@@ -14292,6 +14256,52 @@ export class Library {
 				// }
 			},
 			/**
+			 * 用于代替exec进行主机许可的请求喵
+			 * 
+			 * @this {import("./element/client.js").Client}
+			 * @param {{ type: string }} subject 请求附带的载荷，必须是对象并且包含类型为字符串的`type`属性喵
+			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应喵
+			 */
+			dataSync(subject, id) {
+				if (lib.node.observing.includes(this)) {
+					return;
+				}
+
+				void (async () => {
+					let ok = false;
+					let result = null;
+
+					try {
+						if (!subject || typeof subject !== "object" || typeof subject.type !== "string") {
+							return;
+						}
+
+						const type = subject.type;
+						const requester = lib.playerOL?.[this.id] ?? null;
+						let directResult = null;
+
+						if (!requester) {
+							return;
+						}
+
+						switch (type) {
+							// 如果要增加类型请走这里喵
+							case "skill":
+								directResult = await game.respondSkillData(id, requester, subject);
+								break;
+						}
+
+						if (directResult != null) {
+							[ok, result] = directResult;
+						}
+					} finally {
+						if (id) {
+							this.send("dataReply", { ok, id, result });
+						}
+					}
+				})();
+			},
+			/**
 			 * @this {import("./element/client.js").Client}
 			 */
 			log() {
@@ -15210,6 +15220,22 @@ export class Library {
 					_status.connectDenied();
 				}
 			},
+			/**
+			 * 当服务器响应通过dataSync发送的请求时走这里喵
+			 * 
+			 * @param {{ ok: boolean, id: string|null, result: any }} data 
+			 */
+			dataReply(data) {
+				// 需要提前注册响应回调喵
+				if (data.id && game.dataRequestMap && data.id in game.dataRequestMap) {
+					const callback = game.dataRequestMap[data.id];
+					delete game.dataRequestMap[data.id];
+
+					if (typeof callback === "function") {
+						callback(data.ok, data.result);
+					}
+				}
+			},
 			cancel: function (id) {
 				if (_status.event._parent_id == id) {
 					ui.click.cancel();
@@ -16050,7 +16076,7 @@ export class Library {
 			},
 		],
 		[
-			"忠",
+			"汉",
 			{
 				color: "#ffd700",
 				nature: "metalmm",

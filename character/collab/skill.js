@@ -2985,7 +2985,7 @@ const skills = {
 			}
 		},
 	},
-	//忠曹操
+	//汉曹操
 	//江山如故二代目
 	oldingxi: {
 		audio: 2,

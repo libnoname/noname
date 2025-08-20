@@ -2134,7 +2134,7 @@ const skills = {
 				const topCards = get.cards(num);
 				await game.cardsGotoOrdering(topCards);
 				const result = await player
-					.chooseToMove("诫厉：交换其中任意张牌")
+					.chooseToMove("诫厉：交换其中任意张牌", "noChooseAll")
 					.set("list", [
 						[get.translation(target) + "牌名字数最多的手牌", cards, "dcsushou_tag"],
 						["牌堆顶", topCards],
