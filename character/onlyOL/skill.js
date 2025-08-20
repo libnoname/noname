@@ -237,29 +237,28 @@ const skills = {
 		check: () => true,
 		async content(event, trigger, player) {
 			await player.draw();
-			const phasename = get.info(event.name).phasename;
-			const list = trigger.phaseList.filter(name => phasename.includes(name) && !player.getStorage(event.name + "_used").includes(name)).unique();
-			if (list.length) {
+			const phasename = get.info(event.name).phasename,
+				isPhase = name => phasename.includes(name.split("|")[0]);
+			const list = trigger.phaseList.map((name, index) => [index + 1, "", name.split("|")[0]]);
+			if (list?.some(info => isPhase(info[2]) && !player.getStorage(event.name + "_used").includes(info[2]))) {
 				const result = await player
-					.chooseButton(["独断：请选择一个阶段于本回合跳过", [list.map(name => [name, get.translation(name)]), "tdnodes"]])
-					.set("forced", true)
+					.chooseButton(["独断：请选择一个阶段于本回合跳过", [list.filter(info => {
+						return isPhase(info[2]) && !player.getStorage(event.name + "_used").includes(info[2]);
+					}), "vcard"]], true)
+					.set("forceAuto", true)
 					.forResult();
 				let choice = result?.links[0];
-				player.markAuto(event.name + "_used", choice);
-				player.markAuto(event.name + "_skip", choice);
-				player.addTempSkill(event.name + "_skip");
-				const list2 = trigger.phaseList.filter(name => phasename.includes(name) && name != choice);
+				player.markAuto(event.name + "_used", choice[2]);
+				let phase = trigger.phaseList[choice[0] - 1].replace(choice[2], `skip${choice[2].slice(5)}-${event.name}`);
+				trigger.phaseList[choice[0] - 1] = phase;
+				const list2 = trigger.phaseList.filter((name, index) => isPhase(name) && index != (choice[0] - 1));
 				if (list2.length > 1) {
-					if (list2.unique().length == 1) {
-						player.chat("我超，怎么都一样的阶段");
-						return;
-					}
 					if (list2.length == 2) {
 						const indexList = list2.map(name => trigger.phaseList.indexOf(name));
 						[trigger.phaseList[indexList[0]], trigger.phaseList[indexList[1]]] = [trigger.phaseList[indexList[1]], trigger.phaseList[indexList[0]]];
 						return;
 					}
-					const choices = trigger.phaseList.reduce((list, name, index) => (name != choice && phasename.includes(name) ? [...list, [index + 1, "", name]] : list), []);
+					const choices = trigger.phaseList.reduce((list, name, index) => (index != (choice[0] - 1) && isPhase(name) ? [...list, [index + 1, "", name.split("|")[0]]] : list), []);
 					const indexList = choices.map(i => i[0] - 1);
 					const result2 = await player
 						.chooseToMove("独断：交换另外两个额定阶段", true)

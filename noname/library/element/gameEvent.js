@@ -1377,7 +1377,7 @@ export class GameEvent {
 	}
 
 	async checkSkipped() {
-		if (!this.player || !this.player.skipList.includes(this.name)) {
+		if (!this.player || !this.player.skipList.includes(this.name) && !this.isSkipped) {
 			return false;
 		}
 		this.player.skipList.remove(this.name);

@@ -4843,12 +4843,25 @@ player.removeVirtualEquip(card);
 		}
 		"step 9";
 		if (player.isIn() && num < event.phaseList.length) {
-			var phase = event.phaseList[num].split("|");
-			event.currentPhase = phase[0];
+			var list = event.phaseList[num].split("|");
+			var phase = list[0].split("-"),
+				skip = false;
+			if (phase[0].startsWith("skip")) {
+				event.currentPhase = `phase${phase[0].slice(4)}`;
+				skip = true;
+			} else {
+				event.currentPhase = phase[0];
+			}
 			var next = player[event.currentPhase]();
 			next.phaseIndex = num;
-			if (phase.length > 1) {
-				next._extraPhaseReason = phase[1];
+			if (list.length > 1) {
+				next._extraPhaseReason = list[1];
+			}
+			if (skip) {
+				next.isSkipped = true;
+				if (phase.length > 1) {
+					next._skipPhaseReason = phase[1];
+				}
 			}
 			if (event.currentPhase == "phaseDraw" || event.currentPhase == "phaseDiscard") {
 				if (!player.noPhaseDelay) {
