@@ -479,6 +479,34 @@ game.import("card", function () {
 					},
 				},
 			},
+			yushijiesui: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				filterTarget: true,
+				async content(event, trigger, player) {
+					const target = event.target;
+					await target.damage();
+					await player.loseHp();
+				},
+				ai: {
+					order: 6,
+					value: 12,
+					useful: 10,
+					tag: {
+						damage: 1,
+					},
+					result: {
+						target(player, target) {
+							return get.damageEffect(target, player, target);
+						},
+						player(player, target) {
+							return get.effect(player, { name: "losehp" }, player, player);
+						}
+					},
+				},
+			},
 		},
 		skill: {
 			tiejili_skill: {
@@ -789,6 +817,8 @@ game.import("card", function () {
 			yidugongdu_info: "出牌阶段，对一名已受伤的角色使用。你观看其所有手牌，然后若你与其手牌中均有【毒】，弃置其中一张【毒】并与其各摸两张牌，否则你与其依次受到1点无来源伤害。",
 			dajunyajing: "大军压境",
 			dajunyajing_info: "出牌阶段，对一名角色使用。其以外的所有角色依次选择是否将一张牌当无距离限制的【杀】对其使用。",
+			yushijiesui: "玉石皆碎",
+			yushijiesui_info: "出牌阶段，对一名角色使用。你对目标角色造成1点伤害，然后失去1点体力。",
 		},
 		list: [
 			["diamond", 6, "suibozhuliu"],
@@ -798,6 +828,7 @@ game.import("card", function () {
 			["spade", 5, "shangfangbaojian"],
 			["spade", 5, "qingmingjian"],
 			["club", 5, "mengchong"],
+			["heart", 5, "yushijiesui"],
 		],
 	};
 });

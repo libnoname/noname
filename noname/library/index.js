@@ -16207,6 +16207,14 @@ export class Library {
 				},
 			},
 		],
+		[
+			"智将",
+			{
+				showName: "智",
+				color: "#99e2ffff",
+				nature: "firemm",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

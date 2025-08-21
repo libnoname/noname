@@ -4878,6 +4878,7 @@ player.removeVirtualEquip(card);
 				if (phase.length > 1) {
 					next._skipPhaseReason = phase[1];
 				}
+				game.log(player, "跳过了", event.currentPhase);
 			}
 			if (event.currentPhase == "phaseDraw" || event.currentPhase == "phaseDiscard") {
 				if (!player.noPhaseDelay) {

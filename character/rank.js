@@ -1,6 +1,8 @@
 window.noname_character_rank = {
 	s: ["xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
+		"zj_liuyuan",
+		"zj_zhonghui",
 		"eu_kaisa",
 		"dc_sb_lunxun",
 		"wn_shen_xuzhu",
@@ -253,6 +255,7 @@ window.noname_character_rank = {
 		"ren_dengai",
 	],
 	am: [
+		"zj_huoyi",
 		"ol_sb_lusu",
 		"ol_sb_zhugeliang",
 		"pot_lusu",
@@ -455,6 +458,10 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"zj_jiangwei",
+		"zj_yaokehui",
+		"xiahouhan",
+		"zj_xiahouhan",
 		"dm_lvbu",
 		"dm_diaochan",
 		"wild_liru",
@@ -2088,6 +2095,8 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"zj_liuyuan",
+			"zj_zhonghui",
 			"xia_caopi",
 			"eu_kaisa",
 			"dm_diaochan",
@@ -2382,6 +2391,7 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"zj_huoyi",
 			"ol_sb_lusu",
 			"ol_sb_zhugeliang",
 			"mark_shen_machao",
@@ -2848,6 +2858,10 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"zj_jiangwei",
+			"xiahouhan",
+			"zj_yaokehui",
+			"zj_xiahouhan",
 			"mb_chenzhi",
 			"ol_qiaogong",
 			"std_zhangyao",

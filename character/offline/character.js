@@ -1,4 +1,47 @@
 const characters = {
+	zj_huoyi: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_zhongjue", "zj_qingming"],
+	},
+	zj_yaokehui: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["zj_qiangdu"],
+	},
+	xiahouhan: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["zj_zhuhui", "zj_hanci"],
+	},
+	zj_xiahouhan: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["zj_jieyi", "zj_linei", "zj_tongxin"],
+		img: "image/character/xiahouhan.jpg",
+	},
+	zj_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zj_quanwei", "zj_quanshu", "zj_quanqing"],
+	},
+	zj_jiangwei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_juta", "zj_linze", "zj_fuji"],
+	},
+	zj_liuyuan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["zj_jianxi", "zj_zhaofu", "zj_tuicheng"],
+	},
 	xia_caopi: {
 		sex: "male",
 		group: "wei",

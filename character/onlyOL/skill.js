@@ -356,7 +356,7 @@ const skills = {
 								.when({ player: "phaseDrawBegin2" })
 								.filter(evt => !evt.numFixed)
 								.then(() => {
-									trigger.num++;
+									trigger.num += 2;
 								});
 						} else {
 							await target.draw(2);
