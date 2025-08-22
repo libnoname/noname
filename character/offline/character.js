@@ -1,4 +1,62 @@
 const characters = {
+	zj_zhanghu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zj_cuijian"],
+		dieAudios: ["zhanghu"],
+	},
+	zj_yuechen: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zj_porui"],
+		dieAudios: ["yuechen"],
+	},
+	zj_hulie: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zj_chengxi", "zj_zhaoe"],
+	},
+	zj_zhugexu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zj_tuizhi", "zj_qianjun", "zj_guluo"],
+	},
+	zj_lukang: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["drlt_qianjie", "zj_jueyan", "zj_huairou"],
+		dieAudios: ["lukang"],
+	},
+	zj_zhaotong: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_yizan", "zj_shuge"],
+	},
+	zj_zhaoguang: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_yizan", "zj_zhengui"],
+	},
+	zj_zhugezhan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["zj_zhongwang", "zj_fuyin"],
+		dieAudios: ["zhugezhan"],
+	},
+	zj_liuyin: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_guguo"],
+	},
 	zj_huoyi: {
 		sex: "male",
 		group: "shu",

@@ -129,6 +129,7 @@ export class VCard {
 		}
 		if (!this.cards) {
 			this.cards = [];
+			this.isCard = true;
 		}
 	}
 	sameSuitAs(card) {

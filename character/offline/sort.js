@@ -12,7 +12,7 @@ const characterSort = {
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
 	offline_vtuber: ["vtb_xiaosha", "vtb_xiaoshan", "vtb_xiaotao", "vtb_xiaole", "vtb_xiaojiu"],
-	offline_juedai: ["zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi"],
+	offline_juedai: ["zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi", "zj_liuyin", "zj_zhugezhan", "zj_zhaotong", "zj_zhaoguang", "zj_lukang", "zj_zhugexu", "zj_hulie", "zj_zhanghu", "zj_yuechen"],
 	offline_longyutao: ["drag_pangde", "drag_guanyu", "drag_caoren", "drag_lvchang"],
 	offline_guansuo: ["drag_huaci", "drag_guansuo", "drag_guanyinping", "drag_guanping", "drag_zhoucang", "drag_liaohua", "drag_shendan", "drag_shenyi", "drag_luxun", "drag_xusheng", "she_lvmeng"],
 	offline_taoyuan: ["ty_guanyu", "ty_sunquan", "ty_liubei", "ty_chenshi", "ty_chengjix", "ty_zhaorong", "ty_zhangnan", "ty_fengxí", "ty_liaohua", "ty_huangzhong", "ty_wuban", "ty_shicong", "ty_guanxing", "ty_shamoke", "ty_guanyinping", "ty_luxun", "ty_ganning", "ty_buzhi", "ty_tanxiong", "ty_liue", "ty_zhangda", "ty_fanjiang", "ty_anying", "ty_anyingx", "ty_wuque", "ty_yanque", "ty_wangque"],

@@ -15066,7 +15066,11 @@ const skills = {
 	},
 	rejizhi: {
 		audio: 2,
-		audioname2: { lukang: "rejizhi_lukang", new_simayi: "rejizhi_new_simayi" },
+		audioname2: {
+			lukang: "rejizhi_lukang",
+			zj_lukang: "rejizhi_lukang",
+			new_simayi: "rejizhi_new_simayi",
+		},
 		locked: false,
 		trigger: { player: "useCard" },
 		frequent: true,
