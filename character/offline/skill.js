@@ -11566,7 +11566,7 @@ const skills = {
 						trigger.num++;
 						break;
 					case "phaseUseBegin":
-						player.addTempSkills("hm_weiluan_sha");
+						player.addTempSkill("hm_weiluan_sha");
 						break;
 				}
 			}

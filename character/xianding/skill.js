@@ -1751,7 +1751,7 @@ const skills = {
 		},
 		onChooseToUse(event) {
 			if (!game.online && !event.juanji_record) {
-				const num = event.player.getStat("skill")["dcjuanji"] ?? 0;
+				const num = event.player.getStat("skill")["dcjuanji_backup"] ?? 0;
 				event.set("juanji_record", num + 1);
 			}
 		},
@@ -1814,6 +1814,9 @@ const skills = {
 					numx: get.event("juanji_record"),
 					choice: links[0],
 					filterTarget(card, player, target) {
+						if (target == player) {
+							return false;
+						}
 						const { choice } = get.info("dcjuanji_backup");
 						switch (choice) {
 							case "damage": {

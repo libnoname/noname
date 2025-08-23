@@ -10457,32 +10457,38 @@ export default {
 			return false;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			var cards = player.getCards("h");
-			event.num = cards.length;
-			player.discard(cards);
-			"step 1";
-			var target = trigger.player,
-				str = get.translation(target);
-			event.target = target;
-			if (!target.isIn()) {
-				event.finish();
-			} else if (_status.event.dying) {
-				event._result = { index: 0 };
-			} else if (target.countCards("he")) {
-				event._result = { index: 1 };
-			} else {
-				player
-					.chooseControl()
-					.set("choiceList", ["弃置" + str + "的" + get.cnNumber(num) + "张牌", "对" + str + "造成1点伤害"])
-					.set("ai", () => 1);
+		async content(event, trigger, player) {
+			const hs = player.getCards("h"),
+				target = trigger.player;
+			const { cards } = await player.modedDiscard(hs);
+			if (!target?.isIn()) {
+				return;
 			}
-			"step 2";
+			let choiceList = [
+				`弃置${get.translation(target)}${get.cnNumber(cards.length)}张牌`,
+				`对${get.translation(target)}造成1点伤害`,
+			],
+				choice = [0, 1];
+			if (_status.event.dying) {
+				choice.remove(1);
+			}
+			if (!cards?.length || target.countCards("he") < cards.length) {
+				choice.remove(0);
+			}W
+			if (!choice.length) {
+				return;
+			}
+			const result = choice.length > 1 ? await player
+				.chooseControl()
+				.set("choiceList", choiceList)
+				.set("ai", () => 1)
+				.forResult() : {
+					index: choice[0],
+				};
 			if (result.index == 0) {
-				player.discardPlayerCard(target, num, true, "he");
+				await player.discardPlayerCard(target, cards.length, true, "he");
 			} else {
-				target.damage();
+				await target.damage();
 			}
 		},
 	},

@@ -9206,7 +9206,7 @@ const skills = {
 				})
 				.set("color", get.color(trigger.card))
 				.forResult();
-			if (result.bool && get.color(result.links[0]) == get.color(trigger.card)) {
+			if (result?.bool && get.color(result.links[0]) == get.color(trigger.card)) {
 				await target.damage();
 			}
 		},

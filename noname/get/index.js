@@ -5337,7 +5337,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				return;
 			}
 			var name = node.name,
-				Vcard = node[node.cardSymbol] || false;
+				Vcard = node[node.cardSymbol] || false,
+				trueCard = node;
 			if (node.parentNode.cardMod) {
 				var moded = false;
 				for (var i in node.parentNode.cardMod) {
@@ -5352,29 +5353,28 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					return uiintro;
 				}
 			}
-			if (node.link && node.link.name && lib.card[node.link.name]) {
+			if (node.link?.name && lib.card[node.link.name]) {
 				name = node.link.name;
+				Vcard = node.link[node.link.cardSymbol] || false;
+				trueCard = node.link;
 			}
-			var cardPosition = get.position(node);
-			if (((cardPosition === "e" || cardPosition === "j") && node.viewAs && node.viewAs != name) || (Vcard && (Vcard.cards.length != 1 || Vcard.cards[0].name != name))) {
-				uiintro.add(get.translation(node.viewAs));
-				var cardInfo = lib.card[node.viewAs],
+			var cardPosition = get.position(trueCard);
+			if (((cardPosition === "e" || cardPosition === "j") && trueCard.viewAs && trueCard.viewAs != name) || (Vcard && (Vcard.cards.length != 1 || Vcard.cards[0].name != name))) {
+				uiintro.add(get.translation(trueCard.viewAs));
+				var cardInfo = lib.card[trueCard.viewAs],
 					showCardIntro = true;
-				var cardOwner = get.owner(node);
+				var cardOwner = get.owner(trueCard);
 				if (cardInfo.blankCard) {
 					if (cardOwner && !cardOwner.isUnderControl(true)) {
 						showCardIntro = false;
 					}
 				}
-				if (cardOwner) {
-					var sourceVCard = Vcard;
-					if (showCardIntro && sourceVCard) {
-						uiintro.add('<div class="text center">（' + (sourceVCard?.cards?.length ? get.translation(get.translation(sourceVCard.cards)) : "这是一张虚拟牌") + "）</div>");
-					}
+				if (cardOwner && showCardIntro) {
+					uiintro.isNotCard = true;
 				}
 				// uiintro.add(get.translation(node.viewAs)+'<br><div class="text center" style="padding-top:5px;">（'+get.translation(node)+'）</div>');
-				uiintro.nosub = true;
-				name = node.viewAs;
+				//uiintro.nosub = true;
+				name = trueCard.viewAs;
 			} else {
 				uiintro.add(get.translation(node));
 			}
@@ -5535,6 +5535,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					}
 					if (lib.translate[name + "_append"]) {
 						uiintro.add('<div class="text" style="display:inline">' + lib.translate[name + "_append"] + "</div>");
+					}
+					if (uiintro.isNotCard) {
+						if (Vcard?.cards?.length) {
+							uiintro.add('<div class="text center">—— 对应实体牌 ——</div>');
+							uiintro.addSmall(Vcard.cards);
+						} else {
+							uiintro.add('<div class="text center">（这是一张虚拟牌）</div>');
+						}
 					}
 				}
 				uiintro.add(ui.create.div(".placeholder.slim"));
