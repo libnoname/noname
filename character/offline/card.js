@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	zongma_attack: {
+		derivation: "eu_makang",
+		fullskin: true,
+		cardimage: "chitu",
+		type: "equip",
+		subtype: "equip4",
+		skills: ["eu_zongma_attack"],
+	},
+	zongma_defend: {
+		derivation: "eu_makang",
+		fullskin: true,
+		cardimage: "dilu",
+		type: "equip",
+		subtype: "equip3",
+		skills: ["eu_zongma_defend"],
+	},
 	hschenzhi_poker: {
 		type: "poker",
 		fullskin: true,

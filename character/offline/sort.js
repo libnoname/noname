@@ -20,13 +20,13 @@ const characterSort = {
 	offline_jingxiang: ["jx_zhouyu", "jx_guanyu"],
 	offline_changan: ["ca_wangyun", "ca_lvbu", "ca_lijue", "ca_guosi", "ca_zhangji", "ca_fanchou"],
 	offline_weinan: ["wn_caocao", "wn_hansui", "wn_houxuan", "wn_chengyi", "wn_yangqiú", "wn_zhanghe", "wn_jiaxu", "wn_xuhuang"],
+	offline_Europe: ["eu_kaisa", "eu_Macrinus", "eu_Ardashir", "eu_makang", "eu_yujin", "eu_zhangliao", "eu_yuejin"],
 	offline_jiudin: ["jd_jin_wangyuanji", "jd_ol_huaxin", "jd_sp_yangwan", "jd_sb_huangyueying", "jd_sb_zhaoyun", "jd_sb_ganning", "jd_sb_pangtong", "jd_hanlong", "jd_jin_xiahouhui", "jd_jin_simazhao", "jd_sb_caocao", "jd_sb_sp_zhugeliang", "jd_simayan", "jd_sb_sunquan", "jd_sb_xiaoqiao", "jd_sb_guanyu", "jd_sb_jiangwei", "jd_sb_daqiao", "jd_sb_menghuo", "jd_sb_yuanshao", "jd_sb_yujin", "jd_sb_sunshangxiang", "jd_sb_liubei", "jd_sb_fazheng", "jd_sb_zhangfei", "jd_jin_simashi", "jd_sb_xuhuang"],
 	offline_yanyou: ["yy_quyi", "yy_gongsunzan", "yy_wenchou", "yy_gongsunyuan", "yy_yuanshao", "yy_simayi", "yy_caorui", "yy_zhaoyun", "yy_quancong"],
 	offline_jingyang: ["jy_caocao", "jy_caoren", "jy_zhugeliang", "jy_pangtong", "jy_lusu", "jy_zhangzhao", "jy_zhouyu", "jy_huanggai"],
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
-	offline_Europe: ["eu_kaisa"],
 	//offline_others: [],
 };
 
@@ -61,7 +61,7 @@ const characterSortTranslate = {
 	offline_qingshi: "特典·青史翰墨",
 	offline_shichangshi: "蛇年限定·十常侍",
 	offline_fengyun: "风云际会",
-	offline_Europe: "欧陆风云",
+	offline_Europe: "风云志·欧陆风云",
 };
 
 export { characterSort, characterSortTranslate };
