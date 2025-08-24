@@ -1348,7 +1348,7 @@ const skills = {
 				}
 			} else if (target.countGainableCards(player, "h")) {
 				await target
-					.chooseToGive("烛晦", player, "h", [1, Infinity], true)
+					.chooseToGive(`###烛晦###交给${get.translation(player)}至少一张牌`, player, "h", [1, Infinity], true)
 					.set("complexCard", true)
 					.set("ai", card => {
 						if (ui.selected.cards?.length) {
@@ -2237,7 +2237,7 @@ const skills = {
 						let value = list => {
 							const [skill, name] = list;
 							let value = get.skillRank(skill, "inout") * get.rank(name, true);
-							if (["relonghun", "dunshi"].includes(skill)) {
+							if (["relonghun", "dunshi", "olfuhun", "mbjuejin"].includes(skill)) {
 								value *= 24;
 							}
 							const info = get.info(skill);
@@ -2315,7 +2315,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "damage") {
-				return event.num > 0;
+				return event.num > 1;
 			}
 			if (!get.tag(event.card, "damage")) {
 				return false;

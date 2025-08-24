@@ -2,6 +2,153 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//星太史慈
+	starchongwei: {
+		audio: 2,
+		trigger: {
+			source: "damageSource",
+		},
+		mark: true,
+		marktext: "围",
+		intro: {
+			markcount(storage) {
+				let num = 3;
+				if (typeof storage == "number") {
+					num -= storage;
+				}
+				return Math.max(0, num);
+			},
+			content(storage, player) {
+				let num = 3;
+				if (typeof storage == "number") {
+					num -= storage;
+				}
+				num = Math.max(0, num);
+				return `计算与其他角色的距离+${num}`;
+			},
+		},
+		async content(event, trigger, player) {
+			player.addMark(event.name, 1, false);
+			if (player.countMark(event.name) >= 3) {
+				await player.recover();
+				if (player.getHp() > 0) {
+					await player.draw(player.getHp());
+				}
+				player.setStorage("starchongzu", true);
+				await player.removeSkills(event.name);
+			}
+		},
+		onremove: true,
+		forced: true,
+		mod: {
+			globalFrom(from, to, current) {
+				const num = Math.max(0, 3 - from.countMark("starchongwei"));
+				return current + num;
+			},
+		},
+	},
+	starchongzu: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			return event.targets?.some(target => target == player);
+		},
+		async cost(event, trigger, player) {
+			let list = [
+				["limit", "你使用下一张牌无距离次数限制"],
+				["draw", "摸两张牌且此项本回合失效"],
+				["damage", "你下次使用牌指定目标后，可对其中一个其他角色造成1点伤害"],
+			];
+			if (!player.getStorage(event.skill, false)) {
+				list.splice(2);
+			}
+			const result = await player
+				.chooseButton([get.prompt(event.skill), [list, "textbutton"]])
+				.set("filterButton", button => {
+					const { link } = button,
+						player = get.player();
+					return link != "draw" || !player.hasSkill("starchongzu_used");
+				})
+				.set("ai", button => {
+					const { link } = button;
+					return [null, "limit", "damage", "draw"].indexOf(link);
+				})
+				.forResult();
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					cost_data: result.links,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const link = event.cost_data[0];
+			switch (link) {
+				case "draw": {
+					player.addTempSkill(`${event.name}_used`);
+					await player.draw(2);
+					break;
+				}
+				case "limit": {
+					player
+						.when({
+							player: "useCard1",
+						})
+						.step(async (event, trigger, player) => {
+							const { card } = trigger;
+							if (trigger.addCount !== false) {
+								trigger.addCount = false;
+								player.getStat("card")[card.name]--;
+							}
+						})
+						.assign({
+							mod: {
+								cardUsable: () => Infinity,
+								targetInRange: () => true,
+							},
+							ai: {
+								presha: true,
+							},
+						});
+					break;
+				}
+				default: {
+					player
+						.when({
+							player: "useCardToPlayered",
+						})
+						.filter((evt, player) => evt.targets?.some(target => target != player))
+						.step(async (event, trigger, player) => {
+							const targets = trigger.targets.filter(target => target != player);
+							const result = await player
+								.chooseTarget("冲阻：是否对目标角色中的一名其他角色造成1点伤害？", (card, player, target) => {
+									return get.event("targetsx").includes(target);
+								})
+								.set("targetsx", targets)
+								.set("ai", target => {
+									const player = get.player();
+									return get.damageEffect(target, player, player);
+								})
+								.forResult();
+							if (result.bool) {
+								const target = result.targets[0];
+								player.line(target);
+								await target.damage(player);
+							}
+						});
+					break;
+				}
+			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+			},
+		},
+		derivation: "starchongzu_rewrite",
+	},
 	//星张让
 	starduhai: {
 		audio: 2,
@@ -904,7 +1051,7 @@ const skills = {
 			if (result?.targets?.length) {
 				const target = result.targets[0];
 				player.line(target);
-				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();//current != player && 
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat(); //current != player &&
 				if (!targets.length) {
 					return;
 				}
@@ -15071,7 +15218,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const targets = player.getStorage(event.skill);
 					for (const target of targets.sortBySeat(_status.currentPhase)) {
-						if (!target.isIn() || trigger.name == "damage" && target != trigger.source) {
+						if (!target.isIn() || (trigger.name == "damage" && target != trigger.source)) {
 							continue;
 						}
 						await target.useSkill(event.skill, [player]);

@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	old_lingju: "SP灵雎",
 	old_lingju_prefix: "SP",
@@ -283,6 +285,17 @@ const translates = {
 	olhuaquan_light_info: "使用后你摸一张牌",
 	olsanou: "三殴",
 	olsanou_info: "锁定技，其他角色受到你的伤害后或猜错〖花拳〗的效果后，你摸一张牌并令其获得一个「击倒」标记。一名角色获得至少3个「击倒」标记后移除此标记并进入“击倒”状态。“击倒”状态的角色始终跳过出牌阶段。角色于“击倒”状态时，有10张牌离开牌堆或进入弃牌堆后，其脱离“击倒”状态。",
+	bigsb_dengai: "乐邓艾",
+	bigsb_dengai_prefix: "乐",
+	olandu: "暗度",
+	olandu_info: `锁定技，你使用一张“${get.poptip({
+		id: "andu_yinping",
+		name: "阴平",
+		info: "若一张牌的牌名中，第一个字或最后一个字的读音为阴平（一声，如ā、ē、ī），此牌称为“阴平”牌",
+	})}”牌结算后，随机获得一名其他角色手牌中的“${get.poptip("andu_yinping")}”牌。`,
+	olandu_mark: "阴平",
+	olqiqi: "期期",
+	olqiqi_info: "每轮限一次，你使用牌指定目标时，若牌名字数不小于你的体力值，你可以摸两张牌并令此牌额外结算一次，然后进行判定：若结果为♥，你减少1点体力上限。",
 };
 
 export default translates;

@@ -125,36 +125,29 @@ const skills = {
 		async content(event, trigger, player) {
 			const { cards } = await game.cardsGotoOrdering(get.cards(4));
 			await player.showCards(cards, `${get.translation(player)}发动了【耕读】`);
-			const list = cards.map(card => get.color(card)).toUniqued();
-			const list2 = Object.keys(lib.color);
-			let result = { control: list2[0] };
-			if (list2.length > 1) {
-				result = await player
-					.chooseControl(list2)
-					.set("prompt", "耕读：选择一种颜色的牌获得")
-					.set(
-						"choiceList",
-						list.map(i => [
-							`${get.translation(i)}：${get.translation(
-								cards.filter(card => {
-									return get.color(card) == i;
-								})
-							)}`,
-						])
-					)
-					.set("ai", () => {
-						return get.event("results");
+			const list = ["red", "black"];
+			const result = await player
+				.chooseControl(list)
+				.set("prompt", "耕读：选择一种颜色的牌获得")
+				.set(
+					"choiceList",
+					list.map(i => {
+						const colors = cards.filter(card => get.color(card) == i);
+						return `${get.translation(i)}：${colors.length ? get.translation(colors) : "空气"}`;
 					})
-					.set(
-						"results",
-						(() => {
-							let count = color => cards.filter(card => get.color(card) == color);
-							let results = list.sort((a, b) => count(b) - count(a));
-							return results[0];
-						})()
-					)
-					.forResult();
-			}
+				)
+				.set("ai", () => {
+					return get.event("results");
+				})
+				.set(
+					"results",
+					(() => {
+						let count = color => cards.filter(card => get.color(card) == color);
+						let results = list.sort((a, b) => count(b) - count(a));
+						return results[0];
+					})()
+				)
+				.forResult();
 			const color = result.control,
 				gains = cards.filter(card => get.color(card) == color);
 			if (gains?.length) {
@@ -170,13 +163,17 @@ const skills = {
 				enable: "chooseToUse",
 				charlotte: true,
 				filter(event, player) {
-					const list = lib.skill["dcgengdu_red"].getList(player, event);
+					const list = event.dcgengduList;
 					return list.length && player.countCards("hes", { color: "red" });
 				},
 				usable(skill, player) {
 					return player.getStorage(skill, 0);
 				},
-				getList(player, event) {
+				onChooseToUse(event) {
+					if (game.online || event.dcgengduList) {
+						return;
+					}
+					const player = event.player;
 					let list = lib.inpile.filter(i => {
 						if (get.type(i) != "trick") {
 							return false;
@@ -186,16 +183,16 @@ const skills = {
 						}
 						return true;
 					});
-					player.checkHistory("useCard", evt => {
+					game.checkGlobalHistory("useCard", evt => {
 						if (list.includes(evt.card.name)) {
 							list.remove(evt.card.name);
 						}
 					});
-					return list;
+					event.set("dcgengduList", list);
 				},
 				chooseButton: {
 					dialog(event, player) {
-						const list = lib.skill["dcgengdu_red"].getList(player, event);
+						const list = event.dcgengduList;
 						return ui.create.dialog("耕读", [list, "vcard"]);
 					},
 					check(button) {
@@ -223,11 +220,7 @@ const skills = {
 					},
 				},
 				hiddenCard(player, name) {
-					const skill = "dcgengdu_red",
-						list = lib.skill[skill].getList(player);
-					if (!list.includes(name)) {
-						return false;
-					}
+					const skill = "dcgengdu_red";
 					const count = player.stat[player.stat.length - 1].skill[skill] || 0;
 					if (count >= get.info(skill).usable(skill, player)) {
 						return false;
@@ -257,7 +250,7 @@ const skills = {
 					},
 				},
 				intro: {
-					content: "本阶段限$次，你可以将一张红色牌当作本回合未使用过的普通锦囊牌使用",
+					content: "本阶段限$次，你可以将一张红色牌当作本回合未被使用过的普通锦囊牌使用",
 				},
 				onremove: true,
 			},

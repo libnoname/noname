@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	starchongzu(player) {
+		if (player.getStorage("starchongzu", false)) {
+			return lib.translate["starchongzu_rewrite_info"];
+		}
+		return lib.translate["starchongzu_info"];
+	},
 	mubing(player) {
 		if (player.storage.mubing2) {
 			return "出牌阶段开始时，你可以亮出牌堆顶的四张牌。你可弃置任意张手牌，并可获得任意张点数之和不大于你弃置的牌点数之和的牌。然后你可将以此法得到的牌以任意方式交给其他角色。";

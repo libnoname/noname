@@ -259,6 +259,7 @@ window.noname_character_rank = {
 		"eu_Macrinus",
 		"eu_Ardashir",
 		"eu_makang",
+		"bigsb_dengai",
 	],
 	am: [
 		"zj_lukang",
@@ -467,6 +468,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"star_taishici",
 		"zj_zhanghu",
 		"zj_yuechen",
 		"zj_hulie",
@@ -2409,6 +2411,7 @@ window.noname_character_rank = {
 			"eu_yuejin",
 		],
 		epic: [
+			"bigsb_dengai",
 			"eu_Macrinus",
 			"eu_Ardashir",
 			"eu_makang",
@@ -2882,6 +2885,7 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"star_taishici",
 			"zj_zhanghu",
 			"zj_yuechen",
 			"zj_hulie",

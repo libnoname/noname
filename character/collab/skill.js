@@ -2,6 +2,123 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋谋邓艾
+	olandu: {
+		audio: 2,
+		init(player, skill) {
+			player.addSkill("olandu_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill("olandu_mark");
+		},
+		isYinping(card) {
+			const actualCardName = new Map([
+					...lib.actualCardName,
+					["借刀杀人", "借刀"], //给OL借刀开门
+				]),
+				name = get.translation(typeof card == "string" ? card : get.name(card, false));
+			const trueName = actualCardName.has(name) ? actualCardName.get(name) : name,
+				pinyins = get.pinyin(trueName);
+			if (!pinyins.length) {
+				return false;
+			}
+			const check = pinyin => {
+				const yunmu = get.yunmu(pinyin);
+				if (!yunmu?.length) {
+					return false;
+				}
+				return yunmu.split("").containsSome("ā", "ē", "ī", "ō", "ū", "ǖ");
+			};
+			return check(pinyins[0]) || check(pinyins[pinyins.length - 1]);
+		},
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player, name, card) {
+			if (!get.info("olandu").isYinping(card)) {
+				return false;
+			}
+			return game.hasPlayer(current => current != player && current.countCards("h", card => get.info("olandu").isYinping(card)));
+		},
+		locked: true,
+		getIndex(event, player) {
+			return event.cards ?? [];
+		},
+		async cost(event, trigger, player) {
+			const cards = game
+				.filterPlayer(current => current != player)
+				.reduce((cards, current) => {
+					return [...cards, ...current.getCards("h", card => get.info(event.skill).isYinping(card))];
+				}, []);
+			if (cards?.length) {
+				const card = cards.randomGet();
+				event.result = {
+					bool: true,
+					targets: [get.owner(card)],
+					cost_data: card,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const { cost_data: card } = event;
+			await player.gain(card, "giveAuto");
+		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					get.info(skill).initTag(player, skill, player.getCards("h"));
+				},
+				initTag(player, skill, cards) {
+					cards = cards.filter(card => {
+						return get.info("olandu").isYinping(card) && !card.hasGaintag(skill);
+					});
+					if (cards?.length) {
+						player.addGaintag(cards, skill);
+					}
+				},
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+				trigger: {
+					player: "gainAfter",
+					global: ["loseAfter", "loseAsyncAfter", "gameDrawAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "gameDraw") {
+						return true;
+					}
+					return event.getg?.(player)?.length;
+				},
+				charlotte: true,
+				async cost(event, trigger, player) {
+					const cards = trigger.name == "gameDraw" ? player.getCards("h") : trigger.getg(player);
+					get.info(event.skill).initTag(player, event.skill, cards);
+				},
+			},
+		},
+	},
+	olqiqi: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayer",
+		},
+		round: 1,
+		filter(event, player) {
+			return event.isFirstTarget && get.cardNameLength(event.card) >= player.hp;
+		},
+		async content(event, trigger, player) {
+			await player.draw(2);
+			trigger.getParent().effectCount++;
+			const result = await player
+				.judge(card => {
+					return get.suit(card) == "heart" ? -2 : 2;
+				})
+				.forResult();
+			if (result.suit == "heart") {
+				await player.loseMaxHp();
+			}
+		},
+	},
 	//狂李儒
 	olhuaquan: {
 		audio: 2,
@@ -723,15 +840,15 @@ const skills = {
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event, player) {
-			return game.hasPlayer2(target=>{
+			return game.hasPlayer2(target => {
 				return target.hasHistory("lose", evt => {
-					const evtx = evt.relatedEvent || evt.getParent()
+					const evtx = evt.relatedEvent || evt.getParent();
 					if (evtx != event) {
 						return false;
 					}
 					return !Object.values(evt.gaintag_map).flat().includes("oldigong_tag");
 				});
-			})
+			});
 		},
 		async content(event, trigger, player) {
 			if (player.storage.oldigongCount < 4) {

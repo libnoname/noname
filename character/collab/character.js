@@ -1,4 +1,11 @@
 const characters = {
+	bigsb_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		maxHp: 5,
+		skills: ["olandu", "olqiqi"],
+	},
 	wild_liru: {
 		sex: "male",
 		group: "qun",
