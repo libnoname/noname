@@ -13052,81 +13052,66 @@ export class Library {
 					}
 				},
 			},
-			enable: ["chooseToUse", "chooseToRespond"],
-			filter(event, player) {
-				return player.countCards("hs", card => {
-					if (get.name(card) != "tao") {
-						return false;
-					}
-					return ["sha", "shan"].some(name => {
-						const vcard = get.autoViewAs({ name: name, cards: [card] }, [card]);
-						return event.filterCard(vcard, player, event);
-					});
-				});
-			},
-			chooseButton: {
-				dialog(event, player) {
-					const list = ["sha", "shan"].filter(name => {
-						return player.countCards("hs", card => {
-							if (get.name(card) != "tao") {
+			group: ["aozhan_sha", "aozhan_shan"],
+			subSkill: {
+				sha: {
+					enable: ["chooseToUse", "chooseToRespond"],
+					filterCard: {
+						name: "tao",
+					},
+					viewAs: {
+						name: "sha",
+					},
+					viewAsFilter: function (player) {
+						if (!player.countCards("hs", "tao")) {
+							return false;
+						}
+					},
+					position: "hs",
+					prompt: "将一张桃当杀使用或打出",
+					check: function () {
+						return 1;
+					},
+					ai: {
+						respondSha: true,
+						skillTagFilter: function (player) {
+							if (!player.countCards("hs", "tao")) {
 								return false;
 							}
-							const vcard = get.autoViewAs({ name: name, cards: [card] }, [card]);
-							return event.filterCard(vcard, player, event);
-						});
-					}).map(name => ["basic", "", name]);
-					const dialog = ui.create.dialog("鏖战", [list, "vcard"]);
-					dialog.direct = true;
-					return dialog;
+						},
+						order: function () {
+							return get.order({ name: "sha" }) - 0.1;
+						},
+					},
+					sub: true,
 				},
-				check(button) {
-					if (get.event().getParent().type != "phase") {
+				shan: {
+					enable: ["chooseToRespond", "chooseToUse"],
+					filterCard: {
+						name: "tao",
+					},
+					viewAs: {
+						name: "shan",
+					},
+					prompt: "将一张桃当闪打出",
+					check: function () {
 						return 1;
-					}
-					return get.player().getUseValue({ name: button.link[2] }, false);
-				},
-				prompt(links, player) {
-					return `将一张【桃】当作【${get.translation(links[0][2])}】使用或打出`;
-				},
-				backup(links, player) {
-					return {
-						filterCard(card, player) {
-							return get.name(card) === "tao";
+					},
+					viewAsFilter: function (player) {
+						if (!player.countCards("hs", "tao")) {
+							return false;
+						}
+					},
+					position: "hs",
+					ai: {
+						respondShan: true,
+						skillTagFilter: function (player) {
+							if (!player.countCards("hs", "tao")) {
+								return false;
+							}
 						},
-						popname: true,
-						check(card) {
-							return 6 - get.value(card);
-						},
-						position: "hs",
-						viewAs: {
-							name: links[0][2],
-						},
-					};
-				},
-			},
-			hiddenCard(player, name) {
-				if (!lib.inpile.includes(name) || !["sha", "shan"].includes(name)) {
-					return false;
-				}
-				return player.hasCard(card => {
-					if (_status.connectMode && get.position(card) === "h") {
-						return true;
-					}
-					return get.name(card) === "tao";
-				}, "hs");
-			},
-			locked: false,
-			ai: {
-				respondSha: true,
-				respondShan: true,
-				skillTagFilter: function (player) {
-					if (!player.countCards("hs", "tao")) {
-						return false;
-					}
-				},
-				order: 1,
-				result: {
-					player: 1,
+					},
+					sub: true,
 				},
 			},
 		},
