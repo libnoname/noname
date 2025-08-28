@@ -3011,7 +3011,7 @@ export default {
 					(get.suit(card) == "spade" && player.getHp() == 1) ||
 					(get.suit(card) == "club" && get.tag(cardx, "damage") && player.countCards("h") - (get.position(card) == "h" ? 1 : 0) - (get.position(cardx) == "h" ? 1 : 0) == 0)
 				) {
-					return 1 / (getvalue(card) || 0.5);
+					return 1 / (get.value(card) || 0.5);
 				}
 			}
 			return 0;
@@ -3531,8 +3531,8 @@ export default {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",
 		},
-		filter(event, player) {
-			if (event.card.name != "sha") {
+		filter(event, player, name) {
+			if (event.card.name != "sha" || player._isInJuzhan == name) {
 				return false;
 			}
 			const storage = player.storage.fakejuzhan;
@@ -3548,8 +3548,12 @@ export default {
 			const storage = player.storage.fakejuzhan,
 				target = trigger[storage ? "target" : "player"];
 			event.result = await player.chooseBool(get.prompt2(event.skill, target)).setHiddenSkill("fakejuzhan").forResult();
+			if (event.result.bool) {
+				player._isInJuzhan = event.triggername;
+			}
 		},
 		async content(event, trigger, player) {
+			delete player._isInJuzhan;
 			const storage = player.storage.fakejuzhan;
 			player.changeZhuanhuanji("fakejuzhan");
 			const target = trigger[storage ? "target" : "player"];
@@ -18654,9 +18658,9 @@ export default {
 					const getn = group => {
 						const targets = game.filterPlayer(current => current.identity == group);
 						if (!targets.length || group == "ye") {
-							return 1;
+							return 1 + Math.random();
 						}
-						return targets.reduce((sum, current) => sum + current.hp, 0) / targets.length;
+						return targets.reduce((sum, current) => sum + current.hp, 0) / targets.length + Math.random();
 					};
 					return groups.maxBy(getn);
 				})

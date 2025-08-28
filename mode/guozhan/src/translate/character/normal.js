@@ -25,9 +25,6 @@ export default {
 	gz_huangzhong: "黄忠",
 	gz_weiyan: "魏延",
 	gz_pangtong: "庞统",
-
-	gz_ganfuren: "甘夫人",
-	gz_pangde: "庞德",
 };
 
 export const sort = ["guozhan_default", "国战标准"];

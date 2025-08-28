@@ -3783,7 +3783,7 @@ const skills = {
 				},
 				mod: {
 					cardEnabled2(card) {
-						if (card.hasGaintag("twniwo")) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("twniwo")) {
 							return false;
 						}
 					},

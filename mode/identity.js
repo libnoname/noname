@@ -4973,13 +4973,6 @@ export default () => {
 				precontent() {
 					player.removeSkill("sixiang_xuanwu");
 				},
-				ai: {
-					result: {
-						player(player, target) {
-							return -ui.selected.cards.reduce((p, c) => p + get.value(c, player), 0) / 6;
-						},
-					},
-				},
 				group: "sixiang_remove",
 			},
 			sixiang_qinglong: {

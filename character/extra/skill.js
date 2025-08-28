@@ -213,7 +213,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				trigger: {
-					player: ["phaseDrawBegin2", "useCardToPlayer", "damageBegin3"],
+					player: ["phaseDrawBegin2", "useCardToPlayer", "damageBegin3", "damageBegin4"],
 					source: "damageBegin1",
 				},
 				filter(event, player, name) {
@@ -223,6 +223,15 @@ const skills = {
 					}
 					const jun = target.countMark("mark_shouli_jun"),
 						li = target.countMark("mark_shouli_li");
+					if (name == "damageBegin4") {
+						if (jun + li <= 0) {
+							return false;
+						}
+						if (event.hasNature()) {
+							return true;
+						}
+						return event.card?.name && ["wanjian", "nanman"].includes(event.card.name);
+					}
 					if (name == "useCardToPlayer") {
 						return event.card?.name == "sha" && jun > 2;
 					}
@@ -272,6 +281,15 @@ const skills = {
 							}
 							if (li > 3) {
 								trigger.num += num;
+							}
+							break;
+						}
+						default: {
+							if (jun > 0 && target.getPrevious()?.isIn() && target.getPrevious() != target) {
+								get.info("mark_shouli").changeMark(target, target.getPrevious(), "mark_shouli_jun");
+							}
+							if (li > 0 && target.getNext()?.isIn() && target.getNext() != target) {
+								get.info("mark_shouli").changeMark(target, target.getNext(), "mark_shouli_li");
 							}
 							break;
 						}
@@ -352,10 +370,11 @@ const skills = {
 					name: "骏",
 					content(storage, player) {
 						const list = ["⚡你计算与其他角色的距离-1", "⚡摸牌阶段你额外摸一张牌", "⚡你使用【杀】指定目标时，令其本回合非锁定技失效"];
+						let str = "⚡当你受到属性伤害或【南蛮入侵】、【万箭齐发】造成的伤害时，你将所有“骏”移动至你上家";
 						if (typeof storage != "number" || storage <= 0) {
-							return "无效果";
+							return str;
 						}
-						return list.slice(0, storage).join("<br>");
+						return `${str}<br>${list.slice(0, storage).join("<br>")}`;
 					},
 				},
 			},
@@ -365,10 +384,11 @@ const skills = {
 					name: "骊",
 					content(storage, player) {
 						const list = ["⚡其他角色计算与你的距离+1", "⚡摸牌阶段你额外摸一张牌", "⚡你造成或受到的伤害视为雷电伤害", "⚡你造成或受到的伤害+1"];
+						let str = "⚡当你受到属性伤害或【南蛮入侵】、【万箭齐发】造成的伤害时，你将所有“骊”移动至你下家";
 						if (typeof storage != "number" || storage <= 0) {
-							return "无效果";
+							return str;
 						}
-						return list.slice(0, storage).join("<br>");
+						return `${str}<br>${list.slice(0, storage).join("<br>")}`;
 					},
 				},
 			},
@@ -871,8 +891,8 @@ const skills = {
 							equips = target.getCards("e", card => list[1].includes(card));
 						if (equips.length) {
 							await target.loseToDiscardpile(equips);
-							await lib.skill.cazhaoshao.closeEquip(target, target, list[0]);
-							target.setStorage("cazhaoshao_equip", []);
+							//await lib.skill.cazhaoshao.closeEquip(target, target, list[0]);
+							//target.setStorage("cazhaoshao_equip", []);
 						}
 					}
 					const subtypes = get.subtypes(equip);
