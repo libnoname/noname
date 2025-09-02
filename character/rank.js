@@ -1002,6 +1002,8 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"sunyuan",
+		"clan_hanfu",
 		"mb_chenzhi",
 		"ol_sb_xiaoqiao",
 		"dc_sb_hulie",
@@ -2885,6 +2887,8 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"sunyuan",
+			"clan_hanfu",
 			"star_taishici",
 			"zj_zhanghu",
 			"zj_yuechen",

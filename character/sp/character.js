@@ -1,4 +1,10 @@
 const characters = {
+	sunyuan: {
+		sex: "female",
+		group: "wu",
+		hp: 4,
+		skills: ["olsaying", "oltongxin"],
+	},
 	ol_fanyufeng: {
 		sex: "female",
 		group: "qun",
@@ -85,7 +91,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["oljiawei"],
+		skills: ["oljiawei", "olqujia"],
 	},
 	ol_yuanhuan: {
 		sex: "male",
@@ -160,6 +166,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["olshuzi", "olkuangshou"],
+		clans: ["颍川韩氏"],
 	},
 	ol_niufu: {
 		sex: "male",

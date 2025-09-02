@@ -398,6 +398,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["hfjieying", "weipo"],
+		clans: ["颍川韩氏"],
 	},
 	re_quyi: {
 		sex: "male",

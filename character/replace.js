@@ -106,7 +106,7 @@ window.noname_character_replace = {
 	guozhao: ["ol_guozhao", "guozhao", "xin_guozhao", "jsrg_guozhao", "std_guozhao"],
 	guyong: ["guyong", "re_guyong", "xin_guyong", "tw_guyong"],
 	handang: ["handang", "xin_handang", "re_handang", "sb_handang", "tw_handang", "old_handang"],
-	hanfu: ["hanfu", "ol_hanfu"],
+	hanfu: ["hanfu", "ol_hanfu", "clan_hanfu"],
 	hanhaoshihuan: ["hanhaoshihuan", "re_hanhaoshihuan"],
 	hanlong: ["hanlong", "jd_hanlong"],
 	hansui: ["hansui", "re_hansui", "xin_hansui", "jsrg_hansui", "wn_hansui"],

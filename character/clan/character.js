@@ -1,4 +1,12 @@
 const characters = {
+	clan_hanfu: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		maxHp: 4,
+		skills: ["clanheta", "clanyingxiang", "clanxumin"],
+		clans: ["颍川韩氏"],
+	},
 	clan_luji: {
 		sex: "male",
 		group: "wu",
