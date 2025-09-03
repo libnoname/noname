@@ -7945,12 +7945,33 @@ const skills = {
 				}*/
 			},
 		},
+		init(player) {
+			player.addSkill("dclianjie_effect");
+		},
 		subSkill: {
-			used: {
+			effect: {
 				charlotte: true,
-				onremove(player, skill) {
-					delete player.storage[skill];
+				onremove(player) {
 					player.removeGaintag("dclianjie");
+				},
+				trigger: {
+					player: "useCard1",
+				},
+				filter(event, player) {
+					return event.addCount !== false &&  player.hasHistory("lose", evt => {
+						if (evt.getParent() != event) {
+							return false;
+						}
+						return Object.values(evt.gaintag_map).flat().includes("dclianjie");
+					});
+				},
+				async cost(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				},
 				mod: {
 					targetInRange(card, player, target) {
@@ -7979,6 +8000,13 @@ const skills = {
 							}
 						}
 					},
+				},
+			},
+			used: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeGaintag("dclianjie");
 				},
 				intro: {
 					//${get.translation(storage).replace("13", "K").replace("12", "Q").replace("11", "J").replace("1", "A")}

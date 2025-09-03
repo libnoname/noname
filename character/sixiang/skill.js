@@ -993,7 +993,7 @@ const skills = {
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
 			if (target.canUse({ name: "sha" }, player)) {
 				await target.useCard(sha, player);
-				if (!game.hasPlayer(current => current.hasHistory("damage", evt => evt.getParent(3) == event))) {
+				if (!game.hasPlayer2(current => current.hasHistory("damage", evt => evt.getParent(3) == event), true)) {
 					target.addTempSkill(event.name + "_effect");
 				}
 			}

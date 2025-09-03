@@ -9468,7 +9468,7 @@ const skills = {
 					global: "useCardToTarget",
 				},
 				filter(event, player) {
-					if (get.type(event.card) == "equip") {
+					if (event.player == player || get.type(event.card) == "equip") {
 						return false;
 					}
 					if (!event.targets || event.targets.length != 1) {
