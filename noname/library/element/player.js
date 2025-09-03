@@ -4445,7 +4445,7 @@ export class Player extends HTMLDivElement {
 	 * 获取蓄力点上限
 	 */
 	getMaxCharge() {
-		let skills = game.expandSkills(this.getSkills().concat(lib.skill.global));
+		let skills = game.expandSkills(this.getSkills(null, null, false).concat(lib.skill.global));
 		let max = 0;
 		for (let skill of skills) {
 			let info = get.info(skill);

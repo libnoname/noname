@@ -6804,22 +6804,28 @@ const skills = {
 		enable: ["chooseToUse", "chooseToRespond"],
 		maxNum: 8,
 		filter(event, player) {
-			if (event.type == "wuxie" || player.hasSkill("sbrende_used")) {
+			if (event.type == "wuxie") {
 				return false;
 			}
-			if (player.countMark("sbrende") < 2) {
+			const storage = player.getStorage("sbrende_used");
+			if (event.type == "phase" && player.countCards("h") && game.hasPlayer(current => {
+				return !storage.includes(current) && current != player;
+			})) {
+				return true;
+			}
+			if (player.countMark("sbrende") < 2 || storage.includes("card")) {
 				return false;
 			}
-			for (var name of lib.inpile) {
+			for (const name of lib.inpile) {
 				if (get.type(name) != "basic") {
 					continue;
 				}
-				var card = { name: name, isCard: true };
+				const card = { name: name, isCard: true };
 				if (event.filterCard(card, player, event)) {
 					return true;
 				}
 				if (name == "sha") {
-					for (var nature of lib.inpile_nature) {
+					for (const nature of lib.inpile_nature) {
 						card.nature = nature;
 						if (event.filterCard(card, player, event)) {
 							return true;
@@ -6829,83 +6835,37 @@ const skills = {
 			}
 			return false;
 		},
-		group: ["sbrende_give", "sbrende_gain"],
+		group: ["sbrende_gain"],
 		chooseButton: {
 			dialog(event, player) {
-				var dialog = ui.create.dialog("仁德");
-				if (event.type == "phase") {
-					dialog._chosenOpt = [];
-					var table = document.createElement("div");
-					table.classList.add("add-setting");
-					table.style.margin = "0";
-					table.style.width = "100%";
-					table.style.position = "relative";
-					var list = ["视为使用基本牌", "交给其他角色牌"];
-					for (var i of list) {
-						var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-						td.innerHTML = "<span>" + i + "</span>";
-						td.link = i;
-						if (i == list[0]) {
-							td.classList.add("bluebg");
-							dialog._chosenOpt.add(td);
-						}
-						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-							if (_status.dragged) {
-								return;
-							}
-							if (_status.clicked) {
-								return;
-							}
-							if (_status.justdragged) {
-								return;
-							}
-							_status.tempNoButton = true;
-							_status.clicked = true;
-							setTimeout(function () {
-								_status.tempNoButton = false;
-							}, 500);
-							var link = this.link;
-							if (link == "交给其他角色牌") {
-								game.uncheck();
-							}
-							var current = this.parentNode.querySelector(".bluebg");
-							if (current) {
-								current.classList.remove("bluebg");
-								dialog._chosenOpt.remove(current);
-							}
-							dialog._chosenOpt.add(this);
-							this.classList.add("bluebg");
-							game.check();
-						});
-						table.appendChild(td);
-						dialog.buttons.add(td);
-					}
-					dialog.content.appendChild(table);
+				const dialog = ui.create.dialog("仁德"),
+					storage = player.getStorage("sbrende_used"),
+					list = [],
+					cards = [];
+				dialog.direct = true;
+				if (event.type == "phase" && player.countCards("h") && game.hasPlayer(current => {
+					return !storage.includes(current) && current != player;
+				})) {
+					dialog.add([[["give", "交给其他角色牌"]], "tdnodes"]);
 				}
-				var cards = [];
-				for (var name of lib.inpile) {
-					if (get.type(name) != "basic") {
-						continue;
-					}
-					var card = { name: name, isCard: true };
-					if (event.filterCard(card, player, event)) {
-						cards.push(["基本", "", name]);
-					}
-					if (name == "sha") {
-						for (var nature of lib.inpile_nature) {
-							card.nature = nature;
-							if (event.filterCard(card, player, event)) {
-								cards.push(["基本", "", name, nature]);
-							}
+				if (player.countMark("sbrende") > 1 && !storage.includes("card")) {
+					cards.addArray(get.inpileVCardList(info => {
+						if (info[0] != "basic") {
+							return false;
 						}
+						const card = { name: info[2], nature: info[3], isCard: true };
+						return event.filterCard(card, player, event);
+					}));
+					if (cards.length) {
+						dialog.addText("视为使用基本牌");
+						dialog.add([cards, "vcard"]);
 					}
 				}
-				dialog.add([cards, "vcard"]);
 				return dialog;
 			},
 			check(button, player) {
 				if (typeof button.link == "string") {
-					return -1;
+					return 0.1;
 				}
 				if (_status.event.getParent().type != "phase") {
 					return 1;
@@ -6915,25 +6875,22 @@ const skills = {
 					nature: button.link[3],
 				});
 			},
-			select() {
-				var opts = _status.event.dialog._chosenOpt;
-				return opts && opts.length && opts[0].link == "交给其他角色牌" ? 0 : 1;
-			},
 			backup(links, player) {
-				var isUse = links.length == 1;
-				var backup = get.copy(lib.skill["sbrende_" + (isUse ? "use" : "give")]);
+				const isUse = links[0] !== "give";
+				const backup = get.copy(lib.skill["sbrende_" + (isUse ? "use" : "give")]);
 				if (isUse) {
-					backup.viewAs = { name: links[0][2], nature: links[0][3], isCard: true };
+					const card = links[0];
+					backup.viewAs = { name: card[2], nature: card[3], isCard: true };
 				}
 				return backup;
 			},
 			prompt(links, player) {
-				var isUse = links.length == 1;
+				const isUse = links[0] !== "give";
 				return isUse ? "移去2枚“仁望”，视为使用或打出" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) : "###仁德###出牌阶段每名角色限一次。你可以将任意张牌交给一名其他角色，然后你获得等量“仁望”标记（至多为" + lib.skill.sbrende.maxNum + "）";
 			},
 		},
 		hiddenCard(player, name) {
-			return get.type(name) == "basic" && player.countMark("sbrende") > 1 && player.hasSkill("sbrende_used");
+			return get.type(name) == "basic" && player.countMark("sbrende") > 1 && !player.hasSkill("sbrende_used");
 		},
 		marktext: "仁",
 		intro: {
@@ -6946,27 +6903,29 @@ const skills = {
 			respondShan: true,
 			save: true,
 			skillTagFilter(player) {
-				return player.countMark("sbrende") > 1 && !player.hasSkill("sbrende_used");
+				return player.countMark("sbrende") > 1 && !player.getStorage("sbrende_used").includes("card");
 			},
 			order(item, player) {
 				if (_status.event.type == "phase" && lib.skill.sbzhangwu.ai.result.player(player) > 0) {
-					return 9.1;
+					return 7.1;
 				}
-				return 0.5;
+				return 4;
 			},
 			result: {
 				player(player) {
 					if (_status.event.dying) {
 						return get.attitude(player, _status.event.dying);
 					}
-					return _status.event.type == "phase" && player.countMark("sbrende") <= 2 ? 0 : 1;
+					return 1;
 				},
 			},
 		},
 		subSkill: {
 			backup: {},
-			used: { charlotte: true },
-			given: { onremove: true },
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 			use: {
 				audio: "sbrende",
 				filterCard: () => false,
@@ -6974,53 +6933,31 @@ const skills = {
 				popname: true,
 				log: false,
 				precontent() {
-					player.logSkill("sbrende_use");
+					player.logSkill("sbrende");
 					player.removeMark("sbrende", 2);
 					player.addTempSkill("sbrende_used");
+					player.markAuto("sbrende_used", "card");
 				},
 			},
 			give: {
 				audio: "sbrende",
-				enable: "phaseUse",
 				filterCard: true,
 				selectCard: [1, Infinity],
 				position: "he",
 				discard: false,
 				lose: false,
 				delay: false,
-				filter(event, player) {
-					if (player.countMark("sbrende") < 2 || player.hasSkill("sbrende_used")) {
-						return true;
-					}
-					for (var name of lib.inpile) {
-						if (get.type(name) != "basic") {
-							continue;
-						}
-						var card = { name: name, isCard: true };
-						if (event.filterCard(card, player, event)) {
-							return false;
-						}
-						if (name == "sha") {
-							for (var nature of lib.inpile_nature) {
-								card.nature = nature;
-								if (event.filterCard(card, player, event)) {
-									return false;
-								}
-							}
-						}
-					}
-					return true;
-				},
 				filterTarget(card, player, target) {
-					if (player.getStorage("sbrende_given").includes(target)) {
+					if (player.getStorage("sbrende_used").includes(target)) {
 						return false;
 					}
 					return player != target;
 				},
+				selectTarget: 1,
 				prompt(event) {
 					return "出牌阶段每名角色限一次。你可以将任意张牌交给一名其他角色，然后你获得等量“仁望”标记（至多为" + lib.skill.sbrende.maxNum + "）";
 				},
-				check(card) {
+				ai1(card) {
 					var player = get.owner(card);
 					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
 						return 0;
@@ -7051,42 +6988,39 @@ const skills = {
 					}
 					return 18 - (ui.selected.cards.length + player.countMark("sbrende")) - get.value(card);
 				},
-				content() {
-					player.addTempSkill("sbrende_given", "phaseUseAfter");
-					player.markAuto("sbrende_given", [target]);
+				async content(event, trigger, player) {
+					const { cards, target } = event;
+					player.addTempSkill("sbrende_used");
+					player.markAuto("sbrende_used", [target]);
 					player.markAuto("sbrende_givenx", [target]);
-					player.give(cards, target);
-					var num = Math.min(lib.skill.sbrende.maxNum - player.countMark("sbrende"), cards.length);
+					player
+						.when({
+							global: "phaseUseAfter",
+						})
+						.step(async (event, trigger, player) => {
+							player.unmarkAuto("sbrende_used", [target]);
+						});
+					await player.give(cards, target);
+					const num = Math.min(lib.skill.sbrende.maxNum - player.countMark("sbrende"), cards.length);
 					if (num > 0) {
 						player.addMark("sbrende", num);
 					}
 				},
-				ai: {
-					order(skill, player) {
-						return player.countMark("sbrende") < 2 ? 6.8 : 5.8;
-					},
-					result: {
-						target(player, target) {
-							if (!player.hasFriend() && player.hasSkill("sbzhangwu") && ui.selected.cards.length && get.value(ui.selected.cards[0]) > (lib.skill.sbzhangwu.filterTarget(null, player, target) ? 3 : 5)) {
-								return -0.1;
-							}
-							if (target.hasSkillTag("nogain")) {
-								return 0;
-							}
-							if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
-								if (target.hasSkillTag("nodu")) {
-									return 0;
-								}
-								return -10;
-							}
-							if (target.hasJudge("lebu")) {
-								return 0;
-							}
-							var nh = target.countCards("h");
-							return Math.max(1, 5 - nh);
-						},
-					},
-					threaten: 1.1,
+				ai2(target) {
+					if (target.hasSkillTag("nogain")) {
+						return 0;
+					}
+					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+						if (target.hasSkillTag("nodu")) {
+							return 0;
+						}
+						return -10;
+					}
+					if (target.hasJudge("lebu")) {
+						return 0;
+					}
+					var nh = target.countCards("h");
+					return Math.max(1, 5 - nh) * get.attitude(get.player(), target);
 				},
 			},
 			gain: {
@@ -7127,7 +7061,8 @@ const skills = {
 			}
 			return player.getStorage("sbrende_givenx").includes(target);
 		},
-		selectTarget: [-1, -2],
+		manualConfirm: true,
+		selectTarget: -1,
 		multiline: true,
 		content() {
 			"step 0";
@@ -7155,7 +7090,7 @@ const skills = {
 			game.delayx();
 		},
 		ai: {
-			order: 9,
+			order: 7,
 			combo: "sbrende",
 			result: {
 				player(player, target) {
