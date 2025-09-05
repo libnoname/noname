@@ -1930,7 +1930,7 @@ player.removeVirtualEquip(card);
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 				// 如果只有一行那么多选一般来说就没什么意义喵
-				const canMultiselect = list.length > 1 || !lib.config.choose_all_button || event.noChooseAll;
+				const canMultiselect = list.length > 1 && lib.config.choose_all_button && event.allowChooseAll;
 
 				//_status.imchoosing = true;
 				event.settleed = false;
@@ -2319,7 +2319,8 @@ player.removeVirtualEquip(card);
 
 					let spannedSingle = false;
 
-					if (ui.selected.buttons.length === 1) {
+					// 我们要判断是不是跨区的单个交换喵，但是如果是拖拽的情况下一定是单个交换喵，所以没必要进行额外判断喵
+					if (!isDragging && ui.selected.buttons.length === 1) {
 						const curCard = ui.selected.buttons[0];
 						const target = e.target;
 						if (!curCard.contains(target)) {
@@ -2337,7 +2338,7 @@ player.removeVirtualEquip(card);
 					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1) || spannedSingle) {
 						const curCard = ui.selected.buttons[0];
 						// 鼠标当前处于哪个元素上
-						const target = e.target;
+						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
 						// 相当于没移动，让它自己触发后续的click
 						if (curCard.contains(target)) {
 							return;
@@ -4957,69 +4958,75 @@ player.removeVirtualEquip(card);
 		event.trigger(event.name);
 		game.log(player, "进入了准备阶段");
 	},
-	phaseJudge: function () {
-		"step 0";
-		game.log(player, "进入了判定阶段");
-		event.cards = player.getCards("j");
-		if (!event.cards.length) {
-			event.finish();
-		}
-		"step 1";
-		if (cards.length) {
-			event.card = cards.shift();
-			var cardName = event.card.name,
-				cardInfo = lib.card[cardName];
-			var VJudge = event.card[event.card.cardSymbol];
-			if (cardInfo.noEffect) {
+	phaseJudge: [
+		async (event, trigger, player) => {
+			game.log(player, "进入了判定阶段");
+			event.cards = player.getCards("j");
+		},
+		async (event, trigger, player) => {
+			if (!event.cards.length) {
+				event.finish();
+				return;
+			}
+			event.card = event.cards.shift();
+			const cardName = event.card.name,
+				cardInfo = lib.card[cardName],
+				VJudge = event.card[event.card.cardSymbol];
+			if (cardInfo.noEffect || !player.getCards("j").includes(event.card)) {
 				event.redo();
 			} else {
 				if (event.card) {
-					player.lose(event.card, "visible", ui.ordering);
+					await player.lose(event.card, "visible", ui.ordering);
 				}
 				player.$phaseJudge(event.card);
 				event.cancelled = false;
-				event.trigger("phaseJudge");
+				await event.trigger("phaseJudge");
 				player.popup(cardName, "thunder");
 				if (!cardInfo.effect) {
-					game.delay();
+					await game.delay();
 					event.redo();
 				} else if (!cardInfo.judge) {
-					game.delay();
+					await game.delay();
 					event.nojudge = true;
 				} else {
 					event.nojudge = false;
 				}
 			}
-		} else {
-			event.finish();
-		}
-		"step 2";
-		if (!event.cancelled && !event.nojudge) {
-			player.judge(event.card).set("type", "phase");
-		}
-		"step 3";
-		var name = event.card.name;
-		if (event.excluded) {
-			delete event.excluded;
-		} else if (event.cancelled && !event.direct) {
-			if (lib.card[name].cancel) {
-				var next = game.createEvent(name + "Cancel");
-				next.setContent(lib.card[name].cancel);
+		},
+		async (event, trigger, player) => {
+			if (!event.cancelled && !event.nojudge) {
+				event.result = await player
+					.judge(event.card)
+					.set("type", "phase")
+					.forResult();
+			}
+		},
+		async (event, trigger, player) => {
+			const name = event.card.name;
+			if (event.excluded) {
+				delete event.excluded;
+			} else if (event.cancelled && !event.direct) {
+				if (lib.card[name].cancel) {
+					const next = game.createEvent(name + "Cancel");
+					next.setContent(lib.card[name].cancel);
+					next.card = event.card;
+					next.cards = event.card.cards ?? [];
+					next.player = player;
+					await next;
+				}
+			} else {
+				const next = game.createEvent(name);
+				next.setContent(lib.card[name].effect);
+				next._result = event.result;
 				next.card = event.card;
 				next.cards = event.card.cards ?? [];
 				next.player = player;
+				await next;
 			}
-		} else {
-			var next = game.createEvent(name);
-			next.setContent(lib.card[name].effect);
-			next._result = result;
-			next.card = event.card;
-			next.cards = event.card.cards ?? [];
-			next.player = player;
-		}
-		ui.clear();
-		event.goto(1);
-	},
+			ui.clear();
+			event.goto(1);
+		},
+	],
 	/**
 	 * @deprecated
 	 */
@@ -6025,9 +6032,9 @@ player.removeVirtualEquip(card);
 				}*/
 				if (event.result.skill) {
 					const info = get.info(event.result.skill);
-					if (info && info.content && !game.online) {
-						const next = game.createEvent(event.result.skill);
-						next.setContent(info.content);
+					if (info && info.precontent && !game.online) {
+						const next = game.createEvent("pre_" + event.result.skill);
+						next.setContent(info.precontent);
 						next.set("result", event.result);
 						next.set("player", player);
 						await next;
@@ -8780,7 +8787,7 @@ player.removeVirtualEquip(card);
 						const targets = event.showers.concat(Array.from(ownerLose.keys()));
 						for (const target of targets.unique().sortBySeat()) {
 							const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
-							if (cardsx.length) {
+							if (cardsx?.length) {
 								const logList = event.log?.(cardsx, target) || [target, "展示了", cardsx];
 								game.log(...logList);
 							}
@@ -8797,7 +8804,7 @@ player.removeVirtualEquip(card);
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
 					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-					if (ownerLose.values().length > 0) {
+					if (ownerLose.values()?.length > 0) {
 						const next = game.loseAsync(Array.from(ownerLose.entries())).set("relatedEvent", event.relatedEvent || event.getParent());
 						next.setContent("chooseToCompareLose");
 						await next;
@@ -10002,7 +10009,6 @@ player.removeVirtualEquip(card);
 			event.includeOut = true;
 		}
 		event._skill = event.skill;
-		game.trySkillAudio(event.skill, player, null, null, null, [event, event.player]);
 		var checkShow = player.checkShow(event.skill);
 		if (info.discard != false && info.lose != false && !info.viewAs) {
 			player.discard(cards).delay = false;
@@ -10073,6 +10079,7 @@ player.removeVirtualEquip(card);
 		}
 		str += "发动了";
 		if (!info.direct && info.log !== false) {
+			game.trySkillAudio(event.skill, player, null, null, null, [event, event.player]);
 			game.log(player, str, "【" + get.skillTranslation(skill, player) + "】");
 			if (info.logv !== false) {
 				game.logv(player, skill, targets);

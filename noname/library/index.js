@@ -1266,6 +1266,12 @@ export class Library {
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
 				},
+				choose_all_button: {
+					name: "启用全选/反选按钮",
+					init: true,
+					unfrequent: true,
+					intro: "在选择大量的牌时提供全选/反选功能<br><br>对于部分技能可能会因为其主动限制或者存在复杂的选择情况而失效",
+				},
 				clear_FavoriteCharacter: {
 					name: "清除已收藏武将",
 					clear: true,
@@ -1326,12 +1332,6 @@ export class Library {
 							}, 1000);
 						}
 					},
-				},
-				choose_all_button: {
-					name: "启用全选/反选按钮",
-					init: true,
-					unfrequent: true,
-					intro: "在选择大量的牌时提供全选/反选功能<br><br>对于部分技能可能会因为其主动限制或者存在复杂的选择情况而失效",
 				},
 				video: {
 					name: "保存录像",

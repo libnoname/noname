@@ -3180,9 +3180,21 @@ const skills = {
 					.set("filterButton", button => {
 						return lib.filter.cardDiscardable(button.link, get.player(), "jsrgdaimou");
 					})
-					.set("ai", button => {
-						const player = get.player();
-						return 1 / Math.max(0.01, player.getUseValue(button.link));
+					.set("ai", ({ link }) => {
+						const player = get.player(),
+							card = link.cards?.[0];
+						if (!card) {
+							return 0;
+						}
+						if (!player.hasValueTarget(card)) {
+							return 200;
+						}
+						if (player.countCards("j", cardx => cardx?.cards?.some(cardxx => {
+							return cardxx.name == card.name;
+						})) > 1) {
+							return 101;
+						}
+						return 1 / Math.max(0.01, player.getUseValue(link));
 					});
 				if (bool) {
 					await player.discard(links);

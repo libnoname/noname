@@ -8292,6 +8292,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		check(card) {
 			var player = _status.event.player;
 			if (get.position(card) == "h") {

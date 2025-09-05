@@ -4589,6 +4589,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		position: "h",
 		discard: false,
 		lose: false,

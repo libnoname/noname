@@ -135,7 +135,7 @@ export const checkEnd = {
 			if (!info.filterCard || !info.selectCard) {
 				return;
 			}
-			if (info.complexSelect || info.complexCard || info.noChooseAll) {
+			if (info.complexSelect || info.complexCard || !info.allowChooseAll) {
 				return;
 			}
 			// 调用函数创建全选按钮喵

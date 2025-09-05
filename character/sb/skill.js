@@ -6426,15 +6426,18 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					audio: "sbtianxin",
+					audio: "sbtiaoxin",
 					control: links[0],
 					filterTarget: lib.filter.notMe,
+					logAudio: (event, player) => {
+						const control = get.info("sbtiaoxin_backup")?.control;
+						return control == "all" ? ["sbtiaoxin3.mp3", "sbtiaoxin4.mp3"] : 2;
+					},
 					async content(event, trigger, player) {
 						const { control } = get.info(event.name),
 							{ target } = event;
 						if (control == "all") {
 							player.popup("背水", "fire");
-							player.logSkill("sbtiaoxin", null, null, null, [get.rand(3, 4)]);
 							player.addTempSkill("sbtiaoxin_damage");
 							player.addMark("sbtiaoxin_damage", 1, false);
 							target.addTempSkill("sbtiaoxin_damage");
@@ -6698,6 +6701,7 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "sbbeifa",
+					logAudio: () => "sbbeifa",
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
@@ -6705,7 +6709,7 @@ const skills = {
 					ai1: card => 7 - get.value(card),
 					async precontent(event, trigger, player) {
 						const name = event.result.card.name;
-						player.logSkill("sbbeifa");
+						player.logSkill("sbbeifa", null, null, null, [get.rand(3, 4)]);
 						player.addSkill("sbbeifa_used");
 						player.markAuto("sbbeifa", name);
 						player.removeCharge(get.cardNameLength(name));
@@ -6764,7 +6768,7 @@ const skills = {
 				},
 			},
 			backflow: {
-				audio: ["sbbeifa3.mp3", "sbbeifa4.mp3"],
+				audio: ["sbbeifa1.mp3", "sbbeifa2.mp3"],
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "useCard", "respond"],
 				},
@@ -6777,7 +6781,7 @@ const skills = {
 					if (event.name.indexOf("lose") == 0) {
 						return (
 							event.type == "discard" &&
-							game.hasPlayer(current => {
+							game.hasPlayer2(current => {
 								return event.getl(current)?.cards2?.length;
 							})
 						);
@@ -6943,6 +6947,7 @@ const skills = {
 				audio: "sbrende",
 				filterCard: true,
 				selectCard: [1, Infinity],
+				allowChooseAll: true,
 				position: "he",
 				discard: false,
 				lose: false,
@@ -9183,6 +9188,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		check(card) {
 			let player = _status.event.player;
 			if (

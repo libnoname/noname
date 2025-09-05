@@ -58,7 +58,7 @@ const characters = {
 	dc_sb_jiangwei: {
 		sex: "male",
 		group: "shu",
-		hp: 2,
+		hp: 3,
 		maxHp: 4,
 		skills: ["dcsbjuemou", "dcsbfuzhan"],
 	},

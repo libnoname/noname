@@ -373,35 +373,28 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (!player.storage.dcguying_double) {
-				player.storage.dcguying_double = true;
-			}
+			player.storage.dcguying_double ??= true;
 			const targets = event.targets,
 				skill = "dcguying_effect";
 			player.addTempSkill(skill, { player: "phaseJieshuBegin" });
-			player.storage[skill + "_target"].addArray(targets);
-			targets.forEach(target => target.markAuto(skill, player));
+			player.markAuto(skill, targets);
+			targets.forEach(target => target.markAuto(event.name, player));
+		},
+		intro: {
+			content: `下一次受到伤害后，依次摸体力上限张牌（最多摸5张），然后将超出体力上限的牌数交给<span class=thundertext>$</span>`,
 		},
 		subSkill: {
 			effect: {
 				audio: "dcguying",
 				charlotte: true,
 				forced: true,
-				intro: {
-					content(storage, player) {
-						return `下一次受到伤害后，依次摸体力上限张牌（最多摸5张），然后将超出体力上限的牌数交给<span class=thundertext>${get.translation(storage)}</span>`;
-					},
-				},
-				init(player, skill) {
-					player.storage[skill + "_target"] = [];
-				},
 				onremove(player, skill) {
-					player.storage[skill + "_target"].forEach(target => target.unmarkAuto(skill, player));
-					delete player.storage[skill + "_target"];
+					player.storage[skill].forEach(target => target.unmarkAuto("dcguying", player));
+					delete player.storage[skill];
 				},
 				trigger: { global: "damageEnd" },
 				filter(event, player) {
-					return event.num > 0 && player.storage["dcguying_effect_target"].includes(event.player);
+					return event.num > 0 && player.getStorage("dcguying_effect").includes(event.player);
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
@@ -409,8 +402,8 @@ const skills = {
 						delete player.storage.dcguying_double;
 					}
 					const target = trigger.player;
-					player.storage["dcguying_effect_target"].remove(target);
-					target.unmarkAuto(event.name, player);
+					player.unmarkAuto(event.name, target);
+					target.unmarkAuto("dcguying", player);
 					await target.draw(Math.min(5, target.maxHp));
 					const num = target.countCards("h") - target.maxHp;
 					if (num > 0 && target != player) {
@@ -4202,6 +4195,9 @@ const skills = {
 					target.addJudge({ name: "dczixi_" + cardname }, [card]);
 				}
 			}
+		},
+		ai: {
+			combo: "dcqiqin",
 		},
 		group: "dczixi_effect",
 		subSkill: {
@@ -13684,7 +13680,7 @@ const skills = {
 						event.finish();
 						return;
 					}
-					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？", "noChooseAll");
+					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？");
 					next.set("list", [
 						[get.translation(player) + "（你）的疠", cards],
 						["手牌区", player.getCards("h", card => get.color(card, player) == "black")],
@@ -15369,7 +15365,7 @@ const skills = {
 									use -= Math.sqrt(Math.abs(val));
 								}
 							});
-							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -event.num];
+							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -num];
 							return res.indexOf(Math.max(...res));
 						})()
 					)
@@ -15377,44 +15373,42 @@ const skills = {
 			} else {
 				result = { index: 0 };
 			}
-			if (result?.control) {
-				switch (result.index) {
-					case 0:
-						target.addTempSkill("yachai_block");
-						await player.draw(2);
-						return;
-					case 1: {
-						await target.showHandcards();
-						const map = {},
-							hs = target.getCards("h");
-						for (const i of hs) {
-							map[get.suit(i, target)] = true;
-						}
-						const list = Object.keys(map).filter(i => lib.suit.includes(i));
-						let result2;
-						if (!list.length) {
-							return;
-						} else if (list.length == 1) {
-							result2 = { control: list[0] };
-						} else {
-							result2 = await target
-								.chooseControl(list)
-								.set("prompt", "将一种花色的牌交给" + get.translation(player))
-								.forResult();
-						}
-						if (result2?.control) {
-							const cards = target.getCards("h", function (card) {
-								return get.suit(card, target) == result2.control && lib.filter.canBeGained(card, player, target, "yachai");
-							});
-							if (cards.length) {
-								await target.give(cards, player, "give");
-							}
-						}
-						return;
+			switch (result?.index) {
+				case 0:
+					target.addTempSkill("yachai_block");
+					await player.draw(2);
+					return;
+				case 1: {
+					await target.showHandcards();
+					const map = {},
+						hs = target.getCards("h");
+					for (const i of hs) {
+						map[get.suit(i, target)] = true;
 					}
-					case 2:
-						await target.chooseToDiscard("h", true, num);
+					const list = Object.keys(map).filter(i => lib.suit.includes(i));
+					let result2;
+					if (!list.length) {
+						return;
+					} else if (list.length == 1) {
+						result2 = { control: list[0] };
+					} else {
+						result2 = await target
+							.chooseControl(list)
+							.set("prompt", "将一种花色的牌交给" + get.translation(player))
+							.forResult();
+					}
+					if (result2?.control) {
+						const cards = target.getCards("h", function (card) {
+							return get.suit(card, target) == result2.control && lib.filter.canBeGained(card, player, target, "yachai");
+						});
+						if (cards.length) {
+							await target.give(cards, player, "give");
+						}
+					}
+					return;
 				}
+				case 2:
+					await target.chooseToDiscard("h", true, num);
 			}
 		},
 		subSkill: {

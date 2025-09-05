@@ -2327,8 +2327,8 @@ export class Player extends HTMLDivElement {
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "boolean") {
 				next.forced = arguments[i];
-			} else if (arguments[i] === "noChooseAll") {
-				next.noChooseAll = true;
+			} else if (arguments[i] === "allowChooseAll") {
+				next.allowChooseAll = true;
 			} else if (typeof arguments[i] == "string") {
 				next.prompt = arguments[i];
 			}
@@ -5523,6 +5523,8 @@ export class Player extends HTMLDivElement {
 					}
 				} else if (typeof arg == "object" && arg) {
 					next.filterCard = get.filter(arg);
+				} else if (arg == "allowChooseAll") {
+					next.allowChooseAll = true;
 				} else if (typeof arg == "string") {
 					get.evtprompt(next, arg);
 				}
@@ -5577,6 +5579,8 @@ export class Player extends HTMLDivElement {
 			} else if (typeof arguments[i] == "string") {
 				if (arguments[i] == "chooseonly") {
 					next.chooseonly = true;
+				} else if (arguments[i] == "allowChooseAll") {
+					next.allowChooseAll = true;
 				} else {
 					get.evtprompt(next, arguments[i]);
 				}
@@ -5832,6 +5836,11 @@ export class Player extends HTMLDivElement {
 				} else {
 					next.ai = arguments[i];
 				}
+			} else if (arguments[i] == "complexSelect") {
+				// 为直接添加complexSelect提供支持喵
+				next.complexSelect = true;
+			} else if (arguments[i] == "allowChooseAll") {
+				next.allowChooseAll = true;
 			} else if (Array.isArray(arguments[i])) {
 				next.createDialog = arguments[i];
 			}
@@ -5855,7 +5864,12 @@ export class Player extends HTMLDivElement {
 			};
 		}
 		if (next.complexSelect !== false) {
-			next.complexSelect = true;
+			if (next.complexSelect === undefined && next.allowChooseAll === true) {
+				// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+				next.complexSelect = false;
+			} else {
+				next.complexSelect = true;
+			}
 		}
 		next.setContent("chooseButton");
 		next._args = Array.from(arguments);
@@ -5912,6 +5926,8 @@ export class Player extends HTMLDivElement {
 					next.filterCard = get.filter(arguments[i]);
 				} else if (arguments[i] == "glow_result") {
 					next.glow_result = true;
+				} else if (arguments[i] == "allowChooseAll") {
+					next.allowChooseAll = true;
 				} else if (typeof arguments[i] == "string") {
 					get.evtprompt(next, arguments[i]);
 				}
@@ -6304,6 +6320,11 @@ export class Player extends HTMLDivElement {
 				next.position = arguments[i];
 			} else if (arguments[i] == "visible") {
 				next.visible = true;
+			} else if (arguments[i] == "complexSelect") {
+				// 为直接添加complexSelect提供支持喵
+				next.complexSelect = true;
+			} else if (arguments[i] == "allowChooseAll") {
+				next.allowChooseAll = true;
 			} else if (typeof arguments[i] == "function") {
 				if (next.ai) {
 					next.filterButton = arguments[i];
@@ -6338,7 +6359,12 @@ export class Player extends HTMLDivElement {
 			};
 		}
 		if (next.complexSelect !== false) {
-			next.complexSelect = true;
+			if (next.complexSelect === undefined && next.allowChooseAll === true) {
+				// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+				next.complexSelect = false;
+			} else {
+				next.complexSelect = true;
+			}
 		}
 		next.setContent("choosePlayerCard");
 		next._args = Array.from(arguments);
@@ -6364,6 +6390,11 @@ export class Player extends HTMLDivElement {
 				next.position = arguments[i];
 			} else if (arguments[i] == "visible") {
 				next.visible = true;
+			} else if (arguments[i] == "complexSelect") {
+				// 为直接添加complexSelect提供支持喵
+				next.complexSelect = true;
+			} else if (arguments[i] == "allowChooseAll") {
+				next.allowChooseAll = true;
 			} else if (typeof arguments[i] == "function") {
 				if (next.ai) {
 					next.filterButton = arguments[i];
@@ -6398,7 +6429,12 @@ export class Player extends HTMLDivElement {
 			};
 		}
 		if (next.complexSelect !== false) {
-			next.complexSelect = true;
+			if (next.complexSelect === undefined && next.allowChooseAll === true) {
+				// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+				next.complexSelect = false;
+			} else {
+				next.complexSelect = true;
+			}
 		}
 		next.setContent("discardPlayerCard");
 		next._args = Array.from(arguments);
@@ -6426,6 +6462,11 @@ export class Player extends HTMLDivElement {
 				next.visible = true;
 			} else if (arguments[i] == "visibleMove") {
 				next.visibleMove = true;
+			} else if (arguments[i] == "complexSelect") {
+				// 为直接添加complexSelect提供支持喵
+				next.complexSelect = true;
+			} else if (arguments[i] == "allowChooseAll") {
+				next.allowChooseAll = true;
 			} else if (typeof arguments[i] == "function") {
 				if (next.ai) {
 					next.filterButton = arguments[i];
@@ -6460,7 +6501,12 @@ export class Player extends HTMLDivElement {
 			};
 		}
 		if (next.complexSelect !== false) {
-			next.complexSelect = true;
+			if (next.complexSelect === undefined && next.allowChooseAll === true) {
+				// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+				next.complexSelect = false;
+			} else {
+				next.complexSelect = true;
+			}
 		}
 		next.setContent("gainPlayerCard");
 		next._args = Array.from(arguments);

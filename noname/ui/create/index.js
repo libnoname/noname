@@ -2315,7 +2315,7 @@ export class Create {
 	cardChooseAll() {
 		const event = get.event();
 		// 如果不是当前玩家、当前配置或者事件不允许全选或者使用complexCard与complexSelect，则取消注入喵
-		if (!event.isMine() || event.noChooseAll || event.complexCard || event.complexSelect || !lib.config.choose_all_button) {
+		if (!event.isMine() || !event.allowChooseAll || event.complexCard || event.complexSelect || !lib.config.choose_all_button) {
 			return null;
 		}
 		// 这里的条件用的是“AI代选”按钮的条件喵
@@ -2370,7 +2370,7 @@ export class Create {
 	buttonChooseAll() {
 		const event = get.event();
 		// 如果不是当前玩家、当前配置或者事件不允许全选或者使用complexSelect，则取消注入喵
-		if (!event.isMine() || !(event.dialog instanceof lib.element.Dialog) || event.noChooseAll || event.complexSelect || !lib.config.choose_all_button) {
+		if (!event.isMine() || !(event.dialog instanceof lib.element.Dialog) || !event.allowChooseAll || event.complexSelect || !lib.config.choose_all_button) {
 			return null;
 		}
 		// 这里的条件用的是“AI代选”按钮的条件喵

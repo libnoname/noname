@@ -32,11 +32,11 @@ const dynamicTranslates = {
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	dcyuzhi(player) {
-		let str = `1.弃置一张装备区内的牌并失去此选项至本轮结束；`;
+		let str = `1.弃置一张装备区内的牌，于下次需要使用【闪】响应此【杀】时视为使用之并失去此选项至你的回合开始；`;
 		if (player.hasSkill("dcyuzhi_delete")) {
 			str = `<span style="text-decoration:line-through;">${str}</span>`;
 		}
-		return `锁定技，当你成为【杀】的目标时，需选择一项执行：${str}2.此【杀】伤害增加你装备区非装备牌数。`;
+		return `锁定技，当你成为【杀】的目标时，需选择一项执行：${str}2.此【杀】伤害+1。`;
 	},
 	dcdianlun(player) {
 		let str = lib.translate["dcdianlun_info"];

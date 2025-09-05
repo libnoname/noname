@@ -976,7 +976,10 @@ const skills = {
 	mbfutu: {
 		audio: 8,
 		logAudio: (event, player, name, target, costResult) => {
-			return (costResult.cost_data == "black" ? [1, 2] : [3, 4]).map(i => `mbfutu${i}.mp3`);
+			if (costResult.cost_data.length > 1) {
+				return ["mbfutu5.mp3", "mbfutu6.mp3"];
+			}
+			return (costResult.cost_data.includes("black") ? [1, 2] : [3, 4]).map(i => `mbfutu${i}.mp3`);
 		},
 		trigger: {
 			global: "phaseEnd",
@@ -1046,7 +1049,7 @@ const skills = {
 					player: "damageBegin3",
 				},
 				audio: "mbfutu",
-				logAudio: () => [5, 6, 7, 8].map(i => `mbfutu${i}.mp3`),
+				logAudio: () => [7, 8].map(i => `mbfutu${i}.mp3`),
 				filter(event, player) {
 					return player.hasExpansions("mbfutu");
 				},
@@ -1123,9 +1126,9 @@ const skills = {
 					logAudio: (event, player) => {
 						const choice = get.info("mbjingtu_backup")?.choice;
 						switch (choice) {
-							case "black":
-								return ["mbjingtu1.mp3", "mbjingtu2.mp3"];
 							case "red":
+								return ["mbjingtu1.mp3", "mbjingtu2.mp3"];
+							case "black":
 								return ["mbjingtu3.mp3", "mbjingtu4.mp3"];
 							default:
 								return ["mbjingtu5.mp3", "mbjingtu6.mp3"];
@@ -1142,7 +1145,7 @@ const skills = {
 							return;
 						}
 						await player.gain(cards, "gain2");
-						player.changeSkin({ characterName: "mb_zerong" }, `mb_zerong_${choice}`);
+						player.changeSkin({ characterName: "mb_zerong" }, `mb_zerong_${choice == "all" ? choice : (choice == "red" ? "black" : "red")}`);
 						const count = color => cards?.filter(card => get.color(card) == color)?.length,
 							black = count("black"),
 							red = count("red");
@@ -1270,7 +1273,7 @@ const skills = {
 						[
 							[
 								["damage", `对${get.translation(loser)}造成1点伤害`],
-								["recover", `令${get.translation(loser)}恢复1点体力并摸一张牌，然后获得其两张牌`],
+								["recover", `令${get.translation(loser)}恢复1点体力并摸一张牌，然后获得其至多两张牌`],
 							],
 							"textbutton",
 						],
@@ -1290,7 +1293,7 @@ const skills = {
 				} else {
 					await loser.recover(winner);
 					await loser.draw();
-					await winner.gainPlayerCard(loser, "he", 2, true);
+					await winner.gainPlayerCard(loser, "he", [1, 2], true);
 				}
 			}
 		},
@@ -2469,7 +2472,7 @@ const skills = {
 	mbfeijing: {
 		audio: 4,
 		logAudio() {
-			return ["mbfeijing3.mp3", "mbfeijing4.mp3"];
+			return ["mbfeijing1.mp3", "mbfeijing3.mp3"];
 		},
 		trigger: {
 			player: "useCardToPlayer",
@@ -2641,8 +2644,7 @@ const skills = {
 		group: "mbfeijing_viewas",
 		subSkill: {
 			viewas: {
-				audio: "mbfeijing",
-				logAudio: () => 2,
+				audio: ["mbfeijing2.mp3", "mbfeijing4.mp3"],
 				enable: ["chooseToRespond", "chooseToUse"],
 				filterCard(card, player) {
 					return get.type2(card) == "trick" && get.tag(card, "damage");
@@ -6586,7 +6588,14 @@ const skills = {
 						player.gain(gain, "gain2");
 					}
 					trigger.baseDamage++;
-					player.removeSkill(event.name);
+					player
+						.when({
+							player: "useCardAfter",
+						})
+						.filter(evt => evt === trigger)
+						.then(() => {
+							player.removeSkill("potfuji_sha");
+						});
 				},
 			},
 			shan: {
@@ -6611,8 +6620,10 @@ const skills = {
 					player
 						.when("useCardAfter")
 						.filter(evt => evt === trigger)
-						.then(() => player.draw());
-					player.removeSkill(event.name);
+						.then(() => {
+							player.removeSkill("potfuji_shan");
+							player.draw();
+						});
 				},
 			},
 		},
@@ -9897,7 +9908,7 @@ const skills = {
 		selectCard: [-1, -2],
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const targets = game.filterPlayer(current => current !== player);
+			const targets = game.filterPlayer(current => current !== player).sortBySeat();
 			for (const target of targets) {
 				player.line(target, "thunder");
 				await target.loseHp();

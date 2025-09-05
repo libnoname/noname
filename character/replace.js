@@ -374,7 +374,7 @@ window.noname_character_replace = {
 	re_lusu: ["re_lusu", "ol_lusu", "ol_sb_lusu", "dc_sb_lusu", "pot_lusu", "xia_lusu", "jy_lusu"],
 	re_yuanshao: ["re_yuanshao", "ol_yuanshao", "ol_sb_yuanshao", "star_yuanshao", "xin_yuanshao", "sb_yuanshao", "jsrg_yuanshao", "jd_sb_yuanshao", "yy_yuanshao", "pe_jun_yuanshao"],
 	sp_chenzhen: ["sp_chenzhen", "tw_chenzhen"],
-	sp_jiangwan: ["ol_jiangwan", "sp_jiangwan", "std_jiangwan"],
+	sp_jiangwan: ["ol_jiangwan", "sp_jiangwan", "std_jiangwan", "star_jiangwan"],
 	sp_mifuren: ["dc_mifuren", "sp_mifuren"],
 	sp_zhugeliang: ["sp_zhugeliang", "ol_sp_zhugeliang", "re_sp_zhugeliang", "sb_sp_zhugeliang", "tw_sb_sp_zhugeliang", "jd_sb_sp_zhugeliang"],
 	ty_anying: ["ty_anying", "ty_anyingx"],

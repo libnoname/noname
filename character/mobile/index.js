@@ -52,9 +52,9 @@ game.import("character", function () {
 			mb_simazhao: [["mb_simazhao_shadow", ["die:jin_jsrg_simazhao", "tempname:jin_jsrg_simazhao"]]],
 			pot_yuji: [["pot_yuji_shadow", []]],
 			mb_zerong: [
-				["mb_zerong_red", []],
-				["mb_zerong_black", []],
-				["mb_zerong_all", []],
+				["mb_zerong_red", ["die:mb_zerong"]],
+				["mb_zerong_black", ["die:mb_zerong"]],
+				["mb_zerong_all", ["die:mb_zerong"]],
 			],
 		},
 		card: { ...cards },

@@ -1,4 +1,9 @@
 export default {
+	"#olmiluo1": "曲终人不见，菱花镜里，看灯忽明灭。",
+	"#olmiluo2": "一曲相酬，纵离别未肯衔忧。",
+	"#oljueyan1": "引弦铮铮作兵戈，阿姊，莫回头。",
+	"#oljueyan2": "筝声纷纷花雨下，沾湿皖城月。",
+	"#ol_sb_xiaoqiao:die": "曲终不成调，知己终零落。",
 	"#olzhenlie1": "女子有节，宁死不折！",
 	"#olzhenlie2": "伤在我身，痛在谁心？",
 	"#olmiji1": "身入虎穴，但谋虎子。",

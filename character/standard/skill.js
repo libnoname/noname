@@ -858,6 +858,7 @@ const skills = {
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		discard: false,
 		lose: false,
 		delay: 0,
@@ -1466,6 +1467,7 @@ const skills = {
 		position: "he",
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		prompt: "弃置任意张牌并摸等量的牌",
 		check(card) {
 			let player = _status.event.player;

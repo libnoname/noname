@@ -23,7 +23,7 @@ export default {
 	fake_baoling: "暴凌",
 	fake_baoling_info: "主将技，锁定技，出牌阶段结束时，若你有副将，则你移除副将，加3点体力上限并回复3点体力，然后获得〖崩坏〗。",
 	fake_benghuai: "崩坏",
-	fake_benghuai_info: `结束阶段，若你的体力值不为全场最低，则你选择一项：①失去1点体力；②减1点体力上限；③${get.poptip("beishui")}：执行一个额外的摸牌阶段。`,
+	fake_benghuai_info: `结束阶段，若你的体力值不为全场最低，则你选择一项：①失去1点体力；②减1点体力上限；③${get.poptip("rule_beishui")}：执行一个额外的摸牌阶段。`,
 
 	gz_fengshi: "锋矢",
 	gz_fengshi_sha: "锋矢",

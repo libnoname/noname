@@ -3213,7 +3213,7 @@ export default {
 			const {
 				result: { bool, moved },
 			} = await player
-				.chooseToMove(get.prompt2("fakequanbian"), "noChooseAll")
+				.chooseToMove(get.prompt2("fakequanbian"))
 				.set("list", [
 					["牌堆顶", cards.slice(0, Math.min(player.maxHp, cards.length)), "fakequanbian_tag"],
 					["手牌", player.getCards("h")],
@@ -3776,6 +3776,10 @@ export default {
 					if (!player.getStockSkills(true, true, true).includes("fakebaoqie")) {
 						return false;
 					}
+					const bool = get.character(player.name1, 3).includes("fakebaoqie") ? player.isUnseen(0) : player.isUnseen(1);
+					if (!bool) {
+						return false;
+					}
 					return !game.getAllGlobalHistory("everything", evt => {
 						return evt.name == "showCharacter" && evt.player == player && evt.toShow.some(i => get.character(i, 3).includes("fakebaoqie"));
 					}).length;
@@ -3921,6 +3925,10 @@ export default {
 				trigger: { player: "damageBegin4" },
 				filter(event, player) {
 					if (!player.getStockSkills(true, true, true).includes("fakehuirong")) {
+						return false;
+					}
+					const bool = get.character(player.name1, 3).includes("fakehuirong") ? player.isUnseen(0) : player.isUnseen(1);
+					if (!bool) {
 						return false;
 					}
 					return !game.getAllGlobalHistory("everything", evt => {

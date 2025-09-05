@@ -122,7 +122,7 @@ export class Card extends HTMLDivElement {
 		if (!info) {
 			return;
 		}
-		if (info.destroyLog !== false) {
+		if ((!("destroyLog" in this) || this.destroyLog !== false) && info.destroyLog !== false) {
 			game.log(this, "被销毁了");
 		}
 		if (info.onDestroy) {

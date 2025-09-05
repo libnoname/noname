@@ -558,7 +558,7 @@ const translates = {
 	old_fuhun: "父魂",
 	old_fuhun_info: "摸牌阶段开始时，你可以放弃摸牌，改为从牌堆顶亮出两张牌并获得之，若亮出的牌颜色不同，你获得〖武圣〗和〖咆哮〗直到回合结束。",
 	rejueqing: "绝情",
-	rejueqing_info: "当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力并修改〖绝情〗（X为伤害值）。",
+	rejueqing_info: "当你对其他角色造成非传导伤害时，你可以失去等量的体力，令此伤害翻倍。若如此做，此伤害结算结束后，你修改〖绝情〗。",
 	rejueqing_1st: "绝情",
 	rejueqing_rewrite: "绝情·改",
 	rejueqing_rewrite_info: "锁定技，你即将造成的伤害均视为失去体力。",

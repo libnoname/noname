@@ -16,7 +16,9 @@ https://github.com/nonameShijian/noname-server
 
 客户端下载戳这里：
 
-GitHub： https://github.com/libnoname/noname/releases/tag/chromium91-client
+安卓： https://github.com/nonameShijian/noname-shijian-android/releases/tag/v1.6.8
+
+PC:  https://github.com/nonameShijian/noname/releases/tag/v1.75
 
 网页端推荐使用 Chrome 系内核浏览器游玩，暂不支持 Firefox 浏览器
 

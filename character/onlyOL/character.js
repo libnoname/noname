@@ -15,7 +15,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["olsbzhitian", "olsbliwu", "olsbzhijue"],
+		skills: ["olsbzhitian", "olsbwujing", "olsbzhijue"],
 		names: "诸葛|亮",
 	},
 	ol_sunluban: {
@@ -154,7 +154,7 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 3,
-		skills: ["olsbbingcai", "olsblixian"],
+		skills: ["olsblixian", "olsbbingcai"],
 	},
 	ol_sb_jushou: {
 		sex: "male",

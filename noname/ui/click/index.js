@@ -2833,7 +2833,7 @@ export class Click {
 			}
 		} else {
 			ui.selected.targets.add(this);
-			if (_status.event.name == "chooseTarget" || _status.event.name == "chooseToUse" || _status.event.name == "chooseCardTarget") {
+			if (["chooseTarget", "chooseToUse", "chooseCardTarget", "chooseButtonTarget"].includes(_status.event.name)) {
 				var targetprompt = null;
 				if (_status.event.targetprompt) {
 					targetprompt = _status.event.targetprompt;
@@ -3398,12 +3398,13 @@ export class Click {
 				}
 
 				// 添加台词部分
-				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: bg.tempSkin || audioName } } })
+				let skinName = bg.tempSkin || audioName;
+				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: skinName }, tempname: [skinName] } })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
 				const skillAudioMap = new Map();
 				nameinfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
+					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
 					if (voiceMap.length) {
 						skillAudioMap.set(skill, voiceMap);
 					}
@@ -3423,7 +3424,7 @@ export class Click {
 							if (nameinfo.skills.includes(derivation[i])) {
 								continue;
 							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
 							if (derivationVoiceMap.length) {
 								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}
@@ -3511,6 +3512,7 @@ export class Click {
 						var skill = this.link;
 						var playername = this.linkname;
 						let audioName = this.linkAudioName;
+						let skinName = bg.tempSkin || audioName;
 						var skillnode = this;
 						if (info.derivation) {
 							var derivation = info.derivation;
@@ -3530,9 +3532,8 @@ export class Click {
 						}
 
 						if (lib.config.background_speak && e !== "init") {
-							let name = bg.tempSkin || audioName || playername;
 							if (!this.playAudio || name != this.audioName) {
-								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								const audioList = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -3544,8 +3545,8 @@ export class Click {
 							this.playAudio();
 						}
 					} else {
-						let name = bg.tempSkin || this.linkname;
-						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+						let skinName = bg.tempSkin || this.linkname;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } })
 							.audioList.map(i => i.text)
 							.filter(Boolean);
 						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
@@ -3557,7 +3558,7 @@ export class Click {
 						});
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -3722,12 +3723,13 @@ export class Click {
 				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
 				// 添加台词部分
-				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: bg.tempSkin || audioName } } })
+				let skinName = bg.tempSkin || audioName;
+				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: skinName }, tempname: [skinName] } })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
 				const skillAudioMap = new Map();
 				nameInfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
+					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
 					if (voiceMap.length) {
 						skillAudioMap.set(skill, voiceMap);
 					}
@@ -3747,7 +3749,7 @@ export class Click {
 							if (nameInfo.skills.includes(derivation[i])) {
 								continue;
 							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: bg.tempSkin || audioName } } }).textList;
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
 							if (derivationVoiceMap.length) {
 								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}
@@ -3848,6 +3850,7 @@ export class Click {
 						var skill = this.link;
 						var playername = this.linkname;
 						let audioName = this.linkAudioName;
+						let skinName = bg.tempSkin || audioName;
 						var skillnode = this;
 						let derivations = info.derivation;
 						if (derivations) {
@@ -3887,9 +3890,8 @@ export class Click {
 						}
 
 						if (lib.config.background_speak && e !== "init") {
-							let name = bg.tempSkin || audioName || playername;
 							if (!this.playAudio || name != this.audioName) {
-								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								const audioList = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -3901,8 +3903,8 @@ export class Click {
 							this.playAudio();
 						}
 					} else {
-						let name = bg.tempSkin || this.linkname;
-						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+						let skinName = bg.tempSkin || this.linkname;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } })
 							.audioList.map(i => i.text)
 							.filter(Boolean);
 						introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';

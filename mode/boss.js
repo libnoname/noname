@@ -10141,7 +10141,7 @@ export default () => {
 					}
 					player.discard(player.getCards("j"));
 					"step 3";
-					let evt = _status.event.getParent("phaseLoop");
+					let evt = _status.event.getParent("phaseLoop", true);
 					if (evt) {
 						game.resetSkills();
 						let evtx = _status.event;

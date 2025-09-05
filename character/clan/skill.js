@@ -1071,6 +1071,7 @@ const skills = {
 	},
 	//族荀爽 —— by 刘巴
 	clanyangji: {
+		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 			global: lib.phaseName.map(name => name + "End"),
@@ -1150,6 +1151,7 @@ const skills = {
 		},
 	},
 	clandandao: {
+		audio: 2,
 		trigger: { player: "judgeAfter" },
 		forced: true,
 		filter(event, player) {
@@ -1177,6 +1179,7 @@ const skills = {
 		},
 	},
 	clanqingli: {
+		audio: 2,
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
@@ -2316,7 +2319,7 @@ const skills = {
 				const topCards = get.cards(num);
 				await game.cardsGotoOrdering(topCards);
 				const result = await player
-					.chooseToMove("诫厉：交换其中任意张牌", "noChooseAll")
+					.chooseToMove("诫厉：交换其中任意张牌")
 					.set("list", [
 						[get.translation(target) + "牌名字数最多的手牌", cards, "dcsushou_tag"],
 						["牌堆顶", topCards],

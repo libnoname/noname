@@ -1242,7 +1242,7 @@ game.import("card", function () {
 						})
 						.setContent("chooseToCompareLose");
 					const result = await target
-						.chooseToMove("兄弟同心：请分配" + get.translation(player) + "和你的手牌", true)
+						.chooseToMove("兄弟同心：请分配" + get.translation(player) + "和你的手牌", true, "allowChooseAll")
 						.set("list", [
 							[get.translation(player) + "获得的牌", cards1],
 							["你获得的牌", cards2],

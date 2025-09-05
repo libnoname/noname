@@ -645,6 +645,7 @@ export class GameEvent {
 			forced: this.forced,
 			fakeforce: this.fakeforce,
 			_aiexclude: this._aiexclude,
+			allowChooseAll: this.allowChooseAll,
 			complexSelect: this.complexSelect,
 			complexCard: this.complexCard,
 			complexTarget: this.complexTarget,
@@ -712,6 +713,9 @@ export class GameEvent {
 					this.position = info.position;
 				}
 				//if(info.forced!=undefined) this.forced=info.forced;
+				if (info.allowChooseAll != undefined) {
+					this.allowChooseAll = info.allowChooseAll;
+				}
 				if (info.complexSelect != undefined) {
 					this.complexSelect = info.complexSelect;
 				}
@@ -736,6 +740,7 @@ export class GameEvent {
 				this.selectCard = info.selectCard;
 				this.position = info.position;
 				//this.forced=info.forced;
+				this.allowChooseAll = info.allowChooseAll;
 				this.complexSelect = info.complexSelect;
 				this.complexCard = info.complexCard;
 				this.complexTarget = info.complexTarget;
@@ -767,6 +772,7 @@ export class GameEvent {
 			this.forced = this._backup.forced;
 			this.fakeforce = this._backup.fakeforce;
 			this._aiexclude = this._backup._aiexclude;
+			this.allowChooseAll = this._backup.allowChooseAll;
 			this.complexSelect = this._backup.complexSelect;
 			this.complexCard = this._backup.complexCard;
 			this.complexTarget = this._backup.complexTarget;

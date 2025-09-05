@@ -468,6 +468,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"star_jiangwan",
 		"star_taishici",
 		"zj_zhanghu",
 		"zj_yuechen",
@@ -2887,6 +2888,7 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"star_jiangwan",
 			"sunyuan",
 			"clan_hanfu",
 			"star_taishici",

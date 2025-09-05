@@ -621,7 +621,7 @@ const skills = {
 			} else {
 				await target.addSkills("newzhennan");
 			}
-			await player.recoverTo(2);
+			//await player.recoverTo(2);
 		},
 	},
 	//OL蔡贞姬
@@ -1019,10 +1019,11 @@ const skills = {
 					check(card) {
 						return 6 - get.value(card);
 					},
+					log: false,
 					precontent() {
 						const skill = "olxiewei",
 							cards = event.result.cards;
-						//player.logSkill(skill);
+						player.logSkill(skill);
 						if (cards.length < 2) {
 							var evt = event.getParent();
 							evt.set(skill, true);
@@ -1048,9 +1049,6 @@ const skills = {
 			markcount: "expansion",
 			content: "expansion",
 		},
-		subSkill: {
-			backup: {},
-		},
 	},
 	olyouque: {
 		audio: 2,
@@ -1061,7 +1059,6 @@ const skills = {
 		delay: false,
 		lose: false,
 		discard: false,
-		//log: false,
 		async precontent(event, trigger, player) {
 			const cards = player.getExpansions("olxiewei");
 			const result = await player
@@ -1131,7 +1128,7 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.draw(2);
 					if (!player.getExpansions("olxiewei").some(card => get.suit(card) == "spade")) {
-						player.tempBanSkill("olyouque", "phaseUseAfter");
+						player.tempBanSkill("olyouque", ["phaseChange", "phaseUseAfter"]);
 					}
 				},
 			},
@@ -6224,7 +6221,7 @@ const skills = {
 		},
 	},
 	olleiluan: {
-		audio: 2,
+		audio: "leiluan",
 		onChooseToUse(event) {
 			if (!game.online && !event.olleiluan) {
 				const player = event.player;
@@ -6289,7 +6286,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					audio: "olleiluan",
+					audio: "leiluan",
 					filterCard: true,
 					selectCard: () => get.event().olleiluan[1],
 					check(card) {
@@ -6417,7 +6414,7 @@ const skills = {
 		},
 	},
 	olfuchao: {
-		audio: 2,
+		audio: "fuchao",
 		trigger: { player: ["useCard", "respond"] },
 		filter(event, player) {
 			return Array.isArray(event.respondTo) && event.respondTo[0] != player;
@@ -7150,7 +7147,7 @@ const skills = {
 				if (!player || get.event().type != "phase") {
 					return 1;
 				}
-				let names = player.getStorage("olkouchao");
+				let names = player.getStorage("olkouchao").slice();
 				for (let i = 0; i < names.length; i++) {
 					if (player.getStorage("olkouchao_used").includes(i)) {
 						names.splice(i--, 1);
@@ -17297,7 +17294,7 @@ const skills = {
 					event.cards2 = cards;
 					game.cardsGotoOrdering(cards);
 					var player = trigger.player;
-					var next = player.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌", "noChooseAll");
+					var next = player.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌");
 					var hs = player.getCards("h", card => card.hasGaintag("olzhubi_tag"));
 					next.set("filterMove", function (from, to) {
 						return typeof to != "number";

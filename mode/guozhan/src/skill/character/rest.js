@@ -18200,6 +18200,7 @@ export default {
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		discard: false,
 		prepare: "give",
 		filterTarget(card, player, target) {
