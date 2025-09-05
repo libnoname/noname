@@ -1021,11 +1021,15 @@ const skills = {
 					recover: "red",
 				};
 			list = list.map(i => map[i]);
-			event.result = await player
+			event.result = {
+				bool: true,
+				cost_data: list,
+			}
+			/*event.result = await player
 				.chooseBool(get.prompt(event.skill))
 				.set("prompt2", `将牌堆顶首张${list.map(i => get.translation(i)).join("和")}牌置于武将牌上，称为“业”`)
 				.forResult();
-			event.result.cost_data = list;
+			event.result.cost_data = list;*/
 		},
 		async content(event, trigger, player) {
 			const colors = event.cost_data,
@@ -1151,7 +1155,7 @@ const skills = {
 							red = count("red");
 						if (choice != "black" && black > 0) {
 							const result = await player
-								.chooseTarget(`净土：对一名角色造成${black}点伤害`)
+								.chooseTarget(`净土：对一名角色造成${black}点伤害`, true)
 								.set("ai", target => {
 									const player = get.player();
 									return get.damageEffect(target, player, player);
@@ -1165,7 +1169,7 @@ const skills = {
 						}
 						if (choice != "red" && red > 0) {
 							const result = await player
-								.chooseTarget(`净土：令一名角色增加${red}点体力上限并恢复${red}点体力`)
+								.chooseTarget(`净土：令一名角色增加${red}点体力上限并恢复${red}点体力`, true)
 								.set("ai", target => {
 									const player = get.player();
 									return get.recoverEffect(target, player, player);

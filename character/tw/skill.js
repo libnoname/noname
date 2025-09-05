@@ -18499,31 +18499,44 @@ const skills = {
 	},
 	twjianming: {
 		audio: 2,
-		trigger: { player: ["useCard", "respond"] },
-		filter(event, player) {
-			if (event.card.name != "sha" || !lib.suit.includes(get.suit(event.card))) {
+		trigger: {
+			player: ["useCard", "respond"],
+			global: "loseAsyncAfter",
+		},
+		getIndex(event, player) {
+			if (event.name == "loseAsync") {
+				if (!event.getParent()?.name?.startsWith("chooseToCompare")) {
+					return [];
+				}
+				if (!event.getl?.(player)?.cards2?.length) {
+					return [];
+				}
+				return event.getl(player).cards2;
+			} else {
+				if (event.card.name != "sha") {
+					return [];
+				}
+				return [event.card];
+			}
+		},
+		filter(event, player, name, card) {
+			const suit = get.suit(card);
+			if (!lib.suit.includes(suit)) {
 				return false;
 			}
-			var list = [];
-			player.getHistory("useCard", function (evt) {
-				if (evt.card.name == "sha") {
-					if (event.card != evt.card) {
-						list.push(get.suit(evt.card));
-					}
-				}
-			});
-			player.getHistory("respond", function (evt) {
-				if (evt.card.name == "sha") {
-					if (event.card != evt.card) {
-						list.push(get.suit(evt.card));
-					}
-				}
-			});
-			return !list.includes(get.suit(event.card));
+			return !player.getStorage("twjianming_used").includes(suit);
 		},
 		forced: true,
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			player.addTempSkill("twjianming_used");
+			player.markAuto("twjianming_used", get.suit(event.indexedData));
+			await player.draw();
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//李彦
