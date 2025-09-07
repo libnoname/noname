@@ -6,6 +6,26 @@ export const type = "mode";
 export default () => {
 	return {
 		name: "boss",
+		config: {
+			double_character: {
+				name: "双将模式",
+				init: false,
+				frequent: true,
+				restart: true,
+			},
+			double_hp: {
+				name: "双将体力上限",
+				init: "pingjun",
+				item: {
+					hejiansan: "和减三",
+					pingjun: "平均值",
+					zuidazhi: "最大值",
+					zuixiaozhi: "最小值",
+					zonghe: "相加",
+				},
+				restart: true,
+			},
+		},
 		start() {
 			"step 0";
 			var playback = localStorage.getItem(lib.configprefix + "playback");
@@ -168,13 +188,55 @@ export default () => {
 				event.noslide = true;
 				lib.init.onfree();
 			} else {
-				game.chooseCharacter(function (target) {
-					if (event.current) {
-						event.current.classList.remove("highlight");
+				// 双将模式下的BOSS选择逻辑
+				if (get.config("double_character")) {
+					// 初始化双将BOSS选择状态
+					if (!_status.doubleBossSelection) {
+						_status.doubleBossSelection = {
+							selected: [],
+							count: 0
+						};
 					}
-					event.current = target;
-					game.save("current", target.name);
-					target.classList.add("highlight");
+				}
+
+				if (get.config("double_character") && event.current) {
+					_status.doubleBossSelection.selected.push(event.current.name);
+					_status.doubleBossSelection.count++;
+				}
+				game.chooseCharacter(function (target) {
+					if (get.config("double_character")) {
+						// 双将模式：可以选择两个BOSS
+						if (_status.doubleBossSelection.selected.includes(target.name)) {
+							// 取消选择
+							_status.doubleBossSelection.selected.remove(target.name);
+							_status.doubleBossSelection.count--;
+							target.classList.remove("highlight");
+							if (_status.doubleBossSelection.count === 0) {
+								event.current = null;
+							}
+						} else if (_status.doubleBossSelection.count < 2) {
+							// 添加选择
+							_status.doubleBossSelection.selected.push(target.name);
+							_status.doubleBossSelection.count++;
+							target.classList.add("highlight");
+							if (_status.doubleBossSelection.count === 1) {
+								event.current = target;
+								game.save("current", target.name);
+							} else if (_status.doubleBossSelection.count === 2) {
+								// 选择完成，保存双将信息
+								game.save("current", _status.doubleBossSelection.selected[0]);
+								game.save("current2", _status.doubleBossSelection.selected[1]);
+							}
+						}
+					} else {
+						// 单将模式：原有逻辑
+						if (event.current) {
+							event.current.classList.remove("highlight");
+						}
+						event.current = target;
+						game.save("current", target.name);
+						target.classList.add("highlight");
+					}
 					if (_status.bosschoice) {
 						var name = target.name;
 						if (lib.boss[target.name] && lib.boss[target.name].controlid) {
@@ -220,10 +282,39 @@ export default () => {
 			setTimeout(function () {
 				ui.control.classList.remove("bosslist");
 			}, 500);
+			// 先处理再战数据
+			if (lib.config.continue_name_boss) {
+				result = lib.config.continue_name_boss;
+				game.saveConfig("continue_name_boss");
+			}
 			var boss = ui.create.player();
 			boss.getId();
 			game.boss = boss;
-			boss.init(event.current.name);
+			// 双将模式下BOSS使用双将
+			if (get.config("double_character")) {
+				if (result.bossName2) {
+					// 从"再战"加载的双将BOSS
+					boss.init(result.bossName, result.bossName2);
+					game.log("BOSS", "#b" + get.translation(result.bossName), "与", "#b" + get.translation(result.bossName2), "联合登场！");
+				} else if (_status.doubleBossSelection && _status.doubleBossSelection.selected.length === 2) {
+				// 从BOSS选择界面选择的双将BOSS
+					boss.init(_status.doubleBossSelection.selected[0], _status.doubleBossSelection.selected[1]);
+					game.log("BOSS", "#b" + get.translation(_status.doubleBossSelection.selected[0]), "与", "#b" + get.translation(_status.doubleBossSelection.selected[1]), "联合登场！");
+				} else if (result.bossName) {
+					// 从"再战"加载的单将BOSS（在双将模式下）
+					boss.init(result.bossName);
+				} else {
+					// 默认情况
+					boss.init(event.current.name);
+				}
+			} else {
+				// 单将模式
+				if (result.bossName) {
+					boss.init(result.bossName);
+				} else {
+					boss.init(event.current.name);
+				}
+			}
 			boss.side = true;
 			if (!event.noslide) {
 				var rect = event.current.getBoundingClientRect();
@@ -237,28 +328,63 @@ export default () => {
 			}
 			boss.setIdentity("zhu");
 			boss.identity = "zhu";
-			if (lib.config.continue_name_boss) {
-				result = lib.config.continue_name_boss;
-				game.saveConfig("continue_name_boss");
-			}
-			for (var i = 0; i < result.links.length; i++) {
-				var player = ui.create.player();
-				player.getId();
-				player.init(result.links[i]).addTempClass("start");
-				player.setIdentity("cai");
-				player.identity = "cai";
-				player.side = false;
-				game.players.push(player);
-				if (result.boss) {
-					if (game.bossinfo.minion) {
-						player.dataset.position = i + 3;
-					} else {
-						player.dataset.position = (i + 1) * 2;
+			// 处理双将模式的武将分配
+			if (get.config("double_character")) {
+				// 双将模式：创建3个玩家，每个玩家使用两个武将
+				// 在双将模式下，links数组应该有6个武将：[char1, char2, char3, char4, char5, char6]
+				for (var i = 0; i < 3; i++) {
+					var player = ui.create.player();
+					player.getId();
+					var char1 = result.links[i * 2];
+					var char2 = result.links[i * 2 + 1];
+					if (char1 && char2) {
+						player.init(char1, char2).addTempClass("start");
+					} else if (char1) {
+						// 如果只有一个武将，作为单将处理
+						player.init(char1).addTempClass("start");
 					}
-				} else {
-					player.dataset.position = i + 1;
+					player.setIdentity("cai");
+					player.identity = "cai";
+					player.side = false;
+					game.players.push(player);
+					if (result.boss) {
+						if (game.bossinfo.minion) {
+							player.dataset.position = i + 3;
+						} else {
+							player.dataset.position = (i + 1) * 2;
+						}
+					} else {
+						player.dataset.position = i + 1;
+						if (!get.config("single_control") && i == 0) {
+							player.dataset.position = 0;
+						}
+					}
+					ui.arena.appendChild(player);
 				}
-				ui.arena.appendChild(player);
+			} else {
+				// 单将模式：创建3个玩家，每个玩家使用一个武将
+				for (var i = 0; i < result.links.length; i++) {
+					var player = ui.create.player();
+					player.getId();
+					player.init(result.links[i]).addTempClass("start");
+					player.setIdentity("cai");
+					player.identity = "cai";
+					player.side = false;
+					game.players.push(player);
+					if (result.boss) {
+						if (game.bossinfo.minion) {
+							player.dataset.position = i + 3;
+						} else {
+							player.dataset.position = (i + 1) * 2;
+						}
+					} else {
+						player.dataset.position = i + 1;
+						if (!get.config("single_control") && i == 0) {
+							player.dataset.position = 0;
+						}
+					}
+					ui.arena.appendChild(player);
+				}
 			}
 			if (result.boss) {
 				game.players.unshift(boss);
@@ -308,7 +434,7 @@ export default () => {
 			}
 			ui.create.me();
 			ui.fakeme = ui.create.div(".fakeme.avatar", ui.me);
-			if (game.me !== boss) {
+			if (game.me !== boss && get.config("single_control")) {
 				game.singleHandcard = true;
 				ui.arena.classList.add("single-handcard");
 				ui.window.classList.add("single-handcard");
@@ -428,6 +554,7 @@ export default () => {
 				info.push({
 					name: players[i].name1,
 					identity: players[i].identity,
+					name2: players[i].name2,
 					position: players[i].dataset.position,
 				});
 			}
@@ -441,11 +568,11 @@ export default () => {
 			if (get.config("single_control")) {
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i].side == game.me.side) {
-						game.addRecentCharacter(game.players[i].name);
+						game.addRecentCharacter(game.players[i].name1, game.players[i].name2);
 					}
 				}
 			} else {
-				game.addRecentCharacter(game.me.name);
+				game.addRecentCharacter(game.me.name1, game.me.name2);
 			}
 			event.trigger("gameStart");
 			game.gameDraw(game.boss, game.bossinfo.gameDraw || 4);
@@ -1658,6 +1785,30 @@ export default () => {
 		},
 		game: {
 			reserveDead: true,
+			getRoomInfo: function (uiintro) {
+				uiintro.add('<div class="text chat">双将模式：' + (get.config("double_character") ? "开启" : "关闭"));
+				if (get.config("double_character")) {
+					var hpMode = get.config("double_hp");
+					var hpText = {
+						hejiansan: "和减三",
+						pingjun: "平均值",
+						zuidazhi: "最大值",
+						zuixiaozhi: "最小值",
+						zonghe: "相加"
+					}[hpMode] || "平均值";
+					uiintro.add('<div class="text chat">双将体力：' + hpText);
+				}
+				var last = uiintro.children[uiintro.children.length - 1];
+				if (last) last.style.paddingBottom = "8px";
+			},
+			getVideoName: function () {
+				var str = get.translation(game.me.name);
+				if (game.me.name2) {
+					str += "/" + get.translation(game.me.name2);
+				}
+				var name = [str, "Boss模式"];
+				return name;
+			},
 			addBossFellow(position, name) {
 				var fellow = game.addFellow(position, name, "zoominanim");
 				fellow.directgain(get.cards(4));
@@ -1906,7 +2057,7 @@ export default () => {
 						list.push(i);
 					}
 					list.randomSort();
-					var dialog = ui.create.dialog("选择参战角色", "hidden");
+					var dialog = ui.create.dialog("选择参战角色" + (get.config("double_character") ? "（双将）" : ""), "hidden");
 					dialog.classList.add("fixed");
 					ui.window.appendChild(dialog);
 					dialog.classList.add("bosscharacter");
@@ -1918,7 +2069,7 @@ export default () => {
 					var next = game.me.chooseButton(dialog, true).set("onfree", true);
 					next._triggered = null;
 					next.custom.replace.target = event.customreplacetarget;
-					next.selectButton = [3, 3];
+					next.selectButton = get.config("double_character") ? [6, 6] : [3, 3];
 					next.filterButton = function (button) {
 						let { current } = get.event().getParent("game");
 						if (current) {
@@ -2041,7 +2192,8 @@ export default () => {
 							event.enemy.push(ui.selected.buttons[i].link);
 							event.list.remove(ui.selected.buttons[i].link);
 						}
-						while (event.enemy.length < 3) {
+						var targetLength = get.config("double_character") ? 6 : 3;
+						while (event.enemy.length < targetLength) {
 							var name = event.list
 								.filter(name => {
 									let { current } = get.event().getParent("game");
