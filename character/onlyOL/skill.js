@@ -953,7 +953,7 @@ const skills = {
 					const { cards } = event;
 					await player.loseToDiscardpile(cards);
 					let noDamage = true;
-					const viewAs = card => get.autoViewAs({ name: card.name, nature: card.nature, isCard: true });
+					const viewAs = card => new lib.element.VCard({ name: card.name, nature: card.nature });
 					const cardsx = cards.filter(card => ["basic", "trick"].includes(get.type(card)) && player.hasUseTarget(viewAs(card)));
 					if (cardsx.length) {
 						const result = await player
@@ -970,7 +970,9 @@ const skills = {
 							const card = viewAs(result.links[0]);
 							const next = player.chooseUseTarget(card, true);
 							await next;
-							if (game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == next.card))) {
+							if (game.hasPlayer2(target => target.hasHistory("damage", evt => {
+								return evt.getParent("useCard", true)?.getParent() == next;
+							}), true)) {
 								noDamage = false;
 							}
 						}
@@ -986,7 +988,7 @@ const skills = {
 				forced: true,
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					return event.skill == "olsbzhijue_backup" && !game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == event.card)) && player.countMark("olsbzhitian") < 7;
+					return event.skill == "olsbzhijue_backup" && !game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == event.card), true) && player.countMark("olsbzhitian") < 7;
 				},
 				async content(event, trigger, player) {
 					player.addMark("olsbzhitian", 1, false);

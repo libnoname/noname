@@ -344,14 +344,15 @@ const skills = {
 				const current = targets[i],
 					cards2 = result[i].cards;
 				cards.addArray(cards2);
-				lose_list.push([current, cards2]);
+				//lose_list.push([current, cards2]);
+				await current.modedDiscard(cards2);
 			}
-			await game
+			/*await game
 				.loseAsync({
 					lose_list: lose_list,
 					discarder: player,
 				})
-				.setContent("discardMultiple");
+				.setContent("discardMultiple");*/
 			const next = player.addToExpansion(cards, "gain2");
 			next.gaintag.add("clanfennu");
 			await next;

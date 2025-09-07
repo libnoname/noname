@@ -53,7 +53,7 @@ export default {
 	"#chexuan2": "层层布设，以多胜强！",
 	"#cheliji:die": "元气已伤，不如归去……",
 	"#caiwang1": "才气不俗，声望四海。",
-	"#caiwang2": "绥怀之称，监守邺城。",
+	"#caiwang2": "绥怀之策，监守邺城。",
 	"#naxiang1": "奉命伐吴，得胜纳降。",
 	"#naxiang2": "进军逼江，震慑吴贼。",
 	"#simazhou:die": "恩赐重物，病身难消受……",

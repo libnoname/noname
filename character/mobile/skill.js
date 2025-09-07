@@ -9069,7 +9069,7 @@ const skills = {
 				.set("choiceList", ["令此【杀】伤害+1", "若此【杀】被【闪】抵消，你可以获得与你距离为1以内的一名其他角色区域里的一张牌", "背水！弃置你与其装备区的武器牌并执行所有选项"])
 				.set("prompt", get.prompt(event.skill))
 				.set(
-					"result",
+					"resultx",
 					(function () {
 						let eff = 0;
 						for (const targetx of trigger.targets) {
@@ -9089,7 +9089,7 @@ const skills = {
 					})()
 				)
 				.set("ai", function () {
-					return _status.event.result;
+					return _status.event.resultx;
 				})
 				.forResult();
 			event.result = {

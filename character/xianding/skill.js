@@ -2427,7 +2427,7 @@ const skills = {
 						return Object.values(evt.gaintag_map).flat().includes("dcsbchuanyu_tag");
 					});
 					return event.getd().filter(card => {
-						return historys.some(evt => evt.gaintag_map[card.cardid].includes("dcsbchuanyu_tag"));
+						return historys.some(evt => evt.gaintag_map?.[card.cardid]?.includes("dcsbchuanyu_tag"));
 					});
 				},
 				async cost(event, trigger, player) {

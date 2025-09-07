@@ -2505,6 +2505,7 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		ai: {
+			save: true,
 			order(item, player) {
 				if (get.event().dying) {
 					return 9;
