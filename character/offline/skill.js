@@ -2238,7 +2238,7 @@ const skills = {
 						let value = list => {
 							const [skill, name] = list;
 							let value = get.skillRank(skill, "inout") * get.rank(name, true);
-							if (["relonghun", "dunshi", "olfuhun", "mbjuejin"].includes(skill)) {
+							if (["relonghun", "dunshi", "olfuhun", "mbjuejin", "dcjiushi"].includes(skill)) {
 								value *= 24;
 							}
 							const info = get.info(skill);
