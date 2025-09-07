@@ -1799,15 +1799,9 @@ export default () => {
 					uiintro.add('<div class="text chat">双将体力：' + hpText);
 				}
 				var last = uiintro.children[uiintro.children.length - 1];
-				if (last) last.style.paddingBottom = "8px";
-			},
-			getVideoName: function () {
-				var str = get.translation(game.me.name);
-				if (game.me.name2) {
-					str += "/" + get.translation(game.me.name2);
+				if (last) {
+					last.style.paddingBottom = "8px";
 				}
-				var name = [str, "Boss模式"];
-				return name;
 			},
 			addBossFellow(position, name) {
 				var fellow = game.addFellow(position, name, "zoominanim");
