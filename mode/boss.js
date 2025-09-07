@@ -359,6 +359,9 @@ export default () => {
 						}
 					} else {
 						player.dataset.position = i + 1;
+						if (!get.config("single_control") && i == 0) {
+							player.dataset.position = 0;
+						}
 					}
 					ui.arena.appendChild(player);
 				}
@@ -380,6 +383,9 @@ export default () => {
 						}
 					} else {
 						player.dataset.position = i + 1;
+						if (!get.config("single_control") && i == 0) {
+							player.dataset.position = 0;
+						}
 					}
 					ui.arena.appendChild(player);
 				}
@@ -432,7 +438,7 @@ export default () => {
 			}
 			ui.create.me();
 			ui.fakeme = ui.create.div(".fakeme.avatar", ui.me);
-			if (game.me !== boss) {
+			if (game.me !== boss && get.config("single_control")) {
 				game.singleHandcard = true;
 				ui.arena.classList.add("single-handcard");
 				ui.window.classList.add("single-handcard");
