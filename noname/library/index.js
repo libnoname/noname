@@ -7347,6 +7347,24 @@ export class Library {
 					},
 					frequent: true,
 				},
+				double_character: {
+					name: "双将模式",
+					init: false,
+					frequent: true,
+					restart: true,
+				},
+				double_hp: {
+					name: "双将体力上限",
+					init: "pingjun",
+					item: {
+						hejiansan: "和减三",
+						pingjun: "平均值",
+						zuidazhi: "最大值",
+						zuixiaozhi: "最小值",
+						zonghe: "相加",
+					},
+					restart: true,
+				},
 				single_control: {
 					name: "单人控制",
 					init: true,
