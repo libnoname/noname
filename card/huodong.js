@@ -1452,6 +1452,7 @@ game.import("card", function () {
 				filterTarget(card, player, target) {
 					return target != player && target.countCards("h");
 				},
+				selectTarget: () => 1,
 				changeTarget(player, targets) {
 					targets.push(player);
 				},

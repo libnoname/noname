@@ -2227,7 +2227,7 @@ const skills = {
 						if (current.hp > 1 || get.attitude(player, current) >= 0) {
 							return false;
 						}
-						return player.countCards("h", card => get.tag(card, "damage") && player.canUse(current, target));
+						return player.countCards("h", card => get.tag(card, "damage") && player.canUse(card, current));
 					})) {
 						return "额外回合";
 					}

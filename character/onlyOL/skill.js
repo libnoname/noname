@@ -877,6 +877,7 @@ const skills = {
 				if (button.link == "huogong") {
 					return true;
 				}
+				const player = get.player();
 				return 114514 - player.countCards("h", card => get.color(card, player) == button.link);
 			},
 			backup(links, player) {
