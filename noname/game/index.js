@@ -7340,6 +7340,18 @@ export class Game extends GameCompatible {
 				ui.create.control("再战", function () {
 					let pointer = game.boss;
 					let map = { boss: game.me == game.boss, links: [] };
+					
+					// 保存BOSS信息
+					if (get.config("double_character") && game.boss.name2) {
+						// 双将BOSS
+						map.bossName = game.boss.name;
+						map.bossName2 = game.boss.name2;
+					} else {
+						// 单将BOSS
+						map.bossName = game.boss.name;
+					}
+					
+					// 保存玩家武将信息
 					for (let iwhile = 0; iwhile < 10; iwhile++) {
 						pointer = pointer.nextSeat;
 						if (pointer == game.boss) {
@@ -7347,6 +7359,10 @@ export class Game extends GameCompatible {
 						}
 						if (!pointer.side) {
 							map.links.push(pointer.name);
+							// 双将模式下保存副将
+							if (get.config("double_character") && pointer.name2) {
+								map.links.push(pointer.name2);
+							}
 						}
 					}
 					game.saveConfig("continue_name_boss", map);

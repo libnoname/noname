@@ -284,16 +284,40 @@ export default () => {
 			setTimeout(function () {
 				ui.control.classList.remove("bosslist");
 			}, 500);
+			// 先处理再战数据
+			if (lib.config.continue_name_boss) {
+				result = lib.config.continue_name_boss;
+				game.saveConfig("continue_name_boss");
+			}
+			
 			var boss = ui.create.player();
 			boss.getId();
 			game.boss = boss;
 			
 			// 双将模式下BOSS使用双将
-			if (get.config("double_character") && _status.doubleBossSelection && _status.doubleBossSelection.selected.length === 2) {
-				boss.init(_status.doubleBossSelection.selected[0], _status.doubleBossSelection.selected[1]);
-				game.log("BOSS", "#b" + get.translation(_status.doubleBossSelection.selected[0]), "与", "#b" + get.translation(_status.doubleBossSelection.selected[1]), "联合登场！");
+			if (get.config("double_character")) {
+				if (result.bossName2) {
+					// 从"再战"加载的双将BOSS
+					boss.init(result.bossName, result.bossName2);
+					game.log("BOSS", "#b" + get.translation(result.bossName), "与", "#b" + get.translation(result.bossName2), "联合登场！");
+				} else if (_status.doubleBossSelection && _status.doubleBossSelection.selected.length === 2) {
+					// 从BOSS选择界面选择的双将BOSS
+					boss.init(_status.doubleBossSelection.selected[0], _status.doubleBossSelection.selected[1]);
+					game.log("BOSS", "#b" + get.translation(_status.doubleBossSelection.selected[0]), "与", "#b" + get.translation(_status.doubleBossSelection.selected[1]), "联合登场！");
+				} else if (result.bossName) {
+					// 从"再战"加载的单将BOSS（在双将模式下）
+					boss.init(result.bossName);
+				} else {
+					// 默认情况
+					boss.init(event.current.name);
+				}
 			} else {
-				boss.init(event.current.name);
+				// 单将模式
+				if (result.bossName) {
+					boss.init(result.bossName);
+				} else {
+					boss.init(event.current.name);
+				}
 			}
 			boss.side = true;
 			if (!event.noslide) {
@@ -308,13 +332,10 @@ export default () => {
 			}
 			boss.setIdentity("zhu");
 			boss.identity = "zhu";
-			if (lib.config.continue_name_boss) {
-				result = lib.config.continue_name_boss;
-				game.saveConfig("continue_name_boss");
-			}
 			// 处理双将模式的武将分配
 			if (get.config("double_character")) {
 				// 双将模式：创建3个玩家，每个玩家使用两个武将
+				// 在双将模式下，links数组应该有6个武将：[char1, char2, char3, char4, char5, char6]
 				for (var i = 0; i < 3; i++) {
 					var player = ui.create.player();
 					player.getId();
