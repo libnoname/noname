@@ -1217,6 +1217,34 @@ async function setOnError() {
 
 function setWindowListener() {
 	window.onkeydown = function (e) {
+		// F12 切换菜单栏显示
+		if (lib.config && lib.config.hideMenuBar && e.keyCode === 123) {
+			try {
+				if (window.require) {
+					let remote = require("@electron/remote");
+					if (remote) {
+						let win = remote.getCurrentWindow();
+						let visible = typeof win.isMenuBarVisible === "function" ? win.isMenuBarVisible() : void 0;
+						if (typeof visible === "boolean") {
+							win.setMenuBarVisibility(!visible);
+						} else {
+							// @ts-expect-error
+							window.__menuTempShown = !window.__menuTempShown;
+							// @ts-expect-error
+							win.setMenuBarVisibility(!!window.__menuTempShown);
+						}
+					}
+				}
+				else if (window.node && window.node.menuBar) {
+						// @ts-expect-error
+						window.__menuTempShown = !window.__menuTempShown;
+						// @ts-expect-error
+						if (window.__menuTempShown) window.node.menuBar.show();
+						else window.node.menuBar.hide();
+				}
+			}
+			catch (err) {}
+		}
 		if (typeof ui.menuContainer == "undefined" || !ui.menuContainer.classList.contains("hidden")) {
 			if (e.keyCode == 116 || ((e.ctrlKey || e.metaKey) && e.keyCode == 82)) {
 				if (e.shiftKey) {

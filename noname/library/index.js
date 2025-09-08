@@ -1487,7 +1487,7 @@ export class Library {
 					name: "隐藏顶部菜单栏",
 					init: false,
 					unfrequent: true,
-					intro: "开启后将隐藏顶部菜单栏，隐藏后支持Alt快捷键临时显示",
+					intro: "开启后将隐藏顶部菜单栏，隐藏后支持F12快捷键显示。",
 					onclick(value) {
 						game.saveConfig("hideMenuBar", value);
 						if (value) {
@@ -1501,7 +1501,7 @@ export class Library {
 									if (remote) {
 										let win = remote.getCurrentWindow();
 										win.setMenuBarVisibility(false);
-										win.setAutoHideMenuBar(true);
+										win.setAutoHideMenuBar(false);
 									}
 								} catch (e) {}
 							}

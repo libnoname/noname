@@ -39,7 +39,7 @@ export async function onload() {
 				if (remote) {
 					let win = remote.getCurrentWindow();
 					win.setMenuBarVisibility(false);
-					win.setAutoHideMenuBar(true);
+					win.setAutoHideMenuBar(false);
 				}
 			} catch (e) {}
 		}
