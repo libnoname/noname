@@ -197,11 +197,91 @@ export default () => {
 							count: 0
 						};
 					}
+					if (!_status.ConfirmButtonMonitoring) {
+						_status.ConfirmButtonMonitoring = function(state){
+							if (!get.config("double_character")) {
+								return ;
+							}
+
+							if (state == "start")
+							{
+								// 创建MutationObserver来监控DOM变化
+								if (!_status._confirmButtonObserver) {
+									_status._confirmButtonObserver = new MutationObserver(function(mutations) {
+										mutations.forEach(function(mutation) {
+											// 检查是否有新增的节点
+											if (mutation.type === 'childList') {
+												mutation.addedNodes.forEach(function(node) {
+													// 检查是否是确认按钮相关的节点
+													if (node.nodeType === Node.ELEMENT_NODE) {
+
+														if (node.classList && node.classList.contains('control')) {
+															// 延迟检查，确保ui.confirm已经设置
+															setTimeout(function() {
+																_status.checkAndHandleConfirmButton();
+															}, 50);
+														}
+													}
+												});
+											}
+										});
+									});
+								}
+								// 开始监控document.body的变化
+								_status._confirmButtonObserver.observe(document.body, {
+									childList: true,
+									subtree: true
+								});
+							} else {
+								console.log("stop check");
+								if (_status._confirmButtonObserver) {
+									_status._confirmButtonObserver.disconnect();
+								}
+								if (ui.confirm && ui.confirm._bossMonitoringAdded) {
+									delete ui.confirm._bossMonitoringAdded;
+								}
+							}								
+						}
+					}
+					if (!_status.checkAndHandleConfirmButton) {
+						_status.checkAndHandleConfirmButton = function() {
+							if (!ui.confirm) return;
+
+							// 检查是否在双将模式下
+							if (get.config("double_character") && _status.doubleBossSelection) {
+								// 如果选择的boss数量小于2，禁用确认按钮
+								if (_status.doubleBossSelection.count < 2) {
+									ui.confirm.classList.add("disabled");
+								} else {
+									ui.confirm.classList.remove("disabled");
+
+									// 添加点击事件监听器，确保点击确认按钮时停止监控
+									if (!ui.confirm._bossMonitoringAdded) {
+										ui.confirm._bossMonitoringAdded = true;
+										ui.confirm.addEventListener('click', function() {
+											// 延迟调用，确保确认按钮的原始逻辑先执行
+											setTimeout(function() {
+												_status.ConfirmButtonMonitoring("stop");
+											}, 50);
+										});
+									}
+								}
+							}
+						};
+					}
+					// 启动确认按钮监控
+					_status.ConfirmButtonMonitoring("start");
 				}
 
 				if (get.config("double_character") && event.current) {
 					_status.doubleBossSelection.selected.push(event.current.name);
 					_status.doubleBossSelection.count++;
+					// 初始检查确认按钮状态
+					if (_status.checkAndHandleConfirmButton) {
+						setTimeout(function() {
+							_status.checkAndHandleConfirmButton();
+						}, 50);
+					}
 				}
 				game.chooseCharacter(function (target) {
 					if (get.config("double_character")) {
@@ -213,6 +293,11 @@ export default () => {
 							target.classList.remove("highlight");
 							if (_status.doubleBossSelection.count === 0) {
 								event.current = null;
+							}
+							_status._asbossClassList.add("disabled");
+							// 检查并处理确认按钮
+							if (_status.checkAndHandleConfirmButton) {
+								_status.checkAndHandleConfirmButton();
 							}
 						} else if (_status.doubleBossSelection.count < 2) {
 							// 添加选择
@@ -226,6 +311,11 @@ export default () => {
 								// 选择完成，保存双将信息
 								game.save("current", _status.doubleBossSelection.selected[0]);
 								game.save("current2", _status.doubleBossSelection.selected[1]);
+								_status._asbossClassList.remove("disabled");
+							}
+							// 检查并处理确认按钮
+							if (_status.checkAndHandleConfirmButton) {
+								_status.checkAndHandleConfirmButton();
 							}
 						}
 					} else {
@@ -2221,8 +2311,18 @@ export default () => {
 						if (ui.confirm) {
 							ui.confirm.close();
 						}
+						if (_status.ConfirmButtonMonitoring) {
+							_status.ConfirmButtonMonitoring("stop");
+						}
 						game.resume();
 					});
+					// 将 asboss 的 classList 赋值给全局变量
+					if (get.config("double_character")) {
+						if (!_status._asbossClassList) {
+							_status._asbossClassList = event.asboss.classList;
+						}
+						_status._asbossClassList.add("disabled");
+					}
 					"step 1";
 					if (ui.cheat) {
 						ui.cheat.close();
