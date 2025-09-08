@@ -28,6 +28,23 @@ export async function onload() {
 		createTouchDraggedFilter();
 	}
 
+	if (lib.config.hideMenuBar) {
+		if (window.node && window.node.menuBar) {
+			try {
+				window.node.menuBar.hide();
+			} catch (e) {}
+		} else if (window.require) {
+			try {
+				let remote = require("@electron/remote");
+				if (remote) {
+					let win = remote.getCurrentWindow();
+					win.setMenuBarVisibility(false);
+					win.setAutoHideMenuBar(true);
+				}
+			} catch (e) {}
+		}
+	}
+
 	// 重构了吗？如构
 	let loadingCustomStyle = [
 		tryLoadCustomStyle("card_style", data => {
