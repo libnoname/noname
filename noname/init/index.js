@@ -1228,19 +1228,19 @@ function setWindowListener() {
 						if (typeof visible === "boolean") {
 							win.setMenuBarVisibility(!visible);
 						} else {
-							// @ts-expect-error
+							// @ts-expect-error - 增强对旧版Electron的兼容性
 							window.__menuTempShown = !window.__menuTempShown;
-							// @ts-expect-error
+							// @ts-expect-error - 用临时标记切换菜单栏可见性
 							win.setMenuBarVisibility(!!window.__menuTempShown);
 						}
 					}
 				}
 				else if (window.node && window.node.menuBar) {
-						// @ts-expect-error
+						// @ts-expect-error - 在电脑上记录临时状态
 						window.__menuTempShown = !window.__menuTempShown;
-						// @ts-expect-error
-						if (window.__menuTempShown) window.node.menuBar.show();
-						else window.node.menuBar.hide();
+						// @ts-expect-error - 调用原生menuBar显示和隐藏
+						if (window.__menuTempShown) { window.node.menuBar.show(); }
+						else { window.node.menuBar.hide(); }
 				}
 			}
 			catch (err) {}
