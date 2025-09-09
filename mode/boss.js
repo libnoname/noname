@@ -105,7 +105,7 @@ export default () => {
 			}
 			for (var i in lib.character) {
 				var info = lib.character[i];
-				if (info.isBoss) {
+				if (info.isBoss && (!get.config("double_character") || !info.isDisDouble)) {
 					// var cfg=i+'_bossconfig';
 					// if(get.config(cfg)==undefined){
 					//		game.saveConfig(cfg,true,true);
@@ -245,7 +245,9 @@ export default () => {
 					}
 					if (!_status.checkAndHandleConfirmButton) {
 						_status.checkAndHandleConfirmButton = function() {
-							if (!ui.confirm) return;
+							if (!ui.confirm) {
+								return;
+							}
 
 							// 检查是否在双将模式下
 							if (get.config("double_character") && _status.doubleBossSelection) {
