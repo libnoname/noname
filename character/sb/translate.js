@@ -330,7 +330,7 @@ const translates = {
 	sbtuxi_info: "你的回合限一次，当你不因此技能获得牌后，你可以将其中任意张牌置入弃牌堆，然后获得至多X名其他角色各一张手牌（X为你以此法置入弃牌堆的牌数）。",
 	sbtuxi_info_identity: "你的回合限两次，当你不因此技能获得牌后，你可以将其中任意张牌置入弃牌堆，然后获得至多X名其他角色各一张手牌（X为你以此法置入弃牌堆的牌数）。",
 	sbdengfeng: "登锋",
-	sbdengfeng_info: `准备阶段，你可以选择一名其他角色并选择一项：①令其获得其装备区的一张牌。②你获得牌堆中的一张【杀】。③${get.poptip("rule_beishui")}：你失去1点体力。`,
+	sbdengfeng_info: `准备阶段，你可以选择一名其他角色并选择一项：①令其获得其装备区的至多两张牌。②你获得牌堆中的一张【杀】。③${get.poptip("rule_beishui")}：你失去1点体力。`,
 	sb_guohuai: "谋郭淮",
 	sb_guohuai_prefix: "谋",
 	sbjingce: "精策",

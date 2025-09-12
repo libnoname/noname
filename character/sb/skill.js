@@ -537,7 +537,7 @@ const skills = {
 					`###${get.prompt(event.skill)}###选择一名其他角色并执行一项`,
 					[
 						[
-							["equip", "令一名其他角色获得其装备区里的一张牌"],
+							["equip", "令一名其他角色获得其装备区里的至多两张牌"],
 							["sha", "获得牌堆里的一张【杀】"],
 							["all", "背水！失去1点体力并执行所有选项"],
 						],
@@ -614,7 +614,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			if (["equip", "all"].includes(control) && target.countCards("e")) {
-				const cards = await player.choosePlayerCard(target, true, "e", `选择${get.translation(target)}的一张装备牌令其获得之`).forResultCards();
+				const cards = await player.choosePlayerCard(target, true, "e", `选择${get.translation(target)}的至多两张装备牌令其获得之`, [1, 2]).forResultCards();
 				if (cards?.length) {
 					await target.gain(cards, "gain2");
 				}

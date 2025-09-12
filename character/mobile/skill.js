@@ -5812,7 +5812,7 @@ const skills = {
 					}
 				}
 			}
-			if (names.length && target.isIn() && !Object.values(target.storage["mbzengou_debuff"] || {}).some(num => num > 0)) {
+			if (names.length && target.isIn()) {
 				const choose =
 					names.length > 1
 						? await player
@@ -5839,8 +5839,10 @@ const skills = {
 					player.line(target);
 					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
-					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
-					target.markSkill("mbzengou_debuff");
+					target.setStorage("mbzengou_debuff", choose, true);
+					target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`)
+					//target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
+					//target.markSkill("mbzengou_debuff");
 				}
 			}
 		},
@@ -5873,13 +5875,21 @@ const skills = {
 			},
 			debuff: {
 				charlotte: true,
-				onremove: true,
-				init(player, skill) {
-					player.storage[skill] = player.storage[skill] || {};
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
 				},
 				mark: true,
 				marktext: "诬",
 				intro: {
+					content(storage) {
+						if (!storage) {
+							return "无效果";
+						}
+						return `你每回合使用第一张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`
+					},
+				},
+				/*intro: {
 					markcount(storage = {}) {
 						return Object.keys(storage).reduce((sum, item) => sum + storage[item], 0);
 					},
@@ -5896,30 +5906,32 @@ const skills = {
 							.map(str => "<li>" + str)
 							.join("<br>");
 					},
-				},
+				},*/
 				audio: "mbzengou",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					if (player.getHistory("useCard").indexOf(event) !== 0) {
 						return false;
 					}
-					return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
+					return player.getStorage("mbzengou_debuff") == event.card.name;
+					//return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					player.storage[event.name][trigger.card.name]--;
+					player.removeSkill(event.name);
+					/*player.storage[event.name][trigger.card.name]--;
 					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 						player.removeSkill(event.name);
 						return;
 					}
 					if (player.storage[event.name][trigger.card.name] === 0) {
 						delete player.storage[event.name][trigger.card.name];
-					}
+					}*/
 				},
 				mod: {
 					aiOrder(player, card, num) {
-						if (player.getHistory("useCard").length > 0 || !player.storage["mbzengou_debuff"]?.[card.name]) {
+						if (player.getHistory("useCard").length > 0 || player.storage["mbzengou_debuff"] != card.name) {
 							return;
 						}
 						const effect = get.effect(player, { name: "losehp" }, player, player);
@@ -9386,7 +9398,7 @@ const skills = {
 						filterTarget: lib.filter.notMe,
 						selectCard: [1, Infinity],
 						prompt: used.length ? "是否继续分配手牌？" : get.prompt(event.skill),
-						prompt2: "请选择要分配的卡牌和目标",
+						prompt2: "将任意张手牌交给一名其他角色",
 						ai1(card) {
 							if (!ui.selected.cards.length) {
 								return 8 - get.value(card);
@@ -9418,9 +9430,8 @@ const skills = {
 					map[id].addArray(result.cards);
 					player.addGaintag(result.cards, "mbjiejian_tag");
 					used.addArray(result.targets);
-				} else {
-					break;
 				}
+				break;
 			} while (player.countCards("h"));
 			if (_status.connectMode) {
 				game.broadcastAll(function () {
