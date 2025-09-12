@@ -1610,8 +1610,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			var stat = player.getStat("skill").refuman_targets;
-			return !stat || !stat.includes(target);
+			return !player.getStorage("refuman_used").includes(target);
 		},
 		filter(event, player) {
 			return player.countCards("he") > 0 && game.hasPlayer(current => lib.skill.refuman.filterTarget(null, player, current));
@@ -1628,11 +1627,8 @@ const skills = {
 				next.gaintag.add("refuman");
 				await next;
 			}
-			var stat = player.getStat("skill");
-			if (!stat.refuman_targets) {
-				stat.refuman_targets = [];
-			}
-			stat.refuman_targets.push(target);
+			player.addTempSkill(event.name + "_used", "phaseChange");
+			player.markAuto(event.name + "_used", target);
 		},
 		check(card) {
 			return get.discardPile(card => card.name == "sha") ? 6 - get.value(card) : 0;
@@ -1649,6 +1645,13 @@ const skills = {
 			},
 		},
 		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "已发动过角色：$",
+				},
+			},
 			draw: {
 				charlotte: true,
 				audio: "refuman",

@@ -3343,8 +3343,7 @@ const skills = {
 			if (target == player) {
 				return false;
 			}
-			var stat = player.getStat("skill").twfuman_targets;
-			return !stat || !stat.includes(target);
+			return !player.getStorage("twfuman_used").includes(target);
 		},
 		filter(event, player) {
 			return (
@@ -3354,16 +3353,23 @@ const skills = {
 				})
 			);
 		},
-		content() {
-			player.give(cards, target).gaintag.add("twfuman");
-			target.addSkill("twfuman2");
-			var stat = player.getStat("skill");
-			if (!stat.twfuman_targets) {
-				stat.twfuman_targets = [];
-			}
-			stat.twfuman_targets.push(target);
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.addTempSkill(`${event.name}_used`, "phaseChange");
+			player.markAuto(`${event.name}_used`, target);
+			const next = player.give(cards, target);
+			next.gaintag.add(event.name);
+			await next;
+			target.addSkill(`${event.name}2`);
 		},
 		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: `已发动过的目标：$`,
+				},
+			},
 			draw: {
 				audio: "fuman",
 				trigger: { global: ["useCardAfter", "respondAfter"] },
@@ -11489,6 +11495,7 @@ const skills = {
 				group: "twxiongzheng_effect",
 			},
 			threaten: {
+				charlotte: true,
 				mark: true,
 				intro: { content: "本轮〖雄争〗目标" },
 				ai: { threaten: 10 },

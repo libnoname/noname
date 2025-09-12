@@ -3057,7 +3057,7 @@ game.import("card", function () {
 					}
 					"step 1";
 					if (event.directfalse || result.bool === false) {
-						var cards = target.getEquips(1);
+						const cards = target.getGainableCards(player, "e", card => get.subtypes(card)?.includes("equip1"));
 						if (cards.length) {
 							player.gain(cards, target, "give", "bySelf");
 						}

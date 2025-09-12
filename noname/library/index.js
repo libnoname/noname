@@ -31,6 +31,7 @@ import { Concurrent } from "./concurrent/index.js";
 import { defaultSplashs } from "../init/onload/index.js";
 import dedent from "../../game/dedent.js";
 import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
+import { ZhanfaManager } from "./zhanfa.js";
 
 const html = dedent;
 
@@ -883,9 +884,9 @@ export class Library {
 	};
 
 	#poptip = new PoptipManager();
-	get poptip (){
+	get poptip() {
 		return this.#poptip;
-	};
+	}
 
 	characterDialogGroup = {
 		收藏: function (name, capt) {
@@ -2028,38 +2029,50 @@ export class Library {
 							return;
 						}
 						node.created = true;
-						ui.create.filediv(".menubutton", "添加背景", node, function (file) {
-							if (file) {
-								var name = file.name;
-								if (name.includes(".")) {
-									name = name.slice(0, name.indexOf("."));
-								}
-								var link = (game.writeFile ? "cdv_" : "custom_") + name;
-								if (item[link]) {
-									for (var i = 1; i < 1000; i++) {
-										if (!item[link + "_" + i]) {
-											link = link + "_" + i;
-											break;
+						var fileInput = ui.create.filediv(".menubutton", "添加背景", node, function (file) {
+							var files = this.files;
+							if (files && files.length > 0) {
+								// 支持多文件导入
+								var fileList = Array.from(files);
+								var totalFiles = fileList.length;
+								var processedFiles = 0;
+								fileList.forEach(function(file, index) {
+									if (file) {
+										var name = file.name;
+										if (name.includes(".")) {
+											name = name.slice(0, name.indexOf("."));
+										}
+										var link = (game.writeFile ? "cdv_" : "custom_") + name;
+										if (item[link]) {
+											for (var i = 1; i < 1000; i++) {
+												if (!item[link + "_" + i]) {
+													link = link + "_" + i;
+													break;
+												}
+											}
+										}
+										item[link] = name;
+										var callback = function () {
+											create(link, node.parentNode.defaultNode);
+											node.parentNode.updateBr();
+											lib.config.customBackgroundPack.add(link);
+											game.saveConfig("customBackgroundPack", lib.config.customBackgroundPack);
+											processedFiles++;
+											if (processedFiles === totalFiles && node.lastChild.classList.contains("active")) {
+												editbg.call(node.lastChild);
+											}
+										};
+										if (game.writeFile) {
+											game.writeFile(file, "image/background", link + ".jpg", callback);
+										} else {
+											game.putDB("image", link, file, callback);
 										}
 									}
-								}
-								item[link] = name;
-								var callback = function () {
-									create(link, node.parentNode.defaultNode);
-									node.parentNode.updateBr();
-									lib.config.customBackgroundPack.add(link);
-									game.saveConfig("customBackgroundPack", lib.config.customBackgroundPack);
-								};
-								if (game.writeFile) {
-									game.writeFile(file, "image/background", link + ".jpg", callback);
-								} else {
-									game.putDB("image", link, file, callback);
-								}
-								if (node.lastChild.classList.contains("active")) {
-									editbg.call(node.lastChild);
-								}
+								});
 							}
-						}).inputNode.accept = "image/*";
+						});
+						fileInput.inputNode.accept = "image/*";
+						fileInput.inputNode.multiple = true;
 						var editbg = function () {
 							this.classList.toggle("active");
 							var page = this.parentNode.parentNode;
@@ -7473,6 +7486,8 @@ export class Library {
 						disabled: "禁用",
 						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
+						shiqiang: "获得〖恃强〗",
+						qiangyi: "获得削弱〖强易〗",
 					},
 				},
 				connect_feiyang_version: {
@@ -7718,6 +7733,8 @@ export class Library {
 						disabled: "禁用",
 						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
+						shiqiang: "获得〖恃强〗",
+						qiangyi: "获得削弱〖强易〗",
 					},
 				},
 				feiyang_version: {
@@ -7939,6 +7956,22 @@ export class Library {
 					init: false,
 					restart: true,
 				},
+				free_choose: {
+					name: "自由选将",
+					init: true,
+					onclick(bool) {
+						game.saveConfig("free_choose", bool, this._link.config.mode);
+						if (get.mode() != this._link.config.mode || (!_status.event.getParent().showConfig && !_status.event.showConfig)) {
+							return;
+						}
+						if (!ui.cheat2 && get.config("free_choose")) {
+							ui.create.cheat2();
+						} else if (ui.cheat2 && !get.config("free_choose")) {
+							ui.cheat2.close();
+							delete ui.cheat2;
+						}
+					},
+				},
 				update: function (config, map) {
 					if (config.single_mode != "normal") {
 						map.enable_jin.hide();
@@ -7962,6 +7995,11 @@ export class Library {
 						} else {
 							map.double_hp.hide();
 						}
+					}
+					if (config.single_mode == "wuxianhuoli" || config.single_mode == "dianjiang") {
+						map.free_choose.show();
+					} else {
+						map.free_choose.hide();
 					}
 				},
 			},
@@ -8449,8 +8487,8 @@ export class Library {
 					.getIdList("rule")
 					.map(id => `<li>${lib.poptip.getName(id)}：${lib.poptip.getInfo(id)}</li>`)
 					.unique()
-					.join("")
-					+ "</ul>"
+					.join("") +
+				"</ul>"
 			);
 		},
 	};
@@ -10623,6 +10661,12 @@ export class Library {
 			expandedSlots: "扩展装备栏",
 			stratagem_fury: "怒气",
 			_stratagem_add_buff: "强化",
+			danqi_hufu: "虎符",
+			zhanfa: "战法",
+			zf_common: "普通",
+			zf_rare: "稀有",
+			zf_epic: "史诗",
+			zf_legend: "传说",
 
 			phaseZhunbei: "准备阶段",
 			phaseJudge: "判定阶段",
@@ -12326,6 +12370,303 @@ export class Library {
 				},
 			},
 		},
+		//战法的模版技能
+		//某个条件下造成的伤害+X（X默认为1）
+		zf_anyDamage: {
+			forced: true,
+			trigger: { source: "damageBegin1" },
+			filter(event, player) {
+				return true;
+			},
+			num: 1,
+			async content(event, trigger, player) {
+				let num = get.info(event.name).num;
+				if (typeof num == "function") {
+					num = num(event, trigger, player);
+				}
+				trigger.num += num;
+			},
+		},
+		//某个时机检索并获得X张特定的牌（X默认为1），时机默认为回合开始时
+		zf_anyGain: {
+			forced: true,
+			trigger: { player: "phaseBegin" },
+			cardFilter: card => true, //用法其实类似getCards那些的过滤器
+			num: 1,
+			pos: "cardPile", //从哪个区域获得牌，其实就是get.cardPile的一个参数
+			async content(event, trigger, player) {
+				const info = get.info(event.name);
+				const num = info.num;
+				const cardFilter = info.cardFilter;
+				let filter = cardFilter;
+				const pos = info.pos;
+
+				if (typeof cardFilter == "string") {
+					filter = card => getCardName(card) == cardFilter;
+				} else if (Array.isArray(cardFilter)) {
+					filter = card => cardFilter.includes(getCardName(card));
+				} else if (typeof cardFilter == "object") {
+					filter = card => {
+						for (let j in cardFilter) {
+							var value;
+							if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
+								value = get[j](card);
+							} else if (j == "name") {
+								value = getCardName(card);
+							} else {
+								value = card[j];
+							}
+							if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+								return false;
+							}
+						}
+						return true;
+					};
+				}
+
+				const cards = [];
+				while (cards.length < num) {
+					const card = get.cardPile(card => filter(card) && !cards.includes(card), pos, "random");
+					if (card) {
+						cards.push(card);
+					} else {
+						break;
+					}
+				}
+				if (cards.length) {
+					game.log(player, "获得了", get.cnNumber(cards.length), "张牌");
+					await player.gain(cards, "draw");
+				}
+			},
+		},
+		//某个条件下摸牌阶段摸牌数+X（X默认为1）
+		zf_phaseDraw: {
+			forced: true,
+			trigger: { player: "phaseDrawBegin2" },
+			num: 1,
+			filter(event, trigger, player) {
+				return !event.numFixed;
+			},
+			async content(event, trigger, player) {
+				trigger.num += get.info(event.name).num;
+			},
+		},
+		//某个时机后摸X张牌（默认为造成伤害后，X默认为1）
+		zf_anyDraw: {
+			forced: true,
+			trigger: { source: "damageSource" },
+			num: 1,
+			async content(event, trigger, player) {
+				await player.draw(get.info(event.name).num);
+			},
+		},
+		//使用的特定的牌伤害+X（X默认为1）
+		zf_cardDamage: {
+			forced: true,
+			trigger: { player: "useCard" },
+			num: 1,
+			async content(event, trigger, player) {
+				let num = get.info(event.name).num;
+				if (typeof num == "function") {
+					num = num(event, trigger, player);
+				}
+				trigger.baseDamage += num;
+			},
+		},
+		//特定条件下手牌上限+X（X默认为1）
+		zf_maxHandcard: {
+			modNum: 1, //可以是有player和num参数的函数，但最后必须返回数字；若填写了数字则是直接与mod的num返回值相加
+			init(player, skill) {
+				const info = get.info(skill);
+				if (info?.mod?.maxHandcard) {
+					return;
+				}
+				const func = info.modNum;
+				const mod = function (player, num) {
+					if (typeof func == "number") {
+						return num + func;
+					}
+					if (typeof func == "function") {
+						return func(player, num);
+					}
+				};
+				game.broadcastAll(
+					(skill, mod) => {
+						lib.skill[skill].mod.maxHandcard = mod;
+					},
+					skill,
+					mod
+				);
+			},
+			mod: {},
+		},
+		//特定条件下使用某些牌次数+X（主要就是针对酒和杀，X默认为1）
+		zf_cardUsable: {
+			cardFilter: card => true, //用法其实类似getCards那些的过滤器
+			modNum: 1, //可以是有card、player和num参数的函数，但最后必须返回数字；若填写了数字则是直接与mod的num返回值相加
+			numFixed: false,
+			init(player, skill) {
+				const info = get.info(skill);
+				if (info?.mod?.cardUsable) {
+					return;
+				}
+				const func = info.modNum;
+				const cardFilter = info.cardFilter;
+				let filter = cardFilter;
+
+				if (typeof cardFilter == "string") {
+					filter = card => getCardName(card) == cardFilter;
+				} else if (Array.isArray(cardFilter)) {
+					filter = card => cardFilter.includes(getCardName(card));
+				} else if (typeof cardFilter == "object") {
+					filter = card => {
+						for (let j in cardFilter) {
+							var value;
+							if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
+								value = get[j](card);
+							} else if (j == "name") {
+								value = getCardName(card);
+							} else {
+								value = card[j];
+							}
+							if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+								return false;
+							}
+						}
+						return true;
+					};
+				}
+
+				const mod = function (card, player, num) {
+					if (typeof func == "function") {
+						return func(card, player, num);
+					}
+					if (typeof func == "number") {
+						if (filter(card)) {
+							return num + func;
+						}
+					}
+				};
+				game.broadcastAll(
+					(skill, mod) => {
+						lib.skill[skill].mod.cardUsable = mod;
+					},
+					skill,
+					mod
+				);
+			},
+			mod: {},
+		},
+		//某个条件下，对敌方造成X点伤害（默认是受到伤害后随机一名敌方，且X默认为1）
+		zf_directDamage: {
+			forced: true,
+			trigger: { player: "damageEnd" },
+			num: 1,
+			nature: null,
+			select: 1,
+			targetFilter: target => true, //getEnemies的过滤器
+			async content(event, trigger, player) {
+				const info = get.info(event.name);
+				let num = info.num;
+				let nature = info.nature;
+				const filter = info.targetFilter;
+				const select = info.select;
+				let targets;
+				if (nature == "event") {
+					nature = event.nature;
+				}
+				if (num == "event") {
+					num = event.num;
+				}
+				if (typeof select == "string" && select !== "all") {
+					targets = [trigger[select]];
+				}
+				else {
+					targets = player.getEnemies(filter(target), false);
+					if (select !== "all" && typeof select == "number") {
+						targets = targets.randomGets(select);
+					}
+				}
+				if (targets.length) {
+					player.line(targets, nature || "yellow");
+					await game.doAsyncInOrder(targets, (target, i) => target.damage(num, nature));
+				}
+			},
+		},
+		//获得战法后立即获得对应的牌
+		zf_directGain: {
+			cardFilter: card => true, //用法其实类似getCards那些的过滤器
+			num: 1,
+			pos: "cardPile", //从哪个区域获得牌，其实就是get.cardPile的一个参数
+			init(player, skill) {
+				const info = get.info(skill);
+				const num = info.num;
+				const cardFilter = info.cardFilter;
+				let filter = cardFilter;
+				const pos = info.pos;
+
+				if (typeof cardFilter == "string") {
+					filter = card => getCardName(card) == cardFilter;
+				} else if (Array.isArray(cardFilter)) {
+					filter = card => cardFilter.includes(getCardName(card));
+				} else if (typeof cardFilter == "object") {
+					filter = card => {
+						for (let j in cardFilter) {
+							var value;
+							if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
+								value = get[j](card);
+							} else if (j == "name") {
+								value = getCardName(card);
+							} else {
+								value = card[j];
+							}
+							if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+								return false;
+							}
+						}
+						return true;
+					};
+				}
+
+				const cards = [];
+				while (cards.length < num) {
+					const card = get.cardPile(card => filter(card) && !cards.includes(card), pos, "random");
+					if (card) {
+						cards.push(card);
+					} else {
+						break;
+					}
+				}
+				if (cards.length) {
+					game.log(player, "获得了", get.cnNumber(cards.length), "张牌");
+					player.$draw(cards.length);
+					player.directgain(cards);
+					//await player.gain(cards, "draw");
+				}
+			},
+		},
+		zhanfa: {
+			markimage: "image/card/zhanfa.png",
+			intro: {
+				markcount(storage, player, skill) {
+					return storage?.length || 0;
+				},
+				mark(dialog, storage, player) {
+					const list = storage || [];
+					if (!list.length) {
+						return "暂无战法";
+					}
+					dialog.add([list.map(i => [`zf_${lib.zhanfa.getRarity(i)}`, null, i]), "vcard"]);
+					dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`));
+				},
+			},
+		},
+		danqi_hufu: {
+			markimage: "image/card/danqi_hufu.png",
+			intro: {
+				content: "当前拥有虎符：#",
+			},
+		},
 		charge: {
 			markimage: "image/card/charge.png",
 			intro: {
@@ -13040,80 +13381,60 @@ export class Library {
 		},
 		aozhan: {
 			charlotte: true,
-			mod: {
-				targetEnabled: function (card) {
-					if (card.name == "tao" && ((card.isCard && card.cardid) || get.itemtype(card) == "card")) {
-						return false;
-					}
-				},
-				cardSavable: function (card) {
-					if (card.name == "tao" && ((card.isCard && card.cardid) || get.itemtype(card) == "card")) {
-						return false;
-					}
-				},
-			},
-			group: ["aozhan_sha", "aozhan_shan"],
-			subSkill: {
-				sha: {
-					enable: ["chooseToUse", "chooseToRespond"],
-					filterCard: {
-						name: "tao",
-					},
-					viewAs: {
-						name: "sha",
-					},
-					viewAsFilter: function (player) {
-						if (!player.countCards("hs", "tao")) {
-							return false;
-						}
-					},
-					position: "hs",
-					prompt: "将一张桃当杀使用或打出",
-					check: function () {
-						return 1;
-					},
-					ai: {
-						respondSha: true,
-						skillTagFilter: function (player) {
-							if (!player.countCards("hs", "tao")) {
-								return false;
-							}
-						},
-						order: function () {
-							return get.order({ name: "sha" }) - 0.1;
-						},
-					},
-					sub: true,
-				},
-				shan: {
-					enable: ["chooseToRespond", "chooseToUse"],
-					filterCard: {
-						name: "tao",
-					},
-					viewAs: {
-						name: "shan",
-					},
-					prompt: "将一张桃当闪打出",
-					check: function () {
-						return 1;
-					},
-					viewAsFilter: function (player) {
-						if (!player.countCards("hs", "tao")) {
-							return false;
-						}
-					},
-					position: "hs",
-					ai: {
-						respondShan: true,
-						skillTagFilter: function (player) {
-							if (!player.countCards("hs", "tao")) {
-								return false;
-							}
-						},
-					},
-					sub: true,
-				},
-			},
+    		ruleSkill: true,
+    		mod: {
+    			cardname(card, player) {
+    				if (card.name == "tao") {
+    					const evt = get.event();
+    					if (typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && !evt.filterCard({ name: "sha" }, player, evt)) {
+        					return "shan";
+    					}
+    					return "sha";
+    				}
+    			},
+    		},
+    		trigger: {
+    			player: ["useCardBefore", "respondBefore"],
+    		},
+    		silent: true,
+    		direct: true,
+    		firstDo: true,
+    		priority: Infinity,
+    		filter(event, player) {
+    			if (!event.card || !event.cards || !["sha", "shan"].includes(event.card.name) || event.card === event.cards[0] || event.cards.length != 1 || event.cards[0].name != "tao") {
+    				return false;
+    			}
+    			const evt = event.getParent();
+    			return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
+    		},
+    		async content(event, trigger, player) {
+    		    const control = await player.
+    			    chooseControl(["sha", "shan"])
+    			    .set("prompt", `鏖战：请选择${get.translation(trigger.cards[0])}视为${(trigger.name == "respond" ? "打出" : "使用")}的牌名`)
+    			    .set("ai", () => {
+    				    const choice = _status.event.getParent(5).choice;
+    				    if (choice && ["sha", "shan"].includes(choice)) {
+        				    return choice;
+    				    }
+    				    return ["sha", "shan"].randomGet();
+    			    })
+    			    .forResultControl();
+    		    const card = get.autoViewAs({ name: control }, trigger.cards);
+    		    trigger.card = card;
+    		    trigger.getParent().result.card = card;
+    		},
+    		hiddenCard(player, name) {
+    			return ["sha", "shan"].includes(name) && player.countCards("hs", card => card.name == "tao");
+    		},
+    		ai: {
+    			respondSha: true,
+    			respondShan: true,
+    			skillTagFilter(player, tag, arg) {
+    				if (!player.countCards("hs", card => card.name == "tao")) {
+    					return false;
+    				};
+    			},
+    		},
 		},
 		global: [],
 		globalmap: {},
@@ -13668,6 +13989,9 @@ export class Library {
 				if (map?.type == "round" && event.player != player) {
 					return false;
 				}
+				if (map?.type == "round" && event.skill) {
+					return false;
+				}
 				if (player.isIn()) {
 					delete _status._rest_return?.[player.playerid];
 				}
@@ -13883,6 +14207,12 @@ export class Library {
 	);
 	perfectPair = {};
 	cardPile = {};
+
+	#zhanfa = new ZhanfaManager(this);
+	get zhanfa() {
+		return this.#zhanfa;
+	}
+
 	message = {
 		server: {
 			cardPile() {
@@ -14242,7 +14572,7 @@ export class Library {
 			},
 			/**
 			 * 用于代替exec进行主机许可的请求喵
-			 * 
+			 *
 			 * @this {import("./element/client.js").Client}
 			 * @param {{ type: string }} subject 请求附带的载荷，必须是对象并且包含类型为字符串的`type`属性喵
 			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应喵
@@ -15207,8 +15537,8 @@ export class Library {
 			},
 			/**
 			 * 当服务器响应通过dataSync发送的请求时走这里喵
-			 * 
-			 * @param {{ ok: boolean, id: string|null, result: any }} data 
+			 *
+			 * @param {{ ok: boolean, id: string|null, result: any }} data
 			 */
 			dataReply(data) {
 				// 需要提前注册响应回调喵
@@ -16153,6 +16483,17 @@ export class Library {
 					const span = document.createElement("span");
 					span.style.fontFamily = "NonameSuits";
 					span.textContent = "☁️";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
+			"爻",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "☯";
 					return span.outerHTML;
 				},
 			},

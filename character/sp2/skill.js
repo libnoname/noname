@@ -125,6 +125,10 @@ const skills = {
 					const { cards: [card] } = await game.cardsGotoOrdering(get.bottomCards());
 					await player.showCards(card, `${get.translation(player)}发动了【持国】`, true);
 					if (get.suit(card) == get.suit(trigger.card)) {
+						const info = get.info(trigger.card);
+						if (!["trick", "basic"].includes(info.type) || info.multitarget) {
+							return;
+						}
 						if (trigger.targets?.length) {
 							const targets = game.filterPlayer(current => {
 								if (trigger.targets?.includes(current)) {

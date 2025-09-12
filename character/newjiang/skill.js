@@ -2,6 +2,291 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//爻袁术
+	dcwangyao: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			if (event.name.startsWith("useCard")) {
+				if (event.player == player) {
+					return false;
+				}
+				if (event.card?.name != "sha" && get.type(event.card) != "trick") {
+					return false;
+				}
+				return ["dcwangyao_marka", "dcwangyao_markb"].every(mark => player.hasSkill(mark));
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name.startsWith("useCard")) {
+				const list = ["dcwangyao_marka", "dcwangyao_markb"].map(mark => {
+					const type = player.getStorage(mark, false);
+					return [mark, "", type ? "阳" : "阴"];
+				});
+				const result = await player
+					.chooseButton([
+						"妄爻：是否翻转一枚爻？",
+						[
+							list,
+							(item, type, position, noclick, node) => {
+								node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick, node);
+								node.owner = get.player();
+								node._customintro = function (uiintro, evt) {
+									const yao = node.owner?.getStorage(node.link[2], false);
+									uiintro.add(`${yao ? "阳" : "阴"}爻`);
+								};
+								return node;
+							},
+						],
+					])
+					.set("ai", button => {
+						if (button.link[2] == true) {
+							return 1;
+						}
+						return 2;
+					})
+					.forResult();
+				if (result.bool) {
+					event.result = {
+						bool: true,
+						cost_data: result.links[0],
+					};
+				}
+			} else {
+				event.result = {
+					bool: true,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name.startsWith("useCard")) {
+				const [mark, trash, type] = event.cost_data;
+				game.log(player, "翻转了一枚", type, "爻");
+				get.info(event.name).setType(player, mark, type != "阳");
+				const list = ["dcwangyao_marka", "dcwangyao_markb"];
+				if (player.getStorage(list[0], false) == player.getStorage(list[1], false)) {
+					await player.draw();
+				}
+				return;
+			}
+			player.addSkill("dcwangyao_marka");
+			player.addSkill("dcwangyao_markb");
+		},
+		setType(player, skill, type) {
+			player.setStorage(skill, type);
+			player.markSkill(skill);
+			game.broadcastAll(
+				(player, skill, type) => {
+					const color = type ? "black" : "white",
+						bgColor = type ? "rgb(255, 255, 255)" : "rgba(1, 1, 1, 0.9)";
+					const text = `<span style="color: ${color}">爻</span>`;
+					if (player.marks[skill]) {
+						player.marks[skill].firstChild.style.backgroundColor = bgColor;
+						player.marks[skill].firstChild.innerHTML = text;
+					}
+				},
+				player,
+				skill,
+				type
+			);
+		},
+		subSkill: {
+			marka: {
+				init(player, skill) {
+					get.info("dcwangyao").setType(player, skill, true);
+				},
+				mark: true,
+				marktext: "爻",
+				intro: {
+					content(storage, player) {
+						const color = storage ? "gold" : "gray",
+							name = storage ? "阳" : "阴";
+						return `此爻为<span style="color: ${color}">${name}爻</span>`;
+					},
+				},
+				onremove: true,
+			},
+			markb: {
+				init(player, skill) {
+					get.info("dcwangyao").setType(player, skill, false);
+				},
+				mark: true,
+				marktext: "爻",
+				intro: {
+					content(storage, player) {
+						const color = storage ? "gold" : "gray",
+							name = storage ? "阳" : "阴";
+						return `此爻为<span style="color:${color}">${name}爻</span>`;
+					},
+				},
+				onremove: true,
+			},
+		},
+	},
+	dczengua: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: lib.filter.notMe,
+		filterCard: true,
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player
+				.chooseButton(
+					[
+						`猜测${get.translation(target)}手牌中某种类型的牌是否为全场最多`,
+						[
+							["basic", "trick", "equip"].map(type => {
+								return ["", "", `caoying_${type}`];
+							}),
+							"vcard",
+						],
+						[
+							[
+								["isMax", "全场最多"],
+								["notMax", "不为最多"],
+							],
+							"tdnodes",
+						],
+					],
+					2,
+					true
+				)
+				.set("filterButton", button => {
+					if (ui.selected.buttons?.length) {
+						return typeof button.link == "string";
+					}
+					return typeof button.link != "string";
+				})
+				.set("complexSelect", true)
+				.set("ai", button => {
+					//花里胡哨一看战绩0.5
+					return Math.random();
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const type = result.links[0][2].slice(8),
+				isMax = result.links[1] == "isMax";
+			const count = current => current.countCards("h", card => get.type2(card) == type),
+				bool = !game.hasPlayer(current => {
+					return count(current) > count(target);
+				});
+			if (isMax == bool) {
+				player.popup("洗具", "wood");
+				if (!target.countGainableCards(player, "h", card => get.type2(card) == type)) {
+					return;
+				}
+				await player
+					.gainPlayerCard(target, "h", true)
+					.set("filterButton", button => {
+						return get.type2(button.link) == get.event("cardType");
+					})
+					.set("cardType", type);
+			} else {
+				player.popup("杯具", "fire");
+				await target.draw();
+				const list = ["dcwangyao_marka", "dcwangyao_markb"].map(mark => {
+					const type = player.getStorage(mark, false);
+					return [mark, "", type ? "阳" : "阴"];
+				});
+				if (
+					!list.every(info => {
+						return typeof player.storage[info[0]] == "boolean";
+					})
+				) {
+					return;
+				}
+				const result2 = await player
+					.chooseButton(
+						[
+							"谮卦：翻转一枚爻",
+							[
+								list,
+								(item, type, position, noclick, node) => {
+									node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick, node);
+									node.owner = get.player();
+									node._customintro = function (uiintro, evt) {
+										const yao = node.owner?.getStorage(node.link[2], false);
+										uiintro.add(`${yao ? "阳" : "阴"}爻`);
+									};
+									return node;
+								},
+							],
+						],
+						true
+					)
+					.set("ai", button => {
+						if (button.link[2] == true) {
+							return 1;
+						}
+						return 2;
+					})
+					.forResult();
+				if (result2.bool) {
+					const [mark, trash, type] = result2.links[0];
+					game.log(player, "翻转了一枚", type, "爻");
+					get.info("dcwangyao").setType(player, mark, type != "阳");
+				}
+			}
+		},
+		ai: {
+			order: 5,
+			result: {
+				target(player, target) {
+					if (
+						target.countCards("h") < 2 ||
+						!game.hasPlayer(current => {
+							return current != target && current.countCards("h") > target.countCards("h") / 2;
+						})
+					) {
+						return 2 * get.sgnAttitude(player, target);
+					}
+					return 0;
+				},
+				player: -1,
+			},
+		},
+	},
+	dckanghui: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			player: "damageBegin3",
+		},
+		filter(event, player) {
+			if (event.source == player) {
+				return false;
+			}
+			const list = ["dcwangyao_marka", "dcwangyao_markb"];
+			return list.every(mark => {
+				if (typeof player.storage[mark] != "boolean") {
+					return false;
+				}
+				return player.getStorage(mark, false) == false;
+			});
+		},
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+		mod: {
+			maxHandcard(player, num) {
+				const list = ["dcwangyao_marka", "dcwangyao_markb"];
+				if (list.every(mark => player.getStorage(mark, false))) {
+					return num + 2;
+				}
+			},
+		},
+		ai: {
+			combo: "dcwangyao",
+		},
+	},
 	//张奂
 	dcyiju: {
 		audio: 2,
@@ -72,8 +357,7 @@ const skills = {
 				};
 				if (player == game.me) {
 					func(videoId, cards, cards2);
-				}
-				else if (player.isOnline()) {
+				} else if (player.isOnline()) {
 					player.send(func, videoId, cards, cards2);
 				}
 				const result = await player

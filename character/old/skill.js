@@ -2,6 +2,298 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//爻袁术
+	yao_yaoyi: {
+		audio: 2,
+		init(player, skill) {
+			game.broadcastAll(
+				(player, skill) => {
+					const observer = new MutationObserver(mutationsList => {
+						for (const mutation of mutationsList) {
+							if (mutation.type === "childList") {
+								const cards = player._start_cards ?? [];
+								if (player.node.handcards1.cardMod[skill] && !_status.gameDrawed) {
+									for (const card of mutation.addedNodes) {
+										if (cards.includes(card)) {
+											game.broadcastAll(
+												(card, skill) => {
+													card.classList.add(skill);
+													card.addGaintag(`${skill}_tag`);
+												},
+												card,
+												skill
+											);
+										}
+									}
+								}
+								for (const card of mutation.removedNodes) {
+									if (cards.includes(card)) {
+										game.broadcastAll((card, skill) => card.classList.remove(skill), card, skill);
+									}
+								}
+							}
+						}
+					});
+					const config = { childList: true };
+					observer.observe(player.node.handcards1, config);
+					observer.observe(player.node.handcards2, config);
+					player.node.handcards1.cardMod ??= {};
+					player.node.handcards2.cardMod ??= {};
+					const cardMod = card => {
+						if (card.classList.contains(skill)) {
+							return ["爻疑", "此牌对你不可见"];
+						}
+					};
+					player.node.handcards1.cardMod[skill] = cardMod;
+					player.node.handcards2.cardMod[skill] = cardMod;
+					player.node.handcards1.classList.add(skill);
+					player.node.handcards2.classList.add(skill);
+					if (!ui.css[skill]) {
+						ui.css[skill] = lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi {", "background-image: var(--cardback-url) !important;", "background-size: 100% 100% !important;", "background-position: center !important;", "}"].join(""));
+						lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi > * {", "visibility: hidden !important;", "}"].join(""));
+					}
+					const { card, blank, ...others } = ui.create.buttonPresets;
+					ui.create.buttonPresets = {
+						...others,
+						card(item, ...args) {
+							if (item.classList.contains(skill) && args[args.length - 1] !== skill) {
+								return blank(item, ...args, skill);
+							}
+							return card(item, ...args);
+						},
+						blank(item, ...args) {
+							if (item.classList.contains(skill) && args[args.length - 1] !== skill) {
+								return card(item, ...args, skill);
+							}
+							return blank(item, ...args);
+						},
+					};
+				},
+				player,
+				skill
+			);
+		},
+		onremove(player, skill) {
+			player.removeGaintag(`${skill}_tag`);
+			game.broadcastAll(
+				(player, skill) => {
+					player.node.handcards1.classList.remove(skill);
+					player.node.handcards2.classList.remove(skill);
+					delete player.node.handcards1.cardMod[skill];
+					delete player.node.handcards2.cardMod[skill];
+					player.getCards("h", card => card.classList.contains(skill)).forEach(card => card.classList.remove(skill));
+				},
+				player,
+				skill
+			);
+		},
+		enable: "chooseToUse",
+		filter(event, player) {
+			return get
+				.inpileVCardList(info => lib.skill.yao_yaoyi.hiddenCard(player, info[2]))
+				.some(info => {
+					const card = { name: info[2], nature: info[3] };
+					return player.hasCard(cardx => cardx.classList.contains("yao_yaoyi") && event.filterCard({ ...card, cards: [cardx] }, player, event), "h");
+				});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get
+					.inpileVCardList(info => lib.skill.yao_yaoyi.hiddenCard(player, info[2]))
+					.filter(info => {
+						const card = { name: info[2], nature: info[3] };
+						return player.hasCard(cardx => cardx.classList.contains("yao_yaoyi") && event.filterCard({ ...card, cards: [cardx] }, player, event), "h");
+					});
+				return ui.create.dialog("爻疑", [list, "vcard"]);
+			},
+			filter(button, player) {
+				const event = get.event().getParent(),
+					info = button.link,
+					card = { name: info[2], nature: info[3] };
+				return player.hasCard(cardx => cardx.classList.contains("yao_yaoyi") && event.filterCard({ ...card, cards: [cardx] }, player, event), "h");
+			},
+			check(button) {
+				const event = get.event().getParent();
+				if (event.type !== "phase") {
+					return 1;
+				}
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			prompt(links) {
+				const event = get.event().getParent();
+				return "将一张背置牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】" + (event.name === "chooseToRespond" ? "打出" : "使用");
+			},
+			backup(links, player) {
+				return {
+					audio: "yao_yaoyi",
+					filterCard(card) {
+						return card.classList.contains("yao_yaoyi");
+					},
+					popname: true,
+					check(card) {
+						return 1 + Math.random();
+					},
+					position: "hse",
+					viewAs: { name: links[0][2], nature: links[0][3] },
+					precontent() {
+						player.addTempSkill("yao_yaoyi_used");
+						player.markAuto("yao_yaoyi_used", [event.result.card.name]);
+					},
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name) || player.getStorage("yao_yaoyi_used").includes(name)) {
+				return false;
+			}
+			return ["basic", "trick"].includes(get.type(name)) && player.hasCard(card => _status.connectMode || card.classList.contains("yao_yaoyi"), "h");
+		},
+		locked: false,
+		mod: {
+			cardEnabled(card, player) {
+				if (!card || get.is.convertedCard(card)) {
+					return;
+				}
+				if (card?.cards?.some(cardx => cardx.classList.contains("yao_yaoyi"))) {
+					return false;
+				}
+			},
+			cardRespondable(card, player) {
+				return get.info("yao_yaoyi").mod.cardEnabled.apply(this, arguments);
+			},
+			cardSavable(card, player) {
+				return get.info("yao_yaoyi").mod.cardEnabled.apply(this, arguments);
+			},
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player) {
+				if (!player.hasCard(card => _status.connectMode || card.classList.contains("yao_yaoyi"), "h")) {
+					return false;
+				}
+			},
+			order(item, player) {
+				if (player && _status.event.type == "phase") {
+					const list = get.inpileVCardList(info => lib.skill.yao_yaoyi.hiddenCard(player, info[2]));
+					let max = 0;
+					list.forEach(info => {
+						const card = { name: info[2], nature: info[3] };
+						if (player.getUseValue(card) > 0) {
+							const temp = get.order(card);
+							if (temp > max) {
+								max = temp;
+							}
+						}
+					});
+					if (max > 0) {
+						max += 1;
+					}
+					return max;
+				}
+				return 1;
+			},
+			result: {
+				player(player) {
+					return get.event().dying ? get.attitude(player, get.event().dying) : 1;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+			tag: {},
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	yao_chenwei: {
+		audio: 2,
+		trigger: { player: "useCard" },
+		filter(event, player) {
+			if (
+				!player.hasHistory("lose", evt => {
+					if (evt.getParent() !== event) {
+						return false;
+					}
+					return Object.values(evt.gaintag_map).flat().includes("yao_yaoyi_tag");
+				})
+			) {
+				return false;
+			}
+			if (!player.storage.yao_chenwei) {
+				return player.countCards("h") > 0;
+			}
+			return game.hasPlayer(target => target !== player && target.countGainableCards(player, "he"));
+		},
+		async cost(event, trigger, player) {
+			const next = player.chooseTarget(get.prompt(event.skill));
+			if (player.storage[event.skill]) {
+				next.prompt2 = "获得一名其他角色的一张牌并将此牌背置";
+				next.filterTarget = function (card, player, target) {
+					return target !== player && target.countGainableCards(player, "he");
+				};
+				next.ai = function (target) {
+					const player = get.player();
+					return get.effect(target, { name: "shunshou_copy2" }, player, player);
+				};
+			} else {
+				next.prompt2 = "令一名角色将你的一张手牌翻面";
+				next.ai = function (target) {
+					const player = get.player();
+					return 1 + Math.sign(get.attitude(player, target)) + Math.random();
+				};
+			}
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			const storage = player.storage[event.name],
+				target = event.targets[0];
+			player.changeZhuanhuanji(event.name);
+			if (storage) {
+				const result = await player.gainPlayerCard(target, "he", true).forResult();
+				if (result?.bool && result.cards?.some(i => get.position(i) === "h" && get.owner(i) === player && !i.classList.contains("yao_yaoyi"))) {
+					game.broadcastAll(
+						cards => {
+							for (const card of cards) {
+								card.classList.add("yao_yaoyi");
+								card.addGaintag("yao_yaoyi_tag");
+							}
+						},
+						result.cards.filter(i => get.position(i) === "h" && get.owner(i) === player && !i.classList.contains("yao_yaoyi"))
+					);
+				}
+			} else {
+				const result = await target
+					.choosePlayerCard(player, "h", true)
+					.set("prompt2", `将${get.translation(player)}的一张手牌翻面`)
+					.forResult();
+				if (result?.bool && result.cards?.some(i => get.position(i) === "h" && get.owner(i) === player)) {
+					game.broadcastAll(
+						cards => {
+							for (const card of cards) {
+								card.classList.toggle("yao_yaoyi");
+								card[card.hasGaintag("yao_yaoyi_tag") ? "removeGaintag" : "addGaintag"]("yao_yaoyi_tag");
+							}
+						},
+						result.cards.filter(i => get.position(i) === "h" && get.owner(i) === player),
+					);
+				}
+			}
+		},
+		zhuanhuanji: true,
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage) {
+				return `当你使用背置牌时，你可以${["获得一名其他角色的一张牌并将此牌背置", "令一名角色将你的一张手牌翻面"][1 - storage]}`;
+			},
+		},
+		ai: {
+			combo: "yao_yaoyi",
+		},
+	},
 	//魏武帝
 	junkguixin: {
 		forbid: ["guozhan"],

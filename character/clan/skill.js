@@ -24,6 +24,9 @@ const skills = {
 					if (!player.isLinked() || ["equip", "delay"].includes(get.type(event.card))) {
 						return false;
 					}
+					if (get.info(event.card)?.multitarget) {
+						return false;
+					}
 					const targets = player.getHistory("useCard", evt => {
 						return evt?.targets?.length && evt != event;
 					}, event).map(evt => evt.targets ?? []).flat().toUniqued();
@@ -31,7 +34,7 @@ const skills = {
 						if (event.targets?.includes(target)) {
 							return true;
 						}
-						return lib.filter.targetEnabled(event.card, player, target);
+						return lib.filter.targetEnabled2(event.card, player, target);
 					});
 				},
 				charlotte: true,
@@ -51,7 +54,7 @@ const skills = {
 									return false;
 								}
 							}
-							return targety.includes(target) || lib.filter.targetEnabled(cardx, player, target);
+							return targety.includes(target) || lib.filter.targetEnabled2(cardx, player, target);
 						}, [1, Infinity])
 						.set("targetx", targets)
 						.set("targety", trigger.targets)
@@ -550,9 +553,6 @@ const skills = {
 							await target.useCard(sha, player, false);
 						}
 					}
-				})
-				.vars({
-					target: target,
 				});
 		},
 		selectCard: -1,

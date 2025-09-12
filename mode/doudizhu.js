@@ -130,10 +130,8 @@ export default () => {
 						}
 						list.push("bahu");
 						const enhance = _status.connectMode ? lib.configOL.enhance_dizhu : get.config("enhance_dizhu");
-						if (enhance === "kaihei") {
-							list.push("kaihei");
-						} else if (enhance === "yinfu") {
-							list.push("yinfu");
+						if (["kaihei", "yinfu", "shiqiang", "qiangyi"].includes(enhance)) {
+							list.push(enhance);
 						}
 						game.zhu.addSkill(list);
 					}
@@ -2056,6 +2054,10 @@ export default () => {
 			mbfeiyang_info: "判定阶段开始时，若你的判定区有牌，则你可以弃置两张手牌，然后弃置你判定区的一张牌。",
 			yinfu: "殷富",
 			yinfu_info: "锁定技。①回合开始时，若你的已损失体力值不小于游戏轮次，你回复1点体力。②当你发动〖殷富①〗至少3次后，你失去〖殷富〗。",
+			shiqiang: "恃强",
+			shiqiang_info: "出牌阶段限一次，你可以将一张牌当无距离限制的【杀】使用。你以此法使用【杀】时，摸一张牌。此【杀】结算结束后，若未造成伤害，你减1点体力上限。",
+			qiangyi: "强易",
+			qiangyi_info: "每名角色限一次。出牌阶段，你选择一名其他角色，获得其一张手牌，然后交给其一张手牌。",
 			doudizhu_cardPile: "底牌",
 			online_gongshoujintui: "攻守进退",
 			gongshoujianbei: "攻守兼备",
@@ -2777,6 +2779,99 @@ export default () => {
 					if (player.getAllHistory("useSkill", evt => evt.skill == event.name).length > 2) {
 						await player.removeSkills(event.name);
 					}
+				},
+			},
+			//恃强
+			shiqiang: {
+				enable: "phaseUse",
+				usable: 1,
+				filter(event, player) {
+					return event.filterCard(get.autoViewAs({ name: "sha", storage: { shiqiang: true } }, "unsure"), player, event);
+				},
+				filterCard: true,
+				position: "hes",
+				viewAs: {
+					name: "sha",
+					storage: { shiqiang: true },
+				},
+				locked: false,
+				group: ["shiqiang_effect"],
+				mod: {
+					targetInRange(card, player, target) {
+						if (card?.storage?.shiqiang) {
+							return true;
+						}
+					},
+				},
+				subSkill: {
+					effect: {
+						forced: true,
+						locked: false,
+						trigger: { player: ["useCard", "useCardAfter"] },
+						filter(event, player, name) {
+							if (event.skill != "shiqiang") {
+								return false;
+							}
+							if (name == "useCardAfter") {
+								return !player.hasHistory("sourceDamage", evt => evt.card == event.card);
+							}
+							return true;
+						},
+						async content(event, trigger, player) {
+							if (event.triggername == "useCard") {
+								await player.draw();
+							} else {
+								await player.loseMaxHp();
+							}
+						},
+					},
+				},
+				ai: {
+					order: 4,
+					result: {
+						player: 1,
+					},
+				},
+			},
+			//强易·削弱
+			qiangyi: {
+				enable: "phaseUse",
+				filter(event, player) {
+					return (
+						player == game.zhu &&
+						game.hasPlayer(function (current) {
+							return lib.skill.qiangyi.filterTarget(null, player, current);
+						})
+					);
+				},
+				filterTarget(card, player, target) {
+					return player != target && !player.getStorage("qiangyi_used").includes(target) && target.countGainableCards(player, "h") > 0;
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					player.markAuto(`${event.name}_used`, target);
+					const result = await player.gainPlayerCard(target, "h", true).forResult();
+					if (!result?.bool || !result.cards?.length) {
+						return event.finish();
+					}
+					const hs = player.getCards("h");
+					if (hs.length) {
+						let resultx;
+						if (hs.length == 1) {
+							resultx = { bool: true, cards: hs };
+						} else {
+							resultx = await player.chooseCard("h", true, `选择交给${get.translation(target)}一张手牌`).forResult();
+						}
+						if (resultx?.bool && resultx.cards?.length) {
+							await player.give(resultx.cards, target);
+						}
+					}
+				},
+				ai: {
+					order: 5,
+					result: {
+						target: -1,
+					},
 				},
 			},
 			diqi_skill: {

@@ -301,28 +301,31 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const next = await player.chooseToCompare(target).set("isDelay", true);
-			player
-				.when({
-					player: "useCardAfter",
-				})
-				.filter(evt => evt.getParent() == event)
-				.step(async (event, trigger, player) => {
-					player.removeSkill("sxrmchengbian_sha");
-					target.removeSkill("sxrmchengbian_sha");
-					const result = await game.createEvent("chooseToCompare", false).set("player", player).set("parentEvent", next).setContent("chooseToCompareEffect").forResult();
-					if (result?.winner) {
-						await result.winner.drawTo(result.winner.maxHp);
-					}
-				});
-			player.addTempSkill("sxrmchengbian_sha");
-			target.addTempSkill("sxrmchengbian_sha");
+			const next = player.chooseToCompare(target).set("isDelay", true);
+			await next;
+			await game.delay();
 			const card = new lib.element.VCard({ name: "juedou" });
 			if (player.canUse(card, target)) {
-				await player.useCard(card, target);
+				const next2 = player.useCard(card, target);
+				player
+					.when({
+						player: "useCardAfter",
+					})
+					.filter(evt => evt === next2)
+					.step(async (event, trigger, player) => {
+						player.removeSkill("sxrmchengbian_sha");
+						target.removeSkill("sxrmchengbian_sha");
+						const result = await game.createEvent("chooseToCompare", false).set("player", player).set("parentEvent", next).setContent("chooseToCompareEffect").forResult();
+						if (result?.winner) {
+							await result.winner.drawTo(result.winner.maxHp);
+						}
+					});
+				player.addTempSkill("sxrmchengbian_sha");
+				target.addTempSkill("sxrmchengbian_sha");
+				await next2;
+				player.removeSkill("sxrmchengbian_sha");
+				target.removeSkill("sxrmchengbian_sha");
 			}
-			player.removeSkill("sxrmchengbian_sha");
-			target.removeSkill("sxrmchengbian_sha");
 		},
 		subSkill: {
 			sha: {

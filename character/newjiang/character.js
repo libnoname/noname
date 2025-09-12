@@ -1,4 +1,10 @@
 const characters = {
+	yao_yuanshu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dcwangyao", "dczengua", "dckanghui"],
+	},
 	yj_zhanghuan: {
 		sex: "male",
 		group: "qun",

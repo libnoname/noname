@@ -628,57 +628,38 @@ const skills = {
 					game.getGlobalHistory("changeHp", evt => {
 						if (evt.player === player) {
 							const evt3 = evt.getParent();
-							if (evt3.name === "recover" && evt3.getParent("dying") === trigger && evt3.source?.isIn() && skills.some(i => !evt3.source.hasSkill(i, null, false, false))) {
+							if (evt3.name === "recover" && evt3.getParent("dying") === trigger && evt3.source?.isIn()) {
 								targets.add(evt3.source);
 							}
 						}
 					});
 					targets.sortBySeat();
 					while (skills.length) {
+						const skill = skills.shift();
 						const result = await player
-							.chooseButtonTarget({
-								createDialog: [`###许身###<div class="text center">将${skills.map(i => `【${get.translation(i)}】`).join("、")}分配给令你回复过体力的角色</div>`, [skills, "skill"]],
-								filterButton(button) {
-									const skill = button.link;
-									return get.event().targets.some(i => !i.hasSkill(skill, null, false, false));
-								},
-								filterTarget(card, player, target) {
-									const [skill] = ui.selected.buttons.map(i => i.link);
-									return skill && get.event().targets.includes(target) && !target.hasSkill(skill, null, false, false);
-								},
-								ai1(button) {
-									const { player, targets } = get.event(),
-										skill = button.link;
-									return Math.max(
-										...targets
-											.filter(i => !i.hasSkill(skill, null, false, false))
-											.map(target => {
-												_status.event.skillRankPlayer = target;
-												const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
-												delete _status.event.skillRankPlayer;
-												return num;
-											})
-									);
-								},
-								ai2(target) {
-									const player = get.player(),
-										[skill] = ui.selected.buttons.map(i => i.link);
-									_status.event.skillRankPlayer = target;
-									const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
-									delete _status.event.skillRankPlayer;
-									return num;
-								},
+							.chooseTarget()
+							.set("createDialog", [`###许身###令一名令你回复过体力的角色获得【${get.translation(skill)}】`, [[skill], "skill"]])
+							.set("filterTarget", (card, player, target) => {
+								const { targetx } = get.event();
+								return targetx.includes(target);
 							})
-							.set("targets", targets)
+							.set("ai", target => {
+								const { gainSkill: skill, player } = get.event();
+								_status.event.skillRankPlayer = target;
+								const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
+								delete _status.event.skillRankPlayer;
+								return num;
+							})
+							.set("targetx", targets)
+							.set("gainSkill", skill)
 							.forResult();
-						if (result?.bool && result.links?.length && result.targets?.length) {
-							const [skill] = result.links,
-								[target] = result.targets;
+						if (result?.bool && result.targets?.length) {
+							const [target] = result.targets;
 							player.line(target);
-							skills.remove(skill);
-							await target.addSkills(skill);
-							if (lib.skill.mbxushen.derivation.every(skill => target.hasSkill(skill, null, false, false))) {
-								targets.remove(target);
+							if (target.hasSkill(skill, null, false, false)) {
+								await target.draw(3);
+							} else {
+								await target.addSkills(skill);
 							}
 						}
 					}
@@ -1909,7 +1890,6 @@ const skills = {
 			trigger.set("usedZhuangshi", true);
 			const { cards, cost_data: numbers } = event;
 			if (cards) {
-				await player.modedDiscard(cards);
 				const number = cards.length;
 				player.addTempSkill("potzhuangshi_directHit", "phaseChange");
 				player.addMark("potzhuangshi_directHit", number, false);
@@ -1917,11 +1897,21 @@ const skills = {
 			}
 			if (numbers) {
 				const number = numbers[0];
-				await player.loseHp(number);
 				player.addTempSkill("potzhuangshi_limit", "phaseChange");
 				player.addMark("potzhuangshi_limit", number, false);
 				player.addTip("potzhuangshi_limit", `不计次数 ${number}`);
 			}
+			if (cards) {
+				await player.modedDiscard(cards);
+			}
+			if (numbers) {
+				const number = numbers[0];
+				await player.loseHp(number);
+			}
+		},
+		onremove(player) {
+            player.removeSkill("potzhuangshi_directHit");
+            player.removeSkill("potzhuangshi_limit");
 		},
 		subSkill: {
 			limit: {
@@ -2032,14 +2022,15 @@ const skills = {
 					.when("useCardAfter")
 					.filter(evt => evt == trigger.getParent(2))
 					.step(async (event, trigger, player) => {
+						let result;
 						if (target.isIn() && target.countDiscardableCards(player, "he")) {
-							const result = await player.discardPlayerCard(target, "he", true).forResult();
-							if (bool1 && result?.cards?.length) {
-								await player.gain(result.cards.filterInD("od"), "gain2");
-							}
+							result = await player.discardPlayerCard(target, "he", true).forResult();
 						}
 						if (bool1) {
 							await player.recover();
+							if (result?.cards?.length) {
+								await player.gain(result.cards.filterInD("od"), "gain2");
+							}
 						}
 					});
 			}

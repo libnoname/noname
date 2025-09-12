@@ -1536,6 +1536,8 @@ const skills = {
 						case "diamond":
 							list = [{ name: "sha", nature: "fire" }, player, target];
 							break;
+						default:
+							return 0;
 					}
 					list[0].isCard = true;
 					var eff = 0;

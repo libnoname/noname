@@ -1,4 +1,9 @@
 export default {
+	"#starchongwei1": "敌聚如蝗，不可等闲视之。",
+	"#starchongwei2": "贼围甚密，唯乘夜伺隙。",
+	"#starchongzu1": "黄天已死，北海当立！",
+	"#starchongzu2": "三日练靶，今日便穿汝喉舌！",
+	"#star_taishici:die": "士为知已者死，何憾之有？",
 	"#dcshefu1": "刘备！你一介织鞋贩夫，凭什么在这耀武扬威呀？",
 	"#dcshefu2": "爷们水里进火里出，是响当当的铁汉子，硬骨头！",
 	"#dcpigua1": "今日披挂上阵，定要斩关羽，诛张飞！",

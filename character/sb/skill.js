@@ -9264,14 +9264,16 @@ const skills = {
 			if (!list?.length) {
 				return;
 			}
-			const result = await player
+			/*const result = await player
 				.chooseButton(["统业：选择一个牌名获得", [list.map(card => ["", "", card]), "vcard"]], true)
 				.set("ai", button => get.value(button.link))
 				.forResult();
 			if (!result.bool) {
 				return;
 			}
-			const gains = cards.filter(card => card.name == result.links[0][2] && !player.getStorage("sbtongye_used").includes(card));
+			const gains = cards.filter(card => card.name == result.links[0][2] && !player.getStorage("sbtongye_used").includes(card));*/
+			const name = list.randomGet();
+			const gains = cards.filter(card => card.name == name).randomGets(1);
 			if (!gains?.length) {
 				return;
 			}

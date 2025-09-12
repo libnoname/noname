@@ -10474,7 +10474,7 @@ export default {
 			}
 			if (!cards?.length || target.countCards("he") < cards.length) {
 				choice.remove(0);
-			}W
+			}
 			if (!choice.length) {
 				return;
 			}
@@ -15429,10 +15429,13 @@ export default {
 					250
 				);
 				game.playBackgroundMusic();
+				lib.init.sheet(`
+                    .card[data-card-name = "tao"]>.image {
+                    	background-image: url(${lib.assetURL}image/card/gz_aozhantao.png) !important;
+                    }
+                `);
 			});
-			game.countPlayer(function (current) {
-				current.addSkill("aozhan");
-			});
+			game.addGlobalSkill("aozhan");
 		},
 	},
 	_guozhan_marks: {
@@ -15634,6 +15637,9 @@ export default {
 			}, "h");
 		},
 		filterCard(card) {
+			if (get.itemtype(card) != "card") {
+				return false;
+			}
 			return card.hasTag("lianheng") || card.hasGaintag("_lianheng");
 		},
 		filterTarget(card, player, target) {

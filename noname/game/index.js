@@ -10576,6 +10576,37 @@ export class Game extends GameCompatible {
 			delete _status.poptip;
 		}
 	}
+	/**
+	 * find the skillname of the event
+	 * 获取触发事件的技能
+	 * @param { GameEvent | GameEventPromise } event
+	 * @returns { string | null }
+	 */
+	findSkill(event) {
+		let skill = "";
+		let count = 0;
+		let evt = event;
+		do {
+			evt = evt.parent;
+			let name = evt?.name;
+			if (!name) {
+				break;
+			}
+			if (name.startsWith("pre_")) {
+				name = name.slice(4);
+			}
+			for (const suffix of ["_backup", "ContentBefore", "ContentAfter", "_cost"]) {
+				name = name.slice(0, name.lastIndexOf(suffix));
+			}
+			skill = get.sourceSkillFor(name);
+			const info = get.info(skill);
+			if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) {
+				continue;
+			}
+			return skill;
+		} while (++count < 10);
+		return null;
+	}
 }
 
 export let game = new Game();

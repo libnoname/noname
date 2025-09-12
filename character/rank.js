@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["x_yao_yuanshu", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"zj_liuyuan",
 		"zj_zhonghui",
@@ -1003,6 +1003,7 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"yao_yuanshu",
 		"sunyuan",
 		"clan_hanfu",
 		"mb_chenzhi",
@@ -1517,6 +1518,13 @@ window.noname_character_rank = {
 		"ns_xinnanhua",
 	],
 	bm: [
+		"std_simahui",
+		"std_zhengxuan",
+		"std_miheng",
+		"std_majun",
+		"std_zhangfen",
+		"std_zhaoyan",
+		"std_liuli",
 		"std_zhangyao",
 		"std_wangfuren",
 		"std_panglin",
@@ -2115,6 +2123,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"x_yao_yuanshu",
 			"zj_liuyuan",
 			"zj_zhonghui",
 			"xia_caopi",
@@ -2888,6 +2897,13 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"std_simahui",
+			"std_zhengxuan",
+			"std_miheng",
+			"std_majun",
+			"std_zhangfen",
+			"std_zhaoyan",
+			"std_liuli",
 			"star_jiangwan",
 			"sunyuan",
 			"clan_hanfu",
@@ -3971,6 +3987,7 @@ window.noname_character_rank = {
 			"ns_caimao",
 		],
 		junk: [
+			"yao_yuanshu",
 			"yj_chezhou",
 			"tw_sb_caopi",
 			"zhugejing",

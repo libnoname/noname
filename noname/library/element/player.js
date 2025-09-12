@@ -364,6 +364,34 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
+	 * 获得对应战法
+	 * @param {string} id 战法的id
+	 */
+	addZhanfa(id) {
+		const skill = lib.zhanfa.getSkill(id);
+		if (!skill) {
+			console.warn(`不存在战法: ${id}`);
+			return;
+		}
+		this.addAdditionalSkill("zhanfa", skill, true);
+		this.markAuto("zhanfa", id);
+		game.log(this, "获得战法", `#g【${get.translation(id)}】`);
+	}
+	/**
+	 * 失去对应战法
+	 * @param {string} id 战法的id
+	 */
+	removeZhanfa(id) {
+		const skill = lib.zhanfa.getSkill(id);
+		if (!skill) {
+			console.warn(`不存在战法: ${id}`);
+			return;
+		}
+		this.removeAdditionalSkill("zhanfa", skill);
+		this.unmarkAuto("zhanfa", id);
+		game.log(this, "失去战法", `#g【${get.translation(id)}】`);
+	}
+	/**
 	 * 获取一名角色的名字翻译
 	 * @returns { string }
 	 */

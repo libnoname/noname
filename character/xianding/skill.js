@@ -379,14 +379,14 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 1)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
+				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 2)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
 			},
 			check(button) {
 				return Math.random();
 			},
 			select() {
 				const player = get.player();
-				return [1, 1 + player.getDamagedHp()];
+				return [1, 2 + player.getDamagedHp()];
 			},
 			backup(links) {
 				return {
@@ -424,7 +424,7 @@ const skills = {
 				},
 				trigger: { player: "useCardAfter" },
 				async content(event, trigger, player) {
-					player.markAuto(event.name, get.type(trigger.card));
+					player.markAuto(event.name, get.type2(trigger.card));
 					if (player.getStorage(event.name).length >= 3) {
 						player.removeSkill(event.name);
 						if (player.getStat().skill.dczhongtao > 0) {
@@ -450,7 +450,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (typeof card == "object") {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card)) && !evt.dcjizhan && get.color(card, player) == "black") {
+					if (evt?.card && get.type(evt.card) == "equip" && !evt.dcjizhan && get.color(card, player) == "black") {
 						return num + 10;
 					}
 				}
@@ -467,7 +467,7 @@ const skills = {
 			if (!evt || !evt.card || evt.dcjizhan) {
 				return false;
 			}
-			return ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card));
+			return get.type(evt.card) == "equip";
 		},
 		locked: false,
 		async cost(event, trigger, player) {
@@ -636,7 +636,7 @@ const skills = {
 			mark: {
 				init(player, skill) {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card)) && !evt[skill]) {
+					if (evt?.card && get.type(evt.card) == "equip" && !evt[skill]) {
 						player.addTip(skill, "极斩 可连击");
 					}
 				},
@@ -652,7 +652,7 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					if (event.triggername == "useCard1") {
-						if (["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(trigger.card))) {
+						if (get.type(trigger.card) == "equip") {
 							player.addTip("dcjiazhan", "极斩 可连击");
 						} else {
 							player.removeTip("dcjiazhan");
@@ -1152,6 +1152,7 @@ const skills = {
 		},
 		subSkill: {
 			defend: {
+				audio: "dcsbshijin",
 				charlotte: true,
 				mark: true,
 				intro: {
@@ -2290,6 +2291,8 @@ const skills = {
 		},
 	},
 	dcsbfuzhan: {
+		audio: 2,
+		audioname: ["dc_sb_jiangwei_shadow"],
 		derivation: ["dcsbjuemou_rewrite"],
 		limited: true,
 		skillAnimation: true,
@@ -2313,6 +2316,7 @@ const skills = {
 	},
 	//谋胡烈
 	dcsbchuanyu: {
+		audio: 2,
 		trigger: { global: ["roundStart", "roundEnd"] },
 		filter(event, player, name) {
 			if (name == "roundStart") {
@@ -2327,6 +2331,7 @@ const skills = {
 						prompt: get.prompt(event.skill),
 						prompt2: "将一张牌交给一名角色",
 						filterCard: true,
+						position: "he",
 						filterTarget: true,
 						ai1(card) {
 							return 1 / Math.max(0.1, get.value(card));
@@ -2407,6 +2412,7 @@ const skills = {
 		group: ["dcsbchuanyu_give"],
 		subSkill: {
 			give: {
+				audio: "dcsbchuanyu",
 				trigger: { global: ["cardsDiscardAfter"] },
 				filter(event, player) {
 					return lib.skill.dcsbchuanyu_give.getCards(event, player).length > 0 && game.hasPlayer(target => !player.getStorage("dcsbchuanyu").includes(target));
@@ -2457,6 +2463,7 @@ const skills = {
 		},
 	},
 	dcsbyitou: {
+		audio: 2,
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			return event.player != player && event.player.isMaxHandcard() && player.countCards("h");
@@ -2476,6 +2483,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcsbyitou",
 				onremove: true,
 				charlotte: true,
 				forced: true,
@@ -14522,7 +14530,7 @@ const skills = {
 			} else if (cards.length == 1) {
 				event._result = { bool: true, cards: cards };
 			} else {
-				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true).set("ai", card => {
+				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
 					return 6 - get.value(card);
 				});
 			}

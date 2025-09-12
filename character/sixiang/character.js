@@ -1,4 +1,47 @@
 const characters = {
+	std_simahui: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["stdjianjie", "stdchenghao"],
+		names: "司马|徽",
+	},
+	std_zhengxuan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["stdzhengjing"],
+	},
+	std_miheng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["stdkuangcai", "stdshejian"],
+	},
+	std_majun: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["stdgongqiao"],
+	},
+	std_zhangfen: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["stdwanglu"],
+	},
+	std_zhaoyan: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["stdjinhui", "stdqingman"],
+	},
+	std_liuli: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["stdfuli", "stddehua"],
+	},
 	std_zhangyao: {
 		sex: "female",
 		group: "wu",

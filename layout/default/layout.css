@@ -4424,6 +4424,50 @@ div[data-decoration="bronze"]::after {
 	color: #a82424;
 }
 
+.card.zf_common {
+	border: 2px solid #59392b;
+	filter: drop-shadow(0 0 15px #59392b);
+}
+.card.zf_common > .name,
+.card.zf_common > .info {
+	/*background-color: #59392b;
+	color: white;*/
+	font-weight: bolder;
+}
+
+.card.zf_rare {
+	border: 2px solid #5d3c77;
+	filter: drop-shadow(0 0 15px #5d3c77);
+}
+.card.zf_rare > .name,
+.card.zf_rare > .info {
+	/*background-color: #5d3c77;
+	color: white;*/
+	font-weight: bolder;
+}
+
+.card.zf_epic {
+	border: 2px solid #af572a;
+	filter: drop-shadow(0 0 15px #af572a);
+}
+.card.zf_epic > .name,
+.card.zf_epic > .info {
+	/*background-color: #af572a;
+	color: white;*/
+	font-weight: bolder;
+}
+
+.card.zf_legend {
+	border: 2px solid #b0293e;
+	filter: drop-shadow(0 0 15px #b0293e);
+}
+.card.zf_legend > .name,
+.card.zf_legend > .info {
+	/*background-color: #b0293e;
+	color: white;*/
+	font-weight: bolder;
+}
+
 .config > .toggle.onoff {
 	height: 100%;
 	width: 30px;
