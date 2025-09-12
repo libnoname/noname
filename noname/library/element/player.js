@@ -8579,9 +8579,10 @@ export class Player extends HTMLDivElement {
 	 * 返回某些牌是否能进入玩家的判定区
 	 * @overload
 	 * @param { string | Card } card
+	 * @param { Player } player 
 	 * @returns { boolean }
 	 */
-	canAddJudge(card) {
+	canAddJudge(card, player) {
 		if (this.isDisabledJudge()) {
 			return false;
 		}
@@ -8604,7 +8605,10 @@ export class Player extends HTMLDivElement {
 		if (this.isOut()) {
 			return false;
 		}
-		var mod = game.checkMod(card, this, this, "unchanged", "targetEnabled", this);
+		if (!player) {
+			player = this;
+		}
+		var mod = game.checkMod(card, player, this, "unchanged", "targetEnabled", this);
 		if (mod != "unchanged") {
 			return mod;
 		}

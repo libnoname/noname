@@ -11812,7 +11812,7 @@ export class Library {
 			return range;
 		},
 		judge: function (card, player, target) {
-			return target.canAddJudge(card);
+			return target.canAddJudge(card, player);
 		},
 		autoRespondSha: function () {
 			return !this.player.hasSha("respond");

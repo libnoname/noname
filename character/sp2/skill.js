@@ -6086,7 +6086,7 @@ const skills = {
 						});
 					} else {
 						list = game.filterPlayer(function (current) {
-							return current.canAddJudge(event.card);
+							return current.canAddJudge(event.card, trigger.player);
 						});
 					}
 					if (list.length) {
