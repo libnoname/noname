@@ -4352,58 +4352,91 @@ const skills = {
 						})
 						.flat()
 						.unique();
+					await player.gain(cards, "draw");
 					if (cards.length) {
 						if (_status.connectMode) {
 							game.broadcastAll(() => {
 								_status.noclearcountdown = true;
 							});
 						}
-						const given_map = {};
-						let result;
+						const given_map = new Map();
 						while (true) {
+							let result;
 							if (cards.length > 1) {
 								result = await player
-									.chooseCardButton("弼佐：请选择要分配的牌", true, cards, [1, cards.length])
-									.set("ai", button => {
-										if (ui.selected.buttons.length) {
-											return 0;
-										}
-										return get.buttonValue(button);
+									.chooseCardTarget({
+										prompt: "弼佐：请选择要分配的牌",
+										selectCard: [1, Infinity],
+										filterTarget: lib.filter.notMe,
+										filterCard(card) {
+											if (get.itemtype(card) != "card" || card.hasGaintag("olsujian_given")) {
+												return false;
+											}
+											return get.event("readyToGive").includes(card);
+										},
+										readyToGive: cards,
+										given_map: given_map,
+										ai1(card) {
+											if (ui.selected.cards.length) {
+												return 0;
+											}
+											return get.value(card);
+										},
+										ai2(target) {
+											const { player, given_map } = get.event(),
+												att = get.attitude(player, target),
+												card = ui.selected.cards?.[0];
+											if (!card) {
+												return 0;
+											}
+											if (get.value(card, player, "raw") < 0) {
+												return Math.max(0.01, 100 - att);
+											} else if (att > 0) {
+												const given = given_map.has(target) ? given_map.get(target) : [];
+												return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + given.length));
+											} else {
+												return Math.max(0.01, (100 + att) / 200);
+											}
+										},
 									})
 									.forResult();
 							} else if (cards.length === 1) {
-								result = { bool: true, links: cards.slice(0) };
+								result = await player
+									.chooseTarget(`选择一名角色获得${get.translation(cards)}，或点取消留给自己`)
+									.set("filterTarget", lib.filter.notMe)
+									.set("ai", target => {
+										const { player, given_map } = get.event();
+										const att = get.attitude(player, target);
+										if (get.event("toEnemy")) {
+											return Math.max(0.01, 100 - att);
+										} else if (att > 0) {
+											const given = given_map.has(target) ? given_map.get(target) : [];
+											return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + given.length));
+										} else {
+											return Math.max(0.01, (100 + att) / 200);
+										}
+									})
+									.set("given_map", given_map)
+									.set("toEnemy", get.value(cards[0], player, "raw") < 0)
+									.forResult();
+								result.cards = cards;
 							} else {
 								break;
 							}
-							const toGive = result.links;
-							result = await player
-								.chooseTarget(`选择一名角色获得${get.translation(toGive)}`, cards.length === 1)
-								.set("ai", target => {
-									const att = get.attitude(get.player(), target);
-									if (get.event("toEnemy")) {
-										return Math.max(0.01, 100 - att);
-									} else if (att > 0) {
-										return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event("given_map")[target.playerid] || 0)));
-									} else {
-										return Math.max(0.01, (100 + att) / 200);
-									}
-								})
-								.set("given_map", given_map)
-								.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
-								.forResult();
 							if (result.bool) {
-								cards.removeArray(toGive);
+								cards.removeArray(result.cards);
 								if (result.targets.length) {
-									const id = result.targets[0].playerid;
-									if (!given_map[id]) {
-										given_map[id] = [];
-									}
-									given_map[id].addArray(toGive);
+									const target = result.targets[0];
+									const giveCard = given_map.has(target) ? given_map.get(target) : [];
+									giveCard.addArray(result.cards);
+									given_map.set(target, giveCard);
 								}
+								player.addGaintag(result.cards, "olsujian_given");
 								if (!cards.length) {
 									break;
 								}
+							} else {
+								break;
 							}
 						}
 						if (_status.connectMode) {
@@ -4412,20 +4445,22 @@ const skills = {
 								game.stopCountChoose();
 							});
 						}
-						const gain_list = [];
-						for (const i in given_map) {
-							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-							player.line(source, "green");
-							gain_list.push([source, given_map[i]]);
-							game.log(source, "获得了", given_map[i]);
+						const targets = Array.from(given_map.keys());
+						if (targets.length) {
+							player.line(targets);
+							const gain_list = targets.map(target => {
+								return [target, given_map.get(target)];
+							});
+							await game
+								.loseAsync({
+									gain_list: gain_list,
+									player: player,
+									cards: gain_list.slice().flatMap(list => list[1]),
+									giver: player,
+									animate: "giveAuto",
+								})
+								.setContent("gaincardMultiple");
 						}
-						await game
-							.loseAsync({
-								gain_list,
-								giver: player,
-								animate: "gain2",
-							})
-							.setContent("gaincardMultiple");
 					}
 				});
 		},

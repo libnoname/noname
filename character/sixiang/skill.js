@@ -496,7 +496,7 @@ const skills = {
 			order: 1,
 			result: {
 				player(player, target) {
-					if (game.hasPlayer(target => get.effect(target, player, player) > 0)) {
+					if (game.hasPlayer(target => get.recoverEffect(target, player, player) > 0)) {
 						return 1;
 					}
 					return 0;

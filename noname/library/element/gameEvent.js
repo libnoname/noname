@@ -695,7 +695,7 @@ export class GameEvent {
 					var card = get.card(),
 						player = get.player();
 					var filter = evt._backup.filterCard;
-					if (filter && !filter(card, player, evt)) {
+					if (typeof info.viewAs !== "function" && filter && !filter(card, player, evt)) {
 						return false;
 					}
 					if (evt._backup.filterOk && !evt._backup.filterOk()) {

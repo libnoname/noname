@@ -119,7 +119,7 @@ const skills = {
 					ai1(button) {
 						const card = player.getCards("h").maxBy(card => {
 							return get.number(card);
-						}, card.name == button.link[2]);
+						}, card => card.name == button.link[2]);
 						if (card) {
 							return get.number(card);
 						}
@@ -141,7 +141,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets: [target], cost_data: name } = event;
 			game.log(player, "声明的牌名为", `#y${get.translation(name)}`);
-			player.chat(name);
+			player.chat(get.translation(name));
 			const result = await player.chooseToCompare(target).forResult();
 			if (!result.tie) {
 				const winner = result.bool ? player : target,
