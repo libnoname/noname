@@ -520,6 +520,10 @@ export default {
 	gz_re_xuzhu_prefix: "界",
 	gz_ol_weiyan_prefix: "界",
 	gz_ol_yanwen_prefix: "界",
+	gz_re_huangyueying_prefix: "界",
+	gz_re_caocao_prefix: "界",
+	gz_re_zhangjiao_prefix: "界",
+	gz_re_luxun_prefix: "界",
 	gz_zhoutai: "周泰",
 	gz_pangde: "庞德",
 	gz_ganfuren: "甘夫人",
@@ -553,6 +557,15 @@ export default {
 
 	gzchengshang: "承赏",
 	gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
+
+	gz_clan_zhonghui: "OL钟会",
+	gz_clan_zhonghui_prefix: "OL",
+	gz_ol_quanji: "权计",
+	gz_ol_quanji_info: "你受到伤害后，可以摸一张牌，然后将一张牌置于武将牌上，称为“权”。",
+	gz_ol_paiyi: "排异",
+	gz_ol_paiyi_info: "主将技，①此武将牌计算体力上限时减少半个阴阳鱼。②弃牌阶段结束时，若你此阶段未弃置牌，你可以将任意张“权”交给一名角色，然后若其手牌数大于你，你对其造成1点伤害。",
+	gz_yaopan: "邀叛",
+	gz_yaopan_info: "副将技，你杀死过角色的回合结束时，可以选择一名同势力角色，其可与你副将易位，然后控制此武将牌的角色获得所有“权”并执行一个额外回合。",
 
 	guozhan_jun: "君主武将",
 	guozhan_jin: "文德武备",
