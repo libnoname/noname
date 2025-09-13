@@ -167,14 +167,14 @@ const skills = {
 			if (!result.tie) {
 				const win = result.bool ? player : event.targets[0];
 				if (!game.hasPlayer(curr => win.inRange(curr))) {
-					win.say("手短是会呼吸的痛");
+					win.chat("手短是会呼吸的痛");
 				} else {
 					const targets = await win
 						.chooseTarget("请选择一名攻击范围内的角色对其造成1点伤害", true, 1)
 						.set("filterTarget", (card, player, target) => {
 							return player.inRange(target);
 						})
-						.set("ai", (card, player, target) => {
+						.set("ai", target => {
 							if (get.effect(target, { name: "damage" }, player, player) > 0) {
 								return -get.attitude(player, target);
 							}
@@ -328,8 +328,9 @@ const skills = {
 			return event.num > 2;
 		},
 		async content(event, trigger, player) {
-			await player.useCard({ name: "sha", isCard: true }, trigger.player, false);
-			if (!trigger.player.hasHistory("damage", evt => evt.getParent() == event)) {
+			const next = player.useCard({ name: "sha", isCard: true }, trigger.player, false);
+			await next;
+			if (!trigger.player.hasHistory("damage", evt => evt.card == next.card)) {
 				player.recover();
 			}
 		},
