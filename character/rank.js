@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["x_yao_yuanshu", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["x_yao_yuanshu", "xia_caopi", "zj_zhugeliang", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"zj_liuyuan",
 		"zj_zhonghui",
@@ -482,6 +482,7 @@ window.noname_character_rank = {
 		"zj_xiahouhan",
 		"dm_lvbu",
 		"dm_diaochan",
+		"scl_lvbu",
 		"wild_liru",
 		"ol_qiaogong",
 		"yj_zhangyan",
@@ -2131,6 +2132,7 @@ window.noname_character_rank = {
 			"dm_diaochan",
 			"dm_lvbu",
 			"wild_liru",
+			"zj_zhugeliang",
 			"pe_xiahouxuan",
 			"pe_que",
 			"chenshou",
@@ -2905,6 +2907,7 @@ window.noname_character_rank = {
 			"std_zhaoyan",
 			"std_liuli",
 			"star_jiangwan",
+			"scl_lvbu",
 			"sunyuan",
 			"clan_hanfu",
 			"star_taishici",

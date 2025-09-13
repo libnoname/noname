@@ -178,7 +178,8 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["wushuang"],
+		skills: ["wushuang", "stdqingjiao"],
+		isZhugong: true,
 	},
 	diaochan: {
 		sex: "female",

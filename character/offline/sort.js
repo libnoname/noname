@@ -1,5 +1,5 @@
 const characterSort = {
-	offline_scl: ["scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
+	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
 	offline_yijiang: ["ol_xinxianying", "ol_liuyu", "ol_zhangrang"],
@@ -12,7 +12,7 @@ const characterSort = {
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
 	offline_vtuber: ["vtb_xiaosha", "vtb_xiaoshan", "vtb_xiaotao", "vtb_xiaole", "vtb_xiaojiu"],
-	offline_juedai: ["zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi", "zj_liuyin", "zj_zhugezhan", "zj_zhaotong", "zj_zhaoguang", "zj_lukang", "zj_zhugexu", "zj_hulie", "zj_zhanghu", "zj_yuechen"],
+	offline_juedai: ["zj_zhugeliang", "zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi", "zj_liuyin", "zj_zhugezhan", "zj_zhaotong", "zj_zhaoguang", "zj_lukang", "zj_zhugexu", "zj_hulie", "zj_zhanghu", "zj_yuechen"],
 	offline_longyutao: ["drag_pangde", "drag_guanyu", "drag_caoren", "drag_lvchang"],
 	offline_guansuo: ["drag_huaci", "drag_guansuo", "drag_guanyinping", "drag_guanping", "drag_zhoucang", "drag_liaohua", "drag_shendan", "drag_shenyi", "drag_luxun", "drag_xusheng", "she_lvmeng"],
 	offline_taoyuan: ["ty_guanyu", "ty_sunquan", "ty_liubei", "ty_chenshi", "ty_chengjix", "ty_zhaorong", "ty_zhangnan", "ty_fengxí", "ty_liaohua", "ty_huangzhong", "ty_wuban", "ty_shicong", "ty_guanxing", "ty_shamoke", "ty_guanyinping", "ty_luxun", "ty_ganning", "ty_buzhi", "ty_tanxiong", "ty_liue", "ty_zhangda", "ty_fanjiang", "ty_anying", "ty_anyingx", "ty_wuque", "ty_yanque", "ty_wangque"],

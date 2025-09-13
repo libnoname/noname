@@ -2027,6 +2027,222 @@ const skills = {
 			},
 		},
 	},
+	zj_jindao: {
+		audio: "dcjincui",
+		trigger: {
+			player: "phaseDrawBegin1",
+		},
+		forced: true,
+		filter(event, player) {
+			return !event.numFixed;
+		},
+		async content(event, trigger, player) {
+			trigger.changeToZero();
+			if (player.countCards("h") < 7) {
+				await player.drawTo(7);
+			}
+			if (player.countCards("h", card => _status.connectMode || get.number(card) == 7)) {
+				const result = await player
+					.chooseCard([1, Infinity], "展示任意张点数为7的手牌并回复等量体力", card => {
+						return get.number(card) == 7;
+					})
+					.set("ai", card => 1)
+					.forResult();
+				if (result.bool) {
+					const cards = result.cards;
+					await player.showCards(cards, `${get.translation(player)}发动了【尽道】`);
+					await player.recover(cards.length);
+				}
+			}
+			await player.chooseToGuanxing(7);
+		},
+	},
+	zj_hanshi: {
+		audio: "dcqingshi",
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
+			if (player.getStorage("zj_hanshi_used").includes(event.card.name)) {
+				return false;
+			}
+			return player.countCards("he", card => get.name(card) == event.card.name);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), card => {
+					return get.name(card) == get.event("cardName");
+				})
+				.set("cardName", trigger.card.name)
+				.set("ai", () => 1)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.showCards(event.cards, `${get.translation(player)}发动了【汉势】`);
+			if (trigger.addCount !== false) {
+				trigger.addCount = false;
+				const stat = player.getStat("card"),
+					name = trigger.card.name;
+				if (typeof stat[name] == "number") {
+					stat[name]--;
+				}
+			}
+			player.addSkill("zj_hanshi_damage");
+			player.markAuto("zj_hanshi_damage", trigger.card);
+			player.addTempSkill("zj_hanshi_used", "phaseChange");
+			player.markAuto("zj_hanshi_used", trigger.card.name);
+		},
+		subSkill: {
+			damage: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					source: "damageBegin1",
+					player: "useCardAfter",
+				},
+				filter(event, player) {
+					return event.card && player.getStorage("zj_hanshi_damage").includes(event.card) && event.notLink();
+				},
+				async cost(event, trigger, player) {
+					if (trigger.name == "damage") {
+						trigger.num++;
+					} else {
+						player.unmarkAuto("zj_hanshi_damage", trigger.card);
+					}
+				},
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	zj_wuzhe: {
+		audio: "dczhizhe",
+		enable: "phaseUse",
+		limited: true,
+		filter(event) {
+			return get.inpileVCardList(info => {
+				return ["trick", "delay"].includes(info[0]);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					return ["trick", "delay"].includes(info[0]);
+				});
+				return ui.create.dialog("武哲", [list, "vcard"], "hidden");
+			},
+			select: [1, 2],
+			check(button) {
+				if (button.link[2] == "wuxie") {
+					return 114;
+				}
+				return get.player().getUseValue({ name: button.link[2] });
+			},
+			backup(links, player) {
+				return {
+					audio: "zj_wuzhe",
+					names: links.map(info => info[2]),
+					manualConfirm: true,
+					skillAnimation: true,
+					animationColor: "fire",
+					async content(event, trigger, player) {
+						player.awakenSkill("zj_wuzhe");
+						const { names } = get.info(event.name);
+						player.markAuto("zj_wuzhe_effect", names);
+						player.addSkill("zj_wuzhe_effect");
+						game.addGlobalSkill("zj_wuzhe_ai");
+					},
+				}
+			},
+			prompt(links, player) {
+				return `###是否发动【武哲】？###其他角色使用${links.map(info => {
+					return `【${get.translation(info[2])}】`;
+				}).join("或")}时，你可令此牌无效，然后于此牌置入弃牌堆后获得之`;
+			},
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			backup: {},
+			effect: {
+				audio: "zj_wuzhe",
+				trigger: {
+					global: "useCard",
+				},
+				init(player, skill) {
+					const list = player.getStorage(skill);
+					if (list.length) {
+						player.addTip(skill, list.map(name => `武哲 ${get.translation(name)}`).join("\n"));
+					}
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				filter(event, player) {
+					if (event.player == player) {
+						return false;
+					}
+					return player.getStorage("zj_wuzhe_effect").includes(event.card.name);
+				},
+				prompt2(event, player) {
+					return `令${get.translation(event.card)}无效，然后于此牌进入弃牌堆后获得之`;
+				},
+				check(event, player) {
+					if (event.targets?.length) {
+						return event.targets.reduce((sum, current) => {
+							return sum + get.effect(current, event.card, event.player, player);
+						}, 0) <= 0;
+					}
+					return get.attitude(player, event.player) <= 0;
+				},
+				charlotte: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					trigger.targets.length = 0;
+					trigger.all_excluded = true;
+					player
+						.when({
+							global: "cardsDiscardAfter",
+						})
+						.filter(evt => {
+							if (!evt.cards.someInD("od")) {
+								return false;
+							}
+							const evtx = evt.getParent();
+							if (evtx.name != "orderingDiscard") {
+								return false;
+							}
+							const evtxx = evtx.relatedEvent || evtx.getParent();
+							return evtxx.getParent() == (trigger.relatedEvent || trigger.getParent());
+						})
+						.step(async (event, trigger, player) => {
+							await player.gain(trigger.cards.filterInD("od"), "gain2");
+						})
+				},
+			},
+			ai: {
+				effect: {
+					player_use(card, player) {
+						if (typeof card == "object" && game.hasPlayer(target => {
+							return target.getStorage("zj_wuzhe_effect").includes(card.name) && get.attitude(target, player) < 0;
+						})) {
+							return "zeroplayertarget";
+						}
+					},
+				},
+			},
+		},
+	},
 	zj_jianxi: {
 		audio: 2,
 		trigger: {
@@ -15336,6 +15552,83 @@ const skills = {
 		},
 	},
 	//SCL
+	scls_zhanshen: {
+		audio: 2,
+		trigger: {
+			player: "phaseZhunbeiBegin",
+		},
+		filter(event, player) {
+			return ["draw", "damage", "target"].some(suffix => {
+				return !player.hasSkill(`scls_zhanshen_${suffix}`, null, null, false);
+			});
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const list = [
+				["draw", "摸牌阶段额外摸一张牌"],
+				["damage", "使用【杀】造成的伤害+1"],
+				["target", "使用【杀】可以额外指定一个目标"],
+			].filter(suffix => {
+				return !player.hasSkill(`scls_zhanshen_${suffix[0]}`, null, null, false);
+			});
+			const result = list.length > 1 ? await player
+				.chooseButton(["战神：选择一项", [list, "textbutton"]], true)
+				.set("ai", button => {
+					return [null, "target", "damage", "draw"].indexOf(button.link);
+				})
+				.forResult() : {
+					bool: true,
+					links: [list[0][0]],
+				};
+			if (result.bool) {
+				result.links.forEach(suffix => {
+					player.addSkill(`scls_zhanshen_${suffix}`);
+				});
+			}
+		},
+		subSkill: {
+			draw: {
+				audio: "scls_zhanshen",
+				trigger: {
+					player: "phaseDrawBegin2",
+				},
+				filter(event) {
+					return !event.numFixed;
+				},
+				forced: true,
+				charlotte: true,
+				async content(event, trigger, player) {
+					trigger.num++;
+				},
+			},
+			damage: {
+				audio: "scls_zhanshen",
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event) {
+					return event.card?.name == "sha";
+				},
+				forced: true,
+				charlotte: true,
+				async content(event, trigger, player) {
+					trigger.num++;
+				},
+			},
+			target: {
+				audio: "scls_zhanshen",
+				forced: true,
+				charlotte: true,
+				mod: {
+					selectTarget(card, player, range) {
+						if (card.name == "sha" && range[1] != -1) {
+							range[1]++;
+						}
+					},
+				},
+			},
+		},
+	},
 	scls_yinshi: {
 		//audio: "xinfu_pdgyingshi",
 		mod: {
@@ -31888,7 +32181,7 @@ const skills = {
 							return "无效果";
 						}
 						return `你每回合首次受到/造成伤害后，${get.translation(targets[0])}可以选择一项：
-						1.摸一张牌；2.获得1点护甲；3.背水，失去1点体力并对你发动一次〖攻心〗`;
+						1.摸一张牌；2.获得1点护甲；3.${get.poptip("rule_beishui")}，失去1点体力并对你发动一次〖攻心〗`;
 					},
 				},
 				async cost(event, trigger, player) {
