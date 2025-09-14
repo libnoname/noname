@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["x_yao_yuanshu", "xia_caopi", "zj_zhugeliang", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["x_yao_yuanshu", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"zj_liuyuan",
 		"zj_zhonghui",
@@ -12,6 +12,7 @@ window.noname_character_rank = {
 		"shen_zhonghui",
 		"dc_zhangmancheng",
 		"scl_miheng",
+		"zj_zhugeliang",
 		"ol_sb_yuanshao",
 		"pe_jun_liushan",
 		"pe_jun_sunquan",
@@ -1004,6 +1005,7 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"xy_xunyu",
 		"yao_yuanshu",
 		"sunyuan",
 		"clan_hanfu",
@@ -1828,6 +1830,10 @@ window.noname_character_rank = {
 		"jsrg_hejin",
 	],
 	c: [
+		"xy_caocao",
+		"xy_chengyu",
+		"xy_chengong",
+		"xy_zhangkai",
 		"ps_zhangrang",
 		"ps_zhaozhong",
 		"ps_sunzhang",
@@ -1838,6 +1844,7 @@ window.noname_character_rank = {
 		"ps_duangui",
 		"ps_guosheng",
 		"ps_gaowang",
+		"jun_lvbu",
 		"jy_caocao",
 		"jy_caoren",
 		"jy_zhugeliang",
@@ -2398,6 +2405,7 @@ window.noname_character_rank = {
 			"hm_shen_huangfusong",
 			"hm_shen_yl_luzhi",
 			"hm_shen_zhujun",
+			"tw_jsrg_huangfusong",
 			"vtb_xiaosha",
 			"vtb_xiaoshan",
 			"vtb_xiaotao",
@@ -2425,6 +2433,7 @@ window.noname_character_rank = {
 			"eu_yuejin",
 		],
 		epic: [
+			"xy_xunyu",
 			"bigsb_dengai",
 			"eu_Macrinus",
 			"eu_Ardashir",
@@ -2899,6 +2908,10 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"xy_caocao",
+			"xy_chengyu",
+			"xy_chengong",
+			"xy_zhangkai",
 			"std_simahui",
 			"std_zhengxuan",
 			"std_miheng",
@@ -4074,6 +4087,7 @@ window.noname_character_rank = {
 			"dongtuna",
 			"junk_lidian",
 			"std_panfeng",
+			"jun_lvbu",
 			"junk_xuyou",
 			"std_yuejin",
 			"caocao",

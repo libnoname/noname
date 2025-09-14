@@ -161,6 +161,8 @@ const translates = {
 	fx_baosanniang: "芳许鲍三娘",
 	fx_baosanniang_ab: "手杀牢鲍三娘",
 	fx_baosanniang_prefix: "手杀|牢",
+	x_dc_zhangqiying: "新杀牢张琪瑛",
+	x_dc_zhangqiying_prefix: "新杀|牢",
 };
 
 export default translates;

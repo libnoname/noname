@@ -7613,7 +7613,7 @@ const skills = {
 							num = player.countMark("potzhanlie_lie");
 						player.addTempSkill("potzhanlie_buff");
 						player.clearMark("potzhanlie_lie");
-						event.set("potzhanlie", Math.floor(num / 3));
+						event.set("potzhanlie", Math.floor(num / 2));
 					}).logSkill = "potzhanlie";
 				},
 				marktext: "烈",
@@ -7640,7 +7640,7 @@ const skills = {
 									["目标+1", "令" + str + "可以额外指定一个目标"],
 									["伤害+1", "令" + str + "基础伤害值+1"],
 									["弃牌响应", "令" + str + "需额外弃置一张牌方可响应"],
-									["摸牌", str + "结算完毕后，你摸两张牌"],
+									["摸牌", str + "结算完毕后，你摸三张牌"],
 								],
 								"textbutton",
 							],
@@ -7680,7 +7680,7 @@ const skills = {
 										return sum + get.effect(target, card, player, player);
 									}, 0);
 								case "摸牌":
-									return get.effect(player, { name: "draw" }, player, player) * 2;
+									return get.effect(player, { name: "draw" }, player, player) * 3;
 							}
 						})
 						.forResult();
@@ -7727,7 +7727,7 @@ const skills = {
 									player
 										.when("useCardAfter")
 										.filter(evt => evt === trigger)
-										.then(() => player.draw(2));
+										.then(() => player.draw(3));
 									break;
 							}
 						}

@@ -8841,25 +8841,30 @@ export class Game extends GameCompatible {
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
+		info.skill_id ??= i;
 		let deleteSkill = function (skill, iInfo) {
-			let skillx = {},
-				info = get.info(skill);
-			if (info) {
-				["audio", "audioname", "audioname2"].forEach(name => {
-					if (info[name]) {
-						skillx[name] = info[name];
+			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
+			lib.skill[skill] = { audio, audioname, audioname2, skillID };
+			lib.translate[iInfo] &&= "此模式下不可用";
+			lib.dynamicTranslate[skill] &&= () => "此模式下不可用";
+		};
+		if (info.inherit) {
+			const skill = lib.skill[info.inherit];
+			if (skill) {
+				Object.keys(skill).forEach(value => {
+					if (info[value] == undefined) {
+						if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
+							info[value] = info.inherit;
+						} else {
+							info[value] = skill[value];
+						}
 					}
 				});
 			}
-			lib.skill[skill] = skillx;
-			if (lib.translate[iInfo]) {
-				lib.translate[iInfo] = "此模式下不可用";
-			}
-			if (lib.dynamicTranslate[skill]) {
-				lib.dynamicTranslate[skill] = () => "此模式下不可用";
-			}
-		};
-		if ((info.forbid && info.forbid.includes(mode)) || (info.mode && info.mode.includes(mode) == false) || (info.available && info.available(mode) == false)) {
+			lib.translate[i] ??= lib.translate[info.inherit];
+			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
+		}
+		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
 			deleteSkill(i, iInfo);
 			return;
 		}
@@ -8892,43 +8897,12 @@ export class Game extends GameCompatible {
 				});
 			}
 		}
-		if (info.inherit) {
-			const skill = lib.skill[info.inherit];
-			if (skill) {
-				Object.keys(skill).forEach(value => {
-					if (info[value] != undefined) {
-						return;
-					}
-					if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
-						info[value] = info.inherit;
-					} else {
-						info[value] = skill[value];
-					}
-				});
-			}
-			if (lib.translate[i] == undefined) {
-				lib.translate[i] = lib.translate[info.inherit];
-			}
-			if (lib.translate[iInfo] == undefined) {
-				lib.translate[iInfo] = lib.translate[`${info.inherit}_info`];
-			}
-		}
 		if (info.limited) {
-			if (info.mark === undefined) {
-				info.mark = true;
-			}
-			if (!info.intro) {
-				info.intro = {};
-			}
-			if (info.intro.content === undefined) {
-				info.intro.content = "limited";
-			}
-			if (info.skillAnimation === undefined) {
-				info.skillAnimation = true;
-			}
-			if (info.init === undefined) {
-				info.init = (player, skill) => (player.storage[skill] = false);
-			}
+			info.mark ??= true;
+			info.intro ??= {};
+			info.intro.content ??= "limited";
+			info.skillAnimation ??= true;
+			info.init ??= (player, skill) => (player.storage[skill] = false);
 		}
 		if (info.subSkill && !sub) {
 			Object.keys(info.subSkill).forEach(value => {

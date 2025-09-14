@@ -9132,49 +9132,51 @@ const skills = {
 	},
 	jsrgjulian: {
 		audio: 4,
-		trigger: { player: "phaseJieshuBegin" },
+		logAudio: () => ["jsrgjulian1.mp3", "jsrgjulian2.mp3"],
+		trigger: { global: "gainAfter" },
 		filter(event, player) {
-			return player.hasZhuSkill("jsrgjulian") && lib.skill.jsrgjulian.logTarget(null, player).length;
+			const { player: source } = event;
+			const skill = this.skill_id;
+			if (source == player || source.group != "qun" || source.countMark(`${skill}_count`) >= lib.skill[skill].maxNum) {
+				return false;
+			}
+			const evt = event.getParent("phaseDraw");
+			return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != skill && player.hasZhuSkill(skill, event.player);
 		},
-		prompt: "是否发动【聚敛】？",
-		prompt2: "你可以获得其他所有群势力角色的各一张牌",
-		logAudio: () => ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
-		logTarget(event, player) {
-			return game
-				.filterPlayer(current => {
-					return current.group == "qun" && current.countGainableCards(player, "he") > 0 && current != player;
-				})
-				.sortBySeat();
+		popup: false,
+		async cost(event, trigger, player) {
+			event.result = await trigger.player.chooseBool(`是否响应${get.translation(player)}的【聚敛】摸一张牌？`).forResult();
 		},
 		async content(event, trigger, player) {
-			for (const target of event.targets) {
-				await player.gainPlayerCard(target, "he", true);
-			}
+			const { player: source } = trigger;
+			source.logSkill(event.name, player);
+			source.addTempSkill(`${event.name}_count`);
+			source.addMark(`${event.name}_count`, 1, false);
+			await source.draw();
 		},
-		group: "jsrgjulian_draw",
+		maxNum: 2,
+		group: "jsrgjulian_gain",
 		zhuSkill: true,
 		subSkill: {
-			draw: {
-				audio: ["jsrgjulian1.mp3", "jsrgjulian2.mp3"],
-				trigger: { global: "gainAfter" },
+			gain: {
+				audio: ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
+				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					const { player: source } = event;
-					if (source == player || source.group != "qun" || source.countMark("jsrgjulian_count") > 1) {
-						return false;
-					}
-					var evt = event.getParent("phaseDraw");
-					return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != "jsrgjulian_draw" && player.hasZhuSkill("jsrgjulian", event.player);
+					return lib.skill[this.skill_id].logTarget(null, player).length;
 				},
-				popup: false,
-				async cost(event, trigger, player) {
-					event.result = await trigger.player.chooseBool(`是否响应${get.translation(player)}的【聚敛】摸一张牌？`).forResult();
+				prompt: "是否发动【聚敛】？",
+				prompt2: "获得其他所有群势力角色的各一张牌",
+				logTarget(event, player) {
+					return game
+						.filterPlayer(current => {
+							return current.group == "qun" && current.countGainableCards(player, "he") > 0 && current != player;
+						})
+						.sortBySeat();
 				},
 				async content(event, trigger, player) {
-					const { player: source } = trigger;
-					source.logSkill(event.name, player);
-					source.addTempSkill("jsrgjulian_count");
-					source.addMark("jsrgjulian_count", 1, false);
-					await source.draw();
+					for (const target of event.targets) {
+						await player.gainPlayerCard(target, "he", true);
+					}
 				},
 			},
 			count: {
@@ -9440,6 +9442,7 @@ const skills = {
 	},
 	//皇甫嵩
 	jsrgguanhuo: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
@@ -9513,12 +9516,12 @@ const skills = {
 			ex: {
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
-					return event.card && event.card.name == "huogong" && event.getParent().type == "card";
+					return event.card?.name == "huogong" && event.getParent().type == "card";
 				},
 				forced: true,
 				charlotte: true,
 				onremove: true,
-				intro: { content: "当你造成渠道为【火攻】的伤害时，此伤害+#" },
+				intro: { content: "使用【火攻】造成的伤害+#" },
 				content() {
 					trigger.num += player.countMark("jsrgguanhuo_ex");
 				},
@@ -9526,6 +9529,7 @@ const skills = {
 		},
 	},
 	jsrgjuxia: {
+		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		usable: 1,
 		countSkill(player) {

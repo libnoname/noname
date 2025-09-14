@@ -35,13 +35,6 @@ const characters = {
 		hp: 4,
 		skills: ["dcsbzhouxi", "dcsbshijin"],
 	},
-	x_dc_zhangqiying: {
-		sex: "female",
-		group: "qun",
-		hp: 3,
-		skills: ["x_dc_falu", "x_dc_zhenyi", "x_dc_dianhua"],
-		dieAudios: ["zhangqiying"],
-	},
 	y_dc_zhangqiying: {
 		sex: "female",
 		group: "qun",

@@ -82,7 +82,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["olchaozheng", "olshenchong", "jsrgjulian"],
+		skills: ["olchaozheng", "olshenchong", "oljulian"],
 		isZhugong: true,
 		img: "image/character/jsrg_liuhong.jpg",
 		dieAudios: ["jsrg_liuhong"],
