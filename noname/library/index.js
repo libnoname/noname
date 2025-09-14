@@ -16542,8 +16542,9 @@ export class Library {
 			},
 		],
 		[
-			"徐",
+			"徐兖",
 			{
+				showName: "徐",
 				color: "#ff0000",
 				nature: "firemm",
 			},
