@@ -8390,17 +8390,37 @@ const skills = {
 			}
 			return !player.getStorage("dinghan").includes(event.card.name);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.markAuto("dinghan", [trigger.card.name]);
 			if (trigger.name == "addJudge") {
 				trigger.cancel();
-				var owner = get.owner(trigger.card);
-				if (owner && owner.getCards("hej").includes(trigger.card)) {
-					owner.lose(trigger.card, ui.discardPile);
-				} else {
-					game.cardsDiscard(trigger.card);
+				if (trigger.card?.cards?.length) {
+					const map = new Map(),
+						targets = [];
+					for (const card of trigger.card.cards) {
+						const owner = get.owner(card);
+						if (owner) {
+							targets.add(owner);
+							map.set(owner, (map.get(owner) ?? []).concat([card]));
+						}
+					}
+					if (targets.length) {
+						await game.loseAsync({
+							map: map,
+							targets: targets,
+							cards: trigger.card.cards,
+						}).setContent(async (event, trigger, player) => {
+							const { map, targets, cards } = event;
+							for (const target of targets) {
+								const lose = map.get(target);
+								const next = target.lose(lose, ui.discardPile);
+								next.getlx = false;
+								await next;
+							}
+							game.log(cards, "进入了弃牌堆");
+						});
+					}
 				}
-				game.log(trigger.card, "进入了弃牌堆");
 			} else {
 				trigger.targets.remove(player);
 				trigger.getParent().triggeredTargets2.remove(player);

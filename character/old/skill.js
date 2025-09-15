@@ -27,7 +27,7 @@ const skills = {
 									}
 								}
 								for (const card of mutation.removedNodes) {
-									if (cards.includes(card)) {
+									if (cards.includes(card) && !player.getCards("h").includes(card)) {
 										game.broadcastAll((card, skill) => card.classList.remove(skill), card, skill);
 									}
 								}

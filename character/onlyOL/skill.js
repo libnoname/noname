@@ -2106,7 +2106,7 @@ const skills = {
 							if (target.countCards("h", card => card.hasGaintag("olmiluo"))) {
 								return get.recoverEffect(target, player, player);
 							}
-							return get.effect(target, { name: "loseHp" }, player, player);
+							return get.effect(target, { name: "losehp" }, player, player);
 						});
 					next.set(
 						"targetprompt2",

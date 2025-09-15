@@ -685,15 +685,27 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "对一名角色造成1点伤害")
-				.set("ai", target => {
-					const player = get.player();
-					return get.damageEffect(target, player, player);
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "弃置一张牌并对一名角色造成1点伤害",
+					filterCard(card, player) {
+						return lib.filter.cardDiscardable(card, player, "mbzhennan");
+					},
+					filterTarget: true,
+					ai1(card) {
+						return 5 - get.value(card);
+					},
+					ai2(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					},
 				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			await event.targets[0].damage();
+			const { cards, targets: [target] } = event;
+			await player.modedDiscard(cards);
+			await target.damage("nocard");
 		},
 	},
 	mbfangxu: {
@@ -2298,7 +2310,7 @@ const skills = {
 					})
 					.forResult();
 				if (!result.bool) {
-					await target.discard(cards);
+					await target.modedDiscard(cards);
 				}
 			}
 		},
