@@ -1929,8 +1929,11 @@ export class Get extends GetCompatible {
 			if (info.ai.halfneg) {
 				return 0;
 			}
-			if (typeof info.ai.combo == "string" && player && !player.hasSkill(info.ai.combo)) {
-				return 0;
+			if ((typeof info.ai.combo == "string" || Array.isArray(info.ai.combo)) && player) {
+				let skills = typeof info.ai.combo == "string" ? [info.ai.combo] : info.ai.combo;
+				if (skills.every(skill => !player.hasSkill(skill))) {
+					return 0;
+				}
 			}
 			if (info.ai.neg) {
 				return -1;

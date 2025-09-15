@@ -2,6 +2,13 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//手杀SP曹操
+	mblingfa: {
+		audio: "twlingfa",
+		audioname: ["mb_caocao"],
+		inherit: "twlingfa",
+		derivation: "new_rejianxiong",
+	},
 	//手杀曹洪
 	mbyuanhu: {
 		audio: "yuanhu",
@@ -6479,7 +6486,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				player.logSkill("potfuji", null, null, null, [3]);
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
-				await player.draw();
+				await player.draw(2);
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
 			player
@@ -8337,7 +8344,7 @@ const skills = {
 				})
 			) {
 				const num = player.getAllHistory("custom", evt => evt.name == "mbquchong").length;
-				const list = get.mode() == "identity" ? [0, 5, 10, 10] : [0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
 				return num < 4 && player.countMark("mbquchong") >= list[num];
 			}
 			return player.canMoveCard(
@@ -8390,7 +8397,7 @@ const skills = {
 					.set("logSkill", ["mbquchong", null, null, null, [4]]);
 			} else {
 				const numbers = Array.from({ length: 13 }).map((_, i) => get.strNumber(i + 1));
-				const list = get.mode() == "identity" ? [0, 5, 10, 10] : [0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
 				const costMark = list[player.getAllHistory("custom", evt => evt.name == "mbquchong").length];
 				const result = await player
 					.chooseButton(
@@ -9825,9 +9832,12 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "target",
+				/*
 				get usable() {
 					return get.mode() == "doudizhu" ? 1 : 2;
 				},
+				*/
+				usable: 2,
 				async content(event, trigger, player) {
 					const target = trigger.target,
 						list = [];

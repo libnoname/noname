@@ -113,6 +113,7 @@ const characters = {
 		hp: 3,
 		skills: ["olsblucun", "olsbtuisheng"],
 		trashBin: ["sex:male_castrated"],
+		dieAudios: ["3"],
 	},
 	ol_fuhuanghou: {
 		sex: "female",

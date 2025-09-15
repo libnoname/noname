@@ -1452,7 +1452,7 @@ const skills = {
 		logTarget: "player",
 		prompt2(event, player) {
 			const goon = event.player === player;
-			return (goon ? "" : "令其") + "摸" + get.cnNumber(Math.min(3, Math.max(1, player.getDamagedHp()))) + "张牌，本回合的弃牌阶段开始时，" + (goon ? "弃置所有非基本牌" : "其弃置所有基本牌");
+			return (goon ? "" : "令其") + "摸" + get.cnNumber(Math.min(4, Math.max(1, player.getDamagedHp()))) + "张牌，本回合的弃牌阶段开始时，" + (goon ? "弃置所有非基本牌" : "其弃置所有基本牌");
 		},
 		content() {
 			const target = trigger.player;
@@ -1460,12 +1460,10 @@ const skills = {
 			player.addTempSkill("xiongjin_used", "roundStart");
 			player.markAuto("xiongjin_used", [goon.toString()]);
 			player.addTempSkill("xiongjin_effect");
-			if (!player.storage.xiongjin_effect_target) {
-				player.storage.xiongjin_effect_target = [];
-			}
+			player.storage.xiongjin_effect_target ??= [];
 			player.storage.xiongjin_effect_target.add(target);
 			target.markAuto("xiongjin_effect", [goon ? "nobasic" : "basic"]);
-			target.draw(Math.min(3, Math.max(1, player.getDamagedHp())));
+			target.draw(Math.min(4, Math.max(1, player.getDamagedHp())));
 		},
 		subSkill: {
 			used: {

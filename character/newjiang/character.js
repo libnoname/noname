@@ -215,7 +215,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		maxHp: 4,
+		maxHp: 5,
 		skills: ["xiongjin", "zhenbian", "baoxi"],
 	},
 	fj_peixiu: {

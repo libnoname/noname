@@ -1,4 +1,10 @@
 const characters = {
+	mb_caocao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mblingfa", "twzhian"],
+	},
 	mb_caohong: {
 		sex: "male",
 		group: "wei",

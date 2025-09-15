@@ -3807,6 +3807,7 @@ game.import("card", function () {
 				intro: { content: "当前防具技能已失效" },
 			},
 			qinglong_skill: {
+				audio: true,
 				equipSkill: true,
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
 				direct: true,
@@ -3840,6 +3841,7 @@ game.import("card", function () {
 				},
 			},
 			zhangba_skill: {
+				audio: true,
 				equipSkill: true,
 				enable: ["chooseToUse", "chooseToRespond"],
 				filterCard: true,
@@ -3850,7 +3852,6 @@ game.import("card", function () {
 				filter(event, player) {
 					return player.countCards("hs") >= 2;
 				},
-				audio: true,
 				prompt: "将两张手牌当杀使用或打出",
 				check(card) {
 					let player = _status.event.player;

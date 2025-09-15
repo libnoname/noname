@@ -28,6 +28,7 @@ game.import("character", function () {
 				["ol_sb_dongzhuo_shadow1", ["die:ol_sb_dongzhuo", "tempname:ol_sb_dongzhuo"]],
 				["ol_sb_dongzhuo_shadow2", ["die:ol_sb_dongzhuo", "tempname:ol_sb_dongzhuo"]],
 			],
+			ol_sb_zhangrang: [["ol_sb_zhangrang_shadow", ["die:ol_sb_zhangrang"]]],
 		},
 		card: { ...cards },
 		skill: { ...skills },

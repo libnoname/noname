@@ -10466,24 +10466,13 @@ const skills = {
 	},
 	sblianying: {
 		audio: 2,
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			if (player == event.player) {
-				return false;
-			}
-			if (get.mode() == "doudizhu") {
-				return true;
-			}
-			return player.getHistory("lose", evt => evt.cards2 && evt.cards2.length).length;
+			return event.player !== player;
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			let num = 0;
-			if (get.mode() == "doudizhu") {
-				num++;
-			}
+			let num = 1;
 			player.getHistory("lose", evt => {
 				if (evt.cards2) {
 					num += evt.cards2.length;

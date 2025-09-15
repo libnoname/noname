@@ -3438,10 +3438,11 @@ const skills = {
 		trigger: { player: ["damageEnd", "phaseZhunbeiBegin"] },
 		check(event, player) {
 			const num = player.getRoundHistory("useSkill", evt => evt.skill == "olxianying").length;
-			if (num <= 3) {
-				return true;
+			if (num > 2) {
+				const num2 = player.countCards("he");
+				return !num2 || num2 > num + 1 || num2 + 2 < num + 1;
 			}
-			return player.countCards("he") > num + 1;
+			return true;
 		},
 		async content(event, trigger, player) {
 			await player.draw(2);
@@ -3453,61 +3454,69 @@ const skills = {
 					.map((_, i) => i)
 					.filter(i => !storage.includes(i));
 			player.addTempSkill(record, "roundStart");
-			const result =
-				hs.length <= Math.min(...choices)
-					? { bool: true, cards: hs }
-					: await player
-							.chooseToDiscard("he", [0, Infinity], get.prompt(event.name), `你可以弃置任意张牌，若这些牌同名，则本回合结束时你可以视为使用之${storage.length ? `（本轮已弃置过的牌数：${storage}）` : ``}`, true)
-							.set("filterOk", () => {
-								return !get.event("storage").includes(ui.selected.cards.length);
-							})
-							.set("chooseonly", true)
-							.set("storage", storage)
-							.set("choices", choices)
-							.set("ai", card => {
-								const { player, names, choices } = get.event();
-								const list = names.filter(i => i[1] > choices.remove(0)[0]).map(i => i[0]);
-								if (list.length) {
-									let num = choices.remove(0)[0];
-									if (ui.selected.cards.length >= num) {
-										return 0;
-									}
-									if (!list.includes(get.name(card, player))) {
-										return 0;
-									}
-									return 15 - get.value(card);
-								} else {
-									let num = choices[0];
-									if (ui.selected.cards.length >= num) {
-										return 0;
-									}
-									return 6 - get.value(card);
+			let result;
+			switch (Math.sign(hs.length - Math.min(...choices))) {
+				case -1:
+					result = { bool: false };
+					break;
+				case 0:
+					result = { bool: true, cards: hs };
+					break;
+				case 1:
+					result = await player
+						.chooseToDiscard("he", [0, Infinity], get.prompt(event.name), `你可以弃置任意张牌，若这些牌同名，则本回合结束时你可以视为使用之${storage.length ? `（本轮已弃置过的牌数：${storage}）` : ``}`, true)
+						.set("filterOk", () => {
+							return !get.event("storage").includes(ui.selected.cards.length);
+						})
+						.set("chooseonly", true)
+						.set("storage", storage)
+						.set("choices", choices)
+						.set("ai", card => {
+							const { player, names, choices } = get.event();
+							const list = names.filter(i => i[1] > choices.remove(0)[0]).map(i => i[0]);
+							if (list.length) {
+								let num = choices.remove(0)[0];
+								if (ui.selected.cards.length >= num) {
+									return 0;
 								}
-							})
-							.set(
-								"names",
-								(function () {
-									const hs = player.getCards("he", card => {
-										if (!lib.filter.cardDiscardable(card, player)) {
-											return false;
+								if (!list.includes(get.name(card, player))) {
+									return 0;
+								}
+								return 15 - get.value(card);
+							} else {
+								let num = choices[0];
+								if (ui.selected.cards.length >= num) {
+									return 0;
+								}
+								return 6 - get.value(card);
+							}
+						})
+						.set(
+							"names",
+							(function () {
+								const hs = player.getCards("he", card => {
+									if (!lib.filter.cardDiscardable(card, player)) {
+										return false;
+									}
+									return player.hasValueTarget(card) && ["basic", "trick"].includes(get.type(card));
+								});
+								return hs
+									.map(i => get.name(i, player))
+									.reduce((arr, name) => {
+										const index = arr.find(item => item[0] == name);
+										if (!index) {
+											arr.push([name, 1]);
+										} else {
+											index[1]++;
 										}
-										return player.hasValueTarget(card) && ["basic", "trick"].includes(get.type(card));
-									});
-									return hs
-										.map(i => get.name(i, player))
-										.reduce((arr, name) => {
-											const index = arr.find(item => item[0] == name);
-											if (!index) {
-												arr.push([name, 1]);
-											} else {
-												index[1]++;
-											}
-											return arr;
-										}, [])
-										.sort((a, b) => b[1] - a[1]);
-								})()
-							)
-							.forResult();
+										return arr;
+									}, [])
+									.sort((a, b) => b[1] - a[1]);
+							})()
+						)
+						.forResult();
+					break;
+			}
 			if (result?.bool) {
 				const cards = result.cards || [];
 				if (cards.length) {
@@ -3563,9 +3572,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				init(player, skill) {
-					if (!player.storage[skill]) {
-						player.storage[skill] = [];
-					}
+					player.storage[skill] ??= [];
 				},
 				trigger: { global: "phaseEnd" },
 				forced: true,
