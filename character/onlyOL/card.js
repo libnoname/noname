@@ -1,6 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	lusu_phaseZhunbei: { 
+		fullskin: true,
+		noname: true, 
+	},
+	lusu_phaseJudge: { 
+		fullskin: true,
+		noname: true, 
+	},
+	lusu_phaseDraw: { 
+		fullskin: true,
+		noname: true, 
+	},
+	lusu_phaseUse: { 
+		fullskin: true,
+		noname: true, 
+	},
+	lusu_phaseDiscard: { 
+		fullskin: true,
+		noname: true, 
+	},
+	lusu_phaseJieshu: { 
+		fullskin: true,
+		noname: true, 
+	},
 	sizhaojian: {
 		derivation: "ol_sb_yuanshao",
 		cardcolor: "diamond",

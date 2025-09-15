@@ -1898,7 +1898,19 @@ const skills = {
 						let num = 0;
 						while (list?.length) {
 							const result2 = await player
-								.chooseButton([`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`, [list, "vcard"]])
+								.chooseButton([`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`, [list, (item, type, position, noclick, node) => {
+									let showCard = [item[0], item[1], `lusu_${item[2]}`];
+									node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+									node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+									node.node.info.style["font-size"] = "20px";
+									node._link = node.link = item;
+									node._customintro = uiintro => {
+										uiintro.add(get.translation(node._link[2]));
+										uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+										return uiintro;
+									};
+									return node;
+								}]])
 								.set("ai", button => {
 									if (["phaseDiscard", "phaseJudge"].includes(button.link[2])) {
 										return 1;

@@ -250,7 +250,19 @@ const skills = {
 								list.filter(info => {
 									return isPhase(info[2]) && !player.getStorage(event.name + "_used").includes(info[2]);
 								}),
-								"vcard",
+								(item, type, position, noclick, node) => {
+									let showCard = [item[0], item[1], `lusu_${item[2]}`];
+									node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+									node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+									node.node.info.style["font-size"] = "20px";
+									node._link = node.link = item;
+									node._customintro = uiintro => {
+										uiintro.add(get.translation(node._link[2]));
+										uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+										return uiintro;
+									};
+									return node;
+								},
 							],
 						],
 						true
@@ -272,12 +284,24 @@ const skills = {
 					const choices = trigger.phaseList.reduce((list, name, index) => (index != choice[0] - 1 && isPhase(name) ? [...list, [index + 1, "", name.split("|")[0]]] : list), []);
 					const indexList = choices.map(i => i[0] - 1);
 					const result2 = await player
-						.chooseToMove("独断：交换另外两个额定阶段", true)
+						.chooseToMove("独断：交换另外两个阶段", true)
 						.set("checkMove", moved => {
 							const list = moved[0].reduce((list, i, index) => (choices[index][0] != i[0] ? [...list, i[0]] : list), []).sort();
 							return list;
 						})
-						.set("list", [["额定阶段", [choices, "vcard"]]])
+						.set("list", [["剩余阶段", [choices, (item, type, position, noclick, node) => {
+							let showCard = [item[0], item[1], `lusu_${item[2]}`];
+							node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+							node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+							node.node.info.style["font-size"] = "20px";
+							node._link = node.link = item;
+							node._customintro = uiintro => {
+								uiintro.add(get.translation(node._link[2]));
+								uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+								return uiintro;
+							};
+							return node;
+						}]]])
 						.set("filterOk", moved => {
 							return get.event().checkMove(moved).length == 2;
 						})
