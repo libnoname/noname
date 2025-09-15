@@ -1940,7 +1940,7 @@ const skills = {
 							return;
 						}
 						const result3 =
-							targets.length > 2
+							targets.length > 1
 								? await player
 										.chooseTarget(`###权威###令至多两名角色恢复${get.cnNumber(num)}点体力`, true, [1, 2], (card, player, target) => {
 											return target.isDamaged();

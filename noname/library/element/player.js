@@ -11824,7 +11824,7 @@ export class Player extends HTMLDivElement {
 			}
 			return false;
 		}
-		if (that === me || this == me._trueMe) {
+		if (that === me || this == me?._trueMe) {
 			return true;
 		}
 		if (_status.connectMode) {

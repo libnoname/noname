@@ -13386,8 +13386,9 @@ export class Library {
 				mod: {
 					cardname(card, player) {
 						if (card.name == "tao") {
-							const evt = get.event();
-							if (typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && !evt.filterCard({ name: "sha" }, player, evt)) {
+							const evt = get.event(),
+								viewAs = name => get.autoViewAs({ name: name, cards: [card] }, [card]);
+							if (typeof evt.filterCard == "function" && evt.filterCard(viewAs("shan"), player, evt) && !evt.filterCard(viewAs("sha"), player, evt)) {
 								return "shan";
 							}
 							return "sha";

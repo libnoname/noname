@@ -15609,10 +15609,10 @@ export default {
 				);
 				game.playBackgroundMusic();
 				lib.init.sheet(`
-                    .card[data-card-name = "tao"]>.image {
-                    	background-image: url(${lib.assetURL}image/card/gz_aozhantao.png) !important;
-                    }
-                `);
+					.card[data-card-name = "tao"]>.image {
+						background-image: url(${lib.assetURL}image/card/gz_aozhantao.png) !important;
+					}
+				`);
 			});
 			game.addGlobalSkill("aozhan");
 		},
