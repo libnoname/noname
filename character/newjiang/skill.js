@@ -4371,7 +4371,7 @@ const skills = {
 				firstDo: true,
 				filter(event, player) {
 					if (event.addCount === false) {
-						return true;
+						return false;
 					}
 					var list = lib.skill.lkbushi.getBushi(player);
 					return list[0] == get.suit(event.card);

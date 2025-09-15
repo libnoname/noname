@@ -5130,12 +5130,14 @@ const skills = {
 		},
 		content() {
 			if (player.countMark("dcdouzhen") % 2) {
-				// if(trigger.addCount!==false){
-				// 	 trigger.addCount=false;
-				// 	 if(player.stat[player.stat.length-1].card.sha>0){
-				// 		 player.stat[player.stat.length-1].card.sha--;
-				// 	 }
-				// }
+				if(trigger.addCount!==false){
+					trigger.addCount=false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (stat[name] > 0) {
+						stat[name]--;
+					}
+				}
 			} else {
 				if (trigger.targets.length && trigger.targets.filter(i => i.countGainableCards(player, "he") > 0).length) {
 					player.gainMultiple(trigger.targets.sortBySeat(), "he");
