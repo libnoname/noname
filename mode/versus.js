@@ -4652,6 +4652,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "刘|备",
 				},
 				boss_gongshenyueying: {
 					sex: "female",
@@ -4662,6 +4663,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "黄|月英",
 				},
 				boss_tianhoukongming: {
 					sex: "male",
@@ -4672,6 +4674,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "诸葛|亮",
 				},
 				boss_yuhuoshiyuan: {
 					sex: "male",
@@ -4682,6 +4685,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "庞|统",
 				},
 				boss_qiaokuijunyi: {
 					sex: "male",
@@ -4692,6 +4696,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "张|郃",
 				},
 				boss_jiarenzidan: {
 					sex: "male",
@@ -4702,6 +4707,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "曹|真",
 				},
 				boss_duanyuzhongda: {
 					sex: "male",
@@ -4712,6 +4718,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "司马|懿",
 				},
 				boss_juechenmiaocai: {
 					sex: "male",
@@ -4722,6 +4729,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "夏侯|渊",
 				},
 
 				boss_jileibaihu: {
@@ -4733,6 +4741,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "null|null",
 				},
 				boss_yunpingqinglong: {
 					sex: "male",
@@ -4743,6 +4752,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "null|null",
 				},
 				boss_lingjiaxuanwu: {
 					sex: "male",
@@ -4753,6 +4763,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "null|null",
 				},
 				boss_chiyuzhuque: {
 					sex: "male",
@@ -4763,6 +4774,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "null|null",
 				},
 				boss_fudibian: {
 					sex: "male",
@@ -4773,6 +4785,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "null|null",
 				},
 				boss_tuntianchiwen: {
 					sex: "male",
@@ -4783,6 +4796,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "null|null",
 				},
 				boss_shihuosuanni: {
 					sex: "male",
@@ -4793,6 +4807,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "null|null",
 				},
 				boss_lieshiyazi: {
 					sex: "male",
@@ -4803,6 +4818,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "null|null",
 				},
 
 				boss_kumuyuanrang: {
@@ -4814,6 +4830,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "夏侯|惇",
 				},
 				boss_baijiwenyuan: {
 					sex: "male",
@@ -4824,6 +4841,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "张|辽",
 				},
 				boss_yihanyunchang: {
 					sex: "male",
@@ -4834,6 +4852,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "关|羽",
 				},
 				boss_fuweizilong: {
 					sex: "male",
@@ -4844,6 +4863,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "赵|云",
 				},
 				boss_weiwuyide: {
 					sex: "male",
@@ -4854,6 +4874,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "张|飞",
 				},
 				boss_elaiziman: {
 					sex: "male",
@@ -4864,6 +4885,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "典|韦",
 				},
 				boss_shenjianhansheng: {
 					sex: "male",
@@ -4874,6 +4896,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "shu",
+					names: "黄|忠",
 				},
 				boss_yiyongwenze: {
 					sex: "male",
@@ -4884,6 +4907,7 @@ export default () => {
 					isHiddenBoss: true,
 					isBossAllowed: true,
 					extraModeData: "wei",
+					names: "于|禁",
 				},
 			}
 		),
