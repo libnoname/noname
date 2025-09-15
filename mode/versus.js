@@ -756,6 +756,10 @@ export default () => {
 					lib.characterIntro.boss_baijiwenyuan = lib.characterIntro.zhangliao;
 					lib.characterIntro.boss_yihanyunchang = lib.characterIntro.guanyu;
 					lib.characterIntro.boss_fuweizilong = lib.characterIntro.zhaoyun;
+					lib.characterIntro.boss_weiwuyide = lib.characterIntro.zhangfei;
+					lib.characterIntro.boss_elaiziman = lib.characterIntro.dianwei;
+					lib.characterIntro.boss_shenjianhansheng = lib.characterIntro.huangzhong;
+					lib.characterIntro.boss_yiyongwenze = lib.characterIntro.yujin;
 					"step 1";
 					for (var i in lib.skill) {
 						if (lib.skill[i].seatRelated === true) {
@@ -4841,6 +4845,46 @@ export default () => {
 					isBossAllowed: true,
 					extraModeData: "shu",
 				},
+				boss_weiwuyide: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["boss_mengwu", "boss_hupo", "boss_shuhun"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_elaiziman: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_yingji", "boss_zhene", "boss_weizhu"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_shenjianhansheng: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["boss_qixian", "boss_jinggong", "boss_beishi"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_yiyongwenze: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["boss_hanjun", "boss_pigua", "boss_zhengji"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
 			}
 		),
 		cardsFour: [
@@ -5434,6 +5478,35 @@ export default () => {
 			boss_baijiwenyuan: "百计文远",
 			boss_yihanyunchang: "翊汉云长",
 			boss_fuweizilong: "扶危子龙",
+
+			boss_weiwuyide: "威武翼德",
+			boss_elaiziman: "恶来子满",
+			boss_shenjianhansheng: "神箭汉升",
+			boss_yiyongwenze: "毅勇文则",
+			boss_mengwu: "猛武",
+			boss_mengwu_info: "锁定技，你使用【杀】无距离次数限制，使用【杀】被抵消后摸一张牌。",
+			boss_hupo: "虎魄",
+			boss_hupo_info: "锁定技，你的锦囊牌视为【杀】。",
+			boss_shuhun: "蜀魂",
+			boss_shuhun_info: "锁定技，你造成伤害后，令随机一名友方角色恢复1点体力。",
+			boss_yingji: "影戟",
+			boss_yingji_info: "出牌阶段限一次，你可以展示所有手牌视为使用一张【杀】，且此【杀】的伤害基数改为你以此法展示的类别数。",
+			boss_zhene: "镇恶",
+			boss_zhene_info: "锁定技，你于出牌阶段使用牌指定目标后，若其手牌数不大于你，其不能响应此牌。",
+			boss_weizhu: "卫主",
+			boss_weizhu_info: "友方角色受到伤害时，你可以弃置一张手牌防止之。",
+			boss_qixian: "启弦",
+			boss_qixian_info: "你于出牌阶段内获得一张牌后，令你本回合下一次使用【杀】的伤害+1。",
+			boss_jinggong: "惊弓",
+			boss_jinggong_info: "锁定技，你使用【杀】无距离限制；你的回合结束时，若你本回合未使用【杀】，你失去1点体力。",
+			boss_beishi: "备矢",
+			boss_beishi_info: "锁定技，其他友方角色对敌方角色造成伤害后，你摸一张牌",
+			boss_hanjun: "撼军",
+			boss_hanjun_info: "出牌阶段限一次，你可以随机弃置所有敌方角色各一张牌，然后获得其中的装备牌或非装备牌。",
+			boss_pigua: "披挂",
+			boss_pigua_info: "锁定技，准备阶段，若你的装备区没有牌，你失去1点体力并从牌堆或弃牌堆获得一张装备牌。",
+			boss_zhengji: "整纪",
+			boss_zhengji_info: "锁定技，友方角色的装备被弃置后，你令所有友方角色各摸一张牌。",
 
 			boss_xiaorui: "骁锐",
 			boss_xiaorui2: "骁锐",
@@ -6183,6 +6256,277 @@ export default () => {
 				},
 			},
 			//剑阁技能
+			boss_mengwu: {
+				trigger: {
+					player: "shaMiss",
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+				mod: {
+					cardUsable(card, player) {
+						if (card.name == "sha") {
+							return Infinity;
+						}
+					},
+					targetInRange(card, player) {
+						if (card.name == "sha") {
+							return true;
+						}
+					},
+				},
+			},
+			boss_hupo: {
+				forced: true,
+				mod: {
+					cardname(card, player) {
+						if (["trick", "delay"].includes(lib.card[card.name].type)) {
+							return "sha";
+						}
+					},
+					cardnature(card, player) {
+						if (["trick", "delay"].includes(lib.card[card.name].type)) {
+							return null;
+						}
+					},
+				},
+			},
+			boss_shuhun: {
+				trigger: {
+					source: "damageSource",
+				},
+				forced: true,
+				filter(event, player) {
+					return game.hasPlayer(current => {
+						return current.isFriendOf(player) && current.isDamaged();
+					});
+				},
+				logTarget(event, player) {
+					return game.filterPlayer(current => {
+						return current.isFriendOf(player) && current.isDamaged();
+					}).randomGet();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					await target.recover();
+				},
+			},
+			boss_yingji: {
+				enable: "phaseUse",
+				usable: 1,
+				filterCard: true,
+				selectCard: -1,
+				ignoreMod: true,
+				viewAs: {
+					name: "sha",
+				},
+				async precontent(event, trigger, player) {
+					delete event.result.skill;
+					const cards = event.result.cards;
+					player.logSkill("boss_yingji");
+					await player.showCards(cards);
+					event.result.cards = [];
+					event.result.card = new lib.element.VCard({ name: "sha"});
+					player
+						.when("useCard1")
+						.filter(evt => evt.getParent() == event.getParent())
+						.step(async (event, trigger, player) => {
+							trigger.baseDamage = cards.map(card => get.type2(card)).toUniqued().length;
+						});
+				},
+				ai: {
+					order: 9,
+				},
+			},
+			boss_zhene: {
+				trigger: {
+					player: "useCardToPlayered",
+				},
+				filter(event, player) {
+					return event.target.countCards("h") <= player.countCards("h");
+				},
+				forced: true,
+				logTarget: "target",
+				async content(event, trigger, player) {
+					trigger.getParent().directHit.add(trigger.target);
+				},
+			},
+			boss_weizhu: {
+				trigger: {
+					global: "damageBegin4",
+				},
+				filter(event, player) {
+					return player.countCards("h") && event.player.isFriendOf(player);
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToDiscard(get.prompt2(event.skill, trigger.player), "h")
+						.set("chooseonly", true)
+						.set("eff", get.damageEffect(trigger.player, trigger.source ?? trigger.player, player))
+						.set("ai", card => {
+							const { eff } = get.event();
+							if (eff >= 0) {
+								return 0;
+							}
+							return 7 - get.value(card);
+						})
+						.forResult();
+					event.result.targets = [trigger.player];
+				},
+				async content(event, trigger, player) {
+					const { cards } = event;
+					await player.modedDiscard(cards);
+					trigger.cancel();
+				},
+			},
+			boss_qixian: {
+				trigger: {
+					player: "gainAfter",
+					global: ["loseAfter", "loseAsyncAfter"],
+				},
+				getIndex(event, player) {
+					if (!event.getg) {
+						return false;
+					}
+					return event.getg(player);
+				},
+				filter(event, player) {
+					return player.isPhaseUsing();
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					player
+						.when("useCard1")
+						.filter(evt => evt.card?.name == "sha")
+						.step(async (event, trigger, player) => {
+							trigger.baseDamage ??= 1;
+							trigger.baseDamage++;
+						});
+				},
+			},
+			boss_jinggong: {
+				trigger: {
+					player: "phaseEnd",
+				},
+				forced: true,
+				filter(event, player) {
+					return !player.hasHistory("useCard", evt => evt?.card?.name == "sha");
+				},
+				async content(event, trigger, player) {
+					await player.loseHp();
+				},
+				mod: {
+					targetInRange(card, player) {
+						if (card.name == "sha") {
+							return true;
+						}
+					},
+				},
+			},
+			boss_beishi: {
+				trigger: {
+					global: "damageSource",
+				},
+				forced: true,
+				filter(event, player) {
+					if (event.player.isFriendOf(player)) {
+						return false;
+					}
+					return event.source?.isFriendOf(player) && event.source != player;
+				},
+				logTarget: "source",
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
+			boss_hanjun: {
+				enable: "phaseUse",
+				usable: 1,
+				filter(event, player) {
+					return game.hasPlayer(current => {
+						return !current.isFriendOf(player) && current.countDiscardableCards(player, "he");
+					});
+				},
+				filterTarget(card, player, target) {
+					return !target.isFriendOf(player) && target.countDiscardableCards(player, "he");
+				},
+				selectTarget: -1,
+				async content(event, trigger, player) {
+					const cards = event.target.getDiscardableCards(player, "he");
+					if (cards?.length) {
+						const card = cards.randomGet();
+						await event.target.modedDiscard(card, player);
+						event.getParent().hanjunCards ??= [];
+						event.getParent().hanjunCards.add(card);
+					}
+				},
+				async contentAfter(event, trigger, player) {
+					const cards = event.getParent().hanjunCards;
+					if (cards.length) {
+						const equips = cards.filter(card => get.type(card) == "equip"),
+							noequips = cards.filter(card => get.type(card) != "equip");
+						const result = equips.length && noequips.length ? await player
+							.chooseControl("装备牌", "非装备牌")
+							.set("choiceList", [
+								`获得${get.translation(equips)}`,
+								`获得${get.translation(noequips)}`,
+							])
+							.set("prompt", "撼军：请选择获得的类型")
+							.set("ai", () => get.event("resultx"))
+							.set("resultx", equips.length > noequips.length ? 0 : 1)
+							.forResult() : {
+								index: equips.length ? 0 : 1,
+							};
+						if (result.index == 0) {
+							await player.gain(equips, "gain2");
+						} else {
+							await player.gain(noequips, "gain2");
+						}
+					}
+				},
+			},
+			boss_pigua: {
+				trigger: {
+					player: "phaseZhunbeiBegin",
+				},
+				filter(event, player) {
+					return !player.countCards("e");
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.loseHp();
+					const card = get.cardPile(card => get.type(card) == "equip");
+					if (card) {
+						await player.gain(card, "gain2");
+					}
+				},
+			},
+			boss_zhengji: {
+				trigger: {
+					global: ["loseAfter", "loseAsyncAfter"],
+				},
+				getIndex(event, player) {
+					if (!event.getl || event.type != "discard") {
+						return [];
+					}
+					return game.filterPlayer(current => current.isFriendOf(player)).reduce((cards, current) => {
+						const equips = event.getl(current)?.es;
+						if (equips?.length) {
+							cards.addArray(equips);
+						}
+						return cards;
+					}, []);
+				},
+				logTarget(event, player) {
+					return game.filterPlayer(current => current.isFriendOf(player));
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await game.asyncDraw(event.targets);
+				},
+			},
 			boss_xiaorui: {
 				trigger: { global: "damageSource" },
 				forced: true,
