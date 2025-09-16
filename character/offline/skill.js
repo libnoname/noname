@@ -7899,6 +7899,15 @@ const skills = {
 			player.addTempSkill("hssifen_viewAs", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
 			player.storage.hssifen_viewAs[target.playerid] = result.cards.length;
 		},
+		ai: {
+			order: 7,
+			result: {
+				target(player, target) {
+					const juedou = new lib.element.VCard({ name: "juedou"});
+					return target.getUseValue(juedou) * Math.sqrt(target.countCards("h"));
+				},
+			},
+		},
 		subSkill: {
 			backup: {
 				filterCard(card, player) {
@@ -7975,10 +7984,6 @@ const skills = {
 				position: "hes",
 				check(card) {
 					return 6 - get.value(card);
-				},
-				ai: {
-					order: 5,
-					result: { player: 1 },
 				},
 			},
 		},

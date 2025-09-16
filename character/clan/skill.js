@@ -1528,49 +1528,70 @@ const skills = {
 						_status.noclearcountdown = true;
 					});
 				}
-				const given_map = {};
+				const given_map = new Map();
 				let result;
-				while (true) {
+				while (cards.length) {
 					if (cards.length > 1) {
 						result = await player
-							.chooseCardButton("谏直：请选择要分配的牌", true, cards, [1, cards.length])
-							.set("ai", button => {
-								if (ui.selected.buttons.length) {
-									return 0;
-								}
-								return get.buttonValue(button);
+							.chooseButtonTarget({
+								createDialog: ["谏直：请选择要分配的牌", cards],
+								forced: true,
+								selectButton: [1, Infinity],
+								ai1(button) {
+									if (ui.selected.buttons.length) {
+										return 0;
+									}
+									return get.buttonValue(button);
+								},
+								ai2(target) {
+									const { player, given_map: map } = get.event(),
+										att = get.attitude(player, target),
+										card = ui.selected.buttons?.[0]?.link;
+									if (!card) {
+										return 0;
+									}
+									if (get.value(card, player, "raw") < 0) {
+										return Math.max(0.01, 100 - att);
+									} else if (att > 0) {
+										const cards = map.has(target) ? map.get(target) : [];
+										return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + cards.length));
+									} else {
+										return 0;
+									}
+								},
+								given_map: given_map,
 							})
 							.forResult();
 					} else if (cards.length === 1) {
-						result = { bool: true, links: cards.slice(0) };
+						result = await player
+							.chooseTarget(`选择一名角色获得${get.translation(cards)}`, true)
+							.set("ai", target => {
+								const { player, given_map: map, toGive: card } = get.event(),
+									att = get.attitude(player, target);
+								if (!card) {
+									return 0;
+								}
+								if (get.value(card, player, "raw") < 0) {
+									return Math.max(0.01, 100 - att);
+								} else if (att > 0) {
+									const cards = map.has(target) ? map.get(target) : [];
+									return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + cards.length));
+								} else {
+									return 0;
+								}
+							})
+							.set("given_map", given_map)
+							.set("toGive", cards[0])
+							.forResult();
+						result.links = cards.slice(0);
 					} else {
 						break;
 					}
-					const toGive = result.links;
-					result = await player
-						.chooseTarget(`选择一名角色获得${get.translation(toGive)}`, cards.length === 1)
-						.set("ai", target => {
-							const att = get.attitude(get.player(), target);
-							if (get.event("toEnemy")) {
-								return Math.max(0.01, 100 - att);
-							} else if (att > 0) {
-								return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event("given_map")[target.playerid] || 0)));
-							} else {
-								return Math.max(0.01, (100 + att) / 200);
-							}
-						})
-						.set("given_map", given_map)
-						.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
-						.forResult();
 					if (result.bool) {
+						const { links: toGive, targets: [target] } = result;
 						cards.removeArray(toGive);
-						if (result.targets.length) {
-							const id = result.targets[0].playerid;
-							if (!given_map[id]) {
-								given_map[id] = [];
-							}
-							given_map[id].addArray(toGive);
-						}
+						const given = (given_map.get(target) ?? []).concat(toGive);
+						given_map.set(target, given);
 						if (!cards.length) {
 							break;
 						}
@@ -1582,12 +1603,10 @@ const skills = {
 						game.stopCountChoose();
 					});
 				}
-				const gain_list = [];
-				for (const i in given_map) {
-					const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-					player.line(source, "green");
-					gain_list.push([source, given_map[i]]);
-					game.log(source, "获得了", given_map[i]);
+				const gain_list = Array.from(given_map.entries());
+				for (const info of gain_list) {
+					player.line(info[0], "green");
+					game.log(info[0], "获得了", info[1]);
 				}
 				await game
 					.loseAsync({

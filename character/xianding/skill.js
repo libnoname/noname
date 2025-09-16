@@ -4612,7 +4612,7 @@ const skills = {
 												const given = given_map.has(target) ? given_map.get(target) : [];
 												return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + given.length));
 											} else {
-												return Math.max(0.01, (100 + att) / 200);
+												return 0;
 											}
 										},
 									})
