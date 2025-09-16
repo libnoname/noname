@@ -7460,21 +7460,23 @@ const skills = {
 					global: ["chooseToCompareAfter", "compareMultipleAfter"],
 				},
 				frequent(event, player) {
-					const cards = event.compareMeanwhile ? event.cards : [event.card1, event.card2];
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
 					return !cards.filterInD("od").some(card => card.name == "du");
 				},
 				filter(event, player) {
-					if (event.compareMeanwhile) {
-						return event.cards.someInD("od");
-					}
-					return [event.card1, event.card2].someInD("od");
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
+					return cards.someInD("od");
 				},
 				prompt2(event, player) {
-					const cards = event.compareMeanwhile ? event.cards : [event.card1, event.card2];
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
 					return `获得${get.translation(cards.filterInD("od"))}`;
 				},
 				async content(event, trigger, player) {
-					const cards = trigger.compareMeanwhile ? trigger.cards : [trigger.card1, trigger.card2];
+					const bool = trigger.compareMeanwhile || trigger.compareMultiple,
+						cards = bool ? trigger.cards : [trigger.card1, trigger.card2];
 					await player.gain(cards.filterInD("od"), "gain2");
 				},
 			},
@@ -10250,31 +10252,44 @@ const skills = {
 			},
 			gain: {
 				audio: "scspsyaozhuo",
-				getCards: (event, player) => (player == event.player ? event.card2 : event.card1),
-				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
+				getCards(event, player) {
+					if (event.compareMultiple) {
+						return [];
+					}
+					if (event.compareMeanwhile) {
+						const index = [...event.targets, event.player].indexOf(player),
+							winner = event.winner || event.result.winner;
+						if (index < 0) {
+							return [];
+						}
+						return event.cards.filter((card, i) => {
+							return i !== index;
+						}).filterInD("od");
+					}
+					if (player != event.player && player != event.target) {
+						return [];
+					}
+					const bool = player == event.player;
+					return [event[bool ? "card2" : "card1"]].filterInD("od");
+				},
+				trigger: {
+					global: ["chooseToCompareAfter", "compareMultipleAfter"],
+				},
 				filter(event, player) {
-					if (![event.player, event.target].includes(player)) {
-						return false;
-					}
-					if (event.preserve) {
-						return false;
-					}
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return !get.owner(card);
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return cards.length;
 				},
 				check(event, player) {
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return card.name != "du";
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return cards.every(card => card.name != "du");
 				},
 				prompt2(event, player) {
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return `获得${get.translation(card)}`;
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return `获得${get.translation(cards)}`;
 				},
 				async content(event, trigger, player) {
-					const card = get.info(event.name).getCards(trigger, player);
-					if (!get.owner(card)) {
-						await player.gain(card, "gain2");
-					}
+					const cards = get.info(event.name).getCards(trigger, player);
+					await player.gain(cards, "gain2", "log");
 				},
 			},
 		},

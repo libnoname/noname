@@ -4202,56 +4202,47 @@ const skills = {
 		audio: 2,
 		audioname: ["re_jianyong"],
 		trigger: {
-			player: ["chooseToCompareAfter", "compareMultipleAfter"],
-			target: ["chooseToCompareAfter", "compareMultipleAfter"],
+			global: ["chooseToCompareAfter", "compareMultipleAfter"],
+		},
+		getCards(event, player) {
+			if (event.compareMultiple) {
+				return [];
+			}
+			if (event.compareMeanwhile) {
+				const index = [...event.targets, event.player].indexOf(player),
+					winner = event.winner || event.result.winner;
+				if (index < 0) {
+					return [];
+				}
+				return event.cards.filter((card, i) => {
+					return (i == index) != (winner == player);
+				}).filterInD("od");
+			}
+			if (player != event.player && player != event.target) {
+				return [];
+			}
+			const winner = event.winner || event.result.winner;
+			const bool = (winner == player) == (player == event.player);
+			return [event[bool ? "card2" : "card1"]].filterInD("od");
+		},
+		prompt2(event, player) {
+			const cards = get.info("jyzongshi").getCards(event, player);
+			return `获得${get.translation(cards)}`;
 		},
 		filter(event, player) {
 			if (event.preserve) {
 				return false;
 			}
-			if (player == event.player) {
-				if (event.num1 > event.num2) {
-					return !get.owner(event.card2);
-				} else {
-					return !get.owner(event.card1);
-				}
-			} else {
-				if (event.num1 < event.num2) {
-					return !get.owner(event.card1);
-				} else {
-					return !get.owner(event.card2);
-				}
-			}
+			const cards = get.info("jyzongshi").getCards(event, player);
+			return cards.length;
 		},
 		check(event, player) {
-			if (player == event.player) {
-				if (event.num1 > event.num2) {
-					return event.card2.name != "du";
-				} else {
-					return event.card1.name != "du";
-				}
-			} else {
-				if (event.num1 < event.num2) {
-					return event.card1.name != "du";
-				} else {
-					return event.card2.name != "du";
-				}
-			}
+			const cards = get.info("jyzongshi").getCards(event, player);
+			return cards.every(card => card.name != "du");
 		},
-		content() {
-			if (player == trigger.player) {
-				if (trigger.num1 > trigger.num2) {
-					player.gain(trigger.card2, "gain2", "log");
-				} else {
-					player.gain(trigger.card1, "gain2", "log");
-				}
-			} else {
-				if (trigger.num1 < trigger.num2) {
-					player.gain(trigger.card1, "gain2", "log");
-				} else {
-					player.gain(trigger.card2, "gain2", "log");
-				}
-			}
+		async content(event, trigger, player) {
+			const cards = get.info(event.name).getCards(trigger, player);
+			await player.gain(cards, "gain2", "log");
 		},
 	},
 	xinsidi: {
