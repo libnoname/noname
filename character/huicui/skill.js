@@ -3468,10 +3468,9 @@ const skills = {
 				},
 				discard: false,
 				lose: false,
+				log: false,
 				prepare(cards, player, targets) {
-					if (targets[0] != player) {
-						player.$give(cards, targets[0], false);
-					}
+					targets[0].logSkill("dcshiju");
 				},
 				async content(event, trigger, player) {
 					const card = event.cards[0],
@@ -3486,9 +3485,9 @@ const skills = {
 					}
 					const bool = await target
 						.chooseUseTarget(card)
-						.set("ai", () => {
-							const giver = get.event("giver");
-							return get.attitude(get.event("player"), giver) >= 0;
+						.set("ai", (event, player) => {
+							const { giver } = event;
+							return get.attitude(player, giver) >= 0;
 						})
 						.set("giver", player)
 						.forResultBool();

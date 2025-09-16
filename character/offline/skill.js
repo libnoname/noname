@@ -1619,10 +1619,26 @@ const skills = {
 						const { result } = await player
 							.chooseUseTarget(card, "nodistance", false)
 							.set("ai", target => {
-								const { preTargets, player, _get_card: card } = get.event();
+								if (get.event().name == "chooseBool") {
+									const { targets2, card, player, preTargets } = target;
+									let eff = 0;
+									targets2.forEach(target2 => {
+										eff += get.effect(target2, card, player, player);
+									});
+									if (!targets2.containsSome(...preTargets)) {
+										let losehp = get.effect(player, { name: "losehp" }, player, player);
+										if (player.hp <= 1 && losehp < 0) {
+											losehp *= 2;
+										}
+										eff += losehp;
+									}
+									return eff > 0;
+								}
+								const { player, _get_card: card } = get.event(),
+									{ preTargets } = get.event().getParent();
 								let eff = get.effect(target, card, player, player);
-								if (!preTargets?.includes(target)) {
-									eff -= get.effect(player, { name: "losehp" }, player, player);
+								if (!preTargets?.includes(target) && !ui.selected.targets?.containsSome(...preTargets)) {
+									eff += get.effect(player, { name: "losehp" }, player, player);
 								}
 								return eff;
 							})

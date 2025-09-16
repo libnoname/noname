@@ -2626,17 +2626,16 @@ player.removeVirtualEquip(card);
 				if (event.prompt2) {
 					next.set("prompt2", event.prompt2);
 				}
-				next.set(
-					"ai",
-					event.ai ||
-						function () {
-							var eff = 0;
-							for (var i = 0; i < event.targets2.length; i++) {
-								eff += get.effect(event.targets2[i], card, player, player);
-							}
-							return eff > 0;
-						}
-				);
+				next.set("choice", (() => {
+					let eff = 0;
+					for (var i = 0; i < event.targets2.length; i++) {
+						eff += get.effect(event.targets2[i], card, player, player);
+					}
+					return eff > 0;
+				})());
+				if (typeof event.ai == "function") {
+					next.set("ai", event.ai);
+				}
 			}
 		} else {
 			if (event.filterTarget) {
