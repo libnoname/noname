@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const translates = {
+	pe_guozhao: "郭照",
+	pepianchong: "偏宠",
+	pepianchong_info: "摸牌阶段，你可以改为获得牌堆底的一张牌，此牌倒置（标记为“偏宠”），然后你摸一张牌，直到你下回合开始：你每失去一张倒置牌后，摸一张牌；你每失去一张未倒置的手牌后，获得牌堆底的一张牌并倒置。",
+	pezunwei: "尊位",
+	pezunwei_info: "出牌阶段限一次，你可以选择一项，然后移除该选项：1.将手牌数摸至全场最多；2.随机使用牌堆中的装备牌，直到你装备区牌数为全场最多；3.将体力回复至全场最多。",
 	xia_caopi: "侠曹丕",
 	xia_caopi_prefix: "侠",
 	peqinyi: "勤艺",
@@ -33,7 +38,7 @@ const translates = {
 	xy_jizheng_info: "每回合一次，当你摸牌时，你可以改为令一名角色视为使用一张无视距离的【杀】。",
 	xy_zhangkai_prefix: "徐兖",
 	xy_zhangkai: "徐兖张闿",
-	xy_luejin:"掠金",
+	xy_luejin: "掠金",
 	xy_luejin_info: "若一名角色摸牌阶段摸超过两张牌，你可以在摸牌阶段结束时视为对该角色使用一张【杀】，若该【杀】未造成伤害，你回复1点体力。",
 	eu_yujin: "欧陆于禁",
 	eu_yujin_prefix: "欧陆",
