@@ -4277,9 +4277,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				trigger: {
-					get player() {
-						return lib.phaseName.map(c => `${c}Begin`);
-					},
+					player: "phaseAnyBegin",
 				},
 				getIndex(event, player) {
 					const storage = player.storage.olsbchoulie_buff;
@@ -7427,9 +7425,7 @@ const skills = {
 	olsbhongtu: {
 		audio: 6,
 		trigger: {
-			get global() {
-				return (lib.phaseName || []).map(i => i + "End");
-			},
+			global: "phaseAnyEnd",
 		},
 		filter(event, player) {
 			let count = 0;
@@ -9319,9 +9315,7 @@ const skills = {
 	olsbzhuri: {
 		audio: 2,
 		trigger: {
-			get player() {
-				return (lib.phaseName || []).map(i => i + "End");
-			},
+			player: "phaseAnyEnd",
 		},
 		filter(event, player) {
 			if (!game.hasPlayer(target => player.canCompare(target))) {

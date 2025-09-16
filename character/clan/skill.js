@@ -1075,7 +1075,7 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
-			global: lib.phaseName.map(name => name + "End"),
+			global: "phaseAnyEnd",
 		},
 		filter(event, player, name) {
 			if (name !== "phaseZhunbeiBegin" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0 && evt.getParent(event.name) === event)) {

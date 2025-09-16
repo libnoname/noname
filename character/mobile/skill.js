@@ -3136,9 +3136,7 @@ const skills = {
 				audio: ["mbduanyang1.mp3", "mbduanyang2.mp3"],
 				charlotte: true,
 				trigger: {
-					get global() {
-						return (lib.phaseName || []).map(i => i + "End");
-					},
+					global: "phaseAnyEnd",
 				},
 				filter(event, player) {
 					return player.getExpansions("mbduanyang").length;

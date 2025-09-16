@@ -2130,9 +2130,7 @@ const skills = {
 			skip: {
 				audio: "olwuma",
 				trigger: {
-					get player() {
-						return (lib.phaseName || []).map(i => [i + "Skipped", i + "Cancelled"]).flat();
-					},
+					player: ["phaseAnySkipped", "phaseAnyCancelled"],
 				},
 				forced: true,
 				content() {

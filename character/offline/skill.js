@@ -20170,7 +20170,7 @@ const skills = {
 					evt.player.getStat().card.sha--;
 				}
 			} else if (trigger.player.isIn()) {
-				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: lib.phaseName.map(i => `${i}End`) });
+				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: "phaseAnyEnd" });
 				trigger.player.markAuto("tychengshi_tiaoxin", [player]);
 			}
 		},

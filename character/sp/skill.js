@@ -8097,7 +8097,7 @@ const skills = {
 			player.getHistory("custom").push({ olqingya: evt.name });
 			player
 				.when({
-					global: lib.phaseName.map(name => name + "End").concat("phaseAfter"),
+					global: ["phaseAnyEnd", "phaseAfter"],
 				})
 				.filter(evt => {
 					if (evt.name === "phase") {
