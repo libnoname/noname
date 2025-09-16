@@ -3680,12 +3680,18 @@ export class Create {
 		skill: (item, type, position, noclick, node) => {
 			//搜索拥有这个技能的角色
 			let characterName;
-			if (Array.isArray(item)) {
-				characterName = item[1] || _status.skillOwner[item[0]];
-				item = item[0];
-			} else {
-				characterName = _status.skillOwner[item] || "shibing";
+			if (!Array.isArray(item)) {
+				item = [item, null];
 			}
+			let defaultName = _status.skillOwner[item[0]] || "shibing";
+			if ("clanSkill" in get.info(item[0]) && get.player()) {
+				let name = get.nameList(get.player()).find(name => {
+					return get.character(name, 3).includes(item[0]);
+				});
+				defaultName = name || defaultName;
+			}
+			characterName = item[1] || defaultName;
+			item = item[0];
 			const info = get.character(characterName);
 			//创建这张vcard并重新赋值link
 			node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick);

@@ -16063,32 +16063,30 @@ export default {
 		},
 	},
 	xuanlve: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		direct: true,
 		preHidden: true,
 		filter(event, player) {
 			var evt = event.getl(player);
 			return evt && evt.es && evt.es.length > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("xuanlve"), "弃置一名其他角色的一张牌", function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "弃置一名其他角色的一张牌", (card, player, target) => {
 					return target != player && target.countDiscardableCards(player, "he");
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
+				.set("ai", target => {
+					const player = get.player();
 					return get.effect(target, { name: "guohe_copy2" }, player, player);
 				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("xuanlve", result.targets);
-				player.discardPlayerCard(result.targets[0], "he", true);
-			}
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.discardPlayerCard(event.targets[0], "he", true);
 		},
 		ai: {
 			noe: true,
