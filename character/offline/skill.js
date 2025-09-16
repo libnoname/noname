@@ -100,11 +100,11 @@ const skills = {
 				.forResult();
 			const list = player.getStorage("pezunwei") || [];
 			if (result.bool) {
-				const link = list.add(result.links[0]);
+				list.add(result.links[0]);
 				player.setStorage("pezunwei", list);
-				if (link == 1) {
+				if (result.links[0] == 1) {
 					await player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
-				} else if (link == 2) {
+				} else if (result.links[0] == 2) {
 					do {
 						const card = get.cardPile(card => get.type(card) == "equip");
 						if (player.canUse(card, player)) {
@@ -112,8 +112,8 @@ const skills = {
 							next.nopopup = true;
 							await next;
 						}
-					} while (!player.isMaxEquip() || [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
-				} else if (link == 3) {
+					} while (!player.isMaxEquip() && [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
+				} else if (result.links[0] == 3) {
 					await player.recoverTo(game.findPlayer(player => player.isMaxHp()).getHp());
 				}
 			}
