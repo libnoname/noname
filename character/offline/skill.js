@@ -106,8 +106,8 @@ const skills = {
 					await player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
 				} else if (result.links[0] == 2) {
 					do {
-						const card = get.cardPile(card => get.type(card) == "equip");
-						if (player.canUse(card, player)) {
+						const card = get.cardPile(card => get.type(card) == "equip" && player.canUse(card, player));
+						if (card) {
 							const next = player.chooseUseTarget(card, true);
 							next.nopopup = true;
 							await next;
