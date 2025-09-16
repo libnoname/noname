@@ -2,6 +2,141 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	pepianchong: {
+		trigger: { player: "phaseDrawBegin" },
+		check(event, player) {
+			return true;
+		},
+		filter(event, player) {
+			return !player.skipList.includes(event.name);
+		},
+		async content(event, trigger, player) {
+			const card = get.bottomCards();
+			const next = player.gain(card, "gain2");
+			next.gaintag.add(event.name + "_effect");
+			await next;
+			await player.draw();
+			player.addTempSkill("pepianchong_effect", { player: "phaseBegin" });
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: ["loseAfter"],
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				forced: true,
+				charlotte: true,
+				getIndex(event, player) {
+					if (event.name == "lose") {
+						return Array.from({ length: event.getl(player).cards.length }, (_, i) => i);
+					} else {
+						return Array.from({ length: player.getHistory("lose", evt => evt.getParent() == event)[0]?.getl(player).cards.length }, (_, i) => i);
+					}
+				},
+				filter(event, player) {
+					if (!event.getl(player).hs.length) {
+						return false;
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					let card, bool;
+					if (trigger.name == "lose") {
+						card = trigger.getl(player).cards[event.indexedData];
+						bool = Object.entries(trigger.getl(player).gaintag_map).some(([key, value]) => key == card.cardid && value.includes(event.name));
+					} else {
+						card = trigger.getParent().getl(player).cards[indexedData];
+						bool = Object.entries(player.getHistory("lose", evt => evt.getParent() == trigger)[0]?.getl(player).gaintag_map).some(([key, value]) => key == card.cardid && value.includes(event.name));
+					}
+					if (bool) {
+						await player.draw();
+					} else {
+						const card = get.bottomCards();
+						const next = player.gain(card, "gain2");
+						next.gaintag.add(event.name);
+						await next;
+					}
+				},
+				ai: {
+					noh: true,
+					noe: true,
+				},
+			},
+		},
+	},
+	pezunwei: {
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.getStorage("pezunwei").length < 3;
+		},
+		async content(event, trigger, player) {
+			const buttons = [
+				[1, "将手牌摸至全场最多"],
+				[2, "随机使用牌堆中的装备牌，直至你的装备区牌数为全场最多"],
+				[3, "将体力回复至全场最多"],
+			];
+			const result = await player
+				.chooseButton(["选择一项执行并移除此项", [buttons, "textbutton"]])
+				.set("ai", button => {
+					const player = get.player();
+					if (button.link == 1) {
+						return game.findPlayer(player => player.isMaxHandcard()).countCards("h") - player.getCards("h");
+					} else if (button.link == 2) {
+						return game.findPlayer(player => player.isMaxHandcard()).countCards("e") - player.getCards("e");
+					} else if (button.link == 3) {
+						const num = game.findPlayer(player => player.isMaxHp()).getHp();
+						if (player.getHp() == 1 && num > 1) {
+							return 2;
+						}
+						return num - player.getHp();
+					}
+					return 1;
+				})
+				.set("filterButton", button => {
+					const player = get.player();
+					return !player.getStorage("pezunwei")?.includes(button.link);
+				})
+				.forResult();
+			const list = player.getStorage("pezunwei") || [];
+			if (result.bool) {
+				const link = list.add(result.links[0]);
+				player.setStorage("pezunwei", list);
+				if (link == 1) {
+					await player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
+				} else if (link == 2) {
+					do {
+						const card = get.cardPile(card => get.type(card) == "equip");
+						if (player.canUse(card, player)) {
+							const next = player.chooseUseTarget(card, true);
+							next.nopopup = true;
+							await next;
+						}
+					} while (!player.isMaxEquip() || [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
+				} else if (link == 3) {
+					await player.recoverTo(game.findPlayer(player => player.isMaxHp()).getHp());
+				}
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				plsyer(player, target) {
+					const handNum = game.findPlayer(player => player.isMaxHandcard()).countCards("h"),
+						hpNum = game.findPlayer(player => player.isMaxHp()).getHp(),
+						equipNum = game.findPlayer(player => player.isMaxEquip()).countCards("e");
+					const value = Math.max(player.getCards("h") - handNum, player.getCards("e") - equipNum, player.getHp() - hpNUm);
+					if (value > 3) {
+						return 3;
+					} else if (player.getHp() == 1 && hpNum > 1) {
+						return 2;
+					} else if (value < 0) {
+						return 0;
+					}
+				},
+			},
+		},
+	},
 	//徐兖纵横
 	//曹操
 	xy_zuju: {

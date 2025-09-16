@@ -5,7 +5,7 @@ const characterSort = {
 	offline_yijiang: ["ol_xinxianying", "ol_liuyu", "ol_zhangrang"],
 	offline_luanwu: ["ns_lijue", "ns_zhangji", "ns_fanchou"],
 	offline_yongjian: ["ns_chendao", "yj_caoang", "yj_caocao", "yj_liru", "yj_caohong", "yj_zhangfei", "yongjian_ganning", "yj_dongzhuo", "yj_xuyou", "yj_jiaxu", "yj_zhenji"],
-	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
+	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng","pe_guozhao"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
 	offline_piracyE_jb: ["pe_jun_caopi", "pe_jun_liushan", "pe_jun_sunquan", "pe_jun_liuxie", "pe_jun_liuhong", "pe_jun_liubei", "pe_jun_caocao", "pe_jun_sunce", "pe_jun_yuanshao", "pe_jun_zhangjiao"],
 	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
