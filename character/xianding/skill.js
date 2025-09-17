@@ -25,28 +25,27 @@ const skills = {
 				if (!game.hasPlayer(current => player.canCompare(current))) {
 					break;
 				}
-				num++;
-				if (num != 1) {
+				if (num > 0) {
 					const result = await player
-						.chooseTarget(`###掇月###请选择一名角色拼点（当前拼点次数为：${num - 1}）`, (_, player, target) => {
+						.chooseTarget(`###掇月###请选择一名角色拼点（当前已拼点次数：${num}）`, (_, player, target) => {
 							return player.canCompare(target);
 						})
 						.set("ai", target => get.effect(target, { name: "draw" }, get.player(), get.player()))
 						.forResult();
-					if (result?.bool && result?.targets[0]) {
+					if (result?.bool && result?.targets?.length) {
 						target = result.targets[0];
 					} else {
-						return;
+						break;
 					}
 				}
+				num++;
 				if (player.canCompare(target)) {
 					const result = await player.chooseToCompare(target).forResult();
 					const winner = result?.winner;
 					if (winner?.isIn()) {
 						if (winner === player) {
-							let check = num < 3;
-							const resultx = await player
-								.chooseTarget(`###掇月###你可将此次摸牌改为对一名角色造成一点伤害${check ? "并中止后续拼点" : ""}`)
+							const targets = await player
+								.chooseTarget(`###掇月###你可将此次摸牌改为对一名角色造成一点伤害${num < 3 ? "并中止后续拼点" : ""}`)
 								.set("ai", target => {
 									const { player, drawEff } = get.event();
 									const damageEff = get.damageEffect(target, player, player);
@@ -56,13 +55,13 @@ const skills = {
 									return damageEff;
 								})
 								.set("drawEff", (get.effect(player, { name: "draw" }, player, player) * num) / 2)
-								.forResult();
-							if (resultx?.bool && resultx?.targets) {
-								await resultx.targets[0].damage("nocard");
+								.forResultTargets();
+							if (targets?.length) {
+								await targets[0].damage("nocard");
 								break;
 							}
 						}
-						await result.winner.draw(num);
+						await winner.draw(num);
 					}
 				}
 			}
@@ -85,7 +84,14 @@ const skills = {
 					return ui.selected.cards.every(cardx => get.type2(cardx) == type) || ui.selected.cards.every(cardx => get.color(cardx) == color);
 				})
 				.set("complexCard", true)
-				.set("ai", card => 8 - get.value(card))
+				.set("ai", card => {
+					const { parent: event, player } = get.event();
+					let mark = player.countMark(event.skill + "_effect");
+					if (mark > 5 || ui.selected.cards.length + mark > 5) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				})
 				.set("chooseonly", true)
 				.forResult();
 		},
@@ -130,40 +136,42 @@ const skills = {
 		filter(event, player) {
 			if (event.preserve || event.result?.cancelled) {
 				return false;
+			} else if (event.name == "chooseToCompare" && event.compareMultiple) {
+				return false;
 			}
-			let targets = [event.player];
-			if (event.targets) {
-				if (event.compareMeanwhile || event.player == player) {
-					targets.addArray(event.targets);
-				} else if (event.targets.includes(player)) {
-					targets.add(player);
-				}
-			} else {
-				targets.add(event.target);
-			}
+			const list = get.info("dcxiongwei").getList(event, player);
+			const targets = list.map(info => info[0]),
+				cards = list.flatMap(([target, card]) => {
+					if (target.group != "wei" || target == player) {
+						return [];
+					}
+					return get.position(card) == "d" ? [card] : [];
+				});
 			if (!targets.some(current => current == player)) {
 				return false;
-			}
-			if (!targets.some(current => current != player && current.group == "wei")) {
+			} else if (!targets.some(current => current != player && current.group == "wei")) {
 				return false;
 			}
-			return get.info("dcxiongwei").getCard(event, player).length;
+			return cards.length;
 		},
 		locked: false,
 		forced: true,
 		async content(event, trigger, player) {
-			const cards = get.info(event.name).getCard(trigger, player);
+			const list = get.info(event.name).getList(trigger, player),
+				targets = list.flatMap(([target]) => {
+					if (target == player || target.group != "wei") {
+						return [];
+					}
+					return target.isIn() && !target.hasMark("dcjunhe_effect") ? [target] : [];
+				}),
+				cards = list.flatMap(([target, card]) => {
+					if (target == player || target.group != "wei") {
+						return [];
+					}
+					return get.position(card) == "d" ? [card] : [];
+				});
 			await player.gain(cards, "gain2");
-			if (!player.hasMark("dcjunhe_effect")) {
-				return;
-			}
-			let targets = [trigger.player].concat(trigger.targets ? trigger.targets : [trigger.target]).filter(current => {
-				if (current == player || current.group != "wei") {
-					return false;
-				}
-				return current.isIn() && !current.hasMark("dcjunhe_effect");
-			});
-			if (!targets.length) {
+			if (!player.hasMark("dcjunhe_effect") || !targets.length) {
 				return;
 			}
 			let target;
@@ -176,7 +184,13 @@ const skills = {
 					.set("targetx", targets)
 					.set("ai", target => {
 						const player = get.player();
-						return get.attitude(player, target);
+						let att = get.attitude(player, target);
+						if (target.hasSkill("gangzhi")) {
+							return 0;
+						} else if (target.hasSkillTag("jueqing")) {
+							att = att / 2;
+						}
+						return att;
 					})
 					.forResult();
 				if (result?.bool && result?.targets) {
@@ -189,7 +203,7 @@ const skills = {
 			const result = await player
 				.chooseNumbers("雄威", [
 					{
-						prompt: `请选择你要交给${get.translation(target)}的“军令”次数`,
+						prompt: `请选择你要交给${get.translation(target)}的“军合”次数`,
 						min: 1,
 						max: player.countMark("dcjunhe_effect"),
 					},
@@ -198,26 +212,32 @@ const skills = {
 				.forResult();
 			if (result?.bool && result?.numbers) {
 				const number = result.numbers[0];
+				player.line(target);
+				game.log(player, "将", number, "次“军合”效果交给了", target);
 				player.removeMark("dcjunhe_effect", number, false);
 				target.addMark("dcjunhe_effect", number, false);
 				target.addSkill("dcjunhe_effect");
 			}
 		},
-		getCard(event, player) {
+		getList(event, player) {
 			let list = [];
-			if (event.player !== player && event.player.group == "wei") {
-				list.add(event.card1);
-			}
-			if (event.targets) {
+			if (event.targets?.length) {
+				list.push([event.player, event.result.player]);
 				if (event.compareMeanwhile || event.player == player) {
-					list.addArray(event.targets.filter(current => current !== player && current.group == "wei").map(current => event.cardlist[event.targets.indexOf(current)]));
+					for (const i in event.targets) {
+						list.push([event.targets[i], event.result.targets[i]]);
+					}
+				} else if (event.targets.includes(player)) {
+					let index = event.targets.findIndex(target => target == player);
+					list.push([player, event.result.targets[index]]);
 				}
 			} else {
-				if (event.target !== player && event.target.group == "wei") {
-					list.add(event.card2);
-				}
+				list = [
+					[event.player, event.card1],
+					[event.target, event.card2],
+				];
 			}
-			return list.filterInD("od");
+			return list;
 		},
 	},
 	dcsbqiaodui: {
