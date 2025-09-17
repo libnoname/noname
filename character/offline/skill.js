@@ -22887,7 +22887,7 @@ const skills = {
 				}
 			} else {
 				await target.showCards(event.cards);
-				await target.give(event.cards, player);
+				await target.give(event.cards, player, true);
 			}
 		},
 		mark: true,

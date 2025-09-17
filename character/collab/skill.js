@@ -3064,9 +3064,10 @@ const skills = {
 				firstDo: true,
 				charlotte: true,
 				async content(event, trigger, player) {
-					game.players.forEach(current => {
-						current.removeAdditionalSkills(`xwshoufa_${player.playerid}`);
-					});
+					const func = async current => {
+						await current.removeAdditionalSkills(`xwshoufa_${player.playerid}`);
+					};
+					await game.doAsyncInOrder(game.players, func);
 				},
 			},
 			backup: {},

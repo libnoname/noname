@@ -22767,17 +22767,20 @@ const skills = {
 	xinjyzongshi: {
 		audio: 2,
 		trigger: {
-			player: ["chooseToCompareAfter", "compareMultipleAfter"],
-			target: ["chooseToCompareAfter", "compareMultipleAfter"],
+			global: ["chooseToCompareAfter", "compareMultipleAfter"],
 		},
 		filter(event, player) {
 			if (event.preserve) {
 				return false;
 			}
-			if (event.name == "compareMultiple") {
-				return true;
+			if (event.compareMultiple) {
+				return false;
 			}
-			return !event.compareMultiple;
+			if (event.compareMeanwhile) {
+				const index = [...event.targets, event.player].indexOf(player);
+				return index >= 0;
+			}
+			return [event.player, event.target].some(current => current == player);
 		},
 		frequent: true,
 		content() {
