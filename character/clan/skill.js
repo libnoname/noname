@@ -6275,6 +6275,7 @@ const skills = {
 		check(card) {
 			return 6 - ui.selected.cards.length - get.value(card);
 		},
+		allowChooseAll: true,
 		onuse(links, player) {
 			lib.skill.chenliuwushi.change(player, -1);
 			player.addTempSkill("clanzhanding_effect");

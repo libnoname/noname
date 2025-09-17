@@ -514,7 +514,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard("he", [1, player.countCards("he")], get.prompt(event.skill), "将任意张牌作为“箜”置于武将牌上")
+				.chooseCard("he", [1, player.countCards("he")], get.prompt(event.skill), "将任意张牌作为“箜”置于武将牌上", "allowChooseAll")
 				.set("ai", function (card) {
 					const player = _status.event.player,
 						num = player.getExpansions("olkongsheng") + ui.selected.cards.length;
@@ -1943,7 +1943,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.prompt(event.skill), "将任意张牌置于武将牌上", "he", [1, player.countCards("he")])
+				.chooseCard(get.prompt(event.skill), "将任意张牌置于武将牌上", "he", [1, player.countCards("he")], "allowChooseAll")
 				.set("ai", function (card) {
 					const player = get.player();
 					if (get.position(card) == "e") {

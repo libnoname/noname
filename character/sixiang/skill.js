@@ -5514,6 +5514,7 @@ const skills = {
 					complexCard: true,
 					complexTarget: true,
 					complexSelect: true,
+					allowChooseAll: true,
 					ai1(card) {
 						if (ui.selected.cards.length && card.name != "du") {
 							return 0;
@@ -5543,7 +5544,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			await player.give(event.cards, target);
-			await target.chooseToGive("he", [1, Infinity], player);
+			await target.chooseToGive("he", [1, Infinity], player, "allowChooseAll");
 		},
 	},
 	stdhehe: {

@@ -2177,7 +2177,7 @@ const skills = {
 					}).length
 				),
 				target = event.target;
-			await player.discardPlayerCard(target, "he", num, true);
+			await player.discardPlayerCard(target, "he", num, true, "allowChooseAll");
 			const { cards } = await game.cardsGotoOrdering(get.cards(num + 1));
 			if (!cards?.length) {
 				return;
@@ -9839,6 +9839,7 @@ const skills = {
 					complexCard: true,
 					complexTarget: true,
 					complexSelect: true,
+					allowChooseAll: true,
 					ai1(card) {
 						const player = get.event("player");
 						if (!ui.selected.targets.length) {
@@ -22876,6 +22877,7 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseCard("h", get.prompt(event.skill), [1, 5 - player.countExpansions(event.skill)], `将至多${get.cnNumber(5 - player.countExpansions(event.skill))}张手牌置于武将牌上`)
+					.set("allowChooseAll", true)
 					.set("ai", card => {
 						const player = get.player();
 						if (ui.selected.cards.length >= player.needsToDiscard()) {
@@ -28829,6 +28831,7 @@ const skills = {
 						return target != player;
 					},
 					selectCard: [1, nh],
+					allowChooseAll: true,
 					ai1(card) {
 						var player = _status.event.player;
 						var cardname = _status.event.cardname;
@@ -30236,7 +30239,7 @@ const skills = {
 				return get.value(b, player, "raw") - get.value(a, player, "raw");
 			});
 			event.target
-				.chooseCard([1, hs.length], "展示至少一张手牌", true)
+				.chooseCard([1, hs.length], "展示至少一张手牌", true, "allowChooseAll")
 				.set("ai", function (card) {
 					var rand = _status.event.rand;
 					var list = _status.event.list;
@@ -36770,6 +36773,7 @@ const skills = {
 										return 1;
 									},
 								})
+								.set("allowChooseAll", true)
 								.setHiddenSkill("lirang")
 						: await player
 								.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)

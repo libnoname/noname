@@ -4611,6 +4611,7 @@ const skills = {
 											}
 											return get.event("readyToGive").includes(card);
 										},
+										allowChooseAll: true,
 										readyToGive: cards,
 										given_map: given_map,
 										ai1(card) {
@@ -10027,6 +10028,7 @@ const skills = {
 						position: "h",
 						filterTarget: lib.filter.notMe,
 						prompt: "豪义：请选择要分配的卡牌和目标",
+						allowChooseAll: true,
 						ai1(card) {
 							return !ui.selected.cards.length && card.name == "du" ? 1 : 0;
 						},
@@ -18282,6 +18284,7 @@ const skills = {
 			"step 0";
 			player
 				.chooseToDiscard(get.prompt("dchuizhi"), "你可以选择弃置任意张手牌并点击“确定”，将手牌摸至与全场手牌数最多的角色数相同。", [0, Infinity])
+				.set("allowChooseAll", true)
 				.set("logSkill", "dchuizhi")
 				.set("ai", card => {
 					if (_status.event.isMax) {
@@ -25967,6 +25970,7 @@ const skills = {
 			var next = player.chooseToMove();
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "天运：点击或拖动将牌移动到牌堆顶或牌堆底");
+			next.set("allowChooseAll", true)
 			next.processAI = function (list) {
 				var cards = list[0][1];
 				return [[], cards];

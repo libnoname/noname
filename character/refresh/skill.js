@@ -842,7 +842,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2("rejiqiao"), [1, player.countCards("he")], "he", "chooseonly")
+				.chooseToDiscard(get.prompt2("rejiqiao"), [1, player.countCards("he")], "he", "chooseonly", "allowChooseAll")
 				.set("ai", function (card) {
 					if (card.name == "bagua") {
 						return 10;
@@ -7568,6 +7568,7 @@ const skills = {
 		},
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		position: "hs",
 		check(card) {
 			let player = _status.event.player;
@@ -14526,6 +14527,7 @@ const skills = {
 						}
 						return player.countCards("h") - player.hp;
 					},
+					allowChooseAll: true,
 					ai2(target) {
 						const player = get.player();
 						if (get.attitude(player, _status.currentPhase) < 0) {
@@ -15629,6 +15631,7 @@ const skills = {
 				filterTarget(card, player, target) {
 					return player != target;
 				},
+				allowChooseAll: true,
 				ai1(card) {
 					if (ui.selected.cards.length > 0) {
 						return -1;

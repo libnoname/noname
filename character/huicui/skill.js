@@ -10438,6 +10438,7 @@ const skills = {
 				.chooseCardOL(event.list, "he", true, [1, Infinity], "异勇：弃置任意张牌", (card, player, target) => {
 					return lib.filter.cardDiscardable(card, player, "dcyiyong");
 				})
+				.set("allowChooseAll", true)
 				.set("ai", card => {
 					var evt = _status.event.getParent(2);
 					var source = evt.player,
@@ -16289,6 +16290,7 @@ const skills = {
 		delay: false,
 		lose: false,
 		discard: false,
+		allowChooseAll: true,
 		check(card) {
 			if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
 				return 0;
@@ -17582,6 +17584,7 @@ const skills = {
 								return false;
 							},
 							goon: game.hasPlayer(current => player != current && get.attitude(player, current) > 0),
+							allowChooseAll: true,
 							ai1(card) {
 								if (get.itemtype(card) != "card") {
 									return 0;

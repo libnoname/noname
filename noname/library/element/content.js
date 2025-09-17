@@ -7544,6 +7544,7 @@ player.removeVirtualEquip(card);
 				ui.click.cancel();
 				return;
 			}
+			ui.create.cardChooseAll();
 			game.check();
 			game.pause();
 			if (event.prompt != false) {
@@ -7573,6 +7574,9 @@ player.removeVirtualEquip(card);
 		}
 		"step 2";
 		event.resume();
+		if (event.cardChooseAll) {
+			event.cardChooseAll.close();
+		}
 		if (event.result.bool && event.animate !== false) {
 			for (var i = 0; i < event.result.targets.length; i++) {
 				event.result.targets[i].addTempClass("target");
@@ -7667,6 +7671,7 @@ player.removeVirtualEquip(card);
 						}
 					}
 				}
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 			} else if (event.isOnline()) {

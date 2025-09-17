@@ -1158,6 +1158,7 @@ const skills = {
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},

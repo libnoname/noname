@@ -734,7 +734,7 @@ const skills = {
 			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity]).set("logSkill", "starzhiji");
+			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "allowChooseAll").set("logSkill", "starzhiji");
 			if (_status.auto || !(player === game.me || player.isOnline())) {
 				next.complexCard = true;
 				next.ai = function (card) {
@@ -6910,6 +6910,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		check(card) {
 			let player = _status.event.player,
 				num = player.hasSkill("nifu") ? 15 : 8;
@@ -7161,6 +7162,7 @@ const skills = {
 						}
 						return true;
 					},
+					allowChooseAll: true,
 					ai1(card) {
 						if (!get.event().nogive || ui.selected.cards.length) {
 							return 0 - get.value(card);
@@ -9619,6 +9621,7 @@ const skills = {
 					filterCard: true,
 					filterTarget: lib.filter.notMe,
 					position: "he",
+					allowChooseAll: true,
 					ai1(card) {
 						if (card.name == "du") {
 							return 10;

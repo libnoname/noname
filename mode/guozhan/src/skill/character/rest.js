@@ -98,6 +98,7 @@ export default {
 					createDialog: [get.prompt(event.skill), player.getExpansions("gz_ol_quanji")],
 					selectButton: [1, Infinity],
 					filterTarget: true,
+					allowChooseAll: true,
 					ai1(card) {
 						return get.value(card);
 					},

@@ -4898,7 +4898,7 @@ const skills = {
 			var prompt = `追命：${get.translation(player)}声明了${get.translation(color)}`,
 				prompt2 = `请弃置任意张牌，然后其展示你一张牌，若此牌颜色为${get.translation(color)}，此【杀】不计入次数限制、不可被响应且伤害+1`;
 			yield target
-				.chooseToDiscard(prompt, prompt2, [1, Infinity], "he", true)
+				.chooseToDiscard(prompt, prompt2, [1, Infinity], "he", true, "allowChooseAll")
 				.set("ai", card => {
 					var color = get.event("color"),
 						player = get.player();
@@ -9369,6 +9369,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard(get.prompt(event.skill, trigger.target), "当你使用【杀】指定一名角色为目标后，你可以弃置任意张牌，然后弃置其等量的牌", [1, Infinity], "he")
+				.set("allowChooseAll", true)
 				.set("ai", card => {
 					if (ui.selected.cards.length >= _status.event.max) {
 						return 0;
@@ -10460,7 +10461,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { target } = trigger;
 			event.result = await player
-				.choosePlayerCard(target, "h", [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`)
+				.choosePlayerCard(target, "h", [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`, "allowChooseAll")
 				.set("ai", button => {
 					if (_status.event.all) {
 						return 1;
@@ -12521,7 +12522,7 @@ const skills = {
 			const { target } = event;
 			if (target.countCards("h")) {
 				const result = await target
-					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h")
+					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h", "allowChooseAll")
 					.set("ai", card => {
 						const { numx, player } = get.event();
 						if (player.countCards("h", "sha") <= numx) {

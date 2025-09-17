@@ -1711,7 +1711,7 @@ const skills = {
 			event.num = player.storage.zaoli;
 			player.removeMark("zaoli", event.num);
 			if (player.countCards("he") > 0) {
-				player.chooseToDiscard(true, "he", [1, Infinity], "躁厉：弃置至少一张牌").set("ai", function (card) {
+				player.chooseToDiscard(true, "he", [1, Infinity], "躁厉：弃置至少一张牌", "allowChooseAll").set("ai", function (card) {
 					if (card.hasGaintag("zaoli")) {
 						return 1;
 					}
