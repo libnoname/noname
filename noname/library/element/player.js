@@ -120,6 +120,7 @@ export class Player extends HTMLDivElement {
 			{
 				card: {},
 				skill: {},
+				triggerSkill: {},
 			},
 		];
 		player.actionHistory = [
@@ -136,7 +137,30 @@ export class Player extends HTMLDivElement {
 			},
 		];
 		player.tempSkills = {};
-		player.storage = {};
+		player.storage = {
+			counttrigger: new Proxy({}, {
+				get(_, prop) {
+					return player.getStat("triggerSkill")[prop];
+				},
+				set(_, prop, value) {
+					player.getStat("triggerSkill")[prop] = value;
+					return true;
+				},
+				deleteProperty(_, prop) {
+					delete player.getStat("triggerSkill")[prop];
+					return true;
+				},
+				has(_, prop) {
+					return prop in player.getStat("triggerSkill");
+				},
+				ownKeys() {
+					return Reflect.ownKeys(player.getStat("triggerSkill"));
+				},
+				getOwnPropertyDescriptor(_, prop) {
+					return Object.getOwnPropertyDescriptor(player.getStat("triggerSkill"), prop);
+				}
+			}),
+		};
 		player.marks = {};
 		player.expandedSlots = {};
 		player.disabledSlots = {};
@@ -1919,12 +1943,29 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
-		const next = game.createEvent("changeZhuanhuanji", false, get.event());
-		next.player = this;
-		next.skill = skill;
+		let player = this;
+		let evt = _status.event;
+		//转换技转换后
+		let next = game.createEvent("changeZhuanhuanji", false);
+		next.player = player;
 		next.forceDie = true;
 		next.includeOut = true;
+		next.skill = skill;
+		evt.next.remove(next);
+		if (evt.logSkill || evt.name?.startsWith("pre_")) {
+			evt = evt.getParent();
+		}
+		next.log_event = evt;
+		evt.after.push(next);
 		next.setContent("emptyEvent");
+		//转换技转换时
+		let next2 = game.createEvent("changeZhuanhuanjiBegin", false, get.event());
+		next2.player = player;
+		next2.forceDie = true;
+		next2.includeOut = true;
+		next2.skill = skill;
+		next2.log_event = evt;
+		next2.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -3628,9 +3669,32 @@ export class Player extends HTMLDivElement {
 		this.awakenedSkills = [];
 		this.forbiddenSkills = {};
 		this.phaseNumber = 0;
-		this.stat = [{ card: {}, skill: {} }];
+		this.stat = [{ card: {}, skill: {}, triggerSkill: {} }];
 		this.tempSkills = {};
-		this.storage = {};
+		this.storage = {
+			counttrigger: new Proxy({}, {
+				get(_, prop) {
+					return this.getStat("triggerSkill")[prop];
+				},
+				set(_, prop, value) {
+					this.getStat("triggerSkill")[prop] = value;
+					return true;
+				},
+				deleteProperty(_, prop) {
+					delete this.getStat("triggerSkill")[prop];
+					return true;
+				},
+				has(_, prop) {
+					return prop in this.getStat("triggerSkill");
+				},
+				ownKeys() {
+					return Reflect.ownKeys(this.getStat("triggerSkill"));
+				},
+				getOwnPropertyDescriptor(_, prop) {
+					return Object.getOwnPropertyDescriptor(this.getStat("triggerSkill"), prop);
+				}
+			}),
+		};
 		this.marks = {};
 		this.expandedSlots = {};
 		this.disabledSlots = {};
@@ -4630,24 +4694,14 @@ export class Player extends HTMLDivElement {
 	 */
 	countSkill(skill) {
 		const info = lib.skill[skill];
-		let num = 0;
 		if (!info) {
 			console.warn("“" + skill + "”为无效技能ID！");
 			return 0;
 		}
-		if (info.usable !== undefined && this.hasSkill("counttrigger") && this.storage.counttrigger) {
-			num = this.storage.counttrigger[skill];
-			if (typeof num === "number") {
-				return num;
-			}
+		if (typeof this.getStat("skill")[skill] === "number" || typeof this.getStat("triggerSkill")[skill] === "number") {
+			return Number(this.getStat("skill")?.[skill] ?? 0) + Number(this.getStat("triggerSkill")?.[skill] ?? 0);
 		}
-		num = this.getStat("skill")[skill];
-		if (typeof num === "number") {
-			return num;
-		}
-		return this.getHistory("useSkill", evt => {
-			return evt.skill === skill;
-		}).length;
+		return this.getHistory("useSkill", evt => evt.skill === skill).length;
 	}
 	/**
 	 * @param {*} [unowned]
@@ -8579,7 +8633,7 @@ export class Player extends HTMLDivElement {
 	 * 返回某些牌是否能进入玩家的判定区
 	 * @overload
 	 * @param { string | Card } card
-	 * @param { Player } player 
+	 * @param { Player } player
 	 * @returns { boolean }
 	 */
 	canAddJudge(card, player) {
@@ -8978,7 +9032,7 @@ export class Player extends HTMLDivElement {
 			next.forceDie = true;
 			next.includeOut = true;
 			evt.next.remove(next);
-			if (evt.logSkill) {
+			if (evt.logSkill || evt.name?.startsWith("pre_")) {
 				evt = evt.getParent();
 			}
 			for (var i in logInfo) {
@@ -10059,7 +10113,7 @@ export class Player extends HTMLDivElement {
 				this.addSkill(skill[i]);
 			}
 		} else {
-			if (this.skills.includes(skill)) {
+			if (skill === "counttrigger" || this.skills.includes(skill)) {
 				return;
 			}
 			_status.event.clearStepCache();
@@ -10535,62 +10589,67 @@ export class Player extends HTMLDivElement {
 				this.removeSkill(skill[i]);
 			}
 		} else {
-			var info = lib.skill[skill];
-			if (info && info.fixed && arguments[1] !== true) {
-				return skill;
-			}
-			this.unmarkSkill(skill);
-			game.broadcastAll(
-				function (player, skill) {
-					player.skills.remove(skill);
-					player.hiddenSkills.remove(skill);
-					player.invisibleSkills.remove(skill);
-					delete player.tempSkills[skill];
-					for (var i in player.additionalSkills) {
-						player.additionalSkills[i].remove(skill);
-					}
-				},
-				this,
-				skill
-			);
-			this.checkConflict(skill);
-			if (info) {
-				if (info.onremove) {
-					if (typeof info.onremove == "function") {
-						info.onremove(this, skill);
-					} else if (typeof info.onremove == "string") {
-						if (info.onremove == "storage") {
+			if (skill === "counttrigger") {
+				this.getStat("triggerSkill") = {};
+				return;
+			} else {
+				var info = lib.skill[skill];
+				if (info?.fixed && arguments[1] !== true) {
+					return skill;
+				}
+				this.unmarkSkill(skill);
+				game.broadcastAll(
+					function (player, skill) {
+						player.skills.remove(skill);
+						player.hiddenSkills.remove(skill);
+						player.invisibleSkills.remove(skill);
+						delete player.tempSkills[skill];
+						for (var i in player.additionalSkills) {
+							player.additionalSkills[i].remove(skill);
+						}
+					},
+					this,
+					skill
+				);
+				this.checkConflict(skill);
+				if (info) {
+					if (info.onremove) {
+						if (typeof info.onremove == "function") {
+							info.onremove(this, skill);
+						} else if (typeof info.onremove == "string") {
+							if (info.onremove == "storage") {
+								delete this.storage[skill];
+							} else {
+								var cards = this.storage[skill];
+								if (get.itemtype(cards) == "card") {
+									cards = [cards];
+								}
+								if (get.itemtype(cards) == "cards") {
+									if (this.onremove == "discard") {
+										this.$throw(cards);
+									}
+									if (this.onremove == "discard" || this.onremove == "lose") {
+										game.cardsDiscard(cards);
+										delete this.storage[skill];
+									}
+								}
+							}
+						} else if (Array.isArray(info.onremove)) {
+							for (var i = 0; i < info.onremove.length; i++) {
+								delete this.storage[info.onremove[i]];
+							}
+						} else if (info.onremove === true) {
 							delete this.storage[skill];
-						} else {
-							var cards = this.storage[skill];
-							if (get.itemtype(cards) == "card") {
-								cards = [cards];
-							}
-							if (get.itemtype(cards) == "cards") {
-								if (this.onremove == "discard") {
-									this.$throw(cards);
-								}
-								if (this.onremove == "discard" || this.onremove == "lose") {
-									game.cardsDiscard(cards);
-									delete this.storage[skill];
-								}
-							}
 						}
-					} else if (Array.isArray(info.onremove)) {
-						for (var i = 0; i < info.onremove.length; i++) {
-							delete this.storage[info.onremove[i]];
-						}
-					} else if (info.onremove === true) {
-						delete this.storage[skill];
+					}
+					this.removeSkillTrigger(skill);
+					if (!info.keepSkill) {
+						this.removeAdditionalSkills(skill);
 					}
 				}
-				this.removeSkillTrigger(skill);
-				if (!info.keepSkill) {
-					this.removeAdditionalSkills(skill);
-				}
+				this.enableSkill(skill + "_awake");
+				game.callHook("removeSkillCheck", [skill, this]);
 			}
-			this.enableSkill(skill + "_awake");
-			game.callHook("removeSkillCheck", [skill, this]);
 		}
 		return skill;
 	}
@@ -12194,6 +12253,9 @@ export class Player extends HTMLDivElement {
 	 * @returns { boolean }
 	 */
 	hasSkill(skill, arg2, arg3, arg4) {
+		if (skill === "counttrigger") {
+			return true;
+		}
 		return game.expandSkills(this.getSkills(arg2, arg3, arg4)).includes(skill);
 	}
 	/**

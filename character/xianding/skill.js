@@ -7815,7 +7815,6 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		frequent: true,
 		async content(event, trigger, player) {
 			let cards = [];
 			while (true) {
@@ -7876,7 +7875,7 @@ const skills = {
 					cards.add(card);
 					let result;
 					if (cards.length < game.countPlayer()) {
-						result = await player.chooseBool("是否继续亮出牌堆顶的牌？").set("frequentSkill", event.name).forResult();
+						result = await player.chooseBool("是否继续亮出牌堆顶的牌？").forResult();
 					} else {
 						result = { bool: false };
 					}
@@ -8340,12 +8339,15 @@ const skills = {
 					player: "useCard1",
 				},
 				filter(event, player) {
-					return event.addCount !== false &&  player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
-							return false;
-						}
-						return Object.values(evt.gaintag_map).flat().includes("dclianjie");
-					});
+					return (
+						event.addCount !== false &&
+						player.hasHistory("lose", evt => {
+							if (evt.getParent() != event) {
+								return false;
+							}
+							return Object.values(evt.gaintag_map).flat().includes("dclianjie");
+						})
+					);
 				},
 				async cost(event, trigger, player) {
 					trigger.addCount = false;
@@ -9900,10 +9902,10 @@ const skills = {
 				for (const skill of gainSkills) {
 					const info = get.info(skill);
 					if (info.usable !== undefined) {
-						if (target.hasSkill("counttrigger") && target.storage.counttrigger[skill] && target.storage.counttrigger[skill] >= 1) {
-							delete target.storage.counttrigger[skill];
+						if (typeof target.getStat("triggerSkill")[skill] == "number" && target.getStat("triggerSkill")[skill] >= 1) {
+							delete target.getStat("triggerSkill")[skill];
 						}
-						if (typeof get.skillCount(skill) == "number" && get.skillCount(skill) >= 1) {
+						if (typeof target.getStat("skill")[skill] == "number" && target.getStat("skill")[skill] >= 1) {
 							delete target.getStat("skill")[skill];
 						}
 					}
@@ -14792,32 +14794,34 @@ const skills = {
 		prompt2(event, player) {
 			return (player.countCards("h") < player.maxHp ? "将手牌摸至" + get.cnNumber(player.maxHp) + "张，然后" : "") + "将任意张牌随机置入牌堆并从牌堆或弃牌堆中获得等量点数为8的牌。";
 		},
-		content() {
-			"step 0";
-			player.drawTo(player.maxHp);
-			"step 1";
+		async content(event, trigger, player) {
+			await player.drawTo(player.maxHp);
 			var cards = player.getCards("he");
 			if (!cards.length) {
-				event.finish();
-			} else if (cards.length == 1) {
-				event._result = { bool: true, cards: cards };
-			} else {
-				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
-					return 6 - get.value(card);
-				});
+				return;
 			}
-			"step 2";
+			var result;
+			let selectedCards = null;
+			let selectedCount = 0;
+			if (cards.length == 1) {
+				result = { bool: true, cards: cards };
+			} else {
+				result = await player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
+					return 6 - get.value(card);
+				}).forResult();
+			}
 			if (result.bool) {
-				var cards = result.cards;
-				event.cards = cards;
-				game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
-				player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false).insert_index = function () {
+				selectedCards = result.cards;
+				selectedCount = selectedCards.length;
+				game.log(player, `将${get.cnNumber(selectedCount)}张牌置入了牌堆`);
+				var next = player.loseToDiscardpile(selectedCards, ui.cardPile, "blank").set("log", false);
+				next.insert_index = function () {
 					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
 				};
+				await next;
 			} else {
-				event.finish();
+				return;
 			}
-			"step 3";
 			var list = [],
 				shown = [];
 			var piles = ["cardPile", "discardPile"];
@@ -14830,12 +14834,12 @@ const skills = {
 						if (pile == "discardPile") {
 							shown.push(card);
 						}
-						if (list.length >= cards.length) {
+						if (list.length >= selectedCount) {
 							break;
 						}
 					}
 				}
-				if (list.length >= cards.length) {
+				if (list.length >= selectedCount) {
 					break;
 				}
 			}
@@ -14858,6 +14862,7 @@ const skills = {
 					return 500;
 				});
 				next.gaintag.add("dcxiongmu_tag");
+				await next;
 				player.addTempSkill("dcxiongmu_tag", "roundStart");
 			}
 		},
@@ -14933,7 +14938,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 			},

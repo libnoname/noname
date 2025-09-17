@@ -435,9 +435,11 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
-	//共联时机的map（目前有很大的兼容问题，请不要使用）
+	//共联时机的map
 	#relatedTrigger = {
-		phaseAny: ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"],
+		get phaseAny() {
+			return lib.phaseName;
+		},
 		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
 	get relatedTrigger() {
@@ -2037,7 +2039,7 @@ export class Library {
 								var fileList = Array.from(files);
 								var totalFiles = fileList.length;
 								var processedFiles = 0;
-								fileList.forEach(function(file, index) {
+								fileList.forEach(function (file, index) {
 									if (file) {
 										var name = file.name;
 										if (name.includes(".")) {
@@ -11152,12 +11154,12 @@ export class Library {
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
 				return false;
 			}
-			if (info.usable !== undefined && player.hasSkill("counttrigger") && player.storage.counttrigger) {
+			if (info.usable !== undefined) {
 				let num = info.usable;
 				if (typeof num === "function") {
 					num = info.usable(skill, player);
 				}
-				if (typeof num === "number" && player.storage.counttrigger[skill] >= num) {
+				if (typeof num === "number" && (player.getStat("triggerSkill")[skill] ?? 0) >= num) {
 					return false;
 				}
 			}
@@ -12239,16 +12241,16 @@ export class Library {
 						const cardName = get.name(cards[0], player);
 						return cardName
 							? new lib.element.VCard({
-								name: cardName,
-								nature: get.nature(cards[0], player),
-								suit: get.suit(cards[0], player),
-								number: get.number(cards[0], player),
-								isCard: true,
-								cards: [cards[0]],
-								storage: {
-									stratagem_buffed: 1,
-								},
-							})
+									name: cardName,
+									nature: get.nature(cards[0], player),
+									suit: get.suit(cards[0], player),
+									number: get.number(cards[0], player),
+									isCard: true,
+									cards: [cards[0]],
+									storage: {
+										stratagem_buffed: 1,
+									},
+							  })
 							: new lib.element.VCard();
 					}
 					return null;
@@ -12582,8 +12584,7 @@ export class Library {
 					}
 					if (typeof select == "string" && select !== "all") {
 						targets = [trigger[select]];
-					}
-					else {
+					} else {
 						targets = player.getEnemies(filter(target), false);
 						if (select !== "all" && typeof select == "number") {
 							targets = targets.randomGets(select);
@@ -13411,9 +13412,9 @@ export class Library {
 					return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
 				},
 				async content(event, trigger, player) {
-					const control = await player.
-						chooseControl(["sha", "shan"])
-						.set("prompt", `鏖战：请选择${get.translation(trigger.cards[0])}视为${(trigger.name == "respond" ? "打出" : "使用")}的牌名`)
+					const control = await player
+						.chooseControl(["sha", "shan"])
+						.set("prompt", `鏖战：请选择${get.translation(trigger.cards[0])}视为${trigger.name == "respond" ? "打出" : "使用"}的牌名`)
 						.set("ai", () => {
 							const choice = _status.event.getParent(5).choice;
 							if (choice && ["sha", "shan"].includes(choice)) {
@@ -13435,7 +13436,7 @@ export class Library {
 					skillTagFilter(player, tag, arg) {
 						if (!player.countCards("hs", card => card.name == "tao")) {
 							return false;
-						};
+						}
 					},
 				},
 			},
@@ -13689,31 +13690,6 @@ export class Library {
 					},
 				},
 				markimage: "image/card/shield.png",
-			},
-			counttrigger: {
-				trigger: { global: "phaseAfter" },
-				silent: true,
-				charlotte: true,
-				priority: -100,
-				lastDo: true,
-				content: function () {
-					player.removeSkill("counttrigger");
-					delete player.storage.counttrigger;
-				},
-				group: "counttrigger_2",
-				subSkill: {
-					2: {
-						trigger: { global: ["phaseBeforeStart", "roundStart"] },
-						silent: true,
-						charlotte: true,
-						firstDo: true,
-						priority: 100,
-						content: function () {
-							player.removeSkill("counttrigger");
-							delete player.storage.counttrigger;
-						},
-					},
-				},
 			},
 			/**
 			 * @deprecated
@@ -14201,7 +14177,7 @@ export class Library {
 		},
 		{
 			set(target, prop, newValue) {
-				if (typeof prop === 'string' && typeof newValue === 'object') {
+				if (typeof prop === "string" && typeof newValue === "object") {
 					newValue.skill_id ??= prop;
 				}
 				return Reflect.set(target, prop, newValue);

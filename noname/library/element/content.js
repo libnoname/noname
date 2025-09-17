@@ -366,7 +366,7 @@ export const Content = {
 			_status.characterlist.addArray(rawPairs);
 		}
 		//变更一下获得前后的技能
-		const next =  player.changeSkills(addSkills, removeSkills);
+		const next = player.changeSkills(addSkills, removeSkills);
 		if (event.log === false) {
 			next.$handle = (current, add, remove, evt) => {
 				if (add.length) {
@@ -2013,9 +2013,9 @@ player.removeVirtualEquip(card);
 
 				/**
 				 * 计算可以批量移动的按钮
-				 * 
-				 * @param {Button[]} buttonList 
-				 * @param {HTMLDivElement} buttonsDiv 
+				 *
+				 * @param {Button[]} buttonList
+				 * @param {HTMLDivElement} buttonsDiv
 				 * @param {"first"|"last"} position
 				 */
 				var filterBatchMove = function (buttonList, buttonsDiv, position) {
@@ -2626,13 +2626,16 @@ player.removeVirtualEquip(card);
 				if (event.prompt2) {
 					next.set("prompt2", event.prompt2);
 				}
-				next.set("choice", (() => {
-					let eff = 0;
-					for (var i = 0; i < event.targets2.length; i++) {
-						eff += get.effect(event.targets2[i], card, player, player);
-					}
-					return eff > 0;
-				})());
+				next.set(
+					"choice",
+					(() => {
+						let eff = 0;
+						for (var i = 0; i < event.targets2.length; i++) {
+							eff += get.effect(event.targets2[i], card, player, player);
+						}
+						return eff > 0;
+					})()
+				);
 				if (typeof event.ai == "function") {
 					next.set("ai", event.ai);
 				}
@@ -4289,15 +4292,8 @@ player.removeVirtualEquip(card);
 		}
 		var next = game.createEvent(event.skill);
 		if (info.usable !== undefined) {
-			player.addSkill("counttrigger");
-			if (!player.storage.counttrigger) {
-				player.storage.counttrigger = {};
-			}
-			if (!player.storage.counttrigger[event.skill]) {
-				player.storage.counttrigger[event.skill] = 1;
-			} else {
-				player.storage.counttrigger[event.skill]++;
-			}
+			player.getStat("triggerSkill")[event.skill] ??= 0;
+			player.getStat("triggerSkill")[event.skill]++;
 		}
 		next.player = player;
 		next._trigger = trigger;
@@ -4741,7 +4737,7 @@ player.removeVirtualEquip(card);
 				custom: [],
 				useSkill: [],
 			});
-			current.stat.push({ card: {}, skill: {} });
+			current.stat.push({ card: {}, skill: {}, triggerSkill: {} });
 			if (isRound) {
 				current.getHistory().isRound = true;
 				current.getStat().isRound = true;
@@ -4994,10 +4990,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			if (!event.cancelled && !event.nojudge) {
-				event.result = await player
-					.judge(event.card)
-					.set("type", "phase")
-					.forResult();
+				event.result = await player.judge(event.card).set("type", "phase").forResult();
 			}
 		},
 		async (event, trigger, player) => {
@@ -5879,10 +5872,10 @@ player.removeVirtualEquip(card);
 			})(event);
 			const skills = player.getSkills("invisible").concat(lib.skill.global);
 			game.expandSkills(skills);
-			const hasSkill = skills.some(skill=> {
+			const hasSkill = skills.some(skill => {
 				const info = lib.skill[skill];
 				return info?.enable?.includes(event.name) || info?.enable == event.name;
-			})
+			});
 			if (_status.noclearcountdown !== "direct") {
 				_status.noclearcountdown = true;
 			}
@@ -6455,7 +6448,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger) => {
 			const targets = event.targets;
-			const player = event.player = event.tempplayer;
+			const player = (event.player = event.tempplayer);
 			delete event.tempplayer;
 			event.str = "无人拼点成功";
 			const winner = event.forceWinner || event.winner;
@@ -6495,7 +6488,7 @@ player.removeVirtualEquip(card);
 	chooseToCompareMultiple: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			if ((!event.fixedResult?.[player.playerid]) && player.countCards("h") == 0) {
+			if (!event.fixedResult?.[player.playerid] && player.countCards("h") == 0) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;

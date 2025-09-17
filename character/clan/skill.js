@@ -27,9 +27,17 @@ const skills = {
 					if (get.info(event.card)?.multitarget) {
 						return false;
 					}
-					const targets = player.getHistory("useCard", evt => {
-						return evt?.targets?.length && evt != event;
-					}, event).map(evt => evt.targets ?? []).flat().toUniqued();
+					const targets = player
+						.getHistory(
+							"useCard",
+							evt => {
+								return evt?.targets?.length && evt != event;
+							},
+							event
+						)
+						.map(evt => evt.targets ?? [])
+						.flat()
+						.toUniqued();
 					return targets.some(target => {
 						if (event.targets?.includes(target)) {
 							return true;
@@ -39,23 +47,34 @@ const skills = {
 				},
 				charlotte: true,
 				async cost(event, trigger, player) {
-					const targets = player.getHistory("useCard", evt => {
-						return evt?.targets?.length && evt != trigger;
-					}, trigger).map(evt => evt.targets ?? []).flat().toUniqued();
+					const targets = player
+						.getHistory(
+							"useCard",
+							evt => {
+								return evt?.targets?.length && evt != trigger;
+							},
+							trigger
+						)
+						.map(evt => evt.targets ?? [])
+						.flat()
+						.toUniqued();
 					event.result = await player
-						.chooseTarget((card, player, target) => {
-							const { targetx, targety, cardx } = get.event();
-							if (!targetx.includes(target)) {
-								return false;
-							}
-							if (ui.selected.targets?.length) {
-								const first = ui.selected.targets[0];
-								if (targety.includes(first) !== targety.includes(target)) {
+						.chooseTarget(
+							(card, player, target) => {
+								const { targetx, targety, cardx } = get.event();
+								if (!targetx.includes(target)) {
 									return false;
 								}
-							}
-							return targety.includes(target) || lib.filter.targetEnabled2(cardx, player, target);
-						}, [1, Infinity])
+								if (ui.selected.targets?.length) {
+									const first = ui.selected.targets[0];
+									if (targety.includes(first) !== targety.includes(target)) {
+										return false;
+									}
+								}
+								return targety.includes(target) || lib.filter.targetEnabled2(cardx, player, target);
+							},
+							[1, Infinity]
+						)
 						.set("targetx", targets)
 						.set("targety", trigger.targets)
 						.set("cardx", trigger.card)
@@ -117,9 +136,12 @@ const skills = {
 						return player.canCompare(target);
 					},
 					ai1(button) {
-						const card = player.getCards("h").maxBy(card => {
-							return get.number(card);
-						}, card => card.name == button.link[2]);
+						const card = player.getCards("h").maxBy(
+							card => {
+								return get.number(card);
+							},
+							card => card.name == button.link[2]
+						);
 						if (card) {
 							return get.number(card);
 						}
@@ -139,7 +161,10 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			const { targets: [target], cost_data: name } = event;
+			const {
+				targets: [target],
+				cost_data: name,
+			} = event;
 			game.log(player, "声明的牌名为", `#y${get.translation(name)}`);
 			player.chat(get.translation(name));
 			const result = await player.chooseToCompare(target).forResult();
@@ -167,20 +192,23 @@ const skills = {
 					}
 					return true;
 				});
-				const result2 = skills.length > 1 ? await player
-					.chooseButton(["迎乡：失去一个技能", [skills, "skill"]], true)
-					.set("ai", button => {
-						const { link } = button;
-						const info = get.info(link);
-						if (info?.ai?.neg || info?.ai?.halfneg) {
-							return 3;
-						}
-						return ["clanyingxiang", "clanxumin"].indexOf(link) + 1;
-					})
-					.forResult() : {
-						bool: true,
-						links: skills,
-					};
+				const result2 =
+					skills.length > 1
+						? await player
+								.chooseButton(["迎乡：失去一个技能", [skills, "skill"]], true)
+								.set("ai", button => {
+									const { link } = button;
+									const info = get.info(link);
+									if (info?.ai?.neg || info?.ai?.halfneg) {
+										return 3;
+									}
+									return ["clanyingxiang", "clanxumin"].indexOf(link) + 1;
+								})
+								.forResult()
+						: {
+								bool: true,
+								links: skills,
+						  };
 				if (result2?.bool && result2?.links?.length) {
 					await player.removeSkills(result2.links);
 				}
@@ -1588,7 +1616,10 @@ const skills = {
 						break;
 					}
 					if (result.bool) {
-						const { links: toGive, targets: [target] } = result;
+						const {
+							links: toGive,
+							targets: [target],
+						} = result;
 						cards.removeArray(toGive);
 						const given = (given_map.get(target) ?? []).concat(toGive);
 						given_map.set(target, given);
@@ -4606,11 +4637,18 @@ const skills = {
 			for (var skill of skills) {
 				var info = get.info(skill);
 				if (info.usable !== undefined) {
-					if (player.hasSkill("counttrigger") && player.storage.counttrigger[skill] && player.storage.counttrigger[skill] >= 1) {
+					if (typeof player.getStat("triggerSkill")[skill] == "number" && player.getStat("triggerSkill")[skill] >= 1) {
+						delete player.getStat("triggerSkill")[skill];
+						resetSkills.add(skill);
+					}
+					/*
+					这段逻辑和上面的新逻辑任选一个使用即可
+					if (player.hasSkill("counttrigger") && (player.storage.counttrigger?.[skill] ?? 0) >= 1) {
 						delete player.storage.counttrigger[skill];
 						resetSkills.add(skill);
 					}
-					if (typeof get.skillCount(skill) == "number" && get.skillCount(skill) >= 1) {
+					*/
+					if (typeof player.getStat("skill")[skill] == "number" && player.getStat("skill")[skill] >= 1) {
 						delete player.getStat("skill")[skill];
 						resetSkills.add(skill);
 					}
@@ -4621,6 +4659,7 @@ const skills = {
 				}
 				if (player.storage[`temp_ban_${skill}`]) {
 					delete player.storage[`temp_ban_${skill}`];
+					resetSkills.add(skill);
 				}
 				if (player.awakenedSkills.includes(skill)) {
 					player.restoreSkill(skill);
