@@ -1391,6 +1391,722 @@ export default () => {
 					},
 				},
 			},
+			new_huanhuazhizhan: {
+				name: "幻化三国",
+				mode: "identity",
+				intro: [
+					"所有角色受到1点伤害时，随机获得一张未加入游戏的武将牌，称为“副将”",
+					"一名角色至多持有3个“副将”，超过数量上限时须将相应数量的“副将”放回武将牌堆",
+					"玩家持有“副将”的所有技能",
+				],
+				showcase: function (init) {
+					const node = this;
+					let player;
+					const initPlayer = name => {
+						let player = ui.create.player(null, true);
+						player.node.avatar.style.backgroundSize = "cover";
+						player.node.avatar.setBackground(name, "character");
+						player.node.avatar.show();
+						player.node.count.remove();
+						player.node.hp.remove();
+						player.style.transition = "all 0.5s";
+						return player;
+					}
+					if (init) {
+						player = initPlayer("pot_yuji");
+						player.style.left = "calc(50% - 75px)";
+						player.style.top = "20px";
+						player.nowName = "pot_yuji";
+						node.appendChild(player);
+						node.playernode = player;
+					} else {
+						player = node.playernode;
+					}
+					let num = 0,
+						num2 = 0,
+						nameList = ["pot_yuji", "ol_nanhualaoxian", "pot_yuji_shadow", "re_zuoci"],
+						names = game.initCharacterList();
+					this.showcaseinterval = setInterval(function () {
+						let dx, dy;
+						if (num2 % 5 == 0) {
+							player.classList.add("zoomin3");
+							player.hide();
+							player.style.transitionDuration = "0.7s";
+							setTimeout(function () {
+								player.style.transitionProperty = "none";
+								player.classList.remove("zoomin3");
+								player.classList.add("zoomout2");
+								setTimeout(function () {
+									player.style.transitionProperty = "";
+									player.classList.remove("zoomout2");
+									num++;
+									let nowName = nameList[num % 4];
+									player.node.avatar.setBackground(nowName, "character");
+									player.show();
+								}, 500);
+							}, 700);
+							for (var i = 0; i < 5; i++) {
+								switch (i) {
+									case 0:
+										dx = -180;
+										dy = 0;
+										break;
+									case 1:
+										dx = -140;
+										dy = -100;
+										break;
+									case 2:
+										dx = 0;
+										dy = 155;
+										break;
+									case 3:
+										dx = 140;
+										dy = -100;
+										break;
+									case 4:
+										dx = 180;
+										dy = 0;
+										break;
+								}
+								let card = initPlayer(names.randomGet());
+								card.style.left = "calc(50% - 52px)";
+								card.style.top = "68px";
+								card.style.position = "absolute";
+								card.style.margin = 0;
+								card.style.zIndex = 2;
+								card.style.opacity = 0;
+								node.appendChild(card);
+								ui.refresh(card);
+								card.style.opacity = 1;
+								card.style.transform = "translate(" + dx + "px," + dy + "px)";
+								setTimeout(
+									(function (card) {
+										return function () {
+											card.delete();
+										};
+									})(card),
+									700
+								);
+							}
+						}
+						num2++;
+					}, 700);
+				},
+				init: function () {
+					game.identityVideoName = "三国杀·幻";
+					var pack = {
+						pack: {
+							card: {
+								hhsg_tianshu: {
+									cardcolor: "diamond",
+									type: "equip",
+									subtype: "equip5",
+									ai: {
+										basic: {
+											equipValue: 6.5,
+										},
+									},
+									skills: ["hhsg_tianshu_skill"],
+									fullskin: true,
+								},
+								hhsg_sadou: {
+									audio: true,
+									fullskin: true,
+									type: "trick",
+									enable: true,
+									selectTarget: -1,
+									cardcolor: "red",
+									toself: true,
+									filterTarget(card, player, target) {
+										return target === player;
+									},
+									modTarget: true,
+									async content(event, trigger, player) {
+										await event.target.chooseToGainVice();
+									},
+									ai: {
+										wuxie(target, card, player, viewer) {
+											if (get.viceCharacter(target)?.length >= 3) {
+												return 0;
+											}
+										},
+										basic: {
+											order: 7,
+											useful: 4.5,
+											value: 5,
+										},
+										result: {
+											target: 1,
+										},
+									},
+								},
+							},
+							character: {
+								hhsg_zuoci: {
+									sex: "male",
+									group: "qun",
+									hp: 3,
+									skills: ["hhsg_huashen", "hhsg_xinsheng"],
+								},
+								hhsg_yuji: {
+									sex: "male",
+									group: "qun",
+									hp: 3,
+									skills: ["hhsg_qianhuan", "hhsg_chanyuan"],
+								},
+								hhsg_nanhualaoxian: {
+									sex: "male",
+									group: "qun",
+									hp: 3,
+									skills: ["hhsg_jidao", "hhsg_feisheng", "hhsg_jinghe"],
+								},
+							},
+							skill: {
+								_gainViceCharacter: {
+									trigger: {
+										player: "damageBegin4",
+									},
+									markimage2: "image/character/shibing1.jpg",
+									intro: {
+										name: "副将",
+										markcount(_, player) {
+											return player?.viceCharacters?.length || 0;
+										},
+										mark(dialog, _, player) {
+											const list = player?.viceCharacters ?? [];
+											if (list.length) {
+												dialog.addText("当前副将");
+												dialog.add([list, "character"]);
+											} else {
+												dialog.addText("无副将");
+											}
+										},
+									},
+									getIndex(event, player) {
+										return event.num;
+									},
+									filter(event, player) {
+										return event.num > 0;
+									},
+									forced: true,
+									popup: false,
+									async content(event, trigger, player) {
+										await player.chooseToGainVice();
+									},
+								},
+								hhsg_tianshu_skill: {
+									enable: "phaseUse",
+									usable: 1,
+									equipSkill: true,
+									filter(event, player) {
+										return player.hp > 1;
+									},
+									manualConfirm: true,
+									async content(event, trigger, player) {
+										await player.damage();
+										await player.draw(2);
+									},
+									ai: {
+										order: 6,
+										result: {
+											player(player, target) {
+												return get.damageEffect(player) + (player.hp > 1 ? 2 : 1);
+											},
+										},
+									},
+								},
+								hhsg_huashen: {
+									enable: "phaseUse",
+									usable: 1,
+									filterTarget(card, player, target) {
+										return player !== target && target.getStockSkills("千早爱音", "长崎素世").filter(skill => {
+											if (player.hasSkill(skill, null, null, false)) {
+												return false;
+											}
+											const info = get.info(skill);
+											return info && !info.charlotte;
+										}).length;
+									},
+									async content(event, trigger, player) {
+										const skills = event.target.getStockSkills("千早爱音", "长崎素世").filter(skill => {
+											if (player.hasSkill(skill, null, null, false)) {
+												return false;
+											}
+											const info = get.info(skill);
+											return info && !info.charlotte;
+										});
+										if (!skills.length) {
+											return;
+										}
+										const result = await player
+											.chooseButton(["声明一个技能", [skills, "skill"]], true)
+											.set("ai", () => Math.random())
+											.forResult();
+										if (result.bool) {
+											await player.addTempSkills(result.links);
+										}
+									},
+									ai: {
+										order: 13,
+										result: {
+											player: 1,
+										},
+									},
+								},
+								hhsg_xinsheng: {
+									trigger: {
+										player: "phaseZhunbeiBegin",
+									},
+									init(player, skill) {
+										player.checkMainSkill(skill);
+									},
+									mainSkill: true,
+									filter(event, player) {
+										return get.viceCharacter(player)?.some(name => {
+											return get.character(name, 3)?.every(skill => {
+												return !get.info(skill)?.noRemoveVice;
+											});
+										});
+									},
+									async cost(event, trigger, player) {
+										const result = await player
+											.chooseButton([get.prompt(event.skill), "移除一张副将，然后获得一个新的副将", [get.viceCharacter(player), "character"]])
+											.set("filterButton", button => {
+												const { canRemove } = get.event();
+												return canRemove(button);
+											})
+											.set("canRemove", button => {
+												return get.character(button.link, 3)?.every(skill => {
+													return !get.info(skill)?.noRemoveVice;
+												});
+											})
+											.forResult();
+										if (result.bool) {
+											event.result = {
+												bool: true,
+												cost_data: result.links[0],
+											}
+										}
+									},
+									async content(event, trigger, player) {
+										await player.removeNewVice(event.cost_data);
+										await player.chooseToGainVice();
+									},
+								},
+								hhsg_qianhuan: {
+									trigger: {
+										player: "damageEnd",
+										target: "useCardToTarget",
+									},
+									filter(event, player) {
+										const cards = player.getExpansions("hhsg_qianhuan");
+										if (event.name == "damage") {
+											return player.countCards("he", card => {
+												return cards.every(cardx => {
+													return get.suit(cardx) != get.suit(card);
+												});
+											});
+										}
+										if (!["basic", "trick"].includes(get.type(event.card))) {
+											return false;
+										}
+										if (event.targets?.length != 1) {
+											return false;
+										}
+										return cards.length;
+									},
+									async cost(event, trigger, player) {
+										const cards = player.getExpansions(event.skill);
+										if (trigger.name == "damage") {
+											event.result = await player
+												.chooseCard(get.prompt(event.skill), "将一张牌置于武将牌上", card => {
+													return !get.event("suits")?.includes(get.suit(card));
+												}, "he")
+												.set("suits", cards.map(card => get.suit(card)))
+												.set("ai", card => 5 - get.value(card))
+												.forResult();
+										} else {
+											const result = await player
+												.chooseButton([`###${get.prompt(event.skill)}###移去一张牌并令${get.translation(trigger.card)}对你无效`, cards])
+												.set("ai", button => {
+													if (get.event("eff") < 0) {
+														return 1;
+													}
+													return 0;
+												})
+												.set("eff", get.effect(player, trigger.card, trigger.player, player))
+												.forResult();
+											if (result.bool) {
+												event.result = {
+													bool: true,
+													cost_data: result.links,
+												}
+											}
+										}
+									},
+									intro: {
+										mark(dialog, storage, player) {
+											const cards = player.getExpansions("hhsg_qianhuan");
+											if (player.isUnderControl(true)) {
+												dialog.addAuto(cards);
+											} else {
+												return "共有" + get.cnNumber(cards.length) + "张牌";
+											}
+										},
+										markcount: "expansion",
+									},
+									onremove(player, skill) {
+										const cards = player.getExpansions(skill);
+										if (cards?.length) {
+											player.loseToDiscardpile(cards);
+										}
+									},
+									async content(event, trigger, player) {
+										if (trigger.name == "damage") {
+											const next = player.addToExpansion(event.cards, "giveAuto", player);
+											next.gaintag.add(event.name);
+											await next;
+										} else {
+											await player.loseToDiscardpile(event.cost_data);
+											trigger.getParent().excluded.add(player);
+										}
+									},
+								},
+								hhsg_chanyuan: {
+									viceSkill: true,
+									init(player, skill) {
+										player.checkViceSkill(skill);
+									},
+									noRemoveVice: true,
+								},
+								hhsg_jidao: {
+									mainSkill: true,
+									init(player, skill) {
+										player.checkMainSkill(skill);
+									},
+									trigger: {
+										global: "removeViceAfter",
+									},
+									getIndex(event) {
+										return event.vices;
+									},
+									logTarget: "player",
+									frequent: true,
+									async content(event, trigger, player) {
+										await player.draw();
+									},
+								},
+								hhsg_feisheng: {
+									viceSkill: true,
+									init(player, skill) {
+										player.checkViceSkill(skill);
+									},
+									trigger: {
+										player: "removeViceBegin",
+									},
+									getIndex(event) {
+										return event.vices;
+									},
+									filter(event, player, _3, name) {
+										return get.character(name, 3)?.includes("hhsg_feisheng");
+									},
+									frequent: true,
+									async content(event, trigger, player) {
+										await player.chooseDrawRecover(`###${get.translation(event.name)}###摸两张牌或回复1点体力`, 2, true)
+									},
+								},
+								hhsg_jinghe: {
+									trigger: {
+										global: "chooseToGainViceBegin",
+									},
+									filter(event, player) {
+										return event.player != player && !event.fromJinghe;
+									},
+									logTarget: "player",
+									async content(event, trigger, player) {
+										trigger.set("formJinghe", true);
+										trigger.setContent(async (event, trigger, player) => {
+											const list = get.viceCharacterList();
+											if (!list.length) {
+												game.log("武将牌堆已经空了！");
+												return;
+											}
+											const gains = list.randomGets(2);
+											const result = await player
+												.chooseButton(["###经合###选择作为副将的武将牌", [gains, "character"]], true)
+												.forResult();
+											if (!result.bool) {
+												return;
+											}
+											await player.gainNewVice(result.links);
+											let num = player.viceCharacters.length - 3;
+											if (num > 0) {
+												await player.chooseToRemoveVice(num);
+											}
+										});
+									},
+								},
+							},
+							translate: {
+								hhsg_tianshu: "天书残卷",
+								hhsg_tianshu_info: "出牌阶段限一次，若你的体力值大于1，你可以对自己造成1点伤害，然后摸两张牌。",
+								hhsg_sadou: "撒豆成兵",
+								hhsg_sadou_info: "出牌阶段，对你使用。你随机获得一张未加入游戏的武将牌作为副将。",
+								hhsg_tianshu_skill: "天书残卷",
+								hhsg_tianshu_skill_info: "出牌阶段限一次，若你的体力值大于1，你可以对自己造成1点伤害，然后摸两张牌。",
+								hhsg_zuoci: "幻左慈",
+								hhsg_zuoci_prefix: "幻",
+								hhsg_huashen: "化身",
+								hhsg_huashen_info: "出牌阶段限一次，你可以选择一名其他角色并声明其武将牌上的一个技能，然后你获得此技能直到回合结束。",
+								hhsg_xinsheng: "新生",
+								hhsg_xinsheng_info: "主将技，准备阶段，你可以移去一张副将，然后随机获得一张未加入游戏的武将牌作为副将。",
+								hhsg_yuji: "幻于吉",
+								hhsg_yuji_prefix: "幻",
+								hhsg_qianhuan: "千幻",
+								hhsg_qianhuan_info: "当你受到伤害后，可以将一张与“千幻”牌花色均不同的牌置于武将牌上。当你成为基本牌或普通锦囊牌的唯一目标时，可以移去一张“千幻”牌，令此牌对你无效。",
+								hhsg_chanyuan: "缠怨",
+								hhsg_chanyuan_info: "副将技，此武将牌不可被移除。",
+								hhsg_nanhualaoxian: "幻南华老仙",
+								hhsg_nanhualaoxian_prefix: "幻",
+								hhsg_jidao: "祭祷",
+								hhsg_jidao_info: "主将技，一名角色移除武将牌时，你可以摸一张牌。",
+								hhsg_feisheng: "飞升",
+								hhsg_feisheng_info: "副将技，此武将牌被移除时，你可以选择一项：1.恢复1点体力；2.摸两张牌。",
+								hhsg_jinghe: "经合",
+								hhsg_jinghe_info: "一名其他角色即将获得副将时，你可以令其改为随机观看两张未加入游戏的武将牌，然后其选择一张作为获得的副将。",
+							},
+						},
+						get: {
+							viceCharacterList() {
+								let list = (_status.characterlist ?? game.initCharacterList()).slice(0);
+								game.filterPlayer2().forEach(current => {
+									list.removeArray(get.nameList(current));
+									list.removeArray(get.viceCharacter(current));
+								});
+								return list;
+							},
+							viceCharacter(player) {
+								if (!player) {
+									return [];
+								}
+								player.viceCharacters ??= [];
+								return player.viceCharacters;
+							},
+						},
+						eltc: {
+							async chooseToRemoveVice(event, trigger, player) {
+								player.viceCharacters ??= [];
+								const num = Math.min(event.num, player.viceCharacters.length);
+								if (num <= 0) {
+									return;
+								}
+								const result = await player
+									.chooseButton([`选择移除${get.cnNumber(num)}名副将`, [player.viceCharacters, "character"]], num, true)
+									.set("filterButton", button => {
+										const { canRemove } = get.event();
+										return canRemove(button);
+									})
+									.set("canRemove", button => {
+										return get.character(button.link, 3)?.every(skill => {
+											return !get.info(skill)?.noRemoveVice;
+										});
+									})
+									.forResult();
+								if (result?.bool && result.links?.length) {
+									await player.removeNewVice(result.links);
+								}
+							},
+							async chooseToGainVice(event, trigger, player) {
+								const list = get.viceCharacterList();
+								if (!list.length) {
+									game.log("武将牌堆已经空了！");
+									return;
+								}
+								const gains = list.randomGets(event.num);
+								await player.gainNewVice(gains);
+								let num = player.viceCharacters.length - 3;
+								if (num > 0) {
+									await player.chooseToRemoveVice(num);
+								}
+							},
+						},
+						eltp: {
+							updateVices() {
+								this.viceCharacters ??= [];
+								if (this.viceCharacters.length) {
+									this.markSkill("_gainViceCharacter");
+								} else {
+									this.unmarkSkill("_gainViceCharacter");
+								}
+							},
+							checkViceSkill(skill, disable) {
+								if (this.hasSkillTag("alwaysViceSkill")) {
+									return true;
+								}
+								if (get.viceCharacter(this).some(name => {
+									return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
+								})) {
+									return true;
+								}
+								if (disable !== false) {
+									this.awakenSkill(skill);
+								}
+								return false;
+							},
+							checkMainSkill(skill, disable) {
+								if (this.hasSkillTag("alwaysMainSkill")) {
+									return true;
+								}
+								if (get.nameList(this).some(name => {
+									return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
+								})) {
+									return true;
+								}
+								if (disable !== false) {
+									this.awakenSkill(skill);
+								}
+								return false;
+							},
+							chooseToGainVice(num = 1) {
+								const next = game.createEvent("chooseToGainVice");
+								next.player = this;
+								next.num = num;
+								next.setContent("chooseToGainVice");
+								return next;
+							},
+							chooseToRemoveVice(num = 1) {
+								const next = game.createEvent("chooseToRemoveVice");
+								next.player = this;
+								next.num = num;
+								next.setContent("chooseToRemoveVice");
+								return next;
+							},
+							gainNewVice(vices) {
+								if (!Array.isArray(vices)) {
+									vices = [vices];
+								}
+								const player = this;
+								player.viceCharacters ??= [];
+								player.viceCharacters.addArray(vices);
+								game.broadcastAll(
+									function (player, list) {
+										const cards = [];
+										for (let i = 0; i < list.length; i++) {
+											const cardname = "huashen_card_" + list[i];
+											lib.card[cardname] = {
+												fullimage: true,
+												image: "character/" + list[i],
+											};
+											lib.translate[cardname] = get.rawName2(list[i]);
+											const card = game.createCard(cardname, "", "");
+											card.setBackground(list[i], "character");
+											cards.push(card);
+										}
+										player.$draw(cards, "nobroadcast");
+									},
+									player,
+									vices
+								);
+								game.log(player, "获得了", "#g副将", `#y${get.translation(vices)}`);
+								vices.forEach(name => player.flashAvatar(null, name));
+								const next = game.createEvent("gainVice");
+								next.player = this;
+								next.vices = vices;
+								next.setContent(async (event, trigger, player) => {
+									game.broadcastAll((player, list) => {
+										player.viceCharacters = list;
+									}, player.viceCharacters);
+									const skills = player.viceCharacters.reduce((list, name) => {
+										return list.addArray(get.character(name, 3));
+									}, []);
+									player.updateVices();
+									await player.addAdditionalSkills("_gainViceCharacter", skills);
+									await game.delayx(2);
+								});
+								return next;
+							},
+							removeNewVice(vices) {
+								if (!Array.isArray(vices)) {
+									vices = [vices];
+								}
+								const player = this;
+								player.viceCharacters ??= [];
+								player.viceCharacters.removeArray(vices);
+								game.broadcastAll(
+									function (player, list) {
+										const cards = [];
+										for (let i = 0; i < list.length; i++) {
+											const cardname = "huashen_card_" + list[i];
+											lib.card[cardname] = {
+												fullimage: true,
+												image: "character/" + list[i],
+											};
+											lib.translate[cardname] = get.rawName2(list[i]);
+											const card = game.createCard(cardname, "", "");
+											card.setBackground(list[i], "character");
+											cards.push(card);
+										}
+										player.$throw(cards, 1000, "nobroadcast");
+									},
+									player,
+									vices
+								);
+								game.log(player, "移去了", "#g副将", `#y${get.translation(vices)}`);
+								const next = game.createEvent("removeVice");
+								next.player = this;
+								next.vices = vices;
+								next.setContent(async (event, trigger, player) => {
+									game.broadcastAll((player, list) => {
+										player.viceCharacters = list;
+									}, player.viceCharacters);
+									const skills = player.viceCharacters.reduce((list, name) => {
+										return list.addArray(get.character(name, 3));
+									}, []);
+									player.updateVices();
+									await player.addAdditionalSkills("_gainViceCharacter", skills);
+									await game.delayx(2);
+								});
+								return next;
+							}
+						},
+						game: {},
+					};
+					var func = function (pack) {
+						for (var i in pack.pack) {
+							for (var j in pack.pack[i]) {
+								lib[i][j] = pack.pack[i][j];
+							}
+						}
+						for (var i in pack.eltc) {
+							lib.element.content[i] = pack.eltc[i];
+						}
+						for (var i in pack.eltp) {
+							lib.element.player[i] = pack.eltp[i];
+						}
+						for (var i in pack.game) {
+							game[i] = pack.game[i];
+						}
+						for (var i in pack.get) {
+							get[i] = pack.get[i];
+						}
+						lib.new_huanhuazhizhan = pack;
+					};
+					func(pack);
+				},
+				content: {
+					cardPile: function (list) {
+						for (let i = 0; i < list.length; i++) {
+							if (list[i][2] == "muniu") {
+								list[i][2] = "hhsg_tianshu";
+							}
+							if (list[i].containsAll("lebu", 6, "heart") || list[i].containsAll("wuxie", "diamond", 12)) {
+								list[i][2] = "hhsg_sadou";
+							}
+						}
+						return list;
+					},
+				},
+			},
 			duzhansanguo: {
 				name: "毒战三国",
 				mode: "identity",

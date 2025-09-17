@@ -8252,6 +8252,11 @@ export class Library {
 					init: true,
 					frequent: true,
 				},
+				new_huanhuazhizhan: {
+					name: "幻化三国",
+					init: true,
+					frequent: true,
+				},
 				duzhansanguo: {
 					name: "毒战三国",
 					init: true,
