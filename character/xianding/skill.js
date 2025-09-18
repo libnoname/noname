@@ -29656,7 +29656,8 @@ const skills = {
 			player.$give(cards, player, false);
 		},
 		filterCard(card, player, event) {
-			return get.color(card) == "black" && get.type(card) == "basic" && player.canAddJudge({ name: "bingliang", cards: [card] });
+			const bingliang = get.autoViewAs({ name: "bingliang", cards: [card] }, [card]);
+			return get.color(card) == "black" && get.type(card) == "basic" && player.canAddJudge(bingliang);
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {

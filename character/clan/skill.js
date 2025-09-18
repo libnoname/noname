@@ -1155,7 +1155,7 @@ const skills = {
 					return get.suit(card, player) == "spade";
 				},
 				filterTarget(card, player, target) {
-					return target.canAddJudge(card) && target === get.event().targetx;
+					return lib.filter.judge(card, player, target) && target === get.event().targetx;
 				},
 				filterOk() {
 					return ui.selected.targets.length === 1;

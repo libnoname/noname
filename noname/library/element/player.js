@@ -8662,10 +8662,6 @@ export class Player extends HTMLDivElement {
 		if (!player) {
 			player = this;
 		}
-		var mod = game.checkMod(card, player, this, "unchanged", "targetEnabled", this);
-		if (mod != "unchanged") {
-			return mod;
-		}
 		return true;
 	}
 	addJudgeNext(card, unlimited) {

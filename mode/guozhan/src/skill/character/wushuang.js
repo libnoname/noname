@@ -3082,7 +3082,8 @@ export default {
 		viewAs: { name: "lebu" },
 		position: "hes",
 		filterCard(card, player, event) {
-			return get.suit(card) == "diamond" && player.canAddJudge({ name: "lebu", cards: [card] });
+			const lebu = get.autoViewAs({ name: "lebu", cards: [card] }, [card]);
+			return get.suit(card) == "diamond" && lib.filter.judge(lebu, player, player);
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {

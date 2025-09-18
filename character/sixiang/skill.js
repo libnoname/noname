@@ -2217,8 +2217,12 @@ const skills = {
 					cards,
 					targets: [target],
 				} = ui.selected,
-				player = get.player();
-			return player.canAddJudge({ name: "lebu", cards: [cards[0]] }) && player.canUse({ name: "lebu", cards: [cards[1]] }, target);
+				player = get.player(),
+				canAdd = (current, card) => {
+					const lebu = get.autoViewAs({ name: "lebu", cards: [card]}, [card]);
+					return lib.filter.judge(lebu, player, current);
+				};
+			return canAdd(player, cards[0]) && canAdd(target, cards[1]);
 		},
 		check(card) {
 			return 8 - get.value(card);

@@ -11820,7 +11820,18 @@ export class Library {
 			return range;
 		},
 		judge: function (card, player, target) {
-			return target.canAddJudge(card, player);
+			if (!target.canAddJudge(card, player)) {
+				return false;
+			}
+			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (mod != "unchanged") {
+					return mod;
+				}
+			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (mod2 != "unchanged") {
+				return mod2;
+			}
+			return true;
 		},
 		autoRespondSha: function () {
 			return !this.player.hasSha("respond");

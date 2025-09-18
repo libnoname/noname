@@ -6072,36 +6072,33 @@ const skills = {
 				},
 				logTarget: "player",
 				line: "fire",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger._dunxi = true;
 					trigger.player.removeMark("dunxi", 1);
-					var target = trigger.targets[0];
-					event.target = target;
+					const target = trigger.targets[0];
 					trigger.targets.remove(target);
-					game.delayx();
-					"step 1";
-					var list;
-					if (get.type(event.card) != "delay") {
+					await game.delayx();
+					let list;
+					if (get.type(trigger.card) != "delay") {
 						list = game.filterPlayer(function (current) {
 							return lib.filter.targetEnabled2(trigger.card, trigger.player, current);
 						});
 					} else {
 						list = game.filterPlayer(function (current) {
-							return current.canAddJudge(event.card, trigger.player);
+							return lib.filter.judge(trigger.card, trigger.player, current);
 						});
 					}
 					if (list.length) {
-						target = list.randomGet();
-					}
-					trigger.targets.push(target);
-					trigger.player.line(target, "fire");
-					game.log(trigger.card, "的目标被改为", target);
-					if (target == event.target) {
-						trigger.player.loseHp();
-						var evt = trigger.getParent("phaseUse");
-						if (evt && evt.player == trigger.player) {
-							evt.skipped = true;
+						const targetx = list.randomGet();
+						trigger.targets.push(targetx);
+						trigger.player.line(targetx, "fire");
+						game.log(trigger.card, "的目标被改为", targetx);
+						if (targetx == target) {
+							await trigger.player.loseHp();
+							const evt = trigger.getParent("phaseUse");
+							if (evt && evt.player == trigger.player) {
+								evt.skipped = true;
+							}
 						}
 					}
 				},

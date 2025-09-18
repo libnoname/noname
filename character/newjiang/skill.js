@@ -5903,7 +5903,7 @@ const skills = {
 					return lib.filter.targetEnabled2(event.card, event.player, current);
 				});
 			} else {
-				list = game.filterPlayer(current => current.canAddJudge(event.card));
+				list = game.filterPlayer(current => lib.filter.judge(event.card, event.player, current));
 			}
 			const gainText = `${list.length > 1 && !player.storage.mpmaotao_gained ? `若新目标与原目标相同，你` : ""}${!player.storage.mpmaotao_gained ? "获得牌堆中的一张锦囊牌。" : ""}`;
 			return `移去1枚“醉”${list.length > 1 ? `，令${get.translation(event.card)}目标改为${get.translation(list)}中的一名随机角色` : ""}。${gainText}`;
@@ -5916,7 +5916,7 @@ const skills = {
 					return lib.filter.targetEnabled2(event.card, event.player, current);
 				});
 			} else {
-				list = game.filterPlayer(current => current.canAddJudge(event.card));
+				list = game.filterPlayer(current => lib.filter.judge(event.card, event.player, current));
 			}
 			let list2 = list.filter(current => get.effect(current, event.card, player, player) > eff);
 			let list3 = list.filter(current => get.effect(current, event.card, player, player) > 0);
@@ -5935,7 +5935,7 @@ const skills = {
 					return lib.filter.targetEnabled2(trigger.card, trigger.player, current);
 				});
 			} else {
-				list = game.filterPlayer(current => current.canAddJudge(trigger.card));
+				list = game.filterPlayer(current => lib.filter.judge(trigger.card, trigger.player, current));
 			}
 			if (list.length) {
 				target = list.randomGet();
