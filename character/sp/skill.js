@@ -3007,7 +3007,7 @@ const skills = {
 					const card = result2.links[0];
 					game.broadcastAll(card => {
 						lib.skill.olsiqi_backup.viewAs = card;
-						lib.skill.olsiqi_backup.viewAs.cards = [card];
+						lib.skill.olsiqi_backup.card = card;
 					}, card);
 					player.addTempSkill("olsiqi_target");
 					const next = player.chooseToUse();
@@ -3045,12 +3045,10 @@ const skills = {
 				selectCard: -1,
 				filterTarget: lib.filter.targetEnabled2,
 				log: false,
-				precontent() {
-					const name = event.result.card.name,
-						cards = event.result.card.cards.slice(),
-						rcard = cards[0];
-					event.result.cards = cards;
-					event.result.card = get.autoViewAs(rcard.name == name ? rcard : { name, isCard: true });
+				async precontent(event, trigger, player) {
+					const { card } = get.info("olsiqi_backup");
+					event.result.cards = [card];
+					event.result.card = get.autoViewAs(card, [card]);
 				},
 			},
 			lose: {

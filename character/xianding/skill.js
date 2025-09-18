@@ -17464,7 +17464,7 @@ const skills = {
 				ai: {
 					effect: {
 						player_use(card, player, target) {
-							if (get.itemtype(card) === "card" && cardx.hasGaintag("dczhaowen_tag") && get.color(card, player) === "red") {
+							if (get.itemtype(card) === "card" && card.hasGaintag("dczhaowen_tag") && get.color(card, player) === "red") {
 								return [1, 1];
 							}
 						},

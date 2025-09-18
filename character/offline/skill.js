@@ -8931,7 +8931,7 @@ const skills = {
 			if (get.is.playerNames(target, "zombie_zombie")) {
 				return false;
 			}
-			if (event.reserveOut) {
+			if (event.reserveOut || player.maxHp <= 0) {
 				return false;
 			}
 			return player.hasAllHistory("useSkill", evt => {
