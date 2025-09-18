@@ -242,7 +242,7 @@ const skills = {
 		},
 		logTarget: "player",
 		prompt2(event, player) {
-			if (event.name === "phaseZhunbei") {
+			if (event.name !== "phaseZhunbei") {
 				return `令${get.translation(event.card)}对你无效，然后你摸两张牌`;
 			}
 			return `获得技能〖观火〗`;
