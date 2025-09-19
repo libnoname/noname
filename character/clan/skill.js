@@ -2438,7 +2438,7 @@ const skills = {
 				return false;
 			}
 			return game.hasPlayer(current => {
-				return current.getHp() === delNum;
+				return current.getHp() === delNum || current.countCards("h") == delNum;
 			});
 		},
 		locked: false,
@@ -2450,8 +2450,8 @@ const skills = {
 				prevNum = get.number(prevCard);
 			const delNum = Math.abs(curNum - prevNum);
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), `对一名体力值为${delNum}的角色造成1点伤害`, (card, player, target) => {
-					return target.getHp() === get.event("delNum");
+				.chooseTarget(get.prompt(event.skill), `对一名体力值或手牌数为${delNum}的角色造成1点伤害`, (card, player, target) => {
+					return target.getHp() === get.event("delNum") || target.countCards("h") == get.event("delNum");
 				})
 				.set("delNum", delNum)
 				.set("ai", target => {
@@ -2541,6 +2541,7 @@ const skills = {
 	clanshengmo: {
 		audio: 2,
 		enable: "chooseToUse",
+		round: 1,
 		hiddenCard(player, name) {
 			if (get.type(name) != "basic") {
 				return false;
@@ -2553,7 +2554,7 @@ const skills = {
 			if (event.responded) {
 				return false;
 			}
-			const names = lib.inpile.filter(name => get.type(name) == "basic" && !player.getStorage("clanshengmo").includes(name)),
+			const names = lib.inpile.filter(name => get.type(name) == "basic"),
 				cards = get.event("clanshengmo_cards") || [];
 			return (
 				cards.length > 0 &&
@@ -2574,6 +2575,8 @@ const skills = {
 					}
 					cards.addArray(evt.cards.filter(card => get.position(card, true) == "d"));
 				});
+				event.set("clanshengmo_cards", cards);
+				/*
 				const numbers = cards.map(card => get.number(card, false)).unique();
 				const [min, max] = [Math.min(...numbers), Math.max(...numbers)];
 				event.set(
@@ -2582,13 +2585,13 @@ const skills = {
 						const num = get.number(card, false);
 						return num > min && num < max;
 					})
-				);
+				);*/
 			}
 		},
 		async content(event, trigger, player) {
 			const evt = event.getParent(2);
 			const names = lib.inpile.filter(name => get.type(name) == "basic" && !player.getStorage("clanshengmo").includes(name)),
-				cards = evt.clanshengmo_cards;
+				cards = evt.clanshengmo_cards.sort((a, b) => get.number(a, false) - get.number(b, false));
 			const links = await player
 				.chooseButton(["剩墨：获得其中一张牌", cards], true)
 				.set("ai", button => {
@@ -2596,6 +2599,13 @@ const skills = {
 				})
 				.forResultLinks();
 			if (!links || !links.length) {
+				return;
+			}
+			await player.gain(links, "gain2");
+			const numbers = cards.map(card => get.number(card, false)).unique();
+			const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
+				num = get.number(links[0], false);
+			if (num <= min || num >= max) {
 				return;
 			}
 			const list = [];
@@ -2625,18 +2635,16 @@ const skills = {
 			const name = links2[0][2],
 				nature = links2[0][3];
 			game.broadcastAll(
-				(name, nature, toGain) => {
+				(name, nature) => {
 					lib.skill.clanshengmo_backup.viewAs = {
 						name,
 						nature,
 						isCard: true,
 					};
 					lib.skill.clanshengmo_backup.prompt = `选择${get.translation(nature)}【${get.translation(name)}】的目标`;
-					lib.skill.clanshengmo_backup.cardToGain = toGain;
 				},
 				name,
 				nature,
-				links[0]
 			);
 			evt.set("_backupevent", "clanshengmo_backup");
 			evt.backup("clanshengmo_backup");
@@ -2657,7 +2665,6 @@ const skills = {
 				precontent() {
 					event.result.card.storage.clanshengmo = true;
 					player.markAuto("clanshengmo", event.result.card.name);
-					player.gain(lib.skill.clanshengmo_backup.cardToGain, "gain2");
 				},
 				filterCard: () => false,
 				selectCard: -1,

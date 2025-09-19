@@ -5794,7 +5794,25 @@ const skills = {
 	//徐馨
 	dcyuxian: {
 		audio: 2,
-		trigger: { player: "useCard" },
+		trigger: {
+			global: "roundStart",
+		},
+		filter(event, player) {
+			return player.countCards("h");
+		},
+		async cost(event, trigger, player) {
+			player.setStorage(event.skill, [], true);
+			event.result = await player
+				.chooseCard(get.prompt(event.skill), "依次选择至多四张手牌展示并记录花色", [1, 4])
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			await player.showCards(cards, `${get.translation(player)}发动了【育贤】`);
+			player.setStorage(event.name, cards.map(card => get.suit(card, player)), true);
+			player.addTip(event.name, `育贤 ${player.getStorage(event.name).reduce((str, suit) => str + get.translation(suit), "")}`);
+		},
+		/*trigger: { player: "useCard" },
 		filter(event, player) {
 			return player.isPhaseUsing() && player.getStorage("dcyuxian").length < 4 && get.suit(event.card, player) !== "none";
 		},
@@ -5811,14 +5829,43 @@ const skills = {
 					player.unmarkSkill("dcyuxian");
 				})
 				.assign({ firstDo: true });
-		},
+		},*/
 		intro: { content: "已记录花色：$" },
 		onremove(player, skill) {
 			delete player.storage[skill];
 			player.removeTip(skill);
 		},
+		global: "dcyuxian_ai",
 		group: "dcyuxian_draw",
 		subSkill: {
+			ai: {
+				mod: {
+					aiOrder(player, card, num) {
+						const targets = game.filterPlayer(current => {
+							if (current == player || !current.hasSkill("dcyuxian")) {
+								return false;
+							}
+							return get.attitude(player, current) >= 0 && current.getStorage("dcyuxian").length;
+						});
+						if (!targets.length) {
+							return;
+						}
+						const index = player.getHistory("useCard").length;
+						if (targets.some(target => {
+							const list = target.getStorage("dcyuxian");
+							return list?.[index] == get.suit(card, player);
+						})) {
+							return num + 10;
+						}
+					},
+					aiValue(player, card, num) {
+						return get.info("dcyuxian_ai").mod.aiOrder.apply(this, arguments);
+					},
+					aiUseful(player, card, num) {
+						return get.info("dcyuxian_ai").mod.aiOrder.apply(this, arguments);
+					},
+				},
+			},
 			draw: {
 				audio: "dcyuxian",
 				trigger: { global: "useCard" },

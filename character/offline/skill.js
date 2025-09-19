@@ -8967,7 +8967,7 @@ const skills = {
 								.chooseControl(names)
 								.set("ai", () => {
 									const { controls } = get.event();
-									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true));
+									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true))[0];
 								})
 								.set("prompt", "请选择替换的武将牌")
 								.forResult()
