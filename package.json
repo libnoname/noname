@@ -1,0 +1,55 @@
+{
+    "name": "noname",
+    "productName": "无名杀",
+    "description": "",
+    "version": "1.10.17.4",
+    "license": "GPL-3.0-only",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/libnoname/noname.git"
+    },
+    "type": "module",
+    "scripts": {
+        "start": "",
+        "build": "",
+        "type": ""
+    },
+    "dependencies": {
+        "@codemirror/lang-css": "^6.3.1",
+        "@codemirror/lang-html": "^6.4.10",
+        "@codemirror/lang-javascript": "^6.2.4",
+        "@codemirror/lang-json": "^6.0.2",
+        "@codemirror/lang-markdown": "^6.3.4",
+        "@codemirror/lang-vue": "^0.1.3",
+        "@lezer/html":"^1.3.10",
+        "@lezer/javascript": "^1.5.4",
+        "@lezer/common": "^1.2.3",
+        "@vue/devtools-api": "^8.0.2",
+        "codemirror": "^6.0.2",
+        "core-js-bundle": "^3.43.0",
+        "dedent": "^1.6.0",
+        "jszip": "^3.10.1",
+        "md5": "^2.3.0",
+        "nosleep.js": "^0.12.0",
+        "options": "^0.0.6",
+        "path": "^0.12.7",
+        "pressure": "^2.2.0",
+        "ultron": "^1.1.1",
+        "vue": "^3.5.17",
+        "ws": "^8.18.2"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.29.0",
+        "@types/cordova": "^11.0.3",
+        "@types/estree": "^1.0.8",
+        "@types/node": "^24.0.3",
+        "@types/tern": "^0.23.9",
+        "eslint": "^9.29.0",
+        "eslint-plugin-vue": "^10.2.0",
+        "glob": "^11.0.3",
+        "globals": "^16.2.0",
+        "prettier": "^3.6.2",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.34.1"
+    }
+}

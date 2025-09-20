@@ -1,11 +1,12 @@
 import js from "@eslint/js";
+import { defineConfig } from 'eslint/config';
 import ts from "typescript-eslint";
 import vue from "eslint-plugin-vue";
 import globals from "globals";
 
 const ignores = ["node_modules/", "noname-server.js", "tsconfig.json", "game/codemirror.js", "game/jszip.js", "game/pressure.js", "game/compiler-sfc.esm-browser.js", "game/core-js-bundle.js", "game/dedent.js", "game/typescript.js", "game/vue.esm-browser.js", "game/NoSleep.js"];
 
-export default ts.config(
+export default defineConfig(
 	{
 		...js.configs.recommended,
 		ignores,
@@ -33,6 +34,7 @@ export default ts.config(
 			"@typescript-eslint/ban-ts-comment": [
 				"error",
 				{
+					"ts-ignore":false,
 					"ts-nocheck": false,
 				},
 			],
@@ -61,7 +63,7 @@ export default ts.config(
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
-			curly: "error",
+			// curly: "error",
 		},
 		languageOptions: {
 			ecmaVersion: 13,

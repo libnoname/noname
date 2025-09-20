@@ -9,12 +9,7 @@ image/*.TXT
 !extension/欢乐卡牌
 !extension/玩点论杀
 !extension/英雄杀
-!node_modules/@types
 !node_modules/noname-typings
-!node_modules/options
-!node_modules/ultron
-!node_modules/undici-types
-!node_modules/ws
 ._*
 .DS_Store
 .DS_Store?
@@ -27,14 +22,12 @@ app.html
 ehthumbs.db
 extension
 Home
-jsconfig.json
 localStorage.json
 main.js
 !mode/**/src/main.js
 node_modules
 noname.ico
 package-lock.json
-package.json
 Thumbs.db
 bun.lockb
 deno.lock
