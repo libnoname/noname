@@ -5196,7 +5196,7 @@ const skills = {
 			for (var card of hs) {
 				var added = false;
 				for (var i = 0; i < tags.length; i++) {
-					if (card.hasGaintag(tags[i] + "_tag")) {
+					if (typeof card.hasGaintag === 'function' && card.hasGaintag(tags[i] + "_tag")) {
 						added = true;
 						list[i + 1][1].push(card);
 						break;
@@ -5296,14 +5296,18 @@ const skills = {
 									}
 									if (i == j + 1) {
 										map[tag][0].add(card);
-										if (!card.hasGaintag(tag)) {
-											card.addGaintag(tag);
+										if (typeof card.hasGaintag === 'function' && !card.hasGaintag(tag)) {
+											if (typeof card.addGaintag === 'function') {
+												card.addGaintag(tag);
+											}
 											card.classList.add(glowClass);
 										}
 									} else {
-										if (card.hasGaintag(tag)) {
+										if (typeof card.hasGaintag === 'function' && card.hasGaintag(tag)) {
 											map[tag][1].add(card);
-											card.removeGaintag(tag);
+											if (typeof card.removeGaintag === 'function') {
+												card.removeGaintag(tag);
+											}
 											card.classList.remove(glowClass);
 										}
 									}
@@ -5355,7 +5359,8 @@ const skills = {
 								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
-										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
+										// 检查card是否有hasGaintag方法，如果没有则跳过
+										if (typeof card.hasGaintag === 'function' && card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
 											//添加样式+录像
 											game.broadcastAll(
 												(card, glowClass, tag) => {
@@ -5408,9 +5413,11 @@ const skills = {
 				for (const card of player.getCards("h")) {
 					for (let i = 0; i < tags.length; i++) {
 						const tag = tags[i] + "_tag";
-						if (card.hasGaintag(tag)) {
+						if (typeof card.hasGaintag === 'function' && card.hasGaintag(tag)) {
 							//移除标记+录像
-							card.removeGaintag(tag);
+							if (typeof card.removeGaintag === 'function') {
+								card.removeGaintag(tag);
+							}
 							game.addVideo("removeGaintag", player, [tag, [get.cardInfo(card)]]);
 							const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 							//移除样式+录像
@@ -5434,7 +5441,7 @@ const skills = {
 							return;
 						}
 						for (var i of card.cards) {
-							if (i.hasGaintag("dctuoyu_qingqu_tag")) {
+							if (typeof i.hasGaintag === 'function' && i.hasGaintag("dctuoyu_qingqu_tag")) {
 								return true;
 							}
 						}
@@ -5447,7 +5454,7 @@ const skills = {
 							return;
 						}
 						for (var i of card.cards) {
-							if (i.hasGaintag("dctuoyu_qingqu_tag")) {
+							if (typeof i.hasGaintag === 'function' && i.hasGaintag("dctuoyu_qingqu_tag")) {
 								return Infinity;
 							}
 						}
