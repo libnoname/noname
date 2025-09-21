@@ -222,7 +222,7 @@ window.noname_character_replace = {
 	simayi: ["simayi", "re_simayi", "jin_simayi", "dm_simayi", "dc_sb_simayi", "huan_simayi", "jsrg_simayi", "yy_simayi", "ps_simayi", "ps_jin_simayi", "ps2068_simayi", "junk_simayi"],
 	simazhao: ["jin_simazhao", "mb_simazhao", "simazhao", "sp_simazhao", "jsrg_simazhao", "jin_jsrg_simazhao", "jd_jin_simazhao", "ns_simazhao", "std_simazhao"],
 	simazhou: ["simazhou", "mb_simazhou"],
-	sunce: ["sunce", "re_sunce", "sp_sunce", "dc_sunce", "re_sunben", "sb_sunce", "jsrg_sunce", "pe_jun_sunce"],
+	sunce: ["sunce", "re_sunce", "sp_sunce", "dc_sunce", "re_sunben", "sb_sunce", "jsrg_sunce", "pe_jun_sunce", "v_sunce"],
 	sundeng: ["sundeng", "re_sundeng", "ns_sundeng"],
 	sunhanhua: ["dc_sunhanhua", "sunhanhua", "scl_sunhanhua"],
 	sunhao: ["sunhao", "std_sunhao", "hs_sunhao"],

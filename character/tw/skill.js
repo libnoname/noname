@@ -883,116 +883,11 @@ const skills = {
 		async precontent(event, trigger, player) {
 			player.logSkill("twfushu");
 			player.tempBanSkill("twfushu", null, false);
-			//跟牌堆拼点神技，感觉写的一坨，而且跟十周年ui不太适配的，没法显示出来ui的拼点对比界面
-			//单独一个流程，大部分拼点技能不太影响到，还是保留了那几个手动触发的时机
-			var next = game.createEvent("chooseToCompare_cardPile");
-			next.player = player;
-			if (!next.fixedResult) {
-				next.fixedResult = {};
-			}
+			const next = player.chooseToCompare().set("target", "cardPile");
+			next.fixedResult ??= {};
 			next.fixedResult[player.playerid] = event.result.cards[0];
 			event.result.card = { name: "tao", isCard: true };
 			delete event.result.cards;
-			next.setContent(() => {
-				"step 0";
-				game.log(player, "对牌堆发起拼点");
-				if (!event.filterCard) {
-					event.filterCard = lib.filter.all;
-				}
-				"step 1";
-				const lose_list = [];
-				if (event.fixedResult && event.fixedResult[player.playerid]) {
-					lose_list.push([player, [event.fixedResult[player.playerid]]]);
-				} else {
-					if (result[0].skill && lib.skill[result[0].skill] && lib.skill[result[0].skill].onCompare) {
-						player.logSkill(result[0].skill);
-						result[0].cards = lib.skill[result[0].skill].onCompare(player);
-					}
-					lose_list.push([player, result[0].cards]);
-				}
-				event.card1 = lose_list[0][1][0];
-				const card = game.cardsGotoOrdering(get.cards()).cards[0];
-				event.card2 = card;
-				event.lose_list = lose_list;
-				"step 2";
-				if (event.lose_list.length) {
-					game.loseAsync({
-						lose_list: event.lose_list,
-					}).setContent("chooseToCompareLose");
-				}
-				"step 3";
-				event.trigger("compareCardShowBefore");
-				"step 4";
-				game.broadcast(function () {
-					ui.arena.classList.add("thrownhighlight");
-				});
-				ui.arena.classList.add("thrownhighlight");
-				game.addVideo("thrownhighlight1");
-				player.$compare(event.card1, player, event.card2);
-				game.log(player, "的拼点牌为", event.card1);
-				game.log("牌堆的拼点牌为", event.card2);
-				var getNum = function (card) {
-					for (var i of event.lose_list) {
-						if (i[1].includes(card)) {
-							return get.number(card, i[0]);
-						}
-					}
-					return get.number(card, false);
-				};
-				event.num1 = getNum(event.card1);
-				event.num2 = getNum(event.card2);
-				event.trigger("compare");
-				game.delay(0, 1500);
-				"step 5";
-				event.result = {
-					player: event.card1,
-					target: event.card2,
-					num1: event.num1,
-					num2: event.num2,
-				};
-				event.trigger("compareFixing");
-				"step 6";
-				var str;
-				if (event.forceWinner === player || event.num1 > event.num2) {
-					event.result.bool = true;
-					event.result.winner = player;
-					str = get.translation(player) + "拼点成功";
-					player.popup("胜");
-				} else {
-					event.result.bool = false;
-					str = get.translation(player) + "拼点失败";
-					if (event.num1 == event.num2) {
-						event.result.tie = true;
-						player.popup("平");
-					} else {
-						event.result.winner = null;
-						player.popup("负");
-					}
-				}
-				game.broadcastAll(function (str) {
-					var dialog = ui.create.dialog(str);
-					dialog.classList.add("center");
-					setTimeout(function () {
-						dialog.close();
-					}, 1000);
-				}, str);
-				game.delay(2);
-				"step 7";
-				game.broadcastAll(function () {
-					ui.arena.classList.remove("thrownhighlight");
-				});
-				game.addVideo("thrownhighlight2");
-				if (event.clear !== false) {
-					game.broadcastAll(ui.clear);
-				}
-				if (typeof event.preserve == "function") {
-					event.preserve = event.preserve(event.result);
-				} else if (event.preserve == "win") {
-					event.preserve = event.result.bool;
-				} else if (event.preserve == "lose") {
-					event.preserve = !event.result.bool;
-				}
-			});
 			const result = await next.forResult();
 			if (!result.bool) {
 				player.addSkill("twfushu_damage");
@@ -16267,83 +16162,84 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		check: () => true,
 		onremove: true,
-		content() {
-			"step 0";
-			if (!player.storage.twfupan) {
-				player.storage.twfupan = {};
-			}
-			player.draw(trigger.num);
-			"step 1";
+		async content(event, trigger, player) {
+			player.storage.twfupan ??= {};
+			await player.draw(trigger.num);
 			if (
-				player.countCards("he") &&
-				game.hasPlayer(current => {
+				!player.countCards("he") ||
+				!game.hasPlayer(current => {
 					return !(player.storage.twfupan[current.playerid] >= 2) && player != current;
 				})
 			) {
-				player.chooseCardTarget({
-					filterCard: true,
-					selectCard: 1,
-					position: "he",
-					forced: true,
-					targetprompt(target) {
-						return !_status.event.player.storage.twfupan[target.playerid] ? "你摸两张牌" : "对其<br>造成伤害";
-					},
-					filterTarget(card, player, target) {
-						return !(player.storage.twfupan[target.playerid] >= 2) && player != target;
-					},
-					ai1(card) {
-						var player = _status.event.player;
-						if (get.value(card, false, "raw") < 0) {
-							return 20 * get.value(card);
-						}
-						if (player == _status.currentPhase) {
-							return 20 - player.getUseValue(card);
-						}
-						return 20 - get.value(card);
-					},
-					ai2(target) {
-						var player = _status.event.player;
-						var att = get.attitude(player, target);
-						if (ui.selected.cards.length && get.value(ui.selected.cards[0], false, "raw") < 0) {
-							return -0.1 - att;
-						}
-						if (player.storage.twfupan[target.playerid] === undefined) {
-							return 5;
-						} else if (player.storage.twfupan[target.playerid] === 1) {
-							return get.damageEffect(target, player, player);
-						}
-						return 1;
-					},
-					prompt: "请选择要交出的卡牌和目标角色",
-				});
-			} else {
-				event.finish();
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var cards = result.cards,
-					target = result.targets[0];
+			const next = player.chooseCardTarget({
+				filterCard: true,
+				position: "he",
+				forced: true,
+				filterTarget(card, player, target) {
+					return !(player.storage.twfupan[target.playerid] >= 2) && player != target;
+				},
+				ai1(card) {
+					const player = get.player();
+					if (get.value(card, false, "raw") < 0) {
+						return 20 * get.value(card);
+					}
+					if (player == _status.currentPhase) {
+						return 20 - player.getUseValue(card);
+					}
+					return 20 - get.value(card);
+				},
+				ai2(target) {
+					const player = get.player();
+					const att = get.attitude(player, target);
+					if (ui.selected.cards.length && get.value(ui.selected.cards[0], false, "raw") < 0) {
+						return -0.1 - att;
+					}
+					if (player.storage.twfupan[target.playerid] === undefined) {
+						return 5;
+					} else if (player.storage.twfupan[target.playerid] === 1) {
+						return get.damageEffect(target, player, player);
+					}
+					return 1;
+				},
+				prompt: "请选择要交出的卡牌和目标角色",
+			});
+			next.set(
+				"targetprompt2",
+				next.targetprompt2.concat([
+					target => {
+						const evt = get.event();
+						if (!target.isIn() || !evt.filterTarget(null, evt.player, target)) {
+							return;
+						}
+						return !evt.player.storage.twfupan[target.playerid] ? "你摸两张牌" : "可对其<br>造成伤害";
+					},
+				])
+			);
+			const { result } = await next;
+			if (result?.cards?.length && result.targets?.length) {
+				const {
+					cards,
+					targets: [target],
+				} = result;
 				player.line(target, "green");
-				player.give(cards, target);
-				event.target = target;
+				await player.give(cards, target);
 				if (!player.storage.twfupan[target.playerid]) {
 					player.storage.twfupan[target.playerid] = 1;
-					player.draw(2);
-					event.finish();
+					await player.draw(2);
 				} else {
-					player
-						.chooseBool("复叛：是否对" + get.translation(target) + "造成1点伤害？", "然后你不能再因此技能交给其牌")
+					const { result } = await player
+						.chooseBool(`复叛：是否对${get.translation(target)}造成1点伤害？`, "然后你不能再因此技能交给其牌")
 						.set("ai", () => _status.event.bool)
 						.set("bool", get.damageEffect(target, player, player) > 0);
+					if (result?.bool) {
+						player.storage.twfupan[target.playerid]++;
+						player.line(target, "fire");
+						await target.damage();
+					}
 				}
-			}
-			"step 3";
-			if (result.bool) {
-				player.line(target, "fire");
-				target.damage();
-				player.storage.twfupan[target.playerid]++;
 			}
 		},
 		ai: {
@@ -18696,9 +18592,10 @@ const skills = {
 		usable: 1,
 		async cost(event, trigger, player) {
 			const cards = trigger.name != "cardsDiscard" ? trigger.getd(player, "cards2") : trigger.cards.filterInD("d");
-			const links = await player
-				.chooseButton(["宽济：是否将一张牌交给一名其他角色？", cards])
-				.set("ai", button => {
+			const { result } = await player.chooseButtonTarget({
+				createDialog: [get.prompt2(event.skill), cards],
+				filterTarget: lib.filter.notMe,
+				ai1(button) {
 					const player = get.player();
 					if (
 						game.hasPlayer(current => {
@@ -18708,23 +18605,16 @@ const skills = {
 						return Math.abs(get.value(button.link, "raw")) + 1;
 					}
 					return -get.value(button.link, "raw");
-				})
-				.forResultLinks();
-			if (!links?.length) {
-				return;
-			}
-			const card = links[0];
-			event.card = card;
-			const {
-				result: { bool, targets },
-			} = await player.chooseTarget(`将${get.translation(card)}交给一名其他角色并摸一张牌`, lib.filter.notMe, true).set("ai", target => {
-				const evt = get.event().getParent();
-				return get.attitude(evt.player, target) * get.value(evt.card, target) * (target.hasSkillTag("nogain") ? 0.1 : 1);
+				},
+				ai2(target) {
+					const player = get.player();
+					return get.attitude(player, target) * get.value(ui.selected.buttons[0].link, target) * (target.hasSkillTag("nogain") ? 0.1 : 1);
+				},
 			});
 			event.result = {
-				bool: bool,
-				targets: targets,
-				cost_data: card,
+				bool: result?.bool,
+				targets: result?.targets,
+				cost_data: result?.links,
 			};
 		},
 		async content(event, trigger, player) {

@@ -1924,7 +1924,10 @@ player.removeVirtualEquip(card);
 		let result;
 		if (event.isMine()) {
 			result = await new Promise(resolve => {
-				ui.selected.buttons.length = 0;
+				// 兼容旧版本扩展使用guanxing_button喵
+				ui.selected.guanxing_button = null;
+				// 使用guanxing_buttons作为数组喵，因为buttons会被uncheck清除但是选中状态不会喵，导致不同步哦
+				ui.selected.guanxing_buttons = [];
 
 				const list = event.list;
 				const filterMove = event.filterMove;
@@ -2083,15 +2086,16 @@ player.removeVirtualEquip(card);
 				 * @param { ((button: HTMLDivElement) => boolean)? } filter
 				 */
 				var clearSelected = function (filter) {
-					for (let i = ui.selected.buttons.length; i--; ) {
-						const button = ui.selected.buttons[i];
+					for (let i = ui.selected.guanxing_buttons.length; i--; ) {
+						const button = ui.selected.guanxing_buttons[i];
 
 						if (!filter || filter(button)) {
-							ui.selected.buttons.splice(i, 1);
+							ui.selected.guanxing_buttons.splice(i, 1);
 							button.classList.remove("glow2");
 						}
 					}
 
+					ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 					updateSelectAllButtons();
 				};
 
@@ -2114,7 +2118,8 @@ player.removeVirtualEquip(card);
 						button.classList.add("glow2");
 					});
 
-					ui.selected.buttons.addArray(buttons);
+					ui.selected.guanxing_buttons.addArray(buttons);
+					ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 					updateSelectAllButtons();
 				};
 
@@ -2129,7 +2134,8 @@ player.removeVirtualEquip(card);
 
 					if (!nextState) {
 						button.classList.remove("glow2");
-						ui.selected.buttons.remove(button);
+						ui.selected.guanxing_buttons.remove(button);
+						ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 						updateSelectAllButtons();
 					} else {
 						if (!canMultiselect) {
@@ -2147,7 +2153,7 @@ player.removeVirtualEquip(card);
 				 * @param { HTMLDivElement } container
 				 */
 				var revertSelection = function (container) {
-					const selecteds = new Set(ui.selected.buttons.filter(button => button.parentElement === container));
+					const selecteds = new Set(ui.selected.guanxing_buttons.filter(button => button.parentElement === container));
 					const nextSelecteds = Array.prototype.filter.call(container.childNodes, button => {
 						return !selecteds.has(button);
 					});
@@ -2297,7 +2303,7 @@ player.removeVirtualEquip(card);
 						e = e.changedTouches[0];
 					}
 
-					const isDragging = ui.selected.buttons.length === 1 && document.contains(ui.selected.buttons[0]?.copy);
+					const isDragging = ui.selected.guanxing_buttons.length === 1 && document.contains(ui.selected.guanxing_buttons[0]?.copy);
 
 					buttonss.forEach(btn => {
 						Array.from(btn.children).forEach(element => {
@@ -2320,8 +2326,8 @@ player.removeVirtualEquip(card);
 					let spannedSingle = false;
 
 					// 我们要判断是不是跨区的单个交换喵，但是如果是拖拽的情况下一定是单个交换喵，所以没必要进行额外判断喵
-					if (!isDragging && ui.selected.buttons.length === 1) {
-						const curCard = ui.selected.buttons[0];
+					if (!isDragging && ui.selected.guanxing_buttons.length === 1) {
+						const curCard = ui.selected.guanxing_buttons[0];
 						const target = e.target;
 						if (!curCard.contains(target)) {
 							const buttons = buttonss.find(b => {
@@ -2335,8 +2341,8 @@ player.removeVirtualEquip(card);
 					}
 
 					// 如果是拖动移动、非多选或者跨区单个交换的情况下，我们走原来的代码喵
-					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1) || spannedSingle) {
-						const curCard = ui.selected.buttons[0];
+					if (isDragging || (!canMultiselect && ui.selected.guanxing_buttons.length === 1) || spannedSingle) {
+						const curCard = ui.selected.guanxing_buttons[0];
 						// 鼠标当前处于哪个元素上
 						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
 						// 相当于没移动，让它自己触发后续的click
@@ -2394,7 +2400,7 @@ player.removeVirtualEquip(card);
 						}
 
 						clearSelected();
-					} else if (ui.selected.buttons.length) {
+					} else if (ui.selected.guanxing_buttons.length) {
 						// 获取当前点击的节点喵
 						const target = e.target;
 						// 寻找点击的是那个区域哦喵
@@ -2420,7 +2426,7 @@ player.removeVirtualEquip(card);
 							position = "last";
 						}
 
-						const selected = filterBatchMove(ui.selected.buttons, buttons, position !== "last" ? "first" : "last");
+						const selected = filterBatchMove(ui.selected.guanxing_buttons, buttons, position !== "last" ? "first" : "last");
 						const subPromises = [];
 
 						for (const element of selected) {
@@ -2528,6 +2534,9 @@ player.removeVirtualEquip(card);
 				game.countChoose();
 				event.choosing = true;
 			});
+
+			delete ui.selected.guanxing_button;
+			delete ui.selected.guanxing_buttons;
 		} else if (event.isOnline()) {
 			result = await event.sendAsync();
 		} else {
@@ -6682,20 +6691,24 @@ player.removeVirtualEquip(card);
 	chooseToCompare: [
 		async (event, trigger, player) => {
 			const target = event.target;
+			if (target === "cardPile") {
+				event.compareWithCardPile = true;
+				event.compareType ??= "top";
+			}
 			if (!event.position || typeof event.position != "string") {
 				event.position = "h";
 			}
-			if ((!event.fixedResult?.[player.playerid] && player.countCards(event.position) == 0) || (!event.fixedResult?.[target.playerid] && target.countCards(event.position) == 0)) {
+			if ((!event.fixedResult?.[player.playerid] && player.countCards(event.position) == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.countCards(event.position) == 0)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
-			game.log(player, "对", target, "发起", event.isDelay ? "延时" : "", "拼点");
+			game.log(player, "对", event.compareWithCardPile ? "牌堆" : target, "发起", event.isDelay ? "延时" : "", "拼点");
 			event.filterCard ??= lib.filter.all;
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			event.list = [player, target].filter(current => !event.fixedResult?.[current.playerid]);
+			event.list = [player, target].filter(current => get.itemtype(current) == "player" && !event.fixedResult?.[current.playerid]);
 			if (event.list.length) {
 				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
 					var hs = target.getCards("h");
@@ -6727,15 +6740,25 @@ player.removeVirtualEquip(card);
 					result[index].cards = lib.skill[result[index].skill].onCompare(target);
 				}
 				lose_list.push([target, result[index].cards]);
-			} else if (event.fixedResult?.[target.playerid]) {
+			} else if (get.itemtype(target) == "player" && event.fixedResult?.[target.playerid]) {
 				lose_list.push([target, [event.fixedResult[target.playerid]]]);
 			}
-			event.card2 = lose_list[1][1][0];
+			let card2;
+			if (event.compareWithCardPile) {
+				if (event.compareType == "top") {
+					card2 = game.cardsGotoOrdering(get.cards()).cards[0];
+				} else if (event.compareType == "bottom") {
+					card2 = game.cardsGotoOrdering(get.bottomCards()).cards[0];
+				}
+			} else {
+				card2 = lose_list[1][1][0];
+			}
+			event.card2 = card2;
 			event.lose_list = lose_list;
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			if (event.card2.number >= 10 || event.card2.number <= 4) {
+			if (get.itemtype(target) == "player" && (event.card2.number >= 10 || event.card2.number <= 4)) {
 				if (target.countCards("h") > 2) {
 					event.addToAI = true;
 				}
@@ -6792,12 +6815,12 @@ player.removeVirtualEquip(card);
 			const target = event.target;
 			game.broadcastAll(() => ui.arena.classList.add("thrownhighlight"));
 			game.addVideo("thrownhighlight1");
-			player.$compare(event.card1, target, event.card2);
+			player.$compare(event.card1, event.compareWithCardPile ? player : target, event.card2);
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
 			game.log(player, "的拼点牌为", event.card1);
-			game.log(target, "的拼点牌为", event.card2);
+			game.log(event.compareWithCardPile ? "牌堆" : target, "的拼点牌为", event.card2);
 			var getNum = function (card) {
 				for (var i of event.lose_list) {
 					if (i[1].includes(card)) {
@@ -6829,18 +6852,26 @@ player.removeVirtualEquip(card);
 				event.result.winner = player;
 				event.str = get.translation(player) + "拼点成功";
 				player.popup("胜");
-				target.popup("负");
+				if (get.itemtype(target) == "player") {
+					target.popup("负");
+				}
 			} else {
 				event.result.bool = false;
 				event.str = get.translation(player) + "拼点失败";
 				if (event.forceWinner !== target && event.num1 == event.num2) {
 					event.result.tie = true;
 					player.popup("平");
-					target.popup("平");
+					if (get.itemtype(target) == "player") {
+						target.popup("平");
+					}
 				} else {
-					event.result.winner = target;
+					if (get.itemtype(target) == "player") {
+						event.result.winner == target;
+					}
 					player.popup("负");
-					target.popup("胜");
+					if (get.itemtype(target) == "player") {
+						target.popup("胜");
+					}
 				}
 			}
 		},
@@ -6854,7 +6885,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			if (typeof target.ai.shown == "number" && target.ai.shown <= 0.85 && event.addToAI) {
+			if (get.itemtype(target) == "player" && typeof target.ai.shown == "number" && target.ai.shown <= 0.85 && event.addToAI) {
 				target.ai.shown += 0.1;
 			}
 			game.broadcastAll(() => ui.arena.classList.remove("thrownhighlight"));
@@ -9271,6 +9302,7 @@ player.removeVirtualEquip(card);
 			var link = result.links[0],
 				position = "j";
 			if (event.targets[0].getCards("e").includes(link)) {
+				position = "e";
 				if (!link.cards?.length) {
 					event.targets[0].removeVirtualEquip(link);
 				}
@@ -9286,7 +9318,7 @@ player.removeVirtualEquip(card);
 			}
 			game.log(event.targets[0], "的", link, "被移动给了", event.targets[1]);
 			event.result.card = link;
-			event.result.position = "e";
+			event.result.position = position;
 			game.delay();
 		}
 	},
@@ -12978,6 +13010,9 @@ player.removeVirtualEquip(card);
 	chooseToMove_new: function () {
 		"step 0";
 		//联机时间
+		if (player.isUnderControl()) {
+			game.swapPlayerAuto(player);
+		}
 		if (event.chooseTime && _status.connectMode && !game.online) {
 			event.time = lib.configOL.choose_timeout;
 			game.broadcastAll(function (time) {

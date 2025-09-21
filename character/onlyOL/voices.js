@@ -1,4 +1,9 @@
 export default {
+	"#olsbjigu1": "积五谷以供六军，战则大胜。",
+	"#olsbjigu2": "粮草先于兵马而行，无谷则不胜。",
+	"#olsbjiewan1": "断一腕而存全身，为之何妨。",
+	"#olsbjiewan2": "壮士解腕求存，绝境孤注一掷。",
+	"#ol_sb_dengai:die": "钟会小儿得志，必遭天谴！",
 	"#olsbqianfu1": "今从孟德，定能助其成霸业。",
 	"#olsbqianfu2": "良臣，当为明主筹谋。",
 	"#olsbyushi1": "势者，非由天定，乃凭人谋。",

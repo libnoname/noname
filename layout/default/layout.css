@@ -1387,6 +1387,35 @@ body > .background.land {
 .card.fullborder > .name {
 	font-family: "xinwei";
 }
+.card.dctuoyu-fengtian-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(228, 146, 64) 0 0 5px;
+	background-color: #e49240;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.card.dctuoyu-qingqu-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(0, 139, 139) 0 0 5px;
+	background-color: #008B8B;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.card.dctuoyu-junshan-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(16, 160, 16) 0 0 5px;
+	background-color: #10a010;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.handcards.yao_yaoyi > .card.yao_yaoyi {
+	background-image: var(--cardback-url) !important;
+	background-size: 100% 100% !important;
+	background-position: center !important;
+}
+.handcards.yao_yaoyi > .card.yao_yaoyi > * {
+	visibility: hidden !important;
+}
 .card > .cardframebg {
 	width: 100%;
 	height: 100%;

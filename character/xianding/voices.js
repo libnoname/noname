@@ -1,4 +1,9 @@
 export default {
+	"#dcqingleng1": "冰心映冷月，独守一江清秋。	",
+	"#dcqingleng2": "水之遇寒，故成冰尔。",
+	"#dczhendu1": "恶贼，杀我儿之时，可曾想过今日！",
+	"#dczhendu2": "杜鹃泣血成鸩，孤母泪如是。",
+	"#dongxu:die": "乱世人如草芥，女子更戚三分。",
 	"#dcsbzhouxi1": "不战胜，毋宁死！",
 	"#dcsbzhouxi2": "疾风卷赤帜，山雨摧危楼！",
 	"#dcsbshijin1": "哈哈哈哈，灭国擒主之功，古来几人？",

@@ -23,7 +23,7 @@ const characters = {
 		sex: "female",
 		group: "qun",
 		hp: 3,
-		skills: ["xinfu_falu", "xinfu_dianhua", "xinfu_zhenyi"],
+		skills: ["xinfu_falu", "xinfu_dianhua", "zhenyi"],
 	},
 	ol_qiaoxuan: {
 		sex: "male",

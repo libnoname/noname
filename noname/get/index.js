@@ -110,7 +110,7 @@ export class Get extends GetCompatible {
 			name2 = _status.event.getParent(3).name;
 			evt2 = _status.event.getParent(3);
 		}
-		if (name1 == "compareMultiple" || name2 == "compareMultiple" || name1.indexOf("Callback") != -1 || name2.indexOf("Callback") != -1) {
+		if (name1 == "compareMultiple" || name2 == "compareMultiple" || name1?.indexOf("Callback") != -1 || name2?.indexOf("Callback") != -1) {
 			name1 = _status.event.getParent(4).name;
 			evt1 = _status.event.getParent(4);
 			name2 = _status.event.getParent(5).name;

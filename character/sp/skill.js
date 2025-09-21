@@ -534,22 +534,15 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const nanman = new lib.element.VCard({ name: "nanman" }); //card = event.cards[0],
-			//const select = [1, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)];
+			player.addTempSkill("newzhennan_dist");
+			const nanman = new lib.element.VCard({ name: "nanman", storage: { newzhennan: true } });
 			if (player.hasUseTarget(nanman, true, false)) {
 				const result = await player.chooseUseTarget(nanman, true, false, [1, Infinity]).forResult();
 				if (result?.bool && result.targets?.length) {
-					for (const target of result.targets.sortBySeat()) {
-						if (target.hasHistory("damage", evt => evt.getParent(4) === event)) {
-							const cards = target.getDiscardableCards(target, "he");
-							if (cards.length) {
-								await target.discard(cards.randomGet());
-							}
-						} else {
-							player.line(target);
-							player.addTempSkill("newzhennan_dist");
-							player.markAuto("newzhennan_dist", target);
-						}
+					const targets = result.targets.filter(target => !target.hasHistory("damage", evt => evt.getParent(4) === event)).sortBySeat();
+					if (targets.length > 0) {
+						player.line(targets);
+						player.markAuto("newzhennan_dist", targets);
 					}
 				}
 			}
@@ -565,6 +558,24 @@ const skills = {
 							return true;
 						}
 					},
+				},
+				trigger: { source: "damageSource" },
+				filter(event, player) {
+					const target = event.player;
+					if (!event.card?.storage?.newzhennan || event.getParent().type !== "card") {
+						return false;
+					}
+					return target.isIn() && event.getParent(2).targets?.includes(target) && target.countCards("he") > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const cards = target.getDiscardableCards(target, "he");
+					if (cards.length) {
+						player.line(target);
+						await target.discard(cards.randomGet());
+					}
 				},
 			},
 		},
@@ -4954,7 +4965,6 @@ const skills = {
 			}
 		},
 		ai: { threaten: 4 },
-		derivation: "olhedao_faq",
 	},
 	olshoushu: {
 		audio: 3,
@@ -40294,6 +40304,51 @@ const skills = {
 		},
 	},
 	xinfu_falu: {
+		audio: 2,
+		trigger: {
+			player: ["loseAfter", "enterGame"],
+			global: ["loseAsyncAfter", "phaseBefore"],
+		},
+		filter(event, player) {
+			if (event.name.indexOf("lose") != 0) {
+				return event.name != "phase" || game.phaseNumber == 0;
+			}
+			if (event.type != "discard" || event.getlx === false) {
+				return false;
+			}
+			var evt = event.getl(player);
+			for (var i = 0; i < evt.cards2.length; i++) {
+				if (!player.hasMark("xinfu_falu_" + get.suit(evt.cards2[i]))) {
+					return true;
+				}
+			}
+			return false;
+		},
+		forced: true,
+		content() {
+			if (trigger.name.indexOf("lose") !== 0) {
+				for (var i = 0; i < lib.suit.length; i++) {
+					if (!player.hasMark("xinfu_falu_" + lib.suit[i])) {
+						player.addMark("xinfu_falu_" + lib.suit[i]);
+					}
+				}
+				return;
+			}
+			var evt = trigger.getl(player);
+			for (var i = 0; i < evt.cards2.length; i++) {
+				var suit = get.suit(evt.cards2[i]);
+				if (!player.hasMark("xinfu_falu_" + suit)) {
+					player.addMark("xinfu_falu_" + suit);
+				}
+			}
+		},
+		ai: {
+			combo: ["xinfu_dianhua", "zhenyi"],
+			threaten(player, target) {
+				//用不了this.combo，获取effect时ai被单独提出来this就丢失了（恼）
+				return 1 + ["xinfu_dianhua", "zhenyi"].filter(skill => target.hasSkill(skill)).length;
+			},
+		},
 		subSkill: {
 			spade: {
 				marktext: "♠︎️",
@@ -40324,293 +40379,185 @@ const skills = {
 				},
 			},
 		},
-		forced: true,
-		audio: 2,
-		trigger: {
-			player: ["loseAfter", "enterGame"],
-			global: ["loseAsyncAfter", "phaseBefore"],
-		},
-		filter(event, player) {
-			if (event.name.indexOf("lose") != 0) {
-				return event.name != "phase" || game.phaseNumber == 0;
-			}
-			if (event.type != "discard" || event.getlx === false) {
-				return false;
-			}
-			var evt = event.getl(player);
-			for (var i = 0; i < evt.cards2.length; i++) {
-				if (!player.hasMark("xinfu_falu_" + get.suit(evt.cards2[i]))) {
-					return true;
-				}
-			}
-			return false;
-		},
-		content() {
-			if (trigger.name.indexOf("lose") !== 0) {
-				for (var i = 0; i < lib.suit.length; i++) {
-					if (!player.hasMark("xinfu_falu_" + lib.suit[i])) {
-						player.addMark("xinfu_falu_" + lib.suit[i]);
-					}
-				}
-				return;
-			}
-			var evt = trigger.getl(player);
-			for (var i = 0; i < evt.cards2.length; i++) {
-				var suit = get.suit(evt.cards2[i]);
-				if (!player.hasMark("xinfu_falu_" + suit)) {
-					player.addMark("xinfu_falu_" + suit);
-				}
-			}
-		},
-		ai: {
-			threaten: 1.4,
-			combo: "xinfu_zhenyi",
-		},
 	},
 	xinfu_dianhua: {
-		trigger: {
-			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+		audio: 2,
+		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+		filter(event, player) {
+			return lib.suit.some(suit => player.hasMark(`xinfu_falu_${suit}`));
 		},
 		frequent: true,
-		audio: 2,
-		filter(event, player) {
-			for (var i = 0; i < lib.suit.length; i++) {
-				if (player.hasMark("xinfu_falu_" + lib.suit[i])) {
-					return true;
-				}
-			}
-			return false;
+		async content(event, trigger, player) {
+			const num = lib.suit.filter(suit => player.hasMark(`xinfu_falu_${suit}`)).length;
+			await player.chooseToGuanxing(num).set("prompt", "点化：点击或拖动将牌移动到牌堆顶或牌堆底");
 		},
-		content() {
-			"step 0";
-			var num = 0;
-			for (var i = 0; i < lib.suit.length; i++) {
-				if (player.hasMark("xinfu_falu_" + lib.suit[i])) {
-					num++;
+		ai: { combo: "xinfu_falu" },
+	},
+	xinfu_zhenyi: { audio: 2 },
+	zhenyi: {
+		audio: "xinfu_zhenyi",
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.hasNature() && player.hasMark("xinfu_falu_diamond");
+		},
+		prompt2: "失去「勾陈♦」标记，从牌堆中随机获得每种类型的牌各一张",
+		async content(event, trigger, player) {
+			player.clearMark("xinfu_falu_diamond");
+			let [gains, types] = [[], []];
+			while (types.length < 3) {
+				let card = get.cardPile2(card => !types.includes(get.type2(card)));
+				if (card) {
+					gains.push(card);
+					types.push(get.type2(card));
+				} else {
+					break;
 				}
 			}
-			var cards = get.cards(num);
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove();
-			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-			next.set("prompt", "点化：点击或拖动将牌移动到牌堆顶或牌堆底");
-			next.processAI = function (list) {
-				var cards = list[0][1],
-					player = _status.event.player;
-				var target = _status.event.getTrigger().name == "phaseZhunbei" ? player : player.next;
-				var att = get.sgn(get.attitude(player, target));
-				var top = [];
-				var judges = target.getCards("j");
-				var stopped = false;
-				if (player != target || !target.hasWuxie()) {
-					for (var i = 0; i < judges.length; i++) {
-						var judge = get.judge(judges[i]);
-						cards.sort(function (a, b) {
-							return (judge(b) - judge(a)) * att;
-						});
-						if (judge(cards[0]) * att < 0) {
-							stopped = true;
-							break;
-						} else {
-							top.unshift(cards.shift());
-						}
-					}
-				}
-				var bottom;
-				if (!stopped) {
-					cards.sort(function (a, b) {
-						return (get.value(b, player) - get.value(a, player)) * att;
-					});
-					while (cards.length) {
-						if (get.value(cards[0], player) <= 5 == att > 0) {
-							break;
-						}
-						top.unshift(cards.shift());
-					}
-				}
-				bottom = cards;
-				return [top, bottom];
-			};
-			"step 1";
-			var top = result.moved[0];
-			var bottom = result.moved[1];
-			top.reverse();
-			for (var i = 0; i < top.length; i++) {
-				ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
+			if (gains.length > 0) {
+				await player.gain(gains, "gain2");
 			}
-			for (i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
-			}
-			player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
-			game.log(player, "将" + get.cnNumber(top.length) + "张牌置于牌堆顶");
-			game.updateRoundNumber();
-			game.delayx();
 		},
 		ai: {
 			combo: "xinfu_falu",
-			threaten: 2.2,
+			maixie: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage") && (game.hasNature(card) || (card.name === "sha" && player.hasSkill("zhuque_skill")))) {
+						if (!target.hasMark("xinfu_falu_heart") || player.hasSkillTag("jueqing", false, target)) {
+							return;
+						}
+						let num = 1;
+						if (get.attitude(player, target) > 0) {
+							if (player.needsToDiscard()) {
+								num = 0.7;
+							} else {
+								num = 0.5;
+							}
+						}
+						if (target.hp >= 4) {
+							return [1, num * 2];
+						}
+						if (target.hp == 3) {
+							return [1, num * 1.5];
+						}
+						if (target.hp == 2) {
+							return [1, num * 0.5];
+						}
+					}
+				},
+			},
 		},
-	},
-	xinfu_zhenyi: {
 		group: ["zhenyi_spade", "zhenyi_club", "zhenyi_heart"],
-		trigger: {
-			player: "damageEnd",
-		},
-		audio: 2,
-		filter(event, player) {
-			//if(!event.hasNature()) return false;
-			return player.hasMark("xinfu_falu_diamond");
-		},
-		prompt2: "弃置「勾陈♦」标记，从牌堆中随机获得每种类型的牌各一张。",
-		content() {
-			"step 0";
-			player.removeMark("xinfu_falu_diamond");
-			event.num = 0;
-			event.togain = [];
-			"step 1";
-			var card = get.cardPile2(function (card) {
-				for (var i = 0; i < event.togain.length; i++) {
-					if (get.type(card, "trick") == get.type(event.togain[i], "trick")) {
+		subSkill: {
+			spade: {
+				audio: "xinfu_zhenyi",
+				trigger: { global: "judge" },
+				filter(event, player) {
+					return player.hasMark("xinfu_falu_spade");
+				},
+				async cost(event, trigger, player) {
+					const str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，是否发动【真仪】，失去「紫薇♠」标记并修改判定结果？`;
+					const control = await player.chooseControl('黑桃5', '红桃5', 'cancel2')
+						.set('prompt', get.prompt(event.skill))
+						.set('prompt2', str)
+						.set('judging', trigger.player.judging[0])
+						.set('ai', () => {
+							const { player, judging } = get.event();
+							const trigger = get.event().getTrigger();
+							const results = trigger.judge({ name: judging.name, suit: 'spade', number: 5 }) - trigger.judge(judging);
+							const resulth = trigger.judge({ name: judging.name, suit: 'heart', number: 5 }) - trigger.judge(judging);
+							const attitude = get.attitude(player, trigger.player);
+							if (attitude == 0 || (resulth == 0 && results == 0)) {
+								return 'cancel2';
+							}
+							if (attitude > 0) {
+								if (results > 0) {
+									return resulth > results ? '红桃5' : '黑桃5';
+								}
+								else if (resulth > 0) {
+									return '红桃5';
+								}
+								return 'cancel2';
+							}
+							else {
+								if (results < 0) {
+									return resulth < results ? '红桃5' : '黑桃5';
+								}
+								else if (resulth < 0) {
+									return '红桃5';
+								}
+								return 'cancel2';
+							}
+						}).forResult("control");
+					event.result = {
+						bool: control && control !== "cancel2",
+						cost_data: control,
+					};
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					player.clearMark("xinfu_falu_spade");
+					player.popup(event.cost_data);
+					const control = event.cost_data.startsWith("黑桃") ? "spade" : "heart";
+					game.log(player, "将判定结果改为了", `#y${get.translation(control)}5`);
+					trigger.fixedResult = {
+						suit: control,
+						color: get.color({ suit: control }),
+						number: 5,
+					};
+				},
+				ai: {
+					expose: 0.5,
+					rejudge: true,
+					tag: { rejudge: 1 },
+				},
+			},
+			club: {
+				audio: "xinfu_zhenyi",
+				enable: "chooseToUse",
+				viewAsFilter(player) {
+					if (player == _status.currentPhase) {
 						return false;
 					}
-				}
-				return true;
-			}, "random");
-			if (card) {
-				event.togain.push(card);
-				event.num++;
-				if (event.num < 3) {
-					event.redo();
-				}
-			}
-			"step 2";
-			if (event.togain.length) {
-				player.gain(event.togain, "gain2");
-			}
-		},
-		ai: {
-			combo: "xinfu_falu",
-		},
-	},
-	zhenyi_spade: {
-		trigger: {
-			global: "judge",
-		},
-		direct: true,
-		sourceSkill: "xinfu_zhenyi",
-		filter(event, player) {
-			return player.hasMark("xinfu_falu_spade");
-		},
-		content() {
-			"step 0";
-			var str = get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，是否发动【真仪】，弃置「紫薇♠」标记并修改判定结果？";
-			player
-				.chooseControl("spade", "heart", "diamond", "club", "cancel2")
-				.set("prompt", str)
-				.set("ai", function () {
-					//return '取消';
-					var judging = _status.event.judging;
-					var trigger = _status.event.getTrigger();
-					var res1 = trigger.judge(judging);
-					var list = lib.suit.slice(0);
-					var attitude = get.attitude(player, trigger.player);
-					if (attitude == 0) {
-						return 0;
-					}
-					var getj = function (suit) {
-						return trigger.judge({
-							name: get.name(judging),
-							nature: get.nature(judging),
-							suit: suit,
-							number: 5,
-						});
-					};
-					list.sort(function (a, b) {
-						return (getj(b) - getj(a)) * get.sgn(attitude);
-					});
-					if ((getj(list[0]) - res1) * attitude > 0) {
-						return list[0];
-					}
-					return "cancel2";
-				})
-				.set("judging", trigger.player.judging[0]);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.addExpose(0.25);
-				player.removeMark("xinfu_falu_spade");
-				player.logSkill("xinfu_zhenyi", trigger.player);
-				//player.line(trigger.player);
-				player.popup(result.control);
-				game.log(player, "将判定结果改为了", "#y" + get.translation(result.control + 2) + 5);
-				trigger.fixedResult = {
-					suit: result.control,
-					color: get.color({ suit: result.control }),
-					number: 5,
-				};
-			}
-		},
-		ai: {
-			rejudge: true,
-			tag: {
-				rejudge: 1,
+					return player.hasMark("xinfu_falu_club") && player.countCards("hes") > 0;
+				},
+				filterCard: true,
+				position: "hes",
+				viewAs: { name: "tao" },
+				prompt: "失去「后土♣」标记，将一张牌当作【桃】使用",
+				check(card) {
+					return 15 - get.value(card);
+				},
+				log: false,
+				precontent() {
+					player.logSkill("zhenyi_club");
+					player.clearMark("xinfu_falu_club");
+				},
 			},
-			expose: 0.5,
-		},
-	},
-	zhenyi_club: {
-		audio: "xinfu_zhenyi",
-		enable: "chooseToUse",
-		sourceSkill: "xinfu_zhenyi",
-		viewAsFilter(player) {
-			if (player == _status.currentPhase) {
-				return false;
-			}
-			return player.hasMark("xinfu_falu_club") && player.countCards("hs") > 0;
-		},
-		filterCard: true,
-		position: "hs",
-		viewAs: {
-			name: "tao",
-		},
-		prompt: "弃置「后土♣」标记，将一张手牌当桃使用",
-		check(card) {
-			return 15 - get.value(card);
-		},
-		precontent() {
-			player.removeMark("xinfu_falu_club");
-		},
-	},
-	zhenyi_heart: {
-		trigger: {
-			source: "damageBegin1",
-		},
-		audio: "xinfu_zhenyi",
-		sourceSkill: "xinfu_zhenyi",
-		filter(event, player) {
-			return player.hasMark("xinfu_falu_heart");
-		},
-		check(event, player) {
-			if (get.attitude(player, event.player) >= 0) {
-				return false;
-			}
-			if (
-				event.player.hasSkillTag("filterDamage", null, {
-					player: player,
-					card: event.card,
-				})
-			) {
-				return false;
-			}
-			return true;
-			//return player.hasMark('xinfu_falu_spade')||get.color(ui.cardPile.firstChild)=='black';
-		},
-		prompt2(event) {
-			return "弃置「玉清♥」标记，令对" + get.translation(event.player) + "即将造成的伤害+1。";
-		},
-		logTarget: "player",
-		content() {
-			player.removeMark("xinfu_falu_heart");
-			trigger.num++;
+			heart: {
+				audio: "xinfu_zhenyi",
+				trigger: { source: "damageBegin1" },
+				filter(event, player) {
+					return player.hasMark("xinfu_falu_heart");
+				},
+				check(event, player) {
+					if (get.attitude(player, event.player) >= 0) {
+						return false;
+					}
+					return !event.player.hasSkillTag("filterDamage", null, {
+						player: player,
+						card: event.card,
+					});
+				},
+				prompt2(event) {
+					return "失去「玉清♥」标记，令即将对" + get.translation(event.player) + "造成的伤害+1";
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					player.clearMark("xinfu_falu_heart");
+					trigger.num++;
+				},
+			},
 		},
 	},
 	xinfu_zhennan: {

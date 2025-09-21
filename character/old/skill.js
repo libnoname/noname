@@ -17,8 +17,10 @@ const skills = {
 										if (cards.includes(card)) {
 											game.broadcastAll(
 												(card, skill) => {
-													card.classList.add(skill);
 													card.addGaintag(`${skill}_tag`);
+													game.addVideo("addGaintag", player, [[get.cardInfo(card)], `${skill}_tag`]);
+													card.classList.add(skill);
+													game.addVideo("skill", player, [skill, [true, [get.cardInfo(card)]]]);
 												},
 												card,
 												skill
@@ -27,8 +29,15 @@ const skills = {
 									}
 								}
 								for (const card of mutation.removedNodes) {
-									if (cards.includes(card) && !player.getCards("h").includes(card)) {
-										game.broadcastAll((card, skill) => card.classList.remove(skill), card, skill);
+									if (cards.includes(card) && !card.hasGaintag(`${skill}_tag`)) {
+										game.broadcastAll(
+											(card, skill) => {
+												card.classList.remove(skill);
+												game.addVideo("skill", player, [skill, [false, [get.cardInfo(card)]]]);
+											},
+											card,
+											skill
+										);
 									}
 								}
 							}
@@ -48,9 +57,22 @@ const skills = {
 					player.node.handcards2.cardMod[skill] = cardMod;
 					player.node.handcards1.classList.add(skill);
 					player.node.handcards2.classList.add(skill);
-					if (!ui.css[skill]) {
-						ui.css[skill] = lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi {", "background-image: var(--cardback-url) !important;", "background-size: 100% 100% !important;", "background-position: center !important;", "}"].join(""));
-						lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi > * {", "visibility: hidden !important;", "}"].join(""));
+					if (_status.gameDrawed) {
+						const cards = player._start_cards ?? [];
+						player.getCards("h").forEach(card => {
+							if (cards.includes(card)) {
+								game.broadcastAll(
+									(card, skill) => {
+										card.addGaintag(`${skill}_tag`);
+										game.addVideo("addGaintag", player, [[get.cardInfo(card)], `${skill}_tag`]);
+										card.classList.add(skill);
+										game.addVideo("skill", player, [skill, [true, [get.cardInfo(card)]]]);
+									},
+									card,
+									skill
+								);
+							}
+						});
 					}
 					const { card, blank, ...others } = ui.create.buttonPresets;
 					ui.create.buttonPresets = {
@@ -81,11 +103,25 @@ const skills = {
 					player.node.handcards2.classList.remove(skill);
 					delete player.node.handcards1.cardMod[skill];
 					delete player.node.handcards2.cardMod[skill];
-					player.getCards("h", card => card.classList.contains(skill)).forEach(card => card.classList.remove(skill));
+					player.getCards("h").forEach(card => {
+						if (card.classList.contains(skill)) {
+							card.classList.remove(skill);
+							game.addVideo("skill", player, [skill, [false, [get.cardInfo(card)]]]);
+						}
+					});
 				},
 				player,
 				skill
 			);
+		},
+		video(player, info) {
+			for (const cardid of info[1]) {
+				for (const card of player.getCards("h")) {
+					if (card.cardid === cardid[4]) {
+						card.classList[info[0] ? "add" : "remove"]("yao_yaoyi");
+					}
+				}
+			}
 		},
 		enable: "chooseToUse",
 		filter(event, player) {
@@ -273,11 +309,20 @@ const skills = {
 					game.broadcastAll(
 						cards => {
 							for (const card of cards) {
-								card.classList.toggle("yao_yaoyi");
-								card[card.hasGaintag("yao_yaoyi_tag") ? "removeGaintag" : "addGaintag"]("yao_yaoyi_tag");
+								if (card.hasGaintag("yao_yaoyi_tag")) {
+									card.removeGaintag("yao_yaoyi_tag");
+									game.addVideo("removeGaintag", player, ["yao_yaoyi_tag", [get.cardInfo(card)]]);
+									card.classList.remove("yao_yaoyi");
+									game.addVideo("skill", player, ["yao_yaoyi", [false, [get.cardInfo(card)]]]);
+								} else {
+									card.addGaintag("yao_yaoyi_tag");
+									game.addVideo("addGaintag", player, [[get.cardsInfo(card)], "yao_yaoyi_tag"]);
+									card.classList.add("yao_yaoyi");
+									game.addVideo("skill", player, ["yao_yaoyi", [true, [get.cardInfo(card)]]]);
+								}
 							}
 						},
-						result.cards.filter(i => get.position(i) === "h" && get.owner(i) === player),
+						result.cards.filter(i => get.position(i) === "h" && get.owner(i) === player)
 					);
 				}
 			}

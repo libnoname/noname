@@ -296,7 +296,7 @@ const translates = {
 	dctuoyu_fengtian_tag: '<span data-nature="woodmm">丰田</span>',
 	dctuoyu_qingqu_tag: '<span data-nature="watermm">清渠</span>',
 	dctuoyu_junshan_tag: '<span data-nature="thundermm">峻山</span>',
-	dctuoyu_info: "①锁定技。当你使用拥有对应副区域标签的牌时，你令此牌获得对应效果。<br>丰田：伤害值或回复值+1；清渠：无次数和距离限制；峻山：不可被响应。②出牌阶段开始时和结束时，你给你的手牌分配对应的已激活副区域标签（每个区域至多五张）。",
+	dctuoyu_info: "锁定技。①当你使用拥有对应副区域标签的牌时，你令此牌获得对应效果。<br>丰田：伤害值或回复值+1；清渠：无次数和距离限制；峻山：不可被响应。②出牌阶段开始时和结束时，你给你的手牌分配对应的已激活副区域标签（每个区域至多五张）。",
 	dcxianjin: "险进",
 	dcxianjin_info: "锁定技。当你每造成或受到两次伤害后，你激活一个副区域标签并摸X张牌（X为你已激活的副区域数，若你的手牌数为全场最多则改为摸一张牌）。",
 	dcqijing: "奇径",

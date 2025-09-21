@@ -1622,6 +1622,13 @@ const skills = {
 			},
 			select: [1, Infinity],
 			check: button => {
+				const player = get.player();
+				if (player.hasSkillTag("filterDamage") || player.hasSkillTag("nodamage")) {
+					return get.value(button.link);
+				}
+				if (ui.selected.buttons.length >= player.getHp() && get.damageEffect(player, player, player) < 0) {
+					return 0;
+				}
 				return get.value(button.link);
 			},
 			backup: links => {

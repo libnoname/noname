@@ -322,6 +322,15 @@ export class Game extends GameCompatible {
 			}
 		}
 
+		function getScaledBound(element) {
+			let { x, y, width, height } = element.getBoundingClientRect();
+			x /= game.documentZoom;
+			y /= game.documentZoom;
+			width /= game.documentZoom;
+			height /= game.documentZoom;
+			return { x, y, width, height };
+		}
+
 		/**
 		 * 计算element当前的位置喵
 		 * 包括变换效果和动画效果当前的位置哦喵
@@ -330,7 +339,7 @@ export class Game extends GameCompatible {
 		 * @returns {[number, number]} 当前元素相对于视口的实际位置喵
 		 */
 		function getCurrentPosition(element) {
-			const { x, y } = element.getBoundingClientRect();
+			const { x, y } = getScaledBound(element);
 			const animation = game.$elementGotoAnimData.invertingAnimations.get(element);
 
 			if (animation) {
@@ -541,7 +550,7 @@ export class Game extends GameCompatible {
 				} else {
 					// 否则我们需要复制动画元素喵
 					const [subject, stage] = cloneVisualElement(element);
-					const bounds = subject.getBoundingClientRect();
+					const bounds = getScaledBound(subject);
 					const startX = sx - bounds.x;
 					const startY = sy - bounds.y;
 					const endX = ex - bounds.x;

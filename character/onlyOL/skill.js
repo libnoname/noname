@@ -1549,26 +1549,40 @@ const skills = {
 				log: false,
 			},
 			debuff: {
-				forced: true,
 				charlotte: true,
-				popup: false,
 				init(player, skill) {
 					player.addMark(skill, 2, false);
 				},
 				onremove: true,
-				intro: {
-					content: "当前“幻惑”剩余次数：#",
-				},
-				firstDo: true,
-				trigger: {
-					player: ["chooseToUseBegin", "useCardAfter"],
-				},
+				intro: { content: "当前“幻惑”剩余次数：#" },
+				trigger: { player: ["chooseToUseBegin", "useCardAfter"] },
 				filter(event, player) {
 					if (event.name == "chooseToUse") {
 						return event.type == "phase";
 					}
-					return player.isPhaseUsing();
+					return event.isPhaseUsing(player);
 				},
+				mod: {
+					cardEnabled(card, player) {
+						const event = get.event();
+						if (player.isPhaseUsing() && !_status._olhuanhuo_debuff_check && (!event.skill || event.skill !== "olhuanhuo_backup")) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (player.isPhaseUsing()) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						if (player.isPhaseUsing()) {
+							return false;
+						}
+					},
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						player.removeMark(event.name, 1, false);
@@ -1582,14 +1596,18 @@ const skills = {
 							player.removeSkill(event.name);
 						}
 					} else {
+						game.broadcastAll(() => _status._olhuanhuo_debuff_check = true);
 						const cards = player.getCards("h", card => lib.filter.cardEnabled(card, player, trigger) && lib.filter.cardUsable(card, player, trigger));
+						game.broadcastAll(() => delete _status._olhuanhuo_debuff_check);
 						if (!cards.length) {
+							trigger.getParent("phaseUse").skipped = true;
+							trigger.cancel();
 							return;
 						}
 						const card = cards.randomGet();
 						trigger.set(event.name, card);
 						const name = "olhuanhuo_backup";
-						//trigger.set("openskilldialog", "请选择" + get.translation(card) + "的目标");
+						trigger.set("openskilldialog", `受【${get.translation(event.name)}】影响，须使用${get.translation(card)}`);
 						trigger.set("norestore", true);
 						trigger.set("_backupevent", name);
 						trigger.set("custom", {

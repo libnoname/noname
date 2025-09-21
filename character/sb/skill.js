@@ -3387,7 +3387,7 @@ const skills = {
 					audioname: ["mb_caomao"],
 					filterCard: () => false,
 					selectCard: -1,
-					...filterTarget,
+					...effect.filterTarget,
 					async content(event, trigger, player) {
 						const effect = lib.skill.sbfangzhu_backup.effect;
 						player.removeMark("sbxingshang", effect.cost);

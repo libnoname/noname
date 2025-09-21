@@ -800,6 +800,7 @@ game.import("card", function () {
 						})
 						.filter(evt => evt.getg(target)?.length)
 						.then(() => {
+							player.removeSkill(event.name);
 							sourcex.draw(trigger.getg(player)?.length);
 						})
 						.vars({
