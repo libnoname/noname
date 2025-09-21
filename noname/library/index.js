@@ -29,7 +29,7 @@ import { ErrorManager } from "../util/error.js";
 import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
-import dedent from "../../game/dedent.js";
+import dedent from "dedent";
 import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 import { ZhanfaManager } from "./zhanfa.js";
 

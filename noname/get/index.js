@@ -7,11 +7,13 @@ import { CacheContext } from "../library/cache/cacheContext.js";
 import { Is } from "./is.js";
 import { Promises } from "./promises.js";
 import { rootURL } from "../../noname.js";
-import * as pinyinPro from "./pinyins/index.js";
+import * as pinyinPro from "pinyin-pro";
+import NonameDictionary from "./pinyins/noname-dict.js";
 import { Audio } from "./audio.js";
 import security from "../util/security.js";
 import { CodeSnippet, ErrorManager } from "../util/error.js";
 
+import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";
 import { HTMLPoptipElement } from "../library/poptip.js";
 
@@ -1208,13 +1210,7 @@ export class Get extends GetCompatible {
 	 * @param { (zip: JSZip) => any } callback
 	 */
 	zip(callback) {
-		if (!window.JSZip) {
-			lib.init.js(lib.assetURL + "game", "jszip", function () {
-				callback(new JSZip());
-			});
-		} else {
-			callback(new JSZip());
-		}
+		callback(new JSZip());
 	}
 	delayx(num, max) {
 		if (typeof num != "number") {
@@ -7216,6 +7212,8 @@ freezeSlot(Get.prototype, "isFunctionBody");
 freezeSlot(Get.prototype, "pureFunctionStr");
 freezeSlot(Get.prototype, "funcInfoOL");
 freezeSlot(Get.prototype, "infoFuncOL");
+
+pinyinPro.addDict(NonameDictionary);
 
 export let get = new Get();
 /**

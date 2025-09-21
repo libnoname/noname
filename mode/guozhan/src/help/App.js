@@ -1,4 +1,4 @@
-import html from "../../../../game/dedent.js";
+import html from "dedent";
 
 export default {
 	template: html`

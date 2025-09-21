@@ -104,7 +104,7 @@ function generateImportFunction(type, pathParser) {
 			}
 			return;
 		}
-		const modeContent = await import(path);
+		const modeContent = await import(/* @vite-ignore */path);
 		if (!modeContent.type) {
 			return;
 		}

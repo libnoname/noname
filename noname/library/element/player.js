@@ -8,7 +8,7 @@ import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
 import security from "../../util/security.js";
 import { ContentCompiler } from "./gameEvent.js";
-import dedent from "../../../game/dedent.js";
+import dedent from "dedent";
 
 export class Player extends HTMLDivElement {
 	/**
@@ -10563,7 +10563,7 @@ export class Player extends HTMLDivElement {
 			}
 		} else {
 			if (skill === "counttrigger") {
-				this.getStat("triggerSkill") = {};
+				this.stat[this.stat.length - 1].triggerSkill = {};
 				return;
 			} else {
 				var info = lib.skill[skill];

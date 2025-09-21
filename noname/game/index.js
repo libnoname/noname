@@ -3292,7 +3292,7 @@ export class Game extends GameCompatible {
 			// 编译ts扩展
 			if (isTsFile) {
 				if (typeof globalThis.ts === "undefined") {
-					await lib.init.promises.js("game", "typescript");
+					globalThis.ts = await import("typescript");
 				}
 				/**
 				 * @type {typeof import('typescript')}

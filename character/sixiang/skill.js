@@ -1,4 +1,3 @@
-import { initCustomFormatter } from "../../game/vue.esm-browser.js";
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */

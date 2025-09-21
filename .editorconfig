@@ -13,15 +13,3 @@ indent_size = 4
 [*.vue]
 indent_style = tab
 indent_size = 4
-
-[.prettierrc]
-indent_style = tab
-indent_size = 4
-
-[.eslintrc.json]
-indent_style = tab
-indent_size = 4
-
-[deno.json]
-indent_style = space
-indent_size = 2

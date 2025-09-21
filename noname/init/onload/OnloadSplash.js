@@ -1,7 +1,7 @@
 import { lib, get } from "../../../noname.js";
-import { ref, onMounted } from "../../../game/vue.esm-browser.js";
+import { ref, onMounted } from "vue";
 import { delay } from "../../util/index.js";
-import dedent from "../../../game/dedent.js";
+import dedent from "dedent";
 
 const html = dedent;
 /**

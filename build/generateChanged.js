@@ -6,7 +6,7 @@
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
-const JSZip = require("./jszip.js");
+const JSZip = require("jszip");
 
 const joinRootPath = p => path.join(__dirname, "../", p);
 

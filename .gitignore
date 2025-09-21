@@ -19,6 +19,7 @@ image/*.TXT
 .vscode
 app
 app.html
+dist
 ehthumbs.db
 extension
 Home

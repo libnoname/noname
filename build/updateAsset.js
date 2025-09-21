@@ -15,7 +15,7 @@ const { argv, exit } = require("node:process");
 // @ts-expect-error core-js
 if (typeof Map.groupBy !== 'function') {
 	// await import('./core-js-bundle.js');
-	require('./core-js-bundle.js');
+	require('../game/core-js-bundle.js');
 }
 
 const assetListPath = join(__dirname, "./asset.js");
@@ -112,7 +112,7 @@ async function backup(filePath) {
  */
 async function importAsset() {
 	// @ts-expect-error take it as a module
-	await import("./asset.js");
+	await import("../game/asset.js");
 	const assetList = window.noname_asset_list;
 	delete window.noname_asset_list;
 	delete window.noname_skin_list;

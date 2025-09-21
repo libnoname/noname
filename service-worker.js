@@ -5,14 +5,11 @@
 // @ts-expect-error transfer type on force.
 var self = globalThis;
 // 以副作用导入typescript，以保证require也可以同步使用
-import './game/typescript.js';
-/**
- * @type { import('typescript') }
- */
-var ts = globalThis.ts;
+import ts from 'typescript';
+globalThis.ts = ts;
 // sfc以正常的esmodule使用
-import * as sfc from './game/compiler-sfc.esm-browser.js';
-import dedent from "./game/dedent.js";
+import sfc from '@vue/compiler-sfc';
+import dedent from "dedent";
 if (typeof ts != 'undefined') {
 	console.log(`ts loaded`, ts.version);
 } else {

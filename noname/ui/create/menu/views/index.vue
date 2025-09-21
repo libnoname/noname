@@ -19,7 +19,7 @@
 
 <script>
 import { startMenuData, startMenutabName } from "../startMenu.js";
-import { createApp, reactive } from "../../../../../game/vue.esm-browser.js";
+import { createApp, reactive } from "vue";
 
 export default {
 	props: {

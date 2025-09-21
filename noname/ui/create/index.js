@@ -435,7 +435,7 @@ export class Create {
 				})
 			);
 			if (language === "javascript") {
-				const { Linter } = await import("@/game/eslint-linter-browserify.js");
+				const { Linter } = await import("eslint");
 				extensions.push(
 					linter(
 						esLint(new Linter(), {
@@ -2546,7 +2546,7 @@ export class Create {
 			if (window.plugins && window.plugins.insomnia) {
 				window.plugins.insomnia.keepAwake();
 			} else {
-				lib.init.js(lib.assetURL + "game", "NoSleep", function () {
+				import("nosleep.js").then(function ({default: NoSleep}) {
 					var noSleep = new NoSleep();
 					document.addEventListener(
 						lib.config.touchscreen ? "touchend" : "click",

@@ -1,5 +1,5 @@
 import { ui, game, get, lib, _status } from "../../../../noname.js";
-import { createApp, ref, reactive, onMounted, toRaw, isReactive, watch } from "../../../../game/vue.esm-browser.js";
+import { createApp, ref, reactive, onMounted, toRaw, isReactive, watch } from "vue";
 import { NonameConfig } from "./nonameConfig.js";
 /**
  * 使字符串有html的代码提示
