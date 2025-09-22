@@ -31,8 +31,6 @@
 		"noImplicitAny": false,                              /* Enable error reporting for expressions and declarations with an implied `any` type.. */
 		"strictBindCallApply": true,                         /* Check that the arguments for `bind`, `call`, and `apply` methods match the original function. */
 		"strictPropertyInitialization": false,               /* Check for class properties that are declared but not set in the constructor. */
-		"skipDefaultLibCheck": true,                         /* Skip type checking .d.ts files that are included with TypeScript. */
-		"skipLibCheck": true,                                /* Skip type checking all .d.ts files. */
 		"ignoreDeprecations": "5.0"
 	}
 }

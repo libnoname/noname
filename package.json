@@ -12,7 +12,8 @@
     "scripts": {
         "start": "npx vite",
         "build": "",
-        "type": "npx tsc -p tsconfig.type.json"
+        "type": "npx tsc -p tsconfig.type.json",
+        "lint": "npx eslint"
     },
     "dependencies": {
         "@codemirror/lang-css": "^6.3.1",
@@ -53,8 +54,10 @@
         "eslint-plugin-vue": "^10.2.0",
         "glob": "^11.0.3",
         "globals": "^16.2.0",
+        "jiti": "^2.5.1",
         "prettier": "^3.6.2",
         "typescript-eslint": "^8.34.1",
-        "vite": "^7.1.6"
+        "vite": "^7.1.6",
+        "vue-eslint-parser": "^10.2.0"
     }
 }

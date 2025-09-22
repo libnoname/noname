@@ -1,26 +1,16 @@
 import js from "@eslint/js";
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from "eslint/config";
 import ts from "typescript-eslint";
 import vue from "eslint-plugin-vue";
+import vueParser from "vue-eslint-parser";
 import globals from "globals";
 
-const ignores = ["node_modules/", "noname-server.js", "tsconfig.json", "game/codemirror.js", "game/jszip.js", "game/pressure.js", "game/compiler-sfc.esm-browser.js", "game/core-js-bundle.js", "game/dedent.js", "game/typescript.js", "game/vue.esm-browser.js", "game/NoSleep.js"];
-
 export default defineConfig(
+	globalIgnores(["noname-server.js"]),
+	js.configs.recommended,
+	ts.configs.recommended,
+	vue.configs["flat/essential"],
 	{
-		...js.configs.recommended,
-		ignores,
-	},
-	ts.configs.recommended.map(config => ({
-		...config,
-		ignores,
-	})),
-	vue.configs["flat/essential"].map(config => ({
-		...config,
-		ignores,
-	})),
-	{
-		ignores,
 		files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.vue"],
 		rules: {
 			"@typescript-eslint/no-require-imports": 0,
@@ -34,7 +24,7 @@ export default defineConfig(
 			"@typescript-eslint/ban-ts-comment": [
 				"error",
 				{
-					"ts-ignore":false,
+					"ts-ignore": false,
 					"ts-nocheck": false,
 				},
 			],
@@ -68,6 +58,10 @@ export default defineConfig(
 		languageOptions: {
 			ecmaVersion: 13,
 			sourceType: "module",
+			parser: vueParser,
+			parserOptions: {
+				parser: ts.parser,
+			},
 			globals: {
 				...globals.browser,
 				...globals.es2015,

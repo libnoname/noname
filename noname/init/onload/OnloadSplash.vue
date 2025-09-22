@@ -66,7 +66,3 @@ onMounted(() => {
   });
 });
 </script>
-
-<style scoped>
-/* 这里可以加上你自己的样式 */
-</style>
