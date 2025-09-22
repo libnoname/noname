@@ -307,8 +307,8 @@ game.import("card", function () {
 							.forResult();
 						if (result?.control) {
 							const color = result.control;
-							game.log(player, "选择了", "#y" + color);
-							player.popup(color);
+							game.log(target, "选择了", "#y" + color);
+							target.popup(color);
 							const judgeEvent = target.judge(card => {
 								if (get.color(card) == get.event().haoyun_color) {
 									return 1.5;
@@ -333,7 +333,7 @@ game.import("card", function () {
 						}
 					}
 					if (cards.length) {
-						await player.gain(cards, "gain2");
+						await target.gain(cards, "gain2");
 					}
 				},
 				ai: {
@@ -1051,7 +1051,7 @@ game.import("card", function () {
 							continue;
 						}
 						const { result } = await target
-							.chooseToRespond("劝酒：打出一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
+							.chooseToRespond("劝酒：打出一张【酒】否则受到每名其他角色造成的1点伤害", function (card) {
 								return get.name(card) == "jiu";
 							})
 							.set("ai", () => 114514);
@@ -2124,14 +2124,14 @@ game.import("card", function () {
 		translate: {
 			jianhao: "见好就收",
 			jianhao_bg: "收",
-			jianhao_info: "出牌阶段，对你使用。你展示牌堆顶一张牌，猜测牌堆顶的下张牌点数大于或小于此牌并展示。若猜对，你可选择一项：1.获得所有展示牌;2.再次猜测",
+			jianhao_info: "出牌阶段，对你使用。你展示牌堆顶一张牌，猜测牌堆顶的下张牌点数大于或小于此牌并展示。若猜对，你可选择一项：1.获得所有展示牌；2.再次猜测。",
 			wangmei: "望梅止渴",
 			wangmei_bg: "梅",
 			wangmei_skill: "望梅止渴",
-			wangmei_info: "出牌阶段，对一名角色使用。直到该角色的回合结束，他所有梅花手牌均视为【桃】。",
+			wangmei_info: "出牌阶段，对一名角色使用。直到该角色的回合结束，其所有梅花手牌均视为【桃】。",
 			zhisi: "至死方休",
 			zhisi_bg: "休",
-			zhisi_info: "出牌阶段，对你使用。目标将体力上限减少至1。每减少一点，可以视为使用一张火【杀】。（最多9张）",
+			zhisi_info: "出牌阶段，对你使用。目标将体力上限减少至1。其每减少1点体力上限，便可视为使用一张火【杀】（至多使用九张）。",
 			get qingsuan() {
 				return Math.random() > 0.05 ? "清算" : "青蒜";
 			},
@@ -2140,13 +2140,13 @@ game.import("card", function () {
 			jiaoyou: "火上浇油",
 			jiaoyou_skill: "火上浇油",
 			jiaoyou_bg: "油",
-			jiaoyou_info: "出牌阶段，对所有角色使用。目标依次展示手牌中的伤害牌，这些牌造成的伤害+1直到离开手牌区。",
+			jiaoyou_info: "出牌阶段，对所有角色使用。目标依次展示手牌中的伤害牌，这些牌造成的伤害+1直到离开其手牌区。",
 			haoyun: "好运",
 			haoyun_bg: "运",
 			haoyun_info: "出牌阶段，对你使用。你选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。",
 			liehuo: "烈火",
 			liehuo_bg: "烈",
-			liehuo_info: "出牌阶段，对所有其他角色使用，令你和目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成一点火焰伤害。",
+			liehuo_info: "出牌阶段，对所有其他角色使用，令你和目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成1点火焰伤害。",
 			shenbing: "神兵",
 			shenbing_bg: "兵",
 			shenbing_info: "出牌阶段，对所有角色使用，令目标弃置装备区所有牌或依次使用牌堆不用副类型的装备牌各一张。",
@@ -2166,7 +2166,7 @@ game.import("card", function () {
 			youfu_bg: "福",
 			get youfu_info() {
 				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
-				return `出牌阶段，对${str}使用，令你此阶段对自己使用基本牌和普通锦囊牌时，可以额外指定其为目标`;
+				return `出牌阶段，对${str}使用，令你此阶段对自己使用基本牌和普通锦囊牌时，可以额外指定其为目标。`;
 			},
 			fugui: "富贵",
 			fugui_bg: "富",
@@ -2187,12 +2187,12 @@ game.import("card", function () {
 			guilai_bg: "归",
 			get guilai_info() {
 				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
-				return `出牌阶段，令${str}复活`;
+				return `出牌阶段，令${str}复活。`;
 			},
 			khquanjiux: "劝酒",
 			khquanjiux_tag: "劝酒",
 			khquanjiux_bg: "劝",
-			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次打出一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的一点伤害。此牌不能被【无懈可击】响应。",
+			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次打出一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的1点伤害。此牌不能被【无懈可击】响应。",
 			nisiwohuo: "你死我活",
 			nisiwohuo_end: "你死我活",
 			nisiwohuo_bg: "死",
@@ -2215,7 +2215,7 @@ game.import("card", function () {
 			luojing_info: "一名其他角色进入濒死状态时，对其使用，结束其濒死结算，其死亡后你摸一张牌。",
 			hongyun: "红运当头",
 			hongyun_bg: "红",
-			hongyun_info: "出牌阶段，对你和一名有手牌的其他角色使用，令你与其各弃置至多两张牌，从牌堆或弃牌堆中获得等量红桃牌。",
+			hongyun_info: "出牌阶段，对你和一名有手牌的其他角色使用，令你与其各弃置至多两张牌，从牌堆或弃牌堆中获得等量张红桃牌。",
 			shengsi: "生死与共",
 			shengsi_bg: "生",
 			shengsi_skill: "生死与共",

@@ -1155,13 +1155,13 @@ export class Get extends GetCompatible {
 		if (typeof skill !== "string") {
 			skill = skill[text] || skill.skill;
 		}
-		let info = get.info(skill);
+		let info = lib.skill[skill];
 		while (true) {
 			if (!info || typeof info[text] !== "string") {
 				break;
 			}
 			skill = info[text];
-			info = get.info(skill);
+			info = lib.skill[skill];
 		}
 		return skill;
 	}

@@ -71,6 +71,7 @@ const _zhanfa = {
 		translate: "拔刀术Ⅱ",
 		info: "若上一轮造成的伤害小于3，则你本轮造成的所有伤害+1",
 		card: {
+			cardimage: "zf_badaoshu",
 			value: 8.2,
 		},
 		skill: {
@@ -124,6 +125,7 @@ const _zhanfa = {
 		translate: "博闻Ⅱ",
 		info: "你的回合开始时，从牌堆中获得两张随机锦囊牌",
 		card: {
+			cardimage: "zf_bowen",
 			value: 8,
 		},
 		skill: {
@@ -137,6 +139,7 @@ const _zhanfa = {
 		translate: "博闻Ⅲ",
 		info: "你的回合开始时，从牌堆中获得三张随机锦囊牌",
 		card: {
+			cardimage: "zf_bowen",
 			value: 10,
 		},
 		skill: {
@@ -171,6 +174,7 @@ const _zhanfa = {
 		translate: "布阵Ⅱ",
 		info: "从第5轮开始，你的摸牌数+1",
 		card: {
+			cardimage: "zf_buzhen",
 			value: 4.8,
 		},
 		skill: {
@@ -186,6 +190,7 @@ const _zhanfa = {
 		translate: "布阵Ⅲ",
 		info: "从第7轮开始，你的摸牌数+1",
 		card: {
+			cardimage: "zf_buzhen",
 			value: 4,
 		},
 		skill: {
@@ -246,10 +251,10 @@ const _zhanfa = {
 			trigger: { global: ["eventNeutralized"] },
 			filter(event, player) {
 				const evt = event._neutralize_event;
-				if (evt.name != "wuxie") {
+				if (evt.name != "wuxie" || evt.player != player) {
 					return false;
 				}
-				return event.cards.someInD();
+				return event.cards?.someInD();
 			},
 			async content(event, trigger, player) {
 				await player.gain(trigger.cards.filterInD(), "gain2");
@@ -278,6 +283,7 @@ const _zhanfa = {
 		translate: "策定天下Ⅱ",
 		info: "出牌阶段限一次，当你使用锦囊牌造成伤害后，摸两张牌",
 		card: {
+			cardimage: "zf_cedingtianxia",
 			value: 7.2,
 		},
 		skill: {
@@ -316,6 +322,7 @@ const _zhanfa = {
 		translate: "趁其不备Ⅱ",
 		info: "	你使用【过河拆桥】时，至多弃置目标三张牌",
 		card: {
+			cardimage: "zf_chenqibubei",
 			value: 7.5,
 		},
 		skill: {
@@ -393,6 +400,7 @@ const _zhanfa = {
 		translate: "淬血Ⅱ",
 		info: "你每轮【杀】首次造成伤害后摸两张牌",
 		card: {
+			cardimage: "zf_cuixue",
 			value: 7.6,
 		},
 		skill: {
@@ -448,6 +456,7 @@ const _zhanfa = {
 		translate: "当头一棒Ⅱ",
 		info: "每轮，你的首张【杀】伤害+2",
 		card: {
+			cardimage: "zf_dangtouyibang",
 			value: 8.5,
 		},
 		skill: {
@@ -569,6 +578,7 @@ const _zhanfa = {
 		translate: "多多益善Ⅱ",
 		info: "每回合你第3次摸牌后,你摸一张牌",
 		card: {
+			cardimage: "zf_duoduoyishan",
 			value: 6.7,
 		},
 		skill: {
@@ -589,6 +599,7 @@ const _zhanfa = {
 		translate: "多多益善Ⅲ",
 		info: "每回合你第3次摸牌后,你摸两张牌",
 		card: {
+			cardimage: "zf_duoduoyishan",
 			value: 7.4,
 		},
 		skill: {
@@ -615,10 +626,11 @@ const _zhanfa = {
 		translate: "三连击",
 		info: "你的出牌阶段，你的出杀次数+2",
 		card: {
+			cardimage: "zf_erlianji",
 			value: 8.6,
 		},
 		skill: {
-			inherit: "zf_sanlianji",
+			inherit: "zf_erlianji",
 			modNum: 2,
 		},
 	},
@@ -716,6 +728,7 @@ const _zhanfa = {
 		translate: "拂衣去·火",
 		info: "你的回合开始时，你获得一张【火攻】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 5,
 		},
 		skill: {
@@ -729,6 +742,7 @@ const _zhanfa = {
 		translate: "拂衣去·闪",
 		info: "你的回合开始时，你获得一张【闪】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 6.2,
 		},
 		skill: {
@@ -742,6 +756,7 @@ const _zhanfa = {
 		translate: "拂衣去·桃",
 		info: "你的回合开始时，你获得一张【桃】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 9,
 		},
 		skill: {
@@ -755,6 +770,7 @@ const _zhanfa = {
 		translate: "拂衣去·拆",
 		info: "你的回合开始时，你获得一张【过河拆桥】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 8.1,
 		},
 		skill: {
@@ -768,6 +784,7 @@ const _zhanfa = {
 		translate: "拂衣去·决",
 		info: "你的回合开始时，你获得一张【决斗】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 8,
 		},
 		skill: {
@@ -781,6 +798,7 @@ const _zhanfa = {
 		translate: "拂衣去·锁",
 		info: "你的回合开始时，你获得一张【铁索连环】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 7.8,
 		},
 		skill: {
@@ -794,6 +812,7 @@ const _zhanfa = {
 		translate: "拂衣去·顺",
 		info: "你的回合开始时，你获得一张【顺手牵羊】",
 		card: {
+			cardimage: "zf_fuyiqusha",
 			value: 9.2,
 		},
 		skill: {
@@ -969,6 +988,7 @@ const _zhanfa = {
 		translate: "衡锋Ⅱ",
 		info: "回合内首次造成的伤害+2，回合外首次受到的伤害+2",
 		card: {
+			cardimage: "zf_hengfeng",
 			value: 8.3,
 		},
 		skill: {
@@ -1030,6 +1050,7 @@ const _zhanfa = {
 		translate: "厚实Ⅱ",
 		info: "每轮你前两次受到的伤害-1",
 		card: {
+			cardimage: "zf_houshi",
 			value: 9.5,
 		},
 		skill: {
@@ -1059,6 +1080,7 @@ const _zhanfa = {
 		translate: "虎骨酒Ⅱ",
 		info: "每回合，你可以额外使用2次【酒】",
 		card: {
+			cardimage: "zf_hugujiu",
 			value: 7.5,
 		},
 		skill: {
@@ -1089,6 +1111,7 @@ const _zhanfa = {
 		translate: "护甲Ⅱ",
 		info: "每轮开始时，你获得2点护甲",
 		card: {
+			cardimage: "zf_hujia",
 			value: 8.9,
 		},
 		skill: {
@@ -1143,6 +1166,7 @@ const _zhanfa = {
 		translate: "技艺Ⅱ",
 		info: "当你的技能直接造成伤害时，此伤害+2",
 		card: {
+			cardimage: "zf_jiyi",
 			value: 6.6,
 		},
 		skill: {
@@ -1233,6 +1257,7 @@ const _zhanfa = {
 		translate: "精于谋略Ⅱ",
 		info: "你手牌数量少于6，你的【杀】伤害+1",
 		card: {
+			cardimage: "zf_jingyumoulve",
 			value: 6.8,
 		},
 		skill: {
@@ -1282,6 +1307,7 @@ const _zhanfa = {
 		translate: "狂暴Ⅲ",
 		info: "当你的体力值不大于3时，你摸牌数+1",
 		card: {
+			cardimage: "zf_kuangbao",
 			value: 6.6,
 		},
 		skill: {
@@ -1297,6 +1323,7 @@ const _zhanfa = {
 		translate: "狂暴Ⅳ",
 		info: "当你的体力值不大于5时，你摸牌数+1",
 		card: {
+			cardimage: "zf_kuangbao",
 			value: 7.3,
 		},
 		skill: {
@@ -1312,6 +1339,7 @@ const _zhanfa = {
 		translate: "狂暴Ⅱ",
 		info: "当你的体力值不大于3时，你造成的伤害+1",
 		card: {
+			cardimage: "zf_kuangbao",
 			value: 7.2,
 		},
 		skill: {
@@ -1361,6 +1389,7 @@ const _zhanfa = {
 		translate: "雷火势Ⅱ",
 		info: "每回合限一次，你使用的第一张属性【杀】伤害+2",
 		card: {
+			cardimage: "zf_leihuoshi",
 			value: 7,
 		},
 		skill: {
@@ -1403,7 +1432,7 @@ const _zhanfa = {
 				if (game.roundNumber < 6) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return get.type2(event.card) == "trick" || (!event.card && !!game.findSkill(event));
 			},
 		},
 	},
@@ -1413,6 +1442,7 @@ const _zhanfa = {
 		translate: "烈变Ⅱ",
 		info: "从第4轮开始，你的锦囊和技能造成的伤害+1",
 		card: {
+			cardimage: "zf_liebian",
 			value: 6.8,
 		},
 		skill: {
@@ -1431,6 +1461,7 @@ const _zhanfa = {
 		translate: "烈变Ⅲ",
 		info: "从第2轮开始，你的锦囊和技能造成的伤害+1",
 		card: {
+			cardimage: "zf_liebian",
 			value: 7.8,
 		},
 		skill: {
@@ -1485,7 +1516,9 @@ const _zhanfa = {
 		skill: {
 			mod: {
 				targetInRange(card, player) {
-					return card.name == "shunshou";
+					if (card.name == "shunshou") {
+						return true;
+					}
 				},
 			},
 		},
@@ -1508,6 +1541,7 @@ const _zhanfa = {
 		translate: "摸牌Ⅱ",
 		info: "摸牌阶段，你的摸牌数+2",
 		card: {
+			cardimage: "zf_mopai",
 			value: 8.2,
 		},
 		skill: {
@@ -1551,6 +1585,7 @@ const _zhanfa = {
 		translate: "皮囊Ⅱ",
 		info: "手牌上限+2",
 		card: {
+			cardimage: "zf_pinang",
 			value: 6.5,
 		},
 		skill: {
@@ -1564,6 +1599,7 @@ const _zhanfa = {
 		translate: "皮囊Ⅲ",
 		info: "手牌上限+5",
 		card: {
+			cardimage: "zf_pinang",
 			value: 7.7,
 		},
 		skill: {
@@ -1692,6 +1728,7 @@ const _zhanfa = {
 		translate: "三板斧Ⅱ",
 		info: "你的每第三张【杀】伤害+2",
 		card: {
+			cardimage: "zf_sanbanfu",
 			value: 8.7,
 		},
 		skill: {
@@ -1726,6 +1763,7 @@ const _zhanfa = {
 		translate: "神龙摆尾Ⅱ",
 		info: "你每摸六张卡牌，你对随机敌方造成1点伤害",
 		card: {
+			cardimage: "zf_shenlongbaiwei",
 			value: 8.1,
 		},
 		skill: {
@@ -1807,6 +1845,7 @@ const _zhanfa = {
 		translate: "手到擒来Ⅱ",
 		info: "每回合你使用第五张牌后,你摸一张牌",
 		card: {
+			cardimage: "zf_shoudaoqinlai",
 			value: 6.5,
 		},
 		skill: {
@@ -1822,6 +1861,7 @@ const _zhanfa = {
 		translate: "手到擒来Ⅲ",
 		info: "每回合你使用第六张牌后,你摸两张牌",
 		card: {
+			cardimage: "zf_shoudaoqinlai",
 			value: 7.1,
 		},
 		skill: {
@@ -1890,6 +1930,7 @@ const _zhanfa = {
 		translate: "双刃Ⅱ",
 		info: "每轮，你的首张【杀】至多能额外选择2个目标",
 		card: {
+			cardimage: "zf_shuangren",
 			value: 7.7,
 		},
 		skill: {
@@ -1952,6 +1993,7 @@ const _zhanfa = {
 		translate: "体魄Ⅱ",
 		info: "增加2点体力上限并回复等量体力",
 		card: {
+			cardimage: "zf_tipo",
 			value: 7.5,
 		},
 		skill: {
@@ -1965,6 +2007,7 @@ const _zhanfa = {
 		translate: "体魄Ⅲ",
 		info: "增加3点体力上限并回复等量体力",
 		card: {
+			cardimage: "zf_tipo",
 			value: 9,
 		},
 		skill: {
@@ -2049,6 +2092,7 @@ const _zhanfa = {
 		translate: "铁布衫Ⅱ",
 		info: "获得2点护甲",
 		card: {
+			cardimage: "zf_tiebushan",
 			value: 7,
 		},
 		skill: {
@@ -2062,6 +2106,7 @@ const _zhanfa = {
 		translate: "铁布衫Ⅲ",
 		info: "获得4点护甲",
 		card: {
+			cardimage: "zf_tiebushan",
 			value: 9,
 		},
 		skill: {
@@ -2162,6 +2207,7 @@ const _zhanfa = {
 		translate: "稳定士气",
 		info: "您的所有伤害值固定为2",
 		card: {
+			cardimage: "zf_bingquanzaiwo",
 			value: 8,
 		},
 		skill: {
@@ -2197,7 +2243,9 @@ const _zhanfa = {
 					onremove: true,
 					mod: {
 						cardUsable(card, player, num) {
-							return num + player.countMark("zf_woxinchangdan_effect");
+							if (card.name == "sha" && player === _status.currentPhase) {
+								return num + player.countMark("zf_woxinchangdan_effect");
+							}
 						},
 					},
 				},
@@ -2378,6 +2426,7 @@ const _zhanfa = {
 		translate: "血战Ⅱ",
 		info: "体力上限-2（最低为1），每轮开始时回复2点体力",
 		card: {
+			cardimage: "zf_xuezhan",
 			value: 5.6,
 		},
 		skill: {
@@ -2391,6 +2440,7 @@ const _zhanfa = {
 		translate: "血战Ⅲ",
 		info: "体力上限-3（最低为1），每轮开始时回复3点体力",
 		card: {
+			cardimage: "zf_xuezhan",
 			value: 4.3,
 		},
 		skill: {
@@ -2426,7 +2476,12 @@ const _zhanfa = {
 			forced: true,
 			trigger: { player: "recoverBegin" },
 			filter(event, player) {
-				return game.getGlobalHistory("changeHp", evt => evt.name == "recover" && evt.player == player).indexOf(event) == 0;
+				return (
+					game
+						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
+						.map(evt => evt.getParent())
+						.indexOf(event) == 0
+				);
 			},
 			num: 1,
 			async content(event, trigger, player) {
@@ -2440,6 +2495,7 @@ const _zhanfa = {
 		translate: "药理",
 		info: "回复体力时，额外回复1点",
 		card: {
+			cardimage: "zf_yaoli",
 			value: 7.5,
 		},
 		skill: {
@@ -2455,12 +2511,16 @@ const _zhanfa = {
 		translate: "药理",
 		info: "每回合前3次回复体力时，额外回复1点",
 		card: {
+			cardimage: "zf_yaoli",
 			value: 7.2,
 		},
 		skill: {
 			inherit: "zf_yaoli",
 			filter(event, player) {
-				const index = game.getGlobalHistory("changeHp", evt => evt.name == "recover" && evt.player == player).indexOf(event);
+				const index = game
+					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
+					.map(evt => evt.getParent())
+					.indexOf(event);
 				return index >= 0 && index < 3;
 			},
 		},
@@ -2471,6 +2531,7 @@ const _zhanfa = {
 		translate: "药理Ⅱ",
 		info: "回复体力时，额外回复2点",
 		card: {
+			cardimage: "zf_yaoli",
 			value: 8.5,
 		},
 		skill: {
@@ -2583,6 +2644,7 @@ const _zhanfa = {
 		translate: "勇战Ⅱ",
 		info: "	你离开濒死时，对所有敌方造成2点伤害",
 		card: {
+			cardimage: "zf_yongzhan",
 			value: 9,
 		},
 		skill: {
@@ -2596,6 +2658,7 @@ const _zhanfa = {
 		translate: "愈战愈勇Ⅲ",
 		info: "从第7轮开始，你的【杀】造成的伤害+1",
 		card: {
+			cardimage: "zf_yuzhanyuyong",
 			value: 5.5,
 		},
 		skill: {
@@ -2611,6 +2674,7 @@ const _zhanfa = {
 		translate: "愈战愈勇Ⅱ",
 		info: "从第5轮开始，你的【杀】造成的伤害+1",
 		card: {
+			cardimage: "zf_yuzhanyuyong",
 			value: 6.5,
 		},
 		skill: {
@@ -2654,6 +2718,7 @@ const _zhanfa = {
 		translate: "援助Ⅱ",
 		info: "回合结束时，你摸两张牌",
 		card: {
+			cardimage: "zf_yuanzhu",
 			value: 7,
 		},
 		skill: {
@@ -2667,6 +2732,7 @@ const _zhanfa = {
 		translate: "援助Ⅲ",
 		info: "回合结束时，你摸三张牌",
 		card: {
+			cardimage: "zf_yuanzhu",
 			value: 8,
 		},
 		skill: {
@@ -2715,6 +2781,7 @@ const _zhanfa = {
 		translate: "远谋Ⅲ",
 		info: "第2轮你的回合开始时，你回复2点体力",
 		card: {
+			cardimage: "zf_yuanmou",
 			value: 6.5,
 		},
 		skill: {
@@ -2731,6 +2798,7 @@ const _zhanfa = {
 		translate: "远谋Ⅱ",
 		info: "第3轮你的回合开始时，你回复3点体力",
 		card: {
+			cardimage: "zf_yuanmou",
 			value: 7,
 		},
 		skill: {
@@ -2792,6 +2860,7 @@ const _zhanfa = {
 		translate: "战斗学习Ⅱ",
 		info: "从第4轮开始，你的出杀+1",
 		card: {
+			cardimage: "zf_zhandouxuexi",
 			value: 6.2,
 		},
 		skill: {
@@ -2809,6 +2878,7 @@ const _zhanfa = {
 		translate: "战斗学习Ⅲ",
 		info: "从第7轮开始，你的出杀+1",
 		card: {
+			cardimage: "zf_zhandouxuexi",
 			value: 5.3,
 		},
 		skill: {
@@ -2867,7 +2937,7 @@ const _zhanfa = {
 				return event.card.name == "sha" && player.hasCard(card => player.canRecast(card), "he");
 			},
 			async cost(event, trigger, player) {
-				const select = get.info(event.skill);
+				const { select } = get.info(event.skill);
 				event.result = await player
 					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card))
 					.set("ai", card => 6 - get.value(card))
@@ -2885,6 +2955,7 @@ const _zhanfa = {
 		translate: "铸刀Ⅱ",
 		info: "	你使用【杀】后可以至多重铸两张牌",
 		card: {
+			cardimage: "zf_zhudao",
 			value: 7.7,
 		},
 		skill: {

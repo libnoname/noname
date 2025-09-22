@@ -11824,9 +11824,9 @@ export class Library {
 				return false;
 			}
 			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
+			if (mod != "unchanged") {
+				return mod;
+			}
 			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
 			if (mod2 != "unchanged") {
 				return mod2;
@@ -12422,9 +12422,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12432,7 +12432,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12535,9 +12535,9 @@ export class Library {
 					let filter = cardFilter;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12545,7 +12545,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12601,7 +12601,7 @@ export class Library {
 					if (typeof select == "string" && select !== "all") {
 						targets = [trigger[select]];
 					} else {
-						targets = player.getEnemies(filter(target), false);
+						targets = player.getEnemies(filter, false);
 						if (select !== "all" && typeof select == "number") {
 							targets = targets.randomGets(select);
 						}
@@ -12625,9 +12625,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12635,7 +12635,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12676,7 +12676,7 @@ export class Library {
 							return "暂无战法";
 						}
 						dialog.add([list.map(i => [`zf_${lib.zhanfa.getRarity(i)}`, null, i]), "vcard"]);
-						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`));
+						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`, "zhanfa"));
 					},
 				},
 			},
@@ -16548,6 +16548,7 @@ export class Library {
 		[
 			"徐兖",
 			{
+				showName: "徐",
 				color: "#ff0000",
 				nature: "firemm",
 			},

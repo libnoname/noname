@@ -2052,7 +2052,7 @@ export default {
 				if (hs.length <= num) {
 					result = { bool: true, cards: hs };
 				} else {
-					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num).forResult();
+					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num, "allowChooseAll").forResult();
 				}
 				if (result?.bool) {
 					const cards = result.cards;
@@ -3751,7 +3751,7 @@ export default {
 					}
 				}
 			} else {
-				await player.gainPlayerCard(target, num, "he", true);
+				await player.gainPlayerCard(target, num, "he", true, "allowChooseAll");
 				const names = [player.name1, player.name2].filter(i => {
 					return get.character(i, 3).includes("fakejuzhan");
 				});
@@ -6267,6 +6267,7 @@ export default {
 								var player = _status.event.player;
 								return get.recoverEffect(target, player, player);
 							},
+							allowChooseAll: true,
 						})
 						.setHiddenSkill("gzjiansu_use");
 					"step 1";

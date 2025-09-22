@@ -1,33 +1,40 @@
 const characters = {
+	pe_guozhao: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["pepianchong", "pezunwei"],
+		dieAudios: ["guozhao"],
+	},
 	xy_caocao: {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["xy_zuju", "xy_mintong"]
+		skills: ["xy_zuju", "xy_mintong"],
 	},
 	xy_chengyu: {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["xy_liaofu", "xy_jinshou"]
+		skills: ["xy_liaofu", "xy_jinshou"],
 	},
 	xy_xunyu: {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["xy_jianzu", "xy_dishou"]
+		skills: ["xy_jianzu", "xy_dishou"],
 	},
 	xy_chengong: {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["remingce", "xy_jizheng"]
+		skills: ["remingce", "xy_jizheng"],
 	},
 	xy_zhangkai: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["xy_luejin"]
+		skills: ["xy_luejin"],
 	},
 	zj_zhanghu: {
 		sex: "male",

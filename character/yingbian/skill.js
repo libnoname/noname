@@ -25,6 +25,7 @@ const skills = {
 		popname: true,
 		ignoreMod: true,
 		log: false,
+		allowChooseAll: true,
 		*precontent(event, map) {
 			var player = map.player;
 			var evt = event.getParent();

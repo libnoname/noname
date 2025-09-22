@@ -58,10 +58,9 @@ const dynamicTranslates = {
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	mbzuoyou(player) {
-		const bool = player.storage.mbzuoyou,
-			versus = get.mode() == "versus" && _status.mode == "two" ? "角色" : "有手牌的角色弃置一张手牌，然后其";
+		const bool = player.storage.mbzuoyou;
 		let yang = "你可以令一名角色摸三张牌，然后其弃置两张牌",
-			yin = "你可以令一名" + versus + "获得1点护甲";
+			yin = "你可以令一名角色获得1点护甲";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {

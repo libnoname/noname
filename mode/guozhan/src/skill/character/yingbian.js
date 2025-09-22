@@ -237,7 +237,7 @@ export default {
 			return _status.currentPhase == player;
 		},
 		logTarget: "player",
-		async content() { },
+		async content() {},
 		subSkill: {
 			effect: {
 				enable: "chooseToUse",
@@ -1394,7 +1394,7 @@ export default {
 				next.set("_backupevent", "gz_pozhu_backup");
 				next.set("custom", {
 					add: {},
-					replace: { window() { } },
+					replace: { window() {} },
 				});
 				next.backup("gz_pozhu_backup");
 				next.set("targetRequired", true);
@@ -1686,7 +1686,7 @@ export default {
 						if (!game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gz_fushou"))) {
 							return false;
 						}
-					}
+					},
 				},
 			},
 		},
@@ -1884,10 +1884,10 @@ export default {
 		},
 		filter(event, player) {
 			const num1 = player
-				.getHistory("gain", evt => evt.getParent()?.name == "draw")
-				.reduce((num, evt) => {
-					return num + evt?.cards?.length;
-				}, 0),
+					.getHistory("gain", evt => evt.getParent()?.name == "draw")
+					.reduce((num, evt) => {
+						return num + evt?.cards?.length;
+					}, 0),
 				num2 = player.getHistory("sourceDamage").reduce((num, evt) => {
 					return num + (evt?.num || 0);
 				}, 0);
@@ -2620,11 +2620,15 @@ export default {
 					if (target.countCards("h", "sha")) {
 						const backup = _status.event;
 						_status.event = trigger;
-						const bool = target.countCards("h", card => {
-							return trigger.filterCard(card, player, trigger) && game.hasPlayer(current => {
-								return current !== target && trigger.filterTarget(card, target, current);
-							});
-						}) > 0;
+						const bool =
+							target.countCards("h", card => {
+								return (
+									trigger.filterCard(card, player, trigger) &&
+									game.hasPlayer(current => {
+										return current !== target && trigger.filterTarget(card, target, current);
+									})
+								);
+							}) > 0;
 						_status.event = backup;
 						trigger.set("forced", bool);
 					} else if (target.countCards("h")) {
@@ -3400,7 +3404,7 @@ export default {
 				.set("_backupevent", "fakeqingleng_backup")
 				.set("custom", {
 					add: {},
-					replace: { window() { } },
+					replace: { window() {} },
 				})
 				.set("targetRequired", true)
 				.set("complexSelect", true)
@@ -3914,7 +3918,7 @@ export default {
 			if (target.countCards("h") < target.getHp()) {
 				target.drawTo(target.getHp());
 			} else {
-				target.chooseToDiscard("h", true, target.countCards("h") - target.getHp());
+				target.chooseToDiscard("h", true, target.countCards("h") - target.getHp(), "allowChooseAll");
 			}
 		},
 		ai: { mingzhi_no: true },
@@ -4359,7 +4363,7 @@ export default {
 			const target = trigger.target;
 			const {
 				result: { bool, cards },
-			} = await target.chooseCard("he", [1, Infinity], "是否将任意张牌置于武将牌上？").set("ai", card => {
+			} = await target.chooseCard("he", [1, Infinity], "是否将任意张牌置于武将牌上？", "allowChooseAll").set("ai", card => {
 				const trigger = get.event().getTrigger(),
 					player = trigger.target;
 				if (card.name == "baiyin" && get.position(card) == "e" && player.isDamaged() && get.recoverEffect(player, player, player) > 0) {
@@ -4371,7 +4375,9 @@ export default {
 				return 0;
 			});
 			if (bool) {
-				target.addToExpansion(cards, "giveAuto", target).gaintag.add("fakejuhou");
+				const next = target.addToExpansion(cards, "giveAuto", target);
+				next.gaintag.add("fakejuhou");
+				await next;
 				target.addSkill("fakejuhou");
 				target
 					.when({ global: "useCardAfter" })
@@ -4480,18 +4486,18 @@ export default {
 						typeof yingbianZhuzhanAI == "function"
 							? yingbianZhuzhanAI(player, card, source, targets)
 							: cardx => {
-								var info = get.info(card);
-								if (info && info.ai && info.ai.yingbian) {
-									var ai = info.ai.yingbian(card, source, targets, player);
-									if (!ai) {
+									var info = get.info(card);
+									if (info && info.ai && info.ai.yingbian) {
+										var ai = info.ai.yingbian(card, source, targets, player);
+										if (!ai) {
+											return 0;
+										}
+										return ai - get.value(cardx);
+									} else if (get.attitude(player, source) <= 0) {
 										return 0;
 									}
-									return ai - get.value(cardx);
-								} else if (get.attitude(player, source) <= 0) {
-									return 0;
-								}
-								return 5 - get.value(cardx);
-							},
+									return 5 - get.value(cardx);
+							  },
 				});
 				if (!game.online) {
 					return;
@@ -4987,12 +4993,12 @@ export default {
 							game.countPlayer(function (current) {
 								return !trigger.targets.includes(current) && lib.filter.filterTarget(trigger.card, trigger.player, current) && get.effect(current, trigger.card, trigger.player, player) > 0;
 							}) >=
-							Math.min(
-								2,
-								game.countPlayer(function (current) {
-									return !trigger.targets.includes(current) && lib.filter.filterTarget(trigger.card, trigger.player, current);
-								})
-							)
+								Math.min(
+									2,
+									game.countPlayer(function (current) {
+										return !trigger.targets.includes(current) && lib.filter.filterTarget(trigger.card, trigger.player, current);
+									})
+								)
 						)
 						.setHiddenSkill("gzzhaosong_sha");
 					"step 1";
@@ -5172,7 +5178,7 @@ export default {
 					return lib.filter.cardDiscardable(card, player, "gztairan");
 				}, "he")
 			) {
-				var next = player.chooseToDiscard("he", [1, player.getDamagedHp()], "然后请弃置任意张牌", "此回合结束时，你将摸等量的牌。").set("ai", function (card) {
+				var next = player.chooseToDiscard("he", [1, player.getDamagedHp()], "然后请弃置任意张牌", "此回合结束时，你将摸等量的牌。", "allowChooseAll").set("ai", function (card) {
 					return 5.5 - get.value(card);
 				});
 				if (event.num1 == 0) {
@@ -5544,9 +5550,9 @@ export default {
 				player.getHistory("useCard", function (evt) {
 					return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
 				}).length +
-				player.getHistory("respond", function (evt) {
-					return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
-				}).length ==
+					player.getHistory("respond", function (evt) {
+						return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
+					}).length ==
 				0
 			);
 		},

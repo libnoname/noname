@@ -1696,7 +1696,7 @@ const skills = {
 						return false;
 					}
 					if (event.name == "damage") {
-						return event.card?.dcretanluan === true && event.player != player; 
+						return event.card?.dcretanluan === true && event.player != player;
 					}
 					if (event.type != "card" && event.name != "_wuxie") {
 						return false;
@@ -3271,7 +3271,7 @@ const skills = {
 				});
 			}
 			const [bool, links] = await player
-				.chooseButton([`集筹：将${num < cards.length ? "至多" + get.cnNumber(num) + "张牌" : "任意张牌"}交给等量角色`, cards])
+				.chooseButton([`集筹：将${num < cards.length ? "至多" + get.cnNumber(num) + "张牌" : "任意张牌"}交给等量角色`, cards], "allowChooseAll")
 				.set("selectButton", [1, num])
 				.set("population", [game.countPlayer(current => get.attitude(player, current) > 0), game.countPlayer(current => get.attitude(player, current) < 0)])
 				.set("ai", button => {
@@ -5232,6 +5232,7 @@ const skills = {
 			}
 			return `${str}，然后选择两名角色，前者视为对后者使用一张【杀】，且这两者的非锁定技失效。`;
 		},
+		allowChooseAll: true,
 		*content(event, map) {
 			var player = map.player;
 			if (player.countCards("h") < player.maxHp) {
@@ -7843,7 +7844,7 @@ const skills = {
 				prompt2 += (num > 0 ? "摸一张牌，" : "") + "视为对" + get.translation(trigger.player) + "使用一张【杀】（伤害基数+1）";
 			} else {
 				var next = player
-					.chooseToDiscard(-num)
+					.chooseToDiscard(-num, "allowChooseAll")
 					.set("ai", card => {
 						if (_status.event.goon) {
 							return 5.2 - get.value(card);
@@ -11532,7 +11533,7 @@ const skills = {
 					"step 1";
 					if (result.index == 0) {
 						if (event.index == 0) {
-							target.chooseToDiscard("h", true, num);
+							target.chooseToDiscard("h", true, num, "allowChooseAll");
 						} else {
 							target.draw(num);
 						}
@@ -13785,7 +13786,7 @@ const skills = {
 					"step 0";
 					var target = player.storage.zhishi_mark;
 					event.target = target;
-					player.chooseButton([get.prompt("zhishi", target), '<div class="text center">弃置任意张“疠”并令其摸等量的牌</div>', player.getExpansions("xunli")], [1, Infinity]).set("ai", function (button) {
+					player.chooseButton([get.prompt("zhishi", target), '<div class="text center">弃置任意张“疠”并令其摸等量的牌</div>', player.getExpansions("xunli")], [1, Infinity], "allowChooseAll").set("ai", function (button) {
 						var player = _status.event.player,
 							target = player.storage.zhishi_mark;
 						if (target.hp < 1 && target != get.zhu(player)) {
@@ -15108,7 +15109,7 @@ const skills = {
 				use = false;
 			}
 			player
-				.chooseToDiscard("he", get.prompt("mingluan"), "弃置任意张牌，并摸等同于" + get.translation(trigger.player) + "手牌数的牌（至多摸至五张）", [1, Infinity])
+				.chooseToDiscard("he", get.prompt("mingluan"), "弃置任意张牌，并摸等同于" + get.translation(trigger.player) + "手牌数的牌（至多摸至五张）", [1, Infinity], "allowChooseAll")
 				.set("ai", function (card) {
 					let val = get.value(card, player);
 					if (val < 0 && card.name !== "du") {
@@ -15860,7 +15861,7 @@ const skills = {
 		usable: 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard("h", [2, Infinity], get.prompt(event.skill, trigger.player), '<div class="text center">弃置至少两张手牌，然后选择一项：<br>⒈弃置其等量的牌。⒉对其造成1点伤害。</div>')
+				.chooseToDiscard("h", [2, Infinity], get.prompt(event.skill, trigger.player), '<div class="text center">弃置至少两张手牌，然后选择一项：<br>⒈弃置其等量的牌。⒉对其造成1点伤害。</div>', "allowChooseAll")
 				.set("ai", function (card) {
 					if (_status.event.goon && ui.selected.cards.length < 2) {
 						return 5.6 - get.value(card);
@@ -15921,7 +15922,7 @@ const skills = {
 			}
 			"step 2";
 			if (result.index == 0) {
-				player.discardPlayerCard(target, num, true, "he");
+				player.discardPlayerCard(target, num, true, "he", "allowChoooseAll");
 			} else {
 				target.damage();
 			}
@@ -15975,7 +15976,7 @@ const skills = {
 			"step 0";
 			player.give(cards, target);
 			"step 1";
-			var next = target.chooseCard("he", [2, Infinity], "交给" + get.translation(player) + "至少两张装备牌，否则受到1点伤害", { type: "equip" });
+			var next = target.chooseCard("he", [2, Infinity], "交给" + get.translation(player) + "至少两张装备牌，否则受到1点伤害", { type: "equip" }, "allowChooseAll");
 			if (get.damageEffect(target, player, target) >= 0) {
 				next.set("ai", () => -1);
 			} else {

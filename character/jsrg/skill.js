@@ -3189,9 +3189,13 @@ const skills = {
 						if (!player.hasValueTarget(card)) {
 							return 200;
 						}
-						if (player.countCards("j", cardx => cardx?.cards?.some(cardxx => {
-							return cardxx.name == card.name;
-						})) > 1) {
+						if (
+							player.countCards("j", cardx =>
+								cardx?.cards?.some(cardxx => {
+									return cardxx.name == card.name;
+								})
+							) > 1
+						) {
 							return 101;
 						}
 						return 1 / Math.max(0.01, player.getUseValue(link));
@@ -3233,7 +3237,8 @@ const skills = {
 								return (card.viewAs || card.name) == "xumou_jsrg";
 							}),
 						],
-						[1, Infinity]
+						[1, Infinity],
+						"allowChooseAll"
 					)
 					.set("filterButton", button => {
 						return lib.filter.cardDiscardable(button.link, get.player(), "jsrgdaimou");
@@ -12138,6 +12143,7 @@ const skills = {
 					},
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
+					allowChooseAll: true,
 					precontent() {
 						player.addTempSkill("jsrgciyin_used");
 					},
@@ -12349,7 +12355,7 @@ const skills = {
 			const target = event.target,
 				cards = target.getCards("h").sort((a, b) => get.number(a, target) - get.number(b, target));
 			const result = await target
-				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true)
+				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true, "allowChooseAll")
 				.set("maxNum", get.number(cards[cards.length - 1], target))
 				.set("minNum", get.number(cards[0], target))
 				.set("ai", card => {

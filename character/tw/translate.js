@@ -84,7 +84,7 @@ const translates = {
 	yuejiu: "TW乐就",
 	yuejiu_prefix: "TW",
 	cuijin: "催进",
-	cuijin_info: "当你或你攻击范围内的角色使用【杀】时，你可以弃置一张牌并获得如下效果：此【杀】的伤害值基数+1，且当此【杀】结算结束后，若未造成过伤害，则你对使用者造成1点伤害。",
+	cuijin_info: "当你或你攻击范围内的角色使用【杀】时，你可以弃置一张牌并获得如下效果：此【杀】的伤害值基数+1，且当此【杀】结算结束后，若未造成过伤害，则你摸一张牌并对使用者造成1点伤害。",
 	tw_zhaoxiang: "TW赵襄",
 	tw_zhaoxiang_prefix: "TW",
 	twfuhan: "扶汉",

@@ -5134,7 +5134,7 @@ player.removeVirtualEquip(card);
 			}, player);
 		}
 		"step 1";
-		player.chooseToDiscard(num, true).set("useCache", true);
+		player.chooseToDiscard(num, true).set("useCache", true).set("allowChooseAll", true);
 		"step 2";
 		event.cards = result.cards;
 	},
@@ -5366,7 +5366,22 @@ player.removeVirtualEquip(card);
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
 						next.set("complexSelect", info.chooseButton.complexSelect !== false);
+						next.set(
+							"complexSelect",
+							(() => {
+								if (info.chooseButton.complexSelect !== false) {
+									if (info.chooseButton.complexSelect === undefined && info.chooseButton.allowChooseAll === true) {
+										// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+										return false;
+									} else {
+										return true;
+									}
+								}
+								return false;
+							})()
+						);
 						next.set("filterOk", info.chooseButton.filterOk || (() => true));
+						next.set("allowChooseAll", info.chooseButton.allowChooseAll);
 						if (event.id) {
 							next._parent_id = event.id;
 						}

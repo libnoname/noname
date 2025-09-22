@@ -4184,7 +4184,7 @@ const skills = {
 			if (!gain.length) {
 				return;
 			}
-			const links = await player.chooseButton(["慈荫：你可以将其中任意张黑桃/红桃牌置于武将牌上", gain], [1, Infinity]).set("ai", get.buttonValue).forResultLinks();
+			const links = await player.chooseButton(["慈荫：你可以将其中任意张黑桃/红桃牌置于武将牌上", gain], [1, Infinity], "allowChooseAll").set("ai", get.buttonValue).forResultLinks();
 			if (!links || !links.length) {
 				return;
 			}
@@ -5875,7 +5875,7 @@ const skills = {
 					continue;
 				}
 				const cards = await current
-					.chooseToGive(`${get.translation(player)}对你发动了【受嘱】`, "作为其的同心角色，是否交给其至多四张牌？", player, "he", [1, 4])
+					.chooseToGive(`${get.translation(player)}对你发动了【受嘱】`, "作为其的同心角色，是否交给其至多四张牌？", player, "he", [1, 4], "allowChooseAll")
 					.set("ai", card => {
 						if (!get.event("goon")) {
 							return -get.value(card);
@@ -5900,7 +5900,7 @@ const skills = {
 			for (const current of targets) {
 				const cards = get.cards(count);
 				await game.cardsGotoOrdering(cards);
-				const next = current.chooseToMove();
+				const next = current.chooseToMove("allowChooseAll");
 				next.set("list", [["牌堆底", cards], ["弃牌堆"]]);
 				next.set("prompt", "受嘱：点击排列牌置于牌堆底的顺序，或置入弃牌堆");
 				next.set("processAI", list => {
@@ -10436,6 +10436,7 @@ const skills = {
 					}
 					return 0;
 				},
+				allowChooseAll: true,
 			});
 			"step 1";
 			if (result.bool) {
@@ -11344,6 +11345,7 @@ const skills = {
 				discard: false,
 				lose: false,
 				delay: false,
+				allowChooseAll: true,
 				content() {
 					player.give(cards, target);
 					player.addTempSkill("twjichou_given", "phaseUseAfter");
@@ -20107,9 +20109,16 @@ const skills = {
 			"step 0";
 			if (player.countCards("h", card => get.type(card) != "equip")) {
 				player
-					.chooseCard("h", [1, Infinity], true, "躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌", (card, player) => {
-						return get.type(card) != "equip" && lib.filter.cardDiscardable(card, player, "twzaoli");
-					})
+					.chooseCard(
+						"h",
+						[1, Infinity],
+						true,
+						"躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌",
+						(card, player) => {
+							return get.type(card) != "equip" && lib.filter.cardDiscardable(card, player, "twzaoli");
+						},
+						"allowChooseAll"
+					)
 					.set("ai", function (card) {
 						if (!card.hasGaintag("twzaoli_temp")) {
 							return 5 - get.value(card);
@@ -21082,7 +21091,7 @@ const skills = {
 			if (player.getHistory("sourceDamage").length) {
 				player.chooseToDiscard("h", true, num);
 			} else if (num > 4) {
-				player.chooseToDiscard("h", true, num - 4);
+				player.chooseToDiscard("h", true, num - 4, "allowChooseAll");
 			} else {
 				player.drawTo(4);
 			}
@@ -24658,6 +24667,7 @@ const skills = {
 						})
 					) {
 						player.line(trigger.player, "green");
+						player.draw();
 						trigger.player.damage();
 					}
 				},

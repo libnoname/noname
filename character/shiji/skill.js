@@ -6194,7 +6194,7 @@ const skills = {
 			const num = Math.max(1, player.hp),
 				{ player: target } = trigger;
 			event.result = await player
-				.chooseCard("he", get.prompt(event.skill, target), `交给其至少${get.cnNumber(num)}张牌，防止即将受到的伤害（${trigger.num}点）`, [num, player.countCards("he")])
+				.chooseCard("he", get.prompt(event.skill, target), `交给其至少${get.cnNumber(num)}张牌，防止即将受到的伤害（${trigger.num}点）`, [num, player.countCards("he")], "allowChooseAll")
 				.set(
 					"goon",
 					(() => {

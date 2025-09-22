@@ -1054,7 +1054,7 @@ const skills = {
 					continue;
 				}
 				const result = await target
-					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true)
+					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true, "allowChooseAll")
 					.set("ai", () => {
 						return -1;
 					})
@@ -1239,7 +1239,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player //
-				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成一点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
+				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成1点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
 				.set("ai", target => {
 					return get.damageEffect(target, get.player(), get.player());
 				})
@@ -4886,7 +4886,8 @@ const skills = {
 							],
 						],
 						[1, num],
-						true
+						true,
+						"allowChooseAll"
 					)
 					.set("ai", function (button) {
 						var name = button.link;
@@ -5352,7 +5353,7 @@ const skills = {
 					for (const mutation of mutationsList) {
 						if (mutation.type === "childList") {
 							for (const card of mutation.addedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
@@ -5371,7 +5372,7 @@ const skills = {
 								}
 							}
 							for (const card of mutation.removedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.classList.contains(glowClass)) {

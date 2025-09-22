@@ -138,28 +138,31 @@ export class Player extends HTMLDivElement {
 		];
 		player.tempSkills = {};
 		player.storage = {
-			counttrigger: new Proxy({}, {
-				get(_, prop) {
-					return player.getStat("triggerSkill")[prop];
-				},
-				set(_, prop, value) {
-					player.getStat("triggerSkill")[prop] = value;
-					return true;
-				},
-				deleteProperty(_, prop) {
-					delete player.getStat("triggerSkill")[prop];
-					return true;
-				},
-				has(_, prop) {
-					return prop in player.getStat("triggerSkill");
-				},
-				ownKeys() {
-					return Reflect.ownKeys(player.getStat("triggerSkill"));
-				},
-				getOwnPropertyDescriptor(_, prop) {
-					return Object.getOwnPropertyDescriptor(player.getStat("triggerSkill"), prop);
+			counttrigger: new Proxy(
+				{},
+				{
+					get(_, prop) {
+						return player.getStat("triggerSkill")[prop];
+					},
+					set(_, prop, value) {
+						player.getStat("triggerSkill")[prop] = value;
+						return true;
+					},
+					deleteProperty(_, prop) {
+						delete player.getStat("triggerSkill")[prop];
+						return true;
+					},
+					has(_, prop) {
+						return prop in player.getStat("triggerSkill");
+					},
+					ownKeys() {
+						return Reflect.ownKeys(player.getStat("triggerSkill"));
+					},
+					getOwnPropertyDescriptor(_, prop) {
+						return Object.getOwnPropertyDescriptor(player.getStat("triggerSkill"), prop);
+					},
 				}
-			}),
+			),
 		};
 		player.marks = {};
 		player.expandedSlots = {};
@@ -387,6 +390,13 @@ export class Player extends HTMLDivElement {
 	 */
 	tips;
 
+	/**
+	 * 是否拥有对应战法
+	 * @param {string} id 战法的id
+	 */
+	hasZhanfa(id) {
+		return this.getStorage("zhanfa").includes(id);
+	}
 	/**
 	 * 获得对应战法
 	 * @param {string} id 战法的id
@@ -1371,10 +1381,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				return num + get.numOf(types, type);
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					return num + get.numOf(types, type);
+				}, 0)
 		);
 	}
 	/**
@@ -1406,13 +1416,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				if (!lib.filter.canBeReplaced(card, this)) {
-					num += get.numOf(types, type);
-				}
-				return num;
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					if (!lib.filter.canBeReplaced(card, this)) {
+						num += get.numOf(types, type);
+					}
+					return num;
+				}, 0)
 		);
 	}
 	/**
@@ -1801,11 +1811,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @deprecated
 	 */
-	$disableEquip() { }
+	$disableEquip() {}
 	/**
 	 * @deprecated
 	 */
-	$enableEquip() { }
+	$enableEquip() {}
 	//装备区End
 	chooseToDebate() {
 		var next = game.createEvent("chooseToDebate");
@@ -2775,10 +2785,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-			return !card.cards?.some(card => {
-				return ui.selected.cards?.includes(card);
-			});
-		}),
+				return !card.cards?.some(card => {
+					return ui.selected.cards?.includes(card);
+				});
+			}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -10187,6 +10197,13 @@ export class Player extends HTMLDivElement {
 					player.addSkill(skillsToAdd[i], null, true, true);
 					player.additionalSkills[skill].push(skillsToAdd[i]);
 				}
+				game.broadcast(
+					(player, map) => {
+						player.additionalSkills = map;
+					},
+					player,
+					player.additionalSkills
+				);
 				player.checkConflict();
 			}
 			_status.event.clearStepCache();
@@ -10563,7 +10580,7 @@ export class Player extends HTMLDivElement {
 			}
 		} else {
 			if (skill === "counttrigger") {
-				this.getStat("triggerSkill") = {};
+				this.stat[this.stat.length - 1]["triggerSkill"] = {};
 				return;
 			} else {
 				var info = lib.skill[skill];

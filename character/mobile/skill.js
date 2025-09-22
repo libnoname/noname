@@ -5,9 +5,42 @@ const skills = {
 	//手杀SP曹操
 	mblingfa: {
 		audio: "twlingfa",
-		audioname: ["mb_caocao"],
 		inherit: "twlingfa",
 		derivation: "new_rejianxiong",
+	},
+	mbzhian: {
+		audio: "twzhian",
+		inherit: "twzhian",
+		filter(event, player) {
+			return player.countMark("mbzhian_round") < 2 && event.player !== player && lib.skill.twzhian.filter(event, player);
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("mbzhian_round", "roundStart");
+			player.addMark("mbzhian_round", 1, false);
+			await lib.skill.twzhian.content(event, trigger, player);
+		},
+		global: "mbzhian_ai",
+		subSkill: {
+			round: {
+				charlotte: true,
+				onremove: true,
+			},
+			ai: {
+				ai: {
+					effect: {
+						player_use(card, player, target) {
+							if (get.type(card) !== "delay" && get.type(card) !== "equip") {
+								return 1;
+							}
+							let za = game.findPlayer(cur => cur !== player && cur.hasSkill("mbzhian") && cur.countMark("mbzhian_round") < 2 && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0);
+							if (za) {
+								return [0.5, -0.8];
+							}
+						},
+					},
+				},
+			},
+		},
 	},
 	//手杀曹洪
 	mbyuanhu: {
@@ -889,7 +922,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			const target = event.target;
-			const next = player.chooseCardOL([player, target], "h", true, "栗索：请展示任意张手牌", [1, Infinity]).set("ai", () => -0.5 + Math.random());
+			const next = player.chooseCardOL([player, target], "h", true, "栗索：请展示任意张手牌", [1, Infinity], "allowChooseAll").set("ai", () => -0.5 + Math.random());
 			next._args.remove("glow_result");
 			const result2 = await next.forResult();
 			const [playerCards, targetCards] = result2.map(i => i.cards);
@@ -1646,7 +1679,7 @@ const skills = {
 						.unique()
 				).length;
 				const resultx = await player
-					.chooseToDiscard(`凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成一点伤害`, "he", [0, Infinity])
+					.chooseToDiscard(`凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成1点伤害`, "he", [0, Infinity])
 					.set("filterOk", () => {
 						if (ui.selected.cards.length == get.event().num) {
 							return true;
@@ -3202,6 +3235,7 @@ const skills = {
 			}
 			return 7 - get.value(card);
 		},
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			const cards = event.cards,
 				target = event.targets[0];
@@ -3369,7 +3403,7 @@ const skills = {
 				return [1, 2, 3, 4, 5, "cancel2"];
 			},
 			check() {
-				return 2;
+				return 4;
 			},
 			backup(result, player) {
 				return {
@@ -4070,7 +4104,7 @@ const skills = {
 					.forResult();
 			} else {
 				event.result = await player
-					.chooseToDiscard(prompt, player.countCards("h") - num)
+					.chooseToDiscard(prompt, player.countCards("h") - num, "allowChooseAll")
 					.set("effect", effect)
 					.set("ai", card => {
 						const { player, selectCard, effect } = get.event();
@@ -4134,7 +4168,7 @@ const skills = {
 			if (num > 0) {
 				await target.drawTo(target.maxHp);
 			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
-				await target.chooseToDiscard("h", -num, true);
+				await target.chooseToDiscard("h", -num, true, "allowChooseAll");
 			}
 			const isDraw = target.hasHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2) == event);
 			if (!isDraw && target.isDamaged()) {
@@ -4191,7 +4225,7 @@ const skills = {
 			trigger.player.line(source);
 			const result = await source
 				.chooseToGive(
-					"谙达：交给" + get.translation(trigger.player) + "两张不同颜色牌，否则其回复一点体力",
+					"谙达：交给" + get.translation(trigger.player) + "两张不同颜色牌，否则其回复1点体力",
 					(card, source) => {
 						const selected = ui.selected.cards;
 						if (!selected.length) {
@@ -5106,7 +5140,7 @@ const skills = {
 			const target = event.target,
 				cards = target.getCards("h").sort((a, b) => get.number(a, target) - get.number(b, target));
 			const result = await target
-				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true)
+				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true, "allowChooseAll")
 				.set("maxNum", get.number(cards[cards.length - 1], target))
 				.set("minNum", get.number(cards[0], target))
 				.set("ai", card => {
@@ -6674,7 +6708,7 @@ const skills = {
 			const {
 				result: { moved },
 			} = await player
-				.chooseToMove(get.prompt2(event.skill))
+				.chooseToMove(get.prompt2(event.skill), "allowChooseAll")
 				.set("list", [
 					["牌堆顶", []],
 					[["获得的牌"], cards],
@@ -9734,12 +9768,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		zhuanhuanji: true,
-		filterTarget(card, player, target) {
-			if (player.storage.mbzuoyou) {
-				return get.mode() == "versus" && _status.mode == "two" ? true : target.countCards("h");
-			}
-			return true;
-		},
+		filterTarget: true,
 		prompt() {
 			return get.info("mbzuoyou").intro.content(get.player().storage["mbzuoyou"]);
 		},
@@ -9753,9 +9782,6 @@ const skills = {
 				await target.draw(3);
 				await target.chooseToDiscard(2, true, "h");
 			} else {
-				if ((get.mode() !== "versus" || _status.mode !== "two") && target.countCards("h")) {
-					await target.chooseToDiscard(target === player ? "佐佑" : `${get.translation(player)}对你发动了【佐佑】`, "请弃置一张手牌，然后获得1点护甲", 1, true);
-				}
 				await target.changeHujia(1, null, true);
 			}
 		},
@@ -9767,7 +9793,7 @@ const skills = {
 				if (!storage) {
 					return "转换技。出牌阶段限一次，你可以令一名角色摸三张牌，然后其弃置两张手牌。";
 				}
-				return "转换技。出牌阶段限一次，你可以令一名" + (goon ? "有手牌的角色弃置一张手牌，然后其" : "角色") + "获得1点护甲。";
+				return "转换技。出牌阶段限一次，你可以令一名角色获得1点护甲。";
 			},
 		},
 		ai: {
@@ -12164,7 +12190,7 @@ const skills = {
 			map.trigger.cancel();
 			var num = player.countDiscardableCards(player, "he");
 			if (num) {
-				var result = yield player.chooseToDiscard("纳学：是否弃置任意张牌并摸等量的牌？", "he", [1, num]).set("ai", lib.skill.zhiheng.check);
+				var result = yield player.chooseToDiscard("纳学：是否弃置任意张牌并摸等量的牌？", "he", [1, num], "allowChooseAll").set("ai", lib.skill.zhiheng.check);
 				if (result.bool) {
 					yield player.draw(result.cards.length);
 				}
@@ -15701,7 +15727,7 @@ const skills = {
 		logAudio: () => 1,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he")
+				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he", "allowChooseAll")
 				.set("ai", card => {
 					var player = _status.event.player;
 					if (ui.selected.cards.length < _status.event.num) {
@@ -17665,6 +17691,7 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
+		allowChooseAll: true,
 		content() {
 			var num = 0;
 			for (var i of cards) {
@@ -26958,6 +26985,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
+		allowChooseAll: true,
 		content() {
 			player.addToExpansion(player, "give", cards).gaintag.add("xinfu_zhaoxin");
 			player.draw(cards.length);
@@ -28535,7 +28563,7 @@ const skills = {
 					player.removeSkill("tunchu_choose");
 					var nh = player.countCards("h");
 					if (nh) {
-						player.chooseCard("h", [1, nh], "将任意张手牌置于你的武将牌上").set("ai", function (card) {
+						player.chooseCard("h", [1, nh], "将任意张手牌置于你的武将牌上", "allowChooseAll").set("ai", function (card) {
 							var player = _status.event.player;
 							var count = game.countPlayer(function (current) {
 								return get.attitude(player, current) > 2 && current.hp - current.countCards("h") > 1;

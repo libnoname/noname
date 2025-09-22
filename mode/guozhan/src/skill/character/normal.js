@@ -1185,7 +1185,7 @@ export default {
 		async content(event, trigger, player) {
 			const num = trigger.player.countCards("e");
 			const num2 = event.cards.length;
-			await player.discardPlayerCard(trigger.player, "e", num2, true);
+			await player.discardPlayerCard(trigger.player, "e", num2, true, "allowChooseAll");
 			if (num2 > num) {
 				await trigger.player.damage();
 			}

@@ -103,7 +103,7 @@ window.noname_character_replace = {
 	guojia: ["guojia", "re_guojia", "yj_sb_guojia", "sb_guojia", "jsrg_guojia", "ps1059_guojia", "ps2070_guojia"],
 	guosi: ["guosi", "ca_guosi"],
 	guotufengji: ["guotufengji", "re_guotufengji"],
-	guozhao: ["ol_guozhao", "guozhao", "xin_guozhao", "jsrg_guozhao", "std_guozhao"],
+	guozhao: ["ol_guozhao", "guozhao", "xin_guozhao", "jsrg_guozhao", "std_guozhao","pe_guozhao"],
 	guyong: ["guyong", "re_guyong", "xin_guyong", "tw_guyong"],
 	handang: ["handang", "xin_handang", "re_handang", "sb_handang", "tw_handang", "old_handang"],
 	hanfu: ["hanfu", "ol_hanfu", "clan_hanfu"],

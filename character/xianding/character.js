@@ -1,4 +1,10 @@
 const characters = {
+	xvwen:{
+		sex:"female",
+		hp:3,
+		group:"wei",
+		skills:["dcfuhui","dcmohua"]
+	},
 	v_sunce: {
 		sex: "male",
 		group: "wu",

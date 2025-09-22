@@ -6700,6 +6700,7 @@ export default () => {
 							return get.effect(target, trigger.card, player, player);
 						},
 						max: max,
+						allowChooseAll:true,
 					});
 					"step 1";
 					if (result.bool) {

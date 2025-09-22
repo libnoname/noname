@@ -2644,7 +2644,7 @@ const skills = {
 					lib.skill.clanshengmo_backup.prompt = `选择${get.translation(nature)}【${get.translation(name)}】的目标`;
 				},
 				name,
-				nature,
+				nature
 			);
 			evt.set("_backupevent", "clanshengmo_backup");
 			evt.backup("clanshengmo_backup");
@@ -3342,7 +3342,7 @@ const skills = {
 				}
 			}
 			trigger.player
-				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card))
+				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card), "allowChooseAll")
 				.set("ai", card => {
 					var val = get.value(card);
 					return 6 - val;
@@ -3906,7 +3906,7 @@ const skills = {
 			"step 0";
 			var num = trigger.player.countCards("h");
 			trigger.player
-				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card))
+				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card), "allowChooseAll")
 				.set("ai", card => {
 					var val = get.value(card);
 					return 6 - val;
@@ -5461,7 +5461,7 @@ const skills = {
 				num2 == 0
 					? false
 					: await target
-							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity])
+							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity], "allowChooseAll")
 							.set("ai", get.unuseful)
 							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
 							.forResultBool();

@@ -5999,7 +5999,7 @@ export default () => {
 				selectTarget: [0, 1],
 				notarget: true,
 				multitarget: true,
-				targetprompt: ["造成一点伤害"],
+				targetprompt: ["造成1点伤害"],
 				content: function () {
 					"step 0";
 					if (targets.length) {

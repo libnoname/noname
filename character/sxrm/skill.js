@@ -58,7 +58,7 @@ const skills = {
 					continue;
 				}
 				const result = await target
-					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true)
+					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true, "allowChooseAll")
 					.set("targetx", player)
 					.set("ai", card => {
 						const { player, targetx } = get.event();
@@ -110,8 +110,7 @@ const skills = {
 			};
 			if (event.isMine()) {
 				func(videoId, showcards);
-			}
-			else if (player.isOnline2()) {
+			} else if (player.isOnline2()) {
 				player.send(func, videoId, showcards);
 			}
 			const next2 = player
@@ -345,7 +344,7 @@ const skills = {
 					}
 				},
 				prompt: "将至少半数手牌当杀打出",
-				complexCard: true,
+				allowChooseAll: true,
 				check(card) {
 					const player = get.player(),
 						num = Math.ceil(player.countCards("h") / 2),

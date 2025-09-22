@@ -818,7 +818,7 @@ const skills = {
 				}
 			} else {
 				const result = await player
-					.chooseTarget(`天公：对一名不为${get.translation(trigger.player)}的角色造成一点雷电伤害`, true, (card, player, target) => {
+					.chooseTarget(`天公：对一名不为${get.translation(trigger.player)}的角色造成1点雷电伤害`, true, (card, player, target) => {
 						return get.event().sourcex != target;
 					})
 					.set("sourcex", trigger.player)
@@ -1621,6 +1621,7 @@ const skills = {
 				return ui.create.dialog('###兴功###<div class="text center">请选择要从弃牌堆获得的牌</div>', event.dcshixinggong_cards, "hidden");
 			},
 			select: [1, Infinity],
+			allowChooseAll: true,
 			check: button => {
 				const player = get.player();
 				if (player.hasSkillTag("filterDamage") || player.hasSkillTag("nodamage")) {
