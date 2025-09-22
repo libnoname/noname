@@ -13,7 +13,6 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, './'),
-            vue: 'vue/dist/vue.esm-bundler.js',
         },
         extensions: ['.tsx', '.ts', '.js'],
     }

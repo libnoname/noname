@@ -14,31 +14,12 @@
 		"moduleResolution": "Bundler",                       /* Specify how TypeScript looks up a file from a given module specifier. */
 		"baseUrl": "./",                                     /* Specify the base directory to resolve non-relative module names. */
 		"paths": {
-			"@/*": [
-				"./*"
-			],
-			"vue": [
-				"./game/vue.esm-browser"
-			],
-			"@vue/*": [
-				"./node_modules/@types/noname-typings/@vue/*"
-			],
-			"typescript": [
-				"./game/typescript"
-			],
-			"codemirror": [
-				"./game/codemirror6"
-			],
-			"@codemirror/*": [
-				"./game/@codemirror/*"
-			]
+			"@/*": ["./*"],
 		},
 		"typeRoots": [
 			"./node_modules/@types",
 			"./extension/**",
 			"./extension/**/typings",
-			"./game/**",
-			"./game/@codemirror/**"
 		],
 		"resolveJsonModule": true,                           /* Enable importing .json files */
 		"allowJs": true,                                     /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */

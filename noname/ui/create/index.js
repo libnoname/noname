@@ -435,7 +435,7 @@ export class Create {
 				})
 			);
 			if (language === "javascript") {
-				const { Linter } = await import("eslint");
+				const { Linter } = await import("eslint-linter-browserify");
 				extensions.push(
 					linter(
 						esLint(new Linter(), {

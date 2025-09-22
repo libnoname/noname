@@ -12,7 +12,7 @@
     "scripts": {
         "start": "npx vite",
         "build": "",
-        "type": ""
+        "type": "npx tsc -p tsconfig.type.json"
     },
     "dependencies": {
         "@codemirror/lang-css": "^6.3.1",
@@ -21,18 +21,15 @@
         "@codemirror/lang-json": "^6.0.2",
         "@codemirror/lang-markdown": "^6.3.4",
         "@codemirror/lang-vue": "^0.1.3",
-        "@eslint/js": "^9.29.0",
         "@lezer/common": "^1.2.3",
         "@lezer/html": "^1.3.10",
         "@lezer/javascript": "^1.5.4",
-        "@types/crypto-js": "^4.2.2",
         "@vue/compiler-sfc": "^3.5.21",
-        "@vue/devtools-api": "^8.0.2",
         "codemirror": "^6.0.2",
         "core-js-bundle": "^3.43.0",
         "crypto-js": "^4.2.0",
         "dedent": "^1.6.0",
-        "eslint": "^9.29.0",
+        "eslint-linter-browserify": "^9.36.0",
         "jszip": "^2.6.1",
         "nosleep.js": "^0.12.0",
         "options": "^0.0.6",
@@ -45,11 +42,14 @@
         "ws": "^8.18.2"
     },
     "devDependencies": {
+        "@eslint/js": "^9.29.0",
         "@types/cordova": "^11.0.3",
+        "@types/crypto-js": "^4.2.2",
         "@types/estree": "^1.0.8",
         "@types/node": "^24.0.3",
         "@types/tern": "^0.23.9",
         "@vitejs/plugin-vue": "^6.0.1",
+        "eslint": "^9.29.0",
         "eslint-plugin-vue": "^10.2.0",
         "glob": "^11.0.3",
         "globals": "^16.2.0",
