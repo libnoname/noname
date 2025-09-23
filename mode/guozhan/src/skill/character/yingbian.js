@@ -160,7 +160,7 @@ export default {
 			player: "phaseUseBegin",
 		},
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			return game.hasPlayer(current => current.hasUseTarget(card));
 		},
 		preHidden: true,
@@ -168,7 +168,7 @@ export default {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), 2)
 				.set("filterTarget", (cardx, player, target) => {
-					const card = new lib.element.VCard({ name: "zhibi" });
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 					if (ui.selected.targets.length) {
 						const user = ui.selected.targets[0];
 						return user.canUse(card, target);
@@ -180,7 +180,7 @@ export default {
 					if (att <= 0) {
 						return 0;
 					}
-					const card = new lib.element.VCard({ name: "zhibi" });
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 					return target != get.player() ? target.getUseValue(card) : 0.2;
 				})
 				.set("targetprompt", ["使用者", "目标"])
@@ -189,7 +189,7 @@ export default {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			await event.targets[0].useCard(card, event.targets[1], "noai");
 			if (event.targets[0] != player) {
 				await player.draw();
@@ -889,24 +889,24 @@ export default {
 		},
 		preHidden: true,
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "yiyi" });
+			const card = new lib.element.VCard({ name: "yiyi", isCard: true });
 			return game.hasPlayer(current => current.hasUseTarget(card));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (cardx, player, target) => {
-					const card = new lib.element.VCard({ name: "yiyi" });
+					const card = new lib.element.VCard({ name: "yiyi", isCard: true });
 					return target.hasUseTarget(card);
 				})
 				.set("ai", target => {
-					const card = new lib.element.VCard({ name: "yiyi" });
+					const card = new lib.element.VCard({ name: "yiyi", isCard: true });
 					return get.attitude(get.player(), target) * target.getUseValue(card);
 				})
 				.setHiddenSkill(event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "yiyi" }),
+			const card = new lib.element.VCard({ name: "yiyi", isCard: true }),
 				target = event.targets[0];
 			game.addGlobalSkill("gz_chengxi_ai");
 			const { result } = await target.chooseUseTarget(card, true);
@@ -2222,7 +2222,7 @@ export default {
 		},
 		preHidden: true,
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			return game.hasPlayer(current => {
 				if (current.isUnseen()) {
 					return false;
@@ -2236,11 +2236,11 @@ export default {
 					if (target.isUnseen()) {
 						return false;
 					}
-					const card = new lib.element.VCard({ name: "juedou" });
+					const card = new lib.element.VCard({ name: "juedou", isCard: true });
 					return player.isEnemyOf(target) && player.canUse(card, target) && target != player;
 				})
 				.set("ai", target => {
-					const card = new lib.element.VCard({ name: "juedou" });
+					const card = new lib.element.VCard({ name: "juedou", isCard: true });
 					let eff = 0,
 						limit = player.getHandcardLimit();
 					for (let current of game.filterPlayer(i => target.isFriendOf(i))) {
@@ -2264,7 +2264,7 @@ export default {
 			}
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "juedou" }),
+			const card = new lib.element.VCard({ name: "juedou", isCard: true }),
 				targets = event.targets.filter(target => player.canUse(card, target));
 			await player.useCard(card, targets);
 			if (!player.isIn()) {
@@ -2750,7 +2750,7 @@ export default {
 				if (discards.length == 1) {
 					const targetx = discards[0],
 						user = [player, target].find(i => i != targetx),
-						card = new lib.element.VCard({ name: "juedou" });
+						card = new lib.element.VCard({ name: "juedou", isCard: true });
 					if (user.canUse(card, targetx)) {
 						await user.useCard(card, targetx, "noai");
 					}
@@ -3023,7 +3023,7 @@ export default {
 		},
 		usable: 1,
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "yiyi" });
+			const card = new lib.element.VCard({ name: "yiyi", isCard: true });
 			return lib.filter.targetEnabled2(card, player, player) && game.hasPlayer(target => lib.skill.fakechongxin.filterTarget(card, player, target));
 		},
 		selectTarget: 1,
@@ -3047,7 +3047,7 @@ export default {
 			},
 			result: {
 				target(player, target) {
-					const card = new lib.element.VCard({ name: "yiyi" });
+					const card = new lib.element.VCard({ name: "yiyi", isCard: true });
 					const num = get.sgn(get.attitude(player, target));
 					return num * (get.effect(player, card, player, player) - get.effect(target, card, player, player));
 				},

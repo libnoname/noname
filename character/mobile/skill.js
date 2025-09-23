@@ -5791,8 +5791,8 @@ const skills = {
 							player,
 							list: [target, names, allNames],
 						} = get.event();
-						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
-						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3] }), false))) >
+						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
+						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), false))) >
 							(() => {
 								let sum = 0;
 								sum += target.getCards("h", { name: allNames }).reduce((num, card) => num + get.value(card, target), 0);
@@ -5809,7 +5809,7 @@ const skills = {
 			if (result.index === 0) {
 				const used = [];
 				for (let i = 0; i < 2; i++) {
-					let list = get.inpileVCardList(info => !used.includes(info[2]) && names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
+					let list = get.inpileVCardList(info => !used.includes(info[2]) && names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
 					if (!list.length) {
 						break;
 					}
@@ -5817,12 +5817,12 @@ const skills = {
 						list.length > 1
 							? await player
 									.chooseButton([get.translation(event.name) + "：请选择你要视为使用的基本牌", [list, "vcard"]], true)
-									.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), false, false))
+									.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), false, false))
 									.forResult("links")
 							: list;
 					if (choice) {
 						used.add(choice[2]);
-						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
+						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3], isCard: true }), true, false);
 					}
 				}
 			} else {
@@ -6296,7 +6296,7 @@ const skills = {
 					}
 					return !player.getStorage("potdaozhuan_used").includes(name);
 				})
-				.some(card => event.filterCard(new lib.element.VCard({ name: card[2], nature: card[3] }), player, event));
+				.some(card => event.filterCard(new lib.element.VCard({ name: card[2], nature: card[3], isCard: true }), player, event));
 		},
 		usable: 1,
 		chooseButton: {
@@ -6308,14 +6308,14 @@ const skills = {
 				if (player.getStorage("potdaozhuan_used").includes(button.link[2])) {
 					return false;
 				}
-				return event.filterCard(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), player, event);
+				return event.filterCard(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), player, event);
 			},
 			check(button) {
 				const event = get.event().getParent();
 				if (event.type !== "phase") {
 					return 1;
 				}
-				return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }));
+				return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }));
 			},
 			prompt(links, player) {
 				let prompt = "将你";
@@ -7661,11 +7661,11 @@ const skills = {
 			},
 			lie: {
 				trigger: { player: "phaseUseEnd" },
-				filter: (event, player) => player.hasUseTarget(new lib.element.VCard({ name: "sha" }), false),
+				filter: (event, player) => player.hasUseTarget(new lib.element.VCard({ name: "sha", isCard: true }), false),
 				direct: true,
 				content() {
 					const str = player.hasMark("potzhanlie_lie") ? "移去所有“烈”，" : "";
-					player.chooseUseTarget("###" + get.prompt("potzhanlie") + '###<div class="text center">' + str + "视为使用一张无次数限制的【杀】</div>", new lib.element.VCard({ name: "sha" }), false).set("oncard", () => {
+					player.chooseUseTarget("###" + get.prompt("potzhanlie") + '###<div class="text center">' + str + "视为使用一张无次数限制的【杀】</div>", new lib.element.VCard({ name: "sha", isCard: true }), false).set("oncard", () => {
 						const event = get.event(),
 							{ player } = event,
 							num = player.countMark("potzhanlie_lie");
@@ -7851,7 +7851,7 @@ const skills = {
 					await drawer.draw(Math.min(num, 3));
 				}
 			}
-			const juedou = new lib.element.VCard({ name: "juedou" });
+			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(juedou, target)) {
 				await player.useCard(juedou, target, false);
 			}
@@ -7866,7 +7866,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					return (
-						get.effect(target, new lib.element.VCard({ name: "juedou" }), player, player) -
+						get.effect(target, new lib.element.VCard({ name: "juedou", isCard: true }), player, player) -
 						Math.max(
 							0,
 							Math.min(

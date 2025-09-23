@@ -1259,7 +1259,7 @@ export default {
 			});
 			await player.give(cards, target);
 			const list = get.inpileVCardList(info => {
-				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), void 0, true);
+				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), void 0, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
 				const links = await player
@@ -2352,13 +2352,13 @@ export default {
 		audio: "duoshi",
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi" }));
+			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi", isCard: true }));
 		},
 		direct: true,
 		preHidden: true,
 		async content(event, trigger, player) {
 			await player
-				.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi" }), false)
+				.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi", isCard: true }), false)
 				.set("hiddenSkill", event.name)
 				.set("logSkill", event.name);
 		},

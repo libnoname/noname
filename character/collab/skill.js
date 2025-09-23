@@ -397,7 +397,7 @@ const skills = {
 								if (target == minPlayer || !minPlayer.isIn() || !target.isIn()) {
 									continue;
 								}
-								const sha = new lib.element.VCard({ name: "sha" });
+								const sha = new lib.element.VCard({ name: "sha", isCard: true });
 								if (target.canUse(sha, minPlayer, false)) {
 									await target.useCard(sha, minPlayer, false);
 								}
@@ -628,7 +628,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const num = game.roundNumber,
-				card = new lib.element.VCard({ name: "sha" });
+				card = new lib.element.VCard({ name: "sha", isCard: true });
 			await player.draw(num);
 			if (!player.hasUseTarget(card)) {
 				return;
@@ -5055,7 +5055,7 @@ const skills = {
 					break;
 				}
 			}
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			if (!player.hasUseTarget(card, false)) {
 				return;
 			}

@@ -934,7 +934,7 @@ const skills = {
 			let count = 0;
 			while (count < num) {
 				count++;
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (target?.isIn() && player.canUse(card, target, false)) {
 					await player.useCard(card, target);
 				}
@@ -1430,7 +1430,7 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool) {
-				const card = new lib.element.VCard({ name: result.links[0][2] });
+				const card = new lib.element.VCard({ name: result.links[0][2], isCard: true });
 				if (player.hasUseTarget(card)) {
 					await player.chooseUseTarget(card, true);
 				}
@@ -2091,7 +2091,7 @@ const skills = {
 					if (trigger.name == "phase") {
 						return;
 					}
-					const card = new lib.element.VCard({ name: trigger.card.name, nature: trigger.card.nature });
+					const card = new lib.element.VCard({ name: trigger.card.name, nature: trigger.card.nature, isCard: true });
 					if (player.hasUseTarget(card, false)) {
 						trigger.targets.forEach(target => {
 							target.prompt("羌督目标", "fire");
@@ -4288,16 +4288,16 @@ const skills = {
 			if (!event.targets?.includes(player) || player.hasHistory("damage", evt => evt.card == event.card)) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return player.canUse(card, event.player, false);
 		},
 		logTarget: "player",
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return get.effect(event.player, card, player, player) > 0;
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			await player.useCard(card, event.targets);
 		},
 	},
@@ -4827,7 +4827,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			await player.loseHp();
-			const card = new lib.element.VCard({ name: "dajunyajing" }),
+			const card = new lib.element.VCard({ name: "dajunyajing", isCard: true }),
 				target = event.target;
 			const result = player.canUse(card, target)
 				? await target
@@ -4949,7 +4949,7 @@ const skills = {
 					return false;
 				}
 				eff += get.effect(current, { name: "guohe_copy2" }, player, player);
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (player.canUse(card, event.player, false)) {
 					eff += get.effect(event.player, card, player, player);
 				}
@@ -4976,7 +4976,7 @@ const skills = {
 			}
 			while (num > 0) {
 				num--;
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (player.canUse(card, trigger.player, false)) {
 					await player.useCard(card, trigger.player);
 				} else {
@@ -5038,7 +5038,7 @@ const skills = {
 			return (
 				event.card.name == "sha" &&
 				event.targets?.some(i => {
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					return i.isIn() && player.canUse(card, i, false);
 				}) &&
 				player.countCards("hes")
@@ -5103,16 +5103,16 @@ const skills = {
 			if (!player.getHistory("lose").length) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return player.canUse(card, event.player, false);
 		},
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return get.effect(event.player, card, player, player) > 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const next = player.useCard(card, trigger.player);
 			next.oncard = () => {
 				let num = get
@@ -6108,7 +6108,7 @@ const skills = {
 			const { result: result2 } = await target.chooseToCompare(targetx);
 			if (!result2.tie) {
 				const user = result2.bool ? target : targetx;
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (user.hasUseTarget(card, false)) {
 					await user.chooseUseTarget(card, "nodistance", false, true);
 				}
@@ -7943,7 +7943,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const bool = await player.chooseToCompare(event.target).forResultBool();
 			if (bool) {
-				const card = new lib.element.VCard({ name: "sha", nature: "stab" });
+				const card = new lib.element.VCard({ name: "sha", nature: "stab", isCard: true });
 				if (player.hasUseTarget(card)) {
 					await player.chooseUseTarget(card, false);
 				}
@@ -8206,7 +8206,7 @@ const skills = {
 			await player.gainPlayerCard(target);
 			player.addTempSkill("caliyu_damage");
 			player.addMark("caliyu_damage", 1, false);
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (target.canUse(card, player)) {
 				await target.useCard(card, player, "noai");
 			}
@@ -8252,7 +8252,7 @@ const skills = {
 			const target = event.target;
 			await target.draw();
 			const list = get.inpileVCardList(info => {
-				const card = new lib.element.VCard({ name: info[2], nature: info[3] });
+				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
 				if (!get.tag(card, "damage") || !["basic", "trick"].includes(get.type(card, false))) {
 					return false;
 				}
@@ -8264,14 +8264,14 @@ const skills = {
 			const result = await player
 				.chooseButton([`连计：选择要令${get.translation(target)}使用的牌`, [list, "vcard"]], true)
 				.set("ai", button => {
-					const card = new lib.element.VCard({ name: button.link[2], nature: button.link[3] }),
+					const card = new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }),
 						{ player, target } = get.event();
 					return target.getUseValue(card) * get.attitude(player, target);
 				})
 				.set("target", target)
 				.forResult();
 			if (result.bool) {
-				const card = new lib.element.VCard({ name: result.links[0][2], nature: result.links[0][3] });
+				const card = new lib.element.VCard({ name: result.links[0][2], nature: result.links[0][3], isCard: true });
 				if (target.hasUseTarget(card)) {
 					await target.chooseUseTarget(card, true);
 				}
@@ -8422,7 +8422,7 @@ const skills = {
 			order: 7,
 			result: {
 				target(player, target) {
-					const juedou = new lib.element.VCard({ name: "juedou" });
+					const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
 					return target.getUseValue(juedou) * Math.sqrt(target.countCards("h"));
 				},
 			},

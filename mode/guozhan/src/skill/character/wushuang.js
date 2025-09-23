@@ -2022,7 +2022,7 @@ export default {
 				})
 				.forResult();
 			if (result.bool && get.type(result.cards[0]) == "equip") {
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (player.hasUseTarget(card)) {
 					await player.chooseUseTarget(card, true, false);
 				}
@@ -2176,7 +2176,7 @@ export default {
 							player.addTempSkill("gz_zhilve_limit");
 							player.addMark("gz_zhilve_limit", 1, false);
 							await player.draw();
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (player.hasUseTarget(card, false)) {
 								await player.chooseUseTarget(card, true, false, "nodistance");
 							}
@@ -3888,18 +3888,18 @@ export default {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			return game.hasPlayer(current => current != player && player.canUse(card, current) && current.countCards("h") <= player.countCards("h"));
 		},
 		preHidden: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (cardx, player, target) => {
-					const card = new lib.element.VCard({ name: "zhibi" });
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 					return target != player && player.canUse(card, target) && target.countCards("h") <= player.countCards("h");
 				})
 				.set("ai", target => {
-					const card = new lib.element.VCard({ name: "zhibi" }),
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true }),
 						player = get.player();
 					return get.effect(target, card, player, player);
 				})
@@ -3907,7 +3907,7 @@ export default {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			await player.useCard(card, event.targets);
 		},
 	},

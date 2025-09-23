@@ -15213,7 +15213,7 @@ const skills = {
 			player.addMark(event.name, num + cards.length, false);
 			await player.give(cards, target);
 			const list = get.inpileVCardList(info => {
-				return info[0] == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), null, true);
+				return info[0] == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), null, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
 				const { result } = await player.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]]).set("ai", button => {

@@ -3667,7 +3667,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			const { target } = event,
-				juedou = new lib.element.VCard({ name: "juedou" });
+				juedou = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (target.canUse(juedou, player, false)) {
 				await target.useCard(juedou, player, "noai");
 			}
@@ -3915,7 +3915,7 @@ const skills = {
 				if (get.type(name) === "delay" || player.getStorage("dcdehua").includes(name)) {
 					return false;
 				}
-				const card = new lib.element.VCard({ name: name });
+				const card = new lib.element.VCard({ name: name, isCard: true });
 				return get.tag(card, "damage") && player.hasUseTarget(card);
 			});
 			if (list.length) {
@@ -3935,7 +3935,7 @@ const skills = {
 				});
 				if (bool) {
 					const name = links[0][2],
-						card = new lib.element.VCard({ name: name });
+						card = new lib.element.VCard({ name: name, isCard: true });
 					await player.chooseUseTarget(card, true);
 					player.markAuto("dcdehua", [name]);
 				}

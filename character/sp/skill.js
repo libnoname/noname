@@ -517,7 +517,7 @@ const skills = {
 				.chooseToDiscard(get.prompt2(event.skill), "he", 2)
 				.set("ai", card => {
 					const player = get.player(),
-						nanman = new lib.element.VCard({ name: "nanman" });
+						nanman = new lib.element.VCard({ name: "nanman", isCard: true });
 					const targets = game.filterPlayer(target => player.canUse(nanman, target) && get.effect(target, nanman, player, player) > 0).sort((a, b) => get.effect(b, nanman, player, player) - get.effect(a, nanman, player, player));
 					if (!targets.length) {
 						return 0;
@@ -535,7 +535,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.addTempSkill("newzhennan_dist");
-			const nanman = new lib.element.VCard({ name: "nanman", storage: { newzhennan: true } });
+			const nanman = new lib.element.VCard({ name: "nanman", storage: { newzhennan: true }, isCard: true });
 			if (player.hasUseTarget(nanman, true, false)) {
 				const result = await player.chooseUseTarget(nanman, true, false, [1, Infinity]).forResult();
 				if (result?.bool && result.targets?.length) {
@@ -2091,7 +2091,7 @@ const skills = {
 						player.storage["olshanjia_effect"].set(trigger.getParent("phaseUse"), num - 1);
 						player.chooseToDiscard("he", true).set("prompt", "缮甲：请弃置一张牌").logSkill = event.name;
 					} else {
-						player.chooseUseTarget(new lib.element.VCard({ name: "sha" }), false, "nodistance", "缮甲：是否视为使用一张无距离限制的【杀】？").logSkill = event.name;
+						player.chooseUseTarget(new lib.element.VCard({ name: "sha", isCard: true }), false, "nodistance", "缮甲：是否视为使用一张无距离限制的【杀】？").logSkill = event.name;
 					}
 				},
 			},
@@ -3655,7 +3655,7 @@ const skills = {
 				}
 				return game.hasPlayer(target => player.canUse(get.autoViewAs({ name: "juedou" }, [card]), target));
 			}
-			return game.hasPlayer(target => target.canUse(new lib.element.VCard({ name: "juedou" }), player));
+			return game.hasPlayer(target => target.canUse(new lib.element.VCard({ name: "juedou", isCard: true }), player));
 		},
 		filterCard(card, player) {
 			const suits = get.event().olliyong_suits;
@@ -3671,7 +3671,7 @@ const skills = {
 			if (!player.storage["olliyong"]) {
 				return player.canUse(get.autoViewAs({ name: "juedou" }, ui.selected.cards), target);
 			}
-			return target.canUse(new lib.element.VCard({ name: "juedou" }), player);
+			return target.canUse(new lib.element.VCard({ name: "juedou", isCard: true }), player);
 		},
 		position: "hes",
 		check(card) {
@@ -3703,7 +3703,7 @@ const skills = {
 					await player.gain(card, "gain2");
 				}
 				await game.delay(0.5);
-				await target.useCard(new lib.element.VCard({ name: "juedou" }), player, "noai");
+				await target.useCard(new lib.element.VCard({ name: "juedou", isCard: true }), player, "noai");
 			}
 		},
 		mark: true,
@@ -3725,7 +3725,7 @@ const skills = {
 					if (!player.storage["olliyong"]) {
 						return get.effect(target, get.autoViewAs({ name: "juedou" }, cards), player, player);
 					}
-					return get.effect(player, new lib.element.VCard({ name: "juedou" }), target, player);
+					return get.effect(player, new lib.element.VCard({ name: "juedou", isCard: true }), target, player);
 				},
 			},
 		},
@@ -4127,12 +4127,12 @@ const skills = {
 				name: "你可以视为使用一张无距离和次数限制的【杀】",
 				effect: {
 					filter(event, player) {
-						const card = new lib.element.VCard({ name: "sha" });
+						const card = new lib.element.VCard({ name: "sha", isCard: true });
 						return player.hasUseTarget(card, false);
 					},
 					direct: true,
 					async content(event, trigger, player) {
-						const card = new lib.element.VCard({ name: "sha" });
+						const card = new lib.element.VCard({ name: "sha", isCard: true });
 						event.result = await player
 							.chooseUseTarget(get.prompt2(event.name), card, false, "nodistance")
 							.set("oncard", () => {
@@ -9374,8 +9374,8 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
-			const wugu = new lib.element.VCard({ name: "wugu" });
-			const wanjian = new lib.element.VCard({ name: "wanjian" });
+			const wugu = new lib.element.VCard({ name: "wugu", isCard: true });
+			const wanjian = new lib.element.VCard({ name: "wanjian", isCard: true });
 			const targets = game.filterPlayer(target => {
 					if (target == player) {
 						return false;
@@ -14799,7 +14799,7 @@ const skills = {
 			if (result.bool) {
 				await target.draw(2);
 			} else {
-				const card = new lib.element.VCard({ name: "sha", nature: "thunder" });
+				const card = new lib.element.VCard({ name: "sha", nature: "thunder", isCard: true });
 				for (let i = 1; i <= 2; i++) {
 					if (player.canUse(card, target, false)) {
 						await player.useCard(card, target, false);
@@ -14816,7 +14816,7 @@ const skills = {
 					let sgn = 0,
 						eff = 0,
 						num = get.attitude(player, target);
-					const card = new lib.element.VCard({ name: "sha", nature: "thunder" });
+					const card = new lib.element.VCard({ name: "sha", nature: "thunder", isCard: true });
 					game.countPlayer(current => {
 						if (!current.hasSkillTag("rejudge")) {
 							return;

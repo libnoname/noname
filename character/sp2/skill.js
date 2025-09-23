@@ -585,7 +585,7 @@ const skills = {
 					if (history.length !== 0) {
 						return false;
 					}
-					const card = new lib.element.VCard({ name: event.card.name });
+					const card = new lib.element.VCard({ name: event.card.name, isCard: true });
 					return event.targets?.some(target => {
 						if (!target?.isIn()) {
 							return false;
@@ -600,7 +600,7 @@ const skills = {
 						return trigger.targets.includes(evt.player) && evt.card == trigger.card;
 					});
 					if (history.length == 0) {
-						const card = new lib.element.VCard({ name: trigger.card.name });
+						const card = new lib.element.VCard({ name: trigger.card.name, isCard: true });
 						for (const target of trigger.targets || []) {
 							if (!target?.isIn()) {
 								continue;
@@ -2187,6 +2187,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				const card = new lib.element.VCard({
 					name: "sha",
+					isCard: true,
 				});
 				const result = await player
 					.chooseUseTarget(`###${get.prompt("starminghui")}###视为使用一张无距离限制的【杀】`, card, false, "nodistance")

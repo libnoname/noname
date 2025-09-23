@@ -3018,10 +3018,10 @@ export class Click {
 			if (typeof viewAs == "function") {
 				const viewedAs = viewAs(result.cards, gameEvent.player);
 				if (viewedAs) {
-					result.card = get.autoViewAs(viewedAs, result.cards);
+					result.card = get.autoViewAs(viewedAs);
 				}
 			} else if (viewAs) {
-				result.card = get.autoViewAs(viewAs, result.cards);
+				result.card = get.autoViewAs(viewAs);
 			}
 			const resultCard = result.card;
 			if (resultCard) {

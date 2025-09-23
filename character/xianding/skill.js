@@ -1938,7 +1938,7 @@ const skills = {
 						break;
 					}
 					case "选项二": {
-						const card = new lib.element.VCard({ name: "shunshou" });
+						const card = new lib.element.VCard({ name: "shunshou", isCard: true });
 						if (player.hasUseTarget(card)) {
 							count++;
 							await player.chooseUseTarget(card, [1, count], true);
@@ -1946,7 +1946,7 @@ const skills = {
 						break;
 					}
 					case "选项三": {
-						const card = new lib.element.VCard({ name: "sha" });
+						const card = new lib.element.VCard({ name: "sha", isCard: true });
 						if (player.hasUseTarget(card)) {
 							count++;
 							await player.chooseUseTarget(card, [1, count], true, false);
@@ -2931,7 +2931,7 @@ const skills = {
 			if (result?.bool) {
 				player.addTempSkill("dcrenshuang_used", "roundStart");
 				player.markAuto("dcrenshuang_used", result.links[0][2]);
-				const card = new lib.element.VCard({ name: result.links[0][2] });
+				const card = new lib.element.VCard({ name: result.links[0][2], isCard: true });
 				if (player.hasUseTarget(card)) {
 					await player.chooseUseTarget(card, true);
 				}
@@ -2950,7 +2950,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "phaseUse") {
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				return player.hasUseTarget(card, false);
 			}
 			if (event.name == "phaseDiscard") {
@@ -2969,11 +2969,11 @@ const skills = {
 							.chooseTarget(get.prompt(event.skill))
 							.set("prompt2", "失去1点体力并视为对一名角色使用一张【杀】")
 							.set("filterTarget", (event, player, target) => {
-								const card = new lib.element.VCard({ name: "sha" });
+								const card = new lib.element.VCard({ name: "sha", isCard: true });
 								return player.canUse(card, target, false);
 							})
 							.set("ai", target => {
-								const card = new lib.element.VCard({ name: "sha" }),
+								const card = new lib.element.VCard({ name: "sha", isCard: true }),
 									player = get.player(),
 									eff1 = get.effect(target, card, player, player),
 									eff2 = get.effect(player, { name: "losehp" }, player, player);
@@ -3017,7 +3017,7 @@ const skills = {
 				const {
 					targets: [target],
 				} = event;
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				await player.loseHp();
 				await player.useCard(card, target, false);
 			} else {
@@ -3071,7 +3071,7 @@ const skills = {
 					})
 					.forResult();
 				if (result?.bool) {
-					const card = new lib.element.VCard({ name: result.links[0][2] });
+					const card = new lib.element.VCard({ name: result.links[0][2], isCard: true });
 					if (player.hasUseTarget(card)) {
 						await player.chooseUseTarget(card, true);
 					}
@@ -10661,7 +10661,7 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			const target = event.player;
-			if (!player.countCards("he") && !target.countCards("he") && !player.canUse(new lib.element.VCard({ name: "sha" }), target, false)) {
+			if (!player.countCards("he") && !target.countCards("he") && !player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), target, false)) {
 				return false;
 			}
 			return event.player != player && event.player.isMaxHandcard();
@@ -10673,10 +10673,10 @@ const skills = {
 			if (!player.countCards("he")) {
 				result = await player
 					.chooseBool(get.prompt(event.skill, target), "弃置" + str + "的一张牌，然后视为对其使用一张【杀】")
-					.set("choice", get.effect(target, { name: "guohe_copy2" }, player, player) + get.effect(target, new lib.element.VCard({ name: "sha" }), player, player) > 0)
+					.set("choice", get.effect(target, { name: "guohe_copy2" }, player, player) + get.effect(target, new lib.element.VCard({ name: "sha", isCard: true }), player, player) > 0)
 					.forResult();
 				result.index = 1;
-			} else if (!target.countCards("he") && !player.canUse(new lib.element.VCard({ name: "sha" }), target, false)) {
+			} else if (!target.countCards("he") && !player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), target, false)) {
 				result = await player
 					.chooseBool(get.prompt(event.skill, target), "交给" + str + "一张牌，然后摸两张牌")
 					.set("choice", get.attitude(player, target) > 0 || player.hasCard(card => card.name == "du", "h"))
@@ -10689,7 +10689,7 @@ const skills = {
 					.set("ai", () => {
 						const player = get.event("player"),
 							target = get.event("target");
-						const num = get.effect(target, { name: "guohe_copy2" }, player, player) + get.effect(target, new lib.element.VCard({ name: "sha" }), player, player);
+						const num = get.effect(target, { name: "guohe_copy2" }, player, player) + get.effect(target, new lib.element.VCard({ name: "sha", isCard: true }), player, player);
 						if (num <= 0 && get.attitude(player, target) < 0) {
 							return "cancel2";
 						}
@@ -10712,7 +10712,7 @@ const skills = {
 				await player.draw(2);
 			} else {
 				await player.discardPlayerCard(target, "he", true);
-				const sha = new lib.element.VCard({ name: "sha" });
+				const sha = new lib.element.VCard({ name: "sha", isCard: true });
 				if (player.canUse(sha, target, false)) {
 					await player.useCard(sha, target, false);
 				}
@@ -12751,7 +12751,7 @@ const skills = {
 						if (target.countCards("h") >= game.countPlayer()) {
 							target.addTempSkill("dchuiji_effect");
 							target.markAuto("dchuiji_effect", [event]);
-							const card = new lib.element.VCard({ name: "wugu", storage: { fixedShownCards: [] } });
+							const card = new lib.element.VCard({ name: "wugu", storage: { fixedShownCards: [] }, isCard: true });
 							if (target.hasUseTarget(card)) {
 								await target.chooseUseTarget(card, true, false);
 							}
@@ -13582,7 +13582,7 @@ const skills = {
 						return;
 					}
 					if (event.judgeResult.number > get.number(evt.card)) {
-						const sha = new lib.element.VCard({ name: "sha" }),
+						const sha = new lib.element.VCard({ name: "sha", isCard: true }),
 							target = evt.source;
 						if (player.canUse(sha, target, false, false)) {
 							player.useCard(sha, target, false);
@@ -15209,7 +15209,7 @@ const skills = {
 			if (event.targets.length != 1 || !event.targets[0].isIn()) {
 				return false;
 			}
-			if (!player.canUse(new lib.element.VCard({ name: "sha" }), event.targets[0], false)) {
+			if (!player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), event.targets[0], false)) {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
@@ -15225,7 +15225,7 @@ const skills = {
 			return `视为对${get.translation(event.targets)}使用一张无伤害来源的【杀】`;
 		},
 		check(event, player) {
-			const sha = new lib.element.VCard({ name: "sha" });
+			const sha = new lib.element.VCard({ name: "sha", isCard: true });
 			return Math.max(...[event.targets[0], player].map(source => get.effect(event.targets[0], sha, source, player))) > 0;
 		},
 		logTarget: "targets",
@@ -15233,7 +15233,7 @@ const skills = {
 			const player = map.player,
 				trigger = map.trigger,
 				target = trigger.targets[0];
-			yield (player.useCard(new lib.element.VCard({ name: "sha" }), target, false).oncard = () => {
+			yield (player.useCard(new lib.element.VCard({ name: "sha", isCard: true }), target, false).oncard = () => {
 				get.event().customArgs.default.customSource = {
 					isDead: () => true,
 				};
@@ -20915,7 +20915,7 @@ const skills = {
 				}
 				const list = nameList.slice().randomSort();
 				for (const name of list) {
-					const card = new lib.element.VCard({ name });
+					const card = new lib.element.VCard({ name, isCard: true });
 					let targets = [player, target].filter(current => player.canUse(card, current));
 					if (targets.length) {
 						await player.useCard(card, targets);
@@ -20985,7 +20985,7 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool) {
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					await current.useCard(card, result.targets, false);
 				}
 			}

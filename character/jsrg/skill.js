@@ -2514,7 +2514,7 @@ const skills = {
 				if (result2.bool) {
 					targets.reverse();
 				}
-				const sha = new lib.element.VCard({ name: "sha" });
+				const sha = new lib.element.VCard({ name: "sha", isCard: true });
 				if (targets[0].canUse(sha, targets[1], false)) {
 					targets[0].useCard(sha, targets[1], false);
 				}
@@ -2635,7 +2635,7 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			const juedou = new lib.element.VCard({ name: "juedou", storage: { jsrglonglin: true } });
+			const juedou = new lib.element.VCard({ name: "juedou", storage: { jsrglonglin: true }, isCard: true });
 			const { result } = await player
 				.chooseToDiscard(get.prompt2("jsrglonglin"), "he")
 				.set("ai", card => {
@@ -2910,7 +2910,7 @@ const skills = {
 			player.addTempSkill("jsrgtuigu_handcard");
 			player.addMark("jsrgtuigu_handcard", num, false);
 			await player.draw(num);
-			const jiejia = new lib.element.VCard({ name: "jiejia", storage: { jsrgtuigu: true } });
+			const jiejia = new lib.element.VCard({ name: "jiejia", storage: { jsrgtuigu: true }, isCard: true });
 			if (player.hasUseTarget(jiejia)) {
 				player.addTempSkill("jsrgtuigu_block");
 				await player.chooseUseTarget(jiejia, true);

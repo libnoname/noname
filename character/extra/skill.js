@@ -529,7 +529,7 @@ const skills = {
 			if (event.player == player || !player.hasEnabledSlot()) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			return player.canUse(card, event.player);
 		},
 		async cost(event, trigger, player) {
@@ -542,7 +542,7 @@ const skills = {
 			}
 			list.push("cancel2");
 			let bool = "cancel2";
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (get.effect(trigger.player, card, player, player) > 0) {
 				bool = list.filter(i => i != "cancel2").randomGet();
 			}
@@ -561,7 +561,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const slot = event.cost_data;
 			await player.disableEquip([slot]);
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(card, trigger.player)) {
 				await player.useCard(card, trigger.player);
 			}

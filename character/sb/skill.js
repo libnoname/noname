@@ -198,7 +198,7 @@ const skills = {
 					const vcard = get
 						.inpileVCardList(info => info[2] === "sha")
 						.filter(info => {
-							const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
+							const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon }, isCard: true });
 							return player.hasValueTarget(card, false);
 						});
 					return (
@@ -208,7 +208,7 @@ const skills = {
 							}
 							return Math.max(
 								...vcard.map(info => {
-									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
+									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon }, isCard: true });
 									return player.getUseValue(card, false);
 								})
 							);
@@ -233,7 +233,7 @@ const skills = {
 				const vcard = get
 					.inpileVCardList(info => info[2] === "sha")
 					.filter(info => {
-						const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+						const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 						return player.hasUseTarget(card, false);
 					});
 				if (vcard.length > 0) {
@@ -246,14 +246,14 @@ const skills = {
 											player,
 											infoMap: [goon, targets],
 										} = get.event();
-										const card = new lib.element.VCard({ name: "sha", nature: button.link[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+										const card = new lib.element.VCard({ name: "sha", nature: button.link[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 										return Math.max(...game.filterPlayer(target => player.canUse(card, target, false)).map(target => get.effect(target, card, player, player)));
 									})
 									.set("infoMap", [goon, targets])
 									.forResult("links")
 							: vcard;
 					if (link) {
-						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 						const aims =
 							(await player
 								.chooseUseTarget(card, true, false, "nodistance")
@@ -7177,7 +7177,7 @@ const skills = {
 					var player = _status.event.player;
 					if (ui.selected.targets.length) {
 						var current = ui.selected.targets[0];
-						return get.effect(target, new lib.element.VCard({ name: "sha" }), current, player);
+						return get.effect(target, new lib.element.VCard({ name: "sha", isCard: true }), current, player);
 					}
 					let curs = game.filterPlayer(current => {
 						return target !== current && target.inRange(current) && target.canUse({ name: "sha", isCard: true }, current, false);
@@ -7189,7 +7189,7 @@ const skills = {
 						}
 						return -att * get.threaten(target, player);
 					}
-					return curs.reduce((max, i) => Math.max(max, get.effect(i, new lib.element.VCard({ name: "sha" }), target, player)), -1);
+					return curs.reduce((max, i) => Math.max(max, get.effect(i, new lib.element.VCard({ name: "sha", isCard: true }), target, player)), -1);
 				})
 				.forResult();
 		},

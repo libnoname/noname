@@ -991,7 +991,7 @@ const skills = {
 					const { cards } = event;
 					await player.loseToDiscardpile(cards);
 					let noDamage = true;
-					const viewAs = card => new lib.element.VCard({ name: card.name, nature: card.nature });
+					const viewAs = card => new lib.element.VCard({ name: card.name, nature: card.nature, isCard: true });
 					const cardsx = cards.filter(card => ["basic", "trick"].includes(get.type(card)) && player.hasUseTarget(viewAs(card)));
 					if (cardsx.length) {
 						const result = await player
@@ -3186,7 +3186,7 @@ const skills = {
 		audio: "jsrglonglin",
 		inherit: "jsrglonglin",
 		async content(event, trigger, player) {
-			const juedou = new lib.element.VCard({ name: "juedou", storage: { ollonglin: true } });
+			const juedou = new lib.element.VCard({ name: "juedou", storage: { ollonglin: true }, isCard: true });
 			const { result } = await player
 				.chooseToDiscard(get.prompt2("ollonglin"), "he")
 				.set("ai", card => {
@@ -3967,7 +3967,7 @@ const skills = {
 					}
 					return !player.getStorage("olsblucun_used").includes(name);
 				})
-				.some(card => event.filterCard(new lib.element.VCard({ name: card[2], nature: card[3] }), player, event));
+				.some(card => event.filterCard(new lib.element.VCard({ name: card[2], nature: card[3], isCard: true }), player, event));
 		},
 		usable: 1,
 		chooseButton: {
@@ -3979,14 +3979,14 @@ const skills = {
 				if (player.getStorage("olsblucun_used").includes(button.link[2])) {
 					return false;
 				}
-				return event.filterCard(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), player, event);
+				return event.filterCard(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), player, event);
 			},
 			check(button) {
 				const event = get.event().getParent();
 				if (event.type !== "phase") {
 					return 1;
 				}
-				return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }));
+				return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }));
 			},
 			prompt(links) {
 				return '###赂存###<div class="text center">视为使用' + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】</div>";
@@ -4308,7 +4308,7 @@ const skills = {
 				},
 				getIndex(event, player) {
 					const storage = player.storage.olsbchoulie_buff;
-					const vcard = new lib.element.VCard({ name: "sha" });
+					const vcard = new lib.element.VCard({ name: "sha", isCard: true });
 					return storage.filter(i => player.canUse(vcard, i, false));
 				},
 				filter(event, player) {
@@ -4329,7 +4329,7 @@ const skills = {
 						.set("ai", card => {
 							const player = get.player(),
 								target = get.event().getParent().indexedData;
-							const vcard = new lib.element.VCard({ name: "sha" });
+							const vcard = new lib.element.VCard({ name: "sha", isCard: true });
 							return get.effect(target, vcard, player, player) - get.value(card);
 						})
 						.set("logSkill", list)
@@ -4338,7 +4338,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					const target = event.indexedData;
-					const vcard = new lib.element.VCard({ name: "sha" });
+					const vcard = new lib.element.VCard({ name: "sha", isCard: true });
 					if (player.canUse(vcard, target, false)) {
 						await player.useCard(vcard, target, false);
 					}
@@ -6000,7 +6000,7 @@ const skills = {
 				case 2:
 					for (const current of [player, target]) {
 						const aim = current === player ? target : player;
-						const sha = new lib.element.VCard({ name: "sha" });
+						const sha = new lib.element.VCard({ name: "sha", isCard: true });
 						if (current.isIn() && current.canUse(sha, aim, false)) {
 							current.line(aim);
 							await current.useCard(sha, aim, false, "noai");
@@ -6914,7 +6914,7 @@ const skills = {
 			if (cards_player.length != cards_target.length) {
 				const user = cards_player.length > cards_target.length ? player : target;
 				const aim = user == player ? target : player;
-				const juedou = new lib.element.VCard({ name: "juedou" });
+				const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
 				if (user.canUse(juedou, aim, false)) {
 					await user.useCard(juedou, aim, false);
 				}
@@ -7778,7 +7778,7 @@ const skills = {
 				if (get.attitude(player, target) <= 0) {
 					return 0;
 				}
-				let num = target.getUseValue(new lib.element.VCard({ name: "sha" }), false);
+				let num = target.getUseValue(new lib.element.VCard({ name: "sha", isCard: true }), false);
 				if (target.hasSkillTag("nogain")) {
 					num /= 4;
 				}
@@ -7823,7 +7823,7 @@ const skills = {
 					.set("target", target)
 					.set("ai", function (target) {
 						const evt = _status.event,
-							card = new lib.element.VCard({ name: "sha" });
+							card = new lib.element.VCard({ name: "sha", isCard: true });
 						if (!evt.target.canUse(card, target, false)) {
 							return 0;
 						}
@@ -9220,7 +9220,7 @@ const skills = {
 			if (event.olsbguidao_num > 2) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true } });
+			const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true }, isCard: true });
 			return (
 				game.hasPlayer(target => {
 					return player.canUse(card, target, false);
@@ -9266,7 +9266,7 @@ const skills = {
 		discard: false,
 		delay: 0,
 		filterTarget(card, player, target) {
-			const cardx = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true } });
+			const cardx = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true }, isCard: true });
 			return player.canUse(cardx, target, false);
 		},
 		prompt() {
@@ -9284,7 +9284,7 @@ const skills = {
 			player.getHistory("custom").push({
 				olsbguidao_num: cards.filter(card => get.name(card, player) == "sha").length + 1,
 			});
-			const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true } });
+			const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true }, isCard: true });
 			await player.recast(cards);
 			player.addTempSkill("olsbguidao_buff");
 			if (player.canUse(card, target, false)) {
@@ -9293,7 +9293,7 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true } });
+				const card = new lib.element.VCard({ name: "juedou", storage: { olsbguidao: true }, isCard: true });
 				const order = get.order(card, player);
 				if (order <= 0) {
 					return 0;
@@ -9305,6 +9305,7 @@ const skills = {
 					const card = new lib.element.VCard({
 						name: "juedou",
 						storage: { olsbguidao: true },
+						isCard: true,
 					});
 					return get.sgn(get.attitude(player, target)) * get.effect(target, card, player, player);
 				},
