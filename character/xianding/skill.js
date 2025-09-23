@@ -15752,7 +15752,7 @@ const skills = {
 					player.countCards("h", card => get.number(card) == num)
 				);
 			}
-			player.draw(count);
+			player.draw(count, "nodelay");
 		},
 		ai: {
 			threaten: 4,

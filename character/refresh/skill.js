@@ -3659,7 +3659,7 @@ const skills = {
 			return (lib.suit.includes(get.suit(evt.card)) && get.suit(evt.card) == get.suit(event.card)) || (typeof get.number(evt.card, false) == "number" && get.number(evt.card, false) == get.number(event.card));
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		group: "dcjianying_mark",
 		init(player) {
@@ -15093,7 +15093,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.draw();
+			player.draw("nodelay");
 			"step 1";
 			event.card = result[0];
 			if (get.type(event.card) == "basic") {

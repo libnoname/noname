@@ -11053,7 +11053,7 @@ const skills = {
 		content() {
 			"step 0";
 			player.removeMark("renjie", 1);
-			player.draw();
+			player.draw("nodelay");
 			"step 1";
 			event.card = result[0];
 			if (get.type(event.card) == "basic") {

@@ -4022,8 +4022,10 @@ const skills = {
 			return get.type(event.card) == "trick";
 		},
 		forced: true,
-		content() {
-			player.draw().gaintag = ["sbjizhi"];
+		async content(event, trigger, player) {
+			const next = player.draw("nodelay");
+			next.gaintag.add("sbjizhi");
+			await next;
 			player.addTempSkill("sbjizhi_mark");
 		},
 		subSkill: {

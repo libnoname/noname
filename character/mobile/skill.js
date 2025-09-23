@@ -7235,7 +7235,7 @@ const skills = {
 							game.log(player, "预测", "#y正确");
 							storage[0].push(true);
 							if (storage.filter(b => b === true).length <= 5) {
-								await player.draw();
+								await player.draw("nodelay");
 							}
 						} else {
 							player.popup("预测错误", "fire");
@@ -28491,7 +28491,7 @@ const skills = {
 			return color1 && color2 && color1 != "none" && color2 != "none" && color1 != color2;
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		ai: {
 			threaten: 3,

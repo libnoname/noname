@@ -7281,7 +7281,7 @@ const skills = {
 				return get.owner(i) == player && get.color(i, player) == "red";
 			});
 			await player.showCards(cards, `${get.translation(player)}发动了【兴威】`);
-			await player.draw(cards.length);
+			await player.draw(cards.length, "nodelay");
 		},
 		subfrequent: ["gain"],
 		group: "caxingwei_gain",
@@ -18867,7 +18867,7 @@ const skills = {
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			await player.draw();
+			await player.draw("nodelay");
 			if (!player.isPhaseUsing()) {
 				return;
 			}
@@ -19849,7 +19849,7 @@ const skills = {
 				frequent: true,
 				prompt2: "摸一张牌",
 				content() {
-					player.draw();
+					player.draw("nodelay");
 				},
 			},
 		},
@@ -20921,7 +20921,7 @@ const skills = {
 		forced: true,
 		content() {
 			"step 0";
-			player.draw();
+			player.draw("nodelay");
 			"step 1";
 			player.addTempSkill("jdjizhi_mark");
 			player.addMark("jdjizhi_mark", 1, false);

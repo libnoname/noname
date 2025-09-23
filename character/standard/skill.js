@@ -1445,7 +1445,7 @@ const skills = {
 			return get.type(event.card) == "trick" && event.card.isCard;
 		},
 		async content(event, trigger, player) {
-			player.draw();
+			player.draw("nodelay");
 		},
 		ai: {
 			threaten: 1.4,

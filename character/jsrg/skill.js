@@ -1496,7 +1496,7 @@ const skills = {
 				target.addTempSkill("jsrgxuchong_effect");
 				target.addMark("jsrgxuchong_effect", 2, false);
 			} else {
-				await player.draw();
+				await player.draw("nodelay");
 			}
 			await player.gain(lib.card.ying.getYing(1), "gain2");
 		},

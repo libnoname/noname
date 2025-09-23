@@ -2972,7 +2972,7 @@ const skills = {
 					return player.getStorage("qingbei_effect").length;
 				},
 				content() {
-					player.draw(player.getStorage("qingbei_effect").length);
+					player.draw(player.getStorage("qingbei_effect").length, "nodelay");
 				},
 				mark: true,
 				intro: {

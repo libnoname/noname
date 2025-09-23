@@ -7457,7 +7457,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			player.changeZhuanhuanji("olziruo");
-			await player.draw();
+			await player.draw("nodelay");
 		},
 		mark: true,
 		marktext: "☯",
