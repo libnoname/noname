@@ -2249,12 +2249,12 @@ const skills = {
 				const group = result2.control;
 				await player.changeGroup(group);
 				player.popup(`${group}2`, get.groupnature(group, "raw"));
-				await player.addSkills("zj_fayi");
+				await player.addSkills("zj_qiangyi");
 			}
 		},
-		derivation: "zj_fayi",
+		derivation: "zj_qiangyi",
 	},
-	zj_fayi: {
+	zj_qiangyi: {
 		zhuSkill: true,
 		enable: "chooseToUse",
 		viewAsFilter(player) {
@@ -2286,7 +2286,7 @@ const skills = {
 			},
 		},
 		subfrequent: ["gain"],
-		group: "zj_fayi_gain",
+		group: "zj_qiangyi_gain",
 		subSkill: {
 			gain: {
 				zhuSkill: true,
@@ -10618,6 +10618,9 @@ const skills = {
 				return 7 - val;
 			});
 			next.set("filterButton", button => {
+				if (get.owner(button.link) && !lib.filter.canBeDiscarded(button.link, get.owner(button.link), get.player())) {
+					return false;
+				}
 				for (let i = 0; i < ui.selected.buttons.length; i++) {
 					if (get.suit(button.link) == get.suit(ui.selected.buttons[i].link)) {
 						return false;
