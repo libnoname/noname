@@ -3630,7 +3630,7 @@ game.import("card", function () {
 				},
 				mod: {
 					cardUsable(card, player, num) {
-						var cards = player.getEquips("zhuge");
+						var cards = player.getCards("e", card => get.name(card) == "zhuge");
 						if (card.name === "sha") {
 							if (!cards.length || player.hasSkill("zhuge_skill", null, false) || cards.some(card => card !== _status.zhuge_temp && !ui.selected.cards.includes(card))) {
 								if (get.is.versus() || get.is.changban()) {
@@ -3644,7 +3644,7 @@ game.import("card", function () {
 						if (!_status.event.addCount_extra || player.hasSkill("zhuge_skill", null, false)) {
 							return;
 						}
-						var cards = player.getEquips("zhuge");
+						var cards = player.getCards("e", card => get.name(card) == "zhuge");
 						if (card && cards.includes(card)) {
 							try {
 								var cardz = get.card();
@@ -3827,7 +3827,7 @@ game.import("card", function () {
 									return false;
 								}
 								if (!player.hasSkill("qinglong_skill", null, false)) {
-									var cards = player.getEquips("qinglong");
+									var cards = player.getCards("e", card => get.name(card) == "qinglong");
 									if (!cards.some(card2 => card2 !== card && !ui.selected.cards.includes(card2))) {
 										return false;
 									}
@@ -3894,7 +3894,7 @@ game.import("card", function () {
 					}
 					var min = 2;
 					if (!player.hasSkill("guanshi_skill", null, false)) {
-						min += get.sgn(player.getEquips("guanshi").length);
+						min += get.sgn(player.getCards("e", card => get.name(card) == "guanshi").length);
 					}
 					return player.countCards("he") >= min;
 				},
@@ -3906,7 +3906,7 @@ game.import("card", function () {
 							if (_status.event.ignoreCard) {
 								return true;
 							}
-							var cards = player.getEquips("guanshi");
+							var cards = player.getCards("e", card => get.name(card) == "guanshi");
 							if (!cards.includes(card)) {
 								return true;
 							}
