@@ -1,7 +1,5 @@
-// noinspection ES6PreferShortImport
-
 import { game } from "../game/index.js";
-import { lib, Library } from "../library/index.js";
+import { lib } from "../library/index.js";
 
 /**
  * @param {string} name - 卡牌包名

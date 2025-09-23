@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ai, setAI } from "../ai/index.js";
 import { get, setGet } from "../get/index.js";
 import { lib, Library, setLibrary } from "../library/index.js";

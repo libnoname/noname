@@ -177,7 +177,7 @@ export async function boot() {
 		const { nodeReady } = await import("./node.js");
 		nodeReady();
 	} else {
-		Reflect.set(lib, "path", (await import("../library/path.js")).default);
+		Reflect.set(lib, "path", (await import("path-browserify")).default);
 		if (typeof lib.device != "undefined") {
 			const script = document.createElement("script");
 			script.src = "cordova.js";
