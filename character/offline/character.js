@@ -36,6 +36,24 @@ const characters = {
 		hp: 4,
 		skills: ["xy_luejin"],
 	},
+	xy_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["xy_xiaoxi", "xy_fenqi"],
+	},
+	xy_zhangmiao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["xy_mouni", "xy_zongfan"],
+	},
+	xy_caosong: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["xy_lilu", "xy_yizheng"],
+	},
 	zj_zhanghu: {
 		sex: "male",
 		group: "wei",

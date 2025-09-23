@@ -1,6 +1,80 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	yiguzuoqi: {
+		derivation: "xy_lvbu",
+		audio: true,
+		fullskin: true,
+		type: "trick",
+		enable: true,
+		selectTarget: -1,
+		cardcolor: "red",
+		toself: true,
+		filterTarget(card, player, target) {
+			return target === player;
+		},
+		modTarget: true,
+		async content(event, trigger, player) {
+			const name = event.name;
+			player.addTip(name, "一鼓作气");
+			player
+				.when({
+					player: "useCard",
+					global: ["phaseAfter", "phaseBeginStart"],
+				})
+				.step(async (event, trigger, player) => {
+					player.removeTip(name);
+				})
+				.assign({
+					mod: {
+						cardUsable: () => Infinity,
+						targetInRange: () => true,
+					},
+					forced: false,
+					locked: true,
+					async cost(event, trigger, player) {
+						if (trigger.name == "useCard") {
+							if (trigger.addCount !== false) {
+								trigger.addCount = false;
+								const stat = player.getStat().card,
+									name = trigger.card.name;
+								if (typeof stat[name] == "number" && stat[name] > 0) {
+									stat[name]--;
+								}
+							}
+						} else {
+							event.result = { bool: true };
+						}
+					},
+				})
+		},
+		ai: {
+			wuxie(target, card, player, viewer) {
+				if (target.countCards("h") < 4) {
+					return 0;
+				}
+			},
+			basic: {
+				order: 11.2,
+				useful: 4.5,
+				value(card, player) {
+					const cards = player.getCards("hs", card => {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return player.hasValueTarget(card, false);
+					});
+					if (cards.length < player.getCardUsable("sha", true)) {
+						return 0;
+					}
+					return 1.4 * Math.max(5, player.countCards("hs"));
+				},
+			},
+			result: {
+				target: 2,
+			},
+		},
+	},
 	zongma_attack: {
 		derivation: "eu_makang",
 		fullskin: true,
