@@ -1364,6 +1364,11 @@ const _zhanfa = {
 						return false;
 					}
 				},
+				cardDiscardable(card) {
+					if (get.position(card) == "e" && get.type(card) == "equip") {
+						return false;
+					}
+				},
 			},
 		},
 	},
@@ -1451,7 +1456,7 @@ const _zhanfa = {
 				if (game.roundNumber < 4) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return get.type2(event.card) == "trick" || (!event.card && !!game.findSkill(event));
 			},
 		},
 	},
@@ -1470,7 +1475,7 @@ const _zhanfa = {
 				if (game.roundNumber < 2) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return get.type2(event.card) == "trick" || (!event.card && !!game.findSkill(event));
 			},
 		},
 	},
@@ -2207,7 +2212,6 @@ const _zhanfa = {
 		translate: "稳定士气",
 		info: "您的所有伤害值固定为2",
 		card: {
-			cardimage: "zf_bingquanzaiwo",
 			value: 8,
 		},
 		skill: {
