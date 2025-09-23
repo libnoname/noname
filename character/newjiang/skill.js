@@ -2465,10 +2465,7 @@ const skills = {
 		ai: {
 			order: 9,
 			result: {
-				target(player, target) {
-					const att = get.sgn(get.attitude(player, target));
-					return (2 + att) * att;
-				},
+				target: 1,
 			},
 		},
 	},
@@ -3339,8 +3336,10 @@ const skills = {
 			if (!game.hasPlayer2(current => current.getHistory("damage").length > 0)) {
 				player
 					.chooseBool(get.prompt("jiangxi"), "与" + get.translation(trigger.player) + "各摸一张牌")
-					.set("ai", () => _status.event.bool)
-					.set("bool", trigger.player.getUseValue({ name: "wuzhong" }) + player.getUseValue({ name: "wuzhong" }) > 0);
+					.set("choice", (() => {
+						let eff = current => get.effect(current, { name: "draw" }, player, player);
+						return eff(trigger.player) + eff(player) > 0;
+					})());
 			} else {
 				event.finish();
 			}

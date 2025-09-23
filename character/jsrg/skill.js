@@ -1964,17 +1964,19 @@ const skills = {
 		group: "jsrgwentian_viewas",
 		async content(event, trigger, player) {
 			const cards = get.cards(5);
-			game.cardsGotoOrdering(cards);
-			const { result } = await player.chooseButton(["问天：将一张牌交给一名其他角色", cards], true);
-			if (result.bool) {
-				const { result: result2 } = await player.chooseTarget(`将${get.translation(result.links)}交给一名其他角色`, lib.filter.notMe, true).set("ai", target => {
-					return get.attitude(get.player(), target);
-				});
-				if (result2.bool) {
-					cards.removeArray(result.links);
-					const target = result2.targets[0];
-					player.line(target, "green");
-					await target.gain(result.links, "gain2").set("giver", player);
+			await game.cardsGotoOrdering(cards);
+			if (game.hasPlayer(current => current != player)) {
+				const { result } = await player.chooseButton(["问天：将一张牌交给一名其他角色", cards], true);
+				if (result.bool) {
+					const { result: result2 } = await player.chooseTarget(`将${get.translation(result.links)}交给一名其他角色`, lib.filter.notMe, true).set("ai", target => {
+						return get.attitude(get.player(), target);
+					});
+					if (result2.bool) {
+						cards.removeArray(result.links);
+						const target = result2.targets[0];
+						player.line(target, "green");
+						await target.gain(result.links, "gain2").set("giver", player);
+					}
 				}
 			}
 			const next = player.chooseToMove();
@@ -5894,6 +5896,7 @@ const skills = {
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
 				},
+				charlotte: true,
 				forced: true,
 				locked: false,
 				silent: true,
@@ -5941,8 +5944,13 @@ const skills = {
 				},
 				mod: {
 					cardEnabled2(card, player) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("jsrgmanjuan") && player.getStorage("jsrgmanjuan_used").includes(get.number(card, false))) {
-							return false;
+						if (get.itemtype(card) == "card" && card.hasGaintag("jsrgmanjuan")) {
+							if (!player.hasSkill("jsrgmanjuan")) {
+								return false;
+							}
+							if (player.getStorage("jsrgmanjuan_used").includes(get.number(card, false))) {
+								return false;
+							}
 						}
 					},
 				},

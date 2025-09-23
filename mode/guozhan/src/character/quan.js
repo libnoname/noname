@@ -17,7 +17,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["gz_jieyue"],
-		img: "image/character/yujin.jpg",
+		img: "image/character/yujin_yujin.jpg",
 		dieAudios: ["yujin"],
 	}),
 	gz_wangping: new Character({

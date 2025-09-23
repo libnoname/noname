@@ -3035,7 +3035,7 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (!event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+			if (!event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -3045,10 +3045,10 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				var list = [];
-				if (event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["基本", "", "sha"]);
 				}
-				if (event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["锦囊", "", "wuxie"]);
 				}
 				const dialog = ui.create.dialog("砺锋", [list, "vcard"]);
@@ -3072,6 +3072,9 @@ const skills = {
 					popname: true,
 					viewAs: {
 						name: links[0][2],
+						storage: {
+							starlifeng: true,
+						},
 					},
 					ai1(card) {
 						var player = _status.event.player;
@@ -3115,6 +3118,14 @@ const skills = {
 			},
 			order: 10,
 			result: { player: 1 },
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.starlifeng) {
+					return Infinity;
+				}
+			},
 		},
 		group: "starlifeng_mark",
 		subSkill: {

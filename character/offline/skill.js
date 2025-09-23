@@ -149,9 +149,9 @@ const skills = {
 				player.addMark(event.name, 7);
 			}
 		},
-		marktext: "时",
+		marktext: "势",
 		intro: {
-			name: "时间推进",
+			name: "势",
 			content: "mark",
 		},
 	},
