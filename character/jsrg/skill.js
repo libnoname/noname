@@ -2074,10 +2074,12 @@ const skills = {
 				log: false,
 				precontent() {
 					player.logSkill("jsrgwentian");
-					const cards = get.cards();
+					const cards = get.cards(),
+						name = event.result.card.name;
+					event.result.card = get.autoViewAs({ name: name }, cards);
 					event.result.cards = cards;
 					game.cardsGotoOrdering(cards);
-					const color = event.result.card.name == "wuxie" ? "black" : "red";
+					const color = name == "wuxie" ? "black" : "red";
 					if (get.color(cards, false) != color) {
 						player.tempBanSkill("jsrgwentian", "roundStart");
 					}

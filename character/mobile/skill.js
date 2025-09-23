@@ -14459,6 +14459,9 @@ const skills = {
 				return 7 - val;
 			});
 			chooseButton.set("filterButton", function (button) {
+				if (get.owner(button.link) && !lib.filter.canBeDiscarded(button.link, get.owner(button.link), get.player())) {
+					return false;
+				}
 				for (var i = 0; i < ui.selected.buttons.length; i++) {
 					if (get.suit(button.link) == get.suit(ui.selected.buttons[i].link)) {
 						return false;

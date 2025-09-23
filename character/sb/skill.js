@@ -9241,20 +9241,29 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const cards = event.cards;
-			await player.modedDiscard(cards);
-			let num = 0;
-			player.getHistory("lose", evt => {
-				if (evt.type != "discard" && evt.getParent(2) != event) {
-					return false;
-				}
-				for (let pos of ["h", "e"]) {
-					if (!player.countCards(pos) && evt.getl(player)?.[`${pos}s`]?.length) {
-						num++;
+			const discard = player.modedDiscard(event.cards);
+			event.num = 0;
+			player
+				.when({
+					player: "loseAfter",
+					global: ["phaseEnd", "phaseBeforeStart"],
+				})
+				.filter(evt => evt.name != "lose" || evt.getParent() == discard)
+				.step(async (event, trigger, player) => {
+					if (trigger.name != "lose") {
+						return;
 					}
-				}
-			});
-			await player.draw(cards.length + num);
+					for (let pos of ["h", "e"]) {
+						if (!player.countCards(pos) && trigger.getl(player)?.[`${pos}s`]?.length) {
+							trigger.getParent(2).num++;
+						}
+					}
+				});
+			const { cards } = await discard;
+			event.num += cards.length;
+			if (event.num > 0) {
+				await player.draw(event.num);
+			}
 		},
 		ai: {
 			order(item, player) {
