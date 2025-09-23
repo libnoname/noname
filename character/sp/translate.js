@@ -1240,7 +1240,7 @@ const translates = {
 	olmaozhu_info: "锁定技。①你的手牌上限和使用【杀】的额定次数+X（X为你拥有的技能数）。②当你于出牌阶段首次对技能数小于你的角色造成伤害时，此伤害+1。",
 	oljinlan: "尽览",
 	oljinlan_info: "出牌阶段限一次，你可以将手牌数摸至Y张（Y为场上技能数最多的角色的技能数）。",
-	oljinlan_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>〖飞扬〗〖跋扈〗计入〖茂著〗〖尽览〗的技能数计算</span>',
+	oljinlan_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>〖飞扬〗〖跋扈〗以及持有的战法计入〖茂著〗〖尽览〗的技能数计算</span>',
 	caimao: "蔡瑁",
 	olzuolian: "佐练",
 	olzuolian_tag: "展示牌",

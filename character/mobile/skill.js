@@ -4075,13 +4075,13 @@ const skills = {
 		audio: 4,
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
-			return player !== event.player && player.countCards("h") !== Math.min(5, Math.max(1, event.player.countCards("h")));
+			return player !== event.player && player.countCards("h") !== event.player.countCards("h");
 		},
-		popup: false,
 		logAudio: index => (typeof index === "number" ? "mbkuangwu" + index + ".mp3" : 2),
 		async cost(event, trigger, player) {
 			const target = trigger.player,
 				num = Math.min(5, Math.max(1, target.countCards("h"))),
+				hs = player.countCards("h"),
 				prompt = get.prompt(event.skill, target);
 			const effect = (() => {
 				const juedou = new lib.element.VCard({ name: "juedou" });
@@ -4092,17 +4092,7 @@ const skills = {
 				}
 				return juedouEff + (juedouEff >= 0 ? 0 : loseEff);
 			})();
-			if (player.countCards("h") < num) {
-				event.result = await player
-					.chooseBool(prompt, "将手牌数摸至" + get.cnNumber(num) + "张，视为对" + get.translation(target) + "使用【决斗】")
-					.set(
-						"choice",
-						(() => {
-							return get.effect(player, { name: "draw" }, player, player) * (num - player.countCards("h")) + effect >= 0;
-						})()
-					)
-					.forResult();
-			} else {
+			if (hs > target.countCards("h") && hs > num) {
 				event.result = await player
 					.chooseToDiscard(prompt, player.countCards("h") - num, "allowChooseAll")
 					.set("effect", effect)
@@ -4119,12 +4109,26 @@ const skills = {
 					.set("prompt2", "将手牌数弃至" + get.cnNumber(num) + "张，视为对" + get.translation(target) + "使用【决斗】")
 					.set("onlychoose", true)
 					.forResult();
+			} else {
+				let str = `视为对${get.translation(target)}使用【决斗】`;
+				if (hs < num) {
+					str = `将手牌摸至${get.cnNumber(num)}张，然后${str}`;
+				}
+				event.result = await player
+					.chooseBool(prompt, str)
+					.set(
+						"choice",
+						(() => {
+							const count = Math.max(0, (num - hs));
+							return get.effect(player, { name: "draw" }, player, player) * count + effect >= 0;
+						})()
+					)
+					.forResult();
 			}
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			player.logSkill("mbkuangwu", [target], null, null, [get.rand(1, 2)]);
 			if (event.cards?.length) {
 				await player.discard(event.cards);
 			} else {

@@ -7942,7 +7942,7 @@ const skills = {
 				}
 				const info = get.info(i);
 				return !info || !info.charlotte;
-			}).length;
+			}).length + player.getStorage("zhanfa").length;
 		},
 		mod: {
 			cardUsable(card, player, num) {
