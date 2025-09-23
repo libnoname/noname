@@ -1,10 +1,11 @@
-const express = require("express");
+import express from "express";
 // const https = require("https");
-const minimist = require("minimist");
-const bodyParser = require("body-parser");
+import minimist from "minimist";
+import bodyParser from "body-parser";
 const app = express();
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+const __dirname = import.meta.dirname;
 
 const oneYear = 60 * 1000 * 60 * 24 * 365;
 
@@ -51,7 +52,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // 全局 中间件  解决所有路由的 跨域问题
-app.all("*", function (req, res, next) {
+app.all(/.*/, function (req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With,Content-Type");
 	res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");

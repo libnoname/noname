@@ -109,7 +109,7 @@
 		if (location.href.startsWith("http") && typeof window.initReadWriteFunction != "function" && !window.require && !window.__dirname) {
 			window.initReadWriteFunction = function (game) {
 				return new Promise((resolve, reject) => {
-					fetch(`./checkFile?fileName=noname.js`)
+					fetch(`/checkFile?fileName=noname.js`)
 						.then(response => {
 							return response.json();
 						})
@@ -137,7 +137,7 @@
 						 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 						 */
 						game.checkFile = function checkFile(fileName, callback, onerror) {
-							fetch(`./checkFile?fileName=${fileName}`)
+							fetch(`/checkFile?fileName=${fileName}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result) {
@@ -174,7 +174,7 @@
 						 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 						 */
 						game.checkDir = function checkDir(dir, callback, onerror) {
-							fetch(`./checkDir?dir=${dir}`)
+							fetch(`/checkDir?dir=${dir}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result) {
@@ -198,7 +198,7 @@
 						};
 
 						game.readFile = function readFile(fileName, callback = () => {}, error = () => {}) {
-							fetch(`./readFile?fileName=${fileName}`)
+							fetch(`/readFile?fileName=${fileName}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result?.success) {
@@ -221,7 +221,7 @@
 						};
 
 						game.readFileAsText = function readFileAsText(fileName, callback = () => {}, error = () => {}) {
-							fetch(`./readFileAsText?fileName=${fileName}`)
+							fetch(`/readFileAsText?fileName=${fileName}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result?.success) {
@@ -251,7 +251,7 @@
 										filePath += "/" + name;
 									}
 
-									fetch(`./writeFile`, {
+									fetch(`/writeFile`, {
 										method: "post",
 										headers: { "Content-Type": "application/json" },
 										body: JSON.stringify({
@@ -272,7 +272,7 @@
 						};
 
 						game.removeFile = function removeFile(fileName, callback = () => {}) {
-							fetch(`./removeFile?fileName=${fileName}`)
+							fetch(`/removeFile?fileName=${fileName}`)
 								.then(response => response.json())
 								.then(result => {
 									callback(result.errorMsg);
@@ -281,7 +281,7 @@
 						};
 
 						game.getFileList = function getFileList(dir, callback = () => {}, onerror) {
-							fetch(`./getFileList?dir=${dir}`)
+							fetch(`/getFileList?dir=${dir}`)
 								.then(response => response.json())
 								.then(result => {
 									if (!result) {
@@ -305,7 +305,7 @@
 						};
 
 						game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = () => {}) {
-							fetch(`./createDir?dir=${directory}`)
+							fetch(`/createDir?dir=${directory}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result?.success) {
@@ -317,7 +317,7 @@
 								.catch(errorCallback);
 						};
 						game.removeDir = function removeDir(directory, successCallback = () => {}, errorCallback = () => {}) {
-							fetch(`./removeDir?dir=${directory}`)
+							fetch(`/removeDir?dir=${directory}`)
 								.then(response => response.json())
 								.then(result => {
 									if (result?.success) {
