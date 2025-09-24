@@ -5344,8 +5344,10 @@ export default () => {
 						forced: true,
 						charlotte: true,
 						filter: function (event, player, name) {
-							if (name == "gameStart") return player.hasSkill("boss_jiding");
-							if (name == "changeSkillsEnd") return true;
+							if (name == "gameStart") {
+								return player.hasSkill("boss_jiding");
+							}
+							return true;
 						},
 						content() {
 							if (event.triggername == "gameStart") {
