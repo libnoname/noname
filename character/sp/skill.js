@@ -2168,27 +2168,21 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		filterTarget(card, player, target) {
-			const num = Math.min(
-				player.maxHp,
-				player.actionHistory.filter(evt => {
-					return evt.isMe && !evt.isSkipped;
-				}).length
-			);
-			return target.countCards("he") >= num;
-		},
+		filterTarget: true,
 		filter(event, player) {
-			return game.hasPlayer(current => get.info("oljiawei").filterTarget(null, player, current));
+			return true; // game.hasPlayer(current => get.info("oljiawei").filterTarget(null, player, current));
 		},
 		async content(event, trigger, player) {
 			const num = Math.min(
 					player.maxHp,
 					player.actionHistory.filter(evt => {
 						return evt.isMe && !evt.isSkipped;
-					}).length
+					}).length - 1
 				),
 				target = event.target;
-			await player.discardPlayerCard(target, "he", num, true, "allowChooseAll");
+			if (num > 0 && target.countDiscardableCards(player, "he")) {
+				await player.discardPlayerCard(target, "he", num, true, "allowChooseAll");
+			}
 			const { cards } = await game.cardsGotoOrdering(get.cards(num + 1));
 			if (!cards?.length) {
 				return;
