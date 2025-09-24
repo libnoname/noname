@@ -4619,6 +4619,7 @@ const skills = {
 			return get.type(card) != "basic";
 		},
 		selectCard: [1, 2],
+		position: "he",
 		lose: false,
 		discard: false,
 		delay: false,
