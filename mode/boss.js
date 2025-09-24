@@ -2107,9 +2107,6 @@ export default () => {
 				return next;
 			},
 		},
-		characterSubstitute: {
-			boss_mingxingzhu: [["boss_mingxingzhu_light", []]],
-		},
 		boss: {
 			boss_qiongqi: {
 				chongzheng: 0,
@@ -2934,8 +2931,8 @@ export default () => {
 							return target.isFriendOf(player);
 						})
 						.set("forceDie", true).ai = function (target) {
-							return get.attitude(_status.event.player, target);
-						};
+						return get.attitude(_status.event.player, target);
+					};
 					"step 1";
 					if (result.bool) {
 						var target = result.targets[0];
@@ -3652,8 +3649,8 @@ export default () => {
 							);
 						})
 						.set("forceDie", true).ai = function (target) {
-							return -get.attitude(_status.event.player, target);
-						};
+						return -get.attitude(_status.event.player, target);
+					};
 					"step 1";
 					if (result.bool) {
 						var target = result.targets[0];
@@ -5324,7 +5321,6 @@ export default () => {
 			boss_qingzhu: {
 				trigger: { player: "phaseDiscardBefore" },
 				forced: true,
-				group: "boss_qingzhu_change",
 				content() {
 					trigger.cancel();
 				},
@@ -5333,33 +5329,6 @@ export default () => {
 						if (card.name == "sha" && _status.currentPhase == player && _status.event.getParent("phaseUse") && !player.hasSkill("boss_jiding")) {
 							return false;
 						}
-					},
-				},
-				subSkill: {
-					change: {
-						trigger: {
-							player: "changeSkillsEnd",
-							global: "gameStart",
-						},
-						forced: true,
-						charlotte: true,
-						filter: function (event, player, name) {
-							if (name == "gameStart") return player.hasSkill("boss_jiding");
-							if (name == "changeSkillsEnd") return true;
-						},
-						content() {
-							if (event.triggername == "gameStart") {
-								player.setAvatar("boss_mingxingzhu", "boss_mingxingzhu_light");
-							}
-							if (event.triggername == "changeSkillsEnd") {
-								if (player.hasSkill("boss_jiding")) {
-									player.setAvatar("boss_mingxingzhu", "boss_mingxingzhu_light");
-								}
-								else {
-									player.setAvatar("boss_mingxingzhu", "boss_mingxingzhu");
-								}
-							}
-						},
 					},
 				},
 			},
@@ -10847,7 +10816,7 @@ export default () => {
 			boss_shuishenxuanming_ab: "水神玄冥",
 			boss_shuishenxuanming: "水神玄冥·嬴禺强",
 			boss_zhuanxu_ab: "颛顼",
-			boss_zhuanxu: "颛顼·姬颛顼",
+			boss_zhaunxu: "颛顼·姬颛顼",
 
 			boss_lingqu: "灵躯",
 			boss_lingqu_info: "锁定技，当你受到伤害后，你摸一张牌，然后手牌上限+1；防止你受到的大于1点的伤害。",
