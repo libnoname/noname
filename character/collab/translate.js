@@ -296,6 +296,14 @@ const translates = {
 	olandu_mark: "阴平",
 	olqiqi: "期期",
 	olqiqi_info: "每轮限一次，你使用牌指定目标时，若牌名字数不小于你的体力值，你可以摸两张牌并令此牌额外结算一次，然后进行判定：若结果为♥，你减少1点体力上限。",
+	you_zhugeliang: "有诸葛亮",
+	you_zhugeliang_prefix: "有",
+	dcyingyou: "应有",
+	dcyingyou_info: "①你的回合开始时、结束阶段、受到伤害后可选择一项执行并摸一张牌：1.随机获得一个五虎将持有的技能；2.将【真·诸葛连弩】置入装备区；3.获得10吨馒头。②你使用手牌时，可消耗此牌点数吨馒头，令此牌额外结算一次。",
+	real_zhuge: "真·诸葛连弩",
+	real_zhuge_info: "你使用【杀】无次数限制，若此【杀】点数小于7，不可被响应。此牌离开装备区后销毁。",
+	real_zhuge_skill: "真·诸葛连弩",
+	real_zhuge_skill_info: "你使用【杀】无次数限制，若此【杀】点数小于7，不可被响应。",
 };
 
 export default translates;

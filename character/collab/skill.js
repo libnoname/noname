@@ -2,6 +2,210 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//有诸葛亮 ————我才是奶龙！
+	dcyingyou: {
+		trigger: {
+			player: ["phaseBegin", "phaseJieshuBegin", "damageEnd"],
+		},
+		async cost(event, trigger, player) {
+			const list = [
+				["skill", "随机获得一个五虎将持有的技能"],
+				["card", "将【真·诸葛连弩】置入装备区"],
+				["mantou", "获得10吨馒头"],
+			];
+			const result = await player
+				.chooseButton([`###${get.prompt("dcyingyou")}###选择一项并摸一张牌`, [list, "textbutton"]])
+				.set("filterButton", ({ link }) => {
+					return link != "card" || (player.hasEquipableSlot(1) && !player.getEquip("real_zhuge"));
+				})
+				.set("ai", ({ link }) => {
+					return link == "skill" ? 2 : 1;
+				})
+				.forResult();
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
+		},
+		marktext: "馒",
+		intro: {
+			name: "馒头",
+			content: "你有$吨馒头",
+		},
+		getList() {
+			let list,
+				skills = [];
+			if (get.mode() == "guozhan") {
+				list = [];
+				for (const i in lib.characterPack.mode_guozhan) {
+					if (lib.character[i]) {
+						list.push(i);
+					}
+				}
+			} else if (_status.connectMode) {
+				list = get.charactersOL();
+			} else {
+				list = [];
+				for (const i in lib.character) {
+					if (lib.filter.characterDisabled2(i) || lib.filter.characterDisabled(i)) {
+						continue;
+					}
+					list.push(i);
+				}
+			}
+			const wuhu = ["关羽", "张飞", "赵云", "马超", "黄忠"],
+				wuhuList = list.filter(character => {
+					const names = get.characterSurname(character).map(name => name.join(""));
+					return names.containsSome(...wuhu);
+				});
+			for (const i of wuhuList) {
+				const skillsx = (lib.character[i][3] || [])
+					.filter(skill => {
+						const info = get.info(skill);
+						return info && !info.hiddenSkill && !info.charlotte;
+					})
+					.map(skill => [skill, i]);
+				skills.addArray(skillsx);
+			}
+			return skills;
+		},
+		async content(event, trigger, player) {
+			switch (event.cost_data) {
+				case "skill": {
+					const skills = get
+						.info(event.name)
+						.getList()
+						.filter(skill => !player.hasSkill(skill, null, null, false));
+					if (skills?.length) {
+						const skill = skills.randomGet();
+						player.flashAvatar(event.name, skill[1]);
+						await player.addAdditionalSkills(event.name, skill[0], true);
+					}
+					break;
+				}
+				case "card": {
+					const card = game.createCard("real_zhuge", "club", 1);
+					if (player.canEquip(card, true)) {
+						await player.equip(card, "gain2");
+					}
+					break;
+				}
+				default: {
+					player.addMark(event.name, 10, false);
+					game.log(player, "获得了10吨", "#y馒头");
+					break;
+				}
+			}
+			await player.draw();
+		},
+		group: "dcyingyou_eat",
+		subSkill: {
+			eat: {
+				trigger: {
+					player: "useCard",
+				},
+				filter(event, player) {
+					if (
+						!player.hasHistory("lose", evt => {
+							if (!evt?.hs?.length) {
+								return false;
+							}
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx == event;
+						})
+					) {
+						return false;
+					}
+					if (!get.info("dcshixian").filterx(event)) {
+						return false;
+					}
+					const num = get.number(event.card);
+					return typeof num == "number" && num > 0 && num <= player.countMark("dcyingyou");
+				},
+				prompt2(event, player) {
+					const num = get.number(event.card);
+					return `吃掉${num}吨馒头，令${get.translation(event.card)}额外结算一次`;
+				},
+				async content(event, trigger, player) {
+					const num = get.number(trigger.card);
+					player.removeMark("dcyingyou", num, false);
+					game.log(player, `吃掉了${num}吨`, "#y馒头");
+					trigger.effectCount++;
+				},
+			},
+		},
+	},
+	real_zhuge_skill: {
+		equipSkill: true,
+		audio: "zhuge_skill",
+		firstDo: true,
+		trigger: { player: "useCard1" },
+		forced: true,
+		filter(event, player) {
+			if (event.card.name === "sha") {
+				const num = get.number(event.card);
+				if (typeof num == "number" && num < 7) {
+					return true;
+				}
+			}
+			return !event.audioed && event.card.name === "sha" && player.countUsed("sha", true) > 1 && event.getParent().type === "phase";
+		},
+		async content(event, trigger, player) {
+			const num = get.number(trigger.card);
+			if (typeof num == "number" && num < 7) {
+				trigger.directHit.addArray(game.players);
+			}
+			trigger.audioed = true;
+		},
+		ai: {
+			directHit_ai: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg?.card?.name == "sha") {
+					const num = get.number(arg.card);
+					if (typeof num == "number" && num < 7) {
+						return true;
+					}
+				}
+			},
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				var cards = player.getCards("e", card => get.name(card) == "zhuge");
+				if (card.name === "sha") {
+					if (!cards.length || player.hasSkill("real_zhuge_skill", null, false) || cards.some(card => card !== _status.zhuge_temp && !ui.selected.cards.includes(card))) {
+						if (get.is.versus() || get.is.changban()) {
+							return num + 3;
+						}
+						return Infinity;
+					}
+				}
+			},
+			cardEnabled2(card, player) {
+				if (!_status.event.addCount_extra || player.hasSkill("real_zhuge_skill", null, false)) {
+					return;
+				}
+				var cards = player.getCards("e", card => get.name(card) == "real_zhuge");
+				if (card && cards.includes(card)) {
+					try {
+						var cardz = get.card();
+					} catch (e) {
+						return;
+					}
+					if (!cardz || cardz.name !== "sha") {
+						return;
+					}
+					_status.zhuge_temp = card;
+					var bool = lib.filter.cardUsable(get.autoViewAs(cardz, ui.selected.cards.concat([card])), player);
+					delete _status.zhuge_temp;
+					if (!bool) {
+						return false;
+					}
+				}
+			},
+		},
+	},
 	//谋谋邓艾
 	olandu: {
 		audio: 2,
@@ -3403,7 +3607,11 @@ const skills = {
 					list.push(i);
 				}
 			}
-			const wuhuList = list.filter(character => ["关羽", "张飞", "赵云", "马超", "黄忠"].includes(get.rawName(character)));
+			const wuhu = ["关羽", "张飞", "赵云", "马超", "黄忠"],
+				wuhuList = list.filter(character => {
+					const names = get.characterSurname(character).map(name => name.join(""));
+					return names.containsSome(...wuhu);
+				});
 			for (const i of wuhuList) {
 				skills.addArray(
 					(lib.character[i][3] || []).filter(skill => {

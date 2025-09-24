@@ -4,6 +4,7 @@ window.noname_character_rank = {
 		"zj_liuyuan",
 		"zj_zhonghui",
 		"eu_kaisa",
+		"you_zhugeliang",
 		"dc_sb_lunxun",
 		"wn_shen_xuzhu",
 		"yj_caocaoyuanshao",
@@ -2443,6 +2444,7 @@ window.noname_character_rank = {
 		],
 		epic: [
 			"xy_xunyu",
+			"you_zhugeliang",
 			"bigsb_dengai",
 			"eu_Macrinus",
 			"eu_Ardashir",

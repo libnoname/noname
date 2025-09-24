@@ -16541,7 +16541,7 @@ export class Library {
 			"智将",
 			{
 				showName: "智",
-				color: "#99e2ffff",
+				color: "#99e2ff",
 				nature: "firemm",
 			},
 		],
@@ -16550,6 +16550,13 @@ export class Library {
 			{
 				showName: "徐",
 				color: "#ff0000",
+				nature: "firemm",
+			},
+		],
+		[
+			"有",
+			{
+				color: "#dd9420",
 				nature: "firemm",
 			},
 		],
