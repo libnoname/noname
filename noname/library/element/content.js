@@ -1325,22 +1325,22 @@ player.removeVirtualEquip(card);
 					.set(
 						"ai",
 						event.ai ||
-							function (card) {
-								return Math.random();
-							}
+						function (card) {
+							return Math.random();
+						}
 					)
 					.set(
 						"aiCard",
 						event.aiCard ||
-							function (target) {
-								const getAi =
-									get.event("ai") ||
-									function (card) {
-										return Math.random();
-									};
-								let hs = target.getCards("h").sort((a, b) => getAi(b) - getAi(a));
-								return { bool: true, cards: [hs[0]] };
-							}
+						function (target) {
+							const getAi =
+								get.event("ai") ||
+								function (card) {
+									return Math.random();
+								};
+							let hs = target.getCards("h").sort((a, b) => getAi(b) - getAi(a));
+							return { bool: true, cards: [hs[0]] };
+						}
 					);
 				next._args.remove("glow_result");
 			} else {
@@ -1525,9 +1525,9 @@ player.removeVirtualEquip(card);
 		next.set(
 			"ai",
 			event.ai ||
-				function () {
-					return Math.random();
-				}
+			function () {
+				return Math.random();
+			}
 		);
 		"step 1";
 		if (result.bool) {
@@ -1624,7 +1624,7 @@ player.removeVirtualEquip(card);
 			var dialog = ui.create.dialog("forcebutton", "hidden");
 			event.dialog = dialog;
 			event.dialog.textPrompt = event.dialog.add('<div class="text center">' + (beatmap.prompt || "在音符滑条和底部判定区重合时点击屏幕！") + "</div>");
-			event.switchToAuto = function () {};
+			event.switchToAuto = function () { };
 			event.dialog.classList.add("fixed");
 			event.dialog.classList.add("scroll1");
 			event.dialog.classList.add("scroll2");
@@ -2086,7 +2086,7 @@ player.removeVirtualEquip(card);
 				 * @param { ((button: HTMLDivElement) => boolean)? } filter
 				 */
 				var clearSelected = function (filter) {
-					for (let i = ui.selected.guanxing_buttons.length; i--; ) {
+					for (let i = ui.selected.guanxing_buttons.length; i--;) {
 						const button = ui.selected.guanxing_buttons[i];
 
 						if (!filter || filter(button)) {
@@ -2672,15 +2672,15 @@ player.removeVirtualEquip(card);
 			next.set(
 				"filterTarget",
 				event.filterTarget ||
-					function (card, player, target) {
-						if (!_status.event.targets.includes(target)) {
-							return false;
-						}
-						if (!_status.event.nodistance && !lib.filter.targetInRange(card, player, target)) {
-							return false;
-						}
-						return lib.filter.targetEnabledx(card, player, target);
+				function (card, player, target) {
+					if (!_status.event.targets.includes(target)) {
+						return false;
 					}
+					if (!_status.event.nodistance && !lib.filter.targetInRange(card, player, target)) {
+						return false;
+					}
+					return lib.filter.targetEnabledx(card, player, target);
+				}
 			);
 			next.set("ai", event.ai || get.effect_use);
 			next.set("selectTarget", event.selectTarget || lib.filter.selectTarget);
@@ -2805,7 +2805,7 @@ player.removeVirtualEquip(card);
 							true,
 						],
 					],
-					function () {},
+					function () { },
 					event.ai
 				)
 				.set("switchToAuto", function () {
@@ -2942,7 +2942,7 @@ player.removeVirtualEquip(card);
 							true,
 						],
 					],
-					function () {},
+					function () { },
 					function () {
 						return 1 + Math.random();
 					}
@@ -5334,9 +5334,9 @@ player.removeVirtualEquip(card);
 						next.set(
 							"ai",
 							info.chooseButton.check ||
-								function () {
-									return 0;
-								}
+							function () {
+								return 0;
+							}
 						);
 						if (event.id) {
 							next._parent_id = event.id;
@@ -5353,16 +5353,16 @@ player.removeVirtualEquip(card);
 						next.set(
 							"ai",
 							info.chooseButton.check ||
-								function () {
-									return 1;
-								}
+							function () {
+								return 1;
+							}
 						);
 						next.set(
 							"filterButton",
 							info.chooseButton.filter ||
-								function () {
-									return true;
-								}
+							function () {
+								return true;
+							}
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
 						next.set("complexSelect", info.chooseButton.complexSelect !== false);
@@ -5598,9 +5598,9 @@ player.removeVirtualEquip(card);
 						next.set(
 							"ai",
 							info.chooseButton.check ||
-								function () {
-									return 0;
-								}
+							function () {
+								return 0;
+							}
 						);
 					} else {
 						var next = player.chooseButton(dialog);
@@ -5613,16 +5613,16 @@ player.removeVirtualEquip(card);
 						next.set(
 							"ai",
 							info.chooseButton.check ||
-								function () {
-									return 1;
-								}
+							function () {
+								return 1;
+							}
 						);
 						next.set(
 							"filterButton",
 							info.chooseButton.filter ||
-								function () {
-									return true;
-								}
+							function () {
+								return true;
+							}
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
 						next.set("filterOk", info.chooseButton.filterOk || (() => true));
@@ -6298,13 +6298,14 @@ player.removeVirtualEquip(card);
 	chooseToCompareMeanwhile: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			if (player.countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
+			event.filterCard ??= lib.filter.all;
+			if (player.getCards("h").filter(card => event.filterCard(card)).length == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
 			for (var i = 0; i < targets.length; i++) {
-				if (targets[i].countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
+				if (targets[i].getCards("h").filter(card => event.filterCard(card)).length == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
 					event.result = { cancelled: true, bool: false };
 					event.finish();
 					return;
@@ -6315,7 +6316,6 @@ player.removeVirtualEquip(card);
 			}
 			game.log(player, "对", targets, "发起了共同拼点");
 			event.compareMeanwhile = true;
-			event.filterCard ??= lib.filter.all;
 		},
 		async (event, trigger, player) => {
 			const targets = event.targets;
@@ -6326,7 +6326,8 @@ player.removeVirtualEquip(card);
 					event.list.unshift(player);
 				}
 				player.chooseCardOL(event.list, "请选择拼点牌", true).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					var hs = target.getCards("h");
+					const { filterCard } = get.event();
+					var hs = target.getCards("h").filter(card => filterCard(card));
 					var event = _status.event;
 					event.player = target;
 					hs.sort(function (a, b) {
@@ -6512,13 +6513,14 @@ player.removeVirtualEquip(card);
 	chooseToCompareMultiple: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			if (!event.fixedResult?.[player.playerid] && player.countCards("h") == 0) {
+			event.filterCard ??= lib.filter.all;
+			if (!event.fixedResult?.[player.playerid] && player.getCards("h").filter(card => event.filterCard(card)).length) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
 			for (var i = 0; i < targets.length; i++) {
-				if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].countCards("h") == 0) {
+				if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].getCards("h").filter(card => event.filterCard(card)).length) {
 					event.result = { cancelled: true, bool: false };
 					event.finish();
 					return;
@@ -6528,7 +6530,6 @@ player.removeVirtualEquip(card);
 				targets.sort(lib.sort.seat);
 			}
 			game.log(player, "对", targets, "发起拼点");
-			event.filterCard ??= lib.filter.all;
 		},
 		async (event, trigger, player) => {
 			const targets = event.targets;
@@ -6539,7 +6540,8 @@ player.removeVirtualEquip(card);
 					event.list.unshift(player);
 				}
 				player.chooseCardOL(event.list, "请选择拼点牌", true).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					var hs = target.getCards("h");
+					const { filterCard } = get.event();
+					var hs = target.getCards("h").filter(card => filterCard(card));
 					var event = _status.event;
 					event.player = target;
 					hs.sort(function (a, b) {
@@ -6713,20 +6715,21 @@ player.removeVirtualEquip(card);
 			if (!event.position || typeof event.position != "string") {
 				event.position = "h";
 			}
-			if ((!event.fixedResult?.[player.playerid] && player.countCards(event.position) == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.countCards(event.position) == 0)) {
+			event.filterCard ??= lib.filter.all;
+			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card)).length == 0)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
 			game.log(player, "对", event.compareWithCardPile ? "牌堆" : target, "发起", event.isDelay ? "延时" : "", "拼点");
-			event.filterCard ??= lib.filter.all;
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
 			event.list = [player, target].filter(current => get.itemtype(current) == "player" && !event.fixedResult?.[current.playerid]);
 			if (event.list.length) {
 				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					var hs = target.getCards("h");
+					const { filterCard } = get.event();
+					var hs = target.getCards("h").filter(card => filterCard(card));
 					var event = _status.event;
 					event.player = target;
 					hs.sort((a, b) => event.ai(b) - event.ai(a));
@@ -6774,7 +6777,7 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			const target = event.target;
 			if (get.itemtype(target) == "player" && (event.card2.number >= 10 || event.card2.number <= 4)) {
-				if (target.countCards("h") > 2) {
+				if (target.getCards("h").filter(card => event.filterCard(card)).length > 2) {
 					event.addToAI = true;
 				}
 			}
@@ -8039,24 +8042,24 @@ player.removeVirtualEquip(card);
 			next.set(
 				"ai",
 				event.ai ||
-					function () {
-						const player = get.player();
-						const { target, num1, num2 } = get.event().getParent();
-						const att = get.attitude(player, target);
-						const choices = get.event().controls.slice();
-						const eff1 = get.recoverEffect(target, player, player);
-						const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
-						if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) {
-							return "recover_hp";
-						}
-						if (eff2 > 0) {
-							return "draw_card";
-						}
-						if (choices.includes("cancel2") && att <= 0) {
-							return "cancel2";
-						}
-						return choices.randomGet();
+				function () {
+					const player = get.player();
+					const { target, num1, num2 } = get.event().getParent();
+					const att = get.attitude(player, target);
+					const choices = get.event().controls.slice();
+					const eff1 = get.recoverEffect(target, player, player);
+					const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
+					if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) {
+						return "recover_hp";
 					}
+					if (eff2 > 0) {
+						return "draw_card";
+					}
+					if (choices.includes("cancel2") && att <= 0) {
+						return "cancel2";
+					}
+					return choices.randomGet();
+				}
 			);
 			result = await next.forResult();
 		}
@@ -8689,7 +8692,7 @@ player.removeVirtualEquip(card);
 			return;
 		}
 		var cards = player.getCards("h");
-		player.showCards(cards).setContent(function () {});
+		player.showCards(cards).setContent(function () { });
 		var str = get.translation(player.name) + "的手牌";
 		if (typeof event.prompt == "string") {
 			str = event.prompt;
@@ -8841,7 +8844,7 @@ player.removeVirtualEquip(card);
 					}
 					dialog.open();
 				};
-				const customButton = event.customButton || function () {};
+				const customButton = event.customButton || function () { };
 				//创建对话框
 				createDialog(event.hiddencards, event.videoId, customButton);
 				game.broadcast(
@@ -9250,13 +9253,13 @@ player.removeVirtualEquip(card);
 		if (targets.length == 2) {
 			const dialogArgs = ["请选择要移动的牌"];
 			const es = targets[0].getCards("e", card => {
-					return event.filter(card) && targets[1].canEquip(card, event.canReplace);
-				}),
+				return event.filter(card) && targets[1].canEquip(card, event.canReplace);
+			}),
 				js = event.nojudge
 					? []
 					: targets[0].getCards("j", card => {
-							return event.filter(card) && targets[1].canAddJudge(card);
-					  });
+						return event.filter(card) && targets[1].canAddJudge(card);
+					});
 			if (es.length) {
 				dialogArgs.push(`<div class="text center">装备区</div>`);
 				dialogArgs.push([es, "vcard"]);
@@ -11892,7 +11895,7 @@ player.removeVirtualEquip(card);
 				event.num = num;
 			}
 			switch (
-				event.type //log moved here
+			event.type //log moved here
 			) {
 				case "damage":
 					game.log(player, "的护甲抵挡了" + get.cnNumber(-num) + "点伤害");
