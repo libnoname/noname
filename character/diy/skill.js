@@ -2460,7 +2460,7 @@ const skills = {
 					return lib.filter.cardDiscardable(card, player, "nstuilun");
 				}, "h")
 			) {
-				player.chooseToDiscard("h", true, [1, player.countCards("h") - 1]);
+				player.chooseToDiscard("h", true, [1, player.countCards("h") - 1], "allowChooseAll");
 			} else {
 				game.delayx();
 			}
@@ -5909,6 +5909,7 @@ const skills = {
 		},
 		discard: false,
 		prepare: "give2",
+		allowChooseAll: true,
 		content() {
 			target.gain(cards, player);
 			var num = Math.floor(cards.length / 2);

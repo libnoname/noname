@@ -109,7 +109,7 @@ const skills = {
 		viewAs(cards, player) {
 			return {
 				name: "tiesuo",
-			}
+			};
 		},
 		prepare: () => true,
 		async precontent(event, trigger, player) {
@@ -5966,7 +5966,7 @@ const skills = {
 			} else {
 				await target.draw();
 				if (num > 0) {
-					await target.chooseToDiscard(num, true, "he");
+					await target.chooseToDiscard(num, true, "he", "allowChooseAll");
 				}
 			}
 		},

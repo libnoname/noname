@@ -6351,7 +6351,7 @@ export default () => {
 					player.logSkill("boss_yingji");
 					await player.showCards(cards);
 					event.result.cards = [];
-					event.result.card = new lib.element.VCard({ name: "sha"});
+					event.result.card = new lib.element.VCard({ name: "sha", isCard: true });
 					player
 						.when("useCard1")
 						.filter(evt => evt.getParent() == event.getParent())
@@ -6700,6 +6700,7 @@ export default () => {
 							return get.effect(target, trigger.card, player, player);
 						},
 						max: max,
+						allowChooseAll:true,
 					});
 					"step 1";
 					if (result.bool) {

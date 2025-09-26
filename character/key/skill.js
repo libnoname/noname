@@ -8800,6 +8800,7 @@ const skills = {
 						}
 						return 0;
 					},
+					allowChooseAll: true,
 				});
 			} else {
 				event.goto(2);
@@ -10936,7 +10937,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard("he", [1, player.countCards("he")], get.prompt2(event.skill))
+				.chooseCard("he", [1, player.countCards("he")], get.prompt2(event.skill), "allowChooseAll")
 				.set("ai", function (card) {
 					if (get.position(card) != "h") {
 						return -1;
@@ -12268,7 +12269,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		selectCard() {
 			if (ui.selected.targets.length) {
 				return [1, ui.selected.targets[0].countCards("he")];
@@ -12288,6 +12289,7 @@ const skills = {
 			}
 			return 6 - get.value(card);
 		},
+		allowChooseAll: true,
 		content() {
 			"step 0";
 			event.cardsx = cards.slice(0);

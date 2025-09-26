@@ -861,10 +861,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseCard(get.prompt2(event.skill, trigger.player), "he", [1, Infinity], (card, player) => {
-					const target = get.event().getTrigger().player;
-					return lib.filter.canBeGained(card, target, player);
-				})
+				.chooseCard(
+					get.prompt2(event.skill, trigger.player),
+					"he",
+					[1, Infinity],
+					(card, player) => {
+						const target = get.event().getTrigger().player;
+						return lib.filter.canBeGained(card, target, player);
+					},
+					"allowChooseAll"
+				)
 				.set("ai", card => {
 					const player = get.player(),
 						target = get.event().getTrigger().player,
@@ -904,7 +910,7 @@ const skills = {
 					const target = trigger.player;
 					if (target.countCards("h") > target.hp) {
 						const result = await player
-							.chooseBool(`得宠：是否对${get.translation(target)}造成一点伤害`)
+							.chooseBool(`得宠：是否对${get.translation(target)}造成1点伤害`)
 							.set("choice", get.damageEffect(target, player, player) > 0)
 							.forResult();
 						if (result?.bool) {
@@ -1372,8 +1378,8 @@ const skills = {
 				dialog.add([
 					[
 						["draw", "摸两张牌"],
-						["recover", "回复一点体力"],
-						["damage", "对一名角色造成一点伤害"],
+						["recover", "回复1点体力"],
+						["damage", "对一名角色造成1点伤害"],
 						["move", "移动场上的一张牌"],
 					],
 					"textbutton",
@@ -1428,7 +1434,7 @@ const skills = {
 								}
 								break;
 							case "damage": {
-								const { result } = await player.chooseTarget(`明识：对一名角色造成一点伤害`, true).set("ai", target => {
+								const { result } = await player.chooseTarget(`明识：对一名角色造成1点伤害`, true).set("ai", target => {
 									const player = get.player();
 									return get.damageEffect(target, player, player);
 								});
@@ -2218,7 +2224,7 @@ const skills = {
 				} = ui.selected,
 				player = get.player(),
 				canAdd = (current, card) => {
-					const lebu = get.autoViewAs({ name: "lebu", cards: [card]}, [card]);
+					const lebu = get.autoViewAs({ name: "lebu", cards: [card] }, [card]);
 					return lib.filter.judge(lebu, player, current);
 				};
 			return canAdd(player, cards[0]) && canAdd(target, cards[1]);
@@ -4502,10 +4508,11 @@ const skills = {
 			return player.getHandcardLimit() > 0;
 		},
 		locked: false,
+		delay: false,
 		async content(event, trigger, player) {
 			player.addTempSkill("stdjishe_limit");
 			player.addMark("stdjishe_limit", 1, false);
-			player.draw();
+			player.draw("nodelay");
 		},
 		subSkill: {
 			limit: {

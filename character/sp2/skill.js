@@ -9,14 +9,16 @@ const skills = {
 			global: "phaseEnd",
 		},
 		filter(event, player) {
-			return game.countPlayer2(current => {
-				return current.hasHistory("damage");
-			}, true) > 1;
+			return (
+				game.countPlayer2(current => {
+					return current.hasHistory("damage");
+				}, true) > 1
+			);
 		},
 		async cost(event, trigger, player) {
 			const filter = (current, type) => {
-				return current.hasHistory(type);
-			},
+					return current.hasHistory(type);
+				},
 				choiceList = [
 					["damage", "令一名受到过伤害的角色回复1点体力并摸一张牌"],
 					["sourceDamage", "令一名造成过伤害的角色获得本回合进入弃牌堆的两张牌"],
@@ -75,11 +77,14 @@ const skills = {
 					bool: true,
 					targets: result.targets,
 					cost_data: result.links[0],
-				}
+				};
 			}
 		},
 		async content(event, trigger, player) {
-			const { targets: [target], cost_data: type } = event;
+			const {
+				targets: [target],
+				cost_data: type,
+			} = event;
 			if (type == "damage") {
 				await target.recover();
 				await target.draw();
@@ -105,9 +110,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const cards = get.bottomCards(3, true);
-			await player
-				.chooseControl("ok")
-				.set("dialog", ["持国：牌堆底三张牌", cards]);
+			await player.chooseControl("ok").set("dialog", ["持国：牌堆底三张牌", cards]);
 			player.addTempSkill("starchiguo_effect", "phaseChange");
 		},
 		subSkill: {
@@ -122,7 +125,9 @@ const skills = {
 					};
 				},
 				async content(event, trigger, player) {
-					const { cards: [card] } = await game.cardsGotoOrdering(get.bottomCards());
+					const {
+						cards: [card],
+					} = await game.cardsGotoOrdering(get.bottomCards());
 					await player.showCards(card, `${get.translation(player)}发动了【持国】`, true);
 					if (get.suit(card) == get.suit(trigger.card)) {
 						const info = get.info(trigger.card);
@@ -137,24 +142,31 @@ const skills = {
 								return lib.filter.targetEnabled2(trigger.card, player, current);
 							});
 							if (targets.length) {
-								const result = targets.length > 1 ? await player
-									.chooseTarget(`为${get.translation(trigger.card)}增加或减少一个目标`, (card, player, target) => {
-										return get.event("targetx").includes(target);
-									}, true)
-									.set("ai", target => {
-										const player = get.player(),
-											trigger = get.event().getTrigger(),
-											eff = get.effect(target, trigger.card, trigger.player, player);
-										if (trigger.targets?.includes(target)) {
-											return -eff;
-										}
-										return eff;
-									})
-									.set("targetx", targets)
-									.forResult() : {
-										bool: true,
-										targets: targets,
-									};
+								const result =
+									targets.length > 1
+										? await player
+												.chooseTarget(
+													`为${get.translation(trigger.card)}增加或减少一个目标`,
+													(card, player, target) => {
+														return get.event("targetx").includes(target);
+													},
+													true
+												)
+												.set("ai", target => {
+													const player = get.player(),
+														trigger = get.event().getTrigger(),
+														eff = get.effect(target, trigger.card, trigger.player, player);
+													if (trigger.targets?.includes(target)) {
+														return -eff;
+													}
+													return eff;
+												})
+												.set("targetx", targets)
+												.forResult()
+										: {
+												bool: true,
+												targets: targets,
+										  };
 								if (result.bool) {
 									player.line(result.targets);
 									if (trigger.targets.containsSome(...result.targets)) {
@@ -168,20 +180,27 @@ const skills = {
 						await game.cardsDiscard(card);
 					} else {
 						if (trigger.targets?.length) {
-							const result = trigger.targets.length > 1 ? await player
-								.chooseTarget(`持国：将${get.translation(card)}交给一名目标角色`, (card, player, target) => {
-									const trigger = get.event().getTrigger();
-									return trigger.targets?.includes(target);
-								}, true)
-								.set("ai", target => {
-									const { player, cardx } = get.event();
-									return target.getUseValue(cardx) * get.attitude(player, target);
-								})
-								.set("cardx", card)
-								.forResult() : {
-									bool: true,
-									targets: trigger.targets,
-								};
+							const result =
+								trigger.targets.length > 1
+									? await player
+											.chooseTarget(
+												`持国：将${get.translation(card)}交给一名目标角色`,
+												(card, player, target) => {
+													const trigger = get.event().getTrigger();
+													return trigger.targets?.includes(target);
+												},
+												true
+											)
+											.set("ai", target => {
+												const { player, cardx } = get.event();
+												return target.getUseValue(cardx) * get.attitude(player, target);
+											})
+											.set("cardx", card)
+											.forResult()
+									: {
+											bool: true,
+											targets: trigger.targets,
+									  };
 							if (result.bool) {
 								const target = result.targets[0];
 								player.line(target);
@@ -566,7 +585,7 @@ const skills = {
 					if (history.length !== 0) {
 						return false;
 					}
-					const card = new lib.element.VCard({ name: event.card.name });
+					const card = new lib.element.VCard({ name: event.card.name, isCard: true });
 					return event.targets?.some(target => {
 						if (!target?.isIn()) {
 							return false;
@@ -581,7 +600,7 @@ const skills = {
 						return trigger.targets.includes(evt.player) && evt.card == trigger.card;
 					});
 					if (history.length == 0) {
-						const card = new lib.element.VCard({ name: trigger.card.name });
+						const card = new lib.element.VCard({ name: trigger.card.name, isCard: true });
 						for (const target of trigger.targets || []) {
 							if (!target?.isIn()) {
 								continue;
@@ -646,7 +665,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			let result = await target
-				.chooseToGive(player, "he", true, [1, Infinity])
+				.chooseToGive(player, "he", true, [1, Infinity], "allowChooseAll")
 				.set("ai", card => {
 					const { player, target } = get.event();
 					const att = get.attitude(player, target);
@@ -2168,6 +2187,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				const card = new lib.element.VCard({
 					name: "sha",
+					isCard: true,
 				});
 				const result = await player
 					.chooseUseTarget(`###${get.prompt("starminghui")}###视为使用一张无距离限制的【杀】`, card, false, "nodistance")
@@ -3015,7 +3035,7 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (!event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+			if (!event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -3025,10 +3045,10 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				var list = [];
-				if (event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["基本", "", "sha"]);
 				}
-				if (event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["锦囊", "", "wuxie"]);
 				}
 				const dialog = ui.create.dialog("砺锋", [list, "vcard"]);
@@ -3052,6 +3072,9 @@ const skills = {
 					popname: true,
 					viewAs: {
 						name: links[0][2],
+						storage: {
+							starlifeng: true,
+						},
 					},
 					ai1(card) {
 						var player = _status.event.player;
@@ -3095,6 +3118,14 @@ const skills = {
 			},
 			order: 10,
 			result: { player: 1 },
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.starlifeng) {
+					return Infinity;
+				}
+			},
 		},
 		group: "starlifeng_mark",
 		subSkill: {
@@ -3811,7 +3842,7 @@ const skills = {
 			var suit = get.suit(card);
 			var str = get.translation(suit);
 			player
-				.chooseToDiscard("怒嗔：是否弃置至少一张" + str + "牌？", "若如此做，你对其造成等量伤害；或点击“取消”，获得其所有" + str + "手牌", "he", { suit: suit }, [1, Infinity])
+				.chooseToDiscard("怒嗔：是否弃置至少一张" + str + "牌？", "若如此做，你对其造成等量伤害；或点击“取消”，获得其所有" + str + "手牌", "he", { suit: suit }, [1, Infinity], "allowChooseAll")
 				.set("ai", card => {
 					if (ui.selected.cards.length >= _status.event.num) {
 						return 0;
@@ -5130,8 +5161,8 @@ const skills = {
 		},
 		content() {
 			if (player.countMark("dcdouzhen") % 2) {
-				if(trigger.addCount!==false){
-					trigger.addCount=false;
+				if (trigger.addCount !== false) {
+					trigger.addCount = false;
 					const stat = player.getStat().card,
 						name = trigger.card.name;
 					if (stat[name] > 0) {
@@ -7185,7 +7216,7 @@ const skills = {
 				num = cards.length;
 			} else if (target.countCards("h")) {
 				event.source = target;
-				const { result } = await target.chooseToGive(player, "he", true, [1, Infinity], `选择交给${get.translation(player)}任意张牌`).set("ai", card => -get.value(card));
+				const { result } = await target.chooseToGive(player, "he", true, [1, Infinity], `选择交给${get.translation(player)}任意张牌`, "allowChooseAll").set("ai", card => -get.value(card));
 				if (result?.cards?.length) {
 					source = player;
 					num = result.cards.length;
@@ -9894,6 +9925,7 @@ const skills = {
 						}
 						return 1;
 					})(),
+					allowChooseAll: true,
 				});
 			} else {
 				event.finish();
@@ -13828,7 +13860,7 @@ const skills = {
 				event.finish();
 				return;
 			}
-			target.chooseToDiscard(true, "h", [1, player.countCards("h")], "弃置至多" + get.cnNumber(player.countCards("h")) + "张手牌，并获得" + get.translation(player) + "等量的手牌").ai = function (card) {
+			target.chooseToDiscard(true, "h", [1, player.countCards("h")], "弃置至多" + get.cnNumber(player.countCards("h")) + "张手牌，并获得" + get.translation(player) + "等量的手牌", "allowChooseAll").ai = function (card) {
 				if (ui.selected.cards.length > 1) {
 					return -1;
 				}
@@ -14996,6 +15028,7 @@ const skills = {
 		prompt() {
 			return "选择一名角色并将任意张手牌放置于牌堆中" + get.cnNumber(game.players.length) + "倍数的位置（先选择的牌在上）";
 		},
+		allowChooseAll: true,
 		content() {
 			"step 0";
 			player.$throw(cards.length);

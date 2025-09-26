@@ -1496,7 +1496,7 @@ const skills = {
 				target.addTempSkill("jsrgxuchong_effect");
 				target.addMark("jsrgxuchong_effect", 2, false);
 			} else {
-				await player.draw();
+				await player.draw("nodelay");
 			}
 			await player.gain(lib.card.ying.getYing(1), "gain2");
 		},
@@ -1964,17 +1964,19 @@ const skills = {
 		group: "jsrgwentian_viewas",
 		async content(event, trigger, player) {
 			const cards = get.cards(5);
-			game.cardsGotoOrdering(cards);
-			const { result } = await player.chooseButton(["问天：将一张牌交给一名其他角色", cards], true);
-			if (result.bool) {
-				const { result: result2 } = await player.chooseTarget(`将${get.translation(result.links)}交给一名其他角色`, lib.filter.notMe, true).set("ai", target => {
-					return get.attitude(get.player(), target);
-				});
-				if (result2.bool) {
-					cards.removeArray(result.links);
-					const target = result2.targets[0];
-					player.line(target, "green");
-					await target.gain(result.links, "gain2").set("giver", player);
+			await game.cardsGotoOrdering(cards);
+			if (game.hasPlayer(current => current != player)) {
+				const { result } = await player.chooseButton(["问天：将一张牌交给一名其他角色", cards], true);
+				if (result.bool) {
+					const { result: result2 } = await player.chooseTarget(`将${get.translation(result.links)}交给一名其他角色`, lib.filter.notMe, true).set("ai", target => {
+						return get.attitude(get.player(), target);
+					});
+					if (result2.bool) {
+						cards.removeArray(result.links);
+						const target = result2.targets[0];
+						player.line(target, "green");
+						await target.gain(result.links, "gain2").set("giver", player);
+					}
 				}
 			}
 			const next = player.chooseToMove();
@@ -2074,10 +2076,12 @@ const skills = {
 				log: false,
 				precontent() {
 					player.logSkill("jsrgwentian");
-					const cards = get.cards();
+					const cards = get.cards(),
+						name = event.result.card.name;
+					event.result.card = get.autoViewAs({ name: name }, cards);
 					event.result.cards = cards;
 					game.cardsGotoOrdering(cards);
-					const color = event.result.card.name == "wuxie" ? "black" : "red";
+					const color = name == "wuxie" ? "black" : "red";
 					if (get.color(cards, false) != color) {
 						player.tempBanSkill("jsrgwentian", "roundStart");
 					}
@@ -2512,7 +2516,7 @@ const skills = {
 				if (result2.bool) {
 					targets.reverse();
 				}
-				const sha = new lib.element.VCard({ name: "sha" });
+				const sha = new lib.element.VCard({ name: "sha", isCard: true });
 				if (targets[0].canUse(sha, targets[1], false)) {
 					targets[0].useCard(sha, targets[1], false);
 				}
@@ -2633,7 +2637,7 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			const juedou = new lib.element.VCard({ name: "juedou", storage: { jsrglonglin: true } });
+			const juedou = new lib.element.VCard({ name: "juedou", storage: { jsrglonglin: true }, isCard: true });
 			const { result } = await player
 				.chooseToDiscard(get.prompt2("jsrglonglin"), "he")
 				.set("ai", card => {
@@ -2908,7 +2912,7 @@ const skills = {
 			player.addTempSkill("jsrgtuigu_handcard");
 			player.addMark("jsrgtuigu_handcard", num, false);
 			await player.draw(num);
-			const jiejia = new lib.element.VCard({ name: "jiejia", storage: { jsrgtuigu: true } });
+			const jiejia = new lib.element.VCard({ name: "jiejia", storage: { jsrgtuigu: true }, isCard: true });
 			if (player.hasUseTarget(jiejia)) {
 				player.addTempSkill("jsrgtuigu_block");
 				await player.chooseUseTarget(jiejia, true);
@@ -3189,9 +3193,13 @@ const skills = {
 						if (!player.hasValueTarget(card)) {
 							return 200;
 						}
-						if (player.countCards("j", cardx => cardx?.cards?.some(cardxx => {
-							return cardxx.name == card.name;
-						})) > 1) {
+						if (
+							player.countCards("j", cardx =>
+								cardx?.cards?.some(cardxx => {
+									return cardxx.name == card.name;
+								})
+							) > 1
+						) {
 							return 101;
 						}
 						return 1 / Math.max(0.01, player.getUseValue(link));
@@ -3233,7 +3241,8 @@ const skills = {
 								return (card.viewAs || card.name) == "xumou_jsrg";
 							}),
 						],
-						[1, Infinity]
+						[1, Infinity],
+						"allowChooseAll"
 					)
 					.set("filterButton", button => {
 						return lib.filter.cardDiscardable(button.link, get.player(), "jsrgdaimou");
@@ -5887,6 +5896,7 @@ const skills = {
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
 				},
+				charlotte: true,
 				forced: true,
 				locked: false,
 				silent: true,
@@ -5934,8 +5944,13 @@ const skills = {
 				},
 				mod: {
 					cardEnabled2(card, player) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("jsrgmanjuan") && player.getStorage("jsrgmanjuan_used").includes(get.number(card, false))) {
-							return false;
+						if (get.itemtype(card) == "card" && card.hasGaintag("jsrgmanjuan")) {
+							if (!player.hasSkill("jsrgmanjuan")) {
+								return false;
+							}
+							if (player.getStorage("jsrgmanjuan_used").includes(get.number(card, false))) {
+								return false;
+							}
 						}
 					},
 				},
@@ -12138,6 +12153,7 @@ const skills = {
 					},
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
+					allowChooseAll: true,
 					precontent() {
 						player.addTempSkill("jsrgciyin_used");
 					},
@@ -12349,7 +12365,7 @@ const skills = {
 			const target = event.target,
 				cards = target.getCards("h").sort((a, b) => get.number(a, target) - get.number(b, target));
 			const result = await target
-				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true)
+				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true, "allowChooseAll")
 				.set("maxNum", get.number(cards[cards.length - 1], target))
 				.set("minNum", get.number(cards[0], target))
 				.set("ai", card => {

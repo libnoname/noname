@@ -198,7 +198,7 @@ const skills = {
 					const vcard = get
 						.inpileVCardList(info => info[2] === "sha")
 						.filter(info => {
-							const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
+							const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon }, isCard: true });
 							return player.hasValueTarget(card, false);
 						});
 					return (
@@ -208,7 +208,7 @@ const skills = {
 							}
 							return Math.max(
 								...vcard.map(info => {
-									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
+									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon }, isCard: true });
 									return player.getUseValue(card, false);
 								})
 							);
@@ -233,7 +233,7 @@ const skills = {
 				const vcard = get
 					.inpileVCardList(info => info[2] === "sha")
 					.filter(info => {
-						const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+						const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 						return player.hasUseTarget(card, false);
 					});
 				if (vcard.length > 0) {
@@ -246,14 +246,14 @@ const skills = {
 											player,
 											infoMap: [goon, targets],
 										} = get.event();
-										const card = new lib.element.VCard({ name: "sha", nature: button.link[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+										const card = new lib.element.VCard({ name: "sha", nature: button.link[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 										return Math.max(...game.filterPlayer(target => player.canUse(card, target, false)).map(target => get.effect(target, card, player, player)));
 									})
 									.set("infoMap", [goon, targets])
 									.forResult("links")
 							: vcard;
 					if (link) {
-						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
 						const aims =
 							(await player
 								.chooseUseTarget(card, true, false, "nodistance")
@@ -482,7 +482,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = trigger.getg(player).filter(i => get.owner(i) == player);
 			event.result = await player
-				.chooseCard(get.prompt(event.name.slice(0, -5)), "将本次获得的任意张牌置于弃牌堆，然后获得至多等量名其他角色的各一张手牌", card => get.event().cards.includes(card), [1, cards.length])
+				.chooseCard(get.prompt(event.name.slice(0, -5)), "将本次获得的任意张牌置于弃牌堆，然后获得至多等量名其他角色的各一张手牌", card => get.event().cards.includes(card), [1, cards.length], "allowChooseAll")
 				.set("ai", card => {
 					const player = get.player();
 					const targets = game.filterPlayer(current => player != current && current.countGainableCards(player, "h") && get.effect(current, { name: "shunshou_copy2" }, player, player) > 0);
@@ -2507,7 +2507,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = [player].addArray(event.targets);
 			targets.sortBySeat();
-			const { result } = await player.chooseCardOL(targets, "he", [1, Infinity], true, "驱虎：请将任意张牌扣置于武将牌上").set("ai", card => {
+			const { result } = await player.chooseCardOL(targets, "he", [1, Infinity], true, "驱虎：请将任意张牌扣置于武将牌上", "allowChooseAll").set("ai", card => {
 				const player = get.event().getParent(2).player;
 				let value = 5;
 				if (get.player() == player) {
@@ -2925,7 +2925,7 @@ const skills = {
 			const {
 				result: { bool: bool, cards },
 			} = await target
-				.chooseToDiscard("节命：是否弃置任意张牌？", `若你本次弃置的牌数小于${get.cnNumber(num)}张，${get.translation(player)}失去1点体力。`, [1, Infinity], "he")
+				.chooseToDiscard("节命：是否弃置任意张牌？", `若你本次弃置的牌数小于${get.cnNumber(num)}张，${get.translation(player)}失去1点体力。`, [1, Infinity], "he", "allowChooseAll")
 				.set("ai", card => {
 					if (get.event("nope")) {
 						return 0;
@@ -3814,7 +3814,7 @@ const skills = {
 			if (player.getStorage("sbqicai").includes(card.name)) {
 				return false;
 			}
-			return (get.mode() == "doudizhu" ? get.subtype(card) == "equip2" : get.type(card) == "equip") && game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(card)));
+			return get.type(card) == "equip" && game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(card)));
 		},
 		usable: 1,
 		chooseButton: {
@@ -3874,9 +3874,6 @@ const skills = {
 							cards = [lib.skill.sbqicai_backup.card];
 							target.$gain2(cards);
 							game.delayx();
-						}
-						if (get.mode() == "doudizhu") {
-							player.markAuto("sbqicai", [cards[0].name]);
 						}
 						target.equip(cards[0]);
 						player.addSkill("sbqicai_gain");
@@ -4025,8 +4022,10 @@ const skills = {
 			return get.type(event.card) == "trick";
 		},
 		forced: true,
-		content() {
-			player.draw().gaintag = ["sbjizhi"];
+		async content(event, trigger, player) {
+			const next = player.draw("nodelay");
+			next.gaintag.add("sbjizhi");
+			await next;
 			player.addTempSkill("sbjizhi_mark");
 		},
 		subSkill: {
@@ -4425,7 +4424,7 @@ const skills = {
 			var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
 			if (cards.length) {
 				player
-					.chooseToMove()
+					.chooseToMove("allowChooseAll")
 					.set("list", [["你的“星”", cards], ["牌堆顶"]])
 					.set("prompt", "观星：点击或拖动将牌移动到牌堆顶")
 					.set("processAI", function (list) {
@@ -5402,9 +5401,7 @@ const skills = {
 	sbguose: {
 		audio: 2,
 		enable: "phaseUse",
-		get usable() {
-			return get.mode() == "identity" ? 4 : 2;
-		},
+		usable: 4,
 		discard: false,
 		lose: false,
 		delay: false,
@@ -7180,7 +7177,7 @@ const skills = {
 					var player = _status.event.player;
 					if (ui.selected.targets.length) {
 						var current = ui.selected.targets[0];
-						return get.effect(target, new lib.element.VCard({ name: "sha" }), current, player);
+						return get.effect(target, new lib.element.VCard({ name: "sha", isCard: true }), current, player);
 					}
 					let curs = game.filterPlayer(current => {
 						return target !== current && target.inRange(current) && target.canUse({ name: "sha", isCard: true }, current, false);
@@ -7192,7 +7189,7 @@ const skills = {
 						}
 						return -att * get.threaten(target, player);
 					}
-					return curs.reduce((max, i) => Math.max(max, get.effect(i, new lib.element.VCard({ name: "sha" }), target, player)), -1);
+					return curs.reduce((max, i) => Math.max(max, get.effect(i, new lib.element.VCard({ name: "sha", isCard: true }), target, player)), -1);
 				})
 				.forResult();
 		},
@@ -7865,6 +7862,7 @@ const skills = {
 					}
 					return get.value(card, target) * get.attitude(player, target);
 				},
+				allowChooseAll: true,
 			});
 			"step 7";
 			if (result.bool) {
@@ -9245,20 +9243,29 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const cards = event.cards;
-			await player.modedDiscard(cards);
-			let num = 0;
-			player.getHistory("lose", evt => {
-				if (evt.type != "discard" && evt.getParent(2) != event) {
-					return false;
-				}
-				for (let pos of ["h", "e"]) {
-					if (!player.countCards(pos) && evt.getl(player)?.[`${pos}s`]?.length) {
-						num++;
+			const discard = player.modedDiscard(event.cards);
+			event.num = 0;
+			player
+				.when({
+					player: "loseAfter",
+					global: ["phaseEnd", "phaseBeforeStart"],
+				})
+				.filter(evt => evt.name != "lose" || evt.getParent() == discard)
+				.step(async (event, trigger, player) => {
+					if (trigger.name != "lose") {
+						return;
 					}
-				}
-			});
-			await player.draw(cards.length + num);
+					for (let pos of ["h", "e"]) {
+						if (!player.countCards(pos) && trigger.getl(player)?.[`${pos}s`]?.length) {
+							trigger.getParent(2).num++;
+						}
+					}
+				});
+			const { cards } = await discard;
+			event.num += cards.length;
+			if (event.num > 0) {
+				await player.draw(event.num);
+			}
 		},
 		ai: {
 			order(item, player) {

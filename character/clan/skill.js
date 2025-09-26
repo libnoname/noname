@@ -170,7 +170,7 @@ const skills = {
 			const result = await player.chooseToCompare(target).forResult();
 			if (!result.tie) {
 				const winner = result.bool ? player : target,
-					card = new lib.element.VCard({ name: name });
+					card = new lib.element.VCard({ name: name, isCard: true });
 				if (winner.hasUseTarget(card)) {
 					await winner.chooseUseTarget(card, true);
 				}
@@ -2306,7 +2306,14 @@ const skills = {
 				const name = tag == "respondSha" ? "sha" : "shan";
 				return get.info("clanchengqi").hiddenCard(player, name);
 			},
-			result: { player: 1 },
+			result: {
+				player(player) {
+					if (_status.event?.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
 		},
 		subSkill: {
 			backup: { audio: "clanchengqi" },
@@ -2644,7 +2651,7 @@ const skills = {
 					lib.skill.clanshengmo_backup.prompt = `选择${get.translation(nature)}【${get.translation(name)}】的目标`;
 				},
 				name,
-				nature,
+				nature
 			);
 			evt.set("_backupevent", "clanshengmo_backup");
 			evt.backup("clanshengmo_backup");
@@ -2788,7 +2795,7 @@ const skills = {
 			if (!targets.length) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return (
 				!targets.some(target => {
 					return target.getHistory("useCard").length;
@@ -2807,7 +2814,7 @@ const skills = {
 		animationColor: "watar",
 		prompt2(event, player) {
 			let str = "";
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return event.player.getPrevious() == target || event.player.getNext() == target;
 				}),
@@ -2838,7 +2845,7 @@ const skills = {
 			return str;
 		},
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return event.player.getPrevious() == target || event.player.getNext() == target;
 				}),
@@ -2859,7 +2866,7 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return trigger.player.getPrevious() == target || trigger.player.getNext() == target;
 				}),
@@ -3342,7 +3349,7 @@ const skills = {
 				}
 			}
 			trigger.player
-				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card))
+				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card), "allowChooseAll")
 				.set("ai", card => {
 					var val = get.value(card);
 					return 6 - val;
@@ -3906,7 +3913,7 @@ const skills = {
 			"step 0";
 			var num = trigger.player.countCards("h");
 			trigger.player
-				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card))
+				.chooseCard("是否重铸任意张牌名字数为" + num + "的牌？", [1, Infinity], "he", (card, player) => _status.event.cards.includes(card) && player.canRecast(card), "allowChooseAll")
 				.set("ai", card => {
 					var val = get.value(card);
 					return 6 - val;
@@ -5461,7 +5468,7 @@ const skills = {
 				num2 == 0
 					? false
 					: await target
-							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity])
+							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity], "allowChooseAll")
 							.set("ai", get.unuseful)
 							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
 							.forResultBool();

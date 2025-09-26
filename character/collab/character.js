@@ -1,4 +1,10 @@
 const characters = {
+	you_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcyingyou"],
+	},
 	bigsb_dengai: {
 		sex: "male",
 		group: "wei",

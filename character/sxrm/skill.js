@@ -58,7 +58,7 @@ const skills = {
 					continue;
 				}
 				const result = await target
-					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true)
+					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true, "allowChooseAll")
 					.set("targetx", player)
 					.set("ai", card => {
 						const { player, targetx } = get.event();
@@ -110,8 +110,7 @@ const skills = {
 			};
 			if (event.isMine()) {
 				func(videoId, showcards);
-			}
-			else if (player.isOnline2()) {
+			} else if (player.isOnline2()) {
 				player.send(func, videoId, showcards);
 			}
 			const next2 = player
@@ -304,7 +303,7 @@ const skills = {
 			const next = player.chooseToCompare(target).set("isDelay", true);
 			await next;
 			await game.delay();
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(card, target)) {
 				const next2 = player.useCard(card, target);
 				player
@@ -345,7 +344,7 @@ const skills = {
 					}
 				},
 				prompt: "将至少半数手牌当杀打出",
-				complexCard: true,
+				allowChooseAll: true,
 				check(card) {
 					const player = get.player(),
 						num = Math.ceil(player.countCards("h") / 2),
@@ -678,7 +677,7 @@ const skills = {
 				.step(async (event, trigger, player) => {
 					for (let targetx of targets) {
 						if (!targetx.getHistory("damage").length) {
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (targetx.canUse(card, player, false)) {
 								await targetx.useCard(card, player, false);
 							}
@@ -866,7 +865,7 @@ const skills = {
 						const result3 = await target.chooseToCompare(targetx).forResult();
 						if (result3.winner) {
 							const loser = [target, targetx].find(i => i != result3.winner),
-								sha = new lib.element.VCard({ name: "sha" });
+								sha = new lib.element.VCard({ name: "sha", isCard: true });
 							if (loser && result3.winner.canUse(sha, loser, false)) {
 								await result3.winner.useCard(sha, loser, false);
 							}

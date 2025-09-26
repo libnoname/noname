@@ -1036,12 +1036,12 @@ export default {
 		audio: "duoshi",
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi" }));
+			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi", isCard: true }));
 		},
 		direct: true,
 		preHidden: true,
 		content() {
-			player.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi" }), false).set("hiddenSkill", event.name).logSkill = event.name;
+			player.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi", isCard: true }), false).set("hiddenSkill", event.name).logSkill = event.name;
 		},
 	},
 	//臧霸
@@ -1305,7 +1305,7 @@ export default {
 							})
 							.set("num", num)
 							.set("ai", target => {
-								return target.getUseValue(new lib.element.VCard({ name: "huoshaolianying" }));
+								return target.getUseValue(new lib.element.VCard({ name: "huoshaolianying", isCard: true }));
 							});
 						if (bool) {
 							player.line(targets[0]);
@@ -1330,7 +1330,7 @@ export default {
 				},
 				ai: {
 					order(item, player) {
-						const card = new lib.element.VCard({ name: "huoshaolianying" });
+						const card = new lib.element.VCard({ name: "huoshaolianying", isCard: true });
 						return get.order(card, player) + 0.1;
 					},
 					result: { target: 1 },
@@ -2052,7 +2052,7 @@ export default {
 				if (hs.length <= num) {
 					result = { bool: true, cards: hs };
 				} else {
-					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num).forResult();
+					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num, "allowChooseAll").forResult();
 				}
 				if (result?.bool) {
 					const cards = result.cards;
@@ -3751,7 +3751,7 @@ export default {
 					}
 				}
 			} else {
-				await player.gainPlayerCard(target, num, "he", true);
+				await player.gainPlayerCard(target, num, "he", true, "allowChooseAll");
 				const names = [player.name1, player.name2].filter(i => {
 					return get.character(i, 3).includes("fakejuzhan");
 				});
@@ -3903,16 +3903,16 @@ export default {
 	fakexunxi: {
 		trigger: { global: "showCharacterEnd" },
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return event.player != player && event.player != _status.currentPhase && player.canUse(card, event.player, false);
 		},
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return get.effect(event.player, card, player, player) > 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			await player.useCard(card, trigger.player, false);
 		},
 	},
@@ -6267,6 +6267,7 @@ export default {
 								var player = _status.event.player;
 								return get.recoverEffect(target, player, player);
 							},
+							allowChooseAll: true,
 						})
 						.setHiddenSkill("gzjiansu_use");
 					"step 1";

@@ -529,7 +529,7 @@ const skills = {
 			if (event.player == player || !player.hasEnabledSlot()) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			return player.canUse(card, event.player);
 		},
 		async cost(event, trigger, player) {
@@ -542,7 +542,7 @@ const skills = {
 			}
 			list.push("cancel2");
 			let bool = "cancel2";
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (get.effect(trigger.player, card, player, player) > 0) {
 				bool = list.filter(i => i != "cancel2").randomGet();
 			}
@@ -561,7 +561,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const slot = event.cost_data;
 			await player.disableEquip([slot]);
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(card, trigger.player)) {
 				await player.useCard(card, trigger.player);
 			}
@@ -1054,7 +1054,7 @@ const skills = {
 					continue;
 				}
 				const result = await target
-					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true)
+					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true, "allowChooseAll")
 					.set("ai", () => {
 						return -1;
 					})
@@ -1239,7 +1239,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player //
-				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成一点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
+				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成1点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
 				.set("ai", target => {
 					return get.damageEffect(target, get.player(), get.player());
 				})
@@ -4886,7 +4886,8 @@ const skills = {
 							],
 						],
 						[1, num],
-						true
+						true,
+						"allowChooseAll"
 					)
 					.set("ai", function (button) {
 						var name = button.link;
@@ -5352,7 +5353,7 @@ const skills = {
 					for (const mutation of mutationsList) {
 						if (mutation.type === "childList") {
 							for (const card of mutation.addedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
@@ -5371,7 +5372,7 @@ const skills = {
 								}
 							}
 							for (const card of mutation.removedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.classList.contains(glowClass)) {
@@ -11052,7 +11053,7 @@ const skills = {
 		content() {
 			"step 0";
 			player.removeMark("renjie", 1);
-			player.draw();
+			player.draw("nodelay");
 			"step 1";
 			event.card = result[0];
 			if (get.type(event.card) == "basic") {
@@ -13171,6 +13172,9 @@ const skills = {
 				return 7 - val;
 			});
 			chooseButton.set("filterButton", function (button) {
+				if (get.owner(button.link) && !lib.filter.canBeDiscarded(button.link, get.owner(button.link), get.player())) {
+					return false;
+				}
 				for (var i = 0; i < ui.selected.buttons.length; i++) {
 					if (get.suit(button.link) == get.suit(ui.selected.buttons[i].link)) {
 						return false;

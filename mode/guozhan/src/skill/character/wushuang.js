@@ -2022,7 +2022,7 @@ export default {
 				})
 				.forResult();
 			if (result.bool && get.type(result.cards[0]) == "equip") {
-				const card = new lib.element.VCard({ name: "sha" });
+				const card = new lib.element.VCard({ name: "sha", isCard: true });
 				if (player.hasUseTarget(card)) {
 					await player.chooseUseTarget(card, true, false);
 				}
@@ -2176,7 +2176,7 @@ export default {
 							player.addTempSkill("gz_zhilve_limit");
 							player.addMark("gz_zhilve_limit", 1, false);
 							await player.draw();
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (player.hasUseTarget(card, false)) {
 								await player.chooseUseTarget(card, true, false, "nodistance");
 							}
@@ -2556,7 +2556,7 @@ export default {
 				if (!target.isIn() || !target.countCards("he")) {
 					continue;
 				}
-				const { result } = await target.chooseCard("鸱咽：将任意张牌置于武将牌上直到回合结束", [1, Infinity], true, "he").set("ai", card => {
+				const { result } = await target.chooseCard("鸱咽：将任意张牌置于武将牌上直到回合结束", [1, Infinity], true, "he", "allowChooseAll").set("ai", card => {
 					const player = get.player();
 					if (ui.selected.cards.length) {
 						return 0;
@@ -2915,6 +2915,9 @@ export default {
 				return 7 - val;
 			});
 			chooseButton.set("filterButton", function (button) {
+				if (get.owner(button.link) && !lib.filter.canBeDiscarded(button.link, get.owner(button.link), get.player())) {
+					return false;
+				}
 				for (var i = 0; i < ui.selected.buttons.length; i++) {
 					if (get.suit(button.link) == get.suit(ui.selected.buttons[i].link)) {
 						return false;
@@ -3885,18 +3888,18 @@ export default {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			return game.hasPlayer(current => current != player && player.canUse(card, current) && current.countCards("h") <= player.countCards("h"));
 		},
 		preHidden: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (cardx, player, target) => {
-					const card = new lib.element.VCard({ name: "zhibi" });
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 					return target != player && player.canUse(card, target) && target.countCards("h") <= player.countCards("h");
 				})
 				.set("ai", target => {
-					const card = new lib.element.VCard({ name: "zhibi" }),
+					const card = new lib.element.VCard({ name: "zhibi", isCard: true }),
 						player = get.player();
 					return get.effect(target, card, player, player);
 				})
@@ -3904,7 +3907,7 @@ export default {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "zhibi" });
+			const card = new lib.element.VCard({ name: "zhibi", isCard: true });
 			await player.useCard(card, event.targets);
 		},
 	},

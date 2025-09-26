@@ -7413,12 +7413,14 @@ export class Library {
 							map.connect_choice_fan.show();
 						}
 						map.connect_enhance_dizhu.hide();
+						map.connect_enhance_nongmin.hide();
 						map.connect_feiyang_version.hide();
 					} else {
 						map.connect_double_character.show();
 						map.connect_choice_zhu.show();
 						map.connect_choice_fan.show();
 						map.connect_enhance_dizhu.show();
+						map.connect_enhance_nongmin.show();
 						map.connect_feiyang_version.show();
 					}
 				},
@@ -7493,6 +7495,16 @@ export class Library {
 						qiangyi: "获得削弱〖强易〗",
 					},
 				},
+				connect_enhance_nongmin: {
+					name: "农民遗产",
+					init: "mobile",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
+					},
+				},
 				connect_feiyang_version: {
 					name: "〖飞扬〗版本",
 					init: "online",
@@ -7531,6 +7543,7 @@ export class Library {
 						map.dierestart.hide();
 						map.revive.hide();
 						map.enhance_dizhu.hide();
+						map.enhance_nongmin.hide();
 						map.feiyang_version.hide();
 					} else {
 						map.double_character.show();
@@ -7543,6 +7556,7 @@ export class Library {
 						map.dierestart.show();
 						map.revive.show();
 						map.enhance_dizhu.show();
+						map.enhance_nongmin.show();
 						map.feiyang_version.show();
 					}
 					if (config.double_character && config.doudizhu_mode == "normal") {
@@ -7738,6 +7752,16 @@ export class Library {
 						yinfu: "获得〖殷富〗",
 						shiqiang: "获得〖恃强〗",
 						qiangyi: "获得削弱〖强易〗",
+					},
+				},
+				enhance_nongmin: {
+					name: "农民遗产",
+					init: "mobile",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
 					},
 				},
 				feiyang_version: {
@@ -11824,9 +11848,9 @@ export class Library {
 				return false;
 			}
 			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
+			if (mod != "unchanged") {
+				return mod;
+			}
 			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
 			if (mod2 != "unchanged") {
 				return mod2;
@@ -12422,9 +12446,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12432,7 +12456,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12535,9 +12559,9 @@ export class Library {
 					let filter = cardFilter;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12545,7 +12569,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12601,7 +12625,7 @@ export class Library {
 					if (typeof select == "string" && select !== "all") {
 						targets = [trigger[select]];
 					} else {
-						targets = player.getEnemies(filter(target), false);
+						targets = player.getEnemies(filter, false);
 						if (select !== "all" && typeof select == "number") {
 							targets = targets.randomGets(select);
 						}
@@ -12625,9 +12649,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12635,7 +12659,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12676,7 +12700,7 @@ export class Library {
 							return "暂无战法";
 						}
 						dialog.add([list.map(i => [`zf_${lib.zhanfa.getRarity(i)}`, null, i]), "vcard"]);
-						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`));
+						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`, "zhanfa"));
 					},
 				},
 			},
@@ -13899,7 +13923,7 @@ export class Library {
 							}
 						});
 						if (numberOfCardsToDraw) {
-							player.draw(numberOfCardsToDraw).log = false;
+							player.draw(numberOfCardsToDraw, "nodelay").log = false;
 						}
 					});
 				},
@@ -16541,14 +16565,22 @@ export class Library {
 			"智将",
 			{
 				showName: "智",
-				color: "#99e2ffff",
+				color: "#99e2ff",
 				nature: "firemm",
 			},
 		],
 		[
 			"徐兖",
 			{
+				showName: "徐",
 				color: "#ff0000",
+				nature: "firemm",
+			},
+		],
+		[
+			"有",
+			{
+				color: "#dd9420",
 				nature: "firemm",
 			},
 		],

@@ -733,6 +733,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["xinkuanggu", "reqimou"],
+		tempname: ["ol_weiyan"],
 	}),
 	gz_ol_yanwen: new Character({
 		sex: "male",

@@ -447,6 +447,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["twfupan"],
+		names: "null|null",
 	},
 	tw_liwei: {
 		sex: "male",

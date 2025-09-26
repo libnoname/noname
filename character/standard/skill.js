@@ -1445,7 +1445,7 @@ const skills = {
 			return get.type(event.card) == "trick" && event.card.isCard;
 		},
 		async content(event, trigger, player) {
-			player.draw();
+			player.draw("nodelay");
 		},
 		ai: {
 			threaten: 1.4,
@@ -1575,9 +1575,10 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		prompt: "失去1点体力并摸两张牌",
+		delay: false,
 		async content(event, trigger, player) {
 			player.loseHp(1);
-			player.draw(2);
+			player.draw(2, "nodelay");
 		},
 		ai: {
 			basic: {

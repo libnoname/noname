@@ -4184,7 +4184,7 @@ const skills = {
 			if (!gain.length) {
 				return;
 			}
-			const links = await player.chooseButton(["慈荫：你可以将其中任意张黑桃/红桃牌置于武将牌上", gain], [1, Infinity]).set("ai", get.buttonValue).forResultLinks();
+			const links = await player.chooseButton(["慈荫：你可以将其中任意张黑桃/红桃牌置于武将牌上", gain], [1, Infinity], "allowChooseAll").set("ai", get.buttonValue).forResultLinks();
 			if (!links || !links.length) {
 				return;
 			}
@@ -4652,7 +4652,7 @@ const skills = {
 			player
 				.when({ global: "phaseAfter" })
 				.then(() => {
-					player.insertPhase();
+					player.insertPhase("twhunyou");
 				})
 				.then(() => {
 					player.storage.isInHuan = true;
@@ -4875,7 +4875,7 @@ const skills = {
 					.set("target", target)
 					.forResultLinks();
 				if (links && links.length) {
-					const card = new lib.element.VCard({ name: links[0][2] });
+					const card = new lib.element.VCard({ name: links[0][2], isCard: true });
 					await player.useCard(card, target, false);
 				}
 			}
@@ -5875,7 +5875,7 @@ const skills = {
 					continue;
 				}
 				const cards = await current
-					.chooseToGive(`${get.translation(player)}对你发动了【受嘱】`, "作为其的同心角色，是否交给其至多四张牌？", player, "he", [1, 4])
+					.chooseToGive(`${get.translation(player)}对你发动了【受嘱】`, "作为其的同心角色，是否交给其至多四张牌？", player, "he", [1, 4], "allowChooseAll")
 					.set("ai", card => {
 						if (!get.event("goon")) {
 							return -get.value(card);
@@ -5900,7 +5900,7 @@ const skills = {
 			for (const current of targets) {
 				const cards = get.cards(count);
 				await game.cardsGotoOrdering(cards);
-				const next = current.chooseToMove();
+				const next = current.chooseToMove("allowChooseAll");
 				next.set("list", [["牌堆底", cards], ["弃牌堆"]]);
 				next.set("prompt", "受嘱：点击排列牌置于牌堆底的顺序，或置入弃牌堆");
 				next.set("processAI", list => {
@@ -6668,7 +6668,7 @@ const skills = {
 			return game.hasPlayer(target => get.info("twjuexing").filterTarget(null, player, target));
 		},
 		filterTarget(_, player, target) {
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			return target != player && player.canUse(card, target);
 		},
 		usable: 1,
@@ -6681,7 +6681,7 @@ const skills = {
 				game.log(player, "触发了", "#g【绝行】", "的", "#y历战", "效果");
 			});
 			const target = event.target;
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			player.addTempSkill("twjuexing_effect");
 			player
 				.when({ global: "useCardAfter" })
@@ -7293,7 +7293,7 @@ const skills = {
 				.set("ai", target => {
 					const player = get.event("player"),
 						att = get.attitude(player, target);
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					if (att > 0) {
 						return (
 							game.countPlayer(aim => {
@@ -7470,7 +7470,7 @@ const skills = {
 							if (target.isTurnedOver()) {
 								return 0;
 							}
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (
 								game.hasPlayer(aim => {
 									return target.canUse(card, target) && get.effect(aim, card, target, player) > 0 && get.effect(aim, card, target, target) > 0;
@@ -7868,7 +7868,7 @@ const skills = {
 				audio: "twchue",
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					return (
 						player.hasUseTarget(card) &&
 						/*player.getHistory('useSkill',evt=>{
@@ -7877,7 +7877,7 @@ const skills = {
 					);
 				},
 				check(event, player) {
-					return player.hasValueTarget(new lib.element.VCard({ name: "sha" }));
+					return player.hasValueTarget(new lib.element.VCard({ name: "sha", isCard: true }));
 				},
 				prompt2(event, player) {
 					const num = player.getHp();
@@ -7886,7 +7886,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const num = player.getHp();
 					player.removeMark("twchue", num);
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					player
 						.when("useCard2")
 						.filter(evt => evt.getParent(2) == event)
@@ -10436,6 +10436,7 @@ const skills = {
 					}
 					return 0;
 				},
+				allowChooseAll: true,
 			});
 			"step 1";
 			if (result.bool) {
@@ -11344,6 +11345,7 @@ const skills = {
 				discard: false,
 				lose: false,
 				delay: false,
+				allowChooseAll: true,
 				content() {
 					player.give(cards, target);
 					player.addTempSkill("twjichou_given", "phaseUseAfter");
@@ -11703,12 +11705,12 @@ const skills = {
 				audio: "twxiongzheng",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					const sha = new lib.element.VCard({ name: "sha" });
+					const sha = new lib.element.VCard({ name: "sha", isCard: true });
 					return game.hasPlayer(target => player.getStorage("twxiongzheng_mark").includes(target) || player.canUse(sha, target, false));
 				},
 				async cost(event, trigger, player) {
 					const target = player.storage.twxiongzheng_target;
-					const sha = new lib.element.VCard({ name: "sha" });
+					const sha = new lib.element.VCard({ name: "sha", isCard: true });
 					const list = game.filterPlayer(target => player.getStorage("twxiongzheng_mark").includes(target));
 					const list2 = game.filterPlayer(target => player.canUse(sha, target, false));
 					let choiceList = ["视为对任意名本轮未对" + get.translation(target) + "造成过伤害的角色使用一张【杀】", "令任意名本轮对" + get.translation(target) + "造成过伤害的角色摸两张牌"];
@@ -11777,7 +11779,7 @@ const skills = {
 								if (!list.includes(target)) {
 									return false;
 								}
-								return !goon || player.canUse(new lib.element.VCard({ name: "sha" }), target, false);
+								return !goon || player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), target, false);
 							},
 							[1, list.length]
 						)
@@ -11792,7 +11794,7 @@ const skills = {
 						const targets = result.targets.sortBySeat();
 						player.line(targets);
 						if (goon) {
-							const sha = new lib.element.VCard({ name: "sha" });
+							const sha = new lib.element.VCard({ name: "sha", isCard: true });
 							await player.useCard(sha, targets, false);
 						} else {
 							await game.asyncDraw(targets, 2);
@@ -20107,9 +20109,16 @@ const skills = {
 			"step 0";
 			if (player.countCards("h", card => get.type(card) != "equip")) {
 				player
-					.chooseCard("h", [1, Infinity], true, "躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌", (card, player) => {
-						return get.type(card) != "equip" && lib.filter.cardDiscardable(card, player, "twzaoli");
-					})
+					.chooseCard(
+						"h",
+						[1, Infinity],
+						true,
+						"躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌",
+						(card, player) => {
+							return get.type(card) != "equip" && lib.filter.cardDiscardable(card, player, "twzaoli");
+						},
+						"allowChooseAll"
+					)
 					.set("ai", function (card) {
 						if (!card.hasGaintag("twzaoli_temp")) {
 							return 5 - get.value(card);
@@ -21082,7 +21091,7 @@ const skills = {
 			if (player.getHistory("sourceDamage").length) {
 				player.chooseToDiscard("h", true, num);
 			} else if (num > 4) {
-				player.chooseToDiscard("h", true, num - 4);
+				player.chooseToDiscard("h", true, num - 4, "allowChooseAll");
 			} else {
 				player.drawTo(4);
 			}
@@ -24658,6 +24667,7 @@ const skills = {
 						})
 					) {
 						player.line(trigger.player, "green");
+						player.draw();
 						trigger.player.damage();
 					}
 				},

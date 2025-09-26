@@ -69,7 +69,7 @@ game.import("card", function () {
 						return;
 					}
 					const str = get.translation(target);
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					const targets = game
 						.filterPlayer(current => {
 							return current != target;
@@ -222,7 +222,7 @@ game.import("card", function () {
 					}
 					const targets = game.filterPlayer(current => current != target && current[judge] == "wu");
 					const result = await target
-						.chooseToDiscard("请弃置至少六张手牌", [6, target.countCards("h")], true, "h")
+						.chooseToDiscard("请弃置至少六张手牌", [6, target.countCards("h")], true, "h", "allowChooseAll")
 						.set("ai", card => {
 							const { player, targetx } = get.event();
 							if (2 * ui.selected.targets >= targetx.filter(current => get.attitude(player, current) > 0).length) {

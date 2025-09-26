@@ -1924,7 +1924,10 @@ player.removeVirtualEquip(card);
 		let result;
 		if (event.isMine()) {
 			result = await new Promise(resolve => {
-				ui.selected.buttons.length = 0;
+				// 兼容旧版本扩展使用guanxing_button喵
+				ui.selected.guanxing_button = null;
+				// 使用guanxing_buttons作为数组喵，因为buttons会被uncheck清除但是选中状态不会喵，导致不同步哦
+				ui.selected.guanxing_buttons = [];
 
 				const list = event.list;
 				const filterMove = event.filterMove;
@@ -2083,15 +2086,16 @@ player.removeVirtualEquip(card);
 				 * @param { ((button: HTMLDivElement) => boolean)? } filter
 				 */
 				var clearSelected = function (filter) {
-					for (let i = ui.selected.buttons.length; i--; ) {
-						const button = ui.selected.buttons[i];
+					for (let i = ui.selected.guanxing_buttons.length; i--; ) {
+						const button = ui.selected.guanxing_buttons[i];
 
 						if (!filter || filter(button)) {
-							ui.selected.buttons.splice(i, 1);
+							ui.selected.guanxing_buttons.splice(i, 1);
 							button.classList.remove("glow2");
 						}
 					}
 
+					ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 					updateSelectAllButtons();
 				};
 
@@ -2114,7 +2118,8 @@ player.removeVirtualEquip(card);
 						button.classList.add("glow2");
 					});
 
-					ui.selected.buttons.addArray(buttons);
+					ui.selected.guanxing_buttons.addArray(buttons);
+					ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 					updateSelectAllButtons();
 				};
 
@@ -2129,7 +2134,8 @@ player.removeVirtualEquip(card);
 
 					if (!nextState) {
 						button.classList.remove("glow2");
-						ui.selected.buttons.remove(button);
+						ui.selected.guanxing_buttons.remove(button);
+						ui.selected.guanxing_button = ui.selected.guanxing_buttons[0] || null;
 						updateSelectAllButtons();
 					} else {
 						if (!canMultiselect) {
@@ -2147,7 +2153,7 @@ player.removeVirtualEquip(card);
 				 * @param { HTMLDivElement } container
 				 */
 				var revertSelection = function (container) {
-					const selecteds = new Set(ui.selected.buttons.filter(button => button.parentElement === container));
+					const selecteds = new Set(ui.selected.guanxing_buttons.filter(button => button.parentElement === container));
 					const nextSelecteds = Array.prototype.filter.call(container.childNodes, button => {
 						return !selecteds.has(button);
 					});
@@ -2297,7 +2303,7 @@ player.removeVirtualEquip(card);
 						e = e.changedTouches[0];
 					}
 
-					const isDragging = ui.selected.buttons.length === 1 && document.contains(ui.selected.buttons[0]?.copy);
+					const isDragging = ui.selected.guanxing_buttons.length === 1 && document.contains(ui.selected.guanxing_buttons[0]?.copy);
 
 					buttonss.forEach(btn => {
 						Array.from(btn.children).forEach(element => {
@@ -2320,8 +2326,8 @@ player.removeVirtualEquip(card);
 					let spannedSingle = false;
 
 					// 我们要判断是不是跨区的单个交换喵，但是如果是拖拽的情况下一定是单个交换喵，所以没必要进行额外判断喵
-					if (!isDragging && ui.selected.buttons.length === 1) {
-						const curCard = ui.selected.buttons[0];
+					if (!isDragging && ui.selected.guanxing_buttons.length === 1) {
+						const curCard = ui.selected.guanxing_buttons[0];
 						const target = e.target;
 						if (!curCard.contains(target)) {
 							const buttons = buttonss.find(b => {
@@ -2335,8 +2341,8 @@ player.removeVirtualEquip(card);
 					}
 
 					// 如果是拖动移动、非多选或者跨区单个交换的情况下，我们走原来的代码喵
-					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1) || spannedSingle) {
-						const curCard = ui.selected.buttons[0];
+					if (isDragging || (!canMultiselect && ui.selected.guanxing_buttons.length === 1) || spannedSingle) {
+						const curCard = ui.selected.guanxing_buttons[0];
 						// 鼠标当前处于哪个元素上
 						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
 						// 相当于没移动，让它自己触发后续的click
@@ -2394,7 +2400,7 @@ player.removeVirtualEquip(card);
 						}
 
 						clearSelected();
-					} else if (ui.selected.buttons.length) {
+					} else if (ui.selected.guanxing_buttons.length) {
 						// 获取当前点击的节点喵
 						const target = e.target;
 						// 寻找点击的是那个区域哦喵
@@ -2420,7 +2426,7 @@ player.removeVirtualEquip(card);
 							position = "last";
 						}
 
-						const selected = filterBatchMove(ui.selected.buttons, buttons, position !== "last" ? "first" : "last");
+						const selected = filterBatchMove(ui.selected.guanxing_buttons, buttons, position !== "last" ? "first" : "last");
 						const subPromises = [];
 
 						for (const element of selected) {
@@ -2528,6 +2534,9 @@ player.removeVirtualEquip(card);
 				game.countChoose();
 				event.choosing = true;
 			});
+
+			delete ui.selected.guanxing_button;
+			delete ui.selected.guanxing_buttons;
 		} else if (event.isOnline()) {
 			result = await event.sendAsync();
 		} else {
@@ -5125,7 +5134,7 @@ player.removeVirtualEquip(card);
 			}, player);
 		}
 		"step 1";
-		player.chooseToDiscard(num, true).set("useCache", true);
+		player.chooseToDiscard(num, true).set("useCache", true).set("allowChooseAll", true);
 		"step 2";
 		event.cards = result.cards;
 	},
@@ -5357,7 +5366,22 @@ player.removeVirtualEquip(card);
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
 						next.set("complexSelect", info.chooseButton.complexSelect !== false);
+						next.set(
+							"complexSelect",
+							(() => {
+								if (info.chooseButton.complexSelect !== false) {
+									if (info.chooseButton.complexSelect === undefined && info.chooseButton.allowChooseAll === true) {
+										// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+										return false;
+									} else {
+										return true;
+									}
+								}
+								return false;
+							})()
+						);
 						next.set("filterOk", info.chooseButton.filterOk || (() => true));
+						next.set("allowChooseAll", info.chooseButton.allowChooseAll);
 						if (event.id) {
 							next._parent_id = event.id;
 						}

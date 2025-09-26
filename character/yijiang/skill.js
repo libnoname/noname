@@ -2069,7 +2069,7 @@ const skills = {
 				var num = target.countCards("h") - target.hp;
 				player.line(target, "thunder");
 				player.logSkill("zhenjun", target);
-				player.discardPlayerCard(num, target, true);
+				player.discardPlayerCard(num, target, true, "allowChooseAll");
 			}
 			"step 2";
 			if (result.cards && result.cards.length) {
@@ -2082,7 +2082,7 @@ const skills = {
 				}
 				if (event.num > 0) {
 					var prompt = "弃置" + get.cnNumber(event.num) + "张牌，或令" + get.translation(event.target) + "摸" + get.cnNumber(event.num2) + "张牌";
-					player.chooseToDiscard(event.num, prompt, "he").ai = function (card) {
+					player.chooseToDiscard(event.num, prompt, "he", "allowChooseAll").ai = function (card) {
 						return 5 - get.value(card);
 					};
 				} else {
@@ -2121,7 +2121,7 @@ const skills = {
 				event.target = target;
 				var num = Math.max(target.countCards("h") - target.hp, 1);
 				player.logSkill("rezhenjun", target);
-				player.discardPlayerCard(num, target, true);
+				player.discardPlayerCard(num, target, true, "allowChooseAll");
 			}
 			"step 2";
 			if (result.cards && result.cards.length) {
@@ -2133,7 +2133,7 @@ const skills = {
 				}
 				if (event.num > 0) {
 					var prompt = "弃置" + get.cnNumber(event.num) + "张牌，或令" + get.translation(event.target) + "摸" + get.cnNumber(event.num) + "张牌";
-					player.chooseToDiscard(event.num, prompt, "he").ai = function (card) {
+					player.chooseToDiscard(event.num, prompt, "he", "allowChooseAll").ai = function (card) {
 						return 5 - get.value(card);
 					};
 				} else {
@@ -4214,9 +4214,11 @@ const skills = {
 				if (index < 0) {
 					return [];
 				}
-				return event.cards.filter((card, i) => {
-					return (i == index) != (winner == player);
-				}).filterInD("od");
+				return event.cards
+					.filter((card, i) => {
+						return (i == index) != (winner == player);
+					})
+					.filterInD("od");
 			}
 			if (player != event.player && player != event.target) {
 				return [];
@@ -4544,8 +4546,9 @@ const skills = {
 		},
 		usable: 20,
 		locked: false,
+		delay: false,
 		content() {
-			player.draw();
+			player.draw("nodelay");
 			player.addTempSkill("jishe2");
 			player.addMark("jishe2", 1, false);
 		},
@@ -5590,7 +5593,7 @@ const skills = {
 				event.target = target;
 				var res = get.damageEffect(target, player, target, "fire");
 				target
-					.chooseToDiscard("he", "弃置至少" + get.cnNumber(event.num) + "张牌或受到2点火焰伤害", [num, Infinity])
+					.chooseToDiscard("he", "弃置至少" + get.cnNumber(event.num) + "张牌或受到2点火焰伤害", [num, Infinity], "allowChooseAll")
 					.set("ai", function (card) {
 						if (ui.selected.cards.length >= _status.event.getParent().num) {
 							return -1;
@@ -6345,9 +6348,14 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseCard([1, Math.max(1, player.countCards("h", "sha"))], get.prompt("chunlao"), {
-					name: "sha",
-				})
+				.chooseCard(
+					[1, Math.max(1, player.countCards("h", "sha"))],
+					get.prompt("chunlao"),
+					{
+						name: "sha",
+					},
+					"allowChooseAll"
+				)
 				.set("ai", function () {
 					return 1;
 				});
@@ -9496,7 +9504,7 @@ const skills = {
 			var res = get.damageEffect(target, player, target, "fire");
 			var num = Math.max(1, target.countCards("e"));
 			target
-				.chooseToDiscard(num, "he", "弃置" + get.cnNumber(num) + "张牌或受到1点火焰伤害")
+				.chooseToDiscard(num, "he", "弃置" + get.cnNumber(num) + "张牌或受到1点火焰伤害", "allowChooseAll")
 				.set("ai", function (card) {
 					var res = _status.event.res;
 					var num = _status.event.num;
@@ -9621,6 +9629,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
+		allowChooseAll: true,
 		content() {
 			"step 0";
 			var types = [];
@@ -10167,7 +10176,8 @@ const skills = {
 			return 7 - get.value(card);
 		},
 		position: "he",
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
+		allowChooseAll: true,
 		content() {
 			target.damage("nocard");
 		},
@@ -10738,7 +10748,7 @@ const skills = {
 			return get.type(event.card, "trick") == player.storage.qiangzhi_draw;
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		onremove: true,
 		mark: true,
@@ -14253,7 +14263,7 @@ const skills = {
 			return (get.suit(evt.card) != "none" && get.suit(evt.card) == get.suit(event.card)) || (typeof get.number(evt.card, false) == "number" && get.number(evt.card, false) == get.number(event.card));
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		group: "jianying_mark",
 		init(player) {
