@@ -3428,7 +3428,7 @@ player.removeVirtualEquip(card);
 		_status.discarded = [];
 		game.syncState();
 		game.addVideo("phaseChange", player);
-		if (game.phaseNumber == 1) {
+		if (game.phaseNumber >= 1 && !lib.configOL.observeReady) {
 			delete player._start_cards;
 			if (lib.configOL.observe) {
 				lib.configOL.observeReady = true;
@@ -4803,7 +4803,7 @@ player.removeVirtualEquip(card);
 		_status.discarded = [];
 		game.syncState();
 		game.addVideo("phaseChange", player);
-		if (game.phaseNumber == 1) {
+		if (game.phaseNumber >= 1 && !lib.configOL.observeReady) {
 			if (lib.configOL.observe) {
 				lib.configOL.observeReady = true;
 				game.send("server", "config", lib.configOL);

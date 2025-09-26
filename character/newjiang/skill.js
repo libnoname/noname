@@ -1766,6 +1766,14 @@ const skills = {
 				choices.push("cancel2");
 				return choices;
 			},
+			check() {
+				const player = get.player(),
+					num = [5, 3, 4, 1, 2].find(index => player.hasEmptySlot(index));
+				if (num) {
+					return `equip${num}`;
+				}
+				return "cancel2";
+			},
 			backup(result, player) {
 				return {
 					audio: "gongqiao",
@@ -1781,6 +1789,16 @@ const skills = {
 						card.subtypes = [lib.skill.gongqiao_backup.slot];
 						await player.equip(card);
 					},
+					ai1(card) {
+						const player = get.player();
+						if (player.hasCard(cardx => {
+							return get.type2(cardx, false) === get.type2(card, false);
+						}, "e")) {
+							return 7 - get.value(card);
+						}
+						return 15 - get.value(card);
+					},
+					ai2:() => 1,
 				};
 			},
 			prompt(result, player) {
@@ -1796,6 +1814,12 @@ const skills = {
 				) {
 					return num + 3;
 				}
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
 			},
 		},
 		group: ["gongqiao_basic", "gongqiao_trick"],
@@ -5069,6 +5093,27 @@ const skills = {
 				if (get.itemtype(card) == "card" && card.hasGaintag("gnjinfan")) {
 					return num + 0.5;
 				}
+			},
+		},
+		init(player, skill) {
+			player.addSkill("gnjinfan_nouse");
+		},
+		onremove(player, skill) {
+			player.removeSkill("gnjinfan_nouse");
+		},
+		subSkill: {
+			nouse: {
+				charlotte: true,
+				locked: true,
+				mod: {
+					cardEnabled2(card, player) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("gnjinfan")) {
+							if (!player.hasSkill("gnjinfan")) {
+								return false;
+							}
+						}
+					},
+				},
 			},
 		},
 	},

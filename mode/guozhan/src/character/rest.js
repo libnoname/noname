@@ -29,7 +29,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzhuaiyi", "gzzisui"],
+		skills: ["fakehuaiyi", "fakezisui"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_sunchen: new Character({

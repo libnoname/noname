@@ -2382,7 +2382,10 @@ export default {
 			if (!game.hasPlayer(target => target.isMajor())) {
 				return false;
 			}
-			return player.hasViceCharacter() || ["h", "e", "j"].some(pos => player.getCards(pos).every(card => lib.filter.cardDiscardable(card, player)));
+			return player.hasViceCharacter() || ["h", "e", "j"].some(pos => {
+				const cards = player.getCards(pos);
+				return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
+			});
 		},
 		usable: 1,
 		chooseButton: {
@@ -2395,7 +2398,8 @@ export default {
 				list.addArray(
 					["h", "e", "j"]
 						.filter(pos => {
-							return player.getCards(pos).every(card => lib.filter.cardDiscardable(card, player));
+							const cards = player.getCards(pos);
+							return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
 						})
 						.map(i => map[i])
 				);
@@ -2406,17 +2410,21 @@ export default {
 				return list;
 			},
 			check() {
-				const player = get.event("player");
-				if (player.getCards("j").every(card => lib.filter.cardDiscardable(card, player))) {
+				const player = get.event("player"),
+					count = pos => {
+						const cards = player.getCards(pos);
+						return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
+					};
+				if (count("j")) {
 					return "判定区";
 				}
 				if (player.hasViceCharacter() && get.guozhanRank(player.name2, player) <= 3) {
 					return "移除副将";
 				}
-				if (player.getCards("e").every(card => lib.filter.cardDiscardable(card, player)) && player.getCards("e") <= 1) {
+				if (count("e") && player.getCards("e") <= 1) {
 					return "装备区";
 				}
-				if (player.getCards("h").every(card => lib.filter.cardDiscardable(card, player)) && player.getCards("h") <= 1) {
+				if (count("h") && player.getCards("h") <= 2) {
 					return "手牌区";
 				}
 				return "cancel2";
@@ -2429,7 +2437,7 @@ export default {
 					info: result.control,
 					async content(event, trigger, player) {
 						const control = get.info("fakehuaiyi_backup").info;
-						if (info == "移除副将") {
+						if (control == "移除副将") {
 							await player.removeCharacter(1);
 						} else {
 							const map = { 手牌区: "h", 装备区: "e", 判定区: "j" };
