@@ -6402,7 +6402,7 @@ export default {
 				.set(
 					"choiceList",
 					event.list.map(i => {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, _status.currentPhase) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, _status.currentPhase, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)
@@ -7761,7 +7761,7 @@ export default {
 				.set(
 					"choiceList",
 					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

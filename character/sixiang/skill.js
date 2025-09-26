@@ -5133,7 +5133,7 @@ const skills = {
 		},
 	},
 	//吕玲绮
-	stdhuizhan: {
+	stdhuiji: {
 		audio: "guowu",
 		trigger: { player: "useCard2" },
 		filter(event, player) {
@@ -5163,25 +5163,25 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			trigger.targets.addArray(event.targets);
-			player.addTempSkill("stdhuizhan_effect");
-			trigger.card.stdhuizhan = true;
+			player.addTempSkill("stdhuiji_effect");
+			trigger.card.stdhuiji = true;
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				trigger: { global: "chooseToUseBegin" },
 				filter(event, player) {
-					if (event._stdhuizhan_effect) {
+					if (event._stdhuiji_effect) {
 						return false;
 					}
 					const evt = event.getParent(2);
-					return evt.card && evt.card.stdhuizhan;
+					return evt.card?.stdhuiji;
 				},
 				forced: true,
 				popup: false,
 				forceDie: true,
 				async content(event, trigger, player) {
-					trigger._stdhuizhan_effect = true;
+					trigger._stdhuiji_effect = true;
 					const targets = trigger
 						.getParent(2)
 						.targets.filter(i => {
@@ -5193,12 +5193,17 @@ const skills = {
 							if (!target.isIn()) {
 								continue;
 							}
-							const next = target.chooseToUse("挥战：是否替" + get.translation(trigger.player) + "使用一张【闪】？", { name: "shan" });
+							const next = target.chooseToUse("挥战：是否替" + get.translation(trigger.player) + "使用一张【闪】？", function(card) {
+								if (get.name(card) != "shan") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							});
 							next.set("ai", () => {
 								const event = _status.event;
 								return get.attitude(event.player, event.source) - 2;
 							});
-							next.set("skillwarn", "替" + get.translation(player) + "打出一张闪");
+							next.set("skillwarn", "替" + get.translation(player) + "使用一张闪");
 							next.autochoose = lib.filter.autoRespondShan;
 							next.set("source", player);
 							const result = await next.forResult();

@@ -22974,7 +22974,7 @@ const skills = {
 								info = ' style="text-decoration:line-through; opacity:0.3;"';
 								break;
 						}
-						return '<div class="skill">「' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "」</div>" + "<div" + info + ">" + get.skillInfoTranslation(i, player) + "（已选过" + get.cnNumber(player.getStorage("dctongguan")[i] || 0) + "次）" + "</div>";
+						return '<div class="skill">「' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "」</div>" + "<div" + info + ">" + get.skillInfoTranslation(i, player, false) + "（已选过" + get.cnNumber(player.getStorage("dctongguan")[i] || 0) + "次）" + "</div>";
 					})
 				)
 				.set("displayIndex", false)
@@ -22984,7 +22984,7 @@ const skills = {
 						target = _status.event.getTrigger().player;
 					var str = target
 						.getSkills(null, false, false)
-						.map(i => get.skillInfoTranslation(i))
+						.map(i => get.skillInfoTranslation(i, null, false))
 						.join("");
 					var choices = [];
 					if (controls.includes("dctongguan_wuyong") && /你对\S{1,15}造成\S{1,10}伤害/.test(str)) {

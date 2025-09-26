@@ -2580,7 +2580,7 @@ const skills = {
 					skill = get.sourceSkillFor(skill);
 					info = get.info(skill);
 					//双重检测，如果技能描述中不带伤害字样的去除
-					if (!skill || !get.plainText(get.skillInfoTranslation(skill)).includes("伤害")) {
+					if (!skill || !get.skillInfoTranslation(skill).includes("伤害")) {
 						continue;
 					}
 					//去除觉醒技、隐匿技、势力技、主公技
@@ -3731,7 +3731,7 @@ const skills = {
 									.set(
 										"choiceList",
 										skills.map(i => {
-											return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, target) + "</div>";
+											return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, target, false) + "</div>";
 										})
 									)
 									.set("displayIndex", false)

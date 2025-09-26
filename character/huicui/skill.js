@@ -6755,7 +6755,7 @@ const skills = {
 			player
 				.chooseCardTarget({
 					prompt: get.prompt("dcporui"),
-					prompt2: get.skillInfoTranslation("dcporui", player),
+					prompt2: get.skillInfoTranslation("dcporui", player, false),
 					filterCard(card, player) {
 						return lib.filter.cardDiscardable(card, player, "dcporui");
 					},
@@ -13575,7 +13575,7 @@ const skills = {
 					if (skill.ai && (skill.ai.combo || skill.ai.neg)) {
 						continue;
 					}
-					const infox = get.plainText(get.skillInfoTranslation(j));
+					const infox = get.skillInfoTranslation(j);
 					if (bannedInfo.some(item => infox.includes(item))) {
 						continue;
 					}

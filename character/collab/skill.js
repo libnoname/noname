@@ -570,7 +570,7 @@ const skills = {
 				["", "", "olhuaquan_light"],
 			];
 			const result = await player
-				.chooseButton([`###花拳###${get.skillInfoTranslation(event.name)}`, [list, "vcard"]], true)
+				.chooseButton([`###花拳###${get.skillInfoTranslation(event.name, null, false)}`, [list, "vcard"]], true)
 				.set("ai", button => {
 					const card = get.event().card;
 					const bool = button.link == "olhuaquan_heavy";
@@ -4652,7 +4652,7 @@ const skills = {
 					const skill = player.storage.dcbenxi_pending;
 					if (skill) {
 						dialog.addText(`锁定技，当你下次失去手牌后，你获得技能〖${get.translation(skill)}〗直到你的下回合开始。若已获得该技能，则改为对所有其他角色各造成1点伤害。`, false);
-						dialog.add('<div><div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(skill, player) + "</div></div>");
+						dialog.add('<div><div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(skill, player, false) + "</div></div>");
 					}
 				} else {
 					return "锁定技。当你下次失去手牌后，你随机念出一句拼音中含有“wu,yi”的台词。";

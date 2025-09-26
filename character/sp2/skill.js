@@ -4484,7 +4484,7 @@ const skills = {
 					.set(
 						"choiceList",
 						skills.map(i => {
-							return '<div class="skill">' + (lib.translate[i + "_ab"] || lib.translate[i]) + "</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+							return '<div class="skill">' + (lib.translate[i + "_ab"] || lib.translate[i]) + "</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 						})
 					)
 					.set("displayIndex", false)
@@ -7852,7 +7852,7 @@ const skills = {
 				.set(
 					"choiceList",
 					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

@@ -1076,7 +1076,7 @@ const skills = {
 			const cards = player.getExpansions("olxiewei");
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: [`###诱阙###${get.skillInfoTranslation("olyouque")}`, cards],
+					createDialog: [`###诱阙###${get.skillInfoTranslation("olyouque", null, false)}`, cards],
 					cards: cards,
 					filterButton(button) {
 						return !get.event().cards.some(card => get.number(card) < get.number(button.link));
@@ -1827,7 +1827,7 @@ const skills = {
 							.set(
 								"choiceList",
 								list.map(i => {
-									return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+									return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 								})
 							)
 							.set("displayIndex", false)
@@ -2234,7 +2234,7 @@ const skills = {
 			const result = await player
 				.chooseControl("额外回合", "出杀次数")
 				.set("prompt", "假威：请选择一项")
-				.set("prompt2", get.skillInfoTranslation(event.skill, player))
+				.set("prompt2", get.skillInfoTranslation(event.skill, player, false))
 				.set(
 					"resultx",
 					(() => {
@@ -16174,7 +16174,7 @@ const skills = {
 								.set(
 									"choiceList",
 									skills.map(i => {
-										return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+										return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 									})
 								)
 								.set("displayIndex", false)

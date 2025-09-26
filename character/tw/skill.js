@@ -4312,7 +4312,7 @@ const skills = {
 			}
 			const filter = skill => {
 				const translation = get.skillInfoTranslation(skill, player);
-				if (!translation) {
+				if (!translation.length) {
 					return false;
 				}
 				const info = get.info(skill);
@@ -7315,7 +7315,7 @@ const skills = {
 					.reduce((list, evt) => list.addArray(evt.twhuajing_skills), [])
 					.filter(skill => player.hasMark(skill));
 				let choiceList = skills.map(i => {
-					return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player) + "</div>";
+					return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 				});
 				const {
 					result: { control },
@@ -13289,7 +13289,7 @@ const skills = {
 					}
 					return "cancel2";
 				})
-				.set("prompt2", get.skillInfoTranslation("twjiexun", player) + "<br>" + str);
+				.set("prompt2", get.skillInfoTranslation("twjiexun", player, false) + "<br>" + str);
 			"step 1";
 			if (result.control != "cancel2") {
 				var suit = result.control;
@@ -22095,7 +22095,7 @@ const skills = {
 				.set(
 					"choiceList",
 					skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

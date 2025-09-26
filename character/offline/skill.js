@@ -3134,13 +3134,13 @@ const skills = {
 								if (!infox || infox.charlotte) {
 									return false;
 								}
-								if (!get.plainText(get.skillInfoTranslation(deriSkill)).includes(`【${get.translation(name)}】`)) {
+								if (!get.skillInfoTranslation(deriSkill).includes(`【${get.translation(name)}】`)) {
 									return false;
 								}
 								skills.add([deriSkill, character]);
 							});
 						}
-						if (!get.plainText(get.skillInfoTranslation(skill)).includes(`【${get.translation(name)}】`)) {
+						if (!get.skillInfoTranslation(skill).includes(`【${get.translation(name)}】`)) {
 							return false;
 						}
 						skills.add([skill, character]);
@@ -3213,7 +3213,7 @@ const skills = {
 				game.log(player, "声明了技能", `【${get.translation(skill)}】`);
 				player.chat(`我声明技能【${get.translation(skill)}】`);
 				if (
-					get.plainText(get.skillInfoTranslation(skill)).includes(str) &&
+					get.skillInfoTranslation(skill).includes(str) &&
 					!game.hasPlayer(current => {
 						return current.hasSkill(skill);
 					})
@@ -6401,7 +6401,7 @@ const skills = {
 				} else if (storage === false) {
 					return "所有角色与你互相计算距离为1，你视为拥有〖同忾〗";
 				}
-				return get.skillInfoTranslation(skill, player);
+				return get.skillInfoTranslation(skill, player, false);
 			},
 		},
 		async content(event, trigger, player) {
@@ -10088,7 +10088,7 @@ const skills = {
 				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
 					continue;
 				}
-				const str = get.plainText(get.skillInfoTranslation(skill));
+				const str = get.skillInfoTranslation(skill);
 				if (!["当", "当做", "当作"].some(s => str.includes(s))) {
 					continue;
 				}
@@ -13130,8 +13130,7 @@ const skills = {
 		},
 		infoTranslationIncludesString(skill, list, player) {
 			const text = get.skillInfoTranslation(skill, player);
-			const plainText = get.plainText(text);
-			return list.some(key => plainText.includes(key));
+			return list.some(key => text.includes(key));
 		},
 		derivation: "hm_podai_faq",
 		getSkills(player) {

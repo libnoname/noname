@@ -574,7 +574,7 @@ const skills = {
 		enable: "phaseUse",
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###许身###" + get.skillInfoTranslation("mbxushen"));
+				return ui.create.dialog("###许身###" + get.skillInfoTranslation("mbxushen", null, false));
 			},
 			chooseControl(event, player) {
 				const choices = [...[1, 2, 3].map(i => get.cnNumber(i) + "点"), "cancel2"];
@@ -7540,7 +7540,7 @@ const skills = {
 			const { result } = await player
 				.chooseControl(choices, "cancel2")
 				.set("prompt", `${get.prompt(event.skill)}（本次弃置${get.cnNumber(player.countMark("mbjiexun_used") + 1)}张）`)
-				.set("prompt2", `${get.skillInfoTranslation(event.skill, player)}<br>${str}`)
+				.set("prompt2", `${get.skillInfoTranslation(event.skill, player, false)}<br>${str}`)
 				.set("ai", () => {
 					const player = get.player(),
 						map = get.event().map;
@@ -15948,7 +15948,7 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseTarget("借兵：选择一名其他角色", get.skillInfoTranslation("jiebing"), true, (card, player, target) => {
+				.chooseTarget("借兵：选择一名其他角色", get.skillInfoTranslation("jiebing", null, false), true, (card, player, target) => {
 					return player != target && target != _status.event.getTrigger().source && target.countGainableCards(player, "he");
 				})
 				.set("ai", target => get.effect(target, { name: "shunshou_copy2" }, player, player) /** (target.countCards('he')>1?1.5:1)*/);
@@ -16142,7 +16142,7 @@ const skills = {
 				.set(
 					"choiceList",
 					kane.map(i => {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

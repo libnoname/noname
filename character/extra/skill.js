@@ -1919,7 +1919,7 @@ const skills = {
 					const num_px = document.createElement("div");
 					num_px.classList.add("nodeintro");
 					num_px.nodeTitle = get.translation(position[i]);
-					num_px.nodeContent = get.skillInfoTranslation(position[i]);
+					num_px.nodeContent = get.skillInfoTranslation(position[i], null, false);
 					num_px.style.width = "15%";
 					num_px.style.height = "15%";
 					num_px.id = position[i];
@@ -3453,10 +3453,10 @@ const skills = {
 			player.line(target, "green");
 			let prompt2 = "若你选择是，则你于获得此技能后须失去一个其他技能。<br><br>";
 			if (lib.skill[skillToGain].nobracket) {
-				prompt2 += `<div class="skilln">${get.translation(skillToGain)}</div><div><span style="font-family: yuanli">${get.skillInfoTranslation(skillToGain)}</span></div><br><br>`;
+				prompt2 += `<div class="skilln">${get.translation(skillToGain)}</div><div><span style="font-family: yuanli">${get.skillInfoTranslation(skillToGain, null, false)}</span></div><br><br>`;
 			} else {
 				const translation = lib.translate[skillToGain + "_ab"] || get.translation(skillToGain).slice(0, 2);
-				prompt2 += `<div class="skill">【${translation}】</div><div><span style="font-family: yuanli">${get.skillInfoTranslation(skillToGain)}</span></div><br><br>`;
+				prompt2 += `<div class="skill">【${translation}】</div><div><span style="font-family: yuanli">${get.skillInfoTranslation(skillToGain, null, false)}</span></div><br><br>`;
 			}
 			const bool = await target
 				.chooseBool(`寰道：是否获得技能〖${get.translation(skillToGain)}〗？`, prompt2)
@@ -3504,7 +3504,7 @@ const skills = {
 				.set(
 					"choiceList",
 					ownedSkills.map(skill => {
-						return `<div class="skill">【${get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, target)}</div>`;
+						return `<div class="skill">【${get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, target, false)}</div>`;
 					})
 				)
 				.set("displayIndex", false)
@@ -4855,7 +4855,7 @@ const skills = {
 				var info = lib.character[name];
 				if (
 					info[3].some(function (skill) {
-						var info = get.plainText(get.skillInfoTranslation(skill));
+						var info = get.skillInfoTranslation(skill);
 						if (!info.includes("【杀】")) {
 							return false;
 						}
@@ -4893,7 +4893,7 @@ const skills = {
 						var name = button.link;
 						var info = lib.character[name];
 						var skills = info[3].filter(function (skill) {
-							var info = get.plainText(get.skillInfoTranslation(skill));
+							var info = get.skillInfoTranslation(skill);
 							if (!info.includes("【杀】")) {
 								return false;
 							}
@@ -4939,7 +4939,7 @@ const skills = {
 			node = ui.create.buttonPresets.character(item, "character", position, noclick);
 			const info = lib.character[item];
 			const skills = info[3].filter(function (skill) {
-				var info = get.plainText(get.skillInfoTranslation(skill));
+				var info = get.skillInfoTranslation(skill);
 				if (!info.includes("【杀】")) {
 					return false;
 				}
@@ -4969,9 +4969,9 @@ const skills = {
 					if (lib.translate[skills[i] + "_info"]) {
 						let translation = lib.translate[skills[i] + "_ab"] || get.translation(skills[i]).slice(0, 2);
 						if (lib.skill[skills[i]] && lib.skill[skills[i]].nobracket) {
-							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i], null, false) + "</div></div>");
 						} else {
-							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i], null, false) + "</div></div>");
 						}
 						if (lib.translate[skills[i] + "_append"]) {
 							uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skills[i] + "_append"] + "</div>");
@@ -5030,7 +5030,7 @@ const skills = {
 					card.distance = { attackFrom: 1 - maxHp };
 				}
 				var skills = info[3].filter(function (skill) {
-					var info = get.plainText(get.skillInfoTranslation(skill));
+					var info = get.skillInfoTranslation(skill);
 					if (!info.includes("【杀】")) {
 						return false;
 					}
@@ -5064,10 +5064,10 @@ const skills = {
 				if (skills.length) {
 					for (var skill of skills) {
 						if (lib.skill[skill].nobracket) {
-							append += '<div class="skilln">' + get.translation(skill) + '</div><div><span style="font-family: yuanli">' + get.plainText(get.skillInfoTranslation(skill)) + "</span></div><br><br>";
+							append += '<div class="skilln">' + get.translation(skill) + '</div><div><span style="font-family: yuanli">' + get.skillInfoTranslation(skill) + "</span></div><br><br>";
 						} else {
 							var translation = lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2);
-							append += '<div class="skill">【' + translation + '】</div><div><span style="font-family: yuanli">' + get.plainText(get.skillInfoTranslation(skill)) + "</span></div><br><br>";
+							append += '<div class="skill">【' + translation + '】</div><div><span style="font-family: yuanli">' + get.skillInfoTranslation(skill) + "</span></div><br><br>";
 						}
 					}
 					str = str.slice(0, str.length - 8);

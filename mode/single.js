@@ -996,7 +996,7 @@ export default () => {
 					}
 					const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 					game.globalBuff.forEach((buff, ind) => {
-						dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff)}</div>`);
+						dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff, null, false)}</div>`);
 					});
 					dialog.add([_status.characterChoice[game.me.identity], "character"]);
 					game.me.chooseButton(true, dialog);
@@ -1053,7 +1053,7 @@ export default () => {
 									uiintro.add(
 										`<div class="text">${game.globalBuff
 											.map((buff, ind) => {
-												return get.translation(buff) + "：" + get.skillInfoTranslation(buff);
+												return get.translation(buff) + "：" + get.skillInfoTranslation(buff, null, false);
 											})
 											.join("<br>")}</div>`
 									);
@@ -1510,7 +1510,7 @@ export default () => {
 					const list = ["zhu", "fan"].map(identity => {
 						const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 						game.globalBuff.forEach((buff, ind) => {
-							dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff)}</div>`);
+							dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff, null, false)}</div>`);
 						});
 						dialog.add([_status.characterChoice[identity], "character"]);
 						return [game[identity], true, dialog];
@@ -1606,7 +1606,7 @@ export default () => {
 									uiintro.add(
 										`<div class="text">${game.globalBuff
 											.map((buff, ind) => {
-												return get.translation(buff) + "：" + get.skillInfoTranslation(buff);
+												return get.translation(buff) + "：" + get.skillInfoTranslation(buff, null, false);
 											})
 											.join("<br>")}</div>`
 									);
@@ -2698,7 +2698,7 @@ export default () => {
 							.set(
 								"choiceList",
 								skills.map(skill => {
-									return '<div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(skill, game.me) + "</div>";
+									return '<div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(skill, game.me, false) + "</div>";
 								})
 							)
 							.set("displayIndex", false)

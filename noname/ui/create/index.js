@@ -3711,7 +3711,7 @@ export class Create {
 				const skill = node.link;
 				uiintro.add(get.translation(skill));
 				if (lib.translate[skill + "_info"]) {
-					uiintro.add(`<div class="text">${get.skillInfoTranslation(skill)}</div>`);
+					uiintro.add(`<div class="text">${get.skillInfoTranslation(skill, null, false)}</div>`);
 					if (lib.translate[skill + "_append"]) {
 						uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skill + "_append"] + "</div>");
 					}

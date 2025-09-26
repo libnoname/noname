@@ -13414,7 +13414,7 @@ const skills = {
 								return false;
 							}
 							const name = evt.getParent().name;
-							return name === "moveCard" || get.plainText(get.skillInfoTranslation(name, event.player)).includes("移动");
+							return name === "moveCard" || get.skillInfoTranslation(name, event.player).includes("移动");
 						}).length;
 					});
 				});
@@ -13462,7 +13462,7 @@ const skills = {
 								return false;
 							}
 							const name = evt.getParent().name;
-							return name === "moveCard" || get.plainText(get.skillInfoTranslation(name, player)).includes("移动");
+							return name === "moveCard" || get.skillInfoTranslation(name, player).includes("移动");
 						}).length;
 					},
 					true

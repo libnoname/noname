@@ -8976,7 +8976,7 @@ const skills = {
 		content() {
 			"step 0";
 			var forced = event.forced === undefined ? false : event.forced;
-			var info = get.skillInfoTranslation("huituo", player);
+			var info = get.skillInfoTranslation("huituo", player, false);
 			var str = `###${forced ? "恢拓：请选择一名角色" : get.prompt("huituo")}###令一名角色判定。若结果为红色，其回复1点体力；若结果为黑色，其摸${get.cnNumber(trigger.num)}张牌`;
 			player.chooseTarget(str, event.forced).set("ai", function (target) {
 				var player = _status.event.player;
