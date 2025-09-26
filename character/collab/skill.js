@@ -3029,6 +3029,7 @@ const skills = {
 				},
 			},
 		},
+		derivation: "lijian",
 		group: "oljiejiu_jiese",
 		subSkill: {
 			backup: {},
