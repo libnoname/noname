@@ -3108,7 +3108,9 @@ const skills = {
 		},
 		frequent: true,
 		initSkill(name) {
-			_status.jianxiSkill ??= {};
+			game.broadcastAll(() => {
+				_status.jianxiSkill ??= {};
+			});
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
@@ -3155,10 +3157,7 @@ const skills = {
 			}
 			await player.showCards(result, `${get.translation(player)}发动了【兼习】`);
 			const name = result[0].name,
-				chooseSkill = game.createEvent("chooseSkill", false);
-			chooseSkill.player = player;
-			chooseSkill.cardName = name;
-			chooseSkill.setContent(get.info(event.name).chooseSkill);
+				chooseSkill = get.info(event.name).chooseSkill(player, name);
 			const result2 = await chooseSkill.forResult();
 			let skill = null,
 				str = `【${get.translation(name)}】`;
@@ -3233,17 +3232,23 @@ const skills = {
 			}
 			player.addMark("zj_jianxi_effect", 1, false);
 		},
-		async chooseSkill(event, trigger, player) {
-			if (event.chooseTime && _status.connectMode && !game.online) {
-				event.time = lib.configOL.choose_timeout;
-				game.broadcastAll(function (time) {
-					lib.configOL.choose_timeout = time;
-				}, event.chooseTime);
+		chooseSkill() {
+			const chooseSkill = game.createEvent("chooseSkillEvent", false);
+			for (const arg of arguments) {
+				if (typeof arg === "string") {
+					chooseSkill.set("cardName", arg);
+				} else if (get.itemtype(arg) === "player") {
+					chooseSkill.set("player", arg);
+				}
 			}
+			chooseSkill._args = Array.from(arguments);
+			chooseSkill.setContent(get.info("zj_jianxi").chooseSkillEvent);
+			return chooseSkill;
+		},
+		async chooseSkillEvent(event, trigger, player) {
 			let result;
 			if (event.isMine()) {
 				result = await new Promise(function (resolve, reject) {
-					_status.imchoosing = true;
 					event.settleed = false;
 					event.dialog = ui.create.dialog("兼习", "forcebutton", "hidden");
 					event.dialog.addText(`声明一个含有【${get.translation(event.cardName)}】的技能，或直接确定令你使用基本牌的数值+1`);
@@ -3292,14 +3297,34 @@ const skills = {
 					event.choosing = true;
 				});
 			} else if (event.isOnline()) {
-				result = await event.sendAsync();
+				result = await new Promise(resolve => {
+					event.player.send(
+						function (player, name, event, skills) {
+							game.me.applySkills(skills);
+							const next = get.info("zj_jianxi").chooseSkill(player, name);
+							next._modparent = event;
+							game.resume();
+						},
+						event.player,
+						event.cardName,
+						get.stringifiedResult(event.parent),
+						get.skillState(event.player)
+					);
+					event.player.wait();
+					game.pause();
+					if (!lib.node?.waitForResult || !event.player.playerid) {
+						resolve(null);
+						return;
+					}
+		
+					if (!Array.isArray(lib.node.waitForResult[event.player.playerid])) {
+						lib.node.waitForResult[event.player.playerid] = [resolve];
+					} else {
+						lib.node.waitForResult[event.player.playerid].push(resolve);
+					}
+				});
 			} else {
 				result = "ai";
-			}
-			if (event.time) {
-				game.broadcastAll(function (time) {
-					lib.configOL.choose_timeout = time;
-				}, event.time);
 			}
 			if (!result || result == "ai") {
 				const skills = get

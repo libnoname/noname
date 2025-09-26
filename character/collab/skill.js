@@ -77,7 +77,7 @@ const skills = {
 					const skills = get
 						.info(event.name)
 						.getList()
-						.filter(skill => !player.hasSkill(skill, null, null, false));
+						.filter(skill => !player.hasSkill(skill[0], null, null, false));
 					if (skills?.length) {
 						const skill = skills.randomGet();
 						player.flashAvatar(event.name, skill[1]);

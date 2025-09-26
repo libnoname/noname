@@ -28133,17 +28133,18 @@ const skills = {
 			}
 			game.addVideo("skill", player, ["xinfu_jingxie", [bool, get.cardInfo(card)]]);
 			game.broadcastAll(
-				function (card, bool) {
+				function (card, bool, player) {
 					card.init([card.suit, card.number, "rewrite_" + card.name]);
 					let vcard = card[card.cardSymbol];
 					if (bool && vcard && player.vcardsMap?.equips) {
 						const cardx = get.autoViewAs(card, void 0, false);
 						player.vcardsMap.equips[player.vcardsMap.equips.indexOf(vcard)] = cardx;
-						vcard = cardx;
+						card[card.cardSymbol] = cardx;
 					}
 				},
 				card,
-				bool
+				bool,
+				player
 			);
 			if (bool) {
 				player.addEquipTrigger(card.card || card);
