@@ -4652,7 +4652,7 @@ const skills = {
 			player
 				.when({ global: "phaseAfter" })
 				.then(() => {
-					player.insertPhase();
+					player.insertPhase("twhunyou");
 				})
 				.then(() => {
 					player.storage.isInHuan = true;

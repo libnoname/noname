@@ -4509,10 +4509,11 @@ const skills = {
 			return player.getHandcardLimit() > 0;
 		},
 		locked: false,
+		delay: false,
 		async content(event, trigger, player) {
 			player.addTempSkill("stdjishe_limit");
 			player.addMark("stdjishe_limit", 1, false);
-			player.draw();
+			player.draw("nodelay");
 		},
 		subSkill: {
 			limit: {

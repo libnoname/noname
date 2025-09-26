@@ -2170,7 +2170,10 @@ export default () => {
 						}, true);
 					if (target) {
 						target.showGiveup();
-						target.chooseDrawRecover(2);
+						const version = _status.connectMode ? lib.configOL.enhance_nongmin : get.config("enhance_nongmin");
+						if (version !== "decade") {
+							target[version === "mobile" ? "chooseDrawRecover" : "draw"](version === "mobile" ? 2 : 1);
+						}
 					}
 				},
 				logAi(targets, card) {},

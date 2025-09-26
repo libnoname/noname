@@ -4546,8 +4546,9 @@ const skills = {
 		},
 		usable: 20,
 		locked: false,
+		delay: false,
 		content() {
-			player.draw();
+			player.draw("nodelay");
 			player.addTempSkill("jishe2");
 			player.addMark("jishe2", 1, false);
 		},
