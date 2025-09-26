@@ -35,7 +35,7 @@
 		return alert(globalText.REDIRECT_TIP);
 	}
 
-	// 必须启用serviceWorker
+	// // 必须启用serviceWorker
 	// if (!("serviceWorker" in navigator)) {
 	// 	return alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
 	// }
@@ -85,62 +85,74 @@
 	}
 	// Safari由于系统原因，管不了，先默哀几秒
 
-	// 处理Node环境下的http情况
-	if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
-		// 在http环境下修改__dirname和require的逻辑
-		if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
-			const path = require("path");
-			if (window.process.platform === "darwin") {
-				window.__dirname = path.join(window.process.resourcesPath, "app");
-			} else {
-				window.__dirname = path.join(path.resolve(), "resources/app");
-			}
-			const oldData = Object.entries(window.require);
-			// @ts-expect-error ignore
-			window.require = function (moduleId) {
-				try {
-					return module.require(moduleId);
-				} catch {
-					return module.require(path.join(window.__dirname, moduleId));
-				}
-			};
-			oldData.forEach(([key, value]) => {
-				window.require[key] = value;
-			});
-		}
-		// 增加导入ts的逻辑
-		window.require.extensions[".ts"] = function (module, filename) {
-			// @ts-expect-error ignore
-			const _compile = module._compile;
-			// @ts-expect-error ignore
-			module._compile = function (code, fileName) {
-				/**
-				 *
-				 * @type { import("typescript") }
-				 */
-				// @ts-expect-error ignore
-				const ts = require("typescript");
-				// 使用ts compiler对ts文件进行编译
-				const result = ts.transpile(
-					code,
-					{
-						module: ts.ModuleKind.CommonJS,
-						target: ts.ScriptTarget.ES2020,
-						inlineSourceMap: true,
-						resolveJsonModule: true,
-						esModuleInterop: true,
-					},
-					fileName
-				);
-				// 使用默认的js编译函数获取返回值
-				return _compile.call(this, result, fileName);
-			};
-			// @ts-expect-error ignore
-			module._compile(require("fs").readFileSync(filename, "utf8"), filename);
-		};
-	}
+	// // 处理Node环境下的http情况
+	// if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
+	// 	// 在http环境下修改__dirname和require的逻辑
+	// 	if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
+	// 		const path = require("path");
+	// 		if (window.process.platform === "darwin") {
+	// 			window.__dirname = path.join(window.process.resourcesPath, "app");
+	// 		} else {
+	// 			window.__dirname = path.join(path.resolve(), "resources/app");
+	// 		}
+	// 		const oldData = Object.entries(window.require);
+	// 		// @ts-expect-error ignore
+	// 		window.require = function (moduleId) {
+	// 			try {
+	// 				return require(moduleId);
+	// 			} catch {
+	// 				return require(path.join(window.__dirname, moduleId));
+	// 			}
+	// 		};
+	// 		oldData.forEach(([key, value]) => {
+	// 			window.require[key] = value;
+	// 		});
+	// 	}
+	// 	// 增加导入ts的逻辑
+	// 	window.require.extensions[".ts"] = function (module, filename) {
+	// 		// @ts-expect-error ignore
+	// 		const _compile = module._compile;
+	// 		// @ts-expect-error ignore
+	// 		module._compile = function (code, fileName) {
+	// 			/**
+	// 			 *
+	// 			 * @type { import("typescript") }
+	// 			 */
+	// 			// @ts-expect-error ignore
+	// 			const ts = require("typescript");
+	// 			// 使用ts compiler对ts文件进行编译
+	// 			const result = ts.transpile(
+	// 				code,
+	// 				{
+	// 					module: ts.ModuleKind.CommonJS,
+	// 					target: ts.ScriptTarget.ES2020,
+	// 					inlineSourceMap: true,
+	// 					resolveJsonModule: true,
+	// 					esModuleInterop: true,
+	// 				},
+	// 				fileName
+	// 			);
+	// 			// 使用默认的js编译函数获取返回值
+	// 			return _compile.call(this, result, fileName);
+	// 		};
+	// 		// @ts-expect-error ignore
+	// 		module._compile(require("fs").readFileSync(filename, "utf8"), filename);
+	// 	};
+	// }
 
-	// 使serviceWorker加载完成后，再加载entry.js
+
+	// // 创建一个新的 <script> 元素,用于回退
+	// let fallback = document.createElement("script");
+	// // 设置该 <script> 元素为旧式脚本
+	// fallback.noModule = true;
+	// // 设置 <script> 元素的 src 属性,指向 fallback.js 文件
+	// fallback.src = `${assetURL}game/fallback.js`;
+	// // 为 <script> 元素设置 onload 事件处理程序
+	// fallback.onload = () => game.tryUpdateClient(UpdateReason.FALLBACK);
+	// // 将 <script> 元素添加到 document.head 中
+	// document.head.appendChild(fallback);
+
+	// // 使serviceWorker加载完成后，再加载entry.js
 	// if ("serviceWorker" in navigator) {
 	// 	let scope = new URL("./", location.href).toString();
 	// 	let registrations = await navigator.serviceWorker.getRegistrations();
@@ -181,38 +193,37 @@
 	// 	}
 	// }
 
-	// 创建一个新的 <script> 元素
-	const script = document.createElement("script");
-	// 设置该 <script> 元素为模块脚本
-	script.type = "module";
-	// 设置 <script> 元素的 src 属性,指向 entry.js 文件
-	script.src = `${assetURL}game/entry.js`;
-	// 设置该脚本为异步加载
-	script.async = true;
-	// 为 <script> 元素设置 onerror 事件处理程序
-	script.onerror = event => {
-		// 在控制台输出错误信息
-		console.error(event);
+
+	import("./entry.js").catch((e) =>{
+		console.error(e);
 		// 获取加载失败的提示信息
 		const message = globalText.LOAD_ENTRY_FAILED;
 		// 在控制台输出提示信息
 		console.error(message);
 		// 显示提示信息
 		alert(message);
-	};
-	// 将 <script> 元素添加到 document.head 中
-	document.head.appendChild(script);
-
-	// 创建一个新的 <script> 元素,用于回退
-	let fallback = document.createElement("script");
-	// 设置该 <script> 元素为旧式脚本
-	fallback.noModule = true;
-	// 设置 <script> 元素的 src 属性,指向 fallback.js 文件
-	fallback.src = `${assetURL}game/fallback.js`;
-	// 为 <script> 元素设置 onload 事件处理程序
-	fallback.onload = () => game.tryUpdateClient(UpdateReason.FALLBACK);
-	// 将 <script> 元素添加到 document.head 中
-	document.head.appendChild(fallback);
+	});
+	// 创建一个新的 <script> 元素
+	// const script = document.createElement("script");
+	// // 设置该 <script> 元素为模块脚本
+	// script.type = "module";
+	// // 设置 <script> 元素的 src 属性,指向 entry.js 文件
+	// script.src = `${assetURL}game/entry.js`;
+	// // 设置该脚本为异步加载
+	// script.async = true;
+	// // 为 <script> 元素设置 onerror 事件处理程序
+	// script.onerror = event => {
+	// 	// 在控制台输出错误信息
+	// 	console.error(event);
+	// 	// 获取加载失败的提示信息
+	// 	const message = globalText.LOAD_ENTRY_FAILED;
+	// 	// 在控制台输出提示信息
+	// 	console.error(message);
+	// 	// 显示提示信息
+	// 	alert(message);
+	// };
+	// // 将 <script> 元素添加到 document.head 中
+	// document.head.appendChild(script);
 
 	/**
 	 *

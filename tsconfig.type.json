@@ -3,7 +3,6 @@
     "compilerOptions": {
 		"noEmit": false,
 		"noEmitOnError": false,
-		"allowImportingTsExtensions": true,
 		"declaration": true,                                 /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
 		"emitDeclarationOnly": true,                         /* Only output d.ts files and not JavaScript files. */
 		"outDir": "./node_modules/@types/noname-typings/nonameModules", /* Specify an output folder for all emitted files. */

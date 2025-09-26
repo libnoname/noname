@@ -179,9 +179,6 @@ export async function boot() {
 	} else {
 		Reflect.set(lib, "path", (await import("path-browserify")).default);
 		if (typeof lib.device != "undefined") {
-			const script = document.createElement("script");
-			script.src = "cordova.js";
-			document.body.appendChild(script);
 			await new Promise(resolve => {
 				document.addEventListener("deviceready", async () => {
 					const { cordovaReady } = await import("./cordova.js");

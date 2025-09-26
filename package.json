@@ -10,8 +10,8 @@
     },
     "type": "module",
     "scripts": {
-        "start": "concurrently \"node noname-server.js\" \"npx vite\"",
-        "build": "",
+        "start": "concurrently \"node noname-server.js\" \"npx vite  --config vite.config.ts\"",
+        "build": "node build/build.js",
         "type": "npx tsc -p tsconfig.type.json",
         "lint": "npx eslint"
     },
@@ -48,7 +48,7 @@
         "path-browserify": "^1.0.1",
         "pinyin-pro": "^3.27.0",
         "pressure": "^2.2.0",
-        "typescript": "^5.8.3",
+        "typescript": "^5.9.2",
         "ultron": "^1.1.1",
         "vue": "^3.5.17",
         "ws": "^8.18.2"
@@ -68,10 +68,9 @@
         "globals": "^16.2.0",
         "jiti": "^2.5.1",
         "prettier": "^3.6.2",
-        "rollup-plugin-analyzer": "^4.0.0",
-        "serve-static": "^2.2.0",
         "typescript-eslint": "^8.34.1",
         "vite": "^7.1.6",
+        "vite-plugin-static-copy": "^3.1.2",
         "vue-eslint-parser": "^10.2.0"
     }
 }

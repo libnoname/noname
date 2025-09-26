@@ -7945,10 +7945,10 @@ export class Game extends GameCompatible {
 			let exports;
 			let isESM = true;
 			try {
-				exports = await import(`../../mode/${name}/index.js`);
+				exports = await import(/* @vite-ignore */`../../mode/${name}/index.js`);
 			} catch (e1) {
 				try {
-					exports = await import(`../../mode/${name}.js`);
+					exports = await import(/* @vite-ignore */`../../mode/${name}.js`);
 				} catch (e2) {
 					isESM = false;
 					await lib.init.promises.js(`${lib.assetURL}mode`, name);

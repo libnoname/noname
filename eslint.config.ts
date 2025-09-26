@@ -6,7 +6,7 @@ import vueParser from "vue-eslint-parser";
 import globals from "globals";
 
 export default defineConfig(
-	globalIgnores(["noname-server.js"]),
+	globalIgnores(["noname-server.js", "dist", "node_modules"]),
 	js.configs.recommended,
 	ts.configs.recommended,
 	vue.configs["flat/essential"],
