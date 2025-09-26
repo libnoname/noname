@@ -1988,14 +1988,14 @@ export default {
 						game.broadcastAll(
 							(skill, name, info) => {
 								lib.translate[skill] = get.translation(name);
-								if (!_status.jiapingUsed) {
-									_status.jiapingUsed = [];
-								}
+								_status.jiapingUsed ??= [];
+								info.preName = name;
 								info.precontent = async (event, trigger, player) => {
 									player.logSkill("bahuangsishiling");
+									const skill = get.info("gz_jiaping_use_backup").preName;
 									game.broadcastAll(list => {
 										_status.jiapingUsed = list;
-									}, _status.jiapingUsed.concat(links));
+									}, _status.jiapingUsed.concat([skill]));
 									const target = game.findPlayer(current => {
 										return current.hasSkill("gz_jiaping");
 									});

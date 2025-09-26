@@ -5524,6 +5524,7 @@ export default {
 			}
 			return false;
 		},
+		usable: 1,
 		prompt2: "弃置这些角色的各两张牌",
 		preHidden: ["gzgongjian_gain"],
 		subfrequent: ["gain"],
