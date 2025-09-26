@@ -3968,7 +3968,7 @@ export class Click {
 				continue;
 			}
 			let info = get.info(skill);
-			if (!info || info.nopop) {
+			if (!Object.keys(info)?.length || info.nopop) {
 				continue;
 			}
 			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
@@ -4025,16 +4025,21 @@ export class Click {
 							playerbg.classList.remove("scroll");
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
+							const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
+							for (let i = 0; i < skills.length; i++) {
+								delete skillButtons[i].playAudio;
+							}
 							refreshIntro();
 							game.callHook("refreshSkin", [list[0], this.name]);
 						});
 						let iSTemp = false;
 						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {
 							iSTemp = true;
-							lib.character[i] = ["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]];
+							lib.character[i] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]]);
 						}
 						button.name = i;
-						button.setBackground(i, "character");
+						const skinImg = lib.character[i].img;
+						skinImg ? button.setBackgroundImage(skinImg) : button.setBackground(i, "character");
 						if (iSTemp) {
 							delete lib.character[i];
 						}

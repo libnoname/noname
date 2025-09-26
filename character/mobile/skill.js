@@ -5440,8 +5440,8 @@ const skills = {
 		ai: {
 			order: 10,
 			result: {
-				player(player, target) {
-					return get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
+				target(player, target) {
+					return get.effect(target, { name: "guohe_copy", position: "h" }, player, target);
 				},
 			},
 		},
