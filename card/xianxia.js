@@ -624,10 +624,13 @@ game.import("card", function () {
 								if (get.attitude(player, trigger.player) <= 0 && trigger.player.countCards("h")) {
 									return "获得其一张手牌";
 								}
+								if (!player.countCards("h")) {
+									return "cancel2";
+								}
 								if (player.countCards("h") >= trigger.player.countCards("h") || player.hasSkill("tyxibei")) {
 									return "交给其一张手牌";
 								}
-								return "获得其一张手牌";
+								return "cancel2";
 							})()
 						)
 						.set("ai", () => get.event("res"))

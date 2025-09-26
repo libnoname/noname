@@ -6,7 +6,7 @@ const skills = {
 	oltuoquan: {
 		audio: 2,
 		init(player, skill) {
-			player.setStorage(skill, get.info(skill).fuchens);
+			player.setStorage(skill, get.info(skill).fuchens.slice(0));
 		},
 		onremove(player, skill) {
 			player.setStorage(skill, null);
@@ -46,8 +46,10 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.name != "phaseZhunbei") {
 				const func = async target => {
-					await target.addSkills("oldianzan");
-					target.setStorage("oldianzan", player);
+					if (!target.hasSkill("oldianzan", null, null, false)) {
+						await target.addSkills("oldianzan");
+					}
+					target.markAuto("oldianzan", player);
 				};
 				await game.doAsyncInOrder(event.targets, func);
 				return;
@@ -105,13 +107,17 @@ const skills = {
 	},
 	oldianzan: {
 		clickableFilter(player) {
-			const target = player.getStorage("oldianzan", null);
-			return target?.isIn() && target != player;
+			const targets = player.getStorage("oldianzan");
+			return targets.some(target => target?.isIn() && target != player);
 		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
-				const target = player.getStorage("oldianzan", null);
-				player.throwEmotion(target, ["flower", "wine"].randomGet());
+				const targets = player.getStorage("oldianzan");
+				targets.forEach(target => {
+					if (target?.isIn() && target != player) {
+						player.throwEmotion(target, ["flower", "wine", "egg", "shoe"].randomGet());
+					}
+				});
 			}
 		},
 		onremove: true,

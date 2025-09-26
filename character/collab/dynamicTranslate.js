@@ -2,8 +2,12 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	oldianzan(player) {
-		const target = player.getStorage("oldianzan", null);
-		return `点击此技能为${target ? get.rawName(target.name) : "刘禅"}助力。`;
+		const targets = player.getStorage("oldianzan").filter(target => target?.isIn() && target != player);
+		let str = "刘禅";
+		if (targets?.length) {
+			str = targets.map(target => get.rawName(target.name)).join("、");
+		}
+		return `点击此技能为${str}助力。`;
 	},
 	renneyan(player) {
 		const bool = player.getStorage("renneyan", false);

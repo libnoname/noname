@@ -28840,7 +28840,7 @@ const skills = {
 						}
 					}
 					if (cards.length) {
-						await player.gain(cards, "gain2");
+						await player.gain(cards, "gain2", false);
 					}
 				},
 				mark: true,

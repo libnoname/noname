@@ -4,12 +4,12 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//e郭照
 	pepianchong: {
-		trigger: { player: "phaseDrawBegin" },
+		trigger: { player: "phaseDrawBegin1" },
 		check(event, player) {
 			return true;
 		},
 		filter(event, player) {
-			return !player.skipList.includes(event.name);
+			return !event.numFixed;
 		},
 		async content(event, trigger, player) {
 			const card = get.bottomCards();
@@ -17,6 +17,7 @@ const skills = {
 			next.gaintag.add(event.name + "_effect");
 			await next;
 			await player.draw();
+			trigger.changeToZero();
 			player.addTempSkill("pepianchong_effect", { player: "phaseBegin" });
 		},
 		subSkill: {
@@ -28,15 +29,16 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				getIndex(event, player) {
-					return event.getl(player).hs.map(card => card.cardid) || [];
+					return event.getl?.(player).hs.map(card => card.cardid) || [];
 				},
 				async content(event, trigger, player) {
-					let next;
-					if (trigger.gaintag_map[event.indexedData].includes(event.name)) {
-						next = player.gain(get.bottomCards(), "gain2");
-						next.gaintag.add(event.name);
+					let next,
+						evt = trigger.getl(player);
+					if (evt.gaintag_map?.[event.indexedData]?.includes(event.name)) {
+						next = player.draw("nodelay");
 					} else {
-						next = player.draw();
+						next = player.gain(get.bottomCards(), "gain2", false);
+						next.gaintag.add(event.name);
 					}
 					await next;
 				},
@@ -50,7 +52,23 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.getStorage("pezunwei").length < 3;
+			const filter = index => {
+				const target = game.findPlayer(current => {
+						return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+					});
+				if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
+					return false;
+				}
+				const count = current => {
+					return [
+						current.countCards("h"),
+						current.countCards("e"),
+						current.getHp(),
+					][index];
+				};
+				return count(target) > count(player);
+			};
+			return [0, 1, 2].some(filter);
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -58,69 +76,125 @@ const skills = {
 				var choiceList = ui.create.dialog("尊位：请选择一项", "forcebutton", "hidden");
 				choiceList.add([
 					list.map((item, i) => {
-						if (player.getStorage("pezunwei").includes(i)) {
+						if (player.getStorage("pezunwei_used").includes(i)) {
 							item = `<span style="text-decoration: line-through;">${item}</span>`;
 						}
 						return [i, item];
 					}),
 					"textbutton",
 				]);
+				return choiceList;
 			},
 			check(button) {
-				const player = get.player();
-				if (button.link == 1) {
-					return game.findPlayer(player => player.isMaxHandcard()).countCards("h") - player.getCards("h");
-				} else if (button.link == 2) {
-					return game.findPlayer(player => player.isMaxEquip()).countCards("e") - player.getCards("e");
-				} else if (button.link == 3) {
-					const num = game.findPlayer(player => player.isMaxHp()).getHp();
-					if (player.getHp() == 1 && num > 1) {
-						return 2;
-					}
-					return num - player.getHp();
+				const player = get.player(),
+					target = game.findPlayer(current => {
+						return current[`isMax${["Handcard", "Equip", "Hp"][button.link]}`]();
+					});
+				if (!target || target == player) {
+					return 0;
 				}
-				return 1;
+				const count = current => {
+					return [
+						current.countCards("h"),
+						current.countCards("e"),
+						current.getHp(),
+					][button.link];
+				};
+				return (count(target) - count(player)) * button.link;
 			},
 			filter(button) {
 				const player = get.player();
-				return !player.getStorage("pezunwei")?.includes(button.link);
+				const filter = index => {
+					const target = game.findPlayer(current => {
+							return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+						});
+					if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
+						return false;
+					}
+					const count = current => {
+						return [
+							current.countCards("h"),
+							current.countCards("e"),
+							current.getHp(),
+						][index];
+					};
+					return count(target) > count(player);
+				};
+				return filter(button.link);
 			},
 			backup(links) {
-				list.add(result.links[0]);
-				let next;
-				player.setStorage("pezunwei", list);
-				if (result.links[0] == 1) {
-					next = player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
-				} else if (result.links[0] == 2) {
-					do {
-						const card = get.cardPile(card => get.type(card) == "equip" && player.canUse(card, player));
-						if (card) {
-							next = player.chooseUseTarget(card, true);
-							next.nopopup = true;
+				return {
+					index: links[0],
+					async content(event, trigger, player) {
+						const { index } = get.info(event.name);
+						player.addSkill("pezunwei_used");
+						player.markAuto("pezunwei_used", index);
+						switch (index) {
+							case 0: {
+								const target = game.findPlayer(current => current.isMaxHandcard());
+								if (target) {
+									await player.drawTo(target.countCards("h"));
+								}
+								break;
+							}
+							case 1: {
+								do {
+									const card = get.cardPile2(card => get.type(card) == "equip" && player.canUse(card, player) && player.canEquip(card));
+									if (card) {
+										const next = player.chooseUseTarget(card, true);
+										next.nopopup = true;
+										await next;
+									} else {
+										break;
+									}
+								} while (!player.isMaxEquip() && [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
+								break;
+							}
+							case 2: {
+								const target = game.findPlayer(current => current.isMaxHp());
+								if (target) {
+									await player.recoverTo(target.getHp());
+								}
+								break;
+							}
 						}
-					} while (!player.isMaxEquip() && [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
-				} else if (result.links[0] == 3) {
-					next = player.recoverTo(game.findPlayer(player => player.isMaxHp()).getHp());
-				}
-				return next;
+					},
+				};
 			},
 		},
 		ai: {
 			order: 1,
 			result: {
 				player(player, target) {
-					const handNum = game.findPlayer(player => player.isMaxHandcard()).countCards("h"),
-						hpNum = game.findPlayer(player => player.isMaxHp()).getHp(),
-						equipNum = game.findPlayer(player => player.isMaxEquip()).countCards("e");
-					const value = Math.max(player.getCards("h") - handNum, player.getCards("e") - equipNum, player.getHp() - hpNUm);
-					if (value > 3) {
-						return 3;
-					} else if (player.getHp() == 1 && hpNum > 1) {
-						return 2;
-					} else if (value < 0) {
-						return 0;
+					const value = index => {
+						const target = game.findPlayer(current => {
+								return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+							});
+						if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
+							return 0;
+						}
+						const count = current => {
+							return [
+								current.countCards("h"),
+								current.countCards("e"),
+								current.getHp(),
+							][index];
+						};
+						return (count(target) - count(player)) * index;
+					};
+					const index = [0, 1, 2].maxBy(value);
+					if (value(index) > 3) {
+						return 1;
 					}
+					return 0;
 				},
+			},
+		},
+		subSkill: {
+			backup: {},
+			used: {
+				charlotte: true,
+				onremove: true,
 			},
 		},
 	},
