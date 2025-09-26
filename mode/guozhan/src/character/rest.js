@@ -798,7 +798,7 @@ export default {
 		skills: ["reqianxun", "relianying"],
 		clans: ["吴郡陆氏"],
 	},
-	gz_clan_zhonghui: new Character({
+	gz_ol_zhonghui: new Character({
 		sex: "male",
 		group: "wei",
 		hp: 4,
