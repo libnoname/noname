@@ -6,6 +6,7 @@ const dynamicTranslates = {
 		let str = "刘禅";
 		if (targets?.length) {
 			str = targets.map(target => get.rawName(target.name)).join("、");
+			str += "中的一人";
 		}
 		return `点击此技能为${str}助力。`;
 	},

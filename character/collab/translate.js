@@ -311,7 +311,12 @@ const translates = {
 	ol_le_liushan: "OL乐刘禅",
 	ol_le_liushan_prefix: "OL乐",
 	oltuoquan: "托权",
-	oltuoquan_info: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
+	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
+		id: "tuoquan_fuchen",
+		name: "季汉辅臣",
+		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
+	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
+	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
 		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",

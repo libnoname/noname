@@ -21,7 +21,12 @@ const skills = {
 			if (event.name == "phaseZhunbei") {
 				return player.getStorage("oltuoquan").length;
 			}
-			if (get.mode() != "doudizhu" || !game.hasPlayer(current => current.identity == "fan")) {
+			if (!game.hasPlayer(current => {
+				if (get.mode() == "doudizhu") {
+					return current.identity == "fan";
+				}
+				return current != player;
+			})) {
 				return false;
 			}
 			return event.name != "phase" || game.phaseNumber == 0;
@@ -32,7 +37,12 @@ const skills = {
 				bool: true,
 			};
 			if (trigger.name != "phaseZhunbei") {
-				event.result.targets = game.filterPlayer(current => current.identity == "fan").sortBySeat();
+				event.result.targets = game.filterPlayer(current => {
+					if (get.mode() == "doudizhu") {
+						return current.identity == "fan";
+					}
+					return current != player;
+				}).sortBySeat();
 			} else if (player.getStorage(event.skill).length == 1) {
 				event.result.cost_data = true;
 			}
@@ -110,14 +120,42 @@ const skills = {
 			const targets = player.getStorage("oldianzan");
 			return targets.some(target => target?.isIn() && target != player);
 		},
+		init() {
+			if (!_status._click_throwFlower) {
+				game.broadcastAll(() => {
+					_status._click_throwFlower = function() {
+						const target = this,
+							player = game.me;
+						if (!player?._click_throwFlower?.includes(target)) {
+							return;
+						}
+						player._click_throwFlower = [];
+						if (game.online) {
+							game.requestSkillData("oldianzan", "throwEmotion", 5000, target);
+						} else {
+							player.throwEmotion(target, ["flower", "wine", "egg", "shoe"].randomGet());
+						}
+					};
+					game.countPlayer2(current => {
+						current.addEventListener('click', _status._click_throwFlower);
+					}, true);
+				});
+			}
+		},
+		sync: {
+			throwEmotion(player, target) {
+				player.throwEmotion(target, ["flower", "wine", "egg", "shoe"].randomGet());
+				return;
+			},
+		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
-				const targets = player.getStorage("oldianzan");
-				targets.forEach(target => {
-					if (target?.isIn() && target != player) {
-						player.throwEmotion(target, ["flower", "wine", "egg", "shoe"].randomGet());
-					}
-				});
+				const targets = player.getStorage("oldianzan").filter(current => current != player);
+				if (targets.length === 1) {
+					player.throwEmotion(targets[0], ["flower", "wine", "egg", "shoe"].randomGet());
+				} else {
+					player._click_throwFlower = targets;
+				}
 			}
 		},
 		onremove: true,

@@ -3640,6 +3640,21 @@ export default () => {
 								game.fellow.identityShown = true;
 								game.fellow.node.identity.classList.remove("guessing");
 								_status.event.getParent("phaseLoop").player = game.fellow;
+								game.fellow.actionHistory ??= [];
+								while (game.fellow.actionHistory.length < game.zhu.actionHistory.length) {
+									game.fellow.actionHistory.push({
+										useCard: [],
+										respond: [],
+										skipped: [],
+										lose: [],
+										gain: [],
+										sourceDamage: [],
+										damage: [],
+										custom: [],
+										useSkill: [],
+									});
+									game.fellow.stat.push({ card: {}, skill: {} });
+								}
 							},
 							completeReward: [
 								[
