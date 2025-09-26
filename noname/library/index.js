@@ -16426,6 +16426,14 @@ export class Library {
 			},
 		],
 		[
+			"OL乐",
+			{
+				showName: "乐",
+				color: "#dab71b",
+				nature: "firemm",
+			},
+		],
+		[
 			"烈",
 			{
 				color: "#8B0000",

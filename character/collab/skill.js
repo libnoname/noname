@@ -2,6 +2,239 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//乐刘禅 ————蜀十头
+	oltuoquan: {
+		audio: 2,
+		init(player, skill) {
+			player.setStorage(skill, get.info(skill).fuchens);
+		},
+		onremove(player, skill) {
+			player.setStorage(skill, null);
+			player.setStorage(`${skill}_current`, null);
+		},
+		fuchens: ["guanyu", "zhangfei", "zhaoyun", "re_huangzhong", "jiangwei", "ol_weiyan", "ol_zhangyì", "xin_masu"],
+		trigger: {
+			player: ["enterGame", "phaseZhunbeiBegin"],
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			if (event.name == "phaseZhunbei") {
+				return player.getStorage("oltuoquan").length;
+			}
+			if (get.mode() != "doudizhu" || !game.hasPlayer(current => current.identity == "fan")) {
+				return false;
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		locked: true,
+		async cost(event, trigger, player) {
+			event.result = {
+				bool: true,
+			};
+			if (trigger.name != "phaseZhunbei") {
+				event.result.targets = game.filterPlayer(current => current.identity == "fan").sortBySeat();
+			} else if (player.getStorage(event.skill).length == 1) {
+				event.result.cost_data = true;
+			}
+		},
+		logAudio(_1, _2, _3, _4, costResult) {
+			if (costResult.cost_data === true) {
+				return "shoucheng1.mp3";
+			}
+			return 2;
+		},
+		async content(event, trigger, player) {
+			if (trigger.name != "phaseZhunbei") {
+				const func = async target => {
+					await target.addSkills("oldianzan");
+					target.setStorage("oldianzan", player);
+				};
+				await game.doAsyncInOrder(event.targets, func);
+				return;
+			}
+			const nows = player.getStorage(`${event.name}_current`);
+			if (nows.length) {
+				player.setStorage(`${event.name}_current`, []);
+				await player.addAdditionalSkills(event.name, []);
+				const next = game.createEvent("removeFuchen", false);
+				next.player = player;
+				next.fuchens = nows;
+				next.setContent("emptyEvent");
+				game.broadcastAll((player, names) => {
+					player.tempname.removeArray(names);
+				}, player, nows);
+				await next;
+			}
+			const names = player.getStorage(event.name).randomGets(4);
+			if (!names.length) {
+				return;
+			}
+			const result = await player
+				.chooseButton(["托权", [names, "character"]], Math.min(2, names.length), true)
+				.set("ai", () => Math.random())
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				const fuchens = result.links;
+				player.unmarkAuto(event.name, fuchens);
+				if (!player.getStorage(event.name).length && !player._gainJiangFei) {
+					player._gainJiangFei = true;
+					const jiangfei = Math.random() > 0.99 ? ["jiangfei"] : ["ol_jiangwan", "ol_feiyi"];
+					player.markAuto(event.name, jiangfei);
+				}
+				const skills = fuchens.reduce((arr, name) => {
+					const skills = get.character(name, 3).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte && !info.limited && !info.juexingji;
+					});
+					arr.addArray(skills);
+					return arr;
+				}, []);
+				await player.addAdditionalSkills(event.name, skills);
+				player.markAuto(`${event.name}_current`, fuchens);
+				game.broadcastAll((player, names) => {
+					player.tempname.addArray(names);
+				}, player, fuchens);
+				const next = game.createEvent("gainFuchen", false);
+				next.player = player;
+				next.fuchens = fuchens;
+				next.setContent("emptyEvent");
+				await next;
+			}
+		},
+		derivation: "oldianzan",
+	},
+	oldianzan: {
+		clickableFilter(player) {
+			const target = player.getStorage("oldianzan", null);
+			return target?.isIn() && target != player;
+		},
+		clickable(player) {
+			if (player.isUnderControl(true)) {
+				const target = player.getStorage("oldianzan", null);
+				player.throwEmotion(target, ["flower", "wine"].randomGet());
+			}
+		},
+		onremove: true,
+	},
+	olxianglv: {
+		audio: 2,
+		trigger: {
+			player: ["enterGame", "gainFuchen"],
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			if (event.name == "gainFuchen") {
+				return event.fuchens?.length && player.hasExpansions("olxianglv");
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (trigger.name == "gainFuchen") {
+				const cards = player.getExpansions(event.name).randomGets(trigger.fuchens.length);
+				if (cards.length) {
+					await player.gain(cards, "gain2");
+				}
+				return;
+			}
+			const cards = [];
+			while (true) {
+				const card = get.cardPile2(card => get.type(card) == "basic" && cards.every(cardx => cardx.name != card.name));
+				if (card) {
+					cards.add(card);
+				} else {
+					break;
+				}
+			}
+			const next = player.addToExpansion(cards, "gain2");
+			next.gaintag.add(event.name);
+			await next;
+		},
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		ai: {
+			combo: "oltuoquan",
+		},
+	},
+	olanle: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			return player.getStorage("oltuoquan_current").length > 0;
+		},
+		init(player, skill) {
+			if (!player.getStorage("oltuoquan_current").length) {
+				player.addAdditionalSkill(skill, "xiangle");
+			}
+			player.addSkill("olanle_viewas");
+		},
+		onremove(player, skill) {
+			player.removeAdditionalSkill(skill);
+			player.removeSkill("olanle_viewas");
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const names = player.getStorage("oltuoquan_current");
+			const result = await player
+				.chooseButton(["安乐：移去一名辅臣", [names, "character"]], true)
+				.set("ai", () => Math.random())
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				const removes = result.links;
+				player.unmarkAuto("oltuoquan_current", removes);
+				const skills = player.getStorage("oltuoquan_current").reduce((arr, name) => {
+					const skills = get.character(name, 3).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte && !info.limited && !info.juexingji;
+					});
+					arr.addArray(skills);
+					return arr;
+				}, []);
+				await player.addAdditionalSkills("oltuoquan", skills);
+				game.broadcastAll((player, names) => {
+					player.tempname.removeArray(names);
+				}, player, removes);
+				const next = game.createEvent("removeFuchen", false);
+				next.player = player;
+				next.fuchens = removes;
+				next.setContent("emptyEvent");
+				await next;
+			}
+			const targets = [player];
+			if (_status.currentPhase?.isIn()) {
+				targets.push(_status.currentPhase);
+			}
+			await game.asyncDraw(targets);
+		},
+		derivation: "xiangle",
+		subSkill: {
+			viewas: {
+				trigger: {
+					player: ["gainFuchen", "removeFuchen"],
+				},
+				charlotte: true,
+				firstDo: true,
+				async cost(event, trigger, player) {
+					const bool = player.getStorage("oltuoquan_current").length === 0;
+					if (bool) {
+						player.addAdditionalSkill("olanle", "xiangle");
+					} else {
+						player.removeAdditionalSkill("olanle");
+					}
+				},
+			},
+		},
+	},
 	//有诸葛亮 ————我才是奶龙！
 	dcyingyou: {
 		trigger: {

@@ -285,8 +285,8 @@ const translates = {
 	olhuaquan_light_info: "使用后你摸一张牌",
 	olsanou: "三殴",
 	olsanou_info: "锁定技，其他角色受到你的伤害后或猜错〖花拳〗的效果后，你摸一张牌并令其获得一个「击倒」标记。一名角色获得至少3个「击倒」标记后移除此标记并进入“击倒”状态。“击倒”状态的角色始终跳过出牌阶段。角色于“击倒”状态时，有10张牌离开牌堆或进入弃牌堆后，其脱离“击倒”状态。",
-	bigsb_dengai: "乐邓艾",
-	bigsb_dengai_prefix: "乐",
+	bigsb_dengai: "OL乐邓艾",
+	bigsb_dengai_prefix: "OL乐",
 	olandu: "暗度",
 	olandu_info: `锁定技，你使用一张“${get.poptip({
 		id: "andu_yinping",
@@ -304,6 +304,20 @@ const translates = {
 	real_zhuge_info: "你使用【杀】无次数限制，若此【杀】点数小于7，不可被响应。此牌离开装备区后销毁。",
 	real_zhuge_skill: "真·诸葛连弩",
 	real_zhuge_skill_info: "你使用【杀】无次数限制，若此【杀】点数小于7，不可被响应。",
+	ol_le_liushan: "OL乐刘禅",
+	ol_le_liushan_prefix: "OL乐",
+	oltuoquan: "托权",
+	oltuoquan_info: `锁定技，游戏开始时，你令所有农民获得〖点赞〗。准备阶段，你移去上阵的“${get.poptip({
+		id: "tuoquan_fuchen",
+		name: "季汉辅臣",
+		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
+	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
+	oldianzan: "点赞",
+	oldianzan_info: "点击此技能为刘禅助力。",
+	olxianglv: "相旅",
+	olxianglv_info: `锁定技，游戏开始时，你将牌堆中不同牌名的基本牌各一张置于武将牌上。你每上阵一名“${get.poptip("tuoquan_fuchen")}”，随机获得其中一张基本牌。`,
+	olanle: "安乐",
+	olanle_info: `锁定技，你受到伤害后，移去一名上阵的“${get.poptip("tuoquan_fuchen")}”，然后与当前回合角色各摸一张牌。若你没有“${get.poptip("tuoquan_fuchen")}”，你视为拥有〖享乐〗。`,
 };
 
 export default translates;
