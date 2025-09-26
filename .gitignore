@@ -13,6 +13,7 @@ image/*.TXT
 ._*
 .DS_Store
 .DS_Store?
+.eslintcache
 .idea
 .Spotlight-V100
 .Trashes
@@ -31,8 +32,6 @@ noname.ico
 package-lock.json
 Thumbs.db
 bun.lockb
-deno.lock
-pnpm-lock.yaml
 game/*.zip  
 
 downloadExtension.html

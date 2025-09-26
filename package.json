@@ -10,10 +10,10 @@
     },
     "type": "module",
     "scripts": {
-        "start": "concurrently \"node noname-server.js\" \"npx vite  --config vite.config.ts\"",
+        "start": "concurrently \"node noname-server.js\" \"pnpm vite  --config vite.config.ts\"",
         "build": "node build/build.js",
-        "type": "npx tsc -p tsconfig.type.json",
-        "lint": "npx eslint"
+        "type": "pnpm tsc -p tsconfig.type.json",
+        "lint": "pnpm eslint ."
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.18.7",
