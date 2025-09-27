@@ -8753,20 +8753,26 @@ export default () => {
 				},
 			},
 			boss_danshu: {
-				trigger: { player: "loseEnd" },
+				trigger: {
+					player: "loseAfter",
+					global: ["loseAsyncAfter", "gainAfter", "addJudgeAfter", "equipAfter", "addToExpansionAfter"],
+				},
 				frequent: true,
 				unique: true,
 				filter(event, player) {
-					return _status.currentPhase != player && player.hp < player.maxHp;
+					if (!event.getl?.(player)?.cards2?.length) {
+						return false;
+					}
+					return _status.currentPhase != player && player.isDamaged();
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
-					if (result.color == "red") {
-						player.recover();
+				async content(event, trigger, player) {
+					const result = await player
+						.judge(function (card) {
+							return get.color(card) == "red" ? 1 : 0;
+						})
+						.forResult();
+					if (result?.color == "red") {
+						await player.recover();
 					}
 				},
 				ai: {
