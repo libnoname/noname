@@ -1,5 +1,7 @@
 // 通过比对本地文件来自动修改asset.js和update.js
 // 年久失修
+//@ts-nocheck
+
 var fs = require("fs");
 var path = require("path");
 var exec = require("child_process").exec;

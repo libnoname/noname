@@ -1,6 +1,7 @@
 "use strict";
 
 (async function () {
+	await import("core-js-bundle");
 	// 预设定常量
 	/**
 	 * 最低要求的Safari版本
@@ -32,32 +33,8 @@
 
 	// 不支持file协议
 	if (location.protocol.startsWith("file")) {
-		return alert(globalText.REDIRECT_TIP);
-	}
-
-	// // 必须启用serviceWorker
-	// if (!("serviceWorker" in navigator)) {
-	// 	return alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
-	// }
-
-	await import("core-js-bundle");
-	
-
-	// 检查是否已经显示过GPL许可协议警告
-	if (!localStorage.getItem("gplv3_noname_alerted")) {
-		// 判断游戏是否已经初始化过
-		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
-
-		// 如果满足以下条件之一，则显示GPL许可协议警告:
-		// 1. 已经初始化过
-		// 2. 用户确认显示GPL许可协议警告
-		if (gameIntialized || confirm(globalText.GPL_ALERT)) {
-			// 记录已显示过GPL许可协议警告
-			localStorage.setItem("gplv3_noname_alerted", String(true));
-		} else {
-			// 如果用户拒绝显示GPL许可协议警告，则退出程序
-			game.exit();
-		}
+		alert(globalText.REDIRECT_TIP);
+		return;
 	}
 
 	window["bannedExtensions"] = [
@@ -152,56 +129,65 @@
 	// // 将 <script> 元素添加到 document.head 中
 	// document.head.appendChild(fallback);
 
-	// // 使serviceWorker加载完成后，再加载entry.js
-	// if ("serviceWorker" in navigator) {
-	// 	let scope = new URL("./", location.href).toString();
-	// 	let registrations = await navigator.serviceWorker.getRegistrations();
-	// 	let findServiceWorker = registrations.find(registration => {
-	// 		return registration && registration.active && registration.active.scriptURL == `${scope}service-worker.js`;
-	// 	});
+	// serviceWorker编译器
+	if (!("serviceWorker" in navigator)) {
+		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+		return;
+	} else {
+		let scope = new URL("./", location.href).toString();
+		let registrations = await navigator.serviceWorker.getRegistrations();
+		let findServiceWorker = registrations.find(registration => {
+			return registration && registration.active && registration.active.scriptURL == `${scope}service-worker.js`;
+		});
 
-	// 	try {
-	// 		const registration_1 = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
-	// 			type: "module",
-	// 			updateViaCache: "all",
-	// 			scope,
-	// 		});
-	// 		// 初次加载worker，需要重新启动一次
-	// 		if (!findServiceWorker) {
-	// 			location.reload();
-	// 		}
-	// 		// 接收消息
-	// 		navigator.serviceWorker.addEventListener("message", e => {
-	// 			if (e.data?.type === "reload") {
-	// 				window.location.reload();
-	// 			}
-	// 		});
-	// 		// 发送消息
-	// 		// navigator.serviceWorker.controller.postMessage({ action: "reload" });
-	// 		registration_1.update().catch(e => console.error("worker update失败", e));
-	// 		if (!sessionStorage.getItem("canUseTs")) {
-	// 			await import("./canUse.ts")
-	// 				.then(({ text }) => console.log(text))
-	// 				.catch(() => {
-	// 					sessionStorage.setItem("canUseTs", "1");
-	// 					location.reload();
-	// 				});
-	// 		}
-	// 	} catch (e_1) {
-	// 		console.log("serviceWorker加载失败: ", e_1);
-	// 		return alert(globalText.SERVICE_WORKER_LOAD_FAILED);
-	// 	}
-	// }
+		try {
+			const registration = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
+				type: "module",
+				updateViaCache: "all",
+				scope,
+			});
+			// 初次加载worker，需要重新启动一次
+			if (!findServiceWorker) {
+				window.location.reload();
+			}
+			// 接收消息
+			navigator.serviceWorker.addEventListener("message", e => {
+				if (e.data?.type === "reload") {
+					window.location.reload();
+				}
+			});
+			// 发送消息
+			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
+			registration.update().catch(e => console.error("worker update失败", e));
+			if (!sessionStorage.getItem("canUseTs")) {
+				await fetch("../extension/canUse.ts")
+					.then(({ text }) => console.log(text))
+					.catch(() => {
+						sessionStorage.setItem("canUseTs", "1");
+						location.reload();
+					});
+			}
+		} catch (e) {
+			console.log("serviceWorker加载失败: ", e);
+			alert(globalText.SERVICE_WORKER_LOAD_FAILED);
+			return;
+		}
+	}
 
+	// GPL确认
+	if (!localStorage.getItem("gplv3_noname_alerted")) {
+		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
+
+		if (gameIntialized || confirm(globalText.GPL_ALERT)) {
+			localStorage.setItem("gplv3_noname_alerted", String(true));
+		} else {
+			game.exit();
+		}
+	}
 
 	import("./entry.js").catch((e) =>{
 		console.error(e);
-		// 获取加载失败的提示信息
-		const message = globalText.LOAD_ENTRY_FAILED;
-		// 在控制台输出提示信息
-		console.error(message);
-		// 显示提示信息
-		alert(message);
+		alert(globalText.LOAD_ENTRY_FAILED);
 	});
 	// 创建一个新的 <script> 元素
 	// const script = document.createElement("script");
@@ -225,10 +211,10 @@
 	// // 将 <script> 元素添加到 document.head 中
 	// document.head.appendChild(script);
 
-	/**
-	 *
-	 * @return {import("../noname-compatible.js")}
-	 */
+	// /**
+	//  *
+	//  * @return {import("../noname-compatible.js")}
+	//  */
 	// function importFallback() {
 	// 	class GameCompatible {
 	// 		/**

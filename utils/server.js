@@ -1,3 +1,6 @@
+// 服务器房间管理
+//@ts-nocheck
+
 (function () {
 	var WebSocketServer = require("ws").Server;
 	var wss = new WebSocketServer({ port: 8080 });

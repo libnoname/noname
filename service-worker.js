@@ -4,11 +4,10 @@
  */
 // @ts-expect-error transfer type on force.
 var self = globalThis;
-// 以副作用导入typescript，以保证require也可以同步使用
 import ts from 'typescript';
 globalThis.ts = ts;
 // sfc以正常的esmodule使用
-import sfc from '@vue/compiler-sfc';
+import * as sfc from '@vue/compiler-sfc';
 import dedent from "dedent";
 if (typeof ts != 'undefined') {
 	console.log(`ts loaded`, ts.version);
@@ -70,6 +69,7 @@ self.addEventListener("fetch", event => {
 		return;
 	}
 	const url = new URL(request.url);
+	if (!url.pathname.startsWith("/extension")) return;
 	// 直接返回vue编译好的结果
 	if (vueFileMap.has(request.url)) {
 		const rep = new Response(new Blob([vueFileMap.get(request.url)], { type: "text/javascript" }), {

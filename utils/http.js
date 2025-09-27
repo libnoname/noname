@@ -1,3 +1,5 @@
+// 简易的测试服务器
+
 var http = require("http");
 var fs = require("fs");
 var server = new http.Server();

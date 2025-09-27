@@ -1,3 +1,7 @@
+// 多开客户端，用于测试联机
+// 年久失修
+//@ts-nocheck
+
 var fs = require('fs');
 var webpage = require('webpage')
 var load = function(id){
