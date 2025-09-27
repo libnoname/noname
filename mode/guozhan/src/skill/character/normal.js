@@ -1809,7 +1809,7 @@ export default {
 				.set("suit", suit)
 				.forResult();
 
-			if (!result2.bool) {
+			if (result2 && !result2.bool) {
 				// @ts-expect-error 类型系统未来可期
 				trigger.getParent().directHit.add(trigger.target);
 			}

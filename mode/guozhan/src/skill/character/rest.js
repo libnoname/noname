@@ -15333,7 +15333,7 @@ export default {
 				.set("num", num)
 				.set("suit", suit);
 			"step 4";
-			if (!result.bool) {
+			if (result && !result.bool) {
 				trigger.getParent().directHit.add(trigger.target);
 			}
 		},

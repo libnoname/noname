@@ -7298,7 +7298,7 @@ const skills = {
 								if (player.countMark("friendyance") < 7) {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
-								if (storage[4] && storage[3] > 3) {
+								if (storage[4] && storage[3] >= 3) {
 									player.restoreSkill("friendfangqiu");
 								}
 							}
