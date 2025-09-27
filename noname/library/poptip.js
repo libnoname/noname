@@ -199,6 +199,16 @@ export class PoptipManager {
 
 		return id;
 	}
+	/**
+	 * 注册poptip类型
+	 * @param {string} type 名词类型
+	 */
+	addType(type) {
+		this.#poptip[type] ??= {
+			idList: [],
+		};
+		return type;
+	}
 	// /**
 	//  * @param {string} id
 	//  */

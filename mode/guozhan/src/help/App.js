@@ -1,4 +1,6 @@
 import html from "../../../../game/dedent.js";
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import poptips from "./poptip.js";
 
 export default {
 	template: html`
@@ -24,12 +26,12 @@ export default {
 			<li>当场上触发了胜利条件时，若这些角色中存在未明置过主将的野心家角色，则这些野心家角色选择是否“暴露野心”。若无人选择“是”且场上存在非野心家角色存活，则所有非野心家角色胜利，野心家角色失败。若有人选择“是”，则这些角色明置主将，然后选择是否发起“拉拢人心”。<br /></li>
 			<li>选择发起“拉拢人心”的野心家角色选择一个新的势力作为自己的势力，弃置“野心家”标记，令所有其他非野心家角色且非君主且非已“结盟”角色依次选择是否和该野心家角色“结盟”。选择“是”的角色将势力改为和该野心家势力相同。此次“拉拢人心”对所有其他角色询问结束后，所有选择“否”的角色将手牌摸至四张并回复1点体力。</li>
 		</ul>
-
-		<div :style="titleStyle">纵横捭阖</div>
-		<ul :style="listStyle">
-			<li>当一名角色对目标角色发动具有拥有“纵横”衍生技的技能时，其可以令对方获得“纵横”衍生技直到其下回合结束。</li>
-		</ul>
-	`,
+		${poptips.map(id => `<div :style="titleStyle">${lib.poptip.getName(id)}</div>
+				<ul :style="listStyle">
+					<li>${lib.poptip.getInfo(id)}</li>
+				</ul>`)
+			.unique()
+			.join("")}`,
 
 	setup() {
 		const titleStyle = {
