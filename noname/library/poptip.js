@@ -66,6 +66,9 @@ export class PoptipManager {
 				return Object.keys(lib.card);
 			},
 		};
+		this.#poptip["character"] = {
+			idList: [],
+		};
 	}
 
 	init() {

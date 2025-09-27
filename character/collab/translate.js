@@ -55,6 +55,7 @@ const translates = {
 	dcsitian_info: `出牌阶段，你可以弃置两张颜色不同的手牌。系统从所有${get.poptip({
 		id: "sitian_tianqi",
 		name: "天气",
+		type: "character",
 		info: "<li>烈日：你对其他角色依次造成1点火属性伤害。<br><li>雷电：你令其他角色各进行一次判定。若结果为♠2~9，则其受到3点无来源雷属性伤害。<br><li>大浪：你弃置其他角色装备区内的所有牌（装备区内没有牌的角色改为失去1点体力）。<br><li>暴雨：你弃置一名角色的所有手牌。若其没有手牌，则改为令其失去1点体力。<br><li>大雾：你令所有其他角色获得如下效果：当其使用下一张基本牌时，取消之。",
 	})}中随机选择两个，你观看这些${get.poptip("sitian_tianqi")}并选择一个执行。`,
 	sunyang: "孙杨",
@@ -295,6 +296,7 @@ const translates = {
 	olandu_info: `锁定技，你使用一张“${get.poptip({
 		id: "andu_yinping",
 		name: "阴平",
+		type: "character",
 		info: "若一张牌的牌名中，第一个字或最后一个字的读音为阴平（一声，如ā、ē、ī），此牌称为“阴平”牌",
 	})}”牌结算后，随机获得一名其他角色手牌中的“${get.poptip("andu_yinping")}”牌。`,
 	olandu_mark: "阴平",
@@ -314,11 +316,13 @@ const translates = {
 	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
+		type: "character",
 		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
 	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
 	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
+		type: "character",
 		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
 	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
 	oldianzan: "点赞",

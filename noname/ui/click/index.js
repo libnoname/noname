@@ -4026,7 +4026,7 @@ export class Click {
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
 							const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
-							for (let i = 0; i < skills.length; i++) {
+							for (let i = 0; i < skillButtons.length; i++) {
 								delete skillButtons[i].playAudio;
 							}
 							refreshIntro();
