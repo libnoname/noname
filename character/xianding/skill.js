@@ -4,60 +4,60 @@ import cards from "../sp2/card.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//谋徐盛
-	dcqinqiang: {
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+	dcsbqinqiang: {
+		audio: 2,
+		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.countDiscardableCards("h");
+			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard("选择至多四张手牌弃置", "h")
-				.set("filterCard", (card, player) => {
-					return lib.filter.canBeDiscarded(card, player, player);
-				})
+				.chooseToDiscard(get.prompt2(event.skill), [1, 4])
 				.set("ai", card => {
-					const player = get.player(),
-						suits = player.getCards("h").map(card => get.suit(card)),
-						suit = get.suit(card);
-					if (suits.length > 5) {
-						return get.numOf(suits, suit);
-					} else {
-						return 1;
-					}
+					return 1 / (get.value(card) || 0.5);
 				})
-				.set("selectCard", [0, 4])
-				.set("filterOk", () => ui.selected.cards.length > 0)
 				.forResult();
 		},
+		popup: false,
 		async content(event, trigger, player) {
-			player.addTempSkill("qinqiang_effect");
-			await player.modedDiscard(event.cards);
-			await player.draw(event.cards.length * 2);
+			player.addTempSkill("dcsbqinqiang_effect", { player: "phaseBegin" });
+			const next = player.draw(event.cards.length * 2);
+			next.gaintag.add("dcsbqinqiang_effect");
+			await next;
 		},
 		subSkill: {
-			qinqiang_effect: {
-				trigger: {
-					target: "useCardToTargeted",
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag(skill);
 				},
+				audio: "dcsbqinqiang",
+				trigger: { target: "useCardToTargeted" },
 				filter(event, player) {
-					return player.countCards("h");
+					const suit = get.suit(event.card);
+					if (!player.hasCard({ suit: suit }, "h") && event.cards?.someInD("od")) {
+						return true;
+					}
+					const suits = player.getCards("h").map(card => get.suit(card)),
+						num = Math.max(...suits.map(suitx => get.numOf(suits, suitx)));
+					return get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h");
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					const suit = get.suit(trigger.card),
+						has = !player.hasCard({ suit: suit }, "h"),
 						suits = player.getCards("h").map(card => get.suit(card)),
 						num = Math.max(...[...lib.suit, "none"].map(suitx => get.numOf(suits, suitx)));
-					if (get.numOf(suits, suit) == num) {
-						player
-							.chooseToDiscard(`弃置一张花色为${get.translation(suit)}的手牌`, "h", true)
-							.set("suitx", suit)
-							.set("filterCard", (card, player) => get.suit(card) == get.event("suitx") && lib.filter.canBeDiscarded(card, player, player));
-					} else if (!suit.includes(suit)) {
+					if (get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h")) {
+						await player.chooseToDiscard("h", true, card => card.hasGaintag("dcsbqinqiang_effect"));
+					}
+					if (!has) {
 						player
 							.when({ global: "useCardAfter" })
-							.filter((evt, player) => evt.card == trigger.card && lib.filter.canBeGained(card, player))
-							.step(async (event, trigger, player) => await player.gain(trigger.card, "gain2"));
+							.filter((evt, player) => evt.card === trigger.card && evt.cards?.someInD("od"))
+							.step(async (event, trigger, player) => {
+								await player.gain(trigger.cards.filterInD("od"), "gain2");
+							});
 					}
 				},
 				ai: {
@@ -79,482 +79,336 @@ const skills = {
 	dcfuhui: {
 		audio: 2,
 		enable: "chooseToUse",
-		getUsed(event, player) {
-			const list = player
-					.getHistory("useSkill", evt => evt.skill == "dcfuhui_backup")
-					.reduce((list, evt) => {
-						return list.add(get.name(evt.event.card));
-					}, []),
-				cards = get
-					.inpileVCardList(info => {
-						return ["basic", "trick"].includes(info[0]) && !list.includes(info[2]);
-					})
-					.filter(info => {
-						if (event?.filterCard) {
-							return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
-						}
-						return true;
-					}),
-				suitMap = player.getStorage("dcfuhui_count"),
-				suitList = player
-					.getCards("hs")
-					.map(card => get.suit(card))
-					.unique(),
-				cardValue = player
-					.getCards("hs")
-					.slice()
-					.sort((card1, card2) => player.getUseValue(card1) - player.getUseValue(card2))
-					.slice(-2)
-					.reduce((num, card) => num + player.getUseValue(card), 0),
-				bool = suitMap.every(suits => {
-					suits.every(suit => suitList.includes(suit));
-				});
-			return [cards, cardValue, bool];
-		},
-		init(player, skill) {
-			const suitMap = [];
-			[...lib.suit, "none"].forEach((suit, i, suits) => {
-				const list = suits.slice(i + 1);
-				for (let suitx of list) {
-					suitMap.push([suit, suitx]);
-				}
-			});
-			player.setStorage(skill, suitMap);
-			player.setStorage("dcfuhui_count", suitMap);
-			player.addSkill("dcfuhui_count");
-		},
 		filter(event, player) {
-			const [cards] = lib.skill.dcfuhui.getUsed(event, player);
-			return cards.length && player.countCards("hs");
-		},
-		hiddenCard(player, name) {
-			const event = get.event(),
-				[cards] = lib.skill.dcfuhui.getUsed(event, player);
-			if (cards.some(info => info[2] == name) && player.countCards("hs")) {
-				return true;
+			if (
+				player
+					.getCards("hs")
+					.map(i => get.suit(i))
+					.unique().length < 2
+			) {
+				return false;
 			}
+			return get
+				.inpileVCardList(info => {
+					const name = info[2];
+					if (get.type(name) != "basic" && get.type(name) != "trick") {
+						return false;
+					}
+					return !player.getStorage("dcfuhui_used").includes(name);
+				})
+				.some(card => event.filterCard(get.autoViewAs({ name: card[2], nature: card[3] }, "unsure"), player, event));
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const [cards] = lib.skill.dcfuhui.getUsed(event, player);
-				return ui.create.dialog("选择要使用的牌", [cards, "vcard"]);
+				const list = get
+					.inpileVCardList(info => {
+						const name = info[2];
+						if (get.type(name) != "basic" && get.type(name) != "trick") {
+							return false;
+						}
+						return !player.getStorage("dcfuhui_used").includes(name);
+					})
+					.filter(card => event.filterCard(get.autoViewAs({ name: card[2], nature: card[3] }, "unsure"), player, event));
+				return ui.create.dialog("赋绘", [list, "vcard"]);
 			},
 			check(button) {
-				const player = get.player(),
-					[cards, cardValue, bool] = lib.skill.dcfuhui.getUsed(event, player),
-					useValue = player.getUseValue({
-						name: button.link[2],
-						nature: button.link[3],
-					});
-				if (bool && cardValue <= useValue + 4) {
-					return 1;
-				} else if (cardValue <= useValue) {
+				if (get.event().getParent().type != "phase") {
 					return 1;
 				}
-				return 0;
+				return get.event("player").getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+				});
 			},
 			backup(links, player) {
 				return {
-					filterCard(card) {
-						return ui.selected.cards.every(cradx => get.suit(card) != get.suit(cradx));
+					audio: "dcfuhui",
+					filterCard(card, player) {
+						return !ui.selected.cards.some(i => get.suit(i) === get.suit(card));
 					},
-					selectCard: [2, 2],
 					complexCard: true,
-					posotion: "hs",
+					selectCard: 2,
+					popname: true,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
 					},
-					check: card => -get.value(card),
-					async precontent(event, trigger, player) {
-						const suitMap = player.getStorage("dcfuhui_count"),
-							suit = event.result.cards.map(card => get.suit(card)),
-							bool = suitMap.some(suits => {
-								if (suit.every(suitx => suits.includes(suitx))) {
-									suitMap.remove(suits);
-									player.markAuto("dcfuhui_count", suitMap);
-									return true;
-								}
-								return false;
-							});
-						if (bool) {
-							await player.draw();
-						}
+					ai1(card) {
+						return 1 / (get.value(card) || 0.5);
+					},
+					position: "hs",
+					precontent() {
+						player.addTempSkill("dcfuhui_effect");
+						player.addTempSkill("dcfuhui_used");
+						player.markAuto("dcfuhui_used", [event.result.card.name]);
 					},
 				};
 			},
 			prompt(links, player) {
-				let str = `将两张花色不同的牌当做${get.translation(links[0][2])}使用，若使用`,
-					suitMap = player.getStorage("dcfuhui_count");
-				for (let suits of suitMap) {
-					str += get.translation(suits).replace("、", "") + ",";
-				}
-				str += "的组合，摸一张牌";
-				return str;
+				return "将两张花色各不相同的手牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
 			},
+		},
+		hiddenCard(player, name) {
+			if (
+				player
+					.getCards("hs")
+					.map(i => get.suit(i))
+					.unique().length < 2
+			) {
+				return false;
+			}
+			if (get.type(name) != "basic" && get.type(name) != "trick") {
+				return false;
+			}
+			if (player.getStorage("dcfuhui_used").includes(name)) {
+				return false;
+			}
+			return lib.inpile.includes(name);
 		},
 		ai: {
 			order(item, player) {
-				player = player || get.player();
-				const event = get.event(),
-					[cards, cardValue, bool] = lib.skill.dcfuhui.getUsed(event, player),
-					useValue = Math.max(...cards.map(info => player.getUseValue({ name: info[2], nature: info[3] }, "unsure")));
-				if (bool && cardValue <= useValue + 4) {
-					return 10;
-				} else if (player.isPhaseUsing() && cardValue <= useValue && player.countCards("hs") > player.getHp()) {
-					return 10;
+				if (player && get.event().type == "phase") {
+					let list = get
+						.inpileVCardList(info => {
+							const name = info[2];
+							if (get.type(name) != "basic" && get.type(name) != "trick") {
+								return false;
+							}
+							return !player.getStorage("dcfuhui_used").includes(name);
+						})
+						.map(card => {
+							return { name: card[2], nature: card[3] };
+						})
+						.filter(card => player.getUseValue(card, true, true) > 0);
+					if (!list.length) {
+						return 0;
+					}
+					list.sort((a, b) => (player.getUseValue(b, true, true) || 0) - (player.getUseValue(a, true, true) || 0));
+					return get.order(list[0], player) * 0.99;
 				}
-				return 0;
+				return 0.001;
 			},
+			respondSha: true,
 			respondShan: true,
-			save: true,
 			skillTagFilter(player, tag, arg) {
-				const event = get.event();
-				if (arg == "respond" || player.countCards("hs") == 0) {
+				if (arg == "respond") {
 					return false;
 				}
-				const [cards] = lib.skill.dcfuhui.getUsed(event, player);
-				if (tag == "save") {
-					return cards.some(info => {
-						const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true }, "unsure");
-						return lib.filter.cardSavable(card, player, event.dying);
-					});
-				}
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return lib.skill["dcfuhui"].hiddenCard(player, name);
 			},
 			result: {
-				player(player, target) {
-					const event = get.event(),
-						[cards, cardValue, bool] = lib.skill.dcfuhui.getUsed(event, player),
-						useValue = Math.max(...cards.map(info => player.getUseValue({ name: info[2], nature: info[3] }, "unsure")));
-					if (bool && cardValue <= useValue + 4) {
-						return 1;
-					} else if (player.isPhaseUsing() && cardValue <= useValue && player.countCards("hs") > player.getHp()) {
-						return 1;
+				player(player) {
+					if (_status.event?.dying) {
+						return get.attitude(player, _status.event.dying);
 					}
-					return 0;
+					return 1;
 				},
 			},
 		},
 		subSkill: {
-			count: {
-				trigger: {
-					global: "phaseEnd",
+			backup: { audio: "dcfuhui" },
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+			effect: {
+				charlotte: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					if (event.skill !== "dcfuhui_backup" || (event.cards ?? []).length !== 2) {
+						return false;
+					}
+					const suits = event.cards.map(i => get.suit(i, player));
+					return !player.hasHistory(
+						"useCard",
+						evt => {
+							if (evt === event || (evt.cards ?? []).length !== 2) {
+								return false;
+							}
+							const suits2 = evt.cards.map(i => get.suit(i, player));
+							return suits.length === suits2.length && suits.every(suit => suits2.includes(suit));
+						},
+						event
+					);
 				},
 				forced: true,
-				charlotte: true,
 				popup: false,
-				mark: true,
-				marktext: "赋",
-				intro: {
-					naem: "赋绘",
-					mark(dialog, storage, player) {
-						dialog.addText("本回合未使用的花色组合为：");
-						let str = "";
-						for (let suits of storage) {
-							str += get.translation(suits).replace("、", "") + ",";
-						}
-						if (str.length) {
-							dialog.addText(str.slice(0, str.length / 2 + 1));
-							dialog.addText(str.slice(str.length / 2 + 1));
-						} else {
-							dialog.addText("无剩余花色组合");
-						}
-					},
-				},
 				async content(event, trigger, player) {
-					const suitMap = player.getStorage("dcfuhui");
-					player.setStorage(event.name, suitMap);
+					await player.draw();
 				},
 			},
 		},
 	},
 	dcmohua: {
-		trigger: {
-			global: "phaseJieshuBegin",
-		},
-		round: 1,
-		mohua_wrapKey() {
-			var str = "";
-			for (var arg of arguments) {
-				if (arg === null || arg === undefined) {
-					str += arg + "-";
-					continue;
-				}
-				switch (get.itemtype(arg)) {
-					case "player":
-						str += "p:" + arg.playerid;
-						break;
-					case "card":
-						if (arg.cardid) {
-							str += "c:" + arg.cardid;
-						} else {
-							str += "c:" + arg.name;
-						}
-						break;
-					default:
-						str += "n:" + arg;
-						break;
-				}
-				str += "-";
-			}
-			return str;
-		},
-		mohua_effect(target, card, player, viewer) {
-			if (!_status.event) {
-				return get.effect(target, card, player, viewer);
-			}
-			var key = lib.skill.mohua.mohua_wrapKey.apply(null, arguments);
-			var effect = _status.event.getTempCache("effect", key);
-			if (effect !== undefined) {
-				return effect;
-			}
-			effect = get.effect(target, card, player, viewer);
-			_status.event.putTempCache("effect", key, effect);
-			return effect;
-		},
-		mohua_canUse(player, card, target, arg1, arg2) {
-			if (!_status.event) {
-				return player.canUse(card, target, arg1, arg2);
-			}
-			var key = lib.skill.mohua.mohua_wrapKey.apply(null, arguments);
-			var effect = _status.event.getTempCache("canUse", key);
-			if (effect !== undefined) {
-				return effect;
-			}
-			effect = player.canUse(card, target, arg1, arg2);
-			_status.event.putTempCache("canUse", key, effect);
-			return effect;
-		},
-		mohua_effect_use(target, card, player, viewer) {
-			if (!_status.event) {
-				return get.effect_use(target, card, player, viewer);
-			}
-			var key = lib.skill.mohua.mohua_wrapKey.apply(null, arguments);
-			var effect = _status.event.getTempCache("effect_use", key);
-			if (effect !== undefined) {
-				return effect;
-			}
-			effect = get.effect_use(target, card, player, viewer);
-			_status.event.putTempCache("effect_use", key, effect);
-			return effect;
-		},
+		audio: 2,
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			if (_status.currentPhase == player) {
 				return false;
 			}
-			const cards = event.player
-				.getHistory("useCard", evt => evt.isPhaseUsing(event.player))
-				.filter(evt => {
-					if (get.type(evt.card) == "equip") {
-						return false;
-					}
-					return true;
-				})
-				.map(evt => evt.card);
-			return cards.length && event.player.hasUseTarget(get.name(cards[0])) && player.hasUseTarget(get.name(cards[0]));
+			const history = event.player.getHistory("useCard", evt => evt.isPhaseUsing(event.player) && get.type(evt.card) !== "equip");
+			return player.hasUsableCard(history[0].card.name);
 		},
 		check(event, player) {
-			const cards = event.player
-				.getHistory("useCard", evt => evt.isPhaseUsing(event.player))
-				.filter(evt => {
-					if (get.type(evt.card) == "equip") {
+			const history = event.player.getHistory("useCard", evt => evt.isPhaseUsing(event.player) && get.type(evt.card) !== "equip");
+			const { name, nature } = history[0].card;
+			const card = { name, nature, storage: { dcmohua: [null, history[0].player] } };
+			return player.hasValueTarget(new lib.element.VCard(card));
+		},
+		round: 1,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			player.addTempSkill("dcmohua_effect");
+			const history = trigger.player.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player) && get.type(evt.card) !== "equip");
+			for (const evt of history) {
+				const { name, nature } = evt.card;
+				const card = (event.card = { name, nature, storage: { dcmohua: [evt, evt.player] } });
+				const next = player.chooseToUse(function (card, player, target) {
+					const { name, nature } = get.event().cardx;
+					if (get.name(card) !== name || get.nature(card) !== nature) {
 						return false;
 					}
-					return true;
-				})
-				.map(evt => evt.card);
-			let num;
-			cards.forEach(card => {
-				if (player.hasUseTarget(get.name(card))) {
-					num++;
-				} else if (crad.selectTarget >= 2) {
-					num += 2;
-				}
-			});
-			return num >= 2;
-		},
-		async content(event, trigger, player) {
-			const cards = [],
-				targets = [];
-			trigger.player
-				.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player))
-				.forEach(evt => {
-					if (get.type(evt.card) != "equip") {
-						cards.push(evt.card);
-						targets.push(evt.targets);
-					}
+					return lib.filter.filterCard.apply(this, arguments);
 				});
-			player.setStorage("dcmohua_effect", trigger.player);
-			player.addTempSkill("dcmohua_effect");
-			for (let i = 0; i < cards.length; i++) {
-				const result = await player
-					.chooseToUse(`选择${get.translation(get.name(cards[i]))}的目标`)
-					.set("cardx", cards[i])
-					.set("dcmohua", targets[i])
-					.set("filterCard", (card, player) => get.name(card) == get.name(get.event("cardx")))
-					.set("targetRequired", true)
-					.set("complexTarget", true)
-					.set("complexSelect", true)
-					.forResult();
-				if (!result.bool) {
+				next.set("manualConfirm", true);
+				next.set("openskilldialog", `${get.translation(event.name)}：请选择${get.translation(card.nature || "")}【${get.translation(card.name)}】的目标`);
+				next.set("targetRequired", true);
+				next.set("complexSelect", true);
+				next.set("complexTarget", true);
+				next.set("filterTarget", function (card, player, target) {
+					const source = get.event().cardx.storage.dcmohua[1];
+					return lib.filter.filterTarget(card, source, target);
+				});
+				next.set("cardx", card);
+				next.set("addCount", false);
+				const result = await next.forResult();
+				if (!result?.bool) {
 					break;
+				}
+			}
+		},
+		onChooseToUse(event) {
+			const evt = event.getParent();
+			if (evt.name === "dcmohua" && evt.player === event.player) {
+				const evt2 = evt.card.storage.dcmohua[0];
+				if (Array.isArray(evt2.targets)) {
+					event.targetprompt2.add(target => {
+						if (target.isIn() && evt2.targets.includes(target)) {
+							return "原目标";
+						}
+					});
 				}
 			}
 		},
 		subSkill: {
 			effect: {
-				audio: "dcmohua",
 				charlotte: true,
-				priority: Infinity,
-				mark: "character",
-				intro: {
-					content: "使用牌视为由$使用",
-				},
-				trigger: {
-					player: "useCardBefore",
-				},
-				forced: true,
-				mod: {
-					selectTarget(card, player, range) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
+				mohua_wrapKey() {
+					var str = "";
+					for (var arg of arguments) {
+						if (arg === null || arg === undefined) {
+							str += arg + "-";
+							continue;
 						}
-						var range,
-							info = get.info(card);
-						var select = get.copy(info.selectTarget);
-						if (select == undefined) {
-							if (info.filterTarget == undefined) {
-								return [0, 0];
-							}
-							range = [1, 1];
-						} else if (typeof select == "number") {
-							range = [select, select];
-						} else if (get.itemtype(select) == "select") {
-							range = select;
-						} else if (typeof select == "function") {
-							range = select(card, source);
+						switch (get.itemtype(arg)) {
+							case "player":
+								str += "p:" + arg.playerid;
+								break;
+							case "card":
+								if (arg.cardid) {
+									str += "c:" + arg.cardid;
+								} else {
+									str += "c:" + arg.name;
+								}
+								break;
+							default:
+								str += "n:" + arg;
+								break;
 						}
-						game.checkMod(card, source, range, "selectTarget", source);
-					},
-					cardEnabled2(card, player, event) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						var check = game.checkMod(card, source, event, "unchanged", "cardEnabled2", source);
-						return check;
-					},
-					cardEnabled(card, player, event) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						if (event === "forceEnable") {
-							var mod = game.checkMod(card, source, event, "unchanged", "cardEnabled", source);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							return true;
-						} else {
-							var filter = get.info(card).enable;
-							if (!filter) {
-								return;
-							}
-							var mod = game.checkMod(card, player, source, "unchanged", "cardEnabled", source);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							if (typeof filter == "boolean") {
-								return filter;
-							}
-							if (typeof filter == "function") {
-								return filter(card, source, event);
-							}
-						}
-					},
-					cardUsable(card, player, num) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						var event = _status.event;
-						if (event.type == "chooseToUse_button") {
-							event = event.getParent();
-						}
-						if (source != _status.event.player) {
-							return true;
-						}
-						if (info.updateUsable == "phaseUse") {
-							if (event.getParent().name != "phaseUse") {
-								return true;
-							}
-							if (event.getParent().player != source) {
-								return true;
-							}
-						}
-						event.addCount_extra = true;
-						var num = info.usable;
-						if (typeof num == "function") {
-							num = num(card, source);
-						}
-						num = game.checkMod(card, source, num, event, "cardUsable", source);
-						if (typeof num != "number") {
-							return true;
-						}
-						if (source.countUsed(card) < num) {
-							return true;
-						}
-						if (
-							game.hasPlayer(function (current) {
-								return game.checkMod(card, source, current, false, "cardUsableTarget", source);
-							})
-						) {
-							return true;
-						}
-						return false;
-					},
-					playerEnabled(card, player, target) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						return lib.filter.targetEnabledx(card, source, target);
-					},
-					targetInRange(card, player, target) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						return lib.filter.targetInRange(card, source, target);
-					},
-				},
-				filter(event, player) {
-					var source = player.getStorage("dcmohua_effect");
-					return get.itemtype(source) == "player" && source.isIn() && event.getParent()?.dcmohua.length;
-				},
-				logTarget: (event, player) => player.getStorage("dcmohua_effect"),
-				async content(event, trigger, player) {
-					const targets = trigger.targets,
-						targetx = trigger.getParent()?.dcmohua || [];
-					if (targets.length == targetx.length && targets.every(target => targetx.includes(target))) {
-						await player.draw(trigger.targets.length);
+						str += "-";
 					}
-					trigger.player = player.getStorage("dcmohua_effect");
+					return str;
+				},
+				mohua_effect(target, card, player, viewer) {
+					if (!_status.event) {
+						return get.effect(target, card, player, viewer);
+					}
+					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
+					var effect = _status.event.getTempCache("effect", key);
+					if (effect !== undefined) {
+						return effect;
+					}
+					effect = get.effect(target, card, player, viewer);
+					_status.event.putTempCache("effect", key, effect);
+					return effect;
+				},
+				mohua_canUse(player, card, target, arg1, arg2) {
+					if (!_status.event) {
+						return player.canUse(card, target, arg1, arg2);
+					}
+					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
+					var effect = _status.event.getTempCache("canUse", key);
+					if (effect !== undefined) {
+						return effect;
+					}
+					effect = player.canUse(card, target, arg1, arg2);
+					_status.event.putTempCache("canUse", key, effect);
+					return effect;
+				},
+				mohua_effect_use(target, card, player, viewer) {
+					if (!_status.event) {
+						return get.effect_use(target, card, player, viewer);
+					}
+					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
+					var effect = _status.event.getTempCache("effect_use", key);
+					if (effect !== undefined) {
+						return effect;
+					}
+					effect = get.effect_use(target, card, player, viewer);
+					_status.event.putTempCache("effect_use", key, effect);
+					return effect;
+				},
+				trigger: { player: "useCardBefore" },
+				filter(event, player) {
+					var source = event.card.storage?.dcmohua?.[1];
+					return get.itemtype(source) === "player" && source.isIn();
+				},
+				silent: true,
+				firstDo: true,
+				async content(event, trigger, player) {
+					trigger.player = trigger.card.storage.dcmohua[1];
 					trigger.noai = true;
-					game.delay(0.5);
 				},
 				ai: {
-					order(card, player, target, current) {
+					order(card, player, target) {
 						if (typeof card != "object") {
 							return;
 						}
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
+						var source = card.storage?.dcmohua?.[1];
+						if (get.itemtype(source) !== "player" || !source.isIn()) {
 							return;
 						}
-						return [0, lib.skill.mohua.mohua_effect_use(target, card, source, player), 0, lib.skill.mohua.mohua_effect(target, card, source, target)];
+						return [0, lib.skill.mohua_effect.mohua_effect_use(target, card, source, player), 0, lib.skill.mohua_effect.mohua_effect(target, card, source, target)];
 					},
+				},
+				group: "dcmohua_draw",
+			},
+			draw: {
+				charlotte: true,
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					let evt = event.getParent(2);
+					if (!Array.isArray(event.targets) || evt.name !== "dcmohua" || evt.player !== player) {
+						return false;
+					}
+					evt = evt.card.storage.dcmohua[0];
+					return Array.isArray(evt.targets) && evt.targets.length === event.targets.length && evt.targets.every(i => event.targets.includes(i));
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					await player.draw(trigger.targets.length);
 				},
 			},
 		},
@@ -874,6 +728,7 @@ const skills = {
 								.set("drawEff", (get.effect(player, { name: "draw" }, player, player) * num) / 2)
 								.forResultTargets();
 							if (targets?.length) {
+								player.line(targets);
 								await targets[0].damage("nocard");
 								break;
 							}

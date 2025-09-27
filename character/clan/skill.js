@@ -2306,7 +2306,14 @@ const skills = {
 				const name = tag == "respondSha" ? "sha" : "shan";
 				return get.info("clanchengqi").hiddenCard(player, name);
 			},
-			result: { player: 1 },
+			result: {
+				player(player) {
+					if (_status.event?.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
 		},
 		subSkill: {
 			backup: { audio: "clanchengqi" },

@@ -3,7 +3,7 @@ const characters = {
 		sex:"male",
 		group:"wu",
 		hp:4,
-		skills:["dcqinqiang"]
+		skills:["dcsbqinqiang"]
 	},
 	
 	xvwen:{

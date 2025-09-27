@@ -557,21 +557,27 @@ const skills = {
 		},
 	},
 	//曹操
-	xy_zuju: {
+	xy_shengju: {
 		forced: true,
 		mod: {
 			cardUsable(card, player, num) {
 				if (get.name(card) == "sha") {
-					return Math.min(
-						5,
-						game.countPlayer(current => current.group == "wei")
+					return Math.max(
+						num,
+						Math.min(
+							5,
+							game.countPlayer(current => current.group == "wei")
+						)
 					);
 				}
 			},
 			attackRange(player, num) {
-				return Math.min(
-					5,
-					game.countPlayer(current => current.group == "wei")
+				return Math.max(
+					num,
+					Math.min(
+						5,
+						game.countPlayer(current => current.group == "wei")
+					)
 				);
 			},
 		},
@@ -580,11 +586,13 @@ const skills = {
 			return !event.numFixed;
 		},
 		async content(event, trigger, player) {
-			trigger.num = Math.min(
-				5,
-				game.countPlayer(current => current.group == "wei")
+			trigger.num = Math.max(
+				num,
+				Math.min(
+					5,
+					game.countPlayer(current => current.group == "wei")
+				)
 			);
-			trigger.numFixed = true;
 		},
 	},
 	xy_mintong: {
