@@ -1,6 +1,37 @@
+# 无名杀
+
+## 安装与运行
+
+### 环境要求
+
+- Node.js >= 18
+- [pnpm](https://pnpm.io/) >= 8
+- Webview 内核 >= 91
+
+### 克隆项目
+
+```bash
+git clone https://github.com/libnoname/noname
+cd noname
+```
+
+### 安装依赖
+
+```bash
+pnpm install
+```
+
+### 启动
+
+```bash
+pnpm start
+```
+
+---
+
 noname-server.exe 的源码见以下仓库：
 
-https://github.com/nonameShijian/noname-server
+<https://github.com/nonameShijian/noname-server>
 
 ---
 
@@ -16,9 +47,9 @@ https://github.com/nonameShijian/noname-server
 
 客户端下载戳这里：
 
-安卓： https://github.com/nonameShijian/noname-shijian-android/releases/tag/v1.6.8
+安卓： <https://github.com/nonameShijian/noname-shijian-android/releases/tag/v1.6.8>
 
-PC:  https://github.com/nonameShijian/noname/releases/tag/v1.75
+PC:  <https://github.com/nonameShijian/noname/releases/tag/v1.75>
 
 网页端推荐使用 Chrome 系内核浏览器游玩，暂不支持 Firefox 浏览器
 

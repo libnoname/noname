@@ -8,11 +8,9 @@ export default defineConfig({
 		alias: {
 			"@": path.resolve(import.meta.dirname, "./"),
 		},
-        extensions: ['.tsx', '.ts', '.js'],
+		extensions: [".tsx", ".ts", ".js"],
 	},
-	plugins: [
-		vue(),
-	],
+	plugins: [vue()],
 	server: {
 		open: true,
 		host: "127.0.0.1",

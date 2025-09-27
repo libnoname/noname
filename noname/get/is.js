@@ -394,7 +394,7 @@ export class Is {
 		return get.is.emoji(str) || window.bannedKeyWords?.some(item => str.includes(item));
 	}
 	/**
-	 * @param { GameEventPromise } event
+	 * @param { GameEvent } event
 	 */
 	converted(event) {
 		return !(event.card && event.card.isCard);

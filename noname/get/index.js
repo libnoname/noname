@@ -84,7 +84,7 @@ export class Get extends GetCompatible {
 	/**
 	 * 获取当前事件是由何skill/card事件衍生并生成相应的卡牌信息提示
 	 * @param {Player} player
-	 * @param {GameEventPromise} sourceEvent
+	 * @param {GameEvent} sourceEvent
 	 * @returns {GameEvent|string}
 	 */
 	cardsetion(player, sourceEvent) {
@@ -2901,7 +2901,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { 'dialog' }
 	 *
 	 * @overload
-	 * @param { GameEvent | GameEventPromise } obj
+	 * @param { GameEvent } obj
 	 * @returns { 'event' }
 	 */
 	itemtype(obj) {
@@ -2963,7 +2963,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (obj instanceof lib.element.Dialog) {
 			return "dialog";
 		}
-		if (obj instanceof lib.element.GameEvent || obj instanceof lib.element.GameEventPromise) {
+		if (obj instanceof lib.element.GameEvent) {
 			return "event";
 		}
 

@@ -18,6 +18,7 @@
 			"@/*": ["./*"],
 		},
 		"typeRoots": [
+			"./typings",
 			"./node_modules/@types",
 			"./extension/**",
 			"./extension/**/typings",

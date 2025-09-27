@@ -1,10 +1,10 @@
 /**
  * @typedef {{
- * 	cardMove: GameEventPromise[],
- * 	custom: GameEventPromise[],
- * 	useCard: GameEventPromise[],
- * 	changeHp: GameEventPromise[],
- * 	everything: GameEventPromise[]
+ * 	cardMove: GameEvent[],
+ * 	custom: GameEvent[],
+ * 	useCard: GameEvent[],
+ * 	changeHp: GameEvent[],
+ * 	everything: GameEvent[]
  * }} GameHistory
  * @typedef { { name?: string, type: string, player?: string, content?: string | any[], delay: number } } Video
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
@@ -1095,8 +1095,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { boolean }
 	 */
 	hasGlobalHistory(key, filter, last) {
@@ -1121,8 +1121,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { void }
 	 */
 	checkGlobalHistory(key, filter, last) {
@@ -1152,8 +1152,8 @@ export class Game extends GameCompatible {
 	 * @template { keyof GameHistory } T
 	 * @overload
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } [filter]
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } [filter]
+	 * @param { GameEvent } [last]
 	 * @returns { GameHistory[T] }
 	 */
 	getGlobalHistory(key, filter, last) {
@@ -1179,8 +1179,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { boolean }
 	 */
 	hasAllGlobalHistory(key, filter, last) {
@@ -1212,8 +1212,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { void }
 	 */
 	checkAllGlobalHistory(key, filter, last) {
@@ -1246,8 +1246,8 @@ export class Game extends GameCompatible {
 	 * @template { keyof GameHistory } T
 	 * @overload
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } [filter]
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } [filter]
+	 * @param { GameEvent } [last]
 	 * @returns { GameHistory[T] }
 	 */
 	getAllGlobalHistory(key, filter, last) {
@@ -1277,10 +1277,10 @@ export class Game extends GameCompatible {
 	 * 快速获取当前轮次/倒数第X轮次游戏的历史
 	 * @template { keyof GameHistory } T
 	 * @param {T} key
-	 * @param {(event:GameEventPromise)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
+	 * @param {(event:GameEvent)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
 	 * @param {number} [num] 获取倒数第num轮的历史，默认为0，表示当前轮
 	 * @param {boolean} [keep] 若为true,则获取倒数第num轮到现在的所有历史
-	 * @param {GameEventPromise} last 代表最后一个事件，获取该事件之前的历史
+	 * @param {GameEvent} last 代表最后一个事件，获取该事件之前的历史
 	 * @returns { GameHistory[T] }
 	 */
 	getRoundHistory(key, filter = lib.filter.all, num = 0, keep, last) {
@@ -1322,12 +1322,12 @@ export class Game extends GameCompatible {
 	/**
 	 * @overload
 	 * @param { Card } cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	/**
 	 * @overload
 	 * @param {Card[]} cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsDiscard(cards) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1384,7 +1384,7 @@ export class Game extends GameCompatible {
 	/**
 	 * 将cards移动到处理区
 	 * @param { Card[] | Card } cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsGotoOrdering(cards) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1406,13 +1406,13 @@ export class Game extends GameCompatible {
 	 * @overload
 	 * @param { Card } cards
 	 * @param { 'toRenku' | false } [bool] 为false时不触发trigger，为'toRenku'时牌放到仁库
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	/**
 	 * @overload
 	 * @param {Card[]} cards
 	 * @param { 'toRenku' | false } [bool] 为false时不触发trigger，为'toRenku'时牌放到仁库
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsGotoSpecial(cards, bool) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1482,7 +1482,7 @@ export class Game extends GameCompatible {
 		return next;
 	}
 	/**
-	 * @param { GameEventPromise } event
+	 * @param { GameEvent } event
 	 */
 	$cardsGotoPile(event) {
 		const cards = event.cards;
@@ -6191,8 +6191,8 @@ export class Game extends GameCompatible {
 	 * @param { string } name
 	 * @param { string } skill
 	 * @param { Player } player
-	 * @param { GameEventPromise } event
-	 * @returns { GameEventPromise }
+	 * @param { GameEvent } event
+	 * @returns { GameEvent }
 	 */
 	createTrigger(name, skill, player, event, indexedData) {
 		let info = get.info(skill);
@@ -9361,7 +9361,7 @@ export class Game extends GameCompatible {
 	 * @param { Player } player
 	 * @param { string | Card[] } card
 	 * @param { Player[] } [targets]
-	 * @param { GameEventPromise } [event]
+	 * @param { GameEvent } [event]
 	 * @param { boolean } [forced]
 	 * @param { string } [logvid]
 	 */
@@ -10566,7 +10566,7 @@ export class Game extends GameCompatible {
 	/**
 	 * find the skillname of the event
 	 * 获取触发事件的技能
-	 * @param { GameEvent | GameEventPromise } event
+	 * @param { GameEvent } event
 	 * @param { Boolean } includeCharlotteSkill 是否包含夏洛特技
 	 * @param { Boolean } includeEquipSkill 是否包含装备技能
 	 * @param { Boolean } includeGlobalSkill 是否包含全局技能

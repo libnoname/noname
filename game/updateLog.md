@@ -279,7 +279,7 @@
 ```javascript
          /**
 	 * 令玩家使用牌
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	useCard() {
 		...

@@ -10,9 +10,8 @@
     },
     "type": "module",
     "scripts": {
-        "start": "concurrently \"node noname-server.js\" \"pnpm vite  --config vite.config.ts\"",
+        "start": "concurrently \"node noname-server.js\" \"pnpm vite --config vite.config.ts\"",
         "build": "node build/build.js",
-        "type": "pnpm tsc -p tsconfig.type.json",
         "lint": "pnpm eslint ."
     },
     "dependencies": {

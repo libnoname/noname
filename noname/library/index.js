@@ -5,7 +5,6 @@
  * @typedef { InstanceType<typeof lib.element.Button> } Button
  * @typedef { InstanceType<typeof lib.element.Dialog> } Dialog
  * @typedef { InstanceType<typeof lib.element.GameEvent> } GameEvent
- * @typedef { GameEvent & InstanceType<typeof lib.element.GameEventPromise> } GameEventPromise
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */

@@ -3157,8 +3157,8 @@ player.removeVirtualEquip(card);
 		}
 	},
 	/**
-	 * @param {GameEventPromise} event
-	 * @param {GameEventPromise} trigger
+	 * @param {GameEvent} event
+	 * @param {GameEvent} trigger
 	 * @param {Player} player
 	 */
 	chooseToEnable: async function (event, trigger, player) {
@@ -3242,8 +3242,8 @@ player.removeVirtualEquip(card);
 		}
 	},
 	/**
-	 * @param {GameEventPromise} event
-	 * @param {GameEventPromise} trigger
+	 * @param {GameEvent} event
+	 * @param {GameEvent} trigger
 	 * @param {Player} player
 	 */
 	chooseToDisable: async function (event, trigger, player) {
