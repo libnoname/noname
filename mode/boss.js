@@ -5402,7 +5402,7 @@ export default () => {
 						target = trigger.source;
 					if (player.canUse(card, target, false)) {
 						const next = player.useCard(card, target, false);
-						player
+						const { skill } = player
 							.when({
 								source: "damageSource",
 							})
@@ -5415,6 +5415,11 @@ export default () => {
 								}
 							})
 						await next;
+						player.removeSkill(skill);
+						game.broadcastAll(skill => {
+							delete lib.skill[skill];
+							delete lib.translate[skill];
+						}, skill);
 						await player.removeSkills(event.name);
 					}
 				},
