@@ -836,7 +836,7 @@ export class Player extends HTMLDivElement {
 		}
 		_status.postReconnect.player_when[1][skillName] = true;
 		return {
-			// @ts-expect-error
+			// @ts-expect-error ignore
 			skill: skillName,
 			/**
 			 * @param { Required<Skill>['filter'] } fun
