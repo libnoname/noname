@@ -662,6 +662,7 @@ window.noname_character_rank = {
 		"ol_haizhu",
 		"star_wenchou",
 		"star_yanliang",
+		"huanshujun",
 		"ol_wujing",
 		"one_dc_sp_machao",
 		"mb_xuezong",
@@ -2060,6 +2061,7 @@ window.noname_character_rank = {
 		"jsrg_caocao",
 		"tw_jsrg_caocao",
 		"jsrg_nanhualaoxian",
+		"ol_jsrg_zhangliao",
 	],
 	d: [
 		"jsrg_chunyuqiong",
@@ -2838,6 +2840,7 @@ window.noname_character_rank = {
 			"zhaoyǎn",
 			"star_wenchou",
 			"star_yanliang",
+			"huanshujun",
 			"star_zhangchunhua",
 			"guānning",
 			"yanfuren",
@@ -2925,6 +2928,7 @@ window.noname_character_rank = {
 			"xy_lvbu",
 			"ren_jiangwei",
 			"ren_dengai",
+			"ol_jsrg_zhangliao",
 		],
 		rare: [
 			"xy_caocao",

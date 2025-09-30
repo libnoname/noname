@@ -517,7 +517,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const map = trigger.getParent().customArgs,
-				{ targets: [target], cost_data: num } = event,
+				{
+					targets: [target],
+					cost_data: num,
+				} = event,
 				id = target.playerid;
 			map[id] ??= {};
 			if (typeof map[id].extraDamage !== "number") {
@@ -528,9 +531,11 @@ const skills = {
 				.when("useCardAfter")
 				.filter(evt => evt == trigger.getParent())
 				.step(async (event, trigger, player) => {
-					if (game.hasPlayer(current => {
-						return current.hasHistory("damage", evt => evt.card == trigger.card);
-					})) {
+					if (
+						game.hasPlayer(current => {
+							return current.hasHistory("damage", evt => evt.card == trigger.card);
+						})
+					) {
 						return;
 					}
 					if (target.isIn() && player?.isIn()) {

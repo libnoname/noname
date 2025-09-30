@@ -21,7 +21,7 @@ const characterSort = {
 	sp2_qizuo: ["dc_sb_jushou", "dc_sb_chenlin"],
 	sp2_wangzuo: ["dc_sb_liuxie", "dc_sb_dongcheng", "dc_sb_caohong"],
 	sp2_youlin: ["dc_sb_hulie", "dc_sb_dengai"],
-	sp2_boyan: ["dc_sb_huangquan", "dc_sb_luotong"],
+	sp2_boyan: ["dc_sb_huangquan", "dc_sb_luotong", "dc_sb_xusheng"],
 	sp2_weizhen: ["v_zhangliao", "v_lvbu", "v_dongzhuo", "v_machao"],
 	sp2_junwei: ["v_caopi", "v_sunquan", "v_caocao", "v_sunce"],
 	sp2_waitingforsort: [],

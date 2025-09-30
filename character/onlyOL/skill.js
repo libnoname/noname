@@ -2,6 +2,90 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//闪张辽
+	olzhengbing: {
+		audio: "jsrgzhengbing",
+		enable: "phaseUse",
+		usable: 3,
+		filter(event, player) {
+			return player.group == "qun" && player.countCards("he");
+		},
+		filterCard: lib.filter.cardRecastable,
+		check(card) {
+			var player = _status.event.player,
+				val = 5 + ["shan", "tao"].includes(get.name(card)) * 1.5;
+			if (player.needsToDiscard() > 2 && get.name(card) == "sha" && player.countCards("hs", "sha") > 1) {
+				val += 0.5;
+			}
+			return val - get.value(card);
+		},
+		position: "he",
+		groupSkill: "qun",
+		lose: false,
+		discard: false,
+		delay: false,
+		async content(event, trigger, player) {
+			const { cards, name } = event;
+			await player.recast(cards);
+			let type;
+			switch (get.name(cards[0])) {
+				case "sha":
+					type = "sha";
+					player.addSkill("olzhengbing_sha");
+					player.addMark("olzhengbing_sha", 1, false);
+					break;
+				case "shan":
+					type = "shan";
+					await player.draw();
+					break;
+				case "tao":
+				case "jiu":
+					type = "tao/jiu";
+					player.addTempSkill("olzhengbing_dianjun", { global: ["phaseAfter", "phaseBeforeStart"] });
+					break;
+			}
+			if (type) {
+				player.getHistory("custom").push({ skill: name, type });
+			}
+			if (
+				player
+					.getAllHistory("custom", evt => {
+						return evt.skill == name;
+					})
+					.map(evt => evt.type)
+					.toUniqued().length >= 3
+			) {
+				await player.changeGroup("wei");
+			}
+		},
+		ai: {
+			order: 7,
+			result: { player: 1 },
+		},
+		subSkill: {
+			dianjun: {
+				charlotte: true,
+				trigger: { player: "phaseEnd" },
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+				},
+			},
+			sha: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("olzhengbing_sha");
+					},
+				},
+				intro: {
+					content: "手牌上限+#",
+				},
+			},
+		},
+	},
 	//谋许攸
 	olsbqianfu: {
 		audio: 2,
@@ -4499,12 +4583,14 @@ const skills = {
 				trigger: { player: "damageEnd" },
 				prompt2(event, player) {
 					const list = player.getStorage("olsbnilan_buff").toUniqued();
-					return `你可以${list.length > 0 ? "依次" : ""}执行：<br>${list.map(type => {
-						if (type == "draw") {
-							return "摸两张牌";
-						}
-						return "弃置所有手牌，然后若其中有【杀】，你可以对一名其他角色造成1点伤害";
-					}).join("；<br>")}。`;
+					return `你可以${list.length > 0 ? "依次" : ""}执行：<br>${list
+						.map(type => {
+							if (type == "draw") {
+								return "摸两张牌";
+							}
+							return "弃置所有手牌，然后若其中有【杀】，你可以对一名其他角色造成1点伤害";
+						})
+						.join("；<br>")}。`;
 				},
 				async content(event, trigger, player) {
 					const list = player.getStorage(event.name);

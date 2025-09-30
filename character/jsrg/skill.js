@@ -8334,6 +8334,7 @@ const skills = {
 	},
 	//张辽
 	jsrgzhengbing: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 3,
 		filter(event, player) {
@@ -8388,6 +8389,7 @@ const skills = {
 		},
 	},
 	jsrgtuwei: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},

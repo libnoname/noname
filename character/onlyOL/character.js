@@ -1,4 +1,13 @@
 const characters = {
+	ol_jsrg_zhangliao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olzhengbing", "jsrgtuwei"],
+		doubleGroup: ["wei", "qun"],
+		img: "image/character/jsrg_zhangliao.jpg",
+		dieAudios: ["jsrg_zhangliao"],
+	},
 	ol_sb_xuyou: {
 		sex: "male",
 		group: "qun",
