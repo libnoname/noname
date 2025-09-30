@@ -11,6 +11,12 @@ const characters = {
 		hp: 3,
 		skills: ["dcgongtu", "dchangzhu"],
 	},
+	guotiying: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["dckanyu", "dczhee"],
+	},
 	xvwen: {
 		sex: "female",
 		hp: 3,

@@ -3,6 +3,155 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//郭缇萦
+	dckanyu: {
+		audio: 2,
+		trigger: {
+			player: "damageBegin3",
+			global: "judgeBegin",
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const { cards: [top, bottom] } = await game.cardsGotoOrdering([...get.cards(), ...get.bottomCards()]);
+			const next = player.chooseToMove(get.translation(event.name), true);
+			next.set("list", [["牌堆顶", [top]], ["牌堆底", [bottom]], ["获得", []]])
+			next.set("filterOk", moved => {
+				return !moved[1].length;
+			})
+			next.set("processAI", list => {
+				let player = get.player(),
+					trigger = get.event().getTrigger(),
+					cards = list.map(i => i[1]).flat();
+				//只要贪不死就往死里贪
+				if (!trigger?.judge || !trigger.player) {
+					return [[], [], cards];
+				}
+				let att = get.sgnAttitude(player, trigger.player);
+				cards.sort((a, b) => {
+					return (trigger.judge(b) - trigger.judge(a)) * att;
+				});
+				if (trigger.judge(cards[0]) > 0) {
+					return [cards, [], cards.splice(1)];
+				}
+				return [[], [], cards];
+			});
+			const result = await next.forResult();
+			if (!result?.bool) {
+				return;
+			}
+			const [tops, bottoms, gains] = result.moved;
+			if (gains.length) {
+				await player.gain(gains, "gain2");
+				const name = `${event.name}_tiandu`,
+					map = player.getStorage(name, new Map());
+				gains.forEach(card => {
+					const suit = get.suit(card, false),
+						number = get.number(card, false);
+					const numbers = map.has(suit) ? map.get(suit) : [];
+					map.set(suit, numbers.concat([number]));
+				});
+				player.setStorage(name, map, true);
+				player.addSkill(name);
+			}
+			if (tops.length) {
+				tops.reverse();
+				for (let i = 0; i < tops.length; i++) {
+					ui.cardPile.insertBefore(tops[i], ui.cardPile.firstChild);
+				}
+			}
+			game.updateRoundNumber();
+			await game.delay();
+		},
+		subSkill: {
+			tiandu: {
+				charlotte: true,
+				onremove: true,
+				marktext: "舆",
+				intro: {
+					content: "雷公助我！",
+					mark(dialog, storage, player) {
+						const addNewRow = lib.element.dialog.addNewRow.bind(dialog);
+						dialog.css({ width: "50%" });
+						if (get.is.phoneLayout()) {
+							dialog.classList.add("fullheight");
+						}
+						const records = player.getStorage("dckanyu_tiandu", new Map());
+						let suits = lib.suit.slice(),
+							numbers = Array.from(Array(13)).map((value, index) => index + 1);
+						addNewRow(
+							...[" "].concat(numbers.map(number => get.strNumber(number))).map(number => {
+								return { item: number, ratio: number == " " ? 1 : 2 };
+							})
+						);
+						for (const suit of suits) {
+							let list = [{ item: get.translation(suit), ratio: 1 }];
+							for (const number of numbers) {
+								list.add({
+									item: ((suit, number, records) => {
+										if (suit == "spade" && (number >= 2 && number <= 9)) {
+											return "⚡";
+										}
+										if (records.has(suit) && records.get(suit).includes(number)) {
+											return "⚡";
+										}
+										return "<span class='greentext'>●</span>";
+									})(suit, number, records),
+									ratio: 2,
+								});
+							}
+							addNewRow(...list);
+						}
+					},
+				},
+				trigger: {
+					player: "judgeBefore",
+				},
+				filter(event, player) {
+					return event.card?.name == "shandian";
+				},
+				firstDo: true,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.judgeFromKanyu = trigger.judge;
+					trigger.judge = function(card) {
+						const { player, judgeFromKanyu } = this;
+						const suit = get.suit(card, false),
+							number = get.number(card, false),
+							map = player.getStorage("dckanyu_tiandu", new Map());
+						if (map.has(suit) && map.get(suit).includes(number)) {
+							return -5;
+						}
+						return judgeFromKanyu(card);
+					}
+				},
+			},
+		},
+	},
+	dczhee: {
+		audio: 2,
+		trigger: {
+			player: "enterGame",
+			global: ["phaseBefore", "phaseEnd"],
+		},
+		filter(event, player, name) {
+			if (name == "phaseBefore" && game.phaseNumber !== 0) {
+				return false;
+			}
+			const pos = name == "phaseEnd" ? "discardPile" : "cardPile";
+			return Array.from(ui[pos].childNodes).some(card => card.name == "shandian" && player.canAddJudge(card));
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const name = event.triggername;
+			const card = get[name == "phaseEnd" ? "discardPile" : "cardPile2"](card => {
+				return card.name == "shandian" && player.canAddJudge(card);
+			});
+			if (card) {
+				await player.addJudge(card);
+			}
+		},
+	},
 	//苏越
 	dcgongtu: {
 		audio: 2,

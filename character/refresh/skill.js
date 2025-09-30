@@ -11810,22 +11810,52 @@ const skills = {
 	sishu: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("sishu")).ai = function (target) {
-				var att = get.attitude(_status.event.player, target);
-				if (target.countMark("sishu2") % 2 == 1) {
-					return -att;
-				}
-				return att;
-			};
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sishu", target);
-				target.addSkill("sishu2");
-				target.addMark("sishu2", 1, false);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const att = get.attitude(get.player(), target);
+					if (target.countMark("sishu2") % 2 == 1) {
+						return -att;
+					}
+					return att;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addSkill("sishu_reverse");
+			target.addMark("sishu_reverse", 1, false);
+		},
+		subSkill: {
+			reverse: {
+				charlotte: true,
+				onremove: true,
+				marktext: "思",
+				intro: {
+					name: "思蜀",
+					content: "本局游戏内计算【乐不思蜀】的效果时反转#次",
+				},
+				trigger: {
+					player: "judgeBefore",
+				},
+				filter(event, player) {
+					return event.card?.name == "lebu";
+				},
+				firstDo: true,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.judgeFromSishu = trigger.judge;
+					trigger.judge = function(card) {
+						const { player, judgeFromSishu } = this;
+						let result = judgeFromSishu(card);
+						if (player.countMark("sishu_reverse") % 2 == 1) {
+							result *= -1;
+						}
+						return result;
+					}
+				},
 			}
 		},
 	},

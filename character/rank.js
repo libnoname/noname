@@ -1529,6 +1529,7 @@ window.noname_character_rank = {
 		"ns_wangyue",
 		"ns_xinnanhua",
 		"v_caocao",
+		"guotiying",
 	],
 	bm: [
 		"std_simahui",
@@ -2930,6 +2931,7 @@ window.noname_character_rank = {
 			"ren_jiangwei",
 			"ren_dengai",
 			"ol_jsrg_zhangliao",
+			"guotiying",
 		],
 		rare: [
 			"xy_caocao",
