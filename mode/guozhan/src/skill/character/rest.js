@@ -12919,7 +12919,7 @@ export default {
 		},
 	},
 	jianan: {
-		audio: true,
+		audio: 1,
 		unique: true,
 		forceunique: true,
 		derivation: ["wuziliangjiangdao", "new_retuxi", "qiaobian", "gz_xiaoguo", "gz_jieyue", "gz_duanliang"],

@@ -1,4 +1,11 @@
 export default {
+	"#olsbduduan1": "图高帝之业，观曹操凶衅，不患贫而患不安。",
+	"#olsbduduan2": "坐东南吴会，望九州离乱，不患寡而患不均。",
+	"#olsbyinglve1": "商人趋利，察，虽万难必蹈。",
+	"#olsbyinglve2": "商人择良，用，虽一布必慎。",
+	"#olsbmengshi1": "盟堪市肆，近宅兴家，醉宾客而能贵东主。",
+	"#olsbmengshi2": "势如明渠，决川拒海，活支流然尽注五湖。",
+	"#ol_sb_lusu:die": "利来利往，黄泉路上熙攘…",
 	"#olsbjigu1": "积五谷以供六军，战则大胜。",
 	"#olsbjigu2": "粮草先于兵马而行，无谷则不胜。",
 	"#olsbjiewan1": "断一腕而存全身，为之何妨。",
