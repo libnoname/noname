@@ -3,6 +3,230 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//苏越
+	dcgongtu: {
+		audio: 2,
+		trigger: {
+			player: "enterGame",
+			global: ["phaseBefore", "useCard"],
+		},
+		filter(event, player) {
+			if (event.name == "useCard") {
+				const types = player.getStorage("dcgongtu"),
+					evt = game.getAllGlobalHistory("useCard", () => true, event).at(-2);
+				if (!evt?.card || !types.length) {
+					return false;
+				}
+				return get.type2(evt.card) === types[0] && get.type2(event.card) === types[1];
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				const result = await player
+					.chooseNumbers(get.prompt(event.skill), [
+						{
+							prompt: "从牌堆获得一张指定点数的牌",
+							min: 1,
+							max: 13,
+						}
+					])
+					.set("processAI", () => {
+						return [get.rand(1, 13)];
+					})
+					.forResult();
+				if (result.bool) {
+					event.result = {
+						bool: true,
+						cost_data: result.numbers[0],
+					};
+				}
+			} else {
+				const types = ["basic", "trick", "equip"].map(type => ["", "", `caoying_${type}`]);
+				const result = await player
+					.chooseButton([
+						get.prompt(event.skill),
+						"依次选择两种类型",
+						[types, "vcard"],
+					], 2)
+					.set("ai", () => Math.random())
+					.forResult();
+				if (result.bool) {
+					event.result = {
+						bool: true,
+						cost_data: result.links.map(type => type[2].slice(8)),
+					};
+				}
+			}
+		},
+		onremove(player, skill) {
+			player.setStorage(skill, null);
+			player.removeTip(skill);
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				const { cost_data: num } = event;
+				const card = get.cardPile2(card => get.number(card) == num);
+				if (card) {
+					await player.gain(card, "gain2");
+				}
+			} else {
+				const { name, cost_data: types } = event;
+				player.setStorage(name, types);
+				player.addTip(name, `宫图 ${types.map(type => get.translation(type)[0]).join("")}`);
+			}
+		},
+		global: "dcgongtu_ai",
+		subSkill: {
+			ai: {
+				locked: false,
+				mod: {
+					aiOrder(player, card, num) {
+						const evt = game.getAllGlobalHistory("useCard", () => true).at(-1);
+						if (!evt?.card) {
+							return;
+						}
+						const sgn = game.filterPlayer(current => {
+							return current.hasSkill("dcgongtu") && current.getStorage("dcgongtu")?.[0] == get.type2(evt.card);
+						}).reduce((sgn, current) => {
+							const type = current.getStorage("dcgongtu")[1];
+							if ((get.type2(card) == type) == (get.attitude(player, current) > 0)) {
+								return sgn + 1;
+							}
+							return sgn - 1;
+						}, 1);
+						return Math.max(0.5, num + sgn * 10);
+					},
+				},
+			},
+		},
+	},
+	dchangzhu: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterCard: true,
+		selectCard: [1, Infinity],
+		position: "he",
+		lose: false,
+		discard: false,
+		check(card) {
+			if (ui.selected.cards.length > 2) {
+				return 0;
+			}
+			return 4 - get.value(card);
+		},
+		async content(event, trigger, player) {
+			const { cards, name } = event;
+			const next = player.addToExpansion(cards, player, "give");
+			next.gaintag.add(name);
+			await next;
+			const numbers = cards.map(card => get.number(card)).toUniqued().sort((a, b) => a - b),
+				str = numbers.map(number => get.strNumber(number));
+			const result = await player
+				.chooseTarget(`夯筑：令一名其他角色不能使用或打出点数为${str.join("、")}的牌`, true, lib.filter.notMe)
+				.set("ai", target => {
+					return -get.attitude(get.player(), target);
+				})
+				.forResult();
+			if (result?.bool) {
+				const target = result.targets[0];
+				player.line(target);
+				target.addSkill("dchangzhu_effect");
+				target.when({
+					global: ["phaseBegin", "die"],
+				})
+				.filter(evt => evt.player == player)
+				.step(async (event, trigger, player) => {
+					player.removeSkill("dchangzhu_effect");
+				})
+				target.markAuto("dchangzhu_effect", numbers);
+			}
+			const exps = player.getExpansions(name).slice(0);
+			let allNum = [],
+				sameNum = [];
+			for (const card of exps) {
+				const num = get.number(card);
+				if (allNum.includes(num)) {
+					sameNum.add(num);
+				} else {
+					allNum.add(num);
+				}
+			}
+			if (sameNum.length) {
+				allNum.removeArray(sameNum);
+				const sames = exps.filter(card => sameNum.includes(get.number(card)));
+				if (sames.length) {
+					exps.removeArray(sames);
+					await player.loseToDiscardpile(sames);
+					await player.draw(2);
+				}
+			}
+			if (allNum.length >= 13) {
+				const result2 = await player
+					.chooseTarget(`###夯筑###是否将${get.translation(exps)}交给一名角色并令其回复所有体力？`)
+					.set("ai", target => {
+						return get.attitude(get.player(), target) * target.getDamagedHp();
+					})
+					.forResult();
+				if (result2?.bool) {
+					const target = result2.targets[0];
+					player.line(target);
+					await target.gain(exps, "giveAuto", player);
+					await target.recoverTo(target.maxHp);
+				}
+			}
+		},
+		intro: {
+			markcount: "expansion",
+			content: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getStorage(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		subSkill: {
+			effect: {
+				onremove: true,
+				intro: {
+					content(storage, player) {
+						if (!Array.isArray(storage)) {
+							return "无效果";
+						}
+						const numbers = storage.sort((a, b) => a - b).map(number => get.strNumber(number));
+						return `你无法使用或打出点数为${numbers.join("、")}的牌`;
+					},
+				},
+				locked: false,
+				charlotte: true,
+				mod: {
+					cardEnabled(card, player) {
+						const num = get.number(card, player),
+							list = player.getStorage("dchangzhu_effect");
+						if (list.includes(num)) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						const num = get.number(card, player),
+							list = player.getStorage("dchangzhu_effect");
+						if (list.includes(num)) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						const num = get.number(card, player),
+							list = player.getStorage("dchangzhu_effect");
+						if (list.includes(num)) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
 	//谋徐盛
 	dcsbqinqiang: {
 		audio: 2,
