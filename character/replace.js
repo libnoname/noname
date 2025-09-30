@@ -385,7 +385,7 @@ window.noname_character_replace = {
 	tw_fengxí: ["tw_fengxí", "ty_fengxí"],
 	tw_wenchou: ["ol_sb_wenchou", "star_wenchou", "tw_wenchou", "yy_wenchou", "ns_wenchou"],
 	tw_xiahouen: ["ol_xiahouen", "tw_xiahouen", "jsrg_xiahouen"],
-	tw_yanliang: ["tw_yanliang", "ns_yanliang"],
+	tw_yanliang: ["tw_yanliang", "ns_yanliang", "star_yanliang"],
 	tw_zhangji: ["tw_zhangji", "ol_tw_zhangji"],
 	tw_zhangnan: ["tw_zhangnan", "ty_zhangnan"],
 	tw_zhangzhao: ["tw_zhangzhao", "star_zhangzhao", "jy_zhangzhao"],

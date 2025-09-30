@@ -4038,7 +4038,7 @@ export class Click {
 							lib.character[i] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]]);
 						}
 						button.name = i;
-						const skinImg = lib.character[i].img;
+						const skinImg = lib.character[i]?.img;
 						skinImg ? button.setBackgroundImage(skinImg) : button.setBackground(i, "character");
 						if (iSTemp) {
 							delete lib.character[i];
