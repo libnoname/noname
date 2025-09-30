@@ -11847,14 +11847,14 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					trigger.judgeFromSishu = trigger.judge;
-					trigger.judge = function(card) {
+					trigger.judge = function (card) {
 						const { player, judgeFromSishu } = this;
 						let result = judgeFromSishu(card);
 						if (player.countMark("sishu_reverse") % 2 == 1) {
 							result *= -1;
 						}
 						return result;
-					}
+					};
 				},
 			}
 		},

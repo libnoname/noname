@@ -12,12 +12,18 @@ const skills = {
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			const { cards: [top, bottom] } = await game.cardsGotoOrdering([...get.cards(), ...get.bottomCards()]);
+			const {
+				cards: [top, bottom],
+			} = await game.cardsGotoOrdering([...get.cards(), ...get.bottomCards()]);
 			const next = player.chooseToMove(get.translation(event.name), true);
-			next.set("list", [["牌堆顶", [top]], ["牌堆底", [bottom]], ["获得", []]])
+			next.set("list", [
+				["牌堆顶", [top]],
+				["牌堆底", [bottom]],
+				["获得", []],
+			]);
 			next.set("filterOk", moved => {
 				return !moved[1].length;
-			})
+			});
 			next.set("processAI", list => {
 				let player = get.player(),
 					trigger = get.event().getTrigger(),
@@ -88,7 +94,7 @@ const skills = {
 							for (const number of numbers) {
 								list.add({
 									item: ((suit, number, records) => {
-										if (suit == "spade" && (number >= 2 && number <= 9)) {
+										if (suit == "spade" && number >= 2 && number <= 9) {
 											return "⚡";
 										}
 										if (records.has(suit) && records.get(suit).includes(number)) {
@@ -114,7 +120,7 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					trigger.judgeFromKanyu = trigger.judge;
-					trigger.judge = function(card) {
+					trigger.judge = function (card) {
 						const { player, judgeFromKanyu } = this;
 						const suit = get.suit(card, false),
 							number = get.number(card, false),
@@ -123,7 +129,7 @@ const skills = {
 							return -5;
 						}
 						return judgeFromKanyu(card);
-					}
+					};
 				},
 			},
 		},
@@ -178,7 +184,7 @@ const skills = {
 							prompt: "从牌堆获得一张指定点数的牌",
 							min: 1,
 							max: 13,
-						}
+						},
 					])
 					.set("processAI", () => {
 						return [get.rand(1, 13)];
@@ -193,11 +199,7 @@ const skills = {
 			} else {
 				const types = ["basic", "trick", "equip"].map(type => ["", "", `caoying_${type}`]);
 				const result = await player
-					.chooseButton([
-						get.prompt(event.skill),
-						"依次选择两种类型",
-						[types, "vcard"],
-					], 2)
+					.chooseButton([get.prompt(event.skill), "依次选择两种类型", [types, "vcard"]], 2)
 					.set("ai", () => Math.random())
 					.forResult();
 				if (result.bool) {
@@ -235,15 +237,17 @@ const skills = {
 						if (!evt?.card) {
 							return;
 						}
-						const sgn = game.filterPlayer(current => {
-							return current.hasSkill("dcgongtu") && current.getStorage("dcgongtu")?.[0] == get.type2(evt.card);
-						}).reduce((sgn, current) => {
-							const type = current.getStorage("dcgongtu")[1];
-							if ((get.type2(card) == type) == (get.attitude(player, current) > 0)) {
-								return sgn + 1;
-							}
-							return sgn - 1;
-						}, 1);
+						const sgn = game
+							.filterPlayer(current => {
+								return current.hasSkill("dcgongtu") && current.getStorage("dcgongtu")?.[0] == get.type2(evt.card);
+							})
+							.reduce((sgn, current) => {
+								const type = current.getStorage("dcgongtu")[1];
+								if ((get.type2(card) == type) == get.attitude(player, current) > 0) {
+									return sgn + 1;
+								}
+								return sgn - 1;
+							}, 1);
 						return Math.max(0.5, num + sgn * 10);
 					},
 				},
@@ -270,7 +274,10 @@ const skills = {
 			const next = player.addToExpansion(cards, player, "give");
 			next.gaintag.add(name);
 			await next;
-			const numbers = cards.map(card => get.number(card)).toUniqued().sort((a, b) => a - b),
+			const numbers = cards
+					.map(card => get.number(card))
+					.toUniqued()
+					.sort((a, b) => a - b),
 				str = numbers.map(number => get.strNumber(number));
 			const result = await player
 				.chooseTarget(`夯筑：令一名其他角色不能使用或打出点数为${str.join("、")}的牌`, true, lib.filter.notMe)
@@ -282,13 +289,14 @@ const skills = {
 				const target = result.targets[0];
 				player.line(target);
 				target.addSkill("dchangzhu_effect");
-				target.when({
-					global: ["phaseBegin", "die"],
-				})
-				.filter(evt => evt.player == player)
-				.step(async (event, trigger, player) => {
-					player.removeSkill("dchangzhu_effect");
-				})
+				target
+					.when({
+						global: ["phaseBegin", "die"],
+					})
+					.filter(evt => evt.player == player)
+					.step(async (event, trigger, player) => {
+						player.removeSkill("dchangzhu_effect");
+					});
 				target.markAuto("dchangzhu_effect", numbers);
 			}
 			const exps = player.getExpansions(name).slice(0);
