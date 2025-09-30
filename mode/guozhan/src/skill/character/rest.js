@@ -8,7 +8,171 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
-	//钟会
+	//手杀陆逊
+	gz_mb_qianxun: {
+		audio: "sbqianxun",
+		trigger: {
+			target: "useCardToTarget",
+		},
+		filter(event, player) {
+			return get.type2(event.card) == "trick" && event.targets?.length == 1 && player.countExpansions("gz_mb_qianxun") < 3;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			trigger.getParent().all_excluded = true;
+			trigger.getParent().targets.length = 0;
+			trigger.untrigger();
+			const cards = trigger.cards?.filterInD("od");
+			if (cards?.length) {
+				const next = player.addToExpansion(cards, "gain2");
+				next.gaintag.add(event.name);
+				await next;
+			}
+		},
+		marktext: "节",
+		intro: {
+			name: "节",
+			markcount: "expansion",
+			content: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		ai: {
+			target(card, player, target, current) {
+				if (!card || !("name" in card)) {
+					return;
+				}
+				if (!get.info("xunshi").isXunshi(card) && target.countExpansions("gz_mb_qianxun") < 3) {
+					return "zeroplayertarget";
+				}
+			},
+		},
+	},
+	gz_mb_duoshi: {
+		audio: "sblianying",
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			if (player.countCards("hs", card => {
+				if (get.color(card) != "red") {
+					return false;
+				}
+				const viewAs = get.autoViewAs({ name: "yiyi" }, [card]);
+				return event.filterCard(viewAs, player, event);
+			})) {
+				return true;
+			}
+			if (player.countExpansions("gz_mb_qianxun") < 3) {
+				return false;
+			}
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
+				}
+				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
+				return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					if (info[2] == "yiyi") {
+						return player.countCards("hs", card => {
+							if (get.color(card) != "red") {
+								return false;
+							}
+							const viewAs = get.autoViewAs({ name: "yiyi" }, [card]);
+							return event.filterCard(viewAs, player, event);
+						});
+					}
+					if (player.countExpansions("gz_mb_qianxun") < 3) {
+						return false;
+					}
+					const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
+					return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
+				});
+				const dialog = ui.create.dialog("度势", [list, "vcard"], "hidden");
+				if (list.length === 1 && list[0][2] === "yiyi") {
+					dialog.direct = true;
+				}
+				return dialog;
+			},
+			check(button) {
+				const player = get.player(),
+					card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure");
+				return player.getUseValue(card);
+			},
+			backup(links, player) {
+				const [_1, _2, name, nature] = links[0],
+					backup = get.copy(get.info(`gz_mb_duoshi_${name === "yiyi" ? "yiyi" : "fire"}`));
+				if (name !== "yiyi") {
+					backup.viewAs = {
+						name: name,
+						nature: nature,
+						isCard: true,
+					};
+				}
+				return backup;
+			},
+			prompt(links, player) {
+				if (links[0][2] === "yiyi") {
+					return "###度势###将一张红色手牌当作【以逸待劳】使用";
+				}
+				return `###度势###移去三张“节”，视为使用一张${get.translation(links[0][3] || "")}${get.translation(links[0][2])}`;
+			},
+		},
+		ai: {
+			order() {
+				return get.order({ name: "yiyi" }) + 0.1;
+			},
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			backup: {},
+			yiyi: {
+				audio: "gz_mb_duoshi",
+				logAudio: () => "sblianying2.mp3",
+				viewAs: {
+					name: "yiyi",
+				},
+				filterCard: {
+					color: "red",
+				},
+				position: "hs",
+				check(card) {
+					return 5 - get.value(card);
+				},
+			},
+			fire: {
+				audio: "gz_mb_duoshi",
+				logAudio: () => "sblianying1.mp3",
+				viewAs: {
+					name: "sha",
+					nature: "fire",
+					isCard: true,
+				},
+				filterCard: () => false,
+				selectCard: -1,
+				async precontent(event, trigger, player) {
+					const cards = player.getExpansions("gz_mb_qianxun"),
+						result = cards.length > 3 ? await player.chooseButton(["移去三张“节”", cards], 3, true).forResult() : { bool: true, links: cards };
+					if (result?.bool && result.links?.length) {
+						await player.loseToDiscardpile(result.links);
+					}
+				},
+			},
+		},
+	},
+	//OL钟会
 	gz_ol_quanji: {
 		audio: 2,
 		trigger: {
