@@ -8838,17 +8838,21 @@ const skills = {
 					player.removeGaintag(tag, [card]);
 				}
 				tag = tag ? skill + parseFloat(parseInt(tag.slice(skill.length)) + 1) : "dcsblieji_effect1";
-				if (!lib.skill[tag]) {
-					game.broadcastAll(
-						(tag, str) => {
-							lib.skill[tag] = {};
-							lib.translate[tag] = "烈计+" + str;
-						},
-						tag,
-						tag.slice(skill.length)
-					);
-				}
+				game.broadcastAll(lib.skill["dcsblieji"].createGainTag, tag, tag.slice(skill.length));
+				game.addVideo("skill", player, ["dcsblieji", [tag, tag.slice(skill.length)]]);
 				player.addGaintag([card], tag);
+			}
+		},
+		video: (player, info) => lib.skill.dcsblieji.createGainTag(info[0], info[1]),
+		createGainTag(skill, name) {
+			if (!lib.skill[skill]) {
+				lib.skill[skill] = { charlotte: true };
+				lib.translate[skill] = "烈计+" + name;
+				if (!_status.postReconnect.dcsblieji) {
+					_status.postReconnect.dcsblieji = [lib.skill.dcsblieji.createGainTag, [], []];
+				}
+				_status.postReconnect.dcsblieji[1].add(skill);
+				_status.postReconnect.dcsblieji[2].add(name);
 			}
 		},
 		subSkill: {
@@ -8865,19 +8869,15 @@ const skills = {
 						tags.forEach(tag => player.removeGaintag(tag));
 					}
 				},
-				trigger: { source: "damageBegin1" },
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (!event.card) {
-						return false;
-					}
-					const evt = event.getParent("useCard");
-					if (!evt || evt.card !== event.card || evt.cards?.length !== 1) {
 						return false;
 					}
 					return player.hasHistory(
 						"lose",
 						evtx =>
-							evtx.getParent() === evt &&
+							evtx.getParent() === event &&
 							Object.keys(evtx.gaintag_map).some(i => {
 								return evtx.gaintag_map[i].some(tag => tag.startsWith("dcsblieji_effect"));
 							})
@@ -8887,7 +8887,7 @@ const skills = {
 				logTarget: "player",
 				content() {
 					const skill = "dcsblieji_effect",
-						evt = trigger.getParent("useCard");
+						evt = trigger;
 					const evtx = player.getHistory(
 						"lose",
 						evtx =>
@@ -8896,7 +8896,7 @@ const skills = {
 								return evtx.gaintag_map[i].some(tag => tag.startsWith(skill));
 							})
 					)[0];
-					trigger.num += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
+					trigger.baseDamage += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
 						const tag = evtx.gaintag_map[i].find(tag => tag.startsWith(skill));
 						if (tag) {
 							sum += parseInt(tag.slice(skill.length));
