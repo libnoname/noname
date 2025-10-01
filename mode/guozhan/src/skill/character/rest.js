@@ -42,13 +42,38 @@ export default {
 			}
 		},
 		ai: {
-			target(card, player, target, current) {
-				if (!card || !("name" in card)) {
-					return;
-				}
-				if (!get.info("xunshi").isXunshi(card) && target.countExpansions("gz_mb_qianxun") < 3) {
-					return "zeroplayertarget";
-				}
+			effect: {
+				target(card, player, target, current) {
+					if (!card || !("name" in card) || target.countExpansions("gz_mb_qianxun") >= 3) {
+						return;
+					}
+					const info = lib.card[card.name];
+					if (!info || !["trick", "delay"].includes(info.type)) {
+						return;
+					}
+					const bool = info => {
+						if (info.notarget) {
+							return false;
+						}
+						if (info.selectTarget != undefined) {
+							if (Array.isArray(info.selectTarget)) {
+								if (info.selectTarget[0] < 0) {
+									return info.toself;
+								}
+								return info.selectTarget[0] == 1 && info.selectTarget[1] == 1;
+							} else {
+								if (info.selectTarget < 0) {
+									return info.toself;
+								}
+								return info.selectTarget == 1;
+							}
+						}
+						return true;
+					};
+					if (bool(info)) {
+						return "zeroplayertarget";
+					}
+				},
 			},
 		},
 	},

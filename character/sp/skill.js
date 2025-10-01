@@ -143,6 +143,7 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
+					const player = get.player();
 					if (button.link == "tao") {
 						return player.hasUsableCard("tao", "use");
 					}
