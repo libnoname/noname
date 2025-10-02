@@ -226,7 +226,7 @@ window.noname_character_replace = {
 	sundeng: ["sundeng", "re_sundeng", "ns_sundeng"],
 	sunhanhua: ["dc_sunhanhua", "sunhanhua", "scl_sunhanhua"],
 	sunhao: ["sunhao", "std_sunhao", "hs_sunhao"],
-	sunjian: ["sunjian", "ol_sunjian", "ol_sb_sunjian", "re_sunjian", "star_sunjian", "jsrg_sunjian", "ns_sunjian"],
+	sunjian: ["sunjian", "ol_sunjian", "ol_sb_sunjian", "re_sunjian", "star_sunjian", "tw_jsrg_sunjian", "jsrg_sunjian", "ns_sunjian"],
 	sunliang: ["sunliang", "xin_sunliang"],
 	sunluban: ["re_sunluban", "xin_sunluban", "tw_sunluban", "std_sunluban", "sunluban", "ol_sunluban"],
 	sunluyu: ["sunluyu", "re_sunluyu", "mb_sunluyu", "std_sunluyu"],

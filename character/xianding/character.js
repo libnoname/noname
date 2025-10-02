@@ -17,11 +17,11 @@ const characters = {
 		hp: 3,
 		skills: ["dckanyu", "dczhee"],
 	},
-	xuwen:{
-		sex:"female",
-		hp:3,
-		group:"wei",
-		skills:["dcfuhui","dcmohua"]
+	xuwen: {
+		sex: "female",
+		hp: 3,
+		group: "wei",
+		skills: ["dcfuhui", "dcmohua"],
 	},
 	v_sunce: {
 		sex: "male",

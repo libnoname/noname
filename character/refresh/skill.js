@@ -14134,7 +14134,7 @@ const skills = {
 	},
 	new_rejianxiong: {
 		audio: "rejianxiong",
-		audioname: ["shen_caopi", "mb_caocao"],
+		audioname: ["shen_caopi"],
 		audioname2: { caoying: "lingren_jianxiong" },
 		trigger: { player: "damageEnd" },
 		content() {

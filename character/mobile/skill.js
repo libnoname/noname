@@ -362,9 +362,21 @@ const skills = {
 	},
 	//手杀SP曹操
 	mblingfa: {
-		audio: "twlingfa",
+		audio: 2,
 		inherit: "twlingfa",
-		derivation: "new_rejianxiong",
+		derivation: ["twzhian", "new_rejianxiong"],
+		subSkill: {
+			sha: {
+				audio: "mblingfa",
+				inherit: "twlingfa_sha",
+				sourceSkill: "mblingfa",
+			},
+			tao: {
+				audio: "mblingfa",
+				inherit: "twlingfa_tao",
+				sourceSkill: "mblingfa",
+			},
+		},
 	},
 	mbzhian: {
 		audio: "twzhian",

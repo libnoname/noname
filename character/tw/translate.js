@@ -147,6 +147,8 @@ const translates = {
 	tw_caocao: "TWSP曹操",
 	tw_caocao_prefix: "TW|SP",
 	twlingfa: "令法",
+	twlingfa_sha: "令法",
+	twlingfa_tao: "令法",
 	twlingfa_info: "①第一轮开始时，你可令本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则受到你造成的1点伤害。②第二轮游戏开始时，你可令本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则受到你造成的1点伤害。③非前两轮游戏开始时，你可以失去〖令法〗并获得〖治暗〗。",
 	twzhian: "治暗",
 	twzhian_info: "每回合限一次。一名角色使用装备牌或延时锦囊牌后，你可选择：⒈弃置位于场上的此牌。⒉弃置一张手牌并获得位于场上的此牌。⒊对其造成1点伤害。",
@@ -900,6 +902,8 @@ const translates = {
 	tw_jsrg_hejin: "TW起何进",
 	tw_jsrg_hejin_prefix: "TW|起",
 	twzhuhuan_info: "准备阶段，你可以展示所有手牌并弃置所有【杀】，然后令一名其他角色选择一项：1.受到1点伤害，然后弃置X+1张牌；2.令你回复1点体力，然后你摸X+1张牌（X为你本次弃置【杀】的数量）。",
+	tw_jsrg_sunjian: "TW起孙坚",
+	tw_jsrg_sunjian_prefix: "TW|起",
 };
 
 export default translates;

@@ -1,4 +1,7 @@
 export default {
+	"#mblingfa1": "令行禁止，法外无情。",
+	"#mblingfa2": "法令如山，岂容尔等造次！",
+	"#mb_caocao:die": "孤的大业，还未开始……",
 	"#potgongmou1": "夫居万死之地，必有死争之心。",
 	"#potgongmou2": "大王案六军以示余力，何忧于败而欲自往？",
 	"#potzhengshuo1": "安帝以来，唯有名号，尺土一民，皆非汉有。",
