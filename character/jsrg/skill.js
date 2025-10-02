@@ -8834,7 +8834,9 @@ const skills = {
 			var characters2 = player.getStorage("sbyingmen").slice(0);
 			characters2.removeArray(characters);
 			skills.removeArray(lib.skill.sbyingmen.getSkills(characters2, player));
-			game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			if (Array.isArray(player.tempname)) {
+				game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			}
 			player.unmarkAuto("sbyingmen", characters);
 			_status.characterlist.addArray(characters);
 			player.removeInvisibleSkill(skills);

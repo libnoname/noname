@@ -51,26 +51,32 @@ export default {
 					if (!info || !["trick", "delay"].includes(info.type)) {
 						return;
 					}
-					const bool = info => {
-						if (info.notarget) {
-							return false;
+					if (info.notarget) {
+						return;
+					}
+					const select = info.selectTarget;
+					let range;
+					if (select == undefined) {
+						range = [1, 1];
+					} else if (typeof select == "number") {
+						range = [select, select];
+					} else if (get.itemtype(select) == "select") {
+						range = select;
+					} else if (typeof select == "function") {
+						range = select(card, player);
+						if (typeof range == "number") {
+							range = [range, range];
 						}
-						if (info.selectTarget != undefined) {
-							if (Array.isArray(info.selectTarget)) {
-								if (info.selectTarget[0] < 0) {
-									return info.toself;
-								}
-								return info.selectTarget[0] == 1 && info.selectTarget[1] == 1;
-							} else {
-								if (info.selectTarget < 0) {
-									return info.toself;
-								}
-								return info.selectTarget == 1;
+					}
+					game.checkMod(card, player, range, "selectTarget", player);
+					if (
+						(() => {
+							if (range[1] !== -1) {
+								return !ui.selected.targets.length;
 							}
-						}
-						return true;
-					};
-					if (bool(info)) {
+							return !game.hasPlayer(current => current !== target && player.canUse(card, current));
+						})()
+					) {
 						return "zeroplayertarget";
 					}
 				},
@@ -82,13 +88,15 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (player.countCards("hs", card => {
-				if (get.color(card) != "red") {
-					return false;
-				}
-				const viewAs = get.autoViewAs({ name: "yiyi" }, [card]);
-				return event.filterCard(viewAs, player, event);
-			})) {
+			if (
+				player.countCards("hs", card => {
+					if (get.color(card) != "red") {
+						return false;
+					}
+					const viewAs = get.autoViewAs({ name: "yiyi" }, [card]);
+					return event.filterCard(viewAs, player, event);
+				})
+			) {
 				return true;
 			}
 			if (player.countExpansions("gz_mb_qianxun") < 3) {
@@ -2571,10 +2579,13 @@ export default {
 			if (!game.hasPlayer(target => target.isMajor())) {
 				return false;
 			}
-			return player.hasViceCharacter() || ["h", "e", "j"].some(pos => {
-				const cards = player.getCards(pos);
-				return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
-			});
+			return (
+				player.hasViceCharacter() ||
+				["h", "e", "j"].some(pos => {
+					const cards = player.getCards(pos);
+					return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
+				})
+			);
 		},
 		usable: 1,
 		chooseButton: {
