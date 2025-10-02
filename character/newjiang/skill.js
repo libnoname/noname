@@ -339,39 +339,28 @@ const skills = {
 			});
 			const goon = () => cards.some(card => player.hasUseTarget(card) && get.position(card) == "d");
 			while (goon()) {
-				const videoId = lib.status.videoId++;
-				if (player.isUnderControl()) {
-					game.swapPlayerAuto(player);
-				}
-				const func = (id, cards, cards2) => {
-					const dialog = ui.create.dialog("戍国：请选择要使用的牌");
-					dialog.add(cards);
-					for (const button of dialog.buttons) {
-						if (!cards2.includes(button.link)) {
-							continue;
-						}
-						if (!button.node.gaintag.innerHTML) {
-							button.node.gaintag.innerHTML = "";
-						}
-						button.node.gaintag.innerHTML += `其他角色`;
-					}
-					dialog.videoId = id;
-					return dialog;
-				};
-				if (player == game.me) {
-					func(videoId, cards, cards2);
-				} else if (player.isOnline()) {
-					player.send(func, videoId, cards, cards2);
-				}
 				const result = await player
-					.chooseButton()
-					.set("dialog", get.idDialog(videoId))
+					.chooseButton([
+						"戍国：请选择要使用的牌",
+						[
+							cards.map(card => [
+								card,
+								(() => {
+									return cards2.includes(card) ? "其他角色" : "";
+								})(),
+							]),
+							(item, type, position, noclick, node) => {
+								node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+								node.node.gaintag.innerHTML += item[1];
+								return node;
+							},
+						],
+					])
 					.set("filterButton", button => get.player().hasUseTarget(button.link))
 					.set("ai", button => {
 						return get.player().getUseValue(button.link);
 					})
 					.forResult();
-				game.broadcastAll("closeDialog", videoId);
 				if (result?.bool && result.links?.length) {
 					const card = result.links[0];
 					cards.remove(card);
@@ -3358,12 +3347,13 @@ const skills = {
 			}
 			"step 2";
 			if (!game.hasPlayer2(current => current.getHistory("damage").length > 0)) {
-				player
-					.chooseBool(get.prompt("jiangxi"), "与" + get.translation(trigger.player) + "各摸一张牌")
-					.set("choice", (() => {
+				player.chooseBool(get.prompt("jiangxi"), "与" + get.translation(trigger.player) + "各摸一张牌").set(
+					"choice",
+					(() => {
 						let eff = current => get.effect(current, { name: "draw" }, player, player);
 						return eff(trigger.player) + eff(player) > 0;
-					})());
+					})()
+				);
 			} else {
 				event.finish();
 			}

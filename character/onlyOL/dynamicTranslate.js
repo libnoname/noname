@@ -15,7 +15,6 @@ const dynamicTranslates = {
 		if (triggers.length < 2) {
 			triggers = "";
 		}
-		console.log(triggers);
 		return `${triggers}当你受到伤害后，你可将一张牌当【无中生有】${names}使用。当你以此法使用过三种不同牌名的锦囊牌后，此技能于你的结束阶段也可发动。`;
 	},
 	olsbqianfu(player) {

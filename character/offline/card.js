@@ -95,6 +95,9 @@ const cards = {
 		type: "poker",
 		fullskin: true,
 		noname: true,
+		image: (card) => {
+			return `image/card/lukai_${card.suit}.png`;
+		}
 	},
 	chunqiubi: {
 		derivation: "chenshou",

@@ -408,6 +408,9 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(trigger.player.countMark(trigger.mark));
 		},
+		ai: {
+			combo: "mark_shouli",
+		}
 	},
 	//渭南神马超
 	wn_qiangshu: {

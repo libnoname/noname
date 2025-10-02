@@ -372,12 +372,16 @@ export class Card extends HTMLDivElement {
 		if (info.cardimage) {
 			bg = info.cardimage;
 		}
-		var img = get.dynamicVariable(lib.card[bg].image, this);
+		let img = get.dynamicVariable(lib.card[bg].image, this);
 		if (img) {
-			if (img.startsWith("db:")) {
-				img = img.slice(3);
-			} else if (!img.startsWith("ext:")) {
+			if (typeof img != "string") {
 				img = null;
+			} else {
+				if (img.startsWith("ext:")) {
+					img = img.replace(/^ext:/, "extension/");
+				} else if (["character:"].some(prefix => img.startsWith(prefix)) || ["background", "card"].includes(img)) {
+					img = null;
+				}
 			}
 		}
 		this.classList.remove("fullskin");
@@ -392,11 +396,16 @@ export class Card extends HTMLDivElement {
 		if (!lib.config.hide_card_image && lib.card[bg].fullskin) {
 			this.classList.add("fullskin");
 			if (img) {
-				if (img.startsWith("ext:")) {
+				if (img.startsWith("db:")) {
+					this.node.image.setBackgroundDB(img.slice(3));
+				} else if (typeof img == "string") {
+					this.node.image.setBackgroundImage(img);
+				}
+				/*if (img.startsWith("ext:")) {
 					this.node.image.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 				} else {
 					this.node.image.setBackgroundDB(img);
-				}
+				}*/
 			} else {
 				if (lib.card[bg].modeimage) {
 					this.node.image.setBackgroundImage("image/mode/" + lib.card[bg].modeimage + "/card/" + bg + ".png");
@@ -429,12 +438,18 @@ export class Card extends HTMLDivElement {
 		} else if (lib.card[bg].fullimage) {
 			this.classList.add("fullimage");
 			if (img) {
-				if (img.startsWith("ext:")) {
+				if (img.startsWith("db:")) {
+					this.setBackgroundDB(img.slice(3));
+				} else if (typeof img == "string") {
+					this.setBackgroundImage(img);
+					this.style.backgroundSize = "cover";
+				}
+				/*if (img.startsWith("ext:")) {
 					this.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					this.style.backgroundSize = "cover";
 				} else {
 					this.setBackgroundDB(img);
-				}
+				}*/
 			} else if (get.dynamicVariable(lib.card[bg].image, this)) {
 				if (get.dynamicVariable(lib.card[bg].image, this).startsWith("character:")) {
 					this.setBackground(get.dynamicVariable(lib.card[bg].image, this).slice(10), "character");
@@ -466,12 +481,18 @@ export class Card extends HTMLDivElement {
 				this.insertBefore(this.node.framebg, this.firstChild);
 			}
 			if (img) {
-				if (img.startsWith("ext:")) {
+				if (img.startsWith("db:")) {
+					this.node.avatar.setBackgroundDB(img.slice(3));
+				} else if (typeof img == "string") {
+					this.node.avatar.setBackgroundImage(img);
+					this.node.avatar.style.backgroundSize = "cover";
+				}
+				/*if (img.startsWith("ext:")) {
 					this.node.avatar.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					this.node.avatar.style.backgroundSize = "cover";
 				} else {
 					this.node.avatar.setBackgroundDB(img);
-				}
+				}*/
 			} else if (get.dynamicVariable(lib.card[bg].image, this)) {
 				if (get.dynamicVariable(lib.card[bg].image, this).startsWith("character:")) {
 					this.node.avatar.setBackground(get.dynamicVariable(lib.card[bg].image, this).slice(10), "character");
@@ -494,12 +515,18 @@ export class Card extends HTMLDivElement {
 			}
 		} else if (typeof get.dynamicVariable(lib.card[bg].image, this) == "string" && !lib.card[bg].fullskin) {
 			if (img) {
-				if (img.startsWith("ext:")) {
+				if (img.startsWith("db:")) {
+					this.setBackgroundDB(img.slice(3));
+				} else if (typeof img == "string") {
+					this.setBackgroundImage(img);
+					this.style.backgroundSize = "cover";
+				}
+				/*if (img.startsWith("ext:")) {
 					this.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					this.style.backgroundSize = "cover";
 				} else {
 					this.setBackgroundDB(img);
-				}
+				}*/
 			} else {
 				this.setBackground(get.dynamicVariable(lib.card[bg].image, this));
 			}

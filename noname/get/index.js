@@ -25,6 +25,134 @@ export class Get extends GetCompatible {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
+	 * @param {Card[]} cards 要分组的卡牌
+	 * @param {'suit'|'color'} type 分组类型 目前仅支持'suit'/'color'
+	 * @param {false | Player} player get.suit/get.color的player参数
+	 * @returns {Array<Row_Item_Option | Row_Item_Option[]>} 返回一个列表，每一项是一个分组配置（addNewRow方法的参数RowItem）或一对分组配置组成的数组
+	 */
+	addNewRowList(cards, type = "suit", player = false) {
+		//把框变成按钮，同时给框加封条，显示xxx牌多少张
+		function createCustom() {
+			/**
+			 * @this {{
+			 *   count: number,
+			 *   type: 'suit' | 'color',
+			 *   suit?: string,
+			 *   color?: string
+			 * }}
+			 */
+			return function (itemContainer) {
+				// 从上下文获取color和count
+				const { count, type } = this;
+				// 添加link属性
+				let link;
+				if (type === "suit") {
+					link = this.suit;
+				} else if (type === "color") {
+					link = this.color;
+				}
+				itemContainer.link = link;
+				// 继承Button的原型方法
+				Object.setPrototypeOf(itemContainer, lib.element.Button.prototype);
+				// 添加点击事件
+				itemContainer.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.button);
+				// 将容器加入到dialog.buttons
+				itemContainer.closest(".dialog").buttons.add(itemContainer);
+				// 添加buttonid
+				itemContainer.buttonid ??= get.id();
+				//加封条
+				function formatStr(str, type) {
+					if (type === "color") {
+						return str.replace("红色", '<span style="color: red; ">$&</span>');
+					}
+					return str.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>');
+				}
+				let div = ui.create.div(itemContainer);
+				const innerHTML = count ? formatStr(`${get.translation(link)}牌${count}张`, type) : formatStr(`没有${get.translation(link)}牌`, type);
+				div.css({
+					innerHTML,
+					position: "absolute",
+					width: "100%",
+					bottom: "1%",
+					height: "35%",
+					background: "#352929bf",
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					fontSize: "1.2em",
+					zIndex: "2",
+				});
+			};
+		}
+		//框的样式，不要太宽，高度最小也要100px，防止空框没有高度
+		/**@type {Row_Item_Option['itemContainerCss']} */
+		let itemContainerCss = {
+			border: "solid #c6b3b3 2px",
+			minHeight: "100px",
+		};
+		const groupCards = Object.groupBy(cards, card => get[type](card, player));
+		if (type == "suit") {
+			groupCards.heart ??= [];
+			groupCards.diamond ??= [];
+			groupCards.spade ??= [];
+			groupCards.club ??= [];
+		} else if (type == "color") {
+			groupCards.red ??= [];
+			groupCards.black ??= [];
+		}
+		const keys = Object.keys(groupCards).sort((a, b) => {
+			let arr = [];
+			if (type == "suit") {
+				arr = lib.suits.slice();
+			} else if (type == "color") {
+				arr = Object.keys(lib.color);
+			}
+			return arr.indexOf(a) - arr.indexOf(b);
+		});
+		const list = [];
+		//添加框
+		while (keys.length) {
+			let key1 = keys.shift();
+			let cards1 = groupCards[key1];
+			let key2 = keys.shift();
+			let cards2 = groupCards[key2];
+			if (key2) {
+				list.push([
+					{
+						item: cards1,
+						ItemNoclick: true,
+						custom: createCustom(),
+						itemContainerCss,
+						[type]: key1,
+						count: cards1.length,
+						type,
+					},
+					{
+						item: cards2,
+						ItemNoclick: true,
+						custom: createCustom(),
+						itemContainerCss,
+						[type]: key2,
+						count: cards2.length,
+						type,
+					},
+				]);
+			} else {
+				list.push({
+					item: cards1,
+					ItemNoclick: true,
+					custom: createCustom(),
+					itemContainerCss,
+					[type]: key1,
+					count: cards1.length,
+					type,
+				});
+			}
+		}
+		return list;
+	}
+	/**
 	 * 获取牌的牌面信息
 	 * @param { Card | VCard | CardBaseUIData } node
 	 * @param { Player } player

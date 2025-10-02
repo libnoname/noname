@@ -85,6 +85,7 @@ const skills = {
 					audio: "dczouyi",
 					links: links,
 					async content(event, trigger, player) {
+						const { links } = get.info(event.name);
 						if (links.includes("draw")) {
 							await player.draw(2);
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "he") && target != player)) {

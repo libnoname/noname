@@ -4323,97 +4323,46 @@ const skills = {
 				return;
 			}
 			const skillList = {};
-			for (const name of list.randomGets(4)) {
-				skillList[name] = (lib.character[name][3] || []).filter(filter);
+			list = list.randomGets(4);
+			for (const name of list) {
+				skillList[name] = (lib.character[name][3] || []).filter(filter).flat();
 			}
-			if (Object.keys(skillList).length) {
-				const next = player.chooseButton(3, ["成龙：获得其中至多两个技能", [Object.keys(skillList), "character"]], true, [1, 2]);
-				next.set("skillList", skillList);
-				next.set("processAI", function () {
-					const map = get.event("skillList");
-					return {
-						links: Object.values(map).flat().randomGets(2),
-						bool: true,
-					};
-				});
-				next.set("custom", {
-					replace: {
-						button(button) {
-							if (!_status.event.isMine()) {
-								return;
-							}
-							if (button.classList.contains("selectable") == false) {
-								return;
-							}
-							const dialog = get.event("dialog");
-							const nodes = Array.from(dialog.content.childNodes[1].childNodes);
-							if (nodes.includes(button)) {
-								if (button.classList.contains("selected")) {
-									button.classList.remove("selected");
-									while (dialog.content.childElementCount > 2) {
-										dialog.content.removeChild(dialog.content.lastChild);
-									}
-									dialog.buttons.splice(nodes.length);
-									ui.update();
-								} else {
-									const node = nodes.find(node => node.classList.contains("selected"));
-									if (node) {
-										node.classList.remove("selected");
-										while (dialog.content.childElementCount > 2) {
-											dialog.content.removeChild(dialog.content.lastChild);
-										}
-										dialog.buttons.splice(nodes.length);
-										ui.update();
-									}
-									button.classList.add("selected");
-									dialog.add([get.event("skillList")[button.link].map(value => [value, get.translation(value)]), "tdnodes"]);
-									dialog.buttons.forEach(function (button) {
-										if (ui.selected.buttons.some(value => value.link == button.link)) {
-											button.classList.add("selected");
-										}
-									});
-									game.check();
-								}
-							} else {
-								if (button.classList.contains("selected")) {
-									ui.selected.buttons.remove(button);
-									button.classList.remove("selected");
-									if (_status.multitarget || _status.event.complexSelect) {
-										game.uncheck();
-										game.check();
-									}
-								} else {
-									button.classList.add("selected");
-									ui.selected.buttons.add(button);
-								}
-								const custom = get.event("custom");
-								if (custom && custom.add && custom.add.button) {
-									custom.add.button();
-								}
-							}
-							game.check();
-							nodes.forEach(button => button.classList.add("selectable"));
-						},
-						window() {
-							const dialog = get.event("dialog");
-							const node = dialog.content.childNodes[1];
-							const selected = Array.from(node.childNodes).find(node => node.classList.contains("selected"));
-							if (selected) {
-								selected.classList.remove("selected");
-								while (dialog.content.lastChild != node) {
-									dialog.content.removeChild(dialog.content.lastChild);
-								}
-								dialog.buttons.splice(node.childElementCount);
-							}
-							game.uncheck();
-							game.check();
-							ui.update();
-						},
+			if (Object.values(skillList).length) {
+				const { result } = await player.chooseButton({
+					createDialog: [
+						[
+							[[`成龙：获得其中至多两个技能`], "addNewRow"],
+							[list, "character"],
+							[
+								[
+									Object.values(skillList)
+										.flat()
+										.map(skill => [skill, get.translation(skill)]),
+									"tdnodes",
+								],
+							],
+						],
+					],
+					css: {
+						position: "absolute",
+						top: get.is.phoneLayout() ? "20%" : "30%",
 					},
-					add: next.custom.add,
+					forced: true,
+					selectButton: [1, 2],
+					filterOk: () => {
+						return ui.selected.buttons.every(button => typeof button._link != "string");
+					},
+					ai(button) {
+						if (button._link) {
+							return 0;
+						}
+						return get.skillRank(button.link, "inout");
+					},
 				});
-				const links = await next.forResultLinks();
-				await player.addSkills(links);
+				if (!result?.links?.length) {
+					return;
+				}
+				await player.addSkills(result.links);
 			}
 		},
 		ai: {

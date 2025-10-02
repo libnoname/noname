@@ -93,7 +93,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h");
 		},
-		check: () => true,
 		async content(event, trigger, player) {
 			const hs = player.getCards("h");
 			const top = get.cards(Math.min(3, hs.length), true);
@@ -106,111 +105,23 @@ const skills = {
 					}
 				})
 				.set("delay_time", Math.min(4, cards.length * 1.5));
-			const map = Object.groupBy(cards, i => get.suit(i, player));
-			map.heart ??= [];
-			map.diamond ??= [];
-			map.spade ??= [];
-			map.club ??= [];
 			if (game.hasPlayer(target => target != player)) {
-				const videoId = lib.status.videoId++;
-				const func = (id, map) => {
-					const dialog = ui.create.dialog();
-					dialog.addNewRow(`整经：选择一名其他角色令其获得其中一种花色的牌`);
-					const keys = Object.keys(map).sort((a, b) => {
-						const arr = ["spade", "heart", "club", "diamond", "none"];
-						return arr.indexOf(a) - arr.indexOf(b);
-					});
-					/*dialog.css({
-						position: "absolute",
-						top: get.is.phoneLayout() ? "35%" : "45%",
-					});*/
-					dialog.classList.add("fullheight");
-					while (keys.length) {
-						let key1 = keys.shift();
-						let cards1 = map[key1];
-						let key2 = keys.shift();
-						let cards2 = map[key2];
-						//把框变成按钮，同时给框加封条，显示xxx牌多少张
-						function createCustom(suit, count) {
-							return function (itemContainer) {
-								//改造，狠狠改造
-								itemContainer.link = suit;
-								Object.setPrototypeOf(itemContainer, (lib.element.Button || Button).prototype);
-								itemContainer.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.button);
-								dialog.buttons.add(itemContainer);
-								itemContainer.buttonid ??= get.id();
-								//加封条
-								function formatStr(str) {
-									return str.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>');
-								}
-								let div = ui.create.div(itemContainer);
-								if (count) {
-									div.innerHTML = formatStr(`${get.translation(suit)}牌${count}张`);
-								} else {
-									div.innerHTML = formatStr(`没有${get.translation(suit)}牌`);
-								}
-								div.css({
-									position: "absolute",
-									width: "100%",
-									bottom: "1%",
-									height: "35%",
-									background: "#352929bf",
-									display: "flex",
-									justifyContent: "center",
-									alignItems: "center",
-									fontSize: "1.2em",
-									zIndex: "2",
-								});
-							};
-						}
-						//框的样式，不要太宽，高度最小也要100px，防止空框没有高度
-						/**@type {Row_Item_Option['itemContainerCss']} */
-						let itemContainerCss = {
-							border: "solid #c6b3b3 2px",
-							minHeight: "100px",
-						};
-						if (key2) {
-							dialog.addNewRow(
-								{
-									item: cards1,
-									ItemNoclick: true, //卡牌不需要被点击
-									custom: createCustom(key1, cards1.length), //添加封条
-									itemContainerCss,
-								},
-								{
-									item: cards2,
-									ItemNoclick: true, //卡牌不需要被点击
-									custom: createCustom(key2, cards2.length),
-									itemContainerCss,
-								}
-							);
-						} else {
-							dialog.addNewRow({
-								item: cards1,
-								ItemNoclick: true, //卡牌不需要被点击
-								custom: createCustom(key1, cards1.length),
-								itemContainerCss,
-							});
-						}
-					}
-					dialog.videoId = id;
-					return dialog;
-				};
-				if (player == game.me) {
-					func(videoId, map);
-				} else if (event.isOnline()) {
-					player.send(func, videoId, map);
-				}
+				const map = Object.groupBy(cards, i => get.suit(i, player));
+				const list = get.addNewRowList(cards, "suit", player);
 				const result = await player
 					.chooseButtonTarget({
-						dialog: videoId,
+						createDialog: [[[[`整经：选择一名其他角色令其获得其中一种花色的牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
 						forced: true,
 						filterTarget: lib.filter.notMe,
 						filterButton(button) {
 							return button.links?.length > 0;
 						},
 						ai1(button) {
-							return button.links.length;
+							const player = get.player();
+							if (!game.hasPlayer(current => player != current && get.attitude(player, target) > 0)) {
+								return button.links.length;
+							}
+							return 1 / button.links.length;
 						},
 						ai2(target) {
 							const att = get.attitude(get.player(), target);
@@ -483,7 +394,7 @@ const skills = {
 					.chooseTarget(`抚黎：令一名其他角色展示所有手牌并弃置其中的所有伤害类牌（没有则不弃）并回复1体力`, true, (card, player, target) => {
 						return player != target && target.countCards("h");
 					})
-					.set("ai", target => get.effect(target, get.player(), get.player()))
+					.set("ai", target => get.recoverEffect(target, get.player(), get.player()))
 					.forResult();
 				if (result?.targets?.length) {
 					const [target] = result.targets;
@@ -5193,7 +5104,7 @@ const skills = {
 							if (!target.isIn()) {
 								continue;
 							}
-							const next = target.chooseToUse("挥战：是否替" + get.translation(trigger.player) + "使用一张【闪】？", function(card) {
+							const next = target.chooseToUse("挥战：是否替" + get.translation(trigger.player) + "使用一张【闪】？", function (card) {
 								if (get.name(card) != "shan") {
 									return false;
 								}

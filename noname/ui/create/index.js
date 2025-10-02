@@ -629,19 +629,28 @@ export class Create {
 			node.classList.add("tempimage");
 			let img = get.dynamicVariable(lib.card[cardName].image, card);
 			if (img) {
-				if (img.startsWith("db:")) {
-					img = img.slice(3);
-				} else if (!img.startsWith("ext:")) {
+				if (typeof img != "string") {
 					img = null;
+				} else {
+					if (img.startsWith("ext:")) {
+						img = img.replace(/^ext:/, "extension/");
+					} else if (["character:"].some(prefix => img.startsWith(prefix)) || ["background", "card"].includes(img)) {
+						img = null;
+					}
 				}
 			}
 			if (lib.card[cardName].fullskin) {
 				if (img) {
-					if (img.startsWith("ext:")) {
+					if (img.startsWith("db:")) {
+						bg.setBackgroundDB(img.slice(3));
+					} else if (typeof img == "string") {
+						bg.setBackgroundImage(img);
+					}
+					/*if (img.startsWith("ext:")) {
 						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 					} else {
 						bg.setBackgroundDB(img);
-					}
+					}*/
 				} else {
 					if (lib.card[cardName].modeimage) {
 						bg.setBackgroundImage("image/mode/" + lib.card[cardName].modeimage + "/card/" + cardName + ".png");
@@ -661,12 +670,18 @@ export class Create {
 				}
 			} else if (lib.card[cardName].fullimage) {
 				if (img) {
-					if (img.startsWith("ext:")) {
+					if (img.startsWith("db:")) {
+						bg.setBackgroundDB(img.slice(3));
+					} else if (typeof img == "string") {
+						bg.setBackgroundImage(img);
+						bg.style.backgroundSize = "cover";
+					}
+					/*if (img.startsWith("ext:")) {
 						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 						bg.style.backgroundSize = "cover";
 					} else {
 						bg.setBackgroundDB(img);
-					}
+					}*/
 				} else if (get.dynamicVariable(lib.card[cardName].image, card)) {
 					if (get.dynamicVariable(lib.card[cardName].image, card).startsWith("character:")) {
 						bg.setBackground(get.dynamicVariable(lib.card[cardName].image, card).slice(10), "character");
@@ -689,12 +704,18 @@ export class Create {
 				}
 			} else if (typeof get.dynamicVariable(lib.card[cardName].image, card) == "string" && !lib.card[cardName].fullskin) {
 				if (img) {
-					if (img.startsWith("ext:")) {
+					if (img.startsWith("db:")) {
+						bg.setBackgroundDB(img.slice(3));
+					} else if (typeof img == "string") {
+						bg.setBackgroundImage(img);
+						bg.style.backgroundSize = "cover";
+					}
+					/*if (img.startsWith("ext:")) {
 						bg.setBackgroundImage(img.replace(/^ext:/, "extension/"));
 						bg.style.backgroundSize = "cover";
 					} else {
 						bg.setBackgroundDB(img);
-					}
+					}*/
 				} else {
 					bg.setBackground(get.dynamicVariable(lib.card[cardName].image, card));
 				}
@@ -3449,6 +3470,8 @@ export class Create {
 				position.appendChild(node);
 			}
 			node.link = item;
+			// 复制标记信息
+			node.node.gaintag.innerHTML = item.node.gaintag.innerHTML;
 			if (item.style.backgroundImage) {
 				node.style.backgroundImage = item.style.backgroundImage;
 				node.style.backgroundSize = "cover";

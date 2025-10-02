@@ -12993,7 +12993,7 @@ const skills = {
 	},
 	qice: {
 		audio: 2,
-		audioname: ["clan_xunyou"],
+		audioname: ["clan_xunyou", "pot_huanjie"],
 		enable: "phaseUse",
 		filter(event, player) {
 			const hs = player.getCards("h");

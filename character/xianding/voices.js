@@ -1,5 +1,10 @@
 export default {
-	"#dcqingleng1": "冰心映冷月，独守一江清秋。	",
+	"#dczhongtao1": "凉州男儿，可愿随我再破千军！",
+	"#dczhongtao2": "你我勠力讨贼，何人可堪一战！",
+	"#dcjizhan1": "吾不畏死，又岂畏战！",
+	"#dcjizhan2": "祁连雪未销，战功簿已满！",
+	"#v_machao:die": "战马不休，唯死方卧。",
+	"#dcqingleng1": "冰心映冷月，独守一江清秋。",
 	"#dcqingleng2": "水之遇寒，故成冰尔。",
 	"#dczhendu1": "恶贼，杀我儿之时，可曾想过今日！",
 	"#dczhendu2": "杜鹃泣血成鸩，孤母泪如是。",

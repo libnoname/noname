@@ -2397,7 +2397,7 @@ export class Click {
 				ui.control.show();
 				game.resume2();
 			} else if ((_status.event.isMine() || _status.event.forceMine) && !dialogtouched) {
-				if (_status.event.custom && _status.event.custom.replace.window) {
+				if (typeof _status.event.custom?.replace?.window == "function") {
 					_status.event.custom.replace.window();
 				} else {
 					if (_status.event.skill && _status.event.name == "chooseToUse") {
@@ -2431,7 +2431,7 @@ export class Click {
 		} else {
 			game.closePopped();
 		}
-		if (_status.event.custom && _status.event.custom.add.window) {
+		if (typeof _status.event.custom?.add?.window == "function") {
 			_status.event.custom.add.window(clicked);
 		}
 	}
@@ -2538,7 +2538,7 @@ export class Click {
 		}
 		_status.clicked = true;
 		var custom = _status.event.custom;
-		if (custom && custom.replace.button) {
+		if (typeof custom?.replace?.button == "function") {
 			custom.replace.button(this);
 			return;
 		}
@@ -2559,7 +2559,7 @@ export class Click {
 			this.classList.add("selected");
 			ui.selected.buttons.add(this);
 		}
-		if (custom && custom.add && custom.add.button) {
+		if (typeof custom?.add?.button == "function") {
 			custom.add.button();
 		}
 		game.check();
@@ -2596,7 +2596,7 @@ export class Click {
 			return;
 		}
 		var custom = _status.event.custom;
-		if (custom && custom.replace.card) {
+		if (typeof custom?.replace?.card == "function") {
 			custom.replace.card(this);
 			return;
 		}
@@ -2628,7 +2628,7 @@ export class Click {
 				}
 			}
 		}
-		if (custom.add.card) {
+		if (typeof custom?.add?.card == "function") {
 			custom.add.card();
 		}
 		game.check();
@@ -2815,7 +2815,7 @@ export class Click {
 		}
 		_status.clicked = true;
 		var custom = _status.event.custom;
-		if (custom && custom.replace.target) {
+		if (typeof custom?.replace?.target == "function") {
 			custom.replace.target(this, e);
 			return;
 		}
@@ -2869,7 +2869,7 @@ export class Click {
 			}
 			this.classList.add("selected");
 		}
-		if (custom.add.target) {
+		if (typeof custom?.add?.target == "function") {
 			custom.add.target();
 		}
 		game.check();
@@ -2990,8 +2990,8 @@ export class Click {
 	ok(node) {
 		const gameEvent = get.event(),
 			custom = gameEvent.custom,
-			replaceConfirm = custom.replace.confirm;
-		if (replaceConfirm) {
+			replaceConfirm = custom?.replace?.confirm;
+		if (typeof replaceConfirm == "function") {
 			replaceConfirm(true);
 			return;
 		}
@@ -3055,15 +3055,15 @@ export class Click {
 			ui.skills3.close();
 		}
 		game.uncheck();
-		const addConfirm = custom.add.confirm;
-		if (addConfirm) {
+		const addConfirm = custom?.add?.confirm;
+		if (typeof addConfirm == "function") {
 			addConfirm(true);
 		}
 		game.resume();
 	}
 	cancel(node) {
 		var event = _status.event;
-		if (event.custom.replace.confirm) {
+		if (typeof event.custom?.replace?.confirm == "function") {
 			event.custom.replace.confirm(false);
 			return;
 		}
@@ -3104,7 +3104,7 @@ export class Click {
 			ui.skills3.close();
 		}
 		game.uncheck();
-		if (event.custom.add.confirm) {
+		if (typeof event.custom?.add?.confirm == "function") {
 			event.custom.add.confirm(true);
 		}
 		game.resume();

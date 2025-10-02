@@ -85,7 +85,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
-		"xvwen",
+		"xuwen",
 		"mark_shen_machao",
 		"tw_zhenji",
 		"pe_xiahouxuan",
@@ -1011,6 +1011,7 @@ window.noname_character_rank = {
 		"ns_liuzhang",
 		"ol_maliang",
 		"dc_sb_dengai",
+		"pot_huanjie",
 	],
 	b: [
 		"dc_sb_xusheng",
@@ -2144,6 +2145,7 @@ window.noname_character_rank = {
 		"jsrg_qiaoxuan",
 		"jsrg_zhujun",
 		"jsrg_liubei",
+		"pot_dengai",
 	],
 	rarity: {
 		legend: [
@@ -4032,6 +4034,7 @@ window.noname_character_rank = {
 			"ns_xinnanhua",
 			"ns_caimao",
 			"v_caocao",
+			"pot_huanjie",
 		],
 		junk: [
 			"yao_yuanshu",
@@ -4294,6 +4297,7 @@ window.noname_character_rank = {
 			"jsrg_guojia",
 			"jsrg_dongzhuo",
 			"jsrg_zhanghuan",
+			"pot_dengai",
 		],
 	},
 };
