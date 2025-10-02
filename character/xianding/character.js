@@ -1,5 +1,12 @@
 const characters = {
-	xvwen:{
+	dc_sb_xusheng:{
+		sex:"male",
+		group:"wu",
+		hp:4,
+		skills:["dcsbqinqiang"]
+	},
+	
+	xuwen:{
 		sex:"female",
 		hp:3,
 		group:"wei",

@@ -2419,6 +2419,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToMove_new() {
@@ -2438,6 +2439,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToGuanxing(num) {
@@ -5883,35 +5885,41 @@ export class Player extends HTMLDivElement {
 		}
 		return this.chooseButton(forced, select, "hidden", [prompt, [list, "vcard"], "hidden"]);
 	}
-	chooseButton() {
+	chooseButton(choose) {
 		var next = game.createEvent("chooseButton");
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				if (!next.forced) {
-					next.forced = arguments[i];
-				} else {
-					next.complexSelect = arguments[i];
+		if (arguments.length == 1 && get.is.object(choose)) {
+			for (var i in choose) {
+				next[i] = choose[i];
+			}
+		} else {
+			for (var i = 0; i < arguments.length; i++) {
+				if (typeof arguments[i] == "boolean") {
+					if (!next.forced) {
+						next.forced = arguments[i];
+					} else {
+						next.complexSelect = arguments[i];
+					}
+				} else if (get.itemtype(arguments[i]) == "dialog") {
+					next.dialog = arguments[i];
+					next.closeDialog = true;
+				} else if (get.itemtype(arguments[i]) == "select") {
+					next.selectButton = arguments[i];
+				} else if (typeof arguments[i] == "number") {
+					next.selectButton = [arguments[i], arguments[i]];
+				} else if (typeof arguments[i] == "function") {
+					if (next.ai) {
+						next.filterButton = arguments[i];
+					} else {
+						next.ai = arguments[i];
+					}
+				} else if (arguments[i] == "complexSelect") {
+					// 为直接添加complexSelect提供支持喵
+					next.complexSelect = true;
+				} else if (arguments[i] == "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (Array.isArray(arguments[i])) {
+					next.createDialog = arguments[i];
 				}
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
-				next.closeDialog = true;
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
-			} else if (typeof arguments[i] == "function") {
-				if (next.ai) {
-					next.filterButton = arguments[i];
-				} else {
-					next.ai = arguments[i];
-				}
-			} else if (arguments[i] == "complexSelect") {
-				// 为直接添加complexSelect提供支持喵
-				next.complexSelect = true;
-			} else if (arguments[i] == "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (Array.isArray(arguments[i])) {
-				next.createDialog = arguments[i];
 			}
 		}
 		next.player = this;

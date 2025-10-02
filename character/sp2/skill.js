@@ -585,7 +585,7 @@ const skills = {
 					if (history.length !== 0) {
 						return false;
 					}
-					const card = new lib.element.VCard({ name: event.card.name });
+					const card = new lib.element.VCard({ name: event.card.name, isCard: true });
 					return event.targets?.some(target => {
 						if (!target?.isIn()) {
 							return false;
@@ -600,7 +600,7 @@ const skills = {
 						return trigger.targets.includes(evt.player) && evt.card == trigger.card;
 					});
 					if (history.length == 0) {
-						const card = new lib.element.VCard({ name: trigger.card.name });
+						const card = new lib.element.VCard({ name: trigger.card.name, isCard: true });
 						for (const target of trigger.targets || []) {
 							if (!target?.isIn()) {
 								continue;
@@ -2187,6 +2187,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				const card = new lib.element.VCard({
 					name: "sha",
+					isCard: true,
 				});
 				const result = await player
 					.chooseUseTarget(`###${get.prompt("starminghui")}###视为使用一张无距离限制的【杀】`, card, false, "nodistance")
@@ -3034,7 +3035,7 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (!event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+			if (!event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event) && !event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -3044,10 +3045,10 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				var list = [];
-				if (event.filterCard(get.autoViewAs({ name: "sha" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "sha", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["基本", "", "sha"]);
 				}
-				if (event.filterCard(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: "wuxie", storage: { starlifeng: true } }, "unsure"), player, event)) {
 					list.push(["锦囊", "", "wuxie"]);
 				}
 				const dialog = ui.create.dialog("砺锋", [list, "vcard"]);
@@ -3071,6 +3072,9 @@ const skills = {
 					popname: true,
 					viewAs: {
 						name: links[0][2],
+						storage: {
+							starlifeng: true,
+						},
 					},
 					ai1(card) {
 						var player = _status.event.player;
@@ -3114,6 +3118,14 @@ const skills = {
 			},
 			order: 10,
 			result: { player: 1 },
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.starlifeng) {
+					return Infinity;
+				}
+			},
 		},
 		group: "starlifeng_mark",
 		subSkill: {
@@ -4472,7 +4484,7 @@ const skills = {
 					.set(
 						"choiceList",
 						skills.map(i => {
-							return '<div class="skill">' + (lib.translate[i + "_ab"] || lib.translate[i]) + "</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+							return '<div class="skill">' + (lib.translate[i + "_ab"] || lib.translate[i]) + "</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 						})
 					)
 					.set("displayIndex", false)
@@ -7011,6 +7023,7 @@ const skills = {
 					return 5.5 - get.value(card);
 				},
 				log: false,
+				allowChooseAll: true,
 			},
 		},
 		ai: {
@@ -7840,7 +7853,7 @@ const skills = {
 				.set(
 					"choiceList",
 					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

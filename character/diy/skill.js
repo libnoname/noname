@@ -5794,7 +5794,7 @@ const skills = {
 							}
 						}
 					}
-					if (get.plainText(get.skillInfoTranslation(list[i], player)).includes("【杀】")) {
+					if (get.skillInfoTranslation(list[i], player).includes("【杀】")) {
 						return true;
 					}
 				}
@@ -5842,7 +5842,7 @@ const skills = {
 						if (info.ai?.neg || info.ai?.halfneg || info.ai?.combo) {
 							return false;
 						}
-						return ["使用【杀】时", "使用【杀】指定"].some(str => get.plainText(get.skillInfoTranslation(skill, player)).includes(str));
+						return ["使用【杀】时", "使用【杀】指定"].some(str => get.skillInfoTranslation(skill, player).includes(str));
 					})
 				);
 			event.result = {

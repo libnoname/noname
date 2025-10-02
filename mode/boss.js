@@ -1656,6 +1656,9 @@ export default () => {
 				};
 			}
 		},
+		characterSubstitute: {
+			boss_mingxingzhu: [["boss_mingxingzhu_shadow", ["img:image/mode/boss/character/boss_mingxingzhu_shadow.jpg"]]],
+		},
 		game: {
 			reserveDead: true,
 			addBossFellow(position, name) {
@@ -5377,67 +5380,78 @@ export default () => {
 				intro: {
 					content: "info",
 				},
+				init(player, skill) {
+					player.changeSkin(skill, "boss_mingxingzhu");
+				},
+				onremove(player, skill) {
+					player.changeSkin(skill, "boss_mingxingzhu_shadow");
+				},
 				filter(event, player) {
-					return event.player != player && event.player.isFriendOf(player) && event.source && event.source.isIn() && event.source.isEnemyOf(player);
+					if (event.player == player || event.player.isEnemyOf(player)) {
+						return false;
+					}
+					if (!event.source?.isIn() || event.source.isFriendOf(player)) {
+						return false;
+					}
+					const card = new lib.element.VCard({ name: "sha", nature: "thunder", isCard: true });
+					return player.canUse(card, event.source, false);
 				},
 				logTarget: "source",
-				content() {
-					"step 0";
-					player.useCard({ name: "sha", nature: "thunder" }, trigger.source);
-					"step 1";
-					player.removeSkill("boss_jiding");
-				},
-				group: "boss_jiding_recover",
-				subSkill: {
-					recover: {
-						trigger: { source: "damageEnd" },
-						silent: true,
-						filter(event, player) {
-							return event.getParent(3).name == "boss_jiding";
-						},
-						content() {
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].name == "boss_jinshenrushou") {
-									game.players[i].recover();
-									player.line(game.players[i], "green");
+				async content(event, trigger, player) {
+					const card = new lib.element.VCard({ name: "sha", nature: "thunder", isCard: true }),
+						target = trigger.source;
+					if (player.canUse(card, target, false)) {
+						const next = player.useCard(card, target, false);
+						player
+							.when({
+								source: "damageSource",
+							})
+							.filter(evt => evt.getParent(2) == next)
+							.step(async (event, trigger, player) => {
+								const target = game.findPlayer(current => current.name == "boss_jinshenrushou");
+								if (target) {
+									player.line(target);
+									await target.recover(player);
 								}
-							}
-						},
-					},
+							})
+						await next;
+						await player.removeSkills(event.name);
+					}
 				},
 			},
 			boss_xingqiu: {
-				init(player) {
-					player.storage.boss_xingqiu = false;
+				init(player, skill) {
+					player.setStorage(skill, false);
 				},
-				trigger: { player: "phaseDrawBegin" },
-				direct: true,
+				onremove: true,
+				trigger: { player: "phaseUseBegin" },
 				locked: true,
-				content() {
-					"step 0";
-					if (player.storage.boss_xingqiu) {
-						player.logSkill("boss_xingqiu");
-						event.list = player.getEnemies().sortBySeat();
-					} else {
-						event.finish();
+				async cost(event, trigger, player) {
+					const targets = player.getEnemies().sortBySeat(),
+						bool = player.getStorage(event.skill, false);
+					event.result = {
+						bool: bool,
 					}
-					player.storage.boss_xingqiu = !player.storage.boss_xingqiu;
-					"step 1";
-					if (event.list.length) {
-						var target = event.list.shift();
+					if (targets.length) {
+						event.result.targets = targets;
+					}
+					player.setStorage(event.skill, !bool);
+				},
+				async content(event, trigger, player) {
+					const link = async target => {
 						if (!target.isLinked()) {
-							target.link();
 							player.line(target, "green");
+							await target.link();
 						}
-						event.redo();
-					}
-					"step 2";
-					game.delay();
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].name == "boss_mingxingzhu") {
-							game.players[i].addSkill("boss_jiding");
-						}
-					}
+					};
+					await game.doAsyncInOrder(event.targets, link);
+					const targets = game.filterPlayer(current => current.name == "boss_mingxingzhu").sortBySeat(),
+						addSkill = async target => {
+							if (!target.hasSkill("boss_jiding", null, null, false)) {
+								await target.addSkills("boss_jiding");
+							}
+						};
+					await game.doAsyncInOrder(targets, addSkill);
 				},
 			},
 			boss_kuangxiao: {
@@ -8739,20 +8753,26 @@ export default () => {
 				},
 			},
 			boss_danshu: {
-				trigger: { player: "loseEnd" },
+				trigger: {
+					player: "loseAfter",
+					global: ["loseAsyncAfter", "gainAfter", "addJudgeAfter", "equipAfter", "addToExpansionAfter"],
+				},
 				frequent: true,
 				unique: true,
 				filter(event, player) {
-					return _status.currentPhase != player && player.hp < player.maxHp;
+					if (!event.getl?.(player)?.cards2?.length) {
+						return false;
+					}
+					return _status.currentPhase != player && player.isDamaged();
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
-					if (result.color == "red") {
-						player.recover();
+				async content(event, trigger, player) {
+					const result = await player
+						.judge(function (card) {
+							return get.color(card) == "red" ? 1 : 0;
+						})
+						.forResult();
+					if (result?.color == "red") {
+						await player.recover();
 					}
 				},
 				ai: {
@@ -10816,7 +10836,7 @@ export default () => {
 			boss_shuishenxuanming_ab: "水神玄冥",
 			boss_shuishenxuanming: "水神玄冥·嬴禺强",
 			boss_zhuanxu_ab: "颛顼",
-			boss_zhaunxu: "颛顼·姬颛顼",
+			boss_zhuanxu: "颛顼·姬颛顼",
 
 			boss_lingqu: "灵躯",
 			boss_lingqu_info: "锁定技，当你受到伤害后，你摸一张牌，然后手牌上限+1；防止你受到的大于1点的伤害。",
@@ -10833,7 +10853,7 @@ export default () => {
 			boss_jiazu: "枷足",
 			boss_jiazu_info: "锁定技，回合开始时，弃置你上家和下家的敌方角色的装备区内的坐骑牌。",
 			boss_jiding: "殛顶",
-			boss_jiding_info: "锁定技，其他己方角色受到伤害后，若伤害来源为敌方角色，则你视为对伤害来源使用雷【杀】，若此【杀】造成伤害，蓐收回复1点体力。然后你失去此技能（只有发动了才会失去，没发动不会失去）。",
+			boss_jiding_info: "锁定技，其他己方角色受到伤害后，若伤害来源为敌方角色，则你视为对伤害来源使用雷【杀】，若此【杀】造成伤害，蓐收回复1点体力。然后你失去此技能。",
 			boss_xingqiu: "刑秋",
 			boss_xingqiu_info: "锁定技，每两轮的出牌阶段开始时，你横置所有敌方角色，然后使明刑柱获得〖殛顶〗。",
 			boss_kuangxiao: "狂啸",

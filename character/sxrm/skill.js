@@ -303,7 +303,7 @@ const skills = {
 			const next = player.chooseToCompare(target).set("isDelay", true);
 			await next;
 			await game.delay();
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(card, target)) {
 				const next2 = player.useCard(card, target);
 				player
@@ -677,7 +677,7 @@ const skills = {
 				.step(async (event, trigger, player) => {
 					for (let targetx of targets) {
 						if (!targetx.getHistory("damage").length) {
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (targetx.canUse(card, player, false)) {
 								await targetx.useCard(card, player, false);
 							}
@@ -865,7 +865,7 @@ const skills = {
 						const result3 = await target.chooseToCompare(targetx).forResult();
 						if (result3.winner) {
 							const loser = [target, targetx].find(i => i != result3.winner),
-								sha = new lib.element.VCard({ name: "sha" });
+								sha = new lib.element.VCard({ name: "sha", isCard: true });
 							if (loser && result3.winner.canUse(sha, loser, false)) {
 								await result3.winner.useCard(sha, loser, false);
 							}

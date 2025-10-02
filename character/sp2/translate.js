@@ -522,7 +522,7 @@ const translates = {
 	starsujun: "肃军",
 	starsujun_info: "当你使用一张牌时，若你手牌中的基本牌和非基本牌的牌数相等，你可以摸两张牌。",
 	starlifeng: "砺锋",
-	starlifeng_info: "你可以将一张本回合未有角色使用过的颜色的手牌当做不计入次数的【杀】或【无懈可击】使用。",
+	starlifeng_info: "你可以将一张本回合未有角色使用过的颜色的手牌当做无次数限制且不计入次数的【杀】或【无懈可击】使用。",
 	star_yuanshu: "星袁术",
 	star_yuanshu_prefix: "星",
 	starcanxi: "残玺",

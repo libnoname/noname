@@ -4,6 +4,58 @@ game.import("card", function () {
 		name: "extra",
 		connect: true,
 		card: {
+			//青囊书
+			//杨彪：孩子们我没意见
+			mb_qingnangshu: {
+				audio: true,
+				fullskin: true,
+				type: "equip",
+				subtype: "equip5",
+				skills: ["mb_qingnangshu_skill"],
+				maxNum: 3,
+				onEquip() {
+        			if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
+        				if (!card.storage) {
+            				card.storage = {};
+        				}
+        				card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+        				lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+        			}
+        			player.markSkill("mb_qingnangshu_skill");
+				},
+				onLose() {
+					if (!player.getCards("e", i => i.name == "mb_qingnangshu").length) {
+						player.unmarkSkill("mb_qingnangshu_skill");
+					} else {
+						player.markSkill("mb_qingnangshu_skill");
+					}
+				},
+				cardPrompt(card, player) {
+        			if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
+        				if (!card.storage) {
+            				card.storage = {};
+        				}
+        				card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+        				lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+        			}
+        			return "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余" + parseFloat(card.storage.mb_qingnangshu_skill) + "次）。";
+        		},
+				ai: {
+					equipValue: 9,
+				},
+			},
+			//传国玉玺
+			//受命于天，既寿永昌！
+			mb_chuanguoyuxi: {
+				audio: true,
+				fullskin: true,
+				type: "equip",
+				subtype: "equip5",
+				skills: ["mb_chuanguoyuxi_skill"],
+				ai: {
+					equipValue: 9,
+				},
+			},
 			muniu: {
 				fullskin: true,
 				type: "equip",
@@ -750,6 +802,9 @@ game.import("card", function () {
 				equipSkill: true,
 				enable: "phaseUse",
 				onChooseToUse(event) {
+					if (game.online) {
+						return;
+					}
 					const cards = event.player.getVCards("e").filter(card => card.name == "muniu" && !card?.storage?.used);
 					event.set("muniu_skill", cards);
 				},
@@ -1421,6 +1476,129 @@ game.import("card", function () {
 				},
 			},
 			huogon2: {},
+
+			//青囊书
+			mb_qingnangshu_skill: {
+				equipSkill: true,
+				mark: true,
+				marktext: "书",
+                intro: {
+                    markcount(_, player) {
+                        let cards = player.getCards("e", card => {
+            				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+            			}),
+                			num = 0;
+            			if (cards?.length) {
+                			num = cards[0].storage.mb_qingnangshu_skill;
+            			}
+                        return `${num}/${lib.card.mb_qingnangshu.maxNum}`;
+                    },
+                    content(_, player) {
+                        let cards = player.getCards("e", card => {
+            				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+            			}),
+                			num = 0;
+            			if (cards?.length) {
+                			num = cards[0].storage.mb_qingnangshu_skill;
+            			}
+                        return `<li>剩余可用${num}次<br><li>锁定技，准备阶段，你加1点体力上限并回复1点体力。`;
+                    },
+                },
+        		audio: "zhaohan1.mp3",
+        		trigger: { player: "phaseZhunbeiBegin" },
+        		forced: true,
+        		filter(event, player) {
+        			return player.hasCard(card => {
+        				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+        			}, "e");
+        		},
+        		broadcast(card, player) {
+        			game.broadcast(
+        				(card, storage) => {
+        					card.storage = storage;
+        				},
+        				card,
+        				card.storage
+        			);
+					if (!player) {
+    					player = get.owner(card);
+					}
+					if (player) {
+    					player.markSkill("mb_qingnangshu_skill");
+					}
+        			if (card.storage.mb_qingnangshu_skill <= 0) {
+						if (player) {
+    						player.lose(card, ui.special);
+    						player.$throw(card, 1000);
+    						if (!player.getCards("e", i => i.name == "mb_qingnangshu" && i != card).length) {
+        						player.unmarkSkill("mb_qingnangshu_skill");
+        					}
+    						card.fix();
+    						card.remove();
+    						card.destroyed = true;
+						} else {
+    						game.cardsGotoSpecial(card);
+						}
+						game.log(card, "被移出了游戏");
+        			}
+        		},
+        		async content(event, trigger, player) {
+        			player.flashAvatar(event.name, "yangbiao");
+        			player.chat("天道昭昭，再兴如光武亦可期！");
+        			const cards = player.getCards("e", card => {
+        				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+        			});
+        			for (const card of cards) {
+        				card.storage.mb_qingnangshu_skill--;
+        				game.log(card, "减少了", "#y1点", "#g耐久值");
+        				lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+        			}
+        			await player.gainMaxHp();
+        			await player.recover();
+        		},
+			},
+
+			//传国玉玺
+			mb_chuanguoyuxi_skill: {
+				equipSkill: true,
+        		audio: "weidi",
+        		audioname2: {
+            		shen_simayi: "lianpo1.mp3",
+        			xin_simayi: "lianpo1.mp3",
+        			new_simayi: "lianpo1.mp3",
+        		},
+        		trigger: { player: "phaseDiscardBegin" },
+        		forced: true,
+        		async content(event, trigger, player) {
+        			player.flashAvatar(event.name, "yuanshu");
+        			await player.draw();
+        			player.addSkill(event.name + "_add");
+        			player.addMark(event.name + "_add", 2, false);
+        			game.log(player, "的手牌上限", "#y+2");
+        			let str = "受命于天，既寿永昌！";
+        			if (!player.isZhu2()) {
+            			await player.loseHp();
+            			str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
+        			}
+        			player.chat(str);
+        		},
+        		subSkill: {
+        			add: {
+        				charlotte: true,
+        				onremove: true,
+        				mark: true,
+        				markimage: "image/card/handcard.png",
+        				intro: {
+            				content: "手牌上限+#",
+        				},
+        				mod: {
+        					maxHandcard(player, num) {
+        						return num + player.countMark("mb_chuanguoyuxi_skill_add");
+        					},
+        				},
+        			},
+        		},
+			},
 		},
 		translate: {
 			jiu: "酒",
@@ -1461,6 +1639,19 @@ game.import("card", function () {
 			muniu_skill_bg: "辎",
 			muniu_info: "①出牌阶段限一次，你可以将一张手牌扣置于你装备区里的【木牛流马】下，然后你可以将【木牛流马】移动到一名其他角色的装备区里。②你可以将【木牛流马】下的牌如手牌般使用或打出。③当你失去装备区的【木牛流马】后，你刷新〖木牛流马①〗的使用次数限制。若此牌不是因置入其他角色的装备区而失去的，则你将【木牛流马】下的所有牌置入弃牌堆。",
 			muniu_skill_info: "将一张手牌扣置于你装备区里的【木牛流马】下，然后可以将此装备移动到一名其他角色的装备区里。",
+
+			mb_qingnangshu: "青囊书",
+			mb_qingnangshu_bg: "书",
+			mb_qingnangshu_info: "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余3次）。",
+			mb_qingnangshu_append: '<span style="font-family: yuanli">你也会昭汉？</span>',
+			mb_qingnangshu_skill: "青囊书",
+			mb_qingnangshu_skill_info: "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余3次）。",
+			mb_chuanguoyuxi: "传国玉玺",
+			mb_chuanguoyuxi_bg: "玺",
+			mb_chuanguoyuxi_info: "锁定技，弃牌阶段开始时，你摸一张牌且手牌上限永久+2，然后若你不为主公，你失去1点体力。",
+			mb_chuanguoyuxi_append: '<span style="font-family: yuanli">受命于天，既寿永昌！</span>',
+			mb_chuanguoyuxi_skill: "传国玉玺",
+			mb_chuanguoyuxi_skill_info: "锁定技，弃牌阶段开始时，你摸一张牌且手牌上限永久+2，然后若你不为主公，你失去1点体力。",
 		},
 		list: [
 			["heart", 4, "sha", "fire"],
@@ -1519,6 +1710,9 @@ game.import("card", function () {
 			["club", 4, "bingliang"],
 
 			["diamond", 5, "muniu"],
+
+			["heart", 9, "mb_qingnangshu"],
+			["spade", 13, "mb_chuanguoyuxi"],
 		],
 	};
 });

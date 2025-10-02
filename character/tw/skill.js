@@ -4312,7 +4312,7 @@ const skills = {
 			}
 			const filter = skill => {
 				const translation = get.skillInfoTranslation(skill, player);
-				if (!translation) {
+				if (!translation.length) {
 					return false;
 				}
 				const info = get.info(skill);
@@ -4323,97 +4323,46 @@ const skills = {
 				return;
 			}
 			const skillList = {};
-			for (const name of list.randomGets(4)) {
-				skillList[name] = (lib.character[name][3] || []).filter(filter);
+			list = list.randomGets(4);
+			for (const name of list) {
+				skillList[name] = (lib.character[name][3] || []).filter(filter).flat();
 			}
-			if (Object.keys(skillList).length) {
-				const next = player.chooseButton(3, ["成龙：获得其中至多两个技能", [Object.keys(skillList), "character"]], true, [1, 2]);
-				next.set("skillList", skillList);
-				next.set("processAI", function () {
-					const map = get.event("skillList");
-					return {
-						links: Object.values(map).flat().randomGets(2),
-						bool: true,
-					};
-				});
-				next.set("custom", {
-					replace: {
-						button(button) {
-							if (!_status.event.isMine()) {
-								return;
-							}
-							if (button.classList.contains("selectable") == false) {
-								return;
-							}
-							const dialog = get.event("dialog");
-							const nodes = Array.from(dialog.content.childNodes[1].childNodes);
-							if (nodes.includes(button)) {
-								if (button.classList.contains("selected")) {
-									button.classList.remove("selected");
-									while (dialog.content.childElementCount > 2) {
-										dialog.content.removeChild(dialog.content.lastChild);
-									}
-									dialog.buttons.splice(nodes.length);
-									ui.update();
-								} else {
-									const node = nodes.find(node => node.classList.contains("selected"));
-									if (node) {
-										node.classList.remove("selected");
-										while (dialog.content.childElementCount > 2) {
-											dialog.content.removeChild(dialog.content.lastChild);
-										}
-										dialog.buttons.splice(nodes.length);
-										ui.update();
-									}
-									button.classList.add("selected");
-									dialog.add([get.event("skillList")[button.link].map(value => [value, get.translation(value)]), "tdnodes"]);
-									dialog.buttons.forEach(function (button) {
-										if (ui.selected.buttons.some(value => value.link == button.link)) {
-											button.classList.add("selected");
-										}
-									});
-									game.check();
-								}
-							} else {
-								if (button.classList.contains("selected")) {
-									ui.selected.buttons.remove(button);
-									button.classList.remove("selected");
-									if (_status.multitarget || _status.event.complexSelect) {
-										game.uncheck();
-										game.check();
-									}
-								} else {
-									button.classList.add("selected");
-									ui.selected.buttons.add(button);
-								}
-								const custom = get.event("custom");
-								if (custom && custom.add && custom.add.button) {
-									custom.add.button();
-								}
-							}
-							game.check();
-							nodes.forEach(button => button.classList.add("selectable"));
-						},
-						window() {
-							const dialog = get.event("dialog");
-							const node = dialog.content.childNodes[1];
-							const selected = Array.from(node.childNodes).find(node => node.classList.contains("selected"));
-							if (selected) {
-								selected.classList.remove("selected");
-								while (dialog.content.lastChild != node) {
-									dialog.content.removeChild(dialog.content.lastChild);
-								}
-								dialog.buttons.splice(node.childElementCount);
-							}
-							game.uncheck();
-							game.check();
-							ui.update();
-						},
+			if (Object.values(skillList).length) {
+				const { result } = await player.chooseButton({
+					createDialog: [
+						[
+							[[`成龙：获得其中至多两个技能`], "addNewRow"],
+							[list, "character"],
+							[
+								[
+									Object.values(skillList)
+										.flat()
+										.map(skill => [skill, get.translation(skill)]),
+									"tdnodes",
+								],
+							],
+						],
+					],
+					css: {
+						position: "absolute",
+						top: get.is.phoneLayout() ? "20%" : "30%",
 					},
-					add: next.custom.add,
+					forced: true,
+					selectButton: [1, 2],
+					filterOk: () => {
+						return ui.selected.buttons.every(button => typeof button._link != "string");
+					},
+					ai(button) {
+						if (button._link) {
+							return 0;
+						}
+						return get.skillRank(button.link, "inout");
+					},
 				});
-				const links = await next.forResultLinks();
-				await player.addSkills(links);
+				if (!result?.links?.length) {
+					return;
+				}
+				await player.addSkills(result.links);
 			}
 		},
 		ai: {
@@ -4652,7 +4601,7 @@ const skills = {
 			player
 				.when({ global: "phaseAfter" })
 				.then(() => {
-					player.insertPhase();
+					player.insertPhase("twhunyou");
 				})
 				.then(() => {
 					player.storage.isInHuan = true;
@@ -4875,7 +4824,7 @@ const skills = {
 					.set("target", target)
 					.forResultLinks();
 				if (links && links.length) {
-					const card = new lib.element.VCard({ name: links[0][2] });
+					const card = new lib.element.VCard({ name: links[0][2], isCard: true });
 					await player.useCard(card, target, false);
 				}
 			}
@@ -6668,7 +6617,7 @@ const skills = {
 			return game.hasPlayer(target => get.info("twjuexing").filterTarget(null, player, target));
 		},
 		filterTarget(_, player, target) {
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			return target != player && player.canUse(card, target);
 		},
 		usable: 1,
@@ -6681,7 +6630,7 @@ const skills = {
 				game.log(player, "触发了", "#g【绝行】", "的", "#y历战", "效果");
 			});
 			const target = event.target;
-			const card = new lib.element.VCard({ name: "juedou" });
+			const card = new lib.element.VCard({ name: "juedou", isCard: true });
 			player.addTempSkill("twjuexing_effect");
 			player
 				.when({ global: "useCardAfter" })
@@ -7293,7 +7242,7 @@ const skills = {
 				.set("ai", target => {
 					const player = get.event("player"),
 						att = get.attitude(player, target);
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					if (att > 0) {
 						return (
 							game.countPlayer(aim => {
@@ -7315,7 +7264,7 @@ const skills = {
 					.reduce((list, evt) => list.addArray(evt.twhuajing_skills), [])
 					.filter(skill => player.hasMark(skill));
 				let choiceList = skills.map(i => {
-					return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player) + "</div>";
+					return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 				});
 				const {
 					result: { control },
@@ -7470,7 +7419,7 @@ const skills = {
 							if (target.isTurnedOver()) {
 								return 0;
 							}
-							const card = new lib.element.VCard({ name: "sha" });
+							const card = new lib.element.VCard({ name: "sha", isCard: true });
 							if (
 								game.hasPlayer(aim => {
 									return target.canUse(card, target) && get.effect(aim, card, target, player) > 0 && get.effect(aim, card, target, target) > 0;
@@ -7868,7 +7817,7 @@ const skills = {
 				audio: "twchue",
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					return (
 						player.hasUseTarget(card) &&
 						/*player.getHistory('useSkill',evt=>{
@@ -7877,7 +7826,7 @@ const skills = {
 					);
 				},
 				check(event, player) {
-					return player.hasValueTarget(new lib.element.VCard({ name: "sha" }));
+					return player.hasValueTarget(new lib.element.VCard({ name: "sha", isCard: true }));
 				},
 				prompt2(event, player) {
 					const num = player.getHp();
@@ -7886,7 +7835,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const num = player.getHp();
 					player.removeMark("twchue", num);
-					const card = new lib.element.VCard({ name: "sha" });
+					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					player
 						.when("useCard2")
 						.filter(evt => evt.getParent(2) == event)
@@ -11705,12 +11654,12 @@ const skills = {
 				audio: "twxiongzheng",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					const sha = new lib.element.VCard({ name: "sha" });
+					const sha = new lib.element.VCard({ name: "sha", isCard: true });
 					return game.hasPlayer(target => player.getStorage("twxiongzheng_mark").includes(target) || player.canUse(sha, target, false));
 				},
 				async cost(event, trigger, player) {
 					const target = player.storage.twxiongzheng_target;
-					const sha = new lib.element.VCard({ name: "sha" });
+					const sha = new lib.element.VCard({ name: "sha", isCard: true });
 					const list = game.filterPlayer(target => player.getStorage("twxiongzheng_mark").includes(target));
 					const list2 = game.filterPlayer(target => player.canUse(sha, target, false));
 					let choiceList = ["视为对任意名本轮未对" + get.translation(target) + "造成过伤害的角色使用一张【杀】", "令任意名本轮对" + get.translation(target) + "造成过伤害的角色摸两张牌"];
@@ -11779,7 +11728,7 @@ const skills = {
 								if (!list.includes(target)) {
 									return false;
 								}
-								return !goon || player.canUse(new lib.element.VCard({ name: "sha" }), target, false);
+								return !goon || player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), target, false);
 							},
 							[1, list.length]
 						)
@@ -11794,7 +11743,7 @@ const skills = {
 						const targets = result.targets.sortBySeat();
 						player.line(targets);
 						if (goon) {
-							const sha = new lib.element.VCard({ name: "sha" });
+							const sha = new lib.element.VCard({ name: "sha", isCard: true });
 							await player.useCard(sha, targets, false);
 						} else {
 							await game.asyncDraw(targets, 2);
@@ -13289,7 +13238,7 @@ const skills = {
 					}
 					return "cancel2";
 				})
-				.set("prompt2", get.skillInfoTranslation("twjiexun", player) + "<br>" + str);
+				.set("prompt2", get.skillInfoTranslation("twjiexun", player, false) + "<br>" + str);
 			"step 1";
 			if (result.control != "cancel2") {
 				var suit = result.control;
@@ -22095,7 +22044,7 @@ const skills = {
 				.set(
 					"choiceList",
 					skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

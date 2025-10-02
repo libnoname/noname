@@ -26,7 +26,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzhuaiyi", "gzzisui"],
+		skills: ["fakehuaiyi", "fakezisui"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_sunchen: new Character({
@@ -733,6 +733,7 @@ export default {
 		maxHp: 4,
 		hujia: 0,
 		skills: ["xinkuanggu", "reqimou"],
+		tempname: ["ol_weiyan"],
 	}),
 	gz_ol_yanwen: new Character({
 		sex: "male",
@@ -794,7 +795,7 @@ export default {
 		skills: ["reqianxun", "relianying"],
 		clans: ["吴郡陆氏"],
 	},
-	gz_clan_zhonghui: new Character({
+	gz_ol_zhonghui: new Character({
 		sex: "male",
 		group: "wei",
 		hp: 4,

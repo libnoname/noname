@@ -515,19 +515,14 @@ game.import("card", function () {
 				enable: true,
 				selectTarget: -1,
 				filterTarget: true,
-				multitarget: true,
 				multiline: true,
 				async content(event, trigger, player) {
-					let { targets } = event;
-					targets = targets.filter(target => target.canAddJudge({ name: "shandian" })).sortBySeat();
-					if (targets.length) {
-						for (const target of targets) {
-							const card = game.createCard("shandian", "heart", 7);
-							const cards = [card];
-							target.$draw(card);
-							await game.asyncDelayx();
-							await target.addJudge(get.autoViewAs(card, cards), cards);
-						}
+					const { target } = event,
+						card = game.createCard("shandian", "heart", 7);
+					if (target.canAddJudge(card)) {
+						target.$draw(card);
+						await game.delayx();
+						await target.addJudge(card);
 					}
 				},
 				//ai缝合浮雷和烈火
@@ -1974,7 +1969,6 @@ game.import("card", function () {
 							}
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
-						.set("dying", trigger.player)
 						.set("targetRequired", true);
 				},
 			},

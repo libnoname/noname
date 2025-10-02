@@ -558,8 +558,8 @@ export default {
 	gzchengshang: "承赏",
 	gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
 
-	gz_clan_zhonghui: "OL钟会",
-	gz_clan_zhonghui_prefix: "OL",
+	gz_ol_zhonghui: "OL钟会",
+	gz_ol_zhonghui_prefix: "OL",
 	gz_ol_quanji: "权计",
 	gz_ol_quanji_info: "你受到伤害后，可以摸一张牌，然后将一张牌置于武将牌上，称为“权”。",
 	gz_ol_paiyi: "排异",

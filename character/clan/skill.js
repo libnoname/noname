@@ -170,7 +170,7 @@ const skills = {
 			const result = await player.chooseToCompare(target).forResult();
 			if (!result.tie) {
 				const winner = result.bool ? player : target,
-					card = new lib.element.VCard({ name: name });
+					card = new lib.element.VCard({ name: name, isCard: true });
 				if (winner.hasUseTarget(card)) {
 					await winner.chooseUseTarget(card, true);
 				}
@@ -2306,7 +2306,14 @@ const skills = {
 				const name = tag == "respondSha" ? "sha" : "shan";
 				return get.info("clanchengqi").hiddenCard(player, name);
 			},
-			result: { player: 1 },
+			result: {
+				player(player) {
+					if (_status.event?.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
 		},
 		subSkill: {
 			backup: { audio: "clanchengqi" },
@@ -2788,7 +2795,7 @@ const skills = {
 			if (!targets.length) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return (
 				!targets.some(target => {
 					return target.getHistory("useCard").length;
@@ -2807,7 +2814,7 @@ const skills = {
 		animationColor: "watar",
 		prompt2(event, player) {
 			let str = "";
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return event.player.getPrevious() == target || event.player.getNext() == target;
 				}),
@@ -2838,7 +2845,7 @@ const skills = {
 			return str;
 		},
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return event.player.getPrevious() == target || event.player.getNext() == target;
 				}),
@@ -2859,7 +2866,7 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const targets = game.filterPlayer(target => {
 					return trigger.player.getPrevious() == target || trigger.player.getNext() == target;
 				}),
@@ -5367,7 +5374,7 @@ const skills = {
 					.set(
 						"choiceList",
 						skills.map(i => {
-							return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+							return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 						})
 					)
 					.set("displayIndex", false)

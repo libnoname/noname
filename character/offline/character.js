@@ -10,7 +10,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["xy_zuju", "xy_mintong"],
+		skills: ["xy_shengju", "xy_mintong"],
 	},
 	xy_chengyu: {
 		sex: "male",
@@ -35,6 +35,24 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["xy_luejin"],
+	},
+	xy_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["xy_xiaoxi", "xy_fenqi"],
+	},
+	xy_zhangmiao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["xy_mouni", "xy_zongfan"],
+	},
+	xy_caosong: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["xy_lilu", "xy_yizheng"],
 	},
 	zj_zhanghu: {
 		sex: "male",

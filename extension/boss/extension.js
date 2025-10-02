@@ -47,6 +47,13 @@ game.import("play", function () {
 				lib.characterIntro.boss_jiarenzidan = lib.characterIntro.caozhen;
 				lib.characterIntro.boss_duanyuzhongda = lib.characterIntro.simayi;
 				lib.characterIntro.boss_juechenmiaocai = lib.characterIntro.xiahouyuan;
+				lib.characterIntro.boss_kumuyuanrang = lib.characterIntro.xiahoudun;
+				lib.characterIntro.boss_baijiwenyuan = lib.characterIntro.zhangliao;
+				lib.characterIntro.boss_yihanyunchang = lib.characterIntro.guanyu;
+				lib.characterIntro.boss_fuweizilong = lib.characterIntro.zhaoyun;
+				lib.characterIntro.boss_lvbu1 = lib.characterIntro.lvbu;
+				lib.characterIntro.boss_lvbu2 = lib.characterIntro.lvbu;
+				lib.characterIntro.boss_lvbu3 = lib.characterIntro.lvbu;
 			} else if (_status.mode !== "jiange") {
 				for (const i in list2) {
 					lib.character[i] = list2[i];

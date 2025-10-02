@@ -9,6 +9,8 @@ export default {
 	heyi: "鹤翼",
 	heyi_info: "阵法技。与你处于同一队列的角色视为拥有技能〖飞影〗。",
 
+	gz_shengxi: "生息",
+	gz_shengxi_info: "结束阶段，若你本回合未造成过伤害，你可以摸两张牌。",
 	gz_shoucheng: "守成",
 	gz_shoucheng_info: "当与你势力相同的一名角色于其回合外失去手牌时，若其没有手牌，则你可以令其摸一张牌。",
 

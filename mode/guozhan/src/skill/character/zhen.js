@@ -161,6 +161,20 @@ export default {
 	},
 
 	// gz_jiangfei
+	gz_shengxi: {
+		audio: "shengxi",
+		preHidden: true,
+		frequent: true,
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		filter(event, player) {
+			return !player.hasHistory("sourceDamage");
+		},
+		async content(event, trigger, player) {
+			player.draw(2);
+		},
+	},
 	gz_shoucheng: {
 		audio: "shoucheng",
 		inherit: "shoucheng",

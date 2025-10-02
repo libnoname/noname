@@ -4030,7 +4030,7 @@ export class Library {
 						if (!game.download) {
 							setTimeout(function () {
 								if (!window.StatusBar) {
-									map.show_statusbar.hide();
+									// map.show_statusbar.hide();
 								}
 							}, 5000);
 						}
@@ -7413,12 +7413,14 @@ export class Library {
 							map.connect_choice_fan.show();
 						}
 						map.connect_enhance_dizhu.hide();
+						map.connect_enhance_nongmin.hide();
 						map.connect_feiyang_version.hide();
 					} else {
 						map.connect_double_character.show();
 						map.connect_choice_zhu.show();
 						map.connect_choice_fan.show();
 						map.connect_enhance_dizhu.show();
+						map.connect_enhance_nongmin.show();
 						map.connect_feiyang_version.show();
 					}
 				},
@@ -7487,10 +7489,21 @@ export class Library {
 					restart: true,
 					item: {
 						disabled: "禁用",
-						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
-						shiqiang: "获得〖恃强〗",
+						kaihei: "获得〖强易〗",
 						qiangyi: "获得削弱〖强易〗",
+						oldshiqiang: "获得〖恃强〗",
+						shiqiang: "获得削弱〖恃强〗",
+					},
+				},
+				connect_enhance_nongmin: {
+					name: "农民遗产",
+					init: "mobile",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
 					},
 				},
 				connect_feiyang_version: {
@@ -7531,6 +7544,7 @@ export class Library {
 						map.dierestart.hide();
 						map.revive.hide();
 						map.enhance_dizhu.hide();
+						map.enhance_nongmin.hide();
 						map.feiyang_version.hide();
 					} else {
 						map.double_character.show();
@@ -7543,6 +7557,7 @@ export class Library {
 						map.dierestart.show();
 						map.revive.show();
 						map.enhance_dizhu.show();
+						map.enhance_nongmin.show();
 						map.feiyang_version.show();
 					}
 					if (config.double_character && config.doudizhu_mode == "normal") {
@@ -7734,10 +7749,21 @@ export class Library {
 					restart: true,
 					item: {
 						disabled: "禁用",
-						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
-						shiqiang: "获得〖恃强〗",
+						kaihei: "获得〖强易〗",
 						qiangyi: "获得削弱〖强易〗",
+						oldshiqiang: "获得〖恃强〗",
+						shiqiang: "获得削弱〖恃强〗",
+					},
+				},
+				enhance_nongmin: {
+					name: "农民遗产",
+					init: "mobile",
+					restart: true,
+					item: {
+						online: "OL版本",
+						mobile: "手杀版本",
+						decade: "十周年版本",
 					},
 				},
 				feiyang_version: {
@@ -13500,7 +13526,7 @@ export class Library {
 			autoswap: {
 				firstDo: true,
 				trigger: {
-					player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin"],
+					player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin"],
 				},
 				forced: true,
 				priority: 100,
@@ -13899,7 +13925,7 @@ export class Library {
 							}
 						});
 						if (numberOfCardsToDraw) {
-							player.draw(numberOfCardsToDraw).log = false;
+							player.draw(numberOfCardsToDraw, "nodelay").log = false;
 						}
 					});
 				},
@@ -16402,6 +16428,14 @@ export class Library {
 			},
 		],
 		[
+			"OL乐",
+			{
+				showName: "乐",
+				color: "#dab71b",
+				nature: "firemm",
+			},
+		],
+		[
 			"烈",
 			{
 				color: "#8B0000",
@@ -16541,7 +16575,7 @@ export class Library {
 			"智将",
 			{
 				showName: "智",
-				color: "#99e2ffff",
+				color: "#99e2ff",
 				nature: "firemm",
 			},
 		],
@@ -16550,6 +16584,13 @@ export class Library {
 			{
 				showName: "徐",
 				color: "#ff0000",
+				nature: "firemm",
+			},
+		],
+		[
+			"有",
+			{
+				color: "#dd9420",
 				nature: "firemm",
 			},
 		],

@@ -3428,7 +3428,7 @@ player.removeVirtualEquip(card);
 		_status.discarded = [];
 		game.syncState();
 		game.addVideo("phaseChange", player);
-		if (game.phaseNumber == 1) {
+		if (game.phaseNumber >= 1 && !lib.configOL.observeReady) {
 			delete player._start_cards;
 			if (lib.configOL.observe) {
 				lib.configOL.observeReady = true;
@@ -4803,7 +4803,7 @@ player.removeVirtualEquip(card);
 		_status.discarded = [];
 		game.syncState();
 		game.addVideo("phaseChange", player);
-		if (game.phaseNumber == 1) {
+		if (game.phaseNumber >= 1 && !lib.configOL.observeReady) {
 			if (lib.configOL.observe) {
 				lib.configOL.observeReady = true;
 				game.send("server", "config", lib.configOL);
@@ -5365,7 +5365,6 @@ player.removeVirtualEquip(card);
 							}
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
-						next.set("complexSelect", info.chooseButton.complexSelect !== false);
 						next.set(
 							"complexSelect",
 							(() => {
@@ -5626,6 +5625,21 @@ player.removeVirtualEquip(card);
 						);
 						next.set("selectButton", info.chooseButton.select || 1);
 						next.set("filterOk", info.chooseButton.filterOk || (() => true));
+						next.set(
+							"complexSelect",
+							(() => {
+								if (info.chooseButton.complexSelect !== false) {
+									if (info.chooseButton.complexSelect === undefined && info.chooseButton.allowChooseAll === true) {
+										// 如果complexSelect没有被显式的定义但是全选被显式要求了，那么我们默认认为调用者需要全选而不是complexSelect喵
+										return false;
+									} else {
+										return true;
+									}
+								}
+								return false;
+							})()
+						);
+						next.set("allowChooseAll", info.chooseButton.allowChooseAll);
 					}
 					event.buttoned = event.result.skill;
 				} else if (info && info.precontent && !game.online) {
@@ -5771,7 +5785,7 @@ player.removeVirtualEquip(card);
 				ui.create.cardChooseAll();
 				event.aiChoose = ui.create.control("AI代选", function () {
 					ai.basic.chooseCard(event.ai);
-					if (_status.event.custom && _status.event.custom.add.card) {
+					if (typeof _status.event.custom?.add?.card == "function") {
 						_status.event.custom.add.card();
 					}
 					ui.selected.cards.forEach(i => i.updateTransform(true));
@@ -5894,16 +5908,10 @@ player.removeVirtualEquip(card);
 					return filterCard.call(this, card, player);
 				};
 			})(event);
-			const skills = player.getSkills("invisible").concat(lib.skill.global);
-			game.expandSkills(skills);
-			const hasSkill = skills.some(skill => {
-				const info = lib.skill[skill];
-				return info?.enable?.includes(event.name) || info?.enable == event.name;
-			});
 			if (_status.noclearcountdown !== "direct") {
 				_status.noclearcountdown = true;
 			}
-			/*if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
+			/*if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
 				event.result = {
 					bool: false,
 					cards: [],
@@ -5958,7 +5966,7 @@ player.removeVirtualEquip(card);
 						ui.create.cardChooseAll();
 						event.promptdiscard = ui.create.control("AI代选", function () {
 							ai.basic.chooseCard(event.ai);
-							if (_status.event.custom && _status.event.custom.add.card) {
+							if (typeof _status.event.custom?.add?.card == "function") {
 								_status.event.custom.add.card();
 							}
 							for (var i = 0; i < ui.selected.cards.length; i++) {
@@ -6626,13 +6634,13 @@ player.removeVirtualEquip(card);
 				game.log(event.target, "的拼点牌为", event.card2);
 				player.line(event.target);
 				player.$compare(event.card1, event.target, event.card2);
-				event.trigger("compare");
 			} else {
 				event.goto(12);
 			}
 		},
 		async (event, trigger, player) => {
-			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
+			await game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
+			await event.trigger("compare");
 		},
 		async (event, trigger, player) => {
 			event.iiwhile = event.iwhile;
@@ -6884,7 +6892,7 @@ player.removeVirtualEquip(card);
 					}
 				} else {
 					if (get.itemtype(target) == "player") {
-						event.result.winner == target;
+						event.result.winner = target;
 					}
 					player.popup("负");
 					if (get.itemtype(target) == "player") {
@@ -7161,6 +7169,9 @@ player.removeVirtualEquip(card);
 		if (event.dialog == undefined) {
 			event.dialog = ui.dialog;
 		}
+		if (get.objtype(event.css) == "object") {
+			event.dialog.css(event.css);
+		}
 		if (event.isMine() || event.dialogdisplay) {
 			event.dialog.style.display = "";
 			event.dialog.open();
@@ -7428,6 +7439,12 @@ player.removeVirtualEquip(card);
 					ui.click.cancel();
 					return;
 				}
+				if (event.custom === undefined) {
+					event.custom = {
+						add: {},
+						replace: {},
+					};
+				}
 				ui.create.cardChooseAll();
 				if (event.prompt != false) {
 					var str;
@@ -7463,9 +7480,11 @@ player.removeVirtualEquip(card);
 					}
 					if (Array.isArray(event.selectCard)) {
 						event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
-						event.custom.add.card = function () {
-							_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
-						};
+						if (event.custom.add.card === undefined) {
+							event.custom.add.card = function () {
+								_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+							};
+						}
 					}
 				}
 			} else if (event.isOnline()) {
@@ -7653,71 +7672,74 @@ player.removeVirtualEquip(card);
 			if (event.dialog == undefined) {
 				event.dialog = ui.dialog;
 			}
+			if (get.objtype(event.css) == "object") {
+				event.dialog.css(event.css);
+			}
+			if (event.isMine() || event.dialogdisplay) {
+				event.dialog.style.display = "";
+				event.dialog.open();
+			}
 			if (event.isMine()) {
 				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
 					ui.click.cancel();
 					return;
 				}
-				if (event.isMine() || event.dialogdisplay) {
-					event.dialog.style.display = "";
-					event.dialog.open();
-					if (event.canHidden) {
-						//增加隐藏窗口的按钮
-						const func = () => {
-							const event = get.event();
-							const controls = [
-								link => {
-									ui.selected.buttons.length = 0;
-									game.check();
-									return;
-								},
-							];
-							event.controls = [
-								ui.create.control(
-									controls.concat([
-										"隐藏窗口",
-										"stayleft",
-										link => {
-											const control = event.controls[0];
-											if (event.dialog.style.display == "none") {
-												control.childNodes[0].innerHTML = "隐藏窗口";
-												event.dialog.style.display = "";
-											} else {
-												control.childNodes[0].innerHTML = "显示窗口";
-												event.dialog.style.display = "none";
-											}
-										},
-									])
-								),
-							];
+				if (event.canHidden) {
+					//增加隐藏窗口的按钮
+					const func = () => {
+						const event = get.event();
+						const controls = [
+							link => {
+								ui.selected.buttons.length = 0;
+								game.check();
+								return;
+							},
+						];
+						event.controls = [
+							ui.create.control(
+								controls.concat([
+									"隐藏窗口",
+									"stayleft",
+									link => {
+										const control = event.controls[0];
+										if (event.dialog.style.display == "none") {
+											control.childNodes[0].innerHTML = "隐藏窗口";
+											event.dialog.style.display = "";
+										} else {
+											control.childNodes[0].innerHTML = "显示窗口";
+											event.dialog.style.display = "none";
+										}
+									},
+								])
+							),
+						];
+					};
+					if (event.isMine()) {
+						func(event);
+					} else if (event.isOnline()) {
+						event.player.send(func, event);
+					}
+					if (event.custom == undefined) {
+						event.custom = {
+							add: {},
+							replace: {},
 						};
-						if (event.isMine()) {
-							func(event);
-						} else if (event.isOnline()) {
-							event.player.send(func, event);
-						}
-						if (event.custom == undefined) {
-							event.custom = {
-								add: {},
-								replace: {},
-							};
-						}
-						if (event.custom.add.confirm == undefined) {
-							//如果有人canHidden是true然后还动了这部分请把一部分代码复制过去适配一下，不然隐藏的按钮不会关闭
-							event.custom.add.confirm = function (bool) {
-								if (bool != true) {
-									return;
-								}
-								const event = get.event();
-								if (event.controls) {
-									event.controls.forEach(i => i.close());
-								}
-								if (ui.confirm) {
-									ui.confirm.close();
-								}
-								game.uncheck();
-							};
-						}
+					}
+					if (event.custom.add.confirm == undefined) {
+						//如果有人canHidden是true然后还动了这部分请把一部分代码复制过去适配一下，不然隐藏的按钮不会关闭
+						event.custom.add.confirm = function (bool) {
+							if (bool != true) {
+								return;
+							}
+							const event = get.event();
+							if (event.controls) {
+								event.controls.forEach(i => i.close());
+							}
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+							game.uncheck();
+						};
 					}
 				}
 				ui.create.buttonChooseAll();

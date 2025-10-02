@@ -25,7 +25,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["shengxi", "gz_shoucheng"],
+		skills: ["gz_shengxi", "gz_shoucheng"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_jiangwei: new Character({

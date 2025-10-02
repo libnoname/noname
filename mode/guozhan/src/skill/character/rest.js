@@ -1036,12 +1036,12 @@ export default {
 		audio: "duoshi",
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi" }));
+			return player.hasUseTarget(new lib.element.VCard({ name: "yiyi", isCard: true }));
 		},
 		direct: true,
 		preHidden: true,
 		content() {
-			player.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi" }), false).set("hiddenSkill", event.name).logSkill = event.name;
+			player.chooseUseTarget(get.prompt2(event.name), new lib.element.VCard({ name: "yiyi", isCard: true }), false).set("hiddenSkill", event.name).logSkill = event.name;
 		},
 	},
 	//臧霸
@@ -1305,7 +1305,7 @@ export default {
 							})
 							.set("num", num)
 							.set("ai", target => {
-								return target.getUseValue(new lib.element.VCard({ name: "huoshaolianying" }));
+								return target.getUseValue(new lib.element.VCard({ name: "huoshaolianying", isCard: true }));
 							});
 						if (bool) {
 							player.line(targets[0]);
@@ -1330,7 +1330,7 @@ export default {
 				},
 				ai: {
 					order(item, player) {
-						const card = new lib.element.VCard({ name: "huoshaolianying" });
+						const card = new lib.element.VCard({ name: "huoshaolianying", isCard: true });
 						return get.order(card, player) + 0.1;
 					},
 					result: { target: 1 },
@@ -2382,7 +2382,10 @@ export default {
 			if (!game.hasPlayer(target => target.isMajor())) {
 				return false;
 			}
-			return player.hasViceCharacter() || ["h", "e", "j"].some(pos => player.getCards(pos).every(card => lib.filter.cardDiscardable(card, player)));
+			return player.hasViceCharacter() || ["h", "e", "j"].some(pos => {
+				const cards = player.getCards(pos);
+				return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
+			});
 		},
 		usable: 1,
 		chooseButton: {
@@ -2395,7 +2398,8 @@ export default {
 				list.addArray(
 					["h", "e", "j"]
 						.filter(pos => {
-							return player.getCards(pos).every(card => lib.filter.cardDiscardable(card, player));
+							const cards = player.getCards(pos);
+							return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
 						})
 						.map(i => map[i])
 				);
@@ -2406,17 +2410,21 @@ export default {
 				return list;
 			},
 			check() {
-				const player = get.event("player");
-				if (player.getCards("j").every(card => lib.filter.cardDiscardable(card, player))) {
+				const player = get.event("player"),
+					count = pos => {
+						const cards = player.getCards(pos);
+						return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
+					};
+				if (count("j")) {
 					return "判定区";
 				}
 				if (player.hasViceCharacter() && get.guozhanRank(player.name2, player) <= 3) {
 					return "移除副将";
 				}
-				if (player.getCards("e").every(card => lib.filter.cardDiscardable(card, player)) && player.getCards("e") <= 1) {
+				if (count("e") && player.getCards("e") <= 1) {
 					return "装备区";
 				}
-				if (player.getCards("h").every(card => lib.filter.cardDiscardable(card, player)) && player.getCards("h") <= 1) {
+				if (count("h") && player.getCards("h") <= 2) {
 					return "手牌区";
 				}
 				return "cancel2";
@@ -2429,7 +2437,7 @@ export default {
 					info: result.control,
 					async content(event, trigger, player) {
 						const control = get.info("fakehuaiyi_backup").info;
-						if (info == "移除副将") {
+						if (control == "移除副将") {
 							await player.removeCharacter(1);
 						} else {
 							const map = { 手牌区: "h", 装备区: "e", 判定区: "j" };
@@ -3903,16 +3911,16 @@ export default {
 	fakexunxi: {
 		trigger: { global: "showCharacterEnd" },
 		filter(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return event.player != player && event.player != _status.currentPhase && player.canUse(card, event.player, false);
 		},
 		check(event, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			return get.effect(event.player, card, player, player) > 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "sha" });
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			await player.useCard(card, trigger.player, false);
 		},
 	},
@@ -5516,6 +5524,7 @@ export default {
 			}
 			return false;
 		},
+		usable: 1,
 		prompt2: "弃置这些角色的各两张牌",
 		preHidden: ["gzgongjian_gain"],
 		subfrequent: ["gain"],
@@ -6394,7 +6403,7 @@ export default {
 				.set(
 					"choiceList",
 					event.list.map(i => {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, _status.currentPhase) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, _status.currentPhase, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)
@@ -7753,7 +7762,7 @@ export default {
 				.set(
 					"choiceList",
 					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)

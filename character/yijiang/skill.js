@@ -4546,8 +4546,9 @@ const skills = {
 		},
 		usable: 20,
 		locked: false,
+		delay: false,
 		content() {
-			player.draw();
+			player.draw("nodelay");
 			player.addTempSkill("jishe2");
 			player.addMark("jishe2", 1, false);
 		},
@@ -8975,7 +8976,7 @@ const skills = {
 		content() {
 			"step 0";
 			var forced = event.forced === undefined ? false : event.forced;
-			var info = get.skillInfoTranslation("huituo", player);
+			var info = get.skillInfoTranslation("huituo", player, false);
 			var str = `###${forced ? "恢拓：请选择一名角色" : get.prompt("huituo")}###令一名角色判定。若结果为红色，其回复1点体力；若结果为黑色，其摸${get.cnNumber(trigger.num)}张牌`;
 			player.chooseTarget(str, event.forced).set("ai", function (target) {
 				var player = _status.event.player;
@@ -10747,7 +10748,7 @@ const skills = {
 			return get.type(event.card, "trick") == player.storage.qiangzhi_draw;
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		onremove: true,
 		mark: true,
@@ -12992,7 +12993,7 @@ const skills = {
 	},
 	qice: {
 		audio: 2,
-		audioname: ["clan_xunyou"],
+		audioname: ["clan_xunyou", "pot_huanjie"],
 		enable: "phaseUse",
 		filter(event, player) {
 			const hs = player.getCards("h");
@@ -14262,7 +14263,7 @@ const skills = {
 			return (get.suit(evt.card) != "none" && get.suit(evt.card) == get.suit(event.card)) || (typeof get.number(evt.card, false) == "number" && get.number(evt.card, false) == get.number(event.card));
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		group: "jianying_mark",
 		init(player) {
