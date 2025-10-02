@@ -14366,6 +14366,7 @@ const skills = {
 					player.showHandcards();
 					if (cards.length) {
 						player.loseHp(cards.length);
+						player.removeGaintag(event.name);
 					}
 				},
 				mod: {
