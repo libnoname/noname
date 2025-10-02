@@ -3492,7 +3492,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	select(select) {
 		if (typeof select == "function") {
-			return get.select(select());
+			let result = get.select(select());
+			if (typeof result == "number") {
+				return [result, result];
+			}
+			return result;
 		} else if (typeof select == "number") {
 			return [select, select];
 		} else if (select && get.itemtype(select) == "select") {

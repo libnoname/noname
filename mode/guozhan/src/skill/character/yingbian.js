@@ -1275,6 +1275,9 @@ export default {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			player._checkXunji = true;
 			game.checkMod(card, player, range, "selectTarget", player);

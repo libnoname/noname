@@ -486,7 +486,7 @@ const skills = {
 			player: "useCardToPlayered",
 		},
 		filter(event, player) {
-			if (!event.getParent()?.targets?.length) {
+			if (!event.getParent()?.targets?.length || !event.isFirstTarget) {
 				return false;
 			}
 			return player.getHistory("useCard", evt => get.tag(evt.card, "damage")).indexOf(event.getParent()) == 0;
@@ -2469,6 +2469,9 @@ const skills = {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			const cards = player.getCards("h", cardx => card != cardx && get.suit(card, player) == get.suit(cardx, player));
@@ -4856,6 +4859,9 @@ const skills = {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			return range[1] == -1;

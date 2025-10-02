@@ -2600,6 +2600,9 @@ player.removeVirtualEquip(card);
 			range = get.select(select);
 			if (event.selectTarget) {
 				range = get.select(event.selectTarget);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 		}
