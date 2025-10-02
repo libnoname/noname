@@ -1,6 +1,7 @@
 import { build } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import minimist from "minimist";
+import { build as esbuild } from "esbuild";
 
 const argv = minimist(process.argv.slice(2), {
 	boolean: true,
@@ -18,16 +19,23 @@ const staticModules = [
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },
 ];
 if (argv.full) {
-	staticModules.push({ src: "extension/boss", dest: "extension" });
-	staticModules.push({ src: "extension/cardpile", dest: "extension" });
-	staticModules.push({ src: "extension/coin", dest: "extension" });
-} else {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
+} else {
+	staticModules.push({ src: "extension/boss", dest: "extension" });
+	staticModules.push({ src: "extension/cardpile", dest: "extension" });
+	staticModules.push({ src: "extension/coin", dest: "extension" });
 }
 
 await build({
 	//继承vite.config.ts
 	plugins: [viteStaticCopy({ targets: staticModules })],
+});
+
+await esbuild({
+	entryPoints: ["noname-server.cjs"],
+	outfile: "dist/noname-server.cjs",
+	bundle: true,
+	platform: "node",
 });

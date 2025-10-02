@@ -6,7 +6,7 @@ import vueParser from "vue-eslint-parser";
 import globals from "globals";
 
 export default defineConfig(globalIgnores(["noname-server.js", "dist", "node_modules"]), js.configs.recommended, ts.configs.recommended, vue.configs["flat/essential"], {
-	files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.vue"],
+	files: ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.ts", "**/*.vue"],
 	rules: {
 		"@typescript-eslint/no-require-imports": 0,
 		"@typescript-eslint/no-unused-vars": 0,

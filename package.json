@@ -10,8 +10,8 @@
     },
     "type": "module",
     "scripts": {
-        "start": "",
-        "dev": "concurrently \"node noname-server.js\" \"pnpm vite dev\"",
+        "start": "pnpm build & node dist/noname-server.cjs",
+        "dev": "concurrently \"node noname-server.cjs --debug\" \"pnpm vite dev\"",
         "build": "node scripts/build.js",
         "build:full": "node scripts/build.js --full",
         "build:diff": "node scripts/build.js --diff",
@@ -54,6 +54,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.29.0",
+        "@types/body-parser": "^1.19.6",
         "@types/cordova": "^11.0.3",
         "@types/crypto-js": "^4.2.2",
         "@types/estree": "^1.0.8",
@@ -65,6 +66,7 @@
         "@types/ws": "^8.18.1",
         "@vitejs/plugin-vue": "^6.0.1",
         "concurrently": "^9.2.1",
+        "esbuild": "^0.25.10",
         "eslint": "^9.29.0",
         "eslint-plugin-vue": "^10.2.0",
         "glob": "^11.0.3",

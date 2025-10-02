@@ -1,15 +1,16 @@
-import express from "express";
-import minimist from "minimist";
-import bodyParser from "body-parser";
-import fs from "fs";
-import path from "path";
-const __dirname = import.meta.dirname;
+const express = require("express");
+const minimist = require("minimist");
+const bodyParser = require("body-parser");
+const fs = require("fs");
+const path = require("path");
+const { exec } = require("child_process");
 
 const oneYear = 60 * 1000 * 60 * 24 * 365;
 
 // 解析命令行参数
 // 示例: -s --maxAge 100
 const argv = minimist(process.argv.slice(2), {
+	boolean: true,
 	alias: { server: "s" },
 	default: {
 		platform: "unknow",
@@ -62,7 +63,7 @@ app.all(/.*/, function (req, res, next) {
 // 根据参数设置 maxAge
 const maxAge = argv.server && !argv.debug ? argv.maxAge : 0;
 
-app.use(express.static(__dirname, { maxAge: maxAge }));
+app.use(express.static(__dirname, { maxAge: maxAge, dotfiles: 'allow' }));
 
 app.get("/", (req, res) => {
 	res.send(fs.readFileSync(join("index.html")));
@@ -226,7 +227,9 @@ app.use(function (err, req, res, next) {
 
 const callback = () => {
 	console.log(`应用正在使用 ${argv.port} 端口以提供无名杀本地服务器功能!`);
-	// if (argv.platform == "unknow") require("child_process").exec(`start ${argv.https ? "https" : "http"}://localhost:${argv.port}/`);
+	if (argv.platform == "unknow" && !argv.debug) {
+		exec(`start ${argv.https ? "https" : "http"}://localhost:${argv.port}/`);
+	}
 };
 // if (argv.https) {
 // 	const SSLOptions = {
