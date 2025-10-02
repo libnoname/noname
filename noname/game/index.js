@@ -2882,7 +2882,6 @@ export class Game extends GameCompatible {
 				if (gnc.is.generator(content)) {
 					promise = gnc.of(content)(lib, game, ui, get, ai, _status);
 				} else {
-					// @ts-expect-error no `Promise.try` type info
 					promise = Promise.try(content, lib, game, ui, get, ai, _status);
 				}
 			} else {
@@ -3297,7 +3296,6 @@ export class Game extends GameCompatible {
 				isTsFile = true;
 			}
 			/** @type { string } */
-			// @ts-expect-error ignore
 			let str = extensionFile.asText();
 			if (str === "" || str === undefined) {
 				throw "你导入的不是扩展！请选择正确的文件";

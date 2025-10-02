@@ -8524,7 +8524,7 @@ export class Library {
 		},
 	};
 	/**
-	 * @type {import('path')}
+	 * @type {import('path-browserify')}
 	 */
 	// @ts-expect-error ignore
 	path = {};
@@ -9280,7 +9280,7 @@ export class Library {
 				return element;
 			},
 			generate() {
-				let result = lib.creation.nullObject;
+				let result = Object.create(null);
 				const args = Array.from(arguments);
 				for (const item of args) {
 					switch (typeof item) {
@@ -9291,12 +9291,12 @@ export class Library {
 									if ("_type" in item) {
 										const type = item["_type"];
 										if (!(type in result)) {
-											result[type] = lib.creation.nullObject;
+											result[type] = Object.create(null);
 										}
 										result[type][item.name] = item.value;
 									} else {
 										if (!("style" in result)) {
-											result.style = lib.creation.nullObject;
+											result.style = Object.create(null);
 										}
 										for (const name in item) {
 											result.style[name] = item[name];
@@ -9305,7 +9305,7 @@ export class Library {
 									break;
 								default:
 									if (!("childs" in result)) {
-										result.childs = lib.creation.array;
+										result.childs = [];
 									}
 									result.childs.add(item);
 									break;
@@ -9314,7 +9314,7 @@ export class Library {
 						case "string":
 							if (/^\.|#/.test(item)) {
 								if (!("identity" in result)) {
-									result.identity = lib.creation.array;
+									result.identity = [];
 								}
 								const identities = item.split(".").filter(Boolean);
 								for (const item of identities) {

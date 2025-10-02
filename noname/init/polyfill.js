@@ -373,7 +373,6 @@ HTMLElement.prototype.css = function (style) {
  * @param {number} col
  * @returns {HTMLElement | void}
  */
-// @ts-expect-error OnType
 HTMLTableElement.prototype.get = function (row, col) {
 	if (row < this.childNodes.length) {
 		// @ts-expect-error ignore
@@ -476,7 +475,6 @@ Object.defineProperty(Array.prototype, "filterInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.filter(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -492,7 +490,6 @@ Object.defineProperty(Array.prototype, "someInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.some(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -508,7 +505,6 @@ Object.defineProperty(Array.prototype, "everyInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.every(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -627,7 +623,6 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
 	value() {
-		// @ts-expect-error ignore
 		for (const i of Array.from(arguments)) {
 			this.remove(...i);
 		}
@@ -753,7 +748,6 @@ Object.defineProperty(Array.prototype, "sortBySeat", {
 	 * @type { typeof Array['prototype']['sortBySeat'] }
 	 */
 	value(target) {
-		// @ts-expect-error TypeCorrect
 		lib.tempSortSeat = target;
 		this.sort(lib.sort.seat);
 		delete lib.tempSortSeat;

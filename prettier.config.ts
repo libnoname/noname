@@ -4,7 +4,7 @@ const config: Config = {
 	arrowParens: "avoid",
 	bracketSpacing: true,
 	endOfLine: "lf",
-	printWidth: 999,
+	printWidth: 150,
 	proseWrap: "preserve",
 	quoteProps: "as-needed",
 	semi: true,

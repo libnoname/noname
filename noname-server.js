@@ -1,8 +1,6 @@
 import express from "express";
-// const https = require("https");
 import minimist from "minimist";
 import bodyParser from "body-parser";
-const app = express();
 import fs from "fs";
 import path from "path";
 const __dirname = import.meta.dirname;
@@ -26,6 +24,8 @@ const argv = minimist(process.argv.slice(2), {
 if (argv.debug) {
 	console.log(`argv:`, argv);
 }
+
+const app = express();
 
 app.use(
 	bodyParser.json({

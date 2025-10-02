@@ -1,5 +1,4 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import html from "../../game/dedent.js";
 
 game.import("play", function () {
 	return {
@@ -1310,61 +1309,46 @@ game.import("play", function () {
 			},
 		},
 		help: {
-			// 虽然好像没必要，但是为了规范还是用jsdoc写一个注释罢
-			"富甲天下": {
-				/**
-				 * HTML 模板字符串，用于显示“富甲天下”模式的帮助信息喵～ 
-				 * @type {string}
-				 */
-				template: html`
-					<div style="margin:20px; font-size:1.3rem">富甲天下模式说明</div>
-					<ul style="margin-top:0; list-style: disc; padding-left: 20px;">
-						<li>
-							<strong>金币获取:</strong>
-							<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
-								<li>每完成一次对局，可获得一定数量的基础金币。</li>
-								<li>战斗胜利可额外获得 <strong>20</strong> 金币。</li>
-								<li>每击败一个敌人可额外获得 <strong>10</strong> 金币 (AI托管或托管状态下无效)。</li>
-								<li>使用的武将强度越高，获得的基础金币数量会相应减少。</li>
-							</ul>
-						</li>
-						<li>
-							<strong>金币消耗 (执行以下操作时扣除):</strong>
-							<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
-								<li>作弊: <strong>20</strong> 金币</li>
-								<li>使用换将卡: <strong>3</strong> 金币</li>
-								<li>自由选将: <strong>10</strong> 金币</li>
-								<li>使用手气卡: <strong>3</strong> 金币</li>
-								<li>换人/更换操作者: <strong>10</strong> 金币</li>
-							</ul>
-						</li>
-						<li>
-							<strong>金币用途:</strong><br/>
-							金币可用于购买游戏特效（如烟花等）。通常可以通过点击界面右上角的金币按钮进行购买。
-						</li>
-						<li>
-							<strong>开发者/调试命令:</strong>
-							<ul style="list-style: none; padding-left: 0; margin-top: 5px;">
-								<li>修改金币数量:
-									<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.changeCoin(数量)</code>
-									<span style="font-size: 0.9em; color: #666;"> (例如 game.changeCoin(100) 增加100金币)</span>
-								</li>
-								<li>设置默认开启下雪特效:
-									<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.haveFun.alwaysSnow = true</code>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				`,
-				/**
-				 * 设置函数（当前没有动态数据，给你返回一个空对象罢）
-				 * @returns {object} 返回一个空对象，因为模板中没有使用动态绑定喵~ 
-				 */
-				setup() {
-					// 目前，没有需要从 setup 传递到模板的动态数据喵～
-					return {};
-				}
-			}
+			"富甲天下": `
+				<div style="margin:20px; font-size:1.3rem">富甲天下模式说明</div>
+				<ul style="margin-top:0; list-style: disc; padding-left: 20px;">
+					<li>
+						<strong>金币获取:</strong>
+						<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
+							<li>每完成一次对局，可获得一定数量的基础金币。</li>
+							<li>战斗胜利可额外获得 <strong>20</strong> 金币。</li>
+							<li>每击败一个敌人可额外获得 <strong>10</strong> 金币 (AI托管或托管状态下无效)。</li>
+							<li>使用的武将强度越高，获得的基础金币数量会相应减少。</li>
+						</ul>
+					</li>
+					<li>
+						<strong>金币消耗 (执行以下操作时扣除):</strong>
+						<ul style="list-style: circle; padding-left: 20px; margin-top: 5px;">
+							<li>作弊: <strong>20</strong> 金币</li>
+							<li>使用换将卡: <strong>3</strong> 金币</li>
+							<li>自由选将: <strong>10</strong> 金币</li>
+							<li>使用手气卡: <strong>3</strong> 金币</li>
+							<li>换人/更换操作者: <strong>10</strong> 金币</li>
+						</ul>
+					</li>
+					<li>
+						<strong>金币用途:</strong><br/>
+						金币可用于购买游戏特效（如烟花等）。通常可以通过点击界面右上角的金币按钮进行购买。
+					</li>
+					<li>
+						<strong>开发者/调试命令:</strong>
+						<ul style="list-style: none; padding-left: 0; margin-top: 5px;">
+							<li>修改金币数量:
+								<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.changeCoin(数量)</code>
+								<span style="font-size: 0.9em; color: #666;"> (例如 game.changeCoin(100) 增加100金币)</span>
+							</li>
+							<li>设置默认开启下雪特效:
+								<code style="display: inline-block; background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">game.haveFun.alwaysSnow = true</code>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			`
 		},
 	};
 });
