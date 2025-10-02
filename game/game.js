@@ -2,13 +2,6 @@
 
 (async function () {
 	await import("core-js-bundle");
-	// 预设定常量
-	/**
-	 * 最低要求的Safari版本
-	 *
-	 * @type {[majorVersion: number, minorVersion: number, patchVersion: number]}
-	 */
-	const minSafariVersion = [16, 4, 0];
 
 	// 获取基础变量
 	/**
@@ -21,14 +14,46 @@
 		UpdateReason,
 	} = await import("../noname-compatible.js");
 
+	// 确保浏览器支持module
+	// let fallback = document.createElement("script");
+	// fallback.noModule = true;
+	// fallback.onload = () => game.tryUpdateClient(UpdateReason.FALLBACK);
+	// document.head.appendChild(fallback);
+
 	// 使用到的文本
 	const globalText = {
-		GPL_ALERT: ["①无名杀是一款基于GPLv3协议的开源软件！", "你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。", "点击“确定”即代表您认可并接受GPLv3协议↓️", "https://www.gnu.org/licenses/gpl-3.0.html", "②无名杀官方发布地址仅有GitHub仓库！", "其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！"].join("\n"),
-		LOAD_ENTRY_FAILED: ["您使用的浏览器或《无名杀》客户端加载内容失败！", "请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！", "若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！", "若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！", "若您使用的是苹果端，请至少将Safari升级至16.4.0！"].join("\n"),
-		REDIRECT_TIP: ["您使用的浏览器或无名杀客户端的版本或内核版本过低，已经无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是浏览器，请更新你的浏览器内核！", "如果你使用的是无名杀客户端，点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。", "（第三方客户端请联系第三方客户端的发布者）"].join("\n"),
-		SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至16.4.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
-		SERVICE_WORKER_NOT_SUPPORT: ["您使用的客户端或浏览器不支持启用serviceWorker", "请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker！"].join("\n"),
-		SERVICE_WORKER_LOAD_FAILED: ["serviceWorker加载失败！", "游戏内容或许会因此加载失败！"].join("\n"),
+		GPL_ALERT: [
+			"①无名杀是一款基于GPLv3协议的开源软件！",
+			"你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。",
+			"点击“确定”即代表您认可并接受GPLv3协议↓️",
+			"https://www.gnu.org/licenses/gpl-3.0.html",
+			"②无名杀官方发布地址仅有GitHub仓库！",
+			"其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！",
+		].join("\n"),
+		LOAD_ENTRY_FAILED: [
+			"您使用的浏览器或《无名杀》客户端加载内容失败！",
+			"请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！",
+			"目前使用的浏览器UA信息为: ",
+			userAgentLowerCase,
+			"若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！",
+			"若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！",
+			"若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！",
+			"若您使用的是苹果端，请至少将Safari升级至16.4.0！",
+		].join("\n"),
+		REDIRECT_TIP: [
+			"您使用的浏览器或无名杀客户端的版本或内核版本过低，已经无法正常运行无名杀！",
+			"目前使用的浏览器UA信息为: ",
+			userAgentLowerCase,
+			"如果你使用的是浏览器，请更新你的浏览器内核！",
+			"如果你使用的是无名杀客户端，点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。",
+			"（第三方客户端请联系第三方客户端的发布者）",
+		].join("\n"),
+		SAFARI_VERSION_NOT_SUPPORT: [
+			"您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至16.4.0！",
+			"当前浏览器的UA为: ",
+			userAgentLowerCase,
+			"稍后您的无名杀将自动退出（可能的话）",
+		].join("\n"),
 	};
 
 	// 不支持file协议
@@ -43,135 +68,23 @@
 		"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
 	];
 
-	// 检查是否是Safari浏览器
-	// 通过检查用户代理字符串是否包含 "safari" 且不包含 "chrome"，可以初步判断是不是Safari
-	if (userAgentLowerCase.includes("safari") && !userAgentLowerCase.includes("chrome")) {
-		// 如果是 Safari 浏览器,则进行以下操作
-		// 获取 Safari 版本信息
-		let [coreName, ...safariVersion] = get.coreInfo();
-		// 检查 Safari 的内核名称是否为 "safari"，以及版本号是否低于要求的最小版本号
-		// 如果无法判定是Safari，则证明这个浏览器内核很玄乎，我们表示对未知的、不符合标准的内核无能为力，只能等出问题了再适配
-		if (coreName === "safari" && !get.checkVersion(minSafariVersion, safariVersion)) {
-			// 如果版本号低于要求的最小版本号,则执行以下操作
-			// 显示警告消息
-			alert(globalText.SAFARI_VERSION_NOT_SUPPORT);
-			// 退出程序
-			game.exit();
-			return;
-		}
-	}
-	// Safari由于系统原因，管不了，先默哀几秒
-
-	// // 处理Node环境下的http情况
-	// if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
-	// 	// 在http环境下修改__dirname和require的逻辑
-	// 	if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
-	// 		const path = require("path");
-	// 		if (window.process.platform === "darwin") {
-	// 			window.__dirname = path.join(window.process.resourcesPath, "app");
-	// 		} else {
-	// 			window.__dirname = path.join(path.resolve(), "resources/app");
-	// 		}
-	// 		const oldData = Object.entries(window.require);
-	// 		// @ts-expect-error ignore
-	// 		window.require = function (moduleId) {
-	// 			try {
-	// 				return require(moduleId);
-	// 			} catch {
-	// 				return require(path.join(window.__dirname, moduleId));
-	// 			}
-	// 		};
-	// 		oldData.forEach(([key, value]) => {
-	// 			window.require[key] = value;
-	// 		});
-	// 	}
-	// 	// 增加导入ts的逻辑
-	// 	window.require.extensions[".ts"] = function (module, filename) {
-	// 		// @ts-expect-error ignore
-	// 		const _compile = module._compile;
-	// 		// @ts-expect-error ignore
-	// 		module._compile = function (code, fileName) {
-	// 			/**
-	// 			 *
-	// 			 * @type { import("typescript") }
-	// 			 */
-	// 			// @ts-expect-error ignore
-	// 			const ts = require("typescript");
-	// 			// 使用ts compiler对ts文件进行编译
-	// 			const result = ts.transpile(
-	// 				code,
-	// 				{
-	// 					module: ts.ModuleKind.CommonJS,
-	// 					target: ts.ScriptTarget.ES2020,
-	// 					inlineSourceMap: true,
-	// 					resolveJsonModule: true,
-	// 					esModuleInterop: true,
-	// 				},
-	// 				fileName
-	// 			);
-	// 			// 使用默认的js编译函数获取返回值
-	// 			return _compile.call(this, result, fileName);
-	// 		};
-	// 		// @ts-expect-error ignore
-	// 		module._compile(require("fs").readFileSync(filename, "utf8"), filename);
-	// 	};
-	// }
-
-
-	// // 创建一个新的 <script> 元素,用于回退
-	// let fallback = document.createElement("script");
-	// // 设置该 <script> 元素为旧式脚本
-	// fallback.noModule = true;
-	// // 设置 <script> 元素的 src 属性,指向 fallback.js 文件
-	// fallback.src = `${assetURL}game/fallback.js`;
-	// // 为 <script> 元素设置 onload 事件处理程序
-	// fallback.onload = () => game.tryUpdateClient(UpdateReason.FALLBACK);
-	// // 将 <script> 元素添加到 document.head 中
-	// document.head.appendChild(fallback);
-
-	// serviceWorker编译器
-	if (!("serviceWorker" in navigator)) {
-		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+	// 检查浏览器版本
+	let [core, ...version] = get.coreInfo();
+	if (core === "safari" && !get.checkVersion([16, 4, 0], version)) {
+		alert(globalText.SAFARI_VERSION_NOT_SUPPORT);
+		game.exit();
 		return;
-	} else {
-		let scope = new URL("./", location.href).toString();
-		let registrations = await navigator.serviceWorker.getRegistrations();
-		let findServiceWorker = registrations.find(registration => {
-			return registration && registration.active && registration.active.scriptURL == `${scope}service-worker.js`;
-		});
-
-		try {
-			const registration = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
-				type: "module",
-				updateViaCache: "all",
-				scope,
-			});
-			// 初次加载worker，需要重新启动一次
-			if (!findServiceWorker) {
-				window.location.reload();
-			}
-			// 接收消息
-			navigator.serviceWorker.addEventListener("message", e => {
-				if (e.data?.type === "reload") {
-					window.location.reload();
-				}
-			});
-			// 发送消息
-			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
-			registration.update().catch(e => console.error("worker update失败", e));
-			if (!sessionStorage.getItem("canUseTs")) {
-				await fetch("../extension/canUse.ts")
-					.then(({ text }) => console.log(text))
-					.catch(() => {
-						sessionStorage.setItem("canUseTs", "1");
-						location.reload();
-					});
-			}
-		} catch (e) {
-			console.log("serviceWorker加载失败: ", e);
-			alert(globalText.SERVICE_WORKER_LOAD_FAILED);
-			return;
+	} else if (core === "chrome" && !get.checkVersion([91, 0, 0], version)) {
+		/*
+		const tip = "检测到您的浏览器内核版本小于91，请及时升级浏览器或手机webview内核！";
+		console.warn(tip);
+		game.print(tip);
+		const redirect_tip = `您使用的浏览器或无名杀客户端内核版本过低，将在未来的版本被废弃！\n目前使用的浏览器UA信息为：\n${userAgent}\n点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。`;
+		if (confirm(redirect_tip)) {
+			window.open("https://github.com/libnoname/noname/releases/tag/chromium91-client");
 		}
+		*/
+		game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
 	}
 
 	// GPL确认
@@ -185,7 +98,8 @@
 		}
 	}
 
-	import("./entry.js").catch((e) =>{
+	await import("../jit/index.js");
+	import("./entry.js").catch(e => {
 		console.error(e);
 		alert(globalText.LOAD_ENTRY_FAILED);
 	});

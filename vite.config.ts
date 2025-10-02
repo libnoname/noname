@@ -1,6 +1,12 @@
 import { defineConfig } from "vite";
 import path from "path";
 import vue from "@vitejs/plugin-vue";
+import jit from "./jit/vite-plugin-jit";
+
+const port = {
+	client: 8080,
+	server: 8089,
+};
 
 export default defineConfig({
 	root: ".",
@@ -10,21 +16,40 @@ export default defineConfig({
 		},
 		extensions: [".tsx", ".ts", ".js"],
 	},
-	plugins: [vue()],
+	build: {
+		sourcemap: true,
+		rollupOptions: {
+			preserveEntrySignatures: "strict",
+			treeshake: false,
+			input: {
+				main: "index.html",
+			},
+			output: {
+				preserveModules: true, // 保留文件结构
+				// preserveModulesRoot: "src", // 指定根目录
+
+				// 去掉 hash
+				entryFileNames: "[name].js", // 入口文件
+				chunkFileNames: "[name].js", // 代码分块
+				assetFileNames: "[name][extname]", // 静态资源
+			},
+		},
+	},
+	plugins: [vue(), jit()],
 	server: {
 		open: true,
 		host: "127.0.0.1",
-		port: 8080,
+		port: port.client,
 		proxy: {
-			"/checkFile": "http://127.0.0.1:8089",
-			"/checkDir": "http://127.0.0.1:8089",
-			"/readFile": "http://127.0.0.1:8089",
-			"/readFileAsText": "http://127.0.0.1:8089",
-			"/writeFile": "http://127.0.0.1:8089",
-			"/removeFile": "http://127.0.0.1:8089",
-			"/getFileList": "http://127.0.0.1:8089",
-			"/createDir": "http://127.0.0.1:8089",
-			"/removeDir": "http://127.0.0.1:8089",
+			"/checkFile": "http://127.0.0.1:" + port.server,
+			"/checkDir": "http://127.0.0.1:" + port.server,
+			"/readFile": "http://127.0.0.1:" + port.server,
+			"/readFileAsText": "http://127.0.0.1:" + port.server,
+			"/writeFile": "http://127.0.0.1:" + port.server,
+			"/removeFile": "http://127.0.0.1:" + port.server,
+			"/getFileList": "http://127.0.0.1:" + port.server,
+			"/createDir": "http://127.0.0.1:" + port.server,
+			"/removeDir": "http://127.0.0.1:" + port.server,
 		},
 	},
 });
