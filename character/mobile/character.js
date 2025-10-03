@@ -1,9 +1,21 @@
 const characters = {
+	pot_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["pottuntian", "potjixi", "potzaoxian"],
+	},
+	pot_huanjie: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["potgongmou", "potzhengshuo"],
+	},
 	mb_caocao: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["mblingfa", "mbzhian"],
+		skills: ["mblingfa"],
 	},
 	mb_caohong: {
 		sex: "male",

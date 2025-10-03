@@ -247,9 +247,15 @@ export class Dialog extends HTMLDivElement {
 			/**@type {HTMLDivElement[]} */
 			let items = [];
 			if (typeof item == "string") {
-				let caption = ui.create.caption(item, itemContainer);
-				caption.css(itemOption.itemCss ?? {});
-				items.push(caption);
+				if (item.startsWith("###")) {
+					const items = item.slice(3).split("###");
+					itemContainer.closest(".dialog").add(items[0]);
+					itemContainer.closest(".dialog").addText(items[1], items[1].length <= 20);
+				} else {
+					let caption = ui.create.caption(item, itemContainer);
+					caption.css(itemOption.itemCss ?? {});
+					items.push(caption);
+				}
 			} else if (!Array.isArray(item)) {
 				itemContainer.classList.add("popup");
 				let button = ui.create.button(item, get.itemtype(item), itemContainer, itemOption.ItemNoclick);
@@ -276,7 +282,12 @@ export class Dialog extends HTMLDivElement {
 	 * @param { boolean } [zoom]
 	 */
 	add(item, noclick, zoom) {
-		if (typeof item == "string") {
+		if (Array.isArray(item) && item.every(itemx => Array.isArray(itemx))) {
+			// 允许曹髦/陆郁生这种createDialog中使用多个数组情况使用递归
+			item.forEach(itemx => {
+				this.add(itemx, noclick, zoom);
+			});
+		} else if (typeof item == "string") {
 			if (item.startsWith("###")) {
 				const items = item.slice(3).split("###");
 				this.add(items[0], noclick, zoom);
@@ -320,6 +331,8 @@ export class Dialog extends HTMLDivElement {
 			}
 			// @ts-expect-error ignore
 			this.buttons = this.buttons.concat(ui.create.buttons(item[0], "skill", buttons, noclick));
+		} else if (item[1] == "addNewRow") {
+			this.addNewRow(...item[0]);
 		} else {
 			var buttons = ui.create.div(".buttons", this.content);
 			if (zoom) {

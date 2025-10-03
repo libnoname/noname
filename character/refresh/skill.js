@@ -11810,22 +11810,52 @@ const skills = {
 	sishu: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("sishu")).ai = function (target) {
-				var att = get.attitude(_status.event.player, target);
-				if (target.countMark("sishu2") % 2 == 1) {
-					return -att;
-				}
-				return att;
-			};
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sishu", target);
-				target.addSkill("sishu2");
-				target.addMark("sishu2", 1, false);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const att = get.attitude(get.player(), target);
+					if (target.countMark("sishu2") % 2 == 1) {
+						return -att;
+					}
+					return att;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addSkill("sishu_reverse");
+			target.addMark("sishu_reverse", 1, false);
+		},
+		subSkill: {
+			reverse: {
+				charlotte: true,
+				onremove: true,
+				marktext: "思",
+				intro: {
+					name: "思蜀",
+					content: "本局游戏内计算【乐不思蜀】的效果时反转#次",
+				},
+				trigger: {
+					player: "judgeBefore",
+				},
+				filter(event, player) {
+					return event.card?.name == "lebu";
+				},
+				firstDo: true,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.judgeFromSishu = trigger.judge;
+					trigger.judge = function (card) {
+						const { player, judgeFromSishu } = this;
+						let result = judgeFromSishu(card);
+						if (player.countMark("sishu_reverse") % 2 == 1) {
+							result *= -1;
+						}
+						return result;
+					};
+				},
 			}
 		},
 	},
@@ -12617,9 +12647,9 @@ const skills = {
 					if (lib.translate[skills[i] + "_info"]) {
 						let translation = lib.translate[skills[i] + "_ab"] || get.translation(skills[i]).slice(0, 2);
 						if (lib.skill[skills[i]] && lib.skill[skills[i]].nobracket) {
-							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i], null, false) + "</div></div>");
 						} else {
-							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i], null, false) + "</div></div>");
 						}
 						if (lib.translate[skills[i] + "_append"]) {
 							uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skills[i] + "_append"] + "</div>");
@@ -12702,7 +12732,7 @@ const skills = {
 					dialog.addSmall([[storage.current], (item, type, position, noclick, node) => lib.skill.rehuashen.$createButton(item, type, position, noclick, node)]);
 				}
 				if (storage && storage.current2) {
-					dialog.add('<div><div class="skill">【' + get.translation(lib.translate[storage.current2 + "_ab"] || get.translation(storage.current2).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(storage.current2, player) + "</div></div>");
+					dialog.add('<div><div class="skill">【' + get.translation(lib.translate[storage.current2 + "_ab"] || get.translation(storage.current2).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(storage.current2, player, false) + "</div></div>");
 				}
 				if (storage && storage.character.length) {
 					if (player.isUnderControl(true)) {
@@ -14104,7 +14134,7 @@ const skills = {
 	},
 	new_rejianxiong: {
 		audio: "rejianxiong",
-		audioname: ["shen_caopi", "mb_caocao"],
+		audioname: ["shen_caopi"],
 		audioname2: { caoying: "lingren_jianxiong" },
 		trigger: { player: "damageEnd" },
 		content() {

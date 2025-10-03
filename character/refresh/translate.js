@@ -148,7 +148,7 @@ const translates = {
 	new_tishen2: "替身",
 	new_tishen2_info: "",
 	new_qingjian: "清俭",
-	new_qingjian_info: "当你于摸牌阶段外得到牌后，你可以展示任意张牌并交给一名其他角色。然后，当前回合角色本回合的手牌上限+X（X为你给出的牌中包含的类别数）。每回合限一次。",
+	new_qingjian_info: "每回合限一次。当你于摸牌阶段外得到牌后，你可以展示任意张牌并交给一名其他角色。然后，当前回合角色本回合的手牌上限+X（X为你给出的牌中包含的类别数）。",
 	qingjian_add: "清俭",
 	qingjian_add_info: "",
 	new_reqingnang: "青囊",

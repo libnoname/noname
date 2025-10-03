@@ -463,6 +463,7 @@ export default {
 	"#twfeifu2": "以侯归第？终败于其！",
 	"#twzhian1": "此等蝼蚁不除，必溃千丈之堤！",
 	"#twzhian2": "尔等权贵贪赃枉法，岂可轻饶？！",
+	"#twzhian3": "目无禁法，勿问贵贱依律棒杀！",
 	"#bmcanshi_tw_beimihu1": "此患不足为惧，可蚕食而尽。",
 	"#bmcanshi_tw_beimihu2": "小则蚕食，大则溃坝。",
 };

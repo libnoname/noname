@@ -8334,6 +8334,7 @@ const skills = {
 	},
 	//张辽
 	jsrgzhengbing: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 3,
 		filter(event, player) {
@@ -8388,6 +8389,7 @@ const skills = {
 		},
 	},
 	jsrgtuwei: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -8832,7 +8834,9 @@ const skills = {
 			var characters2 = player.getStorage("sbyingmen").slice(0);
 			characters2.removeArray(characters);
 			skills.removeArray(lib.skill.sbyingmen.getSkills(characters2, player));
-			game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			if (Array.isArray(player.tempname)) {
+				game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			}
 			player.unmarkAuto("sbyingmen", characters);
 			_status.characterlist.addArray(characters);
 			player.removeInvisibleSkill(skills);
@@ -13414,7 +13418,7 @@ const skills = {
 								return false;
 							}
 							const name = evt.getParent().name;
-							return name === "moveCard" || get.plainText(get.skillInfoTranslation(name, event.player)).includes("移动");
+							return name === "moveCard" || get.skillInfoTranslation(name, event.player).includes("移动");
 						}).length;
 					});
 				});
@@ -13462,7 +13466,7 @@ const skills = {
 								return false;
 							}
 							const name = evt.getParent().name;
-							return name === "moveCard" || get.plainText(get.skillInfoTranslation(name, player)).includes("移动");
+							return name === "moveCard" || get.skillInfoTranslation(name, player).includes("移动");
 						}).length;
 					},
 					true

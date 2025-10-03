@@ -1625,7 +1625,7 @@ declare interface SkillAI {
 	 * 
 	 * 不过对于如战役篇钟会这种两个技能互相combo的情况，由于失去〖排异〗后〖权计〗仍然能够发挥一定作用，故〖权计〗改用notemp标签
 	 */
-	combo?: string;
+	combo?: string | string[];
 
 	/**
 	 * 【非临时技】

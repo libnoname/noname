@@ -216,7 +216,7 @@ const skills = {
 					);
 				})
 				.forResult();
-			event.result = { bool: true, cost_data: list.filter(item => (result?.links ?? []).includes(item)) };
+			event.result = { bool: result.bool, cost_data: list.filter(item => (result?.links ?? []).includes(item)) };
 		},
 		async content(event, trigger, player) {
 			const cost_data = event.cost_data.map(item => item.split("|")).flat();
@@ -9245,16 +9245,10 @@ const skills = {
 		async content(event, trigger, player) {
 			const discard = player.modedDiscard(event.cards);
 			event.num = 0;
-			player
-				.when({
-					player: "loseAfter",
-					global: ["phaseEnd", "phaseBeforeStart"],
-				})
-				.filter(evt => evt.name != "lose" || evt.getParent() == discard)
+			const { skill } = player
+				.when("loseAfter")
+				.filter(evt => evt.getParent() == discard)
 				.step(async (event, trigger, player) => {
-					if (trigger.name != "lose") {
-						return;
-					}
 					for (let pos of ["h", "e"]) {
 						if (!player.countCards(pos) && trigger.getl(player)?.[`${pos}s`]?.length) {
 							trigger.getParent(2).num++;
@@ -9266,6 +9260,11 @@ const skills = {
 			if (event.num > 0) {
 				await player.draw(event.num);
 			}
+			player.removeSkill(skill);
+			game.broadcastAll(skill => {
+				delete lib.skill[skill];
+				delete lib.translate[skill];
+			}, skill);
 		},
 		ai: {
 			order(item, player) {

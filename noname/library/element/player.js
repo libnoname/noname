@@ -836,6 +836,8 @@ export class Player extends HTMLDivElement {
 		}
 		_status.postReconnect.player_when[1][skillName] = true;
 		return {
+			// @ts-expect-error ignore
+			skill: skillName,
 			/**
 			 * @param { Required<Skill>['filter'] } fun
 			 */
@@ -2419,6 +2421,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToMove_new() {
@@ -2438,6 +2441,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToGuanxing(num) {
@@ -3310,7 +3314,7 @@ export class Player extends HTMLDivElement {
 									lib.character[character] = get.convertedCharacter(["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]]);
 								}
 								player.smoothAvatar(name == "name2");
-								const skinImg = lib.character[character].img;
+								const skinImg = lib.character[character]?.img;
 								skinImg ? player.node["avatar" + name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(character, "character");
 								player.node["avatar" + name.slice(4)].show();
 								if (goon) {
@@ -5883,35 +5887,41 @@ export class Player extends HTMLDivElement {
 		}
 		return this.chooseButton(forced, select, "hidden", [prompt, [list, "vcard"], "hidden"]);
 	}
-	chooseButton() {
+	chooseButton(choose) {
 		var next = game.createEvent("chooseButton");
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				if (!next.forced) {
-					next.forced = arguments[i];
-				} else {
-					next.complexSelect = arguments[i];
+		if (arguments.length == 1 && get.is.object(choose)) {
+			for (var i in choose) {
+				next[i] = choose[i];
+			}
+		} else {
+			for (var i = 0; i < arguments.length; i++) {
+				if (typeof arguments[i] == "boolean") {
+					if (!next.forced) {
+						next.forced = arguments[i];
+					} else {
+						next.complexSelect = arguments[i];
+					}
+				} else if (get.itemtype(arguments[i]) == "dialog") {
+					next.dialog = arguments[i];
+					next.closeDialog = true;
+				} else if (get.itemtype(arguments[i]) == "select") {
+					next.selectButton = arguments[i];
+				} else if (typeof arguments[i] == "number") {
+					next.selectButton = [arguments[i], arguments[i]];
+				} else if (typeof arguments[i] == "function") {
+					if (next.ai) {
+						next.filterButton = arguments[i];
+					} else {
+						next.ai = arguments[i];
+					}
+				} else if (arguments[i] == "complexSelect") {
+					// 为直接添加complexSelect提供支持喵
+					next.complexSelect = true;
+				} else if (arguments[i] == "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (Array.isArray(arguments[i])) {
+					next.createDialog = arguments[i];
 				}
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
-				next.closeDialog = true;
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
-			} else if (typeof arguments[i] == "function") {
-				if (next.ai) {
-					next.filterButton = arguments[i];
-				} else {
-					next.ai = arguments[i];
-				}
-			} else if (arguments[i] == "complexSelect") {
-				// 为直接添加complexSelect提供支持喵
-				next.complexSelect = true;
-			} else if (arguments[i] == "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (Array.isArray(arguments[i])) {
-				next.createDialog = arguments[i];
 			}
 		}
 		next.player = this;
@@ -9689,6 +9699,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];
@@ -9751,6 +9764,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];

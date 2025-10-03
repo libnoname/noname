@@ -130,7 +130,7 @@ export default () => {
 						}
 						list.push("bahu");
 						const enhance = _status.connectMode ? lib.configOL.enhance_dizhu : get.config("enhance_dizhu");
-						if (["kaihei", "yinfu", "shiqiang", "qiangyi"].includes(enhance)) {
+						if (["kaihei", "yinfu", "shiqiang", "qiangyi", "oldshiqiang"].includes(enhance)) {
 							list.push(enhance);
 						}
 						game.zhu.addSkill(list);
@@ -158,7 +158,8 @@ export default () => {
 
 			var next = game.gameDraw(game.zhu || _status.firstAct || game.me);
 			if (_status.mode == "online") {
-				game.zhu.$equip(game.createCard("diqi", "club", 13));
+				const card = game.createCard("diqi", "club", 13);
+				game.zhu.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
 				next.num = function (player) {
 					var num = 4;
 					if (player == game.zhu) {
@@ -2056,6 +2057,8 @@ export default () => {
 			yinfu_info: "锁定技。①回合开始时，若你的已损失体力值不小于游戏轮次，你回复1点体力。②当你发动〖殷富①〗至少3次后，你失去〖殷富〗。",
 			shiqiang: "恃强",
 			shiqiang_info: "出牌阶段限一次，你可以将一张牌当无距离限制的【杀】使用。此【杀】结算结束后，若未造成伤害，你减1点体力上限。",
+			oldshiqiang: "恃强",
+			oldshiqiang_info: "出牌阶段限一次，你可以将一张牌当无距离限制的任意【杀】使用。你以此法使用【杀】时，摸一张牌。此【杀】结算结束后，若未造成伤害，你减1点体力上限。",
 			qiangyi: "强易",
 			qiangyi_info: "每名角色限一次。出牌阶段，你选择一名其他角色，获得其一张手牌，然后交给其一张手牌。",
 			doudizhu_cardPile: "底牌",
@@ -2786,7 +2789,7 @@ export default () => {
 					}
 				},
 			},
-			//恃强
+			//恃强·削弱
 			shiqiang: {
 				charlotte: true,
 				enable: "phaseUse",
@@ -2825,6 +2828,113 @@ export default () => {
 						popup: false,
 						async content(event, trigger, player) {
 							await player.loseMaxHp();
+						},
+					},
+				},
+				ai: {
+					order: 4,
+					result: {
+						player: 1,
+					},
+				},
+			},
+			//恃强
+			oldshiqiang: {
+				enable: "phaseUse",
+				usable: 1,
+				hiddenCard(player, name) {
+					return name == "sha" && player.countCards("hes");
+				},
+				filter(event, player) {
+					return event.filterCard(get.autoViewAs({ name: "sha", storage: { oldshiqiang: true } }, "unsure"), player, event) || lib.inpile_nature.some(nature => event.filterCard(get.autoViewAs({ name: "sha", nature, storage: { oldshiqiang: true } }, "unsure"), player, event));
+				},
+				chooseButton: {
+					dialog(event, player) {
+						var list = [];
+						if (event.filterCard(get.autoViewAs({ name: "sha", storage: { oldshiqiang: true } }, "unsure"), player, event)) {
+							list.push(["基本", "", "sha"]);
+						}
+						for (var j of lib.inpile_nature) {
+							if (event.filterCard(get.autoViewAs({ name: "sha", nature: j, storage: { oldshiqiang: true } }, "unsure"), player, event)) {
+								list.push(["基本", "", "sha", j]);
+							}
+						}
+						var dialog = ui.create.dialog("恃强", [list, "vcard"], "hidden");
+						dialog.direct = true;
+						return dialog;
+					},
+					check(button) {
+						var player = _status.event.player;
+						var card = { name: button.link[2], nature: button.link[3] };
+						if (
+							_status.event.getParent().type == "phase" &&
+							game.hasPlayer(function (current) {
+								return player.canUse(card, current) && get.effect(current, card, player, player) > 0;
+							})
+						) {
+							switch (button.link[2]) {
+								case "sha":
+									if (button.link[3] == "fire") {
+										return 2.95;
+									} else if (button.link[3] == "thunder" || button.link[3] == "ice") {
+										return 2.92;
+									} else {
+										return 2.9;
+									}
+							}
+						}
+						return 1 + Math.random();
+					},
+					backup(links, player) {
+						return {
+							filterCard: true,
+							check(card) {
+								return 6 - get.value(card);
+							},
+							viewAs: { 
+								name: links[0][2], 
+								nature: links[0][3], 
+								storage: { 
+									oldshiqiang: true 
+								} 
+							},
+							position: "hes",
+							popname: true,
+						};
+					},
+					prompt(links, player) {
+						return "将一张牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
+					},
+				},
+				locked: false,
+				group: ["oldshiqiang_effect"],
+				mod: {
+					targetInRange(card, player, target) {
+						if (card?.storage?.oldshiqiang) {
+							return true;
+						}
+					},
+				},
+				subSkill: {
+					effect: {
+						forced: true,
+						locked: false,
+						trigger: { player: ["useCard", "useCardAfter"] },
+						filter(event, player, name) {
+							if (!event.card?.storage?.oldshiqiang) {
+								return false;
+							}
+							if (name == "useCardAfter") {
+								return !player.hasHistory("sourceDamage", evt => evt.card == event.card);
+							}
+							return true;
+						},
+						async content(event, trigger, player) {
+							if (event.triggername == "useCard") {
+								await player.draw();
+							} else {
+								await player.loseMaxHp();
+							}
 						},
 					},
 				},

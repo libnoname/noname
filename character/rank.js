@@ -1,6 +1,7 @@
 window.noname_character_rank = {
 	s: ["x_yao_yuanshu", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
+		"tw_jsrg_sunjian",
 		"zj_liuyuan",
 		"zj_zhonghui",
 		"eu_kaisa",
@@ -85,7 +86,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
-		"xvwen",
+		"xuwen",
 		"mark_shen_machao",
 		"tw_zhenji",
 		"pe_xiahouxuan",
@@ -272,6 +273,7 @@ window.noname_character_rank = {
 		"zj_huoyi",
 		"ol_sb_lusu",
 		"ol_sb_zhugeliang",
+		"ol_le_liushan",
 		"pot_lusu",
 		"mb_sunjun",
 		"dc_zhaoxiang",
@@ -660,6 +662,8 @@ window.noname_character_rank = {
 		"ol_xugou",
 		"ol_haizhu",
 		"star_wenchou",
+		"star_yanliang",
+		"huanshujun",
 		"ol_wujing",
 		"one_dc_sp_machao",
 		"mb_xuezong",
@@ -1008,6 +1012,7 @@ window.noname_character_rank = {
 		"ns_liuzhang",
 		"ol_maliang",
 		"dc_sb_dengai",
+		"pot_huanjie",
 	],
 	b: [
 		"dc_sb_xusheng",
@@ -1526,6 +1531,7 @@ window.noname_character_rank = {
 		"ns_wangyue",
 		"ns_xinnanhua",
 		"v_caocao",
+		"guotiying",
 	],
 	bm: [
 		"std_simahui",
@@ -1709,6 +1715,7 @@ window.noname_character_rank = {
 		"menghuo",
 		"jiangwei",
 		"dengai",
+		"suyue",
 		"sunce",
 		"yanyan",
 		"wangcan",
@@ -2058,6 +2065,7 @@ window.noname_character_rank = {
 		"jsrg_caocao",
 		"tw_jsrg_caocao",
 		"jsrg_nanhualaoxian",
+		"ol_jsrg_zhangliao",
 	],
 	d: [
 		"jsrg_chunyuqiong",
@@ -2138,6 +2146,7 @@ window.noname_character_rank = {
 		"jsrg_qiaoxuan",
 		"jsrg_zhujun",
 		"jsrg_liubei",
+		"pot_dengai",
 	],
 	rarity: {
 		legend: [
@@ -2457,6 +2466,7 @@ window.noname_character_rank = {
 			"zj_huoyi",
 			"ol_sb_lusu",
 			"ol_sb_zhugeliang",
+			"ol_le_liushan",
 			"mark_shen_machao",
 			"tw_zhenji",
 			"dc_sb_lunxun",
@@ -2834,6 +2844,8 @@ window.noname_character_rank = {
 			"wangyan",
 			"zhaoyǎn",
 			"star_wenchou",
+			"star_yanliang",
+			"huanshujun",
 			"star_zhangchunhua",
 			"guānning",
 			"yanfuren",
@@ -2921,6 +2933,8 @@ window.noname_character_rank = {
 			"xy_lvbu",
 			"ren_jiangwei",
 			"ren_dengai",
+			"ol_jsrg_zhangliao",
+			"guotiying",
 		],
 		rare: [
 			"xy_caocao",
@@ -2928,6 +2942,7 @@ window.noname_character_rank = {
 			"xy_chengong",
 			"xy_zhangkai",
 			"xy_zhangmiao",
+			"suyue",
 			"std_simahui",
 			"std_zhengxuan",
 			"std_miheng",
@@ -4020,6 +4035,7 @@ window.noname_character_rank = {
 			"ns_xinnanhua",
 			"ns_caimao",
 			"v_caocao",
+			"pot_huanjie",
 		],
 		junk: [
 			"yao_yuanshu",
@@ -4282,6 +4298,7 @@ window.noname_character_rank = {
 			"jsrg_guojia",
 			"jsrg_dongzhuo",
 			"jsrg_zhanghuan",
+			"pot_dengai",
 		],
 	},
 };

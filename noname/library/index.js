@@ -4029,7 +4029,7 @@ export class Library {
 						if (!game.download) {
 							setTimeout(function () {
 								if (!window.StatusBar) {
-									map.show_statusbar.hide();
+									// map.show_statusbar.hide();
 								}
 							}, 5000);
 						}
@@ -7488,10 +7488,11 @@ export class Library {
 					restart: true,
 					item: {
 						disabled: "禁用",
-						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
-						shiqiang: "获得〖恃强〗",
+						kaihei: "获得〖强易〗",
 						qiangyi: "获得削弱〖强易〗",
+						oldshiqiang: "获得〖恃强〗",
+						shiqiang: "获得削弱〖恃强〗",
 					},
 				},
 				connect_enhance_nongmin: {
@@ -7747,10 +7748,11 @@ export class Library {
 					restart: true,
 					item: {
 						disabled: "禁用",
-						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
-						shiqiang: "获得〖恃强〗",
+						kaihei: "获得〖强易〗",
 						qiangyi: "获得削弱〖强易〗",
+						oldshiqiang: "获得〖恃强〗",
+						shiqiang: "获得削弱〖恃强〗",
 					},
 				},
 				enhance_nongmin: {
@@ -11603,6 +11605,9 @@ export class Library {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			if (!range || range[1] != -1) {
@@ -11835,6 +11840,9 @@ export class Library {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			if (info.singleCard && info.filterAddedTarget) {
@@ -13523,7 +13531,7 @@ export class Library {
 			autoswap: {
 				firstDo: true,
 				trigger: {
-					player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin"],
+					player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin"],
 				},
 				forced: true,
 				priority: 100,
@@ -16422,6 +16430,14 @@ export class Library {
 			{
 				color: "#ffd700",
 				nature: "metalmm",
+			},
+		],
+		[
+			"OL乐",
+			{
+				showName: "乐",
+				color: "#dab71b",
+				nature: "firemm",
 			},
 		],
 		[

@@ -1214,7 +1214,7 @@ body > .background.land {
 }
 .facade-replacing {
 	visibility: hidden !important;
-	scale: 0 !important;
+	display: none !important;
 }
 
 #system > div > div.hidden {
@@ -1397,7 +1397,7 @@ body > .background.land {
 .card.dctuoyu-qingqu-glow:before {
 	opacity: 0.2;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(0, 139, 139) 0 0 5px;
-	background-color: #008B8B;
+	background-color: #008b8b;
 	-webkit-filter: blur(3px);
 	filter: blur(3px);
 }
@@ -4453,48 +4453,43 @@ div[data-decoration="bronze"]::after {
 	color: #a82424;
 }
 
-.card.zf_common {
-	border: 2px solid #59392b;
-	filter: drop-shadow(0 0 15px #59392b);
+.card.zhanfa > .image {
+	background-size: 75%;
+	background-position: bottom right;
+	background-repeat: no-repeat;
 }
+
 .card.zf_common > .name,
-.card.zf_common > .info {
+.card.zf_common > .info,
+.card.zf_rare > .name,
+.card.zf_rare > .info,
+.card.zf_epic > .name,
+.card.zf_epic > .info,
+.card.zf_legend > .name,
+.card.zf_legend > .info {
 	/*background-color: #59392b;
 	color: white;*/
 	font-weight: bolder;
+}
+
+.card.zf_common {
+	border: 2px solid #59392b;
+	filter: drop-shadow(0 0 15px #59392b);
 }
 
 .card.zf_rare {
 	border: 2px solid #5d3c77;
 	filter: drop-shadow(0 0 15px #5d3c77);
 }
-.card.zf_rare > .name,
-.card.zf_rare > .info {
-	/*background-color: #5d3c77;
-	color: white;*/
-	font-weight: bolder;
-}
 
 .card.zf_epic {
 	border: 2px solid #af572a;
 	filter: drop-shadow(0 0 15px #af572a);
 }
-.card.zf_epic > .name,
-.card.zf_epic > .info {
-	/*background-color: #af572a;
-	color: white;*/
-	font-weight: bolder;
-}
 
 .card.zf_legend {
 	border: 2px solid #b0293e;
 	filter: drop-shadow(0 0 15px #b0293e);
-}
-.card.zf_legend > .name,
-.card.zf_legend > .info {
-	/*background-color: #b0293e;
-	color: white;*/
-	font-weight: bolder;
 }
 
 .config > .toggle.onoff {

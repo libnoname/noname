@@ -94,7 +94,7 @@ export class Check {
 			ok = false;
 		}
 
-		if (event.custom && event.custom.add[type]) {
+		if (typeof event.custom?.add?.[type] == "function") {
 			event.custom.add[type]();
 		}
 

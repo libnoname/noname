@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	olwenyi(player) {
+		let info = lib.translate["olwenyi_info"],
+			limit = 1 + player.countMark("olwenyi_limit");
+		return info.replace("一", get.cnNumber(limit));
+	},
 	olqiaowu(player){
 		const bool = player.storage.olqiaowu;
 		let yang = "摸一张牌",

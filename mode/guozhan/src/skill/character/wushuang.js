@@ -2345,14 +2345,7 @@ export default {
 		ai: {
 			combo: "gz_mowang",
 			nokeep: true,
-			mingzhi_yes: true,
-			skillTagFilter(player, tag) {
-				if (tag !== "mingzhi_yes") {
-					return true;
-				}
-				const event = _status.event;
-				return event?.name === "_mingzhi2" && event._trigger?.skill === "gz_danggu";
-			},
+			mingzhi: true,
 		},
 		intro: {
 			mark(dialog, storage, player) {

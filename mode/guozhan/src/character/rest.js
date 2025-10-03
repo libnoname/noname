@@ -26,7 +26,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzhuaiyi", "gzzisui"],
+		skills: ["fakehuaiyi", "fakezisui"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_sunchen: new Character({
@@ -393,13 +393,15 @@ export default {
 		hujia: 0,
 		skills: ["weicheng", "daoshu"],
 	}),
-	gz_sp_duyu: new Character({
+	gz_mb_luxun: new Character({
 		sex: "male",
-		group: "qun",
-		hp: 4,
-		maxHp: 4,
+		group: "wu",
+		hp: 3,
+		maxHp: 3,
 		hujia: 0,
-		skills: ["spwuku", "spmiewu"],
+		skills: ["gz_mb_qianxun", "gz_mb_duoshi"],
+		img: "image/character/sb_luxun.jpg",
+		dieAudios: ["sb_luxun"],
 	}),
 	gz_huaxin: new Character({
 		sex: "male",
@@ -795,7 +797,7 @@ export default {
 		skills: ["reqianxun", "relianying"],
 		clans: ["吴郡陆氏"],
 	},
-	gz_clan_zhonghui: new Character({
+	gz_ol_zhonghui: new Character({
 		sex: "male",
 		group: "wei",
 		hp: 4,
