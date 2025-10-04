@@ -2758,7 +2758,7 @@ player.removeVirtualEquip(card);
 			function (list, translationList = []) {
 				var list2 = ["db_atk1", "db_atk2", "db_def1", "db_def2"];
 				for (var i = 0; i < 4; i++) {
-					lib.card[list2[i]].image = "card/" + list2[i] + (list[0] == "全军出击" ? "" : "_" + list[i]);
+					lib.card[list2[i]].image = "image/card/" + list2[i] + (list[0] == "全军出击" ? "" : "_" + list[i]) + ".jpg";
 					lib.translate[list2[i]] = list[i];
 					lib.translate[list2[i] + "_info"] = translationList[i];
 				}
@@ -6418,7 +6418,12 @@ player.removeVirtualEquip(card);
 			const { targets, cards } = event;
 			player.$compareMultiple(event.card1, targets, cards);
 			game.log(player, "的拼点牌为", event.card1);
-			event.cardlist.forEach((card, index) => game.log(targets[index], "的拼点牌为", card));
+			await player.showCards(event.card1).setContent(() => {});
+			const func = async (card, index) => {
+				game.log(targets[index], "的拼点牌为", card);
+				await targets[index].showCards(card).setContent(() => {});
+			};
+			await game.doAsyncInOrder(event.cardlist, func, () => 1);
 			player.addTempClass("target");
 			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1000);
 		},
@@ -6625,6 +6630,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			game.log(player, "的拼点牌为", event.card1);
+			player.showCards(event.card1).setContent(() => {});
 		},
 		async (event, trigger, player) => {
 			const targets = event.targets;
@@ -6637,6 +6643,7 @@ player.removeVirtualEquip(card);
 				game.log(event.target, "的拼点牌为", event.card2);
 				player.line(event.target);
 				player.$compare(event.card1, event.target, event.card2);
+				event.target.showCards(event.card2).setContent(() => {});
 			} else {
 				event.goto(12);
 			}
@@ -6848,7 +6855,13 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			const target = event.target;
 			game.log(player, "的拼点牌为", event.card1);
+			await player.showCards(event.card1).setContent(() => {});
 			game.log(event.compareWithCardPile ? "牌堆" : target, "的拼点牌为", event.card2);
+			if (event.compareWithCardPile) {
+				await player.showCards(event.card2).setContent(() => {});
+			} else {
+				await target.showCards(event.card2).setContent(() => {});
+			}
 			var getNum = function (card) {
 				for (var i of event.lose_list) {
 					if (i[1].includes(card)) {
