@@ -1383,10 +1383,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					return num + get.numOf(types, type);
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				return num + get.numOf(types, type);
+			}, 0)
 		);
 	}
 	/**
@@ -1418,13 +1418,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					if (!lib.filter.canBeReplaced(card, this)) {
-						num += get.numOf(types, type);
-					}
-					return num;
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				if (!lib.filter.canBeReplaced(card, this)) {
+					num += get.numOf(types, type);
+				}
+				return num;
+			}, 0)
 		);
 	}
 	/**
@@ -1813,11 +1813,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @deprecated
 	 */
-	$disableEquip() {}
+	$disableEquip() { }
 	/**
 	 * @deprecated
 	 */
-	$enableEquip() {}
+	$enableEquip() { }
 	//装备区End
 	chooseToDebate() {
 		var next = game.createEvent("chooseToDebate");
@@ -2789,10 +2789,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-				return !card.cards?.some(card => {
-					return ui.selected.cards?.includes(card);
-				});
-			}),
+			return !card.cards?.some(card => {
+				return ui.selected.cards?.includes(card);
+			});
+		}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -2972,14 +2972,16 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家是否可以与target拼点
 	 * @param { Player } target
-	 * @param { boolean } [goon] 忽略玩家的手牌不足以拼点
-	 * @param { boolean} [bool] 忽略target的手牌不足以拼点
+	 * @param { boolean } [goon] 忽略玩家的手牌不足以拼点以及mod导致的不能拼点
+	 * @param { boolean} [bool] 忽略target的手牌不足以拼点以及mod导致的不能拼点
+	 * @param { string } [position = "h"] 可用于拼点的区域
+	 * @param { string } [event = "everything"] 拼点事件名
 	 */
-	canCompare(target, goon, bool) {
+	canCompare(target, goon, bool, position = "h", event = "everything") {
 		if (this == target) {
 			return false;
 		}
-		if ((!this.countCards("h") && goon !== true) || (!target.countCards("h") && bool !== true)) {
+		if ((this.getCards(position).filter(card => lib.filter.canBeComapred(card, player, event)).length == 0 && goon !== true) || (bool !== true && target.getCards(position).filter(card => lib.filter.canBeComapred(card, player, event)).length == 0)) {
 			return false;
 		}
 		if (this.hasSkillTag("noCompareSource") || target.hasSkillTag("noCompareTarget")) {
@@ -5705,6 +5707,8 @@ export class Player extends HTMLDivElement {
 	chooseToCompare(target, check) {
 		var next = game.createEvent("chooseToCompare");
 		next.player = this;
+		next.filterCard = lib.filter.canBeCompared;
+		next.position = "h";
 		if (Array.isArray(target)) {
 			next.targets = target;
 			if (check) {

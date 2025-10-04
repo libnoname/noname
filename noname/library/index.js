@@ -526,18 +526,18 @@ export class Library {
 										typeof yingbianZhuzhanAI == "function"
 											? yingbianZhuzhanAI(player, card, source, targets)
 											: cardx => {
-													var info = get.info(card);
-													if (info && info.ai && info.ai.yingbian) {
-														var ai = info.ai.yingbian(card, source, targets, player);
-														if (!ai) {
-															return 0;
-														}
-														return ai - get.value(cardx);
-													} else if (get.attitude(player, source) <= 0) {
+												var info = get.info(card);
+												if (info && info.ai && info.ai.yingbian) {
+													var ai = info.ai.yingbian(card, source, targets, player);
+													if (!ai) {
 														return 0;
 													}
-													return 5 - get.value(cardx);
-											  },
+													return ai - get.value(cardx);
+												} else if (get.attitude(player, source) <= 0) {
+													return 0;
+												}
+												return 5 - get.value(cardx);
+											},
 								});
 								if (!game.online) {
 									return;
@@ -9113,10 +9113,10 @@ export class Library {
 	genAwait(item) {
 		return gnc.is.generator(item)
 			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-			  })()
+				for (const content of item) {
+					yield content;
+				}
+			})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -11575,6 +11575,25 @@ export class Library {
 			}
 			return true;
 		},
+		/**
+		 * player的card在chooseToComapre事件中能否被用于拼点
+		 * @param { Card } card 要被用于拼点的牌
+		 * @param { Player } [player = get.owner(card)] 牌的现持有者
+		 * @param { string } [event] 获得牌事件的名称
+		 * @returns { boolean }
+		 */
+		canBeComapred: function (card, player = get.owner(card), event = _status.event) {
+			if (!typeof event == "string") {
+				event = event.getParent("chooseToCompare", false, true);
+				event = event.skill || event.getParent().name || "everything";
+			}
+			console.log(event);
+			let mod = game.checkMod(card, player, event, "unchanged", "canBeComapred", player);
+			if (mod != "unchanged") {
+				return mod;
+			}
+			return true;
+		},
 		cardAiIncluded: function (card) {
 			if (_status.event.isMine()) {
 				return true;
@@ -12289,16 +12308,16 @@ export class Library {
 						const cardName = get.name(cards[0], player);
 						return cardName
 							? new lib.element.VCard({
-									name: cardName,
-									nature: get.nature(cards[0], player),
-									suit: get.suit(cards[0], player),
-									number: get.number(cards[0], player),
-									isCard: true,
-									cards: [cards[0]],
-									storage: {
-										stratagem_buffed: 1,
-									},
-							  })
+								name: cardName,
+								nature: get.nature(cards[0], player),
+								suit: get.suit(cards[0], player),
+								number: get.number(cards[0], player),
+								isCard: true,
+								cards: [cards[0]],
+								storage: {
+									stratagem_buffed: 1,
+								},
+							})
 							: new lib.element.VCard();
 					}
 					return null;
@@ -14941,7 +14960,7 @@ export class Library {
 								navigator.clipboard
 									.readText()
 									.then(read)
-									.catch(_ => {});
+									.catch(_ => { });
 							} else {
 								var input = ui.create.node("textarea", ui.window, { opacity: "0" });
 								input.select();

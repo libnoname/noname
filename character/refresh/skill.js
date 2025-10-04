@@ -1036,7 +1036,7 @@ const skills = {
 		filter(event, player) {
 			return get.sgn(player.getDamagedHp() - 1.5) != get.sgn(player.getDamagedHp() - 1.5 + event.num);
 		},
-		content() {},
+		content() { },
 		mod: {
 			globalFrom(from, to, current) {
 				return current - 1;
@@ -1296,7 +1296,7 @@ const skills = {
 			}
 			const cards = target.getCards("h").randomGets(1),
 				card = cards[0];
-			await target.showCards(cards).setContent(function () {});
+			await target.showCards(cards).setContent(function () { });
 			event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", cards);
 			event.videoId = lib.status.videoId++;
 
@@ -4658,7 +4658,7 @@ const skills = {
 		},
 		forced: true,
 		firstDo: true,
-		content() {},
+		content() { },
 		subSkill: {
 			global: {
 				mod: {
@@ -5882,13 +5882,13 @@ const skills = {
 				content() {
 					"step 0";
 					var targets = game.filterPlayer(function (target) {
-							return (
-								target != player &&
-								!game.hasPlayer(function (current) {
-									return current != player && current != target && current.countCards("h") < target.countCards("h");
-								})
-							);
-						}),
+						return (
+							target != player &&
+							!game.hasPlayer(function (current) {
+								return current != player && current != target && current.countCards("h") < target.countCards("h");
+							})
+						);
+					}),
 						num = Math.floor(player.countCards("h") / 2);
 					player.chooseCardTarget({
 						position: "h",
@@ -6197,7 +6197,7 @@ const skills = {
 					var info = lib.card[event.card.name];
 					return info && info.selectTarget && info.selectTarget == -1 && !info.toself;
 				},
-				content() {},
+				content() { },
 			},
 		},
 	},
@@ -7659,17 +7659,17 @@ const skills = {
 				return (
 					get.order({ name: "sha" }, player) +
 					0.3 *
-						(Math.min(
-							player.getCardUsable("sha"),
-							player.countCards("hs", "sha") +
-								player.hasCard(function (card) {
-									return card.name != "sha" && get.value(card, player) < 6.3;
-								}, "hs")
-								? 1
-								: 0
-						) > 1
-							? -1
-							: 1)
+					(Math.min(
+						player.getCardUsable("sha"),
+						player.countCards("hs", "sha") +
+							player.hasCard(function (card) {
+								return card.name != "sha" && get.value(card, player) < 6.3;
+							}, "hs")
+							? 1
+							: 0
+					) > 1
+						? -1
+						: 1)
 				);
 			},
 			nokeep: true,
@@ -9965,12 +9965,10 @@ const skills = {
 		},
 		content() {
 			var targets = player == trigger.player ? (trigger.targets ? trigger.targets.slice(0) : [trigger.target]) : [trigger.player];
-			if (!trigger.fixedResult) {
-				trigger.fixedResult = {};
-			}
+			trigger.fixedResult ??= {};
 			while (targets.length) {
 				var target = targets.shift();
-				var hs = target.getCards("h");
+				var hs = target.getCards("h").filter(card => trigger.filterCard(card, player, trigger));
 				if (hs.length) {
 					trigger.fixedResult[target.playerid] = hs.randomGet();
 				}
@@ -11673,7 +11671,7 @@ const skills = {
 		filter(event, player) {
 			return event.card.name == "sha" && !event.skill && event.cards.length == 1 && event.cards[0].name == "jiu";
 		},
-		content() {},
+		content() { },
 		group: "rejinjiu2",
 		global: "rejinjiu3",
 	},
@@ -12226,19 +12224,19 @@ const skills = {
 					.set(
 						"choice",
 						get.attitude(target, player) > 0 ||
-							target.countCards("h", function (card) {
-								var val = get.value(card);
-								if (val < 0) {
-									return true;
-								}
-								if (val <= 5) {
-									return get.number(card) >= 12;
-								}
-								if (val <= 6) {
-									return get.number(card) >= 13;
-								}
-								return false;
-							}) > 0
+						target.countCards("h", function (card) {
+							var val = get.value(card);
+							if (val < 0) {
+								return true;
+							}
+							if (val <= 5) {
+								return get.number(card) >= 12;
+							}
+							if (val <= 6) {
+								return get.number(card) >= 13;
+							}
+							return false;
+						}) > 0
 					)
 					.set("ai", function () {
 						return _status.event.choice;
@@ -13060,7 +13058,7 @@ const skills = {
 			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.num);
 		},
 		forced: true,
-		content() {},
+		content() { },
 	},
 	botu: {
 		audio: 2,
@@ -16463,7 +16461,7 @@ const skills = {
 		filter(event, player) {
 			return get.sgn(player.hp - 2.5) != get.sgn(player.hp - 2.5 - event.num);
 		},
-		content() {},
+		content() { },
 		mod: {
 			globalFrom(from, to, current) {
 				return current - 1;

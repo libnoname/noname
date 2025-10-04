@@ -6311,14 +6311,13 @@ player.removeVirtualEquip(card);
 	chooseToCompareMeanwhile: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			event.filterCard ??= lib.filter.all;
-			if (player.getCards("h").filter(card => event.filterCard(card)).length == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
+			if (player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
 			for (var i = 0; i < targets.length; i++) {
-				if (targets[i].getCards("h").filter(card => event.filterCard(card)).length == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
+				if (targets[i].getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
 					event.result = { cancelled: true, bool: false };
 					event.finish();
 					return;
@@ -6338,10 +6337,10 @@ player.removeVirtualEquip(card);
 				if (!event.fixedResult || !event.fixedResult[player.playerid]) {
 					event.list.unshift(player);
 				}
-				player.chooseCardOL(event.list, "请选择拼点牌", true).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					const { filterCard } = get.event();
-					var hs = target.getCards("h").filter(card => filterCard(card));
-					var event = _status.event;
+				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
+					const evt = get.event().getParent("chooseToComapre");
+					let hs = target.getCards(evt.position).filter(card => evt.filterCard(card, player, evt)),
+						event = _status.event;
 					event.player = target;
 					hs.sort(function (a, b) {
 						return event.ai(b) - event.ai(a);
@@ -6526,14 +6525,13 @@ player.removeVirtualEquip(card);
 	chooseToCompareMultiple: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			event.filterCard ??= lib.filter.all;
-			if (!event.fixedResult?.[player.playerid] && player.getCards("h").filter(card => event.filterCard(card)).length) {
+			if (!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
 			for (var i = 0; i < targets.length; i++) {
-				if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].getCards("h").filter(card => event.filterCard(card)).length) {
+				if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
 					event.result = { cancelled: true, bool: false };
 					event.finish();
 					return;
@@ -6552,10 +6550,10 @@ player.removeVirtualEquip(card);
 				if (!event.fixedResult?.[player.playerid]) {
 					event.list.unshift(player);
 				}
-				player.chooseCardOL(event.list, "请选择拼点牌", true).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					const { filterCard } = get.event();
-					var hs = target.getCards("h").filter(card => filterCard(card));
-					var event = _status.event;
+				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
+					const evt = get.event().getParent("chooseToComapre");
+					let hs = target.getCards(evt.position).filter(card => evt.filterCard(card, player, evt)),
+						event = _status.event;
 					event.player = target;
 					hs.sort(function (a, b) {
 						return event.ai(b) - event.ai(a);
@@ -6725,11 +6723,7 @@ player.removeVirtualEquip(card);
 				event.compareWithCardPile = true;
 				event.compareType ??= "top";
 			}
-			if (!event.position || typeof event.position != "string") {
-				event.position = "h";
-			}
-			event.filterCard ??= lib.filter.all;
-			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card)).length == 0)) {
+			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
@@ -6741,9 +6735,9 @@ player.removeVirtualEquip(card);
 			event.list = [player, target].filter(current => get.itemtype(current) == "player" && !event.fixedResult?.[current.playerid]);
 			if (event.list.length) {
 				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-					const { filterCard } = get.event();
-					var hs = target.getCards("h").filter(card => filterCard(card));
-					var event = _status.event;
+					const evt = get.event().getParent("chooseToComapre");
+					let hs = target.getCards(evt.position).filter(card => evt.filterCard(card, player, evt)),
+						event = _status.event;
 					event.player = target;
 					hs.sort((a, b) => event.ai(b) - event.ai(a));
 					delete event.player;
