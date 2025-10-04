@@ -1405,50 +1405,44 @@ const skills = {
 			return game.hasPlayer(current => current != player && current.countCards("he"));
 		},
 		chooseButton: {
-			dialog() {
-				const dialog = ui.create.dialog("伏械：弃置一张武器牌或失去1个技能");
-				dialog.direct = true;
-				return dialog;
-			},
-			chooseControl(event, player) {
-				let list = player.getSkills(null, false, false).filter(skill => {
+			dialog(event, player) {
+				const skills = player.getSkills(null, false, false).filter(skill => {
 					let info = get.info(skill);
 					if (!info || info.charlotte || get.skillInfoTranslation(skill, player).length == 0) {
 						return false;
 					}
 					return true;
 				});
-				if (player.countCards("he", card => get.subtype(card) == "equip1")) {
-					list.unshift("弃置武器牌");
-				}
-				list.push("cancel2");
-				return list;
+				const dialog = ui.create.dialog("伏械：弃置一张武器牌或失去1个技能", [[["discardEquip1", "弃置武器牌"]], "tdnodes"], [skills, "skill"]);
+				dialog.direct = true;
+				return dialog;
 			},
-			check() {
-				const player = get.player(),
-					list = get.event("controls").slice(0);
-				let getv = function (button, player) {
-					if (button == "弃置武器牌") {
-						if (player.countCards("he", card => get.subtype(card) == "equip1" && get.value(card) < 10)) {
-							return 3;
-						}
-						return 1;
+			filter(button, player) {
+				if (button.link == "discardEquip1") {
+					return player.countCards("he", card => get.subtype(card) == "equip1");
+				}
+				return true;
+			},
+			check(button) {
+				const player = get.player();
+				if (button.link == "discardEquip1") {
+					if (player.countCards("he", card => get.subtype(card) == "equip1" && get.value(card) < 10)) {
+						return 3;
 					}
-					if (["dcshouxing", "dcshaxue"].includes(button)) {
-						return 4;
-					}
-					return 2;
-				};
-				const result = list.sort((a, b) => getv(b, player) - getv(a, player))[0];
-				return result;
+					return 1;
+				}
+				if (["dcshouxing", "dcshaxue"].includes(button.link)) {
+					return 4;
+				}
+				return 2;
 			},
 			backup(result, player) {
 				return {
 					audio: "dcfuxie",
-					choice: result.control,
+					choice: result[0],
 					filterCard(card) {
 						const { choice } = get.info("dcfuxie_backup");
-						if (choice == "弃置武器牌") {
+						if (choice == "discardEquip1") {
 							return get.subtype(card) == "equip1" && lib.filter.cardDiscardable(card, player, "dcfuxie");
 						}
 						return false;
@@ -1456,7 +1450,7 @@ const skills = {
 					position: "he",
 					selectCard() {
 						const { choice } = get.info("dcfuxie_backup");
-						if (choice == "弃置武器牌") {
+						if (choice == "discardEquip1") {
 							return 1;
 						}
 						return -1;
@@ -1466,7 +1460,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						const { choice } = get.info("dcfuxie_backup");
-						if (choice == "弃置武器牌") {
+						if (choice == "discardEquip1") {
 							await player.discard(event.cards);
 						} else {
 							await player.removeSkills(choice);
@@ -1484,7 +1478,7 @@ const skills = {
 				};
 			},
 			prompt(result, player) {
-				let prompt = result.control == "弃置武器牌" ? "弃置一张武器牌" : `失去【${get.translation(result.control)}】`;
+				let prompt = result[0] == "discardEquip1" ? "弃置一张武器牌" : `失去【${get.translation(result[0])}】`;
 				return `${prompt}，令一名角色弃置两张牌`;
 			},
 		},
