@@ -7192,9 +7192,18 @@ const skills = {
 						const effect = button.link[1];
 						return !effect.filter || effect.filter(get.player());
 					})
+					.set("target", target)
 					.set("ai", button => {
-						const effect = button.link[1];
-						return effect.ai(get.event().player);
+						const { dialog, player, target } = get.event();
+						const effect = button.link[1],
+							buttons = dialog.buttons.slice(0).remove(button);
+						if (target !== player) {
+							const targetButton = buttons.maxBy(buttonx => buttonx.link[1].ai(target));
+							if (targetButton) {
+								return effect.ai(player) + targetButton.link[1].ai(target) * get.sgnAttitude(player, target);
+							}
+						}
+						return effect.ai(player);
 					})
 					.forResult();
 				if (result.bool) {
@@ -7214,7 +7223,7 @@ const skills = {
 							await player.draw(2);
 						},
 						ai(player) {
-							return get.effect(player, { name: "wuzhong" }, player, player);
+							return get.effect(player, { name: "draw" }, player, player);
 						},
 					},
 				],
@@ -7241,7 +7250,7 @@ const skills = {
 							}
 						},
 						ai(player) {
-							return (player.isTurnedOver() ? 3 : 0) + player.isLinked();
+							return (player.isTurnedOver() ? 3 : 0) + (player.isLinked() ? 2 : 0);
 						},
 					},
 				],
@@ -17576,7 +17585,10 @@ const skills = {
 					if (target.hasCard(card => card.hasGaintag("olzhubi_tag"), "h")) {
 						return 0.5;
 					}
-					return 1;
+					if (target == player) {
+						return target.countCards("he", card => 4 - get.value(card)) ? 1 : -1;
+					}
+					return (target.countCards("he") - 2) / 3;
 				},
 			},
 		},

@@ -2298,23 +2298,23 @@ const skills = {
 				let result = select.shift();
 				switch (result) {
 					case "选项一": {
+						count++;
 						player.addTempSkill("dcsbzhouxi_range");
 						player.addMark("dcsbzhouxi_range", count, false);
-						count++;
 						break;
 					}
 					case "选项二": {
+						count++;
 						const card = new lib.element.VCard({ name: "shunshou", isCard: true });
 						if (player.hasUseTarget(card)) {
-							count++;
 							await player.chooseUseTarget(card, [1, count], true);
 						}
 						break;
 					}
 					case "选项三": {
+						count++;
 						const card = new lib.element.VCard({ name: "sha", isCard: true });
 						if (player.hasUseTarget(card)) {
-							count++;
 							await player.chooseUseTarget(card, [1, count], true, false);
 						}
 						break;
