@@ -2976,12 +2976,16 @@ export class Player extends HTMLDivElement {
 	 * @param { boolean} [bool] 忽略target的手牌不足以拼点以及mod导致的不能拼点
 	 * @param { string } [position = "h"] 可用于拼点的区域
 	 * @param { string } [event = "everything"] 拼点事件名
+	 * @returns { boolean }
 	 */
 	canCompare(target, goon, bool, position = "h", event = "everything") {
 		if (this == target) {
 			return false;
 		}
-		if ((this.getCards(position).filter(card => lib.filter.canBeComapred(card, player, event)).length == 0 && goon !== true) || (bool !== true && target.getCards(position).filter(card => lib.filter.canBeComapred(card, player, event)).length == 0)) {
+		if (target == "cardPile") {
+			return this.getCards(position).filter(card => lib.filter.canBeCompared(card, this, event)).length != 0 || goon;
+		}
+		if ((this.getCards(position).filter(card => lib.filter.canBeCompared(card, this, event)).length == 0 && goon !== true) || (bool !== true && target.getCards(position).filter(card => lib.filter.canBeCompared(card, target, event)).length == 0)) {
 			return false;
 		}
 		if (this.hasSkillTag("noCompareSource") || target.hasSkillTag("noCompareTarget")) {

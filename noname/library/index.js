@@ -11579,16 +11579,15 @@ export class Library {
 		 * player的card在chooseToComapre事件中能否被用于拼点
 		 * @param { Card } card 要被用于拼点的牌
 		 * @param { Player } [player = get.owner(card)] 牌的现持有者
-		 * @param { string } [event] 获得牌事件的名称
+		 * @param { GameEvent } [event] 获得牌事件(的名称)
 		 * @returns { boolean }
 		 */
-		canBeComapred: function (card, player = get.owner(card), event = _status.event) {
-			if (!typeof event == "string") {
+		canBeCompared: function (card, player = get.owner(card), event = _status.event) {
+			if (typeof event != "string") {
 				event = event.getParent("chooseToCompare", false, true);
 				event = event.skill || event.getParent().name || "everything";
 			}
-			console.log(event);
-			let mod = game.checkMod(card, player, event, "unchanged", "canBeComapred", player);
+			let mod = game.checkMod(card, player, event, "unchanged", "canBeComapared", player);
 			if (mod != "unchanged") {
 				return mod;
 			}
