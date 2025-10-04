@@ -5252,14 +5252,14 @@ const skills = {
 			const cards = get.cards(1, true),
 				card = cards[0];
 			await player.showCards(cards, get.translation(player) + "发动了【灵隐】");
-			if (get.color(card) == get.color(trigger.card)) {
+			if (get.color(card, false) == get.color(trigger.card)) {
 				await player.gain(cards, "gain2");
 			}
-			if (get.suit(card) == get.suit(trigger.card)) {
+			if (get.suit(card, false) == get.suit(trigger.card)) {
 				trigger.getParent().excluded.add(player);
 				game.log(trigger.card, "对", player, "无效");
 			}
-			if (get.color(card) != get.color(trigger.card)) {
+			if (get.color(card, false) != get.color(trigger.card)) {
 				await game.cardsDiscard(cards);
 				player.$throw(cards);
 				game.log(cards, "被置入了弃牌堆");

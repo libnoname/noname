@@ -8514,7 +8514,7 @@ const skills = {
 			if (color == "red") {
 				await player.draw(3);
 			} else if (color == "black" && targetsx.length) {
-				const targets = await player
+				const result = await player
 					.chooseTarget(`选择一名角色弃置其至多两张牌`, (card, player, target) => {
 						return get.event("targetsx").includes(target);
 					})
@@ -8523,9 +8523,9 @@ const skills = {
 						return get.effect(target, { name: "guohe_copy2" }, player, player);
 					})
 					.set("targetsx", targetsx)
-					.forResultTargets();
-				if (targets?.length) {
-					await player.discardPlayerCard(targets[0], "he", true, [1, 2]);
+					.forResult();
+				if (result?.targets?.length) {
+					await player.discardPlayerCard(result.targets[0], "he", true, [1, 2]);
 				}
 			}
 		},

@@ -12529,25 +12529,25 @@ export class Library {
 			zf_maxHandcard: {
 				modNum: 1, //可以是有player和num参数的函数，但最后必须返回数字；若填写了数字则是直接与mod的num返回值相加
 				init(player, skill) {
-					const info = get.info(skill);
-					if (info?.mod?.maxHandcard) {
-						return;
-					}
-					const func = info.modNum;
-					const mod = function (player, num) {
-						if (typeof func == "number") {
-							return num + func;
-						}
-						if (typeof func == "function") {
-							return func(player, num);
-						}
-					};
 					game.broadcastAll(
-						(skill, mod) => {
+						(player, skill) => {
+							const info = get.info(skill);
+							if (info?.mod?.maxHandcard) {
+								return;
+							}
+							const func = info.modNum;
+							const mod = function (player, num) {
+								if (typeof func == "number") {
+									return num + func;
+								}
+								if (typeof func == "function") {
+									return func(player, num);
+								}
+							};
 							lib.skill[skill].mod.maxHandcard = mod;
 						},
-						skill,
-						mod
+						player,
+						skill
 					);
 				},
 				mod: {},
@@ -12558,53 +12558,53 @@ export class Library {
 				modNum: 1, //可以是有card、player和num参数的函数，但最后必须返回数字；若填写了数字则是直接与mod的num返回值相加
 				numFixed: false,
 				init(player, skill) {
-					const info = get.info(skill);
-					if (info?.mod?.cardUsable) {
-						return;
-					}
-					const func = info.modNum;
-					const cardFilter = info.cardFilter;
-					let filter = cardFilter;
-
-					if (typeof cardFilter == "string") {
-						filter = card => get.name(card) == cardFilter;
-					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(get.name(card));
-					} else if (typeof cardFilter == "object") {
-						filter = card => {
-							for (let j in cardFilter) {
-								var value;
-								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
-									value = get[j](card);
-								} else if (j == "name") {
-									value = get.name(card);
-								} else {
-									value = card[j];
-								}
-								if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
-									return false;
-								}
-							}
-							return true;
-						};
-					}
-
-					const mod = function (card, player, num) {
-						if (typeof func == "function") {
-							return func(card, player, num);
-						}
-						if (typeof func == "number") {
-							if (filter(card)) {
-								return num + func;
-							}
-						}
-					};
 					game.broadcastAll(
-						(skill, mod) => {
+						(player, skill) => {
+							const info = get.info(skill);
+							if (info?.mod?.cardUsable) {
+								return;
+							}
+							const func = info.modNum;
+							const cardFilter = info.cardFilter;
+							let filter = cardFilter;
+
+							if (typeof cardFilter == "string") {
+								filter = card => get.name(card) == cardFilter;
+							} else if (Array.isArray(cardFilter)) {
+								filter = card => cardFilter.includes(get.name(card));
+							} else if (typeof cardFilter == "object") {
+								filter = card => {
+									for (let j in cardFilter) {
+										var value;
+										if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
+											value = get[j](card);
+										} else if (j == "name") {
+											value = get.name(card);
+										} else {
+											value = card[j];
+										}
+										if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+											return false;
+										}
+									}
+									return true;
+								};
+							}
+
+							const mod = function (card, player, num) {
+								if (typeof func == "function") {
+									return func(card, player, num);
+								}
+								if (typeof func == "number") {
+									if (filter(card)) {
+										return num + func;
+									}
+								}
+							};
 							lib.skill[skill].mod.cardUsable = mod;
 						},
-						skill,
-						mod
+						player,
+						skill
 					);
 				},
 				mod: {},

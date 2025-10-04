@@ -2180,7 +2180,7 @@ const _zhanfa = {
 		},
 	},
 	//稳定进攻
-	zf_wendingjinggong: {
+	zf_wendingjingong: {
 		rarity: "legend",
 		translate: "稳定进攻",
 		info: "回合内出杀次数固定为5",
@@ -2190,7 +2190,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			cardFilter: "sha",
-			modNum: 5,
+			modNum: () => 5,
 		},
 	},
 	//稳定承载
