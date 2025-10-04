@@ -11606,6 +11606,9 @@ export class Library {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			if (!range || range[1] != -1) {
@@ -11838,6 +11841,9 @@ export class Library {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			if (info.singleCard && info.filterAddedTarget) {

@@ -2600,6 +2600,9 @@ player.removeVirtualEquip(card);
 			range = get.select(select);
 			if (event.selectTarget) {
 				range = get.select(event.selectTarget);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 		}
@@ -4331,8 +4334,10 @@ player.removeVirtualEquip(card);
 		"step 4";
 		if (event.skill.startsWith("player_when_")) {
 			player.removeSkill(event.skill);
-			delete lib.skill[event.skill];
-			delete lib.translate[event.skill];
+			game.broadcastAll(skill => {
+				delete lib.skill[skill];
+				delete lib.translate[skill];
+			}, event.skill);
 		}
 		if (!player._hookTrigger) {
 			return;

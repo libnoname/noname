@@ -393,13 +393,15 @@ export default {
 		hujia: 0,
 		skills: ["weicheng", "daoshu"],
 	}),
-	gz_sp_duyu: new Character({
+	gz_mb_luxun: new Character({
 		sex: "male",
-		group: "qun",
-		hp: 4,
-		maxHp: 4,
+		group: "wu",
+		hp: 3,
+		maxHp: 3,
 		hujia: 0,
-		skills: ["spwuku", "spmiewu"],
+		skills: ["gz_mb_qianxun", "gz_mb_duoshi"],
+		img: "image/character/sb_luxun.jpg",
+		dieAudios: ["sb_luxun"],
 	}),
 	gz_huaxin: new Character({
 		sex: "male",

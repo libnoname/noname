@@ -1,4 +1,9 @@
 export default {
+	"#dchuashang1": "妾若布衣荆钗，岂非明珠投暗？",
+	"#dchuashang2": "妾生千金之家，当配万乘之服。",
+	"#dcyuzhi1": "妾性尚简，今日所衣非常衣！",
+	"#dcyuzhi2": "父王息怒！拙姎实不知上律！",
+	"#cuilingyi:die": "子建，救我！",
 	"#dczhongtao1": "凉州男儿，可愿随我再破千军！",
 	"#dczhongtao2": "你我勠力讨贼，何人可堪一战！",
 	"#dcjizhan1": "吾不畏死，又岂畏战！",

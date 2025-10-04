@@ -1563,7 +1563,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(2);
 			const num = get.distance(player, trigger.player);
-			if (num > 0) {
+			if (num > 0 && trigger.player.isIn()) {
 				await player.chooseToDiscard(num, "he", true);
 			}
 		},

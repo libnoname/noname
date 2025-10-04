@@ -10,6 +10,7 @@ import voices from "./src/voices/index.js";
 import * as info from "./src/info/index.js";
 import { gamePatch, getPatch, contentPatch, playerPatch } from "./src/patch/index.js";
 import help from "./src/help/index.js";
+import poptips from "./src/help/poptip.js";
 
 export const type = "mode";
 

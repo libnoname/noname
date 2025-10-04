@@ -23,6 +23,12 @@ const characters = {
 		hp: 4,
 		skills: ["starlianzhan", "starweiming"],
 	},
+	star_yanliang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["starjizhan", "starcuxia"],
+	},
 	star_dingfeng: {
 		sex: "male",
 		group: "wu",

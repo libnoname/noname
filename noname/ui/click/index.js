@@ -4026,7 +4026,7 @@ export class Click {
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
 							const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
-							for (let i = 0; i < skills.length; i++) {
+							for (let i = 0; i < skillButtons.length; i++) {
 								delete skillButtons[i].playAudio;
 							}
 							refreshIntro();
@@ -4038,7 +4038,7 @@ export class Click {
 							lib.character[i] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]]);
 						}
 						button.name = i;
-						const skinImg = lib.character[i].img;
+						const skinImg = lib.character[i]?.img;
 						skinImg ? button.setBackgroundImage(skinImg) : button.setBackground(i, "character");
 						if (iSTemp) {
 							delete lib.character[i];

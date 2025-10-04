@@ -362,9 +362,21 @@ const skills = {
 	},
 	//手杀SP曹操
 	mblingfa: {
-		audio: "twlingfa",
+		audio: 2,
 		inherit: "twlingfa",
-		derivation: "new_rejianxiong",
+		derivation: ["twzhian", "new_rejianxiong"],
+		subSkill: {
+			sha: {
+				audio: "mblingfa",
+				inherit: "twlingfa_sha",
+				sourceSkill: "mblingfa",
+			},
+			tao: {
+				audio: "mblingfa",
+				inherit: "twlingfa_tao",
+				sourceSkill: "mblingfa",
+			},
+		},
 	},
 	mbzhian: {
 		audio: "twzhian",
@@ -7639,7 +7651,7 @@ const skills = {
 								if (player.countMark("friendyance") < 7) {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
-								if (storage[4] && storage[3] > 3) {
+								if (storage[4] && storage[3] >= 3) {
 									player.restoreSkill("friendfangqiu");
 								}
 							}

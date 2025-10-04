@@ -479,6 +479,108 @@ const skills = {
 			},
 		},
 	},
+	//颜良
+	starjizhan: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+		},
+		filter(event, player) {
+			if (!event.getParent()?.targets?.length || !event.isFirstTarget) {
+				return false;
+			}
+			return player.getHistory("useCard", evt => get.tag(evt.card, "damage")).indexOf(event.getParent()) == 0;
+		},
+		async cost(event, trigger, player) {
+			const num = 2 - player.getHistory("useCard", evt => !get.tag(evt.card, "damage"), trigger.getParent()).length;
+			let str = num > 0 ? `令此牌对其中一个目标造成的伤害+${num}` : "选择一个目标";
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `${str}，若此牌结算后未造成伤害，其对你造成1点伤害`)
+				.set("filterTarget", (card, player, target) => {
+					const trigger = get.event().getTrigger();
+					return trigger.targets?.includes(target);
+				})
+				.set("ai", target => {
+					const { player, num } = get.event();
+					let eff = 0;
+					if (num <= 0 || player.hp <= 1) {
+						eff += get.damageEffect(player, target, player);
+					}
+					if (num > 0) {
+						eff += get.damageEffect(target, player, player);
+					}
+					return eff;
+				})
+				.set("numx", num)
+				.forResult();
+			event.result.cost_data = Math.max(0, num);
+		},
+		async content(event, trigger, player) {
+			const map = trigger.getParent().customArgs,
+				{
+					targets: [target],
+					cost_data: num,
+				} = event,
+				id = target.playerid;
+			map[id] ??= {};
+			if (typeof map[id].extraDamage !== "number") {
+				map[id].extraDamage = 0;
+			}
+			map[id].extraDamage += num;
+			player
+				.when("useCardAfter")
+				.filter(evt => evt == trigger.getParent())
+				.step(async (event, trigger, player) => {
+					if (
+						game.hasPlayer(current => {
+							return current.hasHistory("damage", evt => evt.card == trigger.card);
+						})
+					) {
+						return;
+					}
+					if (target.isIn() && player?.isIn()) {
+						target.line(player);
+						await player.damage(target);
+					}
+				});
+		},
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (get.tag(card, "damage") && !player.hasHistory("useCard", evt => get.tag(evt.card, "damage"))) {
+					return num + 15;
+				}
+			},
+		},
+	},
+	starcuxia: {
+		audio: 2,
+		trigger: { global: "useCard" },
+		filter(event, player) {
+			if (event.player === player || !event.targets?.includes(player)) {
+				return false;
+			}
+			return (
+				event.player.getHp() > player.getHp() ||
+				event.player.getRoundHistory("sourceDamage", evt => {
+					return player == evt.player;
+				}).length > 0
+			);
+		},
+		forced: true,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			await trigger.player.randomDiscard("h");
+			if (
+				trigger.player.getHp() > player.getHp() &&
+				trigger.player.getRoundHistory("sourceDamage", evt => {
+					return player == evt.player;
+				}).length > 0
+			) {
+				await player.draw();
+			}
+		},
+	},
 	//文丑
 	starlianzhan: {
 		audio: 2,
@@ -2367,6 +2469,9 @@ const skills = {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			const cards = player.getCards("h", cardx => card != cardx && get.suit(card, player) == get.suit(cardx, player));
@@ -4754,6 +4859,9 @@ const skills = {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
 			return range[1] == -1;

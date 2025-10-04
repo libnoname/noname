@@ -2057,9 +2057,12 @@ export class Get extends GetCompatible {
 			if (info.ai.halfneg) {
 				return 0;
 			}
-			if ((typeof info.ai.combo == "string" || Array.isArray(info.ai.combo)) && player) {
-				let skills = typeof info.ai.combo == "string" ? [info.ai.combo] : info.ai.combo;
-				if (skills.every(skill => !player.hasSkill(skill))) {
+			if (player?.hasSkill && info?.ai?.combo) {
+				let skills = info.ai.combo;
+				if (!Array.isArray(skills)) {
+					skills = [skills];
+				}
+				if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
 					return 0;
 				}
 			}
@@ -3620,7 +3623,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	select(select) {
 		if (typeof select == "function") {
-			return get.select(select());
+			let result = get.select(select());
+			if (typeof result == "number") {
+				return [result, result];
+			}
+			return result;
 		} else if (typeof select == "number") {
 			return [select, select];
 		} else if (select && get.itemtype(select) == "select") {
@@ -4188,8 +4195,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				if (func && !func(info, skill, i)) {
 					continue;
 				}
-				if (player && player.hasSkill && info.ai && info.ai.combo && !player.hasSkill(info.ai.combo)) {
-					continue;
+				if (player?.hasSkill && info?.ai?.combo) {
+					let skills = info.ai.combo;
+					if (!Array.isArray(skills)) {
+						skills = [skills];
+					}
+					if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
+						continue;
+					}
 				}
 				list.add(skill);
 			}

@@ -1711,12 +1711,12 @@ game.import("card", function () {
 			jiaoyou_skill: {
 				charlotte: true,
 				silent: true,
-				trigger: { source: "damageBegin1" },
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (!event.card) {
 						return false;
 					}
-					const evt = event.getParent("useCard");
+					const evt = event;
 					if (evt?.card !== event.card || evt.cards?.length !== 1) {
 						return false;
 					}
@@ -1731,7 +1731,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const skill = "jiaoyou",
-						evt = trigger.getParent("useCard");
+						evt = trigger;
 					const evtx = player.getHistory(
 						"lose",
 						evtx =>
@@ -1740,7 +1740,7 @@ game.import("card", function () {
 								return evtx.gaintag_map[i].some(tag => tag.startsWith(skill));
 							})
 					)[0];
-					trigger.num += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
+					trigger.baseDamage += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
 						const tag = evtx.gaintag_map[i].find(tag => tag.startsWith(skill));
 						if (tag) {
 							sum += parseInt(tag.slice(skill.length));

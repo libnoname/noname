@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../../../../../noname.js";
+
 export default {
 	gz_jiaping: "嘉平",
 	gz_jiaping_info: "君主技，只要此武将牌处于明置状态，你便拥有“八荒死士令”。",
@@ -142,7 +144,7 @@ export default {
 	fakezhuosheng: "擢升",
 	fakezhuosheng_info: "每回合每种牌名限一次，你可以将至少两张手牌当作任意基本牌使用，若你以此法使用的牌中包含具有应变效果的牌，则你令此牌无视条件获得对应的应变效果。",
 	fakejuhou: "拒后",
-	fakejuhou_info: "阵法技，与你处于同一队列的角色成为【杀】或普通锦囊牌的目标后，你可以令其将任意张牌置于其武将牌上，然后其于此牌结算完毕后获得这些牌。",
+	fakejuhou_info: `${get.poptip("guozhan_zhenfa")}，与你处于同一${get.poptip("guozhan_duilie")}的角色成为【杀】或普通锦囊牌的目标后，你可以令其将任意张牌置于其武将牌上，然后其于此牌结算完毕后获得这些牌。`,
 	fakexiongshu: "凶竖",
 	fakexiongshu_info: "每回合限一次，一名角色使用【杀】或伤害类锦囊牌指定第一个目标后，若你为/不为此牌使用者，则你可以摸一张牌并令一名其他角色成为此牌的伤害来源/弃置一张牌并成为此牌的伤害来源。",
 	fakejianhui: "奸回",

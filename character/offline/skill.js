@@ -3398,8 +3398,17 @@ const skills = {
 								value *= 24;
 							}
 							const info = get.info(skill);
-							if ((info?.ai?.combo && !player.hasSkill(info.ai.combo)) || info?.ai?.neg) {
+							if (info?.ai?.neg) {
 								value = 0;
+							}
+							if (info?.ai?.combo) {
+								let skills = info.ai.combo;
+								if (!Array.isArray(skills)) {
+									skills = [skills];
+								}
+								if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
+									value = 0;
+								}
 							}
 							return value;
 						};
@@ -31140,6 +31149,9 @@ const skills = {
 								range = select;
 							} else if (typeof select == "function") {
 								range = select(card, player);
+								if (typeof range == "number") {
+									range = [range, range];
+								}
 							}
 							game.checkMod(card, player, range, "selectTarget", player);
 							if (range[1] == -1 || (range[1] > 1 && ui.selected.targets && ui.selected.targets.length)) {

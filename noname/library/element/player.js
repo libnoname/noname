@@ -836,6 +836,8 @@ export class Player extends HTMLDivElement {
 		}
 		_status.postReconnect.player_when[1][skillName] = true;
 		return {
+			// @ts-expect-error ignore
+			skill: skillName,
 			/**
 			 * @param { Required<Skill>['filter'] } fun
 			 */
@@ -3312,7 +3314,7 @@ export class Player extends HTMLDivElement {
 									lib.character[character] = get.convertedCharacter(["", "", 0, [], (list.find(i => i[0] == character) || [character, []])[1]]);
 								}
 								player.smoothAvatar(name == "name2");
-								const skinImg = lib.character[character].img;
+								const skinImg = lib.character[character]?.img;
 								skinImg ? player.node["avatar" + name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(character, "character");
 								player.node["avatar" + name.slice(4)].show();
 								if (goon) {
@@ -9697,6 +9699,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];
@@ -9759,6 +9764,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];

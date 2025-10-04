@@ -384,10 +384,13 @@ export const chooseCharacterContent = async (event, _trigger, _player) => {
 						}
 					}
 				}
-				const perfectPairStr = perfectPairs.map(i => `[${get.translation(i.link)}]`).join("<br>");
-				const perfectPairNode = ui.create.caption(`<div class="text" data-nature=shenmm style="font-family: yuanli; font-size: 12px">${perfectPairStr}</div>`, button);
-				perfectPairNode.style.left = "1px";
-				perfectPairNode.style.bottom = "1px";
+				if (!button.perfectPairs?.length) {
+					const perfectPairStr = perfectPairs.map(i => `[${get.translation(i.link)}]`).join("<br>");
+					const perfectPairNode = ui.create.caption(`<div class="text" data-nature=shenmm style="font-family: yuanli; font-size: 12px">${perfectPairStr}</div>`, button);
+					perfectPairNode.style.left = "1px";
+					perfectPairNode.style.bottom = "1px";
+					button.perfectPairs = perfectPairs;
+				}
 			}
 			// @ts-expect-error 祖宗之法就是这么写的
 			if (lib.character[button.link].hasHiddenSkill) {
@@ -803,10 +806,13 @@ export const chooseCharacterOLContent = async (event, _trigger, _player) => {
 						}
 					}
 				}
-				const perfectPairStr = perfectPairs.map(i => `[${get.translation(i.link)}]`).join("<br>");
-				const perfectPairNode = ui.create.caption(`<div class="text" data-nature=shenmm style="font-family: yuanli; font-size: 12px">${perfectPairStr}</div>`, button);
-				perfectPairNode.style.left = "1px";
-				perfectPairNode.style.bottom = "1px";
+				if (!button.perfectPairs?.length) {
+					const perfectPairStr = perfectPairs.map(i => `[${get.translation(i.link)}]`).join("<br>");
+					const perfectPairNode = ui.create.caption(`<div class="text" data-nature=shenmm style="font-family: yuanli; font-size: 12px">${perfectPairStr}</div>`, button);
+					perfectPairNode.style.left = "1px";
+					perfectPairNode.style.bottom = "1px";
+					button.perfectPairs = perfectPairs;
+				}
 			}
 		}
 		const filterChoice = (name1, name2) => {

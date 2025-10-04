@@ -1,4 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../../../../noname.js";
+
 export default {
 	gz_hengjiang: "横江",
 	gz_hengjiang_info: "当你受到伤害后，你可以令当前回合角色本回合的手牌上限-X（X为其装备区牌数且至少为1）。然后其本回合弃牌阶段结束时，若其未于此阶段弃牌，则你将手牌摸至体力上限。",
@@ -27,5 +28,5 @@ export default {
 
 	gz_fengshi: "锋矢",
 	gz_fengshi_sha: "锋矢",
-	gz_fengshi_info: "阵法技，在一个围攻关系中，若你是围攻角色，则你或另一名围攻角色使用【杀】指定被围攻角色为目标后，可令该角色弃置装备区内的一张牌。",
+	gz_fengshi_info: `${get.poptip("guozhan_zhenfa")}，在一个${get.poptip("guozhan_weigong")}关系中，若你是围攻角色，则你或另一名围攻角色使用【杀】指定被围攻角色为目标后，可令该角色弃置装备区内的一张牌。`,
 };

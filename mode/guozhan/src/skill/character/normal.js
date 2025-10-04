@@ -1809,7 +1809,7 @@ export default {
 				.set("suit", suit)
 				.forResult();
 
-			if (!result2.bool) {
+			if (result2 && !result2.bool) {
 				// @ts-expect-error 类型系统未来可期
 				trigger.getParent().directHit.add(trigger.target);
 			}
@@ -2984,8 +2984,8 @@ export default {
 		audio: "suishi",
 		locked: true,
 		forced: true,
-		preHidden: ["gz_suishi_draw", "gz_suishi_lopse"],
-		group: ["gz_suishi_draw", "gz_suishi_lopse"],
+		preHidden: ["gz_suishi_draw", "gz_suishi_lose"],
+		group: ["gz_suishi_draw", "gz_suishi_lose"],
 		/** @type {Record<string, Skill>} */
 		subSkill: {
 			draw: {
@@ -2993,9 +2993,7 @@ export default {
 				trigger: {
 					global: "dying",
 				},
-				check() {
-					return false;
-				},
+				forced: true,
 				filter(event, player) {
 					return event.player != player && event.parent?.name == "damage" && event.parent.source && event.parent.source.isFriendOf(player);
 				},
@@ -3008,12 +3006,20 @@ export default {
 				trigger: {
 					global: "dieAfter",
 				},
+				check() {
+					return false;
+				},
 				forced: true,
 				filter(event, player) {
 					return event.player.isFriendOf(player);
 				},
 				async content(_event, _trigger, player) {
-					await player.loseHp();
+					const result = player.countDiscardableCards(player, "h") ? await player.chooseBool("随势：弃置所有手牌，或点取消失去1点体力").forResult() : { bool: false };
+					if (result.bool) {
+						await player.modedDiscard(player.getCards("h"));
+					} else {
+						await player.loseHp();
+					}
 				},
 			},
 		},
