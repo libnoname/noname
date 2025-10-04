@@ -6723,7 +6723,7 @@ player.removeVirtualEquip(card);
 				event.compareWithCardPile = true;
 				event.compareType ??= "top";
 			}
-			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
+			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
