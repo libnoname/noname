@@ -5214,6 +5214,7 @@ const skills = {
 			list = [list[0], list.slice(1)];
 			var next = player.chooseToMove_new("拓域：请分配你的手牌", true);
 			next.set("list", list);
+			next.set("skillName", "dctuoyu");
 			next.set("filterMove", function (from, to, moved) {
 				var player = _status.event.player;
 				var storage = player.getStorage("dctuoyu"),
@@ -5352,7 +5353,7 @@ const skills = {
 					for (const mutation of mutationsList) {
 						if (mutation.type === "childList") {
 							for (const card of mutation.addedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
@@ -5371,7 +5372,7 @@ const skills = {
 								}
 							}
 							for (const card of mutation.removedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.classList.contains(glowClass)) {

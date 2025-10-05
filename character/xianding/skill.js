@@ -26664,60 +26664,59 @@ const skills = {
 			return event.player.isIn() && get.distance(player, event.player) <= list[0];
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			event.list = lib.skill.yuqi.getInfo(player);
-			var cards = get.cards(event.list[1]);
-			event.cards = cards;
+		async content(event, trigger, player) {
+			const list = lib.skill.yuqi.getInfo(player);
+			const cards = get.cards(list[1]);
 			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove_new(true, "隅泣");
-			next.set("list", [
-				["牌堆顶的牌", cards],
-				[["交给" + get.translation(trigger.player) + '<div class="text center">至少一张' + (event.list[2] > 1 ? "<br>至多" + get.cnNumber(event.list[2]) + "张" : "") + "</div>"], ['交给自己<div class="text center">至多' + get.cnNumber(event.list[3]) + "张</div>"]],
-			]);
-			next.set("filterMove", function (from, to, moved) {
-				var info = lib.skill.yuqi.getInfo(_status.event.player);
-				if (to == 1) {
-					return moved[1].length < info[2];
-				}
-				if (to == 2) {
-					return moved[2].length < info[3];
-				}
-				return true;
-			});
-			next.set("processAI", function (list) {
-				var cards = list[0][1].slice(0).sort(function (a, b) {
-						return get.value(b, "raw") - get.value(a, "raw");
-					}),
-					player = _status.event.player,
-					target = _status.event.getTrigger().player;
-				var info = lib.skill.yuqi.getInfo(_status.event.player);
-				var cards1 = cards.splice(0, Math.min(info[3], cards.length - 1));
-				var card2;
-				if (get.attitude(player, target) > 0) {
-					card2 = cards.shift();
-				} else {
-					card2 = cards.pop();
-				}
-				return [cards, [card2], cards1];
-			});
-			next.set("filterOk", function (moved) {
-				return moved[1].length > 0;
-			});
-			"step 1";
+			const result = await player.chooseToMove_new(true, "隅泣")
+				.set("list", [
+					["牌堆顶的牌", cards],
+					[["交给" + get.translation(trigger.player) + '<div class="text center">至少一张' + (list[2] > 1 ? "<br>至多" + get.cnNumber(list[2]) + "张" : "") + "</div>"], ['交给自己<div class="text center">至多' + get.cnNumber(list[3]) + "张</div>"]],
+				])
+				.set("skillName", "yuqi")
+				.set("filterMove", function (from, to, moved) {
+					var info = lib.skill.yuqi.getInfo(_status.event.player);
+					if (to == 1) {
+						return moved[1].length < info[2];
+					}
+					if (to == 2) {
+						return moved[2].length < info[3];
+					}
+					return true;
+				})
+				.set("processAI", function (list) {
+					var cards = list[0][1].slice(0).sort(function (a, b) {
+							return get.value(b, "raw") - get.value(a, "raw");
+						}),
+						player = _status.event.player,
+						target = _status.event.getTrigger().player;
+					var info = lib.skill.yuqi.getInfo(_status.event.player);
+					var cards1 = cards.splice(0, Math.min(info[3], cards.length - 1));
+					var card2;
+					if (get.attitude(player, target) > 0) {
+						card2 = cards.shift();
+					} else {
+						card2 = cards.pop();
+					}
+					return [cards, [card2], cards1];
+				})
+				.set("filterOk", function (moved) {
+					return moved[1].length > 0;
+				})
+				.forResult();
 			if (result.bool) {
-				var moved = result.moved;
+				const moved = result.moved;
 				cards.removeArray(moved[1]);
 				cards.removeArray(moved[2]);
 				while (cards.length) {
 					ui.cardPile.insertBefore(cards.pop().fix(), ui.cardPile.firstChild);
 				}
-				var list = [[trigger.player, moved[1]]];
+				const gainList = [[trigger.player, moved[1]]];
 				if (moved[2].length) {
-					list.push([player, moved[2]]);
+					gainList.push([player, moved[2]]);
 				}
-				game.loseAsync({
-					gain_list: list,
+				await game.loseAsync({
+					gain_list: gainList,
 					giver: player,
 					animate: "draw",
 				}).setContent("gaincardMultiple");
@@ -26743,16 +26742,15 @@ const skills = {
 		audio: 2,
 		trigger: { global: "die" },
 		direct: true,
-		content() {
-			"step 0";
-			event.goon = !player.hasAllHistory("sourceDamage", function (evt) {
+		async content(event, trigger, player) {
+			const goon = !player.hasAllHistory("sourceDamage", function (evt) {
 				return evt.player == trigger.player;
 			});
-			var list = lib.skill.yuqi.getInfo(player);
-			player
+			const list = lib.skill.yuqi.getInfo(player);
+			const result = await player
 				.chooseControl("<span class=thundertext>蓝色(" + list[0] + ")</span>", "<span class=firetext>红色(" + list[1] + ")</span>", "<span class=greentext>绿色(" + list[2] + ")</span>", "<span class=yellowtext>黄色(" + list[3] + ")</span>", "cancel2")
 				.set("prompt", get.prompt("shanshen"))
-				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (event.goon ? "并回复1点体力" : ""))
+				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (goon ? "并回复1点体力" : ""))
 				.set("ai", function () {
 					var player = _status.event.player,
 						info = lib.skill.yuqi.getInfo(player);
@@ -26779,16 +26777,16 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 1";
+				})
+				.forResult();
 			if (result.control != "cancel2") {
 				player.logSkill("shanshen", trigger.player);
-				var list = lib.skill.yuqi.getInfo(player);
+				const list = lib.skill.yuqi.getInfo(player);
 				list[result.index] = Math.min(5, list[result.index] + 2);
 				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
 				player.markSkill("yuqi");
 				lib.skill.yuqi.init(player, "yuqi");
-				if (event.goon) {
+				if (goon) {
 					player.recover();
 				}
 			}
@@ -26801,10 +26799,9 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		direct: true,
-		content() {
-			"step 0";
-			var list = lib.skill.yuqi.getInfo(player);
-			player
+		async content(event, trigger, player) {
+			const list = lib.skill.yuqi.getInfo(player);
+			const result1 = await player
 				.chooseControl("<span class=thundertext>蓝色(" + list[0] + ")</span>", "<span class=firetext>红色(" + list[1] + ")</span>", "<span class=greentext>绿色(" + list[2] + ")</span>", "<span class=yellowtext>黄色(" + list[3] + ")</span>", "cancel2")
 				.set("prompt", get.prompt("xianjing"))
 				.set("prompt2", "令〖隅泣〗中的一个数字+1")
@@ -26834,25 +26831,26 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 1";
-			if (result.control != "cancel2") {
+				})
+				.forResult();
+			
+			if (result1.control != "cancel2") {
 				player.logSkill("xianjing");
-				var list = lib.skill.yuqi.getInfo(player);
-				list[result.index] = Math.min(5, list[result.index] + 1);
-				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
+				const list = lib.skill.yuqi.getInfo(player);
+				list[result1.index] = Math.min(5, list[result1.index] + 1);
+				game.log(player, "将", result1.control, "数字改为", "#y" + list[result1.index]);
 				player.markSkill("yuqi");
 				lib.skill.yuqi.init(player, "yuqi");
+				
 				if (player.isDamaged()) {
-					event.finish();
+					return;
 				}
 			} else {
-				event.finish();
+				return;
 			}
-			"step 2";
-			var list = lib.skill.yuqi.getInfo(player);
-			player
-				.chooseControl("<span class=thundertext>蓝色(" + list[0] + ")</span>", "<span class=firetext>红色(" + list[1] + ")</span>", "<span class=greentext>绿色(" + list[2] + ")</span>", "<span class=yellowtext>黄色(" + list[3] + ")</span>", "cancel2")
+			const list2 = lib.skill.yuqi.getInfo(player);
+			const result2 = await player
+				.chooseControl("<span class=thundertext>蓝色(" + list2[0] + ")</span>", "<span class=firetext>红色(" + list2[1] + ")</span>", "<span class=greentext>绿色(" + list2[2] + ")</span>", "<span class=yellowtext>黄色(" + list2[3] + ")</span>", "cancel2")
 				.set("prompt", "是否令〖隅泣〗中的一个数字+1？")
 				.set("ai", function () {
 					var player = _status.event.player,
@@ -26880,12 +26878,13 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 3";
-			if (result.control != "cancel2") {
-				var list = lib.skill.yuqi.getInfo(player);
-				list[result.index] = Math.min(5, list[result.index] + 1);
-				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
+				})
+				.forResult();
+			
+			if (result2.control != "cancel2") {
+				const list = lib.skill.yuqi.getInfo(player);
+				list[result2.index] = Math.min(5, list[result2.index] + 1);
+				game.log(player, "将", result2.control, "数字改为", "#y" + list[result2.index]);
 				player.markSkill("yuqi");
 				lib.skill.yuqi.init(player, "yuqi");
 			}
