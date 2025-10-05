@@ -1397,7 +1397,7 @@ body > .background.land {
 .card.dctuoyu-qingqu-glow:before {
 	opacity: 0.2;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(0, 139, 139) 0 0 5px;
-	background-color: #4f84e7;
+	background-color: #008b8b;
 	-webkit-filter: blur(3px);
 	filter: blur(3px);
 }
