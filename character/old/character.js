@@ -507,6 +507,15 @@ const characters = {
 		skills: ["yizhong"],
 		dieAudios: ["yujin.mp3"],
 	},
+	old_clan_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		maxHp: 4,
+		skills: ["old_clanyuzhi", "old_clanxieshu", "clanbaozu"],
+		clans: ["颍川钟氏"],
+		dieAudios: ["clan_zhonghui"],
+	},
 };
 
 export default characters;

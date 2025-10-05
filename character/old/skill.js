@@ -1402,6 +1402,131 @@ const skills = {
 			noe: true,
 		},
 	},
+	//初版族钟会
+	old_clanyuzhi: {
+		inherit: "clanyuzhi",
+		audio: "clanyuzhi",
+		filter(event, player, name) {
+			if (name === "roundStart") {
+				return player.countCards("h");
+			}
+			const num1 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "old_clanyuzhi").reduce((sum, evt) => sum + evt.cards.length, 0);
+			const num2 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "old_clanyuzhi", 1).reduce((sum, evt) => sum + evt.cards.length, 0);
+			console.log(num1, num2);
+			const num3 = player.getRoundHistory("useCard").length;
+			return (num1 > 0 && num2 > 0 && num1 > num2) || num1 > num3;
+		},
+		async content(event, trigger, player) {
+			const name = event.triggername;
+			const num1 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == event.name, name === "roundStart" ? 1 : 0).reduce((sum, evt) => sum + evt.cards.length, 0);
+			switch (name) {
+				case "roundStart": {
+					const { result } = await player
+						.chooseCard(
+							"迂志：请展示一张手牌",
+							"摸此牌牌名字数的牌。本轮结束时，若本轮你使用的牌数或上一轮你以此法摸的牌数小于此牌牌名字数，则你失去1点体力或失去〖保族〗。",
+							(card, player) => {
+								const num = get.cardNameLength(card);
+								return typeof num == "number" && num > 0;
+							},
+							true
+						)
+						.set("ai", card => {
+							const { dying, num } = get.event();
+							if (dying && num > 0 && get.cardNameLength(card) > num) {
+								return 1 / get.cardNameLength(card); //怂
+							}
+							return get.cardNameLength(card); //勇
+						})
+						.set(
+							"dying",
+							player.hp +
+								player.countCards("hs", {
+									name: ["tao", "jiu"],
+								}) <
+								1
+						)
+						.set("num", num1);
+					if (result?.bool && result.cards?.length) {
+						await player.showCards(result.cards, get.translation(player) + "发动了【迂志】");
+						await player.draw(get.cardNameLength(result.cards[0]));
+						player.storage[event.name + "_mark"] = get.cardNameLength(result.cards[0]);
+						player.addTempSkill(event.name + "_mark", "roundStart");
+					}
+					break;
+				}
+				case "roundEnd": {
+					const num2 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == event.name, 1).reduce((sum, evt) => sum + evt.cards.length, 0);
+					const num3 = player.getRoundHistory("useCard").length;
+					if ((num1 > 0 && num2 > 0 && num1 > num2) || num1 > num3) {
+						let result;
+						if (num2 > 0 && num1 > num2) {
+							game.log(player, "的野心已开始膨胀", "#y(" + num1 + "张>" + num2 + "张)");
+						}
+						if (num1 > num3) {
+							game.log(player, "的行动未达到野心", "#y(" + num3 + "张<" + num1 + "张)");
+						}
+						if (player.hasSkill("clanbaozu", null, false, false)) {
+							result = await player.chooseBool("迂志：是否失去〖保族〗？", "若选择“否”，则你失去1点体力").set("choice", player.awakenedSkills.includes("clanbaozu")).forResult();
+						} else {
+							result = { bool: false };
+						}
+						if (result?.bool) {
+							await player.removeSkills("clanbaozu");
+						} else {
+							await player.loseHp();
+						}
+					}
+				}
+			}
+		},
+	},
+	old_clanxieshu: {
+		audio: "clanxieshu",
+		inherit: "clanxieshu",
+		filter(event, player) {
+			if (!event.card) {
+				return false;
+			}
+			var num = get.cardNameLength(event.card);
+			return typeof num == "number" && num > 0 && player.countCards("he") > 0;
+		},
+		async cost(event, trigger, player) {
+			var num = get.cardNameLength(trigger.card),
+				str = "";
+			if (player.getDamagedHp() > 0) {
+				str += "，然后摸" + get.cnNumber(player.getDamagedHp()) + "张牌";
+			}
+			event.result = await player
+				.chooseToDiscard(get.prompt(event.skill), "弃置" + get.cnNumber(num) + "张牌" + str, "he", num, "chooseonly")
+				.set("ai", function (card) {
+					var player = _status.event.player;
+					var num = _status.event.num;
+					var num2 = player.getDamagedHp();
+					if (!num2) {
+						return 0;
+					}
+					if (num < num2) {
+						return 8 - get.value(card);
+					}
+					if (num == num2 || num2 >= 2 + num - num2) {
+						return lib.skill.zhiheng.check(card);
+					}
+					return 0;
+				})
+				.set("num", num)
+				.set("logSkill", event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.modedDiscard(cards);
+			if (player.getDamagedHp() > 0) {
+				await player.draw(player.getDamagedHp());
+			}
+		},
+		ai: { threaten: 5 },
+	},
 };
 
 export default skills;

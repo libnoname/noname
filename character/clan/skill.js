@@ -3627,7 +3627,7 @@ const skills = {
 				str += "，然后摸" + get.cnNumber(player.getDamagedHp()) + "张牌";
 			}
 			event.result = await player
-				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num)
+				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num, "chooseonly")
 				.set("ai", function (card) {
 					var player = _status.event.player;
 					var num = _status.event.num;
@@ -3648,11 +3648,12 @@ const skills = {
 				.forResult();
 		},
 		popup: false,
-		*content(event, map) {
-			const player = map.player;
-			yield player.link(true);
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.modedDiscard(cards);
+			await player.link(true);
 			if (player.getDamagedHp() > 0) {
-				yield player.draw(player.getDamagedHp());
+				await player.draw(player.getDamagedHp());
 			}
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -4507,7 +4508,10 @@ const skills = {
 	clanbaozu: {
 		audio: 2,
 		audioname: ["clan_zhongyan", "clan_zhongyu", "clan_zhongyao"],
-		audioname2: { clan_zhonghui: "clanbaozu_clan_zhonghui" },
+		audioname2: {
+			clan_zhonghui: "clanbaozu_clan_zhonghui",
+			old_clan_zhonghui: "clanbaozu_clan_zhonghui",
+		},
 		trigger: { global: "dying" },
 		clanSkill: true,
 		limited: true,
