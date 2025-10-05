@@ -8831,21 +8831,8 @@ const skills = {
 					player.removeGaintag(tag, [card]);
 				}
 				tag = tag ? skill + parseFloat(parseInt(tag.slice(skill.length)) + 1) : "dcsblieji_effect1";
-				game.broadcastAll(lib.skill["dcsblieji"].createGainTag, tag, tag.slice(skill.length));
-				game.addVideo("skill", player, ["dcsblieji", [tag, tag.slice(skill.length)]]);
+				game.addTempTag(tag, `烈计+${tag.slice(skill.length)}`);
 				player.addGaintag([card], tag);
-			}
-		},
-		video: (player, info) => lib.skill.dcsblieji.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "烈计+" + name;
-				if (!_status.postReconnect.dcsblieji) {
-					_status.postReconnect.dcsblieji = [lib.skill.dcsblieji.createGainTag, [], []];
-				}
-				_status.postReconnect.dcsblieji[1].add(skill);
-				_status.postReconnect.dcsblieji[2].add(name);
 			}
 		},
 		subSkill: {

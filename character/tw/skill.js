@@ -8340,8 +8340,7 @@ const skills = {
 			if (target != player && player.countCards("h")) {
 				game.delayex();
 				const skill = `${skillName}_${player.playerid}`;
-				game.broadcastAll(lib.skill[skillName].createGainTag, skill, player.name);
-				game.addVideo("skill", player, [skillName, [skill, player.name]]);
+				game.addTempTag(skill, `义·${get.translation(player.name)}`);
 				player.addSkill(skillName + "_draw");
 				const next = player
 					.chooseToGive(target, `伸义：是否将任意张手牌交给${get.translation(target)}？`, [1, player.countCards("h")], "allowChooseAll")
@@ -8355,18 +8354,6 @@ const skills = {
 				next.gaintag.add(skill);
 				await next;
 			}
-		},
-		video: (player, info) => lib.skill.twshenyi.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "义·" + get.translation(name);
-			}
-			if (!_status.postReconnect.twshenyi) {
-				_status.postReconnect.twshenyi = [lib.skill.twshenyi.createGainTag, [], []];
-			}
-			_status.postReconnect.twshenyi[1].add(skill);
-			_status.postReconnect.twshenyi[2].add(name);
 		},
 		marktext: "义",
 		intro: {
@@ -8958,8 +8945,7 @@ const skills = {
 				player.addTempSkill("twchungang_used", { global: "phaseChange" });
 			}
 			const skill = `${event.name}_${player.playerid}`;
-			game.broadcastAll(lib.skill[event.name].createGainTag, skill, player.name);
-			game.addVideo("skill", player, [event.name, [skill, player.name]]);
+			game.addTempTag(skill, `纯刚·${get.translation(player.name)}`);
 			const draw = async target => {
 				target.addSkill("twchungang_effect");
 				const next = target.draw("nodelay");
@@ -8967,16 +8953,6 @@ const skills = {
 				await next;
 			};
 			await game.doAsyncInOrder(event.targets, draw);
-		},
-		video: (player, info) => lib.skill.twchungang.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "纯刚·" + get.translation(name);
-			}
-			_status.postReconnect.twchungang ??= [lib.skill.twchungang.createGainTag, [], []];
-			_status.postReconnect.twchungang[1].push(skill);
-			_status.postReconnect.twchungang[2].push(name);
 		},
 		ai: {
 			order: 9,

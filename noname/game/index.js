@@ -632,6 +632,37 @@ export class Game extends GameCompatible {
 		return game.broadcastAll((clientCardName, clientPrompt) => lib.stratagemBuff.cost.set(clientCardName, clientPrompt), cardName, prompt);
 	}
 	/**
+	 * 添加游戏内生成使用的临时tag
+	 *
+	 * @param {string} id tag对应id
+	 * @param {string} translation tag对应翻译
+	 * @returns {string}
+	 */
+	addTempTag(id, translation) {
+		game.addVideo("addTempTag", null, [id, translation]);
+		game.broadcastAll(
+			// @ts-expect-error ignore
+			(id, translation) => {
+				if (!lib.translate[id]) {
+					lib.translate[id] = translation;
+					_status.postReconnect.addTempTag ??= [
+						list => {
+							for (const args of list) {
+								// @ts-expect-error ignore
+								game.addTempTag(...args);
+							}
+						},
+						[],
+					];
+					_status.postReconnect.addTempTag[1].push([id, translation]);
+				}
+			},
+			id,
+			translation
+		);
+		return id;
+	}
+	/**
 	 * 添加新的属性杀
 	 */
 	addNature(nature, translation, config) {
@@ -4203,6 +4234,11 @@ export class Game extends GameCompatible {
 				}
 			} else {
 				console.log(player, content);
+			}
+		},
+		addTempTag: function (content) {
+			if (!lib.translate[content[0]]) {
+				lib.translate[content[0]] = content[1];
 			}
 		},
 		addFellow: function (content) {
