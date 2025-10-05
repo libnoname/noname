@@ -796,6 +796,9 @@ const skills = {
 		mark: true,
 		marktext: "牌",
 		intro: {
+			markcount(storage = 0, player) {
+				return Math.max(1, 7 - storage);
+			},
 			mark(dialog, count = 0, player, event, skill) {
 				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
 					if (!this.classList.contains("disabled")) {

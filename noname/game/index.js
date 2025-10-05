@@ -4207,10 +4207,11 @@ export class Game extends GameCompatible {
 			player.skin[name] = map.to;
 			const goon = !lib.character[map.to];
 			if (goon) {
-				lib.character[map.to] = ["", "", 0, [], (map.list.find(i => i[0] == map.to) || [map.to, []])[1]];
+				lib.character[map.to] = get.convertedCharacter(["", "", 0, [], (map.list.find(i => i[0] == map.to) || [map.to, []])[1]]);
 			}
 			player.smoothAvatar(map.avatar2);
-			player.node["avatar" + map.name.slice(4)].setBackground(map.to, "character");
+			const skinImg = lib.character[map.to]?.img;
+			skinImg ? player.node["avatar" + map.name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(map.to, "character");
 			player.node["avatar" + map.name.slice(4)].show();
 			if (goon) {
 				delete lib.character[map.to];

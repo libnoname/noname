@@ -28215,7 +28215,7 @@ const skills = {
 			return false;
 		},
 		prompt2(event, player) {
-			const cards2 = get.info(this.skill_id).getCards(event, player);
+			const cards2 = get.info("youyan").getCards(event, player);
 			return `获得与${get.translation(cards2)}花色${cards2.length > 1 ? "各" : ""}不相同的牌各一张`;
 		},
 		async content(event, trigger, player) {

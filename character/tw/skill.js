@@ -73,6 +73,17 @@ const skills = {
 				return false;
 			});
 		},
+		prompt2(event, player) {
+			const num = Math.min(
+				event.player.hasHistory("sourceDamage") ? 1 : 2,
+				game.countPlayer(current => !current.hasMark("jsrgzhenglve_mark"))
+			);
+			let str = `你可以摸两张牌`;
+			if (num) {
+				str += `并令${get.cnNumber(num)}名角色获得“猎”标记`;
+			}
+			return str;
+		},
 		drawNum: 2,
 		group: ["twzhenglve_damage", "twzhenglve2", "twzhenglve4"],
 		mod: {
@@ -22697,7 +22708,7 @@ const skills = {
 			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
 		},
 		prompt2(event, player) {
-			const skill = this.skill_id;
+			const skill = "twlingfa";
 			switch (game.roundNumber) {
 				case 1:
 					return "本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害";
