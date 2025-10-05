@@ -164,7 +164,7 @@ const translates = {
 	x_dc_zhangqiying: "新杀牢张琪瑛",
 	x_dc_zhangqiying_prefix: "新杀|牢",
 	old_clan_zhonghui: "OL旧族钟会",
-	old_clan_zhonghui_prefix: "OL|旧",
+	old_clan_zhonghui_prefix: "OL|旧|族",
 	old_clanyuzhi: "迂志",
 	old_clanyuzhi_info: "锁定技。①每轮开始时，你展示一张手牌，然后摸X张牌（X为此牌牌名字数）。②每轮结束时，若你本轮使用的牌数或你上一轮因〖迂志〗摸的牌数小于你本轮因〖迂志〗摸的牌数，你失去1点体力或失去〖保族〗。",
 	old_clanxieshu: "挟术",
