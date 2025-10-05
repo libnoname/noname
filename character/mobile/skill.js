@@ -1626,8 +1626,8 @@ const skills = {
 		},
 		mod: {
 			canBeCompared(card, player, event, bool) {
-				if (event == "mbjiebian" && get.position(card) == "s" && card.hasGaintag("mbjiebian")) {
-					return true;
+				if (event == "mbjiebian" && get.position(card) == "s") {
+					return card.hasGaintag("mbjiebian");
 				}
 			},
 		},
@@ -4738,8 +4738,8 @@ const skills = {
 				},
 				mod: {
 					canBeCompared(card, player, event, bool) {
-						if (event == "mbjianji" && get.position(card) == "s" && card.hasGaintag("mbjianji")) {
-							return true;
+						if (event == "mbjianji" && get.position(card) == "s") {
+							return card.hasGaintag("mbjianji");
 						}
 					},
 				},

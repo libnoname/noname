@@ -12399,7 +12399,7 @@ const skills = {
 			if (target.countCards("h") + 1 > result.cards.length * 2) {
 				next.set("small", true);
 			}
-			target.when({ player: "chooseToCompareBegin" })
+			target.when({ player: "chooseToCompareEnd" })
 				.filter(evt => evt == next)
 				.assign({
 					mod: {
