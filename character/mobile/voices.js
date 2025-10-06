@@ -1,7 +1,12 @@
 export default {
 	"#mblingfa1": "令行禁止，法外无情。",
 	"#mblingfa2": "法令如山，岂容尔等造次！",
-	"#mb_caocao:die": "孤的大业，还未开始……",
+	"#mblingfa3": "吾明令在此，汝何以犯之？",
+	"#mblingfa4": "法不阿贵，绳不挠曲！",
+	"#rejianxiong_mb_caocao1": "是非是过，皆由后人评去。",
+	"#rejianxiong_mb_caocao2": "征乌桓，平诸辽。孤，可为汉家将军第一人！",
+	"#mb_caocao1:die": "孤的大业，还未开始……",
+	"#mb_caocao2:die": "奸宦当道，难以匡正啊……",
 	"#potgongmou1": "夫居万死之地，必有死争之心。",
 	"#potgongmou2": "大王案六军以示余力，何忧于败而欲自往？",
 	"#potzhengshuo1": "安帝以来，唯有名号，尺土一民，皆非汉有。",

@@ -2485,8 +2485,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return (
 					game
-						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-						.map(evt => evt.getParent())
+						.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 						.indexOf(event) == 0
 				);
 			},
@@ -2525,8 +2524,7 @@ const _zhanfa = {
 			inherit: "zf_yaoli",
 			filter(event, player) {
 				const index = game
-					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-					.map(evt => evt.getParent())
+					.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 					.indexOf(event);
 				return index >= 0 && index < 3;
 			},

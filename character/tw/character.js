@@ -818,12 +818,6 @@ const characters = {
 		hp: 4,
 		skills: ["twfengji", "twyiju", "twbudao"],
 	},
-	tw_caocao: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["twlingfa"],
-	},
 	tw_liuhong: {
 		sex: "male",
 		group: "qun",
