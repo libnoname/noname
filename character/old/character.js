@@ -515,6 +515,7 @@ const characters = {
 		skills: ["old_clanyuzhi", "old_clanxieshu", "clanbaozu"],
 		clans: ["颍川钟氏"],
 		dieAudios: ["clan_zhonghui"],
+		img: "image/character/clan_zhonghui.jpg",
 	},
 };
 
