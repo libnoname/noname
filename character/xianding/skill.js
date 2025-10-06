@@ -26748,7 +26748,7 @@ const skills = {
 			});
 			const list = lib.skill.yuqi.getInfo(player);
 			const result = await player
-				.chooseControl("<span class=thundertext>距离(" + list[0] + ")</span>", "<span class=firetext>观看排队(" + list[1] + ")</span>", "<span class=greentext>交给别人(" + list[2] + ")</span>", "<span class=yellowtext>交给自己(" + list[3] + ")</span>", "cancel2")
+				.chooseControl("<span class=thundertext>距离(" + list[0] + ")</span>", "<span class=firetext>观看牌堆(" + list[1] + ")</span>", "<span class=greentext>交给别人(" + list[2] + ")</span>", "<span class=yellowtext>交给自己(" + list[3] + ")</span>", "cancel2")
 				.set("prompt", get.prompt("shanshen"))
 				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (goon ? "并回复1点体力" : ""))
 				.set("ai", function () {
