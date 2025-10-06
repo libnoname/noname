@@ -6311,17 +6311,10 @@ player.removeVirtualEquip(card);
 	chooseToCompareMeanwhile: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			if (player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
+			if (!player.canCompare(targets, false, false, event.position, event)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
-			}
-			for (var i = 0; i < targets.length; i++) {
-				if (targets[i].getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
-					event.result = { cancelled: true, bool: false };
-					event.finish();
-					return;
-				}
 			}
 			if (!event.multitarget) {
 				targets.sort(lib.sort.seat);
@@ -6525,17 +6518,10 @@ player.removeVirtualEquip(card);
 	chooseToCompareMultiple: [
 		async (event, trigger, player) => {
 			const targets = event.targets;
-			if (!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
+			if (!player.canCompare(targets, false, false, event.position, event)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
-			}
-			for (var i = 0; i < targets.length; i++) {
-				if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) {
-					event.result = { cancelled: true, bool: false };
-					event.finish();
-					return;
-				}
 			}
 			if (!event.multitarget) {
 				targets.sort(lib.sort.seat);
@@ -6723,7 +6709,7 @@ player.removeVirtualEquip(card);
 				event.compareWithCardPile = true;
 				event.compareType ??= "top";
 			}
-			if ((!event.fixedResult?.[player.playerid] && player.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.getCards(event.position).filter(card => event.filterCard(card, player, event)).length == 0)) {
+			if (!player.canCompare(target, false, false, event.position, event)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;

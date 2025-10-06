@@ -2971,24 +2971,52 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家是否可以与target拼点
-	 * @param { Player } target
+	 * @param { Player|string|Array } target或targets或"cardPile"
 	 * @param { boolean } [goon] 忽略玩家的手牌不足以拼点以及mod导致的不能拼点
 	 * @param { boolean} [bool] 忽略target的手牌不足以拼点以及mod导致的不能拼点
 	 * @param { string } [position = "h"] 可用于拼点的区域
-	 * @param { string } [event = "everything"] 拼点事件名
+	 * @param { string|GameEvent } [event = "everything"] 拼点事件(名)
 	 * @returns { boolean }
 	 */
 	canCompare(target, goon, bool, position = "h", event = "everything") {
-		if (this == target) {
+		if (get.itemtype(target) == "player") {
+			if (this == target) {
+				return false;
+			}
+			target = [target];
+		}
+		if (this.hasSkillTag("noCompareSource") || (target !== "cardPile" && target.some(current => current.hasSkillTag("noCompareTarget")))) {
 			return false;
 		}
+		const check = current => {
+			//Goon or Bool = gb
+			const gb = current == this ? goon : bool;
+			if (gb) {
+				return true;
+			}
+			if (get.itemtype(event) == "event" && event.name == "chooseToCompare") {
+				if (event.fixedResult?.[current.playerid]) {
+					return true;
+				}
+			}
+			if (!current.countCards(position)) {
+				return false;
+			}
+			const skills = current
+				.getSkills()
+				.filter(sk => !current.isTempBanned(sk))
+				.concat(lib.skill.global);
+			game.expandSkills(skills);
+			if (skills.some(skill => get.info(skill)?.onCompare)) {
+				return true;
+			}
+			return Boolean(current.countCards(position, card => lib.filter.canBeCompared(card, current, event)) || gb);
+		};
 		if (target == "cardPile") {
-			return this.getCards(position).filter(card => lib.filter.canBeCompared(card, this, event)).length != 0 || goon;
+			return check(this);
 		}
-		if ((this.getCards(position).filter(card => lib.filter.canBeCompared(card, this, event)).length == 0 && goon !== true) || (bool !== true && target.getCards(position).filter(card => lib.filter.canBeCompared(card, target, event)).length == 0)) {
-			return false;
-		}
-		if (this.hasSkillTag("noCompareSource") || target.hasSkillTag("noCompareTarget")) {
+		const list = target.map(current => check(current));
+		if (list.some(item => !item)) {
 			return false;
 		}
 		return true;

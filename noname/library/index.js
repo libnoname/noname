@@ -11587,7 +11587,7 @@ export class Library {
 				event = event.getParent("chooseToCompare", false, true);
 				event = event.skill || event.getParent().name || "everything";
 			}
-			let mod = game.checkMod(card, player, event, "unchanged", "canBeComapared", player);
+			let mod = game.checkMod(card, player, event, "unchanged", "canBeCompared", player);
 			if (mod != "unchanged") {
 				return mod;
 			}
