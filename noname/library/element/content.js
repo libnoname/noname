@@ -13084,13 +13084,10 @@ player.removeVirtualEquip(card);
 				if (event.dialog.isBusy) {
 					return;
 				}
-				// 检查是否是dctuoyu或yuqi技能的特殊交互模式
-				if (event.skillName === "dctuoyu" || event.skillName === "yuqi") {
-					// 只有在选中了区域的情况下才能选择牌
+				if (event.requireContainerSelection) {
 					if (!event.dialog.selectedContainer) {
 						return;
 					}
-					// 检查是否可以移动到选中的区域
 					let targetIndex = Array.from(event.dialog.itemContainers).indexOf(event.dialog.selectedContainer) / 2 - 1;
 					if (event.filterMove(card, targetIndex, event.moved)) {
 						event.dialog.isBusy = true;
@@ -13121,32 +13118,19 @@ player.removeVirtualEquip(card);
 				if (event.dialog.isBusy) {
 					return;
 				}
-				if (event.skillName === "dctuoyu" || event.skillName === "yuqi") {
+				if (event.requireContainerSelection) {
 					let index = Array.from(event.dialog.itemContainers).indexOf(itemContainer) / 2 - 1;
-					// 用于dctuoyu技能，检查区域是否已激活
-					if (event.skillName === "dctuoyu") {
-						if (index >= 1 && index <= 3) {
-							var player = _status.event.player;
-							var storage = player.getStorage("dctuoyu");
-							var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
-							var tagIndex = index - 1;
-							if (!storage.includes(tags[tagIndex])) {
-								// 区域未激活，不允许选中
-								return;
-							}
-						}
+					if (event.containerFilter && !event.containerFilter(index)) {
+						return;
 					}
-					// 如果已经选中了区域，再次点击取消选中
 					if (event.dialog.selectedContainer === itemContainer) {
 						event.dialog.selectedContainer.classList.remove("selected-container");
 						event.dialog.selectedContainer = null;
 						return;
 					}
-					// 如果选中了其他区域，切换选中
 					if (event.dialog.selectedContainer) {
 						event.dialog.selectedContainer.classList.remove("selected-container");
 					}
-					// 选中新区域
 					event.dialog.selectedContainer = itemContainer;
 					itemContainer.classList.add("selected-container");
 					return;

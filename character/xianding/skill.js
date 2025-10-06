@@ -26673,7 +26673,7 @@ const skills = {
 					["牌堆顶的牌", cards],
 					[["交给" + get.translation(trigger.player) + '<div class="text center">至少一张' + (list[2] > 1 ? "<br>至多" + get.cnNumber(list[2]) + "张" : "") + "</div>"], ['交给自己<div class="text center">至多' + get.cnNumber(list[3]) + "张</div>"]],
 				])
-				.set("skillName", "yuqi")
+				.set("requireContainerSelection", true)
 				.set("filterMove", function (from, to, moved) {
 					var info = lib.skill.yuqi.getInfo(_status.event.player);
 					if (to == 1) {
@@ -26726,7 +26726,7 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				var info = lib.skill.yuqi.getInfo(player);
-				return '<div class="text center"><span class=thundertext>蓝色：' + info[0] + "</span>　<span class=firetext>红色：" + info[1] + "</span><br><span class=greentext>绿色：" + info[2] + "</span>　<span class=yellowtext>黄色：" + info[3] + "</span></div>";
+				return '<div class="text center"><span class=thundertext>距离：' + info[0] + "</span>　<span class=firetext>观看牌堆：" + info[1] + "</span><br><span class=greentext>交给别人：" + info[2] + "</span>　<span class=yellowtext>交给自己：" + info[3] + "</span></div>";
 			},
 		},
 		ai: {
@@ -26748,7 +26748,7 @@ const skills = {
 			});
 			const list = lib.skill.yuqi.getInfo(player);
 			const result = await player
-				.chooseControl("<span class=thundertext>蓝色(" + list[0] + ")</span>", "<span class=firetext>红色(" + list[1] + ")</span>", "<span class=greentext>绿色(" + list[2] + ")</span>", "<span class=yellowtext>黄色(" + list[3] + ")</span>", "cancel2")
+				.chooseControl("<span class=thundertext>距离(" + list[0] + ")</span>", "<span class=firetext>观看排队(" + list[1] + ")</span>", "<span class=greentext>交给别人(" + list[2] + ")</span>", "<span class=yellowtext>交给自己(" + list[3] + ")</span>", "cancel2")
 				.set("prompt", get.prompt("shanshen"))
 				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (goon ? "并回复1点体力" : ""))
 				.set("ai", function () {
@@ -26802,7 +26802,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const list = lib.skill.yuqi.getInfo(player);
 			const result1 = await player
-				.chooseControl("<span class=thundertext>蓝色(" + list[0] + ")</span>", "<span class=firetext>红色(" + list[1] + ")</span>", "<span class=greentext>绿色(" + list[2] + ")</span>", "<span class=yellowtext>黄色(" + list[3] + ")</span>", "cancel2")
+				.chooseControl("<span class=thundertext>距离(" + list[0] + ")</span>", "<span class=firetext>观看牌堆(" + list[1] + ")</span>", "<span class=greentext>交给别人(" + list[2] + ")</span>", "<span class=yellowtext>交给自己(" + list[3] + ")</span>", "cancel2")
 				.set("prompt", get.prompt("xianjing"))
 				.set("prompt2", "令〖隅泣〗中的一个数字+1")
 				.set("ai", function () {
@@ -26850,7 +26850,7 @@ const skills = {
 			}
 			const list2 = lib.skill.yuqi.getInfo(player);
 			const result2 = await player
-				.chooseControl("<span class=thundertext>蓝色(" + list2[0] + ")</span>", "<span class=firetext>红色(" + list2[1] + ")</span>", "<span class=greentext>绿色(" + list2[2] + ")</span>", "<span class=yellowtext>黄色(" + list2[3] + ")</span>", "cancel2")
+				.chooseControl("<span class=thundertext>距离(" + list2[0] + ")</span>", "<span class=firetext>观看牌堆(" + list2[1] + ")</span>", "<span class=greentext>交给别人(" + list2[2] + ")</span>", "<span class=yellowtext>交给自己(" + list2[3] + ")</span>", "cancel2")
 				.set("prompt", "是否令〖隅泣〗中的一个数字+1？")
 				.set("ai", function () {
 					var player = _status.event.player,

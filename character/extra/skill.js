@@ -5214,7 +5214,17 @@ const skills = {
 			list = [list[0], list.slice(1)];
 			var next = player.chooseToMove_new("拓域：请分配你的手牌", true);
 			next.set("list", list);
-			next.set("skillName", "dctuoyu");
+			next.set("requireContainerSelection", true);
+			next.set("containerFilter", function (index) {
+				if (index >= 1 && index <= 3) {
+					var player = _status.event.player;
+					var storage = player.getStorage("dctuoyu");
+					var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+					var tagIndex = index - 1;
+					return storage.includes(tags[tagIndex]);
+				}
+				return true;
+			});
 			next.set("filterMove", function (from, to, moved) {
 				var player = _status.event.player;
 				var storage = player.getStorage("dctuoyu"),
