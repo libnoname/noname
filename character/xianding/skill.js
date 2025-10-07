@@ -5209,6 +5209,9 @@ const skills = {
 					async content(event, trigger, player) {
 						const num = player.countCards("h"),
 							{ target } = event;
+						if (!target) {
+							return;
+						}
 						const numx = num - target.countCards("h");
 						if (numx > 0) {
 							await target.draw(numx, "nodelay");

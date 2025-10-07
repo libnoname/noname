@@ -2464,10 +2464,13 @@ const _zhanfa = {
 			value: 6.2,
 		},
 		skill: {
-			inherit: "zf_miaoshoukongkong",
 			trigger: { player: "discardPlayerCardBegin" },
 			filter(event, player) {
-				return event.card.name == "guohe";
+				return event.getParent()?.name == "guohe";
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				trigger.set("visible", true);
 			},
 		},
 	},
