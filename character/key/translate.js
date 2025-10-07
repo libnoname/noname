@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	sp_key_yuri: "SP仲村由理",
 	sp_key_yuri_prefix: "SP",
@@ -554,7 +556,7 @@ const translates = {
 	minagi_peiquan: "配券",
 	minagi_peiquan_info: "锁定技。①游戏开始时，你将你所有的手牌记录为“米券”。②出牌阶段，你可以赠予一张“米券”，然后执行一项本回合内未被选择过的效果：⒈对其造成1点伤害；⒉摸两张牌；⒊弃置其的两张牌；⒋亮出牌堆顶的一张牌，然后你可以使用之。",
 	minagi_huanliu: "幻流",
-	minagi_huanliu_info: "准备阶段开始时，你可与一名其他角色进行协力，并获得“远野小满”的所有技能直到目标角色的结束阶段开始。若“协力”成功，则你可以将所有手牌记录为“米券”。",
+	minagi_huanliu_info: `准备阶段开始时，你可与一名其他角色进行“${get.poptip("rule_xieli")}”，并获得“远野小满”的所有技能直到目标角色的结束阶段开始。若“协力”成功，则你可以将所有手牌记录为“米券”。`,
 	key_michiru: "远野小满",
 	michiru_sheyuan: "舍愿",
 	michiru_sheyuan_info: "每轮限一次。若你没有“米券”，则你可以将所有手牌当做任意基本牌或普通锦囊牌使用，然后摸等量的牌。",
