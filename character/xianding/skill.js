@@ -6003,9 +6003,11 @@ const skills = {
 				forced: true,
 				popup: false,
 				prompt2: () => "增加1点体力上限",
-				content() {
+				async content(event, trigger, player) {
 					player.logSkill("dcguangyong");
-					player.gainMaxHp();
+					if (player.maxHp < 8) {
+						await player.gainMaxHp();
+					}
 				},
 			},
 			toself: {
@@ -6042,12 +6044,12 @@ const skills = {
 						})
 						.forResult();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.logSkill("dcguangyong", event.targets);
 					if (player.maxHp > 1) {
-						player.loseMaxHp();
+						await player.loseMaxHp();
 					}
-					player.gainPlayerCard(event.targets[0], "he", true);
+					await player.gainPlayerCard(event.targets[0], "he", true);
 				},
 			},
 		},

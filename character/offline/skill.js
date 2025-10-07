@@ -800,12 +800,15 @@ const skills = {
 		},
 	},
 	xy_dishou: {
-		trigger: { player: "damageBegin" },
+		trigger: { player: "damageBegin4" },
 		filter(event, player) {
+			if (!event.source?.isIn()) {
+				return false;
+			}
 			return event.source.countCards("h") != event.source.getHp();
 		},
 		check(event, player) {
-			if (get.attitude(player, event.source) > 0 && player.getHp() > 1) {
+			if (get.attitude(player, event.source) > 0) {
 				return false;
 			}
 			return true;
