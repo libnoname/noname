@@ -755,7 +755,7 @@ export class Click {
 			}
 		} else {
 			if (get.mode() == "guozhan") {
-				list = { wei: "魏", shu: "蜀", wu: "吴", qun: "群", jin: "晋" };
+				list = { wei: "魏", shu: "蜀", wu: "吴", qun: "群", jin: "晋", ye: "野" };
 				if (_status.forceKey) {
 					list.key = "键";
 				}
