@@ -3284,8 +3284,8 @@ export default {
 	},
 	//野吕布
 	gz_wuchang: {
-		audio: "olyuyu",
-		logAudio: () => ["olyuyu"],
+		audio: ["olyuyu", "ollbzhiji"],
+		logAudio: () => "olyuyu",
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -3321,21 +3321,27 @@ export default {
 		subSkill: {
 			draw: {
 				audio: "gz_wuchang",
+				logAudio: () => "ollbzhiji",
 				trigger: {
 					global: ["dieAfter", "changeGroupInGuozhan", "diaohulishanAfter"],
 				},
 				filter(event, player, name) {
 					if (event.name == "die") {
-						return event.player && !game.hasPlayer(current => current.identity == event.player.identity);
+						return event.player && !game.hasPlayer(current => current.isFriendOf(event.player));
 					}
 					if (event.name == "diaohulishan") {
-						return event.target && !game.hasPlayer(current => current.identity == event.target.identity);
+						return event.target && !game.hasPlayer(current => current.isFriendOf(event.target));
 					}
-					return (
-						event.fromGroups?.some(group => {
-							return !game.hasPlayer(current => current.identity == group);
-						}) && game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup)
-					);
+					let groups = event.fromGroups.reduce((groups, group, index) => {
+						if (group === "ye") {
+							groups.add(`ye${index}`);
+						}
+						if (!game.hasPlayer(current => current.identity == group)) {
+							groups.add(group);
+						}
+						return groups;
+					}, []);
+					return groups.length > 1 || game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup);
 				},
 				locked: true,
 				async cost(event, trigger, player) {
@@ -3370,6 +3376,7 @@ export default {
 			},
 			backup: {
 				audio: "gz_wuchang",
+				logAudio: () => "ollbzhiji",
 				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
@@ -3405,6 +3412,7 @@ export default {
 					source: "damageBegin1",
 				},
 				audio: "gz_wuchang",
+				logAudio: () => "olyuyu",
 				filter(event, player) {
 					const map = player.getStorage("gz_wuchang_effect", new Map()),
 						group = event.player.identity;
