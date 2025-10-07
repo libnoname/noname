@@ -412,6 +412,10 @@ const skills = {
 							}
 							return false;
 						})
+						.set("processAI", list => {
+							let moved = list[0][1][0].slice(0);
+							return [[moved.at(-1), ...moved.slice(1, -1), moved.at(0)]];
+						})
 						.forResult();
 					if (!result2?.bool) {
 						return;

@@ -8519,9 +8519,9 @@ export class Library {
 				"<ul>" +
 				lib.poptip
 					.getIdList("rule")
-					.map(id => `<li>${lib.poptip.getName(id)}：${lib.poptip.getInfo(id)}</li>`)
+					.map(id => `<strong>${lib.poptip.getName(id)}</strong>：<br>${lib.poptip.getInfo(id)}</li>`)
 					.unique()
-					.join("") +
+					.join("<br><br>") +
 				"</ul>"
 			);
 		},
