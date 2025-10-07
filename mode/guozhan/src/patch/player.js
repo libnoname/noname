@@ -667,14 +667,25 @@ export class PlayerGuozhan extends Player {
 		}
 		var name1 = this.name1;
 		var name2 = this.name2;
+		const junFilter = (name1, name2, reverse) => {
+			if (reverse !== true && junFilter(name2, name1, true)) {
+				return true;
+			}
+			if (!get.is.jun(name1)) {
+				return false;
+			}
+			const group = get.character(name1).group,
+				info = get.character(name2);
+			return info.group == group || (info.doubleGroup && info.doubleGroup.includes(group));
+		};
+		if (junFilter(name1, name2)) {
+			return true;
+		}
 		if (name1.indexOf("gz_shibing") == 0) {
 			return false;
 		}
 		if (name2.indexOf("gz_shibing") == 0) {
 			return false;
-		}
-		if (get.is.jun(this.name1)) {
-			return true;
 		}
 		if (choosing && lib.character[name1][1] != "ye" && lib.character[name2][1] != "ye" && lib.character[name1][1] != lib.character[name2][1]) {
 			return false;
