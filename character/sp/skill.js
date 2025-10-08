@@ -7550,68 +7550,17 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets.sortBySeat();
 			let answer_result = [[], []];
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			let locals = targets.slice(0).randomSort();
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, player, eventId) => {
-				lib.skill.olhunjiang.chooseControl(current, player, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (typeof result?.index == "number") {
-							answer_result[result.index].push(player);
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, player, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.olhunjiang.chooseControl(current, player, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.olhunjiang.chooseControl(current, player).forResult();
-					if (result && typeof result.index == "number") {
-						answer_result[result.index].push(current);
-					}
-				}
-			}
-			delete event._global_waiting;
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [player]).forResult();
 			for (const i of targets) {
-				i.hideTimer();
 				i.addExpose(0.05);
-				i.popup(answer_result[0].includes(i) ? "成为目标" : "令其摸牌");
-				game.log(i, "选择了", "#y" + (answer_result[0].includes(i) ? "成为目标" : "令其摸牌"));
+				const result = map.get(i).control;
+				if (result == "成为目标") {
+					answer_result[0].push(i);
+				} else {
+					answer_result[1].push(i);
+				}
+				i.popup(result);
+				game.log(i, "选择了", "#y" + result);
 			}
 			await game.delay();
 			if (answer_result[0].length) {

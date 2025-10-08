@@ -1803,15 +1803,11 @@ const skills = {
 				forceTargets = targets.filter(current => current !== player && current.group === "qun");
 				targets.removeArray(forceTargets);
 			}
-			//让读条不消失
-			event._global_waiting = true;
-			const send = (player, source) => {
-				lib.skill.jsrgzhuni.chooseTarget(player, source);
-				game.resume();
-			};
-			const solve = (result, chooser) => {
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseTarget, [player]).forResult();
+			for (const chooser of targets) {
+				const result = map.get(chooser);
 				let target;
-				if (!result || !result.targets || result === "ai") {
+				if (!result?.targets || result === "ai") {
 					target = game.filterPlayer(current => current !== player).randomGet();
 				} else {
 					target = result.targets[0];
@@ -1820,59 +1816,7 @@ const skills = {
 				if (chooser === player) {
 					forceTargets.forEach(current => results.push([current, target]));
 				}
-			};
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			//分别处理人类玩家和其他玩家
-			const humans = targets.filter(current => current === game.me || current.isOnline()),
-				locals = targets.slice(0);
-			locals.removeArray(humans);
-			//Promise，爽！清瑶你有种抄过去
-			if (humans.length) {
-				await Promise.all(
-					humans.map((current, index) => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, player);
-								current.wait((result, player) => {
-									solve(result, player);
-									resolve();
-								});
-							} else if (current == game.me) {
-								const next = lib.skill.jsrgzhuni.chooseTarget(current, player);
-								const solver = (result, player) => {
-									solve(result, player);
-									resolve();
-								};
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				);
-			}
-			if (locals.length) {
-				for (let current of locals) {
-					const next = lib.skill.jsrgzhuni.chooseTarget(current, player);
-					const result = await next.forResult();
-					solve(result, current);
-				}
-			}
-			//清除读条
-			delete event._global_waiting;
-			for (var i of targets) {
-				i.hideTimer();
+
 			}
 			//统计票数
 			const ticketsMap = new Map();

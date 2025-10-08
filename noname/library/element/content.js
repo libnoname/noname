@@ -7425,6 +7425,74 @@ player.removeVirtualEquip(card);
 			event.goto(7);
 		}
 	},
+	async chooseAnyOL(event, trigger, player) {
+		const { targets, func, args } = event;
+		let map = new Map(),
+			locals = targets.slice();
+		let humans = targets.filter(current => current === game.me || current.isOnline());
+		//分别处理人类玩家和其他玩家
+		locals.removeArray(humans);
+		const eventId = get.id();
+		const send = function() {
+			const [func, ...args] = Array.from(arguments);
+			func(...args);
+			game.resume();
+		};
+		//让读条不消失
+		event._global_waiting = true;
+		let time = 10000;
+		if (lib.configOL && lib.configOL.choose_timeout) {
+			time = parseInt(lib.configOL.choose_timeout) * 1000;
+		}
+		targets.forEach(current => current.showTimer(time));
+		if (humans.length > 0) {
+			const solve = function (resolve, reject) {
+				return function (result, player) {
+					if (result) {
+						map.set(player, result);
+					}
+					resolve();
+				};
+			};
+			await Promise.all(
+				humans.map(current => {
+					return new Promise((resolve, reject) => {
+						if (current.isOnline()) {
+							current.send(send, func, current, ...args, eventId);
+							current.wait(solve(resolve, reject));
+						} else {
+							const next = func(current, ...args, eventId);
+							const solver = solve(resolve, reject);
+							if (_status.connectMode) {
+								game.me.wait(solver);
+							}
+							return next.forResult().then(result => {
+								if (_status.connectMode) {
+									game.me.unwait(result, current);
+								} else {
+									solver(result, current);
+								}
+							});
+						}
+					});
+				})
+			).catch(() => {});
+			game.broadcastAll("cancel", eventId);
+		}
+		if (locals.length > 0) {
+			//模拟ai先后作答
+			for (const current of locals.randomSort()) {
+				const result = await func(current, ...args, eventId).forResult();
+				if (result) {
+					map.set(current, result);
+				}
+			}
+		}
+		//清除读条
+		delete event._global_waiting;
+		targets.forEach(current => current.hideTimer(time));
+		event.result = map;
+	},
 	chooseCard: function () {
 		"step 0";
 		if (event.directresult) {

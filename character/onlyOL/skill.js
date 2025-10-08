@@ -5993,69 +5993,16 @@ const skills = {
 			const target = event.target,
 				targets = [player, target],
 				total = player.countCards("h") + target.countCards("h");
-			let map = {},
-				locals = targets.slice();
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, targets, eventId) => {
-				lib.skill.olsbbojue.chooseCard(current, targets, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (result?.bool && result.cards?.length) {
-							map[player.playerid] = result.cards[0];
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, targets, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.olsbbojue.chooseCard(current, targets, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.olsbbojue.chooseCard(current, targets).forResult();
-					if (result?.bool && result.cards?.length) {
-						map[current.playerid] = result.cards[0];
-					}
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseCard, [targets]).forResult();
+			let count = 0;
+			for (const i of targets) {
+				const result = map.get(i);
+				i.popup(result.bool ? "弃牌" : "摸牌");
+				if (result.bool) {
+					count++;
 				}
 			}
-			delete event._global_waiting;
-			for (const i of targets) {
-				i.hideTimer();
-				i.popup(map[i.playerid] ? "弃牌" : "摸牌");
-			}
-			switch (Object.keys(map).length) {
+			switch (count) {
 				case 0:
 					await player.draw("nodelay");
 					await target.draw();
@@ -6064,16 +6011,16 @@ const skills = {
 					await game
 						.loseAsync({
 							lose_list: [
-								[player, [map[player.playerid]]],
-								[target, [map[target.playerid]]],
+								[player, map.get(player).cards],
+								[target, map.get(target).cards],
 							],
 						})
 						.setContent("discardMultiple");
 					break;
 				default:
 					for (const current of [player, target]) {
-						if (map[current.playerid]) {
-							await current.discard([map[current.playerid]]);
+						if (map.get(current).bool) {
+							await current.discard(map.get(current).cards);
 						} else {
 							await current.draw();
 						}
@@ -6928,69 +6875,12 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.target,
 				targets = [player, target];
-			let map = {},
-				locals = targets.slice();
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, targets, eventId) => {
-				lib.skill.oljianmie.chooseControl(current, targets, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (result?.control) {
-							map[player.playerid] = result.control == "none2" ? "none" : result.control;
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, targets, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.oljianmie.chooseControl(current, targets, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.oljianmie.chooseControl(current, targets).forResult();
-					if (result && result.control) {
-						map[current.playerid] = result.control == "none2" ? "none" : result.control;
-					}
-				}
-			}
-			delete event._global_waiting;
-			for (const i of targets) {
-				i.hideTimer();
-			}
-			const cards_player = player.getDiscardableCards(player, "h").filter(card => get.color(card) == map[player.playerid]);
-			const cards_target = target.getDiscardableCards(target, "h").filter(card => get.color(card) == map[target.playerid]);
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [targets]).forResult();
+			const getColor = result => {
+				return result.control == "none2" ? "none" : result.control;
+			},
+				cards_player = player.getDiscardableCards(player, "h", card => get.color(card) == getColor(map.get(player))),
+				cards_target = target.getDiscardableCards(target, "h", card => get.color(card) == getColor(map.get(target)));
 			if (cards_player.length && cards_target.length) {
 				await game
 					.loseAsync({
@@ -7164,67 +7054,14 @@ const skills = {
 		locked: false,
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer(target => target != trigger.player && target.hasMark("olsbliwen"));
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			let locals = targets.slice();
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, trigger, eventId) => {
-				lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
-				game.resume();
-			};
-			let choices = [];
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (result?.bool) {
-							choices.push(player);
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, trigger, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.olsbzhengyi.chooseBool(current, trigger).forResult();
-					if (result?.bool) {
-						choices.push(current);
-					}
-				}
-			}
-			delete event._global_waiting;
+			const choices = [];
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseBool, [trigger]).forResult();
 			for (const i of targets) {
-				i.hideTimer();
-				i.chat(choices.includes(i) ? "同意" : "拒绝");
+				const { bool } = map.get(i);
+				if (bool) {
+					choices.add(i);
+				}
+				i.chat(bool ? "同意" : "拒绝");
 			}
 			if (!choices.length) {
 				trigger.player.chat("杯具");
@@ -7232,9 +7069,9 @@ const skills = {
 				trigger.cancel();
 				trigger.player.chat("洗具");
 				game.log(choices, "响应了", trigger.player, "的号召");
-				const max = Math.max(...targets.slice().map(i => i.getHp()));
-				for (const i of targets) {
-					if (choices.includes(i) && i.getHp() == max) {
+				const max = Math.max(...choices.slice().map(i => i.getHp()));
+				for (const i of choices) {
+					if (i.getHp() == max) {
 						await i.loseHp(trigger.num);
 					}
 				}
