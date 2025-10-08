@@ -14280,9 +14280,6 @@ const skills = {
 						player.removeGaintag(event.name);
 					}
 				},
-				onremove(player, skill) {
-					player.removeGaintag(skill);
-				},
 				mod: {
 					aiValue(player, card, num) {
 						if (get.itemtype(card) == "card" && card.hasGaintag("dczengou_debuff")) {

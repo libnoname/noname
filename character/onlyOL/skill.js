@@ -3472,6 +3472,9 @@ const skills = {
 							}
 						}
 					}
+					if (!player.storage.olzhendan_mark && count > 0) {
+						return true;
+					}
 					return false;
 				},
 				forced: true,

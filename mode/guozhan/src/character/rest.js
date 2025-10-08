@@ -1,4 +1,7 @@
 import { Character } from "../../../../noname/library/element/index.js";
+import { _status, get } from "../../../../noname.js";
+
+const bool = _status.connectMode ? lib.configOL.jinEx : get.config("jinEx");
 
 export default {
 	// 分组1：野心家
