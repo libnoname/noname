@@ -704,69 +704,12 @@ const skills = {
 			}
 			const target = event.target,
 				targets = [player, target];
-			let map = {},
-				locals = targets.slice();
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, targets, eventId) => {
-				lib.skill.dczhonge.chooseControl(current, targets, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (result.control) {
-							map[player.playerid] = result.control;
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, targets, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.dczhonge.chooseControl(current, targets, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.dczhonge.chooseControl(current, targets).forResult();
-					if (result.control) {
-						map[current.playerid] = result.control;
-					}
-				}
-			}
-			delete event._global_waiting;
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [targets]).forResult();
 			let list = [];
 			for (const i of targets) {
-				i.hideTimer();
-				i.popup(map[i.playerid]);
-				list.push(map[i.playerid]);
+				const result = map.get(i);
+				i.popup(result.control);
+				list.push(result.control);
 			}
 			const bool = list[0] != list[1];
 			for (const i of list) {

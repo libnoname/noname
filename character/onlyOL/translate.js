@@ -208,7 +208,7 @@ const translates = {
 		return list.map((item, i) => ["①", "②", "③"][i] + item).join("。") + "。";
 	})(),
 	olsbzhengyi: "争义",
-	olsbzhengyi_info: "当一名有“贤”标记的角色受到伤害时，所有有“贤”标记同时选择是否取消此伤害，所有角色选择完毕后，若有角色选择是，则取消此伤害，然后选择是的角色中体力值最大的角色依次失去X点体力（X为伤害值）。",
+	olsbzhengyi_info: "当一名有“贤”标记的角色受到伤害时，其以外所有有“贤”标记的角色同时选择是否取消此伤害，所有角色选择完毕后，若有角色选择是，则取消此伤害，然后选择是的角色中体力值最大的角色依次失去X点体力（X为伤害值）。",
 	ol_zhangchunhua: "OL界张春华",
 	ol_zhangchunhua_prefix: "OL界",
 	oljianmie: "翦灭",

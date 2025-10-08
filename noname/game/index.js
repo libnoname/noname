@@ -10503,6 +10503,22 @@ export class Game extends GameCompatible {
 		}
 	}
 	/**
+	 * 此方法用于让所有targets同时执行一个选择函数
+	 *
+	 * @param { Player[] } targets 需要执行选择函数的目标
+	 * @param { function } func 需要执行的函数
+	 * @param { Any[] } args 函数所需的参数
+	 * @returns { GameEventPromise }
+	 */
+	chooseAnyOL(targets, func, args) {
+		const next = game.createEvent("chooseAnyOL");
+		next.targets = targets;
+		next.func = func;
+		next.args = args;
+		next.setContent("chooseAnyOL");
+		return next;
+	}
+	/**
 	 * 用于玩家使用非自己手牌时生成的可以选择的假牌（其实就是复制一份出来）。
 	 *
 	 * @param { Card[] | Card } cards 需要被复制的真牌，允许传入单张卡牌或者卡牌数组

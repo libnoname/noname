@@ -8982,7 +8982,7 @@ const skills = {
 		selectTarget: -1,
 		multiline: true,
 		multitarget: true,
-		chooseCard(boss, current) {
+		chooseCard(current, boss) {
 			const next = current.chooseCard("he");
 			next.set("prompt", "是否交给" + get.translation(boss) + "一张牌？");
 			next.set("_global_waiting", true);
@@ -8997,70 +8997,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets;
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			let locals = targets.slice(0).randomSort();
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (boss, current, eventId) => {
-				lib.skill.dcsbyaozuo.chooseCard(boss, current, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			let giver = [];
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = (result, chooser) => {
-					if (result && result.bool) {
-						giver.add([chooser, result.cards]);
-					}
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, player, current);
-								current.wait((result, player) => {
-									solve(result, player);
-									resolve(void 0);
-								});
-							} else if (current == game.me) {
-								const next = lib.skill.dcsbyaozuo.chooseCard(player, current);
-								const solver = (result, player) => {
-									solve(result, player);
-									resolve(void 0);
-								};
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.dcsbyaozuo.chooseCard(player, current).forResult();
-					if (result && result.bool) {
-						giver.add([current, result.cards]);
-					}
-				}
-			}
-			delete event._global_waiting;
+			const gains = [];
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseCard, [player]).forResult();
 			for (const i of targets) {
-				i.hideTimer();
-				if (giver.some(key => i == key[0])) {
+				const result = map.get(i);
+				if (result.bool) {
 					i.popup("交给", "wood");
+					gains.addArray(result.cards);
 				} else {
 					i.popup("拒绝", "fire");
 					player.addTempSkill("dcsbyaozuo_effect");
@@ -9068,17 +9011,12 @@ const skills = {
 				}
 			}
 			await game.delay();
-			if (!giver.length) {
+			if (!gains.length) {
 				return;
+			} else {
+				await player.gain(gains, "giveAuto");
 			}
-			const first = giver[0][0],
-				cards = [];
-			for (const key of giver) {
-				key[0].$giveAuto(key[1], player, false);
-				cards.addArray(key[1]);
-				game.log(key[0], "交给了", player, "一张牌");
-			}
-			await player.gain(cards);
+			const first = Array.from(map.keys())[0];
 			if (first && first.isIn()) {
 				game.log(first, "第一个写出了文章");
 				await game.delay();
@@ -9100,9 +9038,8 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool) {
-					const targets = result.targets;
-					first.line(targets, "green");
-					await player.useSkill("dcsbzhuanwen", null, targets);
+					first.line(result.targets, "green");
+					await player.useSkill("dcsbzhuanwen", null, result.targets);
 				}
 			}
 		},
