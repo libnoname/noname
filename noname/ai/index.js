@@ -1,11 +1,11 @@
-import { _status } from "../../noname.js";
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
+import { _status, get, lib } from "@noname";
 import { Basic } from "./basic.js";
 
 export class AI {
 	basic = new Basic();
-	get = get;
+	get get(){
+		return get;
+	}
 	/**
 	 * @param { any } obj
 	 * @param { boolean } [similar] true伪equals, false统一前缀

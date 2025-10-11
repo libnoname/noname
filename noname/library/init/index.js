@@ -1,14 +1,7 @@
-import { get } from "../../get/index.js";
-import { game } from "../../game/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
-
+import { rootURL, get, lib, game, _status, ui } from "@noname";
 import { LibInitPromises } from "./promises.js";
-import { rootURL } from "../../../noname.js";
-
-import security from "../../util/security.js";
-import { ContentCompiler } from "../element/gameEvent.js";
+import { ContentCompiler } from "@/library/element/gameEvent.js";
+import security from "@/util/security.js";
 
 export class LibInit {
 	/**
@@ -88,20 +81,23 @@ export class LibInit {
 		throw new Error("lib.init.onload is moved to noname/init/onload");
 	}
 
-	startOnline() {
-		"step 0";
-		event._resultid = null;
-		event._result = null;
-		game.pause();
-		"step 1";
-		if (result) {
-			if (event._resultid) {
-				result.id = event._resultid;
+	startOnline = [
+		async (event) => {
+			event._resultid = null;
+			event._result = null;
+			game.pause();
+		},
+		async (event) => {
+			if (event._result) {
+				if (event._resultid) {
+					event._result.id = event._resultid;
+				}
+				game.send("result", event._result);
 			}
-			game.send("result", result);
+			event.goto(0);
 		}
-		event.goto(0);
-	}
+	]
+
 
 	onfree() {
 		if (lib.onfree) {

@@ -1,5 +1,5 @@
-import { lib } from "../../../../../noname.js";
-import IContentCompiler, { EventCompileable, EventCompiledContent, EventContent } from "./IContentCompiler.ts";
+import { lib } from "@noname";
+import { IContentCompiler, EventCompileable, EventCompiledContent, EventContent } from "./IContentCompiler.ts";
 
 import StepCompiler from "./StepCompiler.ts";
 import YieldCompiler from "./YieldCompiler.ts";

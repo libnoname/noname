@@ -15,8 +15,9 @@ const staticModules = [
 	{ src: "font", dest: "" },
 	{ src: "theme", dest: "" },
 	// step 无法编译，需要覆盖
-	// step 废弃之后请删除
+	// 重构之后请删除
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },
+	{ src: "noname/library/skill.js", dest: "noname/library" },
 ];
 if (argv.full) {
 	staticModules.push({ src: "audio", dest: "" });
@@ -28,14 +29,14 @@ if (argv.full) {
 	staticModules.push({ src: "extension/coin", dest: "extension" });
 }
 
+// 继承vite.config.ts
 await build({
-	//继承vite.config.ts
 	plugins: [viteStaticCopy({ targets: staticModules })],
 });
 
 await esbuild({
-	entryPoints: ["noname-server.cjs"],
+	entryPoints: ["noname-server.cts"],
 	outfile: "dist/noname-server.cjs",
 	bundle: true,
-	platform: "node",
+	platform: "node"
 });

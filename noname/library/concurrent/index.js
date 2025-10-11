@@ -1,4 +1,4 @@
-import { Uninstantable } from "../../util/index.js";
+import { Uninstantable } from "@/util/index.js";
 
 // 文档信息请查阅对应的`index.d.ts`文件
 export class Concurrent extends Uninstantable {

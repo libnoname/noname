@@ -1,8 +1,8 @@
-import { _status, game, get, lib, ui } from "../../../noname.js";
+import { _status, game, get, lib, ui } from "@noname";
 import { Player } from "./index.js";
-import security from "../../util/security.js";
-import ContentCompiler from "./GameEvent/compilers/ContentCompiler.js";
-import GameEventManager from "./GameEvent/GameEventManager.js";
+import security from "@/util/security.js";
+import ContentCompiler from "./GameEvent/compilers/ContentCompiler.ts";
+import GameEventManager from "./GameEvent/GameEventManager.ts";
 export { GameEventManager, ContentCompiler };
 
 /**

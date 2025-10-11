@@ -11,10 +11,10 @@
     "type": "module",
     "scripts": {
         "start": "pnpm build & node dist/noname-server.cjs",
-        "dev": "concurrently \"node noname-server.cjs --debug\" \"pnpm vite dev\"",
-        "build": "node scripts/build.js",
-        "build:full": "node scripts/build.js --full",
-        "build:diff": "node scripts/build.js --diff",
+        "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev\"",
+        "build": "tsx scripts/build.ts",
+        "build:full": "tsx scripts/build.ts --full",
+        "build:diff": "tsx scripts/build.ts --diff",
         "lint": "pnpm eslint ."
     },
     "dependencies": {
@@ -73,6 +73,7 @@
         "globals": "^16.2.0",
         "jiti": "^2.5.1",
         "prettier": "^3.6.2",
+        "tsx": "^4.20.6",
         "typescript-eslint": "^8.34.1",
         "vite": "^7.1.6",
         "vite-plugin-static-copy": "^3.1.2",

@@ -1,21 +1,17 @@
-import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
-import { game } from "../game/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { CacheContext } from "../library/cache/cacheContext.js";
 import { Is } from "./is.js";
 import { Promises } from "./promises.js";
-import { rootURL } from "../../noname.js";
+import { rootURL, game, lib, _status, ui } from "@noname";
 import * as pinyinPro from "pinyin-pro";
 import NonameDictionary from "./pinyins/noname-dict.js";
-import { Audio } from "./audio.js";
-import security from "../util/security.js";
-import { CodeSnippet, ErrorManager } from "../util/error.js";
+import { Audio } from "./audio.ts";
+import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
+import security from "@/util/security.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.js";
 
 import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";
-import { HTMLPoptipElement } from "../library/poptip.js";
+import { HTMLPoptipElement } from "@/library/poptip.js";
+import { CacheContext } from "@/library/cache/cacheContext.js";
 
 // 用于标识Map、Set等对象在序列化中的类型
 // 使用了md5("__noname_type")的值作为键

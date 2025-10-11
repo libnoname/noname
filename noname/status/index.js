@@ -1,7 +1,6 @@
-import { lib } from "../library/index.js";
-import PauseManager from "../game/PauseManager.js";
-import { GameEvent } from "../library/element/gameEvent.js";
-import { GameEventManager } from "../library/element/gameEvent.js";
+import { lib } from "@noname";
+import PauseManager from "@/game/PauseManager.ts";
+import { GameEventManager } from "@/library/element/gameEvent.js";
 
 export class status {
 	imchoosing = false;
@@ -78,6 +77,7 @@ export class status {
 	 * @type { Promise<any>[] | undefined }
 	 */
 	extensionLoading = undefined;
+	javaScriptExtensions = [];
 	/**
 	 * @type { { [key: string]: Promise<any>[] } | undefined }
 	 */

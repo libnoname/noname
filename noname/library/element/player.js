@@ -1,12 +1,7 @@
-import { ai } from "../../ai/index.js";
-import { get } from "../../get/index.js";
-import { game } from "../../game/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
+import { _status, get, lib, game, ai, ui } from "@noname";
 import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
-import security from "../../util/security.js";
+import security from "@/util/security.js";
 import { ContentCompiler } from "./gameEvent.js";
 import dedent from "dedent";
 

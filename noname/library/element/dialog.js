@@ -1,9 +1,5 @@
-import { get } from "../../get/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
-import { game } from "../../../noname.js";
-import { Pagination } from "../../util/pagination.js";
+import { _status, game, get, lib, ui } from "@noname";
+import { Pagination } from "@/util/pagination.js";
 
 export class Dialog extends HTMLDivElement {
 	/** @type { HTMLDivElement } */

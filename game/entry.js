@@ -23,11 +23,11 @@ Promise.resolve()
 				}
 			};
 			/*
-		升级方法:
-			1. 游戏启动后导出数据，然后以http/s协议重启
-			2. 以http/s协议导入数据
-			3. 保存http/s协议的状态，以后不再以file协议启动
-		*/
+			升级方法:
+				1. 游戏启动后导出数据，然后以http/s协议重启
+				2. 以http/s协议导入数据
+				3. 保存http/s协议的状态，以后不再以file协议启动
+			*/
 			// 导出数据到根目录的noname.config.txt
 			if (navigator.notification) {
 				navigator.notification.activityStart("正在进行升级", "请稍候");

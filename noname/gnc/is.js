@@ -1,4 +1,4 @@
-import { GeneratorFunction } from "../util/index.js";
+import { GeneratorFunction } from "@/util/index.js";
 
 export class Is {
 	/**

@@ -1,8 +1,4 @@
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
+import { lib, game, get, _status, ui } from "@noname";
 /**
  * 为元素添加右击或长按弹出的提示信息
  * @param {string} title 标题

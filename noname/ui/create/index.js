@@ -1,9 +1,4 @@
-import { ui } from "../index.js";
-import { lib } from "../../library/index.js";
-import { game } from "../../game/index.js";
-import { get } from "../../get/index.js";
-import { _status } from "../../status/index.js";
-import { ai } from "../../ai/index.js";
+import { lib, game, get, _status, ai, ui } from "@noname";
 import { menu } from "./menu/index.js";
 import { cardPackMenu } from "./menu/pages/cardPackMenu.js";
 import { characterPackMenu } from "./menu/pages/characterPackMenu.js";
@@ -11,7 +6,7 @@ import { extensionMenu } from "./menu/pages/exetensionMenu.js";
 import { optionsMenu } from "./menu/pages/optionsMenu.js";
 import { otherMenu } from "./menu/pages/otherMenu.js";
 import { startMenu } from "./menu/pages/startMenu.js";
-import { Pagination } from "../../util/pagination.js";
+import { Pagination } from "@/util/pagination.js";
 
 export class Create {
 	/**
@@ -370,7 +365,7 @@ export class Create {
 
 		if (language === "javascript" || language === "typescript") {
 			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
-			const { default: security } = await import("@/noname/util/security.js");
+			const { default: security } = await import("@/util/security.js");
 			let proxyWindow = Object.assign({}, window, {
 				_status: _status,
 				lib: lib,

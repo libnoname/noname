@@ -1390,7 +1390,7 @@ declare interface Skill {
 	 * 
 	 * a.触发技判断敌友，大于0为选择队友发动，若<=0是对敌方发动:return get.attitude(player,event.player)>0; 
 	 * 
-	 * b.选取价值小于8的牌：return 8-get.value(card); 数字越大，会选用的牌范围越广，8以上甚至会选用桃发动技能，一般为6-ai.get.value(card); 
+	 * b.选取价值小于8的牌：return 8-get.value(card); 数字越大，会选用的牌范围越广，8以上甚至会选用桃发动技能，一般为6-get.value(card); 
 	 * 
 	 * 注：
 	 * 
@@ -1775,7 +1775,7 @@ declare interface SkillAI {
 	 * 
 	 * 应用：
 	 * 〖主动技〗
-			如果技能发动无须指定目标: effect=result*ai.get.attitude(player,player);
+			如果技能发动无须指定目标: effect=result*get.attitude(player,player);
 			如果技能发动须指定目标 总效果=对使用者的收益值 * 使用者对自己的att+对目标的收益值 * 使用者对目标的att; 实际还会考虑嘲讽值,这里简化了;
 	   〖卖血技〗
 			总效果=对使用者的收益值 * 使用者对自己的att+对目标的收益值 * 使用者对目标的att; 实际还会考虑嘲讽值,这里简化了;
@@ -1796,10 +1796,10 @@ declare interface SkillAI {
 
 		【收益论的检验】示例：
 		content:function(){
-			game.log(player,'对',target,'的att是',ai.get.attitude(player,target));
-			game.log(player,'对',player,'的att是',ai.get.attitude(player,player));
-			game.log(player,'对',target,'发动【测试】的eff是',ai.get.effect(target,'测试',player,player));
-			game.log(player,'对',target,'使用【杀】的eff是',ai.get.effect(target,{name:'sha'},player,player));
+			game.log(player,'对',target,'的att是',get.attitude(player,target));
+			game.log(player,'对',player,'的att是',get.attitude(player,player));
+			game.log(player,'对',target,'发动【测试】的eff是',get.effect(target,'测试',player,player));
+			game.log(player,'对',target,'使用【杀】的eff是',get.effect(target,{name:'sha'},player,player));
 		},
 
 		永远的萌新大佬的示例：
@@ -1902,7 +1902,7 @@ declare interface SkillAI {
 	/** 
 	 * 牌的使用价值【一般用于卡牌的ai】
 	 * 
-	 * 数字越大，在一些ai会选用的牌范围越广，8以上甚至会选用桃发动技能，一般为6-ai.get.value(card); 
+	 * 数字越大，在一些ai会选用的牌范围越广，8以上甚至会选用桃发动技能，一般为6-get.value(card); 
 	 * 大致的价值标准：
 	 * wuzhong 9.2>shunshou 9>lebu 8>tao [8,6.5,5,4]>shan [7,2]>wuxie [6,4]>juedou 5.5>guohe,nanman,wanjian 5>sha [5,1]
 	 *      tiesuo,bingliang 4>huogong [3,1]>jiedao 2>taoyuan,shandian 0

@@ -1,5 +1,5 @@
 // 因为需要规范content的函数体，所以即使是async也要编译喵！
-import { AsyncFunction } from "../../../../util/index.js";
+import { AsyncFunction } from "@/util/index.js";
 import ContentCompiler from "./ContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 import { EventContent } from "./IContentCompiler.ts";

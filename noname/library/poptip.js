@@ -1,6 +1,4 @@
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { get } from "../get/index.js";
+import { game, get, lib } from "@noname";
 
 /**
  * @type {Map<string, {name: string, info: string}>}

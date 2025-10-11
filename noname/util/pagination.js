@@ -3,7 +3,7 @@
  */
 
 import dedent from "dedent";
-import { lib } from "../../noname.js";
+import { lib } from "@noname";
 
 /**
  * 简单分页类

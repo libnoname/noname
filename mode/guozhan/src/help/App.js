@@ -1,5 +1,4 @@
-import html from "dedent";
-import { lib, _status } from "@/noname.js";
+import { lib, _status } from "../../../../noname.js";
 import poptips from "./poptip.js";
 
 export default `

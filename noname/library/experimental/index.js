@@ -1,5 +1,4 @@
 import { lib } from "../index.js";
-import { Uninstantable } from "../../util/index.js";
 
 import * as ExperimentalSymbol from "./symbol.js";
 

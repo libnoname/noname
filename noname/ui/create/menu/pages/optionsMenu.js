@@ -1,6 +1,6 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
-import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
-import { nonameInitialized } from "../../../../util/index.js";
+import { ui, game, get, ai, lib, _status } from "@noname";
+import { nonameInitialized } from "@/util/index.js";
 import JSZip from "jszip";
 
 export const optionsMenu = function (connectMenu) {

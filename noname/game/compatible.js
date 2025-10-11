@@ -1,5 +1,5 @@
-import { userAgentLowerCase, compatibleEnvironment, androidNewStandardApp, device } from "../util/index.js";
-import { get } from "../get/compatible.js";
+import { userAgentLowerCase, compatibleEnvironment, androidNewStandardApp, device } from "@/util/index.js";
+import { get } from "@/get/compatible.js";
 
 export class GameCompatible {
 	/**

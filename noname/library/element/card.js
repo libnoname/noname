@@ -1,8 +1,4 @@
-import { get } from "../../get/index.js";
-import { game } from "../../game/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
+import { _status, game, get, lib, ui } from "@noname";
 
 export class Card extends HTMLDivElement {
 	/**

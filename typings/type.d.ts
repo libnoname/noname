@@ -94,28 +94,28 @@ declare type GeneratorContentFuncByAll = (event: GameEvent, map: {
 
 declare type OldContentFuncByAll = () => void
 
-declare type Game = typeof import('@/noname.js').game;
-declare type Library = typeof import('@/noname.js').lib;
-declare type Status = typeof import('@/noname.js')._status;
-declare type UI = typeof import('@/noname.js').ui;
-declare type Get = typeof import('@/noname.js').get;
-declare type AI = typeof import('@/noname.js').ai;
+declare type Game = typeof import('@noname').game;
+declare type Library = typeof import('@noname').lib;
+declare type Status = typeof import('@noname')._status;
+declare type UI = typeof import('@noname').ui;
+declare type Get = typeof import('@noname').get;
+declare type AI = typeof import('@noname').ai;
 
-declare type Button = import('@/noname/library/index.js').Button;
-declare type Card = import('@/noname/library/index.js').Card;
-declare type VCard = import('@/noname/library/index.js').VCard;
-declare type Dialog = import('@/noname/library/index.js').Dialog;
-declare type GameEvent = import('@/noname/library/index.js').GameEvent;
-declare type Player = import('@/noname/library/index.js').Player;
-declare type Control = import('@/noname/library/index.js').Control;
+declare type Button = import('@/library/index.js').Button;
+declare type Card = import('@/library/index.js').Card;
+declare type VCard = import('@/library/index.js').VCard;
+declare type Dialog = import('@/library/index.js').Dialog;
+declare type GameEvent = import('@/library/index.js').GameEvent;
+declare type Player = import('@/library/index.js').Player;
+declare type Control = import('@/library/index.js').Control;
 
-declare type Video = import('@/noname/game/index.js').Video;
-declare type Videos = import('@/noname/game/index.js').Videos;
-declare type GameHistory = import('@/noname/game/index.js').GameHistory;
+declare type Video = import('@/game/index.js').Video;
+declare type Videos = import('@/game/index.js').Videos;
+declare type GameHistory = import('@/game/index.js').GameHistory;
 // declare type CodeMirror = typeof import('codemirror/index');
 
 declare type Sex = 'male' | 'female' | 'dobule' | 'none';
-declare type Character = [Sex, string, number | string, string[], string[]] | [Sex, string, number | string, string[]] | import('@/noname/library/element/character.js').Character;
+declare type Character = [Sex, string, number | string, string[], string[]] | [Sex, string, number | string, string[]] | import('@/library/element/character.js').Character;
 declare type Select = [number, number];
 
 declare interface progress extends HTMLDivElement {

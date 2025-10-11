@@ -1,7 +1,4 @@
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { get } from "../get/index.js";
-import { _status } from "../status/index.js";
+import { _status, game, get, lib } from "@noname";
 
 /**
  * 战法！！！！！有几种类型的战法是有模板可以套的，详情请看library的index.js，搜索zf_开头的技能

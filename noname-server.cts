@@ -1,9 +1,9 @@
-const express = require("express");
-const minimist = require("minimist");
-const bodyParser = require("body-parser");
-const fs = require("fs");
-const path = require("path");
-const { exec } = require("child_process");
+import minimist from "minimist";
+import express from "express";
+import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+import { exec } from "child_process"; 
 
 const oneYear = 60 * 1000 * 60 * 24 * 365;
 
@@ -160,8 +160,7 @@ app.get("/getFileList", (req, res) => {
 	if (stat.isFile()) {
 		throw new Error("getFileList只适用于文件夹而不是文件");
 	}
-	const files = [],
-		folders = [];
+	const files:string[] = [], folders:string[] = [];
 	try {
 		fs.readdir(join(dir), (err, filelist) => {
 			if (err) {
@@ -293,11 +292,11 @@ class ReturnData {
 /**
  * Business is successful.
  *
- * @param [data] return data.
+ * @param data return data.
  *
  * @return json.
  */
-const successfulJson = function successfulJson(data) {
+const successfulJson = function successfulJson(data?: any) {
 	const returnData = new ReturnData();
 	returnData.setSuccess(true);
 	returnData.setCode(200);
@@ -313,7 +312,7 @@ const successfulJson = function successfulJson(data) {
  *
  * @return json.
  */
-const failedJson = function failedJson(code, message) {
+const failedJson = function failedJson(code: number, message?: any) {
 	const returnData = new ReturnData();
 	returnData.setSuccess(false);
 	returnData.setCode(code);

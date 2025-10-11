@@ -9,9 +9,10 @@
 		"module": "ESNext" /* Specify what module code is generated. */,
 		// "rootDir": "./",                                  /* Specify the root folder within your source files. */
 		"moduleResolution": "Bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
-		"baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
+		// "baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./noname/*"],
+			"@noname": ["./noname.js"]
 		},
 		"typeRoots": ["./typings", "./node_modules/@types", "./extension/**", "./extension/**/typings"],
 		"resolveJsonModule": true /* Enable importing .json files */,

@@ -1,5 +1,5 @@
-import { game, _status } from "../../../../../noname.js";
-import IContentCompiler, { EventContent, GameEvent } from "./IContentCompiler.js";
+import { game, _status } from "@noname";
+import { IContentCompiler, EventContent } from "./IContentCompiler.js";
 
 type HandlerOption = { state?: "begin" | "end" };
 

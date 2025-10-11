@@ -1,13 +1,11 @@
-import { game } from "../game/index.js";
-import { lib } from "../library/index.js";
-import { jumpToCatchBlock } from "./index.js";
+import { lib, game } from "@noname";
 
 /**
  * @param {string} name
  * @returns {any}
  */
 export function get(name) {
-	const config = Reflect.get(lib, "config");
+	const config = lib.config;
 	if (!config) {
 		return null;
 	}
@@ -20,7 +18,7 @@ export function get(name) {
  * @returns {void}
  */
 export function set(name, value) {
-	const config = Reflect.get(lib, "config");
+	const config = lib.config;
 	if (!config) {
 		return;
 	}
@@ -32,7 +30,7 @@ export function set(name, value) {
  * @returns {boolean}
  */
 export function has(name) {
-	const config = Reflect.get(lib, "config");
+	const config = lib.config;
 	if (!config) {
 		return false;
 	}
@@ -66,11 +64,11 @@ export function load(name, type, reinitLocalStorage = true, reinitIndexedDB = un
 	try {
 		let json = localStorage.getItem(`${lib.configprefix}${type === "data" ? name : type}`);
 		if (!json) {
-			jumpToCatchBlock();
+			throw new Error();
 		}
 		config = JSON.parse(json);
 		if (typeof config != "object" || config == null) {
-			jumpToCatchBlock();
+			throw new Error();
 		}
 	} catch (err) {
 		config = {};
@@ -114,11 +112,11 @@ export function save(name, type, value) {
 		try {
 			let json = localStorage.getItem(`${lib.configprefix}${key}`);
 			if (!json) {
-				jumpToCatchBlock();
+				throw new Error();
 			}
 			config = JSON.parse(json);
 			if (typeof config != "object" || config == null) {
-				jumpToCatchBlock();
+				throw new Error();
 			}
 		} catch (err) {
 			config = {};

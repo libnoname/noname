@@ -1,4 +1,3 @@
-import { GeneratorFunction } from "../util/index.js";
 import { Is } from "./is.js";
 
 // gnc: GeNCoroutine

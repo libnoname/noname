@@ -1,4 +1,4 @@
-import { userAgentLowerCase } from "../util/index.js";
+import { userAgentLowerCase } from "@/util/index.js";
 
 /**
  * 用于老版本能用的`get`

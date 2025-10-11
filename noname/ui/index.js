@@ -1,7 +1,4 @@
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { get } from "../get/index.js";
-import { _status } from "../status/index.js";
+import { lib, game, get, _status } from "@noname";
 import { Click } from "./click/index.js";
 import { Create } from "./create/index.js";
 

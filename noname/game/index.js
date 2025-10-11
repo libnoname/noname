@@ -10,22 +10,17 @@
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
-import { ai } from "../ai/index.js";
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { gnc } from "../gnc/index.js";
-import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
+import { _status, lib, get, ai, ui, gnc } from "@noname";
+import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "@/util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
 
-import security from "../util/security.js";
+import security from "@/util/security.js";
 import { GameCompatible } from "./compatible.js";
-import { save } from "../util/config.js";
-import { debounce } from "../util/utils.js";
+import { save } from "@/util/config.js";
+import { debounce } from "@/util/utils.js";
 
 export class Game extends GameCompatible {
 	documentZoom;
@@ -2498,9 +2493,7 @@ export class Game extends GameCompatible {
 		 */
 		const play = () => {
 			// @ts-expect-error ignore
-			if (!check()) {
-				return;
-			}
+			if (!check()) return;
 			// @ts-expect-error ignore
 			audio = random ? list.randomRemove() : list.shift();
 			return game.playAudio({
@@ -3051,18 +3044,10 @@ export class Game extends GameCompatible {
 				extensionPack = lib.extensionPack[name] = objectPackage;
 				objectPackage.files = object.files ?? {};
 				const extensionPackFiles = objectPackage.files;
-				if (!extensionPackFiles.character) {
-					extensionPackFiles.character = [];
-				}
-				if (!extensionPackFiles.card) {
-					extensionPackFiles.card = [];
-				}
-				if (!extensionPackFiles.skill) {
-					extensionPackFiles.skill = [];
-				}
-				if (!extensionPackFiles.audio) {
-					extensionPackFiles.audio = [];
-				}
+				extensionPackFiles.character ??= [];
+				extensionPackFiles.card ??= [];
+				extensionPackFiles.skill ??= [];
+				extensionPackFiles.audio ??= [];
 			} else {
 				extensionPack = lib.extensionPack[name] = {};
 			}
@@ -3494,7 +3479,7 @@ export class Game extends GameCompatible {
 							const fileReader = new FileReader();
 							fileReader.onerror = reject;
 							fileReader.onload = resolve;
-							fileReader.readAsDataURL(blob, "UTF-8");
+							fileReader.readAsDataURL(blob);
 						}).then(fileLoadedEvent => game.putDB("image", `extension-${extensionName}:${filePath}`, fileLoadedEvent.target.result));
 					});
 				}
@@ -8288,488 +8273,495 @@ export class Game extends GameCompatible {
 		}
 		next.config = config;
 		next.list = list;
-		next.setContent(function () {
-			"step 0";
-			event.nodes = [];
-			event.avatars = [];
-			event.friend = [];
-			event.enemy = [];
-			event.blank = [];
-			for (let i = 0; i < event.config.size; i++) {
-				event.nodes.push(ui.create.div(".shadowed.reduce_radius.choosedouble"));
-			}
-			event.moveAvatar = function (node, i) {
-				if (!node.classList.contains("moved")) {
-					event.blank.push(node.index);
-				}
-				event.nodes[node.index].style.display = "";
-				event.nodes[node.index].show();
-				clearTimeout(event.nodes[node.index].choosetimeout);
-				event.moveNode(node, i);
-				let nodex = event.nodes[node.index];
-				nodex.choosetimeout = setTimeout(function () {
-					nodex.hide();
-					nodex.choosetimeout = setTimeout(function () {
-						nodex.show();
-						nodex.style.display = "none";
-					}, 300);
-				}, 400);
-			};
-			event.aiMove = function (friend) {
-				let list = [];
-				for (let i = 0; i < event.avatars.length; i++) {
-					if (!event.avatars[i].classList.contains("moved")) {
-						list.push(event.avatars[i]);
-					}
-				}
-				for (let i = 0; i < list.length; i++) {
-					if (Math.random() < 0.7 || i == list.length - 1) {
-						if (friend) {
-							event.moveAvatar(list[i], event.friend.length + event.config.width * (event.config.height - 1));
-							event.friend.push(list[i]);
-						} else {
-							event.moveAvatar(list[i], event.enemy.length);
-							event.enemy.push(list[i]);
-						}
-						list[i].classList.add("moved");
-						break;
-					}
-				}
-			};
-			event.promptbar = ui.create.div(".hidden", ui.window);
-			event.promptbar.style.width = "100%";
-			event.promptbar.style.left = 0;
-			if (get.is.phoneLayout()) {
-				event.promptbar.style.top = "20px";
-			} else {
-				event.promptbar.style.top = "58px";
-			}
-			event.promptbar.style.pointerEvents = "none";
-			event.promptbar.style.textAlign = "center";
-			event.promptbar.style.zIndex = "2";
-			ui.create.div(".shadowed.reduce_radius", event.promptbar);
-			event.promptbar.firstChild.style.fontSize = "18px";
-			event.promptbar.firstChild.style.padding = "6px 10px";
-			event.promptbar.firstChild.style.position = "relative";
-			event.prompt = function (str) {
-				event.promptbar.firstChild.innerHTML = str;
-				event.promptbar.show();
-			};
-			event.moveNode = function (node, i) {
-				let width = event.width,
-					height = event.height,
-					margin = event.margin;
-				let left = (-(width + 10) * event.config.width) / 2 + 5 + (i % event.config.width) * (width + 10);
-				let top = (-(height + 10) * event.config.height) / 2 + 5 + Math.floor(i / event.config.width) * (height + 10) + margin / 2;
-				node.style.transform = "translate(" + left + "px," + top + "px)";
-				node.index = i;
-			};
-			event.resize = function () {
-				let margin = 0;
-				if (!get.is.phoneLayout()) {
-					margin = 38;
-				}
-				let height = (ui.window.offsetHeight - 10 * (event.config.height + 1) - margin) / event.config.height;
-				let width = (ui.window.offsetWidth - 10 * (event.config.width + 1)) / event.config.width;
-				if (width * event.config.ratio < height) {
-					height = width * event.config.ratio;
-				} else {
-					width = height / event.config.ratio;
-				}
-				event.width = width;
-				event.height = height;
-				event.margin = margin;
+		next.setContent([
+			(event) => {
+				event.nodes = [];
+				event.avatars = [];
+				event.friend = [];
+				event.enemy = [];
+				event.blank = [];
 				for (let i = 0; i < event.config.size; i++) {
-					event.moveNode(event.nodes[i], i);
-					event.nodes[i].style.width = width + "px";
-					event.nodes[i].style.height = height + "px";
-					if (event.avatars[i]) {
-						event.moveNode(event.avatars[i], event.avatars[i].index);
-						event.avatars[i].style.width = width + "px";
-						event.avatars[i].style.height = height + "px";
-						event.avatars[i].nodename.style.fontSize = Math.max(14, Math.round(width / 5.6)) + "px";
-					}
+					event.nodes.push(ui.create.div(".shadowed.reduce_radius.choosedouble"));
 				}
-				if (event.deciding) {
-					let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
-					for (let i = 0; i < event.friendlist.length; i++) {
-						event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+				event.moveAvatar = function (node, i) {
+					if (!node.classList.contains("moved")) {
+						event.blank.push(node.index);
 					}
-				}
-			};
-			lib.onresize.push(event.resize);
-			event.clickAvatar = function () {
-				if (event.deciding) {
-					if (this.index < event.config.width) {
-						return;
-					}
-					if (event.friendlist.includes(this)) {
-						event.friendlist.remove(this);
-						event.moveNode(this, this.index);
-						this.nodename.innerHTML = get.slimName(this.link);
-					} else {
-						event.friendlist.push(this);
-					}
-					if (event.friendlist.length == event.config.num) {
-						event.deciding = false;
-						event.prompt("比赛即将开始");
-						setTimeout(game.resume, 1000);
-					}
-					if (event.config.update) {
-						for (let i = 0; i < event.friendlist.length; i++) {
-							event.friendlist[i].nodename.innerHTML = event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
+					event.nodes[node.index].style.display = "";
+					event.nodes[node.index].show();
+					clearTimeout(event.nodes[node.index].choosetimeout);
+					event.moveNode(node, i);
+					let nodex = event.nodes[node.index];
+					nodex.choosetimeout = setTimeout(function () {
+						nodex.hide();
+						nodex.choosetimeout = setTimeout(function () {
+							nodex.show();
+							nodex.style.display = "none";
+						}, 300);
+					}, 400);
+				};
+				event.aiMove = function (friend) {
+					let list = [];
+					for (let i = 0; i < event.avatars.length; i++) {
+						if (!event.avatars[i].classList.contains("moved")) {
+							list.push(event.avatars[i]);
 						}
 					}
-					let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
-					for (let i = 0; i < event.friendlist.length; i++) {
-						event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+					for (let i = 0; i < list.length; i++) {
+						if (Math.random() < 0.7 || i == list.length - 1) {
+							if (friend) {
+								event.moveAvatar(list[i], event.friend.length + event.config.width * (event.config.height - 1));
+								event.friend.push(list[i]);
+							} else {
+								event.moveAvatar(list[i], event.enemy.length);
+								event.enemy.push(list[i]);
+							}
+							list[i].classList.add("moved");
+							break;
+						}
 					}
+				};
+				event.promptbar = ui.create.div(".hidden", ui.window);
+				event.promptbar.style.width = "100%";
+				event.promptbar.style.left = 0;
+				if (get.is.phoneLayout()) {
+					event.promptbar.style.top = "20px";
 				} else {
-					if (!event.imchoosing) {
-						return;
-					}
-					if (event.replacing) {
-						this.link = event.replacing;
-						this.setBackground(event.replacing, "character");
-
-						this.nodename.innerHTML = get.slimName(event.replacing);
-						this.nodename.dataset.nature = get.groupnature(lib.character[event.replacing][1]);
-
-						delete event.replacing;
-						if (this.classList.contains("moved")) {
-							event.custom.add.window();
-						}
-					}
-					if (this.classList.contains("moved")) {
-						return;
-					}
-					event.moveAvatar(this, event.friend.length + event.config.width * (event.config.height - 1));
-					event.friend.push(this.link);
-					this.classList.add("moved");
-					game.resume();
+					event.promptbar.style.top = "58px";
 				}
-			};
-			event.skipnode = ui.create.system("跳过", function () {
-				this.remove();
-				event._skiprest = true;
-				if (event.imchoosing) {
-					game.resume();
-				}
-			});
-			if (get.config("change_choice")) {
-				event.replacenode = ui.create.system(
-					"换将",
-					function () {
-						event.promptbar.hide();
-						while (event.avatars.length) {
-							event.avatars.shift().remove();
+				event.promptbar.style.pointerEvents = "none";
+				event.promptbar.style.textAlign = "center";
+				event.promptbar.style.zIndex = "2";
+				ui.create.div(".shadowed.reduce_radius", event.promptbar);
+				event.promptbar.firstChild.style.fontSize = "18px";
+				event.promptbar.firstChild.style.padding = "6px 10px";
+				event.promptbar.firstChild.style.position = "relative";
+				event.prompt = function (str) {
+					event.promptbar.firstChild.innerHTML = str;
+					event.promptbar.show();
+				};
+				event.moveNode = function (node, i) {
+					let width = event.width,
+						height = event.height,
+						margin = event.margin;
+					let left = (-(width + 10) * event.config.width) / 2 + 5 + (i % event.config.width) * (width + 10);
+					let top = (-(height + 10) * event.config.height) / 2 + 5 + Math.floor(i / event.config.width) * (height + 10) + margin / 2;
+					node.style.transform = "translate(" + left + "px," + top + "px)";
+					node.index = i;
+				};
+				event.resize = function () {
+					let margin = 0;
+					if (!get.is.phoneLayout()) {
+						margin = 38;
+					}
+					let height = (ui.window.offsetHeight - 10 * (event.config.height + 1) - margin) / event.config.height;
+					let width = (ui.window.offsetWidth - 10 * (event.config.width + 1)) / event.config.width;
+					if (width * event.config.ratio < height) {
+						height = width * event.config.ratio;
+					} else {
+						width = height / event.config.ratio;
+					}
+					event.width = width;
+					event.height = height;
+					event.margin = margin;
+					for (let i = 0; i < event.config.size; i++) {
+						event.moveNode(event.nodes[i], i);
+						event.nodes[i].style.width = width + "px";
+						event.nodes[i].style.height = height + "px";
+						if (event.avatars[i]) {
+							event.moveNode(event.avatars[i], event.avatars[i].index);
+							event.avatars[i].style.width = width + "px";
+							event.avatars[i].style.height = height + "px";
+							event.avatars[i].nodename.style.fontSize = Math.max(14, Math.round(width / 5.6)) + "px";
 						}
-						for (let i = 0; i < event.config.size; i++) {
-							event.nodes[i].show();
-							event.nodes[i].style.display = "";
-							clearTimeout(event.nodes[i].choosetimeout);
+					}
+					if (event.deciding) {
+						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
+						for (let i = 0; i < event.friendlist.length; i++) {
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
-						delete event.list2;
-						event.friend.length = 0;
-						event.enemy.length = 0;
-						event.blank.length = 0;
-						event.redoing = true;
-						if (event.imchoosing) {
-							game.resume();
+					}
+				};
+				lib.onresize.push(event.resize);
+				event.clickAvatar = function () {
+					if (event.deciding) {
+						if (this.index < event.config.width) {
+							return;
 						}
-					},
-					true
-				);
-			}
-			if (get.config("change_choice")) {
-				event.reselectnode = ui.create.system(
-					"重选",
-					function () {
-						event.promptbar.hide();
-						event.list2 = event.list2.concat(event.friend).concat(event.enemy);
-						event.friend.length = 0;
-						event.enemy.length = 0;
-						for (let i = 0; i < event.avatars.length; i++) {
-							if (event.avatars[i].classList.contains("moved")) {
-								event.moveAvatar(event.avatars[i], event.blank.randomRemove());
-								event.avatars[i].classList.remove("moved");
+						if (event.friendlist.includes(this)) {
+							event.friendlist.remove(this);
+							event.moveNode(this, this.index);
+							this.nodename.innerHTML = get.slimName(this.link);
+						} else {
+							event.friendlist.push(this);
+						}
+						if (event.friendlist.length == event.config.num) {
+							event.deciding = false;
+							event.prompt("比赛即将开始");
+							setTimeout(game.resume, 1000);
+						}
+						if (event.config.update) {
+							for (let i = 0; i < event.friendlist.length; i++) {
+								event.friendlist[i].nodename.innerHTML = event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
 							}
 						}
-						event.redoing = true;
-						if (event.imchoosing) {
-							game.resume();
+						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
+						for (let i = 0; i < event.friendlist.length; i++) {
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
-					},
-					true
-				);
-			}
-			if (get.config("free_choose")) {
-				let createCharacterDialog = function () {
-					event.freechoosedialog = ui.create.characterDialog();
-					event.freechoosedialog.style.height = "80%";
-					event.freechoosedialog.style.top = "10%";
-					event.freechoosedialog.style.transform = "scale(0.8)";
-					event.freechoosedialog.style.transition = "all 0.3s";
-					event.freechoosedialog.listen(function (e) {
-						if (!event.replacing) {
-							event.dialoglayer.clicked = true;
-						}
-					});
-					event.freechoosedialog.classList.add("pointerdialog");
-					event.dialoglayer = ui.create.div(".popup-container.hidden", function (e) {
-						if (this.classList.contains("removing")) {
+					} else {
+						if (!event.imchoosing) {
 							return;
 						}
-						if (this.clicked) {
-							this.clicked = false;
-							return;
-						}
-						ui.window.classList.remove("modepaused");
-						this.delete();
-						e.stopPropagation();
-						event.freechoosedialog.style.transform = "scale(0.8)";
 						if (event.replacing) {
-							event.prompt("用" + get.translation(event.replacing) + "替换一名武将");
-						} else {
+							this.link = event.replacing;
+							this.setBackground(event.replacing, "character");
+
+							this.nodename.innerHTML = get.slimName(event.replacing);
+							this.nodename.dataset.nature = get.groupnature(lib.character[event.replacing][1]);
+
+							delete event.replacing;
+							if (this.classList.contains("moved")) {
+								event.custom.add.window();
+							}
+						}
+						if (this.classList.contains("moved")) {
+							return;
+						}
+						event.moveAvatar(this, event.friend.length + event.config.width * (event.config.height - 1));
+						event.friend.push(this.link);
+						this.classList.add("moved");
+						game.resume();
+					}
+				};
+				event.skipnode = ui.create.system("跳过", function () {
+					this.remove();
+					event._skiprest = true;
+					if (event.imchoosing) {
+						game.resume();
+					}
+				});
+				if (get.config("change_choice")) {
+					event.replacenode = ui.create.system(
+						"换将",
+						function () {
+							event.promptbar.hide();
+							while (event.avatars.length) {
+								event.avatars.shift().remove();
+							}
+							for (let i = 0; i < event.config.size; i++) {
+								event.nodes[i].show();
+								event.nodes[i].style.display = "";
+								clearTimeout(event.nodes[i].choosetimeout);
+							}
+							delete event.list2;
+							event.friend.length = 0;
+							event.enemy.length = 0;
+							event.blank.length = 0;
+							event.redoing = true;
+							if (event.imchoosing) {
+								game.resume();
+							}
+						},
+						true
+					);
+				}
+				if (get.config("change_choice")) {
+					event.reselectnode = ui.create.system(
+						"重选",
+						function () {
+							event.promptbar.hide();
+							event.list2 = event.list2.concat(event.friend).concat(event.enemy);
+							event.friend.length = 0;
+							event.enemy.length = 0;
+							for (let i = 0; i < event.avatars.length; i++) {
+								if (event.avatars[i].classList.contains("moved")) {
+									event.moveAvatar(event.avatars[i], event.blank.randomRemove());
+									event.avatars[i].classList.remove("moved");
+								}
+							}
+							event.redoing = true;
+							if (event.imchoosing) {
+								game.resume();
+							}
+						},
+						true
+					);
+				}
+				if (get.config("free_choose")) {
+					let createCharacterDialog = function () {
+						event.freechoosedialog = ui.create.characterDialog();
+						event.freechoosedialog.style.height = "80%";
+						event.freechoosedialog.style.top = "10%";
+						event.freechoosedialog.style.transform = "scale(0.8)";
+						event.freechoosedialog.style.transition = "all 0.3s";
+						event.freechoosedialog.listen(function (e) {
+							if (!event.replacing) {
+								event.dialoglayer.clicked = true;
+							}
+						});
+						event.freechoosedialog.classList.add("pointerdialog");
+						event.dialoglayer = ui.create.div(".popup-container.hidden", function (e) {
+							if (this.classList.contains("removing")) {
+								return;
+							}
+							if (this.clicked) {
+								this.clicked = false;
+								return;
+							}
+							ui.window.classList.remove("modepaused");
+							this.delete();
+							e.stopPropagation();
+							event.freechoosedialog.style.transform = "scale(0.8)";
+							if (event.replacing) {
+								event.prompt("用" + get.translation(event.replacing) + "替换一名武将");
+							} else {
+								if (event.side == 0) {
+									event.prompt("请选择两名武将");
+								} else {
+									event.prompt("请选择一名武将");
+								}
+							}
+						});
+						event.dialoglayer.classList.add("modenopause");
+						event.dialoglayer.appendChild(event.freechoosedialog);
+						event.freechoosenode.classList.remove("hidden");
+					};
+
+					event.custom.replace.button = function (button) {
+						event.replacing = button.link;
+					};
+					event.custom.add.window = function () {
+						if (event.replacing) {
+							delete event.replacing;
 							if (event.side == 0) {
 								event.prompt("请选择两名武将");
 							} else {
 								event.prompt("请选择一名武将");
 							}
 						}
-					});
-					event.dialoglayer.classList.add("modenopause");
-					event.dialoglayer.appendChild(event.freechoosedialog);
-					event.freechoosenode.classList.remove("hidden");
-				};
-
-				event.custom.replace.button = function (button) {
-					event.replacing = button.link;
-				};
-				event.custom.add.window = function () {
-					if (event.replacing) {
-						delete event.replacing;
-						if (event.side == 0) {
-							event.prompt("请选择两名武将");
-						} else {
-							event.prompt("请选择一名武将");
-						}
+					};
+					event.freechoosenode = ui.create.system(
+						"自由选将",
+						function () {
+							if (this.classList.contains("hidden")) {
+								return;
+							}
+							if (!event.imchoosing) {
+								event.prompt("请等待敌方选将");
+								return;
+							}
+							delete event.replacing;
+							ui.window.classList.add("modepaused");
+							ui.window.appendChild(event.dialoglayer);
+							ui.refresh(event.dialoglayer);
+							event.dialoglayer.show();
+							event.freechoosedialog.style.transform = "scale(1)";
+							event.promptbar.hide();
+						},
+						true
+					);
+					if (lib.onfree) {
+						event.freechoosenode.classList.add("hidden");
+						lib.onfree.push(createCharacterDialog);
+					} else {
+						createCharacterDialog();
+					}
+				}
+				event.checkredo = function () {
+					if (event.redoing) {
+						event.goto(1);
+						delete event.redoing;
+						return true;
 					}
 				};
-				event.freechoosenode = ui.create.system(
-					"自由选将",
-					function () {
-						if (this.classList.contains("hidden")) {
-							return;
-						}
-						if (!event.imchoosing) {
-							event.prompt("请等待敌方选将");
-							return;
-						}
-						delete event.replacing;
-						ui.window.classList.add("modepaused");
-						ui.window.appendChild(event.dialoglayer);
-						ui.refresh(event.dialoglayer);
-						event.dialoglayer.show();
-						event.freechoosedialog.style.transform = "scale(1)";
-						event.promptbar.hide();
-					},
-					true
-				);
-				if (lib.onfree) {
-					event.freechoosenode.classList.add("hidden");
-					lib.onfree.push(createCharacterDialog);
-				} else {
-					createCharacterDialog();
-				}
-			}
-			event.checkredo = function () {
-				if (event.redoing) {
-					event.goto(1);
-					delete event.redoing;
-					return true;
-				}
-			};
-			// if(ui.cardPileButton) ui.cardPileButton.style.display='none';
-			ui.auto.hide();
-			ui.wuxie.hide();
-			event.resize();
-			for (let i = 0; i < event.config.size; i++) {
-				ui.window.appendChild(event.nodes[i]);
-			}
-			"step 1";
-			let rand1 = event.config.first;
-			if (rand1 == "rand") {
-				rand1 = Math.random() < 0.5;
-			}
-			if (rand1) {
-				_status.color = true;
-				event.side = 1;
-			} else {
-				_status.color = false;
-				event.side = 3;
-			}
-			if (!event.list2) {
-				event.list2 = event.list.randomGets(event.config.width * 2);
-				for (let i = 0; i < event.config.width * 2; i++) {
-					event.avatars.push(ui.create.div(".shadowed.shadowed2.reduce_radius.character.choosedouble", event.clickAvatar));
-					let name = event.list2[i];
-					event.avatars[i].setBackground(name, "character");
-					event.avatars[i].link = name;
-					event.avatars[i].nodename = ui.create.div(".name", event.avatars[i], get.slimName(name));
-					event.avatars[i].nodename.style.fontFamily = lib.config.name_font;
-					event.avatars[i].index = i + event.config.width;
-					event.avatars[i].addTempClass("start");
-					event.nodes[event.avatars[i].index].style.display = "none";
-					event.avatars[i].nodename.dataset.nature = get.groupnature(lib.character[name][1]);
-					lib.setIntro(event.avatars[i]);
-				}
+				// if(ui.cardPileButton) ui.cardPileButton.style.display='none';
+				ui.auto.hide();
+				ui.wuxie.hide();
 				event.resize();
-				for (let i = 0; i < event.avatars.length; i++) {
-					ui.window.appendChild(event.avatars[i]);
+				for (let i = 0; i < event.config.size; i++) {
+					ui.window.appendChild(event.nodes[i]);
 				}
-				event.avatars.sort(function (a, b) {
-					return get.rank(b.link, true) - get.rank(a.link, true);
-				});
-			}
-			game.delay();
-			lib.init.onfree();
-			"step 2";
-			if (event.checkredo()) {
-				return;
-			}
-			if (event._skiprest) {
-				return;
-			}
-			if (event.side < 2) {
-				event.imchoosing = true;
-				if (event.side == 0) {
-					event.prompt("请选择两名武将");
+			},
+			(event) => {
+				let rand1 = event.config.first;
+				if (rand1 == "rand") {
+					rand1 = Math.random() < 0.5;
+				}
+				if (rand1) {
+					_status.color = true;
+					event.side = 1;
 				} else {
-					event.prompt("请选择一名武将");
-					event.fast = get.time();
+					_status.color = false;
+					event.side = 3;
 				}
-				game.pause();
-			} else {
-				event.aiMove();
+				if (!event.list2) {
+					event.list2 = event.list.randomGets(event.config.width * 2);
+					for (let i = 0; i < event.config.width * 2; i++) {
+						event.avatars.push(ui.create.div(".shadowed.shadowed2.reduce_radius.character.choosedouble", event.clickAvatar));
+						let name = event.list2[i];
+						event.avatars[i].setBackground(name, "character");
+						event.avatars[i].link = name;
+						event.avatars[i].nodename = ui.create.div(".name", event.avatars[i], get.slimName(name));
+						event.avatars[i].nodename.style.fontFamily = lib.config.name_font;
+						event.avatars[i].index = i + event.config.width;
+						event.avatars[i].addTempClass("start");
+						event.nodes[event.avatars[i].index].style.display = "none";
+						event.avatars[i].nodename.dataset.nature = get.groupnature(lib.character[name][1]);
+						lib.setIntro(event.avatars[i]);
+					}
+					event.resize();
+					for (let i = 0; i < event.avatars.length; i++) {
+						ui.window.appendChild(event.avatars[i]);
+					}
+					event.avatars.sort(function (a, b) {
+						return get.rank(b.link, true) - get.rank(a.link, true);
+					});
+				}
 				game.delay();
-			}
-			"step 3";
-			if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
-				event.fast = true;
-			} else {
-				event.fast = false;
-			}
-			delete event.imchoosing;
-			if (event.checkredo()) {
-				return;
-			}
-			if (event._skiprest) {
-				while (event.enemy.length < event.config.width) {
+				lib.init.onfree();
+			},
+			(event) => {
+				if (event.checkredo()) {
+					return;
+				}
+				if (event._skiprest) {
+					return;
+				}
+				if (event.side < 2) {
+					event.imchoosing = true;
+					if (event.side == 0) {
+						event.prompt("请选择两名武将");
+					} else {
+						event.prompt("请选择一名武将");
+						event.fast = get.time();
+					}
+					game.pause();
+				} else {
 					event.aiMove();
-				}
-				while (event.friend.length < event.config.width) {
-					event.aiMove(true);
-				}
-			} else if (event.friend.length + event.enemy.length < event.config.width * 2 - 1) {
-				if (event.side == 1) {
-					game.delay(event.fast ? 1 : 2);
-					event.promptbar.hide();
-				}
-				event.side++;
-				if (event.side > 3) {
-					event.side = 0;
-				}
-				event.goto(2);
-			} else {
-				event.promptbar.hide();
-				event.side++;
-				if (event.side > 3) {
-					event.side = 0;
-				}
-				if (event.side >= 2) {
 					game.delay();
 				}
-			}
-			"step 4";
-			if (event.checkredo()) {
-				return;
-			}
-			if (event.skipnode) {
-				event.skipnode.delete();
-			}
-			if (event.replacenode) {
-				event.replacenode.delete();
-			}
-			if (event.reselectnode) {
-				event.reselectnode.delete();
-			}
-			if (event.freechoosenode) {
-				event.freechoosenode.delete();
-			}
-			for (let i = 0; i < event.avatars.length; i++) {
-				if (!event.avatars[i].classList.contains("moved")) {
-					if (event.side < 2) {
-						event.moveAvatar(event.avatars[i], event.friend.length + event.config.width * (event.config.height - 1));
-						event.friend.push(event.avatars[i]);
-					} else {
-						event.moveAvatar(event.avatars[i], event.enemy.length);
-						event.enemy.push(event.avatars[i]);
+			},
+			(event) => {
+				if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
+					event.fast = true;
+				} else {
+					event.fast = false;
+				}
+				delete event.imchoosing;
+				if (event.checkredo()) {
+					return;
+				}
+				if (event._skiprest) {
+					while (event.enemy.length < event.config.width) {
+						event.aiMove();
 					}
-					event.avatars[i].classList.add("moved");
-				}
-			}
-			game.delay();
-			"step 5";
-			event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
-			event.enemylist = [];
-			for (let i = 0; i < event.avatars.length; i++) {
-				if (event.avatars[i].index > event.config.width) {
-					event.avatars[i].classList.add("selecting");
-				}
-			}
-			let rand = [];
-			for (let i = 0; i < event.config.width; i++) {
-				for (let j = 0; j < event.config.width - i; j++) {
-					rand.push(i);
-				}
-			}
-			for (let i = 0; i < event.config.num; i++) {
-				let rand2 = rand.randomGet();
-				for (let j = 0; j < rand.length; j++) {
-					if (rand[j] == rand2) {
-						rand.splice(j--, 1);
+					while (event.friend.length < event.config.width) {
+						event.aiMove(true);
+					}
+				} else if (event.friend.length + event.enemy.length < event.config.width * 2 - 1) {
+					if (event.side == 1) {
+						game.delay(event.fast ? 1 : 2);
+						event.promptbar.hide();
+					}
+					event.side++;
+					if (event.side > 3) {
+						event.side = 0;
+					}
+					event.goto(2);
+				} else {
+					event.promptbar.hide();
+					event.side++;
+					if (event.side > 3) {
+						event.side = 0;
+					}
+					if (event.side >= 2) {
+						game.delay();
 					}
 				}
-				event.enemylist.push(event.enemy[rand2]);
+			},
+			(event) => {
+				if (event.checkredo()) {
+					return;
+				}
+				if (event.skipnode) {
+					event.skipnode.delete();
+				}
+				if (event.replacenode) {
+					event.replacenode.delete();
+				}
+				if (event.reselectnode) {
+					event.reselectnode.delete();
+				}
+				if (event.freechoosenode) {
+					event.freechoosenode.delete();
+				}
+				for (let i = 0; i < event.avatars.length; i++) {
+					if (!event.avatars[i].classList.contains("moved")) {
+						if (event.side < 2) {
+							event.moveAvatar(event.avatars[i], event.friend.length + event.config.width * (event.config.height - 1));
+							event.friend.push(event.avatars[i]);
+						} else {
+							event.moveAvatar(event.avatars[i], event.enemy.length);
+							event.enemy.push(event.avatars[i]);
+						}
+						event.avatars[i].classList.add("moved");
+					}
+				}
+				game.delay();
+			},
+			(event) => {
+				event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
+				event.enemylist = [];
+				for (let i = 0; i < event.avatars.length; i++) {
+					if (event.avatars[i].index > event.config.width) {
+						event.avatars[i].classList.add("selecting");
+					}
+				}
+				let rand = [];
+				for (let i = 0; i < event.config.width; i++) {
+					for (let j = 0; j < event.config.width - i; j++) {
+						rand.push(i);
+					}
+				}
+				for (let i = 0; i < event.config.num; i++) {
+					let rand2 = rand.randomGet();
+					for (let j = 0; j < rand.length; j++) {
+						if (rand[j] == rand2) {
+							rand.splice(j--, 1);
+						}
+					}
+					event.enemylist.push(event.enemy[rand2]);
+				}
+				event.enemylist.randomSort();
+				event.friendlist = [];
+				event.deciding = true;
+				for (let i = 0; i < event.config.size; i++) {
+					event.nodes[i].hide();
+				}
+				game.pause();
+			},
+			(event) => {
+				event.promptbar.delete();
+				if (ui.cardPileButton) {
+					ui.cardPileButton.style.display = "";
+				}
+				lib.onresize.remove(event.resize);
+				ui.wuxie.show();
+				ui.auto.show();
+				for (let i = 0; i < event.avatars.length; i++) {
+					event.avatars[i].delete();
+				}
+				for (let i = 0; i < event.nodes.length; i++) {
+					event.nodes[i].delete();
+				}
+				event.result = { friend: [], enemy: [] };
+				for (let i = 0; i < event.config.num; i++) {
+					event.result.friend[i] = event.friendlist[i].link;
+					event.result.enemy[i] = event.enemylist[i].link;
+				}
 			}
-			event.enemylist.randomSort();
-			event.friendlist = [];
-			event.deciding = true;
-			for (let i = 0; i < event.config.size; i++) {
-				event.nodes[i].hide();
-			}
-			game.pause();
-			"step 6";
-			event.promptbar.delete();
-			if (ui.cardPileButton) {
-				ui.cardPileButton.style.display = "";
-			}
-			lib.onresize.remove(event.resize);
-			ui.wuxie.show();
-			ui.auto.show();
-			for (let i = 0; i < event.avatars.length; i++) {
-				event.avatars[i].delete();
-			}
-			for (let i = 0; i < event.nodes.length; i++) {
-				event.nodes[i].delete();
-			}
-			event.result = { friend: [], enemy: [] };
-			for (let i = 0; i < event.config.num; i++) {
-				event.result.friend[i] = event.friendlist[i].link;
-				event.result.enemy[i] = event.enemylist[i].link;
-			}
-		});
+		]);
 	}
 	updateRoundNumber() {
 		game.broadcastAll(

@@ -1,7 +1,4 @@
-import { get } from "../../get/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ai } from "../../ai/index.js";
+import { _status, get, lib, ai } from "@noname";
 
 export class VCard {
 	/**

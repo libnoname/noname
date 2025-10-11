@@ -1,4 +1,4 @@
-import { lib, get } from "../../noname.js";
+import { lib, get } from "@noname";
 
 type logAudio = (...args: any[]) => AudioInfo;
 type AudioInfo = AudioInfo[] | string | number | boolean;

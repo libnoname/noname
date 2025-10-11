@@ -80,7 +80,16 @@ abstract class CompileStrategy implements BaseStrategy {
 		if (!response.ok) return response;
 
 		const text = await response.text();
-		return this.transform(ctx, text);
+		
+		try {
+			console.log("正在编译", ctx.request.url);
+			const result = this.transform(ctx, text);
+			console.log(console.log(ctx.request.url, "编译成功"));
+			return result;
+		} catch(e) {
+			console.error(ctx.request.url, "编译失败: ", e);
+			return Response.error();
+		}
 	}
 }
 
@@ -388,12 +397,10 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 	const strategy = strategies.find(s => s.match(ctx));
 	if (strategy) {
 		try {
-			console.log("正在编译", request.url);
 			event.respondWith(strategy.process(ctx));
-			console.log(request.url, "编译成功");
 		} catch (e) {
-			console.error(request.url, "编译失败: ", e);
-			throw e;
+			console.error(request.url,  e);
+			event.respondWith(Response.error());
 		}
 	}
 });

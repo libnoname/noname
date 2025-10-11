@@ -104,11 +104,8 @@ export {};
 			registration.update().catch(e => console.error("worker update失败", e));
 			if (!sessionStorage.getItem("canUseTs")) {
 				await fetch("/extension/canUse.ts")
-					.then(({ text }) => console.log(text))
-					.catch(() => {
-						sessionStorage.setItem("canUseTs", "1");
-						location.reload();
-					});
+					.then(res => res.text())
+					.then(text => console.log(text));
 			}
 		} catch (e) {
 			console.log("serviceWorker加载失败: ", e);
