@@ -1827,7 +1827,7 @@ const skills = {
 							return;
 						}
 						if (get.itemtype(card.cards[0]) === "card" && card.cards[0].hasGaintag("olkuangjuan_effect")) {
-							return true;
+							return Infinity;
 						}
 					},
 				},
@@ -7192,9 +7192,18 @@ const skills = {
 						const effect = button.link[1];
 						return !effect.filter || effect.filter(get.player());
 					})
+					.set("target", target)
 					.set("ai", button => {
-						const effect = button.link[1];
-						return effect.ai(get.event().player);
+						const { dialog, player, target } = get.event();
+						const effect = button.link[1],
+							buttons = dialog.buttons.slice(0).remove(button);
+						if (target !== player) {
+							const targetButton = buttons.maxBy(buttonx => buttonx.link[1].ai(target));
+							if (targetButton) {
+								return effect.ai(player) + targetButton.link[1].ai(target) * get.sgnAttitude(player, target);
+							}
+						}
+						return effect.ai(player);
 					})
 					.forResult();
 				if (result.bool) {
@@ -7214,7 +7223,7 @@ const skills = {
 							await player.draw(2);
 						},
 						ai(player) {
-							return get.effect(player, { name: "wuzhong" }, player, player);
+							return get.effect(player, { name: "draw" }, player, player);
 						},
 					},
 				],
@@ -7241,7 +7250,7 @@ const skills = {
 							}
 						},
 						ai(player) {
-							return (player.isTurnedOver() ? 3 : 0) + player.isLinked();
+							return (player.isTurnedOver() ? 3 : 0) + (player.isLinked() ? 2 : 0);
 						},
 					},
 				],
@@ -7541,68 +7550,17 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets.sortBySeat();
 			let answer_result = [[], []];
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			let locals = targets.slice(0).randomSort();
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, player, eventId) => {
-				lib.skill.olhunjiang.chooseControl(current, player, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (typeof result?.index == "number") {
-							answer_result[result.index].push(player);
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, player, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.olhunjiang.chooseControl(current, player, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.olhunjiang.chooseControl(current, player).forResult();
-					if (result && typeof result.index == "number") {
-						answer_result[result.index].push(current);
-					}
-				}
-			}
-			delete event._global_waiting;
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [player]).forResult();
 			for (const i of targets) {
-				i.hideTimer();
 				i.addExpose(0.05);
-				i.popup(answer_result[0].includes(i) ? "成为目标" : "令其摸牌");
-				game.log(i, "选择了", "#y" + (answer_result[0].includes(i) ? "成为目标" : "令其摸牌"));
+				const result = map.get(i).control;
+				if (result == "成为目标") {
+					answer_result[0].push(i);
+				} else {
+					answer_result[1].push(i);
+				}
+				i.popup(result);
+				game.log(i, "选择了", "#y" + result);
 			}
 			await game.delay();
 			if (answer_result[0].length) {
@@ -8189,14 +8147,9 @@ const skills = {
 			trigger.increase("num");
 		},
 		countSkill(player) {
-			//飞扬跋扈，OL你无敌了
-			const list = [
-				["feiyang", "飞扬"],
-				["bahu", "跋扈"],
-			];
 			return (
 				player.getSkills(null, false, false).filter(i => {
-					if (list.some(text => i.includes(text[0]) && get.translation(i) == text[1])) {
+					if (["飞扬", "跋扈"].includes(get.plainText(get.translation(i)))) {
 						return true;
 					}
 					const info = get.info(i);
@@ -17576,7 +17529,10 @@ const skills = {
 					if (target.hasCard(card => card.hasGaintag("olzhubi_tag"), "h")) {
 						return 0.5;
 					}
-					return 1;
+					if (target == player) {
+						return target.countCards("he", card => 4 - get.value(card)) ? 1 : -1;
+					}
+					return (target.countCards("he") - 2) / 3;
 				},
 			},
 		},
@@ -31262,6 +31218,14 @@ const skills = {
 						button.style.setProperty("margin-right", margin, "important");
 					} else {
 						button.style.setProperty("opacity", "1", "important");
+						//彩蛋喵
+						if (!skillMap[button.link]?.length) {
+    						setTimeout(() => {
+        						button.setBackground("sunce", "character");
+        						button.node.name.innerText = "蜀奸";
+        						button.node.name.dataset.nature = "wood";
+    						}, 824);
+						}
 					}
 					if (button.link == "taofen") {
 						button.style.setProperty("opacity", "0", "important");
@@ -31296,7 +31260,7 @@ const skills = {
 			if (result?.links?.length) {
 				await player.addSkills(result.links);
 			}
-			game.broadcastAll(function (list) {
+			/*game.broadcastAll(function (list) {
 				game.expandSkills(list);
 				for (const i of list) {
 					var info = lib.skill[i];
@@ -31308,7 +31272,7 @@ const skills = {
 					}
 					info.audioname2.dc_zhaoxiang = "fuhan";
 				}
-			}, result.links);
+			}, result.links);*/
 			if (player.isMinHp()) {
 				await player.recover();
 			}

@@ -21,10 +21,12 @@ game.import("card", function () {
         				card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
         				lib.skill.mb_qingnangshu_skill.broadcast(card, player);
         			}
-        			player.markSkill("mb_qingnangshu_skill");
+        			if (player.getVCards("e", i => (i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0)).length) {
+            			player.markSkill("mb_qingnangshu_skill");
+        			}
 				},
 				onLose() {
-					if (!player.getCards("e", i => i.name == "mb_qingnangshu").length) {
+					if (!player.getVCards("e", i => (i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0)).length) {
 						player.unmarkSkill("mb_qingnangshu_skill");
 					} else {
 						player.markSkill("mb_qingnangshu_skill");
@@ -1480,11 +1482,14 @@ game.import("card", function () {
 			//青囊书
 			mb_qingnangshu_skill: {
 				equipSkill: true,
-				mark: true,
+				//mark: true,
 				marktext: "书",
                 intro: {
                     markcount(_, player) {
-                        let cards = player.getCards("e", card => {
+                        if (!player.getVCards("e", i => i.name == "mb_qingnangshu").length) {
+                            return "∞";
+                        }
+                        let cards = player.getVCards("e", card => {
             				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
             			}),
                 			num = 0;
@@ -1494,7 +1499,10 @@ game.import("card", function () {
                         return `${num}/${lib.card.mb_qingnangshu.maxNum}`;
                     },
                     content(_, player) {
-                        let cards = player.getCards("e", card => {
+                        if (!player.getVCards("e", i => i.name == "mb_qingnangshu").length) {
+                            return "<li>剩余可用∞次<br><li>锁定技，准备阶段，你加1点体力上限并回复1点体力。";
+                        }
+                        let cards = player.getVCards("e", card => {
             				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
             			}),
                 			num = 0;
@@ -1508,7 +1516,10 @@ game.import("card", function () {
         		trigger: { player: "phaseZhunbeiBegin" },
         		forced: true,
         		filter(event, player) {
-        			return player.hasCard(card => {
+            		if (!player.getVCards("e", i => i.name == "mb_qingnangshu").length) {
+                		return true;
+            		}
+            		return player.hasVCard(card => {
         				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
         			}, "e");
         		},
@@ -1528,33 +1539,43 @@ game.import("card", function () {
 					}
         			if (card.storage.mb_qingnangshu_skill <= 0) {
 						if (player) {
-    						player.lose(card, ui.special);
-    						player.$throw(card, 1000);
-    						if (!player.getCards("e", i => i.name == "mb_qingnangshu" && i != card).length) {
+    						player.lose(card.cards, ui.special);
+    						player.$throw(card.cards, 1000);
+    						if (!player.getVCards("e", i => (i.name == "mb_qingnangshu" && i != card && i.storage?.mb_qingnangshu_skill > 0)).length) {
         						player.unmarkSkill("mb_qingnangshu_skill");
         					}
-    						card.fix();
-    						card.remove();
-    						card.destroyed = true;
+        					card.cards.forEach(cardx => {
+            					cardx.fix();
+        						cardx.remove();
+        						cardx.destroyed = true;
+    						});
 						} else {
-    						game.cardsGotoSpecial(card);
+    						game.cardsGotoSpecial(card.cards);
 						}
-						game.log(card, "被移出了游戏");
+						game.log(card.cards, "被移出了游戏");
         			}
         		},
+        		getIndex(event, player) {
+            		const cards = player.getVCards("e", card => {
+                		return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+            		});
+            		if (cards?.length) {
+                		return cards;
+            		}
+            		return 1;
+        		},
         		async content(event, trigger, player) {
-        			player.flashAvatar(event.name, "yangbiao");
-        			player.chat("天道昭昭，再兴如光武亦可期！");
-        			const cards = player.getCards("e", card => {
-        				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
-        			});
-        			for (const card of cards) {
-        				card.storage.mb_qingnangshu_skill--;
-        				game.log(card, "减少了", "#y1点", "#g耐久值");
-        				lib.skill.mb_qingnangshu_skill.broadcast(card, player);
-        			}
-        			await player.gainMaxHp();
-        			await player.recover();
+            		/*player.flashAvatar(event.name, "yangbiao");
+            		player.chat("天道昭昭，再兴如光武亦可期！");*/
+            		await player.gainMaxHp();
+            		await player.recover();
+            		const card = event.indexedData;
+            		if (!card) {
+                		return;
+            		}
+            		card.storage.mb_qingnangshu_skill--;
+            		game.log(card, "减少了", "#y1点", "#g耐久值");
+            		lib.skill.mb_qingnangshu_skill.broadcast(card, get.owner(card));
         		},
 			},
 
@@ -1569,18 +1590,25 @@ game.import("card", function () {
         		},
         		trigger: { player: "phaseDiscardBegin" },
         		forced: true,
+        		getIndex(event, player) {
+            		const cards = player.getVCards("e", card => card.name == "mb_chuanguoyuxi");
+            		if (cards?.length) {
+                		return cards;
+            		}
+            		return 1;
+        		},
         		async content(event, trigger, player) {
-        			player.flashAvatar(event.name, "yuanshu");
-        			await player.draw();
-        			player.addSkill(event.name + "_add");
-        			player.addMark(event.name + "_add", 2, false);
-        			game.log(player, "的手牌上限", "#y+2");
-        			let str = "受命于天，既寿永昌！";
-        			if (!player.isZhu2()) {
-            			await player.loseHp();
-            			str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
-        			}
-        			player.chat(str);
+            		/*player.flashAvatar(event.name, "yuanshu");*/
+            		let str = "受命于天，既寿永昌！";
+            		await player.draw();
+            		player.addSkill(event.name + "_add");
+            		player.addMark(event.name + "_add", 2, false);
+            		game.log(player, "的手牌上限", "#y+2");
+            		if (!player.isZhu2()) {
+                		await player.loseHp();
+                		str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
+            		}
+            		player.chat(str);
         		},
         		subSkill: {
         			add: {

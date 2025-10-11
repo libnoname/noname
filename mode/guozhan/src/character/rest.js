@@ -247,7 +247,7 @@ export default {
 		hasSkinInGuozhan: true,
 	}),
 	gz_wangyi: new Character({
-		sex: "male",
+		sex: "female",
 		group: "wei",
 		hp: 3,
 		maxHp: 3,

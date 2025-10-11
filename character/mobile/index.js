@@ -49,7 +49,7 @@ game.import("character", function () {
 				["pot_weiyan_achieve", []],
 				["pot_weiyan_fail", []],
 			],
-			mb_simazhao: [["mb_simazhao_shadow", ["die:jin_jsrg_simazhao", "tempname:jin_jsrg_simazhao"]]],
+			mb_simazhao: [["jin_jsrg_simazhao", []]],
 			pot_yuji: [["pot_yuji_shadow", []]],
 			mb_zerong: [
 				["mb_zerong_red", ["die:mb_zerong"]],

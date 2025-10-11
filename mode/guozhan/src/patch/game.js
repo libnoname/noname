@@ -260,34 +260,18 @@ export class GameGuozhan extends Game {
 			shu: "蜀",
 			wu: "吴",
 			qun: "群",
+			jin: "晋",
 			ye: "野",
 			unknown: "猜",
 		};
-		const num = Math.floor((game.players.length + game.dead.length) / 2);
-		let noye = true;
-		if (get.population("wei") >= num) {
-			// @ts-expect-error 祖宗之法就是这么写的
-			delete list.wei;
-			noye = false;
-		}
-		if (get.population("shu") >= num) {
-			// @ts-expect-error 祖宗之法就是这么写的
-			delete list.shu;
-			noye = false;
-		}
-		if (get.population("wu") >= num) {
-			// @ts-expect-error 祖宗之法就是这么写的
-			delete list.wu;
-			noye = false;
-		}
-		if (get.population("qun") >= num) {
-			// @ts-expect-error 祖宗之法就是这么写的
-			delete list.qun;
-			noye = false;
-		}
-		if (noye) {
-			// @ts-expect-error 祖宗之法就是这么写的
-			delete list.ye;
+		const maxPlayer = (_status.separatism ? Math.max(get.population() / 2 - 1, 1) : get.population() / 2);
+		for ( let group of ["wei", "shu", "wu", "qun", "jin"]) {
+			if (get.population(group) >= maxPlayer && !game.hasPlayer(current => {
+				return get.is.jun(current) && current.identity == group;
+			})) {
+				// @ts-expect-error 祖宗之法就是这么写的
+				delete list[group];
+			}
 		}
 		return list;
 	}

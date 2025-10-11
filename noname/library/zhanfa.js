@@ -2177,7 +2177,7 @@ const _zhanfa = {
 		},
 	},
 	//稳定进攻
-	zf_wendingjinggong: {
+	zf_wendingjingong: {
 		rarity: "legend",
 		translate: "稳定进攻",
 		info: "回合内出杀次数固定为5",
@@ -2187,7 +2187,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			cardFilter: "sha",
-			modNum: 5,
+			modNum: () => 5,
 		},
 	},
 	//稳定承载
@@ -2461,10 +2461,13 @@ const _zhanfa = {
 			value: 6.2,
 		},
 		skill: {
-			inherit: "zf_miaoshoukongkong",
 			trigger: { player: "discardPlayerCardBegin" },
 			filter(event, player) {
-				return event.card.name == "guohe";
+				return event.getParent()?.name == "guohe";
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				trigger.set("visible", true);
 			},
 		},
 	},
@@ -2482,8 +2485,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return (
 					game
-						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-						.map(evt => evt.getParent())
+						.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 						.indexOf(event) == 0
 				);
 			},
@@ -2522,8 +2524,7 @@ const _zhanfa = {
 			inherit: "zf_yaoli",
 			filter(event, player) {
 				const index = game
-					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-					.map(evt => evt.getParent())
+					.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 					.indexOf(event);
 				return index >= 0 && index < 3;
 			},

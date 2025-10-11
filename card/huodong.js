@@ -233,19 +233,6 @@ game.import("card", function () {
 				reverseOrder: true,
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
-					if (!_status.postReconnect.jiaoyou) {
-						_status.postReconnect.jiaoyou = [
-							function (list) {
-								for (const tag of list) {
-									if (!lib.skill[tag]) {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + tag.slice(7);
-									}
-								}
-							},
-							[],
-						];
-					}
 					const { target } = event;
 					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
 						name = event.name;
@@ -257,17 +244,7 @@ game.import("card", function () {
 								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
-							_status.postReconnect.jiaoyou[1].add(tag);
-							if (!lib.skill[tag]) {
-								game.broadcastAll(
-									(tag, str) => {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + str;
-									},
-									tag,
-									tag.slice(name.length)
-								);
-							}
+							game.addTempTag(tag, `浇油+${tag.slice(name.length)}`);
 							target.addGaintag([card], tag);
 						}
 					}

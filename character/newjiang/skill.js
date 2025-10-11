@@ -382,29 +382,63 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			if (player == event.target) {
+			if (!event.targets?.length || !event.isFirstTarget) {
 				return false;
 			}
-			return game.getAllGlobalHistory("useCard", evt => evt.targets.includes(event.target) && evt.card.name == event.card.name).indexOf(event.getParent()) == 0;
+			return event.targets.some(target => {
+				if (target == player || !target.countGainableCards(player, "he")) {
+					return false;
+				}
+				return game.getAllGlobalHistory("useCard", evt => evt.targets.includes(target) && evt.card.name == event.card.name).indexOf(event.getParent()) == 0;
+			});
 		},
 		async cost(event, trigger, player) {
-			event.result = await player.gainPlayerCard(get.prompt2(event.skill, trigger.target), trigger.target, "he").set("chooseonly", true).forResult();
+			const targets = trigger.targets.filter(target => {
+				if (target == player || !target.countGainableCards(player, "he")) {
+					return false;
+				}
+				return game.getAllGlobalHistory("useCard", evt => evt.targets.includes(target) && evt.card.name == trigger.card.name).indexOf(trigger.getParent()) == 0;
+			});
+			if (targets.length > 1) {
+				event.result = await player
+					.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+						const { targets } = get.event();
+						return targets?.includes(target);
+					})
+					.set("targets", targets)
+					.set("ai", target => {
+						const player = get.player();
+						return get.effect(target, { name: "shunshou_copy2" }, player, player);
+					})
+					.forResult();
+			} else {
+				event.result = await player
+					.chooseBool(get.prompt2(event.skill, targets))
+					.set("choice", get.effect(targets[0], { name: "shunshou_copy2" }, player, player) > 0)
+					.forResult();
+				event.result.targets = targets;
+			}
 		},
 		async content(event, trigger, player) {
-			const { cards } = event;
-			await player.gain(cards).set("log", false);
+			const { targets: [target] } = event;
+			await player.gainPlayerCard(target, "he", true);
 		},
 	},
 	dchanjie: {
 		audio: 2,
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
-			return player != event.player && event.player.isMaxHp() && player.countCards("h", { color: "black" });
+			return player != event.player && event.player.hp >= player.hp && player.countCards("hs", { color: "black" });
 		},
 		async cost(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
-				const card = get.autoViewAs({ name: info[2], nature: info[3] }, player.getCards("h", { color: "black" }));
-				return get.tag({ name: info[2] }, "damage") > 0.5 && player.canUse(card, trigger.player, false, false);
+				return get.tag({ name: info[2] }, "damage") > 0.5 && player.countCards("hs", card => {
+					if (get.color(card) != "black") {
+						return false;
+					}
+					const vcard = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+					return player.canUse(vcard, trigger.player, false);
+				}) > 0;
 			});
 			if (!list.length) {
 				return;
@@ -412,28 +446,69 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill, trigger.player), [list, "vcard"]])
 				.set("ai", button => {
-					const player = get.player();
-					const card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, player.getCards("h", { color: "black" }));
-					return get.effect_use(get.event().sourcex, card, player, player);
+					const { player, sourcex: target } = get.event();
+					const card = player.getCards("hs", { color: "black" }).maxBy(card => {
+						const vcard = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, [card]);
+						if (player.canUse(vcard, target, false)) {
+							return get.effect_use(target, vcard, player, player);
+						}
+						return 0;
+					});
+					if (!card) {
+						return 0;
+					}
+					return get.effect_use(target, card, player, player);
 				})
 				.set("sourcex", trigger.player)
 				.forResult();
-			if (result?.links?.length) {
-				event.result = {
-					bool: true,
-					cost_data: result.links[0],
-					targets: [trigger.player],
-				};
+			if (!result?.links?.length) {
+				return;
 			}
+			const card = {
+				name: result.links[0][2],
+				nature: result.links[0][3],
+			};
+			const prompt = `撼捷：是否将一张黑色手牌当做${get.translation(card)}对${get.translation(trigger.player)}使用？`;
+			game.broadcastAll((card, prompt) => {
+				lib.skill.dchanjie_backup.viewAs = card;
+				lib.skill.dchanjie_backup.prompt = prompt;
+			}, card, prompt);
+			const next = player.chooseToUse();
+			next.set("openskilldialog", prompt);
+			next.set("norestore", true);
+			next.set("addCount", false);
+			next.set("onlyTarget", trigger.player);
+			next.set("chooseonly", true);
+			next.set("_backupevent", "dchanjie_backup");
+			next.set("custom", {
+				add: {},
+				replace: { window() {} },
+			});
+			next.backup("dchanjie_backup");
+			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			const info = event.cost_data,
-				cards = player.getCards("h", { color: "black" }),
-				card = get.autoViewAs({ name: info[2], nature: info[3] }, cards),
-				target = trigger.player;
-			if (player.canUse(card, target, false, false)) {
-				await player.useCard(card, cards, target, false);
-			}
+			const { ResultEvent } = event.cost_data;
+			event.next.push(ResultEvent);
+			await ResultEvent;
+		},
+		subSkill: {
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card" && get.color(card) == "black";
+				},
+				position: "hs",
+				selectCard: 1,
+				check: card => 7 - get.value(card),
+				filterTarget(card, player, target) {
+					const { onlyTarget } = get.event();
+					return target == onlyTarget && lib.filter.targetEnabled.apply(this, arguments);
+				},
+				async precontent(event) {
+					delete event.result.skill;
+				},
+				popname: true,
+			},
 		},
 	},
 	//伍孚
@@ -629,69 +704,12 @@ const skills = {
 			}
 			const target = event.target,
 				targets = [player, target];
-			let map = {},
-				locals = targets.slice();
-			let humans = targets.filter(current => current === game.me || current.isOnline());
-			locals.removeArray(humans);
-			const eventId = get.id();
-			const send = (current, targets, eventId) => {
-				lib.skill.dczhonge.chooseControl(current, targets, eventId);
-				game.resume();
-			};
-			event._global_waiting = true;
-			let time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			targets.forEach(current => current.showTimer(time));
-			if (humans.length > 0) {
-				const solve = function (resolve, reject) {
-					return function (result, player) {
-						if (result.control) {
-							map[player.playerid] = result.control;
-						}
-						resolve();
-					};
-				};
-				await Promise.all(
-					humans.map(current => {
-						return new Promise((resolve, reject) => {
-							if (current.isOnline()) {
-								current.send(send, current, targets, eventId);
-								current.wait(solve(resolve, reject));
-							} else {
-								const next = lib.skill.dczhonge.chooseControl(current, targets, eventId);
-								const solver = solve(resolve, reject);
-								if (_status.connectMode) {
-									game.me.wait(solver);
-								}
-								return next.forResult().then(result => {
-									if (_status.connectMode) {
-										game.me.unwait(result, current);
-									} else {
-										solver(result, current);
-									}
-								});
-							}
-						});
-					})
-				).catch(() => {});
-				game.broadcastAll("cancel", eventId);
-			}
-			if (locals.length > 0) {
-				for (const current of locals) {
-					const result = await lib.skill.dczhonge.chooseControl(current, targets).forResult();
-					if (result.control) {
-						map[current.playerid] = result.control;
-					}
-				}
-			}
-			delete event._global_waiting;
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [targets]).forResult();
 			let list = [];
 			for (const i of targets) {
-				i.hideTimer();
-				i.popup(map[i.playerid]);
-				list.push(map[i.playerid]);
+				const result = map.get(i);
+				i.popup(result.control);
+				list.push(result.control);
 			}
 			const bool = list[0] != list[1];
 			for (const i of list) {

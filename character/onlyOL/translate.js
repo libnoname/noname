@@ -30,7 +30,7 @@ const translates = {
 	ol_sb_zhugeliang: "OL谋诸葛亮",
 	ol_sb_zhugeliang_prefix: "OL谋",
 	olsbzhitian: "知天",
-	olsbzhitian_info: "你的回合内，牌堆顶的七张牌对你可见。你的【火攻】结算中，你可观看并选择牌堆顶七张牌中的一张牌代替【火攻】弃牌。",
+	olsbzhitian_info: "出牌阶段，牌堆顶的七张牌对你可见。你的【火攻】结算中，你可观看并选择牌堆顶七张牌中的一张牌代替【火攻】弃牌。",
 	olsbwujing: "武靖",
 	olsbwujing_info: "锁定技，你的回合内，有牌不因使用而进入弃牌堆后，你使用的下一张牌无次数限制；每回合首次有不为手牌的牌进入弃牌堆后，你摸一张牌。",
 	olsbzhijue: "智绝",
@@ -208,7 +208,7 @@ const translates = {
 		return list.map((item, i) => ["①", "②", "③"][i] + item).join("。") + "。";
 	})(),
 	olsbzhengyi: "争义",
-	olsbzhengyi_info: "当一名有“贤”标记的角色受到伤害时，所有有“贤”标记同时选择是否取消此伤害，所有角色选择完毕后，若有角色选择是，则取消此伤害，然后选择是的角色中体力值最大的角色依次失去X点体力（X为伤害值）。",
+	olsbzhengyi_info: "当一名有“贤”标记的角色受到伤害时，其以外所有有“贤”标记的角色同时选择是否取消此伤害，所有角色选择完毕后，若有角色选择是，则取消此伤害，然后选择是的角色中体力值最大的角色依次失去X点体力（X为伤害值）。",
 	ol_zhangchunhua: "OL界张春华",
 	ol_zhangchunhua_prefix: "OL界",
 	oljianmie: "翦灭",

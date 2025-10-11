@@ -44,7 +44,7 @@ export default {
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (!card || !("name" in card) || target.countExpansions("gz_mb_qianxun") >= 3) {
+					if (!card?.name || target.countExpansions("gz_mb_qianxun") >= 3) {
 						return;
 					}
 					const info = lib.card[card.name];
@@ -336,6 +336,9 @@ export default {
 	gz_yaopan: {
 		audio: 2,
 		viceSkill: true,
+		init(player) {
+			player.checkViceSkill("gz_yaopan");
+		},
 		trigger: {
 			global: "phaseEnd",
 		},
@@ -18770,8 +18773,9 @@ export default {
 			if (player.phaseNumber == 1 && player.isUnseen(0) && junzhu) {
 				let name = player.name1;
 				if (name.indexOf("gz_") == 0 && (lib.junList.includes(name.slice(3)) || get.character(name)?.junName)) {
-					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`;
-					const notChange = game.hasPlayer(current => get.nameList(current).includes(junzhu_name));
+					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`,
+						group = lib.character[junzhu_name][1];
+					const notChange = game.hasPlayer(current => get.is.jun(current) && current.identity == group);
 					const result = notChange
 						? {
 								bool: false,
@@ -18793,25 +18797,27 @@ export default {
 						game.trySkillAudio(map[junzhu_name], player);
 
 						await player.showCharacter(0);
-						const group = lib.character[junzhu_name][1],
-							yelist = game.filterPlayer(function (current) {
-								if (current.identity != "ye") {
-									return false;
-								}
-								if (current == player) {
-									return true;
-								}
-								return current.group == group;
-							});
+						const yelist = game.filterPlayer(function (current) {
+							if (current == player) {
+								return current.identity != group;
+							}
+							if (current.identity != "ye") {
+								return false;
+							}
+							return current.group == group;
+						});
 						if (yelist.length > 0) {
 							const next = game.createEvent("changeGroupInGuozhan", false);
 							next.player = player;
 							next.targets = yelist;
 							next.fromGroups = yelist.map(current => current.identity);
-							next.toGroup = player.group;
+							next.toGroup = group;
 							next.setContent("emptyEvent");
 							player.line(yelist, "green");
-							game.log(yelist, "失去了野心家身份");
+							if (yelist.includes(player)) {
+								game.log(player, "变回了", `<span data-nature=${get.groupnature(group, "raw")}m>${get.translation(group + 2)}</span>身份`);
+							}
+							game.log(yelist.filter(current => current != player), "失去了野心家身份");
 							game.broadcastAll(
 								function (list, group) {
 									for (let i = 0; i < list.length; i++) {
@@ -18821,7 +18827,7 @@ export default {
 									}
 								},
 								yelist,
-								player.group
+								group
 							);
 							await next;
 						}

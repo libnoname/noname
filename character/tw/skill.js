@@ -73,6 +73,17 @@ const skills = {
 				return false;
 			});
 		},
+		prompt2(event, player) {
+			const num = Math.min(
+				event.player.hasHistory("sourceDamage") ? 1 : 2,
+				game.countPlayer(current => !current.hasMark("jsrgzhenglve_mark"))
+			);
+			let str = `你可以摸两张牌`;
+			if (num) {
+				str += `并令${get.cnNumber(num)}名角色获得“猎”标记`;
+			}
+			return str;
+		},
 		drawNum: 2,
 		group: ["twzhenglve_damage", "twzhenglve2", "twzhenglve4"],
 		mod: {
@@ -5252,14 +5263,14 @@ const skills = {
 			const cards = get.cards(1, true),
 				card = cards[0];
 			await player.showCards(cards, get.translation(player) + "发动了【灵隐】");
-			if (get.color(card) == get.color(trigger.card)) {
+			if (get.color(card, false) == get.color(trigger.card)) {
 				await player.gain(cards, "gain2");
 			}
-			if (get.suit(card) == get.suit(trigger.card)) {
+			if (get.suit(card, false) == get.suit(trigger.card)) {
 				trigger.getParent().excluded.add(player);
 				game.log(trigger.card, "对", player, "无效");
 			}
-			if (get.color(card) != get.color(trigger.card)) {
+			if (get.color(card, false) != get.color(trigger.card)) {
 				await game.cardsDiscard(cards);
 				player.$throw(cards);
 				game.log(cards, "被置入了弃牌堆");
@@ -8340,8 +8351,7 @@ const skills = {
 			if (target != player && player.countCards("h")) {
 				game.delayex();
 				const skill = `${skillName}_${player.playerid}`;
-				game.broadcastAll(lib.skill[skillName].createGainTag, skill, player.name);
-				game.addVideo("skill", player, [skillName, [skill, player.name]]);
+				game.addTempTag(skill, `义·${get.translation(player.name)}`);
 				player.addSkill(skillName + "_draw");
 				const next = player
 					.chooseToGive(target, `伸义：是否将任意张手牌交给${get.translation(target)}？`, [1, player.countCards("h")], "allowChooseAll")
@@ -8355,18 +8365,6 @@ const skills = {
 				next.gaintag.add(skill);
 				await next;
 			}
-		},
-		video: (player, info) => lib.skill.twshenyi.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "义·" + get.translation(name);
-			}
-			if (!_status.postReconnect.twshenyi) {
-				_status.postReconnect.twshenyi = [lib.skill.twshenyi.createGainTag, [], []];
-			}
-			_status.postReconnect.twshenyi[1].add(skill);
-			_status.postReconnect.twshenyi[2].add(name);
 		},
 		marktext: "义",
 		intro: {
@@ -8958,8 +8956,7 @@ const skills = {
 				player.addTempSkill("twchungang_used", { global: "phaseChange" });
 			}
 			const skill = `${event.name}_${player.playerid}`;
-			game.broadcastAll(lib.skill[event.name].createGainTag, skill, player.name);
-			game.addVideo("skill", player, [event.name, [skill, player.name]]);
+			game.addTempTag(skill, `纯刚·${get.translation(player.name)}`);
 			const draw = async target => {
 				target.addSkill("twchungang_effect");
 				const next = target.draw("nodelay");
@@ -8967,16 +8964,6 @@ const skills = {
 				await next;
 			};
 			await game.doAsyncInOrder(event.targets, draw);
-		},
-		video: (player, info) => lib.skill.twchungang.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "纯刚·" + get.translation(name);
-			}
-			_status.postReconnect.twchungang ??= [lib.skill.twchungang.createGainTag, [], []];
-			_status.postReconnect.twchungang[1].push(skill);
-			_status.postReconnect.twchungang[2].push(name);
 		},
 		ai: {
 			order: 9,
@@ -22721,7 +22708,7 @@ const skills = {
 			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
 		},
 		prompt2(event, player) {
-			const skill = this.skill_id;
+			const skill = "twlingfa";
 			switch (game.roundNumber) {
 				case 1:
 					return "本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害";

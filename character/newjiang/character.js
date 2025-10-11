@@ -20,7 +20,7 @@ const characters = {
 	wufu: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 3,
 		skills: ["dczhonge", "dcjuekai"],
 	},
 	yj_sb_guojia: {
