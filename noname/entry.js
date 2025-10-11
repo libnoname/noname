@@ -1,5 +1,5 @@
-import { game, get, lib, boot, onload } from "../noname.js";
-import { canUseHttpProtocol, sendUpdate } from "../noname/init/index.js";
+import { game, lib, boot, onload } from "@noname";
+import { canUseHttpProtocol, sendUpdate } from "@/init/index.js";
 
 
 
@@ -44,7 +44,6 @@ Promise.resolve()
 						console.error("升级失败:", e);
 					});
 			};
-			// @ts-expect-error ignore
 			if (!lib.db) {
 				data = {};
 				for (let i in localStorage) {
@@ -80,7 +79,6 @@ Promise.resolve()
 									if (!data || typeof data != "object") {
 										throw "err";
 									}
-									// @ts-expect-error ignore
 									if (lib.db && (!data.config || !data.data)) {
 										throw "err";
 									}
@@ -93,7 +91,6 @@ Promise.resolve()
 									}
 									return;
 								}
-								// @ts-expect-error ignore
 								if (!lib.db) {
 									const noname_inited = localStorage.getItem("noname_inited");
 									const onlineKey = localStorage.getItem(lib.configprefix + "key");

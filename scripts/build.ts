@@ -14,6 +14,7 @@ const staticModules = [
 	{ src: "layout", dest: "" },
 	{ src: "font", dest: "" },
 	{ src: "theme", dest: "" },
+	{ src: "game", dest: "" },
 	// step 无法编译，需要覆盖
 	// 重构之后请删除
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },
