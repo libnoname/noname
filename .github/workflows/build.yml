@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [PR-Branch]
+    branches: [PR-Branch, build-tooling]
 
 permissions:
   contents: write  # 允许 Actions 推送代码到仓库
