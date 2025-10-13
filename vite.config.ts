@@ -34,6 +34,10 @@ export default defineConfig({
 				chunkFileNames: "[name].js", // 代码分块
 				assetFileNames: "[name][extname]", // 静态资源
 			},
+			onwarn(warning, warn) {
+				if (warning.code === "CYCLIC_CROSS_CHUNK_REEXPORT") return;
+				warn(warning);
+			},
 		},
 	},
 	plugins: [vue(), jit()],

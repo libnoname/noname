@@ -9,6 +9,9 @@ export class LibInit {
 	 */
 	promises = new LibInitPromises();
 
+	/**
+	 * @deprecated
+	 */
 	init() {
 		throw new Error("lib.init.init is moved to noname/init");
 	}
@@ -76,7 +79,10 @@ export class LibInit {
 		}
 	}
 
-	// 现在改lib.init.onload的都给我无报错被创
+	/**
+	 * @deprecated
+	 * 现在改lib.init.onload的都给我无报错被创
+	 */
 	async onload() {
 		throw new Error("lib.init.onload is moved to noname/init/onload");
 	}
@@ -204,9 +210,11 @@ export class LibInit {
 		return style;
 	}
 
-	//在扩展的precontent中调用，用于加载扩展必需的JS文件。
-	//If any of the parameters is an Array, corresponding files will be loaded in order
-	//如果任意参数为数组，则按顺序加载加载相应的文件
+	/**
+	 * @deprecated
+	 * 在扩展的precontent中调用，用于加载扩展必需的JS文件。
+	 * 如果任意参数为数组，则按顺序加载加载相应的文件
+	 */
 	jsForExtension(path, file, onLoad, onError) {
 		if (!_status.javaScriptExtensions) {
 			_status.javaScriptExtensions = [];
@@ -683,10 +691,7 @@ export class LibInit {
 	}
 
 	/**
-	 *
-	 * @param {*} item
-	 * @param {Function} [scope] 作用域
-	 * @returns
+	 * @deprecated
 	 */
 	parsex(item, scope) {
 		if (scope) {

@@ -195,13 +195,6 @@ export class GameCompatible {
 export let game = new GameCompatible();
 
 /**
- * @param { InstanceType<typeof GameCompatible> } [instance]
- */
-export function setGameCompatible(instance) {
-	game = instance || new GameCompatible();
-}
-
-/**
  * @enum {number}
  * @constant
  */
