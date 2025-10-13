@@ -382,7 +382,7 @@ const strategies: BaseStrategy[] = [
 	new VueSFCStrategy(),
 ];
 
-const proxyedPath = ["/extension", "/noname-builtinModules/"];
+const proxyedPath = ["/extension", "/noname-builtinModules/", "/game"];
 // --- fetch 拦截入口 ---
 self.addEventListener("fetch", (event: FetchEvent) => {
 	const request = event.request;

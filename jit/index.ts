@@ -104,7 +104,7 @@ export {};
 			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
 			registration.update().catch(e => console.error("worker update失败", e));
 			if (!sessionStorage.getItem("canUseTs")) {
-				await fetch("/extension/canUse.ts")
+				await fetch("/game/canUse.ts")
 					.then(res => res.text())
 					.then(text => console.log(text));
 			}

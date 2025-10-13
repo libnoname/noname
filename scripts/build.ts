@@ -1,5 +1,5 @@
 import { build } from "vite";
-import { viteStaticCopy } from "vite-plugin-static-copy";
+import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import minimist from "minimist";
 import { build as esbuild } from "esbuild";
 
@@ -7,7 +7,7 @@ const argv = minimist(process.argv.slice(2), {
 	boolean: true,
 });
 
-const staticModules = [
+const staticModules: Target[] = [
 	{ src: "character", dest: "" },
 	{ src: "card", dest: "" },
 	{ src: "mode", dest: "" },
@@ -24,6 +24,13 @@ if (argv.full) {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
+	//源码
+	staticModules.push({ src: "jit", dest: "src" });
+	staticModules.push({ src: "noname", dest: "src" });
+	staticModules.push({ src: "typings", dest: "src" });
+	staticModules.push({ src: "noname.js", dest: "src" });
+	staticModules.push({ src: "noname-compatible.js", dest: "src" });
+	staticModules.push({ src: "noname-server.cts", dest: "src" });
 } else {
 	staticModules.push({ src: "extension/boss", dest: "extension" });
 	staticModules.push({ src: "extension/cardpile", dest: "extension" });
@@ -39,5 +46,5 @@ await esbuild({
 	entryPoints: ["noname-server.cts"],
 	outfile: "dist/noname-server.cjs",
 	bundle: true,
-	platform: "node"
+	platform: "node",
 });

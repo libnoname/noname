@@ -176,6 +176,10 @@ export async function boot() {
 	} else {
 		lib.path = (await import("path-browserify")).default;
 		if (typeof lib.device != "undefined") {
+			// 这是安卓端根目录的cordova.js，不是init目录下面的
+			const script = document.createElement("script");
+			script.src = "cordova.js";
+			document.body.appendChild(script);
 			await new Promise(resolve => {
 				document.addEventListener("deviceready", async () => {
 					const { cordovaReady } = await import("./cordova.js");

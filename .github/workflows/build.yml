@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Build
-        run: pnpm build
+        run: pnpm build:full
 
       - name: Deploy dist to branch
         env:
