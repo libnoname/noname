@@ -9033,7 +9033,7 @@ export class Game extends GameCompatible {
 				forced: true,
 				popup: false,
 				silent: true,
-				content: () => {
+				content: async (event, trigger, player) => {
 					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
