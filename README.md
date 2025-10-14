@@ -1,19 +1,14 @@
 # 无名杀
 
-## 安装与运行
+## 快速启动
 
 ### 环境要求
 
-- Node.js >= 18
-- [pnpm](https://pnpm.io/) >= 8
-- Webview 内核 >= 91
+> **提示：** 请参考 [本地文档](./docs/how-to-start.md) 或 [github文档](https://github.com/libnoname/noname/wiki/%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E6%97%A0%E5%90%8D%E6%9D%80%EF%BC%88%E7%A8%8B%E5%BA%8F%E5%91%98%E7%89%88%EF%BC%89) 配置环境。
 
-### 克隆项目
-
-```bash
-git clone https://github.com/libnoname/noname
-cd noname
-```
+- [Node.js](https://nodejs.org/) ^20.19.0 || >=22.12.0
+- [pnpm](https://pnpm.io/) >=8
+- Webview >=91
 
 ### 安装依赖
 
@@ -24,7 +19,7 @@ pnpm install
 ### 启动
 
 ```bash
-pnpm start
+pnpm dev
 ```
 
 ---
