@@ -490,15 +490,15 @@ export class Library {
 			complex: new Map([
 				[
 					"zhuzhan",
-					function (event) {
+					function (evt) {
 						const yingbianZhuzhan = game.createEvent("yingbianZhuzhan");
-						yingbianZhuzhan.player = event.player;
-						yingbianZhuzhan.card = event.card;
-						yingbianZhuzhan._trigger = event;
-						yingbianZhuzhan.yingbianZhuzhanAI = event.yingbianZhuzhanAI;
-						yingbianZhuzhan.afterYingbianZhuzhan = event.afterYingbianZhuzhan;
+						yingbianZhuzhan.player = evt.player;
+						yingbianZhuzhan.card = evt.card;
+						yingbianZhuzhan._trigger = evt;
+						yingbianZhuzhan.yingbianZhuzhanAI = evt.yingbianZhuzhanAI;
+						yingbianZhuzhan.afterYingbianZhuzhan = evt.afterYingbianZhuzhan;
 						yingbianZhuzhan.setContent([
-							(event) => {
+							async (event) => {
 								event._global_waiting = true;
 								event.send = (player, card, source, targets, id, id2, yingbianZhuzhanAI, skillState) => {
 									if (skillState) {
@@ -541,12 +541,12 @@ export class Library {
 									game.resume();
 								};
 							},
-							(event, trigger, player) => {
+							async (event, trigger, player) => {
 								var type = get.type2(event.card);
 								event.list = game.filterPlayer(current => current != player && current.countCards("h") > 0 && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
 								event.id = get.id();
 							},
-							(event, trigger, player) => {
+							async (event, trigger, player) => {
 								if (!event.list.length) {
 									event.finish();
 								} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
@@ -555,7 +555,7 @@ export class Library {
 									event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 								}
 							},
-							(event) => {
+							async (event) => {
 								if (event._result.bool) {
 									event.zhuzhanresult = event.current;
 									event.zhuzhanresult2 = event._result;
@@ -567,7 +567,7 @@ export class Library {
 									event.goto(2);
 								}
 							},
-							(event, trigger, player) => {
+							async (event, trigger, player) => {
 								var id = event.id,
 									sendback = (result, player) => {
 										if (result && result.id == id && !event.zhuzhanresult && result.bool) {
@@ -615,7 +615,7 @@ export class Library {
 								}
 								event.withol = withol;
 							},
-							(event) => {
+							async (event) => {
 								if (!event._result || !event._result.bool || event.zhuzhanresult) {
 									return;
 								}
@@ -623,15 +623,15 @@ export class Library {
 								event.zhuzhanresult = game.me;
 								event.zhuzhanresult2 = event._result;
 							},
-							(event) => {
+							async (event) => {
 								if (event.withol && !event.resultOL) {
 									game.pause();
 								}
 							},
-							(event) => {
+							async (event) => {
 								game.players.forEach(value => value.hideTimer());
 							},
-							(event, trigger, player) => {
+							async (event, trigger, player) => {
 								if (event.zhuzhanresult) {
 									var target = event.zhuzhanresult;
 									target.line(player, "green");
