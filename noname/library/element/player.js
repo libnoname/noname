@@ -10778,11 +10778,8 @@ export class Player extends HTMLDivElement {
 					.assign({
 						firstDo: true,
 					})
-					.vars({
-						bannedSkill: skill,
-					})
-					.then(() => {
-						delete player.storage[`temp_ban_${bannedSkill}`];
+					.step(async (event, trigger, player) => {
+						delete player.storage[`temp_ban_${skill}`];
 					})
 					.finish();
 			}

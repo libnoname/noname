@@ -790,7 +790,7 @@ export class Library {
 					event.player
 						.when("useCard")
 						.filter(evt => evt == event)
-						.then(() => {
+						.then(async (event, trigger) => {
 							trigger.getParent(2).decrease("shanRequired", 1);
 						});
 				},
@@ -808,7 +808,7 @@ export class Library {
 							source: "damageBegin1",
 						})
 						.filter(evt => evt.getParent(2) == event && event.targets.includes(evt.player))
-						.then(() => {
+						.step(async (event, trigger) => {
 							trigger.increase("num");
 						});
 				},

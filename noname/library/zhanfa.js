@@ -1205,7 +1205,7 @@ const _zhanfa = {
 				const num = player.getHistory("gain", evt => evt.getParent()?.name == "draw" && evt.getParent("phaseDraw") == trigger).reduce((sum, evt) => sum + evt.cards.length, 0);
 				if (num) {
 					player.addMark(event.name, Math.ceil(num / 2), false);
-					player.when({ global: "phaseAfter" }).then(() => {
+					player.when({ global: "phaseAfter" }).step(async (event, trigger, player) => {
 						player.clearMark("zf_jinnangji", false);
 					});
 				}

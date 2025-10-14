@@ -6814,6 +6814,7 @@ player.removeVirtualEquip(card);
 					cards.addArray(current[1]);
 				}
 				game.cardsGotoSpecial(cards);
+				const evt = event;
 				player
 					.when({
 						global: ["dieAfter", "phaseEnd"],
@@ -6828,16 +6829,12 @@ player.removeVirtualEquip(card);
 						cardsx: cards,
 						evt: event,
 					})
-					.then(() => {
-						if (cardsx?.some(card => get.position(card) == "s")) {
+					.step(async (event, trigger, player) => {
+						if (cards?.some(card => get.position(card) == "s")) {
 							evt.isDestoryed = true;
-							game.cardsGotoOrdering(cardsx);
-						} else {
-							event.finish();
+							await game.cardsGotoOrdering(cards);
+							await game.cardsDiscard(cards);
 						}
-					})
-					.then(() => {
-						game.cardsDiscard(cardsx);
 					});
 				event.untrigger();
 				event.finish();
