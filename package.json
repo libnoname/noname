@@ -48,6 +48,7 @@
         "path-browserify": "^1.0.1",
         "pinyin-pro": "^3.27.0",
         "pressure": "^2.2.0",
+        "stacktrace-js": "^2.0.2",
         "typescript": "^5.9.2",
         "vue": "^3.5.17",
         "ws": "^8.18.2"

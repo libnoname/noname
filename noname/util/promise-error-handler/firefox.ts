@@ -1,13 +1,12 @@
+import { PromiseErrorHandler } from "./promise-error-handler";
 /**
  * 关于`Mozilla Firefox`的异步错误处理
  *
  * 很幸运，Mozilla直接为`Firefox`的报错提供了地址和行列号，故我们能直接获取到要获取的信息，不用像`v8`那样通过栈堆获取
  *
  * 虽然但是，我们还是需要判断一下捕获的报错是否是错误
- *
- * @implements {PromiseErrorHandler}
  */
-export class FirefoxPromiseErrorHandler {
+export class FirefoxPromiseErrorHandler implements PromiseErrorHandler {
 	/**
 	 * 在获取报错的时候，我们通过发生报错的`Promise`来进行捕获错误的操作
 	 *
@@ -38,7 +37,3 @@ export class FirefoxPromiseErrorHandler {
 		});
 	}
 }
-
-/**
- * @typedef {import('../interface/promise-error-handler').PromiseErrorHandler} PromiseErrorHandler
- */

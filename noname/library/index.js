@@ -19,7 +19,7 @@ import { defaultHooks } from "./hooks/index.js";
 import { Concurrent } from "./concurrent/index.js";
 import { freezeButExtensible } from "@/util/index.js";
 import security from "@/util/security.js";
-import { ErrorManager } from "@/util/error.js";
+import { ErrorManager } from "@/util/error.ts";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";

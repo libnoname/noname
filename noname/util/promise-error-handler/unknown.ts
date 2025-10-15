@@ -1,3 +1,5 @@
+import { PromiseErrorHandler } from "./promise-error-handler";
+
 /**
  * 关于除已实现浏览器外其余浏览器的异步错误处理
  *
@@ -6,10 +8,8 @@
  * 尽管我们还是会为了这类浏览器判断是不是捕获到了一个`Error`
  *
  * 总之，虽然这里跟Safari无关，但我们还是为新时代IE默哀一秒
- *
- * @implements {PromiseErrorHandler}
  */
-export class UnknownPromiseErrorHandler {
+export class UnknownPromiseErrorHandler implements PromiseErrorHandler {
 	/**
 	 * 在获取报错的时候，我们通过发生报错的`Promise`来进行捕获错误的操作
 	 *
@@ -29,7 +29,3 @@ export class UnknownPromiseErrorHandler {
 		});
 	}
 }
-
-/**
- * @typedef {import('../interface/promise-error-handler').PromiseErrorHandler} PromiseErrorHandler
- */

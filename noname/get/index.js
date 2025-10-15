@@ -6,7 +6,7 @@ import NonameDictionary from "./pinyins/noname-dict.js";
 import { Audio } from "./audio.ts";
 import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
 import security from "@/util/security.js";
-import { CodeSnippet, ErrorManager } from "@/util/error.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.ts";
 
 import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";

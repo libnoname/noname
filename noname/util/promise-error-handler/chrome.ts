@@ -1,3 +1,4 @@
+import { PromiseErrorHandler } from "./promise-error-handler";
 /**
  * 关于`Google Chrome`的异步错误处理
  *
@@ -10,10 +11,8 @@
  * ~~我们用到了`Error.prepareStackTrace(error, structuredStackTrace)`这个接口，这个接口的信息可参考[这里](https://v8.dev/docs/stack-trace-api#customizing-stack-traces)~~
  *
  * ~~该接口提供了结构化的栈堆信息，很幸运的是，这个结构化的栈堆能直接告诉我们报错的文件以及位置，故我们使用该接口，让异步报错能直接定位原始位置~~
- *
- * @implements {PromiseErrorHandler}
  */
-export class ChromePromiseErrorHandler {
+export class ChromePromiseErrorHandler implements PromiseErrorHandler {
 	/**
 	 * ~~用于临时记录报错信息的列表，通过`Error.prepareStackTrace`更新该列表~~
 	 *
@@ -88,21 +87,9 @@ export class ChromePromiseErrorHandler {
 					// 为了处理eval的情况，故必须获取完行数
 					let lines = error.stack.split("\n").filter(line => this.#STACK_REGEXP.test(line));
 
-					// 提供类型信息防止vscode报错
-					/**
-					 * @type {string | undefined}
-					 */
-					let fileName = void 0;
-
-					/**
-					 * @type {number | undefined}
-					 */
-					let line = void 0;
-
-					/**
-					 * @type {number | undefined}
-					 */
-					let column = void 0;
+					let fileName: string | undefined = void 0;
+					let line: number | undefined = void 0;
+					let column: number | undefined = void 0;
 
 					// 从第一条开始遍历，一直遍历到不存在eval的位置
 					for (let currentLine = 0; currentLine < lines.length; ++currentLine) {
@@ -166,17 +153,6 @@ export class ChromePromiseErrorHandler {
 			*/
 		});
 	}
-
-	/**
-	 * ~~正式报错时便不再需要报错信息了，故直接清空列表，释放内存~~
-	 *
-	 * @deprecated
-	 */
-	onErrorPrepare() {
-		/*
-		this.#errorList.length = 0;
-		*/
-	}
 }
 
 /**
@@ -198,7 +174,3 @@ export function extractLocation(urlLike) {
 	// @ts-expect-error Chrome status
 	return [parts[1], parts[2] || void 0, parts[3] || void 0];
 }
-
-/**
- * @typedef {import('../interface/promise-error-handler').PromiseErrorHandler} PromiseErrorHandler
- */
