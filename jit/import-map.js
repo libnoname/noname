@@ -1,0 +1,2 @@
+//auto generated
+export default {}

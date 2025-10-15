@@ -104,9 +104,8 @@ export {};
 			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
 			registration.update().catch(e => console.error("worker update失败", e));
 			if (!sessionStorage.getItem("canUseTs")) {
-				await fetch("/game/canUse.ts")
-					.then(res => res.text())
-					.then(text => console.log(text));
+				const path = "./test/canUse.ts";
+				await import(/* @vite-ignore */path);
 			}
 		} catch (e) {
 			console.log("serviceWorker加载失败: ", e);

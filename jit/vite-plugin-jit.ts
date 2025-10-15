@@ -1,15 +1,20 @@
-import { Plugin } from "vite";
+import { normalizePath, Plugin } from "vite";
 import { resolve } from "path";
 import { URL } from "url";
+import fs from "fs";
+import path from "path";
 
-export default function vitePluginJIT(): Plugin {
+export default function vitePluginJIT(importMap: Record<string, string> = {}): Plugin {
+	let root = process.cwd();
 	let isBuild = false;
+	const resolvedImportMap: Record<string, string> = {};
 
 	return {
 		name: "vite-plugin-jit",
 
 		configResolved(config) {
 			isBuild = config.command === "build";
+			root = config.root;
 		},
 
 		// 开发环境：虚拟 /sw.js
@@ -51,6 +56,22 @@ export default function vitePluginJIT(): Plugin {
 				id: swEntry,
 				fileName: "service-worker.js",
 			});
+			for (const i in importMap) {
+				const resolved = await this.resolve(importMap[i], undefined, { skipSelf: true });
+				if (resolved?.id) {
+					resolvedImportMap[i] = normalizePath("/" + path.relative(root, resolved.id));
+				}
+			}
+		},
+
+		closeBundle() {
+			const output = path.resolve("dist/jit/import-map.js");
+			fs.mkdirSync(path.dirname(output), { recursive: true });
+			fs.writeFileSync(output, "export default " + JSON.stringify(resolvedImportMap, null, 2));
+			this.warn(`[vite:jit-importmap] Wrote ${output}`);
+			
+			fs.mkdirSync(path.dirname(path.resolve("dist/jit/test/canUse.ts")), { recursive: true });
+			fs.copyFileSync(path.resolve("jit/test/canUse.ts"),path.resolve("dist/jit/test/canUse.ts"))
 		},
 	};
 }

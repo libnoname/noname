@@ -7,9 +7,7 @@ import path from "path";
 import fs from "fs";
 import JSZip from "jszip";
 
-const argv = minimist(process.argv.slice(2), {
-	boolean: true,
-});
+const argv = minimist(process.argv.slice(2));
 
 const getDiffResources = () => {
 	const latestTag = execSync("git describe --tags --abbrev=0").toString().trim();
