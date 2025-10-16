@@ -1,5 +1,7 @@
 # 无名杀
 
+github仓库: <https://github.com/libnoname/noname>
+
 ## 快速启动
 
 ### 环境要求
@@ -8,7 +10,7 @@
 
 - [Node.js](https://nodejs.org/) ^20.19.0 || >=22.12.0
 - [pnpm](https://pnpm.io/) >=8
-- Webview >=91
+- Webview: Chromium >= 91 || Safari >=16.4.0 (暂不支持Firefox)
 
 ### 安装依赖
 
