@@ -6825,10 +6825,6 @@ player.removeVirtualEquip(card);
 					.filter((event, player) => {
 						return event.name == "phase" || [player, target].includes(event.player);
 					})
-					.vars({
-						cardsx: cards,
-						evt: event,
-					})
 					.step(async (event, trigger, player) => {
 						if (cards?.some(card => get.position(card) == "s")) {
 							evt.isDestoryed = true;

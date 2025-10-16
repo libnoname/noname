@@ -542,10 +542,7 @@ export class Player extends HTMLDivElement {
 					firstDo: true,
 					priority: Infinity,
 				})
-				.vars({
-					index,
-				})
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					delete player.storage[`temp_tip_${index}`];
 					player.removeTip(index);
 				})
