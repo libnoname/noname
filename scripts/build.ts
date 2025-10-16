@@ -76,7 +76,50 @@ else {
 
 // 继承vite.config.ts
 await build({
-	plugins: [viteStaticCopy({ targets: staticModules })],
+	build: {
+		// 需要覆写map文件，必须外置
+		sourcemap: argv.sourcemap || false,
+	},
+	plugins: [
+		viteStaticCopy({ targets: staticModules }),
+		(() => {
+			let hasSourceMap = false;
+			return {
+				name: "rewrite-sourcemap-path",
+				enforce: "post",
+				apply: "build",
+
+				configResolved(config) {
+					hasSourceMap = !!config.build.sourcemap;
+				},
+				/**
+				 * 重写sourcemap的sources路径
+				 * 将指向根目录变为指向dist/目录，以适配外部平台
+				 * @example
+				 * 打包结果：dist/a/bundle.js 指向 a/b/c.ts
+				 * 转换：../../a/b/c.ts -> b/c.ts
+				 */
+				writeBundle(_, bundle) {
+					if (!hasSourceMap) return;
+					for (const [fileName, chunk] of Object.entries(bundle)) {
+						if (!fileName.endsWith(".map") || chunk.type !== "asset") continue;
+
+						try {
+							const mapPath = path.resolve("dist", fileName);
+							const jsDir = path.dirname(fileName.replace(/\.map$/, ""));
+							const map = JSON.parse(chunk.source as string);
+
+							map.sources = map.sources.map((src: string) => path.relative(jsDir, src.replace(/^(\.\.\/)+/, "")));
+
+							fs.writeFileSync(mapPath, JSON.stringify(map));
+						} catch (err) {
+							console.warn(`rewrite-sourcemap-path: failed for ${fileName}`, err);
+						}
+					}
+				},
+			};
+		})(),
+	],
 });
 
 await esbuild({

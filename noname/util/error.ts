@@ -1,5 +1,7 @@
 import { promiseErrorHandlerMap } from "@/util/promise-error-handler";
 import StackTrace from "stacktrace-js";
+import ErrorStackParser from "error-stack-parser";
+import StackTraceGPS from "stacktrace-gps";
 
 class CodeSnippet {
 	static #snippetStack: CodeSnippet[] = [];
@@ -353,6 +355,27 @@ class ErrorManager {
 	}
 
 	/**
+	 * 目前和StackTrace.fromError一样
+	 * @param error
+	 * @param opts
+	 * @returns
+	 */
+	static async fromError(error: Error, opts?: StackTraceGPS.Options): Promise<{ origin: StackFrame; source?: StackFrame }[]> {
+		const gps = new StackTraceGPS(opts);
+		const stackframes = ErrorStackParser.parse(error);
+		return Promise.all(
+			stackframes.map(async sf => {
+				try {
+					const source = await gps.pinpoint(sf);
+					return { origin: sf, source };
+				} catch {
+					return { origin: sf };
+				}
+			})
+		);
+	}
+
+	/**
 	 * ```plain
 	 * 设置错误报告器
 	 *
@@ -402,8 +425,8 @@ export async function setOnError({ lib, game, get, _status }) {
 
 	window.onerror = async function (msg: string | Event, src?: string, line?: number, column?: number, err?: Error) {
 		if (!err) return;
-		const stackframes = await StackTrace.fromError(err);
-		const frame = stackframes[0];
+		const stackframes = await ErrorManager.fromError(err);
+		const frame = stackframes[0].source || stackframes[0].origin;
 		const log: string[] = [];
 		const winPath = window.__dirname ? "file:///" + (__dirname.replace(new RegExp("\\\\", "g"), "/") + "/") : "";
 		log.push(`错误文件: ${typeof src == "string" ? decodeURI(src).replace(lib.assetURL, "").replace(winPath, "") : "未知文件"}`);
@@ -442,7 +465,7 @@ export async function setOnError({ lib, game, get, _status }) {
 					return showCode;
 				};
 				// 解析step content的错误
-				if (stackframes[0].functionName === "packStep") {
+				if (frame.functionName === "packStep") {
 					const codes = _status.event.content.originals[_status.event.step];
 					if (typeof codes == "function") {
 						const regex = /<anonymous>:(\d+):\d+/;
@@ -457,7 +480,8 @@ export async function setOnError({ lib, game, get, _status }) {
 					const sourcePath = "local:" + decodeURI(src).replace(lib.assetURL, "").replace(winPath, "");
 					//获取sourcemap
 					try {
-						if (!frame.fileName) throw new Error();
+						const source = stackframes[0].source;
+						if (!source?.fileName) throw new Error();
 
 						let rawSourceMap = lib.init.reqSync(sourcePath + ".map");
 						if (!rawSourceMap) throw new Error();
@@ -491,12 +515,11 @@ export async function setOnError({ lib, game, get, _status }) {
 							}
 						}
 
-						const file = relativeUrl(src, frame.fileName);
+						const file = relativeUrl(src, source.fileName);
 						const content = sourceMap.sourcesContent[sourceMap.sources.indexOf(file)];
 
 						log.push(...createShowCode(content, frame.lineNumber || 0));
 					} catch (e) {
-						console.log(e);
 						let code = lib.init.reqSync(sourcePath);
 						if (code) log.push(...createShowCode(code, frame.lineNumber || 0));
 					}
@@ -505,7 +528,8 @@ export async function setOnError({ lib, game, get, _status }) {
 			if (err && err.stack) {
 				log.push(`${err.name}: ${err.message}`);
 				log.push(
-					...stackframes.map(f => {
+					...stackframes.map(frame => {
+						const f = frame.source || frame.origin;
 						return `    at ${f.functionName || "(anonymous)"} (${decodeURI(f.fileName || "")
 							.replace(new RegExp(lib.assetURL, "g"), "")
 							.replace(new RegExp(winPath, "g"), "")}:${f.lineNumber}:${f.columnNumber})`;

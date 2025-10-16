@@ -74,6 +74,9 @@ importers:
       dedent:
         specifier: ^1.6.0
         version: 1.7.0
+      error-stack-parser:
+        specifier: ^2.1.4
+        version: 2.1.4
       eslint-linter-browserify:
         specifier: ^9.36.0
         version: 9.36.0
@@ -98,6 +101,9 @@ importers:
       pressure:
         specifier: ^2.2.0
         version: 2.2.0
+      stacktrace-gps:
+        specifier: ^3.1.2
+        version: 3.1.2
       stacktrace-js:
         specifier: ^2.0.2
         version: 2.0.2
