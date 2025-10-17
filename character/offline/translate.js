@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const translates = {
+	zc26_taishici_prefix: "26|界",
+	zc26_taishici: "26|界太史慈",
+	zc26_tianyi: "天义",
+	zc26_tianyi_info: "出牌阶段限一次，你可以拼点：若你赢，你本回合使用【杀】次数上限+1、目标上限+1、无距离限制。若你没赢，你本回合使用下一张牌时取消之并令唯一目标摸两张牌。",
+	zc26_dangmo:"荡魔",
+	zc26_dangmo_info: "当你使用牌结算后，若此牌目标与你本回合使用的上一张牌目标不完全相同，你可以对两张牌的重合目标各造成1点伤害。",
+	zc26_jiaxu_prefix: "26|界",
+	zc26_jiaxu: "26|界贾诩",
+	zc26_wansha: "完杀",
+	zc26_wansha_info: "锁定技，你的回合内：除濒死角色外，所有其他角色的红色基本牌均视为【杀】，且使用时你摸两张牌。",
+	zc26_weimu:"帷幕",
+	zc26_weimu_info: "黑色锦囊牌对你无效：你可以将黑色非锦囊牌当【借刀杀人】使用。",
 	pe_guozhao: "郭照",
 	pepianchong: "偏宠",
 	pepianchong_info: "摸牌阶段，你可以改为获得牌堆底的一张牌，此牌倒置（标记为“偏宠”），然后你摸一张牌，直到你下回合开始：你每失去一张倒置牌后，摸一张牌；你每失去一张未倒置的手牌后，获得牌堆底的一张牌并倒置。",

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>无名杀-下载扩展</title>
+		<style>
+			* {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			
+			::-webkit-scrollbar {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="showMessage" style="user-select: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; background:#3B3B3B; z-index:100;">
+			<div id="renwu" style="flex-direction:column; width: 200px;height: 200px;margin:200px auto;box-shadow:0px 0px 40px #2D9EFB inset,0px 0px 10px #2D9EFB;border-radius:50%;padding:40px;display: flex;align-items: center;justify-content: center;color: #FFFFFF;"></div>
+		</div>
+		<script type="text/javascript" style="display: none;">
+			//链接：nonameSKill:?extensionName=全能搜索
+			const { ipcRenderer } = require('electron');
+			const { versions } = process;
+			const electronVersion = parseFloat(versions.electron);
+			let remote;
+			if (electronVersion >= 14) {
+				remote =  require('@electron/remote');
+			} else {
+				remote = require('electron').remote;
+			}
+			const { app, shell } = remote;
+			const path = require('path');
+			window.extension = {};
+			(async function() {
+				let text = await fetch(
+						'https://kuangthree.coding.net/p/noname-extensionxwjh/d/noname-extensionxwjh/git/raw/master/catalog.js')
+					.then(response => {
+						if (response.status != 200) return;
+						return response.text();
+					});
+				eval(text);
+
+				if (JSON.stringify(extension) != '{}') {
+					console.log('玄武镜像加载成功');
+					if (!extension[extensionName]) {
+						alert(`玄武镜像中没有【${extensionName}】这个扩展!`);
+						//后面可以选择退出页面或者展示所有扩展
+						remote.getCurrentWindow().close();
+					} else {
+						let url = 'https://kuangthree.coding.net/p/noname-extensionxwjh/d/noname-extensionxwjh/git/raw/master';
+						//进行下载
+						let files = extension[extensionName]['files'];
+						let pos = files.indexOf('catalogTemplate.txt');
+						//排除这个没用的文件
+						if (pos != -1) {
+							files.splice(pos, 1);
+						}
+						
+						let now = 0, max = files.length;
+						
+						const messageSpan = document.createElement('span');
+						messageSpan.setAttribute('style', 'user-select: none; color: green; font-size: 25px; position: relative;');
+						document.getElementById('renwu').appendChild(messageSpan);
+						messageSpan.innerText = `正在下载【${extensionName}】`;
+						
+						document.getElementById('renwu').appendChild(document.createElement('br'));
+						
+						const span = document.createElement('span');
+						span.setAttribute('style', 'user-select: none; color: green; font-size: 25px; position: relative;');
+						document.getElementById('renwu').appendChild(span);
+						
+						//触发下载
+						function download(num) {
+							span.innerText = `${files[num]}`;
+							messageSpan.innerText = `正在下载【${extensionName}】（${num}/${max}）`;
+							remote.getCurrentWindow().webContents.downloadURL(`${url}/${extensionName}/${files[num]}`);
+						};
+						
+						ipcRenderer.sendSync('download-path', [path.join(__dirname, 'extension', extensionName), extensionName, remote.getCurrentWindow().id]);
+						//把下载地址发送给主进程
+						
+						ipcRenderer.on('download-clog', (event, message) => {
+							console.log(message);
+						});
+						
+						ipcRenderer.on('download-progress', (event, progress) => {
+							span.innerText = `${files[now]} ${(progress * 100).toFixed(2)}%`;
+						});
+						
+						ipcRenderer.on('download-done', (event, state) => {
+							now++;
+							if(now < max) {
+								remote.getCurrentWindow().setProgressBar(now / max);
+								download(now);
+							} else {
+								ipcRenderer.sendSync('download-path', [null, null]);
+								remote.getCurrentWindow().setProgressBar(-1);
+								messageSpan.innerText = `【${extensionName}】下载完成`;
+								localStorage.setItem('download-extensionName', extensionName);
+								shell.beep();
+								remote.getCurrentWindow().focus();
+								let i = 6;
+								setInterval(() => {
+									i--;
+									if (i <= 0) remote.getCurrentWindow().close();
+									else span.innerText = `${i}秒后自动退出页面`;
+								}, 1000);
+							}
+							if (state !== 'completed') {
+								console.error(`下载失败: ${state}`);
+							}
+						});
+						
+						download(now);
+					}
+				} else {
+					console.error('玄武镜像加载失败');
+					const span = document.createElement('span');
+					span.innerText = "玄武镜像加载失败";
+					span.setAttribute('style', 'user-select: none; color: green; font-size: 25px; position: relative;');
+					document.getElementById('renwu').appendChild(span);
+
+					let i = 6;
+					setInterval(() => {
+						i--;
+						if (i <= 0) location.reload();
+						else span.innerText = `玄武镜像加载失败，${i}秒后重新加载页面`;
+					}, 1000);
+				}
+			})();
+		</script>
+	</body>
+</html>

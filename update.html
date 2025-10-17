@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>无名杀-更新文件</title>
+		<style>
+			* {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			
+			::-webkit-scrollbar {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="showMessage" style="user-select: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; background:#3B3B3B; z-index:100;">
+			<div id="renwu" style="flex-direction:column; width: 200px;height: 200px;margin:200px auto;box-shadow:0px 0px 40px #2D9EFB inset,0px 0px 10px #2D9EFB;border-radius:50%;padding:40px;display: flex;align-items: center;justify-content: center;color: #FFFFFF;"></div>
+		</div>
+		<script type="text/javascript" style="display: none;">
+			//链接：?nonameSkill:?updateURL=https://raw.fastgit.org/nonameShijian/noname/main
+			const { ipcRenderer } = require('electron');
+			const { versions } = process;
+			const electronVersion = parseFloat(versions.electron);
+			let remote;
+			if (electronVersion >= 14) {
+				remote =  require('@electron/remote');
+			} else {
+				remote = require('electron').remote;
+			}
+			const { app, shell } = remote;
+			const path = require('path');
+			const fs = require('fs');
+			const ready = (async () => {
+				let text = await fetch(window.updateURL + '/update.js')
+					.then(response => {
+						if (response.status != 200) {
+							alert('连接失败：' + window.updateURL + '/update.js');
+							remote.getCurrentWindow().close();
+						} else return response.text();
+					});
+				eval(text);
+				if(!window.updateList) {
+					alert('update.js加载失败');
+					remote.getCurrentWindow().close();
+				}
+				if(Array.isArray(window.removeFileList)) {
+					for (let file of window.removeFileList) {
+						let filePath = path.join(__dirname, file);
+						fs.existsSync(filePath) && fs.unlink(filePath, console.error);
+					}
+				}
+				
+				let files = window.updateList, now = 0, max = files.length;
+				
+				const messageSpan = document.createElement('span');
+				messageSpan.setAttribute('style', 'position: relative; user-select: none; color: green; font-size: 25px;');
+				document.getElementById('renwu').appendChild(messageSpan);
+				messageSpan.innerText = `正在更新应用本体`;
+				
+				const span = document.createElement('span');
+				span.setAttribute('style', 'position: relative; user-select: none; color: green; font-size: 25px;');
+				document.getElementById('renwu').appendChild(span);
+				
+				//触发下载
+				function download(num) {
+					span.innerText = `${files[num]}`;
+					messageSpan.innerText = `正在更新应用本体（${num}/${max}）`;
+					remote.getCurrentWindow().webContents.downloadURL(`${window.updateURL}/${files[num]}`);
+				};
+				
+				ipcRenderer.sendSync('update-path', [__dirname, window.updateURL, remote.getCurrentWindow().id]);
+				//把下载地址发送给主进程
+				
+				ipcRenderer.on('update-clog', (event, message) => {
+					console.log(message);
+				});
+				
+				ipcRenderer.on('update-progress', (event, progress) => {
+					span.innerText = `${files[now]} ${(progress * 100).toFixed(2)}%`;
+				});
+				
+				ipcRenderer.on('update-done', (event, state) => {
+					now++;
+					if(now < max) {
+						remote.getCurrentWindow().setProgressBar(now / max);
+						download(now);
+					} else {
+						ipcRenderer.sendSync('update-path', [null, null, null]);
+						remote.getCurrentWindow().setProgressBar(-1);
+						messageSpan.innerText = `应用本体更新完成，一秒后自动退出应用`;
+						shell.beep();
+						remote.getCurrentWindow().focus();
+						setTimeout(() => {			
+							app.exit();
+						}, 1000);
+					}
+					if (state !== 'completed') {
+						console.error(`下载失败: ${state}`);
+					}
+				});
+				
+				download(now);
+			});
+			setTimeout(ready, 1000);
+		</script>
+	</body>
+</html>

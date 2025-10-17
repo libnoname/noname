@@ -1,4 +1,6 @@
 export default {
+	zc26_taishici: "剑鸣太平",
+	zc26_jiaxu:"毒士无双",
 	xia_caopi: "弃旧学新",
 	eu_kaisa: "无冕之皇",
 	eu_makang: "马米科尼扬",

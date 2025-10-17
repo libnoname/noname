@@ -1,4 +1,16 @@
 const characters = {
+	zc26_taishici: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["zc26_tianyi", "zc26_dangmo"],
+	},
+	zc26_jiaxu:{
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills:["zc26_wansha", "zc26_weimu","luanwu"],
+	},
 	pe_guozhao: {
 		sex: "female",
 		group: "wei",
