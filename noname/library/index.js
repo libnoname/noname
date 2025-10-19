@@ -154,6 +154,28 @@ export class Library {
 		}
 	);
 	cardPackInfo = {};
+	bingzhu = new Map([
+		["zhuge", ["诸葛亮", "马钧"]],
+		["qinggang", ["赵云", "曹操"]],
+		["guding", ["孙坚"]],
+		["cixiong", ["刘备"]],
+		["guanshi", ["徐晃"]],
+		["zhangba", ["张飞", "关兴张苞", "张星彩"]],
+		["qinglong", ["关羽", "关兴张苞", "关银屏"]],
+		["zhuque", ["周瑜"]],
+		["fangtian", ["吕布"]],
+		["qilin", ["吕布"]],
+		["bagua", ["诸葛亮", "黄月英", "黄承彦"]],
+		["baiyin", ["马超"]],
+		["tengjia", ["兀突骨", "孟获", "祝融"]],
+		["dilu", ["刘备"]],
+		["jueying", ["曹操"]],
+		["zhuahuang", ["曹操"]],
+		["hualiu", ["徐晃"]],
+		["chitu", ["吕布", "关羽"]],
+		["zixin", ["曹植"]],
+		["dawan", ["曹操"]],
+	]);
 	/**
 	 * @type { SMap<number> }
 	 */
@@ -498,7 +520,7 @@ export class Library {
 						yingbianZhuzhan.yingbianZhuzhanAI = evt.yingbianZhuzhanAI;
 						yingbianZhuzhan.afterYingbianZhuzhan = evt.afterYingbianZhuzhan;
 						yingbianZhuzhan.setContent([
-							async (event) => {
+							async event => {
 								event._global_waiting = true;
 								event.send = (player, card, source, targets, id, id2, yingbianZhuzhanAI, skillState) => {
 									if (skillState) {
@@ -532,7 +554,7 @@ export class Library {
 															return 0;
 														}
 														return 5 - get.value(cardx);
-												},
+													},
 									});
 									if (!game.online) {
 										return;
@@ -555,7 +577,7 @@ export class Library {
 									event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 								}
 							},
-							async (event) => {
+							async event => {
 								if (event._result.bool) {
 									event.zhuzhanresult = event.current;
 									event.zhuzhanresult2 = event._result;
@@ -615,7 +637,7 @@ export class Library {
 								}
 								event.withol = withol;
 							},
-							async (event) => {
+							async event => {
 								if (!event._result || !event._result.bool || event.zhuzhanresult) {
 									return;
 								}
@@ -623,12 +645,12 @@ export class Library {
 								event.zhuzhanresult = game.me;
 								event.zhuzhanresult2 = event._result;
 							},
-							async (event) => {
+							async event => {
 								if (event.withol && !event.resultOL) {
 									game.pause();
 								}
 							},
-							async (event) => {
+							async event => {
 								game.players.forEach(value => value.hideTimer());
 							},
 							async (event, trigger, player) => {
@@ -652,7 +674,8 @@ export class Library {
 										bool: false,
 									};
 								}
-						}]);
+							},
+						]);
 						yingbianZhuzhan._args = Array.from(arguments);
 						return yingbianZhuzhan;
 					},
@@ -790,7 +813,7 @@ export class Library {
 					event.player
 						.when("useCard")
 						.filter(evt => evt == event)
-						.step(async (event, trigger,player) => {
+						.step(async (event, trigger, player) => {
 							trigger.getParent(2).decrease("shanRequired", 1);
 						});
 				},
@@ -9175,7 +9198,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-			  })()
+				})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -12212,16 +12235,14 @@ export class Library {
 	 * 	[key: string]: Skill;
 	 * }}
 	 */
-	skill = new Proxy(skills,
-		{
-			set(target, prop, newValue) {
-				if (typeof prop === "string" && typeof newValue === "object") {
-					newValue.skill_id ??= prop;
-				}
-				return Reflect.set(target, prop, newValue);
-			},
-		}
-	);
+	skill = new Proxy(skills, {
+		set(target, prop, newValue) {
+			if (typeof prop === "string" && typeof newValue === "object") {
+				newValue.skill_id ??= prop;
+			}
+			return Reflect.set(target, prop, newValue);
+		},
+	});
 	/** @type {Object<string, import("./element/character.js").Character>} */
 	character = new Proxy(
 		{},
@@ -14596,6 +14617,26 @@ export class Library {
 			{
 				color: "#dd9420",
 				nature: "firemm",
+			},
+		],
+		[
+			"26",
+			{
+				getSpan: () => {
+					const span = document.createElement("span"),
+						style = span.style;
+					style.writingMode = style.webkitWritingMode = "horizontal-tb";
+					style.fontFamily = "MotoyaLMaru";
+					style.transform = "scaleY(0.85)";
+					span.textContent = "26";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
+			"26|界",
+			{
+				getSpan: () => `${get.prefixSpan("26")}${get.prefixSpan("界")}`,
 			},
 		],
 	]);

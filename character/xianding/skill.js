@@ -3,6 +3,168 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	dc_sp_huanling: {
+		trigger: {
+			player: ["phaseUseBegin", "damageEnd"],
+		},
+		filter(event, player) {
+			return player.countCards("hes") > 0;
+		},
+		check(event, player) {
+			return true;
+		},
+		init(player, skill) {
+			const bingzhuSkill = {};
+			lib.inpile.filter(name => get.type(name) == "equip").forEach(name => (bingzhuSkill[name] = []));
+			if (!_status.characterlist) {
+				game.initCharacterList();
+			}
+			_status.characterlist.map(character => {
+				const name = get.rawName(character);
+				for (let bing in bingzhuSkill) {
+					if (get.bingzhu(bing).includes(name)) {
+						bingzhuSkill[bing].push(get.character(character, 3));
+					}
+				}
+			});
+			for (let skills in bingzhuSkill) {
+				bingzhuSkill[skills] = bingzhuSkill[skills]
+					.flat()
+					.unique()
+					.sort(() => Math.random() - 0.5);
+			}
+			player.storage.bingzhuSkill = bingzhuSkill;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard("重铸一张牌，然后获得场上、弃牌堆或牌堆一张花色相同的装备牌，并随机出现该装备的三个兵主技能选择其中一个令一名角色获得。若该角色不为你，你摸X张牌。(X为其技能数)", "hes")
+				.set("ai", card => 10 - get.value(card))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const suitx = get.suit(event.cards[0]);
+			await player.recast(event.cards);
+			const cards1 = Array.from(ui.cardPile.childNodes).filter(card => get.type(card) == "equip" && get.suit(card) == suitx),
+				cards2 = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "equip" && get.suit(card) == suitx) || [],
+				cards3 = game.players.reduce((cards, curr) => cards.addArray(curr.getCards("e", card => get.suit(card) == suitx)), []);
+			const cards = cards1.concat(cards2).concat(cards3);
+			const card = cards.randomGet();
+			if (!card) {
+				player.chat("谁偷走了我的装备牌！");
+				return;
+			}
+			await player.gain(card, "gain2");
+			const skills = player.storage.bingzhuSkill[get.name(card)].filter(skill => !game.hasPlayer(curr => curr.hasSkill(skill))).randomGets(3);
+			if (!skills.length) {
+				player.chat("没有技能喵");
+				return;
+			}
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: ["请选择一个技能令一名角色获得", [skills, "skill"]],
+				})
+				.set("ai1", button => get.priority(button.link) || 1)
+				.set("ai2", target => {
+					const player = get.player();
+					return get.attitude(player, target);
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			await result.targets[0].addSkills(result.links[0]);
+			if (result.targets[0] != player) {
+				await player.draw(result.targets[0].getSkills().length);
+			}
+		},
+	},
+	dc_sp_shenduan: {
+		trigger: {
+			player: "useCardAfter",
+		},
+		init(player, skill) {
+			player.storage.dc_sp_shenduan_effect = new Map([
+				[
+					"equip1",
+					async player => {
+						const card = get.autoViewAs({
+							name: "sha",
+						});
+						await player.chooseUseTarget(card, false);
+					},
+				],
+				[
+					"equip2",
+					async player => {
+						await player.gainMaxHp();
+						await player.recover();
+					},
+				],
+				[
+					"equip3",
+					async player => {
+						await player.draw();
+						player.addMark("dc_sp_shenduan_max");
+					},
+				],
+				[
+					"equip4",
+					async player => {
+						const targets = game.filterPlayer(curr => curr != player);
+						await game.doAsyncInOrder(targets, async target => {
+							await player.discardPlayerCard(target, true);
+						});
+					},
+				],
+			]);
+			player.addSkill("dc_sp_shenduan_max");
+		},
+		check(event, player) {
+			console.log(game.players.length - game.countPlayer(curr => get.attitude(player, curr) < 0));
+			if (get.subtypes(event.card) == "equip4" && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
+				return false;
+			}
+			return true;
+		},
+		filter(event, player) {
+			if (get.type(event.card) != "equip" || get.subtypes(event.card) == "equip5") {
+				return false;
+			}
+			const subtypes = player
+				.getHistory("useSkill", evt => evt.skill == "dc_sp_shenduan")
+				.map(evt => get.subtypes(evt.event.getParent(2).card))
+				.flat();
+			return !subtypes.some(type => get.subtypes(event.card).includes(type));
+		},
+		async content(event, trigger, player) {
+			const types = get.subtypes(trigger.card);
+			for (let type of types) {
+				await player.storage.dc_sp_shenduan_effect.get(type)(player);
+			}
+		},
+		subSkill: {
+			max: {
+				charlotte: true,
+				marktext: "神锻",
+				mark: true,
+				intro: {
+					name: "神锻",
+					mark(dialog, storage) {
+						if (!storage) {
+							dialog.addText("手牌上限+0");
+						} else {
+							dialog.addText(`手牌上限+${storage}`);
+						}
+					},
+				},
+				mod: {
+					maxHandcard: function (player, num) {
+						return num + player.countMark("dc_sp_shenduan_max");
+					},
+				},
+			},
+		},
+	},
 	//郭缇萦
 	dckanyu: {
 		audio: 2,
@@ -3331,49 +3493,49 @@ const skills = {
 				name == "Draw"
 					? await player.chooseBool(get.prompt(event.skill)).set("prompt2", "摸体力上限张牌").forResult()
 					: name == "Use"
-					? await player
-							.chooseTarget(get.prompt(event.skill))
-							.set("prompt2", "失去1点体力并视为对一名角色使用一张【杀】")
-							.set("filterTarget", (event, player, target) => {
-								const card = new lib.element.VCard({ name: "sha", isCard: true });
-								return player.canUse(card, target, false);
-							})
-							.set("ai", target => {
-								const card = new lib.element.VCard({ name: "sha", isCard: true }),
-									player = get.player(),
-									eff1 = get.effect(target, card, player, player),
-									eff2 = get.effect(player, { name: "losehp" }, player, player);
-								return Math.max(0, eff1 - eff2);
-							})
-							.forResult()
-					: await player
-							.chooseCardTarget({
-								filterCard(card, player) {
-									const num = get.event("numx");
-									return num > 0 && lib.filter.cardDiscardable(card, player, "dcjuanji");
-								},
-								prompt: get.prompt(event.skill),
-								prompt2: "将手牌调整至手牌上限，然后弃置一名角色区域里至多两张牌",
-								numx: player.countCards("h") - player.getHandcardLimit(),
-								selectCard() {
-									const num = get.event("numx");
-									if (num > 0) {
-										return num;
-									}
-									return -1;
-								},
-								filterTarget(card, player, target) {
-									return player == target || target.countCards("hej");
-								},
-								ai1(card) {
-									return 10 - get.value(card);
-								},
-								ai2(target) {
-									const player = get.player();
-									return get.effect(target, { name: "guohe" }, player, player);
-								},
-							})
-							.forResult();
+						? await player
+								.chooseTarget(get.prompt(event.skill))
+								.set("prompt2", "失去1点体力并视为对一名角色使用一张【杀】")
+								.set("filterTarget", (event, player, target) => {
+									const card = new lib.element.VCard({ name: "sha", isCard: true });
+									return player.canUse(card, target, false);
+								})
+								.set("ai", target => {
+									const card = new lib.element.VCard({ name: "sha", isCard: true }),
+										player = get.player(),
+										eff1 = get.effect(target, card, player, player),
+										eff2 = get.effect(player, { name: "losehp" }, player, player);
+									return Math.max(0, eff1 - eff2);
+								})
+								.forResult()
+						: await player
+								.chooseCardTarget({
+									filterCard(card, player) {
+										const num = get.event("numx");
+										return num > 0 && lib.filter.cardDiscardable(card, player, "dcjuanji");
+									},
+									prompt: get.prompt(event.skill),
+									prompt2: "将手牌调整至手牌上限，然后弃置一名角色区域里至多两张牌",
+									numx: player.countCards("h") - player.getHandcardLimit(),
+									selectCard() {
+										const num = get.event("numx");
+										if (num > 0) {
+											return num;
+										}
+										return -1;
+									},
+									filterTarget(card, player, target) {
+										return player == target || target.countCards("hej");
+									},
+									ai1(card) {
+										return 10 - get.value(card);
+									},
+									ai2(target) {
+										const player = get.player();
+										return get.effect(target, { name: "guohe" }, player, player);
+									},
+								})
+								.forResult();
 		},
 		async content(event, trigger, player) {
 			const name = trigger.name.slice(5);
@@ -6233,12 +6395,15 @@ const skills = {
 			player.line2(event.targets);
 			await game.delayx();
 			const result = await source
-				.chooseToUse(function (card, player, event) {
-					if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？"
+				)
 				.set("filterTarget", function (card, player, target) {
 					const source = get.event().sourcex;
 					if (target !== source) {
@@ -6402,12 +6567,15 @@ const skills = {
 				}
 			} else {
 				result = await player
-					.chooseToUse(function (card, player, event) {
-						if (get.type(card) !== "basic") {
-							return false;
-						}
-						return lib.filter.cardEnabled.apply(this, arguments);
-					}, get.translation(event.name) + "：是否使用一张基本牌？")
+					.chooseToUse(
+						function (card, player, event) {
+							if (get.type(card) !== "basic") {
+								return false;
+							}
+							return lib.filter.cardEnabled.apply(this, arguments);
+						},
+						get.translation(event.name) + "：是否使用一张基本牌？"
+					)
 					.set("logSkill", event.name)
 					.set("addCount", false)
 					.forResult();
@@ -17713,7 +17881,7 @@ const skills = {
 										},
 										target,
 										target
-								  ))
+									))
 						);
 					})
 					.set("card", card);
@@ -29765,13 +29933,16 @@ const skills = {
 				if (!trigger.getParent().lvli6) {
 					trigger.getParent().goto(0);
 				}
-				game.broadcastAll(function (str) {
-					var dialog = ui.create.dialog(str);
-					dialog.classList.add("center");
-					setTimeout(function () {
-						dialog.close();
-					}, 1000);
-				}, get.translation(player) + "声明的" + get.translation(trigger.card.name) + "并没有生效");
+				game.broadcastAll(
+					function (str) {
+						var dialog = ui.create.dialog(str);
+						dialog.classList.add("center");
+						setTimeout(function () {
+							dialog.close();
+						}, 1000);
+					},
+					get.translation(player) + "声明的" + get.translation(trigger.card.name) + "并没有生效"
+				);
 				game.log("然而什么都没有发生");
 				game.delay(2);
 			}
@@ -30452,10 +30623,10 @@ const skills = {
 							return false;
 						}
 						return true;
-				  }
+					}
 				: current => {
 						return current.isEnemyOf(player);
-				  };
+					};
 			const list = [];
 			if (
 				game.hasPlayer(function (current) {

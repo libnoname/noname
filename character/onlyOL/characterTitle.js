@@ -1,4 +1,5 @@
 export default {
+	ol_reyujing:"征战沙场",
 	ol_sb_xuyou: "帷幄擎炬",
 	ol_sb_lusu: "渊谟肇石城",
 	ol_sb_zhugeliang: "武侯",

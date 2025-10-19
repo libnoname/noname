@@ -1,4 +1,5 @@
 export default {
+	dc_sp_puyuan: "无",
 	lvju: "仗钺征镇",
 	dc_zhangren: "索命神射",
 	dc_jiangqing: "祁奚之器",
@@ -150,7 +151,7 @@ export default {
 	dc_sb_hulie: "暗舆平叛",
 	dc_sb_dengai: "奇锋厄川",
 	dc_sb_huangquan: "智答魏诏",
-	dc_sb_luotong: "知寒始北", 
+	dc_sb_luotong: "知寒始北",
 	v_zhangliao: "威锐镇西风",
 	v_lvbu: "虓虎叱北地",
 	v_dongzhuo: "魔震西凉",

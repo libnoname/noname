@@ -1182,6 +1182,20 @@ export class Get extends GetCompatible {
 		}
 	}
 	/**
+	 * 获取一张装备牌的兵主
+	 * @param { string | Card | VCard  } name
+	 * @returns {String[]}
+	 */
+	bingzhu(name) {
+		if (typeof name != "string") {
+			name = get.name(name);
+		}
+		if (!lib.bingzhu.get(name)) {
+			return [];
+		}
+		return lib.bingzhu.get(name);
+	}
+	/**
 	 * @overload
 	 * @param { string } name
 	 * @returns { import("../library/element/character").Character }
@@ -1535,11 +1549,11 @@ export class Get extends GetCompatible {
 		const target = constructor
 			? Array.isArray(obj) || obj instanceof Map || obj instanceof Set || constructor === Object
 				? // @ts-expect-error ignore
-				  new constructor()
+					new constructor()
 				: constructor.name in window && /\[native code\]/.test(constructor.toString())
-				? // @ts-expect-error ignore
-				  new constructor(obj)
-				: obj
+					? // @ts-expect-error ignore
+						new constructor(obj)
+					: obj
 			: Object.create(null);
 		if (target === obj) {
 			return target;
@@ -2607,7 +2621,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						return stringifying;
 					}, {})
-			  )}`
+				)}`
 			: "";
 	}
 	/**

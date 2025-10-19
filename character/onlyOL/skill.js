@@ -2,6 +2,110 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//界于禁
+	ol_zhenjun: {
+		audio: 2,
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return game.hasPlayer(current => current.countDiscardableCards(player, "he"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("filterTarget", (_, player, target) => target.countDiscardableCards(player, "he"))
+				.set("ai", target => -get.attitude(get.player(), target) * (target.countCards("e") + 1))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const { result } = await player.discardPlayerCard(Math.max(true, target, "he", target.countCards("h") - target.hp, 1), "allowChooseAll");
+			if (result?.bool && result.cards?.length) {
+				const num = result.cards.reduce((sum, card) => (sum + get.type(card) != "equip" ? 1 : 0), 0);
+				if (num == 0) {
+					return;
+				}
+				let resultx;
+				if (num > player.countDiscardableCards(player, "he")) {
+					resultx = { bool: false, cards: [] };
+				} else {
+					let prompt = `弃置${get.cnNumber(event.num)}张牌，或令${get.translation(target)}于你结束阶段摸${get.cnNumber(num)}张牌`;
+					resultx = await player
+						.chooseToDiscard(prompt, num, "he", "allowChooseAll")
+						.set("ai", card => {
+							const event = get.event();
+							const phase = event.getTrigger().getParent("phase");
+							if (phase?.name == "phase" && phase.phaseList?.length) {
+								const phaseJieshu = phase.phaseList.find((v, i) => i > phase.num && v.startsWith("phaseJieshu"));
+								if (!phaseJieshu) {
+									return 0;
+								}
+							}
+							return 6 - get.value(card);
+						})
+						.forResult();
+				}
+				if (!resultx?.bool) {
+					target
+						.when({ global: "phaseJieshuBegin" })
+						.filter(evt => {
+							return evt.player == player;
+						})
+						.step(async function (event, trigger, player) {
+							await player.draw(num);
+						});
+				}
+			}
+		},
+	},
+	ol_yizhong: {
+		audio: 2,
+		trigger: {
+			player: "useCard",
+			target: "useCardToBefore",
+		},
+		forced: true,
+		filter(event, player) {
+			if (event.card.name != "sha" || get.color(event.card) != "black") {
+				return false;
+			}
+			if (event.player == player) {
+				const num = player.countCards("h");
+				return event.targets.some(target => target.countCards("h") < num);
+			}
+			return event.player.getHp() > player.getHp();
+		},
+		logTarget(event, player) {
+			if (event.player == player) {
+				const num = player.countCards("h");
+				return event.targets.filter(target => target.countCards("h") < num).sortBySeat(_status.currentPhase);
+			}
+			return null;
+		},
+		async content(event, trigger, player) {
+			if (trigger.player == player) {
+				trigger.directHit.addArray(event.targets);
+				game.log(event.targets, "不可响应", trigger.card);
+			} else {
+				trigger.cancel();
+			}
+		},
+		ai: {
+			directHit_ai: true,
+			skillTagFilter(player, tag, arg) {
+				return arg?.card?.name == "sha" && get.color(arg?.card, player) == "black" && arg?.target?.countCards("h") < player.countCards("h");
+			},
+			effect: {
+				target(card, player, target) {
+					if (card.name != "sha" && get.color(card) != "black") {
+						return;
+					}
+					if (player.getHp() > target.getHp()) {
+						return "zeroplayertarget";
+					}
+				},
+			},
+		},
+	},
 	//闪张辽
 	olzhengbing: {
 		audio: "jsrgzhengbing",
@@ -675,25 +779,25 @@ const skills = {
 				? {
 						bool: true,
 						index: 1 - player.getStorage("olzenhui_used")[0],
-				  }
+					}
 				: target.countGainableCards(player, "he")
-				? await target
-						.chooseControl()
-						.set("choiceList", [`交给${get.translation(player)}一张牌，然后代替其成为${get.translation(trigger.card)}的使用者`, `成为${get.translation(trigger.card)}的额外目标`])
-						.set("ai", function () {
-							const trigger = _status.event.getTrigger(),
-								{ player, source } = get.event();
-							if (!player.countGainableCards(source, "he")) {
-								return 0;
-							}
-							return get.effect(player, { name: "shunshou_copy2" }, source, source) > get.effect(player, trigger.card, source, source) ? 1 : 0;
-						})
-						.set("source", player)
-						.forResult()
-				: {
-						bool: true,
-						index: 1,
-				  };
+					? await target
+							.chooseControl()
+							.set("choiceList", [`交给${get.translation(player)}一张牌，然后代替其成为${get.translation(trigger.card)}的使用者`, `成为${get.translation(trigger.card)}的额外目标`])
+							.set("ai", function () {
+								const trigger = _status.event.getTrigger(),
+									{ player, source } = get.event();
+								if (!player.countGainableCards(source, "he")) {
+									return 0;
+								}
+								return get.effect(player, { name: "shunshou_copy2" }, source, source) > get.effect(player, trigger.card, source, source) ? 1 : 0;
+							})
+							.set("source", player)
+							.forResult()
+					: {
+							bool: true,
+							index: 1,
+						};
 			player.markAuto("olzenhui_used", [result.index]);
 			const evt = trigger.getParent();
 			if (result.index == 0) {
@@ -7020,13 +7124,16 @@ const skills = {
 				player.line(targets);
 				for (const target of targets) {
 					const result = await target
-						.chooseToUse(function (card) {
-							const evt = _status.event;
-							if (!lib.filter.cardEnabled(card, evt.player, evt)) {
-								return false;
-							}
-							return get.position(card) == "h";
-						}, '###立文###<div class="text center">使用一张手牌，或移去所有“贤”标记并令' + get.translation(player) + "摸等量的牌</div>")
+						.chooseToUse(
+							function (card) {
+								const evt = _status.event;
+								if (!lib.filter.cardEnabled(card, evt.player, evt)) {
+									return false;
+								}
+								return get.position(card) == "h";
+							},
+							'###立文###<div class="text center">使用一张手牌，或移去所有“贤”标记并令' + get.translation(player) + "摸等量的牌</div>"
+						)
 						.set("addCount", false)
 						.forResult();
 					if (!result.bool) {
@@ -7767,12 +7874,15 @@ const skills = {
 					const target2 = result2.targets[0];
 					player.line(target2);
 					const result = await target
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "眩惑：对" + get.translation(target2) + "使用一张【杀】，或令" + get.translation(player) + "观看并获得你的两张牌")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"眩惑：对" + get.translation(target2) + "使用一张【杀】，或令" + get.translation(player) + "观看并获得你的两张牌"
+						)
 						.set("filterTarget", function (card, player, target) {
 							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 								return false;

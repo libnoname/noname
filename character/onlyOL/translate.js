@@ -1,4 +1,10 @@
 const translates = {
+	ol_reyujin: "OL界于禁",
+	ol_reyujin_prefix: "OL|界",
+	ol_zhenjun: "镇军",
+	ol_zhenjun_info: "准备阶段，你可弃置一名角色X张牌（X为其手牌数减体力值且至少为1），然后你选择一项：1.你弃置与其中非装备牌数等量的牌：2.结束阶段，其摸与其中非装备牌数等量的牌。",
+	ol_yizhong: "毅重",
+	ol_yizhong_info: "锁定技，体力值大于你的角色对你使用的黑色【杀】无效，手牌数小于你的角色无法响应你使用的黑色【杀】。",
 	ol_sb_xuyou: "OL谋许攸",
 	ol_sb_xuyou_prefix: "OL谋",
 	olsbqianfu: "迁附",
