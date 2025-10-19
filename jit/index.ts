@@ -36,44 +36,41 @@ export {};
 				window.require[key] = value;
 			});
 		}
-	// 	// 增加导入ts的逻辑
-	// 	window.require.extensions[".ts"] = function (module, filename) {
-	// 		// @ts-expect-error ignore
-	// 		const _compile = module._compile;
-	// 		// @ts-expect-error ignore
-	// 		module._compile = function (code, fileName) {
-	// 			/**
-	// 			 *
-	// 			 * @type { import("typescript") }
-	// 			 */
-	// 			// @ts-expect-error ignore
-	// 			const ts = require("typescript");
-	// 			// 使用ts compiler对ts文件进行编译
-	// 			const result = ts.transpile(
-	// 				code,
-	// 				{
-	// 					module: ts.ModuleKind.CommonJS,
-	// 					target: ts.ScriptTarget.ES2020,
-	// 					inlineSourceMap: true,
-	// 					resolveJsonModule: true,
-	// 					esModuleInterop: true,
-	// 				},
-	// 				fileName
-	// 			);
-	// 			// 使用默认的js编译函数获取返回值
-	// 			return _compile.call(this, result, fileName);
-	// 		};
-	// 		// @ts-expect-error ignore
-	// 		module._compile(require("fs").readFileSync(filename, "utf8"), filename);
-	// 	};
+		// 	// 增加导入ts的逻辑
+		// 	window.require.extensions[".ts"] = function (module, filename) {
+		// 		// @ts-expect-error ignore
+		// 		const _compile = module._compile;
+		// 		// @ts-expect-error ignore
+		// 		module._compile = function (code, fileName) {
+		// 			/**
+		// 			 *
+		// 			 * @type { import("typescript") }
+		// 			 */
+		// 			// @ts-expect-error ignore
+		// 			const ts = require("typescript");
+		// 			// 使用ts compiler对ts文件进行编译
+		// 			const result = ts.transpile(
+		// 				code,
+		// 				{
+		// 					module: ts.ModuleKind.CommonJS,
+		// 					target: ts.ScriptTarget.ES2020,
+		// 					inlineSourceMap: true,
+		// 					resolveJsonModule: true,
+		// 					esModuleInterop: true,
+		// 				},
+		// 				fileName
+		// 			);
+		// 			// 使用默认的js编译函数获取返回值
+		// 			return _compile.call(this, result, fileName);
+		// 		};
+		// 		// @ts-expect-error ignore
+		// 		module._compile(require("fs").readFileSync(filename, "utf8"), filename);
+		// 	};
 	}
 
 	const globalText = {
-		SERVICE_WORKER_NOT_SUPPORT: [
-			"您使用的客户端或浏览器不支持启用serviceWorker",
-			"请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker！",
-		].join("\n"),
-		SERVICE_WORKER_LOAD_FAILED: ["serviceWorker加载失败！", "游戏内容或许会因此加载失败！"].join("\n"),
+		SERVICE_WORKER_NOT_SUPPORT: ["无法启用即时编译功能", "您使用的客户端或浏览器不支持启用serviceWorker", "请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker"].join("\n"),
+		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败", "可能会导致部分扩展加载失败"].join("\n"),
 	};
 	if (!("serviceWorker" in navigator)) {
 		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
@@ -103,9 +100,15 @@ export {};
 			// 发送消息
 			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
 			registration.update().catch(e => console.error("worker update失败", e));
-			if (!sessionStorage.getItem("canUseTs")) {
+			if (sessionStorage.getItem("canUseTs") !== "true") {
 				const path = "./test/canUse.ts";
-				await import(/* @vite-ignore */path);
+				await import(/* @vite-ignore */ path)
+					.then(() => sessionStorage.setItem("canUseTs", "true"))
+					.catch(e => {
+						if (sessionStorage.getItem("canUseTs") === "false") throw e;
+						sessionStorage.setItem("canUseTs", "false");
+						window.location.reload();
+					});
 			}
 		} catch (e) {
 			console.log("serviceWorker加载失败: ", e);

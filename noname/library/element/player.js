@@ -10698,10 +10698,7 @@ export class Player extends HTMLDivElement {
 						firstDo: true,
 						priority: Infinity,
 					})
-					.vars({
-						skillName,
-					})
-					.then(() => {
+					.step(async (event, trigger, player) => {
 						player.removeAdditionalSkills(skillName);
 					})
 					.finish();
