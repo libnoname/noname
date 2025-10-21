@@ -1666,51 +1666,23 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * @param { string[] } updates
-	 * @param { Function } proceed
+	 * @param { () => void | Promise<void> } proceed
 	 */
-	checkFileList(updates, proceed) {
-		if (!Array.isArray(updates) || !updates.length) {
-			proceed();
-		}
-		let n = updates.length,
-			list = updates.slice(0);
-		for (let i = 0; i < list.length; i++) {
-			if (lib.node && lib.node.fs) {
-				lib.node.fs.access(__dirname + "/" + list[i], err => {
-					if (!err) {
-						let stat = lib.node.fs.statSync(__dirname + "/" + list[i]);
-						// @ts-expect-error ignore
-						if (stat.size == 0) {
-							err = true;
-						}
-					}
-					n--;
-					if (!err) {
-						updates.remove(list[i]);
-					}
-					if (n == 0) {
-						proceed();
-					}
-				});
-			} else {
-				window.resolveLocalFileSystemURL(
-					nonameInitialized + list[i],
-					() => {
-						n--;
-						updates.remove(list[i]);
-						if (n == 0) {
-							proceed();
-						}
-					},
-					() => {
-						n--;
-						if (n == 0) {
-							proceed();
-						}
-					}
-				);
+	async checkFileList(updates, proceed) {
+		let list = updates.slice(0);
+		for (const file of list) {
+			const result = await game.promises.checkFile(file);
+			// if (!err) {
+			// 	let stat = lib.node.fs.statSync(__dirname + "/" + list[i]);
+			// 	if (stat.size == 0) {
+			// 		err = true;
+			// 	}
+			// }
+			if (result > 0) {
+				updates.remove(file);
 			}
 		}
+		await proceed();
 	}
 	/**
 	 * @overload

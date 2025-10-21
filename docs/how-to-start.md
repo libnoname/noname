@@ -101,3 +101,17 @@ pnpm install
   ```
   
   进行eslint检查，如果没有任何输出即可提交，否则请检查提示位置。
+
+## Q&A
+
+1. **Q:** 执行npm命令的时候提示:
+
+    ```powershell
+    无法加载文件 path/to/your/nodejs/npm.ps1, 因为在此系统上禁止运行脚本。
+    ```
+
+    **A:** 使用管理员权限打开VSCode。如果仍未解决，请先在命令行输入以下命令：
+
+    ```powershell
+    set-executionpolicy remotesigned -scope currentuser
+    ```

@@ -1,5 +1,6 @@
 audio/*.TXT
 image/*.TXT
+
 extension/
 !extension/boss/
 !extension/cardpile/
@@ -9,24 +10,30 @@ extension/
 !extension/欢乐卡牌/
 !extension/玩点论杀/
 !extension/英雄杀/
-._*
-.DS_Store
-.DS_Store?
-.eslintcache
+
+dist
+node_modules
+package-lock.json
+
+# IDE
 .idea
+.vscode
+
+# macOS
+._*
 .Spotlight-V100
 .Trashes
-.vscode
+.DS_Store
+.DS_Store?
+
+# Windows
+ehthumbs.db
+Thumbs.db
+
+# electron
 app
 app.html
-dist
-ehthumbs.db
-Home
-localStorage.json
 /main.js
-node_modules
+Home
 noname.ico
-package-lock.json
-Thumbs.db
-bun.lockb
-game/*.zip
+# localStorage.json

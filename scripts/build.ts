@@ -46,7 +46,6 @@ const sourceCode: Target[] = [
 	{ src: "noname", dest: "src" },
 	{ src: "typings", dest: "src" },
 	{ src: "noname.js", dest: "src" },
-	{ src: "noname-compatible.js", dest: "src" },
 	{ src: "noname-server.cts", dest: "src" },
 ];
 

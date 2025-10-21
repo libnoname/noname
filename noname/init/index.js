@@ -9,7 +9,7 @@ import security from "@/util/security.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 
 // 判断是否从file协议切换到http/s协议
-export function canUseHttpProtocol() {
+function shouldChangeToHttpProtocol() {
 	// 如果是http了就不用
 	if (location.protocol.startsWith("http")) {
 		return false;
@@ -23,11 +23,7 @@ export function canUseHttpProtocol() {
 		if (window.cordova) {
 			// 直接确定包名
 			// 因为懒人包作者不一定会改成什么版本
-			if (
-				nonameInitialized.endsWith("com.noname.shijian/") &&
-				window.noname_shijianInterfaces &&
-				typeof window.noname_shijianInterfaces.sendUpdate === "function"
-			) {
+			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 				// 每个app自定义能升级的渠道，比如判断版本
 				return window.noname_shijianInterfaces.getApkVersion() >= 16000;
 			}
@@ -60,16 +56,11 @@ export function canUseHttpProtocol() {
  * 传递升级完成的信息
  * @returns { string | void } 返回一个网址
  */
-export function sendUpdate() {
+function sendUpdate() {
 	// 手机端
 	if (window.cordova) {
 		// 直接确定包名
-		if (
-			nonameInitialized &&
-			nonameInitialized.includes("com.noname.shijian") &&
-			window.noname_shijianInterfaces &&
-			typeof window.noname_shijianInterfaces.sendUpdate === "function"
-		) {
+		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
 			// 给诗笺版apk的java层传递升级完成的信息
 			// @ts-expect-error ignore
 			const url = new URL(window.noname_shijianInterfaces.sendUpdate());
@@ -109,6 +100,177 @@ export function sendUpdate() {
 	}
 }
 
+export function tryUpdateProtocol() {
+	// 判断是否从file协议切换到http/s协议
+	if (shouldChangeToHttpProtocol()) {
+		// 保存协议的切换状态
+		const saveProtocol = () => {
+			const url = sendUpdate();
+			if (typeof url == "string") {
+				if (typeof window.require == "function" && typeof window.process == "object") {
+					// @ts-expect-error ignore
+					const remote = require("@electron/remote");
+					const thisWindow = remote.getCurrentWindow();
+					thisWindow.loadURL(url);
+				} else {
+					location.href = url;
+				}
+			}
+		};
+		/*
+			升级方法:
+				1. 游戏启动后导出数据，然后以http/s协议重启
+				2. 以http/s协议导入数据
+				3. 保存http/s协议的状态，以后不再以file协议启动
+			*/
+		// 导出数据到根目录的noname.config.txt
+		if (navigator.notification) {
+			navigator.notification.activityStart("正在进行升级", "请稍候");
+		}
+		let data;
+		let export_data = function (data) {
+			if (navigator.notification) {
+				navigator.notification.activityStop();
+			}
+			game.promises
+				.writeFile(lib.init.encode(JSON.stringify(data)), "./", "noname.config.txt")
+				.then(saveProtocol)
+				.catch(e => {
+					console.error("升级失败:", e);
+				});
+		};
+		if (!lib.db) {
+			data = {};
+			for (let i in localStorage) {
+				if (i.startsWith(lib.configprefix)) {
+					data[i] = localStorage[i];
+				}
+			}
+			export_data(data);
+		} else {
+			game.getDB("config", null, function (data1) {
+				game.getDB("data", null, function (data2) {
+					export_data({
+						config: data1,
+						data: data2,
+					});
+				});
+			});
+		}
+	} else {
+		const readConfig = async () => {
+			return game.promises
+				.readFileAsText("noname.config.txt")
+				.then(data => {
+					if (navigator.notification) {
+						navigator.notification.activityStart("正在导入数据", "请稍候");
+					}
+					return /** @type {Promise<void>} */ (
+						// eslint-disable-next-line no-async-promise-executor
+						new Promise(async (resolve, reject) => {
+							if (!data) {
+								return reject(new Error("没有数据内容"));
+							}
+							try {
+								data = JSON.parse(lib.init.decode(data));
+								if (!data || typeof data != "object") {
+									throw "err";
+								}
+								if (lib.db && (!data.config || !data.data)) {
+									throw "err";
+								}
+							} catch (e) {
+								console.log(e);
+								if (e == "err") {
+									reject(new Error("导入文件格式不正确"));
+								} else {
+									reject(new Error("导入失败： " + e.message));
+								}
+								return;
+							}
+							if (!lib.db) {
+								const noname_inited = localStorage.getItem("noname_inited");
+								const onlineKey = localStorage.getItem(lib.configprefix + "key");
+								localStorage.clear();
+								if (noname_inited) {
+									localStorage.setItem("noname_inited", noname_inited);
+								}
+								if (onlineKey) {
+									localStorage.setItem(lib.configprefix + "key", onlineKey);
+								}
+								for (let i in data) {
+									localStorage.setItem(i, data[i]);
+								}
+							} else {
+								for (let i in data.config) {
+									await game.putDB("config", i, data.config[i]);
+									lib.config[i] = data.config[i];
+								}
+								for (let i in data.data) {
+									await game.putDB("data", i, data.data[i]);
+								}
+							}
+							lib.init.background();
+							resolve();
+						})
+					);
+				})
+				.then(() => {
+					return game.promises.removeFile("noname.config.txt");
+				})
+				.then(() => {
+					alert("数据导入成功, 即将自动重启");
+					const url = new URL(location.href);
+					if (url.searchParams.get("sendUpdate")) {
+						url.searchParams.delete("sendUpdate");
+						location.href = url.toString();
+					} else {
+						location.reload();
+					}
+				})
+				.catch(e => {
+					console.log(e);
+					if (window.FileError) {
+						if (!(e instanceof window.FileError)) {
+							alert(typeof e?.message == "string" ? e.message : JSON.stringify(e));
+						} else {
+							console.error(`noname.config.txt读取失败: ${Object.keys(window.FileError).find(msg => window.FileError[msg] === e.code)}`);
+						}
+					}
+				})
+				.finally(() => {
+					if (navigator.notification) {
+						navigator.notification.activityStop();
+					}
+				});
+		};
+		let searchParams = new URLSearchParams(location.search);
+		for (let [key, value] of searchParams) {
+			// 成功导入后删除noname.config.txt
+			if (key === "sendUpdate" && value === "true") {
+				return readConfig();
+			}
+			// 新客户端导入扩展
+			else if (key === "importExtensionName") {
+				lib.config.extensions.add(value);
+
+				let waitings = [];
+
+				waitings.push(game.promises.saveConfig("extensions", lib.config.extensions));
+				waitings.push(game.promises.saveConfig(`extension_${value}_enable`, true));
+				alert(`扩展${value}已导入成功，点击确定重启游戏`);
+
+				return Promise.allSettled(waitings).then(() => {
+					const url = new URL(location.href);
+					url.searchParams.delete("importExtensionName");
+					location.href = url.toString();
+				});
+			}
+		}
+		readConfig();
+	}
+}
+
 // 无名杀，启动！
 export async function boot() {
 	leaveCompatibleEnvironment();
@@ -145,14 +307,14 @@ export async function boot() {
 	setServerIndex();
 	setBackground();
 
-	// lib.get = get;
-	// lib.ui = ui;
-	// lib.ai = ai;
-	// lib.game = game;
+	lib.get = get;
+	lib.ui = ui;
+	lib.ai = ai;
+	lib.game = game;
 	_status.event = lib.element.GameEvent.initialGameEvent();
 
 	setWindowListener();
-	const promiseErrorHandler = await setOnError({lib, game, get, _status});
+	const promiseErrorHandler = await setOnError({ lib, game, get, _status });
 
 	// 确认手机端平台
 	lib.device = device;
@@ -191,19 +353,7 @@ export async function boot() {
 			//但这种方式只允许修改game的文件读写函数。
 			if (typeof window.initReadWriteFunction == "function") {
 				const g = {};
-				const ReadWriteFunctionName = [
-					"download",
-					"checkFile",
-					"checkDir",
-					"readFile",
-					"readFileAsText",
-					"writeFile",
-					"removeFile",
-					"getFileList",
-					"ensureDirectory",
-					"createDir",
-					"removeDir",
-				];
+				const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
 				ReadWriteFunctionName.forEach(prop => {
 					Object.defineProperty(g, prop, {
 						configurable: true,
@@ -657,7 +807,7 @@ async function getExtensionList() {
 
 		await game.promises.saveConfig("extensions", extensions);
 	}
-	
+
 	return toLoad.filter(i => !window.bannedExtensions.includes(i));
 }
 

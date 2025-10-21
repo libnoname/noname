@@ -24,7 +24,7 @@ type OneParmFun<U, T> = (arg0: U) => T;
 type TwoParmFun<U1, U2, T> = (arg0: U1, arg1: U2) => T;
 type ThreeParmFun<U1, U2, U3, T> = (arg0: U1, arg1: U2, arg2: U3) => T;
 type FourParmFun<U1, U2, U3, U4, T> = (arg0: U1, arg1: U2, arg2: U3, arg3: U4) => T;
-type RestParmFun<T> = (...args) => T;
+type RestParmFun<T> = (...args: any[]) => T;
 type RestParmFun2<U, T> = (...args: U[]) => T;
 
 //尝试增加的符合类型声明
@@ -112,7 +112,6 @@ declare type Control = import('@/library/index.js').Control;
 declare type Video = import('@/game/index.js').Video;
 declare type Videos = import('@/game/index.js').Videos;
 declare type GameHistory = import('@/game/index.js').GameHistory;
-// declare type CodeMirror = typeof import('codemirror/index');
 
 declare type Sex = 'male' | 'female' | 'dobule' | 'none';
 declare type Character = [Sex, string, number | string, string[], string[]] | [Sex, string, number | string, string[]] | import('@/library/element/character.js').Character;

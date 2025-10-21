@@ -42,8 +42,10 @@ export default defineConfig({
 	plugins: [
 		vue(),
 		jit({
-			vue: "vue/dist/vue.esm-browser.js",
 			"@noname": "/noname.js",
+			"vue": "vue/dist/vue.esm-browser.js",
+			"pinyin-pro": "pinyin-pro",
+			"jszip": "jszip"
 		}),
 	],
 	server: {

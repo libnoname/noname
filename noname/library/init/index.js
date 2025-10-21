@@ -4,10 +4,15 @@ import { ContentCompiler } from "@/library/element/gameEvent.js";
 import security from "@/util/security.js";
 
 export class LibInit {
+	
+	#promises;
 	/**
 	 * 部分函数的Promise版本
 	 */
-	promises = new LibInitPromises();
+	get promises(){
+		if(!this.#promises) this.#promises = new LibInitPromises();
+		return this.#promises;
+	};
 
 	/**
 	 * @deprecated
