@@ -3376,7 +3376,45 @@ export class Click {
 		let intro,
 			list = [],
 			clickSkill;
+		// 视图模式：intro(简介) | skill(技能)
+		let viewMode = "intro";
 		let skills = ui.create.div(".characterskill", uiintro);
+		// 顶部切换按钮：简介 / 技能
+		const tabbar = ui.create.div(".menu-buttons", uiintro);
+		let btnIntro, btnSkill;
+		const applyViewMode = () => {
+			// 控制显示的区域
+			const intro2Node = uiintro.querySelector(".intro2");
+			if (viewMode === "intro") {
+				if (intro) intro.style.display = "";
+				if (intro2Node) intro2Node.style.display = "none";
+				if (skills) skills.style.display = "none";
+			} else {
+				if (intro) intro.style.display = "none";
+				if (intro2Node) intro2Node.style.display = "";
+				if (skills) {
+					skills.style.display = "";
+					// 若尚未选中技能，则初始化第一个技能
+					const first = skills.firstChild;
+					if (first && !skills.querySelector(".active") && typeof clickSkill === "function") {
+						clickSkill.call(first, "init");
+						first.classList.add("active");
+					}
+				}
+			}
+			if (btnIntro && btnSkill) {
+				btnIntro.classList.toggle("active", viewMode === "intro");
+				btnSkill.classList.toggle("active", viewMode === "skill");
+			}
+		};
+		btnIntro = ui.create.div(".menubutton.large", tabbar, "简介", function () {
+			viewMode = "intro";
+			applyViewMode();
+		});
+		btnSkill = ui.create.div(".menubutton.large", tabbar, "技能", function () {
+			viewMode = "skill";
+			applyViewMode();
+		});
 		const refreshIntro = function () {
 			if (intro?.firstChild) {
 				while (intro.firstChild) {
@@ -3942,6 +3980,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
+		// 默认显示人物简介
+		applyViewMode();
 
 		var initskill = false;
 		let deri = [];
@@ -3960,7 +4000,7 @@ export class Click {
 			current.link = list[i];
 			current.linkname = name;
 			current.linkAudioName = audioName;
-			if (!initskill) {
+			if (!initskill && viewMode === "skill") {
 				initskill = true;
 				clickSkill.call(current, "init");
 			}
@@ -3996,7 +4036,7 @@ export class Click {
 			currentx.link = skill;
 			currentx.linkname = name;
 			currentx.linkAudioName = audioName;
-			if (!initskill) {
+			if (!initskill && viewMode === "skill") {
 				initskill = true;
 				clickSkill.call(currentx, "init");
 			}

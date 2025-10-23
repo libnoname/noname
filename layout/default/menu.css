@@ -279,6 +279,30 @@
 	z-index: 10;
 }
 
+/* 简介/技能 */
+.menubg.charactercard > .menu-buttons {
+	left: auto;
+	right: -100.5%;
+	bottom: calc(0% + 65px);
+	width: 95px;
+	position: absolute;
+	text-align: right;
+	z-index: 10;
+}
+.menubg.charactercard > .menu-buttons > div {
+	position: relative;
+	display: block;
+	margin-left: 0;
+	margin-bottom: 8px;
+}
+.menubg.charactercard > .menu-buttons > .menubutton.large {
+	width: 85px;
+	height: 30px;
+	line-height: 30px;
+	font-size: 20px;
+	padding: 0;
+	margin-left: 0;
+}
 .menubg.charactercard > .ava > .changeskin {
 	bottom: 6px;
 	left: 6px;
@@ -319,7 +343,7 @@
 	padding-right: 10px;
 	width: auto;
 	box-sizing: border-box;
-	top: 48%;
+	top: 1%;
 	height: 16.67%;
 	white-space: nowrap;
 	overflow-x: auto;
@@ -416,7 +440,7 @@
 .menubg.charactercard .characterintro {
 	left: 42%;
 	width: 55%;
-	height: 35%;
+	height: 82%;
 	padding: 5px;
 	overflow: scroll;
 	border-radius: 4px;
@@ -426,12 +450,12 @@
 .menubg.charactercard .characterintro:not(.intro2) {
 	top: 10px;
 	bottom: auto;
-    height: 43%;
+    height: 93%;
 }
 
 .menubg.charactercard .characterintro.intro2 {
-	top: auto;
-	bottom: 10px;
+	top: 60px;
+	bottom: auto;
 }
 
 .menubg.charactercard > .ava > .avatars {
