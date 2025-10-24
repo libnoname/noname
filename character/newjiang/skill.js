@@ -201,8 +201,8 @@ const skills = {
 		init(player, skill) {
 			const bingzhuSkill = {};
 			lib.inpile
-				.filter(name => get.type(name) == "equip" && lib.card[name].bingzhu)
-				.map(name => lib.card[name].bingzhu)
+				.filter(name => get.type(name) == "equip" && get.bingzhu(name).length)
+				.map(name => get.bingzhu(name))
 				.flat()
 				.forEach(name => (bingzhuSkill[name] = []));
 			if (!_status.characterlist) {
@@ -210,7 +210,7 @@ const skills = {
 			}
 			_status.characterlist.map(character => {
 				const name = get.rawName(character);
-				if (bingzhuSkill[name]) {
+				if (bingzhuSkill[name] || bingzhu[character]) {
 					bingzhuSkill[name].push(get.character(character, 3));
 				}
 			});
@@ -245,9 +245,8 @@ const skills = {
 				})
 				.set("forced", true)
 				.forResult();
-			const name = get.bingzhu(card).randomGet();
-			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
-			if (!skills?.length) {
+			const skills = (get.bingzhu(card).map(name => _status.bingzhuSkill.get(name)) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
+		    if (!skills?.length) {
 				player.chat("没有技能喵");
 			} else {
 				const result2 = await player
