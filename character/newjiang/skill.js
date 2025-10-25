@@ -157,16 +157,19 @@ const skills = {
 						return trigger.target.countCards("he") > 0;
 					}
 					if (button.link == "losehp") {
-						return !trigger.yjspshenfeng;
+						return !trigger.getParent().yjspshenfeng;
 					}
 					return true;
 				})
 				.set("ai", button => Math.random())
 				.forResult();
-			if (result.links[0] == "damge") {
-				trigger.baseDamage++;
+			if (result.links[0] == "damage") {
+				trigger.getParent().baseDamage++;
 			} else if (result.links[0] == "losehp") {
-				trigger.yjspshenfeng = true;
+				trigger.getParent().yjspshenfeng = true;
+				if (!player.hasSkill("yj_sp_shenfeng_effect", null, false, false)) {
+					player.addTempSkill("yj_sp_shenfeng_effect");
+				}
 			} else {
 				await trigger.target.chooseToDiscard(2, "he", true);
 			}
@@ -179,7 +182,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return event.yjspshenfeng;
+					return event.getParent(2).yjspshenfeng;
 				},
 				async content(event, trigger, player) {
 					trigger.cancel();
@@ -201,8 +204,8 @@ const skills = {
 		init(player, skill) {
 			const bingzhuSkill = {};
 			lib.inpile
-				.filter(name => get.type(name) == "equip" && lib.card[name].bingzhu)
-				.map(name => lib.card[name].bingzhu)
+				.filter(name => get.type(name) == "equip" && get.bingzhu(name))
+				.map(name => get.bingzhu(name))
 				.flat()
 				.forEach(name => (bingzhuSkill[name] = []));
 			if (!_status.characterlist) {
@@ -212,6 +215,8 @@ const skills = {
 				const name = get.rawName(character);
 				if (bingzhuSkill[name]) {
 					bingzhuSkill[name].push(get.character(character, 3));
+				} else if (bingzhuSkill[character]) {
+					bingzhuSkill[character].push(get.character(character, 3));
 				}
 			});
 			for (let name in bingzhuSkill) {
@@ -245,8 +250,12 @@ const skills = {
 				})
 				.set("forced", true)
 				.forResult();
-			const name = get.bingzhu(card).randomGet();
-			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
+			const skills = get
+				.bingzhu(card)
+				.map(name => _status.bingzhuSkill.get(name))
+				.flat()
+				.filter(skill => !result1.targets[0].hasSkill(skill, null, false, false))
+				.randomGets(3);
 			if (!skills?.length) {
 				player.chat("没有技能喵");
 			} else {
