@@ -157,22 +157,18 @@ const skills = {
 						return target.countCards("he") > 0;
 					}
 					if (button.link == "losehp") {
-						return !evt.yjspshenfeng;
+						return !trigger.getParent().yjspshenfeng;
 					}
 					return true;
 				})
-				.set("target", trigger.target)
-				.set("evt", trigger.getParent())
-				.set("ai", button => Math.random());
-			if (!result?.links?.length) {
-				return;
-			}
+				.set("ai", button => Math.random())
+				.forResult();
 			if (result.links[0] == "damage") {
 				trigger.getParent().baseDamage++;
 			} else if (result.links[0] == "losehp") {
 				trigger.getParent().yjspshenfeng = true;
-				if (!player.hasSkill("shenfeng_effect", null, false, false)) {
-					player.addTempSkill("shenfeng_effect");
+				if (!player.hasSkill("yj_sp_shenfeng_effect", null, false, false)) {
+					player.addTempSkill("yj_sp_shenfeng_effect");
 				}
 			} else {
 				await trigger.target.chooseToDiscard(2, "he", true);
@@ -203,30 +199,30 @@ const skills = {
 			return true;
 		},
 		init(player, skill) {
-			if (!_status.bingzhuSkill) {
-				const bingzhuSkill = {};
-				Object.keys(lib.card)
-					.filter(name => get.type(name) == "equip" && get.bingzhu(name).length)
-					.map(name => get.bingzhu(name))
-					.flat()
-					.forEach(name => (bingzhuSkill[name] = []));
-				if (!_status.characterlist) {
-					game.initCharacterList();
-				}
-				_status.characterlist.map(character => {
-					const names = get.characterSurname(character).map(info => info.join("")).concat([get.rawName(character)]),
-						skills = get.character(character, 3);
-					names.forEach(name => {
-						if (bingzhuSkill[name]) {
-							bingzhuSkill[name].addArray(skills);
-						}
-					});
-				});
-				for (let name in bingzhuSkill) {
-					bingzhuSkill[name] = bingzhuSkill[name].randomSort();
-				}
-				game.broadcastAll(bingzhuSkill => (_status.bingzhuSkill = bingzhuSkill), new Map(Object.entries(bingzhuSkill)));
+			const bingzhuSkill = {};
+			lib.inpile
+				.filter(name => get.type(name) == "equip" && get.bingzhu(name))
+				.map(name => get.bingzhu(name))
+				.flat()
+				.forEach(name => (bingzhuSkill[name] = []));
+			if (!_status.characterlist) {
+				game.initCharacterList();
 			}
+			_status.characterlist.map(character => {
+				const name = get.rawName(character);
+				if (bingzhuSkill[name]) {
+					bingzhuSkill[name].push(get.character(character, 3));
+				} else if (bingzhuSkill[character]) {
+					bingzhuSkill[character].push(get.character(character, 3));
+				}
+			});
+			for (let name in bingzhuSkill) {
+				bingzhuSkill[name] = bingzhuSkill[name]
+					.flat()
+					.unique()
+					.sort(() => Math.random() - 0.5);
+			}
+			_status.bingzhuSkill = new Map(Object.entries(bingzhuSkill));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -249,19 +245,15 @@ const skills = {
 					const player = get.player();
 					return get.attitude(player, target);
 				})
-				.set("forced", true);
-			const name = get.bingzhu(card).randomGet();
-			if (!result?.targets?.length) {
-				return;
-			}
-			const [target] = result.targets;
+				.set("forced", true)
+				.forResult();
 			const skills = get
 				.bingzhu(card)
 				.map(name => _status.bingzhuSkill.get(name))
 				.flat()
-				.filter(skill => !target.hasSkill(skill, null, false, false))
+				.filter(skill => !result1.targets[0].hasSkill(skill, null, false, false))
 				.randomGets(3);
-			if (!skills.length) {
+			if (!skills?.length) {
 				player.chat("没有技能喵");
 			} else {
 				const { result } = await player
