@@ -17,6 +17,21 @@ const characters = {
 		hp: 4,
 		skills: ["ol_zhenjun", "ol_yizhong"],
 	},
+	ol_jsrg_zhujun: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["ol_fendi", "ol_juxiang"],
+		img: "image/character/jsrg_zhujun.jpg",
+	},
+	ol_jsrg_sunjian: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["ol_pingtao", "ol_juelie"],
+		dieAudios: ["jsrg_sunjian"],
+		img: "image/character/jsrg_sunjian.jpg",
+	},
 	ol_jsrg_zhangliao: {
 		sex: "male",
 		group: "qun",

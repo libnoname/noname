@@ -4,7 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	biancai: {
 		trigger: {
-			player: ["phaseBegin"],
+			global: ["phaseBegin"],
 		},
 		check(event, player) {
 			return true;
@@ -15,10 +15,10 @@ const skills = {
 		async content(event, trigger, player) {
 			const result = await player.judge().forResult();
 			if (result?.color == "red") {
-				const card = get.cardPile(card => get.type(card) == "equip", "cradPile");
+				const card = get.cardPile(card => get.type(card) == "equip", "cardPile");
 				await player.gain(card, "gain2");
 			} else if (result?.color == "black") {
-				const card = get.cardPile(card => get.type(card) == "equip", "discradPile");
+				const card = get.cardPile(card => get.type(card) == "equip", "discardPile");
 				await player.gain(card, "gain2");
 			} else {
 				player.popup("杯具");
@@ -725,7 +725,7 @@ const skills = {
 							]),
 							(item, type, position, noclick, node) => {
 								node = ui.create.buttonPresets.card(item[0], type, position, noclick);
-								game.creatButtonCardsetion(item[1], node);
+								game.createButtonCardsetion(item[1], node);
 								return node;
 							},
 						],

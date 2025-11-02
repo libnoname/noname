@@ -1701,7 +1701,7 @@ const skills = {
 					const dialog = ui.create.dialog(get.translation(player) + "发动了【执盟】", cards);
 					dialog.videoId = id;
 					for (let i = 0; i < targets.length; i++) {
-						game.creatButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
+						game.createButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
 					}
 				},
 				targets,
@@ -1912,7 +1912,7 @@ const skills = {
 					}
 				}
 			}
-			const next = player.chooseToMove();
+			const next = player.chooseToMove("allowChooseAll");
 			next.set("list", [["牌堆顶", cards.filterInD()], ["牌堆底"]]);
 			next.set("prompt", "问天：点击或拖动将牌移动到牌堆顶或牌堆底");
 			next.processAI = list => {
@@ -2778,7 +2778,7 @@ const skills = {
 			const number = game.dead.length > 2 ? 5 : 3;
 			const cards = get.bottomCards(number);
 			game.cardsGotoOrdering(cards);
-			const next = player.chooseToMove();
+			const next = player.chooseToMove("allowChooseAll");
 			next.set("list", [["牌堆顶"], ["牌堆底", cards.reverse()]]);
 			next.set("prompt", "鹰眎：点击或拖动将牌移动到牌堆顶或牌堆底");
 			next.processAI = list => {
@@ -3791,7 +3791,7 @@ const skills = {
 					var dialog = ui.create.dialog(get.translation(player) + "发动了【浮海】", cards);
 					dialog.videoId = id;
 					for (let i = 0; i < targets.length; i++) {
-						game.creatButtonCardsetion(`${targets[i].getName(true)}${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
+						game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
 					}
 				},
 				targets,

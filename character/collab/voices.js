@@ -146,5 +146,5 @@ export default {
 	"#olnengchen2": "为大汉江山鞠躬尽瘁，臣死犹生。",
 	"#olhuojie1": "国虽大，忘战必危，好战必亡。",
 	"#olhuojie2": "这穷兵黩武的罪，让我一人受便可。",
-	"#ol_jsrg_caocao:die": "此征西将军曹操之墓……",
+	"#ol_jsrg_caocao:die": "此征西将军曹侯之墓……",
 };

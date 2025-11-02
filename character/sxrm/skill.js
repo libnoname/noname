@@ -261,6 +261,13 @@ const skills = {
 			rende: {
 				inherit: "rende",
 				sourceSkill: "rende",
+				duplicatePrefix(player, skill) {
+					const targets = player.getStorage(skill);
+					if (targets.length == 1) {
+						return `${get.translation(targets)}·`;
+					}
+					return "魔";
+				},
 				name: "仁德",
 				audio: "rende",
 				init(player, skill) {
@@ -275,6 +282,9 @@ const skills = {
 					player.setStorage(skill, null);
 				},
 				filterTarget(card, player, target) {
+					if (!player.getStorage("sxrmweiwo_rende").length) {
+						return player != target;
+					}
 					return player != target && player.getStorage("sxrmweiwo_rende").includes(target);
 				},
 				check(card) {
@@ -376,6 +386,13 @@ const skills = {
 			qingnang: {
 				inherit: "qingnang",
 				sourceSkill: "qingnang",
+				duplicatePrefix(player, skill) {
+					const targets = player.getStorage(skill);
+					if (targets.length == 1) {
+						return `${get.translation(targets)}·`;
+					}
+					return "魔";
+				},
 				name: "青囊",
 				audio: "qingnang",
 				init(player, skill) {
@@ -393,12 +410,22 @@ const skills = {
 					if (target.hp >= target.maxHp) {
 						return false;
 					}
+					if (!player.getStorage("sxrmweiwo_qingnang").length) {
+						return true;
+					}
 					return player.getStorage("sxrmweiwo_qingnang").includes(target);
 				},
 			},
 			longyin: {
 				inherit: "longyin",
 				sourceSkill: "longyin",
+				duplicatePrefix(player, skill) {
+					const targets = player.getStorage(skill);
+					if (targets.length == 1) {
+						return `${get.translation(targets)}·`;
+					}
+					return "魔";
+				},
 				name: "龙吟",
 				audio: "longyin",
 				init(player, skill) {
@@ -413,7 +440,7 @@ const skills = {
 					player.setStorage(skill, null);
 				},
 				filter(event, player) {
-					if (!player.getStorage("sxrmweiwo_longyin").includes(event.player)) {
+					if (player.getStorage("sxrmweiwo_longyin").length && !player.getStorage("sxrmweiwo_longyin").includes(event.player)) {
 						return false;
 					}
 					return event.card.name == "sha" && player.countCards("he") > 0 && event.player.isPhaseUsing();
@@ -1359,7 +1386,7 @@ const skills = {
 								}),
 								(item, type, position, noclick, node) => {
 									node = ui.create.buttonPresets.card(item[0], type, position, noclick);
-									game.creatButtonCardsetion(item[1].getName(true), node);
+									game.createButtonCardsetion(item[1].getName(true), node);
 									return node;
 								},
 							],

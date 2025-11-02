@@ -1449,7 +1449,7 @@ player.removeVirtualEquip(card);
 										element = new lib.element.VCard(game.createCard("debate_" + element, " ", " "));
 									}
 									element._custom = button => {
-										game.creatButtonCardsetion(list[0].getName(true), button);
+										game.createButtonCardsetion(list[0].getName(true), button);
 									};
 									return element;
 								}),
@@ -1472,7 +1472,7 @@ player.removeVirtualEquip(card);
 							} else {
 								button = ui.create.button(list[1], "card", dialog.buttonss[0]);
 							}
-							game.creatButtonCardsetion(list[0].getName(true), button);
+							game.createButtonCardsetion(list[0].getName(true), button);
 						}
 					}
 				}
@@ -4122,7 +4122,7 @@ player.removeVirtualEquip(card);
 								event.current = currentChoice;
 							} else {
 								const currentPlayer = currentChoice.player;
-								const next = currentPlayer.chooseControl(skillsToChoose);
+								const next = currentPlayer.chooseControl(skillsToChoose.map(skill => get.skillTranslation(skill, currentPlayer, true)));
 								next.set("prompt", "选择下一个触发的技能");
 								next.set("forceDie", true);
 								next.set("arrangeSkill", true);
@@ -4130,7 +4130,7 @@ player.removeVirtualEquip(card);
 								const { result } = await next;
 								//千里走单骑全责，把敌人打死可能会打断chooseControl
 								if (result) {
-									event.current = usableSkills.find(info => info.skill == result.control);
+									event.current = usableSkills.find(info => info.skill == skillsToChoose[result.index]);
 								} else {
 									event.current = usableSkills[0];
 								}
@@ -13118,7 +13118,7 @@ player.removeVirtualEquip(card);
 	async chooseToGuanxing(event, trigger, player) {
 		const cards = get.cards(event.num);
 		await game.cardsGotoOrdering(cards);
-		const next = player.chooseToMove();
+		const next = player.chooseToMove("allowChooseAll");
 		next.set("forceDie", event.forceDie);
 		next.set("includeOut", event.includeOut);
 		next.set("list", [["牌堆顶", cards], ["牌堆底"]]);

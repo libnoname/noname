@@ -83,10 +83,12 @@ const skills = {
 			});
 		},
 		async cost(event, trigger, player) {
-			const storage = player.getStorage(
-				event.skill,
-				lib.inpile.filter(name => get.type(name) == "delay")
-			);
+			const storage = player
+				.getStorage(
+					event.skill,
+					lib.inpile.filter(name => get.type(name) == "delay")
+				)
+				.filter(name => player.hasUseTarget(name));
 			const choice = storage
 				.map(name => [name, player.getUseValue(get.autoViewAs({ name, isCard: false }, "unsure"))])
 				.reduce(
@@ -134,10 +136,12 @@ const skills = {
 					return get.equipValue(link);
 				});
 			if (result?.bool && result.cards?.length) {
-				const storage = player.getStorage(
-					"zc26_shenxie",
-					lib.inpile.filter(name => get.type(name) == "delay")
-				);
+				const storage = player
+					.getStorage(
+						event.name,
+						lib.inpile.filter(name => get.type(name) == "delay")
+					)
+					.filter(name => player.hasUseTarget(name));
 				const links = await player
 					.chooseVCardButton(true, "神械：请选择要使用的延时锦囊牌", storage.slice())
 					.set("ai", ({ link: [_, __, name] }) => {
@@ -2400,8 +2404,10 @@ const skills = {
 			}
 			await game.cardsGotoSpecial(card);
 			game.log(player, "将", card, "移出游戏");
-			trigger.cancel();
 			await player.recoverTo(1);
+			if (player.getHp() > 0) {
+				trigger.cancel();
+			}
 		},
 		group: "kunyu_debuff",
 		subSkill: {
@@ -13941,7 +13947,7 @@ const skills = {
 						if (
 							player.hasMark("drlt_jieying_mark") &&
 							game.hasPlayer(current => {
-								return current.hasSkill("drlt_jieying") && get.attitude(player, current) <= 0;
+								return current.hasSkill("drlt_jieying") && current != player && get.attitude(player, current) <= 0;
 							})
 						) {
 							return Math.max(num, 0) + 1;
@@ -13954,7 +13960,7 @@ const skills = {
 						return (
 							player.hasMark("drlt_jieying_mark") &&
 							game.hasPlayer(current => {
-								return current.hasSkill("drlt_jieying") && get.attitude(player, current) <= 0;
+								return current.hasSkill("drlt_jieying") && current != player;
 							})
 						);
 					},

@@ -1,4 +1,5 @@
 export default {
+	linglie: "烈虎千狩",
 	lvju: "仗钺征镇",
 	dc_zhangren: "索命神射",
 	dc_jiangqing: "祁奚之器",

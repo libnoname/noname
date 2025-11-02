@@ -3950,6 +3950,95 @@ export class Click {
 		// 默认显示人物简介
 		applyViewMode("intro");
 
+		// 创建皮肤容器并添加到intro底部
+		if (lib.characterSubstitute[name]) {
+			if (!intro) {
+				intro = uiintro.querySelector(".characterintro");
+			}
+			if (intro) {
+				intro.style.display = "flex";
+				intro.style.flexDirection = "column";
+				let contentWrapper = ui.create.div(".intro-content-wrapper");
+				contentWrapper.style.flex = "1";
+				while (intro.firstChild) {
+					contentWrapper.appendChild(intro.firstChild);
+				}
+				intro.appendChild(contentWrapper);
+				// 创建皮肤容器
+				let skinsContainer = ui.create.div(".skins-container", intro);
+				skinsContainer.style.marginTop = "auto";
+				skinsContainer.style.paddingTop = "20px";
+				// 创建皮肤列表
+				let skinsList = ui.create.div(".skins-list.horizontal", skinsContainer);
+				skinsList.style.display = "flex";
+				skinsList.style.flexWrap = "wrap";
+				skinsList.style.gap = "8px";
+				skinsList.style.justifyContent = "flex-start";
+				let skinList = lib.characterSubstitute[name];
+				let skinButtonList = [name, ...skinList.map(skin => skin[0])];
+				for (let skinName of skinButtonList) {
+					let skinButton = ui.create.div(".skin-button", skinsList, function () {
+						bg.style.backgroundImage = this.style.backgroundImage;
+						bg.tempSkin = this.name;
+						const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
+						if (skillButtons) {
+							for (let i = 0; i < skillButtons.length; i++) {
+								delete skillButtons[i].playAudio;
+							}
+						}
+						const currentSkinsContainer = intro.querySelector(".skins-container");
+						if (currentSkinsContainer) {
+							currentSkinsContainer.remove();
+						}
+						const currentWrapper = intro.querySelector(".intro-content-wrapper");
+						if (currentWrapper) {
+							while (intro.firstChild) {
+								intro.removeChild(intro.firstChild);
+							}
+							while (currentWrapper.firstChild) {
+								intro.appendChild(currentWrapper.firstChild);
+							}
+						}
+						refreshIntro();
+						intro.style.display = "flex";
+						intro.style.flexDirection = "column";
+						let newWrapper = ui.create.div(".intro-content-wrapper");
+						newWrapper.style.flex = "1";
+						while (intro.firstChild && (!intro.firstChild.classList || !intro.firstChild.classList.contains("skins-container"))) {
+							newWrapper.appendChild(intro.firstChild);
+						}
+						if (intro.firstChild) {
+							intro.insertBefore(newWrapper, intro.firstChild);
+						} else {
+							intro.appendChild(newWrapper);
+						}
+						if (currentSkinsContainer) {
+							intro.appendChild(currentSkinsContainer);
+						}
+
+						game.callHook("refreshSkin", [skinButtonList[0], this.name]);
+					});
+					skinButton.name = skinName;
+					skinButton.style.width = "80px";
+					skinButton.style.height = "110px";
+					skinButton.style.borderRadius = "4px";
+					skinButton.style.backgroundSize = "cover";
+					skinButton.style.backgroundPosition = "50% 0";
+					skinButton.style.boxShadow = "rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px";
+					skinButton.style.cursor = "pointer";
+					let iSTemp = false;
+					if (!lib.character[skinName] && skinList.some(skin => skin[0] == skinName)) {
+						iSTemp = true;
+						lib.character[skinName] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == skinName) || [skinName, []])[1]]);
+					}
+					const skinImg = lib.character[skinName]?.img;
+					skinImg ? skinButton.setBackgroundImage(skinImg) : skinButton.setBackground(skinName, "character");
+					if (iSTemp) {
+						delete lib.character[skinName];
+					}
+				}
+			}
+		}
 		var initskill = false;
 		let deri = [];
 		for (var i = 0; i < list.length; i++) {
@@ -4018,56 +4107,6 @@ export class Click {
 			dieaudio.dieAudios = dieAudios;
 			dieaudio.playername = name;
 			dieaudio.linkname = audioName;
-		}
-		if (lib.characterSubstitute[name]) {
-			let avatars2 = ui.create.div(".avatars", playerbg);
-			let skin = ui.create.div(".changeskin2", "查看其他皮肤", playerbg, function () {
-				playerbg.classList.add("scroll");
-				if (skin._created) {
-					return;
-				}
-				skin._created = true;
-				var createButtons = function (list, skinList) {
-					if (!list) {
-						return;
-					}
-					if (list.length >= 4) {
-						avatars2.classList.add("scroll");
-						if (lib.config.touchscreen) {
-							lib.setScroll(avatars2);
-						}
-					}
-					for (let i of list) {
-						let button = ui.create.div(avatars2, function () {
-							playerbg.classList.remove("scroll");
-							bg.style.backgroundImage = this.style.backgroundImage;
-							bg.tempSkin = this.name;
-							const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
-							for (let i = 0; i < skillButtons.length; i++) {
-								delete skillButtons[i].playAudio;
-							}
-							refreshIntro();
-							game.callHook("refreshSkin", [list[0], this.name]);
-						});
-						let iSTemp = false;
-						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {
-							iSTemp = true;
-							lib.character[i] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]]);
-						}
-						button.name = i;
-						const skinImg = lib.character[i]?.img;
-						skinImg ? button.setBackgroundImage(skinImg) : button.setBackground(i, "character");
-						if (iSTemp) {
-							delete lib.character[i];
-						}
-					}
-				};
-				let list = this.list,
-					skinList = this.skinList;
-				createButtons(list, skinList);
-			});
-			skin.skinList = lib.characterSubstitute[name];
-			skin.list = [name, ...lib.characterSubstitute[name].map(skin => skin[0])];
 		}
 
 		uiintro.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.touchpop);

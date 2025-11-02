@@ -1357,6 +1357,8 @@ const skills = {
 			);
 			await game.delay(3);
 			game.broadcastAll("closeDialog", videoId);
+			game.log(player, "展示了", playerCards);
+			game.log(target, "展示了", targetCards);
 			let sgn = playerCards.length - targetCards.length;
 			if (sgn > 0) {
 				target.addTempSkill(event.name + "_zhixi", { player: "phaseUseAfter" });
@@ -3072,7 +3074,7 @@ const skills = {
 						const dialog = ui.create.dialog(get.translation(player) + "发动了【飞径】", cards);
 						dialog.videoId = id;
 						for (let i = 0; i < targets.length; i++) {
-							game.creatButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
+							game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
 						}
 					},
 					targets,

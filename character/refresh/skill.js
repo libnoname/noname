@@ -15102,8 +15102,8 @@ const skills = {
 					return true;
 				}
 			},
-			canBeDiscarded(card) {
-				if (get.position(card) == "e" && get.subtypes(card).some(slot => slot == "equip2" || slot == "equip5")) {
+			canBeDiscarded(card, player, target) {
+				if (get.position(card) == "e" && get.subtypes(card).some(subtype => ["equip2", "equip5"].includes(subtype)) && player != target) {
 					return false;
 				}
 			},

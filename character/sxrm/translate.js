@@ -65,7 +65,7 @@ const translates = {
 	sxrmhanguo: "撼国",
 	sxrmhanguo_info: `每轮开始时，你可以选择一名上轮未以此法选择过的其他角色，扣置其所有牌直到本轮结束，且本轮内：你对其使用【杀】造成伤害后，其死亡；其可以发动无势力限制的${get.poptip("hujia")}且响应其的角色获得你一张牌。`,
 	sxrmweiwo: "唯我",
-	sxrmweiwo_info: `限定技，结束阶段，你可以令至多三名其他角色各获得${get.poptip("rerende")}${get.poptip("qingnang")}${get.poptip("longyin")}中的一个不同技能（仅能对你发动），然后你获得${get.poptip("old_wushen")}。`,
+	sxrmweiwo_info: `限定技，结束阶段，你可以令至多三名其他角色各获得${get.poptip("rende")}${get.poptip("qingnang")}${get.poptip("longyin")}中的一个不同技能（仅能对你发动），然后你获得${get.poptip("old_wushen")}。`,
 	old_wushen: "武神",
 	old_wushen_info: "锁定技，你的♥手牌视为无距离限制的【杀】。",
 	sxrm_guanyinping: "慢关银屏",

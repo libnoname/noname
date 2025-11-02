@@ -1,4 +1,9 @@
 export default {
+	"#dcshouhu1": "白驹踏云奔，蹄下虎骨碎千钧！",
+	"#dcshouhu2": "虓儿负勇力，狩虎何必看君王！",
+	"#dcningzhun1": "枪削虎王冠，百步之外必取尔首级。",
+	"#dcningzhun2": "壮士不动则已，动则袭如雷霆！",
+	"#linglie:die": "烈有罪，请速死。",
 	"#dchuashang1": "妾若布衣荆钗，岂非明珠投暗？",
 	"#dchuashang2": "妾生千金之家，当配万乘之服。",
 	"#dcyuzhi1": "妾性尚简，今日所衣非常衣！",

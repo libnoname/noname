@@ -5413,8 +5413,7 @@ const skills = {
 			if (get.suit(card) != "diamond") {
 				return false;
 			}
-			var mod = game.checkMod(ui.selected.cards[0], player, "unchanged", "cardEnabled2", player);
-			if (!mod) {
+			if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
 				return false;
 			}
 			return true;
@@ -5436,15 +5435,16 @@ const skills = {
 		check(card) {
 			return 7 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const [target] = event.targets;
 			if (target.hasJudge("lebu")) {
-				target.discard(target.getJudge("lebu"));
+				await target.discard(target.getJudge("lebu"));
 			} else {
-				player.useCard({ name: "lebu" }, target, cards).audio = false;
+				const next = player.useCard({ name: "lebu" }, target, event.cards);
+				next.audio = false;
+				await next;
 			}
-			"step 1";
-			player.draw();
+			await player.draw();
 		},
 		ai: {
 			result: {

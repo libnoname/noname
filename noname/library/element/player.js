@@ -6937,17 +6937,26 @@ export class Player extends HTMLDivElement {
 				});
 				skills.sort((a, b) => get.priority(a) - get.priority(b));
 			}
-			for (const skill of skills) {
-				for (const key of keys) {
+			for (const key of keys) {
+				let preResult = "unchanged";
+				for (const skill of skills) {
 					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
 					if (mod) {
-						let arg = [card, this, event, "unchanged"];
-						const result = mod.call(game, ...arg);
+						let arg = [card, this, get[key.slice(4)](card, false), preResult];
+						let result = mod.call(game, ...arg);
+						if (key == "cardsuit") {
+							const mod2 = get.info(skill).mod[key];
+							if (mod2) {
+								let arg2 = [card, this, get[key.slice(4)](card, false), result]
+								result = mod2.call(game, ...arg2);
+							}
+						}
 						if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
 							arg[arg.length - 1] = result;
 						}
-						if (arg[arg.length - 1]) {
+						if (arg[arg.length - 1] !== preResult) {
 							next.modSkill[key] = skill;
+							preResult = arg[arg.length - 1];
 						}
 					}
 				}
@@ -7412,17 +7421,26 @@ export class Player extends HTMLDivElement {
 				});
 				skills.sort((a, b) => get.priority(a) - get.priority(b));
 			}
-			for (const skill of skills) {
-				for (const key of keys) {
+			for (const key of keys) {
+					let preResult = "unchanged";
+				for (const skill of skills) {
 					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
 					if (mod) {
-						let arg = [card, this, event, "unchanged"];
-						const result = mod.call(game, ...arg);
+						let arg = [card, this, get[key.slice(4)](card, false), preResult];
+						let result = mod.call(game, ...arg);
+						if (key == "cardsuit") {
+							const mod2 = get.info(skill).mod[key];
+							if (mod2) {
+								let arg2 = [card, this, get[key.slice(4)](card, false), result]
+								result = mod2.call(game, ...arg2);
+							}
+						}
 						if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
 							arg[arg.length - 1] = result;
 						}
-						if (arg[arg.length - 1]) {
+						if (arg[arg.length - 1] !== preResult) {
 							next.modSkill[key] = skill;
+							preResult = arg[arg.length - 1];
 						}
 					}
 				}

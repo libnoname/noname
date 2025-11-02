@@ -2,6 +2,141 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//崔烈
+	dczijue: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+			const { target, name } = event;
+			const result = await target
+				.chooseControl("一张", "两张", "三张")
+				.set("prompt", "声明一个数字")
+				.set("ai", () => {
+					return get.event("resultx");
+				})
+				.set(
+					"resultx",
+					(() => {
+						if (get.attitude(target, player) > 0 && player.getHp() > 1) {
+							return "三张";
+						}
+						return "一张";
+					})()
+				)
+				.forResult();
+			target.popup(result.control, "wood");
+			game.log(target, "声明的数字为", `#y${result.index + 1}`);
+			const result2 = await player
+				.chooseToGive(target, "he", [1, Infinity], true, `交给${get.translation(target)}任意张牌`)
+				.set("ai", card => {
+					const { getNum, player } = get.event();
+					if (ui.selected.cards.length >= getNum && player.getHp() > 1) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				})
+				.set("getNum", result.index)
+				.forResult();
+			if (result2?.bool && result2.cards?.length) {
+				if (result2.cards.length > result.index) {
+					player.addSkill(`${name}_effect`);
+					player.addMark(`${name}_effect`, 1, false);
+				} else {
+					await player.damage(target);
+					await player.draw(result.index + 1);
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				locked: false,
+				intro: {
+					content: "你的攻击范围和拼点点数+#",
+				},
+				trigger: {
+					player: "compare",
+					target: "compare",
+				},
+				filter(event, player) {
+					if (player != event.target && event.iwhile) {
+						return false;
+					}
+					return player.countMark("dczijue_effect");
+				},
+				async cost(event, trigger, player) {
+					const key = player == trigger.player ? "num1" : "num2";
+					trigger[key] = Math.min(13, trigger[key] + player.countMark(event.skill));
+					game.log(player, "的拼点牌点数+", player.countMark(event.skill));
+				},
+				mod: {
+					attackRange(player, num) {
+						return num + player.countMark("dczijue_effect");
+					},
+				},
+			},
+		},
+		ai: {
+			order: 8,
+			result: {
+				target(player, target) {
+					return 1;
+				},
+				player(player, target) {
+					if (get.attitude(player, target) > 0 && player.getHp() > 1) {
+						return 3 + get.damageEffect(player, target, player) / 3;
+					}
+					return 1;
+				},
+			},
+		},
+	},
+	dcchibi: {
+		audio: 2,
+		trigger: {
+			global: "useCardToPlayer",
+		},
+		usable: 1,
+		filter(event, player) {
+			if (event.player == player || event.targets?.length != 1 || event.player == event.target) {
+				return false;
+			}
+			return !event.player.inRange(event.target) && player.canCompare(event.player);
+		},
+		logTarget: "player",
+		check(event, player) {
+			if (event.target != player && get.tag(event.card, "damage") && player.hp < 2) {
+				return false;
+			}
+			return get.effect(event.target, event.card, event.player, player) < -2;
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player.chooseToCompare(target).forResult();
+			const evt = trigger.getParent();
+			if (result.bool) {
+				evt.targets.length = 0;
+				evt.all_excluded = true;
+				if (evt.cards?.someInD()) {
+					await player.gain(evt.cards.filterInD(), "gain2");
+				}
+			} else {
+				if (!["basic", "trick"].includes(get.type(evt.card))) {
+					return;
+				}
+				if (evt.targets.includes(player)) {
+					return;
+				}
+				if (!lib.filter.targetEnabled2(evt.card, evt.player, player)) {
+					return;
+				}
+				evt.targets.add(player);
+			}
+		},
+	},
 	//星蒋琬
 	starzhenting: {
 		audio: 2,
@@ -167,7 +302,7 @@ const skills = {
 										: {
 												bool: true,
 												targets: targets,
-										  };
+											};
 								if (result.bool) {
 									player.line(result.targets);
 									if (trigger.targets.containsSome(...result.targets)) {
@@ -201,7 +336,7 @@ const skills = {
 									: {
 											bool: true,
 											targets: trigger.targets,
-									  };
+										};
 							if (result.bool) {
 								const target = result.targets[0];
 								player.line(target);
@@ -1375,12 +1510,15 @@ const skills = {
 				while (targets.length) {
 					const current = targets.shift();
 					const bool = await current
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "驱险：是否对" + get.translation(target) + "使用一张杀？")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"驱险：是否对" + get.translation(target) + "使用一张杀？"
+						)
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)
@@ -2316,7 +2454,10 @@ const skills = {
 							return current2.countCards("h") > current.countCards("h");
 						});
 					})
-					.countCards("h");
+					?.countCards("h");
+				if (!maxNum) {
+					return;
+				}
 				const leastDiscardNum = num - maxNum + 1;
 				const prompt = logged ? `是否将手牌弃置至不为最多？` : get.prompt("starminghui");
 				const next = player
@@ -13511,7 +13652,7 @@ const skills = {
 						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 					}
 					delete player.storage.pingjian_check[skill];
-				})
+				});
 			}
 			if (!_status.characterlist) {
 				game.initCharacterList();
@@ -13632,7 +13773,7 @@ const skills = {
 						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 					}
 					delete player.storage.pingjian_check[skill];
-				})
+				});
 			}
 			var list = [];
 			var skills = [];

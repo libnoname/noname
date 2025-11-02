@@ -6038,7 +6038,7 @@ const skills = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (let i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									game.creatButtonCardsetion(name, dialog.buttons[i]);
+									game.createButtonCardsetion(name, dialog.buttons[i]);
 									break;
 								}
 							}
@@ -8800,7 +8800,7 @@ const skills = {
 			const cards = lib.skill.twlijian.getCards(trigger),
 				target = trigger.player;
 			const result = await player
-				.chooseToMove("力谏：请分配" + get.translation(target) + "和你获得的牌", true)
+				.chooseToMove("力谏：请分配" + get.translation(target) + "和你获得的牌", true, "allowChooseAll")
 				.set("list", [[get.translation(target) + "获得的牌", cards], ["你获得的牌"]])
 				.set("processAI", function (list) {
 					var player = _status.event.player;

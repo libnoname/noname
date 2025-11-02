@@ -3842,31 +3842,38 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 *
 	 * @param { string } str
 	 * @param { Player } [player]
+	 * @param { boolean } prefix 是否考虑重复技能前缀，默认为false
 	 * @returns { string }
 	 */
-	skillTranslation(str, player) {
-		var str2;
-		if (get.itemtype(player) !== "player") {
-			player = undefined;
+	skillTranslation(str, player, prefix = false) {
+		let str2;
+		if (get.itemtype(player) !== "player" || prefix === false) {
+			return get.translation(str);
 		}
-		if (str.startsWith("re")) {
-			str2 = str.slice(2);
-			if (str2) {
-				if (lib.translate[str] == lib.translate[str2]) {
-					if (player?.hasSkill(str2)) {
-						return "界" + lib.translate[str];
-					}
-				}
+		const name = lib.translate[str];
+		if (!player?.getSkills("invisible", null, false).some(skill => get.skillInfoTranslation(skill, player).length && skill != str && lib.translate[skill] == name)) {
+			return get.translation(str);
+		}
+		const info = get.info(str);
+		if (info?.duplicatePrefix !== undefined) {
+			const prefix = info.duplicatePrefix;
+			if (typeof prefix == "function") {
+				return `${prefix(player, str)}${name}`;
 			}
-		} else if (str.startsWith("xin")) {
-			str2 = str.slice(3);
-			if (str2) {
-				if (lib.translate[str] == lib.translate[str2]) {
-					if (player?.hasSkill(str2)) {
-						return "新" + lib.translate[str];
-					}
-				}
+			return `${prefix}${name}`;
+		}
+		const map = lib.duplicatePrefix;
+		for (let key in map) {
+			if (str.startsWith(key) && lib.skill[str.slice(key.length)]) {
+				return `${map[key]}${name}`;
 			}
+			let key2 = `${key}_`;
+			if (str.startsWith(key2)) {
+				return `${map[key]}${name}`;
+			}
+		}
+		if (_status.skillOwner?.[str] !== undefined) {
+			return `${get.translation(str)}（${get.translation(_status.skillOwner[str])}）`;
 		}
 		return get.translation(str);
 	}
@@ -4696,7 +4703,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (position !== "cardPile") {
 			let j = 0;
-			if (start !== "random") {
+			if (start === "random") {
 				j = get.rand(0, ui.discardPile.childNodes.length - 1);
 			}
 			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {
@@ -7268,6 +7275,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 * @overload
 	 * @param {object} poptip
+	 * @param {string} poptip.id 对应特殊名词id
+	 * @param {string} poptip.type 特殊名词的类型
 	 * @param {string} poptip.name 特殊名词
 	 * @param {string} poptip.info 对应解释
 	 * @returns {string}

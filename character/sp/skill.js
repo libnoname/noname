@@ -20694,7 +20694,7 @@ const skills = {
 								return;
 							}
 							var button = ui.create.button(card, "card", dialog.buttonss[index]);
-							game.creatButtonCardsetion(name + get.strNumber(card.number), button);
+							game.createButtonCardsetion(name + get.strNumber(card.number), button);
 						},
 						event.videoId,
 						card,
@@ -20812,7 +20812,7 @@ const skills = {
 								return;
 							}
 							var button = ui.create.button(card, "card", dialog.buttonss[index]);
-							game.creatButtonCardsetion(name + get.strNumber(card.number), dialog.buttons[i]);
+							game.createButtonCardsetion(name + get.strNumber(card.number), dialog.buttons[i]);
 						},
 						event.videoId,
 						card,
@@ -23058,11 +23058,8 @@ const skills = {
 				if (!target.isIn()) {
 					continue;
 				}
-				const bool = await target
-					.chooseBool(`是否令${player == target ? "自己" : get.translation(player)}摸一张牌？`)
-					.set("choice", get.attitude(target, player) > 0)
-					.forResultBool();
-				if (bool) {
+				const { result } = await target.chooseBool(`是否令${player == target ? "自己" : get.translation(player)}摸一张牌？`).set("choice", get.attitude(target, player) > 0);
+				if (result?.bool) {
 					target.line(player);
 					if (player !== target && (get.mode() !== "identity" || target.identity !== "nei")) {
 						target.addExpose(0.15);
@@ -23070,9 +23067,7 @@ const skills = {
 					await player.draw();
 				}
 			}
-			const {
-				result: { bool, targets },
-			} = await player
+			const { result } = await player
 				.chooseTarget("是否对一名手牌数等于自己的目标角色造成1点伤害？", (card, player, target) => {
 					return get.event().getParent().targets.includes(target) && target.countCards("h") == player.countCards("h");
 				})
@@ -23080,19 +23075,17 @@ const skills = {
 					const player = get.player();
 					return get.damageEffect(target, player, player);
 				});
-			if (!bool) {
+			if (!result?.targets?.length) {
 				return;
 			}
-			const [target] = targets;
+			const [target] = result.targets;
 			player.line(target, "green");
 			if (get.mode() !== "identity" || player.identity !== "nei") {
 				player.addExpose(0.15);
 			}
 			await target.damage();
 			if (event.targets.some(target => target.isIn() && target.countCards("h") < player.countCards("h"))) {
-				const {
-					result: { bool, targets },
-				} = await player
+				const { result } = await player
 					.chooseTarget(
 						"请选择一名手牌数小于自己的目标角色，令其摸一张牌",
 						(card, player, target) => {
@@ -23104,10 +23097,10 @@ const skills = {
 						const player = get.player();
 						return get.effect(target, { name: "draw" }, player, player);
 					});
-				if (!bool) {
+				if (!result?.targets?.length) {
 					return;
 				}
-				const [target] = targets;
+				const [target] = result.targets;
 				player.line(target);
 				if (player !== target && (get.mode() !== "identity" || player.identity !== "nei")) {
 					player.addExpose(0.1);
@@ -41824,7 +41817,7 @@ const skills = {
 			await target.draw(2);
 			const evt = trigger.getParent("phase", true);
 			if (evt) {
-				evt.phaseList.splice(evt.num, 0, `phaseUse|${event.name}`);
+				evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
 			}
 		},
 		ai: { expose: 0.5 },

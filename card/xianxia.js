@@ -510,6 +510,84 @@ game.import("card", function () {
 					},
 				},
 			},
+			liuyedao: {
+				fullskin: true,
+				type: "equip",
+				subtype: "equip1",
+				distance: { attackFrom: -1 },
+				ai: {
+					basic: {
+						equipValue: 3,
+					},
+				},
+				skills: ["liuyedao_skill"],
+			},
+			zj_yexingyi: {
+				fullskin: true,
+				type: "equip",
+				subtype: "equip2",
+				ai: {
+					basic: {
+						equipValue: 5.7,
+					},
+				},
+				skills: ["zj_yexingyi_skill"],
+			},
+			zj_lianjunshengyan: {
+				enable: true,
+				fullskin: true,
+				image: "image/card/lianjunshengyan.png",
+				type: "trick",
+				toself: true,
+				filterTarget: lib.filter.notMe,
+				selectTarget: () => 1,
+				changeTarget(player, targets) {
+					targets.push(player);
+				},
+				modTarget: true,
+				async contentBefore(event, trigger, player) {
+					const evt = event.getParent();
+					if (!evt.lianjunType) {
+						const val = evt.targets.reduce((sum, current) => {
+							sum += get.effect(current, { name: "draw" }, player, player);
+							sum -= get.recoverEffect(current, player, player);
+							return sum;
+						}, 0);
+						const result = await player
+							.chooseControl("摸一张牌", "回复1点体力")
+							.set("prompt", `联军盛宴：选择一项令所有目标执行`)
+							.set("ai", () => (get.event("val") > 0 ? "摸一张牌" : "回复1点体力"))
+							.set("val", val)
+							.forResult();
+						if (result?.control) {
+							player.popup(result.control == "摸一张牌" ? "摸牌" : "回血");
+							evt.lianjunType = result.control == "摸一张牌" ? "draw" : "recover";
+						}
+					}
+				},
+				async content(event, trigger, player) {
+					const evt = event.getParent(),
+						{ target } = event,
+						type = evt.lianjunType;
+					await target[type]();
+				},
+				ai: {
+					basic: {
+						useful: 3,
+						value: 3,
+						order: 5,
+					},
+					result: {
+						target(player, target, card) {
+							return Math.max(get.effect(target, { name: "draw" }, player, target), get.recoverEffect(target, player, target));
+						},
+					},
+					tag: {
+						gain: 1,
+						recover: 1,
+					},
+				},
+			},
 		},
 		skill: {
 			tiejili_skill: {
@@ -796,6 +874,86 @@ game.import("card", function () {
 				},
 				log: false,
 			},
+			liuyedao_skill: {
+				equipSkill: true,
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					if (event.card?.name !== "sha") {
+						return false;
+					}
+					return player.countDiscardableCards(player, "h") > 1;
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToDiscard(get.prompt2(event.skill), 2, "h")
+						.set("ai", card => {
+							if (get.event("val") <= 0) {
+								return 0;
+							}
+							return 6 - get.value(card);
+						})
+						.set("val", get.damageEffect(trigger.player, trigger.source, player))
+						.set("chooseonly", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await player.modedDiscard(event.cards);
+					trigger.num++;
+				},
+			},
+			zj_yexingyi_skill: {
+				equipSkill: true,
+				trigger: { target: "shaBegin" },
+				forced: true,
+				priority: 6,
+				audio: true,
+				filter(event, player) {
+					if (player.hasSkillTag("unequip2")) {
+						return false;
+					}
+					if (
+						event.player.hasSkillTag("unequip", false, {
+							name: event.card ? event.card.name : null,
+							target: player,
+							card: event.card,
+						})
+					) {
+						return false;
+					}
+					return event.card.name === "sha" && get.color(event.card) === "red";
+				},
+				async content(event, trigger, player) {
+					trigger.cancel();
+				},
+				ai: {
+					effect: {
+						target(card, player, target) {
+							if (typeof card !== "object" || target.hasSkillTag("unequip2")) {
+								return;
+							}
+							if (
+								player.hasSkillTag("unequip", false, {
+									name: card ? card.name : null,
+									target: target,
+									card: card,
+								}) ||
+								player.hasSkillTag("unequip_ai", false, {
+									name: card ? card.name : null,
+									target: target,
+									card: card,
+								})
+							) {
+								return;
+							}
+							if (card.name === "sha" && get.color(card) === "red") {
+								return "zeroplayertarget";
+							}
+						},
+					},
+				},
+			},
 		},
 		translate: {
 			tiejili: "铁蒺藜骨朵",
@@ -829,6 +987,16 @@ game.import("card", function () {
 			dajunyajing_info: "出牌阶段，对一名角色使用。其以外的所有角色依次选择是否将一张牌当无距离限制的【杀】对其使用。",
 			yushijiesui: "玉石皆碎",
 			yushijiesui_info: "出牌阶段，对一名角色使用。你对目标角色造成1点伤害，然后失去1点体力。",
+			liuyedao: "柳叶刀",
+			liuyedao_info: "你使用【杀】造成伤害时，可以弃置两张手牌令此伤害+1。",
+			liuyedao_skill: "柳叶刀",
+			liuyedao_skill_info: "你使用【杀】造成伤害时，可以弃置两张手牌令此伤害+1。",
+			zj_yexingyi: "夜行衣",
+			zj_yexingyi_info: "锁定技，红色的【杀】对你无效。",
+			zj_yexingyi_skill: "夜行衣",
+			zj_yexingyi_skill_info: "锁定技，红色的【杀】对你无效。",
+			zj_lianjunshengyan: "联军盛宴",
+			zj_lianjunshengyan_info: "出牌阶段，对你和一名其他角色使用。选择一项令所有目标执行：1.摸一张牌；2.回复1点体力。",
 		},
 		list: [
 			["diamond", 6, "suibozhuliu"],
@@ -839,6 +1007,9 @@ game.import("card", function () {
 			["spade", 5, "qingmingjian"],
 			["club", 5, "mengchong"],
 			["heart", 5, "yushijiesui"],
+			["spade", 1, "liuyedao"],
+			["spade", 2, "zj_yexingyi"],
+			["heart", 1, "zj_lianjunshengyan"],
 		],
 	};
 });

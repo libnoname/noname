@@ -4570,8 +4570,8 @@ const skills = {
 					return true;
 				}
 			},
-			canBeDiscarded(card) {
-				if (get.position(card) == "e" && !["equip3", "equip4", "equip6"].includes(get.subtype(card))) {
+			canBeDiscarded(card, player, target) {
+				if (get.position(card) == "e" && !get.subtypes(card).some(subtype => ["equip3", "equip4", "equip6"].includes(subtype)) && player != target) {
 					return false;
 				}
 			},

@@ -1163,7 +1163,7 @@ game.import("card", function () {
 						if (dialog.buttons[i].link === card) {
 							button = dialog.buttons[i];
 							const innerHTML = target.getName(true);
-							game.creatButtonCardsetion(innerHTML, button);
+							game.createButtonCardsetion(innerHTML, button);
 							dialog.buttons.remove(button);
 							break;
 						}
@@ -1179,7 +1179,7 @@ game.import("card", function () {
 									dialog.content.firstChild.innerHTML = capt;
 									for (var i = 0; i < dialog.buttons.length; i++) {
 										if (dialog.buttons[i].link === card) {
-											game.creatButtonCardsetion(name, dialog.buttons[i]);
+											game.createButtonCardsetion(name, dialog.buttons[i]);
 											dialog.buttons.splice(i--, 1);
 											break;
 										}

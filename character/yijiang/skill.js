@@ -3583,7 +3583,7 @@ const skills = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (var i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									game.creatButtonCardsetion(name, dialog.buttons[i]);
+									game.createButtonCardsetion(name, dialog.buttons[i]);
 									break;
 								}
 							}

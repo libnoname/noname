@@ -1292,6 +1292,8 @@ declare interface Skill {
 	clickable?(player: Player): void;
 	/** 过滤点击，应该是过滤弹出面板是否能点击，具体作用日后细究 */
 	clickableFilter?(player: Player): boolean;
+	/** 设置技能重复时此技能的前缀 */
+	duplicatePrefix?: string | ((player: Player, skill: string) => string);
 	/** 技能名不带【】括号 */
 	nobracket?: boolean;
 

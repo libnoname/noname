@@ -5833,12 +5833,13 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return (event.name != "phase" || game.phaseNumber == 0) && player.countCards("h");
 		},
-		content() {
-			"step 0";
-			var cards = player.getCards("h");
-			player.addGaintag(cards, "dclingkong_tag");
+		async content(event, trigger, player) {
+			const cards = player.getCards("h");
+			if (cards.length) {
+				player.addGaintag(cards, "dclingkong_tag");
+			}
 		},
 		mod: {
 			ignoredHandcard(card, player) {
@@ -5856,40 +5857,39 @@ const skills = {
 		subSkill: {
 			marker: {
 				audio: "dclingkong",
-				trigger: { player: ["gainAfter", "loseAsyncAfter"] },
+				trigger: {
+					player: "gainAfter",
+					global: "loseAsyncAfter",
+				},
 				forced: true,
 				filter: (event, player) => {
 					const phaseDraw = event.getParent("phaseDraw");
-					if (phaseDraw && phaseDraw.player === player) {
+					if (phaseDraw?.player === player) {
 						return false;
 					}
-					const evt = player.getHistory("gain").find(i => {
-						const phaseDraw = i.getParent("phaseDraw");
+					const history = player.getHistory("gain", evt => {
+						const phaseDraw = evt.getParent("phaseDraw");
 						return !phaseDraw || phaseDraw.player !== player;
 					});
-					if (!evt) {
-						return false;
-					}
-					if (event.name == "gain") {
-						if (evt != event || event.getlx === false) {
-							return false;
-						}
-					} else if (evt.getParent() != event) {
+					const evt = event.name == "loseAsync" ? event.childEvents?.find(evtx => evtx.name == "gain" && evtx.player == player) : event;
+					if (history.indexOf(evt) !== 0) {
 						return false;
 					}
 					const hs = player.getCards("h");
 					if (!hs.length) {
 						return false;
 					}
-					const cards = event.getg(player);
-					return cards.some(card => hs.includes(card));
+					const cards = event.getg?.(player);
+					return cards?.some(card => hs.includes(card));
 				},
-				content() {
-					var hs = player.getCards("h"),
+				async content(event, trigger, player) {
+					let hs = player.getCards("h"),
 						cards = trigger.getg(player);
 					cards = cards.filter(card => hs.includes(card));
-					player.addGaintag(cards, "dclingkong_tag");
-					game.delayx();
+					if (cards.length) {
+						player.addGaintag(cards, "dclingkong_tag");
+					}
+					await game.delayx();
 				},
 			},
 		},
@@ -11206,7 +11206,7 @@ const skills = {
 					.set("customButton", button => {
 						const target = get.owner(button.link);
 						if (target) {
-							game.creatButtonCardsetion(target.getName(true), button);
+							game.createButtonCardsetion(target.getName(true), button);
 						}
 					})
 					.set("delay_time", 4)
@@ -11241,7 +11241,7 @@ const skills = {
 						const card = item[0],
 							index = item[2] == "仅展示牌" ? 0 : 1;
 						const button = ui.create.button(card, "card", dialog.buttonss[index]);
-						game.creatButtonCardsetion(item[1].getName(true), button);
+						game.createButtonCardsetion(item[1].getName(true), button);
 						if (results.length > 0) {
 							setTimeout(getx, 500);
 						}

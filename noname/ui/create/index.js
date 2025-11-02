@@ -2239,7 +2239,7 @@ export class Create {
 		}
 		ui.skills = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills.childNodes.length; i++) {
-			ui.skills.childNodes[i].innerHTML = get.skillTranslation(ui.skills.childNodes[i].link, _status.event.player);
+			ui.skills.childNodes[i].innerHTML = get.skillTranslation(ui.skills.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills.style.display = "none";
@@ -2276,7 +2276,7 @@ export class Create {
 		}
 		ui.skills2 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills2.childNodes.length; i++) {
-			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(ui.skills2.childNodes[i].link, _status.event.player);
+			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(ui.skills2.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills2.style.display = "none";
@@ -2313,7 +2313,7 @@ export class Create {
 		}
 		ui.skills3 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills3.childNodes.length; i++) {
-			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(ui.skills3.childNodes[i].link, _status.event.player);
+			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(ui.skills3.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills3.style.display = "none";
