@@ -94,6 +94,8 @@ window.noname_character_rank = {
 	],
 	a: [
 		"yj_puyuan",
+		"tengjianahai",
+		"hanbingjianshaonu",
 		"scl_jiaxu",
 		"linglie",
 		"dm_sunquan",
