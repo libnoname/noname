@@ -898,7 +898,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await player.discardPlayerCard(Math.max(true, target, "he", target.countCards("h") - target.hp, 1), "allowChooseAll", target);
+			const { result } = await player.discardPlayerCard(true, target, "he", Math.max(target.countCards("h") - target.hp, 1), "allowChooseAll");
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.reduce((sum, card) => (sum + get.type(card) != "equip" ? 1 : 0), 0);
 				if (num == 0) {
@@ -1048,6 +1048,7 @@ const skills = {
 		},
 		subSkill: {
 			dianjun: {
+				audio: "jsrgzhengbing",
 				charlotte: true,
 				trigger: { player: "phaseEnd" },
 				forced: true,
@@ -1583,8 +1584,8 @@ const skills = {
 			player.addTempSkill("olsbmengshi_effect", { player: "dieAfter" });
 			player.markAuto("olsbmengshi_effect", event.targets);
 			const list = target2.getHp() > target1.getHp() ? [num, -num] : [-num, num];
-			await target1.changeHp(list[0]).set("_triggered", null);
-			await target2.changeHp(list[1]).set("_triggered", null);
+			await target1[list[0] > 0 ? "recover" : "loseHp"](Math.abs(list[0]));
+			await target2[list[1] > 0 ? "recover" : "loseHp"](Math.abs(list[1]));
 		},
 		subSkill: {
 			effect: {

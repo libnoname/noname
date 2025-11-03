@@ -216,28 +216,47 @@ const skills = {
 						_status.zc26_huaxiu ??= {};
 						_status.zc26_huaxiu[name] ??= [];
 						_status.zc26_huaxiu[name].add(player);
+						lib.init.sheet(`
+							.card[data-card-name = "${name}"]>.image {
+								background-image: url(${lib.assetURL}image/card/${map[name]}.png) !important;
+							}
+						`);
 					},
 					name,
 					player,
 					map
 				);
-				function check(name, target) {
-					if (target.hasVCard({ name }, "e")) {
-						return true;
+				function check(name, target, method) {
+					if (method == "e") {
+						return target.hasVCard({ name }, "e");
+					} else if (method == "j") {
+						return target.hasVCard(card => {
+							if (!card.storage?.equipEnable) {
+								return false;
+							}
+							return card.cards.some(cardx => cardx.name == name);
+						}, "j");
 					}
-					return target.hasVCard(card => {
-						if (!card.storage?.equipEnable) {
-							return false;
-						}
-						return card.cards.some(cardx => cardx.name == name);
-					}, "j");
+					return false;
 				}
 				const removeSkill = get.skillsFromEquips([{ name }]),
 					addSkill = get.skillsFromEquips([{ name: map[name] }]);
 				for (let current of game.players) {
-					current.removeSkill(removeSkill);
-					if (check(name, current)) {
+					let keepSkills = Object.values(current.additionalSkills).flat(),
+						removeSkill2 = removeSkill.slice().removeArray(keepSkills);
+					if (removeSkill2.length) {
+						current.removeSkill(removeSkill2);
+					}
+					if (check(name, current, "j")) {
 						current.addSkill(addSkill);
+					}
+					if (check(name, current, "e")) {
+						current.addEquipTrigger({ name: map[name] });
+					}
+					let vcards = current.getVCards("e", { name });
+					while (vcards.length) {
+						let vcard = vcards.shift();
+						current.$addVirtualEquip(vcard, vcard.cards);
 					}
 				}
 			}
@@ -267,19 +286,26 @@ const skills = {
 						for (let name of ["duanjian", "serafuku", "yonglv"]) {
 							if (_status.zc26_huaxiu?.[name]?.includes(player)) {
 								_status.zc26_huaxiu[name].remove(player);
+								lib.init.sheet(`
+									.card[data-card-name = "${name}"]>.image {
+										background-image: url(${lib.assetURL}image/card/${name}.png) !important;
+									}
+								`);
 							}
 						}
 					}, player);
-					function check(name, target) {
-						if (target.hasVCard({ name }, "e")) {
-							return true;
+					function check(name, target, method) {
+						if (method == "e") {
+							return target.hasVCard({ name }, "e");
+						} else if (method == "j") {
+							return target.hasVCard(card => {
+								if (!card.storage?.equipEnable) {
+									return false;
+								}
+								return card.cards.some(cardx => cardx.name == name);
+							}, "j");
 						}
-						return target.hasVCard(card => {
-							if (!card.storage?.equipEnable) {
-								return false;
-							}
-							return card.cards.some(cardx => cardx.name == name);
-						}, "j");
+						return false;
 					}
 					const map = {
 						duanjian: "zc26_zhuge",
@@ -289,6 +315,9 @@ const skills = {
 					for (let name of ["duanjian", "serafuku", "yonglv"]) {
 						if (name in _status.zc26_huaxiu && !_status.zc26_huaxiu[name].length) {
 							game.log(`#y${get.translation({ name })}`, "的效果还原了");
+							game.broadcastAll(function (name) {
+								delete _status.zc26_huaxiu[name];
+							}, name);
 							lib.card[name] = _status.zc26_huaxiu_origin[name].info;
 							lib.translate[name] = _status.zc26_huaxiu_origin[name].translate;
 							lib.translate[`${name}_info`] = _status.zc26_huaxiu_origin[name].translate2;
@@ -300,8 +329,15 @@ const skills = {
 								if (removeSkill2.length) {
 									current.removeSkill(removeSkill2);
 								}
-								if (check(name, current)) {
+								if (check(name, current, "j")) {
 									current.addSkill(addSkill);
+								} else if (check(name, current, "e")) {
+									current.addEquipTrigger({ name });
+								}
+								let vcards = current.getVCards("e", { name });
+								while (vcards.length) {
+									let vcard = vcards.shift();
+									current.$addVirtualEquip(vcard, vcard.cards);
 								}
 							}
 						}
@@ -393,7 +429,7 @@ const skills = {
 						return;
 					}
 					const { result } = await current
-						.chooseCardButton(`请选择重铸${trigger.target}的一张手牌`, cards)
+						.chooseCardButton(`请选择重铸${get.translation(trigger.target)}的一张手牌`, cards)
 						.set("ai", ({ link }) => {
 							const { player, target } = get.event();
 							if (get.attitude(player, target) > 0) {
@@ -586,7 +622,7 @@ const skills = {
 				const targets = game.dead.slice();
 				const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [player, event.indexedData]).forResult();
 				for (const target of targets) {
-					let source = game.findPlayer(current => current.hasCards(card => card == event.indexedData, "ej")),
+					let source = game.findPlayer(current => current.hasCard(card => card == event.indexedData, "ej")),
 						aim;
 					const control = map.get(target).control;
 					if (control == "上家") {

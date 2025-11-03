@@ -614,7 +614,7 @@ const translates = {
 	star_dingfeng: "星丁奉",
 	star_dingfeng_prefix: "星",
 	stardangchen: "荡尘",
-	stardangchen_info: "出牌阶段开始时，你可以令一名角色交给你任意张牌，然后你可以弃置X张牌（X为其交给你的牌数）。若你因此弃牌，则当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为X的倍数，则此牌额外结算一次。",
+	stardangchen_info: "出牌阶段开始时，你可以令一名角色交给你任意张牌，然后你可以弃置X张牌（X为其交给你的牌数）。若你因此弃牌，则当你于本阶段使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为X的倍数，则此牌额外结算一次。",
 	starjianyu: "翦羽",
 	starjianyu_info: "锁定技，其他角色在你回合内失去装备区的牌后，你摸一张牌。",
 	star_wenchou: "星文丑",

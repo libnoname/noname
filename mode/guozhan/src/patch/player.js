@@ -10,8 +10,8 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 获取玩家的势力
 	 *
-	 * @param {Number} [num = 0] - 根据哪张武将牌返回势力，`0`为主将，`1`为副将（默认为0）
-	 * @returns {string}
+	 * @param { number } [num = 0] - 根据哪张武将牌返回势力，`0`为主将，`1`为副将（默认为0）
+	 * @returns { string }
 	 */
 	getGuozhanGroup(num = 0) {
 		if (this.trueIdentity) {
@@ -39,7 +39,7 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 选择军令
 	 *
-	 * @param {Player} target
+	 * @param { Player } target 执行军令的对象
 	 * @returns
 	 */
 	chooseJunlingFor(target) {
@@ -57,11 +57,12 @@ export class PlayerGuozhan extends Player {
 	}
 
 	/**
-	 * 选择军令
+	 * 选择是否执行军令
 	 *
-	 * @param {Player} source
-	 * @param {string} junling
-	 * @param {Player[]} targets
+	 * @param { Player } source 军令发起者
+	 * @param { string } junling 军令内容
+	 * @param { Player[] } targets 军令效果的对象
+	 * @returns
 	 */
 	chooseJunlingControl(source, junling, targets) {
 		const next = game.createEvent("chooseJunlingControl");
@@ -81,9 +82,9 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 执行军令
 	 *
-	 * @param {Player} source
-	 * @param {string} junling
-	 * @param {Player[]} targets
+	 * @param { Player } source 军令发起者
+	 * @param { string } junling 军令内容
+	 * @param { Player[] } targets 军令效果的对象
 	 * @returns
 	 */
 	carryOutJunling(source, junling, targets) {
@@ -102,9 +103,10 @@ export class PlayerGuozhan extends Player {
 	}
 
 	/**
+	 * 选择变更副将
 	 *
-	 * @param {*} [repeat]
-	 * @param {*} [hidden]
+	 * @param { boolean } [repeat] 是否强制变更，且当前变更副将技能不计入变更记录
+	 * @param { "hidden" } [hidden] 是否暗置变更后的副将，若为`"hidden"`则暗置
 	 * @returns
 	 */
 	mayChangeVice(repeat, hidden) {
@@ -135,17 +137,26 @@ export class PlayerGuozhan extends Player {
 
 	// 后面摆了，相信后人的智慧
 
-	differentIdentityFrom(target, self) {
+	/**
+	 * 判断是否“不是”队友
+	 *
+	 * @param { Player } target 判断对象
+	 * @param { boolean } [shown] 考虑自身身份已明确的情况
+	 * @returns { boolean }
+	 */
+	differentIdentityFrom(target, shown) {
+		// @ts-expect-error 类型就是这么写的
 		if (this == target) {
 			return false;
 		}
+		//野心家建国情况
 		if (this.getStorage("yexinjia_friend").includes(target)) {
 			return false;
 		}
 		if (target.getStorage("yexinjia_friend").includes(this)) {
 			return false;
 		}
-		if (self) {
+		if (shown) {
 			if (target.identity == "unknown") {
 				return false;
 			}
@@ -169,6 +180,14 @@ export class PlayerGuozhan extends Player {
 		}
 		return this.identity != target.identity;
 	}
+
+	/**
+	 * 判断是否“是”队友
+	 *
+	 * @param { Player } target 判断对象
+	 * @param { boolean } [shown] 考虑自身身份已明确的情况
+	 * @returns { boolean }
+	 */
 	sameIdentityAs(target, shown) {
 		if (this.getStorage("yexinjia_friend").includes(target)) {
 			return true;
@@ -181,6 +200,7 @@ export class PlayerGuozhan extends Player {
 				return false;
 			}
 		} else {
+			// @ts-expect-error 类型就是这么写的
 			if (this == target) {
 				return true;
 			}
@@ -197,12 +217,24 @@ export class PlayerGuozhan extends Player {
 		}
 		return this.identity == target.identity;
 	}
+
+	/**
+	 * 判断玩家亮将情况
+	 *
+	 * @returns { object }
+	 */
 	getModeState() {
 		return {
 			unseen: this.isUnseen(0),
 			unseen2: this.isUnseen(1),
 		};
 	}
+
+	/**
+	 * 设置玩家信息（主副将名称、身份）
+	 *
+	 * @param { object } info
+	 */
 	setModeState(info) {
 		if (info.mode.unseen) {
 			this.classList.add("unseen");
@@ -310,6 +342,13 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		game.tryResult();
 	}
+
+	/**
+	 * 查看一名角色的主副将
+	 *
+	 * @param { Player } target 查看对象
+	 * @param { number } [num] - 查看哪张武将牌，`0`为主将，`1`为副将，`2`为全部（默认为2）
+	 */
 	viewCharacter(target, num) {
 		if (num != 0 && num != 1) {
 			num = 2;
@@ -351,6 +390,13 @@ export class PlayerGuozhan extends Player {
 			player.chooseControl("ok").set("dialog", content);
 		});
 	}
+
+	/**
+	 * 判断副将技是否生效
+	 *
+	 * @param { string } skill 要判断的技能
+	 * @param { false } [disable] 是否失效该技能，若为`false`则失效
+	 */
 	checkViceSkill(skill, disable) {
 		if (game.expandSkills(lib.character[this.name2][3].slice(0)).includes(skill) || this.hasSkillTag("alwaysViceSkill")) {
 			return true;
@@ -361,6 +407,12 @@ export class PlayerGuozhan extends Player {
 			return false;
 		}
 	}
+	/**
+	 * 判断主将技是否生效
+	 *
+	 * @param { string } skill 要判断的技能
+	 * @param { false } [disable] 是否失效该技能，若为`false`则失效
+	 */
 	checkMainSkill(skill, disable) {
 		if (game.expandSkills(lib.character[this.name1][3].slice(0)).includes(skill) || this.hasSkillTag("alwaysMainSkill")) {
 			return true;
@@ -371,6 +423,12 @@ export class PlayerGuozhan extends Player {
 			return false;
 		}
 	}
+
+	/**
+	 * 减少玩家体力上限，不触发相关时机
+	 *
+	 * @param { number } [num] 减少的数值，默认为1
+	 */
 	removeMaxHp(num) {
 		if (game.online) {
 			return;
@@ -393,6 +451,14 @@ export class PlayerGuozhan extends Player {
 		}
 		this.update();
 	}
+
+	/**
+	 * 暗置武将
+	 *
+	 * @param { number } num - 暗置哪张武将牌，`0`为主将，`1`为副将
+	 * @param { boolean } [log] 是否log信息
+	 * @returns
+	 */
 	hideCharacter(num, log) {
 		if (this.isUnseen(2)) {
 			return;
@@ -410,6 +476,13 @@ export class PlayerGuozhan extends Player {
 		next.setContent("hideCharacter");
 		return next;
 	}
+
+	/**
+	 * 移去武将牌（变成士兵）
+	 *
+	 * @param { number } num - 移去哪张武将牌，`0`为主将，`1`为副将
+	 * @returns
+	 */
 	removeCharacter(num) {
 		var name = this["name" + (num + 1)];
 		var next = game.createEvent("removeCharacter");
@@ -430,6 +503,7 @@ export class PlayerGuozhan extends Player {
 		var to = "gz_shibing" + (info[0] == "male" ? 1 : 2) + info[1];
 		game.log(this, "移除了" + (num ? "副将" : "主将"), "#b" + name);
 		if (!lib.character[to]) {
+			// @ts-expect-error 类型就是这么写的
 			lib.character[to] = [info[0], info[1], 0, [], [`character:${to.slice(3, 11)}`, "unseen"]];
 			lib.translate[to] = `${get.translation(info[1])}兵`;
 		}
@@ -438,6 +512,13 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		_status.characterlist.add(name);
 	}
+
+	/**
+	 * 变更副将
+	 *
+	 * @param { boolean } [hidden] 是否暗置变更后的副将
+	 * @returns
+	 */
 	changeVice(hidden) {
 		var next = game.createEvent("changeVice");
 		// @ts-expect-error 类型就是这么写的
@@ -451,6 +532,15 @@ export class PlayerGuozhan extends Player {
 		}
 		return next;
 	}
+
+	/**
+	 * 与一名角色的主副将进行易位
+	 *
+	 * @param { Player } target 要交换武将的对象
+	 * @param { number } [num1=2]  - 自己要易位的武将牌，`1`为主将，`2`为副将（默认为2）
+	 * @param { number } [num2=num1] - 交换对象要易位的武将牌，`1`为主将，`2`为副将（默认与前一个参数相同）
+	 * @returns
+	 */
 	transCharacter(target, num1 = 2, num2 = num1) {
 		var next = game.createEvent("transCharacter");
 		// @ts-expect-error 类型就是这么写的
@@ -464,9 +554,19 @@ export class PlayerGuozhan extends Player {
 		next.setContent("transCharacter");
 		return next;
 	}
+	/**
+	 * 玩家是否有主将（不为士兵）
+	 *
+	 * @returns { boolean }
+	 */
 	hasMainCharacter() {
 		return this.name1.indexOf("gz_shibing") != 0;
 	}
+	/**
+	 * 玩家是否有副将（不为士兵）
+	 *
+	 * @returns { boolean }
+	 */
 	hasViceCharacter() {
 		return this.name2.indexOf("gz_shibing") != 0;
 	}
@@ -598,6 +698,7 @@ export class PlayerGuozhan extends Player {
 		this.identityShown = true;
 		// @ts-expect-error 类型就是这么写的
 		for (var i = 0; i < skills.length; i++) {
+			// @ts-expect-error 类型就是这么写的
 			if (!this.hiddenSkills.includes(skills[i])) {
 				continue;
 			}
@@ -647,6 +748,14 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		game.tryResult();
 	}
+
+	/**
+	 * 玩家是否“不会”变成野心家
+	 *
+	 * @param { string } [group] 判断所处的势力
+	 * @param { number } [numOfReadyToShow] 预亮角色数，默认为1（自己）
+	 * @returns { boolean }
+	 */
 	wontYe(group, numOfReadyToShow) {
 		if (!group) {
 			if (this.trueIdentity) {
@@ -668,6 +777,13 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		return get.totalPopulation(group) + numOfReadyToShow <= (_status.separatism ? Math.max(get.population() / 2 - 1, 1) : get.population() / 2);
 	}
+
+	/**
+	 * 判断主副将是否“珠联璧合”
+	 *
+	 * @param { object } [choosing] 传入已选主副将（目前无实际用处）
+	 * @returns { boolean }
+	 */
 	perfectPair(choosing) {
 		if (_status.connectMode) {
 			if (!lib.configOL.zhulian) {
@@ -723,6 +839,13 @@ export class PlayerGuozhan extends Player {
 		}
 		return (lib.perfectPair[name1] && lib.perfectPair[name1].flat(Infinity).includes(name2)) || (lib.perfectPair[name2] && lib.perfectPair[name2].flat(Infinity).includes(name1));
 	}
+
+	/**
+	 * 判断玩家是否处于“围攻”状态
+	 *
+	 * @param { Player } [player] 参照对象，是否“围攻”该角色，不填则判断自身上下家
+	 * @returns { boolean }
+	 */
 	siege(player) {
 		if (this.identity == "unknown" || this.hasSkill("undist")) {
 			return false;
@@ -738,9 +861,17 @@ export class PlayerGuozhan extends Player {
 			}
 			return false;
 		} else {
+			// @ts-expect-error 类型就是这么写的
 			return player.sieged() && (player.getNext() == this || player.getPrevious() == this);
 		}
 	}
+
+	/**
+	 * 判断玩家是否处于“被围攻”状态
+	 *
+	 * @param { Player } [player] 参照对象，是否被该角色“围攻”，不填则判断自身上下家
+	 * @returns { boolean }
+	 */
 	sieged(player) {
 		if (this.identity == "unknown") {
 			return false;
@@ -759,6 +890,12 @@ export class PlayerGuozhan extends Player {
 			return false;
 		}
 	}
+
+	/**
+	 * 判断玩家是否处于“队列”
+	 *
+	 * @returns { boolean }
+	 */
 	inline() {
 		if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) {
 			return false;
@@ -846,8 +983,7 @@ export class PlayerGuozhan extends Player {
 					if (targets.length == 1) {
 						// @ts-expect-error 类型就是这么写的
 						this.ai.shown += 0.2 * c;
-					}
-					else {
+					} else {
 						// @ts-expect-error 类型就是这么写的
 						this.ai.shown += 0.1 * c;
 					}

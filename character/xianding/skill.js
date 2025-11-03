@@ -8800,15 +8800,26 @@ const skills = {
 	//威孙权
 	dcwoheng: {
 		audio: 2,
+		mark: true,
+		intro: {
+			markcount() {
+				const useCnt = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
+				return useCnt + 1;
+			},
+			content() {
+				const useCnt = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
+				return `令一名其他角色摸${get.cnNumber(useCnt + 1)}张牌或弃置${get.cnNumber(useCnt + 1)}张牌`;
+			},
+		},
 		trigger: { player: "damageEnd" },
 		enable: "phaseUse",
 		filterTarget: lib.filter.notMe,
 		prompt() {
-			const num = get.player().countMark("dcwoheng");
+			const num = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
 			return `令一名其他角色摸${get.cnNumber(num + 1)}张牌或弃置${get.cnNumber(num + 1)}张牌`;
 		},
 		async cost(event, trigger, player) {
-			const num = player.countMark("dcwoheng");
+			const num = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), `令一名其他角色摸${get.cnNumber(num + 1)}张牌或弃置${get.cnNumber(num + 1)}张牌`, lib.filter.notMe)
 				.set("ai", target => {
@@ -8819,14 +8830,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target || event.targets[0];
-			game.countPlayer(current => {
-				if (current.hasSkill("dcwoheng", null, null, false)) {
-					current.addTempSkill("dcwoheng_used", "roundStart");
-					current.addMark("dcwoheng", 1, false);
-				}
-			});
-			const goon = event.getParent(2).name !== "dcyuhui_buff";
-			const num = goon ? player.countMark("dcwoheng") : 1;
+			const goon = event.getParent(2).name !== "dcyuhui_buff",
+				useCnt = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
+			const num = goon ? useCnt : 1;
 			if (!target?.isIn()) {
 				return;
 			}
@@ -8845,7 +8851,7 @@ const skills = {
 						"choice",
 						get.effect(target, { name: "draw" }, player, player) *
 							(() => {
-								if (goon && player.countMark("dcwoheng") <= 3) {
+								if (goon && useCnt <= 3) {
 									if (target.countCards("h") + num === player.countCards("h")) {
 										return 100 * num;
 									}
@@ -8855,7 +8861,7 @@ const skills = {
 							get.effect(target, { name: "guohe_copy2" }, target, player) *
 								(() => {
 									const numx = Math.min(num, target.countDiscardableCards(target, "he"));
-									if (goon && player.countMark("dcwoheng") <= 3) {
+									if (goon && useCnt <= 3) {
 										if (target.countCards("h") - numx === player.countCards("h")) {
 											return 100 * numx;
 										}
@@ -8872,16 +8878,28 @@ const skills = {
 			} else {
 				await target.chooseToDiscard(num, true, "he");
 			}
-			if (player.countMark("dcwoheng") > 3 || player.countCards("h") !== target.countCards("h")) {
+			if (useCnt > 3 || player.countCards("h") !== target.countCards("h")) {
 				await player.draw(2);
 				if (player.hasSkill("dcwoheng", null, null, false)) {
 					player.tempBanSkill("dcwoheng");
 				}
 			}
 		},
+		group: "dcwoheng_refresh",
+		subSkill: {
+			refresh: {
+				charlotte: true,
+				trigger: { global: "roundStart" },
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.markSkill("dcwoheng");
+				},
+			},
+		},
 		ai: {
 			order(item, player) {
-				const num = player.countMark("dcwoheng") + 1;
+				const num = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length + 1;
 				if (
 					game.hasPlayer(target => {
 						if (get.effect(target, { name: "draw" }, player, player) > 0) {
@@ -8904,12 +8922,13 @@ const skills = {
 			},
 			result: {
 				player(player, target) {
-					const goon = !get.event()?.getParent()?.name.includes("dcyuhui_buff");
-					const num = goon ? player.countMark("dcwoheng") + 1 : 1;
+					const goon = !get.event()?.getParent()?.name.includes("dcyuhui_buff"),
+						useCnt = game.getRoundHistory("everything", evt => evt.name == "dcwoheng", 0).length;
+					const num = goon ? useCnt + 1 : 1;
 					return Math.max(
 						get.effect(target, { name: "draw" }, player, player) *
 							(() => {
-								if (goon && player.countMark("dcwoheng") < 3) {
+								if (goon && useCnt < 3) {
 									if (target.countCards("h") + num === player.countCards("h")) {
 										return 100 * num;
 									}
@@ -8919,7 +8938,7 @@ const skills = {
 						get.effect(target, { name: "guohe_copy2" }, target, player) *
 							(() => {
 								const numx = Math.min(num, target.countDiscardableCards(target, "he"));
-								if (goon && player.countMark("dcwoheng") < 3) {
+								if (goon && useCnt < 3) {
 									if (target.countCards("h") - numx === player.countCards("h")) {
 										return 100 * numx;
 									}
@@ -8927,41 +8946,6 @@ const skills = {
 								return numx;
 							})()
 					);
-				},
-			},
-		},
-		init(player) {
-			const num = (() => {
-				let num = 0,
-					globalHistory = _status.globalHistory;
-				for (let i = globalHistory.length - 1; i >= 0; i--) {
-					num += globalHistory[i].everything.filter(evt => evt.name === "dcwoheng").length;
-					if (globalHistory[i].isRound) {
-						break;
-					}
-				}
-				return num;
-			})();
-			if (num) {
-				player.addTempSkill("dcwoheng_used", "roundStart");
-				player.addMark("dcwoheng", num, false);
-			}
-		},
-		onremove: true,
-		mark: true,
-		intro: {
-			markcount(num = 0) {
-				return num + 1;
-			},
-			content(num = 0) {
-				return `令一名其他角色摸${get.cnNumber(num + 1)}张牌或弃置${get.cnNumber(num + 1)}张牌`;
-			},
-		},
-		subSkill: {
-			used: {
-				charlotte: true,
-				onremove(player) {
-					player.clearMark("dcwoheng", false);
 				},
 			},
 		},

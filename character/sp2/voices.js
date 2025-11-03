@@ -1,4 +1,9 @@
 export default {
+	"#starzhenting1": "臣者，国之股肱，君所倚仗也。",
+	"#starzhenting2": "忠臣事君，当鞠躬尽瘁，死而后已。",
+	"#starchiguo1": "国之兴亡，匹夫有责，况吾等尚食君禄。",
+	"#starchiguo2": "益州疲弊，非忠志之士不可持之。",
+	"#star_jiangwan:die": "琬无功于国，愧负丞相重托。",
 	"#zhuiji_matie1": "伏波之裔，岂惧险地。",
 	"#zhuiji_matie2": "纵龙潭虎穴在前，吾亦不惧半分。",
 	"#dcquxian1": "策马赴国难，醉卧青山头。",
