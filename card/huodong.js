@@ -4,6 +4,71 @@ game.import("card", function () {
 		name: "huodong",
 		connect: true,
 		card: {
+			//青囊书
+			//杨彪：孩子们我没意见
+			mb_qingnangshu: {
+				audio: true,
+				fullskin: true,
+				type: "equip",
+				subtype: "equip5",
+				bingzhu: ["华佗"],
+				skills: ["mb_qingnangshu_skill"],
+				maxNum: 3,
+				async onEquip(event, trigger, player) {
+					let card, vcard;
+					if (get.itemtype(event.card) == "vcard") {
+						card = null;
+						vcard = event.card;
+					} else {
+						card = event.card;
+						vcard = card[card.cardSymbol];
+					}
+					await lib.skill.mb_qingnangshu_skill.broadcast(card, vcard, player);
+					let cards = lib.card["mb_qingnangshu"].getCards(player);
+					if (cards.length) {
+						player.markSkill("mb_qingnangshu_skill");
+					}
+				},
+				async onLose(event, trigger, player) {
+					let cards = lib.card["mb_qingnangshu"].getCards(player);
+					if (!cards.length) {
+						player.unmarkSkill("mb_qingnangshu_skill");
+					} else {
+						player.markSkill("mb_qingnangshu_skill");
+					}
+				},
+				cardPrompt(card, player) {
+					if (typeof card.storage?.mb_qingnangshu_skill != "number") {
+						card.storage ??= {};
+						card.storage.mb_qingnangshu_skill = lib.card["mb_qingnangshu"].maxNum;
+					}
+					return `锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
+				},
+				getCards(player) {
+					const es = player.getCards("e", { name: "mb_qingnangshu" }).filter(card => card[card.cardSymbol].storage?.mb_qingnangshu_skill > 0),
+						js = player
+							.getVCards("j", card => card.storage?.equipEnable)
+							.flatMap(card => card.cards.filter(card => card.name == "mb_qingnangshu"))
+							.filter(card => card.storage?.mb_qingnangshu_skill > 0 || typeof card.storage?.mb_qingnangshu_skill != "number");
+					return es.concat(js);
+				},
+				ai: {
+					equipValue: 9,
+				},
+			},
+			//传国玉玺
+			//受命于天，既寿永昌！
+			mb_chuanguoyuxi: {
+				audio: true,
+				fullskin: true,
+				type: "equip",
+				subtype: "equip5",
+				bingzhu: ["刘宏", "袁术", "司马炎"],
+				skills: ["mb_chuanguoyuxi_skill"],
+				ai: {
+					equipValue: 9,
+				},
+			},
 			//见好就收
 			jianhao: {
 				audio: true,
@@ -233,19 +298,6 @@ game.import("card", function () {
 				reverseOrder: true,
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
-					if (!_status.postReconnect.jiaoyou) {
-						_status.postReconnect.jiaoyou = [
-							function (list) {
-								for (const tag of list) {
-									if (!lib.skill[tag]) {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + tag.slice(7);
-									}
-								}
-							},
-							[],
-						];
-					}
 					const { target } = event;
 					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
 						name = event.name;
@@ -257,17 +309,7 @@ game.import("card", function () {
 								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
-							_status.postReconnect.jiaoyou[1].add(tag);
-							if (!lib.skill[tag]) {
-								game.broadcastAll(
-									(tag, str) => {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + str;
-									},
-									tag,
-									tag.slice(name.length)
-								);
-							}
+							game.addTempTag(tag, `浇油+${tag.slice(name.length)}`);
 							target.addGaintag([card], tag);
 						}
 					}
@@ -1696,6 +1738,166 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			//青囊书
+			mb_qingnangshu_skill: {
+				equipSkill: true,
+				onremove(player, skill) {
+					player.unmarkSkill(skill);
+				},
+				//mark: true,
+				marktext: "书",
+				intro: {
+					markcount(_, player) {
+						let cards = lib.card["mb_qingnangshu"].getCards(player);
+						let num = cards.reduce((sum, card) => {
+							if (get.position(card) == "e") {
+								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
+							}
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+						}, 0);
+						if (!num) {
+							return "0";
+						}
+						return `${num}/${lib.card.mb_qingnangshu.maxNum}`;
+					},
+					content(_, player) {
+						let cards = lib.card["mb_qingnangshu"].getCards(player);
+						let num = cards.reduce((sum, card) => {
+							if (get.position(card) == "e") {
+								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
+							}
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+						}, 0);
+						return `<li>剩余可用${num}次<br><li>锁定技，准备阶段，你加1点体力上限并回复1点体力。`;
+					},
+				},
+				audio: "zhaohan1.mp3",
+				trigger: { player: "phaseZhunbeiBegin" },
+				getIndex(event, player) {
+					return lib.card["mb_qingnangshu"].getCards(player);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (!lib.card["mb_qingnangshu"].getCards(player).includes(event.indexedData)) {
+						return;
+					}
+					await player.logSkill(event.name);
+					//player.flashAvatar(event.name, "yangbiao");
+					//player.chat("天道昭昭，再兴如光武亦可期！");
+					let card, vcard;
+					if (get.position(event.indexedData) == "e") {
+						card = event.indexedData;
+						vcard = card[card.cardSymbol];
+					} else {
+						card = player.getCards("j", card => {
+							let vcard = card[card.cardSymbol];
+							return vcard?.storage?.equipEnable && vcard.cards.some(c => c == event.indexedData);
+						})[0];
+						vcard = event.indexedData;
+					}
+					if (typeof vcard.storage?.mb_qingnangshu_skill != "number") {
+						vcard.storage ??= {};
+						vcard.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+					}
+					vcard.storage.mb_qingnangshu_skill--;
+					game.log(vcard, "减少了", "#y1点", "#g耐久值");
+					await lib.skill.mb_qingnangshu_skill.broadcast(card, vcard, player, get.position(event.indexedData) != "e");
+					await player.gainMaxHp();
+					await player.recover();
+				},
+				async broadcast(card, vcard, player, inJudge) {
+					if (typeof vcard.storage?.mb_qingnangshu_skill != "number") {
+						vcard.storage ??= {};
+						vcard.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+					}
+					game.broadcast(
+						function (vcard, storage) {
+							vcard.storage = storage;
+						},
+						vcard,
+						vcard.storage
+					);
+					if (!inJudge && get.is.ordinaryCard(vcard)) {
+						game.broadcastAll(
+							(vcard, num) => {
+								vcard.cards[0].storage.mb_qingnangshu_skill = num;
+							},
+							vcard,
+							vcard.storage.mb_qingnangshu_skill
+						);
+					}
+					if (player) {
+						player.markSkill("mb_qingnangshu_skill");
+					}
+					if (vcard.storage.mb_qingnangshu_skill <= 0) {
+						let cardx = inJudge ? vcard : card;
+						if (player) {
+							if (cardx) {
+								if (inJudge) {
+									await player.loseToDiscardpile(card);
+								}
+								await player.lose(cardx, ui.special);
+								player.$throw(cardx, 1000);
+							}
+							let cards = lib.card["mb_qingnangshu"].getCards(player);
+							if (!cards.length) {
+								player.unmarkSkill("mb_qingnangshu_skill");
+							} else {
+								player.markSkill("mb_qingnangshu_skill");
+							}
+						} else {
+							await game.cardsGotoSpecial(cardx);
+						}
+						game.log(cardx, "被移出了游戏");
+					}
+				},
+			},
+			//传国玉玺
+			mb_chuanguoyuxi_skill: {
+				equipSkill: true,
+				audio: "weidi",
+				audioname2: {
+					shen_simayi: "lianpo1.mp3",
+					xin_simayi: "lianpo1.mp3",
+					new_simayi: "lianpo1.mp3",
+				},
+				trigger: { player: "phaseDiscardBegin" },
+				getIndex(event, player) {
+					const cards = player.getVCards("e", card => card.name == "mb_chuanguoyuxi");
+					return cards.length ? cards : 1;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					/*player.flashAvatar(event.name, "yuanshu");*/
+					await player.draw();
+					player.addSkill(event.name + "_add");
+					player.addMark(event.name + "_add", 2, false);
+					game.log(player, "的手牌上限", "#y+2");
+					let str = "受命于天，既寿永昌！";
+					if (!player.isZhu2()) {
+						await player.loseHp();
+						str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
+					}
+					player.chat(str);
+				},
+				subSkill: {
+					add: {
+						charlotte: true,
+						onremove: true,
+						mark: true,
+						markimage: "image/card/handcard.png",
+						intro: {
+							content: "手牌上限+#",
+						},
+						mod: {
+							maxHandcard(player, num) {
+								return num + player.countMark("mb_chuanguoyuxi_skill_add");
+							},
+						},
+					},
+				},
+			},
 			qingsuan_record: {
 				silent: true,
 				charlotte: true,
@@ -2052,7 +2254,7 @@ game.import("card", function () {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0];
@@ -2090,6 +2292,7 @@ game.import("card", function () {
 				intro: {
 					content: "你是$的义父",
 				},
+				nopop: true,
 				marktext: "父",
 				mark: true,
 				trigger: { global: "phaseZhunbeiBegin" },
@@ -2116,6 +2319,19 @@ game.import("card", function () {
 			},
 		},
 		translate: {
+			mb_qingnangshu: "青囊书",
+			mb_qingnangshu_bg: "书",
+			mb_qingnangshu_info: "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余3次）。",
+			mb_qingnangshu_append: '<span style="font-family: yuanli">你也会昭汉？</span>',
+			mb_qingnangshu_skill: "青囊书",
+			mb_qingnangshu_skill_info: "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余3次）。",
+			mb_chuanguoyuxi: "传国玉玺",
+			mb_chuanguoyuxi_bg: "玺",
+			mb_chuanguoyuxi_info: "锁定技，弃牌阶段开始时，你摸一张牌且手牌上限永久+2，然后若你不为主公，你失去1点体力。",
+			mb_chuanguoyuxi_append: '<span style="font-family: yuanli">受命于天，既寿永昌！</span>',
+			mb_chuanguoyuxi_skill: "传国玉玺",
+			mb_chuanguoyuxi_skill_info: "锁定技，弃牌阶段开始时，你摸一张牌且手牌上限永久+2，然后若你不为主公，你失去1点体力。",
+
 			jianhao: "见好就收",
 			jianhao_bg: "收",
 			jianhao_info: "出牌阶段，对你使用。你展示牌堆顶一张牌，猜测牌堆顶的下张牌点数大于或小于此牌并展示。若猜对，你可选择一项：1.获得所有展示牌；2.再次猜测。",
@@ -2242,6 +2458,9 @@ game.import("card", function () {
 			yifu_skill_info: "你的“义子”于准备阶段须交给你一张牌。",
 		},
 		list: [
+			["heart", 9, "mb_qingnangshu"],
+			["spade", 13, "mb_chuanguoyuxi"],
+
 			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
 			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
 

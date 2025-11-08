@@ -1,4 +1,63 @@
 const characters = {
+	//慢
+	sxrm_guanyu: {
+		sex: "male",
+		group: "devil",
+		hp: 5,
+		skills: ["sxrmhanguo", "sxrmweiwo"],
+		groupInGuozhan: "shu",
+	},
+	sxrm_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["sxrmyinmou", "sxrmquchi"],
+	},
+	sxrm_yujin: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["sxrmsuwu", "sxrmrenwang"],
+	},
+	sxrm_mifang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["sxrmhuoe", "sxrmtanduo"],
+	},
+	sxrm_liufeng: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["sxrmhuaibing"],
+		names: "刘|封",
+	},
+	sxrm_luxun: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["sxrmchanyu", "sxrmcongfeng"],
+	},
+	sxrm_lvmeng: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		maxHp: 4,
+		skills: ["sxrmkongzhi", "sxrmbizha"],
+	},
+	sxrm_pangde: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["sxrmnizhan"],
+	},
+	sxrm_yanwen: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["sxrmhaibian", "sxrmqiewang"],
+		names: "颜|良-文|丑",
+	},
 	//疑
 	sxrm_caocao: {
 		sex: "male",

@@ -1,4 +1,8 @@
 export default {
+	"#gz_ol_zhuanzheng1": "急调旌旅，合兵一处。",
+	"#gz_ol_zhuanzheng2": "整戎挥师，鼓噪八方。",
+	"#gz_yaopan1": "得蜀而望天下，事成，当为汉高祖！",
+	"#gz_yaopan2": "猛将锐卒，尽在我手，怎能再居于人下！",
 	"#gz_jiangqing:die": "竟……破我阵法……",
 	"#gz_zhonghui:die": "吾机关算尽，却还是棋错一着……",
 	"#gzzhaoxin1": "行明动正，何惧他人讥毁。",

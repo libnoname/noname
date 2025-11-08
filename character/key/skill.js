@@ -277,7 +277,11 @@ const skills = {
 							var evt = trigger.getParent();
 							if (evt.addCount !== false) {
 								evt.addCount = false;
-								player.getStat().card.sha--;
+								const stat = player.getStat().card,
+									name = trigger.card.name;
+								if (typeof stat[name] == "number") {
+									stat[name]--;
+								}
 							}
 							break;
 					}
@@ -1372,67 +1376,10 @@ const skills = {
 	kamome_huanmeng: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			var num = 1 + player.countCards("e");
-			var cards = get.cards(num);
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove();
-			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-			next.set("prompt", "幻梦：点击或拖动将牌移动到牌堆顶或牌堆底");
-			next.processAI = function (list) {
-				var cards = list[0][1],
-					player = _status.event.player;
-				var top = [];
-				var judges = player.getCards("j");
-				var stopped = false;
-				if (!player.hasWuxie()) {
-					for (var i = 0; i < judges.length; i++) {
-						var judge = get.judge(judges[i]);
-						cards.sort(function (a, b) {
-							return judge(b) - judge(a);
-						});
-						if (judge(cards[0]) < 0) {
-							stopped = true;
-							break;
-						} else {
-							top.unshift(cards.shift());
-						}
-					}
-				}
-				var bottom;
-				if (!stopped) {
-					cards.sort(function (a, b) {
-						return get.value(b, player) - get.value(a, player);
-					});
-					while (cards.length) {
-						if (get.value(cards[0], player) <= 5) {
-							break;
-						}
-						top.unshift(cards.shift());
-					}
-				}
-				bottom = cards;
-				return [top, bottom];
-			};
-			"step 1";
-			var top = result.moved[0];
-			var bottom = result.moved[1];
-			top.reverse();
-			for (var i = 0; i < top.length; i++) {
-				ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-			}
-			for (i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
-			}
-			player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
-			game.log(player, "将" + get.cnNumber(top.length) + "张牌置于牌堆顶");
-			game.updateRoundNumber();
-			game.delayx();
+		async content(event, trigger, player) {
+			await player.chooseToGuanxing(1 + player.countCards("e")).set("prompt", "幻梦：点击或拖动将牌移动到牌堆顶或牌堆底");
 		},
-		ai: {
-			threaten: 1.2,
-		},
+		ai: { threaten: 1.2 },
 	},
 	kamome_jieban: {
 		trigger: {
@@ -2483,7 +2430,7 @@ const skills = {
 			var cards = get.cards(num);
 			event.cards = cards;
 			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove();
+			var next = player.chooseToMove("allowChooseAll");
 			next.set("prompt", "星辉：选择要作为“星屑”的牌（先选择的在上）");
 			next.set("list", [["置于武将牌上", cards], ["置入弃牌堆"]]);
 			next.processAI = function (list) {
@@ -3138,7 +3085,11 @@ const skills = {
 				},
 				content() {
 					trigger.addCount = false;
-					player.getStat("card")[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				},
 			},
 		},
@@ -4211,10 +4162,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const num = player.countMark("erika_yousheng_ruka") + 1;
-			event.result = await player.chooseToDiscard("he", num, get.prompt(event.skill, trigger.target), "弃置" + num + "张牌，并转移" + get.translation(trigger.card)).forResult();
+			event.result = await player.chooseToDiscard("he", num, get.prompt(event.skill, trigger.target), "弃置" + num + "张牌，并转移" + get.translation(trigger.card), "chooseonly").forResult();
 		},
 		async content(event, trigger, player) {
-			player.discard(event.cards);
+			await player.discard(event.cards);
 			var ruka = trigger.target,
 				evt = trigger.getParent();
 			evt.targets.remove(ruka);
@@ -4485,8 +4436,6 @@ const skills = {
 			if (!result || !result.links.length) {
 				if (_status.renku.length) {
 					const cards = _status.renku.slice(0);
-					_status.renku.length = 0;
-					game.updateRenku();
 					await player.gain(cards, "gain2", "fromRenku");
 				} else {
 					player.draw(2);
@@ -4536,7 +4485,6 @@ const skills = {
 			if (result.bool) {
 				var card = result.links[0];
 				player.$throw(card, 1000);
-				_status.renku.remove(card);
 				game.cardsDiscard(card).fromRenku = true;
 				game.log(player, "将", card, "置入了弃牌堆");
 				trigger.excluded.add(player);
@@ -7602,8 +7550,8 @@ const skills = {
 			player.equip(game.createCard2("miki_binoculars", "diamond", 6));
 		},
 		mod: {
-			canBeDiscarded(card) {
-				if (get.position(card) == "e" && ["equip1", "equip5"].includes(get.subtype(card))) {
+			canBeDiscarded(card, player, target) {
+				if (get.position(card) == "e" && get.subtypes(card).some(subtype => ["equip1", "equip5"].includes(subtype)) && player != target) {
 					return false;
 				}
 			},
@@ -9500,9 +9448,10 @@ const skills = {
 				trigger.directHit.addArray(game.players);
 			} else if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				var stat = player.getStat().card;
-				if (stat.sha) {
-					stat.sha--;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] == "number") {
+					stat[name]--;
 				}
 			}
 		},
@@ -10196,7 +10145,11 @@ const skills = {
 				var evt = trigger.getParent();
 				if (evt.addCount !== false) {
 					evt.addCount = false;
-					player.getStat().card.sha--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 				player.draw();
 			}
@@ -11624,23 +11577,19 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			player.discard(cards);
-			"step 1";
-			event.bool = true;
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			let result;
 			if (trigger.numFixed) {
-				event._result = { index: 0 };
+				result = { index: 0 };
 			} else if (trigger.player.isIn()) {
-				var name = get.translation(trigger.player);
-				player.chooseControl().set("choiceList", ["对" + name + "造成1点火属性伤害", "令" + name + "此出牌阶段的额定摸牌数改为0"]);
-			} else {
-				event.finish();
+				const name = get.translation(trigger.player);
+				result = await player.chooseControl().set("choiceList", ["对" + name + "造成1点火属性伤害", "令" + name + "此出牌阶段的额定摸牌数改为0"]).forResult();
 			}
-			"step 2";
-			if (result.index == 0) {
-				trigger.player.damage("fire");
-			} else {
+			if (result?.index == 0) {
+				await trigger.player.damage("fire");
+			}
+			if (result?.index == 1) {
 				trigger.changeToZero();
 			}
 		},

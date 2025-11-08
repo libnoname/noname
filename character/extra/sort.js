@@ -12,7 +12,7 @@ const characterSort = {
 	extra_mobileren: ["shen_huatuo", "shen_lusu"],
 	extra_tw: ["tw_shen_guanyu", "tw_shen_lvmeng"],
 	extra_mb: ["xin_simayi"],
-	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying"],
 	extra_taoyuan: ["ty_shen_zhangfei", "ty_shen_guanyu", "ty_shen_liubei"],
 	extra_hanmo: ["hm_shen_yl_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun"],
 	extra_changan: ["ca_shen_wangyun", "ca_shen_caocao", "ca_shen_lijueguosi", "zombie_jiaxu", "zombie_zombie"],

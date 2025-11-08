@@ -1590,6 +1590,89 @@ export const mayChangeVice = async (event, _trigger, player) => {
 }
 
 /**
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export const transCharacter = async (event, _trigger, player) => {
+	// @ts-expect-error 祖宗之法就是这么做的
+	const { target, num1, num2 } = event;
+	const str = [num1, num2].map(i => i == 1 ? "主" : "副").toUniqued();
+	game.log(player, "与", target, `进行了${str}将易位`);
+	const name1 = player[`name${num1}`],
+		name2 = target[`name${num2}`];
+	const getSkills = (current, name) => {
+		return get.character(name, 3).filter(skill => {
+			if (!current.hasSkill(skill, null, null, false)) {
+				return false;
+			}
+			const info = lib.skill[skill];
+			return info && !info.charlotte && get.skillInfoTranslation(skill, current).length > 0;
+		});
+	};
+	const map1 = new Map();
+	const skills1 = getSkills(player, name1);
+	if (skills1?.length) {
+		const func = async skill => {
+			const cards = player.getExpansions(skill);
+			if (!cards?.length) {
+				return;
+			}
+			map1.set(skill, cards);
+			await player.lose(cards, ui.special).set("getlx", false);
+		}
+		// @ts-expect-error 祖宗之法就是这么做的
+		await game.doAsyncInOrder(skills1, func, () => 1);
+	}
+	const map2 = new Map();
+	const skills2 = getSkills(target, name2);
+	if (skills2?.length) {
+		const func = async skill => {
+			const cards = target.getExpansions(skill);
+			if (!cards?.length) {
+				return;
+			}
+			map2.set(skill, cards);
+			await target.lose(cards, ui.special).set("getlx", false);
+		}
+		// @ts-expect-error 祖宗之法就是这么做的
+		await game.doAsyncInOrder(skills2, func, () => 1);
+	}
+	for (const skill of skills1) {
+		if (player.awakenedSkills?.includes(skill)) {
+			player.restoreSkill(skill);
+			target.awakenSkill(skill);
+		}
+	}
+	for (const skill of skills2) {
+		if (target.awakenedSkills?.includes(skill)) {
+			target.restoreSkill(skill);
+			player.awakenSkill(skill);
+		}
+	}
+	await player.reinitCharacter(name1, name2, false);
+	await target.reinitCharacter(name2, name1, false);
+	for (const key of map1.keys()) {
+		if (target.hasSkill(key, null, null, false)) {
+			const cards = map1.get(key);
+			if (cards?.length) {
+				target.$addToExpansion(cards, null, key);
+				target.markSkill(key);
+			}
+		}
+	}
+	for (const key of map2.keys()) {
+		if (player.hasSkill(key, null, null, false)) {
+			const cards = map2.get(key);
+			if (cards?.length) {
+				player.$addToExpansion(cards, null, key);
+				player.markSkill(key);
+			}
+		}
+	}
+}
+
+/**
  *
  * @param {GameEvent} _event
  * @param {GameEvent} _trigger
@@ -1611,5 +1694,6 @@ export default {
 	changeViceOnline,
 	changeVice,
 	mayChangeVice,
+	transCharacter,
 	zhulian,
 };

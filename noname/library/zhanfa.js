@@ -1,7 +1,4 @@
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { get } from "../get/index.js";
-import { _status } from "../status/index.js";
+import { _status, game, get, lib } from "@noname";
 
 /**
  * 战法！！！！！有几种类型的战法是有模板可以套的，详情请看library的index.js，搜索zf_开头的技能
@@ -1208,7 +1205,7 @@ const _zhanfa = {
 				const num = player.getHistory("gain", evt => evt.getParent()?.name == "draw" && evt.getParent("phaseDraw") == trigger).reduce((sum, evt) => sum + evt.cards.length, 0);
 				if (num) {
 					player.addMark(event.name, Math.ceil(num / 2), false);
-					player.when({ global: "phaseAfter" }).then(() => {
+					player.when({ global: "phaseAfter" }).step(async (event, trigger, player) => {
 						player.clearMark("zf_jinnangji", false);
 					});
 				}
@@ -1959,7 +1956,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return event.player.hujia > 0;
 			},
-			num: (event, trigger, player) => Math.floor(trigger.player.hujia / 2),
+			num: (event, trigger, player) => Math.min(Math.floor(trigger.player.hujia / 2), trigger.num),
 		},
 	},
 	//体魄
@@ -1981,16 +1978,6 @@ const _zhanfa = {
 					const { num } = event;
 					await player.gainMaxHp(num);
 					await player.recover(num);
-				});
-			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
 				});
 			},
 		},
@@ -2180,7 +2167,7 @@ const _zhanfa = {
 		},
 	},
 	//稳定进攻
-	zf_wendingjinggong: {
+	zf_wendingjingong: {
 		rarity: "legend",
 		translate: "稳定进攻",
 		info: "回合内出杀次数固定为5",
@@ -2190,7 +2177,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			cardFilter: "sha",
-			modNum: 5,
+			modNum: () => 5,
 		},
 	},
 	//稳定承载
@@ -2308,7 +2295,17 @@ const _zhanfa = {
 				return event.getParent()?.name == "huogong";
 			},
 			async content(event, trigger, player) {
-				const result = await player
+				trigger.chooseonly = true;
+				player
+					.when("chooseToDiscardAfter")
+					.filter(evt => evt == trigger)
+					.step(async (event, trigger, player) => {
+						if (trigger.result?.cards?.length) {
+							const { cards } = trigger.result;
+							await player.showCards(cards, `${get.translation(player)}【火攻】展示的牌`);
+						}
+					});
+				/*const result = await player
 					.chooseCard(trigger.filterCard, () => true)
 					.set("prompt", false)
 					.forResult();
@@ -2316,8 +2313,11 @@ const _zhanfa = {
 					const { cards } = result;
 					await player.showCards(cards, `${get.translation(player)}因【火攻】展示的牌`, false);
 					trigger.result = { bool: true, cards: cards };
-					trigger.finish();
 				}
+				else {
+					trigger.result = { bool: false};
+				}
+				trigger.finish();*/
 			},
 		},
 	},
@@ -2464,10 +2464,13 @@ const _zhanfa = {
 			value: 6.2,
 		},
 		skill: {
-			inherit: "zf_miaoshoukongkong",
 			trigger: { player: "discardPlayerCardBegin" },
 			filter(event, player) {
-				return event.card.name == "guohe";
+				return event.getParent()?.name == "guohe";
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				trigger.set("visible", true);
 			},
 		},
 	},
@@ -2483,12 +2486,7 @@ const _zhanfa = {
 			forced: true,
 			trigger: { player: "recoverBegin" },
 			filter(event, player) {
-				return (
-					game
-						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-						.map(evt => evt.getParent())
-						.indexOf(event) == 0
-				);
+				return game.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player).indexOf(event) == 0;
 			},
 			num: 1,
 			async content(event, trigger, player) {
@@ -2524,10 +2522,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_yaoli",
 			filter(event, player) {
-				const index = game
-					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-					.map(evt => evt.getParent())
-					.indexOf(event);
+				const index = game.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player).indexOf(event);
 				return index >= 0 && index < 3;
 			},
 		},
@@ -2836,16 +2831,6 @@ const _zhanfa = {
 					await player.gainMaxHp(num);
 				});
 			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
-				});
-			},
 		},
 	},
 	//增寿Ⅱ
@@ -2946,7 +2931,7 @@ const _zhanfa = {
 			async cost(event, trigger, player) {
 				const { select } = get.info(event.skill);
 				event.result = await player
-					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card))
+					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card), "he")
 					.set("ai", card => 6 - get.value(card))
 					.forResult();
 			},
@@ -3017,6 +3002,9 @@ export class ZhanfaManager {
 	 * @param {Library} lib
 	 */
 	constructor(lib) {
+		lib.cardPack["zhanfa"] = [];
+		lib.translate["zhanfa_card_config"] = "战法";
+		lib.translate["zhanfa_cardsInfo"] = "这里是用来浏览战法的，这些不是卡牌！";
 		for (const id in _zhanfa) {
 			let { skill, rarity, translate, info, card, ...args } = _zhanfa[id];
 			if (typeof skill != "string") {
@@ -3038,7 +3026,10 @@ export class ZhanfaManager {
 			if (!card.cardimage && !card.image) {
 				card.image = `image/zhanfa/${id}.png`;
 			}
+			card.type = "zhanfa";
+			card.subtype = `zf_${rarity}`;
 			lib.card[id] = card;
+			lib.cardPack["zhanfa"].push(id);
 			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
 		this.#zhanfa = _zhanfa;
@@ -3066,9 +3057,6 @@ export class ZhanfaManager {
 			skill.priority = Infinity;
 			lib.skill["" + id] = skill;
 			skill = id;
-			if (!_status.importingExtension) {
-				game.finishSkill(id);
-			}
 		} else {
 			translate ??= lib.translate[skill];
 			info ??= lib.translate[skill + "_info"];
@@ -3084,7 +3072,10 @@ export class ZhanfaManager {
 		if (!card.cardimage && !card.image) {
 			card.image = `image/zhanfa/${id}.png`;
 		}
+		card.type = "zhanfa";
+		card.subtype = `zf_${rarity}`;
 		lib.card[id] = card;
+		lib.cardPack["zhanfa"].push(id);
 		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 	}
 

@@ -1,7 +1,7 @@
 // 声明：沙盒维护的是服务器秩序，让服务器秩序不会因为非房主的玩家以及旁观者的影响，并在此基础上维护玩家设备不受危险代码攻击
 // 但沙盒不会也没有办法维护恶意服务器/房主对于游戏规则的破坏，请玩家尽量选择官方或其他安全的服务器，同时选择一个受信任的玩家作为房主
 
-import { hex_md5 } from "../library/crypt/md5.js";
+import { MD5 } from "crypto-js";
 
 // 是否强制所有模式下使用沙盒
 const SANDBOX_FORCED = false;
@@ -297,7 +297,7 @@ function requireSandboxOn(ip) {
 		isTrusted = TRUSTED_IPS.includes(ip);
 
 		if (!isTrusted && TRUSTED_IP_MD5.length > 0) {
-			const md5 = hex_md5("noname_server" + ip);
+			const md5 = MD5("noname_server" + ip).toString();
 			isTrusted = TRUSTED_IP_MD5.includes(md5);
 		}
 

@@ -43,6 +43,7 @@ const cards = {
 	},
 	shufazijinguan: {
 		derivation: "ol_puyuan",
+		bingzhu: ["吕布"],
 		cardcolor: "diamond",
 		type: "equip",
 		subtype: "equip5",
@@ -57,6 +58,7 @@ const cards = {
 	},
 	xuwangzhimian: {
 		derivation: "ol_puyuan",
+		bingzhu: ["司马懿"],
 		cardcolor: "club",
 		type: "equip",
 		fullskin: true,
@@ -69,6 +71,7 @@ const cards = {
 	},
 	hongmianbaihuapao: {
 		derivation: "ol_puyuan",
+		bingzhu: ["吕布"],
 		cardcolor: "club",
 		type: "equip",
 		subtype: "equip2",
@@ -83,6 +86,7 @@ const cards = {
 	},
 	guofengyupao: {
 		derivation: "ol_puyuan",
+		bingzhu: ["吕蒙"],
 		cardcolor: "spade",
 		type: "equip",
 		fullskin: true,
@@ -95,6 +99,7 @@ const cards = {
 	},
 	qimenbagua: {
 		derivation: "ol_puyuan",
+		bingzhu: ["诸葛亮"],
 		cardcolor: "spade",
 		type: "equip",
 		fullskin: true,
@@ -107,6 +112,7 @@ const cards = {
 	},
 	linglongshimandai: {
 		derivation: "ol_puyuan",
+		bingzhu: ["吕布"],
 		cardcolor: "spade",
 		type: "equip",
 		subtype: "equip2",
@@ -121,6 +127,7 @@ const cards = {
 	},
 	chixueqingfeng: {
 		derivation: "ol_puyuan",
+		bingzhu: ["赵云"],
 		cardcolor: "spade",
 		type: "equip",
 		fullskin: true,
@@ -134,6 +141,7 @@ const cards = {
 	},
 	guilongzhanyuedao: {
 		derivation: "ol_puyuan",
+		bingzhu: ["关羽"],
 		cardcolor: "spade",
 		type: "equip",
 		fullskin: true,
@@ -150,6 +158,7 @@ const cards = {
 	},
 	wushuangfangtianji: {
 		derivation: "ol_puyuan",
+		bingzhu: ["吕布"],
 		cardcolor: "diamond",
 		type: "equip",
 		modeimage: "boss",
@@ -167,6 +176,7 @@ const cards = {
 	},
 	bintieshuangji: {
 		derivation: "ol_puyuan",
+		bingzhu: ["典韦"],
 		cardcolor: "diamond",
 		type: "equip",
 		subtype: "equip1",

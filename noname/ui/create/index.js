@@ -1,9 +1,4 @@
-import { ui } from "../index.js";
-import { lib } from "../../library/index.js";
-import { game } from "../../game/index.js";
-import { get } from "../../get/index.js";
-import { _status } from "../../status/index.js";
-import { ai } from "../../ai/index.js";
+import { lib, game, get, _status, ai, ui } from "@noname";
 import { menu } from "./menu/index.js";
 import { cardPackMenu } from "./menu/pages/cardPackMenu.js";
 import { characterPackMenu } from "./menu/pages/characterPackMenu.js";
@@ -11,7 +6,7 @@ import { extensionMenu } from "./menu/pages/exetensionMenu.js";
 import { optionsMenu } from "./menu/pages/optionsMenu.js";
 import { otherMenu } from "./menu/pages/otherMenu.js";
 import { startMenu } from "./menu/pages/startMenu.js";
-import { Pagination } from "../../util/pagination.js";
+import { Pagination } from "@/util/pagination.js";
 
 export class Create {
 	/**
@@ -370,7 +365,7 @@ export class Create {
 
 		if (language === "javascript" || language === "typescript") {
 			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
-			const { default: security } = await import("@/noname/util/security.js");
+			const { default: security } = await import("@/util/security.js");
 			let proxyWindow = Object.assign({}, window, {
 				_status: _status,
 				lib: lib,
@@ -435,7 +430,7 @@ export class Create {
 				})
 			);
 			if (language === "javascript") {
-				const { Linter } = await import("@/game/eslint-linter-browserify.js");
+				const { Linter } = await import("eslint-linter-browserify");
 				extensions.push(
 					linter(
 						esLint(new Linter(), {
@@ -2244,7 +2239,7 @@ export class Create {
 		}
 		ui.skills = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills.childNodes.length; i++) {
-			ui.skills.childNodes[i].innerHTML = get.skillTranslation(ui.skills.childNodes[i].link, _status.event.player);
+			ui.skills.childNodes[i].innerHTML = get.skillTranslation(ui.skills.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills.style.display = "none";
@@ -2281,7 +2276,7 @@ export class Create {
 		}
 		ui.skills2 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills2.childNodes.length; i++) {
-			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(ui.skills2.childNodes[i].link, _status.event.player);
+			ui.skills2.childNodes[i].innerHTML = get.skillTranslation(ui.skills2.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills2.style.display = "none";
@@ -2318,7 +2313,7 @@ export class Create {
 		}
 		ui.skills3 = ui.create.control(skills.concat([ui.click.skill]));
 		for (var i = 0; i < ui.skills3.childNodes.length; i++) {
-			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(ui.skills3.childNodes[i].link, _status.event.player);
+			ui.skills3.childNodes[i].innerHTML = get.skillTranslation(ui.skills3.childNodes[i].link, _status.event.player, true);
 		}
 		if (!_status.event.isMine()) {
 			ui.skills3.style.display = "none";
@@ -2567,7 +2562,7 @@ export class Create {
 			if (window.plugins && window.plugins.insomnia) {
 				window.plugins.insomnia.keepAwake();
 			} else {
-				lib.init.js(lib.assetURL + "game", "NoSleep", function () {
+				import("nosleep.js").then(function ({default: NoSleep}) {
 					var noSleep = new NoSleep();
 					document.addEventListener(
 						lib.config.touchscreen ? "touchend" : "click",
@@ -2813,6 +2808,9 @@ export class Create {
 		ui.cardPileButton = ui.create.system("牌堆", null, true);
 		ui.cardPileButton.style.display = "none";
 		lib.setPopped(ui.cardPileButton, ui.click.cardPileButton, 220);
+		ui.commonCardPileButton = ui.create.system("游戏外公共区域", null, true);
+		ui.commonCardPileButton.style.display = "none";
+		lib.setPopped(ui.commonCardPileButton, ui.click.commonCardPileButton, 220);
 		ui.wuxie = ui.create.system("不询问无懈", ui.click.wuxie, true);
 		if (!lib.config.touchscreen) {
 			lib.setPopped(ui.config2, ui.click.pauseconfig, 170);

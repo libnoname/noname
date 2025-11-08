@@ -225,7 +225,7 @@ export const start = async (event, trigger, player) => {
 					info.isUnseen = true;
 				}
 				game.broadcast((name, info) => {
-					get.character(name) = info;
+					lib.character[name] = info;
 				}, character, info);
 			}
 			await game.delay(5);

@@ -1,6 +1,7 @@
-import { GeneratorFunction } from "../../../../util/index.js";
-import { EventContent, GameEvent } from "./IContentCompiler.ts";
-import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
+import { _status, ai, game, get, lib, ui } from "@noname";
+import { GameEvent } from "../../gameEvent.js";
+import { GeneratorFunction } from "@/util/index.js";
+import { EventContent } from "./IContentCompiler.ts";
 import ContentCompiler from "./ContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 

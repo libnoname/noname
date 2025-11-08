@@ -1,8 +1,8 @@
-import { _status, game, get, lib, ui } from "../../../noname.js";
+import { _status, game, get, lib, ui } from "@noname";
 import { Player } from "./index.js";
-import security from "../../util/security.js";
-import ContentCompiler from "./GameEvent/compilers/ContentCompiler.js";
-import GameEventManager from "./GameEvent/GameEventManager.js";
+import security from "@/util/security.js";
+import ContentCompiler from "./GameEvent/compilers/ContentCompiler.ts";
+import GameEventManager from "./GameEvent/GameEventManager.ts";
 export { GameEventManager, ContentCompiler };
 
 /**
@@ -946,6 +946,9 @@ export class GameEvent {
 			if (lib.config.show_cardpile) {
 				ui.cardPileButton.style.display = "";
 			}
+			if (lib.config.show_commonCardpile) {
+				ui.commonCardPileButton.style.display = "";
+			}
 			_status.gameStarted = true;
 			game.showHistory();
 		}
@@ -1258,17 +1261,17 @@ export class GameEvent {
 		return (this.parent ? this.parent.waitNext() : this.start()).then(
 			onfulfilled
 				? () => {
-						return onfulfilled(
-							new Proxy(this, {
-								get(target, p, receiver) {
-									if (p === "then") {
-										return void 0;
-									}
-									return Reflect.get(target, p, receiver);
-								},
-							})
-						);
-				  }
+					return onfulfilled(
+						new Proxy(this, {
+							get(target, p, receiver) {
+								if (p === "then") {
+									return void 0;
+								}
+								return Reflect.get(target, p, receiver);
+							},
+						})
+					);
+				}
 				: onfulfilled,
 			onrejected
 		);

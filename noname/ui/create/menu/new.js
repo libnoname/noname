@@ -1,5 +1,5 @@
 import { ui, game, get, lib, _status } from "../../../../noname.js";
-import { createApp, ref, reactive } from "../../../../game/vue.esm-browser.js";
+import { createApp, ref, reactive } from "vue";
 import { startMenutabName, startMenuData } from "./startMenu.js";
 /**
  * 使字符串有html的代码提示

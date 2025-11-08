@@ -8,6 +8,89 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
+	//OL吴懿
+	gz_ol_benxi: {
+		audio: "benxi",
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			return player == _status.currentPhase;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const name = `${event.name}_effect`;
+			player.addTempSkill(name);
+			player.addMark(name, 1, false);
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					markcount(storage, player) {
+						return -1 * (storage || 0);
+					},
+					content: "计算与其他角色距离-#",
+				},
+				mod: {
+					globalFrom(from, to, distance) {
+						return distance - from.countMark("gz_ol_benxi_effect");
+					},
+				},
+			},
+		},
+	},
+	gz_ol_zhuanzheng: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			if (player.countMark("gz_ol_zhuanzheng_used") > 1) {
+				return false;
+			}
+			return game.hasPlayer(current => player.isFriendOf(current));
+		},
+		filterTarget(card, player, target) {
+			return player.isFriendOf(target) && get.distance(player, target) <= 1;
+		},
+		async content(event, trigger, player) {
+			const { target } = event,
+				name = `${event.name}_used`;
+			player.addTempSkill(name, { global: "roundStart" });
+			player.addMark(name, 1, false);
+			let num = -1,
+				left = player,
+				right = player;
+			while (target?.isIn()) {
+				if (left == target || right == target) {
+					break;
+				}
+				left = left.getPrevious();
+				right = right.getNext();
+				num++;
+			}
+			await player.draw(Math.max(1, num));
+			const result =
+				target == player
+					? {
+							bool: false,
+					  }
+					: await target
+							.chooseBool(`是否与${get.translation(player)}交换副将？`)
+							.set("choice", Math.random() > 0.5)
+							.forResult();
+			if (result.bool) {
+				// @ts-expect-error 祖宗之法就是这么做的
+				await player.transCharacter(target);
+			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
 	//手杀陆逊
 	gz_mb_qianxun: {
 		audio: "sbqianxun",
@@ -44,7 +127,7 @@ export default {
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (!card || !("name" in card) || target.countExpansions("gz_mb_qianxun") >= 3) {
+					if (!card?.name || target.countExpansions("gz_mb_qianxun") >= 3) {
 						return;
 					}
 					const info = lib.card[card.name];
@@ -108,7 +191,7 @@ export default {
 				}
 				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
 				return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
-			}).length;
+			}).length > 0;
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -207,7 +290,7 @@ export default {
 	},
 	//OL钟会
 	gz_ol_quanji: {
-		audio: 2,
+		audio: "quanji",
 		trigger: {
 			player: "damageEnd",
 		},
@@ -232,9 +315,6 @@ export default {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			if (get.event()?.getParent("gz_yaopan", true)) {
-				return;
-			}
 			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
@@ -271,7 +351,7 @@ export default {
 		},
 	},
 	gz_ol_paiyi: {
-		audio: 2,
+		audio: "paiyi",
 		mainSkill: true,
 		init(player) {
 			if (player.checkMainSkill("gz_ol_paiyi")) {
@@ -336,6 +416,9 @@ export default {
 	gz_yaopan: {
 		audio: 2,
 		viceSkill: true,
+		init(player) {
+			player.checkViceSkill("gz_yaopan");
+		},
 		trigger: {
 			global: "phaseEnd",
 		},
@@ -364,14 +447,11 @@ export default {
 							.set("choice", Math.random() > 0.5)
 							.forResult();
 			if (result.bool) {
-				game.log(player, "与", target, "交换了副将");
-				const name = player.name2;
-				player.reinitCharacter(player.name2, target.name2, false);
-				target.reinitCharacter(target.name2, name, false);
-				await game.delayx(2);
+				// @ts-expect-error 祖宗之法就是这么做的
+				await player.transCharacter(target);
 			}
 			const targetx = result.bool ? target : player,
-				cards = player.getExpansions("gz_ol_quanji");
+				cards = targetx?.getExpansions("gz_ol_quanji");
 			if (cards.length) {
 				if (targetx) {
 					await targetx.gain(cards, "give", player);
@@ -380,7 +460,9 @@ export default {
 				}
 			}
 			if (targetx) {
-				targetx.insertPhase();
+				const next = targetx.insertPhase();
+				// @ts-expect-error 祖宗之法就是这么做的
+				next.phaseList = ["phaseUse"];
 			}
 		},
 	},
@@ -430,7 +512,7 @@ export default {
 					position: "hs",
 					popname: true,
 					ai(card) {
-						return 6 - ai.get.value(card);
+						return 6 - get.value(card);
 					},
 					viewAs: { name: links[0][2] },
 					precontent() {
@@ -668,7 +750,7 @@ export default {
 					return evt.gzqizhi == true;
 				}).length;
 			if (dh > 0) {
-				await player.chooseToDiscard(dh, true);
+				await player.chooseToDiscard(dh, true, "allowChooseAll");
 			}
 		},
 		ai: { combo: "gzqizhi" },
@@ -15631,7 +15713,7 @@ export default {
 					selectCard: 1,
 					popname: true,
 					ai(card) {
-						return 6 - ai.get.value(card);
+						return 6 - get.value(card);
 					},
 					viewAs: { name: links[0][2] },
 					onuse(result, player) {
@@ -18770,8 +18852,9 @@ export default {
 			if (player.phaseNumber == 1 && player.isUnseen(0) && junzhu) {
 				let name = player.name1;
 				if (name.indexOf("gz_") == 0 && (lib.junList.includes(name.slice(3)) || get.character(name)?.junName)) {
-					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`;
-					const notChange = game.hasPlayer(current => get.nameList(current).includes(junzhu_name));
+					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`,
+						group = lib.character[junzhu_name][1];
+					const notChange = game.hasPlayer(current => get.is.jun(current) && current.identity == group);
 					const result = notChange
 						? {
 								bool: false,
@@ -18793,25 +18876,27 @@ export default {
 						game.trySkillAudio(map[junzhu_name], player);
 
 						await player.showCharacter(0);
-						const group = lib.character[junzhu_name][1],
-							yelist = game.filterPlayer(function (current) {
-								if (current.identity != "ye") {
-									return false;
-								}
-								if (current == player) {
-									return true;
-								}
-								return current.group == group;
-							});
+						const yelist = game.filterPlayer(function (current) {
+							if (current == player) {
+								return current.identity != group;
+							}
+							if (current.identity != "ye") {
+								return false;
+							}
+							return current.group == group;
+						});
 						if (yelist.length > 0) {
 							const next = game.createEvent("changeGroupInGuozhan", false);
 							next.player = player;
 							next.targets = yelist;
 							next.fromGroups = yelist.map(current => current.identity);
-							next.toGroup = player.group;
+							next.toGroup = group;
 							next.setContent("emptyEvent");
 							player.line(yelist, "green");
-							game.log(yelist, "失去了野心家身份");
+							if (yelist.includes(player)) {
+								game.log(player, "变回了", `<span data-nature=${get.groupnature(group, "raw")}m>${get.translation(group + 2)}</span>身份`);
+							}
+							game.log(yelist.filter(current => current != player), "失去了野心家身份");
 							game.broadcastAll(
 								function (list, group) {
 									for (let i = 0; i < list.length; i++) {
@@ -18821,7 +18906,7 @@ export default {
 									}
 								},
 								yelist,
-								player.group
+								group
 							);
 							await next;
 						}
@@ -19028,7 +19113,7 @@ export default {
 			}
 			const groups = ["wei", "shu", "wu", "qun", "jin"];
 			if (_status.bannedGroup) {
-				groups.remove(_status.bannedGroup);
+				groups.remove(_status.bannedGroup?.slice(6));
 			}
 			const willBeYe = groups.filter(group => {
 				if (_status.yeidentity && _status.yeidentity.includes(group)) {

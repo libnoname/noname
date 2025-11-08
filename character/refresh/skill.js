@@ -2963,7 +2963,7 @@ const skills = {
 			await target.draw(Math.min(5, target.maxHp));
 			let num = target.countCards("h") - Math.min(5, target.maxHp);
 			if (num > 0) {
-				await target.chooseToDiscard("h", true, num);
+				await target.chooseToDiscard("h", true, num, "allowChooseAll");
 			}
 		},
 		ai: {
@@ -6833,7 +6833,11 @@ const skills = {
 			if (result.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = trigger.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				if (get.color(trigger.card) == "red") {
 					player.draw();
@@ -9821,7 +9825,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("decadepojun", trigger.target));
+			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("decadepojun", trigger.target), "allowChooseAll");
 			next.set("ai", function (button) {
 				if (!_status.event.goon) {
 					return 0;
@@ -11717,7 +11721,7 @@ const skills = {
 		preHidden: true,
 		content() {
 			"step 0";
-			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("repojun", trigger.target));
+			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("repojun", trigger.target), "allowChooseAll");
 			next.set("ai", function (button) {
 				if (!_status.event.goon) {
 					return 0;
@@ -14132,7 +14136,7 @@ const skills = {
 	},
 	new_rejianxiong: {
 		audio: "rejianxiong",
-		audioname: ["shen_caopi"],
+		audioname: ["shen_caopi", "mb_caocao"],
 		audioname2: { caoying: "lingren_jianxiong" },
 		trigger: { player: "damageEnd" },
 		content() {
@@ -14963,7 +14967,7 @@ const skills = {
 		trigger: { global: "recoverBefore" },
 		direct: true,
 		filter(event, player) {
-			return player != event.player && event.player.group == "wu" && player.hp <= event.player.hp && event.getParent().name != "rejiuyuan" && player.hasZhuSkill("rejiuyuan", event.player);
+			return player != event.player && event.player.group == "wu" && player.hp <= event.player.hp && event.getParent().name != "rejiuyuan" && player.hasZhuSkill("rejiuyuan", event.player) && event.player === _status.currentPhase;
 		},
 		content() {
 			"step 0";
@@ -15096,8 +15100,8 @@ const skills = {
 					return true;
 				}
 			},
-			canBeDiscarded(card) {
-				if (get.position(card) == "e" && get.subtypes(card).some(slot => slot == "equip2" || slot == "equip5")) {
+			canBeDiscarded(card, player, target) {
+				if (get.position(card) == "e" && get.subtypes(card).some(subtype => ["equip2", "equip5"].includes(subtype)) && player != target) {
 					return false;
 				}
 			},
@@ -16107,7 +16111,7 @@ const skills = {
 	},
 	rejianxiong: {
 		audio: 2,
-		audioname: ["shen_caopi"],
+		audioname: ["shen_caopi", "mb_caocao"],
 		audioname2: { caoteng: "rejianxiong_caoteng" },
 		trigger: { player: "damageEnd" },
 		filter(event, player) {

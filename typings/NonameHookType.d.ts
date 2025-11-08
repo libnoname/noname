@@ -1,0 +1,154 @@
+declare interface NonameHookType {
+	/**
+	 *
+	 * @param id - 势力的id
+	 * @param short - 势力的短名称（单字称呼）
+	 * @param name - 势力的完整名称
+	 * @param config - 关于势力的配置情况
+	 */
+	addGroup(id: string, short: string, name: string, config: Record<string, unknown>): any;
+
+	/**
+	 *
+	 * @param nature - 属性的id
+	 * @param translation - 属性的名称
+	 * @param config - 关于属性的配置
+	 */
+	addNature(nature: string, translation: string, config: Record<string, unknown>): any;
+
+	// #region Assembly-Compatition
+	/**
+	 *
+	 * @param event - 当前检查的事件
+	 */
+	checkBegin(event: GameEvent): any;
+
+	/**
+	 *
+	 * @param event - 当前检查的事件
+	 * @param config - 一些配置
+	 */
+	checkEnd(event: GameEvent, config: { ok: boolean; auto: boolean; autoConfirm: boolean }): any;
+
+	/**
+	 *
+	 * @param button - 检查的Button
+	 * @param event - 当前检查的事件
+	 */
+	checkButton(button: Button, event: GameEvent): any;
+
+	/**
+	 *
+	 * @param card - 检查的卡牌
+	 * @param event - 当前检查的事件
+	 */
+	checkCard(card: Card, event: GameEvent): any;
+
+	/**
+	 *
+	 * @param target - 检查的玩家
+	 * @param event - 当前检查的事件
+	 */
+	checkTarget(target: Player, event: GameEvent): any;
+
+	/**
+	 *
+	 * @param event - 当前检查的事件
+	 * @param args - 要取消检查的对象
+	 */
+	uncheckBegin(event: GameEvent, args: ("button" | "card" | "target")[]): any;
+
+	/**
+	 *
+	 * @param event - 当前检查的事件
+	 * @param args - 要取消检查的对象
+	 */
+	uncheckEnd(event: GameEvent, args: ("button" | "card" | "target")[]): any;
+
+	/**
+	 *
+	 * @param button - 取消检查的Button
+	 * @param event - 当前检查的事件
+	 */
+	uncheckButton(button: Button, event: GameEvent): any;
+
+	/**
+	 *
+	 * @param card - 取消检查的卡牌
+	 * @param event - 当前检查的事件
+	 */
+	uncheckCard(card: Card, event: GameEvent): any;
+
+	/**
+	 *
+	 * @param target - 取消检查的玩家
+	 * @param event - 当前检查的事件
+	 */
+	uncheckTarget(target: Player, event: GameEvent): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param target - 取消检查的玩家
+	 * @param event - 当前检查的事件
+	 */
+	checkOverflow(itemOption: Dialog, itemContainer: Dialog, addedItems: Dialog, game: Game): any;
+	checkTipBottom(player: Player): void;
+	// #endregion
+
+	/**
+	 *
+	 * @param event - 当前检查的伤害事件
+	 * @param player - 当前检查的玩家
+	 */
+	checkDamage1(event: GameEvent, player: Player): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param event - 当前检查的伤害事件
+	 * @param player - 当前检查的玩家
+	 */
+	checkDamage2(event: GameEvent, player: Player): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param event - 当前检查的伤害事件
+	 * @param player - 当前检查的玩家
+	 */
+	checkDamage3(event: GameEvent, player: Player): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param event - 当前检查的伤害事件
+	 * @param player - 当前检查的玩家
+	 */
+	checkDamage4(event: GameEvent, player: Player): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param skill - 获得的技能
+	 * @param player - 当前检查的玩家
+	 */
+	addSkillCheck(skill: string, player: Player ): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param skill - 失去的技能
+	 * @param player - 当前检查的玩家
+	 */
+	removeSkillCheck(skill: string, player: Player ): any;
+	// #endregion
+
+	/**
+	 *
+	 * @param name - 切换的原画
+	 * @param skin - 切换的皮肤
+	 */
+	refreshSkin(name: string, skin: Player ): any;
+	// #endregion
+}

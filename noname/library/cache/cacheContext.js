@@ -1,18 +1,31 @@
-import { lib } from "../index.js";
-import { game } from "../../game/index.js";
-import { get } from "../../get/index.js";
-import { _status } from "../../status/index.js";
-import { hex_md5 } from "../crypt/md5.js";
+// import { game, get, lib } from "@noname";
+import { MD5 } from "crypto-js";
+
+let cacheEnvironment = false;
+let cacheContext = undefined;
+let proxyed = {};
+
 /**
  * 缓存上下文，用于在各种方法中暂时缓存值，以第一次获取的缓存值为准。
  */
 export class CacheContext {
 	constructor() {
-		this.lib = this._createCacheProxy(lib);
-		this.game = this._createCacheProxy(game);
-		this.get = this._createCacheProxy(get);
+		// this.lib = this._createCacheProxy(lib);
+		// this.game = this._createCacheProxy(game);
+		// this.get = this._createCacheProxy(get);
+		for (const i in proxyed){
+			this[i] = this._createCacheProxy(proxyed[i]);
+		}
 		this.sourceMap = new Map();
 		this.storageMap = new Map();
+	}
+
+	/**
+	 * 设置缓存上下文代理的对象。
+	 * @param {Record<string, any>} proxy
+	 */
+	static setProxy(proxy){
+		proxyed = proxy;
 	}
 
 	/**
@@ -20,7 +33,7 @@ export class CacheContext {
 	 * @param {boolean} cache
 	 */
 	static setInCacheEnvironment(cache) {
-		_status.cacheEnvironment = cache;
+		cacheEnvironment = cache;
 	}
 
 	/**
@@ -29,7 +42,7 @@ export class CacheContext {
 	 * @param {CacheContext} context
 	 */
 	static setCacheContext(context) {
-		_status.cacheContext = context;
+		cacheContext = context;
 	}
 
 	/**
@@ -37,14 +50,14 @@ export class CacheContext {
 	 * @returns {CacheContext} 缓存上下文
 	 */
 	static getCacheContext() {
-		return _status.cacheContext;
+		return cacheContext;
 	}
 
 	/**
 	 * 移除当前公有的缓存上下文。
 	 */
 	static removeCacheContext() {
-		delete _status.cacheContext;
+		cacheContext = undefined;
 	}
 
 	/**
@@ -99,7 +112,7 @@ export class CacheContext {
 			}
 			source[method] = function () {
 				try {
-					if (!_status.cacheEnvironment) {
+					if (!cacheEnvironment) {
 						return func.call(this, ...arguments);
 					}
 					return CacheContext._getCacheValueFromObject(CacheContext.requireCacheContext()._requireStorage(this), method, arguments, this, func);
@@ -217,7 +230,7 @@ export class CacheContext {
 				.join("-")}]]`;
 		}
 		if (typeof param === "function") {
-			return `[f:${hex_md5(param.toString())}]`;
+			return `[f:${MD5(param.toString()).toString()}]`;
 		}
 		let entries = Object.entries(param);
 		entries.sort((a, b) => (a[0] < b[0] ? -1 : 1));

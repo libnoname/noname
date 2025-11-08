@@ -1,4 +1,17 @@
 const characters = {
+	yj_puyuan: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["biancai", "cuiren", "shenfeng"],
+	},
+	
+	v_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dczhifeng", "dcweijing"],
+	},
 	yao_yuanshu: {
 		sex: "male",
 		group: "qun",
@@ -20,7 +33,7 @@ const characters = {
 	wufu: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 3,
 		skills: ["dczhonge", "dcjuekai"],
 	},
 	yj_sb_guojia: {

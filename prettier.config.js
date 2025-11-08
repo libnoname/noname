@@ -1,0 +1,17 @@
+/**
+ * @type {import("prettier").Config}
+ */
+const config = {
+	arrowParens: "avoid",
+	bracketSpacing: true,
+	endOfLine: "lf",
+	printWidth: 999,
+	proseWrap: "preserve",
+	quoteProps: "as-needed",
+	semi: true,
+	tabWidth: 4,
+	trailingComma: "es5",
+	useTabs: true,
+};
+
+export default config;

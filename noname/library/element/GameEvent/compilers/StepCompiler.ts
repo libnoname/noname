@@ -1,11 +1,11 @@
 // 喵喵！step写法的content全在这里处理喵！
-import { EventContent, GameEvent } from "./IContentCompiler.ts";
-import { _status, ai, game, get, lib, ui } from "../../../../../noname.js";
-import { AsyncFunction, GeneratorFunction, AsyncGeneratorFunction } from "../../../../util/index.js";
+import { _status, ai, game, get, lib, ui } from "@noname";
+import { AsyncFunction, GeneratorFunction, AsyncGeneratorFunction } from "@/util/index.js";
+import security from "@/util/security.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.js";
+import { EventContent } from "./IContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 import ContentCompiler from "./ContentCompiler.ts";
-import security from "../../../../util/security.js";
-import { CodeSnippet, ErrorManager } from "../../../../util/error.js";
 
 type GeneralFunction = (...args: any[]) => any;
 

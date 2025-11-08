@@ -1,5 +1,4 @@
-import { lib } from "../index.js";
-import { game } from "../../game/index.js";
+import { game, lib } from "@noname";
 
 /**
  * @type {(NonameHookType["addGroup"])[]}

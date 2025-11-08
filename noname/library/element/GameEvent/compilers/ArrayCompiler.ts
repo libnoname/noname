@@ -1,5 +1,6 @@
+import { GameEvent } from "../../gameEvent.js";
+import { EventContent } from "./IContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
-import { EventContent, GameEvent } from "./IContentCompiler.ts";
 
 export default class ArrayCompiler extends ContentCompilerBase {
 	type = "array";

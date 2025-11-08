@@ -1,6 +1,7 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
-import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
-import { nonameInitialized } from "../../../../util/index.js";
+import { ui, game, get, ai, lib, _status } from "@noname";
+import { nonameInitialized } from "@/util/index.js";
+import JSZip from "jszip";
 
 export const optionsMenu = function (connectMenu) {
 	if (connectMenu) {
@@ -672,11 +673,7 @@ export const optionsMenu = function (connectMenu) {
 								alert("没有检测到素材");
 							}
 						};
-						if (!window.JSZip) {
-							lib.init.js(lib.assetURL + "game", "jszip", loadData);
-						} else {
-							loadData();
-						}
+						loadData();
 					};
 					fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
 				}

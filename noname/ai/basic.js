@@ -1,8 +1,5 @@
-import { get } from "../get/index.js";
-import { game } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { CacheContext } from "../library/cache/cacheContext.js";
+import { _status, lib, game, get, ui } from "@noname";
+import { CacheContext } from "@/library/cache/cacheContext.js";
 export class Basic {
 	/**
 	 * @param { (
@@ -21,7 +18,7 @@ export class Basic {
 			if (ui.selected.buttons.length >= range[0]) {
 				ok = true;
 			}
-			CacheContext.setCacheContext(new CacheContext());
+			CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
 			CacheContext.setInCacheEnvironment(true);
 			if (range[1] <= -1) {
 				j = 0;
@@ -97,7 +94,7 @@ export class Basic {
 					return true;
 				}
 				j = 0;
-				CacheContext.setCacheContext(new CacheContext());
+				CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
 				CacheContext.setInCacheEnvironment(true);
 				for (i = 0; i < ui.selected.cards.length; i++) {
 					effect = check(ui.selected.cards[i]);
@@ -125,7 +122,7 @@ export class Basic {
 			// 	return (check(b,cards2)-check(a,cards2));
 			// });
 			var ix = 0;
-			CacheContext.setCacheContext(new CacheContext());
+			CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
 			CacheContext.setInCacheEnvironment(true);
 			var checkix = check(cards[0], cards2);
 			for (i = 1; i < cards.length; i++) {
@@ -188,7 +185,7 @@ export class Basic {
 			}
 			if (range[1] <= -1) {
 				j = 0;
-				CacheContext.setCacheContext(new CacheContext());
+				CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
 				CacheContext.setInCacheEnvironment(true);
 				for (i = 0; i < ui.selected.targets.length; i++) {
 					effect = check(ui.selected.targets[i]);
@@ -213,7 +210,7 @@ export class Basic {
 			// 	return check(b)-check(a);
 			// });
 			let ix = 0;
-			CacheContext.setCacheContext(new CacheContext());
+			CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
 			CacheContext.setInCacheEnvironment(true);
 			let checkix = check(targets[0], targets2);
 			for (i = 1; i < targets.length; i++) {

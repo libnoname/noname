@@ -1280,7 +1280,7 @@ export default {
 					: {
 							bool: true,
 							links: skills,
-					  };
+						};
 			if (result2?.bool) {
 				const skill = result2.links[0],
 					name = "gz_duorui_tieqi";
@@ -1496,7 +1496,7 @@ export default {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 					if (result.bool) {
 						player.line(result.targets, "green");
 						await result.targets[0].link(true);
@@ -1650,7 +1650,7 @@ export default {
 		async cost(event, trigger, player) {
 			const groups = ["wei", "shu", "wu", "qun", "jin", "ye"];
 			if (_status.bannedGroup) {
-				groups.remove(_status.bannedGroup);
+				groups.remove(_status.bannedGroup?.slice(6));
 			}
 			game.filterPlayer(current => {
 				if (current.identity != "unknown") {
@@ -2288,7 +2288,7 @@ export default {
 					? {
 							bool: true,
 							links: list,
-					  }
+						}
 					: await player
 							.chooseButton(["党锢：请选择亮出常侍", [list, "character"]], true)
 							.set("ai", button => Math.random() * 10)
@@ -2830,7 +2830,7 @@ export default {
 							.forResult()
 					: {
 							index: 1,
-					  };
+						};
 			if (result.index == 0) {
 				const { bool, cards, targets } = await player
 					.chooseCardTarget({
@@ -3284,8 +3284,8 @@ export default {
 	},
 	//野吕布
 	gz_wuchang: {
-		audio: "olyuyu",
-		logAudio: () => ["olyuyu"],
+		audio: ["olyuyu", "ollbzhiji"],
+		logAudio: () => "olyuyu",
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -3321,21 +3321,27 @@ export default {
 		subSkill: {
 			draw: {
 				audio: "gz_wuchang",
+				logAudio: () => "ollbzhiji",
 				trigger: {
 					global: ["dieAfter", "changeGroupInGuozhan", "diaohulishanAfter"],
 				},
 				filter(event, player, name) {
 					if (event.name == "die") {
-						return event.player && !game.hasPlayer(current => current.identity == event.player.identity);
+						return event.player && !game.hasPlayer(current => current.isFriendOf(event.player));
 					}
 					if (event.name == "diaohulishan") {
-						return event.target && !game.hasPlayer(current => current.identity == event.target.identity);
+						return event.target && !game.hasPlayer(current => current.isFriendOf(event.target));
 					}
-					return (
-						event.fromGroups?.some(group => {
-							return !game.hasPlayer(current => current.identity == group);
-						}) && game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup)
-					);
+					let groups = event.fromGroups.reduce((groups, group, index) => {
+						if (group === "ye") {
+							groups.add(`ye${index}`);
+						}
+						if (!game.hasPlayer(current => current.identity == group)) {
+							groups.add(group);
+						}
+						return groups;
+					}, []);
+					return groups.length > 1 || game.hasPlayer(current => !event.targets.includes(current) && current.identity == event.toGroup);
 				},
 				locked: true,
 				async cost(event, trigger, player) {
@@ -3360,9 +3366,8 @@ export default {
 				},
 				async content(event, trigger, player) {
 					if (event.cost_data) {
-						const { ResultEvent } = event.cost_data;
-						event.next.push(ResultEvent);
-						await ResultEvent;
+						const { result } = event.cost_data;
+						await player.useResult(result, event);
 					} else {
 						await player.draw(2);
 					}
@@ -3370,6 +3375,7 @@ export default {
 			},
 			backup: {
 				audio: "gz_wuchang",
+				logAudio: () => "ollbzhiji",
 				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
@@ -3405,6 +3411,7 @@ export default {
 					source: "damageBegin1",
 				},
 				audio: "gz_wuchang",
+				logAudio: () => "olyuyu",
 				filter(event, player) {
 					const map = player.getStorage("gz_wuchang_effect", new Map()),
 						group = event.player.identity;
@@ -3953,7 +3960,7 @@ export default {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 					if (result?.bool) {
 						const [target] = result.targets;
 						player.logSkill("gz_qingzhong", [target]);

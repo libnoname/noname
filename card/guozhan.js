@@ -7,6 +7,7 @@ game.import("card", function () {
 			zhaoshu: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["刘宏", "袁术", "司马炎"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
@@ -425,6 +426,7 @@ game.import("card", function () {
 			liulongcanjia: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["曹操"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip6",
@@ -475,6 +477,7 @@ game.import("card", function () {
 			dinglanyemingzhu: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["孙权"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
@@ -513,6 +516,7 @@ game.import("card", function () {
 			feilongduofeng: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["刘备"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
@@ -546,6 +550,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip2",
+				bingzhu: ["张角", "庄周"],
 				cardcolor: "heart",
 				nomod: true,
 				nopower: true,
@@ -584,6 +589,7 @@ game.import("card", function () {
 			jilinqianyi: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["司马懿"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
@@ -616,6 +622,7 @@ game.import("card", function () {
 			yuxi: {
 				audio: true,
 				mode: ["guozhan"],
+				bingzhu: ["刘宏", "袁术", "司马炎"],
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
@@ -1524,11 +1531,13 @@ game.import("card", function () {
 				},
 				skills: ["wuliu_skill"],
 				mode: ["guozhan"],
+				bingzhu: ["孙权"],
 			},
 			sanjian: {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["纪灵"],
 				distance: { attackFrom: -2 },
 				ai: {
 					basic: {
@@ -2164,6 +2173,7 @@ game.import("card", function () {
 			xietianzi: {
 				forced: true,
 				popup: false,
+				nopop: true,
 				filter(event, player) {
 					return player.countCards("h") > 0;
 				},

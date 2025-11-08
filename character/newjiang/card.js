@@ -5,7 +5,7 @@ const cards = {
 		type: "equip",
 		derivation: "yj_majun",
 		fullskin: true,
-		cardimage: "caoying_equip",
+		image: "image/card/majun_gongqiao.png",
 		cardPrompt(card) {
 			let str = `原本是一张装备牌。`,
 				subtypes = get.subtypes(card);
@@ -24,7 +24,7 @@ const cards = {
 		type: "trick",
 		derivation: "yj_majun",
 		fullskin: true,
-		cardimage: "caoying_trick",
+		image: "image/card/majun_gongqiao.png",
 		cardPrompt(card) {
 			let str = `原本是一张锦囊牌。`,
 				subtypes = get.subtypes(card);
@@ -43,7 +43,7 @@ const cards = {
 		type: "basic",
 		derivation: "yj_majun",
 		fullskin: true,
-		cardimage: "caoying_basic",
+		image: "image/card/majun_gongqiao.png",
 		cardPrompt(card) {
 			let str = `原本是一张基本牌。`,
 				subtypes = get.subtypes(card);

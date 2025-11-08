@@ -1,7 +1,4 @@
-import { get } from "../../get/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ai } from "../../ai/index.js";
+import { _status, get, lib, ai } from "@noname";
 
 export class VCard {
 	/**
@@ -47,6 +44,10 @@ export class VCard {
 			 * @type {Record<string, any>}
 			 */
 			this.storage = get.copy(suitOrCard.storage);
+			//复制初始实体牌的skills
+			if (Array.isArray(suitOrCard.skills)) {
+				this.skills = suitOrCard.skills.slice();
+			}
 			if (Array.isArray(numberOrCards)) {
 				this.cards = numberOrCards.slice();
 			} else {

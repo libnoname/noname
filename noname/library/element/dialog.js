@@ -1,9 +1,5 @@
-import { get } from "../../get/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
-import { game } from "../../../noname.js";
-import { Pagination } from "../../util/pagination.js";
+import { _status, game, get, lib, ui } from "@noname";
+import { Pagination } from "@/util/pagination.js";
 
 export class Dialog extends HTMLDivElement {
 	/** @type { HTMLDivElement } */
@@ -333,6 +329,8 @@ export class Dialog extends HTMLDivElement {
 			this.buttons = this.buttons.concat(ui.create.buttons(item[0], "skill", buttons, noclick));
 		} else if (item[1] == "addNewRow") {
 			this.addNewRow(...item[0]);
+		} else if (item[1] == "handle") {
+			item[0](this);
 		} else {
 			var buttons = ui.create.div(".buttons", this.content);
 			if (zoom) {

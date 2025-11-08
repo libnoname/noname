@@ -1,14 +1,7 @@
-// @ts-nocheck
-import { ai, setAI } from "../ai/index.js";
-import { get, setGet } from "../get/index.js";
-import { lib, Library, setLibrary } from "../library/index.js";
-import { game, setGame } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { setUI, ui } from "../ui/index.js";
-import { gnc } from "../gnc/index.js";
+import { lib, game, get, _status, ui, gnc } from "@noname";
 import { importMode } from "./import.js";
-import { Mutex } from "../util/mutex.js";
-import { load } from "../util/config.js";
+import { Mutex } from "@/util/mutex.js";
+import { load } from "@/util/config.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 export async function onload() {

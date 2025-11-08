@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	ns_zuoci: "左慈",
 	ns_wangyun: "王允",
@@ -290,7 +292,7 @@ const translates = {
 	junkyuheng: "驭衡",
 	junkyuheng_info: '锁定技。①回合开始时，你须弃置任意张花色不同的牌，从<span style="font-family: yuanli">东吴命运线·改</span>中随机获得等量的技能。②回合结束时，你失去所有因〖驭衡①〗获得的技能，然后摸等量的牌。',
 	junkdili: "帝力",
-	junkdili_info: "觉醒技。当你获得技能后，若你拥有的技能数大于你的体力上限，则你减1点体力上限，选择失去任意个其他技能，然后获得以下技能中的前等量个：〖圣质〗/〖权道〗/〖持纲〗。",
+	junkdili_info: `觉醒技。当你获得技能后，若你拥有的技能数大于你的体力上限，则你减1点体力上限，选择失去任意个其他技能，然后获得以下技能中的前等量个：${get.poptip("junkshengzhi")}${get.poptip("junkquandao")}${get.poptip("junkchigang")}。`,
 	junkshengzhi: "圣质",
 	junkshengzhi_info: "锁定技。当你发动非锁定技后，你令你本回合使用的下一张牌无距离和次数限制。",
 	junkquandao: "权道",

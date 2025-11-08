@@ -1240,7 +1240,7 @@ const translates = {
 	olmaozhu_info: "锁定技。①你的手牌上限和使用【杀】的额定次数+X（X为你拥有的技能数）。②当你于出牌阶段首次对技能数小于你的角色造成伤害时，此伤害+1。",
 	oljinlan: "尽览",
 	oljinlan_info: "出牌阶段限一次，你可以将手牌数摸至Y张（Y为场上技能数最多的角色的技能数）。",
-	oljinlan_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>〖飞扬〗〖跋扈〗以及持有的战法计入〖茂著〗〖尽览〗的技能数计算</span>',
+	oljinlan_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>拥有Charlotte标签但拥有技能描述的技能和持有的战法计入〖茂著〗〖尽览〗的技能数计算</span>',
 	caimao: "蔡瑁",
 	olzuolian: "佐练",
 	olzuolian_tag: "展示牌",
@@ -1564,6 +1564,14 @@ const translates = {
 	olwenyi_info: "每局游戏限一次，一名角色体力值变为1后，你可对其使用一张【桃】或交给其一张装备牌令其使用之，然后其复原武将牌。",
 	olmiaoxin: "妙心",
 	olmiaoxin_info: "锁定技，你受到1点伤害后，令〖温宜〗发动次数+1，然后若本轮你未发动过〖温宜〗，你摸两张牌，",
+	ol_lvlingqi: "OL吕玲绮",
+	ol_lvlingqi_prefix: "OL",
+	olqiwu: "绮舞",
+	olqiwu_info: "出牌阶段限一次，你可以弃置任意张非伤害牌，视为使用一张无距离限制的【杀】并令目标角色弃置X张牌（X为你弃置牌包含的类型数）。若你与其因此弃置的牌：包含【闪】，你获得其中的【闪】且这些牌本回合不计入手牌上限；不包含【闪】，此【杀】不可被响应。",
+	olqiwu_rewrite: "绮舞·改",
+	olqiwu_rewrite_info: "出牌阶段限一次，你可以弃置任意张牌，视为使用一张无距离限制的【杀】并令目标角色弃置X张牌（X为你弃置牌包含的类型数）。若你与其因此弃置的牌：包含【闪】，你获得其弃置的牌；不包含【闪】，此【杀】不可被响应。",
+	olzhuangrong: "妆戎",
+	olzhuangrong_info: `锁定技，回合开始时，将${get.poptip("shufazijinguan")}${get.poptip("linglongshimandai")}${get.poptip("hongmianbaihuapao")}${get.poptip("wushuangfangtianji")}中的随机一件装备从游戏外置入你的对应空置装备栏。你以此法装备过这些牌后，或你第二次失去以此法装备的牌后，你失去此技能并修改〖绮舞〗，然后增加1点体力上限并回复1点体力。`,
 };
 
 export default translates;

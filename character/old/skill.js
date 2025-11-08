@@ -16,13 +16,14 @@ const skills = {
 									for (const card of mutation.addedNodes) {
 										if (cards.includes(card)) {
 											game.broadcastAll(
-												(card, skill) => {
+												(card, player, skill) => {
 													card.addGaintag(`${skill}_tag`);
 													game.addVideo("addGaintag", player, [[get.cardInfo(card)], `${skill}_tag`]);
 													card.classList.add(skill);
 													game.addVideo("skill", player, [skill, [true, [get.cardInfo(card)]]]);
 												},
 												card,
+												player,
 												skill
 											);
 										}
@@ -31,11 +32,12 @@ const skills = {
 								for (const card of mutation.removedNodes) {
 									if (cards.includes(card) && !card.hasGaintag(`${skill}_tag`)) {
 										game.broadcastAll(
-											(card, skill) => {
+											(card, player, skill) => {
 												card.classList.remove(skill);
 												game.addVideo("skill", player, [skill, [false, [get.cardInfo(card)]]]);
 											},
 											card,
+											player,
 											skill
 										);
 									}
@@ -62,13 +64,14 @@ const skills = {
 						player.getCards("h").forEach(card => {
 							if (cards.includes(card)) {
 								game.broadcastAll(
-									(card, skill) => {
+									(card, player, skill) => {
 										card.addGaintag(`${skill}_tag`);
 										game.addVideo("addGaintag", player, [[get.cardInfo(card)], `${skill}_tag`]);
 										card.classList.add(skill);
 										game.addVideo("skill", player, [skill, [true, [get.cardInfo(card)]]]);
 									},
 									card,
+									player,
 									skill
 								);
 							}

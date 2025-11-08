@@ -1,8 +1,8 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
-import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
-import { nonameInitialized } from "../../../../util/index.js";
-import security from "../../../../util/security.js";
-import { Character } from "../../../../library/element/index.js";
+import { ui, game, get, ai, lib, _status } from "@noname";
+import { nonameInitialized } from "@/util/index.js";
+import security from "@/util/security.js";
+import { Character } from "@/library/element/index.js";
 
 export const extensionMenu = function (connectMenu) {
 	if (connectMenu) {
@@ -2620,7 +2620,7 @@ export const extensionMenu = function (connectMenu) {
 				}, 200);
 			};
 			var downloadExtension = function (e) {
-				if ((this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") || !window.JSZip) {
+				if (this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") {
 					return;
 				}
 				this.classList.remove("update");
@@ -2728,9 +2728,6 @@ export const extensionMenu = function (connectMenu) {
 			node.update = function () {
 				if (this.updated) {
 					return;
-				}
-				if (!window.JSZip) {
-					lib.init.js(lib.assetURL + "game", "jszip");
 				}
 				var toremove = [];
 				for (var i = 0; i < page.childElementCount; i++) {

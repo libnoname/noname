@@ -1,4 +1,4 @@
-import { CodeSnippet, ErrorReporter, ErrorManager } from "./error.js";
+import { CodeSnippet, ErrorReporter, ErrorManager } from "./error.ts";
 
 // 方便开关确定沙盒的问题喵
 // 当此处为true、debug模式未启用、设备非苹果时，沙盒生效

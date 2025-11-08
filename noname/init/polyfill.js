@@ -1,8 +1,4 @@
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
+import { lib, game, get, _status, ui } from "@noname";
 /**
  * 为元素添加右击或长按弹出的提示信息
  * @param {string} title 标题
@@ -373,7 +369,6 @@ HTMLElement.prototype.css = function (style) {
  * @param {number} col
  * @returns {HTMLElement | void}
  */
-// @ts-expect-error OnType
 HTMLTableElement.prototype.get = function (row, col) {
 	if (row < this.childNodes.length) {
 		// @ts-expect-error ignore
@@ -476,7 +471,6 @@ Object.defineProperty(Array.prototype, "filterInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.filter(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -492,7 +486,6 @@ Object.defineProperty(Array.prototype, "someInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.some(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -508,7 +501,6 @@ Object.defineProperty(Array.prototype, "everyInD", {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
-		// @ts-expect-error ignore
 		return this.every(card => pos.includes(get.position(card, true)));
 	},
 });
@@ -627,7 +619,6 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
 	value() {
-		// @ts-expect-error ignore
 		for (const i of Array.from(arguments)) {
 			this.remove(...i);
 		}
@@ -753,7 +744,6 @@ Object.defineProperty(Array.prototype, "sortBySeat", {
 	 * @type { typeof Array['prototype']['sortBySeat'] }
 	 */
 	value(target) {
-		// @ts-expect-error TypeCorrect
 		lib.tempSortSeat = target;
 		this.sort(lib.sort.seat);
 		delete lib.tempSortSeat;

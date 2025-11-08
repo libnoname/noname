@@ -1,19 +1,17 @@
-import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
-import { game } from "../game/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { CacheContext } from "../library/cache/cacheContext.js";
 import { Is } from "./is.js";
 import { Promises } from "./promises.js";
-import { rootURL } from "../../noname.js";
-import * as pinyinPro from "./pinyins/index.js";
-import { Audio } from "./audio.js";
-import security from "../util/security.js";
-import { CodeSnippet, ErrorManager } from "../util/error.js";
+import { rootURL, game, lib, _status, ui } from "@noname";
+import * as pinyinPro from "pinyin-pro";
+import NonameDictionary from "./pinyins/noname-dict.js";
+import { Audio } from "./audio.ts";
+import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
+import security from "@/util/security.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.ts";
 
+import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";
-import { HTMLPoptipElement } from "../library/poptip.js";
+import { HTMLPoptipElement } from "@/library/poptip.js";
+import { CacheContext } from "@/library/cache/cacheContext.js";
 
 // 用于标识Map、Set等对象在序列化中的类型
 // 使用了md5("__noname_type")的值作为键
@@ -210,7 +208,7 @@ export class Get extends GetCompatible {
 	/**
 	 * 获取当前事件是由何skill/card事件衍生并生成相应的卡牌信息提示
 	 * @param {Player} player
-	 * @param {GameEventPromise} sourceEvent
+	 * @param {GameEvent} sourceEvent
 	 * @returns {GameEvent|string}
 	 */
 	cardsetion(player, sourceEvent) {
@@ -830,6 +828,9 @@ export class Get extends GetCompatible {
 		if (info.persevereSkill) {
 			list.add("持恒技");
 		}
+		if (info.transformSkill) {
+			list.add("变身技");
+		}
 		if (info.comboSkill) {
 			list.add("连招技");
 		}
@@ -892,6 +893,27 @@ export class Get extends GetCompatible {
 			names.push([name[0], name[1]]);
 		}
 		return names;
+	}
+	/**
+	 * 获取角色称号，默认返回纯文本
+	 * @param {Player|string} name 玩家对象或角色名
+	 * @param {boolean} [name2=false] 是否返回玩家副将的称号
+	 * @param {boolean} [plainText=true] 是否返回纯文本
+	 * @returns {string} 称号
+	 */
+	characterTitle(player, name2 = false, plainText = true) {
+		if (get.itemtype(player) == "player") {
+			player = name2 ? player.name2 : player.name;
+		}
+		let characterTitle = lib.characterTitle[player] || "";
+		if (plainText) {
+			// 排除掉本体的几个颜色样式标记，如#r、#p、#g、#b
+			if (characterTitle.startsWith("#")) {
+				characterTitle = characterTitle.slice(2);
+			}
+			return get.plainText(characterTitle);
+		}
+		return characterTitle;
 	}
 	/**
 	 * 返回角色对应的原角色
@@ -1184,6 +1206,29 @@ export class Get extends GetCompatible {
 		}
 	}
 	/**
+	 * 获取一张装备牌的兵主
+	 * @param { string | Card | VCard  } name
+	 * @returns {String[]}
+	 */
+	bingzhu(name) {
+		if (typeof name != "string") {
+			name = get.name(name);
+		}
+		const list = [],
+			info = lib.card[name];
+		if (lib.cardBingzhu[name]) {
+			list.addArray(lib.cardBingzhu[name]);
+		}
+		if (info.derivation) {
+			const names = get.characterSurname(info.derivation).map(list => list.join(""));
+			list.addArray(names);
+		}
+		if (info.bingzhu) {
+			list.addArray(info.bingzhu);
+		}
+		return list.filter(surname => surname !== "某");
+	}
+	/**
 	 * @overload
 	 * @param { string } name
 	 * @returns { import("../library/element/character").Character }
@@ -1273,7 +1318,7 @@ export class Get extends GetCompatible {
 	 *
 	 * 获取一个技能或事件的某个属性的源技能
 	 * @param { string | Object } skill - 传入的技能或事件
-	 * @param { string } text - 要获取的属性（不填写默认获取sourceSkill）
+	 * @param { string } [text] - 要获取的属性（不填写默认获取sourceSkill）
 	 * @returns { string }
 	 */
 	sourceSkillFor(skill, text) {
@@ -1336,13 +1381,7 @@ export class Get extends GetCompatible {
 	 * @param { (zip: JSZip) => any } callback
 	 */
 	zip(callback) {
-		if (!window.JSZip) {
-			lib.init.js(lib.assetURL + "game", "jszip", function () {
-				callback(new JSZip());
-			});
-		} else {
-			callback(new JSZip());
-		}
+		callback(new JSZip());
 	}
 	delayx(num, max) {
 		if (typeof num != "number") {
@@ -1543,11 +1582,11 @@ export class Get extends GetCompatible {
 		const target = constructor
 			? Array.isArray(obj) || obj instanceof Map || obj instanceof Set || constructor === Object
 				? // @ts-expect-error ignore
-				  new constructor()
+					new constructor()
 				: constructor.name in window && /\[native code\]/.test(constructor.toString())
-				? // @ts-expect-error ignore
-				  new constructor(obj)
-				: obj
+					? // @ts-expect-error ignore
+						new constructor(obj)
+					: obj
 			: Object.create(null);
 		if (target === obj) {
 			return target;
@@ -1868,8 +1907,10 @@ export class Get extends GetCompatible {
 			over: _status.over,
 			inpile: lib.inpile,
 			inpile_nature: lib.inpile_nature,
-			renku: _status.renku,
 		};
+		for (const [key, value] of lib.commonArea) {
+			state[value.areaStatusName] = _status[value.areaStatusName];
+		}
 		for (var i in lib.playerOL) {
 			state.players[i] = lib.playerOL[i].getState();
 		}
@@ -2613,7 +2654,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						return stringifying;
 					}, {})
-			  )}`
+				)}`
 			: "";
 	}
 	/**
@@ -3036,7 +3077,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { 'dialog' }
 	 *
 	 * @overload
-	 * @param { GameEvent | GameEventPromise } obj
+	 * @param { GameEvent } obj
 	 * @returns { 'event' }
 	 */
 	itemtype(obj) {
@@ -3098,7 +3139,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (obj instanceof lib.element.Dialog) {
 			return "dialog";
 		}
-		if (obj instanceof lib.element.GameEvent || obj instanceof lib.element.GameEventPromise) {
+		if (obj instanceof lib.element.GameEvent) {
 			return "event";
 		}
 
@@ -3801,31 +3842,43 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 *
 	 * @param { string } str
 	 * @param { Player } [player]
+	 * @param { boolean } prefix 是否考虑重复技能前缀，默认为false
 	 * @returns { string }
 	 */
-	skillTranslation(str, player) {
-		var str2;
-		if (get.itemtype(player) !== "player") {
-			player = undefined;
+	skillTranslation(str, player, prefix = false) {
+		let str2;
+		if (get.itemtype(player) !== "player" || prefix === false) {
+			return get.translation(str);
 		}
-		if (str.startsWith("re")) {
-			str2 = str.slice(2);
-			if (str2) {
-				if (lib.translate[str] == lib.translate[str2]) {
-					if (player?.hasSkill(str2)) {
-						return "界" + lib.translate[str];
-					}
-				}
+		const name = lib.translate[str];
+		if (!player?.getSkills("invisible", null, false).some(skill => {
+			if (!get.skillInfoTranslation(skill, player).length || lib.translate[skill] !== name) {
+				return false;
 			}
-		} else if (str.startsWith("xin")) {
-			str2 = str.slice(3);
-			if (str2) {
-				if (lib.translate[str] == lib.translate[str2]) {
-					if (player?.hasSkill(str2)) {
-						return "新" + lib.translate[str];
-					}
-				}
+			return skill != str && get.sourceSkillFor(skill) != get.sourceSkillFor(str);
+		})) {
+			return get.translation(str);
+		}
+		const info = get.info(str);
+		if (info?.duplicatePrefix !== undefined) {
+			const prefix = info.duplicatePrefix;
+			if (typeof prefix == "function") {
+				return `${prefix(player, str)}${name}`;
 			}
+			return `${prefix}${name}`;
+		}
+		const map = lib.duplicatePrefix;
+		for (let key in map) {
+			if (str.startsWith(key) && lib.skill[str.slice(key.length)]) {
+				return `${map[key]}${name}`;
+			}
+			let key2 = `${key}_`;
+			if (str.startsWith(key2)) {
+				return `${map[key]}${name}`;
+			}
+		}
+		if (_status.skillOwner?.[str] !== undefined) {
+			return `${get.translation(str)}（${get.translation(_status.skillOwner[str])}）`;
 		}
 		return get.translation(str);
 	}
@@ -4655,7 +4708,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (position !== "cardPile") {
 			let j = 0;
-			if (start !== "random") {
+			if (start === "random") {
 				j = get.rand(0, ui.discardPile.childNodes.length - 1);
 			}
 			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {
@@ -7227,6 +7280,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 * @overload
 	 * @param {object} poptip
+	 * @param {string} poptip.id 对应特殊名词id
+	 * @param {string} poptip.type 特殊名词的类型
 	 * @param {string} poptip.name 特殊名词
 	 * @param {string} poptip.info 对应解释
 	 * @returns {string}
@@ -7360,6 +7415,8 @@ freezeSlot(Get.prototype, "isFunctionBody");
 freezeSlot(Get.prototype, "pureFunctionStr");
 freezeSlot(Get.prototype, "funcInfoOL");
 freezeSlot(Get.prototype, "infoFuncOL");
+
+pinyinPro.addDict(NonameDictionary);
 
 export let get = new Get();
 /**

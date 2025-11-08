@@ -231,25 +231,27 @@
 }
 
 .removing > .menubg.charactercard {
-	transform: scale(0.8);
+	transform: translate(-50%, -50%) scale(0.8);
 	opacity: 0;
-	transition: all 0.3s;
+	transition: transform 0.3s, opacity 0.3s;
 }
 
 .menubg.charactercard {
-	width: 500px;
-	height: 300px;
-	left: calc(50% - 250px);
-	top: calc(50% - 150px);
-	animation: dialog_start2 0.3s;
-	-webkit-animation: dialog_start2 0.3s;
+	width: min(90vw, 720px);
+	height: 430px;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	animation: dialog_scale_in 0.3s;
+	-webkit-animation: dialog_scale_in 0.3s;
 }
 
+/* 武将头像 */
 .menubg.charactercard > .menubutton.large.ava {
-	width: 180px;
-	height: 240px;
-	left: 10px;
-	top: 10px;
+	width: 34%;
+	height: 79%;
+	left: 1.67%;
+	top: 2.78%;
 	overflow: hidden;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px !important;
 }
@@ -264,11 +266,35 @@
 }
 
 .menubg.charactercard > .menubutton.ban {
-	left: 10px;
+	left: auto;
+	right: 81.8%;
+	bottom: calc(0% + 44px);
+	z-index: 10;
+	width: 16.5%;
 }
 
 .menubg.charactercard > .menubutton.fav {
-	left: 105px;
+	left: auto;
+	right: 64.33%;
+	bottom: calc(0% + 44px);
+	z-index: 10;
+	width: 16.5%;
+}
+
+.menubg.charactercard > .menubutton.introButton {
+	left: auto;
+	right: 81.8%;
+	bottom: calc(0% + 10px);
+	z-index: 10;
+	width: 16.5%;
+}
+
+.menubg.charactercard > .menubutton.skillButton {
+	left: auto;
+	right: 64.33%;
+	bottom: calc(0% + 10px);
+	z-index: 10;
+	width: 16.5%;
 }
 
 .menubg.charactercard > .ava > .changeskin {
@@ -303,15 +329,18 @@
 	cursor: pointer;
 }
 
+/* 技能按钮 */
 .menubg.charactercard > .characterskill {
-	left: 191px;
+	left: 37%;
+	right: 0;
 	padding-left: 9px;
 	padding-right: 10px;
-	width: 290px;
-	top: 125px;
-	height: 50px;
+	width: auto;
+	box-sizing: border-box;
+	top: 1%;
+	height: 16.67%;
 	white-space: nowrap;
-	overflow-x: scroll;
+	overflow-x: auto;
 }
 
 .menubg.charactercard > .characterskill > .menubutton.large {
@@ -401,24 +430,38 @@
 	font-size: smaller;
 }
 
+/* 武将称号样式 */
+.menubg.charactercard .characterintro .character-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #ff6b6b;
+	margin-bottom: 5px;
+	text-align: left;
+	display: block;
+	width: 100%;
+	clear: both;
+}
+
+/* 武将信息技能描述 */
 .menubg.charactercard .characterintro {
-	left: 200px;
-	width: 280px;
-	height: 105px;
+	left: 38%;
+	width: 58%;
+	height: 82%;
 	padding: 5px;
 	overflow: scroll;
 	border-radius: 4px;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px;
 }
-
+/* 武将信息描述 */
 .menubg.charactercard .characterintro:not(.intro2) {
 	top: 10px;
 	bottom: auto;
+    height: 93%;
 }
 
 .menubg.charactercard .characterintro.intro2 {
-	top: auto;
-	bottom: 10px;
+	top: 60px;
+	bottom: auto;
 }
 
 .menubg.charactercard > .ava > .avatars {
@@ -470,8 +513,9 @@
 	opacity: 0;
 }
 
+/* 点击皮肤武将左移 */
 .menubg.charactercard > .ava.scroll > .avatar {
-	transform: translateX(-200px);
+	transform: translateX(-300px);
 	pointer-events: none;
 }
 
@@ -1247,6 +1291,30 @@ input.fileinput::-webkit-file-upload-button {
 		transform: scale(0.5);
 		opacity: 0;
 		transform-origin: 2px -35px;
+	}
+}
+
+@keyframes dialog_scale_in {
+	from {
+		transform: translate(-50%, -50%) scale(0.8);
+		opacity: 0;
+	}
+
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+}
+
+@-webkit-keyframes dialog_scale_in {
+	from {
+		transform: translate(-50%, -50%) scale(0.8);
+		opacity: 0;
+	}
+
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
 	}
 }
 

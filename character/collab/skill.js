@@ -6,11 +6,32 @@ const skills = {
 	oltuoquan: {
 		audio: 2,
 		init(player, skill) {
-			player.setStorage(skill, get.info(skill).fuchens.slice(0));
+			player.setStorage(skill, get.info(skill).fuchens.slice(0), true);
 		},
 		onremove(player, skill) {
 			player.setStorage(skill, null);
 			player.setStorage(`${skill}_current`, null);
+			game.broadcastAll(
+				(player, names) => {
+					if (Array.isArray(player.tempname)) {
+						player.tempname.removeArray(names);
+					}
+				},
+				player,
+				player.getStorage(`${skill}_current2`)
+			);
+			player.setStorage(`${skill}_current2`, null);
+		},
+		mark: true,
+		intro: {
+			mark(dialog, storage, player) {
+				dialog.addText(`剩余辅臣（蒋琬费祎${player._gainJiangFei ? "已" : "未"}出阵）`);
+				dialog.addSmall([storage, "character"]);
+				if (player.storage.oltuoquan_current2?.length && player.isIn()) {
+					dialog.addText(`当前辅臣${player.getStorage("oltuoquan_current").length ? "" : "（已败阵）"}`);
+					dialog.addSmall([player.storage.oltuoquan_current2, "character"]);
+				}
+			},
 		},
 		fuchens: ["guanyu", "zhangfei", "zhaoyun", "re_huangzhong", "jiangwei", "ol_weiyan", "ol_zhangyì", "xin_masu"],
 		trigger: {
@@ -19,30 +40,32 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "phaseZhunbei") {
-				return player.getStorage("oltuoquan").length;
+				return player.getStorage("oltuoquan").length || player.additionalSkills["oltuoquan"]?.length;
 			}
-			if (!game.hasPlayer(current => {
-				if (get.mode() == "doudizhu") {
-					return current.identity == "fan";
-				}
-				return current != player;
-			})) {
+			if (
+				!game.hasPlayer(current => {
+					if (get.mode() == "doudizhu") {
+						return current.identity == "fan";
+					}
+					return current != player;
+				})
+			) {
 				return false;
 			}
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		locked: true,
 		async cost(event, trigger, player) {
-			event.result = {
-				bool: true,
-			};
+			event.result = { bool: true };
 			if (trigger.name != "phaseZhunbei") {
-				event.result.targets = game.filterPlayer(current => {
-					if (get.mode() == "doudizhu") {
-						return current.identity == "fan";
-					}
-					return current != player;
-				}).sortBySeat();
+				event.result.targets = game
+					.filterPlayer(current => {
+						if (get.mode() == "doudizhu") {
+							return current.identity == "fan";
+						}
+						return current != player;
+					})
+					.sortBySeat();
 			} else if (player.getStorage(event.skill).length == 1) {
 				event.result.cost_data = true;
 			}
@@ -64,21 +87,26 @@ const skills = {
 				await game.doAsyncInOrder(event.targets, func);
 				return;
 			}
-			const nows = player.getStorage(`${event.name}_current`);
+			const nows = player.getStorage(`${event.name}_current2`);
 			if (nows.length) {
-				player.setStorage(`${event.name}_current`, []);
+				player.setStorage(`${event.name}_current2`, null);
 				await player.addAdditionalSkills(event.name, []);
-				const next = game.createEvent("removeFuchen", false);
-				next.player = player;
-				next.fuchens = nows;
-				next.setContent("emptyEvent");
-				game.broadcastAll((player, names) => {
-					player.tempname.removeArray(names);
-				}, player, nows);
-				await next;
+				game.broadcastAll(
+					(player, names) => {
+						player.tempname.removeArray(names);
+					},
+					player,
+					nows
+				);
+			}
+			if (!player.getStorage(event.name).length && !player._gainJiangFei) {
+				player._gainJiangFei = true;
+				const jiangfei = Math.random() > 0.99 ? ["jiangfei"] : ["ol_jiangwan", "ol_feiyi"];
+				player.markAuto(event.name, jiangfei);
 			}
 			const names = player.getStorage(event.name).randomGets(4);
 			if (!names.length) {
+				player.unmarkSkill(event.name);
 				return;
 			}
 			const result = await player
@@ -87,12 +115,6 @@ const skills = {
 				.forResult();
 			if (result?.bool && result.links?.length) {
 				const fuchens = result.links;
-				player.unmarkAuto(event.name, fuchens);
-				if (!player.getStorage(event.name).length && !player._gainJiangFei) {
-					player._gainJiangFei = true;
-					const jiangfei = Math.random() > 0.99 ? ["jiangfei"] : ["ol_jiangwan", "ol_feiyi"];
-					player.markAuto(event.name, jiangfei);
-				}
 				const skills = fuchens.reduce((arr, name) => {
 					const skills = get.character(name, 3).filter(skill => {
 						const info = get.info(skill);
@@ -102,10 +124,15 @@ const skills = {
 					return arr;
 				}, []);
 				await player.addAdditionalSkills(event.name, skills);
-				player.markAuto(`${event.name}_current`, fuchens);
-				game.broadcastAll((player, names) => {
-					player.tempname.addArray(names);
-				}, player, fuchens);
+				game.broadcastAll(
+					(player, names) => {
+						player.tempname.addArray(names);
+					},
+					player,
+					fuchens
+				);
+				player.setStorage(`${event.name}_current`, [...fuchens]);
+				player.setStorage(`${event.name}_current2`, [...fuchens]);
 				const next = game.createEvent("gainFuchen", false);
 				next.player = player;
 				next.fuchens = fuchens;
@@ -113,17 +140,19 @@ const skills = {
 				await next;
 			}
 		},
-		derivation: "oldianzan",
 	},
 	oldianzan: {
 		clickableFilter(player) {
 			const targets = player.getStorage("oldianzan");
-			return targets.some(target => target?.isIn() && target != player);
+			return targets.some(target => target?.isIn());
 		},
-		init() {
+		init(player, skill) {
+			if (get.nameList(player).some(name => get.character(name)?.skills?.includes(skill))) {
+				player.markAuto(skill, player);
+			}
 			if (!_status._click_throwFlower) {
 				game.broadcastAll(() => {
-					_status._click_throwFlower = function() {
+					_status._click_throwFlower = function () {
 						const target = this,
 							player = game.me;
 						if (!player?._click_throwFlower?.includes(target)) {
@@ -137,7 +166,7 @@ const skills = {
 						}
 					};
 					game.countPlayer2(current => {
-						current.addEventListener('click', _status._click_throwFlower);
+						current.addEventListener("click", _status._click_throwFlower);
 					}, true);
 				});
 			}
@@ -150,7 +179,7 @@ const skills = {
 		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
-				const targets = player.getStorage("oldianzan").filter(current => current != player);
+				const targets = player.getStorage("oldianzan").filter(current => current?.isIn());
 				if (targets.length === 1) {
 					player.throwEmotion(targets[0], ["flower", "wine", "egg", "shoe"].randomGet());
 				} else {
@@ -204,15 +233,11 @@ const skills = {
 				player.loseToDiscardpile(cards);
 			}
 		},
-		ai: {
-			combo: "oltuoquan",
-		},
+		ai: { combo: "oltuoquan" },
 	},
 	olanle: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return player.getStorage("oltuoquan_current").length > 0;
 		},
@@ -228,32 +253,14 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const names = player.getStorage("oltuoquan_current");
-			const result = await player
-				.chooseButton(["安乐：移去一名辅臣", [names, "character"]], true)
-				.set("ai", () => Math.random())
-				.forResult();
-			if (result?.bool && result.links?.length) {
-				const removes = result.links;
-				player.unmarkAuto("oltuoquan_current", removes);
-				const skills = player.getStorage("oltuoquan_current").reduce((arr, name) => {
-					const skills = get.character(name, 3).filter(skill => {
-						const info = get.info(skill);
-						return info && !info.charlotte && !info.limited && !info.juexingji;
-					});
-					arr.addArray(skills);
-					return arr;
-				}, []);
-				await player.addAdditionalSkills("oltuoquan", skills);
-				game.broadcastAll((player, names) => {
-					player.tempname.removeArray(names);
-				}, player, removes);
-				const next = game.createEvent("removeFuchen", false);
-				next.player = player;
-				next.fuchens = removes;
-				next.setContent("emptyEvent");
-				await next;
-			}
+			const removes = [...player.getStorage("oltuoquan_current")];
+			player.unmarkAuto("oltuoquan", removes);
+			player.unmarkAuto("oltuoquan_current", removes);
+			const next = game.createEvent("removeFuchen", false);
+			next.player = player;
+			next.fuchens = removes;
+			next.setContent("emptyEvent");
+			await next;
 			const targets = [player];
 			if (_status.currentPhase?.isIn()) {
 				targets.push(_status.currentPhase);
@@ -263,9 +270,7 @@ const skills = {
 		derivation: "xiangle",
 		subSkill: {
 			viewas: {
-				trigger: {
-					player: ["gainFuchen", "removeFuchen"],
-				},
+				trigger: { player: ["gainFuchen", "removeFuchen"] },
 				charlotte: true,
 				firstDo: true,
 				async cost(event, trigger, player) {
@@ -293,6 +298,7 @@ const skills = {
 			const result = await player
 				.chooseButton([`###${get.prompt("dcyingyou")}###选择一项并摸一张牌`, [list, "textbutton"]])
 				.set("filterButton", ({ link }) => {
+					const player = get.player();
 					return link != "card" || (player.hasEquipableSlot(1) && !player.getEquip("real_zhuge"));
 				})
 				.set("ai", ({ link }) => {
@@ -1029,7 +1035,11 @@ const skills = {
 			if (bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 			} else {
 				const prompt = `弃置一张${get.translation(get.type2(trigger.card, player))}牌令${get.translation(trigger.card)}额外结算一次，否则无效`;
@@ -4049,9 +4059,9 @@ const skills = {
 					});
 					const cards = get.cards(3, true);
 					const gains = await player
-							.chooseButton(["虎翼：选择获得其中一张牌", cards], true)
-							.set("ai", button => get.value(button.link))
-							.forResult("links");
+						.chooseButton(["虎翼：选择获得其中一张牌", cards], true)
+						.set("ai", button => get.value(button.link))
+						.forResult("links");
 					if (gains?.length) {
 						await player.gain(gains, "draw");
 					}

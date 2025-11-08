@@ -2556,7 +2556,7 @@ const skills = {
 			var num1 = player.countCards("h"),
 				num2 = player.storage.fengjie2.hp;
 			if (num1 > num2) {
-				player.chooseToDiscard("h", true, num1 - num2);
+				player.chooseToDiscard("h", true, num1 - num2, "allowChooseAll");
 			} else {
 				player.drawTo(Math.min(4, num2));
 			}
@@ -4573,8 +4573,6 @@ const skills = {
 			"step 1";
 			if (result.bool) {
 				var cards = result.links;
-				_status.renku.removeArray(cards);
-				game.updateRenku();
 				trigger.player.gain(cards, "gain2", "fromRenku");
 				trigger.player.addTempSkill("spsongshu_block");
 			}
@@ -4726,8 +4724,6 @@ const skills = {
 			event.finish();
 			"step 4";
 			var cards = result.links;
-			_status.renku.removeArray(cards);
-			game.updateRenku();
 			target.gain(cards, "gain2", "fromRenku");
 		},
 		init(player) {
@@ -4802,8 +4798,6 @@ const skills = {
 			event.finish();
 			"step 3";
 			var cards = result.links;
-			_status.renku.removeArray(cards);
-			game.updateRenku();
 			target.gain(cards, "gain2", "fromRenku");
 		},
 	},
@@ -4839,8 +4833,6 @@ const skills = {
 					player.$throw(card, 1000);
 					game.delayx();
 					game.cardsDiscard(card).fromRenku = true;
-					_status.renku.remove(card);
-					game.updateRenku();
 					"step 1";
 					target
 						.chooseControl()
@@ -5844,8 +5836,6 @@ const skills = {
 		logTarget: "player",
 		content() {
 			player.gain(_status.renku, "gain2", "fromRenku");
-			_status.renku.length = 0;
-			game.updateRenku();
 			trigger.player.recover();
 		},
 		ai: {

@@ -1,4 +1,8 @@
-export const rootURL = new URL("./", import.meta.url);
+let url = new URL("./", import.meta.url);
+if (!url.href.endsWith("/")) {
+    url = new URL(url.href + "/");
+}
+export const rootURL = url;
 
 export { GNC, gnc, setGNC } from "./noname/gnc/index.js";
 export { AI, ai, setAI } from "./noname/ai/index.js";

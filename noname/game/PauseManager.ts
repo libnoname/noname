@@ -1,4 +1,4 @@
-import { lib, _status } from "../../noname.js";
+import { lib, _status } from "@noname";
 
 export default class PauseManager {
 	pause = new Deferred();

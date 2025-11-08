@@ -1,9 +1,5 @@
-import { get } from "../../get/index.js";
-import { game } from "../../game/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
-import security from "../../util/security.js";
+import { _status, game, get, lib, ui } from "@noname";
+import security from "@/util/security.js";
 
 export class Client {
 	/**

@@ -1,8 +1,4 @@
-import { lib } from "../index.js";
-import { ui } from "../../ui/index.js";
-import { get } from "../../get/index.js";
-import { _status } from "../../status/index.js";
-import { game } from "../../game/index.js";
+import { _status, get, lib, ui } from "@noname";
 
 /**
  * @type {(NonameAssemblyType["checkBegin"])}

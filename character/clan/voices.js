@@ -1,4 +1,11 @@
 export default {
+	"#clan_wangguang:die": "父过盈渊，子愿代父偿……",
+	"#clanlilun1": "明胆异气，不能相生。",
+	"#clanlilun2": "心之与声，明为二物。",
+	"#clanjianji1": "夫谋大事者，非见利而行。",
+	"#clanjianji2": "今爽咎由自取，民心自失尔。",
+	"#clanzhongliu_clan_wangguang1": "潮有信，民有心，当依大势而为。",
+	"#clanzhongliu_clan_wangguang2": "中流之水不可逆，唯顺尔。",
 	"#clangailan1": "春秋几梦聃周事，遘难而今注子云。",
 	"#clangailan2": "顽石哪比经籍重，满船学问压川河。",
 	"#clanfennu1": "殚意儒学，功在不舍。",

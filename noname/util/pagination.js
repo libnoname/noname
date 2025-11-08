@@ -2,8 +2,8 @@
  * https://github.com/accforgit/blog-data/blob/master/%E7%AE%80%E5%8D%95%E5%88%86%E9%A1%B5/demo/index.html
  */
 
-import dedent from "../../game/dedent.js";
-import { lib } from "../../noname.js";
+import dedent from "dedent";
+import { lib } from "@noname";
 
 /**
  * 简单分页类

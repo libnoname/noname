@@ -4,6 +4,7 @@ import cards from "./card.js";
 import pinyins from "./pinyin.js";
 import skills from "./skill.js";
 import translates from "./translate.js";
+import characterTitles from "./characterTitle.js";
 import characterIntros from "./intro.js";
 import { characterFilters, characterInitFilters } from "./characterFilter.js";
 import dynamicTranslates from "./dynamicTranslate.js";
@@ -29,7 +30,7 @@ game.import("character", function () {
 		},
 		characterFilter: { ...characterFilters },
 		characterInitFilter: { ...characterInitFilters },
-		characterTitle: {},
+		characterTitle: { ...characterTitles },
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
 		card: { ...cards },

@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 import { get } from "../get/index.js";
 import { lib } from "../library/index.js";
 import { game } from "../game/index.js";
@@ -14,15 +14,15 @@ export function nodeReady() {
 		fs: require("fs"),
 		path: require("path"),
 		debug() {
-			let remote;
-			if (electronVersion >= 14) {
-				// @ts-expect-error ignore
-				remote = require("@electron/remote");
-			} else {
-				// @ts-expect-error ignore
-				remote = require("electron").remote;
-			}
-			remote.getCurrentWindow().toggleDevTools();
+			// let remote;
+			// if (electronVersion >= 14) {
+			// 	// @ts-expect-error ignore
+			// 	remote = require("@electron/remote");
+			// } else {
+			// 	// @ts-expect-error ignore
+			// 	remote = require("electron").remote;
+			// }
+			// remote.getCurrentWindow().toggleDevTools();
 		},
 	};
 	lib.path = lib.node.path;

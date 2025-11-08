@@ -10,7 +10,7 @@ const characterSort = {
 	old_yijiang67: ["old_huanghao", "old_liyan"],
 	old_sp: ["old_shixie", "panfeng", "old_wanglang", "old_maliang", "old_zhangxingcai", "old_wangyun", "old_dingfeng", "old_guanyinping"],
 	old_online: ["junk_simayi", "old_yangyan", "old_yangzhi", "junk_sunquan", "ol_baosanniang"],
-	old_decade: ["x_yao_yuanshu", "hr_wufu", "xj_peixiu", "qq_majun", "cx_majun", "one_dc_sp_machao", "two_dc_sp_machao", "x_dc_zhangqiying"],
+	old_decade: ["x_yao_yuanshu", "hr_wufu", "xj_peixiu", "qq_majun", "cx_majun", "one_dc_sp_machao", "two_dc_sp_machao", "x_dc_zhangqiying", "two_yj_puyuan"],
 	old_mobile: ["old_caochun", "new_simayi", "fx_baosanniang", "sy_baosanniang"],
 };
 

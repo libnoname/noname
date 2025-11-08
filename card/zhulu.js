@@ -123,16 +123,8 @@ game.import("card", function () {
 					for (var i = 0; i < dialog.buttons.length; i++) {
 						if (dialog.buttons[i].link == card) {
 							button = dialog.buttons[i];
-							button.querySelector(".info").innerHTML = (function (target) {
-								if (target._tempTranslate) {
-									return target._tempTranslate;
-								}
-								var name = target.name;
-								if (lib.translate[name + "_ab"]) {
-									return lib.translate[name + "_ab"];
-								}
-								return get.translation(name);
-							})(target);
+							const innerHTML = target.getName(true);
+							game.createButtonCardsetion(innerHTML, button);
 							dialog.buttons.remove(button);
 							break;
 						}
@@ -148,7 +140,7 @@ game.import("card", function () {
 									dialog.content.firstChild.innerHTML = capt;
 									for (var i = 0; i < dialog.buttons.length; i++) {
 										if (dialog.buttons[i].link == card) {
-											dialog.buttons[i].querySelector(".info").innerHTML = name;
+											game.createButtonCardsetion(name, dialog.buttons[i]);
 											dialog.buttons.splice(i--, 1);
 											break;
 										}
@@ -157,16 +149,7 @@ game.import("card", function () {
 							},
 							card,
 							dialog.videoId,
-							(function (target) {
-								if (target._tempTranslate) {
-									return target._tempTranslate;
-								}
-								var name = target.name;
-								if (lib.translate[name + "_ab"]) {
-									return lib.translate[name + "_ab"];
-								}
-								return get.translation(name);
-							})(target),
+							target.getName(true),
 							capt
 						);
 					}
@@ -431,6 +414,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["赵云"],
 				distance: { attackFrom: -2 },
 				skills: ["yajiaoqiang_skill"],
 				ai: {
@@ -603,6 +587,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip2",
+				bingzhu: ["司马懿", "诸葛亮"],
 				filterTarget(card, player, target) {
 					if (player == target) {
 						return false;

@@ -4,6 +4,7 @@ import cards from "./card.js";
 import pinyins from "./pinyin.js";
 import skills from "./skill.js";
 import translates from "./translate.js";
+import characterTitles from "./characterTitle.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
 import dynamicTranslates from "./dynamicTranslate.js";
@@ -20,7 +21,7 @@ game.import("character", function () {
 			sp: characterSort,
 		},
 		characterFilter: { ...characterFilters },
-		characterTitle: {},
+		characterTitle: { ...characterTitles },
 		characterSubstitute: {
 			sp_ol_caocao: [["sp_ol_caocao_shadow", ["die:sp_ol_caocao"]]],
 		},

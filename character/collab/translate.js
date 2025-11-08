@@ -275,7 +275,7 @@ const translates = {
 	renqianyao: "潜曜",
 	renqianyao_info: "限定技，回合开始时，你可以摸X张牌，视为使用一张【杀】并依次执行前X项：1.此【杀】额外指定一个目标；2.此【杀】伤害+1；3.此【杀】不可被响应。（X为游戏轮数）",
 	renhuoluan: "惑乱",
-	renhuoluan_info: "出牌阶段限一次，你可以与至多两名其他角色共同拼点并记录你的拼点牌，你可将拼点牌更改为任意点数。点数唯一最小的角色视为被参与拼点的其余角色各使用一张【杀】，点数唯一最大的角色摸体力值张牌，若均不为你，你重置〖惑乱〗。",
+	renhuoluan_info: `出牌阶段限一次，你可以与至多两名其他角色${get.poptip("rule_gongtongpindian")}并记录你的拼点牌，你可将拼点牌更改为任意点数。点数唯一最小的角色视为被参与拼点的其余角色各使用一张【杀】，点数唯一最大的角色摸体力值张牌，若均不为你，你重置〖惑乱〗。`,
 	renguxing: "孤星",
 	renguxing_info: "限定技，回合开始时，你可以依次执行前X项，从牌堆或弃牌堆中：1.获得〖惑乱〗记录的牌；2.获得与〖惑乱〗记录牌点数花色均相同的所有牌；3.获得与〖惑乱〗记录牌牌名相同的牌。（X为游戏轮数，相同牌名的牌至多获得五张）",
 	wild_liru: "狂李儒",
@@ -313,24 +313,24 @@ const translates = {
 	ol_le_liushan: "OL乐刘禅",
 	ol_le_liushan_prefix: "OL乐",
 	oltuoquan: "托权",
-	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
+	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因〖托权〗获得的技能，然后从“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
 		type: "character",
-		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
-	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
-	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你移去上阵的“${get.poptip({
+		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部移去后获得蒋琬、费祎。",
+	})}”中选择两位上阵，获得这些武将牌上的所有技能（觉醒技、限定技除外）。`,
+	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因〖托权〗获得的技能，然后从“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
 		type: "character",
-		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部上阵后获得蒋琬、费祎。",
-	})}”，然后从“${get.poptip("tuoquan_fuchen")}”中选择两位上阵，上阵期间获得其武将牌上所有技能（觉醒技、限定技除外）。`,
+		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部移去后获得蒋琬、费祎。",
+	})}”中选择两位上阵，获得这些武将牌上的所有技能（觉醒技、限定技除外）。`,
 	oldianzan: "点赞",
 	oldianzan_info: "点击此技能为刘禅助力。",
 	olxianglv: "相旅",
 	olxianglv_info: `锁定技，游戏开始时，你将牌堆中不同牌名的基本牌各一张置于武将牌上。你每上阵一名“${get.poptip("tuoquan_fuchen")}”，随机获得其中一张基本牌。`,
 	olanle: "安乐",
-	olanle_info: `锁定技，你受到伤害后，移去一名上阵的“${get.poptip("tuoquan_fuchen")}”，然后与当前回合角色各摸一张牌。若你没有“${get.poptip("tuoquan_fuchen")}”，你视为拥有${get.poptip("xiangle")}。`,
+	olanle_info: `锁定技，你受到伤害后，移去上阵的“${get.poptip("tuoquan_fuchen")}”，然后与当前回合角色各摸一张牌。若你没有上阵的“${get.poptip("tuoquan_fuchen")}”，你视为拥有${get.poptip("xiangle")}。`,
 };
 
 export default translates;

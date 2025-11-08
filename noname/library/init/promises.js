@@ -1,4 +1,4 @@
-import { lib } from "../../../noname.js";
+import { lib, _status } from "@noname";
 
 export class LibInitPromises {
 	/**

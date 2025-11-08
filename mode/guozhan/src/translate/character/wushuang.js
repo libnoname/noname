@@ -7,7 +7,7 @@ export default {
 	gz_quyi: "麹义",
 	gz_caoying: "曹婴",
 	gz_guansuo: "关索",
-	gz_zhangxuan: "张璇",
+	gz_zhangxuan: "张嫙",
 	gz_guanyinping: "关银屏",
 	gz_xinxianying: "辛宪英",
 	gz_zhugedan: "诸葛诞",

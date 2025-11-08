@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技，游戏开始时可自选阴阳状态。若你成为牌的目标，此牌结算后你可摸一张牌并选择一张手牌，`,
+		const start = `转换技。①游戏开始时，你可以转换此技能状态；②一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，`,
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -27,7 +27,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技，游戏开始时可自选阴阳状态。你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}你可以：`,
+		const start = `转换技。①游戏开始时，你可以转换此技能状态；②当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}你可以：`,
 			end = "。若你因此技能进入濒死，你将体力值回复至1点。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

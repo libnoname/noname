@@ -1,6 +1,63 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	dchuashang_equip: {
+		type: "equip",
+		derivation: "cuilingyi",
+		fullskin: true,
+		image: "image/card/cuilingyi_huashang.png",
+		cardPrompt(card) {
+			let str = `原本是一张装备牌。`,
+				subtypes = get.subtypes(card);
+			if (subtypes?.length) {
+				str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+			}
+			return str;
+		},
+		ai: {
+			basic: {
+				equipValue: 0.1,
+			},
+		},
+	},
+	dchuashang_trick: {
+		type: "trick",
+		derivation: "cuilingyi",
+		fullskin: true,
+		image: "image/card/cuilingyi_huashang.png",
+		cardPrompt(card) {
+			let str = `原本是一张锦囊牌。`,
+				subtypes = get.subtypes(card);
+			if (subtypes?.length) {
+				str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+			}
+			return str;
+		},
+		ai: {
+			basic: {
+				equipValue: 4,
+			},
+		},
+	},
+	dchuashang_basic: {
+		type: "basic",
+		derivation: "cuilingyi",
+		fullskin: true,
+		image: "image/card/cuilingyi_huashang.png",
+		cardPrompt(card) {
+			let str = `原本是一张基本牌。`,
+				subtypes = get.subtypes(card);
+			if (subtypes?.length) {
+				str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+			}
+			return str;
+		},
+		ai: {
+			basic: {
+				equipValue: 3,
+			},
+		},
+	},
 	//武关羽的兵临城下水淹七军
 	shuiyanqijuny: {
 		audio: "shuiyanqijunx",

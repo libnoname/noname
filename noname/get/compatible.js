@@ -1,14 +1,13 @@
-import { userAgentLowerCase } from "../util/index.js";
+import { userAgentLowerCase } from "@/util/index.js";
 
 /**
  * 用于老版本能用的`get`
  */
 export class GetCompatible {
-	// require是需求的版本号，current是浏览器环境本身的版本号
 	/**
 	 *
-	 * @param {[majorVersion: number, minorVersion: number, patchVersion: number]} require
-	 * @param {[majorVersion: number, minorVersion: number, patchVersion: number]} current
+	 * @param {[majorVersion: number, minorVersion: number, patchVersion: number]} require 需求的版本号
+	 * @param {[majorVersion: number, minorVersion: number, patchVersion: number]} current 浏览器环境本身的版本号
 	 * @returns
 	 */
 	checkVersion(require, current) {
@@ -137,10 +136,3 @@ export class GetCompatible {
 }
 
 export let get = new GetCompatible();
-
-/**
- * @param { InstanceType<typeof GetCompatible> } [instance]
- */
-export function setGetCompatible(instance) {
-	get = instance || new GetCompatible();
-}

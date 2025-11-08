@@ -1,4 +1,9 @@
 export default {
+	"#jsrgzhengbing1": "厉兵秣马，待敌制胜。",
+	"#jsrgzhengbing2": "戎装既整，如羽扣弦。",
+	"#jsrgtuwei1": "成败之机，在此一战！",
+	"#jsrgtuwei2": "一相与一，勇者得前！",
+	"#jsrg_zhangliao:die": "病厄缠身，君恩难报……",
 	"#jsrglonglin1": "江山北望，熄天下烽火！",
 	"#jsrglonglin2": "龙吟震九州，翼展蔽日月！",
 	"#jsrgzhendan1": "匹马行南北，何暇问死生！",

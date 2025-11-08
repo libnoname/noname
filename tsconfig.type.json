@@ -1,0 +1,13 @@
+{
+    "extends":"./tsconfig.json",
+    "compilerOptions": {
+		"noEmit": false,
+		"noEmitOnError": false,
+		"declaration": true,                                 /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+		"emitDeclarationOnly": true,                         /* Only output d.ts files and not JavaScript files. */
+		"outDir": "./node_modules/@types/noname-typings/nonameModules", /* Specify an output folder for all emitted files. */
+		"declarationDir": "./node_modules/@types/noname-typings/nonameModules", /* Specify the output directory for generated declaration files. */
+		"skipDefaultLibCheck": true,                         /* Skip type checking .d.ts files that are included with TypeScript. */
+		"skipLibCheck": true,                                /* Skip type checking all .d.ts files. */
+    }
+}

@@ -1,11 +1,13 @@
+import { lib, game, ui, get, ai, _status } from "../../../../../../noname.js";
+
 export default {
 	//官盗 国战无双
 	gz_quedi: "却敌",
 	gz_quedi_info: "①你使用【杀】或【决斗】指定唯一目标时，可以选择一项：1.获得其一张手牌；2.弃置一张基本牌并令此牌造成伤害+1。②你杀死一名角色后，可以交换主副将。",
 	gz_zhuifeng: "椎锋",
-	gz_zhuifeng_info: "主将技，出牌阶段限一次，你可以视为使用一张【决斗】。",
+	gz_zhuifeng_info: `${get.poptip("guozhan_mainSkill")}，出牌阶段限一次，你可以视为使用一张【决斗】。`,
 	gz_chongjian: "冲坚",
-	gz_chongjian_info: "副将技，你可以将一张装备牌当作无次数限制的【杀】或【酒】使用或打出。",
+	gz_chongjian_info: `${get.poptip("guozhan_viceSkill")}，你可以将一张装备牌当作无次数限制的【杀】或【酒】使用或打出。`,
 	gz_jungong: "峻攻",
 	gz_jungong_info: "出牌阶段限一次，你可以失去1点体力或弃置一张牌，视为使用一张无距离次数限制的【杀】。",
 	gz_dengli: "等力",
@@ -21,7 +23,7 @@ export default {
 	gz_fujian: "伏间",
 	gz_fujian_info: "准备阶段和结束阶段，你可以视为对一名手牌数不大于你的其他角色使用一张【知己知彼】。",
 	gz_zhengnan: "征南",
-	gz_zhengnan_info: "其他角色死亡后，你可以摸三张牌并获得以下未拥有的一个技能：〖武圣〗〖当先〗〖制蛮〗。",
+	gz_zhengnan_info: `其他角色死亡后，你可以摸三张牌并获得以下未拥有的一个技能：${get.poptip("gz_wusheng")}${get.poptip("gzdangxian")}${get.poptip("gz_zhiman")}。`,
 	gz_tongli: "同礼",
 	gz_tongli_info: "每回合限一次，你使用基本或普通锦囊牌指定目标后，可以展示手牌。若展示牌颜色均相同，此牌额外结算一次。",
 	gz_shezang: "奢葬",
@@ -108,7 +110,7 @@ export default {
 	gz_zhanhuo: "绽火",
 	gz_zhanhuo_info: "限定技，出牌阶段，你可以移去所有“军略”并选择至多等量名横置角色，弃置这些角色装备区里的所有牌，然后对其中一名角色造成1点火焰伤害。",
 	gz_jilve: "极略",
-	gz_jilve_info: "①你明置此武将牌时，获得〖鬼才〗。②你确定势力后，若为：蜀，获得〖集智〗；魏，获得〖放逐〗；吴，获得〖制衡〗；群，获得〖完杀〗；野心家，减少半个阴阳鱼并获得上述全部技能。",
+	gz_jilve_info: `①你明置此武将牌时，获得${get.poptip("guicai")}。②你确定势力后，若为：蜀，获得${get.poptip("fakejizhi")}；魏，获得${get.poptip("gz_fangzhu")}；吴，获得${get.poptip("gz_zhiheng")}；群，获得${get.poptip("wansha")}；野心家，减少半个阴阳鱼并获得上述全部技能。`,
 	gz_lianpo: "连破",
 	gz_lianpo_info: "一名角色的回合结束后，若你本回合杀死过角色，你可以执行一个额外回合。",
 	gz_qinyin: "琴音",
@@ -120,7 +122,7 @@ export default {
 	gz_feiying: "飞影",
 	gz_feiying_info: "锁定技，其他角色计算与你的距离+1。",
 	gz_wuqian: "无前",
-	gz_wuqian_info: "锁定技，你每回合使用的第一张【杀】或【决斗】获得〖无双〗效果且无视防具。",
+	gz_wuqian_info: `锁定技，你每回合使用的第一张【杀】或【决斗】获得${get.poptip("gz_wushuang")}效果且无视防具。`,
 	gz_shenfen: "神愤",
 	gz_shenfen_info: "限定技，出牌阶段，你可以对所有其他角色各造成1点伤害，令这些角色各自弃置装备区里的所有牌，然后依次弃置四张手牌，最后你移除此武将牌。",
 	gz_shelie: "涉猎",

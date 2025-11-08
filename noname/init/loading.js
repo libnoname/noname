@@ -2,17 +2,8 @@
  * 从读取的内容中获取数据
  */
 
-import { ai, setAI } from "../ai/index.js";
-import { get, setGet } from "../get/index.js";
-import { lib, Library, setLibrary } from "../library/index.js";
-import { game, setGame } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { setUI, ui } from "../ui/index.js";
-import { gnc } from "../gnc/index.js";
-import { importMode } from "./import.js";
-import { Mutex } from "../util/mutex.js";
-import { load } from "../util/config.js";
-import { isClass } from "../util/index.js";
+import { lib, game, get, _status, ui, ai, gnc } from "@noname";
+import { isClass } from "@/util/index.js";
 
 /**
  * 读取导入的卡牌包信息
@@ -248,14 +239,12 @@ export async function loadExtension(extension) {
 
 	try {
 		_status.extension = extension[0];
-		// @ts-expect-error ignore
 		_status.evaluatingExtension = extension[3];
 		if (typeof extension[1] == "function") {
 			try {
 				await (gnc.is.coroutine(extension[1]) ? gnc.of(extension[1]) : extension[1]).call(extension, extension[2], extension[4]);
 			} catch (e) {
 				console.log(`加载《${extension[0]}》扩展的content时出现错误。`, e);
-				// @ts-expect-error ignore
 				if (!lib.config.extension_alert) {
 					alert(`加载《${extension[0]}》扩展的content时出现错误。\n该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。\n${decodeURI(e.stack)}`);
 				}
@@ -415,7 +404,6 @@ export async function loadExtension(extension) {
 			}
 		}
 		delete _status.extension;
-		// @ts-expect-error ignore
 		delete _status.evaluatingExtension;
 	} catch (e) {
 		console.error(e);
@@ -535,7 +523,6 @@ function mixinGeneral(config, name, where) {
 		if (["ui", "ai"].includes(name)) {
 			if (typeof value == "object") {
 				// 我甚至不敢把这个双等于改了，怕了
-				// noinspection EqualityComparisonWithCoercionJS
 				if (where[key] == undefined) {
 					where[key] = {};
 				}

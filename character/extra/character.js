@@ -1,4 +1,11 @@
 const characters = {
+	zc26_shen_huangyueying: {
+		sex: "female",
+		group: "shen",
+		hp: 3,
+		skills: ["zc26_cangqiao", "zc26_shenxie", "zc26_huaxiu"],
+		groupInGuozhan: "shu",
+	},
 	mark_shen_machao: {
 		sex: "male",
 		group: "shen",
@@ -237,6 +244,7 @@ const characters = {
 		hp: 3,
 		skills: ["twshelie", "twgongxin"],
 		groupInGuozhan: "wu",
+		dieAudios: ["shen_lvmeng"],
 	},
 	shen_zhangjiao: {
 		sex: "male",

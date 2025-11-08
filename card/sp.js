@@ -207,6 +207,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["曹操", "王允", "董卓"],
 				skills: ["qibaodao", "qibaodao2"],
 				distance: { attackFrom: -1 },
 				ai: {
@@ -230,6 +231,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["周泰"],
 				skills: ["zhungangshuo"],
 				distance: { attackFrom: -2 },
 				ai: {
@@ -250,6 +252,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["赵云"],
 				distance: { attackFrom: -2 },
 				ai: {
 					basic: {
@@ -666,16 +669,8 @@ game.import("card", function () {
 						.forResult();
 				},
 				async content(event, trigger, player) {
-					const { ResultEvent, logSkill } = event.cost_data;
-					event.next.push(ResultEvent);
-					/*if (logSkill) {
-						if (typeof logSkill == "string") {
-							ResultEvent.player.logSkill(logSkill);
-						} else if (Array.isArray(logSkill)) {
-							ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-						}
-					}*/
-					await ResultEvent;
+					const { result } = event.cost_data;
+					await player.useResult(result, event);
 				},
 			},
 			caomu_skill: {

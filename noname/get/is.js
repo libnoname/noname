@@ -1,9 +1,5 @@
-import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
-import { game } from "../game/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { get } from "./index.js";
+import { _status, lib, game, get, ui } from "@noname";
+import { userAgentLowerCase, GeneratorFunction, AsyncFunction } from "@/util/index.js";
 
 export class Is {
 	/**
@@ -394,7 +390,7 @@ export class Is {
 		return get.is.emoji(str) || window.bannedKeyWords?.some(item => str.includes(item));
 	}
 	/**
-	 * @param { GameEventPromise } event
+	 * @param { GameEvent } event
 	 */
 	converted(event) {
 		return !(event.card && event.card.isCard);

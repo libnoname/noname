@@ -912,6 +912,14 @@ export default () => {
 								_status.event = _status.event.parent;
 								_status.event.step = 0;
 								_status.event.identity = link;
+								if (ui.selected.buttons.length > 0) {
+									ui.selected.buttons.forEach(function (button) {
+										if (button && button.parentNode) {
+											button.classList.remove("selected");
+										}
+									});
+									ui.selected.buttons.length = 0;
+								}
 								if (link != (event.zhongmode ? "mingzhong" : "zhu")) {
 									seats.previousSibling.style.display = "";
 									seats.style.display = "";
@@ -2179,7 +2187,7 @@ export default () => {
 						}
 					}
 				},
-				logAi(targets, card) {},
+				logAi(targets, card) { },
 				showIdentity() {
 					game.broadcastAll(
 						function (player, identity) {
@@ -2573,32 +2581,35 @@ export default () => {
 					);
 				},
 				filterTarget(card, player, target) {
-					return player != target && !target.storage.kaihei && target.countGainableCards(player, "he") > 0;
+					return player != target && !player.getStorage("kaihei_used").includes(target) && target.countGainableCards(player, "he") > 0;
 				},
-				content() {
-					"step 0";
-					player.gainPlayerCard(target, [1, 2], "he", true);
-					target.storage.kaihei = true;
-					"step 1";
-					if (!result.bool || !result.cards.length) {
-						event.finish();
+				async content(event, trigger, player) {
+					const { target } = event;
+					player.markAuto(`${event.name}_used`, target);
+					const { result } = await player.gainPlayerCard(target, [1, 2], "he", true);
+					if (!result?.bool || !result.cards?.length) {
 						return;
 					}
-					var num = result.cards.length;
-					var hs = player.getCards("he");
+					let num = result.cards.length,
+						hs = player.getCards("he"),
+						resultx;
 					if (hs.length) {
 						if (hs.length <= num) {
-							event._result = { bool: true, cards: hs };
+							resultx = { bool: true, cards: hs };
 						} else {
-							player.chooseCard("he", true, num, "选择交给" + get.translation(target) + get.cnNumber(num) + "张牌");
+							resultx = await player.chooseCard("he", true, num, `选择交给${get.translation(target)}${get.cnNumber(num)}张牌`).forResult();
 						}
-					} else {
-						event.finish();
+						if (resultx?.bool && resultx?.cards?.length) {
+							await player.give(resultx.cards, target);
+						}
 					}
-					"step 2";
-					if (result.bool && result.cards && result.cards.length) {
-						player.give(result.cards, target);
-					}
+				},
+				ai: {
+					order: 5,
+					result: {
+						player: 1,
+						target: -1,
+					},
 				},
 			},
 			doudizhu_viewHandcard: {
@@ -2891,12 +2902,12 @@ export default () => {
 							check(card) {
 								return 6 - get.value(card);
 							},
-							viewAs: { 
-								name: links[0][2], 
-								nature: links[0][3], 
-								storage: { 
-									oldshiqiang: true 
-								} 
+							viewAs: {
+								name: links[0][2],
+								nature: links[0][3],
+								storage: {
+									oldshiqiang: true,
+								},
 							},
 							position: "hes",
 							popname: true,
@@ -2983,6 +2994,7 @@ export default () => {
 				ai: {
 					order: 5,
 					result: {
+						player: 1,
 						target: -1,
 					},
 				},
@@ -3524,7 +3536,7 @@ export default () => {
 					if (result.index + event.addIndex == 0) {
 						target.drawTo(event.num1);
 					} else {
-						target.chooseToDiscard(true, "h", target.countCards("h") - event.num2);
+						target.chooseToDiscard(true, "h", target.countCards("h") - event.num2, "allowChooseAll");
 					}
 				},
 				ai: {

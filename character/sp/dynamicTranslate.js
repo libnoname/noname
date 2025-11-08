@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	olqiwu(player) {
+		if (player?.hasSkill("olzhuangrong_awaken")) {
+			return lib.translate["olqiwu_rewrite_info"];
+		}
+		return lib.translate["olqiwu_info"];
+	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
 			limit = 1 + player.countMark("olwenyi_limit");

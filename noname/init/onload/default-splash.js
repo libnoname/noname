@@ -1,7 +1,7 @@
-import { lib, game, ui } from "../../../noname.js";
-import { createApp } from "../../../game/vue.esm-browser.js";
+import { lib, game, ui } from "@noname";
+import { createApp } from "vue";
 
-import OnloadSplash from "./OnloadSplash.js";
+import OnloadSplash from "./OnloadSplash.vue";
 
 /**
  * @typedef {import("./onload-splash.js").OnloadSplash} IOnloadSplash

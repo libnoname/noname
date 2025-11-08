@@ -6,6 +6,7 @@ import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
+import characterTitles from "./characterTitle.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import perfectPairs from "./perfectPairs.js";
 import voices from "./voices.js";
@@ -23,7 +24,7 @@ game.import("character", function () {
 			yj_sb_guojia: [["yj_sb_guojia_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
-		characterTitle: {},
+		characterTitle: { ...characterTitles },
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
 		card: { ...cards },

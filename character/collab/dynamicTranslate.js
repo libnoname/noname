@@ -2,11 +2,13 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
 	oldianzan(player) {
-		const targets = player.getStorage("oldianzan").filter(target => target?.isIn() && target != player);
+		const targets = player.getStorage("oldianzan").filter(target => target?.isIn());
 		let str = "刘禅";
 		if (targets?.length) {
 			str = targets.map(target => get.rawName(target.name)).join("、");
-			str += "中的一人";
+			if (targets.length > 1) {
+				str += "中的一人";
+			}
 		}
 		return `点击此技能为${str}助力。`;
 	},

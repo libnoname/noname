@@ -6,7 +6,7 @@ const characterSort = {
 	sp2_whlw: ["lijue", "zhangji", "fanchou", "guosi", "duanwei", "liangxing", "zhangheng", "tangji", "niufu", "dongxie", "liqueguosi"],
 	sp2_zltx: ["lvkai", "zhanggong", "weiwenzhugezhi", "beimihu"],
 	sp2_longzhou: ["xf_tangzi", "xf_huangquan", "xf_sufei", "sp_liuqi"],
-	sp2_zizouqi: ["mangyachang", "xugong", "zhangchangpu"],
+	sp2_zizouqi: ["mangyachang", "xugong", "zhangchangpu", "cuilie"],
 	sp2_sbfm: ["lisu", "xinpi", "zhangwen"],
 	sp2_guandu: ["sp_zhanghe", "xunchen", "sp_shenpei", "gaolan", "lvkuanglvxiang", "chunyuqiong", "sp_xuyou", "xinping", "hanmeng"],
 	sp2_qihuan: ["zhaozhong", "re_hejin", "fengfang", "mushun"],

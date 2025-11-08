@@ -1,31 +1,26 @@
 /**
  * @typedef {{
- * 	cardMove: GameEventPromise[],
- * 	custom: GameEventPromise[],
- * 	useCard: GameEventPromise[],
- * 	changeHp: GameEventPromise[],
- * 	everything: GameEventPromise[]
+ * 	cardMove: GameEvent[],
+ * 	custom: GameEvent[],
+ * 	useCard: GameEvent[],
+ * 	changeHp: GameEvent[],
+ * 	everything: GameEvent[]
  * }} GameHistory
  * @typedef { { name?: string, type: string, player?: string, content?: string | any[], delay: number } } Video
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
-import { ai } from "../ai/index.js";
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { gnc } from "../gnc/index.js";
-import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "../util/index.js";
+import { _status, lib, get, ai, ui, gnc } from "@noname";
+import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "@/util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
 
-import security from "../util/security.js";
+import security from "@/util/security.js";
 import { GameCompatible } from "./compatible.js";
-import { save } from "../util/config.js";
-import { debounce } from "../util/utils.js";
+import { save } from "@/util/config.js";
+import { debounce } from "@/util/utils.js";
 
 export class Game extends GameCompatible {
 	documentZoom;
@@ -143,6 +138,19 @@ export class Game extends GameCompatible {
 			});
 		}
 	})();
+	/**
+	 * 在指定节点（button）内部创建一个卡片内容区域（.cardsetion），并根据当前结构设置节点状态，用于五谷此类须多人选择的牌的执行过程中显示每张卡牌对应的选择角色
+	 * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
+	 * @param {HTMLElement} button 目标节点
+	 */
+	createButtonCardsetion(innerHTML, button) {
+		const next = ui.create.div(".cardsetion", innerHTML, button);
+		next.style.setProperty("display", "block", "important");
+		if (!button.querySelector(".info")) {
+			button.classList.add("infoflip");
+			button.classList.add("infohidden");
+		}
+	}
 	/**
 	 * 初始化角色列表
 	 *
@@ -393,12 +401,54 @@ export class Game extends GameCompatible {
 			game.$elementGotoAnimData.endPosition.set(element, position); // 元素结束位置以最晚的为主喵
 		}
 
+		function updateDOM() {
+			// 依照参数选择添加的位置喵
+			if (position === "first") {
+				parent.insertBefore(element, parent.firstChild);
+			} else if (position === "last") {
+				parent.appendChild(element);
+			} else if (typeof position == "number") {
+				parent.insertBefore(element, parent.children[position]);
+			} else if (parent.contains(position)) {
+				parent.insertBefore(element, position);
+			} else {
+				parent.appendChild(element);
+			}
+		}
+
 		// 首先是FIRST喵，记录起始位置哦喵
 		const parentFrom = element.parentElement;
 		const parentTo = parent;
 
 		if (!parentFrom) {
 			throw new Error("要移动的元素没有父元素");
+		}
+
+		// 补丁喵，对于没有移动的操作我们直接返回FULFILLED喵
+		if (parentFrom === parentTo) {
+			let notMoved = false;
+
+			if (position === "first") {
+				notMoved = parentTo.firstChild === element;
+			} else if (position === "last") {
+				notMoved = parentTo.lastChild === element;
+			} else if (typeof position == "number") {
+				notMoved = parentTo.childNodes[position] === element;
+			} else if (parent.contains(position)) {
+				notMoved = position === element;
+			} else {
+				notMoved = parentTo.lastChild === element;
+			}
+
+			if (notMoved) {
+				return Promise.resolve();
+			}
+		}
+
+		// 额外增强喵，对于duration == 0的情况跳过动画喵
+		if (duration == 0) {
+			updateDOM();
+			return Promise.resolve();
 		}
 
 		// @ts-expect-error childNodes是可迭代的
@@ -414,19 +464,8 @@ export class Game extends GameCompatible {
 		// 如果你需要并发多个动画应该**同步的**调用多次然后使用Promise.all()一起等待哦喵
 		await new Promise(resolve => resolve(null));
 
-		// 依照参数选择添加的位置喵
 		// 此时将更改实际的DOM结构喵
-		if (position === "first") {
-			parent.insertBefore(element, parent.firstChild);
-		} else if (position === "last") {
-			parent.appendChild(element);
-		} else if (typeof position == "number") {
-			parent.insertBefore(element, parent.children[position]);
-		} else if (parent.contains(position)) {
-			parent.insertBefore(element, position);
-		} else {
-			parent.appendChild(element);
-		}
+		updateDOM();
 
 		// 我们再次等待所有节点结构调整完毕喵
 		await new Promise(resolve => resolve(null));
@@ -630,6 +669,37 @@ export class Game extends GameCompatible {
 	}
 	setStratagemBuffPrompt(cardName, prompt) {
 		return game.broadcastAll((clientCardName, clientPrompt) => lib.stratagemBuff.cost.set(clientCardName, clientPrompt), cardName, prompt);
+	}
+	/**
+	 * 添加游戏内生成使用的临时tag
+	 *
+	 * @param {string} id tag对应id
+	 * @param {string} translation tag对应翻译
+	 * @returns {string}
+	 */
+	addTempTag(id, translation) {
+		game.addVideo("addTempTag", null, [id, translation]);
+		game.broadcastAll(
+			// @ts-expect-error ignore
+			(id, translation) => {
+				if (!lib.translate[id]) {
+					lib.translate[id] = translation;
+					_status.postReconnect.addTempTag ??= [
+						list => {
+							for (const args of list) {
+								// @ts-expect-error ignore
+								game.addTempTag(...args);
+							}
+						},
+						[],
+					];
+					_status.postReconnect.addTempTag[1].push([id, translation]);
+				}
+			},
+			id,
+			translation
+		);
+		return id;
 	}
 	/**
 	 * 添加新的属性杀
@@ -1095,8 +1165,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { boolean }
 	 */
 	hasGlobalHistory(key, filter, last) {
@@ -1121,8 +1191,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { void }
 	 */
 	checkGlobalHistory(key, filter, last) {
@@ -1152,8 +1222,8 @@ export class Game extends GameCompatible {
 	 * @template { keyof GameHistory } T
 	 * @overload
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } [filter]
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } [filter]
+	 * @param { GameEvent } [last]
 	 * @returns { GameHistory[T] }
 	 */
 	getGlobalHistory(key, filter, last) {
@@ -1179,8 +1249,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { boolean }
 	 */
 	hasAllGlobalHistory(key, filter, last) {
@@ -1212,8 +1282,8 @@ export class Game extends GameCompatible {
 	/**
 	 * @template { keyof GameHistory } T
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } filter
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } filter
+	 * @param { GameEvent } [last]
 	 * @returns { void }
 	 */
 	checkAllGlobalHistory(key, filter, last) {
@@ -1246,8 +1316,8 @@ export class Game extends GameCompatible {
 	 * @template { keyof GameHistory } T
 	 * @overload
 	 * @param { T } key
-	 * @param { (event: GameEventPromise) => boolean } [filter]
-	 * @param { GameEventPromise } [last]
+	 * @param { (event: GameEvent) => boolean } [filter]
+	 * @param { GameEvent } [last]
 	 * @returns { GameHistory[T] }
 	 */
 	getAllGlobalHistory(key, filter, last) {
@@ -1277,10 +1347,10 @@ export class Game extends GameCompatible {
 	 * 快速获取当前轮次/倒数第X轮次游戏的历史
 	 * @template { keyof GameHistory } T
 	 * @param {T} key
-	 * @param {(event:GameEventPromise)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
+	 * @param {(event:GameEvent)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
 	 * @param {number} [num] 获取倒数第num轮的历史，默认为0，表示当前轮
 	 * @param {boolean} [keep] 若为true,则获取倒数第num轮到现在的所有历史
-	 * @param {GameEventPromise} last 代表最后一个事件，获取该事件之前的历史
+	 * @param {GameEvent} last 代表最后一个事件，获取该事件之前的历史
 	 * @returns { GameHistory[T] }
 	 */
 	getRoundHistory(key, filter = lib.filter.all, num = 0, keep, last) {
@@ -1322,12 +1392,12 @@ export class Game extends GameCompatible {
 	/**
 	 * @overload
 	 * @param { Card } cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	/**
 	 * @overload
 	 * @param {Card[]} cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsDiscard(cards) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1384,7 +1454,7 @@ export class Game extends GameCompatible {
 	/**
 	 * 将cards移动到处理区
 	 * @param { Card[] | Card } cards
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsGotoOrdering(cards) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1406,13 +1476,13 @@ export class Game extends GameCompatible {
 	 * @overload
 	 * @param { Card } cards
 	 * @param { 'toRenku' | false } [bool] 为false时不触发trigger，为'toRenku'时牌放到仁库
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	/**
 	 * @overload
 	 * @param {Card[]} cards
 	 * @param { 'toRenku' | false } [bool] 为false时不触发trigger，为'toRenku'时牌放到仁库
-	 * @returns { GameEventPromise }
+	 * @returns { GameEvent }
 	 */
 	cardsGotoSpecial(cards, bool) {
 		/** @type { 'cards' | 'card' | void } */
@@ -1423,8 +1493,8 @@ export class Game extends GameCompatible {
 		}
 		var next = game.createEvent("cardsGotoSpecial");
 		next.cards = type == "cards" ? cards.slice(0) : [cards];
-		if (bool == "toRenku") {
-			next.toRenku = true;
+		if (typeof bool == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.toName == bool)) {
+			next[bool] = true;
 		} else if (bool === false) {
 			next.notrigger = true;
 		}
@@ -1482,7 +1552,7 @@ export class Game extends GameCompatible {
 		return next;
 	}
 	/**
-	 * @param { GameEventPromise } event
+	 * @param { GameEvent } event
 	 */
 	$cardsGotoPile(event) {
 		const cards = event.cards;
@@ -1609,51 +1679,23 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * @param { string[] } updates
-	 * @param { Function } proceed
+	 * @param { () => void | Promise<void> } proceed
 	 */
-	checkFileList(updates, proceed) {
-		if (!Array.isArray(updates) || !updates.length) {
-			proceed();
-		}
-		let n = updates.length,
-			list = updates.slice(0);
-		for (let i = 0; i < list.length; i++) {
-			if (lib.node && lib.node.fs) {
-				lib.node.fs.access(__dirname + "/" + list[i], err => {
-					if (!err) {
-						let stat = lib.node.fs.statSync(__dirname + "/" + list[i]);
-						// @ts-expect-error ignore
-						if (stat.size == 0) {
-							err = true;
-						}
-					}
-					n--;
-					if (!err) {
-						updates.remove(list[i]);
-					}
-					if (n == 0) {
-						proceed();
-					}
-				});
-			} else {
-				window.resolveLocalFileSystemURL(
-					nonameInitialized + list[i],
-					() => {
-						n--;
-						updates.remove(list[i]);
-						if (n == 0) {
-							proceed();
-						}
-					},
-					() => {
-						n--;
-						if (n == 0) {
-							proceed();
-						}
-					}
-				);
+	async checkFileList(updates, proceed) {
+		let list = updates.slice(0);
+		for (const file of list) {
+			const result = await game.promises.checkFile(file);
+			// if (!err) {
+			// 	let stat = lib.node.fs.statSync(__dirname + "/" + list[i]);
+			// 	if (stat.size == 0) {
+			// 		err = true;
+			// 	}
+			// }
+			if (result > 0) {
+				updates.remove(file);
 			}
 		}
+		await proceed();
 	}
 	/**
 	 * @overload
@@ -2374,7 +2416,7 @@ export class Game extends GameCompatible {
 				: {
 						path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
 						onError: args.find(arg => typeof arg === "function"),
-				  };
+					};
 
 		const {
 			path = "",
@@ -2498,9 +2540,7 @@ export class Game extends GameCompatible {
 		 */
 		const play = () => {
 			// @ts-expect-error ignore
-			if (!check()) {
-				return;
-			}
+			if (!check()) return;
 			// @ts-expect-error ignore
 			audio = random ? list.randomRemove() : list.shift();
 			return game.playAudio({
@@ -2882,7 +2922,6 @@ export class Game extends GameCompatible {
 				if (gnc.is.generator(content)) {
 					promise = gnc.of(content)(lib, game, ui, get, ai, _status);
 				} else {
-					// @ts-expect-error no `Promise.try` type info
 					promise = Promise.try(content, lib, game, ui, get, ai, _status);
 				}
 			} else {
@@ -3052,18 +3091,10 @@ export class Game extends GameCompatible {
 				extensionPack = lib.extensionPack[name] = objectPackage;
 				objectPackage.files = object.files ?? {};
 				const extensionPackFiles = objectPackage.files;
-				if (!extensionPackFiles.character) {
-					extensionPackFiles.character = [];
-				}
-				if (!extensionPackFiles.card) {
-					extensionPackFiles.card = [];
-				}
-				if (!extensionPackFiles.skill) {
-					extensionPackFiles.skill = [];
-				}
-				if (!extensionPackFiles.audio) {
-					extensionPackFiles.audio = [];
-				}
+				extensionPackFiles.character ??= [];
+				extensionPackFiles.card ??= [];
+				extensionPackFiles.skill ??= [];
+				extensionPackFiles.audio ??= [];
 			} else {
 				extensionPack = lib.extensionPack[name] = {};
 			}
@@ -3297,7 +3328,6 @@ export class Game extends GameCompatible {
 				isTsFile = true;
 			}
 			/** @type { string } */
-			// @ts-expect-error ignore
 			let str = extensionFile.asText();
 			if (str === "" || str === undefined) {
 				throw "你导入的不是扩展！请选择正确的文件";
@@ -3305,7 +3335,7 @@ export class Game extends GameCompatible {
 			// 编译ts扩展
 			if (isTsFile) {
 				if (typeof globalThis.ts === "undefined") {
-					await lib.init.promises.js("game", "typescript");
+					globalThis.ts = await import("typescript");
 				}
 				/**
 				 * @type {typeof import('typescript')}
@@ -3496,7 +3526,7 @@ export class Game extends GameCompatible {
 							const fileReader = new FileReader();
 							fileReader.onerror = reject;
 							fileReader.onload = resolve;
-							fileReader.readAsDataURL(blob, "UTF-8");
+							fileReader.readAsDataURL(blob);
 						}).then(fileLoadedEvent => game.putDB("image", `extension-${extensionName}:${filePath}`, fileLoadedEvent.target.result));
 					});
 				}
@@ -4176,10 +4206,11 @@ export class Game extends GameCompatible {
 			player.skin[name] = map.to;
 			const goon = !lib.character[map.to];
 			if (goon) {
-				lib.character[map.to] = ["", "", 0, [], (map.list.find(i => i[0] == map.to) || [map.to, []])[1]];
+				lib.character[map.to] = get.convertedCharacter(["", "", 0, [], (map.list.find(i => i[0] == map.to) || [map.to, []])[1]]);
 			}
 			player.smoothAvatar(map.avatar2);
-			player.node["avatar" + map.name.slice(4)].setBackground(map.to, "character");
+			const skinImg = lib.character[map.to]?.img;
+			skinImg ? player.node["avatar" + map.name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(map.to, "character");
 			player.node["avatar" + map.name.slice(4)].show();
 			if (goon) {
 				delete lib.character[map.to];
@@ -4203,6 +4234,11 @@ export class Game extends GameCompatible {
 				}
 			} else {
 				console.log(player, content);
+			}
+		},
+		addTempTag: function (content) {
+			if (!lib.translate[content[0]]) {
+				lib.translate[content[0]] = content[1];
 			}
 		},
 		addFellow: function (content) {
@@ -5980,10 +6016,13 @@ export class Game extends GameCompatible {
 					div.style.transform += " translateX(" + -(Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2) + "px)";
 					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) scaleX(1)";
 				}, 50);
-				setTimeout(function () {
-					div2.style.transition = "all " + (timeS * 2) / 3 + "s";
-					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
-				}, 50 + ((timeS * 4) / 3) * 1000);
+				setTimeout(
+					function () {
+						div2.style.transition = "all " + (timeS * 2) / 3 + "s";
+						div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
+					},
+					50 + ((timeS * 4) / 3) * 1000
+				);
 				node.appendChild(div2);
 			}
 			if (animation.time <= 100000) {
@@ -6191,8 +6230,8 @@ export class Game extends GameCompatible {
 	 * @param { string } name
 	 * @param { string } skill
 	 * @param { Player } player
-	 * @param { GameEventPromise } event
-	 * @returns { GameEventPromise }
+	 * @param { GameEvent } event
+	 * @returns { GameEvent }
 	 */
 	createTrigger(name, skill, player, event, indexedData) {
 		let info = get.info(skill);
@@ -7958,10 +7997,10 @@ export class Game extends GameCompatible {
 			let exports;
 			let isESM = true;
 			try {
-				exports = await import(`../../mode/${name}/index.js`);
+				exports = await import(/* @vite-ignore */ `../../mode/${name}/index.js`);
 			} catch (e1) {
 				try {
-					exports = await import(`../../mode/${name}.js`);
+					exports = await import(/* @vite-ignore */ `../../mode/${name}.js`);
 				} catch (e2) {
 					isESM = false;
 					await lib.init.promises.js(`${lib.assetURL}mode`, name);
@@ -8290,488 +8329,495 @@ export class Game extends GameCompatible {
 		}
 		next.config = config;
 		next.list = list;
-		next.setContent(function () {
-			"step 0";
-			event.nodes = [];
-			event.avatars = [];
-			event.friend = [];
-			event.enemy = [];
-			event.blank = [];
-			for (let i = 0; i < event.config.size; i++) {
-				event.nodes.push(ui.create.div(".shadowed.reduce_radius.choosedouble"));
-			}
-			event.moveAvatar = function (node, i) {
-				if (!node.classList.contains("moved")) {
-					event.blank.push(node.index);
-				}
-				event.nodes[node.index].style.display = "";
-				event.nodes[node.index].show();
-				clearTimeout(event.nodes[node.index].choosetimeout);
-				event.moveNode(node, i);
-				let nodex = event.nodes[node.index];
-				nodex.choosetimeout = setTimeout(function () {
-					nodex.hide();
-					nodex.choosetimeout = setTimeout(function () {
-						nodex.show();
-						nodex.style.display = "none";
-					}, 300);
-				}, 400);
-			};
-			event.aiMove = function (friend) {
-				let list = [];
-				for (let i = 0; i < event.avatars.length; i++) {
-					if (!event.avatars[i].classList.contains("moved")) {
-						list.push(event.avatars[i]);
-					}
-				}
-				for (let i = 0; i < list.length; i++) {
-					if (Math.random() < 0.7 || i == list.length - 1) {
-						if (friend) {
-							event.moveAvatar(list[i], event.friend.length + event.config.width * (event.config.height - 1));
-							event.friend.push(list[i]);
-						} else {
-							event.moveAvatar(list[i], event.enemy.length);
-							event.enemy.push(list[i]);
-						}
-						list[i].classList.add("moved");
-						break;
-					}
-				}
-			};
-			event.promptbar = ui.create.div(".hidden", ui.window);
-			event.promptbar.style.width = "100%";
-			event.promptbar.style.left = 0;
-			if (get.is.phoneLayout()) {
-				event.promptbar.style.top = "20px";
-			} else {
-				event.promptbar.style.top = "58px";
-			}
-			event.promptbar.style.pointerEvents = "none";
-			event.promptbar.style.textAlign = "center";
-			event.promptbar.style.zIndex = "2";
-			ui.create.div(".shadowed.reduce_radius", event.promptbar);
-			event.promptbar.firstChild.style.fontSize = "18px";
-			event.promptbar.firstChild.style.padding = "6px 10px";
-			event.promptbar.firstChild.style.position = "relative";
-			event.prompt = function (str) {
-				event.promptbar.firstChild.innerHTML = str;
-				event.promptbar.show();
-			};
-			event.moveNode = function (node, i) {
-				let width = event.width,
-					height = event.height,
-					margin = event.margin;
-				let left = (-(width + 10) * event.config.width) / 2 + 5 + (i % event.config.width) * (width + 10);
-				let top = (-(height + 10) * event.config.height) / 2 + 5 + Math.floor(i / event.config.width) * (height + 10) + margin / 2;
-				node.style.transform = "translate(" + left + "px," + top + "px)";
-				node.index = i;
-			};
-			event.resize = function () {
-				let margin = 0;
-				if (!get.is.phoneLayout()) {
-					margin = 38;
-				}
-				let height = (ui.window.offsetHeight - 10 * (event.config.height + 1) - margin) / event.config.height;
-				let width = (ui.window.offsetWidth - 10 * (event.config.width + 1)) / event.config.width;
-				if (width * event.config.ratio < height) {
-					height = width * event.config.ratio;
-				} else {
-					width = height / event.config.ratio;
-				}
-				event.width = width;
-				event.height = height;
-				event.margin = margin;
+		next.setContent([
+			event => {
+				event.nodes = [];
+				event.avatars = [];
+				event.friend = [];
+				event.enemy = [];
+				event.blank = [];
 				for (let i = 0; i < event.config.size; i++) {
-					event.moveNode(event.nodes[i], i);
-					event.nodes[i].style.width = width + "px";
-					event.nodes[i].style.height = height + "px";
-					if (event.avatars[i]) {
-						event.moveNode(event.avatars[i], event.avatars[i].index);
-						event.avatars[i].style.width = width + "px";
-						event.avatars[i].style.height = height + "px";
-						event.avatars[i].nodename.style.fontSize = Math.max(14, Math.round(width / 5.6)) + "px";
-					}
+					event.nodes.push(ui.create.div(".shadowed.reduce_radius.choosedouble"));
 				}
-				if (event.deciding) {
-					let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
-					for (let i = 0; i < event.friendlist.length; i++) {
-						event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+				event.moveAvatar = function (node, i) {
+					if (!node.classList.contains("moved")) {
+						event.blank.push(node.index);
 					}
-				}
-			};
-			lib.onresize.push(event.resize);
-			event.clickAvatar = function () {
-				if (event.deciding) {
-					if (this.index < event.config.width) {
-						return;
-					}
-					if (event.friendlist.includes(this)) {
-						event.friendlist.remove(this);
-						event.moveNode(this, this.index);
-						this.nodename.innerHTML = get.slimName(this.link);
-					} else {
-						event.friendlist.push(this);
-					}
-					if (event.friendlist.length == event.config.num) {
-						event.deciding = false;
-						event.prompt("比赛即将开始");
-						setTimeout(game.resume, 1000);
-					}
-					if (event.config.update) {
-						for (let i = 0; i < event.friendlist.length; i++) {
-							event.friendlist[i].nodename.innerHTML = event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
+					event.nodes[node.index].style.display = "";
+					event.nodes[node.index].show();
+					clearTimeout(event.nodes[node.index].choosetimeout);
+					event.moveNode(node, i);
+					let nodex = event.nodes[node.index];
+					nodex.choosetimeout = setTimeout(function () {
+						nodex.hide();
+						nodex.choosetimeout = setTimeout(function () {
+							nodex.show();
+							nodex.style.display = "none";
+						}, 300);
+					}, 400);
+				};
+				event.aiMove = function (friend) {
+					let list = [];
+					for (let i = 0; i < event.avatars.length; i++) {
+						if (!event.avatars[i].classList.contains("moved")) {
+							list.push(event.avatars[i]);
 						}
 					}
-					let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
-					for (let i = 0; i < event.friendlist.length; i++) {
-						event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+					for (let i = 0; i < list.length; i++) {
+						if (Math.random() < 0.7 || i == list.length - 1) {
+							if (friend) {
+								event.moveAvatar(list[i], event.friend.length + event.config.width * (event.config.height - 1));
+								event.friend.push(list[i]);
+							} else {
+								event.moveAvatar(list[i], event.enemy.length);
+								event.enemy.push(list[i]);
+							}
+							list[i].classList.add("moved");
+							break;
+						}
 					}
+				};
+				event.promptbar = ui.create.div(".hidden", ui.window);
+				event.promptbar.style.width = "100%";
+				event.promptbar.style.left = 0;
+				if (get.is.phoneLayout()) {
+					event.promptbar.style.top = "20px";
 				} else {
-					if (!event.imchoosing) {
-						return;
-					}
-					if (event.replacing) {
-						this.link = event.replacing;
-						this.setBackground(event.replacing, "character");
-
-						this.nodename.innerHTML = get.slimName(event.replacing);
-						this.nodename.dataset.nature = get.groupnature(lib.character[event.replacing][1]);
-
-						delete event.replacing;
-						if (this.classList.contains("moved")) {
-							event.custom.add.window();
-						}
-					}
-					if (this.classList.contains("moved")) {
-						return;
-					}
-					event.moveAvatar(this, event.friend.length + event.config.width * (event.config.height - 1));
-					event.friend.push(this.link);
-					this.classList.add("moved");
-					game.resume();
+					event.promptbar.style.top = "58px";
 				}
-			};
-			event.skipnode = ui.create.system("跳过", function () {
-				this.remove();
-				event._skiprest = true;
-				if (event.imchoosing) {
-					game.resume();
-				}
-			});
-			if (get.config("change_choice")) {
-				event.replacenode = ui.create.system(
-					"换将",
-					function () {
-						event.promptbar.hide();
-						while (event.avatars.length) {
-							event.avatars.shift().remove();
+				event.promptbar.style.pointerEvents = "none";
+				event.promptbar.style.textAlign = "center";
+				event.promptbar.style.zIndex = "2";
+				ui.create.div(".shadowed.reduce_radius", event.promptbar);
+				event.promptbar.firstChild.style.fontSize = "18px";
+				event.promptbar.firstChild.style.padding = "6px 10px";
+				event.promptbar.firstChild.style.position = "relative";
+				event.prompt = function (str) {
+					event.promptbar.firstChild.innerHTML = str;
+					event.promptbar.show();
+				};
+				event.moveNode = function (node, i) {
+					let width = event.width,
+						height = event.height,
+						margin = event.margin;
+					let left = (-(width + 10) * event.config.width) / 2 + 5 + (i % event.config.width) * (width + 10);
+					let top = (-(height + 10) * event.config.height) / 2 + 5 + Math.floor(i / event.config.width) * (height + 10) + margin / 2;
+					node.style.transform = "translate(" + left + "px," + top + "px)";
+					node.index = i;
+				};
+				event.resize = function () {
+					let margin = 0;
+					if (!get.is.phoneLayout()) {
+						margin = 38;
+					}
+					let height = (ui.window.offsetHeight - 10 * (event.config.height + 1) - margin) / event.config.height;
+					let width = (ui.window.offsetWidth - 10 * (event.config.width + 1)) / event.config.width;
+					if (width * event.config.ratio < height) {
+						height = width * event.config.ratio;
+					} else {
+						width = height / event.config.ratio;
+					}
+					event.width = width;
+					event.height = height;
+					event.margin = margin;
+					for (let i = 0; i < event.config.size; i++) {
+						event.moveNode(event.nodes[i], i);
+						event.nodes[i].style.width = width + "px";
+						event.nodes[i].style.height = height + "px";
+						if (event.avatars[i]) {
+							event.moveNode(event.avatars[i], event.avatars[i].index);
+							event.avatars[i].style.width = width + "px";
+							event.avatars[i].style.height = height + "px";
+							event.avatars[i].nodename.style.fontSize = Math.max(14, Math.round(width / 5.6)) + "px";
 						}
-						for (let i = 0; i < event.config.size; i++) {
-							event.nodes[i].show();
-							event.nodes[i].style.display = "";
-							clearTimeout(event.nodes[i].choosetimeout);
+					}
+					if (event.deciding) {
+						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
+						for (let i = 0; i < event.friendlist.length; i++) {
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
-						delete event.list2;
-						event.friend.length = 0;
-						event.enemy.length = 0;
-						event.blank.length = 0;
-						event.redoing = true;
-						if (event.imchoosing) {
-							game.resume();
+					}
+				};
+				lib.onresize.push(event.resize);
+				event.clickAvatar = function () {
+					if (event.deciding) {
+						if (this.index < event.config.width) {
+							return;
 						}
-					},
-					true
-				);
-			}
-			if (get.config("change_choice")) {
-				event.reselectnode = ui.create.system(
-					"重选",
-					function () {
-						event.promptbar.hide();
-						event.list2 = event.list2.concat(event.friend).concat(event.enemy);
-						event.friend.length = 0;
-						event.enemy.length = 0;
-						for (let i = 0; i < event.avatars.length; i++) {
-							if (event.avatars[i].classList.contains("moved")) {
-								event.moveAvatar(event.avatars[i], event.blank.randomRemove());
-								event.avatars[i].classList.remove("moved");
+						if (event.friendlist.includes(this)) {
+							event.friendlist.remove(this);
+							event.moveNode(this, this.index);
+							this.nodename.innerHTML = get.slimName(this.link);
+						} else {
+							event.friendlist.push(this);
+						}
+						if (event.friendlist.length == event.config.num) {
+							event.deciding = false;
+							event.prompt("比赛即将开始");
+							setTimeout(game.resume, 1000);
+						}
+						if (event.config.update) {
+							for (let i = 0; i < event.friendlist.length; i++) {
+								event.friendlist[i].nodename.innerHTML = event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
 							}
 						}
-						event.redoing = true;
-						if (event.imchoosing) {
-							game.resume();
+						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
+						for (let i = 0; i < event.friendlist.length; i++) {
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
-					},
-					true
-				);
-			}
-			if (get.config("free_choose")) {
-				let createCharacterDialog = function () {
-					event.freechoosedialog = ui.create.characterDialog();
-					event.freechoosedialog.style.height = "80%";
-					event.freechoosedialog.style.top = "10%";
-					event.freechoosedialog.style.transform = "scale(0.8)";
-					event.freechoosedialog.style.transition = "all 0.3s";
-					event.freechoosedialog.listen(function (e) {
-						if (!event.replacing) {
-							event.dialoglayer.clicked = true;
-						}
-					});
-					event.freechoosedialog.classList.add("pointerdialog");
-					event.dialoglayer = ui.create.div(".popup-container.hidden", function (e) {
-						if (this.classList.contains("removing")) {
+					} else {
+						if (!event.imchoosing) {
 							return;
 						}
-						if (this.clicked) {
-							this.clicked = false;
-							return;
-						}
-						ui.window.classList.remove("modepaused");
-						this.delete();
-						e.stopPropagation();
-						event.freechoosedialog.style.transform = "scale(0.8)";
 						if (event.replacing) {
-							event.prompt("用" + get.translation(event.replacing) + "替换一名武将");
-						} else {
+							this.link = event.replacing;
+							this.setBackground(event.replacing, "character");
+
+							this.nodename.innerHTML = get.slimName(event.replacing);
+							this.nodename.dataset.nature = get.groupnature(lib.character[event.replacing][1]);
+
+							delete event.replacing;
+							if (this.classList.contains("moved")) {
+								event.custom.add.window();
+							}
+						}
+						if (this.classList.contains("moved")) {
+							return;
+						}
+						event.moveAvatar(this, event.friend.length + event.config.width * (event.config.height - 1));
+						event.friend.push(this.link);
+						this.classList.add("moved");
+						game.resume();
+					}
+				};
+				event.skipnode = ui.create.system("跳过", function () {
+					this.remove();
+					event._skiprest = true;
+					if (event.imchoosing) {
+						game.resume();
+					}
+				});
+				if (get.config("change_choice")) {
+					event.replacenode = ui.create.system(
+						"换将",
+						function () {
+							event.promptbar.hide();
+							while (event.avatars.length) {
+								event.avatars.shift().remove();
+							}
+							for (let i = 0; i < event.config.size; i++) {
+								event.nodes[i].show();
+								event.nodes[i].style.display = "";
+								clearTimeout(event.nodes[i].choosetimeout);
+							}
+							delete event.list2;
+							event.friend.length = 0;
+							event.enemy.length = 0;
+							event.blank.length = 0;
+							event.redoing = true;
+							if (event.imchoosing) {
+								game.resume();
+							}
+						},
+						true
+					);
+				}
+				if (get.config("change_choice")) {
+					event.reselectnode = ui.create.system(
+						"重选",
+						function () {
+							event.promptbar.hide();
+							event.list2 = event.list2.concat(event.friend).concat(event.enemy);
+							event.friend.length = 0;
+							event.enemy.length = 0;
+							for (let i = 0; i < event.avatars.length; i++) {
+								if (event.avatars[i].classList.contains("moved")) {
+									event.moveAvatar(event.avatars[i], event.blank.randomRemove());
+									event.avatars[i].classList.remove("moved");
+								}
+							}
+							event.redoing = true;
+							if (event.imchoosing) {
+								game.resume();
+							}
+						},
+						true
+					);
+				}
+				if (get.config("free_choose")) {
+					let createCharacterDialog = function () {
+						event.freechoosedialog = ui.create.characterDialog();
+						event.freechoosedialog.style.height = "80%";
+						event.freechoosedialog.style.top = "10%";
+						event.freechoosedialog.style.transform = "scale(0.8)";
+						event.freechoosedialog.style.transition = "all 0.3s";
+						event.freechoosedialog.listen(function (e) {
+							if (!event.replacing) {
+								event.dialoglayer.clicked = true;
+							}
+						});
+						event.freechoosedialog.classList.add("pointerdialog");
+						event.dialoglayer = ui.create.div(".popup-container.hidden", function (e) {
+							if (this.classList.contains("removing")) {
+								return;
+							}
+							if (this.clicked) {
+								this.clicked = false;
+								return;
+							}
+							ui.window.classList.remove("modepaused");
+							this.delete();
+							e.stopPropagation();
+							event.freechoosedialog.style.transform = "scale(0.8)";
+							if (event.replacing) {
+								event.prompt("用" + get.translation(event.replacing) + "替换一名武将");
+							} else {
+								if (event.side == 0) {
+									event.prompt("请选择两名武将");
+								} else {
+									event.prompt("请选择一名武将");
+								}
+							}
+						});
+						event.dialoglayer.classList.add("modenopause");
+						event.dialoglayer.appendChild(event.freechoosedialog);
+						event.freechoosenode.classList.remove("hidden");
+					};
+
+					event.custom.replace.button = function (button) {
+						event.replacing = button.link;
+					};
+					event.custom.add.window = function () {
+						if (event.replacing) {
+							delete event.replacing;
 							if (event.side == 0) {
 								event.prompt("请选择两名武将");
 							} else {
 								event.prompt("请选择一名武将");
 							}
 						}
-					});
-					event.dialoglayer.classList.add("modenopause");
-					event.dialoglayer.appendChild(event.freechoosedialog);
-					event.freechoosenode.classList.remove("hidden");
-				};
-
-				event.custom.replace.button = function (button) {
-					event.replacing = button.link;
-				};
-				event.custom.add.window = function () {
-					if (event.replacing) {
-						delete event.replacing;
-						if (event.side == 0) {
-							event.prompt("请选择两名武将");
-						} else {
-							event.prompt("请选择一名武将");
-						}
+					};
+					event.freechoosenode = ui.create.system(
+						"自由选将",
+						function () {
+							if (this.classList.contains("hidden")) {
+								return;
+							}
+							if (!event.imchoosing) {
+								event.prompt("请等待敌方选将");
+								return;
+							}
+							delete event.replacing;
+							ui.window.classList.add("modepaused");
+							ui.window.appendChild(event.dialoglayer);
+							ui.refresh(event.dialoglayer);
+							event.dialoglayer.show();
+							event.freechoosedialog.style.transform = "scale(1)";
+							event.promptbar.hide();
+						},
+						true
+					);
+					if (lib.onfree) {
+						event.freechoosenode.classList.add("hidden");
+						lib.onfree.push(createCharacterDialog);
+					} else {
+						createCharacterDialog();
+					}
+				}
+				event.checkredo = function () {
+					if (event.redoing) {
+						event.goto(1);
+						delete event.redoing;
+						return true;
 					}
 				};
-				event.freechoosenode = ui.create.system(
-					"自由选将",
-					function () {
-						if (this.classList.contains("hidden")) {
-							return;
-						}
-						if (!event.imchoosing) {
-							event.prompt("请等待敌方选将");
-							return;
-						}
-						delete event.replacing;
-						ui.window.classList.add("modepaused");
-						ui.window.appendChild(event.dialoglayer);
-						ui.refresh(event.dialoglayer);
-						event.dialoglayer.show();
-						event.freechoosedialog.style.transform = "scale(1)";
-						event.promptbar.hide();
-					},
-					true
-				);
-				if (lib.onfree) {
-					event.freechoosenode.classList.add("hidden");
-					lib.onfree.push(createCharacterDialog);
-				} else {
-					createCharacterDialog();
-				}
-			}
-			event.checkredo = function () {
-				if (event.redoing) {
-					event.goto(1);
-					delete event.redoing;
-					return true;
-				}
-			};
-			// if(ui.cardPileButton) ui.cardPileButton.style.display='none';
-			ui.auto.hide();
-			ui.wuxie.hide();
-			event.resize();
-			for (let i = 0; i < event.config.size; i++) {
-				ui.window.appendChild(event.nodes[i]);
-			}
-			"step 1";
-			let rand1 = event.config.first;
-			if (rand1 == "rand") {
-				rand1 = Math.random() < 0.5;
-			}
-			if (rand1) {
-				_status.color = true;
-				event.side = 1;
-			} else {
-				_status.color = false;
-				event.side = 3;
-			}
-			if (!event.list2) {
-				event.list2 = event.list.randomGets(event.config.width * 2);
-				for (let i = 0; i < event.config.width * 2; i++) {
-					event.avatars.push(ui.create.div(".shadowed.shadowed2.reduce_radius.character.choosedouble", event.clickAvatar));
-					let name = event.list2[i];
-					event.avatars[i].setBackground(name, "character");
-					event.avatars[i].link = name;
-					event.avatars[i].nodename = ui.create.div(".name", event.avatars[i], get.slimName(name));
-					event.avatars[i].nodename.style.fontFamily = lib.config.name_font;
-					event.avatars[i].index = i + event.config.width;
-					event.avatars[i].addTempClass("start");
-					event.nodes[event.avatars[i].index].style.display = "none";
-					event.avatars[i].nodename.dataset.nature = get.groupnature(lib.character[name][1]);
-					lib.setIntro(event.avatars[i]);
-				}
+				// if(ui.cardPileButton) ui.cardPileButton.style.display='none';
+				ui.auto.hide();
+				ui.wuxie.hide();
 				event.resize();
-				for (let i = 0; i < event.avatars.length; i++) {
-					ui.window.appendChild(event.avatars[i]);
+				for (let i = 0; i < event.config.size; i++) {
+					ui.window.appendChild(event.nodes[i]);
 				}
-				event.avatars.sort(function (a, b) {
-					return get.rank(b.link, true) - get.rank(a.link, true);
-				});
-			}
-			game.delay();
-			lib.init.onfree();
-			"step 2";
-			if (event.checkredo()) {
-				return;
-			}
-			if (event._skiprest) {
-				return;
-			}
-			if (event.side < 2) {
-				event.imchoosing = true;
-				if (event.side == 0) {
-					event.prompt("请选择两名武将");
+			},
+			event => {
+				let rand1 = event.config.first;
+				if (rand1 == "rand") {
+					rand1 = Math.random() < 0.5;
+				}
+				if (rand1) {
+					_status.color = true;
+					event.side = 1;
 				} else {
-					event.prompt("请选择一名武将");
-					event.fast = get.time();
+					_status.color = false;
+					event.side = 3;
 				}
-				game.pause();
-			} else {
-				event.aiMove();
+				if (!event.list2) {
+					event.list2 = event.list.randomGets(event.config.width * 2);
+					for (let i = 0; i < event.config.width * 2; i++) {
+						event.avatars.push(ui.create.div(".shadowed.shadowed2.reduce_radius.character.choosedouble", event.clickAvatar));
+						let name = event.list2[i];
+						event.avatars[i].setBackground(name, "character");
+						event.avatars[i].link = name;
+						event.avatars[i].nodename = ui.create.div(".name", event.avatars[i], get.slimName(name));
+						event.avatars[i].nodename.style.fontFamily = lib.config.name_font;
+						event.avatars[i].index = i + event.config.width;
+						event.avatars[i].addTempClass("start");
+						event.nodes[event.avatars[i].index].style.display = "none";
+						event.avatars[i].nodename.dataset.nature = get.groupnature(lib.character[name][1]);
+						lib.setIntro(event.avatars[i]);
+					}
+					event.resize();
+					for (let i = 0; i < event.avatars.length; i++) {
+						ui.window.appendChild(event.avatars[i]);
+					}
+					event.avatars.sort(function (a, b) {
+						return get.rank(b.link, true) - get.rank(a.link, true);
+					});
+				}
 				game.delay();
-			}
-			"step 3";
-			if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
-				event.fast = true;
-			} else {
-				event.fast = false;
-			}
-			delete event.imchoosing;
-			if (event.checkredo()) {
-				return;
-			}
-			if (event._skiprest) {
-				while (event.enemy.length < event.config.width) {
+				lib.init.onfree();
+			},
+			event => {
+				if (event.checkredo()) {
+					return;
+				}
+				if (event._skiprest) {
+					return;
+				}
+				if (event.side < 2) {
+					event.imchoosing = true;
+					if (event.side == 0) {
+						event.prompt("请选择两名武将");
+					} else {
+						event.prompt("请选择一名武将");
+						event.fast = get.time();
+					}
+					game.pause();
+				} else {
 					event.aiMove();
-				}
-				while (event.friend.length < event.config.width) {
-					event.aiMove(true);
-				}
-			} else if (event.friend.length + event.enemy.length < event.config.width * 2 - 1) {
-				if (event.side == 1) {
-					game.delay(event.fast ? 1 : 2);
-					event.promptbar.hide();
-				}
-				event.side++;
-				if (event.side > 3) {
-					event.side = 0;
-				}
-				event.goto(2);
-			} else {
-				event.promptbar.hide();
-				event.side++;
-				if (event.side > 3) {
-					event.side = 0;
-				}
-				if (event.side >= 2) {
 					game.delay();
 				}
-			}
-			"step 4";
-			if (event.checkredo()) {
-				return;
-			}
-			if (event.skipnode) {
-				event.skipnode.delete();
-			}
-			if (event.replacenode) {
-				event.replacenode.delete();
-			}
-			if (event.reselectnode) {
-				event.reselectnode.delete();
-			}
-			if (event.freechoosenode) {
-				event.freechoosenode.delete();
-			}
-			for (let i = 0; i < event.avatars.length; i++) {
-				if (!event.avatars[i].classList.contains("moved")) {
-					if (event.side < 2) {
-						event.moveAvatar(event.avatars[i], event.friend.length + event.config.width * (event.config.height - 1));
-						event.friend.push(event.avatars[i]);
-					} else {
-						event.moveAvatar(event.avatars[i], event.enemy.length);
-						event.enemy.push(event.avatars[i]);
+			},
+			event => {
+				if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
+					event.fast = true;
+				} else {
+					event.fast = false;
+				}
+				delete event.imchoosing;
+				if (event.checkredo()) {
+					return;
+				}
+				if (event._skiprest) {
+					while (event.enemy.length < event.config.width) {
+						event.aiMove();
 					}
-					event.avatars[i].classList.add("moved");
-				}
-			}
-			game.delay();
-			"step 5";
-			event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
-			event.enemylist = [];
-			for (let i = 0; i < event.avatars.length; i++) {
-				if (event.avatars[i].index > event.config.width) {
-					event.avatars[i].classList.add("selecting");
-				}
-			}
-			let rand = [];
-			for (let i = 0; i < event.config.width; i++) {
-				for (let j = 0; j < event.config.width - i; j++) {
-					rand.push(i);
-				}
-			}
-			for (let i = 0; i < event.config.num; i++) {
-				let rand2 = rand.randomGet();
-				for (let j = 0; j < rand.length; j++) {
-					if (rand[j] == rand2) {
-						rand.splice(j--, 1);
+					while (event.friend.length < event.config.width) {
+						event.aiMove(true);
+					}
+				} else if (event.friend.length + event.enemy.length < event.config.width * 2 - 1) {
+					if (event.side == 1) {
+						game.delay(event.fast ? 1 : 2);
+						event.promptbar.hide();
+					}
+					event.side++;
+					if (event.side > 3) {
+						event.side = 0;
+					}
+					event.goto(2);
+				} else {
+					event.promptbar.hide();
+					event.side++;
+					if (event.side > 3) {
+						event.side = 0;
+					}
+					if (event.side >= 2) {
+						game.delay();
 					}
 				}
-				event.enemylist.push(event.enemy[rand2]);
-			}
-			event.enemylist.randomSort();
-			event.friendlist = [];
-			event.deciding = true;
-			for (let i = 0; i < event.config.size; i++) {
-				event.nodes[i].hide();
-			}
-			game.pause();
-			"step 6";
-			event.promptbar.delete();
-			if (ui.cardPileButton) {
-				ui.cardPileButton.style.display = "";
-			}
-			lib.onresize.remove(event.resize);
-			ui.wuxie.show();
-			ui.auto.show();
-			for (let i = 0; i < event.avatars.length; i++) {
-				event.avatars[i].delete();
-			}
-			for (let i = 0; i < event.nodes.length; i++) {
-				event.nodes[i].delete();
-			}
-			event.result = { friend: [], enemy: [] };
-			for (let i = 0; i < event.config.num; i++) {
-				event.result.friend[i] = event.friendlist[i].link;
-				event.result.enemy[i] = event.enemylist[i].link;
-			}
-		});
+			},
+			event => {
+				if (event.checkredo()) {
+					return;
+				}
+				if (event.skipnode) {
+					event.skipnode.delete();
+				}
+				if (event.replacenode) {
+					event.replacenode.delete();
+				}
+				if (event.reselectnode) {
+					event.reselectnode.delete();
+				}
+				if (event.freechoosenode) {
+					event.freechoosenode.delete();
+				}
+				for (let i = 0; i < event.avatars.length; i++) {
+					if (!event.avatars[i].classList.contains("moved")) {
+						if (event.side < 2) {
+							event.moveAvatar(event.avatars[i], event.friend.length + event.config.width * (event.config.height - 1));
+							event.friend.push(event.avatars[i]);
+						} else {
+							event.moveAvatar(event.avatars[i], event.enemy.length);
+							event.enemy.push(event.avatars[i]);
+						}
+						event.avatars[i].classList.add("moved");
+					}
+				}
+				game.delay();
+			},
+			event => {
+				event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
+				event.enemylist = [];
+				for (let i = 0; i < event.avatars.length; i++) {
+					if (event.avatars[i].index > event.config.width) {
+						event.avatars[i].classList.add("selecting");
+					}
+				}
+				let rand = [];
+				for (let i = 0; i < event.config.width; i++) {
+					for (let j = 0; j < event.config.width - i; j++) {
+						rand.push(i);
+					}
+				}
+				for (let i = 0; i < event.config.num; i++) {
+					let rand2 = rand.randomGet();
+					for (let j = 0; j < rand.length; j++) {
+						if (rand[j] == rand2) {
+							rand.splice(j--, 1);
+						}
+					}
+					event.enemylist.push(event.enemy[rand2]);
+				}
+				event.enemylist.randomSort();
+				event.friendlist = [];
+				event.deciding = true;
+				for (let i = 0; i < event.config.size; i++) {
+					event.nodes[i].hide();
+				}
+				game.pause();
+			},
+			event => {
+				event.promptbar.delete();
+				if (ui.cardPileButton) {
+					ui.cardPileButton.style.display = "";
+				}
+				lib.onresize.remove(event.resize);
+				ui.wuxie.show();
+				ui.auto.show();
+				for (let i = 0; i < event.avatars.length; i++) {
+					event.avatars[i].delete();
+				}
+				for (let i = 0; i < event.nodes.length; i++) {
+					event.nodes[i].delete();
+				}
+				event.result = { friend: [], enemy: [] };
+				for (let i = 0; i < event.config.num; i++) {
+					event.result.friend[i] = event.friendlist[i].link;
+					event.result.enemy[i] = event.enemylist[i].link;
+				}
+			},
+		]);
 	}
 	updateRoundNumber() {
 		game.broadcastAll(
@@ -8922,7 +8968,7 @@ export class Game extends GameCompatible {
 				const iValue = `${i}_${value}`;
 				lib.skill[iValue] = info.subSkill[value];
 				lib.skill[iValue].sub = true;
-				if (info.subSkill[value].sourceSkill !== false) {
+				if (info.subSkill[value].sourceSkill === undefined) {
 					lib.skill[iValue].sourceSkill = i;
 				}
 				if (info.subSkill[value].name) {
@@ -8975,7 +9021,7 @@ export class Game extends GameCompatible {
 				forced: true,
 				popup: false,
 				silent: true,
-				content: () => {
+				content: async (event, trigger, player) => {
 					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
@@ -9361,7 +9407,7 @@ export class Game extends GameCompatible {
 	 * @param { Player } player
 	 * @param { string | Card[] } card
 	 * @param { Player[] } [targets]
-	 * @param { GameEventPromise } [event]
+	 * @param { GameEvent } [event]
 	 * @param { boolean } [forced]
 	 * @param { string } [logvid]
 	 */
@@ -9666,7 +9712,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(result);
 						};
-				  }
+					}
 				: (resolve, reject) => {
 						lib.status.reload++;
 						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
@@ -9696,7 +9742,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(object);
 						};
-				  }
+					}
 		);
 	}
 	/**
@@ -9760,7 +9806,7 @@ export class Game extends GameCompatible {
 						game.reload2();
 						resolve(event);
 					};
-			  })
+				})
 			: game.getDB(storeName).then(object => {
 					const keys = Object.keys(object);
 					lib.status.reload += keys.length;
@@ -9781,7 +9827,7 @@ export class Game extends GameCompatible {
 								})
 						)
 					);
-			  });
+				});
 	}
 	/**
 	 * @param { string } key
@@ -9879,29 +9925,64 @@ export class Game extends GameCompatible {
 				}
 			});
 		}
-		game.saveConfig("version", lib.version);
-		if (_status.extensionChangeLog) {
-			Object.keys(_status.extensionChangeLog).forEach(value => {
-				const li = document.createElement("li");
-				li.innerHTML = `${value}：${_status.extensionChangeLog[value]}`;
-				ul.appendChild(li);
-			});
+		const dialog = ui.create.dialog(caption, "hidden");
+		if (lib.version != lib.config.version) {
+			const lic = ui.create.div(dialog.content);
+			lic.style.display = "block";
+			lic.appendChild(ul);
 		}
-		const dialog = ui.create.dialog(caption, "hidden"),
-			lic = ui.create.div(dialog.content);
-		lic.style.display = "block";
-		ul.style.display = "inline-block";
-		ul.style.marginLeft = "-40px";
-		lic.appendChild(ul);
-		if (players && players.length) {
+		game.saveConfig("version", lib.version);
+		if (players?.length) {
 			dialog.addSmall([players, "character"]);
 			dialog.classList.add("forcebutton");
 			dialog.classList.add("withbg");
 		}
-		if (cards && cards.length) {
+		if (cards?.length) {
 			dialog.addSmall([cards.map(value => [get.translation(get.type(value)), "", value]), "vcard"]);
 			dialog.classList.add("forcebutton");
 			dialog.classList.add("withbg");
+		}
+		if (_status.extensionChangeLog) {
+			Object.keys(_status.extensionChangeLog).forEach(extname => {
+				dialog.add(ui.create.div(".placeholder"));
+				dialog.add(`${extname} ${lib.extensionPack[extname].version} 更新内容`);
+				dialog.add(ui.create.div(".placeholder"));
+				const changeLogList = _status.extensionChangeLog[extname];
+				changeLogList.forEach(item => {
+					switch (item.type) {
+						case "text": {
+							const list = Array.isArray(item.data) ? item.data : [item.data];
+							if (item.addText) {
+								list.forEach(value => {
+									dialog.addText(value);
+								});
+							} else {
+								list.forEach(value => {
+									const li = document.createElement("li");
+									li.innerHTML = value;
+									li.style.textAlign = item.textAlign || "center";
+									dialog.content.appendChild(li);
+								});
+							}
+							break;
+						}
+						case "players": {
+							dialog.addSmall([item.data, "character"]);
+							dialog.classList.add("forcebutton");
+							dialog.classList.add("withbg");
+							break;
+						}
+						case "cards": {
+							dialog.addSmall([item.data.map(value => [get.translation(get.type(value)), "", value]), "vcard"]);
+							dialog.classList.add("forcebutton");
+							dialog.classList.add("withbg");
+							break;
+						}
+						default:
+							return;
+					}
+				});
+			});
 		}
 		dialog.open();
 		let hidden = false;
@@ -9921,8 +10002,9 @@ export class Game extends GameCompatible {
 		lib.init.onfree();
 	}
 	/**
-	 * @param { string } str
-	 * @param { string } [extname]
+	 * 显示显示扩展的更新日志，在game.showChangeLog时显示扩展更新内容
+	 * @param { string } str 更新日志内容，支持以下格式：`string`: 文本，自动包装为 `{ type: 'text', data: str }`；`Array`: 对象数组，每个对象格式为 `{ type, data, 其他属性 }`； `Object`: 单个日志对象，自动包装成数组
+	 * @param { string } [extname] 扩展名，未输入则使用_status.extension
 	 */
 	showExtensionChangeLog(str, extname) {
 		extname = extname || _status.extension;
@@ -9931,11 +10013,19 @@ export class Game extends GameCompatible {
 			return;
 		}
 		game.saveConfig(cfg, lib.extensionPack[extname].version);
-		if (_status.extensionChangeLog) {
-			return;
+		_status.extensionChangeLog ??= {};
+		if (typeof str === "string") {
+			_status.extensionChangeLog[extname] = [
+				{
+					type: "text",
+					data: str,
+				},
+			];
+		} else if (Array.isArray(str)) {
+			_status.extensionChangeLog[extname] = str;
+		} else if (get.objtype(str) === "object") {
+			_status.extensionChangeLog[extname] = [str];
 		}
-		_status.extensionChangeLog = {};
-		_status.extensionChangeLog[extname] = str;
 	}
 	/**
 	 * @param { string } key
@@ -10033,6 +10123,9 @@ export class Game extends GameCompatible {
 		localStorage.removeItem(`${lib.configprefix}${mode}`);
 	}
 	/**
+	 * @deprecated 请使用addPlayerOL，addPlayer已被废除！
+	 */
+	/**
 	 * @param { number } position
 	 * @param { string } [character]
 	 * @param { string } [character2]
@@ -10112,6 +10205,9 @@ export class Game extends GameCompatible {
 		game.arrangePlayers();
 		return player;
 	}
+	/**
+	 * @deprecated 请使用removePlayerOL，removePlayer已被废除！
+	 */
 	/**
 	 * @param { Player } player
 	 */
@@ -10466,6 +10562,22 @@ export class Game extends GameCompatible {
 		}
 	}
 	/**
+	 * 此方法用于让所有targets同时执行一个选择函数
+	 *
+	 * @param { Player[] } targets 需要执行选择函数的目标
+	 * @param { function } func 需要执行的函数
+	 * @param { Any[] } args 函数所需的参数
+	 * @returns { GameEventPromise }
+	 */
+	chooseAnyOL(targets, func, args) {
+		const next = game.createEvent("chooseAnyOL");
+		next.targets = targets;
+		next.func = func;
+		next.args = args;
+		next.setContent("chooseAnyOL");
+		return next;
+	}
+	/**
 	 * 用于玩家使用非自己手牌时生成的可以选择的假牌（其实就是复制一份出来）。
 	 *
 	 * @param { Card[] | Card } cards 需要被复制的真牌，允许传入单张卡牌或者卡牌数组
@@ -10478,7 +10590,14 @@ export class Game extends GameCompatible {
 			cards = [cards];
 		}
 		const cardsx = cards.map(card => {
+			while (card.rcardSymbol) {
+				//好孩子不玩嵌套
+				card = card[card.rcardSymbol];
+			}
 			const cardx = ui.create.card();
+			const rcardSymbol = Symbol("card");
+			cardx.rcardSymbol = rcardSymbol;
+			cardx[rcardSymbol] = card;
 			cardx.isFake = true;
 			cardx._cardid = card.cardid;
 			if (isBlank) {
@@ -10505,9 +10624,9 @@ export class Game extends GameCompatible {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
-		const fake = cards.filter(card => card.isFake && card._cardid),
+		const fake = cards.filter(card => card.isFake && card.rcardSymbol && card._cardid),
 			other = cards.removeArray(fake),
-			wild = [],
+			wild = [],//野生的假牌
 			map = {};
 		fake.forEach(card => {
 			const owner = get.owner(card);
@@ -10515,9 +10634,7 @@ export class Game extends GameCompatible {
 				wild.push(card);
 				return;
 			}
-			if (!map[owner.playerid]) {
-				map[owner.playerid] = [];
-			}
+			map[owner.playerid] ??= [];
 			map[owner.playerid].push(card);
 		});
 		wild.forEach(i => i.delete());
@@ -10566,7 +10683,7 @@ export class Game extends GameCompatible {
 	/**
 	 * find the skillname of the event
 	 * 获取触发事件的技能
-	 * @param { GameEvent | GameEventPromise } event
+	 * @param { GameEvent } event
 	 * @param { Boolean } includeCharlotteSkill 是否包含夏洛特技
 	 * @param { Boolean } includeEquipSkill 是否包含装备技能
 	 * @param { Boolean } includeGlobalSkill 是否包含全局技能
@@ -10578,7 +10695,7 @@ export class Game extends GameCompatible {
 		let evt = event;
 		do {
 			evt = evt.parent;
-			let name = evt?.name;
+			let name = evt?.skill || evt?.name;
 			if (!name) {
 				break;
 			}
@@ -10592,11 +10709,14 @@ export class Game extends GameCompatible {
 			}
 			skill = get.sourceSkillFor(name);
 			const info = lib.skill[skill];
-			if (!info || !Object.keys(info).length || (!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
+			if (!info || !Object.keys(info).length) {
 				continue;
 			}
+			if ((!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
+				return null;
+			}
 			return skill;
-		} while (++count < 10);
+		} while (++count < 5);
 		return null;
 	}
 	/**
@@ -10613,7 +10733,7 @@ export class Game extends GameCompatible {
 		}
 		const addPlayer = function (id, target, character, character2, isNext) {
 			const players = game.players.concat(game.dead);
-			ui.arena.setNumber(players.length + 1);
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
 				position = players.length;
@@ -10644,7 +10764,8 @@ export class Game extends GameCompatible {
 		const player = addPlayer(id, target, character, character2, isNext);
 		const firstSeat = players.find(value => value.getSeatNum() == 1);
 		if (firstSeat) {
-			let seatNum = !isNext ? target.getSeatNum() : target.getSeatNum() + 1;
+			const targetSeat = target.getSeatNum();
+			let seatNum = !isNext ? (targetSeat == 1 ? players.length + 1 : targetSeat) : targetSeat + 1;
 			player.setSeatNum(seatNum);
 			players.forEach(value => {
 				if (seatNum && value.getSeatNum() >= seatNum) {
@@ -10710,7 +10831,7 @@ export class Game extends GameCompatible {
 			player.delete();
 			game.players.remove(player);
 			game.dead.remove(player);
-			ui.arena.setNumber(players.length - 1);
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
 			player.removed = true;
 			if (player == game.me) {
 				ui.me.hide();

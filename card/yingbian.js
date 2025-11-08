@@ -308,6 +308,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["黄盖"],
 				distance: { attackFrom: -2 },
 				ai: {
 					basic: {
@@ -375,6 +376,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
+				bingzhu: ["姜尚"],
 				cardcolor: "spade",
 				ai: {
 					basic: {

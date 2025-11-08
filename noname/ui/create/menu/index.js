@@ -1,4 +1,4 @@
-import { ui, game, get, lib, _status } from "../../../../noname.js";
+import { ui, game, get, lib, _status } from "@noname";
 
 export function openMenu(node, e, onclose) {
 	popupContainer.innerHTML = "";

@@ -1,5 +1,5 @@
-import { userAgentLowerCase, compatibleEnvironment, androidNewStandardApp, device } from "../util/index.js";
-import { get } from "../get/compatible.js";
+import { userAgentLowerCase, compatibleEnvironment, androidNewStandardApp, device } from "@/util/index.js";
+import { get } from "@/get/compatible.js";
 
 export class GameCompatible {
 	/**
@@ -193,13 +193,6 @@ export class GameCompatible {
 }
 
 export let game = new GameCompatible();
-
-/**
- * @param { InstanceType<typeof GameCompatible> } [instance]
- */
-export function setGameCompatible(instance) {
-	game = instance || new GameCompatible();
-}
 
 /**
  * @enum {number}

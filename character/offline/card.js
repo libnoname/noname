@@ -78,7 +78,7 @@ const cards = {
 	zongma_attack: {
 		derivation: "eu_makang",
 		fullskin: true,
-		cardimage: "chitu",
+		image: "image/card/makang_zongma.png",
 		type: "equip",
 		subtype: "equip4",
 		skills: ["eu_zongma_attack"],
@@ -86,7 +86,7 @@ const cards = {
 	zongma_defend: {
 		derivation: "eu_makang",
 		fullskin: true,
-		cardimage: "dilu",
+		image: "image/card/makang_zongma.png",
 		type: "equip",
 		subtype: "equip3",
 		skills: ["eu_zongma_defend"],
@@ -282,16 +282,8 @@ const cards = {
 			for (var i = 0; i < dialog.buttons.length; i++) {
 				if (dialog.buttons[i].link == card) {
 					button = dialog.buttons[i];
-					button.querySelector(".info").innerHTML = (function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(target);
+					const innerHTML = target.getName(true);
+					game.createButtonCardsetion(innerHTML, button);
 					dialog.buttons.remove(button);
 					break;
 				}
@@ -307,7 +299,7 @@ const cards = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (var i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									game.createButtonCardsetion(name, dialog.buttons[i]);
 									dialog.buttons.splice(i--, 1);
 									break;
 								}
@@ -316,16 +308,7 @@ const cards = {
 					},
 					card,
 					dialog.videoId,
-					(function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(target),
+					target.getName(true),
 					capt
 				);
 			}
@@ -394,8 +377,26 @@ const cards = {
 		derivation: "yj_tianchuan",
 		type: "equip",
 		skills: ["xingbian_skill"],
-		async content(event, trigger, player) {
-			if (!event.card.subtypes) {
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
 				const choices = [];
 				for (let i = 0; i <= 5; i++) {
 					if (player.hasEquipableSlot(i)) {
@@ -411,13 +412,6 @@ const cards = {
 					.set("ai", () => _status.event.controls.randomGet())
 					.forResult();
 				event.card.subtypes = [result.control];
-			}
-			if (
-				!event.card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				await event.target.equip(event.card);
 			}
 		},
 		ai: {
@@ -461,10 +455,28 @@ const cards = {
 		type: "equip",
 		skills: ["hm_zhong_heart_skill"],
 		destroy: "discardPile",
-		async content(event, trigger, player) {
-			if (!event.card.subtypes) {
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
 				const choices = [];
-				for (let i = 0; i <= 4; i++) {
+				for (let i = 0; i <= 5; i++) {
 					if (player.hasEquipableSlot(i)) {
 						choices.push(`equip${i}`);
 					}
@@ -478,13 +490,6 @@ const cards = {
 					.set("ai", () => _status.event.controls.randomGet())
 					.forResult();
 				event.card.subtypes = [result.control];
-			}
-			if (
-				!event.card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				await event.target.equip(event.card);
 			}
 		},
 		ai: {
@@ -532,8 +537,6 @@ const cards = {
 			},
 		},
 		enable: true,
-		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
 		toself: true,
@@ -545,10 +548,28 @@ const cards = {
 		type: "equip",
 		skills: ["hm_zhong_diamond_skill"],
 		destroy: "discardPile",
-		async content(event, trigger, player) {
-			if (!event.card.subtypes) {
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
 				const choices = [];
-				for (let i = 0; i <= 4; i++) {
+				for (let i = 0; i <= 5; i++) {
 					if (player.hasEquipableSlot(i)) {
 						choices.push(`equip${i}`);
 					}
@@ -562,13 +583,6 @@ const cards = {
 					.set("ai", () => _status.event.controls.randomGet())
 					.forResult();
 				event.card.subtypes = [result.control];
-			}
-			if (
-				!event.card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				await event.target.equip(event.card);
 			}
 		},
 		ai: {
@@ -616,8 +630,6 @@ const cards = {
 			},
 		},
 		enable: true,
-		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
 		toself: true,
@@ -629,10 +641,28 @@ const cards = {
 		type: "equip",
 		skills: ["hm_zhong_club_skill"],
 		destroy: "discardPile",
-		async content(event, trigger, player) {
-			if (!event.card.subtypes) {
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
 				const choices = [];
-				for (let i = 0; i <= 4; i++) {
+				for (let i = 0; i <= 5; i++) {
 					if (player.hasEquipableSlot(i)) {
 						choices.push(`equip${i}`);
 					}
@@ -646,13 +676,6 @@ const cards = {
 					.set("ai", () => _status.event.controls.randomGet())
 					.forResult();
 				event.card.subtypes = [result.control];
-			}
-			if (
-				!event.card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				await event.target.equip(event.card);
 			}
 		},
 		ai: {
@@ -700,8 +723,6 @@ const cards = {
 			},
 		},
 		enable: true,
-		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
 		toself: true,
@@ -713,10 +734,28 @@ const cards = {
 		type: "equip",
 		skills: ["hm_zhong_spade_skill"],
 		destroy: "discardPile",
-		async content(event, trigger, player) {
-			if (!event.card.subtypes) {
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
 				const choices = [];
-				for (let i = 0; i <= 4; i++) {
+				for (let i = 0; i <= 5; i++) {
 					if (player.hasEquipableSlot(i)) {
 						choices.push(`equip${i}`);
 					}
@@ -730,13 +769,6 @@ const cards = {
 					.set("ai", () => _status.event.controls.randomGet())
 					.forResult();
 				event.card.subtypes = [result.control];
-			}
-			if (
-				!event.card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				await event.target.equip(event.card);
 			}
 		},
 		ai: {
@@ -784,8 +816,6 @@ const cards = {
 			},
 		},
 		enable: true,
-		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
 		toself: true,

@@ -816,7 +816,7 @@ export default {
 			}
 			const result = await player
 				.chooseTarget(
-					"宴席：展示并获得一名角色被你选择的牌",
+					"宴戏：展示并获得一名角色被你选择的牌",
 					(card, player, target) => {
 						return get.event("targetx").includes(target);
 					},
@@ -1237,7 +1237,7 @@ export default {
 				}
 			},
 			playerEnabled(card, player, target) {
-				if (game.hasPlayer(current => current.isUnseen()) && card.name == "sha" && target.isUnseen()) {
+				if (game.hasPlayer(current => current.isUnseen()) && card.name == "sha" && !target.isUnseen()) {
 					return false;
 				}
 			},
@@ -2460,9 +2460,6 @@ export default {
 						name1: name,
 						name2: name2,
 					};
-					if (get.is.jun(name) || get.is.jun(name2)) {
-						return lib.character[name][1] == lib.character[name2][1];
-					}
 					return lib.element.player.perfectPair.call(tempPlayer);
 				});
 			});
@@ -4092,6 +4089,10 @@ export default {
 					if (!player.getStockSkills(true, true, true).includes("fakeshiren")) {
 						return false;
 					}
+					const bool = get.character(player.name1, 3).includes("fakeshiren") ? player.isUnseen(0) : player.isUnseen(1);
+					if (!bool) {
+						return false;
+					}
 					return !game.getAllGlobalHistory("everything", evt => {
 						return evt.name == "showCharacter" && evt.player == player && evt.toShow.some(i => get.character(i, 3).includes("fakeshiren"));
 					}).length;
@@ -5424,14 +5425,16 @@ export default {
 			"step 0";
 			player.choosePlayerCard(target, "h", true);
 			"step 1";
-			player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
-			var type = get.type2(result.cards[0], target),
-				hs = target.getCards("h", function (card) {
-					return card != result.cards[0] && get.type2(card, target) != type;
-				});
-			if (hs.length) {
-				target.addGaintag(hs, "xinchoufa");
-				target.addTempSkill("xinchoufa2");
+			if (result?.bool && result.cards?.length) {
+				player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
+				var type = get.type2(result.cards[0], target),
+					hs = target.getCards("h", function (card) {
+						return card != result.cards[0] && get.type2(card, target) != type;
+					});
+				if (hs.length) {
+					target.addGaintag(hs, "xinchoufa");
+					target.addTempSkill("xinchoufa2");
+				}
 			}
 		},
 	},

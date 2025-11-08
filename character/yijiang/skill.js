@@ -3583,7 +3583,7 @@ const skills = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (var i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									game.createButtonCardsetion(name, dialog.buttons[i]);
 									break;
 								}
 							}
@@ -3592,16 +3592,7 @@ const skills = {
 					},
 					result2.links[0],
 					dialog.videoId,
-					(function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(current),
+					current.getName(true),
 					capt
 				);
 			}
@@ -3610,7 +3601,7 @@ const skills = {
 				_status.dieClose.remove(dialog);
 			}, dialog);
 			if (cards.length) {
-				game.cardsDiscard(cards);
+				await game.cardsDiscard(cards);
 			}
 		},
 	},
@@ -7129,7 +7120,11 @@ const skills = {
 			if (result.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = trigger.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				if (get.color(trigger.card) == "red") {
 					player.draw();
@@ -9260,7 +9255,7 @@ const skills = {
 		audio: "pojun",
 		content() {
 			"step 0";
-			player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.countCards("he"), trigger.target.hp)], get.prompt("xinpojun", trigger.target)).set("forceAuto", true);
+			player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.countCards("he"), trigger.target.hp)], get.prompt("xinpojun", trigger.target), "allowChooseAll").set("forceAuto", true);
 			"step 1";
 			if (result.bool && result.links.length) {
 				var target = trigger.target;

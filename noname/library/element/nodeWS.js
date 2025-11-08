@@ -1,5 +1,4 @@
-import { game } from "../../game/index.js";
-import { _status } from "../../status/index.js";
+import { _status, game } from "@noname";
 
 export class NodeWS {
 	/**

@@ -182,6 +182,7 @@ game.import("card", function () {
 			yitianjian: {
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["曹操"],
 				fullskin: true,
 				distance: { attackFrom: -1 },
 				skills: ["yitianjian"],
@@ -195,6 +196,7 @@ game.import("card", function () {
 			qixingbaodao: {
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["曹操", "王允", "董卓"],
 				distance: { attackFrom: -1 },
 				fullskin: true,
 				manualConfirm: true,

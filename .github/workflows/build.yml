@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+    branches: [PR-Branch]
+
+permissions:
+  contents: write  # 允许 Actions 推送代码到仓库
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Build
+        run: pnpm build:full
+
+      - name: Deploy dist to branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          mkdir /tmp/dist
+          cp -r dist/* /tmp/dist/
+
+          git fetch origin
+          git checkout --orphan build-output
+          git reset --hard
+          rm -rf *
+
+          cp -r /tmp/dist/* .
+
+          git add .
+          git commit -m "Deploy dist from $GITHUB_SHA"
+          git push -f origin build-output

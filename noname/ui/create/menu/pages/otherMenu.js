@@ -1,9 +1,9 @@
 import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
-import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
-import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "../../../../library/update.js";
-import { createApp } from "../../../../../game/vue.esm-browser.js";
-import security from "../../../../util/security.js"
-import dedent from "../../../../../game/dedent.js";
+import { ui, game, get, ai, lib, _status } from "@noname";
+import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "@/library/update.js";
+import { createApp } from "vue";
+import security from "@/util/security.js"
+import dedent from "dedent";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
 	if (connectMenu) {

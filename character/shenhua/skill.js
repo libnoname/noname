@@ -946,7 +946,7 @@ const skills = {
 			const num = player.countCards("h");
 			const num2 = target.countCards("h");
 			if (num < num2) {
-				target.chooseToDiscard(num2 - num, true, "h");
+				target.chooseToDiscard(num2 - num, true, "h", "allowChooseAll");
 			} else {
 				target.drawTo(Math.min(5, num));
 			}
