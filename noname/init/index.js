@@ -336,6 +336,13 @@ export async function boot() {
 		nodeReady();
 	} else {
 		lib.path = (await import("path-browserify")).default;
+		window.onbeforeunload = function () {
+			if (config.get("confirm_exit") && !_status.reloading) {
+				return "是否离开游戏？";
+			} else {
+				return null;
+			}
+		};
 		if (typeof lib.device != "undefined") {
 			// 这是安卓端根目录的cordova.js，不是init目录下面的
 			const script = document.createElement("script");
@@ -349,38 +356,33 @@ export async function boot() {
 				});
 			});
 		} else {
-			//为其他自定义平台提供文件读写函数赋值的一种方式。
-			//但这种方式只允许修改game的文件读写函数。
-			if (typeof window.initReadWriteFunction == "function") {
-				const g = {};
-				const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
-				ReadWriteFunctionName.forEach(prop => {
-					Object.defineProperty(g, prop, {
-						configurable: true,
-						get() {
-							return undefined;
-						},
-						set(newValue) {
-							if (typeof newValue == "function") {
-								delete g[prop];
-								g[prop] = game[prop] = newValue;
-							}
-						},
-					});
-				});
-				// @ts-expect-error ignore
-				await window.initReadWriteFunction(g).catch(e => {
-					console.error("文件读写函数初始化失败:", e);
-				});
-				delete window.initReadWriteFunction; // 后续用不到了喵
-			}
-			window.onbeforeunload = function () {
-				if (config.get("confirm_exit") && !_status.reloading) {
-					return "是否离开游戏？";
-				} else {
-					return null;
-				}
-			};
+			const { browserReady } = await import("./browser.js");
+			await browserReady();
+			// //为其他自定义平台提供文件读写函数赋值的一种方式。
+			// //但这种方式只允许修改game的文件读写函数。
+			// if (typeof window.initReadWriteFunction == "function") {
+			// 	const g = {};
+			// 	const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
+			// 	ReadWriteFunctionName.forEach(prop => {
+			// 		Object.defineProperty(g, prop, {
+			// 			configurable: true,
+			// 			get() {
+			// 				return undefined;
+			// 			},
+			// 			set(newValue) {
+			// 				if (typeof newValue == "function") {
+			// 					delete g[prop];
+			// 					g[prop] = game[prop] = newValue;
+			// 				}
+			// 			},
+			// 		});
+			// 	});
+			// 	// @ts-expect-error ignore
+			// 	await window.initReadWriteFunction(g).catch(e => {
+			// 		console.error("文件读写函数初始化失败:", e);
+			// 	});
+			// 	delete window.initReadWriteFunction; // 后续用不到了喵
+			// }
 		}
 	}
 
@@ -745,9 +747,6 @@ export async function boot() {
 	await Promise.allSettled(toLoad);
 
 	if (_status.importing) {
-		/**
-		 * @type {Promise[]}
-		 */
 		let promises = [];
 		for (const type in _status.importing) {
 			promises.addArray(_status.importing[type]);

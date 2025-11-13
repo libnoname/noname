@@ -1,4 +1,4 @@
-let url = new URL("./", import.meta.url);
+let url = new URL(/* @vite-ignore */"./", import.meta.url);
 if (!url.href.endsWith("/")) {
     url = new URL(url.href + "/");
 }
