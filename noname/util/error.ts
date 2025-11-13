@@ -1,5 +1,5 @@
 import { promiseErrorHandlerMap } from "@/util/promise-error-handler";
-import StackTrace from "stacktrace-js";
+import StackFrame from "stackframe";
 import ErrorStackParser from "error-stack-parser";
 import StackTraceGPS from "stacktrace-gps";
 
@@ -361,18 +361,22 @@ class ErrorManager {
 	 * @returns
 	 */
 	static async fromError(error: Error, opts?: StackTraceGPS.Options): Promise<{ origin: StackFrame; source?: StackFrame }[]> {
-		const gps = new StackTraceGPS(opts);
-		const stackframes = ErrorStackParser.parse(error);
-		return Promise.all(
-			stackframes.map(async sf => {
-				try {
-					const source = await gps.pinpoint(sf);
-					return { origin: sf, source };
-				} catch {
-					return { origin: sf };
-				}
-			})
-		);
+		try {
+			const gps = new StackTraceGPS(opts);
+			const stackframes = ErrorStackParser.parse(error);
+			return Promise.all(
+				stackframes.map(async sf => {
+					try {
+						const source = await gps.pinpoint(sf);
+						return { origin: sf, source };
+					} catch {
+						return { origin: sf };
+					}
+				})
+			);
+		} catch (e) {
+			return [{ origin: new StackFrame({}) }];
+		}
 	}
 
 	/**
