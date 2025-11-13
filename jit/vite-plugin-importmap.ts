@@ -1,5 +1,4 @@
 import { normalizePath, Plugin } from "vite";
-import { resolve } from "path";
 import fs from "fs";
 import path from "path";
 import { createRequire } from 'module';
@@ -20,12 +19,6 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 
 		async buildStart() {
 			if (!isBuild) return;
-			const swEntry = resolve(import.meta.dirname, "./service-worker.ts");
-			this.emitFile({
-				type: "chunk",
-				id: swEntry,
-				fileName: "service-worker.js",
-			});
 			for (const key in importMap) {
 				try {
 					const resolved = require.resolve(importMap[key]);
@@ -37,12 +30,29 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 		},
 
 		closeBundle() {
-			const jitImportMap = path.resolve("dist/jit/import-map.js");
-			fs.mkdirSync(path.dirname(jitImportMap), { recursive: true });
-			fs.writeFileSync(jitImportMap, "export default " + JSON.stringify(resolvedImportMap, null, 2));
+			const gameJs = path.resolve("dist/game/game.js");
+			fs.mkdirSync(path.dirname(gameJs), { recursive: true });
+			fs.writeFileSync(
+				gameJs,
+				`"use strict"
+			
+const im = document.createElement("script");
+im.type = "importmap";
+im.textContent = \`${JSON.stringify({ imports: resolvedImportMap }, null, 2)}\`;
+document.currentScript.after(im);
 
-			fs.mkdirSync(path.dirname(path.resolve("dist/jit/test/canUse.ts")), { recursive: true });
-			fs.copyFileSync(path.resolve("jit/test/canUse.ts"), path.resolve("dist/jit/test/canUse.ts"));
+const script = document.createElement("script");
+script.type = "module";
+script.src = "/noname/entry.js";
+document.head.appendChild(script);
+`
+			);
+		},
+
+		transformIndexHtml(html) {
+			if (!isBuild) return;
+			const script = `<script type="importmap">\n${JSON.stringify({ imports: resolvedImportMap }, null, 2)}\n</script>`;
+			return html.replace("</head>", `${script}\n</head>`);
 		},
 	};
 }

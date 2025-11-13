@@ -1,6 +1,8 @@
 import { game, get, boot, onload } from "@noname";
 import { tryUpdateProtocol } from "@/init/index.js";
 import { nonameInitialized, userAgentLowerCase } from "@/util/index.js";
+// 保证打包时存在(importmap)
+import "vue/dist/vue.esm-browser.js";
 
 (async function () {
 	await import("core-js-bundle");

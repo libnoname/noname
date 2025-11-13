@@ -89,6 +89,12 @@ pnpm install
   ```bash
   pnpm start
   ```
+
+  或在构建完项目后执行：
+
+  ```bash
+  pnpm serve
+  ```
   
   浏览器会自动打开，占用本地的8080端口。
 

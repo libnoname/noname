@@ -1,7 +1,6 @@
 import ts from "typescript";
 import * as sfc from "@vue/compiler-sfc";
 import dedent from "dedent";
-import "vue/dist/vue.esm-browser.js";
 import { compile } from "./ts-compiler";
 
 console.log(`ts loaded`, ts.version);

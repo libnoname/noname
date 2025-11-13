@@ -1,28 +1,21 @@
 import { build } from "vite";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
+import generateImportMap from "../jit/vite-plugin-importmap";
+import jit from "../jit/vite-plugin-jit";
 import minimist from "minimist";
 import { build as esbuild } from "esbuild";
 import { execSync } from "node:child_process";
-import path from "path";
-import fs from "fs";
+import path from "node:path/posix";
+import fs from "fs-extra";
 import JSZip from "jszip";
 
 const argv = minimist(process.argv.slice(2));
 
-const getDiffResources = () => {
-	const latestTag = execSync("git describe --tags --abbrev=0").toString().trim();
-	const diff = execSync(`git diff --name-only ${latestTag}...HEAD`).toString();
-	return diff
-		.split("\n")
-		.filter(file => {
-			if (!file.startsWith("audio") && !file.startsWith("image")) return false;
-			const filePath = path.join(import.meta.dirname, "../", file);
-			return fs.existsSync(filePath) && fs.lstatSync(filePath).isFile();
-		})
-		.map(file => ({
-			src: file,
-			dest: path.dirname(file),
-		}));
+const importMap: Record<string, string> = {
+	"@noname": "/noname.js",
+	vue: "vue/dist/vue.esm-browser.js",
+	"pinyin-pro": "pinyin-pro",
+	// jszip: "jszip",
 };
 
 const staticModules: Target[] = [
@@ -41,33 +34,21 @@ const staticModules: Target[] = [
 	{ src: "noname/library/skill.js", dest: "noname/library" },
 ];
 
-const sourceCode: Target[] = [
-	{ src: "jit", dest: "src" },
-	{ src: "noname", dest: "src" },
-	{ src: "typings", dest: "src" },
-	{ src: "noname.js", dest: "src" },
-	{ src: "noname-server.cts", dest: "src" },
-];
-
 //完整包
-if (argv.mode == "full") {
+if (argv.mode) {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
-	staticModules.push({ src: "scripts/noname-server.exe", dest: "" });
-	staticModules.push(...sourceCode);
-}
-//离线包
-else if (argv.mode == "diff") {
-	staticModules.push(...getDiffResources());
-	staticModules.push({ src: "extension/boss", dest: "extension" });
-	staticModules.push({ src: "extension/cardpile", dest: "extension" });
-	staticModules.push({ src: "extension/coin", dest: "extension" });
-	staticModules.push({ src: "scripts/noname-server.exe", dest: "" });
-	staticModules.push(...sourceCode);
-}
-//无资源包
-else {
+	staticModules.push(
+		...[
+			{ src: "jit", dest: "src" },
+			{ src: "noname", dest: "src" },
+			{ src: "typings", dest: "src" },
+			{ src: "noname.js", dest: "src" },
+			{ src: "noname-server.cts", dest: "src" },
+		]
+	);
+} else {
 	staticModules.push({ src: "extension/boss", dest: "extension" });
 	staticModules.push({ src: "extension/cardpile", dest: "extension" });
 	staticModules.push({ src: "extension/coin", dest: "extension" });
@@ -78,9 +59,31 @@ await build({
 	build: {
 		// 需要覆写map文件，必须外置
 		sourcemap: argv.sourcemap || false,
+		minify: false,
+		rollupOptions: {
+			preserveEntrySignatures: "strict",
+			treeshake: false,
+			input: {
+				index: "index.html",
+			},
+			output: {
+				preserveModules: true, // 保留文件结构
+
+				// 去掉 hash
+				entryFileNames: "[name].js", // 入口文件
+				chunkFileNames: "[name].js", // 代码分块
+				assetFileNames: "[name][extname]", // 静态资源
+			},
+			onwarn(warning, warn) {
+				if (warning.code === "CYCLIC_CROSS_CHUNK_REEXPORT") return;
+				warn(warning);
+			},
+		},
 	},
 	plugins: [
 		viteStaticCopy({ targets: staticModules }),
+		generateImportMap(importMap),
+		jit(importMap),
 		(() => {
 			let hasSourceMap = false;
 			return {
@@ -128,8 +131,47 @@ await esbuild({
 	platform: "node",
 });
 
-// 打包zip到根目录
 if (argv.zip) {
+	interface FileList {
+		added: Set<string>;
+		modified: Set<string>;
+		deleted: Set<string>;
+	}
+
+	const getDiff = (baseRef?: string, targetRef = "HEAD"): FileList => {
+		baseRef ??= execSync("git describe --tags --abbrev=0").toString().trim();
+		const output = execSync(`git diff --name-status ${baseRef}...${targetRef}`).toString().trim();
+		const fileList: FileList = { added: new Set(), modified: new Set(), deleted: new Set() };
+
+		if (!output) return fileList;
+
+		for (const line of output.split("\n")) {
+			const [status, filePath] = line.trim().split(/\s+/);
+
+			switch (status[0]) {
+				case "A":
+					fileList.added.add(filePath);
+					break;
+				case "M":
+					fileList.modified.add(filePath);
+					break;
+				case "D":
+					fileList.deleted.add(filePath);
+					break;
+				case "R": {
+					const [, oldPath, newPath] = line.trim().split(/\s+/);
+					fileList.deleted.add(oldPath);
+					fileList.added.add(newPath);
+					break;
+				}
+				default:
+					break;
+			}
+		}
+
+		return fileList;
+	};
+	
 	const formatDate = (date = new Date()) => {
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, "0"); // getMonth() 返回的是0-11，所以需要加1
@@ -137,29 +179,49 @@ if (argv.zip) {
 		return `${year}${month}${day}`;
 	};
 
-	const addFolderToZip = (zip: JSZip, folderPath: string) => {
-		const files = fs.readdirSync(folderPath);
+	const addFolderToZip = (zip: JSZip, base: string, filter: (p: string) => boolean = () => true) => {
+		const _addFolderToZip = (zip: JSZip, folderPath: string) => {
+			const files = fs.readdirSync(path.join(base, folderPath));
 
-		files.forEach(fileName => {
-			const filePath = path.join(folderPath, fileName);
-			const fileStat = fs.statSync(filePath);
+			files.forEach(fileName => {
+				const filePath = path.join(folderPath, fileName);
+				const fileStat = fs.statSync(path.join(base, filePath));
 
-			if (fileStat.isDirectory()) {
-				// 递归添加子文件夹
-				const newZipFolder = zip.folder(fileName);
-				addFolderToZip(newZipFolder, filePath);
-			} else {
-				// 添加文件
-				const fileData = fs.readFileSync(filePath);
-				zip.file(fileName, fileData);
-			}
-		});
+				if (fileStat.isDirectory()) {
+					const folder = zip.folder(fileName);
+					_addFolderToZip(folder, filePath);
+					if (!Object.keys(folder.files).some(i => i !== folder.root && i.startsWith(folder.root))) {
+						zip.remove(fileName);
+					}
+				} else {
+					if (!filter(filePath)) return;
+					const fileData = fs.readFileSync(path.join(base, filePath));
+					zip.file(fileName, fileData);
+				}
+			});
+		};
+		_addFolderToZip(zip, "");
 	};
 
-	const target = path.join(import.meta.dirname, "../", `测试包-${formatDate()}.zip`);
-	console.log("打包" + target);
+	const diff = getDiff();
+	console.log("打包 " + `测试包-${formatDate()}.zip`);
 	const zip = new JSZip();
-	addFolderToZip(zip, path.join(import.meta.dirname, "../dist"));
+	let filter: (p: string) => boolean = () => true;
+	if (argv.mode == "diff") {
+		filter = p => {
+			if (["audio", "image", "font"].some(i => p.startsWith(i))) {
+				return diff.added.has(p) || diff.modified.has(p);
+			}
+			if (p.startsWith("extension") && !["extension/boss", "extension/cardpile", "extension/coin"].some(i => p.startsWith(i))) {
+				return diff.added.has(p) || diff.modified.has(p);
+			}
+			if (p.startsWith("noname-server.exe")) return false;
+			return true;
+		};
+	}
+	addFolderToZip(zip, path.join(process.cwd(), "dist"), filter);
 	const result = zip.generate({ type: "nodebuffer" });
-	fs.writeFileSync(target, result);
+	fs.ensureDirSync(path.join(process.cwd(), "output"));
+	fs.writeFileSync(path.join(process.cwd(), "output", `测试包-${formatDate()}.zip`), result);
+	fs.copySync(path.join(process.cwd(), "scripts/noname-server.exe"), path.join(process.cwd(), "output/noname-server.exe"));
 }
