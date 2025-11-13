@@ -101,6 +101,7 @@ export {};
 			// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
 			registration.update().catch(e => console.error("worker update失败", e));
 			if (sessionStorage.getItem("canUseTs") !== "true") {
+				sessionStorage.removeItem("canUseTs");
 				const path = "./test/canUse.ts";
 				await import(/* @vite-ignore */ path)
 					.then(() => sessionStorage.setItem("canUseTs", "true"))
