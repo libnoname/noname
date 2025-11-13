@@ -12,6 +12,7 @@ extension/
 !extension/英雄杀/
 
 dist
+output
 node_modules
 package-lock.json
 
