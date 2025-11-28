@@ -128,7 +128,7 @@ const translates = {
 	clanlilun: "离论",
 	clanlilun_info: "出牌阶段限一次，你可以重铸两张牌名相同的手牌（不能是你本回合以此法重铸过的牌名的牌），然后使用其中的一张牌。",
 	clanjianji: "见机",
-	clanjianji_info: "限定技，一名角色的结束阶段，若其上下家均未于本回合：使用过牌，则你可以与其各摸一张牌；成为过牌的目标，则你可以视为使用一张【杀】。",
+	clanjianji_info: "限定技，一名角色的结束阶段，若其上下家均未于本回合：使用过牌，则你可以与其各摸一张牌；成为过【杀】或【决斗】的目标，则你可以视为使用一张【杀】。",
 	clan_wangmingshan: "族王明山",
 	clan_wangmingshan_prefix: "族",
 	clantanque: "弹雀",

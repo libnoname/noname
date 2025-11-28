@@ -9582,6 +9582,16 @@ const skills = {
 	},
 	//吕据
 	dczhengyue: {
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object" && player.countExpansions("dczhengyue")) {
+					if (["suit", "number", "name"].some(func => get[func](card) == get[func](player.getExpansions("dczhengyue")[0]))) {
+						return num + 10;
+					}
+				}
+			},
+		},
+		locked: false,
 		audio: 2,
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
@@ -9598,44 +9608,64 @@ const skills = {
 				})
 				.set("prompt", get.prompt(event.skill))
 				.set("prompt2", "将牌堆顶至多五张牌置于武将牌上");
-			event.result = result;
-			event.result.bool = result.control !== "cancel2";
-			event.result.cost_data = result.index + 1;
+			event.result = {
+				bool: result?.control !== "cancel2",
+				cost_data: result?.index + 1,
+			};
 		},
 		async content(event, trigger, player) {
 			const cards = get.cards(event.cost_data);
 			await game.cardsGotoOrdering(cards);
-			const next = player.chooseToMove("征越：将这些牌以任意顺序置于武将牌上", true);
-			next.set("list", [["武将牌", cards]]);
-			next.set("processAI", list => [list[0][1]]);
-			const {
-				result: { bool, moved: cost_data },
-			} = await next;
-			if (bool) {
-				const cardsx = [];
-				cardsx.addArray(cost_data[0]);
-				cardsx.reverse();
-				const next2 = player.addToExpansion(cardsx, "gain2");
-				next2.gaintag.add("dczhengyue");
-				await next2;
-				if (player.getExpansions("dczhengyue")[0]) {
-					const card = player.getExpansions("dczhengyue")[0];
-					player.addTip("dczhengyue", ["dczhengyue", get.suit(card), get.number(card)].map(i => get.translation(i)).join(" "));
-				} else {
-					player.removeTip("dczhengyue");
-				}
+			let result;
+			if (cards.length > 1) {
+				const next = player.chooseToMove("征越：将这些牌以任意顺序置于武将牌上", true);
+				next.set("list", [["武将牌", cards]]);
+				next.set("processAI", list => [list[0][1].slice(0).randomSort()]);
+				result = await next.forResult();
+			} else {
+				result = { bool: true, moved: [cards] };
 			}
+			if (result?.moved?.[0]?.length) {
+				const moved = result.moved[0].reverse();
+				const next = player.addToExpansion(moved, "gain2");
+				next.gaintag.add(event.name);
+				await next;
+			}
+			lib.skill[event.name].update(player, event.name);
 		},
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
+		},
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+			lib.skill[skill].update(player, skill);
 		},
 		onremove(player, skill) {
 			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
+			player.removeSkill(skill + "_mark");
 			player.removeTip(skill);
+		},
+		update(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.addTip(
+					skill,
+					[skill, get.suit(cards[0]), get.number(cards[0]), get.name(cards[0])]
+						.map((item, index) => {
+							if (index == 2) {
+								return get.strNumber(item);
+							}
+							return get.translation(item);
+						})
+						.join(" ")
+				);
+			} else {
+				player.removeTip(skill);
+			}
 		},
 		group: "dczhengyue_useCard",
 		subSkill: {
@@ -9643,29 +9673,34 @@ const skills = {
 				audio: "dczhengyue",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					const cards = player.getExpansions("dczhengyue"),
-						firstCard = cards[0];
-					if (!firstCard) {
+					const cards = player.getExpansions("dczhengyue");
+					if (!cards.length) {
 						return false;
 					}
-					if (get.suit(firstCard) == get.suit(event.card) || get.number(firstCard) == get.number(event.card) || get.name(firstCard) == get.name(event.card)) {
+					const [card] = cards;
+					if (["suit", "number", "name"].some(func => get[func](card) == get[func](event.card))) {
 						return true;
 					}
-					return cards.length < 5 && event.cards?.someInD("ode");
+					return cards.length <= 5;
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					const firstCard = player.getExpansions("dczhengyue")[0];
-					if (get.suit(firstCard) == get.suit(trigger.card) || get.number(firstCard) == get.number(trigger.card) || get.name(firstCard) == get.name(trigger.card)) {
-						await player.modedDiscard(firstCard);
+					const cards = player.getExpansions("dczhengyue");
+					if (!cards.length) {
+						player.removeTip("dczhengyue");
+						return;
+					}
+					const [card] = cards;
+					if (["suit", "number", "name"].some(func => get[func](card) == get[func](trigger.card))) {
+						await player.loseToDiscardpile(card);
 						await player.draw(2);
-					} else {
+					} else if (cards.length < 5 && trigger.cards?.someInD("ode")) {
 						const puts = trigger.cards.filterInD("ode");
-						const expansion = player.getExpansions("dczhengyue");
+						const expansions = player.getExpansions("dczhengyue");
 						await game.cardsGotoOrdering(puts.filterInD("od"));
 						const next = player.chooseToMove("征越：将这些牌以任意顺序置于武将牌上", true);
 						next.set("list", [
-							["武将牌", expansion],
+							["武将牌", expansions],
 							["实体牌", puts],
 						]);
 						next.set("processAI", list => {
@@ -9676,41 +9711,48 @@ const skills = {
 							const { list } = get.event();
 							return moved[0].length === Math.min(5, list[0][1].length + list[1][1].length);
 						});
-						const {
-							result: { moved },
-						} = await next;
-						const cards = moved[0];
-						cards.reverse();
-						const targets = game.filterPlayer(i => {
-							if (i === player && expansion.length) {
-								return true;
+						const { result } = await next;
+						if (result?.moved?.length) {
+							const cards = result.moved[0].reverse();
+							const targets = game.filterPlayer(current => {
+								if (current === player && expansions.length) {
+									return true;
+								}
+								return puts.filterInD("d").some(card => get.owner(card) === current);
+							});
+							if (targets.length) {
+								const lose_list = [];
+								for (const current of targets) {
+									const loseCard = puts.filterInD("d").filter(card => get.owner(card) === current);
+									lose_list.push([current, (current === player ? expansions : []).concat(loseCard)]);
+								}
+								await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
 							}
-							return puts.filterInD("d").some(j => get.owner(j) === i);
-						});
-						if (targets.length > 0) {
-							const lose_list = [];
-							for (const i of targets) {
-								const loseCard = puts.filterInD("d").filter(j => get.owner(j) === i);
-								lose_list.push([i, (i === player ? expansion : []).concat(loseCard)]);
+							const next = player.addToExpansion(cards, "gain2");
+							next.gaintag.add("dczhengyue");
+							await next;
+							const num = cards.filter(card => puts.includes(card)).length;
+							if (num) {
+								player.addTempSkill("dczhengyue_count");
+								player.addMark("dczhengyue_count", num, false);
+								if (player.countMark("dczhengyue_count") >= 2) {
+									player.addTempSkill("dczhengyue_debuff");
+								}
 							}
-							await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
 						}
-						const next2 = player.addToExpansion(cards, "gain2");
-						next2.gaintag.add("dczhengyue");
-						await next2;
-						player.addTempSkill("dczhengyue_count");
-						player.addMark("dczhengyue_count", puts.length - moved[1].length, false);
-						if (player.storage.dczhengyue_count >= 2) {
-							player.storage.dczhengyue_count = player.storage.dczhengyue_count % 2;
-							player.addTempSkill("dczhengyue_debuff");
+					} else if (cards.length > 1 && cards.length <= 5) {
+						const next = player.chooseToMove("征越：你可以调整“征越”牌的顺序", true);
+						next.set("list", [["武将牌", cards]]);
+						next.set("processAI", list => [list[0][1].slice(0).randomSort()]);
+						const { result } = await next;
+						if (result?.moved?.[0]?.length) {
+							const moved = result.moved[0].reverse();
+							player.$gain2(moved);
+							player.$addToExpansion(moved, null, ["dczhengyue"], false);
+							player.markSkill("dczhengyue");
 						}
 					}
-					if (player.getExpansions("dczhengyue")[0]) {
-						const card = player.getExpansions("dczhengyue")[0];
-						player.addTip("dczhengyue", ["dczhengyue", get.suit(card), get.number(card)].map(i => get.translation(i)).join(" "));
-					} else {
-						player.removeTip("dczhengyue");
-					}
+					lib.skill["dczhengyue"].update(player, "dczhengyue");
 				},
 			},
 			count: {
@@ -9718,13 +9760,41 @@ const skills = {
 				onremove: true,
 			},
 			debuff: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "本回合不能使用或打出手牌" },
 				mod: {
-					cardEnabled(card, player, result) {
+					cardEnabled2(card, player) {
 						if (get.position(card) == "h") {
 							return false;
 						}
-						return result;
 					},
+				},
+			},
+			mark: {
+				charlotte: true,
+				trigger: {
+					player: ["loseAfter", "addToExpansionAfter"],
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "addToExpansion") {
+						return event.gaintag.includes("dczhengyue");
+					}
+					if (event.name == "lose" && event.getlx !== false) {
+						return Object.values(event.gaintag_map).flat().includes("dczhengyue");
+					}
+					return game.getGlobalHistory("cardMove", evt => {
+						if (evt.name != "lose" || event != evt.getParent()) {
+							return false;
+						}
+						return Object.values(evt.gaintag_map).flat().includes("dczhengyue") && evt.player == player;
+					}).length;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					lib.skill["dczhengyue"].update(player, "dczhengyue");
 				},
 			},
 		},

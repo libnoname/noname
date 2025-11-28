@@ -4663,7 +4663,7 @@ export class Library {
 					},
 				},
 				show_commonCardpile: {
-					name: "显示游戏外公共区域按钮",
+					name: "显示公共区域按钮",
 					init: true,
 					unfrequent: true,
 					onclick(bool) {

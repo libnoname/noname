@@ -370,6 +370,18 @@ const characters = {
 		skills: ["xwshoufa", "fuzhao"],
 		names: "null|null",
 	},
+	bozai: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["quanjia"],
+	},
+	xiangjiaoduanwu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["xuyuan", "xiaomian"],
+	},
 };
 
 export default characters;

@@ -533,22 +533,28 @@ const skills = {
 					},
 					log: false,
 					async precontent(event, trigger, player) {
-						const cards = get.discarded();
-						const result = await player
-							.chooseButton(["移出任意张花色各不相同的牌", cards.filterInD("d")], [1, 4], true)
-							.set("filterButton", button => {
-								const suit = get.suit(button.link, false);
-								return ui.selected.buttons?.every(buttonx => get.suit(buttonx.link, false) !== suit);
-							})
-							.set("complexSelect", true)
-							.forResult();
 						const skill = "olsbjinjin";
 						player.logSkill(skill);
-						if (result?.bool && result?.links.length) {
-							const next = player.addToExpansion(result.links, "draw2");
-							next.gaintag.add(skill);
-							await next;
-							game.log(player, "将", result.links, "移出了游戏");
+						const cards = get.discarded().filterInD("d");
+						if (cards.length) {
+							const num = cards.reduce((list, card) => list.add(get.suit(card, false)), []).length;
+							const result =
+								cards.length == 1
+									? { bool: true, links: cards }
+									: await player
+											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, num], true)
+											.set("filterButton", button => {
+												const suit = get.suit(button.link, false);
+												return ui.selected.buttons?.every(buttonx => get.suit(buttonx.link, false) !== suit);
+											})
+											.set("complexSelect", true)
+											.forResult();
+							if (result?.bool && result.links?.length) {
+								const next = player.addToExpansion(result.links, "draw2");
+								next.gaintag.add(skill);
+								await next;
+								game.log(player, "将", result.links, "移出了游戏");
+							}
 						}
 						await player.removeSkills(skill);
 						player.markSkill(skill);
@@ -558,12 +564,9 @@ const skills = {
 							})
 							.filter(evt => player.hasHistory("damage"))
 							.step(async (event, trigger, player) => {
-								const result = await player
-									.chooseTarget("###金烬###令一名角色获得〖金烬〗和你因〖金烬〗移出游戏的牌", true)
-									.set("ai", target => {
-										return get.attitude(get.player(), target);
-									})
-									.forResult();
+								const { result } = await player.chooseTarget(`###金烬###令一名角色获得〖金烬〗${player.countExpansions(skill) ? `和${get.translation(player.getExpansions(skill))}` : ""}`, true).set("ai", target => {
+									return get.attitude(get.player(), target);
+								});
 								if (result?.bool && result.targets?.length) {
 									const target = result.targets[0];
 									player.line(target, "green");
@@ -573,49 +576,9 @@ const skills = {
 									}
 									await target.addSkills(skill);
 								}
-							});
-						/*player
-							.when("damageEnd")
-							.assign({
-								ai: {
-									effect: {
-										target(card, player, target) {
-											if (get.tag(card, "damage")) {
-												if (player.hasSkillTag("jueqing", false, target)) {
-													return;
-												}
-												if (target.hp >= 2) {
-													return [1, 1];
-												}
-												return [1, 0.4];
-											}
-										},
-									},
-								},
 							})
-							.step(async (event, trigger, player) => {
-								player
-									.when({
-										global: "phaseEnd",
-									})
-									.step(async (event, trigger, player) => {
-										const result = await player
-											.chooseTarget("###金烬###令一名角色获得〖金烬〗和你因〖金烬〗移出游戏的牌", true)
-											.set("ai", target => {
-												return get.attitude(get.player(), target);
-											})
-											.forResult();
-										if (result?.bool && result.targets?.length) {
-											const target = result.targets[0];
-											player.line(target, "green");
-											const cards = player.getExpansions(skill);
-											if (cards?.length) {
-												await target.gain(cards, "give", player);
-											}
-											await target.addSkills(skill);
-										}
-									});
-							});*/
+							.assign({ audio: "olsbjinjin", popup: true })
+							.translation("金烬");
 					},
 				};
 			},
@@ -623,6 +586,7 @@ const skills = {
 				return `###金烬###选择${get.translation(links[0][2])}的目标`;
 			},
 		},
+		marktext: "烬",
 		intro: {
 			mark(dialog, storage, player) {
 				const cards = player.getExpansions("olsbjinjin");
@@ -651,6 +615,7 @@ const skills = {
 				},
 			},
 		},
+		subSkill: { backup: {} },
 	},
 	//闪朱儁
 	ol_fendi: {
@@ -2825,12 +2790,10 @@ const skills = {
 	olduoqi: {
 		audio: 2,
 		group: ["olduoqi_gain", "olduoqi_mark"],
-		trigger: {
-			global: "phaseBeforeEnd",
-		},
+		trigger: { global: "phaseBeforeEnd" },
 		forced: true,
 		cardslist(player, target, killGain = false) {
-			const filterCard = card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards.includes(card);
+			const filterCard = card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards?.includes(card);
 			let cards = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes].filter(filterCard);
 			const lose_list = [];
 			const targets = game.filterPlayer();
@@ -2943,9 +2906,7 @@ const skills = {
 		subSkill: {
 			gain: {
 				audio: "olduoqi",
-				trigger: {
-					source: "damageSource",
-				},
+				trigger: { source: "damageSource" },
 				forced: true,
 				filter(event, player) {
 					const cards = get.info("olduoqi").cardslist(player, event.player);
@@ -2971,12 +2932,13 @@ const skills = {
 			},
 			mark: {
 				trigger: {
-					global: "gameDrawAfter",
+					global: "phaseBefore",
+					player: "enterGame",
 				},
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return game.hasPlayer(target => target._start_cards?.length);
+					return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(target => target._start_cards?.length);
 				},
 				async content(event, trigger, player) {
 					game.filterPlayer().forEach(target => target.addGaintag(target._start_cards, "eternal_olduoqi_tag"));

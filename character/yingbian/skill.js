@@ -635,7 +635,7 @@ const skills = {
 			let next;
 			if (num > 0) {
 				next = player
-					.chooseToDiscard("he", num, get.prompt(event.skill, target), "弃置" + get.cnNumber(num) + "张牌并展示其一张手牌")
+					.chooseToDiscard("he", num, get.prompt(event.skill, target), `弃置${get.cnNumber(num)}张牌并展示其一张手牌`, "chooseonly")
 					.set("goon", goon)
 					.set("ai", card => {
 						const { player, goon } = get.event();
@@ -655,24 +655,28 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			const { player: target } = trigger,
-				{ name: skillName } = event;
+			const {
+				targets: [target],
+				cards,
+				name: skillName,
+			} = event;
 			player.addTempSkill(skillName + "_count", "roundStart");
 			player.addMark(skillName + "_count", 1, false);
+			if (get.itemtype(cards) == "cards") {
+				await player.discard(cards);
+			}
 			if (!target.countCards("h")) {
 				return;
 			}
-			const cards = await player.choosePlayerCard(target, true, "h").forResultCards();
-			if (!cards?.length) {
+			let result = await player.choosePlayerCard(target, true, "h").forResult();
+			if (!result?.cards?.length) {
 				return;
 			}
-			const [card] = cards,
+			const [card] = result.cards,
 				name = get.name(card),
 				str = get.translation(target);
 			await player.showCards(card, get.translation(player) + "对" + str + "发动了【凶竖】");
-			const {
-				result: { index },
-			} = await player
+			result = await player
 				.chooseControl("会使用", "不会使用")
 				.set("prompt", "预测：" + str + "是否会使用" + get.translation(name) + "？")
 				.set(
@@ -684,10 +688,12 @@ const skills = {
 						return Math.random() < 0.5 ? 0 : 1;
 					})()
 				)
-				.set("ai", () => get.event().choice);
-			if (typeof index != "number") {
+				.set("ai", () => get.event("choice"))
+				.forResult();
+			if (typeof result?.index != "number") {
 				return;
 			}
+			const { index } = result;
 			if (Math.random() < 0.5) {
 				target.storage.xiongshu_ai = name;
 				target.addTempSkill("xiongshu_ai", "phaseUseAfter");
@@ -707,7 +713,9 @@ const skills = {
 							await player.gain(card, "gain2");
 						}
 					}
-				});
+				})
+				.assign({ audio: "xiongshu", popup: true })
+				.translation("凶竖");
 		},
 		ai: { expose: 0.35 },
 		subSkill: {
@@ -731,6 +739,20 @@ const skills = {
 		},
 	},
 	jianhui: {
+		init(player, skill) {
+			player.addSkill(skill + "_record");
+			const source = player.getAllHistory("damage", evt => evt.source && evt.source != player).lastItem?.source;
+			if (source) {
+				player.storage[skill] = source;
+				player.markSkillCharacter(skill, source, "奸回", "这仇我记下了");
+				player.addTip(skill, `${get.translation(skill)} ${get.translation(source)}`);
+			}
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeSkill(skill + "_record");
+			player.removeTip(skill);
+		},
 		audio: 2,
 		getLastPlayer(evt, player) {
 			var history = player.getAllHistory("damage");
@@ -744,7 +766,7 @@ const skills = {
 				i--;
 			}
 			for (i; i >= 0; i--) {
-				if (history[i].source) {
+				if (history[i].source && history[i].source != player) {
 					return history[i].source;
 				}
 			}
@@ -753,10 +775,10 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		forced: true,
 		filter(event, player) {
-			return event.source && event.source.isIn() && event.source == lib.skill.jianhui.getLastPlayer(event, player) && event.source.countCards("he") > 0;
+			return event.source?.isIn() && event.source == lib.skill.jianhui.getLastPlayer(event, player) && event.source.countCards("he") > 0;
 		},
-		content() {
-			trigger.source.chooseToDiscard("he", true);
+		async content(event, trigger, player) {
+			await trigger.source.chooseToDiscard("he", true);
 		},
 		group: "jianhui_draw",
 		subSkill: {
@@ -768,8 +790,24 @@ const skills = {
 				filter(event, player) {
 					return event.player == lib.skill.jianhui.getLastPlayer(event, player);
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
+			record: {
+				charlotte: true,
+				trigger: { player: "damageEnd" },
+				filter(event, player) {
+					return event.source && event.source !== player.storage.jianhui && (player.getAllHistory("damage", evt => evt.source && evt.source != player).indexOf(event) == 0 || event.source == lib.skill.jianhui.getLastPlayer(event, player));
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const { source } = trigger;
+					player.storage.jianhui = source;
+					player.markSkillCharacter("jianhui", source, "奸回", "这仇我记下了");
+					player.addTip("jianhui", `${get.translation("jianhui")} ${get.translation(source)}`);
 				},
 			},
 		},

@@ -6,9 +6,10 @@ const characterSort = {
 	collab_remake: ["dc_caocao", "dc_liubei", "dc_sunquan", "nezha", "dc_sunce", "dc_zhaoyun", "dc_wuyi", "ren_jiangwei", "ren_dengai"],
 	collab_duanwu_2024: ["quyuan"],
 	collab_dcdoudizhui: ["you_zhugeliang", "yuanshaoyuanshu", "tianji", "dc_noname", "xin_sunquan", "liuxiecaojie", "weiqing", "shi_cenhun"],
-	collab_oldoudizhu: ["ol_le_liushan", "bigsb_dengai", "wild_liru","strong_caochong", "taipingsangong", "wuhujiang", "ol_jsrg_caocao", "ol_jsrg_lvbu", "ol_nianshou", "hanshiwuhu", "ol_xiahouen"],
+	collab_oldoudizhu: ["ol_le_liushan", "bigsb_dengai", "wild_liru", "strong_caochong", "taipingsangong", "wuhujiang", "ol_jsrg_caocao", "ol_jsrg_lvbu", "ol_nianshou", "hanshiwuhu", "ol_xiahouen"],
 	collab_anime: ["jiangziya", "shengongbao", "nanjixianweng"],
 	collab_shengxiao: ["ol_zishu", "ol_chouniu", "ol_yinhu", "ol_maotu", "ol_chenlong", "ol_sishe", "ol_wuma", "ol_weiyang", "ol_shenhou", "ol_youji", "ol_xugou", "ol_haizhu"],
+	collab_hajimi: ["bozai", "xiangjiaoduanwu"],
 };
 
 const characterSortTranslate = {
@@ -22,6 +23,7 @@ const characterSortTranslate = {
 	collab_oldoudizhu: "OL·限时地主",
 	collab_anime: "三国杀·动画",
 	collab_shengxiao: "三国杀·十二生肖",
+	collab_hajimi: "三国杀·哈基米",
 };
 
 export { characterSort, characterSortTranslate };

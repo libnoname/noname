@@ -9498,6 +9498,82 @@ player.removeVirtualEquip(card);
 			if (!get.info(event.card, false).noForceDie) {
 				event.forceDie = true;
 			}
+			//player.using=cards;
+			let cardaudio = true;
+
+			if (event.skill) {
+				if (lib.skill[event.skill].audio) {
+					cardaudio = false;
+				}
+				if (lib.skill[event.skill].log != false) {
+					player.logSkill(event.skill, false, null, null, [event, event.player]);
+				}
+				if (get.info(event.skill).popname) {
+					player.tryCardAnimate(event.card, event.card.name, "metal", true);
+				}
+			} else if (!event.nopopup) {
+				if (lib.translate[event.card.name + "_pop"]) {
+					player.tryCardAnimate(event.card, lib.translate[event.card.name + "_pop"], "metal");
+				} else {
+					player.tryCardAnimate(event.card, event.card.name, "metal");
+				}
+			}
+			if (event.audio === false) {
+				cardaudio = false;
+			}
+			if (cardaudio) {
+				game.broadcastAll(
+					(player, card) => {
+						game.playCardAudio(card, player);
+					},
+					player,
+					event.card
+				);
+			}
+			event.id = get.id();
+			if (!Array.isArray(event.excluded)) {
+				event.excluded = [];
+			}
+			if (!Array.isArray(event.directHit)) {
+				event.directHit = [];
+			}
+			if (typeof event.customArgs != "object" || typeof event.customArgs.default != "object") {
+				event.customArgs = { default: {} };
+			}
+			if (typeof event.baseDamage != "number") {
+				event.baseDamage = get.info(event.card, false).baseDamage || 1;
+			}
+			if (typeof event.effectCount != "number") {
+				event.effectCount = get.info(event.card, false).effectCount || 1;
+			}
+			event.effectedCount = 0;
+			if (event.oncard) {
+				event.oncard(event.card, event.player);
+			}
+			player.actionHistory[player.actionHistory.length - 1].useCard.push(event);
+			game.getGlobalHistory().useCard.push(event);
+			if (event.addCount !== false) {
+				if (player.stat[player.stat.length - 1].card[event.card.name] == undefined) {
+					player.stat[player.stat.length - 1].card[event.card.name] = 1;
+				} else {
+					player.stat[player.stat.length - 1].card[event.card.name]++;
+				}
+			}
+			if (event.skill && event.addSkillCount !== false) {
+				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
+					player.stat[player.stat.length - 1].skill[event.skill] = 1;
+				} else {
+					player.stat[player.stat.length - 1].skill[event.skill]++;
+				}
+				let sourceSkill = get.info(event.skill).sourceSkill;
+				if (sourceSkill) {
+					if (player.stat[player.stat.length - 1].skill[sourceSkill] == undefined) {
+						player.stat[player.stat.length - 1].skill[sourceSkill] = 1;
+					} else {
+						player.stat[player.stat.length - 1].skill[sourceSkill]++;
+					}
+				}
+			}
 			event.lose_map = {
 				noowner: [],
 			};
@@ -9657,82 +9733,6 @@ player.removeVirtualEquip(card);
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
 					await game.cardsGotoOrdering(directDiscard);
-				}
-			}
-			//player.using=cards;
-			let cardaudio = true;
-
-			if (event.skill) {
-				if (lib.skill[event.skill].audio) {
-					cardaudio = false;
-				}
-				if (lib.skill[event.skill].log != false) {
-					player.logSkill(event.skill, false, null, null, [event, event.player]);
-				}
-				if (get.info(event.skill).popname) {
-					player.tryCardAnimate(event.card, event.card.name, "metal", true);
-				}
-			} else if (!event.nopopup) {
-				if (lib.translate[event.card.name + "_pop"]) {
-					player.tryCardAnimate(event.card, lib.translate[event.card.name + "_pop"], "metal");
-				} else {
-					player.tryCardAnimate(event.card, event.card.name, "metal");
-				}
-			}
-			if (event.audio === false) {
-				cardaudio = false;
-			}
-			if (cardaudio) {
-				game.broadcastAll(
-					(player, card) => {
-						game.playCardAudio(card, player);
-					},
-					player,
-					event.card
-				);
-			}
-			event.id = get.id();
-			if (!Array.isArray(event.excluded)) {
-				event.excluded = [];
-			}
-			if (!Array.isArray(event.directHit)) {
-				event.directHit = [];
-			}
-			if (typeof event.customArgs != "object" || typeof event.customArgs.default != "object") {
-				event.customArgs = { default: {} };
-			}
-			if (typeof event.baseDamage != "number") {
-				event.baseDamage = get.info(event.card, false).baseDamage || 1;
-			}
-			if (typeof event.effectCount != "number") {
-				event.effectCount = get.info(event.card, false).effectCount || 1;
-			}
-			event.effectedCount = 0;
-			if (event.oncard) {
-				event.oncard(event.card, event.player);
-			}
-			player.actionHistory[player.actionHistory.length - 1].useCard.push(event);
-			game.getGlobalHistory().useCard.push(event);
-			if (event.addCount !== false) {
-				if (player.stat[player.stat.length - 1].card[event.card.name] == undefined) {
-					player.stat[player.stat.length - 1].card[event.card.name] = 1;
-				} else {
-					player.stat[player.stat.length - 1].card[event.card.name]++;
-				}
-			}
-			if (event.skill && event.addSkillCount !== false) {
-				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
-					player.stat[player.stat.length - 1].skill[event.skill] = 1;
-				} else {
-					player.stat[player.stat.length - 1].skill[event.skill]++;
-				}
-				let sourceSkill = get.info(event.skill).sourceSkill;
-				if (sourceSkill) {
-					if (player.stat[player.stat.length - 1].skill[sourceSkill] == undefined) {
-						player.stat[player.stat.length - 1].skill[sourceSkill] = 1;
-					} else {
-						player.stat[player.stat.length - 1].skill[sourceSkill]++;
-					}
 				}
 			}
 			await event.trigger("useCard0");

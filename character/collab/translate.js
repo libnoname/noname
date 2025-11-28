@@ -331,6 +331,15 @@ const translates = {
 	olxianglv_info: `锁定技，游戏开始时，你将牌堆中不同牌名的基本牌各一张置于武将牌上。你每上阵一名“${get.poptip("tuoquan_fuchen")}”，随机获得其中一张基本牌。`,
 	olanle: "安乐",
 	olanle_info: `锁定技，你受到伤害后，移去上阵的“${get.poptip("tuoquan_fuchen")}”，然后与当前回合角色各摸一张牌。若你没有上阵的“${get.poptip("tuoquan_fuchen")}”，你视为拥有${get.poptip("xiangle")}。`,
+	bozai: "波仔",
+	quanjia: "劝架",
+	quanjia_cost: "劝架",
+	quanjia_info: "其他角色于其回合内对另一名角色造成伤害后，你可以随机观看伤害来源两张手牌。若其中有【杀】，你对其使用之；若没有【杀】，则下次发动〖劝架〗时观看牌数+1。",
+	xiangjiaoduanwu: "香蕉端午",
+	xuyuan: "许愿",
+	xuyuan_info: "出牌阶段开始时，你可选择一个花色和一个装备的副类别，然后从牌堆中随机将一张满足要求的装备牌置入你的装备区。",
+	xiaomian: "笑面",
+	xiaomian_info: "你使用牌时，可以摸X张牌(X 为你装备区里与此牌花色相同的牌数）。若如此做，弃置你装备区里的一张牌。",
 };
 
 export default translates;

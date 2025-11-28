@@ -6871,55 +6871,41 @@ const skills = {
 					if (current == player || current == event.player) {
 						return false;
 					}
-					return current.hasHistory("lose", function (evt) {
-						return evt.cards2.length > 0;
-					});
+					return current.hasHistory("lose", evt => evt.cards2.length);
 				}) && player.countCards("he") > 0
 			);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var map = {};
-			game.countPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const map = new Map();
+			game.countPlayer(current => {
 				if (current == player || current == trigger.player) {
 					return false;
 				}
-				if (
-					current.hasHistory("lose", function (evt) {
-						return evt.cards2.length > 0;
-					})
-				) {
-					map[current.playerid] =
+				if (current.hasHistory("lose", evt => evt.cards2.length)) {
+					map.set(
+						current,
 						Math.min(
 							5,
-							current.getHistory("lose").reduce(function (num, evt) {
-								return num + evt.cards2.length;
-							}, 0)
-						) + 1;
+							current.getHistory("lose").reduce((num, evt) => num + evt.cards2.length, 0)
+						) + 1
+					);
 				}
 			});
-			player
+			const next = player
 				.chooseCardTarget({
-					prompt: get.prompt("dcporui"),
-					prompt2: get.skillInfoTranslation("dcporui", player, false),
-					filterCard(card, player) {
-						return lib.filter.cardDiscardable(card, player, "dcporui");
-					},
+					prompt: get.prompt(event.skill),
+					prompt2: get.skillInfoTranslation(event.skill, player, false),
+					filterCard: lib.filter.cardDiscardable,
 					position: "he",
 					filterTarget(card, player, target) {
-						if (_status.event.map?.[target.playerid]) {
-							target.prompt(`破锐${_status.event.map[target.playerid]}`);
-						}
-						return Object.keys(_status.event.map).includes(target.playerid);
+						return get.event("map").has(target);
 					},
-					complexTarget: true,
 					ai1(card) {
 						return 7 - get.value(card);
 					},
 					ai2(target) {
 						let player = get.event("player"),
-							num = get.event("map")[target.playerid],
+							num = get.event("map").get(target),
 							eff = get.effect(target, { name: "sha" }, player, player);
 						if (num > 1 && eff !== 0) {
 							eff -= (10 / target.getHp()) * Math.pow(2, num);
@@ -6928,69 +6914,42 @@ const skills = {
 					},
 				})
 				.set("map", map);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					cards = result.cards;
-				event.target = target;
-				player.logSkill("dcporui", target);
-				player.discard(cards);
-				event.num2 = Math.min(
-					5,
-					target.getHistory("lose").reduce(function (num, evt) {
-						return num + evt.cards2.length;
-					}, 0)
-				);
-				event.num = event.num2 + 1;
-				player.addTempSkill("dcporui_round", "roundStart");
-				player.addMark("dcporui_round", 1, false);
-			} else {
-				event.finish();
+			next.set(
+				"targetprompt2",
+				next.targetprompt2.concat([
+					target => {
+						if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+							return false;
+						}
+						return `破锐${get.event("map").get(target)}`;
+					},
+				])
+			);
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			player.addTempSkill(event.name + "_round", "roundStart");
+			player.addMark(event.name + "_round", 1, false);
+			await player.discard(cards);
+			const num = Math.min(
+				5,
+				target.getHistory("lose").reduce((num, evt) => num + evt.cards2.length, 0)
+			);
+			let count = num + 1;
+			const card = get.autoViewAs({ name: "sha", isCard: true, storage: { [event.name]: true } });
+			while (count-- && player.canUse(card, target, false) && target.isIn()) {
+				await player.useCard(card, target);
 			}
-			"step 2";
-			var card = { name: "sha", isCard: true, storage: { dcporui: true } };
-			if (player.canUse(card, target, false) && target.isIn()) {
-				player.useCard(card, target);
-				event.num--;
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			if (event.num > 0) {
-				event.goto(2);
-			}
-			"step 4";
-			if (!player.hasMark("dcgonghu_damage") && target.isIn()) {
-				var cards = player.getCards("h");
-				if (cards.length == 0) {
-					event._result = { bool: false };
-				} else if (cards.length <= event.num2) {
-					event._result = { bool: true, cards: cards };
-				} else {
-					player.chooseCard("破锐：交给" + get.translation(target) + get.cnNumber(event.num2) + "张手牌", true, event.num2);
-				}
-			} else {
-				event.finish();
-			}
-			"step 5";
-			if (result.bool) {
-				player.give(result.cards, target);
-			}
-			event.finish();
-			"step 6";
-			if (player.hasMark("dcgonghu_basic")) {
-				if (
-					!target.hasHistory("damage", evt => {
-						return evt.card && evt.card.storage && evt.card.storage.dcporui && evt.getParent("dcporui") == event;
-					})
-				) {
-					player.recover();
-				}
+			if (!player.hasMark("dcgonghu_damage") && target.isIn() && player.countCards("h") && num) {
+				const numx = Math.min(num, player.countCards("h"));
+				await player.chooseToGive(target, "h", numx, true, `破锐：交给${get.translation(target)}${get.cnNumber(numx)}张手牌`);
 			}
 		},
-		subSkill: {
-			round: { charlotte: true, onremove: true },
-		},
+		subSkill: { round: { charlotte: true, onremove: true } },
 		ai: {
 			expose: 0.4,
 			threaten: 3.8,

@@ -10028,114 +10028,72 @@ const skills = {
 	//蒋济
 	jilun: {
 		audio: 2,
-		inherit: "twjilun",
+		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return player.hasSkill("twjichou", null, false, false);
 		},
-		content() {
-			"step 0";
-			var choices = ["选项一"];
-			var choiceList = ["摸两张牌", "获得一个“机论”标记"];
-			if (
-				!player.getStorage("twjichou").length ||
-				!player.getStorage("twjichou").filter(function (name) {
-					return !player.getStorage("jilun").includes(name) && player.hasUseTarget({ name: name });
-				}).length
-			) {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
-			} else {
-				choices.push("选项二");
-			}
-			player
-				.chooseControl(choices, "cancel2")
-				.set("choiceList", choiceList)
-				.set("prompt", get.prompt("jilun"))
-				.set("ai", () => {
-					if (_status.event.choiceList.length == 1 || !player.getStorage("twjichou").length) {
-						return 0;
+		async cost(event, trigger, player) {
+			const num = Math.min(Math.max(1, player.getStorage("twjichou").length), 3);
+			const list = get
+				.inpileVCardList(info => {
+					return info[0] == "basic" && !player.getStorage(event.skill).includes(info[2]);
+				})
+				.addArray(
+					player
+						.getStorage("twjichou")
+						.filter(name => !player.getStorage(event.skill).includes(name))
+						.map(name => ["锦囊", "", name])
+				);
+			const { result } = await player
+				.chooseButton([`###${get.prompt(event.skill)}###摸${get.cnNumber(num)}张牌或者视为使用一张牌`, [[[num, `摸${get.cnNumber(num)}张牌`]], "tdnodes"], [list, "vcard"]])
+				.set("filterButton", button => {
+					const { player, numx } = get.event();
+					const { link } = button;
+					if (!Array.isArray(link)) {
+						return true;
 					}
-					var val = player.getUseValue({ name: "wuzhong" });
-					for (var name of player.getStorage("twjichou")) {
-						if (player.getStorage("jilun").includes(name)) {
-							continue;
-						}
-						if (player.getUseValue({ name: name }) > val) {
+					return (
+						player.hasUseTarget({ name: link[2], nature: link[3] }) &&
+						(get.type(link[2]) == "basic" ||
+							game.countPlayer(current => {
+								return player.canUse({ name: link[2] }, current);
+							}) <= numx)
+					);
+				})
+				.set("ai", button => {
+					const { player, numx } = get.event();
+					const { link } = button;
+					const val = numx > 2 ? Math.min(1.5, 1 + (numx - 2) * 0.1) : 1;
+					if (Array.isArray(link)) {
+						if (player.getUseValue({ name: link[2], nature: link[3] }) > 4 * val) {
 							return 1;
 						}
 					}
+					if (typeof link == "number") {
+						return 1;
+					}
 					return 0;
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("jilun");
-				if (result.control == "选项一") {
-					player.draw(2);
-				} else {
-					player.addMark("jilun_mark", 1);
-				}
+				})
+				.set("numx", num);
+			event.result = {
+				bool: result?.bool,
+				cost_data: result?.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const { cost_data: links } = event;
+			if (typeof links[0] == "number") {
+				await player.draw(links[0]);
+			} else {
+				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				player.markAuto(event.name, [card.name]);
+				await player.chooseUseTarget(card, true);
 			}
 		},
-		group: "jilun_effect",
-		subSkill: {
-			mark: {
-				intro: { content: "mark" },
-			},
-			effect: {
-				audio: "jilun",
-				trigger: { global: "phaseJieshuBegin" },
-				filter(event, player) {
-					return player.hasMark("jilun_mark");
-				},
-				forced: true,
-				content() {
-					"step 0";
-					if (
-						!player.getStorage("twjichou").length ||
-						!player.getStorage("twjichou").filter(function (name) {
-							return !player.getStorage("jilun").includes(name) && player.hasUseTarget({ name: name });
-						}).length
-					) {
-						if (player.hasMark("jilun_mark")) {
-							player.removeMark("jilun_mark", player.countMark("jilun_mark"));
-						}
-						event.finish();
-						return;
-					}
-					var list = [];
-					for (var name of player.getStorage("twjichou")) {
-						if (!player.getStorage("jilun").includes(name)) {
-							list.push(["锦囊", "", name]);
-						}
-					}
-					player
-						.chooseButton(['###机论：请选择你要执行的选项###<div class="text center"><li>失去1枚“机论”标记，视为使用一张〖急筹〗已记录但〖机论〗未记录的普通锦囊牌<br><li>失去所有“机论”标记</div>', [list, "vcard"]])
-						.set("filterButton", function (button) {
-							return _status.event.player.hasUseTarget({ name: button.link[2] });
-						})
-						.set("ai", function (button) {
-							return _status.event.getParent().player.getUseValue({ name: button.link[2] }, null, true);
-						});
-					"step 1";
-					if (result.bool) {
-						player.removeMark("jilun_mark", 1);
-						var card = { name: result.links[0][2], isCard: true };
-						player.chooseUseTarget(card, true);
-						player.markAuto("jilun", [card.name]);
-						player.syncStorage("jilun");
-					} else {
-						player.removeMark("jilun_mark", player.countMark("jilun_mark"));
-						event.finish();
-					}
-					"step 2";
-					if (player.hasMark("jilun_mark")) {
-						event.goto(0);
-					}
-				},
-			},
-		},
-		ai: {
-			combo: "twjichou",
-		},
+		marktext: "论",
+		intro: { content: "已记录牌名：$" },
+		onremove: true,
+		ai: { combo: "twjichou" },
 	},
 	//李遗
 	jiaohua: {

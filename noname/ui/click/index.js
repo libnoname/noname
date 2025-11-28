@@ -2984,7 +2984,7 @@ export class Click {
 			if (info.prompt) {
 				var str2;
 				if (typeof info.prompt == "function") {
-					str2 = info.prompt(event);
+					str2 = info.prompt(event, event.player);
 				} else {
 					str2 = info.prompt;
 				}

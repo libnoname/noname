@@ -2577,17 +2577,19 @@ const skills = {
 	},
 	fengliao: {
 		audio: 2,
-		zhuanhuanji: true,
+		zhuanhuanji(player, skill) {
+			player.storage[skill] = !player.storage[skill];
+			get.info(skill).init(player, skill);
+		},
+		init(player, skill) {
+			player.addTip(skill, `${get.translation(skill)} ${player.storage[skill] ? "伤害" : "摸牌"}`);
+		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+		},
 		mark: true,
 		marktext: "☯",
-		intro: {
-			content(storage) {
-				if (storage) {
-					return "你使用牌指定唯一目标后，你对其造成1点火焰伤害。";
-				}
-				return "你使用牌指定唯一目标后，你令其摸一张牌。";
-			},
-		},
+		intro: { content: storage => `你使用牌指定唯一目标后，你${storage ? "对其造成1点火焰伤害" : "令其摸一张牌"}` },
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.targets.length == 1;
@@ -2595,17 +2597,17 @@ const skills = {
 		forced: true,
 		logTarget: "target",
 		async content(event, trigger, player) {
-			player.changeZhuanhuanji("fengliao");
+			player.changeZhuanhuanji(event.name);
 			const { target } = trigger;
-			if (player.storage.fengliao) {
+			if (player.storage[event.name]) {
 				await target.draw();
 			} else {
-				await target.damage("fire", player);
+				await target.damage("fire");
 			}
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (num > 0) {
+				if (typeof card == "object" && num > 0) {
 					const select = get.info(card).selectTarget;
 					let range;
 					if (select == undefined) {
@@ -2655,7 +2657,7 @@ const skills = {
 					if (_status._fengliao_check) {
 						return;
 					}
-					if (!(typeof card !== "object") || !player || !target) {
+					if (typeof card !== "object" || !player || !target) {
 						return;
 					}
 					const select = get.info(card).selectTarget;

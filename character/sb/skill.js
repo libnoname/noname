@@ -216,7 +216,7 @@ const skills = {
 					);
 				})
 				.forResult();
-			event.result = { bool: result.bool, cost_data: list.filter(item => (result?.links ?? []).includes(item)) };
+			event.result = { bool: result?.bool, cost_data: list.filter(item => (result?.links ?? []).includes(item)) };
 		},
 		async content(event, trigger, player) {
 			const cost_data = event.cost_data.map(item => item.split("|")).flat();

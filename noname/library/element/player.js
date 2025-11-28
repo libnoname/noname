@@ -2699,7 +2699,8 @@ export class Player extends HTMLDivElement {
 				const goon = hiddenCard(player, name);
 				const bool =
 					!info.filter ||
-					(typeof info.filter === "function" &&
+					(info.enable &&
+						typeof info.filter === "function" &&
 						evtNames.some(evtName => {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") {
@@ -7479,29 +7480,30 @@ export class Player extends HTMLDivElement {
 			game.addVideo("directequip", this, get.cardsInfo(cards));
 		}
 	}
-	$addToExpansion(cards, broadcast, gaintag) {
+	$addToExpansion(cards, broadcast, gaintag, check = true) {
 		var hs = this.getCards("x");
 		for (var i = 0; i < cards.length; i++) {
-			if (hs.includes(cards[i])) {
+			if (hs.includes(cards[i]) && check) {
 				cards.splice(i--, 1);
 			}
 		}
 		for (var i = 0; i < cards.length; i++) {
 			cards[i].fix();
 			if (gaintag) {
-				cards[i].addGaintag(gaintag);
+				gaintag.forEach(tag => cards[i].addGaintag(tag));
 			}
 			var sort = lib.config.sort_card(cards[i]);
 			this.node.expansions.insertBefore(cards[i], this.node.expansions.firstChild);
 		}
 		if (broadcast !== false) {
 			game.broadcast(
-				function (player, cards, gaintag) {
-					player.$addToExpansion(cards, null, gaintag);
+				function (player, cards, gaintag, check) {
+					player.$addToExpansion(cards, null, gaintag, check);
 				},
 				this,
 				cards,
-				gaintag
+				gaintag,
+				check
 			);
 		}
 		return this;

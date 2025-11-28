@@ -366,62 +366,52 @@ const card = {
 		type: "trick",
 		enable: true,
 		filterTarget(card, player, target) {
-			return target.countCards("h") > 0;
+			return target.countCards("h") > 0 && player != target;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (!target.countCards("h")) {
-				event.finish();
 				return;
 			}
-			var hs = player.getCards("h");
+			const hs = player.getCards("h");
 			if (hs.length) {
-				var minval = get.value(hs[0]);
-				var colors = [get.color(hs[0])];
-				for (var i = 1; i < hs.length; i++) {
-					var val = get.value(hs[i], player, "raw");
-					if (val < minval) {
-						minval = val;
-						colors = [get.color(hs[i])];
-					} else if (val === minval) {
-						colors.add(get.color(hs[i]));
-					}
-				}
-				player.chooseCardButton("偷梁换柱", target.getCards("h")).ai = function (button) {
-					var val = get.value(button.link, player, "raw") - minval;
-					if (val >= 0) {
-						if (colors.includes(get.color(button.link))) {
-							val += 3;
+				const { result } = await player
+					.chooseButton(2, [`###偷梁换柱###<div class="text center">你可以选择你与${get.translation(target)}其的各一张手牌以交换</div>`, `<div class="text center">${get.translation(target)}的手牌</div>`, target.getCards("h"), '<div class="text center">你的手牌</div>', hs])
+					.set("filterButton", button => {
+						if (!ui.selected.buttons.length) {
+							return true;
 						}
+						return get.owner(ui.selected.buttons[0].link) !== get.owner(button.link);
+					})
+					.set("ai", button => {
+						const { player, target } = get.event();
+						const { link } = button;
+						if (!ui.selected.buttons.length) {
+							if (get.owner(link) !== player) {
+								return 0;
+							}
+							return 6 - get.value(link) + target.hasCard(card => get.color(link, player) == get.color(card, target), "h") ? 2 : 0;
+						}
+						const cardx = ui.selected.buttons[0].link;
+						return 6 + (get.color(cardx, player) == get.color(link, target) ? 3 : 1) - get.value(link);
+					})
+					.set("target", target);
+				if (result?.links?.length == 2) {
+					const {links} = result;
+					if (get.owner(links[0]) != player) {
+						links.reverse();
 					}
-					return val;
-				};
-			} else {
-				player.viewHandcards(target);
-				event.finish();
-			}
-			"step 1";
-			if (result.bool) {
-				event.card = result.links[[0]];
-				player.chooseCard("h", true, "用一张手牌替换" + get.translation(event.card)).ai = function (card) {
-					return -get.value(card);
-				};
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				player.gain(event.card, target);
-				target.gain(result.cards, player);
-				player.$giveAuto(result.cards, target);
-				target.$giveAuto(event.card, player);
-				game.log(player, "与", target, "交换了一张手牌");
-				if (get.color(event.card) === get.color(result.cards[0])) {
-					player.draw();
+					const [card1, card2] = links;
+					await player.swapHandcards(target, [card1], [card2]);
+					if (get.color(card1, player) == get.color(card2, target)) {
+						await player.draw();
+					}
+					target.addTempSkill(event.name + "_ai1");
+				} else {
+					target.addTempSkill(event.name + "_ai2");
 				}
-				target.addTempSkill("toulianghuanzhu_ai1");
 			} else {
-				target.addTempSkill("toulianghuanzhu_ai2");
+				await player.viewHandcards(target);
 			}
 		},
 		ai: {

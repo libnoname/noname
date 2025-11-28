@@ -1135,17 +1135,22 @@ game.import("card", function () {
 				audio: true,
 				fullskin: true,
 				type: "trick",
-				enable: true,
+				enable(card, player) {
+					return game.hasPlayer(target => target != player);
+				},
 				notarget: true,
 				wuxieable: false,
 				global: "nisiwohuo_end",
 				async content(event, trigger, player) {
 					player.$skill(get.translation(event.name), null, "thunder", null, "shen_jiaxu");
 					await game.delayx();
-					const targets = game.filterPlayer2(target => target != player).sortBySeat();
-					player.line(targets.filter(target => target.isIn()));
+					const targets = game.filterPlayer(target => target != player).sortBySeat();
+					if (!targets.length) {
+						return;
+					}
+					player.line(targets);
 					game.broadcastAll(event => {
-						if (!_status.nisiwohuo) {
+						if (!Array.isArray(_status.nisiwohuo)) {
 							_status.nisiwohuo = [];
 						}
 						_status.nisiwohuo.push(event);
@@ -1158,7 +1163,7 @@ game.import("card", function () {
 						return true;
 					};
 					let target = player;
-					while (goon() && count < 100) {
+					while (goon() && count < 100 && target?.isIn()) {
 						count++;
 						target = target.getNext();
 						if (!target?.isIn() || target == player) {
@@ -2265,25 +2270,6 @@ game.import("card", function () {
 					}
 					trigger._chadaox_skill_players.add(player);
 					trigger.player = target;
-					/*const dbi = [
-						["皇帝的新文案", "皇帝的新文案"],
-						["兄啊，有个事情你能不能帮我一下", "死叛恶艹"],
-						["替我挡着！", "你咋这么自私呢，呸！"],
-						["不好意思了兄弟，没注意，抱歉了", "你都叫兄弟了，那还说啥了，我自己受着得了！"],
-						["这扯不扯，你这太性情了哥们", "没事啊，咱们都是弗雷尔卓德队友，没毛病啊"],
-						["两角尖尖犹如利剑！", "孩子我啊米诺斯，一德格拉米"],
-					];
-					const str = dbi.randomGet();
-					if (str[1] != "皇帝的新文案") {
-						if (str[0] == "替我挡着！") {
-							game.playAudio("skill/tianxiang2.mp3");
-						}
-						player.throwEmotion(target, ["flower", "wine"].randomGet(), false);
-						player.chat(str[0]);
-						await game.asyncDelayx();
-						target.throwEmotion(player, ["egg", "shoe"].randomGet(), false);
-						target.chat(str[1]);
-					}*/
 				},
 			},
 			yifu_skill: {
@@ -2402,11 +2388,11 @@ game.import("card", function () {
 			khquanjiux: "劝酒",
 			khquanjiux_tag: "劝酒",
 			khquanjiux_bg: "劝",
-			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次打出一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的1点伤害。此牌不能被【无懈可击】响应。",
+			khquanjiux_info: "①出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次打出一张【酒】，重复此流程直到有角色不打出【酒】，该角色受到每名其他角色造成的1点伤害。②此牌不能被【无懈可击】响应。",
 			nisiwohuo: "你死我活",
 			nisiwohuo_end: "你死我活",
 			nisiwohuo_bg: "死",
-			nisiwohuo_info: "出牌阶段，对其他所有角色使用，令目标依次对距离最近的角色使用一张【杀】，否则失去1点体力，重复效果直至有人死亡。此牌不能被【无懈可击】响应。",
+			nisiwohuo_info: "①出牌阶段，对其他所有角色使用，令目标依次对距离最近的角色使用一张【杀】，否则失去1点体力，重复此流程直至有人死亡。②此牌不能被【无懈可击】响应。",
 			wutian: "无天无界",
 			wutian_bg: "界",
 			wutian_info: "出牌阶段，对自己使用，从三个可造成伤害的技能中选择一个获得至你的下回合开始。",

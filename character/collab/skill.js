@@ -1485,13 +1485,13 @@ const skills = {
 									return 2 * numx(player);
 								}
 								return numx(player);
-						  }
+							}
 						: function (player) {
 								if (player == me) {
 									return 2 * numx;
 								}
 								return numx;
-						  };
+							};
 				player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
 			}
 			if (!trigger.gaintag) {
@@ -3443,12 +3443,15 @@ const skills = {
 				target = event.targets[1];
 			await drawer.draw(2);
 			const result = await drawer
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力"
+				)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
@@ -6792,12 +6795,15 @@ const skills = {
 				return;
 			}
 			const result = await targets[0]
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌"
+				)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -6976,6 +6982,180 @@ const skills = {
 			player.line(trigger.player, "green");
 			player.storage.fenxin = true;
 			player.awakenSkill(event.name);
+		},
+	},
+	quanjia: {
+		init(player, skill) {
+			player.storage[skill] = 2;
+			player.markSkill(skill);
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.unmarkSkill(skill);
+		},
+		mark: true,
+		intro: {
+			content(storage) {
+				return `下次随机观看${storage || 2}张手牌`;
+			},
+		},
+		trigger: {
+			global: "damageSource",
+		},
+		filter(event, player) {
+			if (!event.source || event.source == player || !event.player || event.player == event.source) {
+				return false;
+			}
+			if (!event.source.isIn() || !player.isIn()) {
+				return false;
+			}
+			return event.source.countCards("h") > 0;
+		},
+		async cost(event, trigger, player) {
+			const num = player.storage[event.name] || 2;
+			const count = Math.min(num, trigger.source.countCards("h"));
+			event.result = await player
+				.chooseBool(get.prompt(event.name, trigger.source))
+				.set("prompt2", count ? `随机观看其${count}张手牌，若没有【杀】，下次多看一张` : "")
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const skill = event.name;
+			const source = trigger.source;
+			const num = player.storage[skill] || 2;
+			const cards = source.getCards("h").randomGets(Math.min(num, source.countCards("h")));
+			let hasSha = false;
+			if (cards.length) {
+				await player.viewCards(get.translation(source) + "的手牌", cards);
+				const shaCards = cards.filter(card => {
+					const name = get.name(card, source);
+					return name == "sha" || name == "fire_sha" || name == "thunder_sha" || name == "ice_sha";
+				});
+				if (shaCards.length) {
+					hasSha = true;
+					for (const card of shaCards) {
+						if (!player.isIn() || !source.isIn()) {
+							break;
+						}
+						const useEvt = player.useCard(card, source, false);
+						await useEvt;
+					}
+				}
+			}
+			player.storage[skill] = hasSha ? 2 : num + 1;
+			player.markSkill(skill);
+		},
+	},
+	xiaomian: {
+		trigger: { player: "useCard" },
+		direct: true,
+		filter(event, player) {
+			if (!event.card) {
+				return false;
+			}
+			const suit = get.suit(event.card, player);
+			if (!lib.suit.includes(suit)) {
+				return false;
+			}
+			return player.countCards("e", card => get.suit(card, player) == suit) > 0;
+		},
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card, player);
+			const num = player.countCards("e", card => get.suit(card, player) == suit);
+			if (!num) {
+				return;
+			}
+			const result = await player.chooseBool(get.prompt(event.name)).set("prompt2", `摸${num}张牌，然后弃置1张装备牌`).forResult();
+			if (!result.bool) {
+				return;
+			}
+			await player.draw(num);
+			if (player.countCards("e")) {
+				await player.discardPlayerCard(player, true, "e", 1);
+			}
+		},
+	},
+	xuyuan: {
+		trigger: { player: "phaseUseBegin" },
+		filter(event, player) {
+			const info = get.info("xuyuan");
+			return Object.values(info.getOptions(player)).some(set => set?.size);
+		},
+		async content(event, trigger, player) {
+			const info = get.info("xuyuan");
+			const options = info.getOptions(player);
+			const suits = Object.entries(options)
+				.filter(([, types]) => types?.size)
+				.map(([suit]) => suit);
+			if (!suits.length) {
+				return;
+			}
+			const suit = await player.chooseControl(suits).set("prompt", "许愿：请选择一种花色").forResult("control");
+			if (!suit) {
+				return;
+			}
+			const subtypeList = Array.from(options[suit]);
+			if (!subtypeList.length) {
+				return;
+			}
+			const subtype = await player
+				.chooseControl(subtypeList)
+				.set("prompt", `许愿：请选择${get.translation(suit)}的装备副类别`)
+				.set("prompt2", "从牌堆中随机获得一张满足要求的装备牌")
+				.forResult("control");
+			if (!subtype) {
+				return;
+			}
+			const card = info.getCard(player, suit, subtype);
+			if (!card) {
+				return;
+			}
+			player.logSkill("xuyuan");
+			await player.equip(card, "gain2");
+		},
+		subtypes: ["equip1", "equip2", "equip3", "equip4", "equip5"],
+		getOptions(player) {
+			const result = {};
+			const cards = Array.from(ui.cardPile.childNodes);
+			for (const card of cards) {
+				if (get.type(card, null, false) != "equip") {
+					continue;
+				}
+				if (!player.canEquip(card, true)) {
+					continue;
+				}
+				const suit = get.suit(card);
+				if (!lib.suit.includes(suit)) {
+					continue;
+				}
+				const subtypes = get.subtypes(card, false) || [];
+				for (const subtype of subtypes) {
+					if (!this.subtypes.includes(subtype)) {
+						continue;
+					}
+					if (!result[suit]) {
+						result[suit] = new Set();
+					}
+					result[suit].add(subtype);
+				}
+			}
+			return result;
+		},
+		getCard(player, suit, subtype) {
+			const cards = Array.from(ui.cardPile.childNodes).filter(card => {
+				if (get.type(card, null, false) != "equip") {
+					return false;
+				}
+				if (!player.canEquip(card, true)) {
+					return false;
+				}
+				if (get.suit(card) != suit) {
+					return false;
+				}
+				const subtypes = get.subtypes(card, false) || [];
+				return subtypes.includes(subtype);
+			});
+			return cards.length ? cards.randomGet() : null;
 		},
 	},
 };

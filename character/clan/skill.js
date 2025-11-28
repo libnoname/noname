@@ -2970,6 +2970,24 @@ const skills = {
 		},
 	},
 	clanjianji: {
+		getBool(event, player) {
+			const card = new lib.element.VCard({ name: "sha", isCard: true });
+			const targets = game.filterPlayer(target => {
+				return event.player.getPrevious() == target || event.player.getNext() == target;
+			});
+			const bool = !targets.some(target => {
+				return target.getHistory("useCard").length;
+			});
+			const goon =
+				player.hasUseTarget(card) &&
+				!game.getGlobalHistory("useCard", evt => {
+					if (!["sha", "juedou"].includes(evt.card.name)) {
+						return false;
+					}
+					return evt.targets?.some(target => targets.includes(target));
+				}).length;
+			return [bool, goon];
+		},
 		limited: true,
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
@@ -2983,41 +3001,14 @@ const skills = {
 			if (!targets.length) {
 				return false;
 			}
-			const card = new lib.element.VCard({ name: "sha", isCard: true });
-			return (
-				!targets.some(target => {
-					return target.getHistory("useCard").length;
-				}) ||
-				(player.hasUseTarget(card) &&
-					!targets.some(target => {
-						return game.hasPlayer2(current => {
-							return current.getHistory("useCard", evt => {
-								return evt.targets && evt.targets.includes(target);
-							}).length;
-						});
-					}))
-			);
+			const [bool, goon] = get.info("clanjianji").getBool(event, player);
+			return bool || goon;
 		},
 		skillAnimation: true,
 		animationColor: "watar",
 		prompt2(event, player) {
 			let str = "";
-			const card = new lib.element.VCard({ name: "sha", isCard: true });
-			const targets = game.filterPlayer(target => {
-					return event.player.getPrevious() == target || event.player.getNext() == target;
-				}),
-				bool = !targets.some(target => {
-					return target.getHistory("useCard").length;
-				}),
-				goon =
-					player.hasUseTarget(card) &&
-					!targets.some(target => {
-						return game.hasPlayer2(current => {
-							return current.getHistory("useCard", evt => {
-								return evt.targets && evt.targets.includes(target);
-							}).length;
-						});
-					});
+			const [bool, goon] = get.info("clanjianji").getBool(event, player);
 			if (bool) {
 				if (goon) {
 					str += "你可以";
@@ -3034,49 +3025,19 @@ const skills = {
 		},
 		check(event, player) {
 			const card = new lib.element.VCard({ name: "sha", isCard: true });
-			const targets = game.filterPlayer(target => {
-					return event.player.getPrevious() == target || event.player.getNext() == target;
-				}),
-				bool = !targets.some(target => {
-					return target.getHistory("useCard").length;
-				}),
-				goon =
-					player.hasUseTarget(card) &&
-					!targets.some(target => {
-						return game.hasPlayer2(current => {
-							return current.getHistory("useCard", evt => {
-								return evt.targets && evt.targets.includes(target);
-							}).length;
-						});
-					});
+			const [bool, goon] = get.info("clanjianji").getBool(event, player);
 			return (bool && (get.attitude(player, event.player) > 0 || event.player.countCards("h") > player.countCards("h"))) || (goon && player.hasValueTarget(card));
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const card = new lib.element.VCard({ name: "sha", isCard: true });
-			const targets = game.filterPlayer(target => {
-					return trigger.player.getPrevious() == target || trigger.player.getNext() == target;
-				}),
-				boolx = !targets.some(target => {
-					return target.getHistory("useCard").length;
-				}),
-				goon =
-					player.hasUseTarget(card) &&
-					!targets.some(target => {
-						return game.hasPlayer2(current => {
-							return current.getHistory("useCard", evt => {
-								return evt.targets && evt.targets.includes(target);
-							}).length;
-						});
-					});
+			const [boolx, goon] = get.info(event.name).getBool(trigger, player);
 			if (boolx) {
 				let draw = false;
 				if (goon) {
-					const {
-						result: { bool },
-					} = await player.chooseBool("是否与" + get.translation(trigger.player) + "各摸一张牌？").set("choice", get.attitude(player, trigger.player) > 0 || trigger.player.countCards("h") > player.countCards("h"));
-					if (bool) {
+					const { result } = await player.chooseBool("是否与" + get.translation(trigger.player) + "各摸一张牌？").set("choice", get.attitude(player, trigger.player) > 0 || trigger.player.countCards("h") > player.countCards("h"));
+					if (result?.bool) {
 						draw = true;
 					}
 				} else {

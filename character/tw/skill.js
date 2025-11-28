@@ -11827,88 +11827,62 @@ const skills = {
 	twjilun: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
-		direct: true,
-		content() {
-			"step 0";
-			var num = Math.min(Math.max(1, player.getStorage("twjichou").length), 5);
-			event.num = num;
-			var choices = ["选项一"];
-			var choiceList = ["摸" + get.cnNumber(num) + "张牌", "视为使用一张在〖急筹〗记录内且不在〖机论〗记录内的普通锦囊牌"];
-			if (
-				!player.getStorage("twjichou").length ||
-				player.getStorage("twjichou").filter(name => {
-					return !player.getStorage("twjilun").includes(name) && player.hasUseTarget({ name: name });
-				}).length == 0
-			) {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
-			} else {
-				choices.push("选项二");
-			}
-			player
-				.chooseControl(choices, "cancel2")
-				.set("choiceList", choiceList)
-				.set("prompt", get.prompt("twjilun"))
-				.set("ai", () => {
-					if (_status.event.choiceList.length == 1 || !player.getStorage("twjichou").length) {
-						return 0;
-					}
-					var val = _status.event.num > 3 ? Math.min(1.5, 1 + (_status.event.num - 3) * 0.1) : 1;
-					for (var name of player.getStorage("twjichou")) {
-						if (player.getStorage("twjilun").includes(name)) {
-							continue;
+		async cost(event, trigger, player) {
+			const num = Math.min(Math.max(1, player.getStorage("twjichou").length), 5);
+			const list = player
+				.getStorage("twjichou")
+				.filter(name => !player.getStorage(event.skill).includes(name))
+				.map(name => ["锦囊", "", name]);
+			if (list.length) {
+				const { result } = await player
+					.chooseButton([`###${get.prompt(event.skill)}###摸${get.cnNumber(num)}张牌或者视为使用一张牌`, [[[num, `摸${get.cnNumber(num)}张牌`]], "tdnodes"], [list, "vcard"]])
+					.set("filterButton", button => {
+						const { player, numx } = get.event();
+						const { link } = button;
+						if (!Array.isArray(link)) {
+							return true;
 						}
-						if (player.getUseValue({ name: name }) > 4 * val) {
+						return player.hasUseTarget({ name: link[2] });
+					})
+					.set("ai", button => {
+						const { player, numx } = get.event();
+						const { link } = button;
+						const val = numx > 3 ? Math.min(1.5, 1 + (numx - 3) * 0.1) : 1;
+						if (Array.isArray(link)) {
+							if (player.getUseValue({ name: link[2] }) > 4 * val) {
+								return 1;
+							}
+						}
+						if (typeof link == "number") {
 							return 1;
 						}
-					}
-					return 0;
-				})
-				.set("num", num);
-			"step 1";
-			if (result.control != "cancel2") {
-				if (result.control == "选项一") {
-					player.logSkill("twjilun");
-					player.draw(num);
-					event.finish();
-				} else {
-					var list = [];
-					for (var name of player.getStorage("twjichou")) {
-						if (!player.getStorage("twjilun").includes(name)) {
-							list.push(["锦囊", "", name]);
-						}
-					}
-					player
-						.chooseButton(['###机论###<div class="text center">是否视为使用一张〖急筹〗已记录的普通锦囊牌？</div>', [list, "vcard"]])
-						.set("filterButton", button => {
-							return _status.event.player.hasUseTarget({ name: button.link[2] });
-						})
-						.set("ai", button => {
-							return _status.event.getParent().player.getUseValue({ name: button.link[2] }, null, true);
-						});
+						return 0;
+					})
+					.set("numx", num);
+				event.result = {
+					bool: result?.bool,
+					cost_data: result?.links,
+				};
+			} else {
+				event.result = await player.chooseBool(get.prompt(event.skill), `摸${get.cnNumber(num)}张牌`).forResult();
+				if (event.result?.bool) {
+					event.result.cost_data = [num];
 				}
-			} else {
-				event.finish();
 			}
-			"step 2";
-			if (result.bool) {
-				var card = { name: result.links[0][2], isCard: true };
-				player.chooseUseTarget(card, true).set("logSkill", "twjilun");
-				player.markAuto("twjilun", [card.name]);
-				player.syncStorage("twjilun");
+		},
+		async content(event, trigger, player) {
+			const { cost_data: links } = event;
+			if (typeof links[0] == "number") {
+				await player.draw(links[0]);
 			} else {
-				event.goto(0);
+				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				player.markAuto(event.name, [card.name]);
+				await player.chooseUseTarget(card, true);
 			}
 		},
 		marktext: "论",
-		intro: {
-			markcount(storage, player) {
-				if (storage && storage.length) {
-					return storage.length;
-				}
-				return 0;
-			},
-			content: "已记录牌名：$",
-		},
+		intro: { content: "已记录牌名：$" },
+		onremove: true,
 		ai: {
 			maixie: true,
 			maixie_defend: true,
