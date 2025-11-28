@@ -1,6 +1,5 @@
 /// <reference lib="WebWorker" />
 const worker = globalThis as unknown as ServiceWorkerGlobalScope;
-import ts from "typescript";
 import * as CompileStrategy from "./compile-strategy";
 
 worker.addEventListener("install", event => {
@@ -44,18 +43,9 @@ function sendReload() {
 	});
 }
 
-const strategies: CompileStrategy.BaseStrategy[] = [
-	new CompileStrategy.BuiltinModuleStrategy(),
-	new CompileStrategy.RawResourceStrategy(),
-	new CompileStrategy.WorkerResourceStrategy(),
-	new CompileStrategy.UrlResourceStrategy(),
-	new CompileStrategy.JSONStrategy(),
-	new CompileStrategy.TSStrategy({ allowJs: false }),
-	new CompileStrategy.CSSStrategy(),
-	new CompileStrategy.VueSFCStrategy(),
-];
+const strategies: CompileStrategy.BaseStrategy[] = [new CompileStrategy.BuiltinModuleStrategy(), new CompileStrategy.RawResourceStrategy(), new CompileStrategy.WorkerResourceStrategy(), new CompileStrategy.UrlResourceStrategy(), new CompileStrategy.JSONStrategy(), new CompileStrategy.TSStrategy({ allowJs: false }), new CompileStrategy.CSSStrategy(), new CompileStrategy.VueSFCStrategy()];
 
-const proxyedPath = ["/extension", "/noname-builtinModules/", "/jit/test"];
+const proxyedPath = ["/extension", "/noname-builtinModules/", "/jit"];
 // --- fetch 拦截入口 ---
 worker.addEventListener("fetch", (event: FetchEvent) => {
 	const request = event.request;
@@ -63,7 +53,7 @@ worker.addEventListener("fetch", (event: FetchEvent) => {
 
 	const url = new URL(request.url);
 	// 非相关请求
-	if (url.hostname !== "localhost" && url.hostname !== "127.0.0.1") return;
+	if (!["localhost", "127.0.0.1", "10.0.2.2"].includes(url.hostname)) return;
 	if (!proxyedPath.some(i => url.pathname.startsWith(i))) return;
 
 	const strategy = strategies.find(s => s.match({ event, request, url }));

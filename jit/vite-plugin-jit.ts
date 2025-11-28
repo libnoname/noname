@@ -37,12 +37,9 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 		},
 
 		closeBundle() {
-			const jitImportMap = path.resolve("dist/jit/import-map.js");
-			fs.mkdirSync(path.dirname(jitImportMap), { recursive: true });
-			fs.writeFileSync(jitImportMap, "export default " + JSON.stringify(resolvedImportMap, null, 2));
-
-			fs.mkdirSync(path.dirname(path.resolve("dist/jit/test/canUse.ts")), { recursive: true });
-			fs.copyFileSync(path.resolve("jit/test/canUse.ts"), path.resolve("dist/jit/test/canUse.ts"));
+			fs.mkdirSync(path.resolve("dist/jit"), { recursive: true });
+			fs.writeFileSync(path.resolve("dist/jit/import-map.json"), JSON.stringify(resolvedImportMap, null, 2));
+			fs.copyFileSync(path.resolve(import.meta.dirname, "canUse.ts"), path.resolve("dist/jit/canUse.ts"));
 		},
 	};
 }

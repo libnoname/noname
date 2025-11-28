@@ -7,6 +7,61 @@ import { ui } from "../ui/index.js";
 import { checkVersion } from "../library/update.js";
 
 export function nodeReady() {
+	// 处理Node环境下的http情况
+	if (typeof window.process == "object" && typeof window.__dirname == "string") {
+		// 在http环境下修改__dirname和require的逻辑
+		if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
+			const path = require("path");
+			if (window.process.platform === "darwin") {
+				//@ts-ignore
+				window.__dirname = path.join(window.process.resourcesPath, "app");
+			} else {
+				window.__dirname = path.join(path.resolve(), "resources/app");
+			}
+			const oldRequire = window.require;
+			// @ts-expect-error ignore
+			window.require = function (moduleId) {
+				try {
+					return oldRequire(moduleId);
+				} catch {
+					return oldRequire(path.join(window.__dirname, moduleId));
+				}
+			};
+			Object.entries(oldRequire).forEach(([key, value]) => {
+				window.require[key] = value;
+			});
+		}
+		// 	// 增加导入ts的逻辑
+		// 	window.require.extensions[".ts"] = function (module, filename) {
+		// 		// @ts-expect-error ignore
+		// 		const _compile = module._compile;
+		// 		// @ts-expect-error ignore
+		// 		module._compile = function (code, fileName) {
+		// 			/**
+		// 			 *
+		// 			 * @type { import("typescript") }
+		// 			 */
+		// 			// @ts-expect-error ignore
+		// 			const ts = require("typescript");
+		// 			// 使用ts compiler对ts文件进行编译
+		// 			const result = ts.transpile(
+		// 				code,
+		// 				{
+		// 					module: ts.ModuleKind.CommonJS,
+		// 					target: ts.ScriptTarget.ES2020,
+		// 					inlineSourceMap: true,
+		// 					resolveJsonModule: true,
+		// 					esModuleInterop: true,
+		// 				},
+		// 				fileName
+		// 			);
+		// 			// 使用默认的js编译函数获取返回值
+		// 			return _compile.call(this, result, fileName);
+		// 		};
+		// 		// @ts-expect-error ignore
+		// 		module._compile(require("fs").readFileSync(filename, "utf8"), filename);
+		// 	};
+	}
 	const versions = window.process.versions;
 	// @ts-expect-error ignore
 	const electronVersion = parseFloat(versions.electron);

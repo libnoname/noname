@@ -1,5 +1,5 @@
 import ts from "typescript";
-import importMap from "./import-map";
+let importMap: Record<string, string>;
 
 /**
  * 将 import 路径根据 importmap 替换
@@ -14,13 +14,7 @@ function applyImportMap(source: string, fileName = "module.ts") {
 				const spec = node.moduleSpecifier.text;
 				const mapped = importMap[spec];
 				if (mapped) {
-					return ts.factory.updateImportDeclaration(
-						node,
-						node.modifiers,
-						node.importClause,
-						ts.factory.createStringLiteral(mapped),
-						node.assertClause
-					);
+					return ts.factory.updateImportDeclaration(node, node.modifiers, node.importClause, ts.factory.createStringLiteral(mapped), node.assertClause);
 				}
 			}
 
@@ -51,6 +45,7 @@ function applyImportMap(source: string, fileName = "module.ts") {
  * 编译（支持 TS 与 JS）
  */
 export async function compile(source: string, fileName = "module.ts") {
+	if (!importMap) importMap = await fetch("/jit/import-map.json").then(i => i.json());
 	const transformedSource = applyImportMap(source, fileName);
 
 	const result = ts.transpileModule(transformedSource, {
