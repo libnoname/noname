@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "@noname";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
 	puyuan: "蒲元",

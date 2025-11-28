@@ -1,4 +1,4 @@
-import { _status, game, get, lib, ui } from "@noname";
+import { _status, game, get, lib, ui } from "noname";
 import { Pagination } from "@/util/pagination.js";
 
 export class Dialog extends HTMLDivElement {

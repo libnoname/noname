@@ -1,4 +1,4 @@
-import { lib } from "@noname";
+import { lib } from "noname";
 import { GameEvent } from "../gameEvent.js";
 
 export type NonameGameEventChangedArgs = [newEvent: GameEvent, oldEvent: GameEvent];

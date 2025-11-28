@@ -1,5 +1,5 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
-import { ui, game, get, ai, lib, _status } from "@noname";
+import { ui, game, get, ai, lib, _status } from "noname";
 
 export const cardPackMenu = function (connectMenu) {
 	/**

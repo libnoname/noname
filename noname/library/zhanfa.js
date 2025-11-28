@@ -1,4 +1,4 @@
-import { _status, game, get, lib } from "@noname";
+import { _status, game, get, lib } from "noname";
 
 /**
  * 战法！！！！！有几种类型的战法是有模板可以套的，详情请看library的index.js，搜索zf_开头的技能

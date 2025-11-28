@@ -11,7 +11,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": "/noname",
-			"@noname": "/noname.js",
+			"noname": "/noname.js",
 		},
 		extensions: [".tsx", ".ts", ".js", ".vue"],
 	},

@@ -1,4 +1,4 @@
-import { _status, game, get, lib, ui } from "@noname";
+import { _status, game, get, lib, ui } from "noname";
 
 export class Card extends HTMLDivElement {
 	/**

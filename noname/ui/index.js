@@ -1,4 +1,4 @@
-import { lib, game, get, _status } from "@noname";
+import { lib, game, get, _status } from "noname";
 import { Click } from "./click/index.js";
 import { Create } from "./create/index.js";
 

@@ -1,4 +1,4 @@
-import { lib } from "@noname";
+import { lib } from "noname";
 import PauseManager from "@/game/PauseManager.ts";
 import { GameEventManager } from "@/library/element/gameEvent.js";
 

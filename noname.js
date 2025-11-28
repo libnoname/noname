@@ -11,4 +11,3 @@ export { Get, get, setGet } from "./noname/get/index.js";
 export { Library, lib, setLibrary } from "./noname/library/index.js";
 export { status, _status, setStatus } from "./noname/status/index.js";
 export { UI, ui, setUI } from "./noname/ui/index.js";
-export { boot, onload } from "./noname/init/index.js";

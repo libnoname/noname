@@ -1,4 +1,4 @@
-import { _status, get, lib, game, ai, ui } from "@noname";
+import { _status, get, lib, game, ai, ui } from "noname";
 import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
 import security from "@/util/security.js";

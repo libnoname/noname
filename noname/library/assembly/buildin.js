@@ -1,4 +1,4 @@
-import { _status, get, lib, ui } from "@noname";
+import { _status, get, lib, ui } from "noname";
 
 /**
  * @type {(NonameAssemblyType["checkBegin"])}

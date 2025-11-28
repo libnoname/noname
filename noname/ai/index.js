@@ -1,4 +1,4 @@
-import { _status, get, lib } from "@noname";
+import { _status, get, lib } from "noname";
 import { Basic } from "./basic.js";
 
 export class AI {

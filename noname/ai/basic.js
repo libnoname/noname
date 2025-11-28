@@ -1,4 +1,4 @@
-import { _status, lib, game, get, ui } from "@noname";
+import { _status, lib, game, get, ui } from "noname";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 export class Basic {
 	/**

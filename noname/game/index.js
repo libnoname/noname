@@ -10,7 +10,7 @@
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
-import { _status, lib, get, ai, ui, gnc } from "@noname";
+import { _status, lib, get, ai, ui, gnc } from "noname";
 import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "@/util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";

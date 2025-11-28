@@ -1,4 +1,4 @@
-import { _status, get, lib, ai } from "@noname";
+import { _status, get, lib, ai } from "noname";
 
 export class VCard {
 	/**

@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { lib, get } from "@noname";
+import { lib, get } from "noname";
 import { delay } from "@/util/index.js";
 
 interface Props {

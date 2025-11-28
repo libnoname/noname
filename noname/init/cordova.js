@@ -8,6 +8,14 @@ import { nonameInitialized } from "../util/index.js";
 import { checkVersion } from "../library/update.js";
 
 export async function cordovaReady() {
+	// 安卓端根目录的cordova.js
+	const script = document.createElement("script");
+	script.src = "cordova.js";
+	document.body.appendChild(script);
+	await new Promise(resolve => {
+		document.addEventListener("deviceready", () => resolve(void 0));
+	});
+
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑
 		window.addEventListener(
@@ -106,34 +114,34 @@ export async function cordovaReady() {
 				})
 				.catch(console.log);
 		}
-		if (typeof window.NonameAndroidBridge == "undefined" || typeof window.NonameAndroidBridge.getPackageName != "function" || typeof window.NonameAndroidBridge.getPackageVersionCode != "function") {
-			throw new Error("您的安卓客户端版本过低，请升级至最新版");
-		}
-		const versionCode = window.NonameAndroidBridge.getPackageVersionCode();
-		switch (window.NonameAndroidBridge.getPackageName()) {
-			case "com.noname.shijian":
-				if (versionCode < 16007) {
-					throw new Error("您的安卓诗笺版客户端版本过低，请升级至v1.6.7或以上");
-				}
-				break;
-			case "yuri.nakamura.noname_android":
-				if (versionCode < 10904) {
-					throw new Error("您的安卓由理版客户端版本过低，请升级至v1.9.4或以上");
-				}
-				break;
-			case "yuri.nakamura.noname":
-				if (versionCode < 108004) {
-					throw new Error("您的安卓兼容版客户端版本过低，请升级至v1.8.4或以上");
-				}
-				break;
-			case "com.widget.noname.cola":
-				if (versionCode < 10320) {
-					throw new Error("您的安卓增强版客户端版本过低，请升级至v1.3.2或以上");
-				}
-				break;
-			default:
-			// todo: 懒人包提示
-		}
+		// if (typeof window.NonameAndroidBridge == "undefined" || typeof window.NonameAndroidBridge.getPackageName != "function" || typeof window.NonameAndroidBridge.getPackageVersionCode != "function") {
+		// 	throw new Error("您的安卓客户端版本过低，请升级至最新版");
+		// }
+		// const versionCode = window.NonameAndroidBridge.getPackageVersionCode();
+		// switch (window.NonameAndroidBridge.getPackageName()) {
+		// 	case "com.noname.shijian":
+		// 		if (versionCode < 16007) {
+		// 			throw new Error("您的安卓诗笺版客户端版本过低，请升级至v1.6.7或以上");
+		// 		}
+		// 		break;
+		// 	case "yuri.nakamura.noname_android":
+		// 		if (versionCode < 10904) {
+		// 			throw new Error("您的安卓由理版客户端版本过低，请升级至v1.9.4或以上");
+		// 		}
+		// 		break;
+		// 	case "yuri.nakamura.noname":
+		// 		if (versionCode < 108004) {
+		// 			throw new Error("您的安卓兼容版客户端版本过低，请升级至v1.8.4或以上");
+		// 		}
+		// 		break;
+		// 	case "com.widget.noname.cola":
+		// 		if (versionCode < 10320) {
+		// 			throw new Error("您的安卓增强版客户端版本过低，请升级至v1.3.2或以上");
+		// 		}
+		// 		break;
+		// 	default:
+		// 	// todo: 懒人包提示
+		// }
 	}
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
 		if (!url.startsWith("http")) {

@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "@noname";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
 	ol_sb_xizhicai: "OL谋戏志才",

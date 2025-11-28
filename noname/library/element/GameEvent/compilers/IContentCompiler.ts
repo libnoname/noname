@@ -1,4 +1,4 @@
-import { lib } from "@noname";
+import { lib } from "noname";
 
 type GeneralFunction = (...args: any[]) => any;
 export type EventContent = GeneralFunction | GeneralFunction[];

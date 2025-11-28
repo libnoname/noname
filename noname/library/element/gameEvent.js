@@ -1,4 +1,4 @@
-import { _status, game, get, lib, ui } from "@noname";
+import { _status, game, get, lib, ui } from "noname";
 import { Player } from "./index.js";
 import security from "@/util/security.js";
 import ContentCompiler from "./GameEvent/compilers/ContentCompiler.ts";

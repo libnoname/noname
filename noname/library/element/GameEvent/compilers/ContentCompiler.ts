@@ -1,4 +1,4 @@
-import { lib } from "@noname";
+import { lib } from "noname";
 import { IContentCompiler, EventCompileable, EventCompiledContent, EventContent } from "./IContentCompiler.ts";
 
 import StepCompiler from "./StepCompiler.ts";

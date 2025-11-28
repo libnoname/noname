@@ -1,4 +1,4 @@
-import { game, lib } from "@noname";
+import { game, lib } from "noname";
 
 /**
  * @type {(NonameHookType["addGroup"])[]}

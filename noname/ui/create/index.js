@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ai, ui } from "@noname";
+import { lib, game, get, _status, ai, ui } from "noname";
 import { menu } from "./menu/index.js";
 import { cardPackMenu } from "./menu/pages/cardPackMenu.js";
 import { characterPackMenu } from "./menu/pages/characterPackMenu.js";

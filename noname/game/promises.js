@@ -1,4 +1,4 @@
-import { lib, _status, game } from "@noname";
+import { lib, _status, game } from "noname";
 
 export class GamePromises {
 	/**

@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ui } from "@noname";
+import { lib, game, get, _status, ui } from "noname";
 export class Click {
 	/**
 	 * @type {() => void}

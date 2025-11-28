@@ -1,4 +1,4 @@
-import { game, get, lib } from "@noname";
+import { game, get, lib } from "noname";
 
 /**
  * @type {Map<string, {name: string, info: string}>}

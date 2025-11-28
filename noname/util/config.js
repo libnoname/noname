@@ -1,4 +1,4 @@
-import { lib, game } from "@noname";
+import { lib, game } from "noname";
 
 /**
  * @param {string} name

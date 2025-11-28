@@ -1,4 +1,4 @@
-// import { game, get, lib } from "@noname";
+// import { game, get, lib } from "noname";
 import { MD5 } from "crypto-js";
 
 let cacheEnvironment = false;

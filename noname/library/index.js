@@ -8,7 +8,7 @@
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
-import { ai, get, game, _status, ui, gnc } from "@noname";
+import { ai, get, game, _status, ui, gnc } from "noname";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
 import { Channel } from "./channel/index.js";

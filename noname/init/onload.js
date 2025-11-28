@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ui, gnc } from "@noname";
+import { lib, game, get, _status, ui, gnc } from "noname";
 import { importMode } from "./import.js";
 import { Mutex } from "@/util/mutex.js";
 import { load } from "@/util/config.js";

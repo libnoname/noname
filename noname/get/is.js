@@ -1,4 +1,4 @@
-import { _status, lib, game, get, ui } from "@noname";
+import { _status, lib, game, get, ui } from "noname";
 import { userAgentLowerCase, GeneratorFunction, AsyncFunction } from "@/util/index.js";
 
 export class Is {

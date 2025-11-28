@@ -1,4 +1,4 @@
-import { lib, _status } from "@noname";
+import { lib, _status } from "noname";
 
 export class LibInitPromises {
 	/**

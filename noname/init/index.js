@@ -1,4 +1,4 @@
-import { rootURL, lib, game, get, _status, ui, ai, gnc } from "@noname";
+import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 export { onload } from "./onload.js";
 import { userAgentLowerCase, nonameInitialized, device, leaveCompatibleEnvironment } from "@/util/index.js";
@@ -344,17 +344,8 @@ export async function boot() {
 			}
 		};
 		if (typeof lib.device != "undefined") {
-			// 这是安卓端根目录的cordova.js，不是init目录下面的
-			const script = document.createElement("script");
-			script.src = "cordova.js";
-			document.body.appendChild(script);
-			await new Promise(resolve => {
-				document.addEventListener("deviceready", async () => {
-					const { cordovaReady } = await import("./cordova.js");
-					await cordovaReady();
-					resolve(void 0);
-				});
-			});
+			const { cordovaReady } = await import("./cordova.js");
+			await cordovaReady();
 		} else {
 			const { browserReady } = await import("./browser.js");
 			await browserReady();
@@ -455,6 +446,7 @@ export async function boot() {
 	await loadCss();
 	initSheet();
 
+	await lib.init.promises.js("game", "package");
 	const pack = window.noname_package;
 	delete window.noname_package;
 	for (const name in pack.character) {
@@ -566,6 +558,7 @@ export async function boot() {
 	}
 
 	// 无名杀更新日志
+	await lib.init.promises.js("game", "update");
 	if (window.noname_update) {
 		lib.version = window.noname_update.version;
 		// 更全面的更新内容
@@ -924,6 +917,8 @@ function initSheet() {
 }
 
 async function loadConfig() {
+	const path = "/game/config.js";
+	await import(/*@vite-ignore*/ path);
 	lib.config = window.config;
 	lib.configOL = {};
 	delete window.config;

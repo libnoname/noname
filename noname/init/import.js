@@ -1,4 +1,4 @@
-import { lib, game, _status } from "@noname";
+import { lib, game, _status } from "noname";
 import security from "@/util/security.js";
 /**
  * @param {string} name - 卡牌包名

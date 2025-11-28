@@ -1,4 +1,4 @@
-import { lib, game, ui } from "@noname";
+import { lib, game, ui } from "noname";
 import { createApp } from "vue";
 
 import OnloadSplash from "./OnloadSplash.vue";

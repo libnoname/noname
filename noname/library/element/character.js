@@ -1,4 +1,4 @@
-import { _status, get, lib } from "@noname";
+import { _status, get, lib } from "noname";
 export class Character {
 	/**
 	 * 武将牌的性别

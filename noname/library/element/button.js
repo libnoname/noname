@@ -1,4 +1,4 @@
-import { _status, get, lib, ui } from "@noname";
+import { _status, get, lib, ui } from "noname";
 export class Button extends HTMLDivElement {
 	/**
 	 * @type { string | undefined }

@@ -1,11 +1,11 @@
-import { game, get, boot, onload } from "@noname";
-import { tryUpdateProtocol } from "@/init/index.js";
+import { game, get } from "noname";
+import { boot, onload, tryUpdateProtocol } from "@/init/index.js";
 import { nonameInitialized, userAgentLowerCase } from "@/util/index.js";
+import "core-js-bundle";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 
 (async function () {
-	await import("core-js-bundle");
 	// 使用到的文本
 	const globalText = {
 		GPL_ALERT: ["①无名杀是一款基于GPLv3协议的开源软件！", "你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。", "点击“确定”即代表您认可并接受GPLv3协议↓️", "https://www.gnu.org/licenses/gpl-3.0.html", "②无名杀官方发布地址仅有GitHub仓库！", "其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！"].join("\n"),

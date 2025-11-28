@@ -1,4 +1,4 @@
-import { _status, game } from "@noname";
+import { _status, game } from "noname";
 
 export class NodeWS {
 	/**

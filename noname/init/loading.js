@@ -2,7 +2,7 @@
  * 从读取的内容中获取数据
  */
 
-import { lib, game, get, _status, ui, ai, gnc } from "@noname";
+import { lib, game, get, _status, ui, ai, gnc } from "noname";
 import { isClass } from "@/util/index.js";
 
 /**

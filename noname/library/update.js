@@ -1,4 +1,4 @@
-import { ui, game, lib } from "@noname";
+import { ui, game, lib } from "noname";
 
 // https://github.com/libnoname/noname/archive/refs/tags/v1.10.10.zip
 

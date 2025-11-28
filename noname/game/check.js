@@ -1,4 +1,4 @@
-import { _status, get, lib, game, ui } from "@noname";
+import { _status, get, lib, game, ui } from "noname";
 
 export class Check {
 	processSelection({ type, items, event, useCache, isSelectable }) {
