@@ -2,6 +2,7 @@ import { game, get } from "noname";
 import { boot, onload, tryUpdateProtocol } from "@/init/index.js";
 import { nonameInitialized, userAgentLowerCase } from "@/util/index.js";
 import "core-js-bundle";
+import "../jit/index.js";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 
@@ -19,6 +20,7 @@ import "vue/dist/vue.esm-browser.js";
 		alert(globalText.REDIRECT_TIP);
 		return;
 	}
+	
 
 	window["bannedExtensions"] = [
 		"\u4fa0\u4e49",
@@ -57,7 +59,6 @@ import "vue/dist/vue.esm-browser.js";
 		}
 	}
 
-	await import("../jit/index.js");
 
 	try {
 		await boot();
