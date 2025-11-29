@@ -94,12 +94,12 @@ declare type GeneratorContentFuncByAll = (event: GameEvent, map: {
 
 declare type OldContentFuncByAll = () => void
 
-declare type Game = typeof import('@noname').game;
-declare type Library = typeof import('@noname').lib;
-declare type Status = typeof import('@noname')._status;
-declare type UI = typeof import('@noname').ui;
-declare type Get = typeof import('@noname').get;
-declare type AI = typeof import('@noname').ai;
+declare type Game = typeof import('noname').game;
+declare type Library = typeof import('noname').lib;
+declare type Status = typeof import('noname')._status;
+declare type UI = typeof import('noname').ui;
+declare type Get = typeof import('noname').get;
+declare type AI = typeof import('noname').ai;
 
 declare type Button = import('@/library/index.js').Button;
 declare type Card = import('@/library/index.js').Card;
