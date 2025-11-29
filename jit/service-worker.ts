@@ -12,7 +12,7 @@ worker.addEventListener("activate", event => {
 	// event.waitUntil(worker.clients.claim());
 	event.waitUntil(
 		worker.clients.claim().then(() => {
-			console.log("service worker加载完成，执行重启操作");
+			console.log("service worker加载完成，重启页面");
 			sendReload();
 		})
 	);
@@ -25,11 +25,11 @@ worker.addEventListener("message", event => {
 		case "reload":
 			sendReload();
 			break;
-		case "allowJs": {
-			const tsStrategy = strategies.find(i => i instanceof CompileStrategy.TSStrategy);
-			if (tsStrategy) tsStrategy.allowJs = event.data.enabled || false;
-			break;
-		}
+		// case "allowJs": {
+		// 	const tsStrategy = strategies.find(i => i instanceof CompileStrategy.TSStrategy);
+		// 	if (tsStrategy) tsStrategy.allowJs = event.data.enabled || false;
+		// 	break;
+		// }
 		default:
 			console.log("Unknown action");
 	}
@@ -43,9 +43,9 @@ function sendReload() {
 	});
 }
 
-const strategies: CompileStrategy.BaseStrategy[] = [new CompileStrategy.BuiltinModuleStrategy(), new CompileStrategy.RawResourceStrategy(), new CompileStrategy.WorkerResourceStrategy(), new CompileStrategy.UrlResourceStrategy(), new CompileStrategy.JSONStrategy(), new CompileStrategy.TSStrategy({ allowJs: false }), new CompileStrategy.CSSStrategy(), new CompileStrategy.VueSFCStrategy()];
+const strategies: CompileStrategy.BaseStrategy[] = [new CompileStrategy.RawResourceStrategy(), new CompileStrategy.WorkerResourceStrategy(), new CompileStrategy.UrlResourceStrategy(), new CompileStrategy.JSONStrategy(), new CompileStrategy.TSStrategy({ allowJs: false }), new CompileStrategy.CSSStrategy(), new CompileStrategy.VueSFCStrategy()];
 
-const proxyedPath = ["/extension", "/noname-builtinModules/", "/jit"];
+const proxyedPath = ["/extension", "/jit"];
 // --- fetch 拦截入口 ---
 worker.addEventListener("fetch", (event: FetchEvent) => {
 	const request = event.request;

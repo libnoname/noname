@@ -80,7 +80,7 @@ await build({
 	plugins: [
 		viteStaticCopy({ targets: staticModules }),
 		generateImportMap(importMap),
-		jit(importMap),
+		jit(),
 		(() => {
 			let hasSourceMap = false;
 			return {

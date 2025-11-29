@@ -56,34 +56,34 @@ abstract class CompileStrategy implements BaseStrategy {
 	}
 }
 
-/**
- * 将nodejs的模块编译为js module模块，是在html中使用了如下代码:
- * ```js
- * const builtinModules = require("module").builtinModules;
- * if (Array.isArray(builtinModules)) {
- * 	const importMap = {
- * 		imports: {},
- * 	};
- * 	for (const module of builtinModules) {
- * 		importMap.imports[module] = importMap.imports[`node:${module}`] =
- * 			`./noname-builtinModules/${module}`;
- * 	}
- * 	const im = document.createElement("script");
- * 	im.type = "importmap";
- * 	im.textContent = JSON.stringify(importMap);
- * 	document.currentScript.after(im);
- * }
- * ```
- */
-export class BuiltinModuleStrategy implements BaseStrategy {
-	match(ctx: RequestContext): boolean {
-		return ctx.url.pathname.startsWith("/noname-builtinModules/");
-	}
-	async process(ctx: RequestContext): Promise<Response> {
-		const moduleName = ctx.request.url.replace(location.origin + "/noname-builtinModules/", "");
-		return getResponse(`const module = require('${moduleName}');\nexport default module;`);
-	}
-}
+// /**
+//  * 将nodejs的模块编译为js module模块，是在html中使用了如下代码:
+//  * ```js
+//  * const builtinModules = require("module").builtinModules;
+//  * if (Array.isArray(builtinModules)) {
+//  * 	const importMap = {
+//  * 		imports: {},
+//  * 	};
+//  * 	for (const module of builtinModules) {
+//  * 		importMap.imports[module] = importMap.imports[`node:${module}`] =
+//  * 			`./noname-builtinModules/${module}`;
+//  * 	}
+//  * 	const im = document.createElement("script");
+//  * 	im.type = "importmap";
+//  * 	im.textContent = JSON.stringify(importMap);
+//  * 	document.currentScript.after(im);
+//  * }
+//  * ```
+//  */
+// export class BuiltinModuleStrategy implements BaseStrategy {
+// 	match(ctx: RequestContext): boolean {
+// 		return ctx.url.pathname.startsWith("/noname-builtinModules/");
+// 	}
+// 	async process(ctx: RequestContext): Promise<Response> {
+// 		const moduleName = ctx.request.url.replace(location.origin + "/noname-builtinModules/", "");
+// 		return getResponse(`const module = require('${moduleName}');\nexport default module;`);
+// 	}
+// }
 
 /**
  * 返回资源的原始内容字符串
