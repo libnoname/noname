@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 export { onload } from "./onload.js";
@@ -343,37 +344,12 @@ export async function boot() {
 				return null;
 			}
 		};
-		if (typeof lib.device != "undefined") {
-			const { cordovaReady } = await import("./cordova.js");
-			await cordovaReady();
-		} else {
+		if (import.meta.env.DEV || typeof lib.device == "undefined") {
 			const { browserReady } = await import("./browser.js");
 			await browserReady();
-			// //为其他自定义平台提供文件读写函数赋值的一种方式。
-			// //但这种方式只允许修改game的文件读写函数。
-			// if (typeof window.initReadWriteFunction == "function") {
-			// 	const g = {};
-			// 	const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
-			// 	ReadWriteFunctionName.forEach(prop => {
-			// 		Object.defineProperty(g, prop, {
-			// 			configurable: true,
-			// 			get() {
-			// 				return undefined;
-			// 			},
-			// 			set(newValue) {
-			// 				if (typeof newValue == "function") {
-			// 					delete g[prop];
-			// 					g[prop] = game[prop] = newValue;
-			// 				}
-			// 			},
-			// 		});
-			// 	});
-			// 	// @ts-expect-error ignore
-			// 	await window.initReadWriteFunction(g).catch(e => {
-			// 		console.error("文件读写函数初始化失败:", e);
-			// 	});
-			// 	delete window.initReadWriteFunction; // 后续用不到了喵
-			// }
+		} else {
+			const { cordovaReady } = await import("./cordova.js");
+			await cordovaReady();
 		}
 	}
 

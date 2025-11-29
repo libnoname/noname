@@ -2,9 +2,11 @@
 export {};
 (async function () {
 	if (import.meta.env.DEV) {
-		let scope = new URL("./", location.href).toString();
-		let registrations = await navigator.serviceWorker.getRegistrations();
-		await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
+		if ("serviceWorker" in navigator) {
+			let scope = new URL("./", location.href).toString();
+			let registrations = await navigator.serviceWorker.getRegistrations();
+			await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
+		}
 		return;
 	}
 
