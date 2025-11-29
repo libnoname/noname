@@ -1996,8 +1996,6 @@ div.popup-container.editor div {
 
 .cm-editor {
 	height: 100%;
-	/*cm-tooltip-autocomplete fixed相对定位根*/
-	transform: translateZ(0);
 }
 
 div.popup-container.editor2,
