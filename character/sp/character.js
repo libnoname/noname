@@ -769,7 +769,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 1,
-		skills: ["yinka", "zhuixi"],
+		skills: ["yinka", "zhuishe"],
 		isAiForbidden: true,
 		isUnseen: true,
 	},

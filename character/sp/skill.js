@@ -25272,7 +25272,7 @@ const skills = {
 		},
 	},
 	//蔡阳新技能
-	zhuixi: {
+	zhuishe: {
 		mod: {
 			cardUsable(card, player, num) {
 				if (card.name == "sha") {

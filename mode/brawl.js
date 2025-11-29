@@ -3499,7 +3499,7 @@ export default () => {
 											sex: "male",
 											group: "qun",
 											hp: 1,
-											skills: ["zhuixi"],
+											skills: ["zhuishe"],
 										},
 									},
 									translate: {
