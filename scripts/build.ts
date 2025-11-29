@@ -14,6 +14,7 @@ const importMap: Record<string, string> = {
 	noname: "/noname.js",
 	vue: "vue/dist/vue.esm-browser.js",
 	"pinyin-pro": "pinyin-pro",
+	"dedent": "dedent",
 	// jszip: "jszip",
 };
 
