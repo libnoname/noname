@@ -3994,8 +3994,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
-		// 默认显示人物简介
-		applyViewMode("intro");
+		// 默认显示人物技能
+		applyViewMode("skill");
 
 		// 创建皮肤容器并添加到intro底部
 		if (lib.characterSubstitute[name]) {
@@ -4004,14 +4004,21 @@ export class Click {
 					intro = uiintro.querySelector(".characterintro");
 				}
 				if (intro) {
-					intro.style.display = "flex";
-					intro.style.flexDirection = "column";
-					let contentWrapper = ui.create.div(".intro-content-wrapper");
-					contentWrapper.style.flex = "1";
-					while (intro.firstChild) {
-						contentWrapper.appendChild(intro.firstChild);
+					let layoutWrapper = intro.querySelector(".intro-layout-wrapper");
+					if (!layoutWrapper) {
+						layoutWrapper = ui.create.div(".intro-layout-wrapper");
+						layoutWrapper.style.display = "flex";
+						layoutWrapper.style.flexDirection = "column";
+						layoutWrapper.style.height = "100%";
+						let contentWrapper = ui.create.div(".intro-content-wrapper");
+						contentWrapper.style.flex = "1";
+						contentWrapper.style.overflowY = "auto";
+						while (intro.firstChild) {
+							contentWrapper.appendChild(intro.firstChild);
+						}
+						layoutWrapper.appendChild(contentWrapper);
+						intro.appendChild(layoutWrapper);
 					}
-					intro.appendChild(contentWrapper);
 					// 清除已有皮肤
 					delete bg.tempSkin;
 					const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
@@ -4020,14 +4027,15 @@ export class Click {
 							delete skillButtons[i].playAudio;
 						}
 					}
-					const currentSkinsContainer = intro.querySelector(".skins-container");
+					const currentSkinsContainer = layoutWrapper.querySelector(".skins-container");
 					if (currentSkinsContainer) {
 						currentSkinsContainer.remove();
 					}
 					// 创建皮肤容器
-					let skinsContainer = ui.create.div(".skins-container", intro);
+					let skinsContainer = ui.create.div(".skins-container", layoutWrapper);
 					skinsContainer.style.marginTop = "auto";
 					skinsContainer.style.paddingTop = "20px";
+					skinsContainer.style.flexShrink = "0";
 					// 创建皮肤列表
 					let skinsList = ui.create.div(".skins-list.horizontal", skinsContainer);
 					skinsList.style.display = "flex";
@@ -4046,36 +4054,32 @@ export class Click {
 									delete skillButtons[i].playAudio;
 								}
 							}
-							const currentSkinsContainer = intro.querySelector(".skins-container");
-							if (currentSkinsContainer) {
-								currentSkinsContainer.remove();
-							}
-							const currentWrapper = intro.querySelector(".intro-content-wrapper");
+							const currentLayout = intro.querySelector(".intro-layout-wrapper");
+							const currentWrapper = currentLayout ? currentLayout.querySelector(".intro-content-wrapper") : null;
+							const currentSkinsContainer = currentLayout ? currentLayout.querySelector(".skins-container") : null;
 							if (currentWrapper) {
-								while (intro.firstChild) {
-									intro.removeChild(intro.firstChild);
-								}
 								while (currentWrapper.firstChild) {
 									intro.appendChild(currentWrapper.firstChild);
 								}
 							}
+							if (currentLayout) currentLayout.remove();
 							refreshIntro();
-							intro.style.display = "flex";
-							intro.style.flexDirection = "column";
+							let newLayoutWrapper = ui.create.div(".intro-layout-wrapper");
+							newLayoutWrapper.style.display = "flex";
+							newLayoutWrapper.style.flexDirection = "column";
+							newLayoutWrapper.style.height = "100%";
 							let newWrapper = ui.create.div(".intro-content-wrapper");
 							newWrapper.style.flex = "1";
-							while (intro.firstChild && (!intro.firstChild.classList || !intro.firstChild.classList.contains("skins-container"))) {
+							newWrapper.style.overflowY = "auto";
+							while (intro.firstChild) {
 								newWrapper.appendChild(intro.firstChild);
 							}
-							if (intro.firstChild) {
-								intro.insertBefore(newWrapper, intro.firstChild);
-							} else {
-								intro.appendChild(newWrapper);
-							}
-							if (currentSkinsContainer) {
-								intro.appendChild(currentSkinsContainer);
-							}
+							newLayoutWrapper.appendChild(newWrapper);
 
+							if (currentSkinsContainer) {
+								newLayoutWrapper.appendChild(currentSkinsContainer);
+							}
+							intro.appendChild(newLayoutWrapper);
 							game.callHook("refreshSkin", [skinButtonList[0], this.name]);
 						});
 						skinButton.name = skinName;
