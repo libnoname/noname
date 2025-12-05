@@ -4013,6 +4013,7 @@ export class Click {
 						let contentWrapper = ui.create.div(".intro-content-wrapper");
 						contentWrapper.style.flex = "1";
 						contentWrapper.style.overflowY = "auto";
+						contentWrapper.style.minHeight = "100px";
 						while (intro.firstChild) {
 							contentWrapper.appendChild(intro.firstChild);
 						}
@@ -4036,6 +4037,8 @@ export class Click {
 					skinsContainer.style.marginTop = "auto";
 					skinsContainer.style.paddingTop = "20px";
 					skinsContainer.style.flexShrink = "0";
+					skinsContainer.style.maxHeight = "45%"; 
+					skinsContainer.style.overflowY = "auto"; 
 					// 创建皮肤列表
 					let skinsList = ui.create.div(".skins-list.horizontal", skinsContainer);
 					skinsList.style.display = "flex";
@@ -4071,11 +4074,11 @@ export class Click {
 							let newWrapper = ui.create.div(".intro-content-wrapper");
 							newWrapper.style.flex = "1";
 							newWrapper.style.overflowY = "auto";
+							newWrapper.style.minHeight = "100px";
 							while (intro.firstChild) {
 								newWrapper.appendChild(intro.firstChild);
 							}
 							newLayoutWrapper.appendChild(newWrapper);
-
 							if (currentSkinsContainer) {
 								newLayoutWrapper.appendChild(currentSkinsContainer);
 							}
