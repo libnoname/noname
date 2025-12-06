@@ -28,6 +28,7 @@ const staticModules: Target[] = [
 	{ src: "game", dest: "" },
 	{ src: "LICENSE", dest: "" },
 	{ src: "README.md", dest: "" },
+	{ src: ".nomedia", dest: "" },
 	// step 无法编译，需要覆盖
 	// 重构之后请删除
 	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
@@ -39,6 +40,7 @@ const staticModules: Target[] = [
 if (argv.mode) {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
+	staticModules.push({ src: "docs", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
 	staticModules.push(
 		...[
