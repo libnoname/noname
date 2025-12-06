@@ -1,652 +1,544 @@
-# v1.10.17.3 版本更新内容
+# v1.11.0更新内容
 
-※添加新武将
-- 武将包：青史翰墨四个亡国之君、四象封印·青龙七将、珍藏封印八个将、风云际会、“山河煮酒·关索传”11个新武将，“长安风云”6个新武将，“蚀心入魔”8位新武将，“君霸天下”10位新武将，“渭南风云”7位新武将
-- 新杀：向宠、吉邈吉穆、崔令仪、新杀谋胡烈、谋姜维、诸葛均、怀刃伍孚、忠锷伍孚、任婉、张琪瑛一号、张琪瑛二号、忍邓艾、忍姜维、
-- OL：OL谋小乔、族陆绩、族陆景、冲儿
-- 手杀：势鲁肃、手杀孙峻、势魏延、笮融
-- 线下：魔曹操、曲阿小将、
-- 国战：“紫气东来”、“金印紫绶”扩展包22个晋将，晋势力君主【君司马懿】
+※我们继续和一些优秀且具有开源精神的代码编写者保持着积极合作。在这一版本中，我们通过接收GitHub的Pull Request，整合了@AstralBarrage @ChiryuhLii @Cicardo-Thicavasco @diandian157 @IceCola97 @kuangshen04 @LeeMing999 @mengxinzxz @nonamemajun @nonameShijian @rebirth-of-I-am @Sun-F2004 @S-N-O-R-L-A-X @taofendawang1105 @Xiazhiliao @xiyang141 @xizifu @xjm0708 @yx-lingmeng @zhichaoxi2006 @zhonghui1966 @1937475624 共22位贡献者编写的代码（排名不分先后）。
 
-※**国战拆分**
-※联机支持域名地址
-※新卡牌：新杀开黑妙妙杀卡牌【以毒攻毒】【大军压境】【浑天仪】
-※斗地主休闲和开黑模式支持自定义地主农民候选武将数
-※临时关闭首次载入时的在线更新素材提示
-※临时修复技能未初始化引起的录像bug
-※修复兵乐无useful导致AI错乱留牌的bug
-※修复廖化【伏枥】回复值问题
-※修复新杀蒋琬费祎【生息】时机
-※修复星张让【蠹害】可以对死亡角色发动的问题
-※修复TW周处【除害】从其他角色处获得牌报错的bug
-※调整界面缩放功能为百分比显示
-※ 修改部分默认配置
-※重写乐就/TW乐就【催进】AI
-※优化汉末神皇甫嵩【势策】提示
-※【决斗】杀不足AI不再打出
-※简化mayHaveShan调用（Player.mayHaveShan(viewer, type, ignore, rvt): 若type为"use"且ignore不为false，则自动设ignore为this.getCards("h", i => i.hasGaintag("sha_notshan"))）
-※生死与共、落井下石增加$skill动画
-※桃园陆逊的火烧连营语音调整、以及展示牌窗口调整
-※技能调整至最新版：乐蔡邕、新杀夏侯玄、新杀徐馨、OL张曼成、吴珂助国、新杀钟毓、诸葛均、乐诸葛果、诸葛若雪、手杀谋贾诩、手杀清河公主等
-※海外调整：葛玄、童渊、夏侯紫萼、夏侯子萼、幻张郃、幻姜维、界朱治、谋陈宫、阎圃。同时手杀的对应武将技能async化
-※调整文鸯【膂力】为动态 usable
-※修复 SCL 曹婴【凌人】猜对效果不符
-※界廖化【伏枥】回复体力失效
-※幻曹冲【修睦】联机报错
-※轮次结束时机前加个空白记录隔断；
-※修复势于吉【符济】ai 报错
-※族钟会【迂志】event.num1 未修改为 num1
-※魔司马【骤袭】未判断失效技能
-※【浮雷】判定生效不会受伤的 bug
-※调整张绣【雄乱】、鲁班【鬼斧】【神工】
-※修复了一个使用[无懈可击]但是客机“取消”按钮异常滞留的 bug
-※修复了“\_wuxie”部分情况下导致的异常报错与技能效果无效（旧版本的\_wuxie 没有判断\_status.event 是否为“\_wixie”就直接执行了 game.resume();导致部分情况下“arrangeTrigger”被报错取消从而导致技能失效）
-※优化手杀曹髦【清正】，将选择牌的部分提出方便其他技能使用
-※修复库特莉亚芙卡【巧手】未适配最新装备的更改
-※修复合赵云【镇胆】num 未定义导致报错的 bug
-※将陈寿【点墨】的创造卡牌部分添加到 ui.create.buttonPresets.skill 方法中（类似使用chooseBtton选择的技能可以参考【蹈节】【点墨】等技能使用[skills, "skill"]的格式）
-※对各模式（身份、对决、挑战、战旗）的 phaseloop 进行调整以正确触发每轮结束时的时机
-※修复吴庞统【送丧】参数名不同导致报错的 bug
-※修复谋程昱【识诈】与护甲相关的体力值变化互动错误
-※庞宏【评骘】不能使用【火攻】不能重置
-※修复伍孚势力错误的 bug
-※黄权【途绝】添加备注（无名杀现版本黄权体力值和【途绝】均为海外服版本）
-※修复兴诸葛诞【摧冰】角色死亡报错的 bug
-※修复张怀【诀言】因插入结算导致失去【决言】而报错
-※将大部分技能的 cost 中与 get.prompt/prompt2(具体技能名)相关部分改为 event.skill 方便其他技能继承
-※修复判定牌不为后来先判的 bug
-※修复SP 马超一号【追击】不为伤害值的 bug
-※修复国战【珠联璧合】当【桃】效果失效的bug
-※将【舍身】、【洞察】常驻至 lib.skill、身份局添加【明察】选项
-※修正 TW 赵襄【扶汉】、蛇栗嵩【窥机】技能描述
-※为原来的 charater 写法支持 clans 拼接
-※修复 lib.filter.characterDisabled2 未判断诸神降临的开启导致单挑模式挑战武将不可用的 bug
-※修复\_wuxie 某些情况下可能卡死的 bug
-※修复了一系列装备/判定牌显示问题
-※修爵裴秀【制图】记录加个排序优化显示
-※修复 player.needsToDiscard 对 add 为 cards 进行数组嵌套数组的操作，导致进行 ignoredHandcard 的 mod 检查时数组没有 hasGaintag 方法报错的 bug
-※修复OL 李异【缠双】因缠双角色死亡导致报错的 bug
-※对部分未与木牛流马一样可刷新使用次数的装备进行刷新装备使用技能的适配，主要涉及装备：金箍棒、红缎枪、烈淬刀、水波剑、信鸽、桃园飞龙夺凤、春秋笔、木头面具、玉衡、炼妖壶、伏羲琴、神农鼎、昆仑镜、神偷面具、蓝格怪衣、四非真面鼠槌、诏书、定澜夜明珠
-※修复旧伏寿【求援】报错的 bug
-※修复夏侯楙【蹙国】未限制首次抵消的 bug
-※修复 OL 关张【父魂】isPhaseUsing 少打括号的bug
-※本体编辑器兼容 extension.character 的对象写法
-※神鲁肃【榻谟】调整方便其他武将引用、【智盟】跟进外服最新版本
-※将赵直【统观】吴普【识草】共用的 localMark 函数内置为 player#localMarkSkill
-※蔡邕【飞白】效果调整为牌堆/弃牌堆均没有牌才摸牌
-※调整辛宪英、新辛宪英、将辛宪英等武将【忠鉴】、【才识】
-※调整邴原【清滔】【秉德】
-※修正谋刘赪【掠影】【莺舞】技能描述和效果
-※修复diy 羊祜【避召】一个拼写错误
-※修复吴质【圆融】联机 player 未定义的 bug
-※合并技能的 changeSeat 和 seatRelated 标签
-※斗地主休闲模式添加加强地主和〖飞扬〗版本选项
-※修复 TW 王昶【摄叛】不能成功重置次数的 bug
-※调整神鲁肃【榻谟】至外服版本
-※tw赵襄【扶汉】async化、async化部分refresh.js的技能
-※所有跟每轮结束有关的武将技能调整，具体如下：
-- OL：族钟会clanyuzhi、夏侯玄olzeyue、袁姬olshuiyue、魔司马懿olzhouxi|olrumo、谋董卓olguanbian
-- 十周年：神许褚zhengqing、周善dcmiyun、黄承彦dczecai、星袁绍dcjiaowang、星荀彧staranshu
-- 其他：三公将军oldigong、龙廖化dragxigui、桃园系列tyxihun、荆扬诸葛亮jyqibian
+## 新武将
 
-※修改牢贾逵【挽澜】的写法，其造成伤害后能溯源
-※神张宝技能效果加强能使用其他人的咒兵
-※OL赵忠【抵慈】造成的伤害修正为雷电伤害
-※威吕布威张辽统一：只要有一张是标记牌即可无次数限制使用
-※修复OL界廖化【当先】即使不摸杀也会受到伤害的bug
-※新杀谋刘协结算调整
-※OL赵忠【抵慈】改为unmarkAuto
-※吴普【识草】选类型的按钮样式改为vcard
-※谋荀彧【弼佐】回合封技能改为phaseBegin时机触发
-※九鼎谋关羽不计入次数和无次数限制合并
-※修复OL【劝酒】不能使用转化牌技能的问题
-※修复族杨彪其他角色失去牌不能触发【间难】以及重铸装备牌没包括手牌的bug
-※修复神钟会觉醒不加体力上限的bug
-※修复手杀势于吉【符济】不能展示装备区的牌的bug
-※OL管亥【诱阙】结算小修改
-※修复朱烁体力上限的错误
-※陈寿春秋笔改为随机一项并休整描述
-※修复手杀羊徽瑜awakenSkill错误，同时把两个技能async化
-※tw李翠莲赵全定势力改为蜀
-※修复张曼成【掠城】对非掠城角色也可以无限出杀的bug
-※珪固技能错误、技能描述修正、子技能添加charlotte标签
-※修复汉末神张宝【咒怨】发动后有可能看不到咒兵牌的bug
-※修复魔司马【骤袭】检索记录错误
-※谋卢植【司兵】因为player未定义的报错
-※威曹丕被朱佩兰发动限定技之后标记报错
-※修复十常侍被长安神贾诩复活导致不能正常进行休整不能死亡的bug
-※修复谋关【威临】判断印牌时没有unsure的问题
-※势于吉【符济】描述错误
-※修复线下车胄【暗谋】指定角色后会显示标记的bug
-※转化牌部分含有符济牌时没有判断gaintag_map对应的键值对是否存在
-※修复四个【酒诗】脱离濒死翻回来后下次进濒死不能正常喝酒的bug
-※修复钟毓【捷思】拿到同一张牌不算同名牌的bug
-※修复长安李傕和魔曹操联机对话框无法正常关闭并执行下一步操作的bug
-※修复废除装备区不会弃置牌的bug
-※修复联机填地址为空时报错的问题 
-※修复draw的摸牌数0时控制台警告的错误
-※回滚player#addSkill的info.mark处理部分、更改player#addAdditionalSkill、player#addTempSkill执行的addSkill中的nobroadcast为null，以此支持mark显示
-※revive写成事件，需要使用时请使用player#reviveEvent
-※chooseToCompare写成contents
-※调整多个前缀的nature属性
-※点墨生成的技能牌增加衍生技的显示
-※允许game.expandSkills展开subSkill，来让【点墨】【骤袭】可以筛选到更多的技能
-※为国战添加”文德武备“选项，控制国战司马懿、张春华等晋势力武将使用的版本
-※为执行的额外回合来源增加提示
-※修复lib.filter.cardUsable中判断event出错的bug
-※调整线下武将【龙关羽】【吕常】为修订版本
-※新杀谋曹洪【迎驾】SP贾诩【拥嫡】加强
-※调整国战界徐盛的技能为【破军】
-※起韩遂【互雠】添加tip标记
-※修复【立世】【戒酒】【募讨】【蜕骨】【争擎】【机论】【标倾城】【倾袭】【令法】【狂骨·二级】【平辽】【西向】【逐北】【侻失】的描述问题
-※调整【间计】【砺锋】【围铸】【虚羯】【雷公助我】【锻体】【异合】结算
-※调整【锋势】【凶逆】【溃降】【谋清俭】【登锋】【谋连营】【大雾】【狂风】【礼让】【离叛】【旧蛊惑】【落宠】的写法
-※调整【革制】【残玺】【狂信】【合伐】【国战探锋】的ai
-※修复谋董卓换肤后的焚城语音
-※【诈亡】【邀弈】【经纶】等技能补充衍生技
-※调整【蹈节】【帝力】【破怠】【夺锐】【写轮眼】使用的技能牌样式
-※调整【双雄】【连环】【惑众】的写法以符合点墨的筛选条件
-※【昭凶】补充combo
-※SP曹操【逐北】添加使用牌数提示
-※乐綝【破锐】添加次数提示
-※补充国战君曹操的缺失语音
-※调整【聚谷】为各摸一张
-※修复闪刘宏【朝争】的语音问题
-※调整【累卵】为自选锦囊牌
-※修复“同心”机制的标记显示问题
-※修正【绝围】中错误的参数
-※【寤寐】回合复制phaseList
-※【诏图】【任贤】【弼佐】回合特效绑定对应额外回合
-※为执行的额外回合来源增加提示
-※修复【制霸】语音
-※调整【乘烟】的牌名检测，避免mod的影响
-※调整【武圣归来】为对活人无效
-※调整杨奉【威命】为使命失败时重置【血途】使用次数
-※为【再起】【兴衰】等多个技能的恢复体力添加来源
-※对”对指定目标使用一张牌“的技能补上complexTarget，以适配如方天画戟的额外指定目标技能
-※调整所有[背水！]技能的结算为先执行技能效果后支付背水代价
-※国战吕玲绮【无双】语音调整
-※国战【凶虐】效果调整
-※国战【酣战】提示修复
-※国战【拒战】【卫戍】描述和标记调整
-※调整【雄踞】为修改起始手牌数
-※修复【出策】未正常限制可用牌的bug
-※修复【寤寐】在挑战模式下无限回合的bug
-※修复濒死时无法使用【献酿】酒的bug
-※修复【袭爵】的【骁果】可以被【骤袭】检索的bug
-※修复【镇胆】轮次结束时不能摸牌的bug
-※修复【妙语】没有给牌动画的bug
-※修复谋【武圣】未适配unsure的bug
-※修复【善断】联机报错的bug
-※修复【落宠】ai报错的bug
-※修复长安神贾诩的僵尸会导致getFriends/getEnemies出问题的bug
-※修复标马良【协穆】不为正面给牌的bug
-※修复势于吉【道转】飞刀的bug
-※修复用间李儒【威权】发动报错的bug
-※修复【绝围】ai报错的bug
-※修复【拾忆】没牌发动时报错的bug
-※修复【积干】部分情况未初始化报错的bug
-※修复挑战模式黑名单未正常生效的bug
-※修复吴质【圆融】选牌报错的bug
-※修复谋甘宁【奋威】ai报错的bug
-※修复【纵横】【密图】和延时拼点的bug
-※修复锦盒弃牌的bug
-※修复【军神】【狈行】【道转】的bug
-※修复濒死时使用不计入次数限制的酒，会导致无法再喝酒的bug
-※修复国战暴露野心报错的bug
-※修复君曹操衍生技id错误的bug
-※修复国战【拒战】和【迅析】的互动bug
-※修复国战【总御】交换坐骑牌不触发【屯田】的bug
-※修复国战【急袭】不能发动的bug
-※修复国战【苦肉】缺少技能翻译的bug
-※修复谋【天香】不能使用装备区牌的bug
-※修复【灭害】期间使用黑桃牌当闪不触发后续效果的bug
-※修复【余料】未筛选可选牌的bug
-※修复【武继】不会失去【虎啸】的bug
-※修复【奇击】杀自己的bug
-※修复【衡虑】回收已使用桃的bug
-※修复【袭营】【御嶂】不禁止虚拟牌使用的bug
-※修复【青冥剑】无法正确触发的bug
-※修复【乘流】目标死亡不终止流程的bug
-※修复【承袭】拼点没赢无法额外指定目标的bug
-※修复多个【设伏】重复发动的bug
-※修复【仓储】不会被【失守】失效的bug
-※修复评鉴发动【思泣】指定所有目标的bug
-※修复【精械】选择装备区牌不改变效果的bug
-※修复【据险】可以赠送牌的bug
-※修复【有福同享】仅能生效一个目标的bug
-※修复【慑叛】重置发动次数为生效的bug
-※修复【媦婉】不能对仅判定区有牌的角色使用的bug
-※修复3d夏侯玄【玄论】控底未生效的bug
-※修复【变装】未判断可用性的bug
-※修复【狂骨】技能log在回血/摸牌之后的bug
-※修复【系力】无脑发动的bug
-※修复【齐眉】不触发展示牌时机的bug
-※将国战的围攻、被围攻、处于队列等函数常驻；
-※修复传械马钧巧思卡死的bug
-※修复谋张飞无法退出酒状态的bug
-※诸葛若雪暖惠async化
-※async化手杀胡车儿的盗戟（顺便修复伤害有来源牌的bug
-※族陆景的探锋适配许劭的评鉴，避免发动技能后没法触发无视防具的效果，吴文鸟的冲坚同理
-※两个挽澜的ai优化
-※.星魏延摸牌效果和限制次数的效果放在同一个used子技能，如果中流插入结束不能摸牌
-※修复严政地道强制发动的bug
-※修复宗护没有ignoreMod标签导致的无法使用虚拟闪的bug同时优化技能交互
-※修改OL老仙天书技能的filter
-※调整雍闿势力为蜀
-※为神将补齐国战势力
-※添加势力”魔（devil）“
-※调整汉末神卢植的id为hm_shen_yl_luzhi
-※调整国战孙尚香的技能id
-※将各个武将包中的perfectPairs.js合并
-※幻曹昂的煌烛修正
-※沙盒允许用户来决定是否对当前服务器启用
-※**若干素材补充**
+- **十周年：**
+  - **神将：** 新杀神孙权
+  - **群英荟萃：** 马邈
+  - **系列专属：** 新杀阎象、崔烈、星蒋琬、星太史慈、星颜良
+  - **限定专属：** 新杀谋庞统、新杀谋吴懿、新杀谋法正、侯昭宁、新杀谋许攸、新杀谋吕蒙、新杀桓阶、凌烈、刘懿君、陶璜、新杀谋朱然、威孙尚香、新杀谋徐盛、苏越、郭缇萦、徐妏、威曹操
+  - **新一将成名：** ☆法正、SP蒲元、威孙策、爻袁术、寒冰剑少女、藤甲男孩
+  - **联动卡：** 有诸葛亮、波仔、香蕉端午
+  - **怀旧：** 牢寒冰剑少女、牢藤甲男孩、牢SP蒲元、牢爻袁术、
 
+- **OL：**
+  - **OL专属：** OL谋董昭、OL谋程昱、OL魔曹操、OL谋戏志才、魔孙权、OL谋郭嘉、OL界于禁、闪朱儁、闪孙坚、闪张辽
+  - **璀璨星河：** OL崔琰、OL吕玲绮、环淑君、孙鸢
+  - **门阀士族：** 族陈群、族荀彧、族韩馥
+  - **联动卡：** OL乐刘禅、OL乐邓艾
 
-# 新增函数/函数修改/函数修复
-### player.reviveEvent方法，以及将复活事件化
+- **手杀/海外：**
+  - **移动版：** 手杀SP钟会、手杀崔令仪、礼卢毓、手杀SP曹操
+  - **兵势篇：** 势陈矫、势邓艾、势桓阶
+  - **外服武将：** TW起孙坚、TW起何进、TW起皇甫嵩
+
+- **线下：**
+  - **绝代智将：** 智将黄崇、智将丁奉、智将廖化、智将张虎、智将乐綝、智将胡烈、诸葛绪、智将陆抗、赵统、赵广、智将诸葛瞻、柳隐、霍弋、姚柯回、夏侯含、结依夏侯含、智将钟会、智将姜维、刘渊、魂诸葛亮
+  - **闪耀战姬：** 闪耀甄宓、闪耀吴国太、闪耀芮姬、闪耀吕玲绮、闪耀董绾、领主哥布林、哥布林
+  - **26珍藏：** 26神黄月英、26SP徐氏、26界鲁肃、26界张郃、26界太史慈、26界贾诩
+  - **欧陆风云：** 马克里努斯、阿尔达希尔、马抗、欧陆于禁、欧陆张辽、欧陆乐进
+  - **徐兖纵横：** 徐兖曹操、徐兖程昱、徐兖荀彧、徐兖陈宫、徐兖张闿、徐兖吕布、徐兖张邈、徐兖曹嵩
+  - **四象封印·白虎/朱雀：** 标黄舞蝶、标清河公主、标麴义、标文鸳、标许劭、标张嫙、标沮授、标司马徽、标郑玄、标祢衡、标马钧、标张奋、标赵嫣、标刘理
+  - **蚀心入魔·慢：** 魔关羽、慢关银屏、慢于禁、慢糜芳、慢寇封、慢陆逊、慢吕蒙、慢庞德、慢颜良文丑
+  - **其他：** 渭南朱灵、文心雕龙曹操、SCL贾诩、PE郭照、PE夏侯玄、SCL吕布、PE钟会、PE纪灵、君吕布
+
+### 模式限定武将
+
+**国战：** 【国战无双】十二神将；曹冲、OL钟会、界黄月英、界张角、界曹操、界陆逊、张松、手杀陆逊、OL吴懿
+
+**剑阁：** 毅勇文则、恶来子满、威武翼德、神箭汉升
+
+### 新卡牌
+
+- **应变：** 【百辟刀】
+- **活动卡牌：** 【青囊书】【传国玉玺】
+- **线下卡牌：** 【联军盛宴】【玉石皆碎】【柳叶刀】【夜行衣】
+- **衍生：** 【一鼓作气】
+
+### 跟进武将调整
+
+- **十周年：** 徐馨、SP祝融、新杀谋骆统、新杀谋陆逊、新杀谋徐盛
+- **OL：** OL杨奉、族王明山、OL谋邓艾、魔孙权、OL刘璋
+- **移动版：** 手杀笮融、谋孙权、手杀谋姜维、手杀谋张辽、手杀孟达、势张燕、势辛宪英、势鲁肃
+- **移动版海外：** 幻姜维、海外王越、势太史慈、TW张昭、TW乔公、友诸葛亮、夏侯令女、张勋、星魏延、王越、田畴、张瑶、尹夫人、谋杨婉、手杀糜夫人、手杀向宠、手杀界凌统
+- **线下：** 【青史翰墨·江山如故】
+
+## 新功能
+
+### 工程化
+
+无名杀的`PR-Branch`现在可以使用vite构建了
+
+> **注意：** 现在无名杀区分开发环境和生产环境，**不能互相覆盖/混用**
+>
+> - 开发环境为`PR-Branch`分支，使用vite以及浏览器开发，在PC端运行
+> - 生产环境为`build-tooling`分支、发布的完整包以及测试包，直接进入启动器文件夹覆盖
+> - 使用`pnpm build`可以将开发环境打包为生产环境，结果将输出在`dist/`文件夹下
+> - 开发本体代码或涉及更改本体功能的扩展（例如美化）建议使用开发环境
+> - 开发武将扩展可以使用生产环境，需要阅读源码请进入`src/`文件夹查看
+
+1. 开发环境要求
+    > **提示：** 请参考`docs/how-to-start.md`或[github文档](https://github.com/libnoname/noname/wiki/%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E6%97%A0%E5%90%8D%E6%9D%80%EF%BC%88%E7%A8%8B%E5%BA%8F%E5%91%98%E7%89%88%EF%BC%89) 配置环境。
+
+    - [Node.js](https://nodejs.org/) ^20.19.0 || >=22.12.0
+    - [pnpm](https://pnpm.io/) >= 9
+
+2. 下载[PR-Branch](https://github.com/libnoname/noname/tree/PR-Branch)
+
+3. 安装依赖
+
+    ```bash
+    pnpm install
+    ```
+
+4. 启动
+
+    ```bash
+    pnpm dev
+    ```
+
+5. 构建
+
+    ```bash
+    pnpm build
+    ```
+
+### OL单骑无双·战法
+
+具体功能请查看`noname/library/zhanfa.js`
+
 ```javascript
-        /**
-	 * 令玩家复活--事件化
-	 * @param { number } [hp = 1]
-	 * @param { boolean } [log]
-	 */
-	reviveEvent(hp, log) {
-		const next = game.createEvent("revive");
-		next.player = this;
-		if (hp) {
-			next.hp = hp;
-		} else {
-			next.hp = 1;
-		}
-		next.log = log;
-		next.forceDie = true;
-		next.setContent("revive");
-		return next;
-	}
-       //用例：卡牌武圣归来
-      async content(event, trigger, player) {
-		const { target } = event;
-		if (!target.isDead()) {
-			return;
-		}
-		await target.reviveEvent();
-		await target.draw(3);
-	},
-```
-### 修改player#useCard和player#respond以获取哪个技能的mod修改了对应实体牌的牌名属性花色点数
-```javascript
-         /**
-	 * 令玩家使用牌
-	 * @returns { GameEvent }
-	 */
-	useCard() {
-		...
-		const event = get.event(),
-			card = next.cards[0];
-		next.modSkill = {
-			cardname: null,
-			cardnature: null,
-			cardsuit: null,
-			cardnumber: null,
-		};
-		const keys = Object.keys(next.modSkill).flat();
-		if (event.name == "chooseToUse" && !next.skill && get.itemtype(card) == "card") {
-			let skills = [];
-			if (typeof this.getModableSkills === "function") {
-				skills = this.getModableSkills();
-			} else if (typeof this.getSkills === "function") {
-				skills = this.getSkills().concat(lib.skill.global);
-				game.expandSkills(skills);
-				skills = skills.filter(i => {
-					const info = get.info(i);
-					return info && info.mod;
-				});
-				skills.sort((a, b) => get.priority(a) - get.priority(b));
-			}
-			for (const skill of skills) {
-				for (const key of keys) {
-					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
-					if (mod) {
-						let arg = [card, this, event, "unchanged"];
-						const result = mod.call(game, ...arg);
-						if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
-							arg[arg.length - 1] = result;
-						}
-						if (arg[arg.length - 1]) {
-							next.modSkill[key] = skill;
-						}
-					}
-				}
-			}
-		}
-
-		...
-	}
-         
-```
-### 为一些需要选目标的choose事件新增targetprompt2接口，通过钩子函数在选择目标时生成不同于player#prompt的提示，目前用例有谋小乔（触发技）、谋文丑（主动技）、OL麴义（常驻chooseToUse）
-```javascript
-//OL麴义的伏骑
-onChooseToUse(event) {
-	event.targetprompt2.add(target => {
-		if (!target.isIn()) {
-			return false;
-		}
-		const player = get.player(),
-			card = get.card();
-		if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
-			if (target.isIn() && target !== player && get.distance(target, player) <= 1) {
-				return "不可响应";
-			}
-		}
-	});
-},
-//OL谋小乔的迷落
-const next = player
-	.chooseTarget(`###${get.prompt(event.skill)}###令一名没有“迷落”牌的角色失去1点体力，或令一名有“迷落”牌的角色回复1点体力。`, (card, player, target) => {
-		return player.getStorage("olmiluo_clear").includes(target);
-	})
-	.set("ai", target => {
-		const player = get.player();
-		if (target.countCards("h", card => card.hasGaintag("olmiluo"))) {
-			return get.recoverEffect(target, player, player);
-		}
-		return get.effect(target, { name: "loseHp" }, player, player);
-	});
-	next.targetprompt2.add(target => {
-		if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
-			return false;
-		}
-		return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
-	});
-	event.result = await next.forResult();
-//OL谋文丑的轮战
-onChooseToUse(event) {
-	if (!game.online && !event.olsblunzhan) {
-		const player = get.player();
-		event.set("olsblunzhan", player.getHistory("useCard"));
-	}
-	event.targetprompt2.add(target => {
-		if (!target.isIn() || get.event().skill != "olsblunzhan" || !get.event().filterTarget(get.card(), get.player(), target)) {
-			return false;
-		}
-		const player = get.player(),
-			history = get.event().olsblunzhan;
-		const num = history?.filter(evt => evt.targets?.includes(target)).length;
-		return `轮战${num}`;
-	});
-},
-```
-### 新增game#createFakeCards和game#deleteFakeCards用来生成用于点击的假牌（用例看手杀杨弘和手杀势鲁肃）
-```javascript
-         /**
-	 * 用于玩家使用非自己手牌时生成的可以选择的假牌（其实就是复制一份出来）。
-	 *
-	 * @param { Card[] | Card } cards 需要被复制的真牌，允许传入单张卡牌或者卡牌数组
-	 * @param { Boolean } isBlank 是否生成只有牌背没有其他牌面信息的牌
-	 * @param { string } tempname 生成的假牌的临时名字，只有isBlank为true才会用到
-	 * @returns { Card[] }
-	 */
-	createFakeCards(cards, isBlank = false, tempname) {
-		if (!Array.isArray(cards)) {
-			cards = [cards];
-		}
-		const cardsx = cards.map(card => {
-			const cardx = ui.create.card();
-			cardx.isFake = true;
-			cardx._cardid = card.cardid;
-			if (isBlank) {
-				//没有tempname默认就是白板
-				cardx.init([null, null, tempname || "猜猜看啊", null]);
-				game.broadcastAll(cardx => {
-					cardx.classList.add("infohidden");
-					cardx.classList.add("infoflip");
-				}, cardx);
-			} else {
-				cardx.init(get.cardInfo(card));
-			}
-			return cardx;
-		});
-		return cardsx;
-	}
-	/**
-	 * 用于删除createFakeCards生成的假牌。
-	 *
-	 * @param { Card[] | Card } cards 需要被删除的假牌，允许传入单张卡牌或者卡牌数组
-	 * @returns { Card[] } 返回那些不是假牌的牌
-	 */
-	deleteFakeCards(cards) {
-		if (!Array.isArray(cards)) {
-			cards = [cards];
-		}
-		const fake = cards.filter(card => card.isFake && card._cardid),
-			other = cards.removeArray(fake),
-			wild = [],
-			map = {};
-		fake.forEach(card => {
-			const owner = get.owner(card);
-			if (!owner) {
-				wild.push(card);
-				return;
-			}
-			if (!map[owner.playerid]) {
-				map[owner.playerid] = [];
-			}
-			map[owner.playerid].push(card);
-		});
-		wild.forEach(i => i.delete());
-		for (const id in map) {
-			const target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-			const cards = map[id];
-			if (target?.isOnline2()) {
-				target.send(
-					function (cards, player) {
-						cards.forEach(i => i.delete());
-						if (player == game.me) {
-							ui.updatehl();
-						}
-					},
-					cards,
-					target
-				);
-			}
-			cards.forEach(i => i.delete());
-			if (target == game.me) {
-				ui.updatehl();
-			}
-		}
-		return other;
-	}
-```
-### 将神张飞【神裁】中获取牌面信息的函数常驻为 get.cardDescription 方法
-#### Get.cardDescription 方法
-```javascript
-	cardDescription(node, player) {
-		let str = "",
-			name = node.name;
-		if (lib.translate[name + "_info"]) {
-			if (lib.card[name].type && lib.translate[lib.card[name].type]) {
-				str += "" + get.translation(lib.card[name].type) + "牌|";
-			}
-			if (get.subtype(name)) {
-				str += "" + get.translation(get.subtype(name)) + "|";
-			}
-			if (lib.card[name] && lib.card[name].addinfomenu) {
-				str += "" + lib.card[name].addinfomenu + "|";
-			}
-			if (get.subtype(name) == "equip1") {
-				let added = false;
-				if (lib.card[node.name] && lib.card[node.name].distance) {
-					const dist = lib.card[node.name].distance;
-					if (dist.attackFrom) {
-						added = true;
-						str += "攻击范围：" + (-dist.attackFrom + 1) + "|";
-					}
-				}
-				if (!added) {
-					str += "攻击范围：1|";
-				}
-			}
-		}
-		if (lib.card[name].cardPrompt) {
-			str += "" + lib.card[name].cardPrompt(node, player) + "|";
-		} else if (lib.translate[name + "_info"]) {
-			str += "" + lib.translate[name + "_info"] + "|";
-		}
-		if (lib.translate[name + "_append"]) {
-			str += "" + lib.translate[name + "_append"] + "|";
-		}
-		if (get.is.yingbianConditional(node)) {
-			const yingbianEffects = get.yingbianEffects(node);
-			if (!yingbianEffects.length) {
-				const defaultYingbianEffect = get.defaultYingbianEffect(node);
-				if (lib.yingbian.prompt.has(defaultYingbianEffect)) {
-					yingbianEffects.push(defaultYingbianEffect);
-				}
-			}
-			if (yingbianEffects.length) {
-				str += `应变：${yingbianEffects.map(value => lib.yingbian.prompt.get(value)).join("；")}|`;
-			}
-		}
-		return str;
-	}
+/**
+ * 添加新战法
+ * @param {object} zhanfa 要添加的战法
+ * @param {string} [zhanfa.id]
+ * @param {Skill | string} [zhanfa.skill] 战法的对应效果
+ * @param {string | null} [zhanfa.rarity] 战法的稀有度
+ * @param {string} [zhanfa.translate] 战法的翻译
+ * @param {string} [zhanfa.info] 战法的说明
+ * @param {object | undefined} [zhanfa.card] 战法的对应类似卡牌的信息（包括战法的ai），扩展可以在这里添加路（image属性）或者直接引用已有的卡牌图片（cardimage）
+ */
+lib.zhanfa.add(zhanfa)
+/**
+ * 获取所有战法的id
+ * @param {boolean | undefined} includeBan 获取所有战法，包括被ban的战法
+ * @returns {string[]}
+ */
+lib.zhanfa.getList(includeBan)
+/**
+ * 获取对应战法的Object
+ * @param {string} id 战法的id
+ * @returns {object}
+ */
+lib.zhanfa.get(id)
+/**
+ * 是否拥有对应战法
+ * @param {string} id 战法的id
+ */
+player.hasZhanfa(id)
+/**
+ * 获得对应战法
+ * @param {string} id 战法的id
+ */
+player.addZhanfa(id)
+/**
+ * 失去对应战法
+ * @param {string} id 战法的id
+ */
+player.removeZhanfa(id)
 ```
 
-### 将许劭【评荐】中初始化角色列表的函数常驻为** game.initCharactertList 方法
-#### Game.initCharactertList 方法
+### 本体换肤
+
+具体参考`docs/skin-guide.md`
+
+### 全选/反选
+
+主动技添加`allowChooseAll: true`属性来增加全选/反选按钮
+选按钮、选牌系列方法(包括但不限于`chooseButton`、`chooseCard`、`chooseToDiscard`、`chooseToUse`、`chooseToRespond`、`chooseButtonTarget`、`chooseCardTarget`)传入`"allowChooseAll"`来增加全选/反选按钮
+
+### 公共区域lib.commonArea
+
+将仁库迁入lib.commonArea
+> lib.config.show_commonCardpile开启后可与查看牌堆一样查看各个公共区域的牌
+
 ```javascript
-	/**
-	 * 初始化角色列表
-	 *
-	 * 仅无参时修改_status.characterlist
-	 * @param { boolean } [filter] 筛选逻辑：false跳过移除逻辑，否则执行默认移除逻辑
-	 * @returns { string[] }
-	 */
-	initCharactertList(filter) {
-		let list;
-		if (_status.connectMode) {
-			list = get.charactersOL();
-		} else {
-			list = Object.keys(lib.character).filter(name => !lib.filter.characterDisabled2(name) && !lib.filter.characterDisabled(name));
-		}
-		if (filter !== false) {
-			if (list.length) {
-				game.countPlayer2(current => {
-					list.removeArray(get.nameList(current));
-				});
-			}
-			if (filter === undefined) {
-				_status.characterlist = list;
-			}
-		}
-		return list;
-	}
+lib.commonArea = new Map([
+  [
+   "renku",
+   {
+    /**翻译名 */
+    translate: "仁库",
+    /** 存牌的区域名，_status.renku即是仁库这一区域 */
+    areaStatusName: "renku",
+    /** #player.lose和game.cardsGotoSpecial中的参数名，用于指向区域 */
+    toName: "toRenku",
+    /** #player.gain/.addToExpansion中的参数名，表示来源区域 */
+    fromName: "fromRenku",
+    /** 处理添加到相应区域中的卡牌*/
+    async addHandeler(event, trigger, player) {
+    },
+    /** 处理从相应区域中移出的卡牌*/
+    async removeHandeler(event, trigger, player) {
+    },
+   },
+  ],
+ ]);
 ```
 
-### 为卡牌添加 deadTarget 和 includeOut 属性，支持对死亡/修整角色用牌（用例看武圣归来）；
+### 共联时机`phaseAny`
 
-### player.chooseToUse 支持 chooseonly 方便在技能的 cost 使用 chooseToUse，而不用 direct:true 再在 content 中使用 chooseToUse；
 ```javascript
-skill = {
-	trigger: { player: "phaseUseBegin" },
-	async cost(event, trigger, player) {
-		event.result = await player.chooseToUse().set("chooseonly", true).forResult();
-	},
-	async content(event, trigger, player) {
-		const { ResultEvent, logSkill } = event.cost_data;
-		event.next.push(ResultEvent);
-		if (logSkill) {
-			if (typeof logSkill == "string") {
-				ResultEvent.player.logSkill(event.logSkill);
-			} else if (Array.isArray(logSkill)) {
-				ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-			}
-		}
-		await ResultEvent;
-	},
-};
+trigger:{
+  player: "phaseAnyBegin"
+}
+// 等同于
+trigger:{
+  player: ["phaseZhunbeiBegin", "phaseJudgeBegin", "phaseDrawBegin", "phaseUseBegin", "phaseDiscardBegin", "phaseJieshuBegin"]
+}
 ```
 
-### 优化 chooseNumbers；
+### dialog handle
 
-### player.chooseDrawRecover 添加 gaintag 支持因此获得的牌会添加对应标签；
+> 使用例：手杀曹髦【清正】、手杀陆郁生【润微】、孙韶【筑墼】、标郑玄【整经】、刘渊【兼习】、十周年赵襄【扶汉】
 
-### 添加 game.getRoundHistory（用法参考 player.getRoundHistory）；
-#### Game.getRoundHistory 方法
 ```javascript
-	getRoundHistory(key, filter = lib.filter.all, num = 0, keep, last) {
-		if (!filter || typeof filter != "function") {
-			filter = lib.filter.all;
-		}
-		let evts = [],
-			history = _status.globalHistory;
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (keep === true || num == 0) {
-				let currentHistory = history[i];
-				if (key) {
-					currentHistory = currentHistory[key];
-				}
-				if (filter) {
-					currentHistory = currentHistory.filter(filter);
-				}
-				evts.addArray(currentHistory.slice().reverse());
-			}
-			if (history[i].isRound) {
-				if (num > 0) {
-					num--;
-				} else {
-					break;
-				}
-			}
-		}
-		evts.reverse();
-		if (last && evts.includes(last)) {
-			const lastIndex = evts.indexOf(last);
-			return evts.filter(evt => evts.indexOf(evt) <= lastIndex);
-		}
-		return evts;
-	}
+chooseButton([
+ [
+  [[`${get.translation(event.skill)}：请选择一个花色的牌`], "addNewRow"],
+  [
+   dialog => {
+    //自定义handler
+   },
+   "handle",
+  ],
+  list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+ ],
+])
 ```
 
-### 将赵直【统观】吴普【识草】共用的 localMark 函数内置为 player#localMarkSkill；
-#### Player.localMarkSkill 方法
-```javascript
-localMarkSkill(skill, target, event) {
-		const func = (skill, player) => {
-			var name = skill,
-				info;
-			if (player.marks[name]) {
-				player.updateMarks();
-			}
-			if (lib.skill[name]) {
-				info = lib.skill[name].intro;
-			}
-			if (!info) {
-				return;
-			}
-			if (player.marks[name]) {
-				player.marks[name].info = info;
-			} else {
-				player.marks[name] = player.mark(name, info);
-			}
-			player.updateMarks();
-		};
-		if (event.player == game.me) {
-			func(skill, target);
-		} else if (event.isOnline()) {
-			this.send(func, skill, target);
-		}
-	}
-```
-### 允许game.expandSkills展开subSkill，来让【点墨】【骤袭】可以筛选到更多的技能
+### lib.poptip.addType
 
-### 增加lib.selectGroup来存储自选势力的势力
+添加类型"character"，用于武将专属的特定名词，如“向死存魏”、“五禽戏”
+
 ```javascript
-selectGroup = ["shen", "western", "devil"];
+/**
+ * 注册poptip类型
+ * @param {string} type 名词类型
+ */
+addType(type)
 ```
 
-### 允许chooseToCompare传入event.position控制可选区域
+### game.chooseAnyOL
 
-### 为get.is下判断进攻马/防御马的两个函数添加subtypes判断
+多名玩家同时进行选择
+> 使用例：【翦灭】【忠锷】【搏决】【邀作】【诛逆】
+
+```javascript
+/**
+ * 此方法用于让所有targets同时执行一个选择函数
+ *
+ * @param { Player[] } targets 需要执行选择函数的目标
+ * @param { function } func 需要执行的函数
+ * @param { Any[] } args 函数所需的参数
+ * @returns { GameEvent }
+ */
+chooseAnyOL(targets, func, args)
+```
+
+### game.addPlayerOL/removePlayerOL
+
+添加/移除玩家
+> 废弃game.addPlayer/removePlayer
+
+```javascript
+/**
+ * 添加一个新玩家到target的上家或下家（默认为上家）
+ * @param { Player } target 新玩家的下家
+ * @param { string|undefined|null } [character] 新玩家主将
+ * @param { string|undefined|null } [character2] 新玩家副将
+ * @param { boolean } [isNext] 是否添加到下家
+ * @returns { Player }
+ */
+addPlayerOL(target, character, character2, isNext)
+/**
+ * 移除一名玩家，单机联机都可用
+ * @param { Player } player 要移除的玩家
+ * @returns { Player }
+ */
+removePlayerOL(player)
+```
+
+### game.addTempTag
+
+游戏内创建的临时tag
+> 使用例:【烈计】【伸义】【纯刚】【火上浇油】
+
+```javascript
+/**
+ * 添加游戏内生成使用的临时tag
+ *
+ * @param {string} id tag对应id
+ * @param {string} translation tag对应翻译
+ * @returns {string}
+ */
+addTempTag(id, translation)
+```
+
+### player.refreshSkill
+
+批量重置武将牌上的技能
+> 使用例：【中流】【摧锋】【登难】
+
+### player.getName
+
+获取一名角色的名字翻译
+
+```javascript
+/**
+ * 获取一名角色的名字翻译
+ * @param { boolean } forDialog 是否用于对话框显示，如【五谷丰登】/【惠民】之类多名角色选择卡牌的卡牌/技能的content中，方便知晓卡牌和角色的对应关系。默认为false。
+ * @returns { string } 角色名字翻译，forDialog为true会返回HTML字符串，为对话框中的卡牌呈现类似卡牌动画信息的效果，否则根据player._tempTranslate、lib.translate[`${player.name}_ab`]、get.translation(player.name)的优先级返回纯文本。
+ */
+getName(forDialog = false)
+```
+
+### game.createButtonCardsetion
+
+### card.prepareEquip
+
+装备前的预处理
+
+```javascript
+card: {
+  async prepareEquip(event, trigger, player) {
+    //任意流程
+  }
+}
+```
+
+### get.characterTitle
+
+获取称号
+
+```javascript
+// 获取玩家主将称号（纯文本）
+get.characterTitle(player);
+// 获取玩家副将称号（纯文本）
+get.characterTitle(player, true);
+// 获取某个角色id称号（纯文本）
+get.characterTitle("liubei", true);
+// 获取某个角色id称号（非纯文本）
+get.characterTitle("liubei", false，false);
+```
+
+```javascript
+/**
+ * 在指定节点（button）内部创建一个卡片内容区域（.cardsetion），并根据当前结构设置节点状态，用于五谷此类须多人选择的牌的执过程中显示每张卡牌对应的选择角色
+ * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
+ * @param {HTMLElement} button 目标节点
+ */
+createButtonCardsetion(innerHTML, button)
+```
+
+### get.addNewRowList
+
+```javascript
+/**
+ * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
+ * @param {Card[]} cards 要分组的卡牌
+ * @param {'suit'|'color'} type 分组类型 目前仅支持'suit'/'color'
+ * @param {false | Player} player get.suit/get.color的player参数
+ * @returns {Array<Row_Item_Option | Row_Item_Option[]>} 返回一个列表，每一项是一个分组配置（addNewRow方法的参数RowItem）或一对分组配置组成的数组
+ */
+addNewRowList(cards, type = "suit", player = false)
+```
+
+### game.findSkill
+
+获取触发某个事件的skill
+
+```javascript
+/**
+ * find the skillname of the event
+ * 获取触发事件的技能
+ * @param { GameEvent } event
+ * @param { Boolean } includeCharlotteSkill 是否包含夏洛特技
+ * @param { Boolean } includeEquipSkill 是否包含装备技能
+ * @param { Boolean } includeGlobalSkill 是否包含全局技能
+ * @returns { string | null }
+ */
+findSkill(event, includeCharlotteSkill = false, includeEquipSkill = false, includeGlobalSkill = false)
+```
+
+### game.showChangeLog/showExtensionChangeLog更改
+
+支持多个扩展添加角色/卡牌/文本的更新说明
+
+```javascript
+//字符串形式，也是原本支持的形式
+game.showExtensionChangeLog("本次更新说明", "扩展名");
+```
+
+```javascript
+//数组对象，推荐用法
+game.showExtensionChangeLog([
+ { type: "text", data: "本次更新说明" },
+ {
+  type: "players",
+  data: ["wechat_zhaoyun"],
+ },
+ {
+  type: "cards",
+  data: ["nanman"],
+ },
+],'扩展名');
+```
+
+```javascript
+//对象形式
+game.showExtensionChangeLog({ type: "text", data: "本次更新说明" }, "扩展名");
+```
+
+## 调整与bugfix
+
+> **注：** 仅列出功能调整，武将调整不一一列举
+
+- 修改鏖战杀闪、鏖战桃的逻辑(#2920)
+- 为单个card实例添加destroyLog的检查，修复转化的延时锦囊牌离开判定区时错误的log(#2921)
+- 为国战添加国战无双的神势力规则，修正国战亮将的时机(#2922)
+- 跳过本回合指定阶段的写法调整（OL谋鲁肃）(#2923)
+- 调整转化/虚拟装备/延时锦囊牌的显示(#2923)
+- 令失效技能依然提供蓄力点上限(#2923)
+- 修复elementGoto在overflow被限制的状态下游戏出现缩放导致动画不显示的bug(#2924)
+- 修复chooseToMove在手机上的选择不同步问题(#2924)
+- 修复重启时背景图片重复问题，增加高度，不等待layout.css的加载(#2926)
+- 增加新地主技能：恃强和削弱版强易(#2930)
+- 导入背景时候可以选择多张背景一起导入(#2932)
+- 无限火力添加自由选将功能(#2934)
+- 修复联机模式下国战无法创建房间(#2939)
+- 将chooseToCompareMultiple/Meanwhile/Effect函数改为数组(#2949)
+- 修复同名替换同时存在单/多势力武将的势力显示问题(#2952)
+- 为canAddJudge添加第二个参数player，用于判断能否对对方使用延时锦囊牌(#2954)
+- 给技能创建默认skill_id属性，可以在技能的非执行非箭头函数中使用this.skill_id获取技能ID(#2955)
+- 为斗地主专属地主技增加charlotte标签(#2962)
+- 修改info.ai.combo支持传入数组(#2962)
+- 调整宗族技卡牌的显示策略，以当前玩家为准(#2965)
+- 将Player.storage.counttrigger迁移入Player.getStat().triggerSkill(#2971)
+- 修复在`chooseToUse`和`chooseToRespond`里面的`pre_skill`事件的`logSkill`层级寻找问题(#2971)
+- 修改`get.skillCount`逻辑为同时获得一个有`usable`技能的`enable`和`trigger`两类发动次数之和(#2971)
+- 调整`changeZhuanhuanji`时机逻辑同`logSkill`逻辑（修复谋许攸二技能摸牌时机问题），增加`changeZhuanhuanjiBegin`代替原`changeZhuanhuanji`瞬时时机(#2971)
+- 将canAddJudge中使用牌相关逻辑移动至lib.filter.judge(#2974)
+- lib.element.content.chooseToCompare支持牌堆拼点并支持可选择牌堆底的牌，用法可参考幻曹昂【複舒】(#2980)
+- 修复Player.addAddtionalSkills联机客机获得技能不显示的bug(#2987)
+- 添加斗地主农民死亡后另一名农民获得的遗产开关(#2995)
+- 为get.skillInfoTranslation默认处理一遍get.plainText，添加第三个参数noHTML用于控制(#3004)
+- 为autoswap补充时机(#3004)
+- 修改ui.create.buttonPresets.card方法复制原牌标记信息(#3005)
+- 修复lib.element.content.chooseToCompare中result.winner赋值错误、lib.element.content.chooseToCompareMultiple中拼点动画错误的bug(#3005)
+- 增强card/button/target/confirm/window的_status.event.custom.add/replace的函数判断(#3005)
+- lib.element.player.chooseButton支持唯一参数(#3005)
+- 修改lib.element.dialog.add支持对话框使用addNewRow方法和特定条件下的递归、修改lib.element.dialog.addNewRow支持使用get.prompt2的情况、调整lib.element.content.chooseButton/chooseButtonTarget支持使用对对话框应用css样式(#3005)
+- 补充chooseToMove、chooseToMove_new的_args，保证联机同步(#3007)
+- 修改card#$init和ui.create.cardTempName中对image参数的处理，可自由指定读取的路径(#3010)
+- 为when创造临时技能添加skill返回值(#3012)
+- Player.hasVCard的countCards改为countVCards(#3016)
+- 为拼点增加展示牌的时机以符合实际结算(#3019)
+- 修复$elementGoto对于未改变位置的动画会返回永久pending的Promise问题(#3027)
+- 为chooseToMove与chooseToMove_new添加动画配置开关，并适当缩减chooseToMove的动画长度(#3027)
+- 调整君主武将与国战神将等新机制间的结算(#3028)
+- 调整君主武将的珠联璧合结算为仅限同势力武将(#3028)
+- 国战模式下可猜测势力添加野心家(#3028)
+- 添加武将称号(#3032)
+- 将player.getStat().card[name]相关的技能进行数值判断再执行减值操作(#3036)
+- window.onerror支持获取外置sourcemap映射结果(#3047)
+- 调整武将资料页；阵亡效果默认关闭(#3048)
+- 取消废弃chooseToGuanxing，增加forceDie和includeOut参数适配(#3052)
+- 为转化延时锦囊牌增加`VCard.storage.equipEnable`属性，表该转化延时锦囊牌的实体牌中的装备牌仍然生效，修改了下述函数以适配：`Player#addVirtualJudge`、`Player#removeVirtualJudge`、`Get#nodeintro`；增加了一个新技能equipEnableSkill用以实现该类装备牌的牌面效果(#3052)
+- 添加get.bingzhu获取装备牌兵主，lib.bingzhu为扩展开放添加兵主(#3054)
+- 调整restoreSkill为没有技能时不进行markSkill(#3061)
+- 为tip开关添加介绍(#3061)
+- 调整国战“武将易位”的结算(#3061)
+- 修复removeVirtualJudge不移除被转化装备牌技能的问题(#3076)
+- 简介页面添加武将称号(#3080)
+- 简介页面的技能台词移入对应技能页面下(#3080)
+- 添加武将和技能引文(#3080)
+- 将武将其他原画直接显示在简介底部左对齐(#3089)
+- 调整finishSkill对sourceSkill的添加逻辑(#3092)
+- 修正get.cardPile对随机获得的判断(#3092)
+- 调整技能前缀对重复技能的判断，考虑sourceSkill(#3097)
+- 修改`addVirtualJudge`、`removeVirtualJudge`内装备区失去牌后的结算(#3105)
+- 切换身份时清除已选中的武将，避免其他武将无法点击(#3108)
+- 修复lib.element.content.phaseJudge(#3114)
+- 修复休整角色会被计入座次的问题(#3115)
+- 为when的assign添加广播，允许when使用mod和ai(#3115)
+- 暂时废弃`window.initReadWriteFunction`(#3117)
+- 调整lib.filter.canBeDiscarded的判断，弃置自己时会判断lib.filter.cardDiscardable(#3119)
+- 为addTempSkill适配共联时机(#3119)
+- 修复addJudgeCard未判断canAddJudge导致重复置入延时锦囊的bug(#3119)
+- 长按武将介绍添加查看资料功能(#3119)
+- 武将介绍显示武将所在分包（需自行启用）(#3119)
+- 调整lib.element.content.useCard/respond对addSkillCount属性的判断(#3125)
+- 调整changeGroup和addGroup(#3130)
+- poptip支持自定义显示框（使用例：【凶疑】【许身】【协战】）(#3130)
+- 调整lib.element.player.hasUsableCard逻辑(#3135)
+- ui.click.skill对prompt为函数时增加一个player的参数(#3135)
+- 调整lib.element.content.useCard中播放语音/动画/存放历史记录与玩家使用实体牌的先后顺序(#3135)
+- lib.element.player.$addToExpansion添加第四个参数支持仅刷新武将牌上的牌(#3138)
+- index.html内的导入移入boot过程(#3149)
+- 修复国战休整导致的ai混乱(#3152)
+- 为canMoveCard补全aimTargets的判断(#3152)
+- 修复亮出牌的报错以及loseAsync不能正常销毁牌的bug(#3153)
+- 无限体力的角色获取已损失体力值始终为0
+- 适配装备牌自定义装备技能
+
+## 扩展适配
+
+### 当前版本适配
+
+- 直接导入game文件夹下`codemirror`、`compiler-sfc.esm-browser`、`eslint-linter-browserify`、`jszip`、`typescript`完整包以及直接引用`node_modules`目录下模块的扩展需要适配(工程化)
+- 修改了选按钮、选牌系列方法(包括但不限于`chooseButton`、`chooseCard`、`chooseToDiscard`、`chooseToUse`、`chooseToRespond`、`chooseButtonTarget`、`chooseCardTarget`)的扩展需要跟进(#2912)
+- 修改了鏖战判定和效果技能的扩展需要跟进(#2920)
+- 修改了角色初始化逻辑(`lib.element.player.init/uninit`)/`game.check`/`lib.element.player.changeZhuanhuanji`的扩展需要跟进(#2971)
+- `ui.create.cardChooseAll`和`ui.create.buttonChooseAll`不再支持传入函数(#2980)
+- 修改了`chooseToCompare`的扩展需要跟进(#2980)
+- 自带武将称号的美化扩展需要跟进(#3032)
+- 修改了仁库相关机制的扩展需要跟进(#3036)
+- 修改了牌移动相关机制(包括但不限于`lose`、`gain`、`addToExpansion`、`cardsGoToSpecial`、`cardsGoToPile`、`useCard`、`equip`)的扩展需要跟进(#3036)
+- 修改了`get.nodeIntro`的扩展需要跟进(#3052)
+- 修改了`chooseToGuanxing`的扩展需要跟进(#3052)
+- 修改了`chooseToDebate`的扩展需要跟进(#3071)
+- 修改了`ui.click.charactercard`的扩展需要跟进(#3071)
+- 修改了`lib.element.content.equip`的扩展需要跟进(#3097)
+- 修改了`addVirtualJudge`、`removeVirtualJudge`的扩展需要跟进(#3105)
+- 使用了`window.initReadWriteFunction`的启动器需要跟进(#3117)
+- 修改了`ui.click.skill`的扩展需要跟进(#3135)
+
+### 未来版本适配
+
+- 使用`import xxx from "../../noname.js"`相对路径导入的扩展建议改为`import xxx from "noname"`(工程化)
+- 不建议使用`noname/`文件夹下没有经过`noname.js`导出的内容，这些内容随时可能更改(工程化)
+- 导入`game/dedent.js`、`game/vue.esm-browser.js`以及`noname/get/pinyins/index.js`的扩展建议改为`import xxx from "dedent"`、`import xxx from "vue"`和`import xxx from "pinyin-pro"`(工程化)
+- 使用`game/game.js`作为入口的启动器建议改为使用`index.html`启动，无需额外检测`game/config.js`等其他配置文件(工程化)
+- 使用了`Player.storage.counttrigger`的扩展建议改为`Player.getStat().triggerSkill`(#2971)
+- 使用了`game.addPlayer/removePlayer`建议跟进`game.addPlayerOL/removePlayerOL`(#3005)
+- 需要卡牌公共区域的扩展可以使用`lib.commonArea`(#3036)
+- 需要显示更新信息的扩展可以跟进`game.showExtensionChangeLog`(#3056)
+- 需要获取角色名翻译的扩展可以跟进`player.getName`(#3071)
+- 多名角色选择牌需要显示对应角色拿了什么牌而使用直接读取节点然后赋值innerHTML的方法可以参考【五谷丰登】(#3071)
+- 有置入任意装备栏的卡牌的扩展建议跟进`prepareEquip`(#3097)
+- 改判类技能建议跟进(#3124)
+
+  ```javascript
+  //即使用打出牌事件的实体牌进行改判操作，如代替判定牌/替换判定牌
+  //lib.skill.reguicai.content
+  const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+  if (cards?.length) {
+    if (trigger.player.judging[0].clone) {
+      trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+      game.broadcast(function (card) {
+        if (card.clone) {
+          card.clone.classList.remove("thrownhighlight");
+        }
+      }, trigger.player.judging[0]);
+      game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+    }
+    await game.cardsDiscard(trigger.player.judging[0]);
+    trigger.player.judging[0] = cards[0];
+    trigger.orderingCards.addArray(cards);
+    game.log(trigger.player, "的判定牌改为", cards);
+    await game.delay(2);
+  }
+  ```

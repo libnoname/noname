@@ -21,6 +21,7 @@ const importMap: Record<string, string> = {
 const staticModules: Target[] = [
 	{ src: "character", dest: "" },
 	{ src: "card", dest: "" },
+	{ src: "docs", dest: "" },
 	{ src: "mode", dest: "" },
 	{ src: "layout", dest: "" },
 	{ src: "font", dest: "" },
@@ -40,7 +41,6 @@ const staticModules: Target[] = [
 if (argv.mode) {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
-	staticModules.push({ src: "docs", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
 	staticModules.push(
 		...[
