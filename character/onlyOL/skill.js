@@ -2714,12 +2714,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
-			return player.countCards("he", { type: "equip" });
+			return player.countCards("he", card => !get.tag(card, "damage"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard("he", get.prompt2(event.skill), function (card, player) {
-					return get.type(card) == "equip";
+					return !get.tag(card, "damage");
 				})
 				.set("ai", function (card) {
 					let player = _status.event.player;

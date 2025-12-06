@@ -2282,7 +2282,16 @@ export class Library {
 				change_skin: {
 					name: "开启换肤",
 					init: true,
-					intro: "在武将的右键菜单中换肤，皮肤可在选项-文件-图片文件-皮肤图片中添加",
+					intro: "在武将资料卡界面换肤，皮肤添加方法查看docs/skin-guide.md文件",
+					onclick(item) {
+						game.saveConfig("change_skin", item);
+						if (item == false) {
+							game.broadcastAll(() => {
+								lib.config.skin = {};
+								game.saveConfig("skin", lib.config.skin);
+							});
+						}
+					},
 				},
 				change_skin_auto: {
 					name: "自动换肤",
@@ -14124,6 +14133,13 @@ export class Library {
 		],
 		[
 			"礼",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
+			"射",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",

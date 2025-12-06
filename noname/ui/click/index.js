@@ -3361,10 +3361,10 @@ export class Click {
 									return [file, src];
 								})
 								createButtons(list);
-							});
+							}, () => {});
 						};
 					}
-				});
+				}, () => {});
 			}
 		}
 		var ban = ui.create.div(".menubutton.large.ban.character", uiintro, "禁用", function (e) {

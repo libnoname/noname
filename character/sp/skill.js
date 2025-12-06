@@ -249,6 +249,8 @@ const skills = {
 					});
 					return evts.length > 1;
 				},
+				skillAnimation: true,
+				animationColor: "gray",
 				forced: true,
 				async content(event, trigger, player) {
 					player.addSkill("olzhuangrong_awaken");

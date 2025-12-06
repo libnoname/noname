@@ -903,7 +903,7 @@ const skills = {
 							})
 							.join("<br>")
 					);
-					await player.drawTo(4);
+					await player.drawTo(3);
 				},
 			},
 			clear: {

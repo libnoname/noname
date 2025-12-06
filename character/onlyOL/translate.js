@@ -400,7 +400,7 @@ const translates = {
 	olzenhui: "谮毁",
 	olzenhui_info: "出牌阶段各限一次，你使用【杀】或普通锦囊牌（【借刀杀人】等带有指向性目标的牌除外）指定目标时，可以令一名能成为此牌目标的角色选择一项：1.交给你一张牌并代替你成为此牌使用者（不计次数）；2.成为此牌的额外目标。",
 	oljiaojin: "骄矜",
-	oljiaojin_info: "你受到伤害时，可以弃置一张装备牌并防止此伤害，然后获得造成伤害的牌。",
+	oljiaojin_info: "你受到伤害时，可以弃置一张非伤害牌并防止此伤害，然后获得造成伤害的牌。",
 	dm_diaochan: "魔貂蝉",
 	dm_diaochan_prefix: "魔",
 	olhuanhuo: "幻惑",

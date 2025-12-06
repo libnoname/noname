@@ -1,5 +1,6 @@
 export default {
 	//sp_zhonghui: "",
+	mb_cuilingyi: "戴冠金尾",
 	mb_luyu: "秉性贞固",
 	mb_sunluyu: "舍身饲虎",
 	mb_caohong: "福将",

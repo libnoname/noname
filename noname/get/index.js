@@ -5202,7 +5202,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				td = document.createElement("td");
 
 				(function () {
-					num = 0;
+					let num = 0;
 					for (var j = 0; j < node.stat.length; j++) {
 						if (typeof node.stat[j].damage == "number") {
 							num += node.stat[j].damage;
@@ -5377,6 +5377,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				});
 				uiintro.add(viewInfo);
 			}
+			/*先废弃这里的换肤
 			if (!simple || get.is.phoneLayout()) {
 				if ((lib.config.change_skin || lib.skin) && !node.isUnseen()) {
 					var num = 1;
@@ -5492,7 +5493,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						});
 					}
 				}
-			}
+			}*/
 
 			uiintro.add(ui.create.div(".placeholder.slim"));
 		} else if (node.classList.contains("mark") && node.info && node.parentNode && node.parentNode.parentNode && node.parentNode.parentNode.classList.contains("player")) {

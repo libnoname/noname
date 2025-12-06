@@ -987,6 +987,9 @@ const skills = {
 		trigger: {
 			global: "roundStart",
 		},
+		filter(event, player) {
+			return game.hasPlayer(current => !current.isTurnedOver());
+		},
 		async cost(event, trigger, player) {
 			const falvs = lib.poptip.getInfo("bingfa_lvfa").slice(4).split("<br><li>");
 			const result = await player
@@ -1004,10 +1007,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { name, cost_data: lvfas } = event,
-				targets = game.filterPlayer(() => true).sortBySeat();
+				targets = game.filterPlayer(current => !current.isTurnedOver()).sortBySeat();
 			const map = await game.chooseAnyOL(targets, get.info(name).chooseLvfa, [targets, player, lvfas]).forResult();
 			const tickets = [0, 0, 0, 0];
 			for (const target of targets) {
+				if (target != player && target.hasSkill("mbbingfa_control")) {
+					target.removeSkill("mbbingfa_control");
+				}
 				const result = map.get(target);
 				if (result?.bool && result.links?.length) {
 					lvfas.forEach(lvfa => {
@@ -1031,10 +1037,7 @@ const skills = {
 					.when({
 						global: "roundEnd",
 					})
-					.step(async (event, trigger, player) => {
-						player.logSkill(name, null, null, null, [get.rand(3, 4)]);
-						await get.info(name).effect[index](event, trigger, player);
-					});
+					.step(get.info(name).effect[index]);
 			};
 			await game.doAsyncInOrder(lvfas, enact, () => 1);
 		},
@@ -1061,7 +1064,10 @@ const skills = {
 				const func = async target => {
 					await target.damage(2, "nosource");
 				};
-				await game.doAsyncInOrder(targets, func);
+				if (targets.length) {
+					player.logSkill("mbbingfa", targets, null, null, [get.rand(3, 4)]);
+					await game.doAsyncInOrder(targets, func);
+				}
 			},
 			async (event, trigger, player) => {
 				player.removeTip("mbbingfa_1");
@@ -1086,7 +1092,10 @@ const skills = {
 					target.addSkill("mbbingfa_limit");
 					target.addMark("mbbingfa_limit", 2, false);
 				};
-				await game.doAsyncInOrder(targets, func);
+				if (targets.length) {
+					player.logSkill("mbbingfa", targets, null, null, [get.rand(3, 4)]);
+					await game.doAsyncInOrder(targets, func);
+				}
 			},
 			async (event, trigger, player) => {
 				player.removeTip("mbbingfa_2");
@@ -1106,7 +1115,10 @@ const skills = {
 				const func = async target => {
 					await target.loseMaxHp();
 				};
-				await game.doAsyncInOrder(targets, func);
+				if (targets.length) {
+					player.logSkill("mbbingfa", targets, null, null, [get.rand(3, 4)]);
+					await game.doAsyncInOrder(targets, func);
+				}
 			},
 			async (event, trigger, player) => {
 				player.removeTip("mbbingfa_3");
@@ -1134,12 +1146,15 @@ const skills = {
 						await game.doAsyncInOrder(targetx, func2);
 					}
 				};
-				await game.doAsyncInOrder(targets, func);
+				if (targets.length) {
+					player.logSkill("mbbingfa", targets, null, null, [get.rand(3, 4)]);
+					await game.doAsyncInOrder(targets, func);
+				}
 			},
 		],
 		chooseLvfa(player, targets, source, lvfas, eventId) {
 			const num = game.countPlayer(current => {
-				if (current == source) {
+				if (!targets.includes(current)) {
 					return false;
 				}
 				if (current == player) {
@@ -1291,49 +1306,68 @@ const skills = {
 	},
 	mbshuxing: {
 		audio: 2,
-		usable: 1,
 		trigger: {
 			global: "useCardToTarget",
 		},
 		filter(event, player) {
-			return event.card.name == "sha" && event.isFirstTarget && event.targets?.length;
+			if (player != _status.currentPhase) {
+				return false;
+			}
+			if (event.target == player || event.card.name != "sha") {
+				return false;
+			}
+			return !player.getStorage("mbshuxing_used").includes(event.target);
 		},
-		logTarget: "player",
+		logTarget: "target",
 		check(event, player) {
-			return (
-				event.targets.reduce((val, current) => {
-					return val + get.effect(current, event.card, event.player, player);
-				}, 0) <= 0
-			);
+			const bool = get.effect(event.target, event.card, event.player, player) > 0,
+				hasShan = target => {
+					if (event.player.hasSkillTag("directHit_ai", true, {
+						target: target,
+						card: event.card,
+					})) {
+						return false;
+					}
+					if (target.hasKnownCards(player, card => get.name(card) == "shan")) {
+						return true;
+					}
+					return target.countCards("h") >= Math.random() * 7;
+				};
+			if (!bool) {
+				return true;
+			}
+			return hasShan(event.target);
 		},
 		async content(event, trigger, player) {
-			const evt = trigger.getParent();
+			player.addTempSkill("mbshuxing_used");
+			const evt = trigger.getParent(),
+				target = trigger.target;
+			player.markAuto("mbshuxing_used", target);
 			if (evt) {
-				evt.targets.length = 0;
-				evt.all_excluded = true;
+				evt.excluded.add(target);
 			}
-			if (!player.countCards("h")) {
+			if (!target.countCards("h")) {
 				return;
 			}
-			const { cards } = await player.showHandcards(`${get.translation(player)}发动了【束刑】`);
+			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【束刑】`);
 			if (cards.every(card => get.name(card) !== "shan")) {
 				return;
 			}
-			const result = await trigger.player
+			const result = await target
 				.chooseButton(
 					[
 						"束刑：选择一项",
 						[
 							[
 								["losehp", "失去1点体力"],
-								["give", `交给${get.translation(player)}你手牌中的【闪】和你的【秉法】投票权`],
+								["give", `交给${get.translation(player)}你手牌中的【闪】和你下次【秉法】的投票权`],
 							],
 							"textbutton",
 						],
 					],
 					true
 				)
-				.set("canGive", !trigger.player.hasSkill("mbbingfa_control"))
+				.set("canGive", !target.hasSkill("mbbingfa_control"))
 				.set("source", player)
 				.set("filterButton", button => {
 					const { player, canGive, source } = get.event();
@@ -1348,19 +1382,25 @@ const skills = {
 				.forResult();
 			if (result?.bool && result.links?.length) {
 				if (result.links.includes("losehp")) {
-					await trigger.player.loseHp();
+					await target.loseHp();
 				}
 				if (result.links.includes("give")) {
-					const cards = trigger.player.getGainableCards(player, "he", card => get.name(card) == "shan");
+					const cards = target.getGainableCards(player, "he", card => get.name(card) == "shan");
 					if (cards?.length) {
-						await trigger.player.give(cards, player);
+						await target.give(cards, player);
 					}
-					if (!trigger.player.hasSkill("mbbingfa_control")) {
-						trigger.player.addSkill("mbbingfa_control");
-						trigger.player.markAuto("mbbingfa_control", player);
+					if (!target.hasSkill("mbbingfa_control")) {
+						target.addSkill("mbbingfa_control");
+						target.markAuto("mbbingfa_control", player);
 					}
 				}
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//手杀SP曹操
@@ -2777,7 +2817,7 @@ const skills = {
 					})
 					.setContent("discardMultiple");
 				if (!player.hasSkill("mbjinzu_used")) {
-					player.addTempSkill("mbjinzu_used", { global: ["phaseChange", "phaseEnd"] });
+					//player.addTempSkill("mbjinzu_used", { global: ["phaseChange", "phaseEnd"] });
 					const stat = player.getStat().skill;
 					if (stat.mbjinzu) {
 						delete stat.mbjinzu;
@@ -2880,7 +2920,7 @@ const skills = {
 				await player.chooseUseTarget(cards[0], true, false, "nodistance");
 			}
 		},
-		group: "mbanxian_draw",
+		//group: "mbanxian_draw",
 		subSkill: {
 			draw: {
 				trigger: {
