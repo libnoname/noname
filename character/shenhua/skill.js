@@ -3830,12 +3830,15 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.target;
 			const { result } = await target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
+				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -6430,6 +6433,10 @@ const skills = {
 		noHidden: true,
 		inherit: "bagua_skill",
 		sourceSkill: "bazhen",
+		init(player, skill) {
+			player.addExtraEquip(skill, `${get.translation(skill)} 八卦阵`, 1, player => player.hasEmptySlot(2) && lib.card.bagua && player.hasSkill(skill));
+			player.$handleEquipChange();
+		},
 		filter(event, player) {
 			if (!lib.skill.bagua_skill.filter(event, player)) {
 				return false;

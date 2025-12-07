@@ -2539,7 +2539,7 @@ const skills = {
 					if (target?.isIn()) {
 						await target.link(true);
 					}
-				}
+				};
 				await game.doAsyncInOrder(targets, func);
 			}
 			target.addSkill("oldici_effect");
@@ -2549,9 +2549,7 @@ const skills = {
 			order: 7,
 			result: {
 				player(player, target) {
-					const targets = [target.getPrevious(), target.getNext()]
-						.filter(current => current?.isIn() && !current.isLinked())
-						.unique();
+					const targets = [target.getPrevious(), target.getNext()].filter(current => current?.isIn() && !current.isLinked()).unique();
 					let num = target.isLinked() ? get.effect(target, { name: "tiesuo" }, player, player) : 0;
 					if (targets.length) {
 						for (const current of targets) {
@@ -10199,6 +10197,10 @@ const skills = {
 				nobracket: true,
 				equipSkill: true,
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
+				init(player, skill) {
+					player.addExtraEquip(skill, `${get.translation(skill)} 贯石斧`, 1, player => player.hasEmptySlot(1) && lib.card.guanshi && player.hasSkill(skill));
+					player.$handleEquipChange();
+				},
 				filter(event, player) {
 					if (!player.hasEmptySlot(1) || !lib.card.guanshi || player.hasSkillTag("unequip_equip1")) {
 						return false;

@@ -2006,12 +2006,13 @@ const skills = {
 				const target = event.targets[0];
 				const discards = target.getDiscardableCards(player, "hej"),
 					num = target.countCards("hej") - target.getHp();
-				const result = discards.length > num ? await player
-					.discardPlayerCard(target, num, "hej", true)
-					.forResult() : {
-						bool: true,
-						links: discards,
-					};
+				const result =
+					discards.length > num
+						? await player.discardPlayerCard(target, num, "hej", true).forResult()
+						: {
+								bool: true,
+								links: discards,
+							};
 				if (result?.bool && result.links?.length && target.getHp() > 0) {
 					const cards = [],
 						num = target.getHp();
@@ -2057,9 +2058,14 @@ const skills = {
 			player: "damageEnd",
 		},
 		filter(event, player) {
-			return event.source?.isIn() && event.source.getRoundHistory("sourceDamage", evt => {
-				return evt.player == player;
-			}).indexOf(event) == 0;
+			return (
+				event.source?.isIn() &&
+				event.source
+					.getRoundHistory("sourceDamage", evt => {
+						return evt.player == player;
+					})
+					.indexOf(event) == 0
+			);
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -2071,7 +2077,7 @@ const skills = {
 							["gongsun", "令其不能使用或打出当前手牌直到其下个回合结束"],
 						],
 						"textbutton",
-					]
+					],
 				])
 				.set("att", get.attitude(player, trigger.source))
 				.set("ai", button => {
@@ -2085,12 +2091,16 @@ const skills = {
 				event.result = {
 					bool: true,
 					cost_data: result.links[0],
-				}
+				};
 			}
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
-			const { targets: [target], cost_data, name } = event,
+			const {
+					targets: [target],
+					cost_data,
+					name,
+				} = event,
 				skill = `${name}_${cost_data}`,
 				phase = trigger.getParent("phase");
 			target.addSkill(skill);
@@ -2136,7 +2146,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0],
-						targetx = target.getNext();;
+						targetx = target.getNext();
 					player.addTempSkill("twsbfangzhu_used", { global: "roundStart" });
 					game.broadcastAll(
 						function (target1, target2) {
@@ -2166,7 +2176,10 @@ const skills = {
 				async cost(event, trigger, player) {
 					const list = player.getStorage(event.skill);
 					if (list.length && list.some(phase => phase == trigger)) {
-						player.setStorage(event.skill, list.filter(phase => phase == trigger));
+						player.setStorage(
+							event.skill,
+							list.filter(phase => phase == trigger)
+						);
 					} else {
 						player.removeSkill(event.skill);
 					}
@@ -2204,7 +2217,10 @@ const skills = {
 				async cost(event, trigger, player) {
 					const list = player.getStorage(event.skill);
 					if (list.length && list.some(list => list[0] == trigger)) {
-						player.setStorage(event.skill, list.filter(list => list[0] == trigger));
+						player.setStorage(
+							event.skill,
+							list.filter(list => list[0] == trigger)
+						);
 						player.removeGaintag("twsbfangzhu");
 						const cards = [];
 						for (let i of list) {
@@ -2277,13 +2293,31 @@ const skills = {
 		audio: 2,
 		mod: {
 			maxHandcard(player, num) {
-				return num + Math.min(4, game.countPlayer(current => current != player));
+				return (
+					num +
+					Math.min(
+						4,
+						game.countPlayer(current => current != player)
+					)
+				);
 			},
 			globalFrom(from, to, num) {
-				return num + Math.min(4, game.countPlayer(current => current != from));
+				return (
+					num +
+					Math.min(
+						4,
+						game.countPlayer(current => current != from)
+					)
+				);
 			},
 			globalTo(from, to, num) {
-				return num + Math.min(4, game.countPlayer(current => current != to));
+				return (
+					num +
+					Math.min(
+						4,
+						game.countPlayer(current => current != to)
+					)
+				);
 			},
 		},
 	},
@@ -2296,24 +2330,32 @@ const skills = {
 		zhuSkill: true,
 		getPhases() {
 			let evts = game.getAllGlobalHistory("everything", evt => evt.name == "phase");
-			const evt = evts.slice(0).reverse().find(evt => evt._roundStart);
+			const evt = evts
+				.slice(0)
+				.reverse()
+				.find(evt => evt._roundStart);
 			if (evt) {
 				evts = evts.slice(evts.indexOf(evt));
 			}
 			return evts.filter(evt => !evt._cancelled && !evt._finished);
 		},
 		filter(event, player) {
-			if (event.player == player  || event.player.group != "wei") {
+			if (event.player == player || event.player.group != "wei") {
 				return false;
 			}
 			const evts = get.info("twsbsongwei").getPhases();
-			return game.countPlayer(current => {
-				return evts.every(evt => evt.player != current);
-			}) > 0;
+			return (
+				game.countPlayer(current => {
+					return evts.every(evt => evt.player != current);
+				}) > 0
+			);
 		},
 		async content(event, trigger, player) {
 			const evts = get.info(event.name).getPhases();
-			const num = Math.min(3, game.countPlayer(current => evts.every(evt => evt.player != current)));
+			const num = Math.min(
+				3,
+				game.countPlayer(current => evts.every(evt => evt.player != current))
+			);
 			await player.draw(num);
 		},
 	},
@@ -3683,6 +3725,12 @@ const skills = {
 						.map(name => lib.card[name[2]]?.skills || [])
 						.flat()
 				);
+				player.getStorage(equip).forEach(name => {
+					const info = lib.card[name[2]];
+					const str = get.translation(event.name) + get.translation(info.name);
+					player.addExtraEquip(`${event.name}_equip_${info.subtype}`, str, info.subtype);
+				});
+				player.$handleEquipChange();
 			}
 		},
 		subSkill: {
@@ -3730,6 +3778,12 @@ const skills = {
 				forced: true,
 				popup: false,
 				content() {
+					const list = trigger.slots.map(name => {
+						const info = lib.card[name[2]];
+						return `${event.name}_${info.subtype}`;
+					});
+					player.removeExtraEquip(list);
+					player.$handleEquipChange();
 					player.unmarkAuto(
 						event.name,
 						player.getStorage(event.name).filter(name => trigger.slots.some(t => get.subtypes(name[2]).includes(t)))
