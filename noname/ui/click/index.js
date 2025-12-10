@@ -4384,9 +4384,6 @@ export class Click {
 		}
 	}
 	pause() {
-		if (lib.config.test_game) {
-			return;
-		}
 		if (_status.paused2 || _status.pausing || _status.nopause || !ui.pause) {
 			return;
 		}
@@ -4395,6 +4392,9 @@ export class Click {
 				return;
 			}
 			if (!_status.gameStarted) {
+				return;
+			}
+			if (lib.config.test_game) {
 				return;
 			}
 		}
