@@ -8,6 +8,7 @@ const port = {
 
 export default defineConfig({
 	root: ".",
+  	base: './',
 	resolve: {
 		alias: {
 			"@": "/noname",
@@ -17,7 +18,6 @@ export default defineConfig({
 	},
 	plugins: [vue()],
 	server: {
-		open: true,
 		host: "127.0.0.1",
 		port: port.client,
 		proxy: {

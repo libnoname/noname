@@ -2,7 +2,7 @@
     "name": "noname",
     "productName": "无名杀",
     "description": "",
-    "version": "1.10.17.4",
+    "version": "1.11.0",
     "license": "GPL-3.0-only",
     "repository": {
         "type": "git",
@@ -11,7 +11,7 @@
     "type": "module",
     "scripts": {
         "start": "pnpm build:full & pnpm serve",
-        "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev\"",
+        "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev --open\"",
         "serve": "cd dist & node noname-server.cjs",
         "build": "tsx scripts/build.ts",
         "build:full": "tsx scripts/build.ts --mode full",
