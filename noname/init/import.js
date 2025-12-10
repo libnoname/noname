@@ -45,7 +45,7 @@ export async function importExtension(name) {
 	}
 	await importFunction("extension", `/extension/${name}/extension`).catch(e => {
 		console.error(`扩展《${name}》加载失败`, e);
-		let remove = confirm(`扩展《${name}》加载失败，是否移除此扩展？此操作不会移除目录下的文件。`);
+		let remove = confirm(`扩展《${name}》加载失败，是否移除此扩展？此操作不会移除目录下的文件。\n错误信息: ${(e instanceof Error ? e.stack : String(e))}`);
 		if (remove) {
 			lib.config.extensions.remove(name);
 			if (lib.config[`@Experimental.extension.${name}.character`]) {

@@ -11,8 +11,8 @@ export {};
 	}
 
 	const globalText = {
-		SERVICE_WORKER_NOT_SUPPORT: ["无法启用即时编译功能", "您使用的客户端或浏览器不支持启用serviceWorker", "请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker"].join("\n"),
-		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败", "可能会导致部分扩展加载失败"].join("\n"),
+		SERVICE_WORKER_NOT_SUPPORT: ["无法启用即时编译功能", "您使用的客户端或浏览器不支持启用serviceWorker"].join("\n"),
+		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败"].join("\n"),
 	};
 
 	if (!("serviceWorker" in navigator)) {

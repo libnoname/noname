@@ -337,11 +337,10 @@ export async function boot() {
 		nodeReady();
 	} else {
 		lib.path = (await import("path-browserify")).default;
-		window.onbeforeunload = function () {
+		window.onbeforeunload = function (e) {
 			if (config.get("confirm_exit") && !_status.reloading) {
-				return "是否离开游戏？";
-			} else {
-				return null;
+				e.preventDefault();
+				e.returnValue = '';
 			}
 		};
 		if (import.meta.env.DEV || typeof lib.device == "undefined") {
