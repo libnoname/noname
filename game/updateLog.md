@@ -297,6 +297,15 @@ getName(forDialog = false)
 
 ### game.createButtonCardsetion
 
+```javascript
+/**
+ * 在指定节点（button）内部创建一个卡片内容区域（.cardsetion），并根据当前结构设置节点状态，用于五谷此类须多人选择的牌的执过程中显示每张卡牌对应的选择角色
+ * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
+ * @param {HTMLElement} button 目标节点
+ */
+createButtonCardsetion(innerHTML, button)
+```
+
 ### card.prepareEquip
 
 装备前的预处理
@@ -322,15 +331,6 @@ get.characterTitle(player, true);
 get.characterTitle("liubei", true);
 // 获取某个角色id称号（非纯文本）
 get.characterTitle("liubei", false，false);
-```
-
-```javascript
-/**
- * 在指定节点（button）内部创建一个卡片内容区域（.cardsetion），并根据当前结构设置节点状态，用于五谷此类须多人选择的牌的执过程中显示每张卡牌对应的选择角色
- * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
- * @param {HTMLElement} button 目标节点
- */
-createButtonCardsetion(innerHTML, button)
 ```
 
 ### get.addNewRowList
