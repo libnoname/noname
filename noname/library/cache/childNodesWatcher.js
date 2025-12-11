@@ -20,4 +20,8 @@ export class ChildNodesWatcher {
 		this.childNodes.addArray(Array.from(addedNodes).filter(node => node.parentNode == this.dom));
 		this.childNodes.removeArray(Array.from(removedNodes));
 	}
+
+	toJSON() {
+		return null;
+	}
 }
