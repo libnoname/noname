@@ -202,7 +202,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							zip.load(await blob.arrayBuffer());
 							const entries = Object.entries(zip.files);
 							let root;
-							const hiddenFileFlags = [".", "_"];
+							// const hiddenFileFlags = [".", "_"];
 							unZipProgress = createProgress("正在解压" + progress.getFileName(), entries.length);
 							let i = 0;
 							for (const [key, value] of entries) {
@@ -212,9 +212,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								}
 								unZipProgress.setProgressValue(i++);
 								const fileName = typeof root == "string" && key.startsWith(root) ? key.replace(root, "") : key;
-								if (hiddenFileFlags.includes(fileName[0])) {
-									continue;
-								}
+								// if (hiddenFileFlags.includes(fileName[0])) {
+								// 	continue;
+								// }
 								if (value.dir) {
 									await game.promises.createDir(fileName);
 									continue;
