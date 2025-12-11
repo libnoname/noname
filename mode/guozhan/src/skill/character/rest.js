@@ -8,6 +8,192 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
+	//OL程普
+	gz_ol_daohuo: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterCard(card) {
+			return ui.selected.cards.every(cardx => get.color(cardx) != get.color(card));
+		},
+		complexCard: true,
+		selectCard: 2,
+		position: "hes",
+		viewAs: {
+			name: "sha",
+			nature: "fire",
+		},
+		viewAsFilter(player) {
+			return (
+				player
+					.getCards("hes")
+					.map(card => get.color(card))
+					.toUniqued().length > 1
+			);
+		},
+		prompt: "将两张颜色不同的牌当火杀使用",
+		check(card) {
+			return 6 - get.value(card);
+		},
+		async precontent(event, trigger, player) {
+			player
+				.when("useCardToPlayered")
+				.filter(evt => evt.getParent(2) == event.getParent() && evt.getParent().targets.length == 1)
+				.step(async (event, trigger, player) => {
+					const target = trigger.target;
+					const bool1 = !player.hasMark("yinyang_mark"),
+						bool2 = game.hasPlayer(current => current != target && current.isFriendOf(target));
+					if (!bool1 && !bool2) {
+						return;
+					}
+					const result = await target
+						.chooseButton(
+							[
+								"蹈火：选择一项",
+								[
+									[
+										["yinyang", `令${get.translation(player)}获得1枚“阴阳鱼”标记`],
+										["change", `令${get.translation(player)}选择一名与你同势力的其他角色，你与该角色副将易位`],
+									],
+									"textbutton",
+								],
+							],
+							true
+						)
+						.set("filterButton", button => {
+							const { bool1, bool2 } = get.event();
+							if (button.link == "yinyang") {
+								return bool1;
+							}
+							return bool2;
+						})
+						.set("bool1", bool1)
+						.set("bool2", bool2)
+						.set("ai", button => {
+							return Math.random();
+						})
+						.forResult();
+					if (!result?.bool || !result.links?.length) {
+						return;
+					}
+					if (result.links.includes("yinyang")) {
+						if (!player.countMark("yinyang_mark")) {
+							player.addMark("yinyang_mark", 1, false);
+							game.log(player, "获得了一个", "#g“阴阳鱼”");
+						}
+					}
+					if (result.links.includes("change")) {
+						const targets = game.filterPlayer(current => current != target && current.isFriendOf(target));
+						if (!targets?.length) {
+							return;
+						}
+						const result2 = await player
+							.chooseTarget(
+								`选择一名角色，令其与${get.translation(target)}副将易位`,
+								(card, player, target) => {
+									return get.event("targetx").includes(target);
+								},
+								true
+							)
+							.set("targetx", targets)
+							.set("ai", () => Math.random())
+							.forResult();
+						if (result2?.bool && result2.targets?.length) {
+							// @ts-expect-error 祖宗之法就是这么做的
+							await target.transCharacter(result2.targets[0]);
+						}
+					}
+				});
+		},
+	},
+	gz_ol_chunlao: {
+		audio: "chunlao",
+		global: "gz_ol_chunlao_jiu",
+		subSkill: {
+			jiu: {
+				enable: "chooseToUse",
+				filter(event, player) {
+					if (!game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gz_ol_chunlao"))) {
+						return false;
+					}
+					if (!player.hasMark("yinyang_mark") && !player.hasMark("zhulianbihe_mark")) {
+						return false;
+					}
+					const jiu = new lib.element.VCard({ name: "jiu", isCard: true });
+					return event.filterCard(jiu, player, event);
+				},
+				hiddenCard(player, name) {
+					if (name != "jiu" || !game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gz_ol_chunlao"))) {
+						return false;
+					}
+					return player.hasMark("yinyang_mark") || player.hasMark("zhulianbihe_mark");
+				},
+				chooseButton: {
+					dialog(event, player) {
+						return ui.create.dialog("###醇醪###弃置一枚“阴阳鱼”或“珠联璧合”，视为使用一张【酒】");
+					},
+					chooseControl(event, player) {
+						const list = [];
+						if (player.hasMark("zhulianbihe_mark")) {
+							list.push("珠联璧合");
+						}
+						if (player.hasMark("yinyang_mark")) {
+							list.push("阴阳鱼");
+						}
+						list.push("cancel2");
+						return list;
+					},
+					check(button) {
+						const player = get.player(),
+							card = new lib.element.VCard({ name: "jiu", isCard: true });
+						if (!player.getUseValue(card)) {
+							return "cancel2";
+						}
+						if (player.hasMark("yinyang_mark")) {
+							return "阴阳鱼";
+						}
+						if (player.hasMark("zhulianbihe_mark")) {
+							if (player.getUseValue("tao") < player.getUseValue("jiu")) {
+								return "珠联璧合";
+							}
+						}
+						return "cancel2";
+					},
+					backup(result, player) {
+						return {
+							link: result.control,
+							filterCard: () => false,
+							selectCard: -1,
+							viewAs: {
+								name: "jiu",
+								isCard: true,
+							},
+							async precontent(event, trigger, player) {
+								delete event.result.skill;
+								player.logSkill("gz_ol_chunlao");
+								const map = {
+									阴阳鱼: "yinyang_mark",
+									珠联璧合: "zhulianbihe_mark",
+								};
+								player.removeMark(map[get.info("gz_ol_chunlao_jiu_backup").link], 1, false);
+							},
+						};
+					},
+					prompt(result, player) {
+						return `移去一个${result.control}标记，视为使用一张【酒】`;
+					},
+				},
+				ai: {
+					order(item, player) {
+						return get.order({ name: "jiu" }, player) + 0.1;
+					},
+					result: {
+						player: 1,
+					},
+				},
+			},
+		},
+	},
 	//OL吴懿
 	gz_ol_benxi: {
 		audio: "benxi",
@@ -74,7 +260,7 @@ export default {
 				target == player
 					? {
 							bool: false,
-					  }
+						}
 					: await target
 							.chooseBool(`是否与${get.translation(player)}交换副将？`)
 							.set("choice", Math.random() > 0.5)
@@ -185,13 +371,15 @@ export default {
 			if (player.countExpansions("gz_mb_qianxun") < 3) {
 				return false;
 			}
-			return get.inpileVCardList(info => {
-				if (!["basic", "trick"].includes(info[0])) {
-					return false;
-				}
-				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
-				return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
-			}).length > 0;
+			return (
+				get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
+					return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
+				}).length > 0
+			);
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -441,7 +629,7 @@ export default {
 				target == player
 					? {
 							bool: false,
-					  }
+						}
 					: await target
 							.chooseBool(`是否与${get.translation(player)}交换副将？`)
 							.set("choice", Math.random() > 0.5)
@@ -4866,9 +5054,12 @@ export default {
 				player.addTempSkill("gztongling_used", "phaseUseAfter");
 				player.line2([target, trigger.player]);
 				target
-					.chooseToUse(function (card, player, event) {
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "通令：是否对" + get.translation(trigger.player) + "使用一张牌？")
+					.chooseToUse(
+						function (card, player, event) {
+							return lib.filter.filterCard.apply(this, arguments);
+						},
+						"通令：是否对" + get.translation(trigger.player) + "使用一张牌？"
+					)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -5707,12 +5898,15 @@ export default {
 			var target = targets.shift();
 			if (target.isIn() && (_status.connectMode || !lib.config.skip_shan || target.hasSha())) {
 				target
-					.chooseToUse(function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "是否对" + get.translation(event.target) + "使用一张【杀】？")
+					.chooseToUse(
+						function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						},
+						"是否对" + get.translation(event.target) + "使用一张【杀】？"
+					)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -7176,7 +7370,7 @@ export default {
 	},
 	//廖化
 	gzdangxian: {
-		trigger: { player: "phaseBegin" },
+		trigger: { global: "phaseBegin" },
 		forced: true,
 		preHidden: true,
 		audio: "dangxian",
@@ -7184,11 +7378,28 @@ export default {
 		audioname2: {
 			gz_guansuo: "dangxian_guansuo",
 		},
+		filter(event, player) {
+			return event.player.isFriendOf(player) && event.player.hasMark("xianqu_mark");
+		},
 		async content(event, trigger, player) {
 			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 		group: "gzdangxian_show",
+		global: "gzdangxian_ai",
 		subSkill: {
+			ai: {
+				ai: {
+					keepXianqu: true,
+					skillTagFilter(player, tag, arg) {
+						if (player.countMark("xianqu_mark") > 1) {
+							return false;
+						}
+						if (!game.hasPlayer(current => current.isFriendOf(player) && current.hasSkill("gzdangxian"))) {
+							return false;
+						}
+					},
+				},
+			},
 			show: {
 				audio: "dangxian",
 				trigger: { player: "showCharacterAfter" },
@@ -10075,12 +10286,15 @@ export default {
 			if (target.isIn()) {
 				event.target = target;
 				target
-					.chooseToUse(function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
+					.chooseToUse(
+						function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						},
+						"豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
+					)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
@@ -10197,12 +10411,15 @@ export default {
 		},
 		content() {
 			var next = player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
+				)
 				.set("logSkill", "gzzhuhai")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -10945,7 +11162,7 @@ export default {
 							.forResult()
 					: {
 							index: choice[0],
-					  };
+						};
 			if (result.index == 0) {
 				await player.discardPlayerCard(target, cards.length, true, "he");
 			} else {
@@ -15931,7 +16148,7 @@ export default {
 				const player = get.player(),
 					bool = player.hasMark("yexinjia_mark"),
 					evt = get.event().getParent();
-				if ((bool || player.hasMark("xianqu_mark")) && 4 - player.countCards("h") > 1) {
+				if ((bool || player.hasMark("xianqu_mark")) && !player.hasSkillTag("keepXianqu", false, null, true) && 4 - player.countCards("h") > 1) {
 					return "先驱";
 				}
 				if (bool || player.hasMark("zhulianbihe_mark")) {
@@ -18844,7 +19061,7 @@ export default {
 					const result = notChange
 						? {
 								bool: false,
-						  }
+							}
 						: await player
 								.chooseBool("是否将主武将牌替换为“" + get.translation(junzhu_name) + "”？")
 								.set("createDialog", [`是否替换主武将牌为君主武将“${get.translation(junzhu_name)}”`, [[junzhu_name], "character"]])
@@ -18882,7 +19099,10 @@ export default {
 							if (yelist.includes(player)) {
 								game.log(player, "变回了", `<span data-nature=${get.groupnature(group, "raw")}m>${get.translation(group + 2)}</span>身份`);
 							}
-							game.log(yelist.filter(current => current != player), "失去了野心家身份");
+							game.log(
+								yelist.filter(current => current != player),
+								"失去了野心家身份"
+							);
 							game.broadcastAll(
 								function (list, group) {
 									for (let i = 0; i < list.length; i++) {

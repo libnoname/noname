@@ -1091,6 +1091,16 @@ const translates = {
 	get mbkechang_rewrite_info() {
 		return lib.poptip.getInfo("yunan_kechang");
 	},
+	mb_zhangzhi: "书张芝",
+	mb_zhangzhi_prefix: "书",
+	mbshiju: "势举",
+	mbshiju_info: `锁定技，你使用牌结算结束后，若此牌与上一张被使用的牌：1.类型相同，你获得牌堆顶一张牌；2.花色相同，你获得牌堆底一张牌；${get.poptip("rule_chengshi")}：若牌名也相同，你获得或升级${get.poptip("mbkubai")}。`,
+	mbkubai: "枯白",
+	mbkubai_info: "你于回合内使用每种颜色的第一张牌时，摸一张牌；你的回合内，其他角色只能使用你使用过的颜色的牌。",
+	mbkubai_suit: "枯白·二级",
+	mbkubai_suit_info: "你于回合内使用每种花色的第一张牌时，摸一张牌；你的回合内，其他角色只能使用你使用过的花色的牌。",
+	mbkubai_number: "枯白·三级",
+	mbkubai_number_info: "你于回合内使用每种点数的第一张牌时，摸一张牌；你的回合内，其他角色只能使用你使用过的点数的牌。",
 };
 
 export default translates;

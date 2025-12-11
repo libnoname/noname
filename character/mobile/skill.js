@@ -2,6 +2,189 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	mbshiju: {
+		audio: 3,
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			const history = game.getAllGlobalHistory("useCard"),
+				index = history.indexOf(event);
+			if (index <= 0) {
+				return false;
+			}
+			const evt = history[index - 1];
+			return get.type2(evt.card) == get.type2(event.card) || get.suit(evt.card) == get.suit(event.card);
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const history = game.getAllGlobalHistory("useCard"),
+				index = history.indexOf(trigger);
+			if (index <= 0) {
+				return;
+			}
+			const evt = history[index - 1];
+			const bool1 = get.type2(evt.card) == get.type2(trigger.card),
+				bool2 = get.suit(evt.card) == get.suit(trigger.card),
+				bool3 = get.name(evt.card) == get.name(trigger.card);
+			if (bool1) {
+				await player.gain(get.cards(1, true), "gain2", false);
+			}
+			if (bool2) {
+				await player.gain(get.bottomCards(1, true), "gain2", false);
+			}
+			if (bool1 && bool2) {
+				player.popup("乘势", "fire");
+				if (bool3) {
+					if (!player.hasSkill("mbkubai", null, null, false)) {
+						await player.addSkills("mbkubai");
+					} else if (player.countMark("mbkubai") < 2) {
+						game.log(player, "升级了", "#g【枯白】");
+						player.addMark("mbkubai", 1, false);
+						get.info("mbkubai").init(player, "mbkubai");
+					}
+				}
+			}
+		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					const evts = game.getAllGlobalHistory("useCard");
+					if (evts.length) {
+						let evt = evts[evts.length - 1];
+						const bool1 = get.type2(evt.card) == get.type2(card),
+							bool2 = get.suit(evt.card) == get.suit(card),
+							bool3 = get.name(evt.card) == get.name(card);
+						if (bool1) {
+							num += 10;
+						}
+						if (bool2) {
+							num += 10;
+						}
+						if (bool1 && bool2 && bool3) {
+							num += 30;
+						}
+					}
+					return num;
+				}
+			},
+		},
+		derivation: ["mbkubai"],
+	},
+	mbkubai: {
+		audio: 6,
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			if (player !== _status.currentPhase) {
+				return false;
+			}
+			const key = ["color", "suit", "number"][Math.min(2, player.countMark("mbkubai"))],
+				evts = player.getHistory("useCard");
+			for (let i = 0; i < evts.length; i++) {
+				const evt = evts[i];
+				if (evt == event) {
+					break;
+				}
+				if (get[key](evt.card) == get[key](event.card)) {
+					return false;
+				}
+			}
+			return true;
+		},
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+		init(player, skill) {
+			const level = Math.min(2, player.countMark(skill)),
+				key = ["color", "suit", "number"][level];
+			let list = player
+				.getHistory("useCard")
+				.map(evt => get[key](evt.card))
+				.toUniqued();
+			if (list.length) {
+				if (key == "number") {
+					list = list.filter(i => typeof i == "number").sort((a, b) => a - b);
+				}
+				for (const target of game.filterPlayer(current => current != player).sortBySeat()) {
+					const name = "mbkubai_guanjued";
+					target.addTempSkill(name);
+					target.setStorage(name, list, true);
+				}
+			}
+		},
+		derivation: ["mbkubai_suit", "mbkubai_number"],
+		group: "mbkubai_guanjue",
+		subSkill: {
+			guanjue: {
+				trigger: {
+					player: "useCardAfter",
+				},
+				lastDo: true,
+				popup: false,
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					return player == _status.currentPhase;
+				},
+				async content(event, trigger, player) {
+					const name = "mbkubai";
+					get.info(name).init(player, name);
+				},
+			},
+			guanjued: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				marktext: "白",
+				intro: {
+					content(_1, player) {
+						const list = player.getStorage("mbkubai_guanjued"),
+							target = _status.currentPhase;
+						if (target.hasSkill("mbkubai")) {
+							const level = Math.min(2, target.countMark("mbkubai")),
+								key = ["颜色", "花色", "点数"][level];
+							return `仅能使用${key}为${get.translation(list)}的牌`;
+						}
+						return "无效果";
+					},
+				},
+				mod: {
+					cardEnabled(card, player) {
+						const list = player.getStorage("mbkubai_guanjued"),
+							target = _status.currentPhase;
+						if (target.hasSkill("mbkubai") && target != player) {
+							const level = Math.min(2, target.countMark("mbkubai")),
+								key = get[["color", "suit", "number"][level]](card);
+							if (key != "unsure" && !list.includes(key)) {
+								return false;
+							}
+						}
+					},
+					cardSavable(card, player) {
+						const list = player.getStorage("mbkubai_guanjued"),
+							target = _status.currentPhase;
+						if (target.hasSkill("mbkubai") && target != player) {
+							const level = Math.min(2, target.countMark("mbkubai")),
+								key = get[["color", "suit", "number"][level]](card);
+							if (key != "unsure" && !list.includes(key)) {
+								return false;
+							}
+						}
+					},
+				},
+			},
+			suit: {
+				nopop: true,
+			},
+			number: {
+				nopop: true,
+			},
+		},
+	},
 	//sp钟会 by柴油鹿鹿
 	mbsizi: {
 		audio: 7,
@@ -222,7 +405,7 @@ const skills = {
 				await game.delayx();
 			}
 		},
-		derivation: ["mbkechang", "mbkechang_rewrite"],
+		derivation: ["mbkechang"],
 	},
 	mbkechang: {
 		audio: 2,
@@ -247,8 +430,12 @@ const skills = {
 				return player.getStorage("mbkechang", false) && arg?.card?.name == "sha";
 			},
 		},
+		derivation: ["mbkechang_rewrite"],
 		global: "mbkechang_global",
 		subSkill: {
+			rewrite: {
+				nopop: true,
+			},
 			global: {
 				charlotte: true,
 				mod: {
@@ -1322,10 +1509,12 @@ const skills = {
 		check(event, player) {
 			const bool = get.effect(event.target, event.card, event.player, player) > 0,
 				hasShan = target => {
-					if (event.player.hasSkillTag("directHit_ai", true, {
-						target: target,
-						card: event.card,
-					})) {
+					if (
+						event.player.hasSkillTag("directHit_ai", true, {
+							target: target,
+							card: event.card,
+						})
+					) {
 						return false;
 					}
 					if (target.hasKnownCards(player, card => get.name(card) == "shan")) {
@@ -2406,7 +2595,7 @@ const skills = {
 					red: "获得所有黑色“业”，然后对一名角色造成等量伤害",
 					black: "获得所有红色“业”，然后令一名角色增加等量点体力上限并回复等量体力",
 					all: "获得所有“业”，然后依次执行：1.对一名角色造成黑色“业”数点伤害；2.令一名角色增加红色“业”数点体力上限并回复等量体力",
-				}
+				};
 				return map[links[0]];
 			},
 		},
@@ -21610,34 +21799,35 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
-			const bool = trigger.player.countCards("he", card => {
-				return lib.filter.cardDiscardable(card, trigger.player, "duoduan");
-			}) > 0;
-			const result = bool ? await player
-				.chooseControl()
-				.set("choiceList", [`令其摸两张牌，然后令${get.translation(trigger.card)}对你无效`, `令其弃置一张牌，然后你不可响应${get.translation(trigger.card)}`])
-				.set("prompt", `度断：令${get.translation(trigger.player)}执行一项`)
-				.set("ai", function () {
-					let player = _status.event.player;
-					let source = _status.event.getTrigger().player;
-					if (get.attitude(player, source) > 0) {
-						return 0;
-					}
-					if (!player.hasShan() && player.hp >= 2) {
-						return 1;
-					}
-					return 0;
-				})
-				.forResult() : {
-					index: 0,
-				};
+			const bool =
+				trigger.player.countCards("he", card => {
+					return lib.filter.cardDiscardable(card, trigger.player, "duoduan");
+				}) > 0;
+			const result = bool
+				? await player
+						.chooseControl()
+						.set("choiceList", [`令其摸两张牌，然后令${get.translation(trigger.card)}对你无效`, `令其弃置一张牌，然后你不可响应${get.translation(trigger.card)}`])
+						.set("prompt", `度断：令${get.translation(trigger.player)}执行一项`)
+						.set("ai", function () {
+							let player = _status.event.player;
+							let source = _status.event.getTrigger().player;
+							if (get.attitude(player, source) > 0) {
+								return 0;
+							}
+							if (!player.hasShan() && player.hp >= 2) {
+								return 1;
+							}
+							return 0;
+						})
+						.forResult()
+				: {
+						index: 0,
+					};
 			if (result.index == 0) {
 				await trigger.player.draw(2);
 				trigger.excluded.add(player);
 			} else {
-				const result2 = await trigger.player
-					.chooseToDiscard("弃置一张牌令" + get.translation(player) + "不能闪避此【杀】", "he", true)
-					.forResult();
+				const result2 = await trigger.player.chooseToDiscard("弃置一张牌令" + get.translation(player) + "不能闪避此【杀】", "he", true).forResult();
 				if (result2?.bool) {
 					trigger.directHit.add(player);
 				}

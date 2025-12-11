@@ -14146,6 +14146,13 @@ export class Library {
 			}
 		],
 		[
+			"书",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
 			"TW",
 			{
 				getSpan: () => {

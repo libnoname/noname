@@ -486,21 +486,12 @@
 .menubg.charactercard > .ava > .avatars > div {
 	position: relative;
 	margin: 3px;
-	width: 81px;
+	width: 75px;
 	height: 111px;
 	border-radius: 4px;
 	background-size: cover;
 	background-position: 50% 0;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 0 5px;
-}
-
-.menubg.charactercard > .ava > .avatars > div:first-child,
-.menubg.charactercard > .ava > .avatars > div:first-child + div {
-	margin-top: 6px;
-}
-
-.menubg.charactercard > .ava > .avatars > div:nth-of-type(odd) {
-	margin-left: 6px;
 }
 
 .menubg.charactercard > .ava.scroll > .avatars {

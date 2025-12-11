@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	mbkubai(player, skill) {
+		const level = player.countMark(skill);
+		if (!level) {
+			return lib.translate[`${skill}_info`];
+		}
+		if (level === 1) {
+			return lib.translate[`${skill}_suit_info`];
+		}
+		return lib.translate[`${skill}_number_info`];
+	},
 	mbkechang(player, skill) {
 		if (player.getStorage(skill, false)) {
 			return lib.translate[`${skill}_rewrite_info`];

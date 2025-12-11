@@ -818,6 +818,13 @@ export default {
 		skills: ["gz_ol_benxi", "gz_ol_zhuanzheng"],
 		dieAudios: ["wuyi"],
 	}),
+	gz_chengpu: new Character({
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 4,
+		skills: ["gz_ol_daohuo", "gz_ol_chunlao"],
+	}),
 };
 
 export const sort = "";

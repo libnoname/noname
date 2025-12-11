@@ -2047,7 +2047,7 @@ interface ChooseButtonConfigData {
 	 * 既player.chooseButton的ai
 	 * @param button 
 	 */
-	check?(button: Button): number | void;
+	check?(button: Button): number | void | string;
 	/** 
 	 * 选择数目，默认为1
 	 * 

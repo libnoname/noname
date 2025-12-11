@@ -24,8 +24,8 @@ export default {
 	guozhan_shen: ["gz_shen_zhugeliang", "gz_shen_liubei", "gz_shen_zhangliao", "gz_shen_ganning", "gz_shen_luxun", "gz_shen_simayi", "gz_shen_zhouyu", "gz_shen_caocao", "gz_shen_lvbu", "gz_shen_lvmeng", "gz_shen_guanyu", "gz_shen_zhaoyun"],
 	guozhan_qunxiong: ["gz_xf_huangquan", "gz_guohuai", "gz_guanqiujian", "gz_zhujun", "gz_chengong", "gz_re_xugong"],
 	guozhan_mobile: ["gz_sp_duyu", "gz_mb_luxun"],
-	guozhan_online: ["gz_ol_wuyi", "gz_ol_zhonghui", "gz_caochong", "gz_liuyan", "gz_re_xusheng", "gz_ol_sb_sunjian", "gz_re_huanggai", "gz_re_xuzhu", "gz_ol_weiyan", "gz_ol_yanwen", "gz_zhangsong", "gz_re_huangyueying", "gz_re_caocao", "gz_re_zhangjiao", "gz_re_luxun"],
+	guozhan_online: ["gz_ol_wuyi", "gz_ol_zhonghui", "gz_chengpu", "gz_liaohua", "gz_caochong", "gz_liuyan", "gz_re_xusheng", "gz_ol_sb_sunjian", "gz_re_huanggai", "gz_re_xuzhu", "gz_ol_weiyan", "gz_ol_yanwen", "gz_zhangsong", "gz_re_huangyueying", "gz_re_caocao", "gz_re_zhangjiao", "gz_re_luxun"],
 	guozhan_decade2: ["gz_huaxin", "gz_luyusheng", "gz_zongyu", "gz_miheng", "gz_fengxi", "gz_dengzhi", "gz_re_xunchen", "gz_dc_yanghu", "gz_lvlingqi", "gz_jianggan", "gz_re_nanhualaoxian"],
 	guozhan_tw: ["gz_tw_tianyu", "gz_tw_liufuren", "gz_tw_xiahoushang", "gz_fuwan", "gz_old_huaxiong", "gz_yangxiu"],
-	guozhan_others: ["gz_ol_lisu", "gz_mazhong", "gz_bulianshi", "gz_caozhen", "gz_maliang", "gz_re_panshu", "gz_tengyin", "gz_xurong", "gz_xianglang", "gz_zumao", "gz_zhugejin", "gz_zhouyi", "gz_lingcao", "gz_beimihu", "gz_yangwan", "gz_chendao", "gz_lifeng", "gz_liaohua", "gz_wangyi", "gz_key_ushio"],
+	guozhan_others: ["gz_ol_lisu", "gz_mazhong", "gz_bulianshi", "gz_caozhen", "gz_maliang", "gz_re_panshu", "gz_tengyin", "gz_xurong", "gz_xianglang", "gz_zumao", "gz_zhugejin", "gz_zhouyi", "gz_lingcao", "gz_beimihu", "gz_yangwan", "gz_chendao", "gz_lifeng", "gz_wangyi", "gz_key_ushio"],
 };

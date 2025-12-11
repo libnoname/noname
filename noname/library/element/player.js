@@ -10382,7 +10382,7 @@ export class Player extends HTMLDivElement {
 			return player;
 		}
 		const resetSkills = [],
-			suffixs = ["used", "round", "block", "blocker"];
+			suffixs = ["used", "round", "block", "blocker", "sunben"];
 		for (const skill of skills) {
 			const info = get.info(skill);
 			if (info.usable !== undefined) {

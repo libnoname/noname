@@ -377,7 +377,7 @@ export default {
 	gzxiaoguo_info: "其他角色的结束阶段，你可以弃置一张基本牌，令该角色选择一项：1.弃置一张装备牌；2.受到你对其造成的1点伤害。",
 
 	gzdangxian: "当先",
-	gzdangxian_info: "锁定技。当你首次明置此武将牌时，你获得一枚“先驱”标记。回合开始时，你获得一个额外的出牌阶段。",
+	gzdangxian_info: "锁定技，①当你首次明置此武将牌时，你获得一枚“先驱”标记；②同势力角色的回合开始时，若其有“先驱”标记，你令其获得一个额外的出牌阶段。",
 	gzhuanshi: "缓释",
 	gzhuanshi_info: "一名己方角色的判定牌生效前，你可打出一张牌代替之。",
 	gzhongyuan: "弘援",
@@ -606,6 +606,12 @@ export default {
 	gz_mb_qianxun_info: "锁定技，当你成为锦囊牌的唯一目标时，若你的“节”数小于3，取消之并将此牌置于你的武将牌上，称为“节”。",
 	gz_mb_duoshi: "度势",
 	gz_mb_duoshi_info: "出牌阶段限一次，你可以选择一项：1.将一张红色手牌当【以逸待劳】使用；2.将三张“节”置入弃牌堆，视为使用一张能造成火焰伤害的牌。",
+	gz_chengpu: "OL程普",
+	gz_chengpu_prefix: "OL",
+	gz_ol_daohuo: "蹈火",
+	gz_ol_daohuo_info: `出牌阶段限一次，你可将两张不同颜色的牌当火【杀】使用。此【杀】指定唯一目标后，令其选择一项：1.令你将“阴阳鱼”标记补至1；2.令你选择另一名与其同势力的角色，与其副将${get.poptip("guozhan_transCharacter")}。`,
+	gz_ol_chunlao: "醇醪",
+	gz_ol_chunlao_info: "你的同势力角色可以移去一枚“阴阳鱼”标记或一枚“珠联璧合”标记，视为使用一张【酒】。",
 
 	guozhan_jun: "君主武将",
 	guozhan_jin: "文德武备",

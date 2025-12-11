@@ -3,6 +3,7 @@ window.noname_character_rank = {
 	ap: [
 		"dc_sb_zhuran",
 		"mb_cuilingyi",
+		"mb_zhangzhi",
 		"dc_shen_sunquan",
 		"tw_jsrg_sunjian",
 		"shinin_zhenji",
@@ -2353,6 +2354,7 @@ window.noname_character_rank = {
 			"key_minagi",
 			"key_michiru",
 			"noname",
+			"mb_zhangzhi",
 			"ns_shijian",
 			"ol_wanglang",
 			"dc_xujing",
