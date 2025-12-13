@@ -18,11 +18,10 @@ import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
 
 import security from "@/util/security.js";
-import { GameCompatible } from "./compatible.js";
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
 
-export class Game extends GameCompatible {
+export class Game {
 	documentZoom;
 	online = false;
 	onlineID = null;
@@ -6261,7 +6260,6 @@ export class Game extends GameCompatible {
 		return next;
 	}
 	/**
-	 * @legacy Use {@link lib.element.GameEvent.constructor} instead.
 	 *
 	 * @param { string } name
 	 * @param { false } [trigger]
@@ -10571,8 +10569,8 @@ export class Game extends GameCompatible {
 	 *
 	 * @param { Player[] } targets 需要执行选择函数的目标
 	 * @param { function } func 需要执行的函数
-	 * @param { Any[] } args 函数所需的参数
-	 * @returns { GameEventPromise }
+	 * @param { any[] } args 函数所需的参数
+	 * @returns { GameEvent }
 	 */
 	chooseAnyOL(targets, func, args) {
 		const next = game.createEvent("chooseAnyOL");

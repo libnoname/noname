@@ -42,7 +42,7 @@ import "vue/dist/vue.esm-browser.js";
             window.open("https://github.com/libnoname/noname/releases/tag/chromium91-client");
         }
         */
-		game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
+		// game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
 	}
 
 	// GPL确认
@@ -66,8 +66,10 @@ import "vue/dist/vue.esm-browser.js";
 	} catch (e) {
 		console.error(e);
 		alert(`《无名杀》加载内容失败
-浏览器UA信息: ${userAgentLowerCase}
-报错信息: ${(e instanceof Error ? e.stack : String(e))}
+浏览器UA信息: 
+${userAgentLowerCase}
+报错信息: 
+${(e instanceof Error ? e.stack : String(e))}
 若您不理解该报错信息，请依次检查：
 1. 游戏文件是否完整（重新下载完整包）
 2. 客户端是否需要更新

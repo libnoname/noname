@@ -2,7 +2,7 @@
 import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 export { onload } from "./onload.js";
-import { userAgentLowerCase, nonameInitialized, device, leaveCompatibleEnvironment } from "@/util/index.js";
+import { userAgentLowerCase, nonameInitialized, device } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
@@ -274,13 +274,6 @@ export function tryUpdateProtocol() {
 
 // 无名杀，启动！
 export async function boot() {
-	leaveCompatibleEnvironment();
-
-	if (typeof window.cordovaLoadTimeout != "undefined") {
-		clearTimeout(window.cordovaLoadTimeout);
-		delete window.cordovaLoadTimeout;
-	}
-
 	for (const link of document.head.querySelectorAll("link")) {
 		if (link.href.includes("app/color.css")) {
 			link.remove();
@@ -319,15 +312,6 @@ export async function boot() {
 
 	// 确认手机端平台
 	lib.device = device;
-
-	// 在dom加载完后执行相应的操作
-	const waitDomLoad = new Promise(resolve => {
-		if (document.readyState !== "complete") {
-			window.onload = resolve;
-		} else {
-			resolve(void 0);
-		}
-	}).then(onWindowReady.bind(window));
 
 	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
 
@@ -601,7 +585,14 @@ export async function boot() {
 		document.addEventListener("touchmove", ui.click.windowtouchmove);
 	}
 
-	await waitDomLoad;
+	// 在dom加载完后执行相应的操作
+	await new Promise(resolve => {
+		if (document.readyState !== "complete") {
+			window.onload = resolve;
+		} else {
+			resolve(void 0);
+		}
+	});
 
 	const extensionlist = await getExtensionList();
 	if (extensionlist.length) {
@@ -1043,16 +1034,6 @@ async function loadCss() {
 	};
 	await Promise.allSettled(Object.keys(stylesLoading).map(async i => (ui.css[i] = await stylesLoading[i])));
 }
-
-/**
- * `window.onload`触发时执行的函数
- *
- * 目前无任何内容，预防以后出现需要的情况
- *
- * @deprecated
- * @return {Promise<void>}
- */
-async function onWindowReady() {}
 
 function setBackground() {
 	let htmlbg = localStorage.getItem(lib.configprefix + "background");

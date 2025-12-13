@@ -15,6 +15,11 @@ export async function cordovaReady() {
 	await new Promise(resolve => {
 		document.addEventListener("deviceready", () => resolve(void 0));
 	});
+	
+	if (typeof window.cordovaLoadTimeout != "undefined") {
+		clearTimeout(window.cordovaLoadTimeout);
+		delete window.cordovaLoadTimeout;
+	}
 
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑

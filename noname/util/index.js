@@ -18,7 +18,7 @@ export const characterDefaultPicturePath = "image/character/default_silhouette_"
 
 export const device = nonameInitialized !== "nodejs" ? (userAgentLowerCase.includes("android") ? "android" : userAgentLowerCase.includes("iphone") || userAgentLowerCase.includes("ipad") || userAgentLowerCase.includes("macintosh") ? "ios" : void 0) : void 0;
 
-export const androidNewStandardApp = device === "android" && typeof window.NonameAndroidBridge != "undefined";
+// export const androidNewStandardApp = device === "android" && typeof window.NonameAndroidBridge != "undefined";
 
 /**
  * 不能被new的类
@@ -64,12 +64,6 @@ export function freezeButExtensible(record) {
 	}
 
 	return record;
-}
-
-// 目前是否还在game.js内运行代码
-export let compatibleEnvironment = true;
-export function leaveCompatibleEnvironment() {
-	compatibleEnvironment = false;
 }
 
 /**
