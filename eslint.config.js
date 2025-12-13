@@ -56,6 +56,7 @@ export default defineConfig(globalIgnores(["dist", "node_modules"]), js.configs.
 		sourceType: "module",
 		parser: vueParser,
 		parserOptions: {
+			tsconfigRootDir: import.meta.dirname,
 			parser: ts.parser,
 		},
 		globals: {

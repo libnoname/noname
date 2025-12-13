@@ -1,6 +1,6 @@
 import { build } from "vite";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
-import generateImportMap from "../jit/vite-plugin-importmap";
+import generateImportMap from "./vite-plugin-importmap";
 import jit from "../jit/vite-plugin-jit";
 import minimist from "minimist";
 import { build as esbuild } from "esbuild";
