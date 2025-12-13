@@ -5391,9 +5391,9 @@ export class Game {
 			confirmNode.classList.remove("disabled");
 		} else {
 			input.onkeydown = function (e) {
-				if (e.keyCode == 13) {
+				if (e.code == "Enter") {
 					clickConfirm();
-				} else if (e.keyCode == 27) {
+				} else if (e.code == "Escape") {
 					clickCancel();
 				}
 				e.stopPropagation();

@@ -1317,13 +1317,13 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				}
 			};
 			text2.addEventListener("keydown", e => {
-				if (e.keyCode == 13) {
+				if (e.code == "Enter") {
 					runCommand();
-				} else if (e.keyCode == 38) {
+				} else if (e.code == "ArrowUp") {
 					if (logindex + 1 < logs.length) {
 						text2.value = logs[++logindex];
 					}
-				} else if (e.keyCode == 40) {
+				} else if (e.code == "ArrowDown") {
 					if (logindex >= 0) {
 						logindex--;
 						if (logindex < 0) {

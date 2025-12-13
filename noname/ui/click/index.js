@@ -378,7 +378,7 @@ export class Click {
 					}
 				}
 				button.input.onkeydown = function (e) {
-					if (e.keyCode == 13 && !this.disabled) {
+					if (e.code == "Enter" && !this.disabled) {
 						game.send("server", "status", this.value);
 						this.blur();
 						this.disabled = true;
@@ -1063,7 +1063,7 @@ export class Click {
 			_status.chatValue = input.value;
 		};
 		input.onkeydown = function (e) {
-			if (e.keyCode == 13 && input.value) {
+			if (e.code == "Enter" && input.value) {
 				var player = game.me;
 				var str = input.value;
 				if (!player) {

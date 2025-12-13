@@ -80,7 +80,7 @@ export const NonameConfig = {
 			};
 		},
 		inputKeydown(e) {
-			if (e.keyCode == 13) {
+			if (e.code == "Enter") {
 				e.preventDefault();
 				e.stopPropagation();
 				e.target.blur();

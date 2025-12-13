@@ -82,7 +82,7 @@ export default () => {
 					});
 				};
 				node.addEventListener("keydown", function (e) {
-					if (e.keyCode == 13) {
+					if (e.code == "Enter") {
 						connect(e);
 					}
 				});
