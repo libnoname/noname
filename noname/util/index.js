@@ -16,7 +16,21 @@ export const userAgentLowerCase = userAgent.toLowerCase();
 // export { Mutex } from "./mutex.js";
 export const characterDefaultPicturePath = "image/character/default_silhouette_";
 
-export const device = nonameInitialized !== "nodejs" ? (userAgentLowerCase.includes("android") ? "android" : userAgentLowerCase.includes("iphone") || userAgentLowerCase.includes("ipad") || userAgentLowerCase.includes("macintosh") ? "ios" : void 0) : void 0;
+// 设备环境判定：
+// - iPadOS 有时会伪装成 Macintosh（Safari “请求桌面网站”），需要通过触控点数区分
+// - macOS 桌面浏览器不应被视为 iOS，否则会走 cordova 分支并尝试加载 cordova.js
+const isIPadOSMasqueradingAsMac =
+       userAgentLowerCase.includes("macintosh") && typeof navigator != "undefined" && Number(navigator.maxTouchPoints) > 1;
+
+export const device =
+       nonameInitialized !== "nodejs"
+               ? userAgentLowerCase.includes("android")
+                       ? "android"
+                       : userAgentLowerCase.includes("iphone") || userAgentLowerCase.includes("ipad") || isIPadOSMasqueradingAsMac
+                               ? "ios"
+                               : void 0
+               : void 0;
+
 
 export const androidNewStandardApp = device === "android" && typeof window.NonameAndroidBridge != "undefined";
 
