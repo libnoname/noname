@@ -343,7 +343,12 @@ export async function boot() {
 				e.returnValue = '';
 			}
 		};
-		if (import.meta.env.DEV || typeof lib.device == "undefined") {
+		
+        // 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
+        // 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
+        const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
+
+        if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
 			const { browserReady } = await import("./browser.js");
 			await browserReady();
 		} else {
