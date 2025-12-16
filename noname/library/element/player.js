@@ -435,12 +435,12 @@ export class Player extends HTMLDivElement {
 	 */
 	removeExtraEquip(skill, equip = "noequip") {
 		const player = this;
-		if (equip != "noequip" && typeof equip == "string") {
-			equip = [equip];
-		}
-		let equips = player.extraEquip.filter(info => info[0] != skill);
+		let equips;
 		if (equip != "noequip") {
-			equips = equips.filter(info => !equip.includes(info[1]));
+			equip = typeof equip == "string" ? [equip] : equip;
+			equips = player.extraEquip.filter(info => info[0] != skill || !equip.includes(info[1]));
+		} else {
+			equips = player.extraEquip.filter(info => info[0] != skill);
 		}
 		player.extraEquip = equips;
 		player.$handleEquipChange();
@@ -14157,15 +14157,13 @@ export class Player extends HTMLDivElement {
 		const player = this;
 		const cards = Array.from(player.node.equips.childNodes);
 		const cardsResume = cards.slice(0);
-		const extraEquip = [],
-			extraEquips = [];
+		const extraEquip = [];
 		player.extraEquip.forEach(info => {
 			const extra = `${get.translation(info[0])} ${get.translation(info[1])}`;
-			const subtypes = get.subtypes(info[1]);
-			extraEquips.add(extra);
+			const subtype = get.subtype(info[1]);
 			let preserve = info[2] && !info[2](player);
 			if (!preserve && !extraEquip.map(info => info[1]).includes(info[1])) {
-				extraEquip.add([info, extra, subtypes]);
+				extraEquip.add([info, extra, subtype]);
 			}
 		});
 		cards.forEach(card => {
@@ -14183,21 +14181,17 @@ export class Player extends HTMLDivElement {
 				}
 			}
 			if (card.extraEquip && !remove) {
-				const extra = `${get.translation(card.extraEquip[0])} ${get.translation(card.extraEquip[1])}`;
-				let preserve = card.extraEquip[2] && !card.extraEquip[2](player);
+				let info = card.extraEquip,
+					preserve = card.extraEquip[2] && !card.extraEquip[2](player);
 				const disable = card.classList.contains("feichu");
-				if (!extraEquips.includes(extra) || preserve) {
+				if (!extraEquip.some(infox => infox[0][0] == info[0] && infox[0][1] == info[1]) || preserve) {
 					if (disable) {
 						card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
 						delete card.extraEquip;
 					} else {
 						player.node.equips.removeChild(card);
 						cardsResume.remove(card);
-						delete card.extraEqui;
 					}
-				} else {
-					let remove = extraEquip.find(info => info[1] == extra);
-					extraEquip.remove(remove);
 				}
 			} else if (card.classList.contains("feichu")) {
 				let extra = extraEquip.find(info => info[2].includes("equip" + num));
@@ -14252,9 +14246,8 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		extraEquip.forEach(info => {
-			const subtype = info[2][0].at(-1);
-			if (player.hasEmptySlot(subtype)) {
-				const card = game.createCard("empty_equip" + subtype, "", "");
+			if (player.hasEmptySlot(info[2])) {
+				const card = game.createCard("empty_" + info[2], "", "");
 				card.fix();
 				//console.log('add '+card.name);
 				card.style.transform = "";
@@ -14267,7 +14260,7 @@ export class Player extends HTMLDivElement {
 				let equipped = false;
 				for (let j = 0; j < player.node.equips.childNodes.length; j++) {
 					const node = player.node.equips.childNodes[j];
-					if (get.equipNum(node) == subtype && info && node.classList.contains("emptyequip") && !node.extraEquip) {
+					if (get.equipNum(node) == info[2].at(-1) && info && node.classList.contains("emptyequip") && !node.extraEquip) {
 						node.node.name2.innerHTML = info[1];
 						node.extraEquip = info[0];
 						node.classList.remove("hidden");

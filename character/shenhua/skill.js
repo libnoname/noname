@@ -6416,6 +6416,12 @@ const skills = {
 	bazhen: {
 		audio: 2,
 		audioname: ["re_sp_zhugeliang", "ol_sp_zhugeliang", "ol_pangtong"],
+		init(player, skill) {
+			player.addExtraEquip(skill, "bagua", true, player => player.hasEmptySlot(2) && lib.card.bagua);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: "bazhen_bagua",
 		locked: true,
 	},
@@ -6426,12 +6432,6 @@ const skills = {
 		noHidden: true,
 		inherit: "bagua_skill",
 		sourceSkill: "bazhen",
-		init(player, skill) {
-			player.addExtraEquip(skill, "bagua", true, player => player.hasEmptySlot(2) && lib.card.bagua);
-		},
-		onremove(player, skill) {
-			player.removeExtraEquip(skill);
-		},
 		filter(event, player) {
 			if (!lib.skill.bagua_skill.filter(event, player)) {
 				return false;
