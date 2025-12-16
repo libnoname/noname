@@ -9125,6 +9125,144 @@ export class Game extends GameCompatible {
 			game.addGlobalSkill(i);
 		}
 	}
+	finishCard(cards) {
+		if (!Array.isArray(cards)) {
+			cards = [cards];
+		}
+		const mode = get.mode(),
+			filterTarget = (card, player, target) => player == target && target.canEquip(card, true),
+			aiBasicOrder = (card, player) => {
+				const equipValue = get.equipValue(card, player) / 20;
+				return player && player.hasSkillTag("reverseEquip") ? 8.5 - equipValue : 8 + equipValue;
+			},
+			aiBasicValue = (card, player, index, method) => {
+				if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
+					return 0.01;
+				}
+				const info = get.info(card),
+					current = player.getEquip(info.subtype),
+					value = current && card != current && get.value(current, player);
+				let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
+				if (typeof equipValue == "function") {
+					if (method == "raw") {
+						return equipValue(card, player);
+					}
+					if (method == "raw2") {
+						return equipValue(card, player) - value;
+					}
+					return Math.max(0.1, equipValue(card, player) - value);
+				}
+				if (typeof equipValue != "number") {
+					equipValue = 0;
+				}
+				if (method == "raw") {
+					return equipValue;
+				}
+				if (method == "raw2") {
+					return equipValue - value;
+				}
+				return Math.max(0.1, equipValue - value);
+			},
+			aiResultTarget = (player, target, card) => get.equipResult(player, target, card);
+		cards.forEach(libCardKey => {
+			const info = `${libCardKey}_info`;
+			if (lib.translate[`${info}_${mode}`]) {
+				lib.translate[info] = lib.translate[`${info}_${mode}`];
+			} else if (lib.translate[`${info}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
+				lib.translate[info] = lib.translate[`${info}_zhu`];
+			} else if (lib.translate[`${info}_combat`] && get.is.versus()) {
+				lib.translate[info] = lib.translate[`${info}_combat`];
+			}
+			const card = lib.card[libCardKey];
+			if (card.filterTarget && card.selectTarget == undefined) {
+				card.selectTarget = 1;
+			}
+			if (card.autoViewAs) {
+				if (!card.ai) {
+					card.ai = {};
+				}
+				if (!card.ai.order) {
+					card.ai.order = lib.card[card.autoViewAs].ai.order;
+					if (!card.ai.order && lib.card[card.autoViewAs].ai.basic) {
+						card.ai.order = lib.card[card.autoViewAs].ai.basic.order;
+					}
+				}
+			}
+			if (card.type == "equip") {
+				if (card.enable == undefined) {
+					card.enable = true;
+				}
+				if (card.selectTarget == undefined) {
+					card.selectTarget = -1;
+				}
+				if (card.filterTarget == undefined) {
+					card.filterTarget = filterTarget;
+				}
+				if (card.modTarget == undefined) {
+					card.modTarget = true;
+				}
+				if (card.allowMultiple == undefined) {
+					card.allowMultiple = false;
+				}
+				if (card.content == undefined) {
+					card.content = lib.element.content.equipCard;
+				}
+				if (card.toself == undefined) {
+					card.toself = true;
+				}
+				if (card.ai == undefined) {
+					card.ai = {
+						basic: {},
+					};
+				}
+				if (card.ai.basic == undefined) {
+					card.ai.basic = {};
+				}
+				if (card.ai.result == undefined) {
+					card.ai.result = {
+						target: 1.5,
+					};
+				}
+				if (card.ai.basic.order == undefined) {
+					card.ai.basic.order = aiBasicOrder;
+				}
+				if (card.ai.basic.useful == undefined) {
+					card.ai.basic.useful = 2;
+				}
+				if (card.subtype == "equip3") {
+					if (card.ai.basic.equipValue == undefined) {
+						card.ai.basic.equipValue = 7;
+					}
+				} else if (card.subtype == "equip4") {
+					if (card.ai.basic.equipValue == undefined) {
+						card.ai.basic.equipValue = 4;
+					}
+				} else if (card.ai.basic.equipValue == undefined) {
+					card.ai.basic.equipValue = 1;
+				}
+				if (card.ai.basic.value == undefined) {
+					card.ai.basic.value = aiBasicValue;
+				}
+				if (!card.ai.result.keepAI) {
+					card.ai.result.target = aiResultTarget;
+				}
+			} else if (card.type == "delay" || card.type == "special_delay") {
+				if (card.enable == undefined) {
+					card.enable = true;
+				}
+				if (card.filterTarget == undefined) {
+					card.filterTarget = lib.filter.judge;
+				}
+				if (card.content == undefined) {
+					card.content = lib.element.content.addJudgeCard;
+				}
+				if (card.allowMultiple == undefined) {
+					card.allowMultiple = false;
+				}
+			}
+		});
+		return cards;
+	}
 	finishCards() {
 		_status.cardsFinished = true;
 		const mode = get.mode(),

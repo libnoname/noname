@@ -200,7 +200,12 @@ const cards = {
 		subtype: "equip1",
 		destroyLog: false,
 		distance: { attackFrom: -8 },
-		ai: { basic: { equipValue: 10 } },
+		ai: {
+			equipValue: 10,
+			basic: {
+				equipValue: 10,
+			},
+		},
 		cardPrompt(card) {
 			if (!card.storage || typeof card.storage.mbquchong != "number") {
 				return lib.translate["dagongche_attack_info"];
@@ -218,7 +223,12 @@ const cards = {
 		subtype: "equip1",
 		destroyLog: false,
 		distance: { attackFrom: -8 },
-		ai: { basic: { equipValue: 10 } },
+		ai: {
+			equipValue: 10,
+			basic: {
+				equipValue: 10,
+			},
+		},
 		cardPrompt(card) {
 			if (!card.storage || typeof card.storage.mbquchong != "number") {
 				return lib.translate["dagongche_defend_info"];

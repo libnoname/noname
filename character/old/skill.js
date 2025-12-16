@@ -361,7 +361,7 @@ const skills = {
 				return {
 					audio: "yao_yaoyi",
 					filterCard(card) {
-						return card.classList.contains("yao_yaoyi");
+						return get.itemtype(card) == "card" && card.classList.contains("yao_yaoyi");
 					},
 					popname: true,
 					check(card) {

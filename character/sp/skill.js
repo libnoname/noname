@@ -879,7 +879,7 @@ const skills = {
 		usable: 1,
 		trigger: { global: "useCardToTarget" },
 		filter(event, player) {
-			return event.card.name == "sha" && event.target.isMinHandcard() && (event.target == player || player.inRange(event.target)) && player.countCards("h") && lib.skill.olshuoyu.logTarget(event, player).length;
+			return event.card.name == "sha" && (event.target == player || player.inRange(event.target)) && player.countCards("h") && lib.skill.olshuoyu.logTarget(event, player).length;
 		},
 		logTarget(event, player) {
 			return game.filterPlayer(target => target.hp <= player.hp && target.countCards("h") && player != target).sortBySeat();
@@ -894,12 +894,14 @@ const skills = {
 				const { bool, opinion, targets, opinions } = result;
 				if (opinion == "red") {
 					const lose_list = [];
-					for (const [target, card] of result.red) {
-						const list = lose_list.find(i => i[0] == target);
-						if (!list) {
-							lose_list.push([target, [card]]);
-						} else {
-							lose_list[lose_list.indexOf(list)][1].push(card);
+					for (const color of opinions) {
+						for (const [target, card] of result[color]) {
+							const list = lose_list.find(i => i[0] == target);
+							if (!list) {
+								lose_list.push([target, [card]]);
+							} else {
+								lose_list[lose_list.indexOf(list)][1].push(card);
+							}
 						}
 					}
 					await game
@@ -929,9 +931,9 @@ const skills = {
 							evtx.targets.push(result.targets[0]);
 						}
 					}
-				} else if (opinion == "black") {
+				}/* else if (opinion == "black") {
 					player.tempBanSkill("olshuoyu", { player: "phaseAfter" });
-				}
+				}*/
 			});
 		},
 	},
@@ -10190,6 +10192,12 @@ const skills = {
 	olzhanjin: {
 		audio: 2,
 		locked: true,
+		init(player, skill) {
+			player.addExtraEquip(skill, "guanshi", true, player => player.hasEmptySlot(1) && lib.card.guanshi);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: "olzhanjin_guanshi",
 		subSkill: {
 			guanshi: {
@@ -10197,12 +10205,6 @@ const skills = {
 				nobracket: true,
 				equipSkill: true,
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
-				init(player, skill) {
-					player.addExtraEquip(skill, "guanshi", true, player => player.hasEmptySlot(1) && lib.card.guanshi);
-				},
-				onremove(player, skill) {
-					player.removeExtraEquip(skill);
-				},
 				filter(event, player) {
 					if (!player.hasEmptySlot(1) || !lib.card.guanshi || player.hasSkillTag("unequip_equip1")) {
 						return false;

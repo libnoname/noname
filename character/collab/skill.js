@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	liwenyupei_skill: {
+	bachiqionggouyu_skill: {
 		trigger: {
 			player: ["phaseUseEnd", "phaseDrawBegin"],
 		},
@@ -63,10 +63,12 @@ const skills = {
 		},
 	},
 	ol_le_mojin: {
+		audio: 2,
 		trigger: {
 			player: ["enterGame", "mojinSucces"],
 			global: ["phaseBefore"],
 		},
+		extraCards: ["bintieshuangji", "wuxinghelingshan", "wutiesuolian", "wushuangfangtianji", "chixueqingfeng", "guilongzhanyuedao", "huxinjing", "heiguangkai", "linglongshimandai", "hongmianbaihuapao", "qimenbagua", "guofengyupao", "zhaogujing", "sanlve", "tianjitu", "taigongyinfu", "shufazijinguan", "xuwangzhimian", "huntianyi", "bachiqionggouyu", "bazhijing", "changandajian_equip1", "changandajian_equip2", "changandajian_equip3", "changandajian_equip4", "changandajian_equip5"],
 		init(player, skill) {
 			const mojinMap = [
 				[
@@ -88,7 +90,7 @@ const skills = {
 						if (evt.type != "discard") {
 							return false;
 						}
-						const count = player.getHistory("lose", evt => evt.type == "diacard" && !player.getStorage("immojin").includes(evt)).reduce((num, evt) => (num += evt.hs.length), 0);
+						const count = player.getHistory("lose", evt => evt.type == "discard" && !player.getStorage("immojin").includes(evt)).reduce((num, evt) => (num += evt.cards2.length), 0);
 						return count >= 2;
 					},
 					player => {
@@ -124,23 +126,23 @@ const skills = {
 					"使用两张锦囊牌",
 					{ player: ["useCard"] },
 					(evt, player) => {
-						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "trick" && !player.getStorage("immojin").includes(evt));
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, "trick", false) == "trick" && !player.getStorage("immojin").includes(evt));
 						return history.length >= 2;
 					},
 					player => {
-						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "trick");
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, "trick", false) == "trick");
 						player.setStorage("immojin", history);
 					},
 				],
 				[
-					"造成至少两点伤害",
+					"单次造成至少两点伤害",
 					{ source: ["damageSource"] },
 					(evt, player) => {
-						const history = player.getAllHistory("sorceDamage", evt => evt.num >= 2 && !player.getStorage("immojin").includes(evt));
+						const history = player.getAllHistory("sourceDamage", evt => evt.num >= 2 && !player.getStorage("immojin").includes(evt));
 						return history.length >= 1;
 					},
 					player => {
-						const history = player.getAllHistory("sorceDamage", evt => evt.num >= 2);
+						const history = player.getAllHistory("sourceDamage", evt => evt.num >= 2);
 						player.setStorage("immojin", history);
 					},
 				],
@@ -214,21 +216,73 @@ const skills = {
 				],
 				[
 					"一名其他角色失去最后手牌",
-					{ global: ["loseAfter", "loseAsyncAfter"] },
+					{ global: ["loseAfter", "loseAsyncAfter", "gainAfter", "addToExpansionAfter", "equipAfter", "addJudgeAfter"] },
 					(evt, player) => {
-						return game.hasPlayer(curr => evt?.getl(curr)?.hs.length && curr.countCards("h") == 0);
+						return game.hasPlayer(current => {
+							if (current == player || current.countCards("h")) {
+								return false;
+							}
+							return evt.getl?.(current)?.hs?.length;
+						});
 					},
 				],
 			];
-			const list = [];
+			const list = get.info(skill).extraCards;
 			for (let pack in lib.cardPack) {
-				//拒绝超标卡牌，从我做起
-				if (pack == "huodong" || pack == "zhanfa") {
+				if (!["standard", "extra", "yingbian", "mode_boss_card"].includes(pack)) {
 					continue;
 				}
-				const cards = lib.cardPack[pack].filter(card => !card.destroy);
+				const cards = lib.cardPack[pack].filter(card => {
+					if (card.destroy) {
+						return false;
+					}
+					return pack != "mode_boss_card" || card.type == "equip";
+				});
 				list.addArray(cards);
 			}
+			game.loadModeAsync("boss", function (mode) {
+				for (let i in mode.translate) {
+					if (lib.translate[i]) {
+						continue;
+					}
+					lib.translate[i] = mode.translate[i];
+				}
+				lib.cardPack["mode_boss_card"] ??= Object.keys(mode.card);
+				for (let i in mode.card) {
+					if (lib.card[i]) {
+						continue;
+					}
+					lib.card[i] = mode.card[i];
+				}
+				for (let i in mode.skill) {
+					if (lib.skill[i]) {
+						continue;
+					}
+					lib.skill[i] = mode.skill[i];
+				}
+				game.finishCard(Object.keys(mode.card));
+				Object.keys(mode.skill).forEach(value => game.finishSkill(value));
+
+				const list = [];
+				for (let pack in lib.cardPack) {
+					if (!["standard", "extra", "yingbian", "mode_boss_card"].includes(pack)) {
+						continue;
+					}
+					const cards = lib.cardPack[pack].filter(card => {
+						const info = lib.card[card];
+						if (info.destroy) {
+							return false;
+						}
+						return pack != "mode_boss_card" || info.type == "equip";
+					});
+					list.addArray(cards);
+				}
+				game.countPlayer(current => {
+					if (current.hasSkill("ol_le_mojin", null, null, false)) {
+						current.markAuto("mojinAward", list);
+					}
+				});
+			});
 			player.setStorage("mojinMap", mojinMap);
 			player.setStorage("mojinAward", list);
 		},
@@ -265,17 +319,20 @@ const skills = {
 				.when(data[1])
 				.filter(data[2])
 				.step(async (event, trigger, player) => {
-					const info = [player.getStorage("mojinAward").randomGet(), lib.suit.randomGet(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet()];
+					if (data[3]) {
+						game.broadcastAll((player, data) => data[3](player), player, data);
+					}
+					const type = ["basic", "trick", "equip"].randomGet();
+					const info = [player.getStorage("mojinAward").filter(name => get.type2(name) == type).randomGet(), lib.suit.randomGet(), get.rand(1, 13)];
 					if (info[0] == "sha") {
-						info[3] = [...lib.nature.keys(), undefined].randomGet();
+						info[3] = ["ice", "thunder", "fire", undefined].randomGet();
 					}
 					const card = game.createCard(...info);
 					const next = player.gain(card, "draw");
 					next.set("immojin", true);
-					if (["basic", "trick"].includes[get.type2(card.name, false)]) {
-						player.addGaintag(card, ["ol_le_mojin_directHit", "ol_le-mojin_effect"].randomGet());
+					if (["basic", "trick"].includes(get.type2(card.name, false))) {
+						next.gaintag.add(["ol_le_mojin_directHit", "ol_le_mojin_baseDamage"].randomGet());
 					}
-					player.chat("九九成，稀罕物");
 					await next;
 					event.trigger("mojinSucces");
 				});
@@ -325,6 +382,7 @@ const skills = {
 		},
 	},
 	ol_le_dingbao: {
+		audio: 2,
 		enable: ["phaseUse"],
 		filterTarget: () => false,
 		limited: true,
@@ -340,17 +398,21 @@ const skills = {
 			if (phase?.name == "phaseUse") {
 				phase.skipped = true;
 			}
-			const info = [player.getStorage("mojinAward").randomGet(), lib.suit.randomGet(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet()];
+			const data = player.getStorage("mojinMap").find(data => player.getStorage("ol_le_mojin") == data[0]);
+			if (data?.[3]) {
+				game.broadcastAll((player, data) => data[3](player), player, data);
+			}
+			const type = ["basic", "trick", "equip"].randomGet();
+			const info = [player.getStorage("mojinAward").filter(name => get.type2(name) == type).randomGet(), lib.suit.randomGet(), get.rand(1, 13)];
 			if (info[0] == "sha") {
-				info[3] = [...lib.nature.keys(), ""].randomGet();
+				info[3] = ["ice", "thunder", "fire", undefined].randomGet();
 			}
 			const card = game.createCard(...info);
 			const next = player.gain(card, "draw");
 			next.set("immojin", true);
-			if (["basic", "trick"].includes[get.type2(card.name, false)]) {
-				player.addGaintag(card, ["ol_le_mojin_directHit", "ol_le_mojin_effect"].randomGet());
+			if (["basic", "trick"].includes(get.type2(card.name, false))) {
+				next.gaintag.add(["ol_le_mojin_directHit", "ol_le_mojin_baseDamage"].randomGet());
 			}
-			player.chat("九九成，稀罕物");
 			await next;
 			event.trigger("mojinSucces");
 		},

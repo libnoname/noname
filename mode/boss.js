@@ -480,6 +480,7 @@ export default () => {
 				subtype: "equip5",
 				skills: ["niaobaidaowenha_skill"],
 				modeimage: "boss",
+				bingzhu: ["神山识"],
 				ai: {
 					basic: {
 						equipValue: 7.5,
@@ -493,6 +494,7 @@ export default () => {
 				distance: { attackFrom: -6 },
 				skills: ["goujiangdesidai_skill"],
 				modeimage: "boss",
+				bingzhu: ["篝"],
 				ai: {
 					basic: {
 						equipValue: 7.5,
@@ -505,6 +507,7 @@ export default () => {
 				subtype: "equip2",
 				modeimage: "boss",
 				fullskin: true,
+				bingzhu: ["佐藤雏"],
 			},
 			gubuzifeng: {
 				type: "trick",
@@ -540,6 +543,7 @@ export default () => {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["lingsheji"],
+				bingzhu: ["甄姬"],
 				modeimage: "boss",
 				ai: {
 					basic: {
@@ -552,6 +556,7 @@ export default () => {
 				type: "equip",
 				subtype: "equip5",
 				skills: ["shanrangzhaoshu"],
+				bingzhu: ["曹丕"],
 				modeimage: "boss",
 				ai: {
 					basic: {
@@ -565,6 +570,7 @@ export default () => {
 				subtype: "equip1",
 				distance: { attackFrom: -3 },
 				skills: ["noda_axe"],
+				bingzhu: ["张辽"],
 				modeimage: "boss",
 				ai: {
 					basic: {
@@ -577,6 +583,7 @@ export default () => {
 				type: "equip",
 				subtype: "equip1",
 				skills: ["iwasawa_crowbow"],
+				bingzhu: ["甘宁"],
 				modeimage: "boss",
 				distance: { attackFrom: -8 },
 				ai: {
@@ -726,6 +733,7 @@ export default () => {
 				type: "equip",
 				fullskin: true,
 				subtype: "equip1",
+				bingzhu: ["周瑜"],
 				modeimage: "boss",
 				distance: { attackFrom: -3 },
 				skills: ["chiyanzhenhunqin"],
@@ -739,6 +747,7 @@ export default () => {
 			juechenjinge: {
 				type: "equip",
 				fullskin: true,
+				bingzhu: ["曹操"],
 				modeimage: "boss",
 				subtype: "equip3",
 				skills: ["juechenjinge"],
@@ -752,6 +761,7 @@ export default () => {
 			xiuluolianyuji: {
 				type: "equip",
 				fullskin: true,
+				bingzhu: ["吕布"],
 				subtype: "equip1",
 				modeimage: "boss",
 				distance: { attackFrom: -3 },
@@ -766,6 +776,7 @@ export default () => {
 			longfenghemingjian: {
 				type: "equip",
 				fullskin: true,
+				bingzhu: ["刘备"],
 				modeimage: "boss",
 				subtype: "equip1",
 				distance: { attackFrom: -2 },
@@ -780,6 +791,7 @@ export default () => {
 			qicaishenlu: {
 				fullskin: true,
 				modeimage: "boss",
+				bingzhu: ["陆逊"],
 				type: "equip",
 				subtype: "equip4",
 				distance: { globalFrom: -1 },
@@ -831,6 +843,7 @@ export default () => {
 			boss_sanshou: {
 				fullskin: true,
 				modeimage: "boss",
+				bingzhu: ["张角"],
 				type: "equip",
 				subtype: "equip2",
 				skills: ["sanshou_skill"],
@@ -2345,113 +2358,43 @@ export default () => {
 					game.addGlobalSkill("TheDayIBecomeAGod");
 					game.addGlobalSkill("thedayibecomeagod");
 					var list = ["lebu", "bingliang"];
-					for (var i = 0; i < game.players.length; i++) {
-						switch (game.players[i].name1) {
-							case "shen_guanyu": {
-								game.players[i].equip(game.createCard2("guilongzhanyuedao", "spade", 5));
-								lib.inpile.add("guilongzhanyuedao");
-								list.push("qinglong");
-								break;
+					lib.startEquipMap ??= new Map();
+					const defaultMap = [
+						["关羽", { replace: "qinglong", card: ["guilongzhanyuedao", "spade", 5] }],
+						["诸葛亮", { replace: "bagua", card: ["qimenbagua", "spade", 2] }],
+						["周瑜", { replace: "zhuque", card: ["chiyanzhenhunqin", "diamond", 1] }],
+						["曹操", { replace: "jueying", card: ["juechenjinge", "spade", 5] }],
+						["赵云", { replace: "qinggang", card: ["chixueqingfeng", "spade", 6] }],
+						["吕布", { replace: "fangtian", card: ["xiuluolianyuji", "diamond", 12] }],
+						["司马懿", { card: ["xuwangzhimian", "diamond", 4] }],
+						["刘备", { replace: "fangtian", card: ["longfenghemingjian", "spade", 2] }],
+						["吕蒙", { card: ["guofengyupao", "diamond", 3] }],
+						["陆逊", { card: ["qicaishenlu", "diamond", 3] }],
+						["甘宁", { replace: "qilin", card: ["jinwuluorigong", "heart", 5] }],
+						["张辽", { replace: "guanshi", card: ["xingtianpojunfu", "diamond", 5] }],
+						["甄姬", { card: ["lingsheji", "club", 12] }],
+						["曹丕", { card: ["shanrangzhaoshu", "spade", 13] }],
+						["孙权", { card: ["changandajian_equip4", "heart", 10] }],
+						["张角", { card: ["boss_sanshou", "diamond", 12] }],
+						["野田", { replace: "guanshi", card: ["xingtianpojunfu", "diamond", 5] }],
+						["岩泽雅美", { replace: "qilin", card: ["jinwuluorigong", "heart", 5] }],
+						["篝", { card: ["goujiangdesidai", "heart", 1] }],
+						["神山识", { card: ["niaobaidaowenha", "diamond", 13] }],
+						["佐藤雏", { card: ["shenzhixiunvfu", "spade", 13] }],
+					];
+					for (const [name, info] of defaultMap) {
+						lib.startEquipMap.set(name, info);
+					}
+					for (const current of game.players) {
+						const name = get.characterSurname(current.name1).map(names => names.join("")).join("-");
+						if (lib.startEquipMap.has(name)) {
+							const info = lib.startEquipMap.get(name);
+							if (info.replace) {
+								list.add(info.replace);
 							}
-							case "shen_zhugeliang": {
-								game.players[i].equip(game.createCard2("qimenbagua", "spade", 2));
-								list.push("bagua");
-								lib.inpile.add("qimenbagua");
-								break;
-							}
-							case "shen_zhouyu": {
-								game.players[i].equip(game.createCard2("chiyanzhenhunqin", "diamond", 1));
-								list.push("zhuque");
-								lib.inpile.add("chiyanzhenhunqin");
-								break;
-							}
-							case "shen_caocao": {
-								game.players[i].equip(game.createCard2("juechenjinge", "spade", 5));
-								list.push("jueying");
-								lib.inpile.add("juechenjinge");
-								break;
-							}
-							case "shen_zhaoyun": {
-								game.players[i].equip(game.createCard2("chixueqingfeng", "spade", 6));
-								list.push("qinggang");
-								lib.inpile.add("chixueqingfeng");
-								break;
-							}
-							case "shen_lvbu": {
-								game.players[i].equip(game.createCard2("xiuluolianyuji", "diamond", 12));
-								list.push("fangtian");
-								lib.inpile.add("xiuluolianyuji");
-								break;
-							}
-							case "shen_simayi": {
-								game.players[i].equip(game.createCard2("xuwangzhimian", "diamond", 4));
-								lib.inpile.add("xuwangzhimian");
-								break;
-							}
-							case "shen_liubei": {
-								game.players[i].equip(game.createCard2("longfenghemingjian", "spade", 2));
-								lib.inpile.add("longfenghemingjian");
-								list.push("cixiong");
-								break;
-							}
-							case "shen_lvmeng": {
-								game.players[i].equip(game.createCard2("guofengyupao", "diamond", 3));
-								lib.inpile.add("guofengyupao");
-								break;
-							}
-							case "shen_luxun": {
-								game.players[i].equip(game.createCard2("qicaishenlu", "diamond", 3));
-								lib.inpile.add("qicaishenlu");
-								break;
-							}
-							case "shen_ganning":
-							case "key_iwasawa": {
-								game.players[i].equip(game.createCard2("jinwuluorigong", "heart", 5));
-								lib.inpile.add("jinwuluorigong");
-								list.push("qilin");
-								break;
-							}
-							case "ol_zhangliao":
-							case "key_noda": {
-								game.players[i].equip(game.createCard2("xingtianpojunfu", "diamond", 5));
-								lib.inpile.add("xingtianpojunfu");
-								list.push("guanshi");
-								break;
-							}
-							case "shen_zhenji": {
-								game.players[i].equip(game.createCard2("lingsheji", "club", 12));
-								lib.inpile.add("lingsheji");
-								break;
-							}
-							case "shen_caopi": {
-								game.players[i].equip(game.createCard2("shanrangzhaoshu", "spade", 13));
-								lib.inpile.add("shanrangzhaoshu");
-								break;
-							}
-							case "key_kagari": {
-								game.players[i].equip(game.createCard2("goujiangdesidai", "heart", 1));
-								lib.inpile.add("goujiangdesidai");
-								break;
-							}
-							case "key_shiki": {
-								game.players[i].equip(game.createCard2("niaobaidaowenha", "diamond", 13));
-								lib.inpile.add("niaobaidaowenha");
-								break;
-							}
-							case "db_key_hina": {
-								game.players[i].equip(game.createCard2("shenzhixiunvfu", "spade", 13));
-								lib.inpile.add("shenzhixiunvfu");
-								break;
-							}
-							case "shen_sunquan": {
-								game.players[i].equip(game.createCard2("changandajian_equip4", "heart", 10));
-								lib.inpile.add("changandajian_equip4");
-								break;
-							}
-							case "junk_zhangjiao": {
-								game.players[i].equip(game.createCard2("boss_sanshou", "diamond", 12));
-								lib.inpile.add("boss_sanshou");
-								break;
+							if (info.card) {
+								current.equip(game.createCard2(...info.card));
+								lib.inpile.add(info.card[0]);
 							}
 						}
 					}

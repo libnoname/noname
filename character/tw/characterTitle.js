@@ -1,4 +1,5 @@
 export default {
+	tw_jsrg_liubei: "负戎荷戈",
 	kaisa: "罗马大帝",
 	tw_beimihu: "邪马台的女王",
 	nashime: "率善中郎将",

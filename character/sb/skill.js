@@ -7390,7 +7390,7 @@ const skills = {
 			mark: { charlotte: true },
 			draw: {
 				charlotte: true,
-				trigger: { player: ["useCardAfter"] },
+				trigger: { player: ["useCardAfter", "respondAfter"] },
 				forced: true,
 				popup: false,
 				filter(event, player) {

@@ -6424,6 +6424,12 @@ const skills = {
 		},
 		group: "bazhen_bagua",
 		locked: true,
+		init(player, skill) {
+			player.addExtraEquip(skill, "bagua", true, player => player.hasEmptySlot(2) && lib.card.bagua);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 	},
 	bazhen_bagua: {
 		audio: "bazhen",

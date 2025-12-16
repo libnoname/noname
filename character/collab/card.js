@@ -31,7 +31,7 @@ const cards = {
 		},
 		ai: {
 			equipValue(card, player) {
-				return player.getStorage("bazhijing").length;
+				return 10 - player.getStorage("bazhijing").length;
 			},
 		},
 		skills: ["bazhijing_skill"],

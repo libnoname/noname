@@ -1072,6 +1072,7 @@ window.noname_character_rank = {
 		"ol_maliang",
 		"dc_sb_dengai",
 		"pot_huanjie",
+		"pot_zanghong",
 	],
 	b: [
 		"bozai",
@@ -2224,7 +2225,9 @@ window.noname_character_rank = {
 		"jsrg_qiaoxuan",
 		"jsrg_zhujun",
 		"jsrg_liubei",
+		"tw_jsrg_liubei",
 		"pot_dengai",
+		"ol_le_caohong",
 	],
 	rarity: {
 		legend: [
@@ -3061,6 +3064,7 @@ window.noname_character_rank = {
 			"bozai",
 			"xiangjiaoduanwu",
 			"houzhaoning",
+			"pot_zanghong",
 			"yj_hanbing",
 			"yj_tengjia",
 			"two_yj_hanbing",
@@ -4448,11 +4452,13 @@ window.noname_character_rank = {
 			"jsrg_qiaoxuan",
 			"jsrg_kongrong",
 			"jsrg_liubei",
+			"tw_jsrg_liubei",
 			"jsrg_wangyun",
 			"jsrg_guojia",
 			"jsrg_dongzhuo",
 			"jsrg_zhanghuan",
 			"pot_dengai",
+			"ol_le_caohong",
 		],
 	},
 };

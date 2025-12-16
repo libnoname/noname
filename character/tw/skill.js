@@ -2,6 +2,79 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//外服起刘备
+	twjishan: {
+		audio: "jsrgjishan",
+		trigger: {
+			source: "damageSource",
+			global: "damageBegin4",
+		},
+		filter(event, player, name) {
+			if (player.getStorage("twjishan").includes(name)) {
+				return false;
+			}
+			if (name == "damageBegin4") {
+				return player.hp > 0;
+			}
+			return game.hasPlayer(current => current.isMinHp() && player.getStorage("twjishan").includes(current) && current.isDamaged());
+		},
+		async cost(event, trigger, player) {
+			const { triggername, skill } = event,
+				{ player: target } = trigger;
+			if (triggername == "damageBegin4") {
+				const { result } = await player.chooseBool(get.prompt(skill, target), "失去2点体力并防止此伤害，然后你与其各摸一张牌").set("choice", get.info(skill).check(trigger, player));
+				event.result = {
+					bool: result?.bool,
+					targets: [target],
+				};
+			} else {
+				event.result = await player
+					.chooseTarget(get.prompt(skill), "令一名体力值最小且你对其发动过〖积善①〗的角色回复1点体力", (card, player, target) => {
+						return target.isMinHp() && player.getStorage("twjishan").includes(target) && target.isDamaged();
+					})
+					.set("ai", target => {
+						const player = get.player();
+						return get.recoverEffect(target, player, player);
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				triggername,
+				name,
+				targets: [target],
+			} = event;
+			player.addTempSkill(name + "_used");
+			player.markAuto(name + "_used", [triggername]);
+			if (triggername == "damageBegin4") {
+				player.markAuto(name, [target]);
+				trigger.cancel();
+				await player.loseHp(2);
+				await game.asyncDraw([player, target].sortBySeat(_status.currentPhase));
+			} else {
+				await target.recover();
+			}
+		},
+		onremove: true,
+		check(event, player) {
+			return get.damageEffect(event.player, event.source, _status.event.player, event.nature) * event.num < get.effect(player, { name: "losehp" }, player, _status.event.player) * 1.5 + get.effect(player, { name: "draw" }, player, _status.event.player) + get.effect(event.player, { name: "draw" }, player, _status.event.player) / 2;
+		},
+		logAudio(event, player, name) {
+			if (name == "damageBegin4") {
+				return 2;
+			}
+			return ["jsrgjishan3.mp3", "jsrgjishan4.mp3"];
+		},
+		intro: { content: "已帮助$抵挡过伤害" },
+		ai: { expose: 0.2 },
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
 	//外服起何进
 	twzhuhuan: {
 		audio: "jsrgzhuhuan",

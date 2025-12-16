@@ -3,6 +3,108 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	//势臧洪
+	pot_liezhi: {
+		audio: 2,
+		enable: "chooseToUse",
+		usable: 1,
+		locked: false,
+		mod: {
+			cardUsable(card) {
+				if (card?.storage?.potliezhi) {
+					return Infinity;
+				}
+			},
+		},
+		filter(event, player) {
+			return ["tao", "jiu"].some(name => {
+				const card = new lib.element.VCard({ name, isCard: true, storage: { potliezhi: true } });
+				return event.filterCard(card, player, event);
+			});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = ["tao", "jiu"].filter(name => {
+					const card = new lib.element.VCard({ name, isCard: true, storage: { potliezhi: true } });
+					return event.filterCard(card, player, event);
+				});
+				const dialog = ui.create.dialog("烈志", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") {
+					return 1;
+				}
+				const player = get.player(),
+					card = new lib.element.VCard({ name: button.link[2], isCard: true, storage: { potliezhi: true } });
+				if (button.link[2] == "tao" && player.getDamagedHp() <= 1) {
+					return 0;
+				}
+				return player.getUseValue(card);
+			},
+			prompt(links) {
+				return `减少1点体力上限，视为使用一张${get.translation(links[0][2])}`;
+			},
+			backup(links, player) {
+				return {
+					viewAs: {
+						name: links[0][2],
+						isCard: true,
+						storage: {
+							potliezhi: true,
+						},
+					},
+					filterCard: () => false,
+					selectCard: -1,
+					manualConfirm: true,
+					log: false,
+					popname: true,
+					async precontent(event, trigger, player) {
+						event.getParent().addCount = false;
+						player.logSkill("pot_liezhi");
+						await player.loseMaxHp();
+					},
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			return ["tao", "jiu"].includes(name);
+		},
+		ai: {
+			order: 1,
+			result: {
+				player(player) {
+					if (player.maxHp <= 1) {
+						return -2;
+					}
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+	},
+	pot_jugu: {
+		audio: 2,
+		trigger: {
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			return !player.isDamaged();
+		},
+		check(event, player) {
+			return player.getHistory("useSkill", evt => evt.skill == "pot_jugu").length < 2;
+		},
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const num = Math.min(player.countDiscardableCards(player, "he"), player.getHistory("useSkill", evt => evt.skill == event.name).length);
+			if (num > 0) {
+				await player.chooseToDiscard(num, "he", true);
+			}
+		},
+	},
 	//势陈矫
 	potqingyan: {
 		audio: 3,

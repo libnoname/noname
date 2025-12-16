@@ -586,7 +586,7 @@ const skills = {
 			content: "视为装备着：$",
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			//player.removeTip(skill);
 			player.removeAdditionalSkill(skill);
 			player.setStorage(skill, null, true);
 		},
@@ -649,12 +649,12 @@ const skills = {
 							if (skills.length) {
 								player.addAdditionalSkill("olfuzai", skills);
 							}
-							player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
+							//player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 						} else {
 							player.removeExtraEquip("olfuzai");
 							player.setStorage("olfuzai", [], true);
 							player.removeAdditionalSkill("olfuzai");
-							player.removeTip("olfuzai");
+							//player.removeTip("olfuzai");
 						}
 					}
 					if (player.countCards("e")) {
@@ -711,7 +711,7 @@ const skills = {
 						player.addAdditionalSkill("olfuzai", skills);
 					}
 					player.setStorage("olfuzai", cards, true);
-					player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
+					//player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 				},
 				mod: {
 					attackRangeBase(player) {
@@ -1157,7 +1157,7 @@ const skills = {
 	},
 	//闪孙坚
 	ol_pingtao: {
-		audio: "jsrgpingtao",
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
@@ -1246,7 +1246,7 @@ const skills = {
 		},
 	},
 	ol_juelie: {
-		audio: "jsrgjuelie",
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return player.countCards("he") && event.card.name == "sha";
@@ -2861,7 +2861,9 @@ const skills = {
 							.step(async (event, trigger, player) => {
 								player.$throw(cards, 1000);
 								game.log(player, "弃置了", "#g牌堆", "的", cards);
-								trigger.setContent("cardsDiscard");
+								trigger.setContent(async (event, trigger, player) => {
+									await game.cardsDiscard(event.cards)
+								});
 							});
 					} else {
 						evt.goto(0);
@@ -4053,6 +4055,12 @@ const skills = {
 		},
 		derivation: ["oljiaozhao_lv1", "oljiaozhao_lv2"],
 		subSkill: {
+			lv1: {
+				nopop: true,
+			},
+			lv2: {
+				nopop: true,
+			},
 			backup: {},
 			viewas_backup: {},
 			used: {

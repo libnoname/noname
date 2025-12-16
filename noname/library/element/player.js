@@ -4777,7 +4777,7 @@ export class Player extends HTMLDivElement {
 			return null;
 		}
 		var target = this;
-		for (var i = 0; i < game.players.length - 1; i++) {
+		for (var i = 0; i < game.players.length; i++) {
 			target = target.next;
 			if (!target.hasSkill("undist")) {
 				return target;
@@ -4794,7 +4794,7 @@ export class Player extends HTMLDivElement {
 			return null;
 		}
 		var target = this;
-		for (var i = 0; i < game.players.length - 1; i++) {
+		for (var i = 0; i < game.players.length; i++) {
 			target = target.previous;
 			if (!target.hasSkill("undist")) {
 				return target;
