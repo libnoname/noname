@@ -448,6 +448,26 @@ export const Content = {
 		await event.trigger("changeSkillsEnd");
 		await event.trigger("changeSkillsAfter");
 	},
+	//连接牌
+	async connectCards(event, trigger, player) {
+		const { source, cards, log } = event;
+		const shown = cards.filter(card => get.is.connectedCard(card)),
+			hidden = cards.filter(card => !shown.includes(card));
+		event.shownCards = shown;
+		event.hiddenCards = hidden;
+		game.addConnectedCards(cards);
+		if (log) {
+			game.log(source, `连接了<span class="bluetext">${player == source ? "自己" : get.translation(player)}</span>的`, event.cards);
+		}
+	},
+	//重置连接牌
+	async resetConnectedCards(event, trigger, player) {
+		const { source, cards, log } = event;
+		game.removeConnectedCards(cards);
+		if (log) {
+			game.log(source, `重置了<span class="bluetext">${player == source ? "自己" : get.translation(player)}</span>的连接牌（`, event.cards, "）");
+		}
+	},
 	//增加明置手牌
 	addShownCards: () => {
 		const hs = player.getCards("h"),

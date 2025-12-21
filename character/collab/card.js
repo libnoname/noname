@@ -1,6 +1,52 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	bachiqionggouyu: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip5",
+		ai: {
+			equipValue(card, player) {
+				const lose = player.maxHp - player.getHp();
+				if (_status.currentPhase != player) {
+					return 4 - lose * 2;
+				} else if (_status.currentPhase) {
+					const phase = get.event().getParent("phase");
+					const nexts = phase.phaseList.slice(phase.num);
+					if (nexts.includes("phaseUse") && !player.isDamaged()) {
+						return 2;
+					}
+				}
+				return 0;
+			},
+		},
+		skills: ["bachiqionggouyu_skill"],
+	},
+	bazhijing: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip2",
+		onLose(card, player) {
+			player.unmarkAuto("bazhing", player.getStorage("bazhijing"));
+		},
+		ai: {
+			equipValue(card, player) {
+				return 10 - player.getStorage("bazhijing").length;
+			},
+		},
+		skills: ["bazhijing_skill"],
+	},
+	luoyangchan: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip1",
+		destroy: true,
+		derivation: "ol_le_caohong",
+		distance: {
+			attackFrom: -1,
+		},
+		skills: ["luoyangchan_skill"],
+	},
 	real_zhuge: {
 		derivation: "you_zhugeliang",
 		cardimage: "zhuge",

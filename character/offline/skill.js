@@ -14922,7 +14922,7 @@ const skills = {
 				.set("ai", () => {
 					const { player, targets, controls } = get.event();
 					const eff1 = targets.reduce((sum, current) => sum + get.effect(current, { name: "shunshou_copy2" }, player, player), 0);
-					const eff2 = targets.reduce((sum, current) => sum + 2 * get.effect(current, { name: "guohe_copy2", position: "h" }, player, player) * (current.countCards("h") - current.getHp()), 0);
+					const eff2 = targets.reduce((sum, current) => sum + 2 * get.effect(current, { name: "guohe_copy", position: "h" }, player, player) * (current.countCards("h") - current.getHp()), 0);
 					if (eff1 <= 0 && eff2 <= 0) {
 						return "cancel2";
 					}

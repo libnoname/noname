@@ -25,7 +25,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
-		usable: 1,
+		usable: 2,
 		logAudio: () => ["sbwushuang4.mp3", "sbwushuang5.mp3"],
 		content() {
 			trigger.num++;
@@ -7390,7 +7390,7 @@ const skills = {
 			mark: { charlotte: true },
 			draw: {
 				charlotte: true,
-				trigger: { player: ["useCardAfter"] },
+				trigger: { player: ["useCardAfter", "respondAfter"] },
 				forced: true,
 				popup: false,
 				filter(event, player) {

@@ -1,4 +1,11 @@
 export default {
+	"#clantanque1": "挽弓射营雀，试惊执刀人。",
+	"#clantanque2": "吾可射落山雀，亦可毙汝性命！",
+	"#clanshengmo1": "挥毫纵墨，诸君可见砚底之春秋。",
+	"#clanshengmo2": "余墨染青山，墨尽颜色存。",
+	"#clanzhongliu_clan_wangmingshan1": "既敢居于中流，何惧水漫之厄。",
+	"#clanzhongliu_clan_wangmingshan2": "往昔门庭若洪，府内俱藏乾坤。",
+	"#clan_wangmingshan:die": "一人之罪，王门何辜？",
 	"#clan_hanfu:die": "动则门生，行必故吏，此馥何主也。",
 	"#clanheta1": "兵者不可为首，待他州发动再和之不迟。",
 	"#clanheta2": "学从袁，职自董，当助袁氏乎？当助董氏乎？",

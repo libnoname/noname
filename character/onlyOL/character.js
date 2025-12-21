@@ -53,7 +53,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["ol_pingtao", "ol_juelie"],
-		dieAudios: ["jsrg_sunjian"],
 		img: "image/character/jsrg_sunjian.jpg",
 	},
 	ol_jsrg_zhangliao: {

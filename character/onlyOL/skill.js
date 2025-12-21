@@ -586,7 +586,7 @@ const skills = {
 			content: "视为装备着：$",
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			//player.removeTip(skill);
 			player.removeAdditionalSkill(skill);
 			player.setStorage(skill, null, true);
 		},
@@ -645,14 +645,16 @@ const skills = {
 									skills.addArray(info.skills);
 								}
 							}
+							player.addExtraEquip(`olfuzai`, list, true);
 							if (skills.length) {
 								player.addAdditionalSkill("olfuzai", skills);
 							}
-							player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
+							//player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 						} else {
+							player.removeExtraEquip("olfuzai");
 							player.setStorage("olfuzai", [], true);
 							player.removeAdditionalSkill("olfuzai");
-							player.removeTip("olfuzai");
+							//player.removeTip("olfuzai");
 						}
 					}
 					if (player.countCards("e")) {
@@ -704,11 +706,12 @@ const skills = {
 							skills.addArray(info.skills);
 						}
 					}
+					player.addExtraEquip(`olfuzai`, cards, true);
 					if (skills.length) {
 						player.addAdditionalSkill("olfuzai", skills);
 					}
 					player.setStorage("olfuzai", cards, true);
-					player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
+					//player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 				},
 				mod: {
 					attackRangeBase(player) {
@@ -742,7 +745,10 @@ const skills = {
 					if (evt.position == ui.discardPile) {
 						for (let i of evt.cards) {
 							if (get.position(i) == "d") {
-								suits.add(get.suit(i, false));
+								const suit = get.suit(i, false);
+								if (suit && lib.suit.includes(suit)) {
+									suits.add(suit);
+								}
 							}
 						}
 					}
@@ -750,7 +756,10 @@ const skills = {
 					if (evt.name == "cardsDiscard") {
 						for (let i of evt.cards) {
 							if (get.position(i) == "d") {
-								suits.add(get.suit(i, false));
+								const suit = get.suit(i, false);
+								if (suit && lib.suit.includes(suit)) {
+									suits.add(suit);
+								}
 							}
 						}
 					}
@@ -1148,7 +1157,7 @@ const skills = {
 	},
 	//闪孙坚
 	ol_pingtao: {
-		audio: "jsrgpingtao",
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
@@ -1237,7 +1246,7 @@ const skills = {
 		},
 	},
 	ol_juelie: {
-		audio: "jsrgjuelie",
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return player.countCards("he") && event.card.name == "sha";
@@ -2852,7 +2861,9 @@ const skills = {
 							.step(async (event, trigger, player) => {
 								player.$throw(cards, 1000);
 								game.log(player, "弃置了", "#g牌堆", "的", cards);
-								trigger.setContent("cardsDiscard");
+								trigger.setContent(async (event, trigger, player) => {
+									await game.cardsDiscard(event.cards)
+								});
 							});
 					} else {
 						evt.goto(0);
@@ -4044,6 +4055,12 @@ const skills = {
 		},
 		derivation: ["oljiaozhao_lv1", "oljiaozhao_lv2"],
 		subSkill: {
+			lv1: {
+				nopop: true,
+			},
+			lv2: {
+				nopop: true,
+			},
 			backup: {},
 			viewas_backup: {},
 			used: {
@@ -5290,8 +5307,44 @@ const skills = {
 	oljulian: {
 		audio: "jsrgjulian",
 		inherit: "jsrgjulian",
+		filter(event, player) {
+			const { player: source } = event;
+			const skill = "oljulian";
+			if (source == player || source.group != "qun" || source.countMark(`${skill}_count`) >= lib.skill[skill].maxNum) {
+				return false;
+			}
+			const evt = event.getParent("phaseDraw");
+			return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != skill && player.hasZhuSkill(skill, event.player);
+		},
 		maxNum: 1,
 		group: "oljulian_gain",
+		subSkill: {
+			gain: {
+				audio: ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					return lib.skill["oljulian_gain"].logTarget(null, player).length;
+				},
+				prompt: "是否发动【聚敛】？",
+				prompt2: "获得其他所有群势力角色的各一张牌",
+				logTarget(event, player) {
+					return game
+						.filterPlayer(current => {
+							return current.group == "qun" && current.countGainableCards(player, "he") > 0 && current != player;
+						})
+						.sortBySeat();
+				},
+				async content(event, trigger, player) {
+					for (const target of event.targets) {
+						await player.gainPlayerCard(target, "he", true);
+					}
+				},
+			},
+			count: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
 	//闪赵云
 	ollonglin: {

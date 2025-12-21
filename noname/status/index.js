@@ -46,6 +46,7 @@ export class status {
 		yingbian_force: [],
 	};
 	renku = [];
+	sxrmConnectCards = [];
 	prehidden_skills = [];
 	postReconnect = {};
 	/**

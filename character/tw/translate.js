@@ -910,6 +910,10 @@ const translates = {
 	twzhuhuan_info: "准备阶段，你可以展示所有手牌并弃置所有【杀】，然后令一名其他角色选择一项：1.受到1点伤害，然后弃置X+1张牌；2.令你回复1点体力，然后你摸X+1张牌（X为你本次弃置【杀】的数量）。",
 	tw_jsrg_sunjian: "TW起孙坚",
 	tw_jsrg_sunjian_prefix: "TW|起",
+	tw_jsrg_liubei: "TW起刘备",
+	tw_jsrg_liubei_prefix: "TW|起",
+	twjishan: "积善",
+	twjishan_info: "每回合每项各限一次。①当一名角色受到伤害时，你可以失去2点体力并防止此伤害，然后你与其各摸一张牌。②当你造成伤害后，你可以令一名体力值最小且你对其发动过〖积善①〗的角色回复1点体力。",
 };
 
 export default translates;

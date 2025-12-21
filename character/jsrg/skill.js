@@ -9090,7 +9090,7 @@ const skills = {
 		trigger: { global: "gainAfter" },
 		filter(event, player) {
 			const { player: source } = event;
-			const skill = this.skill_id;
+			const skill = "jsrgjulian";
 			if (source == player || source.group != "qun" || source.countMark(`${skill}_count`) >= lib.skill[skill].maxNum) {
 				return false;
 			}
@@ -9116,7 +9116,7 @@ const skills = {
 				audio: ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return lib.skill[this.skill_id].logTarget(null, player).length;
+					return lib.skill["jsrgjulian_gain"].logTarget(null, player).length;
 				},
 				prompt: "是否发动【聚敛】？",
 				prompt2: "获得其他所有群势力角色的各一张牌",
@@ -9208,7 +9208,7 @@ const skills = {
 			if (!hs.length) {
 				return false;
 			}
-			return hs.every(card => lib.filter.cardDiscardable(card, player, this.skill_id));
+			return hs.every(card => lib.filter.cardDiscardable(card, player, "jsrgzhuhuan"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

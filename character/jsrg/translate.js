@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+
 const translates = {
 	//江山如故·起
 	jsrg_liuhong: "起刘宏",
@@ -5,7 +7,7 @@ const translates = {
 	jsrgchaozheng: "朝争",
 	jsrgchaozheng_info: "准备阶段，你可以令所有其他角色议事。若结果为：红色，意见为红色的角色各回复1点体力；黑色，意见为红色的角色各失去1点体力。然后若所有意见均相同，你摸X张牌（X为此次议事的角色数）。",
 	jsrgshenchong: "甚宠",
-	jsrgshenchong_info: "限定技。出牌阶段，你可以令一名其他角色获得〖飞扬〗、〖跋扈〗。若如此做，当你死亡时，其失去所有技能并弃置所有手牌。",
+	jsrgshenchong_info: `限定技。出牌阶段，你可以令一名其他角色获得获得${get.poptip("jsrgfeiyang")}和${get.poptip("jsrgbahu")}。若如此做，当你死亡时，其失去所有技能并弃置所有手牌。`,
 	jsrgjulian: "聚敛",
 	jsrgjulian_info: "主公技。①其他群势力角色每回合限两次。当其不于摸牌阶段且不因〖聚敛〗摸牌后，其可以摸一张牌。②结束阶段，你可以获得所有其他群势力角色各一张牌。",
 	jsrgfeiyang: "飞扬",

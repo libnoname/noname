@@ -1,4 +1,6 @@
 export default {
+	//dc_sb_jianggan: "",
+	//dc_sb_chunyuqiong: "",
 	houzhaoning: "贤助抚外",
 	dc_sb_xuyou: "智士濡足",
 	liuyijun: "恶嫉蔑死",

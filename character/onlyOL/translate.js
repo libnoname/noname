@@ -363,7 +363,7 @@ const translates = {
 	olchaozheng: "朝争",
 	olchaozheng_info: "①准备阶段，你可以与所有其他角色议事。若结果为：红色，意见为红色的角色各回复1点体力；黑色，意见为红色的其他角色各失去1点体力。然后你摸X张牌（X为此次议事意见与你相同的角色数且至多为2）。②当你参与的议事展示意见时，你的意见权重+1。",
 	olshenchong: "甚宠",
-	olshenchong_info: `限定技。准备阶段，你可以令一名其他角色获得${get.poptip("olrefeiyang")}${get.poptip("jsrgbahu")}。若如此做，当你死亡时，杀死你的角色弃置所有手牌，其失去所有技能。`,
+	olshenchong_info: `限定技。准备阶段，你可以令一名其他角色获得${get.poptip("olrefeiyang")}和${get.poptip("jsrgbahu")}。若如此做，当你死亡时，杀死你的角色弃置所有手牌，其失去所有技能。`,
 	oljulian: "聚敛",
 	oljulian_info: "主公技。①其他群势力角色每回合限一次。当其不于摸牌阶段且不因〖聚敛〗摸牌后，其可以摸一张牌。②结束阶段，你可以获得所有其他群势力角色各一张牌。",
 	olrefeiyang: "飞扬",

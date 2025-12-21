@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+
 const translates = {
 	ddd_handang: "ddd韩当",
 	ddd_handang_prefix: "ddd",
@@ -121,7 +123,7 @@ const translates = {
 	dddanzhi: "暗织",
 	dddanzhi_info: "一名角色的回合开始时，若上一张被使用或打出的牌为黑色，你可以指定一名角色，此回合其第一次成为黑色牌的目标时，此牌对其无效。",
 	dddshixing: "失兴",
-	dddshixing_info: "锁定技。若有未受伤的女性角色，你视为拥有〖享乐〗；若当前回合没有锦囊牌被使用，你视为拥有〖酒诗〗；若你没有上述技能，你视为拥有〖制衡〗。",
+	dddshixing_info: `锁定技。若有未受伤的女性角色，你视为拥有${get.poptip("xiangle")}；若当前回合没有锦囊牌被使用，你视为拥有${get.poptip("jiushi")}；若你没有上述技能，你视为拥有${get.poptip("rezhiheng")}。`,
 	ddddanggu: "党锢",
 	ddddanggu_info: "锁定技。①结束阶段，你横置任意名角色的武将牌，直到场上已横置的角色数不少于X（X为群势力角色数）。②其他角色的弃牌阶段，若其处于连环状态，其装备区里的牌视为手牌。",
 	dddfuzong: "覆宗",

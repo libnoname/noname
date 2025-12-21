@@ -1,6 +1,7 @@
 export default {
 	//pot_dengai: "",
 	//pot_chenjiao: "",
+	//pot_zanghong: "",
 	mb_chenzhi: "承担接贤", 
 	mb_sunjun: "横逆自固",
 	guoyuan: "清介有守",

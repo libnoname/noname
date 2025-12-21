@@ -1650,8 +1650,10 @@ export const transCharacter = async (event, _trigger, player) => {
 			player.awakenSkill(skill);
 		}
 	}
+	_status._isSwitchPos = true;
 	await player.reinitCharacter(name1, name2, false);
 	await target.reinitCharacter(name2, name1, false);
+	delete _status._isSwitchPos;
 	for (const key of map1.keys()) {
 		if (target.hasSkill(key, null, null, false)) {
 			const cards = map1.get(key);

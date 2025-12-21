@@ -1224,6 +1224,7 @@ game.import("card", function () {
 				audio: true,
 				type: "trick",
 				cardnature: "fire",
+				manualConfirm: true,
 				filterTarget(card, player, target) {
 					if (get.mode() == "guozhan") {
 						var next = player.getNext();

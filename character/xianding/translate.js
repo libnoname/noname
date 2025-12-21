@@ -1071,6 +1071,18 @@ const translates = {
 	dcsbzhenjian_info: "每轮开始时，你可选择一名其他角色并秘密选择一个普通锦囊牌的牌名，本轮其使用普通锦囊牌时，若与你选择的牌名不同，你可为此牌增加或减少1个目标（至少为1），否则你失去1点体力且此技能本轮失效。",
 	dcsbxixing: "悉性",
 	dcsbxixing_info: "出牌阶段限一次，你可观看一名其他角色的手牌并获得其中一张牌，然后若你使用的下一张牌对其造成了伤害，此技能视为未发动过。",
+	dc_sb_jianggan: "新杀谋蒋干",
+	dc_sb_jianggan_prefix: "新杀谋",
+	dcsbmingfang: "明访",
+	dcsbmingfang_info: "①回合开始时，你可令一名其他角色展示一张手牌，以此法展示的牌在其手牌中时，其受到伤害+1。②出牌阶段开始时，你可与一名其他角色拼点：若你赢，你对其造成1点伤害且本回合结束阶段可再次拼点；否则你与其横置。",
+	dcsbjibian: "急辩",
+	dcsbjibian_info: "你拼点时，可以摸至多三张牌，你本次拼点的牌点数-X（X为你以此法摸牌数）。",
+	dc_sb_chunyuqiong: "新杀谋淳于琼",
+	dc_sb_chunyuqiong_prefix: "新杀谋",
+	dcsblingshu: "领戍",
+	dcsblingshu_info: "若你本回合未造成或受到过伤害，你可将一张非基本牌当作基本牌使用或打出。",
+	dcsbwankang: "顽抗",
+	dcsbwankang_info: "你处于濒死状态时，可以回复1点体力，然后获得一个“抗”并摸一张牌；若如此做，本回合结束时你可对本回合对你造成过伤害的角色使用任意张【杀】（每使用一张便移去一个“抗”，以此法杀死角色则移去全部“抗”），然后若你还有“抗”，你死亡。",
 };
 
 export default translates;

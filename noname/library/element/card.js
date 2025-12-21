@@ -287,8 +287,9 @@ export class Card extends HTMLDivElement {
 		if (parseInt(cardnum) == cardnum) {
 			cardnum = parseInt(cardnum);
 		}
-
+		let vanish = false;
 		if (!lib.card[card[2]]) {
+			vanish = true;
 			lib.card[card[2]] = {};
 		}
 		var info = lib.card[card[2]];
@@ -328,7 +329,9 @@ export class Card extends HTMLDivElement {
 		if (typeof info.init == "function") {
 			info.init();
 		}
-
+		if (vanish) {
+			delete lib.card[card[2]];
+		}
 		return this;
 	}
 	/**

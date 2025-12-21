@@ -45,7 +45,7 @@ const translates = {
 	sxrmhuice: "迴策",
 	sxrmhuice_info: "出牌阶段限一次，你可以依次与两名角色拼点，于一次拼点中赢的角色对另一次拼点中没赢的角色各造成1点伤害。",
 	sxrmyihe: "异合",
-	sxrmyihe_info: "每回合各限一次，一名角色于你的回合内首次受到伤害时，若其与伤害来源的手牌数与体力值大小关系：相同，你可令其与伤害来源各摸两张牌；不同，你可令此伤害+1。",
+	sxrmyihe_info: "锁定技，你的回合内各限一次，一名角色受到伤害时，若其与伤害来源的手牌数与体力值大小关系：相同，其与伤害来源各摸两张牌；不同，此伤害+1。",
 	sxrmjizhi: "赍志",
 	sxrmjizhi_info: "锁定技，其他角色不能对你使用【桃】；你每回合首次进入濒死时，回复1点体力。",
 	sxrm_caopi: "疑曹丕",
@@ -59,7 +59,6 @@ const translates = {
 	sxrmjugu: "聚谷",
 	sxrmjugu_info: "准备阶段，你可以依次选择任意名角色至多共计五张牌，将这些牌正面向上置于牌堆顶；此回合结束时，这些角色获得牌堆顶各自以此法放置的牌（没有则跳过），然后各摸一张牌。",
 	//蚀心入魔·慢
-	visible_sxrm_connect_tag: "连接牌",
 	sxrm_guanyu: "魔关羽",
 	sxrm_guanyu_prefix: "魔",
 	sxrmhanguo: "撼国",
@@ -71,22 +70,13 @@ const translates = {
 	sxrm_guanyinping: "慢关银屏",
 	sxrm_guanyinping_prefix: "慢",
 	sxrmyinmou: "姻谋",
-	sxrmyinmou_info: `一名男性角色的结束阶段，其可以连接你与其各一张未被${get.poptip({
-		id: "sxrm_connect",
-		name: "连接",
-		type: "character",
-		info: `一种对手牌的动作
-			<br><li>被连接的手牌对所有角色可见
-			<br><li>一名角色因为使用、打出、弃置而失去连接牌时，所有角色依次弃置被连接的手牌（不可嵌套）
-			<br><li>一张连接牌再次被连接或离开手牌区时，重置为正常状态
-		`,
-	})}的手牌。你每回合首次失去${get.poptip("sxrm_connect")}牌后，本次同时失去${get.poptip("sxrm_connect")}牌的角色依次摸X张牌（X为这些角色数且至多为5）。`,
+	sxrmyinmou_info: `一名男性角色的结束阶段，其可以连接你与其各一张未被${get.poptip("sxrm_connect")}的手牌。你每回合首次失去${get.poptip("sxrm_connect")}牌后，本次同时失去${get.poptip("sxrm_connect")}牌的角色依次摸X张牌（X为这些角色数且至多为5）。`,
 	sxrmquchi: "驱斥",
 	sxrmquchi_info: `出牌阶段限一次，你可以对一名角色造成1点火焰伤害，若其有${get.poptip("sxrm_connect")}牌，重置这些牌并令此伤害+1。`,
 	sxrm_yujin: "慢于禁",
 	sxrm_yujin_prefix: "慢",
 	sxrmsuwu: "肃伍",
-	sxrmsuwu_info: `准备阶段，你可以${get.poptip("sxrm_connect")}四名角色各一张手牌；若你有${get.poptip("sxrm_connect")}牌，有${get.poptip("sxrm_connect")}牌的角色每回合使用的首张伤害牌不可被响应且结算后其摸两张牌。`,
+	sxrmsuwu_info: `准备阶段，你可以${get.poptip("sxrm_connect")}至多四名角色各一张手牌；若你有${get.poptip("sxrm_connect")}牌，有${get.poptip("sxrm_connect")}牌的角色每回合使用的首张伤害牌不可被响应且结算后其摸两张牌。`,
 	sxrmrenwang: "仁王",
 	sxrmrenwang_info: `每回合限一次，你可以将一张${get.poptip("sxrm_connect")}牌当作【桃】使用。`,
 	sxrm_mifang: "慢糜芳",

@@ -16042,7 +16042,7 @@ const skills = {
 					.forResult();
 			}
 			if (result?.index == 0) {
-				await player.discardPlayerCard(target, num, true, "he", "allowChoooseAll");
+				await player.discardPlayerCard(target, num, true, "he", "allowChooseAll");
 			} else if (result?.index == 1) {
 				await target.damage();
 			}

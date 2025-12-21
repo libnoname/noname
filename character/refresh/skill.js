@@ -17079,6 +17079,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseDrawBegin1" },
 		preHidden: true,
+		frequent: true,
 		content() {
 			"step 0";
 			var cards = get.cards(4);

@@ -146,6 +146,12 @@ const translates = {
 	potqingyan_info: "你需要使用【闪】或【无懈可击】时，可以展示X张手牌（X为本轮发动此技能的次数且至多为5）并视为使用之，然后此技能失效直到你手牌中没有以此法展示过的牌。",
 	potceduan: "策断",
 	potceduan_info: "出牌阶段限一次，你可以选择一名攻击范围包含你的角色，其攻击范围内的所有角色同时展示一张手牌，然后你将手牌中展示牌最多颜色的所有牌当做一张不计入次数限制的【杀】对其使用，若造成伤害，你摸一张牌。",
+	pot_zanghong: "势臧洪",
+	pot_zanghong_prefix: "势",
+	pot_liezhi: "烈志",
+	pot_liezhi_info: "每回合限一次，你可减少1点体力上限，视为使用一张无次数限制的【桃】/【酒】。",
+	pot_jugu: "据孤",
+	pot_jugu_info: "你成为牌的目标后，若你未受伤，你可摸两张牌，然后弃置X张牌（X为你本回合发动此技能的次数）。",
 };
 
 export default translates;

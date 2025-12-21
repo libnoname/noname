@@ -443,10 +443,14 @@ export class PlayerGuozhan extends Player {
 					this.singleHp = false;
 				} else {
 					this.singleHp = true;
-					this.maxHp--;
+					if (!_status._isSwitchPos) {
+						this.maxHp--;
+					}
 				}
 			} else {
-				this.maxHp--;
+				if (!_status._isSwitchPos) {
+					this.maxHp--;
+				}
 			}
 		}
 		this.update();

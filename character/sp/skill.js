@@ -879,7 +879,7 @@ const skills = {
 		usable: 1,
 		trigger: { global: "useCardToTarget" },
 		filter(event, player) {
-			return event.card.name == "sha" && event.target.isMinHandcard() && (event.target == player || player.inRange(event.target)) && player.countCards("h") && lib.skill.olshuoyu.logTarget(event, player).length;
+			return event.card.name == "sha" && (event.target == player || player.inRange(event.target)) && player.countCards("h") && lib.skill.olshuoyu.logTarget(event, player).length;
 		},
 		logTarget(event, player) {
 			return game.filterPlayer(target => target.hp <= player.hp && target.countCards("h") && player != target).sortBySeat();
@@ -894,12 +894,14 @@ const skills = {
 				const { bool, opinion, targets, opinions } = result;
 				if (opinion == "red") {
 					const lose_list = [];
-					for (const [target, card] of result.red) {
-						const list = lose_list.find(i => i[0] == target);
-						if (!list) {
-							lose_list.push([target, [card]]);
-						} else {
-							lose_list[lose_list.indexOf(list)][1].push(card);
+					for (const color of opinions) {
+						for (const [target, card] of result[color]) {
+							const list = lose_list.find(i => i[0] == target);
+							if (!list) {
+								lose_list.push([target, [card]]);
+							} else {
+								lose_list[lose_list.indexOf(list)][1].push(card);
+							}
 						}
 					}
 					await game
@@ -929,9 +931,9 @@ const skills = {
 							evtx.targets.push(result.targets[0]);
 						}
 					}
-				} else if (opinion == "black") {
+				}/* else if (opinion == "black") {
 					player.tempBanSkill("olshuoyu", { player: "phaseAfter" });
-				}
+				}*/
 			});
 		},
 	},
@@ -2539,7 +2541,7 @@ const skills = {
 					if (target?.isIn()) {
 						await target.link(true);
 					}
-				}
+				};
 				await game.doAsyncInOrder(targets, func);
 			}
 			target.addSkill("oldici_effect");
@@ -2549,9 +2551,7 @@ const skills = {
 			order: 7,
 			result: {
 				player(player, target) {
-					const targets = [target.getPrevious(), target.getNext()]
-						.filter(current => current?.isIn() && !current.isLinked())
-						.unique();
+					const targets = [target.getPrevious(), target.getNext()].filter(current => current?.isIn() && !current.isLinked()).unique();
 					let num = target.isLinked() ? get.effect(target, { name: "tiesuo" }, player, player) : 0;
 					if (targets.length) {
 						for (const current of targets) {
@@ -10192,6 +10192,12 @@ const skills = {
 	olzhanjin: {
 		audio: 2,
 		locked: true,
+		init(player, skill) {
+			player.addExtraEquip(skill, "guanshi", true, player => player.hasEmptySlot(1) && lib.card.guanshi);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: "olzhanjin_guanshi",
 		subSkill: {
 			guanshi: {

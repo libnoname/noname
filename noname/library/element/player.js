@@ -111,6 +111,7 @@ export class Player extends HTMLDivElement {
 		player.popups = [];
 		player.damagepopups = [];
 		player.judging = [];
+		player.extraEquip = [];
 		player.stat = [
 			{
 				card: {},
@@ -205,6 +206,10 @@ export class Player extends HTMLDivElement {
 	 * @type { string[] }
 	 */
 	skipList;
+	/**
+	 * @type { Array<[string,string,Function|undefined]> }
+	 */
+	extraEquip;
 	/**
 	 * @type { string[] }
 	 */
@@ -394,6 +399,62 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
+	 * 添加视为装备
+	 * @param {string} skill 视为装备的技能
+	 * @param {Array<string>|string} equip 视为装备的牌名
+	 * @param {boolean} replace 是否清除该skill原有视为装备
+	 * @param {Function} [preserve] 视为装备的条件,用于八阵类视为装备
+	 */
+	addExtraEquip(skill, equip, replace = false, preserve) {
+		const player = this;
+		if (replace) {
+			player.removeExtraEquip(skill);
+		}
+		let list;
+		if (typeof equip == "string") {
+			list = [[skill, equip, preserve]];
+		} else {
+			list = equip.map(card => [skill, card, preserve]);
+		}
+		player.extraEquip.add(...list);
+		player.$handleEquipChange();
+		game.broadcast(
+			(player, list) => {
+				player.extraEquip.add(...list);
+				player.$handleEquipChange();
+			},
+			player,
+			list
+		);
+	}
+
+	/**
+	 * 移除视为装备
+	 * @param {string} skill 移除的技能
+	 * @param {Array<string>|string} equip 移除的装备
+	 */
+	removeExtraEquip(skill, equip = "noequip") {
+		const player = this;
+		if (equip != "noequip" && typeof equip == "string") {
+			equip = [equip];
+		}
+		let equips = player.extraEquip.filter(info => info[0] != skill);
+		if (equip != "noequip") {
+			equips = equips.filter(info => !equip.includes(info[1]));
+		}
+		player.extraEquip = equips;
+		player.$handleEquipChange();
+		game.broadcast(
+			(player, equips) => {
+				player.extraEquip = equips;
+				player.$handleEquipChange();
+			},
+			player,
+			equips
+		);
+	}
+
+	/**
 	 * 是否拥有对应战法
 	 * @param {string} id 战法的id
 	 */
@@ -478,7 +539,7 @@ export class Player extends HTMLDivElement {
 		}
 		const keys = get.canRespond(evt.card);
 		if (get.type(evt?.card) == "trick") {
-			keys.addArray(get.canRespond("trcik"));
+			keys.addArray(get.canRespond("trick"));
 		}
 		if (get.tag(evt?.card, "damage")) {
 			keys.addArray(get.canRespond("damage"));
@@ -962,9 +1023,13 @@ export class Player extends HTMLDivElement {
 				}
 				if (typeof obj == "object" && obj !== null) {
 					Object.assign(skill, obj);
-					game.broadcast((skillName, obj) => {
-						Object.assign(lib.skill[skillName], obj);
-					}, skillName, obj);
+					game.broadcast(
+						(skillName, obj) => {
+							Object.assign(lib.skill[skillName], obj);
+						},
+						skillName,
+						obj
+					);
 				}
 				return this;
 			},
@@ -1017,6 +1082,96 @@ export class Player extends HTMLDivElement {
 				return this;
 			},
 		};
+	}
+	/**
+	 * 让一名角色连接一名角色一些手牌
+	 */
+	connectCards() {
+		const next = game.createEvent("connectCards");
+		next.player = this;
+		for (const argument of arguments) {
+			const type = get.itemtype(argument);
+			if (type == "cards") {
+				next.cards = argument;
+			} else if (type == "card") {
+				next.cards = [argument];
+			} else if (type == "player") {
+				next.source = [argument];
+			} else if (typeof argument == "boolean") {
+				next.log = argument;
+			}
+		}
+		if (get.itemtype(next.source) != "player") {
+			next.source = _status.event.player;
+		}
+		if (get.itemtype(next.cards) != "cards") {
+			next.cards = this.getCards("h");
+		}
+		if (!next.cards.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
+		if (next.log == undefined) {
+			next.log = true;
+		}
+		next.setContent("connectCards");
+		next._args = Array.from(arguments);
+		return next;
+	}
+	/**
+	 * 让一名角色重置一名角色一些连接手牌
+	 */
+	resetConnectedCards() {
+		const next = game.createEvent("resetConnectedCards");
+		next.player = this;
+		for (const argument of arguments) {
+			const type = get.itemtype(argument);
+			if (type == "cards") {
+				next.cards = argument;
+			} else if (type == "card") {
+				next.cards = [argument];
+			} else if (type == "player") {
+				next.source = [argument];
+			} else if (typeof argument == "boolean") {
+				next.log = argument;
+			}
+		}
+		if (get.itemtype(next.source) != "player") {
+			next.source = _status.event.player;
+		}
+		if (get.itemtype(next.cards) != "cards") {
+			next.cards = this.getConnectedCards();
+		}
+		if (next.log == undefined) {
+			next.log = true;
+		}
+		if (!next.cards.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
+		next.setContent("resetConnectedCards");
+		next._args = Array.from(arguments);
+		return next;
+	}
+	/**
+	 * 获取角色所有的连接手牌
+	 */
+	getConnectedCards() {
+		return this.getCards("h", card => get.is.connectedCard(card));
+	}
+	/**
+	 * 获取角色所有的连接手牌数
+	 * @returns {number}
+	 */
+	countConnectedCards() {
+		return this.getConnectedCards().length;
+	}
+	/**
+	 * 判断一名角色是否拥有连接手牌
+	 * @returns {boolean}
+	 */
+	hasConnectedCards() {
+		return this.hasCard(card => get.is.connectedCard(card), "h");
 	}
 	/**
 	 * 让一名角色明置一些手牌
@@ -1077,6 +1232,20 @@ export class Player extends HTMLDivElement {
 		return this.getCards("h", card => {
 			return get.is.shownCard(card);
 		});
+	}
+	/**
+	 * 获取角色所有的明置手牌数
+	 * @returns {number}
+	 */
+	countShownCards() {
+		return this.getShownCards().length;
+	}
+	/**
+	 * 判断一名角色是否拥有明置手牌
+	 * @returns {boolean}
+	 */
+	hasShownCards() {
+		return this.hasCard(card => get.is.shownCard(card), "h");
 	}
 	/**
 	 * 获取该角色被other所知的牌
@@ -4608,7 +4777,7 @@ export class Player extends HTMLDivElement {
 			return null;
 		}
 		var target = this;
-		for (var i = 0; i < game.players.length - 1; i++) {
+		for (var i = 0; i < game.players.length; i++) {
 			target = target.next;
 			if (!target.hasSkill("undist")) {
 				return target;
@@ -4625,7 +4794,7 @@ export class Player extends HTMLDivElement {
 			return null;
 		}
 		var target = this;
-		for (var i = 0; i < game.players.length - 1; i++) {
+		for (var i = 0; i < game.players.length; i++) {
 			target = target.previous;
 			if (!target.hasSkill("undist")) {
 				return target;
@@ -6954,7 +7123,7 @@ export class Player extends HTMLDivElement {
 						if (key == "cardsuit") {
 							const mod2 = get.info(skill).mod[key];
 							if (mod2) {
-								let arg2 = [card, this, get[key.slice(4)](card, false), result]
+								let arg2 = [card, this, get[key.slice(4)](card, false), result];
 								result = mod2.call(game, ...arg2);
 							}
 						}
@@ -7429,7 +7598,7 @@ export class Player extends HTMLDivElement {
 				skills.sort((a, b) => get.priority(a) - get.priority(b));
 			}
 			for (const key of keys) {
-					let preResult = "unchanged";
+				let preResult = "unchanged";
 				for (const skill of skills) {
 					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
 					if (mod) {
@@ -7438,7 +7607,7 @@ export class Player extends HTMLDivElement {
 						if (key == "cardsuit") {
 							const mod2 = get.info(skill).mod[key];
 							if (mod2) {
-								let arg2 = [card, this, get[key.slice(4)](card, false), result]
+								let arg2 = [card, this, get[key.slice(4)](card, false), result];
 								result = mod2.call(game, ...arg2);
 							}
 						}
@@ -8700,7 +8869,7 @@ export class Player extends HTMLDivElement {
 		if (!card.expired) {
 			let target = this.getNext();
 			const name = card.viewAs || card.name;
-			const cards = get.itemtype(card) == "card" ? [card] : card.cards ?? [];
+			const cards = get.itemtype(card) == "card" ? [card] : (card.cards ?? []);
 			//if (get.itemtype(cards) != "cards") return;
 			let bool = false;
 			if (
@@ -8714,7 +8883,7 @@ export class Player extends HTMLDivElement {
 				return;
 			}
 			for (let iwhile = 0; iwhile < 20; iwhile++) {
-				if (target.canAddJudge(card)) {
+				if (lib.filter.judge(card, target, target)) {
 					bool = true;
 					break;
 				}
@@ -10397,6 +10566,7 @@ export class Player extends HTMLDivElement {
 			}
 			if (info.round && player.storage[skill + "_roundcount"]) {
 				delete player.storage[skill + "_roundcount"];
+				player.unmarkSkill(skill + "_roundcount");
 				resetSkills.add(skill);
 			}
 			if (player.storage[`temp_ban_${skill}`]) {
@@ -10556,7 +10726,7 @@ export class Player extends HTMLDivElement {
 		}
 		if (VCard.storage.equipEnable && VCard.cards?.some(card => get.type(card) == "equip")) {
 			const es = player.getVCards("e"),
-				 equips = VCard.cards;
+				equips = VCard.cards;
 			if (equips.length) {
 				let keepSkills = Object.values(player.additionalSkills).flat().concat(get.skillsFromEquips(es)),
 					skills = get.skillsFromEquips(equips).removeArray(keepSkills);
@@ -13987,10 +14157,21 @@ export class Player extends HTMLDivElement {
 		const player = this;
 		const cards = Array.from(player.node.equips.childNodes);
 		const cardsResume = cards.slice(0);
+		const extraEquip = [],
+			extraEquips = [];
+		player.extraEquip.forEach(info => {
+			const extra = `${get.translation(info[0])} ${get.translation(info[1])}`;
+			const subtypes = get.subtypes(info[1]);
+			extraEquips.add(extra);
+			let preserve = info[2] && !info[2](player);
+			if (!preserve && !extraEquip.map(info => info[1]).includes(info[1])) {
+				extraEquip.add([info, extra, subtypes]);
+			}
+		});
 		cards.forEach(card => {
+			let num = get.equipNum(card);
+			let remove = false;
 			if (card.name.indexOf("empty_equip") == 0) {
-				let num = get.equipNum(card);
-				let remove = false;
 				if ((num == 4 || num == 3) && get.is.mountCombined()) {
 					remove = !player.hasEmptySlot("equip3_4") || player.getEquips("equip3_4").length;
 				} else if (!player.hasEmptySlot(num) || player.getEquips(num).length) {
@@ -13999,6 +14180,31 @@ export class Player extends HTMLDivElement {
 				if (remove) {
 					player.node.equips.removeChild(card);
 					cardsResume.remove(card);
+				}
+			}
+			if (card.extraEquip && !remove) {
+				const extra = `${get.translation(card.extraEquip[0])} ${get.translation(card.extraEquip[1])}`;
+				let preserve = card.extraEquip[2] && !card.extraEquip[2](player);
+				const disable = card.classList.contains("feichu");
+				if (!extraEquips.includes(extra) || preserve) {
+					if (disable) {
+						card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
+						delete card.extraEquip;
+					} else {
+						player.node.equips.removeChild(card);
+						cardsResume.remove(card);
+						delete card.extraEquip;
+					}
+				} else {
+					let remove = extraEquip.find(info => info[1] == extra);
+					extraEquip.remove(remove);
+				}
+			} else if (card.classList.contains("feichu")) {
+				let extra = extraEquip.find(info => info[2].includes("equip" + num));
+				if (extra) {
+					card.node.name2.innerHTML = extra[1];
+					card.extraEquip = extra[0];
+					extraEquip.remove(extra);
 				}
 			}
 		});
@@ -14045,6 +14251,43 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
+		extraEquip.forEach(info => {
+			const subtype = info[2][0].at(-1);
+			if (player.hasEmptySlot(subtype)) {
+				const card = game.createCard("empty_equip" + subtype, "", "");
+				card.fix();
+				//console.log('add '+card.name);
+				card.style.transform = "";
+				card.classList.remove("drawinghidden");
+				card.classList.add("emptyequip");
+				card.node.name2.innerHTML = info[1];
+				card.extraEquip = info[0];
+				delete card._transform;
+				const equipNum = get.equipNum(card);
+				let equipped = false;
+				for (let j = 0; j < player.node.equips.childNodes.length; j++) {
+					const node = player.node.equips.childNodes[j];
+					if (get.equipNum(node) == subtype && info && node.classList.contains("emptyequip") && !node.extraEquip) {
+						node.node.name2.innerHTML = info[1];
+						node.extraEquip = info[0];
+						node.classList.remove("hidden");
+						equipped = true;
+						break;
+					}
+					if (get.equipNum(node) >= equipNum) {
+						player.node.equips.insertBefore(card, node);
+						equipped = true;
+						break;
+					}
+				}
+				if (!equipped) {
+					player.node.equips.appendChild(card);
+					if (_status.discarded) {
+						_status.discarded.remove(card);
+					}
+				}
+			}
+		});
 	}
 	addVirtualJudge(card, cards) {
 		let cardx;

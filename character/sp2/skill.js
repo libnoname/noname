@@ -11457,6 +11457,17 @@ const skills = {
 		},
 	},
 	yujue: {
+		initSkill(skill) {
+			if (!lib.skill[skill]) {
+				lib.skill[skill] = {
+					charlotte: true,
+					onremove: true,
+					mark: "character",
+					intro: { content: "以$之名，授予汝技能〖执笏〗，直至$的下回合开始为止！" },
+				};
+				lib.translate[skill] = "执笏";
+			}
+		},
 		audio: 2,
 		derivation: "zhihu",
 		enable: "phaseUse",
@@ -11469,8 +11480,8 @@ const skills = {
 				return ui.create.dialog("###鬻爵###" + lib.translate.yujue_info);
 			},
 			chooseControl(event, player) {
-				var list = [];
-				for (var i = 1; i < 6; i++) {
+				const list = [];
+				for (let i = 1; i < 6; i++) {
 					if (player.hasEnabledSlot(i)) {
 						list.push("equip" + i);
 					}
@@ -11479,7 +11490,7 @@ const skills = {
 				return list;
 			},
 			check(event, player) {
-				for (var i = 5; i > 0; i--) {
+				for (let i = 5; i > 0; i--) {
 					if (player.hasEmptySlot(i)) {
 						return "equip" + i;
 					}
@@ -11487,9 +11498,43 @@ const skills = {
 				return "cancel2";
 			},
 			backup(result) {
-				var next = get.copy(lib.skill.yujuex);
-				next.position = result.control;
-				return next;
+				return {
+					audio: "yujue",
+					position: result.control,
+					async content(event, trigger, player) {
+						await player.disableEquip(lib.skill.yujue_backup.position);
+						if (
+							player.isIn() &&
+							game.hasPlayer(current => {
+								return current != player && current.countCards("h");
+							})
+						) {
+							const { result } = await player
+								.chooseTarget(true, "选择一名其他角色交给你一张手牌并获得技能〖执笏〗", (card, player, target) => {
+									if (player == target) {
+										return false;
+									}
+									return target.countCards("h") > 0;
+								})
+								.set("ai", target => {
+									return get.attitude(get.player(), target) * target.countCards("h");
+								});
+							if (result?.bool) {
+								const target = result.targets[0];
+								player.line(target);
+								const result2 = await target.chooseToGive(player, "h").forResult();
+								if (result2?.bool) {
+									player.addTempSkill("yujue_clear", { player: "phaseBeginStart" });
+									const skill = `yujue_${player.playerid}`;
+									game.broadcastAll(lib.skill.yujue.initSkill, skill);
+									target.storage[skill] = player;
+									target.addSkill(skill);
+									await target.addAdditionalSkills(skill, "zhihu");
+								}
+							}
+						}
+					},
+				};
 			},
 		},
 		ai: {
@@ -11511,42 +11556,16 @@ const skills = {
 				},
 			},
 		},
-	},
-	yujuex: {
-		audio: "yujue",
-		sourceSkill: "yujue",
-		async content(event, trigger, player) {
-			await player.disableEquip(lib.skill.yujue_backup.position);
-			if (
-				player.isIn() &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h");
-				})
-			) {
-				const result = await player
-					.chooseTarget(true, "选择一名角色交给你一张牌并获得技能〖执笏〗", function (card, player, target) {
-						if (player == target) {
-							return false;
-						}
-						return target.countCards("h") > 0;
-					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target) * target.countCards("h");
-					})
-					.forResult();
-				if (result.bool) {
-					var target = result.targets[0];
-					event.target = target;
-					player.line(target);
-					const result2 = await target.chooseCard("h", true, "交给" + get.translation(player) + "一张手牌").forResult();
-					if (result2.bool && result2.cards && result2.cards.length) {
-						await target.give(result2.cards, player);
-						target.storage.zhihu_mark = player;
-						await target.addSkills("zhihu");
-						target.addSkill("zhihu_mark");
-					}
-				}
-			}
+		subSkill: {
+			backup: {},
+			clear: {
+				charlotte: true,
+				onremove(player) {
+					game.countPlayer(current => {
+						current.removeSkill(`yujue_${player.playerid}`);
+					});
+				},
+			},
 		},
 	},
 	zhihu: {
@@ -11556,29 +11575,8 @@ const skills = {
 		filter(event, player) {
 			return player != event.player;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(2);
-		},
-	},
-	zhihu_mark: {
-		mark: "character",
-		intro: {
-			content: "以$之名，授予汝技能〖执笏〗，直至$的下回合开始为止！",
-		},
-		onremove(player) {
-			delete player.storage.zhihu_mark;
-			player.removeSkills("zhihu");
-		},
-		trigger: { global: "phaseBeginStart" },
-		firstDo: true,
-		charlotte: true,
-		silent: true,
-		sourceSkill: "zhihu",
-		filter(event, player) {
-			return event.player == player.storage.zhihu_mark;
-		},
-		content() {
-			player.removeSkill("zhihu_mark");
 		},
 	},
 	tuxing: {

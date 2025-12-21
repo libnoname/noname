@@ -2150,4 +2150,102 @@ export default {
 			}
 		},
 	},
+	_sxrm_connect: {
+		marktext: "🔗",
+		intro: {
+			name: "连接",
+			markcount(storage, player) {
+				return player.countConnectedCards();
+			},
+			mark(dialog, content, player) {
+				const cards = player.getConnectedCards();
+				if (cards.length) {
+					dialog.addAuto(cards);
+				} else {
+					return "无连接牌";
+				}
+			},
+		},
+		isConnect(cards) {
+			if (get.itemtype(cards) === "cards") {
+				return cards.filter(card => get.is.connectedCard(card));
+			}
+			return get.is.connectedCard(cards);
+		},
+		addConnect(cards) {
+			game.addConnectedCards(cards);
+		},
+		removeConnect(cards) {
+			game.removeConnectedCards(cards);
+		},
+		refreshMark() {
+			game.updateConnectedCards();
+		},
+		trigger: {
+			player: "loseAfter",
+			global: ["loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
+		},
+		firstDo: true,
+		filter(event, player) {
+			if (!event.getl) {
+				return false;
+			}
+			return game.hasPlayer(current => {
+				const cards = event.getl(current)?.hs ?? [];
+				return cards.some(card => get.is.connectedCard(card));
+			});
+		},
+		async cost(event, trigger, player) {
+			const lose_map = new Map();
+			const cards = game
+				.filterPlayer()
+				.map(current => {
+					const lose = (trigger.getl(current).hs ?? []).filter(card => get.is.connectedCard(card));
+					if (lose.length) {
+						lose_map.set(current, lose);
+					}
+					return lose;
+				})
+				.flat();
+			if (!cards.length) {
+				return;
+			}
+			game.removeConnectedCards(cards);
+			const bool1 = ["useCard", "respond"].includes((trigger.relatedEvent || trigger.getParent()).name),
+				bool2 = trigger.type == "discard" && trigger.getlx !== false && !trigger.getParent(event.skill, true);
+			if (["lose", "loseAsync"].includes(trigger.name) && (bool1 || bool2)) {
+				const map = game.filterPlayer().reduce((map, current) => {
+					const cards = current.getConnectedCards();
+					if (cards.length) {
+						map.set(current, cards);
+						const lose = lose_map.get(current) ?? [];
+						lose.addArray(cards);
+						lose_map.set(current, lose);
+					}
+					return map;
+				}, new Map());
+				if (map.size) {
+					event.result = {
+						bool: true,
+						skill_popup: false,
+						targets: Array.from(map.keys()),
+						cost_data: map,
+					};
+				}
+			}
+			if (lose_map.size) {
+				trigger.set("sxrmConnectCardsMap", lose_map);
+			}
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: map } = event;
+			const func = async target => {
+				const cards = map.get(target);
+				if (cards?.length) {
+					await target.modedDiscard(cards);
+				}
+			};
+			await game.doAsyncInOrder(targets, func);
+		},
+	},
 };

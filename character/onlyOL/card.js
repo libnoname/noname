@@ -1,29 +1,29 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
-	lusu_phaseZhunbei: { 
+	lusu_phaseZhunbei: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	lusu_phaseJudge: { 
+	lusu_phaseJudge: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	lusu_phaseDraw: { 
+	lusu_phaseDraw: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	lusu_phaseUse: { 
+	lusu_phaseUse: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	lusu_phaseDiscard: { 
+	lusu_phaseDiscard: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	lusu_phaseJieshu: { 
+	lusu_phaseJieshu: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
 	sizhaojian: {
 		derivation: "ol_sb_yuanshao",

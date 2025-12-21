@@ -11448,9 +11448,13 @@ const skills = {
 	},
 	qinyin: {
 		audio: 2,
+		audioname: ["mb_zhouyu"],
 		trigger: { player: "phaseDiscardEnd" },
 		direct: true,
 		logAudio: index => (typeof index === "number" ? "qinyin" + index + ".mp3" : 2),
+		logAudio2: {
+			mb_zhouyu: index => (typeof index === "number" ? `qinyin_mb_zhouyu${index}.mp3` : 2),
+		},
 		filter(event, player) {
 			var cards = [];
 			player.getHistory("lose", function (evt) {

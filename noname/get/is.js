@@ -202,6 +202,13 @@ export class Is {
 		});
 	}
 	/**
+	 * 判断一张牌是否为连接手牌
+	 * @param { Card } card
+	 */
+	connectedCard(card) {
+		return _status.sxrmConnectCards?.includes(card);
+	}
+	/**
 	 * 判断一张牌是否为明置手牌
 	 * @param { Card } card
 	 */

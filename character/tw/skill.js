@@ -2,6 +2,79 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//外服起刘备
+	twjishan: {
+		audio: "jsrgjishan",
+		trigger: {
+			source: "damageSource",
+			global: "damageBegin4",
+		},
+		filter(event, player, name) {
+			if (player.getStorage("twjishan").includes(name)) {
+				return false;
+			}
+			if (name == "damageBegin4") {
+				return player.hp > 0;
+			}
+			return game.hasPlayer(current => current.isMinHp() && player.getStorage("twjishan").includes(current) && current.isDamaged());
+		},
+		async cost(event, trigger, player) {
+			const { triggername, skill } = event,
+				{ player: target } = trigger;
+			if (triggername == "damageBegin4") {
+				const { result } = await player.chooseBool(get.prompt(skill, target), "失去2点体力并防止此伤害，然后你与其各摸一张牌").set("choice", get.info(skill).check(trigger, player));
+				event.result = {
+					bool: result?.bool,
+					targets: [target],
+				};
+			} else {
+				event.result = await player
+					.chooseTarget(get.prompt(skill), "令一名体力值最小且你对其发动过〖积善①〗的角色回复1点体力", (card, player, target) => {
+						return target.isMinHp() && player.getStorage("twjishan").includes(target) && target.isDamaged();
+					})
+					.set("ai", target => {
+						const player = get.player();
+						return get.recoverEffect(target, player, player);
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				triggername,
+				name,
+				targets: [target],
+			} = event;
+			player.addTempSkill(name + "_used");
+			player.markAuto(name + "_used", [triggername]);
+			if (triggername == "damageBegin4") {
+				player.markAuto(name, [target]);
+				trigger.cancel();
+				await player.loseHp(2);
+				await game.asyncDraw([player, target].sortBySeat(_status.currentPhase));
+			} else {
+				await target.recover();
+			}
+		},
+		onremove: true,
+		check(event, player) {
+			return get.damageEffect(event.player, event.source, _status.event.player, event.nature) * event.num < get.effect(player, { name: "losehp" }, player, _status.event.player) * 1.5 + get.effect(player, { name: "draw" }, player, _status.event.player) + get.effect(event.player, { name: "draw" }, player, _status.event.player) / 2;
+		},
+		logAudio(event, player, name) {
+			if (name == "damageBegin4") {
+				return 2;
+			}
+			return ["jsrgjishan3.mp3", "jsrgjishan4.mp3"];
+		},
+		intro: { content: "已帮助$抵挡过伤害" },
+		ai: { expose: 0.2 },
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
 	//外服起何进
 	twzhuhuan: {
 		audio: "jsrgzhuhuan",
@@ -1317,38 +1390,30 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		chooseButton: {
-			dialog(event, player) {
-				const cards = get.cards(5, true);
-				return ui.create.dialog("潜凶", cards, "hidden");
-			},
-			filter(button, player) {
-				return true;
-			},
-			check(button) {
-				return get.player().getUseValue(button.link);
-			},
-			backup(links) {
-				return {
-					card: links[0],
-					log: false,
-					async content(event, trigger, player) {
-						player.logSkill("twqianxiong");
-						const card = lib.skill.twqianxiong_backup.card;
-						const result = await player
-							.chooseTarget(`潜凶：将${get.translation(card)}正面向下置于一名角色的武将牌上`, true)
-							.set("ai", target => -get.attitude(get.player(), target))
-							.forResult();
-						const target = result.targets[0];
-						player.line(target);
-						game.log(player, "将一张牌正面向下置于", target, "的武将牌上");
-						await target.addToExpansion(card, player, "give").set("gaintag", ["twqianxiong"]);
-					},
-				};
-			},
-			prompt(links) {
-				return `观看牌堆顶的三张牌，将其中一张正面朝下置于一名角色的武将牌上`;
-			},
+		manualConfirm: true,
+		async content(event, trigger, player) {
+			const cards = get.cards(5, true);
+			const result = await player
+				.chooseButton(["潜凶：选择一张要扣置的牌", cards], true)
+				.set("ai", button => {
+					return get.player().getUseValue(button.link);
+				})
+				.forResult();
+			if (!result?.bool || !result.links?.length) {
+				return;
+			}
+			const card = result.links[0];
+			const result2 = await player
+				.chooseTarget(`潜凶：将${get.translation(card)}正面向下置于一名角色的武将牌上`, true)
+				.set("ai", target => -get.attitude(get.player(), target))
+				.forResult();
+			if (!result2?.bool || !result2.targets?.length) {
+				return;
+			}
+			const target = result2.targets[0];
+			player.line(target);
+			game.log(player, "将一张牌正面向下置于", target, "的武将牌上");
+			await target.addToExpansion(card, player, "give").set("gaintag", ["twqianxiong"]);
 		},
 		intro: {
 			markcount: "expansion",
@@ -3725,6 +3790,11 @@ const skills = {
 						.map(name => lib.card[name[2]]?.skills || [])
 						.flat()
 				);
+				player.addExtraEquip(
+					equip,
+					player.getStorage(equip).map(name => name[2]),
+					true
+				);
 			}
 		},
 		subSkill: {
@@ -3772,6 +3842,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				content() {
+					player.removeExtraEquip(event.name);
 					player.unmarkAuto(
 						event.name,
 						player.getStorage(event.name).filter(name => trigger.slots.some(t => get.subtypes(name[2]).includes(t)))
@@ -23300,7 +23371,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "roundStart" },
 		filter(event, player) {
-			const skill = this.skill_id;
+			const skill = "twlingfa";
 			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
 		},
 		prompt2(event, player) {

@@ -3850,12 +3850,14 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return get.translation(str);
 		}
 		const name = lib.translate[str];
-		if (!player?.getSkills("invisible", null, false).some(skill => {
-			if (!get.skillInfoTranslation(skill, player).length || lib.translate[skill] !== name) {
-				return false;
-			}
-			return skill != str && get.sourceSkillFor(skill) != get.sourceSkillFor(str);
-		})) {
+		if (
+			!player?.getSkills("invisible", null, false).some(skill => {
+				if (!get.skillInfoTranslation(skill, player).length || lib.translate[skill] !== name) {
+					return false;
+				}
+				return skill != str && get.sourceSkillFor(skill) != get.sourceSkillFor(str);
+			})
+		) {
 			return get.translation(str);
 		}
 		const info = get.info(str);
@@ -4971,7 +4973,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (lib.config.show_sortPack) {
 				for (let packname in lib.characterPack) {
 					if (node.name in lib.characterPack[packname]) {
-						let pack = lib.translate[packname + '_character_config'],
+						let pack = lib.translate[packname + "_character_config"],
 							sort;
 						if (lib.characterSort[packname]) {
 							let sorted = lib.characterSort[packname];
@@ -5369,7 +5371,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				let viewInfo = ui.create.div(".text.center.pointerdiv");
 				viewInfo.link = node;
 				viewInfo.innerHTML = "查看资料";
-				viewInfo.listen(function() {
+				viewInfo.listen(function () {
 					let player = this.link;
 					let audioName = player.skin.name || player.name1 || player.name;
 					ui.click.charactercard(player.name1 || player.name, null, null, true, player.node.avatar, audioName);
@@ -5612,7 +5614,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				//uiintro.nosub = true;
 				name = trueCard.viewAs;
 			} else {
-				uiintro.add(get.translation(node));
+				if (node.extraEquip) {
+					name = node.extraEquip[1];
+					uiintro.add(`${get.translation(node.extraEquip[0])} ${get.translation(node.extraEquip[1])}`);
+				} else {
+					uiintro.add(get.translation(node));
+				}
 			}
 			if (node._banning) {
 				var clickBanned = function () {
@@ -5733,8 +5740,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						if (get.subtype(name, false) == "equip1") {
 							var added = false;
-							if (lib.card[node.name] && lib.card[node.name].distance) {
-								var dist = lib.card[node.name].distance;
+							if (lib.card[name] && lib.card[name].distance) {
+								var dist = lib.card[name].distance;
 								if (dist.attackFrom) {
 									added = true;
 									uiintro.add('<div class="text center">攻击范围：' + (-dist.attackFrom + 1) + "</div>");
@@ -5815,7 +5822,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (lib.config.show_sortPack) {
 				for (let packname in lib.characterPack) {
 					if (node.link in lib.characterPack[packname]) {
-						let pack = lib.translate[packname + '_character_config'],
+						let pack = lib.translate[packname + "_character_config"],
 							sort;
 						if (lib.characterSort[packname]) {
 							let sorted = lib.characterSort[packname];
@@ -5981,7 +5988,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					viewInfo.link = node.link;
 					viewInfo.innerHTML = "查看资料";
 					viewInfo.style.marginBottom = "15px";
-					viewInfo.listen(function() {
+					viewInfo.listen(function () {
 						return ui.click.charactercard(this.link, node);
 					});
 					uiintro.add(viewInfo);
