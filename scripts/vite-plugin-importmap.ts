@@ -1,7 +1,7 @@
 import { normalizePath, Plugin } from "vite";
 import fs from "fs";
 import path from "path";
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 export default function vitePluginJIT(importMap: Record<string, string> = {}): Plugin {
@@ -51,8 +51,19 @@ document.head.appendChild(script);
 
 		transformIndexHtml(html) {
 			if (!isBuild) return;
-			const script = `<script type="importmap">\n${JSON.stringify({ imports: resolvedImportMap }, null, 2)}\n</script>`;
-			return html.replace("</head>", `${script}\n</head>`);
+			return {
+				html,
+				tags: [
+					{
+						tag: "script",
+						attrs: {
+							type: "importmap",
+						},
+						children: JSON.stringify({ imports: resolvedImportMap }, null, 2),
+						injectTo: "head-prepend",
+					},
+				],
+			};
 		},
 	};
 }

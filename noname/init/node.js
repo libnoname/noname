@@ -229,10 +229,12 @@ export function nodeReady() {
 				};
 				fileReader.readAsArrayBuffer(data, "UTF-8");
 			} else {
-				get.zip(function (zip) {
-					zip.file("i", data);
-					lib.node.fs.writeFile(__dirname + "/" + path + "/" + name, zip.files.i.asNodeBuffer(), null, callback);
-				});
+				lib.node.fs.writeFile(
+					__dirname + "/" + path + "/" + name,
+					typeof data == "string" ? data : new Uint8Array(data),
+					null,
+					callback
+				);
 			}
 		});
 	};

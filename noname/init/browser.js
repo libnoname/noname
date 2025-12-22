@@ -2,8 +2,6 @@
 import { game } from "../game/index.js";
 
 export async function browserReady() {
-	// if (location.href.startsWith("http") && typeof window.initReadWriteFunction != "function" && !window.require && !window.__dirname) {
-	// window.initReadWriteFunction = function (game) {
 	try {
 		await fetch(`/checkFile?fileName=noname.js`)
 			.then(response => response.json())
@@ -217,7 +215,4 @@ export async function browserReady() {
 			})
 			.catch(errorCallback);
 	};
-
-	// };
-	// }
 }
