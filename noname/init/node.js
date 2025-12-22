@@ -81,6 +81,12 @@ export function nodeReady() {
 		},
 	};
 	lib.path = lib.node.path;
+	
+	if (typeof window.cordovaLoadTimeout != "undefined") {
+		clearTimeout(window.cordovaLoadTimeout);
+		delete window.cordovaLoadTimeout;
+	}
+
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
 		if (!url.startsWith("http")) {
 			url = get.url(dev) + url;
