@@ -8,11 +8,11 @@ const port = {
 
 export default defineConfig({
 	root: ".",
-  	base: './',
+	base: "./",
 	resolve: {
 		alias: {
 			"@": "/noname",
-			"noname": "/noname.js",
+			noname: "/noname.js",
 		},
 		extensions: [".tsx", ".ts", ".js", ".vue"],
 	},
@@ -20,6 +20,9 @@ export default defineConfig({
 	server: {
 		host: "127.0.0.1",
 		port: port.client,
+		fs: {
+			allow: ["../.."],
+		},
 		proxy: {
 			"/checkFile": "http://127.0.0.1:" + port.server,
 			"/checkDir": "http://127.0.0.1:" + port.server,

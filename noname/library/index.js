@@ -8623,7 +8623,7 @@ export class Library {
 		},
 	};
 	/**
-	 * @type {import('path-browserify')}
+	 * @type {import('path-browserify-esm')}
 	 */
 	// @ts-expect-error ignore
 	path = {};
@@ -10872,7 +10872,6 @@ export class Library {
 		VCard: Element.VCard,
 		Button: Element.Button,
 		GameEvent: Element.GameEvent,
-		GameEventPromise: Element.GameEventPromise,
 		Dialog: Element.Dialog,
 		Control: Element.Control,
 		Client: Element.Client,

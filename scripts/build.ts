@@ -34,7 +34,7 @@ const staticModules: Target[] = [
 	// 重构之后请删除
 	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },
-	{ src: "noname/library/skill.js", dest: "noname/library" },
+	// { src: "noname/library/skill.js", dest: "noname/library" },
 ];
 
 //完整包

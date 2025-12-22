@@ -5,7 +5,6 @@ export { Content } from "./content.js";
 export { Control } from "./control.js";
 export { Dialog } from "./dialog.js";
 export { GameEvent } from "./gameEvent.js";
-export { GameEventPromise } from "./gameEventPromise.js";
 export { NodeWS } from "./nodeWS.js";
 export { Player } from "./player.js";
 export { VCard } from "./vcard.js";
