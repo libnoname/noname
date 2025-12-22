@@ -320,7 +320,7 @@ export async function boot() {
 		const { nodeReady } = await import("./node.js");
 		nodeReady();
 	} else {
-		lib.path = (await import("path-browserify")).default;
+		lib.path = (await import("path-browserify-esm")).default;
 		window.onbeforeunload = function (e) {
 			if (config.get("confirm_exit") && !_status.reloading) {
 				e.preventDefault();
