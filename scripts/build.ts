@@ -14,7 +14,7 @@ const importMap: Record<string, string> = {
 	noname: "/noname.js",
 	vue: "vue/dist/vue.esm-browser.js",
 	"pinyin-pro": "pinyin-pro",
-	"dedent": "dedent",
+	dedent: "dedent",
 	// jszip: "jszip",
 };
 
@@ -67,6 +67,10 @@ await build({
 			preserveEntrySignatures: "strict",
 			treeshake: false,
 			external: ["vue"],
+			input: {
+				index: "index.html",
+				noname: "noname.js",
+			},
 			output: {
 				preserveModules: true, // 保留文件结构
 				preserveModulesRoot: "./",
