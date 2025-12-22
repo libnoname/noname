@@ -676,7 +676,7 @@ export default {
 			}
 			return false;
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			for (var i = 0; i < player.storage.cooperation.length; i++) {
 				var info = player.storage.cooperation[i];
 				if (info.target == trigger.player) {
@@ -718,7 +718,7 @@ export default {
 					return false;
 				},
 				checkx: info => info.damage && info.damage > 3,
-				content: function () {
+				async content(event, trigger, player) {
 					var source = trigger.source;
 					var storage = player.getStorage("cooperation");
 					for (var info of storage) {
@@ -782,7 +782,7 @@ export default {
 					return false;
 				},
 				checkx: info => info.draw && info.draw > 7,
-				content: function () {
+				async content(event, trigger, player) {
 					var source = trigger.player;
 					var storage = player.getStorage("cooperation");
 					for (var info of storage) {
@@ -846,7 +846,7 @@ export default {
 					return false;
 				},
 				checkx: info => info.discard && info.discard.length > 3,
-				content: function () {
+				async content(event, trigger, player) {
 					var source = trigger.player;
 					var storage = player.getStorage("cooperation");
 					for (var info of storage) {
@@ -923,7 +923,7 @@ export default {
 					return false;
 				},
 				checkx: info => info.used && info.used.length > 3,
-				content: function () {
+				async content(event, trigger, player) {
 					var source = trigger.player,
 						suit = get.suit(trigger.card);
 					var storage = player.getStorage("cooperation");
@@ -1031,7 +1031,7 @@ export default {
 				filter: function (event, player) {
 					return player.isPhaseUsing() && player.storage.zhengsu_leijin !== false;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					var list = player.getHistory("useCard", function (evt) {
 						return evt.isPhaseUsing(player);
 					});
@@ -1099,7 +1099,7 @@ export default {
 				filter: function (event, player) {
 					return player.isPhaseUsing() && player.storage.zhengsu_bianzhen !== false;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					var list = player.getHistory("useCard", function (evt) {
 						return evt.isPhaseUsing();
 					});
@@ -1215,7 +1215,7 @@ export default {
 					var evt = event.getParent("phaseDiscard");
 					return evt && evt.player == player;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					var goon = true,
 						list = [];
 					player.getHistory("lose", function (event) {
@@ -1305,7 +1305,7 @@ export default {
 		filter: function (event, player, name) {
 			return player.isUnseen(2) && get.mode() != "guozhan";
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			player.showCharacter(2);
 			player.removeSkill("g_hidden_ai");
 		},
@@ -1331,7 +1331,7 @@ export default {
 			}
 			return att > 0;
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			trigger.cancel();
 			trigger.player.loseMaxHp(trigger.num).source = player;
 		},
@@ -1349,11 +1349,9 @@ export default {
 		filter: function (event, player) {
 			return get.mode() != "guozhan" && get.is.double(player.name1) && !player._groupChosen;
 		},
-		content: function () {
-			"step 0";
+		async content(event, trigger, player) {
 			player._groupChosen = "double";
-			player.chooseControl(get.is.double(player.name1, true)).set("prompt", "请选择你的势力");
-			"step 1";
+			const result = await player.chooseControl(get.is.double(player.name1, true)).set("prompt", "请选择你的势力").forResult();
 			player.changeGroup(result.control);
 		},
 	},
@@ -1444,7 +1442,7 @@ export default {
 				return get.rawName(storage.name);
 			},
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			trigger.cancel();
 			var evt = trigger.getParent("damage");
 			if (evt.player == player) {
@@ -1477,7 +1475,7 @@ export default {
 			}
 			return true;
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			game.swapPlayerAuto(player);
 		},
 	},
@@ -1493,7 +1491,7 @@ export default {
 					}
 					return Array.isArray(player.storage.dualside);
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					var cfg = player.storage.dualside;
 					var bool = player.isTurnedOver();
 					if (trigger.name == "die") {
@@ -1524,7 +1522,7 @@ export default {
 			init: {
 				trigger: { global: "gameStart", player: "enterGame" },
 				silent: true,
-				content: function () {
+				async content(event, trigger, player) {
 					var list = [player.name1, player.name2];
 					for (var i = 0; i < list.length; i++) {
 						if (list[i] && lib.character[list[i]]) {
@@ -1628,7 +1626,7 @@ export default {
 		init: function (player) {
 			game.log(player, "获得了", "【免疫】");
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
@@ -1679,7 +1677,7 @@ export default {
                 filter: function (event, player) {
                     return player.hp >= player.maxHp;
                 },
-                content: function () {
+				async content(event, trigger, player) {
                     trigger.cancel();
                 },
             },*/
@@ -1693,7 +1691,7 @@ export default {
                 priority:100,
                 popup:false,
                 firstDo:true,
-                content:function(){
+				async content(event, trigger, player) {
                     if(player.isTurnedOver()&&!trigger._noTurnOver){
                         trigger.cancel();
                         player.turnOver();
@@ -1768,7 +1766,7 @@ export default {
 		filter: function (event) {
 			return !event._cleared && event.card.name != "wuxie";
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			game.broadcastAll(function () {
 				ui.clear();
 			});
@@ -1785,7 +1783,7 @@ export default {
 		filter: function (event) {
 			return ui.todiscard[event.discardid] ? true : false;
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			game.broadcastAll(function (id) {
 				var todiscard = ui.todiscard[id];
 				delete ui.todiscard[id];
@@ -1827,8 +1825,8 @@ export default {
 		discard: false,
 		lose: false,
 		delay: false,
-		content: () => {
-			player.recast(cards, void 0, (player, cards) => {
+		async content(event, trigger, player) {
+			player.recast(event.cards, void 0, (player, cards) => {
 				var numberOfCardsToDraw = cards.length;
 				cards.forEach(value => {
 					if (lib.config.mode == "stone" && _status.mode == "deck" && !player.isMin() && get.type(value).startsWith("stone")) {
@@ -1883,31 +1881,34 @@ export default {
 		silent: true,
 		forceOut: true,
 		//priority:-5,
-		content: function () {
-			"step 0";
-			event.logvid = trigger.getLogv();
-			"step 1";
-			event.targets = game.filterPlayer(function (current) {
-				return current != event.player && current.isLinked();
-			});
-			lib.tempSortSeat = _status.currentPhase || player;
-			event.targets.sort(lib.sort.seat);
-			delete lib.tempSortSeat;
-			event._args = [trigger.num, trigger.nature, trigger.cards, trigger.card];
-			if (trigger.source) {
-				event._args.push(trigger.source);
-			} else {
-				event._args.push("nosource");
-			}
-			"step 2";
-			if (event.targets.length) {
-				var target = event.targets.shift();
-				if (target.isLinked()) {
-					target.damage.apply(target, event._args.slice(0));
+		content: [
+			async (event, trigger, player) => {
+				event.logvid = trigger.getLogv();
+			},
+			async (event, trigger, player) => {
+				event.targets = game.filterPlayer(function (current) {
+					return current != event.player && current.isLinked();
+				});
+				lib.tempSortSeat = _status.currentPhase || player;
+				event.targets.sort(lib.sort.seat);
+				delete lib.tempSortSeat;
+				event._args = [trigger.num, trigger.nature, trigger.cards, trigger.card];
+				if (trigger.source) {
+					event._args.push(trigger.source);
+				} else {
+					event._args.push("nosource");
 				}
-				event.redo();
-			}
-		},
+			},
+			async (event, trigger, player) => {
+				if (event.targets.length) {
+					var target = event.targets.shift();
+					if (target.isLinked()) {
+						target.damage.apply(target, event._args.slice(0));
+					}
+					event.redo();
+				}
+			},
+		],
 	},
 	_lianhuan4: {
 		trigger: { player: "changeHp" },
@@ -1920,7 +1921,7 @@ export default {
 			var evt = event.getParent();
 			return evt && evt.name == "damage" && evt.hasNature("linked") && player.isLinked();
 		},
-		content: function () {
+		async content(event, trigger, player) {
 			player.link();
 			if (trigger.getParent().notLink()) {
 				trigger.getParent().lianhuanable = true;
