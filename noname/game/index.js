@@ -3026,59 +3026,42 @@ export class Game {
 		}
 		const name = object.name,
 			extensionName = `extension_${name}`,
-			extensionMenu = (lib.extensionMenu[extensionName] = {
+			extensionMenu = {
 				enable: {
 					name: "开启",
 					init: true,
 				},
-			}),
-			objectPackage = object.package;
-		if (objectPackage) {
-			const author = Object.getOwnPropertyDescriptor(objectPackage, "author");
+			};
+		if (object.package) {
+			const author = Object.getOwnPropertyDescriptor(object.package, "author");
 			if (author) {
-				Object.defineProperty(
-					(extensionMenu.author = {
-						get name() {
-							return `作者：${this.author}`;
-						},
-						clear: true,
-						nopointer: true,
-					}),
-					"author",
-					author
-				);
+				extensionMenu.author = {
+					get name() {
+						return `作者：${this.author}`;
+					},
+					clear: true,
+					nopointer: true,
+				};
+				Object.defineProperty(extensionMenu.author, "author", author);
 			}
-			const intro = Object.getOwnPropertyDescriptor(objectPackage, "intro");
+			const intro = Object.getOwnPropertyDescriptor(object.package, "intro");
 			if (intro) {
-				Object.defineProperty(
-					(extensionMenu.intro = {
-						clear: true,
-						nopointer: true,
-					}),
-					"name",
-					intro
-				);
+				extensionMenu.intro = {
+					clear: true,
+					nopointer: true,
+				};
+				Object.defineProperty(extensionMenu.intro, "name", intro);
 			}
 		}
-		const objectConfig = object.config;
-		if (objectConfig) {
-			Object.defineProperties(
-				extensionMenu,
-				Object.keys(objectConfig).reduce((propertyDescriptorMap, key) => {
-					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(objectConfig, key);
-					return propertyDescriptorMap;
-				}, {})
-			);
+		if (object.config) {
+			Object.keys(object.config).forEach((key) => {
+				Object.defineProperty(extensionMenu, key, Object.getOwnPropertyDescriptor(object.config, key));
+			});
 		}
-		const help = object.help;
-		if (help) {
-			Object.defineProperties(
-				lib.help,
-				Object.keys(help).reduce((propertyDescriptorMap, key) => {
-					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(help, key);
-					return propertyDescriptorMap;
-				}, {})
-			);
+		if (object.help) {
+			Object.keys(object.help).forEach((key) => {
+				Object.defineProperty(lib.help, key, Object.getOwnPropertyDescriptor(object.help, key));
+			});
 		}
 		if (object.editable !== false && lib.config.show_extensionmaker) {
 			extensionMenu.edit = {
@@ -3126,36 +3109,47 @@ export class Game {
 			},
 		};
 
+		lib.extensionMenu[extensionName] = extensionMenu;
+
 		if (_status.importingExtension) {
 			game.importedPack = object;
 			return;
 		}
-		const libConfig = lib.config;
-		if (!object || !libConfig[`${extensionName}_enable`]) {
+		if (!object || !lib.config[`${extensionName}_enable`]) {
 			return;
 		}
 		if (!noEval) {
 			lib.init.eval(object);
 		}
-		const config = Object.keys(libConfig).reduce((constructingConfig, key) => {
-			if (key != extensionName && key.startsWith(extensionName)) {
-				constructingConfig[key.slice(11 + name.length)] = libConfig[key];
-			}
-			return constructingConfig;
-		}, {});
+		Object.keys(object.config)
+			.filter(key => !(`${extensionName}_${key}` in lib.config))
+			.forEach(key => {
+				const value = object.config[key];
+				if (value && "init" in value) {
+					game.saveConfig(`${extensionName}_${key}`, value.init);
+				}
+			});
+		const config = {};
+		Object.keys(lib.config)
+			.filter(key => key !== extensionName && key.startsWith(extensionName))
+			.forEach(key => {
+				const keyName = key.slice(extensionName.length + 1);
+				config[keyName] = lib.config[key];
+			});
 		try {
-			let extensionPack = lib.extensionPack[name];
-			if (objectPackage) {
-				extensionPack = lib.extensionPack[name] = objectPackage;
-				objectPackage.files = object.files ?? {};
-				const extensionPackFiles = objectPackage.files;
+			let extensionPack;
+			if (object.package) {
+				extensionPack = object.package;
+				object.package.files = object.files ?? {};
+				const extensionPackFiles = object.package.files;
 				extensionPackFiles.character ??= [];
 				extensionPackFiles.card ??= [];
 				extensionPackFiles.skill ??= [];
 				extensionPackFiles.audio ??= [];
 			} else {
-				extensionPack = lib.extensionPack[name] = {};
+				extensionPack = {};
 			}
+			lib.extensionPack[name] = extensionPack;
 			const arenaReady = object.arenaReady,
 				content = object.content,
 				prepare = object.prepare,
@@ -3165,8 +3159,8 @@ export class Game {
 				content,
 				prepare,
 				precontent,
-				help,
-				config: objectConfig,
+				help: object.help,
+				config: object.config,
 			};
 			try {
 				if (precontent) {
@@ -3186,7 +3180,7 @@ export class Game {
 			}
 
 			if (content) {
-				lib.extensions.push([name, content, config, _status.evaluatingExtension, objectPackage ?? {}, object.connect, arenaReady]);
+				lib.extensions.push([name, content, config, _status.evaluatingExtension, object.package ?? {}, object.connect, arenaReady]);
 			}
 		} catch (e) {
 			console.error(e);
@@ -3274,336 +3268,130 @@ export class Game {
 	 * @type { () => Promise<any> }
 	 */
 	checkForAssetUpdate;
-	async importExtension(data, finishLoad, exportExtension, extensionPackage) {
+	async importExtension(data, finishLoad, exportExtension) {
 		//by 来瓶可乐加冰、Rintim、Tipx-L、诗笺
 		const zip = await get.promises.zip();
 		if (get.objtype(data) == "object") {
-			//导出
-			const _filelist = data._filelist,
-				filelist2 = _filelist || [];
-			if (_filelist) {
-				delete data._filelist;
-			}
 			const filelist = Object.keys(data);
 			filelist.forEach(value => zip.file(value, data[value]));
-			game.print(filelist);
-			game.print(filelist2);
-			const generate = zip.generate({
-				type: "arraybuffer",
-			});
-			if (!exportExtension) {
-				game.importExtension.apply(this, [generate, finishLoad]);
-				return;
-			}
-			if (extensionPackage) {
-				extensionPackage.files = filelist.concat(filelist2).filter(value => value != "extension.js");
-				const size = generate.byteLength;
-				if (size < 1000) {
-					extensionPackage.size = `${size}B`;
-				} else if (size < 1000000) {
-					extensionPackage.size = `${Math.round(size / 1000)}KB`;
-				} else {
-					extensionPackage.size = `${Math.round(size / 100000) / 10}MB`;
+			if (exportExtension) {
+				//导出
+				game.export(zip.generate({ type: "blob" }), exportExtension);
+				if (typeof finishLoad == "function") {
+					finishLoad();
 				}
-				zip.file(
-					"package.js",
-					Object.keys(extensionPackage).reduce((constructingData, key, currentIndex, keys) => `${constructingData}\t${key}:${JSON.stringify(extensionPackage[key])}${currentIndex < keys.length - 1 ? ",\n" : "\n};"}`, `extension["${exportExtension}"]={\n`)
-				);
-			}
-			const blob = zip.generate({
-					type: "blob",
-				}),
-				fileNameToSaveAs = `${exportExtension.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-")}.zip`;
-
-			if (lib.device) {
-				const directory = lib.device == "android" ? cordova.file.externalDataDirectory : cordova.file.documentsDirectory;
-				new Promise((resolve, reject) => window.resolveLocalFileSystemURL(directory, resolve, reject))
-					.then(
-						directoryEntry =>
-							new Promise((resolve, reject) =>
-								directoryEntry.getFile(
-									fileNameToSaveAs,
-									{
-										create: true,
-									},
-									resolve,
-									reject
-								)
-							)
-					)
-					.then(fileEntry => new Promise((resolve, reject) => fileEntry.createWriter(resolve, reject)))
-					.then(
-						fileWriter =>
-							new Promise((resolve, reject) => {
-								fileWriter.onerror = reject;
-								fileWriter.onwriteend = resolve;
-								fileWriter.write(blob);
-							})
-					)
-					.then(() => alert(`文件已导出至${directory}${fileNameToSaveAs}`));
 			} else {
-				const downloadLink = document.createElement("a");
-				downloadLink.download = fileNameToSaveAs;
-				downloadLink.innerHTML = "Download File";
-				downloadLink.href = window.URL.createObjectURL(blob);
-				downloadLink.click();
-			}
-
-			if (typeof finishLoad == "function") {
-				finishLoad();
+				//保存
+				game.importExtension.apply(this, [zip.generate({ type: "arraybuffer" }), finishLoad]);
 			}
 			return;
 		}
 		//导入
-		const UHP = error => {
-			if (!(error instanceof Error)) {
-				error = new Error(error);
-			}
-			for (const [key, value] of Object.entries(Object.getOwnPropertyDescriptors(error))) {
-				if (value.configurable === true) {
-					Reflect.defineProperty(
-						error,
-						key,
-						Object.assign(value, {
-							enumerable: true,
-						})
-					);
-				}
-			}
-			alert(`导入失败：\n${JSON.stringify(error, null, "\t")}`);
-			console.error(error);
-		};
 		try {
+			if (typeof game.readFile !== "function") {
+				throw new Error("没有文件系统操作权限，无法导入扩展。");
+			}
 			zip.load(data);
-			let extensionFile = zip.file("extension.js");
-			let isTsFile = false;
-			// 未找到extension.js
-			if (!extensionFile) {
-				extensionFile = zip.file("extension.ts");
-				if (!extensionFile) {
-					throw new Error("未找到extension.js");
-				}
-				isTsFile = true;
-			}
-			/** @type { string } */
-			let str = extensionFile.asText();
-			if (str === "" || str === undefined) {
-				throw "你导入的不是扩展！请选择正确的文件";
-			}
-			// 编译ts扩展
-			if (isTsFile) {
-				if (typeof globalThis.ts === "undefined") {
-					globalThis.ts = await import("typescript");
-				}
-				/**
-				 * @type {typeof import('typescript')}
-				 */
-				const ts = globalThis.ts;
-				str = ts.transpile(
-					str,
-					{
-						module: ts.ModuleKind.ES2015,
-						target: ts.ScriptTarget.ES2020,
-						inlineSourceMap: true,
-						resolveJsonModule: true,
-						esModuleInterop: true,
-					},
-					"extension.ts"
-				);
-			}
-			_status.importingExtension = true;
-			try {
-				// 导入普通扩展
-				security.eval(str);
-				// esm扩展可以不写game.import或许会导致_status.extensionLoading不存在
-				if (Array.isArray(_status.extensionLoading)) {
-					await Promise.allSettled(_status.extensionLoading);
-					delete _status.extensionLoading;
-				}
-			} catch (error) {
-				// 是模块扩展
-				if (
-					// @ts-expect-error ignore
-					error.message === "Cannot use import statement outside a module" ||
-					// @ts-expect-error ignore
-					error.message === "await is only valid in async functions and the top level bodies of modules"
-				) {
-					// 改为用info.json判断扩展名
-					const infoFile = zip.file("info.json");
-					if (!infoFile) {
-						throw new Error("未找到info.json,导入模块化扩展必须加入info.json！");
-					}
-					const info = JSON.parse(infoFile.asText());
-					if (typeof info.name == "string") {
+
+			const importExtensionInfo = async () => {
+				// 标准工程扩展
+				const infoFile = zip.file("info.json");
+				if (infoFile) {
+					_status.importingExtension = true;
+					try {
+						const info = JSON.parse(infoFile.asText());
 						await game.import("extension", () => {
 							return Object.assign(info, {
 								config: {},
 							});
 						});
+						if (Array.isArray(_status.extensionLoading)) {
+							await Promise.allSettled(_status.extensionLoading);
+							delete _status.extensionLoading;
+						}
+					} catch (error) {
+						console.log(error);
 					}
+					_status.importingExtension = false;
+					return;
 				}
-			}
-			_status.importingExtension = false;
+
+				// 旧扩展（非esm扩展）
+				const extensionFile = zip.file("extension.js");
+				if (extensionFile) {
+					_status.importingExtension = true;
+					try {
+						security.eval(extensionFile.asText());
+						if (Array.isArray(_status.extensionLoading)) {
+							await Promise.allSettled(_status.extensionLoading);
+							delete _status.extensionLoading;
+						}
+					} catch (error) {
+						console.log(error);
+					}
+					_status.importingExtension = false;
+					return;
+				}
+			};
+			await importExtensionInfo();
+
 			if (!game.importedPack) {
-				throw "此压缩包不是一个扩展";
+				throw new Error("此压缩包不是一个扩展");
 			}
-			const extensionName = game.importedPack.name;
-			if (lib.config.all.plays.includes(extensionName)) {
-				throw "禁止安装游戏原生扩展";
+			const name = game.importedPack.name;
+			if (lib.config.all.plays.includes(name)) {
+				throw new Error("禁止安装游戏原生扩展");
 			}
 			const extensions = lib.config.extensions;
-			if (extensions.includes(extensionName)) {
-				game.removeExtension(extensionName, true);
+			if (extensions.includes(name)) {
+				game.removeExtension(name, true);
 			}
-			extensions.add(extensionName);
+			extensions.add(name);
 			game.saveConfigValue("extensions");
-			game.saveConfig(`extension_${extensionName}_enable`, true);
-			const config = game.importedPack.config;
-			Object.keys(config).forEach(value => {
-				const configObject = config[value];
-				if (configObject && "init" in configObject) {
-					game.saveConfig(`extension_${extensionName}_${value}`, configObject.init);
-				}
-			});
-			if (typeof game.readFile == "function") {
-				const files = zip.files,
-					hiddenFileFlags = [".", "_"],
-					fileList = Object.keys(files)
-						.filter(key => !files[key].dir && !hiddenFileFlags.includes(key[0]))
-						.reverse();
-				//电脑端
-				//具备nodeJS环境
-				if (lib.node && lib.node.fs) {
-					const writeFile = errnoException => {
-						if (errnoException) {
-							finishLoad();
-							UHP(errnoException);
-							return;
-						}
-						if (fileList.length) {
-							//filename 数组 ...dir+/+file
-							//这里需要个创文件夹的函数
-							const zipDir = fileList.pop(),
-								fileName = zipDir.split("/"),
-								name = fileName.pop(),
-								letGo = name => new Promise(resolve => lib.node.fs.writeFile(`${__dirname}/extension/${extensionName}/${name}`, zip.file(zipDir).asNodeBuffer(), null, resolve)).then(writeFile);
-							return fileName.length ? game.promises.createDir(`extension/${extensionName}/${fileName.join("/")}`).then(() => letGo(`${fileName.join("/")}/${name}`)) : letGo(name);
-						}
-						finishLoad();
-					};
-					game.promises.ensureDirectory(`extension/${extensionName}`).then(writeFile).catch(UHP);
-				} else if (typeof window.resolveLocalFileSystemURL == "function") {
-					new Promise((resolve, reject) => window.resolveLocalFileSystemURL(nonameInitialized, resolve, reject))
-						.then(
-							directoryEntry =>
-								new Promise((resolve, reject) =>
-									directoryEntry.getDirectory(
-										`extension/${extensionName}`,
-										{
-											create: true,
-										},
-										resolve,
-										reject
-									)
-								)
-						)
-						.then(directoryEntry => {
-							//扩展文件夹
-							const writeFile = () => {
-								if (!fileList.length) {
-									finishLoad();
-									return;
-								}
-								//filename 数组 ...dir+/+file
-								const zipDirectory = fileList.shift(),
-									fileName = zipDirectory.split("/"),
-									name = fileName.pop(),
-									letGo = name =>
-										new Promise((resolve, reject) =>
-											directoryEntry.getFile(
-												name,
-												{
-													create: true,
-												},
-												resolve,
-												reject
-											)
-										)
-											.then(fileEntry => new Promise((resolve, reject) => fileEntry.createWriter(resolve, reject)))
-											.then(
-												fileWriter =>
-													new Promise((resolve, reject) => {
-														fileWriter.onerror = reject;
-														fileWriter.onwriteend = resolve;
-														fileWriter.write(zip.file(zipDirectory).asArrayBuffer());
-													})
-											)
-											.then(writeFile);
-								return fileName.length ? game.promises.createDir(`extension/${extensionName}/${fileName.join("/")}`).then(() => letGo(`${fileName.join("/")}/${name}`)) : letGo(name);
-							};
-							return writeFile();
-						})
-						.catch(UHP);
+			game.saveConfig(`extension_${name}_enable`, true);
+			delete game.importedPack;
+
+			const targetDir = `extension/${name}`;
+			const tasks = [];
+			for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
+				const outputPath = lib.path.join(targetDir, relativePath);
+
+				if (zipEntry.dir) {
+					// 目录：确保存在
+					tasks.push(game.promises.createDir(outputPath));
 				} else {
-					const writeFile = errnoException => {
-						if (errnoException) {
-							finishLoad();
-							UHP(errnoException);
-							return;
-						}
-						if (fileList.length) {
-							//filename 数组 ...dir+/+file
-							//这里需要个创文件夹的函数
-							const zipDir = fileList.pop(),
-								fileName = zipDir.split("/"),
-								name = fileName.pop(),
-								// letGo = name => new Promise(resolve => lib.node.fs.writeFile(`${__dirname}/extension/${extensionName}/${name}`, zip.file(zipDir).asNodeBuffer(), null, resolve)).then(writeFile);
-								letGo = name => game.promises.writeFile(zip.file(zipDir).asArrayBuffer(), `extension/${extensionName}`, name).then(writeFile);
-							return fileName.length ? game.promises.createDir(`extension/${extensionName}/${fileName.join("/")}`).then(() => letGo(`${fileName.join("/")}/${name}`)) : letGo(name);
-						}
-						finishLoad();
-					};
-					game.promises.ensureDirectory(`extension/${extensionName}`).then(writeFile).catch(UHP);
+					// 文件：先创建父目录，再写文件
+					const task = (async () => {
+						await game.promises.createDir(lib.path.dirname(outputPath));
+
+						const content = zipEntry.asArrayBuffer();
+						await game.promises.writeFile(content, "./", outputPath);
+					})();
+
+					tasks.push(task);
 				}
-			} else {
-				localStorage.setItem(`${lib.configprefix}extension_${extensionName}`, str);
-				const hiddenFileFlags = [".", "_"],
-					fileList = Object.keys(zip.files).filter(filePath => !hiddenFileFlags.includes(filePath[0]) && filePath[filePath.length - 1] != "/");
-				if (fileList.length && lib.db) {
-					lib.config.extensionInfo[extensionName] = {
-						file: fileList,
-					};
-					game.saveConfigValue("extensionInfo");
-					fileList.forEach(filePath => {
-						const arrayBuffer = zip.file(filePath).asArrayBuffer();
-						if (!arrayBuffer) {
-							return;
-						}
-						const blob = new Blob([arrayBuffer]);
-						new Promise((resolve, reject) => {
-							const fileReader = new FileReader();
-							fileReader.onerror = reject;
-							fileReader.onload = resolve;
-							fileReader.readAsDataURL(blob);
-						}).then(fileLoadedEvent => game.putDB("image", `extension-${extensionName}:${filePath}`, fileLoadedEvent.target.result));
-					});
-				}
+			}
+			await Promise.all(tasks);
+
+			if (typeof finishLoad == "function") {
 				finishLoad();
 			}
-			delete game.importedPack;
 		} catch (error) {
-			UHP(error);
+			alert(`导入失败：\n${error}`);
+			console.error(error);
 			return false;
 		}
 	}
 	/**
-	 * @param { string } textToWrite
+	 * @param { any } data
 	 * @param { string } [name]
 	 */
-	export(textToWrite, name) {
-		let textFileAsBlob = new Blob([textToWrite], { type: "text/plain" });
+	export(data, name) {
+		if (typeof data === "string") {
+			data = new Blob([data], { type: "text/plain" });
+		}
 		let fileNameToSaveAs = name || "noname";
-		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, ".");
+		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-");
 
 		if (lib.device) {
 			let directory;
@@ -3618,15 +3406,15 @@ export class Game {
 						fileWriter.onwriteend = function () {
 							alert("文件已导出至" + directory + fileNameToSaveAs);
 						};
-						fileWriter.write(textFileAsBlob);
+						fileWriter.write(data);
 					});
 				});
 			});
 		} else {
-			let downloadLink = document.createElement("a");
+			const downloadLink = document.createElement("a");
 			downloadLink.download = fileNameToSaveAs;
 			downloadLink.innerHTML = "Download File";
-			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+			downloadLink.href = window.URL.createObjectURL(data);
 			downloadLink.click();
 		}
 	}
@@ -10820,9 +10608,9 @@ export class Game {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
-		const fake = cards.filter(card => card.isFake && card._cardid),//&& card.rcardSymbol 
+		const fake = cards.filter(card => card.isFake && card._cardid), //&& card.rcardSymbol
 			other = cards.removeArray(fake),
-			wild = [],//野生的假牌
+			wild = [], //野生的假牌
 			map = {};
 		fake.forEach(card => {
 			const owner = get.owner(card);

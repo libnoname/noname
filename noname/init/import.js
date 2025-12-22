@@ -1,5 +1,4 @@
 import { lib, game, _status } from "noname";
-import security from "@/util/security.js";
 /**
  * @param {string} name - 卡牌包名
  * @returns {Promise<void>}
@@ -28,19 +27,6 @@ export async function importExtension(name) {
 	if (!game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
 		// @ts-expect-error ignore
 		await game.import("extension", await createEmptyExtension(name));
-		return;
-	}
-	let extcontent = localStorage.getItem(lib.configprefix + "extension_" + name);
-	if (extcontent) {
-		//var backup_onload=lib.init.onload;
-		_status.evaluatingExtension = true;
-		try {
-			security.eval(extcontent);
-		} catch (e) {
-			console.log(e);
-		}
-		//lib.init.onload=backup_onload;
-		_status.evaluatingExtension = false;
 		return;
 	}
 	await importFunction("extension", `/extension/${name}/extension`).catch(e => {

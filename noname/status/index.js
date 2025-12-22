@@ -67,9 +67,9 @@ export class status {
 	 */
 	video = undefined;
 	/**
-	 * @type { boolean | undefined }
+	 * @type { boolean }
 	 */
-	importingExtension = undefined;
+	importingExtension = false;
 	/**
 	 * @type { string[] | undefined }
 	 */
