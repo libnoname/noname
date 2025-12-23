@@ -3712,7 +3712,7 @@ export class Click {
 						span = document.createElement("span");
 					span.style.fontWeight = "bold";
 					const exInfo = nameInfo.trashBin,
-						characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
+						characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName(name);
 					span.innerHTML = characterName;
 					const ruby = document.createElement("ruby");
 					ruby.appendChild(span);
