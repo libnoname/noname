@@ -1,5 +1,5 @@
 import { game } from "noname";
-import { boot, onload, tryUpdateProtocol } from "@/init/index.js";
+import { boot } from "@/init/index.js";
 import { nonameInitialized, userAgentLowerCase } from "@/util/index.js";
 import "core-js-bundle";
 import "../jit/index.js";
@@ -13,12 +13,6 @@ import "vue/dist/vue.esm-browser.js";
 		// REDIRECT_TIP: ["您使用的浏览器或无名杀客户端的版本过低，已经无法正常运行无名杀", "请检查浏览器或客户端是否需要更新", "目前使用的浏览器UA信息为: ", userAgentLowerCase].join("\n"),
 		// SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至16.4.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
 	};
-
-	// // 不支持file协议
-	// if (location.protocol.startsWith("file")) {
-	// 	alert(globalText.REDIRECT_TIP);
-	// 	return;
-	// }
 
 	window["bannedExtensions"] = [
 		"\u4fa0\u4e49",
@@ -59,10 +53,6 @@ import "vue/dist/vue.esm-browser.js";
 
 	try {
 		await boot();
-
-		await tryUpdateProtocol();
-
-		await onload();
 	} catch (e) {
 		console.error(e);
 		alert(`《无名杀》加载内容失败

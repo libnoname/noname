@@ -1,276 +1,14 @@
 /// <reference types="vite/client" />
 import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
-import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
-export { onload } from "./onload.js";
-import { userAgentLowerCase, nonameInitialized, device } from "@/util/index.js";
+import { userAgentLowerCase, device } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
 import security from "@/util/security.js";
+import { Mutex } from "@/util/mutex.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
-
-// 判断是否从file协议切换到http/s协议
-function shouldChangeToHttpProtocol() {
-	// 如果是http了就不用
-	if (location.protocol.startsWith("http")) {
-		return false;
-	}
-	// 首次启动不更新(即还没进行过新手教程)
-	if (!config.get("new_tutorial")) {
-		return false;
-	}
-	if (typeof nonameInitialized == "string") {
-		// 手机端
-		if (window.cordova) {
-			// 直接确定包名
-			// 因为懒人包作者不一定会改成什么版本
-			if (nonameInitialized.endsWith("com.noname.shijian/") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
-				// 每个app自定义能升级的渠道，比如判断版本
-				return window.noname_shijianInterfaces.getApkVersion() >= 16000;
-			}
-			// 由理版判断，后续所有app都通过此接口来升级协议
-			if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
-				return true;
-			}
-		}
-		// 电脑端
-		else if (typeof window.require == "function" && typeof window.process == "object") {
-			// 从json判断版本号
-			const fs = require("fs");
-			const path = require("path");
-			if (fs.existsSync(path.join(__dirname, "package.json"))) {
-				// @ts-expect-error ignore
-				const json = require("./package.json");
-				// 诗笺电脑版的判断
-				return json && Number(json.installerVersion) >= 1.7;
-			}
-		}
-		// 浏览器端
-		else {
-			return location.protocol.startsWith("http");
-		}
-	}
-	return false;
-}
-
-/**
- * 传递升级完成的信息
- * @returns { string | void } 返回一个网址
- */
-function sendUpdate() {
-	// 手机端
-	if (window.cordova) {
-		// 直接确定包名
-		if (nonameInitialized && nonameInitialized.includes("com.noname.shijian") && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.sendUpdate === "function") {
-			// 给诗笺版apk的java层传递升级完成的信息
-			// @ts-expect-error ignore
-			const url = new URL(window.noname_shijianInterfaces.sendUpdate());
-			url.searchParams.set("sendUpdate", "true");
-			return url.toString();
-		}
-		// 由理版判断
-		if (window.NonameAndroidBridge && typeof window.NonameAndroidBridge.sendUpdate === "function") {
-			// 给由理版apk的java层传递升级完成的信息
-			// @ts-expect-error ignore
-			const url = new URL(window.NonameAndroidBridge.sendUpdate());
-			url.searchParams.set("sendUpdate", "true");
-			return url.toString();
-		}
-	}
-	// 电脑端
-	else if (typeof window.require == "function" && typeof window.process == "object") {
-		// 从json判断版本号
-		const fs = require("fs");
-		const path = require("path");
-		if (fs.existsSync(path.join(__dirname, "package.json"))) {
-			// @ts-expect-error ignore
-			const json = require("./package.json");
-			// 诗笺电脑版的判断
-			if (json && Number(json.installerVersion) >= 1.7) {
-				fs.writeFileSync(path.join(__dirname, "Home", "saveProtocol.txt"), "");
-				// 启动http
-				const cp = require("child_process");
-				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => {});
-				return `http://localhost:8089/app.html?sendUpdate=true`;
-			}
-		}
-	}
-	// 浏览器端
-	else {
-		return location.href;
-	}
-}
-
-export function tryUpdateProtocol() {
-	// 判断是否从file协议切换到http/s协议
-	if (shouldChangeToHttpProtocol()) {
-		// 保存协议的切换状态
-		const saveProtocol = () => {
-			const url = sendUpdate();
-			if (typeof url == "string") {
-				if (typeof window.require == "function" && typeof window.process == "object") {
-					// @ts-expect-error ignore
-					const remote = require("@electron/remote");
-					const thisWindow = remote.getCurrentWindow();
-					thisWindow.loadURL(url);
-				} else {
-					location.href = url;
-				}
-			}
-		};
-		/*
-			升级方法:
-				1. 游戏启动后导出数据，然后以http/s协议重启
-				2. 以http/s协议导入数据
-				3. 保存http/s协议的状态，以后不再以file协议启动
-			*/
-		// 导出数据到根目录的noname.config.txt
-		if (navigator.notification) {
-			navigator.notification.activityStart("正在进行升级", "请稍候");
-		}
-		let data;
-		let export_data = function (data) {
-			if (navigator.notification) {
-				navigator.notification.activityStop();
-			}
-			game.promises
-				.writeFile(lib.init.encode(JSON.stringify(data)), "./", "noname.config.txt")
-				.then(saveProtocol)
-				.catch(e => {
-					console.error("升级失败:", e);
-				});
-		};
-		if (!lib.db) {
-			data = {};
-			for (let i in localStorage) {
-				if (i.startsWith(lib.configprefix)) {
-					data[i] = localStorage[i];
-				}
-			}
-			export_data(data);
-		} else {
-			game.getDB("config", null, function (data1) {
-				game.getDB("data", null, function (data2) {
-					export_data({
-						config: data1,
-						data: data2,
-					});
-				});
-			});
-		}
-	} else {
-		const readConfig = async () => {
-			return game.promises
-				.readFileAsText("noname.config.txt")
-				.then(data => {
-					if (navigator.notification) {
-						navigator.notification.activityStart("正在导入数据", "请稍候");
-					}
-					return /** @type {Promise<void>} */ (
-						// eslint-disable-next-line no-async-promise-executor
-						new Promise(async (resolve, reject) => {
-							if (!data) {
-								return reject(new Error("没有数据内容"));
-							}
-							try {
-								data = JSON.parse(lib.init.decode(data));
-								if (!data || typeof data != "object") {
-									throw "err";
-								}
-								if (lib.db && (!data.config || !data.data)) {
-									throw "err";
-								}
-							} catch (e) {
-								console.log(e);
-								if (e == "err") {
-									reject(new Error("导入文件格式不正确"));
-								} else {
-									reject(new Error("导入失败： " + e.message));
-								}
-								return;
-							}
-							if (!lib.db) {
-								const noname_inited = localStorage.getItem("noname_inited");
-								const onlineKey = localStorage.getItem(lib.configprefix + "key");
-								localStorage.clear();
-								if (noname_inited) {
-									localStorage.setItem("noname_inited", noname_inited);
-								}
-								if (onlineKey) {
-									localStorage.setItem(lib.configprefix + "key", onlineKey);
-								}
-								for (let i in data) {
-									localStorage.setItem(i, data[i]);
-								}
-							} else {
-								for (let i in data.config) {
-									await game.putDB("config", i, data.config[i]);
-									lib.config[i] = data.config[i];
-								}
-								for (let i in data.data) {
-									await game.putDB("data", i, data.data[i]);
-								}
-							}
-							lib.init.background();
-							resolve();
-						})
-					);
-				})
-				.then(() => {
-					return game.promises.removeFile("noname.config.txt");
-				})
-				.then(() => {
-					alert("数据导入成功, 即将自动重启");
-					const url = new URL(location.href);
-					if (url.searchParams.get("sendUpdate")) {
-						url.searchParams.delete("sendUpdate");
-						location.href = url.toString();
-					} else {
-						location.reload();
-					}
-				})
-				.catch(e => {
-					console.log(e);
-					if (window.FileError) {
-						if (!(e instanceof window.FileError)) {
-							alert(typeof e?.message == "string" ? e.message : JSON.stringify(e));
-						} else {
-							console.error(`noname.config.txt读取失败: ${Object.keys(window.FileError).find(msg => window.FileError[msg] === e.code)}`);
-						}
-					}
-				})
-				.finally(() => {
-					if (navigator.notification) {
-						navigator.notification.activityStop();
-					}
-				});
-		};
-		let searchParams = new URLSearchParams(location.search);
-		for (let [key, value] of searchParams) {
-			// 成功导入后删除noname.config.txt
-			if (key === "sendUpdate" && value === "true") {
-				return readConfig();
-			}
-			// 新客户端导入扩展
-			else if (key === "importExtensionName") {
-				lib.config.extensions.add(value);
-
-				let waitings = [];
-
-				waitings.push(game.promises.saveConfig("extensions", lib.config.extensions));
-				waitings.push(game.promises.saveConfig(`extension_${value}_enable`, true));
-				alert(`扩展${value}已导入成功，点击确定重启游戏`);
-
-				return Promise.allSettled(waitings).then(() => {
-					const url = new URL(location.href);
-					url.searchParams.delete("importExtensionName");
-					location.href = url.toString();
-				});
-			}
-		}
-		readConfig();
-	}
-}
+import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
+import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 // 无名杀，启动！
 export async function boot() {
@@ -324,15 +62,15 @@ export async function boot() {
 		window.onbeforeunload = function (e) {
 			if (config.get("confirm_exit") && !_status.reloading) {
 				e.preventDefault();
-				e.returnValue = '';
+				e.returnValue = "";
 			}
 		};
-		
-        // 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
-        // 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
-        const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
 
-        if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
+		// 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
+		// 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
+		const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
+
+		if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
 			const { browserReady } = await import("./browser.js");
 			await browserReady();
 		} else {
@@ -720,6 +458,253 @@ export async function boot() {
 	}
 
 	window.resetGameTimeout = resetGameTimeout;
+	const libOnload = lib.onload;
+	delete lib.onload;
+	await runCustomContents(libOnload);
+
+	ui.updated();
+	game.documentZoom = game.deviceZoom;
+	if (game.documentZoom !== 1) {
+		ui.updatez();
+	}
+
+	await createBackground();
+
+	if (lib.config.touchscreen) {
+		createTouchDraggedFilter();
+	}
+
+	// 重构了吗？如构
+	let loadingCustomStyle = [
+		tryLoadCustomStyle("card_style", data => {
+			if (ui.css.card_stylesheet) {
+				ui.css.card_stylesheet.remove();
+			}
+			ui.css.card_stylesheet = lib.init.sheet(`.card:not(*:empty){background-image:url(${data})}`);
+		}),
+		tryLoadCustomStyle("cardback_style", {
+			cardback_style(data) {
+				if (ui.css.cardback_stylesheet) {
+					ui.css.cardback_stylesheet.remove();
+				}
+				ui.css.cardback_stylesheet = lib.init.sheet(`.card:empty,.card.infohidden{background-image:url(${data})}`);
+			},
+			cardback_style2(data) {
+				if (ui.css.cardback_stylesheet2) {
+					ui.css.cardback_stylesheet2.remove();
+				}
+				ui.css.cardback_stylesheet2 = lib.init.sheet(`.card.infohidden:not(.infoflip){background-image:url(${data})}`);
+			},
+		}),
+		tryLoadCustomStyle("hp_style", {
+			hp_style1(data) {
+				if (ui.css.hp_stylesheet1) {
+					ui.css.hp_stylesheet1.remove();
+				}
+				ui.css.hp_stylesheet1 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(${data})}`);
+			},
+			hp_style2(data) {
+				if (ui.css.hp_stylesheet2) {
+					ui.css.hp_stylesheet2.remove();
+				}
+				ui.css.hp_stylesheet2 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(${data})}`);
+			},
+			hp_style3(data) {
+				if (ui.css.hp_stylesheet3) {
+					ui.css.hp_stylesheet3.remove();
+				}
+				ui.css.hp_stylesheet3 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(${data})}`);
+			},
+			hp_style4(data) {
+				if (ui.css.hp_stylesheet4) {
+					ui.css.hp_stylesheet4.remove();
+				}
+				ui.css.hp_stylesheet4 = lib.init.sheet(`.hp:not(.text):not(.actcount)>.lost{background-image:url(${data})}`);
+			},
+		}),
+		tryLoadCustomStyle(
+			"player_style",
+			data => {
+				if (ui.css.player_stylesheet) {
+					ui.css.player_stylesheet.remove();
+				}
+				ui.css.player_stylesheet = lib.init.sheet(`#window .player{background-image:url("${data}");background-size:100% 100%;}`);
+			},
+			() => {
+				ui.css.player_stylesheet = lib.init.sheet("#window .player{background-image:none;background-size:100% 100%;}");
+			}
+		),
+		tryLoadCustomStyle("border_style", data => {
+			if (ui.css.border_stylesheet) {
+				ui.css.border_stylesheet.remove();
+			}
+			ui.css.border_stylesheet = lib.init.sheet();
+			ui.css.border_stylesheet.sheet.insertRule(`#window .player>.framebg{display:block;background-image:url("${data}")}`, 0);
+			ui.css.border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
+		}),
+		tryLoadCustomStyle("control_style", data => {
+			if (ui.css.control_stylesheet) {
+				ui.css.control_stylesheet.remove();
+			}
+			ui.css.control_stylesheet = lib.init.sheet(`#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("${data}")}`);
+		}),
+		tryLoadCustomStyle("menu_style", data => {
+			if (ui.css.menu_stylesheet) {
+				ui.css.menu_stylesheet.remove();
+			}
+			ui.css.menu_stylesheet = lib.init.sheet(`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${fileLoadedEvent.target.result}");background-size:cover}`);
+		}),
+	];
+
+	lib.onloadSplashes.forEach(splash => {
+		lib.configMenu.appearence.config.splash_style.item[splash.id] = splash.name;
+	});
+
+	localStorage.removeItem(lib.configprefix + "directstart");
+	if (!lib.imported.mode?.[lib.config.mode]) {
+		window.inSplash = true;
+		clearTimeout(window.resetGameTimeout);
+
+		if (typeof lib.config.splash_style == "undefined") {
+			game.saveConfig("splash_style", lib.onloadSplashes[0].id);
+		}
+		let splash = lib.onloadSplashes.find(item => item.id === lib.config.splash_style);
+		if (!splash) {
+			splash = lib.onloadSplashes[0];
+		}
+
+		let node = ui.create.div("#splash", document.body);
+
+		let { promise, resolve } = Promise.withResolvers();
+		await splash.init(node, resolve);
+
+		let result = await promise;
+
+		let splashInRemoing = await splash.dispose(node);
+		if (!splashInRemoing) {
+			node.remove();
+		}
+		window.resetGameTimeout = setTimeout(lib.init.reset, 10000);
+		delete window.inSplash;
+		game.saveConfig("mode", result);
+		await importMode(result);
+	}
+	lib.storage = (await config.load(lib.config.mode, "data")) || {};
+
+	const libOnload2 = lib.onload2;
+	delete lib.onload2;
+	await runCustomContents(libOnload2);
+
+	await Promise.allSettled(loadingCustomStyle);
+	delete window.game;
+
+	lib.connectCharacterPack = [];
+	lib.connectCardPack = [];
+
+	const currentMode = lib.imported.mode[lib.config.mode];
+	loadMode(currentMode);
+	// 为了模式扩展，两个东西删不了
+	lib.init.start = currentMode.start;
+	lib.init.startBefore = currentMode.startBefore;
+
+	if (lib.imported.character != null) {
+		Object.values(lib.imported.character).forEach(loadCharacter);
+	}
+
+	// 我不好说，但我尊重水乎的想法
+	Object.keys(lib.character)
+		.toSorted(lib.sort.capt)
+		.forEach(character => {
+			lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
+		});
+
+	loadCardPile();
+
+	if (lib.imported.card != null) {
+		Object.values(lib.imported.card).forEach(loadCard);
+	}
+
+	if (lib.cardPack.mode_derivation) {
+		lib.cardPack.mode_derivation = lib.cardPack.mode_derivation.filter(item => {
+			if (typeof lib.card[item].derivation == "string" && !lib.character[lib.card[item].derivation]) {
+				return false;
+			}
+			return !(typeof lib.card[item].derivationpack == "string" && !lib.config.cards.includes(lib.card[item].derivationpack));
+		});
+
+		if (lib.cardPack.mode_derivation.length === 0) {
+			delete lib.cardPack.mode_derivation;
+		}
+	}
+
+	if (lib.config.mode === "connect") {
+		_status.connectMode = true;
+	} else {
+		if (lib.imported.play != null) {
+			Object.values(lib.imported.play).forEach(loadPlay);
+		}
+
+		lib.card.list = lib.card.list.filter(cardData => {
+			if (!cardData[2]) {
+				return false;
+			}
+			if (cardData[2] === "huosha") {
+				cardData[2] = "sha";
+				cardData[3] = "fire";
+			} else if (cardData[2] === "leisha") {
+				cardData[2] = "sha";
+				cardData[3] = "thunder";
+			} else if (cardData[2] === "icesha") {
+				cardData[2] = "sha";
+				cardData[3] = "ice";
+			} else if (cardData[2] === "cisha") {
+				cardData[2] = "sha";
+				cardData[3] = "stab";
+			} else if (cardData[2] === "kamisha") {
+				cardData[2] = "sha";
+				cardData[3] = "kami";
+			}
+			return lib.card[cardData[2]] && !lib.card[cardData[2]].mode?.includes(lib.config.mode);
+		});
+	}
+
+	if (window.isNonameServer) {
+		lib.cheat.i();
+	} else if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
+		lib.cheat.i();
+	}
+	lib.config.sort_card = get.sortCard(lib.config.sort);
+
+	for (let funcName in lib.init) {
+		if (funcName.startsWith("setMode_")) {
+			delete lib.init[funcName];
+		}
+	}
+
+	if (Array.isArray(lib.extensions)) {
+		await Promise.allSettled(lib.extensions.map(loadExtension));
+	}
+
+	if (lib.init.startBefore) {
+		lib.init.startBefore();
+		delete lib.init.startBefore;
+	}
+
+	ui.create.arena();
+	game.createEvent("game", false).setContent(lib.init.start);
+	if (lib.mode[lib.config.mode] && lib.mode[lib.config.mode].fromextension) {
+		var startstr = currentMode.start.toString();
+		if (startstr.indexOf("onfree") === -1) {
+			setTimeout(lib.init.onfree, 500);
+		}
+	}
+	delete lib.init.start;
+	if (Array.isArray(_status.onprepare) && _status.onprepare.length) {
+		await Promise.allSettled(_status.onprepare);
+		delete _status.onprepare;
+	}
+
+	game.loop();
 }
 
 async function getExtensionList() {
@@ -1174,4 +1159,127 @@ function setWindowListener() {
 			// }
 		}
 	};
+}
+
+async function createBackground() {
+	ui.background = ui.create.div(".background");
+	ui.background.style.backgroundSize = "cover";
+	ui.background.style.backgroundPosition = "50% 50%";
+
+	document.documentElement.style.backgroundImage = "";
+	document.documentElement.style.backgroundSize = "";
+	document.documentElement.style.backgroundPosition = "";
+	document.body.insertBefore(ui.background, document.body.firstChild);
+	document.body.onresize = ui.updatexr;
+
+	if (!lib.config.image_background) {
+		return;
+	}
+	if (lib.config.image_background === "default") {
+		return;
+	}
+
+	let url = `url("${lib.assetURL}image/background/${lib.config.image_background}.jpg")`;
+
+	if (lib.config.image_background.startsWith("custom_")) {
+		try {
+			const fileToLoad = await game.getDB("image", lib.config.image_background);
+			const fileReader = new FileReader();
+			const fileLoadedEvent = await Promise(resolve => {
+				fileReader.onload = resolve;
+				fileReader.readAsDataURL(fileToLoad, "UTF-8");
+			});
+			const data = fileLoadedEvent.target.result;
+			url = `url("${data}")`;
+		} catch (e) {
+			console.error(e);
+			url = "none";
+		}
+	}
+
+	ui.background.style.backgroundImage = url;
+	if (lib.config.image_background_blur) {
+		ui.background.style.filter = "blur(8px)";
+		ui.background.style.webkitFilter = "blur(8px)";
+		ui.background.style.transform = "scale(1.05)";
+	}
+}
+
+function createTouchDraggedFilter() {
+	document.body.addEventListener("touchstart", function (e) {
+		this.startX = e.touches[0].clientX / game.documentZoom;
+		this.startY = e.touches[0].clientY / game.documentZoom;
+		_status.dragged = false;
+	});
+	document.body.addEventListener("touchmove", function (e) {
+		if (_status.dragged) {
+			return;
+		}
+		if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
+			_status.dragged = true;
+		}
+	});
+}
+
+/**
+ * @async
+ * @param {((function(Mutex): void) | GeneratorFunction)[]} contents
+ */
+function runCustomContents(contents) {
+	if (!Array.isArray(contents)) {
+		return;
+	}
+
+	const mutex = new Mutex();
+	// 将生成器函数转换成genCoroutin
+	const tasks = contents
+		.filter(fn => typeof fn === "function")
+		.map(fn => (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn))
+		.map(fn => fn(mutex));
+
+	return Promise.allSettled(tasks).then(results => {
+		results.forEach(result => {
+			if (result.status === "rejected") {
+				console.error(result.reason);
+			}
+		});
+	});
+}
+
+/**
+ * 由于不暴露出去，抽象一点
+ *
+ * 实际上但凡有重载都不会抽象
+ *
+ * @param {string} id
+ * @param {(function(string): void) | Record<string, function(string): void>} keys
+ * @param {function(): void} [fallback]
+ * @returns {Promise<void>}
+ */
+async function tryLoadCustomStyle(id, keys, fallback) {
+	if (typeof keys == "function") {
+		keys = {
+			[id]: keys,
+		};
+	}
+
+	if (lib.config[id] === "custom") {
+		await Promise.allSettled(
+			Object.entries(keys).map(async ([key, callback]) => {
+				const fileToLoad = await game.getDB("image", key);
+				if (fileToLoad) {
+					const fileLoadedEvent = await new Promise((resolve, reject) => {
+						const fileReader = new FileReader();
+						fileReader.onload = resolve;
+						fileReader.onerror = reject;
+						fileReader.readAsDataURL(fileToLoad, "UTF-8");
+					});
+
+					await callback?.(fileLoadedEvent.target.result);
+				} else {
+					fallback?.();
+				}
+			})
+		);
+	}
 }

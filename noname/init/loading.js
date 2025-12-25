@@ -422,13 +422,6 @@ export function loadMode(mode) {
 	mixinGeneral(mode, "get", get);
 	mixinGeneral(mode, "ai", ai);
 
-	// @ts-expect-error ignore
-	delete window.noname_character_rank;
-	// @ts-expect-error ignore
-	delete window.noname_character_replace;
-	// @ts-expect-error ignore
-	delete window.noname_character_perfectPairs;
-
 	["onwash", "onover"].forEach(name => {
 		if (game[name]) {
 			lib[name]?.push(game[name]);
@@ -555,9 +548,16 @@ function mixinLibrary(config, lib) {
 	// @ts-expect-error ignore
 	lib.rank = window.noname_character_rank;
 	// @ts-expect-error ignore
+	delete window.noname_character_rank;
+	// @ts-expect-error ignore
 	Object.keys(window.noname_character_replace).forEach(i => (lib.characterReplace[i] = window.noname_character_replace[i]));
 	// @ts-expect-error ignore
+	delete window.noname_character_replace;
+	// @ts-expect-error ignore
 	Object.keys(window.noname_character_perfectPairs).forEach(i => (lib.perfectPair[i] = window.noname_character_perfectPairs[i]));
+	// @ts-expect-error ignore
+	delete window.noname_character_perfectPairs;
+
 
 	for (let name in config) {
 		if (KeptWords.includes(name)) {
