@@ -14,13 +14,6 @@ export class LibInit {
 		return this.#promises;
 	};
 
-	/**
-	 * @deprecated
-	 */
-	init() {
-		throw new Error("lib.init.init is moved to noname/init");
-	}
-
 	reset() {
 		if (window.inSplash) {
 			return;
@@ -82,14 +75,6 @@ export class LibInit {
 				}
 			}
 		}
-	}
-
-	/**
-	 * @deprecated
-	 * 现在改lib.init.onload的都给我无报错被创
-	 */
-	async onload() {
-		throw new Error("lib.init.onload is moved to noname/init/onload");
 	}
 
 	startOnline = [

@@ -543,11 +543,11 @@ export async function setOnError({ lib, game, get, _status }) {
 			alert(log.join("\n"));
 			game.print(log.join("\n"));
 		}
-		window.ea = [msg, src, line, column, err];
-		window.em = msg;
-		window.el = line;
-		window.ec = column;
-		window.eo = err;
+		// window.ea = [msg, src, line, column, err];
+		// window.em = msg;
+		// window.el = line;
+		// window.ec = column;
+		// window.eo = err;
 	};
 
 	return promiseErrorHandler;

@@ -1,9 +1,9 @@
 // noname内扩展的一些array方法：
 declare interface Array<T> {
-    /**
-     * @deprecated 已废弃，请使用includes
-     */
-    contains(item: T): boolean;
+    // /**
+    //  * @deprecated 已废弃，请使用includes
+    //  */
+    // contains(item: T): boolean;
     containsSome(...item: T[]): boolean;
     containsAll(...item: T[]): boolean;
     /**

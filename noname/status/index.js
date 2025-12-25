@@ -4,7 +4,6 @@ import { GameEventManager } from "@/library/element/gameEvent.js";
 
 export class status {
 	imchoosing = false;
-	clicked = false;
 	auto = false;
 	eventManager = new GameEventManager();
 	/**
@@ -54,6 +53,24 @@ export class status {
 	 */
 	extension = undefined;
 	/**
+	 * @type { boolean }
+	 */
+	importingExtension = false;
+	/**
+	 * @type { Promise<any>[] | undefined }
+	 */
+	extensionLoading = undefined;
+	/**
+	 * @type { string[] | undefined }
+	 */
+	extensionLoaded = undefined;
+	javaScriptExtensions = [];
+	/**
+	 * @type { { [key: string]: Promise<any>[] } | undefined }
+	 */
+	importing = undefined;
+	clicked = false;
+	/**
 	 * @type { boolean | undefined }
 	 */
 	dragged = undefined;
@@ -66,23 +83,6 @@ export class status {
 	 * @type { boolean | undefined }
 	 */
 	video = undefined;
-	/**
-	 * @type { boolean }
-	 */
-	importingExtension = false;
-	/**
-	 * @type { string[] | undefined }
-	 */
-	extensionLoaded = undefined;
-	/**
-	 * @type { Promise<any>[] | undefined }
-	 */
-	extensionLoading = undefined;
-	javaScriptExtensions = [];
-	/**
-	 * @type { { [key: string]: Promise<any>[] } | undefined }
-	 */
-	importing = undefined;
 	/**
 	 * @type { Function | boolean | undefined }
 	 */
@@ -166,7 +166,6 @@ export let _status = new status();
 export let setStatus = instance => {
 	_status = instance || new status();
 	if (lib.config.dev) {
-		// @ts-expect-error ignore
 		window._status = _status;
 	}
 };

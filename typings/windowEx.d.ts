@@ -12,35 +12,35 @@ declare interface Window {
         cards?: string[],
     }
 
-    /** 游戏配置 */
-    config: SMap<any>,
+    // /** 游戏配置 */
+    // config: SMap<any>,
 
-    /** 游戏源列表（预加载资源列表，待验证） */
-    noname_source_list?: string[],
+    // /** 游戏源列表（预加载资源列表，待验证） */
+    // noname_source_list?: string[],
 
-    /** 游戏懒加载资源列表(外部扩展资源列表，待验证) */
-    noname_asset_list?: string[],
+    // /** 游戏懒加载资源列表(外部扩展资源列表，待验证) */
+    // noname_asset_list?: string[],
 
-    /** 默认皮肤列表 */
-    noname_skin_list?: SMap<number>;
+    // /** 默认皮肤列表 */
+    // noname_skin_list?: SMap<number>;
 
     /** codeMirror,一个代码编辑器库 */
     // CodeMirror: typeof import('codemirror/index');
 
     resetGameTimeout: number;
 
-    cordovaLoadTimeout?: number;
+    // cordovaLoadTimeout?: number;
 
-    /** window.onerror的参数列表 */
-    ea?: any[];
-    /** 错误信息 */
-    em?: string | Event;
-    /** 错误行号 */
-    el?: number;
-    /** 错误列号 */
-    ec?: number;
-    /** 错误对象 */
-    eo?: Error;
+    // /** window.onerror的参数列表 */
+    // ea?: any[];
+    // /** 错误信息 */
+    // em?: string | Event;
+    // /** 错误行号 */
+    // el?: number;
+    // /** 错误列号 */
+    // ec?: number;
+    // /** 错误对象 */
+    // eo?: Error;
 
     game: Game;
     lib: Library;
@@ -66,10 +66,10 @@ declare interface Window {
         get: Get;
         ai: AI;
     }
-    /** 为其他自定义平台提供文件读写函数赋值的一种方式 */
-    initReadWriteFunction?(game: Game): Promise<void>;
+    // /** 为其他自定义平台提供文件读写函数赋值的一种方式 */
+    // initReadWriteFunction?(game: Game): Promise<void>;
 
-    bannedKeyWords: string[];
+    // bannedKeyWords: string[];
 
     device: Device;
 

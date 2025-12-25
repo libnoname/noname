@@ -14,6 +14,7 @@
         "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev --open\"",
         "serve": "cd dist && node noname-server.cjs",
         "build": "tsx scripts/build.ts",
+        "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
         "build:diff": "tsx scripts/build.ts --mode diff",
         "lint": "pnpm eslint ."
