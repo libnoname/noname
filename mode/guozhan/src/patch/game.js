@@ -1,6 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
-import { Game } from "../../../../noname/game/index.js";
+import { lib, game, Game, ui, get, ai, _status } from "noname";
 import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
 export class GameGuozhan extends Game {

@@ -1,4 +1,4 @@
-import { lib, _status } from "../../../../noname.js";
+import { lib, _status } from "noname";
 import poptips from "./poptip.js";
 
 export default `

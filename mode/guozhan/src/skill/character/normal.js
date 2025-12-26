@@ -1,12 +1,6 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { GameEvent, Player, Card } from "../../../../../noname/library/element/index.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 import { PlayerGuozhan } from "../../patch/player.js";
 import { broadcastAll } from "../../patch/game.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
 
 export default {
 	// gz_caocao
@@ -144,7 +138,7 @@ export default {
 		preHidden: true,
 		/**
 		 * @param {GameEvent} event
-		 * @param {PlayerGuozhan | Player} player
+		 * @param {PlayerGuozhan} player
 		 * @returns {boolean}
 		 */
 		filter(event, player) {
@@ -328,16 +322,13 @@ export default {
 					break;
 				}
 
-				/** @type {Card[]} */
-				const links = cast(result.links);
-				cards.removeArray(links);
-				const toGive = links.slice(0);
+				cards.removeArray(result.links);
+				const toGive = result.links.slice(0);
 
 				result = await player
 					.chooseTarget("选择一名角色获得" + get.translation(result.links), true)
 					.set("ai", (/** @type {PlayerGuozhan} */ target) => {
-						/** @type {GameEvent & { enemy: boolean }} */
-						const event = cast(get.event());
+						const event = get.event();
 						const att = get.attitude(event.player, target);
 						if (event.enemy) {
 							return -att;
@@ -354,8 +345,7 @@ export default {
 					break;
 				}
 
-				/** @type {PlayerGuozhan[]} */
-				const targets = cast(result.targets);
+				const targets = result.targets;
 				if (targets.length) {
 					const id = targets[0].playerid ?? "";
 
@@ -453,8 +443,7 @@ export default {
 				.setHiddenSkill("gz_shensu")
 				.set("goon", player.needsToDiscard())
 				.set("ai", target => {
-					/** @type {GameEvent & { goon: number }} */
-					const event = cast(get.event());
+					const event = get.event();
 					const player = get.player();
 					if (!event.goon || player.hp <= target.hp) {
 						return false;
@@ -571,8 +560,7 @@ export default {
 			event.result = await player
 				.chooseToDiscard(get.prompt("qiaobian"), str, lib.filter.cardDiscardable)
 				.set("ai", card => {
-					/** @type {GameEvent & {check: any}} */
-					const event = cast(get.event());
+					const event = get.event();
 					if (!event.check) {
 						return -1;
 					}
@@ -610,7 +598,7 @@ export default {
 				if (!result.targets?.length) {
 					return;
 				}
-				await player.gainMultiple(cast(result.targets));
+				await player.gainMultiple(result.targets);
 				await game.delay();
 			}
 		},
@@ -2705,7 +2693,7 @@ export default {
 		},
 		check(card) {
 			const player = get.player();
-			const targets = game.filterPlayer(current => player.canUse("wanjian", cast(current)) ?? false);
+			const targets = game.filterPlayer(current => player.canUse("wanjian", current) ?? false);
 			let num = 0;
 			for (let i = 0; i < targets.length; i++) {
 				let eff = get.sgn(get.effect(targets[i], { name: "wanjian" }, player, player));
@@ -2871,17 +2859,12 @@ export default {
 		forced: true,
 		forceDie: true,
 		filter(event, player) {
-			/** @type {PlayerGuozhan} */
-			const source = cast(event.source);
-			return event.source && event.source.isIn() && event.source != player && (source.hasMainCharacter() || source.hasViceCharacter());
+			return event.source && event.source.isIn() && event.source != player && (event.source.hasMainCharacter() || event.source.hasViceCharacter());
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
-			/** @type {PlayerGuozhan} */
-			const source = cast(trigger.source);
-
-			const main = source.hasMainCharacter();
-			const vice = source.hasViceCharacter();
+			const main = trigger.source.hasMainCharacter();
+			const vice = trigger.source.hasViceCharacter();
 
 			/** @type {Partial<Result>} */
 			let result;
@@ -2898,7 +2881,7 @@ export default {
 					.set(
 						"choice",
 						(() => {
-							let rank = get.guozhanRank(trigger.source.name1, cast(source)) - get.guozhanRank(trigger.source.name2, cast(source));
+							let rank = get.guozhanRank(trigger.source.name1, trigger.source) - get.guozhanRank(trigger.source.name2, trigger.source);
 							if (rank == 0) {
 								rank = Math.random() > 0.5 ? 1 : -1;
 							}
@@ -3058,7 +3041,7 @@ export default {
 			if (
 				get.attitude(player, event.target) > 0 ||
 				!event.target.hasCard(function (card) {
-					return lib.filter.canBeGained(card, cast(player), cast(event.target)) && get.value(card, event.target) > 0;
+					return lib.filter.canBeGained(card, player, event.target) && get.value(card, event.target) > 0;
 				}, "e")
 			) {
 				return false;
@@ -3196,7 +3179,7 @@ export default {
 			return 6 - get.value(card, get.event().player);
 		},
 		async content(event, trigger, player) {
-			await chooseToHide(cast(event.target));
+			await chooseToHide(event.target);
 
 			if (get.type(event.cards[0]) != "equip") {
 				return;
@@ -3213,7 +3196,7 @@ export default {
 
 			if (result.bool && result.targets && result.targets.length) {
 				player.line(result.targets[0], "green");
-				await chooseToHide(cast(result.targets[0]));
+				await chooseToHide(result.targets[0]);
 			}
 
 			return;
@@ -3225,7 +3208,7 @@ export default {
 				/** @type {Partial<Result>} */
 				let result;
 
-				if (get.is.jun(cast(target))) {
+				if (get.is.jun(target)) {
 					result = { control: "副将" };
 				} else {
 					let choice = "主将";
@@ -3279,7 +3262,7 @@ export default {
 					if (
 						player.hasCard(function (card) {
 							// ?????
-							return get.tag(card, "damage") && player.canUse(card, target, cast(true), true);
+							return get.tag(card, "damage") && player.canUse(card, target, true, true);
 						}, undefined)
 					) {
 						if (target.maxHp > 3) {

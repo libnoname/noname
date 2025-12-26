@@ -1,8 +1,6 @@
 // @ts-nocheck
 
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
-import { Get } from "../../../../noname/get/index.js";
+import { lib, game, ui, get, Get, ai, _status } from "noname";
 import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
 export class GetGuozhan extends Get {

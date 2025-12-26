@@ -1,7 +1,6 @@
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 
-export class PlayerGuozhan extends Player {
+export class PlayerGuozhan extends lib.element.Player {
 	/**
 	 * @type {string}
 	 */

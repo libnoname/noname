@@ -1,10 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
-import { PlayerGuozhan } from "../../patch/player.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
+import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type {Record<string, Skill>} */
 export default {
@@ -695,9 +689,7 @@ export default {
 				},
 				silent: true,
 				async content(event, _trigger, player) {
-					/** @type {PlayerGuozhan} */
-					const playerRef = cast(player);
-					await playerRef.mayChangeVice(undefined, undefined);
+					await player.mayChangeVice(undefined, undefined);
 					event.skill = "gz_qice";
 					event.trigger("skillAfter");
 				},
@@ -858,9 +850,7 @@ export default {
 				await player.draw(num);
 			}
 
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			await playerRef.mayChangeVice(undefined, undefined);
+			await player.mayChangeVice(undefined, undefined);
 		},
 	},
 
@@ -882,9 +872,7 @@ export default {
 			trigger.cancel(undefined, undefined, undefined);
 
 			if (player.isFriendOf(trigger.player)) {
-				/** @type {PlayerGuozhan} */
-				const targetRef = cast(trigger.player);
-				await targetRef.mayChangeVice();
+				await trigger.player.mayChangeVice();
 			}
 		},
 	},

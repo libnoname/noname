@@ -1,4 +1,5 @@
-import { Character } from "../../../../noname/library/element/index.js";
+import { lib } from "noname";
+const Character = lib.element.Character;
 
 import normal from "./normal.js";
 import zhen from "./zhen.js";

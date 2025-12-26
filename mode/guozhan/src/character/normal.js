@@ -1,4 +1,5 @@
-import { Character } from "../../../../noname/library/element/index.js";
+import { lib } from "noname";
+const Character = lib.element.Character;
 
 export default {
 	gz_caocao: new Character({

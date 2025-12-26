@@ -1,10 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
-import { PlayerGuozhan } from "../../patch/player.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
+import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type {Record<string, Skill>} */
 export default {
@@ -631,9 +625,7 @@ export default {
 		skillAnimation: true,
 		animationColor: "metal",
 		filter(event, player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			return playerRef.checkMainSkill("gz_shenfen", false) || playerRef.checkViceSkill("gz_shenfen", false);
+			return player.checkMainSkill("gz_shenfen", false) || player.checkViceSkill("gz_shenfen", false);
 		},
 		limited: true,
 		manualConfirm: true,
@@ -658,12 +650,10 @@ export default {
 			await game.doAsyncInOrder(targets, damage);
 			await game.doAsyncInOrder(targets, equip);
 			await game.doAsyncInOrder(targets, discard);
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			if (playerRef.checkMainSkill(event.name, false)) {
-				await playerRef.removeCharacter(0);
+			if (player.checkMainSkill(event.name, false)) {
+				await player.removeCharacter(0);
 			} else {
-				await playerRef.removeCharacter(1);
+				await player.removeCharacter(1);
 			}
 		},
 		ai: {

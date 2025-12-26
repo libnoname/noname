@@ -82,16 +82,6 @@ export function freezeButExtensible(record) {
 
 /**
  *
- *
- * @return {never}
- * @throws {Error}
- */
-export function jumpToCatchBlock() {
-	throw new Error("");
-}
-
-/**
- *
  * @return {boolean}
  * @param {function} func
  */
@@ -101,26 +91,4 @@ export function isClass(func) {
 	}
 	const fnStr = Function.prototype.toString.call(func);
 	return /^class\s/.test(fnStr);
-}
-
-/**
- * 一个申必的类型转换函数，用于在Javascript中实现`const a = b as unknown as ...`的功能
- * 
- * @template T - 目标类型，可通过目标变量自动覆盖，故只需要为目标变量提供类型即可
- * @template U - 原类型，无需单独填写，仅用于消除any
- * @param {U} obj - 需要转换类型的对象
- * @returns {T} 返回原对象，仅类型转换
- * 
- * @example
- * ```js
- * // 从某个事件中获取结果
- * const result = await ...
- * // 将结果转换为指定类型
- * // 由于JSDoc中无法重新使用JSDoc注释，故以Typescript说明
- * const card: Card[] = cast(result.links);
- * ```
- */
-export function cast(obj) {
-	// @ts-expect-error Type Translate
-	return /** @type {unknown} */ obj;
 }

@@ -1,10 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
-import { PlayerGuozhan } from "../../patch/player.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
+import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type {Record<string, Skill>} */
 export default {
@@ -14,10 +8,8 @@ export default {
 		audio: "jixi",
 		mainSkill: true,
 		init(player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			if (playerRef.checkMainSkill("gz_jixi")) {
-				playerRef.removeMaxHp();
+			if (player.checkMainSkill("gz_jixi")) {
+				player.removeMaxHp();
 			}
 		},
 	},
@@ -30,9 +22,7 @@ export default {
 			return event.player.isIn() && event.player.isFriendOf(player) && player.getExpansions("tuntian").length > 0;
 		},
 		init(player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			playerRef.checkViceSkill("ziliang");
+			player.checkViceSkill("ziliang");
 		},
 		viceSkill: true,
 		async cost(event, trigger, player) {
@@ -147,9 +137,7 @@ export default {
 					globalTo(from, to, distance) {
 						if (
 							game.hasPlayer(current => {
-								/** @type {PlayerGuozhan} */
-								const currentRef = cast(current);
-								return current.hasSkill("heyi") && currentRef.inline(to);
+								return current.hasSkill("heyi") && current.inline(to);
 							})
 						) {
 							return distance + 1;
@@ -229,11 +217,8 @@ export default {
 	// gz_jiangwei
 	yizhi: {
 		init(player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			// @ts-expect-error 类型系统未来可期
-			if (playerRef.checkViceSkill("yizhi") && !playerRef.viceChanged) {
-				playerRef.removeMaxHp();
+			if (player.checkViceSkill("yizhi") && !player.viceChanged) {
+				player.removeMaxHp();
 			}
 		},
 		viceSkill: true,
@@ -244,9 +229,7 @@ export default {
 	},
 	tianfu: {
 		init(player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
-			playerRef.checkMainSkill("tianfu");
+			player.checkMainSkill("tianfu");
 		},
 		mainSkill: true,
 		inherit: "kanpo",
@@ -332,9 +315,7 @@ export default {
 					})
 					.set("visible", true);
 			} else {
-				/** @type {PlayerGuozhan} */
-				const playerRef = cast(player);
-				playerRef.viewCharacter(target, 2);
+				player.viewCharacter(target, 2);
 			}
 		},
 		ai: {

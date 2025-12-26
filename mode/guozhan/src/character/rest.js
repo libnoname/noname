@@ -1,5 +1,5 @@
-import { Character } from "../../../../noname/library/element/index.js";
-import { _status, get, lib } from "../../../../noname.js";
+import { _status, get, lib } from "noname";
+const Character = lib.element.Character;
 
 const bool = _status.connectMode ? lib.configOL.jinEx : get.config("jinEx");
 

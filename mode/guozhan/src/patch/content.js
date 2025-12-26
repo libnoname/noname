@@ -1,18 +1,16 @@
-import { lib, game as _game, ui, get as _get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player as _Player, Control, Button, Character } from "../../../../noname/library/element/index.js";
-import { GameGuozhan, broadcast, broadcastAll } from "./game.js";
-import { GetGuozhan } from "./get.js";
-import { delay } from "../../../../noname/util/index.js";
+import { lib, game, ui, get, ai, _status } from "noname";
+import { broadcast, broadcastAll } from "./game.js";
 
 import { PlayerGuozhan as Player } from "./player.js";
 
-/** @type {GameGuozhan} */
-// @ts-expect-error 类型就是这么定的
-const game = _game;
-/** @type {GetGuozhan} */
-// @ts-expect-error 类型就是这么定的
-const get = _get;
 const html = String.raw;
+const delay = ms =>
+	new Promise(resolve => {
+		let timeout = setTimeout(() => {
+			clearTimeout(timeout);
+			resolve(undefined);
+		}, ms);
+	});
 
 /**
  * @param {GameEvent} event
@@ -568,7 +566,7 @@ export const chooseCharacterContent = async (event, _trigger, _player) => {
 		// @ts-expect-error 祖宗之法就是这么写的
 		delete _status.createControl;
 	}
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -917,7 +915,7 @@ export const chooseCharacterOLContent = async (event, _trigger, _player) => {
 			}
 		}
 	}
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -1117,7 +1115,7 @@ export const showYexingsContent = async (event, _trigger, player) => {
 		game.checkResult();
 		break;
 	}
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -1199,7 +1197,7 @@ export const hideCharacter = async (event, _trigger, player) => {
 	}
 
 	player.checkConflict();
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -1251,7 +1249,7 @@ export const chooseJunlingFor = async (event, _trigger, player) => {
 	}
 
 	Reflect.set(event, "result", result);
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -1297,7 +1295,7 @@ export const chooseJunlingControl = async (event, _trigger, player) => {
 		control: result.control,
 	};
 	Reflect.set(event, "result", result2);
-}
+};
 
 /**
  * @param {GameEvent & { junling: string }} event
@@ -1383,7 +1381,7 @@ export const carryOutJunling = async (event, _trigger, player) => {
 			player.discard(cards);
 		}
 	}
-}
+};
 
 /**
  * @param {GameEvent} _event
@@ -1394,7 +1392,7 @@ export const doubleDraw = async (_event, _trigger, player) => {
 	if (!player.hasMark("yinyang_mark")) {
 		player.addMark("yinyang_mark", 1);
 	}
-}
+};
 
 /**
  * @param {GameEvent & { hidden: boolean }} event
@@ -1460,7 +1458,7 @@ export const changeViceOnline = async (event, _trigger, player) => {
 			await player.hideCharacter(1, false);
 		}
 	}
-}
+};
 
 export const changeVice = [
 	async (event, _trigger, player) => {
@@ -1587,7 +1585,7 @@ export const mayChangeVice = async (event, _trigger, player) => {
 		// @ts-expect-error 祖宗之法就是这么做的
 		await player.changeVice(event.hidden);
 	}
-}
+};
 
 /**
  * @param {GameEvent} event
@@ -1597,7 +1595,7 @@ export const mayChangeVice = async (event, _trigger, player) => {
 export const transCharacter = async (event, _trigger, player) => {
 	// @ts-expect-error 祖宗之法就是这么做的
 	const { target, num1, num2 } = event;
-	const str = [num1, num2].map(i => i == 1 ? "主" : "副").toUniqued();
+	const str = [num1, num2].map(i => (i == 1 ? "主" : "副")).toUniqued();
 	game.log(player, "与", target, `进行了${str}将易位`);
 	const name1 = player[`name${num1}`],
 		name2 = target[`name${num2}`];
@@ -1620,7 +1618,7 @@ export const transCharacter = async (event, _trigger, player) => {
 			}
 			map1.set(skill, cards);
 			await player.lose(cards, ui.special).set("getlx", false);
-		}
+		};
 		// @ts-expect-error 祖宗之法就是这么做的
 		await game.doAsyncInOrder(skills1, func, () => 1);
 	}
@@ -1634,7 +1632,7 @@ export const transCharacter = async (event, _trigger, player) => {
 			}
 			map2.set(skill, cards);
 			await target.lose(cards, ui.special).set("getlx", false);
-		}
+		};
 		// @ts-expect-error 祖宗之法就是这么做的
 		await game.doAsyncInOrder(skills2, func, () => 1);
 	}
@@ -1672,7 +1670,7 @@ export const transCharacter = async (event, _trigger, player) => {
 			}
 		}
 	}
-}
+};
 
 /**
  *
@@ -1685,7 +1683,7 @@ export const zhulian = async (_event, _trigger, player) => {
 	if (!player.hasMark("zhulianbihe_mark")) {
 		player.addMark("zhulianbihe_mark", 1);
 	}
-}
+};
 
 export default {
 	hideCharacter,

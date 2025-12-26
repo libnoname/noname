@@ -1,10 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
-import { PlayerGuozhan } from "../../patch/player.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
+import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type {Record<string, Skill>} */
 export default {
@@ -20,9 +14,7 @@ export default {
 		},
 		check(event, player) {
 			if (player.countCards("h", card => get.value(card) < 7)) {
-				/** @type {PlayerGuozhan} */
-				const playerRef = cast(player);
-				if (playerRef.isUnseen()) {
+				if (player.isUnseen()) {
 					return Math.random() > 0.7;
 				}
 				return true;
@@ -30,10 +22,10 @@ export default {
 		},
 		async content(event, trigger, player) {
 			const choices = [];
-			if (game.hasPlayer(current => cast(current).isUnseen())) {
+			if (game.hasPlayer(current => current.isUnseen())) {
 				choices.push("选择一名未确定势力的角色");
 			}
-			if (game.hasPlayer(current => current != player && !cast(current).isUnseen()) && player.countCards("h", { type: "basic" })) {
+			if (game.hasPlayer(current => current != player && !current.isUnseen()) && player.countCards("h", { type: "basic" })) {
 				choices.push("将一张基本牌交给一名已确定势力的角色");
 			}
 
@@ -141,15 +133,12 @@ export default {
 
 			function controlCheck() {
 				if (choices.length > 1) {
-					/** @type {PlayerGuozhan} */
-					const player = cast(get.player());
+					const player = get.player();
 					let identity = null;
 					if (
 						!game.hasPlayer(current => {
-							/** @type {PlayerGuozhan} */
-							const currentRef = cast(current);
 							return (
-								(!currentRef.isUnseen() && current.getEquip("yuxi")) ||
+								(!current.isUnseen() && current.getEquip("yuxi")) ||
 								(current.hasSkill("gzyongsi") &&
 									!game.hasPlayer(function (current) {
 										return current.getEquips("yuxi").length > 0;
@@ -157,9 +146,7 @@ export default {
 							);
 						}) &&
 						game.hasPlayer(current => {
-							/** @type {PlayerGuozhan} */
-							const currentRef = cast(current);
-							return currentRef != player && currentRef.isUnseen();
+							return current != player && current.isUnseen();
 						})
 					) {
 						identity = game.players.find(item => item.isMajor())?.identity;
@@ -316,25 +303,22 @@ export default {
 		},
 		logTarget: "targets",
 		async content(event, _trigger, player) {
-			/** @type {PlayerGuozhan} */
-			const playerRef = cast(player);
 			const { targets, cards } = event;
-			/** @type {PlayerGuozhan} */
-			const target = cast(targets[0]);
+			const target = targets[0];
 
-			await player.give(cards, cast(target));
+			await player.give(cards, target);
 
-			const junlingResult = await playerRef.chooseJunlingFor(cast(target)).forResult();
+			const junlingResult = await player.chooseJunlingFor(target).forResult();
 			const { junling, targets: junlingTargets } = junlingResult;
 
 			const choiceList = [];
 			choiceList.push(`执行该军令，然后${get.translation(player)}摸一张牌`);
 			choiceList.push(`令${get.translation(player)}摸牌阶段额外摸三张牌`);
 
-			const chooseJunlingResult = await target.chooseJunlingControl(cast(player), junling, cast(junlingTargets)).set("prompt", "节钺").set("choiceList", choiceList).set("ai", chooseJunlingCheck).forResult();
+			const chooseJunlingResult = await target.chooseJunlingControl(player, junling, junlingTargets).set("prompt", "节钺").set("choiceList", choiceList).set("ai", chooseJunlingCheck).forResult();
 
 			if (chooseJunlingResult.index == 0) {
-				await target.carryOutJunling(cast(player), junling, cast(junlingTargets));
+				await target.carryOutJunling(player, junling, junlingTargets);
 				await player.draw();
 			} else {
 				player.addTempSkill("gz_jieyue_eff");

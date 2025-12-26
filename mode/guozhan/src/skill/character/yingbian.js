@@ -1,10 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { cast } from "../../../../../noname/util/index.js";
-import { GetGuozhan } from "../../patch/get.js";
-import { PlayerGuozhan } from "../../patch/player.js";
-
-/** @type {GetGuozhan}  */
-const get = cast(_get);
+import { lib, game, ui, get, ai, _status } from "noname";
 
 export default {
 	//手杀杜预
@@ -2394,9 +2388,7 @@ export default {
 				},
 				silent: true,
 				async content(event, _trigger, player) {
-					/** @type {PlayerGuozhan} */
-					const playerRef = cast(player);
-					await playerRef.mayChangeVice(undefined, undefined);
+					await player.mayChangeVice(undefined, undefined);
 					event.skill = "gz_xiace";
 					await event.trigger("skillAfter");
 				},
