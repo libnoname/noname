@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 /**
  * 伪连接字符串，去掉换行和行前空串

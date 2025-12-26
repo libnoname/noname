@@ -1,4 +1,4 @@
-import { _status, game, get, lib, ui } from "../../../../noname.js";
+import { _status, game, get, lib, ui } from "noname";
 
 /**
  * 使字符串有html的代码提示

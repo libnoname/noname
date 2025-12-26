@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 export async function precontent(config, pack) {
 	const timeout = 5000; // 超时控制

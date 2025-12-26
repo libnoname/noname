@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */

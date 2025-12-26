@@ -1,4 +1,4 @@
-import { game } from "../../../noname.js";
+import { game } from "noname";
 import character from "./character.js";
 import characterTitle from "./title.js";
 import characterIntro from "./intro.js";

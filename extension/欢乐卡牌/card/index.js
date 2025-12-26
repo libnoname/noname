@@ -1,4 +1,4 @@
-import { game } from "../../../noname.js";
+import { game } from "noname";
 import card from "./card.js";
 import list from "./list.js";
 import skill from "./skill.js";

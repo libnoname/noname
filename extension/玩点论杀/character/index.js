@@ -1,4 +1,4 @@
-import { game } from "../../../noname.js";
+import { game } from "noname";
 import characters from "./character.js";
 import pinyins from "./pinyin.js";
 import skills from "./skill.js";

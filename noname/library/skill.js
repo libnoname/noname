@@ -1,5 +1,4 @@
-// 不经过编译
-import { _status, game, get, lib, ui } from "../../noname.js";
+import { _status, game, get, lib, ui } from "noname";
 
 /**
  * @type {Record<string, Skill>}

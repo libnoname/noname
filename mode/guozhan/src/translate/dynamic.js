@@ -1,4 +1,4 @@
-import { lib, game, ui, get as _get, ai, _status } from "../../../../noname.js";
+import { lib, game, ui, get as _get, ai, _status } from "noname";
 
 export default {
 	gz_longnu(player) {

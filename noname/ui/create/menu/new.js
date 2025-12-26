@@ -1,4 +1,4 @@
-import { ui, game, get, lib, _status } from "../../../../noname.js";
+import { ui, game, get, lib, _status } from "noname";
 import { createApp, ref, reactive } from "vue";
 import { startMenutabName, startMenuData } from "./startMenu.js";
 /**

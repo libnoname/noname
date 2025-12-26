@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 export function precontent(config, pack) {
 	// 适用于多模块并行场景，一个加载失败其余均不加载

@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 import characters from "./character.js";
 import cards from "./card.js";
 import pinyins from "./pinyin.js";

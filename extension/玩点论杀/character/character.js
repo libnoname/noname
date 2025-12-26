@@ -1,4 +1,4 @@
-import { lib } from "../../../noname.js";
+import { lib } from "noname";
 // import { Character } from "../../../noname/library/element/index.js";
 
 /** @type { importCharacterConfig['character'] } */

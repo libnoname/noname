@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 
 export function content(config, pack) {
 	if (lib.config.extension_英雄杀_forbidconfigs !== lib.extensionPack["英雄杀"].version) {

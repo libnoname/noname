@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 import { precontent } from "./main/precontent.js";
 
 const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/玩点论杀/info.json`);
