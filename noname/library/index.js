@@ -9241,20 +9241,6 @@ export class Library {
 			return true;
 		},
 	};
-	creation = {
-		get array() {
-			return [];
-		},
-		get object() {
-			return {};
-		},
-		get nullObject() {
-			return Object.create(null);
-		},
-		get string() {
-			return "";
-		},
-	};
 	linq = {
 		cselector: {
 			hasAttr: name => `[${name}]`,
