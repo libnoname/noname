@@ -23,16 +23,35 @@ export const addGroup = [
 				}
 			}
 			if (color1 && color2 && color3 && color4) {
-				const cs = lib.linq.cselector;
 				game.dynamicStyle.addObject({
-					[cs.group(cs.of(cs.class("player ", "identity"), cs.isAttr("data-color", `"${id}"`)), cs.of("div", cs.isAttr("data-nature", `"${id}"`)), cs.of("span", cs.isAttr("data-nature", `"${id}"`)))]: {
-						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 5px`, `rgba(${color3.join()}) 0 0 10px`, `rgba(${color4.join()}) 0 0 10px`),
+					[`.player.identity[data-color="${id}"], div[data-nature="${id}"], span[data-nature="${id}"]`]: {
+						textShadow: [
+							`black 0 0 1px`,
+							`rgba(${color1.join()}) 0 0 2px`,
+							`rgba(${color2.join()}) 0 0 5px`,
+							`rgba(${color3.join()}) 0 0 10px`,
+							`rgba(${color4.join()}) 0 0 10px`
+						].join(","),
 					},
-					[cs.group(cs.of("div", cs.isAttr("data-nature", `"${id}m"`)), cs.of("span", cs.isAttr("data-nature", `"${id}m"`)))]: {
-						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 5px`, `rgba(${color3.join()}) 0 0 5px`, `rgba(${color4.join()}) 0 0 5px`, "black 0 0 1px"),
+					[`div[data-nature="${id}m"], span[data-nature="${id}m"]`]: {
+						textShadow: [
+							"black 0 0 1px",
+							`rgba(${color1.join()}) 0 0 2px`,
+							`rgba(${color2.join()}) 0 0 5px`,
+							`rgba(${color3.join()}) 0 0 5px`,
+							`rgba(${color4.join()}) 0 0 5px`,
+							"black 0 0 1px"
+						].join(","),
 					},
-					[cs.group(cs.of("div", cs.isAttr("data-nature", `"${id}mm"`)), cs.of("span", cs.isAttr("data-nature", `"${id}mm"`)))]: {
-						textShadow: cs.group("black 0 0 1px", `rgba(${color1.join()}) 0 0 2px`, `rgba(${color2.join()}) 0 0 2px`, `rgba(${color3.join()}) 0 0 2px`, `rgba(${color4.join()}) 0 0 2px`, "black 0 0 1px"),
+					[`div[data-nature="${id}mm"], span[data-nature="${id}mm"]`]: {
+						textShadow: [
+							"black 0 0 1px",
+							`rgba(${color1.join()}) 0 0 2px`,
+							`rgba(${color2.join()}) 0 0 2px`,
+							`rgba(${color3.join()}) 0 0 2px`,
+							`rgba(${color4.join()}) 0 0 2px`,
+							"black 0 0 1px"
+						].join(","),
 					},
 				});
 				lib.groupnature[id] = id;
@@ -137,19 +156,16 @@ export const addNature = [
 			}
 		}
 		if (color1 && color2) {
-			const cs = lib.linq.cselector;
-			const g1 = cs.group(cs.of(cs.class("card", "fullskin", `${nature}`), ">", cs.class("name")));
 			let result = {};
-			result[g1] = {
+			result[`.card.fullskin.${nature}>.name`] = {
 				color: `rgba(${color1.join()})`,
-				border: cs.merge("1px", "solid", `rgba(${color2.join()})`),
+				border: `1px solid rgba(${color2.join()})`,
 			};
 			// @ts-expect-error ignore
 			game.dynamicStyle.addObject(result);
 
-			const g2 = cs.group(cs.of(cs.class("tempname", `${nature}`), ":not([data-nature])>", cs.class("span")));
 			let result2 = {};
-			result2[g2] = {
+			result2[`.tempname.${nature}:not([data-nature])>.span`] = {
 				color: `rgba(${color1.join()})`,
 			};
 			// @ts-expect-error ignore
