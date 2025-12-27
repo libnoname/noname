@@ -1,11 +1,10 @@
 /// <reference types="vite/client" />
-import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
+import { rootURL, lib, game, get, _status, ui, ai } from "noname";
 import { userAgentLowerCase } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
 import security from "@/util/security.js";
-import { Mutex } from "@/util/mutex.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
@@ -63,7 +62,7 @@ export async function boot() {
 	await initializeSandboxRealms(sandboxEnabled);
 
 	// 初始化security
-	await security.initSecurity({ lib, game, ui, get, ai, _status, gnc });
+	await security.initSecurity({ lib, game, ui, get, ai, _status });
 
 	CacheContext.setProxy({ lib, game, get });
 
@@ -356,7 +355,7 @@ export async function boot() {
 		_status.onprepare = Object.freeze(
 			lib.onprepare.map(fn => {
 				if (typeof fn !== "function") return;
-				return (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn)();
+				return fn();
 			})
 		);
 	}
@@ -423,7 +422,7 @@ export async function boot() {
 	window.resetGameTimeout = resetGameTimeout;
 	const libOnload = lib.onload;
 	delete lib.onload;
-	await runCustomContents(libOnload);
+	libOnload.forEach(fn => fn());
 
 	ui.updated();
 	game.documentZoom = game.deviceZoom;
@@ -556,7 +555,7 @@ export async function boot() {
 
 	const libOnload2 = lib.onload2;
 	delete lib.onload2;
-	await runCustomContents(libOnload2);
+	libOnload2.forEach(fn => fn());
 
 	await Promise.allSettled(loadingCustomStyle);
 	delete window.game;
@@ -1188,31 +1187,6 @@ function createTouchDraggedFilter() {
 		if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
 			_status.dragged = true;
 		}
-	});
-}
-
-/**
- * @async
- * @param {((function(Mutex): void) | GeneratorFunction)[]} contents
- */
-function runCustomContents(contents) {
-	if (!Array.isArray(contents)) {
-		return;
-	}
-
-	const mutex = new Mutex();
-	// 将生成器函数转换成genCoroutin
-	const tasks = contents
-		.filter(fn => typeof fn === "function")
-		.map(fn => (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn))
-		.map(fn => fn(mutex));
-
-	return Promise.allSettled(tasks).then(results => {
-		results.forEach(result => {
-			if (result.status === "rejected") {
-				console.error(result.reason);
-			}
-		});
 	});
 }
 

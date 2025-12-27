@@ -6,88 +6,91 @@ export const type = "mode";
 export default () => {
 	return {
 		name: "identity",
-		start() {
-			"step 0";
-			if (!lib.config.new_tutorial) {
-				ui.arena.classList.add("only_dialog");
-			}
-			_status.mode = get.config("identity_mode");
-			if (_status.brawl && _status.brawl.submode) {
-				_status.mode = _status.brawl.submode;
-			}
-			event.replacePile = function () {
-				var list = ["shengdong", "qijia", "caomu", "jinchan", "zengbin", "fulei", "qibaodao", "zhungangshuo", "lanyinjia"];
-				var map = {
-					shunshou: "shengdong",
-					jiedao: "qijia",
-					bingliang: "caomu",
-					wuxie: "jinchan",
-					wuzhong: "zengbin",
-					wugu: "zengbin",
-					shandian: "fulei",
-					qinggang: "qibaodao",
-					qinglong: "zhungangshuo",
-					bagua: "lanyinjia",
-				};
-				for (var i = 0; i < lib.card.list.length; i++) {
-					var name = lib.card.list[i][2];
-					if (list.includes(name)) {
-						lib.card.list.splice(i--, 1);
-					} else if (map[name]) {
-						lib.card.list[i][2] = map[name];
-						lib.card.list[i]._replaced = true;
-					}
-				}
-			};
-			"step 1";
-			var playback = localStorage.getItem(lib.configprefix + "playback");
-			if (playback) {
-				ui.create.me();
-				ui.arena.style.display = "none";
-				ui.system.style.display = "none";
-				_status.playback = playback;
-				localStorage.removeItem(lib.configprefix + "playback");
-				var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-				store.get(parseInt(playback)).onsuccess = function (e) {
-					if (e.target.result) {
-						game.playVideoContent(e.target.result.video);
-					} else {
-						alert("播放失败：找不到录像");
-						game.reload();
-					}
-				};
-				event.finish();
-			} else if (!_status.connectMode) {
-				if (_status.mode == "zhong") {
-					if (get.config("zhong_card")) {
-						event.replacePile();
-					}
-					game.prepareArena(8);
-				} else if (_status.mode == "purple") {
-					game.prepareArena(8);
-				} else {
-					game.prepareArena();
-				}
+		start: [
+			async (event, trigger, player) => {
 				if (!lib.config.new_tutorial) {
-					game.delay();
+					ui.arena.classList.add("only_dialog");
 				}
-			}
-			"step 2";
-			if (!lib.config.new_tutorial) {
-				_status.new_tutorial = true;
-				lib.init.onfree();
-				game.saveConfig("version", lib.version);
-				var clear = function () {
-					ui.dialog.close();
-					while (ui.controls.length) {
-						ui.controls[0].close();
+				_status.mode = get.config("identity_mode");
+				if (_status.brawl && _status.brawl.submode) {
+					_status.mode = _status.brawl.submode;
+				}
+				event.replacePile = function () {
+					var list = ["shengdong", "qijia", "caomu", "jinchan", "zengbin", "fulei", "qibaodao", "zhungangshuo", "lanyinjia"];
+					var map = {
+						shunshou: "shengdong",
+						jiedao: "qijia",
+						bingliang: "caomu",
+						wuxie: "jinchan",
+						wuzhong: "zengbin",
+						wugu: "zengbin",
+						shandian: "fulei",
+						qinggang: "qibaodao",
+						qinglong: "zhungangshuo",
+						bagua: "lanyinjia",
+					};
+					for (var i = 0; i < lib.card.list.length; i++) {
+						var name = lib.card.list[i][2];
+						if (list.includes(name)) {
+							lib.card.list.splice(i--, 1);
+						} else if (map[name]) {
+							lib.card.list[i][2] = map[name];
+							lib.card.list[i]._replaced = true;
+						}
 					}
 				};
-				var clear2 = function () {
-					ui.auto.show();
-					ui.arena.classList.remove("only_dialog");
-				};
-				var step1 = function () {
+			},
+			async (event, trigger, player) => {
+				var playback = localStorage.getItem(lib.configprefix + "playback");
+				if (playback) {
+					ui.create.me();
+					ui.arena.style.display = "none";
+					ui.system.style.display = "none";
+					_status.playback = playback;
+					localStorage.removeItem(lib.configprefix + "playback");
+					var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = function (e) {
+						if (e.target.result) {
+							game.playVideoContent(e.target.result.video);
+						} else {
+							alert("播放失败：找不到录像");
+							game.reload();
+						}
+					};
+					event.finish();
+				} else if (!_status.connectMode) {
+					if (_status.mode == "zhong") {
+						if (get.config("zhong_card")) {
+							event.replacePile();
+						}
+						game.prepareArena(8);
+					} else if (_status.mode == "purple") {
+						game.prepareArena(8);
+					} else {
+						game.prepareArena();
+					}
+					if (!lib.config.new_tutorial) {
+						game.delay();
+					}
+				}
+			},
+			async (event, trigger, player) => {
+				if (!lib.config.new_tutorial) {
+					_status.new_tutorial = true;
+					lib.init.onfree();
+					game.saveConfig("version", lib.version);
+					var clear = function () {
+						ui.dialog.close();
+						while (ui.controls.length) {
+							ui.controls[0].close();
+						}
+					};
+					var clear2 = function () {
+						ui.auto.show();
+						ui.arena.classList.remove("only_dialog");
+					};
+					game.pause();
+
 					ui.create.dialog("欢迎来到无名杀，是否进入新手向导？");
 					game.saveConfig("new_tutorial", true);
 					ui.dialog.add('<div class="text center">跳过后，你可以在选项-其它中重置新手向导');
@@ -98,9 +101,8 @@ export default () => {
 						game.resume();
 						// lib.cheat.cfg(); // owidgets
 					});
-					ui.create.control("继续", step2);
-				};
-				var step2 = function () {
+					await new Promise(resolve => ui.create.control("继续", resolve));
+
 					if (!lib.config.phonelayout) {
 						clear();
 						ui.create.dialog("如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大");
@@ -116,44 +118,36 @@ export default () => {
 								lib.init.layout("mobile");
 							}
 						});
-						ui.create.control("继续", step3);
-					} else {
-						step3();
+						await new Promise(resolve => ui.create.control("继续", resolve));
 					}
-				};
-				var step3 = function () {
+
 					if (lib.config.touchscreen) {
 						clear();
 						ui.create.dialog("触屏模式中，下划可以显示菜单，上划可以切换托管，双指单击可以暂停");
 						ui.dialog.add('<div class="text center">你可以在选项-通用-中更改手势设置');
-						ui.create.control("继续", step4);
-					} else {
-						step4();
+						await new Promise(resolve => ui.create.control("继续", resolve));
 					}
-				};
-				var step4 = lib.genAsync(function* () {
+					
 					clear();
 					ui.window.classList.add("noclick_important");
 					ui.click.configMenu();
 					ui.control.classList.add("noclick_click_important");
 					ui.control.style.top = "calc(100% - 105px)";
-					yield new Promise(resolve => ui.create.control("在菜单中，可以进行各项设置", resolve));
+					await new Promise(resolve => ui.create.control("在菜单中，可以进行各项设置", resolve));
 					ui.click.menuTab("选项");
-					yield new Promise(resolve => ui.controls[0].replace("如果你感到游戏较卡，可以开启流畅模式", resolve));
-					yield new Promise(resolve => ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve));
+					await new Promise(resolve => ui.controls[0].replace("如果你感到游戏较卡，可以开启流畅模式", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve));
 					ui.click.menuTab("武将");
-					yield new Promise(resolve => ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve));
 					ui.click.menuTab("战局");
-					yield new Promise(resolve => ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve));
 					ui.click.menuTab("帮助");
-					yield new Promise(resolve => ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve));
 					ui.click.configMenu();
 					ui.window.classList.remove("noclick_important");
 					ui.control.classList.remove("noclick_click_important");
 					ui.control.style.top = "";
-					step5();
-				});
-				var step5 = function () {
+
 					clear();
 					ui.create.dialog("如果还有其它问题，欢迎来到百度无名杀吧进行交流");
 					ui.create.control("完成", function () {
@@ -161,59 +155,81 @@ export default () => {
 						clear2();
 						game.resume();
 					});
-				};
-				game.pause();
-				step1();
-			} else {
-				if (!_status.connectMode) {
-					game.showChangeLog();
+				} else {
+					if (!_status.connectMode) {
+						game.showChangeLog();
+					}
 				}
-			}
-			"step 3";
-			if (typeof _status.new_tutorial == "function") {
-				_status.new_tutorial();
-			}
-			delete _status.new_tutorial;
-			if (_status.connectMode) {
-				game.waitForPlayer(function () {
-					if (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple") {
+			},
+			async (event, trigger, player) => {
+				if (typeof _status.new_tutorial == "function") {
+					_status.new_tutorial();
+				}
+				delete _status.new_tutorial;
+				if (_status.connectMode) {
+					game.waitForPlayer(function () {
+						if (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple") {
+							lib.configOL.number = 8;
+						}
+					});
+				}
+			},
+			async (event, trigger, player) => {
+				var yearLimitCheck = () => {
+					var next = game.createEvent("year_limit_pop", false);
+					next.setContent(async (event, trigger, player) => {
+						var str = get.cnNumber(game.shuffleNumber + 1, true);
+						game.me.$fullscreenpop(`第${str}年`, "thunder");
+						game.log("游戏进入了", `#y第${str}年`);
+						if (game.shuffleNumber + 1 < game.countPlayer2()) {
+							return;
+						} else {
+							await game.delay(2);
+						}
+						game.me.$fullscreenpop("年份已到", "metal");
+						game.log("年份已到，主忠方判定为胜利");
+						await game.delay(2);
+						game.over(game.me.identity == "zhu" || game.me.identity == "zhong" || game.me.identity == "mingzhong" || (game.me.identity == "commoner" && game.me.isIn()));
+					});
+				};
+				if (_status.connectMode) {
+					_status.mode = lib.configOL.identity_mode;
+					if (_status.mode == "zhong") {
 						lib.configOL.number = 8;
+						if (lib.configOL.zhong_card) {
+							event.replacePile();
+						}
+					} else if (_status.mode == "purple") {
+						lib.configOL.number = 8;
+					} else if (_status.mode == "normal") {
+						if (lib.configOL.enable_commoner || lib.configOL.double_nei) {
+							var identity = lib.configOL.enable_commoner ? "commoner" : "nei";
+							for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
+								var list = lib.config.mode_config.identity.identity[i];
+								var toReplace;
+								if (list.filter(i => i == "nei").length >= 2) {
+									toReplace = "nei";
+								} else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) {
+									toReplace = "zhong";
+								} else {
+									toReplace = "fan";
+								}
+								list.remove(toReplace);
+								list.push(identity);
+							}
+							game.broadcast(identityList => (lib.config.mode_config.identity.identity = identityList), lib.config.mode_config.identity.identity);
+						}
 					}
-				});
-			}
-			"step 4";
-			var yearLimitCheck = () => {
-				var next = game.createEvent("year_limit_pop", false);
-				next.setContent(function () {
-					"step 0";
-					var str = get.cnNumber(game.shuffleNumber + 1, true);
-					game.me.$fullscreenpop(`第${str}年`, "thunder");
-					game.log("游戏进入了", `#y第${str}年`);
-					if (game.shuffleNumber + 1 < game.countPlayer2()) {
-						event.finish();
-					} else {
-						game.delay(2);
+					if (lib.configOL.number < 2) {
+						lib.configOL.number = 2;
 					}
-					"step 1";
-					game.me.$fullscreenpop("年份已到", "metal");
-					game.log("年份已到，主忠方判定为胜利");
-					game.delay(2);
-					"step 2";
-					game.over(game.me.identity == "zhu" || game.me.identity == "zhong" || game.me.identity == "mingzhong" || (game.me.identity == "commoner" && game.me.isIn()));
-				});
-			};
-			if (_status.connectMode) {
-				_status.mode = lib.configOL.identity_mode;
-				if (_status.mode == "zhong") {
-					lib.configOL.number = 8;
-					if (lib.configOL.zhong_card) {
-						event.replacePile();
+					if (_status.mode != "purple" && lib.configOL.enable_year_limit) {
+						lib.onwash.push(yearLimitCheck);
 					}
-				} else if (_status.mode == "purple") {
-					lib.configOL.number = 8;
-				} else if (_status.mode == "normal") {
-					if (lib.configOL.enable_commoner || lib.configOL.double_nei) {
-						var identity = lib.configOL.enable_commoner ? "commoner" : "nei";
+					game.randomMapOL();
+				} else {
+					if (_status.mode == "normal" && (get.config("enable_commoner") || get.config("double_nei"))) {
+						var identity = get.config("enable_commoner") ? "commoner" : "nei";
 						for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
 							var list = lib.config.mode_config.identity.identity[i];
 							var toReplace;
@@ -227,246 +243,224 @@ export default () => {
 							list.remove(toReplace);
 							list.push(identity);
 						}
-						game.broadcast(identityList => (lib.config.mode_config.identity.identity = identityList), lib.config.mode_config.identity.identity);
 					}
+					if (_status.mode != "purple" && get.config("enable_year_limit")) {
+						lib.onwash.push(yearLimitCheck);
+					}
+					for (var i = 0; i < game.players.length; i++) {
+						game.players[i].getId();
+					}
+					if (_status.brawl && _status.brawl.chooseCharacterBefore) {
+						_status.brawl.chooseCharacterBefore();
+					}
+					game.chooseCharacter();
 				}
-				if (lib.configOL.number < 2) {
-					lib.configOL.number = 2;
+			},
+			async (event, trigger, player) => {
+				if (ui.coin) {
+					_status.coinCoeff = get.coinCoeff([game.me.name]);
 				}
-				if (_status.mode != "purple" && lib.configOL.enable_year_limit) {
-					lib.onwash.push(yearLimitCheck);
-				}
-				game.randomMapOL();
-			} else {
-				if (_status.mode == "normal" && (get.config("enable_commoner") || get.config("double_nei"))) {
-					var identity = get.config("enable_commoner") ? "commoner" : "nei";
-					for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
-						var list = lib.config.mode_config.identity.identity[i];
-						var toReplace;
-						if (list.filter(i => i == "nei").length >= 2) {
-							toReplace = "nei";
-						} else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) {
-							toReplace = "zhong";
-						} else {
-							toReplace = "fan";
+				if (game.players.length == 2) {
+					game.showIdentity(true);
+					var map = {};
+					for (var i in lib.playerOL) {
+						map[i] = lib.playerOL[i].identity;
+					}
+					game.broadcast(function (map) {
+						for (var i in map) {
+							lib.playerOL[i].identity = map[i];
+							lib.playerOL[i].setIdentity();
+							lib.playerOL[i].ai.shown = 1;
 						}
-						list.remove(toReplace);
-						list.push(identity);
-					}
-				}
-				if (_status.mode != "purple" && get.config("enable_year_limit")) {
-					lib.onwash.push(yearLimitCheck);
-				}
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].getId();
-				}
-				if (_status.brawl && _status.brawl.chooseCharacterBefore) {
-					_status.brawl.chooseCharacterBefore();
-				}
-				game.chooseCharacter();
-			}
-			"step 5";
-			if (ui.coin) {
-				_status.coinCoeff = get.coinCoeff([game.me.name]);
-			}
-			if (game.players.length == 2) {
-				game.showIdentity(true);
-				var map = {};
-				for (var i in lib.playerOL) {
-					map[i] = lib.playerOL[i].identity;
-				}
-				game.broadcast(function (map) {
-					for (var i in map) {
-						lib.playerOL[i].identity = map[i];
-						lib.playerOL[i].setIdentity();
-						lib.playerOL[i].ai.shown = 1;
-					}
-				}, map);
-			} else {
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].ai.shown = 0;
-				}
-			}
-			var stratagemMode = _status.mode == "stratagem";
-			if (stratagemMode) {
-				var beginner;
-				if (_status.cheat_seat) {
-					var seat = _status.cheat_seat.link;
-					beginner = seat == 0 ? game.me : game.players[game.players.length - seat];
-					if (!beginner) {
-						beginner = game.me;
-					}
-					delete _status.cheat_seat;
+					}, map);
 				} else {
-					beginner = game.players[Math.floor(Math.random() * game.players.length)];
-				}
-				event.beginner = beginner;
-
-				var stratagemBroadcast = () => {
-					_status.stratagemFuryMax = 3;
-					ui.css.stratagemCardStyle = lib.init.sheet([".card.stratagem-fury-glow:before{", "opacity:0.2;", "box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;", "background-color:yellow;", "-webkit-filter:blur(5px);", "filter:blur(5px);", "}"].join(""));
-				};
-				game.broadcastAll(stratagemBroadcast);
-				if (_status.connectMode && !_status.postReconnect.stratagemReinit) {
-					_status.postReconnect.stratagemReinit = [stratagemBroadcast, {}];
-				}
-				for (var current of game.players) {
-					if (current.identity == "zhu") {
-						current.addSkill("stratagem_monarchy");
-					}
-					if (current.identity == "fan") {
-						current.addSkill("stratagem_revitalization");
+					for (var i = 0; i < game.players.length; i++) {
+						game.players[i].ai.shown = 0;
 					}
 				}
-			}
-			if (game.zhu == game.me && game.zhu.identity != "zhu" && _status.brawl && _status.brawl.identityShown) {
-				delete game.zhu;
-			} else {
-				if (!stratagemMode) {
-					game.zhu.ai.shown = 1;
-				}
-				if (game.zhu2) {
-					game.zhong = game.zhu;
-					game.zhu = game.zhu2;
-					delete game.zhu2;
-					if (game.zhong.sex == "male" && game.zhong.maxHp <= 4) {
-						game.zhong.addSkill("dongcha");
-					} else {
-						game.zhong.addSkill("sheshen");
-					}
-				}
-				let enhance_zhu = !["zhong", "stratagem", "purple"].includes(_status.mode),
-					skill;
-				if (enhance_zhu) {
-					if (_status.connectMode) {
-						enhance_zhu = lib.configOL.enhance_zhu;
-					} else {
-						enhance_zhu = get.config("enhance_zhu");
-					}
-				}
-				if (enhance_zhu === "sixiang") {
-					skill = "sixiang_" + ["zhuque", "xuanwu", "qinglong", "baihu"].randomGet();
-				} else if (enhance_zhu === "specific" && get.population("fan") >= 3) {
-					switch (game.zhu.name) {
-						case "key_yuri":
-							skill = "buqu";
-							break;
-						case "liubei":
-							skill = "jizhen";
-							break;
-						case "dongzhuo":
-							skill = "hengzheng";
-							break;
-						case "sunquan":
-							skill = "batu"; // 英雄杀技能
-							break;
-						case "sp_zhangjiao":
-							skill = "tiangong";
-							break;
-						case "liushan":
-							skill = "shengxi";
-							break;
-						/** 玩点论杀技能 */
-						case "sunce":
-							skill = "ciqiu";
-							break;
-						case "re_sunben":
-							skill = "ciqiu";
-							break;
-						case "yuanshao":
-							skill = "geju";
-							break;
-						case "re_caocao":
-							skill = "dangping"; // 古剑奇谭技能
-							break;
-						case "caopi":
-							skill = "junxing";
-							break;
-						case "liuxie":
-							skill = "moukui";
-							break;
-						default:
-							skill = "tianming";
-							break;
-					}
-				}
-				if (skill) {
-					game.broadcastAll(
-						function (player, skill) {
-							player.addSkill(skill);
-							player.storage.enhance_zhu = skill;
-						},
-						game.zhu,
-						skill
-					);
-				}
-				let enable_mingcha;
-				if (_status.connectMode) {
-					enable_mingcha = lib.configOL.enable_mingcha;
-				} else {
-					enable_mingcha = get.config("enable_mingcha");
-				}
-				if (enable_mingcha) {
-					game.broadcastAll(player => {
-						player.addSkill("identity_mingcha");
-					}, game.zhu);
-				}
-			}
-			game.syncState();
-			event.trigger("gameStart");
-
-			var players = get.players(lib.sort.position);
-			var info = [];
-			for (var i = 0; i < players.length; i++) {
-				var ifo = {
-					name: players[i].name1,
-					name2: players[i].name2,
-					identity: players[i].identity,
-					nickname: players[i].node.nameol.innerHTML,
-				};
+				var stratagemMode = _status.mode == "stratagem";
 				if (stratagemMode) {
-					ifo.translate = lib.translate[game.players[i].name];
-					ifo.isCamouflaged = players[i].ai.stratagemCamouflage;
+					var beginner;
+					if (_status.cheat_seat) {
+						var seat = _status.cheat_seat.link;
+						beginner = seat == 0 ? game.me : game.players[game.players.length - seat];
+						if (!beginner) {
+							beginner = game.me;
+						}
+						delete _status.cheat_seat;
+					} else {
+						beginner = game.players[Math.floor(Math.random() * game.players.length)];
+					}
+					event.beginner = beginner;
+
+					var stratagemBroadcast = () => {
+						_status.stratagemFuryMax = 3;
+						ui.css.stratagemCardStyle = lib.init.sheet([".card.stratagem-fury-glow:before{", "opacity:0.2;", "box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;", "background-color:yellow;", "-webkit-filter:blur(5px);", "filter:blur(5px);", "}"].join(""));
+					};
+					game.broadcastAll(stratagemBroadcast);
+					if (_status.connectMode && !_status.postReconnect.stratagemReinit) {
+						_status.postReconnect.stratagemReinit = [stratagemBroadcast, {}];
+					}
+					for (var current of game.players) {
+						if (current.identity == "zhu") {
+							current.addSkill("stratagem_monarchy");
+						}
+						if (current.identity == "fan") {
+							current.addSkill("stratagem_revitalization");
+						}
+					}
 				}
-				info.push(ifo);
-			}
-			_status.videoInited = true;
-			game.addVideo("init", null, info);
-			if (stratagemMode) {
-				game.addVideo("arrangeLib", null, {
-					skill: {
-						stratagem_fury: {
-							mark: true,
-							marktext: "🔥",
-							intro: {
-								name: "怒气",
-								content: "当前怒气值：#",
+				if (game.zhu == game.me && game.zhu.identity != "zhu" && _status.brawl && _status.brawl.identityShown) {
+					delete game.zhu;
+				} else {
+					if (!stratagemMode) {
+						game.zhu.ai.shown = 1;
+					}
+					if (game.zhu2) {
+						game.zhong = game.zhu;
+						game.zhu = game.zhu2;
+						delete game.zhu2;
+						if (game.zhong.sex == "male" && game.zhong.maxHp <= 4) {
+							game.zhong.addSkill("dongcha");
+						} else {
+							game.zhong.addSkill("sheshen");
+						}
+					}
+					let enhance_zhu = !["zhong", "stratagem", "purple"].includes(_status.mode),
+						skill;
+					if (enhance_zhu) {
+						if (_status.connectMode) {
+							enhance_zhu = lib.configOL.enhance_zhu;
+						} else {
+							enhance_zhu = get.config("enhance_zhu");
+						}
+					}
+					if (enhance_zhu === "sixiang") {
+						skill = "sixiang_" + ["zhuque", "xuanwu", "qinglong", "baihu"].randomGet();
+					} else if (enhance_zhu === "specific" && get.population("fan") >= 3) {
+						switch (game.zhu.name) {
+							case "key_yuri":
+								skill = "buqu";
+								break;
+							case "liubei":
+								skill = "jizhen";
+								break;
+							case "dongzhuo":
+								skill = "hengzheng";
+								break;
+							case "sunquan":
+								skill = "batu"; // 英雄杀技能
+								break;
+							case "sp_zhangjiao":
+								skill = "tiangong";
+								break;
+							case "liushan":
+								skill = "shengxi";
+								break;
+							/** 玩点论杀技能 */
+							case "sunce":
+								skill = "ciqiu";
+								break;
+							case "re_sunben":
+								skill = "ciqiu";
+								break;
+							case "yuanshao":
+								skill = "geju";
+								break;
+							case "re_caocao":
+								skill = "dangping"; // 古剑奇谭技能
+								break;
+							case "caopi":
+								skill = "junxing";
+								break;
+							case "liuxie":
+								skill = "moukui";
+								break;
+							default:
+								skill = "tianming";
+								break;
+						}
+					}
+					if (skill) {
+						game.broadcastAll(
+							function (player, skill) {
+								player.addSkill(skill);
+								player.storage.enhance_zhu = skill;
+							},
+							game.zhu,
+							skill
+						);
+					}
+					let enable_mingcha;
+					if (_status.connectMode) {
+						enable_mingcha = lib.configOL.enable_mingcha;
+					} else {
+						enable_mingcha = get.config("enable_mingcha");
+					}
+					if (enable_mingcha) {
+						game.broadcastAll(player => {
+							player.addSkill("identity_mingcha");
+						}, game.zhu);
+					}
+				}
+				game.syncState();
+				event.trigger("gameStart");
+
+				var players = get.players(lib.sort.position);
+				var info = [];
+				for (var i = 0; i < players.length; i++) {
+					var ifo = {
+						name: players[i].name1,
+						name2: players[i].name2,
+						identity: players[i].identity,
+						nickname: players[i].node.nameol.innerHTML,
+					};
+					if (stratagemMode) {
+						ifo.translate = lib.translate[game.players[i].name];
+						ifo.isCamouflaged = players[i].ai.stratagemCamouflage;
+					}
+					info.push(ifo);
+				}
+				_status.videoInited = true;
+				game.addVideo("init", null, info);
+				if (stratagemMode) {
+					game.addVideo("arrangeLib", null, {
+						skill: {
+							stratagem_fury: {
+								mark: true,
+								marktext: "🔥",
+								intro: {
+									name: "怒气",
+									content: "当前怒气值：#",
+								},
 							},
 						},
-					},
+					});
+					for (var i = 0; i < game.players.length; i++) {
+						//game.addVideo('markSkill',game.players[i],['stratagem_fury']);
+						game.players[i].ai.shown = 0;
+					}
+					game.stratagemCamouflage();
+				}
+			},
+			async (event, trigger, player) => {
+				if (_status.mode != "stratagem") {
+					event.beginner = _status.firstAct2 || game.zhong || game.zhu || _status.firstAct || game.me;
+				}
+				game.gameDraw(event.beginner, function (player) {
+					if (_status.mode == "purple" && player.seatNum > 5) {
+						return 5;
+					}
+					return 4;
 				});
-				for (var i = 0; i < game.players.length; i++) {
-					//game.addVideo('markSkill',game.players[i],['stratagem_fury']);
-					game.players[i].ai.shown = 0;
+				if (_status.connectMode && lib.configOL.change_card) {
+					game.replaceHandcards(game.players.slice(0));
 				}
-				game.stratagemCamouflage();
+			},
+			async (event, trigger, player) => {
+				game.phaseLoop(event.beginner);
 			}
-			"step 6";
-			if (_status.mode != "stratagem") {
-				event.beginner = _status.firstAct2 || game.zhong || game.zhu || _status.firstAct || game.me;
-			}
-			game.gameDraw(event.beginner, function (player) {
-				if (_status.mode == "purple" && player.seatNum > 5) {
-					return 5;
-				}
-				return 4;
-			});
-			if (_status.connectMode && lib.configOL.change_card) {
-				game.replaceHandcards(game.players.slice(0));
-			}
-			"step 7";
-			game.phaseLoop(event.beginner);
-		},
+		],
 		game: {
 			canReplaceViewpoint: () => true,
 			getState: function () {

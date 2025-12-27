@@ -66,7 +66,6 @@ const topVariables = {
 	get: null,
 	ai: null,
 	_status: null,
-	gnc: null,
 };
 
 // eval保存
@@ -474,7 +473,7 @@ function _exec2(x, scope = {}) {
  * 初始化模块
  * ```
  */
-async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
+async function initSecurity({ lib, game, ui, get, ai, _status }) {
 	if (initialized) {
 		throw "security 已经被初始化过了";
 	}
@@ -497,7 +496,6 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
 	topVariables.get = get;
 	topVariables.ai = ai;
 	topVariables._status = _status;
-	topVariables.gnc = gnc;
 
 	if (!SANDBOX_ENABLED) {
 		return;

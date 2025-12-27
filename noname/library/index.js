@@ -8,7 +8,7 @@
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
-import { ai, get, game, _status, ui, gnc } from "noname";
+import { ai, get, game, _status, ui } from "noname";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
 import { Channel } from "./channel/index.js";
@@ -40,7 +40,6 @@ export class Library {
 	assetURL = assetURL;
 	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;
-	compatibleEdition = Boolean(typeof nonameInitialized == "string" && nonameInitialized.match(/\/(?:com\.widget|yuri\.nakamura)\.noname\//));
 	changeLog = [];
 	updates = [];
 	canvasUpdates = [];
@@ -9200,29 +9199,6 @@ export class Library {
 			game.export(lib.init.encode(JSON.stringify(_status.videoToSave)), "无名杀 - 录像 - " + _status.videoToSave.name[0] + " - " + _status.videoToSave.name[1]);
 		}
 	}
-	/**
-	 * @param {Function} fn
-	 */
-	genAsync(fn) {
-		return gnc.of(fn);
-	}
-	genAwait(item) {
-		return gnc.is.generator(item)
-			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-				})()
-			: Promise.resolve(item);
-	}
-	gnc = {
-		of: fn => gnc.of(fn),
-		is: {
-			coroutine: item => gnc.is.coroutine(item),
-			generatorFunc: item => gnc.is.generatorFunc(item),
-			generator: item => gnc.is.generator(item),
-		},
-	};
 	comparator = {
 		equals: function () {
 			if (arguments.length == 0) {

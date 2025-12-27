@@ -222,7 +222,7 @@ export class LibInit {
 			path = path.slice(0, path.length - 1);
 		}
 		if (path == `${lib.assetURL}mode` && lib.config.all.stockmode.indexOf(file) == -1) {
-			lib.genAwait(lib.init[`setMode_${file}`]()).then(onLoad);
+			Promise.resolve(lib.init[`setMode_${file}`]()).then(onLoad);
 			return;
 		}
 		if (Array.isArray(file)) {
@@ -293,7 +293,7 @@ export class LibInit {
 			path = path.slice(0, path.length - 1);
 		}
 		if (path == `${lib.assetURL}mode` && lib.config.all.stockmode.indexOf(file) == -1) {
-			lib.genAwait(lib.init[`setMode_${file}`]()).then(onLoad);
+			Promise.resolve(lib.init[`setMode_${file}`]()).then(onLoad);
 			return;
 		}
 		if (Array.isArray(file)) {

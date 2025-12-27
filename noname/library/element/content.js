@@ -1,5 +1,5 @@
 // 不经过编译
-import { _status, game, get, lib, ui, ai, gnc } from "noname";
+import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
 

@@ -2,7 +2,7 @@
  * 从读取的内容中获取数据
  */
 
-import { lib, game, get, _status, ui, ai, gnc } from "noname";
+import { lib, game, get, _status, ui, ai } from "noname";
 import { isClass } from "@/util/index.js";
 
 /**
@@ -242,7 +242,7 @@ export async function loadExtension(extension) {
 		_status.evaluatingExtension = extension[3];
 		if (typeof extension[1] == "function") {
 			try {
-				await (gnc.is.coroutine(extension[1]) ? gnc.of(extension[1]) : extension[1]).call(extension, extension[2], extension[4]);
+				await extension[1].call(extension, extension[2], extension[4]);
 			} catch (e) {
 				console.log(`加载《${extension[0]}》扩展的content时出现错误。`, e);
 				if (!lib.config.extension_alert) {

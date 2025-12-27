@@ -13,7 +13,6 @@ export const AsyncFunction = async function () {}.constructor;
 export const AsyncGeneratorFunction = async function* () {}.constructor;
 export const userAgent = navigator.userAgent;
 export const userAgentLowerCase = userAgent.toLowerCase();
-// export { Mutex } from "./mutex.js";
 export const characterDefaultPicturePath = "image/character/default_silhouette_";
 
 // 设备环境判定：
