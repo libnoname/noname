@@ -1,7 +1,9 @@
 //@ts-nocheck
-import { game } from "../game/index.js";
+import { lib, game } from "noname";
 
-export async function browserReady() {
+export default async function browserReady() {
+	lib.path = (await import("path-browserify-esm")).default;
+
 	try {
 		await fetch(`/checkFile?fileName=noname.js`)
 			.then(response => response.json())

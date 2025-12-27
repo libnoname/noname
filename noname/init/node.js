@@ -1,12 +1,8 @@
 //@ts-nocheck
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
+import { lib, game, get, _status, ui } from "noname";
 import { checkVersion } from "../library/update.js";
 
-export function nodeReady() {
+export default function nodeReady() {
 	// 处理Node环境下的http情况
 	if (typeof window.process == "object" && typeof window.__dirname == "string") {
 		// 在http环境下修改__dirname和require的逻辑
@@ -81,11 +77,6 @@ export function nodeReady() {
 		},
 	};
 	lib.path = lib.node.path;
-	
-	if (typeof window.cordovaLoadTimeout != "undefined") {
-		clearTimeout(window.cordovaLoadTimeout);
-		delete window.cordovaLoadTimeout;
-	}
 
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
 		if (!url.startsWith("http")) {

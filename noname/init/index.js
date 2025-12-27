@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
-import { userAgentLowerCase, device } from "@/util/index.js";
+import { userAgentLowerCase } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
@@ -12,23 +12,17 @@ import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPla
 
 // 无名杀，启动！
 export async function boot() {
-	for (const link of document.head.querySelectorAll("link")) {
-		if (link.href.includes("app/color.css")) {
-			link.remove();
-			break;
-		}
-	}
-	// 不想看，反正别动
-	if (typeof __dirname === "string" && __dirname.length) {
-		const dirsplit = __dirname.split("/");
-		for (let i = 0; i < dirsplit.length; i++) {
-			if (dirsplit[i]) {
-				var c = dirsplit[i][0];
-				lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
-			}
-		}
-		lib.configprefix += "_";
-	}
+	// // 不想看，反正别动
+	// if (typeof __dirname === "string" && __dirname.length) {
+	// 	const dirsplit = __dirname.split("/");
+	// 	for (let i = 0; i < dirsplit.length; i++) {
+	// 		if (dirsplit[i]) {
+	// 			var c = dirsplit[i][0];
+	// 			lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
+	// 		}
+	// 	}
+	// 	lib.configprefix += "_";
+	// }
 
 	await import("./polyfill.js");
 	// 设定游戏加载时间，超过时间未加载就提醒
@@ -47,37 +41,6 @@ export async function boot() {
 
 	setWindowListener();
 	const promiseErrorHandler = await setOnError({ lib, game, get, _status });
-
-	// 确认手机端平台
-	lib.device = device;
-
-	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
-
-	// Electron平台
-	if (typeof window.require === "function") {
-		const { nodeReady } = await import("./node.js");
-		nodeReady();
-	} else {
-		lib.path = (await import("path-browserify-esm")).default;
-		window.onbeforeunload = function (e) {
-			if (config.get("confirm_exit") && !_status.reloading) {
-				e.preventDefault();
-				e.returnValue = "";
-			}
-		};
-
-		// 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
-		// 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
-		const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
-
-		if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
-			const { browserReady } = await import("./browser.js");
-			await browserReady();
-		} else {
-			const { cordovaReady } = await import("./cordova.js");
-			await cordovaReady();
-		}
-	}
 
 	await loadConfig();
 
@@ -1157,6 +1120,13 @@ function setWindowListener() {
 			// else if(e.code=="Escape"){
 			// 	if(!ui.arena.classList.contains('paused')) ui.click.config();
 			// }
+		}
+	};
+	
+	window.onbeforeunload = function (e) {
+		if (config.get("confirm_exit") && !_status.reloading) {
+			e.preventDefault();
+			e.returnValue = "";
 		}
 	};
 }

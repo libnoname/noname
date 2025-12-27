@@ -37,10 +37,22 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 				`"use strict";
 (() => {
 	if (location.protocol.startsWith("file")) {
-		alert(\`您使用的浏览器或客户端正在使用不受支持的file协议运行无名杀\n请检查浏览器或客户端是否需要更新\`);
+		alert("您使用的浏览器或客户端正在使用不受支持的file协议运行无名杀\\n请检查浏览器或客户端是否需要更新");
 		return;
 	}
-				
+
+	for (const link of document.head.querySelectorAll("link")) {
+		if (link.href.includes("app/color.css")) {
+			link.remove();
+			break;
+		}
+	}
+	
+	if (typeof window.cordovaLoadTimeout != "undefined") {
+		clearTimeout(window.cordovaLoadTimeout);
+		delete window.cordovaLoadTimeout;
+	}
+
 	const im = document.createElement("script");
 	im.type = "importmap";
 	im.textContent = \`${JSON.stringify({ imports: resolvedImportMap }, null, 2)}\`;

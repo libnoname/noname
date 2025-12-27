@@ -1,13 +1,11 @@
 //@ts-nocheck
-import { get } from "../get/index.js";
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
+import { lib, game, get, _status, ui } from "noname";
 import { nonameInitialized } from "../util/index.js";
 import { checkVersion } from "../library/update.js";
 
-export async function cordovaReady() {
+export default async function cordovaReady() {
+	lib.path = (await import("path-browserify-esm")).default;
+
 	// 安卓端根目录的cordova.js
 	const script = document.createElement("script");
 	script.src = "cordova.js";
@@ -15,11 +13,6 @@ export async function cordovaReady() {
 	await new Promise(resolve => {
 		document.addEventListener("deviceready", () => resolve(void 0));
 	});
-	
-	if (typeof window.cordovaLoadTimeout != "undefined") {
-		clearTimeout(window.cordovaLoadTimeout);
-		delete window.cordovaLoadTimeout;
-	}
 
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑

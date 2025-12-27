@@ -11,7 +11,7 @@
  */
 
 import { _status, lib, get, ai, ui, gnc } from "noname";
-import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "@/util/index.js";
+import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
