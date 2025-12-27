@@ -57,29 +57,6 @@ export function delay(ms) {
 }
 
 /**
- * 将当前Record已有的普通项封装起来，但不阻止其继续扩展
- *
- * @template {object} T
- * @param {T} record - 要封装的Record
- * @returns {Readonly<T>}
- */
-export function freezeButExtensible(record) {
-	const descriptors = Object.getOwnPropertyDescriptors(record);
-	if (descriptors) {
-		for (const [key, descriptor] of Object.entries(descriptors)) {
-			if ("value" in descriptor) {
-				descriptor.writable = false;
-			}
-			descriptor.configurable = false;
-			// @ts-expect-error ignore
-			Reflect.defineProperty(record, key, descriptor);
-		}
-	}
-
-	return record;
-}
-
-/**
  *
  * @return {boolean}
  * @param {function} func

@@ -15,7 +15,6 @@ import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
-import { freezeButExtensible } from "@/util/index.js";
 import security from "@/util/security.js";
 import { ErrorManager } from "@/util/error.ts";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
@@ -384,7 +383,7 @@ export class Library {
 	 *
 	 * 你可以将hook机制类比为event.trigger()，但是这里只能放同步代码
 	 */
-	hooks = freezeButExtensible({ ...defaultHooks });
+	hooks = { ...defaultHooks };
 
 	/**
 	 * **无名杀消息推送库**
