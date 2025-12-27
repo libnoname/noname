@@ -11,7 +11,6 @@
 import { ai, get, game, _status, ui } from "noname";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
-import { Channel } from "./channel/index.js";
 import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
@@ -386,29 +385,6 @@ export class Library {
 	 * 你可以将hook机制类比为event.trigger()，但是这里只能放同步代码
 	 */
 	hooks = freezeButExtensible({ ...defaultHooks });
-
-	/**
-	 * **无名杀频道推送机制**
-	 *
-	 * 鉴于`Javascript`的特性及自身对所需功能的思考，这是一个参考`Golang`的`channel`设计的、完全和`go channel`不一样的异步消息传递对象
-	 *
-	 * 当且仅当接收方和发送方均存在时进行消息传递，完全保证信息传递的单一性（发送方/接收方一旦确定则无法更改）和准确性（发送方必然将消息发送给接收方）
-	 *
-	 * 若存在发送方/接收方时调用`send`/`receive`，将报错
-	 *
-	 * 若需要异步/不报错发送信息，请等待`lib.actor`
-	 *
-	 * @example
-	 * // 创建一个频道
-	 * const channel = new lib.channel();
-	 *
-	 * // 从某个角落接收channel发出的消息，若无消息则等待
-	 * const message = await channel.receive();
-	 *
-	 * // 从某个角落向channel发消息，若无消息接收则等待
-	 * await channel.send(item);
-	 */
-	channel = Channel;
 
 	/**
 	 * **无名杀消息推送库**
