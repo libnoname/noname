@@ -789,15 +789,15 @@ export class Game {
 		if (!id) {
 			throw new TypeError();
 		}
-		if (lib.comparator.typeEquals(short, "object")) {
+		if (typeof short === "object") {
 			config = short;
 			short = null;
 		}
-		if (lib.comparator.typeEquals(name, "object")) {
+		if (typeof name === "object") {
 			config = name;
 			name = null;
 		}
-		if (!lib.comparator.typeEquals(short, "string") && short) {
+		if (typeof short !== "string" && short) {
 			name = short;
 		}
 		if (["default", "all"].includes(type)) {
