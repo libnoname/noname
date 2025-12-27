@@ -16,7 +16,6 @@ import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
-import { Concurrent } from "./concurrent/index.js";
 import { freezeButExtensible } from "@/util/index.js";
 import security from "@/util/security.js";
 import { ErrorManager } from "@/util/error.ts";
@@ -437,11 +436,6 @@ export class Library {
 	 * lib.announce.unsubscribe("skinChange", method);
 	 */
 	announce = new Announce(new EventTarget(), new WeakMap());
-
-	/**
-	 * 提供一组用于并发异步操作的静态工具方法
-	 */
-	concurrent = Concurrent;
 
 	objectURL = new Map();
 	hookmap = {};
