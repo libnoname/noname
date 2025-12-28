@@ -1214,7 +1214,7 @@ const skills = {
 						}, 300);
 					};
 					for (const target of event.targets) {
-						const links = await target
+						const { links } = await target
 							.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true)
 							.set("ai", function (button) {
 								const player = _status.event.player;
@@ -1246,7 +1246,7 @@ const skills = {
 								}
 								return Math.random();
 							})
-							.forResultLinks();
+							.forResult();
 						if (links[0][2] == "reguhuo_betray") {
 							target.addExpose(0.2);
 							game.log(target, "#y质疑");

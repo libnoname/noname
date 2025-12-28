@@ -1384,7 +1384,7 @@ export default {
 			return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
 		},
 		async content(event, trigger, player) {
-			const control = await player
+			const { control } = await player
 				.chooseControl(["sha", "shan"])
 				.set("prompt", `鏖战：请选择${get.translation(trigger.cards[0])}视为${trigger.name == "respond" ? "打出" : "使用"}的牌名`)
 				.set("ai", () => {
@@ -1394,7 +1394,7 @@ export default {
 					}
 					return ["sha", "shan"].randomGet();
 				})
-				.forResultControl();
+				.forResult();
 			const card = get.autoViewAs({ name: control }, trigger.cards);
 			trigger.card = card;
 			trigger.getParent().result.card = card;

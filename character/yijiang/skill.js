@@ -754,7 +754,7 @@ const skills = {
 				game.countPlayer2(current => {
 					num += current.getHistory("useCard").filter(evt => ["basic", "trick"].includes(get.type2(evt.card)) && evt.targets?.includes(player)).length;
 				});
-				const bool = await player
+				const { bool } = await player
 					.chooseBool(`${get.prompt(skillName)}（可摸${get.cnNumber(num)}张牌）`, get.translation(`${skillName}_info`))
 					.set("ai", () => {
 						return _status.event.choice;
@@ -809,7 +809,7 @@ const skills = {
 							return Math.random() < num / 3;
 						})()
 					)
-					.forResultBool();
+					.forResult();
 				event.result = {
 					bool: bool,
 					cost_data: num,
@@ -1880,7 +1880,7 @@ const skills = {
 				await source.discard(source.getCards("e"));
 				await source.loseHp();
 			}
-			const targets = await player
+			const { targets } = await player
 				.chooseTarget("【绝响】：是否令一名其他角色获得技能〖残韵〗？", lib.filter.notMe)
 				.set("ai", target => {
 					var att = get.attitude(get.player(), target);
@@ -1890,7 +1890,7 @@ const skills = {
 					return 10 + att;
 				})
 				.set("forceDie", true)
-				.forResultTargets();
+				.forResult();
 			if (!targets || !targets.length) {
 				return;
 			}
@@ -11493,13 +11493,13 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { card } = trigger;
-			const bool = await target
+			const { bool } = await target
 				.chooseToGive({ name: "shan" }, `交给${get.translation(player)}一张【闪】，或成为${get.translation(card)}的额外目标`, player)
 				.set("ai", card => {
 					const { player, target } = get.event();
 					return get.attitude(player, target) >= 0 ? 1 : -1;
 				})
-				.forResultBool();
+				.forResult();
 			if (!bool) {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);

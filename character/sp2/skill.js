@@ -1745,7 +1745,7 @@ const skills = {
 					nosha = [];
 				while (targets.length) {
 					const current = targets.shift();
-					const bool = await current
+					const { bool } = await current
 						.chooseToUse(
 							function (card, player, event) {
 								if (get.name(card) != "sha") {
@@ -1766,7 +1766,7 @@ const skills = {
 						})
 						.set("sourcex", target)
 						.set("addCount", false)
-						.forResultBool();
+						.forResult();
 					if (bool) {
 						sha.push(current);
 					} else if (current != player) {
@@ -2110,7 +2110,7 @@ const skills = {
 						const control =
 							choices.length == 1
 								? choices[0]
-								: await current
+								: (await current
 										.chooseControl(choices)
 										.set("choiceList", choiceList)
 										.set("prompt", "忠言：请选择一项")
@@ -2119,12 +2119,12 @@ const skills = {
 											const eff2 = get.recoverEffect(player, player, player);
 											return eff2 ? 0 : 1;
 										})
-										.forResultControl();
+										.forResult()).control;
 						chosen.push(control);
 						if (control == "选项一") {
 							await current.recover();
 						} else {
-							const targets = await current
+							const { targets } = await current
 								.chooseTarget("获得一名角色场上的一张牌", true, (card, player, target) => {
 									const targetx = get.event("targetx");
 									return target.countGainableCards(targetx, "ej") > 0;
@@ -2140,7 +2140,7 @@ const skills = {
 									return att * lib.card.shunshou.ai.result.target(player, target);
 								})
 								.set("targetx", current)
-								.forResultTargets();
+								.forResult();
 							await current.gainPlayerCard(targets[0], "ej", true);
 						}
 					}
@@ -4970,7 +4970,7 @@ const skills = {
 			if (skills.length == 1) {
 				skill = skills[0];
 			} else {
-				skill = await player
+				skill = (await player
 					.chooseControl(skills)
 					.set(
 						"choiceList",
@@ -4986,7 +4986,7 @@ const skills = {
 							return get.skillRank(b, "in") - get.skillRank(a, "in");
 						})[0];
 					})
-					.forResultControl();
+					.forResult()).control;
 			}
 			player.addTempSkill("dclongsong_remove", ["phaseUseAfter", "phaseAfter"]);
 			player.markAuto("dclongsong_remove", [skill]);
@@ -14776,14 +14776,14 @@ const skills = {
 					})
 				);
 			})[0];
-			const control = await player
+			const { control } = await player
 				.chooseControl(list)
 				.set("prompt", "秉诏：请选择一个其他势力")
 				.set("ai", () => {
 					return get.event().choice;
 				})
 				.set("choice", maxGroup)
-				.forResultControl();
+				.forResult();
 			event.result = { bool: true, cost_data: control };
 		},
 		async content(event, trigger, player) {

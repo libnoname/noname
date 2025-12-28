@@ -378,14 +378,14 @@ const skills = {
 							num1 += 2 * get.effect(target, { name: "draw" }, player, player);
 							num2 += get.recoverEffect(target, player, player);
 						}
-						control = await trigger.player
+						control = (await trigger.player
 							.chooseControl("摸两张牌", "回复体力")
 							.set("prompt", "整肃奖励：请选择" + get.translation(list) + "的整肃奖励")
 							.set("ai", function () {
 								return ["摸两张牌", "回复体力"][_status.event.goon.indexOf(Math.max.apply(Math, _status.event.goon))];
 							})
 							.set("goon", [num1, num2])
-							.forResultControl();
+							.forResult()).control;
 					} else {
 						control = "摸两张牌";
 					}
@@ -2982,7 +2982,7 @@ const skills = {
 			}
 			list.push("背水！");
 			list.push("cancel2");
-			const control = await player
+			const { control } = await player
 				.chooseControl(list)
 				.set("choiceList", [`获得${get.translation(target)}的一张手牌`, `弃置一张基本牌并令${get.translation(trigger.card)}伤害+1`, "背水！减1点体力上限并执行所有选项"])
 				.set("prompt", get.prompt(event.skill, target))
@@ -3014,7 +3014,7 @@ const skills = {
 					}
 					return "cancel2";
 				})
-				.forResultControl();
+				.forResult();
 			event.result = {
 				bool: control != "cancel2",
 				cost_data: control,
@@ -3028,7 +3028,7 @@ const skills = {
 				await player.gainPlayerCard(target, true, "h");
 			}
 			if (["选项二", "背水！"].includes(control) && player.hasCard(card => get.type(card, null, player) == "basic" && lib.filter.cardDiscardable(card, player, "dbquedi"), "h")) {
-				const bool = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResultBool();
+				const { bool } = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResult();
 				if (bool) {
 					trigger.getParent().baseDamage++;
 				}
@@ -5409,7 +5409,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const cards = trigger.getl(player).cards2;
-			const links = await player
+			const { links } = await player
 				.chooseButton(["宽济：是否将一张牌交给一名其他角色？", cards.filterInD("d")])
 				.set("ai", button => {
 					const player = get.player();
@@ -5422,7 +5422,7 @@ const skills = {
 					}
 					return -get.value(button.link, "raw");
 				})
-				.forResultLinks();
+				.forResult();
 			if (!links?.length) {
 				return;
 			}

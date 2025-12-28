@@ -9176,7 +9176,7 @@ const skills = {
 				if (!target.isIn()) {
 					continue;
 				}
-				const bool = await target
+				const { bool } = await target
 					.chooseToGive(player, `诏兵：交给${get.translation(player)}一张【杀】，或失去1点体力`, card => get.name(card) == "sha")
 					.set("ai", card => {
 						if (get.event().goon) {
@@ -9185,7 +9185,7 @@ const skills = {
 						return 6 - get.value(card);
 					})
 					.set("goon", get.effect(target, { name: "losehp" }, target, target) >= 0)
-					.forResultBool();
+					.forResult();
 				if (!bool) {
 					await target.loseHp();
 				}
@@ -9262,7 +9262,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const att = get.attitude(target, player);
-			const bool = await target
+			const { bool } = await target
 				.chooseToGive(player, `${get.translation(player)}对你发动了【平讨】`, "交给其一张牌并令其此回合使用【杀】的次数上限+1；或点击“取消”令其视为对你使用一张【杀】", "he")
 				.set("ai", card => {
 					const { give, att } = get.event();
@@ -9279,7 +9279,7 @@ const skills = {
 				})
 				.set("give", (att >= 0 || (target.hp == 1 && target.countCards("hs", "shan") <= 1)) && get.effect(target, { name: "sha" }, player, target) < 0)
 				.set("att", att)
-				.forResultBool();
+				.forResult();
 			if (bool) {
 				player.addTempSkill(event.name + "_sha");
 				player.addMark(event.name + "_sha", 1, false);
@@ -10545,13 +10545,13 @@ const skills = {
 			let target2;
 			while (targets.length) {
 				const target = targets.shift();
-				const bool = await target
+				const { bool } = await target
 					.chooseBool("是否对" + get.translation(player) + "发动【争义】？", "将此" + (trigger.source ? "来源为" + get.translation(trigger.source) : "无来源") + "的" + trigger.num + "点伤害转移给你")
 					.set("ai", () => {
 						return _status.event.bool;
 					})
 					.set("bool", get.damageEffect(player, trigger.source, target) > get.damageEffect(target, trigger.source, target))
-					.forResultBool();
+					.forResult();
 				if (bool) {
 					target2 = target;
 					break;

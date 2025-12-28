@@ -4461,7 +4461,7 @@ const skills = {
 						return get.skillRank(b, "in") - get.skillRank(a, "in");
 					})[0]
 				);
-				const links = await next.forResultLinks();
+				const { links } = await next.forResult();
 				event.result = { bool: true, cost_data: links };
 			}
 		},

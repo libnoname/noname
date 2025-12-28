@@ -126,7 +126,7 @@ const skills = {
 							next.set("skillwarn", "替" + get.translation(player) + "打出一张闪");
 							next.autochoose = lib.filter.autoRespondShan;
 							next.set("source", player);
-							bool = await next.forResultBool();
+							bool = (await next.forResult()).bool;
 						}
 						player.storage.hujiaing = false;
 						if (bool) {
@@ -1324,10 +1324,10 @@ const skills = {
 				if (!player?.isIn() || !target?.isIn()) {
 					return;
 				}
-				const bool = await player
+				const { bool } = await player
 					.chooseBool(`是否继续对${get.translation(target)}搦战？`)
 					.set("choice", player.hp > 1)
-					.forResultBool();
+					.forResult();
 				if (!bool) {
 					break;
 				}

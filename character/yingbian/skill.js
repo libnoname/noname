@@ -373,7 +373,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { name } = trigger.card;
-			const bool = await target
+			const { bool } = await target
 				.chooseToDiscard("he", { name: name }, "弃置一张【" + get.translation(name) + "】或受到1点伤害")
 				.set("ai", card => {
 					const { player, take } = get.event();
@@ -383,7 +383,7 @@ const skills = {
 					return 8 - get.value(card);
 				})
 				.set("take", get.damageEffect(target, player, target) >= 0)
-				.forResultBool();
+				.forResult();
 			if (!bool) {
 				await target.damage();
 			}
@@ -427,7 +427,7 @@ const skills = {
 			if (!target.countCards("h")) {
 				return;
 			}
-			const cards = await player
+			const { cards } = await player
 				.choosePlayerCard(target, "遗毒：展示" + get.translation(target) + "的至多三张手牌", true, "h", [1, Math.min(3, target.countCards("h"))])
 				.set("forceAuto", true)
 				.set("ai", button => {
@@ -436,7 +436,7 @@ const skills = {
 					}
 					return 1 + Math.random();
 				})
-				.forResultCards();
+				.forResult();
 			if (!cards?.length) {
 				return;
 			}

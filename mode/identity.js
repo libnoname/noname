@@ -5056,7 +5056,7 @@ export default () => {
 					player.removeSkill("sixiang_qinglong");
 					let control;
 					if (lebu.length && bingliang.length) {
-						control = await player
+						control = (await player
 							.chooseControl("lebu", "bingliang")
 							.set("prompt", "请选择要弃置的牌")
 							.set("ai", () => get.event("control"))
@@ -5088,7 +5088,7 @@ export default () => {
 									return "lebu";
 								})()
 							)
-							.forResultControl();
+							.forResult()).control;
 					} else if (lebu) {
 						control = "lebu";
 					} else if (bingliang) {

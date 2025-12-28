@@ -1788,7 +1788,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const bool = await target.gainPlayerCard(player, "he", true).forResultBool();
+			const { bool } = await target.gainPlayerCard(player, "he", true).forResult();
 			if (!bool) {
 				return;
 			}

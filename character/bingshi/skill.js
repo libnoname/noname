@@ -296,7 +296,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.removeCharge();
-			const cards = await target
+			const { cards } = await target
 				.chooseCard("he", true, "选择一张牌置于" + get.translation(player) + "的武将牌上作为「田」")
 				.set("ai", card => {
 					const player = get.player(),
@@ -308,7 +308,7 @@ const skills = {
 					return target.getUseValue(card);
 				})
 				.set("target", player)
-				.forResultCards();
+				.forResult();
 			if (cards?.length) {
 				const next = player.addToExpansion(cards, target, "give");
 				next.gaintag.add("pottuntian");
@@ -1704,7 +1704,7 @@ const skills = {
 				} else {
 					choice = "draw_card";
 				}
-				const control = await player
+				const { control } = await player
 					.chooseControl(list)
 					.set("prompt", get.prompt(event.skill))
 					.set("choiceList", choiceList)
@@ -1713,7 +1713,7 @@ const skills = {
 					.set("ai", () => {
 						return get.event("choice");
 					})
-					.forResultControl();
+					.forResult();
 				event.result = {
 					bool: control != "cancel2",
 					cost_data: control,

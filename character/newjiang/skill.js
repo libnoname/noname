@@ -1944,7 +1944,7 @@ const skills = {
 				while (cards.length) {
 					const card = cards.shift();
 					await game.delayx();
-					const bool = await winner
+					const { bool } = await winner
 						.chooseUseTarget(true, card, false)
 						.set("filterTarget", function (card, player, target) {
 							let evt = _status.event;
@@ -1957,7 +1957,7 @@ const skills = {
 							return lib.filter.targetEnabledx(card, player, target);
 						})
 						.set("dcxiujue_target", [player, target])
-						.forResultBool();
+						.forResult();
 					if (!bool) {
 						break;
 					}

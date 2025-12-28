@@ -605,7 +605,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			if (["equip", "all"].includes(control) && target.countCards("e")) {
-				const cards = await player.choosePlayerCard(target, true, "e", `选择${get.translation(target)}的至多两张装备牌令其获得之`, [1, 2]).forResultCards();
+				const { cards } = await player.choosePlayerCard(target, true, "e", `选择${get.translation(target)}的至多两张装备牌令其获得之`, [1, 2]).forResult();
 				if (cards?.length) {
 					await target.gain(cards, "gain2");
 				}
@@ -1386,7 +1386,7 @@ const skills = {
 							choices.push(`选项${get.cnNumber(i + 1, true)}`);
 						}
 					}
-					const control = await player
+					const { control } = await player
 						.chooseControl(choices, "cancel2")
 						.set("choiceList", choiceList)
 						.set("prompt", get.prompt(event.name.slice(0, -5)))
@@ -1394,7 +1394,7 @@ const skills = {
 							const choices = get.event().controls.slice().remove("cancel2");
 							return choices.randomGet();
 						})
-						.forResultControl();
+						.forResult();
 					event.result = {
 						bool: control != "cancel2",
 						cost_data: control,
@@ -1676,7 +1676,7 @@ const skills = {
 				return;
 			}
 			const controls = ["选项一", "选项二", "背水！"];
-			const control = await target
+			const { control } = await target
 				.chooseControl(controls)
 				.set("choiceList", [`令所有攻击范围内含有你的角色依次弃置一张牌（${get.translation(targets)}）`, `你摸等同于攻击范围内含有你的角色数的牌（${get.cnNumber(count)}张牌）`, `背水！令${get.translation(player)}的〖解烦〗失效直到其杀死一名角色，然后你依次执行上述所有选项`])
 				.set("ai", () => {
@@ -1715,7 +1715,7 @@ const skills = {
 						return "选项二";
 					})()
 				)
-				.forResultControl();
+				.forResult();
 			game.log(target, "选择了", "#g" + control);
 			if (control !== "选项二") {
 				for (const current of targets) {

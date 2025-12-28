@@ -3082,11 +3082,11 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { source } = trigger;
-			const bool = await player
+			const { bool } = await player
 				.chooseBool(get.prompt(event.name.slice(0, -5), source))
 				.set("choice", (source.countCards("h") <= source.getHp() && player.countCards("h") < 4 && !source.hasSkillTag("nogain")) || get.attitude(player, source) > 0)
 				.set("prompt2", "其他角色对你造成伤害后，你可以观看该角色的手牌，然后交给其一张牌，当前角色回合结束时，若此牌仍在该角色的手牌区或装备区，你将手牌摸至四张")
-				.forResultBool();
+				.forResult();
 			event.result = {
 				bool: bool,
 				targets: [source],
@@ -3714,7 +3714,7 @@ const skills = {
 			});
 			next.set("logSkill", event.skill);
 			next.setHiddenSkill(event.skill);
-			const control = await next.forResultControl();
+			const { control } = await next.forResult();
 			if (control == "cancel2") {
 				return;
 			}
@@ -4013,7 +4013,7 @@ const skills = {
 			chooseToDiscard.ai = function (card) {
 				return 20 - get.value(card);
 			};
-			if (!(await chooseToDiscard.forResultBool())) {
+			if (!(await chooseToDiscard.forResult()).bool) {
 				return;
 			}
 			const chooseTarget = player.chooseTarget(true, "请选择进行额外回合的目标角色", lib.filter.notMe);
@@ -4221,7 +4221,7 @@ const skills = {
 			chooseBool.ai = function () {
 				return true;
 			};
-			const bool = await chooseBool.forResultBool();
+			const { bool } = await chooseBool.forResult();
 			if (!bool) {
 				return;
 			}
@@ -4508,10 +4508,10 @@ const skills = {
 				async content(event, trigger, player) {
 					const { target } = event;
 					if (["hunzi", "rehunzi"].some(skill => target.storage[skill])) {
-						const bool = await target
+						const { bool } = await target
 							.chooseBool("是否拒绝〖制霸〗拼点？")
 							.set("choice", get.attitude(target, player) <= 0)
-							.forResultBool();
+							.forResult();
 						if (bool) {
 							game.log(target, "拒绝了拼点");
 							target.chat("拒绝");
@@ -4541,7 +4541,7 @@ const skills = {
 							return;
 						}
 						const next = target.chooseBool("是否获得" + get.translation(list) + "？").set("ai", () => get.value(list) > 0);
-						if (await next.forResultBool()) {
+						if ((await next.forResult()).bool) {
 							await target.gain(list, "gain2");
 						}
 					}
@@ -5959,7 +5959,7 @@ const skills = {
 							return _status.event.choice;
 						})
 						.set("choice", get.attitude(player, target) > 0 ? 0 : 1)
-						.forResultControl());
+						.forResult()).control;
 			}
 			if (directcontrol) {
 				if (num > 0) {
@@ -6054,7 +6054,7 @@ const skills = {
 							return _status.event.choice;
 						})
 						.set("choice", get.attitude(player, target) > 0 ? str1 : str2)
-						.forResultControl());
+						.forResult()).control;
 			}
 			if (directcontrol) {
 				await target.draw(num);
@@ -6172,7 +6172,7 @@ const skills = {
 			return !player.isMinHp();
 		},
 		async content(event, trigger, player) {
-			const control = await player
+			const { control } = await player
 				.chooseControl("baonue_hp", "baonue_maxHp", function (event, player) {
 					if (player.hp == player.maxHp) {
 						return "baonue_hp";
@@ -6183,7 +6183,7 @@ const skills = {
 					return "baonue_hp";
 				})
 				.set("prompt", "崩坏：失去1点体力或减1点体力上限")
-				.forResultControl();
+				.forResult();
 			if (control == "baonue_hp") {
 				await player.loseHp();
 			} else {
@@ -6660,7 +6660,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
-			const bool = await player.chooseToCompare(target).forResultBool();
+			const { bool } = await player.chooseToCompare(target).forResult();
 			if (!bool) {
 				return void (await player.damage(target));
 			}
@@ -7031,7 +7031,7 @@ const skills = {
 			return player.countCards("h") > 0;
 		},
 		async content(event, trigger, player) {
-			const bool = await player.chooseToCompare(event.target).forResultBool();
+			const { bool } = await player.chooseToCompare(event.target).forResult();
 			if (bool) {
 				player.addTempSkill("tianyi2");
 			} else {
@@ -8114,13 +8114,13 @@ const skills = {
 					choice = "选项二";
 				}
 			}
-			const control = await source
+			const { control } = await source
 				.chooseControl(function () {
 					return _status.event.choice;
 				})
 				.set("choiceList", [str1, str2])
 				.set("choice", choice)
-				.forResultControl();
+				.forResult();
 			if (control == "选项一") {
 				if (player.isDamaged()) {
 					await player.draw(player.maxHp - player.hp);
@@ -8206,7 +8206,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const str = "红颜：" + get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，请将其改为一种花色";
-			const control = await player
+			const { control } = await player
 				.chooseControl("spade", "heart", "diamond", "club")
 				.set("prompt", str)
 				.set("ai", function () {
@@ -8232,7 +8232,7 @@ const skills = {
 					return list[0];
 				})
 				.set("judging", trigger.player.judging[0])
-				.forResultControl();
+				.forResult();
 			event.result = {
 				bool: control != "cancel2",
 				cost_data: control,
@@ -8311,7 +8311,7 @@ const skills = {
 							return;
 						}
 						if (count > 1) {
-							cards = await player
+							cards = (await player
 								.chooseCardButton("不屈：移去一张“创”", true, cards)
 								.set("ai", function (button) {
 									const buttons = get.selectableButtons();
@@ -8322,7 +8322,7 @@ const skills = {
 									}
 									return 0;
 								})
-								.forResultLinks();
+								.forResult()).links;
 						}
 						await player.loseToDiscardpile(cards);
 					}
@@ -9081,7 +9081,7 @@ const skills = {
 				}, 300);
 			};
 			for (const target of event.targets) {
-				const links = await target
+				const { links } = await target
 					.chooseButton([event.prompt, [["reguhuo_ally", "reguhuo_betray"], "vcard"]], true)
 					.set("ai", function (button) {
 						const player = _status.event.player;
@@ -9113,7 +9113,7 @@ const skills = {
 						}
 						return Math.random();
 					})
-					.forResultLinks();
+					.forResult();
 				if (links[0][2] == "reguhuo_betray") {
 					target.addExpose(0.2);
 					game.log(target, "#y质疑");

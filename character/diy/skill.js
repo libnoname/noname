@@ -7224,7 +7224,7 @@ const skills = {
 					lib.translate[skill + "_info"] +
 					"</div></div>",
 			]);
-			const links = await player
+			const { links } = await player
 				.chooseButton(["选择获得一个技能", [list, "textbutton"]])
 				.set("displayIndex", false)
 				.set("ai", button => {
@@ -7235,7 +7235,7 @@ const skills = {
 					}
 					return get.skillRank(button.link, "inout");
 				})
-				.forResultLinks();
+				.forResult();
 			if (!links?.length) {
 				return;
 			}
@@ -7484,7 +7484,7 @@ const skills = {
 						continue;
 					}
 					if (current.countCards("he")) {
-						const cards = await current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌").forResultCards();
+						const { cards } = await current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌").forResult();
 						if (cards) {
 							await current.give(cards, player);
 						}
@@ -8036,10 +8036,10 @@ const skills = {
 					if (left && player.hasSkill(left) && right && player.hasSkill(right)) {
 						await target.addSkills(["releiji", "guidao"]);
 					} else {
-						const control = await player
+						const { control } = await player
 							.chooseControl("releiji", "guidao")
 							.set("prompt", `令${get.translation(target)}获得一项技能`)
-							.forResultControl();
+							.forResult();
 						await target.addSkills(control);
 					}
 				},

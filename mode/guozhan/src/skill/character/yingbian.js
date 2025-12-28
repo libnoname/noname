@@ -1147,7 +1147,7 @@ export default {
 			if (!target.countCards("h")) {
 				return;
 			}
-			const cards = await player
+			const { cards } = await player
 				.choosePlayerCard(target, "遗毒：展示" + get.translation(target) + "的至多两张手牌", true, "h", [1, Math.min(2, target.countCards("h"))])
 				.set("forceAuto", true)
 				.set("ai", button => {
@@ -1156,7 +1156,7 @@ export default {
 					}
 					return 1 + Math.random();
 				})
-				.forResultCards();
+				.forResult();
 			if (!cards?.length) {
 				return;
 			}

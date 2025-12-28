@@ -58,7 +58,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			const bool = await target
+			const { bool } = await target
 				.chooseToDiscard("he", "弃置一张装备牌，或受到1点伤害", { type: "equip" })
 				.set("ai", card => {
 					if (get.event("damage") > 0) {
@@ -71,7 +71,7 @@ const skills = {
 				})
 				.set("damage", get.damageEffect(target, player, target))
 				.set("noe", target.hasSkillTag("noe"))
-				.forResultBool();
+				.forResult();
 			if (!bool) {
 				await target.damage();
 			}
@@ -272,7 +272,7 @@ const skills = {
 						next.set("skillwarn", "替" + get.translation(player) + "打出一张闪");
 						next.autochoose = lib.filter.autoRespondShan;
 						next.set("source", player);
-						bool = await next.forResultBool();
+						bool = (await next.forResult()).bool;
 					}
 				}
 				player.storage.hujiaing = false;
@@ -1614,7 +1614,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
-			const control = await target
+			const { control } = await target
 				.chooseControl("heart2", "diamond2", "club2", "spade2")
 				.set("ai", event => {
 					switch (Math.floor(Math.random() * 6)) {
@@ -1630,7 +1630,7 @@ const skills = {
 							return "spade2";
 					}
 				})
-				.forResultControl();
+				.forResult();
 			game.log(target, "选择了" + get.translation(control));
 			event.choice = control;
 			target.chat("我选" + get.translation(event.choice));
@@ -2197,7 +2197,7 @@ const skills = {
 			if (!player.countCards("he")) {
 				list.remove("弃牌");
 			}
-			const control = await player
+			const { control } = await player
 				.chooseControl(list, () => {
 					const player = _status.event.player;
 					if (list.includes("弃牌")) {
@@ -2214,7 +2214,7 @@ const skills = {
 					return "cancel2";
 				})
 				.set("prompt", get.prompt2(event.skill))
-				.forResultControl();
+				.forResult();
 			if (control === "cancel2") {
 				event.result = { bool: false };
 			} else {

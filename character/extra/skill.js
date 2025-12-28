@@ -479,7 +479,7 @@ const skills = {
 						lib.inpile.filter(name => get.type(name) == "delay")
 					)
 					.filter(name => player.hasUseTarget(name));
-				const links = await player
+				const { links } = await player
 					.chooseVCardButton(true, "神械：请选择要使用的延时锦囊牌", storage.slice())
 					.set("ai", ({ link: [_, __, name] }) => {
 						const { player, choice } = get.event();
@@ -489,7 +489,7 @@ const skills = {
 						return player.getUseValue(name);
 					})
 					.set("choice", choice)
-					.forResultLinks();
+					.forResult();
 				if (links?.length) {
 					const name = links[0][2];
 					storage.remove(name);
@@ -845,12 +845,12 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.zc26_bagua_skill = true;
 			if (game.dead.length) {
-				const targets = await player
+				const { targets } = await player
 					.chooseTarget(`###${get.prompt(event.name)}###令一名死亡角色卜算3`)
 					.set("filterTarget", (_, player, target) => target.isDead())
 					.set("ai", target => get.attitude(get.player(), target) > 0)
 					.set("deadTarget", true)
-					.forResultTargets();
+					.forResult();
 				if (targets?.length) {
 					player.line(targets[0]);
 					game.log(player, "令", targets[0], "卜算3");
@@ -947,10 +947,10 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (trigger.name == "phaseZhunbei") {
-				const targets = await player
+				const { targets } = await player
 					.chooseTarget(`軨軨：选择一名角色对其造成1点雷电伤害`, true)
 					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
-					.forResultTargets();
+					.forResult();
 				if (targets?.length) {
 					await targets[0].damage(player, "thunder");
 				}
@@ -1848,7 +1848,7 @@ const skills = {
 			}
 			player.line(target, "green");
 			let choices = ["获得弃牌堆或场上一张装备牌并使用", "翻面并摸一张牌", "减少1点体力上限"];
-			const control = await player
+			const { control } = await player
 				.chooseControl()
 				.set("choiceList", choices)
 				.set("prompt", `令${get.translation(target)}执行一项`)
@@ -1873,7 +1873,7 @@ const skills = {
 					}
 					return "选项三";
 				})
-				.forResultControl();
+				.forResult();
 			switch (control) {
 				case "选项一": {
 					let bool = false,
@@ -3677,10 +3677,10 @@ const skills = {
 						.map(card => get.suit(card))
 						.toUniqued();
 					if (hidden.length == 1) {
-						const bool = await player
+						const { bool } = await player
 							.chooseBool("戢鳞：明置一张“志”", `令${get.translation(trigger.card)}对你无效`)
 							.set("choice", goon)
-							.forResultBool();
+							.forResult();
 						event.result = {
 							bool: bool,
 							cost_data: hidden,
@@ -4023,7 +4023,7 @@ const skills = {
 					cost_data: links,
 				};
 			} else {
-				const bool = await player.chooseBool("连破：于此回合结束后获得一个额外回合？").forResultBool();
+				const { bool } = await player.chooseBool("连破：于此回合结束后获得一个额外回合？").forResult();
 				event.result = {
 					bool: bool,
 				};
@@ -4413,7 +4413,7 @@ const skills = {
 				const translation = lib.translate[skillToGain + "_ab"] || get.translation(skillToGain).slice(0, 2);
 				prompt2 += `<div class="skill">【${translation}】</div><div><span style="font-family: yuanli">${get.skillInfoTranslation(skillToGain, null, false)}</span></div><br><br>`;
 			}
-			const bool = await target
+			const { bool } = await target
 				.chooseBool(`寰道：是否获得技能〖${get.translation(skillToGain)}〗？`, prompt2)
 				.set(
 					"choice",
@@ -4433,7 +4433,7 @@ const skills = {
 						});
 					})()
 				)
-				.forResultBool();
+				.forResult();
 			if (!bool) {
 				target.chat("拒绝");
 				game.log(target, "拒绝获得技能", `#g【${get.translation(skillToGain)}】`);
@@ -4454,7 +4454,7 @@ const skills = {
 			if (!ownedSkills) {
 				return;
 			}
-			const control = await target
+			const { control } = await target
 				.chooseControl(ownedSkills)
 				.set(
 					"choiceList",
@@ -4491,7 +4491,7 @@ const skills = {
 						})[0];
 					})()
 				)
-				.forResultControl();
+				.forResult();
 			await target.removeSkills(control);
 		},
 		ai: {

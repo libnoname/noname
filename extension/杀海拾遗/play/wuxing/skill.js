@@ -84,7 +84,7 @@ const skill = {
 		prompt: "选择一张手牌永久改变其五行属性",
 		async content(event, trigger, player) {
 			const card = event.cards[0];
-			const control = await player.chooseControl("metal", "wood", "water", "fire", "soil").forResultControl();
+			const { control } = await player.chooseControl("metal", "wood", "water", "fire", "soil").forResult();
 			if (!card.node.wuxing) {
 				card.node.wuxing = ui.create.div(".wunature", card);
 			}

@@ -981,7 +981,7 @@ const skills = {
 			}
 			const next = player.gainPlayerCard(target, [1, 2], position, true);
 			next.gaintag.add(tag);
-			const links = await next.forResultCards();
+			const { links } = await next.forResult();
 			if (!links?.length) {
 				return;
 			}
@@ -3716,14 +3716,14 @@ const skills = {
 					if (!target.getCards("h").includes(card) || get.type(card) !== "equip") {
 						return;
 					}
-					const bool = await target
+					const { bool } = await target
 						.chooseUseTarget(card)
 						.set("ai", (event, player) => {
 							const { giver } = event;
 							return get.attitude(player, giver) >= 0;
 						})
 						.set("giver", player)
-						.forResultBool();
+						.forResult();
 					if (!bool) {
 						return;
 					}
@@ -3814,7 +3814,7 @@ const skills = {
 			let bool;
 			if (count > 0) {
 				const prompt = `###${get.translation(player)}对你发动了【应时】###弃置${get.cnNumber(count)}张牌，令其本回合不能再发动〖应时〗，或令其于此牌结算后视为对你使用一张同名牌"`;
-				bool = await target
+				bool = (await target
 					.chooseToDiscard(prompt, count, "he")
 					.set("ai", card => {
 						if (get.event("goon")) {
@@ -3823,7 +3823,7 @@ const skills = {
 						return 0;
 					})
 					.set("goon", !get.tag(trigger.card, "norepeat") && get.effect(target, trigger.card, trigger.player, target) < 0)
-					.forResultBool();
+					.forResult()).bool;
 			} else {
 				bool = false;
 			}

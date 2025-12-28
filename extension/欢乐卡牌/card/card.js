@@ -46,7 +46,7 @@ const card = {
 			const target = event.target;
 			let bool;
 			if (target.countCards("he")) {
-				bool = await target
+				bool = (await target
 					.chooseToDiscard("he", { type: "equip" }, "弃置一张装备牌或受到1点伤害")
 					.set("ai", card => {
 						var player = _status.event.player;
@@ -56,7 +56,7 @@ const card = {
 						}
 						return 7 - get.value(card);
 					})
-					.forResultBool();
+					.forResult()).bool;
 			}
 			if (!bool) {
 				await target.damage();

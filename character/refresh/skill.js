@@ -8284,14 +8284,14 @@ const skills = {
 				const cards = player.getCards("h", { color: control }),
 					num = cards.length;
 				await player.discard(cards);
-				const targets = await player
+				const { targets } = await player
 					.chooseTarget(`请选择至多${get.cnNumber(num)}名有牌的其他角色，获得这些角色的各一张牌。`, [1, num], (card, player, target) => {
 						return target != player && target.countGainableCards(player, "he");
 					})
 					.set("ai", target => {
 						return -get.attitude(get.player(), target) + 0.5;
 					})
-					.forResultTargets();
+					.forResult();
 				if (!targets || !targets.length) {
 					return;
 				}

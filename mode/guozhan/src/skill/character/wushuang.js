@@ -4258,7 +4258,7 @@ export default {
 				list.push("选项二");
 			}
 			list.push("cancel2");
-			const control = await player
+			const { control } = await player
 				.chooseControl(list)
 				.set("choiceList", [`获得${get.translation(target)}的一张手牌`, `弃置一张基本牌并令${get.translation(trigger.card)}伤害+1`])
 				.set("prompt", get.prompt(event.skill, target))
@@ -4287,7 +4287,7 @@ export default {
 					}
 					return "cancel2";
 				})
-				.forResultControl();
+				.forResult();
 			event.result = {
 				bool: control != "cancel2",
 				cost_data: control,
@@ -4301,7 +4301,7 @@ export default {
 				await player.gainPlayerCard(target, true, "h");
 			}
 			if (["选项二", "背水！"].includes(control) && player.hasCard(card => get.type(card, null, player) == "basic" && lib.filter.cardDiscardable(card, player, "dbquedi"), "h")) {
-				const bool = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResultBool();
+				const { bool } = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResult();
 				if (bool) {
 					trigger.getParent().baseDamage++;
 				}

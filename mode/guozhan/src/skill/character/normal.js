@@ -820,7 +820,7 @@ export default {
 		},
 		async content(event, _trigger, player) {
 			const target = event.target;
-			const bool = await player.chooseToCompare(target, void 0).forResultBool();
+			const { bool } = await player.chooseToCompare(target, void 0).forResult();
 			if (!bool) {
 				return void (await player.damage(target));
 			}
@@ -1250,12 +1250,12 @@ export default {
 				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), void 0, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
-				const links = await player
+				const { links } = await player
 					.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]])
 					.set("ai", button => {
 						return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
 					})
-					.forResultLinks();
+					.forResult();
 				if (!links?.length) {
 					return;
 				}
@@ -1946,7 +1946,7 @@ export default {
 			});
 			next.set("logSkill", event.skill);
 			next.setHiddenSkill(event.skill);
-			const control = await next.forResultControl();
+			const { control } = await next.forResult();
 			if (control == "cancel2") {
 				return;
 			}

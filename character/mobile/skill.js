@@ -3779,7 +3779,7 @@ const skills = {
 				}
 			}
 			if (target.hp <= player.hp || target.countCards("h") <= player.countCards("h")) {
-				const bool = await player.chooseBool("援护：是否摸一张牌？").forResultBool();
+				const { bool } = await player.chooseBool("援护：是否摸一张牌？").forResult();
 				if (!bool) {
 					return;
 				}
@@ -4882,10 +4882,10 @@ const skills = {
 					} else {
 						const card = { name: "sha", isCard: true };
 						if (player.canUse(card, evt.player, false)) {
-							const bool = await player
+							const { bool } = await player
 								.chooseBool("积戾", `是否对${get.translation(evt.player)}视为使用一张杀？`)
 								.set("choice", get.effect(evt.player, card, player, player) > 0)
-								.forResultBool();
+								.forResult();
 							if (bool) {
 								await player.useCard(card, evt.player, false);
 							}
@@ -7682,12 +7682,12 @@ const skills = {
 				const links =
 					cards.length == 1
 						? cards
-						: await player
+						: (await player
 								.chooseButton(["博鉴：请选择要分配的牌", cards], true)
 								.set("ai", button => {
 									return get.value(button.link);
 								})
-								.forResultLinks();
+								.forResult()).links;
 				const togive = links[0];
 				const result = await player.chooseTarget("选择获得" + get.translation(togive) + "的角色", true).set("ai", target => {
 					const player = get.player();
@@ -7801,7 +7801,7 @@ const skills = {
 				}
 				list.sort((a, b) => b[1] - a[1]);
 				let colors = list.filter(i => i[1] == list[0][1]).map(i => i[0]);
-				const control = colors.length == 1 ? colors[0] : await player.chooseControl(colors).set("prompt", "济危：请选择一个颜色").forResultControl();
+				const control = colors.length == 1 ? colors[0] : (await player.chooseControl(colors).set("prompt", "济危：请选择一个颜色").forResult()).control;
 				let togive = player.getCards("h").filter(card => get.color(card) == control.slice(0, -1));
 				if (_status.connectMode) {
 					game.broadcastAll(() => (_status.noclearcountdown = true));
@@ -8294,7 +8294,7 @@ const skills = {
 			const control =
 				choices.length == 1
 					? choices[0]
-					: await list[1]
+					: (await list[1]
 							.chooseControl(choices)
 							.set("choiceList", choiceList)
 							.set("prompt", "悖逆：请选择一项")
@@ -8306,7 +8306,7 @@ const skills = {
 								return eff1 > eff2 ? "选项一" : "选项二";
 							})
 							.set("target", list[0])
-							.forResultControl();
+							.forResult()).control;
 			if (control == "选项一") {
 				await list[1].useCard(sha, list[0], false, "noai");
 			} else {
@@ -8339,7 +8339,7 @@ const skills = {
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
-			const control = await player
+			const { control } = await player
 				.chooseControl(choices, "cancel2")
 				.set("choiceList", choiceList)
 				.set("prompt", get.prompt(event.name.slice(0, -5)))
@@ -8360,7 +8360,7 @@ const skills = {
 					}
 					return choices.randomGet();
 				})
-				.forResultControl();
+				.forResult();
 			event.result = {
 				bool: control != "cancel2",
 				cost_data: control,
@@ -8370,7 +8370,7 @@ const skills = {
 			if (event.cost_data == "选项一") {
 				await player.recover();
 			} else {
-				const targets = await player
+				const { targets } = await player
 					.chooseTarget(
 						"选择一名角色弃置其至多两张牌",
 						(card, player, target) => {
@@ -8382,7 +8382,7 @@ const skills = {
 						const player = get.player();
 						return get.effect(target, { name: "guohe_copy2" }, player, player);
 					})
-					.forResultTargets();
+					.forResult();
 				if (!targets || !targets.length) {
 					return;
 				}
@@ -11567,14 +11567,14 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const targets = await player
+			const { targets } = await player
 				.chooseTarget(get.prompt2("mbyilie"), lib.filter.notMe, true)
 				.set("ai", function (target) {
 					let player = _status.event.player;
 					return Math.max(1 + get.attitude(player, target) * get.threaten(target), Math.random());
 				})
 				.set("animate", false)
-				.forResultTargets();
+				.forResult();
 			if (targets) {
 				const target = targets[0];
 				player.line(target, "green");
