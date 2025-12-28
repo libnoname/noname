@@ -16,7 +16,6 @@ declare interface NonameHookType {
 	 */
 	addNature(nature: string, translation: string, config: Record<string, unknown>): any;
 
-	// #region Assembly-Compatition
 	/**
 	 *
 	 * @param event - 当前检查的事件
@@ -85,7 +84,6 @@ declare interface NonameHookType {
 	 * @param event - 当前检查的事件
 	 */
 	uncheckTarget(target: Player, event: GameEvent): any;
-	// #endregion
 
 	/**
 	 *
@@ -94,7 +92,6 @@ declare interface NonameHookType {
 	 */
 	checkOverflow(itemOption: Dialog, itemContainer: Dialog, addedItems: Dialog, game: Game): any;
 	checkTipBottom(player: Player): void;
-	// #endregion
 
 	/**
 	 *
@@ -102,7 +99,6 @@ declare interface NonameHookType {
 	 * @param player - 当前检查的玩家
 	 */
 	checkDamage1(event: GameEvent, player: Player): any;
-	// #endregion
 
 	/**
 	 *
@@ -110,7 +106,6 @@ declare interface NonameHookType {
 	 * @param player - 当前检查的玩家
 	 */
 	checkDamage2(event: GameEvent, player: Player): any;
-	// #endregion
 
 	/**
 	 *
@@ -118,7 +113,6 @@ declare interface NonameHookType {
 	 * @param player - 当前检查的玩家
 	 */
 	checkDamage3(event: GameEvent, player: Player): any;
-	// #endregion
 
 	/**
 	 *
@@ -126,29 +120,26 @@ declare interface NonameHookType {
 	 * @param player - 当前检查的玩家
 	 */
 	checkDamage4(event: GameEvent, player: Player): any;
-	// #endregion
 
 	/**
 	 *
 	 * @param skill - 获得的技能
 	 * @param player - 当前检查的玩家
 	 */
-	addSkillCheck(skill: string, player: Player ): any;
-	// #endregion
-
+	addSkillCheck(skill: string, player: Player): any;
 	/**
 	 *
 	 * @param skill - 失去的技能
 	 * @param player - 当前检查的玩家
 	 */
-	removeSkillCheck(skill: string, player: Player ): any;
-	// #endregion
+	removeSkillCheck(skill: string, player: Player): any;
 
 	/**
 	 *
 	 * @param name - 切换的原画
 	 * @param skin - 切换的皮肤
 	 */
-	refreshSkin(name: string, skin: Player ): any;
-	// #endregion
+	refreshSkin(name: string, skin: Player): any;
+
+	[key: string]: (...args: any[]) => any;
 }
