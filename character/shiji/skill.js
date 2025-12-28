@@ -410,7 +410,7 @@ const skills = {
 			return ["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].some(i => !player.hasSkill(i));
 		},
 		async cost(event, trigger, player) {
-			const { result } = await player.chooseButton([get.prompt(event.skill), [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !player.hasSkill(i)), "vcard"]]).set("ai", () => Math.random());
+			const result = await player.chooseButton([get.prompt(event.skill), [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !player.hasSkill(i)), "vcard"]]).set("ai", () => Math.random()).forResult();
 			event.result = {
 				bool: result.bool,
 				cost_data: result.links?.[0][2],
@@ -883,7 +883,7 @@ const skills = {
 		onremove: true,
 		logAudio: () => 1,
 		async cost(event, trigger, player) {
-			const { result } = await player.chooseButton([get.prompt(event.skill), [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !player.hasSkill(i)), "vcard"]]).set("ai", () => Math.random());
+			const result = await player.chooseButton([get.prompt(event.skill), [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !player.hasSkill(i)), "vcard"]]).set("ai", () => Math.random()).forResult();
 			event.result = {
 				bool: result.bool,
 				cost_data: result.links?.[0][2],
@@ -5428,12 +5428,10 @@ const skills = {
 			}
 			const card = links[0];
 			event.card = card;
-			const {
-				result: { bool, targets },
-			} = await player.chooseTarget(`将${get.translation(card)}交给一名其他角色并摸一张牌`, lib.filter.notMe, true).set("ai", target => {
+			const { bool, targets } = await player.chooseTarget(`将${get.translation(card)}交给一名其他角色并摸一张牌`, lib.filter.notMe, true).set("ai", target => {
 				const evt = _status.event.getParent();
 				return get.attitude(evt.player, target) * get.value(evt.card, target) * (target.hasSkillTag("nogain") ? 0.1 : 1);
-			});
+			}).forResult();
 			event.result = {
 				bool: bool,
 				targets: targets,

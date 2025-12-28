@@ -5049,14 +5049,14 @@ export default () => {
 				async content(event, trigger, player) {
 					const { player: target } = trigger;
 					player.line(target, "fire");
-					const netx = target.judge(card => {
+					const next = target.judge(card => {
 						if (get.color(card) == "red") {
 							return -5;
 						}
 						return 5;
 					});
-					netx.judge2 = result => result.bool;
-					const { result } = await netx;
+					next.judge2 = result => result.bool;
+					const result = await next.forResult();
 					if (!result?.bool) {
 						target.damage("fire");
 					}

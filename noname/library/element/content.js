@@ -4157,7 +4157,7 @@ player.removeVirtualEquip(card);
 								next.set("forceDie", true);
 								next.set("arrangeSkill", true);
 								next.set("includeOut", true);
-								const { result } = await next;
+								const result = await next.forResult();
 								//千里走单骑全责，把敌人打死可能会打断chooseControl
 								if (result) {
 									event.current = usableSkills.find(info => info.skill == skillsToChoose[result.index]);
@@ -13618,7 +13618,7 @@ player.removeVirtualEquip(card);
 						return [top, cards];
 				}
 			};
-		const { result } = await next;
+		const result = await next.forResult();
 		const top = result?.moved?.[0] || [];
 		const bottom = result?.moved?.[1] || [];
 		top.reverse();

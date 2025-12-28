@@ -20,9 +20,7 @@ export default {
 				list.push("拿牌");
 			}
 			list.push("cancel2");
-			const {
-				result: { control },
-			} = await player
+			const { control } = await player
 				.chooseControl(list)
 				.set("prompt", get.prompt2("rejianxiong_old"))
 				.set("ai", () => {
@@ -41,7 +39,7 @@ export default {
 						}
 					}
 					return "摸牌";
-				});
+				}).forResult();
 			event.result = { bool: control != "cancel2", cost_data: { result: control } };
 		},
 		/**
@@ -583,13 +581,14 @@ export default {
 					await player.moveCard();
 				}
 			} else if (trigger.name == "phaseDraw") {
-				const { result } = await player
+				const result = await player
 					.chooseTarget([1, 2], "获得至多两名角色各一张手牌", function (card, player, target) {
 						return target != player && target.countCards("h");
 					})
 					.set("ai", target => {
 						return 1 - get.attitude(get.player(), target);
-					});
+					})
+					.forResult();
 				if (!result.bool) {
 					return;
 				}
@@ -828,13 +827,14 @@ export default {
 			if (!game.hasPlayer(player => player != target && target.inRange(player))) {
 				return;
 			}
-			const { result } = await player
+			const result = await player
 				.chooseTarget((card, player, target) => {
 					const source = _status.event?.source;
 					return target != source && source?.inRange(target);
 				}, true)
 				.set("ai", target => get.damageEffect(target, _status.event?.source, player))
-				.set("source", target);
+				.set("source", target)
+				.forResult();
 			if (!result.bool || !result.targets || !result.targets.length) {
 				return;
 			}
@@ -2448,7 +2448,7 @@ export default {
 			} = event;
 			trigger.cancel();
 			await player.discard(cards);
-			const { result } = await player
+			const result = await player
 				// @ts-expect-error 类型系统未来可期
 				.chooseControlList(true, (event, player) => get.event().index, [`令${get.translation(target)}受到伤害来源对其造成的1点伤害，然后摸X张牌（X为其已损失体力值且至多为5）`, `令${get.translation(target)}失去1点体力，然后获得${get.translation(cards)}`])
 				.set(
@@ -2460,7 +2460,8 @@ export default {
 						}
 						return att > 0 ? 0 : 1;
 					})()
-				);
+				)
+				.forResult();
 			if (typeof result.index != "number") {
 				return;
 			}
@@ -2543,14 +2544,12 @@ export default {
 				.sortBySeat(player);
 			for (const i of targets) {
 				const aim = list[1 - list.indexOf(i)];
-				const {
-					result: { bool },
-				} = await i.chooseBool(get.prompt("gz_hanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
+				const { bool } = await i.chooseBool(get.prompt("gz_hanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
 					"choice",
 					aim.hasCard(card => {
 						return get.value(card, aim) * get.attitude(i, aim) < 0;
 					}, "e")
-				);
+				).forResult();
 				if (bool) {
 					users.push(i);
 				}

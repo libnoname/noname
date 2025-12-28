@@ -1322,7 +1322,7 @@ export const carryOutJunling = async (event, _trigger, player) => {
 			}
 
 			for (let i = 0; i < 2 && player.countCards("he") > 0; i++) {
-				const { result } = await player.chooseCard("交给" + get.translation(source) + "第" + get.cnNumber(i + 1) + "张牌（共两张）", "he", true);
+				const result = await player.chooseCard("交给" + get.translation(source) + "第" + get.cnNumber(i + 1) + "张牌（共两张）", "he", true).forResult();
 				if (result.cards?.length) {
 					await player.give(result.cards, source);
 				}
@@ -1352,7 +1352,7 @@ export const carryOutJunling = async (event, _trigger, player) => {
 				position += "e";
 				num0++;
 			}
-			const { result } = await player
+			const result = await player
 				.chooseCard(
 					"选择一张手牌和一张装备区内牌（若有），然后弃置其余的牌",
 					position,
@@ -1368,7 +1368,8 @@ export const carryOutJunling = async (event, _trigger, player) => {
 				.set("complexCard", true)
 				.set("ai", function (card) {
 					return get.value(card);
-				});
+				})
+				.forResult();
 
 			if (!result.bool || !result.cards?.length) {
 				return;

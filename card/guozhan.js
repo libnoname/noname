@@ -99,9 +99,7 @@ game.import("card", function () {
 							choices.remove(current[judge] == "wei" ? "得牌" : "弃牌");
 						}
 						if (choices.length > 1) {
-							const {
-								result: { control },
-							} = await current
+							const { control } = await current
 								.chooseControl(choices)
 								.set("prompt", "号令天下：请选择其中一项")
 								.set("target", target)
@@ -123,7 +121,8 @@ game.import("card", function () {
 										return "弃牌";
 									}
 									return "cancel2";
-								});
+								})
+								.forResult();
 							if (control != "cancel2") {
 								if (control == "出杀") {
 									if (current[judge] != "wei") {

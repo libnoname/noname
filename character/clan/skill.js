@@ -898,7 +898,7 @@ const skills = {
 					return 7 - get.value(card);
 				});
 			nextx._args.remove("glow_result");
-			const { result } = await nextx;
+			const result = await nextx.forResult();
 			const lose_list = [],
 				cards = [];
 			for (let i = 0; i < result.length; i++) {
@@ -2060,7 +2060,7 @@ const skills = {
 				judgeEvent.set("callback", async event => {
 					event.getParent().orderingCards.remove(event.card);
 				});
-				const { result } = await judgeEvent;
+				const result = await judgeEvent.forResult();
 				if (!result?.card) {
 					break;
 				} else {
@@ -2420,14 +2420,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
-			const {
-				result: { cards },
-			} = await player.discardPlayerCard(target, true).set("ai", function (button) {
+			const { cards } = await player.discardPlayerCard(target, true).set("ai", function (button) {
 				if (!["basic", "equip"].includes(get.type(button.link))) {
 					return 0;
 				}
 				return Math.random();
-			});
+			}).forResult();
 			if (["basic", "equip"].includes(get.type(cards[0]))) {
 				await player.chooseUseTarget({ name: "sha", isCard: true }, cards);
 			}
@@ -2443,9 +2441,7 @@ const skills = {
 					return event.getParent(2).name == "clanpoxi";
 				},
 				async content(event, trigger, player) {
-					const {
-						result: { bool },
-					} = await player.chooseBool("破袭：是否令此牌不可被响应？");
+					const { bool } = await player.chooseBool("破袭：是否令此牌不可被响应？").forResult();
 					if (bool) {
 						trigger.directHit.addArray(trigger.targets);
 					}
@@ -2478,7 +2474,7 @@ const skills = {
 		trigger: { player: ["phaseUseBegin", "damageEnd"] },
 		async cost(event, trigger, player) {
 			const count = Math.min(4, player.countMark("clananran_used") + 1);
-			const { result } = await player
+			const result = await player
 				.chooseButton([
 					get.prompt2(event.skill),
 					[
@@ -2502,7 +2498,8 @@ const skills = {
 						})
 						.slice(0, count)
 						.reduce((sum, target) => sum + get.effect(target, { name: "draw" }, player, player), 0);
-				});
+				})
+				.forResult();
 			event.result = {
 				bool: result.bool,
 				cost_data: result.links?.[0],
@@ -2522,7 +2519,7 @@ const skills = {
 				player.addTempSkill(tag, map);
 				await player.draw(count).set("gaintag", [tag]);
 			} else {
-				const { result } = await player.chooseTarget(`岸然：令至多${get.cnNumber(count)}名角色各摸一张牌`, [1, count], true);
+				const result = await player.chooseTarget(`岸然：令至多${get.cnNumber(count)}名角色各摸一张牌`, [1, count], true).forResult();
 				if (result.targets?.length) {
 					for (const i of result.targets.sortBySeat()) {
 						i.addTempSkill(tag, map);
@@ -3274,16 +3271,14 @@ const skills = {
 			);
 			const cards = event.cards.filterInD("d");
 			if (cards.some(card => player.hasUseTarget(card))) {
-				const {
-					result: { bool, links },
-				} = await player
+				const { bool, links } = await player
 					.chooseButton(["离论：是否使用其中的一张牌？", cards])
 					.set("filterButton", button => {
 						return get.event("player").hasUseTarget(button.link);
 					})
 					.set("ai", button => {
 						return get.event("player").getUseValue(button.link);
-					});
+					}).forResult();
 				if (bool) {
 					const card = links[0];
 					player.$gain2(card, false);
@@ -3371,7 +3366,7 @@ const skills = {
 			if (boolx) {
 				let draw = false;
 				if (goon) {
-					const { result } = await player.chooseBool("是否与" + get.translation(trigger.player) + "各摸一张牌？").set("choice", get.attitude(player, trigger.player) > 0 || trigger.player.countCards("h") > player.countCards("h"));
+					const result = await player.chooseBool("是否与" + get.translation(trigger.player) + "各摸一张牌？").set("choice", get.attitude(player, trigger.player) > 0 || trigger.player.countCards("h") > player.countCards("h")).forResult();
 					if (result?.bool) {
 						draw = true;
 					}
@@ -3404,9 +3399,7 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			const {
-				result: { bool },
-			} = await player
+			const { bool } = await player
 				.chooseToDiscard((card, player) => {
 					return get.color(card, player) == "black" && lib.filter.cardDiscardable(card, player);
 				}, "he")
@@ -3421,7 +3414,8 @@ const skills = {
 					}
 					return goon ? get.number(card) : 1 / (get.value(card) || 0.5);
 				})
-				.set("logSkill", "clanqiajue");
+				.set("logSkill", "clanqiajue")
+				.forResult();
 			if (bool) {
 				player
 					.when({
@@ -3483,7 +3477,7 @@ const skills = {
 					list.removeArray(Object.values(storage));
 					if (list.length) {
 						const dialog = ["百出：选择记录一种普通锦囊牌", [list, "vcard"]];
-						const { result } = await player.chooseButton(dialog, true).set("ai", function (button) {
+						const result = await player.chooseButton(dialog, true).set("ai", function (button) {
 							const player = get.player(),
 								name = button.link[2];
 							if (name == get.event().getTrigger().card.name) {
@@ -3493,7 +3487,7 @@ const skills = {
 								return 114514;
 							}
 							return get.effect(player, { name: name }, player, player) * (1 + player.countCards("hs", name));
-						});
+						}).forResult();
 						if (result?.bool && result?.links?.length) {
 							const key = `${get.suit(trigger.card)}+${get.type2(trigger.card)}`,
 								name = result.links[0][2];
@@ -4013,7 +4007,7 @@ const skills = {
 			const num1 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "clanyuzhi", name === "roundStart" ? 1 : 0).reduce((sum, evt) => sum + evt.cards.length, 0);
 			switch (name) {
 				case "roundStart": {
-					const { result } = await player
+					const result = await player
 						.chooseCard(
 							"迂志：请展示一张手牌",
 							"摸此牌牌名字数的牌。本轮结束时弃置此牌，若本轮你使用的牌数或上一轮你以此法摸的牌数小于此牌牌名字数，则你受到1点雷属性伤害或失去〖保族〗。",
@@ -4038,7 +4032,8 @@ const skills = {
 								}) <
 								1
 						)
-						.set("num", num1);
+						.set("num", num1)
+						.forResult();
 					if (result?.bool && result.cards?.length) {
 						await player.showCards(result.cards, get.translation(player) + "发动了【迂志】");
 						player.addGaintag(result.cards, "clanyuzhi");
@@ -4645,14 +4640,15 @@ const skills = {
 				async content(event, trigger, player) {
 					let cards = player.getStorage("clanmingjie_record").slice().filterInD("d");
 					while (cards.some(card => get.position(card, true) == "d" && player.hasUseTarget(card))) {
-						const { result } = await player
+						const result = await player
 							.chooseButton(["铭戒：是否使用这些牌？", cards])
 							.set("filterButton", button => {
 								return get.player().hasUseTarget(button.link);
 							})
 							.set("ai", button => {
 								return get.player().getUseValue(button.link);
-							});
+							})
+							.forResult();
 						if (result.bool) {
 							const card = result.links[0];
 							cards.remove(card);

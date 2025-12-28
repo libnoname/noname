@@ -880,7 +880,7 @@ const skills = {
 			);
 		},
 		async cost(event, trigger, player) {
-			const { result } = await player.chooseButtonTarget({
+			const result = await player.chooseButtonTarget({
 				createDialog: [
 					"任行：你可选择一项",
 					[
@@ -926,7 +926,7 @@ const skills = {
 					const player = get.player();
 					return get.effect(target, { name: "guohe_copy2" }, player, player);
 				},
-			});
+			}).forResult();
 			event.result = {
 				bool: result?.bool,
 				targets: result?.targets,
@@ -2657,7 +2657,7 @@ const skills = {
 							return;
 						}
 						const list = get.addNewRowList(cards, "color");
-						const { result } = await player.chooseButtonTarget({
+						const result = await player.chooseButtonTarget({
 							createDialog: [
 								[
 									[[`润微：选择一名角色令其获得其中一种颜色的牌`], "addNewRow"],
@@ -2696,7 +2696,7 @@ const skills = {
 								}
 								return get.attitude(player, target);
 							},
-						});
+						}).forResult();
 						if (result?.links?.length && result?.targets.length) {
 							const target = result.targets[0],
 								gain = cards.filter(card => get.color(card, false) == result.links[0]);
@@ -3450,7 +3450,7 @@ const skills = {
 		popup: false,
 		async cost(event, trigger, player) {
 			const list = get.addNewRowList(player.getCards("h"), "suit", player);
-			const { result } = await player
+			const result = await player
 				.chooseButton([
 					[
 						[[`${get.translation(event.skill)}：请选择一个花色的牌`], "addNewRow"],
@@ -3482,7 +3482,8 @@ const skills = {
 						return 5 - button.links.length;
 					}
 					return 0;
-				});
+				})
+				.forResult();
 			if (result?.bool && result?.links?.length) {
 				event.result = {
 					bool: result?.bool,
@@ -4282,7 +4283,7 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
-				const { result } = await player.chooseButton([`###${get.prompt(event.skill)}###获得一张智囊或摸两张牌`, [get.zhinangs(), "vcard"], [["摸两张牌", "取消"], "tdnodes"]], true).set("ai", button => {
+				const result = await player.chooseButton([`###${get.prompt(event.skill)}###获得一张智囊或摸两张牌`, [get.zhinangs(), "vcard"], [["摸两张牌", "取消"], "tdnodes"]], true).set("ai", button => {
 					const player = get.player();
 					const { link } = button;
 					if (Array.isArray(link)) {
@@ -4295,7 +4296,7 @@ const skills = {
 						return get.effect(player, { name: "draw" }, player, player) * 2;
 					}
 					return 0;
-				});
+				}).forResult();
 				event.result = {
 					bool: result?.bool && result?.links?.[0] != "取消",
 					cost_data: result?.links,
@@ -4565,7 +4566,7 @@ const skills = {
 				logTarget: "target",
 				async content(event, trigger, player) {
 					const { target } = trigger;
-					const { result } = await target.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card)).set("ai", card => {
+					const result = await target.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card)).set("ai", card => {
 						const player = get.player(),
 							trigger = get.event().getTrigger();
 						if (get.effect(player, trigger.card, trigger.player, player) >= 0) {
@@ -4579,7 +4580,7 @@ const skills = {
 							return 0;
 						}
 						return 8 - get.value(card);
-					});
+					}).forResult();
 					if (!result?.bool) {
 						trigger.set("directHit", true);
 						game.log(target, "不可响应", trigger.card);

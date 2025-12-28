@@ -369,9 +369,7 @@ export default {
 		audio: "benghuai",
 		inherit: "benghuai",
 		async content(event, trigger, player) {
-			const {
-				result: { control },
-			} = await player
+			const { control } = await player
 				.chooseControl("体力", "上限", "背水！")
 				.set("prompt", "崩坏：请选择一项")
 				.set("choiceList", ["失去1点体力", "减1点体力上限", "背水！依次执行前两项，然后执行一个额外的摸牌阶段"])
@@ -381,7 +379,8 @@ export default {
 						return "背水！";
 					}
 					return player.isDamaged() ? "上限" : "体力";
-				});
+				})
+				.forResult();
 			// @ts-expect-error 类型系统未来可期
 			player.popup(control);
 			game.log(player, "选择了", "#g" + control);

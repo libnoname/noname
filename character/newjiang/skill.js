@@ -34,7 +34,7 @@ const skills = {
 		async content(event, trigger, player) {
 			if (event.triggername == "useCardToTarget") {
 				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
-				const { result } = await trigger.player
+				const result = await trigger.player
 					.chooseToDiscard(`忧叹：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`, "he")
 					.set("ai", card => {
 						const { eff } = get.event();
@@ -43,7 +43,8 @@ const skills = {
 						}
 						return 0;
 					})
-					.set("eff", eff);
+					.set("eff", eff)
+					.forResult();
 				if (!result?.bool) {
 					trigger.getParent().excluded.add(player);
 				}
@@ -780,7 +781,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
-			const { result } = await player
+			const result = await player
 				.chooseButton([
 					"神锋：请选择一项",
 					[
@@ -805,7 +806,8 @@ const skills = {
 				})
 				.set("target", trigger.target)
 				.set("evt", trigger.getParent())
-				.set("ai", button => Math.random());
+				.set("ai", button => Math.random())
+				.forResult();
 			if (!result?.links?.length) {
 				return;
 			}
@@ -888,13 +890,14 @@ const skills = {
 				return;
 			}
 			await player.gain(card, "gain2");
-			const { result } = await player
+			const result = await player
 				.chooseTarget("选择一名角色获得技能")
 				.set("ai", target => {
 					const player = get.player();
 					return get.attitude(player, target);
 				})
-				.set("forced", true);
+				.set("forced", true)
+				.forResult();
 			const name = get.bingzhu(card).randomGet();
 			if (!result?.targets?.length) {
 				return;
@@ -909,12 +912,13 @@ const skills = {
 			if (!skills.length) {
 				player.chat("没有技能喵");
 			} else {
-				const { result } = await player
+				const result = await player
 					.chooseButton([`选择一个技能令${get.translation(target)}获得`, [skills, "skill"]])
 					.set("ai", button => {
 						return get.priority(button.link);
 					})
-					.set("forced", true);
+					.set("forced", true)
+					.forResult();
 				if (result?.links?.length) {
 					await target.addSkills(result.links[0]);
 				}
@@ -1711,7 +1715,7 @@ const skills = {
 						return;
 					}
 					num++;
-					const { result: result2 } = await player.chooseBool(`是否继续与${get.translation(trigger.source)}拼点？（已赢${num}次）`).set("choice", Math.random() > 0.7);
+					const result2 = await player.chooseBool(`是否继续与${get.translation(trigger.source)}拼点？（已赢${num}次）`).set("choice", Math.random() > 0.7).forResult();
 					if (!result2.bool) {
 						return;
 					}
@@ -1933,7 +1937,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
-			const { result } = await player.chooseToCompare(target);
+			const result = await player.chooseToCompare(target).forResult();
 			const { winner } = result;
 			if (winner) {
 				const cards = [result.player, result.target].filterInD("d").filter(card => winner.hasUseTarget(card));
@@ -4805,10 +4809,11 @@ const skills = {
 			const history = game.getAllGlobalHistory("useCard");
 			const index = history.indexOf(trigger);
 			const previous = history[index - 1].player;
-			const { result } = await trigger.player
+			const result = await trigger.player
 				.chooseBool("是否对" + get.translation(previous) + "发动【联对】？", "令" + get.translation(previous) + "摸两张牌")
 				.set("ai", () => _status.event.bool)
-				.set("bool", get.effect(previous, { name: "draw" }, trigger.player, trigger.player) > 0);
+				.set("bool", get.effect(previous, { name: "draw" }, trigger.player, trigger.player) > 0)
+				.forResult();
 			if (result.bool) {
 				event.result = { bool: true, cost_data: previous };
 			}
@@ -6658,9 +6663,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const cards = get.info(event.skill).getCards(player);
-			const {
-				result: { bool, links },
-			} = await player.chooseButton(["俭吝：你可以获得其中一张牌", cards]).set("ai", get.buttonValue);
+			const { bool, links } = await player.chooseButton(["俭吝：你可以获得其中一张牌", cards]).set("ai", get.buttonValue).forResult();
 			event.result = {
 				bool: bool,
 				cost_data: links,

@@ -1313,15 +1313,14 @@ const skills = {
 									}
 								});
 						}
-						const {
-							targets,
-							num1,
-							result: { player: card, num2 },
-						} = await player
+						const next = await player
 							.chooseToCompare(event.targets, card => {
 								return get.number(card);
 							})
 							.setContent("chooseToCompareMeanwhile");
+
+						const { player: card, num2 } = await next.forResult();
+						const { targets, num1 } = next;
 						player.markAuto("renhuoluan", card);
 						let max = 0,
 							min = 14,
@@ -4505,9 +4504,7 @@ const skills = {
 						return Math.random();
 					});
 					next.set("skills", skills);
-					const {
-						result: { bool, links },
-					} = await next;
+					const { bool, links } = await next.forResult();
 					event.result = {
 						bool: bool,
 						cost_data: links,

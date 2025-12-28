@@ -2052,9 +2052,7 @@ const skills = {
 				if (trigger.player.isDamaged()) {
 					list.unshift("回复体力");
 				}
-				const {
-					result: { control },
-				} = await player
+				const { control } = await player
 					.chooseControl(list)
 					.set("prompt", get.prompt(event.skill, trigger.player))
 					.set("prompt2", "令" + get.translation(event.player) + "执行其中一项")
@@ -2065,7 +2063,8 @@ const skills = {
 							return "回复体力";
 						}
 						return get.effect(target, { name: "losehp" }, player, player) > 0 ? "失去体力" : "cancel2";
-					});
+					})
+					.forResult();
 				event.result = {
 					bool: control !== "cancel2",
 					targets: [trigger.player],
@@ -2117,9 +2116,7 @@ const skills = {
 						if (target.countCards("h")) {
 							list.push("弃牌");
 						}
-						const {
-							result: { control },
-						} = await player
+						const { control } = await player
 							.chooseControl(list, "cancel2")
 							.set("prompt", get.prompt("dddzhengjun", target))
 							.set("prompt2", "令" + get.translation(target) + "执行其中一项")
@@ -2130,7 +2127,8 @@ const skills = {
 									return "弃牌";
 								}
 								return get.effect(target, { name: "draw" }, player, player) > 0 ? "摸牌" : "cancel2";
-							});
+							})
+							.forResult();
 						if (control !== "cancel2") {
 							map.hs_target = [target, control];
 						}
@@ -2139,13 +2137,12 @@ const skills = {
 				if (es_targets.length) {
 					let target;
 					if (hs_targets.length === 1) {
-						const {
-							result: { bool },
-						} = await player
+						const { bool } = await player
 							.chooseBool()
 							.set("prompt", get.prompt("dddzhengjun", hs_targets[0]))
 							.set("prompt2", "移动" + get.translation(hs_targets[0]) + "的一张装备牌")
-							.set("choice", () => player.canMoveCard(true, true, hs_targets[0]));
+							.set("choice", () => player.canMoveCard(true, true, hs_targets[0]))
+							.forResult();
 						if (bool) {
 							target = hs_targets[0];
 						}
@@ -3666,7 +3663,7 @@ const skills = {
 							dialog.addArray([`<span class="text center">${str}</span>`, cards[i]]);
 						}
 					}
-					const { result } = await player.chooseControl(choices).set("dialog", dialog);
+					const result = await player.chooseControl(choices).set("dialog", dialog).forResult();
 					cards.splice(result.index, 1);
 					let index = 0;
 					while (index < 2) {
@@ -3705,7 +3702,7 @@ const skills = {
 						const ind = button.link + 1;
 						return player.countCards("h") - player.countExpansions(`dddmiaoxing_${ind}`);
 					});
-					const { result } = await next;
+					const result = await next.forResult();
 					event.result = {
 						bool: result?.bool,
 						cost_data: result?.links,
@@ -3724,9 +3721,9 @@ const skills = {
 							next.gaintag.add(tag);
 							await next;
 						} else if (expansions.length) {
-							const { result } = await player.chooseButton([`淼形：移除${get.cnNumber(-del)}张第${get.cnNumber(link + 1)}组的“水相”`, expansions], -del, true).set("ai", button => {
+							const result = await player.chooseButton([`淼形：移除${get.cnNumber(-del)}张第${get.cnNumber(link + 1)}组的“水相”`, expansions], -del, true).set("ai", button => {
 								return -get.buttonValue(button);
-							});
+							}).forResult();
 							if (result?.bool && result?.links?.length) {
 								await player.loseToDiscardpile(result.links);
 							}
@@ -3760,7 +3757,7 @@ const skills = {
 					dialog.addArray([`<span class="text center">${str}</span>`, cards]);
 				}
 			}
-			const { result } = await player
+			const result = await player
 				.chooseControl(choices, "cancel2")
 				.set("dialog", dialog)
 				.set("ai", () => {
@@ -3777,7 +3774,8 @@ const skills = {
 						].sort((a, b) => b[1] - a[1]);
 						return list[0][0] - 1;
 					})()
-				);
+				)
+				.forResult();
 			event.result = {
 				bool: result?.control !== "cancel2",
 				cost_data: result?.index,

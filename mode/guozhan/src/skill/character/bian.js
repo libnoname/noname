@@ -492,9 +492,7 @@ export default {
 					return player.getStorage("fake_yigui").length;
 				},
 				async cost(event, trigger, player) {
-					const {
-						result: { bool, links },
-					} = await player.chooseButton([get.prompt("fake_jihun"), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fake_yigui"), "character"]], [1, 2]).set("ai", button => {
+					const { bool, links } = await player.chooseButton([get.prompt("fake_jihun"), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fake_yigui"), "character"]], [1, 2]).set("ai", button => {
 						const getNum = character => {
 							return (
 								// @ts-expect-error 类型系统未来可期
@@ -514,7 +512,7 @@ export default {
 						};
 						// @ts-expect-error 类型系统未来可期
 						return game.countPlayer() - getNum(button.link);
-					});
+					}).forResult();
 					event.result = { bool: bool, cost_data: links };
 				},
 				async content(event, trigger, player) {
@@ -755,7 +753,7 @@ export default {
 		logTarget: "targets",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await player.gainPlayerCard(target, "e", true);
+			const result = await player.gainPlayerCard(target, "e", true).forResult();
 
 			if (!result.bool) {
 				return;

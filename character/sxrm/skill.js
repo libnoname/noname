@@ -1468,7 +1468,7 @@ const skills = {
 				if (!target.countCards("h")) {
 					continue;
 				}
-				const { result } = await target
+				const result = await target
 					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true, "allowChooseAll")
 					.set("targetx", player)
 					.set("ai", card => {
@@ -1487,7 +1487,8 @@ const skills = {
 							val = get.value(card, targetx) - val;
 						}
 						return val;
-					});
+					})
+					.forResult();
 				if (!result?.cards?.length) {
 					continue;
 				}
@@ -2398,7 +2399,8 @@ const skills = {
 		frequent: true,
 		logTarget: "target",
 		async content(event, trigger, player) {
-			const { cards } = await game.cardsGotoOrdering(get.bottomCards(4));
+			const cards = get.bottomCards(4);
+			await game.cardsGotoOrdering(cards);
 			if (cards.map(i => get.suit(i)).toUniqued().length > 3) {
 				const result = await player
 					.chooseBool(`是否展示并获得${get.translation(cards)}？`)

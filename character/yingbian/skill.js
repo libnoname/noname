@@ -872,7 +872,7 @@ const skills = {
 			} = event;
 			player.line(target, "green");
 			const str = get.translation(target);
-			const { result } = await player
+			const result = await player
 				.chooseControl()
 				.set("choiceList", [`令${str}的手牌上限+1`, `令${str}的攻击范围+1`, `令${str}摸一张牌`])
 				.set("ai", () => {
@@ -885,7 +885,8 @@ const skills = {
 					}
 					return 2;
 				})
-				.set("target", target);
+				.set("target", target)
+				.forResult();
 			if (result?.index == 2) {
 				await target.draw();
 			} else if ([0, 1].includes(result?.index)) {
@@ -1018,7 +1019,7 @@ const skills = {
 			if (!target.hasCard(lib.filter.cardRecastable, "he")) {
 				return;
 			}
-			const { result } = await target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable);
+			const result = await target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable).forResult();
 			if (result?.bool && result?.cards?.length) {
 				await target.recast(result.cards);
 			}
@@ -1528,9 +1529,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			if (trigger.name == "useCard") {
 				const cards = trigger.cards.filterInD();
-				const {
-					result: { bool, targets },
-				} = await player.chooseTarget(get.prompt(event.name.slice(0, -5)), `令一名其他角色获得${get.translation(cards)}`, lib.filter.notMe).set("ai", target => {
+				const { bool, targets } = await player.chooseTarget(get.prompt(event.name.slice(0, -5)), `令一名其他角色获得${get.translation(cards)}`, lib.filter.notMe).set("ai", target => {
 					let att = get.attitude(get.player(), target);
 					if (att < 3) {
 						return 0;
@@ -1542,7 +1541,7 @@ const skills = {
 						att /= 10;
 					}
 					return att / (1 + get.distance(player, target, "absolute"));
-				});
+				}).forResult();
 				event.result = {
 					bool: bool,
 					targets: targets,
@@ -3685,9 +3684,7 @@ const skills = {
 				str += "，然后获得其余的牌";
 			}
 			str += "？";
-			const {
-				result: { bool, links },
-			} = await player
+			const { bool, links } = await player
 				.chooseButton([str, cards])
 				.set("ai", button => {
 					const card = button.link;
@@ -3703,7 +3700,8 @@ const skills = {
 					return get.value(cards) - get.value(card) - 2;
 				})
 				.set("source", target)
-				.setHiddenSkill(event.skill);
+				.setHiddenSkill(event.skill)
+				.forResult();
 			event.result = {
 				bool: bool,
 				targets: [target],

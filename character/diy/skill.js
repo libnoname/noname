@@ -2654,7 +2654,7 @@ const skills = {
 					list[i] = [get.type(list[i]), "", list[i]];
 				}
 			}
-			const { result } = await player
+			const result = await player
 				.chooseButton([get.prompt(event.skill), [list, "vcard"]])
 				.set("filterButton", function (button) {
 					return player.hasUseTarget({
@@ -2669,7 +2669,8 @@ const skills = {
 						nature: button.link[3],
 						isCard: true,
 					});
-				});
+				})
+				.forResult();
 			if (result.bool) {
 				event.result = {
 					bool: true,
@@ -3861,7 +3862,7 @@ const skills = {
 					return true;
 				}, "hs")
 			) {
-				const { result } = await target
+				const result = await target
 					.chooseCard(`${target == trigger.player ? "你" : get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，请打出一张手牌进行改判`, "hs", card => {
 						const player = get.player();
 						const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
@@ -3888,7 +3889,8 @@ const skills = {
 							return -result / Math.max(0.1, get.value(card));
 						}
 					})
-					.set("judging", trigger.player.judging[0]);
+					.set("judging", trigger.player.judging[0])
+					.forResult();
 				if (result?.cards?.length) {
 					const { cards } = await target.respond(result.cards, "highlight", "noOrdering").set("nopopup", true);
 					if (cards?.length) {
@@ -4062,7 +4064,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const list = ["lebu", "bingliang"].filter(name => player.hasCard(card => player.canAddJudge({ name: name, cards: [card] }) && get.type2(card) != "trick", "he"));
-			const { result } = await player.chooseButton([get.prompt2(event.skill), [list.map(name => [get.type(name), "", name]), "vcard"]]).set("ai", button => {
+			const result = await player.chooseButton([get.prompt2(event.skill), [list.map(name => [get.type(name), "", name]), "vcard"]]).set("ai", button => {
 				const player = get.player();
 				if (button.link[2] == "lebu") {
 					return 0;
@@ -4075,7 +4077,7 @@ const skills = {
 					return Math.random();
 				}
 				return 0;
-			});
+			}).forResult();
 			event.result = {
 				bool: result?.bool,
 				cost_data: result?.links,
@@ -4507,7 +4509,7 @@ const skills = {
 		inherit: "wangxi",
 		async content(event, trigger, player) {
 			const target = get.info(event.name).logTarget(trigger, player);
-			const { result } = await player.draw(2);
+			const result = await player.draw(2).forResult();
 			if (get.itemtype(result) == "cards" && target.isIn() && player.hasCard(card => result.includes(card), "he")) {
 				await player.chooseToGive(target, "he", true, card => get.event("cards")?.includes(card)).set("cards", result);
 			}
@@ -5803,9 +5805,7 @@ const skills = {
 					lib.translate[skill + "_info"] +
 					"</div></div>",
 			]);
-			const {
-				result: { bool, links },
-			} = await player
+			const { bool, links } = await player
 				.chooseButton([`###百鸣###<div class="text center">你可以获得其中一个技能</div>`, [list, "textbutton"]])
 				.set("displayIndex", false)
 				.set("ai", button => {
@@ -5825,7 +5825,8 @@ const skills = {
 						}
 						return ["使用【杀】时", "使用【杀】指定"].some(str => get.skillInfoTranslation(skill, player).includes(str));
 					})
-				);
+				)
+				.forResult();
 			event.result = {
 				bool: bool,
 				cost_data: links,

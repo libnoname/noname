@@ -960,7 +960,7 @@ game.import("card", function () {
 									return target == _status.event.choice ? 1 : -1;
 								});
 								next.set("choice", choice);
-								const { result } = await next;
+								const result = await next.forResult();
 								if (result?.bool && result?.targets?.length) {
 									const card = player.getCards("e", i => i[i.cardSymbol] == muniu)[0];
 									if (card) {

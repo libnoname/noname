@@ -1080,7 +1080,7 @@ const card = {
 			if (list.length) {
 				var dialog = ui.create.dialog("卜天术", [list, "vcard"]);
 				var bing = event.target.countCards("h") <= 1;
-				const { result } = await player
+				const result = await player
 					.chooseButton(dialog, true, function (button) {
 						if (get.effect(event.target, { name: button.link[2] }, player, player) > 0) {
 							if (button.link[2] === "bingliang") {
@@ -1104,7 +1104,8 @@ const card = {
 					})
 					.set("filterButton", function (button) {
 						return !event.target.hasJudge(button.link[2]);
-					});
+					})
+					.forResult();
 				if (result.links && result.links[0]) {
 					var card = game.createCard(result.links[0][2]);
 					event.judgecard = card;
@@ -1266,9 +1267,7 @@ const card = {
 			var yanzi = game.hasPlayer(function (current) {
 				return get.attitude(player, current) > 0 && current.isMinHandcard();
 			});
-			const {
-				result: { links },
-			} = await player
+			const { links } = await player
 				.chooseButton(dialog, true, function (button) {
 					var player = _status.event.player; //QQQ
 					var name = button.link[2];
@@ -1326,7 +1325,8 @@ const card = {
 						});
 					}
 					return true;
-				});
+				})
+				.forResult();
 			if (links && links[0]) {
 				player.chooseUseTarget(true, game.createCard(links[0][2], event.card.suit, event.card.number));
 			}

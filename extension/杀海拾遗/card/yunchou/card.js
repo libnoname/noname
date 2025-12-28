@@ -375,7 +375,7 @@ const card = {
 			}
 			const hs = player.getCards("h");
 			if (hs.length) {
-				const { result } = await player
+				const result = await player
 					.chooseButton(2, [`###偷梁换柱###<div class="text center">你可以选择你与${get.translation(target)}其的各一张手牌以交换</div>`, `<div class="text center">${get.translation(target)}的手牌</div>`, target.getCards("h"), '<div class="text center">你的手牌</div>', hs])
 					.set("filterButton", button => {
 						if (!ui.selected.buttons.length) {
@@ -395,7 +395,8 @@ const card = {
 						const cardx = ui.selected.buttons[0].link;
 						return 6 + (get.color(cardx, player) == get.color(link, target) ? 3 : 1) - get.value(link);
 					})
-					.set("target", target);
+					.set("target", target)
+					.forResult();
 				if (result?.links?.length == 2) {
 					const {links} = result;
 					if (get.owner(links[0]) != player) {
