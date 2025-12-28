@@ -5932,10 +5932,10 @@ const skills = {
 			await target.loseToDiscardpile(target.getCards("h"));
 			await target.gain(cards, "gain2").set("giver", player);
 			if (player.isDamaged()) {
-				const bool = await target
+				const { bool } = await target
 					.chooseBool("是否令" + get.translation(player) + "回复1点体力？")
 					.set("choice", get.recoverEffect(player, target, target) > 0)
-					.forResult("bool");
+					.forResult();
 				if (bool) {
 					target.line(player);
 					await player.recover(target);

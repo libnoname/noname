@@ -19301,7 +19301,7 @@ export default {
 			if (!groups?.length) {
 				return;
 			}
-			const newGroup = await player
+			const { control: newGroup } = await player
 				.chooseControl(groups)
 				.set("prompt", "请选择一个新的势力")
 				.set("ai", (event, player) => {
@@ -19316,7 +19316,7 @@ export default {
 					return groups.maxBy(getn);
 				})
 				.set("groups", groups)
-				.forResult("control");
+				.forResult();
 			if (newGroup != player.identity) {
 				const next = game.createEvent("changeGroupInGuozhan", false);
 				next.player = player;

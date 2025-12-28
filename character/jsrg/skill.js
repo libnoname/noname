@@ -188,7 +188,7 @@ const skills = {
 				})
 				.sortBySeat();
 			for (const target of targets) {
-				const bool = await target
+				const { bool } = await target
 					.chooseBool(`是否也成为${get.translation(trigger.card)}的目标？`, `若最终目标数大于${get.translation(source)}手牌中的黑色牌数，则此牌无效。`)
 					.set("ai", () => get.event("choice"))
 					.set(
@@ -200,7 +200,7 @@ const skills = {
 							return game.countPlayer(current => trigger.targets.includes(current) || get.attitude(current, player) > 0) > trigger.player.countCards("h");
 						})()
 					)
-					.forResult("bool");
+					.forResult();
 				if (bool) {
 					target.addExpose(0.15);
 					target.chat("我也上！");
@@ -891,7 +891,7 @@ const skills = {
 				if (targets.length === 1) {
 					[target] = targets;
 				} else {
-					[target] = await player
+					[target] = (await player
 						.chooseTarget(true, "暴威：对一名目标角色造成2点伤害", (card, player, target) => {
 							return get.event("targets").includes(target);
 						})
@@ -900,7 +900,7 @@ const skills = {
 							const player = get.player();
 							return get.damageEffect(target, player, player) * (1.1 - get.sgn(get.attitude(player, target)));
 						})
-						.forResult("targets");
+						.forResult()).targets;
 				}
 				player.line(target, "green");
 				target.damage(2);
@@ -925,13 +925,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.target;
 			if (target.countCards("h") > 0) {
-				const [card] = await player
+				const { cards: [card] } = await player
 					.choosePlayerCard(target, true, "h", "visible")
 					.set("ai", button => {
 						//开摆，直接随机选，不考虑有的没的
 						return get.event().getRand(button.link.cardid);
 					})
-					.forResult("cards");
+					.forResult();
 				const videoId = lib.status.videoId++;
 				game.addVideo("showCards", player, [`${get.translation(player)}对${get.translation(target)}发动了【扫奸】`, get.cardsInfo([card])]);
 				game.broadcastAll(
@@ -951,13 +951,13 @@ const skills = {
 				await game.delay(3);
 				game.broadcastAll("closeDialog", videoId);
 				for (let i = 0; i < 5; i++) {
-					const discarded = await target
+					const { cards: discarded } = await target
 						.chooseToDiscard("h", true)
 						.set("ai", card => {
 							//开摆，直接随机弃牌，不考虑有的没的
 							return get.event().getRand(card.cardid);
 						})
-						.forResult("cards");
+						.forResult();
 					if (!discarded || !discarded.length || discarded[0] === card) {
 						break;
 					}
@@ -1398,7 +1398,7 @@ const skills = {
 				//谁手牌少就选谁，没啥要考虑的
 				return 1 / (1 + target.countCards("h"));
 			});
-			const sources = await next.forResult("targets");
+			const { targets: sources } = await next.forResult();
 			sources.sortBySeat();
 			player.line(sources, "thunder");
 			for (let source of sources) {
@@ -1482,7 +1482,7 @@ const skills = {
 				choices.push(`令${get.translation(current)}本回合的手牌上限+2`);
 			}
 			//暂时不写AI，默认摸牌，先爽再说
-			const control = await player.chooseControl("cancel2").set("choiceList", choices).forResult("control");
+			const { control } = await player.chooseControl("cancel2").set("choiceList", choices).forResult();
 			if (control !== "cancel2") {
 				event.result = {
 					bool: true,
@@ -1530,7 +1530,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			const targets = await target
+			const { targets } = await target
 				.chooseTarget([1, 2], true, "请选择至多两名角色", `${get.translation(player)}对你发动了【纵害】。你可以选择至多两名角色，只有他（们）可以使用牌拯救你，且当此次濒死结算结束后，他（们均）会受到来自${get.translation(player)}的1点伤害。`)
 				.set("ai", target => {
 					//自救还要挨一刀，最好的反制方法就是跟对面爆了
@@ -1540,7 +1540,7 @@ const skills = {
 					return get.damageEffect(target, source, player);
 				})
 				.set("forceDie", true)
-				.forResult("targets");
+				.forResult();
 			target.line(targets);
 			game.log(target, "选择了", targets);
 			targets.sortBySeat(_status.currentPhase || player);

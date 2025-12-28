@@ -1816,7 +1816,7 @@ const skills = {
 											const player = get.player();
 											return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
 										})
-										.forResult("targets")) ?? [];
+										.forResult()).targets ?? [];
 								if (target) {
 									player.line(target);
 									await player.discardPlayerCard(target, "ej", true);
@@ -3492,7 +3492,7 @@ const skills = {
 					_status.noclearcountdown = true;
 				});
 			}
-			const [bool, links] = await player
+			const { bool, links } = await player
 				.chooseButton([`集筹：将${num < cards.length ? "至多" + get.cnNumber(num) + "张牌" : "任意张牌"}交给等量角色`, cards], "allowChooseAll")
 				.set("selectButton", [1, num])
 				.set("population", [game.countPlayer(current => get.attitude(player, current) > 0), game.countPlayer(current => get.attitude(player, current) < 0)])
@@ -3507,9 +3507,9 @@ const skills = {
 					}
 					return 2 + get.value(card);
 				})
-				.forResult("bool", "links");
+				.forResult();
 			if (bool) {
-				const [bool, targets] = await player
+				const { bool, targets } = await player
 					.chooseTarget(`集筹：请选择${get.cnNumber(links.length)}名角色`, `操作提示：请按照顺序选择要交给牌的目标，令这些角色按顺序获得这些牌：${get.translation(links)}`, true, links.length)
 					.set(
 						"values",
@@ -3524,7 +3524,7 @@ const skills = {
 						}
 						return 0.01 - att;
 					})
-					.forResult("bool", "targets");
+					.forResult();
 				if (_status.connectMode) {
 					game.broadcastAll(() => {
 						delete _status.noclearcountdown;
@@ -3616,7 +3616,7 @@ const skills = {
 				.map(card => get.name(card))
 				.unique().length;
 			if (count > toKeepCount) {
-				const [bool, cards] = await player
+				const { bool, cards } = await player
 					.chooseCard("自缚：选择要保留的手牌", "选择不同牌名的手牌各一张，然后弃置其余手牌", toKeepCount)
 					.set("filterCard", card => {
 						if (!ui.selected.cards.length) {
@@ -3630,7 +3630,7 @@ const skills = {
 					})
 					.set("complexCard", true)
 					.set("ai", get.value)
-					.forResult("bool", "cards");
+					.forResult();
 				if (!bool) {
 					return;
 				}
@@ -10717,7 +10717,7 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		forced: true,
 		async content(event, trigger, player) {
-			const index = await player
+			const { index } = await player
 				.chooseControl()
 				.set("prompt", "夙仇：请选择一项")
 				.set("choiceList", ["失去1点体力，本阶段使用牌不可被响应", "减1点体力上限，本阶段使用牌不可被响应", "失去〖夙仇〗"])
@@ -10728,7 +10728,7 @@ const skills = {
 					}
 					return 1;
 				})
-				.forResult("index");
+				.forResult();
 			switch (index) {
 				case 0:
 					await player.loseHp();

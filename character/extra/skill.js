@@ -6490,7 +6490,7 @@ const skills = {
 				const control =
 					tags.length === 1
 						? tags[0]
-						: await player
+						: (await player
 								.chooseControl(tags)
 								.set(
 									"choiceList",
@@ -6506,7 +6506,7 @@ const skills = {
 								)
 								.set("displayIndex", false)
 								.set("prompt", "险峻：选择激活一个副区域标签")
-								.forResult("control");
+								.forResult()).control;
 				game.log(player, "激活了副区域", "#y" + get.translation(control));
 				player.markAuto("dctuoyu", [control]);
 				player.popup(get.translation(control + "_tag"));

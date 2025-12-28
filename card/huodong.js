@@ -2060,7 +2060,7 @@ game.import("card", function () {
 					});
 					if (targets.length == 1) {
 						const target = targets[0];
-						const bool = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult("bool");
+						const { bool } = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult();
 						event.result = { bool: bool, targets: targets };
 					} else {
 						event.result = await player

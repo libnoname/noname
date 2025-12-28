@@ -4591,7 +4591,7 @@ const skills = {
 				}
 				await game.delayx();
 			}
-			const index = await player
+			const { index } = await player
 				.chooseControl()
 				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌", "获得牌堆顶第" + get.cnNumber(num) + "张牌下的两张牌"])
 				.set("prompt", "归汉：请选择一项")
@@ -4601,7 +4601,7 @@ const skills = {
 					return player.hasSkillTag("nogain") ? 1 - index : index;
 				})
 				.set("num", num)
-				.forResult("index");
+				.forResult();
 			if (index == 0 && num > 0) {
 				await player.draw(num);
 			} else if (ui.cardPile.childElementCount > num) {
@@ -5585,11 +5585,11 @@ const skills = {
 			if (!target.countCards("h")) {
 				choice = 1;
 			} else {
-				choice = await player
+				choice = (await player
 					.chooseControl()
 					.set("choiceList", ["观看" + str + "的手牌并将其中至多" + get.cnNumber(num) + "张牌置于牌堆顶", "令" + str + "摸" + get.cnNumber(num) + "张牌"])
 					.set("ai", () => (get.attitude(get.player(), get.event().getTrigger().player) > 0 ? 1 : 0))
-					.forResult("index");
+					.forResult()).index;
 			}
 			if (typeof choice != "number") {
 				return;
@@ -5629,11 +5629,11 @@ const skills = {
 					if (gives.length == 1) {
 						give = 0;
 					} else {
-						give = await player
+						give = (await player
 							.chooseControl(gives)
 							.set("ai", () => 0)
 							.set("prompt", "仙援：将任意枚“仙援”标记分配给" + get.translation(target))
-							.forResult("index");
+							.forResult()).index;
 					}
 					if (typeof give != "number") {
 						return;
@@ -8731,7 +8731,7 @@ const skills = {
 					});
 					if (targets.length == 1) {
 						const target = targets[0];
-						const bool = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult("bool");
+						const { bool } = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult();
 						event.result = { bool: bool, targets: targets };
 					} else {
 						event.result = await player
@@ -12417,7 +12417,7 @@ const skills = {
 						choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 					}
 					choices.push("cancel2");
-					const control = await player
+					const { control } = await player
 						.chooseControl(choices)
 						.set("prompt", "雄争：是否选择一项？")
 						.set("choiceList", choiceList)
@@ -12450,7 +12450,7 @@ const skills = {
 							}
 							return "cancel2";
 						})
-						.forResult("control");
+						.forResult();
 					event.result = {
 						bool: control && control !== "cancel2",
 						cost_data: [control, [list2, list]],

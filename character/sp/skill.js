@@ -2420,7 +2420,7 @@ const skills = {
 			const list = skills.filter(i => !player.hasSkill(i, null, false, false));
 			const skill =
 				list.length > 1
-					? await player
+					? (await player
 							.chooseControl(list)
 							.set(
 								"choiceList",
@@ -2431,7 +2431,7 @@ const skills = {
 							.set("displayIndex", false)
 							.set("prompt", get.translation(event.name) + "：请选择你要获得的技能")
 							.set("ai", () => get.rand(0, 1))
-							.forResult("control")
+							.forResult()).control
 					: list[0];
 			if (skill) {
 				await player.addSkills(skill);
@@ -2455,7 +2455,7 @@ const skills = {
 								}
 								return get.attitude(player, target);
 							})
-							.forResult("targets")) ?? [];
+							.forResult()).targets ?? [];
 					if (target) {
 						player.line(target);
 						await target.addSkills(skill2);
@@ -2593,14 +2593,14 @@ const skills = {
 					const target = event.targets[0],
 						str = get.translation(target);
 					player.unmarkAuto("oldici_effect", target);
-					const bool = await player
+					const { bool } = await player
 						.chooseToGive(target, "h", "交给" + str + "一张手牌，或受到" + str + "对你造成的1点雷属性伤害")
 						.set("ai", card => {
 							const { player, target } = get.event();
 							return 7 - get.value(card) - get.damageEffect(player, target, player, "thunder");
 						})
 						.set("target", target)
-						.forResult("bool");
+						.forResult();
 					if (!bool) {
 						await player.damage(1, target, "thunder");
 					}
@@ -2618,7 +2618,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			await player.draw(3);
-			const bool = await player
+			const { bool } = await player
 				.chooseToUse(
 					function (card, player, event) {
 						if (get.name(card) !== "sha") {
@@ -2632,7 +2632,7 @@ const skills = {
 					get.event().player?.chat("雪豹我们走");
 				})
 				.set("addCount", false)
-				.forResult("bool");
+				.forResult();
 			if (!bool) {
 				player.chat("雪豹闭嘴");
 			}
@@ -40944,7 +40944,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，是否发动【真仪】，失去「紫薇♠」标记并修改判定结果？`;
-					const control = await player
+					const { control } = await player
 						.chooseControl("黑桃5", "红桃5", "cancel2")
 						.set("prompt", get.prompt(event.skill))
 						.set("prompt2", str)
@@ -40974,7 +40974,7 @@ const skills = {
 								return "cancel2";
 							}
 						})
-						.forResult("control");
+						.forResult();
 					event.result = {
 						bool: control && control !== "cancel2",
 						cost_data: control,

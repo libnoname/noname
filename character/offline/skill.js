@@ -24261,7 +24261,7 @@ const skills = {
 		inherit: "yanxi",
 		async content(event, trigger, player) {
 			const target = event.target;
-			const [card] = await player.choosePlayerCard(target, "h", true).forResult("cards");
+			const { cards: [card] } = await player.choosePlayerCard(target, "h", true).forResult();
 			if (card) {
 				const videoId = lib.status.videoId++;
 				game.addVideo("showCards", player, [`${get.translation(player)}对${get.translation(target)}发动了【宴戏】`, get.cardsInfo([card])]);
@@ -24895,7 +24895,7 @@ const skills = {
 			let suits = lib.suit.slice().reverse(),
 				num = 0;
 			while (suits.length > 0) {
-				const control = await target
+				const { control } = await target
 					.chooseControl(suits)
 					.set("prompt", "奇袭：猜测" + get.translation(player) + "选择的牌的花色")
 					.set("ai", () => {
@@ -24906,7 +24906,7 @@ const skills = {
 						}
 						return controls.randomGet();
 					})
-					.forResult("control");
+					.forResult();
 				if (control) {
 					target.chat("我猜是" + get.translation(control) + "！");
 					game.log(target, "猜测为", "#y" + control);
@@ -27250,7 +27250,7 @@ const skills = {
 			if (!player.countCards("he") || !game.hasPlayer(current => current != player)) {
 				return;
 			}
-			const [cards, targets] = await player
+			const { cards, targets } = await player
 				.chooseCardTarget({
 					forced: true,
 					prompt: get.prompt("psmouchuan"),
@@ -27266,7 +27266,7 @@ const skills = {
 						return get.attitude(player, target);
 					},
 				})
-				.forResult("cards", "targets");
+				.forResult();
 			if (!cards || !cards.length || !targets || !targets.length) {
 				return;
 			}

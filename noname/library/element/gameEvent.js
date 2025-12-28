@@ -1491,21 +1491,21 @@ export class GameEvent {
 	 * 返回result中的bool项
 	 */
 	forResultBool() {
-		return this.forResult("bool");
+		return this.forResult().then(r => r.bool);
 	}
 
 	/**
 	 * 返回result中的targets项。
 	 */
 	forResultTargets() {
-		return this.forResult("targets");
+		return this.forResult().then(r => r.targets);
 	}
 
 	/**
 	 * 返回result中的cards项
 	 */
 	forResultCards() {
-		return this.forResult("cards");
+		return this.forResult().then(r => r.cards);
 	}
 
 	/**
@@ -1515,21 +1515,21 @@ export class GameEvent {
 	 *
 	 */
 	forResultCard() {
-		return this.forResult("card");
+		return this.forResult().then(r => r.card);
 	}
 
 	/**
 	 * 返回result中的control项。
 	 */
 	forResultControl() {
-		return this.forResult("control");
+		return this.forResult().then(r => r.control);
 	}
 
 	/**
 	 * 返回result中的links项。
 	 */
 	forResultLinks() {
-		return this.forResult("links");
+		return this.forResult().then(r => r.links);
 	}
 
 	/**

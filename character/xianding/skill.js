@@ -9082,7 +9082,7 @@ const skills = {
 				const types = lib.inpile.map(name => get.type2(name)).unique();
 				const choice =
 					types.length > 1
-						? await player
+						? (await player
 								.chooseControl(types)
 								.set("ai", () => {
 									const {
@@ -9094,7 +9094,7 @@ const skills = {
 									return controls.sort((a, b) => att * (target.countCards("h", card => get.type2(card) === a) - target.countCards("h", card => get.type2(card) === b)))[0];
 								})
 								.set("prompt", get.translation(event.name) + "：选择获得类别的牌且" + get.translation(target) + "本回合不能使用此类别的牌")
-								.forResult("control")
+								.forResult()).control
 						: types[0];
 				const card = get.cardPile2(card => get.type2(card) === choice);
 				card ? await player.gain(card, "gain2") : player.chat("什么罐头我说？！");
@@ -9591,7 +9591,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = trigger.targets,
 				storage = player.storage[event.name];
-			const goon = storage[3] || (await player.chooseToCompare(target).forResult("bool"));
+			const goon = storage[3] || (await player.chooseToCompare(target).forResult()).bool;
 			if (!goon) {
 				return;
 			}
@@ -9607,7 +9607,7 @@ const skills = {
 			*/
 			const choice =
 				choices.length > 1
-					? await player
+					? (await player
 							.chooseControl(choices)
 							.set("ai", () => {
 								const player = get.player(),
@@ -9625,7 +9625,7 @@ const skills = {
 							})
 							.set("choiceList", choiceList)
 							.set("prompt", "诀言：请选择一项执行，执行后该项目数值变为1，其余项目数值+1")
-							.forResult("control")
+							.forResult()).control
 					: choices[0];
 			const index = (event.index = list.indexOf(choice));
 			switch (index) {
@@ -9712,7 +9712,7 @@ const skills = {
 			} else {
 				choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "（无法选择）</span>";
 			}
-			const choice = await player
+			const { control: choice } = await player
 				.chooseControl(choices, "cancel2")
 				.set("ai", () => {
 					const player = get.player(),
@@ -9729,7 +9729,7 @@ const skills = {
 				})
 				.set("choiceList", choiceList)
 				.set("prompt", [get.prompt(event.skill), '<div class="text center">你可以选择一项执行，执行后该项目数值变为1，其余项目数值+1</div>'].map(str => "###" + str).join(""))
-				.forResult("control");
+				.forResult();
 			if (!choice || choice === "cancel2") {
 				event.result = { bool: false };
 			} else {
@@ -15089,7 +15089,7 @@ const skills = {
 				target = event.targets[0],
 				num = Math.ceil(target.countCards("h") / 2);
 			player.changeZhuanhuanji("dcsbfumou");
-			let cards = await player
+			let { cards } = await player
 				.choosePlayerCard("覆谋：选择展示" + get.translation(target) + "的至多" + get.cnNumber(num) + "张牌", target, "h", [1, num], true)
 				.set("ai", card => {
 					const player = get.event("player"),
@@ -15102,7 +15102,7 @@ const skills = {
 				})
 				.set("visible", true)
 				.set("storage", storage)
-				.forResult("cards");
+				.forResult();
 			if (!cards.length) {
 				return;
 			}

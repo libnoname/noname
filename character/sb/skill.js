@@ -239,7 +239,7 @@ const skills = {
 				if (vcard.length > 0) {
 					const [link] =
 						vcard.length > 1
-							? await player
+							? (await player
 									.chooseButton(["神速：请选择你要视为使用的【杀】", '<div class="text center">无距离限制' + (goon ? "且不可被响应" : "") + "</div>", [vcard, "vcard"]], true)
 									.set("ai", button => {
 										const {
@@ -250,7 +250,7 @@ const skills = {
 										return Math.max(...game.filterPlayer(target => player.canUse(card, target, false)).map(target => get.effect(target, card, player, player)));
 									})
 									.set("infoMap", [goon, targets])
-									.forResult("links")
+									.forResult()).links
 							: vcard;
 					if (link) {
 						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets }, isCard: true });
@@ -264,7 +264,7 @@ const skills = {
 										game.log(event.card, "不可被响应");
 									}
 								})
-								.forResult("targets")) ?? [];
+								.forResult()).targets ?? [];
 						targets = aims || [];
 						continue;
 					}

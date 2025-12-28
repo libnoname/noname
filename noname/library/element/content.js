@@ -382,7 +382,7 @@ export const Content = {
 				newGroups = get.is.double(player.name2, true) || [get.character(player.name2, 1)];
 			}
 			if (newGroups.length > 1) {
-				const newGroup = await player.chooseControl(newGroups).set("prompt", "请选择一个新的势力").forResult("control");
+				const { control: newGroup } = await player.chooseControl(newGroups).set("prompt", "请选择一个新的势力").forResult();
 				if (newGroup != player.group) {
 					await player.changeGroup(newGroup);
 				}
