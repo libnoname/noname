@@ -1,7 +1,7 @@
 import { _status, get, lib, game, ai, ui } from "noname";
 import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
 import dedent from "dedent";
 

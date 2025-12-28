@@ -365,7 +365,7 @@ export class Create {
 
 		if (language === "javascript" || language === "typescript") {
 			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
-			const { default: security } = await import("@/util/security.js");
+			const { security } = await import("@/util/sandbox.js");
 			let proxyWindow = Object.assign({}, window, {
 				_status: _status,
 				lib: lib,

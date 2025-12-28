@@ -1,7 +1,7 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
 import { nonameInitialized } from "@/util/index.js";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js"
 import { Character } from "@/library/element/index.js";
 
 export const extensionMenu = function (connectMenu) {

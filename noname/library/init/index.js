@@ -1,7 +1,7 @@
 import { rootURL, get, lib, game, _status, ui } from "noname";
 import { LibInitPromises } from "./promises.js";
 import { ContentCompiler } from "@/library/element/gameEvent.js";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js";
 
 export class LibInit {
 	

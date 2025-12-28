@@ -59,9 +59,9 @@ https://www.gnu.org/licenses/gpl-3.0.html
 		alert(`《无名杀》加载内容失败
 浏览器UA信息: 
 ${userAgentLowerCase}
-报错信息: 
+错误信息: 
 ${e instanceof Error ? e.stack : String(e)}
-若您不理解该报错信息，请依次检查：
+若您不理解该信息，请依次检查：
 1. 游戏文件是否完整（重新下载完整包）
 2. 客户端是否需要更新
 3. 浏览器是否需要更新

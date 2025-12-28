@@ -2,9 +2,8 @@
 import { rootURL, lib, game, get, _status, ui, ai } from "noname";
 import { userAgentLowerCase } from "@/util/index.js";
 import * as config from "@/util/config.js";
-import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
-import security from "@/util/security.js";
+import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
@@ -39,7 +38,7 @@ export async function boot() {
 	_status.event = lib.element.GameEvent.initialGameEvent();
 
 	setWindowListener();
-	const promiseErrorHandler = await setOnError({ lib, game, get, _status });
+	setOnError({ lib, game, get, _status });
 
 	await loadConfig();
 
@@ -310,24 +309,11 @@ export async function boot() {
 		for (const promise of extensionsImporting) {
 			await promise.catch(async error => {
 				extErrorList.add(error);
-				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
-					return;
-				}
-				// @ts-expect-error ignore
-				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
 		for (const promise of _status.extensionLoading) {
 			await promise.catch(async error => {
-				if (extErrorList.includes(error)) {
-					return;
-				}
 				extErrorList.add(error);
-				if (!promiseErrorHandler || !promiseErrorHandler.onHandle) {
-					return;
-				}
-				// @ts-expect-error ignore
-				await promiseErrorHandler.onHandle({ promise });
 			});
 		}
 		// await Promise.allSettled(_status.extensionLoading);

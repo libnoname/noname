@@ -5,8 +5,7 @@ import * as pinyinPro from "pinyin-pro";
 import NonameDictionary from "./pinyins/noname-dict.js";
 import { Audio } from "./audio.ts";
 import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction, userAgentLowerCase } from "@/util/index.js";
-import security from "@/util/security.js";
-import { CodeSnippet, ErrorManager } from "@/util/error.ts";
+import { security, CodeSnippet, ErrorManager } from "@/util/sandbox.js";
 
 import JSZip from "jszip";
 import { HTMLPoptipElement } from "@/library/poptip.js";

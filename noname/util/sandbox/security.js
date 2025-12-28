@@ -1055,7 +1055,7 @@ if (SANDBOX_DEV) {
 	});
 }
 
-const exports = {
+export const security = {
 	enterSandbox,
 	exitSandbox,
 	currentSandbox,
@@ -1076,5 +1076,4 @@ const exports = {
 	SANDBOX_ENABLED,
 };
 
-Object.freeze(exports);
-export default exports;
+Object.freeze(security);

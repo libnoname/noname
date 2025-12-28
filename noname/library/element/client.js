@@ -1,5 +1,5 @@
 import { _status, game, get, lib, ui } from "noname";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js";
 
 export class Client {
 	/**

@@ -15,8 +15,7 @@ import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
-import security from "@/util/security.js";
-import { ErrorManager } from "@/util/error.ts";
+import { security, ErrorManager } from "@/util/sandbox.js";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";

@@ -2,7 +2,7 @@ import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwi
 import { ui, game, get, ai, lib, _status } from "noname";
 import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "@/library/update.js";
 import { createApp } from "vue";
-import security from "@/util/security.js"
+import { security } from "@/util/sandbox.js"
 import dedent from "dedent";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {

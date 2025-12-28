@@ -15,7 +15,11 @@ export async function importCharacterPack(name) {
 	const alreadyModernCharacterPack = lib.config.moderned_chracters || [];
 	const path = alreadyModernCharacterPack.includes(name) ? `/character/${name}/index` : `/character/${name}`;
 	await importFunction("character", path).catch(e => {
-		console.warn("如果您在扩展中使用了game.import创建武将包，可将以下代码删除: lib.config.all.characters.push('武将包名');");
+		console.error(`武将包《${name}》加载失败`, e);
+		alert(`武将包《${name}》加载失败
+错误信息: 
+${e instanceof Error ? e.stack : String(e)}
+如果您在扩展中使用了game.import创建武将包，可将以下代码删除: lib.config.all.characters.push('武将包名');`);
 	});
 }
 
@@ -31,16 +35,9 @@ export async function importExtension(name) {
 	}
 	await importFunction("extension", `/extension/${name}/extension`).catch(e => {
 		console.error(`扩展《${name}》加载失败`, e);
-		let remove = confirm(`扩展《${name}》加载失败，是否移除此扩展？此操作不会移除目录下的文件。\n错误信息: \n${(e instanceof Error ? e.stack : String(e))}`);
-		if (remove) {
-			lib.config.extensions.remove(name);
-			if (lib.config[`@Experimental.extension.${name}.character`]) {
-				game.saveConfig(`@Experimental.extension.${name}.character`);
-			}
-			if (lib.config[`@Experimental.extension.${name}.card`]) {
-				game.saveConfig(`@Experimental.extension.${name}.card`);
-			}
-			game.saveConfig("extensions", lib.config.extensions);
+		let close = confirm(`扩展《${name}》加载失败，是否关闭此扩展？错误信息: \n${e instanceof Error ? e.stack : String(e)}`);
+		if (close) {
+			game.saveConfig(`extension_${name}_enable`, false);
 		}
 	});
 }
