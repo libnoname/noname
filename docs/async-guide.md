@@ -85,13 +85,13 @@ Promise是JavaScript中的一种异步编程解决方案，它允许你以一种
 
 ```javascript
 let skill = {
-	trigger: {
-		player: "phaseBegin",
-	},
-	content: function () {
-		"step 0"
-		player.draw(2);
-	},
+ trigger: {
+  player: "phaseBegin",
+ },
+ content: function () {
+  "step 0"
+  player.draw(2);
+ },
 };
 ```
 
@@ -101,12 +101,12 @@ let skill = {
 
 ```javascript
 let skill = {
-	trigger: {
-		player: "phaseBegin",
-	},
-	content: async function (event, trigger, player) {
-		await player.draw(2);
-	},
+ trigger: {
+  player: "phaseBegin",
+ },
+ content: async function (event, trigger, player) {
+  await player.draw(2);
+ },
 };
 ```
 
@@ -147,19 +147,19 @@ let skill = {
 
 ```javascript
 let skill = {
-	trigger: {
-		player: "phaseBegin",
-	},
-	content() {
-		"step 0"
-		player.addTempSkill("jiang");
-		player.draw(2);
-		"step 1"
-		if (player.countCards("h") > 5) {
-			player.chooseToDiscard(2, true);
-		}
-		player.addMark("jiang");
-	},
+ trigger: {
+  player: "phaseBegin",
+ },
+ content() {
+  "step 0"
+  player.addTempSkill("jiang");
+  player.draw(2);
+  "step 1"
+  if (player.countCards("h") > 5) {
+   player.chooseToDiscard(2, true);
+  }
+  player.addMark("jiang");
+ },
 };
 ```
 
@@ -234,17 +234,17 @@ function (...) {
 
 ```javascript
 let skill = {
-	trigger: {
-		player: "phaseBegin",
-	},
-	content: async function (event, trigger, player) {
-		player.addTempSkill("jiang");
-		await player.draw(2);
-		if (player.countCards("h") > 5) {
-			await player.chooseToDiscard(2, true);
-		}
-		player.addMark("jiang");
-	},
+ trigger: {
+  player: "phaseBegin",
+ },
+ content: async function (event, trigger, player) {
+  player.addTempSkill("jiang");
+  await player.draw(2);
+  if (player.countCards("h") > 5) {
+   await player.chooseToDiscard(2, true);
+  }
+  player.addMark("jiang");
+ },
 };
 ```
 
@@ -255,36 +255,22 @@ let skill = {
 原先分步情况下你可以在下一步中用 `result`变量来获取上一步事件的结果，而现在，当我们 `await`之后，我们可以这样做：
 
 ```javascript
-let drawEvent = await player.draw(2);
+let cards = await player.draw(2).forResult();
 ```
 
 你或许也发现了，无论是无名杀的分步，还是Javascript原来的回调异步，都会存在“结果”。就好比你做一件事，就算最后没有因为这件事得到任何东西，此时的情况也是一种“结果”
 
-而 `await`也同理，在等待事件结束后，便会得到这个“结果”。而对于 `player.draw(2)`这种常见的，需要分步得到 `result`的，我们称之为“事件“的东西，`await`后返回的，是事件本身；而事件的结果，则是该事件的 `result`属性
+`await`也同理，在等待事件结束后，便会得到这个“结果”。而对于 `player.draw(2)`这种常见的，需要分步得到 `result`的，我们称之为“事件”的东西，其结果是该事件的 `result`属性，而我们可以通过`forResult()`来获取这个结果。
 
 我们把“`await`后会等待后续事物执行完毕，并返回新的东西”的东西，简单的称作能 `await`的东西；在后文中我们会再次讨论这块的内容
 
-换句话说，摸牌函数返回的 `drawEvent`事件，是一个可 `await`的东西；而 `await`一个事件，就是等待一个事件运行结束，并获取这个事件本身
+换句话说，摸牌函数返回的事件，是一个可 `await`的东西；而 `await 一个事件.forResult()`，就是等待一个事件运行结束，并获取结果（`result`属性）
 
-故我们接下来就能这样获取我们所摸的牌：
-
-```javascript
-let cards = drawEvent.result;
-```
-
-如果你不需要事件，只需要对应的结果，无名杀提供了对应的方法，你可以使用 `forResult`函数：
+当然，大部分事件的结果其实是一个通用的模板，其中包括了`bool`、`cards`等一系列属性，我们可以通过[解构赋值](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)语法来方便地获取结果的多个属性。
 
 ```javascript
-let cards = await player.draw(2).forResult();
+let { bool, cards } = await player.chooseToDiscard(2).forResult();
 ```
-
-当然，Javascript也有对应的语法帮助我们，那就是[解构赋值](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)：
-
-```javascript
-let { result: cards } = await player.draw(2);
-```
-
-两种方法都能得到结果，只要不混用就行；如果你对Javascript的新语法不熟悉，只需要简单的使用 `forResult`就行
 
 实际上 `await`没有那么死板，你完全可以把 `await`放在任何你想要的地方，只有能 `await`的情况才会等待，反之会原封不动的将值返回过来
 
@@ -356,8 +342,8 @@ if (event.targets.length) event.redo();
 
 ```javascript
 while (event.targets.length) {
-	let target = event.targets.shift();
-	await target.draw(1);
+ let target = event.targets.shift();
+ await target.draw(1);
 }
 ```
 
@@ -533,8 +519,8 @@ let { promise, resolve } = Promise.withResolvers();
 
 // 监听按钮点击，当按钮点击时执行大括号里面的代码
 button.listen(() => {
-	resolve(); // 结束await的等待
-	game.log("玩家点击了按钮");
+ resolve(); // 结束await的等待
+ game.log("玩家点击了按钮");
 });
 
 // 暂停代码的执行并等待点击
@@ -555,10 +541,10 @@ await promise;
 let v1 = 1;
 
 function funA() {
-	let v2 = 2;
-	function funB() {
-		return v1 + v2; // 访问了两个闭包变量
-	}
+ let v2 = 2;
+ function funB() {
+  return v1 + v2; // 访问了两个闭包变量
+ }
 }
 ```
 

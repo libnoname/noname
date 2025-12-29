@@ -1449,33 +1449,11 @@ export class GameEvent {
 	 * 获取 Result 对象中的信息。
 	 * @example 
 	 * ```js
-	// 示例 1：
 	const chooseCardResult = await player.chooseCard().forResult();
 	// 获取整个结果对象，然后访问如 chooseCardResult.cards 等属性
-	
-	// 示例 2：
-	const cards = await player.chooseCard().forResult('cards');
-	// 获取结果对象中 'cards' 属性的值
-	
-	// 示例 3：
-	const [success, cards, targets] = await player.chooseCardTarget().forResult('bool', 'cards', 'targets');
-	// 获取结果对象中多个属性的值
-	// - success 表示是否成功
-	// - cards 表示选择的卡片
-	// - targets 表示选择的目标
 	```
-	 * @template {keyof Result} T
 	 * @this GameEvent
-	 * @overload
 	 * @returns {Promise<Partial<Result>>}
-	 * 
-	 * @overload
-	 * @param {T} param0
-	 * @returns {Promise<Exclude<Result[T], undefined>>}
-	 * 
-	 * @overload
-	 * @param { T[] } params
-	 * @returns { Promise<Exclude<Result[T], undefined>[]> }
 	 */
 	async forResult(...params) {
 		await this;
