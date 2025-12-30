@@ -1892,16 +1892,8 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { keyof typeof lib.message.client } T
-	 * @overload
-	 * @param { T } func
-	 * @param { ...Parameters<typeof lib.message.client[T]> } args
-	 * @returns { void }
-	 */
-	/**
 	 * @template { any[] } T
-	 * @overload
-	 * @param { (...args: T) => void } func
+	 * @param { (...args: T) => any } func
 	 * @param { ...T } args
 	 * @returns { void }
 	 */
@@ -1916,16 +1908,8 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { keyof typeof lib.message.client } T
-	 * @overload
-	 * @param { T } func
-	 * @param { ...Parameters<typeof lib.message.client[T]> } args
-	 * @returns { void }
-	 */
-	/**
 	 * @template { any[] } T
-	 * @overload
-	 * @param { (...args: T) => void } func
+	 * @param { (...args: T) => any } func
 	 * @param { ...T } args
 	 * @returns { void }
 	 */
@@ -2983,10 +2967,9 @@ export class Game {
 				promise = Promise.resolve(content);
 			}
 
-			promise = promise.then(content2 => {
-				if (content2.name) {
-					lib.imported[type][content2.name] = content2;
-					// delete content2.name;
+			promise = promise.then(result => {
+				if (result.name) {
+					lib.imported[type][result.name] = result;
 				}
 			});
 
