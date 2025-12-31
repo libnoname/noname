@@ -10,17 +10,17 @@ import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPla
 
 // 无名杀，启动！
 export async function boot() {
-	// // 不想看，反正别动
-	// if (typeof __dirname === "string" && __dirname.length) {
-	// 	const dirsplit = __dirname.split("/");
-	// 	for (let i = 0; i < dirsplit.length; i++) {
-	// 		if (dirsplit[i]) {
-	// 			var c = dirsplit[i][0];
-	// 			lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
-	// 		}
-	// 	}
-	// 	lib.configprefix += "_";
-	// }
+	// 不想看，反正别动
+	if (typeof __dirname === "string" && __dirname.length) {
+		const dirsplit = __dirname.split("/");
+		for (let i = 0; i < dirsplit.length; i++) {
+			if (dirsplit[i]) {
+				var c = dirsplit[i][0];
+				lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
+			}
+		}
+		lib.configprefix += "_";
+	}
 
 	await import("./polyfill.js");
 	// 设定游戏加载时间，超过时间未加载就提醒
