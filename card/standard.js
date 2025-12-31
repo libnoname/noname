@@ -1028,7 +1028,7 @@ game.import("card", function () {
 					if (card.storage?.chooseDirection || get.is.versus()) {
 						player
 							.chooseControl("顺时针", "逆时针", function (event, player) {
-								if ((get.event("isVersus") && player.next.side === player.side) || get.attitude(player, player.next) > get.attitude(player, player.previous)) {
+								if ((get.event().isVersus && player.next.side === player.side) || get.attitude(player, player.next) > get.attitude(player, player.previous)) {
 									return "逆时针";
 								}
 								return "顺时针";
@@ -3688,12 +3688,12 @@ game.import("card", function () {
 						trigger.target
 							.chooseToDiscard("弃置一张手牌，或令" + get.translation(player) + "摸一张牌")
 							.set("ai", function (card) {
-								const bool = get.event("bool");
+								const bool = get.event().bool;
 								if (!bool) {
 									return 0;
 								}
 								if (get.name(card) === "shan") {
-									return bool - get.event("shan") * get.value(card);
+									return bool - get.event().shan * get.value(card);
 								}
 								return bool - get.value(card);
 							})
@@ -4056,13 +4056,13 @@ game.import("card", function () {
 					event.result = await next.forResult();
 
 					function filterTarget(card, player, target) {
-						const cardx = get.event("cardx");
+						const cardx = get.event().cardx;
 
 						if (!lib.filter.filterTarget(cardx, player, target)) {
 							return false;
 						}
 
-						const targets = get.event("targets").concat(ui.selected.targets);
+						const targets = get.event().targets.concat(ui.selected.targets);
 
 						if (targets.includes(target)) {
 							return false;
@@ -4082,7 +4082,7 @@ game.import("card", function () {
 
 					function check(target) {
 						const player = get.player();
-						const card = get.event("cardx");
+						const card = get.event().cardx;
 						return get.effect(target, card, player, player);
 					}
 				},

@@ -300,7 +300,7 @@ const skills = {
 				.chooseCard("he", true, "选择一张牌置于" + get.translation(player) + "的武将牌上作为「田」")
 				.set("ai", card => {
 					const player = get.player(),
-						target = get.event("target"),
+						target = get.event().target,
 						att = get.attitude(player, target);
 					if (att <= 0) {
 						return 6 - get.value(card);
@@ -694,7 +694,7 @@ const skills = {
 						.chooseControl([...lib.suit.slice(0).reverse(), "cancel2"])
 						.set("dialog", ["请选择一个花色", player.getCards("h")])
 						.set("ai", () => {
-							const target = get.event("target");
+							const target = get.event().target;
 							const player = get.player();
 							const att = get.attitude(player, target);
 							if (att > 0) {
@@ -901,7 +901,7 @@ const skills = {
 				})(),
 				filterButton(button) {
 					if (button.link == "discard") {
-						return get.event("noShas")?.length;
+						return get.event().noShas?.length;
 					}
 					return _status.currentPhase?.isIn();
 				},
@@ -912,7 +912,7 @@ const skills = {
 				filterTarget(card, player, target) {
 					const link = ui.selected.buttons?.[0]?.link;
 					if (link == "discard") {
-						return get.event("noShas")?.includes(target);
+						return get.event().noShas?.includes(target);
 					}
 					return target == _status.currentPhase || target == player;
 				},
@@ -1723,7 +1723,7 @@ const skills = {
 					.set("displayIndex", false)
 					.set("choice", choice)
 					.set("ai", () => {
-						return get.event("choice");
+						return get.event().choice;
 					})
 					.forResult();
 				event.result = {
@@ -2575,7 +2575,7 @@ const skills = {
 					const target = _status.currentPhase;
 					if (target?.isIn() && get.attitude(get.player(), target) > 0) {
 						if (button.link == "both") {
-							return get.event("count") > 1 ? 0 : 3;
+							return get.event().count > 1 ? 0 : 3;
 						}
 						return 2;
 					}

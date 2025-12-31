@@ -5009,7 +5009,7 @@ export default () => {
 						.chooseToDiscard("he", 2, get.prompt(event.skill), info)
 						.set("logSkill", event.skill)
 						.set("ai", function (card) {
-							const goon = get.event("goon");
+							const goon = get.event().goon;
 							if (goon) {
 								return goon - get.value(card);
 							}
@@ -5059,7 +5059,7 @@ export default () => {
 						control = (await player
 							.chooseControl("lebu", "bingliang")
 							.set("prompt", "请选择要弃置的牌")
-							.set("ai", () => get.event("control"))
+							.set("ai", () => get.event().control)
 							.set(
 								"control",
 								(() => {

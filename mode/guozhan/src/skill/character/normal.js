@@ -24,7 +24,7 @@ export default {
 				.chooseControl(list)
 				.set("prompt", get.prompt2("rejianxiong_old"))
 				.set("ai", () => {
-					const player = get.event("player"),
+					const player = get.event().player,
 						trigger = get.event().getTrigger();
 					const cards = trigger.cards ? trigger.cards.filterInD() : [];
 					// @ts-expect-error 类型就是这么写的
@@ -1152,7 +1152,7 @@ export default {
 				)
 				.set("complexSelect", true)
 				.set("ai", card => {
-					const player = get.event("player"),
+					const player = get.event().player,
 						target = get.event().getTrigger().player;
 					const effect = get.damageEffect(target, player, player);
 					const cards = target.getCards("e", card => get.attitude(player, target) * get.value(card, target) < 0);

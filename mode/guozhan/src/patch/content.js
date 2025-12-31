@@ -1074,7 +1074,7 @@ export const showYexingsContent = async (event, _trigger, player) => {
 			 */
 			function check(_event, _player) {
 				const player = get.player();
-				const source = get.event("source");
+				const source = get.event().source;
 				const friendsCount = target.getFriends(true, false).length;
 
 				if (game.players.length <= 2 * friendsCount) {

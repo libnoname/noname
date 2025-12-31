@@ -374,7 +374,7 @@ export default {
 				.set("prompt", "崩坏：请选择一项")
 				.set("choiceList", ["失去1点体力", "减1点体力上限", "背水！依次执行前两项，然后执行一个额外的摸牌阶段"])
 				.set("ai", () => {
-					const player = get.event("player");
+					const player = get.event().player;
 					if (player.maxHp > 1 && (player.getHp() == 2 || !player.countCards("h"))) {
 						return "背水！";
 					}

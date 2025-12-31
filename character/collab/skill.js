@@ -1591,7 +1591,7 @@ const skills = {
 				const prompt = `弃置一张${get.translation(get.type2(trigger.card, player))}牌令${get.translation(trigger.card)}额外结算一次，否则无效`;
 				const result = await player
 					.chooseToDiscard(prompt, "he", (card, player) => {
-						return get.type2(card, player) == get.event("cardType");
+						return get.type2(card, player) == get.event().cardType;
 					})
 					.set("cardType", get.type2(trigger.card, player))
 					.set("ai", card => {
@@ -2179,7 +2179,7 @@ const skills = {
 				str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
 			}
 			event.result = await player
-				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event("tag")))
+				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event().tag))
 				.set("tag", tag)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
@@ -2421,7 +2421,7 @@ const skills = {
 						prompt2: "交给其中一名角色一张手牌，然后获得其至多两张手牌",
 						filterCard: true,
 						filterTarget(card, player, target) {
-							return get.event("targets").includes(target);
+							return get.event().targets.includes(target);
 						},
 						ai1(card) {
 							const { player, targets } = get.event();
@@ -4524,7 +4524,7 @@ const skills = {
 				next.set("forced", true);
 				next.set("ai", button => {
 					const skill = button.link,
-						choice = get.event("choice");
+						choice = get.event().choice;
 					if (get.info("olhuyi").prioritySkills.includes(skill)) {
 						return 3;
 					}
@@ -4571,7 +4571,7 @@ const skills = {
 					next.set("ai", button => {
 						const player = get.player();
 						const skill = button.link;
-						let skills = get.event("skills").slice(0);
+						let skills = get.event().skills.slice(0);
 						skills.removeArray(get.info("olhuyi").prioritySkills);
 						if (skills.length < 4) {
 							return 0;
@@ -4742,7 +4742,7 @@ const skills = {
 					if (!get.cardPile2(button.link[2])) {
 						return 0;
 					}
-					return get.value({ name: button.link[2] }, get.event("player"));
+					return get.value({ name: button.link[2] }, get.event().player);
 				})
 				.forResult();
 			if (result.bool) {
@@ -4807,7 +4807,7 @@ const skills = {
 						return target != player && !target.hasSkill("dchuanli_zhangzhang");
 					})
 					.set("ai", target => {
-						const player = get.event("player");
+						const player = get.event().player;
 						return (
 							get.rank("zhangzhang", true) -
 							["name", "name1", "name2"].reduce((sum, name) => {
@@ -4841,10 +4841,10 @@ const skills = {
 			if (targets.length) {
 				const result = await player
 					.chooseTarget(get.prompt("dchuanli"), "令一名其他角色的所有技能失效，然后令其获得〖英姿〗和〖反间〗直到其回合结束", (card, player, target) => {
-						return get.event("targets").includes(target);
+						return get.event().targets.includes(target);
 					})
 					.set("ai", target => {
-						const player = get.event("player");
+						const player = get.event().player;
 						return (
 							get.rank("re_zhouyu", true) -
 							["name", "name1", "name2"].reduce((sum, name) => {

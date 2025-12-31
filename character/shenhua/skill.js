@@ -6281,7 +6281,7 @@ const skills = {
 					}
 				)
 				.set("ai2", function () {
-					return get.effect_use.apply(this, arguments) - get.event("effect");
+					return get.effect_use.apply(this, arguments) - get.event().effect;
 				})
 				.set("effect", get.effect(target, { name: "losehp" }, target, target))
 				.set("addCount", false)
@@ -8526,8 +8526,8 @@ const skills = {
 			event.result = await player
 				.chooseBool(get.prompt(event.skill, target), "失去1点体力，令该角色摸两张牌")
 				.set("ai", function () {
-					const player = get.event("player"),
-						target = get.event("target");
+					const player = get.event().player,
+						target = get.event().target;
 					if (get.attitude(player, target) <= 0) {
 						return false;
 					}
@@ -8555,10 +8555,10 @@ const skills = {
 		},
 		preHidden: true,
 		check(event, player) {
-			if (get.attitude(get.event("player"), event.player) <= 0) {
+			if (get.attitude(get.event().player, event.player) <= 0) {
 				return false;
 			}
-			return 2 * get.effect(event.player, { name: "draw" }, player, get.event("player")) + get.effect(player, { name: "losehp" }, player, get.event("player")) > 0;
+			return 2 * get.effect(event.player, { name: "draw" }, player, get.event().player) + get.effect(player, { name: "losehp" }, player, get.event().player) > 0;
 		},
 		async content(event, trigger, player) {
 			player.line(trigger.player, "green");

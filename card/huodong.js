@@ -1095,7 +1095,7 @@ game.import("card", function () {
 							.forResult();
 						/*.set("ai1", () => 114514)
 							.set("ai2", function () {
-								return get.effect_use.apply(this, arguments) - get.event("effect") + 114514;
+								return get.effect_use.apply(this, arguments) - get.event().effect + 114514;
 							})
 							.set(
 								"effect",
@@ -1197,7 +1197,7 @@ game.import("card", function () {
 								}
 							)
 							.set("ai2", function () {
-								return get.effect_use.apply(this, arguments) - get.event("effect");
+								return get.effect_use.apply(this, arguments) - get.event().effect;
 							})
 							.set("effect", get.effect(target, { name: "losehp" }, target, target))
 							.set("addCount", false)

@@ -988,7 +988,7 @@ export default {
 			}
 			const result = await player
 				.chooseTarget("绽火：对一名目标角色造成1点火焰伤害", true, (card, player, target) => {
-					return get.event("targets").includes(target);
+					return get.event().targets.includes(target);
 				})
 				.set("targets", event.targets)
 				.set("ai", target => {
@@ -1240,7 +1240,7 @@ export default {
 			}
 			const result = await player
 				.chooseTarget("夺锐：是否令一名本回合受过伤的角色失效一个技能？", (card, player, target) => {
-					return get.event("selectTarget").includes(target);
+					return get.event().selectTarget.includes(target);
 				})
 				.set("selectTarget", targets)
 				.set("ai", target => {
@@ -3579,7 +3579,7 @@ export default {
 				.set("choiceList", choiceList)
 				.set("prompt", get.prompt(event.skill))
 				.set("ai", () => {
-					return get.event("choice");
+					return get.event().choice;
 				})
 				.set(
 					"choice",
@@ -3849,7 +3849,7 @@ export default {
 			if (targets.length > 1) {
 				event.result = await player
 					.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-						return get.event("targetx").includes(target);
+						return get.event().targetx.includes(target);
 					})
 					.set("targetx", targets)
 					.set("ai", target => {

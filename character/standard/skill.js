@@ -41,7 +41,7 @@ const skills = {
 				return get.type(card) == "basic";
 			});
 			next.set("ai", card => {
-				return get.event("eff") - get.useful(card);
+				return get.event().eff - get.useful(card);
 			});
 			next.set(
 				"eff",
@@ -61,13 +61,13 @@ const skills = {
 			const { bool } = await target
 				.chooseToDiscard("he", "弃置一张装备牌，或受到1点伤害", { type: "equip" })
 				.set("ai", card => {
-					if (get.event("damage") > 0) {
+					if (get.event().damage > 0) {
 						return 0;
 					}
-					if (get.event("noe")) {
+					if (get.event().noe) {
 						return 12 - get.value(card);
 					}
-					return -get.event("damage") - get.value(card);
+					return -get.event().damage - get.value(card);
 				})
 				.set("damage", get.damageEffect(target, player, target))
 				.set("noe", target.hasSkillTag("noe"))

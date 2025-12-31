@@ -1369,7 +1369,7 @@ player.removeVirtualEquip(card);
 						event.aiCard ||
 							function (target) {
 								const getAi =
-									get.event("ai") ||
+									get.event().ai ||
 									function (card) {
 										return Math.random();
 									};
@@ -9603,9 +9603,9 @@ player.removeVirtualEquip(card);
 			return;
 		}
 		var next = player.chooseTarget(2, function (card, player, target) {
-			var filterCard = get.event("filter");
+			var filterCard = get.event().filter;
 			if (ui.selected.targets.length) {
-				if (!get.event("aimTargets").includes(target)) {
+				if (!get.event().aimTargets.includes(target)) {
 					return false;
 				}
 				var from = ui.selected.targets[0];
@@ -9629,11 +9629,11 @@ player.removeVirtualEquip(card);
 				}
 				return false;
 			} else {
-				if (!get.event("sourceTargets").includes(target)) {
+				if (!get.event().sourceTargets.includes(target)) {
 					return false;
 				}
 				return game.hasPlayer(current => {
-					if (!get.event("aimTargets").includes(current) || target == current) {
+					if (!get.event().aimTargets.includes(current) || target == current) {
 						return false;
 					}
 					var js = target.getCards("j", filterCard);
@@ -9663,8 +9663,8 @@ player.removeVirtualEquip(card);
 			var player = _status.event.player;
 			var att = get.attitude(player, target);
 			var sgnatt = get.sgn(att);
-			var aimTargets = get.event("aimTargets"),
-				filterCard = get.event("filter");
+			var aimTargets = get.event().aimTargets,
+				filterCard = get.event().filter;
 			if (ui.selected.targets.length == 0) {
 				if (att > 0) {
 					let noEffect = true;
@@ -9724,7 +9724,7 @@ player.removeVirtualEquip(card);
 				return 0;
 			}
 			const current = ui.selected.targets[0],
-				pos = get.event("nojudge") ? "e" : "ej",
+				pos = get.event().nojudge ? "e" : "ej",
 				cards = current.getCards(pos, filterCard),
 				att2 = get.sgn(get.attitude(player, current));
 			let maxEff = 0;
@@ -9834,7 +9834,7 @@ player.removeVirtualEquip(card);
 					.set("targets1", targets[1])
 					/*.set("filterButton", function (button) {
 				var targets1 = _status.event.targets1;
-				if (!get.event("filter")(button.link)) return false;
+				if (!get.event().filter(button.link)) return false;
 				if (get.position(button.link) == "j") {
 					if (_status.event.nojudge) return false;
 					return targets1.canAddJudge(button.link);

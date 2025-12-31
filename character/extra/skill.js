@@ -2036,7 +2036,7 @@ const skills = {
 					}
 					await target
 						.moveCard(true, source, aim, card => {
-							const cardx = get.event("card");
+							const cardx = get.event().card;
 							if (get.itemtype(card) == "card") {
 								return card == cardx;
 							}
@@ -2641,7 +2641,7 @@ const skills = {
 			const result = await player
 				.chooseControl(list)
 				.set("prompt", get.prompt2(event.skill))
-				.set("ai", () => get.event("bool"))
+				.set("ai", () => get.event().bool)
 				.set("bool", bool)
 				.forResult();
 			event.result = {
@@ -3261,7 +3261,7 @@ const skills = {
 				.set("prompt", "弃置一种颜色的所有手牌")
 				.set("resultC", colors[0])
 				.set("ai", () => {
-					return get.event("resultC");
+					return get.event().resultC;
 				})
 				.forResult();
 			if (result.control) {
@@ -4553,7 +4553,7 @@ const skills = {
 			let result = await player
 				.chooseControlList(list)
 				.set("ai", function () {
-					let player = get.event("player"),
+					let player = get.event().player,
 						damaged = player.getDamagedHp();
 					if (damaged) {
 						damaged +=
@@ -4754,8 +4754,8 @@ const skills = {
 							.set("ai", button => {
 								const player = get.player(),
 									card = button.link,
-									suits = get.event("suits");
-								if (!get.event("goon")) {
+									suits = get.event().suits;
+								if (!get.event().goon) {
 									return 0;
 								}
 								if (!suits.includes(get.suit(card))) {
@@ -4847,7 +4847,7 @@ const skills = {
 				.set("ai", button => {
 					const player = get.player(),
 						card = button.link,
-						suits = get.event("suits");
+						suits = get.event().suits;
 					const getNum = player => {
 						var list = [];
 						for (var i of lib.suit) {
@@ -5061,7 +5061,7 @@ const skills = {
 				const next = player.chooseButton(["连破：请选择一项", [skills.map(i => [i, `获得【${get.translation(i)}】`]).concat(["于此回合结束后获得一个额外回合"]), "textbutton"]]);
 				next.set("ai", button => {
 					const link = button.link,
-						skills = get.event("skills");
+						skills = get.event().skills;
 					if ((skills.length <= 2 || game.countPlayer() <= 2) && !player.hasSkill("xinlianpo_mark", null, null, false) && link == "于此回合结束后获得一个额外回合") {
 						return 6;
 					}
@@ -5139,14 +5139,14 @@ const skills = {
 						if (ui.selected.buttons[0].link == "摸牌") {
 							return link <= 1;
 						}
-						return link == get.event("num") - 1;
+						return link == get.event().num - 1;
 					}
 					return true;
 				});
 				next.set("ai", button => {
 					const link = button.link,
-						num = get.event("num"),
-						skills = get.event("skills");
+						num = get.event().num,
+						skills = get.event().skills;
 					if (!ui.selected.buttons.length) {
 						if (num > 2 && link == "摸牌") {
 							return 10;
@@ -5179,7 +5179,7 @@ const skills = {
 					.set("prompt", get.prompt("xinrenjie"))
 					.set("prompt2", `你可以移去至多${get.cnNumber(draw.length)}枚“忍”标记并摸等量张牌`)
 					.set("ai", () => {
-						return get.event("choice");
+						return get.event().choice;
 					})
 					.set(
 						"choice",
@@ -5327,7 +5327,7 @@ const skills = {
 				.set("choiceList", [`令${name}摸${get.cnNumber(round)}张牌`, `令${name}随机弃置${get.cnNumber(round)}张手牌`])
 				.set("prompt", "滤心：请选择一项")
 				.set("ai", () => {
-					return get.event("choice");
+					return get.event().choice;
 				})
 				.set("choice", get.attitude(player, target) > 0 ? "摸牌" : "弃牌")
 				.forResult();
@@ -5528,7 +5528,7 @@ const skills = {
 				.set("displayIndex", false)
 				.set("prompt", "寰道：选择失去一个技能")
 				.set("ai", () => {
-					return get.event("choice");
+					return get.event().choice;
 				})
 				.set(
 					"choice",
@@ -5721,11 +5721,11 @@ const skills = {
 			storage: { zhuangpo: true },
 		},
 		viewAsFilter() {
-			return get.event("zhuangpo_cards")?.length;
+			return get.event().zhuangpo_cards?.length;
 		},
 		prompt: "将一张牌面信息包含“【杀】”的牌当【决斗】使用",
 		filterCard(card, player) {
-			return get.event("zhuangpo_cards").includes(card);
+			return get.event().zhuangpo_cards.includes(card);
 		},
 		position: "hes",
 		precontent() {
@@ -5755,7 +5755,7 @@ const skills = {
 						.chooseControl(list, "cancel2")
 						.set("prompt", "壮魄：是否移去任意枚“擎”？")
 						.set("prompt2", `若如此做，${get.translation(target)}须弃置等量的牌`)
-						.set("ai", () => get.event("choice"))
+						.set("ai", () => get.event().choice)
 						.set(
 							"choice",
 							(() => {
@@ -5923,7 +5923,7 @@ const skills = {
 			next.set("list", [["（以下排列的顺序即为发动技能后角色的座次顺序）", [toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton]]]);
 			next.set("toSortPlayers", toSortPlayers.slice(0));
 			next.set("processAI", () => {
-				const players = get.event("toSortPlayers"),
+				const players = get.event().toSortPlayers,
 					player = get.player();
 				players.randomSort().sort((a, b) => get.attitude(player, b) - get.attitude(player, a));
 				return [players.map(i => `${i.getSeatNum()}|${i.name}`)];
@@ -12044,7 +12044,7 @@ const skills = {
 			const result = await player
 				.chooseButton([`选择${get.translation(target)}武将牌上的一个技能并令其失效`, [list, "textbutton"]])
 				.set("ai", button => {
-					if (!get.event("check")) {
+					if (!get.event().check) {
 						return 0;
 					}
 					const { link } = button;
@@ -13624,7 +13624,7 @@ const skills = {
 		animationColor: "metal",
 		skillAnimation: "legend",
 		check(card) {
-			if (!lib.skill.yeyan.getBigFire(get.event("player"))) {
+			if (!lib.skill.yeyan.getBigFire(get.event().player)) {
 				return -1;
 			}
 			return 1 / (get.value(card) || 0.5);

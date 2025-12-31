@@ -6498,7 +6498,7 @@ export default () => {
 								`获得${get.translation(noequips)}`,
 							])
 							.set("prompt", "撼军：请选择获得的类型")
-							.set("ai", () => get.event("resultx"))
+							.set("ai", () => get.event().resultx)
 							.set("resultx", equips.length > noequips.length ? 0 : 1)
 							.forResult() : {
 								index: equips.length ? 0 : 1,

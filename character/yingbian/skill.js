@@ -186,7 +186,7 @@ const skills = {
 								.chooseButton([`畜鸣：请选择要对${get.translation(current)}使用的牌`, [list, "vcard"]], true)
 								.set("ai", button => {
 									var player = get.player();
-									return get.effect(get.event("currentTarget"), { name: button.link[2] }, player, player);
+									return get.effect(get.event().currentTarget, { name: button.link[2] }, player, player);
 								})
 								.set("currentTarget", current);
 						}
@@ -688,7 +688,7 @@ const skills = {
 						return Math.random() < 0.5 ? 0 : 1;
 					})()
 				)
-				.set("ai", () => get.event("choice"))
+				.set("ai", () => get.event().choice)
 				.forResult();
 			if (typeof result?.index != "number") {
 				return;

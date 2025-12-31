@@ -3701,20 +3701,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return card;
 	}
 	/**
-	 * @overload
 	 * @returns {GameEvent}
-	 */
-	/**
-	 * @template { keyof GameEvent } T
-	 * @overload
-	 * @param {T} key
-	 * @returns {GameEvent[T]}
 	 */
 	event(key) {
 		if (key) {
-			// 能跑起来的东西还是不要去动它比较好 --Spmario233
-			// 跑起来没问题的东西就不要乱动！ --Spmario233
-			// console.warn(`get.event("${key}")写法即将被废弃，请更改为get.event().${key}`);
+			console.warn(`get.event("${key}")写法即将被废弃，请更改为get.event().${key}`);
 			return _status.event[key];
 		}
 		return _status.event;

@@ -17,7 +17,7 @@ const skills = {
 			const targets = get.info(event.skill).getSelected(player);
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target != player && !get.event("usedTarget").includes(target);
+					return target != player && !get.event().usedTarget.includes(target);
 				})
 				.set("usedTarget", targets)
 				.set("ai", target => {
@@ -147,7 +147,7 @@ const skills = {
 								targets.length > 1
 									? await event.current
 											.chooseTarget(`撼国：获得${get.translation(targets)}中的一名角色一张牌`, true, (card, player, target) => {
-												return get.event("selectTargets").includes(target);
+												return get.event().selectTargets.includes(target);
 											})
 											.set("selectTargets", targets)
 											.set("ai", target => {
@@ -1028,7 +1028,7 @@ const skills = {
 				const result2 = await winner
 					.chooseControl("red", "black", "basic", "equip", "trick", "cancel2")
 					.set("dialog", dialog)
-					.set("ai", () => get.event("resultx"))
+					.set("ai", () => get.event().resultx)
 					.set(
 						"resultx",
 						(() => {
@@ -1287,7 +1287,7 @@ const skills = {
 								.chooseTarget(
 									`选择${get.translation(card)}的使用者`,
 									(card, player, target) => {
-										return get.event("canUse").includes(target);
+										return get.event().canUse.includes(target);
 									},
 									true
 								)
@@ -1903,7 +1903,7 @@ const skills = {
 						let list = [null, "suit", "number", "type2"];
 						for (let i = 1; i < 4; i++) {
 							let key = list[i];
-							if (moved[i].some(card => get[key](card) != get.event(key)) || moved[i].length > 1) {
+							if (moved[i].some(card => get[key](card) != get.event()[key]) || moved[i].length > 1) {
 								return false;
 							}
 						}
@@ -1913,16 +1913,16 @@ const skills = {
 						let list = [null, "suit", "number", "type2"];
 						if (typeof to == "number") {
 							if (to != 0) {
-								return moved[to].length < 1 && get[list[to]](from.link) == get.event(list[to]);
+								return moved[to].length < 1 && get[list[to]](from.link) == get.event()[list[to]];
 							}
 							return true;
 						}
 						let num1 = [0, 1, 2, 3].find(i => moved[i].includes(from.link)),
 							num2 = [0, 1, 2, 3].find(i => moved[i].includes(to.link));
-						if (num1 != 0 && get[list[num1]](to.link) != get.event(list[num1])) {
+						if (num1 != 0 && get[list[num1]](to.link) != get.event()[list[num1]]) {
 							return false;
 						}
-						if (num2 != 0 && get[list[num2]](from.link) != get.event(list[num2])) {
+						if (num2 != 0 && get[list[num2]](from.link) != get.event()[list[num2]]) {
 							return false;
 						}
 						return true;
@@ -1934,7 +1934,7 @@ const skills = {
 							keys = ["suit", "number", "type2"];
 						for (let i = 0; i < keys.length; i++) {
 							let key = keys[i];
-							let card = cardx.find(j => !cards.includes(j) && get[key](j) == get.event(key));
+							let card = cardx.find(j => !cards.includes(j) && get[key](j) == get.event()[key]);
 							if (card) {
 								cards.add(card);
 								discards[i].add(card);
@@ -2310,7 +2310,7 @@ const skills = {
 					.chooseTarget(
 						`为${get.translation(target)}指定拼点目标`,
 						(card, player, target) => {
-							return get.event("comparer").canCompare(target);
+							return get.event().comparer.canCompare(target);
 						},
 						true
 					)
@@ -2557,7 +2557,7 @@ const skills = {
 			if (game.hasPlayer(current => current != event.target && player.canCompare(current))) {
 				const result = await player
 					.chooseTarget("迴策：与另一名角色进行拼点", true, (card, player, target) => {
-						return get.event("first") != target && player.canCompare(target);
+						return get.event().first != target && player.canCompare(target);
 					})
 					.set("first", event.target)
 					.set("ai", target => {
@@ -2854,7 +2854,7 @@ const skills = {
 				const result2 = await player
 					.choosePlayerCard(target, "he", [1, 5 - selected.length], true, "选择要明置于牌堆顶的牌")
 					.set("filterButton", button => {
-						return !get.event("selected").includes(button.link);
+						return !get.event().selected.includes(button.link);
 					})
 					.set("selected", selected)
 					.set("ai", button => {

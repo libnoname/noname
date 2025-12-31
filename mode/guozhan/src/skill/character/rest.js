@@ -340,7 +340,7 @@ export default {
 							.chooseTarget(
 								`选择一名角色，令其与${get.translation(target)}副将易位`,
 								(card, player, target) => {
-									return get.event("targetx").includes(target);
+									return get.event().targetx.includes(target);
 								},
 								true
 							)
@@ -1901,7 +1901,7 @@ export default {
 				)
 				.set("complexSelect", true)
 				.set("ai", card => {
-					const player = get.event("player"),
+					const player = get.event().player,
 						target = get.event().getTrigger().player;
 					const effect = get.damageEffect(target, player, player);
 					const cards = target.getCards("e", card => get.attitude(player, target) * get.value(card, target) < 0);
@@ -2014,7 +2014,7 @@ export default {
 											return false;
 										}
 										return target != player || game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-									}) >= get.event("num")
+									}) >= get.event().num
 								);
 							})
 							.set("num", num)
@@ -2236,7 +2236,7 @@ export default {
 				.set("prompt", "崩坏：请选择一项")
 				.set("choiceList", ["失去1点体力", "减1点体力上限", "背水！依次执行前两项，然后执行一个额外的摸牌阶段"])
 				.set("ai", () => {
-					const player = get.event("player");
+					const player = get.event().player;
 					if (player.maxHp > 1 && (player.getHp() == 2 || !player.countCards("h"))) {
 						return "背水！";
 					}
@@ -2690,7 +2690,7 @@ export default {
 				.set("prompt", "###" + get.prompt("fakejueyan") + '###<div class="text center">于本回合结束阶段弃置一个区域的所有牌，然后…</div>')
 				.set("choiceList", ["判定区：跳过判定阶段，获得〖集智〗直到回合结束", "装备区：摸三张牌，本回合手牌上限+3", "手牌区：本回合使用【杀】的额定次数+3"])
 				.set("ai", () => {
-					const player = get.event("player");
+					const player = get.event().player;
 					if (player.countCards("j", { type: "delay" })) {
 						return "判定区";
 					}
@@ -2828,13 +2828,13 @@ export default {
 						.chooseTarget(
 							"排异：是否对至多" + cnNum + "名与" + get.translation(target) + "势力相同的角色各造成1点伤害并移去等量的“权”？",
 							(card, player, target) => {
-								return target.isFriendOf(get.event("target"));
+								return target.isFriendOf(get.event().target);
 							},
 							[1, num]
 						)
 						.set("target", target)
 						.set("ai", target => {
-							return get.damageEffect(target, get.event("player"), get.event("player"));
+							return get.damageEffect(target, get.event().player, get.event().player);
 						})
 						.forResult();
 					if (result.bool) {
@@ -3114,7 +3114,7 @@ export default {
 				return list;
 			},
 			check() {
-				const player = get.event("player"),
+				const player = get.event().player,
 					count = pos => {
 						const cards = player.getCards(pos);
 						return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player));
@@ -3163,10 +3163,10 @@ export default {
 							const { bool, cards } = await target
 								.chooseToGive(player, "he", true, [1, Infinity], "怀异：交给" + get.translation(player) + "至少一张牌")
 								.set("ai", card => {
-									const player = get.event("player"),
-										targets = get.event("targetx");
+									const player = get.event().player,
+										targets = get.event().targetx;
 									if (
-										!get.event("competition") ||
+										!get.event().competition ||
 										!game.hasPlayer(target => {
 											return target.isFriendOf(player) && target.hasViceCharacter() && get.guozhanRank(target.name2, target) > 4;
 										})
@@ -3197,7 +3197,7 @@ export default {
 									.chooseTarget(
 										"怀异：移除" + get.translation(group) + "势力的其中一名角色的副将",
 										(card, player, target) => {
-											return target.identity == get.event("group") && target.hasViceCharacter();
+											return target.identity == get.event().group && target.hasViceCharacter();
 										},
 										true
 									)
@@ -3342,7 +3342,7 @@ export default {
 					return 7.5 - get.value(card);
 				},
 				ai2(target) {
-					const player = get.event("player");
+					const player = get.event().player;
 					return Math.max(get.effect(target, { name: "wuzhong" }, player, player), get.recoverEffect(target, player, player));
 				},
 			});
@@ -3506,7 +3506,7 @@ export default {
 						return get.event().getParent().filterCard({ name: button.link[2], nature: button.link[3] }, player, event);
 					},
 					check(button) {
-						const player = get.event("player");
+						const player = get.event().player;
 						const card = { name: button.link[2], nature: button.link[3] };
 						if (player.countCards("hes", cardx => cardx.name == card.name)) {
 							return 0;
@@ -3785,7 +3785,7 @@ export default {
 			const { bool, links } = await player
 				.chooseButton([get.prompt2("fakeshuliang", trigger.player), player.getExpansions("faketunchu")])
 				.set("ai", button => {
-					if (get.attitude(get.event("player"), get.event().getTrigger().player) <= 0) {
+					if (get.attitude(get.event().player, get.event().getTrigger().player) <= 0) {
 						return 0;
 					}
 					return 1 + Math.random();
@@ -3860,7 +3860,7 @@ export default {
 		},
 		position: "he",
 		check(card) {
-			const player = get.event("player");
+			const player = get.event().player;
 			let cards = player.getCards("hs", card => player.hasValueTarget(card, true, true));
 			let discards = player.getCards("he", card => get.info("fakezhufu").filterCard(card, player));
 			for (let i = 1; i < discards.length; i++) {
@@ -4187,7 +4187,7 @@ export default {
 					.set("prompt2", lib.translate.fakemibei_info)
 					.set("prompt", "请选择【秘备】的目标")
 					.set("ai", target => {
-						const player = get.event("player");
+						const player = get.event().player;
 						return get.attitude(player, target);
 					})
 					.forResult();
@@ -4221,7 +4221,7 @@ export default {
 						await player.draw(num);
 					} else {
 						const { bool, cards } = await player.chooseCard("秘备：展示一至三张手牌，本回合你可以将其中一张牌当作另一张基本牌或普通锦囊牌使用一次", [1, 3], true).set("ai", card => {
-							const player = get.event("player"),
+							const player = get.event().player,
 								goon = _status.currentPhase == player;
 							if (goon) {
 								return player.getUseValue(card) / get.value(card);
@@ -4288,7 +4288,7 @@ export default {
 						return event.filterCard({ name: button.link[2], nature: button.link[3] }, player, event);
 					},
 					check(button) {
-						const player = get.event("player");
+						const player = get.event().player;
 						const card = { name: button.link[2], nature: button.link[3] };
 						if (player.countCards("hes", cardx => cardx.name == card.name)) {
 							return 0;
@@ -4347,7 +4347,7 @@ export default {
 					return !get.event().getTrigger().targets.includes(target) && target.countCards("he") > 0;
 				})
 				.set("ai", target => {
-					const player = get.event("player");
+					const player = get.event().player;
 					if (target == player) {
 						return 2;
 					}
@@ -4906,7 +4906,7 @@ export default {
 							return get.distance(trigger.player, target) <= 1 && target != trigger.player && target.countCards("hej");
 						})
 						.set("ai", target => {
-							const player = get.event("player");
+							const player = get.event().player;
 							return get.effect(target, { name: "guohe" }, player, player);
 						})
 						.setHiddenSkill("fakehuyuan")
@@ -6699,7 +6699,7 @@ export default {
 			const prompt2 = "被选择的目标角色下次受到伤害后，其对伤害来源造成1点伤害；未被选择的目标角色下次受到伤害后，伤害来源弃置两张牌。";
 			const next = player
 				.chooseTarget("选择一名角色获得反伤效果", prompt2, (card, player, target) => {
-					return get.event("allTargets").includes(target);
+					return get.event().allTargets.includes(target);
 				})
 				.set("allTargets", event.targets)
 				.set("ai", target => {

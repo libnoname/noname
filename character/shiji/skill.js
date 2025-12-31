@@ -2396,7 +2396,7 @@ const skills = {
 						})()
 					)
 					.set("ai", () => {
-						return get.event("resultx");
+						return get.event().resultx;
 					});
 			} else {
 				player.loseHp();

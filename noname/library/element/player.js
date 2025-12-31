@@ -9091,7 +9091,7 @@ export class Player extends HTMLDivElement {
 			for (var i = 0; i < game.players.length; i++) {
 				game.players[i].hideTimer();
 			}
-		} else if (!get.event("_global_waiting") && (_status.noclearcountdown !== "direct" || (result && result.bool)) && !(result && result._noHidingTimer)) {
+		} else if (!get.event()._global_waiting && (_status.noclearcountdown !== "direct" || (result && result.bool)) && !(result && result._noHidingTimer)) {
 			this.hideTimer();
 		}
 		clearTimeout(lib.node.torespondtimeout[this.playerid]);

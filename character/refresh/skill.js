@@ -410,7 +410,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await trigger.player
 				.chooseBool(player == trigger.player ? get.prompt(event.skill) : "是否响应" + get.translation(player) + "的【郡兵】？", "摸一张牌" + (player == trigger.player ? "" : "，将所有手牌交给" + get.translation(player) + "，然后其可以交给你等量张牌"))
-				.set("ai", () => get.event("choice"))
+				.set("ai", () => get.event().choice)
 				.set("choice", get.attitude(trigger.player, player) > 0)
 				.forResult();
 		},
@@ -431,7 +431,7 @@ const skills = {
 					.chooseCard("郡兵：是否还给" + get.translation(target) + get.translation(num) + "张牌？", "he", num)
 					.set("ai", card => {
 						let player = _status.event.player,
-							target = get.event("target");
+							target = get.event().target;
 						if (get.attitude(player, target) <= 0) {
 							if (card.name == "du") {
 								return 1145141919810;
@@ -2425,7 +2425,7 @@ const skills = {
 						const result = await target
 							.chooseToDiscard("he", "焚城：弃置至少" + get.cnNumber(num) + "张牌，或受到2点火焰伤害", [num, Infinity], "allowChooseAll")
 							.set("ai", card => {
-								if (ui.selected.cards.length >= get.event("num")) {
+								if (ui.selected.cards.length >= get.event().num) {
 									return -1;
 								}
 								if (get.player().hasSkillTag("nofire")) {
@@ -5165,7 +5165,7 @@ const skills = {
 				}, "he")
 			) {
 				player.chooseToDiscard("he", true).set("ai", card => {
-					let player = get.event("player");
+					let player = get.event().player;
 					if (get.color(card, player)) {
 						return 7 - get.value(card, player);
 					}
@@ -8995,7 +8995,7 @@ const skills = {
 					[1, 2]
 				)
 				.set("ai", target => {
-					let player = get.event("player"),
+					let player = get.event().player,
 						att = get.attitude(player, target),
 						hs = target.countCards("h"),
 						es = target.countCards("e");
@@ -9006,7 +9006,7 @@ const skills = {
 					}
 					if (ui.selected.targets.length) {
 						let pre = ui.selected.targets[0],
-							damage = get.event("damage");
+							damage = get.event().damage;
 						if (get.attitude(player, pre) < 0 && (damage ? get.damageEffect(pre, player, player) > 0 : true) && pre.countCards("he") >= 2) {
 							return 0;
 						}
@@ -9049,7 +9049,7 @@ const skills = {
 				})
 				.set("targets", targets)
 				.set("ai", target => {
-					const player = get.event("player");
+					const player = get.event().player;
 					return get.damageEffect(target, player, player);
 				})
 				.forResult();
@@ -9151,8 +9151,8 @@ const skills = {
 			target
 				.chooseToDiscard(cards.length, "弃置" + get.cnNumber(cards.length) + "张牌并失去1点体力，或点取消将武将牌翻面并摸" + get.cnNumber(cards.length) + "张牌", "he")
 				.set("ai", function (card) {
-					const player = get.event("player");
-					if (get.event("cardsx")?.length > 3 || player.hasSkillTag("noturn") || player.isTurnedOver() || ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, player, player))) {
+					const player = get.event().player;
+					if (get.event().cardsx?.length > 3 || player.hasSkillTag("noturn") || player.isTurnedOver() || ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, player, player))) {
 						return -1;
 					}
 					if (player.hp <= 1) {
@@ -10898,7 +10898,7 @@ const skills = {
 				.chooseTarget(
 					get.prompt2(event.skill),
 					(card, player, target) => {
-						return get.event("targetx").includes(target);
+						return get.event().targetx.includes(target);
 					},
 					[1, Infinity]
 				)
@@ -11455,7 +11455,7 @@ const skills = {
 			}
 			"step 5";
 			player.chooseControl("bazhen", "olhuoji", "olkanpo").set("prompt", "选择获得一个技能").ai = function () {
-				let player = get.event("player"),
+				let player = get.event().player,
 					threaten = get.threaten(player);
 				if (!player.hasEmptySlot(2)) {
 					return "olhuoji";
@@ -13403,7 +13403,7 @@ const skills = {
 					const player = _status.event.player;
 					let eff = get.damageEffect(target, player, target, "thunder");
 					if (
-						get.event("num") > 1 &&
+						get.event().num > 1 &&
 						!target.hasSkillTag("filterDamage", null, {
 							player: player,
 							card: null,
@@ -14500,7 +14500,7 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					if (get.color(card) == "black") {
-						return 18 - get.event("black") - get.value(card);
+						return 18 - get.event().black - get.value(card);
 					}
 					return 18 - get.value(card);
 				})
@@ -15669,7 +15669,7 @@ const skills = {
 				.choosePlayerCard(get.prompt(event.skill, trigger.source), trigger.source, trigger.source != player ? "he" : "e")
 				.set("ai", button => {
 					let val = get.buttonValue(button);
-					if (get.event("att") > 0) {
+					if (get.event().att > 0) {
 						return 1 - val;
 					}
 					return val;
@@ -16325,7 +16325,7 @@ const skills = {
 				.chooseControl(list)
 				.set("prompt", get.prompt2(event.skill))
 				.set("ai", () => {
-					const player = get.event("player"),
+					const player = get.event().player,
 						trigger = get.event().getTrigger();
 					const cards = trigger.cards ? trigger.cards.filterInD() : [];
 					if (get.event().controls.includes("拿牌")) {

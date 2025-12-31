@@ -3517,7 +3517,7 @@ const skills = {
 					forced: true,
 					list: list,
 					filterTarget(card, player, target) {
-						return get.event("list").includes(target);
+						return get.event().list.includes(target);
 					},
 					ai1(card) {
 						return 6 - get.value(card);
@@ -4117,7 +4117,7 @@ const skills = {
 				.set("choiceList", choiceList)
 				.set("prompt", get.prompt(event.skill))
 				.set("ai", () => {
-					return get.event("choice");
+					return get.event().choice;
 				})
 				.set(
 					"choice",
@@ -4760,7 +4760,7 @@ const skills = {
 			event.zhu = get.info("qinqing").getZhu(player);
 			player
 				.chooseTarget(get.prompt2("qinqing"), [1, Infinity], function (card, player, target) {
-					var zhu = get.event("zhu");
+					var zhu = get.event().zhu;
 					if (target == zhu) {
 						return false;
 					}
@@ -4768,7 +4768,7 @@ const skills = {
 				})
 				.set("ai", function (target) {
 					var he = target.countCards("he");
-					var zhu = get.event("zhu");
+					var zhu = get.event().zhu;
 					if (get.attitude(_status.event.player, target) > 0) {
 						if (he == 0) {
 							return 1;
@@ -9038,7 +9038,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard("he", get.prompt(event.skill, trigger.source), prompt)
 				.set("ai", function (card) {
-					let eff = get.event("eff");
+					let eff = get.event().eff;
 					if (typeof eff === "number") {
 						return eff - get.value(card);
 					}
@@ -9188,7 +9188,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard("he", get.prompt(event.skill, trigger.player), prompt)
 				.set("ai", function (card) {
-					let eff = get.event("eff");
+					let eff = get.event().eff;
 					if (typeof eff === "number") {
 						return eff - get.value(card);
 					}
@@ -9824,7 +9824,7 @@ const skills = {
 			"step 0";
 			player.draw();
 			player.chooseToDiscard("he", true).set("ai", card => {
-				let player = get.event("player");
+				let player = get.event().player;
 				if (get.color(card, player)) {
 					return 7 - get.value(card, player);
 				}

@@ -1721,7 +1721,7 @@ export default () => {
 										if (trigger.name == "damage") {
 											event.result = await player
 												.chooseCard(get.prompt(event.skill), "将一张牌置于武将牌上", card => {
-													return !get.event("suits")?.includes(get.suit(card));
+													return !get.event().suits?.includes(get.suit(card));
 												}, "he")
 												.set("suits", cards.map(card => get.suit(card)))
 												.set("ai", card => 5 - get.value(card))
@@ -1730,7 +1730,7 @@ export default () => {
 											const result = await player
 												.chooseButton([`###${get.prompt(event.skill)}###移去一张牌并令${get.translation(trigger.card)}对你无效`, cards])
 												.set("ai", button => {
-													if (get.event("eff") < 0) {
+													if (get.event().eff < 0) {
 														return 1;
 													}
 													return 0;

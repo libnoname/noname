@@ -113,7 +113,7 @@ export default {
 							return get.distance(trigger.player, target) <= 1 && target != trigger.player && target.countCards("hej");
 						})
 						.set("ai", target => {
-							const player = get.event("player");
+							const player = get.event().player;
 							return get.effect(target, { name: "guohe" }, player, player);
 						})
 						.setHiddenSkill("fake_huyuan")

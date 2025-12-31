@@ -104,9 +104,9 @@ game.import("card", function () {
 								.set("prompt", "号令天下：请选择其中一项")
 								.set("target", target)
 								.set("ai", () => {
-									const player = get.event("player"),
-										target = get.event("target"),
-										choices = get.event("controls");
+									const player = get.event().player,
+										target = get.event().target,
+										choices = get.event().controls;
 									const guohe = new lib.element.VCard({ name: "guohe_copy2" }),
 										shunshou = new lib.element.VCard({ name: "shunshou_copy2" }),
 										sha = new lib.element.VCard({ name: "sha" });
@@ -258,7 +258,7 @@ game.import("card", function () {
 							const { links } = result;
 							result = await target
 								.chooseTarget(true, `选择获得${get.translation(links)}的角色`, (card, player, target) => {
-									return get.event("targetx").includes(target);
+									return get.event().targetx.includes(target);
 								})
 								.set("targetx", targets)
 								.set("ai", target => {
