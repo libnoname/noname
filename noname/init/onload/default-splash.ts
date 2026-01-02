@@ -2,21 +2,18 @@ import { lib, game, ui } from "noname";
 import { createApp } from "vue";
 
 import OnloadSplash from "./OnloadSplash.vue";
+import type { OnloadSplash as IOnloadSplash } from "./onload-splash"
 
-/**
- * @typedef {import("./onload-splash.js").OnloadSplash} IOnloadSplash
- * @interface IOnloadSplash
- */
-export class DefaultSplash {
-	id = "style1";
-	name = "样式一";
+export class DefaultSplash implements IOnloadSplash {
+	readonly id: string = "style1";
+	readonly name: string = "样式一";
 
-	path = "image/splash/style1/";
-	resolve;
-	app;
-	clicked;
+	protected path: string = "image/splash/style1/";
+	private resolve: (mode: string) => void;
+	private app: any;
+	private clicked: HTMLDivElement;
 
-	async init(node, resolve) {
+	async init(node: HTMLDivElement, resolve: (mode: string) => void): Promise<void> {
 		this.resolve = resolve;
 
 		if (lib.config.touchscreen) {
@@ -42,15 +39,15 @@ export class DefaultSplash {
 		}
 	}
 
-	async dispose(node) {
+	async dispose(node: HTMLDivElement): Promise<boolean> {
 		node.delete(1000);
 
-		await new Promise(resolve => this.clicked.listenTransition(resolve, 500));
+		await new Promise<void>(resolve => this.clicked.listenTransition(resolve, 500));
 
 		return true;
 	}
 
-	preview(node) {
+	preview(node: HTMLDivElement): void {
 		node.className = "button character";
 		node.style.width = "200px";
 		node.style.height = `${(node.offsetWidth * 1080) / 2400}px`;
@@ -61,11 +58,11 @@ export class DefaultSplash {
 		node.setBackgroundImage(`image/splash/${this.id}.jpg`);
 	}
 
-	handle(mode) {
+	handle(mode: string): string {
 		return lib.path.join(this.path, `${mode}.jpg`);
 	}
 
-	click(mode, node) {
+	click(mode: string, node: HTMLDivElement): void {
 		node.classList.add("clicked");
 
 		if (game.layout !== "mobile" && lib.layoutfixed.indexOf(mode) !== -1) {
