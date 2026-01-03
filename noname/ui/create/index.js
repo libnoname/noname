@@ -2783,11 +2783,6 @@ export class Create {
 			}
 		}
 
-		// 根据157的要求移除掉本体的五行扩展哦喵
-		if (game.hasExtension("wuxing")) {
-			game.removeExtension("wuxing");
-		}
-
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);
 
