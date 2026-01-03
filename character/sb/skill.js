@@ -4525,7 +4525,7 @@ const skills = {
 			"step 0";
 			var num = player.countCards("s", card => card.hasGaintag("sbguanxing"));
 			if (!num && event.triggername == "damageBegin3") {
-				trigger.increase("num");
+				trigger.num ++;
 			} else if (num && event.triggername == "damageBegin4") {
 				player
 					.judge(function (result) {
@@ -4537,7 +4537,7 @@ const skills = {
 					.set("judge2", result => result.bool)
 					.set("callback", function () {
 						if (event.judgeResult.number <= player.countCards("s", card => card.hasGaintag("sbguanxing"))) {
-							event.getParent("sbkongcheng").getTrigger().decrease("num");
+							event.getParent("sbkongcheng").getTrigger().num--;
 						}
 					});
 			}

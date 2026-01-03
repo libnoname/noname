@@ -11410,7 +11410,7 @@ const skills = {
 					} else {
 						target.popup("杯具");
 						game.log(target, "猜测", "#y错误");
-						trigger.increase("num");
+						trigger.num ++;
 					}
 				},
 			},

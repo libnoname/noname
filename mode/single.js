@@ -2396,7 +2396,7 @@ export default () => {
 				popup: true,
 				charlotte: true,
 				async content(_, trigger) {
-					trigger.increase("num");
+					trigger.num ++;
 				},
 			},
 			wuxianhuoli_liuanhuaming: {

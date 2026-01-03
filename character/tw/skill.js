@@ -7322,7 +7322,7 @@ const skills = {
 					player.discard(cards.randomGet());
 				}
 			} else {
-				trigger.increase("num");
+				trigger.num ++;
 			}
 		},
 	},
@@ -10017,8 +10017,8 @@ const skills = {
 				`<div class="text center">令一张拼点牌的点数+${num}或-${num}</div>`,
 				[
 					[
-						["addNumber", "增加"],
-						["subtractNumber", "减少"],
+						["add", "增加"],
+						["subtract", "减少"],
 					],
 					"tdnodes",
 				],
@@ -10116,13 +10116,17 @@ const skills = {
 						});
 					});
 					const numId = player === trigger.player ? "num1" : "num2";
-					trigger[fn](numId, num);
+					if (fn === "add") {
+						trigger[numId] += num;
+					} else {
+						trigger[numId] -= num;
+					}
 					if (trigger[numId] > 13) {
 						trigger[numId] = 13;
 					} else if (trigger[numId] < 1) {
 						trigger[numId] = 1;
 					}
-					game.log(player, "的拼点牌点数", fn === "addNumber" ? "+" : "-", num);
+					game.log(player, "的拼点牌点数", fn === "add" ? "+" : "-", num);
 				},
 			},
 		},

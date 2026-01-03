@@ -145,14 +145,14 @@ export default {
 			if (typeof cost != "number" || !event.shanRequired) {
 				return;
 			}
-			event.addNumber(
-				"shanIgnored",
-				Math.min(
-					player.countCards(lib.skill._stratagem_add_buff.position, {
-						name: "shan",
-					}),
-					Math.floor(fury / cost)
-				)
+			if (!event.shanIgnored){
+				event.shanIgnored = 0;
+			}
+			event.shanIgnored += Math.min(
+				player.countCards(lib.skill._stratagem_add_buff.position, {
+					name: "shan",
+				}),
+				Math.floor(fury / cost)
 			);
 		},
 		check: card => {

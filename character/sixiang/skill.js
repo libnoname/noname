@@ -5449,7 +5449,7 @@ const skills = {
 			if (result.bool) {
 				if (result.cards && result.cards.some(i => get.suit(i, target) == "diamond")) {
 					player.popup("洗具");
-					trigger.increase("num");
+					trigger.num ++;
 				}
 			}
 		},
@@ -6227,7 +6227,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		content() {
-			trigger.increase("num");
+			trigger.num ++;
 		},
 		global: "stdzhanying_mark",
 		subSkill: {

@@ -775,7 +775,11 @@ export class Library {
 						.when("useCard")
 						.filter(evt => evt == event)
 						.step(async (event, trigger, player) => {
-							trigger.getParent(2).decrease("shanRequired", 1);
+							const evt = trigger.getParent(2);
+							if (!evt.shanRequired) {
+								evt.shanRequired = 0;
+							}
+							evt.shanRequired --;
 						});
 				},
 			],
@@ -793,7 +797,7 @@ export class Library {
 						})
 						.filter(evt => evt.getParent(2) == event && event.targets.includes(evt.player))
 						.step(async (event, trigger) => {
-							trigger.increase("num");
+							trigger.num ++;
 						});
 				},
 			],
@@ -805,7 +809,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "造成的伤害+1");
-					event.increase("baseDamage", 1);
+					event.baseDamage ++;
 				},
 			],
 			[
@@ -816,7 +820,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "回复的体力+1");
-					event.increase("baseDamage", 1);
+					event.baseDamage ++;
 				},
 			],
 		]),

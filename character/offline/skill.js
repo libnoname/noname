@@ -15883,7 +15883,11 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			trigger[trigger.hasNature() ? "increase" : "decrease"]("num");
+			if (trigger.hasNature()) {
+				trigger.num ++;
+			} else {
+				trigger.num --;
+			}
 		},
 	},
 	// 鲁肃
@@ -29148,7 +29152,7 @@ const skills = {
 						if (result.index == 0) {
 							await player.discardPlayerCard(target, "h", true);
 						} else {
-							trigger.increase("num");
+							trigger.num ++;
 						}
 					}
 				},

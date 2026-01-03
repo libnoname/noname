@@ -3050,7 +3050,11 @@ export default {
 			return event.source == player ? event.player : event.source;
 		},
 		async content(event, trigger, player) {
-			trigger[parseInt(event.triggername.slice("damageBegin".length)) == 4 ? "decrease" : "increase"]("num");
+			if (parseInt(event.triggername.slice("damageBegin".length)) == 4) {
+				trigger.num --;
+			} else {
+				trigger.num ++;
+			}
 		},
 		ai: {
 			combo: "fakeshilu",
