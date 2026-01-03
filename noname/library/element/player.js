@@ -726,7 +726,7 @@ export class Player extends HTMLDivElement {
 			triggerNames.remove(false);
 		}
 		if (triggerNames.length == 0) {
-			throw "player.when的参数数量应大于0";
+			throw new Error("player.when的参数数量应大于0");
 		}
 		// add other triggerNames
 		// arguments.length = 1
@@ -755,7 +755,7 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		if (!trigger) {
-			throw "player.when传参数类型错误:" + triggerNames;
+			throw new Error("player.when传参数类型错误:" + triggerNames);
 		}
 		let skillName;
 		do {
@@ -916,7 +916,7 @@ export class Player extends HTMLDivElement {
 			 */
 			filter(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.filterFuns.push(fun);
 				return this;
@@ -926,7 +926,7 @@ export class Player extends HTMLDivElement {
 			 */
 			removeFilter(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.filterFuns.remove(fun);
 				return this;
@@ -936,7 +936,7 @@ export class Player extends HTMLDivElement {
 			 */
 			filter2(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.filter2Funs.push(fun);
 				return this;
@@ -946,7 +946,7 @@ export class Player extends HTMLDivElement {
 			 */
 			removeFilter2(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.filter2Funs.remove(fun);
 				return this;
@@ -956,7 +956,7 @@ export class Player extends HTMLDivElement {
 			 */
 			then(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.contentFuns.push(String(fun)); // 提前转换，防止与闭包函数弄混
 				createContent();
@@ -984,7 +984,7 @@ export class Player extends HTMLDivElement {
 			 */
 			step(fun) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				skill.contentFuns.push(fun);
 				createContent();
@@ -995,7 +995,7 @@ export class Player extends HTMLDivElement {
 			 */
 			popup(str) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				if (typeof str == "string") {
 					skill.popup = str;
@@ -1007,7 +1007,7 @@ export class Player extends HTMLDivElement {
 			 */
 			translation(translation) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				if (typeof translation == "string") {
 					_status.postReconnect.player_when[1][skillName] = translation;
@@ -1020,7 +1020,7 @@ export class Player extends HTMLDivElement {
 			 */
 			assign(obj) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				if (typeof obj == "object" && obj !== null) {
 					Object.assign(skill, obj);
@@ -1039,10 +1039,10 @@ export class Player extends HTMLDivElement {
 			 */
 			vars(arg) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				if (!get.is.object(arg)) {
-					throw "vars的第一个参数必须为对象";
+					throw new Error("vars的第一个参数必须为对象");
 				}
 				Object.assign(vars, arg);
 				createContent();
@@ -1059,7 +1059,7 @@ export class Player extends HTMLDivElement {
 			 */
 			apply(_scope) {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				if (security.isSandboxRequired()) {
 					console.warn("`player.when().apply()` 在沙盒模式下不推荐使用");
@@ -1077,7 +1077,7 @@ export class Player extends HTMLDivElement {
 			 **/
 			finish() {
 				if (lib.skill[skillName] != skill) {
-					throw `This skill has been destroyed`;
+					throw new Error(`This skill has been destroyed`);
 				}
 				player.addSkill(skillName);
 				return this;

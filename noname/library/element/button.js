@@ -43,7 +43,7 @@ export class Button extends HTMLDivElement {
 			return button;
 		} else {
 			console.error([item, type, position, noClick, button]);
-			throw "button不合法";
+			throw new Error("button不合法");
 		}
 	}
 	exclude() {

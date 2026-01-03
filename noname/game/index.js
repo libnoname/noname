@@ -524,7 +524,7 @@ export class Game {
 
 			// 这是不可能出现的情况喵，但是eslint会报错喵
 			if (!target) {
-				throw "impossible";
+				throw new Error("impossible");
 			}
 
 			while (!target.id && target !== document.body) {
@@ -537,7 +537,7 @@ export class Game {
 				target = target.parentElement;
 
 				if (!target) {
-					throw "impossible";
+					throw new Error("impossible");
 				}
 			}
 
@@ -7964,10 +7964,10 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 				try {
 					lib.storage = JSON.parse(localStorage.getItem(lib.configprefix + lib.config.mode));
 					if (typeof lib.storage != "object") {
-						throw "err";
+						throw new Error("err");
 					}
 					if (lib.storage == null) {
-						throw "err";
+						throw new Error("err");
 					}
 				} catch (err) {
 					lib.storage = {};
@@ -9766,7 +9766,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		try {
 			config = JSON.parse(localStorage.getItem(`${lib.configprefix}${mode}`));
 			if (typeof config != "object") {
-				throw "err";
+				throw new Error("err");
 			}
 		} catch (err) {
 			config = {};
@@ -9999,7 +9999,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		try {
 			config = JSON.parse(localStorage.getItem(`${lib.configprefix}config`));
 			if (!config || typeof config != "object") {
-				throw "err";
+				throw new Error("err");
 			}
 		} catch (err) {
 			config = {};

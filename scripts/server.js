@@ -365,7 +365,7 @@
 				try {
 					arr = JSON.parse(message);
 					if (!Array.isArray(arr)) {
-						throw "err";
+						throw new Error("err");
 					}
 				} catch (e) {
 					this.sendl("denied", "banned");

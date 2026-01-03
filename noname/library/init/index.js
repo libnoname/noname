@@ -137,7 +137,7 @@ export class LibInit {
 			try {
 				message = JSON.parse(messagestr);
 				if (!Array.isArray(message) || typeof lib.message.server[message[0]] !== "function") {
-					throw "err";
+					throw new Error("err");
 				}
 				if (client.sandbox) {
 					security.enterSandbox(client.sandbox);
@@ -450,7 +450,7 @@ export class LibInit {
 				try {
 					result = JSON.parse(oReq.responseText);
 					if (!result) {
-						throw "err";
+						throw new Error("err");
 					}
 				} catch (e) {
 					if (typeof onerror == "function") {
@@ -494,7 +494,7 @@ export class LibInit {
 				try {
 					result = JSON.parse(oReq.responseText);
 					if (!result) {
-						throw "err";
+						throw new Error("err");
 					}
 				} catch (e) {
 					if (typeof onerror == "function") {

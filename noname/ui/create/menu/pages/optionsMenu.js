@@ -374,10 +374,10 @@ export const optionsMenu = function (connectMenu) {
 								try {
 									data = JSON.parse(lib.init.decode(data));
 									if (!data || typeof data != "object") {
-										throw "err";
+										throw new Error("err");
 									}
 									if (lib.db && (!data.config || !data.data)) {
-										throw "err";
+										throw new Error("err");
 									}
 								} catch (e) {
 									console.log(e);

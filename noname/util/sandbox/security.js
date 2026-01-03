@@ -114,7 +114,7 @@ function enterSandbox(box) {
 	}
 
 	if (!Domain.isBelievable(Domain.topDomain)) {
-		throw "无法在沙盒里面访问";
+		throw new Error("无法在沙盒里面访问");
 	}
 
 	sandboxStack.push(box);
@@ -131,7 +131,7 @@ function exitSandbox() {
 	}
 
 	if (!Domain.isBelievable(Domain.topDomain)) {
-		throw "无法在沙盒里面访问";
+		throw new Error("无法在沙盒里面访问");
 	}
 	if (!sandboxStack.length) {
 		throw new ReferenceError("无法弹出更多的沙盒");
@@ -186,7 +186,7 @@ function isUnsafeObject(obj, prop = null) {
  */
 function assertSafeObject(obj, prop = null) {
 	if (isUnsafeObject(obj, prop)) {
-		throw "unsafe object denied";
+		throw new Error("unsafe object denied");
 	}
 }
 
@@ -475,7 +475,7 @@ function _exec2(x, scope = {}) {
  */
 async function initSecurity({ lib, game, ui, get, ai, _status }) {
 	if (initialized) {
-		throw "security 已经被初始化过了";
+		throw new Error("security 已经被初始化过了");
 	}
 
 	const sandbox = await import("./sandbox.js");
@@ -596,7 +596,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 		.require("property", "ws", "sandbox")
 		// 抛出异常
 		.then((access, nameds, control) => {
-			throw `有不信任的代码修改 \`game.${String(nameds.property)}\` 属性`;
+			throw new Error(`有不信任的代码修改 \`game.${String(nameds.property)}\` 属性`);
 		})
 		// 让 Monitor 开始工作
 		.start(); // 差点忘记启动了喵
@@ -749,7 +749,7 @@ function getIsolatedsFrom(item) {
 		const box = Sandbox.from(domain);
 
 		if (!box) {
-			throw "意外的运行域: 运行域没有绑定沙盒";
+			throw new Error("意外的运行域: 运行域没有绑定沙盒");
 		}
 
 		return getIsolateds(box);

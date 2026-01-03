@@ -11586,7 +11586,7 @@ const skills = {
 					event.card2 = event.resultOL[target.playerid].cards[0];
 				}
 				if (!event.card1 || !event.card2) {
-					throw "err";
+					throw new Error("err");
 				}
 			} catch (e) {
 				console.log(e);

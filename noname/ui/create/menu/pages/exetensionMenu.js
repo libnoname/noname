@@ -341,14 +341,14 @@ export const extensionMenu = function (connectMenu) {
 							if (["arenaReady", "content", "prepare", "precontent"].includes(i)) {
 								ext[i] = security.exec2(`return (${dash4.content[i]});`).return;
 								if (typeof ext[i] != "function") {
-									throw "err";
+									throw new Error("err");
 								} else {
 									ext[i] = ext[i].toString();
 								}
 							} else {
 								ext[i] = security.exec2(dash4.content[i])[i];
 								if (ext[i] == null || typeof ext[i] != "object") {
-									throw "err";
+									throw new Error("err");
 								} else {
 									ext[i] = JSON.stringify(ext[i]);
 								}
@@ -1628,10 +1628,10 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { card } = security.exec2(inputCode);
 						if (card == null || typeof card != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 					} catch (e) {
-						if (e == "err") {
+						if (e?.message == "err") {
 							alert("代码格式有错误，请对比示例代码仔细检查");
 						} else {
 							var tip = lib.getErrorTip(e) || "";
@@ -1703,7 +1703,7 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { card } = security.exec2(code);
 						if (card == null || typeof card != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 						page.content.pack.card[name] = card;
 					} catch (e) {
@@ -2047,10 +2047,10 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { skill } = security.exec2(resultCode);
 						if (skill == null || typeof skill != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 					} catch (e) {
-						if (e == "err") {
+						if (e?.message == "err") {
 							alert("代码格式有错误，请对比示例代码仔细检查");
 						} else {
 							var tip = lib.getErrorTip(e) || "";
@@ -2258,7 +2258,7 @@ export const extensionMenu = function (connectMenu) {
 						try {
 							var { skill } = security.exec2(code);
 							if (skill == null || typeof skill != "object") {
-								throw "err";
+								throw new Error("err");
 							}
 							page.content.pack.skill[name] = skill;
 						} catch (e) {
@@ -2370,21 +2370,21 @@ export const extensionMenu = function (connectMenu) {
 							if (["arenaReady", "content", "prepare", "precontent"].includes(link)) {
 								var { func } = security.exec2(`func = ${resultCode}`);
 								if (typeof func != "function") {
-									throw "err";
+									throw new Error("err");
 								}
 							} else if (link == "config") {
 								var { config } = security.exec2(resultCode);
 								if (config == null || typeof config != "object") {
-									throw "err";
+									throw new Error("err");
 								}
 							} else if (link == "help") {
 								var { help } = security.exec2(resultCode);
 								if (help == null || typeof help != "object") {
-									throw "err";
+									throw new Error("err");
 								}
 							}
 						} catch (e) {
-							if (e == "err") {
+							if (e?.message == "err") {
 								alert("代码格式有错误，请对比示例代码仔细检查");
 							} else {
 								var tip = lib.getErrorTip(e) || "";
