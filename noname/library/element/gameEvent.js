@@ -1,6 +1,5 @@
 import { _status, game, get, lib, ui } from "noname";
 import { Player } from "./index.js";
-import { security } from "@/util/sandbox.js"
 import ContentCompiler from "./GameEvent/compilers/ContentCompiler.ts";
 import GameEventManager from "./GameEvent/GameEventManager.ts";
 export { GameEventManager, ContentCompiler };
@@ -1417,7 +1416,7 @@ export class GameEvent {
 	}
 
 	/**
-	 * @type { Promise<Result | void> | null }
+	 * @type { Promise<Partial<Result> | void> | null }
 	 */
 	#waitNext = null;
 	waitNext() {
@@ -1512,61 +1511,5 @@ export class GameEvent {
 	 */
 	forResultLinks() {
 		return this.forResult().then(r => r.links);
-	}
-
-	/**
-	 * 在某个异步事件中调试变量信息
-	 *
-	 * 注: 在调试步骤中`定义的变量只在当前输入的语句有效`
-	 *
-	 * @example
-	 * 在技能中调试技能content相关的信息
-	 * ```js
-	 * await event.debugger();
-	 * ```
-	 * 在技能中调试触发此技能事件的相关的信息
-	 * ```js
-	 * await trigger.debugger();
-	 * ```
-	 */
-	async debugger() {
-		if (!lib.config.dev) {
-			return;
-		}
-		if (security.isSandboxRequired()) {
-			throw new Error("当前模式下禁止调试");
-		}
-		const runCode = function (event, code) {
-			try {
-				// 为了使玩家调试时使用var player=xxx时不报错，故使用var
-				// var { player, _trigger: trigger, _result: result } = event;
-				var context = {
-					event,
-					player: event.player,
-					trigger: event._trigger,
-					result: event._result,
-				};
-				return security.exec(`return ${code}`, context);
-			} catch (error) {
-				return error;
-			}
-		}.bind(window);
-
-		const input = async () => {
-			const result = await game.promises.prompt("debugger调试");
-
-			if (result === false) {
-				return false;
-			}
-
-			const obj = runCode(this, result);
-			alert(!obj || obj instanceof Error ? String(obj) : get.stringify(obj));
-			return true;
-		};
-
-		let result = true;
-		while (result) {
-			result = await input();
-		}
 	}
 }
