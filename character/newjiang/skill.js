@@ -3611,7 +3611,7 @@ const skills = {
 					if (card) {
 						cards.push(card);
 						target.$gain2(card, false);
-						await game.asyncDelayx();
+						await game.delayx();
 						await target.chooseUseTarget(card, true, "nopopup");
 					} else {
 						break;

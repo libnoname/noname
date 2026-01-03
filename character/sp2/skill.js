@@ -8244,7 +8244,7 @@ const skills = {
 				player.addExpose(0.2);
 			}
 			await trigger.player.damage();
-			await game.asyncDelayx();
+			await game.delayx();
 		},
 		group: "tianze_draw",
 		subSkill: {

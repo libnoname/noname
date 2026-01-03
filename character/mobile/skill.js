@@ -2263,7 +2263,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const num = lib.skill.mbsizi.beginMarkCount;
 					player.addCharge(num);
-					await game.asyncDelayx();
+					await game.delayx();
 				},
 			},
 			extra: {
