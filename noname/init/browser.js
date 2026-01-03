@@ -1,7 +1,5 @@
 //@ts-nocheck
-import { lib, game } from "noname";
-
-export default async function browserReady() {
+export default async function browserReady({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
 	try {
@@ -14,6 +12,30 @@ export default async function browserReady() {
 		console.error("文件读写函数初始化失败:", e);
 		return;
 	}
+	
+	game.export = function (data, name) {
+		if (typeof data === "string") {
+			data = new Blob([data], { type: "text/plain" });
+		}
+		let fileNameToSaveAs = name || "noname";
+		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-");
+
+		const downloadLink = document.createElement("a");
+		downloadLink.download = fileNameToSaveAs;
+		downloadLink.innerHTML = "Download File";
+		downloadLink.href = window.URL.createObjectURL(data);
+		downloadLink.click();
+	};
+
+	game.exit = function () {
+		window.onbeforeunload = null;
+		window.close();
+	};
+
+	game.open = function (url) {
+		window.open(url);
+	};
+
 	/**
 	 * 检查指定的路径是否是一个文件
 	 *

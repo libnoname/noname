@@ -522,8 +522,12 @@ export const optionsMenu = function (connectMenu) {
 			createModeConfig(i, start.firstChild);
 		}
 	}
+	/**
+	 * 文件管理
+	 * @deprecated
+	 */
 	(function () {
-		if (!game.download && !lib.device) {
+		if (!lib.node?.fs || !window.resolveLocalFileSystemURL) {
 			return;
 		}
 		var page = ui.create.div("#create-extension");

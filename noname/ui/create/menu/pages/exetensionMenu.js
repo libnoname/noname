@@ -1,6 +1,5 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
-import { nonameInitialized } from "@/util/index.js";
 import { security } from "@/util/sandbox.js"
 import { Character } from "@/library/element/index.js";
 
@@ -836,50 +835,11 @@ export const extensionMenu = function (connectMenu) {
 						page.content.image = {};
 						for (var i in page.content.pack.character) {
 							var file = i + ".jpg";
-							var loadImage = function (file, data) {
-								var img = new Image();
-								img.crossOrigin = "Anonymous";
-								img.onload = function () {
-									var canvas = document.createElement("CANVAS");
-									var ctx = canvas.getContext("2d");
-									var dataURL;
-									canvas.height = this.height;
-									canvas.width = this.width;
-									ctx.drawImage(this, 0, 0);
-									canvas.toBlob(function (blob) {
-										var fileReader = new FileReader();
-										fileReader.onload = function (e) {
-											page.content.image[file] = e.target.result;
-										};
-										fileReader.readAsArrayBuffer(blob, "UTF-8");
-									});
-								};
-								img.src = data;
-							};
-							if (game.readFile) {
-								var url = lib.assetURL + "extension/" + name + "/" + file;
-								createButton(i, url);
-								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
-										entry.getFile(file, {}, function (fileEntry) {
-											fileEntry.file(function (fileToLoad) {
-												var fileReader = new FileReader();
-												fileReader.onload = function (e) {
-													page.content.image[file] = e.target.result;
-												};
-												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-											});
-										});
-									});
-								} else {
-									loadImage(file, url);
-								}
-							} else {
-								game.getDB("image", `extension-${name}:${file}`).then(value => {
-									createButton(i, value);
-									loadImage(file, value);
-								});
-							}
+							var url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(i, url);
+							game.promises.readFile(url).then(result => {
+								page.content.image[file] = result;
+							}).catch(e => console.error(e));
 						}
 					} else {
 						page.content = {
@@ -1460,50 +1420,11 @@ export const extensionMenu = function (connectMenu) {
 							} else {
 								file = i + ".jpg";
 							}
-							var loadImage = function (file, data) {
-								var img = new Image();
-								img.crossOrigin = "Anonymous";
-								img.onload = function () {
-									var canvas = document.createElement("CANVAS");
-									var ctx = canvas.getContext("2d");
-									var dataURL;
-									canvas.height = this.height;
-									canvas.width = this.width;
-									ctx.drawImage(this, 0, 0);
-									canvas.toBlob(function (blob) {
-										var fileReader = new FileReader();
-										fileReader.onload = function (e) {
-											page.content.image[file] = e.target.result;
-										};
-										fileReader.readAsArrayBuffer(blob, "UTF-8");
-									});
-								};
-								img.src = data;
-							};
-							if (game.readFile) {
-								var url = lib.assetURL + "extension/" + name + "/" + file;
-								createButton(i, url, fullskin);
-								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
-										entry.getFile(file, {}, function (fileEntry) {
-											fileEntry.file(function (fileToLoad) {
-												var fileReader = new FileReader();
-												fileReader.onload = function (e) {
-													page.content.image[file] = e.target.result;
-												};
-												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-											});
-										});
-									});
-								} else {
-									loadImage(file, url);
-								}
-							} else {
-								game.getDB("image", `extension-${name}:${file}`).then(value => {
-									createButton(i, value, fullskin);
-									loadImage(file, value);
-								});
-							}
+							var url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(i, url, fullskin);
+							game.promises.readFile(url).then(result => {
+								page.content.image[file] = result;
+							}).catch(e => console.error(e));
 						}
 					} else {
 						page.content = {

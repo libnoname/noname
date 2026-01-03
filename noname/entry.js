@@ -1,4 +1,4 @@
-import { lib, game } from "noname";
+import { lib, game, get, _status, ui, ai } from "noname";
 import { boot } from "@/init/index.js";
 import { userAgentLowerCase, device } from "@/util/index.js";
 import "core-js-bundle";
@@ -34,7 +34,7 @@ import "vue/dist/vue.esm-browser.js";
 				}
 			}
 		});
-		await preload();
+		await preload({ lib, game, get, _status, ui, ai });
 
 		// GPL确认
 		if (!localStorage.getItem("gplv3_noname_alerted")) {

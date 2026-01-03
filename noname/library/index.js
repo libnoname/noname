@@ -16,7 +16,7 @@ import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
 import { security, ErrorManager } from "@/util/sandbox.js";
-import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
+import { assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
 import dedent from "dedent";

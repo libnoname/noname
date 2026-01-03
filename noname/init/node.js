@@ -1,8 +1,7 @@
 //@ts-nocheck
-import { lib, game, get, _status, ui } from "noname";
 import { checkVersion } from "../library/update.js";
 
-export default function nodeReady() {
+export default function nodeReady({ lib, game, get, _status, ui }) {
 	// 处理Node环境下的http情况
 	if (typeof window.process == "object" && typeof window.__dirname == "string") {
 		// 在http环境下修改__dirname和require的逻辑
@@ -125,6 +124,38 @@ export default function nodeReady() {
 		);
 	};
 
+	game.export = function (data, name) {
+		if (typeof data === "string") {
+			data = new Blob([data], { type: "text/plain" });
+		}
+		let fileNameToSaveAs = name || "noname";
+		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-");
+
+		const downloadLink = document.createElement("a");
+		downloadLink.download = fileNameToSaveAs;
+		downloadLink.innerHTML = "Download File";
+		downloadLink.href = window.URL.createObjectURL(data);
+		downloadLink.click();
+	};
+
+	game.exit = function () {
+		var versions = window.process.versions;
+		var electronVersion = parseFloat(versions.electron);
+		var remote;
+		if (electronVersion >= 14) {
+			remote = require("@electron/remote");
+		} else {
+			remote = require("electron").remote;
+		}
+		var thisWindow = remote.getCurrentWindow();
+		thisWindow.destroy();
+		window.process.exit();
+	};
+
+	game.open = function (url) {
+		window.open(url);
+	};
+	
 	/**
 	 * 检查指定的路径是否是一个文件
 	 *

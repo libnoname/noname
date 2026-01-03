@@ -3186,6 +3186,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	 *  - `1`: 路径的内容是文件
 	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 * @type { undefined  | ((fileName: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (err: Error) => void) => void) }
 	 */
 	checkFile;
 
@@ -3199,6 +3200,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	 *  - `1`: 路径的内容是目录
 	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 * @type { undefined  | ((dir: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (err: Error) => void) => void) }
 	 */
 	checkDir;
 
@@ -3250,6 +3252,20 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	 * @type { () => Promise<any> }
 	 */
 	checkForAssetUpdate;
+	/**
+	 * @type { () => void }
+	 */
+	exit;
+
+	/**
+	 * @type { (url: string) => void }
+	 */
+	open;
+	/**
+	 * @type { (data: any, name?: string) => void }
+	 */
+	export;
+	
 	async importExtension(data, finishLoad, exportExtension) {
 		//by 来瓶可乐加冰、Rintim、Tipx-L、诗笺
 		const zip = await get.promises.zip();
@@ -3364,42 +3380,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			return false;
 		}
 	}
-	/**
-	 * @param { any } data
-	 * @param { string } [name]
-	 */
-	export(data, name) {
-		if (typeof data === "string") {
-			data = new Blob([data], { type: "text/plain" });
-		}
-		let fileNameToSaveAs = name || "noname";
-		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-");
 
-		if (lib.device) {
-			let directory;
-			if (lib.device == "android") {
-				directory = cordova.file.externalDataDirectory;
-			} else {
-				directory = cordova.file.documentsDirectory;
-			}
-			window.resolveLocalFileSystemURL(directory, function (entry) {
-				entry.getFile(fileNameToSaveAs, { create: true }, function (fileEntry) {
-					fileEntry.createWriter(function (fileWriter) {
-						fileWriter.onwriteend = function () {
-							alert("文件已导出至" + directory + fileNameToSaveAs);
-						};
-						fileWriter.write(data);
-					});
-				});
-			});
-		} else {
-			const downloadLink = document.createElement("a");
-			downloadLink.download = fileNameToSaveAs;
-			downloadLink.innerHTML = "Download File";
-			downloadLink.href = window.URL.createObjectURL(data);
-			downloadLink.click();
-		}
-	}
 	/**
 	 * @param { string[] } list
 	 * @param { Function } [onsuccess]
@@ -4977,63 +4958,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		window.location.reload();
 		delete _status.waitingToReload;
 	}
-	exit() {
-		var ua = userAgentLowerCase;
-		var ios = ua.includes("iphone") || ua.includes("ipad") || ua.includes("macintosh");
-		//electron
-		if (typeof window.process == "object" && typeof window.require == "function") {
-			var versions = window.process.versions;
-			var electronVersion = parseFloat(versions.electron);
-			var remote;
-			if (electronVersion >= 14) {
-				remote = require("@electron/remote");
-			} else {
-				remote = require("electron").remote;
-			}
-			var thisWindow = remote.getCurrentWindow();
-			thisWindow.destroy();
-			window.process.exit();
-		}
-		// android-cordova环境
-		else if (lib.device === "android") {
-			if (navigator.app && navigator.app.exitApp) {
-				navigator.app.exitApp();
-			}
-		}
-		//ios-cordova环境或ios浏览器环境
-		else if (lib.device === "ios" || (!lib.device && ios)) {
-			game.saveConfig("mode");
-			if (_status) {
-				if (_status.reloading) {
-					return;
-				}
-				_status.reloading = true;
-			}
-			if (_status.video && !_status.replayvideo) {
-				localStorage.removeItem(lib.configprefix + "playbackmode");
-			}
-			window.location.reload();
-		}
-		//非ios的网页版
-		else if (!ios) {
-			window.onbeforeunload = null;
-			window.close();
-		}
-	}
-	/**
-	 * @param { string } url
-	 */
-	open(url) {
-		if (lib.device) {
-			if (cordova.InAppBrowser) {
-				cordova.InAppBrowser.open(url, "_system");
-			} else {
-				ui.create.iframe(url);
-			}
-		} else {
-			window.open(url);
-		}
-	}
+
 	reloadCurrent() {
 		const me = Reflect.get(_status, "_startPlayerNames") ?? game.me;
 		let names = [me.name1 || me.name, me.name2];

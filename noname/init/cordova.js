@@ -1,9 +1,7 @@
 //@ts-nocheck
-import { lib, game, get, _status, ui } from "noname";
-import { nonameInitialized } from "../util/index.js";
 import { checkVersion } from "../library/update.js";
 
-export default async function cordovaReady() {
+export default async function cordovaReady({ lib, game, get, _status, ui }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
 	// 安卓端根目录的cordova.js
@@ -13,6 +11,8 @@ export default async function cordovaReady() {
 	await new Promise(resolve => {
 		document.addEventListener("deviceready", () => resolve(void 0));
 	});
+
+	const nonameInitialized = localStorage.getItem("noname_inited");
 
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑
@@ -108,7 +108,11 @@ export default async function cordovaReady() {
 					return shouldRequestPermissions.filter(({ hasPermission }) => !hasPermission).map(({ request }) => permissions[request] || `android.permission.${request}`);
 				})
 				.then(willRequestPermissions => {
-					permissions.requestPermissions(willRequestPermissions, () => {}, () => {});
+					permissions.requestPermissions(
+						willRequestPermissions,
+						() => {},
+						() => {}
+					);
 				})
 				.catch(console.log);
 		}
@@ -174,17 +178,61 @@ export default async function cordovaReady() {
 		);
 	};
 
-	/**
-	 * 检查指定的路径是否是一个文件
-	 *
-	 * @param {string} fileName - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是文件
-	 *  - `1`: 路径的内容是文件
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
-	 */
+	game.export = function (data, name) {
+		if (typeof data === "string") {
+			data = new Blob([data], { type: "text/plain" });
+		}
+		let fileNameToSaveAs = name || "noname";
+		fileNameToSaveAs = fileNameToSaveAs.replace(/\\|\/|:|\?|"|\*|<|>|\|/g, "-");
+
+		let directory;
+		if (lib.device == "android") {
+			directory = cordova.file.externalDataDirectory;
+		} else {
+			directory = cordova.file.documentsDirectory;
+		}
+		window.resolveLocalFileSystemURL(directory, function (entry) {
+			entry.getFile(fileNameToSaveAs, { create: true }, function (fileEntry) {
+				fileEntry.createWriter(function (fileWriter) {
+					fileWriter.onwriteend = function () {
+						alert("文件已导出至" + directory + fileNameToSaveAs);
+					};
+					fileWriter.write(data);
+				});
+			});
+		});
+	};
+
+	game.exit = function () {
+		if (lib.device === "android") {
+			if (navigator.app && navigator.app.exitApp) {
+				navigator.app.exitApp();
+			}
+		}
+		//ios
+		else {
+			game.saveConfig("mode");
+			if (_status) {
+				if (_status.reloading) {
+					return;
+				}
+				_status.reloading = true;
+			}
+			if (_status.video && !_status.replayvideo) {
+				localStorage.removeItem(lib.configprefix + "playbackmode");
+			}
+			window.location.reload();
+		}
+	};
+
+	game.open = function (url) {
+		if (cordova.InAppBrowser) {
+			cordova.InAppBrowser.open(url, "_system");
+		} else {
+			ui.create.iframe(url);
+		}
+	};
+
 	game.checkFile = function (fileName, callback, onerror) {
 		let path = lib.path.join(nonameInitialized, fileName);
 
@@ -203,17 +251,6 @@ export default async function cordovaReady() {
 		);
 	};
 
-	/**
-	 * 检查指定的路径是否是一个目录
-	 *
-	 * @param {string} dir - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是目录
-	 *  - `1`: 路径的内容是目录
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
-	 */
 	game.checkDir = function (dir, callback, onerror) {
 		let path = lib.path.join(nonameInitialized, dir);
 
