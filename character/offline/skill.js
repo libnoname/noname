@@ -15468,7 +15468,7 @@ const skills = {
 						list.reverse();
 					}
 					await list[0].loseHp();
-					await list[1].addTempSkills("rechouhai");
+					await list[1].addTempSkills("rechouhai", "roundEnd");
 				}
 			}
 		},

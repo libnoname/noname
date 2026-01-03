@@ -12042,7 +12042,10 @@ player.removeVirtualEquip(card);
 			game.broadcast(
 				function (player, cards, num) {
 					for (var i = 0; i < cards.length; i++) {
-						cards[i].removeGaintag(true);
+						//cards[i].removeGaintag(true);
+						//仅移除非永久标记
+						const tags = cards[i].gaintag.filter(tag => !tag.startsWith("eternal_"));
+						tags.forEach(tag => cards[i].removeGaintag(tag));
 						cards[i].classList.remove("glow");
 						cards[i].classList.remove("glows");
 						cards[i].fix();

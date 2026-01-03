@@ -2377,7 +2377,6 @@ export default {
 				return;
 			} else if (event.triggername == "dieAfter") {
 				if (player.getStorage("gz_danggu").length) {
-					player.logSkill("gz_mowang");
 					game.broadcastAll(function () {
 						if (lib.config.background_speak) {
 							game.playAudio("die", "shichangshiRest");
@@ -2390,6 +2389,7 @@ export default {
 					trigger.cancel();
 				} else {
 					if (player.getStorage("gz_danggu").length) {
+						player.logSkill("gz_mowang");
 						trigger.excludeMark.add("gz_danggu");
 						trigger.noDieAudio = true;
 						//trigger.includeOut = true;

@@ -403,6 +403,7 @@ game.import("card", function () {
 				subtype: "equip5",
 				fullskin: true,
 				skills: ["xinge"],
+				loseDelay: false,
 				ai: {
 					equipValue: 2,
 					basic: { equipValue: 2 },

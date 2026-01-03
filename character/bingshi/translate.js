@@ -1,6 +1,25 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	sp_zhonghui: "势钟会",
+	sp_zhonghui_prefix: "势",
+	mbsizi: "肆恣",
+	mbsizi_info: `蓄力技（4/4）。出牌阶段限一次，你可消耗任意蓄力点，令从此回合开始的等量个回合，执行以下效果（你的回合开始时，这些效果失效）：1.所有角色使用【杀】造成的伤害+1；2.每个回合结束时，你摸两张牌且本回合内使用过【杀】的角色失去1点体力。若你消耗的蓄力点大于你的体力值，执行一个额外效果：每个回合结束时，若本回合未有角色使用过【杀】，当前回合角色失去1点体力。`,
+	mbxiezhi: "挟志",
+	mbxiezhi_info: "锁定技，当你的体力值变化后，你获得X点蓄力点（X为本次变化的值）。若你有因此未获得的蓄力点，你的手牌上限与使用【杀】的次数永久+1。",
+	mbyunan: "迂难",
+	mbyunan_info: `觉醒技，你的登场势力为魏；当你令一名角色进入濒死状态时，若本轮已有角色死亡，你将势力变更为群，然后获得${get.poptip("mbkechang")}，若已有则改为升级${get.poptip({
+		id: "yunan_kechang",
+		name: "〖克昌〗",
+		type: "character",
+		info: "主公技，锁定技，群势力角色使用【杀】无距离限制；你使用的【杀】不可被响应。",
+	})}。`,
+	mbkechang: "克昌",
+	mbkechang_info: "主公技，锁定技，群势力角色使用【杀】无距离限制。",
+	mbkechang_rewrite: "克昌·二级",
+	get mbkechang_rewrite_info() {
+		return lib.poptip.getInfo("yunan_kechang");
+	},
 	pot_taishici: "势太史慈",
 	pot_taishici_prefix: "势",
 	pothanzhan: "酣战",

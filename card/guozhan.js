@@ -482,6 +482,7 @@ game.import("card", function () {
 				subtype: "equip5",
 				nomod: true,
 				nopower: true,
+				loseDelay: false,
 				unique: true,
 				global: "g_dinglanyemingzhu_ai",
 				skills: ["dinglanyemingzhu_skill"],

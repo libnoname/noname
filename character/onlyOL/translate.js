@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_re_xinxianying: "OL界辛宪英",
+	ol_re_xinxianying_prefix: "OL界",
+	olcaishi: "才识",
+	olcaishi_info: "锁定技，当你每轮首次使用一种类型的牌后，若你的手牌上限不为全场最大，你增加一点手牌上限，否则你回复1点体力并令此技能本轮失效。",
+	olzhongjian: "忠鉴",
+	olzhongjian_info: "出牌阶段限一次，你可展示一名其他角色X张手牌（X为其体力值），然后你展示一张手牌。若展示其的牌包含与你展示牌：颜色相同的牌，你摸一张牌；牌名相同的牌，本阶段此技能改为限两次。",
 	ol_sb_chengyu: "OL谋程昱",
 	ol_sb_chengyu_prefix: "OL谋",
 	olsbliduan: "戾断",

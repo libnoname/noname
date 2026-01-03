@@ -2,6 +2,97 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//界辛宪英
+	olcaishi: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			const type = get.type2(event.card);
+			return player.getRoundHistory("useCard", evt => get.type2(evt.card) == type).indexOf(event) == 0;
+		},
+		async content(event, trigger, player) {
+			if (!get.info("clanmuyin").isMax(player)) {
+				player.addSkill(`${event.name}_effect`);
+				player.addMark(`${event.name}_effect`, 1, false);
+			} else {
+				await player.recover();
+				player.tempBanSkill(event.name, "roundStart");
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				markimage: "image/card/handcard.png",
+				intro: {
+					content: "手牌上限+#",
+				},
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("olcaishi_effect");
+					},
+				},
+			},
+		},
+	},
+	olzhongjian: {
+		audio: 2,
+		enable: "phaseUse",
+		usable(skill, player) {
+			return 1 + player.countMark(skill);
+		},
+		filterTarget(card, player, target) {
+			return player != target && target.countCards("h") > 0 && target.getHp() > 0;
+		},
+		async content(event, trigger, player) {
+			const { target, name } = event;
+			const result = await player.choosePlayerCard(target, "h", target.getHp(), true).forResult();
+			const { cards: shown } = result;
+			await player.showCards(shown, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
+			if (!player.countCards("h")) {
+				return;
+			}
+			const result2 = await player
+				.chooseCard(`忠鉴：请你展示一张手牌`, "h", true)
+				.set("shown", shown)
+				.set("ai", card => {
+					let val = 0;
+					const { shown } = get.event();
+					if (shown.some(i => get.suit(i) == get.suit(card))) {
+						val += 1;
+					}
+					if (shown.some(i => get.name(i) == get.name(card))) {
+						val += 2;
+					}
+					return val;
+				})
+				.forResult();
+			const {
+				cards: [card],
+			} = result2;
+			await player.showCards(card);
+			if (shown.some(i => get.suit(i) == get.suit(card))) {
+				await player.draw();
+			}
+			if (shown.some(i => get.name(i) == get.name(card)) && !player.hasMark(name)) {
+				player.addMark(name, 1, false);
+				player.when({ global: "phaseChange" }).step(async (event, trigger, player) => {
+					player.clearMark(name, false);
+				});
+			}
+		},
+		ai: {
+			order: 7,
+			result: {
+				target(player, target) {
+					return -Math.min(target.getHp(), target.countCards("h"));
+				},
+			},
+		},
+	},
 	//谋程昱
 	olsbliduan: {
 		audio: 2,
@@ -1283,7 +1374,7 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return (
-				player.hasCards(card => {
+				player.hasCard(card => {
 					if (get.position(card) === "h" && _status.connectMode) {
 						return true;
 					}

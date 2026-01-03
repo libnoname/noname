@@ -11,12 +11,6 @@ const dynamicTranslates = {
 		}
 		return lib.translate[`${skill}_number_info`];
 	},
-	mbkechang(player, skill) {
-		if (player.getStorage(skill, false)) {
-			return lib.translate[`${skill}_rewrite_info`];
-		}
-		return lib.translate[`${skill}_info`];
-	},
 	mbweizhuang(player, skill) {
 		if (!player) {
 			return lib.translate[`${skill}_info`];

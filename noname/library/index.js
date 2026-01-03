@@ -192,7 +192,7 @@ export class Library {
 		xiaosha_emotion: 20,
 		xiaotao_emotion: 20,
 		xiaojiu_emotion: 20,
-		biexiao_emotion: 18,
+		biexiao_emotion: 24,
 		chaijun_emotion: 43,
 		maoshu_emotion: 18,
 		mobile_emotion: 15,

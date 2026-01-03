@@ -1,4 +1,5 @@
 export default {
+	//ol_re_xinxianying: "",
 	ol_sb_dongzhao: "天阶登志",
 	ol_sb_chengyu: "兼智且勇",
 	ol_sb_yl_luzhi: "人之望",

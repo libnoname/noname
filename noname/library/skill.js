@@ -1963,11 +1963,12 @@ export default {
 		},
 		intro: {
 			markcount(storage, player) {
-				return _status._rest_return?.[player.playerid].count || 0;
+				const { type, count } = _status._rest_return?.[player.playerid] || {};
+				return (!count || !type || count < 0) ? "∞" : count;
 			},
 			content(storage, player) {
 				const { type, count } = _status._rest_return?.[player.playerid] || {};
-				if (!count) {
+				if (!count || !type || count < 0) {
 					return `无限休整中，撅醒时机未知`;
 				}
 				return `还需休整${count}${type == "phase" ? "回合" : "轮"}`;

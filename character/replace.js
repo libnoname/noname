@@ -280,7 +280,7 @@ window.noname_character_replace = {
 	xianglang: ["xianglang", "mb_xianglang"],
 	xiaoqiao: ["xiaoqiao", "ol_xiaoqiao", "ol_sb_xiaoqiao", "yue_xiaoqiao", "re_xiaoqiao", "sb_xiaoqiao", "jd_sb_xiaoqiao", "old_xiaoqiao"],
 	xinpi: ["xinpi", "sp_xinpi"],
-	xinxianying: ["xinxianying", "re_xinxianying", "ol_xinxianying", "sp_xinxianying", "ns_xinxianying", "pot_xinxianying"],
+	xinxianying: ["xinxianying", "ol_re_xinxianying", "re_xinxianying", "ol_xinxianying", "sp_xinxianying", "ns_xinxianying", "pot_xinxianying"],
 	xizhicai: ["xizhicai", "ol_sb_xizhicai"],
 	xuangongzhu: ["xuangongzhu", "yj_xuangongzhu"],
 	xuelingyun: ["ol_xuelingyun", "xuelingyun"],
@@ -440,4 +440,5 @@ window.noname_character_replace = {
 	zhanghu: ["zj_zhanghu", "zhanghu"],
 	yuechen: ["zj_yuechen", "yuechen"],
 	wenyuan: ["wenyuan", "std_wenyuan"],
+	chentai: ["clan_chentai", "chentai"],
 };

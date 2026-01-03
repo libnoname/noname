@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	clandongxu(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "你可以将你装备区里的一张牌置于其他角色装备区（替换原装备），视为对其使用一张【杀】",
+			yin = "你可以将手牌摸至X（X为你的攻击范围且至多为5），视为使用一张【闪】";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技,",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	clanlianzhu(player) {
 		const bool = player.storage.clanlianzhu;
 		let yang = "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限-1",

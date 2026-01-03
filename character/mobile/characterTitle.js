@@ -1,5 +1,4 @@
 export default {
-	//sp_zhonghui: "",
 	//mb_zhangzhi: "",
 	//mb_caozhi: "",
 	//mb_zhouyu: "",
