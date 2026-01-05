@@ -9,6 +9,15 @@
         "url": "git+https://github.com/libnoname/noname.git"
     },
     "type": "module",
+    "main": "dist",
+    "exports": {
+        ".": {
+            "types": "./dist-types/noname.d.ts",
+            "development": "./noname.js",
+            "default": "./dist/noname.js"
+        },
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "start": "pnpm build:full && pnpm serve",
         "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev --open\"",
