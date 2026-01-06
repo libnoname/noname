@@ -1289,7 +1289,7 @@ export class GameEvent {
 	}
 
 	/**
-	 * @type { Promise<void> | null }
+	 * @type { Promise<Partial<Result>|void> | null }
 	 */
 	#waitNext = null;
 	waitNext() {
@@ -1297,6 +1297,7 @@ export class GameEvent {
 			return this.#waitNext;
 		}
 		this.#waitNext = (async () => {
+			let result;
 			while (true) {
 				await _status.pauseManager.waitPause();
 				if (this.manager.tempEvent) {
@@ -1304,14 +1305,17 @@ export class GameEvent {
 						this.manager.tempEvent = void 0;
 					} else {
 						this.cancel(true, null, "notrigger");
-						return;
+						return result;
 					}
 				}
 				if (!this.next.length) {
-					return;
+					return result;
 				}
 				const next = this.next[0];
 				await next.start();
+				if (next.result) {
+					result = next.result;
+				}
 				this.next.shift();
 			}
 		})().finally(() => (this.#waitNext = null));
