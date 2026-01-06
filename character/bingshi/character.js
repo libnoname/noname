@@ -6,7 +6,6 @@ const characters = {
 		skills: ["mbsizi", "mbxiezhi", "mbyunan", "mbkechang"],
 		isZhugong: true,
 		clans: ["颍川钟氏"],
-		groupBorder: "qun",
 		doubleGroup: ["wei", "qun"],
 	},
 	pot_zanghong: {

@@ -1948,7 +1948,7 @@ const skills = {
 					.forResult();
 				if (result.bool) {
 					const cards = result.moved.slice(1).flat();
-					await other.discard(cards).set("discarder", player);
+					await other.modedDiscard(cards, player);
 				}
 			}
 		},

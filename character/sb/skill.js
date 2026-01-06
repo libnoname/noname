@@ -10562,6 +10562,7 @@ const skills = {
 						? await player.chooseButtonTarget({
 								createDialog: [`连营：请选择要分配的牌和目标`, cards],
 								forced: true,
+								allowChooseAll: true,
 								selectButton: [1, Infinity],
 								cardsx: cards,
 								ai1(button) {
@@ -10590,7 +10591,7 @@ const skills = {
 								})
 								.set("enemy", get.value(cards[0], player, "raw") < 0)
 								.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					if (!result.links?.length) {
 						result.links = cards.slice(0);
 					}

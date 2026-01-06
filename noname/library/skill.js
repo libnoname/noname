@@ -1348,7 +1348,7 @@ export default {
 		filter: function (event, player) {
 			const groups = get.selectGroup(player.name1),
 				type = get.selectGroup(player.name1, true);
-			return get.mode() != "guozhan" && groups.length > 1 && type != "kami" && !player._groupChosen;
+			return get.mode() != "guozhan" && groups.length > 0 && type == "double" && !player._groupChosen;
 		},
 		async content(event, trigger, player) {
 			const groups = get.selectGroup(player.name1),
@@ -1356,6 +1356,7 @@ export default {
 			player._groupChosen = type;
 			const result = await player
 				.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true)
+				.set("direct", true)
 				.forResult();
 			if (result?.bool && result.links?.length) {
 				await player.changeGroup(result.links[0][2].slice(6));
@@ -1546,6 +1547,9 @@ export default {
 						}
 					}
 					var cfg = player.storage.dualside;
+					if(!Array.isArray(cfg)){
+						return;
+					}
 					if (get.mode() == "guozhan") {
 						if (player.name1 == cfg[0]) {
 							player.showCharacter(0);

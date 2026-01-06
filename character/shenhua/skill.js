@@ -8431,9 +8431,7 @@ const skills = {
 	},
 	fenji: {
 		audio: 2,
-		trigger: {
-			global: ["gainAfter", "loseAfter", "loseAsyncAfter"],
-		},
+		trigger: { global: ["gainAfter", "loseAfter", "loseAsyncAfter"] },
 		filter(event, player) {
 			if (event.name == "lose") {
 				if (event.type != "discard" || !event.player.isIn()) {
@@ -8454,7 +8452,7 @@ const skills = {
 				if (!cards.length) {
 					return false;
 				}
-				return game.hasPlayer(function (current) {
+				return game.hasPlayer(current => {
 					if (current == event.player) {
 						return false;
 					}
@@ -8471,7 +8469,7 @@ const skills = {
 					return false;
 				}
 				const hs = event.getl(event.player);
-				return game.hasPlayer(function (current) {
+				return game.hasPlayer(current => {
 					if (current == event.player) {
 						return false;
 					}
@@ -8486,7 +8484,7 @@ const skills = {
 				if (!event.discarder) {
 					return false;
 				}
-				return game.hasPlayer(function (current) {
+				return game.hasPlayer(current => {
 					return current != event.discarder && event.getl(current).hs.length > 0;
 				});
 			}
@@ -8497,7 +8495,7 @@ const skills = {
 			if (event.name == "gain") {
 				const cards = event.getg(event.player);
 				targets.addArray(
-					game.filterPlayer(function (current) {
+					game.filterPlayer(current => {
 						if (current == event.player) {
 							return false;
 						}
@@ -8512,7 +8510,7 @@ const skills = {
 				);
 			} else if (event.name == "loseAsync" && event.type == "discard") {
 				targets.addArray(
-					game.filterPlayer(function (current) {
+					game.filterPlayer(current => {
 						return current != event.discarder && event.getl(current).hs.length > 0;
 					})
 				);
@@ -8521,23 +8519,15 @@ const skills = {
 			}
 			return targets;
 		},
-		async cost(event, trigger, player) {
-			const target = event.indexedData;
-			event.result = await player
-				.chooseBool(get.prompt(event.skill, target), "失去1点体力，令该角色摸两张牌")
-				.set("ai", function () {
-					const player = get.event().player,
-						target = get.event().target;
-					if (get.attitude(player, target) <= 0) {
-						return false;
-					}
-					return 2 * get.effect(target, { name: "draw" }, player, player) + get.effect(player, { name: "losehp" }, player, player) > 0;
-				})
-				.set("target", target)
-				.forResult();
+		logTarget: (event, player, triggername, target) => target,
+		check(event, player, triggername, target) {
+			if (get.attitude(player, target) <= 0) {
+				return false;
+			}
+			return 2 * get.effect(target, { name: "draw" }, player, player) + get.effect(player, { name: "losehp" }, player, player) > 0;
 		},
 		async content(event, trigger, player) {
-			const target = event.indexedData;
+			const [target] = event.targets;
 			await player.loseHp();
 			await target.draw(2);
 		},
@@ -8560,6 +8550,7 @@ const skills = {
 			}
 			return 2 * get.effect(event.player, { name: "draw" }, player, get.event().player) + get.effect(player, { name: "losehp" }, player, get.event().player) > 0;
 		},
+		logTarget: "player",
 		async content(event, trigger, player) {
 			player.line(trigger.player, "green");
 			await trigger.player.draw(2);

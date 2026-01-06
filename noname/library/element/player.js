@@ -6101,6 +6101,8 @@ export class Player extends HTMLDivElement {
 					next.complexSelect = true;
 				} else if (arguments[i] == "allowChooseAll") {
 					next.allowChooseAll = true;
+				} else if (arguments[i] == "direct") {
+					next.direct = true;
 				} else if (Array.isArray(arguments[i])) {
 					next.createDialog = arguments[i];
 				}
@@ -7314,24 +7316,56 @@ export class Player extends HTMLDivElement {
 		next.gaintag = [];
 		return next;
 	}
+	/**
+	 * 令玩家随机弃置其区域内的一些牌
+	 *
+	 * num: number;
+	 * 要弃置的牌数
+	 *
+	 * discarder?: Player;
+	 * 弃牌来源，令Player弃牌的角色。默认目标角色
+	 *
+	 * position?: string;
+	 * 弃牌区域，默认 "he"
+	 * 
+	 * random?: "random";
+	 * 是否纯随机，否则优先弃置能弃置的牌
+	 *
+	 * log?: 'popup' | 'logSkill' | false | string;
+	 * 因对应Mod技能导致部分牌未被弃置时，是否为Mod技能执行对应函数。默认'popup'
+	 *
+	 * @returns { GameEvent }
+	 */
 	randomDiscard() {
 		let position = "he",
+			discarder = this,
 			num = 1,
-			delay = null;
+			random = false,
+			log = "popup";
 		for (let i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
+			if (typeof arguments[i] === "number") {
 				num = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "position") {
+			} else if (get.itemtype(arguments[i]) == "player") {
+				discarder = arguments[i];
+			} else if (get.itemtype(arguments[i]) === "position") {
 				position = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				delay = arguments[i];
+			} else if (arguments[i] === "random") {
+				random = true;
+			} else if (arguments[i] === false || typeof arguments[i] === "string") {
+				log = arguments[i];
 			}
 		}
-		const cards = this.getDiscardableCards(this, position).randomGets(num);
-		const next = this.discard(cards, "notBySelf");
-		if (typeof delay == "boolean") {
-			next.delay = delay;
+		let cards;
+		if (random) {
+			cards = this.getCards(position).randomGets(num);
+		} else {
+			const discardable = this.getDiscardableCards(discarder, position);
+			cards = discardable.randomGets(num);
+			if (cards.length < num) {
+				cards.addArray(this.getCards(position, (c) => !discardable.includes(c)).randomGets(num - cards.length));
+			}
 		}
+		const next = this.modedDiscard(cards, discarder, log);
 		return next;
 	}
 	randomGain() {
@@ -7365,6 +7399,19 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 强制令玩家弃置其区域内的一些牌
+	 *
+	 * cards: Card[] | Card;
+	 * 要弃置的牌
+	 *
+	 * discarder?: Player;
+	 * 弃牌来源，令Player弃牌的角色
+	 *
+	 * position?: div | fragment;
+	 * 经Mod筛选后的牌要置入的区域，默认ui.discardPile
+	 *
+	 * notBySelf?: 'notBySelf';
+	 * 是否是他人弃置。discarder设置后会自动判断
+	 * 
 	 * @returns { GameEvent }
 	 */
 	discard() {
@@ -7372,17 +7419,18 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.num = 0;
 		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "cards") {
+			if (get.itemtype(arguments[i]) === "player") {
+				next.discarder = arguments[i];
+				if (this !== next.discarder) {
+					next.notBySelf = true;
+				}
+			} else if (get.itemtype(arguments[i]) === "cards") {
 				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
+			} else if (get.itemtype(arguments[i]) === "card") {
 				next.cards = [arguments[i]];
-			} else if (typeof arguments[i] == "boolean") {
-				next.animate = arguments[i];
 			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
 				next.position = arguments[i];
-			} else if (arguments[i] == "notBySelf") {
+			} else if (arguments[i] === "notBySelf") {
 				next.notBySelf = true;
 			}
 		}
@@ -7399,8 +7447,8 @@ export class Player extends HTMLDivElement {
 	 * cards: Card[] | Card;
 	 * 要弃置的牌
 	 *
-	 * source?: Player;
-	 * 来源，令Player弃牌的角色。默认目标角色
+	 * discarder?: Player;
+	 * 弃牌来源，令Player弃牌的角色。默认目标角色
 	 *
 	 * position?: div | fragment;
 	 * 经Mod筛选后的牌要置入的区域，默认ui.discardPile
@@ -7413,13 +7461,13 @@ export class Player extends HTMLDivElement {
 	modedDiscard() {
 		var next = game.createEvent("discard");
 		next.player = this;
-		next.source = this;
+		next.discarder = this;
 		next.cards = [];
 		next.log = "popup";
 		for (let i = 0; i < arguments.length; i++) {
 			if (get.itemtype(arguments[i]) === "player") {
-				next.source = arguments[i];
-				if (this !== next.source) {
+				next.discarder = arguments[i];
+				if (this !== next.discarder) {
 					next.notBySelf = true;
 				}
 			} else if (get.itemtype(arguments[i]) === "cards") {
@@ -7458,7 +7506,7 @@ export class Player extends HTMLDivElement {
 			let mod = get.info(skill).mod.canBeDiscarded;
 			if (mod) {
 				for (let i = 0; i < next.cards.length; i++) {
-					let arg = [next.cards[i], next.source, this, event, "unchanged"],
+					let arg = [next.cards[i], next.discarder, this, event, "unchanged"],
 						result = mod.call(game, ...arg);
 					if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
 						arg[arg.length - 1] = result;
@@ -7503,6 +7551,12 @@ export class Player extends HTMLDivElement {
 				await event.done;
 				await event.trigger("discard");
 			}
+			event.result = {
+				bool: cards.length > 0,
+				cards,
+				skills: event.skills,
+				protected_cards: event.protected_cards,
+			};
 		});
 		return next;
 	}

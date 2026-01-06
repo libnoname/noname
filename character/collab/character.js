@@ -388,12 +388,14 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["quanjia"],
+		names: "耄|耋",
 	},
 	xiangjiaoduanwu: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
 		skills: ["xuyuan", "xiaomian"],
+		names: "耄|耋",
 	},
 };
 

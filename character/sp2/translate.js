@@ -362,7 +362,7 @@ const translates = {
 	gongxiu: "共修",
 	gongxiu_info: "结束阶段，若你本回合内发动过〖经合〗，则你选择一项：①令所有本回合内成为过〖经合〗目标的角色各摸一张牌；②令所有本回合内未成为过〖经合〗目标的角色各弃置一张手牌。",
 	jinghe: "经合",
-	jinghe_info: "出牌阶段限一次，你可以展示至多四张牌名各不相同的牌并选择等量的角色。系统从“写满技能的天书”中随机选择等量的技能，然后这些角色依次选择获得其中的一个直到你的下回合开始。",
+	jinghe_info: `出牌阶段限一次，你可以展示至多四张牌名各不相同的牌并选择等量的角色。系统从“写满技能的天书”（${["releiji", "rebiyue", "new_retuxi", "remingce", "xinzhiyan", "nhyinbing", "nhhuoqi", "nhguizhu", "nhxianshou", "nhlundao", "nhguanyue", "nhyanzheng"].map(skill =>get.poptip(skill)).join("、")} ）中随机选择等量的技能，然后这些角色依次选择获得其中的一个直到你的下回合开始。`,
 	nhyinbing: "阴兵",
 	nhyinbing_info: "锁定技，你使用的【杀】造成伤害改为失去体力。其他角色失去体力后，你摸一张牌。",
 	nhhuoqi: "活气",

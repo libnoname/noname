@@ -1164,7 +1164,7 @@ export default {
 			await player.showCards(cards, get.translation(player) + "对" + get.translation(target) + "发动了【遗毒】");
 			const color = get.color(cards[0], target);
 			if (cards.every(card => get.color(card, target) == color)) {
-				await target.discard(cards, "notBySelf").set("discarder", player);
+				await target.modedDiscard(cards, player);
 			}
 		},
 	},
@@ -4576,7 +4576,7 @@ export default {
 					player.logSkill("fakecaiwang");
 				}
 				target.line(player, "green");
-				target.discard(event.zhuzhanresult2.cards).discarder = target;
+				target.modedDiscard(event.zhuzhanresult2.cards);
 				if (typeof event.afterYingbianZhuzhan == "function") {
 					event.afterYingbianZhuzhan(event, trigger);
 				}

@@ -5788,7 +5788,7 @@ const skills = {
 			if (!event.directfalse && result.bool) {
 				var e1 = player.getEquips(1);
 				if (e1.length) {
-					player.discard(e1, "notBySelf");
+					player.modedDiscard(e1, this.trigger.target);
 				}
 				event.finish();
 			} else {
@@ -5900,7 +5900,7 @@ const skills = {
 			if (!event.directfalse && result.bool) {
 				var e1 = player.getEquips(1);
 				if (e1.length) {
-					player.discard(e1, "notBySelf");
+					player.modedDiscard(e1, trigger.player);
 				}
 			} else {
 				trigger.num++;

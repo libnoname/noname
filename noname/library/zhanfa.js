@@ -2588,7 +2588,7 @@ const _zhanfa = {
 				const target = trigger.player;
 				const cards = target.getDiscardableCards(player, "he", () => true);
 				if (cards.length) {
-					await target.discard(cards.randomGet()).set("discarder", player);
+					await target.randomDiscard(player, "random");
 				}
 			},
 		},

@@ -958,27 +958,52 @@ const skills = {
 							.toUniqued(),
 						target: target,
 					});
+					const list = get.addNewRowList(player.getCards("h"), "suit", player);
 					const result = await target
-						.chooseControl([...lib.suit.slice(0).reverse(), "cancel2"])
-						.set("dialog", ["请选择一个花色", player.getCards("h")])
-						.set("ai", () => {
-							const target = get.event().target;
-							const player = get.player();
+						.chooseButton([
+							[
+								[[`诫节：请选择一个花色<div class="text center">若${get.translation(player)}手牌包含此花色，其本回合使用此花色的牌无次数限制，然后弃置其余花色的手牌，否则其获得此花色的一张牌</div>`], "addNewRow"],
+								[
+									dialog => {
+										dialog.classList.add("fullheight");
+										dialog.forcebutton = false;
+										dialog._scrollset = false;
+									},
+									"handle",
+								],
+								list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+							],
+						])
+						.set("ai", button => {
+							const { player, target } = get.event();
 							const att = get.attitude(player, target);
+							const { links } = button;
+							const hs = target.getCards("h");
 							if (att > 0) {
-								const lack = lib.suit.slice(0).filter(suit => !target.hasCard(card => get.suit(card, target) == suit, "h"));
-								if (lack.length) {
-									return lack.randomGet();
+								if (!links.length) {
+									return 2;
 								}
-							} else if (att <= 0 && target.hasCard(true, "h")) {
-								return lib.suit.filter(suit => target.hasCard(card => get.suit(card, target) == suit, "h")).reduce((min, current) => (target.countCards("h", { suit: current }) < target.countCards("h", { suit: min }) ? current : min));
+								if (links.filter(card => card.name == "sha" && target.getUseValue(card, true, false)).length > 1 && hs.length - links.length < 3) {
+									return 1;
+								}
+								return get.event().getRand();
+							} else if (att <= 0) {
+								if (!links.length) {
+									return 0;
+								}
+								if (links.length < 2) {
+									return 2;
+								}
+								if (links.filter(card => card.name == "sha" && target.getUseValue(card, true, false)).length < 2) {
+									return 1;
+								}
+								return 0;
 							}
-							return lib.suit.randomGet();
 						})
 						.set("target", player)
 						.forResult();
-					const choice = result.control;
-					if (choice !== "cancel2") {
+					if (result?.links?.length) {
+						const [choice] = result.links;
 						game.log(target, "选择了" + get.translation(choice));
 						target.popup(choice);
 						if (player.hasCard(card => get.suit(card, player) == choice, "h")) {
@@ -1536,7 +1561,7 @@ const skills = {
 					player.logSkill("mbxiongtu", [target], null, null, [get.rand(3, 4)]);
 					await target.damage();
 				} else {
-					await target.modedDiscard(card).set("discarder", player);
+					await target.modedDiscard(card, player);
 				}
 			}
 		},
@@ -2997,7 +3022,7 @@ const skills = {
 										const cards = player.getCards("h", card => card.hasGaintag("mbrunwei"));
 										if (cards.length) {
 											player.logSkill("mbrunwei", null, null, null, [4]);
-											await player.modedDiscard(cards).set("discarder", player);
+											await player.modedDiscard(cards, player);
 										}
 									});
 							}

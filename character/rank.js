@@ -101,6 +101,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"mb_shen_jiangwei",
 		"ol_sb_dongzhao",
 		"ol_sb_chengyu",
 		"ol_cuiyan",
@@ -2565,6 +2566,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"mb_shen_jiangwei",
 			"ol_sb_dongzhao",
 			"ol_sb_chengyu",
 			"ol_cuiyan",

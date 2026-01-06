@@ -8838,8 +8838,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { cards } = event;
-			await player.discard(cards).set("discarder", player);
+			const cards = await player.modedDiscard(event.cards).forResultCards();
 			await player.draw(cards.length * 2);
 			game.log(trigger.card, "的伤害改为", "#y" + cards.length);
 			player.addTempSkill(event.name + "_damage");
@@ -11449,9 +11448,9 @@ const skills = {
 				return;
 			}
 			await target.showHandcards();
-			const cards2 = target.getDiscardableCards(player, "h").filter(card => result.links.includes(get.suit(card, target)));
+			const cards2 = target.getCards("h", card => result.links.includes(get.suit(card, target)));
 			if (cards2.length) {
-				await target.discard(cards2, "notBySelf").set("discarder", player);
+				await target.modedDiscard(cards2, player);
 			}
 			if (cards1.length > cards2.length) {
 				await target.damage(player);

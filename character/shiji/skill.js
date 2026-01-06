@@ -1225,54 +1225,64 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		chooseButton: {
-			dialog() {
-				return ui.create.dialog("###严教###" + get.translation("spyanjiao_info"));
+			dialog(event, player) {
+				const list = get.addNewRowList(player.getCards("h"), "suit", player);
+				const dialog = ui.create.dialog();
+				dialog.add([
+					[[`###严教###<div class="text center">${get.translation("spyanjiao", "info")}</div>`], "addNewRow"],
+					[
+						dialog => {
+							dialog.classList.add("fullheight");
+							dialog.forcebutton = false;
+							dialog._scrollset = false;
+						},
+						"handle",
+					],
+					list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+				]);
+				return dialog;
 			},
-			chooseControl(event, player) {
-				var map = {},
-					hs = player.getCards("h");
-				for (var i of hs) {
-					map[get.suit(i, player)] = true;
-				}
-				var list = lib.suit.filter(i => map[i]);
-				list.push("cancel2");
-				return list;
+			filter(button, player) {
+				return button.links.length;
 			},
-			check(event, player) {
-				var map = {},
+			check(button) {
+				const player = get.player();
+				let map = {},
 					hs = player.getCards("h"),
 					min = Infinity,
 					min_suit = null;
-				for (var i of hs) {
-					var suit = get.suit(i, player);
+				for (const card of hs) {
+					const suit = get.suit(card, player);
 					if (!map[suit]) {
 						map[suit] = 0;
 					}
-					map[suit] += get.value(i);
+					map[suit] += get.value(card);
 				}
-				for (var i in map) {
-					if (map[i] < min) {
-						min = map[i];
-						min_suit = i;
+				for (let suit in map) {
+					if (map[suit] < min) {
+						min = map[suit];
+						min_suit = suit;
 					}
 				}
-				return min_suit;
+				if (get.suit(button.links[0], player) == min_suit) return 1;
+				return 0;
 			},
 			backup(result, player) {
 				return {
 					audio: "spyanjiao",
-					filterCard: { suit: result.control },
+					filterCard: { suit: result[0] },
 					selectCard: -1,
 					position: "h",
 					filterTarget: lib.filter.notMe,
 					discard: false,
 					lose: false,
 					delay: false,
-					content() {
+					async content(event, trigger, player) {
+						const { cards, target } = event;
 						player.addSkill("spyanjiao_draw");
 						player.addMark("spyanjiao_draw", cards.length, false);
-						player.give(cards, target);
-						target.damage("nocard");
+						await player.give(cards, target);
+						await target.damage("nocard");
 					},
 					ai: {
 						result: {
@@ -1280,7 +1290,7 @@ const skills = {
 								if (!ui.selected.cards.length) {
 									return 0;
 								}
-								var val = get.value(ui.selected.cards, target);
+								const val = get.value(ui.selected.cards, target);
 								if (val < 0) {
 									return val + get.damageEffect(target, player, target);
 								}
@@ -1298,13 +1308,14 @@ const skills = {
 		subSkill: {
 			draw: {
 				audio: "spyanjiao",
+				charlotte: true,
 				onremove: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
-				charlotte: true,
-				content() {
-					player.draw(player.countMark("spyanjiao_draw"));
-					player.removeSkill("spyanjiao_draw");
+				async content(event, trigger, player) {
+					const num = player.countMark(event.name);
+					player.removeSkill(event.name);
+					await player.draw(num);
 				},
 				mark: true,
 				intro: { content: "下回合开始时摸#张牌" },
@@ -6114,7 +6125,6 @@ const skills = {
 			}
 			const target = _status.currentPhase,
 				card = trigger.getl(player).cards2[0];
-			event.card = card;
 			player.addMark(event.name, 1, false);
 			const choiceList = [],
 				str = get.translation(player);

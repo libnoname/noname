@@ -181,22 +181,6 @@ export class Library {
 	ondb = [];
 	ondb2 = [];
 	chatHistory = [];
-	emotionList = {
-		huangdou_emotion: 50,
-		shibing_emotion: 15,
-		wanglang_emotion: 20,
-		guojia_emotion: 20,
-		zhenji_emotion: 20,
-		xiaowu_emotion: 14,
-		xiaokuo_emotion: 8,
-		xiaosha_emotion: 20,
-		xiaotao_emotion: 20,
-		xiaojiu_emotion: 20,
-		biexiao_emotion: 24,
-		chaijun_emotion: 43,
-		maoshu_emotion: 18,
-		mobile_emotion: 15,
-	};
 	animate = {
 		skill: {},
 		card: {},
@@ -618,7 +602,7 @@ export class Library {
 								if (event.zhuzhanresult) {
 									var target = event.zhuzhanresult;
 									target.line(player, "green");
-									target.discard(event.zhuzhanresult2.cards).discarder = target;
+									target.modedDiscard(event.zhuzhanresult2.cards);
 									if (typeof event.afterYingbianZhuzhan == "function") {
 										event.afterYingbianZhuzhan(event, trigger);
 									}

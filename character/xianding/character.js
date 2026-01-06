@@ -98,7 +98,7 @@ const characters = {
 	},
 	suyue: {
 		sex: "male",
-		group: "qun",
+		group: "wei",
 		hp: 3,
 		skills: ["dcgongtu", "dchangzhu"],
 	},

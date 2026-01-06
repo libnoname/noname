@@ -707,7 +707,7 @@ async function getExtensionList() {
 		await game.promises.saveConfig("extensions", extensions);
 	}
 
-	return toLoad.filter(i => !window.bannedExtensions.includes(i));
+	return toLoad;
 }
 
 function initSheet() {

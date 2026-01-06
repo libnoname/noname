@@ -387,7 +387,7 @@ game.import("card", function () {
 							return;
 						}
 						const owner = get.owner(result.links[0]);
-						await owner.discard(result.links, "notBySelf", player);
+						await owner.modedDiscard(result.links, player);
 						await game.asyncDraw([player, target], 2);
 					} else {
 						await player.damage("nosource");

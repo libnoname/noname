@@ -1338,7 +1338,7 @@ const skill = {
 			game.delayx();
 			"step 1";
 			player.storage.baoxue = true;
-			player.awakenSkill(event.name);
+			player.awakenSkill(event.skill);
 			player.showHandcards();
 			player.discard(player.getCards("he", { color: "black" }));
 		},

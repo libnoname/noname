@@ -973,7 +973,7 @@ const translates = {
 	jd_sb_sunquan: "九鼎孙权",
 	jd_sb_sunquan_prefix: "九鼎",
 	jdsbzhiheng: "制衡",
-	jdsbzhiheng_info: "出牌阶段限一次。你可以弃置任意张牌并摸等量的牌，若你以此法弃置的牌包括你装备区的牌，则你多摸一张牌",
+	jdsbzhiheng_info: "出牌阶段限一次。你可以弃置任意张牌并摸等量的牌，若你以此法弃置的牌包括你装备区的牌，则你多摸一张牌。",
 	jdsbtongye: "统业",
 	jdsbtongye_info: "锁定技，若牌堆未洗过牌，你视为拥有〖英姿〗和〖固政〗。",
 	jdsbjiuyuan: "救援",

@@ -7607,8 +7607,7 @@ const skills = {
 				logTarget: "target",
 				async content(event, trigger, player) {
 					const target = trigger.target;
-					const cards = target.getDiscardableCards(player, "he");
-					target.discard(cards.randomGets(Math.min(2, cards.length))).discarder = player;
+					target.randomDiscard(2, player);
 				},
 			},
 			dao: {
@@ -7713,7 +7712,7 @@ const skills = {
 				forced: true,
 				logTarget: "player",
 				async content(event, trigger, player) {
-					trigger.player.discard(trigger.player.getDiscardableCards(player, "e").randomGets(1)).discarder = player;
+					trigger.player.randomDiscard("e", player);
 				},
 			},
 			blocker: {
@@ -10280,7 +10279,7 @@ const skills = {
 					}
 				} else {
 					if (lib.filter.canBeDiscarded(card, target, player)) {
-						target.discard(card, "notBySelf");
+						target.discard(card, player);
 						target.draw();
 					}
 				}
@@ -14858,9 +14857,8 @@ const skills = {
 		},
 		filterCard: true,
 		position: "he",
-		content() {
-			"step 0";
-			target.viewHandcards(player);
+		async content(event, trigger, player) {
+			await target.viewHandcards(player);
 			var chooseButton;
 			if (player.countCards("h")) {
 				chooseButton = player.chooseButton([1, 2], ['###尚义###<div class="text center">选择' + get.translation(target) + "的一张手牌以弃置，或选择你与其的各一张牌以交换</div>", '<div class="text center">' + get.translation(target) + "的手牌</div>", target.getCards("h"), '<div class="text center">你的手牌</div>', player.getCards("h")], true);
@@ -14910,12 +14908,12 @@ const skills = {
 				}
 				return true;
 			});
-			"step 1";
+			const result = await chooseButton.forResult();
 			if (result.bool) {
 				if (result.links.length == 1) {
-					target.discard(result.links[0]).discarder = player;
-					if (get.color(result.links[0], target) != "black") {
-						event.finish();
+					const cards = await target.modedDiscard(result.links, player).forResultCards();
+					if (get.color(cards[0], target) === "black") {
+						await player.draw();
 					}
 				} else {
 					var links = result.links.slice();
@@ -14924,16 +14922,12 @@ const skills = {
 					}
 					var card1 = links[0],
 						card2 = links[1];
-					player.swapHandcards(target, [card1], [card2]);
-					if (get.color(card1, player) != "red" || get.color(card2, target) != "red") {
-						event.finish();
+					await player.swapHandcards(target, [card1], [card2]);
+					if (get.color(card1, player) === "red" && get.color(card2, target) === "red") {
+						await player.draw();
 					}
 				}
-			} else {
-				event.finish();
 			}
-			"step 2";
-			player.draw();
 		},
 		ai: {
 			order: 10,
@@ -23632,7 +23626,7 @@ const skills = {
 			switch (event.cost_data) {
 				case "弃置卡牌":
 					player.logSkill(event.name, owner);
-					await owner.discard(card, "notBySelf");
+					await owner.modedDiscard(card, player);
 					break;
 				case "获得卡牌": {
 					const next = player.chooseToDiscard("h", true);

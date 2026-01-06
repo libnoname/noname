@@ -200,7 +200,7 @@ const translates = {
 	dczhonge: "忠锷",
 	dczhonge_info: "出牌阶段限一次，你可以将手牌调整至体力上限，与一名其他角色同时选择一项：1.你与其依次摸一张牌；2.你与其依次视为对对方使用一张【杀】。若其选择的项与你不同，你执行每项操作时额外执行一次。",
 	dcjuekai: "绝忾",
-	dcjuekai_info: "限定技，出牌阶段，你可以重置〖忠锷〗，然后直到出牌阶段结束，此阶段获得过牌的角色无法再使用手牌。",
+	dcjuekai_info: `限定技，出牌阶段，你可以重置${get.poptip("dczhonge")}，然后直到出牌阶段结束，此阶段获得过牌的角色无法再使用手牌。`,
 	yj_zhanghuan: "新杀张奂",
 	yj_zhanghuan_prefix: "新杀",
 	dcyiju: "义拒",

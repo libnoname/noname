@@ -8,12 +8,6 @@ import "vue/dist/vue.esm-browser.js";
 
 (async () => {
 	try {
-		window["bannedExtensions"] = [
-			"\u4fa0\u4e49",
-			"\u5168\u6559\u7a0b",
-			"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
-		];
-
 		lib.device = device;
 
 		// 预加载脚本

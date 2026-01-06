@@ -1207,7 +1207,7 @@ const skills = {
 			player.addTempSkill(event.name + "_check", "phaseUseAfter");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【评骘】`);
 			if (player.storage[event.name]) {
-				await target.modedDiscard(cards).set("discarder", player);
+				await target.modedDiscard(cards, player);
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
 				if (target.canUse(huogong, player, false)) {
 					await target.useCard(huogong, player, false);
@@ -4507,11 +4507,11 @@ const skills = {
 							game.log(trigger.card, "额外结算一次");
 							break;
 						case 2:
-							player.draw(2);
+							await player.draw(2);
 							break;
 						case 3:
-							target.discard(target.getCards("j")).discarder = player;
-							target.damage(3);
+							await target.discard(target.getCards("j"), player);
+							await target.damage(3);
 							break;
 					}
 				},
@@ -12117,12 +12117,7 @@ const skills = {
 				if (cards.length) {
 					player.gain(cards, target, "giveAuto", "bySelf");
 				} else {
-					var cards = result.cards.filter(function (card) {
-						return lib.filter.canBeDiscarded(card, target, player);
-					});
-					if (cards.length) {
-						target.discard(cards, "notBySelf");
-					}
+					target.modedDiscard(result.cards, player);
 				}
 			}
 		},
@@ -15703,7 +15698,7 @@ const skills = {
 					const draws = [];
 					for (let i = 0; i < cards.length; i++) {
 						if (!cards2.includes(cards[i])) {
-							await targets[i].discard(cards[i]).set("delay", false).set("discarder", player);
+							await targets[i].modedDiscard(cards[i], player);
 						} else {
 							draws.push(targets[i]);
 						}

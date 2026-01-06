@@ -3093,7 +3093,7 @@ const skills = {
 	dckanyu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin3",
+			player: "damageEnd",
 			global: "judgeBegin",
 		},
 		frequent: true,
@@ -5294,7 +5294,7 @@ const skills = {
 						} else {
 							index[1].addArray(cards);
 						}
-						await target.discard(cards, "notBySelf").set("discarder", player);
+						await target.modedDiscard(cards, player);
 					} else {
 						break;
 					}
@@ -15466,7 +15466,7 @@ const skills = {
 			const target = trigger.player;
 			const result = event.cost_data;
 			if (result.links?.length) {
-				await target.discard(result.links, "notBySelf").set("discarder", player);
+				await target.modedDiscard(result.links, player);
 			} else {
 				await player.discard(result.cards);
 			}
@@ -18883,12 +18883,7 @@ const skills = {
 				count++;
 			}
 			if (discard) {
-				const cards = target.getCards("e", card => {
-					return lib.filter.cardDiscardable(card, target, "dcnuanhui");
-				});
-				if (cards.length) {
-					await target.discard(cards).set("discarder", target);
-				}
+				await target.modedDiscard(target.getCards("e"));
 			}
 		},
 		ai: {
@@ -19261,7 +19256,7 @@ const skills = {
 					if (trigger.hasNature("fire")) {
 						source.line(target, "fire");
 						const type = get.type2(event.cards[0]);
-						await source.discard(event.cards).set("discarder", source);
+						await source.modedDiscard(event.cards);
 						//await game.delayx();
 						const cardsToDiscard = target.getExpansions("dcxiaoyin").filter(card => get.type2(card, false) === type);
 						if (cardsToDiscard.length === 1) {
@@ -24339,7 +24334,7 @@ const skills = {
 					} else {
 						index[1].addArray(cards);
 					}
-					await target.discard(cards, "notBySelf").set("discarder", player);
+					await target.modedDiscard(cards, player);
 				} else {
 					break;
 				}
@@ -34206,9 +34201,7 @@ const skills = {
 					map[id].push(i);
 				}
 				for (let i in map) {
-					const next = (_status.connectMode ? lib.playerOL : game.playerMap)[i].discard(map[i], "notBySelf");
-					next.discarder = player;
-					await next;
+					await (_status.connectMode ? lib.playerOL : game.playerMap)[i].modedDiscard(map[i], player);
 				}
 			}
 		},

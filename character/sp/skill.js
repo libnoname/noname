@@ -1943,7 +1943,7 @@ const skills = {
 		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			if (!player.hasSkill("olshuliang_used") && player.getExpansions("oljiyun").some(card => card.name == name)) {
+			if (player.getExpansions("oljiyun").some(card => card.name == name)) {
 				return true;
 			}
 		},
@@ -6130,7 +6130,7 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.name === "damage") {
 				const owner = get.owner(event.cards[0]);
-				await owner.discard(event.cards).set("discarder", owner);
+				await owner.modedDiscard(event.cards);
 				trigger.num++;
 			} else {
 				await player.recover();

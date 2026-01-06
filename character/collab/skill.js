@@ -1846,9 +1846,7 @@ const skills = {
 			event.result.targets = [trigger[player == trigger.player ? "target" : "player"]];
 		},
 		async content(event, trigger, player) {
-			const next = trigger.target.discard(event.cards);
-			next.set("discarder", trigger.player);
-			await next;
+			await trigger.target.modedDiscard(event.cards, trigger.player);
 		},
 	},
 	//张角三兄弟
@@ -2622,12 +2620,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			let next = trigger.player.discard(event.cards);
-			if (player !== trigger.player) {
-				next.notBySelf = true;
-			}
-			next.discarder = player;
-			await next;
+			await trigger.player.modedDiscard(event.cards, player);
 			trigger.getParent().baseDamage++;
 			if (trigger.player.isMinHandcard() || trigger.player.isMaxHandcard()) {
 				await player.draw();

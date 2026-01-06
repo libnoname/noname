@@ -8986,9 +8986,6 @@ player.removeVirtualEquip(card);
 		}
 		if (!event.chooseonly) {
 			var next = target.discard(event.cards);
-			if (player != target) {
-				next.notBySelf = true;
-			}
 			next.discarder = player;
 			event.done = next;
 			if (event.delay === false) {

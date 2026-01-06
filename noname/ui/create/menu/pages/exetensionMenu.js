@@ -110,12 +110,7 @@ export const extensionMenu = function (connectMenu) {
 	var createModeConfig = function (mode, position) {
 		var page = ui.create.div("");
 		page.style.paddingBottom = "10px";
-		var node;
-		if (mode.startsWith("extension_")) {
-			node = ui.create.div(".menubutton.large", mode.slice(10), position, clickMode);
-		} else {
-			node = ui.create.div(".menubutton.large", lib.translate[mode + "_play_config"], position, clickMode);
-		}
+		let node = ui.create.div(".menubutton.large", mode.startsWith("extension_") ? (lib.translate[mode] || mode.slice(10)) : lib.translate[`${mode}_play_config`], position, clickMode);
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
 		}
@@ -359,7 +354,7 @@ export const extensionMenu = function (connectMenu) {
 						}
 					}
 					page.currentExtension = inputExtName.value || "无名扩展";
-					var str = '{name:"' + page.currentExtension + '"';
+					var str = '{name:"' + page.currentExtension + '",editable:true,connect:false';
 					for (var i in ext) {
 						str += "," + i + ":" + ext[i];
 					}
@@ -415,14 +410,12 @@ export const extensionMenu = function (connectMenu) {
 					for (const i in dash3.content.audio) {
 						files.skill.push(i);
 					}
-					str += ",files:" + JSON.stringify(files);
-					str += ",connect:false"; //不写的话，这里会变成undefined喵，所以默认是不能联机的哦
-					str += "}";
+					str += ",files:" + JSON.stringify(files) + "}";
 					const extension = {
 						"extension.js": `import { lib, game, ui, get, ai, _status } from "noname";\nexport const type = "extension";\nexport default function(){\n\treturn ${str} \n};`,
 						"info.json": JSON.stringify({
-							intro: introExtLine.querySelector("input").value ?? "",
 							name: page.currentExtension,
+							intro: introExtLine.querySelector("input").value ?? "",
 							author: authorExtLine.querySelector("input").value ?? "",
 							diskURL: diskExtLine.querySelector("input").value ?? "",
 							forumURL: forumExtLine.querySelector("input").value ?? "",
@@ -2349,7 +2342,7 @@ export const extensionMenu = function (connectMenu) {
 						dashes.arenaReady.node.code = "function(){\n    \n}\n\n/*\n函数执行时机为界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
 						dashes.content.node.code = "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
 						dashes.prepare.node.code = "function(){\n    \n}\n\n/*\n函数执行时机玩游戏扩展加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.precontent.node.code = "function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
+						dashes.precontent.node.code = "function(config){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
 						dashes.config.node.code = 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n    name:"示例列表选项",\n        init:"3",\n        item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 						dashes.help.node.code = 'help={\n    \n}\n\ns/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 					}
@@ -2425,7 +2418,7 @@ export const extensionMenu = function (connectMenu) {
 				createCode("辅", "辅助代码", page, clickCode, "arenaReady", "function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
 				createCode("主", "主代码", page, clickCode, "content", "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
 				createCode("预", "预备代码", page, clickCode, "prepare", "function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
-				createCode("启", "启动代码", page, clickCode, "precontent", "function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("启", "启动代码", page, clickCode, "precontent", "function(config){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
 				createCode("选", "选项代码", page, clickCode, "config", 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n        name:"示例列表选项",\n        init:"3",\n     	  item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
 				createCode("帮", "帮助代码", page, clickCode, "help", 'help={\n    \n}\n\n/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
 

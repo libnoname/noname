@@ -617,6 +617,16 @@ const translates = {
 	sm_prettyDerby_info: "锁定技，你计算与其他角色的距离-1，其他角色计算与你的距离+1。",
 	sm_kuangchi: "狂驰",
 	sm_kuangchi_info: "你杀死一名角色后，可以交给其一张“赛马”代替其一张武将牌并令其复活，其胜利条件改为与你一致。",
+	mb_shen_jiangwei: "手杀神姜维",
+	mb_shen_jiangwei_prefix: "手杀|神",
+	mbguxuan: "孤悬",
+	mbguxuan_info: "锁定技，结束阶段，你弃置一个区域里的所有牌(至少一张)，然后依次弃置至多等量名其他角色同区域的各一张牌， 未因此弃置【杀】的角色失去1点体力。",
+	mbxinghun: "星魂",
+	mbxinghun_info: "出牌阶段限一次，你可以观看的牌堆顶X张牌(X为你的体力上限)，用任意张手牌与其中的等量张牌进行交换并任意排序，然后你令一名其他角色展示你的手牌与牌堆顶的共计X张牌，你对其依次使用其中的【杀】。",
+	mbshenpei: "神霈",
+	mbshenpei_info: `限定技，当你进入濒死状态时，你可以回复X点体力(X为你本局游戏进入过濒死状态的次数)，然后对一名角色造成等量点火焰伤害并获得${get.poptip("mbhuitian")}。`,
+	mbhuitian: "回天",
+	mbhuitian_info: "一名角色的回合结束时，若其体力值大于你，你可以执行一个额外的回合。每轮开始时，若你发动过此技能，你死亡。",
 };
 
 export default translates;

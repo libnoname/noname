@@ -1,4 +1,5 @@
 export default {
+	mb_shen_jiangwei: "燃魂孤忠",
 	sm_shen_machao: "赛马娘",
 	sp_sm_shen_machao: "赛马神",
 	dc_shen_sunquan: "瀚海碧君",

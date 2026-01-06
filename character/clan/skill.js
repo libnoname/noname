@@ -1932,7 +1932,7 @@ const skills = {
 							return target.countDiscardableCards(target, "h");
 						})
 						.set("ai", target => {
-							return get.effect(target, { name: "guohe_copy", position: "h" }, target, player);
+							return get.effect(target, { name: "guohe_copy", position: "h" }, target, get.player());
 						})
 						.forResult();
 					if (!result2?.targets?.length) {
@@ -3621,7 +3621,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.hasCard(card => get.info("clanlilun").filterCard(card, player), "h");
+			return player.hasCard(card => get.info("clanlilun").filterCard(card, player), "he");
 		},
 		filterCard(card, player) {
 			if (player.getStorage("clanlilun").includes(card.name)) {
@@ -3630,11 +3630,11 @@ const skills = {
 			if (ui.selected.cards.length && ui.selected.cards[0].name != card.name) {
 				return false;
 			}
-			const cards = player.getCards("h", cardx => player.canRecast(cardx));
+			const cards = player.getCards("he", cardx => player.canRecast(cardx));
 			return cards.includes(card) && cards.filter(i => i.name == card.name).length > 1;
 		},
 		selectCard: 2,
-		position: "h",
+		position: "he",
 		check(card) {
 			const player = get.event().player;
 			const value = function (card, player) {

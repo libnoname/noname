@@ -3331,12 +3331,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { targets, cards } = event;
-			const next = targets[0].discard(cards);
-			if (player != targets[0]) {
-				next.notBySelf = true;
-			}
-			next.discarder = player;
-			await next;
+			await targets[0].modedDiscard(cards, player);
 			if (player == targets[0]) {
 				await player.draw();
 			}

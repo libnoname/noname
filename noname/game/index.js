@@ -2986,22 +2986,19 @@ export class Game {
 		}
 	}
 	async loadExtension(object) {
-		let noEval = false;
-		if (typeof object == "function") {
+		let stopImporting = false;
+		if (typeof object === "function") {
+			const extensionFilter = object.filter || function () {
+				return true;
+			}
 			if (isClass(object)) {
-				const filters = await object.filter?.();
-				if (filters ?? true) {
-					object = (await object.init?.()) ?? new object();
-				} else {
-					return;
-				}
+				object = (await object.init?.()) ?? new object();
 			} else {
 				object = await object(lib, game, ui, get, ai, _status);
 			}
-			noEval = true;
-		}
-		if (object.closeSyntaxCheck) {
-			noEval = true;
+			if (await extensionFilter() !== true) {
+				stopImporting = true;
+			}
 		}
 		const name = object.name,
 			extensionName = `extension_${name}`,
@@ -3032,29 +3029,26 @@ export class Game {
 				Object.defineProperty(extensionMenu.intro, "name", intro);
 			}
 		}
-		if (object.config) {
-			Object.keys(object.config).forEach((key) => {
-				Object.defineProperty(extensionMenu, key, Object.getOwnPropertyDescriptor(object.config, key));
-			});
-		}
-		if (object.help) {
-			Object.keys(object.help).forEach((key) => {
-				Object.defineProperty(lib.help, key, Object.getOwnPropertyDescriptor(object.help, key));
-			});
-		}
-		if (object.editable !== false && lib.config.show_extensionmaker) {
-			extensionMenu.edit = {
-				name: "编辑此扩展",
-				clear: true,
-				onclick: () => {
-					if (game.editExtension && lib.extensionPack && lib.extensionPack[name]) {
-						game.editExtension(name);
-					} else {
-						alert("无法编辑未启用的扩展，请启用此扩展并重启后重试");
-					}
-				},
-			};
-		}
+		const addOptions = (target, source) => {
+			if (source) {
+				const descriptors = Object.fromEntries(Object.keys(source).map(key => [key, Object.getOwnPropertyDescriptor(source, key)]));
+				Object.defineProperties(target, descriptors);
+			}
+		};
+		addOptions(extensionMenu, object.config);
+		addOptions(lib.help, object.help);
+
+		extensionMenu.edit = {
+			name: "编辑此扩展",
+			clear: true,
+			onclick() {
+				if (lib.extensionPack?.[name] && object.editable !== false && lib.config.show_extensionmaker) {
+					game.editExtension?.(name);
+				} else {
+					alert("无法编辑未启用的扩展，请启用此扩展并重启后重试");
+				}
+			},
+		};
 		extensionMenu.delete = {
 			name: "删除此扩展",
 			clear: true,
@@ -3094,11 +3088,8 @@ export class Game {
 			game.importedPack = object;
 			return;
 		}
-		if (!object || !lib.config[`${extensionName}_enable`]) {
+		if (stopImporting || !object || !lib.config[`${extensionName}_enable`]) {
 			return;
-		}
-		if (!noEval) {
-			lib.init.eval(object);
 		}
 		Object.keys(object.config)
 			.filter(key => !(`${extensionName}_${key}` in lib.config))
@@ -3120,19 +3111,18 @@ export class Game {
 			if (object.package) {
 				extensionPack = object.package;
 				object.package.files = object.files ?? {};
-				const extensionPackFiles = object.package.files;
-				extensionPackFiles.character ??= [];
-				extensionPackFiles.card ??= [];
-				extensionPackFiles.skill ??= [];
-				extensionPackFiles.audio ??= [];
+				const extensionPackFiles = {
+					character: [],
+					card: [],
+					skill: [],
+					audio: [],
+					...object.package.files,
+				}
 			} else {
 				extensionPack = {};
 			}
 			lib.extensionPack[name] = extensionPack;
-			const arenaReady = object.arenaReady,
-				content = object.content,
-				prepare = object.prepare,
-				precontent = object.precontent;
+			const { arenaReady, content, prepare, precontent } = object;
 			extensionPack.code = {
 				arenaReady,
 				content,

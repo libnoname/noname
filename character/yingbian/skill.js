@@ -443,7 +443,7 @@ const skills = {
 			await player.showCards(cards, get.translation(player) + "对" + get.translation(target) + "发动了【遗毒】");
 			const color = get.color(cards[0], target);
 			if (cards.every(card => get.color(card, target) == color)) {
-				await target.discard(cards, "notBySelf").set("discarder", player);
+				await target.modedDiscard(cards, player);
 			}
 		},
 	},
