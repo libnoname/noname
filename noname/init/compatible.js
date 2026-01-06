@@ -201,6 +201,6 @@ get.event = function (key) {
 
 // asyncDelay
 {
-	game.asyncDelay = game.delay(time, time2);
-	game.asyncDelayx = game.delayx(time, time2);
+	game.asyncDelay = game.delay;
+	game.asyncDelayx = game.delayx;
 }
