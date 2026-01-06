@@ -45,7 +45,6 @@ export async function boot() {
 	for (const name in get.config("translate")) {
 		lib.translate[name] = get.config("translate")[name];
 	}
-	if (config.get("compatiblemode")) _status.withError = true;
 	if (config.get("debug")) {
 		await lib.init.promises.js(`${lib.assetURL}game`, "asset");
 		if (window.noname_skin_list) {
@@ -53,6 +52,10 @@ export async function boot() {
 			delete window.noname_skin_list;
 			delete window.noname_asset_list;
 		}
+	}
+
+	if (config.get("compatiblemode")) {
+		await import("./compatible.js");
 	}
 
 	const sandboxEnabled = !config.get("debug") && !get.is.safari();

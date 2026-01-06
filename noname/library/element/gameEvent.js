@@ -5,7 +5,7 @@ import GameEventManager from "./GameEvent/GameEventManager.ts";
 export { GameEventManager, ContentCompiler };
 
 /**
- * @implements { PromiseLike<Omit<GameEvent,"then">> }
+ * @implements { PromiseLike<void> }
  */
 export class GameEvent {
 	/**
@@ -211,68 +211,6 @@ export class GameEvent {
 	 * @type { Function[] }
 	 */
 	targetprompt2 = [];
-	/**
-	 * @param {keyof this} key
-	 * @param {number} [value]
-	 * @param {number} [baseValue]
-	 */
-	addNumber(key, value, baseValue) {
-		if (typeof value != "number") {
-			value = 0;
-		}
-		if (typeof this[key] == "number") {
-			this[key] += value;
-		} else {
-			if (typeof baseValue != "number") {
-				baseValue = 0;
-			}
-			this[key] = baseValue + value;
-		}
-		return this;
-	}
-	/**
-	 * @param {keyof this} key
-	 * @param {number} [baseValue]
-	 */
-	decrease(key, baseValue) {
-		if (typeof this[key] == "number") {
-			this[key]--;
-		} else {
-			this.subtractNumber(key, 1, baseValue);
-		}
-		return this;
-	}
-	/**
-	 * @param {keyof this} key
-	 * @param {number} [baseValue]
-	 */
-	increase(key, baseValue) {
-		if (typeof this[key] == "number") {
-			this[key]++;
-		} else {
-			this.addNumber(key, 1, baseValue);
-		}
-		return this;
-	}
-	/**
-	 * @param {keyof this} key
-	 * @param {number} [value]
-	 * @param {number} [baseValue]
-	 */
-	subtractNumber(key, value, baseValue) {
-		if (typeof value != "number") {
-			value = 0;
-		}
-		if (typeof this[key] == "number") {
-			this[key] -= value;
-		} else {
-			if (typeof baseValue != "number") {
-				baseValue = 0;
-			}
-			this[key] = baseValue - value;
-		}
-		return this;
-	}
 	/**
 	 * @param {Parameters<typeof this.hasHandler>[0]} type
 	 * @param {GameEvent} event
@@ -955,7 +893,7 @@ export class GameEvent {
 			_status.gameStarted = true;
 			game.showHistory();
 		}
-		if (!lib.hookmap[name] && !lib.config.compatiblemode) {
+		if (!lib.hookmap[name]) {
 			return;
 		}
 		if (!game.players || !game.players.length) {
@@ -1090,48 +1028,10 @@ export class GameEvent {
 					player.removeSkill(skill);
 				});
 
-			if (lib.config.compatiblemode) {
-				const map = lib.relatedTrigger,
-					names = Object.keys(map);
-				doing.addList(
-					game.expandSkills(player.getSkills("invisible").concat(lib.skill.global)).filter(skill => {
-						const info = get.info(skill);
-						if (!info || !info.trigger) {
-							return false;
-						}
-						return roles.some(role => {
-							const list = [];
-							if (typeof info.trigger[role] == "string") {
-								list.add(info.trigger[role]);
-							} else if (Array.isArray(info.trigger[role])) {
-								list.addArray(info.trigger[role]);
-							}
-							if (list.includes(name)) {
-								return true;
-							}
-							for (const trigger of list.slice()) {
-								for (const name of names) {
-									if (trigger.startsWith(name)) {
-										list.addArray(map[name].map(i => i + trigger.slice(name.length)));
-									}
-								}
-							}
-							return list.includes(name);
-							/*if (info.trigger[role] === name) {
-								return true;
-							}
-							if (Array.isArray(info.trigger[role]) && info.trigger[role].includes(name)) {
-								return true;
-							}*/
-						});
-					})
-				);
-			} else {
-				roles.forEach(role => {
-					doing.addList(lib.hook.globalskill[role + "_" + name]);
-					doing.addList(lib.hook[player.playerid + "_" + role + "_" + name]);
-				});
-			}
+			roles.forEach(role => {
+				doing.addList(lib.hook.globalskill[role + "_" + name]);
+				doing.addList(lib.hook[player.playerid + "_" + role + "_" + name]);
+			});
 			delete doing.listAdded;
 			delete doing.addList;
 			doingList.push(doing);
@@ -1165,18 +1065,6 @@ export class GameEvent {
 		} else if (player) {
 			this._notrigger.add(player);
 		}
-		return this;
-	}
-	/**
-	 * @deprecated
-	 */
-	toPromise() {
-		return this;
-	}
-	/**
-	 * @deprecated
-	 */
-	toEvent() {
 		return this;
 	}
 
@@ -1270,28 +1158,12 @@ export class GameEvent {
 	 * @template TResult1
 	 * @template TResult2
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
-	 * @param { ((event: Omit<GameEvent,"then">) => TResult1 | Promise<TResult1>) | null } [onfulfilled] The callback to execute when the Promise is resolved.
+	 * @param { (() => TResult1 | Promise<TResult1>) | null } [onfulfilled] The callback to execute when the Promise is resolved.
 	 * @param { ((reason: any) => TResult2 | Promise<TResult2>) | null } [onrejected] The callback to execute when the Promise is rejected.
 	 * @returns { Promise<TResult1 | TResult2> } A Promise for the completion of which ever callback is executed.
 	 */
 	then(onfulfilled, onrejected) {
-		return (this.parent ? this.parent.waitNext() : this.start()).then(
-			onfulfilled
-				? () => {
-					return onfulfilled(
-						new Proxy(this, {
-							get(target, p, receiver) {
-								if (p === "then") {
-									return void 0;
-								}
-								return Reflect.get(target, p, receiver);
-							},
-						})
-					);
-				}
-				: onfulfilled,
-			onrejected
-		);
+		return (this.parent ? this.parent.waitNext() : this.start()).then(onfulfilled, onrejected);
 	}
 	/**
 	 * @template TResult
@@ -1374,14 +1246,15 @@ export class GameEvent {
 					await trigger("Begin", 2);
 				} else {
 					this.#inContent = true;
-					let next = this.content(this);
-					if (_status.withError || (_status.connectMode && !lib.config.debug)) {
-						next = next.catch(error => {
+					let next = this.content(this).catch(error => {
+						if (lib.config.ignore_error || (_status.connectMode && !lib.config.debug)) {
 							game.print("游戏出错：" + this.name);
 							game.print(error.toString());
 							console.error(error);
-						});
-					}
+						} else {
+							throw error;
+						}
+					});
 					await next.finally(() => (this.#inContent = false));
 				}
 			} else {
@@ -1416,7 +1289,7 @@ export class GameEvent {
 	}
 
 	/**
-	 * @type { Promise<Partial<Result> | void> | null }
+	 * @type { Promise<void> | null }
 	 */
 	#waitNext = null;
 	waitNext() {
@@ -1424,7 +1297,6 @@ export class GameEvent {
 			return this.#waitNext;
 		}
 		this.#waitNext = (async () => {
-			let result;
 			while (true) {
 				await _status.pauseManager.waitPause();
 				if (this.manager.tempEvent) {
@@ -1432,17 +1304,14 @@ export class GameEvent {
 						this.manager.tempEvent = void 0;
 					} else {
 						this.cancel(true, null, "notrigger");
-						return result;
+						return;
 					}
 				}
 				if (!this.next.length) {
-					return result;
+					return;
 				}
 				const next = this.next[0];
 				await next.start();
-				if (next.result) {
-					result = next.result;
-				}
 				this.next.shift();
 			}
 		})().finally(() => (this.#waitNext = null));
@@ -1458,58 +1327,8 @@ export class GameEvent {
 	 * @this GameEvent
 	 * @returns {Promise<Partial<Result>>}
 	 */
-	async forResult(...params) {
+	async forResult() {
 		await this;
-		if (params.length == 0) {
-			return this.result;
-		}
-		if (params.length == 1) {
-			return this.result[params[0]];
-		}
-		return Array.from(params).map(key => this.result[key]);
-	}
-	/**
-	 * 返回result中的bool项
-	 */
-	forResultBool() {
-		return this.forResult().then(r => r.bool);
-	}
-
-	/**
-	 * 返回result中的targets项。
-	 */
-	forResultTargets() {
-		return this.forResult().then(r => r.targets);
-	}
-
-	/**
-	 * 返回result中的cards项
-	 */
-	forResultCards() {
-		return this.forResult().then(r => r.cards);
-	}
-
-	/**
-	 * 返回result中的card项
-	 *
-	 * @returns {Promise<VCard>|Promise<Card>} 返回的card项。
-	 *
-	 */
-	forResultCard() {
-		return this.forResult().then(r => r.card);
-	}
-
-	/**
-	 * 返回result中的control项。
-	 */
-	forResultControl() {
-		return this.forResult().then(r => r.control);
-	}
-
-	/**
-	 * 返回result中的links项。
-	 */
-	forResultLinks() {
-		return this.forResult().then(r => r.links);
+		return this.result;
 	}
 }

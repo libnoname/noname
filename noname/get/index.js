@@ -3703,11 +3703,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 * @returns {GameEvent}
 	 */
-	event(key) {
-		if (key) {
-			console.warn(`get.event("${key}")写法即将被废弃，请更改为get.event().${key}`);
-			return _status.event[key];
-		}
+	event() {
 		return _status.event;
 	}
 	player() {

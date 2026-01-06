@@ -96,10 +96,6 @@ export class status {
 	 */
 	roundSkipped;
 	/**
-	 * @type { boolean }
-	 */
-	withError = false;
-	/**
 	 * @type { string | undefined }
 	 */
 	mode = undefined;

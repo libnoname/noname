@@ -190,11 +190,6 @@
 	pointer-events: auto;
 	/*-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 180px, -10px 180px);*/
 }
-/*#window.compatiblemode #arena:not(.chess) .player[data-position='0']:not(.minskin)>.avatar,
-#window.compatiblemode #arena:not(.chess) .player[data-position='0']:not(.minskin)>.avatar2,
-#window.compatiblemode #arena:not(.chess) .player[data-position='0']:not(.minskin)>.equips{
-    -webkit-clip-path: none;
-}*/
 #arena:not(.chess) .player[data-position="0"]:not(.minskin) > .identity {
 	pointer-events: auto;
 }

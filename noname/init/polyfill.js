@@ -21,21 +21,6 @@ HTMLElement.prototype.setNodeIntro = function (title, content) {
 	}
 	return this;
 };
-// 废弃覆盖原型的HTMLDivElement.prototype.animate
-// 改为HTMLDivElement.prototype.addTempClass
-/**
- * @this HTMLDivElement
- * @type { typeof HTMLDivElement['prototype']['animate'] }
- */
-HTMLDivElement.prototype.animate = function (keyframes, options) {
-	if (typeof keyframes == "string") {
-		console.trace(this, "无名杀开发者修改的animate方法已废弃，请改为使用addTempClass方法");
-		// @ts-expect-error ignore
-		return HTMLDivElement.prototype.addTempClass.call(this, keyframes, options);
-	} else {
-		return HTMLElement.prototype.animate.call(this, keyframes, options);
-	}
-};
 
 /**
  * @this HTMLDivElement
@@ -375,90 +360,7 @@ HTMLTableElement.prototype.get = function (row, col) {
 		return /** @type {HTMLElement | void} */ this.childNodes[row].childNodes[col];
 	}
 };
-/*处理lib.nature等从array改为map的兼容性问题*/
-/**
- * @this Map
- * @template T
- * @param { T } item
- * @returns { boolean }
- */
-const mapHasFunc = function (item) {
-	console.trace(this, "已经从array改为map，请改为使用has方法");
-	return this.has(item);
-};
-Object.defineProperty(Map.prototype, "contains", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	value: mapHasFunc,
-});
-Object.defineProperty(Map.prototype, "includes", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	value: mapHasFunc,
-});
-/**
- * @this Map
- * @template T
- * @template K
- * @param { T } item
- * @returns { Map<T, K> }
- */
-const mapAddFunc = function (item) {
-	console.trace(this, "已经从array改为map，请改为使用set方法");
-	this.set(item, 0);
-	return this;
-};
-Object.defineProperty(Map.prototype, "add", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	value: mapAddFunc,
-});
-Object.defineProperty(Map.prototype, "push", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	value: mapAddFunc,
-});
-Object.defineProperty(Map.prototype, "addArray", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	/**
-	 * @this Map
-	 * @template T
-	 * @template U
-	 * @param { T[] } arr
-	 * @returns { Map<T, U> }
-	 */
-	value(arr) {
-		console.trace(this, "已经从array改为map，请改为使用set方法");
-		for (let i = 0; i < arr.length; i++) {
-			this.set(arr[i], 0);
-		}
-		return this;
-	},
-});
-Object.defineProperty(Map.prototype, "remove", {
-	configurable: true,
-	enumerable: false,
-	writable: true,
-	/**
-	 * @this Map
-	 * @template T
-	 * @template U
-	 * @param { T } item
-	 * @returns { Map<T, U> }
-	 */
-	value(item) {
-		console.trace(this, "已经从array改为map，请改为使用delete方法");
-		this.delete(item);
-		return this;
-	},
-});
-/*Map prototype end*/
+
 Object.defineProperty(Array.prototype, "filterInD", {
 	configurable: true,
 	enumerable: false,

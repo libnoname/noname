@@ -3153,7 +3153,7 @@ export class Game {
 				}
 			} catch (e) {
 				console.error(`加载《${name}》扩展的precontent时出现错误。`, e);
-				if (!lib.config.extension_alert) {
+				if (!lib.config.ignore_error) {
 					alert(`加载《${name}》扩展的precontent时出现错误。
 该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。
 错误信息: 
@@ -7312,18 +7312,6 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		return game.delay(time, time2);
 	}
 	/**
-	 * @deprecated
-	 */
-	asyncDelay(time, time2) {
-		return game.delay(time, time2);
-	}
-	/**
-	 * @deprecated
-	 */
-	asyncDelayx(time, time2) {
-		return game.delayx(time, time2);
-	}
-	/**
 	 * @param { GameEvent } [event]
 	 */
 	check(event = _status.event) {
@@ -7343,7 +7331,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			return false;
 		}
 
-		let useCache = !lib.config.compatiblemode && !event.skill && !event.multitarget;
+		let useCache = !event.skill && !event.multitarget;
 		const filterCache = type => {
 			if (get.select(event[`select${uppercaseType(type)}`])[1] < 0) {
 				return false;

@@ -2531,9 +2531,6 @@ export class Create {
 			ui.arena.classList.add("lslim_player");
 		}
 		ui.window.dataset.player_border = lib.config.player_border;
-		if (lib.config.compatiblemode) {
-			ui.window.classList.add("compatiblemode");
-		}
 		ui.window.dataset.radius_size = lib.config.radius_size || "default";
 		if (game.layout == "long" || game.layout == "mobile") {
 			//if(lib.config.textequip=='text') ui.arena.classList.add('textequip');

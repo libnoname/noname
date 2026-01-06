@@ -947,12 +947,6 @@ export class Library {
 		general: {
 			name: "通用",
 			config: {
-				mount_combine: {
-					name: "合并坐骑栏",
-					init: false,
-					intro: "<li>将进攻坐骑栏和防御坐骑栏合并为同一个位置（重启后生效）。",
-					restart: true,
-				},
 				low_performance: {
 					name: "流畅模式",
 					init: false,
@@ -968,22 +962,47 @@ export class Library {
 				},
 				compatiblemode: {
 					name: "兼容模式",
+					init: true,
+					intro: "提供部分即将废弃api的实现，使用老扩展时建议开启。<br/>注：这些api将在下个版本移除，扩展作者请关闭此选项以进行适配。（重启后生效）",
+					restart: true,
+				},
+				ignore_error: {
+					name: "无视报错",
 					init: false,
-					intro: "开启兼容模式可防止扩展使游戏卡死并提高对旧扩展的兼容性，但对游戏速度有一定影响，若无不稳定或不兼容的扩展建议关闭",
-					onclick(bool) {
-						game.saveConfig("compatiblemode", bool);
-						if (bool) {
-							ui.window.classList.add("compatiblemode");
-						} else {
-							ui.window.classList.remove("compatiblemode");
-						}
-					},
+					intro: "不以弹窗形式报错。<br/>注：此选项仅保证部分不影响运行的错误不会令游戏卡死，不保证报错后结算正常。影响游戏运行的错误请通知扩展作者适配。",
 				},
 				confirm_exit: {
 					name: "确认退出",
 					init: false,
-					unfrequent: true,
 					intro: "离开游戏前弹出确认对话框",
+				},
+				show_splash: {
+					name: "显示开始界面",
+					intro: "游戏开始前进入模式选择画面",
+					init: "init",
+					item: {
+						off: "关闭",
+						init: "首次启动",
+						always: "保持开启",
+					},
+				},
+				game_speed: {
+					name: "游戏速度",
+					init: "mid",
+					item: {
+						vslow: "慢",
+						slow: "较慢",
+						mid: "中",
+						fast: "较快",
+						vfast: "快",
+						vvfast: "很快",
+					},
+					intro: "设置不同游戏操作间的时间间隔",
+				},
+				sync_speed: {
+					name: "限制结算速度",
+					intro: "在动画结算完成前不执行下一步操作，开启后游戏操作的间隔更长但画面更流畅，在游戏较卡时建议开启",
+					init: true,
 				},
 				keep_awake: {
 					name: "屏幕常亮",
@@ -1013,6 +1032,13 @@ export class Library {
 							}
 						}
 					},
+				},
+				mount_combine: {
+					name: "合并坐骑栏",
+					init: false,
+					unfrequent: true,
+					intro: "<li>将进攻坐骑栏和防御坐骑栏合并为同一个位置（重启后生效）。",
+					restart: true,
 				},
 				auto_confirm: {
 					name: "自动确认",
@@ -1201,34 +1227,6 @@ export class Library {
 						}
 						game.saveConfig("round_menu_func", item);
 					},
-				},
-				show_splash: {
-					name: "显示开始界面",
-					intro: "游戏开始前进入模式选择画面",
-					init: "init",
-					item: {
-						off: "关闭",
-						init: "首次启动",
-						always: "保持开启",
-					},
-				},
-				game_speed: {
-					name: "游戏速度",
-					init: "mid",
-					item: {
-						vslow: "慢",
-						slow: "较慢",
-						mid: "中",
-						fast: "较快",
-						vfast: "快",
-						vvfast: "很快",
-					},
-					intro: "设置不同游戏操作间的时间间隔",
-				},
-				sync_speed: {
-					name: "限制结算速度",
-					intro: "在动画结算完成前不执行下一步操作，开启后游戏操作的间隔更长但画面更流畅，在游戏较卡时建议开启",
-					init: true,
 				},
 				enable_vibrate: {
 					name: "开启震动",
@@ -1483,31 +1481,6 @@ export class Library {
 					async onclick(bool) {
 						await game.promises.saveConfig("extension_auto_import", bool);
 					},
-					unfrequent: true,
-				},
-				experimental_enable: {
-					name: "启用实验性功能",
-					init: false,
-					intro: html`
-						开启后将启用部分仍处于实验性质的功能，将改变无名杀现有的部分逻辑（重启后生效）
-						<br />
-						※ 实验性功能无法保证API稳定，如需使用请及时跟进本体进展
-						<br />
-						※ 以API为主的功能不提供具体实现，如需使用请自行实现
-						<br />
-						※ 部分功能将会作用于联机模式
-					`,
-					/**
-					 * @param {boolean} bool
-					 */
-					async onclick(bool) {
-						await game.promises.saveConfig("experimental_enable", bool);
-					},
-					unfrequent: true,
-				},
-				extension_alert: {
-					name: "无视扩展报错",
-					init: false,
 					unfrequent: true,
 				},
 				fuck_sojson: {
