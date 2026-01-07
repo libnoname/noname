@@ -944,7 +944,7 @@ export class Library {
 						}
 					},
 				},
-				compatiblemode: {
+				compatible: {
 					name: "兼容模式",
 					init: true,
 					intro: "提供部分即将废弃api的实现，使用老扩展时建议开启。<br/>注：这些api将在下个版本移除，扩展作者请关闭此选项以进行适配。（重启后生效）",

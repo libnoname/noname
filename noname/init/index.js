@@ -54,7 +54,7 @@ export async function boot() {
 		}
 	}
 
-	if (config.get("compatiblemode")) {
+	if (config.get("compatible")) {
 		await import("./compatible.js");
 	}
 
