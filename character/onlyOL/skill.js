@@ -11562,8 +11562,8 @@ const skills = {
 						if (result3.bool) {
 							var card = result3.links[0];
 							player.$gain2(card, false);
-							game.delayx();
-							player.chooseUseTarget(true, card, false);
+							await game.delayx();
+							await player.chooseUseTarget(true, card, false);
 						}
 					}
 				} else {

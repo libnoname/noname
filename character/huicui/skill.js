@@ -4948,7 +4948,7 @@ const skills = {
 			if (delta != 0) {
 				await target[delta > 0 ? "draw" : "chooseToDiscard"](Math.abs(delta), true, "allowChooseAll");
 			}
-			target.showHandcards();
+			await target.showHandcards();
 			const hs = target.getCards("h");
 			let hasSame = false;
 			outer: for (let i = 0; i < hs.length - 1; i++) {
@@ -4961,7 +4961,7 @@ const skills = {
 					}
 				}
 			}
-			game.delayex();
+			await game.delayex();
 			if (hasSame) {
 				return event.finish();
 			}
