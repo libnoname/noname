@@ -674,25 +674,6 @@ export class LibInit {
 		return ContentCompiler.compile(item);
 	}
 
-	eval(func) {
-		if (typeof func == "function") {
-			return security.eval(`return (${func.toString()});`);
-		} else if (typeof func == "object") {
-			for (var i in func) {
-				if (Object.prototype.hasOwnProperty.call(func, i)) {
-					if (typeof func[i] == "function") {
-						let checkObject = {};
-						checkObject[i] = func[i];
-						return security.eval(`return ${get.stringify(checkObject)};`)[i];
-					} else {
-						func[i] = lib.init.eval(func[i]);
-					}
-				}
-			}
-		}
-		return func;
-	}
-
 	encode(strUni) {
 		var strUtf = strUni.replace(/[\u0080-\u07ff]/g, function (c) {
 			var cc = c.charCodeAt(0);
