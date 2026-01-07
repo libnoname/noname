@@ -135,12 +135,6 @@ Object.assign(lib.element.GameEvent.prototype, {
 
 // forResult
 Object.assign(lib.element.GameEvent.prototype, {
-	toPromise() {
-		return this;
-	},
-	toEvent() {
-		return this;
-	},
 	then(onfulfilled, onrejected) {
 		return (this.parent ? this.parent.waitNext() : this.start()).then(
 			onfulfilled
