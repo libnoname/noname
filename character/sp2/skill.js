@@ -3220,8 +3220,7 @@ const skills = {
 			return player.getHp() > 0;
 		},
 		direct: true,
-		*content(event, map) {
-			var player = map.player;
+		async content(event, trigger, player) {
 			var str = get.cnNumber(player.getHp());
 			var choiceList = ["令至多" + str + "名体力值大于等于你的角色各失去1点体力", "令至多" + str + "名手牌数大于等于你的角色各弃置一张手牌"],
 				list = ["cancel2"];
@@ -3238,7 +3237,7 @@ const skills = {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
 			list.unshift("扣血");
-			var result = yield player
+			var result = await player
 				.chooseControl(list)
 				.set("prompt", "###" + get.prompt("starzhangrong") + "###选择其中一项令任意名符合条件的角色执行，然后你摸等量的牌，回合结束时，若这些角色中有本回合未受到过伤害的角色，则你失去1点体力")
 				.set("ai", () => {
@@ -3264,10 +3263,11 @@ const skills = {
 					}
 					return Math.max(0, get.sgn(targets2.length - targets1.length));
 				})
-				.set("choiceList", choiceList);
+				.set("choiceList", choiceList)
+				.forResult();
 			if (result.control != "cancel2") {
 				var choice = result.index;
-				var result2 = yield player
+				var result2 = await player
 					.chooseTarget([1, player.getHp()], "请选择【掌戎】的目标", "令至多" + str + "名" + (choice ? "手牌数" : "体力值") + "大于你的角色各" + (choice ? "弃置一张手牌" : "失去1点体力"), (card, player, target) => {
 						var name = _status.event.card.name;
 						if (name == "guohe_copy2") {
@@ -3285,7 +3285,8 @@ const skills = {
 						}
 						return get.effect(target, _status.event.card, player, player);
 					})
-					.set("card", { name: choice ? "guohe_copy2" : "losehp" });
+					.set("card", { name: choice ? "guohe_copy2" : "losehp" })
+					.forResult();
 				if (result2.bool) {
 					var targets = result2.targets.sortBySeat();
 					player.logSkill("starzhangrong", targets);
@@ -3353,10 +3354,9 @@ const skills = {
 		},
 		direct: true,
 		zhuSkill: true,
-		*content(event, map) {
-			var player = map.player,
-				target = map.trigger.player;
-			var result = yield target.chooseBool(get.prompt("starhaoshou", player), "令" + get.translation(player) + "回复1点体力").set("choice", get.recoverEffect(player, target, target) > 0);
+		async content(event, trigger, player) {
+			var target = trigger.player;
+			var result = await target.chooseBool(get.prompt("starhaoshou", player), "令" + get.translation(player) + "回复1点体力").set("choice", get.recoverEffect(player, target, target) > 0).forResult();
 			if (result.bool) {
 				target.line(player);
 				player.logSkill("starhaoshou");

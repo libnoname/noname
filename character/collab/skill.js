@@ -4310,13 +4310,12 @@ const skills = {
 			const player = get.player();
 			return "将性别变更为" + (player.storage["dcqixin"] ? "刘协--男" : "曹节--女");
 		},
-		*content(event, map) {
-			const player = map.player;
+		async content(event, trigger, player) {
 			player.changeZhuanhuanji("dcqixin");
 			player.storage.dcqixin_hp[1 - Boolean(player.storage["dcqixin"])] = player.hp;
 			const hp = player.storage.dcqixin_hp[0 + Boolean(player.storage["dcqixin"])];
 			if (player.hp != hp) {
-				yield player.changeHp(hp - player.hp);
+				await player.changeHp(hp - player.hp);
 			}
 			player.tempBanSkill(
 				"dcqixin",
@@ -5512,10 +5511,9 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		*content(event, map) {
-			var player = map.player,
-				num = game.countPlayer();
-			var result = yield player
+		async content(event, trigger, player) {
+			var num = game.countPlayer();
+			var result = await player
 				.chooseControl()
 				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用" + get.cnNumber(num) + "张火【杀】或【火攻】"])
 				.set("ai", () => {
@@ -5525,7 +5523,8 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
+				})
+				.forResult();
 			player.flashAvatar("dcshuangbi", ["re_zhouyu", "shen_zhouyu", "dc_sb_zhouyu"][result.index]);
 			switch (result.index) {
 				case 0:
@@ -5534,7 +5533,7 @@ const skills = {
 					player.addMark("dcshuangbi_effect", num, false);
 					break;
 				case 1:
-					var result2 = yield player.chooseToDiscard("双壁：弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", [1, num], "he").set("ai", card => 1 / (get.value(card) || 0.5));
+					var result2 = await player.chooseToDiscard("双壁：弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", [1, num], "he").set("ai", card => 1 / (get.value(card) || 0.5)).forResult();
 					if (result2.bool) {
 						var map = {},
 							sum = result2.cards.length;
@@ -5560,13 +5559,13 @@ const skills = {
 						if (game.hasPlayer(target => player.canUse({ name: "huogong" }, target))) {
 							list.push(["锦囊", "", "huogong"]);
 						}
-						var result2 = yield player.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]], true).set("ai", button => (button.link[2] == "sha" ? 1 : 0));
+						var result2 = await player.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]], true).set("ai", button => (button.link[2] == "sha" ? 1 : 0)).forResult();
 						if (result2.bool) {
 							var card = {
 								name: result2.links[0][2],
 								nature: result2.links[0][3],
 							};
-							yield player.chooseUseTarget(true, card, false);
+							await player.chooseUseTarget(true, card, false);
 						} else {
 							break;
 						}
@@ -5596,9 +5595,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin4" },
 		forced: true,
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger;
+		async content(event, trigger, player) {
 			var source = trigger.source;
 			trigger.cancel();
 			var hp = player.getHp();
@@ -5713,8 +5710,7 @@ const skills = {
 			return false;
 		},
 		direct: true,
-		*content(event, map) {
-			var player = map.player;
+		async content(event, trigger, player) {
 			var list = get.inpileVCardList(info => {
 				if (info[0] != "trick") {
 					return false;
@@ -5723,9 +5719,9 @@ const skills = {
 				return !player.hasStorage("dcfaqi", name) && player.hasUseTarget({ name: name, isCard: true });
 			});
 			if (list.length) {
-				var result = yield player.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]], true).set("ai", button => {
+				var result = await player.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]], true).set("ai", button => {
 					return get.player().getUseValue({ name: button.link[2] });
-				});
+				}).forResult();
 				if (result.bool) {
 					var name = result.links[0][2];
 					if (!player.storage.dcfaqi) {

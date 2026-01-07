@@ -11007,9 +11007,7 @@ const skills = {
 		},
 		direct: true,
 		locked: true,
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger;
+		async content(event, trigger, player) {
 			if (trigger.name != "phaseZhunbei") {
 				player.logSkill("guimou");
 				var result,
@@ -11017,10 +11015,11 @@ const skills = {
 				if (trigger.name != "phase" || game.phaseNumber == 0) {
 					result = { index: get.rand(0, 2) };
 				} else {
-					result = yield player
+					result = await player
 						.chooseControl()
 						.set("choiceList", choiceList)
-						.set("ai", () => get.rand(0, 2));
+						.set("ai", () => get.rand(0, 2))
+						.forResult();
 				}
 				var str = choiceList[result.index];
 				game.log(player, "选择", "#g" + str);
@@ -11041,7 +11040,7 @@ const skills = {
 			}
 			targets = targets.filter(target => target != player && target.countCards("h"));
 			if (targets.length) {
-				var result = yield player
+				var result = await player
 					.chooseTarget(
 						"请选择【诡谋】的目标",
 						"观看一名可选择的角色的手牌并选择其中一张牌，然后你可以此牌交给另一名其他角色或弃置此牌",
@@ -11053,30 +11052,33 @@ const skills = {
 					.set("ai", target => {
 						return Math.sqrt(Math.min(3, target.countCards("h"))) * get.effect(target, { name: "guohe_copy2" }, player, player);
 					})
-					.set("targets", targets);
+					.set("targets", targets)
+					.forResult();
 				if (result.bool) {
 					var target = result.targets[0];
 					player.logSkill("guimou", target);
 					player.addExpose(0.3);
-					var result2 = yield player
+					var result2 = await player
 						.choosePlayerCard(target, "h", "visible", true)
 						.set("ai", button => {
 							return get.value(button.link);
 						})
 						.set("prompt", "诡谋：请选择" + get.translation(target) + "的一张手牌")
-						.set("prompt2", '<div class="text center">将选择的牌交给另一名其他角色或弃置此牌</div>');
+						.set("prompt2", '<div class="text center">将选择的牌交给另一名其他角色或弃置此牌</div>')
+						.forResult();
 					if (result2.bool) {
 						var cards = result2.links.slice(),
 							result3;
 						if (!game.hasPlayer(targetx => targetx != player && targetx != target)) {
 							result3 = { bool: false };
 						} else {
-							result3 = yield player
+							result3 = await player
 								.chooseTarget("是否令另一名其他角色获得" + get.translation(cards) + "？", (card, player, target) => {
 									return target != player && target != _status.event.target;
 								})
 								.set("ai", target => get.attitude(_status.event.player, target))
-								.set("target", target);
+								.set("target", target)
+								.forResult();
 						}
 						if (result3.bool) {
 							var targetx = result3.targets[0];
@@ -11247,14 +11249,12 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger,
-				target = trigger.player;
+		async content(event, trigger, player) {
+			var target = trigger.player;
 			var cards = get.cards(3);
-			yield game.cardsDiscard(cards);
+			await game.cardsDiscard(cards);
 			player.showCards(cards, get.translation(player) + "发动了【州贤】");
-			var result = yield target
+			var result = await target
 				.chooseToDiscard("he", "州贤：弃置一张其中有的类别的牌，或令此牌对" + get.translation(player) + "无效", (card, player) => {
 					return _status.event.cards.some(cardx => get.type2(cardx) == get.type2(card));
 				})
@@ -11265,7 +11265,8 @@ const skills = {
 					}
 					return 7.5 - get.value(card);
 				})
-				.set("goon", get.effect(player, trigger.card, target, target) > 0);
+				.set("goon", get.effect(player, trigger.card, target, target) > 0)
+				.forResult();
 			if (!result || !result.bool) {
 				trigger.getParent().excluded.add(player);
 			}
@@ -11411,18 +11412,17 @@ const skills = {
 				return false;
 			});
 		},
-		*content(event, map) {
-			var player = map.player;
-			map.trigger.cancel();
+		async content(event, trigger, player) {
+			trigger.cancel();
 			var num = player.countDiscardableCards(player, "he");
 			if (num) {
-				var result = yield player.chooseToDiscard("纳学：是否弃置任意张牌并摸等量的牌？", "he", [1, num], "allowChooseAll").set("ai", lib.skill.zhiheng.check);
+				var result = await player.chooseToDiscard("纳学：是否弃置任意张牌并摸等量的牌？", "he", [1, num], "allowChooseAll").set("ai", lib.skill.zhiheng.check).forResult();
 				if (result.bool) {
-					yield player.draw(result.cards.length);
+					await player.draw(result.cards.length);
 				}
 			}
 			if (player.countCards("h")) {
-				var result2 = yield player.chooseCardTarget({
+				var result2 = await player.chooseCardTarget({
 					prompt: "是否交给至多两名其他角色各一张手牌？",
 					prompt2: "先按顺序选中所有要给出的牌，然后再按顺序选择等量的目标角色。",
 					selectCard: [1, 2],
@@ -11464,7 +11464,7 @@ const skills = {
 						}
 						return att;
 					},
-				});
+				}).forResult();
 				if (result2.bool) {
 					const list = [];
 					for (let i = 0; i < result2.targets.length; i++) {
@@ -16556,9 +16556,8 @@ const skills = {
 		},
 		usable: 1,
 		logAudio: () => 1,
-		*content(event, map) {
-			var player = map.player,
-				target = event.target;
+		async content(event, trigger, player) {
+			var target = event.target;
 			var targets = [player],
 				names = lib.inpile.randomGets(3);
 			if (!names.length) {
@@ -16571,7 +16570,7 @@ const skills = {
 			}
 			targets.remove(target);
 			targets.sortBySeat();
-			var result = yield target
+			var result = await target
 				.chooseButton(["盗书：请选择伪装的牌和牌名", target.getCards("h"), [Object.keys(map), "tdnodes"]], 2, true)
 				.set("filterButton", button => {
 					var map = _status.event.map;
@@ -16606,7 +16605,8 @@ const skills = {
 					}
 					return 0;
 				})
-				.set("map", map);
+				.set("map", map)
+				.forResult();
 			if (result.bool) {
 				var guessWinner = [];
 				if (typeof result.links[0] == "string") {
@@ -16618,7 +16618,7 @@ const skills = {
 				var card = game.createCard(ChangeName, get.suit(OriginCard, false), get.number(OriginCard, false));
 				cards[cards.indexOf(OriginCard)] = card;
 				var list = targets.map(target2 => [target2, ["请猜测" + get.translation(target) + "伪装的手牌", cards], true]);
-				var result2 = yield player
+				var result2 = await player
 					.chooseButtonOL(list)
 					.set("switchToAuto", () => (_status.event.result = "ai"))
 					.set("processAI", () => {
@@ -16629,7 +16629,8 @@ const skills = {
 							links: [card ? card : cards.randomGet()],
 						};
 					})
-					.set("cards", cards);
+					.set("cards", cards)
+					.forResult();
 				for (var i in result2) {
 					if (result2[i].links?.[0] == card) {
 						guessWinner.push((_status.connectMode ? lib.playerOL : game.playerMap)[i]);

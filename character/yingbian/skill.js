@@ -26,15 +26,14 @@ const skills = {
 		ignoreMod: true,
 		log: false,
 		allowChooseAll: true,
-		*precontent(event, map) {
-			var player = map.player;
+		async precontent(event, trigger, player) {
 			var evt = event.getParent();
 			if (evt.dialog && typeof evt.dialog == "object") {
 				evt.dialog.close();
 			}
 			player.logSkill("oltousui");
 			var cards = event.result.cards;
-			player.loseToDiscardpile(cards, ui.cardPile, false, "blank").log = false;
+			await player.loseToDiscardpile(cards, ui.cardPile, false, "blank").set("log", false);
 			var shownCards = cards.filter(i => get.position(i) == "e"),
 				handcardsLength = cards.length - shownCards.length;
 			if (shownCards.length) {
@@ -45,7 +44,7 @@ const skills = {
 				player.$throw(handcardsLength, null);
 				game.log(player, "将", get.cnNumber(handcardsLength), "张牌置于了牌堆底");
 			}
-			game.delayex();
+			await game.delayex();
 			var viewAs = new lib.element.VCard({ name: event.result.card.name, isCard: true });
 			event.result.card = viewAs;
 			event.result.cards = [];
@@ -95,9 +94,7 @@ const skills = {
 			return target && target.isIn();
 		},
 		forced: true,
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger;
+		async content(event, trigger, player) {
 			if (!trigger.card || !trigger.cards || !trigger.cards.length) {
 				trigger.num++;
 				event.finish();
@@ -138,8 +135,7 @@ const skills = {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				popup: false,
-				*content(event, map) {
-					var player = map.player;
+				async content(event, trigger, player) {
 					var mapx = {};
 					var history = player.getHistory("damage").concat(player.getHistory("sourceDamage"));
 					history.forEach(evt => {
@@ -182,13 +178,14 @@ const skills = {
 						if (list.length == 1) {
 							result = { bool: true, links: [["", "", list[0]]] };
 						} else {
-							result = yield player
+							result = await player
 								.chooseButton([`畜鸣：请选择要对${get.translation(current)}使用的牌`, [list, "vcard"]], true)
 								.set("ai", button => {
 									var player = get.player();
 									return get.effect(get.event().currentTarget, { name: button.link[2] }, player, player);
 								})
-								.set("currentTarget", current);
+								.set("currentTarget", current)
+								.forResult();
 						}
 						if (result.bool) {
 							var card = get.autoViewAs({ name: result.links[0][2] }, cards);

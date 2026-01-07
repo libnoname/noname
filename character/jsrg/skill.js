@@ -4791,12 +4791,10 @@ const skills = {
 			return event.isFirstTarget && event.targets.length == 1 && event.target.isIn();
 		},
 		direct: true,
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger,
-				target = trigger.target;
+		async content(event, trigger, player) {
+			var target = trigger.target;
 			var colors = Object.keys(lib.color).remove("none");
-			var result = yield player
+			var result = await player
 				.chooseControl(colors, "cancel2")
 				.set("prompt", get.prompt("jsrgzhuiming"))
 				.set("prompt2", `声明一种颜色并令${get.translation(trigger.target)}弃置任意张牌`)
@@ -4834,7 +4832,8 @@ const skills = {
 						});
 					return list[0][0];
 				})
-				.set("target", target);
+				.set("target", target)
+				.forResult();
 			var color = result.control;
 			if (color == "cancel2") {
 				event.finish();
@@ -4845,7 +4844,7 @@ const skills = {
 			game.log(player, "声明了", color);
 			var prompt = `追命：${get.translation(player)}声明了${get.translation(color)}`,
 				prompt2 = `请弃置任意张牌，然后其展示你一张牌，若此牌颜色为${get.translation(color)}，此【杀】不计入次数限制、不可被响应且伤害+1`;
-			yield target
+			await target
 				.chooseToDiscard(prompt, prompt2, [1, Infinity], "he", true, "allowChooseAll")
 				.set("ai", card => {
 					var color = get.event().color,
@@ -4860,7 +4859,7 @@ const skills = {
 				})
 				.set("color", color);
 			if (target.countCards("he")) {
-				result = yield player
+				result = await player
 					.choosePlayerCard(target, "he", true)
 					.set("ai", button => {
 						var color = get.event().color,
@@ -4871,7 +4870,8 @@ const skills = {
 						return 1 + Math.random();
 					})
 					.set("color", color)
-					.set("att", get.attitude(player, target) > 0 ? 1 : -1);
+					.set("att", get.attitude(player, target) > 0 ? 1 : -1)
+					.forResult();
 			} else {
 				event.finish();
 				return;
@@ -5094,20 +5094,17 @@ const skills = {
 		group: ["jsrgfuni_unlimit", "jsrgfuni_zero"],
 		forced: true,
 		direct: true,
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger;
+		async content(event, trigger, player) {
 			var count = Math.ceil(game.countPlayer() / 2);
-			var result = yield player.chooseTarget(`伏匿：请选择至多${get.cnNumber(count)}名角色`, `令这些角色获得共计${get.cnNumber(count)}张【影】`, true, [1, count]).set("ai", target => {
+			var result = await player.chooseTarget(`伏匿：请选择至多${get.cnNumber(count)}名角色`, `令这些角色获得共计${get.cnNumber(count)}张【影】`, true, [1, count]).set("ai", target => {
 				return get.attitude(get.player(), target) + get.event().getRand(target.playerid);
-			});
+			}).forResult();
 			if (result.bool) {
 				var targets = result.targets.slice().sortBySeat(_status.currentPhase);
 				player.logSkill("jsrgfuni", targets);
 			} else {
-				event.finish();
+				return;
 			}
-			yield null;
 			var num = count / targets.length;
 			if (num == 1 || num == count) {
 				result = {
@@ -5130,7 +5127,7 @@ const skills = {
 						],
 					]);
 				}
-				result = yield player
+				result = await player
 					.chooseButton(dialog, true)
 					.set("filterButton", button => {
 						var total = 0,
@@ -5206,7 +5203,8 @@ const skills = {
 								links: result.map(i => `${i[0]}|${i[1]}`),
 							};
 						})()
-					);
+					)
+					.forResult();
 			}
 			if (result.bool) {
 				var links = result.links;
@@ -6582,14 +6580,12 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(i => i != player);
 		},
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger,
-				targets = game.filterPlayer(i => i != player);
+		async content(event, trigger, player) {
+			var targets = game.filterPlayer(i => i != player);
 			var shas = player.mayHaveSha(target, "use", null, "count") - player.getCardUsable("sha", true);
 			for (var target of targets) {
 				var att = get.attitude(target, player);
-				var result = yield target
+				var result = await target
 					.chooseCard("he", `负山：是否交给${get.translation(player)}一张牌？`, `若如此做，其此阶段使用【杀】的次数上限+1`)
 					.set("att", att)
 					.set("ai", card => {
@@ -6603,7 +6599,8 @@ const skills = {
 						return (isSha ? 10 : 0) - get.value(card);
 					})
 					.set("goon", (att > 0 && shas >= 0) || (att < 0 && target.hp > player.getCardUsable("sha", true) && shas < -1 / Math.max(1, player.hp)))
-					.set("target", player);
+					.set("target", player)
+					.forResult();
 				if (result.bool) {
 					target.give(result.cards, player);
 					target.line(player);

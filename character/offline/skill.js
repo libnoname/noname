@@ -26017,9 +26017,8 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				*content(event, map) {
-					const player = map.player;
-					const result = yield player.draw(2);
+				async content(event, trigger, player) {
+					const result = await player.draw(2).forResult();
 					if (Array.isArray(result) && result.length) {
 						player.addTempSkill("jdlongdan_mark", ["phaseChange", "phaseAfter"]);
 					}
@@ -26202,9 +26201,8 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				*content(event, map) {
-					const player = map.player;
-					yield player.gain(player.getExpansions("duwang"), "gain2");
+				async content(event, trigger, player) {
+					await player.gain(player.getExpansions("duwang"), "gain2");
 					player.addSkill("jdcibei_effect");
 				},
 			},

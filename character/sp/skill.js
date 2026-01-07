@@ -9683,19 +9683,19 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					log: false,
-					*precontent(event, map) {
-						const player = map.player;
+					async precontent(event, trigger, player) {
 						let stop = false;
-						const result = yield player
+						const result = await player
 							.chooseTarget("请选择一名距离为1的角色", "弃置其一张手牌，若此牌牌名为【" + get.translation(event.result.card.name) + "】，则视为你使用/打出之", (card, player, target) => {
 								return get.distance(player, target) == 1 && target.countDiscardableCards(player, "h");
 							})
-							.set("ai", target => 1 - get.sgn(get.attitude(get.event().player, target)));
+							.set("ai", target => 1 - get.sgn(get.attitude(get.event().player, target)))
+							.forResult();
 						if (result?.bool) {
 							const target = result.targets[0];
 							player.logSkill("olweijie", target);
 							player.tempBanSkill("olweijie", null, false);
-							const result2 = yield player
+							const result2 = await player
 								.discardPlayerCard(target, "h", true)
 								.set("prompt2", "若弃置的牌名为【" + get.translation(event.result.card.name) + "】，则视为你使用/打出之")
 								.set("ai", button => {
@@ -9704,7 +9704,8 @@ const skills = {
 									}
 									return 1 + Math.random();
 								})
-								.set("namex", event.result.card.name);
+								.set("namex", event.result.card.name)
+								.forResult();
 							if (result2?.bool) {
 								const card = result2.cards[0];
 								if (get.name(card, target) == event.result.card.name) {
@@ -11124,10 +11125,8 @@ const skills = {
 			}
 			return event.target.getHp() <= 2 || player.getDamagedHp() > 1 || !player.hasCard({ color: "black" }, "hes");
 		},
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger,
-				result = map.result;
+		async content(event, trigger, player) {
+			var result = event.result;
 			var target = trigger.target;
 			var send = function (card, list) {
 				var next = game.createEvent("ollangdao_choose", false);
@@ -11258,7 +11257,7 @@ const skills = {
 				}
 			}
 			if (withme) {
-				result = yield next;
+				result = await next.forResult();
 				if (_status.connectMode) {
 					game.me.unwait(result, game.me);
 				} else {
@@ -11272,13 +11271,11 @@ const skills = {
 				}
 			}
 			if (withol && !event.resultOL) {
-				game.pause();
-				yield null;
+				await game.pause();
 			}
 			if (ai_targets.length > 0) {
 				withai = true;
-				game.pause();
-				yield null;
+				await game.pause();
 			}
 			if (_status.connectMode) {
 				for (var i of [player, target]) {
@@ -11369,7 +11366,7 @@ const skills = {
 				event.finish();
 				return;
 			}
-			result = yield player
+			result = await player
 				.chooseTarget(`狼蹈：为${get.translation(trigger.card)}额外指定至多${get.cnNumber(extraTargetNum)}个目标`, (card, player, target) => {
 					return !_status.event.targets.includes(target) && player.canUse(_status.event.card, target);
 				})
@@ -11378,7 +11375,8 @@ const skills = {
 					var player = _status.event.player;
 					return get.effect(target, _status.event.card, player, player);
 				})
-				.set("card", trigger.card);
+				.set("card", trigger.card)
+				.forResult();
 			if (result.bool) {
 				if (!event.isMine() && !event.isOnline()) {
 					game.delayex();

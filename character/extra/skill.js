@@ -6815,8 +6815,8 @@ const skills = {
 			return identities;
 		},
 		group: "jxlianpo_show",
-		*content(event, map) {
-			var source = map.trigger.source;
+		async content(event, trigger, player) {
+			var source = trigger.source;
 			source.chooseDrawRecover(2, true);
 		},
 		mark: true,
@@ -7001,9 +7001,7 @@ const skills = {
 			}
 			return get.attitude(player, event.player) > 3.5;
 		},
-		*content(event, map) {
-			var player = map.player,
-				trigger = map.trigger;
+		async content(event, trigger, player) {
 			var target = trigger.player;
 			player.awakenSkill(event.name);
 			trigger.cancel();
@@ -7014,12 +7012,12 @@ const skills = {
 				}
 			});
 			if (skills.length) {
-				yield target.removeSkills(skills);
+				await target.removeSkills(skills);
 			}
-			yield target.gainMaxHp(3);
+			await target.gainMaxHp(3);
 			var num = 3 - target.getHp(true);
 			if (num > 0) {
-				yield target.recover(num);
+				await target.recover(num);
 			}
 			target.draw(4);
 			player.addSkill("jxzhaoluan_effect");

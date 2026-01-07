@@ -3047,9 +3047,8 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
-		*content(event, map) {
-			var player = map.player,
-				storage = player.storage.twkanpo;
+		async content(event, trigger, player) {
+			var storage = player.storage.twkanpo;
 			var sum = storage[0];
 			storage[1] = [];
 			player.markSkill("twkanpo");
@@ -3090,7 +3089,7 @@ const skills = {
 			} else if (event.isOnline()) {
 				event.player.send(func);
 			}
-			var result = yield player
+			var result = await player
 				.chooseButton(["看破：是否记录至多" + get.cnNumber(sum) + "个牌名？", [list, "vcard"]], [1, sum], false)
 				.set("ai", function (button) {
 					if (ui.selected.buttons.length >= Math.max(3, game.countPlayer() / 2)) {
@@ -3195,7 +3194,8 @@ const skills = {
 						},
 					},
 				})
-				.set("sum", sum);
+				.set("sum", sum)
+				.forResult();
 			if (result.bool) {
 				var names = result.links.map(link => link[2]);
 				storage[0] -= names.length;
@@ -8940,9 +8940,8 @@ const skills = {
 			return player.getExpansions("twshenyi").some(card => player.hasValueTarget(card));
 		},
 		direct: true,
-		*content(event, map) {
-			var player = map.player;
-			var result = yield player
+		async content(event, trigger, player) {
+			var result = await player
 				.chooseBool()
 				.set("createDialog", [
 					get.prompt("twxinghan"),
@@ -8953,7 +8952,8 @@ const skills = {
 						.reverse(),
 					"hidden",
 				])
-				.set("choice", lib.skill.twxinghan.check(null, player));
+				.set("choice", lib.skill.twxinghan.check(null, player))
+				.forResult();
 			if (!result.bool) {
 				event.finish();
 				return;
@@ -8966,7 +8966,7 @@ const skills = {
 				if (!cards.length) {
 					break;
 				}
-				yield player.chooseUseTarget(true, cards[0], false);
+				await player.chooseUseTarget(true, cards[0], false);
 			}
 			player.when("phaseEnd").then(() => {
 				if (player.countCards("h")) {

@@ -525,8 +525,7 @@ const skills = {
 					return player.getHistory("sourceDamage").indexOf(event) == 0 && player.getStorage("remingjian_buff").some(i => i.isIn());
 				},
 				direct: true,
-				*content(event, map) {
-					const player = map.player;
+				async content(event, trigger, player) {
 					const masters = player
 						.getStorage("remingjian_buff")
 						.filter(i => i.isIn())
@@ -542,7 +541,7 @@ const skills = {
 						next.player = master;
 						next.forced = true;
 						next._trigger = map.trigger;
-						yield next;
+						await next;
 					}
 				},
 				mod: {
