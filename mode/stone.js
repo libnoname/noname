@@ -2839,7 +2839,7 @@ export default () => {
 					lib.character[i].skills.add("stonedraw");
 					name = i + "_stonecharacter";
 					lib.card[name] = {
-						image: "mode/stone/character/" + i,
+						image: "image/mode/stone/character/" + i + ".jpg",
 						stoneact: lib.character[i].extraModeData[0],
 						career: lib.character[i].extraModeData[2] || null,
 					};
