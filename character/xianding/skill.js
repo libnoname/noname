@@ -2822,7 +2822,7 @@ const skills = {
 				if (get.event().getParent().type != "phase") {
 					return 1;
 				}
-				return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: butotn.link[3], isCard: true }));
+				return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true }));
 			},
 			backup(links, player) {
 				return {
