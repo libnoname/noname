@@ -138,10 +138,13 @@ const skills = {
 			global: ["useCard", "respond"],
 		},
 		filter(event, player) {
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
 			if (!event.respondTo || !Array.isArray(event.respondTo)) {
 				return false;
 			}
-			if (!player.isPhaseUsing()) {
+			if (player != event.player && player != event.respondTo[0]) {
 				return false;
 			}
 			if (event.player == event.respondTo[0]) {
