@@ -2,7 +2,6 @@ import { lib } from "noname";
 import { IContentCompiler, EventCompileable, EventCompiledContent, EventContent } from "./IContentCompiler.ts";
 
 import StepCompiler from "./StepCompiler.ts";
-import YieldCompiler from "./YieldCompiler.ts";
 import AsyncCompiler from "./AsyncCompiler.ts";
 import ArrayCompiler from "./ArrayCompiler.ts";
 
@@ -103,6 +102,5 @@ const compiler = new ContentCompiler();
 compiler.addCompiler(new ArrayCompiler());
 compiler.addCompiler(new AsyncCompiler());
 compiler.addCompiler(new StepCompiler());
-compiler.addCompiler(new YieldCompiler());
 
 export default compiler;

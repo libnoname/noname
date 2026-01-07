@@ -109,9 +109,8 @@ export class GameEvent {
 	 */
 	_notrigger = [];
 	/**
-	 * @type { Result }
+	 * @type { Partial<Result> }
 	 */
-	// @ts-expect-error ignore
 	_result = {};
 	/**
 	 * @type { any[] }
