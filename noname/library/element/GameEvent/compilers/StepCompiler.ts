@@ -52,9 +52,6 @@ class StepParser {
 		// ModAsyncFunction
 		this.functionConstructor = security.getIsolatedsFrom(func)[2] as any;
 		this.str = this.formatFunction(func);
-		if (lib.config.dev) {
-			this.replaceDebugger();
-		}
 	}
 
 	getResult(): (e: GameEvent) => Promise<void> {
@@ -128,30 +125,5 @@ class StepParser {
 			.slice(0, code.lastIndexOf("}"))
 			.slice(code.indexOf("{") + 1)
 			.trim();
-	}
-
-	replaceDebugger() {
-		const regex = /event\.debugger\(\)/;
-		// let hasDebugger = false;
-		const insertDebugger = `await event.debugger()`; // yield code=>eval(code) 唔唔不是我干的喵
-		let debuggerSkip = 0;
-		let debuggerResult: RegExpMatchArray | null;
-
-		while ((debuggerResult = this.str.slice(debuggerSkip).match(regex)) != null) {
-			if (debuggerResult.index == null) {
-				throw new Error("匹配到了debugger但是没有索引值");
-			}
-
-			let debuggerCopy = this.str;
-			debuggerCopy = debuggerCopy.slice(0, debuggerSkip + debuggerResult.index) + insertDebugger + debuggerCopy.slice(debuggerSkip + debuggerResult.index + debuggerResult[0].length, -1);
-			try {
-				new this.functionConstructor(debuggerCopy);
-				this.str = debuggerCopy + "}";
-				debuggerSkip += debuggerResult.index + insertDebugger.length;
-				// hasDebugger = true;
-			} catch (error) {
-				debuggerSkip += debuggerResult.index + debuggerResult[0].length;
-			}
-		}
 	}
 }
