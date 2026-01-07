@@ -198,3 +198,16 @@ get.event = function (key) {
 	game.asyncDelay = game.delay;
 	game.asyncDelayx = game.delayx;
 }
+
+// jsForExtension
+lib.init.jsForExtension = function (path, file, onLoad, onError) {
+	if (!_status.javaScriptExtensions) {
+		_status.javaScriptExtensions = [];
+	}
+	_status.javaScriptExtensions.push({
+		path: path,
+		file: file,
+		onLoad: onLoad,
+		onError: onError,
+	});
+};

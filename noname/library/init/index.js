@@ -200,23 +200,6 @@ export class LibInit {
 		return style;
 	}
 
-	/**
-	 * @deprecated
-	 * 在扩展的precontent中调用，用于加载扩展必需的JS文件。
-	 * 如果任意参数为数组，则按顺序加载加载相应的文件
-	 */
-	jsForExtension(path, file, onLoad, onError) {
-		if (!_status.javaScriptExtensions) {
-			_status.javaScriptExtensions = [];
-		}
-		_status.javaScriptExtensions.push({
-			path: path,
-			file: file,
-			onLoad: onLoad,
-			onError: onError,
-		});
-	}
-
 	js(path, file, onLoad, onError) {
 		if (path[path.length - 1] == "/") {
 			path = path.slice(0, path.length - 1);
