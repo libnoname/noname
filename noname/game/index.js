@@ -3008,6 +3008,7 @@ export class Game {
 					init: true,
 				},
 			};
+		object.config ??= {};
 		if (object.package) {
 			const author = Object.getOwnPropertyDescriptor(object.package, "author");
 			if (author) {
