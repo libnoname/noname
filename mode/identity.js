@@ -3525,15 +3525,15 @@ export default () => {
 					aiTargets.randomSort();
 					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
 						var interval = setInterval(() => {
-								aiTargets.shift();
-								if (aiTargets.length) {
-									return;
-								}
-								clearInterval(interval);
-								if (event.withAI) {
-									game.resume();
-								}
-							}, Math.ceil(500 + 500 * Math.random()));
+							aiTargets.shift();
+							if (aiTargets.length) {
+								return;
+							}
+							clearInterval(interval);
+							if (event.withAI) {
+								game.resume();
+							}
+						}, Math.ceil(500 + 500 * Math.random()));
 					});
 					"step 1";
 					if (event.withMe) {
@@ -4993,47 +4993,47 @@ export default () => {
 				charlotte: true,
 				async content(event, trigger, player) {
 					const lebu = player.getCards("j", j => {
-							return j.viewAs === "lebu" || j.name === "lebu";
-						}),
-						bingliang = player.getCards("j", j => {
-							return j.viewAs === "bingliang" || j.name === "bingliang";
-						});
+						return j.viewAs === "lebu" || j.name === "lebu";
+					}),
+					bingliang = player.getCards("j", j => {
+						return j.viewAs === "bingliang" || j.name === "bingliang";
+					});
 					player.removeSkill("sixiang_qinglong");
 					let control;
 					if (lebu.length && bingliang.length) {
 						control = (await player
-								.chooseControl("lebu", "bingliang")
-								.set("prompt", "请选择要弃置的牌")
-								.set("ai", () => get.event().control)
-								.set(
-									"control",
-									(() => {
-										if (
-											get.effect(
-												player,
-												{
-													name: "lebu",
-													cards: lebu,
-												},
-												player,
-												player
-											) >
-											get.effect(
-												player,
-												{
-													name: "bingliang",
-													cards: bingliang,
-												},
-												player,
-												player
-											)
-										) {
-											return "bingliang";
-										}
+							.chooseControl("lebu", "bingliang")
+							.set("prompt", "请选择要弃置的牌")
+							.set("ai", () => get.event().control)
+							.set(
+								"control",
+								(() => {
+									if (
+										get.effect(
+											player,
+											{
+												name: "lebu",
+												cards: lebu,
+											},
+											player,
+											player
+										) >
+										get.effect(
+											player,
+											{
+												name: "bingliang",
+												cards: bingliang,
+											},
+											player,
+											player
+										)
+									) {
+										return "bingliang";
+									}
 										return "lebu";
-									})()
-								)
-								.forResult()).control;
+								})()
+							)
+							.forResult()).control;
 					} else if (lebu) {
 						control = "lebu";
 					} else if (bingliang) {
