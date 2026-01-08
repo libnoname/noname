@@ -143,10 +143,10 @@ export default () => {
 					await new Promise(resolve => ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve));
 					ui.click.menuTab("武将");
 					await new Promise(resolve => ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve));
-					ui.click.menuTab("战局");
-					await new Promise(resolve => ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve));
-					ui.click.menuTab("帮助");
-					await new Promise(resolve => ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve));
+					ui.click.menuTab("其它");
+					await new Promise(resolve => ui.controls[0].replace("在其它的关于一栏中，可以检查更新和下载素材", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在控制/命令一栏中，可以执行一些常见的操作/输入游戏命令", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在录像一栏中，可以管理游戏录像", resolve));
 					ui.click.configMenu();
 					ui.window.classList.remove("noclick_important");
 					ui.control.classList.remove("noclick_click_important");
