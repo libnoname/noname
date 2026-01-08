@@ -75,34 +75,38 @@ export default () => {
 				}
 			},
 			async (event, trigger, player) => {
-				if (!lib.config.new_tutorial) {
-					_status.new_tutorial = true;
-					lib.init.onfree();
-					game.saveConfig("version", lib.version);
-					var clear = function () {
-						ui.dialog.close();
-						while (ui.controls.length) {
-							ui.controls[0].close();
-						}
-					};
-					var clear2 = function () {
-						ui.auto.show();
-						ui.arena.classList.remove("only_dialog");
-					};
-					game.pause();
+				if (lib.config.new_tutorial) {
+					if (!_status.connectMode) {
+						game.showChangeLog();
+					}
+					return;
+				}
 
-					ui.create.dialog("欢迎来到无名杀，是否进入新手向导？");
-					game.saveConfig("new_tutorial", true);
-					ui.dialog.add('<div class="text center">跳过后，你可以在选项-其它中重置新手向导');
-					ui.auto.hide();
-					ui.create.control("跳过向导", function () {
-						clear();
-						clear2();
-						game.resume();
-						// lib.cheat.cfg(); // owidgets
-					});
-					await new Promise(resolve => ui.create.control("继续", resolve));
+				_status.new_tutorial = true;
+				lib.init.onfree();
+				game.saveConfig("version", lib.version);
 
+				await game.promises.saveConfig("new_tutorial", true);
+				ui.create.dialog("欢迎来到无名杀，是否进入新手向导？");
+				ui.dialog.add('<div class="text center">跳过后，你可以在选项-其它中重置新手向导');
+				ui.auto.hide();
+
+				const { promise, resolve } = Promise.withResolvers();
+
+				ui.create.control("跳过向导", () => resolve(true));
+				ui.create.control("继续", () => resolve(false));
+
+				const skip_tutorial = await promise;
+
+				if (!skip_tutorial) {
+					await tutorial();
+				}
+
+				clear();
+				ui.auto.show();
+				ui.arena.classList.remove("only_dialog");
+
+				async function tutorial() {
 					if (!lib.config.phonelayout) {
 						clear();
 						ui.create.dialog("如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大");
@@ -127,7 +131,7 @@ export default () => {
 						ui.dialog.add('<div class="text center">你可以在选项-通用-中更改手势设置');
 						await new Promise(resolve => ui.create.control("继续", resolve));
 					}
-					
+
 					clear();
 					ui.window.classList.add("noclick_important");
 					ui.click.configMenu();
@@ -150,14 +154,13 @@ export default () => {
 
 					clear();
 					ui.create.dialog("如果还有其它问题，欢迎来到百度无名杀吧进行交流");
-					ui.create.control("完成", function () {
-						clear();
-						clear2();
-						game.resume();
-					});
-				} else {
-					if (!_status.connectMode) {
-						game.showChangeLog();
+					await new Promise(resolve => ui.create.control("完成", resolve));
+				}
+
+				function clear() {
+					ui.dialog.close();
+					while (ui.controls.length) {
+						ui.controls[0].close();
 					}
 				}
 			},
@@ -459,7 +462,7 @@ export default () => {
 			},
 			async (event, trigger, player) => {
 				game.phaseLoop(event.beginner);
-			}
+			},
 		],
 		game: {
 			canReplaceViewpoint: () => true,
@@ -3522,15 +3525,15 @@ export default () => {
 					aiTargets.randomSort();
 					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
 						var interval = setInterval(() => {
-							aiTargets.shift();
-							if (aiTargets.length) {
-								return;
-							}
-							clearInterval(interval);
-							if (event.withAI) {
-								game.resume();
-							}
-						}, Math.ceil(500 + 500 * Math.random()));
+								aiTargets.shift();
+								if (aiTargets.length) {
+									return;
+								}
+								clearInterval(interval);
+								if (event.withAI) {
+									game.resume();
+								}
+							}, Math.ceil(500 + 500 * Math.random()));
 					});
 					"step 1";
 					if (event.withMe) {
@@ -4990,8 +4993,8 @@ export default () => {
 				charlotte: true,
 				async content(event, trigger, player) {
 					const lebu = player.getCards("j", j => {
-						return j.viewAs === "lebu" || j.name === "lebu";
-					}),
+							return j.viewAs === "lebu" || j.name === "lebu";
+						}),
 						bingliang = player.getCards("j", j => {
 							return j.viewAs === "bingliang" || j.name === "bingliang";
 						});
@@ -4999,38 +5002,38 @@ export default () => {
 					let control;
 					if (lebu.length && bingliang.length) {
 						control = (await player
-							.chooseControl("lebu", "bingliang")
-							.set("prompt", "请选择要弃置的牌")
-							.set("ai", () => get.event().control)
-							.set(
-								"control",
-								(() => {
-									if (
-										get.effect(
-											player,
-											{
-												name: "lebu",
-												cards: lebu,
-											},
-											player,
-											player
-										) >
-										get.effect(
-											player,
-											{
-												name: "bingliang",
-												cards: bingliang,
-											},
-											player,
-											player
-										)
-									) {
-										return "bingliang";
-									}
-									return "lebu";
-								})()
-							)
-							.forResult()).control;
+								.chooseControl("lebu", "bingliang")
+								.set("prompt", "请选择要弃置的牌")
+								.set("ai", () => get.event().control)
+								.set(
+									"control",
+									(() => {
+										if (
+											get.effect(
+												player,
+												{
+													name: "lebu",
+													cards: lebu,
+												},
+												player,
+												player
+											) >
+											get.effect(
+												player,
+												{
+													name: "bingliang",
+													cards: bingliang,
+												},
+												player,
+												player
+											)
+										) {
+											return "bingliang";
+										}
+										return "lebu";
+									})()
+								)
+								.forResult()).control;
 					} else if (lebu) {
 						control = "lebu";
 					} else if (bingliang) {
