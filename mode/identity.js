@@ -4995,9 +4995,9 @@ export default () => {
 					const lebu = player.getCards("j", j => {
 						return j.viewAs === "lebu" || j.name === "lebu";
 					}),
-					bingliang = player.getCards("j", j => {
-						return j.viewAs === "bingliang" || j.name === "bingliang";
-					});
+						bingliang = player.getCards("j", j => {
+							return j.viewAs === "bingliang" || j.name === "bingliang";
+						});
 					player.removeSkill("sixiang_qinglong");
 					let control;
 					if (lebu.length && bingliang.length) {
@@ -5030,7 +5030,7 @@ export default () => {
 									) {
 										return "bingliang";
 									}
-										return "lebu";
+									return "lebu";
 								})()
 							)
 							.forResult()).control;
