@@ -1603,43 +1603,18 @@ export const extensionMenu = function (connectMenu) {
 				};
 
 				codeButton.onclick = function () {
-					ui.window.classList.add("shortcutpaused");
-					ui.window.classList.add("systempaused");
-					ui.window.appendChild(container);
-					ui.create.editor2(container, {
+					ui.create.editor2({
 						language: "javascript",
 						value: code,
-						saveInput,
-					}).then(editor => {
-						window.saveNonameInput = () => saveInput(editor);
+						saveInput: result => {
+							var { card } = security.exec2(result);
+							if (card == null || typeof card != "object") {
+								throw new Error("代码格式有错误，请对比示例代码仔细检查");
+							}
+							dash2.link.classList.add("active");
+							code = result;
+						},
 					});
-				};
-
-				var container = ui.create.div(".popup-container.editor2");
-				var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
-					var inputCode = view.state.doc.toString();
-					try {
-						var { card } = security.exec2(inputCode);
-						if (card == null || typeof card != "object") {
-							throw new Error("err");
-						}
-					} catch (e) {
-						if (e?.message == "err") {
-							alert("代码格式有错误，请对比示例代码仔细检查");
-						} else {
-							var tip = lib.getErrorTip(e) || "";
-							alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-						}
-						window.focus();
-						view.dom.focus();
-						return;
-					}
-					dash2.link.classList.add("active");
-					ui.window.classList.remove("shortcutpaused");
-					ui.window.classList.remove("systempaused");
-					container.delete();
-					code = inputCode;
-					delete window.saveNonameInput;
 				};
 
 				code = 'card={\n    \n}\n\n/*\n示例：\ncard={\n    type:"basic",\n    enable:true,\n    filterTarget:true,\n    content:function(){\n        target.draw()\n    },\n    ai:{\n        order:1,\n        result:{\n            target:1\n        }\n    }\n}\n此例的效果为目标摸一张牌\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
@@ -2022,43 +1997,18 @@ export const extensionMenu = function (connectMenu) {
 				editbutton.innerHTML = "编辑代码";
 				commandline.appendChild(editbutton);
 				editbutton.onclick = function () {
-					ui.window.classList.add("shortcutpaused");
-					ui.window.classList.add("systempaused");
-					ui.window.appendChild(container);
-					ui.create.editor2(container, {
+					ui.create.editor2({
 						language: "javascript",
 						value: code,
-						saveInput,
-					}).then(editor => {
-						window.saveNonameInput = () => saveInput(editor);
+						saveInput: result => {
+							const { skill } = security.exec2(result);
+							if (skill == null || typeof skill != "object") {
+								throw new Error("代码格式有错误，请对比示例代码仔细检查");
+							}
+							dash3.link.classList.add("active");
+							code = result;
+						},
 					});
-				};
-
-				var container = ui.create.div(".popup-container.editor2");
-				var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
-					var resultCode = view.state.doc.toString();
-					try {
-						var { skill } = security.exec2(resultCode);
-						if (skill == null || typeof skill != "object") {
-							throw new Error("err");
-						}
-					} catch (e) {
-						if (e?.message == "err") {
-							alert("代码格式有错误，请对比示例代码仔细检查");
-						} else {
-							var tip = lib.getErrorTip(e) || "";
-							alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-						}
-						window.focus();
-						view.dom.focus();
-						return;
-					}
-					dash3.link.classList.add("active");
-					ui.window.classList.remove("shortcutpaused");
-					ui.window.classList.remove("systempaused");
-					container.delete();
-					code = resultCode;
-					delete window.saveNonameInput;
 				};
 				let code = 'skill={\n    \n}\n\n/*\n示例：\nskill={\n    trigger:{player:"phaseJieshuBegin"},\n    frequent:true,\n    content:function(){\n        player.draw()\n    }\n}\n此例为闭月代码\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 
@@ -2322,9 +2272,6 @@ export const extensionMenu = function (connectMenu) {
 				page.reset = function (name) {
 					page.content = {};
 					if (lib.extensionPack[name]) {
-						for (var i in dashes) {
-							dashes[i].node.code = "";
-						}
 						for (var i in lib.extensionPack[name].code) {
 							switch (typeof lib.extensionPack[name].code[i]) {
 								case "function":
@@ -2335,92 +2282,51 @@ export const extensionMenu = function (connectMenu) {
 									break;
 							}
 						}
-						for (var i in page.content) {
-							dashes[i].node.code = page.content[i] || "";
-						}
-					} else {
-						dashes.arenaReady.node.code = "function(){\n    \n}\n\n/*\n函数执行时机为界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.content.node.code = "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.prepare.node.code = "function(){\n    \n}\n\n/*\n函数执行时机玩游戏扩展加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.precontent.node.code = "function(config){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/";
-						dashes.config.node.code = 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n    name:"示例列表选项",\n        init:"3",\n        item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
-						dashes.help.node.code = 'help={\n    \n}\n\ns/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 					}
 				};
 				var dashes = {};
-				var createCode = function (str1, str2, sub, func, link, str) {
+				var createCode = function (shortName, fullName, link, defaultCode) {
 					var dash = ui.create.div(".menubutton.large.dashboard");
 					dashes[link] = dash;
-					sub.appendChild(dash);
-					dash.listen(func);
-					dash.link = link;
-					ui.create.div("", str1, dash);
-					ui.create.div("", str2, dash);
-					var container = ui.create.div(".popup-container.editor2");
-					var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/view) {
-						var resultCode = view.state.doc.toString();
-						try {
-							if (["arenaReady", "content", "prepare", "precontent"].includes(link)) {
-								var { func } = security.exec2(`func = ${resultCode}`);
-								if (typeof func != "function") {
-									throw new Error("err");
+					page.appendChild(dash);
+					dash.listen(() => {
+						ui.create.editor2({
+							language: "javascript",
+							value: page.content[link] || defaultCode,
+							saveInput: result => {
+								if (["arenaReady", "content", "prepare", "precontent"].includes(link)) {
+									var { func } = security.exec2(`func = ${result}`);
+									if (typeof func != "function") {
+										throw new Error("代码格式有错误，请对比示例代码仔细检查");
+									}
+								} else if (link == "config") {
+									var { config } = security.exec2(result);
+									if (config == null || typeof config != "object") {
+										throw new Error("代码格式有错误，请对比示例代码仔细检查");
+									}
+								} else if (link == "help") {
+									var { help } = security.exec2(result);
+									if (help == null || typeof help != "object") {
+										throw new Error("代码格式有错误，请对比示例代码仔细检查");
+									}
 								}
-							} else if (link == "config") {
-								var { config } = security.exec2(resultCode);
-								if (config == null || typeof config != "object") {
-									throw new Error("err");
-								}
-							} else if (link == "help") {
-								var { help } = security.exec2(resultCode);
-								if (help == null || typeof help != "object") {
-									throw new Error("err");
-								}
-							}
-						} catch (e) {
-							if (e?.message == "err") {
-								alert("代码格式有错误，请对比示例代码仔细检查");
-							} else {
-								var tip = lib.getErrorTip(e) || "";
-								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-							}
-							window.focus();
-							view.dom.focus();
-							return;
-						}
-						dash4.link.classList.add("active");
-						ui.window.classList.remove("shortcutpaused");
-						ui.window.classList.remove("systempaused");
-						container.delete();
-						container.code = resultCode;
-						page.content[link] = resultCode;
-						delete window.saveNonameInput;
-					};
-					container.code = str;
-					// dash.editor = editor;
-					dash.node = container;
-					dash.saveInput = saveInput;
-					page.content[link] = str;
-				};
-				var clickCode = function () {
-					var node = this.node;
-					ui.window.classList.add("shortcutpaused");
-					ui.window.classList.add("systempaused");
-					ui.window.appendChild(node);
-					ui.create.editor2(node, {
-						language: "javascript",
-						value: node.code,
-						saveInput: this.saveInput,
-					}).then(editor => {
-						window.saveNonameInput = () => this.saveInput(editor);
+								dash4.link.classList.add("active");
+								page.content[link] = result;
+							},
+						});
 					});
+					dash.link = link;
+					ui.create.div("", shortName, dash);
+					ui.create.div("", fullName, dash);
+					page.content[link] = defaultCode;
 				};
 				page.content = {};
-				createCode("辅", "辅助代码", page, clickCode, "arenaReady", "function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
-				createCode("主", "主代码", page, clickCode, "content", "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
-				createCode("预", "预备代码", page, clickCode, "prepare", "function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
-				createCode("启", "启动代码", page, clickCode, "precontent", "function(config){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
-				createCode("选", "选项代码", page, clickCode, "config", 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n        name:"示例列表选项",\n        init:"3",\n     	  item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
-				createCode("帮", "帮助代码", page, clickCode, "help", 'help={\n    \n}\n\n/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
+				createCode("辅", "辅助代码", "arenaReady", "function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("主", "主代码", "content", "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("预", "预备代码", "prepare", "function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("启", "启动代码", "precontent", "function(config){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("选", "选项代码", "config", 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n        name:"示例列表选项",\n        init:"3",\n     	  item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
+				createCode("帮", "帮助代码", "help", 'help={\n    \n}\n\n/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
 
 				return page;
 			})();

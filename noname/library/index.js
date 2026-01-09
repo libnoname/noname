@@ -7161,48 +7161,18 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor2", ui.window);
-						var node = container;
 						var map = get.config("character_three") || lib.choiceThree;
-						var str = "character=[\n    ";
-						for (var i = 0; i < map.length; i++) {
-							str += '"' + map[i] + '",';
-							if (i + 1 < map.length && (i + 1) % 5 == 0) {
-								str += "\n    ";
-							}
-						}
-						str += "\n];";
-						ui.window.classList.add("shortcutpaused");
-						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
-							var code = view.state.doc.toString();
-							try {
-								var { character } = security.exec2(code);
+						ui.create.editor2({
+							language: "json",
+							value: JSON.stringify(map, null, 2),
+							saveInput: result => {
+								const character = JSON.parse(result);
 								if (!Array.isArray(character)) {
-									throw new Error("err");
+									throw new Error("代码格式有错误，请对比示例代码仔细检查");
 								}
-							} catch (e) {
-								var tip = lib.getErrorTip(e) || "";
-								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-								window.focus();
-								view.dom.focus();
-								return;
-							}
-							game.saveConfig("character_three", character, "versus");
-							ui.window.classList.remove("shortcutpaused");
-							ui.window.classList.remove("systempaused");
-							container.delete();
-							delete window.saveNonameInput;
-						};
-						ui.create
-							.editor2(container, {
-								language: "javascript",
-								value: str,
-								saveInput,
-							})
-							.then(editor => {
-								window.saveNonameInput = () => saveInput(editor);
-							});
+								game.saveConfig("character_three", character, "versus");
+							},
+						});
 					},
 				},
 				reset_character_three: {
@@ -7224,48 +7194,18 @@ export class Library {
 							alert("请进入对决模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor2", ui.window);
-						var node = container;
 						var map = get.config("character_four") || lib.choiceFour;
-						var str = "character=[\n    ";
-						for (var i = 0; i < map.length; i++) {
-							str += '"' + map[i] + '",';
-							if (i + 1 < map.length && (i + 1) % 5 == 0) {
-								str += "\n    ";
-							}
-						}
-						str += "\n];";
-						ui.window.classList.add("shortcutpaused");
-						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
-							var code = view.state.doc.toString();
-							try {
-								var { character } = security.exec2(code);
+						ui.create.editor2({
+							language: "json",
+							value: JSON.stringify(map, null, 2),
+							saveInput: result => {
+								var { character } = JSON.parse(result);
 								if (!Array.isArray(character)) {
-									throw new Error("err");
+									throw new Error("代码格式有错误，请对比示例代码仔细检查");
 								}
-							} catch (e) {
-								var tip = lib.getErrorTip(e) || "";
-								alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-								window.focus();
-								view.dom.focus();
-								return;
-							}
-							game.saveConfig("character_four", character, "versus");
-							ui.window.classList.remove("shortcutpaused");
-							ui.window.classList.remove("systempaused");
-							container.delete();
-							delete window.saveNonameInput;
-						};
-						ui.create
-							.editor2(container, {
-								language: "javascript",
-								value: str,
-								saveInput,
-							})
-							.then(editor => {
-								window.saveNonameInput = () => saveInput(editor);
-							});
+								game.saveConfig("character_four", character, "versus");
+							},
+						});
 					},
 				},
 				reset_character_four: {
@@ -7829,61 +7769,31 @@ export class Library {
 							alert("请进入斗地主模式，然后再编辑将池");
 							return;
 						}
-						var container = ui.create.div(".popup-container.editor2", ui.window);
-						var node = container;
 						var map = get.config("character_online") || lib.characterOnline;
 						var code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
-						ui.window.classList.add("shortcutpaused");
-						ui.window.classList.add("systempaused");
-						var saveInput = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
-							var code = view.state.doc.toString();
-							try {
+						ui.create.editor2({
+							language: "javascript",
+							value: code,
+							saveInput: result => {
 								var { character } = security.exec2(code);
 								if (!get.is.object(character)) {
-									throw new Error("err");
+									throw new Error("代码格式有错误，请对比示例代码仔细检查");
 								}
 								var groups = [];
 								for (var i in character) {
 									if (!Array.isArray(character[i])) {
-										throw new Error("type");
+										throw new Error("请严格按照格式填写，不要写入不为数组的数据");
 									}
 									if (character[i].length >= 3) {
 										groups.push(i);
 									}
 								}
 								if (groups.length < 3) {
-									throw new Error("enough");
+									throw new Error("请保证至少写入了3个势力，且每个势力至少有3个武将");
 								}
-							} catch (e) {
-								if (e?.message == "type") {
-									alert("请严格按照格式填写，不要写入不为数组的数据");
-								} else if (e?.message == "enough") {
-									alert("请保证至少写入了3个势力，且每个势力至少有3个武将");
-								} else if (e?.message == "err") {
-									alert("代码格式有错误，请对比示例代码仔细检查");
-								} else {
-									var tip = lib.getErrorTip(e) || "";
-									alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
-								}
-								window.focus();
-								view.dom.focus();
-								return;
-							}
-							game.saveConfig("character_online", character, "doudizhu");
-							ui.window.classList.remove("shortcutpaused");
-							ui.window.classList.remove("systempaused");
-							container.delete();
-							delete window.saveNonameInput;
-						};
-						ui.create
-							.editor2(container, {
-								language: "javascript",
-								value: code,
-								saveInput,
-							})
-							.then(editor => {
-								window.saveNonameInput = () => saveInput(editor);
-							});
+								game.saveConfig("character_online", character, "doudizhu");
+							},
+						});
 					},
 				},
 				reset_character: {

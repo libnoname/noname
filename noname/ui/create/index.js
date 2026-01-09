@@ -300,25 +300,44 @@ export class Create {
 	}
 	/**
 	 * 创建codemirror6编辑器
-	 * @param {HTMLDivElement} container
-	 * @param {{ value?: string, language?: string, saveInput?:(view: import("@codemirror/view").EditorView) => any }} config
+	 * @param {{ value?: string, language?: string, saveInput?: (code: string) => any }} config
 	 */
-	async editor2(container, config = {}) {
+	async editor2(config = {}) {
 		const {
 			value = "",
 			language = "javascript",
-			saveInput = view => {
-				ui.window.classList.remove("shortcutpaused");
-				ui.window.classList.remove("systempaused");
-				view.dom.parentElement?.parentElement?.parentElement?.remove();
-			},
+			saveInput = code => {},
 		} = config;
+
+		const container = ui.create.div(".popup-container.editor2");
+		ui.window.appendChild(container);
+		ui.window.classList.add("shortcutpaused");
+		ui.window.classList.add("systempaused");
+
+		const callback = function (/**@type {import("@codemirror/view").EditorView}*/ view) {
+			const code = view.state.doc.toString();
+			try {
+				saveInput(code);
+			} catch (e) {
+				const tip = lib.getErrorTip(e) || "";
+				alert("代码语法有错误，请仔细检查（" + e + "）" + tip);
+				window.focus();
+				view.dom.focus();
+				return;
+			}
+			ui.window.classList.remove("shortcutpaused");
+			ui.window.classList.remove("systempaused");
+			container.delete();
+			delete window.saveNonameInput;
+		};
+
 
 		const { basicSetup } = await import("codemirror");
 		const { EditorView } = await import("@codemirror/view");
 		const { linter, lintGutter } = await import("@codemirror/lint");
 		const { search, highlightSelectionMatches, openSearchPanel } = await import("@codemirror/search");
 
+		
 		// 在editorpage中添加功能按钮等
 		const editorpage = ui.create.div(container);
 		editorpage.addEventListener("keydown", function (e) {
@@ -332,11 +351,13 @@ export class Create {
 			ui.window.classList.remove("shortcutpaused");
 			ui.window.classList.remove("systempaused");
 			container.delete();
+			delete window.saveNonameInput;
 		});
 
 		const saveConfig = ui.create.div(".editbutton", "保存", editorpage, () => {
-			saveInput(view);
+			callback(view);
 		});
+		window.saveNonameInput = () => callback(view);
 
 		const fontSize = ui.create.div(".editbutton", "字号", editorpage, () => {
 			game.promises.prompt(`###请输入字号###${lib.config.codeMirror_fontSize || "16px"}`).then(size => {
@@ -507,7 +528,7 @@ export class Create {
 			extensions,
 		});
 		lib.setScroll(view.scrollDOM);
-		return view;
+		// return view;
 	}
 	/**
 	 * 弹出提示。
