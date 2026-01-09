@@ -7199,7 +7199,7 @@ export class Library {
 							language: "json",
 							value: JSON.stringify(map, null, 2),
 							saveInput: result => {
-								var { character } = JSON.parse(result);
+								const character = JSON.parse(result);
 								if (!Array.isArray(character)) {
 									throw new Error("代码格式有错误，请对比示例代码仔细检查");
 								}
@@ -7763,6 +7763,7 @@ export class Library {
 				},
 				edit_character: {
 					name: "编辑将池",
+					intro: "这里是智斗三国模式的武将将池。<br/>您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。<br/>将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。<br/>而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。<br/>该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。<br/>但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。",
 					clear: true,
 					onclick() {
 						if (get.mode() != "doudizhu") {
@@ -7770,12 +7771,11 @@ export class Library {
 							return;
 						}
 						var map = get.config("character_online") || lib.characterOnline;
-						var code = "character=" + get.stringify(map) + "\n/*\n    这里是智斗三国模式的武将将池。\n    您可以在这里编辑对武将将池进行编辑，然后点击“保存”按钮即可保存。\n    将池中的Key势力武将，仅同时在没有被禁用的情况下，才会出现在选将框中。\n    而非Key势力的武将，只要所在的武将包没有被隐藏，即可出现在选将框中。\n    该将池为单机模式/联机模式通用将池。在这里编辑后，即使进入联机模式，也依然会生效。\n    但联机模式本身禁用的武将（如神貂蝉）不会出现在联机模式的选将框中。\n*/";
 						ui.create.editor2({
-							language: "javascript",
-							value: code,
+							language: "json",
+							value: JSON.stringify(map, null, 2),
 							saveInput: result => {
-								var { character } = security.exec2(code);
+								const character = JSON.parse(result);
 								if (!get.is.object(character)) {
 									throw new Error("代码格式有错误，请对比示例代码仔细检查");
 								}
