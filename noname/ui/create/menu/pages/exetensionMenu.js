@@ -1603,7 +1603,7 @@ export const extensionMenu = function (connectMenu) {
 				};
 
 				codeButton.onclick = function () {
-					ui.create.editor2({
+					ui.create.editor({
 						language: "javascript",
 						value: code,
 						saveInput: result => {
@@ -1997,7 +1997,7 @@ export const extensionMenu = function (connectMenu) {
 				editbutton.innerHTML = "编辑代码";
 				commandline.appendChild(editbutton);
 				editbutton.onclick = function () {
-					ui.create.editor2({
+					ui.create.editor({
 						language: "javascript",
 						value: code,
 						saveInput: result => {
@@ -2290,7 +2290,7 @@ export const extensionMenu = function (connectMenu) {
 					dashes[link] = dash;
 					page.appendChild(dash);
 					dash.listen(() => {
-						ui.create.editor2({
+						ui.create.editor({
 							language: "javascript",
 							value: page.content[link] || defaultCode,
 							saveInput: result => {

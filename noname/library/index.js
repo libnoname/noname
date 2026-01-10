@@ -7162,7 +7162,7 @@ export class Library {
 							return;
 						}
 						var map = get.config("character_three") || lib.choiceThree;
-						ui.create.editor2({
+						ui.create.editor({
 							language: "json",
 							value: JSON.stringify(map, null, 2),
 							saveInput: result => {
@@ -7195,7 +7195,7 @@ export class Library {
 							return;
 						}
 						var map = get.config("character_four") || lib.choiceFour;
-						ui.create.editor2({
+						ui.create.editor({
 							language: "json",
 							value: JSON.stringify(map, null, 2),
 							saveInput: result => {
@@ -7771,7 +7771,7 @@ export class Library {
 							return;
 						}
 						var map = get.config("character_online") || lib.characterOnline;
-						ui.create.editor2({
+						ui.create.editor({
 							language: "json",
 							value: JSON.stringify(map, null, 2),
 							saveInput: result => {

@@ -86,7 +86,7 @@ export class Create {
 	 * 创建codemirror6编辑器
 	 * @param {{ value?: string, language?: string, saveInput?: (code: string) => any }} config
 	 */
-	async editor2(config = {}) {
+	async editor(config = {}) {
 		const {
 			value = "",
 			language = "javascript",
