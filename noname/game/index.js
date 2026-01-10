@@ -7718,6 +7718,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		return players[0];
 	}
 	/**
+	 * @todo deprecate
 	 * @param { string } name
 	 * @param { (exports: importModeConfig) => any } [callback]
 	 * @param { (error: unknown) => any } [onerror]
@@ -7962,6 +7963,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		});
 	}
 	/**
+	 * @todo deprecate
 	 * @param { string } mode
 	 */
 	loadMode(mode) {
