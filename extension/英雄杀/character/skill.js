@@ -3143,7 +3143,7 @@ const skill = {
 			const card = get.autoViewAs({ name: result.links[0].name }, cards);
 			result = await player
 				.chooseTarget(`神工：选择一个角色装备${get.translation(card)}（${get.translation(cards)}）`, (card, player, target) => {
-					return target.canEquip(get.event("cardx"), true);
+					return target.canEquip(get.event().cardx, true);
 				})
 				.set("ai", target => {
 					const { player, cardx } = get.event();
