@@ -682,7 +682,7 @@ const skill = {
 			"step 1";
 			if (result.bool) {
 				player.logSkill("lianjing", result.targets);
-				player.insertEvent("lianjing", lib.skill.lianjing.content_phase);
+				player.insertPhase("lianjing").setContent(lib.skill.lianjing.content_phase);
 				player.storage.lianjing_targets = result.targets.slice(0);
 				game.delay();
 			}

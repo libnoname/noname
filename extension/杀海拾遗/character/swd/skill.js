@@ -7254,12 +7254,12 @@ const skill = {
 				event.finish();
 				return;
 			}
-			var next = player.insertEvent("duijueLoop", lib.skill.duijue.duijueLoop, {
-				targets: [target, player],
-				num: 0,
-				backup: [],
-				source: player,
-			});
+			var next = player.insertPhase("duijueLoop")
+				.set("targets", [target, player])
+				.set("num", 0)
+				.set("backup", [])
+				.set("source", player)
+				.setContent(lib.skill.duijue.duijueLoop);
 			next.forceDie = true;
 			for (var i = 0; i < game.players.length; i++) {
 				if (game.players[i] !== player && game.players[i] !== target) {

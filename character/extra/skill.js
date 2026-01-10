@@ -12753,7 +12753,7 @@ const skills = {
 					if (player.storage.baonu > 6) {
 						return 0;
 					}
-					if (player.hp + player.num("h", "tao") > 3) {
+					if (player.hp + player.countCards("h", "tao") > 3) {
 						return 1;
 					}
 					return 0;
