@@ -182,7 +182,7 @@ export default async function browserReady({ lib, game }) {
 		});
 	};
 
-	game.removeFile = function removeFile(fileName, callback = () => {}) {
+	game.removeFile = function removeFile(fileName, callback = () => {}, error = () => {}) {
 		fetch(`/removeFile?fileName=${fileName}`)
 			.then(response => response.json())
 			.then(result => {
