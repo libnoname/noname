@@ -20,7 +20,6 @@ import { Check } from "./check.js";
 import { security } from "@/util/sandbox.js"
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
-import { Character } from "@/library/element/character.js"
 
 export class Game {
 	documentZoom;
@@ -6082,7 +6081,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		 */
 		function processCharacter(content) {
 			for (const name in content) {
-				const character = new Character(content[name]);
+				const character = get.convertedCharacter(content[name]);
 
 				// 处理武将图像和阵亡音效
 				const audiosrc = `die:ext:${extname}/${name}.mp3`;
