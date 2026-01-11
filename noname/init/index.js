@@ -670,6 +670,7 @@ async function getExtensionList() {
 		}
 		return true;
 	})();
+	const searchParamsImportExtension = new URLSearchParams(location.search).get("importExtensionName");
 
 	window.resetExtension = () => {
 		for (let ext of config.get("extensions")) {
@@ -704,6 +705,13 @@ async function getExtensionList() {
 		});
 		await Promise.allSettled(promises);
 
+		await game.promises.saveConfig("extensions", extensions);
+	} else if (searchParamsImportExtension) {
+		extensions.push(searchParamsImportExtension);
+		toLoad.push(searchParamsImportExtension);
+		if (!config.has(`extension_${searchParamsImportExtension}_enable`)) {
+			await game.promises.saveConfig(`extension_${searchParamsImportExtension}_enable`, true);
+		}
 		await game.promises.saveConfig("extensions", extensions);
 	}
 
