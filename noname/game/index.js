@@ -1809,9 +1809,6 @@ export class Game {
 			ui.arena.classList.add("playerhidden");
 		}
 		game.prepareArena();
-		if (window.isNonameServer) {
-			game.me = ui.create.player();
-		}
 		let list = [];
 		for (let i = 0; i < game.players.length; i++) {
 			if (game.players[i] != game.me) {
@@ -1829,11 +1826,9 @@ export class Game {
 			current.nickname = current.ws.nickname;
 			current.setNickname();
 		}
-		if (!window.isNonameServer) {
-			game.me.playerid = get.id();
-			game.me.nickname = get.connectNickname();
-			game.me.setNickname();
-		}
+		game.me.playerid = get.id();
+		game.me.nickname = get.connectNickname();
+		game.me.setNickname();
 		for (let i = 0; i < game.players.length; i++) {
 			if (!game.players[i].playerid) {
 				game.players[i].playerid = get.id();
@@ -7201,11 +7196,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		if (game.addRecord) {
 			game.addRecord(resultbool);
 		}
-		if (window.isNonameServer) {
-			lib.configOL.gameStarted = false;
-			game.saveConfig("pagecfg" + window.isNonameServer, [lib.configOL, game.roomId, _status.onlinenickname, _status.onlineavatar]);
-			game.reload();
-		} else if (_status.connectMode && !game.online) {
+		if (_status.connectMode && !game.online) {
 			setTimeout(game.reload, 15000);
 		}
 	}

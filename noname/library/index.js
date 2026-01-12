@@ -11709,7 +11709,7 @@ export class Library {
 						lib.node.clients.remove(this);
 						this.closed = true;
 					}
-				} else if (lib.node.clients.length - (window.isNonameServer ? 1 : 0) >= parseInt(lib.configOL.number)) {
+				} else if (lib.node.clients.length >= parseInt(lib.configOL.number)) {
 					this.send("denied", "number");
 					lib.node.clients.remove(this);
 					this.closed = true;
@@ -11729,7 +11729,7 @@ export class Library {
 							break;
 						}
 					}
-					this.send("init", this.id, lib.configOL, game.ip, window.isNonameServer, game.roomId);
+					this.send("init", this.id, lib.configOL, game.ip, false, game.roomId);
 				}
 			},
 			/**
@@ -12089,23 +12089,16 @@ export class Library {
 				game.ws.close();
 			},
 			reloadroom: function (forced) {
-				if (window.isNonameServer && (forced || !_status.protectingroom)) {
-					game.reload();
-				}
+				// if (window.isNonameServer && (forced || !_status.protectingroom)) {
+				// 	game.reload();
+				// }
 			},
 			createroom: function (index, config, mode) {
 				game.online = false;
 				game.onlineroom = true;
 				game.roomId = index;
 				lib.node = {};
-				if (config && mode && window.isNonameServer) {
-					if (mode == "auto") {
-						mode = lib.configOL.mode;
-					}
-					game.switchMode(mode, config);
-				} else {
-					game.switchMode(lib.configOL.mode);
-				}
+				game.switchMode(lib.configOL.mode);
 				ui.create.connecting(true);
 			},
 			enterroomfailed: function () {
@@ -12218,23 +12211,7 @@ export class Library {
 						game.saveConfig("tmp_user_roomId");
 					}
 
-					if (window.isNonameServer) {
-						var cfg = "pagecfg" + window.isNonameServer;
-						if (lib.config[cfg]) {
-							lib.configOL = lib.config[cfg][0];
-							game.send("server", "server", lib.config[cfg].slice(1));
-							game.saveConfig(cfg);
-							_status.protectingroom = true;
-							setTimeout(function () {
-								_status.protectingroom = false;
-								if (!lib.node || !lib.node.clients || !lib.node.clients.length) {
-									game.reload();
-								}
-							}, 15000);
-						} else {
-							game.send("server", "server");
-						}
-					} else if (typeof game.roomId == "string") {
+					if (typeof game.roomId == "string") {
 						var room = findRoom(game.roomId);
 						if (game.roomIdServer && room && (room.serving || !room.version)) {
 							console.log();

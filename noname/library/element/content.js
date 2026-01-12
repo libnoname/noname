@@ -4584,24 +4584,16 @@ player.removeVirtualEquip(card);
 		}
 
 		ui.create.connectPlayers(game.ip);
-		if (!window.isNonameServer) {
-			var me = game.connectPlayers[0];
-			me.setIdentity("zhu");
-			me.initOL(get.connectNickname(), lib.config.connect_avatar);
-			me.playerid = "1";
-			game.onlinezhu = "1";
-		}
+		var me = game.connectPlayers[0];
+		me.setIdentity("zhu");
+		me.initOL(get.connectNickname(), lib.config.connect_avatar);
+		me.playerid = "1";
+		game.onlinezhu = "1";
 		_status.waitingForPlayer = true;
-		if (window.isNonameServer) {
-			document.querySelector("#server_status").innerHTML = "等待中";
-		}
 		game.pause();
 		"step 1";
 		_status.waitingForPlayer = false;
 		lib.configOL.gameStarted = true;
-		if (window.isNonameServer) {
-			document.querySelector("#server_status").innerHTML = "游戏中";
-		}
 		if (game.onlineroom) {
 			game.send("server", "config", lib.configOL);
 		}

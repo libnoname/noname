@@ -28,7 +28,6 @@ export async function boot() {
 	// 现在不暴露到全局变量里了，直接传给onload
 	const resetGameTimeout = setTimeout(lib.init.reset, configLoadTime);
 
-	setServerIndex();
 	setBackground();
 
 	lib.get = get;
@@ -619,9 +618,7 @@ export async function boot() {
 		});
 	}
 
-	if (window.isNonameServer) {
-		lib.cheat.i();
-	} else if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
+	if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
 		lib.cheat.i();
 	}
 	lib.config.sort_card = get.sortCard(lib.config.sort);
@@ -982,7 +979,6 @@ async function loadConfig() {
 
 	config.set("duration", 500);
 
-	if (window.isNonameServer) config.set("mode", "connect");
 	if (!config.get("gameRecord")) config.set("gameRecord", {});
 
 	return result;
@@ -1031,20 +1027,6 @@ function setBackground() {
 			// 由于html没设高度或最小高度导致了图片重复问题
 			// 这是在layout.css加载完成之前才会有的问题
 			document.documentElement.style.height = "100%";
-		}
-	}
-}
-
-function setServerIndex() {
-	const index = window.location.href.indexOf("index.html?server=");
-	if (index !== -1) {
-		window.isNonameServer = window.location.href.slice(index + 18);
-		window.nodb = true;
-	} else {
-		const savedIndex = localStorage.getItem(lib.configprefix + "asserver");
-		if (savedIndex) {
-			window.isNonameServer = savedIndex;
-			window.isNonameServerIp = lib.hallURL;
 		}
 	}
 }

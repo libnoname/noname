@@ -80,11 +80,6 @@ export class Client {
 			}, player);
 			player.unwait("ai");
 		}
-
-		if (window.isNonameServer) {
-			// @ts-expect-error ignore
-			document.querySelector("#server_count").innerHTML = lib.node.clients.length;
-		}
 		return this;
 	}
 }

@@ -2261,31 +2261,31 @@ export class Create {
 			}, 1000);
 		}
 		// lib.setPressure(ui.window,ui.click.pressurepause);
-		if (window.isNonameServer) {
-			ui.window.classList.add("server");
-			var serverinfo = ui.create.div(".serverinfo", ui.window);
-			ui.create.div("", "服务器正在运行", serverinfo);
-			var serverinfotable = ui.create.table(2, 2, ui.create.div(serverinfo));
-			serverinfotable.style.display = "inline-block";
-			serverinfotable.firstChild.firstChild.innerHTML = "房间人数：";
-			serverinfotable.firstChild.lastChild.id = "server_count";
-			serverinfotable.firstChild.lastChild.innerHTML = "0";
-			serverinfotable.lastChild.firstChild.innerHTML = "房间状态：";
-			serverinfotable.lastChild.lastChild.id = "server_status";
-			serverinfotable.lastChild.lastChild.innerHTML = "空闲";
-			ui.create.div(
-				".menubutton.large",
-				"关闭服务器",
-				function () {
-					if (_status.gameStarted && !confirm("关闭服务器当前进行的游戏将终止且不可恢复，是否确定关闭？")) {
-						return;
-					}
-					localStorage.removeItem(lib.configprefix + "asserver");
-					game.reload();
-				},
-				ui.create.div("", serverinfo)
-			);
-		}
+		// if (window.isNonameServer) {
+		// 	ui.window.classList.add("server");
+		// 	var serverinfo = ui.create.div(".serverinfo", ui.window);
+		// 	ui.create.div("", "服务器正在运行", serverinfo);
+		// 	var serverinfotable = ui.create.table(2, 2, ui.create.div(serverinfo));
+		// 	serverinfotable.style.display = "inline-block";
+		// 	serverinfotable.firstChild.firstChild.innerHTML = "房间人数：";
+		// 	serverinfotable.firstChild.lastChild.id = "server_count";
+		// 	serverinfotable.firstChild.lastChild.innerHTML = "0";
+		// 	serverinfotable.lastChild.firstChild.innerHTML = "房间状态：";
+		// 	serverinfotable.lastChild.lastChild.id = "server_status";
+		// 	serverinfotable.lastChild.lastChild.innerHTML = "空闲";
+		// 	ui.create.div(
+		// 		".menubutton.large",
+		// 		"关闭服务器",
+		// 		function () {
+		// 			if (_status.gameStarted && !confirm("关闭服务器当前进行的游戏将终止且不可恢复，是否确定关闭？")) {
+		// 				return;
+		// 			}
+		// 			localStorage.removeItem(lib.configprefix + "asserver");
+		// 			game.reload();
+		// 		},
+		// 		ui.create.div("", serverinfo)
+		// 	);
+		// }
 
 		ui.window.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.window);
 		ui.system = ui.create.div("#system.", ui.window);

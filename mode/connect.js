@@ -202,11 +202,7 @@ export default () => {
 				}
 				lib.init.onfree();
 			};
-			if (window.isNonameServer) {
-				game.connect(window.isNonameServerIp || "localhost");
-			} else {
-				createNode();
-			}
+			createNode();
 			if (!game.onlineKey) {
 				game.onlineKey = localStorage.getItem(lib.configprefix + "key");
 				if (!game.onlineKey) {

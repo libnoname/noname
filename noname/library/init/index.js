@@ -129,9 +129,6 @@ export class LibInit {
 	connection(ws) {
 		const client = new lib.element.Client(ws);
 		lib.node.clients.push(client);
-		if (window.isNonameServer) {
-			document.querySelector("#server_count").innerHTML = lib.node.clients.length;
-		}
 		ws.on("message", function (messagestr) {
 			var message;
 			try {
