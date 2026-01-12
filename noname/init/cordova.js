@@ -39,7 +39,7 @@ export default async function cordovaReady({ lib, game, get, _status, ui }) {
 			false
 		);
 		document.addEventListener("pause", function () {
-			if (!_status.paused2 && typeof _status.event.isMine == "function" && !_status.event.isMine()) {
+			if (_status.gameStarted && !_status.event.isMine()) {
 				ui.click.pause();
 			}
 			if (ui.backgroundMusic) {
@@ -58,7 +58,7 @@ export default async function cordovaReady({ lib, game, get, _status, ui }) {
 				} else {
 					ui.click.configMenu();
 				}
-			} else if (lib.config.confirm_exit) {
+			} else if (lib.config?.confirm_exit) {
 				navigator.notification.confirm(
 					"是否退出游戏？",
 					function (index) {
