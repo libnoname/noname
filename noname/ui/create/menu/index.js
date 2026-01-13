@@ -315,7 +315,7 @@ export function createConfig(config, position) {
 		input.style.overflow = "hidden";
 		input.style.whiteSpace = "nowrap";
 		input.onkeydown = function (e) {
-			if (e.code == "Enter") {
+			if (e.key == "Enter") {
 				e.preventDefault();
 				e.stopPropagation();
 				input.blur();

@@ -118,7 +118,7 @@ export default () => {
 						sel.removeAllRanges();
 					};
 					rename.onkeydown = function (e) {
-						if (e.code == "Enter") {
+						if (e.key == "Enter") {
 							e.preventDefault();
 							e.stopPropagation();
 							rename.blur();

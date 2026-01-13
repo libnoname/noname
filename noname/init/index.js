@@ -981,7 +981,7 @@ function setBackground() {
 function setWindowListener() {
 	window.onkeydown = function (e) {
 		if (typeof ui.menuContainer == "undefined" || !ui.menuContainer.classList.contains("hidden")) {
-			if (e.code == "F5" || ((e.ctrlKey || e.metaKey) && e.code == "KeyR")) {
+			if (e.key === "F5" || ((e.ctrlKey || e.metaKey)  && e.key.toLowerCase() === "r")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1002,14 +1002,14 @@ function setWindowListener() {
 				} else {
 					game.reload();
 				}
-			} else if (e.code == "KeyS" && (e.ctrlKey || e.metaKey)) {
+			} else if (e.key.toLowerCase() === "s" && (e.ctrlKey || e.metaKey)) {
 				if (typeof window.saveNonameInput == "function") {
 					window.saveNonameInput();
 				}
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.code == "KeyJ" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (e.key.toLowerCase() === "j" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
 				lib.node.debug();
 			}
 		} else {
@@ -1019,24 +1019,24 @@ function setWindowListener() {
 				// @ts-expect-error ignore
 				dialogs[i].delete();
 			}
-			if (e.code == "Space") {
+			if (e.key == "Space") {
 				var node = ui.window.querySelector("pausedbg");
 				if (node) {
 					node.click();
 				} else {
 					ui.click.pause();
 				}
-			} else if (e.code == "KeyA") {
+			} else if (e.key.toLowerCase() === "a") {
 				if (typeof ui.auto != "undefined") {
 					ui.auto.click();
 				}
-			} else if (e.code == "KeyW") {
+			} else if (e.key.toLowerCase() === "w") {
 				if (typeof ui.wuxie != "undefined" && ui.wuxie.style.display != "none") {
 					ui.wuxie.classList.toggle("glow");
 				} else if (typeof ui.tempnowuxie != "undefined") {
 					ui.tempnowuxie.classList.toggle("glow");
 				}
-			} else if (e.code == "F5" || ((e.ctrlKey || e.metaKey) && e.code == "KeyR")) {
+			} else if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1057,14 +1057,14 @@ function setWindowListener() {
 				} else {
 					game.reload();
 				}
-			} else if (e.code == "KeyS" && (e.ctrlKey || e.metaKey)) {
+			} else if (e.key.toLowerCase() === "s" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.code == "KeyJ" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (e.key.toLowerCase() === "j" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
 				lib.node.debug();
 			}
-			// else if(e.code=="Escape"){
+			// else if(e.key=="Escape"){
 			// 	if(!ui.arena.classList.contains('paused')) ui.click.config();
 			// }
 		}

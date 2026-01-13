@@ -82,7 +82,7 @@ export default () => {
 					});
 				};
 				node.addEventListener("keydown", function (e) {
-					if (e.code == "Enter") {
+					if (e.key == "Enter") {
 						connect(e);
 					}
 				});

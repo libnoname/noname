@@ -5126,9 +5126,9 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			confirmNode.classList.remove("disabled");
 		} else {
 			input.onkeydown = function (e) {
-				if (e.code == "Enter") {
+				if (e.key == "Enter") {
 					clickConfirm();
-				} else if (e.code == "Escape") {
+				} else if (e.key == "Escape") {
 					clickCancel();
 				}
 				e.stopPropagation();

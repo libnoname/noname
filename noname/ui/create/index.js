@@ -1786,7 +1786,7 @@ export class Create {
 		find.addEventListener("click", updateFind);
 		input.onkeydown = function (e) {
 			e.stopPropagation();
-			if (e.code == "Enter") {
+			if (e.key == "Enter") {
 				updateFind();
 			}
 		};
