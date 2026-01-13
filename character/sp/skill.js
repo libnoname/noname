@@ -9716,7 +9716,7 @@ const skills = {
 							return 7 - get.value(card);
 						},
 						ai2(target) {
-							const att = get.sgn(get.sgn(get.attitude(get.event("player"), target)) + 0.5);
+							const att = get.sgn(get.sgn(get.attitude(get.event().player, target)) + 0.5);
 							return (target.countCards("h") + 1) * att;
 						},
 					})
@@ -22580,7 +22580,7 @@ const skills = {
 						return !targets.includes(target) && filter(target);
 					},
 					ai1(button) {
-						if (button.link == get.event("choice")) {
+						if (button.link == get.event().choice) {
 							return 1;
 						}
 						return 0;
@@ -23741,7 +23741,7 @@ const skills = {
 						const { bool, cards, targets } = await player
 							.chooseCardTarget({
 								filterCard(card, player) {
-									return get.event("cards").includes(card) && !card.hasGaintag("olsujian_given");
+									return get.event().cards.includes(card) && !card.hasGaintag("olsujian_given");
 								},
 								cards: toGive,
 								filterTarget: lib.filter.notMe,
