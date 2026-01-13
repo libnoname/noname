@@ -386,12 +386,22 @@ const skills = {
 								})
 								.forResult();
 							if (result2?.bool && result2.targets?.length) {
-								player.line(result2.targets);
-								await player.chooseToCompare(result2.targets[0]);
+								const { targets: [target] } = result2;
+								player.line(target);
+								const result3 = await player.chooseToCompare(target).forResult();
+								if (result3?.bool) {
+									await target.damage();
+								}
+								else {
+									await player.draw();
+									await player.link(true);
+									await target.link(true);
+								}
 							}
 						}
 					});
 			} else {
+				await player.draw();
 				await player.link(true);
 				await target.link(true);
 			}
@@ -8503,7 +8513,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						skill = "dcdujun_effect";
-					player.storage.dcdujun = target;
+					player.setStorage("dcdujun", target);
 					player.addSkill(skill);
 					player.markAuto(skill, target);
 				},

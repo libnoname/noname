@@ -1581,6 +1581,14 @@ const translates = {
 	olshutong_info: "锁定技，你使用一张牌指定目标后，本回合你与目标角色使用的下一张牌不能为此花色。若目标角色均与你体力值相同，你摸一张牌。",
 	olzhijie: "直节",
 	olzhijie_info: "锁定技，每回合结束时，若你此回合使用或打出过牌，且你成为过牌的目标，你对攻击范围内的一名角色造成1点伤害。",
+	ol_caojinyu: "OL曹金玉",
+	ol_caojinyu_prefix: "OL",
+	olchunhui: "春晖",
+	olchunhui_info: "锁定技，每轮首张牌被使用后，若此牌为: 红色，你回复1点体力；黑色，你摸一张牌。",
+	olxiasheng: "夏晟",
+	olxiasheng_info: "准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用红色牌时，可为此牌增加或减少一个目标（至多减至1）。",
+	olqiumu: "秋暮",
+	olqiumu_info: `锁定技，你脱离濒死状态后，你重铸所有红色牌，并将${get.poptip("olchunhui")}${get.poptip("olxiasheng")}〖秋暮〗描述中的“红色”均改为“黑色”。`,
 };
 
 export default translates;

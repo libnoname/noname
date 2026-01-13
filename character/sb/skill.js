@@ -963,7 +963,9 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (!cards?.length) {
 				return;
 			}
@@ -9258,7 +9260,8 @@ const skills = {
 						}
 					}
 				});
-			const { cards } = await discard;
+			await discard;
+			const { cards } = discard;
 			event.num += cards.length;
 			if (event.num > 0) {
 				await player.draw(event.num);

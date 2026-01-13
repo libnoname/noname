@@ -6038,70 +6038,99 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		let extname = _status.extension || "扩展";
 		let gzFlag = false;
 		packagename = packagename || extname;
-		//TODO: 把这里一大坨改成新写法
-		for (let i in pack) {
-			if (i == "mode") {
-				if (pack[i] == "guozhan") {
-					gzFlag = true;
-				}
-				continue;
-			}
-			if (i == "forbid") {
-				continue;
-			}
-			for (let j in pack[i]) {
-				if (i == "character") {
-					if (!pack[i][j][4]) {
-						pack[i][j][4] = [];
+
+		for (const name in pack) {
+			const content = pack[name];
+
+			switch (name) {
+				case "mode":
+					if (content == "guozhan") {
+						gzFlag = true;
 					}
-					let imgsrc;
-					if (_status.evaluatingExtension) {
-						imgsrc = "db:extension-" + extname + ":" + j + ".jpg";
-					} else {
-						imgsrc = "ext:" + extname + "/" + j + ".jpg";
+				// [falls through]
+				case "forbid":
+					break;
+				case "character":
+					processCharacter(content);
+					break;
+				case "skill":
+					processSkill(content);
+					break;
+				default:
+					for (const key in content) {
+						lib[name][key] ??= content[key];
 					}
-					const audiosrc = "die:ext:" + extname + "/" + j + ".mp3";
-					if (!pack[i][j][4].some(str => typeof str == "string" && /^(?:db:extension-.+?|ext|img):(?:.+)/.test(str))) {
-						pack[i][j][4].add(imgsrc);
-					}
-					if (!pack[i][j][4].some(str => typeof str == "string" && /^die:(?:.+)/.test(str))) {
-						pack[i][j][4].add(audiosrc);
-					}
-					if (pack[i][j][4].includes("boss") || pack[i][j][4].includes("hiddenboss")) {
-						lib.config.forbidai.add(j);
-					}
-					if (lib.config.forbidai_user && lib.config.forbidai_user.includes(j)) {
-						lib.config.forbidai.add(j);
-					}
-					for (var l = 0; l < pack[i][j][3].length; l++) {
-						lib.skilllist.add(pack[i][j][3][l]);
-					}
-				} else if (i == "skill") {
-					if (typeof pack[i][j].audio == "number" || typeof pack[i][j].audio == "boolean") {
-						pack[i][j].audio = "ext:" + extname + ":" + pack[i][j].audio;
-					}
-				}
-				if (lib[i][j] == undefined) {
-					// 判断扩展武将包是否开启
-					if (i == "character") {
-						// if (!game.hasExtension(extname) || !game.hasExtensionLoaded(extname)) continue;
-						if (lib.config[`extension_${extname}_characters_enable`] === undefined) {
-							game.saveExtensionConfig(extname, "characters_enable", true);
-						}
-						if (lib.config[`extension_${extname}_characters_enable`] === true) {
-							lib[i][j] = pack[i][j];
-						}
-					} else {
-						lib[i][j] = pack[i][j];
-					}
-				}
 			}
 		}
+
 		let packname = packagename;
 		lib.characterPack[packname] = pack.character;
 		lib.translate[packname + "_character_config"] = packagename;
 		if (gzFlag) {
 			lib.characterGuozhanFilter.add(packname);
+		}
+		return;
+
+		/**
+		 * @param {Record<string, Character>} content 
+		 */
+		function processCharacter(content) {
+			for (const name in content) {
+				const character = get.convertedCharacter(content[name]);
+
+				// 处理武将图像和阵亡音效
+				const audiosrc = `die:ext:${extname}/${name}.mp3`;
+				let imgsrc;
+				if (_status.evaluatingExtension) {
+					imgsrc = `db:extension-${extname}:${name}.jpg`;
+				} else {
+					imgsrc = `ext:${extname}/${name}.jpg`;
+				}
+
+				character.img ??= imgsrc;
+				if (character.dieAudios.length === 0) {
+					character.dieAudios.push(audiosrc);
+				}
+
+				// 处理AI禁用
+				if (character.isBoss || character.isHiddenBoss) {
+					lib.config.forbidai.add(name);
+				}
+				if (lib.config.forbidai_user && lib.config.forbidai_user.includes(name)) {
+					lib.config.forbidai.add(name)
+				}
+
+				// 将武将技能加入技能列表
+				for (const skill of character.skills) {
+					lib.skilllist.add(skill);
+				}
+
+				if (lib.character[name] != null) {
+					continue;
+				}
+
+				if (lib.config[`extension_${extname}_characters_enable`] === undefined) {
+					game.saveExtensionConfig(extname, "characters_enable", true);
+				}
+				if (lib.config[`extension_${extname}_characters_enable`] === true) {
+					lib.character[name] = character;
+				}
+			}
+		}
+
+		/**
+		 * @param {Record<string, Skill>} content 
+		 */
+		function processSkill(content) {
+			for (const name in content) {
+				const skill = content[name];
+
+				if (typeof skill.audio == "number" || typeof skill.audio == "boolean") {
+					skill.audio = `ext:${extname}:${skill.audio}`;
+				}
+
+				lib.skill[name] ??= skill
+			}
 		}
 	}
 	/**

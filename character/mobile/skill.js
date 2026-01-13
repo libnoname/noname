@@ -3278,7 +3278,7 @@ const skills = {
 			if (!target.countCards("h")) {
 				return;
 			}
-			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【束刑】`);
+			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【束刑】`).forResult();
 			if (cards.every(card => get.name(card) !== "shan")) {
 				return;
 			}
@@ -9916,7 +9916,7 @@ const skills = {
 			}
 			let cards2 = target.getCards("h", card => result.links.includes(get.suit(card, target)));
 			if (cards2.length) {
-				cards2 = await target.modedDiscard(cards2, player).forResultCards();
+				cards2 = (await target.modedDiscard(cards2, player).forResult()).cards;
 			}
 			if (cards1.length > cards2.length) {
 				await target.damage(player);

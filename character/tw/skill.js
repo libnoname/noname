@@ -6772,7 +6772,9 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				if (trigger.player.judging[0].clone) {
 					trigger.player.judging[0].clone.classList.remove("thrownhighlight");
@@ -14858,6 +14860,7 @@ const skills = {
 		filterCard: true,
 		position: "he",
 		async content(event, trigger, player) {
+			const { target } = event;
 			await target.viewHandcards(player);
 			var chooseButton;
 			if (player.countCards("h")) {
@@ -14911,7 +14914,7 @@ const skills = {
 			const result = await chooseButton.forResult();
 			if (result.bool) {
 				if (result.links.length == 1) {
-					const cards = await target.modedDiscard(result.links, player).forResultCards();
+					const cards = (await target.modedDiscard(result.links, player).forResult()).cards;
 					if (get.color(cards[0], target) === "black") {
 						await player.draw();
 					}
@@ -23399,7 +23402,9 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				player.$gain2(trigger.player.judging[0]);
 				await player.gain(trigger.player.judging[0]);

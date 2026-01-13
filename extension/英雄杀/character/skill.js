@@ -1063,7 +1063,9 @@ const skill = {
 			return event.num;
 		},
 		async content(event, trigger, player) {
-			const { cards } = await game.cardsGotoOrdering(get.cards(2));
+			const next = game.cardsGotoOrdering(get.cards(2));
+			await next;
+			const { cards } = next;
 			if (_status.connectMode) {
 				game.broadcastAll(function () {
 					_status.noclearcountdown = true;

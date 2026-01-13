@@ -12,6 +12,7 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				bingzhu: ["华佗"],
+				loseDelay: false,
 				skills: ["mb_qingnangshu_skill"],
 				maxNum: 3,
 				async onEquip(event, trigger, player) {

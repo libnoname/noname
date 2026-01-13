@@ -3301,7 +3301,9 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				player.$gain2(trigger.player.judging[0]);
 				await player.gain(trigger.player.judging[0]);
@@ -3892,7 +3894,9 @@ const skills = {
 					.set("judging", trigger.player.judging[0])
 					.forResult();
 				if (result?.cards?.length) {
-					const { cards } = await target.respond(result.cards, "highlight", "noOrdering").set("nopopup", true);
+					const next = target.respond(result.cards, event.name, "highlight", "noOrdering").set("nopopup", true);
+					await next;
+					const { cards } = next;
 					if (cards?.length) {
 						if (trigger.player.judging[0].clone) {
 							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
@@ -6005,7 +6009,9 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				player.$gain2(trigger.player.judging[0]);
 				await player.gain(trigger.player.judging[0]);

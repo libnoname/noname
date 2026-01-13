@@ -1,4 +1,10 @@
 const characters = {
+	ol_caojinyu: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["olchunhui", "olxiasheng", "olqiumu"],
+	},
 	ol_cuiyan: {
 		sex: "male",
 		group: "wei",
@@ -14,7 +20,7 @@ const characters = {
 	huanshujun: {
 		sex: "female",
 		group: "wei",
-		hp :3,
+		hp: 3,
 		skills: ["olhuanpei", "olwenyi", "olmiaoxin"],
 	},
 	sunyuan: {

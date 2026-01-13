@@ -442,4 +442,5 @@ window.noname_character_replace = {
 	wenyuan: ["wenyuan", "std_wenyuan"],
 	chentai: ["clan_chentai", "chentai"],
 	shen_jiangwei: ["shen_jiangwei", "mb_shen_jiangwei"],
+	caojinyu: ["ol_caojinyu", "caojinyu"],
 };

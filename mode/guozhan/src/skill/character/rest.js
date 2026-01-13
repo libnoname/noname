@@ -7490,7 +7490,9 @@ export default {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				if (trigger.player.judging[0].clone) {
 					trigger.player.judging[0].clone.classList.remove("thrownhighlight");
@@ -11382,7 +11384,7 @@ export default {
 		async content(event, trigger, player) {
 			const hs = player.getCards("h"),
 				target = trigger.player;
-			const { cards } = await player.modedDiscard(hs);
+			const { cards } = await player.modedDiscard(hs).forResult();
 			if (!target?.isIn()) {
 				return;
 			}

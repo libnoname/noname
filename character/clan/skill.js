@@ -719,24 +719,19 @@ const skills = {
 	clandingan: {
 		audio: 2,
 		trigger: {
-			player: "useCardAfter",
+			global: "useCardAfter",
 		},
-		locked: true,
 		filter(event, player) {
-			if (player.getStorage("clandingan_used").includes(event.card.name)) {
-				return false;
-			}
-			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) > 0;
+			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) == 1;
 		},
-		async cost(event, trigger, player) {
-			const targets = game.filterPlayer(current => {
-				if (trigger.targets?.includes(current)) {
-					return false;
-				}
-				return current != player;
+		forced: true,
+		async content(event, trigger, player) {
+			const skill = `${event.name}_used`;
+			const pre_targets = game.filterPlayer(target => {
+				return !trigger.targets.includes(target) && !player.getStorage(skill).includes(target);
 			});
 			const result =
-				targets.length > 1
+				pre_targets.length > 1
 					? await player
 							.chooseTarget(
 								`定安：与任意名不为此牌目标的其他角色各摸一张牌`,
@@ -744,10 +739,10 @@ const skills = {
 									return get.event().targetx.includes(target);
 								},
 								true,
-								[1, targets.length]
+								[1, pre_targets.length]
 							)
-							.set("targetx", targets)
-							.set("prompt2", "然后你令之中手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
+							.set("targetx", pre_targets)
+							.set("prompt2", "然后你令手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
 							.set("ai", target => {
 								const { player, targetx } = get.event(),
 									getD = current => get.effect(current, { name: "draw" }, player, player);
@@ -763,28 +758,16 @@ const skills = {
 							.forResult()
 					: {
 							bool: true,
-							targets: targets,
+							targets: pre_targets,
 						};
-			if (!result?.bool) {
+			if (!result?.bool || !result.targets) {
 				return;
 			}
-			let targets2 = [player];
-			if (result.targets?.length) {
-				targets2.addArray(result.targets);
-			}
-			event.result = {
-				bool: true,
-				targets: targets2,
-			};
-		},
-		async content(event, trigger, player) {
-			const { targets } = event,
-				skill = "clandingan_used";
-			player.addTempSkill(skill, "roundStart");
-			player.markAuto(skill, trigger.card.name);
-			targets.sortBySeat();
+			player.addTempSkill(skill);
+			player.markAuto(skill, result.targets);
+			const targets = [player, ...result.targets.sortBySeat()];
 			await game.asyncDraw(targets);
-			const currents = targets.filter(target => target != player && target.isMaxHandcard(false, current => current != player && targets.includes(current)));
+			const currents = game.filterPlayer(target => target != player && target.isMaxHandcard(false, current => current != player));
 			if (!currents?.length) {
 				return;
 			}
@@ -821,9 +804,6 @@ const skills = {
 							names = cards.map(card => get.name(card)),
 							maxName = names.toUniqued().maxBy(name => get.numOf(names, name));
 						const num = get.numOf(names, maxName);
-						if (num <= 1) {
-							return;
-						}
 						const name = names
 							.toUniqued()
 							.filter(name => get.numOf(names, name) == num)
@@ -852,7 +832,7 @@ const skills = {
 			player: "changeHpAfter",
 		},
 		filter(event, player) {
-			const evts = game.getGlobalHistory("changeHp", evt => evt.player == player && evt.num != 0);
+			const evts = game.getRoundHistory("changeHp", evt => evt.player == player && evt.num != 0);
 			if (evts.indexOf(event) !== 0) {
 				return false;
 			}
@@ -3672,7 +3652,8 @@ const skills = {
 					})
 					.set("ai", button => {
 						return get.event().player.getUseValue(button.link);
-					}).forResult();
+					})
+					.forResult();
 				if (bool) {
 					const card = links[0];
 					player.$gain2(card, false);

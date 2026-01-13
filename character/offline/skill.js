@@ -4577,7 +4577,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【谋逆】`);
+			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【谋逆】`).forResult();
 			const shas = cards.filter(card => get.name(card) == "sha"),
 				list = [];
 			while (shas.length) {
@@ -5224,7 +5224,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
-			const { cards } = await target.showHandcards();
+			const { cards } = await target.showHandcards().forResult();
 			const gains = cards.filter(card => get.name(card, target) == "shan" || get.subtype(card) == "equip2");
 			if (gains?.length) {
 				await player.gain(gains, "give", target, "bySelf");
@@ -5358,7 +5358,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.target;
-			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【乘袭】`);
+			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【乘袭】`).forResult();
 			if (!target.countCards("he")) {
 				return;
 			}
@@ -5416,7 +5416,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.awakenSkill(event.name);
-			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【昭恶】`);
+			const { cards } = await target.showHandcards(`${get.translation(player)}发动了【昭恶】`).forResult();
 			const num = cards.filter(card => get.tag(card, "damage")).length;
 			if (num <= 0) {
 				return;
@@ -8838,7 +8838,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const cards = await player.modedDiscard(event.cards).forResultCards();
+			const cards = (await player.modedDiscard(event.cards).forResult()).cards;
 			await player.draw(cards.length * 2);
 			game.log(trigger.card, "的伤害改为", "#y" + cards.length);
 			player.addTempSkill(event.name + "_damage");
@@ -9973,7 +9973,9 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
 			if (cards?.length) {
 				player.$gain2(trigger.player.judging[0]);
 				await player.gain(trigger.player.judging[0]);
@@ -16142,7 +16144,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = get.discarded().filterInD("d");
 			const result = await player
-				.chooseButton([`火策：获得其中每种颜色的牌的各一张`, cards], cards.map(card => get.color(card)).toUniqued().length)
+				.chooseButton([`飒爽：获得其中每种颜色的牌的各一张`, cards], cards.map(card => get.color(card)).toUniqued().length)
 				.set("filterButton", button => {
 					const { link } = button;
 					return !ui.selected.buttons.reduce((list, card) => list.add(get.color(card.link)), []).includes(get.color(link));
@@ -17248,7 +17250,7 @@ const skills = {
 		prompt2: "亮出牌堆顶的一张牌代替判定牌",
 		async content(event, trigger, player) {
 			const card = get.cards(1)[0];
-			player.respond([card], "hm_gaiming", "highlight", "noOrdering");
+			await player.respond([card], "hm_gaiming", "highlight", "noOrdering");
 			if (player.judging[0].clone) {
 				player.judging[0].clone.classList.remove("thrownhighlight");
 				game.broadcast(function (card) {
