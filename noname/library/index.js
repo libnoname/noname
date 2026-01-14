@@ -12107,7 +12107,21 @@ export class Library {
 			onconnection: id => lib.init.connection((lib.wsOL[id] = new lib.element.NodeWS(id))),
 			onmessage: function (id, message) {
 				if (lib.wsOL[id]) {
-					lib.wsOL[id].onmessage(message);
+					// NodeWS.onmessage expects a string (to be parsed), but message
+					// is already parsed by the WebSocket handler. Convert it back to string.
+					var messageStr;
+					if (typeof message === 'string') {
+						messageStr = message;
+					} else {
+						// Use get.stringifiedResult to handle circular references safely
+						try {
+							messageStr = JSON.stringify(get.stringifiedResult(message));
+						} catch (e) {
+							return;
+							return;
+						}
+					}
+					lib.wsOL[id].onmessage(messageStr);
 				}
 			},
 			onclose: function (id) {

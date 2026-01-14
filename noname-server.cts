@@ -316,6 +316,27 @@ export default function createApp(config = defaultConfig) {
 	// 	app.listen(config.port, callback);
 	// }
 	app.listen(config.port, callback);
+
+	// Start WebSocket server for multiplayer
+	if (!config.debug) {
+		try {
+			const wsPort = 8080;
+			// Import and run the WebSocket server script
+			// When running from dist/, go up one level to find scripts/
+			const serverPath = path.join(config.dirname, "..", "scripts", "server.js");
+			if (fs.existsSync(serverPath)) {
+				console.log(`正在启动 WebSocket 服务器在端口 ${wsPort}...`);
+				import(serverPath);
+				console.log(`WebSocket 服务器已启动在端口 ${wsPort}，用于多人联机功能!`);
+			} else {
+				console.log(`警告: 未找到 WebSocket 服务器文件 (${serverPath})，多人联机功能将不可用`);
+			}
+		} catch (error) {
+			console.error("启动 WebSocket 服务器时出错:", error);
+			console.log("多人联机功能将不可用");
+		}
+	}
+
 	return app;
 }
 
