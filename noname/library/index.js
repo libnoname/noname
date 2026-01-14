@@ -12118,7 +12118,6 @@ export class Library {
 							messageStr = JSON.stringify(get.stringifiedResult(message));
 						} catch (e) {
 							return;
-							return;
 						}
 					}
 					lib.wsOL[id].onmessage(messageStr);
