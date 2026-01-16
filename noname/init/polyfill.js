@@ -222,10 +222,30 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 		}
 		this.style.backgroundPositionX = "center";
 		this.style.backgroundSize = "cover";
+		//@ts-ignore
+		//不应在外部使用
+		this._backgroundImage = src;
 		if (type === "character") {
 			const nameinfo = get.character(name);
 			const sex = nameinfo && ["male", "female", "double"].includes(nameinfo[0]) ? nameinfo[0] : "male";
-			this.setBackgroundImage([src, `${lib.characterDefaultPicturePath}${sex}${ext}`]);
+			this.setBackgroundImage(`${lib.characterDefaultPicturePath}${sex}${ext}`);
+			const observer = new IntersectionObserver(([entry]) => {
+				if (!entry.isIntersecting) return;
+				
+				//@ts-ignore
+				const backgroundImage = this._backgroundImage;
+				const img = new Image();
+				img.src = backgroundImage;
+				img.onload = () => {
+					//@ts-ignore
+					if (backgroundImage !== this._backgroundImage) return;
+					this.setBackgroundImage(backgroundImage);
+				}
+
+				observer.disconnect();
+			});
+
+			observer.observe(this);
 		} else {
 			this.setBackgroundImage(src);
 		}
@@ -247,16 +267,7 @@ HTMLDivElement.prototype.setBackgroundDB = async function (img) {
  * @type { typeof HTMLDivElement['prototype']['setBackgroundImage'] }
  */
 HTMLDivElement.prototype.setBackgroundImage = function (img) {
-	if (Array.isArray(img)) {
-		this.style.backgroundImage = img
-			.unique()
-			.map(v => `url("${lib.assetURL}${v}")`)
-			.join(",");
-	} else if (URL.canParse(img)) {
-		this.style.backgroundImage = `url("${img}")`;
-	} else {
-		this.style.backgroundImage = `url("${lib.assetURL}${img}")`;
-	}
+	this.style.backgroundImage = URL.canParse(img) ? `url("${img}")` : `url("${lib.assetURL}${img}")`;
 	return this;
 };
 /**
