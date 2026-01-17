@@ -575,6 +575,7 @@ export class GameEvent {
 			selectButton: this.selectButton,
 			filterTarget: this.filterTarget,
 			selectTarget: this.selectTarget,
+			chessForceAll: this.chessForceAll,
 			filterCard: this.filterCard,
 			selectCard: this.selectCard,
 			position: this.position,
@@ -609,6 +610,9 @@ export class GameEvent {
 				}
 				if (info.selectTarget != undefined) {
 					this.selectTarget = info.selectTarget;
+				}
+				if (info.chessForceAll != undefined) {
+					this.chessForceAll = info.chessForceAll;
 				}
 				if (info.filterCard != undefined) {
 					if (info.ignoreMod) {
@@ -676,6 +680,7 @@ export class GameEvent {
 				this.selectButton = info.selectButton;
 				this.filterTarget = info.filterTarget ? get.filter(info.filterTarget) : undefined;
 				this.selectTarget = info.selectTarget;
+				this.chessForceAll = info.chessForceAll;
 				this.filterCard = info.filterCard ? get.filter(info.filterCard) : undefined;
 				this.selectCard = info.selectCard;
 				this.position = info.position;
@@ -706,6 +711,7 @@ export class GameEvent {
 			this.selectButton = this._backup.selectButton;
 			this.filterTarget = this._backup.filterTarget;
 			this.selectTarget = this._backup.selectTarget;
+			this.chessForceAll = this._backup.chessForceAll;
 			this.filterCard = this._backup.filterCard;
 			this.selectCard = this._backup.selectCard;
 			this.position = this._backup.position;
