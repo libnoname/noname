@@ -231,7 +231,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 			this.setBackgroundImage(`${lib.characterDefaultPicturePath}${sex}${ext}`);
 			const observer = new IntersectionObserver(([entry]) => {
 				if (!entry.isIntersecting) return;
-				
+
 				//@ts-ignore
 				const backgroundImage = this._backgroundImage;
 				const img = new Image();
@@ -240,12 +240,12 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					//@ts-ignore
 					if (backgroundImage !== this._backgroundImage) return;
 					this.setBackgroundImage(backgroundImage);
-				}
+				};
 
 				observer.disconnect();
 			});
 
-			observer.observe(this);
+			setTimeout(() => observer.observe(this), 0);
 		} else {
 			this.setBackgroundImage(src);
 		}
