@@ -351,8 +351,8 @@ const skills = {
 					}
 					lib.skill[i] = mode.skill[i];
 				}
-				game.finishCard(Object.keys(mode.card));
-				Object.keys(mode.skill).forEach(value => game.finishSkill(value));
+				Object.keys(mode.card).forEach(i => game.finishCard(i));
+				Object.keys(mode.skill).forEach(i => game.finishSkill(i));
 
 				const list = [];
 				for (let pack in lib.cardPack) {

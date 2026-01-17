@@ -8640,10 +8640,10 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			players[0].draw(num2);
 		}
 	}
-	finishSkill(i, sub) {
+	finishSkill(skillId, sub) {
 		const mode = get.mode(),
-			info = lib.skill[i],
-			iInfo = `${i}_info`;
+			info = lib.skill[skillId],
+			iInfo = `${skillId}_info`;
 		if (_status.mode && lib.translate[iInfo + "_" + mode + "_" + _status.mode]) {
 			lib.translate[iInfo] = lib.translate[iInfo + "_" + mode + "_" + _status.mode];
 		} else if (lib.translate[`${iInfo}_${mode}`]) {
@@ -8653,7 +8653,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
-		info.skill_id ??= i;
+		info.skill_id ??= skillId;
 		let deleteSkill = function (skill, iInfo) {
 			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
 			lib.skill[skill] = { audio, audioname, audioname2, skillID };
@@ -8673,11 +8673,11 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 					}
 				});
 			}
-			lib.translate[i] ??= lib.translate[info.inherit];
+			lib.translate[skillId] ??= lib.translate[info.inherit];
 			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
 		}
 		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
-			deleteSkill(i, iInfo);
+			deleteSkill(skillId, iInfo);
 			return;
 		}
 		if (info.viewAs && typeof info.viewAs != "function") {
@@ -8687,7 +8687,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 				};
 			}
 			if (!lib.card[info.viewAs.name]) {
-				deleteSkill(i, iInfo);
+				deleteSkill(skillId, iInfo);
 				return;
 			}
 			if (info.ai == undefined) {
@@ -8718,16 +8718,16 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		}
 		if (info.subSkill && !sub) {
 			Object.keys(info.subSkill).forEach(value => {
-				const iValue = `${i}_${value}`;
+				const iValue = `${skillId}_${value}`;
 				lib.skill[iValue] = info.subSkill[value];
 				lib.skill[iValue].sub = true;
 				if (info.subSkill[value].sourceSkill === undefined) {
-					lib.skill[iValue].sourceSkill = i;
+					lib.skill[iValue].sourceSkill = skillId;
 				}
 				if (info.subSkill[value].name) {
 					lib.translate[iValue] = info.subSkill[value].name;
 				} else {
-					lib.translate[iValue] = lib.translate[iValue] || lib.translate[i];
+					lib.translate[iValue] = lib.translate[iValue] || lib.translate[skillId];
 				}
 				if (info.subSkill[value].description) {
 					lib.translate[`${iValue}_info`] = info.subSkill[value].description;
@@ -8739,7 +8739,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			});
 		}
 		if (info.round) {
-			const k = `${i}_roundcount`;
+			const k = `${skillId}_roundcount`;
 			if (typeof info.group == "string") {
 				info.group = [info.group, k];
 			} else if (Array.isArray(info.group)) {
@@ -8782,11 +8782,11 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 					}
 				},
 			}))(info.round, k);
-			lib.translate[k] = lib.translate[i] || "";
-			lib.translate[`${k}_bg`] = lib.translate[`${i}_bg`] || lib.translate[k][0];
+			lib.translate[k] = lib.translate[skillId] || "";
+			lib.translate[`${k}_bg`] = lib.translate[`${skillId}_bg`] || lib.translate[k][0];
 		}
 		if (info.marktext) {
-			lib.translate[`${i}_bg`] = info.marktext;
+			lib.translate[`${skillId}_bg`] = info.marktext;
 		}
 		if (info.silent) {
 			if (!("forced" in info)) {
@@ -8815,14 +8815,11 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			}
 			info._priority = priority;
 		}
-		if (i[0] == "_") {
-			game.addGlobalSkill(i);
+		if (skillId[0] == "_") {
+			game.addGlobalSkill(skillId);
 		}
 	}
-	finishCard(cards) {
-		if (!Array.isArray(cards)) {
-			cards = [cards];
-		}
+	finishCard(cardId) {
 		const mode = get.mode(),
 			filterTarget = (card, player, target) => player == target && target.canEquip(card, true),
 			aiBasicOrder = (card, player) => {
@@ -8858,240 +8855,106 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 				return Math.max(0.1, equipValue - value);
 			},
 			aiResultTarget = (player, target, card) => get.equipResult(player, target, card);
-		cards.forEach(libCardKey => {
-			const info = `${libCardKey}_info`;
-			if (lib.translate[`${info}_${mode}`]) {
-				lib.translate[info] = lib.translate[`${info}_${mode}`];
-			} else if (lib.translate[`${info}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
-				lib.translate[info] = lib.translate[`${info}_zhu`];
-			} else if (lib.translate[`${info}_combat`] && get.is.versus()) {
-				lib.translate[info] = lib.translate[`${info}_combat`];
+		const info = `${cardId}_info`;
+		if (lib.translate[`${info}_${mode}`]) {
+			lib.translate[info] = lib.translate[`${info}_${mode}`];
+		} else if (lib.translate[`${info}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
+			lib.translate[info] = lib.translate[`${info}_zhu`];
+		} else if (lib.translate[`${info}_combat`] && get.is.versus()) {
+			lib.translate[info] = lib.translate[`${info}_combat`];
+		}
+		const card = lib.card[cardId];
+		if (card.filterTarget && card.selectTarget == undefined) {
+			card.selectTarget = 1;
+		}
+		if (card.autoViewAs) {
+			if (!card.ai) {
+				card.ai = {};
 			}
-			const card = lib.card[libCardKey];
-			if (card.filterTarget && card.selectTarget == undefined) {
-				card.selectTarget = 1;
-			}
-			if (card.autoViewAs) {
-				if (!card.ai) {
-					card.ai = {};
-				}
-				if (!card.ai.order) {
-					card.ai.order = lib.card[card.autoViewAs].ai.order;
-					if (!card.ai.order && lib.card[card.autoViewAs].ai.basic) {
-						card.ai.order = lib.card[card.autoViewAs].ai.basic.order;
-					}
+			if (!card.ai.order) {
+				card.ai.order = lib.card[card.autoViewAs].ai.order;
+				if (!card.ai.order && lib.card[card.autoViewAs].ai.basic) {
+					card.ai.order = lib.card[card.autoViewAs].ai.basic.order;
 				}
 			}
-			if (card.type == "equip") {
-				if (card.enable == undefined) {
-					card.enable = true;
-				}
-				if (card.selectTarget == undefined) {
-					card.selectTarget = -1;
-				}
-				if (card.filterTarget == undefined) {
-					card.filterTarget = filterTarget;
-				}
-				if (card.modTarget == undefined) {
-					card.modTarget = true;
-				}
-				if (card.allowMultiple == undefined) {
-					card.allowMultiple = false;
-				}
-				if (card.content == undefined) {
-					card.content = lib.element.content.equipCard;
-				}
-				if (card.toself == undefined) {
-					card.toself = true;
-				}
-				if (card.ai == undefined) {
-					card.ai = {
-						basic: {},
-					};
-				}
-				if (card.ai.basic == undefined) {
-					card.ai.basic = {};
-				}
-				if (card.ai.result == undefined) {
-					card.ai.result = {
-						target: 1.5,
-					};
-				}
-				if (card.ai.basic.order == undefined) {
-					card.ai.basic.order = aiBasicOrder;
-				}
-				if (card.ai.basic.useful == undefined) {
-					card.ai.basic.useful = 2;
-				}
-				if (card.subtype == "equip3") {
-					if (card.ai.basic.equipValue == undefined) {
-						card.ai.basic.equipValue = 7;
-					}
-				} else if (card.subtype == "equip4") {
-					if (card.ai.basic.equipValue == undefined) {
-						card.ai.basic.equipValue = 4;
-					}
-				} else if (card.ai.basic.equipValue == undefined) {
-					card.ai.basic.equipValue = 1;
-				}
-				if (card.ai.basic.value == undefined) {
-					card.ai.basic.value = aiBasicValue;
-				}
-				if (!card.ai.result.keepAI) {
-					card.ai.result.target = aiResultTarget;
-				}
-			} else if (card.type == "delay" || card.type == "special_delay") {
-				if (card.enable == undefined) {
-					card.enable = true;
-				}
-				if (card.filterTarget == undefined) {
-					card.filterTarget = lib.filter.judge;
-				}
-				if (card.content == undefined) {
-					card.content = lib.element.content.addJudgeCard;
-				}
-				if (card.allowMultiple == undefined) {
-					card.allowMultiple = false;
-				}
+		}
+		if (card.type == "equip") {
+			if (card.enable == undefined) {
+				card.enable = true;
 			}
-		});
-		return cards;
+			if (card.selectTarget == undefined) {
+				card.selectTarget = -1;
+			}
+			if (card.filterTarget == undefined) {
+				card.filterTarget = filterTarget;
+			}
+			if (card.modTarget == undefined) {
+				card.modTarget = true;
+			}
+			if (card.allowMultiple == undefined) {
+				card.allowMultiple = false;
+			}
+			if (card.content == undefined) {
+				card.content = lib.element.content.equipCard;
+			}
+			if (card.toself == undefined) {
+				card.toself = true;
+			}
+			if (card.ai == undefined) {
+				card.ai = {
+					basic: {},
+				};
+			}
+			if (card.ai.basic == undefined) {
+				card.ai.basic = {};
+			}
+			if (card.ai.result == undefined) {
+				card.ai.result = {
+					target: 1.5,
+				};
+			}
+			if (card.ai.basic.order == undefined) {
+				card.ai.basic.order = aiBasicOrder;
+			}
+			if (card.ai.basic.useful == undefined) {
+				card.ai.basic.useful = 2;
+			}
+			if (card.subtype == "equip3") {
+				if (card.ai.basic.equipValue == undefined) {
+					card.ai.basic.equipValue = 7;
+				}
+			} else if (card.subtype == "equip4") {
+				if (card.ai.basic.equipValue == undefined) {
+					card.ai.basic.equipValue = 4;
+				}
+			} else if (card.ai.basic.equipValue == undefined) {
+				card.ai.basic.equipValue = 1;
+			}
+			if (card.ai.basic.value == undefined) {
+				card.ai.basic.value = aiBasicValue;
+			}
+			if (!card.ai.result.keepAI) {
+				card.ai.result.target = aiResultTarget;
+			}
+		} else if (card.type == "delay" || card.type == "special_delay") {
+			if (card.enable == undefined) {
+				card.enable = true;
+			}
+			if (card.filterTarget == undefined) {
+				card.filterTarget = lib.filter.judge;
+			}
+			if (card.content == undefined) {
+				card.content = lib.element.content.addJudgeCard;
+			}
+			if (card.allowMultiple == undefined) {
+				card.allowMultiple = false;
+			}
+		}
 	}
 	finishCards() {
 		_status.cardsFinished = true;
-		const mode = get.mode(),
-			filterTarget = (card, player, target) => player == target && target.canEquip(card, true),
-			aiBasicOrder = (card, player) => {
-				const equipValue = get.equipValue(card, player) / 20;
-				return player && player.hasSkillTag("reverseEquip") ? 8.5 - equipValue : 8 + equipValue;
-			},
-			aiBasicValue = (card, player, index, method) => {
-				if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
-					return 0.01;
-				}
-				const info = get.info(card),
-					current = player.getEquip(info.subtype),
-					value = current && card != current && get.value(current, player);
-				let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-				if (typeof equipValue == "function") {
-					if (method == "raw") {
-						return equipValue(card, player);
-					}
-					if (method == "raw2") {
-						return equipValue(card, player) - value;
-					}
-					return Math.max(0.1, equipValue(card, player) - value);
-				}
-				if (typeof equipValue != "number") {
-					equipValue = 0;
-				}
-				if (method == "raw") {
-					return equipValue;
-				}
-				if (method == "raw2") {
-					return equipValue - value;
-				}
-				return Math.max(0.1, equipValue - value);
-			},
-			aiResultTarget = (player, target, card) => get.equipResult(player, target, card);
-		Object.keys(lib.card).forEach(libCardKey => {
-			const info = `${libCardKey}_info`;
-			if (lib.translate[`${info}_${mode}`]) {
-				lib.translate[info] = lib.translate[`${info}_${mode}`];
-			} else if (lib.translate[`${info}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
-				lib.translate[info] = lib.translate[`${info}_zhu`];
-			} else if (lib.translate[`${info}_combat`] && get.is.versus()) {
-				lib.translate[info] = lib.translate[`${info}_combat`];
-			}
-			const card = lib.card[libCardKey];
-			if (card.filterTarget && card.selectTarget == undefined) {
-				card.selectTarget = 1;
-			}
-			if (card.autoViewAs) {
-				if (!card.ai) {
-					card.ai = {};
-				}
-				if (!card.ai.order) {
-					card.ai.order = lib.card[card.autoViewAs].ai.order;
-					if (!card.ai.order && lib.card[card.autoViewAs].ai.basic) {
-						card.ai.order = lib.card[card.autoViewAs].ai.basic.order;
-					}
-				}
-			}
-			if (card.type == "equip") {
-				if (card.enable == undefined) {
-					card.enable = true;
-				}
-				if (card.selectTarget == undefined) {
-					card.selectTarget = -1;
-				}
-				if (card.filterTarget == undefined) {
-					card.filterTarget = filterTarget;
-				}
-				if (card.modTarget == undefined) {
-					card.modTarget = true;
-				}
-				if (card.allowMultiple == undefined) {
-					card.allowMultiple = false;
-				}
-				if (card.content == undefined) {
-					card.content = lib.element.content.equipCard;
-				}
-				if (card.toself == undefined) {
-					card.toself = true;
-				}
-				if (card.ai == undefined) {
-					card.ai = {
-						basic: {},
-					};
-				}
-				if (card.ai.basic == undefined) {
-					card.ai.basic = {};
-				}
-				if (card.ai.result == undefined) {
-					card.ai.result = {
-						target: 1.5,
-					};
-				}
-				if (card.ai.basic.order == undefined) {
-					card.ai.basic.order = aiBasicOrder;
-				}
-				if (card.ai.basic.useful == undefined) {
-					card.ai.basic.useful = 2;
-				}
-				if (card.subtype == "equip3") {
-					if (card.ai.basic.equipValue == undefined) {
-						card.ai.basic.equipValue = 7;
-					}
-				} else if (card.subtype == "equip4") {
-					if (card.ai.basic.equipValue == undefined) {
-						card.ai.basic.equipValue = 4;
-					}
-				} else if (card.ai.basic.equipValue == undefined) {
-					card.ai.basic.equipValue = 1;
-				}
-				if (card.ai.basic.value == undefined) {
-					card.ai.basic.value = aiBasicValue;
-				}
-				if (!card.ai.result.keepAI) {
-					card.ai.result.target = aiResultTarget;
-				}
-			} else if (card.type == "delay" || card.type == "special_delay") {
-				if (card.enable == undefined) {
-					card.enable = true;
-				}
-				if (card.filterTarget == undefined) {
-					card.filterTarget = lib.filter.judge;
-				}
-				if (card.content == undefined) {
-					card.content = lib.element.content.addJudgeCard;
-				}
-				if (card.allowMultiple == undefined) {
-					card.allowMultiple = false;
-				}
-			}
-		});
-		Object.keys(lib.skill).forEach(value => game.finishSkill(value));
+		Object.keys(lib.card).forEach(i => game.finishCard(i));
+		Object.keys(lib.skill).forEach(i => game.finishSkill(i));
 	}
 	/**@type {CheckMod} */
 	checkMod() {
