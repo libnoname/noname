@@ -1957,7 +1957,7 @@ const skills = {
 				return Math.max(num, [6.5, 4, 3, 2][Math.min(geti(), 2)]);
 			},
 			aiUseful() {
-				return lib.skill.kanpo.mod.aiValue.apply(this, arguments);
+				return lib.skill.jijiu.mod.aiValue.apply(this, arguments);
 			},
 		},
 		locked: false,

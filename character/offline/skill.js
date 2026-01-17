@@ -21408,10 +21408,8 @@ const skills = {
 			let cards = get.cards(3, true);
 			await player.showCards(cards, get.translation(player) + "发动了【冲虚】");
 			const {
-				result: {
-					bool,
-					links: [card],
-				},
+				bool,
+				links: [card],
 			} = await player
 				.chooseCardButton("冲虚：选择要获得的牌", true, cards)
 				.set("ai", button => {
@@ -21445,7 +21443,8 @@ const skills = {
 						}
 						return false;
 					})()
-				);
+				)
+				.forResult();
 			if (!bool) {
 				return;
 			}

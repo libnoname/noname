@@ -2699,7 +2699,7 @@ player.removeVirtualEquip(card);
 				if (targets.length < range[0]) {
 					event._result = { bool: false };
 					return;
-				} else if (!info.complexTarget && targets.length == range[0] && range[0] == range[1]) {
+				} else if (!info.complexTarget && targets.length == range[0] && range[0] == range[1] && event.forced) {
 					event.targets2 = targets;
 					event._result = { bool: true };
 					return;
@@ -3422,28 +3422,30 @@ player.removeVirtualEquip(card);
 			}
 		}
 	},
-	swapEquip: function () {
-		"step 0";
-		game.log(player, "和", target, "交换了装备区中的牌");
-		event.cards = [player.getCards("e"), target.getCards("e")];
-		//		event.vcards = [player.getVCards("e"), target.getVCards("e")];
-		game.loseAsync({
+	swapEquip: async function(event, trigger, player) {
+		const { target } = event;
+		const cards = event.cards = [player.getCards("e"), target.getCards("e")];
+		await game.loseAsync({
 			player: player,
 			target: target,
-			cards1: event.cards[0],
-			cards2: event.cards[1],
+			cards1: cards[0],
+			cards2: cards[1],
 		}).setContent("swapHandcardsx");
-		"step 1";
-		for (var i = 0; i < event.cards[1].length; i++) {
-			if (get.position(event.cards[1][i], true) == "o") {
-				player.equip(event.cards[1][i]);
+		
+		for (const card of cards[1]) {
+			const vcard = card[card.cardSymbol];
+			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
+				continue;
 			}
+			await player.equip(vcard);
 		}
-		for (var i = 0; i < event.cards[0].length; i++) {
-			if (get.position(event.cards[0][i], true) == "o") {
-				target.equip(event.cards[0][i]);
+		for (const card of cards[0]) {
+			const vcard = card[card.cardSymbol];
+			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
+				continue;
 			}
-		}
+			await target.equip(vcard);
+		}	
 	},
 	disableJudge: function () {
 		"step 0";
@@ -9238,7 +9240,7 @@ player.removeVirtualEquip(card);
 	},
 	showCards: [
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9255,7 +9257,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("showCards");
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str, flashAnimation } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9272,7 +9274,7 @@ player.removeVirtualEquip(card);
 			const ownerLose = new Map();
 			event.ownerLose = ownerLose;
 			for (const card of cards) {
-				const pos = get.position(card);
+				const pos = get.position(card, true);
 				const owner = get.owner(card);
 				if (owner && !event.show_map.has(owner)) {
 					event.show_map.set(owner, {
@@ -9312,17 +9314,19 @@ player.removeVirtualEquip(card);
 			if (!event.str) {
 				event.str = get.translation(player.name) + "展示的牌";
 			}
-			event.videoId = lib.status.videoId++;
 			//展示牌的流程
-			if (!isFlash) {
+			if (!flashAnimation) {
 				//允许自定义dialog，类似chooseButton
 				if (typeof event.dialog == "number") {
 					event.videoId = event.dialog;
 					event.dialog = get.idDialog(event.dialog);
 				}
+				else {
+					event.videoId = lib.status.videoId++;
+				}
 				if (event.createDialog && !event.dialog) {
 					if (Array.isArray(event.createDialog)) {
-						event.createDialog.add("hidden");
+						//event.createDialog.add("hidden");
 						game.broadcastAll(
 							(id, createDialog) => {
 								const dialog = ui.create.dialog.apply(this, createDialog);
@@ -9350,6 +9354,7 @@ player.removeVirtualEquip(card);
 				const createDialog = function (cards2, id, customButton) {
 					const dialog = get.idDialog(id);
 					dialog.forcebutton = true;
+					//dialog.style.display = "none";
 					//处理隐藏牌（这东西有人用过？）
 					if (cards2) {
 						for (let i = 0; i < dialog.buttons.length; i++) {
@@ -9363,7 +9368,7 @@ player.removeVirtualEquip(card);
 					if (typeof customButton == "function") {
 						dialog.buttons.forEach(button => customButton(button));
 					}
-					dialog.open();
+					//dialog.style.display = "";
 				};
 				const customButton = event.customButton || function () {};
 				//创建对话框
@@ -9403,6 +9408,7 @@ player.removeVirtualEquip(card);
 				}
 				game.addVideo("showCards", player, [event.str, get.cardsInfo(cards)]);
 			} else {
+				event.videoId = lib.status.videoId++;
 				//这部分是处理亮出牌的，动画效果类似判定，需要另外处理
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
@@ -9421,7 +9427,7 @@ player.removeVirtualEquip(card);
 				}
 				//创建动画，其实就跟judge的类似
 				game.broadcastAll(
-					function (player, cards, str, id, cardid) {
+					function (player, cards, str, id, cardids) {
 						var event;
 						if (game.online) {
 							event = {};
@@ -9429,8 +9435,9 @@ player.removeVirtualEquip(card);
 							event = _status.event;
 						}
 						event.nodes ??= [];
-						for (const card of cards) {
+						cards.forEach((card, index) => {
 							let node;
+							const cardid = cardids[index];
 							if (game.chess) {
 								node = card.copy("thrown", "center", ui.arena).addTempClass("start");
 							} else {
@@ -9442,7 +9449,7 @@ player.removeVirtualEquip(card);
 							node.cardid = cardid;
 							node.classList.add("thrownhighlight");
 							event.nodes.push(node);
-						}
+						});
 						ui.arena.classList.add("thrownhighlight");
 						event.dialog = ui.create.dialog(str);
 						event.dialog.classList.add("center");
@@ -9452,7 +9459,7 @@ player.removeVirtualEquip(card);
 					cards,
 					event.str,
 					event.videoId,
-					get.id()
+					cards.map(i => get.id())
 				);
 				if (event.log != false) {
 					const logList = event.log?.(cards, player) || [player, "亮出了", cards];
@@ -9463,9 +9470,9 @@ player.removeVirtualEquip(card);
 			await game.delayx(event.delay_time || 2.5);
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str, flashAnimation } = event;
 			//关闭对话框，结束动画
-			if (!isFlash) {
+			if (!flashAnimation) {
 				if (event.closeDialog != false) {
 					game.broadcastAll("closeDialog", event.videoId);
 				}
@@ -9482,17 +9489,17 @@ player.removeVirtualEquip(card);
 						}
 						ui.arena.classList.remove("thrownhighlight");
 					}, event.videoId);
-					game.addVideo("judge2", null, event.videoId);
 				}
+				game.addVideo("judge2", null, event.videoId);
 			}
 		},
 		async (event, trigger, player) => {
-			const { cards, str } = event;
 			//新增callback事件
 			if (event.callback) {
 				const next = game.createEvent("showCardsCallback", false);
 				next.player = player;
 				next.cards = event.result.cards;
+				next.result = event.result;
 				next.setContent(event.callback);
 				await next;
 			}

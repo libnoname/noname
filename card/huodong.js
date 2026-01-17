@@ -1415,7 +1415,6 @@ game.import("card", function () {
 						.set("ai2", function () {
 							return get.effect_use.apply(this, arguments) - _status.event.effect;
 						})
-						.set("targetRequired", true)
 						.set("effect", get.effect(target, { name: "losehp" }, target, target))
 						.set("addCount", false)
 						.forResult();

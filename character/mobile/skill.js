@@ -4546,7 +4546,7 @@ const skills = {
 			global: "phaseBegin",
 		},
 		filter(event, player) {
-			return player.inRange(event.player) && player.getStorage("mbjili").length < 4;
+			return player.inRange(event.player) && player.getStorage("mbjili").length < 3;
 		},
 		async cost(event, trigger, player) {
 			const list = [0, 1, 2].filter(num => !player.getStorage("mbjili").includes(num));
@@ -4574,10 +4574,11 @@ const skills = {
 			player.markAuto(event.name, num);
 			player.addTempSkill("mbjili_used", "roundStart");
 			if (!trigger.mbjili) {
-				trigger.mbjili = {};
+				trigger.set("mbjili", {});
 			}
-			trigger.mbjili[player.playerid] = num;
+			//trigger.mbjili[player.playerid] = num;
 			player.addTempSkill("mbjili_effect");
+			player.setStorage("mbjili_effect", [num, event.targets[0]]);
 		},
 		subSkill: {
 			effect: {
@@ -4586,16 +4587,23 @@ const skills = {
 					global: "phaseJieshuBegin",
 				},
 				charlotte: true,
+				onremove: true,
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					const evt = event.getParent("phase", true);
-					return typeof evt?.mbjili?.[player.playerid] == "number";
+					/*const evt = event.getParent("phase", true);
+					return typeof evt?.mbjili?.[player.playerid] == "number";*/
+					const storage = player.getStorage("mbjili_effect");
+					return typeof storage[0] == "number" && storage[1] == event.player;
 				},
 				logAudio(event, player) {
-					const evt = event.getParent("phase", true),
-						num = evt.mbjili[player.playerid],
-						count = evt.player.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
+					//logAudio客机自己跑没法获取history的
+					/*const evt = event.getParent("phase", true),
+						num = evt.mbjili[player.playerid],*/
+					const storage = player.getStorage("mbjili_effect");
+					const target = storage[1],
+						num = storage[0],
+						count = target.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
 					if (count < num) {
 						return ["mbjili7.mp3", "mbjili8.mp3", "mbjili9.mp3"];
 					}
@@ -4606,26 +4614,29 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					const evt = trigger.getParent("phase", true),
-						num = evt.mbjili[player.playerid],
-						count = evt.player.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
+					/*const evt = trigger.getParent("phase", true),
+						num = evt.mbjili[player.playerid],*/
+					const storage = player.getStorage(event.name);
+					const target = storage[1],
+						num = storage[0],
+						count = target.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
 					if (count < num) {
 						if (num < 4) {
 							await player.draw(4 - num);
 						}
 					} else if (count == num) {
 						if (num > 0 && player.countCards("he")) {
-							await player.chooseToGive(evt.player, num, true, "he");
+							await player.chooseToGive(target, num, true, "he");
 						}
 					} else {
 						const card = { name: "sha", isCard: true };
-						if (player.canUse(card, evt.player, false)) {
+						if (player.canUse(card, target, false)) {
 							const { bool } = await player
-								.chooseBool("积戾", `是否对${get.translation(evt.player)}视为使用一张杀？`)
-								.set("choice", get.effect(evt.player, card, player, player) > 0)
+								.chooseBool("积戾", `是否对${get.translation(target)}视为使用一张杀？`)
+								.set("choice", get.effect(target, card, player, player) > 0)
 								.forResult();
 							if (bool) {
-								await player.useCard(card, evt.player, false);
+								await player.useCard(card, target, false);
 							}
 						}
 					}

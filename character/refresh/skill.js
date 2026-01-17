@@ -540,7 +540,7 @@ const skills = {
 						next.setContent(lib.skill.huituo.content);
 						next.player = master;
 						next.forced = true;
-						next._trigger = map.trigger;
+						next._trigger = trigger;
 						await next;
 					}
 				},

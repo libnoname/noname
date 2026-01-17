@@ -1,4 +1,11 @@
 export default {
+	"#clangezhi1": "天下十分君有其九，群生皆盼，此天人之应。",
+	"#clangezhi2": "夏不以谦辞，周不吝诛放，畏知天命，无所与让。",
+	"#clanmingdian1": "谄员蔽信，心利锥刀，岂居台府之任！",
+	"#clanmingdian2": "陛列庸夫，智昏麦菽，何当机衡之重？",
+	"#clanshize_clan_chenqun1": "敬五行，承三德，惩恶息杀，甘率时臣矣。",
+	"#clanshize_clan_chenqun2": "建九品，定八议，彰德行法，足万世表也。",
+	"#clan_chenqun:die": "匆碌二十载，惟愿后人曰“陈尚书在，不成此殿”。",
 	"#clantanque1": "挽弓射营雀，试惊执刀人。",
 	"#clantanque2": "吾可射落山雀，亦可毙汝性命！",
 	"#clanshengmo1": "挥毫纵墨，诸君可见砚底之春秋。",

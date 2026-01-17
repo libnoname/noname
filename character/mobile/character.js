@@ -140,7 +140,7 @@ const characters = {
 	friend_shitao: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["friendqinying", "friendlunxiong", "friendgongli_shitao"],
 	},
 	mb_qinghegongzhu: {

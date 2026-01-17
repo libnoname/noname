@@ -259,14 +259,6 @@ game.import("card", function () {
 					return target.countCards("h") > 0;
 				},
 				async content(event, trigger, player) {
-					//适配卡牌上的storage？
-					/*const { card } = event;
-					if (card?.storage) {
-						const keys = ["showPosition", "discardPosition", "chooseToShow", "chooseToDiscard", "filterDiscard", "filterShow"];
-						for (const key of keys) {
-							event[key] = card.storage[key];
-						}
-					};*/
 					const { target, showPosition = "h" } = event;
 					if (target.countCards(showPosition) == 0) {
 						return event.finish();
@@ -276,7 +268,7 @@ game.import("card", function () {
 						const { showPosition = "h", filterShow = () => true } = event;
 						let result;
 						if (target.countCards(showPosition) == 1) {
-							result = { cards: target.getCards(showPosition) };
+							result = { bool: true, cards: target.getCards(showPosition) };
 						}
 						else {
 							result = await target

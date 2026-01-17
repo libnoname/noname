@@ -5377,7 +5377,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseDrawBegin1" },
 		filter(event, player) {
-			return !event.numFixed && player.hp < player.maxHp;
+			return !event.numFixed && player.isDamaged();
 		},
 		check(event, player) {
 			if (player.getDamagedHp() < 2) {
@@ -5389,21 +5389,20 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			trigger.changeToZero();
-			event.cards = get.cards(player.getDamagedHp() + (event.name == "zaiqi" ? 0 : 1));
-			await game.cardsGotoOrdering(event.cards);
-			await player.showCards(event.cards);
+			let cards = get.cards(player.getDamagedHp() + (event.name == "zaiqi" ? 0 : 1), true);
+			cards = (await player.showCards(cards, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`, true).set("delay_time", Math.min(4, cards.length)).forResult()).cards;
 			let num = 0;
-			for (let i = 0; i < event.cards.length; i++) {
-				if (get.suit(event.cards[i]) == "heart") {
+			for (let i = 0; i < cards.length; i++) {
+				if (get.suit(cards[i]) == "heart") {
 					num++;
-					event.cards.splice(i--, 1);
+					cards.splice(i--, 1);
 				}
 			}
 			if (num) {
 				await player.recover(num);
 			}
-			if (event.cards.length) {
-				await player.gain(event.cards, "gain2");
+			if (cards.length) {
+				await player.gain(cards, "gain2");
 			}
 		},
 		ai: {

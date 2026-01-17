@@ -1596,7 +1596,9 @@ const skills = {
 						},
 					})
 					.forResult();
-				if (!result?.links?.length) return;
+				if (!result?.links?.length) {
+					return;
+				}
 				const [link] = result.links;
 				if (link == 0) {
 					game.log(player, "选择了", "#g【枯心】", "的", "#y选项一");

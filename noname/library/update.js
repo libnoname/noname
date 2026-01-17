@@ -448,6 +448,7 @@ export function createProgress(title, max, fileName, value) {
 
 	// 可拖动
 	parent.className = "dialog";
+	Object.setPrototypeOf(parent, lib.element.Dialog.prototype);
 
 	const container = ui.create.div(parent, {
 		position: "absolute",

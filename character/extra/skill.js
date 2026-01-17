@@ -292,7 +292,9 @@ const skills = {
 		},
 		filter(event, player, name) {
 			if (event.name == "damage") {
-				return (
+				const key = name == "damageSource" ? "sourceDamage" : "damage";
+				return player.getHistory(key, evt => evt.num > 0).indexOf(event) == 0;
+				/*return (
 					game
 						.getGlobalHistory("everything", evt => {
 							if (evt.name != "damage") {
@@ -304,7 +306,7 @@ const skills = {
 							return evt.player == player || evt.source == player;
 						})
 						.indexOf(event) == 0
-				);
+				);*/
 			}
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
@@ -1862,6 +1864,7 @@ const skills = {
 		filter(event, player) {
 			return event.zc26_huaxiu?.length;
 		},
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const list = event.getParent(2).zc26_huaxiu.map(name => [get.type(name), "", name]);
 			const result = await player

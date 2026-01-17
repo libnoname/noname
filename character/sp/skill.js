@@ -5640,34 +5640,30 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const FromItems = lib.skill.olhedao.tianshuTrigger.slice();
+			let { tianshuTrigger: fromItems, tianshuContent: toItems } = get.info("olhedao");
+			fromItems = fromItems.randomGets(3);
 			const froms = await player
-				.chooseButton(['###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>', [FromItems.randomGets(3).map(item => [item, "（触发等级：" + item.fromIndex + "）" + item.name]), "textbutton"]], true)
+				.chooseButton(['###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>', [fromItems.map((item, index) => [index, "（触发等级：" + item.fromIndex + "）" + item.name]), "textbutton"]], true)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!froms?.links?.length) {
 				return;
 			}
-			const [from] = froms.links;
-			if (!lib.skill.olhedao.tianshuContent.some(item => (!item.filter || item.filter(from.name)) && from.fromIndex === item.toIndex)) {
-				return;
+			const from = fromItems[froms.links[0]];
+			const items = toItems.filter(item => !item.filter || item.filter(from.name));
+			toItems = items.filter(item => from.fromIndex === item.toIndex).randomGets(3);
+			if (get.isLuckyStar(player) || Math.random() > 0.5) {
+				let levelItem = items.filter(item => from.fromIndex + 1 === item.toIndex).randomGet();
+				if (levelItem) {
+					toItems[get.rand(0, toItems.length - 1)] = levelItem;
+				}
 			}
 			const tos = await player
 				.chooseButton(
 					[
 						'###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>",
 						[
-							(() => {
-								const ToItems = lib.skill.olhedao.tianshuContent.filter(item => !item.filter || item.filter(from.name));
-								let items = ToItems.filter(item => from.fromIndex === item.toIndex).randomGets(3);
-								if (get.isLuckyStar(player) || Math.random() > 0.5) {
-									let levelItem = ToItems.filter(item => from.fromIndex + 1 === item.toIndex).randomGet();
-									if (levelItem) {
-										items[get.rand(0, items.length - 1)] = levelItem;
-									}
-								}
-								return items;
-							})().map(item => [item, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]),
+							toItems.map((item, index) => [index, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]),
 							"textbutton",
 						],
 					],
@@ -5678,7 +5674,7 @@ const skills = {
 			if (!tos?.links?.length) {
 				return;
 			}
-			const [to] = tos.links;
+			const to = toItems[tos.links[0]];
 			let skill;
 			while (true) {
 				skill = "olhedao_tianshu_" + Math.random().toString(36).slice(-8);

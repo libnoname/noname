@@ -124,7 +124,7 @@ const skills = {
 					if (event.name == "phase") {
 						return game.phaseNumber == 0;
 					}
-					return name == "enterGame" || (event.getg?.(player)?.length || event.getl?.(player)?.hs?.length);
+					return name == "enterGame" || event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
 				},
 				async content(event, trigger, player) {
 					get.info(event.name).init(player, event.name);
@@ -1865,7 +1865,7 @@ const skills = {
 	//族杨众 —— by 星の语
 	clanjuetu: {
 		audio: 2,
-		trigger: { player: "phaseDiscardBefore" },
+		trigger: { player: "phaseDiscardBegin" },
 		forced: true,
 		async content(event, trigger, player) {
 			trigger.setContent(lib.skill[event.name].phaseDiscard);
@@ -1922,16 +1922,22 @@ const skills = {
 					}
 					const target = result2.targets[0];
 					player.line(target);
-					const result3 = await target.chooseToDiscard("绝途：请弃置一张手牌", true, "h").forResult();
-					if (!result3?.cards?.length) {
-						event.finish();
-						return;
-					}
-					const card = result3.cards[0],
-						suit = get.suit(card, target);
-					if (!player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
-						await target.damage();
-					}
+					//修复有些角色的牌不能在弃牌阶段弃置的bug
+					const next = game.createEvent("clanjuetu_discard", false);
+					next.player = player;
+					next.target = target;
+					next.setContent(async (event, trigger, player) => {
+						const result = await target.chooseToDiscard("绝途：请弃置一张手牌", true, "h").forResult();
+						if (!result?.cards?.length) {
+							event.finish();
+							return;
+						}
+						const suit = get.suit(result.cards[0], target);
+						if (!player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
+							await target.damage();
+						}
+					});
+					await next;
 				}
 			},
 		],

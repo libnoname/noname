@@ -2713,9 +2713,14 @@ const skills = {
 		limited: true,
 		animationColor: "wood",
 		filter(event, player) {
-			return game.filterPlayer(target => target !== player).map(current => {
-				return current.getHp();
-			}).toUniqued().length >= 2;
+			return (
+				game
+					.filterPlayer(target => target !== player)
+					.map(current => {
+						return current.getHp();
+					})
+					.toUniqued().length >= 2
+			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -2918,7 +2923,19 @@ const skills = {
 	olsbzhitian: {
 		audio: 2,
 		clickableFilter(player) {
-			return player.isPhaseUsing();
+			//return player.isPhaseUsing();
+			return player.hasSkill("olsbzhitian") && player.hasSkill("olsbzhitian_viewTop");
+		},
+		init(player, skill) {
+			if (player.isPhaseUsing()) {
+				player.addTempSkill(`${skill}_viewTop`, { global: ["phaseChange", "phaseAfter", "phaseBeforeStart"] });
+			}
+		},
+		forced: true,
+		locked: false,
+		trigger: { player: "phaseUseBegin" },
+		async content(event, trigger, player) {
+			player.addTempSkill(`${event.name}_viewTop`, { global: ["phaseChange", "phaseAfter", "phaseBeforeStart"] });
 		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
@@ -2989,6 +3006,9 @@ const skills = {
 		},
 		group: ["olsbzhitian_huogong"],
 		subSkill: {
+			viewTop: {
+				charlotte: true,
+			},
 			huogong: {
 				enable: "chooseToDiscard",
 				filter(event, player) {
@@ -3017,10 +3037,11 @@ const skills = {
 							.when("discardBegin")
 							.filter(evtx => evtx.getParent() == evt)
 							.step(async (event, trigger, player) => {
-								player.$throw(cards, 1000);
-								game.log(player, "弃置了", "#g牌堆", "的", cards);
 								trigger.setContent(async (event, trigger, player) => {
-									await game.cardsDiscard(event.cards);
+									const { cards } = event;
+									player.$throw(cards, 1000);
+									game.log(player, "弃置了", "#g牌堆", "的", cards);
+									await game.cardsDiscard(cards);
 								});
 							});
 					} else {
@@ -4798,10 +4819,10 @@ const skills = {
 							skills = storage["skill"];
 						let str = "";
 						if (cards.length) {
-							str += `<li>记录的牌：${cards.map(card=>get.poptip(card)).join("、")}<br>`;
+							str += `<li>记录的牌：${cards.map(card => get.poptip(card)).join("、")}<br>`;
 						}
 						if (skills.length) {
-							str += `<li>记录的技能：${skills.map(skill=>get.poptip(skill)).join("、")}`;
+							str += `<li>记录的技能：${skills.map(skill => get.poptip(skill)).join("、")}`;
 						}
 						if (!str) {
 							return "无记录的牌或技能";
@@ -11504,7 +11525,7 @@ const skills = {
 					} else {
 						target.popup("杯具");
 						game.log(target, "猜测", "#y错误");
-						trigger.num ++;
+						trigger.num++;
 					}
 				},
 			},
@@ -11556,7 +11577,10 @@ const skills = {
 					var cards = [result2.player, result2.target].filterInD("d");
 					cards = cards.filter(card => player.hasUseTarget(card));
 					if (cards.length) {
-						var result3 = await player.chooseButton(["是否使用其中的牌？", cards]).set("ai", button => _status.event.player.getUseValue(button.link)).forResult();
+						var result3 = await player
+							.chooseButton(["是否使用其中的牌？", cards])
+							.set("ai", button => _status.event.player.getUseValue(button.link))
+							.forResult();
 						if (result3.bool) {
 							var card = result3.links[0];
 							player.$gain2(card, false);

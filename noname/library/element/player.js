@@ -6538,10 +6538,11 @@ export class Player extends HTMLDivElement {
 	 * 玩家展示/亮出一些牌
 	 * @param { Card[] } cards 要亮出或展示的牌
 	 * @param { string } str 对话框的提示
-	 * @param { boolean } [isFlash] 是否是亮出牌（会改变动画效果）
+	 * @param { boolean | undefined } [flashAnimation] 改变动画效果，变成类似判定那种
+	 * @param { boolean | undefined } [isFlash] 是否是亮出牌（若改变动画效果后不设置该属性则默认为true）
 	 * @returns { GameEvent }
 	 */
-	showCards(cards, str, isFlash = false) {
+	showCards(cards, str, flashAnimation = false, isFlash) {
 		const next = game.createEvent("showCards");
 		next.player = this;
 		next.str = str;
@@ -6558,7 +6559,13 @@ export class Player extends HTMLDivElement {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
-		next.isFlash = isFlash;
+		next.flashAnimation = flashAnimation;
+		if (flashAnimation && !isFlash) {
+			next.isFlash = true;
+		}
+		else {
+			next.isFlash = false;
+		}
 		next.getShown = function (player, key) {
 			const event = this;
 			if (get.itemtype(player) != "player") {

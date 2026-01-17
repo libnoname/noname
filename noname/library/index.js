@@ -194,9 +194,6 @@ export class Library {
 	arenaReady = [
 		//提前缓存表情包
 		function () {
-			if (!_status.connectMode) {
-				return;
-			}
 			_status.emotion_cache = {};
 			const findFiles = function (name) {
 				const srcBase = `${lib.assetURL}image/emotion/${name}/`;
