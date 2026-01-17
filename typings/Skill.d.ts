@@ -276,6 +276,10 @@ declare interface Skill {
 
 	/** 【主动技中使用】能否选择死亡的玩家	*/
 	deadTarget?: boolean
+	/** 
+	 * 【主动技中使用】能否在战棋/塔防模式中无视距离上限选择玩家
+	 */
+	chessForceAll?: boolean,
 	/** 【主动技中使用】能否选择离场的玩家，例如调虎离山等*/
 	includeOut?: boolean
 
