@@ -575,6 +575,7 @@ export class GameEvent {
 			selectButton: this.selectButton,
 			filterTarget: this.filterTarget,
 			selectTarget: this.selectTarget,
+			deadTarget: this.deadTarget,
 			chessForceAll: this.chessForceAll,
 			filterCard: this.filterCard,
 			selectCard: this.selectCard,
@@ -610,6 +611,9 @@ export class GameEvent {
 				}
 				if (info.selectTarget != undefined) {
 					this.selectTarget = info.selectTarget;
+				}
+				if (info.deadTarget != undefined) {
+					this.deadTarget = info.deadTarget;
 				}
 				if (info.chessForceAll != undefined) {
 					this.chessForceAll = info.chessForceAll;
@@ -680,6 +684,7 @@ export class GameEvent {
 				this.selectButton = info.selectButton;
 				this.filterTarget = info.filterTarget ? get.filter(info.filterTarget) : undefined;
 				this.selectTarget = info.selectTarget;
+				this.deadTarget = info.deadTarget;
 				this.chessForceAll = info.chessForceAll;
 				this.filterCard = info.filterCard ? get.filter(info.filterCard) : undefined;
 				this.selectCard = info.selectCard;
@@ -711,6 +716,7 @@ export class GameEvent {
 			this.selectButton = this._backup.selectButton;
 			this.filterTarget = this._backup.filterTarget;
 			this.selectTarget = this._backup.selectTarget;
+			this.deadTarget = this._backup.deadTarget;
 			this.chessForceAll = this._backup.chessForceAll;
 			this.filterCard = this._backup.filterCard;
 			this.selectCard = this._backup.selectCard;

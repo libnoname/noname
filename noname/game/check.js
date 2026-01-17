@@ -131,7 +131,7 @@ export class Check {
 		const player = event.player;
 		const card = get.card();
 		const targets = game.players.slice();
-		if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget) || (card && get.info(card)?.deadTarget)) {
+		if (event.deadTarget || (card && get.info(card)?.deadTarget)) {
 			targets.addArray(game.dead);
 		}
 		const isSelectable = (target, event) => {
