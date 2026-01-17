@@ -241,7 +241,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					if (backgroundImage !== this._backgroundImage) return;
 					this.setBackgroundImage(backgroundImage);
 
-					if (this === game.me.node.avatar && ui.fakeme) {
+					if (game.me != null && this === game.me.node.avatar && ui.fakeme) {
 						ui.fakeme.style.backgroundImage = this.style.backgroundImage;
 					}
 				};
