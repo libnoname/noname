@@ -135,7 +135,7 @@ export class Check {
 			targets.addArray(game.dead);
 		}
 		const isSelectable = (target, event) => {
-			if (game.chess && !event.chessForceAll && player && get.distance(player, target, "pure") > 7) {
+			if (game.chess && !(event.chessForceAll || (event.skill && get.info(event.skill)?.chessForceAll) || (card && get.info(card)?.chessForceAll)) && player && get.distance(player, target, "pure") > 7) {
 				return false;
 			}
 			if (target.isOut() && !event.includeOut && !(event.skill && get.info(event.skill)?.includeOut) && !(card && get.info(card)?.includeOut)) {
