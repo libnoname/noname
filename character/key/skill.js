@@ -1613,6 +1613,7 @@ const skills = {
 				? 1
 				: -1;
 		},
+		chessForceAll: true,
 		filter(event, player) {
 			return (
 				player.hasCard(card => get.name(card, false) === "tao", "hs") &&
@@ -4706,6 +4707,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player && target.canEquip(ui.selected.cards[0]);
 		},
+		chessForceAll: true,
 		check(card) {
 			if (get.value(card) <= 0) {
 				return 10;

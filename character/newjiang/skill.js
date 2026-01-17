@@ -4903,6 +4903,7 @@ const skills = {
 				},
 				selectCard: 1,
 				filterCard: true,
+				chessForceAll: true,
 				filterTarget(card, player, target) {
 					return target.hasSkill("biejun");
 				},

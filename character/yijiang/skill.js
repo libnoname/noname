@@ -3709,7 +3709,8 @@ const skills = {
 					.set("ai", function (target) {
 						var player = _status.event.player;
 						return get.attitude(player, target);
-					});
+					})
+					.set("chessForceAll", true);
 			} else {
 				event.finish();
 			}

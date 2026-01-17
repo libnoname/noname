@@ -4621,6 +4621,7 @@ const skills = {
 				filterCard(card) {
 					return get.type(card) == "basic";
 				},
+				chessForceAll: true,
 				position: "he",
 				check(card) {
 					return 4 - get.value(card);

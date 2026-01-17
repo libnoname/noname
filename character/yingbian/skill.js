@@ -2053,6 +2053,7 @@ const skills = {
 				enable: "phaseUse",
 				usable: 1,
 				prompt: "出牌阶段限一次。你可以令一名有〖博览〗的角色从三个描述中包含“出牌阶段限一次”的技能中选择一个，你获得此技能直到此阶段结束。",
+				chessForceAll: true,
 				filter(event, player) {
 					return game.hasPlayer(function (current) {
 						return current != player && current.hasSkill("bolan");

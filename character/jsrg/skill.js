@@ -5777,6 +5777,7 @@ const skills = {
 					});
 					return num > 1 ? 1 : -1;
 				},
+				chessForceAll: true,
 				filterCard(card) {
 					return get.type(card) == "equip";
 				},

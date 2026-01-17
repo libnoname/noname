@@ -11333,6 +11333,7 @@ const skills = {
 							filterTarget(card, player, target) {
 								return target.hasSkill("twkaizeng");
 							},
+							chessForceAll: true,
 							selectTarget() {
 								const player = get.player();
 								const targets = game.filterPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h"));
@@ -23881,6 +23882,7 @@ const skills = {
 				),
 			];
 		},
+		chessForceAll: true,
 		filterCard: true,
 		filterTarget(card, player, target) {
 			if (!target.hasSkill("twyujue")) {
