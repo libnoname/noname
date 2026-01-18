@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { VitePWA } from "vite-plugin-pwa";
 
 const port = {
 	client: 8080,
@@ -16,9 +17,48 @@ export default defineConfig({
 		},
 		extensions: [".tsx", ".ts", ".js", ".vue"],
 	},
-	plugins: [vue()],
+	plugins: [
+		vue(),
+		VitePWA({
+			registerType: "autoUpdate",
+			injectRegister: "auto",
+			devOptions: {
+				enabled: true,
+			},
+			manifest: {
+				name: "无名杀",
+				short_name: "无名杀",
+				start_url: ".",
+				scope: ".",
+				display: "standalone",
+				background_color: "#141414",
+				theme_color: "#141414",
+				icons: [
+					{
+						src: "sha.png",
+						sizes: "1024x1024",
+						type: "image/png",
+					},
+				],
+				screenshots: [
+					{
+						src: "screenshot2k.png",
+						sizes: "2560x1600",
+						type: "image/png",
+						form_factor: "wide",
+					},
+					{
+						src: "screenshot phone.png",
+						sizes: "560x1216",
+						type: "image/png",
+						form_factor: "narrow",
+					},
+				],
+			},
+		}),
+	],
 	server: {
-		host: "127.0.0.1",
+		host: "0.0.0.0",
 		port: port.client,
 		fs: {
 			allow: ["../.."],
