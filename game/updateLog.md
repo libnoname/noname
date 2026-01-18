@@ -86,7 +86,7 @@ player.rest(restMap = { type: "phase", count: -1 })
 player.restEnd(restEndMap = { hp: null })
 ```
 
-### ExtraEquip
+### ExtraEquip（不稳定）
 
 视为装备，无对应实体/虚拟牌（用法可参考火诸葛）
 
