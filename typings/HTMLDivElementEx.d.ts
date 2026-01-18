@@ -56,7 +56,7 @@ interface HTMLDivElement {
      * 设置背景
      * @param img 
      */
-    setBackgroundImage(img: string): this;
+    setBackgroundImage(img: string | string[]): this;
     /**
      * 设置触摸/点击监听
      * @param func 
