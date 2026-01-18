@@ -1,12 +1,11 @@
 window.noname_update = {
-	version: "1.11.0",
-	update: "NULL", //新版本更新文件较多，直接强制进行全量更新
+	version: "1.11.1",
+	update: "NULL",
 	changeLog: [
-		"大量新武将、新卡牌",
-		"大量新功能",
-		"OL单骑无双·战法",
-		"操作优化和bugfix",
-		"具体内容请参考game/updateLog.md"
+		"新增31个武将",
+		"兼容模式改动",
+		"废弃部分api",
+		"详细信息请参考game/updateLog.md"
 	],
 	files: [],
 };
