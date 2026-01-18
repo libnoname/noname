@@ -3656,15 +3656,7 @@ const skills = {
 		audio: "wengua",
 		enable: "phaseUse",
 		filter(event, player) {
-			if (player.hasSkill("wengua3")) {
-				return false;
-			}
-			return (
-				player.countCards("he") &&
-				game.hasPlayer(function (current) {
-					return current.hasSkill("wengua");
-				})
-			);
+			return player.countCards("he") && game.hasPlayer(current => current.hasSkill("wengua") && !current.hasSkill("wengua3"));
 		},
 		log: false,
 		delay: false,
@@ -3673,17 +3665,18 @@ const skills = {
 		lose: false,
 		position: "he",
 		prompt() {
-			var player = _status.event.player;
-			var list = game.filterPlayer(function (current) {
-				return current.hasSkill("wengua");
-			});
-			if (list.length == 1 && list[0] == player) {
+			const player = get.player();
+
+			const targets = game.filterPlayer(current => current.hasSkill("wengua") && !current.hasSkill("wengua3"));
+			if (targets.length === 1 && targets[0] === player) {
 				return "将一张牌置于牌堆顶或是牌堆底";
 			}
-			var str = "将一张牌交给" + get.translation(list);
-			if (list.length > 1) {
+
+			let str = `将一张牌交给${get.translation(targets)}`;
+			if (targets.length > 1) {
 				str += "中的一人";
 			}
+
 			return str;
 		},
 		check(card) {
@@ -3692,16 +3685,15 @@ const skills = {
 			}
 			return 8 - get.value(card);
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(function (current) {
-				return current.hasSkill("wengua");
-			});
-			if (targets.length == 1) {
-				event.target = targets[0];
-				event.goto(2);
-			} else if (targets.length > 0) {
-				player
+		async content(event, trigger, player) {
+			const { cards } = event;
+			const targets = game.filterPlayer(current => current.hasSkill("wengua") && !current.hasSkill("wengua3"));
+
+			let target;
+			if (targets.length === 1) {
+				target = targets[0];
+			} else {
+				const result = await player
 					.chooseTarget(true, "选择【问卦】的目标", function (card, player, target) {
 						return _status.event.list.includes(target);
 					})
@@ -3710,72 +3702,76 @@ const skills = {
 						var player = _status.event.player;
 						return get.attitude(player, target);
 					})
-					.set("chessForceAll", true);
-			} else {
-				event.finish();
-			}
-			"step 1";
-			if (result.bool && result.targets.length) {
-				event.target = result.targets[0];
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.target) {
-				player.logSkill("wengua", event.target);
-				player.addTempSkill("wengua3", "phaseUseEnd");
-				event.card = cards[0];
-				if (event.target != player) {
-					player.give(cards, event.target);
+					.set("chessForceAll", true)
+					.forResult();
+
+				if (!result.bool || !result.targets.length) {
+					return;
 				}
-			} else {
-				event.finish();
+
+				target = result.targets[0];
 			}
+
 			delete _status.noclearcountdown;
 			game.stopCountChoose();
-			"step 3";
-			if (event.target.getCards("he").includes(event.card)) {
-				event.target.chooseControlList("问卦", "将" + get.translation(event.card) + "置于牌堆顶", "将" + get.translation(event.card) + "置于牌堆底", event.target == player, function () {
+			if (!target) {
+				return;
+			}
+
+			player.logSkill("wengua", target);
+			target.addTempSkill("wengua3", "phaseUseEnd");
+			const card = cards[0];
+			if (target !== player) {
+				await player.give(cards, target);
+			}
+
+			if (!target.getCards("he").includes(card)) {
+				return;
+			}
+
+			const result = await target
+				.chooseControlList("问卦", `将${get.translation(card)}置于牌堆顶`, `将${get.translation(card)}置于牌堆底`, target === player, () => {
 					if (get.attitude(event.target, player) < 0) {
 						return 2;
 					}
 					return 1;
-				});
-			} else {
-				event.finish();
-			}
-			"step 4";
-			event.index = result.index;
-			if (event.index == 0 || event.index == 1) {
-				var next = event.target.lose(event.card, ui.cardPile);
-				if (event.index == 0) {
+				})
+				.forResult();
+
+			const index = result.index;
+			if (index == 0 || index == 1) {
+				const next = target.lose(card, ui.cardPile);
+				if (index == 0) {
 					next.insert_card = true;
 				}
-				game.broadcastAll(function (player) {
-					var cardx = ui.create.card();
+
+				game.broadcastAll(player => {
+					const cardx = ui.create.card();
 					cardx.classList.add("infohidden");
 					cardx.classList.add("infoflip");
 					player.$throw(cardx, 1000, "nobroadcast");
-				}, event.target);
+				}, target);
+
+				await next;
 			} else {
-				event.finish();
+				return;
 			}
-			"step 5";
-			game.delay();
-			"step 6";
-			if (event.index == 1) {
-				game.log(event.target, "将得到的牌置于牌堆底");
-				if (ui.cardPile.childElementCount == 1 || player == event.target) {
-					player.draw();
+
+			await game.delay();
+
+			if (index == 1) {
+				game.log(target, "将得到的牌置于牌堆底");
+				if (ui.cardPile.childElementCount === 1 || player === target) {
+					await player.draw();
 				} else {
-					game.asyncDraw([player, target], null, null);
+					await game.asyncDraw([player, target], null, null);
 				}
-			} else if (event.index == 0) {
+			} else if (index == 0) {
 				game.log(player, "将获得的牌置于牌堆顶");
-				if (ui.cardPile.childElementCount == 1 || player == event.target) {
-					player.draw("bottom");
+				if (ui.cardPile.childElementCount === 1 || player === target) {
+					await player.draw("bottom");
 				} else {
-					game.asyncDraw([player, target], null, null, true);
+					await game.asyncDraw([player, target], null, null, true);
 				}
 			}
 		},
