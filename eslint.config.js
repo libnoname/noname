@@ -38,6 +38,7 @@ export default defineConfig(globalIgnores(["dist", "node_modules"]), js.configs.
 			},
 		],
 		"prefer-const": 0,
+		"prefer-spread": 0,
 		"no-redeclare": 0,
 		"no-undef": 0,
 		"no-empty": [

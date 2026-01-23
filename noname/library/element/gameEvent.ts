@@ -49,10 +49,10 @@ export class GameEvent implements PromiseLike<void> {
 	_args: any[] = [];
 	_set: [string, any][] = [];
 	set(key: string, value: any) {
-		if (arguments.length == 1 && Array.isArray(arguments[0])) {
-			for (var i = 0; i < arguments[0].length; i++) {
-				if (Array.isArray(arguments[0][i])) {
-					this.set(arguments[0][i][0], arguments[0][i][1]);
+		if (Array.isArray(key)) {
+			for (let i = 0; i < key.length; i++) {
+				if (Array.isArray(key[i])) {
+					this.set(key[i][0], key[i][1]);
 				}
 			}
 		} else {
@@ -824,7 +824,7 @@ export class GameEvent implements PromiseLike<void> {
 							console.log(card);
 							card.cards = [];
 						}*/
-						return get.filter(evt.filterCard2).apply(this, arguments);
+						return get.filter(evt.filterCard2).apply(this, [card, player, event]);
 					};
 				}
 				this.filterOk = function () {
@@ -1142,6 +1142,7 @@ export class GameEvent implements PromiseLike<void> {
 	 * @returns {number}
 	 */
 	pushHandler(type) {
+		// eslint-disable-next-line prefer-rest-params
 		return typeof type == "string" ? this.getHandler(type).push(...Array.from(arguments).slice(1)) : this.getHandler().push(...arguments);
 	}
 	// #endregion
