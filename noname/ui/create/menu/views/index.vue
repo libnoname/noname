@@ -33,7 +33,7 @@ export default {
 				app: null,
 			},
 			/**
-			 * @type {{ name: string; attrs: SMap<any>; }[]}
+			 * @type {{ name: string; attrs: Record<string, any>; }[]}
 			 */
 			leftPaneData: [],
 			/**

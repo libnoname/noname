@@ -25,7 +25,7 @@ type TextMap = {
 };
 
 export class Audio {
-	static #audioCache: SMap<TextMap[]> = {};
+	static #audioCache: Record<string, TextMap[]> = {};
 
 	/**
 	 * 根据skill中的audio,audioname,audioname2和player来获取技能台词列表及其对应的源文件名

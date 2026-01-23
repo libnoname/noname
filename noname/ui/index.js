@@ -159,7 +159,7 @@ export class UI {
 	 */
 	coin;
 	/**
-	 * @type {SMap<HTMLLinkElement | HTMLStyleElement>}
+	 * @type {Record<string, HTMLLinkElement | HTMLStyleElement>}
 	 */
 	css;
 	/**

@@ -13,7 +13,7 @@ declare interface Window {
     }
 
     // /** 游戏配置 */
-    // config: SMap<any>,
+    // config: Record<string, any>,
 
     // /** 游戏源列表（预加载资源列表，待验证） */
     // noname_source_list?: string[],
@@ -22,7 +22,7 @@ declare interface Window {
     // noname_asset_list?: string[],
 
     // /** 默认皮肤列表 */
-    // noname_skin_list?: SMap<number>;
+    // noname_skin_list?: Record<string, number>;
 
     /** codeMirror,一个代码编辑器库 */
     // CodeMirror: typeof import('codemirror/index');

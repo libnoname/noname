@@ -36,7 +36,7 @@ export class Player extends HTMLDivElement {
 	}
 	buildNode() {
 		let player = this;
-		/** @type { SMap<HTMLDivElement> } */
+		/** @type { Record<string, HTMLDivElement> } */
 		const node = (player.node = {
 			avatar: ui.create.div(".avatar", player, ui.click.avatar).hide(),
 			avatar2: ui.create.div(".avatar2", player, ui.click.avatar2).hide(),
@@ -196,7 +196,7 @@ export class Player extends HTMLDivElement {
 			}
 		}
 	}
-	/** @type { SMap<HTMLDivElement> } */
+	/** @type { Record<string, HTMLDivElement> } */
 	// eslint-disable-next-line no-unreachable
 	node;
 	/**
@@ -224,11 +224,11 @@ export class Player extends HTMLDivElement {
 	 */
 	initedSkills;
 	/**
-	 * @type { SMap<string[]> }
+	 * @type { Record<string, string[]> }
 	 */
 	additionalSkills;
 	/**
-	 * @type { SMap<string[]> }
+	 * @type { Record<string, string[]> }
 	 */
 	disabledSkills;
 	/**
@@ -240,7 +240,7 @@ export class Player extends HTMLDivElement {
 	 */
 	awakenedSkills;
 	/**
-	 * @type { SMap<string[]> }
+	 * @type { Record<string, string[]> }
 	 */
 	forbiddenSkills;
 	/**
@@ -265,23 +265,23 @@ export class Player extends HTMLDivElement {
 	 */
 	actionHistory;
 	/**
-	 * @type { SMap<string[]> }
+	 * @type { Record<string, string[]> }
 	 */
 	tempSkills;
 	/**
-	 * @type { SMap<any> }
+	 * @type { Record<string, any> }
 	 */
 	storage;
 	/**
-	 * @type { SMap<HTMLDivElement> }
+	 * @type { Record<string, HTMLDivElement> }
 	 */
 	marks;
 	/**
-	 * @type { SMap<number> }
+	 * @type { Record<string, number> }
 	 */
 	expandedSlots;
 	/**
-	 * @type { SMap<number> }
+	 * @type { Record<string, number> }
 	 */
 	disabledSlots;
 	/**
@@ -1016,7 +1016,7 @@ export class Player extends HTMLDivElement {
 				return this;
 			},
 			/**
-			 * @param { SMap<any> } obj
+			 * @param { Record<string, any> } obj
 			 */
 			assign(obj) {
 				if (lib.skill[skillName] != skill) {
@@ -1035,7 +1035,7 @@ export class Player extends HTMLDivElement {
 				return this;
 			},
 			/**
-			 * @param { SMap<any> } arg
+			 * @param { Record<string, any> } arg
 			 */
 			vars(arg) {
 				if (lib.skill[skillName] != skill) {
@@ -1843,7 +1843,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 同步显示扩展装备区状态
-	 * @param { SMap<number> } [map]
+	 * @param { Record<string, number> } [map]
 	 */
 	$syncExpand(map) {
 		if (!map) {
@@ -1862,7 +1862,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 同步装备区废除牌显示状态
-	 * @param { SMap<number> } [map]
+	 * @param { Record<string, number> } [map]
 	 */
 	$syncDisable(map) {
 		//TODO:虚拟装备牌的添加暂时没有考虑到废除装备栏的情况，会出现排序错误的问题。需要手动设置排序。

@@ -55,7 +55,7 @@ declare interface SkillHookTrigger {
 	 * 
 	 * 在logSkill中执行，每次触发logSkill都会触发
 	 */
-	log?: ThreeParmFun<Player, string, Player[], void>;
+	log?: (player: Player, skill: string, targets: Player[]) => void;
 }
 
 /** mod的配置 */
@@ -359,7 +359,7 @@ declare interface Skill {
 	 * 
 	 * 其key值为人物的name；
 	 */
-	audioname2?: SMap<string>;
+	audioname2?: Record<string, string>;
 	/** 强制播放音频 */
 	forceaudio?: boolean;
 
@@ -425,7 +425,7 @@ declare interface Skill {
 	 * 
 	 * 若该属性值是“check”，则调用当前技能得check方法检测
 	 */
-	frequent?: boolean | string | TwoParmFun<GameEvent, Player, number | boolean>;
+	frequent?: boolean | string | ((event: GameEvent, player: Player) => number | boolean);
 	/** 
 	 * 此技能是否可以被设置为自动发动2 
 	 * 
@@ -441,7 +441,7 @@ declare interface Skill {
 	 * 
 	 * 可以影响技能触发响应时间（主要影响loop之间的时间,即game.delayx的调用情况）
 	 */
-	autodelay?: boolean | number | TwoParmFun<SkillTrigger, Player, number>;
+	autodelay?: boolean | number | ((event: GameEvent, player: Player) => number);
 	/** 第一时刻执行？（将发动顺序前置到列表前） */
 	firstDo?: boolean;
 	/** 最后一刻做？（将发动顺序置于列表后方） */
@@ -492,13 +492,13 @@ declare interface Skill {
 	 *  其执行时机和chooseButton一致，当chooseButton不存在时且game.online为false，则会执行这个
 	 * @param config 
 	 */
-	precontent?: ContentFuncByAll | GeneratorContentFuncByAll | OldContentFuncByAll;
+	precontent?: ContentFuncByAll | OldContentFuncByAll;
 	/**
 	 * 在content之前触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之前
 	 */
-	contentBefore?: ContentFuncByAll | GeneratorContentFuncByAll | OldContentFuncByAll;
+	contentBefore?: ContentFuncByAll | OldContentFuncByAll;
 	/**
 	 * 触发内容（技能内容）
 	 * 
@@ -512,13 +512,13 @@ declare interface Skill {
 	 * 注：此时的content，已经为触发该技能的效果而创建的，该技能执行中的事件，此时的event一般是不具备
 	 *  触发信息，触发的信息，主要在trigger触发事件中获取。
 	 */
-	content?: ContentFuncByAll | GeneratorContentFuncByAll | OldContentFuncByAll;
+	content?: ContentFuncByAll | OldContentFuncByAll;
 	/**
 	 * 在content之后触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之后
 	 */
-	contentAfter?: ContentFuncByAll | GeneratorContentFuncByAll | OldContentFuncByAll;
+	contentAfter?: ContentFuncByAll | OldContentFuncByAll;
 
 	//技能初始化与移除：
 	/**
@@ -554,7 +554,7 @@ declare interface Skill {
 	 * 
 	 * 注：当前disableSkill中，若当前info.ondisable，调用onremove必须是方法，且不注入skill参数；
 	 */
-	onremove?: TwoParmFun<Player, string, void> | string | string[] | boolean;
+	onremove?: ((player: Player, type: string) => void) | string | string[] | boolean;
 	/** 是否持续的附加技能，在removeSkill中使用 */
 	keepSkill?: boolean;
 
@@ -594,7 +594,7 @@ declare interface Skill {
 	 * 
 	 * 注：子技能，会被视为“技能_子技能”独立保存起来。
 	 */
-	subSkill?: SMap<Skill>;
+	subSkill?: Record<string, Skill>;
 	/**
 	 * 全局技能?:
 	 * 
@@ -634,7 +634,7 @@ declare interface Skill {
 	/** 用于“技能名_roundcount”技能中，当前技能不可使用时，“n轮后”xxx，中xxx的部分显示（即后面部分） */
 	roundtext?: string;
 	/** 增加显示的信息，这部分时增加，“n轮后”前面部分 */
-	addintro?(storage: SMap<any>, player: Player): string;
+	addintro?(storage: Record<string, any>, player: Player): string;
 	/** 延迟的时间 */
 	delay?: number | boolean;
 	/** 
@@ -723,10 +723,10 @@ declare interface Skill {
 	/** 标记显示内容 */
 	intro?: {
 		/** 自定义mark弹窗的显示内容 */
-		mark?: ThreeParmFun<Dialog, any, Player, string | void>;
+		mark?: (dialog: Dialog, storage: any, player: Player) => string | void;
 		/** 用于info.mark为“character”，添加，移除标记时，log显示的标记名（好像意义不大） */
-		name?: string | TwoParmFun<any, Player, string>;
-		name2?: string | TwoParmFun<any, Player, string>;
+		name?: string | ((arg: any, player: Player) => string);
+		name2?: string | ((arg: any, player: Player) => string);
 		/** 
 		 * 标记显示内容？
 		 * 为cards时显示标记内的牌.
@@ -779,7 +779,7 @@ declare interface Skill {
 		 * 
 		 * 主要在player.updateMark时使用，实际顶替this.storage[i+'_markcount']获取标记数 
 		 */
-		markcount?: number | TwoParmFun<any, Player, number | string> | string;
+		markcount?: number | ((storage: any, player: Player) => number | string) | string;
 		/** 是否不启用技能标记计数 */
 		nocount?: boolean;
 		/**
@@ -791,7 +791,7 @@ declare interface Skill {
 		 * 
 		 * 注：该参数原本只在把整个标记移除时执行，后续可能自己扩展；
 		 */
-		onunmark?: TwoParmFun<any, Player, void> | string | boolean;
+		onunmark?: ((storage: any, player: Player) => void) | string | boolean;
 		// id?:string; //id名字需带“subplayer”，用于特殊模式显示信息用
 	};
 
@@ -984,7 +984,7 @@ declare interface Skill {
 	 *  在lose事件中使用，必须要失去的卡牌为“equips”（装备牌），有onLose才生效。
 	 * 若符合以上条件，则检测该牌是否需要后续触发执行“lose_卡牌名”事件，既上面配置的onLose
 	 */
-	filterLose?: TwoParmFun<Card, Player, boolean>;
+	filterLose?: ((card: Card, player: Player) => boolean);
 	/** 在lose事件中使用，取值为true，作用貌似强制延迟弃牌动画处理 */
 	loseDelay?: boolean;
 
@@ -1063,7 +1063,7 @@ declare interface Skill {
 	 * 例子：
 	 * targetprompt:['出杀','出闪'],依次就是你点击第一个角色后在其旁边显示出杀，第二个角色显示出闪
 	 */
-	targetprompt?: string | string[] | OneParmFun<Player, string>;
+	targetprompt?: string | string[] | ((target: Player) =>  string);
 	/**
 	 * 是否每个目标都结算一次(多个目标)
 	 * 
@@ -1140,7 +1140,7 @@ declare interface Skill {
 	 * 
 	 * 为变量时（具体情况具体分析），例：()=>number
 	 */
-	selectCard?: number | Select | NoneParmFum<number | Select>;
+	selectCard?: number | Select | (() => number | Select);
 	/**
 	 * 需要选择多少个目标才能发动
 	 * 
@@ -1165,7 +1165,7 @@ declare interface Skill {
 	 * 注：game.check时，如果当前时viewAs“视为技”，则其过滤技能时filterCard,作为方法，多入参一个event参数，需要时可以使用；
 	 * （一般没有）
 	 */
-	filterCard?: boolean | CardBaseUIData | TwoParmFun<Card, Player, boolean> | boolean;
+	filterCard?: boolean | CardBaseUIData | ((card: Card, player: Player) => boolean) | boolean;
 	/** 
 	 * 是否使用mod检测
 	 * 
@@ -1202,7 +1202,7 @@ declare interface Skill {
 	 * 
 	 * 注：即触发技能/主动发动技能的提示描述信息；
 	 */
-	prompt?: string | TwoParmFun<SkillTrigger, Player, string>;
+	prompt?: string | ((event: GameEvent, player: Player) => string);
 	//| TwoParmFun<Trigger, Player, String> | TwoParmFun<Links, Player, string> //好像没见到用
 	/**
 	 * 二次提示
@@ -1213,13 +1213,13 @@ declare interface Skill {
 	 * 
 	 * 注：即发动技能时，prompt提示下的提示（默认显示技能描述）；
 	 */
-	prompt2?: string | TwoParmFun<SkillTrigger, Player, string> | boolean;
+	prompt2?: string | ((event: GameEvent, player: Player) => string) | boolean;
 	/** 
 	 * 在ui.click.skill中使用，若当前event.skillDialog不存在，可以用该方法生成的文本的dialog作为skillDialog；
 	 * 
 	 * 若没有该方法，可以使用翻译中该技能的info信息代替。
 	 */
-	promptfunc?: TwoParmFun<SkillTrigger, Player, string>;
+	promptfunc?: ((event: GameEvent, player: Player) => string);
 	/** 表示这次描述非常长(涉及用了h5文本)，设置为true，重新执行ui.update()，设置skillDialog.forcebutton为true */
 	longprompt?: boolean;
 
@@ -1227,7 +1227,7 @@ declare interface Skill {
 	/** 过滤不可选择按钮 */
 	filterButton?(button: Button, player: Player): boolean;
 	/** 按钮的可选数量，大多数情况下，默认1 */
-	selectButton?: number | Select | NoneParmFum<number | Select>;
+	selectButton?: number | Select | (() => number | Select);
 	complexSelect?: boolean;
 	/** 复合选牌：即每选完一次牌后，都会重新下一次对所有牌的过滤 */
 	complexCard?: boolean;
@@ -1421,7 +1421,7 @@ declare interface Skill {
 	// /** ai用于检测的方法：用于事件触发技能 */
 	// check?(event:GameEvent,player:Player):number|boolean;
 	// check?():number|boolean;
-	// check?:OneParmFun<Card,number|boolean> | OneParmFun<Button,number|boolean> | OneParmFun<Player,number|boolean> | TwoParmFun<GameEvent,Player,number|boolean>;
+	// check?:((arg: Card) => number|boolean) | ((arg: Button) => number|boolean) | ((arg: Player) => number|boolean) | ((arg0: GameEvent, arg1: Player) => number | boolean);
 
 	//event.addTrigger,默认对于技能优先度的标记：rule<card<equip（注：silent默认比同级多1优先度）
 	/** 装备技能 */
@@ -1463,7 +1463,7 @@ declare interface Skill {
 	 * 
 	 * callback就是作为以上事件的content使用
 	 */
-	callback?: ContentFuncByAll | GeneratorContentFuncByAll | OldContentFuncByAll;
+	callback?: ContentFuncByAll | OldContentFuncByAll;
 	/**
 	 * v1.10.11
 	 * 
@@ -1759,7 +1759,7 @@ declare interface SkillAI {
 	 * ai发动技能的优先度 【也用于卡牌的优先度】
 	 * 要具体比什么先发发动，可以使用函数返回结果
 	 */
-	order?: number | ((item: SkillOrCard, player: Player) => number | void);
+	order?: number | ((item: string | Card | { name: string }, player: Player) => number | void);
 	/** 
 	 * 发动技能是身份暴露度（0~1，相当于概率）
 	 * 取值范围为0~1,用于帮助AI判断身份,AI中未写expose其他AI将会无法判断其身份
@@ -1925,19 +1925,19 @@ declare interface SkillAI {
 	 *      tiesuo,bingliang 4>huogong [3,1]>jiedao 2>taoyuan,shandian 0
 	 * 注：当value的结果为一个数组时，则标识当前card在手牌中位置，根据该牌所处位置，获得对应下标不同的value；
 	 */
-	value?: number | number[] | TwoParmFun<Player, any, number>;
+	value?: number | number[] | ((player: Player, arg1: any) => number);
 	/** 该装备的价值 */
-	equipValue?: number | TwoParmFun<Card, Player, number>;
+	equipValue?: number | ((card: Card, player: Player) => number);
 	/** 主要是使用在card的ai属性，武将技能可以无视 */
 	basic?: {
 		/** 该装备的价值，同equipValue，优先使用equipValue，没有则ai.basic.equipValue */
-		equipValue?: number | TwoParmFun<Card, Player, number>;
+		equipValue?: number | ((card: Card, player: Player) => number);
 		/** 优先度 */
-		order?: number | TwoParmFun<Card, Player, number>;
+		order?: number | ((card: Card, player: Player) => number);
 		/** 回合外留牌的价值(该牌可用价值),number为当前事件玩家的手牌的下标 */
-		useful?: SAAType<number> | TwoParmFun<Card, number, SAAType<number>>;
+		useful?: SAAType<number> | ((card: Card, cardIndex: number) => SAAType<number>);
 		/** 该牌的使用价值 */
-		value?: SAAType<number> | FourParmFun<Card, Player, number, any, SAAType<number>>;
+		value?: SAAType<number> | ((card: Card, player: Player, num: number, method: any) => SAAType<number>);
 
 		[key: string]: any;
 	};
@@ -2003,7 +2003,7 @@ declare interface SkillAI {
 }
 
 /** 卡牌的tag的类型，注：作为方法的第二参数很少用上（一般用于二级类型判断） */
-type CardTagType = number | TwoParmFun<Card, string, boolean | number> | OneParmFun<Card, boolean | number>;
+type CardTagType = number | ((arg0: Card, arg1: string) => boolean | number) | ((card: Card) =>  boolean | number);
 
 /** 
  * 选择按钮配置 

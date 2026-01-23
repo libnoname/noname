@@ -166,7 +166,7 @@ export class Library {
 	};
 	cardPackInfo = {};
 	/**
-	 * @type { SMap<number> }
+	 * @type { Record<string, number> }
 	 */
 	skin = {};
 	onresize = [];
@@ -442,7 +442,7 @@ export class Library {
 		return this.#relatedTrigger;
 	}
 	/**
-	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
+	 * @type { { character?: Record<string, importCharacterConfig>, card?: Record<string, importCardConfig>, mode?: Record<string, importModeConfig>, player?: Record<string, importPlayerConfig>, extension?: Record<string, importExtensionConfig>, play?: Record<string, importPlayConfig> } }
 	 */
 	imported = {};
 	layoutfixed = ["chess", "tafang", "stone"];
@@ -11621,13 +11621,13 @@ export class Library {
 	/**
 	 * @type {{
 	 * 	global: string[];
-	 * 	globalmap: SMap<Player[]>;
-	 * 	storage: SMap<any>;
-	 * 	undist: SMap<any>;
-	 * 	thers: SMap<any>;
-	 * 	zhu: SMap<any>;
-	 * 	zhuSkill: SMap<any>;
-	 * 	land_used: SMap<any>;
+	 * 	globalmap: Record<string, Player[]>;
+	 * 	storage: Record<string, any>;
+	 * 	undist: Record<string, any>;
+	 * 	thers: Record<string, any>;
+	 * 	zhu: Record<string, any>;
+	 * 	zhuSkill: Record<string, any>;
+	 * 	land_used: Record<string, any>;
 	 * 	[key: string]: Skill;
 	 * }}
 	 */

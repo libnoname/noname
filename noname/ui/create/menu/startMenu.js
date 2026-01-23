@@ -214,7 +214,7 @@ export const startMenuData = {
 };
 
 /**
- * @type { SMap<null | HTMLElement> }
+ * @type { Record<string, null | HTMLElement> }
  */
 const connectDisplayMap = {
 	connect_player_number: null,

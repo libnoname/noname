@@ -76,7 +76,7 @@ export class Card extends HTMLDivElement {
 			lib.setIntro(this);
 		}
 	}
-	/** @type { SMap<HTMLDivElement> } */
+	/** @type { Record<string, HTMLDivElement> } */
 	// eslint-disable-next-line no-unreachable
 	node;
 	/**
@@ -84,7 +84,7 @@ export class Card extends HTMLDivElement {
 	 */
 	name;
 	/**
-	 * @type { SMap<any> }
+	 * @type { Record<string, any> }
 	 */
 	storage;
 	/**

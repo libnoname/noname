@@ -7,37 +7,14 @@ type styleObj = {
     [key in keyof CSSStyleDeclaration]?: string;
 }
 
-/** key为字符串的map */
-interface SMap<V> {
-    [key: string]: V
-}
+/** 
+ * @deprecated
+ * key为字符串的Record
+ */
+type SMap<V> = Record<string, V>;
 
-/** key为number的map */
-interface NMap<V> {
-    [key: number]: V
-}
-type WithAnyString<T extends string> = T | (string & {})
-
-//从0个参数到任意参数的方法结构声明
-type NoneParmFum<T> = () => T;
-type OneParmFun<U, T> = (arg0: U) => T;
-type TwoParmFun<U1, U2, T> = (arg0: U1, arg1: U2) => T;
-type ThreeParmFun<U1, U2, U3, T> = (arg0: U1, arg1: U2, arg2: U3) => T;
-type FourParmFun<U1, U2, U3, U4, T> = (arg0: U1, arg1: U2, arg2: U3, arg3: U4) => T;
-type RestParmFun<T> = (...args: any[]) => T;
-type RestParmFun2<U, T> = (...args: U[]) => T;
-
-//尝试增加的符合类型声明
-/** SingleAndArrayType:单体与集合类型 */
+/** 单体与集合类型 */
 type SAAType<T> = T | T[];
-/** 再价格可以返回这种类型的方法 */
-type SAAFType<T> = T | T[] | RestParmFun<T>;
-/** 有name属性的对象 */
-type NameType = { name: string };
-/** 技能或者卡牌 */
-type SkillOrCard = string | NameType | Card;
-/** 卡牌或者卡牌集合 */
-type CCards = SAAType<Card>;
 
 
 type Row_Item = SAAType<Card | Player | string>;
@@ -75,22 +52,6 @@ declare type RowItem = Row_Item | Row_Item_Option<Row_Item>;
 
 /** 技能content */
 declare type ContentFuncByAll = (event: GameEvent, trigger: GameEvent, player: Player) => Promise<any>;
-
-declare type GeneratorContentFuncByAll = (event: GameEvent, map: {
-    event: GameEvent,
-    step: number,
-    source: Player,
-    player: Player,
-    target: Player,
-    targets: Player[],
-    card: Card,
-    cards: Card[],
-    skill: string,
-    forced: boolean,
-    num: number,
-    trigger: GameEvent,
-    result: Result
-}) => Generator<any, void, unknown>;
 
 declare type OldContentFuncByAll = () => void
 
@@ -155,40 +116,40 @@ declare interface importCharacterConfig {
     /** 
      * 设置武将基本配置信息
      */
-    character: SMap<Character>;
+    character: Record<string, Character>;
     /** 
      * 设置武将介绍 
      * */
-    characterIntro?: SMap<string>;
+    characterIntro?: Record<string, string>;
     /** 
      * 设置武将标题（用于写称号或注释）
      * */
-    characterTitle?: SMap<string>;
+    characterTitle?: Record<string, string>;
     /** 
      * 设置技能 
      * */
-    skill?: SMap<Skill>;
+    skill?: Record<string, Skill>;
     /** 
      * 设置珠联璧合武将 
      * */
-    perfectPair?: SMap<string[]>;
+    perfectPair?: Record<string, string[]>;
     /** 
      * 设置指定武将的过滤方法（传入一个mode，用于过滤玩法模式） 
      * */
-    characterFilter?: SMap<OneParmFun<string, boolean>>;
+    characterFilter?: Record<string, (mod: string) => boolean>;
     /** 
      * 设置在武将包界面分包
      */
-    characterSort?: SMap<SMap<string[]>>;
+    characterSort?: Record<string, Record<string, string[]>>;
     /** 
      * 设置该武将包独有的卡牌（或者是特殊卡牌） 
      * 
      * */
-    card?: SMap<any>;
+    card?: Record<string, any>;
     /** 
      * 设置自定义卡牌类型的排序用的优先级
      * */
-    cardType?: SMap<number>;
+    cardType?: Record<string, number>;
     /**
      * 设置动态翻译（本地化）【v1.9.105】
      * 
@@ -196,45 +157,45 @@ declare interface importCharacterConfig {
      * 
      * Player:指技能拥有者
      */
-    dynamicTranslate?: SMap<OneParmFun<Player, string>>;
+    dynamicTranslate?: Record<string, (player: Player) => string>;
     /** 
      * 选择武将时，武将左下角可进行替换的武将配置【v1.9.106.3】 
      * 
      * */
-    characterReplace?: SMap<string[]>;
+    characterReplace?: Record<string, string[]>;
 
-    translate?: SMap<string>;
+    translate?: Record<string, string>;
     /**
      * 对应lib.element
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    element?: SMap<any>;
+    element?: Record<string, any>;
     /**
      * 对应ai
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ai?: SMap<any>;
+    ai?: Record<string, any>;
     /**
      * 对应ui
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ui?: SMap<any>;
+    ui?: Record<string, any>;
     /**
      * 对应game
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    game?: SMap<any>;
+    game?: Record<string, any>;
     /**
      * 类型：键值对
      * 
      * 作用：对应get
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    get?: SMap<any>;
+    get?: Record<string, any>;
     /**
      * 帮助内容将显示在菜单－选项－帮助中
      * 
@@ -253,7 +214,7 @@ declare interface importCharacterConfig {
      * ```
      * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
      */
-    help?: SMap<string>;
+    help?: Record<string, string>;
 
     [key: string]: any;
 }
@@ -270,17 +231,17 @@ declare interface importCardConfig {
     /** 
      * 设置卡牌
      * */
-    card: SMap<Card>;
+    card: Record<string, Card>;
     /** 
      * 设置卡牌技能 
      * */
-    skill: SMap<Skill>;
+    skill: Record<string, Skill>;
     /** 
      * 设置从牌堆添加指定卡牌
      * */
     list: CardBaseUIData[];
     /** 卡牌翻译 */
-    translate: SMap<string> | string;
+    translate: Record<string, string> | string;
     /**
      * 帮助内容将显示在菜单－选项－帮助中
      * 
@@ -299,7 +260,7 @@ declare interface importCardConfig {
      * ```
      * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
      */
-    help?: SMap<string>;
+    help?: Record<string, string>;
 
     [key: string]: any;
 }
@@ -311,21 +272,21 @@ declare interface importModeConfig {
     /** 模式名 */
     name: string;
     /** 技能（主要是放些该模式下特有的技能） */
-    skill?: SMap<Skill>;
+    skill?: Record<string, Skill>;
     /** 
      * 武将包
      */
-    characterPack?: SMap<SMap<Character>>;
+    characterPack?: Record<string, Record<string, Character>>;
     /**
      * 武将分类排序
      */
-    characterSort?: SMap<SMap<string[]>>;
+    characterSort?: Record<string, Record<string, string[]>>;
     /** 卡牌（主要是放些该模式下特有的卡牌） */
-    card?: SMap<Card>;
+    card?: Record<string, Card>;
     /** 
      * 卡包
      */
-    cardPack?: SMap<SMap<string[]>>;
+    cardPack?: Record<string, Record<string, string[]>>;
     /**
      * mode的init方法（若有，init是最早启动的方法）
      */
@@ -353,25 +314,25 @@ declare interface importModeConfig {
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    element?: SMap<any>;
+    element?: Record<string, any>;
     /**
      * 对应ai
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ai?: SMap<any>;
+    ai?: Record<string, any>;
     /**
      * 对应ui
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ui?: SMap<any>;
+    ui?: Record<string, any>;
     /**
      * 对应game
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    game?: SMap<any>;
+    game?: Record<string, any>;
 
     /**
      * 类型：键值对
@@ -379,7 +340,7 @@ declare interface importModeConfig {
      * 作用：对应get
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    get?: SMap<any>;
+    get?: Record<string, any>;
     /**
      * 帮助内容将显示在菜单－选项－帮助中
      * 
@@ -398,7 +359,7 @@ declare interface importModeConfig {
      * ```
      * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
      */
-    help?: SMap<string>;
+    help?: Record<string, string>;
 
     [key: string]: any;
 }
@@ -421,25 +382,25 @@ declare interface importPlayerConfig {
       * 
       * 若里面是项目内的同名字段，将覆盖原方法
       */
-    element?: SMap<any>;
+    element?: Record<string, any>;
     /**
      * 对应ai
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ai?: SMap<any>;
+    ai?: Record<string, any>;
     /**
      * 对应ui
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ui?: SMap<any>;
+    ui?: Record<string, any>;
     /**
      * 对应game
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    game?: SMap<any>;
+    game?: Record<string, any>;
 
     /**
      * 类型：键值对
@@ -447,7 +408,7 @@ declare interface importPlayerConfig {
      * 作用：对应get
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    get?: SMap<any>;
+    get?: Record<string, any>;
 
     [key: string]: any;
 }
@@ -475,13 +436,13 @@ declare interface importExtensionConfig {
      * 
      * (也是游戏编辑器中的选项代码部分)
      */
-    config?: SMap<SelectConfigData>;
+    config?: Record<string, SelectConfigData>;
     /**
      * 联机配置（目前扩展已经不能联机）
      * 
      * 特殊接口：update
      */
-    connect?: SMap<SelectConfigData>;
+    connect?: Record<string, SelectConfigData>;
     /**
      * 扩展的包信息。
      * 
@@ -497,7 +458,7 @@ declare interface importExtensionConfig {
      * @param config 扩展选项/配置
      * @param pack 扩展定义的武将、卡牌和技能等
      */
-    content?(config: SMap<any>, pack: PackageData): void;
+    content?(config: Record<string, any>, pack: PackageData): void;
     /**
      * 函数执行时机为游戏数据加载之前，且不受禁用扩展的限制，除添加模式外请慎用
      * 
@@ -508,7 +469,7 @@ declare interface importExtensionConfig {
      * 注2：当前扩展联机时，需要直接再此扩展；为了方便扩展，大部分扩展直接在这里扩展；
      * @param data 保存在lib.config中”extension_扩展名“为前缀的配置
      */
-    precontent?(data?: SMap<any>): void;
+    precontent?(data?: Record<string, any>): void;
     /** 删除该扩展后调用 */
     onremove?(): void;
     /** 
@@ -529,7 +490,7 @@ declare interface importExtensionConfig {
      * ```
      * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
      */
-    help?: SMap<string>;
+    help?: Record<string, string>;
     /** 相关文件名 */
     files?: {
         character?: string[],
@@ -545,23 +506,23 @@ declare interface importExtensionConfig {
      * 对应lib.element,
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    element?: SMap<any>;
+    element?: Record<string, any>;
     /**
      * 对应ai
      */
-    ai?: SMap<any>;
+    ai?: Record<string, any>;
     /**
      * 对应ui
      */
-    ui?: SMap<any>;
+    ui?: Record<string, any>;
     /**
      * 对应game
      */
-    game?: SMap<any>;
+    game?: Record<string, any>;
     /**
      * 对应get
      */
-    get?: SMap<any>;
+    get?: Record<string, any>;
     /** 
      * 可以继续加入更多对象：
      * 这些对象会对应附加在lib中，或替换对应lib位置的对象：
@@ -584,44 +545,44 @@ declare interface importPlayConfig {
     /** 
      * 设置技能 
      * */
-    skill?: SMap<Skill>;
+    skill?: Record<string, Skill>;
     /** 
      * 设置该武将包独有的卡牌（或者是特殊卡牌） 
      * 
      * */
-    card?: SMap<any>;
-    translate?: SMap<string>;
+    card?: Record<string, any>;
+    translate?: Record<string, string>;
     /**
      * 对应lib.element
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    element?: SMap<any>;
+    element?: Record<string, any>;
     /**
      * 对应ai
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ai?: SMap<any>;
+    ai?: Record<string, any>;
     /**
      * 对应ui
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    ui?: SMap<any>;
+    ui?: Record<string, any>;
     /**
      * 对应game
      * 
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    game?: SMap<any>;
+    game?: Record<string, any>;
     /**
      * 类型：键值对
      * 
      * 作用：对应get
      * 若里面是项目内的同名字段，将覆盖原方法
      */
-    get?: SMap<any>;
+    get?: Record<string, any>;
     /**
      * 帮助内容将显示在菜单－选项－帮助中
      * 
@@ -640,7 +601,7 @@ declare interface importPlayConfig {
      * ```
      * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
      */
-    help?: SMap<string>;
+    help?: Record<string, string>;
     [key: string]: any;
 }
 
@@ -660,13 +621,13 @@ declare interface SelectConfigData {
     /** 
      * 【核心】二级菜单配置(当前config内容的菜单)
      */
-    item?: SMap<string> | NoneParmFum<SMap<string>>;
+    item?: Record<string, string> | (() => Record<string, string>);
     /** 
      * 功能说明
      * 
      * 若没有，也不是其他特殊的选项，则显示“设置 + name”
      */
-    intro?: string | NoneParmFum<string>;
+    intro?: string | (() => string);
 
     /**
      * 显示bar(添加了“withbar”,有一定的居中效果，即当前menu的头部或者尾部)
@@ -676,7 +637,7 @@ declare interface SelectConfigData {
      * @param create 即内部自定义的createNode方法，一般不直接使用该方法，目前来看，可以内部重新定义覆盖该方法，自己达成创建item列表的方式
      * @param switcher 当前config的item的node节点
      */
-    visualBar?: (node: HTMLDivElement, item: SMap<string>, create: OneParmFun<string, void>, switcher?: HTMLDivElement) => void
+    visualBar?: (node: HTMLDivElement, item: Record<string, string>, create: (arg: string) =>  void, switcher?: HTMLDivElement) => void
     /**
      * 显示菜单
      * 显示一个以3列为一行的显示列表（内部实现）
@@ -732,7 +693,7 @@ declare interface SelectConfigData {
     onswitch?(bool: boolean): void;
 
     /** 核心，更新方法 */
-    update?(config: SMap<any>, map: SMap<HTMLDivElement>): any;
+    update?(config: Record<string, any>, map: Record<string, HTMLDivElement>): any;
 
     /**
      * 在玩法模式选择中： 
@@ -740,7 +701,7 @@ declare interface SelectConfigData {
      * 在选项中：
      *  每次改变该选项，都会重置当前的ui选项（增加，减少一些功能项） 
      */
-    restart?: boolean | NoneParmFum<boolean>;
+    restart?: boolean | (() => boolean);
     /** 应该与unfrequent功能时一致的，相反判断，直接显示出来的功能项 */
     frequent?: boolean,
     /** 加入更多中（随着下拉出现），用得较多 */
@@ -771,19 +732,19 @@ declare interface PackageData {
 
     /** 武将导入信息 */
     character?: {
-        character: SMap<Character>;
-        translate: SMap<string>;
+        character: Record<string, Character>;
+        translate: Record<string, string>;
     };
     /** 卡牌导入信息 */
     card?: {
-        card: SMap<Card>;
-        translate: SMap<string>;
+        card: Record<string, Card>;
+        translate: Record<string, string>;
         list: CardBaseUIData[];
     };
     /** 技能导入信息 */
     skill?: {
-        skill: SMap<Skill>;
-        translate: SMap<string>;
+        skill: Record<string, Skill>;
+        translate: Record<string, string>;
     };
 
     /** 相关文件名（扩展所使用的一些图片） */
@@ -796,13 +757,13 @@ declare interface PackageData {
     /** 主代码中，pack.code包括以下属性： */
     code?: {
         /** 扩展的config配置信息 */
-        config?: SMap<SelectConfigData>;
+        config?: Record<string, SelectConfigData>;
         /** 扩展主代码 */
-        content?: (config: SMap<any>, pack: PackageData) => void;
+        content?: (config: Record<string, any>, pack: PackageData) => void;
         /** 扩展帮助信息 */
-        help?: SMap<string>;
+        help?: Record<string, string>;
         /** 扩展启动代码 */
-        precontent?: (data?: SMap<any>) => void;
+        precontent?: (data?: Record<string, any>) => void;
     }
 }
 
@@ -856,7 +817,7 @@ interface When {
      * })
      * ```
     */
-    vars(obj: SMap<any>): When
+    vars(obj: Record<string, any>): When
     /**
     * 传递外部作用域
     *
@@ -909,7 +870,7 @@ type _AllCardName = "caoyao" | "dinvxuanshuang" | "du" | "fengyinzhidan" | "hufu
     "yuanbaorou" | "yuchandui" | "yuchangen" | "yuchankan" | "yuchankun" | "yuchanli" | "yuchanqian" | "yuchanxun" | "yuchanzhen" |
     "zhiluxiaohu" | "zhuquezhizhang"
 
-type AllCardName = WithAnyString<_AllCardName>
+type AllCardName = _AllCardName | (string & {})
 
 //--------------------
 
@@ -933,7 +894,7 @@ type Signal = Signal_Event | Signal_Trigger | (string & {})
 
 
 type EnableSignal1 = 'chooseToUse' | 'chooseToRespond' | 'chooseCard'
-//技能的enbale
+//技能的enable
 type EnableSignal = 'phaseUse' | EnableSignal1 | EnableSignal1[]
 
 
@@ -981,7 +942,7 @@ type Stat = {
     /** 出牌(不同名字的牌单独计数) */
     card: Record<AllCardName, number>;
     /** 使用技能（不同名字的技能单独计数） */
-    skill: SMap<number>;
+    skill: Record<string, number>;
     /** 伤害 */
     damage?: number;
     /** 受到伤害 */
@@ -997,7 +958,7 @@ type Stat = {
 
 declare interface menuData {
     /** 菜单左方的数据列表 */
-    leftPaneData: { name: string; attrs: SMap<any> }[][];
+    leftPaneData: { name: string; attrs: Record<string, any> }[][];
     /** 缓存的vue实例 */
     rightPaneApps: Map<
       HTMLElement,
@@ -1011,7 +972,7 @@ declare interface menuData {
     /** 初始化菜单左方的数据列表
      * @param connectMenu 是否是联机菜单
      */
-    initLeftPaneData(connectMenu: boolean): { name: string; attrs: SMap<any> }[][];
+    initLeftPaneData(connectMenu: boolean): { name: string; attrs: Record<string, any> }[][];
     /** 获取默认选中的元素 */
     getDefaultActive(
       connectMenu: boolean,

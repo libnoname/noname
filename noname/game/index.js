@@ -2599,8 +2599,6 @@ export class Game {
 		};
 	}
 	/**
-	 * @deprecated 请使用get.Audio.skill().fileList
-	 *
 	 * 根据skill中的audio,audioname,audioname2和player来获取音频地址列表
 	 * @typedef {[string,number]|string|number|boolean} audioInfo
 	 * @typedef {{audio: audioInfo, audioname?:string[], audioname2?:{[playerName: string]: audioInfo}}} skillInfo
@@ -2613,8 +2611,6 @@ export class Game {
 		return get.Audio.skill({ skill, player, info: skillInfo }).fileList;
 	}
 	/**
-	 * @deprecated 请使用get.Audio.skill().textList
-	 *
 	 * 根据skill中的audio,audioname,audioname2和player来获取技能台词列表
 	 * @param { string } skill  技能名
 	 * @param { Player | Object | string } [player]  角色/角色名
@@ -2625,8 +2621,6 @@ export class Game {
 		return get.Audio.skill({ skill, player, info: skillInfo }).textList;
 	}
 	/**
-	 * @deprecated 请使用get.Audio.skill().audioList
-	 *
 	 * 根据skill中的audio,audioname,audioname2和player来获取技能台词列表及其对应的源文件名
 	 * @param { string } skill  技能名
 	 * @param { Player | Object | string } [player]  角色/角色名
@@ -2637,8 +2631,6 @@ export class Game {
 		return get.Audio.skill({ skill, player, info: skillInfo }).audioList;
 	}
 	/**
-	 * @deprecated 请使用get.Audio.die().audioList
-	 *
 	 * 获取角色死亡时能播放的所有阵亡语音
 	 * @param { string | Player } player  角色名
 	 * @returns 语音地址列表
@@ -6358,7 +6350,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	}
 	/**
 	 * @param { string } skill
-	 * @param { lib.element.Player } player
+	 * @param { Player } player
 	 */
 	removeGlobalSkill(skill, player) {
 		const players = lib.skill.globalmap[skill];
@@ -6414,6 +6406,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		return extensionName !== void 0 && _status.extensionLoaded.includes(extensionName);
 	}
 	/**
+	 * @todo deprecate
 	 * @param { string } extensionName
 	 * @param { Function } runnable
 	 */

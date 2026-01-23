@@ -30175,7 +30175,7 @@ const skills = {
 		forced: true,
 		popup: false,
 		filter(event, player) {
-			return event.source != player && event.getParent(2).name == "useCard" && event.getParent(3).name == "wylianjiInserted";
+			return event.source != player && event.getParent(2).name == "useCard" && event.getParent(4).name == "wylianji";
 		},
 		init(player) {
 			player.storage.moucheng = 0;
