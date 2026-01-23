@@ -75,6 +75,7 @@ declare type RowItem = Row_Item | Row_Item_Option<Row_Item>;
 
 /** 技能content */
 declare type ContentFuncByAll = (event: GameEvent, trigger: GameEvent, player: Player) => Promise<any>;
+declare type ContentFuncsByAll = ((event: GameEvent, trigger: GameEvent, player: Player, result: Partial<Result>) => Promise<any>)[];
 
 declare type GeneratorContentFuncByAll = (event: GameEvent, map: {
     event: GameEvent,
