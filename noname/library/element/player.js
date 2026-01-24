@@ -1450,7 +1450,7 @@ export class Player extends HTMLDivElement {
 	 * @param { (player: Player, cards: Card[]) => any } [recastingLose]
 	 * @param { (player: Player, cards: Card[]) => any } [recastingGain]
 	 */
-	recast(cards, recastingLose = (player, cards) => (player.loseToDiscardpile(cards).log = false), recastingGain = (player, cards) => (player.draw(cards.length).log = false)) {
+	recast(cards, recastingLose, recastingGain) {
 		const recast = game.createEvent("recast");
 		recast.player = this;
 		const isArray = Array.isArray(cards);
@@ -1466,7 +1466,11 @@ export class Player extends HTMLDivElement {
 			if (recastingLose === null) {
 				console.trace(`recast的recastingLose参数不应传入null,可以用void 0或undefined占位`);
 			}
-			recastingLose = (player, cards) => (player.loseToDiscardpile(cards).log = false);
+			recastingLose = (player, cards) => {
+				const next = player.loseToDiscardpile(cards);
+				next.log = false;
+				return next;
+			};
 		}
 		recast.recastingLose = recastingLose;
 		recast.recastingLosingEvents = [];
@@ -1474,7 +1478,11 @@ export class Player extends HTMLDivElement {
 			if (recastingLose === null) {
 				console.trace(`recast的recastingGain参数不应传入null,可以用void 0或undefined占位`);
 			}
-			recastingGain = (player, cards) => (player.draw(cards.length).log = false);
+			recastingGain = (player, cards) => {
+				const next = player.draw(cards.length);
+				next.log = false;
+				return next;
+			};
 		}
 		recast.recastingGain = recastingGain;
 		recast.recastingGainingEvents = [];
