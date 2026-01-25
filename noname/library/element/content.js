@@ -5457,6 +5457,8 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
+
 			if (event.result != "ai") {
 				return;
 			}
@@ -5781,6 +5783,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result != "ai") {
 				return;
 			}
@@ -7567,6 +7570,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result == "ai") {
 				if (event.processAI) {
 					event.result = event.processAI();
@@ -7918,6 +7922,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result != "ai") {
 				return;
 			}
@@ -8005,6 +8010,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result == "ai") {
 				game.check();
 				if ((ai.basic.chooseTarget(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
@@ -8058,6 +8064,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result != "ai") {
 				return;
 			}
@@ -8696,6 +8703,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result == "ai") {
 				game.check();
 				if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
@@ -8885,6 +8893,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result == "ai") {
 				game.check();
 				if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
@@ -9106,6 +9115,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			const { forced } = event;
 			if (event.result == "ai") {
 				game.check();
 				if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
