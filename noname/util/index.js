@@ -44,35 +44,15 @@ export class Uninstantable {
 
 /**
  * 暂停x毫秒
- *
- * @param { number } ms - 毫秒数
- * @param { Object } [option] - 选项
- * @param { AbortSignal } [option.signal] - 中止信号
- * @param { boolean } [option.rejectOnAbort = true] - 中止时是否拒绝Promise
+ * @param { number } ms
  * @returns { Promise<void> }
  */
-export function delay(ms, option = {}) {
-	const { signal, rejectOnAbort = true } = option;
-	if (signal?.aborted) {
-		return rejectOnAbort ? Promise.reject(signal.reason) : Promise.resolve();
-	}
-
-	return new Promise((resolve, reject) => {
-		const abort = () => {
-			clearTimeout(timeout);
-			if (rejectOnAbort) {
-				reject(signal?.reason);
-			} else {
-				resolve();
-			}
-		};
-		const done = () => {
-			signal?.removeEventListener("abort", abort);
+export function delay(ms) {
+	return new Promise(resolve => {
+		let timeout = setTimeout(() => {
 			clearTimeout(timeout);
 			resolve();
-		};
-		let timeout = setTimeout(done, ms);
-		signal?.addEventListener("abort", abort, { once: true });
+		}, ms);
 	});
 }
 

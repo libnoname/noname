@@ -1749,7 +1749,7 @@ player.removeVirtualEquip(card);
 
 			const songDuration = beatmap.timeleap[beatmap.timeleap.length - 1] + beatmap.speed * 100 + 1000 + (beatmap.current || 0);
 			const control = new AbortController();
-			const songPlaybackDelay = delay(songDuration, { signal: control.signal, rejectOnAbort: false });
+			const songPlaybackDelay = delayExt(songDuration, { signal: control.signal, rejectOnAbort: false });
 
 			const delays = [songPlaybackDelay];
 			if (!_status.connectMode) {
@@ -1763,7 +1763,7 @@ player.removeVirtualEquip(card);
 				};
 
 				document.addEventListener(lib.config.touchscreen ? "touchend" : "click", skip);
-				const skipDelay = delay(songDuration, { signal: control.signal, rejectOnAbort: false }).then(() => {
+				const skipDelay = delayExt(songDuration, { signal: control.signal, rejectOnAbort: false }).then(() => {
 					document.removeEventListener(lib.config.touchscreen ? "touchend" : "click", skip);
 				});
 				delays.push(skipDelay);
@@ -1831,6 +1831,42 @@ player.removeVirtualEquip(card);
 		);
 
 		event.result = result;
+
+		return;
+
+		/**
+		 * 暂停x毫秒
+		 *
+		 * @param { number } ms - 毫秒数
+		 * @param { Object } [option] - 选项
+		 * @param { AbortSignal } [option.signal] - 中止信号
+		 * @param { boolean } [option.rejectOnAbort = true] - 中止时是否拒绝Promise
+		 * @returns { Promise<void> }
+		 */
+		function delayExt(ms, option = {}) {
+			const { signal, rejectOnAbort = true } = option;
+			if (signal?.aborted) {
+				return rejectOnAbort ? Promise.reject(signal.reason) : Promise.resolve();
+			}
+		
+			return new Promise((resolve, reject) => {
+				const abort = () => {
+					clearTimeout(timeout);
+					if (rejectOnAbort) {
+						reject(signal?.reason);
+					} else {
+						resolve();
+					}
+				};
+				const done = () => {
+					signal?.removeEventListener("abort", abort);
+					clearTimeout(timeout);
+					resolve();
+				};
+				let timeout = setTimeout(done, ms);
+				signal?.addEventListener("abort", abort, { once: true });
+			});
+		}
 	},
 
 	async chooseToMove(event, trigger, player) {
