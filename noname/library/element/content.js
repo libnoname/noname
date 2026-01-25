@@ -2706,13 +2706,11 @@ player.removeVirtualEquip(card);
 		const defendChoose = [event.title + "：请选择一种策略", defendButtons];
 		const attackChoose = [event.title + "：请选择一种策略", attackButtons];
 
-		const playerChoose = [defendChoose, true];
-		const targetChoose = [attackChoose, true];
 		let playerResult;
 		let targetResult;
 		if (_status.connectMode) {
-			playerChoose.unshift(player);
-			targetChoose.unshift(target);
+			const playerChoose = [player, defendChoose, true];
+			const targetChoose = [target, attackChoose, true];
 
 			const choose = [playerChoose, targetChoose];
 			/** @type {Record<string, Partial<Result>>} */
@@ -2733,11 +2731,11 @@ player.removeVirtualEquip(card);
 			playerResult = result[player.playerid].links[0][2];
 			targetResult = result[target.playerid].links[0][2];
 		} else {
-			const playerChooseEvent = player.chooseButton(playerChoose);
+			const playerChooseEvent = player.chooseButton(defendChoose, true);
 			playerChooseEvent.ai = event.ai;
 			playerResult = await playerChooseEvent.forResult().then(result => result.links[0][2]);
 
-			const targetChooseEvent = target.chooseButton(targetChoose);
+			const targetChooseEvent = target.chooseButton(attackChoose, true);
 			targetChooseEvent.ai = event.ai;
 			targetResult = await targetChooseEvent.forResult().then(result => result.links[0][2]);
 		}
