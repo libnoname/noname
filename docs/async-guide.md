@@ -255,7 +255,8 @@ let skill = {
 原先分步情况下你可以在下一步中用 `result`变量来获取上一步事件的结果，而现在，当我们 `await`之后，我们可以这样做：
 
 ```javascript
-let cards = await player.draw(2).forResult();
+let result = await player.draw(2).forResult();
+let cards = result.cards;
 ```
 
 你或许也发现了，无论是无名杀的分步，还是Javascript原来的回调异步，都会存在“结果”。就好比你做一件事，就算最后没有因为这件事得到任何东西，此时的情况也是一种“结果”
@@ -591,6 +592,8 @@ function funA() {
 你会发现，这很像 `Async Content`。实际上，当时 `Generator Content`或许会代替现在 `Async Content`的地位，因为两者的优缺点一致，`Generator Content`也能轻松实现异步功能；但时至今日，我们庆幸最终采用了 `Async Content`，并将事件改成了可 `await`的东西——这使得等待归一，从而使代码能实现更多功能，而 `Generator Content`的 `yield`却无法简单的实现
 
 只不过这一点过于复杂，本章节不会阐述，但额外章节会考虑讲述这一方面的内容
+
+再v1.11.1后，`Generator Content`已被废弃，只有打开兼容模式才能继续使用
 
 ### `Array Content`
 
