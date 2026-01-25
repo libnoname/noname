@@ -576,7 +576,7 @@ function funA() {
 ```javascript
 {
     content: function * (event, { player }) {
-        let cards = yield player.draw(2);
+        let { cards } = yield player.draw(2);
 
         if (player.countCards("h") > 5) {
             yield player.chooseToDiscard(2, true);
@@ -593,7 +593,7 @@ function funA() {
 
 只不过这一点过于复杂，本章节不会阐述，但额外章节会考虑讲述这一方面的内容
 
-再v1.11.1后，`Generator Content`已被废弃，只有打开兼容模式才能继续使用
+在v1.11.1后，`Generator Content`已被废弃，只有打开兼容模式才能继续使用
 
 ### `Array Content`
 
