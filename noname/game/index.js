@@ -10312,7 +10312,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		let sortedTargets = targets.sort(sort);
 		for (let i = 0; i < sortedTargets.length; i++) {
 			let target = sortedTargets[i];
-			await Promise.resolve(asyncFunc(target, i));
+			await Promise.try(asyncFunc, target, i);
 		}
 	}
 	/**
