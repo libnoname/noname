@@ -6124,7 +6124,7 @@ player.removeVirtualEquip(card);
 				delay = game.delay(0, get.delayx(500, 500));
 				break;
 			case "give":
-			case "giveAuto":
+			case "giveAuto": {
 				if (!player) {
 					break;
 				}
@@ -6157,6 +6157,7 @@ player.removeVirtualEquip(card);
 				}
 				delay = game.delay(0, get.delayx(500, 500));
 				break;
+			}
 		}
 		const nexts = [];
 		for (const pair of event.gain_list) {
@@ -10594,7 +10595,7 @@ player.removeVirtualEquip(card);
 				waitings.push(losecard);
 			}
 			if (info.line != false && targets.length) {
-				const config = {};
+				let config = {};
 				if (get.is.object(info.line)) {
 					config = info.line;
 				} else if (info.line == "fire") {
@@ -12471,7 +12472,8 @@ player.removeVirtualEquip(card);
 		await event.trigger("changeHp");
 	},
 	async changeHujia(event) {
-		const { player, num } = event;
+		const { player } = event;
+		let { num } = event;
 		if (num > 0) {
 			game.log(player, "获得了" + get.cnNumber(num) + "点护甲");
 		} else if (num < 0) {
