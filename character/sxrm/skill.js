@@ -2297,7 +2297,7 @@ const skills = {
 			for (const target of event.targets) {
 				const next = target.draw();
 				next.gaintag.add("sxrmmitu");
-				const result = await next.forResult();
+				const result = (await next.forResult()).cards;
 				if (result?.length) {
 					await target.showCards(result, "密图");
 					event[target.playerid] = result[0];

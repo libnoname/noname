@@ -361,7 +361,7 @@ const skills = {
 					const color1 = get.color(cards);
 					let result;
 					await player.give(cards, target);
-					result = await player.draw().forResult();
+					result = (await player.draw().forResult()).cards;
 					const cards2 = result.filter(i => get.owner(i) === player && get.position(i) === "h");
 					if (!cards.length) {
 						return event.finish();

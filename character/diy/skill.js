@@ -4514,8 +4514,8 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = get.info(event.name).logTarget(trigger, player);
 			const result = await player.draw(2).forResult();
-			if (get.itemtype(result) == "cards" && target.isIn() && player.hasCard(card => result.includes(card), "he")) {
-				await player.chooseToGive(target, "he", true, card => get.event().cards?.includes(card)).set("cards", result);
+			if (get.itemtype(result.cards) == "cards" && target.isIn() && player.hasCard(card => result.cards.includes(card), "he")) {
+				await player.chooseToGive(target, "he", true, card => get.event().cards?.includes(card)).set("cards", result.cards);
 			}
 		},
 	},

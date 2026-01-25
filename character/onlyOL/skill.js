@@ -10562,7 +10562,7 @@ const skills = {
 			if (bool) {
 				const target = targets[0];
 				player.logSkill("olzhiyan", target);
-				const result = await target.draw("visible").forResult();
+				const result = (await target.draw("visible").forResult()).cards;
 				if (result) {
 					const card = result[0];
 					if (get.type(card, null, target) == "equip") {

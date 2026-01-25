@@ -5400,8 +5400,8 @@ const skills = {
 				targets: [target],
 			} = event;
 			while (player.isIn() && target.isIn()) {
-				const list1 = await player.draw("nodelay").forResult();
-				const list2 = await target.draw().forResult();
+				const list1 = (await player.draw("nodelay").forResult()).cards;
+				const list2 = (await target.draw().forResult()).cards;
 				await game.delayx();
 				if (
 					[list1, list2].every(cards => get.itemtype(cards) == "cards") &&
@@ -14848,8 +14848,12 @@ const skills = {
 		filter(event) {
 			return event.card && (get.color(event.card) != "red" || (event.source && event.source.isIn()));
 		},
-		content() {
-			trigger[get.color(trigger.card) != "red" ? "player" : "source"].draw();
+		async content(event, trigger, player) {
+			if (get.color(trigger.card) == "red") {
+				await trigger.source.draw();
+			} else {
+				await trigger.player.draw();
+			}
 		},
 		ai: {
 			effect: {

@@ -8558,7 +8558,7 @@ const skills = {
 		check: () => true,
 		//frequent:true,
 		async content(event, trigger, player) {
-			let cards = await player.draw(2).forResult();
+			let { cards } = await player.draw(2).forResult();
 			cards = cards.filter(card => get.owner(card) == player);
 			if (get.itemtype(cards) != "cards" || !cards.length) {
 				return;
@@ -12997,7 +12997,7 @@ const skills = {
 			if (player.countCards("h") >= player.maxHp) {
 				return;
 			}
-			const result = await player.drawTo(player.maxHp).forResult();
+			const result = (await player.drawTo(player.maxHp).forResult()).cards;
 			if (result) {
 				player.addGaintag(result, "dclianjie");
 			}
@@ -13684,7 +13684,7 @@ const skills = {
 		filterTarget: true,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const result = await target.draw(3).forResult();
+			const result = (await target.draw(3).forResult()).cards;
 			const { index } = await target
 				.chooseControl()
 				.set("choiceList", [`${get.translation(result)}不能被你使用且不计入你的手牌上限`, `失去1点体力，再摸一张牌并使用其中任意张牌，然后弃置其余牌`])
@@ -13717,7 +13717,7 @@ const skills = {
 					.vars({ toRemove: result });
 			} else {
 				await target.loseHp();
-				const result2 = await target.draw().forResult();
+				const result2 = (await target.draw().forResult()).cards;
 				let cards = result.slice().concat(result2);
 				while (cards.some(i => get.owner(i) == target && target.hasUseTarget(i))) {
 					const result = await target
@@ -14342,7 +14342,7 @@ const skills = {
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			const result = await player.draw(lib.skill.dcchixing.getNum(trigger).length).forResult();
+			const result = (await player.draw(lib.skill.dcchixing.getNum(trigger).length).forResult()).cards;
 			if (Array.isArray(result) && result.some(card => get.name(card, false) == "sha")) {
 				await player
 					.chooseToUse(function (card) {

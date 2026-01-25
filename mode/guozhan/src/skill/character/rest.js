@@ -15537,33 +15537,34 @@ export default {
 			}
 			return 5 - get.value(card);
 		},
-		contentBefore() {
-			var evt = event.getParent();
+		async contentBefore(event, trigger, player) {
+			const { cards } = event;
+			const evt = event.getParent();
 			evt.draw = [];
 			if (get.suit(cards[0]) == "spade") {
 				evt.draw.push(player);
 			}
 		},
-		content() {
-			"step 0";
-			player.discardPlayerCard(target, "he", true);
-			"step 1";
+		async content(event, trigger, player) {
+			const { target } = event;
+
+			const result = await player.discardPlayerCard(target, "he", true).forResult();
+
 			if (result.bool) {
 				if (get.suit(result.cards[0]) == "spade") {
 					event.getParent().draw.push(target);
 				}
 			}
 		},
-		contentAfter() {
-			"step 0";
-			var list = event.getParent().draw;
+		async contentAfter(event, trigger, player) {
+			const list = event.getParent().draw;
 			if (!list.length) {
-				event.finish();
+				return;
 			} else {
-				game.asyncDraw(list);
+				await game.asyncDraw(list);
 			}
-			"step 1";
-			game.delay();
+
+			await game.delay();
 		},
 		ai: {
 			result: {

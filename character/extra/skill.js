@@ -5624,7 +5624,8 @@ const skills = {
 			let cards2 = [];
 			const makeDraw = result.index === 0;
 			if (makeDraw) {
-				cards2 = await target.draw(round).forResult();
+				const result = await target.draw(round).forResult();
+				cards2 = result.cards;
 			} else {
 				if (cards.length > 0) {
 					const evt = target.randomDiscard(round);

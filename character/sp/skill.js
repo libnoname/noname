@@ -6603,7 +6603,7 @@ const skills = {
 			if (num > 4) {
 				await target.chooseToDiscard("h", num - 4, true, "allowChooseAll");
 			} else {
-				const cards = await target.draw(4 - num).forResult();
+				const cards = (await target.draw(4 - num).forResult()).cards;
 				if (Array.isArray(cards) && cards.length) {
 					const black = cards.filter(card => get.color(card) === "black");
 					const red = cards.filter(card => get.color(card) === "red").length;
@@ -7289,7 +7289,7 @@ const skills = {
 			let gains = [];
 			for (let i = 0; i < 2; i++) {
 				const next = [player, target][i].draw(...[i === 0 ? "nodelay" : "bottom"]);
-				const result = await next.forResult();
+				const result = (await next.forResult()).cards;
 				if (Array.isArray(result)) {
 					gains.push([[player, target][i], result[0]]);
 				}
@@ -23725,7 +23725,7 @@ const skills = {
 				player.markSkill(event.name);
 			} else {
 				player.addTempSkill(event.name + "_used");
-				const result = await player.draw(2).forResult();
+				const result = (await player.draw(2).forResult()).cards;
 				const ai_list = [];
 				if (get.itemtype(result) == "cards" && player.getCards("h").some(card => result.includes(card))) {
 					if (_status.connectMode) {
@@ -27116,16 +27116,16 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		frequent: true,
 		audio: "xingshen",
-		content() {
-			"step 0";
-			var next = player.draw();
+		async content(event, trigger, player) {
+			const next = player.draw();
 			if (get.isLuckyStar(player) || Math.random() < 0.5) {
 				next.num = 2;
 			}
-			var num = player.countMark("olxingshen");
+			const num = player.countMark("olxingshen");
 			if (num < 6) {
 				player.addMark("olxingshen", Math.min(6 - num, player.getDamagedHp()), false);
 			}
+			await next;
 		},
 		intro: {
 			content: "下一次发动〖严教〗时多展示X张牌",

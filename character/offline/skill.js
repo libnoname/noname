@@ -7556,7 +7556,7 @@ const skills = {
 			return _status.jianxiSkill[name];
 		},
 		async content(event, trigger, player) {
-			let result = await player.draw().forResult();
+			let result = (await player.draw().forResult()).cards;
 			if (get.itemtype(result) !== "cards") {
 				return;
 			}
@@ -8005,7 +8005,7 @@ const skills = {
 			const num = player.countMark(skill);
 			const result = player.draw(num);
 			result.gaintag.add("pejixin_effect");
-			const cards = await result.forResult();
+			const cards = await (result.forResult()).cards;
 			await player.showCards(get.translation(player) + "发动了【技新】", cards);
 			player.addSkill("pejixin_effect");
 		},
@@ -24364,7 +24364,7 @@ const skills = {
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			const result = await player.draw("bottom").forResult();
+			const result = (await player.draw("bottom").forResult()).cards;
 			await player.showCards(get.translation(player) + "发动了【轻寇】", result);
 			if (result?.length != 1) {
 				return;
@@ -24426,7 +24426,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
 		async content(event, trigger, player) {
-			const result = await player.draw().forResult();
+			const result = (await player.draw().forResult()).cards;
 			if (get.itemtype(result) != "cards") {
 				return;
 			}
@@ -26021,7 +26021,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const result = await player.draw(2).forResult();
+					const result = (await player.draw(2).forResult()).cards;
 					if (Array.isArray(result) && result.length) {
 						player.addTempSkill("jdlongdan_mark", ["phaseChange", "phaseAfter"]);
 					}
@@ -38389,7 +38389,7 @@ const skills = {
 			return get.attitude(player, event.player) > 0;
 		},
 		async content(event, trigger, player) {
-			const result = await player.draw().forResult();
+			const result = (await player.draw().forResult()).cards;
 			if (!result) {
 				return;
 			}

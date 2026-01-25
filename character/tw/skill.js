@@ -4545,7 +4545,7 @@ const skills = {
 						await target.recast(event.cards);
 						card = event.cards[0];
 					} else {
-						const result = await target.draw().forResult();
+						const result = (await target.draw().forResult()).cards;
 						card = result[0];
 					}
 					if (nums[0] > nums[1]) {

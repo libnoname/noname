@@ -3688,9 +3688,9 @@ export default {
 					}
 					return player.hp == target.hp;
 				},
-				content() {
-					game.delayx();
-					(player == trigger.player ? player.storage.fakeqimei_draw : player).draw();
+				async content(event, trigger, player) {
+					await game.delayx();
+					await (player == trigger.player ? player.storage.fakeqimei_draw : player).draw();
 				},
 			},
 		},

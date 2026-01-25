@@ -514,7 +514,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const cards = event.cards;
 			const target = trigger.player;
-			const draw = await target.draw(cards.length).forResult();
+			const draw = (await target.draw(cards.length).forResult()).cards;
 			if (Array.isArray(cards) && Array.isArray(draw)) {
 				let types = [cards, draw]
 					.map(list => list.map(card => get.type2(card)))

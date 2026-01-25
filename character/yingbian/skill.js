@@ -1234,9 +1234,11 @@ const skills = {
 					}
 					return player.hp == target.hp;
 				},
-				content() {
-					game.delayx();
-					(player == trigger.player ? player.storage.qimei_draw : player).draw();
+				async content(event, trigger, player) {
+					const current = player == trigger.player ? player.storage.qimei_draw : player;
+					const next = current.draw();
+					await game.delayx();
+					await next;
 				},
 			},
 		},

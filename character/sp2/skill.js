@@ -1437,7 +1437,7 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const num = event.cards.length - ((await player.drawTo(5).forResult()) || []).length;
+			const num = event.cards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
@@ -5307,13 +5307,14 @@ const skills = {
 		},
 		frequent: true,
 		group: "dcniji_discard",
-		content() {
-			var next = player.draw();
-			var evt = trigger.getParent("dcniji_discard");
+		async content(event, trigger, player) {
+			const next = player.draw();
+			const evt = trigger.getParent("dcniji_discard");
 			if (!evt || evt.player != player) {
 				next.gaintag = ["dcniji"];
 			}
 			player.addTempSkill("dcniji_clear");
+			await next;
 		},
 		subSkill: {
 			clear: {
