@@ -549,3 +549,13 @@ lib.element.Player.prototype.insertEvent = function (name, content, arg) {
 	next.setContent(content);
 	return next;
 };
+
+// Draw result
+{
+	const originDrawContent = lib.element.content.draw;
+	lib.element.content.draw = async function compatibleDraw(event, trigger, player) {
+		await originDrawContent(event, trigger, player);
+		const cards = event.result.cards.slice(0);
+		event.result = Object.assign(cards, event.result);
+	}
+}
