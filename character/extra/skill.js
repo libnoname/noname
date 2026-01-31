@@ -3779,8 +3779,8 @@ const skills = {
 			if (choices.includes("fengyin")) {
 				game.log(player, "选择了", "#y准备阶段、结束阶段", "的效果");
 				for (const target of targets) {
-					target.when({ player: "phaseJieshuBefore" }).then(() => player.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
-					target.when({ player: "phaseZhunbeiBefore" }).then(() => player.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
+					target.when({ player: "phaseJieshuBefore" }).step(async () => target.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
+					target.when({ player: "phaseZhunbeiBefore" }).step(async () => target.addTempSkill("fengyin", ["phaseBefore", "phaseChange", "phaseAfter"]));
 				}
 			}
 			if (choices.includes("judge")) {
@@ -3807,14 +3807,12 @@ const skills = {
 				game.log(player, "选择了", "#y摸牌阶段", "的效果");
 				for (const target of targets) {
 					target.addTempSkill("dclishi_discard", { player: "phaseDrawAfter" });
-					//target.when({ player: "phaseDrawBegin" }).then(() => trigger.set("dclishi", player.playerid));
 				}
 			}
 			if (choices.includes("use")) {
 				game.log(player, "选择了", "#y出牌阶段", "的效果");
 				for (const target of targets) {
 					target.addTempSkill("dclishi_limit", { player: "phaseUseAfter" });
-					//target.when({ player: "phaseUseBegin" }).then(() => player.addTempSkill("dclishi_limit", ["phaseBefore", "phaseChange", "phaseAfter"]));
 				}
 			}
 			if (choices.includes("gain")) {
@@ -3822,7 +3820,6 @@ const skills = {
 				for (const target of targets) {
 					target.addTempSkill("dclishi_gain", { player: "phaseDiscardAfter" });
 					target.markAuto("dclishi_gain", player);
-					//target.when({ player: "phaseDiscardBegin" }).then(() => trigger.set("dclishi", player.playerid));
 				}
 			}
 		},
@@ -4649,7 +4646,7 @@ const skills = {
 						.when({
 							player: ["damageBegin3", "phaseEnd"],
 						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							player.removeTip("new_dclieqiong_leg");
 							if (trigger.name == "damage") {
 								trigger.num++;
@@ -4676,7 +4673,7 @@ const skills = {
 						.when({
 							player: ["useCard", "phaseEnd"],
 						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							player.removeTip("new_dclieqiong_chest");
 							if (trigger.name == "useCard") {
 								trigger.targets.length = 0;
@@ -5564,11 +5561,12 @@ const skills = {
 		async content(event, trigger, player) {
 			if (!player.storage.jingyu_used) {
 				player
-					.when({ global: "roundStart" })
+					.when({ global: "roundStart" }, false)
 					.assign({
 						firstDo: true,
 					})
-					.then(() => delete player.storage.jingyu_used);
+					.step(async () => delete player.storage.jingyu_used)
+					.finish();
 			}
 			let skill = get.sourceSkillFor(trigger);
 			player.markAuto("jingyu_used", skill);
@@ -6892,18 +6890,19 @@ const skills = {
 					var choice = result.links[0],
 						mark = `jxlianpo_mark_${choice}`;
 					player
-						.when({ global: "roundStart" })
+						.when({ global: "roundStart" }, false)
 						.assign({
 							firstDo: true,
 						})
 						.filter(evt => evt != trigger)
-						.then(() => {
+						.step(async () => {
 							for (var i in player.storage) {
 								if (i.startsWith("jxlianpo_mark_")) {
 									player.clearMark(i);
 								}
 							}
-						});
+						})
+						.finish();
 					player.addMark(mark, 1, false);
 					event.videoId = lib.status.videoId++;
 					var createDialog = function (player, identity, id) {
@@ -7085,7 +7084,7 @@ const skills = {
 					player.line(target);
 					target.damage();
 					if (!player.storage.jxzhaoluan_hit) {
-						player.when("phaseUseAfter").then(() => {
+						player.when("phaseUseAfter").step(async () => {
 							delete player.storage.jxzhaoluan_hit;
 						});
 					}

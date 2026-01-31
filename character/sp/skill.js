@@ -1729,7 +1729,7 @@ const skills = {
 						},
 						trigger.cards.filter(i => get.owner(i) == player)
 					);
-					player.when({ global: "phaseAfter" }).then(() => {
+					player.when({ global: "phaseAfter" }).step(async () => {
 						player.removeGaintag("olleishi");
 					});
 				},
@@ -2521,12 +2521,13 @@ const skills = {
 			player.markAuto("olfulve_used", [choice]);
 			await map[choice](player, target, trigger.getParent());
 			choice = choice == "damage" ? "gain" : "damage";
+			const sourcex = player;
 			target
 				.when({ global: "useCardAfter" })
 				.filter(evt => {
 					return evt === trigger.getParent();
 				})
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (
 						game.hasPlayer(current => {
 							return current.hasHistory("damage", evt => evt.getParent(2) == trigger);
@@ -2554,16 +2555,12 @@ const skills = {
 							return lib.filter.filterTarget.apply(this, arguments);
 						})
 						.set("sourcex", sourcex)
-						.set("func", func)
+						.set("func", map[choice])
 						.set("oncard", (card, player) => {
 							const event = get.event(),
 								evt = event.getParent();
 							evt.func(player, evt.sourcex, event);
 						});
-				})
-				.vars({
-					func: map[choice],
-					sourcex: player,
 				});
 		},
 		subSkill: {
@@ -3818,7 +3815,7 @@ const skills = {
 					player
 						.when("chooseToUseBegin")
 						.filter(evt => evt === next)
-						.then(() => (trigger.filterCard = () => false));
+						.step(async (event, trigger, player) => (trigger.filterCard = () => false));
 					const result3 = await next.forResult();
 					player.removeSkill("olsiqi_target");
 					if (result3.bool) {
@@ -6721,7 +6718,7 @@ const skills = {
 					player
 						.when("phaseUseEnd")
 						.filter(evtx => evtx == evt)
-						.then(() => {
+						.step(async () => {
 							const next = game.createEvent("renxia_draw", false);
 							next.player = player;
 							next.setContent(lib.skill.olrenxia_draw.content);
@@ -6744,7 +6741,7 @@ const skills = {
 					player
 						.when("phaseUseEnd")
 						.filter(evtx => evtx == evt)
-						.then(() => {
+						.step(async () => {
 							const next = game.createEvent("renxia_discard", false);
 							next.player = player;
 							next.setContent(lib.skill.olrenxia_discard.content);
@@ -7952,7 +7949,7 @@ const skills = {
 					},
 					precontent() {
 						if (!player.storage.olkouchao_used) {
-							player.when({ global: "roundStart" }).then(() => delete player.storage.olkouchao_used);
+							player.when({ global: "roundStart" }).step(async () => delete player.storage.olkouchao_used);
 						}
 						player.markAuto("olkouchao_used", [lib.skill.olkouchao_backup.viewAs.storage.olkouchao - 1]);
 						player.addTempSkill("olkouchao_effect");
@@ -8844,6 +8841,7 @@ const skills = {
 				return;
 			}
 			player.getHistory("custom").push({ olqingya: evt.name });
+			const curPhaseName = evt.name;
 			player
 				.when({
 					global: ["phaseAnyEnd", "phaseAfter"],
@@ -8861,12 +8859,9 @@ const skills = {
 					}
 					return evt2.name !== evt.name;
 				})
-				.vars({
-					curPhaseName: evt.name,
-				})
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (trigger.name === "phase") {
-						return event.finish();
+						return;
 					}
 					const history = player.getHistory("useSkill", evt => {
 							if (evt.skill !== "olqingya") {
@@ -8890,24 +8885,23 @@ const skills = {
 						}, true);
 					});
 					if (!cards.length) {
-						return event.finish();
+						return;
 					}
 					event.cards = cards;
-					player
+					const result = await player
 						.chooseButton(["倾轧：是否使用其中的一张牌？", event.cards])
 						.set("filterButton", button => {
 							return get.player().hasUseTarget(button.link);
 						})
 						.set("ai", button => {
 							return get.player().getUseValue(button.link);
-						});
-				})
-				.then(() => {
+						})
+						.forResult();
 					if (result.bool) {
 						const card = result.links[0];
 						player.$gain2(card, false);
-						game.delayx();
-						player.chooseUseTarget(card, true);
+						await game.delayx();
+						await player.chooseUseTarget(card, true);
 					}
 				});
 		},
@@ -9337,19 +9331,18 @@ const skills = {
 						player
 							.when("useCardAfter")
 							.filter(evt => evt.skill == "olxuanzhu_backup")
-							.then(() => {
+							.step(async () => {
 								const card = cards[0];
 								if (get.type(card) != "equip") {
-									player.chooseToDiscard("he", true);
+									await player.chooseToDiscard("he", true);
 								} else {
 									const cardx = player.getExpansions("olxuanzhu");
 									if (cardx.length) {
-										player.loseToDiscardpile(cardx);
-										player.draw(cardx.length);
+										await player.loseToDiscardpile(cardx);
+										await player.draw(cardx.length);
 									}
 								}
-							})
-							.vars({ cards: cards });
+							});
 					},
 					onuse(result, player) {
 						player.changeZhuanhuanji("olxuanzhu");
@@ -11313,7 +11306,7 @@ const skills = {
 				if (_status.connectMode) {
 					players[i].showTimer();
 				}
-				var card = trigger.card,
+				const card = trigger.card,
 					list = player.getStorage("ollangdao");
 				if (players[i].isOnline()) {
 					withol = true;
@@ -11443,22 +11436,19 @@ const skills = {
 			}
 			var chosenCount = [0, 0, 0];
 			results.sort((a, b) => lib.sort.seat(a[0], b[0]));
+			const card = trigger.card;
 			player
 				.when("useCardAfter")
-				.assign({
-					card: trigger.card,
-				})
-				.then(() => {
-					var card = get.info(event.name).card;
-					var dieEvts = game.getGlobalHistory("everything", evt => evt.name == "die");
+				.step(async (event, trigger, player) => {
+					const dieEvts = game.getGlobalHistory("everything", evt => evt.name == "die");
 					if (
 						trigger.card == card &&
 						!game.hasPlayer2(current => {
-							for (var evt of dieEvts) {
+							for (const evt of dieEvts) {
 								if (evt.player != current) {
 									continue;
 								}
-								var evtx = evt.getParent(2);
+								const evtx = evt.getParent(2);
 								if (evtx.name != "damage") {
 									continue;
 								}
@@ -11469,8 +11459,8 @@ const skills = {
 							return false;
 						}, true)
 					) {
-						var toRemove = card.storage.ollangdao_remove;
-						var list = [0, 1, 2].filter(i => (toRemove >> i) & 1);
+						const toRemove = card.storage.ollangdao_remove;
+						const list = [0, 1, 2].filter(i => (toRemove >> i) & 1);
 						if (!list.length) {
 							return;
 						}
@@ -12926,25 +12916,17 @@ const skills = {
 						player
 							.when("useCardAfter")
 							.filter(evt => evt.card.olxiaofan)
-							.then(() => {
-								let num = lib.skill.olxiaofan.getNum(player),
-									pos = "jeh".slice(0, num);
-								if (num > 0 && player.countCards(pos) > 0) {
-									event.maxNum = Math.min(3, num);
-									event.num = 0;
-								} else {
-									event.finish();
-								}
-							})
-							.then(() => {
-								let pos = "jeh"[event.num],
-									hs = player.countCards(pos);
-								if (hs > 0) {
-									player.chooseToDiscard(hs, pos, true);
-								}
-								event.num++;
-								if (event.num < event.maxNum) {
-									event.redo();
+							.step(async (event, trigger, player) => {
+								let maxNum = Math.min(3, lib.skill.olxiaofan.getNum(player));
+								if (maxNum > 0 && player.countCards("jeh".slice(0, maxNum)) > 0) {
+									for (let i = 0; i < maxNum; i++){
+										let pos = "jeh"[i],
+											hs = player.countCards(pos);
+										if (hs > 0) {
+											await player.chooseToDiscard(hs, pos, true);
+										}
+									}
+
 								}
 							});
 					},

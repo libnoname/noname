@@ -20241,9 +20241,9 @@ const skills = {
 			player
 				.when({ global: "useCardAfter" })
 				.filter(evt => evt.card == trigger.card)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (game.hasPlayer2(current => current.hasHistory("damage", evt => evt.card == trigger.card))) {
-						player.changeGroup("shu");
+						await player.changeGroup("shu");
 					}
 				});
 		},
@@ -20522,9 +20522,9 @@ const skills = {
 				player
 					.when("useCardAfter")
 					.filter(evt => evt.card == trigger.card)
-					.then(() => {
-						if (!game.hasPlayer2(current => current.hasHistory("damage", evt => evt.card == card))) {
-							player
+					.step(async () => {
+						if (!game.hasPlayer2(current => current.hasHistory("damage", evt => evt.card == trigger.card))) {
+							const { index } = await player
 								.chooseControl(`失去${num - 1}点体力`, "此技能本回合失效")
 								.set("prompt", "险行：选择一项")
 								.set("ai", () => {
@@ -20533,21 +20533,14 @@ const skills = {
 									}
 									return [0, 1].randomGet();
 								})
-								.set("num", num);
-						} else {
-							event.finish();
+								.set("num", num)
+								.forResult();
+							if (index == 0) {
+								await player.loseHp(num - 1);
+							} else {
+								player.tempBanSkill("xkxianxing");
+							}
 						}
-					})
-					.then(() => {
-						if (result.index == 0) {
-							player.loseHp(num - 1);
-						} else {
-							player.tempBanSkill("xkxianxing");
-						}
-					})
-					.vars({
-						card: trigger.card,
-						num: num,
 					});
 			}
 		},
@@ -20652,7 +20645,7 @@ const skills = {
 				direct: true,
 				async content(event, trigger, player) {
 					if (!player.getStorage("xk_qiyijun").length) {
-						player.when({ global: ["phaseBefore", "phaseAfter", "phaseUseBefore", "phaseUseAfter"] }).then(() => {
+						player.when({ global: ["phaseBefore", "phaseAfter", "phaseUseBefore", "phaseUseAfter"] }).step(async () => {
 							player.unmarkAuto("xk_qiyijun", player.getStorage("xk_qiyijun"));
 						});
 					}
@@ -23661,7 +23654,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			if (!player.getStorage("tylengjian").length) {
-				player.when({ global: "phaseEnd" }).then(() => {
+				player.when({ global: "phaseEnd" }).step(async () => {
 					player.unmarkSkill("tylengjian");
 					delete player.storage.tylengjian;
 				});
@@ -24974,8 +24967,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			trigger.effectCount++;
-			player.when({ global: "phaseEnd" }).then(() => {
-				player.loseHp();
+			player.when({ global: "phaseEnd" }).step(async () => {
+				await player.loseHp();
 			});
 		},
 	},
@@ -25089,14 +25082,10 @@ const skills = {
 			target
 				.when({ global: "useCardAfter" })
 				.filter(evt => evt.card == trigger.card)
-				.then(() => {
-					if (!skiller.hasHistory("damage", evt => evt.getParent("useCard") == evtx) && player.isDamaged()) {
-						player.recover();
+				.step(async () => {
+					if (!player.hasHistory("damage", evtx => evtx.getParent("useCard") == evt) && target.isDamaged()) {
+						await target.recover();
 					}
-				})
-				.vars({
-					skiller: player,
-					evtx: evt,
 				});
 		},
 	},
@@ -27102,17 +27091,14 @@ const skills = {
 			}
 			player
 				.when("phaseUseBegin")
-				.then(() => {
+				.step(async () => {
 					if (hp > 0) {
-						player.loseHp(hp);
+						await player.loseHp(hp);
 					}
-				})
-				.then(() => {
 					if (player.countCards("h") && num > 0) {
-						player.chooseToDiscard("h", num, true);
+						await player.chooseToDiscard("h", num, true);
 					}
-				})
-				.vars({ hp: hp, num: num });
+				});
 		},
 	},
 	//九鼎-张飞
@@ -30018,9 +30004,6 @@ const skills = {
 							} else {
 								await player.chooseToGive("h", true, target);
 							}
-						})
-						.vars({
-							target: target,
 						});
 				}
 			}
@@ -38898,7 +38881,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await trigger.player.draw(player.hp);
 			if (trigger.player != player) {
-				player.when({ global: "roundStart" }).then(() => {
+				player.when({ global: "roundStart" }).step(async () => {
 					player.restoreSkill("dragjiezhong");
 				});
 			}
@@ -39599,26 +39582,24 @@ const skills = {
 					.forResult();
 				if (result.bool) {
 					if (!player.getStorage("xingbian_skill").length) {
-						player.when("phaseJieshuBegin").then(() => {
-							const args = player.storage.xingbian_skill.shift();
-							let damage = true;
-							if (player.getHistory("useCard", evt => evt.card.name == "sha" && evt.targets?.includes(args[1])).length) {
-								damage = false;
+						player.when("phaseJieshuBegin").step(async () => {
+							while (player.storage.xingbian_skill.length) {
+								const args = player.storage.xingbian_skill.shift();
+								let damage = true;
+								if (player.getHistory("useCard", evt => evt.card.name == "sha" && evt.targets?.includes(args[1])).length) {
+									damage = false;
+								}
+								if (player.getHistory("sourceDamage", evt => evt.player == args[1]).length) {
+									damage = false;
+								}
+								if (damage === true) {
+									args[0].chat("该罚！");
+									args[0].line(player, "green");
+									await player.damage(player);
+								}
 							}
-							if (player.getHistory("sourceDamage", evt => evt.player == args[1]).length) {
-								damage = false;
-							}
-							if (damage === true) {
-								args[0].chat("该罚！");
-								args[0].line(player, "green");
-								player.damage(player);
-							}
-							if (player.storage.xingbian_skill.length) {
-								event.redo();
-							} else {
-								player.unmarkSkill("xingbian_skill");
-								delete player.storage.xingbian_skill;
-							}
+							player.unmarkSkill("xingbian_skill");
+							delete player.storage.xingbian_skill;
 						});
 						player.storage.xingbian_skill = [];
 					}

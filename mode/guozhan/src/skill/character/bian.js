@@ -388,7 +388,7 @@ export default {
 						_status.characterlist.add(character);
 						game.log(player, "移去了一张", "#g“魂（" + get.translation(character) + "）”");
 						if (!player.storage.fake_yigui2) {
-							player.when({ global: "phaseBefore" }).then(() => delete player.storage.fake_yigui2);
+							player.when({ global: "phaseBefore" }).step(async () => delete player.storage.fake_yigui2);
 						}
 						player.markAuto("fake_yigui2", [get.type(result.card.name)]);
 					},

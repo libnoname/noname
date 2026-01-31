@@ -5519,7 +5519,7 @@ const skills = {
 						player.logSkill("jsrgdengnan");
 						player.awakenSkill("jsrgdengnan");
 						if (!player.storage.jsrgdengnan_check) {
-							player.when("phaseEnd").then(() => {
+							player.when("phaseEnd").step(async () => {
 								var targets = [];
 								player.checkHistory("useCard", evt => {
 									if (evt.card.storage?.jsrgdengnan && evt.targets?.length) {
@@ -6645,7 +6645,7 @@ const skills = {
 			player
 				.when("phaseUseAfter")
 				.filter(evt => evt == trigger)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					player.logSkill("jsrgfushan");
 					if (
 						player.getCardUsable("sha", true) >
@@ -6655,9 +6655,9 @@ const skills = {
 						player.storage.jsrgfushan_given &&
 						player.storage.jsrgfushan_given.every(i => i.isIn())
 					) {
-						player.loseHp(2);
+						await player.loseHp(2);
 					} else {
-						player.drawTo(player.maxHp);
+						await player.drawTo(player.maxHp);
 					}
 					delete player.storage.jsrgfushan_given;
 				});
@@ -8266,7 +8266,7 @@ const skills = {
 					precontent() {
 						player.logSkill("jsrgchengxian");
 						if (!player.storage.jsrgchengxian) {
-							player.when({ global: "phaseAfter" }).then(() => {
+							player.when({ global: "phaseAfter" }).step(async () => {
 								player.unmarkSkill("jsrgchengxian");
 							});
 						}
@@ -11996,7 +11996,7 @@ const skills = {
 			player
 				.when("useCardAfter")
 				.filter(evt => evt.getParent() == event)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					player.logSkill("jsrgfuzhen", null, null, null, [get.rand(3, 4)]);
 					const sum = player
 						.getHistory("sourceDamage", evt => evt.card && evt.card == trigger.card)
@@ -12004,26 +12004,18 @@ const skills = {
 							return num + evt.num;
 						}, 0);
 					if (sum) {
-						player.draw(sum);
+						await player.draw(sum);
 					}
-				})
-				.then(() => {
 					player.line(silentTarget, "green");
 					game.log(player, "选择的秘密目标是", silentTarget);
-					game.delay();
-				})
-				.then(() => {
+					await game.delay();
 					if (silentTarget && !silentTarget.getHistory("damage", evt => evt.card == trigger.card).length) {
 						const cardx = get.autoViewAs({ name: "sha", nature: "thunder", isCard: true });
 						const targetx = targets.filter(target => target.isIn() && player.canUse(cardx, target, false));
 						if (targetx.length) {
-							player.useCard(cardx, targets);
+							await player.useCard(cardx, targets);
 						}
 					}
-				})
-				.vars({
-					silentTarget: silentTarget,
-					targets: targets,
 				});
 			await player.useCard(card, targets).set("forceDie", true);
 		},
@@ -12826,10 +12818,10 @@ const skills = {
 						.when({
 							global: ["phaseBefore", "phaseAfter"],
 						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							const cards = player.getExpansions("jsrgweisi");
 							if (cards.length) {
-								player.gain(cards, "draw");
+								await player.gain(cards, "draw");
 								game.log(player, "收回了" + get.cnNumber(cards.length) + "张“威肆”牌");
 							}
 						});
@@ -12841,7 +12833,7 @@ const skills = {
 					source: "damageSource",
 				})
 				.filter(evt => evt.getParent(event.name) == event)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					const cards = trigger.player.getCards("h");
 					if (cards.length) {
 						trigger.player.give(cards, player);

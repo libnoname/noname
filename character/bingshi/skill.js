@@ -1300,13 +1300,14 @@ const skills = {
 				player.insertPhase();
 				if (!player.isMaxHp(true)) {
 					player
-						.when({ player: "phaseBegin" })
+						.when({ player: "phaseBegin" }, false)
+						.assign({ firstDo: true })
 						.filter(evt => evt.skill == event.name)
 						.step(async (event, trigger, player) => {
 							player.logSkill("mbquanchong", null, null, null, [get.rand(3, 4)]);
 							await player.loseHp();
 						})
-						.assign({ firstDo: true });
+						.finish();
 				}
 			}
 		},
@@ -3497,7 +3498,7 @@ const skills = {
 				.filter(evt => evt.getParent("phase") == trigger.getParent("phase"))
 				.step(async (event, trigger, player) => {
 					if (control === 1) {
-						player.draw(num);
+						await player.draw(num);
 					} else if (control === 0) {
 						player.clearMark("pothongyi");
 					}
@@ -4560,11 +4561,11 @@ const skills = {
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
 			player
-				.when({ player: ["phaseBegin"] })
+				.when({ player: ["phaseBegin"] }, false)
 				.assign({
 					lastDo: true,
 				})
-				.then(() => {
+				.step(async () => {
 					player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
 					game.broadcastAll(function (player) {
 						if (player.node.potfuji_dynamic) {
@@ -4574,7 +4575,8 @@ const skills = {
 							delete player.node.potfuji_dynamic2;
 						}
 					}, player);
-				});
+				})
+				.finish();
 		},
 		dynamic(player) {
 			game.broadcastAll(function (player) {
@@ -4712,7 +4714,7 @@ const skills = {
 							player: "useCardAfter",
 						})
 						.filter(evt => evt === trigger)
-						.then(() => {
+						.step(async () => {
 							player.removeSkill("potfuji_sha");
 						});
 				},
@@ -4739,9 +4741,9 @@ const skills = {
 					player
 						.when("useCardAfter")
 						.filter(evt => evt === trigger)
-						.then(() => {
+						.step(async () => {
 							player.removeSkill("potfuji_shan");
-							player.draw();
+							await player.draw();
 						});
 				},
 			},
@@ -4985,8 +4987,8 @@ const skills = {
 									player
 										.when("useCard2")
 										.filter(evt => evt === trigger)
-										.then(() => {
-											player
+										.step(async (event, trigger, player) => {
+											const result = await player
 												.chooseTarget("是否为" + get.translation(trigger.card) + "增加一个目标？", (card, player, target) => {
 													const evt = get.event().getTrigger();
 													return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
@@ -4995,9 +4997,8 @@ const skills = {
 													const player = get.player(),
 														evt = get.event().getTrigger();
 													return get.effect(target, evt.card, player);
-												});
-										})
-										.then(() => {
+												})
+												.forResult();
 											if (result?.bool && result.targets?.length) {
 												const [target] = result.targets;
 												player.line(target, trigger.card.nature);
@@ -5018,7 +5019,7 @@ const skills = {
 									player
 										.when("useCardAfter")
 										.filter(evt => evt === trigger)
-										.then(() => player.draw(3));
+										.step(async () => await player.draw(3));
 									break;
 							}
 						}

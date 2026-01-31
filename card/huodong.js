@@ -826,22 +826,21 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
+					const source = player;
 					target
 						.when({
 							player: "gainAfter",
 							global: "loseAsyncAfter",
-						})
+						}, false)
 						.assign({
 							firstDo: true,
 						})
 						.filter(evt => evt.getg(target)?.length)
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							player.removeSkill(event.name);
-							sourcex.draw(trigger.getg(player)?.length);
+							await source.draw(trigger.getg(player)?.length);
 						})
-						.vars({
-							sourcex: player,
-						});
+						.finish();
 				},
 				ai: {
 					wuxie() {
@@ -1481,8 +1480,8 @@ game.import("card", function () {
 					player
 						.when({ global: "dieAfter" })
 						.filter(evtx => evtx.player == target)
-						.then(() => {
-							player.draw();
+						.step(async () => {
+							await player.draw();
 						});
 				},
 			},

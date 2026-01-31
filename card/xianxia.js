@@ -619,7 +619,7 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					player.storage.tiejili_skill = player.hp;
 					player.markSkill(event.name);
-					player.when("phaseAfter").then(() => {
+					player.when("phaseAfter").step(async () => {
 						let card = player.getEquip("tiejili");
 						if (card) {
 							player.storage.tiejili_skill = card.storage.tiejili_skill;

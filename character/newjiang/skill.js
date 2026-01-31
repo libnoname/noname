@@ -3832,10 +3832,10 @@ const skills = {
 		locked: false,
 		content() {
 			player.draw(2).gaintag = ["kangli"];
-			player.when({ source: "damageBegin1" }).then(() => {
+			player.when({ source: "damageBegin1" }).step(async () => {
 				var cards = player.getCards("h", card => card.hasGaintag("kangli") && lib.filter.cardDiscardable(card, player, "kangli"));
 				if (cards.length) {
-					player.discard(cards);
+					await player.discard(cards);
 				}
 			});
 		},
@@ -3872,15 +3872,14 @@ const skills = {
 			"step 0";
 			player.recast(cards);
 			"step 1";
-			var numbers = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
-			target.when("useCard1").then(() => {
+			const numbers = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
+			target.when("useCard1").step(async (event, trigger, player) => {
 				trigger._tongwei_checked = true;
 			});
+			const playerx = player;
 			target
 				.when("useCardAfter")
 				.assign({
-					numbers: numbers,
-					playerx: player,
 					mod: {
 						aiOrder(player, card, num) {
 							var number = get.number(card);
@@ -3893,23 +3892,19 @@ const skills = {
 				.filter((event, player) => {
 					return event._tongwei_checked;
 				})
-				.then(() => {
-					var number = get.number(trigger.card);
-					var numbers = get.info(event.name).numbers;
-					event.playerx = get.info(event.name).playerx;
+				.step(async (event, trigger, player) => {
+					const number = get.number(trigger.card);
 					if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
-						event.finish();
+						return;
 					}
-				})
-				.then(() => {
-					var playerx = event.playerx;
-					var names = ["sha", "guohe"].filter(name => playerx.canUse({ name: name, isCard: true }, player, false));
+					const names = ["sha", "guohe"].filter(name => playerx.canUse({ name: name, isCard: true }, player, false));
+					let result;
 					if (!names.length) {
-						event.finish();
+						return;
 					} else if (names.length == 1) {
-						event._result = { links: [[null, null, names[0]]] };
+						result = { links: [[null, null, names[0]]] };
 					} else {
-						playerx
+						result = await playerx
 							.chooseButton([`请选择要视为对${get.translation(player)}使用的牌`, [names, "vcard"]], true)
 							.set("ai", button => {
 								return button.link[0][2] == _status.event.choice;
@@ -3917,7 +3912,7 @@ const skills = {
 							.set(
 								"choice",
 								(function () {
-									var list = names
+									const list = names
 										.map(name => {
 											return [name, get.effect(player, { name: name, isCard: true }, playerx, playerx)];
 										})
@@ -3926,15 +3921,13 @@ const skills = {
 										});
 									return list[0][0];
 								})()
-							);
+							)
+							.forResult();
 					}
-				})
-				.then(() => {
-					var name = result.links[0][2];
-					var card = { name: name, isCard: true },
-						playerx = event.playerx;
+					const name = result.links[0][2];
+					const card = { name: name, isCard: true };
 					if (playerx.canUse(card, player, false)) {
-						playerx.useCard(card, player, "tongwei");
+						await playerx.useCard(card, player, "tongwei");
 					}
 				});
 		},
@@ -4007,7 +4000,7 @@ const skills = {
 					.filter(event => {
 						return event.card.storage?.cuguo && event == next;
 					})
-					.then(() => {
+					.step(async (event, trigger, player) => {
 						if (
 							game.hasGlobalHistory("everything", evt => {
 								if (evt._neutralized || (evt.responded && (!evt.result || !evt.result.bool))) {
@@ -4018,7 +4011,7 @@ const skills = {
 								return false;
 							})
 						) {
-							player.loseHp();
+							await player.loseHp();
 						}
 					});
 				await next;
@@ -6870,8 +6863,8 @@ const skills = {
 								target
 									.when({ global: ["useCardAfter", "respondAfter"] })
 									.filter(evt => evt.player == player && evt.skill == "mpsixiao_use_backup")
-									.then(() => {
-										player.draw();
+									.step(async () => {
+										await target.draw();
 									});
 							},
 						};
@@ -6999,7 +6992,7 @@ const skills = {
 				var card = get.cardPile2(card => get.type2(card) == "trick");
 				if (card) {
 					if (!player.storage.mpmaotao_gained) {
-						player.when({ global: "phaseAfter" }).then(() => {
+						player.when({ global: "phaseAfter" }).step(async () => {
 							delete player.storage.mpmaotao_gained;
 						});
 						player.storage.mpmaotao_gained = true;

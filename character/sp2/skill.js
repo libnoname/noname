@@ -1594,24 +1594,21 @@ const skills = {
 			player
 				.when({ global: "useCardToTargeted" })
 				.filter(evt => evt.card?.anshu && evt?.targets?.length == evt.getParent()?.triggeredTargets4?.length)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					delete trigger.card.anshu;
 					const targets = game.filterPlayer(current => current == player || current.isDamaged());
+					let target = player;
 					if (targets.length > 1) {
-						player
+						const { targets } = await player
 							.chooseTarget("请选择【五谷丰登】的起点", true, function (card, player, target) {
 								return get.event().targets.includes(target);
 							})
 							.set("targets", targets)
 							.set("ai", target => {
 								return get.attitude(get.player(), target);
-							});
-					}
-				})
-				.then(() => {
-					let target = player;
-					if (result?.targets) {
-						target = result.targets[0];
+							})
+							.forResult();
+						target = targets[0];
 					}
 					trigger.getParent().targets = trigger.getParent().targets.sortBySeat(target);
 					trigger.getParent().triggeredTargets4 = trigger.getParent().triggeredTargets4.sortBySeat(target);
@@ -3300,18 +3297,17 @@ const skills = {
 					player.draw(targets.length);
 					player
 						.when("phaseEnd")
-						.then(() => {
+						.step(async () => {
 							targets.forEach(target => target.removeSkill("starzhangrong_threaten"));
 							var targetx = targets.filter(target => !target.getHistory("damage").length);
 							if (targetx.length) {
 								targetx.forEach(target => target.chat("乐"));
 								player.popup("杯具");
-								player.loseHp();
+								await player.loseHp();
 								return;
 							}
 							player.popup("洗具");
-						})
-						.vars({ targets: targets });
+						});
 				}
 			}
 		},
@@ -3937,7 +3933,7 @@ const skills = {
 						event.result.card = viewAs;
 						event.result.cards = [];
 						if (!player.storage.starsaying) {
-							player.when({ global: "roundStart" }).then(() => {
+							player.when({ global: "roundStart" }).step(async () => {
 								delete player.storage.starsaying;
 							});
 						}
@@ -13675,12 +13671,11 @@ const skills = {
 			player
 				.when({ global: "damageEnd" })
 				.filter(evt => evt == trigger)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (trigger.player.isIn()) {
-						player.chooseToDiscard(num, true, "he");
+						await player.chooseToDiscard(num, true, "he");
 					}
-				})
-				.vars({ num: num });
+				});
 		},
 	},
 	biaozhao: {

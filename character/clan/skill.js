@@ -2162,7 +2162,7 @@ const skills = {
 			player
 				.when({ global: "phaseUseAfter" })
 				.filter(evt => evt === trigger)
-				.then(() => player.removeSkill("clanjiewu_effect"));
+				.step(async () => player.removeSkill("clanjiewu_effect"));
 		},
 		subSkill: {
 			effect: {
@@ -3667,7 +3667,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
 			if (!player.storage.clanlilun) {
-				player.when({ global: "phaseAfter" }).then(() => {
+				player.when({ global: "phaseAfter" }).step(async () => {
 					player.unmarkSkill("clanlilun");
 					delete player.storage.clanlilun;
 				});
@@ -3833,7 +3833,7 @@ const skills = {
 						player: ["phaseDrawEnd", "phaseDrawCancelled", "phaseUseSkipped"],
 					})
 					.filter(evt => evt == trigger)
-					.then(() => {
+					.step(async (event, trigger, player) => {
 						const cards = player.getCards("h"),
 							num = cards.reduce((sum, card) => sum + get.number(card), 0);
 						if (cards.length) {
@@ -6993,7 +6993,7 @@ const skills = {
 						}, [])
 						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 					if (!player.storage.clandianzhan) {
-						player.when({ global: "roundStart" }).then(() => {
+						player.when({ global: "roundStart" }).step(async () => {
 							delete player.storage.clandianzhan;
 							player.unmarkSkill("clandianzhan");
 						});
@@ -7014,7 +7014,7 @@ const skills = {
 				.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 			if (suits.length) {
 				if (!player.storage.clandianzhan) {
-					player.when({ global: "roundStart" }).then(() => {
+					player.when({ global: "roundStart" }).step(async () => {
 						delete player.storage.clandianzhan;
 						player.unmarkSkill("clandianzhan");
 					});

@@ -1,6 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type {Record<string, Skill>} */
 export default {
 	//OL许攸
 	gz_ol_chenglve: {
@@ -2168,8 +2167,8 @@ export default {
 				return lib.filter.cardEnabled(card, _status.event.player, _status.event);
 			}, "疑城：是否使用装备牌？");
 			if (!target.storage.fakeyicheng) {
-				target.when({ global: "phaseEnd" }).then(() => {
-					player.chooseToDiscard("he", player.countMark("fakeyicheng"), true);
+				target.when({ global: "phaseEnd" }).step(async (event, trigger, player) => {
+					await player.chooseToDiscard("he", player.countMark("fakeyicheng"), true);
 					delete player.storage.fakeyicheng;
 				});
 			}
@@ -2552,7 +2551,7 @@ export default {
 						_status.characterlist.add(character);
 						game.log(player, "移去了一张", "#g“魂（" + get.translation(character) + "）”");
 						if (!player.storage.fakeyigui2) {
-							player.when({ global: "phaseBefore" }).then(() => delete player.storage.fakeyigui2);
+							player.when({ global: "phaseBefore" }).step(async () => delete player.storage.fakeyigui2);
 						}
 						player.markAuto("fakeyigui2", [get.type(result.card.name)]);
 					},
@@ -2726,12 +2725,11 @@ export default {
 			}
 			player
 				.when("phaseJieshuBegin")
-				.then(() => {
-					if (player.countCards(pos)) {
-						player.discard(player.getCards(pos));
+				.step(async () => {
+					if (player.countCards(position)) {
+						await player.discard(player.getCards(position));
 					}
 				})
-				.vars({ pos: position });
 		},
 	},
 	fakejizhi: {
@@ -3707,10 +3705,9 @@ export default {
 			get.info("rekuangcai").change(player, goon ? -1 : 1);
 			player
 				.when({ global: "phaseAfter" })
-				.then(() => {
+				.step(async () => {
 					get.info("rekuangcai").change(player, goon ? 1 : -1);
-				})
-				.vars({ goon: goon });
+				});
 		},
 	},
 	faketunchu: {
@@ -3729,23 +3726,16 @@ export default {
 			player
 				.when(["phaseDrawEnd", "phaseDrawSkipped", "phaseDrawCancelled"])
 				.filter(evt => evt == trigger)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					var nh = player.countCards("h");
 					if (nh) {
-						player.chooseCard("h", [1, Math.min(nh, 2)], "将至多两张手牌置于你的武将牌上", true).set("ai", card => {
+						const result = await player.chooseCard("h", [1, Math.min(nh, 2)], "将至多两张手牌置于你的武将牌上", true).set("ai", card => {
 							return 7.5 - get.value(card);
-						});
-					} else {
-						player.addTempSkill("faketunchu_effect");
-						event.finish();
+						}).forResult();
+						if (result.bool) {
+							player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("faketunchu");
+						}
 					}
-				})
-				.then(() => {
-					if (result.bool) {
-						player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("faketunchu");
-					}
-				})
-				.then(() => {
 					player.addTempSkill("faketunchu_effect");
 				});
 		},
@@ -4664,7 +4654,7 @@ export default {
 							}
 							return get.type(evt.card) == "equip2";
 						})
-						.then(() => player.removeSkill("fakehuanjia_equip2"));
+						.step(async () => player.removeSkill("fakehuanjia_equip2"));
 					const cards = trigger.player.getEquips(2);
 					if (cards.length) {
 						player.addExtraEquip("fakehuanjia_equip2", cards);
@@ -4698,7 +4688,7 @@ export default {
 							}
 							return get.type(evt.card) == "equip1";
 						})
-						.then(() => player.removeSkill("fakehuanjia_equip1"));
+						.step(async () => player.removeSkill("fakehuanjia_equip1"));
 					const cards = trigger.target.getEquips(1);
 					if (cards.length) {
 						player.addExtraEquip("fakehuanjia_equip1", cards);

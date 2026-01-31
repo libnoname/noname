@@ -1349,8 +1349,8 @@ const skills = {
 				player
 					.when("useCardAfter")
 					.filter(evt => evt == trigger.getParent())
-					.then(() => {
-						player.draw();
+					.step(async () => {
+						await player.draw();
 					});
 			}
 			const targets = trigger.targets.filter(target => target != player);
@@ -1528,7 +1528,7 @@ const skills = {
 						const num = get.info(event.name)?.number;
 						if (typeof num == "number") {
 							player
-								.when("compare")
+								.when("compare", false)
 								.filter((evt, player) => {
 									if (!evt.getParent(event.name, true)) {
 										return false;
@@ -1550,7 +1550,8 @@ const skills = {
 											trigger[`num${ind}`] = num;
 										}
 									}
-								});
+								})
+								.finish();
 						}
 						const next = player
 							.chooseToCompare(event.targets, card => {
@@ -2282,7 +2283,7 @@ const skills = {
 		async content(event, trigger, player) {
 			//为false则表示不是第一次使用手牌，因为考虑到技能可能被失效导致第一张手牌受到限制所以用的false来赋值
 			player.storage.dcshigong_first = false;
-			player.when({ global: "phaseAfter" }).then(() => {
+			player.when({ global: "phaseAfter" }).step(async () => {
 				delete player.storage.dcshigong_first;
 			});
 			if (lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu") != 0) {
@@ -2698,9 +2699,9 @@ const skills = {
 			player
 				.when({ player: "useCardAfter" })
 				.filter((evt, player, name) => evt.card === trigger.card && evt.oljuejue)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (trigger.cards.filterInD().length) {
-						player.gain(trigger.cards.filterInD(), "gain2");
+						await player.gain(trigger.cards.filterInD(), "gain2");
 					}
 				});
 		},
@@ -4906,7 +4907,7 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.num -= event.cost_data.length;
 			if (!player.storage.dchuiwan_used) {
-				player.when({ global: "phaseAfter" }).then(() => delete player.storage.dchuiwan_used);
+				player.when({ global: "phaseAfter" }).step(async () => delete player.storage.dchuiwan_used);
 			}
 			player.markAuto(
 				"dchuiwan_used",
@@ -5876,7 +5877,7 @@ const skills = {
 				if (result.bool) {
 					var name = result.links[0][2];
 					if (!player.storage.dcfaqi) {
-						player.when({ global: "phaseAfter" }).then(() => delete player.storage.dcfaqi);
+						player.when({ global: "phaseAfter" }).step(async () => delete player.storage.dcfaqi);
 					}
 					player.markAuto("dcfaqi", name);
 					player.chooseUseTarget({ name: name, isCard: true }, true, false).logSkill = "dcfaqi";

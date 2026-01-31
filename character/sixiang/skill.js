@@ -755,17 +755,15 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
+			const target = trigger.player;
 			player
 				.when({ global: "phaseJieshuBegin" })
 				.filter(evt => evt.getParent("phase") === trigger.getParent("phase"))
-				.then(() => {
-					if (targetx.isIn()) {
-						player.line(targetx);
-						targetx.damage();
+				.step(async (event, trigger, player) => {
+					if (target.isIn()) {
+						player.line(target);
+						await target.damage();
 					}
-				})
-				.vars({
-					targetx: trigger.player,
 				});
 		},
 	},
@@ -4303,7 +4301,7 @@ const skills = {
 			await player.give(event.cards, target);
 			trigger.cancel();
 			if (!player.getStorage("stdjuyi").length) {
-				player.when({ global: "phaseEnd" }).then(() => {
+				player.when({ global: "phaseEnd" }).step(async () => {
 					delete player.storage.stdjuyi;
 				});
 			}
@@ -4893,7 +4891,7 @@ const skills = {
 			player
 				.when({ global: "phaseDiscardEnd" })
 				.filter(evt => evt == trigger)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					trigger.player.removeSkill("stdjinglve_discard");
 					const cards = [];
 					game.getGlobalHistory("cardMove", function (evt) {
@@ -4912,14 +4910,10 @@ const skills = {
 						}
 					});
 					if (cards.length) {
-						player.chooseButton(["景略：是否获得本阶段弃置的一张牌？", cards]);
-					} else {
-						event._result = { bool: false };
-					}
-				})
-				.then(() => {
-					if (result.bool) {
-						player.gain(result.links, "gain2");
+						const { bool, links } = await player.chooseButton(["景略：是否获得本阶段弃置的一张牌？", cards]).forResult();
+						if (bool) {
+							await player.gain(links, "gain2");
+						}
 					}
 				});
 		},

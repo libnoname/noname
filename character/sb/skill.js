@@ -2590,7 +2590,7 @@ const skills = {
 						game.log(card, "无视防具且不计入次数限制");
 						if (!player.storage.sbxianzhen_damaged) {
 							player.storage.sbxianzhen_damaged = (player.storage.sbxianzhen_damaged || 0) + 1;
-							player.when("phaseAfter").then(() => {
+							player.when("phaseAfter").step(async () => {
 								delete player.storage.sbxianzhen_damaged;
 							});
 						}
@@ -2671,7 +2671,7 @@ const skills = {
 						}
 					});
 					if (!player.storage.sbxianzhen_recorded) {
-						player.when("sbxianzhen_attackAfter").then(() => {
+						player.when("sbxianzhen_attackAfter").step(async () => {
 							delete player.storage.sbxianzhen_recorded;
 						});
 					}

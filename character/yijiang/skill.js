@@ -12491,7 +12491,7 @@ const skills = {
 					if (target.hp < target.maxHp) {
 						controls.push("recover_hp");
 					}
-					if (target.isLinked() | target.isTurnedOver()) {
+					if (target.isLinked() || target.isTurnedOver()) {
 						controls.push("reset_character");
 					}
 					target.chooseControl(controls).ai = function () {
@@ -14409,7 +14409,7 @@ const skills = {
 						player,
 						get.suit(trigger.card, player)
 					);
-					player.when("phaseUseAfter").then(() => {
+					player.when("phaseUseAfter").step(async () => {
 						player.unmarkSkill("jianying_mark");
 						delete player.storage.jianying_mark;
 					});
@@ -14445,7 +14445,7 @@ const skills = {
 							player,
 							get.suit(trigger.card, player)
 						);
-						player.when("phaseUseAfter").then(() => {
+						player.when("phaseUseAfter").step(async () => {
 							player.unmarkSkill("jianying_mark");
 							delete player.storage.jianying_mark;
 						});

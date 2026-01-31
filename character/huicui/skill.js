@@ -1445,20 +1445,20 @@ const skills = {
 		async content(event, trigger, player) {
 			let name = event.triggername;
 			player
-				.when({ player: ["useCardAfter", "dcmurui"] })
+				.when({ player: ["useCardAfter", "dcmurui"] }, false)
 				.filter((evt, player, namex) => {
 					return namex === "dcmurui" || (player.getStorage("dcmurui").includes(evt.card) && ["sourceDamage", "damage"].some(type => game.hasPlayer2(current => current.hasHistory(type, evtx => evt.card === evtx.card))));
 				})
 				.assign({ firstDo: true })
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (event.triggername === "dcmurui") {
 						return;
 					}
-					player.draw(2);
+					await player.draw(2);
 					player.markAuto("dcmurui_filter", name);
 					player.markSkill("dcaoren");
 				})
-				.vars({ name: name });
+				.finish();
 			const result = await player
 				.chooseToUse("使用一张牌，若造成伤害则不能再于此时用牌")
 				.set("oncard", () => {
@@ -3331,7 +3331,7 @@ const skills = {
 				.forResult();
 			if (control) {
 				if (!player.storage.dcjianzhuan_used) {
-					player.when("phaseUseAfter").then(() => delete player.storage.dcjianzhuan_used);
+					player.when("phaseUseAfter").step(async () => delete player.storage.dcjianzhuan_used);
 				}
 				player.markAuto("dcjianzhuan_used", [map[control]]);
 				await info[map[control]].content(player, num);
@@ -3736,7 +3736,7 @@ const skills = {
 			const target = result.targets[0];
 			player.logSkill("dczhenrao", target);
 			if (!player.storage.dczhenrao) {
-				player.when({ global: "phaseAfter" }).then(() => player.unmarkSkill("dczhenrao"));
+				player.when({ global: "phaseAfter" }).step(async () => player.unmarkSkill("dczhenrao"));
 			}
 			player.markAuto("dczhenrao", target);
 			await target.damage();
@@ -3783,10 +3783,7 @@ const skills = {
 			player
 				.when("phaseUseEnd")
 				.filter(evt => evt === event.getParent("phaseUse"))
-				.vars({
-					sishiList,
-				})
-				.then(() => {
+				.step(async () => {
 					const lose_list = [],
 						players = game.filterPlayer();
 					players.forEach(current => {
@@ -3797,23 +3794,18 @@ const skills = {
 						}
 					});
 					if (lose_list.length) {
-						game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
+						await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
 					}
-				})
-				.then(() => {
-					game.cardsGotoSpecial(sishiList);
+					await game.cardsGotoSpecial(sishiList);
 					game.log(sishiList, "被移出了游戏");
 				});
 			player
 				.when("die")
-				.vars({
-					sishiList,
-				})
 				.assign({
 					forceDie: true,
 				})
-				.then(() => {
-					game.cardsDiscard(sishiList);
+				.step(async () => {
+					await game.cardsDiscard(sishiList);
 					game.log(sishiList, "被置入了弃牌堆");
 				});
 		},
@@ -4193,20 +4185,17 @@ const skills = {
 			if (bool) {
 				player.tempBanSkill("dcyingshi");
 			} else {
+				const cardx = {
+					name: trigger.card.name,
+					nature: trigger.card.nature,
+					isCard: true,
+					storage: { dcyingshi: true },
+				};
 				player
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt === trigger.getParent())
-					.vars({
-						targetx: target,
-						cardx: {
-							name: trigger.card.name,
-							nature: trigger.card.nature,
-							isCard: true,
-							storage: { dcyingshi: true },
-						},
-					})
-					.then(() => {
-						const next = player.useCard(get.copy(cardx), targetx, false);
+					.step(async (event, trigger, player) => {
+						const next = player.useCard(get.copy(cardx), target, false);
 						if (trigger.addedTarget) {
 							next.addedTarget = trigger.addedTarget;
 						}
@@ -4436,13 +4425,12 @@ const skills = {
 						target.addMark("dcfuli_range", goon ? target.getAttackRange() : 1, false);
 						player
 							.when(["phaseBegin", "dieBegin"])
-							.then(() => {
+							.step(async () => {
 								target.removeMark("dcfuli_range", target.countMark("dcfuli_range"), false);
 								if (!target.hasMark("dcfuli_range")) {
 									target.removeSkill("dcfuli_range");
 								}
-							})
-							.vars({ target: target });
+							});
 					}
 				}
 			}
@@ -5420,7 +5408,7 @@ const skills = {
 				return;
 			}
 			player.markAuto("dcliangxiu", cards.map(card => get.type2(card, false)).toUniqued());
-			player.when({ global: "phaseChange" }).then(() => {
+			player.when({ global: "phaseChange" }).step(async () => {
 				player.unmarkSkill("dcliangxiu");
 			});
 			if (_status.connectMode) {
@@ -6006,7 +5994,7 @@ const skills = {
 						var target = event.result.targets[0];
 						player.logSkill("dcshizong", target);
 						if (!player.countMark("dcshizong")) {
-							player.when({ global: "phaseAfter" }).then(() => delete player.storage.dcshizong);
+							player.when({ global: "phaseAfter" }).step(async () => delete player.storage.dcshizong);
 						}
 						player.addMark("dcshizong", 1, false);
 						await player.give(event.result.cards.slice(), target);
@@ -9756,7 +9744,7 @@ const skills = {
 				player
 					.when("useCardAfter")
 					.filter(event => event == next)
-					.then(() => {
+					.step(async (event, trigger, player) => {
 						if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
 							var cards = trigger.cards.filterInD();
 							if (cards.length > 0) {

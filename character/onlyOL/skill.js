@@ -2778,12 +2778,12 @@ const skills = {
 							target
 								.when({ player: "phaseDrawBegin2" })
 								.filter(evt => !evt.numFixed)
-								.then(() => {
+								.step(async (event, trigger, player) => {
 									trigger.num += 2;
 								});
 						} else {
 							await target.draw(2);
-							target.when({ player: "phaseDiscardBegin" }).then(() => {
+							target.when({ player: "phaseDiscardBegin" }).step(async (event, trigger, player) => {
 								player.addTempSkill("olsbyinglve_debuff", ["phaseBeforeStart", "phaseChange", "phaseAfter"]);
 								player.addMark("olsbyinglve_debuff", 2, false);
 							});
@@ -3530,12 +3530,13 @@ const skills = {
 			next._noTurnOver = true;
 			next.set("phaseList", ["phaseUse"]);
 			player
-				.when({ player: "phaseBegin" })
+				.when({ player: "phaseBegin" }, false)
+				.assign({ firstDo: true })
 				.filter(evt => evt.skill == "olduoqi")
-				.then(() => {
+				.step(async () => {
 					player.addTempSkill("olduoqi_limit");
 				})
-				.assign({ firstDo: true });
+				.finish();
 			if (!trigger._finished) {
 				trigger.finish();
 				trigger._finished = true;
@@ -9602,9 +9603,9 @@ const skills = {
 			player
 				.when("phaseJieshuBegin")
 				.filter(evt => evt.getParent() == trigger.getParent())
-				.then(() => {
+				.step(async () => {
 					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") && get.type(evtx.card) != "delay") && player.countDiscardableCards("he")) {
-						player.chooseToDiscard("he", game.countGroup(), true);
+						await player.chooseToDiscard("he", game.countGroup(), true);
 					}
 				});
 		},
@@ -10011,11 +10012,11 @@ const skills = {
 					let skillName = `olsbhongtu_${player.playerid}`;
 					await target.addAdditionalSkills(skillName, [skill], true);
 					delete target.storage.olsbhongtu_phased;
-					target.when({ player: "phaseBegin" }).then(() => {
-						player.storage.olsbhongtu_phased = true;
+					target.when({ player: "phaseBegin" }).step(async () => {
+						target.storage.olsbhongtu_phased = true;
 					});
 					target
-						.when({ player: "phaseEnd" })
+						.when({ player: "phaseEnd" }, false)
 						.filter(() => {
 							return target.storage.olsbhongtu_phased;
 						})
@@ -10023,13 +10024,11 @@ const skills = {
 							firstDo: true,
 							priority: Infinity,
 						})
-						.vars({
-							skillName,
+						.step(async () => {
+							delete target.storage.olsbhongtu_phased;
+							target.removeAdditionalSkills(skillName);
 						})
-						.then(() => {
-							delete player.storage.olsbhongtu_phased;
-							player.removeAdditionalSkills(skillName);
-						});
+						.finish();
 				}
 			}
 		},
@@ -10421,13 +10420,13 @@ const skills = {
 			player
 				.when("useCardAfter")
 				.filter(evt => evt == trigger)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					if (
 						game.hasPlayer2(target => {
 							return target.getHistory("damage", evt => evt.card && evt.card == trigger.card).length;
 						})
 					) {
-						player.chooseToDiscard("he", "疠火：弃置一张牌，或失去1点体力").set("ai", card => {
+						const result = await player.chooseToDiscard("he", "疠火：弃置一张牌，或失去1点体力").set("ai", card => {
 							const player = get.event().player,
 								cards = player.getCards("h");
 							if ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, player, player)) {
@@ -10445,14 +10444,10 @@ const skills = {
 								return -1;
 							}
 							return 24 - 5 * cards.length - 2 * Math.min(4, player.getHp()) - get.value(card);
-						});
-					} else {
-						event.finish();
-					}
-				})
-				.then(() => {
-					if (!result.bool) {
-						player.loseHp();
+						}).forResult();
+						if (!result.bool) {
+							await player.loseHp();
+						}
 					}
 				});
 		},
@@ -11465,10 +11460,10 @@ const skills = {
 			player
 				.when({ global: "useCardAfter" })
 				.filter(evt => evt == trigger.getParent())
-				.then(() => {
+				.step(async () => {
 					const num = Math.min(5, player.getAttackRange());
 					if (num > 0) {
-						player.draw(num);
+						await player.draw(num);
 					}
 				});
 		},
@@ -11867,7 +11862,7 @@ const skills = {
 				}
 			}
 			player.addSkill("olsbranji_norecover");
-			player.when({ source: "dieAfter" }).then(() => player.removeSkill("olsbranji_norecover"));
+			player.when({ source: "dieAfter" }).step(async () => player.removeSkill("olsbranji_norecover"));
 		},
 		derivation: ["kunfenx", "zhaxiang"],
 		getList(event) {

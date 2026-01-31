@@ -5116,7 +5116,7 @@ const skills = {
 				player
 					.when({ player: "phaseUseEnd" })
 					.filter(evt => event.getParent("phaseUse") == evt)
-					.then(() => {
+					.step(async () => {
 						const num = player
 							.getHistory("gain", evt => {
 								return evt.getParent(2)?.name == "mbxuehen_sha" && evt.cards?.length;
@@ -5200,19 +5200,19 @@ const skills = {
 				await player.drawTo(Math.min(5, target.countCards("h")));
 			}
 			player
-				.when({ global: "useCardAfter" })
+				.when({ global: "useCardAfter" }, false)
 				.filter((evt, player) => player.getStorage("mbkuangwu").includes(evt.card))
 				.assign({ firstDo: true })
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					player.unmarkAuto("mbkuangwu", [trigger.card]);
 					if (target.hasHistory("damage", evtx => trigger === evtx?.getParent(2))) {
 						return;
 					}
 					player.logSkill("mbkuangwu", null, null, null, [get.rand(3, 4)]);
-					player.loseHp();
+					await player.loseHp();
 					player.tempBanSkill("mbkuangwu", "roundStart");
 				})
-				.vars({ target: target });
+				.finish();
 			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
 			if (player.canUse(juedou, target)) {
 				await player.useCard(juedou, target).set("oncard", () => {
@@ -5551,7 +5551,7 @@ const skills = {
 						.when({
 							global: ["phaseBefore", "phaseAfter"],
 						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							const cards = player.getExpansions("mbweisi");
 							if (cards.length) {
 								player.gain(cards, "draw");
@@ -5566,15 +5566,15 @@ const skills = {
 					source: "damageSource",
 				})
 				.filter(evt => evt.getParent(event.name) == event)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					const cards = trigger.player.getCards("h");
 					if (cards.length) {
 						player.logSkill("mbweisi", [trigger.player], null, null, [3]);
 						const mode = get.mode();
 						if (mode !== "doudizhu") {
-							trigger.player.give(cards, player);
+							await trigger.player.give(cards, player);
 						} else {
-							player.gainPlayerCard(trigger.player, "h", true);
+							await player.gainPlayerCard(trigger.player, "h", true);
 						}
 					}
 				});
@@ -8701,7 +8701,7 @@ const skills = {
 					precontent() {
 						if (!player.storage.mbzujin) {
 							player.storage.mbzujin = [];
-							player.when({ global: "phaseEnd" }).then(() => {
+							player.when({ global: "phaseEnd" }).step(async () => {
 								delete player.storage.mbzujin;
 							});
 						}
@@ -10266,7 +10266,7 @@ const skills = {
 						player
 							.when("phaseUseEnd")
 							.filter(evtx => !evtx.fangzhuUsed)
-							.then(() => {
+							.step(async () => {
 								player.storage.mbcmfangzhu = player;
 							});
 						switch (num) {
@@ -16417,7 +16417,7 @@ const skills = {
 						player,
 						get.suit(trigger.card, player)
 					);
-					player.when("phaseUseAfter").then(() => {
+					player.when("phaseUseAfter").step(async () => {
 						player.unmarkSkill("jianying_mark");
 						delete player.storage.jianying_mark;
 					});
@@ -24760,7 +24760,7 @@ const skills = {
 				player
 					.when({ global: "dyingAfter" })
 					.filter(evt => evt === trigger)
-					.then(() => _status.currentPhase?.damage());
+					.step(async () => await _status.currentPhase?.damage());
 			}
 		},
 	},

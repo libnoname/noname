@@ -1590,14 +1590,14 @@ const skills = {
 					if (control == "选项一") {
 						player.addTempSkill("twqianxiong_damage");
 						player.markAuto("twqianxiong_damage", [target]);
-						target.when("phaseEnd").then(() => {
+						target.when("phaseEnd").step(async (event, trigger, player) => {
 							const cards = player.getExpansions("twqianxiong").filter(card => {
 								return player.hasHistory("useCard", evt => evt.card.name == card.name) || player.hasHistory("respond", evt => evt.card.name == card.name);
 							});
 							if (!cards.length) {
 								return;
 							}
-							player.loseToDiscardpile(cards);
+							await player.loseToDiscardpile(cards);
 						});
 					} else if (control == "选项二") {
 						const cards = target.getExpansions("twqianxiong").slice(0);
@@ -4775,15 +4775,16 @@ const skills = {
 				content() {
 					const next = player.insertPhase();
 					next.set("phaseList", ["phaseUse"]);
+					const cardsx = player.getStorage("twrenxian_phase");
 					player
-						.when({ global: "phaseBegin" })
+						.when({ global: "phaseBegin" }, false)
+						.assign({ firstDo: true })
 						.filter(evt => evt.skill == "twrenxian_phase")
-						.then(() => {
+						.step(async () => {
 							player.addTempSkill("twrenxian_mark", "phaseAfter");
 							player.markAuto("twrenxian_mark", cardsx);
 						})
-						.assign({ firstDo: true })
-						.vars({ cardsx: player.getStorage("twrenxian_phase") });
+						.finish();
 				},
 			},
 			mark: {
@@ -5272,10 +5273,8 @@ const skills = {
 			}
 			player
 				.when({ global: "phaseAfter" })
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					player.insertPhase("twhunyou");
-				})
-				.then(() => {
 					player.storage.isInHuan = true;
 					player.changeSkin({ characterName: "huan_zhugeliang" }, "huan_zhugeliang_shadow");
 					player.changeSkills(get.info("twhunyou").derivation, ["twhunyou"]);
@@ -5640,15 +5639,6 @@ const skills = {
 						}
 					}
 				}
-				/*trigger.player
-					.when("useCard")
-					.filter(evt => evt.card.name == "shan")
-					.then(() => {
-						let hs = player.getCards("h");
-						if (hs.length) {
-							player.discard(hs.randomGets(2));
-						}
-					});*/
 			}
 		},
 		group: "twzhihuan_compare",
@@ -6599,7 +6589,7 @@ const skills = {
 			player
 				.when({ player: "phaseBegin" }, false)
 				.assign({ firstDo: true })
-				.then(() => {
+				.step(async () => {
 					delete player.storage.beOfOneHeartWith;
 					player.unmarkSkill("beOfOneHeart");
 				})
@@ -6763,7 +6753,7 @@ const skills = {
 						player.logSkill("twcairu");
 						if (!player.storage.twcairu_used) {
 							player.storage.twcairu_used = [];
-							player.when({ global: "phaseAfter" }).then(() => {
+							player.when({ global: "phaseAfter" }).step(async () => {
 								delete player.storage.twcairu_used;
 							});
 						}
@@ -7211,7 +7201,7 @@ const skills = {
 						player.logSkill("twylyanshi");
 						player.awakenSkill("twylyanshi");
 						if (player.storage.twduwang_ylyanshi) {
-							player.when({ global: "phaseEnd" }).then(() => {
+							player.when({ global: "phaseEnd" }).step(async () => {
 								if (player.awakenedSkills.includes("twylyanshi")) {
 									player.popup("历战");
 									player.restoreSkill("twylyanshi");
@@ -7283,7 +7273,7 @@ const skills = {
 		usable: 1,
 		onremove: "twjuexing_lizhan",
 		async content(event, trigger, player) {
-			player.when({ global: "phaseEnd" }).then(() => {
+			player.when({ global: "phaseEnd" }).step(async () => {
 				player.popup("历战");
 				player.addSkill("twjuexing_lizhan");
 				player.addMark("twjuexing_lizhan", 1, false);
@@ -7295,36 +7285,32 @@ const skills = {
 			player
 				.when({ global: "useCardAfter" })
 				.filter(evtx => evtx.getParent() == event)
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					let list = [];
-					var targets = [player].concat(trigger.targets);
+					const targets = [player].concat(trigger.targets);
 					for (const i of targets) {
 						if (i.isIn() && i.hasCard(card => card.hasGaintag("twjuexing"), "h")) {
 							list.push([i, i.getCards("h", card => card.hasGaintag("twjuexing"))]);
 						}
 					}
 					if (list.length) {
-						game.loseAsync({ lose_list: list }).setContent("discardMultiple");
+						await game.loseAsync({ lose_list: list }).setContent("discardMultiple");
 					}
-				})
-				.then(() => {
+
 					let listx = [];
-					var targets = [player].concat(trigger.targets);
 					for (const i of targets) {
 						if (i.isIn() && i.getExpansions("twjuexing_buff").length) {
 							listx.push([i, i.getExpansions("twjuexing_buff")]);
 						}
 					}
 					if (listx.length) {
-						game.loseAsync({ gain_list: listx, animate: "draw" }).setContent("gaincardMultiple");
+						await game.loseAsync({ gain_list: listx, animate: "draw" }).setContent("gaincardMultiple");
 					}
-				})
-				.then(() => {
-					var targets = [player].concat(trigger.targets);
+					
 					targets.forEach(current => {
 						current.removeSkill("twjuexing_buff");
 					});
-					game.delay();
+					await game.delay();
 				});
 			await player.useCard(card, target, false);
 		},
@@ -7591,7 +7577,7 @@ const skills = {
 					}
 				}
 			}
-			player.when({ global: "phaseEnd" }).then(() => {
+			player.when({ global: "phaseEnd" }).step(async () => {
 				player.popup("历战");
 				player.addMark("twbaizu_lizhan", 1, false);
 				game.log(player, "触发了", "#g【败族】", "的", "#y历战", "效果");
@@ -8101,12 +8087,11 @@ const skills = {
 					player.popup("登剑");
 					target.popup("登剑");
 					game.log(player, "将", "#g【登剑】", "传授给了", target);
+					const evtx = event;
 					player
 						.when("phaseBegin")
-						.then(() => {
-							target.removeAdditionalSkills("twxinshou_" + player.playerid);
-						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
+							await target.removeAdditionalSkills("twxinshou_" + player.playerid);
 							const history = game.getAllGlobalHistory("everything");
 							for (let i = history.length - 1; i >= 0; i--) {
 								const evt = history[i];
@@ -8122,8 +8107,7 @@ const skills = {
 							}
 							player.popup("杯具");
 							player.chat("剑法废掉了...");
-						})
-						.vars({ target: target, evtx: event });
+						});
 				}
 			} else {
 				let choice = [],
@@ -8232,7 +8216,7 @@ const skills = {
 			target
 				.when("enableEquipEnd")
 				.filter((e, p) => !p.hasDisabledSlot())
-				.then(() => player.removeSkill("twjieqiu_buff"));
+				.step(async () => target.removeSkill("twjieqiu_buff"));
 		},
 		ai: {
 			order: 7,
@@ -8495,12 +8479,12 @@ const skills = {
 					player.removeMark("twchue", num);
 					const card = new lib.element.VCard({ name: "sha", isCard: true });
 					player
-						.when("useCard2")
+						.when("useCard2", false)
 						.filter(evt => evt.getParent(2) == event)
 						.assign({
 							firstDo: true,
 						})
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							trigger.baseDamage++;
 							if (
 								!game.hasPlayer(target => {
@@ -8509,7 +8493,7 @@ const skills = {
 							) {
 								return;
 							}
-							player
+							const result = await player
 								.chooseTarget("额外指定至多" + get.cnNumber(num) + "名目标", [1, num], (card, player, target) => {
 									const trigger = _status.event.getTrigger();
 									return !trigger.targets.includes(target) && player.canUse(trigger.card, target);
@@ -8518,16 +8502,15 @@ const skills = {
 									const player = get.event().player,
 										trigger = _status.event.getTrigger();
 									return get.effect(target, trigger.card, player, player);
-								});
-						})
-						.then(() => {
+								})
+								.forResult();
 							if (result.bool) {
 								const targets = result.targets;
 								player.line(targets);
 								trigger.targets.addArray(targets);
 							}
 						})
-						.vars({ num: num });
+						.finish();
 					player.chooseUseTarget("视为使用造成的伤害+1且可以额外指定" + num + "个目标的【杀】", card, false, true);
 				},
 			},
@@ -8693,7 +8676,7 @@ const skills = {
 					player
 						.when("useCardAfter")
 						.filter(evt => evt == trigger.getParent())
-						.then(() => {
+						.step(async (event, trigger, player) => {
 							if (player.getHistory("sourceDamage", evt => evt.card == trigger.card).length) {
 								player.addTempSkill("twhuzhong_sha", "phaseUseAfter");
 								player.addMark("twhuzhong_sha", 1, false);
@@ -8786,7 +8769,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			if (!player.storage.twchengxi_used) {
-				player.when("phaseUseAfter").then(() => delete player.storage.twchengxi_used);
+				player.when("phaseUseAfter").step(async () => delete player.storage.twchengxi_used);
 			}
 			player.markAuto("twchengxi_used", [target]);
 			await player.draw();
@@ -8903,21 +8886,6 @@ const skills = {
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					trigger.effectCount++;
-					/*player
-						.when("useCardAfter")
-						.filter(evt => evt == trigger)
-						.then(() => {
-							if (trigger.targets) {
-								var card = {
-									name: trigger.card.name,
-									isCard: true,
-								};
-								var targets = trigger.targets.filter(i => i.isIn() && player.canUse(card, i, false));
-								if (targets.length) {
-									player.useCard(card, targets, false);
-								}
-							}
-						});*/
 				},
 				mark: true,
 				marktext: "袭",
@@ -9099,12 +9067,12 @@ const skills = {
 				}
 				await player.chooseUseTarget(true, cards[0], false);
 			}
-			player.when("phaseEnd").then(() => {
+			player.when("phaseEnd").step(async () => {
 				if (player.countCards("h")) {
-					player.chooseToDiscard(player.countCards("h"), true);
+					await player.chooseToDiscard(player.countCards("h"), true);
 				}
 				var num = Math.max(1, player.getHp() - 1);
-				player.loseHp(num);
+				await player.loseHp(num);
 			});
 		},
 		group: "twxinghan_init",
@@ -10196,10 +10164,7 @@ const skills = {
 			player
 				.when("chooseToCompareAfter")
 				.filter(evt => evt === trigger)
-				.vars({
-					toDraw: num,
-				})
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					const num1 = trigger.result.num1,
 						num2 = trigger.result.num2;
 					let bool = false;
@@ -10215,7 +10180,7 @@ const skills = {
 						}
 					}
 					if (bool) {
-						player.draw(toDraw);
+						await player.draw(num);
 					}
 				});
 		},
@@ -20207,7 +20172,7 @@ const skills = {
 				player
 					.when({ player: ["useCard", "respond"] })
 					.filter(evt => evt.skill == "twjiange")
-					.then(() => player.draw());
+					.step(async () => await player.draw());
 			}
 			event.getParent().addCount = false;
 		},

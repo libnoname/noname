@@ -2109,9 +2109,6 @@ const skills = {
 						global: "phaseEnd",
 					})
 					.filter(evt => evt.skill == event.name)
-					.vars({
-						skillName,
-					})
 					.step(async (event, trigger, player) => {
 						player.removeAdditionalSkill(skillName);
 						let cards = player.getExpansions("sxrmshefu_effect");
@@ -2141,7 +2138,7 @@ const skills = {
 			target
 				.when({
 					player: "phaseEnd",
-				})
+				}, false)
 				.assign({
 					lastDo: true,
 				})
@@ -2155,7 +2152,8 @@ const skills = {
 							}
 						}
 					}
-				});
+				})
+				.finish();
 			target.insertPhase(event.name);
 		},
 		derivation: "sxrmshefu",
