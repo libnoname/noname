@@ -3,6 +3,7 @@ import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
 import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
+import { AsyncFunction } from "@/util/index.js";
 import dedent from "dedent";
 
 export class Player extends HTMLDivElement {
@@ -691,14 +692,11 @@ export class Player extends HTMLDivElement {
 	 * when('xxx') when([xxx1,xxx2])//均会被解析为：player:xxx或player:[xxx1,xxx2]
 	 *
 	 * when({player:xxx})或when({global:[xxx]})//对象类型将直接应用
-	 *
-	 * when(xxx1,xxx2)//解析为player:[xxx1,xxx2]
-	 *
-	 * when({player: 'xxAfter'}, {global: 'yyBegin'})//合并解析
-	 * @param  {[Signal[]]|Signal[]|SkillTrigger[]} triggerNames
+	 * @param {Signal[]|Signal|SkillTrigger} triggerName 时机
+	 * @param {boolean} [instantlyAdd] 自动`addSkill`。如果技能是`firstDo`或`lastDo`，请设为`false`并手动调用`.finish()`
 	 * @returns {When}
 	 */
-	when(...triggerNames) {
+	when(triggerName, instantlyAdd = true) {
 		const player = this;
 		if (!_status.postReconnect.player_when) {
 			_status.postReconnect.player_when = [
@@ -719,43 +717,13 @@ export class Player extends HTMLDivElement {
 			];
 		}
 		let trigger;
-		let instantlyAdd = true;
-		//从triggerNames中取出instantlyAdd的部分
-		if (triggerNames.includes(false)) {
-			instantlyAdd = false;
-			triggerNames.remove(false);
-		}
-		if (triggerNames.length == 0) {
-			throw new Error("player.when的参数数量应大于0");
-		}
-		// add other triggerNames
-		// arguments.length = 1
-		if (triggerNames.length == 1) {
-			// 以下两种情况:
-			// triggerNames = [ ['xxAfter', ...args] ]
-			// triggerNames = [ 'xxAfter' ]
-			if (Array.isArray(triggerNames[0]) || typeof triggerNames[0] == "string") {
-				trigger = { player: triggerNames[0] };
-			}
-			// triggerNames = [ {player:'xxx'} ]
-			else if (get.is.object(triggerNames[0])) {
-				trigger = triggerNames[0];
-			}
-		}
-		// arguments.length > 1
-		else {
-			// triggerNames = [ 'xxAfter', 'yyBegin' ]
-			if (triggerNames.every(t => typeof t == "string")) {
-				trigger = { player: triggerNames };
-			}
-			// triggerNames = [ {player: 'xxAfter'}, {global: 'yyBegin'} ]
-			// 此处不做特殊的合并处理，由使用者自行把握，同名属性后者覆盖前者
-			else if (triggerNames.every(t => get.is.object(t))) {
-				trigger = triggerNames.reduce((pre, cur) => Object.assign(pre, cur));
-			}
+		if (Array.isArray(triggerName) || typeof triggerName == "string") {
+			trigger = { player: triggerName };
+		} else if (get.is.object(triggerName)) {
+			trigger = triggerName;
 		}
 		if (!trigger) {
-			throw new Error("player.when传参数类型错误:" + triggerNames);
+			throw new Error("player.when传参数类型错误:" + triggerName);
 		}
 		let skillName;
 		do {
@@ -795,9 +763,6 @@ export class Player extends HTMLDivElement {
 			// 必要条件
 			/** @type { Required<Skill>['filter'][] } */
 			filterFuns: [],
-			// 充分条件
-			/** @type { Required<Skill>['filter'][] } */
-			filter2Funs: [],
 			/** @type { Required<Skill>['content'][] } */
 			contentFuns: [],
 			// 外部变量
@@ -806,9 +771,6 @@ export class Player extends HTMLDivElement {
 			},
 			get filter() {
 				return (event, player, name) => skill.filterFuns.every(fun => Boolean(fun(event, player, name))) && skill.filter2(event, player, name);
-			},
-			get filter2() {
-				return (event, player, name) => skill.filter2Funs.length === 0 || skill.filter2Funs.some(fun => Boolean(fun(event, player, name)));
 			},
 		};
 		const warnVars = ["event", "step", "source", "player", "target", "targets", "card", "cards", "skill", "forced", "num", "trigger", "result"];
@@ -922,43 +884,17 @@ export class Player extends HTMLDivElement {
 				return this;
 			},
 			/**
-			 * @param { Required<Skill>['filter'] } fun
-			 */
-			removeFilter(fun) {
-				if (lib.skill[skillName] != skill) {
-					throw new Error(`This skill has been destroyed`);
-				}
-				skill.filterFuns.remove(fun);
-				return this;
-			},
-			/**
-			 * @param { Required<Skill>['filter'] } fun
-			 */
-			filter2(fun) {
-				if (lib.skill[skillName] != skill) {
-					throw new Error(`This skill has been destroyed`);
-				}
-				skill.filter2Funs.push(fun);
-				return this;
-			},
-			/**
-			 * @param { Required<Skill>['filter'] } fun
-			 */
-			removeFilter2(fun) {
-				if (lib.skill[skillName] != skill) {
-					throw new Error(`This skill has been destroyed`);
-				}
-				skill.filter2Funs.remove(fun);
-				return this;
-			},
-			/**
-			 * @param { Required<Skill>['content'] } fun
+			 * @param { ContentFuncByAll } fun
 			 */
 			then(fun) {
 				if (lib.skill[skillName] != skill) {
 					throw new Error(`This skill has been destroyed`);
 				}
-				skill.contentFuns.push(String(fun)); // 提前转换，防止与闭包函数弄混
+				if (fun instanceof AsyncFunction) {
+					skill.contentFuns.push(fun);
+				} else {
+					skill.contentFuns.push(String(fun)); // 提前转换，防止与闭包函数弄混
+				}
 				createContent();
 				return this;
 			},
@@ -1035,6 +971,7 @@ export class Player extends HTMLDivElement {
 				return this;
 			},
 			/**
+			 * @deprecated
 			 * @param { Record<string, any> } arg
 			 */
 			vars(arg) {
@@ -1046,29 +983,6 @@ export class Player extends HTMLDivElement {
 				}
 				Object.assign(vars, arg);
 				createContent();
-				return this;
-			},
-			/**
-			 * 传递外部作用域
-			 *
-			 * 一般是传递一个 code=>eval(code) 函数
-			 *
-			 * 传递后可在then中使用外部变量(vars的上位替代)
-			 *
-			 * @param {Function} _scope
-			 */
-			apply(_scope) {
-				if (lib.skill[skillName] != skill) {
-					throw new Error(`This skill has been destroyed`);
-				}
-				if (security.isSandboxRequired()) {
-					console.warn("`player.when().apply()` 在沙盒模式下不推荐使用");
-				}
-				// @ts-expect-error ignore
-				scope = _scope;
-				if (skill.contentFuns.length > 0) {
-					createContent();
-				}
 				return this;
 			},
 			/**
@@ -2033,7 +1947,7 @@ export class Player extends HTMLDivElement {
 		};
 		this.storage.cooperation.add(info);
 		this.addTempSkill("cooperation", { player: "dieAfter" });
-		this.addSkill("cooperation_" + type, { player: "dieAfter" });
+		this.addTempSkill("cooperation_" + type, { player: "dieAfter" });
 		game.log(this, "向", target, "发起了“协力”，合作类型是", "#g" + get.translation("cooperation_" + type));
 	}
 	chooseCooperationFor() {

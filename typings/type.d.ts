@@ -773,7 +773,7 @@ declare interface PackageData {
 
 interface When {
     /**一次性技能的内容，一个then中写一个step中的内容 */
-    then(fun: OldContentFuncByAll): When
+    then(fun: ContentFuncByAll): When
     /**
      * ```plain
      * 闭包用法的then，不再提供parsex变量，改为使用闭包访问
@@ -799,12 +799,6 @@ interface When {
      * 向临时技能中添加技能可以拥有的一切属性
      *  */
     assign(obj: Skill): When
-    /**与filter相反，用于移除一个筛选条件 */
-    removeFilter(fun: Required<Skill>['filter']): When
-    /**添加临时技能的充分筛选条件，只要有一个添加的筛选条件通过时，就会触发 */
-    filter2(fun: Required<Skill>['filter']): When
-    /**与filter2相反，用于移除一个筛选条件 */
-    removeFilter2(fun: Required<Skill>['filter']): When
     /**触发时，弹出的显示提示字样 */
     popup(str: string): When
     /**
@@ -819,23 +813,6 @@ interface When {
      * ```
     */
     vars(obj: Record<string, any>): When
-    /**
-    * 传递外部作用域
-    *
-    * 一般是传递一个 code=>eval(code) 函数
-    *
-    * 传递后可在then中使用外部变量(vars的上位替代)
-    * @example
-    * let _var = 1;
-     * let me = player;
-     * player.when('drawAfter')
-     * 		.apply(code => eval(code))
-     * 		.then(() => console.log(_var))//可以使用外部作用域
-     * 		.then('me.gainMaxHp(5)');//可以使用外部变量
-     * 
-    *
-    */
-    apply(fun: Function): When
     translation(str: string): When
     /**
      * 获得技能

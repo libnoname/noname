@@ -2,7 +2,7 @@
 import { lib, game, get, _status, ui, ai } from "noname";
 import ContentCompiler from "@/library/element/GameEvent/compilers/ContentCompiler";
 import ContentCompilerBase from "@/library/element/GameEvent/compilers/ContentCompilerBase";
-import { GeneratorFunction } from "@/util/index.js";
+import { GeneratorFunction, AsyncFunction } from "@/util/index.js";
 
 // 改为HTMLDivElement.prototype.addTempClass
 HTMLDivElement.prototype.animate = function (keyframes, options) {
@@ -559,3 +559,334 @@ lib.element.Player.prototype.insertEvent = function (name, content, arg) {
 		event.result = Object.assign(cards, event.result);
 	}
 }
+
+// player.when
+lib.element.Player.prototype.when = function (...triggerNames) {
+	const player = this;
+	if (!_status.postReconnect.player_when) {
+		_status.postReconnect.player_when = [
+			function (map) {
+				"use strict";
+				for (let i in map) {
+					lib.skill[i] = {
+						charlotte: true,
+						forced: true,
+						popup: false,
+					};
+					if (typeof map[i] == "string") {
+						lib.translate[i] = map[i];
+					}
+				}
+			},
+			{},
+		];
+	}
+	let trigger;
+	let instantlyAdd = true;
+	//从triggerNames中取出instantlyAdd的部分
+	if (triggerNames.includes(false)) {
+		instantlyAdd = false;
+		triggerNames.remove(false);
+	}
+	if (triggerNames.length == 0) {
+		throw new Error("player.when的参数数量应大于0");
+	}
+	// add other triggerNames
+	// arguments.length = 1
+	if (triggerNames.length == 1) {
+		// 以下两种情况:
+		// triggerNames = [ ['xxAfter', ...args] ]
+		// triggerNames = [ 'xxAfter' ]
+		if (Array.isArray(triggerNames[0]) || typeof triggerNames[0] == "string") {
+			trigger = { player: triggerNames[0] };
+		}
+		// triggerNames = [ {player:'xxx'} ]
+		else if (get.is.object(triggerNames[0])) {
+			trigger = triggerNames[0];
+		}
+	}
+	// arguments.length > 1
+	else {
+		// triggerNames = [ 'xxAfter', 'yyBegin' ]
+		if (triggerNames.every(t => typeof t == "string")) {
+			trigger = { player: triggerNames };
+		}
+		// triggerNames = [ {player: 'xxAfter'}, {global: 'yyBegin'} ]
+		// 此处不做特殊的合并处理，由使用者自行把握，同名属性后者覆盖前者
+		else if (triggerNames.every(t => get.is.object(t))) {
+			trigger = triggerNames.reduce((pre, cur) => Object.assign(pre, cur));
+		}
+	}
+	if (!trigger) {
+		throw new Error("player.when传参数类型错误:" + triggerNames);
+	}
+	let skillName;
+	do {
+		skillName = "player_when_" + Math.random().toString(36).slice(-8);
+	} while (lib.skill[skillName] != null);
+	const vars = {};
+	//获取sourceSkill
+	let eventName = get.event().name;
+	if (eventName.startsWith("pre_")) {
+		eventName = eventName.slice(4);
+	}
+	if (eventName.endsWith("_backup")) {
+		eventName = eventName.slice(0, eventName.lastIndexOf("_backup"));
+	}
+	if (eventName.endsWith("ContentBefore")) {
+		eventName = eventName.slice(0, eventName.lastIndexOf("ContentBefore"));
+	}
+	if (eventName.endsWith("ContentAfter")) {
+		eventName = eventName.slice(0, eventName.lastIndexOf("ContentAfter"));
+	}
+	if (eventName.endsWith("_cost")) {
+		eventName = eventName.slice(0, eventName.lastIndexOf("_cost"));
+	}
+	const sourceSkill = get.sourceSkillFor(eventName);
+	/**
+	 * 作用域
+	 * @type { ((code: string) => any)? }
+	 */
+	let scope;
+	/** @type { Skill } */
+	let skill = {
+		trigger: trigger,
+		forced: true,
+		charlotte: true,
+		popup: false,
+		sourceSkill: sourceSkill,
+		// 必要条件
+		/** @type { Required<Skill>['filter'][] } */
+		filterFuns: [],
+		// 充分条件
+		/** @type { Required<Skill>['filter'][] } */
+		filter2Funs: [],
+		/** @type { Required<Skill>['content'][] } */
+		contentFuns: [],
+		// 外部变量
+		get vars() {
+			return vars;
+		},
+		get filter() {
+			return (event, player, name) => skill.filterFuns.every(fun => Boolean(fun(event, player, name))) && skill.filter2(event, player, name);
+		},
+		get filter2() {
+			return (event, player, name) => skill.filter2Funs.length === 0 || skill.filter2Funs.some(fun => Boolean(fun(event, player, name)));
+		},
+	};
+	const warnVars = ["event", "step", "source", "player", "target", "targets", "card", "cards", "skill", "forced", "num", "trigger", "result"];
+	const errVars = ["_status", "lib", "game", "ui", "get", "ai"];
+	const createContent = () => {
+		let varstr = "";
+		for (const key in vars) {
+			if (warnVars.includes(key)) {
+				console.warn(`Variable '${key}' should not be referenced by vars objects`);
+			}
+			if (errVars.includes(key)) {
+				throw new Error(`Variable '${key}' should not be referenced by vars objects`);
+			}
+			varstr += `var ${key}=lib.skill['${skillName}'].vars['${key}'];\n`;
+		}
+		const originals = [];
+		const contents = [];
+		const compileStep = (code, scope) => {
+			const deconstructs = ["step", "source", "target", "targets", "card", "cards", "skill", "forced", "num", "_result: result"];
+			const topVars = ["_status", "lib", "game", "ui", "get", "ai"];
+
+			const params = ["topVars", "event", "trigger", "player"];
+			const body = dedent`
+					var { ${deconstructs.join(", ")} } = event;
+					var { ${topVars.join(", ")} } = topVars;
+					${varstr}
+					{
+						${code}
+					}
+				`;
+
+			if (!get.isFunctionBody(body)) {
+				throw new Error(`无效的函数体: ${body}`);
+			}
+
+			let compiled;
+			if (!scope) {
+				compiled = new Function(...params, body);
+			} else {
+				compiled = scope(`(function (${params.join(", ")}) {\n${body}\n})`);
+			}
+
+			originals.push(compiled);
+			contents.push(function (event, trigger, player) {
+				// @ts-expect-error ignore
+				return compiled.apply(this, [{ lib, game, ui, get, ai, _status }, event, trigger, player]);
+			});
+		};
+		for (let i = 0; i < skill.contentFuns.length; i++) {
+			const fun2 = skill.contentFuns[i];
+			if (typeof fun2 === "function") {
+				originals.push(fun2);
+				contents.push(fun2);
+			} else {
+				const a = fun2;
+				//防止传入()=>xxx的情况
+				const begin = a.indexOf("{") == a.indexOf("}") && a.indexOf("{") == -1 && a.indexOf("=>") > -1 ? a.indexOf("=>") + 2 : a.indexOf("{") + 1;
+				const str2 = a.slice(begin, a.lastIndexOf("}") != -1 ? a.lastIndexOf("}") : undefined).trim();
+				// 防止注入喵
+				if (!get.isFunctionBody(str2)) {
+					throw new Error("无效的content函数代码");
+				}
+				let recompiledScope;
+				if (security.isSandboxRequired()) {
+					recompiledScope = scope ? security.eval(`return (${scope.toString()})`) : code => security.eval(`return (${code.toString()})`);
+				} else {
+					recompiledScope = scope || eval;
+				}
+				compileStep(str2, recompiledScope);
+			}
+		}
+		const content = ContentCompiler.compile(contents);
+		content.original = originals;
+		skill.content = content;
+	};
+	Object.defineProperty(lib.skill, skillName, {
+		configurable: true,
+		//这类技能不需要被遍历到
+		enumerable: false,
+		writable: true,
+		value: skill,
+	});
+	game.broadcast(function (skillName) {
+		Object.defineProperty(lib.skill, skillName, {
+			configurable: true,
+			enumerable: false,
+			writable: true,
+			value: {
+				forced: true,
+				charlotte: true,
+				popup: false,
+				vars: {},
+			},
+		});
+	}, skillName);
+	if (instantlyAdd !== false) {
+		this.addSkill(skillName);
+	}
+	_status.postReconnect.player_when[1][skillName] = true;
+	return {
+		skill: skillName,
+		filter(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			skill.filterFuns.push(fun);
+			return this;
+		},
+		removeFilter(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			skill.filterFuns.remove(fun);
+			return this;
+		},
+		filter2(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			skill.filter2Funs.push(fun);
+			return this;
+		},
+		removeFilter2(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			skill.filter2Funs.remove(fun);
+			return this;
+		},
+		then(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (fun instanceof AsyncFunction) {
+				skill.contentFuns.push(fun);
+			} else {
+				skill.contentFuns.push(String(fun)); // 提前转换，防止与闭包函数弄混
+			}
+			createContent();
+			return this;
+		},
+		step(fun) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			skill.contentFuns.push(fun);
+			createContent();
+			return this;
+		},
+		popup(str) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (typeof str == "string") {
+				skill.popup = str;
+			}
+			return this;
+		},
+		translation(translation) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (typeof translation == "string") {
+				_status.postReconnect.player_when[1][skillName] = translation;
+				game.broadcastAll((skillName, translation) => (lib.translate[skillName] = translation), skillName, translation);
+			}
+			return this;
+		},
+		assign(obj) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (typeof obj == "object" && obj !== null) {
+				Object.assign(skill, obj);
+				game.broadcast(
+					(skillName, obj) => {
+						Object.assign(lib.skill[skillName], obj);
+					},
+					skillName,
+					obj
+				);
+			}
+			return this;
+		},
+		vars(arg) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (!get.is.object(arg)) {
+				throw new Error("vars的第一个参数必须为对象");
+			}
+			Object.assign(vars, arg);
+			createContent();
+			return this;
+		},
+		apply(_scope) {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			if (security.isSandboxRequired()) {
+				console.warn("`player.when().apply()` 在沙盒模式下不推荐使用");
+			}
+			// @ts-expect-error ignore
+			scope = _scope;
+			if (skill.contentFuns.length > 0) {
+				createContent();
+			}
+			return this;
+		},
+		finish() {
+			if (lib.skill[skillName] != skill) {
+				throw new Error(`This skill has been destroyed`);
+			}
+			player.addSkill(skillName);
+			return this;
+		},
+	};
+};
