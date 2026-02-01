@@ -299,7 +299,7 @@ const skills = {
 				target.popup(get.translation(type));
 				const { source } = trigger;
 				if (source?.isIn()) {
-					const last = source.getHistory("useCard").slice()?.reverse()?.[0];
+					const last = source.getHistory("useCard").length;
 					player
 						.when({
 							global: ["useCardAfter", "phaseAfter", "phaseBeforeStart"],
@@ -308,7 +308,7 @@ const skills = {
 							if (evt.name == "phase") {
 								return true;
 							}
-							return evt.player == source && evt.card != last?.card;
+							return evt.player == source && evt.player.getHistory("useCard").indexOf(evt) == last;
 						})
 						.step(async (event, trigger, player) => {
 							if (trigger.name == "phase") {

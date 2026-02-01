@@ -86,6 +86,9 @@ export const Content = {
 				result = { bool: false };
 			}
 
+			if (event.finished) {
+				break;
+			}
 			if (result.bool) {
 				if (dying.hp > 0 || trigger.nodying || dying.nodying || !dying.isAlive() || dying.isOut() || dying.removed) {
 					trigger.untrigger();
@@ -4255,6 +4258,8 @@ player.removeVirtualEquip(card);
 		}
 		next.indexedData = event.indexedData;
 
+		await next;
+
 		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
 			player.removeSkill(event.skill);
@@ -4263,8 +4268,6 @@ player.removeVirtualEquip(card);
 				delete lib.translate[skill];
 			}, event.skill);
 		}
-
-		await next;
 		
 		if (!player._hookTrigger) {
 			return;
