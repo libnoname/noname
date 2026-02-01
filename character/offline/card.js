@@ -32,37 +32,8 @@ const cards = {
 		modTarget: true,
 		async content(event, trigger, player) {
 			const name = event.name;
-			player.addTip(name, "一鼓作气");
-			player
-				.when({
-					player: "useCard",
-					global: ["phaseAfter", "phaseBeginStart"],
-				})
-				.step(async (event, trigger, player) => {
-					player.removeTip(name);
-				})
-				.assign({
-					mod: {
-						cardUsable: () => Infinity,
-						targetInRange: () => true,
-					},
-					forced: false,
-					locked: true,
-					async cost(event, trigger, player) {
-						if (trigger.name == "useCard") {
-							if (trigger.addCount !== false) {
-								trigger.addCount = false;
-								const stat = player.getStat().card,
-									name = trigger.card.name;
-								if (typeof stat[name] == "number" && stat[name] > 0) {
-									stat[name]--;
-								}
-							}
-						} else {
-							event.result = { bool: true };
-						}
-					},
-				})
+			player.addTip(name, "一鼓作气", true);
+			player.addTempSkill("yiguzuoqi_effect");
 		},
 		ai: {
 			wuxie(target, card, player, viewer) {

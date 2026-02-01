@@ -4991,6 +4991,28 @@ const skills = {
 			},
 		},
 	},
+	yiguzuoqi_effect: {
+		trigger: {
+			player: "useCard",
+		},
+		charlotte: true,
+		forced: true,
+		popup: false,
+		async content(event, trigger, player) {
+			if (trigger.addCount !== false) {
+				trigger.addCount = false;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] == "number" && stat[name] > 0) {
+					stat[name]--;
+				}
+			}
+		},
+		mod: {
+			cardUsable: () => Infinity,
+			targetInRange: () => true,
+		},
+	},
 	//张邈
 	xy_mouni: {
 		audio: "mouni",
