@@ -2167,8 +2167,8 @@ game.import("card", function () {
 						return player.canUse("zhibi", current);
 					});
 				},
-				content() {
-					player.chooseUseTarget("玉玺：选择知己知彼的目标", { name: "zhibi" });
+				async content(event, trigger, player) {
+					await player.chooseUseTarget("玉玺：选择知己知彼的目标", { name: "zhibi", isCard: true });
 				},
 			},
 			xietianzi: {

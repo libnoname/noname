@@ -295,14 +295,12 @@ const skills = {
 	},
 	hefeidangshi: {
 		audio: 2,
-		trigger: {
-			player: "useCardAfter",
-		},
+		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			if (!event.targets?.length) {
 				return false;
 			}
-			return get.tag(event.card, "damage") > 0;
+			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -367,7 +365,7 @@ const skills = {
 					? await target
 							.chooseButton(["荡势：请选择一项", [list, "textbutton"]], true)
 							.set("filterButton", button => {
-								return get.event().canChoose.includes(button.link);
+								return get.event().canChoose?.includes(button.link);
 							})
 							.set("ai", button => {
 								const { player, getNum } = get.event(),
@@ -410,9 +408,6 @@ const skills = {
 				})
 			) {
 				await player.draw();
-				/*const skill = `${name}_effect`;
-				player.addTempSkill(skill, { global: "phaseAnyAfter" });
-				player.addMark(skill, 1, false);*/
 			}
 			switch (type) {
 				case "useCard": {
@@ -9380,14 +9375,12 @@ const skills = {
 		subSkill: {
 			inphase: {
 				audio: "mbcuizhen",
-				trigger: {
-					player: "useCardToPlayered",
-				},
+				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
 					if (!player.isPhaseUsing()) {
 						return false;
 					}
-					if (!get.tag(event.card, "damage")) {
+					if (!get.is.damageCard(event.card)) {
 						return false;
 					}
 					const target = event.target;

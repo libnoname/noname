@@ -314,7 +314,7 @@ export default {
 					});
 				},
 				filterCard(card) {
-					if (!get.tag(card, "damage")) {
+					if (!get.is.damageCard(card)) {
 						return false;
 					}
 					return true;
@@ -1107,13 +1107,10 @@ export default {
 	},
 	gz_yidu: {
 		audio: "yidu",
-		trigger: {
-			player: "useCardAfter",
-		},
+		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
-				get.tag(event.card, "damage") &&
-				get.type(event.card) != "delay" &&
+				get.is.damageCard(event.card) &&
 				event.targets.some(target => {
 					return target.countCards("h") > 0 && !target.hasHistory("damage", evt => evt.card == event.card);
 				})

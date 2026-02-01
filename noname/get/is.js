@@ -227,6 +227,21 @@ export class Is {
 		});
 	}
 	/**
+	 * 是否是伤害牌
+	 * @param { Card | VCard } card
+	 * @param { boolean } [includeDelay=false] 是否包含延时锦囊，默认排除
+	 * @returns { boolean } 是否是伤害牌
+	 */
+	damageCard(card, includeDelay = false) {
+		if (!get.tag(card, "damage")) {
+			return false;
+		}
+		if (!includeDelay && get.type(card) === "delay") {
+			return false;
+		}
+		return true;
+	}
+	/**
 	 * 是否是虚拟牌
 	 * @param { Card | VCard } card
 	 */

@@ -1039,17 +1039,15 @@ const skills = {
 	//颜良
 	starjizhan: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			if (!event.getParent()?.targets?.length || !event.isFirstTarget) {
 				return false;
 			}
-			return player.getHistory("useCard", evt => get.tag(evt.card, "damage")).indexOf(event.getParent()) == 0;
+			return player.getHistory("useCard", evt => get.is.damageCard(evt.card)).indexOf(event.getParent()) == 0;
 		},
 		async cost(event, trigger, player) {
-			const num = 2 - player.getHistory("useCard", evt => !get.tag(evt.card, "damage"), trigger.getParent()).length;
+			const num = 2 - player.getHistory("useCard", evt => !get.is.damageCard(evt.card), trigger.getParent()).length;
 			let str = num > 0 ? `令此牌对其中一个目标造成的伤害+${num}` : "选择一个目标";
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), `${str}，若此牌结算后未造成伤害，其对你造成1点伤害`)
@@ -1104,7 +1102,7 @@ const skills = {
 		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
-				if (get.tag(card, "damage") && !player.hasHistory("useCard", evt => get.tag(evt.card, "damage"))) {
+				if (get.is.damageCard(card) && !player.hasHistory("useCard", evt => get.is.damageCard(evt.card))) {
 					return num + 15;
 				}
 			},
@@ -1146,7 +1144,7 @@ const skills = {
 			if (event.targets.length !== 1) {
 				return false;
 			}
-			return get.tag(event.card, "damage") >= 0.5;
+			return get.is.damageCard(event.card);
 		},
 		filterx(event, player) {
 			const info = get.info(event.card);

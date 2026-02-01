@@ -3696,7 +3696,7 @@ const skills = {
 		audio: 3,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return player.hasCard(card => !get.tag(card, "damage") && player.canRecast(card), "hej");
+			return player.hasCard(card => !get.is.damageCard(card) && player.canRecast(card), "hej");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -3711,7 +3711,7 @@ const skills = {
 				.set("filterButton", button => {
 					const card = button.link,
 						player = get.player();
-					return !get.tag(card, "damage") && player.canRecast(card);
+					return !get.is.damageCard(card) && player.canRecast(card);
 				})
 				.forResult();
 		},

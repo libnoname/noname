@@ -2987,11 +2987,9 @@ const skills = {
 		},
 	},
 	cayurong: {
-		trigger: {
-			target: "useCardToTarget",
-		},
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			if (!get.tag(event.card, "damage")) {
+			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
 			if (player.getStorage("cayurong_targeted").includes(event.card.name)) {
@@ -3009,7 +3007,6 @@ const skills = {
 			targeted: {
 				onremove: true,
 				charlotte: true,
-				sub: true,
 			},
 		},
 	},

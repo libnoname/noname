@@ -1524,7 +1524,7 @@ const skills = {
 			target: "useCardToTargeted",
 		},
 		filter(event, player, name) {
-			if (!event.card || !get.tag(event.card, "damage")) {
+			if (!event.card || !get.is.damageCard(event.card)) {
 				return false;
 			}
 			if (name == "useCardToPlayered" && !event.isFirstTarget) {

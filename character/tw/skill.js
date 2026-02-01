@@ -9220,9 +9220,7 @@ const skills = {
 	//张纮
 	twquanqian: {
 		audio: 2,
-		trigger: {
-			global: "phaseDrawEnd",
-		},
+		trigger: { global: "phaseDrawEnd" },
 		sunbenSkill: true,
 		filter(event, player) {
 			return event.player != player && game.hasPlayer(current => current.countCards("h") > 0);
@@ -9285,12 +9283,8 @@ const skills = {
 					player.clearMark(skill, false);
 				},
 				onremove: true,
-				intro: {
-					content: "还需#次有角色成为非延时伤害牌的目标且未受到该牌伤害",
-				},
-				trigger: {
-					global: "useCardAfter",
-				},
+				intro: { content: "还需#次有角色成为非延时伤害牌的目标且未受到该牌伤害" },
+				trigger: { global: "useCardAfter" },
 				getIndex(event) {
 					return event.targets;
 				},
@@ -9298,7 +9292,7 @@ const skills = {
 					if (!event.targets?.length) {
 						return false;
 					}
-					if (get.type(event.card) == "delay" || !get.tag(event.card, "damage")) {
+					if (!get.is.damageCard(event.card)) {
 						return false;
 					}
 					return !target?.hasHistory("damage", evt => evt.card == event.card);
@@ -9336,14 +9330,12 @@ const skills = {
 	},
 	twrouke: {
 		audio: 2,
-		trigger: {
-			target: "useCardToTarget",
-		},
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			if (event.player == player) {
 				return false;
 			}
-			if (get.type(event.card) == "delay" || !get.tag(event.card, "damage")) {
+			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
 			return event.player.hasHistory("sourceDamage");
@@ -17186,7 +17178,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return event.player == _status.currentPhase && get.tag(event.card, "damage");
+					return event.player == _status.currentPhase && get.is.damageCard(event.card);
 				},
 				logTarget: "player",
 				content() {
@@ -19542,7 +19534,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
-			if (!event.isFirstTarget || !get.tag(event.card, "damage")) {
+			if (!event.isFirstTarget || !get.is.damageCard(event.card)) {
 				return false;
 			}
 			return (
@@ -19663,7 +19655,7 @@ const skills = {
 					}
 					if (event.targets && !info.multitarget) {
 						return (
-							get.tag(card, "damage") &&
+							get.is.damageCard(event.card) &&
 							event.targets &&
 							game.hasPlayer(function (target) {
 								return target.hasMark("twlvren") && !event.targets.includes(target) && lib.filter.targetEnabled2(card, player, target);

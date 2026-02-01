@@ -613,7 +613,7 @@ const skills = {
 				) {
 					return false;
 				}
-				const evts = event.player.getHistory("useCard", evt => get.tag(evt.card, "damage"));
+				const evts = event.player.getHistory("useCard", evt => get.is.damageCard(evt.card));
 				return evts.indexOf(event) == 0;
 			}
 			return game.hasPlayer(current => current.countCards("h"));

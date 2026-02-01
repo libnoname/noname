@@ -3511,7 +3511,7 @@ export default {
 		locked: false,
 		mod: {
 			selectTarget(card, player, range) {
-				if (range[1] == -1 || !get.tag(card, "damage")) {
+				if (range[1] == -1 || !get.is.damageCard(card)) {
 					return;
 				}
 				let info = lib.card[card.name];
@@ -3821,11 +3821,9 @@ export default {
 	//曹婴
 	gz_lingren: {
 		audio: "xinfu_lingren",
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			if (!event.isFirstTarget || !get.tag(event.card, "damage")) {
+			if (!event.isFirstTarget || !get.is.damageCard(event.card)) {
 				return false;
 			}
 			return event.targets?.some(target => target.countCards("h") <= player.countCards("h"));

@@ -4397,7 +4397,7 @@ const skills = {
 					if (num) {
 						await player.draw(num);
 					}
-					const goon = cards.some(card => card.name != "shandian" && get.tag(card, "damage"));
+					const goon = cards.some(card => get.is.damageCard(card));
 					const { bool, targets } = await player
 						.chooseTarget("抚黎：是否令一名角色的攻击范围" + (goon ? "减至0" : "-1") + "直到你的下个回合开始？", (card, player, target) => {
 							return !get.event().goon || target.getAttackRange() > 0;
@@ -4557,15 +4557,15 @@ const skills = {
 			hand: {
 				charlotte: true,
 				mark: true,
-				intro: { content: "伤害牌不计入手牌数" },
+				intro: { content: "伤害牌不计入手牌上限" },
 				mod: {
 					ignoredHandcard(card) {
-						if (get.tag(card, "damage")) {
+						if (get.is.damageCard(card)) {
 							return true;
 						}
 					},
 					cardDiscardable(card, _, name) {
-						if (name == "phaseDiscard" && get.tag(card, "damage")) {
+						if (name == "phaseDiscard" && get.is.damageCard(card)) {
 							return false;
 						}
 					},

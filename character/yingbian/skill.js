@@ -3567,7 +3567,7 @@ const skills = {
 			});
 		},
 		filterCard(card) {
-			if (!get.tag(card, "damage")) {
+			if (!get.is.damageCard(card)) {
 				return false;
 			}
 			var type = get.type(card);

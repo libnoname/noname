@@ -18,7 +18,7 @@ const skills = {
 			if (event.name == "phase") {
 				return !player.countCharge(true);
 			}
-			return player.countCharge(true) && event.getl?.(player)?.cards2.some(card => !get.tag(card, "damage"));
+			return player.countCharge(true) && event.getl?.(player)?.cards2.some(card => !get.is.damageCard(card));
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
@@ -2485,7 +2485,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			return event.player != player && get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.includes(player);
+			return event.player != player && get.is.damageCard(event.card) && event.targets?.includes(player);
 		},
 		async cost(event, trigger, player) {
 			const damaged = player.hasHistory("damage", evt => evt.card && evt.getParent(2) == trigger);
@@ -2754,7 +2754,7 @@ const skills = {
 	mbchizhang: {
 		mod: {
 			targetInRange(card, player, target) {
-				if (get.tag(card, "damage") && get.type(card) != "delay") {
+				if (get.is.damageCard(card)) {
 					return true;
 				}
 			},
@@ -2765,8 +2765,7 @@ const skills = {
 		filter(event, player) {
 			return (
 				event.isFirstTarget &&
-				get.tag(event.card, "damage") &&
-				get.type(event.card) != "delay" &&
+				get.is.damageCard(event.card) &&
 				player.countDiscardableCards(player, "h") &&
 				player.hasHistory("lose", evt => {
 					const evtx = evt.relatedEvent || evt.getParent();

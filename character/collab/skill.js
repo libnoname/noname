@@ -71,7 +71,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const num = get.discarded().filter(card => ["tao", "jiu"].includes(get.name(card))).length;
-					const card = get.cardPile(card => get.tag(card, "damage") && get.cardNameLength(card) == num);
+					const card = get.cardPile(card => get.is.damageCard(card) && get.cardNameLength(card) == num);
 					if (card) {
 						await player.gain(card, "gain2");
 					} else {
@@ -92,7 +92,7 @@ const skills = {
 			return player.countMark(`mbmaodie_used`) < 2 && get.info("mbmaodie").getCards(player, event.targets || []).length > 0;
 		},
 		getCards(player, targets) {
-			return targets.flatMap(target => target._start_cards.filter(card => "cdhej".includes(get.position(card)) && get.owner(card) !== player));
+			return targets.flatMap(target => (target._start_cards || []).filter(card => "cdhej".includes(get.position(card)) && get.owner(card) !== player));
 		},
 		async content(event, trigger, player) {
 			if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
@@ -123,7 +123,7 @@ const skills = {
 				silent: true,
 				trigger: { player: "useCard1" },
 				filter(event, player) {
-					return get.tag(event.card, "damage");
+					return get.is.damageCard(event.card);
 				},
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
@@ -131,7 +131,7 @@ const skills = {
 				mod: {
 					cardEnabled(card, player) {
 						const storage = player.storage.mbmaodie_limit;
-						if (!storage || typeof storage != "number" || !get.tag(card, "damage")) {
+						if (!storage || typeof storage != "number" || !get.is.damageCard(card)) {
 							return;
 						}
 						return get.cardNameLength(card) > storage;
@@ -1930,7 +1930,7 @@ const skills = {
 				}
 				if (player.isMaxHp()) {
 					let card = get.cardPile2(card => {
-						return get.subtype(card) == "equip1" || get.tag(card, "damage");
+						return get.subtype(card) == "equip1" || get.is.damageCard(card);
 					});
 					if (card) {
 						trigger.showCards.add(card);
@@ -2054,7 +2054,7 @@ const skills = {
 					player.changeSkin({ characterName: "taipingsangong" }, "taipingsangong_ultimate");
 				}
 			}
-			if (get.tag(trigger.card, "damage") && get.type(trigger.card) != "delay") {
+			if (get.is.damageCard(trigger.card)) {
 				trigger.baseDamage++;
 			} else {
 				player
@@ -3652,7 +3652,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { card, target } = trigger;
 			let num = target.countMark("olyuyu");
-			if (get.tag(card, "damage")) {
+			if (get.is.damageCard(card)) {
 				const evt = trigger.getParent();
 				if (typeof evt.baseDamage != "number") {
 					evt.baseDamage = 1;
@@ -4314,7 +4314,7 @@ const skills = {
 			if (
 				!player.getPrevious() ||
 				!event.cards.filterInD("d").some(card => {
-					return get.tag(card, "damage") && player.canUse(card, player.getPrevious());
+					return get.is.damageCard(card) && player.canUse(card, player.getPrevious());
 				})
 			) {
 				return false;
@@ -4328,12 +4328,12 @@ const skills = {
 				if (evtxx.getParent().name === "oldingxi") {
 					return false;
 				}
-				return evtx.getParent() == (evtxx.relatedEvent || evtxx.getParent()) && get.tag(evtxx.card, "damage");
+				return evtx.getParent() == (evtxx.relatedEvent || evtxx.getParent()) && get.is.damageCard(evtxx.card);
 			});
 		},
 		async cost(event, trigger, player) {
 			const target = player.getPrevious();
-			const cards = trigger.cards.filterInD("d").filter(card => get.tag(card, "damage"));
+			const cards = trigger.cards.filterInD("d").filter(card => get.is.damageCard(card));
 			event.result = await player
 				.chooseButton([get.prompt2(event.skill, target), cards])
 				.set("filterButton", button => {

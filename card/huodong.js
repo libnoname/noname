@@ -298,7 +298,7 @@ game.import("card", function () {
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
 					const { target } = event;
-					const cards = target.getCards("h", card => get.tag(card, "damage") && get.type(card) != "delay"),
+					const cards = target.getCards("h", card => get.is.damageCard(card)),
 						name = event.name;
 					if (cards.length) {
 						await target.showCards(cards);
@@ -1362,7 +1362,7 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					const cards = [];
 					while (cards.length < 2) {
-						const card = get.cardPile(card => get.tag(card, "damage") && get.type(card) != "delay" && !cards.includes(card));
+						const card = get.cardPile(card => get.is.damageCard(card) && !cards.includes(card));
 						if (card) {
 							cards.add(card);
 						} else {

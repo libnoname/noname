@@ -255,7 +255,7 @@ const skills = {
 		usable: 1,
 		trigger: { player: "useCard" },
 		filter(event, player) {
-			return get.tag(event.card, "damage") && get.type(event.card) != "delay";
+			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
 			const list = [`摸两张牌`, `失去一点体力，令${get.translation(trigger.card)}伤害+1`];

@@ -6272,7 +6272,7 @@ const skills = {
 					var evt = evts[j];
 					let card = evt.card,
 						targets = evt.targets;
-					if (!get.tag(card, "damage") || !targets.includes(player)) {
+					if (!get.is.damageCard(card) || !targets.includes(player)) {
 						continue;
 					}
 					return event.player == evt.player;
@@ -6292,9 +6292,7 @@ const skills = {
 		},
 		subSkill: {
 			tip: {
-				trigger: {
-					target: "useCardToTarget",
-				},
+				trigger: { target: "useCardToTarget" },
 				charlotte: true,
 				init(player, skill) {
 					const history = _status.globalHistory || [];
@@ -6304,7 +6302,7 @@ const skills = {
 							var evt = evts[j];
 							let card = evt.card,
 								targets = evt.targets;
-							if (!get.tag(card, "damage") || !targets.includes(player)) {
+							if (!get.is.damageCard(card) || !targets.includes(player)) {
 								continue;
 							}
 							player.addTip(skill, `互雠 ${get.translation(evt.player)}`);

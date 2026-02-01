@@ -914,7 +914,7 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return !get.tag(event.card, "damage") && !event.card.storage?.olzhuoyue && game.hasPlayer(target => target.hasUseTarget({ name: "jiu", isCard: true }));
+			return !get.is.damageCard(event.card) && !event.card.storage?.olzhuoyue && game.hasPlayer(target => target.hasUseTarget({ name: "jiu", isCard: true }));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -934,7 +934,7 @@ const skills = {
 				audio: "olzhuoyue",
 				trigger: { global: "useCardToTargeted" },
 				filter(event, player) {
-					return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.target.hasSkill("jiu") && event.target.hasUseTarget({ name: "tao", isCard: true }, false, false);
+					return get.is.damageCard(event.card) && event.target.hasSkill("jiu") && event.target.hasUseTarget({ name: "tao", isCard: true }, false, false);
 				},
 				logTarget: "target",
 				prompt2(event, player) {
@@ -2941,9 +2941,6 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
-		filter(event, player) {
-			return true; // game.hasPlayer(current => get.info("oljiawei").filterTarget(null, player, current));
-		},
 		async content(event, trigger, player) {
 			const num = Math.min(
 					player.maxHp,
@@ -2963,24 +2960,15 @@ const skills = {
 			game.log(player, "亮出了", cards);
 			player.$throw(cards);
 			await game.delayx(3);
-			const damages = cards.filter(card => get.tag(card, "damage")),
-				nodamages = cards.filter(card => !get.tag(card, "damage"));
+			const damages = cards.filter(card => get.is.damageCard(card)),
+				nodamages = cards.filter(card => !get.is.damageCard(card));
 			if (damages?.length) {
 				await player.gain(damages, "gain2");
 			}
 			if (nodamages?.length) {
 				await target.gain(nodamages, "gain2");
 			}
-			player
-				.when({
-					global: "phaseAfter",
-				})
-				.assign({
-					mod: {
-						targetInRange: () => true,
-					},
-				})
-				.step(async () => {});
+			player.addTempSkill(event.name + "_effect");
 		},
 		ai: {
 			order: 8,
@@ -2988,6 +2976,14 @@ const skills = {
 				target(player, target) {
 					return target.countCards("he");
 				},
+			},
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "本回合使用牌无距离限制" },
+				mod: { targetInRange: () => true },
 			},
 		},
 	},
@@ -12974,7 +12970,7 @@ const skills = {
 				}
 			},
 			targetInRange: card => {
-				if (card.storage && card.storage.oltuishi) {
+				if (card.storage?.oltuishi) {
 					return true;
 				}
 			},
@@ -13019,9 +13015,7 @@ const skills = {
 							return (
 								!player.getHistory("sourceDamage", evt2 => {
 									return evt2.card && evt2.card == evt.card;
-								}).length &&
-								get.tag(evt.card, "damage") &&
-								get.type(evt.card) != "delay"
+								}).length && get.is.damageCard(evt.card)
 							);
 						})
 						.indexOf(event) >= 2
@@ -13046,7 +13040,7 @@ const skills = {
 		},
 		init(player) {
 			player.addSkill("oltuishi_count");
-			const history = player.getHistory("useCard", evt => evt.finished && get.tag(evt.card, "damage") && get.type(evt.card) != "delay" && !player.hasHistory("sourceDamage", evt2 => evt2.card === evt.card));
+			const history = player.getHistory("useCard", evt => evt.finished && get.is.damageCard(evt.card) && !player.hasHistory("sourceDamage", evt2 => evt2.card === evt.card));
 			history.length > 0 && player.addMark("oltuishi_count", history.length, false);
 		},
 		onremove(player) {
@@ -13062,7 +13056,7 @@ const skills = {
 				},
 				filter(event, player) {
 					if (event.name === "useCard") {
-						return get.tag(event.card, "damage") && get.type(event.card) != "delay" && !player.hasHistory("sourceDamage", evt2 => evt2.card === event.card);
+						return get.is.damageCard(event.card) && !player.hasHistory("sourceDamage", evt2 => evt2.card === event.card);
 					}
 					return player.hasMark("oltuishi_count");
 				},
