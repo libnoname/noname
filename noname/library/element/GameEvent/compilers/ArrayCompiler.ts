@@ -15,7 +15,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 		}
 
 		const compiler = this;
-		return async function (event: GameEvent) {
+		return async function (this: GameEvent, event: GameEvent) {
 			if (!Number.isInteger(event.step)) {
 				event.step = 0;
 			}
@@ -30,9 +30,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 				let result: Result | undefined;
 				if (!compiler.isPrevented(event)) {
 					const original = content[event.step];
-					// @ts-expect-error ignore
-					const next = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
-					result = next instanceof GameEvent ? next.result : next;
+					result = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
 				}
 				const nextResult = await event.waitNext();
 				event._result = result ?? nextResult ?? event._result;

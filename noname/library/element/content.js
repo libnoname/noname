@@ -2622,7 +2622,7 @@ player.removeVirtualEquip(card);
 						next.set("ai", event.ai);
 					}
 
-					return next;
+					return next.forResult();
 				}
 			} else {
 				if (event.filterTarget) {
@@ -2676,7 +2676,7 @@ player.removeVirtualEquip(card);
 					next.setHiddenSkill(event.hsskill);
 				}
 
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player, result) => {
@@ -4707,7 +4707,7 @@ player.removeVirtualEquip(card);
 					current.getStat().isSkipped = true;
 				}
 				event.cancel();
-				return next;
+				return next.forResult();
 			} else {
 				player.phaseSkipped = false;
 				player.getHistory().isMe = true;
@@ -4841,7 +4841,7 @@ player.removeVirtualEquip(card);
 				}
 			}
 
-			return next;
+			return next.forResult();
 		},
 		async (event, trigger, player) => {
 			if (event.currentPhase == "phaseUse") {
@@ -4972,7 +4972,7 @@ player.removeVirtualEquip(card);
 					if (event.attachDraw) {
 						next.minnum = event.attachDraw.length;
 					}
-					return next;
+					return next.forResult();
 				}
 			}
 		},
@@ -5029,7 +5029,7 @@ player.removeVirtualEquip(card);
 				next.set("prompt", false);
 			}
 			next.set("type", "phase");
-			return next;
+			return next.forResult();
 		},
 		async (event, trigger, player, result) => {
 			if (result.bool && !event.skipped) {
@@ -5067,7 +5067,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const { num } = event;
-			return player.chooseToDiscard(num, true).set("useCache", true).set("allowChooseAll", true);
+			return player.chooseToDiscard(num, true).set("useCache", true).set("allowChooseAll", true).forResult();
 		},
 		async (event, trigger, player, result) => {
 			event.cards = result.cards;
@@ -5339,7 +5339,7 @@ player.removeVirtualEquip(card);
 				}
 				event.buttoned = event.result.skill;
 
-				return next;
+				return next.forResult();
 			} else if (info && info.precontent && !game.online && !event.nouse) {
 				const next = game.createEvent("pre_" + event.result.skill);
 
@@ -5347,7 +5347,7 @@ player.removeVirtualEquip(card);
 				next.set("result", event.result);
 				next.set("player", player);
 
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player, result) => {
@@ -5617,13 +5617,13 @@ player.removeVirtualEquip(card);
 					}
 					event.buttoned = event.result.skill;
 
-					return next;
+					return next.forResult();
 				} else if (info && info.precontent && !game.online) {
 					const next = game.createEvent("pre_" + event.result.skill);
 					next.setContent(info.precontent);
 					next.set("result", event.result);
 					next.set("player", player);
-					return next;
+					return next.forResult();
 				}
 			}
 		},
@@ -5887,7 +5887,6 @@ player.removeVirtualEquip(card);
 					event.done.visible = true;
 				}
 			}
-			return event.done;
 		},
 	],
 	chooseToDiscard: [
@@ -7758,7 +7757,7 @@ player.removeVirtualEquip(card);
 				next.callback = event.callback;
 				next.switchToAuto = event.switchToAuto;
 				next.processAI = event.processAI;
-				return next;
+				return next.forResult();
 			} else {
 				event.goto(3);
 			}
@@ -7773,7 +7772,7 @@ player.removeVirtualEquip(card);
 				next.callback = event.callback;
 				next.switchToAuto = event.switchToAuto;
 				next.processAI = event.processAI;
-				return next;
+				return next.forResult();
 			} else {
 				event.goto(5);
 			}
@@ -7798,7 +7797,7 @@ player.removeVirtualEquip(card);
 				next.callback = event.callback;
 				next.switchToAuto = event.switchToAuto;
 				next.processAI = event.processAI;
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player, result) => {
@@ -9201,7 +9200,6 @@ player.removeVirtualEquip(card);
 					const next = player.gain(event.cards, target, event.visibleMove ? "give" : "giveAuto", "bySelf");
 					next.gaintag.addArray(event.gaintag);
 					event.done = next;
-					waiting = next;
 				} else {
 					const next = player.gain(event.cards, target, "bySelf");
 					next.gaintag.addArray(event.gaintag);
@@ -9210,9 +9208,7 @@ player.removeVirtualEquip(card);
 					if (event.visibleMove) {
 						next.visible = true;
 					}
-					waiting = next;
 				}
-				return waiting;
 			} else {
 				target[event.visibleMove ? "$give" : "$giveAuto"](cards, player);
 			}
@@ -10797,7 +10793,7 @@ player.removeVirtualEquip(card);
 				if (event.includeOut) {
 					next.includeOut = true;
 				}
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player) => {
@@ -10891,7 +10887,7 @@ player.removeVirtualEquip(card);
 				if (event.includeOut) {
 					next.includeOut = true;
 				}
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player) => {
@@ -10901,7 +10897,7 @@ player.removeVirtualEquip(card);
 			}
 			if (document.getElementsByClassName("thrown").length) {
 				if (event.skill && get.info(event.skill).delay !== false && get.info(event.skill).delay !== 0) {
-					return game.delayx();
+					await game.delayx();
 				}
 			} else {
 				event.finish();
@@ -12381,7 +12377,7 @@ player.removeVirtualEquip(card);
 				}
 			}
 			if (next) {
-				return next;
+				return next.forResult();
 			}
 		},
 		async (event, trigger, player) => {
@@ -13174,7 +13170,7 @@ player.removeVirtualEquip(card);
 			if (!event.noJudgeTrigger) {
 				await event.trigger("judge");
 			}
-			return waiting;
+			return waiting.forResult();
 		},
 		async (event, trigger, player) => {
 			event.result = {
