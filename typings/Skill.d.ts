@@ -411,11 +411,7 @@ declare interface Skill {
 	 */
 	silent?: boolean;
 	/** 
-	 * 功能相当于forced+nopop，在createTrigger中，直接event._result={bool:true}，执行content流程，且取消logSkill
-	 * 
-	 * 在没有cost函数的旧版本中使用，目的是对于需要选牌/选目标发动的技能，在content内部执行选择，确定发动后再手动后置执行logSkill
-	 * 
-	 * @deprecated 请使用cost函数进行规范的卡牌选择/目标选择写法
+	 * 使用content接管整个skill发动流程
 	 */
 	direct?: boolean;
 	/**

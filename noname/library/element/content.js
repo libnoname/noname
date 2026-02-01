@@ -4073,6 +4073,9 @@ player.removeVirtualEquip(card);
 		if (event.cancelled) {
 			return;
 		}
+		if (event.skill.startsWith("player_when_")) {
+			lib.skill[event.skill].triggered = true;
+		}
 
 		/** @type {Partial<Result>} */
 		let result;
@@ -4227,12 +4230,12 @@ player.removeVirtualEquip(card);
 			const args = [trigger, player, event.triggername, event.indexedData, result];
 			player.logSkill(popup_info, info.logLine === false ? false : targets, info.line, null, args);
 		}
-
-		const next = game.createEvent(event.skill);
 		if (info.usable !== undefined) {
 			player.getStat("triggerSkill")[event.skill] ??= 0;
 			player.getStat("triggerSkill")[event.skill]++;
 		}
+
+		const next = game.createEvent(event.skill);
 		next.player = player;
 		next._trigger = trigger;
 		next.triggername = event.triggername;

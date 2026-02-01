@@ -759,10 +759,15 @@ export class Player extends HTMLDivElement {
 			forced: true,
 			charlotte: true,
 			popup: false,
+			// 保证仅发动一次
+			triggered: false,
 			sourceSkill: sourceSkill,
-			// 必要条件
 			/** @type { Required<Skill>['filter'][] } */
-			filterFuns: [],
+			filterFuns: [
+				function(event, player) {
+					return !lib.skill[skillName].triggered;
+				}
+			],
 			/** @type { Required<Skill>['content'][] } */
 			contentFuns: [],
 			// 外部变量
@@ -770,7 +775,7 @@ export class Player extends HTMLDivElement {
 				return vars;
 			},
 			get filter() {
-				return (event, player, name) => skill.filterFuns.every(fun => Boolean(fun(event, player, name))) && skill.filter2(event, player, name);
+				return (event, player, name) => skill.filterFuns.every(fun => Boolean(fun(event, player, name)));
 			},
 		};
 		const warnVars = ["event", "step", "source", "player", "target", "targets", "card", "cards", "skill", "forced", "num", "trigger", "result"];
