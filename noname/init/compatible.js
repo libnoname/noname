@@ -1,14 +1,15 @@
-// @ts-nocheck
+
 import { lib, game, get, _status, ui, ai } from "noname";
 import ContentCompiler from "@/library/element/GameEvent/compilers/ContentCompiler";
 import ContentCompilerBase from "@/library/element/GameEvent/compilers/ContentCompilerBase";
 import { GeneratorFunction, AsyncFunction } from "@/util/index.js";
+import { security } from "@/util/sandbox";
+import dedent from "dedent";
 
 // 改为HTMLDivElement.prototype.addTempClass
 HTMLDivElement.prototype.animate = function (keyframes, options) {
 	if (typeof keyframes == "string") {
 		console.trace(this, "无名杀开发者修改的animate方法已废弃，请改为使用addTempClass方法");
-		// @ts-expect-error ignore
 		return HTMLDivElement.prototype.addTempClass.call(this, keyframes, options);
 	} else {
 		return HTMLElement.prototype.animate.call(this, keyframes, options);
@@ -874,7 +875,6 @@ lib.element.Player.prototype.when = function (...triggerNames) {
 			if (security.isSandboxRequired()) {
 				console.warn("`player.when().apply()` 在沙盒模式下不推荐使用");
 			}
-			// @ts-expect-error ignore
 			scope = _scope;
 			if (skill.contentFuns.length > 0) {
 				createContent();

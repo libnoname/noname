@@ -89,7 +89,7 @@ export class GameEvent implements PromiseLike<void> {
 	 * @returns A Promise for the completion of which ever callback is executed.
 	 */
 	then<TResult1, TResult2>(onfulfilled?: (() => TResult1 | Promise<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | Promise<TResult2>) | null): Promise<TResult1 | TResult2> {
-		return (this.parent ? this.parent.waitNext() : this.start()).then(onfulfilled, onrejected);
+		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(onfulfilled, onrejected);
 	}
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
@@ -832,7 +832,8 @@ export class GameEvent implements PromiseLike<void> {
 					const card = get.card(),
 						player = get.player();
 					const filter = evt._backup.filterCard;
-					if (info.viewAs && filter && !filter(card, player, evt)) {//typeof info.viewAs !== "function" && 
+					if (info.viewAs && filter && !filter(card, player, evt)) {
+						//typeof info.viewAs !== "function" &&
 						return false;
 					}
 					if (info.filterOk != undefined) {
@@ -961,7 +962,6 @@ export class GameEvent implements PromiseLike<void> {
 	forceDie: boolean;
 	includeOut: boolean;
 	targetprompt2: ((...args: any) => any)[] = [];
-
 
 	changeToZero() {
 		this.num = 0;
@@ -1215,5 +1215,4 @@ export class GameEvent implements PromiseLike<void> {
 		return this;
 	}
 	// #endregion
-
 }
