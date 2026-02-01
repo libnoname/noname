@@ -748,11 +748,6 @@ export class Player extends HTMLDivElement {
 			eventName = eventName.slice(0, eventName.lastIndexOf("_cost"));
 		}
 		const sourceSkill = get.sourceSkillFor(eventName);
-		/**
-		 * 作用域
-		 * @type { ((code: string) => any)? }
-		 */
-		let scope;
 		/** @type { Skill } */
 		let skill = {
 			trigger: trigger,
@@ -840,9 +835,9 @@ export class Player extends HTMLDivElement {
 					}
 					let recompiledScope;
 					if (security.isSandboxRequired()) {
-						recompiledScope = scope ? security.eval(`return (${scope.toString()})`) : code => security.eval(`return (${code.toString()})`);
+						recompiledScope = code => security.eval(`return (${code.toString()})`);
 					} else {
-						recompiledScope = scope || eval;
+						recompiledScope = eval;
 					}
 					compileStep(str2, recompiledScope);
 				}
