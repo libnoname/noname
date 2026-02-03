@@ -15136,24 +15136,23 @@ const skills = {
 		init(player) {
 			player.storage.rejizhi = 0;
 		},
-		content() {
-			"step 0";
-			player.draw("nodelay");
-			"step 1";
-			event.card = result[0];
-			if (get.type(event.card) == "basic") {
-				player
-					.chooseBool("是否弃置" + get.translation(event.card) + "并令本回合手牌上限+1？")
-					.set("ai", function (evt, player) {
-						return _status.currentPhase == player && player.needsToDiscard(-3) && _status.event.value < 6;
-					})
-					.set("value", get.value(event.card, player));
+		async content(event, trigger, player) {
+			const result = await player.draw("nodelay").forResult();
+			event.card = result.cards[0];
+			if (get.type(event.card) !== "basic") {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.discard(event.card);
+
+			const result2 = await player
+				.chooseBool(`是否弃置${get.translation(event.card)}并令本回合手牌上限+1？`)
+				.set("ai", (evt, player)=> _status.currentPhase === player && player.needsToDiscard(-3) && _status.event.value < 6)
+				.set("value", get.value(event.card, player))
+				.forResult();
+
+			if (result2.bool) {
+				await player.discard(event.card);
 				player.storage.rejizhi++;
-				if (_status.currentPhase == player) {
+				if (_status.currentPhase === player) {
 					player.markSkill("rejizhi");
 				}
 			}
