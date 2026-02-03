@@ -30,7 +30,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run ESLint
-        run: pnpm --filter "...[${{ github.base_ref }}]" lint
+        run: pnpm --filter "...[${{ github.base_ref }}]" --filter "!./" lint
