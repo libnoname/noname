@@ -6846,16 +6846,15 @@ const skills = {
 			}
 			return [0, 1];
 		},
-		content() {
-			var stat = player.getStat();
-			if (!stat._qiangxix) {
-				stat._qiangxix = [];
-			}
+		async content(event, trigger, player) {
+			const stat = player.getStat();
+			stat._qiangxix ??= [];
 			stat._qiangxix.push(target);
-			if (!cards.length) {
-				player.loseHp();
+
+			if (!event.cards.length) {
+				await player.loseHp();
 			}
-			target.damage("nocard");
+			await event.target.damage("nocard");
 		},
 		ai: {
 			damage: true,
