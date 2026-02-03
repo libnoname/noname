@@ -10209,7 +10209,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	}
 	/**
 	 * @overload
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => boolean } [func]
 	 * @param { Player[] } [list]
 	 * @param { boolean } [includeOut]
 	 * @returns { Player[] }
