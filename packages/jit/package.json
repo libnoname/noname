@@ -10,7 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsx build.ts"
+    "build": "tsx build.ts",
+    "lint": "pnpm eslint src/**"
   },
   "keywords": [],
   "author": "",

@@ -26,7 +26,7 @@
         "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
         "build:diff": "tsx scripts/build.ts --mode diff",
-        "lint": "pnpm eslint ."
+        "lint": "pnpm eslint noname/**"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.0",

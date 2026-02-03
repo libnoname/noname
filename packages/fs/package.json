@@ -17,7 +17,8 @@
     "build": "tsup",
     "build:win": "tsx build.ts win32",
     "build:mac": "tsx build.ts macos",
-    "build:linux": "tsx build.ts linux"
+    "build:linux": "tsx build.ts linux",
+    "lint": "pnpm eslint src/**"
   },
   "keywords": [],
   "author": "",

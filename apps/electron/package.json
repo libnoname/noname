@@ -10,7 +10,8 @@
     "build": "vite build",
     "build:win": "tsx build.ts win",
     "build:linux": "tsx build.ts linux",
-    "build:mac": "tsx build.ts macos"
+    "build:mac": "tsx build.ts macos",
+    "lint": "pnpm eslint app/**"
   },
   "devDependencies": {
     "electron": "^39.1.1",

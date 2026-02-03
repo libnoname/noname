@@ -10,7 +10,8 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsup"
+        "build": "tsup",
+        "lint": "pnpm eslint src/**"
     },
     "keywords": [],
     "author": "",

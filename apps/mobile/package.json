@@ -8,7 +8,8 @@
     "mobile"
   ],
   "scripts": {
-    "sync": "pnpm -F noname build:full & cap sync & tsx afterSync.ts"
+    "sync": "pnpm -F noname build:full & cap sync & tsx afterSync.ts",
+    "lint": "pnpm eslint src/**"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

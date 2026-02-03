@@ -6,7 +6,8 @@
         "init:web": "pnpm i -F noname...",
         "dev": "pnpm -F noname dev",
         "build": "pnpm -F noname... build",
-        "start": "pnpm build && pnpm -F noname serve"
+        "start": "pnpm build && pnpm -F noname serve",
+        "lint": "pnpm -r lint"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
