@@ -6,7 +6,7 @@
   "main": "dist/app/main.js",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"pnpm -F noname exec vite dev\"",
+    "dev": "concurrently \"vite\" \"pnpm -F noname dev\"",
     "build": "vite build",
     "build:win": "tsx build.ts win",
     "build:linux": "tsx build.ts linux",

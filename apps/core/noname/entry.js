@@ -2,7 +2,6 @@ import { lib, game, get, _status, ui, ai } from "noname";
 import { boot } from "@/init/index.js";
 import { userAgentLowerCase, device } from "@/util/index.js";
 import "core-js-bundle";
-import "../jit/index.js";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 

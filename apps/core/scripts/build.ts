@@ -1,9 +1,8 @@
 import { build } from "vite";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
-import jit from "../jit/vite-plugin-jit";
+import jit from "@noname/jit";
 import minimist from "minimist";
-import { build as esbuild } from "esbuild";
 import { generateTestPack } from "./generateTestPack";
 import fs from "fs-extra";
 import path from "path";
@@ -43,7 +42,6 @@ if (argv.mode) {
 			{ src: "noname", dest: "src" },
 			{ src: "typings", dest: "src" },
 			{ src: "noname.js", dest: "src" },
-			{ src: "noname-server.cts", dest: "src" },
 		]
 	);
 } else {
@@ -123,13 +121,6 @@ await build({
 			};
 		})(),
 	],
-});
-
-await esbuild({
-	entryPoints: ["noname-server.cts"],
-	outfile: "dist/noname-server.cjs",
-	bundle: true,
-	platform: "node",
 });
 
 if (argv.zip) {

@@ -21,7 +21,7 @@ async function main(platform) {
 
 		await build({
 			config: false,
-			entry: ["src/index.ts"],
+			entry: ["src/entry.ts"],
 			format: "cjs",
 			outDir: "output",
 			platform: "node",

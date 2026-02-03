@@ -1,4 +1,3 @@
-import minimist from "minimist";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import cors from "@fastify/cors";
@@ -27,7 +26,7 @@ const failedJson = <T = any>(code: number, message?: string): JsonResult<T> => (
 
 const oneYear = 60 * 1000 * 60 * 24 * 365;
 
-const defaultConfig = {
+export const defaultConfig = {
 	server: false,
 	maxAge: oneYear,
 	port: 8089,
@@ -59,6 +58,7 @@ function createFsHandler(dirname: string) {
 
 export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	const cfg = { ...defaultConfig, ...config };
+	cfg.dirname = path.resolve(cfg.dirname);
 	if (cfg.debug) console.log(cfg);
 	const app = Fastify({
 		logger: cfg.debug,
@@ -169,9 +169,13 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 		"/checkFile",
 		wrap(async ({ fileName }: { fileName: string }) => {
 			const full = ensureSafe(fileName);
-			const stat = await fs.stat(full);
-			if (!stat.isFile()) throw new Error("不是文件");
-			return true;
+			try {
+				const stat = await fs.stat(full);
+				if (stat.isFile()) return "file";
+				else return "directory";
+			} catch {
+				return {};
+			}
 		})
 	);
 
@@ -179,9 +183,13 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 		"/checkDir",
 		wrap(async ({ dir }: { dir: string }) => {
 			const full = ensureSafe(dir);
-			const stat = await fs.stat(full);
-			if (!stat.isDirectory()) throw new Error("不是文件夹");
-			return true;
+			try {
+				const stat = await fs.stat(full);
+				if (stat.isFile()) return "file";
+				else return "directory";
+			} catch {
+				return {};
+			}
 		})
 	);
 
@@ -214,16 +222,4 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	app.listen({ port: cfg.port }, callback);
 
 	return app;
-}
-
-if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
-	// 解析命令行参数
-	// 示例: -s --maxAge 100
-	createApp(
-		minimist(process.argv.slice(2), {
-			boolean: true,
-			alias: { server: "s" },
-			default: defaultConfig,
-		}) as any
-	);
 }

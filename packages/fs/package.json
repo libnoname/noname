@@ -9,12 +9,10 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "noname-fs": "dist/index.cjs"
-  },
   "scripts": {
-    "start": "tsx src/index.ts",
+    "dev": "tsx src/entry.ts",
     "build": "tsup",
+    "serve": "node dist/entry.cjs",
     "build:win": "tsx build.ts win32",
     "build:mac": "tsx build.ts macos",
     "build:linux": "tsx build.ts linux",

@@ -12,7 +12,7 @@ export default async function browserReady({ lib, game }) {
 		console.error("文件读写函数初始化失败:", e);
 		return;
 	}
-	
+
 	game.export = function (data, name) {
 		if (typeof data === "string") {
 			data = new Blob([data], { type: "text/plain" });
@@ -53,17 +53,16 @@ export default async function browserReady({ lib, game }) {
 			.then(result => {
 				if (result) {
 					if (result.success) {
-						callback?.(1);
-						return;
-					}
-
-					if (result.code === 404) {
-						if (result.errorMsg === "不是一个文件") {
-							callback?.(0);
-							return;
-						} else if (result.errorMsg === "文件不存在或无法访问") {
-							callback?.(-1);
-							return;
+						switch (result.data) {
+							case "file":
+								callback?.(1);
+								return;
+							case "directory":
+								callback?.(0);
+								return;
+							default:
+								callback?.(-1);
+								return;
 						}
 					}
 				}
@@ -90,15 +89,16 @@ export default async function browserReady({ lib, game }) {
 			.then(result => {
 				if (result) {
 					if (result.success) {
-						callback?.(1);
-						return;
-					}
-
-					if (result.code === 404) {
-						if (result.errorMsg === "不是一个文件夹") {
-							return void callback?.(0);
-						} else if (result.errorMsg === "文件夹不存在或无法访问") {
-							return void callback?.(-1);
+						switch (result.data) {
+							case "file":
+								callback?.(0);
+								return;
+							case "directory":
+								callback?.(1);
+								return;
+							default:
+								callback?.(-1);
+								return;
 						}
 					}
 				}
@@ -166,7 +166,10 @@ export default async function browserReady({ lib, game }) {
 					method: "post",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						data: typeof data == "string" ? data : Array.prototype.slice.call(new Uint8Array(data)),
+						data:
+							typeof data == "string"
+								? data
+								: Array.prototype.slice.call(new Uint8Array(data)),
 						path: filePath,
 					}),
 				})
@@ -215,7 +218,11 @@ export default async function browserReady({ lib, game }) {
 		game.createDir(pathArray.join("/"), callback, console.error);
 	};
 
-	game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = () => {}) {
+	game.createDir = function createDir(
+		directory,
+		successCallback = () => {},
+		errorCallback = () => {}
+	) {
 		fetch(`/createDir?dir=${directory}`)
 			.then(response => response.json())
 			.then(result => {
@@ -227,7 +234,11 @@ export default async function browserReady({ lib, game }) {
 			})
 			.catch(errorCallback);
 	};
-	game.removeDir = function removeDir(directory, successCallback = () => {}, errorCallback = () => {}) {
+	game.removeDir = function removeDir(
+		directory,
+		successCallback = () => {},
+		errorCallback = () => {}
+	) {
 		fetch(`/removeDir?dir=${directory}`)
 			.then(response => response.json())
 			.then(result => {
