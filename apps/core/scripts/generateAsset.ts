@@ -93,7 +93,7 @@ function readPackageVersion(pkgPath: string): string {
 function main(): void {
 	// 上级 noname 目录
 	const basePath = path.resolve(import.meta.dirname, "..");
-	const outputPath = path.join(basePath, "game", "asset.js");
+	const outputPath = path.join(basePath, "game", "asset.json");
 
 	if (!fs.existsSync(basePath) || !fs.statSync(basePath).isDirectory()) {
 		console.error(`错误: 未找到上级目录 ${basePath}`);
@@ -131,18 +131,7 @@ function main(): void {
 
 	allFiles.sort(naturalCompare);
 
-	const lines: string[] = [];
-	lines.push("/* 自动生成的资源列表 - 请勿手动修改 */");
-	lines.push("window.noname_asset_list = [");
-	lines.push(`\t"v${version}",`);
-	for (const f of allFiles) {
-		lines.push(`\t${JSON.stringify(f)},`);
-	}
-	lines.push("];");
-	lines.push("window.noname_skin_list = {};");
-	lines.push("");
-
-	fs.writeFileSync(outputPath, lines.join("\n"), { encoding: "utf8" });
+	fs.writeFileSync(outputPath, JSON.stringify(allFiles, null, "\t"), { encoding: "utf8" });
 
 	console.log("✅ 资源清单生成成功！");
 	console.log(`├─ 扫描目录: ${basePath.replace(/\\/g, "/")}`);

@@ -44,14 +44,6 @@ export async function boot() {
 	for (const name in get.config("translate")) {
 		lib.translate[name] = get.config("translate")[name];
 	}
-	if (config.get("debug")) {
-		await lib.init.promises.js(`${lib.assetURL}game`, "asset");
-		if (window.noname_skin_list) {
-			lib.skin = window.noname_skin_list;
-			delete window.noname_skin_list;
-			delete window.noname_asset_list;
-		}
-	}
 
 	if (config.get("compatible") ?? true) {
 		await import("./compatible.js");
@@ -842,11 +834,8 @@ function initSheet() {
 }
 
 async function loadConfig() {
-	const path = "/game/config.js";
-	await import(/*@vite-ignore*/ path);
-	lib.config = window.config;
+	lib.config = await lib.init.promises.json(lib.assetURL + "game/config.json");;
 	lib.configOL = {};
-	delete window.config;
 
 	if (!window.indexedDB) {
 		throw new Error("您的环境不支持indexedDB，无法保存配置");

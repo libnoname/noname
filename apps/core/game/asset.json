@@ -1,6 +1,4 @@
-/* 自动生成的资源列表 - 请勿手动修改 */
-window.noname_asset_list = [
-	"v1.11.1",
+[
 	"audio/background/aozhan_chaoming.mp3",
 	"audio/background/aozhan_online.mp3",
 	"audio/background/aozhan_rewrite.mp3",
@@ -12457,7 +12455,5 @@ window.noname_asset_list = [
 	"theme/woodden/wood2.jpg",
 	"theme/woodden/wood2.png",
 	"theme/woodden/wood.jpg",
-	"theme/woodden/wood.png",
-];
-window.noname_skin_list = {};
-
+	"theme/woodden/wood.png"
+]
