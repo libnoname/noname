@@ -672,7 +672,7 @@ export class GameEvent implements PromiseLike<void> {
 		this.finished = true;
 	}
 	// @todo 奇怪的参数
-	cancel(all, player, notrigger) {
+	cancel(all?: any, player?: any, notrigger?: any) {
 		this.untrigger(all, player);
 		let next;
 		if (!notrigger) {
