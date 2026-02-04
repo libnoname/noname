@@ -9923,12 +9923,12 @@ export class Player extends HTMLDivElement {
 		if (this.hasSkill("subplayer") && this.name == name) {
 			this.exitSubPlayer(true);
 		} else {
-			if (player.storage[name].onremove) {
-				player.storage[name].onremove(player, name);
+			if (this.storage[name].onremove) {
+				this.storage[name].onremove(this, name);
 			}
 			this.removeSkill(name);
 			delete this.storage[name];
-			game.log(player, "牺牲了随从", "#g" + name);
+			game.log(this, "牺牲了随从", "#g" + name);
 			_status.event.trigger("removeSubPlayer");
 		}
 	}
