@@ -38,7 +38,6 @@ if (argv.mode) {
 	staticModules.push({ src: "extension", dest: "" });
 	staticModules.push(
 		...[
-			{ src: "jit", dest: "src" },
 			{ src: "noname", dest: "src" },
 			{ src: "typings", dest: "src" },
 			{ src: "noname.js", dest: "src" },
