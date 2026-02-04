@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { cwd } from "node:process";
 
 function naturalCompare(left: string, right: string): number {
 	const tokenPattern = /(\d+)|(\D+)/g;
@@ -65,6 +66,29 @@ function toPosixRelative(fullPath: string, basePath: string): string {
 	return path.relative(basePath, fullPath).split(path.sep).join("/");
 }
 
+function getAllResources(basePath: string): string[] {
+	const folders = ["audio", "font", "image", "theme"] as const;
+	const excludeDirs = ["audio/effect", "image/flappybird", "image/pointer"] as const;
+
+	const allFiles: string[] = [];
+
+	for (const folder of folders) {
+		const folderPath = path.join(basePath, folder);
+		if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) continue;
+
+		const files = walkFiles(folderPath);
+		for (const file of files) {
+			if (path.extname(file).toLowerCase() === ".css") continue;
+
+			const rel = toPosixRelative(file, basePath);
+			if (excludeDirs.some(ex => rel.startsWith(ex + "/"))) continue;
+
+			allFiles.push(rel);
+		}
+	}
+	return allFiles;
+}
+
 function readPackageVersion(pkgPath: string): string {
 	if (!fs.existsSync(pkgPath)) {
 		throw new Error(`未找到 package.json (${pkgPath})`);
@@ -89,45 +113,21 @@ function readPackageVersion(pkgPath: string): string {
 	}
 	return version.trim();
 }
-
 function main(): void {
 	// 上级 noname 目录
-	const basePath = path.resolve(import.meta.dirname, "..");
+	const basePath = cwd();
 	const outputPath = path.join(basePath, "game", "asset.json");
 
-	if (!fs.existsSync(basePath) || !fs.statSync(basePath).isDirectory()) {
-		console.error(`错误: 未找到上级目录 ${basePath}`);
-		process.exit(1);
-	}
+	// const pkgPath = path.join(basePath, "package.json");
+	// let version: string;
+	// try {
+	// 	version = readPackageVersion(pkgPath);
+	// } catch (e) {
+	// 	console.error(`错误: ${(e as Error).message}`);
+	// 	process.exit(1);
+	// }
 
-	const pkgPath = path.join(basePath, "package.json");
-	let version: string;
-	try {
-		version = readPackageVersion(pkgPath);
-	} catch (e) {
-		console.error(`错误: ${(e as Error).message}`);
-		process.exit(1);
-	}
-
-	const folders = ["audio", "font", "image", "theme"] as const;
-	const excludeDirs = ["audio/effect", "image/flappybird", "image/pointer"] as const;
-
-	const allFiles: string[] = [];
-
-	for (const folder of folders) {
-		const folderPath = path.join(basePath, folder);
-		if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) continue;
-
-		const files = walkFiles(folderPath);
-		for (const file of files) {
-			if (path.extname(file).toLowerCase() === ".css") continue;
-
-			const rel = toPosixRelative(file, basePath);
-			if (excludeDirs.some(ex => rel.startsWith(ex + "/"))) continue;
-
-			allFiles.push(rel);
-		}
-	}
+	const allFiles = getAllResources(basePath);
 
 	allFiles.sort(naturalCompare);
 
@@ -136,8 +136,8 @@ function main(): void {
 	console.log("✅ 资源清单生成成功！");
 	console.log(`├─ 扫描目录: ${basePath.replace(/\\/g, "/")}`);
 	console.log(`├─ 输出文件: ${outputPath.replace(/\\/g, "/")}`);
-	console.log(`├─ 包含资源: ${allFiles.length} 项`);
-	console.log(`└─ 设置版本: v${version}`);
+	console.log(`└─ 包含资源: ${allFiles.length} 项`);
+	// console.log(`└─ 设置版本: v${version}`);
 }
 
 main();

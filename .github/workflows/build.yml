@@ -28,12 +28,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm -F noname... install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run Build
-        run: |
-          pnpm -F noname^... build
-          pnpm -F noname build:full
+        run: pnpm build:full
 
       - name: Deploy dist to branch
         env:

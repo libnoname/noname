@@ -23,7 +23,6 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
-        "build:diff": "tsx scripts/build.ts --mode diff",
         "generateAsset": "tsx scripts/generateAsset.ts",
         "lint": "pnpm eslint noname/**"
     },

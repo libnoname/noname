@@ -6,9 +6,10 @@
         "init:web": "pnpm i -F noname...",
         "dev": "concurrently \"pnpm -F @noname/fs dev --debug --dirname=../../apps/core\" \"pnpm -F noname dev --open\"",
         "build": "pnpm -F noname... build",
-        "build:full": "pnpm -F noname^... build && pnpm -F noname build:full",
+        "build:full": "pnpm -F noname... -F !noname build && pnpm -F noname build:full",
         "serve": "pnpm -F @noname/fs dev --dirname=../../apps/core/dist",
         "start": "pnpm build:full && pnpm serve",
+        "generateTestPack": "pnpm build:full && tsx scripts/generateTestPack.ts",
         "lint": "pnpm -r lint"
     },
     "devDependencies": {

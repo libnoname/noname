@@ -3,7 +3,6 @@ import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
 import jit from "@noname/jit";
 import minimist from "minimist";
-import { generateTestPack } from "./generateTestPack";
 import fs from "fs-extra";
 import path from "path";
 
@@ -121,7 +120,3 @@ await build({
 		})(),
 	],
 });
-
-if (argv.zip) {
-	generateTestPack(argv.mode == "diff");
-}
