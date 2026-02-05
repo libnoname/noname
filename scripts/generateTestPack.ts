@@ -57,8 +57,12 @@ fs.rmSync("output/testpack", { recursive: true, force: true });
 fs.mkdirSync("output/testpack", { recursive: true });
 
 for (const i of fs.readdirSync("apps/core/dist")) {
-	if (["audio", "font", "image", "theme"].includes(i)) continue;
+	if (["audio", "extension", "font", "image", "theme"].includes(i)) continue;
 	fs.cpSync(path.join("apps/core/dist", i), path.join("output/testpack", i), { recursive: true });
+}
+for (const i of fs.readdirSync("apps/core/dist/extension")) {
+	if (!["boss", "cardpile", "coin"].includes(i)) continue;
+	fs.cpSync(path.join("apps/core/dist/extension", i), path.join("output/testpack/extension", i), { recursive: true });
 }
 const oldAsset = new Set(JSON.parse(fs.readFileSync("apps/core/game/asset.json", "utf-8")));
 asset = asset.filter(i => !oldAsset.has(i));
