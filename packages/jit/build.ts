@@ -1,5 +1,5 @@
 import { build } from "tsup";
-import fs from "fs";
+import fs from "node:fs/promises";
 await build({
 	config: false,
 	clean: true,
@@ -24,4 +24,4 @@ await build({
 	noExternal: ["typescript", "@vue/compiler-sfc", "dedent"],
 	minify: "terser",
 });
-fs.cpSync("public", "dist/public", { recursive: true });
+await fs.cp("public", "dist/public", { recursive: true });
