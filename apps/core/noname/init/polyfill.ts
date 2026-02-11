@@ -148,9 +148,9 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 		ext = ext || ".jpg";
 		subfolder = subfolder || "default";
 		if (type) {
-			let dbimage = null,
-				extimage = null,
-				modeimage = null,
+			let dbimage: string | null = null,
+				extimage: string | null = null,
+				modeimage: string | null = null,
 				nameinfo,
 				gzbool = false;
 			const mode = get.mode();
@@ -170,7 +170,6 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 						modeimage = mode;
 					}
 				} else if (name.includes("::")) {
-					// @ts-expect-error ignore
 					name = name.split("::");
 					modeimage = name[0];
 					name = name[1];
@@ -201,7 +200,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					}
 				}
 			}
-			if (type === "character" && lib.config.skin[name] && arguments[2] !== "noskin") {
+			if (type === "character" && lib.config.skin[name] && ext !== "noskin") {
 				src = lib.config.skin[name][1];
 			} else if (imgPrefixUrl) {
 				src = imgPrefixUrl;
@@ -263,18 +262,14 @@ HTMLDivElement.prototype.setBackgroundImage = function (img) {
  * @this HTMLDivElement
  * @type { typeof HTMLDivElement['prototype']['listen'] }
  */
-HTMLDivElement.prototype.listen = function (func) {
+HTMLDivElement.prototype.listen = function (this: HTMLDivElement, func) {
 	if (lib.config.touchscreen) {
 		this.addEventListener("touchend", function (e) {
 			if (!_status.dragged) {
 				func.call(this, e);
 			}
 		});
-		/**
-		 * @this HTMLDivElement
-		 * @param { MouseEvent } e
-		 */
-		const fallback = function (e) {
+		const fallback = function (this: HTMLDivElement, e: MouseEvent) {
 			if (!_status.touchconfirmed) {
 				func.call(this, e);
 			} else {
@@ -291,7 +286,7 @@ HTMLDivElement.prototype.listen = function (func) {
  * @this HTMLDivElement
  * @type { typeof HTMLDivElement['prototype']['listenTransition'] }
  */
-HTMLDivElement.prototype.listenTransition = function (func, time) {
+HTMLDivElement.prototype.listenTransition = function (this: HTMLDivElement, func, time) {
 	let done = false;
 	const callback = () => {
 		if (!done) {
@@ -303,7 +298,6 @@ HTMLDivElement.prototype.listenTransition = function (func, time) {
 	};
 	const timer = setTimeout(callback, time || 1000);
 	this.addEventListener("webkitTransitionEnd", callback);
-	// @ts-expect-error ignore
 	return timer;
 };
 /**
@@ -314,7 +308,7 @@ HTMLDivElement.prototype.listenTransition = function (func, time) {
   - 将条件运算符的结果直接嵌入到模板字符串中，取代了之前使用字符串拼接的方式喵。
   //最后，宝贝看一下我的理解有问题吗？🥺
  */
-HTMLDivElement.prototype.setPosition = function (...args) {
+HTMLDivElement.prototype.setPosition = function (this: HTMLDivElement, ...args) {
 	let position;
 	if (args.length === 4) {
 		position = args;
@@ -354,9 +348,8 @@ HTMLElement.prototype.css = function (style) {
  * @param {number} col
  * @returns {HTMLElement | void}
  */
-HTMLTableElement.prototype.get = function (row, col) {
+HTMLTableElement.prototype.get = function (this: HTMLTableElement, row, col) {
 	if (row < this.childNodes.length) {
-		// @ts-expect-error ignore
 		return /** @type {HTMLElement | void} */ this.childNodes[row].childNodes[col];
 	}
 };
@@ -369,7 +362,7 @@ Object.defineProperty(Array.prototype, "filterInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['filterInD'] }
 	 */
-	value(pos = "o") {
+	value(this: Card[], pos = "o") {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
@@ -384,7 +377,7 @@ Object.defineProperty(Array.prototype, "someInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['someInD'] }
 	 */
-	value(pos = "o") {
+	value(this: Card[], pos = "o") {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
@@ -399,7 +392,7 @@ Object.defineProperty(Array.prototype, "everyInD", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['everyInD'] }
 	 */
-	value(pos = "o") {
+	value(this: Card[], pos = "o") {
 		if (typeof pos != "string") {
 			pos = "o";
 		}
@@ -413,40 +406,22 @@ Object.defineProperty(Array.prototype, "contains", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this T[]
-	 * @template T
-	 * @param { T[] } args
-	 * @returns { boolean }
-	 */
-	value(...args) {
-		console.warn(this, "Array的contains方法已废弃，请使用includes方法");
-		// @ts-expect-error ignore
-		return this.includes(...args);
-	},
+	value: Array.prototype.includes,
 });
 Object.defineProperty(Array.prototype, "containsSome", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @type { typeof Array['prototype']['containsSome'] }
-	 */
-	value() {
-		return Array.from(arguments).some(i => this.includes(i));
+	value<T>(this: T[], ...args: T[]) {
+		return args.some(i => this.includes(i));
 	},
 });
 Object.defineProperty(Array.prototype, "containsAll", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @type { typeof Array['prototype']['containsAll'] }
-	 */
-	value() {
-		return Array.from(arguments).every(i => this.includes(i));
+	value<T>(this: T[], ...args: T[]) {
+		return args.every(i => this.includes(i));
 	},
 });
 
@@ -458,8 +433,8 @@ Object.defineProperty(Array.prototype, "add", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['add'] }
 	 */
-	value() {
-		for (const arg of arguments) {
+	value<T>(this: T[], ...args: T[]) {
+		for (const arg of args) {
 			if (this.includes(arg)) {
 				continue;
 			}
@@ -476,8 +451,8 @@ Object.defineProperty(Array.prototype, "addArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['addArray'] }
 	 */
-	value() {
-		for (const arr of arguments) {
+	value<T>(this: T[], ...args: T[][]) {
+		for (const arr of args) {
 			for (const item of arr) {
 				this.add(item);
 			}
@@ -493,12 +468,12 @@ Object.defineProperty(Array.prototype, "remove", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['remove'] }
 	 */
-	value(...args) {
+	value<T>(this: T[], ...args: T[]) {
 		for (const item of args) {
 			let pos;
 
 			if (typeof item == "number" && isNaN(item)) {
-				pos = this.findIndex(v => isNaN(v));
+				pos = this.findIndex(v => isNaN(v as number));
 			} else {
 				pos = this.indexOf(item);
 			}
@@ -520,8 +495,8 @@ Object.defineProperty(Array.prototype, "removeArray", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['removeArray'] }
 	 */
-	value() {
-		for (const i of Array.from(arguments)) {
+	value<T>(this: T[], ...args: T[][]) {
+		for (const i of args) {
 			this.remove(...i);
 		}
 		return this;
@@ -531,11 +506,7 @@ Object.defineProperty(Array.prototype, "unique", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @type { typeof Array['prototype']['unique'] }
-	 */
-	value() {
+	value<T>(this: T[]) {
 		let uniqueArray = [...new Set(this)];
 		this.length = uniqueArray.length;
 		for (let i = 0; i < uniqueArray.length; i++) {
@@ -548,11 +519,7 @@ Object.defineProperty(Array.prototype, "toUniqued", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @type { typeof Array['prototype']['toUniqued'] }
-	 */
-	value() {
+	value<T>(this: T[]) {
 		return [...new Set(this)];
 	},
 });
@@ -569,7 +536,7 @@ Object.defineProperty(Array.prototype, "randomGet", {
 
 		if (excludes.length > 0) {
 			arr = this.slice(0);
-			arr.removeArray(Array.from(arguments));
+			arr.removeArray(excludes);
 		}
 
 		return arr[Math.floor(Math.random() * arr.length)];
@@ -583,12 +550,12 @@ Object.defineProperty(Array.prototype, "randomGets", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['randomGets'] }
 	 */
-	value(num = 0) {
+	value<T>(this: T[], num = 0) {
 		if (num > this.length) {
 			num = this.length;
 		}
 		let arr = this.slice(0);
-		let list = [];
+		let list: (T | undefined)[] = [];
 		for (let i = 0; i < num; i++) {
 			list.push(arr.splice(Math.floor(Math.random() * arr.length), 1)[0]);
 		}
@@ -599,14 +566,9 @@ Object.defineProperty(Array.prototype, "randomRemove", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @param { number } [num]
-	 * @type { typeof Array['prototype']['randomRemove'] }
-	 */
-	value(num) {
+	value<T>(this: T[], num?: number) {
 		if (typeof num == "number") {
-			let list = [];
+			let list: (T | undefined)[] = [];
 			for (let i = 0; i < num; i++) {
 				if (!this.length) {
 					break;
@@ -622,11 +584,7 @@ Object.defineProperty(Array.prototype, "randomSort", {
 	configurable: true,
 	enumerable: false,
 	writable: true,
-	/**
-	 * @this any[]
-	 * @type { typeof Array['prototype']['randomSort'] }
-	 */
-	value() {
+	value<T>(this: T[]) {
 		for (let i = this.length; i > 1; --i) {
 			const index = /* randInt(0, i); */ Math.floor(Math.random() * i);
 			const temp = this[i - 1];
@@ -645,7 +603,7 @@ Object.defineProperty(Array.prototype, "sortBySeat", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['sortBySeat'] }
 	 */
-	value(target) {
+	value(this: Player[], target: Player) {
 		lib.tempSortSeat = target;
 		this.sort(lib.sort.seat);
 		delete lib.tempSortSeat;
@@ -663,7 +621,7 @@ Object.defineProperty(Array.prototype, "maxBy", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['maxBy'] }
 	 */
-	value(sortBy, filter) {
+	value<T>(this: T[], sortBy, filter) {
 		let list = this.filter(filter || (() => true));
 		if (sortBy && typeof sortBy == "function") {
 			list.sort((a, b) => sortBy(a) - sortBy(b));
@@ -681,7 +639,7 @@ Object.defineProperty(Array.prototype, "minBy", {
 	 * @this any[]
 	 * @type { typeof Array['prototype']['minBy'] }
 	 */
-	value(sortBy, filter) {
+	value<T>(this: T[], sortBy, filter) {
 		let list = this.filter(filter || (() => true));
 		if (sortBy && typeof sortBy == "function") {
 			list.sort((a, b) => sortBy(a) - sortBy(b));
