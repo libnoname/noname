@@ -3026,17 +3026,19 @@ export class Game {
 		addOptions(extensionMenu, object.config);
 		addOptions(lib.help, object.help);
 
-		extensionMenu.edit = {
-			name: "编辑此扩展",
-			clear: true,
-			onclick() {
-				if (lib.extensionPack?.[name] && object.editable !== false && lib.config.show_extensionmaker) {
-					game.editExtension?.(name);
-				} else {
-					alert("无法编辑未启用的扩展，请启用此扩展并重启后重试");
-				}
-			},
-		};
+		if (object.editable !== false && lib.config.show_extensionmaker) {
+			extensionMenu.edit = {
+				name: "编辑此扩展",
+				clear: true,
+				onclick() {
+					if (game.editExtension && lib.extensionPack && lib.extensionPack[name]) {
+						game.editExtension(name);
+					} else {
+						alert("无法编辑未启用的扩展，请启用此扩展并重启后重试");
+					}
+				},
+			};
+		}
 		extensionMenu.delete = {
 			name: "删除此扩展",
 			clear: true,
@@ -6406,23 +6408,6 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 	 */
 	hasExtensionLoaded(extensionName) {
 		return extensionName !== void 0 && _status.extensionLoaded.includes(extensionName);
-	}
-	/**
-	 * @todo deprecate
-	 * @param { string } extensionName
-	 * @param { Function } runnable
-	 */
-	runAfterExtensionLoaded(extensionName, runnable) {
-		if (game.hasExtensionLoaded(extensionName)) {
-			runnable();
-		} else {
-			let eventName = `Noname.Init.Extension.${extensionName}.onLoad`;
-			let callback = () => {
-				lib.announce.unsubscribe(eventName, callback);
-				runnable();
-			};
-			lib.announce.subscribe(eventName, callback);
-		}
 	}
 	/**
 	 * @param { string } extensionName
