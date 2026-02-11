@@ -64,7 +64,6 @@ export class status {
 	 * @type { string[] | undefined }
 	 */
 	extensionLoaded = undefined;
-	javaScriptExtensions = [];
 	/**
 	 * @type { { [key: string]: Promise<any>[] } | undefined }
 	 */

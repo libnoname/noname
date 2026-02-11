@@ -15,7 +15,7 @@ export async function boot() {
 		const dirsplit = __dirname.split("/");
 		for (let i = 0; i < dirsplit.length; i++) {
 			if (dirsplit[i]) {
-				var c = dirsplit[i][0];
+				const c = dirsplit[i][0];
 				lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
 			}
 		}
@@ -340,7 +340,7 @@ export async function boot() {
 		);
 	}
 
-	const toLoad = [];
+	const toLoad: Promise<any>[] = [];
 
 	let show_splash;
 	switch (config.get("show_splash")) {
@@ -371,22 +371,6 @@ export async function boot() {
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "rank"));
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "replace"));
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "perfectPairs"));
-
-	// @deprecated lib.init.jsForExtension
-	_status.javaScriptExtensions.forEach(ctx => {
-		const toArray = arr => (Array.isArray(arr) ? arr : [arr]);
-		const path = toArray(ctx.path);
-		const file = toArray(ctx.file);
-		const onLoad = toArray(ctx.onLoad);
-		const onError = toArray(ctx.onError);
-		toLoad.push(
-			(async () => {
-				for (let i = 0; i <= path.length; i++) {
-					await lib.init.promises.js(path[i], file[i]).then(onLoad[i], onError[i]);
-				}
-			})()
-		);
-	});
 
 	await Promise.allSettled(toLoad);
 
@@ -506,7 +490,7 @@ export async function boot() {
 				ui.css.menu_stylesheet.remove();
 			}
 			ui.css.menu_stylesheet = lib.init.sheet(
-				`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${fileLoadedEvent.target.result}");background-size:cover}`
+				`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${data}");background-size:cover}`
 			);
 		}),
 	];
@@ -565,13 +549,6 @@ export async function boot() {
 	if (lib.imported.character != null) {
 		Object.values(lib.imported.character).forEach(loadCharacter);
 	}
-
-	// 联机头像改为输入模式，不再需要填充item
-	// Object.keys(lib.character)
-	// 	.toSorted(lib.sort.capt)
-	// 	.forEach(character => {
-	// 		lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
-	// 	});
 
 	loadCardPile();
 
@@ -646,7 +623,7 @@ export async function boot() {
 	ui.create.arena();
 	game.createEvent("game", false).setContent(lib.init.start);
 	if (lib.mode[lib.config.mode] && lib.mode[lib.config.mode].fromextension) {
-		var startstr = currentMode.start.toString();
+		const startstr = currentMode.start.toString();
 		if (startstr.indexOf("onfree") === -1) {
 			setTimeout(lib.init.onfree, 500);
 		}
@@ -681,8 +658,8 @@ async function getExtensionList() {
 		localStorage.setItem(lib.configprefix + "disable_extension", String(true));
 	};
 
-	const extensions = config.get("extensions");
-	const toLoad = [];
+	const extensions: string[] = config.get("extensions");
+	const toLoad: string[] = [];
 	toLoad.addArray(config.get("plays").filter(i => config.get("all").plays.includes(i)));
 	toLoad.addArray(extensions);
 
@@ -766,7 +743,7 @@ function initSheet() {
 
 	const control_style = config.get("control_style");
 	if (control_style && control_style != "default" && control_style != "custom") {
-		var str = "";
+		let str = "";
 		switch (control_style) {
 			case "wood":
 				str = `url("${lib.assetURL}theme/woodden/wood.jpg")`;
@@ -823,7 +800,7 @@ function initSheet() {
 	const zhishixian = config.get("zhishixian");
 	game.zsOriginLineXy = game.linexy;
 	if (zhishixian && zhishixian != "default") {
-		var layout = zhishixian;
+		const layout = zhishixian;
 		game.saveConfig("zhishixian", zhishixian);
 		if (layout == "default") {
 			game.linexy = game.zsOriginLineXy;
@@ -834,14 +811,14 @@ function initSheet() {
 }
 
 async function loadConfig() {
-	lib.config = await lib.init.promises.json(lib.assetURL + "game/config.json");;
+	lib.config = await lib.init.promises.json(lib.assetURL + "game/config.json");
 	lib.configOL = {};
 
 	if (!window.indexedDB) {
 		throw new Error("您的环境不支持indexedDB，无法保存配置");
 	}
 
-	const event = await new Promise((resolve, reject) => {
+	const event = await new Promise<Event>((resolve, reject) => {
 		const idbOpenDBRequest = window.indexedDB.open(`${lib.configprefix}data`, 4);
 		idbOpenDBRequest.onerror = reject;
 		idbOpenDBRequest.onsuccess = resolve;
@@ -986,8 +963,8 @@ function setWindowListener() {
 			if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
-						var noname_inited = localStorage.getItem("noname_inited");
-						var onlineKey = localStorage.getItem(lib.configprefix + "key");
+						const noname_inited = localStorage.getItem("noname_inited");
+						const onlineKey = localStorage.getItem(lib.configprefix + "key");
 						localStorage.clear();
 						if (noname_inited) {
 							localStorage.setItem("noname_inited", noname_inited);
@@ -1016,13 +993,13 @@ function setWindowListener() {
 			}
 		} else {
 			game.closePopped();
-			var dialogs = document.querySelectorAll("#window>.dialog.popped:not(.static)");
-			for (var i = 0; i < dialogs.length; i++) {
+			const dialogs = document.querySelectorAll("#window>.dialog.popped:not(.static)");
+			for (let i = 0; i < dialogs.length; i++) {
 				// @ts-expect-error ignore
 				dialogs[i].delete();
 			}
 			if (e.key == "Space") {
-				var node = ui.window.querySelector("pausedbg");
+				const node = ui.window.querySelector("pausedbg");
 				if (node) {
 					node.click();
 				} else {
@@ -1041,8 +1018,8 @@ function setWindowListener() {
 			} else if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
-						var noname_inited = localStorage.getItem("noname_inited");
-						var onlineKey = localStorage.getItem(lib.configprefix + "key");
+						const noname_inited = localStorage.getItem("noname_inited");
+						const onlineKey = localStorage.getItem(lib.configprefix + "key");
 						localStorage.clear();
 						if (noname_inited) {
 							localStorage.setItem("noname_inited", noname_inited);
@@ -1104,7 +1081,7 @@ async function createBackground() {
 		try {
 			const fileToLoad = await game.getDB("image", lib.config.image_background);
 			const fileReader = new FileReader();
-			const fileLoadedEvent = await Promise(resolve => {
+			const fileLoadedEvent = await new Promise(resolve => {
 				fileReader.onload = resolve;
 				fileReader.readAsDataURL(fileToLoad, "UTF-8");
 			});
@@ -1147,14 +1124,13 @@ function createTouchDraggedFilter() {
  * 由于不暴露出去，抽象一点
  *
  * 实际上但凡有重载都不会抽象
- *
- * @param {string} id
- * @param {(function(string): void) | Record<string, function(string): void>} keys
- * @param {function(): void} [fallback]
- * @returns {Promise<void>}
  */
-async function tryLoadCustomStyle(id, keys, fallback) {
-	if (typeof keys == "function") {
+async function tryLoadCustomStyle(
+	id: string,
+	keys: (data: string) => void | Record<string, (data: string) => void>,
+	fallback?: () => void
+): Promise<void> {
+	if (typeof keys === "function") {
 		keys = {
 			[id]: keys,
 		};
@@ -1172,7 +1148,7 @@ async function tryLoadCustomStyle(id, keys, fallback) {
 						fileReader.readAsDataURL(fileToLoad, "UTF-8");
 					});
 
-					await callback?.(fileLoadedEvent.target.result);
+					await callback?.(fileLoadedEvent.target.result as string);
 				} else {
 					fallback?.();
 				}
