@@ -296,38 +296,9 @@ export async function boot() {
 	if (extensionlist.length) {
 		_status.extensionLoading = [];
 		_status.extensionLoaded = [];
-
-		const extensionsImporting = extensionlist.map(i => importExtension(i));
-
-		const extErrorList = [];
-		for (const promise of extensionsImporting) {
-			await promise.catch(async error => {
-				extErrorList.add(error);
-			});
+		for (const i of extensionlist) {
+			await importExtension(i);
 		}
-		for (const promise of _status.extensionLoading) {
-			await promise.catch(async error => {
-				extErrorList.add(error);
-			});
-		}
-		// await Promise.allSettled(_status.extensionLoading);
-
-		if (extErrorList.length) {
-			const stacktraces = extErrorList.map(e => (e instanceof Error ? e.stack : String(e))).join("\n\n");
-			// game.saveConfig("update_first_log", stacktraces);
-			if (confirm(`扩展加载出错！是否重新载入游戏？\n以下扩展出现了错误：\n\n${stacktraces}`)) {
-				game.reload();
-				clearTimeout(resetGameTimeout);
-				return;
-			}
-		}
-
-		_status.extensionLoaded
-			.filter(name => game.hasExtension(name))
-			.forEach(name => {
-				lib.announce.publish("Noname.Init.Extension.onLoad", name);
-				lib.announce.publish(`Noname.Init.Extension.${name}.onLoad`, void 0);
-			});
 		delete _status.extensionLoading;
 	}
 
