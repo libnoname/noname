@@ -164,7 +164,7 @@ export function setOnError({ lib, game, get, _status }) {
 						const source = stackframes[0].source;
 						if (!source?.fileName) throw new Error();
 
-						let rawSourceMap = lib.init.reqSync(sourcePath + ".map");
+						let rawSourceMap = await lib.init.promises.req(sourcePath + ".map");
 						if (!rawSourceMap) throw new Error();
 						const sourceMap = JSON.parse(rawSourceMap);
 
@@ -201,7 +201,7 @@ export function setOnError({ lib, game, get, _status }) {
 
 						log.push(...createShowCode(content, frame.lineNumber || 0));
 					} catch (e) {
-						let code = lib.init.reqSync(sourcePath);
+						let code = await lib.init.promises.req(sourcePath);
 						if (code) log.push(...createShowCode(code, frame.lineNumber || 0));
 					}
 				}

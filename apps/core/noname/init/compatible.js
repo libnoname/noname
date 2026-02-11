@@ -1,4 +1,3 @@
-
 import { lib, game, get, _status, ui, ai } from "noname";
 import ContentCompiler from "@/library/element/GameEvent/compilers/ContentCompiler";
 import ContentCompilerBase from "@/library/element/GameEvent/compilers/ContentCompilerBase";
@@ -284,7 +283,11 @@ get.event = function (key) {
 				var es = [];
 				if (arg3 !== false) {
 					for (i = 0; i < this.node.equips.childElementCount; i++) {
-						if (!this.node.equips.childNodes[i].classList.contains("removing") && !this.node.equips.childNodes[i].classList.contains("feichu") && !this.node.equips.childNodes[i].classList.contains("emptyequip")) {
+						if (
+							!this.node.equips.childNodes[i].classList.contains("removing") &&
+							!this.node.equips.childNodes[i].classList.contains("feichu") &&
+							!this.node.equips.childNodes[i].classList.contains("emptyequip")
+						) {
 							var equipskills = get.info(this.node.equips.childNodes[i]).skills;
 							if (equipskills) {
 								es.addArray(equipskills);
@@ -328,18 +331,32 @@ get.event = function (key) {
 				for (i = 0; i < arg1.length; i++) {
 					if (arg1[i] == "h") {
 						for (j = 0; j < this.node.handcards1.childElementCount; j++) {
-							if (!this.node.handcards1.childNodes[j].classList.contains("removing") && !this.node.handcards1.childNodes[j].classList.contains("feichu") && !this.node.handcards1.childNodes[j].classList.contains("emptyequip") && !this.node.handcards1.childNodes[j].classList.contains("glows")) {
+							if (
+								!this.node.handcards1.childNodes[j].classList.contains("removing") &&
+								!this.node.handcards1.childNodes[j].classList.contains("feichu") &&
+								!this.node.handcards1.childNodes[j].classList.contains("emptyequip") &&
+								!this.node.handcards1.childNodes[j].classList.contains("glows")
+							) {
 								cards.push(this.node.handcards1.childNodes[j]);
 							}
 						}
 						for (j = 0; j < this.node.handcards2.childElementCount; j++) {
-							if (!this.node.handcards2.childNodes[j].classList.contains("removing") && !this.node.handcards2.childNodes[j].classList.contains("feichu") && !this.node.handcards2.childNodes[j].classList.contains("emptyequip") && !this.node.handcards2.childNodes[j].classList.contains("glows")) {
+							if (
+								!this.node.handcards2.childNodes[j].classList.contains("removing") &&
+								!this.node.handcards2.childNodes[j].classList.contains("feichu") &&
+								!this.node.handcards2.childNodes[j].classList.contains("emptyequip") &&
+								!this.node.handcards2.childNodes[j].classList.contains("glows")
+							) {
 								cards.push(this.node.handcards2.childNodes[j]);
 							}
 						}
 					} else if (arg1[i] == "e") {
 						for (j = 0; j < this.node.equips.childElementCount; j++) {
-							if (!this.node.equips.childNodes[j].classList.contains("removing") && !this.node.equips.childNodes[j].classList.contains("feichu") && !this.node.equips.childNodes[j].classList.contains("emptyequip")) {
+							if (
+								!this.node.equips.childNodes[j].classList.contains("removing") &&
+								!this.node.equips.childNodes[j].classList.contains("feichu") &&
+								!this.node.equips.childNodes[j].classList.contains("emptyequip")
+							) {
 								cards.push(this.node.equips.childNodes[j]);
 							}
 						}
@@ -353,7 +370,11 @@ get.event = function (key) {
 						}
 					} else if (arg1[i] == "j") {
 						for (j = 0; j < this.node.judges.childElementCount; j++) {
-							if (!this.node.judges.childNodes[j].classList.contains("removing") && !this.node.judges.childNodes[j].classList.contains("feichu") && !this.node.judges.childNodes[j].classList.contains("emptyequip")) {
+							if (
+								!this.node.judges.childNodes[j].classList.contains("removing") &&
+								!this.node.judges.childNodes[j].classList.contains("feichu") &&
+								!this.node.judges.childNodes[j].classList.contains("emptyequip")
+							) {
 								cards.push(this.node.judges.childNodes[j]);
 								if (this.node.judges.childNodes[j].viewAs && arguments.length > 1) {
 									this.node.judges.childNodes[j].tempJudge = this.node.judges.childNodes[j].name;
@@ -545,7 +566,7 @@ lib.element.Player.prototype.insertEvent = function (name, content, arg) {
 		await originDrawContent(event, trigger, player);
 		const cards = event.result.cards.slice(0);
 		event.result = Object.assign(cards, event.result);
-	}
+	};
 }
 
 // player.when
@@ -716,7 +737,8 @@ lib.element.Player.prototype.when = function (...triggerNames) {
 			} else {
 				const a = fun2;
 				//防止传入()=>xxx的情况
-				const begin = a.indexOf("{") == a.indexOf("}") && a.indexOf("{") == -1 && a.indexOf("=>") > -1 ? a.indexOf("=>") + 2 : a.indexOf("{") + 1;
+				const begin =
+					a.indexOf("{") == a.indexOf("}") && a.indexOf("{") == -1 && a.indexOf("=>") > -1 ? a.indexOf("=>") + 2 : a.indexOf("{") + 1;
 				const str2 = a.slice(begin, a.lastIndexOf("}") != -1 ? a.lastIndexOf("}") : undefined).trim();
 				// 防止注入喵
 				if (!get.isFunctionBody(str2)) {
@@ -877,3 +899,170 @@ lib.element.Player.prototype.when = function (...triggerNames) {
 		},
 	};
 };
+
+// lib.init.xxxSync
+Object.assign(lib.init, {
+	/**
+	 * 同步lib.init.js
+	 * @returns { void }
+	 */
+	jsSync(path, file, onLoad, onError) {
+		if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
+			const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
+			if (typeof onError == "function") {
+				onError(e);
+			} else {
+				throw e;
+			}
+			return;
+		}
+		if (path[path.length - 1] == "/") {
+			path = path.slice(0, path.length - 1);
+		}
+		if (path == `${lib.assetURL}mode` && lib.config.all.stockmode.indexOf(file) == -1) {
+			Promise.resolve(lib.init[`setMode_${file}`]()).then(onLoad);
+			return;
+		}
+		if (Array.isArray(file)) {
+			return file.forEach(value => lib.init.jsSync(path, value, onLoad, onError));
+		}
+		let scriptSource;
+		if (!file) {
+			scriptSource = path;
+		} else {
+			scriptSource = `${path}/${file}.js`;
+		}
+		if (path.startsWith("http")) {
+			scriptSource += `?rand=${get.id()}`;
+		}
+		const xmlHttpRequest = new XMLHttpRequest();
+		let data;
+		xmlHttpRequest.addEventListener("load", () => {
+			if (![0, 200].includes(xmlHttpRequest.status)) {
+				if (typeof onError == "function") {
+					onError(new Error(xmlHttpRequest.statusText || xmlHttpRequest.status));
+				}
+				return;
+			}
+			data = xmlHttpRequest.responseText;
+			if (!data) {
+				if (typeof onError == "function") {
+					onError(new Error(`${scriptSource}加载失败！`));
+				}
+				return;
+			}
+			if (lib.config.fuck_sojson && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
+				const pathToRead = scriptSource.slice(lib.assetURL.length);
+				if (data.includes("sojson") || data.includes("jsjiami") || data.includes("var _0x")) {
+					alert(`检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`);
+				}
+			}
+			try {
+				security.eval(data);
+				if (typeof onLoad == "function") {
+					onLoad();
+				}
+			} catch (error) {
+				if (typeof onError == "function") {
+					onError(error);
+				}
+			}
+		});
+		if (typeof onError == "function") {
+			xmlHttpRequest.addEventListener("error", onError);
+		}
+		xmlHttpRequest.open("GET", scriptSource, false);
+		xmlHttpRequest.send();
+	},
+
+	/**
+	 * 同步lib.init.req
+	 */
+	reqSync(str, onload, onerror, master) {
+		let sScriptURL;
+		if (str.startsWith("http")) {
+			sScriptURL = str;
+		} else if (str.startsWith("local:")) {
+			if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
+				const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
+				if (typeof onerror == "function") {
+					onerror(e);
+				} else {
+					throw e;
+				}
+				return;
+			}
+			sScriptURL = lib.assetURL + str.slice(6);
+		} else {
+			let url = get.url(master);
+			if (url[url.length - 1] != "/") {
+				url += "/";
+			}
+			sScriptURL = url + str;
+		}
+		const oReq = new XMLHttpRequest();
+		if (typeof onload == "function") {
+			oReq.addEventListener("load", result => {
+				if (![0, 200].includes(oReq.status)) {
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
+					return;
+				}
+				onload(result);
+			});
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
+		oReq.open("GET", sScriptURL, false);
+		oReq.send();
+		if (typeof onload !== "function") {
+			return oReq.responseText;
+		}
+	},
+
+	/**
+	 * 同步lib.init.json
+	 */
+	jsonSync(url, onload, onerror) {
+		if (lib.assetURL.length == 0 && location.origin == "file://" && typeof game.readFile == "undefined") {
+			const e = new Error("浏览器file协议下无法使用此api，请在http/https协议下使用此api");
+			if (typeof onerror == "function") {
+				onerror(e);
+			} else {
+				throw e;
+			}
+			return;
+		}
+		const oReq = new XMLHttpRequest();
+		if (typeof onload == "function") {
+			oReq.addEventListener("load", () => {
+				if (![0, 200].includes(oReq.status)) {
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
+					return;
+				}
+				let result;
+				try {
+					result = JSON.parse(oReq.responseText);
+					if (!result) {
+						throw new Error("err");
+					}
+				} catch (e) {
+					if (typeof onerror == "function") {
+						onerror(e);
+					}
+					return;
+				}
+				onload(result);
+			});
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
+		oReq.open("GET", url, false);
+		oReq.send();
+	},
+});
