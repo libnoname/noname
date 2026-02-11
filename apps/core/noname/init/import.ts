@@ -1,52 +1,51 @@
+/// <reference types="vite/client" />
 import { lib, game, _status } from "noname";
-/**
- * @param {string} name - 卡牌包名
- * @returns {Promise<void>}
- */
-export async function importCardPack(name) {
+
+export async function importCardPack(name: string) {
 	await importFunction("card", `/card/${name}`);
 }
 
-/**
- * @param {string} name - 武将包名
- * @returns {Promise<void>}
- */
-export async function importCharacterPack(name) {
+export async function importCharacterPack(name: string) {
 	const alreadyModernCharacterPack = lib.config.moderned_chracters || [];
 	const path = alreadyModernCharacterPack.includes(name) ? `/character/${name}/index` : `/character/${name}`;
 	await importFunction("character", path).catch(e => {
 		console.error(`武将包《${name}》加载失败`, e);
-// 		alert(`武将包《${name}》加载失败
-// 错误信息: 
-// ${e instanceof Error ? e.stack : String(e)}
-// 如果您在扩展中使用了game.import创建武将包，可将以下代码删除: lib.config.all.characters.push('武将包名');`);
+		// 		alert(`武将包《${name}》加载失败
+		// 错误信息:
+		// ${e instanceof Error ? e.stack : String(e)}
+		// 如果您在扩展中使用了game.import创建武将包，可将以下代码删除: lib.config.all.characters.push('武将包名');`);
 	});
 }
 
-/**
- * @param {string} name - 扩展名
- * @returns {Promise<void>}
- */
-export async function importExtension(name) {
+export async function importExtension(name: string) {
 	if (!game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
 		// @ts-expect-error ignore
 		await game.import("extension", await createEmptyExtension(name));
+		if (_status.extensionLoading) {
+			await Promise.all(_status.extensionLoading);
+		}
 		return;
 	}
-	await importFunction("extension", `/extension/${name}/extension`).catch(e => {
+	try {
+		await importFunction("extension", `/extension/${name}/extension`);
+		if (_status.extensionLoading) {
+			await Promise.all(_status.extensionLoading);
+		}
+	} catch (e) {
 		console.error(`扩展《${name}》加载失败`, e);
 		let close = confirm(`扩展《${name}》加载失败，是否关闭此扩展？错误信息: \n${e instanceof Error ? e.stack : String(e)}`);
 		if (close) {
 			game.saveConfig(`extension_${name}_enable`, false);
+			// @ts-expect-error ignore
+			await game.import("extension", await createEmptyExtension(name));
+			if (_status.extensionLoading) {
+				await Promise.all(_status.extensionLoading);
+			}
 		}
-	});
+	}
 }
 
-/**
- * @param {string} name - 模式名
- * @returns {Promise<void>}
- */
-export async function importMode(name) {
+export async function importMode(name: string) {
 	if (lib.mode[name] && lib.mode[name].fromextension) {
 		let loadModeMethod = lib.init["setMode_" + name];
 		if (typeof loadModeMethod === "function") {
@@ -59,14 +58,7 @@ export async function importMode(name) {
 	await importFunction("mode", path);
 }
 
-/**
- * 生成导入
- *
- * @param { 'card' | 'character' | 'extension' | 'mode' } type
- * @param {string} path
- * @returns {Promise<void>}
- */
-async function importFunction(type, path) {
+async function importFunction(type: "card" | "character" | "extension" | "mode", path: string): Promise<void> {
 	const modeContent = await import(/* @vite-ignore */ path + ".js").catch(async e => {
 		if (window.isSecureContext) {
 			try {
@@ -85,7 +77,7 @@ async function importFunction(type, path) {
 	await game.import(type, modeContent.default);
 }
 
-async function createEmptyExtension(name) {
+export async function createEmptyExtension(name: string) {
 	const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/${name}/info.json`).then(
 		info => info,
 		() => {

@@ -7,10 +7,8 @@ import { isClass } from "@/util/index.js";
 
 /**
  * 读取导入的卡牌包信息
- *
- * @param {importCardConfig} cardConfig
  */
-export function loadCard(cardConfig) {
+export function loadCard(cardConfig: importCardConfig) {
 	const cardConfigName = cardConfig.name;
 
 	lib.cardPack[cardConfigName] ??= [];
@@ -116,10 +114,8 @@ export function loadCardPile() {
 
 /**
  * 读取导入的武将包信息
- *
- * @param {importCharacterConfig} character
  */
-export function loadCharacter(character) {
+export function loadCharacter(character: importCharacterConfig) {
 	let name = character.name;
 
 	if (character.character) {
@@ -415,10 +411,8 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 
 /**
  * 读取当前的模式信息
- *
- * @param {importModeConfig} mode
  */
-export function loadMode(mode) {
+export function loadMode(mode: importModeConfig) {
 	mixinLibrary(mode, lib);
 	mixinGeneral(mode, "game", game);
 	mixinGeneral(mode, "ui", ui);
@@ -439,10 +433,8 @@ export function loadMode(mode) {
 
 /**
  * 读取导入的play信息
- *
- * @param {importPlayConfig} playConfig
  */
-export function loadPlay(playConfig) {
+export function loadPlay(playConfig: importPlayConfig) {
 	const i = playConfig.name;
 
 	if (lib.config.hiddenPlayPack.includes(i)) {
