@@ -1,9 +1,12 @@
 packages:
   - apps/*
   - packages/*
+  - packages/extension/*
 
 onlyBuiltDependencies:
   - core-js-bundle
   - electron
   - electron-winstaller
   - esbuild
+
+sharedWorkspaceLockfile: false

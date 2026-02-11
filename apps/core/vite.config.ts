@@ -14,7 +14,6 @@ export default defineConfig({
 			"@": "/noname",
 			noname: "/noname.js",
 		},
-		extensions: [".tsx", ".ts", ".js", ".vue"],
 	},
 	plugins: [vue()],
 	server: {

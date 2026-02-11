@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@vue/compiler-sfc": "^3.5.27",
+    "@vue/compiler-sfc": "^3.5.28",
     "dedent": "^1.7.1",
     "typescript": "^5.9.3"
   },

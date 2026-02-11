@@ -1,6 +1,6 @@
 {
 	// "include": ["noname"],
-	"exclude": ["dist", "node_modules", "extension"],
+	"exclude": ["dist", "output", "node_modules", "extension"],
 	"compilerOptions": {
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
 		"lib": ["dom", "WebWorker", "ESNext"],

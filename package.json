@@ -3,18 +3,16 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "init:web": "pnpm i -F noname...",
-        "dev": "concurrently \"pnpm -F @noname/fs dev --debug --dirname=../../apps/core\" \"pnpm -F noname dev --open\"",
-        "build": "pnpm -F noname... build",
-        "build:full": "pnpm -F noname... -F !noname build && pnpm -F noname build:full",
-        "serve": "pnpm -F @noname/fs dev --dirname=../../apps/core/dist",
-        "start": "pnpm build:full && pnpm serve",
-        "generateTestPack": "pnpm build:full && tsx scripts/generateTestPack.ts",
+        "dev": "tsx scripts/dev.ts",
+        "build": "tsx scripts/build.ts",
+        "serve": "pnpm -F @noname/fs dev --dirname=../../dist",
+        "start": "pnpm build && pnpm serve",
+        "generateTestPack": "pnpm build && tsx scripts/generateTestPack.ts",
         "lint": "pnpm -r lint"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
-        "@types/node": "^25.2.0",
+        "@types/node": "^25.2.2",
         "concurrently": "^9.2.1",
         "cross-env": "^10.1.0",
         "eslint": "^9.39.2",
@@ -25,7 +23,7 @@
         "tsup": "^8.5.1",
         "tsx": "^4.21.0",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.54.0",
+        "typescript-eslint": "^8.55.0",
         "vue-eslint-parser": "^10.2.0"
     }
 }

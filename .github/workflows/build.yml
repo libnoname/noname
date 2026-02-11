@@ -31,7 +31,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Build
-        run: pnpm build:full
+        run: pnpm build
 
       - name: Deploy dist to branch
         env:
@@ -41,7 +41,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           mkdir /tmp/dist
-          cp -r apps/core/dist/* /tmp/dist/
+          cp -r dist/* /tmp/dist/
 
           git fetch origin
           git checkout --orphan build-output
