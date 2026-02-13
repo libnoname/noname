@@ -6487,7 +6487,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 玩家展示手牌
-	 * @param { string } str
+	 * @param { string } [str] 对话框的提示
 	 * @returns { GameEvent }
 	 */
 	showHandcards(str) {

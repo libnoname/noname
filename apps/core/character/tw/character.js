@@ -1,4 +1,12 @@
 const characters = {
+	tw_huangfusong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twtaoluan", "twshiji", "twzhengjun"],
+		img: "image/character/sp_huangfusong.jpg",
+		dieAudios: ["sp_huangfusong"],
+	},
 	tw_jsrg_wangyun: {
 		sex: "male",
 		group: "qun",

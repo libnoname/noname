@@ -1508,6 +1508,7 @@ const skills = {
 							"枯心：请选择一项执行",
 							[
 								list.flatMap(([cards, target]) => {
+									console.log(cards);
 									return cards.map(card => [card, target]);
 								}),
 								(item, type, position, noclick, node) => {
@@ -1562,7 +1563,8 @@ const skills = {
 							const player = get.player();
 							const cards =
 								get
-									.event("list")
+									.event()
+									.list
 									?.map(i => i[0])
 									.flat() || [];
 							const { num } = get.event().getTrigger();

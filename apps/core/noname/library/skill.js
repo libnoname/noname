@@ -145,7 +145,7 @@ export default {
 			if (typeof cost != "number" || !event.shanRequired) {
 				return;
 			}
-			if (!event.shanIgnored){
+			if (!event.shanIgnored) {
 				event.shanIgnored = 0;
 			}
 			event.shanIgnored += Math.min(
@@ -167,7 +167,12 @@ export default {
 							}
 							const storage = player.storage,
 								zhibi = storage.zhibi;
-							return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use") && player.hasSkill("jiu");
+							return (
+								((zhibi && !zhibi.includes(current)) ||
+									get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
+								current.mayHaveShan(player, "use") &&
+								player.hasSkill("jiu")
+							);
 						})
 					) {
 						return 1;
@@ -185,7 +190,10 @@ export default {
 			if (_status.event.type == "dying") {
 				return get.attitude(player, _status.event.dying) > 3 ? 1 : 0;
 			}
-			return (_status.event.getParent().shanRequired || 1) > 1 && get.damageEffect(player, _status.event.getParent().player || player, player) < 0 ? 1 : 0;
+			return (_status.event.getParent().shanRequired || 1) > 1 &&
+				get.damageEffect(player, _status.event.getParent().player || player, player) < 0
+				? 1
+				: 0;
 		},
 		position: "hs",
 		filterCard: (card, player, event) => {
@@ -277,7 +285,11 @@ export default {
 									}
 									const storage = player.storage,
 										zhibi = storage.zhibi;
-									return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use");
+									return (
+										((zhibi && !zhibi.includes(current)) ||
+											get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
+										current.mayHaveShan(player, "use")
+									);
 								})
 							) {
 								return get.order(card, player) + 0.5;
@@ -394,7 +406,10 @@ export default {
 						} else {
 							value = card[j];
 						}
-						if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+						if (
+							(typeof cardFilter[j] == "string" && value != cardFilter[j]) ||
+							(Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))
+						) {
 							return false;
 						}
 					}
@@ -509,7 +524,10 @@ export default {
 								} else {
 									value = card[j];
 								}
-								if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+								if (
+									(typeof cardFilter[j] == "string" && value != cardFilter[j]) ||
+									(Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))
+								) {
 									return false;
 								}
 							}
@@ -597,7 +615,10 @@ export default {
 						} else {
 							value = card[j];
 						}
-						if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
+						if (
+							(typeof cardFilter[j] == "string" && value != cardFilter[j]) ||
+							(Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))
+						) {
 							return false;
 						}
 					}
@@ -652,7 +673,7 @@ export default {
 				if (max == Infinity) {
 					max = "∞";
 				}
-				return `当前蓄力点数：${storage}/${max}`;
+				return `当前蓄力点数：${storage || 0}/${max}`;
 			},
 		},
 	},
@@ -915,7 +936,11 @@ export default {
 					}
 					var storage = player.getStorage("cooperation");
 					for (var info of storage) {
-						if (info.type == "use" && (event.player == player || event.player == info.target) && (!info.used || !info.used.includes(suit))) {
+						if (
+							info.type == "use" &&
+							(event.player == player || event.player == info.target) &&
+							(!info.used || !info.used.includes(suit))
+						) {
 							return true;
 						}
 					}
@@ -1158,7 +1183,12 @@ export default {
 								var val = 0;
 								if (
 									player.hasCard(function (cardx) {
-										return get.suit(cardx) == suitx && card != cardx && (!card.cards || !card.cards.includes(cardx)) && player.hasValueTarget(cardx);
+										return (
+											get.suit(cardx) == suitx &&
+											card != cardx &&
+											(!card.cards || !card.cards.includes(cardx)) &&
+											player.hasValueTarget(cardx)
+										);
 									}, "hs")
 								) {
 									val = [2, 0.1];
@@ -1371,7 +1401,11 @@ export default {
 				if (card.name == "tao") {
 					const evt = get.event(),
 						viewAs = name => get.autoViewAs({ name: name, cards: [card] }, [card]);
-					if (typeof evt.filterCard == "function" && evt.filterCard(viewAs("shan"), player, evt) && !evt.filterCard(viewAs("sha"), player, evt)) {
+					if (
+						typeof evt.filterCard == "function" &&
+						evt.filterCard(viewAs("shan"), player, evt) &&
+						!evt.filterCard(viewAs("sha"), player, evt)
+					) {
 						return "shan";
 					}
 					return "sha";
@@ -1386,11 +1420,20 @@ export default {
 		firstDo: true,
 		priority: Infinity,
 		filter(event, player) {
-			if (!event.card || !event.cards || !["sha", "shan"].includes(event.card.name) || event.card === event.cards[0] || event.cards.length != 1 || event.cards[0].name != "tao") {
+			if (
+				!event.card ||
+				!event.cards ||
+				!["sha", "shan"].includes(event.card.name) ||
+				event.card === event.cards[0] ||
+				event.cards.length != 1 ||
+				event.cards[0].name != "tao"
+			) {
 				return false;
 			}
 			const evt = event.getParent();
-			return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
+			return (
+				typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt)
+			);
 		},
 		async content(event, trigger, player) {
 			const { control } = await player
@@ -1465,7 +1508,27 @@ export default {
 	autoswap: {
 		firstDo: true,
 		trigger: {
-			player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin", "chooseNumbersBegin"],
+			player: [
+				"chooseToUseBegin",
+				"chooseToRespondBegin",
+				"chooseToDiscardBegin",
+				"chooseToCompareBegin",
+				"chooseButtonBegin",
+				"chooseCardBegin",
+				"chooseTargetBegin",
+				"chooseCardTargetBegin",
+				"chooseControlBegin",
+				"chooseBoolBegin",
+				"choosePlayerCardBegin",
+				"discardPlayerCardBegin",
+				"gainPlayerCardBegin",
+				"chooseToMoveBegin",
+				"chooseToPlayBeatmapBegin",
+				"chooseToGiveBegin",
+				"chooseToGuanxingBegin",
+				"chooseButtonTargetBegin",
+				"chooseNumbersBegin",
+			],
 		},
 		forced: true,
 		priority: 100,
@@ -1547,7 +1610,7 @@ export default {
 						}
 					}
 					var cfg = player.storage.dualside;
-					if(!Array.isArray(cfg)){
+					if (!Array.isArray(cfg)) {
 						return;
 					}
 					if (get.mode() == "guozhan") {
@@ -1976,7 +2039,7 @@ export default {
 		intro: {
 			markcount(storage, player) {
 				const { type, count } = _status._rest_return?.[player.playerid] || {};
-				return (!count || !type || count < 0) ? "∞" : count;
+				return !count || !type || count < 0 ? "∞" : count;
 			},
 			content(storage, player) {
 				const { type, count } = _status._rest_return?.[player.playerid] || {};
@@ -1984,8 +2047,8 @@ export default {
 					return `无限休整中，撅醒时机未知`;
 				}
 				return `还需休整${count}${type == "phase" ? "回合" : "轮"}`;
-			}
-		}
+			},
+		},
 	},
 	/**
 	 * @deprecated

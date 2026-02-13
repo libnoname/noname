@@ -1096,6 +1096,8 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"tw_huangfusong",
+		"mb_muniu",
 		"o_tanshihuai",
 		"o_lvbu",
 		"o_gaoshun",
@@ -3103,6 +3105,8 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"tw_huangfusong",
+			"mb_muniu",
 			"o_tanshihuai",
 			"o_lvbu",
 			"o_gaoshun",

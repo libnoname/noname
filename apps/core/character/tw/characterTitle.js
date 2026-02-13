@@ -1,4 +1,5 @@
 export default {
+	tw_huangfusong: "铁血柔肠",
 	tw_jsrg_wangyun: "居功自矜",
 	tw_jsrg_liubei: "负戎荷戈",
 	kaisa: "罗马大帝",

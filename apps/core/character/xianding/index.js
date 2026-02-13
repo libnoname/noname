@@ -21,6 +21,7 @@ game.import("character", function () {
 			xianding: characterSort,
 		},
 		characterSubstitute: {
+			v_sunshangxiang: [["v_sunshangxiang_shadow", []]],
 			dc_sb_simayi: [["dc_sb_simayi_shadow", []]],
 			dc_sb_zhouyu: [["dc_sb_zhouyu_shadow", []]],
 			dc_sb_lusu: [["dc_sb_lusu_shadow", []]],

@@ -6847,14 +6847,15 @@ const skills = {
 			return [0, 1];
 		},
 		async content(event, trigger, player) {
+			const { target, cards } = event;
 			const stat = player.getStat();
 			stat._qiangxix ??= [];
 			stat._qiangxix.push(target);
 
-			if (!event.cards.length) {
+			if (!cards?.length) {
 				await player.loseHp();
 			}
-			await event.target.damage("nocard");
+			await target.damage("nocard");
 		},
 		ai: {
 			damage: true,
@@ -8366,7 +8367,7 @@ const skills = {
 			mingzhi: true,
 			effect: {
 				target(card, player, target) {
-					if (get.tag(card, "damage") || get.tag(card, "losehp")) {
+					if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
 						let num = target.getExpansions("gzbuqu").length || target.getHp();
 						return (num + 1) / 5;
 					}
@@ -8421,7 +8422,7 @@ const skills = {
 			},
 			effect: {
 				target(card, player, target) {
-					if (get.tag(card, "damage") || get.tag(card, "losehp")) {
+					if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
 						let num = target.getExpansions("buqu").length || target.getHp();
 						return (num + 1) / 5;
 					}

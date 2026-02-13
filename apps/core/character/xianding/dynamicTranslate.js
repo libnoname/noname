@@ -226,7 +226,7 @@ const dynamicTranslates = {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：",
-			end = "。";
+			end = "。若其未因此受到伤害，你对其造成1点火焰伤害。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	dcsbquanmou(player) {

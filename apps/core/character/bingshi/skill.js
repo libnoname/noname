@@ -149,10 +149,10 @@ const skills = {
 				.info(event.name)
 				.getTargets(player)
 				.filter(target => player.canUse(card, target, false));
-			if (targets.length && player.getMaxCharge() > 0) {
+			if (targets.length) {
 				const result = await player
 					.chooseTarget(`凿险：视为对任意名其他角色使用一张无距离限制的【顺手牵羊】`, [1, Infinity], (card, player, target) => {
-						return get.event().targets.includes(target) && player.canUse(card, target, false);
+						return get.event().targets.includes(target);
 					})
 					.set("_get_card", card)
 					.set("targets", targets)

@@ -1,4 +1,10 @@
 const characters = {
+	mb_muniu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["mbshezi", "mbyixing"],
+	},
 	jm_yuanshu: {
 		sex: "male",
 		group: "qun",

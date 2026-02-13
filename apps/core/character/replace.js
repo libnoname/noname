@@ -121,7 +121,7 @@ window.noname_character_replace = {
 	huaman: ["huaman", "sp_huaman"],
 	huangchengyan: ["huangchengyan", "dc_huangchengyan", "ns_huangchengyan"],
 	std_huangchong: ["std_huangchong", "zj_huangchong"],
-	huangfusong: ["huangfusong", "wu_huangfusong", "sp_huangfusong", "tw_jsrg_huangfusong", "jsrg_huangfusong", "std_huangfusong", "old_huangfusong"],
+	huangfusong: ["huangfusong", "wu_huangfusong", "sp_huangfusong", "tw_jsrg_huangfusong", "tw_huangfusong", "jsrg_huangfusong", "std_huangfusong", "old_huangfusong"],
 	huanggai: ["huanggai", "re_huanggai", "dc_sb_huanggai", "sb_huanggai", "huan_huanggai", "jy_huanggai"],
 	huanghao: ["huanghao", "dc_huanghao", "old_huanghao"],
 	huangyueying: ["huangyueying", "re_huangyueying", "jsp_huangyueying", "ol_sb_huangyueying", "re_jsp_huangyueying", "sb_huangyueying", "jd_sb_huangyueying", "junk_huangyueying"],
