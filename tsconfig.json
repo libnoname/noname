@@ -1,17 +1,13 @@
 {
-    "exclude": [
-        "dist",
-        "output",
-        "node_modules"
-    ],
-    "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "Bundler",
-        "resolveJsonModule": true,
-        "esModuleInterop": true,
-        "strict": true,
-        "noImplicitAny": false,
-        "allowSyntheticDefaultImports": true,
-    }
+	"exclude": ["dist", "output", "node_modules"],
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"strict": true,
+		"noImplicitAny": false,
+		"allowSyntheticDefaultImports": true
+	}
 }

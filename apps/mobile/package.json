@@ -8,17 +8,17 @@
     "mobile"
   ],
   "scripts": {
-    "sync": "pnpm -F noname build:full & cap sync & tsx afterSync.ts",
+    "sync": "cap sync & tsx afterSync.ts",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {
-    "@capacitor/android": "^8.0.2",
-    "@capacitor/app": "^8.0.0",
-    "@capacitor/core": "^8.0.2",
-    "@capacitor/filesystem": "^8.1.0"
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/app": "^8.0.1",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/filesystem": "^8.1.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.0.2",
+    "@capacitor/cli": "^8.1.0",
     "vite": "^7.3.1"
   },
   "author": "",

@@ -8,16 +8,12 @@ async function main(targets: PackagerOptions["targets"], config: Partial<Configu
 			appId: "com.libnoname.noname",
 			productName: "noname",
 			directories: {
-				output: "output",
+				output: "../../output",
 			},
 			files: [
 				{ from: "dist", to: "" },
-				{
-					from: "../core/dist",
-					to: "",
-					filter: ["**/*", "!./package.json"],
-				},
-				{ from: "../core/dist/node_modules", to: "node_modules" },
+				{ from: "../../dist", to: "" },
+				{ from: "../../dist/node_modules", to: "node_modules" },
 				"package.json",
 			],
 			extraMetadata: {
