@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => ({
 			targets: [
 				{ src: "audio", dest: "" },
 				{ src: "image", dest: "" },
+				{ src: "info.json", dest: "" },
+				{ src: "LICENSE", dest: "" },
 			],
 		}) as PluginOption,
 	],
