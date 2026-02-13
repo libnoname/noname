@@ -19,6 +19,7 @@ async function copyTemplateDirectory(sourceDir: string, targetDir: string, vars:
 				await copyTemplateDirectory(sourcePath, targetPath, vars);
 				return;
 			}
+			if (entry.name === ".gitkeep") return;
 			let content = await fs.readFile(sourcePath, "utf8");
 			for (const [key, value] of Object.entries(vars)) {
 				content = content.replaceAll(`{{${key}}}`, value);
@@ -28,20 +29,9 @@ async function copyTemplateDirectory(sourceDir: string, targetDir: string, vars:
 	);
 }
 
-async function ensureTemplateExists(templateDir: string) {
-	try {
-		const stat = await fs.stat(templateDir);
-		if (!stat.isDirectory()) {
-			throw new Error(`模板路径不是目录: ${templateDir}`);
-		}
-	} catch {
-		throw new Error(`找不到模板目录: ${templateDir}`);
-	}
-}
-
 async function main() {
 	const {
-		values: { author, useVue, help },
+		values: { author, vue: useVue, help },
 		positionals: [extensionName],
 	} = parseArgs({
 		args: process.argv.slice(2),
@@ -51,7 +41,7 @@ async function main() {
 				type: "string",
 				default: "无名玩家",
 			},
-			useVue: {
+			vue: {
 				type: "boolean",
 			},
 			help: {
@@ -77,8 +67,6 @@ async function main() {
 	if (!extensionName) {
 		throw new Error(`请输入扩展名\n` + helpMessage);
 	}
-	const templateDir = useVue ? TEMPLATE_DIR_WITH_VUE : TEMPLATE_DIR;
-	await ensureTemplateExists(templateDir);
 
 	const targetDir = path.join(EXTENSION_ROOT, extensionName);
 	await fs.stat(targetDir).then(
@@ -88,10 +76,17 @@ async function main() {
 		() => {}
 	);
 
-	await copyTemplateDirectory(templateDir, targetDir, {
+	await copyTemplateDirectory(TEMPLATE_DIR, targetDir, {
 		EXTENSION_NAME: extensionName,
 		AUTHOR: author,
 	});
+
+	if (useVue) {
+		await copyTemplateDirectory(TEMPLATE_DIR_WITH_VUE, targetDir, {
+			EXTENSION_NAME: extensionName,
+			AUTHOR: author,
+		});
+	}
 
 	console.log(`扩展初始化完成: packages/extension/${extensionName}，可执行以下命令：
 pnpm i

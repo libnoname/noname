@@ -1,10 +1,19 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import info from "./info.json";
 
 export default defineConfig(({ mode }) => ({
 	define: {
 		"process.env.NODE_ENV": JSON.stringify(mode),
 	},
+	plugins: [
+		viteStaticCopy({
+			targets: [
+				{ src: "audio", dest: "" },
+				{ src: "image", dest: "" },
+			],
+		}) as PluginOption,
+	],
 	build: {
 		sourcemap: true,
 		minify: false,
