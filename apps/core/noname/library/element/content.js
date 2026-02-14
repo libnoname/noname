@@ -512,14 +512,15 @@ export const Content = {
 	//增加明置手牌
 	async addShownCards(event, _trigger, player) {
 		const hs = player.getCards("h");
-		const showingCards = event._cards.filter(showingCard => hs.includes(showingCard));
+		const showingCards = event.cards.filter(showingCard => hs.includes(showingCard));
 		const shown = player.getShownCards();
 
 		for (const tag of event.gaintag) {
 			player.addGaintag(showingCards, tag);
 		}
 
-		if (!(event.cards = showingCards.filter(showingCard => !shown.includes(showingCard))).length) {
+		event.cards = showingCards.filter(showingCard => !shown.includes(showingCard));
+		if (!event.cards.length) {
 			return;
 		}
 
@@ -530,7 +531,7 @@ export const Content = {
 	//隐藏明置手牌
 	async hideShownCards(event, _trigger, player) {
 		const shown = player.getShownCards();
-		const hidingCards = event._cards.filter(hidingCard => shown.includes(hidingCard));
+		const hidingCards = event.cards.filter(hidingCard => shown.includes(hidingCard));
 
 		if (!hidingCards.length) {
 			return;
@@ -543,7 +544,7 @@ export const Content = {
 		} else {
 			const map = new Map();
 			for (const hidingCard of hidingCards) {
-				for (const tag of hidingCard) {
+				for (const tag of hidingCard.gaintag) {
 					if (!tag.startsWith("visible_")) {
 						continue;
 					}
@@ -565,7 +566,8 @@ export const Content = {
 		if (!hidingCards.length) {
 			return;
 		}
-		game.log(player, "取消明置了", (event.cards = hidingCards));
+		event.cards = hidingCards;
+		game.log(player, "取消明置了", event.cards);
 		//if (event.animate != false) player.$give(hidingCards, player, false);
 		await event.trigger("hideShownCardsAfter");
 	},

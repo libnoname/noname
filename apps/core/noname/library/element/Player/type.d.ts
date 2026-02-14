@@ -1,0 +1,241 @@
+import type { Card, Player, Button, GameEvent } from ".."
+
+// 一些常用的封装
+
+/**
+ * 相比`Select`来说更加广泛的选择范围
+ * 
+ * 当给定`number`时，表示精确选择该数量
+ * 
+ * 当给定`[begin, end]`时，表示选择数量在该区间内
+ */
+export type BroadSelect = number | Select
+
+/**
+ * 
+ */
+export interface CheckCardParams {
+    /**
+	 * 选择牌需要满足的条件
+     * 
+	 * 直接填true，则有些地方，会优先触发过滤可使用的卡牌，例如ui.click.skill,ai.basic.chooseCard
+	 * 
+	 * 注：game.check时，如果当前时viewAs“视为技”，则其过滤技能时filterCard,作为方法，多入参一个event参数，需要时可以使用；
+	 * （一般没有）
+	 * 
+	 * @param card - 选择的牌
+	 * @param player - 发起选择的玩家
+	 * @param event - 触发选择的事件，一般情况下可能不存在
+	 * @returns 牌是否符合条件
+	 */
+	filterCard?: boolean | ((card: Card, player: Player, event?: GameEvent) => boolean);
+	
+	/**
+	 * 需要选择牌数量的范围
+	 * 
+	 * 当值为-1时，表示选择所有满足条件的牌
+	 * 
+	 * @returns 选择牌的数量范围
+	 */
+	selectCard?: BroadSelect | (() => BroadSelect);
+
+	/** 
+	 * 指定选择牌的位置
+	 * 
+	 * 可选值为"hejsx"的字串全排序，其中：
+	 * 
+	 * - "h": 手牌区
+	 * - "e": 装备区
+	 * - "j": 判定区
+	 * - "s": 特殊区，一般用于《木牛流马》等需要“如手牌般使用或打出”的情况
+	 * - "x": 武将牌上的牌，例如《屯田》
+	 * 
+	 * 此外，有一些不属于位置但存在的缩写：
+	 * 
+	 * - "c": 牌堆
+	 * - "d": 弃牌堆
+	 * - "o": 处理区，即当前正在使用或打出的牌
+	 * 
+	 * 一般情况下默认为"h"
+	 */
+	position?: string;
+
+	/**
+	 * 选择牌的情况是否复杂
+	 * 
+	 * 当该值为`true`时，`filterCard`和`selectCard`将在每选择一张牌后重新计算
+	 * 
+	 * 默认为`false`
+	 */
+	complexCard?: boolean;
+
+	/**
+	 * 是否允许选牌时可以使用全选/反选按钮
+	 * 
+	 * 仅在`complexCard`不为`true`的情况下生效
+	 */
+	allowChooseAll?: boolean;
+
+	/**
+	 * AI选择牌时的优先级评分函数
+	 * 
+	 * @param card - 选择的牌
+	 * @RETURNS 选择该牌的优先级评分
+	 */
+	ai?(card: Card): number;
+}
+
+/**
+ * 
+ */
+export interface CheckTargetParams {
+	/**
+	 * 选择的目标需要满足的条件
+	 * 
+	 * @param card - 与选择目标相关的牌，一般情况下可能不存在
+	 * @param player - 发起选择的玩家
+	 * @param target - 被选择的目标玩家
+	 * @returns 目标是否符合条件
+	 */
+	filterTarget?: boolean | ((card: Card, player: Player, target: Player) => boolean);
+
+	/**
+	 * 需要选择目标的范围
+	 * 
+	 * 当值为-1时，表示选择所有符合条件的目标
+	 * 
+	 * @returns 选择目标的数量范围
+	 */
+	selectTarget?: BroadSelect | (() => BroadSelect);
+
+	/**
+	 * 选择目标的情况是否复杂
+	 * 
+	 * 当该值为`true`时，`filterTarget`和`selectTarget`将在每选择一个目标后重新计算
+	 * 
+	 * 默认为`false`
+	 */
+	complexTarget?: boolean;
+
+	/**
+	 * AI选择目标时的优先级评分函数
+	 * 
+	 * @param target - 选择的目标
+	 * @RETURNS 选择该目标的优先级评分
+	 */
+	ai?(target: Player): number;
+}
+
+/**
+ * 
+ */
+export interface CheckButtonParams {
+	/**
+	 * 选择的按钮需要满足的条件
+	 * 
+	 * @param button - 被选择的按钮
+	 * @param player - 发起选择的玩家
+	 * @returns 按钮是否符合条件
+	 */
+	filterButton?(button: Button, player: Player): boolean;
+
+	/** 
+	 * 需要选择按钮的范围
+	 * 
+	 * 当值为-1时，表示选择所有符合条件的按钮
+	 * 
+	 * @returns 选择按钮的数量范围
+	 */
+	selectButton?: BroadSelect | (() => BroadSelect);
+
+	/**
+	 * 是否允许选目标时可以使用全选/反选按钮
+	 * 
+	 * 当该值为`true`时，`filterButton`和`selectButton`将不再每选择一个按钮后重新计算
+	 */
+	allowChooseAll?: boolean;
+
+	/**
+	 * AI选择按钮时的优先级评分函数
+	 * 
+	 * @param button - 选择的按钮
+	 * @RETURNS 选择该按钮的优先级评分
+	 */
+	ai?(button: Button): number;
+}
+
+/**
+ * 
+ */
+export interface CheckCardTargetParams extends CheckCardParams, CheckTargetParams {
+	ai: undefined;
+
+	/**
+	 * AI选择牌时的优先级评分函数
+	 * 
+	 * @param card - 选择的牌
+	 * @RETURNS 选择该牌的优先级评分
+	 */
+	ai1?(card: Card): number;
+
+	/**
+	 * AI选择目标时的优先级评分函数
+	 * 
+	 * @param target - 选择的目标
+	 * @RETURNS 选择该目标的优先级评分
+	 */
+	ai2?(target: Player): number;
+}
+
+/**
+ * 
+ */
+export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetParams {
+	ai: undefined;
+
+	/**
+	 * AI选择按钮时的优先级评分函数
+	 * 
+	 * @param button - 选择的按钮
+	 * @RETURNS 选择该按钮的优先级评分
+	 */
+	ai1?(button: Button): number;
+
+	/**
+	 * AI选择目标时的优先级评分函数
+	 * 
+	 * @param target - 选择的目标
+	 * @RETURNS 选择该目标的优先级评分
+	 */
+	ai2?(target: Player): number;
+}
+
+// 事件的具体选项
+// TODO: 等各事件的作者自行补充注释
+
+export interface EventConnectCardsParams {
+	cards?: Card[];
+	source?: Player;
+	log?: boolean;
+}
+
+export interface EventResetConnectCardsParams {
+	cards?: Card[];
+	source?: Player;
+	log?: boolean;
+}
+
+export interface EventAddShownCardsParams {
+	cards?: Card[];
+	gaintag?: string[];
+}
+
+export interface EventHideShownCardsParams {
+	cards?: Card[];
+	gaintag?: string[];
+}
+
+export interface EventDisableEquipParams {
+	source?: Player;
+	slots?: string[];
+}

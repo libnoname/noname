@@ -1007,22 +1007,40 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色连接一名角色一些手牌
+	 * 
+	 * @param {import("./Player/type.d").EventConnectCardsParams} params
 	 */
-	connectCards() {
+	connectCards(params) {
 		const next = game.createEvent("connectCards");
 		next.player = this;
-		for (const argument of arguments) {
-			const type = get.itemtype(argument);
-			if (type == "cards") {
-				next.cards = argument;
-			} else if (type == "card") {
-				next.cards = [argument];
-			} else if (type == "player") {
-				next.source = [argument];
-			} else if (typeof argument == "boolean") {
-				next.log = argument;
+
+		const args = [...arguments];
+		let objParam = args.length === 1 && typeof params === "object";
+
+		if (objParam) {
+			const type = get.itemtype(params);
+			if (type != null) {
+				objParam = false;
 			}
 		}
+
+		if (objParam) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				const type = get.itemtype(arg);
+				if (type == "cards") {
+					next.cards = arg;
+				} else if (type == "card") {
+					next.cards = [arg];
+				} else if (type == "player") {
+					next.source = arg;
+				} else if (typeof arg == "boolean") {
+					next.log = arg;
+				}
+			}
+		}
+
 		if (get.itemtype(next.source) != "player") {
 			next.source = _status.event.player;
 		}
@@ -1037,25 +1055,42 @@ export class Player extends HTMLDivElement {
 			next.log = true;
 		}
 		next.setContent("connectCards");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
 	/**
 	 * 让一名角色重置一名角色一些连接手牌
+	 * 
+	 * @param {import("./Player/type.d").EventResetConnectCardsParams} params
 	 */
-	resetConnectedCards() {
+	resetConnectedCards(params) {
 		const next = game.createEvent("resetConnectedCards");
 		next.player = this;
-		for (const argument of arguments) {
-			const type = get.itemtype(argument);
-			if (type == "cards") {
-				next.cards = argument;
-			} else if (type == "card") {
-				next.cards = [argument];
-			} else if (type == "player") {
-				next.source = [argument];
-			} else if (typeof argument == "boolean") {
-				next.log = argument;
+
+		const args = [...arguments];
+		let objParam = args.length === 1 && typeof params === "object";
+
+		if (objParam) {
+			const type = get.itemtype(params);
+			if (type != null) {
+				objParam = false;
+			}
+		}
+
+		if (objParam) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				const type = get.itemtype(arg);
+				if (type == "cards") {
+					next.cards = arg;
+				} else if (type == "card") {
+					next.cards = [arg];
+				} else if (type == "player") {
+					next.source = arg;
+				} else if (typeof arg == "boolean") {
+					next.log = arg;
+				}
 			}
 		}
 		if (get.itemtype(next.source) != "player") {
@@ -1072,7 +1107,7 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		next.setContent("resetConnectedCards");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
 	/**
@@ -1097,54 +1132,70 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色明置一些手牌
+	 * 
+	 * @param {import("./Player/type.d").EventAddShownCardsParams} params
 	 */
-	addShownCards() {
-		const cards = [],
-			tags = [];
-		for (const argument of arguments) {
-			const type = get.itemtype(argument);
-			if (type == "cards") {
-				cards.addArray(argument);
-			} else if (type == "card") {
-				cards.add(argument);
-			} else if (typeof argument == "string" && argument.startsWith("visible_")) {
-				tags.add(argument);
-			}
-		}
-		if (!cards.length || !tags.length) {
-			return;
-		}
+	addShownCards(params) {
+		const args = [...arguments];
+		
 		const next = game.createEvent("addShownCards", false);
 		next.player = this;
-		next._cards = cards;
-		next.gaintag = tags;
+		next.cards = [];
+		next.gaintag = [];
+		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+			Object.assign(next);
+		} else {
+			for (const arg of args) {
+				const type = get.itemtype(arg);
+				if (type == "cards") {
+					next.cards.addArray(arg);
+				} else if (type == "card") {
+					next.cards.add(arg);
+				} else if (typeof arg == "string" && arg.startsWith("visible_")) {
+					next.gaintag.add(arg);
+				}
+			}
+		}
+		if (!next.cards?.length || !next.gaintag?.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
 		next.setContent("addShownCards");
+		next._args = args;
 		return next;
 	}
 	/**
 	 * 让一名角色暗置一些手牌
+	 * 
+	 * @param {import("./Player/type.d").EventHideShownCardsParams} params
 	 */
-	hideShownCards() {
-		const cards = [],
-			tags = [];
-		for (const argument of arguments) {
-			const type = get.itemtype(argument);
-			if (type == "cards") {
-				cards.addArray(argument);
-			} else if (type == "card") {
-				cards.add(argument);
-			} else if (typeof argument == "string" && argument.startsWith("visible_")) {
-				tags.add(argument);
-			}
-		}
-		if (!cards.length) {
-			return;
-		}
+	hideShownCards(params) {
 		const next = game.createEvent("hideShownCards", false);
 		next.player = this;
-		next._cards = cards;
-		next.gaintag = tags;
+		next.cards = [];
+		next.gaintag = [];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				const type = get.itemtype(arg);
+				if (type == "cards") {
+					next.cards.addArray(arg);
+				} else if (type == "card") {
+					next.cards.add(arg);
+				} else if (typeof arg == "string" && arg.startsWith("visible_")) {
+					next.gaintag.add(arg);
+				}
+			}
+		}
+		if (!next.cards?.length || !next.gaintag?.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
 		next.setContent("hideShownCards");
+		next._args = args;
 		return next;
 	}
 	/**
@@ -1272,7 +1323,7 @@ export class Player extends HTMLDivElement {
 		executeDelayCardEffect.judge = judge;
 		executeDelayCardEffect.judge2 = judge2;
 		executeDelayCardEffect.setContent("executeDelayCardEffect");
-		executeDelayCardEffect._args = Array.from(arguments);
+		executeDelayCardEffect._args = [...arguments];
 		return executeDelayCardEffect;
 	}
 	/**
@@ -1294,22 +1345,22 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } target
 	 */
 	gift(cards, target) {
-		const gift = game.createEvent("gift");
-		gift.player = this;
-		gift.target = target;
+		const next = game.createEvent("gift");
+		next.player = this;
+		next.target = target;
 		const isArray = Array.isArray(cards);
 		if (cards && !isArray) {
-			gift.cards = [cards];
+			next.cards = [cards];
 		} else if (isArray && cards.length) {
-			gift.cards = cards;
+			next.cards = cards;
 		} else {
-			_status.event.next.remove(gift);
-			gift.resolve();
+			_status.event.next.remove(next);
+			next.resolve();
 		}
-		gift.deniedGifts = [];
-		gift.setContent("gift");
-		gift._args = Array.from(arguments);
-		return gift;
+		next.deniedGifts = [];
+		next.setContent("gift");
+		next._args = [...arguments];
+		return next;
 	}
 	/**
 	 * Check if the player can gift the card
@@ -1408,7 +1459,7 @@ export class Player extends HTMLDivElement {
 		recast.recastingGain = recastingGain;
 		recast.recastingGainingEvents = [];
 		recast.setContent("recast");
-		recast._args = Array.from(arguments);
+		recast._args = [...arguments];
 		return recast;
 	}
 	/**
@@ -1648,30 +1699,39 @@ export class Player extends HTMLDivElement {
 	 * 新的废除装备区
 	 *
 	 * 参数：废除来源角色（不写默认当前事件角色），废除区域（数字/区域字符串/数组，可以写多个，重复废除）
+	 * 
+	 * @param {import("./Player/type.d").EventDisableEquipParams} params
 	 */
-	disableEquip() {
-		var next = game.createEvent("disableEquip");
+	disableEquip(params) {
+		const next = game.createEvent("disableEquip");
 		next.player = this;
 		next.slots = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (Array.isArray(arguments[i])) {
-				for (var arg of arguments[i]) {
-					if (typeof arg == "string") {
-						if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
-							next.slots.push(arg);
+
+		const args = [...arguments];
+
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params)) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (Array.isArray(arg)) {
+					for (const slot of arg) {
+						if (typeof slot == "string") {
+							if (slot.startsWith("equip") && parseInt(slot.slice(5)) > 0) {
+								next.slots.push(slot);
+							}
+						} else if (typeof slot == "number") {
+							next.slots.push("equip" + slot);
 						}
-					} else if (typeof arg == "number") {
-						next.slots.push("equip" + arg);
 					}
+				} else if (typeof arg == "string") {
+					if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
+						next.slots.push(arg);
+					}
+				} else if (typeof arg == "number") {
+					next.slots.push("equip" + arg);
 				}
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i].startsWith("equip") && parseInt(arguments[i].slice(5)) > 0) {
-					next.slots.push(arguments[i]);
-				}
-			} else if (typeof arguments[i] == "number") {
-				next.slots.push("equip" + arguments[i]);
 			}
 		}
 		if (!next.source) {
@@ -5870,12 +5930,14 @@ export class Player extends HTMLDivElement {
 		next._args.add("glow_result");
 		return next;
 	}
-	chooseCard(choose) {
-		var next = game.createEvent("chooseCard");
+	chooseCard(options) {
+		const next = game.createEvent("chooseCard");
 		next.player = this;
-		if (arguments.length == 1 && get.is.object(choose)) {
-			for (var i in choose) {
-				next[i] = choose[i];
+
+		const args = Array.from(arguments);
+		if (args.length == 1 && get.is.object(options)) {
+			for (var i in options) {
+				next[i] = options[i];
 			}
 		} else {
 			for (var i = 0; i < arguments.length; i++) {
@@ -9932,31 +9994,23 @@ export class Player extends HTMLDivElement {
 			_status.event.trigger("removeSubPlayer");
 		}
 	}
-	callSubPlayer() {
+	callSubPlayer(result) {
 		if (this.hasSkill("subplayer")) {
 			return;
 		}
 		var next = game.createEvent("callSubPlayer");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") {
-				next.directresult = arguments[i];
-			}
-		}
+		next.directresult = result;
 		next.setContent("callSubPlayer");
 		return next;
 	}
-	toggleSubPlayer() {
+	toggleSubPlayer(result) {
 		if (!this.hasSkill("subplayer")) {
 			return;
 		}
 		var next = game.createEvent("toggleSubPlayer");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") {
-				next.directresult = arguments[i];
-			}
-		}
+		next.directresult = result;
 		next.setContent("toggleSubPlayer");
 		return next;
 	}
