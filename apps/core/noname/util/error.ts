@@ -105,10 +105,12 @@ export function setOnError({ lib, game, get, _status }) {
 		window.onerror?.(error.message, undefined, undefined, undefined, error);
 	};
 
-	window.onerror = async (msg: string | Event, src?: string, line?: number, column?: number, err?: Error) => {
+	window.onerror = async (_msg: string | Event, _src?: string, _line?: number, _column?: number, err?: Error) => {
 		if (!err) return;
 		const stackframes = await fromError(err);
 		const frame = stackframes[0].source || stackframes[0].origin;
+		const msg = err.message;
+		const src = frame.fileName;
 		const log: string[] = [];
 		log.push(`错误文件: ${typeof src == "string" ? decodeURI(src).replace(lib.assetURL, "") : "未知文件"}`);
 		log.push(`错误信息: ${msg}`);
@@ -158,13 +160,12 @@ export function setOnError({ lib, game, get, _status }) {
 				}
 				// 协议名须和html一致(网页端防跨域)，且文件是js
 				else if (typeof src == "string" && src.startsWith(location.protocol) && src.endsWith(".js")) {
-					const sourcePath = "local:" + decodeURI(src).replace(lib.assetURL, "");
 					//获取sourcemap
 					try {
 						const source = stackframes[0].source;
 						if (!source?.fileName) throw new Error();
 
-						let rawSourceMap = await lib.init.promises.req(sourcePath + ".map");
+						let rawSourceMap = await lib.init.promises.req(src + ".map");
 						if (!rawSourceMap) throw new Error();
 						const sourceMap = JSON.parse(rawSourceMap);
 
@@ -201,7 +202,7 @@ export function setOnError({ lib, game, get, _status }) {
 
 						log.push(...createShowCode(content, frame.lineNumber || 0));
 					} catch (e) {
-						let code = await lib.init.promises.req(sourcePath);
+						let code = await lib.init.promises.req(src);
 						if (code) log.push(...createShowCode(code, frame.lineNumber || 0));
 					}
 				}
