@@ -21,16 +21,16 @@ export async function importExtension(name: string) {
 	if (!game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
 		// @ts-expect-error ignore
 		await game.import("extension", await createEmptyExtension(name));
-		if (_status.extensionLoading) {
-			await Promise.all(_status.extensionLoading);
-		}
+		// if (_status.extensionLoading) {
+		// 	await Promise.all(_status.extensionLoading);
+		// }
 		return;
 	}
 	try {
 		await importFunction("extension", `/extension/${name}/extension`);
-		if (_status.extensionLoading) {
-			await Promise.all(_status.extensionLoading);
-		}
+		// if (_status.extensionLoading) {
+		// 	await Promise.all(_status.extensionLoading);
+		// }
 	} catch (e) {
 		console.error(`扩展《${name}》加载失败`, e);
 		let close = confirm(`扩展《${name}》加载失败，是否关闭此扩展？错误信息: \n${e instanceof Error ? e.stack : String(e)}`);
@@ -38,9 +38,9 @@ export async function importExtension(name: string) {
 			game.saveConfig(`extension_${name}_enable`, false);
 			// @ts-expect-error ignore
 			await game.import("extension", await createEmptyExtension(name));
-			if (_status.extensionLoading) {
-				await Promise.all(_status.extensionLoading);
-			}
+			// if (_status.extensionLoading) {
+			// 	await Promise.all(_status.extensionLoading);
+			// }
 		}
 	}
 }

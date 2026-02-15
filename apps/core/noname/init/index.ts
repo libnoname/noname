@@ -299,6 +299,9 @@ export async function boot() {
 		for (const i of extensionlist) {
 			await importExtension(i);
 		}
+		if (_status.extensionLoading) {
+			await Promise.all(_status.extensionLoading);
+		}
 		delete _status.extensionLoading;
 	}
 
