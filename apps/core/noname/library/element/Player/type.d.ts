@@ -1,4 +1,4 @@
-import type { Card, Player, Button, GameEvent } from ".."
+import type { Card, VCard, Player, Button, Dialog, GameEvent } from ".."
 
 // 一些常用的封装
 
@@ -210,6 +210,14 @@ export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetP
 	ai2?(target: Player): number;
 }
 
+/**
+ * 
+ */
+export interface ChooseBase {
+	forced?: boolean;
+	prompt?: string;
+}
+
 // 事件的具体选项
 // TODO: 等各事件的作者自行补充注释
 
@@ -238,4 +246,98 @@ export interface EventHideShownCardsParams {
 export interface EventDisableEquipParams {
 	source?: Player;
 	slots?: string[];
+}
+
+export interface EventEnableEquipParams {
+	source?: Player;
+	slots?: string[];
+}
+
+export interface EventExpandEquipParams {
+	source?: Player;
+	slots?: string[];
+}
+
+export interface EventChooseToDebateParams {
+	list: Player[];
+	args: any[]
+}
+
+export interface EventChooseCooperationForParams {
+	target: Player;
+	cardlist?: string[];
+	reason?: string;
+}
+
+export interface EventChooseToMoveParams extends ChooseBase {
+	forced?: boolean;
+	allowChooseAll?: boolean;
+}
+
+export type EventChooseToMoveNewParams = ChooseBase;
+
+export interface EventChooseToEnableParams extends CheckButtonParams {
+	source?: Player;
+}
+
+export interface EventChooseToDisableParams extends CheckButtonParams {
+	source?: Player;
+	horse?: boolean;
+}
+
+export interface EventChooseToUseParams extends ChooseBase, CheckCardTargetParams {
+	chooseonly?: boolean;
+}
+
+export interface EventChooseToRespondParams extends ChooseBase, CheckCardParams {
+	nosource?: boolean;
+	card?: VCard;
+}
+
+export interface EventChooseToGiveParams extends ChooseBase, CheckCardParams {
+	chooseonly?: boolean;
+	dialog?: Dialog;
+}
+
+export interface EventChooseToDiscardParams extends ChooseBase, CheckCardParams {
+	chooseonly?: boolean;
+	dialog?: Dialog;
+}
+
+export interface EventChooseSkillParams extends ChooseBase {
+	func?: (...args: any[]) => unknown;
+}
+
+export interface EventDiscoverCardParams extends ChooseBase {
+	use?: boolean;
+	nogain?: boolean;
+	num?: number;
+	ai?(card: Card): number;
+}
+
+export interface EventChooseCardButtonParams extends ChooseBase {
+	cards: Card[];
+	select?: BroadSelect | (() => BroadSelect);
+}
+
+export interface EventChooseVCardButtonParams extends ChooseBase {
+	list: string[];
+	notype?: boolean;
+	select?: BroadSelect | (() => BroadSelect);
+}
+
+export interface EventChooseButtonParams extends ChooseBase, CheckButtonParams {
+	complexSelect?: boolean;
+	dialog?: Dialog;
+	direct?: boolean;
+	createDialog?: any[];
+}
+
+export interface EventChooseCardOLParams {
+	list?: Player[];
+	args: any[];
+}
+
+export interface EventChooseCardParams extends ChooseBase, CheckCardParams {
+	glow_result?: boolean;
 }

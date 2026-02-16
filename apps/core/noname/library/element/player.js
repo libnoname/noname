@@ -1709,7 +1709,7 @@ export class Player extends HTMLDivElement {
 
 		const args = [...arguments];
 
-		if (args.length === 1 && typeof params === "object" && !Array.isArray(params)) {
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -1744,34 +1744,43 @@ export class Player extends HTMLDivElement {
 		next.setContent("disableEquip");
 		return next;
 	}
+
 	/**
 	 * 新的恢复装备区
 	 *
 	 * 参数：恢复来源角色（不写默认当前事件角色），恢复区域（数字/区域字符串/数组，可以写多个，重复恢复）
+	 * 
+	 * @param {import("./Player/type.d").EventEnableEquipParams} params
 	 */
-	enableEquip() {
-		var next = game.createEvent("enableEquip");
+	enableEquip(params) {
+		const next = game.createEvent("enableEquip");
 		next.player = this;
 		next.slots = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (Array.isArray(arguments[i])) {
-				for (var arg of arguments[i]) {
-					if (typeof arg == "string") {
-						if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
-							next.slots.push(arg);
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (Array.isArray(arg)) {
+					for (const slot of arg) {
+						if (typeof slot == "string") {
+							if (slot.startsWith("equip") && parseInt(slot.slice(5)) > 0) {
+								next.slots.push(slot);
+							}
+						} else if (typeof slot == "number") {
+							next.slots.push("equip" + slot);
 						}
-					} else if (typeof arg == "number") {
-						next.slots.push("equip" + arg);
 					}
+				} else if (typeof arg == "string") {
+					if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
+						next.slots.push(arg);
+					}
+				} else if (typeof arg == "number") {
+					next.slots.push("equip" + arg);
 				}
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i].startsWith("equip") && parseInt(arguments[i].slice(5)) > 0) {
-					next.slots.push(arguments[i]);
-				}
-			} else if (typeof arguments[i] == "number") {
-				next.slots.push("equip" + arguments[i]);
 			}
 		}
 		if (!next.source) {
@@ -1788,30 +1797,38 @@ export class Player extends HTMLDivElement {
 	 * 新的扩展装备区
 	 *
 	 * 参数：扩展来源角色（不写默认当前事件角色），扩展区域（数字/区域字符串/数组，可以写多个，重复扩展）
+	 * 
+	 * @param {import("./Player/type.d").EventExpandEquipParams} params
 	 */
-	expandEquip() {
-		var next = game.createEvent("expandEquip");
+	expandEquip(params) {
+		const next = game.createEvent("expandEquip");
 		next.player = this;
 		next.slots = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (Array.isArray(arguments[i])) {
-				for (var arg of arguments[i]) {
-					if (typeof arg == "string") {
-						if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
-							next.slots.push(arg);
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (Array.isArray(arg)) {
+					for (var slot of arg) {
+						if (typeof slot == "string") {
+							if (slot.startsWith("equip") && parseInt(slot.slice(5)) > 0) {
+								next.slots.push(slot);
+							}
+						} else if (typeof slot == "number") {
+							next.slots.push("equip" + slot);
 						}
-					} else if (typeof arg == "number") {
-						next.slots.push("equip" + arg);
 					}
+				} else if (typeof arg == "string") {
+					if (arg.startsWith("equip") && parseInt(arg.slice(5)) > 0) {
+						next.slots.push(arg);
+					}
+				} else if (typeof arg == "number") {
+					next.slots.push("equip" + arg);
 				}
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i].startsWith("equip") && parseInt(arguments[i].slice(5)) > 0) {
-					next.slots.push(arguments[i]);
-				}
-			} else if (typeof arguments[i] == "number") {
-				next.slots.push("equip" + arguments[i]);
 			}
 		}
 		if (!next.source) {
@@ -1983,15 +2000,26 @@ export class Player extends HTMLDivElement {
 		return this.countEnabledSlot(num) > this.getVEquips(num).length;
 	}
 	//装备区End
-	chooseToDebate() {
-		var next = game.createEvent("chooseToDebate");
+
+	/**
+	 * @param { import("./Player/type.d").EventChooseToDebateParams } params
+	 */
+	chooseToDebate(params) {
+		const next = game.createEvent("chooseToDebate");
 		next.player = this;
 		next._args = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "players") {
-				next.list = arguments[i].slice(0);
-			} else {
-				next._args.push(arguments[i]);
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params)) {
+			next.list = params.list;
+			next._args = params.args;
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "players") {
+					next.list = arg.slice(0);
+				} else {
+					next._args.push(arg);
+				}
 			}
 		}
 		next.setContent("chooseToDebate");
@@ -2017,16 +2045,26 @@ export class Player extends HTMLDivElement {
 		this.addTempSkill("cooperation_" + type, { player: "dieAfter" });
 		game.log(this, "向", target, "发起了“协力”，合作类型是", "#g" + get.translation("cooperation_" + type));
 	}
-	chooseCooperationFor() {
-		var next = game.createEvent("chooseCooperationFor");
+
+	/**
+	 * @param { import("./Player/type.d").EventChooseCooperationForParams } params
+	 */
+	chooseCooperationFor(params) {
+		const next = game.createEvent("chooseCooperationFor");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.target = arguments[i];
-			} else if (Array.isArray(arguments[i])) {
-				next.cardlist = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				next.reason = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.target = arg;
+				} else if (Array.isArray(arg)) {
+					next.cardlist = arg;
+				} else if (typeof arg == "string") {
+					next.reason = arg;
+				}
 			}
 		}
 		if (!next.cardlist) {
@@ -2563,20 +2601,31 @@ export class Player extends HTMLDivElement {
 		var next = game.createEvent("chooseToPlayBeatmap");
 		next.player = this;
 		next.beatmap = beatmap;
-		next._args = Array.from(arguments);
+		next._args = [...arguments];
 		next.setContent("chooseToPlayBeatmap");
 		return next;
 	}
-	chooseToMove() {
+
+	/**
+	 * @param { import("./Player/type.d").EventChooseToMoveParams } params
+	 */
+	chooseToMove(params) {
 		var next = game.createEvent("chooseToMove");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (arguments[i] === "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
+
+		const args = [...arguments];
+
+		if (args.length === 1 && typeof params === "object") {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (arg === "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
+				}
 			}
 		}
 		next.setContent("chooseToMove");
@@ -2586,17 +2635,27 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	chooseToMove_new() {
+
+	/**
+	 * @param { import("./Player/type.d").EventChooseToMoveNewParams } params
+	 */
+	chooseToMove_new(params) {
 		var next = game.createEvent("chooseToMove_new");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object") {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
+				}
 			}
 		}
 		next.setContent("chooseToMove_new");
@@ -3078,17 +3137,27 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家选择恢复一个已废除的装备栏
+	 * @param { import("./Player/type.d").EventChooseToEnableParams } params
 	 * @returns { GameEvent }
 	 */
-	chooseToEnable() {
-		var next = game.createEvent("chooseToEnable");
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
+	chooseToEnable(params) {
+		const next = game.createEvent("chooseToEnable");
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				}
 			}
 		}
 		if (next.source == undefined) {
@@ -3100,19 +3169,29 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家选择废除一个未废除的装备栏
+	 * @param { import("./Player/type.d").EventChooseToDisableParams } params
 	 * @returns { GameEvent }
 	 */
-	chooseToDisable() {
-		var next = game.createEvent("chooseToDisable");
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.horse = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
+	chooseToDisable(params) {
+		const next = game.createEvent("chooseToDisable");
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (typeof arg == "boolean") {
+					next.horse = arg;
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				}
 			}
 		}
 		if (next.horse == undefined) {
@@ -5386,30 +5465,33 @@ export class Player extends HTMLDivElement {
 		next.setContent("phaseJieshu");
 		return next;
 	}
-	chooseToUse(use) {
+	/**
+	 * @param { import("./Player/type.d").EventChooseToUseParams } params
+	 */
+	chooseToUse(params) {
 		var next = game.createEvent("chooseToUse");
 		next.player = this;
-		if (arguments.length == 1 && get.objtype(arguments[0]) == "object") {
-			for (var i in use) {
-				next[i] = use[i];
-			}
+
+		const args = [...arguments];
+		if (arguments.length == 1 && get.objtype(params) == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
 		} else {
-			for (var i = 0; i < arguments.length; i++) {
-				if (typeof arguments[i] == "number" || get.itemtype(arguments[i]) == "select") {
-					next.selectTarget = arguments[i];
-				} else if ((typeof arguments[i] == "object" && arguments[i]) || typeof arguments[i] == "function") {
-					if (get.itemtype(arguments[i]) == "player" || next.filterCard) {
-						next.filterTarget = arguments[i];
+			for (const arg of args) {
+				if (typeof arg == "number" || get.itemtype(arg) == "select") {
+					next.selectTarget = arg;
+				} else if ((typeof arg == "object" && arg) || typeof arg == "function") {
+					if (get.itemtype(arg) == "player" || next.filterCard) {
+						next.filterTarget = arg;
 					} else {
-						next.filterCard = arguments[i];
+						next.filterCard = arg;
 					}
-				} else if (typeof arguments[i] == "boolean") {
-					next.forced = arguments[i];
-				} else if (typeof arguments[i] == "string") {
-					if (arguments[i] == "chooseonly") {
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "string") {
+					if (arg == "chooseonly") {
 						next.chooseonly = true;
 					} else {
-						next.prompt = arguments[i];
+						next.prompt = arg;
 					}
 				}
 			}
@@ -5442,35 +5524,52 @@ export class Player extends HTMLDivElement {
 			next.ai2 = get.cacheEffectUse;
 		}
 		next.setContent("chooseToUse");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	chooseToRespond() {
-		var next = game.createEvent("chooseToRespond");
+	/**
+	 * @param { import("./Player/type.d").EventChooseToRespondParams } params
+	 */
+	chooseToRespond(params) {
+		const next = game.createEvent("chooseToRespond");
 		next.player = this;
-		var filter;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				next.selectCard = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectCard = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "position") {
-				next.position = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				if (next.filterCard) {
-					next.ai = arguments[i];
-				} else {
-					next.filterCard = arguments[i];
+
+		let filter;
+		const args = [...arguments];
+		if (args.length == 1 && get.objtype(params) == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.card != null) {
+				Reflect.deleteProperty(next, "card");
+				next.filterCard = get.filter(params.card);
+				filter = params.card;
+			}
+			if (typeof next.selectCard === "number") {
+				next.selectCard = [next.selectCard, next.selectCard];
+			}
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "number") {
+					next.selectCard = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectCard = arg;
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (typeof arg == "function") {
+					if (next.filterCard) {
+						next.ai = arg;
+					} else {
+						next.filterCard = arg;
+					}
+				} else if (typeof arg == "object" && arg) {
+					next.filterCard = get.filter(arg);
+					filter = arg;
+				} else if (arg == "nosource") {
+					next.nosource = true;
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
 				}
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				next.filterCard = get.filter(arguments[i]);
-				filter = arguments[i];
-			} else if (arguments[i] == "nosource") {
-				next.nosource = true;
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
 			}
 		}
 		if (next.filterCard == undefined) {
@@ -5513,15 +5612,24 @@ export class Player extends HTMLDivElement {
 			next.ai2 = () => 1;
 		}
 		next.setContent("chooseToRespond");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	chooseToGive(...args) {
+	/**
+	 * @param { import("./Player/type.d").EventChooseToGiveParams } params
+	 */
+	chooseToGive(params) {
 		const next = game.createEvent("chooseToGive");
 		next.player = this;
-		if (args.length == 1 && get.is.object(args[0])) {
-			for (const i in args[0]) {
-				next[i] = args[0][i];
+
+		const args = [...arguments];
+		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.dialog) {
+				next.prompt = false;
+			} else if (params.prompt) {
+				delete next.prompt;
+				get.evtprompt(next, params.prompt);
 			}
 		} else {
 			for (const arg of args) {
@@ -5576,41 +5684,55 @@ export class Player extends HTMLDivElement {
 		next.gaintag = [];
 		return next;
 	}
-	chooseToDiscard() {
+	/**
+	 * @param { import("./Player/type.d").EventChooseToDiscardParams } params
+	 */
+	chooseToDiscard(params) {
 		var next = game.createEvent("chooseToDiscard");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				next.selectCard = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectCard = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
+
+		const args = [...arguments];
+
+		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.dialog) {
 				next.prompt = false;
-			} else if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "position") {
-				next.position = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				if (next.filterCard) {
-					next.ai = arguments[i];
-				} else {
-					next.filterCard = arguments[i];
-				}
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				next.filterCard = get.filter(arguments[i]);
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i] == "chooseonly") {
-					next.chooseonly = true;
-				} else if (arguments[i] == "allowChooseAll") {
-					next.allowChooseAll = true;
-				} else {
-					get.evtprompt(next, arguments[i]);
-				}
+			} else if (params.prompt) {
+				delete next.prompt;
+				get.evtprompt(next, params.prompt);
 			}
-			if (arguments[i] === null) {
-				for (var i = 0; i < arguments.length; i++) {
-					console.log(arguments[i]);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "number") {
+					next.selectCard = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectCard = arg;
+				} else if (get.itemtype(arg) == "dialog") {
+					next.dialog = arg;
+					next.prompt = false;
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (typeof arg == "function") {
+					if (next.filterCard) {
+						next.ai = arg;
+					} else {
+						next.filterCard = arg;
+					}
+				} else if (typeof arg == "object" && arg) {
+					next.filterCard = get.filter(arg);
+				} else if (typeof arg == "string") {
+					if (arg == "chooseonly") {
+						next.chooseonly = true;
+					} else if (arg == "allowChooseAll") {
+						next.allowChooseAll = true;
+					} else {
+						get.evtprompt(next, arg);
+					}
+				}
+				if (arg === null) {
+					console.log(args);
 				}
 			}
 		}
@@ -5649,14 +5771,20 @@ export class Player extends HTMLDivElement {
 			return get.select(this.selectCard)[0] >= num;
 		};
 		next.setContent("chooseToDiscard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	chooseToCompare(target, check) {
+	
+	/**
+	 * @param {Player | Player[]} targetOrTargets 
+	 * @param {(card: Card) => number} check 
+	 * @returns 
+	 */
+	chooseToCompare(targetOrTargets, check) {
 		var next = game.createEvent("chooseToCompare");
 		next.player = this;
-		if (Array.isArray(target)) {
-			next.targets = target;
+		if (Array.isArray(targetOrTargets)) {
+			next.targets = targetOrTargets;
 			if (check) {
 				next.ai = check;
 			} else {
@@ -5704,7 +5832,7 @@ export class Player extends HTMLDivElement {
 			}
 			next.setContent("chooseToCompareMultiple");
 		} else {
-			next.target = target;
+			next.target = targetOrTargets;
 			if (check) {
 				next.ai = check;
 			} else {
@@ -5747,132 +5875,209 @@ export class Player extends HTMLDivElement {
 			next.setContent("chooseToCompare");
 		}
 		next.forceDie = true;
-		next._args = Array.from(arguments);
+		next._args = [...arguments];
 		return next;
 	}
-	chooseSkill(target) {
-		var next = game.createEvent("chooseSkill");
+	/**
+	 * @param {Player} target 
+	 * @param {import("./Player/type.d").EventChooseSkillParams} params
+	 * @returns {GameEvent}
+	 */
+	chooseSkill(target, params) {
+		const next = game.createEvent("chooseSkill");
 		next.player = this;
 		next.setContent("chooseSkill");
 		next.target = target;
-		for (var i = 1; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				next.func = arguments[i];
+
+		const args = [...arguments].slice(1);
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "string") {
+					next.prompt = arg;
+				} else if (typeof arg == "function") {
+					next.func = arg;
+				}
 			}
 		}
 		return next;
 	}
-	discoverCard(list) {
+
+	/**
+	 * 
+	 * @param {string[]} list 
+	 * @param {import("./Player/type.d").EventDiscoverCardParams} params
+	 * @returns 
+	 */
+	discoverCard(list, params) {
 		var next = game.createEvent("discoverCard");
 		next.player = this;
 		next.setContent("discoverCard");
 		next.list = list || lib.inpile.slice(0);
 		next.forced = true;
-		for (var i = 1; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				switch (arguments[i]) {
-					case "use":
-						next.use = true;
-						break;
-					case "nogain":
-						next.nogain = true;
-						break;
-					default:
-						next.prompt = arguments[i];
+
+		const args = [...arguments].slice(1);
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "string") {
+					switch (arg) {
+						case "use":
+							next.use = true;
+							break;
+						case "nogain":
+							next.nogain = true;
+							break;
+						default:
+							next.prompt = arg;
+					}
+				} else if (typeof arg == "number") {
+					next.num = arg;
+				} else if (typeof arg === "function") {
+					next.ai = arg;
 				}
-			} else if (typeof arguments[i] == "number") {
-				next.num = arguments[i];
-			} else if (typeof arguments[i] === "function") {
-				next.ai = arguments[i];
 			}
 		}
 		return next;
 	}
-	chooseCardButton() {
-		var cards, prompt, forced, select;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				cards = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				forced = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				prompt = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "select" || typeof arguments[i] == "number") {
-				select = arguments[i];
+	/**
+	 * @param {import("./Player/type.d").EventChooseCardButtonParams} params 
+	 */
+	chooseCardButton(params) {
+		let cards;
+		let prompt;
+		let forced;
+		let select;
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			cards = params.cards;
+			prompt = params.prompt;
+			forced = params.forced;
+			select = params.select;
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					cards = arg;
+				} else if (typeof arg == "boolean") {
+					forced = arg;
+				} else if (typeof arg == "string") {
+					prompt = arg;
+				} else if (get.itemtype(arg) == "select" || typeof arg == "number") {
+					select = arg;
+				}
 			}
 		}
 		if (prompt == undefined) {
 			prompt = "请选择卡牌";
 		}
-		return this.chooseButton(forced, select, "hidden", [prompt, cards, "hidden"]);
-	}
-	chooseVCardButton() {
-		var list,
-			prompt,
+		return this.chooseButton({
 			forced,
-			select,
-			notype = false;
-		for (var i = 0; i < arguments.length; i++) {
-			if (Array.isArray(arguments[i])) {
-				list = arguments[i];
-			} else if (arguments[i] == "notype") {
-				notype = true;
-			} else if (typeof arguments[i] == "boolean") {
-				forced = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				prompt = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "select" || typeof arguments[i] == "number") {
-				select = arguments[i];
+			selectButton: select,
+			createDialog: [prompt, cards, "hidden"],
+		});
+	}
+	/**
+	 * 
+	 * @param {import("./Player/type.d").EventChooseVCardButtonParams} params 
+	 * @returns {GameEvent}
+	 */
+	chooseVCardButton(params) {
+		let list;
+		let prompt;
+		let forced;
+		let select;
+		let notype = false;
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			list = params.list;
+			prompt = params.prompt;
+			forced = params.forced;
+			select = params.select;
+			notype = params.notype ?? false;
+		} else {
+			for (const arg of args) {
+				if (Array.isArray(arg)) {
+					list = arg;
+				} else if (arg == "notype") {
+					notype = true;
+				} else if (typeof arg == "boolean") {
+					forced = arg;
+				} else if (typeof arg == "string") {
+					prompt = arg;
+				} else if (get.itemtype(arg) == "select" || typeof arg == "number") {
+					select = arg;
+				}
 			}
 		}
-		for (var i = 0; i < list.length; i++) {
-			list[i] = [notype ? "" : get.subtype(list[i], false) || get.type(list[i]), "", list[i]];
-		}
+		list = list?.map(item => {
+			if (notype) {
+				return ["", "", item];
+			}
+
+			return [get.subtype(item, false) || get.type(item), "", item];
+		});
 		if (prompt == undefined) {
 			prompt = "请选择卡牌";
 		}
-		return this.chooseButton(forced, select, "hidden", [prompt, [list, "vcard"], "hidden"]);
+		return this.chooseButton({
+			forced,
+			selectButton: select,
+			createDialog: [prompt, [list, "vcard"], "hidden"],
+		});
 	}
-	chooseButton(choose) {
-		var next = game.createEvent("chooseButton");
-		if (arguments.length == 1 && get.is.object(choose)) {
-			for (var i in choose) {
-				next[i] = choose[i];
+	/**
+	 * 
+	 * @param {import("./Player/type.d").EventChooseButtonParams} params 
+	 * @returns 
+	 */
+	chooseButton(params) {
+		const next = game.createEvent("chooseButton");
+
+		const args = [...arguments];
+		if (args.length == 1 && get.is.object(args) && get.itemtype(args) == null) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+			if (params.dialog != null) {
+				next.closeDialog = true;
 			}
 		} else {
-			for (var i = 0; i < arguments.length; i++) {
-				if (typeof arguments[i] == "boolean") {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
 					if (!next.forced) {
-						next.forced = arguments[i];
+						next.forced = arg;
 					} else {
-						next.complexSelect = arguments[i];
+						next.complexSelect = arg;
 					}
-				} else if (get.itemtype(arguments[i]) == "dialog") {
-					next.dialog = arguments[i];
+				} else if (get.itemtype(arg) == "dialog") {
+					next.dialog = arg;
 					next.closeDialog = true;
-				} else if (get.itemtype(arguments[i]) == "select") {
-					next.selectButton = arguments[i];
-				} else if (typeof arguments[i] == "number") {
-					next.selectButton = [arguments[i], arguments[i]];
-				} else if (typeof arguments[i] == "function") {
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				} else if (typeof arg == "function") {
 					if (next.ai) {
-						next.filterButton = arguments[i];
+						next.filterButton = arg;
 					} else {
-						next.ai = arguments[i];
+						next.ai = arg;
 					}
-				} else if (arguments[i] == "complexSelect") {
+				} else if (arg == "complexSelect") {
 					// 为直接添加complexSelect提供支持喵
 					next.complexSelect = true;
-				} else if (arguments[i] == "allowChooseAll") {
+				} else if (arg == "allowChooseAll") {
 					next.allowChooseAll = true;
-				} else if (arguments[i] == "direct") {
+				} else if (arg == "direct") {
 					next.direct = true;
-				} else if (Array.isArray(arguments[i])) {
-					next.createDialog = arguments[i];
+				} else if (Array.isArray(arg)) {
+					next.createDialog = arg;
 				}
 			}
 		}
@@ -5903,7 +6108,7 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		next.setContent("chooseButton");
-		next._args = Array.from(arguments);
+		next._args = args;
 		next.forceDie = true;
 		return next;
 	}
@@ -5913,56 +6118,77 @@ export class Player extends HTMLDivElement {
 		next.setContent("chooseButtonOL");
 		next.ai = ai;
 		next.callback = callback;
-		next._args = Array.from(arguments);
+		next._args = [...arguments];
 		return next;
 	}
-	chooseCardOL() {
+	/**
+	 * 
+	 * @param {import("./Player/type.d").EventChooseCardOLParams} params 
+	 * @returns {GameEvent}
+	 */
+	chooseCardOL(params) {
 		var next = game.createEvent("chooseCardOL");
 		next._args = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "players") {
-				next.list = arguments[i].slice(0);
-			} else {
-				next._args.push(arguments[i]);
+
+		const args = [...arguments];
+		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+			next.list = params.list;
+			next._args = params.args;
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "players") {
+					next.list = arg.slice(0);
+				} else {
+					next._args.push(arg);
+				}
 			}
 		}
 		next.setContent("chooseCardOL");
 		next._args.add("glow_result");
 		return next;
 	}
-	chooseCard(options) {
+	/**
+	 * 
+	 * @param {import("./Player/type.d").EventChooseCardParams} params 
+	 * @returns 
+	 */
+	chooseCard(params) {
 		const next = game.createEvent("chooseCard");
 		next.player = this;
 
 		const args = Array.from(arguments);
-		if (args.length == 1 && get.is.object(options)) {
-			for (var i in options) {
-				next[i] = options[i];
+		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (typeof next.selectCard === "number") {
+				next.selectCard = [next.selectCard, next.selectCard];
+			}
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
 			}
 		} else {
 			for (var i = 0; i < arguments.length; i++) {
-				if (typeof arguments[i] == "number") {
-					next.selectCard = [arguments[i], arguments[i]];
-				} else if (get.itemtype(arguments[i]) == "select") {
-					next.selectCard = arguments[i];
-				} else if (typeof arguments[i] == "boolean") {
-					next.forced = arguments[i];
-				} else if (get.itemtype(arguments[i]) == "position") {
-					next.position = arguments[i];
-				} else if (typeof arguments[i] == "function") {
+				if (typeof arg == "number") {
+					next.selectCard = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectCard = arg;
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (typeof arg == "function") {
 					if (next.filterCard) {
-						next.ai = arguments[i];
+						next.ai = arg;
 					} else {
-						next.filterCard = arguments[i];
+						next.filterCard = arg;
 					}
-				} else if (typeof arguments[i] == "object" && arguments[i]) {
-					next.filterCard = get.filter(arguments[i]);
-				} else if (arguments[i] == "glow_result") {
+				} else if (typeof arg == "object" && arg) {
+					next.filterCard = get.filter(arg);
+				} else if (arg == "glow_result") {
 					next.glow_result = true;
-				} else if (arguments[i] == "allowChooseAll") {
+				} else if (arg == "allowChooseAll") {
 					next.allowChooseAll = true;
-				} else if (typeof arguments[i] == "string") {
-					get.evtprompt(next, arguments[i]);
+				} else if (typeof arg == "string") {
+					get.evtprompt(next, arg);
 				}
 			}
 		}
