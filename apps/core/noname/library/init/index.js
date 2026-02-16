@@ -285,17 +285,55 @@ export class LibInit {
 			}
 			sScriptURL = url + str;
 		}
-		fetch(sScriptURL)
-			.then(result => result.text())
-			.then(onload)
-			.catch(onerror);
+		const oReq = new XMLHttpRequest();
+		if (typeof onload == "function") {
+			oReq.addEventListener("load", result => {
+				if (![0, 200].includes(oReq.status)) {
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
+					return;
+				}
+				onload(oReq.responseText);
+			});
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
+		oReq.open("GET", sScriptURL);
+		oReq.send();
 	}
 
 	json(url, onload, onerror) {
-		fetch(url)
-			.then(result => result.json())
-			.then(onload)
-			.catch(onerror);
+		const oReq = new XMLHttpRequest();
+		if (typeof onload == "function") {
+			oReq.addEventListener("load", () => {
+				if (![0, 200].includes(oReq.status)) {
+					if (typeof onerror == "function") {
+						onerror(new Error(oReq.statusText || oReq.status));
+					}
+					return;
+				}
+				let result;
+				try {
+					result = JSON.parse(oReq.responseText);
+					if (!result) {
+						throw new Error("err");
+					}
+				} catch (e) {
+					if (typeof onerror == "function") {
+						onerror(e);
+					}
+					return;
+				}
+				onload(result);
+			});
+		}
+		if (typeof onerror == "function") {
+			oReq.addEventListener("error", onerror);
+		}
+		oReq.open("GET", url);
+		oReq.send();
 	}
 
 	cssstyles() {
