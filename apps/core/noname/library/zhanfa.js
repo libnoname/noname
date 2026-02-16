@@ -1890,7 +1890,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return event.card.name == "shunshou";
 			},
-			async content(event, trigger, palyer) {
+			async content(event, trigger, player) {
 				trigger.effectCount++;
 			},
 		},
