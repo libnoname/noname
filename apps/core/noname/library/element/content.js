@@ -741,9 +741,9 @@ export const Content = {
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
 				if (slot == "equip3" || slot == "equip4") {
-					event.slotsx.add("equip3_4");
+					slots.add("equip3_4");
 				} else {
-					event.slotsx.add(slot);
+					slots.add(slot);
 				}
 			}
 		} else {
