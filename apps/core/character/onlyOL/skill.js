@@ -4069,13 +4069,13 @@ const skills = {
 				.set(
 					"resultAI",
 					(function () {
-						let cards = player.getDiscardableCards(player, "he", card => get.value(card) > 7.5).sort((a, b) => get.value(a) - get.value(b)),
+						let cards = player.getDiscardableCards(player, "he", card => get.value(card) < 7.5).sort((a, b) => get.value(a) - get.value(b)),
 							targets = game
 								.filterPlayer(current => current != player && -get.attitude(player, current) * current.countCards("hs") > 0)
 								.sort((a, b) => {
 									let num1 = -get.attitude(get.player(), a) * a.countCards("hs"),
 										num2 = -get.attitude(get.player(), b) * b.countCards("hs");
-									return num1 - num2;
+									return num2 - num1;
 								});
 						const num2 = Math.min(cards.length, targets.length, num);
 						cards = cards.slice(0, num2);
