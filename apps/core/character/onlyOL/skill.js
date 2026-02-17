@@ -4060,12 +4060,29 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
-						return 7.5 - get.value(card);
+						return get.event().resultAI.cards.includes(card);
 					},
 					ai2(target) {
-						return -get.attitude(get.player(), target) * target.countCards("hs");
+						return get.event().resultAI.targets.includes(target);
 					},
 				})
+				.set(
+					"resultAI",
+					(function () {
+						let cards = player.getDiscardableCards(player, "he", card => get.value(card) > 7.5).sort((a, b) => get.value(a) - get.value(b)),
+							targets = game
+								.filterPlayer(current => current != player && -get.attitude(player, current) * current.countCards("hs") > 0)
+								.sort((a, b) => {
+									let num1 = -get.attitude(get.player(), a) * a.countCards("hs"),
+										num2 = -get.attitude(get.player(), b) * b.countCards("hs");
+									return num1 - num2;
+								});
+						const num2 = Math.min(cards.length, targets.length, num);
+						cards = cards.slice(0, num2);
+						targets = targets.slice(0, num2);
+						return { cards, targets };
+					})()
+				)
 				.forResult();
 			if (result?.cards?.length && result.targets?.length) {
 				const { cards, targets } = result;
