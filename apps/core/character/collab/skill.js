@@ -159,6 +159,7 @@ const skills = {
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		logTarget: () => game.players,
+		logAudio: () => 2,
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const map = new Map();
@@ -201,6 +202,7 @@ const skills = {
 		group: "mbjimi_gain",
 		subSkill: {
 			gain: {
+				audio: ["mbjimi3.mp3", "mbjimi4.mp3"],
 				forced: true,
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
@@ -241,6 +243,7 @@ const skills = {
 				(target._start_cards || []).filter(card => "cdhej".includes(get.position(card)) && get.owner(card) !== player)
 			);
 		},
+		logAudio: (event, player) => player.hasHistory("sourceDamage", evt => evt.card == event.card) ? 2 : ["mbmaodie3.mp3", "mbmaodie4.mp3"],
 		async content(event, trigger, player) {
 			if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
 				player.addTempSkill(`${event.name}_limit`);

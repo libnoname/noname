@@ -271,7 +271,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			if (event.triggername == "roundStart") {
-				event.result = { bool: true };
+				event.result = {
+					bool: true,
+					die: true
+				};
 			} else {
 				event.result = await player
 					.chooseBool(get.prompt2(event.skill))
@@ -296,6 +299,7 @@ const skills = {
 					.forResult();
 			}
 		},
+		logAudio: (a, b, c, d, costResult) => costResult.die ? ["mbhuitian3.mp3", "mbhuitian4.mp3"] : 2,
 		async content(event, tigger, player) {
 			if (event.triggername == "roundStart") {
 				await player.die();

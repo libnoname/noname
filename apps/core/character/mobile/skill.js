@@ -2288,6 +2288,15 @@ const skills = {
 			return get.type2(evt.card) == get.type2(event.card) || get.suit(evt.card) == get.suit(event.card);
 		},
 		forced: true,
+		logAudio(event) {
+			const history = game.getAllGlobalHistory("useCard"),
+				index = history.indexOf(event);
+			const evt = history[index - 1];
+			const bool1 = get.type2(evt.card) == get.type2(event.card),
+				bool2 = get.suit(evt.card) == get.suit(event.card),
+				bool3 = get.name(evt.card) == get.name(event.card);
+			return bool1 && bool2 && bool3 ? "mbshiju3.mp3" : 2;
+		},
 		async content(event, trigger, player) {
 			const history = game.getAllGlobalHistory("useCard"),
 				index = history.indexOf(trigger);
