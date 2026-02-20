@@ -330,6 +330,7 @@ export interface EventChooseButtonParams extends ChooseBase, CheckButtonParams {
 	complexSelect?: boolean;
 	dialog?: Dialog;
 	direct?: boolean;
+	// TODO: 加类型
 	createDialog?: any[];
 }
 
@@ -340,4 +341,46 @@ export interface EventChooseCardOLParams {
 
 export interface EventChooseCardParams extends ChooseBase, CheckCardParams {
 	glow_result?: boolean;
+}
+
+export interface EventChooseUseTargetParams extends ChooseBase, CheckTargetParams {
+	cards?: Card[];
+	card?: Card | VCard;
+	nopopup?: boolean;
+	animate?: boolean;
+	throw?: boolean;
+	nodistance?: boolean;
+	noTargetDelay?: boolean;
+	nodelayx?: boolean;
+	addCount?: boolean;
+}
+
+export interface EventChooseTargetParams extends ChooseBase, CheckTargetParams {
+	dialog?: Dialog;
+}
+
+export interface EventChooseCardTargetParams extends ChooseBase, CheckCardTargetParams {}
+
+export interface EventChooseButtonTargetParams extends ChooseBase, CheckButtonTargetParams {}
+
+export interface EventChooseControlListParams extends ChooseBase {
+	list?: string[];
+	ai?(event: GameEvent, player: Player): string | number;
+}
+
+export interface EventChooseControlParams extends ChooseBase {
+	forced?: undefined;
+	controls?: string[];
+	choiceList?: string[];
+	choice?: number;
+	dialog?: Dialog;
+	dialogcontrol?: boolean;
+	seperate?: boolean;
+	ai?(event: GameEvent, player: Player): string | number;
+}
+
+export interface EventChooseBoolParams extends ChooseBase {
+	choice?: boolean;
+	dialog?: Dialog;
+	ai?(event: GameEvent, player: Player): boolean;
 }

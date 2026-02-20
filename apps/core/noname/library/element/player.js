@@ -6166,7 +6166,7 @@ export class Player extends HTMLDivElement {
 				get.evtprompt(next, params.prompt);
 			}
 		} else {
-			for (var i = 0; i < arguments.length; i++) {
+			for (const arg of args) {
 				if (typeof arg == "number") {
 					next.selectCard = [arg, arg];
 				} else if (get.itemtype(arg) == "select") {
@@ -6221,49 +6221,66 @@ export class Player extends HTMLDivElement {
 			return get.select(this.selectCard)[0] >= this.player.countCards(this.position);
 		};
 		next.setContent("chooseCard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	chooseUseTarget() {
-		var next = game.createEvent("chooseUseTarget");
+	/**
+	 * @param {import("./Player/type.d").EventChooseUseTargetParams} params 
+	 * @returns 
+	 */
+	chooseUseTarget(params) {
+		const next = game.createEvent("chooseUseTarget");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.card = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "players") {
-				next.targets = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				next.targets = [arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectTarget = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectTarget = [arguments[i], arguments[i]];
-			} else if (get.is.object(arguments[i]) && arguments[i].name) {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i] == "nopopup") {
-					next.nopopup = true;
-				} else if (arguments[i] == "noanimate") {
-					next.animate = false;
-				} else if (arguments[i] == "nothrow") {
-					next.throw = false;
-				} else if (arguments[i] == "nodistance") {
-					next.nodistance = true;
-				} else if (arguments[i] == "noTargetDelay") {
-					next.noTargetDelay = true;
-				} else if (arguments[i] == "nodelayx") {
-					next.nodelayx = true;
-				} else if (lib.card[arguments[i]] && !next.card) {
-					next.card = { name: arguments[i], isCard: true };
-				} else {
-					get.evtprompt(next, arguments[i]);
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (typeof next.selectTarget === "number") {
+				next.selectTarget = [next.selectTarget, next.selectTarget];
+			}
+
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (get.itemtype(arg) == "players") {
+					next.targets = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.targets = [arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectTarget = arg;
+				} else if (typeof arg == "number") {
+					next.selectTarget = [arg, arg];
+				} else if (get.is.object(arg) && arg.name) {
+					next.card = arg;
+				} else if (typeof arg == "string") {
+					if (arg == "nopopup") {
+						next.nopopup = true;
+					} else if (arg == "noanimate") {
+						next.animate = false;
+					} else if (arg == "nothrow") {
+						next.throw = false;
+					} else if (arg == "nodistance") {
+						next.nodistance = true;
+					} else if (arg == "noTargetDelay") {
+						next.noTargetDelay = true;
+					} else if (arg == "nodelayx") {
+						next.nodelayx = true;
+					} else if (lib.card[arg] && !next.card) {
+						next.card = { name: arg, isCard: true };
+					} else {
+						get.evtprompt(next, arg);
+					}
+				} else if (arg === true) {
+					next.forced = true;
+				} else if (arg === false) {
+					next.addCount = false;
 				}
-			} else if (arguments[i] === true) {
-				next.forced = true;
-			} else if (arguments[i] === false) {
-				next.addCount = false;
 			}
 		}
 		if (!next.targets) {
@@ -6284,31 +6301,49 @@ export class Player extends HTMLDivElement {
 			next.targets.addArray(game.dead);
 		}
 		next.setContent("chooseUseTarget");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
-		// Fully Online-Ready! Enjoy It!
 	}
-	chooseTarget() {
-		var next = game.createEvent("chooseTarget");
+	/**
+	 * @param {import("./Player/type.d").EventChooseTargetParams} params 
+	 * @returns 
+	 */
+	chooseTarget(params) {
+		const next = game.createEvent("chooseTarget");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				next.selectTarget = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectTarget = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params)) {
+			Object.assign(next, params);
+			if (params.dialog != null) {
 				next.prompt = false;
-			} else if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				if (next.filterTarget) {
-					next.ai = arguments[i];
-				} else {
-					next.filterTarget = arguments[i];
+			}
+			if (params.selectTarget != null && typeof params.selectTarget == "number") {
+				next.selectTarget = [params.selectTarget, params.selectTarget];
+			}
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "number") {
+					next.selectTarget = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectTarget = arg;
+				} else if (get.itemtype(arg) == "dialog") {
+					next.dialog = arg;
+					next.prompt = false;
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "function") {
+					if (next.filterTarget) {
+						next.ai = arg;
+					} else {
+						next.filterTarget = arg;
+					}
+				} else if (typeof arg == "string") {
+					get.evtprompt(next, arg);
 				}
-			} else if (typeof arguments[i] == "string") {
-				get.evtprompt(next, arguments[i]);
 			}
 		}
 		if (next.filterTarget == undefined) {
@@ -6325,14 +6360,15 @@ export class Player extends HTMLDivElement {
 		next.forceDie = true;
 		return next;
 	}
-	chooseCardTarget(choose) {
-		var next = game.createEvent("chooseCardTarget");
+	/**
+	 * @param {import("./Player/type.d").EventChooseCardTargetParams} params
+	 * @returns 
+	 */
+	chooseCardTarget(params) {
+		const next = game.createEvent("chooseCardTarget");
 		next.player = this;
-		if (arguments.length == 1) {
-			for (var i in choose) {
-				next[i] = choose[i];
-			}
-		}
+
+		Object.assign(next, params);
 		if (typeof next.filterCard == "object") {
 			next.filterCard = get.filter(next.filterCard);
 		}
@@ -6358,17 +6394,17 @@ export class Player extends HTMLDivElement {
 			next.ai2 = get.attitude2;
 		}
 		next.setContent("chooseCardTarget");
-		next._args = Array.from(arguments);
+		next._args = [...arguments];
 		return next;
 	}
-	chooseButtonTarget(choose) {
-		var next = game.createEvent("chooseButtonTarget");
+	/**
+	 * @param {import("./Player/type.d").EventChooseButtonTargetParams} params
+	 * @returns 
+	 */
+	chooseButtonTarget(params) {
+		const next = game.createEvent("chooseButtonTarget");
 		next.player = this;
-		if (arguments.length == 1) {
-			for (var i in choose) {
-				next[i] = choose[i];
-			}
-		}
+		Object.assign(next, params);
 		if (typeof next.filterButton == "object") {
 			next.filterButton = get.filter(next.filterButton);
 		}
@@ -6402,48 +6438,78 @@ export class Player extends HTMLDivElement {
 		next._args = Array.from(arguments);
 		return next;
 	}
-	chooseControlList() {
-		var list = [];
-		var prompt = null;
-		var forced = "cancel2";
-		var func = null;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") {
+	/**
+	 * @param {import("./Player/type.d").EventChooseControlListParams} params
+	 */
+	chooseControlList(params) {
+		if (arguments.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			const controls = params.forced ? ["cancel2"] : [];
+			return this.chooseControl({
+				choiceList: params.list,
+				ai: params.ai,
+				prompt: params.prompt,
+			});
+		}
+
+		let list = [];
+		let prompt = null;
+		let forced = false;
+		let func = null;
+		const args = [...arguments];
+		for (const arg of args) {
+			if (typeof arg == "string") {
 				if (!prompt) {
-					prompt = arguments[i];
+					prompt = arg;
 				} else {
-					list.push(arguments[i]);
+					list.push(arg);
 				}
-			} else if (Array.isArray(arguments[i])) {
-				list = arguments[i];
-			} else if (arguments[i] === true) {
-				forced = null;
-			} else if (typeof arguments[i] == "function") {
-				func = arguments[i];
+			} else if (Array.isArray(arg)) {
+				list = arg;
+			} else if (arg === true) {
+				forced = true;
+			} else if (typeof arg == "function") {
+				func = arg;
 			}
 		}
-		return this.chooseControl(forced, func).set("choiceList", list).set("prompt", prompt);
+		const controls = forced ? ["cancel2"] : [];
+		return this.chooseControl({
+			controls,
+			choiceList: list,
+			prompt,
+			ai: func,
+		});
 	}
-	chooseControl() {
-		var next = game.createEvent("chooseControl");
+	/**
+	 * 
+	 * @param {import("./Player/type.d").EventChooseControlParams} params
+	 * @returns 
+	 */
+	chooseControl(params) {
+		const next = game.createEvent("chooseControl");
 		next.controls = [];
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "string") {
-				if (arguments[i] == "dialogcontrol") {
-					next.dialogcontrol = true;
-				} else if (arguments[i] == "seperate") {
-					next.seperate = true;
-				} else {
-					next.controls.push(arguments[i]);
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "string") {
+					if (arg == "dialogcontrol") {
+						next.dialogcontrol = true;
+					} else if (arg == "seperate") {
+						next.seperate = true;
+					} else {
+						next.controls.push(arg);
+					}
+				} else if (Array.isArray(arg)) {
+					next.controls = next.controls.concat(arg);
+				} else if (typeof arg == "function") {
+					next.ai = arg;
+				} else if (typeof arg == "number") {
+					next.choice = arg;
+				} else if (get.itemtype(arg) == "dialog") {
+					next.dialog = arg;
 				}
-			} else if (Array.isArray(arguments[i])) {
-				next.controls = next.controls.concat(arguments[i]);
-			} else if (typeof arguments[i] == "function") {
-				next.ai = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.choice = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
 			}
 		}
 		next.player = this;
@@ -6451,29 +6517,42 @@ export class Player extends HTMLDivElement {
 			next.choice = 0;
 		}
 		next.setContent("chooseControl");
-		next._args = Array.from(arguments);
+		next._args = args;
 		next.forceDie = true;
 		return next;
 	}
-	chooseBool() {
-		var next = game.createEvent("chooseBool");
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				next.choice = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				next.ai = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				get.evtprompt(next, arguments[i]);
-			} else if (get.itemtype(arguments[i]) == "dialog") {
-				next.dialog = arguments[i];
+	/**
+	 * @param {import("./Player/type.d").EventChooseBoolParams} params
+	 * @returns 
+	 */
+	chooseBool(params) {
+		const next = game.createEvent("chooseBool");
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params)) {
+			Object.assign(next, params);
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
 			}
-			if (next.choice == undefined) {
-				next.choice = true;
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
+					next.choice = arg;
+				} else if (typeof arg == "function") {
+					next.ai = arg;
+				} else if (typeof arg == "string") {
+					get.evtprompt(next, arg);
+				} else if (get.itemtype(arg) == "dialog") {
+					next.dialog = arg;
+				}
 			}
+		}
+		if (next.choice == undefined) {
+			next.choice = true;
 		}
 		next.player = this;
 		next.setContent("chooseBool");
-		next._args = Array.from(arguments);
+		next._args = args;
 		next.forceDie = true;
 		return next;
 	}
@@ -6779,25 +6858,13 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	showHandcards(str) {
-		/*var next = game.createEvent("showHandcards");
-		next.player = this;
-		if (typeof str == "string") {
-			next.prompt = str;
-		}
-		next.setContent("showHandcards");
-		next._args = Array.from(arguments);
-		return next;*/
 		const cards = this.getCards("h");
-		if (cards.length) {
-			if (typeof str !== "string") {
-				str = get.translation(this) + "的手牌";
-			}
-			const next = this.showCards(cards, str);
-			next._args = Array.from(arguments);
-			return next;
-		} else {
-			return false;
+
+		if (typeof str !== "string") {
+			str = get.translation(this) + "的手牌";
 		}
+		const next = this.showCards(cards, str);
+		return next;
 	}
 	/**
 	 * 玩家展示/亮出一些牌
@@ -6856,7 +6923,7 @@ export class Player extends HTMLDivElement {
 			);
 		};
 		next.setContent("showCards");
-		next._args = Array.from(arguments);
+		next._args = [...arguments];
 		return next;
 	}
 	/**
