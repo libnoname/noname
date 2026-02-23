@@ -1,5 +1,6 @@
 audio/*.TXT
 image/*.TXT
+image/background
 
 extension/**
 !extension/boss/**
