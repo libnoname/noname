@@ -3,6 +3,8 @@ output
 node_modules
 package-lock.json
 
+apps/core/image/background
+
 # IDE
 .idea/
 .vscode/
