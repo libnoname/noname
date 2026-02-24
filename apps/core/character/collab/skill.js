@@ -20,7 +20,7 @@ const skills = {
 		async content(event, trigger, player) {
 			let cards = player.getExpansions("mbhaoshi");
 			await player.gain(cards, "gain2");
-			player.insertPhase(event.skill);
+			player.insertPhase(event.name);
 		},
 		group: ["mbhaooshi_effect"],
 		subSkill: {
@@ -163,7 +163,7 @@ const skills = {
 				async content(event, trigger, player) {
 					trigger.cancel();
 					trigger.skipped = true;
-					player.removeSkill(event.skill);
+					player.removeSkill(event.name);
 				},
 			},
 		},
@@ -345,8 +345,7 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			console.log(event.cost_data);
-			let num = player.getHistory("useSkill", evt => evt.skill == event.skill).length + 1;
+			let num = player.getHistory("useSkill", evt => evt.skill == event.name).length + 1;
 			if (event.cost_data[0] == "draw") {
 				await player.draw(num);
 				player.addTempSkill("mbmaimeng_effect");
