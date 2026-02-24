@@ -165,7 +165,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				trigger: {
-					player: ["phaseAnyBegin"],
+					player: ["phaseAnyBefore"],
 				},
 				forced: true,
 				charlotte: true,
@@ -413,7 +413,8 @@ const skills = {
 				},
 				onremove: true,
 				async content(event, trigger, player) {
-					trigger.cancel();
+					trigger.targets.length = 0;
+					trigger.all_excluded = true;
 					player.removeSkill(event.name);
 				},
 			},
