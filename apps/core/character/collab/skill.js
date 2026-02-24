@@ -5,45 +5,52 @@ import { h } from "vue";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//宫百万
-	mbhaoshi: {
+	dchaoshi: {
 		trigger: {
 			global: ["phaseEnd"],
 		},
 		forced: true,
+		marktext: "食",
+		intro: {
+			name: "好食",
+			content: "expansion",
+			markcount: "expansion",
+		},
 		filter(event, player) {
 			return (
-				player.getExpansions("mbhaoshi").reduce((num, card) => {
+				player.getExpansions("dchaoshi").reduce((num, card) => {
 					return (num += get.number(card));
 				}, 0) >= 100
 			);
 		},
 		async content(event, trigger, player) {
-			let cards = player.getExpansions("mbhaoshi");
+			let cards = player.getExpansions("dchaoshi");
 			await player.gain(cards, "gain2");
 			player.insertPhase(event.name);
 		},
-		group: ["mbhaooshi_effect"],
+		group: ["dchaoshi_effect"],
 		subSkill: {
 			effect: {
 				trigger: {
 					player: ["damageAfter"],
 					source: ["damageSource"],
 				},
-				force: true,
+				forced: true,
 				async content(event, trigger, player) {
+					await player.draw();
 					let { cards } = await player.chooseCard("he", "将一张牌置于武将牌上", true).forResult();
 					let next = player.addToExpansion(cards);
-					next.gaintag.add("mbhaoshi");
+					next.gaintag.add("dchaoshi");
 					await next;
 				},
 			},
 		},
 	},
 	//美腿之神
-	mbshentui: {
+	dcshentui: {
 		mod: {
 			attackRange(player, num) {
-				return (num += player.getStorage("mbshentui"));
+				return (num += player.getStorage("dcshentui"));
 			},
 			targetInRange(card, player) {
 				if (get.name(card, false) == "sha" && get.number(card, false) > player.getAttackRange()) {
@@ -61,16 +68,19 @@ const skills = {
 		selectCard: 0,
 		selectTarget: 0,
 		async content(event, trigger, player) {
-			let num = player.getStorage("mbshentui") ?? 0;
+			let card = get.autoViewAs({ name: "sha" });
+			await player.chooseUseTarget(card, false);
+			let num = player.getStorage("dcshentui") ?? 0;
 			num++;
-			player.setStorage("mbshentui", num);
+			player.setStorage("dcshentui", num);
 		},
-		group: ["mbshentui_effect"],
+		group: ["dcshentui_effect"],
 		subSkill: {
 			effect: {
 				trigger: {
 					player: "useCard",
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					let num = player.getAttackRange();
 					let number = get.number(trigger.card, false);
@@ -83,7 +93,7 @@ const skills = {
 			},
 		},
 	},
-	mbxurui: {
+	dcxurui: {
 		trigger: {
 			player: "phaseEnd",
 		},
@@ -96,7 +106,7 @@ const skills = {
 		},
 	},
 	//逆转之神
-	mbfanzhuan: {
+	dcfanzhuan: {
 		trigger: {
 			global: ["phaseBegin"],
 		},
@@ -110,7 +120,7 @@ const skills = {
 			await player.draw(draw);
 		},
 	},
-	mbniyun: {
+	dcniyun: {
 		mod: {
 			cardUsable(card, player, num) {
 				if (card.name == "sha") {
@@ -123,7 +133,7 @@ const skills = {
 		},
 	},
 	//睡眠之神
-	mbkeshui: {
+	dckeshui: {
 		trigger: {
 			player: ["phaseAnyBegin"],
 		},
@@ -146,7 +156,7 @@ const skills = {
 				}
 			} else {
 				await player.gain(card, "draw");
-				player.addTempSkill("mbkeshui_effect");
+				player.addTempSkill("dckeshui_effect");
 				game.broadcastAll(player => {
 					player.getStat("triggerSkill").mbkeshui--;
 				}, player);
@@ -158,6 +168,7 @@ const skills = {
 					player: ["phaseAnyBegin"],
 				},
 				forced: true,
+				charlotte: true,
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
@@ -169,7 +180,7 @@ const skills = {
 		},
 	},
 	//变幻之神
-	mbbaibian: {
+	dcbaibian: {
 		trigger: {
 			player: ["damageAfter", "phaseBegin"],
 		},
@@ -188,18 +199,18 @@ const skills = {
 			"mbgunyuan",
 		],
 		filter(event, player) {
-			return get.info("mbbaibian").skillList.some(skill => !player.hasSkill(skill, null, false, true));
+			return get.info("dcbaibian").skillList.some(skill => !player.hasSkill(skill, null, false, true));
 		},
 		async content(event, trigger, player) {
 			let skill = get
-				.info("mbbaibian")
+				.info("dcbaibian")
 				.skillList.filter(skill => !player.hasSkill(skill, null, false, true))
 				.randomGet();
 			await player.addTempSkills(skill, { player: ["phaseEnd"] });
 		},
 	},
 	//抉择之神
-	mbhuibian: {
+	dchuibian: {
 		enable: ["phaseUse"],
 		filterTarget: (card, player, target) => {
 			return target.countCards("h") > 0;
@@ -233,7 +244,7 @@ const skills = {
 					await player.showCards(cards);
 					await player.gain(cards, "draw");
 				} else {
-					player.tempBanSkill("mbhuibian");
+					player.tempBanSkill("dchuibian");
 					await game
 						.loseAsync({
 							lose_list: [
@@ -248,7 +259,7 @@ const skills = {
 		},
 	},
 	//委屈之神
-	mb_weiqu: {
+	dcweiqu: {
 		trigger: {
 			target: "useCardToTargeted",
 		},
@@ -295,14 +306,14 @@ const skills = {
 				let cards = player.getCards("e");
 				await player.discard(cards);
 				trigger.getParent()?.cancel();
-				player.addTempSkill("mb_weiqu_e");
+				player.addTempSkill("dcweiqu_e");
 			} else {
 				let cards = player.getCards("h");
 				await player.discard(cards);
 				await player.draw(cards.length);
-				player.addTempSkill("mb_weiqu_h");
+				player.addTempSkill("dcweiqu_h");
 			}
-			if (player.hasSkill("mb_weiqu_e") && player.hasSkill("mb_weiqu_h")) {
+			if (player.hasSkill("dcweiqu_e") && player.hasSkill("dcweiqu_h")) {
 				await player.draw(2);
 			}
 		},
@@ -312,7 +323,7 @@ const skills = {
 		},
 	},
 	//可爱之神
-	mbmaimeng: {
+	dcmaimeng: {
 		trigger: {
 			player: "changeHpAfter",
 		},
@@ -348,7 +359,7 @@ const skills = {
 			let num = player.getHistory("useSkill", evt => evt.skill == event.name).length + 1;
 			if (event.cost_data[0] == "draw") {
 				await player.draw(num);
-				player.addTempSkill("mbmaimeng_effect");
+				player.addTempSkill("dcmaimeng_effect");
 			} else {
 				let result = await player.chooseTarget().set("filterTarget", lib.filter.notMe).forResult();
 				let target = result.targets?.[0];
@@ -369,7 +380,7 @@ const skills = {
 							}
 						)
 						.set("currentTarget", player);
-					await target.addTempSkill("mbmaimeng_deEffect");
+					await target.addTempSkill("dcmaimeng_deEffect");
 				}
 			}
 		},
@@ -409,7 +420,7 @@ const skills = {
 		},
 	},
 	//体重之神
-	mbgunyuan: {
+	dcgunyuan: {
 		trigger: {
 			player: "dying",
 		},
@@ -420,7 +431,7 @@ const skills = {
 			},
 		},
 		filter(event, player) {
-			if (player.countMark("mbgunyuanHp") >= 3) {
+			if (player.countMark("dcgunyuanHp") >= 3) {
 				return false;
 			}
 			console.log(game.getRoundHistory("everything", evt => evt.player != player && evt.name == "dying", event).slice(0, -1).length);
@@ -429,7 +440,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.recoverTo(1);
 			await player.gainMaxHp();
-			player.addMark("mbgunyuanHp", 1, false);
+			player.addMark("dcgunyuanHp", 1, false);
 			await player.draw();
 		},
 	},

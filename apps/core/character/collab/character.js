@@ -1,58 +1,58 @@
 const characters = {
-	mbmeitui: {
+	meituizhishen: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["mbshentui", "mbxurui"],
+		skills: ["dcshentui", "dcxurui"],
 	},
 	gongbaiwan: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
-		skills: ["mbhaoshi"],
+		skills: ["dchaoshi"],
 	},
-	mbnizhuan: {
+	nizhuanzhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
 		maxHp: 5,
-		skills: ["mbfanzhuan", "mbniyun"],
+		skills: ["dcfanzhuan", "dcniyun"],
 	},
-	mbshuimian: {
+	shuimianzhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["mbkeshui"],
+		skills: ["dckeshui"],
 	},
-	mbbianhuan: {
+	bianhuanzhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["mbbaibian"],
+		skills: ["dcbaibian"],
 	},
-	mbjueze: {
+	juezezhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["mbhuibian"],
+		skills: ["dchuibian"],
 	},
-	mbweiqu: {
+	weiquzhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["mb_weiqu"],
+		skills: ["dcweiqu"],
 	},
-	mbkeai: {
+	keaizhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["mbmaimeng"],
+		skills: ["dcmaimeng"],
 	},
-	mbtizhong: {
+	tizhongzhishen: {
 		sex: "male",
 		group: "shen",
 		hp: 5,
-		skills: ["mbgunyuan", "mbzuandai"],
+		skills: ["dcgunyuan", "dczuandai"],
 	},
 	mb_chitu: {
 		sex: "male",

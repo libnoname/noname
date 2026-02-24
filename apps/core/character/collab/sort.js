@@ -10,7 +10,7 @@ const characterSort = {
 	collab_mbdoudizhu: ["tw_dm_quyi", "jm_yuanshu", "mb_muniu", "mb_chitu", "mb_jueying", "mb_dilu"],
 	collab_anime: ["jiangziya", "shengongbao", "nanjixianweng"],
 	collab_shengxiao: ["ol_zishu", "ol_chouniu", "ol_yinhu", "ol_maotu", "ol_chenlong", "ol_sishe", "ol_wuma", "ol_weiyang", "ol_shenhou", "ol_youji", "ol_xugou", "ol_haizhu"],
-	collab_hajimi: ["bozai", "xiangjiaoduanwu", "mbtizhong", "mbkeai", "mbnizhuan", "mbjueze", "mbweiqu", "mbbianhuan", "gongbaiwan", "mbshuimian", "mbmeitui"],
+	collab_hajimi: ["bozai", "xiangjiaoduanwu", "tizhongzhishen", "keaizhishen", "nizhuanzhishen", "juezezhishen", "weiquzhishen", "bianhuanzhishen", "gongbaiwan", "shuimianzhishen", "meituizhishen"],
 };
 
 const characterSortTranslate = {
