@@ -18,7 +18,7 @@ const skills = {
 				map = { h: "手牌区", e: "装备区", j: "判定区" };
 			let list = position.map(i => map[i]);
 			const result = await player
-				.chooseControl(list)
+				.chooseControl({ controls: list })
 				.set("prompt", `###${get.translation(event.name)}：选择一个区域并弃置其中所有牌###然后选择弃置任意名其他角色对应区域内的各一张牌。`)
 				.set("ai", (event, player) => {
 					const targets = game.filterPlayer(current => current != player),
@@ -11235,7 +11235,6 @@ const skills = {
 						if (result.control == "选项二") {
 							player.logSkill("tspowei_use", target);
 							await player.gainPlayerCard(target, "h", true);
-							event.goto(3);
 						}
 					} else {
 						return;
@@ -14194,7 +14193,13 @@ const skills = {
 			const { cards, targets } = event;
 
 			if (cards.length !== 4) {
-				await game.doAsyncInOrder(targets, target => target.damage(1, "fire", "nocard"));
+				await game.doAsyncInOrder(targets, target =>
+					target.damage({
+						num: 1,
+						nature: "fire",
+						nocard: true,
+					})
+				);
 				return;
 			}
 
@@ -14208,7 +14213,11 @@ const skills = {
 					.set("forceDie", true)
 					.forResult();
 
-				await targets[0].damage("fire", result.control === "2点" ? 2 : 3, "nocard");
+				await targets[0].damage({
+					num: result.control === "2点" ? 2 : 3,
+					nature: "fire",
+					nocard: true
+				});
 			} else {
 				const result = await player
 					.chooseTarget("请选择受到2点伤害的角色", true, (card, player, target) => {
@@ -14226,7 +14235,11 @@ const skills = {
 					if (target === target2) {
 						damageNum = 2;
 					}
-					await target.damage("fire", damageNum, "nocard");
+					await target.damage({
+						num: damageNum,
+						nature: "fire",
+						nocard: true,
+					});
 				}
 			}
 		},
