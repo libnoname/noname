@@ -1007,8 +1007,8 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色连接一名角色一些手牌
-	 * 
-	 * @param {import("./Player/type.d").EventConnectCardsParams} params
+	 *
+	 * @param {import("./Player/type.d").EventConnectCardsParams} [params]
 	 */
 	connectCards(params) {
 		const next = game.createEvent("connectCards");
@@ -1060,8 +1060,8 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色重置一名角色一些连接手牌
-	 * 
-	 * @param {import("./Player/type.d").EventResetConnectCardsParams} params
+	 *
+	 * @param {import("./Player/type.d").EventResetConnectCardsParams} [params]
 	 */
 	resetConnectedCards(params) {
 		const next = game.createEvent("resetConnectedCards");
@@ -1132,12 +1132,12 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色明置一些手牌
-	 * 
-	 * @param {import("./Player/type.d").EventAddShownCardsParams} params
+	 *
+	 * @param {import("./Player/type.d").EventAddShownCardsParams} [params]
 	 */
 	addShownCards(params) {
 		const args = [...arguments];
-		
+
 		const next = game.createEvent("addShownCards", false);
 		next.player = this;
 		next.cards = [];
@@ -1166,8 +1166,8 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 让一名角色暗置一些手牌
-	 * 
-	 * @param {import("./Player/type.d").EventHideShownCardsParams} params
+	 *
+	 * @param {import("./Player/type.d").EventHideShownCardsParams} [params]
 	 */
 	hideShownCards(params) {
 		const next = game.createEvent("hideShownCards", false);
@@ -1699,8 +1699,8 @@ export class Player extends HTMLDivElement {
 	 * 新的废除装备区
 	 *
 	 * 参数：废除来源角色（不写默认当前事件角色），废除区域（数字/区域字符串/数组，可以写多个，重复废除）
-	 * 
-	 * @param {import("./Player/type.d").EventDisableEquipParams} params
+	 *
+	 * @param {import("./Player/type.d").EventDisableEquipParams} [params]
 	 */
 	disableEquip(params) {
 		const next = game.createEvent("disableEquip");
@@ -1749,8 +1749,8 @@ export class Player extends HTMLDivElement {
 	 * 新的恢复装备区
 	 *
 	 * 参数：恢复来源角色（不写默认当前事件角色），恢复区域（数字/区域字符串/数组，可以写多个，重复恢复）
-	 * 
-	 * @param {import("./Player/type.d").EventEnableEquipParams} params
+	 *
+	 * @param {import("./Player/type.d").EventEnableEquipParams} [params]
 	 */
 	enableEquip(params) {
 		const next = game.createEvent("enableEquip");
@@ -1797,8 +1797,8 @@ export class Player extends HTMLDivElement {
 	 * 新的扩展装备区
 	 *
 	 * 参数：扩展来源角色（不写默认当前事件角色），扩展区域（数字/区域字符串/数组，可以写多个，重复扩展）
-	 * 
-	 * @param {import("./Player/type.d").EventExpandEquipParams} params
+	 *
+	 * @param {import("./Player/type.d").EventExpandEquipParams} [params]
 	 */
 	expandEquip(params) {
 		const next = game.createEvent("expandEquip");
@@ -2002,7 +2002,7 @@ export class Player extends HTMLDivElement {
 	//装备区End
 
 	/**
-	 * @param { import("./Player/type.d").EventChooseToDebateParams } params
+	 * @param { import("./Player/type.d").EventChooseToDebateParams } [params]
 	 */
 	chooseToDebate(params) {
 		const next = game.createEvent("chooseToDebate");
@@ -2047,7 +2047,7 @@ export class Player extends HTMLDivElement {
 	}
 
 	/**
-	 * @param { import("./Player/type.d").EventChooseCooperationForParams } params
+	 * @param { import("./Player/type.d").EventChooseCooperationForParams } [params]
 	 */
 	chooseCooperationFor(params) {
 		const next = game.createEvent("chooseCooperationFor");
@@ -2607,7 +2607,7 @@ export class Player extends HTMLDivElement {
 	}
 
 	/**
-	 * @param { import("./Player/type.d").EventChooseToMoveParams } params
+	 * @param { import("./Player/type.d").EventChooseToMoveParams } [params]
 	 */
 	chooseToMove(params) {
 		var next = game.createEvent("chooseToMove");
@@ -2640,7 +2640,7 @@ export class Player extends HTMLDivElement {
 	}
 
 	/**
-	 * @param { import("./Player/type.d").EventChooseToMoveNewParams } params
+	 * @param { import("./Player/type.d").EventChooseToMoveNewParams } [params]
 	 */
 	chooseToMove_new(params) {
 		var next = game.createEvent("chooseToMove_new");
@@ -3137,7 +3137,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家选择恢复一个已废除的装备栏
-	 * @param { import("./Player/type.d").EventChooseToEnableParams } params
+	 * @param { import("./Player/type.d").EventChooseToEnableParams } [params]
 	 * @returns { GameEvent }
 	 */
 	chooseToEnable(params) {
@@ -3169,7 +3169,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家选择废除一个未废除的装备栏
-	 * @param { import("./Player/type.d").EventChooseToDisableParams } params
+	 * @param { import("./Player/type.d").EventChooseToDisableParams } [params]
 	 * @returns { GameEvent }
 	 */
 	chooseToDisable(params) {
@@ -5466,7 +5466,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param { import("./Player/type.d").EventChooseToUseParams } params
+	 * @param { import("./Player/type.d").EventChooseToUseParams } [params]
 	 */
 	chooseToUse(params) {
 		var next = game.createEvent("chooseToUse");
@@ -5528,7 +5528,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param { import("./Player/type.d").EventChooseToRespondParams } params
+	 * @param { import("./Player/type.d").EventChooseToRespondParams } [params]
 	 */
 	chooseToRespond(params) {
 		const next = game.createEvent("chooseToRespond");
@@ -5616,7 +5616,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param { import("./Player/type.d").EventChooseToGiveParams } params
+	 * @param { import("./Player/type.d").EventChooseToGiveParams } [params]
 	 */
 	chooseToGive(params) {
 		const next = game.createEvent("chooseToGive");
@@ -5685,7 +5685,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param { import("./Player/type.d").EventChooseToDiscardParams } params
+	 * @param { import("./Player/type.d").EventChooseToDiscardParams } [params]
 	 */
 	chooseToDiscard(params) {
 		var next = game.createEvent("chooseToDiscard");
@@ -5774,11 +5774,11 @@ export class Player extends HTMLDivElement {
 		next._args = args;
 		return next;
 	}
-	
+
 	/**
-	 * @param {Player | Player[]} targetOrTargets 
-	 * @param {(card: Card) => number} check 
-	 * @returns 
+	 * @param {Player | Player[]} targetOrTargets
+	 * @param {(card: Card) => number} check
+	 * @returns
 	 */
 	chooseToCompare(targetOrTargets, check) {
 		var next = game.createEvent("chooseToCompare");
@@ -5879,8 +5879,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {Player} target 
-	 * @param {import("./Player/type.d").EventChooseSkillParams} params
+	 * @param {Player} target
+	 * @param {import("./Player/type.d").EventChooseSkillParams} [params]
 	 * @returns {GameEvent}
 	 */
 	chooseSkill(target, params) {
@@ -5905,10 +5905,10 @@ export class Player extends HTMLDivElement {
 	}
 
 	/**
-	 * 
-	 * @param {string[]} list 
-	 * @param {import("./Player/type.d").EventDiscoverCardParams} params
-	 * @returns 
+	 *
+	 * @param {string[]} list
+	 * @param {import("./Player/type.d").EventDiscoverCardParams} [params]
+	 * @returns
 	 */
 	discoverCard(list, params) {
 		var next = game.createEvent("discoverCard");
@@ -5945,7 +5945,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseCardButtonParams} params 
+	 * @param {import("./Player/type.d").EventChooseCardButtonParams} [params]
 	 */
 	chooseCardButton(params) {
 		let cards;
@@ -5982,8 +5982,8 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 
-	 * @param {import("./Player/type.d").EventChooseVCardButtonParams} params 
+	 *
+	 * @param {import("./Player/type.d").EventChooseVCardButtonParams} [params]
 	 * @returns {GameEvent}
 	 */
 	chooseVCardButton(params) {
@@ -6032,9 +6032,9 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 
-	 * @param {import("./Player/type.d").EventChooseButtonParams} params 
-	 * @returns 
+	 *
+	 * @param {import("./Player/type.d").EventChooseButtonParams} [params]
+	 * @returns
 	 */
 	chooseButton(params) {
 		const next = game.createEvent("chooseButton");
@@ -6122,8 +6122,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 
-	 * @param {import("./Player/type.d").EventChooseCardOLParams} params 
+	 *
+	 * @param {import("./Player/type.d").EventChooseCardOLParams} [params]
 	 * @returns {GameEvent}
 	 */
 	chooseCardOL(params) {
@@ -6148,9 +6148,9 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 
-	 * @param {import("./Player/type.d").EventChooseCardParams} params 
-	 * @returns 
+	 *
+	 * @param {import("./Player/type.d").EventChooseCardParams} [params]
+	 * @returns
 	 */
 	chooseCard(params) {
 		const next = game.createEvent("chooseCard");
@@ -6225,8 +6225,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseUseTargetParams} params 
-	 * @returns 
+	 * @param {import("./Player/type.d").EventChooseUseTargetParams} [params]
+	 * @returns
 	 */
 	chooseUseTarget(params) {
 		const next = game.createEvent("chooseUseTarget");
@@ -6305,8 +6305,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseTargetParams} params 
-	 * @returns 
+	 * @param {import("./Player/type.d").EventChooseTargetParams} [params]
+	 * @returns
 	 */
 	chooseTarget(params) {
 		const next = game.createEvent("chooseTarget");
@@ -6361,8 +6361,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseCardTargetParams} params
-	 * @returns 
+	 * @param {import("./Player/type.d").EventChooseCardTargetParams} [params]
+	 * @returns
 	 */
 	chooseCardTarget(params) {
 		const next = game.createEvent("chooseCardTarget");
@@ -6398,8 +6398,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseButtonTargetParams} params
-	 * @returns 
+	 * @param {import("./Player/type.d").EventChooseButtonTargetParams} [params]
+	 * @returns
 	 */
 	chooseButtonTarget(params) {
 		const next = game.createEvent("chooseButtonTarget");
@@ -6439,7 +6439,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseControlListParams} params
+	 * @param {import("./Player/type.d").EventChooseControlListParams} [params]
 	 */
 	chooseControlList(params) {
 		if (arguments.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
@@ -6452,7 +6452,7 @@ export class Player extends HTMLDivElement {
 		}
 
 		let list = [];
-		let prompt = null;
+		let prompt = undefined;
 		let forced = false;
 		let func = null;
 		const args = [...arguments];
@@ -6480,9 +6480,9 @@ export class Player extends HTMLDivElement {
 		});
 	}
 	/**
-	 * 
-	 * @param {import("./Player/type.d").EventChooseControlParams} params
-	 * @returns 
+	 *
+	 * @param {import("./Player/type.d").EventChooseControlParams} [params]
+	 * @returns
 	 */
 	chooseControl(params) {
 		const next = game.createEvent("chooseControl");
@@ -6522,8 +6522,8 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseBoolParams} params
-	 * @returns 
+	 * @param {import("./Player/type.d").EventChooseBoolParams} [params]
+	 * @returns
 	 */
 	chooseBool(params) {
 		const next = game.createEvent("chooseBool");
@@ -6556,24 +6556,34 @@ export class Player extends HTMLDivElement {
 		next.forceDie = true;
 		return next;
 	}
-	chooseDrawRecover() {
-		var next = game.createEvent("chooseDrawRecover", false);
+	/**
+	 * @param {import("./Player/type.d").EventChooseDrawRecoverParams} [params]
+	 */
+	chooseDrawRecover(params) {
+		const next = game.createEvent("chooseDrawRecover", false);
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				if (typeof next.num1 == "number") {
-					next.num2 = arguments[i];
-				} else {
-					next.num1 = arguments[i];
+		next.gaintag = [];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "number") {
+					if (typeof next.num1 == "number") {
+						next.num2 = arg;
+					} else {
+						next.num1 = arg;
+					}
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
+				} else if (typeof arg == "function") {
+					next.ai = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.target = arg;
 				}
-			} else if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				next.ai = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				next.target = arguments[i];
 			}
 		}
 		if (typeof next.num1 != "number") {
@@ -6585,31 +6595,41 @@ export class Player extends HTMLDivElement {
 		if (next.target == undefined) {
 			next.target = this;
 		}
-		next.gaintag = [];
 		next.setContent("chooseDrawRecover");
 		return next;
 	}
 	/**
 	 * 选择一或多个数值
+	 *
+	 * @param {import("./Player/type.d").EventChooseNumbersParams} [params]
 	 */
-	chooseNumbers() {
+	chooseNumbers(params) {
 		const next = game.createEvent("chooseNumbers");
 		next.player = this;
 		next.list = [];
-		for (const argument of arguments) {
-			if (typeof argument == "string") {
-				get.evtprompt(next, argument);
-			} else if (typeof argument == "number") {
-				next.optionSum = argument;
-			} else if (typeof argument == "boolean") {
-				next.forced = argument;
-			} else if (typeof argument == "object" && Array.isArray(argument)) {
-				next.list.push(...argument);
-			} else if (typeof argument == "function") {
-				if (!next.processAI) {
-					next.processAI = argument;
-				} else {
-					next.filterSelect = argument;
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "string") {
+					get.evtprompt(next, arg);
+				} else if (typeof arg == "number") {
+					next.optionSum = arg;
+				} else if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (typeof arg == "object" && Array.isArray(arg)) {
+					next.list.push(...arg);
+				} else if (typeof arg == "function") {
+					if (!next.processAI) {
+						next.processAI = arg;
+					} else {
+						next.filterSelect = arg;
+					}
 				}
 			}
 		}
@@ -6636,47 +6656,63 @@ export class Player extends HTMLDivElement {
 			next.forced = false;
 		}
 		next.setContent("chooseNumbers");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	choosePlayerCard() {
-		var next = game.createEvent("choosePlayerCard");
+
+	/**
+	 * @param {import("./Player/type.d").EventChoosePlayerCardParams} [params]
+	 */
+	choosePlayerCard(params) {
+		const next = game.createEvent("choosePlayerCard");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.target = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				if (!next.forced) {
-					next.forced = arguments[i];
-				} else {
-					next.complexSelect = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params)) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.target = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "boolean") {
+					if (!next.forced) {
+						next.forced = arg;
+					} else {
+						next.complexSelect = arg;
+					}
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (arg == "visible") {
+					next.visible = true;
+				} else if (arg == "complexSelect") {
+					// 为直接添加complexSelect提供支持喵
+					next.complexSelect = true;
+				} else if (arg == "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (typeof arg == "function") {
+					if (next.ai) {
+						next.filterButton = arg;
+					} else {
+						next.ai = arg;
+					}
+				} else if (typeof arg == "object" && arg) {
+					var filter = get.filter(arg);
+					next.filterButton = function (button) {
+						return filter(button.link);
+					};
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
 				}
-			} else if (get.itemtype(arguments[i]) == "position") {
-				next.position = arguments[i];
-			} else if (arguments[i] == "visible") {
-				next.visible = true;
-			} else if (arguments[i] == "complexSelect") {
-				// 为直接添加complexSelect提供支持喵
-				next.complexSelect = true;
-			} else if (arguments[i] == "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (typeof arguments[i] == "function") {
-				if (next.ai) {
-					next.filterButton = arguments[i];
-				} else {
-					next.ai = arguments[i];
-				}
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				var filter = get.filter(arguments[i]);
-				next.filterButton = function (button) {
-					return filter(button.link);
-				};
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
 			}
 		}
 		if (next.filterButton == undefined) {
@@ -6706,47 +6742,62 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		next.setContent("choosePlayerCard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	discardPlayerCard() {
-		var next = game.createEvent("discardPlayerCard");
+	/**
+	 * @param {import("./Player/type.d").EventDiscardPlayerCardParams} [params]
+	 */
+	discardPlayerCard(params) {
+		const next = game.createEvent("discardPlayerCard");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.target = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				if (!next.forced) {
-					next.forced = arguments[i];
-				} else {
-					next.complexSelect = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params)) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.target = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "boolean") {
+					if (!next.forced) {
+						next.forced = arg;
+					} else {
+						next.complexSelect = arg;
+					}
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (arg == "visible") {
+					next.visible = true;
+				} else if (arg == "complexSelect") {
+					// 为直接添加complexSelect提供支持喵
+					next.complexSelect = true;
+				} else if (arg == "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (typeof arg == "function") {
+					if (next.ai) {
+						next.filterButton = arg;
+					} else {
+						next.ai = arg;
+					}
+				} else if (typeof arg == "object" && arg) {
+					var filter = get.filter(arg);
+					next.filterButton = function (button) {
+						return filter(button.link);
+					};
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
 				}
-			} else if (get.itemtype(arguments[i]) == "position") {
-				next.position = arguments[i];
-			} else if (arguments[i] == "visible") {
-				next.visible = true;
-			} else if (arguments[i] == "complexSelect") {
-				// 为直接添加complexSelect提供支持喵
-				next.complexSelect = true;
-			} else if (arguments[i] == "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (typeof arguments[i] == "function") {
-				if (next.ai) {
-					next.filterButton = arguments[i];
-				} else {
-					next.ai = arguments[i];
-				}
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				var filter = get.filter(arguments[i]);
-				next.filterButton = function (button) {
-					return filter(button.link);
-				};
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
 			}
 		}
 		if (next.filterButton == undefined) {
@@ -6776,49 +6827,64 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		next.setContent("discardPlayerCard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
-	gainPlayerCard() {
-		var next = game.createEvent("gainPlayerCard");
+	/**
+	 * @param {import("./Player/type.d").EventGainPlayerCardParams} [params]
+	 */
+	gainPlayerCard(params) {
+		const next = game.createEvent("gainPlayerCard");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.target = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.selectButton = [arguments[i], arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "select") {
-				next.selectButton = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				if (!next.forced) {
-					next.forced = arguments[i];
-				} else {
-					next.complexSelect = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params)) {
+			Object.assign(next, params);
+			if (typeof next.selectButton === "number") {
+				next.selectButton = [next.selectButton, next.selectButton];
+			}
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.target = arg;
+				} else if (typeof arg == "number") {
+					next.selectButton = [arg, arg];
+				} else if (get.itemtype(arg) == "select") {
+					next.selectButton = arg;
+				} else if (typeof arg == "boolean") {
+					if (!next.forced) {
+						next.forced = arg;
+					} else {
+						next.complexSelect = arg;
+					}
+				} else if (get.itemtype(arg) == "position") {
+					next.position = arg;
+				} else if (arg == "visible") {
+					next.visible = true;
+				} else if (arg == "visibleMove") {
+					next.visibleMove = true;
+				} else if (arg == "complexSelect") {
+					// 为直接添加complexSelect提供支持喵
+					next.complexSelect = true;
+				} else if (arg == "allowChooseAll") {
+					next.allowChooseAll = true;
+				} else if (typeof arg == "function") {
+					if (next.ai) {
+						next.filterButton = arg;
+					} else {
+						next.ai = arg;
+					}
+				} else if (typeof arg == "object" && arg) {
+					var filter = get.filter(arg);
+					next.filterButton = function (button) {
+						return filter(button.link);
+					};
+				} else if (typeof arg == "string") {
+					next.prompt = arg;
 				}
-			} else if (get.itemtype(arguments[i]) == "position") {
-				next.position = arguments[i];
-			} else if (arguments[i] == "visible") {
-				next.visible = true;
-			} else if (arguments[i] == "visibleMove") {
-				next.visibleMove = true;
-			} else if (arguments[i] == "complexSelect") {
-				// 为直接添加complexSelect提供支持喵
-				next.complexSelect = true;
-			} else if (arguments[i] == "allowChooseAll") {
-				next.allowChooseAll = true;
-			} else if (typeof arguments[i] == "function") {
-				if (next.ai) {
-					next.filterButton = arguments[i];
-				} else {
-					next.ai = arguments[i];
-				}
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				var filter = get.filter(arguments[i]);
-				next.filterButton = function (button) {
-					return filter(button.link);
-				};
-			} else if (typeof arguments[i] == "string") {
-				next.prompt = arguments[i];
 			}
 		}
 		if (next.filterButton == undefined) {
@@ -6848,7 +6914,7 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		next.setContent("gainPlayerCard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		next.gaintag = [];
 		return next;
 	}
@@ -6868,7 +6934,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 玩家展示/亮出一些牌
-	 * @param { Card[] } cards 要亮出或展示的牌
+	 * @param { Card | Card[] } cards 要亮出或展示的牌
 	 * @param { string } [str] 对话框的提示
 	 * @param { boolean | undefined } [flashAnimation] 改变动画效果，变成类似判定那种
 	 * @param { boolean | undefined } [isFlash] 是否是亮出牌（若改变动画效果后不设置该属性则默认为true）
@@ -6884,8 +6950,10 @@ export class Player extends HTMLDivElement {
 			next.str = str;
 		}
 		if (get.itemtype(cards) == "card") {
+			// @ts-ignore
 			next.cards = [cards];
 		} else if (get.itemtype(cards) == "cards") {
+			// @ts-ignore
 			next.cards = cards.slice(0);
 		} else {
 			_status.event.next.remove(next);
@@ -6933,7 +7001,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	viewCards(str, cards) {
-		var next = game.createEvent("viewCards");
+		const next = game.createEvent("viewCards");
 		next.player = this;
 		next.str = str;
 		next.cards = cards.slice(0);
@@ -6947,12 +7015,8 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	viewHandcards(target) {
-		var cards = target.getCards("h");
-		if (cards.length) {
-			return this.viewCards(get.translation(target) + "的手牌", cards);
-		} else {
-			return false;
-		}
+		const cards = target.getCards("h");
+		return this.viewCards(`${get.translation(target)}的手牌`, cards);
 	}
 	//TODO: 给canMoveCard函数适配虚拟牌的移动
 	canMoveCard(withatt, nojudge) {
@@ -7036,45 +7100,56 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 移动一些牌
+	 *
+	 * @param {import("./Player/type.d").EventMoveCardParams} [params]
 	 * @returns { GameEvent }
 	 */
-	moveCard() {
-		var next = game.createEvent("moveCard");
+	moveCard(params) {
+		const next = game.createEvent("moveCard");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "boolean") {
-				next.forced = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "players") {
-				if (!next.sourceTargets) {
-					next.sourceTargets = arguments[i];
-				} else if (!next.aimTargets) {
-					next.aimTargets = arguments[i];
-				}
-			} else if (get.itemtype(arguments[i]) == "player") {
-				if (!next.sourceTargets) {
-					next.sourceTargets = [arguments[i]];
-				} else if (!next.aimTargets) {
-					next.aimTargets = [arguments[i]];
-				}
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i] == "canReplace") {
-					next.canReplace = true;
-				} else {
-					get.evtprompt(next, arguments[i]);
-				}
-			} else if (Array.isArray(arguments[i])) {
-				for (var j = 0; j < arguments[i].length; j++) {
-					if (typeof arguments[i][j] != "string") {
-						break;
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.prompt != null) {
+				get.evtprompt(next, params.prompt);
+			}
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "boolean") {
+					next.forced = arg;
+				} else if (get.itemtype(arg) == "players") {
+					if (!next.sourceTargets) {
+						next.sourceTargets = arg;
+					} else if (!next.aimTargets) {
+						next.aimTargets = arg;
 					}
+				} else if (get.itemtype(arg) == "player") {
+					if (!next.sourceTargets) {
+						next.sourceTargets = [arg];
+					} else if (!next.aimTargets) {
+						next.aimTargets = [arg];
+					}
+				} else if (typeof arg == "string") {
+					if (arg == "canReplace") {
+						next.canReplace = true;
+					} else {
+						get.evtprompt(next, arg);
+					}
+				} else if (Array.isArray(arg)) {
+					for (var j = 0; j < arg.length; j++) {
+						if (typeof arg[j] != "string") {
+							break;
+						}
+					}
+					if (j == arg.length) {
+						next.targetprompt = arg;
+					}
+				} else if (typeof arg == "function") {
+					next.filter = arg;
+				} else if (typeof arg == "object" && arg) {
+					next.filter = get.filter(arg);
 				}
-				if (j == arguments[i].length) {
-					next.targetprompt = arguments[i];
-				}
-			} else if (typeof arguments[i] == "function") {
-				next.filter = arguments[i];
-			} else if (typeof arguments[i] == "object" && arguments[i]) {
-				next.filter = get.filter(arguments[i]);
 			}
 		}
 		if (!next.sourceTargets) {
@@ -7087,7 +7162,7 @@ export class Player extends HTMLDivElement {
 			next.filter = lib.filter.all;
 		}
 		next.setContent("moveCard");
-		next._args = Array.from(arguments);
+		next._args = args;
 		return next;
 	}
 	useResult(result, event) {
@@ -7135,33 +7210,41 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家使用牌
+	 *
+	 * @param {import("./Player/type.d").EventUseCardParams} [params]
 	 * @returns { GameEvent }
 	 */
-	useCard() {
-		var next = game.createEvent("useCard");
+	useCard(params) {
+		const next = game.createEvent("useCard");
 		next.player = this;
 		next.num = 0;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "players") {
-				next.targets = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				next.targets = [arguments[i]];
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "object" && arguments[i] && arguments[i].name) {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				if (arguments[i] == "noai") {
-					next.noai = true;
-				} else if (arguments[i] == "nowuxie") {
-					next.nowuxie = true;
-				} else {
-					next.skill = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "players") {
+					next.targets = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.targets = [arg];
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (typeof arg == "object" && arg && arg.name) {
+					next.card = arg;
+				} else if (typeof arg == "string") {
+					if (arg == "noai") {
+						next.noai = true;
+					} else if (arg == "nowuxie") {
+						next.nowuxie = true;
+					} else {
+						next.skill = arg;
+					}
+				} else if (typeof arg == "boolean") {
+					next.addCount = arg;
 				}
-			} else if (typeof arguments[i] == "boolean") {
-				next.addCount = arguments[i];
 			}
 		}
 		if (next.cards == undefined) {
@@ -7277,23 +7360,31 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家使用某个技能
+	 *
+	 * @param {import("./Player/type.d").EventUseSkillParams} [params]
 	 * @returns { GameEvent }
 	 */
-	useSkill() {
-		var next = game.createEvent("useSkill");
+	useSkill(params) {
+		const next = game.createEvent("useSkill");
 		next.player = this;
 		next.num = 0;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "players") {
-				next.targets = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				next.skill = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.addCount = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "players") {
+					next.targets = arg;
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (typeof arg == "string") {
+					next.skill = arg;
+				} else if (typeof arg == "boolean") {
+					next.addCount = arg;
+				}
 			}
 		}
 		if (next.cards == undefined) {
@@ -7323,56 +7414,75 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家摸牌摸至指定值
 	 * @param { number } num
-	 * @param { * } args
+	 * @param { import("./Player/type.d").EventDrawToParams | any[] } [args]
 	 * @returns { GameEvent }
 	 */
 	drawTo(num, args) {
-		var num2 = num - this.countCards("h");
-		var next = this.draw(num2);
+		const num2 = num - this.countCards("h");
+		let next;
 		if (Array.isArray(args)) {
-			for (var i = 0; i < args.length; i++) {
-				if (get.itemtype(args[i]) == "player") {
-					next.source = args[i];
-				} else if (typeof args[i] == "boolean") {
-					next.animate = args[i];
-				} else if (args[i] == "nodelay") {
+			next = this.draw({ num: num2 });
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (typeof arg == "boolean") {
+					next.animate = arg;
+				} else if (arg == "nodelay") {
 					next.animate = false;
 					next.$draw = true;
-				} else if (args[i] == "visible") {
+				} else if (arg == "visible") {
 					next.visible = true;
-				} else if (args[i] == "bottom") {
+				} else if (arg == "bottom") {
 					next.bottom = true;
-				} else if (typeof args[i] == "object" && args[i] && args[i].drawDeck != undefined) {
-					next.drawDeck = args[i].drawDeck;
+				} else if (typeof arg == "object" && arg && arg.drawDeck != undefined) {
+					next.drawDeck = arg.drawDeck;
 				}
 			}
+		} else if (get.is.object(args) && get.itemtype(args) == null) {
+			next = this.draw({ num: num2, ...args });
+		} else {
+			next = this.draw({ num: num2 });
 		}
 		return next;
 	}
 	/**
 	 * 令玩家摸牌
+	 *
+	 * @param { import("./Player/type.d").EventDrawParams } [params]
 	 * @returns { GameEvent }
 	 */
-	draw() {
-		var next = game.createEvent("draw");
+	draw(params) {
+		const next = game.createEvent("draw");
 		next.player = this;
+
+		const args = [...arguments];
 		const event = _status.event;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.num = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.animate = arguments[i];
-			} else if (arguments[i] == "nodelay") {
+		// 就算是drawDeck项，由于已经判断了参数长度，不会出现不同的地方
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.nodelay) {
+				delete next.nodelay;
 				next.animate = false;
 				next.$draw = true;
-			} else if (arguments[i] == "visible") {
-				next.visible = true;
-			} else if (arguments[i] == "bottom") {
-				next.bottom = true;
-			} else if (typeof arguments[i] == "object" && arguments[i] && arguments[i].drawDeck != undefined) {
-				next.drawDeck = arguments[i].drawDeck;
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (typeof arg == "number") {
+					next.num = arg;
+				} else if (typeof arg == "boolean") {
+					next.animate = arg;
+				} else if (arg == "nodelay") {
+					next.animate = false;
+					next.$draw = true;
+				} else if (arg == "visible") {
+					next.visible = true;
+				} else if (arg == "bottom") {
+					next.bottom = true;
+				} else if (typeof arg == "object" && arg && arg.drawDeck != undefined) {
+					next.drawDeck = arg.drawDeck;
+				}
 			}
 		}
 		if (typeof next.num != "number") {
@@ -7399,40 +7509,38 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家随机弃置其区域内的一些牌
 	 *
-	 * num: number;
-	 * 要弃置的牌数
-	 *
-	 * discarder?: Player;
-	 * 弃牌来源，令Player弃牌的角色。默认目标角色
-	 *
-	 * position?: string;
-	 * 弃牌区域，默认 "he"
-	 *
-	 * random?: "random";
-	 * 是否纯随机，否则优先弃置能弃置的牌
-	 *
-	 * log?: 'popup' | 'logSkill' | false | string;
-	 * 因对应Mod技能导致部分牌未被弃置时，是否为Mod技能执行对应函数。默认'popup'
-	 *
+	 * @param {import("./Player/type.d").EventRandomDiscardParams} [params]
 	 * @returns { GameEvent }
 	 */
-	randomDiscard() {
-		let position = "he",
-			discarder = this,
-			num = 1,
-			random = false,
-			log = "popup";
-		for (let i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] === "number") {
-				num = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				discarder = arguments[i];
-			} else if (get.itemtype(arguments[i]) === "position") {
-				position = arguments[i];
-			} else if (arguments[i] === "random") {
-				random = true;
-			} else if (arguments[i] === false || typeof arguments[i] === "string") {
-				log = arguments[i];
+	randomDiscard(params) {
+		let position = "he";
+		/** @type {Player} */
+		let discarder = this;
+		let num = 1;
+		let random = false;
+		/** @type {string | false} */
+		let log = "popup";
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && params != null && get.itemtype(params) == null) {
+			num = params.num ?? num;
+			discarder = params.discarder ?? discarder;
+			position = params.position ?? position;
+			random = params.random ?? random;
+			log = params.log ?? log;
+		} else {
+			for (const arg of args) {
+				if (typeof arg === "number") {
+					num = arg;
+				} else if (get.itemtype(arg) == "player") {
+					discarder = arg;
+				} else if (get.itemtype(arg) === "position") {
+					position = arg;
+				} else if (arg === "random") {
+					random = true;
+				} else if (arg === false || typeof arg === "string") {
+					log = arg;
+				}
 			}
 		}
 		let cards;
@@ -7445,73 +7553,112 @@ export class Player extends HTMLDivElement {
 				cards.addArray(this.getCards(position, c => !discardable.includes(c)).randomGets(num - cards.length));
 			}
 		}
-		const next = this.modedDiscard(cards, discarder, log);
+		const next = this.modedDiscard({
+			cards,
+			discarder,
+			log,
+		});
 		return next;
 	}
-	randomGain() {
-		var position = "he",
-			num = 1,
-			target = null,
-			line = false;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				num = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "position") {
-				position = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				target = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				line = arguments[i];
-			}
-		}
-		if (target) {
-			var cards = target.getCards(position).randomGets(num);
-			if (cards.length) {
-				if (line) {
-					this.line(target, "green");
+
+	/**
+	 * 随机获得一名角色的牌
+	 *
+	 * @param { import("./Player/type.d").EventRandomGainParams } [params]
+	 */
+	randomGain(params) {
+		let position = "he";
+		let num = 1;
+		let target = null;
+		let line = false;
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && params != null && get.itemtype(params) == null) {
+			num = params.num ?? num;
+			position = params.position ?? position;
+			target = params.target ?? target;
+			line = params.line ?? line;
+		} else {
+			for (const arg of args) {
+				if (typeof arg == "number") {
+					num = arg;
+				} else if (get.itemtype(arg) == "position") {
+					position = arg;
+				} else if (get.itemtype(arg) == "player") {
+					target = arg;
+				} else if (typeof arg == "boolean") {
+					line = arg;
 				}
-				this.gain(cards, target, "log", "bySelf");
-				target.$giveAuto(cards, this);
 			}
-			return cards;
 		}
-		return [];
+
+		if (target == null) {
+			return this.gain({
+				cards: [],
+				log: true,
+				bySelf: true,
+			});
+		}
+
+		const cards = target.getCards(position).randomGets(num);
+		const next = this.gain({
+			cards,
+			source: target,
+			log: true,
+			bySelf: true,
+		});
+		if (line) {
+			const contents = lib.element.content.gain;
+			if (Array.isArray(contents)) {
+				const newContents = [
+					async (event, trigger, player) => {
+						player.line(event.target, "green");
+					},
+					...contents,
+				];
+				next.setContent(newContents);
+			} else {
+				next.setContent(async (event, trigger, player) => {
+					player.line(event.target, "green");
+					await contents(event, trigger, player);
+				});
+			}
+		}
+		return next;
 	}
 	/**
 	 * 强制令玩家弃置其区域内的一些牌
 	 *
-	 * cards: Card[] | Card;
-	 * 要弃置的牌
-	 *
-	 * discarder?: Player;
-	 * 弃牌来源，令Player弃牌的角色
-	 *
-	 * position?: div | fragment;
-	 * 经Mod筛选后的牌要置入的区域，默认ui.discardPile
-	 *
-	 * notBySelf?: 'notBySelf';
-	 * 是否是他人弃置。discarder设置后会自动判断
-	 *
+	 * @param {import("./Player/type.d").EventDiscardParams} [params]
 	 * @returns { GameEvent }
 	 */
-	discard() {
-		var next = game.createEvent("discard");
+	discard(params) {
+		const next = game.createEvent("discard");
 		next.player = this;
 		next.num = 0;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) === "player") {
-				next.discarder = arguments[i];
-				if (this !== next.discarder) {
+
+		const args = [...arguments];
+		if (args.length === 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.discarder != null && params.discarder !== this) {
+				next.notBySelf = true;
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) === "player") {
+					next.discarder = arg;
+					if (this !== next.discarder) {
+						next.notBySelf = true;
+					}
+				} else if (get.itemtype(arg) === "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) === "card") {
+					next.cards = [arg];
+				} else if (["div", "fragment"].includes(get.objtype(arg))) {
+					next.position = arg;
+				} else if (arg === "notBySelf") {
 					next.notBySelf = true;
 				}
-			} else if (get.itemtype(arguments[i]) === "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) === "card") {
-				next.cards = [arguments[i]];
-			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
-				next.position = arguments[i];
-			} else if (arguments[i] === "notBySelf") {
-				next.notBySelf = true;
 			}
 		}
 		if (get.itemtype(next.cards) !== "cards") {
@@ -7524,40 +7671,38 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家弃置其区域内一些能被弃置的牌
 	 *
-	 * cards: Card[] | Card;
-	 * 要弃置的牌
-	 *
-	 * discarder?: Player;
-	 * 弃牌来源，令Player弃牌的角色。默认目标角色
-	 *
-	 * position?: div | fragment;
-	 * 经Mod筛选后的牌要置入的区域，默认ui.discardPile
-	 *
-	 * log?: 'popup' | 'logSkill' | false | string;
-	 * 因对应Mod技能导致部分牌未被弃置时，是否为Mod技能执行对应函数。默认'popup'
-	 *
+	 * @param {import("./Player/type.d").EventModedDiscardParams} [params]
 	 * @returns { GameEvent }
 	 */
-	modedDiscard() {
-		var next = game.createEvent("discard");
+	modedDiscard(params) {
+		const next = game.createEvent("discard");
 		next.player = this;
 		next.discarder = this;
 		next.cards = [];
 		next.log = "popup";
-		for (let i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) === "player") {
-				next.discarder = arguments[i];
-				if (this !== next.discarder) {
-					next.notBySelf = true;
+
+		const args = [...arguments];
+		if (args.length === 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.discarder != null && params.discarder !== this) {
+				next.notBySelf = true;
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) === "player") {
+					next.discarder = arg;
+					if (this !== next.discarder) {
+						next.notBySelf = true;
+					}
+				} else if (get.itemtype(arg) === "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) === "card") {
+					next.cards = [arg];
+				} else if (["div", "fragment"].includes(get.objtype(arg))) {
+					next.position = arg;
+				} else if (arg === false || typeof arg === "string") {
+					next.log = arg;
 				}
-			} else if (get.itemtype(arguments[i]) === "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) === "card") {
-				next.cards = [arguments[i]];
-			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
-				next.position = arguments[i];
-			} else if (arguments[i] === false || typeof arguments[i] === "string") {
-				next.log = arguments[i];
 			}
 		}
 		if (!next.cards.length) {
@@ -7612,7 +7757,7 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		next.setContent(async function (event, trigger, player) {
+		next.setContent(async (event, trigger, player) => {
 			if (event.skills.length && event.log) {
 				for (let i of event.skills) {
 					if (typeof player[event.log] === "function") {
@@ -7642,29 +7787,37 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家将一些牌置入弃牌堆
+	 *
+	 * @param {import("./Player/type.d").EventLoseToDiscardpileParams} [params]
 	 * @returns { GameEvent }
 	 */
-	loseToDiscardpile() {
-		var next = game.createEvent("loseToDiscardpile");
+	loseToDiscardpile(params) {
+		const next = game.createEvent("loseToDiscardpile");
 		next.player = this;
 		next.num = 0;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.cards = [arguments[i]];
-			} else if (typeof arguments[i] == "boolean") {
-				next.animate = arguments[i];
-			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
-				next.position = arguments[i];
-			} else if (arguments[i] == "notBySelf") {
-				next.notBySelf = true;
-			} else if (arguments[i] == "insert") {
-				next.insert_card = true;
-			} else if (arguments[i] == "blank") {
-				next.blank = true;
+
+		const args = [...arguments];
+		if (args.length === 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.cards = [arg];
+				} else if (typeof arg == "boolean") {
+					next.animate = arg;
+				} else if (["div", "fragment"].includes(get.objtype(arg))) {
+					next.position = arg;
+				} else if (arg == "notBySelf") {
+					next.notBySelf = true;
+				} else if (arg == "insert") {
+					next.insert_card = true;
+				} else if (arg == "blank") {
+					next.blank = true;
+				}
 			}
 		}
 		if (next.cards == undefined) {
@@ -7676,28 +7829,36 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家打出牌
+	 *
+	 * @param {import("./Player/type.d").EventRespondParams} [params]
 	 * @returns { GameEvent }
 	 */
-	respond() {
-		var next = game.createEvent("respond");
+	respond(params) {
+		const next = game.createEvent("respond");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.card = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (typeof arguments[i] == "object" && arguments[i] && arguments[i].name) {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.animate = arguments[i];
-			} else if (arguments[i] == "highlight") {
-				next.highlight = true;
-			} else if (arguments[i] == "noOrdering") {
-				next.noOrdering = true;
-			} else if (typeof arguments[i] == "string") {
-				next.skill = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (typeof arg == "object" && arg && arg.name) {
+					next.card = arg;
+				} else if (typeof arg == "boolean") {
+					next.animate = arg;
+				} else if (arg == "highlight") {
+					next.highlight = true;
+				} else if (arg == "noOrdering") {
+					next.noOrdering = true;
+				} else if (typeof arg == "string") {
+					next.skill = arg;
+				}
 			}
 		}
 		if (next.cards == undefined) {
@@ -7767,7 +7928,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	swapHandcards(target, cards1, cards2) {
-		var next = game.createEvent("swapHandcards", false);
+		const next = game.createEvent("swapHandcards", false);
 		next.player = this;
 		next.target = target;
 		if (cards1) {
@@ -7938,7 +8099,7 @@ export class Player extends HTMLDivElement {
 	 * @param { string } [position = "h"]
 	 */
 	gainMultiple(targets, position = "h") {
-		var next = game.createEvent("gainMultiple", false);
+		const next = game.createEvent("gainMultiple", false);
 		next.setContent("gainMultiple");
 		next.player = this;
 		next.targets = targets;
@@ -7947,34 +8108,49 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家获得一些牌
+	 *
+	 * @param { import("./Player/type.d").EventGainParams } [params]
 	 * @returns { GameEvent }
 	 */
-	gain() {
-		var next = game.createEvent("gain");
+	gain(params) {
+		const next = game.createEvent("gain");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.cards = [arguments[i]];
-			} else if (arguments[i] === "log") {
-				next.log = true;
-			} else if (arguments[i] == "fromStorage") {
-				next.fromStorage = true;
-			} else if (
-				typeof arguments[i] == "string" &&
-				Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == arguments[i])
-			) {
-				next.fromStorage = true;
-				next[arguments[i]] = true;
-			} else if (arguments[i] == "bySelf") {
-				next.bySelf = true;
-			} else if (typeof arguments[i] == "string") {
-				next.animate = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.delay = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params?.areaNames != null) {
+				delete next.areaNames;
+				const commonAreas = [...lib.commonArea.values()];
+				for (const areaName of params.areaNames) {
+					if (commonAreas.some(area => area?.fromName === areaName)) {
+						next.fromStorage = true;
+						next[areaName] = true;
+					}
+				}
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.cards = [arg];
+				} else if (arg === "log") {
+					next.log = true;
+				} else if (arg == "fromStorage") {
+					next.fromStorage = true;
+				} else if (typeof arg == "string" && [...lib.commonArea.keys()].some(area => lib.commonArea.get(area)?.fromName == arg)) {
+					next.fromStorage = true;
+					next[arg] = true;
+				} else if (arg == "bySelf") {
+					next.bySelf = true;
+				} else if (typeof arg == "string") {
+					next.animate = arg;
+				} else if (typeof arg == "boolean") {
+					next.delay = arg;
+				}
 			}
 		}
 		if (next.animate == "gain2" || next.animate == "draw2") {
@@ -8048,39 +8224,54 @@ export class Player extends HTMLDivElement {
 			}
 			return this.cards.slice(0);
 		};
-		next.gaintag = [];
+		next.gaintag ??= [];
 		return next;
 	}
 	/**
 	 * 将一些牌置入玩家的武将牌上
+	 *
+	 * @param { import("./Player/type.d").EventAddToExpansionParams } [params]
 	 * @returns { GameEvent }
 	 */
-	addToExpansion() {
-		var next = game.createEvent("addToExpansion");
+	addToExpansion(params) {
+		const next = game.createEvent("addToExpansion");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.cards = [arguments[i]];
-			} else if (arguments[i] === "log") {
-				next.log = true;
-			} else if (arguments[i] == "fromStorage") {
-				next.fromStorage = true;
-			} else if (
-				typeof arguments[i] == "string" &&
-				Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == arguments[i])
-			) {
-				next.fromStorage = true;
-				next[arguments[i]] = true;
-			} else if (arguments[i] == "bySelf") {
-				next.bySelf = true;
-			} else if (typeof arguments[i] == "string") {
-				next.animate = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.delay = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.areaNames != null) {
+				delete next.areaNames;
+				const commonAreas = [...lib.commonArea.values()];
+				for (const areaName of params.areaNames) {
+					if (commonAreas.some(area => area?.fromName === areaName)) {
+						next.fromStorage = true;
+						next[areaName] = true;
+					}
+				}
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.cards = [arg];
+				} else if (arg === "log") {
+					next.log = true;
+				} else if (arg == "fromStorage") {
+					next.fromStorage = true;
+				} else if (typeof arg == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == arg)) {
+					next.fromStorage = true;
+					next[arg] = true;
+				} else if (arg == "bySelf") {
+					next.bySelf = true;
+				} else if (typeof arg == "string") {
+					next.animate = arg;
+				} else if (typeof arg == "boolean") {
+					next.delay = arg;
+				}
 			}
 		}
 		if (next.animate == "gain2" || next.animate == "draw2" || next.animate == "give") {
@@ -8151,7 +8342,7 @@ export class Player extends HTMLDivElement {
 		next.getg = function (player) {
 			return [];
 		};
-		next.gaintag = [];
+		next.gaintag ??= [];
 		return next;
 	}
 	/**
@@ -8161,36 +8352,55 @@ export class Player extends HTMLDivElement {
 	 * @param { boolean } [visible]
 	 */
 	give(cards, target, visible) {
-		var next = target.gain(cards, this);
-		next.animate = visible ? "give" : "giveAuto";
+		const next = target.gain({
+			cards: Array.isArray(cards) ? cards : [cards],
+			source: this,
+			animate: visible ? "give" : "giveAuto",
+		});
 		next.giver = this;
 		return next;
 	}
-	lose() {
-		var next = game.createEvent("lose");
+	/**
+	 * @param { import("./Player/type.d").EventLoseParams } [params]
+	 */
+	lose(params) {
+		const next = game.createEvent("lose");
 		next.player = this;
 		next.forceDie = true;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.cards = [arguments[i]];
-			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
-				next.position = arguments[i];
-			} else if (arguments[i] == "toStorage") {
-				next.toStorage = true;
-			} else if (
-				typeof arguments[i] == "string" &&
-				Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.toName == arguments[i])
-			) {
-				next.toStorage = true;
-				next[arguments[i]] = true;
-			} else if (arguments[i] == "visible") {
-				next.visible = true;
-			} else if (arguments[i] == "insert") {
-				next.insert_card = true;
+
+		const args = [...arguments];
+		if (args.length === 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.areaNames != null) {
+				delete next.areaNames;
+				const commonAreas = [...lib.commonArea.values()];
+				for (const areaName of params.areaNames) {
+					if (commonAreas.some(area => area?.toName === areaName)) {
+						next.toStorage = true;
+						next[areaName] = true;
+					}
+				}
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.cards = [arg];
+				} else if (["div", "fragment"].includes(get.objtype(arg))) {
+					next.position = arg;
+				} else if (arg == "toStorage") {
+					next.toStorage = true;
+				} else if (typeof arg == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.toName == arg)) {
+					next.toStorage = true;
+					next[arg] = true;
+				} else if (arg == "visible") {
+					next.visible = true;
+				} else if (arg == "insert") {
+					next.insert_card = true;
+				}
 			}
 		}
 		if (next.cards) {
@@ -8248,42 +8458,62 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家受到伤害
+	 *
+	 * @param {import("./Player/type.d").EventDamageParams} [params]
 	 * @returns { GameEvent }
 	 */
-	damage() {
+	damage(params) {
 		const next = game.createEvent("damage");
 		//next.forceDie=true;
 		next.player = this;
-		let noCard, noSource;
+		let noCard = false;
+		let noSource = false;
 		const event = _status.event;
-		for (const argument of arguments) {
-			if (get.itemtype(argument) == "cards") {
-				next.cards = argument.slice();
-			} else if (get.itemtype(argument) == "card") {
-				next.card = argument;
-			} else if (typeof argument == "number") {
-				next.num = argument;
-			} else if (get.itemtype(argument) == "player") {
-				next.source = argument;
-			} else if (argument && typeof argument == "object" && argument.name) {
-				next.card = argument;
-			} else if (argument == "nocard") {
-				noCard = true;
-			} else if (argument == "nosource") {
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.nosource) {
 				noSource = true;
-			} else if (argument == "notrigger") {
+				delete next.nosource;
+			}
+			if (params.nocard) {
+				noCard = true;
+				delete next.nocard;
+			}
+			if (params.notrigger) {
 				next._triggered = null;
-				next.notrigger = true;
-			} else if (argument == "unreal") {
-				next.unreal = true;
-			} else if (argument == "nohujia") {
-				next.nohujia = true;
-			} else if (get.itemtype(argument) == "nature" && argument != "stab") {
-				next.nature = argument;
-			} else if (get.itemtype(argument) == "natures") {
-				const natures = argument.split(lib.natureSeparator).remove("stab");
-				if (natures.length) {
-					next.nature = natures.join(lib.natureSeparator);
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice();
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (typeof arg == "number") {
+					next.num = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (arg && typeof arg == "object" && arg.name) {
+					next.card = arg;
+				} else if (arg == "nocard") {
+					noCard = true;
+				} else if (arg == "nosource") {
+					noSource = true;
+				} else if (arg == "notrigger") {
+					next._triggered = null;
+					next.notrigger = true;
+				} else if (arg == "unreal") {
+					next.unreal = true;
+				} else if (arg == "nohujia") {
+					next.nohujia = true;
+				} else if (get.itemtype(arg) == "nature" && arg != "stab") {
+					next.nature = arg;
+				} else if (get.itemtype(arg) == "natures") {
+					const natures = arg.split(lib.natureSeparator).remove("stab");
+					if (natures.length) {
+						next.nature = natures.join(lib.natureSeparator);
+					}
 				}
 			}
 		}
@@ -8339,33 +8569,51 @@ export class Player extends HTMLDivElement {
 				this._triggered = null;
 				return true;
 			}
+			return false;
 		};
 		return next;
 	}
 	/**
 	 * 令玩家回复体力
+	 *
+	 * @param { import("./Player/type.d").EventRecoverParams } [params]
 	 * @returns { GameEvent }
 	 */
-	recover() {
-		var next = game.createEvent("recover");
+	recover(params) {
+		const next = game.createEvent("recover");
 		next.player = this;
-		var nocard, nosource;
-		var event = _status.event;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "cards") {
-				next.cards = arguments[i].slice(0);
-			} else if (get.itemtype(arguments[i]) == "card") {
-				next.card = arguments[i];
-			} else if (get.itemtype(arguments[i]) == "player") {
-				next.source = arguments[i];
-			} else if (typeof arguments[i] == "object" && arguments[i] && arguments[i].name) {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "number") {
-				next.num = arguments[i];
-			} else if (arguments[i] == "nocard") {
+		let nocard = false;
+		let nosource = false;
+
+		const args = [...arguments];
+		const event = _status.event;
+		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+			if (params.nocard != null) {
+				delete next.nocard;
 				nocard = true;
-			} else if (arguments[i] == "nosource") {
+			}
+			if (params.nosource != null) {
+				delete next.nosource;
 				nosource = true;
+			}
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "cards") {
+					next.cards = arg.slice(0);
+				} else if (get.itemtype(arg) == "card") {
+					next.card = arg;
+				} else if (get.itemtype(arg) == "player") {
+					next.source = arg;
+				} else if (typeof arg == "object" && arg && arg.name) {
+					next.card = arg;
+				} else if (typeof arg == "number") {
+					next.num = arg;
+				} else if (arg == "nocard") {
+					nocard = true;
+				} else if (arg == "nosource") {
+					nosource = true;
+				}
 			}
 		}
 		if (next.card == undefined && !nocard) {
@@ -8393,23 +8641,27 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家回复体力至指定值
+	 *
+	 * @param { number } num
+	 * @param { import("./Player/type.d").EventRecoverToParams } [args]
 	 * @returns { GameEvent }
 	 */
-	recoverTo() {
-		const newArguments = [];
-		let num = 1;
-		for (let i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] === "number") {
-				num = arguments[i] - this.getHp(true);
-				newArguments.push(num);
-			} else {
-				newArguments.push(arguments[i]);
-			}
+	recoverTo(num, args) {
+		const num2 = num - this.getHp(true);
+
+		// 我打算创了
+		if (Array.isArray(args)) {
+			// @ts-ignore
+			return this.recover(num2, ...args);
 		}
-		return this.recover(...newArguments);
+
+		return this.recover({
+			num: num2,
+			...args,
+		});
 	}
 	doubleDraw() {
-		var next = game.createEvent("doubleDraw");
+		const next = game.createEvent("doubleDraw");
 		if (get.is.changban()) {
 			_status.event.next.remove(next);
 			next.resolve();
@@ -8424,11 +8676,8 @@ export class Player extends HTMLDivElement {
 	 */
 	loseHp(num) {
 		var next = game.createEvent("loseHp");
-		next.num = num;
+		next.num = num ?? 1;
 		next.player = this;
-		if (next.num == undefined) {
-			next.num = 1;
-		}
 		next.setContent("loseHp");
 		next.filterStop = function () {
 			if (this.num <= 0) {
@@ -8442,17 +8691,25 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 扣减玩家的体力上限
+	 *
+	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }}
 	 */
-	loseMaxHp() {
-		var next = game.createEvent("loseMaxHp");
+	loseMaxHp(params) {
+		const next = game.createEvent("loseMaxHp");
 		next.player = this;
 		next.num = 1;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] === "number") {
-				next.num = arguments[i];
-			} else if (typeof arguments[i] === "boolean") {
-				next.forced = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg === "number") {
+					next.num = arg;
+				} else if (typeof arg === "boolean") {
+					next.forced = arg;
+				}
 			}
 		}
 		next.setContent("loseMaxHp");
@@ -8460,17 +8717,25 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 令玩家获得体力上限
+	 *
+	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }
 	 */
-	gainMaxHp() {
-		var next = game.createEvent("gainMaxHp");
+	gainMaxHp(params) {
+		const next = game.createEvent("gainMaxHp");
 		next.player = this;
 		next.num = 1;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] === "number") {
-				next.num = arguments[i];
-			} else if (typeof arguments[i] === "boolean") {
-				next.forced = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (typeof arg === "number") {
+					next.num = arg;
+				} else if (typeof arg === "boolean") {
+					next.forced = arg;
+				}
 			}
 		}
 		next.setContent("gainMaxHp");
@@ -8483,7 +8748,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	changeHp(num, popup) {
-		var next = game.createEvent("changeHp");
+		const next = game.createEvent("changeHp");
 		next.num = num;
 		if (popup != undefined) {
 			next.popup = popup;
@@ -8500,7 +8765,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	changeHujia(num, type, limit) {
-		var next = game.createEvent("changeHujia");
+		const next = game.createEvent("changeHujia");
 		if (typeof num != "number") {
 			num = 1;
 		}
@@ -8525,13 +8790,13 @@ export class Player extends HTMLDivElement {
 		next.setContent("changeHujia");
 		return next;
 	}
-	getBuff() {
+	getBuff(...args) {
 		var list = [1, 2, 3, 4, 5, 6];
 		var nodelay = false;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				list.remove(arguments[i]);
-			} else if (arguments[i] === false) {
+		for (const arg of args) {
+			if (typeof arg == "number") {
+				list.remove(arg);
+			} else if (arg === false) {
 				nodelay = true;
 			}
 		}
@@ -8575,13 +8840,13 @@ export class Player extends HTMLDivElement {
 		}
 		return this;
 	}
-	getDebuff() {
+	getDebuff(...args) {
 		var list = [1, 2, 3, 4, 5, 6];
 		var nodelay = false;
-		for (var i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == "number") {
-				list.remove(arguments[i]);
-			} else if (arguments[i] === false) {
+		for (const arg of args) {
+			if (typeof arg == "number") {
+				list.remove(arg);
+			} else if (arg === false) {
 				nodelay = true;
 			}
 		}
@@ -9084,25 +9349,34 @@ export class Player extends HTMLDivElement {
 			card.expired = false;
 		}
 	}
-	judge() {
-		var next = game.createEvent("judge");
+	/**
+	 * @param { import("./Player/type.d").EventJudgeParams } [params]
+	 */
+	judge(params) {
+		const next = game.createEvent("judge");
 		next.player = this;
-		for (var i = 0; i < arguments.length; i++) {
-			if (get.itemtype(arguments[i]) == "card" || get.is.object(arguments[i])) {
-				next.card = arguments[i];
-			} else if (typeof arguments[i] == "string") {
-				next.skill = arguments[i];
-			} else if (typeof arguments[i] == "function") {
-				next.judge = arguments[i];
-			} else if (typeof arguments[i] == "boolean") {
-				next.clearArena = arguments[i];
-			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
-				next.position = arguments[i];
+
+		const args = [...arguments];
+		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+			Object.assign(next, params);
+		} else {
+			for (const arg of args) {
+				if (get.itemtype(arg) == "card" || get.is.object(arg)) {
+					next.card = arg;
+				} else if (typeof arg == "string") {
+					next.skill = arg;
+				} else if (typeof arg == "function") {
+					next.judge = arg;
+				} else if (typeof arg == "boolean") {
+					next.clearArena = arg;
+				} else if (["div", "fragment"].includes(get.objtype(arg))) {
+					next.position = arg;
+				}
 			}
 		}
 		if (next.card && next.judge == undefined) {
 			next.judge = get.judge(next.card);
-			next.judge2 = get.judge2(next.card);
+			next.judge2 ??= get.judge2(next.card);
 		}
 		if (next.judge == undefined) {
 			next.judge = function () {
@@ -11298,8 +11572,8 @@ export class Player extends HTMLDivElement {
 	clearSkills(all) {
 		var list = [];
 		var exclude = [];
-		for (var i = 0; i < arguments.length; i++) {
-			exclude.push(arguments[i]);
+		for (const arg of arguments) {
+			exclude.push(arg);
 		}
 		for (i = 0; i < this.skills.length; i++) {
 			if (lib.skill[this.skills[i]].superCharlotte) {
@@ -12635,7 +12909,7 @@ export class Player extends HTMLDivElement {
 			return false;
 		}
 	}
-	inline() {
+	inline(...args) {
 		if (["unknown", "ye"].includes(this.identity) || this.hasSkill("undist")) {
 			return false;
 		}
@@ -12663,8 +12937,8 @@ export class Player extends HTMLDivElement {
 		if (!list.length) {
 			return false;
 		}
-		for (var i = 0; i < arguments.length; i++) {
-			if (!list.includes(arguments[i]) && arguments[i] != this) {
+		for (const arg of args) {
+			if (!list.includes(arg) && arg != this) {
 				return false;
 			}
 		}
