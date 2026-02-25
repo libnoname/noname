@@ -457,6 +457,90 @@ export class Player extends HTMLDivElement {
 	}
 
 	/**
+	 * 整理手牌，要联机的不要单独用，主机不会同步状态的
+	 * @param {(a: Card, b: Card) => number|Card[]} [sort] 排序方法，如果传的牌数组，就按数组顺序排
+	 * @returns {boolean|undefined}
+	 */
+	sortHandcard(sort) {
+		if (this.hasSkillTag("noSortCard")) {
+			return false;
+		}
+
+		const hs = this.getCards("h").slice();
+		if (!hs.length) {
+			return false;
+		}
+		const cards1 = [];
+		const cards2 = !get.is.singleHandcard() ? [] : null;
+
+		if (typeof sort == "function") {
+			hs.sort(sort);
+		} else if (get.itemtype(sort) == "cards") {
+			hs.sort((a, b) => sort.indexOf(a) - sort.indexOf(b));
+		} else if (this.hasSkillTag("sortCardByNum")) {
+			const getn = function (card) {
+				const num = get.number(card, this);
+				if (num < 3) {
+					return 13 + num;
+				}
+				return num;
+			};
+			hs.sort((a, b) => getn(b) - getn(a));
+		} else {
+			hs.sort(function (b, a) {
+				if (a.name != b.name) {
+					return lib.sort.card(a.name, b.name);
+				} else if (a.suit != b.suit) {
+					return lib.suit.indexOf(a) - lib.suit.indexOf(b);
+				} else {
+					return a.number - b.number;
+				}
+			});
+		}
+
+		this.node.handcards1.style.visibility = "hidden";
+		this.node.handcards2.style.visibility = "hidden";
+		hs.forEach(card => {
+			const sort = lib.config.sort_card(card);
+			if (sort < 0 && cards2) {
+				cards2.unshift(card);
+			} else {
+				cards1.unshift(card);
+			}
+		});
+
+		this.node.handcards1.prepend(...cards1);
+		if (cards2) {
+			this.node.handcards2.prepend(...cards2);
+		}
+		this.node.handcards1.style.visibility = "visible";
+		this.node.handcards2.style.visibility = "visible";
+		if (this == game.me) {
+			ui.updatehl();
+		}
+	}
+	/**
+	 * 整理手牌然后如果是联机模式顺便同步
+	 * @param {(a: Card, b: Card) => number|Card[]} [sort] 排序方法，如果传的牌数组，就按数组顺序排
+	 */
+	sortHandcardOL(sort) {
+		const bool = game.me.sortHandcard(sort);
+		//联机要同步手牌状态
+		if (_status.connectMode && bool !== false) {
+			if (game.online) {
+				game.send(
+					"syncHandcard",
+					this.getCards("h").map(i => i.cardid)
+				);
+			} else {
+				game.syncHandcard(
+					game.me,
+					this.getCards("h").map(i => i.cardid)
+				);
+			}
+		}
+	}
+	/**
 	 * 是否拥有对应战法
 	 * @param {string} id 战法的id
 	 */
@@ -7987,13 +8071,16 @@ export class Player extends HTMLDivElement {
 		return this;
 	}
 	directgain(cards, broadcast, gaintag) {
-		var hs = this.getCards("hs");
-		for (var i = 0; i < cards.length; i++) {
+		const hs = this.getCards("hs");
+		for (let i = 0; i < cards.length; i++) {
 			if (hs.includes(cards[i])) {
 				cards.splice(i--, 1);
 			}
 		}
-		for (var i = 0; i < cards.length; i++) {
+		const cards1 = [];
+		const cards2 = [];
+		//老写法直接循环insertBefore，颠倒cards顺序，诗人啊！
+		for (let i = 0; i < cards.length; i++) {
 			cards[i].fix();
 			if (gaintag) {
 				if (typeof gaintag == "string") {
@@ -8002,16 +8089,22 @@ export class Player extends HTMLDivElement {
 				//cards[i].addGaintag(gaintag);
 				gaintag.forEach(tag => cards[i].addGaintag(tag));
 			}
-			var sort = lib.config.sort_card(cards[i]);
+			const sort = lib.config.sort_card(cards[i]);
 			if (this == game.me) {
 				cards[i].classList.add("drawinghidden");
 			}
 			if (get.is.singleHandcard() || sort > 0) {
-				this.node.handcards1.insertBefore(cards[i], this.node.handcards1.firstChild);
+				cards1.push(cards[i]);
 			} else {
-				this.node.handcards2.insertBefore(cards[i], this.node.handcards2.firstChild);
+				cards2.push(cards[i]);
 			}
 		}
+		//插入回手牌去
+		this.node.handcards1.prepend(...cards1);
+		if (cards2.length) {
+			this.node.handcards2.prepend(...cards2);
+		}
+
 		if (this == game.me || _status.video) {
 			ui.updatehl();
 		}

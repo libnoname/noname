@@ -3531,7 +3531,7 @@ const skills = {
 					list.addArray(evt.cards);
 					return list;
 				}, []);
-				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("showers", targets);
+				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("multipleShow", true);
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:

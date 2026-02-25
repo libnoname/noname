@@ -87,11 +87,7 @@ export class Create {
 	 * @param {{ value?: string, language?: string, saveInput?: (code: string) => any }} config
 	 */
 	async editor(config = {}) {
-		const {
-			value = "",
-			language = "javascript",
-			saveInput = code => {},
-		} = config;
+		const { value = "", language = "javascript", saveInput = code => {} } = config;
 
 		const container = ui.create.div(".popup-container.editor2");
 		ui.window.appendChild(container);
@@ -115,13 +111,11 @@ export class Create {
 			delete window.saveNonameInput;
 		};
 
-
 		const { basicSetup } = await import("codemirror");
 		const { EditorView } = await import("@codemirror/view");
 		const { linter, lintGutter } = await import("@codemirror/lint");
 		const { search, highlightSelectionMatches, openSearchPanel } = await import("@codemirror/search");
 
-		
 		// 在editorpage中添加功能按钮等
 		const editorpage = ui.create.div(container);
 		editorpage.addEventListener("keydown", function (e) {
@@ -540,7 +534,9 @@ export class Create {
 		ui.roombase.classList.add("scroll2");
 		ui.roombase.classList.add("noupdate");
 		for (var i = 0; i < list.length; i++) {
-			var player = ui.roombase.add('<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>');
+			var player = ui.roombase.add(
+				'<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>'
+			);
 			player.roomindex = i;
 			player.initRoom = lib.element.Player.prototype.initRoom;
 			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.connectroom);
@@ -1021,7 +1017,10 @@ export class Create {
 					dialog.currentgroupnode = node;
 					node.classList.add("thundertext");
 					for (var i = 0; i < dialog.buttons.length; i++) {
-						if (dialog.buttons[i].group != link || (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt))) {
+						if (
+							dialog.buttons[i].group != link ||
+							(dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt))
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1287,7 +1286,10 @@ export class Create {
 						restoreState(dialog.buttons[i]);
 						if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
+						} else if (
+							dialog.currentcapt2 &&
+							dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1310,7 +1312,10 @@ export class Create {
 						restoreState(dialog.buttons[i]);
 						if (dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
+						} else if (
+							dialog.currentcapt2 &&
+							dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
@@ -1340,7 +1345,10 @@ export class Create {
 						restoreState(dialog.buttons[i]);
 						if (dialog.currentgroup && dialog.buttons[i].group != dialog.currentgroup) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
+						} else if (
+							dialog.currentcapt &&
+							dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1464,7 +1472,10 @@ export class Create {
 						restoreState(dialog.buttons[i]);
 						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
+						} else if (
+							dialog.currentcapt2 &&
+							dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else {
 							dialog.buttons[i].classList.remove("nodisplay");
@@ -1481,7 +1492,10 @@ export class Create {
 						restoreState(dialog.buttons[i]);
 						if (dialog.currentcapt && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt)) {
 							dialog.buttons[i].classList.add("nodisplay");
-						} else if (dialog.currentcapt2 && dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)) {
+						} else if (
+							dialog.currentcapt2 &&
+							dialog.buttons[i].capt != dialog.getCurrentCapt(dialog.buttons[i].link, dialog.buttons[i].capt, true)
+						) {
 							dialog.buttons[i].classList.add("nodisplay");
 						} else if (dialog.currentgroup == "double") {
 							if (dialog.buttons[i]._changeGroup) {
@@ -1549,7 +1563,12 @@ export class Create {
 				for (var i = 0; i < node.childElementCount; i++) {
 					if (node.childNodes[i].tagName.toLowerCase() == "span") {
 						node.childNodes[i].style.display = "none";
-						node.childNodes[i].touchlink = ui.create.div(filternode.firstChild, clickCaptNode, ".menubutton.large.capt", node.childNodes[i].innerHTML);
+						node.childNodes[i].touchlink = ui.create.div(
+							filternode.firstChild,
+							clickCaptNode,
+							".menubutton.large.capt",
+							node.childNodes[i].innerHTML
+						);
 						node.childNodes[i].touchlink.link = node.childNodes[i];
 					}
 				}
@@ -2190,7 +2209,13 @@ export class Create {
 	buttonChooseAll() {
 		const event = get.event();
 		// 如果不是当前玩家、当前配置或者事件不允许全选或者使用complexSelect，则取消注入喵
-		if (!event.isMine() || !(event.dialog instanceof lib.element.Dialog) || !event.allowChooseAll || event.complexSelect || !lib.config.choose_all_button) {
+		if (
+			!event.isMine() ||
+			!(event.dialog instanceof lib.element.Dialog) ||
+			!event.allowChooseAll ||
+			event.complexSelect ||
+			!lib.config.choose_all_button
+		) {
 			return null;
 		}
 		// 这里的条件用的是“AI代选”按钮的条件喵
@@ -2363,7 +2388,7 @@ export class Create {
 			if (window.plugins && window.plugins.insomnia) {
 				window.plugins.insomnia.keepAwake();
 			} else {
-				import("nosleep.js").then(function ({default: NoSleep}) {
+				import("nosleep.js").then(function ({ default: NoSleep }) {
 					var noSleep = new NoSleep();
 					document.addEventListener(
 						lib.config.touchscreen ? "touchend" : "click",
@@ -2668,10 +2693,14 @@ export class Create {
 		// }
 
 		ui.sortCard = ui.create.system("整理手牌", function () {
-			if (!game.me || game.me.hasSkillTag("noSortCard")) {
+			if (!game.me) {
+				// || game.me.hasSkillTag("noSortCard")
 				return;
 			}
-			var hs = game.me.getCards("h");
+			//允许自定义手牌排序，自己想办法塞一个吧
+			const sort = _status.tempHandcardSort;
+			game.me.sortHandcardOL(sort);
+			/*var hs = game.me.getCards("h");
 			if (!hs.length) {
 				return;
 			}
@@ -2699,7 +2728,7 @@ export class Create {
 					}
 				});
 			}
-			game.me.directgain(hs, false);
+			game.me.directgain(hs, false);*/
 		});
 		if (!lib.config.show_sortcard) {
 			ui.sortCard.style.display = "none";
@@ -2876,7 +2905,9 @@ export class Create {
 						function handleColor(str) {
 							let red = `[${get.translation("diamond")}${get.translation("heart")}]`;
 							let black = `[${get.translation("club")}${get.translation("spade")}]`;
-							return str.replace(new RegExp(red, "g"), '<span style="color:red">$&</span>').replace(new RegExp(black, "g"), '<span style="color:black">$&</span>');
+							return str
+								.replace(new RegExp(red, "g"), '<span style="color:red">$&</span>')
+								.replace(new RegExp(black, "g"), '<span style="color:black">$&</span>');
 						}
 					}
 				}
@@ -2886,11 +2917,11 @@ export class Create {
 		);
 
 		lib.arenaReady?.push(function () {
-			if (lib.config.show_deckMonitor) {
+			if (lib.config.show_deckMonitor && !_status.connectMode) {
 				ui.deckMonitor.style.display = "";
-				if (_status.connectMode) {// && !lib.config.show_deckMonitor_online
+				/*if (_status.connectMode && !lib.config.show_deckMonitor_online) {
 					ui.deckMonitor.style.display = "none";
-				}
+				}*/
 			} else {
 				ui.deckMonitor.style.display = "none";
 			}
@@ -3414,7 +3445,11 @@ export class Create {
 				if (infoitem[1]) {
 					var double = get.is.double(item, true);
 					if (double) {
-						node.node.group.innerHTML = double.reduce((previousValue, currentValue) => `${previousValue}<div data-nature="${get.groupnature(currentValue)}">${get.translation(currentValue)}</div>`, "");
+						node.node.group.innerHTML = double.reduce(
+							(previousValue, currentValue) =>
+								`${previousValue}<div data-nature="${get.groupnature(currentValue)}">${get.translation(currentValue)}</div>`,
+							""
+						);
 						if (double.length > 4) {
 							if (new Set([5, 6, 9]).has(double.length)) {
 								node.node.group.style.height = "48px";
@@ -3628,40 +3663,45 @@ export class Create {
 		ipbar.style.borderRadius = "2px";
 		ipbar.style.position = "relative";
 
-		var button = ui.create.div(".menubutton.large.highlight.connectbutton.connectbutton1.pointerdiv", game.online ? "退出联机" : "开始游戏", ui.window, function () {
-			if (button.clicked) {
-				return;
-			}
-			if (game.online) {
-				if (game.onlinezhu) {
-					game.send("startGame");
-				} else {
-					game.saveConfig("tmp_owner_roomId");
-					game.saveConfig("tmp_user_roomId");
-					game.saveConfig("reconnect_info");
-					game.reload();
-				}
-			} else {
-				var num = 0;
-				for (var i of game.connectPlayers) {
-					if (!i.nickname && !i.classList.contains("unselectable2")) {
-						num++;
-					}
-				}
-				if (num >= lib.configOL.number - 1) {
-					alert("至少要有两名玩家才能开始游戏！");
+		var button = ui.create.div(
+			".menubutton.large.highlight.connectbutton.connectbutton1.pointerdiv",
+			game.online ? "退出联机" : "开始游戏",
+			ui.window,
+			function () {
+				if (button.clicked) {
 					return;
 				}
-				game.resume();
+				if (game.online) {
+					if (game.onlinezhu) {
+						game.send("startGame");
+					} else {
+						game.saveConfig("tmp_owner_roomId");
+						game.saveConfig("tmp_user_roomId");
+						game.saveConfig("reconnect_info");
+						game.reload();
+					}
+				} else {
+					var num = 0;
+					for (var i of game.connectPlayers) {
+						if (!i.nickname && !i.classList.contains("unselectable2")) {
+							num++;
+						}
+					}
+					if (num >= lib.configOL.number - 1) {
+						alert("至少要有两名玩家才能开始游戏！");
+						return;
+					}
+					game.resume();
+				}
+				button.delete();
+				bar.delete();
+				shareButton.delete();
+				delete ui.connectStartButton;
+				delete ui.connectStartBar;
+				delete ui.connectShareButton;
+				button.clicked = true;
 			}
-			button.delete();
-			bar.delete();
-			shareButton.delete();
-			delete ui.connectStartButton;
-			delete ui.connectStartBar;
-			delete ui.connectShareButton;
-			button.clicked = true;
-		});
+		);
 
 		var shareButton = ui.create.div(".menubutton.large.highlight.connectbutton.connectbutton2.pointerdiv", "分享房间", ui.window, function () {
 			var text = `无名杀-联机-${lib.translate[get.mode()]}-${game.connectPlayers.filter(p => p.avatar).length}/${game.connectPlayers.filter(p => !p.classList.contains("unselectable2")).length}\n${get.connectNickname()}邀请你加入${game.roomId}房间\n联机地址:${game.ip}\n请先通过游戏内菜单-开始-联机中启用“读取邀请链接”选项`;

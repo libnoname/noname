@@ -4844,7 +4844,8 @@ const skills = {
 						return colors[1];
 					}
 					var list = get
-						.event("controls")
+						.event()
+						.controls
 						.map(i => [
 							i,
 							target

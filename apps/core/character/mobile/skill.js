@@ -2288,6 +2288,15 @@ const skills = {
 			return get.type2(evt.card) == get.type2(event.card) || get.suit(evt.card) == get.suit(event.card);
 		},
 		forced: true,
+		logAudio(event) {
+			const history = game.getAllGlobalHistory("useCard"),
+				index = history.indexOf(event);
+			const evt = history[index - 1];
+			const bool1 = get.type2(evt.card) == get.type2(event.card),
+				bool2 = get.suit(evt.card) == get.suit(event.card),
+				bool3 = get.name(evt.card) == get.name(event.card);
+			return bool1 && bool2 && bool3 ? "mbshiju3.mp3" : 2;
+		},
 		async content(event, trigger, player) {
 			const history = game.getAllGlobalHistory("useCard"),
 				index = history.indexOf(trigger);
@@ -2353,8 +2362,9 @@ const skills = {
 				trigger: {
 					global: "useCard1",
 				},
-				async cost(event, trigger, player) {
-					get.info(event.skill).init(player, event.skill);
+				silent: true,
+				async content(event, trigger, player) {
+					get.info(event.name).init(player, event.name);
 				},
 				intro: {
 					markcount() {
@@ -2446,14 +2456,15 @@ const skills = {
 				.getHistory("useCard")
 				.map(evt => get[key](evt.card))
 				.toUniqued();
-			if (list.length) {
+			if (_status.currentPhase == player) {
 				if (key == "number") {
 					list = list.filter(i => typeof i == "number").sort((a, b) => a - b);
 				}
 				for (const target of game.filterPlayer(current => current != player).sortBySeat()) {
 					const name = "mbkubai_guanjued";
 					target.addTempSkill(name);
-					target.setStorage(name, list, true);
+					target.storage[name] = list;
+					target.markSkill(name);
 				}
 			}
 		},
@@ -2462,9 +2473,8 @@ const skills = {
 		subSkill: {
 			guanjue: {
 				trigger: {
-					player: "useCardAfter",
+					player: ["useCard1", "phaseBeginStart"],
 				},
-				lastDo: true,
 				popup: false,
 				forced: true,
 				locked: false,
@@ -2482,10 +2492,14 @@ const skills = {
 				mark: true,
 				marktext: "白",
 				intro: {
+					markcount: (storage) => storage?.length || 0,
 					content(_1, player) {
 						const list = player.getStorage("mbkubai_guanjued"),
 							target = _status.currentPhase;
 						if (target.hasSkill("mbkubai")) {
+							if (!list.length) {
+								return "不能使用牌";
+							}
 							const level = Math.min(2, target.countMark("mbkubai")),
 								key = ["颜色", "花色", "点数"][level];
 							return `仅能使用${key}为${get.translation(list)}的牌`;
@@ -12880,7 +12894,7 @@ const skills = {
 					}
 				})
 				.set("delay_time", 4)
-				.set("showers", targets);
+				.set("multipleShow", true);
 			const card = cards[targets.indexOf(player)];
 			const cardx = cards.filter(cardy => cardy != card && get.color(cardy, targets[cards.indexOf(cardy)]) == get.color(card, player));
 			if (cardx.length) {

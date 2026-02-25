@@ -545,6 +545,9 @@ export const Content = {
 			const map = new Map();
 			for (const hidingCard of hidingCards) {
 				for (const tag of hidingCard.gaintag) {
+					if (tag.startsWith("eternal_") && !tag.slice(8).startsWith("visible_")) {
+						continue;
+					}
 					if (!tag.startsWith("visible_")) {
 						continue;
 					}
@@ -743,9 +746,9 @@ export const Content = {
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
 				if (slot == "equip3" || slot == "equip4") {
-					event.slotsx.add("equip3_4");
+					slots.add("equip3_4");
 				} else {
-					event.slotsx.add(slot);
+					slots.add(slot);
 				}
 			}
 		} else {
@@ -9448,7 +9451,7 @@ export const Content = {
 		event.dialog.close();
 	},
 	showCards: async function (event, trigger, player) {
-		const { cards, str, flashAnimation, triggeronly } = event;
+		const { cards, str, flashAnimation, triggeronly, isFlash, multipleShow } = event;
 		if (get.itemtype(cards) != "cards") {
 			return event.finish();
 		}
@@ -9465,7 +9468,7 @@ export const Content = {
 		await event.trigger("showCards");
 
 		if (get.itemtype(cards) != "cards") {
-			return event.finish();
+			return;
 		}
 
 		//确定要展示的牌
@@ -9523,6 +9526,22 @@ export const Content = {
 		//仅触发时机，不做后续处理
 		if (triggeronly) {
 			return;
+		}
+
+		//这部分是处理将牌置入处理区的，一般只有亮出才会置入
+		if (!event.noOrdering && isFlash) {
+			//有noOrdering属性亮出牌就不会把牌丢进处理区
+			//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
+			if (Array.from(ownerLose.values())?.flat()?.length > 0) {
+				const next = game
+					.loseAsync({ lose_list: Array.from(ownerLose.entries()) })
+					.set("relatedEvent", event.relatedEvent || event.getParent());
+				next.setContent("chooseToCompareLose");
+				await next;
+			}
+			if (directLose.length > 0) {
+				await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent());
+			}
 		}
 
 		//展示牌的动画
@@ -9595,48 +9614,10 @@ export const Content = {
 				event.videoId,
 				customButton
 			);
-			const cards2 = cards.slice(0);
-			if (event.hiddencards) {
-				cards2.removeArray(event.hiddencards);
-			}
-			//处理历史记录的log，允许自定义log的内容，log函数参数为对应角色要展示的牌cards和角色player
-			if (event.log != false) {
-				if (get.itemtype(event.showers) !== "players") {
-					const logList = event.log?.(cards2, player) || [player, "展示了", cards2];
-					game.log(...logList);
-				} else {
-					const targets = event.showers.concat(Array.from(ownerLose.keys()));
-					for (const target of targets.unique().sortBySeat()) {
-						const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
-						if (cardsx?.length) {
-							const logList = event.log?.(cardsx, target) || [target, "展示了", cardsx];
-							game.log(...logList);
-						}
-					}
-					if (directLose.length) {
-						const logList = event.log?.(directLose, player) || [player, "展示了", directLose];
-						game.log(...logList);
-					}
-				}
-			}
+			//处理历史记录的log
 			game.addVideo("showCards", player, [event.str, get.cardsInfo(cards)]);
 		} else {
 			event.videoId = lib.status.videoId++;
-			//这部分是处理亮出牌的，动画效果类似判定，需要另外处理
-			if (!event.noOrdering) {
-				//有noOrdering属性亮出牌就不会把牌丢进处理区
-				//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-				if (Array.from(ownerLose.values())?.flat()?.length > 0) {
-					const next = game
-						.loseAsync({ lose_list: Array.from(ownerLose.entries()) })
-						.set("relatedEvent", event.relatedEvent || event.getParent());
-					next.setContent("chooseToCompareLose");
-					await next;
-				}
-				if (directLose.length > 0) {
-					await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent());
-				}
-			}
 			for (const card of cards) {
 				game.addVideo("judge1", player, [get.cardInfo(card), event.str, event.videoId]);
 			}
@@ -9676,13 +9657,38 @@ export const Content = {
 				event.videoId,
 				cards.map(i => get.id())
 			);
-			if (event.log != false) {
-				const logList = event.log?.(cards, player) || [player, "亮出了", cards];
+		}
+
+		//允许自定义log的内容，log函数参数为对应角色要展示的牌cards和角色player
+		const cards2 = cards.slice(0);
+		if (event.hiddencards && !isFlash) {
+			cards2.removeArray(event.hiddencards);
+		}
+		if (event.log != false) {
+			const str = isFlash ? "亮出了" : "展示了";
+			//multipleShow属性是表示是否有多个展示牌的角色的意思
+			if (multipleShow !== true) {
+				const logList = event.log?.(cards2, player) || [player, str, cards2];
 				game.log(...logList);
+			} else {
+				const targets = Array.from(ownerLose.keys());
+				for (const target of targets.sortBySeat()) {
+					const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
+					if (cardsx?.length) {
+						const logList = event.log?.(cardsx, target) || [target, str, cardsx];
+						game.log(...logList);
+					}
+				}
+				if (directLose.length) {
+					const logList = event.log?.(directLose, player) || [player, str, directLose];
+					game.log(...logList);
+				}
 			}
 		}
+		//添加知情者
 		game.addCardKnower(cards, "everyone");
-		await game.delayx(event.delay_time || 2.5);
+		//增加延迟，允许自定义
+		await game.delayx(event.delay_time || Math.min(5, cards.length));
 
 		//关闭对话框，结束动画
 		if (!flashAnimation) {
@@ -9732,6 +9738,7 @@ export const Content = {
 				await new Promise(resolve => {
 					ui.create.confirm("o", resolve);
 				});
+				ui?.confirm?.close();
 			} else {
 				event.result = "viewed";
 				const wait = delay(2 * lib.config.duration).then(() => {

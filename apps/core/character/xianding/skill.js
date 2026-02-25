@@ -5089,7 +5089,7 @@ const skills = {
 			await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
 			const num = cards.length + 1;
 			const name = `${event.name}_effect`;
-			player.addMark(name, num, false);
+			player.setMark(name, num, false);
 			player.setStorage(`${event.name}_shown`, [...cards.map(i => get.color(i)), ...cards.map(i => get.type2(i))].unique());
 			player.addSkill(name);
 		},
@@ -6250,7 +6250,7 @@ const skills = {
 				const suits = cards.map(card => get.suit(card)).unique();
 				const next = player
 					.showCards(cards, `${get.translation(player)} 发动了【${get.translation(event.name)}】`, false)
-					.set("showers", targets)
+					.set("multipleShow", true)
 					.set("customButton", button => {
 						const target = get.owner(button.link);
 						if (target) {
@@ -6334,7 +6334,7 @@ const skills = {
 					await game.doAsyncInOrder(damage, async target => {
 						const next = target.damage("fire");
 						await next;
-						damaged.addArray(targets.filter(i => i.hasHistory("damage", evt => (evt.getParent()?.getTrigger() || evt) == next)));
+						damaged.addArray(targets.filter(i => i.hasHistory("damage", evt => evt == next || evt.getParent()?.getTrigger() == next)));
 					});
 					if (damaged.length != event.targets.length) {
 						targets.forEach(target => {
@@ -13577,8 +13577,9 @@ const skills = {
 			if (card) {
 				await player.gain(card, get.owner(card) ? "give" : "gain2");
 				if (num == 1) {
-					await player.recover();
+					//谁tm再提这个构思结算问题，我*****
 					player.tempBanSkill("dcchaozhen");
+					await player.recover();
 				}
 			}
 		},
@@ -19689,7 +19690,7 @@ const skills = {
 					if (!result2.bool) {
 						if (storage) {
 							target.popup("杯具");
-							target.loseHp(num + 1);
+							await target.loseHp(num + 1);
 						}
 						break;
 					}
@@ -26317,7 +26318,7 @@ const skills = {
 						await game.cardsGotoPile(cards);
 					} else {
 						player.popup("牌堆顶");
-						await game.cardsGotoPile(cards, "insert");
+						await game.cardsGotoPile(cards.slice().reverse(), "insert");
 					}
 				}
 			}
@@ -31858,6 +31859,9 @@ const skills = {
 				});
 				player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
 				game.log(player, "将" + get.cnNumber(top.length) + "张牌置于牌堆顶");
+				if (bottom.length != num) {
+					return;
+				}
 				const result2 = await player
 					.chooseTarget("是否令一名角色摸" + get.cnNumber(num) + "张牌，然后失去1点体力？")
 					.set("ai", function (target) {
@@ -36556,33 +36560,31 @@ const skills = {
 		check() {
 			return ui.cardPile.hasChildNodes() && get.color(ui.cardPile.firstChild) != "black";
 		},
-		content() {
-			"step 0";
-			event.count = 0;
-			"step 1";
-			player.draw();
-			"step 2";
-			if (Array.isArray(result)) {
-				event.count += result.length;
-				if (get.color(result) != "red") {
-					if (player.hp > 1) {
-						player.loseHp();
+		async content(event, trigger, player) {
+			let count = 0;
+			while (count < 3) {
+				const { cards } = await player.draw().forResult();
+				count += cards?.length;
+				if (cards?.some(card => get.color(card) == "black")) {
+					if (player.getHp() > 1) {
+						await player.loseHp();
 					}
-					event.finish();
-				} else if (event.count < 3) {
-					player.chooseBool("是否继续发动【命戒】？").ai = function () {
-						if (event.count == 2) {
-							return Math.random() < 0.5;
-						}
-						return lib.skill.mingjie.check();
-					};
+					break;
+				} else {
+					const result = await player
+						.chooseBool("是否继续发动【命戒】？")
+						.set("ai", function () {
+							if (get.event().count == 2) {
+								return Math.random() < 0.5;
+							}
+							return lib.skill.mingjie.check();
+						})
+						.set("count", count)
+						.forResult();
+					if (!result.bool) {
+						break;
+					}
 				}
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				event.goto(1);
 			}
 		},
 	},

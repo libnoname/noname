@@ -2,7 +2,7 @@ export default {
 	"#mbxinghun1": "仰观紫微知兴替，俯察将星照铁衣。",
 	"#mbxinghun2": "既晓九星所向，傲破万难独前。",
 	"#mbtiantao1": "以此天穹之水，涤瑕荡秽。",
-	"#mbtiantao2": "心怀浊恶之徒，岂能成神女之卿？",
+	"#mbtiantao2": "心怀浊恶之徒，岂能成神雨之清？",
 	"#mbshenpei1": "雄山峻壑终踏过，须信寒过总是春。",
 	"#mbshenpei2": "世有云霓之望，维必借天馈之！",
 	"#mbhuitian1": "胸怀赤义，敢问苍天争命数！",

@@ -639,7 +639,7 @@ const skills = {
 			if (!cards?.length) {
 				return;
 			}
-			await player.showCards(cards, `${get.translation(player)}发动了【策断】`).set("showers", targets);
+			await player.showCards(cards, `${get.translation(player)}发动了【策断】`).set("multipleShow", true);
 			const colorMap = new Map();
 			for (const card of cards) {
 				const color = get.color(card);

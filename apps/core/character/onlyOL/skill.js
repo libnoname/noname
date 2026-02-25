@@ -429,7 +429,7 @@ const skills = {
 			global: "damageEnd",
 		},
 		filter(event, player) {
-			return !player.getStorage("olsbshunji_used").includes(event.player);
+			return !player.getStorage("olsbshunji_used").includes(event.player) && event.player?.isIn();
 		},
 		logTarget: "player",
 		check(event, player) {
@@ -2316,9 +2316,9 @@ const skills = {
 			}
 			if (event.player == player) {
 				const num = player.countCards("h");
-				return event.targets.some(target => target.countCards("h") < num);
+				return event.targets.some(target => target.countCards("h") <= num);
 			}
-			return event.player.getHp() > player.getHp();
+			return event.player.getHp() >= player.getHp();
 		},
 		logTarget(event, player) {
 			if (event.player == player) {
@@ -4060,12 +4060,29 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
-						return 7.5 - get.value(card);
+						return get.event().resultAI.cards.includes(card);
 					},
 					ai2(target) {
-						return -get.attitude(get.player(), target) * target.countCards("hs");
+						return get.event().resultAI.targets.includes(target);
 					},
 				})
+				.set(
+					"resultAI",
+					(function () {
+						let cards = player.getDiscardableCards(player, "he", card => get.value(card) < 7.5).sort((a, b) => get.value(a) - get.value(b)),
+							targets = game
+								.filterPlayer(current => current != player && -get.attitude(player, current) * current.countCards("hs") > 0)
+								.sort((a, b) => {
+									let num1 = -get.attitude(get.player(), a) * a.countCards("hs"),
+										num2 = -get.attitude(get.player(), b) * b.countCards("hs");
+									return num2 - num1;
+								});
+						const num2 = Math.min(cards.length, targets.length, num);
+						cards = cards.slice(0, num2);
+						targets = targets.slice(0, num2);
+						return { cards, targets };
+					})()
+				)
 				.forResult();
 			if (result?.cards?.length && result.targets?.length) {
 				const { cards, targets } = result;
@@ -7038,7 +7055,10 @@ const skills = {
 							const player = get.player(),
 								target = get.event().getParent().indexedData;
 							const vcard = new lib.element.VCard({ name: "sha", isCard: true });
-							return get.effect(target, vcard, player, player) - get.value(card);
+							if (get.effect(target, vcard, player, player) > 0) {
+								return 7 - get.value(card);
+							}
+							return 0;
 						})
 						.set("logSkill", list)
 						.forResult();
@@ -7100,8 +7120,8 @@ const skills = {
 			return !player.hasHistory("sourceDamage", evt => evt.card == evtx.card);
 		},
 		forced: true,
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 			trigger.baseDamage++;
 			player.addTempSkill("olsbzhuijiao_debuff");
 			trigger.olsbzhuijiao = true;

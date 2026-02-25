@@ -24,11 +24,8 @@ const failedJson = <T = any>(code: number, message?: string): JsonResult<T> => (
 	errorMsg: message,
 });
 
-const oneYear = 60 * 1000 * 60 * 24 * 365;
-
 export const defaultConfig = {
 	server: false,
-	maxAge: oneYear,
 	port: 8089,
 	debug: false,
 	dirname: cwd(),
@@ -75,7 +72,7 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 		root: cfg.dirname,
 		prefix: "/",
 		dotfiles: "allow",
-		maxAge: cfg.debug ? 0 : cfg.maxAge,
+		maxAge: 0,
 	});
 
 	// index.html

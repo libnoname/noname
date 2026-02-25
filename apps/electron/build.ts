@@ -30,7 +30,7 @@ await buildVite();
 
 switch (process.argv[2]) {
 	case "win":
-		main(Platform.WINDOWS.createTarget("nsis", Arch.x64, Arch.ia32), {
+		main(Platform.WINDOWS.createTarget("nsis", Arch.x64), {
 			win: {
 				verifyUpdateCodeSignature: false,
 				icon: "noname.ico",

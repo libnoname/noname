@@ -4860,12 +4860,12 @@ export class Library {
 					unfrequent: true,
 					onclick(bool) {
 						if (_status.connectMode) {
-							if (confirm("当前为联机模式，修改此设置需重启，是否重启？")) {
+							/*if (confirm("当前为联机模式，修改此设置需重启，是否重启？")) {
 								game.saveConfig("show_deckMonitor", bool);
 								game.reload();
 							} else {
 								this.classList.toggle("on");
-							}
+							}*/
 						} else {
 							game.saveConfig("show_deckMonitor", bool);
 							if (lib.config.show_deckMonitor) {
@@ -12005,7 +12005,7 @@ export class Library {
 			 * @this {import("./element/client.js").Client}
 			 */
 			init(version, config, banned_info) {
-				var show_deckMonitor = false;
+				/*var show_deckMonitor = false;
 				if (lib.config.show_deckMonitor) {
 					// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
@@ -12016,7 +12016,7 @@ export class Library {
 					} else {
 						ui.deckMonitor.style.display = "none";
 					}
-				}, show_deckMonitor);
+				}, show_deckMonitor);*/
 				this.onlineKey = config.onlineKey;
 				var banBlacklist = lib.config.banBlacklist === undefined ? [] : lib.config.banBlacklist;
 				if (lib.node.banned.includes(banned_info) || banBlacklist.includes(config.onlineKey)) {
@@ -12427,6 +12427,23 @@ export class Library {
 					return;
 				}
 				this.send("log", items);
+			},
+			/**
+			 * 同步主客机的手牌状态
+			 *
+			 * @this {import("./element/client.js").Client}
+			 * @param {string[]} cardid_list 要同步的手牌id序列
+			 */
+			syncHandcard(cardid_list) {
+				if (lib.node.observing.includes(this)) {
+					return;
+				}
+
+				const player = lib.playerOL[this.id];
+				if (!player) {
+					return;
+				}
+				game.syncHandcard(player, cardid_list);
 			},
 		},
 		client: {
@@ -14528,8 +14545,8 @@ export class Library {
 			{
 				color: "#e8a0b7",
 				nature: "woodmm",
-			}
-		]
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

@@ -1,6 +1,6 @@
 {
   "name": "@noname/electron",
-  "version": "1.11.0",
+  "version": "1.11.2",
   "productName": "无名杀",
   "license": "GPL-3.0-only",
   "main": "dist/app/main.js",

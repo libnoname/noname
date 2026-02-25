@@ -286,7 +286,7 @@ const skills = {
 			order: 3,
 			result: {
 				target(player, target) {
-					return -get.effect(target, { name: "guohe_copy2" }, player, player);
+					return -get.effect(target, { name: "guohe_copy2" }, target, player);
 				},
 			},
 		},
@@ -749,7 +749,10 @@ const skills = {
 			global: "useCardAfter",
 		},
 		filter(event, player) {
-			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) == 1;
+			return (
+				game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) == 1 &&
+				game.hasPlayer(target => !event.targets.includes(target) && !player.getStorage("clandingan_used").includes(target))
+			);
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -761,12 +764,11 @@ const skills = {
 				pre_targets.length > 1
 					? await player
 							.chooseTarget(
-								`定安：与任意名不为此牌目标的其他角色各摸一张牌`,
+								`定安：与一名不为此牌目标的其他角色各摸一张牌`,
 								(card, player, target) => {
 									return get.event().targetx.includes(target);
 								},
-								true,
-								[1, pre_targets.length]
+								true
 							)
 							.set("targetx", pre_targets)
 							.set("prompt2", "然后你令手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")

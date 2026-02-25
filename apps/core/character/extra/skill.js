@@ -14,7 +14,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const position = ["h", "e", "j"],//.filter(pos => player.countDiscardableCards(player, pos)),
+			const position = ["h", "e", "j"], //.filter(pos => player.countDiscardableCards(player, pos)),
 				map = { h: "手牌区", e: "装备区", j: "判定区" };
 			let list = position.map(i => map[i]);
 			const result = await player
@@ -42,19 +42,20 @@ const skills = {
 				return;
 			}
 			const pos = { 手牌区: "h", 装备区: "e", 判定区: "j" }[result.control];
+			let doneList = new Map();
 			const result2 = await player.modedDiscard(player.getCards(pos)).forResult();
-			let doneList = new Map([[player, result2?.cards || []]]);
+			if (result2?.cards?.length) {
+				doneList.set(player, result2.cards);
+			}
 			while (true) {
 				if (!game.hasPlayer(current => current != player && !doneList.has(current) && current.countDiscardableCards(player, pos))) {
 					break;
 				}
 				let result = await player
 					.chooseTarget(`天涛：选择一名其他角色，弃置其${{ h: "手牌区", e: "装备区", j: "判定区" }[pos]}内的一张牌`)
-					.set(
-						"filterTarget",
-						(_, player, target) =>
-							target != player && !get.event().doneList.get(target) && target.countDiscardableCards(player, get.event().pos)
-					)
+					.set("filterTarget", (_, player, target) => {
+						return target != player && !get.event().doneList.has(target) && target.countDiscardableCards(player, get.event().pos);
+					})
 					.set("ai", target => {
 						const { pos, player } = get.event();
 						return get.effect(target, { name: "guohe_copy", position: pos }, player, player);
@@ -90,7 +91,7 @@ const skills = {
 			const num = 5;
 			const cards = get.cards(num, true);
 			let result = await player
-				.chooseToMove_new("星魂：选择任意张手牌牌进行交换", true)
+				.chooseToMove_new("星魂：选择任意张手牌进行交换", true)
 				.set("list", [
 					["牌堆顶的牌", cards],
 					["你的手牌", player.getCards("h")],
@@ -164,26 +165,59 @@ const skills = {
 			if (result?.bool && result.targets?.length) {
 				const [target] = result.targets;
 				player.line(target, "thunder");
-				let numx = 0;
+				let showCards = [];
+				const top = get.cards(5, true);
 				if (player.countCards("h")) {
-					let min = Math.min(player.countCards("h"), num);
-					result = await target
-						.chooseNumbers(
-							`###${get.translation(player)}对你发动了“${get.translation(event.name)}”，请选择一个数字X###然后展示其X张手牌和牌堆顶${num}-X张牌，其对你依次使用其中的【杀】`,
-							min,
-							[Array.from({ length: min + 1 }, (_, i) => i)],
+					const result = await target
+						.chooseButton(
+							[
+								`星魂：请展示五张牌`,
+								`<div class="text center">牌堆顶</div>`,
+								[top, "blank"],
+								`<div class="text center">${get.translation(player)}的手牌</div>`,
+								player.getCards("h").slice().randomSort(),
+								[
+									dialog => {
+										const { target, player, top } = get.event();
+										dialog.buttons.forEach(button => {
+											const card = button.link;
+											if (top.includes(card)) {
+												return;
+											}
+											if (
+												!target.isUnderControl(true) &&
+												!player.hasSkillTag("viewHandcard", null, target, true) &&
+												!get.is.shownCard(card)
+											) {
+												button.classList.add("infoflip");
+												button.classList.add("infohidden");
+											}
+										});
+									},
+									"handle",
+								],
+							],
+							5,
 							true
 						)
-						.set("processAI", ({ list: [numbers] }) => [numbers.at(-1)])
+						.set("top", top)
+						.set("target", player)
+						.set("ai", () => Math.random())
 						.forResult();
-					if (result?.bool && result.numbers?.length) {
-						numx = result.numbers[0];
-					}
+					showCards = result.links;
+				} else {
+					showCards = top;
 				}
-				const top = get.cards(num - numx, true);
-				const showCards = player.getCards("h").randomGets(numx).concat(top);
-				await game.cardsGotoOrdering(top);
-				await target.showCards(showCards, `${get.translation(target)}因“${get.translation(event.name)}”展示`);
+				//await game.cardsGotoOrdering(top);
+				await target
+					.showCards(showCards, `${get.translation(target)}因“${get.translation(event.name)}”展示`)
+					.set("customButton", button => {
+						if (get.event().top.includes(button.link)) {
+							button.node.gaintag.innerHTML = "牌堆顶";
+						}
+					})
+					.set("top", top)
+					.set("delay_time", 5);
 				if (showCards.some(card => get.name(card) == "sha")) {
 					let sha = showCards.filter(card => get.name(card) == "sha");
 					while (sha.length) {
@@ -196,9 +230,9 @@ const skills = {
 						}
 					}
 				}
-				if (top.length) {
+				/*if (top.length) {
 					await game.cardsGotoPile(top.slice().reverse(), "insert");
-				}
+				}*/
 			}
 		},
 		ai: {
@@ -241,7 +275,7 @@ const skills = {
 			if (num > 0) {
 				await player.recover(num);
 				const result = await player
-					.chooseTarget(`绝烬：选择一名角色对其造成${num}点雷电伤害`, true)
+					.chooseTarget(`神霈：选择一名角色对其造成${num}点雷电伤害`, true)
 					.set("ai", target => {
 						const { player } = get.event();
 						return get.damageEffect(target, player, player, "thunder");
@@ -268,7 +302,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			if (event.triggername == "roundStart") {
-				event.result = { bool: true };
+				event.result = {
+					bool: true,
+					die: true,
+				};
 			} else {
 				event.result = await player
 					.chooseBool(get.prompt2(event.skill))
@@ -293,6 +330,7 @@ const skills = {
 					.forResult();
 			}
 		},
+		logAudio: (a, b, c, d, costResult) => (costResult.die ? ["mbhuitian3.mp3", "mbhuitian4.mp3"] : 2),
 		async content(event, tigger, player) {
 			if (event.triggername == "roundStart") {
 				await player.die();
@@ -3639,6 +3677,9 @@ const skills = {
 				if (color == "black") {
 					let num = cards.length;
 					while (num > 0) {
+						if (!game.hasPlayer(current => current.countExpansions("caweijue_tag") > 0)) {
+							break;
+						}
 						const result2 = await player
 							.chooseTarget("获得一名角色的“威”", true, (card, player, target) => {
 								return target.countExpansions("caweijue_tag");
@@ -3662,9 +3703,6 @@ const skills = {
 						player.line(target);
 						await player.gain(cards, "give", target, "bySelf");
 						num -= cards.length;
-						if (!game.hasPlayer(current => current.countExpansions("caweijue_tag"))) {
-							break;
-						}
 					}
 				} else if (color == "red") {
 					const targets = game
@@ -11235,16 +11273,17 @@ const skills = {
 						if (result.control == "选项二") {
 							player.logSkill("tspowei_use", target);
 							await player.gainPlayerCard(target, "h", true);
+						} else if (result.control == "选项一") {
+							await player.chooseToDiscard("h", true).set("logSkill", ["tspowei_use", target]);
+							if (get.mode() != "identity" || player.identity != "nei") {
+								player.addExpose(0.2);
+							}
+							await target.damage();
 						}
+						player.addTempSkill("tspowei_inRange");
 					} else {
 						return;
 					}
-					await player.chooseToDiscard("h", true).set("logSkill", ["tspowei_use", target]);
-					if (get.mode() != "identity" || player.identity != "nei") {
-						player.addExpose(0.2);
-					}
-					await target.damage();
-					player.addTempSkill("tspowei_inRange");
 				},
 				ai: { expose: 0.2 },
 			},

@@ -3980,8 +3980,8 @@ export default {
 								return cards.reduce((sum, card) => sum + get.value(card, player), 0);
 							};
 						let controls = get
-							.event("controls")
-							.slice()
+							.event()
+							.controls.slice()
 							.map(i => (i == "none2" ? "none" : i));
 						controls.sort((a, b) => getNum(cards, b, player) - getNum(cards, a, player));
 						return controls[0] == "none" ? "none2" : controls[0];
