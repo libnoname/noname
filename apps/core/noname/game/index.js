@@ -10205,7 +10205,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return game.players.concat(game.dead).some(value => (includeOut || !value.isOut()) && func(value));
 	}
 	/**
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => boolean } [func]
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {

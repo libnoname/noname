@@ -9682,6 +9682,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player | Player[] } [targets]
 	 * @param { boolean | string } [nature]
 	 * @param { boolean } [logv]
+	 * @param { * } [args]
 	 */
 	logSkill(name, targets, nature, logv, args) {
 		if (get.itemtype(targets) == "player") {
@@ -10407,7 +10408,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } target
 	 * @param { false } [distance] false：无距离限制
 	 * @param { boolean | GameEvent } [includecard] 是否受使用次数限制，可以填入用于检测的事件
-	 * @returns
+	 * @returns { boolean }
 	 */
 	canUse(card, target, distance, includecard) {
 		if (typeof card == "string") {
@@ -10435,7 +10436,7 @@ export class Player extends HTMLDivElement {
 		if (distance !== false && !lib.filter.targetInRange(card, this, target)) {
 			return false;
 		}
-		return lib.filter[includecard ? "targetEnabledx" : "targetEnabled"](card, this, target);
+		return lib.filter[includecard ? "targetEnabledx" : "targetEnabled"](card, this, target) ?? false;
 	}
 	/**
 	 * 场上是否存在能对其使用card的目标
