@@ -216,6 +216,7 @@ export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetP
 export interface ChooseBase {
 	forced?: boolean;
 	prompt?: string;
+	prompt2?: string;
 }
 
 // 事件的具体选项
