@@ -5,6 +5,11 @@ export class Button extends HTMLDivElement {
 	 */
 	// eslint-disable-next-line no-unreachable
 	buttonid;
+
+	/**
+	 * @type { * }
+	 */
+	link;
 	/**
 	 * @param {{}} item
 	 * @param {keyof typeof ui.create.buttonPresets | ((item: {}, type: Function, position?: HTMLDivElement | DocumentFragment, noClick?: true, button?: Button) => Button)} type
