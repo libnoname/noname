@@ -556,7 +556,12 @@ export class Player extends HTMLDivElement {
 		if (!skill) {
 			console.warn(`不存在战法: ${id}`);
 			return;
+		} else if (this.hasZhanfa(id)) {
+			return;
 		}
+		game.log(this, "获得战法", `#g【${get.translation(id)}】`);
+		const card = game.createCard(id, "战法", "");
+		this.$draw(card, void 0, void 0, false);
 		this.addAdditionalSkill("zhanfa", skill, true);
 		this.markAuto("zhanfa", id);
 		const next = game.createEvent("addZhanfa", false, get.event());
@@ -565,7 +570,6 @@ export class Player extends HTMLDivElement {
 		next.forceDie = true;
 		next.includeOut = true;
 		next.setContent(async (event, trigger, player) => {
-			game.log(player, "获得战法", `#g【${get.translation(event.zhanfaId)}】`);
 			await event.trigger(event.name);
 		});
 	}
@@ -578,7 +582,12 @@ export class Player extends HTMLDivElement {
 		if (!skill) {
 			console.warn(`不存在战法: ${id}`);
 			return;
+		} else if (!this.hasZhanfa(id)) {
+			return;
 		}
+		game.log(this, "失去战法", `#g【${get.translation(id)}】`);
+		const card = game.createCard(id, "战法", "");
+		this.$throw(card, 1000, void 0, void 0, false);
 		this.removeAdditionalSkill("zhanfa", skill);
 		this.unmarkAuto("zhanfa", id);
 		const next = game.createEvent("removeZhanfa", false, get.event());
@@ -587,7 +596,6 @@ export class Player extends HTMLDivElement {
 		next.forceDie = true;
 		next.includeOut = true;
 		next.setContent(async (event, trigger, player) => {
-			game.log(player, "失去战法", `#g【${get.translation(event.zhanfaId)}】`);
 			await event.trigger(event.name);
 		});
 	}

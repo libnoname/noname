@@ -30568,7 +30568,7 @@ const skills = {
 			["受到X点伤害", "弃置X张牌", "翻面并横置", "随机执行一个已经移除过的选项"],
 		],
 		filterx: [
-			[() => true /*player => player.isDamaged()*/, () => true, player => player.isTurnedOver() || player.isLinked(), () => true],
+			[() => true /*player => player.isDamaged()*/, () => true, /*player => player.isTurnedOver() || player.isLinked()*/() => true, () => true],
 			[
 				() => true,
 				/*player =>
@@ -30576,7 +30576,8 @@ const skills = {
 						return lib.filter.cardDiscardable(card, player, "caiyi");
 					}, "he"),*/
 				() => true,
-				player => !player.isTurnedOver() || !player.isLinked(),
+				/*player => !player.isTurnedOver() || !player.isLinked(),*/
+				() => true,
 				() => true,
 			],
 		],
@@ -30586,7 +30587,7 @@ const skills = {
 			const list = player.storage.caiyi_info[index],
 				choices = lib.skill[event.skill].choices[index],
 				numbers = ["⒈", "；⒉", "；⒊", "；⒋"];
-			const num = 4 - list.length;
+			let num = 4 - list.length;
 			let str = "令一名角色选择执行其中一项：";
 			for (let i = 0; i < 4; i++) {
 				if (list.includes(i)) {
@@ -30599,10 +30600,13 @@ const skills = {
 				str += choices[i];
 			}
 			str += "。";
-			str = str.replace(/X/g, get.cnNumber(num));
+			num++;
+			str = str.replace(/X/g, function(match, index) {
+				return get.cnNumber(num++);
+			});
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt("caiyi") + "（当前状态：" + (index ? "阳" : "阴") + "）",
+					prompt: get.prompt("caiyi") + "（当前状态：" + (!index ? "阳" : "阴") + "）",
 					prompt2: str,
 					ai(target) {
 						const player = _status.event.player;
@@ -30614,9 +30618,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.storage.caiyi_info ??= [[], []];
 			const index = (event.index = player.storage.caiyi ? 1 : 0);
-			const list = player.storage.caiyi_info[index],
-				choices = lib.skill[event.name].choices[index],
-				numbers = ["⒈", "；⒉", "；⒊", "；⒋"];
+			const list = player.storage.caiyi_info[index];
 			const num = (event.num = 4 - list.length);
 			const {
 				targets: [target],
@@ -30625,8 +30627,8 @@ const skills = {
 			player.changeZhuanhuanji(event.name);
 			if (index == 0) {
 				const list = [];
-				const str = get.cnNumber(num);
-				let choiceList = ["回复" + str + "点体力。", "摸" + str + "张牌。", "将武将牌翻至正面且重置。", "随机执行一个已经被移除的选项。"];
+				const getStr = num => get.cnNumber(num);
+				let choiceList = ["回复" + getStr(num + 1) + "点体力。", "摸" + getStr(num + 2) + "张牌。", "将武将牌翻至正面且重置。", "随机执行一个已经被移除的选项。"];
 				const storage = player.storage.caiyi_info[event.index];
 				for (let i = 0; i < 4; i++) {
 					if (storage.includes(i)) {
@@ -30655,10 +30657,10 @@ const skills = {
 								let max = 0,
 									func = {
 										选项一(current) {
-											max = get.recoverEffect(current, player, player) * Math.min(evt.getParent().num, player.getDamagedHp());
+											max = get.recoverEffect(current, player, player) * Math.min(evt.getParent().num + 1, player.getDamagedHp());
 										},
 										选项二(target) {
-											max = get.effect(target, { name: "draw" }, player, player) * evt.getParent().num;
+											max = get.effect(target, { name: "draw" }, player, player) * (evt.getParent().num + 2);
 										},
 										选项三(target) {
 											if (player.isTurnedOver()) {
@@ -30682,9 +30684,7 @@ const skills = {
 					})
 					.forResult();
 				let index2 = ["选项一", "选项二", "选项三", "选项四"].indexOf(result.control);
-				if (index2 != 3) {
-					player.storage.caiyi_info[event.index].push(index2);
-				}
+				player.storage.caiyi_info[event.index].add(index2);
 				if (index2 == 3) {
 					const list = player.storage.caiyi_info[event.index].filter(function (i) {
 						return i != 3 && lib.skill.caiyi.filterx[event.index][i](target);
@@ -30696,10 +30696,10 @@ const skills = {
 				}
 				switch (index2) {
 					case 0:
-						await target.recover({ num });
+						await target.recover({ num: num + 1 });
 						break;
 					case 1:
-						await target.draw({ num });
+						await target.draw({ num: num + 2 });
 						break;
 					case 2:
 						await target.turnOver(false);
@@ -30708,8 +30708,8 @@ const skills = {
 				}
 			} else if (index == 1) {
 				const list = [];
-				const str = get.cnNumber(num);
-				let choiceList = ["受到" + str + "点伤害。", "弃置" + str + "张牌。", "将武将牌翻至背面并横置。", "随机执行一个已经被移除的选项。"];
+				const getStr = num => get.cnNumber(num);
+				let choiceList = ["受到" + getStr(num + 1) + "点伤害。", "弃置" + getStr(num + 2) + "张牌。", "将武将牌翻至背面并横置。", "随机执行一个已经被移除的选项。"];
 				const storage = player.storage.caiyi_info[event.index];
 				for (let i = 0; i < 4; i++) {
 					if (storage.includes(i)) {
@@ -30738,16 +30738,16 @@ const skills = {
 								let max = 0,
 									func = {
 										选项一(current) {
-											max = get.effect(current, { name: "damage" }, player, player) * evt.getParent().num;
+											max = get.effect(current, { name: "damage" }, player, player) * (evt.getParent().num + 1);
 										},
 										选项二(target) {
 											max =
 												get.effect(target, { name: "guohe_copy2" }, player, player) *
-												Math.min(player.countCards("he"), evt.getParent().num);
+												Math.min(player.countCards("he"), evt.getParent().num + 2);
 										},
 										选项三(target) {
 											if (!player.isTurnedOver()) {
-												max -= 10;
+												max -= 20;
 											}
 											if (!player.isLinked()) {
 												max += get.effect(player, { name: "tiesuo" }, player, player);
@@ -30767,9 +30767,7 @@ const skills = {
 					})
 					.forResult();
 				let index2 = ["选项一", "选项二", "选项三", "选项四"].indexOf(result.control);
-				if (index2 != 3) {
-					player.storage.caiyi_info[event.index].push(index2);
-				}
+				player.storage.caiyi_info[event.index].add(index2);
 				if (index2 == 3) {
 					const list = player.storage.caiyi_info[event.index].filter(function (i) {
 						return i != 3 && lib.skill.caiyi.filterx[event.index][i](target);
@@ -30781,10 +30779,10 @@ const skills = {
 				}
 				switch (index2) {
 					case 0:
-						await target.damage({ num });
+						await target.damage({ num: num + 1 });
 						break;
 					case 1:
-						await target.chooseToDiscard({ num, forced: true, position: "he" });
+						await target.chooseToDiscard({ selectCard: num + 2, forced: true, position: "he" });
 						break;
 					case 2:
 						await target.turnOver(true);

@@ -155,8 +155,8 @@ const dynamicTranslates = {
 	caiyi(player) {
 		const bool = player.storage.caiyi,
 			list = player.storage.caiyi_info || [[], []],
-			list1 = ["⒈回复X点体力。", "⒉摸X张牌。", "⒊复原武将牌。", "⒋随机执行一个已经移除过的阴选项"],
-			list2 = ["⒈受到X点伤害。", "⒉弃置X张牌。", "⒊翻面并横置。", "⒋随机执行一个已经移除过的阳选项"];
+			list1 = ["⒈回复X+1点体力。", "⒉摸X+2张牌。", "⒊复原武将牌。", "⒋随机执行一个已经移除过的阳选项"],
+			list2 = ["⒈受到X+1点伤害。", "⒉弃置X+2张牌。", "⒊翻面并横置。", "⒋随机执行一个已经移除过的阴选项"];
 		let yang = "",
 			yin = "";
 		for (let i = 0; i < 4; i++) {

@@ -480,6 +480,12 @@ const translates = {
 	gongbaiwan: "宫百万",
 	dchaoshi: "好食",
 	dchaoshi_info: "你造成或受到伤害后，你摸一张牌并将一张牌置于武将牌上，每回合结束时，若你武将牌上的牌点数总计大于等于100，你获得一个额外回合并获得这些牌。",
+	ol_le_zhugeliang: "乐诸葛亮",
+	ol_le_zhugeliang_prefix: "乐",
+	oljiangwu: "讲武",
+	oljiangwu_info: "锁定技，首轮开始时，你选择三个价值不同的“战法”获得。若如此做，接下来的每轮结束后，你进行一次消耗“虎符”的“战法”选择。每名角色的回合结束时，你获得1枚“虎符”。",
+	olxinghan: "兴汉",
+	olxinghan_info: `限定技，出牌阶段，你可失去任意个战法，然后你购买的下等量个战法不消耗虎符，且你每以此法失去一个战法，依次获得以下一个专属战法：${get.poptip("zf_dongfeng")}、${get.poptip("zf_qiaoqi")}。`,
 };
 
 export default translates;

@@ -669,8 +669,7 @@ export default {
 		trigger: {
 			player: "addZhanfa",
 		},
-		forced: true,
-		popup: false,
+		silent: true,
 		async content(event, trigger, player) {
 			if (trigger.zhanfaId != event.name) {
 				return;

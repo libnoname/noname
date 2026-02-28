@@ -3174,7 +3174,7 @@ export class ZhanfaManager {
 	 */
 	add(zhanfa, pack) {
 		let { id, skill, rarity, translate, info, card, ...args } = zhanfa;
-		if (!id || lib.zhanfa.get(id)) {
+		if (!id || this.get(id)) {
 			return;
 		}
 		if (typeof skill != "string") {
@@ -3278,7 +3278,7 @@ export class ZhanfaManager {
 	/**
 	 * 获取对应战法的稀有度
 	 * @param {string} id 战法的id
-	 * @param {boolean} raw 是否返回不带zf_前缀的格式
+	 * @param {boolean} [raw] 是否返回不带zf_前缀的格式
 	 * @returns {string}
 	 */
 	getRarity(id, raw) {

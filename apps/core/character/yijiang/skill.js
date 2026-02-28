@@ -5966,7 +5966,7 @@ const skills = {
 					return get.color(card) == "black";
 				},
 				viewAsFilter(player) {
-					return player.getExpansions("jieyue").length && player.countCards("hs", { color: "black" }) > 0;
+					return player.countExpansions("jieyue") > 0 && player.countCards("hs", { color: "black" }) > 0;
 				},
 				position: "hs",
 				viewAs: { name: "wuxie" },
@@ -5984,7 +5984,7 @@ const skills = {
 				position: "hs",
 				viewAs: { name: "shan" },
 				viewAsFilter(player) {
-					return player.getExpansions("jieyue").length && player.countCards("hs", { color: "red" }) > 0;
+					return player.countExpansions("jieyue") > 0 && player.countCards("hs", { color: "red" }) > 0;
 				},
 				prompt: "将一张红色手牌当闪使用或打出",
 				check: () => 1,

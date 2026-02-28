@@ -3128,7 +3128,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (obj instanceof lib.element.Card) {
 			return "card";
 		}
-		if (obj instanceof lib.element.VCard) {
+		if (obj instanceof lib.element.VCard || (get.is.object(name) && obj.name && obj.name in lib.card)) {
 			return "vcard";
 		}
 		if (obj instanceof lib.element.Player) {
