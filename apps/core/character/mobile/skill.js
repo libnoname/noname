@@ -405,7 +405,7 @@ const skills = {
 			const result = await player
 				.chooseToDuiben(target)
 				.set("title", "谋弈")
-				.set("namelist", ["长驱直入", "无懈可击", "金蝉脱壳", "弃履狂奔"]) //应对策略不明
+				.set("namelist", ["克敌先机", "洞若观火", "金蝉脱壳", "弃履狂奔"]) //应对策略不明
 				.set("translationList", [
 					`以防止${get.translation(player)}令此杀伤害-1`,
 					`以防止${get.translation(player)}令你随机弃置一张手牌`,

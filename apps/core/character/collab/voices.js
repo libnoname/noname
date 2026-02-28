@@ -1,4 +1,9 @@
 export default {
+	"#oljiangwu1": " 金戈耀长安，复光炎汉，当以武德昭日月。",
+	"#oljiangwu2": " 铁马临洛水，滚滚烽烟，尽是汉家驿马尘！",
+	"#olxinghan1": " 三兴之业，试问天下谁可阻？",
+	"#olxinghan2": " 威加海内兮归故乡，今得猛士兮守四方！",
+	"#ol_le_zhugeliang:die": " 四百年汉祚得续，哈哈哈哈臣可赴草庐旧约。",
 	"#mbjunkui1": "凡驹，退场！",
 	"#mbjunkui2": "肉骨凡胎，怎比我钢铁之躯！",
 	"#mbchiyuan1": "马力全开，红霆裂空！",
