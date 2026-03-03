@@ -82,7 +82,7 @@ await build({
 		outDir: `dist/character/.tmp`,
 		rollupOptions: {
 			preserveEntrySignatures: "strict",
-			treeshake: false,
+			treeshake: true,
 			external: Object.keys(importMap),
 			input: {
 				...charaInputs,
