@@ -1,14 +1,16 @@
-import { join } from "path";
 import { build } from "vite";
+import { join, dirname } from "path";
 import { moveSync } from "fs-extra/esm";
+import { fileURLToPath } from "node:url";
 import { existsSync, readdirSync, rmdirSync } from "fs";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
 import jit from "@noname/jit";
 
 import { moderned_characters } from "../game/config.json";
-// 由于pwd不稳定，使用import.meta.url获取当前文件路径，并以此为基础构建其他路径
-const root = new URL("../", import.meta.url).pathname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const root = join(__dirname, "..");
 
 const importMap: Record<string, string> = {
 	noname: "/noname.js",
