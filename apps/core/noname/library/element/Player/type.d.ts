@@ -168,7 +168,7 @@ export interface CheckButtonParams {
  * 
  */
 export interface CheckCardTargetParams extends CheckCardParams, CheckTargetParams {
-	ai: undefined;
+	ai?: undefined;
 
 	/**
 	 * AI选择牌时的优先级评分函数
@@ -191,7 +191,7 @@ export interface CheckCardTargetParams extends CheckCardParams, CheckTargetParam
  * 
  */
 export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetParams {
-	ai: undefined;
+	ai?: undefined;
 
 	/**
 	 * AI选择按钮时的优先级评分函数
