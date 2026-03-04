@@ -1720,7 +1720,7 @@ const skills = {
 		check(event, player) {
 			return player.canMoveCard(true);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.moveCard(true);
 		},
 	},
@@ -3048,8 +3048,8 @@ const skills = {
 				filter(event, player) {
 					return event.skill == "stdzhanjue";
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 		},
@@ -4379,7 +4379,7 @@ const skills = {
 			}
 			return event.card.name == "wuxie";
 		},
-		async content() {},
+		async content(_) {},
 		mod: {
 			cardname(card, player) {
 				let info = lib.card[card.name];
@@ -4503,7 +4503,7 @@ const skills = {
 			return !event.numFixed && player.getHp() < player.maxHp;
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += player.getDamagedHp();
 		},
 		mod: {
@@ -4526,7 +4526,7 @@ const skills = {
 		selectCard: () => Math.max(1, get.player().getHp()),
 		complexCard: true,
 		log: false,
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.logSkill("oldlonghun");
 		},
 		ai: {
@@ -5288,8 +5288,11 @@ const skills = {
 				},
 				forced: true,
 				autodelay: true,
-				content() {
-					player.chooseToDiscard("he", true);
+				async content(event, trigger, player) {
+					await player.chooseToDiscard({
+						forced: true,
+						position: "he",
+					});
 				},
 			},
 		},
@@ -5371,17 +5374,17 @@ const skills = {
 		direct: true,
 		clearTime: true,
 		zhuSkill: true,
-		content() {
-			player
-				.moveCard(
-					game.filterPlayer(i => {
+		async content(event, trigger, player) {
+			await player
+				.moveCard({
+					prompt: get.prompt2("stdyouji"),
+					sourceTargets: game.filterPlayer(i => {
 						return i.group == "qun";
 					}),
-					card => {
-						return [3, 4, 6].includes(parseInt(get.subtype(card)?.slice("equip".length)));
-					}
-				)
-				.set("prompt", get.prompt2("stdyouji"))
+					filter(card) {
+						return [3, 4, 6].includes(parseInt(get.subtype(card)?.slice("equip".length) ?? "0"));
+					},
+				})
 				.set("nojudge", true)
 				.set("logSkill", "stdyouji");
 		},
@@ -5511,7 +5514,7 @@ const skills = {
 			return player.isTempBanned("stddaoshu");
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			delete player.storage.temp_ban_stddaoshu;
 			player.popup("盗书");
 			game.log(player, "重置了技能", "#g【盗书】");
@@ -5559,7 +5562,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.tempBanSkill("stdxiongxia");
 				},
 			},
@@ -5681,7 +5684,8 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
+					player.storage.temp_ban_stdmingfa?.delete?.(); // optional cleanup if needed
 					delete player.storage[`temp_ban_stdmingfa`];
 					player.popup("明伐");
 					game.log(player, "恢复了技能", "#g【明伐】");
@@ -5713,7 +5717,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: () => _status.currentPhase,
-		content() {
+		async content(event, trigger, player) {
 			_status.currentPhase.draw();
 		},
 	},
@@ -6066,8 +6070,13 @@ const skills = {
 				})
 				.forResult();
 		},
-		content() {
-			player.addToExpansion(event.cards, player, "giveAuto").gaintag.add("stdshefu");
+		async content(event, trigger, player) {
+			await player.addToExpansion({
+				cards: event.cards,
+				source: player,
+				animate: "giveAuto",
+				gaintag: ["stdshefu"],
+			})
 		},
 		marktext: "伏",
 		intro: {
@@ -6211,8 +6220,8 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
-		content() {
-			trigger.num ++;
+		async content(event, trigger, player) {
+			trigger.num++;
 		},
 		global: "stdzhanying_mark",
 		subSkill: {
@@ -6233,7 +6242,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("stdzhanying_count");
 					player.addMark("stdzhanying_count", player.countCards("h"), false);
 				},
@@ -6427,7 +6436,7 @@ const skills = {
 			return get.type2(event.card) == "trick" && !player.countCards("e");
 		},
 		frequent: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 		ai: {
