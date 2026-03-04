@@ -1059,10 +1059,8 @@ const skills = {
 			next.phaseList = ["phaseUse"];
 			//next.setContent(lib.skill.oldmingjian.phase);
 		},
-		phase() {
-			"step 0";
-			player.phaseUse();
-			"step 1";
+		async phase(event, trigger, player) {
+			await player.phaseUse();
 			game.broadcastAll(function () {
 				if (ui.tempnowuxie) {
 					ui.tempnowuxie.close();
