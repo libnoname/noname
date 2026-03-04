@@ -191,7 +191,9 @@
 		"standard",
 		"shenhua",
 		"extra",
-		"refresh"
+		"refresh",
+		"old",
+		"sxrm"
 	],
 	"moderned_modes": ["guozhan"],
 	"connect_characters": ["diy"],
