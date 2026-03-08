@@ -1502,6 +1502,16 @@ export default {
 				}
 			}
 		},
+		ai: {
+			noLink: true,
+			effect: {
+				target(card) {
+					if (card.name == "tiesuo") {
+						return "zeroplayertarget";
+					}
+				},
+			},
+		},
 		global: "gz_jieying_global",
 		subSkill: {
 			global: {
