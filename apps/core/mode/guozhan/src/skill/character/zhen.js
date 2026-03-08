@@ -199,10 +199,10 @@ export default {
 
 				const result = await player
 					.chooseBool(get.prompt2("gz_shoucheng", target))
-					.set("ai", function () {
-						// @ts-expect-error 类型系统未来可期
-						return get.attitude(get.player(), _status.event?.getParent()?.target) > 0;
+					.set("ai", function (event, player) {
+						return get.effect(get.event().target, { name: "draw" }, player, player) > 0;
 					})
+					.set("target", target)
 					.setHiddenSkill(event.name)
 					.forResult();
 
