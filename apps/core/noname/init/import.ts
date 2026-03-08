@@ -93,6 +93,7 @@ export async function createEmptyExtension(name: string) {
 	);
 	return {
 		name: extensionInfo.name,
+		translation : extensionInfo.translation,
 		editable: false,
 		arenaReady() {},
 		content(config, pack) {},

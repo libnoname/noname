@@ -3031,6 +3031,9 @@ export class Game {
 				};
 				Object.defineProperty(extensionMenu.intro, "name", intro);
 			}
+			if(object.package.translation){
+				lib.translate[extensionName] = object.package.translation
+			}
 		}
 		const addOptions = (target, source) => {
 			if (source) {

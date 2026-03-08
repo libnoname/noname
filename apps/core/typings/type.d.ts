@@ -730,6 +730,8 @@ declare interface PackageData {
     forumURL?: string,
     /** 扩展版本 */
     version?: string,
+    /** 扩展在UI中显示的名字 */
+    translation?:string;
 
     /** 武将导入信息 */
     character?: {
