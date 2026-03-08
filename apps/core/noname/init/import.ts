@@ -93,7 +93,6 @@ export async function createEmptyExtension(name: string) {
 	);
 	return {
 		name: extensionInfo.name,
-		translation : extensionInfo.translation,
 		editable: false,
 		arenaReady() {},
 		content(config, pack) {},
@@ -102,6 +101,7 @@ export async function createEmptyExtension(name: string) {
 		config: {},
 		help: {},
 		package: {
+			translation : extensionInfo.translation,
 			nopack: true,
 			intro: extensionInfo.intro ? extensionInfo.intro.replace("${assetURL}", lib.assetURL) : "",
 			author: extensionInfo.author ?? "未知",
