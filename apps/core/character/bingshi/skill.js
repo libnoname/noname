@@ -3303,7 +3303,7 @@ const skills = {
 					const num = trigger.getl(player)?.cards2?.length;
 					if (num >= player.countMark(event.name)) {
 						player.logSkill("mbrunwei", null, null, null, [3]);
-						
+
 						const info = get.info(event.name);
 						if (typeof info.onremove === "function") {
 							info.onremove(player, event.name);
@@ -4316,7 +4316,7 @@ const skills = {
 				await player.gain({
 					cards: gains,
 					animate: "gain2",
-					gaintag: ["potjiyu_effect"]
+					gaintag: ["potjiyu_effect"],
 				});
 			}
 		},
