@@ -1,3 +1,5 @@
+import { BroadSelect } from "@/library/element/Player/type";
+
 /** 时机 */
 declare interface SkillTrigger {
 	/** 
@@ -642,7 +644,7 @@ declare interface Skill {
 	 * 
 	 * 是否可以被“封印”（内置技能“fengyin”）的技能，取值为false时，get.is.locked返回为false；true则正常逻辑 
 	 */
-	locked?: boolean;
+	locked?: boolean | ((skill: string, player: Player) => boolean);
 	/** 是否是旧版技能，值为true，添加到lib.config.vintageSkills中，可以实现新/旧版技能切换，如果该为true，则“原翻译名_alter”即作为当前的翻译 */
 	alter?: boolean;
 
@@ -2059,7 +2061,7 @@ interface ChooseButtonConfigData {
 	 * 
 	 * 既player.chooseButton的selectButton
 	 */
-	select?: number;
+	select?: BroadSelect;
 
 	//成功选择操作后的内容：
 	/**

@@ -3219,7 +3219,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 * 返回牌的类型
 	 * @overload
-	 * @param { Card | string } obj
+	 * @param { Card | VCard | string } obj
 	 * @param { 'trick' | null} [method]
 	 * @param { Player | false } [player]
 	 * @returns { string }
@@ -3233,7 +3233,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		var name = get.name(obj, player);
 		if (!lib.card[name]) {
-			if (!name.startsWith("sha_")) {
+			if (!name?.startsWith("sha_")) {
 				return;
 			}
 			if (
@@ -3472,7 +3472,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * 返回牌堆顶的牌
 	 * @param { number } [num = 1] 默认为1
 	 * @param { boolean } [putBack] 是否放回牌堆顶
-	 * @returns { Card[] | Card } num为0返回Card，否则返回Cards
+	 * @returns { Card[] }
 	 */
 	cards(num, putBack) {
 		if (_status.waitingForCards) {

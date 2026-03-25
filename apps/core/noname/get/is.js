@@ -599,7 +599,7 @@ export class Is {
 	}
 	/**
 	 * @param { string } skill
-	 * @param { Player } player
+	 * @param { Player } [player]
 	 * @returns
 	 */
 	locked(skill, player) {
