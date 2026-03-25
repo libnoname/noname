@@ -3086,7 +3086,7 @@ const skills = {
 			const me = player;
 			const numx = trigger.num;
 			const sum = game.players.slice().concat(game.dead).length * 4;
-			trigger.num = player => player == me ? sum : typeof numx == "function" ? numx(player) : numx;
+			trigger.num = player => (player == me ? sum : typeof numx == "function" ? numx(player) : numx);
 		},
 		mod: {
 			cardDiscardable(card, player) {
@@ -6322,6 +6322,7 @@ const skills = {
 		usable: 1,
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
+			const { target } = event;
 			player.addTempSkill("dclvecheng_xiongluan");
 			player.markAuto("dclvecheng_xiongluan", [target]);
 			var cards = player.getCards("h", "sha");
@@ -6905,7 +6906,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const suits = new Set(lib.suit);
 			for (const card of player.iterableGetCards("h", card => card.hasGaintag("dcshuangjia_tag"))) {
-				suits.delete(get.suit(card))
+				suits.delete(get.suit(card));
 			}
 			const cards = [];
 			for (const suit of suits) {
@@ -6916,7 +6917,7 @@ const skills = {
 			}
 			if (cards.length) {
 				await player.gain({
-					cards, 
+					cards,
 					animate: "gain2",
 				});
 			}
@@ -7925,6 +7926,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let result;
+			const { target } = event;
 
 			// step 0
 			player.addTempSkill("oldmoyu_clear");
@@ -10858,6 +10860,7 @@ const skills = {
 		selectTarget: 2,
 		multitarget: true,
 		async content(event, trigger, player) {
+			const { cards, targets } = event;
 			await player.give(cards, targets[0], "give");
 			if (!targets[0].canCompare(targets[1])) {
 				return;
@@ -11780,6 +11783,7 @@ const skills = {
 			return target.countCards("he");
 		},
 		async content(event, trigger, player) {
+			const { target } = event;
 			const result = await player
 				.choosePlayerCard(target, "he", true)
 				.set("filterButton", button => {
@@ -12233,6 +12237,7 @@ const skills = {
 				filterCard: () => false,
 				selectCard: -1,
 				async content(event, trigger, player) {
+					const { target } = event;
 					let result;
 					player.addTempSkill("dcquanjian_used", "phaseUseAfter");
 					player.markAuto("dcquanjian_used", "draw");
@@ -12872,9 +12877,9 @@ const skills = {
 						filterTarget: true,
 						equip: links.map(i => i[0]).sort(),
 						async content(event, trigger, player) {
-							var list = lib.skill.midu_backup.equip,
-								num = list.length,
-								bool = false;
+							const list = lib.skill.midu_backup.equip;
+							const num = list.length;
+							let bool = false;
 							if (list.includes(-1)) {
 								list.remove(-1);
 								bool = true;
@@ -12885,7 +12890,7 @@ const skills = {
 							if (bool) {
 								player.disableJudge();
 							}
-							target.draw(num);
+							event.target.draw(num);
 						},
 						ai: {
 							tag: {
@@ -13768,12 +13773,13 @@ const skills = {
 			return target != player;
 		},
 		async content(event, trigger, player) {
-			var skills = target.getSkills(null, false, false).filter(function (i) {
-				if (i == "bazhen") {
+			const { target } = event;
+			const skills = target.getSkills(null, false, false).filter(skill => {
+				if (skill == "bazhen") {
 					return;
 				}
-				var info = get.info(i);
-				return info && !get.is.locked(i) && !info.limited && !info.juexingji && !info.zhuSkill && !info.charlotte && !info.persevereSkill;
+				var info = get.info(skill);
+				return info && !get.is.locked(skill) && !info.limited && !info.juexingji && !info.zhuSkill && !info.charlotte && !info.persevereSkill;
 			});
 			target.addAdditionalSkills("dcjiezhen_blocker", "bazhen");
 			target.addSkill("dcjiezhen_blocker");
@@ -14570,16 +14576,18 @@ const skills = {
 							"allowChooseAll"
 						)
 						.set("ai", function (button) {
-							var player = _status.event.player,
-								target = player.storage.zhishi_mark;
+							const event = get.event();
+							const player = event.player;
+							const target = player.storage.zhishi_mark;
 							if (target.hp < 1 && target != get.zhu(player)) {
 								return 0;
 							}
 							if (target.hasSkillTag("nogain")) {
 								return 0;
 							}
-							return 3 - player.getUseValue(card, false);
+							return 3 - player.getUseValue(event.card, false);
 						})
+						.set("card", event.card)
 						.forResult();
 					if (result.bool) {
 						player.logSkill("zhishi", target);
@@ -14620,10 +14628,7 @@ const skills = {
 				if (cards.length) {
 					await player.loseToDiscardpile(cards);
 				}
-				if (
-					target.isIn() &&
-					!target.hasHistory("damage", evt => evt.getParent("lieyi") == event && evt._dyinged)
-				) {
+				if (target.isIn() && !target.hasHistory("damage", evt => evt.getParent("lieyi") == event && evt._dyinged)) {
 					await player.loseHp();
 				}
 				return;
@@ -15819,7 +15824,7 @@ const skills = {
 						player.storage.huguan_all = 0;
 						return;
 					}
-					game.countPlayer((current) => {
+					game.countPlayer(current => {
 						if (current.hasSkill("huguan")) {
 							num = Math.max(num, get.attitude(_status.event.player, current));
 						}
@@ -16492,6 +16497,7 @@ const skills = {
 			return player.hp > 0 && target != player && target.countGainableCards(player, "h") > 0;
 		},
 		async content(event, trigger, player) {
+			const { target } = event;
 			let result;
 			let num;
 
@@ -17075,6 +17081,7 @@ const skills = {
 			return target != player && target.countCards("h") > 0 && !target.hasSkillTag("noCompareTarget");
 		},
 		async content(event, trigger, player) {
+			const { target } = event;
 			let result;
 
 			// step 0
@@ -18027,7 +18034,7 @@ const skills = {
 						await player.draw();
 						return;
 					}
-						
+
 					const list = [player, target].sortBySeat();
 					await game.asyncDraw(list);
 					await game.delayx();
@@ -18216,6 +18223,7 @@ const skills = {
 			});
 		},
 		async content(event, trigger, player) {
+			const { target } = event;
 			let result;
 
 			// step 0
@@ -18729,6 +18737,7 @@ const skills = {
 			return target != player && !player.getStorage("dcxunji_effect").includes(target);
 		},
 		async content(event, trigger, player) {
+			const { target } = event;
 			player.markAuto("dcxunji_effect", [target]);
 			player.addTempSkill("dcxunji_effect", { player: "die" });
 			target.addTempSkill("dcxunji_mark", { player: "phaseEnd" });

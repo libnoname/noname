@@ -5003,6 +5003,7 @@ const skills = {
 		},
 		usable: 1,
 		async content(event, trigger, player) {
+			const { target } = event;
 			await target.recover();
 		},
 		ai: {

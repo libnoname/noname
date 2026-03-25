@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
@@ -2537,7 +2538,8 @@ const skills = {
 				}
 			}
 		},
-		callback() {
+		async callback(event, trigger, player) {
+			const { target } = event;
 			var list = [
 					[player, event.num1],
 					[target, event.num2],
