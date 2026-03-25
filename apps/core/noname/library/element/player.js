@@ -7590,7 +7590,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家摸牌
 	 *
-	 * @param { import("./Player/type.d").EventDrawParams } [params]
+	 * @param { number | import("./Player/type.d").EventDrawParams } [params]
 	 * @returns { GameEvent }
 	 */
 	draw(params) {
@@ -7600,7 +7600,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		const event = _status.event;
 		// 就算是drawDeck项，由于已经判断了参数长度，不会出现不同的地方
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "number") {
+			next.num = params;
+		} else if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params.nodelay) {
 				delete next.nodelay;
@@ -9738,9 +9740,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * @param { string | string[] } name
-	 * @param { Player | Player[] } [targets]
-	 * @param { boolean | string } [nature]
-	 * @param { boolean } [logv]
+	 * @param { Player | Player[] | null } [targets]
+	 * @param { boolean | string | null } [nature]
+	 * @param { boolean | null } [logv]
 	 * @param { * } [args]
 	 */
 	logSkill(name, targets, nature, logv, args) {
@@ -12173,7 +12175,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家的攻击距离
-	 * @param { boolean } raw
+	 * @param { boolean } [raw]
 	 * @returns { number }
 	 */
 	getAttackRange(raw) {
