@@ -5474,7 +5474,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result.bool) {
-				return return;
+				return;
 			}
 			const target = result.targets[0];
 			player.logSkill("dcdingji", target);
