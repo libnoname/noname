@@ -6077,43 +6077,46 @@ const skills = {
 		filterTarget(card, player, current) {
 			return player.canCompare(current);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
+
 			target.addTempSkill("jsrgyangming_lose", "phaseUseAfter");
-			"step 1";
-			player.chooseToCompare(target).set(
-				"small",
-				get.attitude(player, target) > 0 &&
-					(player.countCards("h", card => {
-						return get.value(card) < 6;
-					}) <= 1 ||
-						target.countCards("h", card => {
-							return get.value(card) < 6;
-						}) <= 1)
-			);
-			"step 2";
-			if (result.winner != target) {
+			while (true) {
+				const isFriend = get.attitude(player, target) > 0;
+				const selfNoEnough = player.countCards("h", card => get.value(card) < 6) <= 1;
+				const otherNoEnough = target.countCards("h", card => get.value(card) < 6) <= 1;
+
+				const small = isFriend && (selfNoEnough || otherNoEnough);
+				/**
+				 * @type {Partial<Result>}
+				 */
+				let result = await player.chooseToCompare(target).set("small", small).forResult();
+				if (result.winner === target) {
+					if (target.storage.jsrgyangming_lose) {
+						await target.draw(target.storage.jsrgyangming_lose);
+					}
+					await player.recover();
+					return;
+				}
 				if (!player.canCompare(target)) {
-					event._result = { bool: false };
+					result = { bool: false };
 				} else {
-					player
-						.chooseBool("是否与其重复此拼点流程？")
-						.set("ai", () => get.event().bool)
-						.set("bool", get.effect(target, "jsrgyangming", player, player) > 0);
+					result = await player
+						.chooseBool({
+							prompt: "是否与其重复此拼点流程？",
+							ai() {
+								return get.event().bool;
+							}
+						})
+						.set("bool", get.effect(target, "jsrgyangming", player, player) > 0)
+						.forResult();
 				}
 				game.broadcastAll(target => {
 					target.storage.jsrgyangming_lose++;
 				}, target);
-			} else {
-				if (target.storage.jsrgyangming_lose) {
-					target.draw(target.storage.jsrgyangming_lose);
+				if (!result.bool) {
+					return;
 				}
-				player.recover();
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				event.goto(1);
 			}
 		},
 		ai: {
