@@ -9934,26 +9934,22 @@ const skills = {
 		lose: false,
 		discard: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.showCards(cards, get.translation(player) + "发动了【连诛】");
-			"step 1";
-			player.give(cards, target, true);
-			"step 2";
-			event.targets = game
-				.filterPlayer(current => {
-					return current.group == target.group && current != player;
-				})
-				.sortBySeat();
-			game.delayx();
-			"step 3";
-			var target = targets.shift();
-			if (player.canUse("guohe", target)) {
-				player.useCard({ name: "guohe", isCard: true }, target);
-			}
-			if (targets.length) {
-				event.redo();
-			}
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+
+			await player.showCards(cards, `${get.translation(player)}发动了【连诛】`);
+			await player.give(cards, target, true);
+
+			const targets = game.filterPlayer(current => current.group === target.group && current !== player && player.canUse("guohe", current));
+			await game.delayx();
+
+			await game.doAsyncInOrder(targets, current => player.useCard({
+				card: {
+					name: "guohe",
+					isCard: true,
+				},
+				targets: [current],
+			}));
 		},
 		ai: {
 			order: 4,
