@@ -1122,18 +1122,18 @@ const translates = {
 	hefei_yuejin: "骥乐进",
 	hefei_yuejin_prefix: "骥",
 	hefeichonglei: "冲垒",
-	hefeichonglei_info: "锁定技，你的出牌阶段内：①每回合限一次，你响应其他角色使用的牌后，或你使用的牌被其他角色响应后，获得其一张牌。②其他角色不处于濒死状态时，所有非【杀】手牌只能当作【闪】使用或打出。",
+	hefeichonglei_info: "锁定技。①你的出牌阶段内，所有其他角色的非基本手牌均只能作为【闪】使用或打出。②出牌阶段限X次（X为其他角色数），当你使用的牌被其他角色响应后，或当你响应其他角色使用的牌后，你获得该角色一张手牌。",
 	hefeidangshi: "荡势",
-	hefeidangshi_info: "你使用伤害牌结算结束后，可选择一名此牌目标，令其选择一项执行：1.对你使用一张同名牌；2.弃置X张牌（X为其选择此项的次数+1）；3.受到1点伤害。若为本阶段首次执行此项，你摸一张牌。",//且本阶段出杀次数+1
+	hefeidangshi_info: "当你使用伤害牌结算完毕后，你可以令其中一名目标其他角色选择一项：1.弃置X张牌（X为所有角色本轮选择此选项的次数，且至少为1）；2.你对其造成1点伤害。",//且本阶段出杀次数+1
 	hefeiheyuzhangliao: "合御",
 	hefeiheyuzhangliao_info: `锁定技，①若${get.poptip({
-		id: "characterx_hefei_lidian",
-		name: "合李典",
+		id: "characterx_hefei_yuejin",
+		name: "骥乐进",
 		type: "character",
 		dialog: "characterDialog",
-	})}在场且与你阵营相同，修改${get.poptip("hefeichonglei")}中的“非【杀】手牌”为“手牌”。②若${get.poptip({
-		id: "characterx_hefei_yuejin",
-		name: "合乐进",
+	})}在场且与你阵营相同，修改${get.poptip("hefeichonglei")}中的“非基本手牌”为“手牌”。②若${get.poptip({
+		id: "characterx_hefei_lidian",
+		name: "骥李典",
 		type: "character",
 		dialog: "characterDialog",
 	})}在场且与你阵营相同，将${get.poptip("hefeidangshi")}中的X固定为3。`,
@@ -1144,7 +1144,7 @@ const translates = {
 	hefeiheyulidian: "合御",
 	hefeiheyulidian_info: `锁定技，①若${get.poptip("characterx_hefei_yuejin")}在场且与你阵营相同，你获得因${get.poptip("hefeiduanjin")}弃置的牌。②若${get.poptip({
 		id: "characterx_hefei_zhangliao",
-		name: "合张辽",
+		name: "骥张辽",
 		type: "character",
 		dialog: "characterDialog",
 	})}在场且与你阵营相同，令${get.poptip("hefeigaigong")}使用的牌不可被响应。`,
@@ -1179,8 +1179,8 @@ const translates = {
 	mbjiren_info: "限定技，出牌阶段你可以发动此技能，直到本局游戏结束，所有角色使用非武器牌不能指定自己为目标。",
 	mbjuezhi: "决止",
 	mbjuezhi_info: "出牌阶段每项限一次：1.你可以摸两张牌，视为使用一张【决斗】，然后弃置手牌中所有非伤害牌；2.你可以摸两张牌，然后回复1点体力并弃置手牌中所有伤害牌。",
-	mb_zhangji: "手杀张既",
-	mb_zhangji_prefix: "手杀",
+	mb_tw_zhangji: "手杀张既",
+	mb_tw_zhangji_prefix: "手杀",
 	mbdingzhen: "定镇",
 	mbdingzhen_info: "每轮开始时，你可令与你距离X以内的至多X名其他角色依次选择一项（X为你的体力值）：1.弃一张【杀】；2.本轮其于回合内不能指定你为锦囊牌的目标。",
 };

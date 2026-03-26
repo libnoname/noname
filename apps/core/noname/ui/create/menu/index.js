@@ -229,12 +229,12 @@ export function createConfig(config, position) {
 		} else {
 			node.classList.add("switcher");
 			node.listen(clickSwitcher);
-			node._link.choosing = ui.create.div("", config.item[config.init], node);
+			node._link.choosing = ui.create.div("", config.item[config.init] || config.init, node);
 			node._link.menu = ui.create.div(".menu");
 			if (config.visualMenu) {
 				node._link.menu.classList.add("visual");
 				var updateVisual = function () {
-					config.visualMenu(this, this._link, config.item[this._link], config);
+					config.visualMenu(this, this._link, config.item[this._link] || this._link, config);
 				};
 				var createNode = function (i, before) {
 					var visualMenu = ui.create.div();
@@ -247,9 +247,9 @@ export function createConfig(config, position) {
 					} else {
 						node._link.menu.appendChild(visualMenu);
 					}
-					ui.create.div(".name", get.verticalStr(config.item[i]), visualMenu);
+					ui.create.div(".name", get.verticalStr(config.item[i] || i), visualMenu);
 					visualMenu._link = i;
-					if (config.visualMenu(visualMenu, i, config.item[i], config) !== false) {
+					if (config.visualMenu(visualMenu, i, config.item[i] || i, config) !== false) {
 						visualMenu.listen(clickMenuItem);
 					}
 					visualMenu.update = updateVisual;
@@ -286,10 +286,10 @@ export function createConfig(config, position) {
 				node._link.menu.updateBr();
 			} else {
 				for (var i in config.item) {
-					var textMenu = ui.create.div("", config.item[i], node._link.menu, clickMenuItem);
+					var textMenu = ui.create.div("", config.item[i] || i, node._link.menu, clickMenuItem);
 					textMenu._link = i;
 					if (config.textMenu) {
-						config.textMenu(textMenu, i, config.item[i], config);
+						config.textMenu(textMenu, i, config.item[i] || i, config);
 					}
 					lib.setScroll(node._link.menu);
 				}

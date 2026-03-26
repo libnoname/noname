@@ -54,6 +54,12 @@ const dynamicTranslates = {
 		str += "然后本回合结束时你摸X张牌，若未满足选择的条件，则删除此选项（X为你最后一次发动〖矜名〗选择的选项序号）。";
 		return str;
 	},
+	old_oljiaozhao(player) {
+		if (player.countMark("old_oldanxin")) {
+			return lib.translate[`old_oljiaozhao_lv${player.countMark("old_oldanxin")}_info`];
+		}
+		return lib.translate["old_oljiaozhao_info"];
+	},
 	oljiaozhao(player) {
 		if (player.countMark("oldanxin")) {
 			return lib.translate[`oljiaozhao_lv${player.countMark("oldanxin")}_info`];

@@ -1,5 +1,5 @@
 const characters = {
-	mb_zhangji: {
+	mb_tw_zhangji: {
 		sex: "male",
 		group: "wei",
 		hp: 3,

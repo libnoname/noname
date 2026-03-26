@@ -1,4 +1,9 @@
 export default {
+	"#dcyuzheng1": "文王贤誉天下，犹知不可为众矢之的。",
+	"#dcyuzheng2": "袁公路，汝当真要冒天下之大不韪吗？",
+	"#dcyxsuishi1": "孙伯符，汝当真要作忘恩负义之徒吗？",
+	"#dcyxsuishi2": "养虎不羁，饲者必成虎口之伥。",
+	"#dc_yanxiang:die": "我等要皆为阶下囚了！",
 	"#starjunxi1": "进亦死，退亦死，向死而生可乎！",
 	"#starjunxi2": "与其坐以待毙，何不放手一搏！",
 	"#starjixian1": "卸甲疾行，敌虽远亦一夕可至。",

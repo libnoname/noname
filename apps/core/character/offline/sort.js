@@ -9,6 +9,7 @@ const characterSort = {
 	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
 	offline_piracyE_jb: ["pe_jun_caopi", "pe_jun_liushan", "pe_jun_sunquan", "pe_jun_liuxie", "pe_jun_liuhong", "pe_jun_liubei", "pe_jun_caocao", "pe_jun_sunce", "pe_jun_yuanshao", "pe_jun_zhangjiao"],
+	offline_piracyE_hl: ["hl_shen_lvbu", "hl_shen_zhouyu", "hl_shen_lvmeng", "hl_shen_zhugeliang", "hl_shen_guanyu"],
 	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_guozhao", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
@@ -34,7 +35,7 @@ const characterSort = {
 	offline_zc26: ["zc26_sp_xushi", "zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
 	offline_wenxindiaolong: ["wxdl_caocao"],
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
-	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji"],
+	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei"],
 	//offline_others: [],
 };
 
@@ -51,6 +52,7 @@ const characterSortTranslate = {
 	offline_piracyE_zy: "官盗E系列·战役篇",
 	offline_piracyE_xk: "官盗E系列·侠客行",
 	offline_piracyE_jb: "官盗E系列·君霸天下",
+	offline_piracyE_hl: "官盗E系列·神霸虎牢",
 	offline_piracyE: "官盗E系列",
 	offline_piracyS: "官盗S系列",
 	offline_vtuber: "天书乱斗·虚拟偶像",

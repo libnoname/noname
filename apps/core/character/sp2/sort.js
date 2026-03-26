@@ -15,7 +15,7 @@ const characterSort = {
 	sp2_fenghuo: ["re_nanhualaoxian", "tongyuan", "zhangning", "re_pangdegong"],
 	sp2_huangjin: ["liuhong", "zhujun", "re_hansui", "xushao"],
 	sp2_fadong: ["ol_dingyuan", "wangrong", "re_quyi", "hanfu"],
-	sp2_xuzhou: ["re_taoqian", "caosong", "zhangmiao", "qiuliju"],
+	sp2_xuzhou: ["caobao", "re_taoqian", "caosong", "zhangmiao", "qiuliju"],
 	sp2_zhongyuan: ["re_hucheer", "re_zoushi", "caoanmin", "re_dongcheng"],
 	sp2_xiaohu: ["haomeng", "yanfuren", "yanrou", "dc_zhuling"],
 	sp2_qunxiong: ["dc_yanxiang", "chezhou", "hansong", "matie"],

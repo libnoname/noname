@@ -51,6 +51,7 @@ export default {
 	ol_jsrg_lvbu: "双戟镇斗",
 	shi_cenhun: "锁北别西",
 	ol_nianshou: "凶兽",
+	ol_re_nianshou: "凶兽",
 	ol_zishu: "十二生肖",
 	ol_chouniu: "十二生肖",
 	ol_yinhu: "十二生肖",

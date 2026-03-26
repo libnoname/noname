@@ -1,4 +1,9 @@
 export default {
+	"#dcsbzhenjian1": "我知季玉其人，必不为伤民之恶。",
+	"#dcsbzhenjian2": "自古有拒敌以安民，无动民以避敌。",
+	"#dcsbxixing1": "正受性无术，恐不明本末。",
+	"#dcsbxixing2": "左将军英才盖世，可为良禽栖木。",
+	"#dc_sb_fazheng:die": "璋公有恩，我却无义。",
 	"#dccangming1": "沧溟起幕，万类归流，百川当濯我足！",
 	"#dccangming2": "乾坤浩荡，我主沉浮！",
 	"#dcchouxi1": "此间云雨，皆出我袖！",
@@ -115,7 +120,7 @@ export default {
 	"#dcdulu2": "没了这头黑丝，看阎王收不收你这丑奴！",
 	"#dcfuji1": "将军，妾这儿媳，可合您心意？",
 	"#dcfuji2": "自缚双臂，效赧王衔玉，求曹公怜惜。",
-	"#liuyijun:die": "贞者不妒，妒者必不贞。",
+	"#liufuren:die": "贞者不妒，妒者必不贞。",
 	"#dcweiwei1": "交州虽远，亦在王土之滨。",
 	"#dcweiwei2": "九州六合，缺一不可！",
 	"#dczhijue1": "裂土而背德者，定斩不赦。",

@@ -1,4 +1,11 @@
 const characters = {
+	ol_huangfusong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olyanjing", "olfenyue"],
+		names: "皇甫|嵩",
+	},
 	pangji: {
 		sex: "male",
 		group: "qun",

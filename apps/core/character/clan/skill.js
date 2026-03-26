@@ -3169,16 +3169,16 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 10,
+			order: 3,
 			result: {
 				player(player, target) {
-					if (!player.hasCard(card => player.hasUseTarget(card), "h")) {
+					if (!player.hasCard(card => player.hasUseTarget(card, undefined, true), "h")) {
 						return -1;
 					}
 					if (player == target || get.attitude(player, target) > 0) {
 						return 1;
 					}
-					if (player.countCards("h", card => player.hasUseTarget(card)) >= player.countCards("h", card => !player.hasUseTarget(card))) {
+					if (player.countCards("h", card => player.hasUseTarget(card, undefined, true)) >= player.countCards("h", card => !player.hasUseTarget(card, undefined, true))) {
 						return -0.5 + Math.random();
 					}
 					return -1;
@@ -3631,63 +3631,60 @@ const skills = {
 					return get.value(button.link);
 				})
 				.forResult();
-			if (!links || !links.length) {
-				return;
-			}
-			await player.gain(links, "gain2");
-			player.markAuto("clanshengmo_num", links.map(card => get.number(card, false)).toUniqued());
-			const numbers = cards.map(card => get.number(card, false)).unique();
-			const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
-				num = get.number(links[0], false);
-			if (num <= min || num >= max) {
-				return;
-			}
-			const list = [];
-			for (const name of names) {
-				const card = { name, isCard: true };
-				if (evt.filterCard(card, player, evt)) {
-					list.push(["基本", "", name]);
-				}
-				if (name == "sha") {
-					for (const nature of lib.inpile_nature) {
-						card.nature = nature;
+			if (links?.length) {
+				await player.gain(links, "gain2");
+				player.markAuto("clanshengmo_num", links.map(card => get.number(card, false)).toUniqued());
+				const numbers = cards.map(card => get.number(card, false)).unique();
+				const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
+					num = get.number(links[0], false);
+				if (num > min && num < max) {
+					const list = [];
+					for (const name of names) {
+						const card = { name, isCard: true };
 						if (evt.filterCard(card, player, evt)) {
-							list.push(["基本", "", name, nature]);
+							list.push(["基本", "", name]);
 						}
+						if (name == "sha") {
+							for (const nature of lib.inpile_nature) {
+								card.nature = nature;
+								if (evt.filterCard(card, player, evt)) {
+									list.push(["基本", "", name, nature]);
+								}
+							}
+						}
+					}
+					if (list.length) {
+						const { links: links2 } = await player
+							.chooseButton(["视为使用一张未以此法使用过的基本牌", [list, "vcard"]], true)
+							.set("ai", button => {
+								return get.player().getUseValue(button.link) + 1;
+							})
+							.forResult();
+						const name = links2[0][2],
+							nature = links2[0][3];
+						game.broadcastAll(
+							(name, nature) => {
+								lib.skill.clanshengmo_backup.viewAs = {
+									name,
+									nature,
+									isCard: true,
+								};
+								lib.skill.clanshengmo_backup.prompt = `选择${get.translation(nature)}【${get.translation(name)}】的目标`;
+							},
+							name,
+							nature
+						);
+						evt.set("_backupevent", "clanshengmo_backup");
+						evt.backup("clanshengmo_backup");
+						evt.set("openskilldialog", `选择${get.translation(nature)}【${get.translation(name)}】的目标`);
+						evt.set("norestore", true);
+						evt.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
 					}
 				}
 			}
-			if (!list.length) {
-				return;
-			}
-			const { links: links2 } = await player
-				.chooseButton(["视为使用一张未以此法使用过的基本牌", [list, "vcard"]], true)
-				.set("ai", button => {
-					return get.player().getUseValue(button.link) + 1;
-				})
-				.forResult();
-			const name = links2[0][2],
-				nature = links2[0][3];
-			game.broadcastAll(
-				(name, nature) => {
-					lib.skill.clanshengmo_backup.viewAs = {
-						name,
-						nature,
-						isCard: true,
-					};
-					lib.skill.clanshengmo_backup.prompt = `选择${get.translation(nature)}【${get.translation(name)}】的目标`;
-				},
-				name,
-				nature
-			);
-			evt.set("_backupevent", "clanshengmo_backup");
-			evt.backup("clanshengmo_backup");
-			evt.set("openskilldialog", `选择${get.translation(nature)}【${get.translation(name)}】的目标`);
-			evt.set("norestore", true);
-			evt.set("custom", {
-				add: {},
-				replace: { window() {} },
-			});
 			evt.goto(0);
 		},
 		marktext: "墨",
@@ -3865,10 +3862,10 @@ const skills = {
 		check(event, player) {
 			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const [bool, goon] = get.info("clanjianji").getBool(event, player);
-			return (
-				(bool && (get.attitude(player, event.player) > 0 || event.player.countCards("h") > player.countCards("h"))) ||
-				(goon && player.hasValueTarget(card))
-			);
+			if (player.hasSkill("clanzhongliu")) {
+				return goon && player.hasValueTarget(card);
+			}
+			return (bool && (get.attitude(player, event.player) > 0 || event.player.countCards("h") > player.countCards("h"))) || (goon && player.hasValueTarget(card));
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -4870,9 +4867,9 @@ const skills = {
 						);
 					})
 				) {
-					return 10;
+					return 5;
 				}
-				return 2;
+				return 1;
 			},
 			result: {
 				target(player, target) {
@@ -4999,7 +4996,7 @@ const skills = {
 			var player = _status.event.player;
 			var storage = player.storage.clanjiexuan;
 			var name = (storage || 0) % 2 ? "guohe" : "shunshou";
-			var fix = player.hasSkill("clanzhongliu") && get.position(card) != "h" ? 2 : 1;
+			var fix = player.hasSkill("clanzhongliu") && (get.position(card) != "h" || get.suit(card) == "spade") ? 2 : 1;
 			return (get.value({ name: name }, player) - get.value(card)) * fix;
 		},
 		position: "hes",
@@ -5138,6 +5135,13 @@ const skills = {
 			effect: {
 				charlotte: true,
 				audio: "clanmingjie",
+				mod: {
+					aiOrder(player, card, num) {
+						if(get.suit(card) == "spade") {
+							return num + 3;
+						}
+					},
+				},
 				trigger: { player: "useCard2" },
 				filter(event, player) {
 					const { card } = event;
@@ -7399,10 +7403,13 @@ const skills = {
 						if (Math.random() < 0.75 && link == "clandaojie") {
 							if (player.hasSkill("clanbaichu")) return 0;
 							return 2;
+						} else if (get.event().removeSkillCheck) {
+							return 100 - get.skillRank(link);
 						}
 						return 0;
 					})
 					.set("listx", skills)
+					.set("removeSkillCheck", player.hp < 2 && !player.countCards("hs", card => get.tag(card, "save")))
 					.forResult();
 			}
 			if (result?.bool && result?.links?.length) {

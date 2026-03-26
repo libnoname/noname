@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	olfenyue(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "摸两张牌",
+			yin = "使用一张【杀】";
+		if (!bool) {
+			yang = `<span class=firetext>${yang}</span>`;
+		} else {
+			yin = `<span class=bluetext>${yin}</span>`;
+		}
+		const start = "转换技，每回合结束时，若本回合有角色受到过属性伤害，你可以：",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
 		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;

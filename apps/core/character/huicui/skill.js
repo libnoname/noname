@@ -2920,7 +2920,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					player.addTempSkill("dcjigu_used", { global: "roundStart" });
-					player.addMark("dcjigu_used");
+					player.addMark("dcjigu_used", 1, false);
 					await player.draw(
 						Array.from({ length: 5 })
 							.map((_, i) => i + 1)
@@ -16232,21 +16232,23 @@ const skills = {
 						"idx",
 						(function () {
 							let att = get.sgn(get.attitude(target, player)),
-								use = 2 * att,
-								suits = {};
+								use = get.effect(player, { name: "draw" }, player, target) * 1.5,
+								give = {},
+								discard = [];
 							target.countCards("h", i => {
+								discard.add(i);
 								let suit = get.suit(i, target),
 									val = target.getUseValue(i, null, true);
-								if (suits[suit]) {
-									suits[suit]++;
-								} else {
-									suits[suit] = 1;
-								}
+								give[suit] ??= 0;
+								give[suit] += get.value(i);
 								if (val > 1) {
 									use -= Math.sqrt(Math.abs(val));
 								}
 							});
-							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -num];
+							discard.sort((a, b) => get.value(a) - get.value(b));
+							discard = discard.slice(0, Math.min(num, discard.length)).reduce((sum, card) => sum + get.value(card), 0);
+							give = att * Math.min(...Object.values(give));
+							const res = [use, give, -discard];
 							return res.indexOf(Math.max(...res));
 						})()
 					)

@@ -1,4 +1,9 @@
 export default {
+	"olkuangxin1": "汉庭之上，皆为窃天之贼！",
+	"olkuangxin2": "黄天之下，再无饥寒之祸。",
+	"olleishi1": "雷芒裂苍穹，群山已撼，试问谁能挡！",
+	"olleishi2": "天公降怒，雷光闪处，万物皆夷灭！",
+	"#ol_zhangmancheng:die": "巡逻不前者，杀！",
 	"#oltingji1": "翦之恶暴，其怒如动发雷音，当振大汉天声。",
 	"#oltingji2": "玄岂以一子之命，而纵国贼！",
 	"#olxuanliu1": "彼之贤才，其涌如通流大川，当趋源头活水。",

@@ -1,4 +1,5 @@
 export default {
+	//caobao: "",
 	star_zhangsong: "乌鹊折槁",
 	star_zhanghe: "河北之庭柱",
 	dc_yanxiang: "冢中鸣鸮",

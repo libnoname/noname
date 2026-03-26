@@ -1,11 +1,13 @@
 export default {
+	//ol_huangfusong: "",
+	ol_caojinyu: "春秋盈昃",
 	//pangji: "",
-	//ol_dongguiren: "",
-	//ol_liuye: "",
+	ol_dongguiren: "衣雪宫柳",
+	ol_liuye: "佐世之才",
 	ol_cuiyan: "时乎时乎",
 	//ol_yangfeng: "忠勇半途", //暂无称号
 	//ol_caizhenji: "舍心顾复", //暂无称号
-	//sunyuan: "孙鸢", //暂无称号
+	sunyuan: "仗钺临戎", //暂无称号
 	ol_lvlingqi: "红袖仗钺",
 	zhangren: "索命神射",
 	zoushi: "惑心之魅",

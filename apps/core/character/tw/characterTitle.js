@@ -46,7 +46,7 @@ export default {
 	tw_jianshuo: "西园硕犀",
 	tw_mateng: "驰骋西陲", //这个皮肤在海外和普通称号一样，但是在国内OL改名叫安狄将军
 	tw_baoxin: "坚朴的忠相",
-	tw_liufuren: "酷妒的海棠",
+	tw_liufuren: "酷妒的海棠",//热辣的海藻（）
 	tw_wangling: "深谋远虑",
 	tw_zhugeguo: "仙池起舞",
 	tw_fanchou: "反攻长安",

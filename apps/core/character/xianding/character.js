@@ -1,4 +1,22 @@
 const characters = {
+	dc_sb_zhangren: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dcsbshedao", "dcsbxunshi", "dcsbzhengong"],
+	},
+	v_zhangxingcai: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["dchuangnu", "dcxiankuang"],
+	},
+	liuxuan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["mogui", "zunjian"],
+	},
 	zhangyu: {
 		sex: "male",
 		group: "shu",
@@ -170,11 +188,12 @@ const characters = {
 		hp: 4,
 		skills: ["dcshouhu", "dcningzhun"],
 	},
-	liuyijun: {
+	liufuren: {
 		sex: "female",
 		group: "qun",
 		hp: 3,
 		skills: ["dcdulu", "dcfuji"],
+		names: "刘|null",
 	},
 	taohuang: {
 		sex: "male",

@@ -3,7 +3,7 @@ export default {
 	arrowParens: "avoid",
 	bracketSpacing: true,
 	endOfLine: "lf",
-	printWidth: 150,
+	printWidth: Infinity,
 	proseWrap: "preserve",
 	quoteProps: "as-needed",
 	semi: true,

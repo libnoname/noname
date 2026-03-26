@@ -2524,7 +2524,7 @@ const skills = {
 			event.result = await player
 				.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hes", card => {
 					const { player, color } = get.event();
-					if (get.color(card) != color) {
+					if (get.color(card) == color) {
 						return false;
 					}
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);

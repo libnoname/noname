@@ -4586,31 +4586,38 @@ export class Library {
 				recent_character_number: {
 					name: "最近使用武将",
 					intro: "自由选将对话框中最近使用武将的数量",
-					init: "12",
-					item: {
-						5: "5",
-						6: "6",
-						10: "10",
-						12: "12",
-						20: "20",
-						30: "30",
+					init: 12,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 1) {
+							num = 1;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("recent_character_number", num);
 					},
-					unfrequent: true,
 				},
 				showMax_character_number: {
 					name: "最大武将数显示",
 					intro: "设置自由选将对话框一页显示的最大武将数<br><span class=firetext>注意事项：<br><li>更改此选项后，需要重启游戏以使用新选项配置<br><li>推荐将此选项设置为偏小数值，可降低加载过多武将时导致的性能损耗</span>",
-					init: "10",
-					item: {
-						5: "5",
-						6: "6",
-						10: "10",
-						12: "12",
-						20: "20",
-						24: "24",
-						0: "∞",
+					init: 10,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 1) {
+							num = 1;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("showMax_character_number", num);
 					},
-					unfrequent: true,
 				},
 				popequip: {
 					name: "触屏装备选择",
@@ -5801,8 +5808,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -5817,10 +5824,27 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
-						3: "三",
-						4: "四",
-						6: "六",
-						8: "八",
+						number: "自选数值",
+					},
+					onclick(item) {
+						if (item !== "number") {
+							game.saveConfig("connect_limit_zhu", item, "identity");
+							return;
+						}
+						const result = prompt("请输入常备主候选武将数");
+						if (/^-?\d+(\.\d+)?$/.test(result)) {
+							const number = Number(result);
+							if (number > 0) {
+								if (Number.isInteger(number)) {
+									this.querySelector("div").innerHTML = result;
+									game.saveConfig("connect_limit_zhu", result, "identity");
+								} else {
+									alert("请输入整数");
+								}
+								return;
+							}
+						}
+						alert("请输入大于0的整数");
 					},
 				},
 				connect_choice_zhong: {
@@ -5831,8 +5855,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 4;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -5854,8 +5878,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -5871,8 +5895,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 6;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -5906,8 +5930,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 4;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -6446,8 +6470,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -6462,10 +6486,27 @@ export class Library {
 					item: {
 						off: "不限制",
 						group: "按势力筛选",
-						3: "三",
-						4: "四",
-						6: "六",
-						8: "八",
+						number: "自选数值",
+					},
+					onclick(item) {
+						if (item !== "number") {
+							game.saveConfig("limit_zhu", item, "identity");
+							return;
+						}
+						const result = prompt("请输入常备主候选武将数");
+						if (/^-?\d+(\.\d+)?$/.test(result)) {
+							const number = Number(result);
+							if (number > 0) {
+								if (Number.isInteger(number)) {
+									this.querySelector("div").innerHTML = result;
+									game.saveConfig("limit_zhu", result, "identity");
+								} else {
+									alert("请输入整数");
+								}
+								return;
+							}
+						}
+						alert("请输入大于0的整数");
 					},
 				},
 				choice_zhong: {
@@ -6476,8 +6517,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 4;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -6493,8 +6534,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 6;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -6510,8 +6551,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -6534,8 +6575,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 4;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -7674,8 +7715,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 5;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -7691,8 +7732,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -7828,8 +7869,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 5;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -7845,8 +7886,8 @@ export class Library {
 					onblur(e) {
 						let text = e.target,
 							num = Number(text.innerText);
-						if (isNaN(num) || num < 2) {
-							num = 3;
+						if (isNaN(num) || num < 1) {
+							num = 1;
 						} else if (!Number.isInteger(num)) {
 							num = Math.round(num);
 						}
@@ -14546,6 +14587,13 @@ export class Library {
 				nature: "woodmm",
 			},
 		],
+		[
+			"虎牢",
+			{
+				color: "#5A2A1C",
+				nature: "firemm",
+			}
+		]
 	]);
 	groupnature = {
 		shen: "shen",

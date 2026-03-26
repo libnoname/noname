@@ -19,7 +19,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["twtaoluan", "twshiji", "twzhengjun"],
-		img: "image/character/sp_huangfusong.jpg",
 		dieAudios: ["sp_huangfusong"],
 	},
 	tw_jsrg_wangyun: {
