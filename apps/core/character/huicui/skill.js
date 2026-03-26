@@ -5474,7 +5474,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result.bool) {
-				return event.finish();
+				return return;
 			}
 			const target = result.targets[0];
 			player.logSkill("dcdingji", target);
@@ -5500,7 +5500,7 @@ const skills = {
 			}
 			await game.delayex();
 			if (hasSame) {
-				return event.finish();
+				return;
 			}
 			const list = get.inpileVCardList(info => {
 				if (!["basic", "trick"].includes(info[0])) {
@@ -5514,7 +5514,7 @@ const skills = {
 				});
 			});
 			if (!list.length) {
-				return event.finish();
+				return;
 			}
 			result = await target
 				.chooseButton(["是否视为使用其中一张牌？", [list, "vcard"]])
@@ -5607,7 +5607,6 @@ const skills = {
 			if (!cards.length) {
 				player.chat("没牌了…");
 				game.log("但是哪里都找不到没有符合条件的牌！");
-				event.finish();
 				return;
 			}
 			player.markAuto("dcliangxiu", cards.map(card => get.type2(card, false)).toUniqued());
@@ -5760,7 +5759,7 @@ const skills = {
 						game.stopCountChoose();
 					});
 				}
-				return event.finish();
+				return;
 			}
 			let prompt = "";
 			const choice = result.control,
@@ -5792,14 +5791,14 @@ const skills = {
 				});
 			}
 			if (!result.bool) {
-				return event.finish();
+				return;
 			}
 			const target = result.targets[0];
 			player.logSkill("dcxunjie", target);
 			player.tempBanSkill(`dcxunjie_${index == 0 ? "handcard" : "hp"}`, "roundStart", false);
 			const delt = (target.getHp(true) - target.countCards("h")) * (1 - 2 * index);
 			if (delt == 0) {
-				event.finish();
+				return;
 			} else if (index == 0) {
 				target[delt > 0 ? "draw" : "chooseToDiscard"](Math.abs(delt), true, "allowChooseAll");
 			} else {
@@ -6015,7 +6014,6 @@ const skills = {
 				await player.drawTo(player.maxHp);
 			}
 			if (game.countPlayer() < 2) {
-				event.finish();
 				return;
 			}
 			var result = await player
@@ -7402,7 +7400,7 @@ const skills = {
 				event.recast = player.recast(cards);
 				await event.recast;
 			} else {
-				event.finish();
+				return;
 			}
 			// step 2
 			if (
@@ -7644,7 +7642,7 @@ const skills = {
 						}
 						event.targets = result.targets;
 					} else {
-						event.finish();
+						return;
 					}
 					// step 2
 					if (event.targets) {
@@ -16514,7 +16512,7 @@ const skills = {
 				event.num = numx;
 				event.cards = result.cards;
 				if (!hs.length) {
-					event.finish();
+					return;
 				} else if (hs.length <= num) {
 					result = { bool: true, cards: hs };
 				} else {
@@ -16529,7 +16527,7 @@ const skills = {
 						.forResult();
 				}
 			} else {
-				event.finish();
+				return;
 			}
 			// step 2
 			await player.give(result.cards, target);
@@ -16803,7 +16801,7 @@ const skills = {
 			const num = cards.length;
 			let result;
 			if (!target.isIn()) {
-				return event.finish();
+				return;
 			} else if (!target.countDiscardableCards(player, "he")) {
 				result = { index: 1 };
 			} else {
@@ -17089,7 +17087,7 @@ const skills = {
 			// step 1
 			if (result.bool) {
 				if (!target.countCards("hej")) {
-					event.finish();
+					return;
 				} else {
 					await player.gainPlayerCard(target, true, "hej", 2, "获得" + get.translation(target) + "区域里的两张牌");
 				}
@@ -17602,7 +17600,7 @@ const skills = {
 				hs.addArray(target.getCards("he", card => get.subtype(card) == "equip2"));
 				await player.gain(hs, target, "give", "bySelf");
 				if (player.hasMark("zhtongyuan_basic")) {
-					event.finish();
+					return;
 				} else {
 					num = hs.length;
 					event.num = num;
@@ -17611,12 +17609,12 @@ const skills = {
 				if (player.hasMark("zhtongyuan_trick")) {
 					await player.draw(2);
 				}
-				event.finish();
+				return;
 			}
 			// step 1
 			const hs2 = player.getCards("he");
 			if (!hs2.length || !target.isIn()) {
-				event.finish();
+				return;
 			} else if (hs2.length <= num) {
 				result = { bool: true, cards: hs2 };
 			} else {
