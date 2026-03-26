@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/**
+ * @typedef {import("../../typings/Skill").Skill} Skill
+ * @type {Record<string, Skill>}
+ */
 const skills = {
 	//江山如故·衰
 	//张举
@@ -7841,7 +7844,6 @@ const skills = {
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
-		direct: true,
 		filter(event, player) {
 			return (
 				game.countPlayer(current => {
@@ -7849,139 +7851,141 @@ const skills = {
 				}) >= 2
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(
-					get.prompt2("jsrgguitu"),
-					(card, player, target) => {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					filterTarget(card, player, target) {
 						return target.getEquips(1).length;
 					},
-					[1, 2]
-				)
+					selectTarget: [1, 2],
+					prompt: get.prompt2("jsrgguitu"),
+					ai(target) {
+						let sign = -1;
+						let val = 0;
+						if (ui.selected.targets.length) {
+							sign = 1;
+							const targetx = ui.selected.targets[0];
+							const cards = targetx.getEquips(1);
+							const list = cards.map(card => {
+								return [card, get.value(card, targetx)];
+							});
+							list.sort((a, b) => b[1] - a[1]);
+							val = get.attitude(_status.event.player, targetx) * list[0][1];
+						}
+						const cards = target.getEquips(1);
+						const list = cards.map(card => {
+							return [card, get.value(card, target)];
+						});
+						list.sort((a, b) => b[1] - a[1]);
+						return get.attitude(_status.event.player, target) * list[0][1] * sign - val;
+					}
+				})
 				.set("filterOk", () => {
-					var num = 0;
-					for (var target of ui.selected.targets) {
+					let num = 0;
+					for (const target of ui.selected.targets) {
 						num += target.getEquips(1).length;
 					}
 					return num >= 2;
 				})
-				.set("ai", target => {
-					var sign = -1;
-					var val = 0;
-					if (ui.selected.targets.length) {
-						sign = 1;
-						var targetx = ui.selected.targets[0];
-						var cards = targetx.getEquips(1);
-						var list = cards.map(card => {
-							return [card, get.value(card, targetx)];
-						});
-						list.sort((a, b) => {
-							return b[1] - a[1];
-						});
-						val = get.attitude(_status.event.player, targetx) * list[0][1];
-					}
-					var cards = target.getEquips(1);
-					var list = cards.map(card => {
-						return [card, get.value(card, target)];
-					});
-					list.sort((a, b) => {
-						return b[1] - a[1];
-					});
-					return get.attitude(_status.event.player, target) * list[0][1] * sign - val;
-				});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.slice();
-				targets.sortBySeat();
-				event.targets = targets;
-				player.logSkill("jsrgguitu", targets);
-				event.rangeList = targets.map(target => {
-					return target.getAttackRange();
-				});
-				var weapons = [];
-				for (var target of targets) {
-					weapons.addArray(target.getEquips(1));
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { targets } = event;
+			targets.sortBySeat();
+			const rangeList = targets.map(target => target.getAttackRange());
+			const weapons = [];
+			for (const target of targets) {
+				weapons.addArray(target.getEquips(1));
+			}
+			/**
+			 * @type {Partial<Result>}
+			 */
+			let result;
+			if (weapons.length > 2) {
+				const list = ["诡图：选择要交换的武器牌"];
+				for (const target of targets) {
+					list.addArray(['<div class="text center">' + get.translation(target) + "的武器牌</div>", target.getEquips(1)]);
 				}
-				if (weapons.length > 2) {
-					var list = ["诡图：选择要交换的武器牌"];
-					for (var target of targets) {
-						list.addArray(['<div class="text center">' + get.translation(target) + "的武器牌</div>", target.getEquips(1)]);
-					}
-					player
-						.chooseButton(list, true, 2)
-						.set("filterButton", button => {
-							var count = _status.event.count;
+				result = await player
+					.chooseButton({
+						createDialog: list,
+						filterButton(button) {
+							const count = _status.event.count;
 							if (count == 1) {
 								return true;
 							}
-							for (var i = 0; i < ui.selected.buttons.length; i++) {
-								if (get.owner(button.link) == get.owner(ui.selected.buttons[i].link)) {
+							for (const selectedButton of ui.selected.buttons) {
+								if (get.owner(button.link) == get.owner(selectedButton.link)) {
 									return false;
 								}
 							}
 							return true;
-						})
-						.set("count", targets.length)
-						.set("ai", button => {
-							var player = _status.event.player;
-							var card = button.link;
-							var owner = get.owner(card);
-							var att = get.attitude(player, owner);
-							var val = -get.value(card) * att;
-							return val;
-						});
-				} else {
-					event._result = { bool: true, links: weapons };
-				}
+						},
+						selectButton: 2,
+						forced: true,
+						ai(button) {
+							const currentPlayer = _status.event.player;
+							const card = button.link;
+							const owner = get.owner(card);
+							const att = get.attitude(currentPlayer, owner);
+							return -get.value(card) * att;
+						},
+					})
+					.set("count", targets.length)
+					.forResult();
 			} else {
-				event.finish();
+				result = { bool: true, links: weapons };
 			}
-			"step 2";
-			if (result.bool) {
-				var links = result.links;
-				var list = [];
-				for (var target of targets) {
-					var weapons = target.getEquips(1);
-					weapons = weapons.filter(i => links.includes(i));
-					if (weapons.length) {
-						list.push([target, weapons]);
+
+			if (!result.bool) {
+				return;
+			}
+			const links = result.links;
+			const list = [];
+			for (const target of targets) {
+				const targetWeapons = target.getEquips(1).filter(i => links.includes(i));
+				if (targetWeapons.length) {
+					list.push([target, targetWeapons]);
+				}
+			}
+			let players;
+			let cards;
+			if (list.length == 2) {
+				players = list.map(i => i[0]);
+				cards = list.map(i => i[1]);
+			} else {
+				players = [list[0][0], list[0][0]];
+				cards = list[0][1];
+			}
+			await game
+				.loseAsync({
+					player: players[0],
+					target: players[1],
+					cards1: cards[0],
+					cards2: cards[1],
+				})
+				.setContent("swapHandcardsx");
+
+			if (Array.isArray(cards[1])) {
+				for (const card of cards[1]) {
+					if (get.position(card, true) == "o") {
+						players[0].equip(card);
 					}
 				}
-				if (list.length == 2) {
-					event.players = list.map(i => i[0]);
-					event.cards = list.map(i => i[1]);
-				} else {
-					event.players = [list[0][0], list[0][0]];
-					event.cards = list[0][1];
-				}
-				game.loseAsync({
-					player: event.players[0],
-					target: event.players[1],
-					cards1: event.cards[0],
-					cards2: event.cards[1],
-				}).setContent("swapHandcardsx");
-			} else {
-				event.finish();
 			}
-			"step 3";
-			for (var i = 0; i < event.cards[1].length; i++) {
-				if (get.position(event.cards[1][i], true) == "o") {
-					event.players[0].equip(event.cards[1][i]);
+			if (Array.isArray(cards[0])) {
+				for (const card of cards[0]) {
+					if (get.position(card, true) == "o") {
+						players[1].equip(card);
+					}
 				}
 			}
-			for (var i = 0; i < event.cards[0].length; i++) {
-				if (get.position(event.cards[0][i], true) == "o") {
-					event.players[1].equip(event.cards[0][i]);
-				}
-			}
-			"step 4";
-			var rangeList = targets.map(target => {
-				return target.getAttackRange();
-			});
-			for (var i = 0; i < targets.length; i++) {
-				if (rangeList[i] < event.rangeList[i]) {
-					targets[i].recover();
+
+			const newRangeList = targets.map(target => target.getAttackRange());
+			for (const [index, target] of targets.entries()) {
+				if (newRangeList[index] < rangeList[index]) {
+					await target.recover();
 				}
 			}
 		},
