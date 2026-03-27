@@ -10423,28 +10423,31 @@ const skills = {
 		filterTarget(card, player, current) {
 			return current.countCards("h") > player.countCards("h") && player.canCompare(current);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
+		async content(event, trigger, player) {
+			const { target } = event;
+
+			let result = await player.chooseToCompare(target).forResult();
 			if (result.bool) {
 				target.skip("phaseDraw");
 				target.addTempSkill("yizheng2", { player: "phaseDrawSkipped" });
-				event.finish();
-			} else {
-				target
-					.chooseControl("1", "2", "cancel")
-					.set("prompt", "是否对" + get.translation(player) + "造成至多2点伤害？")
-					.set("ai", () => {
-						return _status.event.choice;
-					})
-					.set("choice", get.damageEffect(player, target, target) > 0 ? (get.attitude(target, player) > 0 ? 0 : 1) : "cancel2");
+				return;
 			}
-			"step 2";
+
+			result = await target.chooseControl({
+				prompt: `是否对${get.translation(player)}造成至多2点伤害？`,
+				controls: ["1", "2", "cancel"],
+				ai() {
+					return get.event().choice;
+				},
+			}).set("choice", get.damageEffect(player, target, target) > 0 ? (get.attitude(target, player) > 0 ? 0 : 1) : "cancel2").forResult();
+
 			if (result.control != "cancel2") {
-				var num = result.index + 1;
+				const num = result.index + 1;
 				target.line(player);
-				player.damage(target, num);
+				await player.damage({
+					num,
+					source: target,
+				});
 			}
 		},
 		ai: {
