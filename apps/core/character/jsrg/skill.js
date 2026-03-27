@@ -11234,18 +11234,23 @@ const skills = {
 		},
 		locked: false,
 		frequent: true,
-		content() {
-			"step 0";
-			player.showHandcards();
-			"step 1";
+		async content(event, trigger, player) {
+			await player.showHandcards();
 			if (player.countCards("h", { type: "basic" })) {
-				event.finish();
-			} else {
-				player.chooseBool("图射：是否摸" + get.cnNumber(trigger.targets.length) + "张牌？").set("ai", () => 1);
+				return;
 			}
-			"step 2";
+
+			const result = await player
+				.chooseBool({
+					prompt: `图射：是否摸${get.cnNumber(trigger.targets.length)}张牌？`,
+					ai() {
+						return 1;
+					},
+				})
+				.forResult();
+
 			if (result.bool) {
-				player.draw(trigger.targets.length);
+				await player.draw(trigger.targets.length);
 			}
 		},
 		ai: {
