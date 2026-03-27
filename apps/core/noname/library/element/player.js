@@ -5198,7 +5198,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @param { string } [arg1='h']
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [arg2]
-	 * @returns { Iterable<Card> }
+	 * @returns { Iterator<Card> }
 	 */
 	*iterableGetCards(arg1, arg2) {
 		if (typeof arg1 != "string") {
