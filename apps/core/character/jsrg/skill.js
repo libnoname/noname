@@ -10082,7 +10082,7 @@ const skills = {
 			});
 		},
 		group: "jsrgjuezhi_disable",
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill("jsrgjuezhi_used", ["phaseZhunbeiAfter", "phaseJudgeAfter", "phaseDrawAfter", "phaseUseAfter", "phaseDiscardAfter", "phaseJieshuAfter"]);
 			trigger.num += lib.skill.jsrgjuezhi.getNum(trigger.player, player);
 		},
@@ -10095,28 +10095,31 @@ const skills = {
 				},
 				direct: true,
 				filter(event, player) {
-					var evt = event.getl(player);
+					const evt = event.getl(player);
 					return evt && evt.es && evt.es.length > 0;
 				},
-				content() {
-					"step 0";
-					event.cards = trigger.getl(player).es;
-					"step 1";
-					var card = cards.shift(),
-						subtypes = get.subtypes(card).filter(slot => player.hasEnabledSlot(slot));
-					event.subtypes = subtypes;
-					if (subtypes.length > 0) {
-						player.chooseBool(get.prompt("jsrgjuezhi_disable"), "废除你的" + get.translation(subtypes) + "栏").set("ai", () => 1);
-					} else {
-						event._result = { bool: false };
-					}
-					"step 2";
-					if (result.bool) {
-						player.logSkill("jsrgjuezhi_disable");
-						player.disableEquip(event.subtypes);
-					}
-					if (cards.length > 0) {
-						event.goto(1);
+				async content(event, trigger, player) {
+					const cards = trigger.getl(player).es;
+
+					for (const card of cards) {
+						const subtypes = get.subtypes(card).filter(slot => player.hasEnabledSlot(slot));
+						if (subtypes.length <= 0) {
+							continue;
+						}
+
+						const result = await player.chooseBool({
+							prompt: get.prompt("jsrgjuezhi_disable"),
+							prompt2: `废除你的${get.translation(subtypes)}栏`,
+							ai() {
+								return 1;
+							},
+						}).forResult();
+						if (result.bool) {
+							player.logSkill("jsrgjuezhi_disable");
+							await player.disableEquip({
+								slots: subtypes,
+							});
+						}
 					}
 				},
 			},
