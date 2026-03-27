@@ -3341,30 +3341,33 @@ const skills = {
 					},
 					log: false,
 					selectCard: -1,
-					precontent() {
-						"step 0";
-						player
-							.moveCard(
-								`惊惧：将其他角色判定区里的牌移动至你的判定区`,
-								game.filterPlayer(i => i != player),
-								player,
-								card => {
-									if (card.cards) {
-										return get.position(card.cards[0]) == "j";
+					async precontent(event, trigger, player) {
+						const result = await player
+							.moveCard({
+								prompt: "惊惧：将其他角色判定区里的牌移动至你的判定区",
+								sourceTargets: game.filterPlayer(current => current !== player),
+								aimTargets: [player],
+								filter(card) {
+									if ("cards" in card) {
+										return get.position(card.cards[0]) === "j";
 									}
-									return get.position(card) == "j";
-								}
-							)
-							.set("logSkill", "jsrgjingju");
-						"step 1";
+									return get.position(card) === "j";
+								},
+							})
+							.set("logSkill", "jsrgjingju")
+							.forResult();
+						
 						if (!result.bool) {
-							event.getParent().jsrgjingju = true;
-							event.getParent().goto(0);
-							delete event.getParent().openskilldialog;
-							event.finish();
+							const parent = event.getParent();
+							if (parent != null) {
+								parent.jsrgjingju = true;
+								parent.goto(0);
+								delete parent.openskilldialog;
+							}
+							return;
 						}
-						"step 2";
-						game.delayx();
+
+						await game.delayx();
 					},
 				};
 			},
