@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/**
+ * @typedef {import("../../typings/Skill").Skill} Skill
+ * @type {Record<string, Skill>}
+ */
 const skills = {
 	//OL51
 	olbenxi: {
@@ -7810,16 +7813,15 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") > 0 && target != player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (target.countCards("h") == 0 || player.countCards("h") == 0) {
-				event.finish();
 				return;
 			}
-			"step 1";
-			var sendback = function () {
-				if (_status.event != event) {
-					return function () {
+
+			const sendback = () => {
+				if (_status.event !== event) {
+					return () => {
 						event.resultOL = _status.event.resultOL;
 					};
 				}
@@ -7827,55 +7829,57 @@ const skills = {
 			if (player.isOnline()) {
 				player.wait(sendback);
 				event.ol = true;
-				player.send(function () {
-					game.me.chooseCard(true).set("glow_result", true).ai = function () {
-						return Math.random();
-					};
+				player.send(() => {
+					game.me
+						.chooseCard(true)
+						.set("glow_result", true)
+						.set("ai", () => Math.random());
 					game.resume();
 				});
 			} else {
 				event.localPlayer = true;
-				player.chooseCard(true).set("glow_result", true).ai = function () {
-					return Math.random();
-				};
+				const result = await player
+					.chooseCard(true)
+					.set("glow_result", true)
+					.set("ai", () => Math.random())
+					.forResult();
+				event.card1 = result.cards[0];
 			}
 			if (target.isOnline()) {
 				target.wait(sendback);
 				event.ol = true;
-				target.send(function () {
-					var rand = Math.random() < 0.4;
-					game.me.chooseCard(true).set("glow_result", true).ai = function (card) {
-						if (rand) {
-							return card.name == "shan" ? 1 : 0;
-						}
-						return card.name == "shan" ? 0 : 1;
-					};
+				target.send(() => {
+					const rand = Math.random() < 0.4;
+					game.me
+						.chooseCard(true)
+						.set("glow_result", true)
+						.set("ai", card => {
+							if (rand) {
+								return card.name == "shan" ? 1 : 0;
+							}
+							return card.name == "shan" ? 0 : 1;
+						});
 					game.resume();
 				});
 			} else {
 				event.localTarget = true;
-			}
-			"step 2";
-			if (event.localPlayer) {
-				event.card1 = result.cards[0];
-			}
-			if (event.localTarget) {
-				var rand = Math.random() < 0.4;
-				target.chooseCard(true).set("glow_result", true).ai = function (card) {
-					if (rand) {
-						return card.name == "shan" ? 1 : 0;
-					}
-					return card.name == "shan" ? 0 : 1;
-				};
-			}
-			"step 3";
-			if (event.localTarget) {
+				const rand = Math.random() < 0.4;
+				const result = await target
+					.chooseCard(true)
+					.set("glow_result", true)
+					.set("ai", card => {
+						if (rand) {
+							return card.name == "shan" ? 1 : 0;
+						}
+						return card.name == "shan" ? 0 : 1;
+					})
+					.forResult();
 				event.card2 = result.cards[0];
 			}
+
 			if (!event.resultOL && event.ol) {
-				game.pause();
+				await game.pause();
 			}
-			"step 4";
 			try {
 				if (!event.card1) {
 					event.card1 = event.resultOL[player.playerid].cards[0];
@@ -7888,82 +7892,89 @@ const skills = {
 				}
 			} catch (e) {
 				console.log(e);
-				event.finish();
 				return;
 			}
 			game.broadcastAll(
-				function (card1, card2) {
+				(card1, card2) => {
 					card1.classList.remove("glow");
 					card2.classList.remove("glow");
 				},
 				event.card1,
 				event.card2
 			);
-			"step 5";
-			game.broadcastAll(function () {
+
+			game.broadcastAll(() => {
 				ui.arena.classList.add("thrownhighlight");
 			});
 			game.addVideo("thrownhighlight1");
 			player.$compare(event.card1, target, event.card2);
-			game.delay(4);
-			"step 6";
-			var next = game.createEvent("showCards");
+			await game.delay(4);
+
+			let next = game.createEvent("showCards");
 			next.player = player;
 			next.cards = [event.card1];
 			next.setContent("emptyEvent");
 			game.log(player, "展示了", event.card1);
-			"step 7";
-			var next = game.createEvent("showCards");
+			await next;
+
+			next = game.createEvent("showCards");
 			next.player = target;
 			next.cards = [event.card2];
 			next.setContent("emptyEvent");
 			game.log(target, "展示了", event.card2);
-			"step 8";
-			var name1 = get.name(event.card1);
-			var name2 = get.name(event.card2);
+			await next;
+
+			const name1 = get.name(event.card1);
+			const name2 = get.name(event.card2);
 			if (name1 == "sha" && name2 != "shan") {
-				player.discard(event.card1).set("animate", false);
+				await player.discard(event.card1).set("animate", false);
 				target.$gain2(event.card2);
-				var clone = event.card1.clone;
+				const clone = event.card1.clone;
 				if (clone) {
 					clone.style.transition = "all 0.5s";
 					clone.style.transform = "scale(1.2)";
 					clone.delete();
 					game.addVideo("deletenode", player, get.cardsInfo([clone]));
 				}
-				game.broadcast(function (card) {
-					var clone = card.clone;
-					if (clone) {
-						clone.style.transition = "all 0.5s";
-						clone.style.transform = "scale(1.2)";
-						clone.delete();
-					}
-				}, event.card1);
-				target.damage("nocard");
+				game.broadcast(
+					card => {
+						const clone = card.clone;
+						if (clone) {
+							clone.style.transition = "all 0.5s";
+							clone.style.transform = "scale(1.2)";
+							clone.delete();
+						}
+					},
+					event.card1
+				);
+				await target.damage("nocard");
 			} else if (name1 != "sha" && name2 == "shan") {
-				player.discard(event.card1).set("animate", false);
+				await player.discard(event.card1).set("animate", false);
 				target.$gain2(event.card2);
-				var clone = event.card1.clone;
+				const clone = event.card1.clone;
 				if (clone) {
 					clone.style.transition = "all 0.5s";
 					clone.style.transform = "scale(1.2)";
 					clone.delete();
 					game.addVideo("deletenode", player, get.cardsInfo([clone]));
 				}
-				game.broadcast(function (card) {
-					var clone = card.clone;
-					if (clone) {
-						clone.style.transition = "all 0.5s";
-						clone.style.transform = "scale(1.2)";
-						clone.delete();
-					}
-				}, event.card1);
-				player.gainPlayerCard(target, true, "he");
+				game.broadcast(
+					card => {
+						const clone = card.clone;
+						if (clone) {
+							clone.style.transition = "all 0.5s";
+							clone.style.transform = "scale(1.2)";
+							clone.delete();
+						}
+					},
+					event.card1
+				);
+				await player.gainPlayerCard(target, true, "he");
 			} else {
 				player.$gain2(event.card1);
 				target.$gain2(event.card2);
 			}
-			game.broadcastAll(function () {
+			game.broadcastAll(() => {
 				ui.arena.classList.remove("thrownhighlight");
 			});
 			game.addVideo("thrownhighlight2");
