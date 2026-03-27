@@ -11559,33 +11559,30 @@ const skills = {
 			return true;
 			//return event.name!='phase'||game.phaseNumber==0;
 		},
-		direct: true,
 		group: "jsrgshoushu_destroy",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("jsrgshoushu"), "将【太平要术】置入一名角色的装备区", (card, player, target) => {
-					var card = { name: "taipingyaoshu" };
-					return target.canEquip(card, true);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("jsrgshoushu"),
+					prompt2: "将【太平要术】置入一名角色的装备区",
+					filterTarget(card, player, target) {
+						return target.canEquip(get.event().cardx, true);
+					},
+					ai(target) {
+						return target.getUseValue(get.event().cardx) * get.attitude(get.player(), target);
+					},
 				})
-				.set("ai", target => {
-					return target.getUseValue({ name: "taipingyaoshu" }) * get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("jsrgshoushu", target);
-				if (!lib.inpile.includes("taipingyaoshu")) {
-					lib.inpile.push("taipingyaoshu");
-				}
-				event.card = game.createCard2("taipingyaoshu", "heart", 3);
-			} else {
-				event.finish();
+				.set("cardx", get.autoViewAs({ name: "taipingyaoshu" }))
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			if (!lib.inpile.includes("taipingyaoshu")) {
+				lib.inpile.push("taipingyaoshu");
 			}
-			"step 2";
+			const card = game.createCard2("taipingyaoshu", "heart", 3);
 			if (card) {
-				target.equip(card);
+				await event.targets[0].equip(card);
 			}
 		},
 		subSkill: {
@@ -11604,15 +11601,13 @@ const skills = {
 						return false;
 					});
 				},
-				content() {
-					var cards = [];
-					game.countPlayer(current => {
-						var evt = trigger.getl(current);
-						if (evt && evt.es) {
-							return cards.addArray(evt.es.filter(i => i.name == "taipingyaoshu"));
-						}
-					});
-					game.cardsGotoSpecial(cards);
+				async content(event, trigger, player) {
+					const cards = game
+						.filterPlayer()
+						.map(current => trigger.getl(current))
+						.filter(evt => Array.isArray(evt?.es))
+						.flatMap(evt => evt.es.filter(card => card.name === "taipingyaoshu"));
+					await game.cardsGotoSpecial(cards);
 					game.log(cards, "被销毁了");
 				},
 			},
