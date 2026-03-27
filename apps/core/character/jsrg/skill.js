@@ -6855,41 +6855,37 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
-			"step 0";
-			event.targets = game.filterPlayer();
-			"step 1";
-			var target = event.targets.shift();
-			event.target = target;
-			if (!target) {
-				event.finish();
-			} else if (!target.isIn() || target == player) {
-				event.redo();
-			} else if (target.group == "wu") {
-				if ((target == game.me && !_status.auto) || get.attitude(target, player) > 2 || target.isOnline()) {
-					player.storage.jsrgbashiing = true;
-					var list = ["sha", "shan"].filter(name => trigger.filterCard({ name: name }, player, trigger));
-					var names = list.map(i => "【" + get.translation(i) + "】").join("或");
-					var next = target.chooseToRespond("是否替" + get.translation(player) + "打出一张" + names + "？", { name: list });
-					next.set("ai", function () {
-						var event = _status.event;
-						return get.attitude(event.player, event.source) - 2;
-					});
-					next.set("skillwarn", "替" + get.translation(player) + "打出一张" + names);
-					next.autochoose = function () {
-						if (!lib.filter.autoRespondSha.apply(this, arguments)) {
-							return false;
-						}
-						return lib.filter.autoRespondShan.apply(this, arguments);
-					};
-					next.set("source", player);
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(target => target.isIn() && target !== player && target.group === "wu");
+			for (const target of targets) {
+				if (!((target == game.me && !_status.auto) || get.attitude(target, player) > 2 || target.isOnline())) {
+					continue;
 				}
-			}
-			"step 2";
-			delete player.storage.jsrgbashiing;
-			if (result.bool) {
-				event.finish();
-				var name = result.card.name;
+				player.storage.jsrgbashiing = true;
+				const list = ["sha", "shan"].filter(name => trigger.filterCard({ name: name }, player, trigger));
+				const names = list.map(i => "【" + get.translation(i) + "】").join("或");
+				const next = target.chooseToRespond({
+					prompt: "是否替" + get.translation(player) + "打出一张" + names + "？", 
+					card: get.autoViewAs({ name: list }),
+				});
+				next.set("ai", () => {
+					const event = _status.event;
+					return get.attitude(event.player, event.source) - 2;
+				});
+				next.set("skillwarn", "替" + get.translation(player) + "打出一张" + names);
+				next.autochoose = (...args) => {
+					if (!lib.filter.autoRespondSha.apply(next, args)) {
+						return false;
+					}
+					return lib.filter.autoRespondShan.apply(next, args);
+				};
+				next.set("source", player);
+				const result = await next.forResult();
+				delete player.storage.jsrgbashiing;
+				if (!result.bool) {
+					continue;
+				}
+				const name = result.card.name;
 				trigger.result = { bool: true, card: { name: name, isCard: true } };
 				trigger.responded = true;
 				trigger.animate = false;
@@ -6899,9 +6895,9 @@ const skills = {
 						target.ai.shown = 0.95;
 					}
 				}
-			} else {
-				event.goto(1);
+				return;
 			}
+			delete player.storage.jsrgbashiing;
 		},
 		ai: {
 			respondSha: true,
