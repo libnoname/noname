@@ -4658,43 +4658,41 @@ const skills = {
 				})
 			);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt2("jsrgbaohe"), 2, "he")
-				.set("ai", card => {
-					var val = _status.event.val;
-					if (val > 20) {
-						return 6 - get.value(card);
-					}
-					if (val > 0) {
-						return 4 - get.value(card);
-					}
-					return 0;
+		async cost(event, trigger, player) {
+			const val = game
+				.filterPlayer(current => current.inRange(trigger.player) && player.canUse("sha", current, false))
+				.map(current => get.effect(current, { name: "sha" }, player, player))
+				.reduce((a, b) => a + b, 0);
+
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("jsrgbaohe"),
+					selectCard: 2,
+					position: "he",
+					ai(card) {
+						const val = get.event().val;
+						if (val > 20) {
+							return 6 - get.value(card);
+						}
+						if (val > 0) {
+							return 4 - get.value(card);
+						}
+						return 0;
+					},
 				})
-				.set(
-					"val",
-					game
-						.filterPlayer(current => {
-							return current.inRange(trigger.player) && player.canUse("sha", current, false);
-						})
-						.map(i => get.effect(i, { name: "sha" }, player, player))
-						.reduce((p, c) => {
-							return p + c;
-						}, 0)
-				)
-				.set("logSkill", "jsrgbaohe");
-			"step 1";
-			if (result.bool) {
-				var targets = game.filterPlayer(current => {
-					return current.inRange(trigger.player) && player.canUse("sha", current, false);
+				.set("val", val)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => current.inRange(trigger.player) && player.canUse("sha", current, false));
+			if (targets.length) {
+				player.addTempSkill("jsrgbaohe_add");
+				await game.delayex();
+				await player.useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true, storage: { jsrgbaohe: true } }),
+					targets,
+					addCount: false,
 				});
-				if (targets.length) {
-					game.delayex();
-					player.useCard({ name: "sha", isCard: true, storage: { jsrgbaohe: true } }, targets, false);
-					player.addTempSkill("jsrgbaohe_add");
-				}
 			}
 		},
 		subSkill: {
@@ -4706,33 +4704,39 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					let evt = event.getParent(3),
-						respondTo = event.respondTo;
-					if (evt.name != "useCard" || !Array.isArray(respondTo) || !respondTo[1].storage || !respondTo[1].storage.jsrgbaohe) {
+					const evt = event?.getParent(3);
+					const respondTo = event?.respondTo;
+					if (evt?.name != "useCard" || !Array.isArray(respondTo) || !respondTo[1].storage || !respondTo[1].storage.jsrgbaohe) {
 						return false;
 					}
 					return evt.targets.length > evt.num + 1;
 				},
 				logTarget(event) {
-					let evt = event.getParent(3);
-					return evt.targets.slice(evt.num + 1);
+					const evt = event?.getParent(3);
+					return evt?.targets.slice(evt.num + 1);
 				},
-				content() {
-					"step 0";
-					var evt = trigger.getParent(3);
-					var targets = evt.targets.slice(evt.num + 1);
-					var map = evt.customArgs;
+				async content(event, trigger, player) {
+					const evt = trigger.getParent(3);
+					if (evt == null) {
+						return;
+					}
+
+					const targets = evt.targets.slice(evt.num + 1);
+					const map = evt.customArgs;
 					for (var target of targets) {
-						var id = target.playerid;
+						const id = target.playerid;
+						if (id == null) {
+							continue;
+						}
 						if (!map[id]) {
 							map[id] = {};
 						}
-						if (typeof map[id].extraDamage != "number") {
+						if (typeof map[id].extraDamage !== "number") {
 							map[id].extraDamage = 0;
 						}
 						map[id].extraDamage++;
 					}
-					game.delayx();
+					await game.delayx();
 				},
 			},
 		},
