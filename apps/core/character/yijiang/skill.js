@@ -7310,86 +7310,91 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			player.showHandcards();
-			const hs = player.getCards("h"),
-				color = get.color(hs[0], player);
-			if (
-				hs.length === 1 ||
-				!hs.some((card, index) => {
-					return index > 0 && get.color(card) !== color;
-				})
-			) {
-				event.finish();
+		async content(event, trigger, player) {
+			await player.showHandcards();
+
+			const hs = player.getCards("h");
+			const color = get.color(hs[0], player);
+			if (hs.length === 1 || !hs.some((card, index) => index > 0 && get.color(card) !== color)) {
+				return;
 			}
-			"step 1";
-			const list = [],
-				bannedList = [],
-				indexs = Object.keys(lib.color);
-			player.getCards("h").forEach(card => {
+
+			const colors = [];
+			const bannedList = [];
+			const indexs = Object.keys(lib.color);
+			for (const card of player.getCards("h")) {
 				const color = get.color(card, player);
-				list.add(color);
+				colors.add(color);
 				if (!lib.filter.cardDiscardable(card, player, "huaiyi")) {
 					bannedList.add(color);
 				}
-			});
-			list.removeArray(bannedList);
-			list.sort((a, b) => indexs.indexOf(a) - indexs.indexOf(b));
-			if (!list.length) {
-				event.finish();
-			} else if (list.length === 1) {
-				event._result = { control: list[0] };
+			}
+			colors.removeArray(bannedList);
+			colors.sort((a, b) => indexs.indexOf(a) - indexs.indexOf(b));
+
+			let result;
+			if (!colors.length) {
+				return;
+			}
+			if (colors.length === 1) {
+				result = { control: colors[0] };
 			} else {
-				player
-					.chooseControl(list.map(i => `${i}2`))
-					.set("ai", function () {
-						var player = _status.event.player;
-						if (player.countCards("h", { color: "red" }) == 1 && player.countCards("h", { color: "black" }) > 1) {
-							return 1;
-						}
-						return 0;
+				result = await player
+					.chooseControl({
+						controls: colors.map(color => `${color}2`),
+						prompt: "请选择弃置一种颜色的所有手牌",
+						ai() {
+							const player = get.player();
+							if (player.countCards("h", { color: "red" }) == 1 && player.countCards("h", { color: "black" }) > 1) {
+								return 1;
+							}
+							return 0;
+						},
 					})
-					.set("prompt", "请选择弃置一种颜色的所有手牌");
+					.forResult();
 			}
-			"step 2";
-			event.control = result.control.slice(0, result.control.length - 1);
-			var cards = player.getCards("h", { color: event.control });
-			player.discard(cards);
-			event.num = cards.length;
-			"step 3";
-			player
-				.chooseTarget("请选择至多" + get.cnNumber(event.num) + "名有牌的其他角色，获得这些角色的各一张牌。", [1, event.num], function (card, player, target) {
-					return target != player && target.countCards("he") > 0;
+
+			const control = result.control.slice(0, result.control.length - 1);
+			const cards = player.getCards("h", { color: control });
+			const num = cards.length;
+			await player.discard({ cards });
+
+			result = await player
+				.chooseTarget({
+					prompt: `请选择至多${get.cnNumber(num)}名有牌的其他角色，获得这些角色的各一张牌。`,
+					filterTarget(card, player, target) {
+						return target !== player && target.countCards("he") > 0;
+					},
+					selectTarget: [1, num],
+					ai(target) {
+						return -get.attitude(get.player(), target) + 0.5;
+					},
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) + 0.5;
-				});
-			"step 4";
-			if (result.bool && result.targets) {
-				player.line(result.targets, "green");
-				event.targets = result.targets;
-				event.targets.sort(lib.sort.seat);
-				event.gained = 0;
-			} else {
-				event.finish();
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
-			"step 5";
-			if (player.isIn() && event.targets.length) {
-				player.gainPlayerCard(event.targets.shift(), "he", true);
-			} else {
-				event.finish();
+			const targets = result.targets;
+			player.line(targets, "green");
+			let gained = 0;
+			for (const target of targets.sortBySeat()) {
+				if (!player.isIn() || !target.countCards("he")) {
+					continue;
+				}
+				const result = await player
+					.gainPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+				if (result.bool && result.cards?.length) {
+					gained += result.cards.length;
+				}
 			}
-			"step 6";
-			if (result.bool) {
-				event.gained += result.cards.length;
-			}
-			if (event.targets.length) {
-				event.goto(5);
-			}
-			"step 7";
-			if (event.gained > 1) {
-				player.loseHp();
+
+			if (gained > 1) {
+				await player.loseHp();
 			}
 		},
 		ai: {
