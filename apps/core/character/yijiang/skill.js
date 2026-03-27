@@ -10319,33 +10319,31 @@ const skills = {
 			re_jianyong: "reqiaoshui",
 			xin_jianyong: "xinqiaoshui",
 		},
-		trigger: { player: "phaseUseBegin" },
-		direct: true,
+		trigger: {
+			player: "phaseUseBegin"
+		},
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("qiaoshui"), function (card, player, target) {
-					return player.canCompare(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("qiaoshui"),
+					filterTarget(card, player, target) {
+						return player.canCompare(target);
+					},
+					ai(target) {
+						const player = get.player();
+						return -get.attitude(player, target) / target.countCards("h");
+					},
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) / target.countCards("h");
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("qiaoshui", result.targets[0]);
-				player.chooseToCompare(result.targets[0]);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				player.addTempSkill("qiaoshui3");
-			} else {
-				player.addTempSkill("qiaoshui2");
-			}
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player.chooseToCompare(target).forResult();
+			player.addTempSkill(result.bool ? "qiaoshui3" : "qiaoshui2");
 		},
 		ai: {
 			expose: 0.1,
@@ -10362,93 +10360,140 @@ const skills = {
 		},
 	},
 	qiaoshui3: {
-		charlotte: true,
 		audio: "qiaoshui",
-		trigger: { player: "useCard2" },
+		trigger: {
+			player: "useCard2",
+		},
+		silent: true,
+		charlotte: true,
 		sourceSkill: "qiaoshui",
 		filter(event, player) {
-			var type = get.type(event.card);
+			const type = get.type(event.card);
 			return type == "basic" || type == "trick";
 		},
-		direct: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.removeSkill(event.name);
-			var goon = false;
-			var info = get.info(trigger.card);
+
+			// 00，01，10，11分别表示是否可以增加目标和是否可以减少目标
+			// 0b00: Neither，0b01: Add，0b10: Remove，0b11: Both
+			let flags = 0;
+
+			// 是否能增加目标
+			const info = get.info(trigger.card);
 			if (trigger.targets && !info.multitarget) {
-				var players = game.filterPlayer();
-				for (var i = 0; i < players.length; i++) {
-					if (lib.filter.targetEnabled2(trigger.card, player, players[i]) && !trigger.targets.includes(players[i])) {
-						goon = true;
+				const players = game.filterPlayer();
+				for (const target of players) {
+					if (lib.filter.targetEnabled2(trigger.card, player, target) && !trigger.targets.includes(target)) {
+						flags |= 0b01;
 						break;
 					}
 				}
 			}
-			if (goon) {
-				player
-					.chooseTarget("巧说：是否为" + get.translation(trigger.card) + "额外指定一名目标？", function (card, player, target) {
-						var trigger = _status.event;
-						if (trigger.targets.includes(target)) {
-							return false;
-						}
-						return lib.filter.targetEnabled2(trigger.card, _status.event.player, target);
-					})
-					.set("ai", function (target) {
-						var trigger = _status.event.getTrigger();
-						var player = _status.event.player;
-						return get.effect(target, trigger.card, player, player);
+
+			// 是否能减少目标
+			if (!info.multitarget && trigger.targets && trigger.targets.length > 1) {
+				flags |= 0b10;
+			}
+
+			if (flags === 0) {
+				return;
+			}
+
+			// 增加目标的流程
+			const addTarget = async (forced) => {
+				const result = await player
+					.chooseTarget({
+						prompt: forced ? `巧说：为${get.translation(trigger.card)}额外指定一名目标` : `巧说：是否为${get.translation(trigger.card)}额外指定一名目标？`,
+						filterTarget(card, player, target) {
+							const currentEvent = get.event();
+							if (currentEvent.targets.includes(target)) {
+								return false;
+							}
+							return lib.filter.targetEnabled2(currentEvent.card, currentEvent.player, target);
+						},
+						forced,
+						ai(target) {
+							const trigger = _status.event.getTrigger();
+							const player = _status.event.player;
+							return get.effect(target, trigger.card, player, player);
+						},
 					})
 					.set("targets", trigger.targets)
-					.set("card", trigger.card);
-			} else {
-				if (!info.multitarget && trigger.targets && trigger.targets.length > 1) {
-					event.goto(3);
+					.set("card", trigger.card)
+					.forResult();
+
+				if (!result.bool || !result.targets?.length) {
+					return;
 				}
-			}
-			"step 1";
-			if (result.bool) {
+
 				if (!event.isMine()) {
-					game.delayx();
+					await game.delayx();
 				}
-				event.target = result.targets[0];
-			} else if (!get.info(trigger.card).multitarget && trigger.targets && trigger.targets.length > 1) {
-				event.goto(3);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.target) {
-				player.logSkill(event.name, event.target);
-				trigger.targets.add(event.target);
-			}
-			event.finish();
-			"step 3";
-			player
-				.chooseTarget("巧说：是否减少一名" + get.translation(trigger.card) + "的目标？", function (card, player, target) {
-					return _status.event.targets.includes(target);
-				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					return -get.effect(target, trigger.card, trigger.player, _status.event.player);
-				})
-				.set("targets", trigger.targets);
-			"step 4";
-			if (result.bool) {
-				event.targets = result.targets;
+				const target = result.targets[0];
+				player.logSkill("qiaoshui3", target);
+				trigger.targets.add(target);
+			};
+
+			// 减少目标的流程
+			const removeTarget = async (forced) => {
+				const result = await player
+					.chooseTarget({
+						prompt: forced ? `巧说：减少一名${get.translation(trigger.card)}的目标` : `巧说：是否减少一名${get.translation(trigger.card)}的目标？`,
+						filterTarget(card, player, target) {
+							return get.event().targets.includes(target);
+						},
+						forced,
+						ai(target) {
+							const trigger = get.event().getTrigger();
+							return -get.effect(target, trigger.card, trigger.player, get.player());
+						},
+					})
+					.set("targets", trigger.targets)
+					.forResult();
+
+				if (!result.bool || !result.targets?.length) {
+					return;
+				}
+
+				const target = result.targets[0];
 				if (event.isMine()) {
-					player.logSkill(event.name, event.targets);
-					event.finish();
+					player.logSkill("qiaoshui3", target);
 				}
-				for (var i = 0; i < result.targets.length; i++) {
-					trigger.targets.remove(result.targets[i]);
+				trigger.targets.remove(target);
+				await game.delay();
+				if (!event.isMine()) {
+					player.logSkill("qiaoshui3", target);
 				}
-				game.delay();
-			} else {
-				event.finish();
 			}
-			"step 5";
-			player.logSkill(event.name, event.targets);
+
+			const items = [addTarget, removeTarget];
+
+			switch (flags) {
+				case 0b01:
+					await addTarget(false);
+					break;
+				case 0b10:
+					await removeTarget(false);
+					break;
+				case 0b11: {
+					const result = await player
+						.chooseControlList({
+							prompt: get.prompt("qiaoshui3"),
+							list: [`为${get.translation(trigger.card)}增加一个目标`, `为${get.translation(trigger.card)}减少一个目标`],
+							ai() {
+								return get.event().add ? 0 : 1;
+							},
+						})
+						.set("add", get.effect(player, trigger.card, trigger.player, player) >= 0)
+						.forResult();
+
+					if (result.control === "cancel2") {
+						return;
+					}
+
+					await items[result.index](true);
+				}
+			}
 		},
 	},
 	qiaoshui4: {
