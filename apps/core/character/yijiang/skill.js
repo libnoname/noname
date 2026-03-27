@@ -2269,52 +2269,47 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			if (target.isMinHandcard()) {
-				target.draw();
-				event.h = true;
-			}
-			"step 1";
-			if (target.isMinHp() && target.isDamaged()) {
-				target.recover();
-				event.hp = true;
-			}
-			"step 2";
-			var equip = get.cardPile(
-				function (card) {
-					return get.type(card) == "equip" && target.hasUseTarget(card);
+		async content(event, trigger, player) {
+			const { target } = event;
+
+			const drawing = [current => current.isMinHandcard(), current => current.draw()];
+			const recovering = [current => current.isMinHp() && current.isDamaged(), current => current.recover()];
+			const equipping = [
+				current => current.isMinEquip(),
+				async current => {
+					const equip = get.cardPile(card => get.type(card) == "equip" && current.hasUseTarget(card), false, "random");
+					if (equip) {
+						await current.chooseUseTarget({
+							card: equip,
+							throw: false,
+							nopopup: true,
+							forced: true,
+						});
+					}
 				},
-				false,
-				"random"
-			);
-			if (target.isMinEquip() && equip) {
-				target.chooseUseTarget(equip, "nothrow", "nopopup", true);
-				event.e = true;
-			}
-			"step 3";
-			game.updateRoundNumber();
-			if (!event.h && player.isMinHandcard()) {
-				player.draw();
-			}
-			"step 4";
-			if (!event.hp && player.isMinHp() && player.isDamaged()) {
-				player.recover();
-			}
-			"step 5";
-			if (!event.e && player.isMinEquip()) {
-				var equip = get.cardPile(
-					function (card) {
-						return get.type(card) == "equip" && player.hasUseTarget(card);
-					},
-					false,
-					"random"
-				);
-				if (equip) {
-					player.chooseUseTarget(equip, "nothrow", "nopopup", true);
+			];
+
+			const todo = [drawing, recovering, equipping];
+
+			for (let i = 0; i < todo.length; ++i) {
+				const [condition, action] = todo[i];
+				if (condition(target)) {
+					await action(target);
+					todo.splice(i, 1);
+					--i;
 				}
 			}
-			"step 6";
+
+			game.updateRoundNumber();
+			if (!todo.length) {
+				return;
+			}
+
+			for (const [condition, action] of todo) {
+				if (condition(player)) {
+					await action(player);
+				}
+			}
 			game.updateRoundNumber();
 		},
 		ai: {
