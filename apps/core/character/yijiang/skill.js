@@ -7603,54 +7603,63 @@ const skills = {
 		filter(event, player) {
 			return (player.storage.reyanzhu ? player.maxHp : player.hp) > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget([1, player.storage.reyanzhu ? player.maxHp : player.hp], get.prompt("rexingxue"), "令所有目标角色依次摸一张牌，然后所有手牌数大于体力值的目标角色依次将一张牌置于牌堆顶").set("ai", function (target) {
-				var att = get.attitude(player, target);
-				if (target.countCards("h") == target.hp - 1) {
-					att *= 2;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("rexingxue"),
+					prompt2: "令所有目标角色依次摸一张牌，然后所有手牌数大于体力值的目标角色依次将一张牌置于牌堆顶",
+					selectTarget: [1, player.storage.reyanzhu ? player.maxHp : player.hp],
+					ai(target) {
+						let att = get.attitude(player, target);
+						if (target.countCards("h") == target.hp - 1) {
+							att *= 2;
+						}
+						return att;
+					},
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { targets } = event;
+			targets.sortBySeat();
+
+			await game.asyncDraw(targets);
+			await game.delay();
+
+			for (const target of targets) {
+				if (target.isDead()) {
+					continue;
 				}
-				return att;
-			});
-			"step 1";
-			if (result.bool) {
-				event.targets = result.targets.sortBySeat();
-				player.logSkill("rexingxue", event.targets);
-				game.asyncDraw(result.targets);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			game.delay();
-			"step 3";
-			if (event.targets.length) {
-				event.target = event.targets.shift();
-				if (event.target.isDead()) {
-					event.redo();
+				if (!(target.isIn() && target.countCards("h") && target.countCards("h") > target.hp)) {
+					continue;
 				}
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (target.isIn() && target.countCards("h") && target.countCards("h") > target.hp) {
-				target.chooseCard("he", true, "将一张牌置于牌堆顶");
-			} else {
-				event.goto(3);
-			}
-			"step 5";
-			if (result && result.cards) {
-				event.card = result.cards[0];
-				target.lose(result.cards, ui.cardPile, "insert");
-				game.log(target, "将", get.position(event.card) == "h" ? "一张牌" : event.card, "置于牌堆顶");
-				game.broadcastAll(function (player) {
-					var cardx = ui.create.card();
+
+				const result = await target
+					.chooseCard({
+						prompt: "将一张牌置于牌堆顶",
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+				if (!result.bool || !result?.cards.length) {
+					continue;
+				}
+
+				const card = result.cards[0];
+				game.log(target, "将", get.position(card) == "h" ? "一张牌" : card, "置于牌堆顶");
+				await target.lose({
+					cards: result.cards,
+					position: ui.cardPile,
+					insert_card: true,
+				});
+				game.broadcastAll(current => {
+					const cardx = ui.create.card();
 					cardx.classList.add("infohidden");
 					cardx.classList.add("infoflip");
-					player.$throw(cardx, 1000, "nobroadcast");
+					current.$throw(cardx, 1000, "nobroadcast");
 				}, target);
 			}
-			event.goto(3);
 		},
 	},
 	rezhaofu: {
