@@ -5697,25 +5697,25 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") < player.countCards("h") && target.hasSex("male");
 		},
-		content() {
-			"step 0";
-			player.swapHandcards(target);
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.addSkill("jsrgguiji_swapback");
 			player.markAuto("jsrgguiji_swapback", target);
 			player.addTempSkill("jsrgguiji_used");
+			await player.swapHandcards(target);
 		},
 		ai: {
 			order: 6,
 			result: {
 				target(player, target) {
-					var val = player
+					const val = player
 						.getCards("h")
-						.map(i => get.value(i))
-						.reduce((p, c) => p + c, 0);
-					var val2 = target
+						.map(card => get.value(card))
+						.reduce((a, b) => a + b, 0);
+					const val2 = target
 						.getCards("h")
-						.map(i => get.value(i))
-						.reduce((p, c) => p + c, 0);
+						.map(card => get.value(card))
+						.reduce((a, b) => a + b, 0);
 					return val - val2;
 				},
 			},
@@ -5731,7 +5731,6 @@ const skills = {
 					return player.getStorage("jsrgguiji_swapback").includes(event.player);
 				},
 				charlotte: true,
-				direct: true,
 				check(event, player) {
 					return (
 						player
@@ -5745,24 +5744,32 @@ const skills = {
 							4 * Math.random()
 					);
 				},
-				content() {
-					"step 0";
+				async cost(event, trigger, player) {
 					player.unmarkAuto("jsrgguiji_swapback", [trigger.player]);
-					if (trigger.name == "phaseUse") {
-						player
-							.chooseBool(get.prompt("jsrgguiji_swapback", trigger.player), "与其交换手牌。")
-							.set("ai", () => {
+					if (trigger.name !== "phaseUse") {
+						event.result = { bool: false };
+						return;
+					}
+
+					const result = await player
+						.chooseBool({
+							prompt: get.prompt("jsrgguiji_swapback", trigger.player),
+							prompt2: "与其交换手牌。",
+							ai() {
 								return get.event().bool;
-							})
-							.set("bool", lib.skill.jsrgguiji_swapback.check(trigger, player) > 0);
-					} else {
-						event.finish();
-					}
-					"step 1";
-					if (result.bool) {
-						player.logSkill("jsrgguiji_swapback", trigger.player);
-						player.swapHandcards(trigger.player);
-					}
+							},
+						})
+						.set("bool", lib.skill.jsrgguiji_swapback.check(trigger, player) > 0)
+						.forResult();
+
+					event.result = {
+						bool: result.bool,
+						targets: [trigger.player],
+					};
+				},
+				logTarget: "targets",
+				async content(event, trigger, player) {
+					await player.swapHandcards(trigger.player);
 				},
 				intro: {
 					content: "$的下个出牌阶段结束时，你可以与其交换手牌",
