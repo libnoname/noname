@@ -10470,10 +10470,8 @@ const skills = {
 
 			switch (flags) {
 				case 0b01:
-					await addTarget(false);
-					break;
 				case 0b10:
-					await removeTarget(false);
+					await items[flags - 1](false);
 					break;
 				case 0b11: {
 					const result = await player
