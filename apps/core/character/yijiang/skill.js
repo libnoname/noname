@@ -3264,135 +3264,148 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("bizhuan").length > 0 && player.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			var four = false;
-			var nofour = !player.hasFriend();
-			var expansions = player.getExpansions("bizhuan");
+		async content(event, trigger, player) {
+			let result;
+			let four = false;
+			const nofour = !player.hasFriend();
+			const expansions = player.getExpansions("bizhuan");
 			if (expansions.length == 4) {
-				var suits = ["club", "spade", "heart", "diamond"];
-				var list = player.getCards("he").concat(expansions);
-				for (var i = 0; i < list.length; i++) {
-					suits.remove(get.suit(list[i]));
-					if (suits.length == 0) {
+				const suits = new Set(["club", "spade", "heart", "diamond"]);
+				const list = player.getCards("he").concat(expansions);
+				for (const card of list) {
+					suits.delete(get.suit(card));
+					if (suits.size == 0) {
 						four = true;
 						break;
 					}
 				}
 			}
-			var next = player.chooseToMove("通博：是否交换“书”和手牌？").set("four", four).set("nofour", nofour);
-			next.set("list", [
+			const chooseMoveEvent = player.chooseToMove({ prompt: "通博：是否交换“书”和手牌？" }).set("four", four).set("nofour", nofour);
+			chooseMoveEvent.set("list", [
 				[get.translation(player) + "（你）的“书”", expansions],
 				["你的牌", player.getCards("he")],
 			]);
-			next.set("filterMove", function (from, to) {
-				return typeof to != "number";
-			});
-			next.set("processAI", function (list) {
-				var player = _status.event.player,
-					cards = list[0][1].concat(list[1][1]),
-					cards2 = [];
+			chooseMoveEvent.set("filterMove", (from, to) => typeof to != "number");
+			chooseMoveEvent.set("processAI", list => {
+				const player = _status.event.player;
+				const cards = list[0][1].concat(list[1][1]);
+				let cards2 = [];
 				if (_status.event.four) {
-					var sorted = [[], [], [], []];
-					for (var i of cards) {
-						var index = lib.suit.indexOf(get.suit(i, false));
+					const sorted = [[], [], [], []];
+					for (const card of cards) {
+						const index = lib.suit.indexOf(get.suit(card, false));
 						if (sorted[index]) {
-							sorted[index].push(i);
+							sorted[index].push(card);
 						}
 					}
 					if (_status.event.nofour) {
-						sorted.sort(function (a, b) {
-							return a.length - b.length;
-						});
-						var cards3 = cards.slice(0).sort(function (a, b) {
-							return get.useful(a) - get.useful(b);
-						});
+						sorted.sort((a, b) => a.length - b.length);
+						const cards3 = cards.slice(0).sort((a, b) => get.useful(a) - get.useful(b));
 						cards3.removeArray(sorted[0]);
 						cards2 = cards3.slice(0, 4);
 						cards.removeArray(cards2);
 					} else {
-						for (var i of sorted) {
+						for (const i of sorted) {
 							cards2.push(i.randomGet());
 							cards.remove(cards2);
 						}
 					}
 				} else {
-					cards.sort(function (a, b) {
-						return get.useful(a) - get.useful(b);
-					});
+					cards.sort((a, b) => get.useful(a) - get.useful(b));
 					cards2 = cards.splice(0, player.getExpansions("bizhuan").length);
 				}
 				return [cards2, cards];
 			});
-			"step 1";
+			result = await chooseMoveEvent.forResult();
+
 			if (result.bool) {
-				var pushs = result.moved[0],
-					gains = result.moved[1];
+				const pushs = result.moved[0];
+				const gains = result.moved[1];
 				pushs.removeArray(player.getExpansions("bizhuan"));
 				gains.removeArray(player.getCards("he"));
 				if (!pushs.length || pushs.length != gains.length) {
-					event.finish();
 					return;
 				}
 				player.logSkill("tongbo");
-				player.addToExpansion(pushs, "give", player).gaintag.add("bizhuan");
-				player.gain(gains, "gain2");
-			}
-			"step 2";
-			var suits2 = ["club", "spade", "heart", "diamond"];
-			var expansions = player.getExpansions("bizhuan");
-			for (var i = 0; i < expansions.length; i++) {
-				suits2.remove(get.suit(expansions[i]));
-			}
-			if (suits2.length > 0) {
-				event.finish();
-			}
-			"step 3";
-			event.cards = player.getExpansions("bizhuan").slice(0);
-			if (event.cards.length > 1) {
-				player.chooseCardButton("将所有“书”交给任意名其他角色", true, event.cards, [1, event.cards.length]).set("ai", function (button) {
-					if (ui.selected.buttons.length == 0) {
-						return 1;
-					}
-					return 0;
+				await player.addToExpansion({
+					cards: pushs,
+					animate: "give",
+					source: player,
+					gaintag: ["bizhuan"],
 				});
-			} else if (event.cards.length == 1) {
-				event._result = { links: event.cards.slice(0), bool: true };
-			} else {
-				event.finish();
+				await player.gain({
+					cards: gains,
+					animate: "gain2",
+				});
 			}
-			"step 4";
-			if (result.bool) {
-				for (var i = 0; i < result.links.length; i++) {
-					event.cards.remove(result.links[i]);
+
+			const suits2 = new Set(["club", "spade", "heart", "diamond"]);
+			const expansions2 = player.getExpansions("bizhuan");
+			for (const expansion of expansions2) {
+				suits2.delete(get.suit(expansion));
+			}
+			if (suits2.size > 0) {
+				return;
+			}
+
+			const cards = player.getExpansions("bizhuan").slice(0);
+			while (cards.length) {
+				if (cards.length > 1) {
+					result = await player
+						.chooseCardButton({
+							prompt: "将所有“书”交给任意名其他角色",
+							forced: true,
+							cards,
+							select: [1, cards.length],
+							ai(button) {
+								if (ui.selected.buttons.length == 0) {
+									return 1;
+								}
+								return 0;
+							},
+						})
+						.forResult();
+				} else {
+					result = { links: cards.slice(0), bool: true };
 				}
-				event.togive = result.links.slice(0);
-				player
-					.chooseTarget("将" + get.translation(result.links) + "交给一名其他角色", true, function (card, player, target) {
-						return target != player;
-					})
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (_status.event.enemy) {
-							return -att;
-						} else if (att > 0) {
-							return att / (1 + target.countCards("h"));
-						} else {
+				if (!result.bool) {
+					return;
+				}
+
+				for (const link of result.links) {
+					cards.remove(link);
+				}
+				const togive = result.links.slice(0);
+				result = await player
+					.chooseTarget({
+						prompt: `将${get.translation(result.links)}交给一名其他角色`,
+						filterTarget(card, player, target) {
+							return target !== player;
+						},
+						forced: true,
+						ai(target) {
+							const att = get.attitude(_status.event.player, target);
+							if (_status.event.enemy) {
+								return -att;
+							}
+							if (att > 0) {
+								return att / (1 + target.countCards("h"));
+							}
 							return att / 100;
-						}
+						},
 					})
-					.set("enemy", get.value(event.togive[0], player, "raw") < 0);
-			} else {
-				event.finish();
-			}
-			"step 5";
-			if (result.targets.length) {
-				result.targets[0].gain(event.togive, "draw").giver = player;
-				player.line(result.targets[0], "green");
-				game.log(result.targets[0], "获得了" + get.cnNumber(event.togive.length) + "张", "#g“书”");
-				if (event.cards.length) {
-					event.goto(3);
+					.set("enemy", get.value(togive[0], player, "raw") < 0)
+					.forResult();
+
+				if (!result.targets?.length) {
+					return;
 				}
+
+				const gainEvent = result.targets[0].gain({ cards: togive, animate: "draw" });
+				gainEvent.giver = player;
+				await gainEvent;
+				player.line(result.targets[0], "green");
+				game.log(result.targets[0], "获得了" + get.cnNumber(togive.length) + "张", "#g“书”");
 			}
 		},
 		ai: {
