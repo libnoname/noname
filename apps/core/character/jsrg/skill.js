@@ -4272,49 +4272,37 @@ const skills = {
 			});
 		},
 		derivation: "xinshensu",
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("jsrgqingzi"), "弃置任意名其他角色装备区里的一张牌，然后令这些角色获得〖神速〗直到你的下回合开始", [1, Infinity], (card, player, target) => {
-					return (
-						target != player &&
-						target.hasCard(card => {
-							return lib.filter.canBeDiscarded(card, player, target);
-						}, "e")
-					);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("jsrgqingzi"),
+					prompt2: "弃置任意名其他角色装备区里的一张牌，然后令这些角色获得〖神速〗直到你的下回合开始",
+					filterTarget(card, player, target) {
+						return target !== player && target.hasCard(card => lib.filter.canBeDiscarded(card, player, target), "e");
+					},
+					selectTarget: [1, Infinity],
+					ai(target) {
+						const currentPlayer = get.player();
+						return target.hasCard(card => (lib.filter.canBeDiscarded(card, currentPlayer, target) && get.value(card, target) > 3) || (target.hp == 1 && get.value(card, target) > 0)) ? 1 : 0;
+					},
 				})
-				.set("ai", target => {
-					var player = _status.event.player;
-					return target.hasCard(card => {
-						return (lib.filter.canBeDiscarded(card, player, target) && get.value(card, target) > 3) || (target.hp == 1 && get.value(card, target) > 0);
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { targets } = event;
+			targets.sortBySeat();
+			player.addSkill("jsrgqingzi_clear");
+			for (const target of targets) {
+				if (target.hasCard(card => lib.filter.canBeDiscarded(card, player, target), "e")) {
+					await player.discardPlayerCard({
+						target,
+						position: "e",
+						forced: true,
 					});
-				});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.slice();
-				targets.sortBySeat();
-				event.targets = targets;
-				event.num = 0;
-				player.logSkill("jsrgqingzi", targets);
-				player.addSkill("jsrgqingzi_clear");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = targets[num];
-			if (
-				target.hasCard(card => {
-					return lib.filter.canBeDiscarded(card, player, target);
-				}, "e")
-			) {
-				player.discardPlayerCard(target, "e", true);
-				target.addAdditionalSkills("jsrgqingzi_" + player.playerid, "xinshensu");
-				player.markAuto("jsrgqingzi_clear", [target]);
-			}
-			event.num++;
-			if (event.num < targets.length) {
-				event.redo();
+					await target.addAdditionalSkills(`jsrgqingzi_${player.playerid}`, "xinshensu");
+					player.markAuto("jsrgqingzi_clear", [target]);
+				}
 			}
 		},
 		subSkill: {
