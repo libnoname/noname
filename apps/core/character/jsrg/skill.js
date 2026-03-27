@@ -4368,18 +4368,16 @@ const skills = {
 				return lib.filter.cardDiscardable(card, player, "jsrgdingce");
 			});
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var target = trigger.source;
-			event.target = target;
-			player
-				.chooseToDiscard(get.prompt("jsrgdingce", target), "弃置你与其的各一张手牌。若这两张牌颜色相同，你视为使用一张【洞烛先机】。")
-				.set("ai", card => {
-					if (_status.event.goon) {
-						return 6 - get.value(card);
-					}
-					return 0;
+		async cost(event, trigger, player) {
+			const { source: target } = trigger;
+
+			const result = await player
+				.chooseToDiscard({
+					prompt: get.prompt("jsrgdingce", target),
+					prompt2: "弃置你与其的各一张手牌。若这两张牌颜色相同，你视为使用一张【洞烛先机】。",
+					ai(card) {
+						return _status.event.goon ? 6 - get.value(card) : 0;
+					},
 				})
 				.set(
 					"goon",
@@ -4387,35 +4385,49 @@ const skills = {
 						player
 							.getCards("h")
 							.concat(target.getCards("h"))
-							.filter(card => {
-								return get.value(card) < 5.5;
-							}).length >= 2
+							.filter(card => get.value(card) < 5.5).length >= 2
 				)
-				.set("logSkill", ["jsrgdingce", target]);
-			"step 1";
-			if (result.bool) {
-				event.card = result.cards[0];
-				if (target.countDiscardableCards(player, "h")) {
-					var next = player.discardPlayerCard(target, "h", true);
-					if (target == player) {
-						next.set("ai", button => {
-							var card = button.link;
-							return (get.color(card, false) == _status.event.color ? 7.5 : 5) - get.value(card);
-						}).set("color", get.color(event.card, false));
-					}
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+				.forResult();
+
+			event.result = {
+				bool: result.bool,
+				cards: result.cards,
+				targets: result.targets,
 			}
-			"step 2";
-			if (result.bool) {
-				var card = result.cards[0];
-				if (get.color(event.card, false) == get.color(card, false)) {
-					game.delayex();
-					player.chooseUseTarget("dongzhuxianji", true);
-				}
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { source: target } = trigger;
+
+			const card = event.cards[0];
+			if (!target.countDiscardableCards(player, "h")) {
+				return;
+			}
+
+			const next = player.discardPlayerCard({
+				target,
+				position: "h", 
+				forced: true,
+			});
+			if (target === player) {
+				next.set("ai", button => {
+					const card = button.link;
+					return (get.color(card, false) === get.event().color ? 7.5 : 5) - get.value(card);
+				});
+				next.set("color", get.color(card, false));
+			}
+			const result = await next.forResult();
+
+			if (!result.bool || !result.cards?.length) {
+				return;
+			}
+			const discardedCard = result.cards[0];
+			if (get.color(event.card, false) === get.color(discardedCard, false)) {
+				await game.delayex();
+				await player.chooseUseTarget({
+					card: get.autoViewAs({ name: "dongzhuxianji", isCard: true }),
+					forced: true,
+				});
 			}
 		},
 	},
