@@ -12233,7 +12233,149 @@ const skills = {
 	miji: {
 		audio: 2,
 		audioname: ["re_wangyi"],
+		trigger: {
+			player: "phaseJieshuBegin"
+		},
 		locked: false,
+		filter(event, player) {
+			return player.hp < player.maxHp;
+		},
+		async content(event, trigger, player) {
+			const num = player.getDamagedHp();
+			await player.draw(num);
+			if (_status.connectMode) {
+				game.broadcastAll(() => {
+					_status.noclearcountdown = true;
+				});
+			}
+
+			const check = () => {
+				const result = {
+					bool: true,
+					cards: [],
+				};
+				const cards = player.getCards("he");
+				const targets = game.filterPlayer(current => player !== current);
+
+				for (const card of cards) {
+					const val = get.value(card, player);
+					let max = val;
+					let target = null;
+					for (const targetx of targets) {
+						const otherVal = get.value(card, targetx);
+						if (otherVal > max) {
+							max = otherVal;
+							target = targetx;
+						}
+					}
+					if (target != null) {
+						result.cards.push([card, target, max - val]);
+					}
+				}
+				if (result.cards.length < num) {
+					result.bool = false;
+				} else if (result.cards.length > num) {
+					result.cards
+						.sort((a, b) => {
+							return b[2] - a[2];
+						})
+						.slice(0, num);
+				}
+				return result;
+			}
+
+			let given = 0;
+			let forced = false;
+			const givenMap = new Map();
+			const aiCheck = check();
+			while (given < num) {
+				const result = await player
+					.chooseCardTarget({
+						filterTarget: lib.filter.notMe,
+						filterCard(card) {
+							return get.itemtype(card) === "card" && !card.hasGaintag("miji_tag");
+						},
+						selectCard: [1, num - given],
+						prompt: "请选择要分配的卡牌和目标",
+						forced,
+						ai1(card) {
+							const event = get.event();
+							if (!event.res.bool || ui.selected.cards.length) {
+								return 0;
+							}
+							for (const arr of event.res.cards) {
+								if (arr[0] === card) {
+									return arr[2];
+								}
+							}
+							return 0;
+						},
+						ai2(target) {
+							const event = get.event();
+							const card = ui.selected.cards[0];
+							for (const arr of event.res.cards) {
+								if (arr[0] === card) {
+									return get.attitude(player, target);
+								}
+							}
+							const val = target.getUseValue(card);
+							if (val > 0) {
+								return val * get.attitude(player, target) * 2;
+							}
+							return get.value(card, target) * get.attitude(player, target);
+						},
+					})
+					.set("res", aiCheck)
+					.forResult();
+
+				if (!result.bool || !result.cards?.length || !result.targets?.length) {
+					break;
+				}
+
+				forced = true;
+				const cards = result.cards;
+				const target = result.targets[0].playerid;
+				player.addGaintag(cards, "miji_tag");
+				given += cards.length;
+				if (!givenMap.has(target)) {
+					givenMap.set(target, []);
+				}
+				givenMap.get(target).addArray(cards);
+			}
+
+			if (_status.connectMode) {
+				game.broadcastAll(() => {
+					delete _status.noclearcountdown;
+					game.stopCountChoose();
+				});
+			}
+
+			if (!givenMap.size) {
+				return;
+			}
+
+			const map = [];
+			const cards = [];
+			for (const [name, cardxs] of givenMap) {
+				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[name];
+				player.line(source, "green");
+				if (player !== source && (get.mode() !== "identity" || player.identity !== "nei")) {
+					player.addExpose(0.18);
+				}
+				map.push([source, cardxs]);
+				cards.addArray(cardxs);
+			}
+
+			const loseAsyncEvent = game.loseAsync({
+				gain_list: map,
+				player: player,
+				cards,
+				giver: player,
+				animate: "giveAuto",
+			});
+			loseAsyncEvent.setContent("gaincardMultiple");
+			await loseAsyncEvent;
+		},
 		mod: {
 			aiOrder(player, card, num) {
 				if (num > 0 && _status.event && _status.event.type === "phase" && get.tag(card, "recover")) {
@@ -12244,131 +12386,6 @@ const skills = {
 				}
 			},
 		},
-		trigger: { player: "phaseJieshuBegin" },
-		filter(event, player) {
-			return player.hp < player.maxHp;
-		},
-		content() {
-			"step 0";
-			event.num = player.getDamagedHp();
-			player.draw(event.num);
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					_status.noclearcountdown = true;
-				});
-			}
-			event.given_map = {};
-			event._forcing = false;
-			event.aicheck = (function () {
-				let res = {
-						bool: true,
-						cards: [],
-					},
-					cards = player.getCards("he"),
-					tars = game.filterPlayer(i => player !== i);
-				cards.forEach(i => {
-					let o = get.value(i, player),
-						max = o,
-						temp,
-						t;
-					tars.forEach(tar => {
-						temp = get.value(i, tar);
-						if (temp > max) {
-							max = temp;
-							t = tar;
-						}
-					});
-					if (t) {
-						res.cards.push([i, t, max - o]);
-					}
-				});
-				if (res.cards.length < event.num) {
-					res.bool = false;
-				} else if (res.cards.length > event.num) {
-					res.cards
-						.sort((a, b) => {
-							return b[2] - a[2];
-						})
-						.slice(0, event.num);
-				}
-				return res;
-			})();
-			"step 1";
-			player.chooseCardTarget({
-				filterCard(card) {
-					return get.itemtype(card) == "card" && !card.hasGaintag("miji_tag");
-				},
-				filterTarget: lib.filter.notMe,
-				selectCard: [1, event.num],
-				prompt: "请选择要分配的卡牌和目标",
-				forced: event._forcing,
-				ai1(card) {
-					if (!_status.event.res.bool || ui.selected.cards.length) {
-						return 0;
-					}
-					for (let arr of _status.event.res.cards) {
-						if (arr[0] === card) {
-							return arr[2];
-						}
-					}
-					return 0;
-				},
-				ai2(target) {
-					let card = ui.selected.cards[0];
-					for (let arr of _status.event.res.cards) {
-						if (arr[0] === card) {
-							return get.attitude(player, target);
-						}
-					}
-					let val = target.getUseValue(card);
-					if (val > 0) {
-						return val * get.attitude(player, target) * 2;
-					}
-					return get.value(card, target) * get.attitude(player, target);
-				},
-				res: event.aicheck,
-			});
-			"step 2";
-			if (result.bool) {
-				event._forcing = true;
-				var res = result.cards,
-					target = result.targets[0].playerid;
-				player.addGaintag(res, "miji_tag");
-				event.num -= res.length;
-				if (!event.given_map[target]) {
-					event.given_map[target] = [];
-				}
-				event.given_map[target].addArray(res);
-				if (event.num > 0) {
-					event.goto(1);
-				}
-			}
-			"step 3";
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					delete _status.noclearcountdown;
-					game.stopCountChoose();
-				});
-			}
-			var map = [],
-				cards = [];
-			for (var i in event.given_map) {
-				var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				player.line(source, "green");
-				if (player !== source && (get.mode() !== "identity" || player.identity !== "nei")) {
-					player.addExpose(0.18);
-				}
-				map.push([source, event.given_map[i]]);
-				cards.addArray(event.given_map[i]);
-			}
-			game.loseAsync({
-				gain_list: map,
-				player: player,
-				cards: cards,
-				giver: player,
-				animate: "giveAuto",
-			}).setContent("gaincardMultiple");
-		},
 		ai: {
 			threaten(player, target) {
 				return 0.6 + 0.7 * target.getDamagedHp();
@@ -12376,9 +12393,9 @@ const skills = {
 			effect: {
 				target(card, player, target) {
 					if (target.hp <= 2 && get.tag(card, "damage")) {
-						var num = 1;
+						let num = 1;
 						if (
-							get.itemtype(player) == "player" &&
+							get.itemtype(player) === "player" &&
 							player.hasSkillTag("damageBonus", false, {
 								target: target,
 								card: card,
