@@ -11950,63 +11950,89 @@ const skills = {
 	},
 	xinxuanhuo: {
 		audio: 2,
-		trigger: { player: "phaseDrawBegin1" },
-		direct: true,
+		trigger: {
+			player: "phaseDrawBegin1",
+		},
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("xinxuanhuo"), function (card, player, target) {
-					return player != target;
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					if (att > 0) {
-						if (target.countCards("h") < target.hp) {
-							att += 2;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("xinxuanhuo"),
+					filterTarget(card, player, target) {
+						return player != target;
+					},
+					ai(target) {
+						const event = get.event();
+						const player = get.player();
+
+						let att = get.attitude(player, target);
+						const count = target.countCards("h");
+						if (att > 0) {
+							if (count < target.hp) {
+								att += 2;
+							}
+							return att - count / 3;
+						} else {
+							return -1;
 						}
-						return att - target.countCards("h") / 3;
-					} else {
-						return -1;
-					}
-				});
-			"step 1";
-			if (result.bool) {
-				trigger.changeToZero();
-				player.logSkill("xinxuanhuo", result.targets);
-				event.target = result.targets[0];
-				event.target.draw(2);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (
-				game.hasPlayer(function (current) {
-					return target.canUse("sha", current);
+					},
 				})
-			) {
-				player
-					.chooseTarget("选择出杀的目标", true, function (card, player, target) {
-						return _status.event.target.canUse("sha", target);
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			trigger.changeToZero();
+
+			const target = event.targets[0];
+			await target.draw(2);
+
+			let noSha = true;
+			if (game.hasPlayer(current => target.canUse("sha", current))) {
+				let result = await player
+					.chooseTarget({
+						prompt: "选择出杀的目标",
+						filterTarget(card, player, target) {
+							const event = get.event();
+							return event.target.canUse("sha", target);
+						},
+						forced: true,
+						ai(target) {
+							const event = get.event();
+							return get.effect(target, { name: "sha" }, event.target, event.player);
+						},
 					})
-					.set("ai", function (target) {
-						return get.effect(target, { name: "sha" }, _status.event.target, _status.event.player);
-					})
-					.set("target", event.target);
+					.set("target", target)
+					.forResult();
+
+				if (result.bool && result.targets?.length) {
+					game.log(player, "指定的出杀目标为", result.targets);
+					const target2 = result.targets[0];
+					target.line(target2);
+					result = await target
+						.chooseToUse({
+							prompt: `对${get.translation(result.targets)}使用一张杀，或令${get.translation(player)}获得你的两张牌`,
+							filterTarget(card, player, target) {
+								return target === target2;
+							},
+							selectTarget: -1,
+							filterCard(card) {
+								return card.name === "sha";
+							},
+						})
+						.forResult();
+					noSha = !result.bool;
+				}
 			}
-			"step 3";
-			if (result.bool && result.targets.length) {
-				game.log(player, "指定的出杀目标为", result.targets);
-				event.target.line(result.targets);
-				event.target.chooseToUse("对" + get.translation(result.targets) + "使用一张杀，或令" + get.translation(player) + "获得你的两张牌", { name: "sha" }, result.targets[0], -1);
-			} else {
-				event.bool = true;
-			}
-			"step 4";
-			if (event.bool || result.bool == false) {
-				player.gainPlayerCard("he", event.target, Math.min(2, event.target.countCards("he")), true);
+
+			if (noSha) {
+				await player.gainPlayerCard({
+					target,
+					selectButton: Math.min(2, target.countCards("he")),
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 		ai: {
