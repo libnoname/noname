@@ -13301,12 +13301,13 @@ const skills = {
 	xuanfeng: {
 		audio: 2,
 		audioname: ["boss_lvbu3"],
-		audioname2: { re_heqi: "fenwei_heqi" },
+		audioname2: {
+			re_heqi: "fenwei_heqi",
+		},
 		trigger: {
 			player: ["loseAfter", "phaseDiscardEnd"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		direct: true,
 		filter(event, player) {
 			if (event.name == "phaseDiscard") {
 				var cards = [];
@@ -13321,38 +13322,52 @@ const skills = {
 				return evt && evt.es && evt.es.length > 0;
 			}
 		},
-		content() {
-			"step 0";
-			event.count = 2;
-			event.logged = false;
-			"step 1";
-			player
-				.chooseTarget(get.prompt("xuanfeng"), "弃置一名其他角色的一张牌", function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					return target.countDiscardableCards(player, "he");
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("xuanfeng"),
+					filterTarget(event, player, target) {
+						return player !== target && target.countDiscardableCards(player, "he") > 0;
+					},
+					ai(target) {
+						const player = get.player();
+						return -get.attitude(player, target);
+					},
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 2";
-			if (result.bool) {
-				if (!event.logged) {
-					player.logSkill("xuanfeng", result.targets);
-					event.logged = true;
-				} else {
-					player.line(result.targets[0], "green");
-				}
-				player.discardPlayerCard(result.targets[0], "he", true);
-				event.count--;
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target1 = event.targets[0];
+			player.line(target1, "green");
+			await player.discardPlayerCard({
+				target: target1,
+				position: "he",
+				forced: true,
+			});
+
+			const result = await player
+				.chooseTarget({
+					prompt: "旋风：弃置一名其他角色的一张牌",
+					filterTarget(event, player, target) {
+						return player !== target && target.countDiscardableCards(player, "he") > 0;
+					},
+					ai(target) {
+						const player = get.player();
+						return -get.attitude(player, target);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
-			"step 3";
-			if (event.count) {
-				event.goto(1);
-			}
+
+			const target2 = result.targets[0];
+			player.line(target2, "green");
+			await player.discardPlayerCard({
+				target: target2,
+				position: "he",
+				forced: true,
+			});
 		},
 		ai: {
 			effect: {
