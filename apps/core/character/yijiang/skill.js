@@ -212,10 +212,10 @@ const skills = {
 			return event.type == "discard" && event.getl(player).cards2.length > 0 && player.countCards("h") > 0 && !player.hasSkill("olbingyi_blocker", null, null, false);
 		},
 		prompt2(event, player) {
-			var str = "展示所有手牌，然后",
-				hs = player.getCards("h");
-			var color = get.color(hs);
-			if (color == "none") {
+			let str = "展示所有手牌，然后";
+			const hs = player.getCards("h");
+			const color = get.color(hs);
+			if (color === "none") {
 				return str + "无事发生";
 			}
 			str += "令至多" + get.cnNumber(hs.length) + "名其他角色和自己各摸一张牌";
@@ -225,37 +225,50 @@ const skills = {
 			var color = get.color(player.getCards("h"));
 			return color != "none";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("olbingyi_blocker", ["phaseZhunbeiAfter", "phaseJudgeAfter", "phaseDrawAfter", "phaseUseAfter", "phaseDiscardAfter", "phaseJieshuAfter"]);
-			player.showHandcards(get.translation(player) + "发动了【秉壹】");
-			if (get.color(player.getCards("h")) == "none") {
-				event.finish();
+			
+			const cards = player.getCards("h");
+			await player.showCards(cards, `${get.translation(player)}发动了【秉壹】`);
+
+			if (get.color(cards) === "none") {
+				return;
 			}
-			"step 1";
-			var num = player.countCards("h");
-			player.chooseTarget([1, num], "令至多" + get.cnNumber(num) + "名角色也各摸一张牌", lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player;
-				var att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
-				if (target.hasSkillTag("nogain")) {
-					att /= 10;
-				}
-				return att;
-			});
-			"step 2";
-			var targets = [player];
-			if (result.bool) {
-				targets.addArray(result.targets);
-				player.line(targets, "green");
-				game.asyncDraw(targets.sortBySeat());
-			} else {
-				player.draw();
-				event.finish();
+
+			const num = cards.length;
+			const result = await player
+				.chooseTarget({
+					prompt: `令至多${get.cnNumber(num)}名角色也各摸一张牌`,
+					filterTarget(card, player, target) {
+						return player !== target;
+					},
+					ai(target) {
+						const player = get.player();
+						let att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
+						if (target.hasSkillTag("nogain")) {
+							att /= 10;
+						}
+						return att;
+					},
+				})
+				.forResult();
+			
+			if (!result.bool || !result.targets?.length) {
+				await player.draw();
+				return;
 			}
-			"step 3";
-			game.delayx();
+
+			const targets = result.targets;
+			player.line(targets, "green");
+			targets.push(player);
+			await game.asyncDraw(targets.sortBySeat());
+			await game.delayx();
 		},
-		subSkill: { blocker: { charlotte: true } },
+		subSkill: {
+			blocker: { 
+				charlotte: true,
+			},
+		},
 	},
 	//孙体
 	xinzhaofu: {
