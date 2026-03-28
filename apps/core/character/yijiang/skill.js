@@ -14753,25 +14753,35 @@ const skills = {
 		ai: { combo: "zyexin" },
 	},
 	zpaiyi: {
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
 		filter(event, player) {
 			return player.getExpansions("zyexin").length;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var next = player.chooseCardButton(get.prompt("zpaiyi"), player.getExpansions("zyexin"));
-			next.set("ai", function (button) {
-				return get.value(button.link);
-			});
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				event.card = card;
-				player
-					.chooseTarget(function (card, player, target) {
-						var card = _status.event.card;
-						var type = get.type(card);
+		async cost(event, trigger, player) {
+			let result = await player
+				.chooseCardButton({
+					prompt: get.prompt("zpaiyi"),
+					cards: player.getExpansions("zyexin"),
+					ai(button) {
+						return get.value(button.link);
+					},
+				})
+				.forResult();
+			
+			if (!result.bool || !result.links?.length) {
+				event.result = { bool: false };
+				return;
+			}
+
+			const cards = result.links;
+
+			result = await player
+				.chooseTarget({
+					selectTarget(card, player, target) {
+						const card = _status.event.card;
+						const type = get.type(card);
 						switch (type) {
 							case "basic":
 							case "trick":
@@ -14782,44 +14792,56 @@ const skills = {
 								return target.canEquip(card, true);
 						}
 						return true;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, _status.event.card, player, player);
-					})
-					.set("card", card);
-			} else {
-				event.finish();
+					},
+					ai(target) {
+						const { player, card } = get.event();
+						return get.effect(target, card, player, player);
+					},
+				})
+				.set("card", cards[0])
+				.forResult();
+
+			if (!result.bool || !result.targets?.length) {
+				event.result = { bool: false };
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var type = get.type(event.card),
-					target = result.targets[0];
-				player.logSkill("zpaiyi", target);
-				switch (type) {
-					case "basic":
-					case "trick":
-						player.give(event.card, target, "give");
-						break;
-					case "delay":
-						player.$give(event.card, target, false);
-						target.addJudge(event.card);
-						break;
-					case "equip":
-						player.$give(event.card, target, false);
-						target.equip(event.card);
-				}
-				if (player != result.targets[0]) {
-					player.chooseBool("是否摸一张牌？");
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+
+			const targets = result.targets;
+
+			event.result = {
+				bool: true,
+				cards,
+				targets,
+			};
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { cards, targets } = event;
+			const card = cards[0];
+			const target = targets[0];
+
+			switch (type) {
+				case "basic":
+				case "trick":
+					await player.give(card, target, "give");
+					break;
+				case "delay":
+					player.$give(card, target, false);
+					await target.addJudge(card);
+					break;
+				case "equip":
+					player.$give(card, target, false);
+					await target.equip(card);
+					break;
 			}
-			"step 3";
+
+			if (player === target) {
+				return;
+			}
+
+			const result = await player.chooseBool({ prompt: "是否摸一张牌？" }).forResult();
 			if (result.bool) {
-				player.draw();
+				await player.draw();
 			}
 		},
 		ai: {
