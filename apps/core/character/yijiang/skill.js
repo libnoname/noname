@@ -14242,39 +14242,42 @@ const skills = {
 		audio: 2,
 		audioname: ["re_liufeng"],
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(
-				get.prompt2(event.name),
-				[1, 2],
-				function (card, player, target) {
-					return target.countCards("he") > 0;
-				},
-				function (target) {
-					return -get.attitude(_status.event.player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("xiansi"),
+					filterTarget(card, player, target) {
+						return target.countCards("he") > 0;
+					},
+					selectTarget: [1, 2],
+					ai(target) {
+						const player = get.player();
+						return -get.attitude(player, target);
+					},
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			for (const target of event.targets) {
+				const result = await player
+					.choosePlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+
+				if (!result.bool || !result.cards?.length) {
+					return;
 				}
-			);
-			"step 1";
-			if (result.bool) {
-				result.targets.sortBySeat();
-				player.logSkill(event.name, result.targets);
-				event.targets = result.targets;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.targets.length) {
-				var target = event.targets.shift();
-				event.current = target;
-				player.choosePlayerCard(target, true);
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				player.addToExpansion(result.cards, event.current, "give").gaintag.add("xiansi");
-				event.goto(2);
+
+				await player.addToExpansion({
+					cards: result.cards,
+					source: target,
+					animate: "give",
+					gaintag: ["xiansi"],
+				});
 			}
 		},
 		intro: {
