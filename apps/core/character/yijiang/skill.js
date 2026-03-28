@@ -3708,14 +3708,18 @@ const skills = {
 				target = targets[0];
 			} else {
 				const result = await player
-					.chooseTarget(true, "选择【问卦】的目标", function (card, player, target) {
-						return _status.event.list.includes(target);
+					.chooseTarget({
+						prompt: "选择【问卦】的目标",
+						filterTarget(card, player, target) {
+							const event = get.event();
+							return event.list.includes(target);
+						},
+						ai(target) {
+							const player = get.player();
+							return get.attitude(player, target);
+						},
 					})
 					.set("list", targets)
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.attitude(player, target);
-					})
 					.set("chessForceAll", true)
 					.forResult();
 
@@ -3744,32 +3748,39 @@ const skills = {
 			}
 
 			const result = await target
-				.chooseControlList("问卦", `将${get.translation(card)}置于牌堆顶`, `将${get.translation(card)}置于牌堆底`, target === player, () => {
-					if (get.attitude(event.target, player) < 0) {
-						return 2;
+				.chooseControlList({
+					prompt: "问卦",
+					list: [`将${get.translation(card)}置于牌堆顶`, `将${get.translation(card)}置于牌堆底`],
+					forced: target === player,
+					ai() {
+						const { player, target } = get.event();
+						if (get.attitude(target, player) < 0) {
+							return 2;
+						}
+						return 1;
 					}
-					return 1;
 				})
+				.set("target", target)
 				.forResult();
 
 			const index = result.index;
-			if (index == 0 || index == 1) {
-				const next = target.lose(card, ui.cardPile);
-				if (index == 0) {
-					next.insert_card = true;
-				}
-
-				game.broadcastAll(player => {
-					const cardx = ui.create.card();
-					cardx.classList.add("infohidden");
-					cardx.classList.add("infoflip");
-					player.$throw(cardx, 1000, "nobroadcast");
-				}, target);
-
-				await next;
-			} else {
+			if (index >= 2) {
 				return;
 			}
+
+			const next = target.lose(card, ui.cardPile);
+			if (index == 0) {
+				next.insert_card = true;
+			}
+
+			game.broadcastAll(player => {
+				const cardx = ui.create.card();
+				cardx.classList.add("infohidden");
+				cardx.classList.add("infoflip");
+				player.$throw(cardx, 1000, "nobroadcast");
+			}, target);
+
+			await next;
 
 			await game.delay();
 
@@ -3781,7 +3792,7 @@ const skills = {
 					await game.asyncDraw([player, target], null, null);
 				}
 			} else if (index == 0) {
-				game.log(player, "将获得的牌置于牌堆顶");
+				game.log(target, "将获得的牌置于牌堆顶");
 				if (ui.cardPile.childElementCount === 1 || player === target) {
 					await player.draw("bottom");
 				} else {
