@@ -14241,7 +14241,15 @@ const skills = {
 	xiansi: {
 		audio: 2,
 		audioname: ["re_liufeng"],
-		trigger: { player: "phaseZhunbeiBegin" },
+		trigger: {
+			player: "phaseZhunbeiBegin",
+		},
+		onremove(player) {
+			const cards = player.getExpansions("xiansi");
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
@@ -14280,38 +14288,35 @@ const skills = {
 				});
 			}
 		},
+		group: "xiansix",
+		global: "xiansi2",
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
 		},
-		onremove(player) {
-			var cards = player.getExpansions("xiansi");
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
-			}
-		},
 		ai: {
 			threaten: 2,
 		},
-		global: "xiansi2",
-		group: "xiansix",
 	},
 	xiansix: {},
 	xiansi2: {
-		enable: "chooseToUse",
 		audio: 2,
-		audioname2: { re_liufeng: "rexiansi" },
-		viewAs: { name: "sha", isCard: true },
+		enable: "chooseToUse",
+		audioname2: {
+			re_liufeng: "rexiansi",
+		},
+		viewAs: {
+			name: "sha",
+			isCard: true,
+		},
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.hasSkill("xiansix") && current.getExpansions("xiansi").length > 1 && event.filterTarget({ name: "sha" }, player, current);
-			});
+			return game.hasPlayer(current => current.hasSkill("xiansix") && current.getExpansions("xiansi").length > 1 && event.filterTarget({ name: "sha" }, player, current));
 		},
 		filterTarget(card, player, target) {
-			var bool = false;
-			var players = ui.selected.targets.slice(0);
-			for (var i = 0; i < players.length; i++) {
-				if (players[i].hasSkill("xiansix") && players[i].getExpansions("xiansi").length > 1) {
+			let bool = false;
+			const players = ui.selected.targets.slice(0);
+			for (const current of players) {
+				if (current.hasSkill("xiansix") && current.getExpansions("xiansi").length > 1) {
 					bool = true;
 				}
 				break;
@@ -14321,66 +14326,68 @@ const skills = {
 			}
 			return _status.event._backup.filterTarget.apply(this, arguments);
 		},
-		complexSelect: true,
-		selectCard: -1,
 		filterCard() {
 			return false;
 		},
+		selectCard: -1,
+		complexSelect: true,
 		forceaudio: true,
 		prompt: "弃置一名有【逆】的角色的两张【逆】，然后视为对包含其在内的角色使用【杀】。",
 		delay: false,
 		log: false,
-		precontent() {
-			"step 0";
-			var targets = event.result.targets.filter(function (current) {
-				return current.getExpansions("xiansi").length > 1 && current.hasSkill("xiansix");
-			});
+		async precontent(event, trigger, player) {
+			const targets = event.result.targets.filter(current => current.getExpansions("xiansi").length > 1 && current.hasSkill("xiansix"));
+			if (!targets.length) {
+				return;
+			}
+
+			let target;
 			if (targets.length == 1) {
-				event.target = targets[0];
-				event.goto(2);
-			} else if (targets.length > 0) {
-				player
-					.chooseTarget(true, "选择弃置【陷嗣】牌的目标", function (card, player, target) {
-						return _status.event.list.includes(target);
+				target = targets[0];
+			} else {
+				const result = await player
+					.chooseTarget({
+						prompt: "选择弃置【陷嗣】牌的目标",
+						filterTarget(card, player, target) {
+							return get.event().list.includes(target);
+						},
+						forced: true,
+						ai(target) {
+							const player = get.player();
+							return get.attitude(player, target);
+						},
 					})
 					.set("list", targets)
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.attitude(player, target);
-					});
-			} else {
-				event.finish();
-			}
-			"step 1";
-			if (result.bool && result.targets.length) {
-				event.target = result.targets[0];
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.target) {
-				if (event.target.getExpansions("xiansi").length == 2) {
-					event.directresult = event.target.getExpansions("xiansi").slice(0);
-				} else {
-					player.chooseCardButton("移去两张“逆”", 2, event.target.getExpansions("xiansi"), true);
+					.forResult();
+				if (!result.bool || !result.targets.length) {
+					return;
 				}
+				target = result.targets[0];
+			}
+
+			let links;
+			if (target.getExpansions("xiansi").length == 2) {
+				links = target.getExpansions("xiansi").slice(0);
 			} else {
-				event.finish();
+				const result = await player.chooseCardButton("移去两张“逆”", 2, target.getExpansions("xiansi"), true).forResult();
+				if (!result.bool) {
+					return;
+				}
+				links = result.links;
 			}
-			"step 3";
-			if (event.directresult || result.bool) {
-				player.logSkill("xiansi2_log", event.target);
-				game.trySkillAudio("xiansi2", event.target, true);
-				var links = event.directresult || result.links;
-				target.loseToDiscardpile(links);
-			}
+
+			player.logSkill("xiansi2_log", target);
+			game.trySkillAudio("xiansi2", target, true);
+			await target.loseToDiscardpile(links);
 		},
 		ai: {
 			order() {
 				return get.order({ name: "sha" }) + 0.05;
 			},
 		},
-		subSkill: { log: {} },
+		subSkill: {
+			log: {},
+		},
 	},
 	shibei: {
 		trigger: { player: "damageEnd" },
