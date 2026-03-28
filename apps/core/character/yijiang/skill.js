@@ -5507,52 +5507,56 @@ const skills = {
 		},
 	},
 	duliang: {
-		enable: "phaseUse",
-		usable: 1,
-		filterTarget(card, player, target) {
-			return player != target && target.countCards("h") > 0;
-		},
 		audio: 2,
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "h", true);
-			"step 1";
-			var name = get.translation(target);
-			player
-				.chooseControl(function () {
-					return Math.random() < 0.5 ? "选项一" : "选项二";
+		usable: 1,
+		enable: "phaseUse",
+		filterTarget(card, player, target) {
+			return player !== target && target.countCards("h") > 0;
+		},
+		async content(event, trigger, player) {
+			const { target } = event;
+			await player.gainPlayerCard(target, "h", true);
+
+			const name = get.translation(target);
+			const result = await player
+				.chooseControl({
+					prompt: "督粮",
+					choiceList: [`令${name}观看牌堆顶的两张牌，然后获得其中的基本牌`, `令${name}于下个摸牌阶段额外摸一张牌`],
+					ai() {
+						return Math.random() < 0.5 ? "选项一" : "选项二";
+					},
 				})
-				.set("prompt", "督粮")
-				.set("choiceList", ["令" + name + "观看牌堆顶的两张牌，然后获得其中的基本牌", "令" + name + "于下个摸牌阶段额外摸一张牌"]);
-			"step 2";
+				.forResult();
 			if (result.control == "选项一") {
-				var cards = get.cards(2);
-				target.viewCards("督粮", cards);
-				event.cards2 = [];
-				event.tothrow = [];
-				for (var i = 0; i < cards.length; i++) {
-					if (get.type(cards[i]) == "basic") {
-						ui.special.appendChild(cards[i]);
-						event.cards2.push(cards[i]);
+				const cards = get.cards(2);
+				await target.viewCards("督粮", cards);
+
+				const cards2 = [];
+				const tothrow = [];
+				for (const card of cards) {
+					if (get.type(card) == "basic") {
+						ui.special.appendChild(card);
+						cards2.push(card);
 					} else {
-						event.tothrow.push(cards[i]);
+						tothrow.push(card);
 					}
 				}
-				while (event.tothrow.length) {
-					ui.cardPile.insertBefore(event.tothrow.pop(), ui.cardPile.firstChild);
+				while (tothrow.length) {
+					ui.cardPile.insertBefore(tothrow.pop(), ui.cardPile.firstChild);
 				}
-			} else {
-				target.addSkill("duliang2");
-				target.updateMarks("duliang2");
-				target.storage.duliang2++;
-				event.finish();
+				if (cards2.length) {
+					await target.gain({
+						cards: cards2, 
+						animate: "draw",
+					});
+					game.log(target, "获得了" + get.cnNumber(cards2.length) + "张牌");
+				}
+				game.updateRoundNumber();
+				return;
 			}
-			"step 3";
-			if (event.cards2 && event.cards2.length) {
-				target.gain(event.cards2, "draw");
-				game.log(target, "获得了" + get.cnNumber(event.cards2.length) + "张牌");
-			}
-			game.updateRoundNumber();
+			target.addSkill("duliang2");
+			target.updateMarks("duliang2");
+			++target.storage.duliang2;
 		},
 		ai: {
 			order: 4,
@@ -5563,24 +5567,24 @@ const skills = {
 		},
 	},
 	duliang2: {
-		trigger: { player: "phaseDrawBegin" },
-		forced: true,
-		mark: true,
 		audio: false,
-		onremove: true,
+		trigger: {
+			player: "phaseDrawBegin",
+		},
 		charlotte: true,
+		forced: true,
 		sourceSkill: "duliang",
 		init(player, skill) {
-			if (!player.storage[skill]) {
-				player.storage[skill] = 0;
-			}
+			player.storage[skill] ??= 0;
 		},
-		intro: {
-			content: "下个摸牌阶段额外摸#张牌",
-		},
-		content() {
+		onremove: true,
+		async content(event, trigger, player) {
 			trigger.num += player.storage.duliang2;
 			player.removeSkill("duliang2");
+		},
+		mark: true,
+		intro: {
+			content: "下个摸牌阶段额外摸#张牌",
 		},
 	},
 	xinfencheng: {
