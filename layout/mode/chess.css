@@ -1,0 +1,346 @@
+#arena.chess {
+	width: 100% !important;
+	height: 100% !important;
+	left: 0 !important;
+	top: 0 !important;
+	transition: all 0s !important;
+}
+#arena.chess > #me,
+#arena.chess > #mebg,
+#arena.chess > #autonode {
+	bottom: 0;
+	top: auto;
+	border-radius: 0;
+}
+#arena.chess > #autonode {
+	width: calc(100% - 240px);
+	left: 120px;
+}
+#me > .fakeme.avatar {
+	width: 120px;
+	height: 120px;
+	border-radius: 0px;
+	top: 0;
+	left: 0;
+	background-size: cover;
+	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+}
+#window:not(.nopointer) .dialog.fullheight .buttons .button.character:not(.squarebutton):not(.selectable) {
+	cursor: default;
+}
+#window:not(.nopointer) .obstacle.glow,
+#window:not(.nopointer) .player.playerblank.glow {
+	cursor: pointer;
+}
+#chess-container {
+	width: 100%;
+	height: calc(100% - 121px);
+	left: 0;
+	top: 0;
+	overflow: hidden;
+	text-align: center;
+	position: absolute;
+}
+#chess {
+	margin-top: 36px;
+	margin-bottom: 36px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	transition: all 0s;
+}
+#arena .card.thrown {
+	z-index: 4;
+}
+#canvas2 {
+	position: absolute;
+	z-index: 10;
+	pointer-events: none;
+}
+
+#handcards1 {
+	height: 120px;
+	padding: 0;
+	top: calc(100% - 120px);
+	width: calc(100% - 240px);
+	left: 120px;
+}
+#handcards2 {
+	display: none;
+}
+#mebg,
+#me,
+#autonode {
+	height: 120px;
+}
+#window:not(.nopointer) .dialog.pointerbutton .buttons .button:not(.unselectable) {
+	cursor: pointer !important;
+}
+#system {
+	z-index: 5;
+}
+#arena > .dialog {
+	width: 400px;
+	height: 240px;
+	left: calc(50% - 200px);
+	top: calc(50% - 120px);
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 8px;
+}
+#arena.chess > .dialog {
+	height: calc(50% - 20px);
+	max-height: 240px;
+}
+#window[data-radius_size="reduce"] > .dialog {
+	border-radius: 4px;
+}
+#window[data-radius_size="off"] > .dialog {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] > .dialog {
+	border-radius: 16px;
+}
+#arena > .dialog.slim:not(.center) {
+	top: 40px;
+	pointer-events: none;
+}
+#control {
+	top: calc(100% - 155px);
+}
+#arena.ipad #control {
+	top: calc(100% - 165px);
+}
+.fakeme {
+	width: 120px;
+	height: 120px;
+	border-radius: 0px !important;
+	top: 0;
+}
+#window[data-radius_size="increase"] .fakeme,
+#window[data-radius_size="reduce"] .fakeme {
+	border-radius: 0px;
+}
+.fakeme.avatar {
+	left: 0;
+	background-size: cover;
+}
+.fakeme.player {
+	left: calc(100% - 120px);
+	text-align: center;
+	transition: all 0s;
+	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+}
+.fakeme.player.zoomed {
+	width: 240px;
+	height: 240px;
+	left: calc(100% - 240px);
+	top: calc(100% - 240px);
+	background-size: 200%;
+}
+.fakeme.player > div {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: scroll;
+	left: 0;
+	top: 0;
+}
+.fakeme.player.zoomed > div > div {
+	width: 90px;
+	height: 90px;
+	left: 0;
+	top: 16px;
+	margin-left: 8px;
+	margin-right: 8px;
+	margin-bottom: 16px;
+}
+.fakeme.player > div > div {
+	width: 45px;
+	height: 45px;
+	background-size: cover;
+	border-radius: 4px;
+	position: relative;
+	left: 0;
+	top: 8px;
+	margin-left: 4px;
+	margin-right: 4px;
+	margin-bottom: 8px;
+	transition: box-shadow 0.5s;
+}
+#window:not(.nopointer) .fakeme.player > div > div {
+	cursor: pointer;
+}
+
+.fakeme.player > div > .selectable {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 1) 0 0 5px, rgba(0, 133, 255, 1) 0 0 10px;
+}
+.fakeme.player > div > .selected {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(255, 0, 0, 1) 0 0 5px, rgba(255, 0, 0, 1) 0 0 10px !important;
+}
+.fakeme.player > div > .dead {
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+	opacity: 0.5;
+}
+.card.drawing {
+	animation: drawing2 1s;
+	animation-fill-mode: forwards;
+	-webkit-animation: drawing2 1s;
+	-webkit-animation-fill-mode: forwards;
+}
+
+.player.playergrid,
+.player.obstacle {
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 8px;
+}
+#window[data-radius_size="reduce"] .player.playergrid,
+#window[data-radius_size="reduce"] .player.obstacle {
+	border-radius: 4px;
+}
+#window[data-radius_size="off"] .player.playergrid,
+#window[data-radius_size="off"] .player.obstacle {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] .player.playergrid,
+#window[data-radius_size="increase"] .player.obstacle {
+	border-radius: 16px;
+}
+.player.playerblank {
+	background: none;
+}
+#window .player.obstacle {
+	background: repeating-linear-gradient(
+		135deg,
+		rgba(0, 0, 0, 0.2),
+		rgba(0, 0, 0, 0.2) 10px,
+		rgba(0, 0, 0, 0.1) 10px,
+		rgba(0, 0, 0, 0.1) 20px
+	);
+}
+#window .player.obstacle[data-obscolor="blue"] {
+	background: repeating-linear-gradient(
+		135deg,
+		rgba(0, 64, 162, 0.4),
+		rgba(0, 64, 162, 0.4) 10px,
+		rgba(0, 0, 0, 0) 10px,
+		rgba(0, 0, 0, 0) 20px
+	);
+	box-shadow: rgba(0, 64, 162, 0.6) 0 0 0 1px;
+}
+
+.playergrid.temp {
+	opacity: 0.3;
+}
+.chessscroll {
+	height: calc(100% - 162px);
+	width: 20px;
+	top: 42px;
+	z-index: 1;
+	position: fixed;
+}
+.chessscroll.left {
+	left: 0;
+}
+.chessscroll.right {
+	right: 0;
+}
+.button.forbidden {
+	opacity: 0.6;
+}
+#arena.leaderhide > *:not(canvas) {
+	opacity: 0 !important;
+	transition: all 0.5s !important;
+	pointer-events: none;
+}
+#arena.leadercontrol > #control {
+	transition: all 0.5s !important;
+}
+/* .player.treasure{ */
+/*box-shadow: none;*/
+/* } */
+.player.treasure .count,
+.player.treasure .identity {
+	display: none;
+}
+.player.treasure .avatar {
+	width: 120px;
+	height: 120px;
+	left: 0;
+	top: 0;
+}
+.player.minskin .action {
+	text-shadow: black 0 0 1px !important;
+	font-size: 16px !important;
+	left: 0;
+}
+.player .action.thunder {
+	color: rgb(117, 186, 255);
+}
+#arena.selecting .player .action:not(.hidden) {
+	opacity: 1 !important;
+}
+.button .intro.showintro.tafang {
+	font-family: "xinwei";
+	font-size: 20px;
+	top: 66px;
+	right: 5px;
+	left: auto;
+}
+.button.newstyle .intro.showintro.tafang {
+	top: 6px;
+}
+.dialog .buttons > .button.character.squarebutton {
+	height: 90px;
+}
+.dialog .buttons > .button.character.squarebutton > .hp.text {
+	/*left:22px;*/
+	right: 4px;
+	text-align: right;
+	bottom: 4px;
+	top: auto;
+	left: auto;
+}
+.dialog .buttons > .button.character.squarebutton > .name {
+	top: 8px;
+}
+br.finish_game {
+	display: none;
+}
+
+#arena.chess.slim_player.lslim_player .player.minskin:not(.fakeme) > .avatar:not(.fakeme) {
+	left: 5px;
+	top: 5px;
+	width: calc(100% - 10px);
+	height: calc(100% - 10px);
+}
+
+#arena.chess #chess > .player {
+	left: 14px;
+	top: 14px;
+}
+
+#window.rightbar #system,
+#window.leftbar #system {
+	width: calc(100% - 62px);
+}
+#window.leftbar #system {
+	left: 50px;
+}
+
+#historybar {
+	border-radius: 0;
+	top: 0;
+	height: calc(100% - 121px);
+}
+#window.rightbar #historybar {
+	left: calc(100% - 50px);
+}
+#window.leftbar #historybar {
+	left: 0;
+}

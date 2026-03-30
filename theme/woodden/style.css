@@ -1,0 +1,285 @@
+html {
+	color: white;
+	text-shadow: black 0 0 2px;
+	background: url("grid.png"), linear-gradient(#6c7989, #434b55) fixed;
+}
+#system > div > div,
+#mebg,
+.control,
+.player,
+.card,
+.avatar,
+.avatar2,
+.button,
+.dialog > .bar,
+.menu,
+#splash > div,
+#arena.mobile:not(.chess) .player[data-position="0"] .equips,
+.playerbg,
+.menubg,
+.mebg {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	border-radius: 8px;
+}
+
+.dialog.choose-character > .packnode > div {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+	color: white;
+	text-shadow: black 0 0 2px;
+}
+.dialog.choose-character > .packnode > div.active {
+	box-shadow: rgba(27, 63, 95, 0.8) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px !important;
+	background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1));
+}
+
+.button-downloading > .button-progress > div {
+	background: rgba(77, 224, 100, 0.45);
+}
+
+.menu.main > .menu-tab > div:not(.active):not(*:hover),
+.menu.main > .menu-tab > .disabled {
+	color: rgba(77, 60, 51, 0.5);
+}
+#window > .dialog.popped,
+.menu,
+.menubg {
+	background: url("wood2.png");
+	color: rgba(77, 60, 51, 0.8);
+	text-shadow: none;
+}
+.popup-container > .menu.visual > .dashedmenubutton {
+	color: rgba(77, 60, 51, 0.8);
+	text-shadow: none;
+	border-color: rgba(77, 60, 51, 0.8);
+}
+.cardbg {
+	background-size: initial !important;
+}
+#splash > div {
+	background: url("wood2.png");
+}
+
+#arena:not(.long).mobile:not(.oldlayout) .player.unseen:not([data-position="0"]) .equips:not(*:empty),
+#arena:not(.long):not(.mobile):not(.oldlayout) .player.unseen .equips:not(*:empty),
+#arena.long.mobile:not(.oldlayout) .player.unseen2:not([data-position="0"]) .equips:not(*:empty),
+#arena.long:not(.mobile):not(.oldlayout) .player.unseen2 .equips:not(*:empty) {
+	background: url("wood.png");
+	border-radius: 4px;
+	overflow: hidden;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 2px 10px;
+}
+#arena:not(.long).mobile:not(.oldlayout) .player.unseen:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena:not(.long):not(.mobile):not(.oldlayout) .player.unseen .equips:not(*:empty) > .card:not(.selected),
+#arena.long.mobile:not(.oldlayout) .player.unseen2:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena.long:not(.mobile):not(.oldlayout) .player.unseen2 .equips:not(*:empty) > .card:not(.selected) {
+	background: none !important;
+}
+
+.coin_menu .content > .caption > .coin_buy > .menubutton {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px !important;
+}
+
+.popup.fire {
+	color: rgb(255, 119, 63);
+}
+.popup.thunder {
+	color: rgb(117, 186, 255);
+}
+.control .thundertext,
+.thundertext.thunderauto,
+.dialog.popped .bluetext,
+.menubg .bluetext {
+	color: rgba(29, 63, 137, 1);
+}
+.control .controlthundertext {
+	color: rgb(62, 41, 30);
+}
+.dialog.popped .yellowtext,
+.menubg .yellowtext {
+	color: #631515;
+}
+.dialog.popped .firetext,
+.menubg .firetext {
+	color: #a20000;
+}
+.dialog.popped .greentext,
+.menubg .greentext,
+.control span.greentext,
+.poisontext.poisonauto {
+	color: #00312d;
+}
+.control span.firetext {
+	color: #631515;
+}
+.legendtext.legendauto {
+	color: rgba(106, 27, 154, 1);
+}
+.player,
+.card,
+.dialog > .bar,
+.cardbg,
+#arena.mobile:not(.chess) .player[data-position="0"] .equips,
+.playerbg,
+#window .player.playerbg {
+	background: url("wood.jpg");
+}
+.cardbg.button {
+	background: url("wood.png");
+}
+#arena.observe .handcards > .card {
+	background: url("wood.jpg") !important;
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card {
+	background: url("wood.jpg") !important;
+	color: rgb(77, 60, 51) !important;
+	text-shadow: none !important;
+	box-shadow: rgba(0, 0, 0, 0.4) 1px 0 0 1px;
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card:first-child {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 1px 0 0;
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.selected {
+	-webkit-filter: sepia(0.8) !important;
+	background-image: url("wood.jpg") !important;
+	/*background-image: linear-gradient(rgba(47,101,150,1), rgba(43, 90, 132,1)) !important;*/
+	/*color: white !important;
+	box-shadow: rgba(0,0,0,0.4) 1px 0 0 1px !important;*/
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card.selected:first-child {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 1px 0 0 !important;
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card > .name2 {
+	transition: opacity 0.5s, color 0s;
+}
+
+.control,
+#system > div > div,
+.menubutton,
+#system > div > .pressdown2 {
+	background: url("wood2.jpg");
+	color: rgba(77, 60, 51, 0.8);
+	text-shadow: none;
+	border-radius: 4px;
+}
+#roundmenu > div:not(.clock) {
+	background: rgba(77, 60, 51, 0.8);
+	box-shadow: none;
+}
+#system > div > .pressdown2 {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.8) 0 0 0 2px, rgba(0, 133, 255, 1) 0 0 5px !important;
+}
+.judges > div,
+.marks > div {
+	border-radius: 4px;
+}
+#mebg,
+.menubutton,
+.menubutton.highlight,
+.menubutton.active,
+.mebg {
+	background: url("wood.png");
+}
+.menubutton.large {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px !important;
+}
+.menubutton.large.active,
+.menubutton.round.active,
+.menubutton.active,
+.menubutton.highlight.update {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.4) 0 0 0 2px, rgba(0, 133, 255, 1) 0 0 5px !important;
+}
+.connectevents.icon.highlight {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px !important;
+	background: url("wood.jpg");
+}
+.videonode.menubutton.extension > .caption > .menubutton.active {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px !important;
+}
+.videonode.menubutton.extension.current {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 133, 255, 0.4) 0 0 0 2px, rgba(0, 133, 255, 1) 0 0 5px !important;
+}
+.themebutton {
+	box-shadow: rgba(0, 0, 0, 0.45) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px !important;
+}
+.config.toggle > div > div {
+	background: url("wood.png");
+	box-shadow: rgba(151, 151, 151, 1) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+}
+.config.toggle.on > div {
+	background-color: transparent;
+}
+.config.toggle.on > div::before {
+	content: "开";
+	position: absolute;
+	left: 13px;
+	opacity: 0.5;
+	font-size: 14px;
+	line-height: 26px;
+	font-family: "xinwei";
+}
+.popup-container > .menu:not(.visual) > div:hover {
+	color: white;
+	background-image: linear-gradient(rgb(0, 133, 255), rgb(5, 119, 220));
+	box-shadow: none;
+}
+.control,
+#system > div > div,
+.popup,
+.dialog > .bar {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 2px 10px;
+}
+.card {
+	text-shadow: rgba(0, 0, 0, 0.1) 0 0 1px;
+}
+.card.equip3 > .range,
+.card.equip4 > .range {
+	text-shadow: white 0 0 2px;
+}
+.card,
+.menubg,
+.cardbg,
+.button.character.cardbg {
+	color: rgb(77, 60, 51);
+	text-shadow: none;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] .card.fullskin.epic > .name2 {
+	color: rgba(0, 66, 165, 1);
+}
+#arena.mobile:not(.chess) .player[data-position="0"] .card.fullskin.legend > .name2 {
+	color: rgba(106, 27, 154, 1);
+	/*color: rgb(117,186,0);*/
+}
+.bordered {
+	border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dialog.popped .config > .toggle.onoff > div {
+	border: 1px solid rgba(77, 60, 51, 0.8);
+	box-shadow: none;
+}
+.dialog.popped .config > .toggle.onoff > div > div {
+	background: rgba(77, 60, 51, 0.8);
+	border: 1px solid rgba(77, 60, 51, 0);
+	box-shadow: none;
+}
+
+.player > .turned {
+	color: rgba(0, 0, 0, 0.8);
+	background: white;
+}
+.player .marks > div:first-child > div {
+	-webkit-filter: invert(0.8) sepia(1);
+}
+
+#roundmenu.clock > div:nth-of-type(15) {
+	background: url("wood2.png");
+	box-shadow: rgba(0, 0, 0, 0.5) 0 0 5px inset;
+}
+.menubg.charactercard > .ava > .avatar {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	background-position: -6px -6px;
+}

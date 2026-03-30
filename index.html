@@ -1,0 +1,410 @@
+<!doctype html>
+
+<head>
+  <script type="importmap">{
+  "imports": {
+    "noname": "/noname.js",
+    "vue": "/node_modules/.pnpm/vue@3.5.28/node_modules/vue/dist/vue.esm-browser.js",
+    "pinyin-pro": "/node_modules/.pnpm/pinyin-pro@3.28.0/node_modules/pinyin-pro/dist/index.js",
+    "dedent": "/node_modules/.pnpm/dedent@1.7.1/node_modules/dedent/dist/dedent.js"
+  }
+}</script>
+  <script type="module">// src/entry.ts
+(async function() {
+  const scope = new URL("./", location.href).toString();
+  const globalText = {
+    SERVICE_WORKER_NOT_SUPPORT: ["\u65E0\u6CD5\u542F\u7528\u5373\u65F6\u7F16\u8BD1\u529F\u80FD", "\u60A8\u4F7F\u7528\u7684\u5BA2\u6237\u7AEF\u6216\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u542F\u7528serviceWorker"].join("\n"),
+    SERVICE_WORKER_LOAD_FAILED: ["\u65E0\u6CD5\u542F\u7528\u5373\u65F6\u7F16\u8BD1\u529F\u80FD", "serviceWorker\u52A0\u8F7D\u5931\u8D25"].join("\n")
+  };
+  if (!("serviceWorker" in navigator)) {
+    alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+    return;
+  }
+  if (sessionStorage.getItem("isJITReloaded") !== "true") {
+    let registrations = await navigator.serviceWorker.getRegistrations();
+    await registrations.find((registration) => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
+    sessionStorage.setItem("isJITReloaded", "true");
+    window.location.reload();
+    return;
+  }
+  try {
+    await navigator.serviceWorker.register(`${scope}service-worker.js`, {
+      type: "module",
+      updateViaCache: "all",
+      scope
+    });
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      if (e.data?.type === "reload") {
+        window.location.reload();
+      }
+    });
+    if (sessionStorage.getItem("canUseTs") !== "true") {
+      const path = "/jit-test.ts";
+      console.log((await import(
+        /* @vite-ignore */
+        path
+      )).text);
+      sessionStorage.setItem("canUseTs", "true");
+    }
+  } catch (e) {
+    if (sessionStorage.getItem("canUseTs") === "false") {
+      console.log("serviceWorker\u52A0\u8F7D\u5931\u8D25: ", e);
+    } else {
+      sessionStorage.setItem("canUseTs", "false");
+      window.location.reload();
+    }
+  }
+})();
+</script>
+
+
+
+	<meta charset="UTF-8" />
+	<!-- 不自动检查电话号码 -->
+	<meta name="format-detection" content="telephone=no" />
+	<!-- 手机端网页不显示地址栏 -->
+	<meta name="mobile-web-app-capable" content="yes" />
+	<!-- 禁止缩放 手机端全屏 -->
+	<meta name="viewport" content="user-scalable=no, viewport-fit=cover" />
+	<title>无名杀</title>
+	<script>
+		"use strict";
+		(() => {
+			window.onerror = function (msg, src, line, column, err) {
+				let str = `错误文件: ${typeof src == "string" && src.length > 0 ? decodeURI(src) : "未知文件"}`;
+				str += `\n错误信息: ${msg}`;
+				str += `\n行号: ${line}`;
+				str += `\n列号: ${column}`;
+				if (err && err.stack) str += "\n" + decodeURI(err.stack);
+				console.error(str);
+				alert(str);
+			};
+			const STACK_REGEXP = /^\s*at .*(\S+:\d+|\(native\))/m;
+			const errorList = [];
+			function extractLocation(urlLike) {
+				// 不存在地址信息的字符串
+				if (!/:/.test(urlLike)) {
+					return [urlLike];
+				}
+
+				// 捕获位置用到的正则
+				const regExp = /(.+?)(?::(\d+))?(?::(\d+))?$/;
+				const parts = regExp.exec(urlLike.replace(/[()]/g, ""));
+
+				// @ts-ignore
+				return [parts[1], parts[2] || void 0, parts[3] || void 0];
+			}
+			window.onunhandledrejection = async event => {
+				event.promise.catch(error => {
+					console.log(error);
+					// 如果`error`是个错误，则继续处理
+					if (error instanceof Error) {
+						// 如果已经处理过该错误，则不再处理
+						if (errorList.includes(error)) return;
+						errorList.push(error);
+						// 如果`error`拥有字符串形式的报错栈堆，且报错栈堆确实符合v8的stack
+						if (typeof error.stack === "string" && STACK_REGEXP.test(error.stack)) {
+							// 获取符合栈堆信息的字符串，一般来说就是从第二行开始的所有行
+							// 为了处理eval的情况，故必须获取完行数
+							let lines = error.stack.split("\n").filter(line => STACK_REGEXP.test(line));
+
+							// 提供类型信息防止vscode报错
+							/**
+							 * @type {string | undefined}
+							 */
+							let fileName = void 0;
+
+							/**
+							 * @type {number | undefined}
+							 */
+							let line = void 0;
+
+							/**
+							 * @type {number | undefined}
+							 */
+							let column = void 0;
+
+							// 从第一条开始遍历，一直遍历到不存在eval的位置
+							for (let currentLine = 0; currentLine < lines.length; ++currentLine) {
+								if (/\(eval /.test(lines[currentLine])) continue;
+
+								let formatedLine = lines[currentLine]
+									.replace(/^\s+/, "")
+									.replace(/\(eval code/g, "(")
+									.replace(/^.*?\s+/, "");
+
+								const location = formatedLine.match(/ (\(.+\)$)/);
+								if (location) formatedLine = formatedLine.replace(location[0], "");
+
+								const locationParts = extractLocation(location ? location[1] : formatedLine);
+
+								fileName = ["eval", "<anonymous>"].includes(locationParts[0]) ? void 0 : locationParts[0];
+								line = Number(locationParts[1]);
+								column = Number(locationParts[2]);
+								break;
+							}
+
+							// @ts-ignore
+							window.onerror(error.message, fileName, line, column, error);
+						}
+						// 反之我们只能不考虑报错文件信息，直接调用onerror
+						else {
+							try {
+								// @ts-ignore
+								let [_, src = void 0, line = void 0, column = void 0] = /at\s+.*\s+\((.*):(\d*):(\d*)\)/i.exec(error.stack.split("\n")[1]);
+								if (typeof line == "string") line = Number(line);
+								if (typeof column == "string") column = Number(column);
+								// @ts-ignore
+								window.onerror(error.message, src, line, column, error);
+							} catch (e) {
+								window.onerror(error.message, "", 0, 0, error);
+							}
+						}
+					}
+				});
+			};
+		})();
+	</script>
+  <script type="module" crossorigin src="./_virtual/modulepreload-polyfill.js"></script>
+  <script type="module" crossorigin src="./_virtual/preload-helper.js"></script>
+  <script type="module" crossorigin src="./_virtual/_commonjsHelpers.js"></script>
+  <script type="module" crossorigin src="./_virtual/index5.js"></script>
+  <script type="module" crossorigin src="./_virtual/_commonjs-dynamic-modules.js"></script>
+  <script type="module" crossorigin src="./_virtual/core.js"></script>
+  <script type="module" crossorigin src="./_virtual/__vite-browser-external.js"></script>
+  <script type="module" crossorigin src="./_virtual/___vite-browser-external.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/core.js"></script>
+  <script type="module" crossorigin src="./_virtual/x64-core.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/x64-core.js"></script>
+  <script type="module" crossorigin src="./_virtual/lib-typedarrays.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/lib-typedarrays.js"></script>
+  <script type="module" crossorigin src="./_virtual/enc-utf16.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/enc-utf16.js"></script>
+  <script type="module" crossorigin src="./_virtual/enc-base64.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/enc-base64.js"></script>
+  <script type="module" crossorigin src="./_virtual/enc-base64url.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/enc-base64url.js"></script>
+  <script type="module" crossorigin src="./_virtual/md5.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/md5.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha1.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha1.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha256.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha256.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha224.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha224.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha512.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha512.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha384.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha384.js"></script>
+  <script type="module" crossorigin src="./_virtual/sha3.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/sha3.js"></script>
+  <script type="module" crossorigin src="./_virtual/ripemd160.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/ripemd160.js"></script>
+  <script type="module" crossorigin src="./_virtual/hmac.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/hmac.js"></script>
+  <script type="module" crossorigin src="./_virtual/pbkdf2.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pbkdf2.js"></script>
+  <script type="module" crossorigin src="./_virtual/evpkdf.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/evpkdf.js"></script>
+  <script type="module" crossorigin src="./_virtual/cipher-core.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/cipher-core.js"></script>
+  <script type="module" crossorigin src="./_virtual/mode-cfb.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/mode-cfb.js"></script>
+  <script type="module" crossorigin src="./_virtual/mode-ctr.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/mode-ctr.js"></script>
+  <script type="module" crossorigin src="./_virtual/mode-ctr-gladman.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/mode-ctr-gladman.js"></script>
+  <script type="module" crossorigin src="./_virtual/mode-ofb.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/mode-ofb.js"></script>
+  <script type="module" crossorigin src="./_virtual/mode-ecb.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/mode-ecb.js"></script>
+  <script type="module" crossorigin src="./_virtual/pad-ansix923.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pad-ansix923.js"></script>
+  <script type="module" crossorigin src="./_virtual/pad-iso10126.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pad-iso10126.js"></script>
+  <script type="module" crossorigin src="./_virtual/pad-iso97971.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pad-iso97971.js"></script>
+  <script type="module" crossorigin src="./_virtual/pad-zeropadding.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pad-zeropadding.js"></script>
+  <script type="module" crossorigin src="./_virtual/pad-nopadding.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/pad-nopadding.js"></script>
+  <script type="module" crossorigin src="./_virtual/format-hex.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/format-hex.js"></script>
+  <script type="module" crossorigin src="./_virtual/aes.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/aes.js"></script>
+  <script type="module" crossorigin src="./_virtual/tripledes.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/tripledes.js"></script>
+  <script type="module" crossorigin src="./_virtual/rc4.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/rc4.js"></script>
+  <script type="module" crossorigin src="./_virtual/rabbit.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/rabbit.js"></script>
+  <script type="module" crossorigin src="./_virtual/rabbit-legacy.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/rabbit-legacy.js"></script>
+  <script type="module" crossorigin src="./_virtual/blowfish.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/blowfish.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/crypto-js@4.2.0/node_modules/crypto-js/index.js"></script>
+  <script type="module" crossorigin src="./_virtual/index3.js"></script>
+  <script type="module" crossorigin src="./noname/library/cache/cacheContext.js"></script>
+  <script type="module" crossorigin src="./noname/library/init/promises.js"></script>
+  <script type="module" crossorigin src="./noname/util/index.js"></script>
+  <script type="module" crossorigin src="./noname/util/sandbox/error.js"></script>
+  <script type="module" crossorigin src="./noname/util/sandbox/initRealms.js"></script>
+  <script type="module" crossorigin src="./noname/util/sandbox/security.js"></script>
+  <script type="module" crossorigin src="./noname/util/sandbox.js"></script>
+  <script type="module" crossorigin src="./noname/game/dynamic-style/index.js"></script>
+  <script type="module" crossorigin src="./noname/game/promises.js"></script>
+  <script type="module" crossorigin src="./noname/get/is.js"></script>
+  <script type="module" crossorigin src="./noname/get/promises.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pinyin-pro@3.28.0/node_modules/pinyin-pro/dist/index.js"></script>
+  <script type="module" crossorigin src="./noname/get/pinyins/noname-dict.js"></script>
+  <script type="module" crossorigin src="./noname/get/audio.js"></script>
+  <script type="module" crossorigin src="./_virtual/base64.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/base64.js"></script>
+  <script type="module" crossorigin src="./_virtual/support.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/support.js"></script>
+  <script type="module" crossorigin src="./_virtual/utils.js"></script>
+  <script type="module" crossorigin src="./_virtual/compressions.js"></script>
+  <script type="module" crossorigin src="./_virtual/flate.js"></script>
+  <script type="module" crossorigin src="./_virtual/common.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/utils/common.js"></script>
+  <script type="module" crossorigin src="./_virtual/deflate.js"></script>
+  <script type="module" crossorigin src="./_virtual/deflate2.js"></script>
+  <script type="module" crossorigin src="./_virtual/trees.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/trees.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/adler32.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/crc32.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/messages.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/deflate.js"></script>
+  <script type="module" crossorigin src="./_virtual/strings.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/utils/strings.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/zstream.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/deflate.js"></script>
+  <script type="module" crossorigin src="./_virtual/inflate.js"></script>
+  <script type="module" crossorigin src="./_virtual/inflate2.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/inffast.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/inftrees.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/inflate.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/constants.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/zlib/gzheader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/lib/inflate.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/pako@1.0.11/node_modules/pako/index.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/flate.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/compressions.js"></script>
+  <script type="module" crossorigin src="./_virtual/nodeBuffer.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/nodeBuffer.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/utils.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/crc32.js"></script>
+  <script type="module" crossorigin src="./_virtual/signature.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/signature.js"></script>
+  <script type="module" crossorigin src="./_virtual/defaults.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/defaults.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/compressedObject.js"></script>
+  <script type="module" crossorigin src="./_virtual/utf8.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/utf8.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/stringWriter.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/uint8ArrayWriter.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/object.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/dataReader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/stringReader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/arrayReader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/uint8ArrayReader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/nodeBufferReader.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/zipEntry.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/zipEntries.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/load.js"></script>
+  <script type="module" crossorigin src="./_virtual/deprecatedPublicUtils.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/deprecatedPublicUtils.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/jszip@2.7.0/node_modules/jszip/lib/index.js"></script>
+  <script type="module" crossorigin src="./_virtual/index2.js"></script>
+  <script type="module" crossorigin src="./noname/library/poptip.js"></script>
+  <script type="module" crossorigin src="./noname/get/index.js"></script>
+  <script type="module" crossorigin src="./noname/ui/click/index.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/index.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/cardPackMenu.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/characterPackMenu.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/button.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/card.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/client.js"></script>
+  <script type="module" crossorigin src="./noname/library/cache/childNodesWatcher.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/dedent@1.7.1/node_modules/dedent/dist/dedent.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/player.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/content.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/control.js"></script>
+  <script type="module" crossorigin src="./noname/util/pagination.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/dialog.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/nodeWS.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/vcard.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/character.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/index.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/exetensionMenu.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/optionsMenu.js"></script>
+  <script type="module" crossorigin src="vue"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/otherMenu.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/menu/pages/startMenu.js"></script>
+  <script type="module" crossorigin src="./noname/ui/create/index.js"></script>
+  <script type="module" crossorigin src="./noname/ui/index.js"></script>
+  <script type="module" crossorigin src="./noname/game/check.js"></script>
+  <script type="module" crossorigin src="./noname/util/config.js"></script>
+  <script type="module" crossorigin src="./noname/util/utils.js"></script>
+  <script type="module" crossorigin src="./noname/game/index.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/compilers/ContentCompilerBase.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/compilers/StepCompiler.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/compilers/AsyncCompiler.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/compilers/ArrayCompiler.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/compilers/ContentCompiler.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/GameEvent/GameEventManager.js"></script>
+  <script type="module" crossorigin src="./noname/library/element/gameEvent.js"></script>
+  <script type="module" crossorigin src="./noname/library/init/index.js"></script>
+  <script type="module" crossorigin src="./noname/library/announce/index.js"></script>
+  <script type="module" crossorigin src="./noname/library/experimental/symbol.js"></script>
+  <script type="module" crossorigin src="./noname/library/experimental/index.js"></script>
+  <script type="module" crossorigin src="./noname/library/update-urls.js"></script>
+  <script type="module" crossorigin src="./noname/library/hooks/index.js"></script>
+  <script type="module" crossorigin src="vue"></script>
+  <script type="module" crossorigin src="vue"></script>
+  <script type="module" crossorigin src="./noname/init/onload/OnloadSplash.vue2.js"></script>
+  <script type="module" crossorigin src="./noname/init/onload/OnloadSplash.vue.js"></script>
+  <script type="module" crossorigin src="./noname/init/onload/default-splash.js"></script>
+  <script type="module" crossorigin src="./noname/init/onload/wide-splash.js"></script>
+  <script type="module" crossorigin src="./noname/init/onload/index.js"></script>
+  <script type="module" crossorigin src="./noname/library/zhanfa.js"></script>
+  <script type="module" crossorigin src="./noname/library/skill.js"></script>
+  <script type="module" crossorigin src="./noname/library/index.js"></script>
+  <script type="module" crossorigin src="./noname/game/PauseManager.js"></script>
+  <script type="module" crossorigin src="./noname/status/index.js"></script>
+  <script type="module" crossorigin src="./noname/ai/basic.js"></script>
+  <script type="module" crossorigin src="./noname/ai/index.js"></script>
+  <script type="module" crossorigin src="./noname.js"></script>
+  <script type="module" crossorigin src="./_virtual/stackframe2.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/stackframe@1.3.4/node_modules/stackframe/stackframe.js"></script>
+  <script type="module" crossorigin src="./_virtual/stackframe.js"></script>
+  <script type="module" crossorigin src="./_virtual/error-stack-parser2.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/error-stack-parser@2.1.4/node_modules/error-stack-parser/error-stack-parser.js"></script>
+  <script type="module" crossorigin src="./_virtual/error-stack-parser.js"></script>
+  <script type="module" crossorigin src="./_virtual/stacktrace-gps2.js"></script>
+  <script type="module" crossorigin src="./_virtual/source-map-consumer.js"></script>
+  <script type="module" crossorigin src="./_virtual/util.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/util.js"></script>
+  <script type="module" crossorigin src="./_virtual/binary-search.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/binary-search.js"></script>
+  <script type="module" crossorigin src="./_virtual/array-set.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/array-set.js"></script>
+  <script type="module" crossorigin src="./_virtual/base64-vlq.js"></script>
+  <script type="module" crossorigin src="./_virtual/base642.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/base64.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/base64-vlq.js"></script>
+  <script type="module" crossorigin src="./_virtual/quick-sort.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/quick-sort.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/source-map@0.5.6/node_modules/source-map/lib/source-map-consumer.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/stacktrace-gps@3.1.2/node_modules/stacktrace-gps/stacktrace-gps.js"></script>
+  <script type="module" crossorigin src="./_virtual/stacktrace-gps.js"></script>
+  <script type="module" crossorigin src="./noname/util/error.js"></script>
+  <script type="module" crossorigin src="./noname/init/import.js"></script>
+  <script type="module" crossorigin src="./noname/init/loading.js"></script>
+  <script type="module" crossorigin src="./noname/init/index.js"></script>
+  <script type="module" crossorigin src="./_virtual/index6.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/core-js-bundle@3.48.0/node_modules/core-js-bundle/index.js"></script>
+  <script type="module" crossorigin src="./_virtual/index.js"></script>
+  <script type="module" crossorigin src="./node_modules/.pnpm/vue@3.5.28/node_modules/vue/dist/vue.esm-browser.js"></script>
+  <script type="module" crossorigin src="./noname/entry.js"></script>
+</head>

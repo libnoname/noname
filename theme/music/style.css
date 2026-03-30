@@ -1,0 +1,150 @@
+html {
+	color: white;
+	text-shadow: black 0 0 2px;
+	background: url("grid.png"), linear-gradient(#333333, #222222) fixed;
+}
+#system > div > div,
+#mebg,
+.control,
+.player,
+.card,
+.avatar,
+.avatar2,
+.button,
+#window > .dialog.popped,
+#arena:not(.long) .player.unseen .equips:not(*:empty),
+#arena.long .player.unseen2 .equips:not(*:empty),
+.menu,
+#splash > div,
+#arena.mobile:not(.chess) .player[data-position="0"] .equips,
+.playerbg,
+#window .player.playerbg,
+.menubg,
+.mebg {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	background-image: linear-gradient(#4b4b4b, #464646);
+	border-radius: 8px;
+}
+#arena.observe .handcards > .card {
+	background: linear-gradient(#4b4b4b, #464646) !important;
+}
+
+.videonode.menubutton.extension.current {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 133, 255, 0.4) 0 2px 5px,
+		rgba(0, 133, 255, 0.5) 0 0 12px, rgba(0, 133, 255, 0.8) 0 0 15px;
+}
+body[data-background_color_music="blue"] #system > div > div,
+body[data-background_color_music="blue"] #mebg,
+body[data-background_color_music="blue"] .control,
+body[data-background_color_music="blue"] .player,
+body[data-background_color_music="blue"] .card,
+body[data-background_color_music="blue"] .avatar,
+body[data-background_color_music="blue"] .avatar2,
+body[data-background_color_music="blue"] .button,
+body[data-background_color_music="blue"] #window > .dialog.popped,
+body[data-background_color_music="blue"] .player.unseen .equips:not(*:empty),
+body[data-background_color_music="blue"] .menu,
+body[data-background_color_music="blue"] #splash > div,
+body[data-background_color_music="blue"] #arena.mobile:not(.chess) .player[data-position="0"] .equips {
+	background-image: linear-gradient(#6c7989, #434b55);
+}
+
+.marks > .card.fullskin > .markcount.menubutton {
+	background: url("wood3.png");
+}
+
+/*.player.current_action{
+	background-image: linear-gradient(rgba(57, 123, 4,1), rgb(48, 103, 3));
+}*/
+#window > .dialog.popped {
+	border-radius: 6px;
+}
+.control,
+#system > div > div,
+.judges > div,
+.marks > div,
+#arena:not(.long) .player.unseen .equips:not(*:empty),
+#arena.long .player.unseen2 .equips:not(*:empty) {
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+#arena:not(.long).mobile:not(.oldlayout) .player.unseen:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena:not(.long):not(.mobile):not(.oldlayout) .player.unseen .equips:not(*:empty) > .card:not(.selected),
+#arena.long.mobile:not(.oldlayout) .player.unseen2:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena.long:not(.mobile):not(.oldlayout) .player.unseen2 .equips:not(*:empty) > .card:not(.selected) {
+	background: none !important;
+}
+
+.player,
+#mebg {
+	/*background:url('wood.png') left repeat-y,url('wood.png') right repeat-y,linear-gradient(#4b4b4b, #464646);*/
+}
+.card {
+	color: white;
+}
+.cardbg {
+	background-size: initial !important;
+}
+.card:not(*:empty),
+.cardbg {
+	color: rgb(77, 60, 51);
+	text-shadow: none;
+	background: url("wood3.png");
+}
+.marks > .card:not(.fullskin) {
+	color: white;
+	text-shadow: black 0 0 2px;
+	background: linear-gradient(#4b4b4b, #464646);
+}
+#me > div > div > .card,
+#arena > .card:not(*:empty) {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+}
+
+#system > div > .glow {
+	/*background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1));*/
+	box-shadow: rgba(47, 101, 150, 1) 0 0 0 1px, rgba(43, 90, 132, 1) 0 3px 10px !important;
+}
+
+.fire {
+	color: rgb(255, 119, 63);
+}
+.thunder {
+	color: rgb(117, 186, 255);
+}
+.poison {
+	color: rgb(104, 221, 127);
+}
+.brown {
+	color: rgb(195, 161, 223);
+}
+
+#roundmenu.clock > div:nth-of-type(15) {
+	background: linear-gradient(#4b4b4b, #464646);
+	box-shadow: rgba(0, 0, 0, 0.6) 0 0 5px inset;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	background-position: -6px -6px;
+}
+
+.woodbg {
+	color: rgba(77, 60, 51, 0.8) !important;
+	text-shadow: none !important;
+}
+.woodbg .menubutton.large {
+	background: url("wood3.png") !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px !important;
+}
+
+#window .player.minskin.obstacle[data-obscolor="blue"] {
+	background: repeating-linear-gradient(
+		135deg,
+		rgba(0, 133, 255, 0.5),
+		rgba(0, 133, 255, 0.5) 10px,
+		rgba(0, 0, 0, 0) 10px,
+		rgba(0, 0, 0, 0) 20px
+	);
+	box-shadow: rgba(0, 133, 255, 0.5) 0 0 0 1px;
+}

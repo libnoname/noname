@@ -1,0 +1,5734 @@
+/*--------标签--------*/
+html {
+	width: 100%;
+	height: 100%;
+	font-size: 16px;
+	cursor: default;
+	overflow: hidden;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-webkit-font-smoothing: subpixel-antialiased;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	background-color: rgb(60, 60, 60);
+}
+
+body {
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	left: 0;
+	top: 0;
+	position: absolute;
+	overflow: hidden;
+	text-rendering: optimizeLegibility;
+	transform-origin: top left;
+	font-family: "STHeiti", "SimHei", "Microsoft JhengHei", "Microsoft YaHei", "WenQuanYi Micro Hei", "Suits", Helvetica, Arial, sans-serif;
+}
+
+div {
+	display: inline-block;
+	position: absolute;
+	transition: all 0.5s;
+}
+
+table {
+	table-layout: fixed;
+}
+
+/*--------场景--------*/
+#window {
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0;
+	transition-property: opacity;
+	overflow: hidden;
+}
+#window.connecting > *:not(#system) {
+	opacity: 0.5;
+}
+.fullsize.connectlayer {
+	display: table;
+	text-align: center;
+	z-index: 100;
+}
+.connectlayer > div {
+	display: table-cell;
+	vertical-align: middle;
+	font-size: 60px;
+	color: white;
+	text-shadow: black 0 0 2px;
+	position: relative;
+	font-family: "xinwei";
+	transition: all 0.5s;
+}
+#window.server > div:not(.serverinfo) {
+	display: none !important;
+}
+#window.server > .serverinfo {
+	width: 400px;
+	height: 200px;
+	font-family: "xinwei";
+	text-align: center;
+	left: calc(50% - 200px);
+	top: calc(50% - 100px);
+}
+#window.server > .serverinfo > div {
+	position: relative;
+	display: block;
+	font-size: 20px;
+	margin-top: 10px;
+}
+#window.server > .serverinfo > div > div {
+	position: relative;
+	display: inline-block;
+}
+#window.server > .serverinfo > div > div:last-child {
+	width: 60px;
+	text-align: left;
+	white-space: nowrap;
+}
+#window.server > .serverinfo > div > .menubutton.large:last-child {
+	width: auto;
+	margin-top: 30px;
+	cursor: pointer;
+}
+#window.server > .serverinfo > div:first-child {
+	font-size: 40px;
+}
+.statusbar #window {
+	top: 24px;
+	height: calc(100% - 24px);
+}
+#statusbg {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 24px;
+	background: rgba(0, 0, 0, 0.4);
+	display: none;
+}
+.statusbar #statusbg {
+	display: block;
+}
+#window > .tutorial_tap {
+	width: 30px;
+	height: 30px;
+	border-radius: 100%;
+	background: rgba(255, 255, 255, 0.5);
+	box-shadow: rgba(255, 255, 255, 0.5) 0 0 5px;
+	left: calc(50% - 15px);
+	top: calc(50% - 15px);
+	position: absolute;
+	transition: all 1s;
+}
+#window.testing > *:not(.pausedbg) {
+	display: none !important;
+}
+#window.modepaused > div:not(.modenopause):not(#arena):not(.popped) {
+	opacity: 0.3;
+}
+#window.modepaused > #arena > #roundmenu {
+	opacity: 0.3;
+}
+#window.shortcutpaused > .modeshortcutpause {
+	opacity: 0.3 !important;
+}
+#window.shortcutpaused.modepaused > .modenopause.popup-container:not(.filter-character) {
+	opacity: 0.3;
+}
+#window.shortcutpaused > div:not(.background):not(#shortcut):not(#system):not(#arena):not(.hidden):not(.removing):not(.dialog):not(.centermenu):not(.popup-container):not(.forceopaque) {
+	opacity: 0.3 !important;
+}
+#window.shortcutpaused > #arena > div:not(#timer):not(.removing):not(.hidden):not(#autonode) {
+	opacity: 0.3 !important;
+}
+#window.shortcutpaused > #system {
+	z-index: 31;
+}
+#window.systempaused > #system {
+	opacity: 0.3 !important;
+}
+#window.noclick_important * {
+	pointer-events: none !important;
+}
+#window.noclick_important .noclick_click_important div {
+	pointer-events: auto !important;
+}
+#window.blur_ui #arena.paused,
+#window.blur_ui #arena.menupaused,
+#window.blur_ui #historybar.paused,
+#window.blur_ui #historybar.menupaused,
+#window.blur_ui #arena.unfocus,
+#window.blur_ui #arena.right,
+#window.blur_ui.shortcutpaused > #arena,
+#window.blur_ui.shortcutpaused > #historybar {
+	filter: blur(3px);
+	-webkit-filter: blur(3px);
+}
+#window.blur_ui #arena.menupaused,
+#window.blur_ui #historybar.menupaused {
+	opacity: 0.6;
+}
+#window.blur_ui #arena.thrownhighlight > .card.thrown:not(.thrownhighlight) {
+	filter: blur(2px);
+	-webkit-filter: blur(2px);
+}
+
+#time {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	left: 0;
+	top: 11px;
+	text-align: center;
+	pointer-events: none;
+	display: block;
+	font-family: "xinwei";
+}
+#time > div {
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+	margin-left: 6px;
+	margin-right: 6px;
+	position: relative;
+}
+#shortcut {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10;
+	/*background-color: rgba(0, 0, 0, 0.6);*/
+}
+#shortcut > div {
+	width: 80px;
+	height: 80px;
+	padding: 10px;
+	margin: 0;
+	overflow: hidden;
+	line-height: 80px;
+	font-size: 50px;
+	white-space: nowrap;
+	text-align: center;
+	letter-spacing: -6px;
+	transform: scale(1.3);
+}
+#shortcut > div:not(.menubutton) {
+	width: 100%;
+	height: 80px;
+	margin: 0;
+	padding: 0;
+	left: 0;
+	top: 0;
+}
+#shortcut > div > span {
+	width: 200px;
+	left: -63px;
+	position: relative;
+	display: inline-block;
+}
+#shortcut > div[data-position="1"] {
+	left: calc(50% - 50px);
+	top: calc(50% - 190px);
+}
+#shortcut.hidden > div[data-position="1"] {
+	transform: scale(1) translateY(150px);
+}
+#shortcut > div[data-position="2"] {
+	left: calc(50% + 100px);
+	top: calc(50% - 40px);
+}
+#shortcut.hidden > div[data-position="2"] {
+	transform: scale(1) translateX(-150px);
+}
+#shortcut > div[data-position="3"] {
+	left: calc(50% - 50px);
+	top: calc(50% + 110px);
+}
+#shortcut.hidden > div[data-position="3"] {
+	transform: scale(1) translateY(-150px);
+}
+#shortcut > div[data-position="4"] {
+	left: calc(50% - 200px);
+	top: calc(50% - 40px);
+}
+#shortcut.hidden > div[data-position="4"] {
+	transform: scale(1) translateX(150px);
+}
+#shortcut > div[data-position="5"] {
+	left: calc(50% - 50px);
+	top: calc(50% - 50px);
+}
+#shortcut > .favmodelist:not(.menubutton) {
+	width: 130px;
+	height: 300px;
+	top: calc(50% - 150px);
+	left: calc(50% - 430px);
+	overflow: visible;
+}
+#shortcut > .favmodelist > .menubutton.large {
+	display: block;
+	position: absolute;
+	left: 0;
+	letter-spacing: 0;
+}
+#shortcut > .favmodelist > [data-type="even"] {
+	top: calc(50% - 45px);
+}
+#shortcut > .favmodelist > [data-type="odd"] {
+	top: calc(50% - 20px);
+}
+#shortcut > .favmodelist > [data-position="0"] {
+	transition-duration: 0.5s;
+}
+#shortcut.hidden > .favmodelist > [data-position="0"] {
+	transform: translateX(-140px);
+}
+#shortcut > .favmodelist > [data-position="1"] {
+	transition-duration: 0.6s;
+	transform: translateY(50px);
+}
+#shortcut.hidden > .favmodelist > [data-position="1"] {
+	transform: translateY(50px) translateX(-150px);
+}
+#shortcut > .favmodelist > [data-position="2"] {
+	transition-duration: 0.4s;
+	transform: translateY(-50px);
+}
+#shortcut.hidden > .favmodelist > [data-position="2"] {
+	transform: translateY(-50px) translateX(-130px);
+}
+#shortcut > .favmodelist > [data-position="3"] {
+	transition-duration: 0.7s;
+	transform: translateY(100px);
+}
+#shortcut.hidden > .favmodelist > [data-position="3"] {
+	transform: translateY(100px) translateX(-160px);
+}
+#shortcut > .favmodelist > [data-position="4"] {
+	transition-duration: 0.3s;
+	transform: translateY(-100px);
+}
+#shortcut.hidden > .favmodelist > [data-position="4"] {
+	transform: translateY(-100px) translateX(-120px);
+}
+#shortcut > .favmodelist > [data-position="5"] {
+	transition-duration: 0.8s;
+	transform: translateY(150px);
+}
+#shortcut.hidden > .favmodelist > [data-position="5"] {
+	transform: translateY(150px) translateX(-170px);
+}
+#shortcut.hidden {
+	pointer-events: none;
+	transition: opacity 0.3s;
+}
+
+#splash {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	position: absolute;
+	text-align: center;
+	overflow: visible;
+	transition: all 0.3s;
+	overflow-x: scroll;
+	white-space: nowrap;
+}
+#splash.removing {
+	pointer-events: none;
+}
+#splash > div {
+	width: 100px;
+	height: 300px;
+	top: calc(50% - 150px);
+	margin-left: 10px;
+	margin-right: 10px;
+	position: relative;
+	transition: all 0.8s;
+	cursor: pointer;
+}
+#splash > div:first-child {
+	margin-left: 20px;
+}
+#splash > div:last-child {
+	margin-right: 20px;
+}
+#splash:not(.touch) > div:hover:not(.clicked) {
+	transform: translateY(-20px);
+}
+#splash > div.clicked {
+	transform: translateY(-20px) scale(1.5);
+	transition: all 0.3s;
+	opacity: 0;
+}
+#splash > div.hidden {
+	transform: translateY(-300px) scale(0.5);
+}
+#splash.low_performance > div.hidden {
+	transform: scale(0.8);
+}
+#splash.low_performance > div {
+	transition: all 0.5s;
+}
+#splash > div > .splashtext {
+	font-family: "huangcao", "xinwei";
+	font-size: 50px;
+	position: absolute;
+	right: 7px;
+	bottom: 7px;
+	z-index: 1;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+#splash > div > .avatar {
+	width: 86px;
+	height: calc(100% - 14px);
+	left: 7px;
+	top: 7px;
+	background-size: cover;
+}
+
+#splash.slim > div > .splashtext {
+	right: 5px;
+	bottom: 5px;
+}
+#splash.slim > div > .avatar {
+	width: 90px;
+	height: calc(100% - 10px);
+	left: 5px;
+	top: 5px;
+}
+
+#splash[data-radius_size="reduce"] > div > div,
+#splash[data-radius_size="reduce"] > div {
+	border-radius: 4px;
+}
+#splash[data-radius_size="off"] > div > div,
+#splash[data-radius_size="off"] > div {
+	border-radius: 0px;
+}
+#splash[data-radius_size="increase"] > div > div,
+#splash[data-radius_size="increase"] > div {
+	border-radius: 12px;
+}
+
+/* 启动页style2 */
+#splash[data-splash_style="style2"] > div {
+	width: 250px;
+	height: 350px;
+	top: calc(50% - 175px);
+}
+#splash[data-splash_style="style2"] > div:first-child {
+	margin-left: 15px;
+}
+#splash[data-splash_style="style2"] > div:last-child {
+	margin-right: 15px;
+}
+#splash[data-splash_style="style2"] > div > .splashtext {
+	font-family: "shousha";
+	font-size: 65px;
+}
+#splash[data-splash_style="style2"].slim > div > .splashtext {
+	right: 10px;
+	bottom: 5px;
+}
+#splash[data-splash_style="style2"].slim > div > .avatar {
+	width: 240px;
+}
+
+#arena.playerhidden > .player,
+#arena.playerhidden > #mebg,
+#arena.markhidden > .player > .marks {
+	visibility: hidden;
+	opacity: 0;
+}
+
+#arena.chess > #arenalog {
+	display: none !important;
+}
+#arena.observe .handcards > .card > div {
+	opacity: 0 !important;
+}
+#arena.hide_name .player > .name:not(.name_seat),
+#arena.hide_name .player > .name2,
+#arena.hide_name > .dialog .button.character > .name {
+	display: none !important;
+}
+#arenalog {
+	width: calc(50% - 210px);
+	height: calc(100% - 370px);
+	left: calc(50% + 60px);
+	top: 200px;
+	overflow: hidden;
+}
+#arenalog.withdialog {
+	opacity: 0.5;
+}
+#arena:not(.oldlayout) > #arenalog[data-position="center"] {
+	left: calc(25% + 105px);
+}
+#arena:not(.oldlayout) > #arenalog[data-position="left"] {
+	left: 150px;
+}
+#arena.oldlayout > #arenalog {
+	top: 160px;
+	width: calc(50% - 300px);
+	height: calc(100% - 325px);
+}
+#arena.oldlayout > #arenalog[data-position="center"] {
+	left: calc(25% + 150px);
+}
+#arena.oldlayout > #arenalog[data-position="left"] {
+	left: 240px;
+}
+
+#arenalog > div {
+	position: relative;
+	display: block;
+	width: calc(100% - 20px);
+	left: 20px;
+	line-height: 18px;
+}
+#window:not(.low_performance) #arena #arenalog > div {
+	animation: game_start 0.5s;
+	-webkit-animation: game_start 0.5s;
+}
+/*#arena[data-font_size='14']{
+	font-size:14px;
+}
+#arena[data-font_size='16']{
+	font-size:16px;
+}
+#arena[data-font_size='18']{
+	font-size:18px;
+}
+#arena[data-font_size='20']{
+	font-size:20px;
+}*/
+#arena {
+	width: 94%;
+	height: 90%;
+	top: calc(5% + 10px);
+	left: 3%;
+	transition-property: opacity;
+}
+#arena.right:not(.noleft) {
+	left: 240px;
+	opacity: 0.6;
+}
+#arena.left:not(.noleft) {
+	left: calc(10% - 240px);
+	opacity: 0.6;
+}
+#window.leftbar #arena:not(.chess) {
+	left: calc(3% + 50px);
+	width: calc(94% - 50px);
+}
+#window.rightbar #arena:not(.chess) {
+	width: calc(94% - 50px);
+}
+#arena.top {
+	top: -100%;
+}
+#arena.paused,
+#arena.unfocus,
+#historybar.paused {
+	opacity: 0.3 !important;
+}
+#arena.paused2 {
+	opacity: 0.1 !important;
+}
+
+#arena > .poplayer,
+#window > .poplayer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 20;
+}
+
+#arena.only_dialog > div:not(.dialog):not(#control) {
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+#arena > canvas {
+	z-index: 10;
+	pointer-events: none;
+	position: absolute;
+}
+#arena.playerfocus > div:not(#timer):not(.playerfocus):not(#chess-container):not(.removing):not(#autonode) {
+	opacity: 0.3 !important;
+}
+#arena.playerfocus #chess > div:not(.playerfocus):not(.removing) {
+	opacity: 0.3 !important;
+}
+
+#historybar {
+	left: 1.5%;
+	width: 50px;
+	height: calc(90% - 20px);
+	top: calc(5% + 25px);
+	border-radius: 4px;
+	visibility: hidden;
+	opacity: 0;
+	overflow: hidden;
+	z-index: 2;
+	transition-property: opacity, visibility;
+}
+#historybar.hidden {
+	pointer-events: none;
+}
+#historybar > div {
+	width: 42px;
+	height: 42px;
+	margin: 0;
+	padding: 4px;
+	display: block;
+	position: absolute;
+}
+#historybar > div > .card {
+	transform: scale(0.403846);
+	transform-origin: top left;
+	margin: 0;
+	left: 4px;
+	top: 4px;
+	position: absolute;
+}
+#historybar > div > .avatar {
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	left: 4px;
+	top: 4px;
+	width: 42px;
+	height: 42px;
+	border-radius: 3.230768px;
+}
+#historybar > div > .avatar > div {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	left: 0;
+	bottom: 2px;
+	height: auto;
+	font-family: "xinwei";
+	font-size: 18px;
+	text-align: center;
+	width: 100%;
+}
+#historybar > div > .avatar > .avatarbg {
+	bottom: 0;
+	height: 100%;
+	background-size: cover;
+}
+#historybar > div > .avatar2 {
+	width: 20px;
+	height: 20px;
+	left: 28px;
+	top: 28px;
+	border-radius: 100%;
+	font-family: "xinwei";
+	font-size: 20px;
+	line-height: 20px;
+	z-index: 1;
+}
+#historybar > div > .avatar2.avatar3 {
+	left: 12px;
+	top: 31px;
+	transform: scale(0.7);
+	transform-origin: top left;
+}
+
+#window.rightbar #historybar,
+#window.rightbar2:not(.leftbar) #historybar {
+	left: calc(98.5% - 50px);
+}
+
+#window.leftbar #historybar,
+#window.rightbar #historybar {
+	opacity: 1;
+	visibility: visible;
+}
+
+.dialog .button.character.cardbg > .avatar_name {
+	font-family: "xinwei";
+	font-size: 20px;
+	width: 100%;
+	height: 20px;
+	line-height: 20px;
+	top: 37px;
+	left: 0;
+	text-align: center;
+}
+.player:not(.treasure).playerfocus {
+	transform: scale(1.1);
+}
+.player.linked:not(.treasure).playerfocus {
+	transform: scale(1.1) rotate(-90deg);
+}
+.player.connect > div:not(.avatar):not(.name):not(.nameol):not(.hp):not(.room):not(.gaming):not(.identity) {
+	display: none !important;
+}
+.player.connect > .gaming {
+	left: 16px;
+	top: auto;
+	bottom: 16px;
+	font-family: "xinwei";
+}
+.player.connect[data-cursor_style="forbidden"] {
+	opacity: 0.5;
+}
+#arena #me > div > div > .card {
+	position: absolute;
+	left: 8px;
+}
+
+.touchinfo {
+	padding: 6px;
+	position: absolute;
+	color: white;
+	text-shadow: black 0 0 2px;
+	top: 0;
+	margin: 0;
+	font-family: "xinwei";
+}
+.touchinfo.left {
+	left: 0;
+}
+.touchinfo.right {
+	left: auto;
+	right: 14px;
+	text-align: right;
+}
+#window.touchinfohidden > .touchinfo {
+	opacity: 0;
+}
+
+.roundarenabutton {
+	/*width: 50px;
+	height: 50px;*/
+	left: 180px;
+	top: 210px;
+	position: absolute;
+	/*background: rgba(0,0,0,0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius:100%;*/
+	z-index: 7;
+	transition-property: opacity;
+	overflow: hidden;
+}
+#arena:not(.phone) #roundmenu {
+	display: none !important;
+}
+#roundmenu > div {
+	width: 26px;
+	height: 4px;
+	background: white;
+	position: absolute;
+	left: 12px;
+	border-radius: 2px;
+	box-shadow: black 0 0 2px;
+}
+#roundmenu.clock > div:nth-of-type(1) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 2px;
+	opacity: 1;
+}
+#roundmenu.clock > div:nth-of-type(2) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 46px;
+	opacity: 1;
+}
+#roundmenu.clock > div:nth-of-type(3) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 2px;
+	opacity: 1;
+}
+#roundmenu.clock > div:nth-of-type(4) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 46px;
+	opacity: 1;
+}
+#roundmenu.clock > div:nth-of-type(5) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 2px;
+	opacity: 0.4;
+	transform: rotate(30deg);
+	transform-origin: 1px 23px;
+}
+#roundmenu.clock > div:nth-of-type(9) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 2px;
+	opacity: 0.4;
+	transform: rotate(60deg);
+	transform-origin: 1px 23px;
+}
+#roundmenu.clock > div:nth-of-type(6) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 46px;
+	opacity: 0.4;
+	transform: rotate(30deg);
+	transform-origin: 1px -23px;
+}
+#roundmenu.clock > div:nth-of-type(10) {
+	width: 2px;
+	height: 2px;
+	left: 24px;
+	top: 46px;
+	opacity: 0.4;
+	transform: rotate(60deg);
+	transform-origin: 1px -23px;
+}
+#roundmenu.clock > div:nth-of-type(7) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 2px;
+	opacity: 0.4;
+	transform: rotate(30deg);
+	transform-origin: 23px 1px;
+}
+#roundmenu.clock > div:nth-of-type(11) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 2px;
+	opacity: 0.4;
+	transform: rotate(60deg);
+	transform-origin: 23px 1px;
+}
+#roundmenu.clock > div:nth-of-type(8) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 46px;
+	opacity: 0.4;
+	transform: rotate(30deg);
+	transform-origin: -23px 1px;
+}
+#roundmenu.clock > div:nth-of-type(12) {
+	width: 2px;
+	height: 2px;
+	top: 24px;
+	left: 46px;
+	opacity: 0.4;
+	transform: rotate(60deg);
+	transform-origin: -23px 1px;
+}
+#roundmenu.clock > div:nth-of-type(13) {
+	width: 22px;
+	height: 2px;
+	top: 24px;
+	left: 24px;
+	transform-origin: 1px 1px;
+	border-radius: 4px 40px 40px 4px/4px 4px 4px 4px;
+}
+#roundmenu.clock > div:nth-of-type(14) {
+	width: 16px;
+	height: 4px;
+	top: 23px;
+	left: 23px;
+	transform-origin: 2px 2px;
+	border-radius: 4px 23px 23px 4px/4px 4px 4px 4px;
+}
+#roundmenu.clock > div:nth-of-type(15) {
+	width: 80%;
+	height: 80%;
+	left: 10%;
+	top: 10%;
+	border-radius: 100%;
+	margin: 0;
+	padding: 0;
+	z-index: -1;
+	opacity: 0;
+}
+
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(1),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(2),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(3),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(4),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(5),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(6),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(7),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(8),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(9),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(10),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(11),
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(12) {
+	opacity: 0;
+}
+#roundmenu.clock[data-watchface="simple"] > div:nth-of-type(15) {
+	opacity: 1;
+}
+
+#roundmenu:not(.clock) > div:nth-of-type(even) {
+	width: 20px;
+	left: 18px;
+}
+#roundmenu:not(.clock) > div:nth-of-type(odd) {
+	width: 4px;
+}
+
+#roundmenu:not(.clock) > div:nth-of-type(1),
+#roundmenu:not(.clock) > div:nth-of-type(2) {
+	top: 14px;
+}
+
+#roundmenu:not(.clock) > div:nth-of-type(3),
+#roundmenu:not(.clock) > div:nth-of-type(4) {
+	top: 23px;
+}
+
+#roundmenu:not(.clock) > div:nth-of-type(5),
+#roundmenu:not(.clock) > div:nth-of-type(6) {
+	top: 32px;
+	transform: none !important;
+}
+
+#roundmenu:not(.clock) > div:nth-of-type(7),
+#roundmenu:not(.clock) > div:nth-of-type(8),
+#roundmenu:not(.clock) > div:nth-of-type(9),
+#roundmenu:not(.clock) > div:nth-of-type(10),
+#roundmenu:not(.clock) > div:nth-of-type(11),
+#roundmenu:not(.clock) > div:nth-of-type(12),
+#roundmenu:not(.clock) > div:nth-of-type(13),
+#roundmenu:not(.clock) > div:nth-of-type(14),
+#roundmenu:not(.clock) > div:nth-of-type(15) {
+	opacity: 0;
+}
+
+.linexy {
+	pointer-events: none;
+	transition-property: transform, opacity;
+	width: 3px;
+	border-radius: 4px;
+	z-index: 4;
+	box-shadow: rgba(0, 0, 0, 0.5) 0 0 2px;
+	transform-origin: top center;
+}
+.linexy.drag {
+	transition-property: none !important;
+}
+#me,
+#mebg {
+	width: 100%;
+	height: 140px;
+	top: calc(100% - 140px);
+	left: 0;
+}
+#mebg {
+	z-index: -1;
+}
+#autonode {
+	z-index: 10;
+	width: 100%;
+	height: 140px;
+	top: calc(100% - 140px);
+	left: 0;
+	display: table;
+	text-align: center;
+	font-size: 60px;
+	font-family: "xinwei";
+	text-shadow: black 0 0 10px;
+}
+#arena:not(.chess):not(.mobile) > #autonode {
+	display: none;
+}
+#arena:not(.auto) > #autonode,
+#autonode.hidden {
+	opacity: 0;
+	pointer-events: none;
+}
+#arena.auto #me .handcards {
+	opacity: 0.5;
+}
+#autonode > div {
+	display: table-cell;
+	vertical-align: middle;
+	position: relative;
+}
+
+#handcards1,
+#handcards2 {
+	width: calc(50% - 140px);
+	height: 127px;
+	padding: 10px;
+	text-align: left;
+}
+#handcards1,
+#handcards2 {
+	white-space: nowrap;
+	overflow-x: visible;
+	overflow-y: visible;
+	display: block;
+}
+#handcards1.scrollh,
+#handcards2.scrollh {
+	overflow-x: scroll;
+	overflow-y: hidden;
+}
+#handcards1 {
+	left: 0;
+	top: calc(100% - 140px);
+}
+#handcards2 {
+	left: calc(50% + 120px);
+	top: calc(100% - 140px);
+}
+
+#arena #handcards1 > div,
+#arena #handcards2 > div {
+	height: 100%;
+	position: relative;
+	margin-left: 2px;
+	margin-right: 10px;
+}
+#arena:not(.mobile):not(.single-handcard):not(.chess) #handcards1 > div,
+#arena:not(.mobile):not(.single-handcard):not(.chess) #handcards2 > div {
+	left: -10px;
+}
+#arena.single-handcard #handcards1 {
+	width: calc(100% - 120px);
+	left: 120px;
+}
+#arena:not(.mobile).single-handcard #handcards1 {
+	width: calc(100% - 140px);
+}
+#arena.single-handcard #handcards2 {
+	display: none;
+}
+
+#system {
+	padding: 6px;
+	width: calc(100% - 12px);
+	white-space: nowrap;
+	z-index: 3;
+	pointer-events: none;
+	transition-property: opacity;
+}
+#system > div {
+	height: 100%;
+	position: relative;
+	margin: 0;
+	padding: 0;
+}
+#system > div > div {
+	pointer-events: auto;
+}
+#system > div:last-child {
+	text-align: right;
+	float: right;
+}
+#system > div > div {
+	position: relative;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	padding-left: 8px;
+	padding-right: 8px;
+	text-align: center;
+	margin: 4px;
+	transition: all 0.1s;
+}
+
+.pausedbg {
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 5;
+}
+.pausedbg > div:first-child {
+	font-size: 30px;
+	top: calc(50% - 17px);
+	left: calc(50% - 45px);
+}
+#sidebar,
+#sidebar3 {
+	left: 0;
+	top: 0;
+	width: 200px;
+	height: calc(100% - 40px);
+	text-align: left;
+	padding: 20px;
+	overflow-y: scroll;
+	z-index: 6;
+}
+#sidebar3 {
+	text-align: right;
+}
+.pausedbg > #sidebar.right,
+#sidebar3 {
+	left: calc(100% - 240px);
+}
+#sidebar3.left {
+	left: 0;
+	text-align: left;
+}
+
+.dialog.popped #sidebar {
+	padding: 0;
+}
+.dialog .poppedpile {
+	width: 100%;
+	padding-bottom: 10px;
+}
+.dialog .poppedpile > div {
+	display: block;
+	position: relative;
+}
+.dialog.character > .content-container {
+	width: calc(100% - 136px);
+	left: 136px;
+}
+.dialog.character > .packnode {
+	width: 136px;
+	left: 0;
+	height: 100%;
+	position: absolute;
+	overflow: scroll;
+}
+.dialog.choose-character > .content-container {
+	width: calc(100% - 106px);
+	left: 106px;
+}
+.dialog.choose-character > .packnode {
+	width: 106px;
+}
+.dialog.character > .packnode > div {
+	/*box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));
+	border-radius: 4px;
+	font-family:'STXinwei','xinwei';
+
+	text-align:center;
+	display:inline-block;
+	padding:5px;*/
+	font-size: 26px;
+	line-height: 26px;
+	width: calc(100% - 30px);
+	margin-top: 9px;
+	margin-left: 10px;
+	white-space: nowrap;
+	position: relative;
+}
+.dialog.character > .packnode > div:last-child {
+	margin-bottom: 9px;
+}
+.dialog.popped .caption > .text > ul > li:not(*:last-child) {
+	margin-bottom: 8px;
+}
+.dialog.popped .caption > .caption > div > .skillinfo:not(*:last-child) {
+	margin-bottom: 8px;
+}
+
+.skillversion {
+	padding-bottom: 5px;
+}
+
+#sidebar > div,
+#sidebar3 > div {
+	margin: 10px;
+	position: relative;
+	display: block;
+	min-height: 5px;
+}
+#scrollzone1 {
+	left: 0;
+}
+#scrollzone2 {
+	left: calc(50% - 140px);
+}
+#scrollzone3 {
+	right: calc(50% - 140px);
+}
+#scrollzone4 {
+	right: 0;
+}
+.scrollzone {
+	width: 20px;
+	height: 140px;
+}
+
+body > .background.paused {
+	filter: blur(3px);
+	-webkit-filter: blur(3px);
+}
+body > .background {
+	z-index: -5;
+}
+body > .background.upper {
+	z-index: -4;
+}
+body > .background.land {
+	background-position: center;
+	background-size: cover;
+	transition: all 2s;
+}
+
+.popup:not(.guanxing) {
+	padding: 5px;
+}
+.forcehide {
+	display: none !important;
+}
+.removing,
+.hidden {
+	opacity: 0 !important;
+	pointer-events: none;
+}
+
+/* game.$elementGoto使用的喵 */
+/* 这些可能作用于任何元素上面，为了确保动画效果，我们要尽可能提升优先级喵 */
+.cloned-visual:not(.visual-subject) {
+	pointer-events: none !important;
+	translate: -1000000px -1000000px !important;
+	overflow: visible !important;
+	transition: none !important;
+}
+.facade-replacing {
+	visibility: hidden !important;
+	display: none !important;
+}
+
+#system > div > div.hidden {
+	opacity: 0.5 !important;
+}
+.opaque {
+	opacity: 0 !important;
+}
+.transparent {
+	opacity: 0.3 !important;
+}
+.transparent2 {
+	opacity: 0.6 !important;
+}
+
+.out {
+	opacity: 0.3 !important;
+	/* filter: blur(3px); */
+	/* -webkit-filter: blur(3px) */
+}
+.blurbg {
+	filter: blur(3px) !important;
+	-webkit-filter: blur(3px) !important;
+	transform: scale(1.2);
+}
+.blur {
+	filter: blur(3px) !important;
+	-webkit-filter: blur(3px) !important;
+}
+.blur2 {
+	filter: blur(6px) !important;
+	-webkit-filter: blur(6px) !important;
+}
+.invert-color {
+	filter: invert(1);
+	-webkit-filter: invert(1);
+}
+.zoominanim {
+	animation: zoomin 0.5s;
+	-webkit-animation: zoomin 0.5s;
+}
+.zoomin {
+	transform: scale(1.05) !important;
+}
+.zoomout {
+	transform: scale(0.95) !important;
+}
+.zoomin2 {
+	transform: scale(2) !important;
+}
+.zoomin3 {
+	transform: scale(3) !important;
+}
+.zoomout2 {
+	transform: scale(0.5) !important;
+}
+.zoomout3 {
+	transform: scale(0.3) !important;
+}
+.rotateleft {
+	transform: rotate(-3deg) !important;
+}
+.rotateright {
+	transform: rotate(3deg) !important;
+}
+
+.exclude {
+	opacity: 0.6 !important;
+}
+.button.buttonclick {
+	animation: buttonclick 0.8s;
+	-webkit-animation: buttonclick 0.8s;
+}
+.background {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	display: inline-block !important;
+}
+.background2 {
+	width: 90%;
+	height: 90%;
+	left: 5%;
+	top: 5%;
+	margin: 0;
+	padding: 0;
+	display: inline-block !important;
+}
+.background,
+.button,
+.avatar,
+.avatar2 {
+	transition-property: top, box-shadow, opacity, transform;
+	transition-duration: 0.5s;
+}
+.fullsize {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	display: block;
+	position: absolute;
+}
+.intro {
+	width: 20px;
+	height: 20px;
+}
+#systembutton {
+	left: calc(-150% / 47 + 15px);
+	bottom: calc(-100% / 18 + 135px);
+	top: auto;
+	margin: 0;
+}
+#arena:not(.mobile) > #systembutton {
+	display: none !important;
+}
+/*--------卡牌--------*/
+.card {
+	width: 104px;
+	height: 104px;
+	margin-top: 8px;
+	margin-left: 4px;
+	margin-right: 4px;
+	position: relative;
+	/*overflow: hidden;*/
+}
+.card > .info {
+	top: 5.2px;
+	right: 7px;
+	white-space: nowrap;
+	word-spacing: -0.1em;
+}
+.card > .range {
+	bottom: 5px;
+	right: 5px;
+	text-align: right;
+	text-shadow: rgba(213, 194, 179, 1) 0 0 3px, rgba(213, 194, 179, 1) 0 0 3px, rgba(213, 194, 179, 1) 0 0 3px, rgba(213, 194, 179, 1) 0 0 3px, black 0 0 3px;
+}
+.card > .gaintag {
+	bottom: 5px;
+	left: 5px;
+	text-align: left;
+	color: white;
+	text-shadow: rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, black 0 0 1px;
+}
+.card > .name {
+	top: 9px;
+	left: 6px;
+	text-align: center;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.card.fullimage > .name.long {
+	top: 6px;
+}
+.card > .name2 {
+	display: none;
+}
+.card > .intro {
+	top: 85px;
+	right: 0;
+}
+.card.fullborder > .name {
+	font-family: "xinwei";
+}
+.card.dctuoyu-fengtian-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(228, 146, 64) 0 0 5px;
+	background-color: #e49240;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.card.dctuoyu-qingqu-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(0, 139, 139) 0 0 5px;
+	background-color: #008b8b;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.card.dctuoyu-junshan-glow:before {
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(16, 160, 16) 0 0 5px;
+	background-color: #10a010;
+	-webkit-filter: blur(3px);
+	filter: blur(3px);
+}
+.handcards.yao_yaoyi > .card.yao_yaoyi {
+	background-image: var(--cardback-url) !important;
+	background-size: 100% 100% !important;
+	background-position: center !important;
+}
+.handcards.yao_yaoyi > .card.yao_yaoyi > * {
+	visibility: hidden !important;
+}
+.card > .cardframebg {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	position: absolute;
+	background-size: 100% 100%;
+	border-radius: 8px;
+}
+#window[data-radius_size="reduce"] .card > .cardframebg {
+	border-radius: 4px;
+}
+#window[data-radius_size="increase"] .card > .cardframebg {
+	border-radius: 16px;
+}
+#window[data-radius_size="off"] .card > .cardframebg {
+	border-radius: 0;
+}
+.card > .cardframebg[data-auto="gold"] {
+	background-image: url("../../theme/style/card/image/border_gold.jpg");
+}
+.card > .cardframebg[data-auto="silver"] {
+	background-image: url("../../theme/style/card/image/border_silver.jpg");
+}
+.card > .cardframebg[data-auto="bronze"] {
+	background-image: url("../../theme/style/card/image/border_bronze.jpg");
+}
+.card > .cardframebg[data-auto="wood"] {
+	background-image: url("../../theme/style/card/image/border_wood.jpg");
+}
+.card > .cardframebg[data-auto="map"] {
+	background-image: url("../../theme/style/card/image/border_map.jpg");
+}
+.card > .cardavatar {
+	width: calc(100% - 6px);
+	height: calc(100% - 6px);
+	left: 3px;
+	top: 3px;
+	position: absolute;
+	border-radius: 6px;
+	pointer-events: none;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px inset, rgba(0, 0, 0, 0.45) 0 0 10px inset;
+}
+
+/*卡牌转化动画*/
+.card .initmask {
+--flow-radius: 10px;
+    width: calc(100% - var(--flow-radius));
+    height: calc(100% - var(--flow-radius));
+    margin: calc(var(--flow-radius) / 2);
+    background: white;
+    box-shadow: white 0 0 calc(var(--flow-radius) / 2) calc(var(--flow-radius) / 2);
+}
+
+#window[data-radius_size="reduce"] .card > .cardavatar {
+	border-radius: 3px;
+}
+#window[data-radius_size="off"] .card > .cardavatar {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] .card > .cardavatar {
+	border-radius: 14px;
+}
+
+div:not(.handcards) > .card:not(.thrown) > .info,
+.handcards > .card:last-child > .info,
+div:not(.handcards) > .card:not(.thrown) > .name,
+.handcards > .card:last-child > .name {
+	transform: none !important;
+}
+
+div:not(.handcards).menu-buttons > .button.card > .name {
+	transform: scale(0.9) !important;
+	transform-origin: top left;
+}
+div:not(.handcards).menu-buttons > .button.card > .info {
+	transform: scale(0.9) !important;
+	transform-origin: top right;
+}
+div:not(.handcards) > .card:not(.thrown) > .info > span,
+.handcards > .card:last-child > .info > span {
+	display: inline !important;
+}
+
+.card > .image {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	background-size: cover;
+}
+.card.infohidden > div {
+	display: none !important;
+}
+.card.fullimage.infohidden {
+	background-image: var(--cardback-url) !important;
+	background-size: 100% 100% !important;
+	background-position: center !important;
+	background-repeat: no-repeat !important;
+}
+.card.cardflip {
+	animation: cardflip 0.3s ease-out;
+	animation-fill-mode: none;
+	-webkit-animation: cardflip 0.3s ease-out;
+	-webkit-animation-fill-mode: none;
+}
+.player .playerjiu {
+	animation: game_start 0.5s;
+	-webkit-animation: game_start 0.5s;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 4;
+	pointer-events: none;
+	background: rgba(255, 0, 0, 0.3);
+}
+.player.playerbright {
+	filter: brightness(1.2);
+	-webkit-filter: brightness(1.2);
+}
+.player.playerflip {
+	animation: playerflip 0.3s ease-out;
+	-webkit-animation: playerflip 0.3s ease-out;
+}
+
+div.select-all:not(.card):not(.player) {
+	right: 0px;
+	position: absolute;
+	background: rgba(0, 0, 0, 0.6);
+	font-size: 16px;
+	z-index: 7;
+	padding: 6px 8px;
+}
+.button.card.button > .intro {
+	top: 69px;
+}
+.buttons {
+	width: 100%;
+}
+.buttons.guanxing:not(.pointerdiv) {
+	min-height: 106px;
+	width: calc(100% - var(--contentdiv-margin-left) - var(--contentdiv-margin-right));
+	box-sizing: border-box;
+}
+.buttons.smallzoom {
+	display: block;
+	/* zoom: 0.65; */
+}
+.buttons .card.button > .name {
+	transform: scale(0.8);
+	transform-origin: top left;
+}
+.buttons.scrollbuttons {
+	white-space: nowrap;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	width: 100%;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+.buttons.scrollbuttons:not(.popup) .button:first-child {
+	margin-left: 12px;
+}
+.buttons.scrollbuttons:not(.popup) .button:last-child {
+	margin-right: 12px;
+}
+/*.buttons.smallzoom .card.button>.name,
+.buttons.smallzoom .card.button>.info{
+	transform: scale(0.8) !important;
+}
+.buttons.smallzoom .card.button>.range{
+	transform: scale(0.8);
+	transform-origin: bottom right;
+}*/
+.buttons .card.button > .info {
+	transform: scale(0.8);
+	transform-origin: top right;
+}
+.buttons .card.button > .addinfo {
+	transform: scale(0.8);
+	transform-origin: bottom left;
+}
+
+.dialog .buttons > .button.character,
+.button.character.longcharacter {
+	height: 108px;
+	background-size: cover;
+}
+.dialog .buttons > .button.character > .name,
+.button.character.longcharacter > .name {
+	overflow: visible;
+}
+.dialog .buttons > .button.character > .name.long {
+	transform: scale(0.95);
+	transform-origin: top left;
+}
+.dialog .buttons > .card > .name {
+	font-size: 14px;
+	line-height: 16px;
+}
+.dialog .buttons > .card > .name.long {
+	top: 3px;
+}
+.card.center {
+	top: calc(50% - 52px);
+	left: calc(50% - 52px);
+}
+.card > .background {
+	font-size: 80px;
+	height: 80px;
+	padding-top: 14px;
+	text-align: center;
+}
+
+.card.fullimage > div:not(.background),
+.card.fullborder > div:not(.background) {
+	color: white;
+	text-shadow: black 0px 0px 2px;
+}
+.card.fullimage > .name {
+	line-height: 18px;
+}
+
+.equips > .card > .background {
+	font-size: 36px;
+	height: 36px;
+	padding-top: 3px;
+}
+#window.low_performance #arena .player .equips,
+#window.low_performance #arena .player .name {
+	transition: all 0s;
+}
+
+.judges > .card > .background,
+.marks > .card > .background {
+	font-size: 20px;
+	height: 20px;
+	padding-top: 3px;
+}
+.judges > .card.fakejudge.fullskin > .image {
+	display: none !important;
+}
+.judges > .card.fakejudge.fullskin > .background,
+.judges > .card.fakejudge.fullborder > .background,
+.marks > .card.fakemark.fullborder > .background {
+	display: block !important;
+	font-family: "huangcao" !important;
+	padding-top: 4px !important;
+}
+.judges:empty {
+	pointer-events: none;
+}
+
+.mark-container.marks {
+	left: 0;
+	top: 0;
+	position: relative;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+.mark-container.marks > div {
+	position: relative !important;
+	margin: 8px;
+	width: 48px !important;
+	height: 48px !important;
+}
+.mark-container.marks > .card > .background.skillmark,
+.mark-container.marks > .card.fakemark.fullborder > .background {
+	padding-top: calc(17px / 2) !important;
+	/* zoom: 2; */
+}
+.mark-container.marks > .card.overflowmark {
+	overflow: visible;
+}
+.mark-container.marks > div > .markcount.menubutton {
+	font-size: 12px;
+	width: 16px;
+	height: 16px;
+	line-height: 18px;
+	position: absolute;
+	left: 36px;
+	top: 34px;
+	border-radius: 100%;
+}
+.mark-container.marks > .card.fullskin > .image {
+	background-size: 100%;
+	background-position: 0 0;
+}
+.mark-container.marks > .card.fullskin > .info {
+	transform: scale(0.6) !important;
+	transform-origin: top right;
+	left: auto !important;
+	right: 3px !important;
+	display: block;
+	top: 2px;
+}
+.mark-container.marks > .card.fullskin > .name {
+	transform: scale(0.5) !important;
+	transform-origin: top left;
+	left: 3px !important;
+	display: block;
+	top: 3px !important;
+}
+.mark-container.marks > .card.fullskin > .name.long {
+	transform: scale(0.48) !important;
+	top: 1px !important;
+}
+
+.button.card > .background {
+	font-size: 68px;
+	height: 68px;
+	padding-top: 12px;
+}
+.card > .background {
+	font-family: "xiaozhuan";
+}
+.card > .background.tight {
+	letter-spacing: -0.2em;
+}
+.marks > .card > .background.skillmark {
+	font-family: "huangcao", "xinwei";
+	padding-top: 4px;
+}
+.marks > .card.overflowmark {
+	overflow: visible;
+}
+.marks > div > .markcount.menubutton {
+	font-family: "xinwei";
+	font-size: 9px;
+	width: 12px;
+	height: 12px;
+	padding: 0;
+	line-height: 14px;
+	position: absolute;
+	left: 16px;
+	top: 14px;
+	border-radius: 100%;
+	z-index: 1;
+	display: block !important;
+}
+
+#arena.oldlayout .player:not(.linked2) .marks > div:first-child,
+#arena.oldlayout:not(.nolink) .player .marks > div:first-child,
+#arena.oldlayout .player .marks .removing {
+	transform: scale(0.2);
+	opacity: 0;
+	pointer-events: none;
+}
+/*--------窗口--------*/
+.dialog {
+	text-align: center;
+	z-index: 4;
+	transition-property: opacity, background, box-shadow;
+}
+.dialog {
+	width: calc(90% - 420px);
+	height: calc(100% / 3 - 160px / 3 + 120px);
+}
+.dialog.fullheight {
+	height: calc(100% - 80px) !important;
+	top: 40px !important;
+}
+.dialog.fullwidth {
+	left: calc(5% + 60px) !important;
+	width: calc(90% - 120px) !important;
+}
+.dialog.halfleft,
+.dialog.halfright {
+	width: 43% !important;
+	opacity: 1 !important;
+}
+.dialog.halfleft {
+	left: 5% !important;
+}
+.dialog.halfright {
+	left: 52% !important;
+}
+.dialog {
+	top: calc(100% / 3 - 100px / 3);
+	left: calc(5% + 210px);
+}
+.dialog.nobutton {
+	width: 400px;
+	left: calc(50% - 200px);
+	bottom: auto !important;
+	min-height: 0px !important;
+}
+.dialog.forcebutton,
+.dialog.forcebutton-auto {
+	width: 400px;
+	left: calc(50% - 200px);
+}
+.dialog.nobutton .content > div:last-child {
+	padding-bottom: 8px;
+}
+#window > .dialog.popped {
+	z-index: 5;
+	width: 220px;
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 6px;
+	transition: opacity 0.3s;
+}
+#window[data-radius_size="reduce"] > .dialog.popped {
+	border-radius: 4px;
+}
+#window[data-radius_size="off"] > .dialog.popped {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] > .dialog.popped {
+	border-radius: 12px;
+}
+#window > .dialog.popped > .bar {
+	display: none !important;
+}
+#window > .dialog.popped > .content-container {
+	height: 100%;
+	top: 0;
+}
+.content > table {
+	width: 100%;
+}
+.content > div {
+	--contentdiv-margin-left: 4px;
+	--contentdiv-margin-right: 4px;
+	--contentdiv-margin-top: 8px;
+	--contentdiv-margin-bottom: 8px;
+	margin-top: var(--contentdiv-margin-top);
+	margin-bottom: var(--contentdiv-margin-bottom);
+	margin-left: var(--contentdiv-margin-left);
+	margin-right: var(--contentdiv-margin-right);
+	position: relative;
+}
+.content > div:not(.pointerdiv) {
+	width: calc(100% - 8px);
+}
+.content > .caption + .buttons:not(*:last-child) {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+.content > .caption + .buttons:last-child {
+	margin-top: 0;
+}
+.content > .config {
+	height: 20px;
+	line-height: 20px;
+}
+.content > .config.removing {
+	margin-top: -28px;
+}
+.config > .configinfo {
+	margin-top: 28px;
+}
+.config > .configinfo > ul {
+	margin: 0;
+	padding-left: 20px;
+}
+.config > .configinfo > .dashedline {
+	border-bottom: 1px dashed white;
+	display: block;
+	height: 0;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.content > .placeholder {
+	display: block;
+	height: 5px;
+}
+.content > .placeholder.slim {
+	margin: 1px;
+}
+.content > .placeholder.removing {
+	margin-top: -13px;
+}
+.content {
+	display: block;
+	width: 100%;
+	font-size: 0px;
+	overflow-x: hidden;
+}
+.content > * {
+	font-size: 16px;
+}
+.dialog:not(.popped) .content {
+	vertical-align: top;
+}
+.dialog:not(.popped) .content > .config {
+	width: 200px;
+	left: 0;
+	margin-left: 20px;
+	display: inline-block;
+}
+.dialog:not(.popped) .content > .config > .switcher {
+	position: absolute;
+}
+.dialog .content > .volumn {
+	margin: 0;
+	font-family: "xinwei";
+}
+.dialog .content > .volumn > span {
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+.config {
+	text-align: left;
+	width: 90%;
+	left: 5%;
+	display: block;
+	overflow: hidden;
+	border-radius: 2px;
+}
+.config > div {
+	text-align: left;
+	left: 0;
+}
+.config > div > div {
+	position: relative;
+	padding-right: 10px;
+	height: 20px;
+}
+.dialog > .content > .config {
+	width: 300px;
+	left: calc(50% - 150px);
+}
+.toggle {
+	right: 16px;
+	left: auto !important;
+	min-width: 16px;
+	text-align: right !important;
+}
+
+.menu-buttons.configpopped {
+	margin-top: 10px;
+}
+.menu-buttons.configpopped > .toggle {
+	text-align: left !important;
+	margin-left: 21px !important;
+	width: calc(100% - 15px) !important;
+	overflow: visible;
+}
+
+.switcher {
+	width: 88%;
+	position: relative;
+}
+.dialog.popped .caption {
+	transition: all 0s;
+}
+.caption {
+	padding-top: 8px;
+	font-size: 20px;
+	display: block;
+}
+.caption.choosetomove {
+	margin: 5px;
+	padding: 0px !important;
+}
+.caption:only-child {
+	padding-bottom: 8px;
+}
+.caption:not(.normal) > div {
+	text-align: left;
+	display: block;
+	width: 100%;
+}
+.caption > div {
+	position: relative;
+}
+.caption > .text {
+	font-size: 16px;
+	text-align: left;
+}
+.caption > .text.center {
+	text-align: center;
+}
+.caption > .text.chat {
+	word-break: break-all;
+	margin-bottom: 3px;
+	margin-left: 10px;
+	width: calc(100% - 20px);
+}
+.caption > .text.textlink {
+	margin-left: 10px;
+}
+.caption > .text.textlink:not(*:first-child) {
+	margin-top: 6px;
+}
+.caption > .text.textlink:hover {
+	text-decoration: underline;
+}
+.caption > div > div {
+	font-size: 16px;
+	position: relative;
+	width: calc(100% - 70px);
+	vertical-align: top;
+	margin: 0;
+	padding: 0;
+}
+
+.skill {
+	left: 0 !important;
+	width: 70px !important;
+	/*-- white-space: nowrap; --*/
+}
+.skilln {
+	left: 0 !important;
+	width: 70px !important;
+}
+.skill > .card {
+	transform: scale(0.56);
+	transform-origin: top left;
+	margin-left: 2px;
+	margin-top: 6px;
+	margin-bottom: -52px;
+}
+.caption > .ctext {
+	text-align: center;
+	font-size: 16px;
+}
+
+.button.character,
+.button.card {
+	width: 90px;
+	height: 90px;
+	position: relative;
+	margin: 6px;
+}
+.button.card {
+	font-size: 14px;
+}
+.button.character > .name {
+	left: 5px;
+	top: 22px;
+	max-height: 68px;
+	overflow: hidden;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.button.character > .hp {
+	left: 5px;
+	top: 3px;
+}
+.button.character > .hp.text {
+	top: 8px;
+	left: 6px;
+	font-family: "huangcao", "xinwei";
+	font-size: 20px;
+	letter-spacing: 3px;
+}
+.button.nodisplay {
+	display: none;
+}
+.dialog .content > .nodisplay {
+	display: none;
+}
+.button.character > .intro {
+	top: 71px;
+	left: 0;
+}
+.button.character > .identity {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap-reverse;
+	left: 72px;
+	top: -6px;
+}
+.button.character.newstyle > .identity {
+	/*display: none;*/
+	border: none;
+	background: none !important;
+	/*box-shadow: none;*/
+	left: auto;
+	right: 6px;
+	top: 5px;
+	/*font-size: 20px;*/
+}
+.button.newstyle > .name {
+	top: 8px;
+	max-height: 84px;
+}
+.button.newstyle > .name.long {
+	top: 6px;
+	transform: scale(0.93);
+	transform-origin: top left;
+}
+.button.newstyle > .hp,
+.button.newstyle > .hp.text {
+	left: auto;
+	top: auto;
+	text-align: right;
+	right: 6px;
+	bottom: 5px;
+}
+.button.newstyle > .hp > div {
+	width: 10px;
+	height: 10px;
+	background: rgba(57, 123, 4, 1);
+	border: 1px solid rgba(39, 79, 7, 1);
+	box-shadow: rgba(0, 0, 0, 0.2) 1px -1px 2px inset, rgba(255, 255, 255, 0.15) -1px 1px 5px inset;
+}
+.button.newstyle > .hp > .shield {
+	background: rgba(63, 119, 173, 1);
+	border: 1px solid rgba(31, 82, 131, 1);
+}
+.button.newstyle > .hp > div.text {
+	background: none !important;
+	box-shadow: none !important;
+	border: none !important;
+	font-family: "xinwei";
+	text-align: right;
+	width: auto;
+	height: auto;
+	transform: none !important;
+	text-shadow: black 0 0 2px, black 0 0 3px;
+}
+
+.button.replaceButton,
+.button.replaceButton.text {
+	left: 2px;
+	top: auto;
+	text-align: center;
+	width: 42px;
+	right: auto;
+	bottom: 3px;
+	background-image: linear-gradient(rgba(150, 47, 47, 1), rgba(132, 43, 43, 1));
+	border-radius: 3px;
+}
+.button.replaceButton > div {
+	width: 10px;
+	height: 10px;
+}
+/*--------确认--------*/
+#control {
+	text-align: center;
+	z-index: 5;
+	top: calc(200% / 3);
+	left: calc(5% + 240px);
+	width: calc(90% - 480px);
+	pointer-events: none;
+}
+#control > * {
+	pointer-events: auto;
+}
+#window:not(.nopointer) #control {
+	cursor: pointer;
+}
+#control.nozoom > div {
+	transition-property: opacity;
+}
+#control > div.stayleft {
+	transition-property: opacity !important;
+}
+.control {
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+.control {
+	font-size: 18px;
+	white-space: nowrap;
+	overflow: hidden;
+	opacity: 0;
+}
+.control.removing.removing2 {
+	transform: scale(0.2);
+}
+.control > div {
+	position: relative;
+	padding: 3px;
+	margin: 0;
+}
+.control.disabled {
+	opacity: 0.6 !important;
+	cursor: default !important;
+}
+#control > div {
+	position: absolute;
+	left: 50%;
+}
+#arena.choose-to-move > #control,
+#arena.discard-player-card > #control,
+#arena.gain-player-card > #control,
+#arena.choose-player-card > #control {
+	top: calc(80%) !important;
+}
+/*--------角色--------*/
+.player > .avatar > .action {
+	margin: 5px;
+	font-family: "xinwei";
+	font-size: 20px;
+	letter-spacing: -2px;
+	right: 5px;
+	text-align: right;
+}
+.player > .avatar.hidden,
+.player > .avatar2.hidden {
+	pointer-events: none !important;
+}
+.player > .avatar.disabled,
+.player > .avatar2.disabled {
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+	opacity: 0.8;
+}
+.player > .avatar > .action:not(.freecolor) {
+	text-shadow: black 0 0 1px, rgba(10, 155, 67, 1) 0 0 5px, rgba(10, 155, 67, 1) 0 0 10px;
+}
+.player:not(.current_action) .avatar > .action {
+	opacity: 0;
+}
+#arena.chess:not(.selecting) .player.current_action .avatar > .action {
+	opacity: 0;
+}
+.player.controlfakeme {
+	width: 100px;
+	height: 120px;
+	top: calc(100% - 140px);
+}
+.player.controlfakeme > .avatar {
+	width: 100%;
+	height: 100%;
+	box-shadow: none;
+	left: 0;
+	top: 0;
+}
+.player {
+	z-index: 2;
+	width: 240px;
+	height: 120px;
+}
+.player.minskin {
+	width: 120px;
+}
+.player.replaceme {
+	animation: replaceme 0.5s;
+	-webkit-animation: replaceme 0.5s;
+}
+.player.replaceenemy {
+	animation: replaceenemy 0.5s;
+	-webkit-animation: replaceenemy 0.5s;
+}
+
+.player > div {
+	z-index: 2;
+}
+
+.player.dead,
+.player.likedead {
+	z-index: 1;
+}
+
+.player.dead *,
+.player.likedead * {
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+
+.grayscale1 {
+	z-index: 1;
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+
+.grayscale {
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+
+.player > .nameol {
+	left: 0;
+	top: 13px;
+	width: 100%;
+	font-size: 12px;
+	text-align: center;
+	white-space: nowrap;
+	/*opacity: 0;*/
+}
+.player:hover > .nameol {
+	opacity: 1;
+}
+.player > .name {
+	left: 16px;
+	top: 24px;
+	font-size: 20px;
+	font-family: "xinwei";
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.player > .name.name2 {
+	left: 81px;
+}
+
+#arena.slim_player .player > .name {
+	left: 13px;
+	top: 21px;
+}
+#arena.slim_player .player > .name.name2 {
+	left: 78px;
+}
+
+#arena .player.minskin > .name,
+#arena.slim_player .player.minskin > .name {
+	top: 17px;
+}
+
+#arena .player.minskin > .name.long,
+#arena.slim_player .player.minskin > .name.long {
+	transform: scale(0.9);
+	transform-origin: top left;
+	top: 13px;
+}
+
+#arena .player.linked.minskin > .name,
+#arena.slim_player .player.linked.minskin > .name {
+	transform: rotate(90deg) translate(81px, -66px);
+}
+
+.button.character > .name {
+	font-family: "xinwei";
+}
+.player > .intro {
+	top: 87px;
+	left: 18px;
+}
+.player > .turned {
+	font-family: "xinwei";
+	width: 100%;
+	height: 100%;
+	line-height: 50px;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	font-size: 50px;
+	opacity: 0;
+	pointer-events: none;
+	text-shadow: none;
+	background: black;
+	top: 0;
+	border-radius: 8px;
+	color: rgba(255, 255, 255, 0.8);
+	text-shadow: none;
+}
+.player > .turned > div {
+	top: calc(50% - 50px);
+	left: calc(50% - 25px);
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.player > .chain {
+	top: calc(50% - 10px);
+	left: 0;
+	height: 20px;
+	width: 100%;
+	overflow-x: hidden;
+	overflow-y: visible;
+	white-space: nowrap;
+	padding: 0;
+	margin: 0;
+	z-index: 3;
+	pointer-events: none;
+}
+.player > .chain > div {
+	overflow: visible;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+}
+.player:not(.linked2) > .chain > div {
+	opacity: 0;
+	transform: translateX(-40px);
+}
+#arena.nolink .player > .chain {
+	display: none;
+}
+.player > .chain > div > div {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	left: 0;
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.4) 0 0 2px;
+}
+.player > .chain > div > div:nth-child(odd) {
+	height: 8px;
+	width: 10px;
+	border-radius: 2px;
+	top: 6px;
+}
+.player > .chain > div > div:nth-child(even) {
+	width: 10px;
+	height: 2px;
+	top: 9px;
+	z-index: 1;
+	border-radius: 2px;
+}
+#arena:not(.hide_turned):not(.oldlayout) .player.turnedover > .turned {
+	opacity: 0.2;
+}
+#window > .damage.fullscreenavatar {
+	text-align: center;
+	font-family: "xinwei";
+	top: calc(50% - 200px);
+	height: 400px;
+	transform-origin: center;
+}
+#window > .damage.fullscreenavatar > div {
+	width: 500px;
+	height: 100%;
+	left: calc(50% - 250px);
+	display: inline-block;
+	position: absolute;
+	top: 0;
+}
+#window > .damage.fullscreenavatar > div:first-child {
+	mask-image: linear-gradient(transparent, black, black, transparent);
+	-webkit-mask-image: linear-gradient(transparent, black, black, transparent);
+}
+#window > .damage.fullscreenavatar > div:first-child > div {
+	background-size: cover;
+	background-position: 50%;
+	width: 200px;
+	left: 150px;
+	top: 0;
+	height: 100%;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px;
+}
+#window > .damage.fullscreenavatar[data-nature="thunder"]:not(.noshadow) > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.3) 0 0 30px, rgba(100, 74, 139, 1) 0 0 60px;
+}
+#window > .damage.fullscreenavatar[data-nature="kami"]:not(.noshadow) > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.3) 0 0 30px, rgba(90, 118, 99, 1) 0 0 60px;
+}
+#window > .damage.fullscreenavatar[data-nature="metal"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(255, 0, 0, 0.1) 0 0 30px, rgba(255, 203, 0, 0.6) 0 0 80px;
+}
+#window > .damage.fullscreenavatar[data-nature="wood"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.3) 0 0 30px, rgba(57, 123, 4, 1) 0 0 60px;
+}
+#window > .damage.fullscreenavatar[data-nature="water"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.3) 0 0 30px, rgba(78, 117, 140, 1) 0 0 60px, rgba(78, 117, 140, 1) 0 0 60px;
+}
+#window > .damage.fullscreenavatar[data-nature="ice"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(213, 194, 179, 1) 0 0 80px;
+}
+#window > .damage.fullscreenavatar[data-nature="soil"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.3) 0 0 30px, rgba(128, 59, 2, 1) 0 0 60px;
+}
+#window > .damage.fullscreenavatar[data-nature="fire"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(232, 53, 53, 1) 0 0 80px;
+}
+#window > .damage.fullscreenavatar[data-nature="fire"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(203, 177, 255, 1) 0 0 80px;
+}
+#window > .damage.fullscreenavatar[data-nature="orange"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(255, 120, 0, 1) 0 0 80px;
+}
+#window > .damage.fullscreenavatar[data-nature="gray"] > div:first-child > div {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(213, 194, 179, 1) 0 0 80px;
+}
+#window > .damage.fullscreenavatar > .text {
+	display: table;
+}
+#window > .damage.fullscreenavatar > .text > div {
+	display: block;
+	position: relative;
+	width: auto;
+	height: auto;
+	font-size: 90px;
+	text-align: right;
+	top: auto;
+	bottom: 30px;
+	position: absolute;
+	left: auto;
+	right: 165px;
+}
+#window > .damage.fullscreenavatar > .text > div > div {
+	transform: scale(4);
+	opacity: 0;
+	display: inline-block;
+	position: relative;
+}
+#window > .damage.fullscreenavatar > .textbg {
+	transition: all 0s;
+	display: none;
+}
+#window > .damage.fullscreenavatar.flashtext > .textbg {
+	display: block;
+}
+/*#window>.damage.fullscreenavatar.flashtext>.text:not(.textbg)>div{
+	transform: scale(2);
+	opacity: 0;
+}*/
+#window > .damage.fullscreenavatar > .text > div > .flashtext {
+	transform: none;
+	opacity: 1;
+}
+#window > .damage.fullscreenavatar > .name > div {
+	display: block;
+	position: relative;
+	width: auto;
+	height: auto;
+	top: 30px;
+	position: absolute;
+	left: 20px;
+	font-size: 40px;
+}
+#window > .damage.fullscreenavatar.removing {
+	transition: all 0.3s;
+}
+.player > .damage,
+#window > .damage {
+	font-family: "huangcao", "xinwei";
+	font-size: 72px;
+	width: 100%;
+	text-align: center;
+	top: calc(50% - 36px);
+	left: 0;
+	opacity: 0;
+	transform: scale(0.7);
+	white-space: nowrap;
+	z-index: 5;
+	pointer-events: none;
+}
+#window > .damage {
+	transform: scale(2);
+	font-size: 120px;
+}
+.damage.normal-font {
+	font-family: xinwei;
+	font-size: 30px;
+	top: calc(50% - 15px);
+}
+.player.minskin > .damage.normal-font {
+	font-size: 26px;
+	top: calc(50% - 13px);
+}
+.player[data-position="0"] > .damage.dieidentity,
+.player:not(.dead) > .damage.dieidentity {
+	opacity: 0 !important;
+}
+.player > .damage.dieidentity {
+	transition-property: opacity;
+}
+.player > .cardeffect {
+	font-family: "huangcao", "xinwei";
+	font-size: 108px;
+	width: 100%;
+	text-align: center;
+	top: calc(50% - 54px);
+	left: 0;
+	animation: cardeffect 1s;
+	-webkit-animation: cardeffect 1s;
+	animation-fill-mode: forwards;
+	-webkit-animation-fill-mode: forwards;
+}
+.player > .damage.damageadded,
+#window > .damage.damageadded {
+	opacity: 1;
+	transform: scale(1);
+}
+.player.linked > .damage {
+	transform: scale(0.7) rotate(90deg);
+}
+.player.linked > .damage.damageadded {
+	transform: scale(1) rotate(90deg);
+}
+
+.player > .framebg {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	background-size: 100% 100%;
+	display: none;
+	pointer-events: none;
+}
+#arena.oldlayout .player > .framebg {
+	transform: rotate(90deg) translateY(-240px);
+	width: 120px;
+	height: 240px;
+	transform-origin: top left;
+}
+#window #arena.mobile:not(.chess) .player[data-position="0"] > .framebg {
+	/*display: none;*/
+	width: 120px;
+}
+
+#window .player > .framebg[data-auto="gold"],
+#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"] > .framebg[data-auto="gold"] {
+	display: block;
+	background-image: url("../../theme/style/player/gold1.png");
+}
+#window #arena.long:not(.fewplayer) .player > .framebg[data-auto="gold"],
+#arena.oldlayout .player > .framebg[data-auto="gold"] {
+	display: block;
+	background-image: url("../../theme/style/player/gold3.png");
+}
+#window .player > .framebg[data-auto="silver"],
+#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"] > .framebg[data-auto="silver"] {
+	display: block;
+	background-image: url("../../theme/style/player/silver1.png");
+}
+#window #arena.long:not(.fewplayer) .player > .framebg[data-auto="silver"],
+#arena.oldlayout .player > .framebg[data-auto="silver"] {
+	display: block;
+	background-image: url("../../theme/style/player/silver3.png");
+}
+#window .player > .framebg[data-auto="bronze"],
+#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"] > .framebg[data-auto="bronze"] {
+	display: block;
+	background-image: url("../../theme/style/player/bronze1.png");
+}
+#window #arena.long:not(.fewplayer) .player > .framebg[data-auto="bronze"],
+#arena.oldlayout .player > .framebg[data-auto="bronze"] {
+	display: block;
+	background-image: url("../../theme/style/player/bronze3.png");
+}
+
+.avatar {
+	width: 100px;
+	height: 100px;
+	left: 10px;
+	top: 10px;
+	overflow: hidden;
+}
+.avatar2 {
+	width: 42px;
+	height: 42px;
+	top: 70px;
+	left: 70px;
+	overflow: hidden;
+}
+
+.equips {
+	width: 96px;
+	height: 96px;
+	right: 14px;
+	top: 12px;
+}
+.equips > div {
+	width: 42px;
+	height: 42px;
+	margin: 0;
+	position: absolute;
+}
+.equips > .equip1 {
+	top: 0;
+	left: 0;
+}
+.equips > .equip2 {
+	top: 0;
+	right: 0;
+}
+.equips > .equip3 {
+	bottom: 0;
+	left: 0;
+}
+.equips > .equip4 {
+	bottom: 0;
+	right: 0;
+}
+.equips > .equip5 {
+	top: calc(50% - 21px);
+	left: calc(50% - 21px);
+	border-radius: 21px;
+	z-index: 1;
+}
+.equips > .equip6 {
+	bottom: 3;
+	left: calc(50% - 21px);
+}
+.equips > div > div:not(.image),
+.judges > div > div:not(.image),
+.marks > div > div:not(.image) {
+	display: none;
+}
+.equips > div > .image,
+.judges > div > .image,
+.marks > div > .image {
+	/*width: 120%;
+	height: 120%;
+	left: -20%;
+	top: -20%;*/
+	background-size: 120%;
+	background-position: -4px -4px;
+	background-repeat: no-repeat;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .equips > div > .image {
+	background-size: 115%;
+}
+/*.equips>div:hover>.info{display: inline-block;
+	animation:equip_hover 1s;
+	-webkit-animation:equip_hover 1s;
+	left: 0;right: auto;width: 42px;text-align: center;}*/
+/*.equips>div:hover>.background {
+	animation:equip_hover2 1s;
+	animation-fill-mode: forwards;
+	-webkit-animation:equip_hover2 1s;
+	-webkit-animation-fill-mode: forwards;
+}*/
+#arena.oldlayout .marks {
+	left: 14px;
+}
+
+.judges {
+	left: 14px;
+	top: -18px;
+}
+.marks {
+	left: 14px;
+	top: 112px;
+}
+.player > .marks {
+	z-index: 4;
+}
+.judges > div,
+.marks > div {
+	width: 24px;
+	height: 24px;
+	margin: 0;
+	left: 0;
+	top: 0;
+	opacity: 1;
+	position: absolute;
+	line-height: 20px;
+}
+
+.hp {
+	left: 18px;
+	top: 14px;
+	width: 72px;
+	line-height: 14px;
+	text-align: left;
+}
+.hp.text {
+	top: 18px;
+}
+.hp.textstyle {
+	font-family: "xinwei";
+}
+.hp > div {
+	width: 8px;
+	height: 8px;
+	margin-left: 3px;
+	position: relative;
+	border-radius: 100%;
+	box-shadow: rgba(0, 0, 0, 0.2) 1px -1px 2px inset, rgba(255, 255, 255, 0.15) -1px 1px 5px inset;
+	position: relative;
+	filter: brightness(1.5);
+	-webkit-filter: brightness(1.5);
+	transition: all 0.5s;
+	background-repeat: no-repeat;
+}
+.button .hp > div {
+	width: 6px;
+	height: 6px;
+	background: white;
+	box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+	border: 1px solid #fff;
+}
+.button .hp > .shield {
+	background: rgba(63, 119, 173, 1);
+	border: 1px solid rgba(63, 119, 173, 1);
+}
+.hp[data-condition="hidden"] > div:not(.lost):not(.shield) {
+	background-image: url("../../theme/style/hp/image/hidden_hp.png") !important;
+	width: 12px;
+	height: 12px;
+	background-size: 100% 100%;
+	box-shadow: none;
+}
+.hp[data-condition="high"] > div:not(.lost):not(.shield) {
+	background: rgba(57, 123, 4, 1);
+	border: 1px solid rgba(39, 79, 7, 1);
+}
+.hp[data-condition="mid"] > div:not(.lost):not(.shield) {
+	background: rgba(166, 140, 6, 1);
+	border: 1px solid rgba(79, 64, 7, 1);
+}
+.hp[data-condition="low"] > div:not(.lost):not(.shield) {
+	background: rgba(148, 27, 27, 1);
+	border: 1px solid rgba(79, 7, 7, 1);
+}
+.hp.actcount > div:not(.lost):not(.shield) {
+	background: rgba(63, 119, 173, 1);
+	border: 1px solid rgba(31, 82, 131, 1);
+}
+.treasure > .hp > div:not(.lost):not(.shield) {
+	background: rgba(63, 119, 173, 1) !important;
+	border: 1px solid rgba(31, 82, 131, 1) !important;
+}
+.hp.actcount > div.overflow:not(.lost):not(.shield) {
+	background: rgb(154, 154, 154);
+	border: 1px solid rgb(109, 109, 109);
+}
+.hp.actcount.overflow2 > div.overflow:not(.lost):not(.shield) {
+	background: rgb(173, 129, 63);
+	border: 1px solid rgb(131, 109, 31);
+}
+.hp.actcount > .lost {
+	background: rgba(63, 119, 173, 1);
+	border: 1px solid rgba(31, 82, 131, 1);
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+
+.hp > .lost {
+	background: rgba(57, 123, 4, 1);
+	border: 1px solid rgba(39, 79, 7, 1);
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}
+.hp > .shield {
+	background: rgba(63, 119, 173, 1);
+	border: 1px solid rgba(31, 82, 131, 1);
+}
+.hp.text[data-condition="low"],
+.hp.textstyle[data-condition="low"] {
+	text-shadow: black 0 0 1px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 5px, rgba(232, 53, 53, 1) 0 0 10px;
+}
+.hp.text[data-condition="mid"],
+.hp.textstyle[data-condition="mid"] {
+	text-shadow: black 0 0 1px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 5px, rgba(255, 203, 0, 1) 0 0 10px;
+}
+.hp.text[data-condition="high"],
+.hp.textstyle[data-condition="high"] {
+	text-shadow: rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 5px, rgba(57, 123, 4, 1) 0 0 10px;
+}
+
+.player::after,
+.card::after,
+.button::after,
+.player::before,
+.card::before,
+.button::before {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+	border-radius: 8px;
+	transition: opacity 0.5s;
+}
+
+.player::after,
+.card::after,
+.button::after {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px, rgba(255, 0, 0, 0.4) 0 0 12px, rgba(255, 0, 0, 0.8) 0 0 15px;
+}
+
+.player::before,
+.card::before,
+.button::before {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 133, 255, 0.5) 0 0 5px, rgba(0, 133, 255, 0.6) 0 0 12px, rgba(0, 133, 255, 0.8) 0 0 15px;
+}
+
+/*.hp>div{width: 6px;height: 6px;margin-left: 3px;position: relative;}*/
+.count.p2 {
+	right: 174px;
+}
+.count {
+	right: 140px;
+	top: 86px;
+	text-align: right;
+	font-size: 14px;
+}
+.player.minskin .count {
+	right: 20px;
+}
+.identity {
+	left: 90px;
+	top: 5px;
+}
+.identity {
+	text-align: center;
+}
+.identity > div {
+	line-height: 16px;
+	position: relative;
+	text-align: right;
+	top: 2px;
+}
+
+.identity .identitycircle {
+	position: relative;
+	width: 20px;
+	height: 20px;
+	left: 1px;
+	top: 1px;
+	border-radius: 100%;
+}
+
+.identitycircle > div {
+	width: 18px;
+	height: 18px;
+	left: 1px;
+	top: 1px;
+	border-radius: 100%;
+	overflow: hidden;
+}
+
+.identitycircle > div > div {
+	width: 9px;
+	height: 9px;
+	left: 9px;
+	top: 0px;
+	transform-origin: bottom left;
+}
+
+.identitycircle > div > div[data-color="wei"] {
+	background-image: radial-gradient(circle at bottom left, rgb(157, 198, 255), rgb(117, 147, 189));
+}
+
+.identitycircle > div > div[data-color="shu"] {
+	background-image: radial-gradient(circle at bottom left, rgb(185, 72, 36), rgb(158, 62, 31));
+}
+
+.identitycircle > div > div[data-color="wu"] {
+	background-image: radial-gradient(circle at bottom left, rgb(120, 218, 83), rgb(104, 189, 73));
+}
+
+.identitycircle > div > div[data-color="qun"] {
+	background-image: radial-gradient(circle at bottom left, rgb(255, 218, 71), rgb(224, 191, 62));
+}
+
+.identitycircle > div > div[data-color="jin"] {
+	background-image: radial-gradient(circle at bottom left, rgb(100, 74, 139), rgb(96, 72, 136));
+}
+
+.identitycircle > div > div[data-color="key"] {
+	background-image: radial-gradient(circle at bottom left, rgb(203, 177, 255), rgb(203, 177, 255));
+}
+
+.unseen > .avatar,
+.unseen > .name:not(.name2),
+.unseen2 > .avatar2,
+.unseen2 > .name2 {
+	opacity: 0 !important;
+}
+
+#arena:not(.observe) .player[data-position="0"].unseen > .avatar,
+#arena:not(.observe) .player[data-position="0"].unseen2 > .avatar2,
+#arena:not(.observe) .player[data-position="0"].unseen > .name:not(.name2):not(.name_seat),
+#arena:not(.observe) .player[data-position="0"].unseen2 > .name2,
+#arena:not(.observe) .unseen_v > .avatar,
+#arena:not(.observe) .unseen2_v > .avatar2,
+#arena:not(.observe) .unseen_v > .name:not(.name2):not(.name_seat),
+#arena:not(.observe) .unseen2_v > .name2 {
+	opacity: 0.2 !important;
+}
+
+.player > .unseen_show > .avatar,
+.player > .unseen2_show > .avatar2 {
+	opacity: 0;
+}
+
+#arena:not(.observe) .player:not([data-position="0"]).unseen_show > .avatar,
+#arena:not(.observe) .player:not([data-position="0"]).unseen2_show > .avatar2 {
+	opacity: 1 !important;
+	background-image: url("../../image/character/hidden_image.jpg") !important;
+}
+
+.player > .name_seat {
+	opacity: 0;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.player:not([data-position="0"]).unseen.unseen2 > .name_seat,
+.player:not([data-position="0"]):not(.fullskin2).unseen > .name_seat {
+	opacity: 1 !important;
+}
+
+.linked > .avatar,
+.linked > .avatar2 {
+	transform: rotate(-90deg);
+}
+.linked > .avatar2 {
+	top: 5px;
+}
+.linked > .identity {
+	top: 88px;
+}
+.linked > .count {
+	right: 154px;
+}
+.acted > .identity > div {
+	transform: rotate(180deg);
+}
+
+/*--------位置(8人)------*/
+[data-number="8"] > .player[data-position="1"] {
+	top: calc(200% / 3 - 90px);
+	left: calc(100% - 240px);
+}
+[data-number="8"] > .player[data-position="2"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="8"] > .player[data-position="3"] {
+	top: 10px;
+	left: calc(75% - 60px);
+}
+[data-number="8"] > .player[data-position="4"] {
+	top: 0;
+	left: calc(50% - 120px);
+}
+[data-number="8"] > .player[data-position="5"] {
+	top: 10px;
+	left: calc(25% - 180px);
+}
+[data-number="8"] > .player[data-position="6"] {
+	top: calc(100% / 3 - 40px);
+	left: 0;
+}
+[data-number="8"] > .player[data-position="7"] {
+	top: calc(200% / 3 - 90px);
+	left: 0;
+}
+[data-number="8"] > .card[data-position="1"] {
+	top: calc(200% / 3 - 90px);
+	left: calc(100% - 240px);
+}
+[data-number="8"] > .card[data-position="2"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="8"] > .card[data-position="3"] {
+	top: 10px;
+	left: calc(75% - 60px);
+}
+[data-number="8"] > .card[data-position="4"] {
+	top: 0;
+	left: calc(50% - 52px);
+}
+[data-number="8"] > .card[data-position="5"] {
+	top: 10px;
+	left: calc(25% - 60px);
+}
+[data-number="8"] > .card[data-position="6"] {
+	top: calc(100% / 3 - 40px);
+	left: 120px;
+}
+[data-number="8"] > .card[data-position="7"] {
+	top: calc(200% / 3 - 90px);
+	left: 120px;
+}
+[data-number="8"] > .popup[data-position="1"] {
+	top: calc(200% / 3 - 78px);
+	left: calc(100% - 270px);
+}
+[data-number="8"] > .popup[data-position="2"] {
+	top: calc(100% / 3 - 28px);
+	left: calc(100% - 270px);
+}
+[data-number="8"] > .popup[data-position="3"] {
+	top: 140px;
+	left: calc(75% - 80px);
+}
+[data-number="8"] > .popup[data-position="4"] {
+	top: 130px;
+	left: calc(50% - 106px);
+}
+[data-number="8"] > .popup[data-position="5"] {
+	top: 140px;
+	left: calc(25% + 60px);
+}
+[data-number="8"] > .popup[data-position="6"] {
+	top: calc(100% / 3 - 28px);
+	left: 250px;
+}
+[data-number="8"] > .popup[data-position="7"] {
+	top: calc(200% / 3 - 78px);
+	left: 250px;
+}
+/*--------位置(7人)------*/
+[data-number="7"] > .player[data-position="1"] {
+	top: calc(200% / 3 - 90px);
+	left: calc(100% - 240px);
+}
+[data-number="7"] > .player[data-position="2"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="7"] > .player[data-position="3"] {
+	top: 10px;
+	left: calc(75% - 180px);
+}
+[data-number="7"] > .player[data-position="4"] {
+	top: 10px;
+	left: calc(25% - 60px);
+}
+[data-number="7"] > .player[data-position="5"] {
+	top: calc(100% / 3 - 40px);
+	left: 0;
+}
+[data-number="7"] > .player[data-position="6"] {
+	top: calc(200% / 3 - 90px);
+	left: 0;
+}
+[data-number="7"] > .card[data-position="1"] {
+	top: calc(200% / 3 - 90px);
+	left: calc(100% - 240px);
+}
+[data-number="7"] > .card[data-position="2"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="7"] > .card[data-position="3"] {
+	top: 10px;
+	left: calc(75% - 180px);
+}
+[data-number="7"] > .card[data-position="4"] {
+	top: 10px;
+	left: calc(25% + 60px);
+}
+[data-number="7"] > .card[data-position="5"] {
+	top: calc(100% / 3 - 40px);
+	left: 120px;
+}
+[data-number="7"] > .card[data-position="6"] {
+	top: calc(200% / 3 - 90px);
+	left: 120px;
+}
+[data-number="7"] > .popup[data-position="1"] {
+	top: calc(200% / 3 - 78px);
+	left: calc(100% - 270px);
+}
+[data-number="7"] > .popup[data-position="2"] {
+	top: calc(100% / 3 - 28px);
+	left: calc(100% - 270px);
+}
+[data-number="7"] > .popup[data-position="3"] {
+	top: 140px;
+	left: calc(75% - 210px);
+}
+[data-number="7"] > .popup[data-position="4"] {
+	top: 140px;
+	left: calc(25% + 180px);
+}
+[data-number="7"] > .popup[data-position="5"] {
+	top: calc(100% / 3 - 28px);
+	left: 250px;
+}
+[data-number="7"] > .popup[data-position="6"] {
+	top: calc(200% / 3 - 78px);
+	left: 250px;
+}
+/*--------位置(6人)------*/
+[data-number="6"] > .player[data-position="1"] {
+	top: calc(200% / 3 - 325px / 3);
+	left: calc(100% - 240px);
+}
+[data-number="6"] > .player[data-position="2"] {
+	top: calc(100% / 3 - 230px / 3);
+	left: calc(100% - 240px);
+}
+[data-number="6"] > .player[data-position="3"] {
+	top: 0;
+	left: calc(50% - 120px);
+}
+[data-number="6"] > .player[data-position="4"] {
+	top: calc(100% / 3 - 230px / 3);
+	left: 0;
+}
+[data-number="6"] > .player[data-position="5"] {
+	top: calc(200% / 3 - 325px / 3);
+	left: 0;
+}
+[data-number="6"] > .card[data-position="1"] {
+	top: calc(200% / 3 - 325px / 3);
+	left: calc(100% - 240px);
+}
+[data-number="6"] > .card[data-position="2"] {
+	top: calc(100% / 3 - 230px / 3);
+	left: calc(100% - 240px);
+}
+[data-number="6"] > .card[data-position="3"] {
+	top: 0;
+	left: calc(50% - 52px);
+}
+[data-number="6"] > .card[data-position="4"] {
+	top: calc(100% / 3 - 230px / 3);
+	left: 120px;
+}
+[data-number="6"] > .card[data-position="5"] {
+	top: calc(200% / 3 - 325px / 3);
+	left: 120px;
+}
+[data-number="6"] > .popup[data-position="1"] {
+	top: calc(200% / 3 - 289px / 3);
+	left: calc(100% - 270px);
+}
+[data-number="6"] > .popup[data-position="2"] {
+	top: calc(100% / 3 - 194px / 3);
+	left: calc(100% - 270px);
+}
+[data-number="6"] > .popup[data-position="3"] {
+	top: 130px;
+	left: calc(50% - 106px);
+}
+[data-number="6"] > .popup[data-position="4"] {
+	top: calc(100% / 3 - 194px / 3);
+	left: 250px;
+}
+[data-number="6"] > .popup[data-position="5"] {
+	top: calc(200% / 3 - 289px / 3);
+	left: 250px;
+}
+/*--------位置(5人)------*/
+[data-number="5"] > .player[data-position="1"] {
+	top: calc(150% / 3 - 65px);
+	left: calc(100% - 240px);
+}
+[data-number="5"] > .player[data-position="2"] {
+	top: 10px;
+	left: calc(75% - 120px);
+}
+[data-number="5"] > .player[data-position="3"] {
+	top: 10px;
+	left: calc(25% - 120px);
+}
+[data-number="5"] > .player[data-position="4"] {
+	top: calc(150% / 3 - 65px);
+	left: 0;
+}
+[data-number="5"] > .card[data-position="1"] {
+	top: calc(150% / 3 - 65px);
+	left: calc(100% - 240px);
+}
+[data-number="5"] > .card[data-position="2"] {
+	top: 10px;
+	left: calc(75% - 120px);
+}
+[data-number="5"] > .card[data-position="3"] {
+	top: 10px;
+	left: calc(25% - 0px);
+}
+[data-number="5"] > .card[data-position="4"] {
+	top: calc(150% / 3 - 65px);
+	left: 120px;
+}
+[data-number="5"] > .popup[data-position="1"] {
+	top: calc(150% / 3 - 53px);
+	left: calc(100% - 270px);
+}
+[data-number="5"] > .popup[data-position="2"] {
+	top: 140px;
+	left: calc(75% - 150px);
+}
+[data-number="5"] > .popup[data-position="3"] {
+	top: 140px;
+	left: calc(25% + 120px);
+}
+[data-number="5"] > .popup[data-position="4"] {
+	top: calc(150% / 3 - 53px);
+	left: 250px;
+}
+/*--------位置(4人)------*/
+[data-number="4"] > .player[data-position="1"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="4"] > .player[data-position="2"] {
+	top: 0;
+	left: calc(50% - 120px);
+}
+[data-number="4"] > .player[data-position="3"] {
+	top: calc(100% / 3 - 40px);
+	left: 0;
+}
+[data-number="4"] > .card[data-position="1"] {
+	top: calc(100% / 3 - 40px);
+	left: calc(100% - 240px);
+}
+[data-number="4"] > .card[data-position="2"] {
+	top: 0;
+	left: calc(50% - 52px);
+}
+[data-number="4"] > .card[data-position="3"] {
+	top: calc(100% / 3 - 40px);
+	left: 120px;
+}
+[data-number="4"] > .popup[data-position="1"] {
+	top: calc(100% / 3 - 28px);
+	left: calc(100% - 270px);
+}
+[data-number="4"] > .popup[data-position="2"] {
+	top: 130px;
+	left: calc(50% - 106px);
+}
+[data-number="4"] > .popup[data-position="3"] {
+	top: calc(100% / 3 - 28px);
+	left: 250px;
+}
+/*--------位置(3人)------*/
+[data-number="3"] > .player[data-position="1"] {
+	top: 10px;
+	left: calc(75% - 60px);
+}
+[data-number="3"] > .player[data-position="2"] {
+	top: 10px;
+	left: calc(25% - 180px);
+}
+[data-number="3"] > .card[data-position="1"] {
+	top: 10px;
+	left: calc(75% - 60px);
+}
+[data-number="3"] > .card[data-position="2"] {
+	top: 10px;
+	left: calc(25% - 60px);
+}
+[data-number="3"] > .popup[data-position="1"] {
+	top: 140px;
+	left: calc(75% - 80px);
+}
+[data-number="3"] > .popup[data-position="2"] {
+	top: 140px;
+	left: calc(25% + 60px);
+}
+/*--------位置(2人)------*/
+[data-number="2"] > .player[data-position="1"] {
+	top: 0;
+	left: calc(50% - 120px);
+}
+[data-number="2"] > .card[data-position="1"] {
+	top: 0;
+	left: calc(50% - 52px);
+}
+[data-number="2"] > .popup[data-position="1"] {
+	top: 130px;
+	left: calc(50% - 106px);
+}
+/*--------位置(1人)------*/
+.player[data-position="0"] {
+	top: calc(100% - 130px);
+	left: calc(50% - 120px);
+}
+.card[data-position="0"] {
+	top: calc(100% - 130px);
+	left: calc(50% - 52px);
+}
+.popup[data-position="0"] {
+	top: calc(100% - 176px);
+	left: calc(50% - 106px);
+}
+
+#window > .player.connect[data-position="c0"] {
+	left: calc(50% - 120px);
+	top: calc(50% - 200px);
+}
+#window > .player.connect[data-position="c1"] {
+	left: calc(50% - 120px);
+	top: calc(50% - 60px);
+}
+#window > .player.connect[data-position="c2"] {
+	left: calc(50% - 120px);
+	top: calc(50% + 80px);
+}
+#window > .player.connect[data-position="c0"] {
+	left: calc(50% - 140px);
+	top: calc(50% - 200px);
+}
+#window > .player.connect[data-position="c1"] {
+	left: calc(50% - 140px);
+	top: calc(50% - 60px);
+}
+#window > .player.connect[data-position="c2"] {
+	left: calc(50% - 140px);
+	top: calc(50% + 80px);
+}
+#window > .player.connect[data-position="c3"] {
+	left: calc(50% + 20px);
+	top: calc(50% - 200px);
+}
+#window > .player.connect[data-position="c4"] {
+	left: calc(50% + 20px);
+	top: calc(50% - 60px);
+}
+#window > .player.connect[data-position="c5"] {
+	left: calc(50% + 20px);
+	top: calc(50% + 80px);
+}
+#window > .player.connect[data-position="cx0"] {
+	left: calc(150% / 7 - 1275px / 7);
+	top: calc(300% / 7 - 160px + 5px);
+}
+#window > .player.connect[data-position="cx1"] {
+	left: calc(247% / 7 - 850px / 7);
+	top: calc(300% / 7 - 160px + 5px);
+}
+#window > .player.connect[data-position="cx2"] {
+	left: calc(350% / 7 - 525px / 7);
+	top: calc(300% / 7 - 160px + 5px);
+}
+#window > .player.connect[data-position="cx3"] {
+	left: calc(453% / 7 - 200px / 7);
+	top: calc(300% / 7 - 160px + 5px);
+}
+#window > .player.connect[data-position="cx4"] {
+	left: calc(550% / 7 + 125px / 7);
+	top: calc(300% / 7 - 160px + 5px);
+}
+#window > .player.connect[data-position="cx5"] {
+	left: calc(150% / 7 - 1275px / 7);
+	top: calc(400% / 7 - 40px + 5px);
+}
+#window > .player.connect[data-position="cx6"] {
+	left: calc(247% / 7 - 850px / 7);
+	top: calc(400% / 7 - 40px + 5px);
+}
+#window > .player.connect[data-position="cx7"] {
+	left: calc(350% / 7 - 525px / 7);
+	top: calc(400% / 7 - 40px + 5px);
+}
+#window > .player.connect[data-position="cx8"] {
+	left: calc(453% / 7 - 200px / 7);
+	top: calc(400% / 7 - 40px + 5px);
+}
+#window > .player.connect[data-position="cx9"] {
+	left: calc(550% / 7 + 125px / 7);
+	top: calc(400% / 7 - 40px + 5px);
+}
+
+#window > .player.connect {
+	width: 120px;
+}
+#window.menupaused > .player.connect {
+	opacity: 0.5;
+}
+.connectbutton {
+	top: calc(400% / 7 - 35px);
+	width: 130px;
+}
+.connectbutton1 {
+	left: calc(50% - 200px);
+}
+.connectbutton2 {
+	left: calc(50% + 60px);
+}
+.connectevents {
+	left: auto;
+	top: auto;
+	right: 20px;
+	bottom: 20px;
+	z-index: 5;
+}
+.connectevents.server {
+	left: 20px;
+	right: auto;
+}
+.connectevents.left {
+	transform: translateX(-85px);
+}
+.connectevents.left2 {
+	transform: translateX(-170px);
+}
+.connectevents.icon {
+	width: 20px;
+	height: 20px;
+	border-radius: 100%;
+	padding: 0;
+	font-size: 15px;
+	font-family: "xinwei";
+	line-height: 22px;
+	bottom: 47px;
+	right: 13px;
+}
+
+/*--------动画--------*/
+.start,
+.equips > .card,
+.popup {
+	animation: game_start 0.5s;
+	-webkit-animation: game_start 0.5s;
+}
+.start2 {
+	animation: card_start 0.5s;
+	-webkit-animation: card_start 0.5s;
+}
+.dialog.popped {
+	animation: dialog_start2 0.3s;
+	-webkit-animation: dialog_start2 0.3s;
+}
+/*.dialog.removing{top: 100px}*/
+.card.drawing {
+	animation: drawing 1s;
+	animation-fill-mode: forwards;
+	-webkit-animation: drawing 1s;
+	-webkit-animation-fill-mode: forwards;
+}
+.card.thrown {
+	position: absolute;
+	opacity: 1;
+	margin: 0;
+	z-index: 3;
+}
+#arena > .card.thrown {
+	pointer-events: none;
+}
+#arena.thrownhighlight > .card.thrown:not(.thrownhighlight):not(.drawingcard) {
+	opacity: 0.5;
+	transform: scale(0.95);
+	/*-webkit-filter:blur(3px);*/
+}
+.card.start {
+	animation: card_start 0.5s;
+	-webkit-animation: card_start 0.5s;
+}
+.judgestart {
+	animation: card_judgestart 1s;
+	-webkit-animation: card_judgestart 1s;
+}
+#me > div > div > .card.start {
+	animation: card_start2 0.5s;
+	-webkit-animation: card_start2 0.5s;
+}
+#me > div > div > .card.drawinghidden {
+	opacity: 0;
+	transform: scale(0.2) !important;
+}
+.marks > .card.drawinghidden,
+.judges > .card.drawinghidden {
+	opacity: 0;
+	transform: scale(0.2);
+}
+#me > .fakeme.avatar {
+	width: 120px;
+	height: 120px;
+	border-radius: 8px;
+	top: 10px;
+	left: 10px;
+	background-size: cover;
+}
+#window[data-radius_size="reduce"] #me > .fakeme.avatar {
+	border-radius: 4px;
+}
+#window[data-radius_size="off"] #me > .fakeme.avatar {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] #me > .fakeme.avatar {
+	border-radius: 16px;
+}
+.card.removing {
+	transform: scale(0);
+}
+#me > div > div > .card.removing {
+	margin-left: -52px;
+	margin-right: -52px;
+}
+.card.thrown.removing {
+	width: 104px;
+	height: 104px;
+	transform: none;
+}
+#sidebar.sidebar {
+	animation: sidebar 0.5s;
+	-webkit-animation: sidebar 0.5s;
+}
+.button.zoom {
+	animation: zoom_button 0.5s;
+	-webkit-animation: zoom_button 0.5s;
+}
+.content > .config.start {
+	animation: config 0.5s;
+	-webkit-animation: config 0.5s;
+}
+.flash,
+.flash-animation-iteration-count-infinite {
+	animation-name: flash;
+	animation-duration: 1s;
+}
+.flash-animation-iteration-count-infinite {
+	animation-iteration-count: infinite;
+}
+.flip {
+	animation: flip 1s;
+	-webkit-animation: flip 1s;
+}
+/*--------样式--------*/
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .background,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .name,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .name2,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .info,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .range,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .gaintag,
+#arena.selecting:not(.video) .player[data-position="0"] .card:not(.selectable) > .addinfo,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .background,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .name,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .name2,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .info,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .range,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .gaintag,
+#arena.selecting:not(.video) .player.current_action .card:not(.selectable) > .addinfo,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .background,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .image,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .name,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .name2,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .info,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .range,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .gaintag,
+#arena.selecting:not(.video) #me .card:not(.selectable) > .addinfo,
+#arena.selecting:not(.video) .dialog:not(.noselect) .button:not(.selectable):not(.noclick):not(.replaceButton),
+#arena.selecting:not(.video) .dialog:not(.noselect) .textbutton:not(.selectable):not(.noclick):not(.replaceButton),
+#arena.selecting:not(.video) .dialog:not(.noselect) .tdnodes:not(.selectable):not(.noclick):not(.replaceButton),
+.dead,
+.likedead {
+	opacity: 0.6;
+}
+
+#window:not(.nopointer) .player .judges > .card,
+#window:not(.nopointer) .player .marks > .card {
+	cursor: context-menu;
+}
+#window:not(.nopointer) .player .identity.guessing {
+	cursor: help;
+}
+
+#window:not(.nopointer) #system > div > div:not(.hidden),
+#window:not(.nopointer) .choosedouble.character,
+#window:not(.nopointer) .config.more,
+#window:not(.nopointer) .dashboard,
+#window:not(.nopointer) .textlink,
+#window:not(.nopointer) .hrefnode,
+#window:not(.nopointer) #historybar > div > div,
+#window:not(.nopointer) .closenode,
+#window:not(.nopointer) .pointerdiv,
+#window:not(.nopointer) .pointernode div,
+#window:not(.nopointer) .pointerspan span,
+#window:not(.nopointer) .pointertable td > span,
+#window:not(.nopointer) .config > .toggle.onoff,
+#window:not(.nopointer) .pointerdialog .button:not(.unselectable),
+#window:not(.nopointer) .dialog.fullheight .buttons .button:not(.selectedx):not(.glow):not(.glows):not(.forbidden),
+#window:not(.nopointer) #arena.selecting:not(.video) .player .equips > .card.selectable,
+#window:not(.nopointer) #arena.selecting #me .card.selectable,
+#window:not(.nopointer) #arena.selecting .button.selectable,
+#window:not(.nopointer) #arena.selecting .player.selectable,
+#window:not(.nopointer) .menubutton.round,
+*[data-cursor_style="pointer"] {
+	cursor: pointer;
+}
+*[data-cursor_style="forbidden"] {
+	cursor: not-allowed;
+}
+*[data-cursor_style="menu"] {
+	cursor: context-menu;
+}
+*[data-cursor_style="zoom"] {
+	cursor: -webkit-zoom-in;
+}
+#arena.dragging {
+	cursor: -webkit-grabbing;
+}
+
+#arena.selecting:not(.video) .player[data-position="0"] .marks > .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player[data-position="0"] .judges > .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player[data-position="0"] .judges > .card:not(.selectable) > .background,
+#arena.selecting:not(.video) .player .marks > .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player .judges > .card:not(.selectable) > .image,
+#arena.selecting:not(.video) .player .judges > .card:not(.selectable) > .background {
+	opacity: 1;
+}
+
+#arena.tempnoe .player.selectable .equips > .card {
+	pointer-events: none;
+}
+
+.unselectable:not(.selected):not(.removing) {
+	opacity: 0.6 !important;
+}
+.unselectable2 {
+	opacity: 0.4 !important;
+}
+.mark > .background {
+	opacity: 1 !important;
+}
+#arena.selecting:not(.video) #me .card:not(.selectable) {
+	opacity: 0.8;
+}
+.button.character.banned,
+.button.card.banned {
+	opacity: 0.5;
+}
+
+.card.selectable > .background,
+.card.selectable > .name,
+.card.selectable > .name2,
+.card.selectable > .info,
+.card.selectable > .range,
+.card.selectable > .gaintag,
+.button.selectable {
+	opacity: 1;
+}
+
+.card {
+	color: rgba(0, 0, 0, 0.3);
+	text-shadow: none;
+}
+.fire {
+	color: rgba(255, 0, 0, 0.3);
+}
+.thunder {
+	color: rgba(0, 80, 255, 0.3);
+}
+.kami {
+	color: rgba(90, 118, 99, 0.3);
+}
+.ice {
+	color: rgba(0, 153, 255, 0.3);
+}
+.poison {
+	color: rgba(30, 133, 51, 0.4);
+}
+.brown {
+	color: rgba(133, 92, 30, 0.4);
+}
+.purple {
+	color: rgba(177, 62, 177, 0.4);
+}
+.player,
+.button.character {
+	color: white;
+	text-shadow: black 0 0 2px;
+}
+.turnedover > div {
+	opacity: 0.3;
+}
+.turnedover > .identity,
+.turnedover > .framebg,
+.turnedover > .marks,
+.turnedover > .judges {
+	opacity: 0.7;
+}
+.turnedover > .timerbar {
+	opacity: 1;
+}
+.intro:not(.showintro) {
+	opacity: 0;
+	display: none !important;
+}
+.intro.showintro {
+	white-space: nowrap;
+}
+div:hover > .intro {
+	opacity: 1;
+}
+/*.hp>div{background: white;box-shadow:0px 1px 1px rgba(0,0,0,0.5);border:1px solid #fff;border-radius: 8px;}*/
+/*.hp>.lost{background: rgba(128,128,128,0.3);}*/
+.identity {
+	border-radius: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.player .identity {
+	z-index: 4;
+}
+.info {
+	border-radius: 10px;
+}
+.dialog > .bar {
+	position: absolute;
+	width: 100%;
+	height: 5px;
+	left: 0;
+	opacity: 0;
+}
+.dialog > .bar.top {
+	top: 0;
+}
+.dialog > .bar.bottom {
+	bottom: 0;
+}
+.dialog > .content-container {
+	width: 100%;
+	height: calc(100% - 0px);
+	/*height:calc(100% - 5px);*/
+	left: 0;
+	top: 0px;
+	/*top:5px;*/
+	position: absolute;
+	overflow: scroll;
+}
+/*.dialog.scroll1>.bar.top{opacity:1}
+.dialog.scroll2>.bar.bottom{opacity:1}*/
+.dialog.slim {
+	top: 300px;
+	bottom: auto;
+	min-height: none;
+}
+/*.dialog.scroll1{box-shadow:0 -10px 10px -9px rgba(0,0,0,0.1),0 -10px 0 -9px rgba(0,0,0,0.05);}
+.dialog.scroll2{box-shadow:0 10px 10px -9px rgba(0,0,0,0.1),0 10px 0 -9px rgba(0,0,0,0.05)}
+.dialog.scroll1.scroll2{box-shadow:0 -10px 10px -9px rgba(0,0,0,0.1),0 -10px 0 -9px rgba(0,0,0,0.05),
+	0 10px 10px -9px rgba(0,0,0,0.1),0 10px 0 -9px rgba(0,0,0,0.05);}*/
+/* .selected,.target { */
+/*transform: scale(1.05);*/
+/* } */
+/*.player.target{-webkit-filter:brightness(1.2)}*/
+
+.target {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px, rgba(255, 0, 0, 0.5) 0 0 12px, rgba(255, 0, 0, 0.8) 0 0 15px !important;
+}
+#mebg.target {
+	transform: none !important;
+}
+#arena[data-target_shake="shake"] .target {
+	transform: rotate(-3deg);
+}
+#arena[data-target_shake="shake"] .target2 {
+	transform: rotate(3deg);
+}
+#arena[data-target_shake="zoom"] .target,
+#arena[data-target_shake="zoom"] .target2 {
+	transform: scale(1.03);
+}
+
+.content > .config.line2 {
+	transform: translateX(-5px);
+}
+.popup {
+	--popup-padding: 50px;
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 4px;
+	padding-left: var(--popup-padding);
+	padding-right: var(--popup-padding);
+}
+
+.tdnode {
+	position: relative !important;
+	display: inline-block;
+	padding: 5px !important;
+	padding-left: 8px !important;
+	padding-right: 8px !important;
+	font-size: 18px !important;
+	margin: 4px !important;
+	margin-left: 6px !important;
+	margin-right: 6px !important;
+	width: auto !important;
+}
+.tdnode.thundertext {
+	background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1)) !important;
+}
+.tdnode.reduce_margin {
+	margin-left: 4px !important;
+	margin-right: 4px !important;
+}
+
+.shadowed,
+.menubutton.large.shadowed {
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 8px;
+	color: white !important;
+}
+.shadowed2 {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+}
+#window[data-radius_size="reduce"] .shadowed {
+	border-radius: 4px;
+}
+#window[data-radius_size="off"] .shadowed {
+	border-radius: 0px;
+}
+#window[data-radius_size="increase"] .shadowed {
+	border-radius: 16px;
+}
+#window[data-radius_size="default"] .shadowed.reduce_radius {
+	border-radius: 4px;
+}
+
+#window > .choosedouble {
+	left: 50%;
+	top: 50%;
+}
+#window > .choosedouble:not(.character) {
+	transition-duration: 0.2s;
+}
+#window > .choosedouble.character {
+	transform-origin: top left;
+	transition-property: opacity, transform;
+}
+#window > .choosedouble.character.moved {
+	z-index: 1;
+}
+#window:not(.nopointer) > .choosedouble.character.moved:not(.selecting) {
+	cursor: default;
+}
+#window > .choosedouble.character > .name {
+	left: 6%;
+	top: 8%;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+
+.hrefnode {
+	text-decoration: underline;
+}
+.closenode {
+	float: right;
+}
+.underline,
+.underlinenode {
+	padding: 3px;
+	width: auto;
+	display: inline-block;
+	border-width: 0 0 2px;
+	border-style: solid;
+	border-color: transparent;
+}
+.underlinenode.slim {
+	padding-bottom: 0;
+}
+.underlinenode.gray:not(.on) {
+	border-color: rgb(133, 133, 133);
+	opacity: 0.5;
+}
+.on > .underline,
+.underlinenode.on {
+	border-color: rgb(0, 133, 255);
+}
+.config.underlined {
+	overflow: visible;
+}
+.config.underlined > div {
+	border-width: 0 0 2px;
+	border-style: solid;
+	border-color: rgb(0, 133, 255);
+	padding-bottom: 1px;
+}
+
+.newgame {
+	width: calc(100% - 16px);
+	display: flex;
+}
+.newgame > div {
+	padding: 3px;
+	position: relative;
+	margin: auto;
+}
+
+.player .identity {
+	align-items: flex-end;
+	border: none;
+	border-radius: 100%;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.2s;
+}
+
+.player .identity > div {
+	position: relative;
+	font-family: "huangcao", "xinwei";
+	font-size: 24px;
+	line-height: 24px;
+	top: 0;
+}
+.player .identity.animate {
+	animation: identity 0.8s;
+	-webkit-animation: identity 0.8s;
+}
+.player .identity[data-color="zhu"],
+.player .identity[data-color="truezhu"],
+.player .identity[data-color="enemy"],
+div[data-nature="zhu"],
+span[data-nature="zhu"],
+div[data-nature="enemy"],
+span[data-nature="enemy"],
+div[data-nature="fire"],
+span[data-nature="fire"] {
+	text-shadow: black 0 0 1px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 5px, rgba(232, 53, 53, 1) 0 0 10px, rgba(232, 53, 53, 1) 0 0 10px, rgba(232, 53, 53, 1) 0 0 20px, rgba(232, 53, 53, 1) 0 0 20px;
+}
+
+div[data-nature="firem"],
+span[data-nature="firem"] {
+	text-shadow: black 0 0 1px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 5px, rgba(232, 53, 53, 1) 0 0 5px, rgba(232, 53, 53, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="firemx"],
+span[data-nature="firemx"] {
+	text-shadow: black 0 0 1px, rgba(191, 0, 0, 0.2) 0 0 2px, rgba(191, 0, 0, 1) 0 0 2px, rgba(191, 0, 0, 1) 0 0 5px, rgba(191, 0, 0, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="firemm"],
+span[data-nature="firemm"] {
+	text-shadow: black 0 0 1px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 2px, rgba(232, 53, 53, 1) 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color="mingzhong"],
+.player .identity[data-color="rZhu"],
+.player .identity[data-color="rZhong"],
+.player .identity[data-color="rNei"],
+.player .identity[data-color="cai2"],
+div[data-nature="orange"],
+span[data-nature="orange"] {
+	text-shadow: rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 5px, rgba(255, 120, 0, 1) 0 0 10px, rgba(255, 120, 0, 1) 0 0 10px, rgba(255, 120, 0, 1) 0 0 20px, rgba(255, 120, 0, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="orangem"],
+span[data-nature="orangem"] {
+	text-shadow: rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 5px, rgba(255, 120, 0, 1) 0 0 5px, rgba(255, 120, 0, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="orangemm"],
+span[data-nature="orangemm"] {
+	text-shadow: rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="firemx"],
+span[data-nature="firemx"] {
+	text-shadow: black 0 0 1px, rgba(255, 120, 0, 0.2) 0 0 2px, rgba(255, 120, 0, 1) 0 0 2px, rgba(255, 120, 0, 1) 0 0 5px, rgba(255, 120, 0, 1) 0 0 5px, black 0 0 1px;
+}
+
+.player .identity[data-color="zhong"],
+.player .identity[data-color="qun"],
+.player .identity[data-color="neutral"],
+.player .identity[data-color="friend2"],
+div[data-nature="zhong"],
+span[data-nature="zhong"],
+div[data-nature="metal"],
+span[data-nature="metal"] {
+	text-shadow: black 0 0 1px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 5px, rgba(255, 203, 0, 1) 0 0 10px, rgba(255, 203, 0, 1) 0 0 10px;
+}
+div[data-nature="metalm"],
+span[data-nature="metalm"] {
+	text-shadow: black 0 0 1px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 5px, rgba(255, 203, 0, 1) 0 0 5px, rgba(255, 203, 0, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="metalmm"],
+span[data-nature="metalmm"] {
+	text-shadow: black 0 0 1px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 2px, rgba(255, 203, 0, 1) 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color="key"],
+div[data-nature="key"],
+span[data-nature="key"] {
+	text-shadow: rgba(203, 177, 255, 1) 0 0 2px, rgba(203, 177, 255, 1) 0 0 5px, rgba(203, 177, 255, 1) 0 0 10px, rgba(203, 177, 255, 1) 0 0 10px, rgba(203, 177, 255, 1) 0 0 20px, rgba(203, 177, 255, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="keym"],
+span[data-nature="keym"] {
+	text-shadow: rgba(203, 177, 255, 1) 0 0 2px, rgba(203, 177, 255, 1) 0 0 5px, rgba(203, 177, 255, 1) 0 0 5px, rgba(203, 177, 255, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="keymm"],
+span[data-nature="keymm"] {
+	text-shadow: rgba(203, 177, 255, 1) 0 0 2px, rgba(203, 177, 255, 1) 0 0 2px, rgba(203, 177, 255, 1) 0 0 2px, rgba(203, 177, 255, 1) 0 0 2px, black 0 0 1px;
+}
+
+div[data-nature="shen"],
+span[data-nature="shen"] {
+	text-shadow: rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 5px, rgba(243, 171, 27, 1) 0 0 10px, rgba(243, 171, 27, 1) 0 0 10px, rgba(243, 171, 27, 1) 0 0 20px, rgba(243, 171, 27, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="shenm"],
+span[data-nature="shenm"] {
+	text-shadow: rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 5px, rgba(243, 171, 27, 1) 0 0 5px, rgba(243, 171, 27, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="shenmm"],
+span[data-nature="shenmm"] {
+	text-shadow: rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 2px, rgba(243, 171, 27, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="devil"],
+span[data-nature="devil"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 5px, rgb(155, 34, 52) 0 0 10px, rgb(155, 34, 52) 0 0 10px, rgb(155, 34, 52) 0 0 20px, rgb(155, 34, 52) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="devilm"],
+span[data-nature="devilm"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 5px, rgb(155, 34, 52) 0 0 5px, rgb(155, 34, 52) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="devilmm"],
+span[data-nature="devilmm"] {
+	text-shadow: rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 2px, rgb(155, 34, 52) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="qun"],
+span[data-nature="qun"] {
+	text-shadow: rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 5px, rgba(164, 164, 164, 1) 0 0 10px, rgba(164, 164, 164, 1) 0 0 10px, rgba(164, 164, 164, 1) 0 0 20px, rgba(164, 164, 164, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="qunm"],
+span[data-nature="qunm"] {
+	text-shadow: rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 5px, rgba(164, 164, 164, 1) 0 0 5px, rgba(164, 164, 164, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="qunmm"],
+span[data-nature="qunmm"] {
+	text-shadow: rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 2px, rgba(164, 164, 164, 1) 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color="nei"],
+.player .identity[data-color="ye"],
+.player .identity[data-color="rYe"],
+.player .identity[data-color="bYe"],
+.player .identity[data-color="jin"],
+div[data-nature="nei"],
+span[data-nature="nei"],
+div[data-nature="thunder"],
+span[data-nature="thunder"] {
+	text-shadow: rgba(100, 74, 139, 1) 0 0 2px, rgba(100, 74, 139, 1) 0 0 5px, rgba(100, 74, 139, 1) 0 0 10px, rgba(100, 74, 139, 1) 0 0 10px, rgba(100, 74, 139, 1) 0 0 20px, rgba(100, 74, 139, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="thunderm"],
+span[data-nature="thunderm"] {
+	text-shadow: rgba(100, 74, 139, 1) 0 0 2px, rgba(100, 74, 139, 1) 0 0 5px, rgba(100, 74, 139, 1) 0 0 5px, rgba(100, 74, 139, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="thundermm"],
+span[data-nature="thundermm"] {
+	text-shadow: rgba(100, 74, 139, 1) 0 0 2px, rgba(100, 74, 139, 1) 0 0 2px, rgba(100, 74, 139, 1) 0 0 2px, rgba(100, 74, 139, 1) 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color="kami"],
+div[data-nature="kami"],
+span[data-nature="kami"] {
+	text-shadow: rgba(90, 118, 99, 1) 0 0 2px, rgba(90, 118, 99, 1) 0 0 5px, rgba(90, 118, 99, 1) 0 0 10px, rgba(90, 118, 99, 1) 0 0 10px, rgba(90, 118, 99, 1) 0 0 20px, rgba(90, 118, 99, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="kamim"],
+span[data-nature="kamim"] {
+	text-shadow: rgba(90, 118, 99, 1) 0 0 2px, rgba(90, 118, 99, 1) 0 0 5px, rgba(90, 118, 99, 1) 0 0 5px, rgba(90, 118, 99, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="kamimm"],
+span[data-nature="kamimm"] {
+	text-shadow: rgba(90, 118, 99, 1) 0 0 2px, rgba(90, 118, 99, 1) 0 0 2px, rgba(90, 118, 99, 1) 0 0 2px, rgba(90, 118, 99, 1) 0 0 2px, black 0 0 1px;
+}
+
+.player .identity[data-color="fan"],
+.player .identity[data-color="wu"],
+div[data-nature="fan"],
+span[data-nature="fan"],
+div[data-nature="wood"],
+span[data-nature="wood"] {
+	text-shadow: rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 5px, rgba(57, 123, 4, 1) 0 0 10px, rgba(57, 123, 4, 1) 0 0 10px, rgba(57, 123, 4, 1) 0 0 20px, rgba(57, 123, 4, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="woodm"],
+span[data-nature="woodm"] {
+	text-shadow: rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 5px, rgba(57, 123, 4, 1) 0 0 5px, rgba(57, 123, 4, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="woodmm"],
+span[data-nature="woodmm"] {
+	text-shadow: rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 2px, rgba(57, 123, 4, 1) 0 0 2px, black 0 0 1px;
+}
+.player .identity[data-color="commoner"],
+div[data-nature="commoner"],
+span[data-nature="commoner"] {
+	text-shadow: rgb(135, 135, 135, 1) 0 0 2px, rgba(135, 135, 135, 1) 0 0 5px, rgba(135, 135, 135, 1) 0 0 10px, rgba(135, 135, 135, 1) 0 0 10px, rgba(135, 135, 135, 1) 0 0 20px, rgba(135, 135, 135, 1) 0 0 20px, black 0 0 1px;
+}
+
+.player .identity[data-color="cai"],
+.player .identity[data-color="bZhu"],
+.player .identity[data-color="bZhong"],
+.player .identity[data-color="bNei"],
+.player .identity[data-color="wei"],
+.player .identity[data-color="falsezhu"],
+.player .identity[data-color="friend"],
+.water,
+div[data-nature="friend"],
+span[data-nature="friend"],
+div[data-nature="water"],
+span[data-nature="water"] {
+	text-shadow: rgba(78, 117, 140, 1) 0 0 2px, rgba(78, 117, 140, 1) 0 0 5px, rgba(78, 117, 140, 1) 0 0 10px, rgba(78, 117, 140, 1) 0 0 10px, rgba(78, 117, 140, 1) 0 0 20px, rgba(78, 117, 140, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="waterm"],
+span[data-nature="waterm"] {
+	text-shadow: rgba(78, 117, 140, 1) 0 0 2px, rgba(78, 117, 140, 1) 0 0 5px, rgba(78, 117, 140, 1) 0 0 5px, rgba(78, 117, 140, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="watermm"],
+span[data-nature="watermm"] {
+	text-shadow: rgba(78, 117, 140, 1) 0 0 2px, rgba(78, 117, 140, 1) 0 0 2px, rgba(78, 117, 140, 1) 0 0 2px, rgba(78, 117, 140, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="watermx"],
+span[data-nature="watermx"] {
+	text-shadow: rgba(0, 0, 0, 0.4) 0 0 1px, rgba(20, 83, 140, 1) 0 0 2px, rgba(20, 83, 140, 1) 0 0 2px, rgba(20, 83, 140, 1) 0 0 5px, rgba(20, 83, 140, 1) 0 0 5px, black 0 0 1px;
+}
+
+.player .identity[data-color="shu"],
+div[data-nature="soil"],
+span[data-nature="soil"] {
+	text-shadow: rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 5px, rgba(128, 59, 2, 1) 0 0 10px, rgba(128, 59, 2, 1) 0 0 10px, rgba(128, 59, 2, 1) 0 0 20px, rgba(128, 59, 2, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="soilm"],
+span[data-nature="soilm"] {
+	text-shadow: rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 5px, rgba(128, 59, 2, 1) 0 0 5px, rgba(128, 59, 2, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="soilmm"],
+span[data-nature="soilmm"] {
+	text-shadow: rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="soilmx"],
+span[data-nature="soilmx"] {
+	text-shadow: rgba(0, 0, 0, 0.4) 0 0 1px, rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 2px, rgba(128, 59, 2, 1) 0 0 5px, rgba(128, 59, 2, 1) 0 0 5px, black 0 0 1px;
+}
+
+div[data-nature="gray"],
+span[data-nature="gray"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 10px, rgba(213, 194, 179, 1) 0 0 10px, rgba(213, 194, 179, 1) 0 0 20px, rgba(213, 194, 179, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="graym"],
+span[data-nature="graym"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="graymm"],
+span[data-nature="graymm"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="graymx"],
+span[data-nature="graymx"] {
+	text-shadow: black 0 0 1px, rgba(213, 194, 179, 0.2) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, black 0 0 1px;
+}
+
+div[data-nature="ice"],
+span[data-nature="ice"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 10px, rgba(213, 194, 179, 1) 0 0 10px, rgba(213, 194, 179, 1) 0 0 20px, rgba(213, 194, 179, 1) 0 0 20px, black 0 0 1px;
+}
+div[data-nature="icem"],
+span[data-nature="icem"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="icemm"],
+span[data-nature="icemm"] {
+	text-shadow: rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, black 0 0 1px;
+}
+div[data-nature="icemx"],
+span[data-nature="icemx"] {
+	text-shadow: black 0 0 1px, rgba(213, 194, 179, 0.2) 0 0 2px, rgba(213, 194, 179, 1) 0 0 2px, rgba(213, 194, 179, 1) 0 0 5px, rgba(213, 194, 179, 1) 0 0 5px, black 0 0 1px;
+}
+
+.player .identity[data-color="unknownx"],
+div[data-nature="black"],
+span[data-nature="black"] {
+	text-shadow: rgba(0, 0, 0, 0.5) 0 0 2px, rgba(0, 0, 0, 0.5) 0 0 5px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.5) 0 0 10px, rgba(0, 0, 0, 0.5) 0 0 20px, rgba(0, 0, 0, 0.5) 0 0 20px, black 0 0 1px;
+}
+div[data-color="unknownm"],
+span[data-color="unknownm"] {
+	text-shadow: rgba(0, 0, 0, 0.5) 0 0 2px, rgba(0, 0, 0, 0.2) 0 0 5px, rgba(0, 0, 0, 0.2) 0 0 5px, rgba(0, 0, 0, 0.2) 0 0 5px, black 0 0 1px;
+}
+div[data-nature="unknown"] {
+	text-shadow: rgba(0, 0, 0, 0.2) 0 0 2px, rgba(0, 0, 0, 0.2) 0 0 5px, rgba(0, 0, 0, 0.2) 0 0 10px, rgba(0, 0, 0, 0.2) 0 0 10px, rgba(0, 0, 0, 0.2) 0 0 20px, rgba(0, 0, 0, 0.2) 0 0 20px, rgba(0, 0, 0, 0.6) 0 0 1px;
+}
+
+div[data-decoration="gold"]::before,
+#arena:not(.autoframe)[data-framedecoration="gold"] .player > .framebg::before {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/gold_d1.png");
+	background-size: 100% 100%;
+	width: 41px;
+	height: 80px;
+	left: -13px;
+	top: -19px;
+}
+.button[data-decoration="gold"]::before {
+	transform: scale(0.75) translate(-3px, -3px);
+}
+div[data-decoration="gold"]::after,
+#arena:not(.autoframe)[data-framedecoration="gold"] .player > .framebg::after {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/gold_d2.png");
+	background-size: 100% 100%;
+	width: 75px;
+	height: 32px;
+	left: auto;
+	top: auto;
+	right: -8px;
+	bottom: -8px;
+}
+.button[data-decoration="gold"]::after {
+	transform: scale(0.75) translate(10px, 2px);
+}
+
+div[data-decoration="silver"]::before,
+#arena:not(.autoframe)[data-framedecoration="silver"] .player > .framebg::before {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/silver_d1.png");
+	background-size: 100% 100%;
+	width: 41px;
+	height: 61px;
+	left: -13px;
+	top: -14px;
+}
+.button[data-decoration="silver"]::before {
+	transform: scale(0.75) translate(-2px, -3px);
+}
+div[data-decoration="silver"]::after,
+#arena:not(.autoframe)[data-framedecoration="silver"] .player > .framebg::after {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/silver_d2.png");
+	background-size: 100% 100%;
+	width: 69px;
+	height: 21px;
+	left: auto;
+	top: auto;
+	right: -8px;
+	bottom: -9px;
+}
+.button[data-decoration="silver"]::after {
+	transform: scale(0.75) translate(10px, 0px);
+}
+
+div[data-decoration="bronze"]::before,
+#arena:not(.autoframe)[data-framedecoration="bronze"] .player > .framebg::before {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/bronze_d1.png");
+	background-size: 100% 100%;
+	width: 40px;
+	height: 80px;
+	left: -13px;
+	top: -18px;
+}
+.button[data-decoration="bronze"]::before {
+	transform: scale(0.75) translate(-2px, -3px);
+}
+div[data-decoration="bronze"]::after,
+#arena:not(.autoframe)[data-framedecoration="bronze"] .player > .framebg::after {
+	content: "";
+	position: absolute;
+	background-image: url("../../theme/style/player/bronze_d2.png");
+	background-size: 100% 100%;
+	width: 69px;
+	height: 21px;
+	left: auto;
+	top: auto;
+	right: -8px;
+	bottom: -5px;
+}
+.button[data-decoration="bronze"]::after {
+	transform: scale(0.75) translate(9px, 2px);
+}
+.guessidentity {
+	display: block;
+	position: relative;
+}
+.guessidentity > .menubutton.large {
+	display: block;
+	position: relative;
+}
+/*.guessidentity>.menubutton.large:not(*[data-nature="none"]){
+	color:white;
+}*/
+
+div[data-decoration="gold"]::before,
+div[data-decoration="gold"]::after,
+div[data-decoration="silver"]::before,
+div[data-decoration="silver"]::after,
+div[data-decoration="bronze"]::before,
+div[data-decoration="bronze"]::after {
+	opacity: 1;
+	z-index: 10;
+	box-shadow: none !important;
+}
+
+.card.fullskin > .background {
+	display: none !important;
+}
+.card:not(.fullskin) > .image {
+	display: none !important;
+}
+.card.fullskin > .name {
+	top: 8px;
+	left: 7px;
+	/*border:1px solid #631515;*/
+	border-radius: 4px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	/*color:#631515;*/
+	border: 1px solid rgb(74, 29, 1);
+	color: rgb(74, 29, 1);
+	text-shadow: none;
+	text-align: center;
+	line-height: 18px;
+}
+.cardbg,
+.button.character.cardbg {
+	color: rgb(74, 29, 1);
+	text-shadow: none;
+}
+.card.fullskin > .name.long {
+	top: 5px;
+}
+.card.fullskin.thunder > .name {
+	color: #152e63;
+	border: 1px solid #152e63;
+}
+.card.fullskin.kami > .name {
+	color: #1f3c38;
+	border: 1px solid #1f3c38;
+}
+.card.fullskin.ice > .name {
+	color: #3b6273;
+	border: 1px solid #3b6273;
+}
+.card.fullskin.fire > .name {
+	color: #631515;
+	border: 1px solid #631515;
+}
+.card.fullskin.poison > .name {
+	color: #00312d;
+	border: 1px solid #00312d;
+}
+.card.fullskin.epic > .name {
+	color: white;
+	background: rgba(0, 66, 165, 0.6);
+	border: 1px solid rgba(0, 66, 165, 1);
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 10px inset;
+}
+.card.fullskin.epic > .name2 {
+	color: rgb(117, 186, 255);
+}
+.card.fullskin.legend > .name {
+	color: white;
+	background: rgba(106, 27, 154, 0.6);
+	border: 1px solid rgb(158, 102, 0);
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 10px inset;
+}
+.card.fullskin.legend > .name2 {
+	color: rgb(233, 131, 255);
+	/*color: rgb(117,186,0);*/
+}
+.card.fullskin.gold > .name {
+	color: white;
+	text-shadow: black 0 0 1px, rgba(0, 0, 0, 0.5) 0 0 1px;
+	background: rgba(234, 158, 0, 0.6);
+	border: 1px solid rgb(134, 87, 1);
+	box-shadow: rgba(255, 149, 0, 0.4) 0 0 10px inset;
+}
+.card.fullskin.gold > .name2 {
+	color: rgb(255, 235, 59);
+}
+.card.fullskin > .info {
+	top: 5.2px;
+	right: 7px;
+	color: rgba(0, 0, 0, 0.8);
+	white-space: nowrap;
+	text-shadow: none;
+}
+.card.fullskin > .info.red {
+	color: #a82424;
+}
+
+.card[data-card-type="zhanfa"] > .image {
+	background-size: 75%;
+	background-position: bottom right;
+	background-repeat: no-repeat;
+}
+
+.card.zf_common > .name,
+.card.zf_common > .info,
+.card.zf_rare > .name,
+.card.zf_rare > .info,
+.card.zf_epic > .name,
+.card.zf_epic > .info,
+.card.zf_legend > .name,
+.card.zf_legend > .info {
+	/*background-color: #59392b;
+	color: white;*/
+	font-weight: bolder;
+}
+
+.card.zf_common {
+	border: 2px solid #59392b;
+	filter: drop-shadow(0 0 10px #59392b);
+}
+
+.card.zf_rare {
+	border: 2px solid #5d3c77;
+	filter: drop-shadow(0 0 10px #5d3c77);
+}
+
+.card.zf_epic {
+	border: 2px solid #af572a;
+	filter: drop-shadow(0 0 10px #af572a);
+}
+
+.card.zf_legend {
+	border: 2px solid #b0293e;
+	filter: drop-shadow(0 0 10px #b0293e);
+}
+
+.config > .toggle.onoff {
+	height: 100%;
+	width: 30px;
+	display: inline-flex;
+}
+.config > .toggle.onoff > div {
+	height: 12px;
+	width: 100%;
+	border: 1px solid white;
+	border-radius: 12px;
+	box-shadow: black 0 0 2px, black 0 0 1px inset;
+	margin: auto;
+	overflow: hidden;
+	transition-property: none;
+}
+.config > .toggle.onoff > div > div {
+	transition-property: left;
+}
+.config > .toggle.onoff:not(.on) > div,
+.config.disabled {
+	opacity: 0.4;
+}
+.menubutton.large.disabled {
+	opacity: 0.5;
+}
+.menubutton.large.smallfont {
+	font-size: 22px !important;
+	text-indent: -2px;
+}
+.config > .toggle.onoff > div > div {
+	width: 8px;
+	height: 8px;
+	border-radius: 100%;
+	position: absolute;
+	left: 1px;
+	top: 1px;
+	background: white;
+	border: 1px solid white;
+	box-shadow: black 0 0 2px;
+}
+.config > .toggle.onoff.on > div > div {
+	left: calc(100% - 11px);
+}
+
+#arena > .skillbar {
+	width: 65px;
+	height: 65px;
+	border-radius: 100% !important;
+	font-size: 55px;
+	font-family: "huangcao";
+	top: calc(50% - 110px);
+	line-height: 65px;
+	text-align: center;
+}
+#arena > .skillbar.left {
+	left: 0;
+	right: auto;
+}
+#arena > .skillbar.right {
+	right: 0;
+	left: auto;
+}
+#arena > .skillbar > div {
+	border-radius: 100%;
+	width: 55px;
+	height: 55px;
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	left: 5px;
+	top: 5px;
+	overflow: hidden;
+}
+#arena > .skillbar > .skillbarshadow {
+	box-shadow: 0px 0px 8px #222 inset;
+	z-index: 1;
+}
+#arena > .skillbar > .skillbarfill > div {
+	box-shadow: 0px 0px 10px #555 inset, rgba(0, 0, 0, 0.05) 0 0 0 1px;
+	width: 200%;
+	height: 200%;
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	background-color: rgba(63, 119, 173, 1);
+	left: -50%;
+	top: 100%;
+}
+#arena > .skillbar.full > .skillbarfill > div {
+	box-shadow: none;
+	background-color: red;
+}
+/* #arena>.skillbar.full { */
+/*transform: scale(1.1);*/
+/*box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	-webkit-animation:skillbarglow 3s infinite;*/
+/* } */
+#arena > .skillbar > .skillbartext {
+	font-family: "xinwei";
+	font-size: 35px;
+	width: 100%;
+	text-align: center;
+	height: 35px;
+	line-height: 40px;
+	overflow: visible;
+	margin: 0;
+	padding: 0;
+	left: 0;
+	top: 15px;
+	z-index: 2;
+	opacity: 0;
+}
+
+.firetext {
+	color: rgb(255, 119, 63);
+}
+.yellowtext {
+	color: #ffff7a;
+}
+.bluetext {
+	color: rgb(150, 202, 255);
+}
+.greentext {
+	color: rgb(104, 221, 127);
+}
+.icetext {
+	color: rgb(59, 98, 115);
+}
+.thundertext,
+.controlthundertext {
+	color: rgb(117, 186, 255);
+}
+.kamitext {
+	color: rgb(90, 118, 99);
+}
+.whitetext .thundertext {
+	color: white;
+}
+.poisontext {
+	color: rgb(104, 221, 127);
+}
+.browntext {
+	color: rgb(195, 161, 223);
+}
+.legendtext {
+	color: rgb(233, 131, 255);
+}
+
+#window > canvas.fun {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: -2;
+	pointer-events: none;
+}
+#window.canvas_top > canvas.fun {
+	z-index: 20;
+}
+.coin_menu .content > .caption > .coin_buy {
+	line-height: 36px;
+	font-family: "xinwei";
+	font-size: 24px;
+}
+.coin_menu .content > .caption > .coin_buy > .menubutton {
+	width: auto;
+	position: relative;
+	float: right;
+	padding-left: 5px;
+	padding-right: 5px;
+	height: auto;
+	font-size: 24px;
+	margin-left: 10px;
+}
+.coin_menu .content > .caption > .coin_buy > .menubutton.disabled {
+	opacity: 0.5;
+}
+
+.wunature {
+	font-family: "huangcao", "xinwei";
+	font-size: 24px;
+	color: white !important;
+	pointer-events: none;
+}
+.player .wunature {
+	left: 14px;
+	display: none;
+	top: auto;
+	bottom: 14px;
+}
+#arena > .player .wunature,
+#chess > .player .wunature {
+	display: block;
+}
+/* div:hover>.wunature { */
+/*opacity: 0.5;*/
+/* } */
+.button.noclick .wunature,
+.player.treasure .wunature {
+	display: none !important;
+}
+
+.player .actcount.hp {
+	left: 216px;
+	top: 9px;
+	width: 20px;
+}
+.player .actcount.hp > div {
+	width: 12px;
+	height: 12px;
+	margin-left: 4px;
+	margin-bottom: 3px;
+	animation: game_start 0.5s;
+	-webkit-animation: game_start 0.5s;
+}
+
+.player {
+	top: 47px;
+	left: 14px;
+}
+.cardsetion {
+	left: 1px;
+	width: calc(100% - 2px);
+	color: #fff;
+	text-shadow: 1px 1px black;
+	font-size: 15px;
+	bottom: 9%;
+	text-align: center;
+	z-index: 2;
+	pointer-events: none;
+}
+.card.tempname.tempimage {
+	opacity: 1 !important;
+}
+.card .wunature {
+	top: 74px;
+	right: 6px;
+}
+.tempname {
+	color: white !important;
+	font-size: 22px;
+	left: 6px;
+	pointer-events: none;
+	top: 6px;
+}
+.tempname.vertical {
+	left: 4px;
+	top: 8px;
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+.tempname.tempimage {
+	top: calc(50% - 12.5px);
+	left: 2px;
+	width: calc(100% - 4px);
+	height: 25px;
+	background-image: url("../../image/card/cardtempname_bg.png");
+	background-size: 100% 100%;
+	text-align: right;
+	writing-mode: horizontal-tb;
+	-webkit-writing-mode: horizontal-tb;
+}
+.tempname.tempimage:not([data-nature]) {
+	color: black !important;
+	text-shadow: white 0 0 2px, white 0 0 3px;
+}
+.tempname.tempimage > div {
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background-size: 100%;
+	background-position: -20px -30px;
+	background-repeat: no-repeat;
+}
+.tempname.tempimage > span {
+	position: relative;
+	z-index: 1;
+	line-height: 25px;
+}
+.button > .tempname {
+	font-size: 17px;
+}
+.button > .tempname:not(.tempimage) {
+	left: 5px;
+	top: 5px;
+}
+.button > .tempname .vertical {
+	left: 3px;
+	top: 6px;
+}
+.tempname.kami:not([data-nature]) > span {
+	color: #1f3c38;
+}
+.tempname.ice:not([data-nature]) > span {
+	color: #3b6273;
+}
+.tempname.fire:not([data-nature]) > span {
+	color: #631515;
+}
+.tempname.thunder:not([data-nature]) > span {
+	color: #152e63;
+}
+.tempname.poison:not([data-nature]) > span {
+	color: #00312d;
+}
+/*.card.equip1 .wunature,
+.card.equip3 .wunature,
+.card.equip4 .wunature{
+	top:56px;
+	right:4px;
+}*/
+.card .addinfo {
+	bottom: 6px;
+	left: 6px;
+}
+
+.button.card .wunature {
+	top: 59px;
+}
+#arena.oldlayout .player > .timerbar > div {
+	top: 100px;
+	left: 15px;
+	width: 90px;
+}
+#arena.oldlayout .player > .nameol {
+	left: 15px;
+	top: 85px;
+	text-align: left;
+}
+
+.timerbar > div {
+	left: 25px;
+	box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+	border-radius: 8px;
+	height: 5px;
+	width: 100px;
+}
+.timerbar > div:first-child {
+	background: rgba(255, 255, 255, 0.6);
+}
+.timerbar > div {
+	top: 165px;
+}
+.timerbar > div:last-child {
+	background: linear-gradient(#ffda47, #ce0404);
+	transition-timing-function: linear;
+	float: left;
+	transform-origin: left;
+}
+/*.timerbar>div:last-child{background: linear-gradient(#FFFFFF,#F0F0F0);}
+.timerbar[data-color="red"]>div:last-child{background: linear-gradient(#FF0000, #CE0404)}
+.timerbar[data-color="blue"]>div:last-child{background: linear-gradient(#8EE0FA, #0F637E)}
+.timerbar[data-color="green"]>div:last-child{background: linear-gradient(#7AFF00, #589103)}
+.timerbar[data-color="purple"]>div:last-child{background: linear-gradient(#E247FF, #CE0404)}
+.timerbar[data-color="orange"]>div:last-child{background: linear-gradient(#FFDA47, #CE0404)}*/
+
+/*阴影*/
+/*.player.selectable{
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 133, 255, 0.5) 0 0 5px, rgba(0, 133, 255, 0.6) 0 0 12px, rgba(0, 133, 255, 0.8) 0 0 15px;
+}*/
+.player.selectable:not(.selected)::before,
+.card.glow::before,
+.button.glow::before {
+	opacity: 1;
+}
+
+.player.selected::after,
+.card.selected::after,
+.button.selected::after {
+	opacity: 1;
+}
+
+.selected:not(.tdnodes):not(.text):not(.player):not(.card):not(.button),
+.selectedx {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(255, 0, 0, 0.4) 0 0 5px, rgba(255, 0, 0, 0.4) 0 0 12px, rgba(255, 0, 0, 0.8) 0 0 15px !important;
+}
+
+#me .card.selected::after {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(255, 0, 0) 0 0 5px, rgba(255, 0, 0, 1) 0 0 10px;
+}
+#me .card.glow::before {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(0, 133, 255) 0 0 5px, rgba(0, 133, 255, 1) 0 0 10px;
+}
+
+#me > #handcards1:not(.scrollh),
+#me > #handcards2:not(.scrollh) {
+	z-index: 3;
+}
+/*#me>div:not(.scrollh)>.handcards>.card{
+	top:0;
+}
+#me>div:not(.scrollh)>.handcards>.card.selected{
+	top:-20px;
+}*/
+
+#me .card.glows {
+	opacity: 1;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(255, 153, 51) 0 0 5px, rgba(255, 153, 51, 1) 0 0 10px;
+}
+.glow:not(.button):not(.card) {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 133, 255, 0.4) 0 0 5px, rgba(0, 133, 255, 0.5) 0 0 12px, rgba(0, 133, 255, 0.8) 0 0 15px !important;
+}
+.glow2:not(.player.glow_phase) > .avatar {
+	/*-webkit-animation:control_glow 4s infinite;*/
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;
+}
+.glow3 {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 133, 255, 0.8) 0 0 10px, rgba(0, 133, 255, 0) 0 0 40px, rgba(0, 133, 255, 0.8) 0 0 60px !important;
+}
+.selectedx3 {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(255, 0, 0, 0.8) 0 0 10px, rgba(255, 0, 0, 0) 0 0 40px, rgba(255, 0, 0, 0.8) 0 0 60px !important;
+}
+.glow4 {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 133, 255, 0.8) 0 0 10px, rgba(0, 133, 255, 0) 0 0 40px, rgba(0, 133, 255, 0.8) 0 0 40px !important;
+}
+.selectedx4 {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(255, 0, 0, 0.6) 0 0 10px, rgba(255, 0, 0, 0) 0 0 40px, rgba(255, 0, 0, 0.8) 0 0 40px !important;
+}
+.player:not(.glow_phase) > .avatar.glow2,
+.button.glow2:not(.selected) {
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 5px, rgba(10, 155, 67, 1) 0 0 5px, rgba(10, 155, 67, 1) 0 0 10px, rgba(10, 155, 67, 1) 0 0 10px !important;
+}
+
+.control.blue {
+	background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1));
+}
+.control.red {
+	background-image: linear-gradient(rgba(150, 47, 47, 1), rgba(132, 43, 43, 1));
+}
+.control.red,
+.control.blue {
+	color: white;
+	text-shadow: black 0 0 2px;
+}
+
+.dialog.scroll1,
+.dialog.scroll2,
+.dialog.withbg {
+	background: rgba(0, 0, 0, 0.2);
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
+	border-radius: 8px;
+	min-height: 200px;
+}
+
+.dice-container {
+	background: rgba(0, 0, 0, 0.3);
+	z-index: 50;
+	perspective: 1000px;
+}
+.dice {
+	position: absolute;
+	width: 200px;
+	height: 200px;
+	transform-style: preserve-3d;
+	left: calc(50% - 100px);
+	top: calc(50% - 100px);
+	transition: transform 2s ease;
+}
+.dice[data-side="1"] {
+	transform: rotateX(75deg) rotateY(0deg) rotateZ(45deg);
+}
+.dice[data-side="1"].up-front {
+	transform: rotateX(0deg) rotateY(0deg) rotateZ(45deg);
+}
+.dice[data-side="2"] {
+	transform: rotateX(-15deg) rotateY(45deg);
+}
+.dice[data-side="2"].up-front {
+	transform: rotateX(-90deg) rotateY(45deg);
+}
+.dice[data-side="3"] {
+	transform: rotateX(165deg) rotateY(-45deg) rotateZ(90deg);
+}
+.dice[data-side="3"].up-front {
+	transform: rotateX(90deg) rotateY(-45deg) rotateZ(90deg);
+}
+.dice[data-side="4"] {
+	transform: rotateX(345deg) rotateY(-45deg) rotateZ(90deg);
+}
+.dice[data-side="4"].up-front {
+	transform: rotateX(270deg) rotateY(-45deg) rotateZ(90deg);
+}
+.dice[data-side="5"] {
+	transform: rotateX(345deg) rotateY(-45deg) rotateZ(180deg);
+}
+.dice[data-side="5"].up-front {
+	transform: rotateX(270deg) rotateY(-45deg) rotateZ(180deg);
+}
+.dice[data-side="6"] {
+	transform: rotateX(255deg) rotateY(0deg) rotateZ(135deg);
+}
+.dice[data-side="6"].up-front {
+	transform: rotateX(180deg) rotateY(0deg) rotateZ(135deg);
+}
+.dice > div {
+	position: absolute;
+	width: 200px;
+	height: 200px;
+	background: #fff;
+	box-shadow: inset 0 0 40px #ccc;
+	border-radius: 40px;
+}
+.dice .cover,
+.dice .inner {
+	background: #e0e0e0;
+	box-shadow: none;
+}
+.dice .cover {
+	border-radius: 0;
+	transform: translateZ(0px);
+}
+.dice .cover.x {
+	transform: rotateY(90deg);
+}
+.dice .cover.z {
+	transform: rotateX(90deg);
+}
+
+.dice .front {
+	transform: translateZ(100px);
+}
+.dice .front.inner {
+	transform: translateZ(98px);
+}
+.dice .back {
+	transform: rotateX(-180deg) translateZ(100px);
+}
+.dice .back.inner {
+	transform: rotateX(-180deg) translateZ(98px);
+}
+.dice .right {
+	transform: rotateY(90deg) translateZ(100px);
+}
+.dice .right.inner {
+	transform: rotateY(90deg) translateZ(98px);
+}
+.dice .left {
+	transform: rotateY(-90deg) translateZ(100px);
+}
+.dice .left.inner {
+	transform: rotateY(-90deg) translateZ(98px);
+}
+.dice .top {
+	transform: rotateX(90deg) translateZ(100px);
+}
+.dice .top.inner {
+	transform: rotateX(90deg) translateZ(98px);
+}
+.dice .bottom {
+	transform: rotateX(-90deg) translateZ(100px);
+}
+.dice .bottom.inner {
+	transform: rotateX(-90deg) translateZ(98px);
+}
+
+.dice .dot {
+	position: absolute;
+	width: 46px;
+	height: 46px;
+	border-radius: 23px;
+	background: #444;
+	box-shadow: inset 5px 0 10px #000;
+}
+.dice .dot.center {
+	margin: 77px 0 0 77px;
+}
+.dice .dot.dtop {
+	margin-top: 20px;
+}
+.dice .dot.dleft {
+	margin-left: 134px;
+}
+.dice .dot.dright {
+	margin-left: 20px;
+}
+.dice .dot.dbottom {
+	margin-top: 134px;
+}
+.dice .dot.center.dleft {
+	margin: 77px 0 0 20px;
+}
+.dice .dot.center.dright {
+	margin: 77px 0 0 134px;
+}
+
+#window.dicepaused > #arena,
+#window.dicepaused > #system,
+#window.dicepaused > #historybar {
+	opacity: 0.3 !important;
+}
+
+#window[data-radius_size="reduce"] .dialog.scroll1,
+#window[data-radius_size="reduce"] .dialog.scroll2,
+#window[data-radius_size="reduce"] .dialog.withbg {
+	border-radius: 4px;
+}
+
+#window[data-radius_size="off"] .dialog.scroll1,
+#window[data-radius_size="off"] .dialog.scroll2,
+#window[data-radius_size="off"] .dialog.withbg {
+	border-radius: 0px;
+}
+
+#window[data-radius_size="increase"] .dialog.scroll1,
+#window[data-radius_size="increase"] .dialog.scroll2,
+#window[data-radius_size="increase"] .dialog.withbg {
+	border-radius: 16px;
+}
+
+#window[data-radius_size="reduce"] #system > div > div,
+#window[data-radius_size="reduce"] #mebg,
+#window[data-radius_size="reduce"] .control,
+#window[data-radius_size="reduce"] .player,
+#window[data-radius_size="reduce"] .player > .turned,
+#window[data-radius_size="reduce"] .player::after,
+#window[data-radius_size="reduce"] .card,
+#window[data-radius_size="reduce"] .card::after,
+#window[data-radius_size="reduce"] .avatar,
+#window[data-radius_size="reduce"] .avatar2,
+#window[data-radius_size="reduce"] .button,
+#window[data-radius_size="reduce"] .button,
+::after,
+#window[data-radius_size="reduce"] #window > .dialog.popped,
+#window[data-radius_size="reduce"] .player.unseen .equips:not(*:empty),
+#window[data-radius_size="reduce"] .menu,
+#window[data-radius_size="reduce"] .left.pane > .menubutton,
+#window[data-radius_size="reduce"] #splash > div,
+#window[data-radius_size="reduce"].mobile:not(.chess) .player[data-position="0"] .equips {
+	border-radius: 4px;
+}
+
+#window[data-radius_size="off"] #system > div > div,
+#window[data-radius_size="off"] #mebg,
+#window[data-radius_size="off"] .control,
+#window[data-radius_size="off"] .player,
+#window[data-radius_size="off"] .player > .turned,
+#window[data-radius_size="off"] .player::after,
+#window[data-radius_size="off"] .card,
+#window[data-radius_size="off"] .card::after,
+#window[data-radius_size="off"] .avatar,
+#window[data-radius_size="off"] .avatar2,
+#window[data-radius_size="off"] .button,
+#window[data-radius_size="off"] .button::after,
+#window[data-radius_size="off"] #window > .dialog.popped,
+#window[data-radius_size="off"] .player.unseen .equips:not(*:empty),
+#window[data-radius_size="off"] .menu,
+#window[data-radius_size="off"] .left.pane > .menubutton,
+#window[data-radius_size="off"] #splash > div,
+#window[data-radius_size="off"].mobile:not(.chess) .player[data-position="0"] .equips {
+	border-radius: 0px;
+}
+
+#window[data-radius_size="increase"] #system > div > div,
+#window[data-radius_size="increase"] #mebg,
+#window[data-radius_size="increase"] .control,
+#window[data-radius_size="increase"] .player,
+#window[data-radius_size="increase"] .player > .turned,
+#window[data-radius_size="increase"] .player::after,
+#window[data-radius_size="increase"] .card,
+#window[data-radius_size="increase"] .card::after,
+#window[data-radius_size="increase"] .avatar,
+#window[data-radius_size="increase"] .avatar2,
+#window[data-radius_size="increase"] .button,
+#window[data-radius_size="increase"] .button::after,
+#window[data-radius_size="increase"] #window > .dialog.popped,
+#window[data-radius_size="increase"] .player.unseen .equips:not(*:empty),
+#window[data-radius_size="increase"] .menu,
+#window[data-radius_size="increase"] .left.pane > .menubutton,
+#window[data-radius_size="increase"] #splash > div,
+#window[data-radius_size="increase"].mobile:not(.chess) .player[data-position="0"] .equips {
+	border-radius: 16px;
+}
+
+.loading-screen {
+	background-color: black;
+	height: 100%;
+	width: 100%;
+	z-index: 31415926;
+}
+
+/*--------动画--------*/
+@keyframes shadow_thunder {
+	0% {
+		box-shadow: rgba(0, 0, 0, 1) 0 0 1px, rgba(0, 0, 0, 0.1) 0 0 40px, rgba(100, 74, 139, 0.5) 0 0 60px, rgba(100, 74, 139, 0.5) 0 0 100px, black 0 0 1px;
+	}
+	50% {
+		box-shadow: rgba(0, 0, 0, 1) 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 40px, rgba(100, 74, 139, 1) 0 0 60px, rgba(100, 74, 139, 1) 0 0 100px, black 0 0 1px;
+	}
+	100% {
+		box-shadow: rgba(0, 0, 0, 1) 0 0 1px, rgba(0, 0, 0, 0.1) 0 0 40px, rgba(100, 74, 139, 0.5) 0 0 60px, rgba(100, 74, 139, 0.5) 0 0 100px, black 0 0 1px;
+	}
+}
+@keyframes cardeffect {
+	0% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+
+	2% {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	50% {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	100% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+	/*from{box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;}
+	to{box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px !important}*/
+}
+@keyframes control_glow {
+	0% {
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	}
+
+	30% {
+		box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px;
+	}
+
+	70% {
+		box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px;
+	}
+
+	100% {
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	}
+	/*from{box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;}
+	to{box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px !important}*/
+}
+@-webkit-keyframes control_glow {
+	0% {
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	}
+
+	30% {
+		box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px;
+	}
+
+	70% {
+		box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px;
+	}
+
+	100% {
+		box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+	}
+	/*from{box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;}
+	to{box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px !important}*/
+}
+@keyframes cardflip {
+	from {
+		transform: perspective(600px) rotateY(-90deg) translateX(52px);
+	}
+
+	to {
+		transform: perspective(600px) rotateY(0deg) translateX(0);
+	}
+}
+@-webkit-keyframes cardflip {
+	from {
+		transform: perspective(600px) rotateY(-90deg) translateX(52px);
+	}
+
+	to {
+		transform: perspective(600px) rotateY(0deg) translateX(0);
+	}
+}
+@keyframes playerflip {
+	from {
+		transform: perspective(1200px) rotateY(-90deg) translateX(150px);
+	}
+
+	to {
+		transform: perspective(1200px) rotateY(0deg) translateX(0);
+	}
+}
+@keyframes playerflip {
+	from {
+		transform: perspective(1200px) rotateY(-90deg) translateX(150px);
+	}
+
+	to {
+		transform: perspective(1200px) rotateY(0deg) translateX(0);
+	}
+}
+@-webkit-keyframes playerflip {
+	from {
+		transform: perspective(1200px) rotateY(-90deg) translateX(150px);
+	}
+
+	to {
+		transform: perspective(1200px) rotateY(0deg) translateX(0);
+	}
+}
+@keyframes splash {
+	from {
+		opacity: 0;
+		transform: translateY(-300px);
+	}
+}
+@-webkit-keyframes splash {
+	from {
+		opacity: 0;
+		transform: translateY(-300px);
+	}
+}
+@keyframes game_start {
+	from {
+		opacity: 0;
+	}
+}
+@-webkit-keyframes game_start {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes equip_hover {
+	0% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 0;
+	}
+}
+@-webkit-keyframes equip_hover {
+	0% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 0;
+	}
+}
+@keyframes buttonclick {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.9);
+	}
+}
+@-webkit-keyframes buttonclick {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.9);
+	}
+}
+@keyframes equip_hover2 {
+	0% {
+	}
+
+	50% {
+		opacity: 0.6;
+	}
+
+	100% {
+		opacity: 0.3;
+	}
+}
+@-webkit-keyframes equip_hover2 {
+	0% {
+	}
+
+	50% {
+		opacity: 0.6;
+	}
+
+	100% {
+		opacity: 0.3;
+	}
+}
+@keyframes dialog_start {
+	from {
+		opacity: 0;
+		top: 100px;
+	}
+}
+@-webkit-keyframes dialog_start {
+	from {
+		opacity: 0;
+		top: 100px;
+	}
+}
+@keyframes dialog_start2 {
+	from {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+}
+@-webkit-keyframes dialog_start2 {
+	from {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+}
+@keyframes replaceme {
+	from {
+		opacity: 0;
+		transform: translateY(120px);
+	}
+}
+@-webkit-keyframes replaceme {
+	from {
+		opacity: 0;
+		transform: translateY(120px);
+	}
+}
+@keyframes replaceenemy {
+	from {
+		opacity: 0;
+		transform: translateY(-120px);
+	}
+}
+@-webkit-keyframes replaceenemy {
+	from {
+		opacity: 0;
+		transform: translateY(-120px);
+	}
+}
+@keyframes drawing {
+	0% {
+		opacity: 0;
+		left: calc(50% - 52px);
+		top: calc(50% - 52px);
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+@-webkit-keyframes drawing {
+	0% {
+		opacity: 0;
+		left: calc(50% - 52px);
+		top: calc(50% - 52px);
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes drawing2 {
+	0% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+@-webkit-keyframes drawing2 {
+	0% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes card_start {
+	from {
+		opacity: 0;
+		transform: scale(0);
+	}
+}
+@-webkit-keyframes card_start {
+	from {
+		opacity: 0;
+		transform: scale(0);
+	}
+}
+@keyframes history_start {
+	from {
+		opacity: 0;
+		margin-bottom: -50px;
+	}
+}
+@-webkit-keyframes history_start {
+	from {
+		opacity: 0;
+		margin-bottom: -50px;
+	}
+}
+@keyframes card_start2 {
+	from {
+		opacity: 0;
+		transform: scale(0);
+		margin-left: -52px;
+		margin-right: -52px;
+	}
+}
+@-webkit-keyframes card_start2 {
+	from {
+		opacity: 0;
+		transform: scale(0);
+		margin-left: -52px;
+		margin-right: -52px;
+	}
+}
+@keyframes card_judgestart {
+	from {
+		opacity: 0;
+		transform: scale(0) rotateY(-180deg) perspective(600px);
+	}
+}
+@-webkit-keyframes card_judgestart {
+	from {
+		opacity: 0;
+		transform: scale(0) rotateY(-180deg) perspective(600px);
+	}
+}
+@keyframes sidebar {
+	from {
+		left: -120px;
+		opacity: 0;
+	}
+}
+@-webkit-keyframes sidebar {
+	from {
+		left: -120px;
+		opacity: 0;
+	}
+}
+@keyframes zoom_button {
+	from {
+		margin-top: -48px;
+		margin-bottom: -48px;
+		transform: scale(0);
+		opacity: 0;
+	}
+}
+@-webkit-keyframes zoom_button {
+	from {
+		margin-top: -48px;
+		margin-bottom: -48px;
+		transform: scale(0);
+		opacity: 0;
+	}
+}
+@keyframes config {
+	from {
+		margin-top: -28px;
+		opacity: 0;
+	}
+}
+@-webkit-keyframes config {
+	from {
+		margin-top: -28px;
+		opacity: 0;
+	}
+}
+@keyframes zoomin {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+	}
+}
+@-webkit-keyframes zoomin {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+	}
+}
+@keyframes zoomout {
+	from {
+		opacity: 0;
+		transform: scale(2);
+	}
+}
+@-webkit-keyframes zoomout {
+	from {
+		opacity: 0;
+		transform: scale(2);
+	}
+}
+@keyframes zoomout3 {
+	from {
+		opacity: 0;
+		transform: scale(3);
+	}
+}
+@-webkit-keyframes zoomout3 {
+	from {
+		opacity: 0;
+		transform: scale(3);
+	}
+}
+@keyframes zoomout4 {
+	from {
+		opacity: 0;
+		transform: scale(4);
+	}
+}
+@-webkit-keyframes zoomout4 {
+	from {
+		opacity: 0;
+		transform: scale(4);
+	}
+}
+@keyframes flash {
+	0% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
+@-webkit-keyframes flash {
+	0% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
+@keyframes flip {
+	from {
+		transform: perspective(1000px) rotateY(0);
+	}
+
+	to {
+		transform: perspective(1000px) rotateY(360deg);
+	}
+}
+@-webkit-keyframes flip {
+	from {
+		transform: perspective(1000px) rotateY(0);
+	}
+
+	to {
+		transform: perspective(1000px) rotateY(360deg);
+	}
+}
+@keyframes background-position-left-center-right-center-left-center {
+	0% {
+		background-position: left center;
+	}
+
+	50% {
+		background-position: right center;
+	}
+
+	100% {
+		background-position: left center;
+	}
+}
+@keyframes opacity-0-1 {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+@keyframes opacity-1-0 {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+/*--------其它--------*/
+/* 解放下拉框滚动条！ */
+:not(select)::-webkit-scrollbar {
+	display: none;
+}
+/* 火狐和chrome120+隐藏滚动条 */
+:not(select) {
+	scrollbar-width: none;
+}
+/* 更新进度条 */
+progress.progress {
+	width: 75%;
+	height: 10px;
+	border: 2px solid;
+	border-radius: 15px;
+	vertical-align: middle;
+	-webkit-appearance: none;
+}
+progress.progress::-webkit-progress-bar {
+	background: rgb(239, 239, 239);
+	border-radius: 0.2rem;
+}
+progress.progress::-webkit-progress-value {
+	border-radius: 0.2rem;
+	background: rgb(0, 117, 255);
+}
+/* 给poptip增加下划线和加粗 */
+#window noname-poptip {
+	text-decoration: underline;
+	font-weight: bolder;
+}
