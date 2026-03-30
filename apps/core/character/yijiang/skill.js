@@ -14822,7 +14822,7 @@ const skills = {
 			result = await player
 				.chooseTarget({
 					selectTarget(card, player, target) {
-						const card = _status.event.card;
+						card = get.event().card;
 						const type = get.type(card);
 						switch (type) {
 							case "basic":
