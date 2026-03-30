@@ -3639,9 +3639,11 @@ const skills = {
 	},
 	fuzhu: {
 		audio: 2,
-		trigger: { global: "phaseJieshuBegin" },
+		trigger: {
+			global: "phaseJieshuBegin",
+		},
 		filter(event, player) {
-			return event.player != player && event.player.hasSex("male") && ui.cardPile.childElementCount <= player.hp * 10;
+			return event.player !== player && event.player.hasSex("male") && ui.cardPile.childElementCount <= player.hp * 10;
 		},
 		check(event, player) {
 			return get.attitude(player, event.player) < 0 && get.effect(event.player, { name: "sha" }, player, player) > 0;
@@ -3653,24 +3655,26 @@ const skills = {
 			_status.event.getParent("fuzhu").washed = true;
 			return "remove";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.washed = false;
 			lib.onwash.push(lib.skill.fuzhu.onWash);
-			event.total = game.players.length + game.dead.length;
-			"step 1";
-			event.total--;
-			var card = get.cardPile2(function (card) {
-				return card.name == "sha" && player.canUse(card, trigger.player, false);
-			});
-			if (card) {
-				player.useCard(card, trigger.player, false);
+			let total = game.players.length + game.dead.length;
+			while (true) {
+				total--;
+				const card = get.cardPile2(card => {
+					return card.name == "sha" && player.canUse(card, trigger.player, false);
+				});
+				if (card) {
+					await player.useCard({
+						card,
+						targets: [trigger.player],
+						addCount: false,
+					});
+				}
+				if (!(total > 0 && !event.washed && ui.cardPile.childElementCount <= player.hp * 10 && trigger.player.isIn())) {
+					break;
+				}
 			}
-			"step 2";
-			if (event.total > 0 && !event.washed && ui.cardPile.childElementCount <= player.hp * 10 && trigger.player.isIn()) {
-				event.goto(1);
-			}
-			"step 3";
 			lib.onwash.remove(lib.skill.fuzhu.onWash);
 			game.washCard();
 		},
