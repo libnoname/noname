@@ -13696,8 +13696,8 @@ const skills = {
 	},
 	xuanhuo: {
 		audio: 2,
-		enable: "phaseUse",
 		usable: 1,
+		enable: "phaseUse",
 		discard: false,
 		lose: false,
 		delay: 0,
@@ -13726,31 +13726,44 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			// game.delay();
-			"step 1";
-			player.gainPlayerCard(target, "he", true);
-			"step 2";
-			var source = target;
-			event.card = result.links[0];
-			if (player.getCards("h").includes(event.card)) {
-				player
-					.chooseTarget("将" + get.translation(event.card) + "交给另一名其他角色", function (card, player, target) {
-						return target != _status.event.sourcex && target != player;
-					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target);
-					})
-					.set("sourcex", target);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+
+			await player.give(cards, target);
+
+			let result = await player
+				.gainPlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				player.give(card, result.targets[0], "give");
-				game.delay();
+
+			const card = result.cards[0];
+			if (!player.hasCard(cardx => cardx === card, "h")) {
+				return;
+			}
+				
+			result = await player
+				.chooseTarget({
+					prompt: `将${get.translation(card)}交给另一名其他角色`,
+					filterTarget(card, player, target) {
+						return target !== get.event().sourcex && target !== player;
+					},
+					ai(target) {
+						return get.attitude(get.event().player, target);
+					},
+				})
+				.set("sourcex", target)
+				.forResult();
+
+			if (result.bool && result.targets?.length) {
+				await player.give(card, result.targets[0], "give");
+				await game.delay();
 			}
 		},
 		ai: {
