@@ -1223,7 +1223,7 @@ const skills = {
 					制衡: `令${targetName}弃置至多两张牌，然后其摸等量的牌`,
 				};
 
-				const choiceList = controls.map(control => `<span style="opacity:0.5">${controlMap[control]}</span>`);
+				const choiceList = ["摸牌", "弃牌", "制衡"].map(control => (controls.includes(control) ? controlMap[control] : `<span style="opacity:0.5">${controlMap[control]}</span>`));
 				result = await player
 					.chooseControl({
 						controls,
