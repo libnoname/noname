@@ -6968,39 +6968,53 @@ const skills = {
 	},
 	zhongyong: {
 		audio: 2,
-		trigger: { player: "shaMiss" },
-		direct: true,
+		trigger: {
+			player: "shaMiss",
+		},
 		filter(event, player) {
 			return event.responded && get.itemtype(event.responded.cards) == "cards";
 		},
-		content() {
-			"step 0";
-			var cards = trigger.responded.cards;
-			event.cards = cards;
-			player
-				.chooseTarget("忠勇：将" + get.translation(trigger.responded.cards) + "交给一名角色", function (card, player, target) {
-					return target != _status.event.source;
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					if (target.countCards("h", "shan") && target.countCards("h") >= 2) {
-						att /= 1.5;
-					}
-					return att;
+		async cost(event, trigger, player) {
+			const cards = trigger.responded.cards;
+
+			event.result = await player
+				.chooseTarget({
+					prompt: `忠勇：将${get.translation(trigger.responded.cards)}交给一名角色`,
+					filterTarget(card, player, target) {
+						return target !== get.event().source;
+					},
+					ai(target) {
+						const att = get.attitude(get.player(), target);
+						const cards = target.getCards("h");
+						if (cards.length >= 2 && cards.some(card => card.name === "shan")) {
+							att /= 1.5;
+						}
+						return att;
+					},
 				})
 				.set("source", trigger.target);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("zhongyong", result.targets);
-				result.targets[0].gain(event.cards, "gain2");
-				if (result.targets[0] == player) {
-					event.finish();
-				}
-			} else {
-				event.finish();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const cards = trigger.responded.cards;
+			const target = event.targets[0];
+			if (target === player) {
+				return;
 			}
-			"step 2";
-			player.chooseToUse("是否对" + get.translation(trigger.target) + "再使用一张杀？", { name: "sha" }, trigger.target, -1).set("addCount", false);
+
+			await player
+				.chooseToUse({
+					prompt: `是否对${get.translation(trigger.target)}使用一张杀？`,
+					filterCard(card) {
+						return card.name === "sha";
+					},
+					filterTarget(card, player, target) {
+						return target === get.event().target;
+					},
+					selectTarget: -1,
+				})
+				.set("target", trigger.target)
+				.set("addCount", false);
 		},
 	},
 	xinzhongyong: {
