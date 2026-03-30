@@ -1108,156 +1108,172 @@ const skills = {
 			source: "damageSource",
 		},
 		filter(event, player) {
-			return game.hasPlayer(function (target) {
-				return ["摸牌", "弃牌", "制衡"].some(function (control) {
-					var storage = player.getStorage("xinyaoming_used");
-					if (storage.includes(control)) {
-						return false;
+			const storage = player.getStorage("xinyaoming_used");
+
+			const items = ["摸牌", "弃牌", "制衡"].filter(control => !storage.includes(control));
+			if (items.length === 0) {
+				return false;
+			}
+
+			return game.hasPlayer(target => {
+				return items.some(control => {
+					switch (control) {
+						case "摸牌":
+							return target !== player;
+						case "弃牌":
+							return target !== player && target.countCards("h") > 0;
+						case "制衡":
+							return true;
+						default:
+							return false;
 					}
-					if (control == "摸牌" && target != player) {
-						return true;
-					}
-					if (control == "弃牌" && target != player && target.countCards("h")) {
-						return true;
-					}
-					if (control == "制衡") {
-						return true;
-					}
-					return false;
 				});
 			});
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var func = function (player) {
-				game.countPlayer(function (target) {
-					var list = ["摸牌", "弃牌", "制衡"].filter(function (control) {
-							var storage = player.getStorage("xinyaoming_used");
-							if (storage.includes(control)) {
-								return false;
-							}
-							if (control == "摸牌" && target != player) {
-								return true;
-							}
-							if (control == "弃牌" && target != player && target.countCards("h")) {
-								return true;
-							}
-							if (control == "制衡") {
-								return true;
-							}
-							return false;
-						}),
-						str = "";
-					for (var i of list) {
-						str += i + "<br>";
-					}
-					str = str.slice(0, -4);
-					target.prompt(str);
-				});
-			};
-			if (event.player == game.me) {
-				func(player);
-			} else if (event.isOnline()) {
-				player.send(func, player);
+		async cost(event, trigger, player) {
+			if (player === game.me) {
+				availableControlsPrompt(player);
+			} else {
+				player.send(availableControlsPrompt, player);
 			}
-			player
-				.chooseTarget(get.prompt2("xinyaoming"), function (card, player, target) {
-					var storage = player.getStorage("xinyaoming_used");
-					if (!storage.includes("制衡")) {
-						return true;
-					}
-					if (target == player) {
-						return false;
-					}
-					return !storage.includes("摸牌") || target.countCards("h");
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var storage = player.getStorage("xinyaoming_used");
-					if (get.attitude(player, target) > 0 && !storage.includes("摸牌") && target != player) {
-						return get.effect(target, { name: "draw" }, player, player);
-					}
-					if (get.attitude(player, target) < 0 && !storage.includes("弃牌") && target != player && target.countCards("h")) {
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
-					}
-					if (get.attitude(player, target) > 0 && !storage.includes("制衡")) {
-						return get.effect(target, { name: "kaihua" }, player, player);
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("xinyaoming", target);
-				var controls = ["摸牌", "弃牌", "制衡"].filter(function (control) {
-					var storage = player.getStorage("xinyaoming_used");
-					if (storage.includes(control)) {
-						return false;
-					}
-					if (control == "摸牌" && target != player) {
-						return true;
-					}
-					if (control == "弃牌" && target != player && target.countCards("h")) {
-						return true;
-					}
-					if (control == "制衡") {
-						return true;
-					}
-					return false;
-				});
-				if (controls.length == 1) {
-					event._result = { control: controls[0] };
-				} else {
-					var str = get.translation(target);
-					var choiceList = ["令" + str + "摸一张牌", "弃置" + str + "一张手牌", "令" + str + "弃置至多两张牌，然后其摸等量的牌"];
-					var list = ["摸牌", "弃牌", "制衡"];
-					for (var i = 0; i < 3; i++) {
-						if (!controls.includes(list[i])) {
-							choiceList[i] = '<span style="opacity:0.5">' + choiceList[i] + "</span>";
+
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("xinyaoming"),
+					filterTarget(card, player, target) {
+						const storage = player.getStorage("xinyaoming_used");
+						if (!storage.includes("制衡")) {
+							return true;
 						}
+
+						if (target === player) {
+							return false;
+						}
+						return !storage.includes("摸牌") || target.countCards("h") > 0;
+					},
+					ai(target) {
+						const player = get.player();
+						const storage = player.getStorage("xinyaoming_used");
+						if (get.attitude(player, target) > 0 && !storage.includes("摸牌") && target !== player) {
+							return get.effect(target, { name: "draw" }, player, player);
+						}
+						if (get.attitude(player, target) < 0 && !storage.includes("弃牌") && target !== player && target.countCards("h") > 0) {
+							return get.effect(target, { name: "guohe_copy2" }, player, player);
+						}
+						if (get.attitude(player, target) > 0 && !storage.includes("制衡")) {
+							return get.effect(target, { name: "kaihua" }, player, player);
+						}
+						return 0;
 					}
-					player
-						.chooseControl(controls)
-						.set("choiceList", choiceList)
-						.set("ai", function () {
-							var player = _status.event.player;
-							var target = _status.event.target;
-							var controls = _status.event.controls.slice();
-							var map = {
+				})
+				.forResult();
+
+			return;
+
+			function availableControlsPrompt(player) {
+				const storage = player.getStorage("xinyaoming_used");
+				const controls = ["摸牌", "弃牌", "制衡"].filter(control => !storage.includes(control));
+
+				for (const target of game.filterPlayer()) {
+					const prompt = controls
+						.filter(control => {
+							switch (control) {
+								case "摸牌":
+									return target !== player;
+								case "弃牌":
+									return target !== player && target.countCards("h") > 0;
+								case "制衡":
+									return true;
+								default:
+									return false;
+							}
+						})
+						.join("<br/>");
+					target.prompt(prompt);
+				}
+			}
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+
+			const storage = player.getStorage("xinyaoming_used");
+			const controls = ["摸牌", "弃牌", "制衡"]
+				.filter(control => !storage.includes(control))
+				.filter(control => {
+					switch (control) {
+						case "摸牌":
+							return target !== player;
+						case "弃牌":
+							return target !== player && target.countCards("h") > 0;
+						case "制衡":
+							return true;
+						default:
+							return false;
+					}
+				});
+				
+			/** @type {Partial<Result>} */
+			let result;
+			if (controls.length > 1) {
+				const targetName = get.translation(target);
+				const controlMap = {
+					摸牌: `令${targetName}摸一张牌`,
+					弃牌: `弃置${targetName}一张手牌`,
+					制衡: `令${targetName}弃置至多两张牌，然后其摸等量的牌`,
+				};
+
+				const choiceList = controls.map(control => `<span style="opacity:0.5">${controlMap[control]}</span>`);
+				result = await player
+					.chooseControl({
+						controls,
+						choiceList,
+						ai() {
+							const { player, target, controls } = get.event();
+							const map = {
 								摸牌: get.effect(target, { name: "draw" }, player, player),
 								弃牌: get.effect(target, { name: "guohe_copy2" }, player, player),
 								制衡: get.effect(target, { name: "kaihua" }, player, player),
 							};
-							controls.sort((a, b) => map[b] - map[a]);
-							return controls[0];
-						})
-						.set("target", target);
-				}
+							return controls.toSorted((a, b) => map[b] - map[a])[0];
+						}
+					})
+					.set("target", target)
+					.forResult();
 			} else {
-				event.finish();
+				result = { control: controls[0] };
 			}
-			"step 2";
+
 			player.addTempSkill("xinyaoming_used");
 			player.markAuto("xinyaoming_used", [result.control]);
 			switch (result.control) {
 				case "摸牌":
-					target.draw();
+					await target.draw();
 					break;
 				case "弃牌":
-					player.discardPlayerCard(target, "h", true);
+					await player.discardPlayerCard({
+						target,
+						position: "h",
+						forced: true,
+					});
 					break;
 				case "制衡":
-					target.chooseToDiscard([1, 2], "he", "邀名：弃置至多两张牌，然后摸等量的牌", true).set("ai", card => lib.skill.zhiheng.check(card));
+					result = await target
+						.chooseToDiscard({
+							prompt: "邀名：弃置至多两张牌，然后摸等量的牌",
+							selectCard: [1, 2],
+							position: "he",
+							forced: true,
+							ai(card) {
+								return lib.skill.zhiheng.check(card);
+							},
+						})
+						.forResult();
+					
+					if (result.bool && result.cards?.length) {
+						await target.draw(result.cards.length);
+					}
 					break;
-			}
-			if (result.control != "制衡") {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				target.draw(result.cards.length);
 			}
 		},
 		subSkill: {
