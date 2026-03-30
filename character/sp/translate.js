@@ -1438,7 +1438,7 @@ const translates = {
 	ol_taoqian: "OL陶谦",
 	ol_taoqian_prefix: "OL",
 	olzongluan: "纵乱",
-	olzongluan_info: "准备阶段，你可以选择一名角色，其视为使用一张可以指定任意名角色的【杀】，然后你弃置X张牌（X为以此法受到伤害的角色数）。",
+	olzongluan_info: "准备阶段，你可以选择一名角色，其视为使用一张可以指定攻击范围内任意名角色的【杀】，然后你弃置X张牌（X为以此法受到伤害的角色数）。",
 	olzhaohuo: "招祸",
 	olzhaohuo_info: "锁定技，其他角色于你的回合内首次受到伤害后，其须交给你一张手牌，你本回合不能使用或打出这些牌，且这些牌本回合不计入手牌上限。",
 	olwenren: "温仁",
