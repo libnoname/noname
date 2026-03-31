@@ -4992,71 +4992,60 @@ const skills = {
 		},
 	},
 	jiaozhao: {
-		mod: {
-			targetEnabled(card, player, target) {
-				if (card.storage && card.storage.jiaozhao && card.storage.jiaozhao == target) {
-					return false;
-				}
-			},
-		},
-		enable: "phaseUse",
-		usable: 1,
 		audio: 2,
-		check(card) {
-			return 8 - get.value(card);
-		},
+		usable: 1,
+		enable: "phaseUse",
 		filter(event, player) {
 			return player.countMark("xindanxin") < 2 && player.countCards("h") > 0;
 		},
 		filterCard: true,
+		check(card) {
+			return 8 - get.value(card);
+		},
+		locked: false,
 		discard: false,
 		lose: false,
 		delay: false,
-		locked: false,
-		content() {
-			"step 0";
-			player.showCards(cards);
-			"step 1";
-			if (player.countMark("xindanxin") > 1) {
-				event.target = player;
-			} else {
-				var targets = game.filterPlayer();
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.showCards(cards);
+			let jiaozhaoTarget = player;
+			if (player.countMark("xindanxin") <= 1) {
+				const targets = game.filterPlayer();
 				targets.remove(player);
-				targets.sort(function (a, b) {
-					return Math.max(1, get.distance(player, a)) - Math.max(1, get.distance(player, b));
-				});
-				var distance = Math.max(1, get.distance(player, targets[0]));
-				for (var i = 1; i < targets.length; i++) {
+				targets.sort((a, b) => Math.max(1, get.distance(player, a)) - Math.max(1, get.distance(player, b)));
+				const distance = Math.max(1, get.distance(player, targets[0]));
+				for (let i = 1; i < targets.length; i++) {
 					if (Math.max(1, get.distance(player, targets[i])) > distance) {
 						targets.splice(i);
 						break;
 					}
 				}
-				player
-					.chooseTarget("请选择【矫诏】的目标", true, function (card, player, target) {
-						return _status.event.targets.includes(target);
+				const result = await player
+					.chooseTarget({
+						prompt: "请选择【矫诏】的目标",
+						filterTarget(card, player, target) {
+							return get.event().targets.includes(target);
+						},
+						forced: true,
+						ai(target) {
+							return get.attitude(get.player(), target);
+						},
 					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target);
-					})
-					.set("targets", targets);
-			}
-			"step 2";
-			if (!event.target) {
-				event.target = result.targets[0];
+					.set("targets", targets)
+					.forResult();
+				jiaozhaoTarget = result.targets[0];
 				player.line(result.targets, "green");
 			}
-			if (!event.target) {
-				event.finish();
+			if (!jiaozhaoTarget) {
 				return;
 			}
-			var list = [];
-			for (var i = 0; i < lib.inpile.length; i++) {
-				var name = lib.inpile[i];
+			const list = [];
+			for (const name of lib.inpile) {
 				if (name == "sha") {
 					list.push(["基本", "", "sha"]);
-					for (var j of lib.inpile_nature) {
-						list.push(["基本", "", "sha", j]);
+					for (const nature of lib.inpile_nature) {
+						list.push(["基本", "", "sha", nature]);
 					}
 				} else if (get.type(name) == "basic") {
 					list.push(["基本", "", name]);
@@ -5064,38 +5053,41 @@ const skills = {
 					list.push(["锦囊", "", name]);
 				}
 			}
-			event.target
-				.chooseButton(["矫诏", [list, "vcard"]], true)
-				.set("ai", function (button) {
-					var player = _status.event.getParent().player,
-						card = {
+			const result = await jiaozhaoTarget
+				.chooseButton({
+					createDialog: ["矫诏", [list, "vcard"]],
+					forced: true,
+					ai(button) {
+						const player = get.event(0).getParent().player;
+						const card = {
 							name: button.link[2],
 							nature: button.link[3],
 							storage: {
 								jiaozhao: player,
 							},
 						};
-					return player.getUseValue(card, null, true) * _status.event.att;
+						return player.getUseValue(card, null, true) * get.event().att;
+					}
 				})
-				.set("att", get.attitude(event.target, player) > 0 ? 1 : -1);
-			"step 3";
-			var chosen = result.links[0][2];
-			var nature = result.links[0][3];
-			var fakecard = {
+				.set("att", get.attitude(jiaozhaoTarget, player) > 0 ? 1 : -1)
+				.forResult();
+			const chosen = result.links[0][2];
+			const nature = result.links[0][3];
+			const fakecard = {
 				name: chosen,
 				storage: { jiaozhao: player },
 			};
 			if (nature) {
 				fakecard.nature = nature;
 			}
-			event.target.showCards(
+			await jiaozhaoTarget.showCards(
 				game.createCard({
 					name: chosen,
 					nature: nature,
 					suit: cards[0].suit,
 					number: cards[0].number,
 				}),
-				get.translation(event.target) + "声明了" + get.translation(chosen)
+				get.translation(jiaozhaoTarget) + "声明了" + get.translation(chosen)
 			);
 			player.storage.jiaozhao = cards[0];
 			player.storage.jiaozhao_card = fakecard;
@@ -5109,13 +5101,20 @@ const skills = {
 			);
 			player.addTempSkill("jiaozhao2", "phaseUseEnd");
 		},
+		group: "jiaozhao3",
+		mod: {
+			targetEnabled(card, player, target) {
+				if (card.storage && card.storage.jiaozhao && card.storage.jiaozhao == target) {
+					return false;
+				}
+			},
+		},
 		ai: {
 			order: 9,
 			result: {
 				player: 1,
 			},
 		},
-		group: "jiaozhao3",
 	},
 	jiaozhao2: {
 		enable: "phaseUse",
