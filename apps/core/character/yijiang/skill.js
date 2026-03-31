@@ -8873,50 +8873,40 @@ const skills = {
 			});
 		},
 		limited: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var targets = game.filterPlayer();
-			targets.remove(player);
-			event.targets = targets;
-			event.damages = [];
-			"step 1";
-			if (event.targets.length) {
-				var current = event.targets.shift();
-				if (current.group == "wei") {
-					current
-						.chooseBool("是否令" + get.translation(player) + "回复1点体力？")
-						.set("ai", function () {
-							return get.attitude(_status.event.player, _status.event.target) > 2;
-						})
-						.set("target", player);
-					event.current = current;
-				} else {
-					event.redo();
+			const phaseTargets = game.filterPlayer(current => current !== player && current.group === "wei");
+			const damages = [];
+			for (const current of phaseTargets) {
+				if (current.group != "wei") {
+					continue;
 				}
-			} else {
-				event.goto(3);
+				const result = await current
+					.chooseBool({
+						prompt: `是否令${get.translation(player)}回复1点体力？`,
+						ai() {
+							const { player, target } = get.event();
+							return get.attitude(player, target) > 2;
+						},
+					})
+					.set("target", player)
+					.forResult();
+
+				if (result.bool) {
+					damages.push(current);
+					current.line(player, "green");
+					game.log(current, "令", player, "回复1点体力");
+					await player.recover({ source: current });
+				}
 			}
-			"step 2";
-			if (result.bool) {
-				event.damages.push(event.current);
-				event.current.line(player, "green");
-				game.log(event.current, "令", player, "回复1点体力");
-				player.recover(event.current);
-			}
-			if (event.targets.length) {
-				event.goto(1);
-			}
-			"step 3";
-			if (event.damages.length) {
-				var next = game.createEvent("xingshuaI_next");
+			if (damages.length) {
+				const next = game.createEvent("xingshuai_next");
 				event.next.remove(next);
 				trigger.after.push(next);
-				next.targets = event.damages;
-				next.setContent(function () {
-					targets.shift().damage();
-					if (targets.length) {
-						event.redo();
+				next.targets = damages;
+				next.setContent(async (event) => {
+					for (const target of event.targets) {
+						await target.damage();
 					}
 				});
 			}
