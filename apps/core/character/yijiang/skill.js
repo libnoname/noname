@@ -2157,44 +2157,59 @@ const skills = {
 				return current.countCards("h") > 0;
 			});
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("rezhenjun"), (card, player, target) => {
-				return target.countCards("he");
-			}).ai = function (target) {
-				return -get.attitude(_status.event.player, target) * (target.countCards("e") + 1);
-			};
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				var num = Math.max(target.countCards("h") - target.hp, 1);
-				player.logSkill("rezhenjun", target);
-				player.discardPlayerCard(num, target, true, "allowChooseAll");
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2("rezhenjun"), (card, player, target) => {
+					return target.countCards("he");
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return -get.attitude(player, target) * (target.countCards("e") + 1);
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const num = Math.max(target.countCards("h") - target.hp, 1);
+
+			let result = await player
+				.discardPlayerCard({
+					target,
+					selectButton: num,
+					forced: true,
+					allowChooseAll: true,
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
-			"step 2";
-			if (result.cards && result.cards.length) {
-				event.num = 0;
-				for (var i = 0; i < result.cards.length; i++) {
-					if (get.type(result.cards[i]) != "equip") {
-						event.num++;
-					}
+
+			let num2 = 0;
+			for (const card of result.cards) {
+				if (get.type(card) !== "equip") {
+					num2++;
 				}
-				if (event.num > 0) {
-					var prompt = "弃置" + get.cnNumber(event.num) + "张牌，或令" + get.translation(event.target) + "摸" + get.cnNumber(event.num) + "张牌";
-					player.chooseToDiscard(event.num, prompt, "he", "allowChooseAll").ai = function (card) {
+			}
+
+			if (num2 <= 0) {
+				return;
+			}
+
+			const prompt = `弃置${get.cnNumber(num2)}张牌，或令${get.translation(target)}摸${get.cnNumber(num2)}张牌`;
+			result = await player
+				.chooseToDiscard({
+					prompt,
+					selectCard: num2,
+					position: "he",
+					allowChooseAll: true,
+					ai(card) {
 						return 5 - get.value(card);
-					};
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
-			}
-			"step 3";
+					},
+				})
+				.forResult();
 			if (!result.bool) {
-				event.target.draw(event.num);
+				await target.draw(num2);
 			}
 		},
 	},
