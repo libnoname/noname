@@ -2690,7 +2690,10 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		onremove: true,
 		async cost(event, trigger, player) {
-			const num1 = game.countPlayer(current => current.hasCard({ suit: "diamond" }, "ej"));
+			const num1 = game
+				.filterPlayer()
+				.map(current => current.countCards("ej", { suit: "diamond" }))
+				.reduce((a, b) => a + b, 0);
 			const num2 = player.countMark("xinjiexun");
 
 			let prompt = `令目标摸${get.cnNumber(num1)}张牌`;
