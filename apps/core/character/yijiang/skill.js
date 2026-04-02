@@ -11160,43 +11160,46 @@ const skills = {
 			}
 			return false;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("chanhui"), function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					var evt = _status.event.getTrigger();
-					return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("chanhui"),
+					filterTarget(card, player, target) {
+						if (player === target) {
+							return false;
+						}
+						const evt = _status.event.getTrigger();
+						return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+					},
+					ai(target) {
+						const event = get.event();
+						const trigger = event.getTrigger();
+						const player = get.player();
+						return get.effect(target, trigger.card, player, player) + 0.01;
+					},
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, player, player) + 0.01;
-				});
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-			} else {
-				event.finish();
-			}
-			"step 2";
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
 			player.addTempSkill("chanhui2");
-			player.logSkill("chanhui", event.target);
-			event.target.chooseCard("交给" + get.translation(player) + "一张手牌，或成为" + get.translation(trigger.card) + "的额外目标").set("ai", function (card) {
-				return 5 - get.value(card);
-			});
-			"step 3";
+			const result = await target
+				.chooseCard({
+					prompt: `交给${get.translation(player)}一张手牌，或成为${get.translation(trigger.card)}的额外目标`,
+					ai(card) {
+						return 5 - get.value(card);
+					}
+				})
+				.forResult();
 			if (result.bool) {
-				target.give(result.cards, player);
+				await target.give(result.cards, player);
 				trigger.untrigger();
-				trigger.getParent().player = event.target;
-				game.log(event.target, "成为了", trigger.card, "的使用者");
+				trigger.getParent().player = target;
+				game.log(target, "成为了", trigger.card, "的使用者");
 			} else {
-				game.log(event.target, "成为了", trigger.card, "的额外目标");
-				trigger.getParent().targets.push(event.target);
+				game.log(target, "成为了", trigger.card, "的额外目标");
+				trigger.getParent().targets.push(target);
 			}
 		},
 	},
