@@ -2626,48 +2626,60 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		onremove: true,
-		direct: true,
-		content() {
-			"step 0";
-			var num1 = game.countPlayer(function (current) {
-				return current.countCards("ej", { suit: "diamond" });
-			});
-			var num2 = player.countMark("jiexun");
-			event.num1 = num1;
-			event.num2 = num2;
-			var str = "令目标摸" + get.cnNumber(num1) + "张牌";
-			if (num2) {
-				str += "，然后弃置" + get.cnNumber(num2) + "张牌；若目标因此法弃置了所有牌，则你失去“诫训”，然后你发动“复难”时，无须令其获得你使用的牌";
+		async cost(event, trigger, player) {
+			const num1 = game
+				.filterPlayer()
+				.map(current => current.countCards("ej", { suit: "diamond" }))
+				.reduce((a, b) => a + b, 0);
+			const num2 = player.countMark("jiexun");
+
+			let prompt = `令目标摸${get.cnNumber(num1)}张牌`;
+			if (num2 > 0) {
+				prompt = `${prompt}，然后弃置${get.cnNumber(num2)}张牌；若目标因此法弃置了所有牌，则你失去“诫训”，然后你发动“复难”时，无须令其获得你使用的牌`;
 			}
-			player
-				.chooseTarget(get.prompt("jiexun"), function (card, player, target) {
-					return target != player;
-				})
-				.set("ai", function (target) {
-					return _status.event.coeff * get.attitude(_status.event.player, target);
+
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("jiexun"),
+					prompt2: prompt,
+					filterTarget(card, player, target) {
+						return target !== player;
+					},
+					ai(target) {
+						const { player, coeff } = get.event();
+						return coeff * get.attitude(player, target);
+					},
 				})
 				.set("coeff", num1 >= num2 ? 1 : -1)
-				.set("prompt2", str);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("jiexun", target);
-				if (event.num1) {
-					target.draw(event.num1);
-				}
-				player.addMark("jiexun", 1, false);
-			} else {
-				event.finish();
+				.forResult();
+			
+			event.result.cost_data = {
+				num1,
+				num2,
+			};
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const { num1, num2 } = event.cost_data;
+
+			if (num1) {
+				await target.draw(num1);
 			}
-			"step 2";
-			if (event.num2) {
-				event.target.chooseToDiscard(event.num2, true, "he");
-			} else {
-				event.finish();
+			player.addMark("jiexun", 1, false);
+
+			if (!num2) {
+				return;
 			}
-			"step 3";
-			if (result.bool && result.autochoose && result.cards.length == result.rawcards.length) {
+
+			const result = await target
+				.chooseToDiscard({
+					selectCard: num2,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (result.bool && result.autochoose && result.cards?.length === result.rawcards.length) {
 				player.removeSkills("jiexun");
 				player.addSkill("funan_jiexun");
 			}
