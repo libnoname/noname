@@ -5810,28 +5810,31 @@ const skills = {
 	xinjuece: {
 		audio: "juece",
 		audioname: ["dc_liru", "ol_liru"],
-		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		filter(event, player) {
-			return game.hasPlayer(function (player) {
-				return player.countCards("h") == 0;
-			});
+		trigger: {
+			player: "phaseJieshuBegin",
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("xinjuece"), "对一名没有手牌的角色造成1点伤害", function (card, player, target) {
-					return target.countCards("h") == 0;
+		filter(event, player) {
+			return game.hasPlayer(current => current.countCards("h") === 0);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("xinjuece"),
+					prompt2: "对一名没有手牌的角色造成1点伤害",
+					filterTarget(card, player, target) {
+						return target.countCards("h") === 0;
+					},
+					ai(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					}
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("xinjuece", result.targets);
-				result.targets[0].damage();
-			}
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.damage();
 		},
 	},
 	xinmieji: {
@@ -9860,47 +9863,48 @@ const skills = {
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		direct: true,
-		filter(event, player) {
-			if (_status.currentPhase != player) {
-				return false;
+		getIndex(event, player) {
+			if (_status.currentPhase !== player) {
+				return [];
 			}
-			return game.hasPlayer(current => {
-				if (current == player || current.countCards("h")) {
+			return game.filterPlayer(current => {
+				if (current === player || current.countCards("h") > 0) {
 					return false;
 				}
-				var evt = event.getl(current);
-				return evt && evt.hs && evt.hs.length;
+				const evt = event.getl(current);
+				return evt?.hs?.length > 0;
 			});
+		},
+		filter(event, player, _name, target) {
+			return _status.currentPhase === player;
 		},
 		check(event, player) {
 			return get.damageEffect(event.player, player, player) > 0;
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(current => {
-				if (current == player || current.countCards("h")) {
-					return false;
-				}
-				var evt = trigger.getl(current);
-				return evt && evt.hs && evt.hs.length;
-			});
-			event.targets = targets;
-			"step 1";
-			var target = event.targets.shift();
-			event.target = target;
-			player.chooseBool(get.prompt2("juece", target)).set("ai", () => {
-				return get.damageEffect(_status.event.getParent().target, _status.event.player, _status.event.player) >= 0;
-			});
-			"step 2";
-			if (result.bool) {
-				player.logSkill("juece", target);
-				target.damage();
-			}
-			"step 3";
-			if (targets.length) {
-				event.goto(1);
-			}
+		async cost(event, trigger, player) {
+			/** @type {Player} */
+			const target = event.indexedData;
+			
+			const result = await player
+				.chooseBool({
+					prompt: get.prompt2("juece", target),
+					ai() {
+						const { player, target } = get.event();
+						return get.damageEffect(target, player, player) >= 0;
+					},
+				})
+				.set("target", target)
+				.forResult();
+
+			event.result = {
+				bool: result.bool,
+				targets: [target],
+			};
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.damage();
 		},
 		ai: {
 			threaten: 1.1,
