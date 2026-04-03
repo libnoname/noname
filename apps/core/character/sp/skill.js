@@ -38435,7 +38435,7 @@ const skills = {
 		audioname: ["sp_mushun"],
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha";
+			return event.card.name === "sha";
 		},
 		async cost(event, trigger, player) {
 			const controls = ["draw_card"];
@@ -38444,20 +38444,22 @@ const skills = {
 			}
 			controls.push("cancel2");
 			const result = await player
-				.chooseControl(controls)
-				.set("ai", function () {
-					var trigger = _status.event.getTrigger(),
-						player = _status.event.player;
-					if (trigger.target.countCards("he") && get.attitude(_status.event.player, trigger.target) < 0) {
-						return "discard_card";
-					}
-					const num = Math.min(player.getCardUsable("sha"), player.countCards("hs", i => get.name(i) === "sha") + 1);
-					if (!player.hasCard(i => get.value(i) > 6 + num, "e")) {
-						return "draw_card";
-					}
-					return "cancel2";
+				.chooseControl({
+					prompt: get.prompt2(event.skill, trigger.target),
+					controls,
+					ai() {
+						const trigger = get.event().getTrigger();
+						const player = get.player();
+						if (trigger.target.countCards("he") && get.attitude(_status.event.player, trigger.target) < 0) {
+							return "discard_card";
+						}
+						const num = Math.min(player.getCardUsable("sha"), player.countCards("hs", i => get.name(i) === "sha") + 1);
+						if (!player.hasCard(i => get.value(i) > 6 + num, "e")) {
+							return "draw_card";
+						}
+						return "cancel2";
+					},
 				})
-				.set("prompt", get.prompt2(event.skill, trigger.target))
 				.forResult();
 			event.result = {
 				bool: result.control != "cancel2",
@@ -38467,7 +38469,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const result = event.cost_data;
-			if (result == "draw_card") {
+			if (result === "draw_card") {
 				await player.draw();
 			} else if (trigger.target.countCards("he")) {
 				await player.discardPlayerCard(trigger.target, "he", true);
