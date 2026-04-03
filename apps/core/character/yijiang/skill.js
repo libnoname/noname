@@ -3547,65 +3547,70 @@ const skills = {
 	shouxi: {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
-		direct: true,
 		init(player) {
-			if (!player.storage.shouxi) {
-				player.storage.shouxi = [];
-			}
+			player.storage.shouxi ??= [];
 		},
 		filter(event, player) {
-			return event.card.name == "sha" && event.player.isIn();
+			return event.card.name === "sha" && event.player.isIn();
 		},
-		content() {
-			"step 0";
-			var list = lib.inpile.filter(function (i) {
-				if (player.storage.shouxi.includes(i)) {
+		async cost(event, trigger, player) {
+			const cards = lib.inpile.filter(card => {
+				if (player.storage.shouxi.includes(card)) {
 					return false;
 				}
-				var type = get.type2(i);
-				if (type == "basic" || type == "trick") {
-					return true;
-				}
-				return false;
+				const type = get.type2(card);
+				return type === "basic" || type === "trick";
 			});
-			for (var i = 0; i < list.length; i++) {
-				list[i] = [get.type(list[i]), "", list[i]];
+			if (cards.length === 0) {
+				event.result = { bool: false };
+				return;
 			}
-			player.chooseButton([get.prompt("shouxi", trigger.player), [list, "vcard"]]).set("ai", function (button) {
-				return Math.random();
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("shouxi");
-				var name = result.links[0][2];
-				event.vcard = result.links;
-				event.cardname = name;
-				player.storage.shouxi.add(name);
-				player.popup(name);
-				game.log(player, "声明了", "#y" + get.translation(name));
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var name = event.cardname;
-			trigger.player
-				.chooseToDiscard(function (card) {
-					return card.name == _status.event.cardname;
+
+			const list = cards.map(card => [get.type(card), "", card]);
+			const result = await player
+				.chooseButton({
+					createDialog: [get.prompt("shouxi", trigger.player), [list, "vcard"]],
+					ai() {
+						return Math.random();
+					},
 				})
-				.set("ai", function (card) {
-					if (_status.event.att < 0) {
-						return 10 - get.value(card);
-					}
-					return 0;
+				.forResult();
+
+			event.result = {
+				bool: result.bool,
+				cost_data: {
+					vcard: result.links,
+					name: result.links?.[0]?.[2],
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const { vcard, name } = event.cost_data;
+			player.storage.shouxi.add(name);
+			player.popup(name);
+			game.log(player, "声明了", `#y${get.translation(name)}`);
+
+			const result = await trigger.player
+				.chooseToDiscard({
+					filterCard(card) {
+						return card.name === get.event().cardname;
+					},
+					ai(card) {
+						return get.event().att < 0 ? 10 - get.value(card) : 0;
+					},
 				})
 				.set("att", get.attitude(trigger.player, player))
 				.set("cardname", name)
-				.set("dialog", ["守玺：请弃置一张【" + get.translation(name) + "】，否则此【杀】对" + get.translation(player) + "无效", [event.vcard, "vcard"]]);
-			"step 3";
-			if (result.bool == false) {
-				trigger.excluded.push(player);
+				.set("dialog", [
+					"守玺：请弃置一张【" + get.translation(name) + "】，否则此【杀】对" + get.translation(player) + "无效",
+					[vcard, "vcard"],
+				])
+				.forResult();
+
+			if (result.bool) {
+				await trigger.player.gainPlayerCard({ target: player });
 			} else {
-				trigger.player.gainPlayerCard(player);
+				trigger.excluded.push(player);
 			}
 		},
 		ai: {
