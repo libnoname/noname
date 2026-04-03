@@ -38439,10 +38439,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const controls = ["draw_card"];
-			if (trigger.target.countCards("he")) {
+			if (trigger.target.countCards("he") > 0) {
 				controls.push("discard_card");
 			}
-			controls.push("cancel");
+			controls.push("cancel2");
 			const result = await player
 				.chooseControl(controls)
 				.set("ai", function () {
@@ -38455,12 +38455,12 @@ const skills = {
 					if (!player.hasCard(i => get.value(i) > 6 + num, "e")) {
 						return "draw_card";
 					}
-					return "cancel";
+					return "cancel2";
 				})
 				.set("prompt", get.prompt2(event.skill, trigger.target))
 				.forResult();
 			event.result = {
-				bool: result.control != "cancel",
+				bool: result.control != "cancel2",
 				targets: [trigger.target],
 				cost_data: result.control,
 			};
