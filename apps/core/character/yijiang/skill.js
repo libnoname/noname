@@ -11216,47 +11216,50 @@ const skills = {
 			}
 			return false;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("rechanhui"), function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					var trigger = _status.event;
-					return player.canUse(trigger.card, target, false) && trigger.targets.includes(target) == false;
-				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, player, player) + 0.01;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("rechanhui"),
+					filterTarget(card, player, target) {
+						if (player === target) {
+							return false;
+						}
+						const trigger = get.event();
+						return player.canUse(trigger.card, target, false) && !trigger.targets.includes(target);
+					},
+					ai(target) {
+						const trigger = get.event().getTrigger();
+						const player = get.player();
+						return get.effect(target, trigger.card, player, player) + 0.01;
+					},
 				})
 				.set("targets", trigger.targets)
-				.set("card", trigger.card);
-			"step 1";
+				.set("card", trigger.card)
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await target
+				.chooseCard({
+					prompt: `交给${get.translation(player)}一张牌，或成为${get.translation(trigger.card)}的额外目标`,
+					position: "he",
+					ai(card) {
+						return 5 - get.value(card);
+					},
+				})
+				.forResult();
+
 			if (result.bool) {
-				//game.delay(0,200);
-				event.target = result.targets[0];
-			} else {
-				event.finish();
-			}
-			"step 2";
-			player.logSkill("rechanhui", event.target);
-			event.target.chooseCard("交给" + get.translation(player) + "一张牌，或成为" + get.translation(trigger.card) + "的额外目标", "he").set("ai", function (card) {
-				return 5 - get.value(card);
-			});
-			"step 3";
-			if (result.bool) {
-				target.give(result.cards, player);
+				await target.give(result.cards, player);
 				trigger.untrigger();
-				trigger.getParent().player = event.target;
-				game.log(event.target, "成为了", trigger.card, "的使用者");
-			} else {
-				game.log(event.target, "成为了", trigger.card, "的额外目标");
-				trigger.getParent().targets.push(event.target);
-				player.tempBanSkill("rechanhui");
+				trigger.getParent().player = target;
+				game.log(target, "成为了", trigger.card, "的使用者");
+				return;
 			}
+			game.log(target, "成为了", trigger.card, "的额外目标");
+			trigger.getParent().targets.push(target);
+			player.tempBanSkill("rechanhui");
 		},
 	},
 	rejiaojin: {
