@@ -1138,6 +1138,13 @@ export class Create {
 		var node = ui.create.div(".dialogbutton.menubutton.large", "筛选", packnode);
 		return dialog;
 	}
+
+	// 用于搜索技能寻找武将的一系列缓存
+	#skillCaching = false;
+	#skillCacheReady = false;
+	#skillMaps = new Map();
+	#skillRegsCache = new Map();
+
 	characterDialog() {
 		// if(lib.config.character_dialog_style=='newstyle'){
 		//     for(var i=0;i<arguments.length;i++){
@@ -1767,7 +1774,7 @@ export class Create {
 			fontSize: "21px",
 		});
 		const div = ui.create.div(".searcher.find");
-		input.placeholder = "支持正则搜索";
+		input.placeholder = "支持正则搜索和技能搜索";
 		//使用click事件搜索，因为用input事件，难以解决按下a键会触发自动托管的bug
 		let find = ui.create.button(["find", "搜索"], "tdnodes");
 		find.style.display = "inline";
@@ -1790,11 +1797,50 @@ export class Create {
 				btn.style.display = "";
 			}
 		};
+
+		if (!this.#skillCacheReady && !this.#skillCaching) {
+			this.#skillCaching = true;
+			queueMicrotask(() => {
+				for (const skill in lib.skill) {
+					const translation = lib.translate[skill];
+					if (!translation) {
+						continue;
+					}
+					if (!this.#skillMaps.has(translation)) {
+						this.#skillMaps.set(translation, new Set());
+					}
+					this.#skillMaps.get(translation).add(skill);
+				}
+				this.#skillCacheReady = true;
+			});
+		}
 		const updateFind = () => {
 			const { value } = input;
 			const reg = new RegExp(value);
+			let skills;
+			if (this.#skillCacheReady) {
+				if (this.#skillRegsCache.has(value)) {
+					skills = this.#skillRegsCache.get(value);
+				} else {
+					skills = new Set();
+					for (const [desc, skillSet] of this.#skillMaps.entries()) {
+						if (reg.test(desc)) {
+							for (const skill of skillSet) {
+								skills.add(skill);
+							}
+						}
+					}
+					this.#skillRegsCache.set(value, skills);
+				}
+			}
 			for (let btn of dialog.buttons) {
-				if (reg.test(get.translation(btn.link)) || reg.test(get.translation(btn.link + "_ab"))) {
+				const name = btn.link;
+				const character = lib.character[name];
+
+				const nameHit = reg.test(get.translation(name)) || reg.test(get.translation(`${name}_ab`));
+				const skillHit = value in lib.skill && character.skills.includes(value);
+				const skillTransHit = skills?.size > 0 && character.skills.some(skill => skills.has(skill));
+				if (nameHit || skillHit || skillTransHit) {
 					btn.classList.remove("nodisplay");
 				} else {
 					btn.classList.add("nodisplay");
