@@ -121,3 +121,54 @@ pnpm install
     ```powershell
     set-executionpolicy remotesigned -scope currentuser
     ```
+2. **Q:** 如何在本地打包electron程序（windows系统）？
+
+    **A:** 请先确保以下命令能够正常执行：
+    ```bash
+    pnpm dev
+    pnpm build      #输出在./dist文件夹
+    ```
+    然后在项目根目录执行打包命令：
+    ```bash
+    pnpm -F @noname/electron build:win
+    ```
+    这条命令构建结果会输出到`./output/`文件夹，其中`./output/win-uppackd/noname.exe`目录中的文件可以直接运行。
+
+    注意：若构建时有网络问题，请设置mirror或添加代理，相关操作请自行百度。
+3. **Q:** 如何在本地打包electron程序（macos系统）？
+
+    **A:** 请先确保以下命令能够正常执行：
+    ```bash
+    pnpm dev
+    pnpm build      #输出在./dist文件夹
+    ```
+    然后在项目根目录执行打包命令：
+    ```bash
+    pnpm -F @noname/electron build:mac
+    ```
+    这条命令构建结果会输出到`./output/`文件夹。
+    由于旧的macbook使用intel芯片，新的macbook使用arm芯片，所以可以先修改一下配置文件：`./apps/electron/build.ts`，例如，针对intel芯片的macbook，可以修改为：
+    ```js
+    main(Platform.MAC.createTarget("dmg", Arch.x64), {
+			mac: {
+				identity: null,
+			},
+		});
+    ```
+    若构建dmg有报错，可以先直接构建为zip版：
+     ```js
+    main(Platform.MAC.createTarget("zip", Arch.x64), {
+			mac: {
+				identity: null,
+			},
+		});
+    ```
+    注意：若构建时有网络问题，请设置mirror或添加代理，相关操作请自行百度。
+4. **Q:** 如何在本地开启联机服务器（windows系统）？
+
+    **A:** 在项目根目录执行命令，启动ws服务：
+    ```bash
+    pnpm -F @noname/server dev
+    ```
+    这条命令启动ws服务，监听本地的8082端口。
+    在联机模式中，地址填写为：`localhost:8082`即可进入联机大厅。
