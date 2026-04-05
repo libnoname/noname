@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/**
+ * @typedef {import("../../typings/Skill").Skill} Skill
+ * @type {Record<string, Skill>}
+ */
 const skills = {
 	//曹豹
 	yanjiu: {
@@ -582,7 +585,7 @@ const skills = {
 				player.markAuto(`${event.name}_used`, index);
 				if (index == 0) {
 					const num = game.findPlayer(i => i.isMinHandcard())?.countCards("h");
-					if (!num) {
+					if (num == null) {
 						return;
 					}
 					const numx = num - target.countCards("h");
