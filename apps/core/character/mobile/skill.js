@@ -471,11 +471,11 @@ const skills = {
 	//手杀张既
 	mbdingzhen: {
 		audio: "twdingzhen",
-		trigger: { global: "roundStart" },
+		trigger: { 
+			global: "roundStart"
+		},
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return get.distance(player, current) <= player.getHp() && current != player;
-			});
+			return game.hasPlayer(current => get.distance(player, current) <= player.getHp() && current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -512,19 +512,12 @@ const skills = {
 							return 0;
 						},
 					})
-					.set(
-						"goon",
-						get.attitude(target, player) < 0 &&
-							player.countCards("hs") <= 3 &&
-							target.countCards("hs", card => {
-								return target.hasValueTarget(card);
-							}) > 1
-					)
+					.set("goon", get.attitude(target, player) < 0 && player.countCards("hs") <= 3 && target.countCards("hs", card => target.hasValueTarget(card)) > 1)
 					.forResult();
 				if (result.bool) {
 					target.addExpose(0.1);
 				} else {
-					target.addSkill(`${event.name}_target`, "roundStart");
+					target.addTempSkill(`${event.name}_target`, "roundStart");
 					target.markAuto(`${event.name}_target`, [player]);
 				}
 			});
