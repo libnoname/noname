@@ -1,5 +1,3 @@
-import { BroadSelect } from "@/library/element/Player/type";
-
 /** 时机 */
 declare interface SkillTrigger {
 	/** 
@@ -2067,7 +2065,7 @@ interface ChooseButtonConfigData {
 	 * 
 	 * 既player.chooseButton的selectButton
 	 */
-	select?: BroadSelect;
+	select?: import("@/library/element/Player/type").BroadSelect;
 
 	//成功选择操作后的内容：
 	/**
