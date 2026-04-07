@@ -168,6 +168,15 @@ export class UI {
 	 */
 	_handcardHover = null;
 	/**
+	 * @type {(HTMLDivElement & {
+	 * 	fillnode: HTMLDivElement;
+	 * 	popnode: HTMLDivElement;
+	 * 	position: number;
+	 * 	set(text: string | number, percentage: number): void;
+	 * }) | undefined}
+	 */
+	timer;
+	/**
 	 * 计算手牌展开偏移量
 	 * - 触屏设备：点击选中时展开
 	 * - PC端：仅鼠标悬浮时展开
