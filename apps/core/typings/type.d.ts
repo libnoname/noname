@@ -732,18 +732,16 @@ declare interface PackageData {
     version?: string,
     /** 扩展在UI中显示的名字 */
     translation?:string;
+    /**
+     * 不将package中的character、card、skill自动拆包导入
+     * @see {@link /apps/core/noname/init/loading.ts} loadExtension `if (extension[4] && !extension[4].nopack)`
+     */
+    nopack?: boolean;
 
     /** 武将导入信息 */
-    character?: {
-        character: Record<string, Character>;
-        translate: Record<string, string>;
-    };
+    character?: Partial<importCharacterConfig> & Required<Pick<importCharacterConfig, "character" | "translate">>;
     /** 卡牌导入信息 */
-    card?: {
-        card: Record<string, Card>;
-        translate: Record<string, string>;
-        list: CardBaseUIData[];
-    };
+    card?: Partial<importCardConfig> & Pick<importCardConfig, "card" | "translate" | "list">;
     /** 技能导入信息 */
     skill?: {
         skill: Record<string, Skill>;
