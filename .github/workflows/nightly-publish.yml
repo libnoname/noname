@@ -1,0 +1,47 @@
+name: nightly-publish
+
+on:
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch: # 允许手动点击按钮触发编译
+
+permissions:
+  contents: write  # 允许 Actions 推送代码到仓库
+
+jobs:
+  publish:
+    name: Nightly Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and Generate test pack
+        run: pnpm generateTestPack
+
+      - name: Generate Nightly Name
+        id: info
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Upload Nightly Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-${{ steps.info.outputs.date }}
+          path: output/testpack
+          retention-days: 7
