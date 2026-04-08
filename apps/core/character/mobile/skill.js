@@ -1245,6 +1245,7 @@ const skills = {
 	},
 	mbyilv: {
 		audio: 4,
+		usable: 1,
 		trigger: {
 			target: "useCardToPlayered",
 		},
