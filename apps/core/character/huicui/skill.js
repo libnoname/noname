@@ -16152,7 +16152,7 @@ const skills = {
 				}
 			}
 
-			const selfCards = targetCards.filter(card => lib.skill.jinhui.getUsableTarget(card, player, target));
+			const selfCards = cards.filter(card => lib.skill.jinhui.getUsableTarget(card, player, target));
 			while (selfCards.length) {
 				result = await player
 					.chooseButton({
