@@ -3897,7 +3897,7 @@ export const Content = {
 							if (character.isBoss || character.isHiddenBoss) {
 								lib.config.forbidai.add(termName);
 							}
-							if (lib.config.forbidai_user && lib.config.forbidai_user.includes(termName)) {
+							if (lib.config[`forbidai_user_${charaPackName}`] && lib.config.forbidai_user?.includes(termName)) {
 								lib.config.forbidai.add(termName);
 							}
 							for (const skill of character.skills) {

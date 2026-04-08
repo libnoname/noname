@@ -161,10 +161,10 @@ export const characterPackMenu = function (connectMenu) {
 					continue;
 				}
 				list.push(i);
-				if (Boolean(boolAI) !== lib.config.forbidai_user.includes(i)) {
-					lib.config.forbidai_user[boolAI ? "add" : "remove"](i);
-					game.saveConfig("forbidai_user", lib.config.forbidai_user);
-				}
+				// if (Boolean(boolAI) !== lib.config.forbidai_user.includes(i)) {
+				//	lib.config.forbidai_user[boolAI ? "add" : "remove"](i);
+				//	game.saveConfig("forbidai_user", lib.config.forbidai_user);
+				// }
 				for (var j = 0; j < characterInfo.skills.length; j++) {
 					if (!lib.skill[characterInfo.skills[j]]) {
 						continue;
@@ -203,8 +203,8 @@ export const characterPackMenu = function (connectMenu) {
 				intro: "将该武将包内的武将全部设置为仅点将可用",
 				onclick(bool) {
 					game.saveConfig(`forbidai_user_${mode}`, bool);
-					lib.config.forbidai_user[bool ? "addArray" : "removeArray"](list);
-					game.saveConfig("forbidai_user", lib.config.forbidai_user);
+					// lib.config.forbidai_user[bool ? "addArray" : "removeArray"](list);
+					// game.saveConfig("forbidai_user", lib.config.forbidai_user);
 				},
 			});
 			if (!mode.startsWith("mode_")) {
