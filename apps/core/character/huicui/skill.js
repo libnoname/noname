@@ -8612,14 +8612,17 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			if (event.player == player || !event.player.isIn()) {
+			if (event.player === player || !event.player.isIn()) {
 				return false;
 			}
 			if (!player.canUse("sha", event.player, false)) {
 				return false;
 			}
-			var respondEvts = [];
-			game.countPlayer2(current => respondEvts.addArray(current.getHistory("useCard")).addArray(current.getHistory("respond")));
+			let respondEvts = [];
+			for (const current of game.filterPlayer2()) {
+				respondEvts.addArray(current.getHistory("useCard"));
+				respondEvts.addArray(current.getHistory("respond"));
+			}
 			respondEvts = respondEvts.filter(i => i.respondTo).map(evt => evt.respondTo);
 			return event.player.hasHistory("useCard", evt => {
 				return respondEvts.some(list => list[1] == evt.card);
@@ -8664,7 +8667,7 @@ const skills = {
 				player.addTempSkill("dcsigong_check");
 				await player
 					.useCard({ name: "sha", isCard: true }, trigger.player, false)
-					.set("shanReq", num)
+					.set("shanReq", event.num)
 					.set("oncard", card => {
 						const evt = _status.event;
 						evt.baseDamage++;
