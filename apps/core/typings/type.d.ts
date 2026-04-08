@@ -443,7 +443,7 @@ declare interface importExtensionConfig {
      * 
      * 特殊接口：update
      */
-    connect?: Record<string, SelectConfigData>;
+    connect?: boolean;
     /**
      * 扩展的包信息。
      * 
@@ -496,7 +496,8 @@ declare interface importExtensionConfig {
     files?: {
         character?: string[],
         card?: string[],
-        skill?: string[]
+        skill?: string[],
+        audio?: string[]
     };
     /**
      * 【特殊】用于game.addMode添加时，
