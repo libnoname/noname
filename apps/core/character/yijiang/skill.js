@@ -4887,39 +4887,37 @@ const skills = {
 			if (mode == "identity" && _status.mode == "purple") {
 				return false;
 			}
+			return true;
 		},
-		getZhu: player => {
-			if (get.mode() == "doudizhu") {
-				return game.findPlayer(i => i.identity == "zhu");
+		getZhu(player) {
+			if (get.mode() === "doudizhu") {
+				return game.findPlayer(i => i.identity === "zhu");
 			}
 			return get.zhu(player);
 		},
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			var zhu = get.info("qinqing").getZhu(player);
-			if (!zhu || (get.mode() != "doudizhu" && !zhu.isZhu)) {
+			const zhu = get.info("qinqing").getZhu(player);
+			if (!zhu || (get.mode() !== "doudizhu" && !zhu.isZhu)) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				return current != zhu && current.inRange(zhu);
-			});
+			return game.hasPlayer(current => current !== zhu && current.inRange(zhu));
 		},
-		content() {
-			"step 0";
-			event.zhu = get.info("qinqing").getZhu(player);
-			player
-				.chooseTarget(get.prompt2("qinqing"), [1, Infinity], function (card, player, target) {
-					var zhu = get.event().zhu;
-					if (target == zhu) {
-						return false;
-					}
-					return target.inRange(zhu);
-				})
-				.set("ai", function (target) {
-					var he = target.countCards("he");
-					var zhu = get.event().zhu;
-					if (get.attitude(_status.event.player, target) > 0) {
+		async cost(event, trigger, player) {
+			const zhu = get.info("qinqing").getZhu(player);
+
+			event.result = await player.chooseTarget({
+				prompt: get.prompt2("qinqing"),
+				filterTarget(card, player, target) {
+					const zhu = get.event().zhu;
+					return target !== zhu && target.inRange(zhu);
+				},
+				selectTarget: [1, Infinity],
+				ai(target) {
+					const player = get.player();
+					const he = target.countCards("he");
+					const zhu = get.event().zhu;
+					if (get.attitude(player, target) > 0) {
 						if (he == 0) {
 							return 1;
 						}
@@ -4932,37 +4930,37 @@ const skills = {
 						}
 					}
 					return 0;
-				})
-				.set("zhu", event.zhu);
-			"step 1";
-			if (result.bool) {
-				event.targets = result.targets.slice(0).sortBySeat();
-				event.list = event.targets.slice(0);
-				player.logSkill("qinqing", event.targets);
-			} else {
-				event.finish();
+				},
+			}).forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const zhu = get.info("qinqing").getZhu(player);
+			const targets = event.targets.toSorted(lib.sort.seat);
+
+			for (const target of targets) {
+				if (target.countCards("he") > 0) {
+					await player.discardPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					});
+				}
+				await target.draw();
 			}
-			"step 2";
-			if (event.targets.length) {
-				var target = event.targets.shift();
-				if (target.countCards("he")) {
-					player.discardPlayerCard(target, "he", true);
-				}
-				target.draw();
-				event.redo();
+
+			if (!zhu) {
+				return;
 			}
-			"step 3";
-			var num = 0;
-			if (event.zhu) {
-				var nh = event.zhu.countCards("h");
-				for (var i = 0; i < event.list.length; i++) {
-					if (event.list[i].countCards("h") > nh) {
-						num++;
-					}
+			let num = 0;
+			const nh = zhu.countCards("h");
+			for (const target of targets) {
+				if (target.countCards("h") > nh) {
+					++num;
 				}
-				if (num) {
-					player.draw(num);
-				}
+			}
+			if (num) {
+				await player.draw(num);
 			}
 		},
 		ai: {
