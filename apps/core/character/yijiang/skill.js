@@ -11482,42 +11482,43 @@ const skills = {
 			return player != target;
 		},
 		delay: false,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const cards = player.getCards("e");
+			const target = event.target;
+			const num = cards.length;
 			player.awakenSkill(event.name);
-			var cards = player.getCards("e");
-			player.give(cards, target);
-			event.num = cards.length;
-			game.delay();
-			"step 1";
-			target
-				.chooseTarget([1, event.num], "令" + get.translation(player) + "回复" + event.num + "点体力，或对攻击范围内的" + event.num + "名角色造成1点伤害", function (card, player, target2) {
-					return _status.event.player.inRange(target2);
-				})
-				.set("ai", function (target2) {
-					var target = _status.event.player;
-					var player = _status.event.getParent().player;
-					if (get.attitude(target, player) > 0) {
-						if (player.hp + event.num <= player.maxHp || player.hp == 1) {
-							return -1;
+			await player.give(cards, target);
+			await game.delay();
+			
+			const result = await target
+				.chooseTarget({
+					prompt: "令" + get.translation(player) + "回复" + num + "点体力，或对攻击范围内的" + num + "名角色造成1点伤害",
+					filterTarget(card, player, target2) {
+						return _status.event.player.inRange(target2);
+					},
+					selectTarget: [1, num],
+					ai(target2) {
+						const target = _status.event.player;
+						const player = _status.event.getParent().player;
+						if (get.attitude(target, player) > 0) {
+							if (player.hp + num <= player.maxHp || player.hp == 1) {
+								return -1;
+							}
 						}
+						return get.damageEffect(target2, target, target);
 					}
-					return get.damageEffect(target2, target, target);
+				})
+				.forResult();
+			if (!result.bool) {
+				await player.recover({
+					num,
+					source: target,
 				});
-			"step 2";
-			if (result.bool) {
-				target.line(result.targets, "green");
-				event.targets = result.targets;
-				event.num2 = 0;
-			} else {
-				player.recover(event.num, target);
-				event.finish();
+				return;
 			}
-			"step 3";
-			if (event.num2 < event.targets.length) {
-				event.targets[event.num2].damage(target);
-				event.num2++;
-				event.redo();
+			target.line(result.targets, "green");
+			for (const targetx of result.targets) {
+				await targetx.damage({ source: target });
 			}
 		},
 		ai: {
