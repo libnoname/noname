@@ -7148,76 +7148,82 @@ const skills = {
 	xinzhongyong: {
 		trigger: { player: "useCardAfter" },
 		audio: "zhongyong",
-		direct: true,
 		filter(event, player) {
 			return event.card.name == "sha";
 		},
-		content() {
-			"step 0";
-			event.sha = trigger.cards.slice(0).filterInD();
-			event.shan = [];
-			game.countPlayer2(function (current) {
-				current.getHistory("useCard", function (evt) {
-					if (evt.card.name == "shan" && evt.getParent(3) == trigger) {
-						event.shan.addArray(evt.cards);
-					}
-				});
-			});
-			event.shan.filterInD("d");
-			if (!event.sha.length && !event.shan.length) {
-				event.finish();
+		async cost(event, trigger, player) {
+			const sha = trigger.cards.slice(0).filterInD();
+			const shan = [];
+			for (const current of game.filterPlayer2()) {
+				for (const evt of current.getHistory("useCard", evt => evt.card.name === "shan" && evt.getParent(3) == trigger)) {
+					shan.addArray(evt.cards);
+				}
 			}
-			player
-				.chooseTarget(get.prompt2("xinzhongyong"), function (card, player, target) {
-					return !_status.event.source.includes(target) && target != player;
+			shan.filterInD();
+
+			if (!sha.length && !shan.length) {
+				return;
+			}
+
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("xinzhongyong"),
+					filterTarget(card, player, target) {
+						return !_status.event.source.includes(target) && target !== player;
+					},
+					ai(target) {
+						return get.attitude(_status.event.player, target);
+					},
 				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
-				})
-				.set("source", trigger.targets);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("xinzhongyong", target);
-				if (event.sha.length && event.shan.length) {
-					player
-						.chooseControl()
-						.set("choiceList", ["将" + get.translation(event.sha) + "交给" + get.translation(target), "将" + get.translation(event.shan) + "交给" + get.translation(target)])
-						.set("ai", function () {
+				.set("source", trigger.targets)
+				.forResult();
+			
+			event.result.cost_data = {
+				sha,
+				shan,
+			};
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const { sha, shan } = event.cost_data;
+
+			let result;
+			if (sha.length && shan.length) {
+				result = await player
+					.chooseControl({
+						choiceList: ["将" + get.translation(event.sha) + "交给" + get.translation(target), "将" + get.translation(event.shan) + "交给" + get.translation(target)],
+						ai() {
 							return _status.event.choice;
-						})
-						.set(
-							"choice",
-							(function () {
-								if (get.color(event.sha) != "black") {
-									return 0;
-								}
-								return 1;
-							})()
-						);
-				} else {
-					event._result = { index: event.sha.length ? 0 : 1 };
-				}
+						},
+					})
+					.set(
+						"choice",
+						(function () {
+							if (get.color(event.sha) != "black") {
+								return 0;
+							}
+							return 1;
+						})()
+					)
+					.forResult();
 			} else {
-				event.finish();
+				result = { index: event.sha.length ? 0 : 1 };
 			}
-			"step 2";
-			var cards = result.index == 0 ? event.sha : event.shan;
-			event.useSha = false;
-			target.gain(cards, "gain2");
-			for (var i = 0; i < cards.length; i++) {
-				if (get.color(cards[i]) == "red") {
-					event.useSha = true;
-					break;
-				}
-			}
-			"step 3";
-			if (event.useSha) {
-				event.target
-					.chooseToUse("是否使用一张杀？", { name: "sha" })
-					.set("filterTarget", function (card, player, target) {
-						return target != _status.event.sourcex && _status.event.sourcex.inRange(target) && lib.filter.targetEnabled.apply(this, arguments);
+
+			const cards = result.index == 0 ? sha : shan;
+			await target.gain({
+				cards,
+				animate: "gain2",
+			});
+			if (cards.some(card => get.color(card) === "red")) {
+				await event.target
+					.chooseToUse({
+						prompt: "是否使用一张杀？",
+						filterCard: get.filter({ name: "sha" }),
+						filterTarget(card, player, target) {
+							return target != _status.event.sourcex && _status.event.sourcex.inRange(target) && lib.filter.targetEnabled.apply(this, arguments);
+						},
 					})
 					.set("sourcex", player)
 					.set("addCount", false);
