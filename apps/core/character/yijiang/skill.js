@@ -12729,93 +12729,95 @@ const skills = {
 	},
 	xinjujian: {
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		audio: 2,
 		filter(event, player) {
 			return player.countCards("he") > player.countCards("he", { type: "basic" });
 		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				filterTarget(card, player, target) {
-					return player != target;
-				},
-				filterCard(card, player) {
-					return get.type(card) != "basic" && lib.filter.cardDiscardable(card, player);
-				},
-				ai1(card) {
-					if (get.tag(card, "damage") && get.type(card) == "trick") {
-						return 20;
-					}
-					return 9 - get.value(card);
-				},
-				ai2(target) {
-					var att = get.attitude(_status.event.player, target);
-					if (att > 0) {
-						if (target.isTurnedOver()) {
-							att += 3;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCardTarget({
+					filterTarget(card, player, target) {
+						return player != target;
+					},
+					filterCard(card, player) {
+						return get.type(card) != "basic" && lib.filter.cardDiscardable(card, player);
+					},
+					ai1(card) {
+						if (get.tag(card, "damage") && get.type(card) == "trick") {
+							return 20;
 						}
-						if (target.hp == 1) {
-							att += 3;
+						return 9 - get.value(card);
+					},
+					ai2(target) {
+						var att = get.attitude(_status.event.player, target);
+						if (att > 0) {
+							if (target.isTurnedOver()) {
+								att += 3;
+							}
+							if (target.hp == 1) {
+								att += 3;
+							}
 						}
-					}
-					return att;
-				},
-				position: "he",
-				prompt: get.prompt2("xinjujian"),
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("xinjujian", target);
-				player.discard(result.cards);
-				if (target.hp == target.maxHp && !target.isTurnedOver() && !target.isLinked()) {
-					target.draw(2);
-					event.finish();
-				} else {
-					var controls = ["draw_card"];
-					if (target.hp < target.maxHp) {
-						controls.push("recover_hp");
-					}
-					if (target.isLinked() || target.isTurnedOver()) {
-						controls.push("reset_character");
-					}
-					target.chooseControl(controls).ai = function () {
-						if (target.isTurnedOver()) {
-							return "reset_character";
-						} else if (target.hp == 1 && target.maxHp > 2) {
-							return "recover_hp";
-						} else if (target.hp == 2 && target.maxHp > 2 && target.countCards("h") > 1) {
-							return "recover_hp";
-						} else {
-							return "draw_card";
-						}
-					};
-				}
-			} else {
-				event.finish();
+						return att;
+					},
+					position: "he",
+					prompt: get.prompt2("xinjujian"),
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			
+			await player.discard(event.cards);
+
+			const controls = ["draw_card"];
+			if (target.hp < target.maxHp) {
+				controls.push("recover_hp");
 			}
-			"step 2";
-			event.control = result.control;
-			switch (event.control) {
+			if (target.isLinked() || target.isTurnedOver()) {
+				controls.push("reset_character");
+			}
+
+			let result;
+			if (controls.length === 1) {
+				result = { control: controls[0] };
+			} else {
+				result = await target
+					.chooseControl({
+						controls,
+						ai() {
+							const target = get.event().target;
+							if (target.isTurnedOver()) {
+								return "reset_character";
+							} else if (target.hp == 1 && target.maxHp > 2) {
+								return "recover_hp";
+							} else if (target.hp == 2 && target.maxHp > 2 && target.countCards("h") > 1) {
+								return "recover_hp";
+							} else {
+								return "draw_card";
+							}
+						},
+					})
+					.set("target", target)
+					.forResult();
+			}
+
+			switch (result.control) {
 				case "recover_hp":
-					event.target.recover();
-					event.finish();
+					await target.recover();
 					break;
 				case "draw_card":
-					event.target.draw(2);
-					event.finish();
+					await target.draw(2);
 					break;
 				case "reset_character":
-					if (event.target.isTurnedOver()) {
-						event.target.turnOver();
+					if (target.isTurnedOver()) {
+						await target.turnOver();
+					}
+					if (target.isLinked()) {
+						await target.link();
 					}
 					break;
-			}
-			"step 3";
-			if (event.control == "reset_character" && event.target.isLinked()) {
-				event.target.link();
 			}
 		},
 		ai: {
