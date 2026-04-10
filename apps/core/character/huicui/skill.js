@@ -9864,6 +9864,7 @@ const skills = {
 		subfrequent: ["draw"],
 		async content(event, trigger, player) {
 			await player.discard(player.getCards("h", card => card.hasGaintag("dcaishou_tag")));
+
 			let len = 0;
 			for (const evt of player.getHistory("lose", evt => evt.getParent(2) === event)) {
 				len += evt.cards.length;
