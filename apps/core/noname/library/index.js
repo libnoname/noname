@@ -5826,25 +5826,26 @@ export class Library {
 						group: "按势力筛选",
 						number: "自选数值",
 					},
-					onclick(item) {
+					async onclick(item) {
 						if (item !== "number") {
-							game.saveConfig("connect_limit_zhu", item, "identity");
+							await game.promises.saveConfig("connect_limit_zhu", item, "identity");
 							return;
 						}
-						const result = prompt("请输入常备主候选武将数");
-						if (/^-?\d+(\.\d+)?$/.test(result)) {
-							const number = Number(result);
-							if (number > 0) {
-								if (Number.isInteger(number)) {
-									this.querySelector("div").innerHTML = result;
-									game.saveConfig("connect_limit_zhu", result, "identity");
-								} else {
-									alert("请输入整数");
-								}
-								return;
+						while (true) {
+							const result = await game.promises.prompt("请输入常备主候选武将数");
+							if (!result) {
+								break;
 							}
+							if (/^-?\d+(\.\d+)?$/.test(result)) {
+								const number = Number(result);
+								if (number > 0 && Number.isInteger(number)) {
+									this.querySelector("div").innerHTML = result;
+									await game.promises.saveConfig("connect_limit_zhu", result, "identity");
+									break;
+								}
+							}
+							alert("请输入大于0的整数");
 						}
-						alert("请输入大于0的整数");
 					},
 				},
 				connect_choice_zhong: {
