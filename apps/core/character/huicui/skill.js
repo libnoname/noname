@@ -8894,7 +8894,7 @@ const skills = {
 		prompt() {
 			return (
 				"限定技。你可以失去〖汇灵〗，增加" +
-				Math.min(game.countPlayer(), _status.event.player.countMark("dchuiling")) +
+				Math.min(game.countPlayer2(), _status.event.player.countMark("dchuiling")) +
 				"点体力上限，然后获得〖踏寂〗和〖清荒〗。"
 			);
 		},
