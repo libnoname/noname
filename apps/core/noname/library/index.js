@@ -12772,10 +12772,11 @@ export class Library {
 								if (result || input.value.length > 0) {
 									read(input.value);
 								} else if (confirm("是否输入邀请链接以加入房间？")) {
-									var text = prompt("请输入邀请链接");
-									if (typeof text == "string" && text.length > 0) {
-										read(text);
-									}
+									game.prompt("请输入邀请链接", text => {
+										if (typeof text === "string" && text.length > 0) {
+											read(text);
+										}
+									});
 								}
 							}
 						}
