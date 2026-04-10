@@ -1,9 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//魏讽
 	dchuozhong: {
@@ -9866,7 +9863,7 @@ const skills = {
 		group: ["dcaishou_draw", "dcaishou_lose"],
 		subfrequent: ["draw"],
 		async content(event, trigger, player) {
-			player.discard(player.getCards("h", card => card.hasGaintag("dcaishou_tag")));
+			await player.discard(player.getCards("h", card => card.hasGaintag("dcaishou_tag")));
 			let len = 0;
 			for (const evt of player.getHistory("lose", evt => evt.getParent(2) === event)) {
 				len += evt.cards.length;

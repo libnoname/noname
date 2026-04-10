@@ -1,9 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	//朱绩

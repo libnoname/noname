@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//四象封印玄武
 	//柯比能

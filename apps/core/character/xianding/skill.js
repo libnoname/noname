@@ -1,10 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 import cards from "../sp2/card.js";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//王越
 	wudou: {

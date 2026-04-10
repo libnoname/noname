@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//幻小无
 	noname_gongchuang: {

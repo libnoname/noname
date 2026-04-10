@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//沙币文心雕龙曹植
 	wxdl_huamao: {
