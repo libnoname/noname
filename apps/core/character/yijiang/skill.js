@@ -12643,21 +12643,22 @@ const skills = {
 			return false;
 		},
 		trigger: { target: "useCardToTargeted" },
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (get.attitude(player, trigger.player) < 0 && trigger.player.countDiscardableCards(player, "he")) {
 				player.addTempSkill("zhenlie_lose");
 			}
-			player.loseHp();
-			"step 1";
+			await player.loseHp();
 			player.removeSkill("zhenlie_lose");
 			trigger.getParent().excluded.add(player);
-			"step 2";
 			if (trigger.player.countCards("he")) {
 				if (get.mode() !== "identity" || player.identity !== "nei") {
 					player.addExpose(0.12);
 				}
-				player.discardPlayerCard(trigger.player, "he", true);
+				await player.discardPlayerCard({
+					target: trigger.player,
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 		subSkill: {
