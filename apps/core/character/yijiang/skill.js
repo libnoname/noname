@@ -11572,66 +11572,70 @@ const skills = {
 			return true;
 		},
 		direct: true,
-		content() {
-			"step 0";
-			var next;
-			if (
-				trigger.player.hasCard(function (card) {
-					return player.canEquip(card);
-				}, "e")
-			) {
-				next = player
-					.chooseControl("移动装备", "draw_card", "cancel2", function (event, player) {
-						var source = _status.event.sourcex;
-						var att = get.attitude(player, source);
-						if (source.hasSkillTag("noe")) {
-							if (att > 0) {
-								return "移动装备";
+		async content(event, trigger, player) {
+			let result;
+			if (trigger.player.hasCard(card => player.canEquip(card), "e")) {
+				result = await player
+					.chooseControl({
+						prompt: get.prompt("qieting", trigger.player),
+						controls: ["移动装备", "draw_card", "cancel2"],
+						ai(event, player) {
+							const source = _status.event.sourcex;
+							const att = get.attitude(player, source);
+							if (source.hasSkillTag("noe")) {
+								if (att > 0) {
+									return "移动装备";
+								}
+							} else {
+								if (att <= 0 && source.countCards("e", card => get.value(card, source) > 0 && get.effect(player, card, player, player) > 0)) {
+									return "移动装备";
+								}
 							}
-						} else {
-							if (
-								att <= 0 &&
-								source.countCards("e", function (card) {
-									return get.value(card, source) > 0 && get.effect(player, card, player, player) > 0;
-								})
-							) {
-								return "移动装备";
-							}
-						}
-						return "draw_card";
+							return "draw_card";
+						},
 					})
-					.set("sourcex", trigger.player);
+					.set("sourcex", trigger.player)
+					.forResult();
 			} else {
-				next = player.chooseControl("draw_card", "cancel2", function () {
-					return "draw_card";
-				});
+				result = await player
+					.chooseControl({
+						prompt: get.prompt("qieting", trigger.player),
+						controls: ["draw_card", "cancel2"],
+						ai() {
+							return "draw_card";
+						},
+					})
+					.forResult();
 			}
-			next.set("prompt", get.prompt("qieting", trigger.player));
-			"step 1";
-			if (result.control == "移动装备") {
-				player.logSkill("qieting", trigger.player);
-				player
-					.choosePlayerCard(trigger.player, "e", "将一张装备牌移至你的装备区", true)
-					.set("filterButton", function (button) {
-						return _status.event.player.canEquip(button.link);
-					})
-					.set("ai", function (button) {
-						return get.effect(player, button.link, player, player);
-					});
-			} else {
+			if (result.control != "移动装备") {
 				if (result.control == "draw_card") {
 					player.logSkill("qieting");
-					player.draw();
+					await player.draw();
 				}
-				event.finish();
+				return;
 			}
-			"step 2";
-			if (result && result.links && result.links.length) {
-				game.delay(2);
-				trigger.player.$give(result.links[0], player, false);
-				player.equip(result.links[0]);
-				player.addExpose(0.2);
+			player.logSkill("qieting", trigger.player);
+			result = await player
+				.choosePlayerCard({
+					prompt: "将一张装备牌移至你的装备区",
+					target: trigger.player,
+					filterButton(card, player, target) {
+						return _status.event.player.canEquip(button.link);
+					},
+					position: "e",
+					forced: true,
+					ai(button) {
+						return get.effect(player, button.link, player, player);
+					}
+				})
+				.forResult();
+			if (!result || !result.links || !result.links.length) {
+				return;
 			}
+			await game.delay(2);
+			trigger.player.$give(result.links[0], player, false);
+			await player.equip(result.links[0]);
+			player.addExpose(0.2);
 		},
 	},
 	oldzhuikong: {
