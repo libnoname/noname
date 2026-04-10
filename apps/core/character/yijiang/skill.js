@@ -11820,31 +11820,38 @@ const skills = {
 			}
 			return 6 - get.equipValue(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards } = event;
 			player.addTempSkill("gongji2");
-			"step 1";
-			if (get.type(cards[0], null, cards[0].original == "h" ? player : false) == "equip") {
-				player
-					.chooseTarget("是否弃置一名角色的一张牌？", function (card, player, target) {
+			if (get.type(cards[0], null, cards[0].original == "h" ? player : false) != "equip") {
+				return;
+			}
+			const result = await player
+				.chooseTarget({
+					prompt: "是否弃置一名角色的一张牌？",
+					filterTarget(card, player, target) {
 						return player != target && target.countCards("he") > 0;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
+					},
+					ai(target) {
+						const player = _status.event.player;
 						if (get.attitude(player, target) < 0) {
 							return Math.max(0.5, get.effect(target, { name: "sha" }, player, player));
 						}
 						return 0;
-					});
-			} else {
-				event.finish();
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.line(result.targets, "green");
-				event.target = result.targets[0];
-				player.discardPlayerCard(event.target, "he", true).ai = get.buttonValue;
-			}
+			player.line(result.targets, "green");
+			const target = result.targets[0];
+			await player.discardPlayerCard({
+				target,
+				position: "he",
+				forced: true,
+				ai: get.buttonValue
+			});
 		},
 		ai: {
 			order: 9,
