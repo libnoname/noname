@@ -11930,9 +11930,10 @@ const skills = {
 			return false;
 		},
 		selectTarget: 2,
-		content() {
-			"step 0";
-			var gainner, giver;
+		async content(event, trigger, player) {
+			const { targets } = event;
+			let gainner;
+			let giver;
 			if (targets[0].countCards("h") < targets[1].countCards("h")) {
 				gainner = targets[0];
 				giver = targets[1];
@@ -11940,21 +11941,22 @@ const skills = {
 				gainner = targets[1];
 				giver = targets[0];
 			}
-			gainner.gainPlayerCard(giver, true, "h", "visibleMove");
-			event.gainner = gainner;
-			event.giver = giver;
-			"step 1";
-			if (result.cards) {
-				event.bool = false;
-				var card = result.cards[0];
-				if (get.suit(card) != "spade") {
-					event.bool = true;
-				}
+			const result = await gainner
+				.gainPlayerCard({
+					target: giver,
+					positon: "h",
+					forced: true,
+					visibleMove: true,
+				})
+				.forResult();
+			if (!result.cards?.length) {
+				return;
 			}
-			"step 2";
-			if (event.bool) {
-				player.draw();
+			const card = result.cards[0];
+			if (get.suit(card) == "spade") {
+				return;
 			}
+			await player.draw();
 		},
 		ai: {
 			order: 10.5,
