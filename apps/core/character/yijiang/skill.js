@@ -12011,9 +12011,10 @@ const skills = {
 			return false;
 		},
 		selectTarget: 2,
-		content() {
-			"step 0";
-			var gainner, giver;
+		async content(event, trigger, player) {
+			const { targets } = event;
+			let gainner;
+			let giver;
 			if (targets[0].countCards("h") < targets[1].countCards("h")) {
 				gainner = targets[0];
 				giver = targets[1];
@@ -12021,15 +12022,16 @@ const skills = {
 				gainner = targets[1];
 				giver = targets[0];
 			}
-			giver.chooseCard("选择一张手牌交给" + get.translation(gainner), true);
-			event.gainner = gainner;
-			event.giver = giver;
-			"step 1";
-			var card = result.cards[0];
-			event.giver.give(card, event.gainner);
-			"step 2";
-			if (event.gainner.countCards("h") == event.giver.countCards("h")) {
-				player.chooseDrawRecover(true);
+			const result = await giver
+				.chooseCard({
+					prompt: "选择一张手牌交给" + get.translation(gainner),
+					forced: true,
+				})
+				.forResult();
+			const card = result.cards[0];
+			await giver.give(card, gainner);
+			if (gainner.countCards("h") === giver.countCards("h")) {
+				await player.chooseDrawRecover(true);
 			}
 		},
 		ai: {
