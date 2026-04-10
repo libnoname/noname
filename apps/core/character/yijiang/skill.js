@@ -12369,33 +12369,32 @@ const skills = {
 		audio: 2,
 		audioname: ["gexuan", "re_yufan"],
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("zhiyan"), "令一名角色摸一张牌并展示之。若为装备牌，则其回复1点体力").set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				player.logSkill("zhiyan", result.targets);
-				event.bool = false;
-				event.target.draw("visible");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var card = result[0];
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("zhiyan"),
+					prompt2: "令一名角色摸一张牌并展示之。若为装备牌，则其回复1点体力",
+					ai(target) {
+						return get.attitude(_status.event.player, target);
+					},
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			let shouldRecover = false;
+			const result = await target.draw({ visible: true }).forResult();
+			const card = result.cards[0];
 			if (get.type(card) == "equip") {
 				if (target.getCards("h").includes(card) && target.hasUseTarget(card)) {
-					event.target.chooseUseTarget(card, true, "nopopup");
-					game.delay();
+					await target.chooseUseTarget(card, true, "nopopup");
+					await game.delay();
 				}
-				event.bool = true;
+				shouldRecover = true;
 			}
-			"step 3";
-			if (event.bool) {
-				target.recover();
+			if (shouldRecover) {
+				await target.recover();
 			}
 		},
 		ai: {
