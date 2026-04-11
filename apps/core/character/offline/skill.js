@@ -18071,7 +18071,9 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const { zhuzhanresult2, result } = await lib.yingbian.condition.complex.get("zhuzhan")(trigger);
+			const next = lib.yingbian.condition.complex.get("zhuzhan")(trigger);
+			await next;
+			const { zhuzhanresult2, result } = next;
 			if (result?.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
