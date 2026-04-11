@@ -902,7 +902,7 @@ declare interface Skill {
 	 * 
 	 * 【v1.9.102】扩展：可以使用函数式viewAs，目前核心支持使用地方：backup,ok;
 	 */
-	viewAs?: string | CardBaseUIData | ((cards: Card[], player: Player) => VCard | CardBaseUIData | null);
+	viewAs?: string | CardBaseUIData | ((cards: Card[], player: Player) => string | VCard | CardBaseUIData | null);
 	/**
 	 * 视为技按钮出现条件（即发动条件）
 	 * @param player 
