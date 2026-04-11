@@ -644,7 +644,7 @@ export interface EventJudgeParams {
 	clearArena?: boolean;
 	position?: HTMLDivElement | DocumentFragment;
 	judge?(card: Card): number;
-	judge2?(result: Partial<Result>): boolean;
+	judge2?(result: Partial<Result>): boolean | undefined;
 }
 
 // 一些不暴露的类型
