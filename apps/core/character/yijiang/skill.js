@@ -4690,8 +4690,8 @@ const skills = {
 		usable: 20,
 		locked: false,
 		delay: false,
-		content() {
-			player.draw("nodelay");
+		async content(event, trigger, player) {
+			await player.draw({ nodelay: true });
 			player.addTempSkill("jishe2");
 			player.addMark("jishe2", 1, false);
 		},
@@ -4728,36 +4728,27 @@ const skills = {
 			if (player.countCards("h")) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				return !current.isLinked();
-			});
+			return game.hasPlayer(current => !current.isLinked());
 		},
-		content() {
-			"step 0";
-			var num = game.countPlayer(function (current) {
-				return !current.isLinked();
-			});
-			player
-				.chooseTarget(get.prompt("jishe"), "横置至多" + get.cnNumber(Math.min(num, player.hp)) + "名未横置的角色", [1, Math.min(num, player.hp)], function (card, player, target) {
-					return !target.isLinked();
+		async cost(event, trigger, player) {
+			const num = game.countPlayer(current => !current.isLinked());
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("jishe"),
+					prompt2: `横置至多${get.cnNumber(Math.min(num, player.hp))}名未横置的角色`,
+					filterTarget(card, player, target) {
+						return !target.isLinked();
+					},
+					selectTarget: [1, Math.min(num, player.hp)],
+					ai(target) {
+						return -get.attitude(get.player(), target);
+					}
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("jishe", result.targets);
-				event.targets = result.targets;
-				event.num = 0;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.num < event.targets.length) {
-				event.targets[event.num].link();
-				event.num++;
-				event.redo();
-			}
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			await game.doAsyncInOrder(event.targets, target => target.link());
 		},
 		ai: {
 			expose: 0.3,
