@@ -4634,51 +4634,50 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(
-					true,
-					function (card, player, target) {
-						return target != player;
-					},
-					'滔乱<br><br><div class="text center">令一名其他角色选择一项：1.交给你一张与你以此法使用的牌类别不同的牌；2.你失去1点体力'
-				)
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					if (get.attitude(player, target) > 0) {
-						if (get.attitude(target, player) > 0) {
-							return target.countCards("he");
+		async content(event, trigger, player) {
+			let result = await player
+				.chooseTarget({
+					prompt: '滔乱<br /><br /><div class="text center">令一名其他角色选择一项：1.交给你一张与你以此法使用的牌类别不同的牌；2.你失去1点体力',
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai(target) {
+						const current = _status.event.player;
+						if (get.attitude(current, target) > 0) {
+							if (get.attitude(target, current) > 0) {
+								return target.countCards("he");
+							}
+							return target.countCards("he") / 2;
 						}
-						return target.countCards("he") / 2;
+						return 0;
 					}
-					return 0;
-				});
-			"step 1";
-			var target = result.targets[0];
-			event.target = target;
+				})
+				.forResult();
+			const target = result.targets[0];
 			player.line(target, "green");
-			var type = get.type(trigger.card, "trick");
-			target
-				.chooseCard('滔乱<br><br><div class="text center">交给' + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", function (card, player, target) {
-					return get.type(card, "trick") != _status.event.cardType;
+			const type = get.type(trigger.card, "trick");
+			result = await target
+				.chooseCard({
+					prompt: `滔乱<br><br><div class="text center">交给${get.translation(player)}一张不为${get.translation(type)}牌的牌，或令其失去1点体力且滔乱无效直到回合结束`,
+					position: "he",
+					filterCard(card) {
+						return get.type(card, "trick") !== get.event().cardType;
+					},
+					ai(card) {
+						if (get.event().att) {
+							return 11 - get.value(card);
+						}
+						return 0;
+					}
 				})
 				.set("cardType", type)
-				.set("ai", function (card) {
-					if (_status.event.att) {
-						return 11 - get.value(card);
-					}
-					return 0;
-				})
-				.set("att", get.attitude(target, player) > 0);
-			"step 2";
-			var target = event.target;
-			if (result.bool) {
-				target.give(result.cards, player);
-			} else {
+				.set("att", get.attitude(target, player) > 0)
+				.forResult();
+			if (!result.bool) {
 				player.tempBanSkill("taoluan");
-				player.loseHp();
+				await player.loseHp();
+				return;
 			}
+			await target.give(result.cards, player);
 		},
 	},
 	taoluan_backup: {},
