@@ -10279,7 +10279,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * 此方法用于对所有targets按顺序执行一个async函数。
 	 *
 	 * @param { Player[] } targets 需要执行async方法的目标
-	 * @param { (player: Player, i: number) => Promise<any | void> } asyncFunc 需要执行的async方法
+	 * @param { (player: Player, i: number) => PromiseLike<any | void> |  } asyncFunc 需要执行的async方法
 	 * @param { (a: Player, b: Player) => number } [sort] 排序器，默认为lib.sort.seat
 	 */
 	async doAsyncInOrder(targets, asyncFunc, sort) {
