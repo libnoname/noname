@@ -12119,7 +12119,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回一些牌的攻击距离
-	 * @param { Card[] } cards
+	 * @param { Card[] } [cards]
 	 * @returns { number }
 	 */
 	getEquipRange(cards) {
