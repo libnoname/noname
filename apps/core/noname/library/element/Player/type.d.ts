@@ -416,7 +416,7 @@ export interface EventChoosePlayerCardParams extends ChooseBase, CheckButtonPara
 
 export type EventDiscardPlayerCardParams = EventChoosePlayerCardParams;
 export interface EventGainPlayerCardParams extends EventChoosePlayerCardParams {
-	visibleMove: boolean;
+	visibleMove?: boolean;
 }
 
 export interface EventMoveCardParams extends ChooseBase {
