@@ -1,5 +1,3 @@
-import { BroadSelect } from "@/library/element/Player/type";
-
 /** 时机 */
 declare interface SkillTrigger {
 	/** 
@@ -153,7 +151,7 @@ declare interface Mod {
 	 */
 	attackTo?(from: Player, to: Player, range: number): number | void;
 	/**
-	 * 蓄力点上限
+	 * 蓄力值上限
 	 * @param player 玩家
 	 * @param max 当前上限
 	 */
@@ -2069,7 +2067,7 @@ interface ChooseButtonConfigData {
 	 * 
 	 * 既player.chooseButton的selectButton
 	 */
-	select?: BroadSelect;
+	select?: import("@/library/element/Player/type").BroadSelect;
 
 	//成功选择操作后的内容：
 	/**

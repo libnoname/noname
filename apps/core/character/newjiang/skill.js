@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//笛音荀勖
 	diyin: {
@@ -3949,20 +3949,23 @@ const skills = {
 			}
 			const list = get.addNewRowList(player.getCards("h"), "suit", player);
 			const result = await player
-				.chooseButton([
+				.chooseButton(
 					[
-						[[`备预：将一种花色的手牌置于牌堆底`], "addNewRow"],
 						[
-							dialog => {
-								dialog.classList.add("fullheight");
-								dialog.forcebutton = false;
-								dialog._scrollset = false;
-							},
-							"handle",
+							[[`备预：将一种花色的手牌置于牌堆底`], "addNewRow"],
+							[
+								dialog => {
+									dialog.classList.add("fullheight");
+									dialog.forcebutton = false;
+									dialog._scrollset = false;
+								},
+								"handle",
+							],
+							list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
 						],
-						list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
 					],
-				])
+					true
+				)
 				.set("filterButton", button => {
 					return button.links.length > 0;
 				})
@@ -3976,36 +3979,18 @@ const skills = {
 				const [suit] = result.links,
 					cards = player.getCards("h", card => get.suit(card, player) == suit);
 				if (cards.length) {
-					let resultx;
-					if (cards.length == 1) {
-						resultx = { bool: true, moved: [cards] };
-					} else {
-						resultx = await player
-							.chooseToMove("备预：将牌按顺序置于牌堆底", true)
-							.set("list", [["牌堆底", cards]])
-							.set("processAI", list => {
-								return [list[0][1].slice(0)];
-							})
-							.forResult();
-					}
-					if (resultx?.bool) {
-						const moved = resultx.moved[0];
-						if (moved.length) {
-							game.log(player, `将${get.cnNumber(moved.length)}张牌置于牌堆底`);
-							player.$throw(moved.length, 1000);
-							await player.lose(moved, ui.cardPile);
-							/*for (let i = 0; i < moved.length; i++) {
-								const card = moved[i];
-								card.fix();
-								ui.cardPile.appendChild(card);
-							}*/
-						}
-					}
+					game.log(player, "将", cards, "置于牌堆底");
+					await player.lose(cards, ui.cardPile);
 				}
 			}
 		},
 		ai: {
-			order: 0.001,
+			order(item, player) {
+				if (player.maxHp - player.countCards("h") >= 2 && player.countCards("h") <= 2) {
+					return 10;
+				}
+				return 1;
+			},
 			result: { player: 1 },
 		},
 	},

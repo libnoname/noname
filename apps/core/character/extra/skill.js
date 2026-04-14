@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//应天司马懿！别肘
 	jilin: {
@@ -3368,66 +3368,58 @@ const skills = {
 	},
 	nzry_junlve: {
 		audio: 2,
-		//marktext:"军",
-		intro: {
-			content: "当前有#个标记",
-		},
+		intro: { content: "当前有#个标记" },
 		trigger: {
-			player: "damageAfter",
+			player: "damageEnd",
 			source: "damageSource",
+		},
+		filter(event, player) {
+			return event.num > 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.addMark("nzry_junlve", trigger.num);
+			player.addMark(event.name, trigger.num);
 		},
-		ai: {
-			combo: "nzry_cuike",
-		},
+		ai: { combo: "nzry_cuike" },
 	},
 	nzry_cuike: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseBegin",
-		},
+		trigger: { player: "phaseUseBegin" },
 		async cost(event, trigger, player) {
-			/** @type {string} */
-			let prompt;
-			if (player.countMark("nzry_junlve") % 2 == 1) {
-				prompt = "是否发动【摧克】，对一名角色造成1点伤害？";
-			} else {
-				prompt = "是否发动【摧克】，横置一名角色并弃置其区域内的一张牌？";
-			}
-
-			const next = player.chooseTarget(prompt);
-			next.set("ai", target => -get.attitude(player, target));
-
-			event.result = await next.forResult();
+			const str = player.countMark("nzry_junlve") % 2 == 1 ? "对一名角色造成1点伤害" : "横置一名角色并弃置其区域内的一张牌";
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), str)
+				.set("ai", target => {
+					const player = get.player();
+					const num = player.countMark("nzry_junlve") % 2;
+					if (num == 1) {
+						return get.damageEffect(target, player, player);
+					}
+					return get.effect(target, { name: "guohe_copy" }, player, player) + (!target.isLinked() ? 2 : 0);
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const [target] = targets;
-
 			if (player.countMark("nzry_junlve") % 2 == 1) {
 				await target.damage();
 			} else {
 				await target.link(true);
 				await player.discardPlayerCard(target, 1, "hej", true);
 			}
-
 			if (player.countMark("nzry_junlve") <= 7) {
 				return;
 			}
-
-			const next = player.chooseBool();
-			next.set("ai", () => true);
-			next.set("prompt", "是否弃置所有“军略”标记并对所有其他角色造成1点伤害？");
-
-			const result = await next.forResult();
-			if (result.bool) {
-				const players = game.filterPlayer(target => target !== player);
-				player.line(players);
-				player.removeMark("nzry_junlve", player.countMark("nzry_junlve"));
-				await game.doAsyncInOrder(players, target => target.damage());
+			const targetsx = game.filterPlayer(target => target !== player);
+			const result = await player
+				.chooseBool(`是否弃置所有“军略”标记${targetsx.length ? `并对${get.translation(targetsx)}造成1点伤害` : ""}？`)
+				.set("choice", targetsx.reduce((num, target) => num + get.damageEffect(target, player, player), 0) > 0)
+				.forResult();
+			if (result?.bool) {
+				player.line(targetsx);
+				player.clearMark("nzry_junlve");
+				await game.doAsyncInOrder(targetsx, target => target.damage());
 			}
 		},
 		ai: {
@@ -3441,19 +3433,12 @@ const skills = {
 		animationColor: "metal",
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countMark("nzry_junlve") > 0;
+			return player.countMark("nzry_junlve") > 0 && game.hasPlayer(current => current.isLinked());
 		},
 		check(event, player) {
-			var num = game.countPlayer(function (current) {
-				return get.attitude(player, current) < 0 && current.isLinked();
-			});
-			return (
-				player.storage.nzry_junlve >= num &&
-				num ==
-					game.countPlayer(function (current) {
-						return get.attitude(player, current) < 0;
-					})
-			);
+			const targets = game.filterPlayer(current => get.attitude(player, current) < 0 && current.isLinked());
+			const num = targets.length;
+			return player.countMark("nzry_junlve") >= num && (num == game.countPlayer(current => get.attitude(player, current) < 0) || (num <= 2 && targets.filter(current => current.countCards("e") > 0).length > 0));
 		},
 		filterTarget(card, player, target) {
 			return target.isLinked();
@@ -3464,24 +3449,28 @@ const skills = {
 		multiline: true,
 		multitarget: true,
 		async content(event, trigger, player) {
-			const { targets } = event;
-
+			let { targets } = event;
 			player.awakenSkill(event.name);
-			player.storage.nzry_dinghuo = true;
-			player.removeMark("nzry_junlve", player.countMark("nzry_junlve"));
-			for (const target of targets) {
+			player.clearMark("nzry_junlve");
+			for (const target of targets.sortBySeat()) {
 				await target.discard(target.getCards("e"));
 			}
-
+			targets = targets.filter(current => current.isIn());
+			if (!targets.length) {
+				return;
+			}
 			const result = await player
 				.chooseTarget(true, "对一名目标角色造成1点火焰伤害", (card, player, target) => {
 					return _status.event.targets.includes(target);
 				})
 				.set("targets", targets)
-				.set("ai", () => 1)
+				.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(target, player, player, "fire");
+				})
 				.forResult();
-			if (result.bool) {
-				await result.targets[0].damage("fire", "nocard");
+			if (result?.bool) {
+				await result.targets[0].damage("fire");
 			}
 		},
 		ai: {

@@ -3228,7 +3228,7 @@ export class Library {
 				},
 				autoborder_count: {
 					name: "边框升级方式",
-					intro: "<strong>击杀</strong> 每击杀一人，边框提升两级<br><strong>伤害</strong> 每造成两点伤害，边框提升一级<br><strong>混合</strong> 击杀量决定边框颜色，伤害量决定边框装饰",
+					intro: "<strong>击杀</strong> 每击杀一人，边框提升两级<br><strong>伤害</strong> 每造成2点伤害，边框提升一级<br><strong>混合</strong> 击杀量决定边框颜色，伤害量决定边框装饰",
 					init: "kill",
 					item: {
 						kill: "击杀",
@@ -5826,25 +5826,26 @@ export class Library {
 						group: "按势力筛选",
 						number: "自选数值",
 					},
-					onclick(item) {
+					async onclick(item) {
 						if (item !== "number") {
-							game.saveConfig("connect_limit_zhu", item, "identity");
+							await game.promises.saveConfig("connect_limit_zhu", item, "identity");
 							return;
 						}
-						const result = prompt("请输入常备主候选武将数");
-						if (/^-?\d+(\.\d+)?$/.test(result)) {
-							const number = Number(result);
-							if (number > 0) {
-								if (Number.isInteger(number)) {
-									this.querySelector("div").innerHTML = result;
-									game.saveConfig("connect_limit_zhu", result, "identity");
-								} else {
-									alert("请输入整数");
-								}
-								return;
+						while (true) {
+							const result = await game.promises.prompt("请输入常备主候选武将数");
+							if (!result) {
+								break;
 							}
+							if (/^-?\d+(\.\d+)?$/.test(result)) {
+								const number = Number(result);
+								if (number > 0 && Number.isInteger(number)) {
+									this.querySelector("div").innerHTML = result;
+									await game.promises.saveConfig("connect_limit_zhu", result, "identity");
+									break;
+								}
+							}
+							alert("请输入大于0的整数");
 						}
-						alert("请输入大于0的整数");
 					},
 				},
 				connect_choice_zhong: {
@@ -6488,25 +6489,26 @@ export class Library {
 						group: "按势力筛选",
 						number: "自选数值",
 					},
-					onclick(item) {
+					async onclick(item) {
 						if (item !== "number") {
-							game.saveConfig("limit_zhu", item, "identity");
+							await game.promises.saveConfig("limit_zhu", item, "identity");
 							return;
 						}
-						const result = prompt("请输入常备主候选武将数");
-						if (/^-?\d+(\.\d+)?$/.test(result)) {
-							const number = Number(result);
-							if (number > 0) {
-								if (Number.isInteger(number)) {
-									this.querySelector("div").innerHTML = result;
-									game.saveConfig("limit_zhu", result, "identity");
-								} else {
-									alert("请输入整数");
-								}
-								return;
+						while (true) {
+							const result = await game.promises.prompt("请输入常备主候选武将数");
+							if (!result) {
+								break;
 							}
+							if (/^-?\d+(\.\d+)?$/.test(result)) {
+								const number = Number(result);
+								if (number > 0 && Number.isInteger(number)) {
+									this.querySelector("div").innerHTML = result;
+									await game.promises.saveConfig("limit_zhu", result, "identity");
+									break;
+								}
+							}
+							alert("请输入大于0的整数");
 						}
-						alert("请输入大于0的整数");
 					},
 				},
 				choice_zhong: {
@@ -12770,10 +12772,11 @@ export class Library {
 								if (result || input.value.length > 0) {
 									read(input.value);
 								} else if (confirm("是否输入邀请链接以加入房间？")) {
-									var text = prompt("请输入邀请链接");
-									if (typeof text == "string" && text.length > 0) {
-										read(text);
-									}
+									game.prompt("请输入邀请链接", text => {
+										if (typeof text === "string" && text.length > 0) {
+											read(text);
+										}
+									});
 								}
 							}
 						}

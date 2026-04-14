@@ -497,6 +497,9 @@ export class Player extends HTMLDivElement {
 				}
 			});
 		}
+		if (this.getCards("h").every((card, index) => hs[index] == card)) {
+			return false;
+		}
 
 		this.node.handcards1.style.visibility = "hidden";
 		this.node.handcards2.style.visibility = "hidden";
@@ -524,7 +527,7 @@ export class Player extends HTMLDivElement {
 	 * @param {(a: Card, b: Card) => number|Card[]} [sort] 排序方法，如果传的牌数组，就按数组顺序排
 	 */
 	sortHandcardOL(sort) {
-		const bool = game.me.sortHandcard(sort);
+		const bool = this.sortHandcard(sort);
 		//联机要同步手牌状态
 		if (_status.connectMode && bool !== false) {
 			if (game.online) {
@@ -534,7 +537,7 @@ export class Player extends HTMLDivElement {
 				);
 			} else {
 				game.syncHandcard(
-					game.me,
+					this,
 					this.getCards("h").map(i => i.cardid)
 				);
 			}
@@ -4820,8 +4823,8 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 获得蓄力点
-	 * @param { number } [num = 1] 获得蓄力点数
+	 * 获得蓄力值
+	 * @param { number } [num = 1] 获得蓄力值数
 	 * @param { boolean } [log] false: 不进行广播
 	 */
 	addCharge(num, log) {
@@ -4839,8 +4842,8 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 移去蓄力点
-	 * @param { number } [num = 1] 移去蓄力点数
+	 * 移去蓄力值
+	 * @param { number } [num = 1] 移去蓄力值数
 	 * @param { boolean } [log] false: 不进行广播
 	 */
 	removeCharge(num, log) {
@@ -4853,8 +4856,8 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 返回玩家的蓄力点数
-	 * @param { boolean } [max] true: 返回当前蓄力点与上限之差
+	 * 返回玩家的蓄力值数
+	 * @param { boolean } [max] true: 返回当前蓄力值与上限之差
 	 * @returns { number }
 	 */
 	countCharge(max) {
@@ -4867,7 +4870,7 @@ export class Player extends HTMLDivElement {
 		return this.countMark("charge");
 	}
 	/**
-	 * 获取蓄力点上限
+	 * 获取蓄力值上限
 	 */
 	getMaxCharge() {
 		let skills = game.expandSkills(this.getSkills(null, null, false).concat(lib.skill.global));
@@ -8299,7 +8302,7 @@ export class Player extends HTMLDivElement {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
-			player.checkHistory("lose", function (evt) {
+			player.checkAllHistory("lose", function (evt) {
 				if (evt.parent == that) {
 					map.hs.addArray(evt.hs);
 					map.es.addArray(evt.es);
@@ -8420,7 +8423,7 @@ export class Player extends HTMLDivElement {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
-			player.checkHistory("lose", function (evt) {
+			player.checkAllHistory("lose", function (evt) {
 				if (evt.parent == that) {
 					map.hs.addArray(evt.hs);
 					map.es.addArray(evt.es);
@@ -9267,7 +9270,7 @@ export class Player extends HTMLDivElement {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
-			player.checkHistory("lose", function (evt) {
+			player.checkAllHistory("lose", function (evt) {
 				if (evt.parent == that) {
 					map.hs.addArray(evt.hs);
 					map.es.addArray(evt.es);
@@ -9355,7 +9358,7 @@ export class Player extends HTMLDivElement {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
-			player.checkHistory("lose", function (evt) {
+			player.checkAllHistory("lose", function (evt) {
 				if (evt.parent == that) {
 					map.hs.addArray(evt.hs);
 					map.es.addArray(evt.es);

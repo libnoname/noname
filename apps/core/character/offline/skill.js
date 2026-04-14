@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//沙币文心雕龙曹植
 	wxdl_huamao: {
@@ -2354,7 +2354,7 @@ const skills = {
 			await player.recoverTo(3);
 			const result = await player
 				.chooseTarget({
-					prompt: "涅槃：对一名角色造成两点火焰伤害",
+					prompt: "涅槃：对一名角色造成2点火焰伤害",
 					filterTarget: lib.filter.all,
 					ai(target) {
 						return get.damageEffect(target, get.player(), get.player(), "fire");
@@ -18071,7 +18071,9 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const { zhuzhanresult2, result } = await lib.yingbian.condition.complex.get("zhuzhan")(trigger);
+			const next = lib.yingbian.condition.complex.get("zhuzhan")(trigger);
+			await next;
+			const { zhuzhanresult2, result } = next;
 			if (result?.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;

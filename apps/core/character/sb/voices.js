@@ -105,6 +105,8 @@ export default {
 	"#sb_sp_zhugeliang:die": "纵具地利，不得天时亦难胜也……",
 	"#sbqiaobian1": "将计就计，变夺胜机。",
 	"#sbqiaobian2": "因势而变，则可引势而为。",
+	"#sbliaoshi1": "能而示之不能，用而示之不用。",
+	"#sbliaoshi2": "欲攻其东，先击其西，敌必分兵救之。",
 	"#sb_zhanghe:die": "未料竟中孔明之计……",
 	"#sbxiayuan1": "速置粮草，驰援天柱山。",
 	"#sbxiayuan2": "援军既至，定攻克此地！",

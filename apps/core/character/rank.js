@@ -1120,6 +1120,7 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"tw_dm_zhouyu",
 		"zhuji",
 		"ylyg_dianwei",
 		"ylyg_pangtong",
@@ -2634,6 +2635,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"tw_dm_zhouyu",
 			"o_tadun",
 			"o_guanyu",
 			"wxdl_caozhi",

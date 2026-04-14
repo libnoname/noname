@@ -1,9 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	// OP蹋顿
 	youlve: {
@@ -287,17 +284,17 @@ const skills = {
 			let result = !target.countCards("he")
 				? { bool: false }
 				: await target
-						.chooseToGive("he", player, get.translation(player) + "对你发动了【义绝】", "是否交给其任意张牌", [1, Infinity])
+						.chooseToGive("he", player, get.translation(player) + "对你发动了【义绝】", "是否交给其任意张牌", [1, Infinity], true)
 						.set("ai", card => {
 							const { player, target } = get.event();
 							const att = get.attitude(player, target);
 							if (att > 0) {
 								return 6 - get.value(card, target);
 							}
-							if (ui.selected.cards.some(cardx => get.suit(cardx) == get.suit(card))) {
+							if (ui.selected.cards.some(cardx => get.suit(cardx) == get.suit(card)) || ui.selected.cards.length > 1) {
 								return 0;
 							}
-							return -get.value(card, target);
+							return -get.value(card);
 						})
 						.forResult();
 			const cards = result?.cards || [];
@@ -420,7 +417,7 @@ const skills = {
 				charlotte: true,
 				mark: true,
 				intro: { content: "十万！十万！十万！" },
-				audio: "mbshizhong3.jpg",
+				audio: "mbshizhong3.mp3",
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				async content(event, trigger, player) {
@@ -471,11 +468,11 @@ const skills = {
 	//手杀张既
 	mbdingzhen: {
 		audio: "twdingzhen",
-		trigger: { global: "roundStart" },
+		trigger: { 
+			global: "roundStart"
+		},
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return get.distance(player, current) <= player.getHp() && current != player;
-			});
+			return game.hasPlayer(current => get.distance(player, current) <= player.getHp() && current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -512,19 +509,12 @@ const skills = {
 							return 0;
 						},
 					})
-					.set(
-						"goon",
-						get.attitude(target, player) < 0 &&
-							player.countCards("hs") <= 3 &&
-							target.countCards("hs", card => {
-								return target.hasValueTarget(card);
-							}) > 1
-					)
+					.set("goon", get.attitude(target, player) < 0 && player.countCards("hs") <= 3 && target.countCards("hs", card => target.hasValueTarget(card)) > 1)
 					.forResult();
 				if (result.bool) {
 					target.addExpose(0.1);
 				} else {
-					target.addSkill(`${event.name}_target`, "roundStart");
+					target.addTempSkill(`${event.name}_target`, "roundStart");
 					target.markAuto(`${event.name}_target`, [player]);
 				}
 			});
@@ -1252,6 +1242,7 @@ const skills = {
 	},
 	mbyilv: {
 		audio: 4,
+		usable: 1,
 		trigger: {
 			target: "useCardToPlayered",
 		},

@@ -1,9 +1,6 @@
 import { _status, game, get, lib, ui } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 export default {
 	equipEnable: {
 		chalotte: true,
@@ -784,7 +781,7 @@ export default {
 				if (max == Infinity) {
 					max = "∞";
 				}
-				return `当前蓄力点数：${storage || 0}/${max}`;
+				return `当前蓄力值数：${storage || 0}/${max}`;
 			},
 		},
 	},

@@ -1,4 +1,11 @@
 export default {
+	"#olhexu1": "和风拂汉柳，细雨润未央。",
+	"#olhexu2": "妾心若春水，潺潺解君忧。",
+	"#olzeguang1": "且行且过，深宫之内亦有暖阳。",
+	"#olzeguang2": "执灯映寒雪，长夜虽漫，可待春晖。",
+	"#olchengen1": "承恩长乐不觉久，惟愿君王万载长。",
+	"#olchengen2": "妾非皎月，但为萤火，与君共明晦。",
+	"#ol_dongguiren:die": "汉之广矣，不可泳思。",
 	"olkuangxin1": "汉庭之上，皆为窃天之贼！",
 	"olkuangxin2": "黄天之下，再无饥寒之祸。",
 	"olleishi1": "雷芒裂苍穹，群山已撼，试问谁能挡！",

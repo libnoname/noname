@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//谋朱然
 	sbzhenwei: {
@@ -69,8 +69,8 @@ const skills = {
 							`镇围：执行至多${num}项`,
 							[
 								[
-									["damage", `对${get.translation(target)}造成一点伤害`],
-									["draw", "摸两张牌"],
+									["damage", `对${get.translation(target)}造成1点伤害`],
+									["draw", "摸三张牌"],
 									//["hujia", "获得1点护甲"],
 								],
 								"textbutton",
@@ -85,7 +85,7 @@ const skills = {
 							case "damage":
 								return get.damageEffect(targetx, player, player);
 							case "draw":
-								return get.effect(player, { name: "draw" }, player, player) * 2;
+								return get.effect(player, { name: "draw" }, player, player) * 3;
 							/*case "hujia":
 								return player.hujia < 5 ? get.recoverEffect(player, player, player) : 0;*/
 						}
@@ -112,7 +112,7 @@ const skills = {
 		},
 		map: {
 			damage: ["对其造成1点伤害", (player, target) => get.damageEffect(target, player, player), player => player.damage()],
-			draw: ["摸两张牌", (player, target) => get.effect(target, { name: "draw" }, player, player), player => player.draw(2)],
+			draw: ["摸三张牌", (player, target) => get.effect(target, { name: "draw" }, player, player), player => player.draw(3)],
 			//hujia: ["获得1点护甲", (player, target) => get.recoverEffect(target, player, player), player => player.changeHujia(1, void 0, true)],
 		},
 		ai: {
@@ -357,11 +357,11 @@ const skills = {
 					if (num == player.countCards("e") && result?.targets?.length) {
 						const target = result.targets[1];
 						const result2 = await player
-							.chooseBool(`巧变：是否令${get.translation(target)}摸一张牌`)
+							.chooseBool(`巧变：是否令${get.translation(target)}摸两张牌`)
 							.set("choice", get.effect(target, { name: "draw" }, player, player) > 0)
 							.forResult();
 						if (result?.bool) {
-							await target.draw();
+							await target.draw(2);
 						}
 					}
 				},

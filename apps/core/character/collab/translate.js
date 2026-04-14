@@ -396,7 +396,7 @@ const translates = {
 	mb_chitu_prefix: "手杀",
 	mb_chitu: "手杀赤兔",
 	mbjunkui: "骏魁",
-	mbjunkui_info: "锁定技，游戏开始时，你将所有坐骑牌移出游戏；你的出【杀】次数+1。",
+	mbjunkui_info: "锁定技，游戏开始时，你将所有坐骑牌移出游戏；你使用【杀】的次数上限+1。",
 	mbchiyuan: "驰原",
 	mbchiyuan_info: "你每回合使用的第一张【杀】无距离限制且需要额外使用一张【闪】响应。出牌阶段限一次，你可摸X张牌（X为当前连续被使用的红色牌数）。",
 	tizhongzhishen: "体重之神",
@@ -457,6 +457,10 @@ const translates = {
 	})(),
 	olfuyou: "福佑",
 	olfuyou_info: "锁定技。①你使用红色普通锦囊牌额外结算一次。②每回合限一次，你使用红色普通锦囊牌造成伤害后，你摸一张牌。",
+	tw_dm_zhouyu: "TW魔周瑜",
+	tw_dm_zhouyu_prefix: "TW|魔",
+	yiran: "易燃",
+	yiran_info: "锁定技，你受到的火焰伤害+1。",
 };
 
 export default translates;

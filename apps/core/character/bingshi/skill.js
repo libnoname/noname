@@ -1,14 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	//朱绩
 	potjiezhu: {
 		audio: 2,
+		audioname: ["zhuji_shadow"],
 		enable: "chooseToUse",
 		getOnlyNum(player, isDiscard) {
 			let num = player.countCards("h");
@@ -203,7 +201,7 @@ const skills = {
 			) {
 				const result = await player
 					.chooseTarget({
-						prompt: "兼虑：你对一名其他角色造成一点伤害，或者取消并重置此技能的X",
+						prompt: "兼虑：你对一名其他角色造成1点伤害，或者取消并重置此技能的X",
 						filterTarget: lib.filter.notMe,
 						ai(target) {
 							const player = get.player();
@@ -259,7 +257,7 @@ const skills = {
 		},
 		subSkill: {
 			phaseUse: {
-				audio: "potjixi",
+				audio: "pottuntian",
 				enable: "phaseUse",
 				filter(event, player) {
 					return player.countCharge() > 0;
@@ -268,7 +266,7 @@ const skills = {
 				async precontent(event, trigger, player) {
 					const skill = event.name.slice(4);
 					const result = await player
-						.chooseNumbers(`###${get.translation(skill)}###出牌阶段限一次，你可以消耗任意点蓄力点，令至多等量名角色从牌堆或弃牌堆中各获得一张红桃牌`, [{ prompt: "请选择要移去的蓄力值", min: 1, max: player.countCharge() }])
+						.chooseNumbers(`###${get.translation(skill)}###出牌阶段限一次，你可以消耗任意点蓄力值，令至多等量名角色从牌堆或弃牌堆中各获得一张红桃牌`, [{ prompt: "请选择要移去的蓄力值", min: 1, max: player.countCharge() }])
 						.set("processAI", () => {
 							const player = get.player();
 							const num = Math.min(player.countCharge(), 3);
@@ -324,13 +322,14 @@ const skills = {
 		forced: true,
 		trigger: { player: "removeMark" },
 		filter(event, player) {
-			return event.markName == "charge" && event.num >= 3;
+			return event.markName == "charge" && event.num >= 2;
 		},
 		async content(event, trigger, player) {
 			const { num } = trigger;
 			const list = ["wuzhong", "wuxie", "wugu"];
-			for (let i = 0; i < 3; i++) {
-				if (num >= (i + 1) * 2 + 1) {
+			const numList = [2, 5, 7];
+			for (let i = 0; i < numList.length; i++) {
+				if (num >= numList[i]) {
 					const card = get.discardPile(card => get.name(card) == list[i]);
 					if (card) {
 						await player.gain(card, "gain2");
@@ -3765,7 +3764,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const num = get.info("pothongyi").maxMark() - player.countMark("pothongyi");
-					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? 1 : 3, num));
+					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? 1 : 4, num));
 				},
 			},
 		},

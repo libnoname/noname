@@ -162,7 +162,7 @@ export function loadCharacter(character: importCharacterConfig) {
 					let value2 = value[key2];
 
 					if (key === "character") {
-						if (lib.config.forbidai_user && lib.config.forbidai_user.includes(key2)) {
+						if (lib.config[`forbidai_user_${name}`] || lib.config.forbidai_user?.includes(key2)) {
 							lib.config.forbidai.add(key2);
 						}
 						if (Array.isArray(value2)) {
@@ -276,7 +276,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 					lib.characterGuozhanFilter.add(content.name);
 				}
 				for (const [charaName, character] of Object.entries(content.character)) {
-					if (lib.config.forbidai_user && lib.config.forbidai_user.includes(charaName)) {
+					if (lib.config[`forbidai_user_${content.name}`] || lib.config.forbidai_user?.includes(charaName)) {
 						lib.config.forbidai.add(charaName);
 					}
 					if (Array.isArray(character)) {

@@ -79,8 +79,6 @@ export default {
 	"#drlt_jieying2": "裹甲衔枚，劫营如入无人之境。",
 	"#shen_ganning:die": "吾不能奉主，谁辅主基业？",
 	"#boss_zhaoyun:die": "血染鳞甲，龙坠九天……",
-	"#dccuixin1": "今兵临城下，其王庭可摧。",
-	"#dccuixin2": "四面皆奏楚歌，问汝降是不降？",
 	"#dili_shengzhi1": "位继父兄，承弘德以继往。",
 	"#dili_shengzhi2": "英魂犹在，履功业而开来。",
 	"#dili_chigang1": "秉承伦常，扶树纲纪。",

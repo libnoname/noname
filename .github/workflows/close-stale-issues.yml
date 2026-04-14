@@ -1,7 +1,7 @@
 name: Close Stale Issues
 on:
   schedule:
-    - cron: "0 11 * * *" # 每天的 11:00 运行
+    - cron: "49 11 * * *" # 每天的 19:49 运行
   workflow_dispatch:
 
 permissions:

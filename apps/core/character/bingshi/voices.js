@@ -1,4 +1,16 @@
 export default {
+	"#potjiezhu1": "趁魏军退走，我等可急令进军。",
+	"#potjiezhu2": "虽攻敌不足，然退守有余矣。",
+	"#potjiezhu_zhuji_shadow1": "城头旌旗不倒，吴土寸步不让！",
+	"#potjiezhu_zhuji_shadow2": "魏虏虽众，岂能撼我吴疆！",
+	"#pothuanshi1": "当效父之胆，拒犯我之贼！",
+	"#pothuanshi2": "美酒虽好，不可误我政事。",
+	"#pothuanshi3": "养育之恩虽重，血脉之源难断！",
+	"#potjianlv1": "今观曹魏之兵，更胜当年十倍。",
+	"#potjianlv2": "蜀汉若灭，恐唇亡齿寒啊。",
+	"#potjianlv3": "卫护江东，以全节义。",
+	"#zhuji:die": "诸葛融何以引军不发，致我有此惨败。",
+	"#zhuji_shaodw:die": "哎，内忧至此，回天无力啊。",
 	"#mbsizi1": "昔韩信暗度陈仓，乃定三秦之地。",
 	"#mbsizi2": "今吾大军十万，岂惧蜀道之险？",
 	"#mbsizi3": "德彰功显，取之何愧？",
@@ -186,5 +198,4 @@ export default {
 	"#potzhenfeng3": "待吾重振兵马，胜负犹未可知！",
 	"#potzhenfeng4": "有胆气者，随某前去一战！",
 	"#pot_taishici:die": "身征大义，魂念江东……",
-
 };

@@ -3,6 +3,7 @@ declare type CardBaseUIData = {
 	suit?: string;
 	number?: number;
 	nature?: string | null;
+	storage?: Record<string, any>;
 
 	//用于某些方法，用于过滤卡牌的额外结构
 	type?: string | string[];

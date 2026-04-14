@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//族荀莳（族荀肘）
 	clanqingjue: {
@@ -745,11 +745,9 @@ const skills = {
 	//族荀彧
 	clandingan: {
 		audio: 2,
-		trigger: {
-			global: "useCardAfter",
-		},
+		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) == 1 && game.hasPlayer(target => !event.targets.includes(target) && !player.getStorage("clandingan_used").includes(target));
+			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) == 1 && game.hasPlayer(target => !event.targets.includes(target) && !player.getStorage("clandingan_used").includes(target)) && !game.getGlobalHistory("everything", evt => evt.name == "dying").length;
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -757,7 +755,7 @@ const skills = {
 			const pre_targets = game.filterPlayer(target => {
 				return !trigger.targets.includes(target) && !player.getStorage(skill).includes(target);
 			});
-			const result =
+			let result =
 				pre_targets.length > 1
 					? await player
 							.chooseTarget(
@@ -768,7 +766,7 @@ const skills = {
 								true
 							)
 							.set("targetx", pre_targets)
-							.set("prompt2", "然后你令手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
+							.set("prompt2", "然后你令一名手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
 							.set("ai", target => {
 								const { player, targetx } = get.event(),
 									getD = current => get.effect(current, { name: "draw" }, player, player);
@@ -786,7 +784,7 @@ const skills = {
 							bool: true,
 							targets: pre_targets,
 						};
-			if (!result?.bool || !result.targets) {
+			if (!result?.bool || !result.targets?.length) {
 				return;
 			}
 			player.addTempSkill(skill);
@@ -797,53 +795,74 @@ const skills = {
 			if (!currents?.length) {
 				return;
 			}
-			const func = async target => {
-				const result2 = await player
-					.chooseButton(
+			result =
+				currents.length == 1
+					? { bool: true, targets: currents }
+					: await player
+							.chooseTarget("定安：选择一名手牌最多的其他角色", true, (card, player, target) => {
+								return get.event().targetsx?.includes(target);
+							})
+							.set("targetsx", currents)
+							.set("ai", target => {
+								const player = get.player();
+								const att = get.attitude(player, target);
+								if (att > 0) {
+									return 0;
+								}
+								if (target.countCards("h") > 2) {
+									return get.sgnAttitude(player, target) * Math.sqrt(target.countCards("h"));
+								}
+								return get.damageEffect(target, player, player);
+							})
+							.forResult();
+			if (!result?.bool || !result.targets?.length) {
+				return;
+			}
+			const target = result.targets[0];
+			result = await player
+				.chooseButton(
+					[
+						`定安：选择一项令${get.translation(target)}执行`,
 						[
-							`定安：选择一项令${get.translation(target)}执行`,
 							[
-								[
-									["damage", "受到你造成的1点伤害"],
-									["discard", "随机弃置手牌中最多的同名牌"],
-								],
-								"textbutton",
+								["damage", "受到你造成的1点伤害"],
+								["discard", "随机弃置手牌中最多的同名牌"],
 							],
+							"textbutton",
 						],
-						true
-					)
-					.set("targetx", target)
-					.set("ai", button => {
-						const { player, targetx: target } = get.event();
-						if (button.link == "damage") {
-							return get.damageEffect(target, player, player);
-						}
-						return get.sgnAttitude(player, target) * Math.sqrt(target.countCards("h"));
-					})
-					.forResult();
-				if (result2?.bool && result2.links?.length) {
-					player.line(target);
-					if (result2.links[0] == "damage") {
-						await target.damage(player);
-					} else {
-						const cards = target.getCards("h"),
-							names = cards.map(card => get.name(card)),
-							maxName = names.toUniqued().maxBy(name => get.numOf(names, name));
-						const num = get.numOf(names, maxName);
-						const name = names
-							.toUniqued()
-							.filter(name => get.numOf(names, name) == num)
-							.randomGet();
-						if (name) {
-							const discards = cards.filter(card => get.name(card) == name);
-							if (discards?.length) {
-								await target.modedDiscard(discards);
-							}
+					],
+					true
+				)
+				.set("target", target)
+				.set("ai", button => {
+					const { player, target } = get.event();
+					if (button.link == "damage") {
+						return get.damageEffect(target, player, player);
+					}
+					return get.sgnAttitude(player, target) * Math.sqrt(target.countCards("h"));
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				player.line(target);
+				if (result.links[0] == "damage") {
+					await target.damage(player);
+				} else {
+					const cards = target.getCards("h"),
+						names = cards.map(card => get.name(card)),
+						maxName = names.toUniqued().maxBy(name => get.numOf(names, name));
+					const num = get.numOf(names, maxName);
+					const name = names
+						.toUniqued()
+						.filter(name => get.numOf(names, name) == num)
+						.randomGet();
+					if (name) {
+						const discards = cards.filter(card => get.name(card) == name);
+						if (discards?.length) {
+							await target.modedDiscard(discards);
 						}
 					}
 				}
-			};
-			await game.doAsyncInOrder(currents, func);
+			}
 		},
 		subSkill: {
 			used: {
@@ -854,9 +873,7 @@ const skills = {
 	},
 	clanfuning: {
 		audio: 2,
-		trigger: {
-			player: "changeHpAfter",
-		},
+		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
 			const evts = game.getRoundHistory("changeHp", evt => evt.player == player && evt.num != 0);
 			if (evts.indexOf(event) !== 0) {
@@ -916,7 +933,7 @@ const skills = {
 				if (num > 0) {
 					const count = Math.min(num, player.countDiscardableCards(player, "h"));
 					if (count > 0) {
-						await player.chooseToDiscard("h", count, true);
+						await player.chooseToDiscard("h", count, true, "allowChooseAll");
 					}
 				} else if (num < 0) {
 					await player.draw(-num);
