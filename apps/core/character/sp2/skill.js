@@ -2099,7 +2099,7 @@ const skills = {
 					})
 					.set("gainer", target)
 					.set("ai", target => {
-						return get.attitude(get.player(), target) * target.countCards("he");
+						return -get.attitude(get.player(), target) * target.countCards("he");
 					})
 					.forResult();
 				if (result?.targets?.length) {

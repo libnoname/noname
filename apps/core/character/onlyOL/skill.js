@@ -1211,7 +1211,7 @@ const skills = {
 					.when("useCardAfter")
 					.filter(evt => evt.card == card)
 					.then(async (event, trigger, player) => {
-						if (game.hasPlayer(target => target.hasHistory("damage", evt => evt.card == trigger.card))) {
+						if (game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == trigger.card))) {
 							await player.chooseUseTarget({ card: cards?.[0], addCount: false });
 						}
 					});
