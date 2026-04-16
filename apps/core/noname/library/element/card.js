@@ -784,7 +784,7 @@ export class Card extends HTMLDivElement {
 		}
 	}
 	//判断玩家对此牌是否知情。
-	isKnownBy(player) {
+	isKnownBy(player, checkKnowers = true) {
 		if (["e", "j"].includes(get.position(this))) {
 			return true;
 		} //装备区或者判定区的牌，必知情。
@@ -803,7 +803,7 @@ export class Card extends HTMLDivElement {
 		if (get.is.shownCard(this)) {
 			return true;
 		} //此牌是明置牌，必知情。
-		if (this._knowers) {
+		if (this._knowers && checkKnowers) {
 			return this._knowers.includes("everyone") || this._knowers.includes(player.playerid);
 		}
 		return false;

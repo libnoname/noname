@@ -462,98 +462,7 @@ export default () => {
 					chooseCharacterBefore: function () {
 						game.identityVideoName = "幻化之战";
 						var skills = [];
-						var banned = [
-							"xinfu_guhuo",
-							"reguhuo",
-							"jixi",
-							"duanchang",
-							"huashen",
-							"xinsheng",
-							"rehuashen",
-							"rexinsheng",
-							"jinqu",
-							"nzry_binglve",
-							"nzry_huaiju",
-							"nzry_yili",
-							"nzry_zhenglun",
-							"nzry_mingren",
-							"nzry_zhenliang",
-							"drlt_qingce",
-							"new_wuhun",
-							"qixing",
-							"kuangfeng",
-							"dawu",
-							"baonu",
-							"wumou",
-							"ol_wuqian",
-							"ol_shenfen",
-							"renjie",
-							"jilue",
-							"nzry_junlve",
-							"nzry_dinghuo",
-							"drlt_duorui",
-							"chuanxin",
-							"cunsi",
-							"jueqing",
-							"huilei",
-							"paiyi",
-							"fuhun",
-							"zhuiyi",
-							"olddanshou",
-							"yanzhu",
-							"juexiang",
-							"jiexun",
-							"bizhuan",
-							"tongbo",
-							"xinfu_zhanji",
-							"xinfu_jijun",
-							"xinfu_fangtong",
-							"xinfu_qianchong",
-							"pdgyinshi",
-							"shuliang",
-							"zongkui",
-							"guju",
-							"bmcanshi",
-							"dingpan",
-							"xinfu_lingren",
-							"new_luoyan",
-							"junwei",
-							"gxlianhua",
-							"qizhou",
-							"fenyue",
-							"dianhu",
-							"linglong",
-							"fenxin",
-							"mouduan",
-							"cuorui",
-							"xinmanjuan",
-							"xinfu_jianjie",
-							"jianjie_faq",
-							"new_meibu",
-							"xinfu_xingzhao",
-							"jici",
-							"xianfu",
-							"fenyong",
-							"xuehen",
-							"midao",
-							"yishe",
-							"yinbing",
-							"juedi",
-							"bushi",
-							"xinfu_dianhua",
-							"xinfu_falu",
-							"xinfu_zhenyi",
-							"lskuizhu",
-							"pingjian",
-							"xjshijian",
-							"fentian",
-							"zhiri",
-							"xindan",
-							"xinzhengnan",
-							"xinfu_xiaode",
-							"komari_xueshang",
-							"qiaosi_map",
-						];
+						var banned = ["xinfu_guhuo", "reguhuo", "jixi", "duanchang", "huashen", "xinsheng", "rehuashen", "rexinsheng", "jinqu", "nzry_binglve", "nzry_huaiju", "nzry_yili", "nzry_zhenglun", "nzry_mingren", "nzry_zhenliang", "drlt_qingce", "new_wuhun", "qixing", "kuangfeng", "dawu", "baonu", "wumou", "ol_wuqian", "ol_shenfen", "renjie", "jilue", "nzry_junlve", "nzry_dinghuo", "drlt_duorui", "chuanxin", "cunsi", "jueqing", "huilei", "paiyi", "fuhun", "zhuiyi", "olddanshou", "yanzhu", "juexiang", "jiexun", "bizhuan", "tongbo", "xinfu_zhanji", "xinfu_jijun", "xinfu_fangtong", "xinfu_qianchong", "pdgyinshi", "shuliang", "zongkui", "guju", "bmcanshi", "dingpan", "xinfu_lingren", "new_luoyan", "junwei", "gxlianhua", "qizhou", "fenyue", "dianhu", "linglong", "fenxin", "mouduan", "cuorui", "xinmanjuan", "xinfu_jianjie", "jianjie_faq", "new_meibu", "xinfu_xingzhao", "jici", "xianfu", "fenyong", "xuehen", "midao", "yishe", "yinbing", "juedi", "bushi", "xinfu_dianhua", "xinfu_falu", "xinfu_zhenyi", "lskuizhu", "pingjian", "xjshijian", "fentian", "zhiri", "xindan", "xinzhengnan", "xinfu_xiaode", "komari_xueshang", "qiaosi_map"];
 						var characters = [];
 						for (var name in lib.character) {
 							if (!lib.character[name]) {
@@ -1394,11 +1303,7 @@ export default () => {
 			new_huanhuazhizhan: {
 				name: "幻化三国",
 				mode: "identity",
-				intro: [
-					"所有角色受到1点伤害时，随机获得一张未加入游戏的武将牌，称为“副将”",
-					"一名角色至多持有3个“副将”，超过数量上限时须将相应数量的“副将”放回武将牌堆",
-					"玩家持有“副将”的所有技能",
-				],
+				intro: ["所有角色受到1点伤害时，随机获得一张未加入游戏的武将牌，称为“副将”", "一名角色至多持有3个“副将”，超过数量上限时须将相应数量的“副将”放回武将牌堆", "玩家持有“副将”的所有技能"],
 				showcase: function (init) {
 					const node = this;
 					let player;
@@ -1411,7 +1316,7 @@ export default () => {
 						player.node.hp.remove();
 						player.style.transition = "all 0.5s";
 						return player;
-					}
+					};
 					if (init) {
 						player = initPlayer("pot_yuji");
 						player.style.left = "calc(50% - 75px)";
@@ -1620,13 +1525,16 @@ export default () => {
 									enable: "phaseUse",
 									usable: 1,
 									filterTarget(card, player, target) {
-										return player !== target && target.getStockSkills("千早爱音", "长崎素世").filter(skill => {
-											if (player.hasSkill(skill, null, null, false)) {
-												return false;
-											}
-											const info = get.info(skill);
-											return info && !info.charlotte;
-										}).length;
+										return (
+											player !== target &&
+											target.getStockSkills("千早爱音", "长崎素世").filter(skill => {
+												if (player.hasSkill(skill, null, null, false)) {
+													return false;
+												}
+												const info = get.info(skill);
+												return info && !info.charlotte;
+											}).length
+										);
 									},
 									async content(event, trigger, player) {
 										const skills = event.target.getStockSkills("千早爱音", "长崎素世").filter(skill => {
@@ -1686,7 +1594,7 @@ export default () => {
 											event.result = {
 												bool: true,
 												cost_data: result.links[0],
-											}
+											};
 										}
 									},
 									async content(event, trigger, player) {
@@ -1720,10 +1628,18 @@ export default () => {
 										const cards = player.getExpansions(event.skill);
 										if (trigger.name == "damage") {
 											event.result = await player
-												.chooseCard(get.prompt(event.skill), "将一张牌置于武将牌上", card => {
-													return !get.event().suits?.includes(get.suit(card));
-												}, "he")
-												.set("suits", cards.map(card => get.suit(card)))
+												.chooseCard(
+													get.prompt(event.skill),
+													"将一张牌置于武将牌上",
+													card => {
+														return !get.event().suits?.includes(get.suit(card));
+													},
+													"he"
+												)
+												.set(
+													"suits",
+													cards.map(card => get.suit(card))
+												)
 												.set("ai", card => 5 - get.value(card))
 												.forResult();
 										} else {
@@ -1741,7 +1657,7 @@ export default () => {
 												event.result = {
 													bool: true,
 													cost_data: result.links,
-												}
+												};
 											}
 										}
 									},
@@ -1813,7 +1729,7 @@ export default () => {
 									},
 									frequent: true,
 									async content(event, trigger, player) {
-										await player.chooseDrawRecover(`###${get.translation(event.name)}###摸两张牌或回复1点体力`, 2, true)
+										await player.chooseDrawRecover(`###${get.translation(event.name)}###摸两张牌或回复1点体力`, 2, true);
 									},
 								},
 								hhsg_jinghe: {
@@ -1833,9 +1749,7 @@ export default () => {
 												return;
 											}
 											const gains = list.randomGets(2);
-											const result = await player
-												.chooseButton(["###经合###选择作为副将的武将牌", [gains, "character"]], true)
-												.forResult();
+											const result = await player.chooseButton(["###经合###选择作为副将的武将牌", [gains, "character"]], true).forResult();
 											if (!result.bool) {
 												return;
 											}
@@ -1945,9 +1859,11 @@ export default () => {
 								if (this.hasSkillTag("alwaysViceSkill")) {
 									return true;
 								}
-								if (get.viceCharacter(this).some(name => {
-									return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
-								})) {
+								if (
+									get.viceCharacter(this).some(name => {
+										return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
+									})
+								) {
 									return true;
 								}
 								if (disable !== false) {
@@ -1959,9 +1875,11 @@ export default () => {
 								if (this.hasSkillTag("alwaysMainSkill")) {
 									return true;
 								}
-								if (get.nameList(this).some(name => {
-									return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
-								})) {
+								if (
+									get.nameList(this).some(name => {
+										return game.expandSkills(get.character(name, 3).slice(0)).includes(skill);
+									})
+								) {
 									return true;
 								}
 								if (disable !== false) {
@@ -2069,7 +1987,7 @@ export default () => {
 									await game.delayx(2);
 								});
 								return next;
-							}
+							},
 						},
 						game: {},
 					};
@@ -3443,7 +3361,7 @@ export default () => {
 					submode: "two",
 					chooseCharacterBefore: function () {
 						game.versusVideoName = "白衣渡江";
-						(lib.skill._changeCharacter = {
+						((lib.skill._changeCharacter = {
 							trigger: { player: ["phaseBefore", "phaseAfter"] },
 							forced: true,
 							silent: true,
@@ -3468,7 +3386,7 @@ export default () => {
 								}
 							},
 						}),
-							game.addGlobalSkill("_changeCharacter");
+							game.addGlobalSkill("_changeCharacter"));
 						game.chooseCharacterTwo = function () {
 							var next = game.createEvent("chooseCharacter");
 							next.setContent(function () {
@@ -5192,10 +5110,14 @@ export default () => {
 							}
 						},
 						chooseCharacterAi: function (player, list, list2) {
-							var info = player.brawlinfo;
+							let info = player.brawlinfo;
+							list = list
+								.slice()
+								.map(name => [name, ...(lib.characterReplace?.[name] ?? [])])//这么写是防止有人给lib.characterReplace[name]弄成空数组或者不放name进去
+								.unique()
+								.flat();
 							if (info.name2 != "none") {
 								if (info.name == "random" && info.name2 == "random") {
-									list = list.slice(0);
 									player.init(list.randomRemove(), list.randomRemove());
 								} else if (info.name == "random") {
 									player.init(list.randomGet(), info.name2);

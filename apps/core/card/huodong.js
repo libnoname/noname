@@ -570,7 +570,6 @@ game.import("card", function () {
 						await target.addJudge(card);
 					}
 				},
-				//ai缝合浮雷和烈火
 				ai: {
 					wuxie() {
 						return Math.random() > 0.75;
@@ -584,11 +583,6 @@ game.import("card", function () {
 						target(player, target) {
 							return lib.card.shandian.ai.result.target(player, target);
 						},
-					},
-					tag: {
-						damage: 0.25,
-						natureDamage: 0.25,
-						thunderDamage: 0.25,
 					},
 				},
 			},

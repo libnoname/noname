@@ -1,4 +1,10 @@
 const characters = {
+	tw_dm_zhouyu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twjuyan", "twlihuo", "yingjian", "yiran"],
+	},
 	ol_re_nianshou: {
 		sex: "male",
 		group: "qun",

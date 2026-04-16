@@ -141,8 +141,10 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 		if (!name) {
 			return this;
 		}
-		let src;
+		let src,
+			noskin = false;
 		if (ext === "noskin") {
+			noskin = true;
 			ext = ".jpg";
 		}
 		ext = ext || ".jpg";
@@ -200,7 +202,7 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					}
 				}
 			}
-			if (type === "character" && lib.config.skin[name] && ext !== "noskin") {
+			if (type === "character" && lib.config.skin[name] && !noskin) {
 				src = lib.config.skin[name][1];
 			} else if (imgPrefixUrl) {
 				src = imgPrefixUrl;

@@ -7,7 +7,6 @@ export default {
 		group: "wei",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["xunxun", "wangxi"],
 	}),
 	gz_zangba: new Character({
@@ -15,7 +14,6 @@ export default {
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_hengjiang"],
 		img: "image/character/tw_zangba.jpg",
 	}),
@@ -24,7 +22,6 @@ export default {
 		group: "shu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_md_mashu", "qianxi"],
 		hasSkinInGuozhan: true,
 	}),
@@ -33,7 +30,6 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_guixiu", "gz_cunsi"],
 	}),
 	gz_sunce: new Character({
@@ -41,7 +37,6 @@ export default {
 		group: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["jiang", "yingyang", "baka_hunshang"],
 		hasSkinInGuozhan: true,
 	}),
@@ -50,7 +45,6 @@ export default {
 		group: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["duanxie", "fake_fenming"],
 		hasSkinInGuozhan: true,
 	}),
@@ -59,7 +53,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["hengzheng", "fake_baoling"],
 	}),
 	gz_zhangren: new Character({
@@ -67,7 +60,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["chuanxin", "gz_fengshi"],
 	}),
 };

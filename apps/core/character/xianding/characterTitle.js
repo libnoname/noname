@@ -1,6 +1,9 @@
 export default {
-	//v_zhangxingcai: "",
-	//liuxuan: "",
+	//dc_xia_wangyue: "",
+	//shie: "",
+	dc_sb_zhangren: "尖锋致溃",
+	v_zhangxingcai: "帼姿凤舞",
+	liuxuan: "依劝移行",
 	zhangyu: "预已知命",
 	shen_jiangwei: "怒麟布武",
 	shen_machao: "神威天将军",

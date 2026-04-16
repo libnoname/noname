@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//幻小无
 	noname_gongchuang: {
@@ -2031,7 +2031,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.damage(2, "nocard", player);
 						},
-						translate: "其受到两点来自于你的伤害",
+						translate: "其受到2点来自于你的伤害",
 						result: {
 							evtPlayer: player => (player.hasSkillTag("maixie") && player.hp > 2 ? 2 : -2),
 						},

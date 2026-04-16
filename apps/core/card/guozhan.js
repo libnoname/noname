@@ -1150,26 +1150,7 @@ game.import("card", function () {
 					target.addTempSkill("diaohulishan");
 				},
 				ai: {
-					order(item, player) {
-						if (!player) {
-							player = get.player();
-						}
-						if (
-							player.hasCard(function (card) {
-								return ["gz_haolingtianxia", "gz_guguoanbang", "gz_kefuzhongyuan", "wuzhong", "yuanjiao", "lianjunshengyan", "lulitongxin", "yiyi"].includes(get.name(card));
-							}, "hs")
-						) {
-							return 3.5;
-						}
-						if (
-							player.hasCard(function (card) {
-								return get.name(card) == "taoyuan";
-							}, "hs")
-						) {
-							return get.order({ name: "taoyuan" }, player) - 1;
-						}
-						return 9.5;
-					},
+					order: 10,
 					value: 4,
 					useful: [2, 1],
 					wuxie() {
@@ -1177,22 +1158,30 @@ game.import("card", function () {
 					},
 					result: {
 						player(player, target) {
-							var att = get.attitude(player, target);
-							if (target.hp == 1 && att < 0) {
+							if (target.hasSkill("undist") || target.hasSkill("diaohulishan")) {
 								return 0;
 							}
-							if (
-								game.hasPlayer(function (current) {
-									return get.attitude(player, current) < att;
-								})
-							) {
-								var num = 1;
-								if (target == player.next || target == player.previous) {
-									num += 0.5;
+							return player.countCards("hs", card => {
+								if (ui.selected.cards.includes(card)) {
+									return false;
 								}
-								return num;
-							}
-							return 0;
+								const cardx = get.autoViewAs({ name: get.name(card), nature: get.nature(card), cards: [card] }, [card]);
+								if (!player.hasUseTarget(cardx, null, true)) {
+									return false;
+								}
+								const select = get.select(cardx);
+								if (select[1] === -1) {
+									if (player.canUse(cardx, target, null, true)) {
+										return get.effect(target, cardx, player, player) < 0;
+									}
+									return false;
+								}
+								let eff1 = player.getUseValue(cardx, null, true);
+								target.addSkill("undist");
+								let eff2 = player.getUseValue(cardx, null, true);
+								target.removeSkill("undist");
+								return eff2 > eff1;
+							});
 						},
 					},
 				},

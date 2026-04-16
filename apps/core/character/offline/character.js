@@ -1,4 +1,10 @@
 const characters = {
+	wxdl_caozhi: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["wxdl_huamao", "wxdl_qishen"],
+	},
 	hl_shen_guanyu: {
 		sex: "male",
 		group: "shen",

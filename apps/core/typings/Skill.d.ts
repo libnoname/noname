@@ -1,5 +1,3 @@
-import { BroadSelect } from "@/library/element/Player/type";
-
 /** 时机 */
 declare interface SkillTrigger {
 	/** 
@@ -153,7 +151,7 @@ declare interface Mod {
 	 */
 	attackTo?(from: Player, to: Player, range: number): number | void;
 	/**
-	 * 蓄力点上限
+	 * 蓄力值上限
 	 * @param player 玩家
 	 * @param max 当前上限
 	 */
@@ -269,6 +267,12 @@ declare interface Mod {
 	 * @param num 当前的数值
 	 */
 	attackRangeBase?(player: Player, num: number): number | void
+	/**
+	 * 玩家的攻击范围的最终数值
+	 * @param player 玩家
+	 * @param num 当前的数值
+	 */
+	attackRangeFinal?(player: Player, num: number): number | void
 	chessMove?(player: Player, move: number): number | void
 
 }
@@ -1474,8 +1478,10 @@ declare interface Skill {
 	 * 而对于一些牌移动事件的技能而言，不仅要“多次发动”，每次发动时还都有不同的目标。
 	 * 
 	 * 比如伊籍的【急援】，可能会出现“同时将一些牌交给了多名角色”的情况
+	 * 
+	 * 如果返回值为数组，则会遍历数组，分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用；
 	 */
-	getIndex?: (event, player, triggername) => number | Player[];
+	getIndex?: (event, player, triggername) => number | any[];
 
 	/**
 	 * 持恒技
@@ -2061,7 +2067,7 @@ interface ChooseButtonConfigData {
 	 * 
 	 * 既player.chooseButton的selectButton
 	 */
-	select?: BroadSelect;
+	select?: import("@/library/element/Player/type").BroadSelect;
 
 	//成功选择操作后的内容：
 	/**

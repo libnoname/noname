@@ -3,7 +3,7 @@ export default {
 	gz_jun_jin_simayi_prefix: "君",
 	gz_jin_jiachong: "贾充",
 	gz_jin_yanghu: "羊祜",
-	gz_sp_duyu: "杜预",
+	gz_sp_duyu_prefix: "手杀",
 	gz_jin_guohuai: "郭槐",
 	gz_wangjun: "王濬",
 	gz_malong: "马隆",
@@ -16,4 +16,8 @@ export default {
 	gz_wenyang: "文鸯",
 	gz_pk_sp_duyu: "杜预",
 	gz_pk_sp_duyu_ab: "应变杜预",
+	gz_caoying: "手杀曹婴",
+	gz_caoying_prefix: "手杀",
+	gz_guansuo: "手杀关索",
+	gz_guansuo_prefix: "手杀",
 };

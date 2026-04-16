@@ -484,7 +484,7 @@ export default () => {
 		},
 		element: {
 			card: {
-				moveTo: function (player) {
+				moveTo(player) {
 					var rect1 = this.getBoundingClientRect();
 					var rect2 = player.getBoundingClientRect();
 					var dx = rect2.left + rect2.width / 2 - (rect1.left + rect1.width / 2);
@@ -493,21 +493,21 @@ export default () => {
 				},
 			},
 			player: {
-				getLeft: function () {
+				getLeft() {
 					var left = this.offsetLeft;
 					if (this._chesstransform) {
 						left += this._chesstransform[0];
 					}
 					return left;
 				},
-				getTop: function () {
+				getTop() {
 					var top = this.offsetLeft;
 					if (this._chesstransform) {
 						top += this._chesstransform[1];
 					}
 					return top;
 				},
-				createRangeShadow: function (num, move) {
+				createRangeShadow(num, move) {
 					num++;
 					var shadows = this.parentNode.getElementsByClassName("playergrid");
 					while (shadows.length) {
@@ -535,7 +535,7 @@ export default () => {
 					}
 					return grids;
 				},
-				chooseToMoveChess: function (num, prompt) {
+				chooseToMoveChess(num, prompt) {
 					var next = game.createEvent("chooseToMoveChess");
 					next.num = num || 1;
 					next.player = this;
@@ -543,11 +543,11 @@ export default () => {
 					next.prompt = prompt;
 					return next;
 				},
-				move: function (x, y) {
+				move(x, y) {
 					var xy = this.getXY();
 					return this.moveTo(x + xy[0], y + xy[1]);
 				},
-				moveTo: function (x, y) {
+				moveTo(x, y) {
 					game.addVideo("moveTo", this, [x, y]);
 					if (x >= ui.chesswidth) {
 						x = ui.chesswidth - 1;
@@ -606,7 +606,7 @@ export default () => {
 					}
 					return this;
 				},
-				canMoveTowards: function (target) {
+				canMoveTowards(target) {
 					var fxy = this.getXY();
 					var txy = target.getXY();
 					var dx = txy[0] - fxy[0];
@@ -625,7 +625,7 @@ export default () => {
 					}
 					return false;
 				},
-				moveTowards: function (target, forbid) {
+				moveTowards(target, forbid) {
 					var fxy = this.getXY();
 					var txy;
 					if (Array.isArray(target)) {
@@ -688,7 +688,7 @@ export default () => {
 					}
 					return false;
 				},
-				chessFocus: function () {
+				chessFocus() {
 					game.addVideo("chessFocus", this);
 					if (ui.chess._chessdrag) {
 						return;
@@ -734,13 +734,13 @@ export default () => {
 						// _status.currentChessFocus=requestAnimationFrame(chessFocus);
 					}
 				},
-				getXY: function () {
+				getXY() {
 					var pos = parseInt(this.dataset.position);
 					var x = pos % ui.chesswidth;
 					var y = Math.floor(pos / ui.chesswidth);
 					return [x, y];
 				},
-				getDataPos: function (x, y) {
+				getDataPos(x, y) {
 					var xy = this.getXY();
 					if (typeof x != "number") {
 						x = 0;
@@ -752,7 +752,7 @@ export default () => {
 					y += xy[1];
 					return x + y * ui.chesswidth;
 				},
-				getNeighbour: function (x, y) {
+				getNeighbour(x, y) {
 					var xy = this.getXY();
 					if (xy[0] + x < 0) {
 						return null;
@@ -768,7 +768,7 @@ export default () => {
 					}
 					return lib.posmap[this.getDataPos(x, y)] || null;
 				},
-				getNeighbours: function () {
+				getNeighbours() {
 					var players = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.isChessNeighbour(game.players[i], this)) {
@@ -777,7 +777,7 @@ export default () => {
 					}
 					return players;
 				},
-				movable: function (x, y) {
+				movable(x, y) {
 					var xy = this.getXY();
 					if (xy[0] + x < 0) {
 						return false;
@@ -793,35 +793,35 @@ export default () => {
 					}
 					return !this.getNeighbour(x, y);
 				},
-				moveRight: function () {
+				moveRight() {
 					if (this.movable(1, 0)) {
 						this.move(1, 0);
 						return true;
 					}
 					return false;
 				},
-				moveLeft: function () {
+				moveLeft() {
 					if (this.movable(-1, 0)) {
 						this.move(-1, 0);
 						return true;
 					}
 					return false;
 				},
-				moveUp: function () {
+				moveUp() {
 					if (this.movable(0, -1)) {
 						this.move(0, -1);
 						return true;
 					}
 					return false;
 				},
-				moveDown: function () {
+				moveDown() {
 					if (this.movable(0, 1)) {
 						this.move(0, 1);
 						return true;
 					}
 					return false;
 				},
-				dieAfter2: function () {
+				dieAfter2() {
 					var player = this;
 					delete lib.posmap[player.dataset.position];
 					setTimeout(function () {
@@ -835,7 +835,7 @@ export default () => {
 						}
 					}
 				},
-				dieAfter: function (source) {
+				dieAfter(source) {
 					var player = this;
 					if (_status.friends) {
 						_status.friends.remove(this);
@@ -951,7 +951,7 @@ export default () => {
 					}
 					game.over(game.me.side == game.players[0].side);
 				},
-				$draw_old: function (num) {
+				$draw_old(num) {
 					var cards;
 					if (get.itemtype(num) == "cards") {
 						cards = num;
@@ -966,7 +966,7 @@ export default () => {
 
 					return this.$gainmod(num);
 				},
-				$gainmod: function (num) {
+				$gainmod(num) {
 					var cards, node;
 					if (get.itemtype(num) == "cards") {
 						cards = num;
@@ -1007,7 +1007,7 @@ export default () => {
 						}
 					}
 				},
-				$throw: function (card, time, init) {
+				$throw(card, time, init) {
 					if (init !== false) {
 						if (get.itemtype(card) != "cards") {
 							if (get.itemtype(card) == "card") {
@@ -1043,7 +1043,7 @@ export default () => {
 						}
 					}
 				},
-				$givemod: function (card, player) {
+				$givemod(card, player) {
 					this.chessFocus();
 					var from = this;
 					if (get.itemtype(card) == "cards") {
@@ -1083,7 +1083,7 @@ export default () => {
 						}, 700);
 					}
 				},
-				$throwxy: function (card, left, top, transform) {
+				$throwxy(card, left, top, transform) {
 					var node = card.copy("thrown", "thrownhighlight");
 					var rect = this.getBoundingClientRect();
 					node.style.left = rect.left + 8 + "px";
@@ -1100,7 +1100,7 @@ export default () => {
 					node.style.top = top;
 					return node;
 				},
-				$phaseJudge: function (card) {
+				$phaseJudge(card) {
 					game.addVideo("phaseJudge", this, get.cardInfo(card));
 					let cardToThrow;
 					if (card.cards?.length) {
@@ -1117,7 +1117,7 @@ export default () => {
 					game.delay();
 					game.linexy([clone.offsetLeft + clone.offsetWidth / 2, clone.offsetTop + clone.offsetHeight / 2, player.getLeft() + player.offsetWidth / 2, player.getTop() + player.offsetHeight / 2], { opacity: 0.5, dashed: true }, true);
 				},
-				$randomMove: function (node, length, rand) {
+				$randomMove(node, length, rand) {
 					if (!this.node.chessthrown) {
 						this.node.chessthrown = [];
 					}
@@ -1197,7 +1197,7 @@ export default () => {
 				},
 			},
 			content: {
-				replaceChessPlayer: function () {
+				replaceChessPlayer() {
 					"step 0";
 					if (get.config("additional_player")) {
 						if (!event.enemy && !_status.auto && (game.me.isDead() || get.config("single_control"))) {
@@ -1259,7 +1259,7 @@ export default () => {
 						game.modeSwapPlayer(player);
 					}
 				},
-				chooseToMoveChess: function () {
+				chooseToMoveChess() {
 					"step 0";
 					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 						return;
@@ -1417,7 +1417,7 @@ export default () => {
 			chess: true,
 			treasures: [],
 			obstacles: [],
-			initChess: function () {
+			initChess() {
 				ui.chess.style.height = 148 * ui.chessheight + "px";
 				ui.chess.style.width = 148 * ui.chesswidth + "px";
 				ui.chessContainer.xmax = Math.max(0, 148 * ui.chesswidth - ui.chessContainer.offsetWidth);
@@ -1536,12 +1536,12 @@ export default () => {
 					}
 				}
 			},
-			getVideoName: function () {
+			getVideoName() {
 				var str = "战棋" + get.translation(_status.mode) + " - " + _status.friendCount + "v" + _status.enemyCount;
 				var name = [get.translation(game.me.name), str];
 				return name;
 			},
-			addChessPlayer: function (name, enemy, num, pos) {
+			addChessPlayer(name, enemy, num, pos, enter = true) {
 				if (typeof num != "number") {
 					num = 4;
 				}
@@ -1618,23 +1618,25 @@ export default () => {
 					game.setChessInfo(game.players[0]);
 				}
 
-				game.triggerEnter(player);
+				if (enter) {
+					game.triggerEnter(player);
+				}
 
 				return player;
 			},
-			replaceChessPlayer: function (name, enemy) {
+			replaceChessPlayer(name, enemy) {
 				var next = game.createEvent("replaceChessPlayer");
 				next.playername = name;
 				next.enemy = enemy;
 				next.setContent("replaceChessPlayer");
 			},
-			removeTreasure: function (player) {
+			removeTreasure(player) {
 				game.addVideo("removeTreasure", null, player.dataset.position);
 				player.delete();
 				delete lib.posmap[player.dataset.position];
 				game.treasures.remove(player);
 			},
-			addObstacle: function (x, y) {
+			addObstacle(x, y) {
 				if (y !== false) {
 					game.addVideo("addObstacle", null, [x, y]);
 				}
@@ -1661,14 +1663,14 @@ export default () => {
 				}
 				return null;
 			},
-			addTempObstacle: function (x, y, num) {
+			addTempObstacle(x, y, num) {
 				var node = game.addObstacle(x, y);
 				if (node) {
 					game.colorObstacle(node, "blue");
 					node.tempObstacle = num;
 				}
 			},
-			removeObstacle: function (pos) {
+			removeObstacle(pos) {
 				if (get.is.div(pos)) {
 					pos = pos.dataset.position;
 				}
@@ -1680,7 +1682,7 @@ export default () => {
 					node.delete();
 				}
 			},
-			moveObstacle: function (pos, x, y) {
+			moveObstacle(pos, x, y) {
 				if (get.is.div(pos)) {
 					pos = pos.dataset.position;
 				}
@@ -1712,7 +1714,7 @@ export default () => {
 				}
 				return false;
 			},
-			colorObstacle: function (pos, color) {
+			colorObstacle(pos, color) {
 				if (get.is.div(pos)) {
 					pos = pos.dataset.position;
 				}
@@ -1722,7 +1724,7 @@ export default () => {
 					node.dataset.obscolor = color;
 				}
 			},
-			addOverDialog: function (dialog, result) {
+			addOverDialog(dialog, result) {
 				if (ui.finishGame) {
 					ui.finishGame.remove();
 				}
@@ -1751,7 +1753,7 @@ export default () => {
 					dialog.add(div);
 				}
 			},
-			controlOver: function () {
+			controlOver() {
 				if (_status.mode == "three") {
 					ui.create.control("再战", function () {
 						game.saveConfig("continue_name_chess", {
@@ -1801,7 +1803,7 @@ export default () => {
 					}
 				}
 			},
-			phaseLoopThree: function (player) {
+			phaseLoopThree(player) {
 				const next = game.createEvent("phaseLoop");
 				next.player = player;
 				next.swap = function (player) {
@@ -1960,7 +1962,7 @@ export default () => {
 					},
 				]);
 			},
-			phaseLoopOrdered: function (player) {
+			phaseLoopOrdered(player) {
 				const next = game.createEvent("phaseLoop");
 				next.player = player;
 				next.setContent([
@@ -2130,7 +2132,7 @@ export default () => {
 					},
 				]);
 			},
-			isChessNeighbour: function (a, b) {
+			isChessNeighbour(a, b) {
 				if (a && a.dataset) {
 					a = a.dataset.position;
 				}
@@ -2152,14 +2154,14 @@ export default () => {
 
 				return false;
 			},
-			draw2: function (func) {
+			draw2(func) {
 				lib.canvasUpdates2.push(func);
 				if (!lib.status.canvas2) {
 					lib.status.canvas2 = true;
 					game.update(game.updateCanvas2);
 				}
 			},
-			updateCanvas2: function (time) {
+			updateCanvas2(time) {
 				if (lib.canvasUpdates2.length === 0) {
 					lib.status.canvas2 = false;
 					return false;
@@ -2187,7 +2189,7 @@ export default () => {
 					}
 				}
 			},
-			setChessInfo: function (p) {
+			setChessInfo(p) {
 				if (!p) {
 					if (ui.phasequeue && ui.phasequeue.length) {
 						p = ui.phasequeue[0].link;
@@ -2199,7 +2201,7 @@ export default () => {
 				ui.phasequeue = [];
 				for (var i = 0; i < game.players.length; i++) {
 					var node = ui.create.div(".avatar", ui.chessinfo.firstChild);
-					node.style.backgroundImage = p.node.avatar.style.backgroundImage;
+					node.style.backgroundImage = p.isUnseen() ? `url(${lib.assetURL}/image/character/hidden_image.jpg)` : p.node.avatar.style.backgroundImage;
 					node.link = p;
 					node.listen(ui.click.chessInfo);
 					lib.setIntro(node);
@@ -2212,7 +2214,7 @@ export default () => {
 					p = p.next;
 				}
 			},
-			initLeaderSave: function (save) {
+			initLeaderSave(save) {
 				game.save(save, {
 					money: 300,
 					dust: 0,
@@ -2220,7 +2222,7 @@ export default () => {
 					character: [],
 				});
 			},
-			leaderView: function () {
+			leaderView() {
 				var next = game.createEvent("leaderView", false);
 				next.setContent(function () {
 					"step 0";
@@ -3636,33 +3638,60 @@ export default () => {
 							};
 							node.listenTransition(onEnd);
 						};
-						setTimeout(function () {
-							nodes[0].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[1].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[2].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[3].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[4].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[5].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[6].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[7].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[8].delete();
-						}, 400 + Math.random() * 300);
+						setTimeout(
+							function () {
+								nodes[0].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[1].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[2].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[3].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[4].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[5].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[6].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[7].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[8].delete();
+							},
+							400 + Math.random() * 300
+						);
 						setTimeout(function () {
 							var prize = new Array(6);
 							var map = [1, 2, 3, 4, 5];
@@ -3921,10 +3950,10 @@ export default () => {
 					game.delay();
 				});
 			},
-			saveData: function () {
+			saveData() {
 				game.save(get.config("chess_leader_save"), game.data);
 			},
-			getLeaderList: function () {
+			getLeaderList() {
 				var list = lib.rank.all.slice(0);
 				for (var i = 0; i < game.data.character.length; i++) {
 					list.remove(game.data.character[i]);
@@ -3934,7 +3963,7 @@ export default () => {
 				}
 				return list.randomGets(6);
 			},
-			getLeaderCharacter: function () {
+			getLeaderCharacter() {
 				var pleg;
 				if (game.data.legend <= 20) {
 					pleg = 0.01;
@@ -3956,17 +3985,17 @@ export default () => {
 				}
 				return lib.rank.rarity.common.randomGet();
 			},
-			changeMoney: function (num) {
+			changeMoney(num) {
 				game.data.money += num;
 				game.saveData();
 				ui.money.lastChild.innerHTML = game.data.money;
 			},
-			changeDust: function (num) {
+			changeDust(num) {
 				game.data.dust += num;
 				game.saveData();
 				ui.money.childNodes[1].innerHTML = game.data.dust;
 			},
-			chooseCharacter: function () {
+			chooseCharacter() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
 				next.ai = function (player, list) {
@@ -4421,7 +4450,7 @@ export default () => {
 					}
 				});
 			},
-			modeSwapPlayer: function (player) {
+			modeSwapPlayer(player) {
 				var content = [game.me.dataset.position, player.dataset.position];
 				game.me.classList.remove("current_action");
 				player.classList.add("current_action");
@@ -4435,7 +4464,7 @@ export default () => {
 			_tempobstacle: {
 				trigger: { player: "phaseAfter" },
 				silent: true,
-				content: function () {
+				content() {
 					var list = game.obstacles.slice(0);
 					for (var i = 0; i < list.length; i++) {
 						if (typeof list[i].tempObstacle == "number") {
@@ -4450,7 +4479,7 @@ export default () => {
 				trigger: { player: "damage" },
 				silent: true,
 				priority: 50,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (!event.source) {
 						return false;
 					}
@@ -4470,7 +4499,7 @@ export default () => {
 					}
 					return player.movable(dx, dy);
 				},
-				content: function () {
+				content() {
 					var xy1 = trigger.source.getXY();
 					var xy2 = player.getXY();
 					var dx = xy2[0] - xy1[0];
@@ -4493,7 +4522,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hp <= 1) {
 						return false;
 					}
@@ -4504,7 +4533,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var source = null;
 					for (var i = 0; i < game.treasures.length; i++) {
@@ -4539,7 +4568,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hp == player.maxHp) {
 						return false;
 					}
@@ -4550,7 +4579,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var source = null;
 					for (var i = 0; i < game.treasures.length; i++) {
@@ -4588,7 +4617,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hp > 1) {
 						return false;
 					}
@@ -4599,7 +4628,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var source = null;
 					for (var i = 0; i < game.treasures.length; i++) {
@@ -4640,7 +4669,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					var nh = player.countCards("h");
 					if (!nh) {
 						return false;
@@ -4657,7 +4686,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var source = null;
 					for (var i = 0; i < game.treasures.length; i++) {
@@ -4694,7 +4723,7 @@ export default () => {
 				trigger: { player: "damageAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.num < 2) {
 						return false;
 					}
@@ -4705,7 +4734,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					game.delayx();
 					"step 1";
@@ -4741,7 +4770,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.treasures.length; i++) {
 						if (game.treasures[i].name == "treasure_shenmidiaoxiang") {
 							return player.canMoveTowards(game.treasures[i]) && get.chessDistance(game.treasures[i], player) > 3;
@@ -4749,7 +4778,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var source = null;
 					for (var i = 0; i < game.treasures.length; i++) {
@@ -4780,13 +4809,13 @@ export default () => {
 			arenaAdd: {
 				enable: "phaseUse",
 				usable: 1,
-				filter: function (event, player) {
+				filter(event, player) {
 					return _status.enterArena && player.side == game.me.side && game.data.arena.arenachoice.length > game.data.arena.dead.length;
 				},
 				direct: true,
 				delay: 0,
 				preservecancel: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = game.data.arena.arenachoice.slice(0);
 					for (var i = 0; i < game.data.arena.dead.length; i++) {
@@ -4826,7 +4855,7 @@ export default () => {
 				unique: true,
 				enable: "phaseUse",
 				usable: 1,
-				promptfunc: function (event, player) {
+				promptfunc(event, player) {
 					var targets = [];
 					var skill = lib.skill.leader_zhaoxiang;
 					for (var i = 0; i < game.players.length; i++) {
@@ -4844,7 +4873,7 @@ export default () => {
 					}
 					return str;
 				},
-				chance: function (target, player) {
+				chance(target, player) {
 					var chance;
 					var renyi = player.hasSkill("leader_renyi");
 					switch (target.hp) {
@@ -4905,13 +4934,13 @@ export default () => {
 					}
 					return Math.min(1, chance);
 				},
-				filter: function () {
+				filter() {
 					return game.data.dust >= 10;
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return game.isChessNeighbour(player, target) && !game.data.character.includes(target.name);
 				},
-				content: function () {
+				content() {
 					var chance = lib.skill.leader_zhaoxiang.chance(target, player);
 					game.changeDust(-10);
 					if (Math.random() < chance) {
@@ -4930,10 +4959,10 @@ export default () => {
 				unique: true,
 				forced: true,
 				trigger: { source: "damageSource" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.num > 0;
 				},
-				content: function () {
+				content() {
 					switch (_status.difficulty) {
 						case "leader_easy":
 							game.reward += 2 * trigger.num;
@@ -4956,7 +4985,7 @@ export default () => {
 			},
 			leader_mouduan2: {
 				mod: {
-					chessMove: function (player, current) {
+					chessMove(player, current) {
 						if (player.side && player.name != _status.lord) {
 							return current + 1;
 						}
@@ -4970,22 +4999,22 @@ export default () => {
 				firstDo: true,
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "trick" && event.player.isFriendOf(player);
 				},
-				content: function () {
+				content() {
 					trigger.nowuxie = true;
 				},
 			},
 			tongshuai: {
 				unique: true,
 				forbid: ["guozhan"],
-				init: function (player) {
+				init(player) {
 					player.storage.tongshuai = {
 						list: [],
 						owned: {},
 						player: player,
-						get: function (num) {
+						get(num) {
 							if (typeof num != "number") {
 								num = 1;
 							}
@@ -5010,7 +5039,7 @@ export default () => {
 				},
 				group: ["tongshuai1", "tongshuai2", "tongshuai3"],
 				intro: {
-					content: function (storage, player) {
+					content(storage, player) {
 						var str = "";
 						var slist = storage.owned;
 						var list = [];
@@ -5029,7 +5058,7 @@ export default () => {
 						}
 						return str;
 					},
-					mark: function (dialog, content, player) {
+					mark(dialog, content, player) {
 						var slist = content.owned;
 						var list = [];
 						for (var i in slist) {
@@ -5051,7 +5080,7 @@ export default () => {
 				forced: true,
 				popup: false,
 				priority: 10,
-				content: function () {
+				content() {
 					for (var i = 0; i < game.data.character.length; i++) {
 						var skills = lib.character[game.data.character[i]][3];
 						var add = false;
@@ -5085,7 +5114,7 @@ export default () => {
 			tongshuai2: {
 				audio: 2,
 				trigger: { player: ["phaseBegin", "phaseEnd"], global: "gameStart" },
-				filter: function (event, player, name) {
+				filter(event, player, name) {
 					if (!player.hasSkill("tongshuai")) {
 						return false;
 					}
@@ -5097,7 +5126,7 @@ export default () => {
 				priority: -9,
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					var slist = player.storage.tongshuai.owned;
 					var list = [];
 					for (var i in slist) {
@@ -5201,10 +5230,10 @@ export default () => {
 				unique: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.storage.tongshuai && player.storage.tongshuai.unowned && player.storage.tongshuai.unowned.length > 0;
 				},
-				content: function () {
+				content() {
 					player.storage.tongshuai.get();
 				},
 			},
@@ -5212,7 +5241,7 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.isTurnedOver()) {
 						return false;
 					}
@@ -5226,7 +5255,7 @@ export default () => {
 					}
 					return false;
 				},
-				filterCard: function (card) {
+				filterCard(card) {
 					var suit = get.suit(card);
 					for (var i = 0; i < ui.selected.cards.length; i++) {
 						if (suit == get.suit(ui.selected.cards[i])) {
@@ -5237,14 +5266,14 @@ export default () => {
 				},
 				complexCard: true,
 				selectCard: 4,
-				check: function (card) {
+				check(card) {
 					return 10 - get.value(card);
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player != target;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.goMad();
 					if (!player.isTurnedOver()) {
 						player.turnOver();
@@ -5254,7 +5283,7 @@ export default () => {
 				ai: {
 					order: 10,
 					effect: {
-						player_use: function (card, player) {
+						player_use(card, player) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (get.attitude(player, game.players[i]) < 0) {
@@ -5290,7 +5319,7 @@ export default () => {
 						},
 					},
 					result: {
-						target: function (player) {
+						target(player) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (get.attitude(player, game.players[i]) < 0) {
@@ -5312,7 +5341,7 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					for (var i = 0; i < game.players.length; i++) {
 						game.players[i].unMad();
 					}
@@ -5323,7 +5352,7 @@ export default () => {
 				trigger: { player: "phaseEnd" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					event.players = get.players(player);
 					"step 1";
@@ -5340,7 +5369,7 @@ export default () => {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].countCards("h")) {
 							return true;
@@ -5348,7 +5377,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var players = get.players(player);
 					players.remove(player);
@@ -5369,7 +5398,7 @@ export default () => {
 			},
 			guanchuan: {
 				trigger: { player: "useCardToPlayer" },
-				getTargets: function (player, target) {
+				getTargets(player, target) {
 					var targets = [];
 					var pxy = player.getXY();
 					var txy = target.getXY();
@@ -5399,13 +5428,13 @@ export default () => {
 					}
 					return targets;
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.targets.length != 1 || event.card.name != "sha") {
 						return false;
 					}
 					return lib.skill.guanchuan.getTargets(player, event.targets[0]).length > 0;
 				},
-				check: function (event, player) {
+				check(event, player) {
 					var targets = lib.skill.guanchuan.getTargets(player, event.targets[0]);
 					var eff = 0;
 					for (var i = 0; i < targets.length; i++) {
@@ -5413,7 +5442,7 @@ export default () => {
 					}
 					return eff > 0;
 				},
-				content: function () {
+				content() {
 					var targets = lib.skill.guanchuan.getTargets(player, trigger.targets[0]);
 					for (var i = 0; i < targets.length; i++) {
 						trigger.targets.push(targets[i]);
@@ -5423,12 +5452,12 @@ export default () => {
 			},
 			sanjiansheji: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("h", "sha") > 1 && lib.filter.filterCard({ name: "sha" }, player);
 				},
 				filterCard: { name: "sha" },
 				selectCard: 2,
-				check: function (card) {
+				check(card) {
 					var num = 0;
 					var player = _status.event.player;
 					for (var i = 0; i < game.players.length; i++) {
@@ -5444,25 +5473,25 @@ export default () => {
 				selectTarget: [1, Infinity],
 				discard: false,
 				prepare: "throw",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return lib.filter.targetEnabled({ name: "sha" }, player, target) && get.distance(player, target, "pure") <= 5;
 				},
-				content: function () {
+				content() {
 					targets.sort(lib.sort.seat);
 					player.useCard({ name: "sha" }, cards, targets, "luanjian").animate = false;
 				},
 				multitarget: true,
 				ai: {
-					order: function () {
+					order() {
 						return get.order({ name: "sha" }) + 0.1;
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.effect(target, { name: "sha" }, player, target);
 						},
 					},
 					effect: {
-						player: function (card, player) {
+						player(card, player) {
 							if (_status.currentPhase != player) {
 								return;
 							}
@@ -5484,17 +5513,17 @@ export default () => {
 			},
 			zhimingx: {
 				trigger: { source: "damageBegin1" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.distance(event.player, player, "attack") > 1 && event.card && event.card.name == "sha";
 				},
 				forced: true,
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 			},
 			lianshe: {
 				mod: {
-					cardUsable: function (card, player, num) {
+					cardUsable(card, player, num) {
 						if (card.name == "sha") {
 							return (
 								num +
@@ -5507,7 +5536,7 @@ export default () => {
 				},
 				trigger: { player: "useCard" },
 				frequent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return (
 						event.card &&
 						event.card.name == "sha" &&
@@ -5516,7 +5545,7 @@ export default () => {
 						})[0] == event
 					);
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 				ai: {
@@ -5525,10 +5554,10 @@ export default () => {
 			},
 			pianyi: {
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.getStat("damage");
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseToMoveChess(2, get.prompt("pianyi"));
 					"step 1";
@@ -5540,14 +5569,14 @@ export default () => {
 			lingdong: {
 				trigger: { player: "phaseJieshuBegin" },
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return (
 						player.getHistory("useCard", function (evt) {
 							return evt.card.name == "sha";
 						}).length > 0
 					);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseToMoveChess(
 						player.getHistory("useCard", function (evt) {
@@ -5563,12 +5592,12 @@ export default () => {
 			},
 			_noactpunish: {
 				trigger: { player: "useCard" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return _status.currentPhase == player && event.targets && (event.targets.length > 1 || event.targets[0] != player);
 				},
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					player.addTempSkill("noactpunish");
 				},
 			},
@@ -5579,7 +5608,7 @@ export default () => {
 				direct: true,
 				delay: false,
 				preservecancel: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var num = 0;
 					var xy = player.getXY();
 					var neighbour;
@@ -5609,7 +5638,7 @@ export default () => {
 					}
 					return num >= 3;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.obstacles = [];
 					event.movemap = {};
@@ -5705,7 +5734,7 @@ export default () => {
 				trigger: { player: "phaseBegin" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					var current = ui.chessinfo.firstChild.querySelector(".glow2");
 					if (current) {
 						current.classList.remove("glow2");
@@ -5722,7 +5751,7 @@ export default () => {
 				direct: true,
 				delay: false,
 				preservecancel: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 						return false;
 					}
@@ -5730,7 +5759,7 @@ export default () => {
 					move = game.checkMod(player, move, "chessMove", player);
 					return move > 0;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var move = 2;
 					move = game.checkMod(player, move, "chessMove", player);
@@ -5752,7 +5781,7 @@ export default () => {
 				ai: {
 					order: 5,
 					result: {
-						playerx: function (player) {
+						playerx(player) {
 							if (get.mode() == "tafang" && _status.enemies.includes(player)) {
 								return 1;
 							}
@@ -5796,7 +5825,7 @@ export default () => {
 							}
 							return 1;
 						},
-						player: function (player) {
+						player(player) {
 							if (player.getStat().skill._chessmovetried >= 10) {
 								return 0;
 							}
@@ -5817,25 +5846,25 @@ export default () => {
 				forced: true,
 				priority: 100,
 				popup: false,
-				content: function () {
+				content() {
 					player.chessFocus();
 				},
 			},
 			boss_bfengxing: {
 				mod: {
-					chessMove: function (player, current) {
+					chessMove(player, current) {
 						return current + 2;
 					},
-					attackFrom: function (from, to, current) {
+					attackFrom(from, to, current) {
 						return current - 2;
 					},
 				},
 				trigger: { player: "phaseDrawBegin2" },
 				forced: true,
-				filter: function (event) {
+				filter(event) {
 					return !event.numFixed;
 				},
-				content: function () {
+				content() {
 					trigger.num += 2;
 				},
 			},
@@ -5844,24 +5873,24 @@ export default () => {
 				usable: 1,
 				filterCard: { color: "red" },
 				nodelay: true,
-				check: function (card) {
+				check(card) {
 					return 8 - get.value(card);
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return get.distance(player, target) <= 5 && player != target;
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("h", { color: "red" }) > 0;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage("fire");
 				},
 				line: "fire",
 				ai: {
 					order: 1,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player, target, "fire");
 						},
 					},
@@ -5872,31 +5901,31 @@ export default () => {
 				usable: 1,
 				position: "he",
 				filterCard: { type: "equip" },
-				init: function (player) {
+				init(player) {
 					for (var i = 1; i < 6; i++) {
 						player.disableEquip("equip" + i);
 					}
 				},
-				check: function (card) {
+				check(card) {
 					var player = _status.currentPhase;
 					if (player.countCards("he", { subtype: get.subtype(card) }) > 1) {
 						return 12 - get.equipValue(card);
 					}
 					return 8 - get.equipValue(card);
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("he", { type: "equip" });
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player != target && get.distance(player, target) <= 2;
 				},
-				content: function () {
+				content() {
 					target.damage(3, "fire");
 				},
 				ai: {
 					order: 9,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player, target, "fire");
 						},
 					},
@@ -5904,10 +5933,10 @@ export default () => {
 			},
 			boss_wuying: {
 				mod: {
-					globalTo: function (from, to, distance) {
+					globalTo(from, to, distance) {
 						return distance + 2;
 					},
-					chessMove: function (player, current) {
+					chessMove(player, current) {
 						return current - 1;
 					},
 				},
@@ -5915,7 +5944,7 @@ export default () => {
 			boss_wushang: {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].countCards("h") && get.distance(player, game.players[i]) <= 5) {
 							return true;
@@ -5923,7 +5952,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var players = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -6106,7 +6135,7 @@ export default () => {
 			mode_chess_card_config: "战棋模式",
 		},
 		ui: {
-			placeChess: function (player, pos) {
+			placeChess(player, pos) {
 				player.dataset.position = pos;
 				pos = parseInt(pos);
 				var j = Math.floor(pos / ui.chesswidth);
@@ -6117,7 +6146,7 @@ export default () => {
 				player.style.transform = "translate(" + dx + "px," + dy + "px)";
 			},
 			create: {
-				playergrid: function (player, x, y) {
+				playergrid(player, x, y) {
 					var pos = player.getDataPos(x, y);
 					if (get.mode() == "tafang") {
 						if (pos < ui.chesswidth) {
@@ -6132,7 +6161,7 @@ export default () => {
 					ui.placeChess(node, pos);
 					return node;
 				},
-				fakeme: function () {
+				fakeme() {
 					if (ui.fakeme) {
 						ui.fakeme.delete();
 					}
@@ -6141,7 +6170,7 @@ export default () => {
 				},
 			},
 			click: {
-				moveContainer: function (x, y, scroll) {
+				moveContainer(x, y, scroll) {
 					if (scroll) {
 						clearTimeout(ui.chessContainer._scrolling);
 						ui.chessContainer._scrolling = true;
@@ -6189,7 +6218,7 @@ export default () => {
 						ui.chess._ending = ending;
 					}
 				},
-				chessInfo: function (e) {
+				chessInfo(e) {
 					if (this.link.isAlive()) {
 						this.link.chessFocus();
 						if (this.link.classList.contains("selectable") || this.link.classList.contains("selected")) {
@@ -6199,7 +6228,7 @@ export default () => {
 						e.stopPropagation();
 					}
 				},
-				playergrid: function () {
+				playergrid() {
 					if (!_status.paused) {
 						return;
 					}
@@ -6216,7 +6245,7 @@ export default () => {
 					};
 					game.resume();
 				},
-				obstacle: function () {
+				obstacle() {
 					if (_status.event.chooseObstacle && _status.paused && _status.event.obstacles && _status.event.obstacles.includes(this)) {
 						_status.event.obstacle = this;
 						game.resume();
@@ -6225,12 +6254,12 @@ export default () => {
 			},
 		},
 		get: {
-			chessDistance: function (from, to) {
+			chessDistance(from, to) {
 				var fxy = from.getXY();
 				var txy = to.getXY();
 				return Math.abs(fxy[0] - txy[0]) + Math.abs(fxy[1] - txy[1]);
 			},
-			rawAttitude: function (from, to) {
+			rawAttitude(from, to) {
 				return from.side === to.side ? 6 : -6;
 			},
 		},
@@ -6240,7 +6269,7 @@ export default () => {
 				fullskin: true,
 				modeimage: "chess",
 				enable: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (target.movable(-1, 0)) {
 						return true;
 					}
@@ -6255,7 +6284,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var xy = target.getXY();
 					var x = xy[0];
 					var y = xy[1];
@@ -6272,7 +6301,7 @@ export default () => {
 						game.addTempObstacle(x, y - 1, game.countPlayer());
 					}
 				},
-				content_old: function () {
+				content_old() {
 					"step 0";
 					var pos = parseInt(player.dataset.position);
 					var poses = [];
@@ -6324,7 +6353,7 @@ export default () => {
 				},
 				ai: {
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.getNeighbours().length) {
 								return 0;
 							}
@@ -6338,11 +6367,11 @@ export default () => {
 				type: "basic",
 				fullskin: true,
 				modeimage: "chess",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
 				selectTarget: -1,
-				enable: function (event, player) {
+				enable(event, player) {
 					if (game.obstacles.includes(player.getNeighbour(-1, 0)) && player.movable(-2, 0)) {
 						return true;
 					}
@@ -6356,7 +6385,7 @@ export default () => {
 						return true;
 					}
 				},
-				content: function () {
+				content() {
 					var neighbour,
 						num = 0;
 					neighbour = player.getNeighbour(-1, 0);
@@ -6383,7 +6412,7 @@ export default () => {
 						player.draw(num);
 					}
 				},
-				content_old: function () {
+				content_old() {
 					"step 0";
 					event.obstacles = [];
 					var neighbour;
@@ -6601,23 +6630,7 @@ export default () => {
 		rank: {},
 		posmap: {},
 		help: {
-			战棋模式:
-				'<div style="margin:10px">对阵模式</div><ul style="margin-top:0"><li>n人对战n人的模式，由单人控制，开始游戏后随机分配位置与出牌顺序<li>' +
-				"每人在出牌阶段有一次移动的机会，可移动的最大距离为2<li>" +
-				"任何卡牌或技能无法指定位置相隔8个格以上的角色为目标<li>" +
-				"杀死对方阵营的角色可摸一张牌，杀死本方阵营无惩罚<li>" +
-				"若开启主将，双方各选择一名角色成为主将。主将体力上限加一，主将死亡后，若有副将，副将代替之成为主将，否则游戏结束<li>" +
-				"开启无尽模式后，任何一方有角色死亡都将选择一名新角色重新加入战场，直到点击左上角的结束游戏按钮手动结束游戏。结束游戏时，杀敌更多的一方获胜<li>" +
-				"行动顺序为指定时，双方无论存活角色角色多少都将轮流进行行动。在一方所有角色行动完毕进行下一轮行动时，若其人数比另一方少，另一方可指定至多X名角色名摸一张牌，X为人数之差<li>" +
-				"开启战场机关后，每个回合结束时有一定机率出现一个机关，该机关不参与战斗，并有一个影响周围或全体角色的效果。机关在出现后的5~10个回合内消失<li>" +
-				"开启击退效果后，当一名角色对距离两格以内的目标造成伤害后，受伤害角色将沿反方向移动一格<li>" +
-				"战场上可设置出现随机路障，角色无法移动到路障处。当一名角色的周围四格有至少三格为路障或在战场外时，其可以在回合内清除一个相邻路障</ul>" +
-				'<div style="margin:10px">君主模式</div><ul style="margin-top:0"><li>收集武将进行战斗，根据战斗难度及我方出场武将的强度，战斗胜利后将获得数量不等的金钱。没有君主出场时，获得的金钱较多<li>' +
-				"金钱可以用来招募随机武将，招到已有武将，或遣返不需要的武将时可得到招募令<li>" +
-				"战斗中有君主出场时可招降敌将，成功率取决于敌将的稀有度、剩余体力值以及手牌数。成功后战斗立即结束且没有金钱奖励。每发动一次招降，无论成功还是失败，都会扣除10招募令<li>" +
-				"挑战武将会与该武将以及与其强度相近的武将进行战斗，敌方人数与我方出场人数相同，但不少于3。胜利后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别需要40/100/400/1600招募令<li>" +
-				"竞技场：<br>随机选择9名武将，每次派出1~3名武将参战。战斗中阵亡的武将不能再次上场。<br><br>战斗后武将进入疲劳状态，若立即再次出场则初始体力值-1。<br><br>战斗中本方武将行动时可召唤后援，令一名未出场的已方武将加入战斗。后援武将在战斗结束后无论存活与否均不能再次出场<br><br>当取得12场胜利或所有武将全部阵亡后结束，并根据胜场数获得随机奖励<li>" +
-				"修改金钱：<br>game.changeMoney<br>修改招募令：<br>game.changeDust</ul>",
+			战棋模式: '<div style="margin:10px">对阵模式</div><ul style="margin-top:0"><li>n人对战n人的模式，由单人控制，开始游戏后随机分配位置与出牌顺序<li>' + "每人在出牌阶段有一次移动的机会，可移动的最大距离为2<li>" + "任何卡牌或技能无法指定位置相隔8个格以上的角色为目标<li>" + "杀死对方阵营的角色可摸一张牌，杀死本方阵营无惩罚<li>" + "若开启主将，双方各选择一名角色成为主将。主将体力上限加一，主将死亡后，若有副将，副将代替之成为主将，否则游戏结束<li>" + "开启无尽模式后，任何一方有角色死亡都将选择一名新角色重新加入战场，直到点击左上角的结束游戏按钮手动结束游戏。结束游戏时，杀敌更多的一方获胜<li>" + "行动顺序为指定时，双方无论存活角色角色多少都将轮流进行行动。在一方所有角色行动完毕进行下一轮行动时，若其人数比另一方少，另一方可指定至多X名角色名摸一张牌，X为人数之差<li>" + "开启战场机关后，每个回合结束时有一定机率出现一个机关，该机关不参与战斗，并有一个影响周围或全体角色的效果。机关在出现后的5~10个回合内消失<li>" + "开启击退效果后，当一名角色对距离两格以内的目标造成伤害后，受伤害角色将沿反方向移动一格<li>" + "战场上可设置出现随机路障，角色无法移动到路障处。当一名角色的周围四格有至少三格为路障或在战场外时，其可以在回合内清除一个相邻路障</ul>" + '<div style="margin:10px">君主模式</div><ul style="margin-top:0"><li>收集武将进行战斗，根据战斗难度及我方出场武将的强度，战斗胜利后将获得数量不等的金钱。没有君主出场时，获得的金钱较多<li>' + "金钱可以用来招募随机武将，招到已有武将，或遣返不需要的武将时可得到招募令<li>" + "战斗中有君主出场时可招降敌将，成功率取决于敌将的稀有度、剩余体力值以及手牌数。成功后战斗立即结束且没有金钱奖励。每发动一次招降，无论成功还是失败，都会扣除10招募令<li>" + "挑战武将会与该武将以及与其强度相近的武将进行战斗，敌方人数与我方出场人数相同，但不少于3。胜利后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别需要40/100/400/1600招募令<li>" + "竞技场：<br>随机选择9名武将，每次派出1~3名武将参战。战斗中阵亡的武将不能再次上场。<br><br>战斗后武将进入疲劳状态，若立即再次出场则初始体力值-1。<br><br>战斗中本方武将行动时可召唤后援，令一名未出场的已方武将加入战斗。后援武将在战斗结束后无论存活与否均不能再次出场<br><br>当取得12场胜利或所有武将全部阵亡后结束，并根据胜场数获得随机奖励<li>" + "修改金钱：<br>game.changeMoney<br>修改招募令：<br>game.changeDust</ul>",
 		},
 	};
 };

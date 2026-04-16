@@ -30,7 +30,7 @@ const dynamicTranslates = {
 	dcliexiang(player, skill) {
 		let info = lib.translate[`${skill}_info`];
 		if (player.hasSkill("dcliexiang_extra")) {
-			return info.replace("一名", "至多两名");
+			return info.replace("一名", `至多${get.cnNumber(player.countMark("dcliexiang_extra") + 1)}名`);
 		}
 		return info;
 	},

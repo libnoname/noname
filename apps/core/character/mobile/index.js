@@ -68,6 +68,7 @@ game.import("character", function () {
 				["mb_cuilingyi_xiuge2", ["die:mb_cuilingyi"]],
 				["mb_cuilingyi_xiuge3", ["die:mb_cuilingyi"]],
 			],
+			zhuji: [["zhuji_shadow", []]],
 		},
 		card: { ...cards },
 		skill: { ...skills },

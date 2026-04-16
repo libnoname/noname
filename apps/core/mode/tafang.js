@@ -274,7 +274,7 @@ export default () => {
 		},
 		element: {
 			content: {
-				chessMechRemove: function () {
+				chessMechRemove() {
 					game.treasures.remove(player);
 					setTimeout(function () {
 						player.delete();
@@ -286,7 +286,7 @@ export default () => {
 				},
 			},
 			player: {
-				dieAfter2: function () {
+				dieAfter2() {
 					var player = this;
 					delete lib.posmap[player.dataset.position];
 					setTimeout(function () {
@@ -300,7 +300,7 @@ export default () => {
 						}
 					}
 				},
-				dieAfter: function (source) {
+				dieAfter(source) {
 					var player = this;
 					if (_status.friends) {
 						_status.friends.remove(this);
@@ -349,13 +349,13 @@ export default () => {
 			chess: true,
 			treasures: [],
 			obstacles: [],
-			getVideoName: function () {
+			getVideoName() {
 				return [get.translation(game.me.name), "塔防模式"];
 			},
-			addOverDialog: function (dialog) {
+			addOverDialog(dialog) {
 				dialog.classList.add("center");
 			},
-			phaseLoopTafang: function () {
+			phaseLoopTafang() {
 				var next = game.createEvent("phaseLoop");
 				next.setContent(function () {
 					"step 0";
@@ -526,6 +526,7 @@ export default () => {
 						var selected = dialog.querySelectorAll(".button.selected");
 						event.bufang = [];
 						event.zhaomu = [];
+						event.currentPlayers = [];
 						event.xingdong = _status.friends.slice(0);
 						// var xingdongs=[];
 						_status.remainingCount += 10;
@@ -631,8 +632,9 @@ export default () => {
 						event.dialog = ui.create.dialog("选择一个位置安排【" + get.translation(event.currentZhaomu) + "】");
 						var size = ui.chesswidth * (ui.chessheight - 1);
 						var clickGrid = function () {
-							var player = game.addChessPlayer(event.currentZhaomu, false, 4, this.dataset.position);
+							var player = game.addChessPlayer(event.currentZhaomu, false, 0, this.dataset.position, false);
 							_status.friends.push(player);
+							event.currentPlayers.push(player);
 							if (!game.me.name) {
 								game.me = player;
 								game.me.classList.add("current_action");
@@ -721,9 +723,10 @@ export default () => {
 								}
 							}
 							if (list1.length) {
-								var enemy = game.addChessPlayer(_status.characterList.shift(), true, 4, list1.randomRemove());
+								var enemy = game.addChessPlayer(_status.characterList.shift(), true, 0, list1.randomRemove(), false);
 								_status.enemies.push(enemy);
 								event.justadded.push(enemy.name);
+								event.currentPlayers.push(enemy);
 								if (game.players.length == 1) {
 									ui.me.querySelector(".fakeme.player").show();
 									game.setChessInfo(game.players[0]);
@@ -751,26 +754,37 @@ export default () => {
 						game.over(true);
 					}
 					"step 8";
+					if (event.currentPlayers.length > 0) {
+						game.gameDraw(game.me, 4, event.currentPlayers);
+						for (var target of event.currentPlayers) {
+							game.triggerEnter(target);
+						}
+					}
+					"step 9";
 					if (event.xingdong.length) {
-						var toact = event.xingdong.shift();
+						var toact = (event.player = event.xingdong.shift());
 						if (game.players.includes(toact)) {
 							toact.phase();
+							event.trigger("phaseOver");
 						}
 						event.redo();
 					} else {
 						event.xingdong = _status.enemies.slice(0);
 					}
-					"step 9";
+					delete event.player;
+					"step 10";
 					if (event.xingdong.length) {
-						var enemy = event.xingdong.shift();
+						var enemy = (event.player = event.xingdong.shift());
 						if (!event.justadded.includes(enemy.name) && game.players.includes(enemy)) {
 							enemy.phase();
+							event.trigger("phaseOver");
 						}
 						event.redo();
 					} else {
 						event.mechlist = game.treasures.slice(0);
 					}
-					"step 10";
+					delete event.player;
+					"step 11";
 					if (event.mechlist.length) {
 						var mech = event.mechlist.shift();
 						var info = lib.skill[mech.name + "_skill"];
@@ -793,18 +807,22 @@ export default () => {
 						}
 						event.redo();
 					}
-					"step 11";
+					"step 12";
 					delete event.xingdong;
 					delete event.mechlist;
 					if (_status.turnCount >= _status.turnTotal) {
 						game.over(true);
+						return;
 					} else {
-						event.goto(0);
-						game.delay();
+						game.log();
+						event.trigger("roundEnd");
 					}
+					"step 13";
+					event.goto(0);
+					game.delay();
 				});
 			},
-			loadMap: function () {
+			loadMap() {
 				var next = game.createEvent("loadMap");
 				next.setContent(function () {
 					if (!lib.storage.map) {
@@ -957,7 +975,7 @@ export default () => {
 		},
 		skill: {
 			tafang_mech_weixingxianjing_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (!_status.enemies[i].isTurnedOver() && get.chessDistance(player, _status.enemies[i]) <= 2) {
 							return true;
@@ -965,7 +983,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (!_status.enemies[i].isTurnedOver() && get.chessDistance(player, _status.enemies[i]) <= 2) {
@@ -982,7 +1000,7 @@ export default () => {
 				},
 			},
 			tafang_mech_nengliangqiu_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.friends.length; i++) {
 						if (get.chessDistance(player, _status.friends[i]) <= 3) {
 							return true;
@@ -990,7 +1008,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list1 = [],
 						list2 = [];
 					for (var i = 0; i < _status.friends.length; i++) {
@@ -1018,7 +1036,7 @@ export default () => {
 				},
 			},
 			tafang_mech_mutong_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
 							return true;
@@ -1026,7 +1044,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
@@ -1045,7 +1063,7 @@ export default () => {
 				},
 			},
 			tafang_mech_guangmingquan_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.friends.length; i++) {
 						if (_status.friends[i].hp < _status.friends[i].maxHp && get.chessDistance(player, _status.friends[i]) <= 2) {
 							return true;
@@ -1053,7 +1071,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < _status.friends.length; i++) {
 						if (_status.friends[i].hp < _status.friends[i].maxHp && get.chessDistance(player, _status.friends[i]) <= 2) {
@@ -1071,7 +1089,7 @@ export default () => {
 				},
 			},
 			tafang_mech_jiguanren_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
 							return true;
@@ -1079,7 +1097,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < _status.enemies.length; i++) {
@@ -1107,7 +1125,7 @@ export default () => {
 				},
 			},
 			tafang_mech_gongchengche_skill: {
-				filter: function (player) {
+				filter(player) {
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (get.chessDistance(player, _status.enemies[i]) <= 2) {
 							return true;
@@ -1115,7 +1133,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < _status.enemies.length; i++) {
 						if (get.chessDistance(player, _status.enemies[i]) <= 2) {

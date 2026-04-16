@@ -7609,9 +7609,8 @@ export default {
 		forced: true,
 		preHidden: true,
 		audio: "dangxian",
-		audioname: ["guansuo"],
 		audioname2: {
-			gz_guansuo: "dangxian_guansuo",
+			guansuo: "dangxian_guansuo",
 		},
 		filter(event, player) {
 			return event.player.isFriendOf(player) && event.player.hasMark("xianqu_mark");

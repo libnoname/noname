@@ -20,15 +20,15 @@ export interface CheckCardParams {
      * 
 	 * 直接填true，则有些地方，会优先触发过滤可使用的卡牌，例如ui.click.skill,ai.basic.chooseCard
 	 * 
-	 * 注：game.check时，如果当前时viewAs“视为技”，则其过滤技能时filterCard,作为方法，多入参一个event参数，需要时可以使用；
+	 * 注：game.check时，如果当前时viewAs“视为技”，则其过滤技能时filterCard；作为方法，多入参一个event参数，需要时可以使用；
 	 * （一般没有）
 	 * 
 	 * @param card - 选择的牌
 	 * @param player - 发起选择的玩家
-	 * @param event - 触发选择的事件，一般情况下可能不存在
+	 * @param event - 触发选择事件的名称，一般情况下可能不存在
 	 * @returns 牌是否符合条件
 	 */
-	filterCard?: boolean | ((card: Card, player: Player, event?: GameEvent) => boolean);
+	filterCard?: boolean | ((card: Card, player: Player, event?: string) => boolean);
 	
 	/**
 	 * 需要选择牌数量的范围
@@ -415,7 +415,9 @@ export interface EventChoosePlayerCardParams extends ChooseBase, CheckButtonPara
 }
 
 export type EventDiscardPlayerCardParams = EventChoosePlayerCardParams;
-export type EventGainPlayerCardParams = EventChoosePlayerCardParams;
+export interface EventGainPlayerCardParams extends EventChoosePlayerCardParams {
+	visibleMove?: boolean;
+}
 
 export interface EventMoveCardParams extends ChooseBase {
 	sourceTargets?: Player[];
@@ -642,7 +644,7 @@ export interface EventJudgeParams {
 	clearArena?: boolean;
 	position?: HTMLDivElement | DocumentFragment;
 	judge?(card: Card): number;
-	judge2?(result: Partial<Result>): boolean;
+	judge2?(result: Partial<Result>): boolean | undefined;
 }
 
 // 一些不暴露的类型

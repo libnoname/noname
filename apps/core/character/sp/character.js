@@ -873,7 +873,6 @@ const characters = {
 		hp: 3,
 		skills: ["yuxu", "xjshijian"],
 	},
-
 	jianggan: {
 		sex: "male",
 		group: "wei",
@@ -884,7 +883,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 4,
-		skills: ["xinfu_lingren", "fujian"],
+		skills: ["ollingren", "olfujian"],
 	},
 	simahui: {
 		sex: "male",

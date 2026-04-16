@@ -1,100 +1,123 @@
-# v1.11.2更新内容
+# v1.11.3更新内容
 
-※我们继续和一些优秀且具有开源精神的代码编写者保持着积极合作。在这一版本中，我们通过接收GitHub的Pull Request，整合了 @diandian157 @kuangshen04 @rintim @S-N-O-R-L-A-X @Xiazhiliao @xiyang141 @xizifu @xjm0708 @yx-lingmeng共9位贡献者编写的代码（排名不分先后）。
+※ 我们继续和一些优秀且具有开源精神的代码编写者保持着积极合作。在这一版本中，我们通过接收GitHub的Pull Request，整合了 @1937475624 @1TheLeaderOne @diandian157 @gitxin09 @mengxinzxz @rintim @willinie @Xiazhiliao @xjm0708 @xiyang141 @xizifu @yx-lingmeng @YYUZDS @Zander-Sun 共14位贡献者编写的代码（排名不分先后）。
 
-## 新武将
+# 新武将
 
-- **十周年：**
-  - 限定专属: 新杀陈祗、新杀谋刘璋、威公孙瓒
-  - 群英荟萃: 新杀张世平、新杀魏讽
-- **OL：**
-  - OL专属: OL界曹节
-- **手杀/海外：**
-  - 移动版·缘: 缘檀石槐、缘吕布、缘高顺
-  - 谋攻篇: 谋朱然
-  - 联动卡: 集蜜袁术、手杀木牛流马
-  - 外服武将: TW皇甫嵩、TW起王允
-- **线下：**
-  - 雁翎耀光: 雁翎小乔、雁翎于吉
-  - 无名专属: 幻小无
+- **十周年:**
+  - 星河璀璨: 星张松
+  - 限定专属: 张裕、刘璿、威张星彩、新杀谋张任、史阿、王越
+  - 一将成名2026: 笛音荀勖、勘律荀勖
+  - 武将列传: 曹豹
 
-## 底层改动
+- **OL:**
+  - OL专属: 闪张郃、OL界张松、OL界夏侯氏
+  - 限时地主: 乐诸葛亮
+  - 璀璨星河: OL刘晔、OL皇甫嵩、董予安、逄纪
 
-### 项目结构更改
+- **手杀/海外:**
+  - 限时地主: 赤兔、绝影、的卢
+  - 喵喵杀: 体重之神、可爱之神、委屈之神、抉择之神、变幻之神、睡眠之神、逆转之神、美腿之神、宫百万
+  - 移动版·缘: 缘孙权、缘关羽、缘梅成、缘陈兰、缘蹋顿
+  - 兵势篇: 手杀朱绩
+  - 未分组: 手杀张既
 
-- 项目结构更改为monorepo，本体代码位于`apps/core`下
-- 开发分支切换为`main`，以后请向`main`分支提交pr
-- 加入electron启动器代码（位于`apps/electron`下）
-- 将原先的`noname-server.ts`（文件系统管理）分离为`@noname/fs`包（位于`packages/fs`下）
-- 将原先的`scripts/server.js`（联机服务器）分离为`@noname/server`包（位于`packages/server`下）
-- `game/asset.js`与`game/config.js`改为使用json存储
+- **线下:**
+  - 四象封印: 标轲比能、标牛金、标甘夫人、标王沈、标曹金玉、标吕伯奢、吴珂
+  - 雁翎耀光: 雁翎庞统、雁翎典韦
+  - 神霸虎牢: 虎牢神关羽、虎牢神诸葛亮、虎牢神吕蒙、虎牢神周瑜、虎牢神吕布
+  - 文心雕龙: 文曹植
 
-### 扩展工程化
+# 底层改动
 
-- 可以在`packages/extension`下创建工程化扩展，直接参与本体的开发服务器与打包流程
-- 使用`pnpm init:extension <name> [--author <author>] [--vue]`命令来快速创建新工程化扩展
-  - `<name>` 扩展目录名与扩展名
-  - `--author <author>` 作者名，默认: 无名玩家
-  - `--vue` 启用 Vue
+## 为所有不定参数的Player方式添加可提供类型的obj参数 (#3428)
 
-> **提示：** 开发模式使用`build:watch`命令，生产模式使用`build`命令，打包到`apps/core/extension`文件夹下。具体配置请参考`scripts/extension-template`下的模板。
+无名杀不少创建事件的函数都是不定参数顺序的，以`chooseCard`举例，`player.chooseCard(2, true)`和`player.chooseCard(true, 2)`都发挥一个功能，即强制选择两张牌；这些不定顺序的函数有一个问题，就是不好写函数的注释
 
-### lib.element.content相关
+目前为所有参数为不定参数的`Player#xxx`增加了一个新的形参，即提供一个和`Player#chooseCardTarget`参数形式一样的object类型参数，而该object类型的参数拥有完整的类型，方便函数使用
 
-- lib.element.content全部重构为async content
+**注:** 该改动理应不影响以前的扩展，但由于固有代码与现形式的部分冲突，发生以下情况请及时适配:
 
-### 在线更新相关
+- 在使用`Player#chooseCard`等选择牌函数的时候，如果只给了一个参数且该参数是限定可选择什么牌的object（如`player.chooseCard({ type: "trick" })`），如果限定object没有name属性，则会被当成obj参数从而导致函数异常
 
-- 由于本体项目结构正在重构，在线更新功能暂时废弃，请前往<https://github.com/libnoname/noname/releases>下载最新版本
-- 在1-2个版本后会重新加入在线更新功能，与启动器一并发布
+## 重写Step Content任务 (#3323) (W.I.P)
 
-## api更改
+Step Content过于依赖Javascript的动态，导致现在环境下，Step Content拥有下面的问题:
+- IDE/LSP无法正常理解Step Content中的状态问题
+- AI也无法理解Step Content的逻辑
+基于此，将本体的Step Content都重写成Async Content和Array Content需提上日程，其中无需跨步的重写成Async Content，而需要跨步的重写成Array Content
+
+目前已完成下面的任务:
+
+- 重写`lib.element.content`中的所有`Step Content`函数 (#3324)
+- 重写神话再临和神将的`Step Content` (#3336)
+- 重写界限突破包的所有step content (#3407)
+- 重写旧武将包和四象封印包的所有step content (#3450)
+
+等所有Step Content均重写完后，将会把武将包和模式打包成单文件，从而加快游戏加载流程
+
+**注:** 重写Step Content不代表要舍弃Step Content，请无需担心
+
+## API更改
 
 ### 新增
 
-#### get.is.damageCard(card)
+**Player#sortHandcard**和**Player#sortHandcardOL**
 
-- 用于判断一张牌是否为伤害牌
+- 用于整理手牌，其中`Player#sortHandcard`用于单机，而`Player#sortHandcardOL`同时作用于单机和联机，建议一般情况下均使用`Player#sortHandcardOL`
 
-#### player.when相关
+**game.syncHandcard**
 
-- `player.when()`的`.then()`方法支持传入async content
+- 供联机中主机同步手牌状态，应用可参考OL的蒋琬
 
-### 立即废弃
+### 变动
 
-#### 扩展加载相关
+**game.addPlayerOL**和**game.removePlayerOL**
 
-- 废弃`game.runAfterExtensionLoaded`
-- 废弃`lib.announce`的`Noname.Init.Extension.onLoad`和`Noname.Init.Extension.${name}.onLoad`时机
+- 改为异步函数（返回值不变），同时增加新函数，可允许自定义动画；`game.addPlayerOL`可增加添加角色的来源
+- 现函数签名如下:
+```typescript
+type Game = {
+    ...
+    /**
+     * 添加一个新玩家到target的上家或下家（默认为上家）
+     * @param { Player } target 新玩家的下家
+     * @param { string|undefined|null } [character] 新玩家主将
+     * @param { string|undefined|null } [character2] 新玩家副将
+     * @param { boolean } [isNext] 是否添加到下家
+     * @param { object } [config] 一些别的参数塞这来！
+     * @param { Player } [config.source] addPlayer的来源，不填就是没有
+     * @param { ((player: Player) => Promise) | false } [config.animate] 添加player的动画，有默认动画，自定义动画须返回一个promise；false则不生成动画
+     * @returns { Player }
+     */
+    async addPlayerOL(target, character, character2, isNext, config = {})
 
-#### **（1.11.1兼容模式）** lib.init.jsForExtension
-
-> 适配方法：改为使用esm导入(`await import(xxx)`)或使用`for(let i in files)promise.then(()=>lib.init.promises.js(xxx,i))`遍历文件
-
-### 移入兼容模式
-
-#### lib.init.jsSync/reqSync/jsonSync
-
-> 适配方法：请使用异步的`lib.init.js/req/json`
-
-#### player.when相关
-
-- 废弃多时机参数`player.when("aaa", "bbb")`以及`player.when({player: "aaa"}, "bbb")`
-    > 注: 时机的数组形式`player.when(["aaa", "bbb"])`不受影响
-- 废弃`player.when()`的`.popup()`方法
-- 废弃`player.when()`的`.apply()`传递作用域方法
-- 废弃`player.when()`的`removeFilter()`、`filter2()`、`removeFilter2()`
-
-#### player.draw相关
-
-- 将draw事件的result由cards数组改为统一的`{ bool: true, cards: cards }`
-
-> 适配方法：
-
-```javascript
-const cards = await player.draw().forResult();
-// 请改为
-const { cards } = await player.draw().forResult();
-//或
-const cards = (await player.draw().forResult()).cards;
+    /**
+     * 移除一名玩家，单机联机都可用
+     * @param { Player } player 要移除的玩家
+     * @param { object } [config] 一些别的参数塞这来！
+     * @param { ((player: Player) => Promise) | false } [config.animate] 移除player的动画，有默认动画，自定义动画须返回一个promise；false则不生成动画
+     * @returns { Player }
+     */
+    async removePlayerOL(player, config = {})
+    ...
+}
 ```
+
+**Player#showCards**
+
+- 新增 `multipleShow` 属性，有该属性时，showCards 的 log 改为每个在此次事件中有牌被展示的角色依次展示
+
+**Player#clearSkills**
+
+- 如果第一个参数不为真则直接返回`this.removeSkills(this.getSkills(null, false, false).removeArray(skills))`，否则走老逻辑
+
+**game.gameDraw**
+
+- 新增可传入`targets`数组（不传默认为`game.players`），让部分人定向执行分发起始手牌
+
+### 废弃
+
+**game.addPlayer**和**game.removePlayer**
+
+- 请使用`game.addPlayerOL`和`game.removePlayerOL`替代

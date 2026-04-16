@@ -141,7 +141,7 @@ export default () => {
 							return type != "stonecard" && type != "stonecharacter";
 						},
 						{
-							seperate: function (list) {
+							seperate(list) {
 								var nl = [],
 									ns = [];
 								var career = {};
@@ -517,7 +517,7 @@ export default () => {
 					count: players[i].actcount,
 				});
 			}
-			(_status.videoInited = true), game.addVideo("init", null, info);
+			((_status.videoInited = true), game.addVideo("init", null, info));
 
 			event.trigger("gameStart");
 			if (_status.mode == "deck") {
@@ -551,7 +551,7 @@ export default () => {
 		},
 		element: {
 			content: {
-				addFellowAuto: function () {
+				addFellowAuto() {
 					"step 0";
 					if (!player.canAddFellow()) {
 						event.finish();
@@ -592,14 +592,14 @@ export default () => {
 			stonecharacter: {
 				type: "stonecharacter",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
-				recastable: function (event, player) {
+				recastable(event, player) {
 					return !player.isMin() && !player.canAddFellow();
 				},
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					var name = card.name.slice(0, card.name.indexOf("_stonecharacter"));
 					var added = false;
@@ -640,7 +640,7 @@ export default () => {
 				},
 			},
 			player: {
-				init: function (player) {
+				init(player) {
 					if (!player.isMin() || player.forcemin) {
 						if (!player.node.actcount) {
 							player.node.actcount = ui.create.div(".actcount.hp", player);
@@ -655,7 +655,7 @@ export default () => {
 						player.updateActCount();
 					}
 				},
-				changeRage: function (num) {
+				changeRage(num) {
 					if (_status.mode != "deck") {
 						return;
 					}
@@ -705,7 +705,7 @@ export default () => {
 						}, 700);
 					}
 				},
-				drawDeck: function (num, log) {
+				drawDeck(num, log) {
 					if (!num) {
 						num = 1;
 					}
@@ -721,7 +721,7 @@ export default () => {
 					}
 					return cards;
 				},
-				updateActCount: function (used, countx, current) {
+				updateActCount(used, countx, current) {
 					if (_status.video) {
 						this.actcount = countx || 2;
 					} else {
@@ -777,10 +777,10 @@ export default () => {
 						}
 					}
 				},
-				getAct: function () {
+				getAct() {
 					return this.actcount - this.getActCount();
 				},
-				hasFellowSkill: function (skill, exclude) {
+				hasFellowSkill(skill, exclude) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (exclude && game.players[i] == this) {
 							continue;
@@ -791,7 +791,7 @@ export default () => {
 					}
 					return false;
 				},
-				countFellowSkill: function (skill, exclude) {
+				countFellowSkill(skill, exclude) {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
 						if (exclude && game.players[i] == this) {
@@ -803,7 +803,7 @@ export default () => {
 					}
 					return num;
 				},
-				canAddFellow: function () {
+				canAddFellow() {
 					if (!this.actcharacterlist) {
 						return false;
 					}
@@ -817,7 +817,7 @@ export default () => {
 					}
 					return false;
 				},
-				getDeckCards: function (num) {
+				getDeckCards(num) {
 					if (typeof num != "number") {
 						num = 1;
 					}
@@ -838,16 +838,16 @@ export default () => {
 					}
 					return list;
 				},
-				getActCount: function () {
+				getActCount() {
 					return this.countUsed() + (this.actused || 0);
 				},
-				getLeader: function () {
+				getLeader() {
 					return this.side == game.me.side ? game.me : game.enemy;
 				},
-				getEnemy: function () {
+				getEnemy() {
 					return this.side != game.me.side ? game.me : game.enemy;
 				},
-				hasFellow: function () {
+				hasFellow() {
 					if (!this.actcharacterlist) {
 						return false;
 					}
@@ -858,7 +858,7 @@ export default () => {
 					}
 					return false;
 				},
-				getFellow: function (enemy) {
+				getFellow(enemy) {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin()) {
@@ -875,7 +875,7 @@ export default () => {
 					}
 					return list;
 				},
-				countFellow: function () {
+				countFellow() {
 					if (!this.actcharacterlist) {
 						return 0;
 					}
@@ -887,7 +887,7 @@ export default () => {
 					}
 					return num;
 				},
-				addFellow: function (fellow) {
+				addFellow(fellow) {
 					if (!this.actcharacterlist) {
 						return this;
 					}
@@ -902,7 +902,7 @@ export default () => {
 					fellow.dataset.position = i + 4 + (this == game.me ? 0 : 4);
 					return this;
 				},
-				addFellowAuto: function (name, delay) {
+				addFellowAuto(name, delay) {
 					var next = game.createEvent("addFellowAuto");
 					next.player = this;
 					next.fellowName = name;
@@ -911,7 +911,7 @@ export default () => {
 					}
 					next.setContent("addFellowAuto");
 				},
-				removeFellow: function (fellow) {
+				removeFellow(fellow) {
 					if (!this.actcharacterlist) {
 						return this;
 					}
@@ -921,7 +921,7 @@ export default () => {
 					}
 					return this;
 				},
-				dieAfter: function (source) {
+				dieAfter(source) {
 					var dead = this;
 					if (game.me.isDead()) {
 						if (!_status.mylist.length) {
@@ -935,7 +935,7 @@ export default () => {
 						}
 					}
 				},
-				dieAfter2: function (source) {
+				dieAfter2(source) {
 					var dead = this;
 					if (game.me.isDead()) {
 						if (!_status.mylist.length) {
@@ -1064,130 +1064,7 @@ export default () => {
 		},
 		beastList: ["stone_misha", "stone_leiouke", "stone_huofu", "stone_caoyuanshi", "stone_jiewangzhu", "stone_huangjialeixiang", "stone_damoshatuo", "stone_tujiu", "stone_senlinlang", "stone_fennuxiaoji", "stone_juxingchanchu", "stone_yanjingshe", "stone_yuanhou"],
 		cardPack: {
-			mode_stone: [
-				"spell_xiaoshi",
-				"spell_chenmo",
-				"spell_morizaihuo",
-				"spell_shengerpingdeng",
-				"spell_jingshenkongzhi",
-				"spell_anyingkuangluan",
-				"spell_binghuan",
-				"spell_yanmie",
-				"spell_zhiliaozhichu",
-				"spell_wangzhezhufu",
-				"spell_diyulieyan",
-				"spell_zhiliaoshui",
-				"spell_hanbingjian",
-				"spell_huoqiushu",
-				"spell_bianxingshu",
-				"spell_aoshuzhihui",
-				"spell_baofengxue",
-				"spell_lieyanfengbao",
-				"spell_shandianfengbao",
-				"spell_chazhuangshandian",
-				"spell_yaoshu",
-				"spell_shixue",
-				"spell_lianhuanbaolie",
-				"spell_yexinglanghun",
-				"spell_fuchouzhinu",
-				"spell_liliangzhufu",
-				"spell_fennuzhichui",
-				"spell_fengxian",
-				"spell_zuozhandongyuan",
-				"spell_shengliaoshu",
-				"spell_cigu",
-				"spell_modaoyou",
-				"spell_jianrenluanwu",
-				"spell_daoshan",
-				"spell_cisha",
-				"spell_sijidaifa",
-				"spell_huotigenxu",
-				"spell_wuyashenxiang",
-				"spell_ziranzhili",
-				"spell_yemanpaoxiao",
-				"spell_hengsao",
-				"spell_yexingchengzhang",
-				"spell_xishengqiyue",
-				"spell_zuzhou",
-				"spell_xiaoguibaopo",
-				"spell_emozhinu",
-				"spell_anyinglieyan",
-				"spell_liliangdaijia",
-				"spell_shenshengxinxing",
-				"spell_shengguangzhadan",
-				"spell_maizang",
-				"spell_xinlingshijie",
-				"spell_naluzhiguang",
-				"spell_zhiliaozhihuan",
-				"spell_nuxi",
-				"spell_dunpaimengji",
-				"spell_zhansha",
-				"spell_nuhuozhongshao",
-				"spell_xuanfengzhan",
-				"spell_juemingluandou",
-				"spell_lierenyinji",
-				"spell_kuaisusheji",
-				"spell_guanmenfanggou",
-				"spell_zhaohuanchongwu",
-				"spell_zidanshangtang",
-				"spell_duochongsheji",
-				"spell_xianzuzhihun",
-				"spell_xianzuzhaohuan",
-				"spell_fengnu",
-				"spell_shihuawuqi",
-				"spell_xianzuzhishi",
-				"spell_rongyanbaolie",
-				"spell_laojiuhuoba",
-				"spell_chirehuoba",
-				"spell_aoshufeidan",
-				"spell_canying",
-				"spell_yanbaoshu",
-				"spell_hanbingpingzhang",
-				"spell_jingxiang",
-				"spell_mengun",
-				"spell_jipao",
-				"spell_beici",
-				"spell_weijisifu",
-				"spell_zhumo",
-				"spell_anzhongpohuai",
-				"spell_piaoqie",
-				"spell_conglinzhihun",
-				"spell_heiandiyu",
-				"spell_fugen",
-				"spell_xingchenzhuiluo",
-				"spell_fennu",
-				"spell_ziyang",
-				"spell_shalumingling",
-				"spell_tianjiangzhuqun",
-				"spell_tanxianmao",
-				"spell_dubiao",
-				"spell_qiangfengsheji",
-				"spell_zhuizongshu",
-				"spell_zhenyanshu",
-				"spell_enzeshu",
-				"spell_anyingxingtai",
-				"spell_kuaisuzhiliao",
-				"spell_kongxinshu",
-				"spell_xinlinghanbao",
-				"spell_jinyingduijue",
-				"spell_zhihuizhufu",
-				"spell_shenshengfennu",
-				"spell_yongshizhufu",
-				"spell_shenpan",
-				"spell_zhengqianghaosheng",
-				"spell_zhongnian",
-				"spell_fuchoudaji",
-				"spell_yingyongdaji",
-				"spell_zhandounuhuo",
-				"spell_chongfeng",
-				"spell_kuangbao",
-				"spell_linghunhongxi",
-				"spell_siwangchanrao",
-				"spell_emozhixin",
-				"spell_fushishu",
-				"spell_ansezhadan",
-				"spell_heianqiyue",
-			],
+			mode_stone: ["spell_xiaoshi", "spell_chenmo", "spell_morizaihuo", "spell_shengerpingdeng", "spell_jingshenkongzhi", "spell_anyingkuangluan", "spell_binghuan", "spell_yanmie", "spell_zhiliaozhichu", "spell_wangzhezhufu", "spell_diyulieyan", "spell_zhiliaoshui", "spell_hanbingjian", "spell_huoqiushu", "spell_bianxingshu", "spell_aoshuzhihui", "spell_baofengxue", "spell_lieyanfengbao", "spell_shandianfengbao", "spell_chazhuangshandian", "spell_yaoshu", "spell_shixue", "spell_lianhuanbaolie", "spell_yexinglanghun", "spell_fuchouzhinu", "spell_liliangzhufu", "spell_fennuzhichui", "spell_fengxian", "spell_zuozhandongyuan", "spell_shengliaoshu", "spell_cigu", "spell_modaoyou", "spell_jianrenluanwu", "spell_daoshan", "spell_cisha", "spell_sijidaifa", "spell_huotigenxu", "spell_wuyashenxiang", "spell_ziranzhili", "spell_yemanpaoxiao", "spell_hengsao", "spell_yexingchengzhang", "spell_xishengqiyue", "spell_zuzhou", "spell_xiaoguibaopo", "spell_emozhinu", "spell_anyinglieyan", "spell_liliangdaijia", "spell_shenshengxinxing", "spell_shengguangzhadan", "spell_maizang", "spell_xinlingshijie", "spell_naluzhiguang", "spell_zhiliaozhihuan", "spell_nuxi", "spell_dunpaimengji", "spell_zhansha", "spell_nuhuozhongshao", "spell_xuanfengzhan", "spell_juemingluandou", "spell_lierenyinji", "spell_kuaisusheji", "spell_guanmenfanggou", "spell_zhaohuanchongwu", "spell_zidanshangtang", "spell_duochongsheji", "spell_xianzuzhihun", "spell_xianzuzhaohuan", "spell_fengnu", "spell_shihuawuqi", "spell_xianzuzhishi", "spell_rongyanbaolie", "spell_laojiuhuoba", "spell_chirehuoba", "spell_aoshufeidan", "spell_canying", "spell_yanbaoshu", "spell_hanbingpingzhang", "spell_jingxiang", "spell_mengun", "spell_jipao", "spell_beici", "spell_weijisifu", "spell_zhumo", "spell_anzhongpohuai", "spell_piaoqie", "spell_conglinzhihun", "spell_heiandiyu", "spell_fugen", "spell_xingchenzhuiluo", "spell_fennu", "spell_ziyang", "spell_shalumingling", "spell_tianjiangzhuqun", "spell_tanxianmao", "spell_dubiao", "spell_qiangfengsheji", "spell_zhuizongshu", "spell_zhenyanshu", "spell_enzeshu", "spell_anyingxingtai", "spell_kuaisuzhiliao", "spell_kongxinshu", "spell_xinlinghanbao", "spell_jinyingduijue", "spell_zhihuizhufu", "spell_shenshengfennu", "spell_yongshizhufu", "spell_shenpan", "spell_zhengqianghaosheng", "spell_zhongnian", "spell_fuchoudaji", "spell_yingyongdaji", "spell_zhandounuhuo", "spell_chongfeng", "spell_kuangbao", "spell_linghunhongxi", "spell_siwangchanrao", "spell_emozhixin", "spell_fushishu", "spell_ansezhadan", "spell_heianqiyue"],
 		},
 		characterPack: {
 			mode_stone: {
@@ -2766,7 +2643,7 @@ export default () => {
 		game: {
 			reserveDead: true,
 			bannedcards: ["lebu", "xietianzi"],
-			onwash: function () {
+			onwash() {
 				if (_status.mode != "deck") {
 					return;
 				}
@@ -2781,7 +2658,7 @@ export default () => {
 					list.shift().remove();
 				}
 			},
-			getVideoName: function () {
+			getVideoName() {
 				var str = get.translation(game.me.name);
 				if (game.me.name2) {
 					str += "/" + get.translation(game.me.name2);
@@ -2789,37 +2666,48 @@ export default () => {
 				var name = [str, "炉石 - " + get.config("battle_number") + "人"];
 				return name;
 			},
-			updateStatusCount: function () {
+			updateStatusCount() {
 				_status.friendCount.innerHTML = "友军: " + get.cnNumber(1 + _status.mylist.length / (_status.double_character ? 2 : 1), true);
 				_status.enemyCount.innerHTML = "敌军: " + get.cnNumber(1 + _status.enemylist.length / (_status.double_character ? 2 : 1), true);
 			},
-			stoneLoop: function (player) {
+			stoneLoop(player) {
 				var next = game.createEvent("phaseLoop");
 				next.player = player;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					_status.roundStart = game.me;
-					player.phase();
-					event.num = 0;
-					"step 1";
-					if (event.num < player.actcharacterlist.length) {
-						var current = player.actcharacterlist[event.num];
-						if (current) {
-							current.phase();
+					await event.player.phase();
+					await event.trigger("phaseOver");
+					if (event.player.actcharacterlist.length > 0) {
+						for (const current2 of event.player.actcharacterlist) {
+							event.player = current2;
+							await event.player.phase();
+							await event.trigger("phaseOver");
 						}
-						event.num++;
-						event.redo();
 					}
-					"step 2";
-					if (event.player == game.me) {
-						event.player = game.enemy;
-					} else {
-						event.player = game.me;
+					while (true) {
+						event.player = event.player === game.me ? game.enemy : game.me;
+						const next = event.player.phase();
+						event.next.remove(next);
+						if (lib.onround.every(i => i(next, event.player))) {
+							if (_status.roundStart === event.player && _status.globalHistory.some(i => i.isRound)) {
+								game.log();
+								await event.trigger("roundEnd");
+							}
+						}
+						event.next.push(next);
+						await next;
+						await event.trigger("phaseOver");
+						if (event.player.actcharacterlist.length > 0) {
+							for (const current2 of event.player.actcharacterlist) {
+								event.player = current2;
+								await event.player.phase();
+								await event.trigger("phaseOver");
+							}
+						}
 					}
-					event.goto(0);
 				});
 			},
-			initStone: function () {
+			initStone() {
 				var list = [],
 					list2 = [],
 					list3 = {},
@@ -2940,7 +2828,7 @@ export default () => {
 				_status.deadenemy = [];
 				game.additionaldead = [];
 			},
-			chooseCharacter: function () {
+			chooseCharacter() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
 				next.setContent(function () {
@@ -3182,7 +3070,7 @@ export default () => {
 			},
 		},
 		get: {
-			rawAttitude: function (from, to) {
+			rawAttitude(from, to) {
 				var num;
 				if (to.isMin() && !to.hasSkill("lschaofeng")) {
 					num = 5;
@@ -3191,7 +3079,7 @@ export default () => {
 				}
 				return num * (from.side == to.side ? 1 : -1);
 			},
-			stonecard: function (type, career) {
+			stonecard(type, career) {
 				var list = [];
 				for (var i in lib.card) {
 					if (lib.card[i].stonehidden) {
@@ -3213,7 +3101,7 @@ export default () => {
 				}
 				return list;
 			},
-			deck: function (player, name) {
+			deck(player, name) {
 				var career, deck;
 				if (name == "random" || name.indexOf("random:") == 0) {
 					if (name == "random") {
@@ -3262,10 +3150,10 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.damage();
 					"step 1";
@@ -3292,7 +3180,7 @@ export default () => {
 				stoneact: 3,
 				career: "warlock",
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage(2);
 				},
 				ai: {
@@ -3313,10 +3201,10 @@ export default () => {
 				career: "warlock",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					if (target.side != player.side) {
 						target.damage(4);
 					} else {
@@ -3328,7 +3216,7 @@ export default () => {
 					value: 3,
 					useful: 3,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.side != player.side) {
 								return -3;
 							} else {
@@ -3345,7 +3233,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					var fellows = player.getEnemy().getFellow();
 					if (fellows.length) {
@@ -3367,7 +3255,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player) {
+						player(player) {
 							if (player.getEnemy().countFellow() >= 2) {
 								return 1;
 							}
@@ -3382,10 +3270,10 @@ export default () => {
 				career: "warlock",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.die();
 					"step 1";
@@ -3396,7 +3284,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -3408,10 +3296,10 @@ export default () => {
 				career: "warlock",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("warlock_fushishu");
 				},
-				content: function () {
+				content() {
 					target.addSkill("warlock_fushishu");
 				},
 				ai: {
@@ -3419,7 +3307,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -3432,11 +3320,11 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "warrior",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					if (player.hp <= 2) {
 						target.damage(3);
 					} else {
@@ -3463,10 +3351,10 @@ export default () => {
 				career: "warrior",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.damage(2, target);
 					"step 1";
@@ -3477,7 +3365,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hujia >= 2) {
 								return -1.5;
 							}
@@ -3498,7 +3386,7 @@ export default () => {
 			spell_zhandounuhuo: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 							return true;
@@ -3508,11 +3396,11 @@ export default () => {
 				},
 				stoneact: 1,
 				career: "warrior",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
@@ -3536,10 +3424,10 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "warrior",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.isDamaged();
 				},
-				content: function () {
+				content() {
 					target.draw(4);
 				},
 				ai: {
@@ -3557,10 +3445,10 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				career: "warrior",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.isTurnedOver();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.draw(3);
 					"step 1";
@@ -3573,7 +3461,7 @@ export default () => {
 					value: 3,
 					useful: 3,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.isTurnedOver()) {
 								return 2;
 							}
@@ -3586,7 +3474,7 @@ export default () => {
 				type: "stonecard",
 				stoneact: 3,
 				career: "warrior",
-				enable: function (event, player) {
+				enable(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 							return true;
@@ -3596,7 +3484,7 @@ export default () => {
 				},
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
@@ -3612,7 +3500,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].side == player.side && game.players[i].isDamaged()) {
@@ -3635,19 +3523,19 @@ export default () => {
 				type: "stonecard",
 				stoneact: 4,
 				career: "paladin",
-				enable: function (card, player) {
+				enable(card, player) {
 					var n1 = player.countFellow();
 					var n2 = player.getEnemy().countFellow();
 					return n1 > 0 && n2 > 0 && n1 + n2 > 2;
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (!targets.length) {
 						event.finish();
@@ -3691,7 +3579,7 @@ export default () => {
 					value: 2,
 					useful: 2,
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							return player.getEnemy().countFellow() - player.countFellow();
 						},
 					},
@@ -3701,14 +3589,14 @@ export default () => {
 				type: "stonecard",
 				stoneact: 1,
 				career: "paladin",
-				enable: function (card, player) {
+				enable(card, player) {
 					return !player.isMin();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("paladin_zhihuizhufu");
 				},
-				content: function () {
+				content() {
 					target.addSkill("paladin_zhihuizhufu");
 					target.storage.paladin_zhihuizhufu = player;
 				},
@@ -3717,7 +3605,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							return target.hp;
 						},
 					},
@@ -3730,7 +3618,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					event.card = player.getDeckCards()[0];
 					player.gain(event.card, "gain2", "log");
@@ -3758,10 +3646,10 @@ export default () => {
 				career: "paladin",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.countCards("h") > 0;
 				},
-				content: function () {
+				content() {
 					target.draw(target.countCards("h"));
 				},
 				ai: {
@@ -3769,7 +3657,7 @@ export default () => {
 					value: 2,
 					useful: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(0, target.countCards("h") - 1);
 						},
 					},
@@ -3779,13 +3667,13 @@ export default () => {
 				type: "stonecard",
 				stoneact: 2,
 				career: "paladin",
-				enable: function (card, player) {
+				enable(card, player) {
 					var num = player.getEnemy().countFellow();
 					return num > 0 && num >= player.countFellow();
 				},
 				fullimage: true,
 				notarget: true,
-				content: function () {
+				content() {
 					var target = player.getEnemy().getFellow().randomGet();
 					player.line(target);
 					target.die();
@@ -3803,15 +3691,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 2,
 				career: "paladin",
-				enable: function (card, player) {
+				enable(card, player) {
 					return !player.hasSkill("paladin_zhengqianghaosheng");
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.addSkill("paladin_zhengqianghaosheng");
 				},
 				ai: {
@@ -3819,7 +3707,7 @@ export default () => {
 					value: 4,
 					useful: 4,
 					result: {
-						player: function (player) {
+						player(player) {
 							if (player.countFellow() >= 2) {
 								return 1;
 							}
@@ -3835,10 +3723,10 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.maxHp++;
 					target.hp++;
 					target.update();
@@ -3849,7 +3737,7 @@ export default () => {
 					value: 3,
 					useful: 3,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(1, 10 - target.hp);
 						},
 					},
@@ -3861,10 +3749,10 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.maxHp += 3;
 					target.hp += 3;
 					target.update();
@@ -3874,7 +3762,7 @@ export default () => {
 					value: 3,
 					useful: 3,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(1, 10 - target.hp);
 						},
 					},
@@ -3885,18 +3773,18 @@ export default () => {
 				stoneact: 2,
 				career: "priest",
 				recastable: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					if (player.career != "priest") {
 						return false;
 					}
 					return !player.storage.anyingxingtai || player.storage.anyingxingtai < 2;
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					if (typeof player.storage.anyingxingtai != "number") {
 						player.storage.anyingxingtai = 1;
 					} else if (player.storage.anyingxingtai < 2) {
@@ -3919,13 +3807,13 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player.hasFellowSkill("priest_hunwu")) {
 						return true;
 					}
 					return target.hp < target.maxHp;
 				},
-				content: function () {
+				content() {
 					var num = 2;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 4;
@@ -3942,7 +3830,7 @@ export default () => {
 					value: 7,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return -2;
 							}
@@ -3955,15 +3843,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 3,
 				career: "priest",
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.canAddFellow();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					if (!player.canAddFellow()) {
 						return;
 					}
@@ -3996,11 +3884,11 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var num = 2;
 					// if(player.hasFellowSkill('stone_shenyou')){
 					// 	num=4;
@@ -4027,7 +3915,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					var num = 1;
 					var friends = player.getFellow();
 					for (var i = 0; i < friends.length; i++) {
@@ -4057,7 +3945,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				notarget: true,
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side) {
@@ -4085,10 +3973,10 @@ export default () => {
 				career: "hunter",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side == player.side;
 				},
-				content: function () {
+				content() {
 					target.maxHp++;
 					target.hp++;
 					target.update();
@@ -4100,7 +3988,7 @@ export default () => {
 					value: 2,
 					useful: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(1, 10 - target.hp);
 						},
 					},
@@ -4112,11 +4000,11 @@ export default () => {
 				career: "hunter",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseCardButton("选择一张加入手牌", player.getDeckCards(3), true);
 					"step 1";
@@ -4137,11 +4025,11 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "hunter",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side && target.isMin();
 				},
 				selectTarget: [1, 2],
-				content: function () {
+				content() {
 					"step 0";
 					target.damage();
 					"step 1";
@@ -4157,7 +4045,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.countCards("h")) {
 								return -2;
 							}
@@ -4174,13 +4062,13 @@ export default () => {
 			spell_tianjiangzhuqun: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				stoneact: 3,
 				career: "hunter",
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (player.canAddFellow()) {
 						player.addFellowAuto("stone_jiewangzhu");
@@ -4210,11 +4098,11 @@ export default () => {
 				career: "druid",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player.side == target.side && target.isMin() && !target.hasSkill("druid_conglinzhihun");
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.addSkill("druid_conglinzhihun");
 				},
 				ai: {
@@ -4222,7 +4110,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player) {
+						player(player) {
 							var num = 0;
 							for (var i = 0; i < game.players.length; i++) {
 								if (game.players[i].isMin() && game.players[i].side == player.side && !game.players[i].hasSkill("druid_conglinzhihun")) {
@@ -4243,14 +4131,14 @@ export default () => {
 				enable: true,
 				stoneact: 4,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				multitarget: true,
 				targetprompt: ["增加体力并摸牌"],
 				selectTarget: [0, 1],
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (targets.length) {
 						targets[0].maxHp++;
@@ -4270,7 +4158,7 @@ export default () => {
 				ai: {
 					order: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(1, target.hp - target.countCards("h"));
 						},
 					},
@@ -4280,15 +4168,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 3,
 				career: "druid",
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.deckCards && !player.isMin();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					if (player.hasSkill("druid_ziyang")) {
 						player.drawDeck(3);
@@ -4325,12 +4213,12 @@ export default () => {
 				career: "druid",
 				targetprompt: ["造成五点伤害"],
 				multitarget: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side && target.isMin();
 				},
 				selectTarget: [0, 1],
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (targets.length) {
 						targets[0].damage(4);
@@ -4356,7 +4244,7 @@ export default () => {
 					useful: 5,
 					value: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target == player.getEnemy()) {
 								return -2;
 							}
@@ -4374,10 +4262,10 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseControl("两点", "一点").prompt = "造成2点伤害，或造成1点伤害并从牌库中获得一张牌";
 					"step 1";
@@ -4408,10 +4296,10 @@ export default () => {
 				career: "druid",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.die();
 					"step 1";
@@ -4431,7 +4319,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -4444,10 +4332,10 @@ export default () => {
 				career: "rogue",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.die()._triggered = null;
 					event.name = target.name;
@@ -4459,7 +4347,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -4469,15 +4357,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 3,
 				career: "rogue",
-				enable: function (card, player) {
+				enable(card, player) {
 					return !player.isMin();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					if (!player.isMin()) {
 						player.drawDeck(4);
 					}
@@ -4497,10 +4385,10 @@ export default () => {
 				career: "rogue",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.hp == target.maxHp;
 				},
-				content: function () {
+				content() {
 					target.loseHp();
 				},
 				ai: {
@@ -4518,11 +4406,11 @@ export default () => {
 				career: "rogue",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					if (target.deckCards) {
 						var cards = [];
 						for (var i = 0; i < 3; i++) {
@@ -4557,11 +4445,11 @@ export default () => {
 				career: "rogue",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					var list = target.getFellow();
 					if (list.length) {
@@ -4578,7 +4466,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hasFellow()) {
 								return -1;
 							}
@@ -4593,11 +4481,11 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var cards = player.getEnemy().deckCards.randomGets(2);
 					var list = [];
 					for (var i = 0; i < cards.length; i++) {
@@ -4619,17 +4507,17 @@ export default () => {
 				type: "stonecard",
 				stoneact: 1,
 				career: "mage",
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.hasFellow();
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side == player.side;
 				},
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
 				fullimage: true,
-				content: function () {
+				content() {
 					var cards = [];
 					for (var i = 0; i < targets.length; i++) {
 						if (lib.card[targets[i].name + "_stonecharacter"]) {
@@ -4654,7 +4542,7 @@ export default () => {
 				stoneact: 2,
 				career: "mage",
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage("fire");
 					if (player.deckCards) {
 						player.deckCards.push(game.createCard("spell_chirehuoba"));
@@ -4682,7 +4570,7 @@ export default () => {
 				career: "mage",
 				stonehidden: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage(2, "fire");
 				},
 				ai: {
@@ -4706,7 +4594,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					if (target.maxHp < 2) {
 						target.maxHp = 2;
 					}
@@ -4721,7 +4609,7 @@ export default () => {
 					value: 3,
 					useful: 3,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hp <= 2) {
 								return 3 - target.hp;
 							}
@@ -4733,18 +4621,18 @@ export default () => {
 			spell_aoshufeidan: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.getEnemy().countFellow() > 0;
 				},
 				stoneact: 2,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side && target.isMin();
 				},
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (!targets.length) {
 						event.finish();
@@ -4783,16 +4671,16 @@ export default () => {
 			spell_jingxiang: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				stoneact: 2,
 				career: "mage",
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player == target;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (player.canAddFellow()) {
 						player.addFellowAuto("stone_jingxiang", false);
@@ -4818,7 +4706,7 @@ export default () => {
 				stoneact: 6,
 				career: "mage",
 				filterTarget: true,
-				content: function () {
+				content() {
 					var num = 4;
 					if (!target.isMin()) {
 						num = Math.min(4, target.hp);
@@ -4846,10 +4734,10 @@ export default () => {
 				career: "shaman",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("shaman_fengnu");
 				},
-				content: function () {
+				content() {
 					target.addSkill("shaman_fengnu");
 				},
 				ai: {
@@ -4857,7 +4745,7 @@ export default () => {
 					value: 4,
 					useful: 4,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hasSkill("shaman_tuteng")) {
 								return 0;
 							}
@@ -4875,10 +4763,10 @@ export default () => {
 				career: "shaman",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("shaman_shihuawuqi");
 				},
-				content: function () {
+				content() {
 					target.addSkill("shaman_shihuawuqi");
 				},
 				ai: {
@@ -4886,7 +4774,7 @@ export default () => {
 					value: 4,
 					useful: 4,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.isTurnedOver()) {
 								return 0;
 							}
@@ -4908,13 +4796,13 @@ export default () => {
 				career: "shaman",
 				fullimage: true,
 				enable: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return !target.isMin();
 				},
 				multitarget: true,
 				multiline: true,
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					if (targets[0]) {
 						var hs = targets[0].getCards("h", function (card) {
@@ -4939,7 +4827,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player) {
+						player(player) {
 							var hs = player.getCards("h", function (card) {
 								return get.type(card) == "stonecharacter";
 							});
@@ -4968,10 +4856,10 @@ export default () => {
 				career: "shaman",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("shaman_xianzuzhihun");
 				},
-				content: function () {
+				content() {
 					target.addSkill("shaman_xianzuzhihun");
 				},
 				ai: {
@@ -4979,7 +4867,7 @@ export default () => {
 					value: 4,
 					useful: 4,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (lib.card[target.name + "_stonecharacter"]) {
 								return lib.card[target.name + "_stonecharacter"].stoneact - 1;
 							}
@@ -4994,11 +4882,11 @@ export default () => {
 				enable: true,
 				stoneact: 0,
 				career: "shaman",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.drawDeck(2);
 					player.addTempSkill("shaman_xianzuzhishi");
 				},
@@ -5016,7 +4904,7 @@ export default () => {
 				stoneact: 3,
 				career: "shaman",
 				filterTarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					target.damage(3, "fire");
 					"step 1";
@@ -5043,14 +4931,14 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player.hasFellowSkill("priest_hunwu") || target.side != player.side) {
 						return true;
 					}
 					return target.isDamaged();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var num = 1;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 2;
@@ -5070,7 +4958,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return -1;
 							}
@@ -5093,11 +4981,11 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.countCards("h") > 0;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var num = 1;
 					// if(player.hasFellowSkill('stone_shenyou')){
 					// 	num=2;
@@ -5109,7 +4997,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -Math.min(target.countCards("h"), target.hp);
 						},
 					},
@@ -5126,10 +5014,10 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.die()._triggered = null;
 					"step 1";
@@ -5142,7 +5030,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -5152,15 +5040,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 0,
 				career: "priest",
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.getEnemy().countCards("h") > 0;
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var card = target.getCards("h").randomGet();
 					if (card) {
 						player.gain(game.createCard(card.name, card.suit, card.number, card.nature), "draw");
@@ -5181,13 +5069,13 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player.hasFellowSkill("priest_hunwu")) {
 						return true;
 					}
 					return target.hp < target.maxHp;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var num = 1;
 					if (player.hasFellowSkill("stone_shenyou")) {
@@ -5208,7 +5096,7 @@ export default () => {
 					value: 7,
 					useful: 5,
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return 1;
 							}
@@ -5217,7 +5105,7 @@ export default () => {
 							}
 							return 0;
 						},
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return -2;
 							}
@@ -5232,11 +5120,11 @@ export default () => {
 				career: "priest",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var num = 3;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 6;
@@ -5252,7 +5140,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return -1;
 							}
@@ -5269,7 +5157,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage();
 					player.changeHujia(2);
 				},
@@ -5289,14 +5177,14 @@ export default () => {
 				type: "stonecard",
 				stoneact: 2,
 				career: "warrior",
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.hujia > 0;
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.damage(player.hujia);
 				},
 				ai: {
@@ -5317,10 +5205,10 @@ export default () => {
 				career: "warrior",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.hp < target.maxHp;
 				},
-				content: function () {
+				content() {
 					target.die();
 				},
 				ai: {
@@ -5328,7 +5216,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -5340,10 +5228,10 @@ export default () => {
 				career: "warrior",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.damage();
 					"step 1";
@@ -5356,7 +5244,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hp == 1) {
 								return -1;
 							}
@@ -5377,11 +5265,11 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				career: "warrior",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage();
 				},
 				ai: {
@@ -5402,7 +5290,7 @@ export default () => {
 				type: "stonecard",
 				stoneact: 4,
 				career: "warrior",
-				enable: function () {
+				enable() {
 					var num = 0;
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin()) {
@@ -5415,11 +5303,11 @@ export default () => {
 					return false;
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					targets.randomRemove();
 					targets.sort(lib.sort.seat);
@@ -5446,10 +5334,10 @@ export default () => {
 				career: "hunter",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.maxHp > 1;
 				},
-				content: function () {
+				content() {
 					target.loseMaxHp(target.maxHp - 1);
 				},
 				ai: {
@@ -5457,7 +5345,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return 1 - target.hp;
 						},
 					},
@@ -5470,7 +5358,7 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage();
 					player.draw();
 				},
@@ -5490,15 +5378,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 2,
 				career: "hunter",
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.getEnemy().countFellow() > 0 && player.canAddFellow();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					event.num = player.getEnemy().countFellow();
 					"step 1";
@@ -5520,15 +5408,15 @@ export default () => {
 				type: "stonecard",
 				stoneact: 2,
 				career: "hunter",
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.addFellowAuto(lib.beastList.randomGet());
 				},
 				ai: {
@@ -5546,11 +5434,11 @@ export default () => {
 				career: "hunter",
 				enable: true,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					var list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
 					player.gain(game.createCard(list.randomGet()), "draw");
 					player.addTempSkill("hunter_zidanshangtang");
@@ -5567,7 +5455,7 @@ export default () => {
 			spell_duochongsheji: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side != player.side) {
 							return true;
@@ -5578,7 +5466,7 @@ export default () => {
 				stoneact: 4,
 				career: "hunter",
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -5613,10 +5501,10 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side == player.side && target.isMin();
 				},
-				content: function () {
+				content() {
 					target.draw(4);
 					target.hp = 5;
 					target.maxHp = 5;
@@ -5628,7 +5516,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hasSkill("warlock_yongsheng")) {
 								return 2;
 							}
@@ -5646,10 +5534,10 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.num = Math.ceil(Math.random() * 3);
 					target.damage(event.num);
@@ -5677,11 +5565,11 @@ export default () => {
 				enable: true,
 				stoneact: 4,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage(2);
 				},
 				ai: {
@@ -5704,10 +5592,10 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side == player.side && target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.die({ source: player });
 					event.num = target.hp;
@@ -5730,7 +5618,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							if (player == target) {
 								return -10;
 							}
@@ -5764,7 +5652,7 @@ export default () => {
 				enable: true,
 				stoneact: 0,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (!target.isMin()) {
 						return false;
 					}
@@ -5776,7 +5664,7 @@ export default () => {
 				selectTarget: 2,
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					targets.sort(lib.sort.seat);
 					for (var i = 0; i < targets.length; i++) {
 						targets[i].die();
@@ -5784,7 +5672,7 @@ export default () => {
 				},
 				ai: {
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (ui.selected.targets.length && target.hp < ui.selected.targets[0].hp) {
 								return 1;
 							}
@@ -5800,17 +5688,17 @@ export default () => {
 				stoneact: 1,
 				fullimage: true,
 				career: "warlock",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.turnOver();
 					player.draw();
 				},
 				ai: {
 					order: 6,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.isTurnedOver()) {
 								return 1;
 							}
@@ -5823,16 +5711,16 @@ export default () => {
 			spell_yexingchengzhang: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return !player.hasSkill("druid_yexingchengzhang") && !player.isMin();
 				},
 				stoneact: 2,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.addSkill("druid_yexingchengzhang");
 				},
 				ai: {
@@ -5847,16 +5735,16 @@ export default () => {
 			spell_ziranzhili: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				stoneact: 4,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					event.num = 3;
 					"step 1";
@@ -5877,16 +5765,16 @@ export default () => {
 			spell_yemanpaoxiao: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return !player.hasSkill("spell_yemanpaoxiao");
 				},
 				stoneact: 2,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.addTempSkill("spell_yemanpaoxiao", { player: "phaseBegin" });
 				},
 				ai: {
@@ -5894,7 +5782,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						player: function (player) {
+						player(player) {
 							if (player.countFellow() >= 2) {
 								return 1;
 							}
@@ -5909,10 +5797,10 @@ export default () => {
 				enable: true,
 				stoneact: 4,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -5945,11 +5833,11 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "druid",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseControl("法术牌", "随从牌").ai = function () {
 						return Math.random() < 0.5 ? "法术牌" : "随从牌";
@@ -6000,7 +5888,7 @@ export default () => {
 				notarget: true,
 				multitarget: true,
 				targetprompt: ["造成1点伤害"],
-				content: function () {
+				content() {
 					"step 0";
 					if (targets.length) {
 						targets[0].damage();
@@ -6034,7 +5922,7 @@ export default () => {
 				stoneact: 2,
 				career: "rogue",
 				filterTarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (player.countCards("e")) {
 						player.chooseToDiscard("e", "是否弃置一张装备区内的牌令伤害+1？").ai = function (card) {
@@ -6070,16 +5958,16 @@ export default () => {
 			spell_sijidaifa: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return !player.hasSkill("spell_sijidaifa");
 				},
 				stoneact: 0,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.addSkill("spell_sijidaifa");
 				},
 				ai: {
@@ -6097,14 +5985,14 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side && target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage();
 				},
-				contentAfter: function () {
+				contentAfter() {
 					player.drawDeck();
 				},
 				ai: {
@@ -6124,19 +6012,19 @@ export default () => {
 			spell_jianrenluanwu: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.getEquip(1) ? true : false;
 				},
 				stoneact: 2,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side;
 				},
 				selectTarget: -1,
-				contentBefore: function () {
+				contentBefore() {
 					player.discard(player.getEquip(1));
 				},
-				content: function () {
+				content() {
 					if (typeof player.storage.spell_modaoyou == "number") {
 						target.damage(player.storage.spell_modaoyou + 1);
 					} else {
@@ -6144,7 +6032,7 @@ export default () => {
 					}
 					player.unmarkSkill("spell_modaoyou");
 				},
-				contentAfter: function () {
+				contentAfter() {
 					player.storage.spell_modaoyou = 0;
 				},
 				ai: {
@@ -6167,10 +6055,10 @@ export default () => {
 				enable: true,
 				stoneact: 4,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.die({ source: player });
 				},
 				ai: {
@@ -6178,7 +6066,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp - target.countCards("h") / 2;
 						},
 					},
@@ -6190,11 +6078,11 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				career: "rogue",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.markSkill("spell_modaoyou");
 					if (typeof player.storage.spell_modaoyou != "number") {
 						player.storage.spell_modaoyou = 1;
@@ -6229,11 +6117,11 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "paladin",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage();
 				},
 				ai: {
@@ -6253,18 +6141,18 @@ export default () => {
 			spell_fuchouzhinu: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.getEnemy().countFellow() > 0;
 				},
 				stoneact: 4,
 				career: "paladin",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.side != player.side && target.isMin();
 				},
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (!targets.length) {
 						event.finish();
@@ -6306,10 +6194,10 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "paladin",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.draw(2);
 				},
 				ai: {
@@ -6328,7 +6216,7 @@ export default () => {
 				stoneact: 3,
 				career: "paladin",
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.recover(2);
 					target.draw(2);
 				},
@@ -6337,7 +6225,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return 1 + target.maxHp - target.hp;
 						},
 					},
@@ -6346,13 +6234,13 @@ export default () => {
 			spell_zuozhandongyuan: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				stoneact: 3,
 				career: "paladin",
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (player.canAddFellow()) {
 						player.addFellowAuto("stone_xinbing");
@@ -6386,7 +6274,7 @@ export default () => {
 				stoneact: 2,
 				career: "paladin",
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage();
 					player.drawDeck();
 				},
@@ -6410,7 +6298,7 @@ export default () => {
 				stoneact: 1,
 				career: "shaman",
 				filterTarget: true,
-				content: function () {
+				content() {
 					target.damage(Math.ceil(Math.random() * 2), "thunder");
 				},
 				ai: {
@@ -6433,11 +6321,11 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				career: "shaman",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage(Math.ceil(Math.random() * 2), "thunder");
 				},
 				ai: {
@@ -6462,10 +6350,10 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "shaman",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.clearSkills(true);
 					target.init("stone_qingwa");
 					target.noPhaseDelay = true;
@@ -6475,7 +6363,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp;
 						},
 					},
@@ -6488,12 +6376,12 @@ export default () => {
 				stoneact: 4,
 				career: "shaman",
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side == player.side;
 				},
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					game.asyncDraw(targets, 2);
 				},
 				ai: {
@@ -6511,13 +6399,13 @@ export default () => {
 			spell_yexinglanghun: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.canAddFellow();
 				},
 				stoneact: 4,
 				career: "shaman",
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (player.canAddFellow()) {
 						player.addFellowAuto("stone_youlinglang");
@@ -6539,7 +6427,7 @@ export default () => {
 			spell_chazhuangshandian: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side != player.side) {
 							return true;
@@ -6550,7 +6438,7 @@ export default () => {
 				stoneact: 2,
 				career: "shaman",
 				notarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -6585,10 +6473,10 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.damage(2);
 					"step 1";
@@ -6615,7 +6503,7 @@ export default () => {
 				stoneact: 4,
 				career: "mage",
 				filterTarget: true,
-				content: function () {
+				content() {
 					var num = 3;
 					if (!target.isMin()) {
 						num = Math.min(3, target.hp);
@@ -6642,11 +6530,11 @@ export default () => {
 				enable: true,
 				stoneact: 5,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.damage(2);
 				},
 				ai: {
@@ -6669,10 +6557,10 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.clearSkills();
 					target.init("stone_mianyang");
 				},
@@ -6681,7 +6569,7 @@ export default () => {
 					value: 5,
 					useful: 5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp;
 						},
 					},
@@ -6693,11 +6581,11 @@ export default () => {
 				enable: true,
 				stoneact: 1,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					player.drawDeck(2);
 				},
 				ai: {
@@ -6713,11 +6601,11 @@ export default () => {
 				enable: true,
 				stoneact: 4,
 				career: "mage",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					"step 0";
 					target.damage();
 					"step 1";
@@ -6745,10 +6633,10 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				fullimage: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && (target.maxHp > 1 || target.countCards("he") > 0);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.discard(target.getCards("he"));
 					"step 1";
@@ -6758,7 +6646,7 @@ export default () => {
 				},
 				ai: {
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.min(0, 2 - target.hp) - target.countCards("h") / 2;
 						},
 					},
@@ -6769,13 +6657,13 @@ export default () => {
 				fullimage: true,
 				type: "stonecard",
 				enable: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
 				multiline: true,
 				multitarget: true,
-				content: function () {
+				content() {
 					"step 0";
 					targets.sort(lib.sort.seat);
 					event.list = targets;
@@ -6792,7 +6680,7 @@ export default () => {
 					order: 9,
 					result: {
 						target: -1,
-						player: function (player) {
+						player(player) {
 							if (player.hp < player.maxHp) {
 								return 1;
 							}
@@ -6806,17 +6694,17 @@ export default () => {
 				type: "stonecard",
 				enable: true,
 				stoneact: 2,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.maxHp > 1;
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.loseMaxHp(target.maxHp - 1);
 				},
 				ai: {
 					order: 9.1,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.hp > 1) {
 								return -1;
 							}
@@ -6831,17 +6719,17 @@ export default () => {
 			spell_jingshenkongzhi: {
 				fullimage: true,
 				type: "stonecard",
-				enable: function (event, player) {
+				enable(event, player) {
 					if (player.isMin()) {
 						return false;
 					}
 					return player.canAddFellow();
 				},
 				stoneact: 6,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
-				content: function () {
+				content() {
 					target.getLeader().removeFellow(target);
 					target.side = player.side;
 					player.addFellow(target);
@@ -6852,7 +6740,7 @@ export default () => {
 				ai: {
 					order: 9.5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp;
 						},
 					},
@@ -6861,17 +6749,17 @@ export default () => {
 			spell_anyingkuangluan: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					if (player.isMin()) {
 						return false;
 					}
 					return player.canAddFellow();
 				},
 				stoneact: 4,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side && target.countCards("h") <= 1;
 				},
-				content: function () {
+				content() {
 					target.getLeader().removeFellow(target);
 					target.side = player.side;
 					player.addFellow(target);
@@ -6880,7 +6768,7 @@ export default () => {
 				ai: {
 					order: 9.5,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return -target.hp;
 						},
 					},
@@ -6891,17 +6779,17 @@ export default () => {
 				type: "stonecard",
 				enable: true,
 				stoneact: 1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content: function () {
+				content() {
 					target.turnOver();
 				},
 				ai: {
 					order: 7,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.isTurnedOver()) {
 								return 1;
 							}
@@ -6915,10 +6803,10 @@ export default () => {
 				type: "stonecard",
 				enable: true,
 				stoneact: 1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin() && target.side == player.side && (!target.hasSkill("lschaofeng") || target.hp < target.maxHp);
 				},
-				content: function () {
+				content() {
 					if (target.hp < target.maxHp) {
 						target.recover(target.maxHp - target.hp);
 					}
@@ -6930,7 +6818,7 @@ export default () => {
 				ai: {
 					order: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return target.maxHp - target.hp;
 						},
 					},
@@ -6941,10 +6829,10 @@ export default () => {
 				type: "stonecard",
 				enable: true,
 				stoneact: 4,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content: function () {
+				content() {
 					target.maxHp += 2;
 					target.hp += 2;
 					target.update();
@@ -6953,7 +6841,7 @@ export default () => {
 				ai: {
 					order: 7,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return Math.max(1, 10 - target.hp);
 						},
 					},
@@ -6968,7 +6856,7 @@ export default () => {
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content: function () {
+				content() {
 					targets.sort(lib.sort.seat);
 					for (var i = 0; i < targets.length; i++) {
 						targets[i].loseHp();
@@ -6985,16 +6873,16 @@ export default () => {
 			spell_zhiliaoshui: {
 				type: "stonecard",
 				fullimage: true,
-				enable: function (event, player) {
+				enable(event, player) {
 					return player.hp < player.maxHp;
 				},
 				savable: true,
 				stoneact: 2,
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
-				content: function () {
+				content() {
 					if (target.isDying()) {
 						target.recover();
 					} else {
@@ -7016,10 +6904,10 @@ export default () => {
 				enable: true,
 				stoneact: 3,
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var targets = [player, target];
 					event.cards = [targets[0].getCards("e"), targets[1].getCards("e")];
@@ -7050,7 +6938,7 @@ export default () => {
 					value: 1,
 					useful: 1,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							var ne1 = target.countCards("e"),
 								ne2 = player.countCards("e");
 							var nh1 = target.countCards("h"),
@@ -7072,10 +6960,10 @@ export default () => {
 				enable: true,
 				stoneact: 2,
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					target.gain(target.getCards("e"), "gain2");
 					"step 1";
@@ -7089,7 +6977,7 @@ export default () => {
 					value: 1,
 					useful: 1,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (target.countCards("he") >= player.countCards("h")) {
 								return -1;
 							}
@@ -7104,7 +6992,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player) {
 							return true;
@@ -7112,7 +7000,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -7142,7 +7030,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 							return true;
@@ -7150,7 +7038,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
@@ -7165,10 +7053,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return _status.currentPhase == player.getLeader();
 				},
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					target.actused -= 4;
 					target.updateActCount();
@@ -7178,10 +7066,10 @@ export default () => {
 			stone_mowang: {
 				trigger: { global: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source != player && player.side == event.source.side && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
-				content: function () {
+				content() {
 					if (trigger.player.isMin()) {
 						trigger.num += 4;
 					} else {
@@ -7195,10 +7083,10 @@ export default () => {
 			shaman_fali: {
 				trigger: { global: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source != player && event.source == player.getLeader() && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 				ai: {
@@ -7209,10 +7097,10 @@ export default () => {
 				trigger: { global: "useCard" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecard" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					trigger.player.gain(game.createCard("spell_huoqiushu"), "gain2");
 				},
 				ai: {
@@ -7223,10 +7111,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().career == "warlock";
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var target = player.getLeader();
 					if (target.name == "stone_jialakesix") {
@@ -7253,14 +7141,14 @@ export default () => {
 			stone_jinu: {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.isDamaged();
 				},
-				content: function () {
+				content() {
 					trigger.num += 2;
 				},
 				ai: {
-					threaten: function (player, target) {
+					threaten(player, target) {
 						if (target.hp < target.maxHp) {
 							return 2;
 						}
@@ -7268,7 +7156,7 @@ export default () => {
 					},
 					maixie: true,
 					effect: {
-						target: function (card, player, target) {
+						target(card, player, target) {
 							if (target.maxHp <= 3) {
 								return;
 							}
@@ -7287,12 +7175,12 @@ export default () => {
 			stone_lianyu: {
 				mark: true,
 				intro: {
-					content: function (storage) {
+					content(storage) {
 						return "地狱火的初始手牌数和体力值为" + (storage + 2);
 					},
 				},
 				ai: {
-					threaten: function (player, target) {
+					threaten(player, target) {
 						return 1 + target.storage.stone_lianyu;
 					},
 				},
@@ -7301,10 +7189,10 @@ export default () => {
 				trigger: { global: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.side == player.side && event.source != player;
 				},
-				content: function () {
+				content() {
 					player.maxHp++;
 					player.hp++;
 					player.update();
@@ -7318,7 +7206,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var target = player.getLeader();
 					var next = target.chooseControl("召唤树人", "增强随从");
@@ -7357,7 +7245,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("stone_fuchou2");
 				},
 			},
@@ -7365,10 +7253,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("stone_fuchou");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					player.removeSkill("stone_fuchou2");
 					var targets = player.getEnemy().getFellow();
@@ -7387,7 +7275,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
@@ -7414,7 +7302,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("warlock_zhaohuan2");
 				},
 				ai: {
@@ -7425,10 +7313,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("warlock_zhaohuan");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					player.removeSkill("warlock_zhaohuan2");
 					var hs = player.getCards("h", function (card) {
@@ -7443,7 +7331,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					var hs = target.getCards("h");
 					if (hs.length) {
@@ -7455,10 +7343,10 @@ export default () => {
 				trigger: { source: "damageEnd" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().isDamaged();
 				},
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					player.line(target, "green");
 					target.recover();
@@ -7471,14 +7359,14 @@ export default () => {
 				trigger: { source: "fellow" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
 							return true;
 						}
 					}
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget(
@@ -7512,10 +7400,10 @@ export default () => {
 				trigger: { global: "damageEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					player.maxHp++;
 					player.hp++;
 					player.update();
@@ -7530,10 +7418,10 @@ export default () => {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader() && event.player.canAddFellow();
 				},
-				content: function () {
+				content() {
 					trigger.player.addFellowAuto("stone_shengjiachong");
 				},
 				ai: {
@@ -7544,10 +7432,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().countCards("h", { type: "stonecharacter" }) > 0;
 				},
-				content: function () {
+				content() {
 					player.addSkill("stone_chongfeng");
 					if (player.isTurnedOver()) {
 						player.turnOver();
@@ -7558,7 +7446,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].isMin() && !game.players[i].hasSkill("lschaofeng")) {
 							return true;
@@ -7566,7 +7454,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("陪练：令一名随从获得嘲讽", function (card, playerx, target) {
@@ -7586,7 +7474,7 @@ export default () => {
 				trigger: { source: "damageEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var target = event.player;
 					if (target.side == player.side) {
 						return false;
@@ -7604,7 +7492,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != trigger.player && game.players[i].isMin() && game.players[i].side != player.side) {
@@ -7622,7 +7510,7 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getEnemy();
 					player.line(target, "green");
 					target.damage();
@@ -7633,7 +7521,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
 							return true;
@@ -7641,7 +7529,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("普照：选择一名己方随从增加2点体力和体力上限", function (card, playerx, target) {
@@ -7663,7 +7551,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].isMin() && game.players[i].maxHp > 1) {
 							return true;
@@ -7671,7 +7559,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("缩小：令一名随从减少2点体力上限", function (card, playerx, target) {
@@ -7723,10 +7611,10 @@ export default () => {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var target = player.getLeader();
 					target.damage();
@@ -7741,14 +7629,14 @@ export default () => {
 				trigger: { player: "phaseBegin" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
 							return true;
 						}
 					}
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
@@ -7770,12 +7658,12 @@ export default () => {
 				trigger: { player: "phaseDrawBefore" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
 					effect: {
-						target: function (card) {
+						target(card) {
 							if (card.name == "bingliang") {
 								return [0, 0];
 							}
@@ -7788,10 +7676,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().countCards("h", { type: "stonecharacter" }) > 0;
 				},
-				content: function () {
+				content() {
 					player.maxHp++;
 					player.hp++;
 					player.update();
@@ -7802,10 +7690,10 @@ export default () => {
 				trigger: { global: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.side == player.side && event.source != player;
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -7813,10 +7701,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().countFellow() > 1 && player.getLeader().canAddFellow();
 				},
-				content: function () {
+				content() {
 					var num = player.getLeader().countFellow() - 1;
 					var list = [];
 					for (var i in lib.character) {
@@ -7837,7 +7725,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					var target = player.getLeader();
@@ -7866,7 +7754,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var list = [];
 					var target = player.getLeader();
 					for (var i = 0; i < target.deckCards.length; i++) {
@@ -7888,10 +7776,10 @@ export default () => {
 			hunter_zhanhuo2: {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasFellowSkill("hunter_zhanhuo", true) && player.isMin();
 				},
-				content: function () {
+				content() {
 					trigger.num += player.countFellowSkill("hunter_zhanhuo", true);
 				},
 			},
@@ -7900,11 +7788,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var target = player.getLeader();
 					return target.countCards("e") > 0;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseToDiscard("是否弃置一张装备牌令" + get.translation(player) + "摸三张牌？", "he", function (card) {
@@ -7922,10 +7810,10 @@ export default () => {
 				trigger: { global: "equipEnd" },
 				unique: true,
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.side == player.side && get.subtype(event.card) == "equip1";
 				},
-				content: function () {
+				content() {
 					player.draw(2);
 				},
 				ai: {
@@ -7936,14 +7824,14 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].hp > 1) {
 							return true;
 						}
 					}
 				},
-				content: function () {
+				content() {
 					var num = 1;
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].hp > num) {
@@ -7959,7 +7847,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var target = player.getLeader();
 					if (target.getEquip(1)) {
@@ -7982,10 +7870,10 @@ export default () => {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader() && event.player.countFellow() > 1;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var players = get.players();
 					var targets = [];
@@ -8011,10 +7899,10 @@ export default () => {
 				trigger: { global: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.side != player.side && !player.hasSkill("qianxing");
 				},
-				content: function () {
+				content() {
 					player.tempHide();
 				},
 			},
@@ -8028,10 +7916,10 @@ export default () => {
 			paladin_moma2: {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.name == "stone_xinbing" && player.hasFellowSkill("paladin_moma");
 				},
-				content: function () {
+				content() {
 					trigger.num += player.countFellowSkill("paladin_moma");
 				},
 			},
@@ -8039,7 +7927,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].countCards("h") > 1) {
 							return true;
@@ -8047,7 +7935,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -8070,11 +7958,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var leader = player.getLeader();
 					return leader.hp < leader.maxHp;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.line(target, "green");
 					var target = player.getLeader();
@@ -8092,7 +7980,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && (game.players[i].hp != 2 || game.players[i].maxHp != 2)) {
 							return true;
@@ -8100,7 +7988,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("化石：令一名随从的体力值及体力上限变为2", function (card, playerx, target) {
@@ -8125,7 +8013,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
 							return true;
@@ -8133,7 +8021,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("保卫：令一名友方随从获得1点护甲", function (card, playerx, target) {
@@ -8153,7 +8041,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getEnemy();
 					var added = [];
 					for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
@@ -8183,10 +8071,10 @@ export default () => {
 			mage_yufa: {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					trigger.player.actused--;
 					trigger.player.updateActCount();
 				},
@@ -8195,7 +8083,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
@@ -8219,24 +8107,24 @@ export default () => {
 			mage_gushou: {
 				trigger: { global: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.num <= 1) {
 						return false;
 					}
 					return event.player == player.getLeader();
 				},
 				priority: -11,
-				content: function () {
+				content() {
 					trigger.num = 1;
 				},
 			},
 			mage_jili: {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -8244,7 +8132,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().gain(game.createCard("spell_aoshuzhihui"), "gain2");
 				},
 			},
@@ -8252,10 +8140,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().countCards("e") > 0 && player.getEnemy().hasFellow();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var num = player.getLeader().countCards("e");
 					var map = [];
@@ -8284,11 +8172,11 @@ export default () => {
 
 			druid_juhuo: {
 				trigger: { global: "dieAfter" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.isMin() && _status.currentPhase == player.getLeader();
 				},
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					target.actused--;
 					target.updateActCount();
@@ -8299,7 +8187,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					game.asyncDraw([player.getLeader(), player.getEnemy()], 1, { drawDeck: 1 });
 				},
 			},
@@ -8307,11 +8195,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var target = player.getLeader();
 					return _status.currentPhase == target && target.countFellow() > 1;
 				},
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					var num = target.countFellow();
 					if (num > 1) {
@@ -8324,7 +8212,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("druid_qicheng2");
 				},
 				ai: {
@@ -8335,10 +8223,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("druid_qicheng");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					var list = [];
 					for (var i in lib.character) {
@@ -8354,7 +8242,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					player.getLeader().chooseControl("冲锋", "潜行").ai = function () {
 						if (Math.random() < 0.5) {
@@ -8381,10 +8269,10 @@ export default () => {
 				trigger: { global: "damageBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event) {
+				filter(event) {
 					return event.card && get.type(event.card) == "trick" && event.notLink();
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 			},
@@ -8393,10 +8281,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					player.line(player.getLeader(), "green");
 					player.getLeader().drawDeck();
 				},
@@ -8405,10 +8293,10 @@ export default () => {
 				trigger: { global: "useCardAfter" },
 				direct: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecharacter" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					if (!player.storage.shaman_zoushi) {
 						player.storage.shaman_zoushi = true;
 					} else {
@@ -8433,7 +8321,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.draw(Math.ceil(Math.random() * 3));
 				},
 			},
@@ -8441,7 +8329,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
 						if (fellows[i].hasSkill("shaman_tuteng")) {
@@ -8450,7 +8338,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var num = 0;
 					var fellows = player.getLeader().getFellow();
 					for (var i = 0; i < fellows.length; i++) {
@@ -8467,10 +8355,10 @@ export default () => {
 				trigger: { global: "phaseUseBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.career && player.side == event.player.side;
 				},
-				content: function () {
+				content() {
 					player.line(trigger.player, "green");
 					trigger.player.actused--;
 					trigger.player.updateActCount();
@@ -8487,7 +8375,7 @@ export default () => {
 				intro: {
 					content: "下个回合结束后死亡",
 				},
-				content: function () {
+				content() {
 					player.die();
 				},
 				ai: {
@@ -8502,7 +8390,7 @@ export default () => {
 				intro: {
 					content: "在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌",
 				},
-				content: function () {
+				content() {
 					player.removeSkill("paladin_zhengqianghaosheng");
 					var list = player.getFellow();
 					for (var i = 0; i < list.length; i++) {
@@ -8518,14 +8406,14 @@ export default () => {
 				forced: true,
 				mark: true,
 				intro: {
-					content: function (storage) {
+					content(storage) {
 						return "准备阶段，" + get.translation(storage) + "从牌库中获得一张牌";
 					},
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return game.players.includes(player.storage.paladin_zhihuizhufu);
 				},
-				content: function () {
+				content() {
 					player.storage.paladin_zhihuizhufu.drawDeck();
 				},
 			},
@@ -8537,14 +8425,14 @@ export default () => {
 				},
 				marktext: "治",
 				mod: {
-					maxHandcard: function (player, num) {
+					maxHandcard(player, num) {
 						return num - 1;
 					},
 				},
 			},
 			priest_anyingxingtai: {
 				intro: {
-					content: function (storage, player) {
+					content(storage, player) {
 						return "职业技能改为造成" + get.cnNumber(player.storage.anyingxingtai) + "点伤害";
 					},
 				},
@@ -8558,7 +8446,7 @@ export default () => {
 				intro: {
 					content: "你死亡时，将一张探险帽置入主将的手牌",
 				},
-				content: function () {
+				content() {
 					player.getLeader().addSkill("hunter_tanxianmao2");
 				},
 			},
@@ -8566,17 +8454,17 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("hunter_tanxianmao");
 				},
-				content: function () {
+				content() {
 					player.gain(game.createCard("spell_tanxianmao"), "gain2");
 					player.removeSkill("hunter_tanxianmao2");
 				},
 			},
 			rogue_zhumo: {
 				trigger: { player: "discardAfter" },
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < event.cards.length; i++) {
 						if (get.position(event.cards[i]) == "d") {
 							if (event.cards[i].name == "spell_zhumo") {
@@ -8588,7 +8476,7 @@ export default () => {
 				},
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					"step 0";
 					event.num = 0;
 					for (var i = 0; i < trigger.cards.length; i++) {
@@ -8615,7 +8503,7 @@ export default () => {
 				intro: {
 					content: "你死亡后，召唤一个树人",
 				},
-				content: function () {
+				content() {
 					player.getLeader().addSkill("druid_conglinzhihun2");
 				},
 				ai: {
@@ -8626,10 +8514,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("druid_conglinzhihun");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					player.addFellowAuto("stone_shurenx");
 					player.removeSkill("druid_conglinzhihun2");
@@ -8642,7 +8530,7 @@ export default () => {
 				},
 				marktext: "祖",
 				mod: {
-					maxHandcard: function (player, num) {
+					maxHandcard(player, num) {
 						return num - 1;
 					},
 				},
@@ -8656,7 +8544,7 @@ export default () => {
 					content: "你死亡后，召唤一个自身的复制",
 				},
 				marktext: "魂",
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					target.addSkill("shaman_xianzuzhihun2");
 					target.storage.shaman_xianzuzhihun = player.name;
@@ -8669,13 +8557,13 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (!player.storage.shaman_xianzuzhihun) {
 						return false;
 					}
 					return event.player.hasSkill("shaman_xianzuzhihun");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					player.addFellowAuto(player.storage.shaman_xianzuzhihun);
 					player.removeSkill("shaman_xianzuzhihun2");
@@ -8691,10 +8579,10 @@ export default () => {
 				intro: {
 					content: "结合结束后，你获得一个额外的回合",
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.parent.name != "shaman_fengnu";
 				},
-				content: function () {
+				content() {
 					player.phase();
 				},
 				ai: {
@@ -8708,7 +8596,7 @@ export default () => {
 			shaman_shihuawuqi: {
 				trigger: { player: "phaseBegin" },
 				forced: true,
-				content: function () {
+				content() {
 					player.draw(3);
 				},
 				mark: true,
@@ -8721,10 +8609,10 @@ export default () => {
 				trigger: { global: "phaseBegin" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					player.removeSkill("shaman_shihuawuqi");
 				},
 			},
@@ -8734,10 +8622,10 @@ export default () => {
 				unique: true,
 				priority: -55,
 				mark: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hp - event.num < 2;
 				},
-				content: function () {
+				content() {
 					trigger.num = player.hp - 2;
 				},
 				intro: {
@@ -8746,7 +8634,7 @@ export default () => {
 				marktext: "屏",
 				ai: {
 					effect: {
-						target: function (card, player, target) {
+						target(card, player, target) {
 							if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
 								if (target.hp <= 2) {
 									return 0;
@@ -8761,16 +8649,16 @@ export default () => {
 				trigger: { global: "phaseBegin" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					player.removeSkill("mage_hanbingpingzhang");
 				},
 			},
 			spell_modaoyou: {
 				intro: {
-					content: function (storage) {
+					content(storage) {
 						return "下次剑刃乱舞的伤害+" + storage;
 					},
 				},
@@ -8779,10 +8667,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("hunter_jiewang");
 				},
-				content: function () {
+				content() {
 					player.gain(game.createCard(lib.beastList.randomGet() + "_stonecharacter"), "draw");
 					player.removeSkill("hunter_jiewang2");
 				},
@@ -8794,10 +8682,10 @@ export default () => {
 				intro: {
 					content: "每当你使用一张法术牌，便随机获得一张猎人职业法术牌",
 				},
-				filter: function (event) {
+				filter(event) {
 					return get.type(event.card) == "stonecard";
 				},
-				content: function () {
+				content() {
 					var list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
 					player.gain(game.createCard(list.randomGet()), "draw");
 				},
@@ -8812,31 +8700,31 @@ export default () => {
 			spell_yemanpaoxiao2: {
 				trigger: { source: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().hasSkill("spell_yemanpaoxiao") && event.notLink();
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 			},
 			stone_zibao: {
 				trigger: { player: "phaseAfter" },
 				forced: true,
-				content: function () {
+				content() {
 					player.die();
 				},
 			},
 			spell_sijidaifa: {
 				trigger: { player: "useCard" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecard";
 				},
 				mark: true,
 				intro: {
 					content: "使用下一张法术牌时获得X点行动值，X为该法术的行动值消耗且不超过3",
 				},
-				content: function () {
+				content() {
 					var num = lib.card[trigger.card.name].stoneact;
 					if (num > 3) {
 						num = 3;
@@ -8851,7 +8739,7 @@ export default () => {
 				forced: true,
 				unique: true,
 				popup: false,
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
@@ -8863,12 +8751,12 @@ export default () => {
 				forced: true,
 				unique: true,
 				popup: false,
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
 					effect: {
-						target: function (card) {
+						target(card) {
 							if (card.name == "bingliang") {
 								return [0, 0];
 							}
@@ -8879,7 +8767,7 @@ export default () => {
 			},
 			mage_mianyang: {
 				mod: {
-					cardEnabled: function (card) {
+					cardEnabled(card) {
 						if (card.name == "sha") {
 							return false;
 						}
@@ -8893,10 +8781,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().countCards("h", { type: "stonecharacter" }) > 0;
 				},
-				content: function () {
+				content() {
 					player.draw();
 					player.addSkill("lschaofeng");
 				},
@@ -8905,10 +8793,10 @@ export default () => {
 				trigger: { player: "changeHp" },
 				forced: true,
 				unique: true,
-				filter: function (event) {
+				filter(event) {
 					return event.num != 0;
 				},
-				content: function () {
+				content() {
 					player.draw(Math.abs(trigger.num));
 				},
 			},
@@ -8916,7 +8804,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
 							return true;
@@ -8924,7 +8812,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
@@ -8945,7 +8833,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
@@ -8970,10 +8858,10 @@ export default () => {
 				trigger: { global: "recoverEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event) {
+				filter(event) {
 					return event.player.isMin();
 				},
-				content: function () {
+				content() {
 					player.getLeader().drawDeck();
 				},
 			},
@@ -8981,10 +8869,10 @@ export default () => {
 				trigger: { global: "recoverEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event) {
+				filter(event) {
 					return event.player.isMin();
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -8992,10 +8880,10 @@ export default () => {
 				trigger: { source: "damageEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.isAlive() && event.player.isMin();
 				},
-				content: function () {
+				content() {
 					trigger.player.die({ source: player });
 				},
 			},
@@ -9003,23 +8891,23 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var target = player.getLeader();
 					return target.countCards("e") > 0;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseCardTarget({
 						position: "e",
-						filterTarget: function (card, player, target) {
+						filterTarget(card, player, target) {
 							return player.side != target.side;
 						},
 						filterCard: true,
-						ai1: function (card) {
+						ai1(card) {
 							return 9 - get.value(card);
 						},
-						ai2: function (target) {
+						ai2(target) {
 							return get.damageEffect(target, player, player);
 						},
 						prompt: "偷袭：弃置一张装备区内的牌并对一名敌方角色1点伤害",
@@ -9037,7 +8925,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side != player.side && game.players[i].hp == game.players[i].maxHp) {
 							return true;
@@ -9045,7 +8933,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -9068,7 +8956,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("rogue_xunbao2");
 				},
 			},
@@ -9076,10 +8964,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("rogue_xunbao");
 				},
-				content: function () {
+				content() {
 					player.gain(game.createCard("spell_sijidaifa"), "gain2");
 					player.removeSkill("rogue_xunbao2");
 				},
@@ -9088,7 +8976,7 @@ export default () => {
 				trigger: { source: "damageEnd" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().drawDeck();
 				},
 			},
@@ -9096,10 +8984,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().canAddFellow();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.getLeader().addFellowAuto("stone_haidao");
 					"step 1";
@@ -9110,7 +8998,7 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var leader = player.getLeader();
 					leader.changeHujia();
 				},
@@ -9119,7 +9007,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var leader = player.getLeader();
 					leader.changeHujia(2);
 				},
@@ -9128,10 +9016,10 @@ export default () => {
 				trigger: { global: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source.side == player.side && event.source != player && event.source.countCards("h") <= 2;
 				},
-				content: function () {
+				content() {
 					trigger.source.classList.remove("turnedover");
 					player.line(trigger.source, "green");
 				},
@@ -9142,10 +9030,10 @@ export default () => {
 			warrior_baoluan: {
 				trigger: { global: "damageEnd" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.isMin();
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 				ai: {
@@ -9156,7 +9044,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].isMin()) {
 							return true;
@@ -9164,7 +9052,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("监工：对一名随从造成1点伤害然后令其摸两张牌", function (card, playerx, target) {
@@ -9193,7 +9081,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player) {
 							return true;
@@ -9201,7 +9089,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
@@ -9224,7 +9112,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					var hs = target.getCards("h");
 					if (hs.length) {
@@ -9236,7 +9124,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("warlock_yongsheng2");
 				},
 				ai: {
@@ -9247,10 +9135,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("warlock_yongsheng");
 				},
-				content: function () {
+				content() {
 					game.delay();
 					player.addFellowAuto("stone_kongjuzhanma");
 					player.removeSkill("warlock_yongsheng2");
@@ -9260,10 +9148,10 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getLeader().canAddFellow();
 				},
-				content: function () {
+				content() {
 					player.getLeader().addFellowAuto("stone_xiaogui");
 				},
 			},
@@ -9271,7 +9159,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					target.damage("fire");
 					player.line(target, "green");
@@ -9282,7 +9170,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("paladin_zhaohuan2");
 				},
 			},
@@ -9293,10 +9181,10 @@ export default () => {
 				intro: {
 					content: "使用下一张随从牌时，获得两点行动值",
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecharacter";
 				},
-				content: function () {
+				content() {
 					player.actused -= 2;
 					player.updateActCount();
 					player.removeSkill("paladin_zhaohuan2");
@@ -9306,11 +9194,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var leader = player.getLeader();
 					return leader.hp < leader.maxHp;
 				},
-				content: function () {
+				content() {
 					var leader = player.getLeader();
 					leader.recover(2);
 				},
@@ -9319,7 +9207,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin() && game.players[i].countCards("he")) {
 							return true;
@@ -9327,7 +9215,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("持盾：弃置对方一名随从的所有牌", function (card, playerx, target) {
@@ -9348,10 +9236,10 @@ export default () => {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					player.draw(2);
 				},
 			},
@@ -9359,7 +9247,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].name == "stone_xinbing" && game.players[i].side == player.side) {
 							return true;
@@ -9367,7 +9255,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].name == "stone_xinbing" && game.players[i].side == player.side) {
@@ -9387,7 +9275,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.changeHujia();
 				},
 			},
@@ -9395,7 +9283,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i] != player) {
 							return true;
@@ -9403,7 +9291,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var target1 = player.getLeader();
 					var target2 = player.getEnemy();
 					var list = [];
@@ -9425,10 +9313,10 @@ export default () => {
 			mage_minghuo: {
 				trigger: { global: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source == player.getLeader() && event.parent.name == "_mage_skill";
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 			},
@@ -9436,10 +9324,10 @@ export default () => {
 				trigger: { global: "useCard" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecard" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -9447,10 +9335,10 @@ export default () => {
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecard" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side) {
@@ -9470,10 +9358,10 @@ export default () => {
 				trigger: { global: "useCard" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecard" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					trigger.player.actused--;
 					trigger.player.updateActCount();
 				},
@@ -9481,10 +9369,10 @@ export default () => {
 			mage_bingdong: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.isMin() && event.player != player && !event.player.isTurnedOver();
 				},
-				content: function () {
+				content() {
 					trigger.player.turnOver();
 				},
 			},
@@ -9492,7 +9380,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i] != player && game.players[i].isMin()) {
 							return true;
@@ -9500,7 +9388,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("驯兽：选择一名己方随从增加1点体力和体力上限并摸两张牌", function (card, playerx, target) {
@@ -9524,7 +9412,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("hunter_jiewang2");
 				},
 			},
@@ -9532,7 +9420,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var targets = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side) {
@@ -9547,7 +9435,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
 							game.players[i].recover();
@@ -9559,7 +9447,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side) {
 							game.players[i].addSkill("hunter_nuhou2");
@@ -9572,10 +9460,10 @@ export default () => {
 				forced: true,
 				popup: false,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasSkill("hunter_nuhou2");
 				},
-				content: function () {
+				content() {
 					player.damage("nosource");
 					player.removeSkill("hunter_nuhou2");
 				},
@@ -9584,17 +9472,17 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.classList.remove("turnedover");
 				},
 			},
 			druid_nuhuo: {
 				trigger: { global: "useSkillAfter" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side) {
@@ -9614,7 +9502,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin()) {
 							return true;
@@ -9622,7 +9510,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("护卫：对一名对方随从造成1点伤害或弃置其所有牌并将其体力上限改为1", function (card, playerx, target) {
@@ -9663,7 +9551,7 @@ export default () => {
 				intro: {
 					content: "下个出牌阶段开始时获得三点额外行动值",
 				},
-				content: function () {
+				content() {
 					player.actused -= 3;
 					player.updateActCount();
 					player.removeSkill("druid_yexingchengzhang");
@@ -9676,7 +9564,7 @@ export default () => {
 				intro: {
 					content: "下个出牌阶段开始时获得四点额外行动值",
 				},
-				content: function () {
+				content() {
 					player.actused -= 4;
 					player.updateActCount();
 					player.removeSkill("druid_ziyang");
@@ -9686,7 +9574,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var target = player.getLeader();
 					target.actused--;
 					target.updateActCount();
@@ -9697,7 +9585,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("druid_chengzhang3");
 				},
 			},
@@ -9705,10 +9593,10 @@ export default () => {
 				trigger: { global: "dieAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.hasSkill("druid_chengzhang");
 				},
-				content: function () {
+				content() {
 					if (player.countCards("h")) {
 						game.delay();
 						player.chooseToDiscard("h", true);
@@ -9720,10 +9608,10 @@ export default () => {
 				trigger: { global: "useCard" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.type(event.card) == "stonecharacter" && event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -9731,7 +9619,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin()) {
 							return true;
@@ -9739,7 +9627,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("火袭：对一名对方随从造成2点伤害", function (card, playerx, target) {
@@ -9759,10 +9647,10 @@ export default () => {
 			shaman_fachao: {
 				trigger: { global: "phaseEnd" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player.career && player.side == event.player.side && event.player.isAlive();
 				},
-				content: function () {
+				content() {
 					trigger.player.drawDeck();
 					trigger.player.recover();
 				},
@@ -9770,7 +9658,7 @@ export default () => {
 			shaman_jili: {
 				trigger: { global: "phaseEnd" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.player.career && player.side == event.player.side) {
 						for (var i = 0; i < game.players.length; i++) {
 							if (!game.players[i].career && game.players[i].hasSkill("shaman_tuteng") && game.players[i].side == player.side) {
@@ -9780,7 +9668,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (!game.players[i].career && game.players[i].hasSkill("shaman_tuteng") && game.players[i].side == player.side) {
@@ -9795,10 +9683,10 @@ export default () => {
 			shaman_huoshe: {
 				trigger: { global: "damageBegin" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.source && event.source != player && event.source.isMin() && player.side == event.source.side && event.notLink();
 				},
-				content: function () {
+				content() {
 					trigger.num++;
 				},
 				ai: {
@@ -9807,7 +9695,7 @@ export default () => {
 			},
 			_priest_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "priest") {
 						return false;
 					}
@@ -9820,19 +9708,19 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				prompt: function (event) {
+				prompt(event) {
 					if (event.player.hasFellowSkill("priest_hunwu")) {
 						return "令目标失去1点体力";
 					}
 					return "回复1点体力";
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player.hasFellowSkill("priest_hunwu")) {
 						return true;
 					}
 					return target.hp < target.maxHp;
 				},
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					event.parent.career = "priest";
@@ -9849,7 +9737,7 @@ export default () => {
 				ai: {
 					order: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (player.hasFellowSkill("priest_hunwu")) {
 								return -1;
 							}
@@ -9860,7 +9748,7 @@ export default () => {
 			},
 			_priest_skillx: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "priest") {
 						return false;
 					}
@@ -9873,11 +9761,11 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				prompt: function (event, player) {
+				prompt(event, player) {
 					return "造成" + get.cnNumber(_status.event.player.storage.anyingxingtai) + "点伤害";
 				},
 				filterTarget: true,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					event.parent.career = "priest";
@@ -9890,7 +9778,7 @@ export default () => {
 				ai: {
 					order: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player, target);
 						},
 					},
@@ -9898,7 +9786,7 @@ export default () => {
 			},
 			_mage_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "mage") {
 						return false;
 					}
@@ -9909,10 +9797,10 @@ export default () => {
 				},
 				usable: 1,
 				line: "fire",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return !target.career;
 				},
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					target.damage("fire");
@@ -9921,7 +9809,7 @@ export default () => {
 				ai: {
 					order: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player, target, "fire");
 						},
 					},
@@ -9929,7 +9817,7 @@ export default () => {
 			},
 			_warlock_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hasSkill("stone_lianyu")) {
 						return false;
 					}
@@ -9942,7 +9830,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					player.drawDeck(2);
@@ -9957,7 +9845,7 @@ export default () => {
 			},
 			_warlock_skillx: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (!player.hasSkill("stone_lianyu")) {
 						return false;
 					}
@@ -9973,7 +9861,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					"step 0";
 					player.actused += 2;
 					player.updateActCount();
@@ -9996,7 +9884,7 @@ export default () => {
 			},
 			_hunter_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "hunter") {
 						return false;
 					}
@@ -10006,25 +9894,25 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				prompt: function (event) {
+				prompt(event) {
 					if (event.player.hasFellowSkill("hunter_juji")) {
 						return "造成1点伤害";
 					}
 					return "对敌方主将造成1点伤害";
 				},
-				selectTarget: function () {
+				selectTarget() {
 					if (_status.event.player.hasFellowSkill("hunter_juji")) {
 						return 1;
 					}
 					return -1;
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player.hasFellowSkill("hunter_juji")) {
 						return target != player;
 					}
 					return target.career && target.side != player.side;
 				},
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					target.damage();
@@ -10033,7 +9921,7 @@ export default () => {
 				ai: {
 					order: 2,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.damageEffect(target, player, target);
 						},
 					},
@@ -10041,7 +9929,7 @@ export default () => {
 			},
 			_warrior_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hujia >= 3) {
 						return false;
 					}
@@ -10054,7 +9942,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					player.changeHujia(1);
@@ -10069,7 +9957,7 @@ export default () => {
 			},
 			_rogue_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "rogue") {
 						return false;
 					}
@@ -10079,7 +9967,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					"step 0";
 					player.actused += 2;
 					player.updateActCount();
@@ -10110,7 +9998,7 @@ export default () => {
 					event.parent.career = "rogue";
 				},
 				ai: {
-					order: function (skill, player) {
+					order(skill, player) {
 						if (!player.getEquip(1) && player.countCards("e") < 2) {
 							if (player.countCards("h", "sha") && player.getActCount() + 3 <= player.actcount) {
 								return 4;
@@ -10120,7 +10008,7 @@ export default () => {
 						return 0;
 					},
 					result: {
-						player: function (player) {
+						player(player) {
 							if (player.countCards("e") <= 2) {
 								return 1;
 							}
@@ -10131,7 +10019,7 @@ export default () => {
 			},
 			_druid_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "druid") {
 						return false;
 					}
@@ -10141,22 +10029,22 @@ export default () => {
 					return lib.filter.cardEnabled({ name: "sha" }, player);
 				},
 				usable: 1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player.canUse("sha", target, null, false);
 				},
 				direct: true,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					player.useCard({ name: "sha" }, targets, "_druid_skill", false).animate = false;
 					event.parent.career = "druid";
 				},
 				ai: {
-					order: function () {
+					order() {
 						return get.order({ name: "sha" }) - 0.1;
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return get.effect(target, { name: "sha" }, player, target);
 						},
 					},
@@ -10166,12 +10054,12 @@ export default () => {
 				trigger: { player: "phaseDrawBefore" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
 					effect: {
-						target: function (card) {
+						target(card) {
 							if (card.name == "bingliang") {
 								return [0, 0];
 							}
@@ -10184,7 +10072,7 @@ export default () => {
 				trigger: { player: "phaseEnd" },
 				forced: true,
 				direct: true,
-				content: function () {
+				content() {
 					"step 0";
 					var players = get.players();
 					var targets = [];
@@ -10210,10 +10098,10 @@ export default () => {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var players = get.players();
 					var targets = [];
@@ -10236,10 +10124,10 @@ export default () => {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var players = get.players();
 					var targets = [];
@@ -10261,7 +10149,7 @@ export default () => {
 			},
 			_shaman_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "shaman") {
 						return false;
 					}
@@ -10274,7 +10162,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					var name = "stone_tuteng" + Math.ceil(Math.random() * 4);
@@ -10290,7 +10178,7 @@ export default () => {
 			},
 			_paladin_skill: {
 				enable: "phaseUse",
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.career != "paladin") {
 						return false;
 					}
@@ -10303,7 +10191,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content: function () {
+				content() {
 					player.actused += 2;
 					player.updateActCount();
 					player.addFellowAuto("stone_xinbing");
@@ -10324,7 +10212,7 @@ export default () => {
 			},
 			_lschaofeng: {
 				mod: {
-					targetEnabled: function (card, player, target) {
+					targetEnabled(card, player, target) {
 						if (target.hasSkill("lschaofeng")) {
 							return;
 						}
@@ -10342,7 +10230,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.die();
 				},
 			},
@@ -10350,7 +10238,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin()) {
 							return true;
@@ -10358,7 +10246,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("毒液：令一名敌方随从失去1点体力", function (card, playerx, target) {
@@ -10380,10 +10268,10 @@ export default () => {
 				forced: true,
 				popup: false,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasSkill("stone_juxingchanchu2");
 				},
-				content: function () {
+				content() {
 					player.loseHp();
 					player.removeSkill("stone_juxingchanchu2");
 				},
@@ -10392,7 +10280,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != player && game.players[i].isMin()) {
 							return true;
@@ -10400,7 +10288,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player) {
 							game.players[i].addSkill("stone_shishigui2");
@@ -10413,29 +10301,29 @@ export default () => {
 				forced: true,
 				popup: false,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasSkill("stone_shishigui2");
 				},
-				content: function () {
+				content() {
 					player.loseHp();
 					player.removeSkill("stone_shishigui2");
 				},
 			},
 			stone_fennuxiaoji1: {
 				trigger: { player: "phaseBegin" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("h") == 0;
 				},
-				content: function () {
+				content() {
 					player.draw(2);
 				},
 			},
 			stone_fatiaozhuru1: {
 				trigger: { player: "phaseEnd" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("h") == 0;
 				},
-				content: function () {
+				content() {
 					player.draw(2);
 				},
 			},
@@ -10443,7 +10331,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				silent: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.tempHide();
 				},
 			},
@@ -10451,14 +10339,14 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addSkill("stone_kutongsiseng2");
 				},
 			},
 			stone_kutongsiseng2: {
 				trigger: { player: "phaseEnd" },
 				forced: true,
-				content: function () {
+				content() {
 					player.draw();
 					player.removeSkill("stone_kutongsiseng2");
 				},
@@ -10467,7 +10355,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("暗影：选择敌方一名角色视为对其使用一张杀", function (card, player, target) {
@@ -10486,7 +10374,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side == player.side && game.players[i] != player) {
 							return true;
@@ -10494,7 +10382,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("发明：选择己方一名角色摸一张牌", function (card, playerx, target) {
@@ -10514,7 +10402,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin() && game.players[i].countCards("he")) {
 							return true;
@@ -10522,7 +10410,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("叫嚣：弃置对方一名随从的所有牌", function (card, playerx, target) {
@@ -10543,7 +10431,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].side != player.side && game.players[i].isMin()) {
 							return true;
@@ -10551,7 +10439,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getLeader();
 					event.chooser.chooseTarget("火枪：对一名对方随从造成1点伤害", function (card, playerx, target) {
@@ -10572,10 +10460,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getEnemy().countCards("e") > 0;
 				},
-				content: function () {
+				content() {
 					var enemy = player.getEnemy();
 					var es = enemy.getCards("e");
 					if (es.length) {
@@ -10590,13 +10478,13 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().addTempSkill("stone_yaosaishouwei2");
 				},
 			},
 			stone_yaosaishouwei2: {
 				mod: {
-					maxHandcard: function (player, num) {
+					maxHandcard(player, num) {
 						return num + 2;
 					},
 				},
@@ -10605,7 +10493,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.getLeader().draw(2);
 				},
 			},
@@ -10613,14 +10501,14 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					player.addSkill("stone_chilundashi2");
 				},
 			},
 			stone_chilundashi2: {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				content: function () {
+				content() {
 					trigger.num++;
 					player.removeSkill("stone_chilundashi2");
 				},
@@ -10629,7 +10517,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var targets = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player) {
@@ -10644,7 +10532,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content: function () {
+				content() {
 					var targets = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side != player.side) {
@@ -10661,11 +10549,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					var num = player.getEnemy().countFellow();
 					return num > 0 && num >= player.getLeader().countFellow();
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i].side != player.side) {
@@ -10684,10 +10572,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.getEnemy().countFellow() >= player.getLeader().countFellow();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					event.chooser = player.getEnemy();
 					event.chooser.chooseTarget(
@@ -10711,10 +10599,10 @@ export default () => {
 			stone_mafengzhuru1: {
 				trigger: { player: "dieBegin" },
 				forced: true,
-				filter: function (event) {
+				filter(event) {
 					return event.source && event.source.isMin();
 				},
-				content: function () {
+				content() {
 					trigger.source.addSkill("stone_mafengzhuru2");
 				},
 			},
@@ -10723,10 +10611,10 @@ export default () => {
 				forced: true,
 				popup: false,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasSkill("stone_mafengzhuru2");
 				},
-				content: function () {
+				content() {
 					player.loseHp();
 					player.removeSkill("stone_mafengzhuru2");
 				},
@@ -10735,7 +10623,7 @@ export default () => {
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				unique: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.player != player.getLeader()) {
 						return false;
 					}
@@ -10746,7 +10634,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
@@ -10763,7 +10651,7 @@ export default () => {
 			},
 			_actcount: {
 				mod: {
-					cardEnabled: function (card, player) {
+					cardEnabled(card, player) {
 						if (player.isMin()) {
 							return;
 						}
@@ -10783,10 +10671,10 @@ export default () => {
 				forced: true,
 				popup: false,
 				priority: 15,
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.isMin();
 				},
-				content: function () {
+				content() {
 					player.actused = 0;
 					if (player.side) {
 						player.actcount = player.getEnemy().actcount + 1;
@@ -10812,10 +10700,10 @@ export default () => {
 				trigger: { player: "useCard" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.isMin() && !event.noActCount && _status.currentPhase == player;
 				},
-				content: function () {
+				content() {
 					var stoneact = get.info(trigger.card).stoneact;
 					if (typeof stoneact === "number") {
 						player.actused += stoneact - 1;
@@ -10826,7 +10714,7 @@ export default () => {
 			stonesha: {
 				unique: true,
 				mod: {
-					cardname: function (card) {
+					cardname(card) {
 						if (lib.card[card.name].type == "equip") {
 							return "sha";
 						}
@@ -10836,7 +10724,7 @@ export default () => {
 			stoneshan: {
 				unique: true,
 				mod: {
-					cardname: function (card) {
+					cardname(card) {
 						if (lib.card[card.name].type.indexOf("stone") == 0) {
 							return "shan";
 						}
@@ -10847,12 +10735,12 @@ export default () => {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					trigger.num--;
 				},
 				ai: {
 					effect: {
-						target: function (card) {
+						target(card) {
 							if (card.name == "bingliang") {
 								return 0.6;
 							}
@@ -10864,7 +10752,7 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					if (player.isMin()) {
 						player.changeRage(3 * trigger.num);
 					} else {
@@ -10876,7 +10764,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				popup: false,
-				content: function () {
+				content() {
 					if (player.isMin()) {
 						player.changeRage(10);
 					} else {
@@ -10888,10 +10776,10 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.isMin() && player.getEnemy().countFellow() > player.countFellow();
 				},
-				content: function () {
+				content() {
 					player.changeRage((player.getEnemy().countFellow() - player.countFellow()) * 10);
 				},
 			},
@@ -10899,7 +10787,7 @@ export default () => {
 				trigger: { player: "phaseBegin" },
 				direct: true,
 				priority: 10,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (!player.canAddFellow()) {
 						return false;
 					}
@@ -10910,7 +10798,7 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					var list = [];
 					var list2 = [];
@@ -11863,35 +11751,7 @@ export default () => {
 			mode_stone_character_config: "炉石模式",
 		},
 		help: {
-			炉石模式:
-				'<div style="margin:10px">构筑</div><ul style="margin-top:0"><li>点击右上角的卡组管理构建卡组<li>一套卡组共30张牌，由法术和随从牌构成，每个同名卡牌最多带两张' +
-				"<li>卡组管理器中，随从右上角的x/y表示登场状态为x牌y血" +
-				"<li>游戏开始时，双方摸三张牌并从牌库中获得一张牌，并可选择将手牌置换一次" +
-				"<li>每当主将摸X张牌时，若X至少为2，则其中的X-1张牌从牌堆中获得，一张牌从牌库中获得" +
-				"<li>每名角色使用一套卡组，卡组用完后会重新补满" +
-				"<li>卡组与职业绑定，每个职业有一个专属技能，每回合限用一次，消耗两点行动值</ul>" +
-				'<div style="margin:10px">职业技能</div><ul style="margin-top:0"><li>祭司：召唤一个随机图腾' +
-				"<li>法师：对一名随从造成1点火焰伤害" +
-				"<li>牧师：回复1点体力" +
-				"<li>战士：获得1点护甲（不能超过3点）" +
-				"<li>术士：牌库中摸两张牌" +
-				"<li>潜行者：装备一把武器和一个随机非武器装备" +
-				"<li>圣骑士：召唤一名士兵" +
-				"<li>猎人：对敌方主将造成1点伤害" +
-				"<li>德鲁伊：视为使用一张不计入出杀次数的杀</ul>" +
-				'<div style="margin:10px">怒气值</div><ul style="margin-top:0"><li>每当友方随从受到伤害获得3点怒气值，主将受到伤害获得6点怒气值' +
-				"<li>每有一个友方随从死亡，获得10点怒气值，主将死亡获得20点怒气值" +
-				"<li>结束阶段，若己方随从数少于对方会获得10X点怒气值，X为随从数之差" +
-				"<li>怒气值达到100时不再增加。准备阶段，若怒气值己满，可消耗全部怒气值和4点行动值并召唤一名传说随从</ul>" +
-				'<div style="margin:10px">战斗</div><ul style="margin-top:0"><li>场上有两名主将进行对抗，主将的体力上限+1' +
-				"<li>游戏牌堆移除了乐不思蜀等跳过出牌阶段以及包含翻面功能的卡牌" +
-				"<li>主将出牌阶段的出牌数量（行动值）有上限，从1开始递增，后手的首个回合有一点额外行动值，装备牌不计入出牌上限<li>游戏每进行一轮，主将的出牌上限+1，直到增加至6" +
-				"<li>使用随从牌可召唤一个随从，随从出场时背面朝上。每一方在场的随从数不能超过4<li>随从于摸牌阶段摸牌基数为1，随从的法术和随从牌均视为闪，装备牌均视为杀<li>" +
-				"随从与其他所有角色相互距离基数为1<li>" +
-				"主将杀死对方随从后获得一个额外的行动值并从牌库中获得一张牌，杀死己方随从无惩罚，随从杀死随从无效果" +
-				"<li>主将在随从满员时可重铸随从牌，但回合内总的重铸次数不能超过3；若重铸的牌为随从牌或法术牌，则摸牌改为获得一张随机法术牌" +
-				"<li>嘲讽：若一方阵营中有嘲讽角色，则同阵营的无嘲讽角色不以能成为杀目标" +
-				"<li>行动顺序为先主将后随从。主将或随从死亡后立即移出游戏，主将死亡后替补登场，替补登场时摸3+X张牌，X为对方存活的随从数，无替补时游戏结束",
+			炉石模式: '<div style="margin:10px">构筑</div><ul style="margin-top:0"><li>点击右上角的卡组管理构建卡组<li>一套卡组共30张牌，由法术和随从牌构成，每个同名卡牌最多带两张' + "<li>卡组管理器中，随从右上角的x/y表示登场状态为x牌y血" + "<li>游戏开始时，双方摸三张牌并从牌库中获得一张牌，并可选择将手牌置换一次" + "<li>每当主将摸X张牌时，若X至少为2，则其中的X-1张牌从牌堆中获得，一张牌从牌库中获得" + "<li>每名角色使用一套卡组，卡组用完后会重新补满" + "<li>卡组与职业绑定，每个职业有一个专属技能，每回合限用一次，消耗两点行动值</ul>" + '<div style="margin:10px">职业技能</div><ul style="margin-top:0"><li>祭司：召唤一个随机图腾' + "<li>法师：对一名随从造成1点火焰伤害" + "<li>牧师：回复1点体力" + "<li>战士：获得1点护甲（不能超过3点）" + "<li>术士：牌库中摸两张牌" + "<li>潜行者：装备一把武器和一个随机非武器装备" + "<li>圣骑士：召唤一名士兵" + "<li>猎人：对敌方主将造成1点伤害" + "<li>德鲁伊：视为使用一张不计入出杀次数的杀</ul>" + '<div style="margin:10px">怒气值</div><ul style="margin-top:0"><li>每当友方随从受到伤害获得3点怒气值，主将受到伤害获得6点怒气值' + "<li>每有一个友方随从死亡，获得10点怒气值，主将死亡获得20点怒气值" + "<li>结束阶段，若己方随从数少于对方会获得10X点怒气值，X为随从数之差" + "<li>怒气值达到100时不再增加。准备阶段，若怒气值己满，可消耗全部怒气值和4点行动值并召唤一名传说随从</ul>" + '<div style="margin:10px">战斗</div><ul style="margin-top:0"><li>场上有两名主将进行对抗，主将的体力上限+1' + "<li>游戏牌堆移除了乐不思蜀等跳过出牌阶段以及包含翻面功能的卡牌" + "<li>主将出牌阶段的出牌数量（行动值）有上限，从1开始递增，后手的首个回合有一点额外行动值，装备牌不计入出牌上限<li>游戏每进行一轮，主将的出牌上限+1，直到增加至6" + "<li>使用随从牌可召唤一个随从，随从出场时背面朝上。每一方在场的随从数不能超过4<li>随从于摸牌阶段摸牌基数为1，随从的法术和随从牌均视为闪，装备牌均视为杀<li>" + "随从与其他所有角色相互距离基数为1<li>" + "主将杀死对方随从后获得一个额外的行动值并从牌库中获得一张牌，杀死己方随从无惩罚，随从杀死随从无效果" + "<li>主将在随从满员时可重铸随从牌，但回合内总的重铸次数不能超过3；若重铸的牌为随从牌或法术牌，则摸牌改为获得一张随机法术牌" + "<li>嘲讽：若一方阵营中有嘲讽角色，则同阵营的无嘲讽角色不以能成为杀目标" + "<li>行动顺序为先主将后随从。主将或随从死亡后立即移出游戏，主将死亡后替补登场，替补登场时摸3+X张牌，X为对方存活的随从数，无替补时游戏结束",
 		},
 	};
 };

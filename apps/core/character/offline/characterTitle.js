@@ -1,8 +1,9 @@
 export default {
-	hl_shen_guanyu: "炼狱鬼神",
+	wxdl_caozhi: "白马饰金羁",
+	hl_shen_guanyu: "刀炽炼狱",
 	hl_shen_zhugeliang: "赤壁唤风",
-	hl_shen_lvmeng: "兼资文武",
-	hl_shen_zhouyu: "琴音袅袅",
+	hl_shen_lvmeng: "白衣渡江",
+	hl_shen_zhouyu: "红莲业火",
 	hl_shen_lvbu: "魔神再临",
 	ylyg_pangtong: "南州冠英",
 	ylyg_dianwei: "戟贯数人",

@@ -9,7 +9,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_jiaping", "gz_guikuang", "gz_shujuan"],
 	}),
 	gz_simaliang: new Character({
@@ -17,7 +16,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_gongzhi", "gz_sheju"],
 		img: "image/character/jsrg_simaliang.jpg",
 	}),
@@ -26,7 +24,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_chengliu"],
 		img: "image/character/jsrg_wangjun.jpg",
 	}),
@@ -35,7 +32,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_zhuanzhan", "gz_xunji"],
 		img: "image/character/jsrg_malong.jpg",
 	}),
@@ -44,7 +40,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_zhulan", "gz_luanchang"],
 	}),
 	gz_jin_guohuai: new Character({
@@ -52,7 +47,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_zhefu", "gz_yidu"],
 	}),
 	gz_wenyang: new Character({
@@ -60,7 +54,6 @@ export default {
 		group: "jin",
 		hp: 5,
 		maxHp: 5,
-		hujia: 0,
 		skills: ["gz_duanqiu"],
 		hasSkinInGuozhan: true,
 	}),
@@ -69,7 +62,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_xiace", "gz_limeng"],
 		hasSkinInGuozhan: true,
 		names: "柏|灵筠",
@@ -79,7 +71,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_xiejian", "gz_yinsha"],
 	}),
 	gz_yangjun: new Character({
@@ -87,7 +78,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_neiji"],
 	}),
 	gz_wangxiang: new Character({
@@ -95,7 +85,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_bingxin"],
 	}),
 	gz_jin_zhangchunhua: new Character({
@@ -103,7 +92,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzhuishi", "fakeqingleng"],
 	}),
 	gz_new_jin_zhangchunhua: new Character({
@@ -111,7 +99,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_ejue", "gz_shangshi"],
 		img: "image/character/gz_jin_zhangchunhua.jpg",
 		dieAudios: ["jin_zhangchunhua"],
@@ -121,7 +108,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["fakequanbian", "smyyingshi", "fakezhouting"],
 	}),
 	gz_new_jin_simayi: new Character({
@@ -129,7 +115,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_yingshi", "gz_shunfu"],
 		junName: "gz_jun_jin_simayi",
 		img: "image/character/gz_jin_simayi.jpg",
@@ -140,7 +125,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: bool ? ["fakeyanxi", "fakeshiren"] : ["gz_yanxi", "gz_shiren"],
 	}),
 	gz_jin_simazhao: new Character({
@@ -148,7 +132,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: bool ? ["zhaoran", "gzchoufa"] : ["gz_zhaoran", "gz_beiluan"],
 	}),
 	gz_jin_xiahouhui: new Character({
@@ -156,7 +139,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["fakebaoqie", "jyishi", "shiduo"],
 	}),
 	gz_jin_simashi: new Character({
@@ -164,7 +146,6 @@ export default {
 		group: "jin",
 		hp: bool ? 5 : 4,
 		maxHp: bool ? 5 : 4,
-		hujia: 0,
 		skills: bool ? ["gzyimie", "gztairan"] : ["gz_yimie", "gz_ruilve"],
 	}),
 	gz_duyu: new Character({
@@ -172,7 +153,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: bool ? ["gzsanchen", "gzpozhu"] : ["gz_sanchen", "gz_pozhu"],
 	}),
 	gz_zhanghuyuechen: new Character({
@@ -180,7 +160,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: bool ? ["fakexijue"] : ["gz_xijue", "gz_lvxian", "gz_yingwei"],
 	}),
 	gz_jin_yanghuiyu: new Character({
@@ -188,7 +167,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: bool ? ["fakeciwei", "fakehuirong"] : ["gz_ciwei", "gz_caiyuan"],
 	}),
 	gz_simazhou: new Character({
@@ -196,7 +174,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: bool ? ["caiwang", "gznaxiang"] : ["gz_pojing"],
 	}),
 	gz_shibao: new Character({
@@ -204,7 +181,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: bool ? ["gzzhuosheng"] : ["gz_zhuosheng"],
 	}),
 	gz_weiguan: new Character({
@@ -212,7 +188,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: bool ? ["zhongyun", "shenpin"] : ["gz_chengxi", "gz_jiantong"],
 	}),
 	gz_zhongyan: new Character({
@@ -220,7 +195,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzbolan", "yifa"],
 	}),
 	gz_yangyan: new Character({
@@ -228,7 +202,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzxuanbei", "xianwan"],
 	}),
 	gz_zuofen: new Character({
@@ -236,7 +209,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzzhaosong", "gzlisi"],
 	}),
 	gz_xuangongzhu: new Character({
@@ -244,7 +216,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["fakeqimei", "ybzhuiji"],
 	}),
 	gz_xinchang: new Character({
@@ -252,7 +223,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["fakecanmou", "congjian"],
 	}),
 	gz_yangzhi: new Character({
@@ -260,7 +230,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzwanyi", "gzmaihuo"],
 	}),
 	gz_jin_jiachong: new Character({
@@ -268,7 +237,6 @@ export default {
 		group: "jin",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: bool ? ["fakexiongshu", "fakejianhui"] : ["gz_chujue", "gz_jianzhi"],
 	}),
 	gz_jin_yanghu: new Character({
@@ -276,7 +244,6 @@ export default {
 		group: "jin",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: bool ? ["fakechongxin", "fakeweirong"] : ["gz_huaiyuan", "gz_fushou"],
 	}),
 	gz_sp_duyu: new Character({
@@ -284,7 +251,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_wuku", "gz_miewu"],
 	}),
 	gz_pk_sp_duyu: new Character({
@@ -292,7 +258,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["fakezhufu"],
 		dieAudios: ["sp_duyu"],
 	}),
@@ -301,7 +266,20 @@ export default {
 		group: "wei",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["fakeqizhi", "fakejinqu"],
+	}),
+	gz_caoying: new Character({
+		sex: "female",
+		group: "wei",
+		hp: 4,
+		tempname: ["caoying"],
+		skills: ["xinfu_lingren", "xinfu_fujian"],
+	}),
+	gz_guansuo: new Character({
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		tempname: ["guansuo"],
+		skills: ["zhengnan", "xiefang"],
 	}),
 };

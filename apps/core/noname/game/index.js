@@ -268,10 +268,7 @@ export class Game {
 			await game.$elementSwap(elementB, elementA, duration, timefun);
 		} else {
 			// 否则我们直接入队交换就好哦喵
-			await Promise.all([
-				game.$elementGoto(elementA, parentB, elementB.nextElementSibling || "last", duration, timefun),
-				game.$elementGoto(elementB, parentA, elementA.nextElementSibling || "last", duration, timefun),
-			]);
+			await Promise.all([game.$elementGoto(elementA, parentB, elementB.nextElementSibling || "last", duration, timefun), game.$elementGoto(elementB, parentA, elementA.nextElementSibling || "last", duration, timefun)]);
 		}
 	}
 	/**
@@ -855,18 +852,10 @@ export class Game {
 		return game.broadcastAll((yingbianCondition, color) => lib.yingbian.condition.color.set(yingbianCondition, color), yingbianCondition, color);
 	}
 	setComplexYingbianCondition(yingbianCondition, condition) {
-		return game.broadcastAll(
-			(yingbianCondition, condition) => lib.yingbian.condition.complex.set(yingbianCondition, condition),
-			yingbianCondition,
-			condition
-		);
+		return game.broadcastAll((yingbianCondition, condition) => lib.yingbian.condition.complex.set(yingbianCondition, condition), yingbianCondition, condition);
 	}
 	setSimpleYingbianCondition(yingbianCondition, condition) {
-		return game.broadcastAll(
-			(yingbianCondition, condition) => lib.yingbian.condition.simple.set(yingbianCondition, condition),
-			yingbianCondition,
-			condition
-		);
+		return game.broadcastAll((yingbianCondition, condition) => lib.yingbian.condition.simple.set(yingbianCondition, condition), yingbianCondition, condition);
 	}
 	setYingbianEffect(yingbianEffect, effect) {
 		return game.broadcastAll((yingbianEffect, effect) => lib.yingbian.effect.set(yingbianEffect, effect), yingbianEffect, effect);
@@ -1158,7 +1147,7 @@ export class Game {
 				gaintag_map: {},
 				vcard_map: new Map(),
 			};
-			player.checkHistory("lose", function (evt) {
+			player.checkAllHistory("lose", function (evt) {
 				if (evt.parent == that) {
 					map.hs.addArray(evt.hs);
 					map.es.addArray(evt.es);
@@ -2138,10 +2127,8 @@ export class Game {
 
 			tempUrl = new URL(tempHref);
 
-			const ipv4Regex =
-				/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-			const ipv6Regex =
-				/^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+			const ipv4Regex = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+			const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
 
 			// 如果给定的地址是纯ip地址，则自动添加8080端口，兼容以前的地址
 			if (ipv4Regex.test(ip) || ipv6Regex.test(ip)) {
@@ -3031,8 +3018,8 @@ export class Game {
 				};
 				Object.defineProperty(extensionMenu.intro, "name", intro);
 			}
-			if(object.package.translation){
-				lib.translate[extensionName] = object.package.translation
+			if (object.package.translation) {
+				lib.translate[extensionName] = object.package.translation;
 			}
 		}
 		const addOptions = (target, source) => {
@@ -3638,10 +3625,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					if (_status.mode == "stratagem") {
 						game.players[i].init(players[i].name, players[i].name2);
 						game.players[i].identity = players[i].identity;
-						if (
-							(game.players[i].identity == "fan" && game.players[i].isCamouflaged && game.me.identity == "nei") ||
-							game.players[i] == game.me
-						) {
+						if ((game.players[i].identity == "fan" && game.players[i].isCamouflaged && game.me.identity == "nei") || game.players[i] == game.me) {
 							game.players[i].setIdentity(players[i].identity);
 						}
 					} else {
@@ -4020,9 +4004,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			player.smoothAvatar(map.avatar2);
 			const skinImg = !lib.config.skin[map.to] && lib.character[map.to]?.img;
-			skinImg
-				? player.node["avatar" + map.name.slice(4)].setBackgroundImage(skinImg)
-				: player.node["avatar" + name.slice(4)].setBackground(map.to, "character");
+			skinImg ? player.node["avatar" + map.name.slice(4)].setBackgroundImage(skinImg) : player.node["avatar" + name.slice(4)].setBackground(map.to, "character");
 			player.node["avatar" + map.name.slice(4)].show();
 			if (goon) {
 				delete lib.character[map.to];
@@ -5641,11 +5623,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					var imgs_num = 0;
 					for (var i = 0; i < num_frame; i++) {
 						var img = new Image();
-						img.src =
-							folder_frame +
-							(animation.qianzhui == undefined ? "" : animation.qianzhui) +
-							(animation.liang == true ? (i < 10 ? "0" + i : i) : i) +
-							type_frame;
+						img.src = folder_frame + (animation.qianzhui == undefined ? "" : animation.qianzhui) + (animation.liang == true ? (i < 10 ? "0" + i : i) : i) + type_frame;
 						if (i >= num_frame - 1) {
 							img.zhx_final = true;
 						}
@@ -5781,14 +5759,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				setTimeout(
 					function () {
 						div2.style.transition = "all " + (timeS * 2) / 3 + "s";
-						div2.style.transform =
-							"rotate(" +
-							getAngle(x0, y0, x1, y1) +
-							"deg) translateX(" +
-							(Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) +
-								2 -
-								Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) +
-							"px) scaleX(0.01)";
+						div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
 					},
 					50 + ((timeS * 4) / 3) * 1000
 				);
@@ -6047,16 +6018,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	addCharacter(name, information) {
 		//TODO: 这一坨也要改
 		const extensionName = _status.extension || information.extension,
-			character = [
-				information.sex,
-				information.group,
-				information.hp,
-				information.skills || [],
-				[
-					_status.evaluatingExtension ? `db:extension-${extensionName}:${name}.jpg` : `ext:${extensionName}/${name}.jpg`,
-					`die:ext:${extensionName}/${name}.mp3`,
-				],
-			];
+			character = [information.sex, information.group, information.hp, information.skills || [], [_status.evaluatingExtension ? `db:extension-${extensionName}:${name}.jpg` : `ext:${extensionName}/${name}.jpg`, `die:ext:${extensionName}/${name}.mp3`]];
 		if (information.tags) {
 			character[4] = character[4].concat(information.tags);
 		}
@@ -6115,27 +6077,16 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		 */
 		function processCharacter(content) {
 			for (const name in content) {
-				const character = get.convertedCharacter(content[name]);
+				const character = (content[name] = get.convertedCharacter(content[name]));
 
 				// 处理武将图像和阵亡音效
-				const audiosrc = `die:ext:${extname}/${name}.mp3`;
-				let imgsrc;
-				if (_status.evaluatingExtension) {
-					imgsrc = `db:extension-${extname}:${name}.jpg`;
-				} else {
-					imgsrc = `ext:${extname}/${name}.jpg`;
-				}
-
-				character.img ??= imgsrc;
 				if (character.dieAudios.length === 0) {
-					character.dieAudios.push(audiosrc);
+					character.dieAudios.push(`ext:${extname}/audio/die:true`);
 				}
+				character.img ??= `extension/${extname}/${name}.jpg`;
 
 				// 处理AI禁用
-				if (character.isBoss || character.isHiddenBoss) {
-					lib.config.forbidai.add(name);
-				}
-				if (lib.config.forbidai_user && lib.config.forbidai_user.includes(name)) {
+				if (character.isBoss || character.isHiddenBoss || lib.config.forbidai_user?.includes(name)) {
 					lib.config.forbidai.add(name);
 				}
 
@@ -7416,15 +7367,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			auto_confirm = false;
 		}
 		player.node.equips.classList.remove("popequip");
-		if (
-			event.filterCard &&
-			lib.config.popequip &&
-			!_status.nopopequip &&
-			get.is.phoneLayout() &&
-			typeof event.position === "string" &&
-			event.position.includes("e") &&
-			player.node.equips.querySelector(".card.selectable")
-		) {
+		if (event.filterCard && lib.config.popequip && !_status.nopopequip && get.is.phoneLayout() && typeof event.position === "string" && event.position.includes("e") && player.node.equips.querySelector(".card.selectable")) {
 			player.node.equips.classList.add("popequip");
 			auto_confirm = false;
 		}
@@ -8046,12 +7989,15 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return next;
 	}
 	/**
-	 * @param { Player } [player]
+	 * @param { Player } player
+	 * @param { number } num
+	 * @param { Player[] } targets
 	 */
-	gameDraw(player, num = 4) {
+	gameDraw(player = game.me, num = 4, targets = game.players) {
 		let next = game.createEvent("gameDraw");
-		next.player = player || game.me;
+		next.player = player;
 		next.num = num;
+		next.targets = targets;
 		next.setContent("gameDraw");
 		return next;
 	}
@@ -8218,8 +8164,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					if (event.deciding) {
 						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
 						for (let i = 0; i < event.friendlist.length; i++) {
-							event.friendlist[i].style.transform =
-								"scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
 					}
 				};
@@ -8243,14 +8188,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						}
 						if (event.config.update) {
 							for (let i = 0; i < event.friendlist.length; i++) {
-								event.friendlist[i].nodename.innerHTML =
-									event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
+								event.friendlist[i].nodename.innerHTML = event.config.update(i, event.friendlist.length) || event.friendlist[i].nodename.innerHTML;
 							}
 						}
 						let str = "px," + (event.margin / 2 - event.height * 0.5) + "px)";
 						for (let i = 0; i < event.friendlist.length; i++) {
-							event.friendlist[i].style.transform =
-								"scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
+							event.friendlist[i].style.transform = "scale(1.2) translate(" + ((-(event.width + 14) * event.friendlist.length) / 2 + 7 + i * (event.width + 14)) + str;
 						}
 					} else {
 						if (!event.imchoosing) {
@@ -8809,10 +8752,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				popup: false,
 				silent: true,
 				content: async (event, trigger, player) => {
-					if (
-						lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) >
-						0
-					) {
+					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
 						player.unmarkSkill(event.name);
@@ -10267,7 +10207,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	}
 	/**
 	 * @overload
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => boolean } [func]
 	 * @param { Player[] } [list]
 	 * @param { boolean } [includeOut]
 	 * @returns { Player[] }
@@ -10339,7 +10279,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * 此方法用于对所有targets按顺序执行一个async函数。
 	 *
 	 * @param { Player[] } targets 需要执行async方法的目标
-	 * @param { (player: Player, i: number) => Promise<any | void> } asyncFunc 需要执行的async方法
+	 * @param { (player: Player, i: number) => PromiseLike<any | void> |  } asyncFunc 需要执行的async方法
 	 * @param { (a: Player, b: Player) => number } [sort] 排序器，默认为lib.sort.seat
 	 */
 	async doAsyncInOrder(targets, asyncFunc, sort) {
@@ -10504,11 +10444,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!info || !Object.keys(info).length) {
 				continue;
 			}
-			if (
-				(!includeCharlotteSkill && info.charlotte) ||
-				(!includeEquipSkill && info.equipSkill) ||
-				(!includeGlobalSkill && lib.skill.global.includes(skill))
-			) {
+			if ((!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
 				return null;
 			}
 			return skill;
@@ -10523,9 +10459,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	syncHandcard(player, id_list) {
 		game.broadcastAll(
 			(player, id_list) => {
-				if (game.me == player) {
-					return;
-				}
 				const sortFunc = (a, b) => id_list.indexOf(a.cardid) - id_list.indexOf(b.cardid);
 				player.sortHandcard(sortFunc);
 			},
@@ -10611,19 +10544,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				return drop.finished.then(result => {
 					const list = [];
 					//落地后开始震动
-					const shock = parent.animate(
-						[
-							{ transform: "translate(0, 0)" },
-							{ transform: "translate(-10px, 15px)" },
-							{ transform: "translate(10px, -10px)" },
-							{ transform: "translate(-5px, 5px)" },
-							{ transform: "translate(0, 0)" },
-						],
-						{
-							duration: 300,
-							easing: "ease-out",
-						}
-					).finished;
+					const shock = parent.animate([{ transform: "translate(0, 0)" }, { transform: "translate(-10px, 15px)" }, { transform: "translate(10px, -10px)" }, { transform: "translate(-5px, 5px)" }, { transform: "translate(0, 0)" }], {
+						duration: 300,
+						easing: "ease-out",
+					}).finished;
 					list.push(shock);
 					//生成冲击波
 					const wave = document.createElement("div");

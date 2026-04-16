@@ -1,9 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/**
- * @typedef {import("../../typings/Skill").Skill} Skill
- * @type {Record<string, Skill>}
- */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//江山如故·衰
 	//张举
@@ -7342,6 +7339,7 @@ const skills = {
 	},
 	//张郃
 	jsrgqiongtu: {
+		audio: 2,
 		enable: "chooseToUse",
 		groupSkill: "qun",
 		viewAs: {
@@ -7426,6 +7424,7 @@ const skills = {
 		},
 	},
 	jsrgxianzhu: {
+		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
 			return (

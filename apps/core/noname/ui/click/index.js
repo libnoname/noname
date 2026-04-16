@@ -3116,8 +3116,11 @@ export class Click {
 			const skillInformation = get.info(gameEvent.skill),
 				viewAs = skillInformation.viewAs;
 			if (typeof viewAs == "function") {
-				const viewedAs = viewAs(result.cards, gameEvent.player);
+				let viewedAs = viewAs(result.cards, gameEvent.player);
 				if (viewedAs) {
+					if (typeof viewedAs == "string") {
+						viewedAs = { name: viewedAs };
+					}
 					result.card = get.autoViewAs(viewedAs);
 				}
 			} else if (viewAs) {
@@ -4194,7 +4197,7 @@ export class Click {
 								intro.appendChild(currentSkinsContainer);
 							}
 
-							game.callHook("refreshSkin", [skinButtonList[0], this.name]);
+							game.callHook("refreshSkin", [skinButtonList[0], this.name, sourcenode, avatar]);
 						});
 						skinButton.name = skinName;
 						skinButton.style.width = "80px";

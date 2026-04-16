@@ -9,7 +9,6 @@ export default {
 		groupInGuozhan: "shu",
 		hp: 2,
 		maxHp: 2,
-		hujia: 0,
 		skills: ["gz_juejing", "gz_longhun"],
 	}),
 	gz_shen_guanyu: new Character({
@@ -18,7 +17,6 @@ export default {
 		groupInGuozhan: "shu",
 		hp: 5,
 		maxHp: 5,
-		hujia: 0,
 		skills: ["gz_wushen", "gz_wuhun"],
 	}),
 	gz_shen_lvmeng: new Character({
@@ -27,7 +25,6 @@ export default {
 		groupInGuozhan: "wu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_shelie", "gz_gongxin"],
 	}),
 	gz_shen_lvbu: new Character({
@@ -36,7 +33,6 @@ export default {
 		groupInGuozhan: "qun",
 		hp: 5,
 		maxHp: 5,
-		hujia: 0,
 		skills: ["gz_wuqian", "gz_shenfen"],
 	}),
 	gz_shen_caocao: new Character({
@@ -45,7 +41,6 @@ export default {
 		groupInGuozhan: "wei",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_guixin", "gz_feiying"],
 	}),
 	gz_shen_zhouyu: new Character({
@@ -54,7 +49,6 @@ export default {
 		groupInGuozhan: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_qinyin", "gz_yeyan"],
 	}),
 	gz_shen_simayi: new Character({
@@ -63,7 +57,6 @@ export default {
 		groupInGuozhan: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_jilve", "gz_lianpo"],
 		tempname: ["new_simayi", "xin_simayi"],
 		names: "司马|懿",
@@ -74,7 +67,6 @@ export default {
 		groupInGuozhan: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_junlve", "gz_cuike", "gz_zhanhuo"],
 	}),
 	gz_shen_ganning: new Character({
@@ -83,7 +75,6 @@ export default {
 		groupInGuozhan: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_poxi", "gz_gn_jieying"],
 	}),
 	gz_shen_zhangliao: new Character({
@@ -92,7 +83,6 @@ export default {
 		groupInGuozhan: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_duorui", "gz_zhiti"],
 	}),
 	gz_shen_liubei: new Character({
@@ -101,7 +91,6 @@ export default {
 		groupInGuozhan: "shu",
 		hp: 6,
 		maxHp: 6,
-		hujia: 0,
 		skills: ["gz_longnu", "gz_jieying"],
 	}),
 	gz_shen_zhugeliang: new Character({
@@ -110,7 +99,6 @@ export default {
 		groupInGuozhan: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_qixing", "gz_kuangfeng", "gz_dawu"],
 	}),
 	//野心家
@@ -119,7 +107,6 @@ export default {
 		group: "ye",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_gongao"],
 	}),
 	gz_pot_weiyan: new Character({
@@ -127,15 +114,13 @@ export default {
 		group: "ye",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_new_kuanggu"],
 	}),
-	gz_re_lvbu: new Character({
+	gz_sb_lvbu: new Character({
 		sex: "male",
 		group: "ye",
 		hp: 5,
 		maxHp: 5,
-		hujia: 0,
 		skills: ["gz_wuchang", "gz_liyu"],
 	}),
 	gz_yl_yuanshu: new Character({
@@ -143,7 +128,6 @@ export default {
 		group: "ye",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_new_yongsi", "gz_new_weidi"],
 	}),
 	gz_jsrg_liuyan: new Character({
@@ -151,7 +135,6 @@ export default {
 		group: "ye",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_tushe", "gz_limu"],
 	}),
 	//双势力文鸯
@@ -160,7 +143,6 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gzyouyan", "gzzhuihuan"],
 		hasSkinInGuozhan: true,
 	}),
@@ -170,7 +152,6 @@ export default {
 		group: "qun",
 		hp: 2,
 		maxHp: 2,
-		hujia: 0,
 		skills: ["gz_danggu", "gz_mowang"],
 		trashBin: ["sex:male_castrated"],
 		names: "张|让-赵|忠-孙|璋-毕|岚-夏|恽-韩|悝-栗|嵩-段|珪-郭|胜-高|望",
@@ -180,7 +161,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_taoluan"],
 		trashBin: ["sex:male_castrated"],
@@ -190,7 +170,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_chiyan"],
 		trashBin: ["sex:male_castrated"],
@@ -200,7 +179,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_zimou"],
 		trashBin: ["sex:male_castrated"],
@@ -210,7 +188,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_picai"],
 		trashBin: ["sex:male_castrated"],
@@ -220,7 +197,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_yaozhuo"],
 		trashBin: ["sex:male_castrated"],
@@ -230,7 +206,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_xiaolu"],
 		trashBin: ["sex:male_castrated"],
@@ -240,7 +215,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_kuiji"],
 		trashBin: ["sex:male_castrated"],
@@ -250,7 +224,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_chihe"],
 		trashBin: ["sex:male_castrated"],
@@ -260,7 +233,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_niqu"],
 		trashBin: ["sex:male_castrated"],
@@ -270,7 +242,6 @@ export default {
 		group: "qun",
 		hp: 1,
 		maxHp: 1,
-		hujia: 0,
 		isUnseen: true,
 		skills: ["gz_miaoyu"],
 		trashBin: ["sex:male_castrated"],
@@ -280,7 +251,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_jungong", "gz_dengli"],
 		dieAudios: ["sp_gaolan"],
 	}),
@@ -289,7 +259,6 @@ export default {
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["kaikang"],
 	}),
 	gz_zhangxingcai: new Character({
@@ -297,7 +266,6 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["shenxian", "gz_qiangwu"],
 	}),
 	gz_luzhi: new Character({
@@ -305,7 +273,6 @@ export default {
 		group: "wei",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_qingzhong", "gz_weijing"],
 	}),
 	gz_quyi: new Character({
@@ -313,31 +280,33 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["fuqi", "jiaozi"],
 	}),
-	gz_caoying: new Character({
+	gz_ws_caoying: new Character({
 		sex: "female",
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_lingren", "gz_fujian"],
+		tempname: ["caoying"],
+		dieAudios: ["caoying"],
+		hasSkinInGuozhan: true,
 	}),
-	gz_guansuo: new Character({
+	gz_ws_guansuo: new Character({
 		sex: "male",
 		group: "shu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_zhengnan"],
+		tempname: ["guansuo"],
+		dieAudios: ["guansuo"],
+		hasSkinInGuozhan: true,
 	}),
 	gz_zhangxuan: new Character({
 		sex: "female",
 		group: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_tongli", "gz_shezang"],
 	}),
 	gz_zhangyao: new Character({
@@ -345,7 +314,6 @@ export default {
 		group: "wu",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_yuanyu", "gz_xiyan"],
 	}),
 	gz_guanyinping: new Character({
@@ -353,7 +321,6 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["xueji", "gz_huxiao"],
 	}),
 	gz_xinxianying: new Character({
@@ -361,7 +328,6 @@ export default {
 		group: "wei",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_caishi"],
 	}),
 	gz_yj_zhanghe: new Character({
@@ -369,7 +335,6 @@ export default {
 		group: "qun",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_zhilve"],
 	}),
 	gz_mizhu: new Character({
@@ -377,7 +342,6 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		hujia: 0,
 		skills: ["gz_ziyuan", "gz_jugu"],
 	}),
 	gz_caochun: new Character({
@@ -385,7 +349,6 @@ export default {
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 0,
 		skills: ["gz_shanjia"],
 	}),
 };

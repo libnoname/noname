@@ -894,7 +894,7 @@ export default {
 				})
 				.set("ai", target => {
 					const card = new lib.element.VCard({ name: "yiyi", isCard: true });
-					return get.attitude(get.player(), target) * target.getUseValue(card);
+					return -get.attitude(get.player(), target) * target.getUseValue(card);
 				})
 				.setHiddenSkill(event.skill)
 				.forResult();

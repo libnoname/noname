@@ -1,4 +1,9 @@
 export default {
+	"#sbzhenwei1": "吾刃未折，家国不堕！",
+	"#sbzhenwei2": "纵魏军百万，难撼吾寸土！",
+	"#sbheyuan1": "扼守涿乡要道，休教刘备西遁。",
+	"#sbheyuan2": "昔擒关羽于临沮，今当缚刘备于夷陵。",
+	"#sb_zhuran:die": "粮尽杀马，马尽食革，但有死无降耳。",
 	"#sbwushuang1": "小儿何往？与某再战一场！",
 	"#sbwushuang2": "这熟悉的力量，本该由我掌控。",
 	"#sbwushuang3": "黄口竖子，何敢挑衅于我。",
@@ -100,6 +105,8 @@ export default {
 	"#sb_sp_zhugeliang:die": "纵具地利，不得天时亦难胜也……",
 	"#sbqiaobian1": "将计就计，变夺胜机。",
 	"#sbqiaobian2": "因势而变，则可引势而为。",
+	"#sbliaoshi1": "能而示之不能，用而示之不用。",
+	"#sbliaoshi2": "欲攻其东，先击其西，敌必分兵救之。",
 	"#sb_zhanghe:die": "未料竟中孔明之计……",
 	"#sbxiayuan1": "速置粮草，驰援天柱山。",
 	"#sbxiayuan2": "援军既至，定攻克此地！",

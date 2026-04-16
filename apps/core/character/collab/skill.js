@@ -1,7 +1,29 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type { importCharacterConfig['skill'] } */
+/** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 魔周瑜
+	yiran: {
+		audio: 2,
+		trigger: { player: "damageBegin3" },
+		forced: true,
+		filter(event, player) {
+			return  event.hasNature("fire");
+		},
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+		ai: {
+			neg: true,
+			effect: {
+				target(card, player, target, current) {
+					if (get.tag(card, "fireDamage") && current < 0) {
+						return 2;
+					}
+				},
+			},
+		},
+	},
 	//粘兽
 	olsuizhong: {
 		trigger: { player: "damageEnd" },
@@ -81,7 +103,7 @@ const skills = {
 				await player.discard(player.getDiscardableCards(player, "j").randomGets(2));
 			} else {
 				for (const target of event.targets) {
-					await target.damege();
+					await target.damage();
 				}
 			}
 		},
@@ -1942,7 +1964,7 @@ const skills = {
 					},
 				],
 				[
-					"单次造成至少两点伤害",
+					"单次造成至少2点伤害",
 					{ source: ["damageSource"] },
 					(evt, player) => {
 						const history = player.getAllHistory("sourceDamage", evt => evt.num >= 2 && !player.getStorage("immojin").includes(evt));
@@ -4629,9 +4651,12 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			const skill = event.name,
-				storage = player.storage[skill];
+				storage = player.getStorage(skill, [0, 1, 2]);
 			switch (trigger.name) {
 				case "damage": {
+					if (!player.storage?.[skill]) {
+						return;
+					}
 					const list = ["摸牌数", "手牌上限", "体力上限"];
 					const choices = [0, 1, 2].filter(num => storage[num] === Math.min(...storage));
 					const result =
@@ -4678,12 +4703,12 @@ const skills = {
 		},
 		mark: true,
 		intro: {
-			markcount: storage => storage.map(num => num.toString()).join(""),
-			content(storage = []) {
+			markcount: storage => (storage || [0, 1, 2]).map(num => num.toString()).join(""),
+			content(storage = [0, 1, 2]) {
 				return ["摸牌阶段额外摸" + storage[0] + "张牌", "手牌上限+" + storage[1], "体力上限+" + storage[2]].map(str => "<li>" + str).join("<br>");
 			},
 		},
-		mod: { maxHandcard: (player, num) => num + (player.storage?.["olshouhun"]?.[1] || 0) },
+		mod: { maxHandcard: (player, num) => num + (player.getStorage("olshouhun", [0, 1, 2])[1] || 0) },
 	},
 	//十二生肖
 	olzishu: {
@@ -5433,7 +5458,11 @@ const skills = {
 		},
 		ai: {
 			order: 20,
-			result: { player: player => 1 - (player.hasSkill("dcbeijin_buff") && player.hasCard(card => card.hasGaintag("dcbeijin_effect"), "h")) },
+			result: {
+				player(player) {
+					return player.hasCard(card => card.hasGaintag("dcbeijin_effect"), "h") ? 0 : 1;
+				},
+			},
 		},
 		locked: false,
 		mod: {
@@ -5453,12 +5482,16 @@ const skills = {
 						}
 					},
 					aiOrder(player, card, num) {
-						if (player.hasSkill("dcbeijin_buff") && typeof card === "object") {
-							if (get.itemtype(card) === "card" || card.cards?.some(card => card.hasGaintag("dcbeijin_effect"))) {
-								return num + 100;
+						const cards = (get.itemtype(card) === "card" ? [card] : card.cards) ?? [];
+						if (player.getHp() === 1 && player.hasSkill("dcbeijin_buff")) {
+							if (player.hasCard(card => card.hasGaintag("dcbeijin_effect") && !cards.includes(card), "h") && !player.hasCard(card => player.canSaveCard(card, player) && !cards.includes(card), "hs")) {
+								return 0;
 							}
-							return num / (get.tag(card, "recover") ? 1 : 1145141919810);
 						}
+						if (cards.some(card => card.hasGaintag("dcbeijin_effect"))) {
+							return num + 100;
+						}
+						return num / (get.tag(card, "recover") ? 1 : 1145141919810);
 					},
 				},
 				trigger: { player: "useCard1" },

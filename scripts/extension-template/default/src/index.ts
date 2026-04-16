@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 export const type = "extension";
 
-export default function () {
+export default function (): importExtensionConfig {
 	return {
 		name: "{{EXTENSION_NAME}}",
 		editable: false,

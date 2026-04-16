@@ -1,4 +1,9 @@
 export default {
+	"#dchuozhong1": "杀贼之荣光，我魏讽，岂能独享！",
+	"#dchuozhong2": "事败才叫造反，功成即是勤王！",
+	"#dczhuguo1": "让邺城燃烧！让奸贼陨落！",
+	"#dczhuguo2": "一声魏王，没了五十万枯骨！",
+	"#dc_weifeng:die": "气死我了，气死我了！",
 	"#dczhangguan1": "大将军战于前，我等何患之有？",
 	"#dczhangguan2": "立国四十年，江油无战事！",
 	"#dccongfeng1": "生义孰轻孰重，马某还拎的清！",

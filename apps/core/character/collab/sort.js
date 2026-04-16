@@ -8,7 +8,7 @@ const characterSort = {
 	collab_dcdoudizhui: ["you_zhugeliang", "yuanshaoyuanshu", "tianji", "dc_noname", "xin_sunquan", "liuxiecaojie", "weiqing", "shi_cenhun"],
 	collab_oldoudizhu: ["ol_le_zhugeliang", "ol_le_caohong", "ol_le_liushan", "bigsb_dengai", "wild_liru", "strong_caochong", "taipingsangong", "wuhujiang", "ol_jsrg_caocao", "ol_jsrg_lvbu", "ol_nianshou", "hanshiwuhu", "ol_xiahouen"],
 	collab_shanhetu: ["ol_re_nianshou"],
-	collab_mbdoudizhu: ["tw_dm_quyi", "jm_yuanshu", "mb_muniu", "mb_chitu", "mb_jueying", "mb_dilu"],
+	collab_mbdoudizhu: ["tw_dm_zhouyu", "tw_dm_quyi", "jm_yuanshu", "mb_muniu", "mb_chitu", "mb_jueying", "mb_dilu"],
 	collab_anime: ["jiangziya", "shengongbao", "nanjixianweng"],
 	collab_shengxiao: ["ol_zishu", "ol_chouniu", "ol_yinhu", "ol_maotu", "ol_chenlong", "ol_sishe", "ol_wuma", "ol_weiyang", "ol_shenhou", "ol_youji", "ol_xugou", "ol_haizhu"],
 	collab_hajimi: ["bozai", "xiangjiaoduanwu", "tizhongzhishen", "keaizhishen", "nizhuanzhishen", "juezezhishen", "weiquzhishen", "bianhuanzhishen", "gongbaiwan", "shuimianzhishen", "meituizhishen"],

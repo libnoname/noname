@@ -1,4 +1,8 @@
 export default {
+	"#jsrgqiongtu1": "箭倒辕门，徒无用也，今大势去矣。",
+	"#jsrgqiongtu2": "前狼后虎，凶蛇两端，不知何处能归？",
+	"#jsrgxianzhu1": "敌荡荡无虑，旌旗不整，乃率一而可击十。",
+	"#jsrgxianzhu2": "诱之以利，士贪于得，设伏投机，必取！",
 	"#jsrgguanhuo1": "四面合围，纵火惊之，此战必剿黄巾残党！",
 	"#jsrgguanhuo2": "兵有奇变，不在众寡，当以计胜之！",
 	"#jsrgjuxia1": "昔与明公俱为鸿鹄，不意明公今为凤皇耳！",
