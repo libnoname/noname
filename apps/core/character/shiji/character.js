@@ -153,7 +153,7 @@ const characters = {
 	sp_yanghu: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["mingfa", "rongbei"],
 		groupBorder: "jin",
 	},
