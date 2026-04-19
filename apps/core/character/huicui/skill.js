@@ -5175,12 +5175,12 @@ const skills = {
 					}
 				}
 			}
+			player.addTempSkill("dcpanqin_eff");
 			await player.chooseUseTarget({
 				forced: true,
 				card: get.autoViewAs({ name: "nanman" }),
 				cards,
 			});
-			player.addTempSkill("dcpanqin_eff");
 		},
 		subSkill: {
 			eff: {
@@ -5199,9 +5199,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					const { source, target, targets, card, cards, skill, forced, num } = event;
-					let result;
-					const next = player.addMark("dcmanwang", 1, false);
-					await next;
+					player.addMark("dcmanwang", 1, false);
 					switch (player.countMark("dcmanwang")) {
 						case 1: {
 							await player.draw(2);
