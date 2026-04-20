@@ -399,6 +399,10 @@ export class Player extends HTMLDivElement {
 	 * @type {Map<string,HTMLDivElement>}
 	 */
 	tips;
+	/**
+	 * @type { import("./client.js").Client | undefined }
+	 */
+	ws;
 
 	/**
 	 * 添加视为装备
@@ -4145,11 +4149,15 @@ export class Player extends HTMLDivElement {
 			player.style.transform = "";
 		}, 100);
 	}
-	send() {
+	/**
+	 * @type { import("./client.js").ClientSend<this> }
+	 */
+	send(...args)
+	 {
 		if (!this.ws || this.ws.closed) {
 			return this;
 		}
-		this.ws.send.apply(this.ws, arguments);
+		this.ws.send(...args);
 		return this;
 	}
 	getId() {

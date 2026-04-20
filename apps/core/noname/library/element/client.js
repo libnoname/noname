@@ -1,6 +1,18 @@
 import { _status, game, get, lib, ui } from "noname";
 import { security } from "@/util/sandbox.js";
 
+/**
+ * @typedef {import("../index.js").Library["message"]["client"]} ClientMsgs
+ */
+/**
+ * @template THIS
+ * @typedef {<P extends any[], K extends keyof ClientMsgs>(
+ * ...args:
+ * | [func: (...args: P) => any, ...P]
+ * | [msg: K , ...Parameters<ClientMsgs[K]>, ...any[]]
+ * ) => THIS
+ * } ClientSend
+ */
 export class Client {
 	/**
 	 * @param {import('../index.js').NodeWS | InstanceType<typeof import('ws').WebSocket> | Client} ws
@@ -34,6 +46,9 @@ export class Client {
 			}
 		}
 	}
+	/**
+	 * @type {ClientSend<this>}
+	 */
 	send() {
 		if (this.closed) {
 			return this;
