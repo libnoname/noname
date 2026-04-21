@@ -5258,41 +5258,60 @@ export class Player extends HTMLDivElement {
 		return Array.from(this.iterableGetCards(position, filter));
 	}
 	/**
-	 * @param { Player } player
-	 * @param { string } [arg1]
-	 * @param { string } [arg2]
-	 * @returns { Generator<Card, void, unknown> }
+	 * 返回玩家的牌区中能被给定角色弃置的牌，默认返回手牌区的牌
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getDiscardableCards`
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Iterable<Card> } - 经过过滤后的牌的生成器
 	 */
-	*iterableGetDiscardableCards(player, arg1, arg2) {
-		for (let card of this.iterableGetCards(arg1, arg2)) {
+	*iterableGetDiscardableCards(player, position, filter) {
+		for (const card of this.iterableGetCards(position, filter)) {
 			if (lib.filter.canBeDiscarded(card, player, this)) {
 				yield card;
 			}
 		}
 	}
-	getDiscardableCards(player, arg1, arg2) {
-		return Array.from(this.iterableGetDiscardableCards(player, arg1, arg2));
+	/**
+	 * 返回玩家的牌区中能被给定角色弃置的牌，默认返回手牌区的牌
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Card[] } - 经过过滤后的牌的数组
+	 */
+	getDiscardableCards(player, position, filter) {
+		return Array.from(this.iterableGetDiscardableCards(player, position, filter));
 	}
 	/**
-	 * @param {Parameters<lib['filter']['canBeGained']>[1]} player
-	 * @param {Parameters<this['iterableGetCards']>[0]} arg1
-	 * @param {Parameters<this['iterableGetCards']>[1]} arg2
+	 * 返回玩家的牌区中能被给定角色获得的牌，默认返回手牌区的牌
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getGainableCards`
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Iterable<Card> } - 经过过滤后的牌的生成器
 	 */
-	*iterableGetGainableCards(player, arg1, arg2) {
-		for (let card of this.iterableGetCards(arg1, arg2)) {
+	*iterableGetGainableCards(player, position, filter) {
+		for (const card of this.iterableGetCards(position, filter)) {
 			if (lib.filter.canBeGained(card, player, this)) {
 				yield card;
 			}
 		}
 	}
 	/**
-	 *
-	 * @param {Parameters<this['iterableGetGainableCards']>[0]} player
-	 * @param {Parameters<this['iterableGetGainableCards']>[1]} [arg1]
-	 * @param {Parameters<this['iterableGetGainableCards']>[2]} [arg2]
+	 * 返回玩家的牌区中能被给定角色获得的牌，默认返回手牌区的牌
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
-	getGainableCards(player, arg1, arg2) {
-		return Array.from(this.iterableGetGainableCards(player, arg1, arg2));
+	getGainableCards(player, position, filter) {
+		return Array.from(this.iterableGetGainableCards(player, position, filter));
 	}
 	getGainableSkills(func) {
 		var list = [];
@@ -5331,16 +5350,35 @@ export class Player extends HTMLDivElement {
 		}
 		return -1;
 	}
-	countDiscardableCards(player, arg1, arg2) {
-		return this.getDiscardableCards(player, arg1, arg2).length;
+	/**
+	 * 返回玩家的牌区中能被给定角色弃置的牌的数量，默认返回手牌区的牌的数量
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { number } - 经过过滤后的牌的数量
+	 */
+	countDiscardableCards(player, position, filter) {
+		let count = 0;
+		for (const _ of this.iterableGetDiscardableCards(player, position, filter)) {
+			++count;
+		}
+		return count;
 	}
 	/**
-	 * @param {Parameters<this['getGainableCards']>[0]} player
-	 * @param {Parameters<this['getGainableCards']>[1]} [arg1]
-	 * @param {Parameters<this['getGainableCards']>[2]} [arg2]
+	 * 返回玩家的牌区中能被给定角色获得的牌的数量，默认返回手牌区的牌的数量
+	 * 
+	 * @param { Player } player - 进行弃置的角色
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { number } - 经过过滤后的牌的数量
 	 */
-	countGainableCards(player, arg1, arg2) {
-		return this.getGainableCards(player, arg1, arg2).length;
+	countGainableCards(player, position, filter) {
+		let count = 0;
+		for (const _ of this.iterableGetGainableCards(player, position, filter)) {
+			++count;
+		}
+		return count;
 	}
 	/**
 	 * 返回武将牌上原有的技能
