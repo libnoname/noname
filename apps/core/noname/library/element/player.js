@@ -5159,13 +5159,17 @@ export class Player extends HTMLDivElement {
 		return count;
 	}
 	/**
-	 * @param { string } [arg1='h']
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [arg2]
-	 * @returns { Iterable<Card> }
+	 * 返回玩家的牌区中的牌，默认返回手牌区的牌
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getCards`
+	 * 
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Iterable<Card> } - 经过过滤后的牌的生成器
 	 */
-	*iterableGetCards(arg1, arg2) {
-		if (typeof arg1 != "string") {
-			arg1 = "h";
+	*iterableGetCards(position, filter) {
+		if (typeof position != "string") {
+			position = "h";
 		}
 		const getCardName = card => {
 			if (card.parentNode == this.node.judges) {
@@ -5175,74 +5179,83 @@ export class Player extends HTMLDivElement {
 			}
 			return get.name(card);
 		};
-		let filter = card => true;
-		if (arg2) {
-			if (typeof arg2 == "string") {
-				filter = card => getCardName(card) == arg2;
-			} else if (Array.isArray(arg2)) {
-				filter = card => arg2.includes(getCardName(card));
-			} else if (typeof arg2 == "object") {
-				filter = card => {
-					for (let j in arg2) {
-						var value;
-						if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number") {
-							value = get[j](card);
-						} else if (j == "name") {
+		let filterCard = _ => true;
+		if (filter) {
+			if (typeof filter == "string") {
+				filterCard = card => getCardName(card) == filter;
+			} else if (Array.isArray(filter)) {
+				filterCard = card => filter.includes(getCardName(card));
+			} else if (typeof filter == "object") {
+				filterCard = card => {
+					for (const key in filter) {
+						let value;
+						if (key == "type" || key == "subtype" || key == "color" || key == "suit" || key == "number") {
+							value = get[key](card);
+						} else if (key == "name") {
 							value = getCardName(card);
 						} else {
-							value = card[j];
+							value = card[key];
 						}
-						if ((typeof arg2[j] == "string" && value != arg2[j]) || (Array.isArray(arg2[j]) && !arg2[j].includes(value))) {
+						if ((typeof filter[key] == "string" && value != filter[key]) || (Array.isArray(filter[key]) && !filter[key].includes(value))) {
 							return false;
 						}
 					}
 					return true;
 				};
-			} else if (typeof arg2 == "function") {
-				filter = arg2;
+			} else if (typeof filter == "function") {
+				filterCard = filter;
 			}
 		}
-		for (let i = 0; i < arg1.length; i++) {
-			if (arg1[i] == "h") {
-				for (let card of get.iterableChildNodes(this.node.handcards1, this.node.handcards2)) {
-					if (!card.classList.contains("removing") && !card.classList.contains("glows") && filter(card)) {
-						yield card;
+
+		for (const pos of position) {
+			switch (pos) {
+				case "h":
+					for (const card of get.iterableChildNodes(this.node.handcards1, this.node.handcards2)) {
+						if (!card.classList.contains("removing") && !card.classList.contains("glows") && filterCard(card)) {
+							yield card;
+						}
 					}
-				}
-			} else if (arg1[i] == "s") {
-				for (let card of get.iterableChildNodes(this.node.handcards1, this.node.handcards2)) {
-					if (!card.classList.contains("removing") && card.classList.contains("glows") && filter(card)) {
-						yield card;
+					break;
+				case "s":
+					for (const card of get.iterableChildNodes(this.node.handcards1, this.node.handcards2)) {
+						if (!card.classList.contains("removing") && card.classList.contains("glows") && filterCard(card)) {
+							yield card;
+						}
 					}
-				}
-			} else if (arg1[i] == "e") {
-				for (let card of get.iterableChildNodes(this.node.equips)) {
-					if (!card.classList.contains("removing") && !card.classList.contains("feichu") && !card.classList.contains("emptyequip") && filter(card)) {
-						yield card;
+					break;
+				case "e":
+					for (const card of get.iterableChildNodes(this.node.equips)) {
+						if (!card.classList.contains("removing") && !card.classList.contains("feichu") && !card.classList.contains("emptyequip") && filterCard(card)) {
+							yield card;
+						}
 					}
-				}
-			} else if (arg1[i] == "j") {
-				for (let card of get.iterableChildNodes(this.node.judges)) {
-					if (!card.classList.contains("removing") && !card.classList.contains("feichu") && filter(card)) {
-						yield card;
+					break;
+				case "j":
+					for (const card of get.iterableChildNodes(this.node.judges)) {
+						if (!card.classList.contains("removing") && !card.classList.contains("feichu") && filterCard(card)) {
+							yield card;
+						}
 					}
-				}
-			} else if (arg1[i] == "x") {
-				for (let card of get.iterableChildNodes(this.node.expansions)) {
-					if (!card.classList.contains("removing") && filter(card)) {
-						yield card;
+					break;
+				case "x":
+					for (const card of get.iterableChildNodes(this.node.expansions)) {
+						if (!card.classList.contains("removing") && filterCard(card)) {
+							yield card;
+						}
 					}
-				}
+					break;
 			}
 		}
 	}
 	/**
-	 * @param { string } [arg1='h']
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [arg2]
-	 * @returns { Card[] }
+	 * 返回玩家的牌区中的牌，默认返回手牌区的牌
+	 * 
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
-	getCards(arg1, arg2) {
-		return Array.from(this.iterableGetCards(arg1, arg2));
+	getCards(position, filter) {
+		return Array.from(this.iterableGetCards(position, filter));
 	}
 	/**
 	 * @param { Player } player
@@ -5290,13 +5303,16 @@ export class Player extends HTMLDivElement {
 		return list;
 	}
 	/**
-	 * @param { Parameters<typeof this['iterableGetCards']>[0] } [arg1]
-	 * @param { Parameters<typeof this['iterableGetCards']>[1] } [arg2]
+	 * 返回玩家的牌区中满足条件的牌的数量，默认返回手牌区的牌的数量
+	 * 
+	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @returns { number } - 经过过滤后的牌的数量
 	 */
-	countCards(arg1, arg2) {
+	countCards(position, filter) {
 		let count = 0;
-		for (let item of this.iterableGetCards(arg1, arg2)) {
-			count++;
+		for (const _ of this.iterableGetCards(position, filter)) {
+			++count;
 		}
 		return count;
 	}
@@ -13537,15 +13553,16 @@ export class Player extends HTMLDivElement {
 		}
 		return count > _status.event.getRand("mayHaveShan" + hs + this.playerid);
 	}
-	hasCard(name, position) {
-		if (typeof name == "function") {
-			for (let card of this.iterableGetCards(position, name)) {
-				return true;
-			}
-		} else {
-			if (this.countCards(position, name)) {
-				return true;
-			}
+	/**
+	 * 返回玩家是否有某(种牌名的)牌
+	 * 
+	 * @param { string | Record<string, any> | ((card: Card) => boolean) } pattern - 牌名/牌属性/筛选函数
+	 * @param { string } [position] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
+	 * @returns { boolean }
+	 */
+	hasCard(pattern, position) {
+		for (const _ of this.iterableGetCards(position, pattern)) {
+			return true;
 		}
 		return false;
 	}
