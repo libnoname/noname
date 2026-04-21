@@ -7583,13 +7583,7 @@ const skills = {
 					list = [],
 					cards = [];
 				dialog.direct = true;
-				if (
-					event.type == "phase" &&
-					player.countCards("h") &&
-					game.hasPlayer(current => {
-						return !storage.includes(current) && current != player;
-					})
-				) {
+				if (event.type == "phase" && player.hasCard(() => true, "he") && game.hasPlayer(current => !storage.includes(current) && current != player)) {
 					dialog.add([[["give", "交给其他角色牌"]], "tdnodes"]);
 				}
 				if (player.countMark("sbrende") > 1 && !storage.includes("card")) {
