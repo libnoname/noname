@@ -4137,14 +4137,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	/**
 	 * 遍历子元素
-	 * @param {HTMLElement} node
+	 * @param {...HTMLElement} elements
 	 * @returns {Iterable<HTMLElement>} 迭代器
 	 */
-	*iterableChildNodes(node) {
-		for (let i = 0; i < arguments.length; i++) {
-			let arg = arguments[i];
-			for (let j = 0; j < arg.childElementCount; j++) {
-				yield arg.childNodes[j];
+	*iterableChildNodes(...elements) {
+		for (const element of elements) {
+			for (let i = 0; i < element.childElementCount; ++i) {
+				const current = element.childNodes[i];
+				if (current instanceof HTMLElement) {
+					yield current;
+				}
 			}
 		}
 	}
