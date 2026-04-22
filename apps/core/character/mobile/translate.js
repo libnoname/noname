@@ -972,7 +972,7 @@ const translates = {
 	friendqinying: "钦英",
 	friendqinying_info: "出牌阶段限一次，你可以重铸任意张牌，视为使用一张【决斗】。此【决斗】结算流程中限X次（X为你以此法重铸的牌数），你或目标角色可以弃置自己区域里的一张牌，视为打出一张【杀】。",
 	friendlunxiong: "论雄",
-	friendlunxiong_info: "当你造成或受到伤害后，你可以弃置手牌中点数最大的牌并摸三张牌，本局游戏你再次发动此技能弃置牌的点数须大于此牌的点数。",
+	friendlunxiong_info: "当你造成或受到伤害后，你可以弃置手牌中点数最大的牌并摸三张牌，本局游戏你再次发动此技能弃置牌的点数须大于等于此牌的点数。",
 	friendgongli_shitao: "共砺",
 	friendgongli_shitao_info: "锁定技，游戏开始时，你为〖钦英〗减少X个可弃置类别（X为场上的友系列武将数）。",
 	simazhao: "SP司马昭",
