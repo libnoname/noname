@@ -16360,7 +16360,7 @@ const skills = {
 	qingtan: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 1,
+		usable: 2,
 		filter(event, player) {
 			return game.hasPlayer(current => current.countCards("h") > 0);
 		},
