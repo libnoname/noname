@@ -3153,6 +3153,8 @@ const skills = {
 			if (player.getStorage("zhenbian").length >= 4 && player.maxHp < 8) {
 				player.unmarkSkill("zhenbian");
 				await player.gainMaxHp();
+				await player.draw();
+
 			}
 		},
 		intro: {
