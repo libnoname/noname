@@ -1085,7 +1085,7 @@ const characters = {
 	zhangbu: {
 		sex: "male",
 		group: "wu",
-		hp: 3,
+		hp: 4,
 		skills: ["mbchengxiong", "mbwangzhuang"],
 	},
 	mb_wangjing: {
