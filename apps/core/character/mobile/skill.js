@@ -7151,7 +7151,7 @@ const skills = {
 					return false;
 				}
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendlunxiong ?? 0)) {
+				if (number < (player.storage?.friendlunxiong ?? 0)) {
 					return false;
 				}
 				const cards = cardx.slice().remove(card);
@@ -7165,14 +7165,14 @@ const skills = {
 						return false;
 					}
 					const number = get.number(card, player);
-					if (number <= (player.storage?.friendlunxiong ?? 0)) {
+					if (number < (player.storage?.friendlunxiong ?? 0)) {
 						return false;
 					}
 					const cards = cardx.slice().remove(card);
 					return !cards.length || number >= Math.max(...cards.map(i => get.number(i, player)));
 				}),
 				number = get.number(card, player);
-			return "弃置" + get.translation(card) + "并摸三张牌，本局游戏发动此技能弃置牌的点数须大于" + number;
+			return "弃置" + get.translation(card) + "并摸三张牌，本局游戏发动此技能弃置牌的点数须大于等于" + number;
 		},
 		check(event, player) {
 			const cardx = player.getCards("h", card => typeof get.number(card, player) === "number");
@@ -7181,7 +7181,7 @@ const skills = {
 					return false;
 				}
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendlunxiong ?? 0)) {
+				if (number < (player.storage?.friendlunxiong ?? 0)) {
 					return false;
 				}
 				const cards = cardx.slice().remove(card);
@@ -7199,7 +7199,7 @@ const skills = {
 					return false;
 				}
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendlunxiong ?? 0)) {
+				if (number < (player.storage?.friendlunxiong ?? 0)) {
 					return false;
 				}
 				const cards = cardx.slice().remove(card);
@@ -7213,7 +7213,7 @@ const skills = {
 				player.markSkill(event.name);
 			}
 		},
-		intro: { content: "发动〖论雄〗弃置牌的点数须大于#" },
+		intro: { content: "发动〖论雄〗弃置牌的点数须大于等于#" },
 	},
 	friendgongli_shitao: {
 		audio: 2,
