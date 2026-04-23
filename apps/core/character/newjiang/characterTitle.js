@@ -38,4 +38,5 @@ export default {
 	wufu: "忠虹贯日",
 	yj_zhanghuan: "正身洁己",
 	yj_zhangyan: "黑山飞燕",
+	v_sunce: "勇冠三江势",
 };
