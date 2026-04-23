@@ -194,7 +194,6 @@ export default {
 	v_caopi: "威泽四海都",
 	v_sunquan: "坐断东南",
 	v_caocao: "山海归心",
-	v_sunce: "勇冠三江势",
 	x_dc_zhangqiying: "九州春回",
 	dc_taohuang: "威惠素著",
 	dc_sb_zhuran: "孤城镇岳",
