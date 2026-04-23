@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	v_sunce: "威孙策",
+	v_sunce_prefix: "威",
+	dczhifeng: "猘锋",
+	dczhifeng_info: "每回合限X次（X为游戏人数）。当你的手牌数：大于体力值时，你可将至少一张黑色牌当作不计入次数的【酒】使用；小于体力值时，你可将一张红色牌当作无距离限制的任意【杀】使用或打出，然后将手牌摸至体力上限；等于体力值时，你可将任意张牌当作【决斗】对至多两名角色使用。",
+	dcweijing: "威靖",
+	dcweijing_info: "其他吴势力角色的回合开始时，你可令其执行一项：1、受到你造成的1点伤害；2、交给你一张牌，然后其可发动一次对应条件的〖猘锋〗。",
 	yj_zhanghe: "☆张郃",
 	yj_zhanghe_prefix: "☆",
 	yj_zhangliao: "☆张辽",
