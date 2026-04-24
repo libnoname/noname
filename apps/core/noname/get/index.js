@@ -4142,11 +4142,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	*iterableChildNodes(...elements) {
 		for (const element of elements) {
-			for (let i = 0; i < element.childElementCount; ++i) {
-				const current = element.childNodes[i];
-				if (current instanceof HTMLElement) {
-					yield current;
-				}
+			for (const child of element.children) {
+				yield child;
 			}
 		}
 	}
