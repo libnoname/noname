@@ -1,9 +1,4 @@
 export default {
-	"#dczhifeng1": "千里江东地，谁敢独槊相向！",
-	"#dczhifeng2": "饮江为酿，看我醉挑山河！",
-	"#dcweijing1": "既称吴臣，方可免死！",
-	"#dcweijing2": "天无二日，虎犬安能并列！",
-	"#v_sunce:die": "恨，不见九鼎，尽刻吴纹。",
 	"#dcjuxi1": "雪吞箭囊空，犹挽虚弦射苍穹！",
 	"#dcjuxi2": "英雄怎可，徒手而亡！",
 	"#dczhuitao1": "从来中原恨，须用颅山叠。",
