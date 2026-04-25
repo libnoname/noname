@@ -5164,7 +5164,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
-	 * @returns { Iterator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetCards(position, filter) {
 		if (typeof position != "string") {
@@ -5343,7 +5343,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
-	 * @returns { Iterator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetDiscardableCards(player, position, filter) {
 		for (const card of this.iterableGetCards(position, filter)) {
@@ -5371,7 +5371,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
-	 * @returns { Iterator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetGainableCards(player, position, filter) {
 		for (const card of this.iterableGetCards(position, filter)) {
