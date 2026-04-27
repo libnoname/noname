@@ -946,7 +946,7 @@ export class GameEvent implements PromiseLike<void> {
 	forced: boolean;
 	num: number;
 	original_num: number;
-	directHit: boolean | Player[];
+	directHit: Player[];
 	baseDamage: number;
 	extraDamage: number;
 	customSource: Player;
