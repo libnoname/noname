@@ -7,18 +7,16 @@ const cards = {
 		blankCard: true,
 		fullimage: true,
 		wuxieable: false,
-		effect() {
-			"step 0";
-			var card = get.autoViewAs(event.cards[0]);
+		async effect(event, trigger, player) {
+			const card = get.autoViewAs(event.cards[0]);
 			card.storage.xumou_jsrg = true;
-			player.chooseUseTarget(card, event.cards, `蓄谋:是否使用${get.translation(card)}？`, `请选择要使用的目标。若不使用此牌，则判定区内的所有“蓄谋”牌都将被置入弃牌堆。`);
-			"step 1";
+			const result = await player
+				.chooseUseTarget(card, event.cards, `蓄谋:是否使用${get.translation(card)}？`, `请选择要使用的目标。若不使用此牌，则判定区内的所有"蓄谋"牌都将被置入弃牌堆。`)
+				.forResult();
 			if (!result.bool) {
-				var cards = player.getCards("j", card => {
-					return (card.viewAs || card.name) == "xumou_jsrg";
-				});
+				const cards = player.getCards("j", card => (card.viewAs || card.name) == "xumou_jsrg");
 				if (cards.length > 0) {
-					player.loseToDiscardpile(cards);
+					await player.loseToDiscardpile(cards);
 				}
 			} else {
 				player.addTempSkill("xumou_jsrg_temp", "phaseChange");
