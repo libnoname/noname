@@ -6746,8 +6746,6 @@ const skills = {
 			});
 			player.logSkill("dcyouzhan", targets);
 			for (const target of targets) {
-				let num = trigger.getl(target).cards2.length;
-				while (num > 0) {
 					const next = player.draw();
 					next.gaintag = ["dcyouzhan"];
 					await next;
@@ -6755,8 +6753,7 @@ const skills = {
 					target.addTempSkill("dcyouzhan_effect");
 					target.addMark("dcyouzhan_effect", 1, false);
 					target.addTempSkill("dcyouzhan_draw");
-					--num;
-				}
+					
 			}
 		},
 		ai: {
