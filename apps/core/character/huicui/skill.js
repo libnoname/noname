@@ -8902,7 +8902,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.removeSkills("dchuiling");
-			player.gainMaxHp(Math.min(game.countPlayer(), player.countMark("dchuiling")));
+			player.gainMaxHp(Math.min(game.countPlayer2(), player.countMark("dchuiling")));
 			player.addSkills(["dctaji", "dcqinghuang"]);
 		},
 		ai: {
