@@ -8,37 +8,37 @@ const cards = {
 		filterTarget: true,
 		selectTarget: [1, 3],
 		derivation: "key_kano",
-		content() {
-			"step 0";
-			target.draw();
-			"step 1";
-			var hs = target.getCards("he");
+		async content(event, trigger, player) {
+			const { target } = event;
+			await target.draw();
+			const hs = target.getCards("he");
 			if (!hs.length) {
-				event.finish();
-			} else if (hs.length == 1) {
-				event._result = { bool: true, cards: hs };
-			} else {
-				target.chooseCard("he", true, "选择一张牌置入仁库");
+				return;
 			}
-			"step 2";
+			let result;
+			if (hs.length == 1) {
+				result = { bool: true, cards: hs };
+			} else {
+				result = await target.chooseCard("he", true, "选择一张牌置入仁库").forResult();
+			}
 			if (result.bool) {
-				var card = result.cards[0];
+				const card = result.cards[0];
 				target.$throw(card, 1000);
-				target.lose(card, "toRenku");
+				await target.lose(card, "toRenku");
 			}
 		},
-		contentAfter() {
+		async contentAfter(event, trigger, player) {
+			const cards = event.cards;
 			if (
 				player.isIn() &&
-				_status.renku.length &&
-				(function () {
-					var cards = _status.renku;
+				cards.length &&
+				(() => {
 					if (cards.length == 1) {
 						return true;
 					}
-					var color = get.color(cards[0], false),
-						type = get.type(cards[0], false);
-					for (var i = 1; i < cards.length; i++) {
+					let color = get.color(cards[0], false);
+					let type = get.type(cards[0], false);
+					for (let i = 1; i < cards.length; i++) {
 						if (color && get.color(cards[i], false) != color) {
 							color = false;
 						}
@@ -52,7 +52,7 @@ const cards = {
 					return true;
 				})()
 			) {
-				player.draw();
+				await player.draw();
 			}
 		},
 		ai: {
