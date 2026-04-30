@@ -9527,7 +9527,7 @@ const skills = {
 	hisako_zhuanyun: {
 		trigger: { player: "judgeBegin" },
 		forced: true,
-		persevereSkill: true,
+		charlotte: true,
 		silent: true,
 		filter(event, player) {
 			return !event.directresult;
