@@ -14414,33 +14414,28 @@ const skills = {
 	},
 	new_yajiao: {
 		audio: "reyajiao",
-		trigger: {
-			player: "loseEnd",
-		},
+		trigger: { player: ["useCard", "respond"] },
 		frequent: true,
 		filter(event, player) {
-			return player != _status.currentPhase && event.hs && event.hs.length > 0 && ["useCard", "respond"].includes(event.getParent().name);
+			return player != _status.currentPhase;
 		},
 		async content(event, trigger, player) {
-			let result;
-
-			// step 0
-			event.card = get.cards();
+			event.card = get.cards()[0];
 			await player.showCards(event.card);
-			event.same = get.type(event.card, "trick") == get.type(trigger.getParent().card, "trick");
-
-			result = await player
-				.chooseTarget("选择获得此牌的角色", true)
-				.set("ai", function (target) {
-					let att = get.attitude(_status.event.player, target);
-					if (_status.event.du) {
+			event.same = get.type2(event.card) == get.type2(trigger.card);
+			const result = await player
+				.chooseTarget(`涯角：令一名角色获得${get.translation(event.card)}`, true)
+				.set("ai", target => {
+					const { player, du, same } = get.event();
+					let att = get.attitude(player, target);
+					if (du) {
 						if (target.hasSkillTag("nodu")) {
 							return 0;
 						}
 						return -att;
 					}
-					if (!_status.event.same) {
-						att += target == _status.event.player ? 1 : 0;
+					if (!same) {
+						att += target == player ? 1 : 0;
 					}
 					if (att > 0) {
 						return att + Math.max(0, 5 - target.countCards("h"));
@@ -14450,8 +14445,6 @@ const skills = {
 				.set("du", event.card.name == "du")
 				.set("same", event.same)
 				.forResult();
-
-			// step 1
 			if (result?.targets?.length) {
 				player.line(result.targets, "green");
 				await result.targets[0].gain(event.card, "gain2");

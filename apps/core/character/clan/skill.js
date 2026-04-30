@@ -6078,14 +6078,11 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return game.hasPlayer(current => !current.isLinked());
+			return game.countPlayer(current => !current.isLinked()) > 1;
 		},
-		direct: true,
-		async content(event, trigger, player) {
-			let result;
-
-			result = await player
-				.chooseTarget(get.prompt2("clanlianhe"), 2, (card, player, target) => {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), 2, (card, player, target) => {
 					return !target.isLinked();
 				})
 				.set("ai", target => {
@@ -6096,14 +6093,12 @@ const skills = {
 					return Math.abs(att);
 				})
 				.forResult();
-
-			if (result.bool && result.targets?.length) {
-				const targets = result.targets;
-				await game.doAsyncInOrder(targets, target => target.link(true));
-				player.logSkill("clanlianhe", targets);
-				player.addSkill("clanlianhe_effect");
-				player.markAuto("clanlianhe_effect", targets);
-			}
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			await game.doAsyncInOrder(targets, target => target.link(true));
+			player.addSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", targets);
 		},
 		subSkill: {
 			effect: {
@@ -6120,20 +6115,20 @@ const skills = {
 				marktext: "连",
 				intro: { content: "已选择目标：$" },
 				async content(event, trigger, player) {
-					player.unmarkAuto("clanlianhe_effect", [trigger.player]);
+					player.unmarkAuto(event.name, [trigger.player]);
 					if (trigger.name == "die") {
 						return;
 					}
 
 					if (
-						trigger.player.hasHistory(evt => {
+						trigger.player.hasHistory("gain", evt => {
 							return evt.getParent().name == "draw" && evt.getParent("phaseUse") == trigger;
 						})
 					) {
 						return;
 					}
 
-					player.logSkill("clanlianhe_effect", trigger.player);
+					player.logSkill(event.name, trigger.player);
 
 					let num = 0;
 					trigger.player.getHistory("gain", evt => {

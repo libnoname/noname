@@ -424,7 +424,7 @@ export interface EventMoveCardParams extends ChooseBase {
 	aimTargets?: Player[];
 	canReplace?: boolean;
 	targetprompt?: string[];
-	filter?(card: Card): boolean;
+	filter?(card: Card | VCard): boolean;
 }
 
 export interface EventUseCardParams {
