@@ -42,6 +42,10 @@ for (const file of readdirSync(charaDist)) {
 		// 依照vite入口规范，使用相对于根目录的路径作为输入
 		// 后续可直接用于vite的input配置，无需再进行路径转换
 		charaInputs[file] = `character/${file}/index.${ts ? "ts" : "js"}`;
+		staticModules.push({
+			src: `character/${file}`,
+			dest: "src/character",
+		});
 		continue;
 	}
 	// 剩下的武将包未完成进行异步化，可能仍然存在step content，故直接复制
