@@ -4701,7 +4701,7 @@ const skills = {
 					event.videoId,
 					event.time
 				);
-				const result = event.result || result;
+				const result = event.result || event._result;
 				game.log(player, "获得了", "#g" + result.score + "分");
 				if (!result.score) {
 					player.chooseToDiscard(2, true, "he");
