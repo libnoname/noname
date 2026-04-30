@@ -218,45 +218,63 @@ const card = {
 			}
 			return target.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			if (target.countCards("h") === 0) {
-				event.finish();
-				return;
+		async content(event, trigger, player) {
+			const { target, showPosition = "h" } = event;
+			if (target.countCards(showPosition) == 0) {
+				return event.finish();
 			}
-			var rand = Math.random() < 0.5;
-			target.chooseCard(true).ai = function (card) {
-				if (rand) {
-					return Math.random();
+			//返回目标选展示牌的结果，给出默认逻辑
+			event.chooseToShow ??= async (event, player, target) => {
+				const { showPosition = "h", filterShow = () => true } = event;
+				let result;
+				if (target.countCards(showPosition) == 1) {
+					result = { bool: true, cards: target.getCards(showPosition) };
+				} else {
+					result = await target
+						.chooseCard(true, showPosition, "请选择【闪电箭】要展示的牌", filterShow)
+						.set("ai", function (card) {
+							if (_status.event.getRand() < 0.5) {
+								return Math.random();
+							}
+							return get.value(card);
+						})
+						.forResult();
 				}
-				return get.value(card);
+				return result;
 			};
-			"step 1";
-			event.dialog = ui.create.dialog(get.translation(target.name) + "展示的手牌", result.cards);
-			event.card2 = result.cards[0];
-			event.videoId = lib.status.videoId++;
-			game.addVideo("cardDialog", null, [get.translation(target.name) + "展示的手牌", get.cardsInfo(result.cards), event.videoId]);
-			game.log(target, "展示了", event.card2);
-			player.chooseToDiscard(
-				function (card) {
-					return get.suit(card) === get.suit(_status.event.parent.card2);
-				},
-				function (card) {
-					if (get.damageEffect(target, player, player, "thunder") > 0) {
-						return 6 - get.value(card, _status.event.player);
-					}
-					return -1;
-				}
-			).prompt = false;
-			game.delay(2);
-			"step 2";
-			if (result.bool) {
-				target.damage("thunder");
+			const result = await event.chooseToShow(event, player, target);
+			event.showResult = result;
+			const { cards } = result;
+			event.cards2 = cards;
+			const showEvent = target.showCards(cards, `${get.translation(target)}因【闪电箭】展示的牌`).set("closeDialog", false);
+			await showEvent;
+			const videoId = showEvent.videoId;
+			event.videoId = videoId;
+			//返回玩家弃牌/其他操作的结果，给出默认逻辑
+			event.chooseToDiscard ??= async (event, player, target) => {
+				const { discardPostion = "h", cards2, filterDiscard = { suit: get.suit(cards2[0]) } } = event;
+				const result = await player
+					.chooseToDiscard(discardPostion, filterDiscard)
+					.set("ai", card => {
+						const evt = _status.event.getParent();
+						if (get.damageEffect(evt.target, evt.player, evt.player, "thunder") > 0) {
+							return 6.2 + Math.min(4, evt.player.hp) - get.value(card, evt.player);
+						}
+						return -1;
+					})
+					.set("prompt", false)
+					.forResult();
+				return result;
+			};
+			const result2 = await event.chooseToDiscard(event, player, target);
+			event.discardResult = result2;
+			if (result2?.bool) {
+				await target.damage("thunder");
 			} else {
 				target.addTempSkill("huogong2");
 			}
-			game.addVideo("cardDialog", null, event.videoId);
-			event.dialog.close();
+			game.addVideo("cardDialog", null, videoId);
+			game.broadcastAll("closeDialog", videoId);
 		},
 		ai: {
 			basic: {
@@ -273,7 +291,7 @@ const card = {
 				player(player) {
 					var nh = player.countCards("h");
 					if (nh <= player.hp && nh <= 4 && _status.event.name === "chooseToUse") {
-						if (typeof _status.event.filterCard === "function" && _status.event.filterCard(new lib.element.VCard({ name: "shandianjian" }))) {
+						if (typeof _status.event.filterCard == "function" && _status.event.filterCard(new lib.element.VCard({ name: "shandianjian" }), player, _status.event)) {
 							return -10;
 						}
 						if (_status.event.skill) {
@@ -296,7 +314,7 @@ const card = {
 						return 0;
 					}
 					if (target === player) {
-						if (typeof _status.event.filterCard === "function" && _status.event.filterCard(new lib.element.VCard({ name: "shandianjian" }))) {
+						if (typeof _status.event.filterCard == "function" && _status.event.filterCard(new lib.element.VCard({ name: "shandianjian" }), player, _status.event)) {
 							return -1.5;
 						}
 						if (_status.event.skill) {

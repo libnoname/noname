@@ -2369,11 +2369,12 @@ export default {
 			global: ["loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
 		},
 		firstDo: true,
+		forceDie: true,
 		filter(event, player) {
 			if (!event.getl) {
 				return false;
 			}
-			return game.hasPlayer(current => {
+			return game.hasPlayer2(current => {
 				const cards = event.getl(current)?.hs ?? [];
 				return cards.some(card => get.is.connectedCard(card));
 			});
@@ -2381,7 +2382,7 @@ export default {
 		async cost(event, trigger, player) {
 			const lose_map = new Map();
 			const cards = game
-				.filterPlayer()
+				.filterPlayer2()
 				.map(current => {
 					const lose = (trigger.getl(current).hs ?? []).filter(card => get.is.connectedCard(card));
 					if (lose.length) {
@@ -2397,7 +2398,7 @@ export default {
 			const bool1 = ["useCard", "respond"].includes((trigger.relatedEvent || trigger.getParent()).name),
 				bool2 = trigger.type == "discard" && trigger.getlx !== false && !trigger.getParent(event.skill, true);
 			if (["lose", "loseAsync"].includes(trigger.name) && (bool1 || bool2)) {
-				const map = game.filterPlayer().reduce((map, current) => {
+				const map = game.filterPlayer2().reduce((map, current) => {
 					const cards = current.getConnectedCards();
 					if (cards.length) {
 						map.set(current, cards);
@@ -2422,13 +2423,12 @@ export default {
 		},
 		async content(event, trigger, player) {
 			const { targets, cost_data: map } = event;
-			const func = async target => {
+			for (const target of targets.sortBySeat()) {
 				const cards = map.get(target);
 				if (cards?.length) {
 					await target.modedDiscard(cards);
 				}
-			};
-			await game.doAsyncInOrder(targets, func);
+			}
 		},
 	},
 };

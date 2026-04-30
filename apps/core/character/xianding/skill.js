@@ -1611,12 +1611,12 @@ const skills = {
 							nature: "fire",
 							isCard: true,
 						},
-						"请选择火【杀】的目标（" + (i === 8 ? "⑨" : i + 1) + "/9）",
+						"平襄：请选择火【杀】的目标（" + (i === 8 ? "⑨" : i + 1) + "/9）",
 						false
 					)
 					.forResult();
 
-				if (!result.bool) {
+				if (!result?.bool) {
 					break;
 				}
 			}
@@ -1648,6 +1648,7 @@ const skills = {
 			},
 			combo: "tianren",
 		},
+		derivation: ["jiufa"],
 		subSkill: {
 			effect: {
 				marktext: "襄",
@@ -1753,7 +1754,7 @@ const skills = {
 				cards2 = result.cards;
 			} else {
 				if (cards.length > 0) {
-					const evt = target.randomDiscard(round);
+					const evt = target.randomDiscard(round, "h");
 					await evt;
 					cards2 = evt.done.cards2;
 				}
@@ -6663,15 +6664,10 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				if (storage) {
-					return `每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，弃置体力值张手牌。`;
-				}
-				return `每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，摸体力值张牌（至多摸五）。`;
+				return `每个回合结束时，若本回合有角色失去手牌数不小于其当前手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，${storage ? "其弃置体力值张手牌" : "摸体力值张牌（至多摸五）"}。`;
 			},
 		},
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return get.info("dcsbyinmou").getTargets().length > 0;
 		},
@@ -6683,7 +6679,7 @@ const skills = {
 						cards.addArray(evt.hs);
 					}
 				});
-				return cards.length > target.countCards("h");
+				return cards.length >= target.countCards("h");
 			});
 		},
 		prompt2(event, player) {
@@ -6708,7 +6704,7 @@ const skills = {
 					createDialog: [`寅谋：将一张牌交给一名角色`, cards],
 					targets: targets,
 					filterTarget(card, player, target) {
-						return get.event().targets.includes(target);
+						return get.event().targets?.includes(target);
 					},
 					bool: bool,
 					forced: true,
@@ -6841,9 +6837,12 @@ const skills = {
 				};
 			}
 		},
-		prompt() {
-			const { hongceEvts: evts } = get.event();
-			const link = evts[0].link;
+		prompt(event, player) {
+			// 起许劭【评荐】询问发动触发技时会读技能的prompt以生成“是否发动某某技能”的技能提示，使用trigger和enable一起写的写法时需要注意prompt里分类讨论
+			if (event.name == "phase") {
+				return get.prompt('dcsbhongce', null, player);
+			}
+			const link = event.hongceEvts?.[0]?.link;
 			switch (link) {
 				case "sha": {
 					return "令一名角色将半数手牌替换为伤害牌，视为使用一张【杀】";
@@ -7490,7 +7489,7 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		round: 1,
 		filter(event, player) {
-			return player.countDiscardableCards(player, "h") > 0;
+			return player.countDiscardableCards(player, "h") > 0 && event.player != player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

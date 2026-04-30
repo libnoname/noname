@@ -15760,13 +15760,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return (
-				event.player != player &&
-				!event.player.getHistory("sourceDamage", function (evt) {
-					return evt.player == player;
-				}).length &&
-				player.getExpansions("twyouye").length < 5
-			);
+			return event.player != player && !event.player.hasHistory("sourceDamage", evt => evt.player == player) && player.getExpansions("twyouye").length < 5;
 		},
 		forced: true,
 		group: "twyouye_give",
@@ -15774,7 +15768,7 @@ const skills = {
 			await player.addToExpansion({
 				cards: get.cards(1, true),
 				animate: "gain2",
-				gaintag: ["twyouye"],
+				gaintag: [event.name],
 			});
 		},
 		marktext: "蓄",
@@ -15784,7 +15778,7 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
@@ -15798,102 +15792,119 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					let boolx = _status.currentPhase && _status.currentPhase.isIn();
+					let boolx = _status.currentPhase?.isIn();
 					const cards = player.getExpansions("twyouye");
 					if (_status.connectMode) {
 						game.broadcastAll(function () {
 							_status.noclearcountdown = true;
 						});
 					}
-					const given_map = {};
+					const given_map = new Map();
 					while (cards.length > 0) {
-						let result;
-						if (cards.length > 1) {
-							result = await player
-								.chooseCardButton({
-									prompt: `攸业：请选择要分配的牌${boolx ? `（至少分给${get.translation(_status.currentPhase)}一张）` : ""}`,
-									forced: true,
-									cards,
-									select: [1, cards.length],
-									ai(button) {
-										if (ui.selected.buttons.length) {
-											return 0;
-										}
-										return get.value(button.link, _status.event.player);
-									},
-								})
-								.forResult();
-						} else {
-							result = { bool: true, links: cards.slice() };
-						}
-						const { links } = result;
-						if (!links?.length) {
-							break;
-						}
-						const result2 = await player
-							.chooseTarget({
-								prompt: "攸业：选择一名角色获得" + get.translation(links),
-								filterTarget(card, player, target) {
-									const evt = _status.event;
-									const cards = evt.cards.slice(),
-										cards2 = evt.cards2;
-									if (cards.removeArray(cards2).length > 0 || !evt.boolx) {
-										return true;
-									}
-									return target == _status.currentPhase;
-								},
-								forced: true,
-								ai(target) {
-									const att = get.attitude(_status.event.player, target);
-									if (_status.event.enemy) {
-										return Math.max(0.01, 100 - att);
-									} else if (att > 0) {
-										return Math.max(0.1, att / (1 + target.countCards("h") + (_status.event.given_map[target.playerid] || 0)));
-									} else {
-										return Math.max(0.01, (100 + att) / 100);
-									}
-								},
-							})
-							.set("given_map", given_map)
-							.set("cards", cards)
-							.set("cards2", links)
-							.set("boolx", boolx)
-							.set("enemy", get.value(links[0], player, "raw") < 0)
-							.forResult();
-						const { targets } = result2;
-						if (targets?.length) {
+						const result =
+							cards.length > 1
+								? await player
+										.chooseButtonTarget({
+											createDialog: [`攸业：请选择要分配的牌${boolx ? `（至少分给${get.translation(_status.currentPhase)}一张）` : ""}`, cards],
+											selectButton: [1, Infinity],
+											forced: true,
+											filterTarget(card, player, target) {
+												if (!get.event().boolx) {
+													return true;
+												}
+												return target == _status.currentPhase;
+											},
+											ai1(button) {
+												if (!get.event().boolx) {
+													return get.value(button.link);
+												}
+												const att = get.attitude(get.player(), _status.currentPhase);
+												if (att <= 0) {
+													if (ui.selected.buttons.length) {
+														return 0;
+													}
+													return -get.value(button.link);
+												}
+												return get.value(button.link);
+											},
+											canHidden: true,
+											ai2(target) {
+												const { player, boolx } = get.event();
+												if (!boolx) {
+													return 1;
+												}
+												const card = ui.selected.buttons[0].link;
+												if (card) {
+													return get.value(card, target) * get.attitude(player, target);
+												}
+												return 1;
+											},
+										})
+										.set("allowChooseAll", true)
+										.set("boolx", boolx)
+										.forResult()
+								: await player
+										.chooseTarget(
+											`攸业：令一名角色获得${get.translation(cards)}`,
+											(card, player, target) => {
+												if (!get.event().boolx) {
+													return true;
+												}
+												return target == _status.currentPhase;
+											},
+											true
+										)
+										.set("ai", target => {
+											const { player, enemy } = get.event();
+											const att = get.attitude(player, target);
+											if (enemy) {
+												return -att;
+											} else if (att > 0) {
+												return att / (1 + target.countCards("h"));
+											} else {
+												return att / 100;
+											}
+										})
+										.set("enemy", get.value(cards[0], player, "raw") < 0)
+										.forResult();
+						if (result?.bool) {
+							let links;
+							if (!result.links?.length) {
+								links = cards.slice();
+							} else {
+								links = result.links;
+							}
 							cards.removeArray(links);
-							const [target] = targets;
+							const [target] = result.targets;
 							if (target == _status.currentPhase) {
 								boolx = false;
 							}
-							const id = target.playerid;
-							given_map[id] ??= [];
-							given_map[id].addArray(links);
+							if (!given_map.has(target)) {
+								given_map.set(target, links);
+							} else {
+								given_map.get(target).addArray(links);
+							}
 						} else {
 							break;
 						}
 					}
 					if (_status.connectMode) {
-						game.broadcastAll(function () {
+						game.broadcastAll(() => {
 							delete _status.noclearcountdown;
 							game.stopCountChoose();
 						});
 					}
-					const list = [];
-					for (const i in given_map) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						player.line(source, "green");
-						list.push([source, given_map[i]]);
-						game.log(source, "获得了", given_map[i]);
+					if (given_map.size) {
+						await game
+							.loseAsync({
+								gain_list: Array.from(given_map),
+								player,
+								cards: Object.values(given_map).slice().flat(),
+								giver: player,
+								animate: "gain2",
+							})
+							.setContent("gaincardMultiple");
 					}
-					await game
-						.loseAsync({
-							gain_list: list,
-							giver: player,
-							animate: "gain2",
-						})
-						.setContent("gaincardMultiple");
 				},
 			},
 		},

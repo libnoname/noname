@@ -801,24 +801,11 @@ const skills = {
 	//☆法正
 	youtan: {
 		audio: 4,
-		logAudio(event) {
-			if (event.name == "useCardToTarget") {
-				return ["youtan3.mp3", "youtan4.mp3"];
-			}
-			return 2;
-		},
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
-			target: "useCardToTarget",
 		},
 		filter(event, player, name) {
-			if (name == "useCardToTarget") {
-				if (event.player == player) {
-					return false;
-				}
-				return !player.getStorage("youtan").includes(get.suit(event.card));
-			}
 			const evt = event.getParent("phaseUse", true);
 			if (evt && evt.player == player) {
 				return false;
@@ -826,47 +813,27 @@ const skills = {
 			const cards = event.getg(player);
 			return cards?.length && cards.some(card => !player.getStorage("youtan").includes(get.suit(card)));
 		},
-		intro: {
-			content: "已记录花色:$",
-		},
+		intro: { content: "已记录花色：$" },
 		forced: true,
 		onremove(player, skill) {
 			player.removeTip(skill);
 			player.setStorage(skill, []);
 		},
 		async content(event, trigger, player) {
-			if (event.triggername == "useCardToTarget") {
-				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
-				const result = await trigger.player
-					.chooseToDiscard(`忧叹：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`, "he")
-					.set("ai", card => {
-						const { eff } = get.event();
-						if (eff > 0) {
-							return 10 - get.value(card);
-						}
-						return 0;
-					})
-					.set("eff", eff)
-					.forResult();
-				if (!result?.bool) {
-					trigger.getParent().excluded.add(player);
-				}
-			} else {
-				const suits = trigger
-					.getg(player)
-					.map(card => get.suit(card))
-					.removeArray(player.getStorage(event.name));
-				if (suits?.length) {
-					player.markAuto(event.name, suits);
-					player.addTip(
-						event.name,
-						`忧叹${player
-							.getStorage(event.name)
-							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
-							.map(i => get.translation(i))
-							.join("")}`
-					);
-				}
+			const suits = trigger
+				.getg(player)
+				.map(card => get.suit(card))
+				.removeArray(player.getStorage(event.name));
+			if (suits?.length) {
+				player.markAuto(event.name, suits);
+				player.addTip(
+					event.name,
+					`忧叹${player
+						.getStorage(event.name)
+						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+						.map(i => get.translation(i))
+						.join("")}`
+				);
 			}
 		},
 		mod: {
@@ -7509,7 +7476,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const num = targets.length;
-			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌然后` : ""}回复一点体力`];
+			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌，然后` : ""}回复1点体力`];
 			if (player.getHistory("damage").length > num) {
 				list.push(`依次执行以上两项，然后非锁定失效直到你下个回合开始`);
 			}
@@ -7520,22 +7487,21 @@ const skills = {
 					.set("prompt", "雀颂：请选择一项")
 					.set("ai", () => {
 						const { num, player } = get.event();
-						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >=
-							get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player)
-							? 0
-							: 1;
+						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >= get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player) ? 0 : 1;
 					})
 					.set("num", num)
 					.forResult();
-				if (typeof result.index == "number") {
+				if (typeof result?.index == "number") {
 					const { index } = result;
 					if (index % 2 == 0) {
 						await target.draw(4 - num);
 						await target.link(false);
 						await target.turnOver(false);
 					}
-					if (index > 0 && num > 1) {
-						await target.chooseToDiscard(num - 1, "he", true);
+					if (index > 0) {
+						if (num > 1) {
+							await target.chooseToDiscard(num - 1, "he", true);
+						}
 						await target.recover();
 					}
 					if (index == 2) {

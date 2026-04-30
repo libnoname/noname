@@ -12071,6 +12071,9 @@ const skills = {
 				return list;
 			},
 			check(event, player) {
+				if (player.countEnabledSlot() == 1 && player.maxHp <= 3 && player.hasSkill("tuxing")) {
+					return "cancel2";
+				}
 				for (let i = 5; i > 0; i--) {
 					if (player.hasEmptySlot(i)) {
 						return "equip" + i;
@@ -12123,6 +12126,9 @@ const skills = {
 			order: 1,
 			result: {
 				player(player) {
+					if (player.countEnabledSlot() == 1 && player.maxHp <= 3 && player.hasSkill("tuxing")) {
+						return 0;
+					}
 					if (
 						game.hasPlayer(function (target) {
 							if (player == target) {
@@ -12163,34 +12169,31 @@ const skills = {
 	},
 	tuxing: {
 		audio: 2,
-		trigger: { player: "disableEquipAfter" },
+		trigger: { player: "disableEquipEnd" },
 		forced: true,
-		content() {
-			"step 0";
-			player.gainMaxHp();
-			player.recover();
-			"step 1";
+		async content(event, trigger, player) {
+			const num = trigger.slots.length;
+			await player.gainMaxHp(num);
+			await player.recover(num);
 			if (!player.hasEnabledSlot()) {
-				player.loseMaxHp(4);
-				player.addSkill("tuxing2");
+				await player.loseMaxHp(4);
+				player.addSkill(event.name + "_effect");
+				player.addMark(event.name + "_effect", 1, false);
 			}
 		},
-		ai: {
-			combo: "yujue",
-		},
-	},
-	tuxing2: {
-		audio: "tuxing",
-		trigger: { source: "damageBegin1" },
-		forced: true,
-		charlotte: true,
-		sourceSkill: "tuxing",
-		content() {
-			trigger.num++;
-		},
-		mark: true,
-		intro: {
-			content: "造成伤害时，此伤害+1",
+		ai: { combo: "yujue" },
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				audio: "tuxing",
+				trigger: { source: "damageBegin1" },
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.num += player.countMark(event.name);
+				},
+				intro: { content: "造成伤害时，此伤害+#" },
+			},
 		},
 	},
 	gongjian: {

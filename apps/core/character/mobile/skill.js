@@ -468,11 +468,9 @@ const skills = {
 	//手杀张既
 	mbdingzhen: {
 		audio: "twdingzhen",
-		trigger: { 
-			global: "roundStart"
-		},
+		trigger: { global: "roundStart" },
 		filter(event, player) {
-			return game.hasPlayer(current => get.distance(player, current) <= player.getHp() && current != player);
+			return game.hasPlayer(current => get.distance(current, player) <= player.getHp() && current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -480,7 +478,7 @@ const skills = {
 					prompt: get.prompt2(event.skill),
 					selectTarget: [1, Infinity],
 					filterTarget(card, player, target) {
-						return get.distance(player, target) <= player.getHp() && target != player;
+						return get.distance(target, player) <= player.getHp() && target != player;
 					},
 					ai(target) {
 						const player = get.player();
@@ -511,7 +509,7 @@ const skills = {
 					})
 					.set("goon", get.attitude(target, player) < 0 && player.countCards("hs") <= 3 && target.countCards("hs", card => target.hasValueTarget(card)) > 1)
 					.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					target.addExpose(0.1);
 				} else {
 					target.addTempSkill(`${event.name}_target`, "roundStart");
@@ -533,6 +531,127 @@ const skills = {
 							return false;
 						}
 					},
+				},
+			},
+		},
+	},
+	mbyouye: {
+		audio: 2,
+		trigger: { global: "phaseJieshuBegin" },
+		filter(event, player) {
+			return event.player != player && !event.player.hasHistory("sourceDamage", evt => evt.player == player) && player.getExpansions("mbyouye").length < 5;
+		},
+		forced: true,
+		group: "mbyouye_give",
+		async content(event, trigger, player) {
+			await player.addToExpansion({
+				cards: get.cards(1, true),
+				animate: "gain2",
+				gaintag: [event.name],
+			});
+		},
+		marktext: "蓄",
+		intro: {
+			name: "蓄(攸业)",
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		subSkill: {
+			give: {
+				audio: "twyouye",
+				trigger: { source: "damageSource", player: "damageEnd" },
+				filter(event, player) {
+					return player.getExpansions("mbyouye").length;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("mbyouye");
+					if (_status.connectMode) {
+						game.broadcastAll(function () {
+							_status.noclearcountdown = true;
+						});
+					}
+					const given_map = new Map();
+					while (cards.length > 0) {
+						const result =
+							cards.length > 1
+								? await player
+										.chooseButtonTarget({
+											createDialog: [`攸业：请选择要分配的牌`, cards],
+											selectButton: [1, Infinity],
+											forced: true,
+											filterTarget: true,
+											ai1(button) {
+												return get.value(button.link);
+											},
+											canHidden: true,
+											ai2(target) {
+												const player = get.player();
+												const card = ui.selected.buttons[0].link;
+												if (card) {
+													return get.value(card, target) * get.attitude(player, target);
+												}
+												return 1;
+											},
+										})
+										.set("allowChooseAll", true)
+										.forResult()
+								: await player
+										.chooseTarget(`攸业：令一名角色获得${get.translation(cards)}`, true)
+										.set("ai", target => {
+											const { player, enemy } = get.event();
+											const att = get.attitude(player, target);
+											if (enemy) {
+												return -att;
+											} else if (att > 0) {
+												return att / (1 + target.countCards("h"));
+											} else {
+												return att / 100;
+											}
+										})
+										.set("enemy", get.value(cards[0], player, "raw") < 0)
+										.forResult();
+						if (result?.bool) {
+							let links;
+							if (!result.links?.length) {
+								links = cards.slice();
+							} else {
+								links = result.links;
+							}
+							cards.removeArray(links);
+							const [target] = result.targets;
+							if (!given_map.has(target)) {
+								given_map.set(target, links);
+							} else {
+								given_map.get(target).addArray(links);
+							}
+						} else {
+							break;
+						}
+					}
+					if (_status.connectMode) {
+						game.broadcastAll(() => {
+							delete _status.noclearcountdown;
+							game.stopCountChoose();
+						});
+					}
+					if (given_map.size) {
+						await game
+							.loseAsync({
+								gain_list: Array.from(given_map),
+								player,
+								cards: Object.values(given_map).slice().flat(),
+								giver: player,
+								animate: "gain2",
+							})
+							.setContent("gaincardMultiple");
+					}
 				},
 			},
 		},
@@ -1879,9 +1998,7 @@ const skills = {
 	},
 	hefeixianjian: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.card.name == "sha" && event.targets?.length == 1;
 		},
@@ -1952,9 +2069,9 @@ const skills = {
 			);
 			if (link == "draw") {
 				await player.draw();
-				const num = Math.min(target.countDiscardableCards("he"), Math.max(1, target.countCards("ej")));
+				const num = Math.min(target.countDiscardableCards(target, "he"), Math.max(1, target.countCards("ej")));
 				if (num > 0) {
-					await target.chooseToDiscard(num, "he", true);
+					await target.chooseToDiscard(num, "he", true, "allowChooseAll");
 				}
 			} else {
 				player
@@ -7857,8 +7974,10 @@ const skills = {
 		locked: true,
 		async content(event, trigger, player) {
 			const card = game.createCard2("xuanjian", "spade", 9);
-			await player.gain([card], "gain2");
-			await player.chooseUseTarget(card, true, false);
+			await player.gain(card, "gain2");
+			if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+				await player.chooseUseTarget(card, true, false);
+			}
 		},
 		group: "friendxiaxing_gain",
 		subSkill: {

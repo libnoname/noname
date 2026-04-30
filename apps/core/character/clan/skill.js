@@ -2819,7 +2819,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(_, player, target) {
-			if (target.countDiscardableCards("he") <= 0) {
+			if (!target.countDiscardableCards(player, "he")) {
 				return false;
 			}
 			return get.distance(player, target) <= 1;
@@ -2843,7 +2843,7 @@ const skills = {
 					return Math.random();
 				})
 				.forResult();
-			if (["basic", "equip"].includes(get.type(cards[0]))) {
+			if (["basic", "equip"].includes(get.type(cards?.[0]))) {
 				await player.chooseUseTarget({ name: "sha", isCard: true }, cards);
 			}
 		},

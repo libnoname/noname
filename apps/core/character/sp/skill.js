@@ -4526,10 +4526,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			target.chooseUseTarget(new lib.element.VCard({ name: "sha", storage: { olzongluan: true }, isCard: true }), true, false).set("selectTarget", [1, Infinity]);
-			const num = game.countPlayer2(c => c.hasHistory("damage", evt => evt.getParent(4).name == "olzongluan"), true);
+			const next = target.chooseUseTarget(new lib.element.VCard({ name: "sha", storage: { olzongluan: true }, isCard: true }), true, false).set("selectTarget", [1, Infinity]);
+			await next;
+			const num = game.countPlayer2(current => current.hasHistory("damage", evt => evt.getParent(3) == next), true);
 			if (num > 0) {
-				await player.chooseToDiscard(num, true, "he");
+				await player.chooseToDiscard(num, true, "he", "allowChooseAll");
 			}
 		},
 		init(player, skill) {
@@ -34083,18 +34084,23 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countCards("h", "sha") > 0;
+			return player.hasCard(card => get.info("juesi").filterCard(card, player), "h") && game.hasPlayer(current => get.info("juesi").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
 			return target != player && target.countCards("he") > 0 && player.inRange(target);
 		},
-		filterCard: { name: "sha" },
-		content() {
-			"step 0";
-			target.chooseToDiscard("he", true);
-			"step 1";
-			if (target.hp >= player.hp && result.bool && result.cards[0].name != "sha") {
-				player.useCard({ name: "juedou", isCard: true }, target);
+		filterCard(card, player) {
+			return get.name(card) == "sha" && lib.filter.cardDiscardable(card, player, "juesi");
+		},
+		async content(event, trigger, player) {
+			const { target } = event;
+			const juedou = get.autoViewAs({ name: "juedou", isCard: true });
+			if (!target.countDiscardableCards(target, "he")) {
+				return;
+			}
+			const result = await target.chooseToDiscard("he", true).forResult();
+			if (target.hp >= player.hp && result?.cards?.length && result.cards[0].name != "sha" && player.canUse(juedou, target)) {
+				await player.useCard(juedou, target);
 			}
 		},
 		ai: {

@@ -1184,6 +1184,8 @@ const translates = {
 	mb_tw_zhangji_prefix: "手杀",
 	mbdingzhen: "定镇",
 	mbdingzhen_info: "每轮开始时，你可令与你距离X以内的至多X名其他角色依次选择一项（X为你的体力值）：1.弃一张【杀】；2.本轮其于回合内不能指定你为锦囊牌的目标。",
+	mbyouye: "攸业",
+	mbyouye_info: "锁定技。①其他角色的结束阶段，若其本回合未对你造成过伤害且“蓄”数小于5，你将牌堆顶的牌置于武将牌上，称为“蓄”。②当你造成或受到伤害后，若你有“蓄”，你将所有“蓄”分配给任意角色。",
 	o_sunquan: "缘孙权",
 	o_sunquan_prefix: "缘",
 	mbshizhong: "势众",

@@ -2036,7 +2036,7 @@ const translates = {
 	sm_xianxing_info: "锁定技，每轮开始时，你可与所有角色进行一次共同拼点。若你赢，你执行一个额外回合；若你没赢，你受到1点伤害并获得拼点牌中所有点数小于你的牌。",
 	zhuahuang_jipao_append: "<span style='font-family: yuanli'>以魏武之名，驱驰吧！爪黄飞电！</span>",
 	sm_zixin: "资馨",
-	sm_zixin_info: "你与回合外获得牌后，可以展示并使用其中一张牌。",
+	sm_zixin_info: "你于回合外获得牌后，可以展示并使用其中一张牌。",
 	sm_zhiyin: "知音",
 	sm_zhiyin_info: "一名角色的准备阶段，你可消耗1点速度并声明至多四种花色。若如此做，此回合结束时，每有一种被声明的花色：被使用过，你与当前回合角色各摸一张牌；未被使用，你失去1点体力。",
 	zijian_jipao_append: "<span style='font-family: yuanli'>风的气息，today，似乎孕育着一首绝句。</span>",

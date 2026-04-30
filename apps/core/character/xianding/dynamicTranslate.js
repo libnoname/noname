@@ -37,13 +37,13 @@ const dynamicTranslates = {
 	dcsbyinmou(player) {
 		const bool = player.storage.dcsbyinmou;
 		let yang = "摸体力值张牌（至多摸五）",
-			yin = "弃置体力值张手牌";
+			yin = "其弃置体力值张手牌";
 		if (bool) {
 			yin = `<span class="bluetext">${yin}</span>`;
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技，①游戏开始时，你可以转换此技能状态；②每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，`,
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②每个回合结束时，若本回合有角色失去手牌数不小于其当前手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，`,
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

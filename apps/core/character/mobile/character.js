@@ -33,7 +33,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["mbdingzhen", "twyouye"],
+		skills: ["mbdingzhen", "mbyouye"],
 		dieAudios: ["tw_zhangji"],
 	},
 	xin_simayi: {

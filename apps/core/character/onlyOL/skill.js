@@ -11413,7 +11413,7 @@ const skills = {
 				.when("phaseJieshuBegin")
 				.filter(evt => evt.getParent() == trigger.getParent())
 				.step(async () => {
-					if (player.hasHistory("useCard", evtx => get.is.damageCard(evtx.card)) && player.countDiscardableCards("he")) {
+					if (player.hasHistory("useCard", evtx => get.is.damageCard(evtx.card)) && player.countDiscardableCards(player, "he")) {
 						await player.chooseToDiscard("he", game.countGroup(), true);
 					}
 				});

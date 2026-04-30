@@ -4307,10 +4307,10 @@ const skills = {
 			trigger.set(event.name, true);
 			player
 				.when({ player: "useCardAfter" })
-				.filter((evt, ply, skillName) => evt.card === trigger.card && evt.oljuejue)
-				.step(async (event2, trigger2, player2) => {
-					if (trigger2.cards.filterInD().length) {
-						await player2.gain(trigger2.cards.filterInD(), "gain2");
+				.filter(evt => evt.card === trigger.card && evt.oljuejue)
+				.step(async (event, trigger, player) => {
+					if (trigger.cards.filterInD().length) {
+						await player.gain(trigger.cards.filterInD(), "gain2");
 					}
 				});
 		},
