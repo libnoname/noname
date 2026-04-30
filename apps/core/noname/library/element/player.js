@@ -5163,7 +5163,7 @@ export class Player extends HTMLDivElement {
 	 * 该方法返回一个生成器，需要返回数组请使用`Player#getCards`
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetCards(position, filter) {
@@ -5329,7 +5329,7 @@ export class Player extends HTMLDivElement {
 	 * 返回玩家的牌区中的牌，默认返回手牌区的牌
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
 	getCards(position, filter) {
@@ -5342,7 +5342,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetDiscardableCards(player, position, filter) {
@@ -5357,7 +5357,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
 	getDiscardableCards(player, position, filter) {
@@ -5370,7 +5370,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
 	*iterableGetGainableCards(player, position, filter) {
@@ -5385,7 +5385,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
 	getGainableCards(player, position, filter) {
@@ -5403,7 +5403,7 @@ export class Player extends HTMLDivElement {
 	 * 返回玩家的牌区中满足条件的牌的数量，默认返回手牌区的牌的数量
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { number } - 经过过滤后的牌的数量
 	 */
 	countCards(position, filter) {
@@ -5433,7 +5433,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { number } - 经过过滤后的牌的数量
 	 */
 	countDiscardableCards(player, position, filter) {
@@ -5448,7 +5448,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、属性对象或过滤函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { number } - 经过过滤后的牌的数量
 	 */
 	countGainableCards(player, position, filter) {
@@ -13672,7 +13672,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家是否有某(种牌名的)牌
 	 *
-	 * @param { string | Record<string, any> | ((card: Card) => boolean) } pattern - 牌名/牌属性/筛选函数
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } pattern - 牌名/牌名数组/牌属性/筛选函数
 	 * @param { string } [position] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @returns { boolean }
 	 */
