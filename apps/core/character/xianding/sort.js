@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_decade: ["dc_shen_sunquan", "shen_zhonghui", "shen_huangzhong", "shen_jiangwei", "shen_machao", "shen_zhangfei", "shen_zhangjiao", "shen_dengai", "shen_xuzhu", "dc_shen_huatuo", "shen_pangtong"],
+	extra_decade: ["dc_shen_caopi", "dc_shen_sunquan", "shen_zhonghui", "shen_huangzhong", "shen_jiangwei", "shen_machao", "shen_zhangfei", "shen_zhangjiao", "shen_dengai", "shen_xuzhu", "dc_shen_huatuo", "shen_pangtong"],
 	sp2_huben: ["linglie", "lvju", "dc_zhangren", "dc_jiangqing", "chendong", "wangshuang", "wenyang", "re_liuzan", "dc_huangzu", "wulan", "leitong", "chentai", "dc_duyu", "dc_wangjun", "dc_xiahouba", "old_huangfusong", "huzun", "dc_lingcao", "taohuang"],
 	sp2_shengun: ["shie", "dc_xia_wangyue", "zhangyu", "suyue", "puyuan", "guanlu", "gexuan", "wufan", "re_zhangbao", "dukui", "zhaozhi", "zhujianping", "dc_zhouxuān", "zerong"],
 	sp2_bizhe: ["dc_chenzhi", "dc_huanjie", "dc_zhushuo", "dc_wuzhi", "dc_zhongyu", "dc_luotong", "dc_wangchang", "chengbing", "dc_yangbiao", "ruanji", "cuimao"],
@@ -13,7 +13,7 @@ const characterSort = {
 	sp2_yuxiu: ["dongguiren", "dc_tengfanglan", "zhangjinyun", "zhoubuyi", "dc_xujing", "guanyue", "zhugejing", "renwan"],
 	sp2_qifu: ["dc_guansuo", "xin_baosanniang", "dc_zhaoxiang", "xurong", "y_dc_zhangqiying", "dc_caochun"],
 	sp2_gaoshan: ["wanglang", "liuhui", "zhangjian"],
-	sp2_wumiao: ["wu_zhugeliang", "wu_luxun", "wu_guanyu", "wu_huangfusong", "wu_lukang"],
+	sp2_wumiao: ["wu_zhugeliang", "wu_luxun", "wu_guanyu", "wu_huangfusong", "wu_lukang", "wu_zhangfei"],
 	sp2_mouding: ["dc_sb_luxun", "dc_sb_jiangwei", "dc_sb_jiaxu", "dc_sb_lusu", "dc_sb_zhouyu", "dc_sb_simayi", "dc_sb_xunyu", "dc_sb_pangtong"],
 	sp2_zhonghu: ["dc_jiangji", "dc_wangling", "dc_simashi", "dc_caoshuang"],
 	sp2_zijing: ["dc_sb_zhugejin", "dc_sb_guanping", "dc_sb_lvmeng"],

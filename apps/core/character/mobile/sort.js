@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_mb: ["xin_simayi"],
+	extra_mb: ["xin_simayi", "mb_shen_machao"],
 	mobile_sp2: ["mb_sunluyu"],
 	mobile_sp3: ["mb_guanyinping", "mb_caohong"],
 	mobile_sp4: ["re_heqi"],

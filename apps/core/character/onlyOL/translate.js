@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dm_zhangfei_prefix: "魔",
+	dm_zhangfei: "魔张飞",
+	zhuohun: "灼魂",
+	zhuohun_info: "锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你摸一张牌。",
+	duanhun: "锻魂",
+	duanhun_info: "锁定技，若其他角色的勾玉颜色与你：不同，你使用黑色【杀】能额外指定其为目标；相同，你对其，或其对你使用的黑色【杀】改为【决斗】。你因【杀】和【决斗】首次造成了或受到了至少3点伤害后，你回复1点体力，修改“灼魂”并入魔。",
 	ol_xiahoushi: "OL界夏侯氏",
 	ol_xiahoushi_prefix: "OL界",
 	olqiaoshi: "樵拾",

@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_shen_machao_prefix: "手杀|神",
+	mb_shen_machao: "手杀神马超",
+	yuli: "驭雳",
+	yuli_info: "锁定技，1.你造成的伤害改为雷电伤害，已是雷电伤害则伤害+1；2.你受到雷电伤害时，防止之并摸等量牌。",
+	tingwei: "霆威",
+	tingwei_info: "你使用【杀】指定目标后，可获得4个“霆”标记并选择一名目标角色，其选择任意项（每选择一项，你失去1个“霆”标记）：1.非锁定技失效至其下个回合结束；2.交给你一张装备牌；3.此牌对其造成伤害+1；4.随机弃一张牌。若其均不选择，其进入连环状态。",
+	jimie: "寂灭",
+	jimie_info: "限定技，出牌阶段结束时，你可失去8个“霆”，对一名角色造成等于其体力上限的伤害。然后你“驭雳”的两项均执行后，该技能可再次发动。",
 	xin_simayi: "手杀神司马懿",
 	xin_simayi_prefix: "手杀神",
 	xinrenjie: "忍戒",
@@ -1125,7 +1133,7 @@ const translates = {
 	hefeichonglei: "冲垒",
 	hefeichonglei_info: "锁定技。①你的出牌阶段内，所有其他角色的非基本手牌均只能作为【闪】使用或打出。②出牌阶段限X次（X为其他角色数），当你使用的牌被其他角色响应后，或当你响应其他角色使用的牌后，你获得该角色一张手牌。",
 	hefeidangshi: "荡势",
-	hefeidangshi_info: "当你使用伤害牌结算完毕后，你可以令其中一名目标其他角色选择一项：1.弃置X张牌（X为所有角色本轮选择此选项的次数，且至少为1）；2.你对其造成1点伤害。",//且本阶段出杀次数+1
+	hefeidangshi_info: "当你使用伤害牌结算完毕后，你可以令其中一名目标其他角色选择一项：1.弃置X张牌（X为所有角色本轮选择此选项的次数，且至少为1）；2.你对其造成1点伤害。", //且本阶段出杀次数+1
 	hefeiheyuzhangliao: "合御",
 	hefeiheyuzhangliao_info: `锁定技，①若${get.poptip({
 		id: "characterx_hefei_yuejin",

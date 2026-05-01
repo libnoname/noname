@@ -21,6 +21,33 @@ export class Get {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 返回勾玉颜色
+	 * @param { Player } player
+	 * @param { {hp?:number,maxHp?:number} | undefined } [change]
+	 * @returns { string }
+	 */
+	hpColor(player, change) {
+		let { hp, maxHp } = player;
+		if (change?.hp) {
+			hp += change.hp;
+		}
+		if (change?.maxHp) {
+			maxHp += change.maxHp;
+		}
+		if (hp > maxHp) {
+			hp = maxHp;
+		}
+		if (hp <= 0) {
+			return "none";
+		} else if (hp > Math.round(maxHp / 2) || hp === maxHp) {
+			return "high";
+		} else if (hp > Math.floor(maxHp / 3)) {
+			return "mid";
+		} else {
+			return "low";
+		}
+	}
+	/**
 	 * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
 	 * @param {Card[]} cards 要分组的卡牌
 	 * @param {'suit'|'color'} type 分组类型 目前仅支持'suit'/'color'

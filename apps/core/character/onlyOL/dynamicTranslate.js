@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	zhuohun(player) {
+		if (player.getStorage("zhuohun_pro") == true) {
+			return "锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你将手牌摸至体力上限，并执行对应效果：绿色，其本回合摸牌均改为从牌堆中获得等量张【杀】； 黄色，其本回合非锁定技失效；红色，若没有角色处于濒死状态，其失去所有体力。";
+		}
+		return "锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你摸一张牌。";
+	},
 	olsblixian(player) {
 		let names =
 			player

@@ -2,6 +2,214 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//手杀神马超
+	yuli: {
+		audio: 2,
+		trigger: {
+			source: ["damageBegin2"],
+			player: ["damageBegin3"],
+		},
+		filter(event, player) {
+			if (event.player == player && event.source != player) {
+				return event.nature?.split("|").includes("thunder");
+			}
+			return true;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (trigger.player == player && trigger.nature?.split("|").includes("thunder")) {
+				trigger.cancel();
+				await player.draw(trigger.num);
+				player.addMark("yuli_def", 1, false);
+			} else {
+				if (trigger.nature?.split("|").includes("thunder")) {
+					trigger.num++;
+				} else {
+					trigger.nature = "thunder";
+				}
+				player.addMark("yuli_atk", 1, false);
+			}
+		},
+	},
+	tingwei: {
+		audio: 2,
+		trigger: {
+			player: "useCardToTargeted",
+		},
+		async cost(event, trigger, player) {
+			const target = trigger.target;
+			const { links } = await target
+				.chooseButton({
+					prompt: "霆威：请选择一项",
+					createDialog: [
+						[
+							[
+								["fengyin", "非锁定技失效至下个回合结束"],
+								["equip", "交给其一张装备牌"],
+								["damage", "此牌对你造成伤害+1"],
+								["discard", "随机弃一张牌"],
+							],
+							"textbutton",
+						],
+					],
+					selectButton: [0, 4],
+					ai(button) {
+						const link = button.link;
+						const player = get.player();
+						const source = get.event().twsource;
+						if (get.attitude(player, source) > 0) {
+							return 0;
+						} else if (link == "fengyin") {
+							const skills = player.getSkills(null, false, false).filter(skill => {
+								const info = get.info(skill);
+								return !get.is.locked(skill) && !info.charlotte && get.skillInfoTranslation(skill).length > 0;
+							});
+							if (skills.every(skill => lib.skill[skill].ai?.neg)) {
+								return 10;
+							}
+							return 0;
+						} else if (link == "equip") {
+							if (player.countCards("h", card => get.type2(card) == "equip")) {
+								return 10;
+							} else if (player.getCards("e", card => get.type2(card) == "equip" && get.equipValue(card) < 0).length) {
+								return 10;
+							}
+						} else if (link == "damage") {
+							if (source.hasSkill("yuli", null, false, false) && player.hasSkillTag("nothunder")) {
+								return 10;
+							} else if (player.hasCard("shan", "hs")) {
+								return 10;
+							}
+						} else if (link == "discard") {
+							return Math.random() - 0.5;
+						}
+						return 0;
+					},
+					filterButton(button, player) {
+						const link = button.link;
+						if (link == "fengyin") {
+							return !player.hasSkill("tingwei_fengyin");
+						} else if (link == "equip") {
+							return player.countCards("he", card => get.type2(card, false) == "equip") > 0;
+						} else if (link == "discard") {
+							return player.countCards("he") > 0;
+						}
+						return true;
+					},
+				})
+				.set("twsource", player)
+				.forResult();
+			event.result = {
+				bool: true,
+				cost_data: {
+					links: links,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			const list = event.cost_data.links;
+			const num = list?.length || 0;
+			player.addMark("jimie", 4 - num);
+			if (!num) {
+				if (!target.isLinked()) {
+					await target.link();
+				}
+			} else {
+				for (const link of list) {
+					if (link == "fengyin") {
+						target.addTempSkill("tingwei_fengyin", { player: "phaseEnd" });
+					} else if (link == "equip") {
+						const { cards } = await target.chooseCard({
+							prompt: "请选择要交给" + get.translation(player) + "的装备牌",
+							position: "he",
+							filterCard(card) {
+								return get.type2(card) == "equip";
+							},
+						});
+					} else if (link == "damage") {
+						const id = target.playerid;
+						const map = trigger.getParent().customArgs;
+						if (!map[id]) {
+							map[id] = {};
+						}
+						if (typeof map[id].extraDamage != "number") {
+							map[id].extraDamage = 0;
+						}
+						map[id].extraDamage++;
+					} else if (link == "discard") {
+						const cards = [target.getDiscardableCards(target, "he").randomGet()];
+						await target.discard({
+							cards: cards,
+						});
+					}
+				}
+			}
+		},
+		subSkill: {
+			fengyin: {
+				inherit: "fengyin",
+			},
+		},
+	},
+	jimie: {
+		trigger: {
+			player: ["phaseUseEnd"],
+		},
+		limited: true,
+		skillAnimation: true,
+		mark: true,
+		marktext: "霆",
+		init(player, skill) {
+			player.setStorage(skill, 0);
+		},
+		intro: {
+			name: "霆",
+			content: "当前拥有#个“霆”标记",
+		},
+		async cost(event, trigger, player) {
+			const { bool, targets } = await player
+				.chooseTarget({
+					prompt: "是否失去8个“霆”，对一名角色造成等于其体力上限的伤害",
+				})
+				.forResult();
+			event.result = {
+				bool: bool,
+				cost_data: {
+					links: targets,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const target = event.cost_data.links[0];
+			await target.damage({
+				num: target.maxHp,
+			});
+			player.removeMark("jimie", 8);
+		},
+		group: ["jimie_refresh"],
+		subSkill: {
+			refresh: {
+				trigger: {
+					player: ["addMark"],
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					const marks = ["yuli_atk", "yuli_def"];
+					if (marks.includes(event.markName)) {
+						return false;
+					}
+					return marks.every(mark => player.countMark(mark) > 0);
+				},
+				async content(event, trigger, player) {
+					["yuli_atk", "yuli_def"].forEach(mark => player.clearMark(mark));
+					player.refreshSkill(["jimie"]);
+				},
+			},
+		},
+	},
 	// OP蹋顿
 	youlve: {
 		audio: 2,
