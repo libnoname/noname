@@ -6746,14 +6746,13 @@ const skills = {
 			});
 			player.logSkill("dcyouzhan", targets);
 			for (const target of targets) {
-					const next = player.draw();
-					next.gaintag = ["dcyouzhan"];
-					await next;
-					player.addTempSkill("dcyouzhan_limit");
-					target.addTempSkill("dcyouzhan_effect");
-					target.addMark("dcyouzhan_effect", 1, false);
-					target.addTempSkill("dcyouzhan_draw");
-					
+				const next = player.draw();
+				next.gaintag = ["dcyouzhan"];
+				await next;
+				player.addTempSkill("dcyouzhan_limit");
+				target.addTempSkill("dcyouzhan_effect");
+				target.addMark("dcyouzhan_effect", 1, false);
+				target.addTempSkill("dcyouzhan_draw");
 			}
 		},
 		ai: {
