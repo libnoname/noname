@@ -563,7 +563,9 @@ const translates = {
 	minagi_huanliu_info: `准备阶段开始时，你可与一名其他角色进行“${get.poptip("rule_xieli")}”，并获得“远野小满”的所有技能直到目标角色的结束阶段开始。若“协力”成功，则你可以将所有手牌记录为“米券”。`,
 	key_michiru: "远野小满",
 	michiru_sheyuan: "舍愿",
-	michiru_sheyuan_info: "每轮限一次。若你没有“米券”，则你可以将所有手牌当做任意基本牌或普通锦囊牌使用，然后摸等量的牌。",
+	michiru_sheyuan_info: "Charlotte技：每轮限一次。若你没有“米券”，则你可以将所有手牌当做任意基本牌或普通锦囊牌使用，然后摸等量的牌。",
+	michiru_sheyuan_append: `<span style="font-family:yuanli">Charlotte技：该技能不受【技能失效】效果以及【技能失去】效果的影响</span>`,
+	
 	minagi_tag: "米券",
 };
 
