@@ -8661,10 +8661,6 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						let isOnline = player.isOnline2();
-						if(!isOnline) {
-
-						}
 						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
