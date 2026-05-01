@@ -7240,8 +7240,10 @@ const skills = {
 		},
 	},
 	xinzhongyong: {
-		trigger: { player: "useCardAfter" },
 		audio: "zhongyong",
+		trigger: {
+			player: "useCardAfter",
+		},
 		filter(event, player) {
 			return event.card.name == "sha";
 		},
@@ -7302,7 +7304,7 @@ const skills = {
 					)
 					.forResult();
 			} else {
-				result = { index: event.sha.length ? 0 : 1 };
+				result = { index: sha.length ? 0 : 1 };
 			}
 
 			const cards = result.index == 0 ? sha : shan;
