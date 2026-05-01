@@ -6,26 +6,26 @@ const skills = {
 	yuli: {
 		audio: 2,
 		trigger: {
-			source: ["damageBegin2"],
-			player: ["damageBegin3"],
+			source: ["damageBegin1"],
+			player: ["damageBegin4"],
 		},
 		filter(event, player) {
 			if (event.player == player && event.source != player) {
-				return event.nature?.split("|").includes("thunder");
+				return get.natureList(event.nature).includes("thunder");
 			}
 			return true;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			if (trigger.player == player && trigger.nature?.split("|").includes("thunder")) {
+			if (trigger.player == player && get.natureList(trigger.nature).includes("thunder")) {
 				trigger.cancel();
 				await player.draw(trigger.num);
 				player.addMark("yuli_def", 1, false);
 			} else {
-				if (trigger.nature?.split("|").includes("thunder")) {
+				if (get.natureList(trigger.nature).includes("thunder")) {
 					trigger.num++;
 				} else {
-					trigger.nature = "thunder";
+					game.setNature(trigger, "thunder");
 				}
 				player.addMark("yuli_atk", 1, false);
 			}
