@@ -282,7 +282,7 @@ const skills = {
 			if (num < 3) {
 				game.broadcastAll((player, target, num) => (player.storage.yinzhi[target.playerid] = num + 1), player, target, num);
 			}
-			if (player.getCards("he").some(card => lib.filter.canBeDiscarded(card, player, player))) {
+			if (player.hasCard(card => lib.filter.canBeDiscarded(card, player, player), "he")) {
 				const cards = await player
 					.chooseToDiscard({
 						selectCard: num + 1,
@@ -374,8 +374,8 @@ const skills = {
 					continue;
 				}
 				const skills = get
-					.character(char)[3]
-					.map(skill => [skill].concat(lib.skill[skill].derivation || []))
+					.character(char)
+					.skills.map(skill => [skill].concat(lib.skill[skill].derivation || []))
 					.filter(sk => {
 						return [skill].concat(lib.skill[skill].group || []).some(sk => {
 							const info = get.info(sk);
