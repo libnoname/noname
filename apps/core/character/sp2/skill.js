@@ -7321,63 +7321,67 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		direct: true,
 		filter(event, player) {
 			return event.source && event.player != event.source;
 		},
-		content() {
-			"step 0";
-			event.num = event.triggername == "damageEnd" ? 1 : -1;
-			player.chooseTarget(get.prompt("dcbihuo"), "令一名角色下回合的额定摸牌数" + (event.num > 0 ? "+1" : "-1")).set("ai", function (target) {
-				var player = _status.event.player,
-					num = _status.event.getParent().num;
-				var att = get.attitude(player, target);
-				if (num > 0) {
-					if (att <= 0) {
-						return 0;
+		async cost(event, trigger, player) {
+			const num = event.triggername == "damageEnd" ? 1 : -1;
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名角色下回合的额定摸牌数" + (event.num > 0 ? "+1" : "-1"))
+				.set("ai", target => {
+					const { player, numx: num } = get.event();
+					const att = get.attitude(player, target);
+					if (num > 0) {
+						if (att <= 0) {
+							return 0;
+						}
+						if (target.hasJudge("lebu")) {
+							return att / 10;
+						}
+						return (att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
 					}
-					if (target.hasJudge("lebu")) {
-						return att / 10;
+					if (num < 0) {
+						if (att >= 0) {
+							return 0;
+						}
+						if ((target.storage.dcbihuo_effect || 0) <= -2) {
+							return -att / 10;
+						}
+						return (-att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
 					}
-					return (att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
-				}
-				if (num < 0) {
-					if (att >= 0) {
-						return 0;
-					}
-					if ((target.storage.dcbihuo_effect || 0) <= -2) {
-						return -att / 10;
-					}
-					return (-att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
-				}
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcbihuo", target);
-				if (typeof target.storage.dcbihuo_effect != "number") {
-					target.storage.dcbihuo_effect = 0;
-				}
-				target.storage.dcbihuo_effect += event.num;
-				target.addTempSkill("dcbihuo_effect", { player: "phaseAfter" });
-				game.delayx();
+				})
+				.set("numx", num)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const num = event.triggername == "damageEnd" ? 1 : -1;
+			const target = event.targets[0];
+			const effect = event.name + "_effect";
+			if (typeof target.storage[effect] != "number") {
+				target.storage[effect] = 0;
 			}
+			target.storage[effect] += num;
+			target.addTempSkill(effect, { player: "phaseAfter" });
+			target.markSkill(effect);
+			await game.delayx();
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
-				trigger: { player: "phaseDrawBegin" },
-				forced: true,
 				onremove: true,
-				content() {
-					var num = player.storage.dcbihuo_effect;
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					return typeof player.storage.dcbihuo_effect == 'number' && !event.numFixed;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const num = player.countMark(event.name);
 					trigger.num += num;
 					game.log(player, "的额定摸牌数", "#g" + (num >= 0 ? "+" : "") + num);
 				},
 				mark: true,
-				intro: {
-					content: num => "额定摸牌数" + (num >= 0 ? "+" : "") + num,
-				},
+				intro: { content: num => "额定摸牌数" + (num >= 0 ? "+" : "") + num },
 			},
 		},
 	},

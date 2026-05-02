@@ -1898,19 +1898,22 @@ const skills = {
 				const { debateResult: result } = event;
 				const { bool, opinion, targets, opinions } = result;
 				if (opinion == "red") {
-					await player
-						.gain(result.red.map(i => i[1]))
-						.set("animate", event => {
-							var player = event.player,
-								cards = event.cards;
-							event.targets.forEach((target, index) => {
-								target.$give(cards[index], player);
-							});
-						})
-						.set(
-							"targets",
-							result.red.map(i => i[0]).filter(target => target != player)
-						);
+					const cards = result.red.flatMap(i => i[1]).filter(card => get.itemtype(card) == "card");
+					if (cards.length) {
+						await player
+							.gain(cards)
+							.set("animate", event => {
+								const player = event.player,
+									cards = event.cards;
+								event.targets.forEach((target, index) => {
+									target.$give(cards[index], player);
+								});
+							})
+							.set(
+								"targets",
+								result.red.map(i => i[0]).filter(target => target != player)
+							);
+					}
 				} else if (opinion == "black") {
 					const drawer = result.red
 						.map(i => i[0])
@@ -1919,6 +1922,10 @@ const skills = {
 					await game.asyncDraw([player].concat(drawer));
 				}
 			});
+		},
+		ai: {
+			order: 6,
+			result: { player: 1 },
 		},
 	},
 	olshuoyu: {
@@ -1940,24 +1947,28 @@ const skills = {
 				const { debateResult: result } = event;
 				const { bool, opinion, targets, opinions } = result;
 				if (opinion == "red") {
-					const lose_list = [];
+					const lose_map = new Map();
 					for (const color of opinions) {
 						for (const [target, card] of result[color]) {
-							const list = lose_list.find(i => i[0] == target);
-							if (!list) {
-								lose_list.push([target, [card]]);
+							if (get.itemtype(card) != "card") {
+								continue;
+							}
+							if (!lose_map.has(target)) {
+								lose_map.set(target, [card]);
 							} else {
-								lose_list[lose_list.indexOf(list)][1].push(card);
+								lose_map.get(target).push(card);
 							}
 						}
 					}
-					await game
-						.loseAsync({
-							lose_list: lose_list,
-							discarder: player,
-						})
-						.setContent("discardMultiple");
-					const evt = event.getTrigger(); //.getParent(2)
+					if (lose_map.size) {
+						await game
+							.loseAsync({
+								lose_list: Array.from(lose_map),
+								discarder: player,
+							})
+							.setContent("discardMultiple");
+					}
+					const evt = event.getTrigger();
 					const targetsx = game.filterPlayer(target => !evt.targets?.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target) && !targets.includes(target));
 					if (targetsx.length) {
 						const result = await player
@@ -1978,9 +1989,7 @@ const skills = {
 							evtx.targets.push(result.targets[0]);
 						}
 					}
-				} /* else if (opinion == "black") {
-					player.tempBanSkill("olshuoyu", { player: "phaseAfter" });
-				}*/
+				}
 			});
 		},
 	},
