@@ -17,13 +17,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			if (trigger.player == player && get.natureList(trigger.nature).includes("thunder")) {
-				trigger.cancel();
-				await player.draw(trigger.num);
-				if (player.awakenedSkills.includes("jimie")) {
-					player.storage._yuli_def = true;
-				}
-			} else {
+			if (event.triggername === "damageBegin1") {
 				if (get.natureList(trigger.nature).includes("thunder")) {
 					trigger.num++;
 				} else {
@@ -31,6 +25,12 @@ const skills = {
 				}
 				if (player.awakenedSkills.includes("jimie")) {
 					player.storage._yuli_atk = true;
+				}
+			} else if (get.natureList(trigger.nature).includes("thunder")) {
+				trigger.cancel();
+				await player.draw(trigger.num);
+				if (player.awakenedSkills.includes("jimie")) {
+					player.storage._yuli_def = true;
 				}
 			}
 
