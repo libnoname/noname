@@ -87,9 +87,11 @@ const skills = {
 						score += skills.length * 1.2;
 
 						// 交装备：有装备牌时才有压力
-						const equips = target.getCards("e");
+						const equips1 = target.getGainableCards(player, "e");
+						const equips2 = target.getGainableCards(player, "h", card => card.isKnownBy(player) && get.type(card) === "equip");
+						const equips = equips1.concat(equips2);
 						if (equips.length) {
-							const values = equips.reduce((sum, card) => sum + get.value(card, target), 0) / 3;
+							const values = equips.reduce((sum, card) => sum + get.value(card, target), 0) / equips.length;
 							score += Math.min(3, values);
 						}
 
@@ -140,31 +142,37 @@ const skills = {
 						],
 					],
 					filterButton(button, player) {
+						const source = get.event().source;
 						const link = button.link;
 						const selected = ui.selected.buttons.map(button => button.link);
 
+						// 同时选装备牌和弃牌的情况
+						// 总之最后有点抽象，但还算能理解
+						const equipCanBeGained = card => get.type(card) === "equip" && lib.filter.canBeGained(card, source, player);
+						const canBeDiscarded = card => lib.filter.canBeDiscarded(card, player, player);
+						const bothEquipAndDiscard = pos => card => equipCanBeGained(card) && player.hasCard(cardx => canBeDiscarded(cardx) && card !== cardx, pos);
 						switch (link) {
 							case "fengyin":
 								return !player.hasSkill("tingwei_fengyin");
 							case "equip": {
-								const hasEquip = player.hasCard({ type: "equip" }, "he");
+								const hasEquip = player.hasCard(equipCanBeGained, "he");
 								if (!hasEquip) {
 									return false;
 								}
 								if (!selected.includes("discard")) {
 									return true;
 								}
-								return player.countCards("he") > 1;
+								return player.hasCard(bothEquipAndDiscard("he"), "he");
 							}
 							case "discard": {
-								const hasCard = player.hasCard(true, "he");
+								const hasCard = player.hasCard(canBeDiscarded, "he");
 								if (!hasCard) {
 									return false;
 								}
 								if (!selected.includes("equip")) {
 									return true;
 								}
-								return player.countCards("he") > 1;
+								return player.hasCard(bothEquipAndDiscard("he"), "he");
 							}
 							default:
 								return true;
@@ -206,7 +214,7 @@ const skills = {
 						}
 
 						// 选项2：交给你一张装备牌
-						const equips = target.getCards("e");
+						const equips = target.getGainableCards(player, "he", { type: "equip" });
 						if (equips.length) {
 							costs[1] = Math.min(4, equips.reduce((sum, card) => sum + get.value(card, target), 0) / equips.length);
 						} else {
@@ -231,7 +239,7 @@ const skills = {
 						}
 
 						// 选项4：随机弃一张牌
-						const cards = target.getCards("he");
+						const cards = target.getDiscardableCards(target, "he");
 						if (cards.length) {
 							const values = cards.reduce((sum, card) => sum + get.value(card, target), 0) / cards.length;
 							costs[3] = Math.min(4, 1 + 4 / values);
@@ -251,14 +259,16 @@ const skills = {
 						}
 
 						// 检查第二项和第四项的冲突可能
-						if (resultLinks.includes("equip") && resultLinks.includes("discard") && target.countCards("he") <= 1) {
-							// 只关注是否为友方，是则给装备，否则弃置牌
-							// 特殊情况太杂不好思考，等后来人补充
-							const att = get.attitude(target, player);
-							if (att > 0) {
-								resultLinks.remove("discard");
-							} else {
-								resultLinks.remove("equip");
+						if (resultLinks.includes("equip") && resultLinks.includes("discard")) {
+							if (!equips.some(card => cards.some(cardx => cardx !== card))) {
+								// 只关注是否为友方，是则给装备，否则弃置牌
+								// 特殊情况太杂不好思考，等后来人补充
+								const att = get.attitude(target, player);
+								if (att > 0) {
+									resultLinks.remove("discard");
+								} else {
+									resultLinks.remove("equip");
+								}
 							}
 						}
 
@@ -386,14 +396,25 @@ const skills = {
 						target.addTempSkill("tingwei_fengyin", { player: "phaseEnd" });
 						break;
 					case "equip": {
-						await target.chooseToGive({
-							prompt: `请选择要交给${get.translation(player)}的装备牌`,
-							target: player,
-							filterCard(card) {
-								return get.type2(card) == "equip";
-							},
-							position: "he",
-						});
+						await target
+							.chooseToGive({
+								prompt: `请选择要交给${get.translation(player)}的装备牌`,
+								target: player,
+								filterCard(card) {
+									const event = get.event();
+									const target = get.player();
+									if (get.type(card) !== "equip") {
+										return false;
+									}
+									if (!event.discarding) {
+										return true;
+									}
+									return target.hasCard(cardx => cardx !== card && lib.filter.canBeDiscarded(cardx, target, target), "he");
+								},
+								position: "he",
+								forced: true,
+							})
+							.set("discarding", result.links.includes("discard"));
 						break;
 					}
 					case "damage": {
@@ -403,6 +424,9 @@ const skills = {
 						}
 
 						const map = trigger.getParent()?.customArgs;
+						if (map == null) {
+							break;
+						}
 						if (!map[id]) {
 							map[id] = {};
 						}
