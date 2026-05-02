@@ -251,7 +251,7 @@ const skills = {
 						}
 
 						// 检查第二项和第四项的冲突可能
-						if (resultLinks.includes("equip") && resultLinks.includes("discard") && player.countCards("he") <= 1) {
+						if (resultLinks.includes("equip") && resultLinks.includes("discard") && target.countCards("he") <= 1) {
 							// 只关注是否为友方，是则给装备，否则弃置牌
 							// 特殊情况太杂不好思考，等后来人补充
 							const att = get.attitude(target, player);
@@ -283,7 +283,7 @@ const skills = {
 							const index = costs.indexOf(minCost);
 
 							if (linkCost > minCost) {
-								result.push(links[index]);
+								resultLinks.push(links[index]);
 							}
 						}
 
