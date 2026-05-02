@@ -440,6 +440,9 @@ const skills = {
 				player.setMark(skill, 0);
 			}
 		},
+		filter(_event, player) {
+			return player.countMark("jimie") >= 8;
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
