@@ -20,14 +20,24 @@ const skills = {
 			if (trigger.player == player && get.natureList(trigger.nature).includes("thunder")) {
 				trigger.cancel();
 				await player.draw(trigger.num);
-				player.addMark("yuli_def", 1, false);
+				if (player.awakenedSkills.includes("jimie")) {
+					player.storage._yuli_def = true;
+				}
 			} else {
 				if (get.natureList(trigger.nature).includes("thunder")) {
 					trigger.num++;
 				} else {
 					game.setNature(trigger, "thunder");
 				}
-				player.addMark("yuli_atk", 1, false);
+				if (player.awakenedSkills.includes("jimie")) {
+					player.storage._yuli_atk = true;
+				}
+			}
+
+			if (player.storage._yuli_def && player.storage._yuli_atk) {
+				player.restoreSkill("jimie");
+				player.storage._yuli_def = false;
+				player.storage._yuli_atk = false;
 			}
 		},
 	},
@@ -301,6 +311,11 @@ const skills = {
 								return 0;
 							}
 
+							// 如果【寂灭】已经发动过且没有【驭雳】，【霆】也毫无用处，移除收益为0
+							if (player.awakenedSkills.includes("jimie") && !player.hasSkill("yuli")) {
+								return 0;
+							}
+
 							// 移除敌人的“霆”才有价值；如果是友方，几乎不想移除
 							if (get.attitude(target, player) > 0) {
 								return -1;
@@ -420,56 +435,41 @@ const skills = {
 		},
 		limited: true,
 		skillAnimation: true,
-		mark: true,
-		marktext: "霆",
 		init(player, skill) {
-			player.setStorage(skill, 0);
-		},
-		intro: {
-			name: "霆",
-			content: "当前拥有#个“霆”标记",
+			if (!player.hasMark(skill)) {
+				player.setMark(skill, 0);
+			}
 		},
 		async cost(event, trigger, player) {
-			const { bool, targets } = await player
+			event.result = await player
 				.chooseTarget({
-					prompt: "是否失去8个“霆”，对一名角色造成等于其体力上限的伤害",
+					prompt: get.prompt("jimie"),
+					prompt2: "是否失去8个“霆”，对一名角色造成等于其体力上限的伤害",
+					ai(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					}
 				})
 				.forResult();
-			event.result = {
-				bool: bool,
-				cost_data: {
-					links: targets,
-				},
-			};
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill(event.name);
-			const target = event.cost_data.links[0];
+			player.awakenSkill("jimie");
+			player.removeMark("jimie", 8);
+			const target = event.targets[0];
 			await target.damage({
 				num: target.maxHp,
 			});
-			player.removeMark("jimie", 8);
+
+			if (player.hasSkill("yuli")) {
+				player.storage._yuli_def = false;
+				player.storage._yuli_atk = false;
+			}
 		},
-		group: ["jimie_refresh"],
-		subSkill: {
-			refresh: {
-				trigger: {
-					player: ["addMark"],
-				},
-				forced: true,
-				popup: false,
-				filter(event, player) {
-					const marks = ["yuli_atk", "yuli_def"];
-					if (marks.includes(event.markName)) {
-						return false;
-					}
-					return marks.every(mark => player.countMark(mark) > 0);
-				},
-				async content(event, trigger, player) {
-					["yuli_atk", "yuli_def"].forEach(mark => player.clearMark(mark));
-					player.refreshSkill(["jimie"]);
-				},
-			},
+		mark: true,
+		marktext: "霆",
+		intro: {
+			name: "霆",
+			content: "当前拥有#个“霆”标记",
 		},
 	},
 	// OP蹋顿
