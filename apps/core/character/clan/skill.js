@@ -5578,7 +5578,7 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage) {
-				var str = "转换技。每名角色Ａ的出牌阶段限一次。";
+				let str = "转换技。每名角色Ａ的出牌阶段限一次。";
 				if (!storage) {
 					str += "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色不同，则你的手牌上限-1。";
 				} else {
@@ -5614,12 +5614,12 @@ const skills = {
 					);
 				},
 				selectTarget() {
-					var player = _status.event.player;
-					var count = game.countPlayer(current => lib.skill.clanlianzhu_global.filterTarget(null, player, current));
+					const player = get.player();
+					const count = game.countPlayer(current => lib.skill.clanlianzhu_global.filterTarget(null, player, current));
 					return count == 1 ? -1 : 1;
 				},
 				filterOk() {
-					var target = ui.selected.targets[0];
+					const target = ui.selected.targets[0];
 					if (!target) {
 						return false;
 					}
@@ -5633,10 +5633,10 @@ const skills = {
 				lose: false,
 				delay: false,
 				prompt() {
-					var player = _status.event.player;
-					var bocchi = [],
+					const player = get.player();
+					const bocchi = [],
 						kita = [];
-					game.countPlayer(function (target) {
+					game.countPlayer(target => {
 						if (target.hasSkill("clanlianzhu") && !target.hasSkill("clanlianzhu_targeted")) {
 							if (target.storage.clanlianzhu) {
 								if (
@@ -5658,7 +5658,7 @@ const skills = {
 					});
 					bocchi.sortBySeat();
 					kita.sortBySeat();
-					var str = "";
+					let str = "";
 					if (bocchi.length) {
 						str += "重铸一张牌，然后令";
 						bocchi.forEach((current, i) => {
@@ -5690,91 +5690,97 @@ const skills = {
 					let result;
 
 					target.addTempSkill("clanlianzhu_targeted", "phaseUseAfter");
+					target.changeZhuanhuanji("clanlianzhu");
 
-					if (!target.storage.clanlianzhu) {
-						target.changeZhuanhuanji("clanlianzhu");
+					if (cards?.length) {
 						await player.recast(cards);
-
 						if (!target.countCards("he") && !_status.connectMode) {
 							result = { bool: false };
 						} else {
 							result = await target.chooseCard("he", "联诛：是否重铸一张牌？", lib.filter.cardRecastable).forResult();
 						}
-
-						if (result.bool) {
+						if (result?.bool) {
 							await target.recast(result.cards);
 							if (get.color(cards[0]) === get.color(result.cards[0])) {
 								lib.skill.chenliuwushi.change(target, 1);
 							}
 						}
-						return;
-					}
-
-					result = await target
-						.chooseTarget("联诛：选择其与你使用【杀】的目标", true, (card, player, target) => {
-							if (target == player || target == _status.event.sourcex) {
+					} else {
+						const targets = game.filterPlayer(current => {
+							if (current == player || current == target) {
 								return false;
 							}
-							return target.inRangeOf(player) || target.inRangeOf(_status.event.sourcex);
-						})
-						.set("ai", target => {
-							return get.effect(target, { name: "sha" }, _status.event.player, _status.event.player);
-						})
-						.set("sourcex", player)
-						.forResult();
+							return current.inRangeOf(player) || current.inRangeOf(target);
+						});
 
-					if (!result.bool) {
-						return;
-					}
+						if (!targets.length) {
+							return;
+						}
 
-					const targetx = result.targets[0];
-					target.line(targetx);
+						result =
+							targets.length == 1
+								? { bool: true, targets }
+								: await target
+										.chooseTarget(`联诛：选择${player == target ? "你" : `${get.translation(player)}与你`}使用【杀】的目标`, true, (card, player, target) => {
+											return get.event().targets?.includes(target);
+										})
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "sha" }, player, player);
+										})
+										.set("targets", targets)
+										.forResult();
 
-					if (!event.isMine() && !event.isOnline()) {
-						await game.delayx();
-					}
+						if (!result?.bool) {
+							return;
+						}
 
-					const users = [player, target];
-					const usedCards = [];
+						const targetx = result.targets[0];
+						target.line(targetx);
 
-					for (const current of users) {
-						result = await current
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
+						if (!event.isMine() && !event.isOnline()) {
+							await game.delayx();
+						}
+
+						const users = [player, target];
+						const usedCards = [];
+
+						for (const current of users) {
+							if (!current.isIn()) {
+								continue;
+							}
+							result = await current
+								.chooseToUse(
+									function (card, player, event) {
+										if (get.name(card) != "sha") {
+											return false;
+										}
+										return lib.filter.filterCard.apply(this, arguments);
+									},
+									"联诛：是否对" + get.translation(targetx) + "使用一张杀？"
+								)
+								.set("targetRequired", true)
+								.set("complexSelect", true)
+								.set("complexTarget", true)
+								.set("filterTarget", function (card, player, target) {
+									if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 										return false;
 									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"联诛：是否对" + get.translation(targetx) + "使用一张杀？"
-							)
-							.set("targetRequired", true)
-							.set("complexSelect", true)
-							.set("complexTarget", true)
-							.set("filterTarget", function (card, player, target) {
-								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-									return false;
-								}
-								return lib.filter.targetEnabled.apply(this, arguments);
-							})
-							.set("sourcex", targetx)
-							.set("addCount", false)
-							.forResult();
+									return lib.filter.targetEnabled.apply(this, arguments);
+								})
+								.set("sourcex", targetx)
+								.set("addCount", false)
+								.forResult();
 
-						if (result.bool) {
-							usedCards.push(result.card);
+							if (result?.bool) {
+								usedCards.push(result.card);
+							}
 						}
-					}
 
-					if (usedCards.length > 1) {
-						const color = get.color(usedCards[0], false);
-						if (color != "none") {
-							for (const card of usedCards.slice(1)) {
-								const color2 = get.color(card, false);
-								if (color !== color2 && color2 !== "none") {
-									lib.skill.chenliuwushi.change(target, -1);
-									break;
-								}
+						if (usedCards.length > 1) {
+							const colors = usedCards.map(card => get.color(card, false)).toUniqued();
+							if (colors.length > 1 && !colors.includes("none")) {
+								lib.skill.chenliuwushi.change(target, -1);
 							}
 						}
 					}

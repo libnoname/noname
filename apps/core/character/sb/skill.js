@@ -129,46 +129,51 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(target => !player.getStorage("sbheyuan").includes(target) && target.isDamaged());
+			const storage = player.getStorage("sbzhenwei_last", []);
+			const num = storage[0] || 0;
+			return game.hasPlayer(target => !player.getStorage("sbheyuan").includes(target) && target.isDamaged()) && player.countCards("he") > num;
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
 			const map = get.info("sbzhenwei").map;
 			event.result = await player
-				.chooseTarget(
-					get.prompt2(event.skill) +
-						`<br><span class=bluetext>上次弃牌数：${storage[0] || 0}<br>最后执行选项：${map[storage[1]]?.[0] || "无"}</span>`,
-					(card, player, target) => {
+				.chooseCardTarget({
+					prompt: get.prompt2(event.skill) + `<br><span class=bluetext>上次弃牌数：${storage[0] || 0}<br>最后执行选项：${map[storage[1]]?.[0] || "无"}</span>`,
+					filterTarget: (card, player, target) => {
 						return !player.getStorage("sbheyuan").includes(target) && target.isDamaged();
-					}
-				)
-				.set("map", map)
-				.set("ai", target => {
-					const { map, player } = get.event();
-					const storage = player.getStorage("sbzhenwei_last", []);
-					const num = storage[0] || 0;
-					const choice = storage[1];
-					let eff = 1;
-					if (choice) {
-						eff = map[choice][1](player, target);
-					}
-					if (!num || (num < 3 && player.hasCard(card => 6 - get.value(card), "he"))) {
-						return eff;
-					}
-					return 0;
+					},
+					filterCard: lib.filter.cardDiscardable,
+					selectCard: storage[0] || 0,
+					position: "he",
+					ai1(card) {
+						return 7 - get.value(card);
+					},
+					ai2(target) {
+						const { map, player } = get.event();
+						const storage = player.getStorage("sbzhenwei_last", []);
+						const num = storage[0] || 0;
+						const choice = storage[1];
+						let eff = 1;
+						if (choice) {
+							eff = map[choice][1](player, target);
+						}
+						if (!num || (num < 3 && player.hasCard(card => 6 - get.value(card), "he"))) {
+							return eff;
+						}
+						return 0;
+					},
 				})
+				.set("map", map)
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const {
+				cards,
 				targets: [target],
 			} = event;
 			player.markAuto(event.name, target);
 			const storage = player.getStorage("sbzhenwei_last", []);
-			const num = storage[0] || 0;
-			if (num) {
-				await player.chooseToDiscard("he", num, true);
-			}
+			await player.discard(cards);
 			player.markAuto("sbzhenwei", target);
 			const map = get.info("sbzhenwei").map;
 			const choice = storage[1];

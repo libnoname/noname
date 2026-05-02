@@ -11847,44 +11847,50 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(current => current != player);
 		},
-		filterTarget(card, player, target) {
-			return player != target;
-		},
+		filterTarget: lib.filter.notMe,
 		selectTarget: [1, Infinity],
 		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
-			await player.chooseToDebate(event.targets.concat([player])).set("callback", lib.skill.jsrgshanzheng.callback);
+			await player
+				.chooseToDebate(
+					game.filterPlayer(current => {
+						return current == player || event.targets.includes(current);
+					})
+				)
+				.set("callback", lib.skill.jsrgshanzheng.callback);
 		},
 		async callback(event, trigger, player) {
 			const result = event.debateResult;
 			if (result.bool && result.opinion) {
 				if (result.opinion == "red") {
-					const prompt = "是否对一名未参与议事的角色造成1点伤害？";
+					const targets = game.filterPlayer(current => !result.targets.includes(current));
+					if (!targets.length) {
+						return;
+					}
 					const resultx = await player
-						.chooseTarget(prompt, function (card, player, target) {
-							const bool1 = current => !get.event().targets1.includes(current);
-							return bool1(target);
+						.chooseTarget("擅政：你可以对一名未参与议事的角色造成1点伤害", (card, player, target) => {
+							return get.event().targets.includes(target);
 						})
-						.set("complexTarget", true)
-						.set("targets1", result.targets)
+						.set("targets", targets)
 						.set("ai", target => {
-							return get.damageEffect(target, get.player()) >= 0;
+							const player = get.player();
+							return get.damageEffect(target, player, player);
 						})
 						.forResult();
-					if (resultx.bool) {
+					if (resultx?.bool) {
 						player.logSkill("jsrgshanzheng", resultx.targets, null, null, [3]);
 						player.line(resultx.targets.sortBySeat(), "green");
-						for (let target of resultx.targets.sortBySeat()) {
+						for (const target of resultx.targets.sortBySeat()) {
 							await target.damage();
 						}
 					}
 				} else if (result.opinion == "black") {
-					let cards = [],
+					const cards = [],
 						targets = [];
-					for (let color of result.opinions) {
+					for (const color of result.opinions) {
 						if (result[color]?.length) {
-							cards.addArray(result[color].map(i => i[1]));
+							cards.addArray(result[color].map(i => i[1]).filter(card => get.itemtype(card) == "card"));
 							targets.addArray(result[color].map(i => i[0]));
 						}
 					}
@@ -11907,9 +11913,7 @@ const skills = {
 	},
 	jsrgxiongbao: {
 		audio: 2,
-		trigger: {
-			global: "chooseToDebateBegin",
-		},
+		trigger: { global: "chooseToDebateBegin" },
 		filter(event, player) {
 			if (!event.list.includes(player)) {
 				return false;
@@ -11920,19 +11924,35 @@ const skills = {
 			return player.countCards("h") > 1;
 		},
 		async cost(event, trigger, player) {
-			event.result = await player.chooseCard(get.prompt(event.skill), 2, "本次议事你展示两张手牌").forResult();
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), 2)
+				.set("ai", card => {
+					let val = 6 - get.value(card);
+					if (!ui.selected.cards.length) {
+						if ((player.hasCard(cardx => card != cardx && get.color(cardx) == get.color(card)), "h")) {
+							val += 3;
+						}
+						return val;
+					}
+					if (get.color(card) == get.color(ui.selected.cards[0])) {
+						val += 3;
+					}
+					return val;
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (!trigger.fixedResult) {
+			if (!Array.isArray(trigger.fixedResult)) {
 				trigger.fixedResult = [];
 			}
 			trigger.fixedResult.push([player, event.cards[0]]);
 			trigger.fixedResult.push([player, event.cards[1]]);
-			for (let i of trigger.list) {
-				if (i == player || !i.countCards("h")) {
+			for (const current of trigger.list) {
+				if (current == player || !current.countCards("h")) {
 					continue;
 				}
-				trigger.fixedResult.push([i, i.getCards("h").randomGet()]);
+				player.line(current, "thunder");
+				trigger.fixedResult.push([current, current.getCards("h").randomGet()]);
 			}
 		},
 	},
