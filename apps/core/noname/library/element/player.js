@@ -1358,7 +1358,7 @@ export class Player extends HTMLDivElement {
 	 * 
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } 经过过滤后的牌的生成器
 	 */
 	*iterableGetKnownCards(other, filter) {
 		if (!other) {
@@ -1380,7 +1380,7 @@ export class Player extends HTMLDivElement {
 	 * 
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Card[] } - 经过过滤后的牌的数组
+	 * @returns { Card[] } 经过过滤后的牌的数组
 	 */
 	getKnownCards(other, filter) {
 		return Array.from(this.iterableGetKnownCards(other, filter));
@@ -1425,7 +1425,7 @@ export class Player extends HTMLDivElement {
 	 * 
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { number } - 经过过滤后的牌的数量
+	 * @returns { number } 经过过滤后的牌的数量
 	 */
 	countKnownCards(other, filter) {
 		let count = 0;
@@ -5196,7 +5196,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } 经过过滤后的牌的生成器
 	 */
 	*iterableGetCards(position, filter) {
 		if (typeof position != "string") {
@@ -5362,7 +5362,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Card[] } - 经过过滤后的牌的数组
+	 * @returns { Card[] } 经过过滤后的牌的数组
 	 */
 	getCards(position, filter) {
 		return Array.from(this.iterableGetCards(position, filter));
@@ -5375,7 +5375,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } 经过过滤后的牌的生成器
 	 */
 	*iterableGetDiscardableCards(player, position, filter) {
 		for (const card of this.iterableGetCards(position, filter)) {
@@ -5390,7 +5390,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Card[] } - 经过过滤后的牌的数组
+	 * @returns { Card[] } 经过过滤后的牌的数组
 	 */
 	getDiscardableCards(player, position, filter) {
 		return Array.from(this.iterableGetDiscardableCards(player, position, filter));
@@ -5403,7 +5403,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行获取的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
+	 * @returns { Generator<Card> } 经过过滤后的牌的生成器
 	 */
 	*iterableGetGainableCards(player, position, filter) {
 		for (const card of this.iterableGetCards(position, filter)) {
@@ -5418,7 +5418,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行获取的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { Card[] } - 经过过滤后的牌的数组
+	 * @returns { Card[] } 经过过滤后的牌的数组
 	 */
 	getGainableCards(player, position, filter) {
 		return Array.from(this.iterableGetGainableCards(player, position, filter));
@@ -5436,7 +5436,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { number } - 经过过滤后的牌的数量
+	 * @returns { number } 经过过滤后的牌的数量
 	 */
 	countCards(position, filter) {
 		let count = 0;
@@ -5466,7 +5466,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行弃置的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { number } - 经过过滤后的牌的数量
+	 * @returns { number } 经过过滤后的牌的数量
 	 */
 	countDiscardableCards(player, position, filter) {
 		let count = 0;
@@ -5481,7 +5481,7 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } player - 进行获取的角色
 	 * @param { string } [position="h"] - 牌区，h:手牌区，e:装备区，j:判定区，x:扩展区，s:特殊区(木牛流马牌的位置)
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
-	 * @returns { number } - 经过过滤后的牌的数量
+	 * @returns { number } 经过过滤后的牌的数量
 	 */
 	countGainableCards(player, position, filter) {
 		let count = 0;
