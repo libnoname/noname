@@ -1307,26 +1307,49 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 获取角色所有的明置手牌
+	 * 返回玩家手牌中已明置的牌
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getShownCards`
+	 * 
+	 * @returns { Generator<Card> }
+	 */
+	*iterableGetShownCards() {
+		for (const card of this.iterableGetCards("h")) {
+			if (get.is.shownCard(card)) {
+				yield card;
+			}
+		}
+	}
+	/**
+	 * 返回玩家手牌中已明置的牌
+	 * 
+	 * @returns { Card[] }
 	 */
 	getShownCards() {
-		return this.getCards("h", card => {
-			return get.is.shownCard(card);
-		});
+		return Array.from(this.iterableGetShownCards());
 	}
 	/**
-	 * 获取角色所有的明置手牌数
-	 * @returns {number}
+	 * 返回玩家手牌中已明置牌的数量
+	 * 
+	 * @returns { number }
 	 */
 	countShownCards() {
-		return this.getShownCards().length;
+		let count = 0;
+		for (const _ of this.iterableGetShownCards()) {
+			++count;
+		}
+		return count;
 	}
 	/**
-	 * 判断一名角色是否拥有明置手牌
+	 * 判断玩家手牌中存在已明置的牌
+	 * 
 	 * @returns {boolean}
 	 */
 	hasShownCards() {
-		return this.hasCard(card => get.is.shownCard(card), "h");
+		for (const _ of this.iterableGetShownCards()) {
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 返回玩家手牌中被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
