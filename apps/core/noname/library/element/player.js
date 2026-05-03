@@ -10264,14 +10264,32 @@ export class Player extends HTMLDivElement {
 			this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
 		}
 	}
+	/**
+	 * 获取置于武将牌上给定类型的牌（如【田】和【逆】）
+	 *
+	 * @param { string } tag - 需要获取牌的标签
+	 * @returns { Card[] }
+	 */
 	getExpansions(tag) {
 		return this.getCards("x", card => card.hasGaintag(tag));
 	}
+	/**
+	 * 获取置于武将牌上给定类型的牌的数量（如【田】和【逆】）
+	 *
+	 * @param { string } tag - 需要获取牌的标签
+	 * @returns { number }
+	 */
 	countExpansions(tag) {
-		return this.getExpansions(tag).length;
+		return this.countCards("x", card => card.hasGaintag(tag));
 	}
+	/**
+	 * 判断给定类型的牌是否置于武将牌上（如【田】和【逆】）
+	 *
+	 * @param { string } tag - 需要获取牌的标签
+	 * @returns { boolean }
+	 */
 	hasExpansions(tag) {
-		return this.countExpansions(tag) > 0;
+		return this.hasCards("x", card => card.hasGaintag(tag));
 	}
 	setStorage(name, value, mark) {
 		this.storage[name] = value;
