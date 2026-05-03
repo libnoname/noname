@@ -1329,78 +1329,87 @@ export class Player extends HTMLDivElement {
 		return this.hasCard(card => get.is.shownCard(card), "h");
 	}
 	/**
-	 * 获取该角色被other所知的牌
-	 * @param { Player } [other]
-	 * @param { (card: Card) => boolean } [filter]
+	 * 返回玩家手牌中被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getKnownCards`
+	 * 
+	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
+	 * @returns { Generator<Card> } - 经过过滤后的牌的生成器
 	 */
-	getKnownCards(other = _status.event.player, filter = card => true) {
+	*iterableGetKnownCards(other, filter) {
 		if (!other) {
 			if (other === null) {
-				console.trace(`getKnownCards的other参数不应传入null,可以用void 0或undefined占位`);
+				console.trace("other参数不应传入null，可以用void 0或undefined占位；后续版本可能将不再检查，请及时更改！");
+			} else if (other !== undefined) {
+				console.trace("other参数不应传入假值（如false、0和空字符串）后续版本可能会废除该兼容，请及时更改！");
 			}
-			other = _status.event.player || this;
+			other = get.player() || this;
 		}
-		if (!filter) {
-			if (other === null) {
-				console.trace(`getKnownCards的filter参数不应传入null,可以用void 0或undefined占位`);
+		for (const card of this.iterableGetCards("h", filter)) {
+			if (card.isKnownBy(other)) {
+				yield card;
 			}
-			filter = card => true;
 		}
-		return this.getCards("h", card => {
-			return card.isKnownBy(other) && filter(card);
-		});
 	}
 	/**
-	 * 判断此角色的手牌是否已经被看光了
-	 * @param { Player } [other]
+	 * 返回玩家手牌中被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
+	 * 
+	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
+	 * @returns { Card[] } - 经过过滤后的牌的数组
 	 */
-	isAllCardsKnown(other = _status.event.player) {
-		if (!other) {
-			if (other === null) {
-				console.trace(`isAllCardsKnown的other参数不应传入null,可以用void 0或undefined占位`);
-			}
-			other = _status.event.player || this;
-		}
-		if (!other) {
-			other = this;
-		}
-		return (
-			this.countCards("h", card => {
-				return !card.isKnownBy(other);
-			}) == 0
-		);
+	getKnownCards(other, filter) {
+		return Array.from(this.iterableGetKnownCards(other, filter));
 	}
 	/**
-	 * 判断此角色是否有被知的牌。
-	 * @param { Player } [other]
-	 * @param { (card: Card) => boolean } [filter]
+	 * 判断玩家手牌是否全部被给定角色所知，默认为当前事件的角色（不存在则改为自身）
+	 * 
+	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
+	 * @returns { boolean }
 	 */
-	hasKnownCards(other = _status.event.player, filter = card => true) {
+	isAllCardsKnown(other) {
 		if (!other) {
 			if (other === null) {
-				console.trace(`hasKnownCards的other参数不应传入null,可以用void 0或undefined占位`);
+				console.trace("other参数不应传入null，可以用void 0或undefined占位；后续版本可能将不再检查，请及时更改！");
+			} else if (other !== undefined) {
+				console.trace("other参数不应传入假值（如false、0和空字符串）后续版本可能会废除该兼容，请及时更改！");
 			}
-			other = _status.event.player || this;
+			other = get.player() || this;
 		}
-		if (!filter) {
-			if (other === null) {
-				console.trace(`hasKnownCards的filter参数不应传入null,可以用void 0或undefined占位`);
+		for (const card of this.iterableGetCards("h")) {
+			if (!card.isKnownBy(other)) {
+				return false;
 			}
-			filter = card => true;
 		}
-		return (
-			this.countCards("h", card => {
-				return card.isKnownBy(other) && filter(card);
-			}) > 0
-		);
+		return true;
 	}
 	/**
-	 * 数此角色被知道的牌
-	 * @param { Player } [other]
-	 * @param { (card: Card) => boolean } [filter]
+	 * 判断玩家手牌中是否有被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
+	 *
+	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
+	 * @returns { boolean }
+	 */
+	hasKnownCards(other, filter) {
+		for (const _ of this.iterableGetKnownCards(other, filter)) {
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * 返回玩家手牌中被给定角色所知的牌的数量，默认为当前事件的角色（不存在则改为自身）
+	 * 
+	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
+	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
+	 * @returns { number } - 经过过滤后的牌的数量
 	 */
 	countKnownCards(other, filter) {
-		return this.getKnownCards(other, filter).length;
+		let count = 0;
+		for (const _ of this.iterableGetKnownCards(other, filter)) {
+			++count;
+		}
+		return count;
 	}
 	/**
 	 * Execute the delay card effect
