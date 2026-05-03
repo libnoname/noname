@@ -4732,7 +4732,6 @@ const skills = {
 	jishe3: {
 		audio: "jishe",
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		sourceSkill: "jishe",
 		filter(event, player) {
 			if (player.countCards("h")) {
