@@ -1219,24 +1219,49 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 获取角色所有的连接手牌
+	 * 返回玩家手牌中所有的连接手牌
+	 * 
+	 * 该方法返回一个生成器，需要返回数组请使用`Player#getConnectedCards`
+	 * 
+	 * @returns { Generator<Card> }
+	 */
+	*iterableGetConnectedCards() {
+		for (const card of this.iterableGetCards("h")) {
+			if (get.is.connectedCard(card)) {
+				yield card;
+			}
+		}
+	}
+	/**
+	 * 返回玩家手牌中所有的连接牌
+	 * 
+	 * @returns { Card[] }
 	 */
 	getConnectedCards() {
-		return this.getCards("h", card => get.is.connectedCard(card));
+		return Array.from(this.iterableGetConnectedCards());
 	}
 	/**
-	 * 获取角色所有的连接手牌数
-	 * @returns {number}
+	 * 返回玩家手牌中连接牌的数量
+	 * 
+	 * @returns { number }
 	 */
 	countConnectedCards() {
-		return this.getConnectedCards().length;
+		let count = 0;
+		for (const _ of this.iterableGetConnectedCards()) {
+			++count;
+		}
+		return count;
 	}
 	/**
-	 * 判断一名角色是否拥有连接手牌
-	 * @returns {boolean}
+	 * 判断玩家手牌中是否有连接牌
+	 * 
+	 * @returns { boolean }
 	 */
 	hasConnectedCards() {
-		return this.hasCard(card => get.is.connectedCard(card), "h");
+		for (const _ of this.iterableGetConnectedCards()) {
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 让一名角色明置一些手牌
