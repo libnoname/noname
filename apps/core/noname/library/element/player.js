@@ -1220,9 +1220,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中所有的连接手牌
-	 * 
+	 *
 	 * 该方法返回一个生成器，需要返回数组请使用`Player#getConnectedCards`
-	 * 
+	 *
 	 * @returns { Generator<Card> }
 	 */
 	*iterableGetConnectedCards() {
@@ -1234,7 +1234,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中所有的连接牌
-	 * 
+	 *
 	 * @returns { Card[] }
 	 */
 	getConnectedCards() {
@@ -1242,7 +1242,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中连接牌的数量
-	 * 
+	 *
 	 * @returns { number }
 	 */
 	countConnectedCards() {
@@ -1254,7 +1254,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 判断玩家手牌中是否有连接牌
-	 * 
+	 *
 	 * @returns { boolean }
 	 */
 	hasConnectedCards() {
@@ -1333,9 +1333,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中已明置的牌
-	 * 
+	 *
 	 * 该方法返回一个生成器，需要返回数组请使用`Player#getShownCards`
-	 * 
+	 *
 	 * @returns { Generator<Card> }
 	 */
 	*iterableGetShownCards() {
@@ -1347,7 +1347,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中已明置的牌
-	 * 
+	 *
 	 * @returns { Card[] }
 	 */
 	getShownCards() {
@@ -1355,7 +1355,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中已明置牌的数量
-	 * 
+	 *
 	 * @returns { number }
 	 */
 	countShownCards() {
@@ -1367,7 +1367,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 判断玩家手牌中存在已明置的牌
-	 * 
+	 *
 	 * @returns {boolean}
 	 */
 	hasShownCards() {
@@ -1378,9 +1378,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
-	 * 
+	 *
 	 * 该方法返回一个生成器，需要返回数组请使用`Player#getKnownCards`
-	 * 
+	 *
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Generator<Card> } 经过过滤后的牌的生成器
@@ -1402,7 +1402,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中被给定角色所知的牌，默认为当前事件的角色（不存在则改为自身）
-	 * 
+	 *
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { Card[] } 经过过滤后的牌的数组
@@ -1412,7 +1412,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 判断玩家手牌是否全部被给定角色所知，默认为当前事件的角色（不存在则改为自身）
-	 * 
+	 *
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @returns { boolean }
 	 */
@@ -1447,7 +1447,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 返回玩家手牌中被给定角色所知的牌的数量，默认为当前事件的角色（不存在则改为自身）
-	 * 
+	 *
 	 * @param { Player } [other] - 作为观测者的玩家（即以该玩家为原点观察）
 	 * @param { string | string[] | Record<string, any> | ((card: Card) => boolean) } [filter] - 过滤条件，可以是牌名、牌名数组、属性对象或过滤函数
 	 * @returns { number } 经过过滤后的牌的数量
