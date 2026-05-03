@@ -16250,4 +16250,4 @@ export class Player extends HTMLDivElement {
 	}
 }
 
-CacheContext.inject(Player.prototype, ["hasCard", "hasValueTarget", "getModableSkills", "getCardIndex", "countCards", "getSkills", "getUseValue", "canUse"]);
+CacheContext.inject(Player.prototype, ["hasCard", "hasCards", "hasDiscardableCards", "hasGainableCards", "hasConnectedCards", "hasShownCards", "hasKnownCards", "isAllCardsKnown", "hasValueTarget", "getModableSkills", "getCardIndex", "countCards", "countDiscardableCards", "countGainableCards", "countConnectedCards", "countShownCards", "countKnownCards", "getSkills", "getUseValue", "canUse"]);
