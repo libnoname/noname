@@ -5755,8 +5755,9 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "dcjuxi",
 					filterCard: () => false,
-					selectCard: 0,
+					selectCard: -1,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
@@ -5778,9 +5779,7 @@ const skills = {
 		},
 		ai: {
 			order: 7,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			clear: {
@@ -5792,9 +5791,7 @@ const skills = {
 				forced: true,
 				onremove: true,
 				charlotte: true,
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "equipAfter", "cardsDiscardAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "cardsDiscardAfter"] },
 				filter(event, player) {
 					return event.getd()?.some(card => player.getStorage("dcjuxi_refresh").includes(get.name(card)));
 				},
@@ -5802,9 +5799,7 @@ const skills = {
 					player.removeSkill(event.name);
 					player.refreshSkill("dcjuxi");
 				},
-				intro: {
-					content: "$ 进入弃牌堆重置技能",
-				},
+				intro: { content: "$进入弃牌堆重置技能" },
 			},
 		},
 	},
@@ -5821,6 +5816,7 @@ const skills = {
 				}
 			},
 		},
+		locked: false,
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			const { card } = event;
@@ -10357,21 +10353,26 @@ const skills = {
 				filter(event, player) {
 					return player.hasMark("dcjunhe_effect");
 				},
-				//forced: true,
-				//popup: false,
 				async cost(event, trigger, player) {
 					if (event.triggername == "damageBegin1") {
 						const list = player.getStorage("dcjunhe_shown");
+						const target = trigger.player;
 						event.result = await player
-							.chooseToDiscard(`军合：是否弃置一张符合条件的牌并令此伤害+1？`, "he", (card, player) => {
+							.chooseToDiscard(get.prompt(event.skill, target), `弃置一张符合条件的牌并令${get.translation(trigger.player)}即将受到来自你的${trigger.num}点伤害+1`, "he", (card, player) => {
 								const { list } = get.event();
 								const type = get.type2(card);
 								const color = get.color(card);
 								return list.includes(type) || list.includes(color);
 							})
 							.set("list", list)
-							.set("target", trigger.player)
-							.set("ai", card => {})
+							.set("goon", get.damageEffect(trigger.player, player, player) > 0)
+							.set("ai", card => {
+								const { goon } = get.event();
+								if (!goon) {
+									return 0;
+								}
+								return 7 - get.value(card);
+							})
 							.set("chooseonly", true)
 							.forResult();
 					} else {
@@ -11355,12 +11356,12 @@ const skills = {
 			sha: {
 				mod: {
 					cardname(card, player, name) {
-						if (card.hasGaintag("dcsbjunmou_sha")) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("dcsbjunmou_sha")) {
 							return "sha";
 						}
 					},
 					cardnature(card, player, nature) {
-						if (card.hasGaintag("dcsbjunmou_sha")) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("dcsbjunmou_sha")) {
 							return "fire";
 						}
 					},
@@ -11543,6 +11544,9 @@ const skills = {
 					position: "he",
 					ai1(card) {
 						return 10 - get.value(card);
+					},
+					ai2(target) {
+						return 1;
 					},
 				});
 				nextx.set(
