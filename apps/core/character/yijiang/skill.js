@@ -3104,28 +3104,29 @@ const skills = {
 		async content_choose(event, trigger, player) {
 			const { target } = event;
 
+			let resultIndex;
 			if (target.isHealthy()) {
-				return;
-			}
-
-			let index;
-			if (get.attitude(player, target) > 0) {
-				index = 1;
+				resultIndex = 0;
 			} else {
-				index = 0;
-			}
+				let index;
+				if (get.attitude(player, target) > 0) {
+					index = 1;
+				} else {
+					index = 0;
+				}
 
-			const chooseResult = await player
-				.chooseControlList({
-					list: ["令" + get.translation(target) + "失去1点体力，随机使用一张装备牌", "令" + get.translation(target) + "回复1点体力，弃置一张装备牌"],
-					forced: true,
-					ai(event, player) {
-						return get.event().index;
-					},
-				})
-				.set("index", index)
-				.forResult();
-			const resultIndex = chooseResult?.index || index;
+				const chooseResult = await player
+					.chooseControlList({
+						list: ["令" + get.translation(target) + "失去1点体力，随机使用一张装备牌", "令" + get.translation(target) + "回复1点体力，弃置一张装备牌"],
+						forced: true,
+						ai(event, player) {
+							return get.event().index;
+						},
+					})
+					.set("index", index)
+					.forResult();
+				resultIndex = chooseResult?.index || index;
+			}
 			let card = null;
 			if (resultIndex == 0) {
 				await target.loseHp();
