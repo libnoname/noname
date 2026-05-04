@@ -96,7 +96,7 @@ const skills = {
 						}
 
 						// 随机弃牌：牌越少越疼，牌越关键越疼
-						const cards = target.countCards("he");
+						const cards = target.countDiscardableCards(target, "he");
 						if (cards) {
 							score += Math.min(3, 1 + 4 / cards);
 						}
@@ -146,33 +146,28 @@ const skills = {
 						const link = button.link;
 						const selected = ui.selected.buttons.map(button => button.link);
 
-						// 同时选装备牌和弃牌的情况
-						// 总之最后有点抽象，但还算能理解
-						const equipCanBeGained = card => get.type(card) === "equip" && lib.filter.canBeGained(card, source, player);
-						const canBeDiscarded = card => lib.filter.canBeDiscarded(card, player, player);
-						const bothEquipAndDiscard = pos => card => equipCanBeGained(card) && player.hasCard(cardx => canBeDiscarded(cardx) && card !== cardx, pos);
 						switch (link) {
 							case "fengyin":
 								return !player.hasSkill("tingwei_fengyin");
 							case "equip": {
-								const hasEquip = player.hasCard(equipCanBeGained, "he");
+								const hasEquip = player.hasGainableCards(source, "he", { type: "equip" });
 								if (!hasEquip) {
 									return false;
 								}
 								if (!selected.includes("discard")) {
 									return true;
 								}
-								return player.hasCard(bothEquipAndDiscard("he"), "he");
+								return player.hasGainableCards(source, "he", card => get.type(card) === "equip" && player.hasDiscardableCards(player, "he", cardx => cardx !== card));
 							}
 							case "discard": {
-								const hasCard = player.hasCard(canBeDiscarded, "he");
+								const hasCard = player.hasDiscardableCards(player, "he");
 								if (!hasCard) {
 									return false;
 								}
 								if (!selected.includes("equip")) {
 									return true;
 								}
-								return player.hasCard(bothEquipAndDiscard("he"), "he");
+								return player.hasGainableCards(source, "he", card => get.type(card) === "equip" && player.hasDiscardableCards(player, "he", cardx => cardx !== card));
 							}
 							default:
 								return true;
@@ -409,7 +404,7 @@ const skills = {
 									if (!event.discarding) {
 										return true;
 									}
-									return target.hasCard(cardx => cardx !== card && lib.filter.canBeDiscarded(cardx, target, target), "he");
+									return target.hasDiscardableCards(target, "he", cardx => cardx !== card);
 								},
 								position: "he",
 								forced: true,
