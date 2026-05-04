@@ -5186,25 +5186,21 @@ const skills = {
 	shiming: {
 		audio: 2,
 		trigger: { global: "phaseDrawBegin1" },
-		filter(event, player) {
-			return !player.hasSkill("shiming_round");
-		},
+		round: 1,
 		check(event, player) {
-			return true; //get.attitude(player,event.player)<0||get.damageEffect(event.player,event.player,player)>0;
+			return true;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.addTempSkill("shiming_round", "roundStart");
 			const {
 				targets: [target],
 			} = event;
 			const cards = get.cards(3, true);
-			const result = await player
+			let result = await player
 				.chooseButton(["识命：是否将其中一张置于牌堆底？", cards.slice(0)])
 				.set("ai", button => {
-					var att = _status.event.att,
-						damage = _status.event.damage,
-						val = get.value(button.link, _status.event.player);
+					const { att, damage, player } = get.event();
+					const val = get.value(button.link, player);
 					if ((att > 0 && damage < 0) || (att <= 0 && damage > 0)) {
 						return 6 - val;
 					}
@@ -5213,28 +5209,22 @@ const skills = {
 				.set("att", get.attitude(player, target))
 				.set("damage", get.damageEffect(target, target, player) > 0 && target.hp <= 3 ? 1 : -1)
 				.forResult();
-			if (result.bool && result.links?.length) {
+			if (result?.bool && result.links?.length) {
 				const { links: cards } = result;
 				player.popup("一下", "wood");
 				game.log(player, "将一张牌置于了牌堆底");
 				await game.cardsGotoPile(cards);
 			}
-			const result2 = await target
+			result = await target
 				.chooseBool("是否跳过摸牌阶段并对自己造成1点伤害，然后从牌堆底摸三张牌？")
 				.set("ai", () => _status.event.bool)
 				.set("bool", get.damageEffect(target, target) >= -6 || target.hp > 3)
 				.forResult();
-			if (result2.bool) {
+			if (result?.bool) {
 				trigger.cancel();
 				await target.damage(target);
-				await target.draw(3);
+				await target.draw(3, "bottom");
 			}
-		},
-		subSkill: {
-			round: {
-				mark: true,
-				intro: { content: "本轮已发动〖识命〗" },
-			},
 		},
 	},
 	jiangxi: {
