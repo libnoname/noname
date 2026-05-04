@@ -14967,6 +14967,9 @@ export class Player extends HTMLDivElement {
 			num = get.rand(6) + 1;
 			_status.event.num = num;
 		}
+		if (lib.config.test_game != null) {
+			return;
+		}
 		if (!game.online) {
 			game.pause();
 		}
