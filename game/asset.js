@@ -11053,7 +11053,7 @@ window.noname_asset_list = [
 	"image/mode/boss/card/linglongshimandai.jpg",
 	"image/mode/boss/card/linglongshimandai.png",
 	"image/mode/boss/card/lingsheji.png",
-	"image/mode/boss/card/longfenghemingjian.png",
+	"image/mode/boss/card/luanfenghemingjian.png",
 	"image/mode/boss/card/niaobaidaowenha.png",
 	"image/mode/boss/card/qicaishenlu.jpg",
 	"image/mode/boss/card/qicaishenlu.png",
