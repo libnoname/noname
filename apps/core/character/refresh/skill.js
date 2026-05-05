@@ -8747,31 +8747,26 @@ const skills = {
 	rexuanhuo: {
 		audio: 2,
 		trigger: { player: "phaseDrawEnd" },
-		direct: true,
 		filter(event, player) {
 			return player.countCards("h") > 1 && game.countPlayer() > 2;
 		},
-		async content(event, trigger, player) {
-			let result;
-			let target, target2;
-
-			// step 0
-			var ai2 = function (target) {
-				var player = _status.event.player;
+		async cost(event, trigger, player) {
+			const ai2 = function (target) {
+				const player = get.player();
 				if (get.attitude(player, target) <= 0) {
 					return 0;
 				}
-				var list = [null, "juedou"].concat(lib.inpile_nature);
+				const list = [null, "juedou"].concat(lib.inpile_nature);
 				if (target.hasSkill("ayato_zenshen")) {
 					list.push("kami");
 				}
-				var num = Math.max.apply(
+				let num = Math.max.apply(
 					Math,
 					list.map(function (i) {
 						if (i == "juedou") {
 							return target.getUseValue({ name: "juedou", isCard: true }, false);
 						}
-						var card = { name: "sha", nature: i, isCard: true };
+						const card = { name: "sha", nature: i, isCard: true };
 						return target.getUseValue(card, false);
 					})
 				);
@@ -8780,16 +8775,15 @@ const skills = {
 				}
 				return num;
 			};
-
-			result = await player
+			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt2("rexuanhuo"),
+					prompt: get.prompt2(event.skill),
 					filterCard: true,
 					selectCard: 2,
 					position: "h",
 					filterTarget: lib.filter.notMe,
-					goon: game.hasPlayer(function (current) {
-						return current != player && ai2(player, current) > 0;
+					goon: game.hasPlayer(current => {
+						return current != player && ai2(current) > 0;
 					}),
 					ai1(card) {
 						if (!_status.event.goon) {
@@ -8797,78 +8791,74 @@ const skills = {
 						}
 						return 7 - get.value(card);
 					},
-					ai2: ai2,
+					ai2,
 				})
 				.forResult();
-
-			// step 1
-			if (result.bool) {
-				target = result.targets[0];
-				event.target = target;
-				player.logSkill("rexuanhuo", target);
-				await player.give(result.cards, target);
-			} else {
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.give(event.cards, target);
+			let result;
+			const targets = game.filterPlayer(current => {
+				return current != player && current != target;
+			});
+			if (!targets.length) {
 				return;
 			}
-
-			// step 2
-			if (
-				game.hasPlayer(function (current) {
-					return current != player && current != target;
-				})
-			) {
-				result = await player
-					.chooseTarget(
-						function (card, player, target) {
-							return target != player && target != _status.event.target;
-						},
-						"选择" + get.translation(target) + "使用【杀】或【决斗】的目标",
-						true
-					)
-					.set("target", target)
-					.set("ai", function (target) {
-						var evt = _status.event;
-						var list = [null, "juedou"].concat(lib.inpile_nature);
-						if (evt.target.hasSkill("ayato_zenshen")) {
-							list.push("kami");
-						}
-						return Math.max.apply(
-							Math,
-							list.map(function (i) {
-								var card = { name: "sha", isCard: true };
-								if (i == "juedou") {
-									card.name = "juedou";
-								} else if (i) {
-									card.nature = i;
+			result =
+				targets.length == 1
+					? { bool: true, targets }
+					: await player
+							.chooseTarget(
+								(card, player, target) => {
+									return _status.event.targets?.includes(target);
+								},
+								`选择${get.translation(target)}使用【杀】或【决斗】的目标`,
+								true
+							)
+							.set("target", target)
+							.set("ai", target => {
+								const evt = _status.event;
+								const list = [null, "juedou"].concat(lib.inpile_nature);
+								if (evt.target.hasSkill("ayato_zenshen")) {
+									list.push("kami");
 								}
-								if (!evt.target.canUse(card, target, false)) {
-									return 0;
-								}
-								return get.effect(target, card, evt.target, evt.player);
+								return Math.max.apply(
+									Math,
+									list.map(item => {
+										const card = { name: "sha", isCard: true };
+										if (item == "juedou") {
+											card.name = "juedou";
+										} else if (item) {
+											card.nature = item;
+										}
+										if (!evt.target.canUse(card, target, false)) {
+											return 0;
+										}
+										return get.effect(target, card, evt.target, evt.player);
+									})
+								);
 							})
-						);
-					})
-					.forResult();
-			} else {
+							.set("targets", targets)
+							.forResult();
+			if (!result?.bool) {
 				return;
 			}
-
-			// step 3
-			target2 = result.targets[0];
+			const target2 = result.targets[0];
 			event.target2 = target2;
 			player.line(target2);
 			game.log(player, "选择了", target2);
-			var list = lib.inpile_nature.slice(0);
+			const list = lib.inpile_nature.slice(0);
 			list.unshift(null);
-			var vcards = [];
+			let vcards = [];
 			if (target.hasSkill("ayato_zenshen")) {
 				list.add("kami");
 			}
-			for (var i of list) {
-				if (target.canUse({ name: "sha", isCard: true, nature: i }, target2, false)) {
-					vcards.push(["基本", "", "sha", i]);
-				}
-			}
+			vcards = list
+				.filter(nature => target.canUse({ name: "sha", isCard: true, nature }, target2, false))
+				.map(nature => {
+					return ["基本", "", "sha", nature];
+				});
 			if (target.canUse({ name: "juedou", isCard: true }, target2, false)) {
 				vcards.push(["基本", "", "juedou"]);
 			}
@@ -8879,45 +8869,28 @@ const skills = {
 					result = { index: 1 };
 				}
 			} else if (!target.countCards("h")) {
-				event.vcards = vcards;
 				result = { index: 0 };
 			} else {
-				event.vcards = vcards;
 				result = await target
 					.chooseControl()
-					.set("choiceList", [
-						"视为对" + get.translation(target2) + "使用任意一种【杀】或【决斗】",
-						"将所有手牌交给" + get.translation(player),
-					])
+					.set("choiceList", [`视为对${get.translation(target2)}使用任意一种【杀】或【决斗】`, `将所有手牌交给${get.translation(player)}`])
 					.forResult();
 			}
-
-			// step 4
-			if (result.index == 0) {
-				if (event.vcards.length == 1) {
-					result = { links: event.vcards, bool: true };
-				} else {
-					result = await target
-						.chooseButton(["请选择要对" + get.translation(event.target2) + "使用的牌", [event.vcards, "vcard"]], true)
-						.set("ai", function (button) {
-							var player = _status.event.player;
-							return get.effect(
-								_status.event.getParent().target2,
-								{ name: button.link[2], isCard: true, nature: button.link[3] },
-								player,
-								player
-							);
-						})
-						.forResult();
+			if (result?.index == 0) {
+				result = await target
+					.chooseButton([`眩惑：请选择要对${get.translation(target2)}使用的牌`, [vcards, "vcard"]], true)
+					.set("target", target2)
+					.set("direct", true)
+					.set("ai", button => {
+						const { player, target } = get.event();
+						return get.effect(target, { name: button.link[2], isCard: true, nature: button.link[3] }, player, player);
+					})
+					.forResult();
+				if (result?.bool) {
+					await target.useCard({ name: result.links[0][2], isCard: true, nature: result.links[0][3] }, false, target2);
 				}
-			} else {
-				target.give(target.getCards("h"), player, "giveAuto");
-				return;
-			}
-
-			// step 5
-			if (result.bool) {
-				await target.useCard({ name: result.links[0][2], isCard: true, nature: result.links[0][3] }, false, event.target2);
+			} else if (result?.index == 1) {
+				await target.give(target.getCards("h"), player, "giveAuto");
 			}
 		},
 		ai: {
