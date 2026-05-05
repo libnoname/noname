@@ -1,4 +1,9 @@
 export default {
+	"#dcbinji1": " 好铁锻成好兵器，保准能捅贼将一万个窟隆！",
+	"#dcbinji2": " 这铁好啊，硬的像虎骨，韧的像龙筋！",
+	"#dczangmao1": " 不才走南闯北，做得些贩马生意。",
+	"#dczangmao2": " 幽州驹、冀州马，铜钱换马，童叟无欺！",
+	"#dc_zhangshiping:die": " 什么？玄德奔南走了？",
 	"#dchuozhong1": "杀贼之荣光，我魏讽，岂能独享！",
 	"#dchuozhong2": "事败才叫造反，功成即是勤王！",
 	"#dczhuguo1": "让邺城燃烧！让奸贼陨落！",

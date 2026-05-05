@@ -1,4 +1,9 @@
 export default {
+	"#starxisong1": " 一目十行，速而不漏，博而不杂。",
+	"#starxisong2": " 张目可阅三千牍，弹舌能辨二百误！",
+	"#starfanglang1": " 吾当牵黄擎苍，猎尽天下伪君子面皮！",
+	"#starfanglang2": " 掷靴投铜鹤，呼尔莫上船！",
+	"#star_zhangsong:die": " 刘季玉！你也配某一声主公！",
 	"#dcyuzheng1": "文王贤誉天下，犹知不可为众矢之的。",
 	"#dcyuzheng2": "袁公路，汝当真要冒天下之大不韪吗？",
 	"#dcyxsuishi1": "孙伯符，汝当真要作忘恩负义之徒吗？",
