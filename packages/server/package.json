@@ -1,0 +1,26 @@
+{
+    "name": "@noname/server",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "dev": "tsx src/index.ts",
+        "build": "tsup",
+        "lint": "pnpm eslint src/**"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "ws": "^8.19.0"
+    },
+    "devDependencies": {
+        "@types/ws": "^8.18.1"
+    }
+}

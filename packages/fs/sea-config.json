@@ -1,0 +1,1 @@
+{ "main": "output/entry.bundle.cjs", "output": "output/index.blob" }

@@ -1,6 +1,34 @@
-noname-server.exe 的源码见以下仓库：
+# 无名杀
 
-https://github.com/nonameShijian/noname-server
+## 项目使用约定
+
+本项目基于 GPL 3.0 协议开源，使用此项目时请遵守开源协议。  
+除此外，希望你在使用代码时已经了解以下额外说明：
+
+1. 打包、二次分发 **请保留代码出处**：<https://github.com/libnoname/noname>
+2. 请不要用于商业用途。
+
+## 快速启动
+
+### 环境要求
+
+> **提示：** 请参考 [本地文档](./docs/how-to-start.md) 或 [github文档](https://github.com/libnoname/noname/wiki/%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E6%97%A0%E5%90%8D%E6%9D%80%EF%BC%88%E7%A8%8B%E5%BA%8F%E5%91%98%E7%89%88%EF%BC%89) 配置环境。
+
+- [Node.js](https://nodejs.org/) ^20.19.0 || >=22.12.0
+- [pnpm](https://pnpm.io/) >= 9
+- Webview: Chromium >= 91 || Safari >=16.4.0 (暂不支持Firefox)
+
+### 安装依赖
+
+```bash
+pnpm install
+```
+
+### 启动
+
+```bash
+pnpm dev
+```
 
 ---
 
@@ -16,15 +44,13 @@ https://github.com/nonameShijian/noname-server
 
 客户端下载戳这里：
 
-安卓： https://github.com/nonameShijian/noname-shijian-android/releases/tag/v1.6.8
+安卓： <https://github.com/nonameShijian/noname-shijian-android/releases/tag/v1.6.8>
 
-PC:  https://github.com/nonameShijian/noname/releases/tag/v1.75
+PC:  <https://github.com/nonameShijian/noname/releases/tag/v1.75>
 
 网页端推荐使用 Chrome 系内核浏览器游玩，暂不支持 Firefox 浏览器
 
 请尽量保证游玩的 Chrome 系浏览器或手机 Webview 的`内核版本大于等于91`
-
-提交 Pull Request 时请推送到"PR-Branch"分支！
 
 ---
 

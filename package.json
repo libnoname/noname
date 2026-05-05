@@ -1,0 +1,32 @@
+{
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx scripts/dev.ts",
+        "build": "tsx scripts/build.ts",
+        "init:extension": "tsx scripts/initExtension.ts",
+        "serve": "pnpm -F @noname/fs dev --dirname=../../dist",
+        "start": "pnpm build && pnpm serve",
+        "generateTestPack": "pnpm build && tsx scripts/generateTestPack.ts",
+        "lint": "pnpm -r lint"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/minimist": "^1.2.5",
+        "@types/node": "^25.2.3",
+        "concurrently": "^9.2.1",
+        "cross-env": "^10.1.0",
+        "eslint": "^9.39.2",
+        "eslint-plugin-vue": "^10.7.0",
+        "globals": "^17.3.0",
+        "minimist": "^1.2.8",
+        "prettier": "^3.8.1",
+        "terser": "^5.46.0",
+        "tsup": "^8.5.1",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.55.0",
+        "vue-eslint-parser": "^10.3.0"
+    }
+}

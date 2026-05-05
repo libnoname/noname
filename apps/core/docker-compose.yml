@@ -1,0 +1,8 @@
+name: noname
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8089:8089"
