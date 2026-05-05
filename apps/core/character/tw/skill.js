@@ -26285,6 +26285,7 @@ const skills = {
 			const target = event.targets[0],
 				evt = event.getParent();
 			evt._target = target;
+			evt.given_map = new Map();
 			const list = game.filterPlayer(function (current) {
 				return current != player && current != target && current.hp <= player.hp;
 			});
@@ -26301,19 +26302,28 @@ const skills = {
 			if (!player.isIn() || !target.countGainableCards(player, "h")) {
 				return;
 			}
-			const result = await target.chooseToGive(player, "h").forResult();
+			const result = await target
+				.chooseToGive(player, "h")
+				.set("ai", card => {
+					const { player, target } = get.event();
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						return 7 - get.value(card);
+					}
+					return 0;
+				})
+				.forResult();
 			if (!result?.bool || !result.cards?.length) {
 				game.log(target, "拒绝给牌");
+			} else {
+				target.addExpose(0.1);
+				event.getParent().given_map ??= new Map();
+				event.getParent().given_map.set(target, result.cards);
 			}
 		},
 		async contentAfter(event, trigger, player) {
-			let num = 0,
-				par = event.getParent();
-			player.getHistory("gain", function (evt) {
-				if (evt.getParent(2) == par) {
-					num += evt.cards.length;
-				}
-			});
+			event.getParent().given_map ??= new Map();
+			let num = Array.from(event.getParent().given_map.values()).flat().length;
 			if (!num) {
 				await player.loseHp();
 				await game.doAsyncInOrder(event.targets, async target => {

@@ -2167,9 +2167,7 @@ const skills = {
 	},
 	sxrmshefu: {
 		audio: "shefu",
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return player.countCards("he");
 		},
@@ -2188,6 +2186,8 @@ const skills = {
 				})
 				.forResult();
 		},
+		// 防止【请君】中useSkill('sxrmshefu')出现player.discard(event.cards)的结算，lose: false也可以
+		discard: false,
 		async content(event, trigger, player) {
 			const next = player.addToExpansion(event.cards, player, "giveAuto");
 			next.gaintag.add("sxrmshefu_effect");
@@ -2202,9 +2202,7 @@ const skills = {
 		group: "sxrmshefu_effect",
 		subSkill: {
 			effect: {
-				trigger: {
-					global: ["useCard"],
-				},
+				trigger: { global: "useCard" },
 				filter(event, player) {
 					if (_status.currentPhase == player || event.player == player || event.all_excluded) {
 						return false;
