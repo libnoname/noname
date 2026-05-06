@@ -1713,17 +1713,12 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (
-				player.countCards("h") == 0 ||
-				!game.hasPlayer(function (current) {
-					return current != player && current.hp <= player.hp;
-				})
-			) {
+			if (!player.hasCards() || !game.hasPlayer(current => current !== player && current.hp <= player.hp)) {
 				return false;
 			}
-			var list = player.getStorage("caozhao");
-			for (var i of lib.inpile) {
-				if (!list.includes(i) && ["basic", "trick"].includes(get.type(i))) {
+			const cardNames = player.getStorage("caozhao");
+			for (const name of lib.inpile) {
+				if (!cardNames.includes(name) && ["basic", "trick"].includes(get.type(name))) {
 					return true;
 				}
 			}
@@ -1731,20 +1726,20 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = player.getStorage("caozhao"),
-					vcards = [];
-				for (var i of lib.inpile) {
-					if (!list.includes(i)) {
-						var type = get.type(i);
+				const cardNames = player.getStorage("caozhao");
+				const vcards = [];
+				for (const name of lib.inpile) {
+					if (!cardNames.includes(name)) {
+						const type = get.type(name);
 						if (type == "basic" || type == "trick") {
-							vcards.push([type, "", i]);
+							vcards.push([type, "", name]);
 						}
 					}
 				}
 				return ui.create.dialog("草诏", [vcards, "vcard"]);
 			},
 			check(button) {
-				return _status.event.player.getUseValue({ name: button.link[2], isCard: true }, null, true);
+				return _status.event.player.getUseValue({ name: button.link[2], isCard: true }, undefined, true);
 			},
 			backup(links, player) {
 				return {
@@ -1753,59 +1748,68 @@ const skills = {
 					filterCard: true,
 					position: "h",
 					check(card) {
-						return player.getUseValue({ name: lib.skill.caozhao_backup.cardname }) - (player.getUseValue(card, null, true) + 0.1) / (get.value(card) / 6);
+						return player.getUseValue({ name: lib.skill.caozhao_backup.cardname }) - (player.getUseValue(card, undefined, true) + 0.1) / (get.value(card) / 6);
 					},
 					filterTarget(card, player, target) {
 						return target != player && target.hp <= player.hp;
 					},
 					discard: false,
 					lose: false,
-					content() {
-						"step 0";
-						player.showCards(cards, get.translation(player) + "发动【草诏】，声明" + get.translation(lib.skill.caozhao_backup.cardname));
-						if (!player.storage.caozhao) {
-							player.storage.caozhao = [];
+					async content(event, trigger, player) {
+						const { cards, target } = event;
+						if (cards[0].cardid == null) {
+							return;
 						}
+						await player.showCards(cards, `${get.translation(player)}发动【草诏】，声明${get.translation(lib.skill.caozhao_backup.cardname)}`);
+						player.storage.caozhao ??= [];
 						player.storage.caozhao.push(lib.skill.caozhao_backup.cardname);
-						"step 1";
-						target
-							.chooseControl()
-							.set("choiceList", ["令" + get.translation(player) + "将" + get.translation(cards[0]) + "的牌名改为" + get.translation(lib.skill.caozhao_backup.cardname), "失去1点体力"])
-							.set("ai", function (event, player) {
-								var target = _status.event.getParent().player;
-								if (get.attitude(player, target) > 0) {
+						const controlResult = await target
+							.chooseControl({
+								choiceList: [`令${get.translation(player)}将${get.translation(cards[0])}的牌名改为${get.translation(lib.skill.caozhao_backup.cardname)}`, "失去1点体力"],
+								ai(event, player) {
+									const evt = get.event().getParent();
+									if (evt == null) {
+										return 0;
+									}
+									const target = evt.player;
+									if (get.attitude(player, target) > 0) {
+										return 0;
+									}
+									if (player.hp > 3 || (player.hp > 1 && player.hasSkill("zhaxiang"))) {
+										return 1;
+									}
+									if (player.hp > 2) {
+										return [0, 1].randomGet();
+									}
 									return 0;
-								}
-								if (player.hp > 3 || (player.hp > 1 && player.hasSkill("zhaxiang"))) {
-									return 1;
-								}
-								if (player.hp > 2) {
-									return Math.random() > 0.5 ? 0 : 1;
-								}
-								return 0;
-							});
-						"step 2";
-						if (result.index == 1) {
+								},
+							})
+							.forResult();
+						if (controlResult.index == 1) {
 							target.addExpose(0.2);
-							target.loseHp();
-							event.finish();
-						} else {
-							player.chooseTarget("是否将" + get.translation(lib.skill.caozhao_backup.cardname) + "（" + get.translation(cards[0]) + "）交给一名其他角色？", lib.filter.notMe).set("ai", () => -1);
+							await target.loseHp();
+							return;
 						}
-						"step 3";
-						if (result.bool) {
-							var target = result.targets[0];
+						const targetResult = await player
+							.chooseTarget({
+								prompt: `是否将${get.translation(lib.skill.caozhao_backup.cardname)}（${get.translation(cards[0])}）交给一名其他角色？`,
+								filterTarget: lib.filter.notMe,
+								ai() {
+									return -1;
+								},
+							})
+							.forResult();
+						if (targetResult.bool && targetResult.targets?.length) {
+							const target = targetResult.targets[0];
 							player.line(target, "green");
-							if (!target.storage.caozhao_info) {
-								target.storage.caozhao_info = {};
-							}
+							target.storage.caozhao_info ??= {};
 							target.storage.caozhao_info[cards[0].cardid] = lib.skill.caozhao_backup.cardname;
 							target.addSkill("caozhao_info");
-							player.give(cards, target, "give").gaintag.add("caozhao");
+							const next = player.give(cards, target, true);
+							next.gaintag.add("caozhao");
+							await next;
 						} else {
-							if (!player.storage.caozhao_info) {
-								player.storage.caozhao_info = {};
-							}
+							player.storage.caozhao_info ??= {};
 							player.storage.caozhao_info[cards[0].cardid] = lib.skill.caozhao_backup.cardname;
 							player.addGaintag(cards, "caozhao");
 							player.addSkill("caozhao_info");
@@ -1820,7 +1824,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "将一张手牌声明为" + get.translation(links[0][2]);
+				return `将一张手牌声明为${get.translation(links[0][2])}`;
 			},
 		},
 		ai: {
@@ -1834,13 +1838,19 @@ const skills = {
 		charlotte: true,
 		mod: {
 			cardname(card, player) {
-				var map = player.storage.caozhao_info;
+				if (card.cardid == null) {
+					return;
+				}
+				const map = player.storage.caozhao_info;
 				if (map && map[card.cardid] && get.itemtype(card) == "card" && card.hasGaintag("caozhao")) {
 					return map[card.cardid];
 				}
 			},
 			cardnature(card, player) {
-				var map = player.storage.caozhao_info;
+				if (card.cardid == null) {
+					return;
+				}
+				const map = player.storage.caozhao_info;
 				if (map && map[card.cardid] && get.itemtype(card) == "card" && card.hasGaintag("caozhao")) {
 					return false;
 				}
