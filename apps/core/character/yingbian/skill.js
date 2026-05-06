@@ -2905,61 +2905,60 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.cards = player.getExpansions("qiaoyan");
 			event.result = await player
-				.chooseTarget(true, "请选择【献珠】的目标", "将" + get.translation(event.cards) + "交给一名角色。若该角色不为你自己，则你令其视为对其攻击范围内的另一名角色使用【杀】")
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var eff = get.sgn(get.attitude(player, target)) * get.value(_status.event.getParent().cards[0], target);
-					if (player != target) {
-						eff += Math.max.apply(
-							null,
-							game
-								.filterPlayer(function (current) {
-									if (current != target && player.inRange(current) && target.canUse("sha", current, false)) {
-										return true;
-									}
-								})
-								.map(function (current) {
-									return get.effect(current, { name: "sha" }, target, player);
-								})
-						);
-					}
-					return eff;
+				.chooseTarget({
+					prompt: "请选择【献珠】的目标",
+					prompt2: `将${get.translation(event.cards)}交给一名角色。若该角色不为你自己，则你令其视为对其攻击范围内的另一名角色使用【杀】`,
+					forced: true,
+					ai(target) {
+						const player = get.player();
+						const evt = get.event().getParent();
+						if (evt == null) {
+							return 0;
+						}
+
+						let eff = get.sgn(get.attitude(player, target)) * get.value(evt.cards[0], target);
+						if (player !== target) {
+							eff += Math.max(...game.filterPlayer(current => current !== target && player.inRange(current) && target.canUse("sha", current, false)).map(current => get.effect(current, { name: "sha" }, target, player)));
+						}
+						return eff;
+					},
 				})
 				.forResult();
 		},
-		content() {
-			"step 0";
-			event.cards = player.getExpansions("qiaoyan");
-			event.target = targets[0];
-			"step 1";
-			player.give(cards, target, "give");
-			"step 2";
-			if (
-				player != target &&
-				target.isIn() &&
-				player.isIn() &&
-				game.hasPlayer(function (current) {
-					return current != target && player.inRange(current) && target.canUse("sha", current, false);
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("qiaoyan");
+			const target = event.targets[0];
+			await player.give(cards, target, true);
+			if (player === target || !target.isIn() || !player.isIn()) {
+				return;
+			}
+			if (!game.hasPlayer(current => current !== target && player.inRange(current) && target.canUse("sha", current, false))) {
+				return;
+			}
+			const str = get.translation(target);
+			const result = await player
+				.chooseTarget({
+					prompt: `选择攻击范围内的一名角色，视为${str}对其使用【杀】`,
+					filterTarget(card, player, current) {
+						return player.inRange(current) && get.event().target.canUse("sha", current, false);
+					},
+					forced: true,
+					ai(current) {
+						const { player, target } = get.event();
+						return get.effect(current, { name: "sha" }, target, player);
+					},
 				})
-			) {
-				var str = get.translation(target);
-				player
-					.chooseTarget(true, "选择攻击范围内的一名角色，视为" + str + "对其使用【杀】", function (card, player, target) {
-						var source = _status.event.target;
-						return player.inRange(target) && source.canUse("sha", target, false);
-					})
-					.set("target", target)
-					.set("ai", function (target) {
-						var evt = _status.event;
-						return get.effect(target, { name: "sha" }, evt.target, evt.player);
-					});
-			} else {
-				event.finish();
+				.set("target", target)
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				target.useCard({ name: "sha", isCard: true }, result.targets[0], false);
-			}
+			const card = get.autoViewAs({ name: "sha", isCard: true });
+			await target.useCard({
+				card,
+				targets: result.targets,
+				addCount: false,
+			});
 		},
 		ai: { combo: "qiaoyan" },
 	},
