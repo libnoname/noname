@@ -7314,7 +7314,7 @@ const skills = {
 				animate: "gain2",
 			});
 			if (cards.some(card => get.color(card) === "red")) {
-				await event.target
+				await target
 					.chooseToUse({
 						prompt: "是否使用一张杀？",
 						filterCard: get.filter({ name: "sha" }),
