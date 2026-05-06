@@ -4132,29 +4132,26 @@ const skills = {
 	},
 	yanxi: {
 		audio: 2,
-		enable: "phaseUse",
 		usable: 1,
-		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 0;
-		},
+		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("h") > 0;
-			});
+			return game.hasPlayer(current => current !== player && current.hasCards());
 		},
-		content() {
-			"step 0";
-			event.card = target.getCards("h").randomGet();
-			var cards;
-			cards = get.cards(2);
-			event.cards = cards.concat([event.card]);
-			while (cards.length) {
-				ui.cardPile.insertBefore(cards.pop().fix(), ui.cardPile.firstChild);
+		filterTarget(card, player, target) {
+			return target !== player && target.hasCards();
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			const card = target.getCards("h").randomGet();
+			let pileCards = get.cards(2);
+			let cards = pileCards.concat(card);
+			while (pileCards.length > 0) {
+				ui.cardPile.insertBefore(pileCards.pop().fix(), ui.cardPile.firstChild);
 			}
 			if (get.mode() == "guozhan") {
-				var num = ui.cardPile.childElementCount;
-				var num1 = get.rand(1, num - 1),
-					num2 = get.rand(1, num - 1);
+				const num = ui.cardPile.childElementCount;
+				let num1 = get.rand(1, num - 1);
+				let num2 = get.rand(1, num - 1);
 				if (num1 == num2) {
 					if (num1 == 0) {
 						num2++;
@@ -4162,62 +4159,77 @@ const skills = {
 						num1--;
 					}
 				}
-				event.cards = [event.card, ui.cardPile.childNodes[num1], ui.cardPile.childNodes[num2]];
+				cards = [card, ui.cardPile.childNodes[num1], ui.cardPile.childNodes[num2]];
 			}
 			game.updateRoundNumber();
-			event.cards.randomSort();
-			game.log(player, "展示了", event.cards);
-			event.videoId = lib.status.videoId++;
-			var str = get.translation(player) + "对" + get.translation(target) + "发动了【宴戏】";
+			cards.randomSort();
+			game.log(player, "展示了", cards);
+			const videoId = lib.status.videoId++;
+			const str = `${get.translation(player)}对${get.translation(target)}发动了【宴戏】`;
 			game.broadcastAll(
-				function (str, id, cards) {
-					var dialog = ui.create.dialog(str, cards);
+				(str, id, cards) => {
+					const dialog = ui.create.dialog(str, cards);
 					dialog.videoId = id;
 				},
 				str,
-				event.videoId,
-				event.cards
+				videoId,
+				cards
 			);
-			game.addVideo("showCards", player, [str, get.cardsInfo(event.cards)]);
-			game.delay(2);
-			"step 1";
-			var func = function (id, target) {
-				var dialog = get.idDialog(id);
+			game.addVideo("showCards", player, [str, get.cardsInfo(cards)]);
+			await game.delay(2);
+			const updateDialog = (id, target) => {
+				const dialog = get.idDialog(id);
 				if (dialog) {
 					dialog.content.firstChild.innerHTML = "猜猜哪张是" + get.translation(target) + "的手牌？";
 				}
 			};
 			if (player == game.me) {
-				func(event.videoId, target);
+				updateDialog(videoId, target);
 			} else if (player.isOnline()) {
-				player.send(func, event.videoId, target);
+				player.send(updateDialog, videoId, target);
 			}
-			"step 2";
-			var next = player.chooseButton(true);
-			next.set("dialog", event.videoId);
-			next.set("ai", function (button) {
-				if (_status.event.answer) {
-					return button.link == _status.event.answer ? 1 : 0;
+			const next = player.chooseButton({
+				forced: true,
+				ai(button) {
+					const evt = get.event();
+					if (evt.answer) {
+						return button.link == evt.answer ? 1 : 0;
+					}
+					return get.value(button.link, evt.player);
 				}
-				return get.value(button.link, _status.event.player);
 			});
-			if (player.hasSkillTag("viewHandcard", null, target, true)) {
+			next.set("dialog", videoId);
+			if (card.isKnownBy(player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 				next.set("answer", card);
 			}
-			"step 3";
-			game.broadcastAll("closeDialog", event.videoId);
+			const result = await next.forResult();
+			game.broadcastAll("closeDialog", videoId);
 			player.addTempSkill("yanxi2");
-			var card2 = result.links[0];
-			if (card2 == card) {
-				player.popup("洗具");
-				cards.remove(card2);
-				player.$gain2(cards);
-				player.gain(cards, "log").gaintag.add("yanxi");
-				player.gain(card, target, "bySelf", "give").gaintag.add("yanxi");
-			} else {
+			const card2 = result.links[0];
+			if (card2 !== card) {
 				player.popup("杯具");
-				player.gain(card2, "gain2").gaintag.add("yanxi");
+				await player.gain({
+					cards: card2,
+					animate: "gain2",
+					gaintag: ["yanxi"],
+				});
+				return;
 			}
+			player.popup("洗具");
+			cards.remove(card2);
+			player.$gain2(cards);
+			await player.gain({
+				cards,
+				log: true,
+				gaintag: ["yanxi"],
+			});
+			await player.gain({
+				cards: [card],
+				source: target,
+				bySelf: true,
+				animate: "give",
+				gaintag: ["yanxi"],
+			});
 		},
 		ai: {
 			order: 6,
