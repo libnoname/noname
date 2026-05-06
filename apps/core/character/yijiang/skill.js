@@ -14238,7 +14238,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const card = event.links[0];
+			const card = event.cards[0];
 			await player.showCards([card], get.translation(player) + "展示的手牌");
 			if (get.type(card) !== "basic") {
 				await trigger.player.discard(card);
