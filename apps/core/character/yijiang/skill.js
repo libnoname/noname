@@ -6999,15 +6999,16 @@ const skills = {
 				cards: event.cards,
 				discarder: player,
 			});
+			let related;
 			let used = false;
 			if (player.canUse({ name: "sha", isCard: true }, trigger.player)) {
 				used = true;
-				await player.useCard({
+				related = await player.useCard({
 					card: get.autoViewAs({ name: "sha", isCard: true }),
 					targets: [trigger.player],
 				});
 			}
-			if (!used || !game.hasPlayer2(current => current.getHistory("damage", evt => evt.getParent(2) == related).length > 0)) {
+			if (!used || !game.hasPlayer2(current => current.hasHistory("damage", evt => evt.getParent(2) == related))) {
 				await player.draw();
 			}
 		},
