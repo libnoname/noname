@@ -4388,18 +4388,12 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			if (get.mode() == "guozhan") {
-				return (
-					game
-						.getAllGlobalHistory("everything", evt => {
-							return evt.name == "showCharacter" && evt.toShow?.some(i => get.character(i).skills?.includes("xijue"));
-						})
-						.indexOf(event) == 0
-				);
+			if (get.mode() === "guozhan") {
+				return game.getAllGlobalHistory("everything", evt => evt.name === "showCharacter" && evt.toShow?.some(i => get.character(i).skills?.includes("xijue"))).indexOf(event) === 0;
 			}
-			return event.name != "showCharacter" && (event.name != "phase" || game.phaseNumber == 0);
+			return event.name !== "showCharacter" && (event.name !== "phase" || game.phaseNumber === 0);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("xijue", 4);
 		},
 		intro: {
@@ -4415,10 +4409,10 @@ const skills = {
 				forced: true,
 				sourceSkill: "xijue",
 				filter(event, player) {
-					var stat = player.getStat();
+					const stat = player.getStat();
 					return stat.damage && stat.damage > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("xijue", player.getStat().damage);
 				},
 			},
@@ -4427,51 +4421,42 @@ const skills = {
 				trigger: {
 					player: "phaseDrawBegin2",
 				},
-				direct: true,
 				filter(event, player) {
 					return (
 						event.num > 0 &&
 						!event.numFixed &&
 						player.hasMark("xijue") &&
-						game.hasPlayer(function (target) {
-							return player != target && target.countCards("h") > 0;
-						})
+						game.hasPlayer(target => player !== target && target.hasCards("h"))
 					);
 				},
-				content() {
-					"step 0";
-					var num = trigger.num;
-					if (get.mode() == "guozhan" && num > 2) {
-						num = 2;
-					}
-					player.chooseTarget(
-						"是否弃置一枚“爵”发动【突袭】？",
-						"获得至多" + get.translation(num) + "名角色的各一张手牌，然后少摸等量的牌",
-						[1, num],
-						function (card, player, target) {
-							return target.countCards("h") > 0 && player != target;
-						},
-						function (target) {
-							var att = get.attitude(_status.event.player, target);
-							if (target.hasSkill("tuntian")) {
-								return att / 10;
-							}
-							return 1 - att;
-						}
-					);
-					"step 1";
-					if (result.bool) {
-						result.targets.sortBySeat();
-						player.logSkill("xijue_tuxi", result.targets);
-						player.removeMark("xijue", 1);
-						player.gainMultiple(result.targets);
-						trigger.num -= result.targets.length;
-					} else {
-						event.finish();
-					}
-					"step 2";
+				async cost(event, trigger, player) {
+					const num = get.mode() === "guozhan" ? Math.min(trigger.num, 2) : trigger.num;
+					event.result = await player
+						.chooseTarget({
+							prompt: "是否弃置一枚“爵”发动【突袭】？",
+							prompt2: `获得至多${get.translation(num)}名角色的各一张手牌，然后少摸等量的牌`,
+							filterTarget(card, player, target) {
+								return target !== player && target.hasCards("h");
+							},
+							selectTarget: [1, num],
+							ai(target) {
+								const attitude = get.attitude(get.player(), target);
+								if (target.hasSkill("tuntian")) {
+									return attitude / 10;
+								}
+								return 1 - attitude;
+							},
+						})
+						.forResult();
+				},
+				logTarget: "targets",
+				async content(event, trigger, player) {
+					event.targets.sortBySeat();
+					player.removeMark("xijue", 1);
+					await player.gainMultiple(event.targets);
+					trigger.num -= event.targets.length;
 					if (trigger.num <= 0) {
-						game.delay();
+						await game.delay();
 					}
 				},
 				ai: {
@@ -4482,71 +4467,62 @@ const skills = {
 				audio: 2,
 				trigger: { global: "phaseJieshuBegin" },
 				filter(event, player) {
-					return (
-						player.hasMark("xijue") &&
-						event.player.isAlive() &&
-						event.player != player &&
-						player.countCards("h", function (card) {
-							if (_status.connectMode || get.mode() != "guozhan") {
-								return true;
-							}
-							return get.type(card) == "basic";
-						})
-					);
+					return player.hasMark("xijue") && event.player.isAlive() && event.player !== player && player.hasCards("h", card => _status.connectMode || get.mode() !== "guozhan" || get.type(card) === "basic");
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var nono =
-						Math.abs(get.attitude(player, trigger.player)) < 3 ||
-						trigger.player.hp > player.countMark("xijue") * 1.5 ||
-						trigger.player.countCards("e", function (card) {
-							return get.value(card, trigger.player) <= 0;
-						});
-					if (get.damageEffect(trigger.player, player, player) <= 0) {
-						nono = true;
+				async cost(event, trigger, player) {
+					const target = trigger.player;
+					let nono = true;
+					if (get.damageEffect(target, player, player) > 0) {
+						nono = Math.abs(get.attitude(player, target)) < 3 || target.hp > player.countMark("xijue") * 1.5 || target.hasCards("e", card => get.value(card, trigger.player) <= 0);
 					}
-					var next = player.chooseToDiscard(`是否弃置一枚“爵”和一张${get.mode() == "guozhan" ? "基本" : "手"}牌，对${get.translation(trigger.player)}发动【骁果】？`, "h", function (card, player) {
-						if (get.mode() != "guozhan") {
-							return true;
-						}
-						return get.type(card, null, player) == "basic";
-					});
-					next.set("ai", function (card) {
-						if (_status.event.nono) {
-							return 0;
-						}
-						return 8 - get.useful(card);
-					});
-					next.set("logSkill", ["xijue_xiaoguo", trigger.player]);
-					next.set("nono", nono);
-					"step 1";
-					if (result.bool) {
-						player.removeMark("xijue", 1);
-						var nono = get.damageEffect(trigger.player, player, trigger.player) >= 0;
-						trigger.player
-							.chooseToDiscard("he", "弃置一张装备牌并令" + get.translation(player) + "摸一张牌，或受到1点伤害", { type: "equip" })
-							.set("ai", function (card) {
-								if (_status.event.nono) {
+					event.result = await player
+						.chooseToDiscard({
+							prompt: `是否弃置一枚“爵”和一张${get.mode() === "guozhan" ? "基本" : "手"}牌，对${get.translation(target)}发动【骁果】？`,
+							filterCard(card, player) {
+								return get.mode() !== "guozhan" || get.type2(card, player) === "basic";
+							},
+							position: "h",
+							chooseonly: true,
+							ai(card) {
+								const { nono } = get.event();
+								return nono ? 0 : 8 - get.useful(card);
+							},
+						})
+						.set("nono", nono)
+						.forResult();
+					event.result.targets = [target];
+				},
+				logTarget: "targets",
+				async content(event, trigger, player) {
+					const { cards, targets } = event;
+					const target = targets[0];
+					player.removeMark("xijue", 1);
+					await player.discard({ cards: event.cards });
+					const result = await target
+						.chooseToDiscard({
+							prompt: `弃置一张装备牌并令${get.translation(player)}摸一张牌，或受到1点伤害`,
+							filterCard: get.filter({ type: "equip" }),
+							position: "he",
+							ai(card) {
+								const { player, nono } = get.event();
+								if (nono) {
 									return 0;
 								}
-								if (_status.event.player.hp == 1) {
+								if (player.hp === 1) {
 									return 10 - get.value(card);
 								}
 								return 9 - get.value(card);
-							})
-							.set("nono", nono);
-					} else {
-						event.finish();
-					}
-					"step 2";
+							}
+						})
+						.set("nono", get.damageEffect(target, player, target) >= 0)
+						.forResult();
 					if (result.bool) {
-						if (get.mode() != "guozhan") {
-							player.draw();
+						if (get.mode() !== "guozhan") {
+							await player.draw();
 						}
-					} else {
-						trigger.player.damage();
+						return;
 					}
+					await target.damage();
 				},
 				ai: {
 					expose: 0.3,
