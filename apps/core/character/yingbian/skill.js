@@ -3807,71 +3807,62 @@ const skills = {
 		locked: false,
 		hiddenSkill: true,
 		filter(event, player) {
-			var target = _status.currentPhase;
-			return player != target && target && target.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("tuishi"));
+			const target = _status.currentPhase;
+			return player !== target && target && target.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("tuishi"));
 		},
-		content() {
+		async content(_event, _trigger, player) {
 			player.addTempSkill("tuishi2");
 		},
 	},
 	tuishi2: {
 		trigger: { global: "phaseEnd" },
-		direct: true,
 		charlotte: true,
 		sourceSkill: "tuishi",
 		filter(event, player) {
-			var target = _status.currentPhase;
-			return (
-				target != player &&
-				target &&
-				target.isAlive() &&
-				game.hasPlayer(function (current) {
-					return current != target && target.inRange(current);
-				})
-			);
+			const target = _status.currentPhase;
+			return target != null && target !== player && target.isAlive() && game.hasPlayer(current => current !== target && target.inRange(current));
 		},
-		content() {
-			"step 0";
-			var target = _status.currentPhase;
-			event.target = target;
-			player
-				.chooseTarget(get.prompt2("tuishi", event.target), function (card, player, target) {
-					var source = _status.event.source;
-					return source != target && source.inRange(target);
+		async cost(event, trigger, player) {
+			const targetx = _status.currentPhase;
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("tuishi", targetx),
+					filterTarget(card, player, target) {
+						const targetx = get.event().targetx;
+						return targetx !== target && targetx.inRange(target);
+					},
+					ai(target) {
+						const event = get.event();
+						if (!event.goon) {
+							return 0;
+						}
+						return get.effect(target, { name: "sha" }, event.source, event.player);
+					},
 				})
-				.set("source", target)
-				.set("goon", get.damageEffect(target, player, player) > 0)
-				.set("ai", function (target) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					var evt = _status.event;
-					return get.effect(target, { name: "sha" }, evt.source, evt.player);
-				});
-			"step 1";
-			if (result.bool) {
-				event.target2 = result.targets[0];
-				player.logSkill("tuishi");
-				player.line2([target, event.target2]);
-				game.delayx();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			target.chooseToUse({
-				preTarget: event.target2,
-				prompt: "请对" + get.translation(event.target2) + "使用一张【杀】，或受到来自" + get.translation(player) + "的1点伤害",
-				filterCard(card, player) {
-					return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
-				},
-				filterTarget(card, player, target) {
-					return target == _status.event.preTarget && lib.filter.filterTarget.apply(this, arguments);
-				},
-				addCount: false,
-			});
-			"step 3";
+				.set("targetx", targetx)
+				.set("goon", get.damageEffect(targetx, player, player) > 0)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const source = _status.currentPhase;
+			const target = event.targets[0];
+			player.line2([source, target]);
+			await game.delayx();
+			const result = await source
+				.chooseToUse({
+					prompt: `请对${get.translation(target)}使用一张【杀】，或受到来自${get.translation(player)}的1点伤害`,
+					filterCard(card, player) {
+						return get.name(card) === "sha" && lib.filter.filterCard.apply(this, arguments);
+					},
+					filterTarget(card, player, current) {
+						return current === get.event().preTarget && lib.filter.filterTarget.apply(this, arguments);
+					},
+					addCount: false,
+				})
+				.set("preTarget", target)
+				.forResult();
 			if (!result.bool) {
-				target.damage();
+				await source.damage({ source: player });
 			}
 		},
 	},
