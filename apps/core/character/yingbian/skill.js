@@ -4251,66 +4251,63 @@ const skills = {
 	},
 	sanchen: {
 		audio: 2,
-		enable: "phaseUse",
 		usable(skill, player) {
 			return 1 + player.countMark("sanchen_add");
 		},
+		enable: "phaseUse",
 		filter(event, player) {
-			var stat = player.getStat("sanchen");
-			return game.hasPlayer(function (current) {
-				return !stat || !stat.includes(current);
-			});
+			const stat = player.getStat("sanchen");
+			return game.hasPlayer(current => !stat?.includes(current));
 		},
 		filterTarget(card, player, target) {
-			var stat = player.getStat("sanchen");
-			return !stat || !stat.includes(target);
+			const stat = player.getStat("sanchen");
+			return !stat?.includes(target);
 		},
-		content() {
-			"step 0";
-			var stat = player.getStat();
-			if (!stat.sanchen) {
-				stat.sanchen = [];
-			}
-			stat.sanchen.push(target);
-			if (get.mode() != "guozhan") {
-				player.addMark("sanchen", 1, false);
-			}
-			target.draw(3);
-			"step 1";
-			if (!target.countCards("he")) {
-				event._result = { bool: false };
-			} else {
-				target.chooseToDiscard("he", true, 3).set("ai", function (card) {
-					var list = ui.selected.cards.map(function (i) {
-						return get.type2(i);
-					});
-					if (!list.includes(get.type2(card))) {
-						return 7 - get.value(card);
-					}
-					return -get.value(card);
-				});
-			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length) {
-				var list = [];
-				for (var i of result.cards) {
-					list.add(get.type2(i));
-				}
-				if (list.length == result.cards.length) {
-					target.draw();
-					player.addTempSkill(event.name + "_add", "phaseUseAfter");
-					player.addMark(event.name + "_add", 1, false);
-					if (get.mode() == "guozhan") {
-						player.addTempSkills("pozhu");
-					}
-				}
-			} else {
-				target.draw();
-				player.addTempSkill(event.name + "_add", "phaseUseAfter");
-				player.addMark(event.name + "_add", 1, false);
-				if (get.mode() == "guozhan") {
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const stat = player.getStat();
+			const grantBonus = async () => {
+				await target.draw();
+				player.addTempSkill(`${event.name}_add`, "phaseUseAfter");
+				player.addMark(`${event.name}_add`, 1, false);
+				if (get.mode() === "guozhan") {
 					player.addTempSkills("pozhu");
 				}
+			};
+			stat.sanchen ??= [];
+			stat.sanchen.push(target);
+			if (get.mode() !== "guozhan") {
+				player.addMark("sanchen", 1, false);
+			}
+			await target.draw(3);
+			if (!target.countCards("he")) {
+				await grantBonus();
+				return;
+			}
+			const result = await target
+				.chooseToDiscard({
+					selectCard: 3,
+					position: "he",
+					forced: true,
+					ai(card) {
+						const list = ui.selected.cards.map(card => get.type2(card));
+						if (!list.includes(get.type2(card))) {
+							return 7 - get.value(card);
+						}
+						return -get.value(card);
+					}
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				await grantBonus();
+				return;
+			}
+			const list = [];
+			for (const card of result.cards) {
+				list.add(get.type2(card));
+			}
+			if (list.length === result.cards.length) {
+				await grantBonus();
 			}
 		},
 		ai: {
@@ -4337,20 +4334,20 @@ const skills = {
 		},
 	},
 	zhaotao: {
-		forbid: ["guozhan"],
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		juexingji: true,
+		forbid: ["guozhan"],
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
 			return player.countMark("sanchen") > 2;
 		},
-		content() {
+		async content(_event, _trigger, player) {
 			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			player.addSkills("pozhu");
+			await player.loseMaxHp();
+			await player.addSkills("pozhu");
 		},
 		derivation: "pozhu",
 		ai: {
@@ -4360,10 +4357,10 @@ const skills = {
 	pozhu: {
 		audio: 2,
 		enable: "phaseUse",
+		viewAs: { name: "chuqibuyi" },
 		viewAsFilter(player) {
 			return player.countCards("hs") > 0;
 		},
-		viewAs: { name: "chuqibuyi" },
 		filterCard: true,
 		position: "hs",
 		check(card) {
@@ -4373,18 +4370,13 @@ const skills = {
 	},
 	pozhu2: {
 		trigger: { player: "useCardAfter" },
+		charlotte: true,
 		silent: true,
 		sourceSkill: "pozhu",
 		filter(event, player) {
-			return (
-				event.skill == "pozhu" &&
-				(get.mode() == "guozhan" ||
-					!player.getHistory("sourceDamage", function (evt) {
-						return evt.card == event.card;
-					}).length)
-			);
+			return event.skill == "pozhu" && (get.mode() === "guozhan" || !player.hasHistory("sourceDamage", evt => evt.card === event.card));
 		},
-		content() {
+		async content(_event, _trigger, player) {
 			player.tempBanSkill("pozhu");
 		},
 	},
