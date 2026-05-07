@@ -2860,42 +2860,53 @@ const skills = {
 		trigger: { player: "damageBegin2" },
 		forced: true,
 		filter(event, player) {
-			return player != _status.currentPhase && event.source && event.source != player;
+			return player !== _status.currentPhase && event.source && event.source !== player;
 		},
 		logTarget: "source",
-		content() {
-			"step 0";
-			var cards = player.getExpansions("qiaoyan");
-			if (cards.length) {
-				var source = trigger.source;
-				source.gain(cards, player, "give", "bySelf");
-				event.finish();
-			} else {
-				trigger.cancel();
-				player.draw();
+		async content(event, trigger, player) {
+			const expansionCards = player.getExpansions("qiaoyan");
+			if (expansionCards.length) {
+				const source = trigger.source;
+				await source.gain({
+					cards: expansionCards,
+					source: player,
+					animate: "give",
+					bySelf: true,
+				});
+				return;
 			}
-			"step 1";
-			var hs = player.getCards("he");
-			if (!hs.length) {
-				event.finish();
-			} else if (hs.length == 1) {
-				event._result = { bool: true, cards: hs };
-			} else {
-				player.chooseCard("he", true, "将一张牌作为“珠”置于武将牌上");
+			trigger.cancel();
+			await player.draw();
+			const handCards = player.getCards("he");
+			if (!handCards.length) {
+				return;
 			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length) {
-				var cards = result.cards;
-				player.addToExpansion(cards, player, "give").gaintag.add("qiaoyan");
+			const result =
+				handCards.length === 1
+					? { bool: true, cards: handCards }
+					: await player
+							.chooseCard({
+								prompt: "将一张牌作为“珠”置于武将牌上",
+								position: "he",
+								forced: true,
+							})
+							.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
-			event.finish();
+			await player.addToExpansion({
+				cards: result.cards,
+				source: player,
+				animate: "give",
+				gaintag: ["qiaoyan"],
+			});
 		},
 		marktext: "珠",
 		intro: { content: "expansion", markcount: "expansion" },
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		ai: {
