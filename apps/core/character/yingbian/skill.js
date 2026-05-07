@@ -3753,45 +3753,47 @@ const skills = {
 	},
 	shiduo: {
 		audio: 2,
-		enable: "phaseUse",
 		usable: 1,
+		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(function (target) {
-				return player != target && player.canCompare(target);
-			});
+			return game.hasPlayer(target => player !== target && player.canCompare(target));
 		},
 		filterTarget(card, player, target) {
-			return player != target && player.canCompare(target);
+			return player !== target && player.canCompare(target);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool && target.isAlive()) {
-				var num = target.countCards("h");
-				if (num > 0) {
-					player.gainPlayerCard(target, true, "h", num);
-				}
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const { bool } = await player.chooseToCompare(target).forResult();
+			if (!bool || !target.isAlive()) {
+				return;
 			}
-			"step 2";
-			var num = Math.floor(player.countCards("h") / 2);
-			if (num && target.isAlive()) {
-				player.chooseCard("h", num, true, "交给" + get.translation(target) + get.cnNumber(num) + "张牌");
-			} else {
-				event.finish();
+			const targetHands = target.getCards("h");
+			if (targetHands.length) {
+				// await player.gainPlayerCard(target, true, "h", handcardCount);
+				await player.gain({
+					cards: targetHands,
+					source: target,
+					animate: "giveAuto",
+					bySelf: true,
+				});
 			}
-			"step 3";
-			if (result.bool && result.cards && result.cards.length) {
-				player.give(result.cards, target);
+			const giveCount = Math.floor(player.countCards("h") / 2);
+			if (!giveCount || !target.isAlive()) {
+				return;
 			}
+			await player.chooseToGive({
+				prompt: `交给${get.translation(target)}${get.cnNumber(giveCount)}张牌`,
+				target,
+				selectCard: giveCount,
+				position: "h",
+				forced: true,
+			});
 		},
 		ai: {
 			order: 1,
 			result: {
 				target(player, target) {
-					var delta = target.countCards("h") - player.countCards("h");
+					const delta = target.countCards("h") - player.countCards("h");
 					if (delta < 0) {
 						return 0;
 					}
