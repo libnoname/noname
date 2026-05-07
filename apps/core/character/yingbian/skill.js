@@ -449,7 +449,7 @@ const skills = {
 		audio: "wanyi",
 		trigger: { player: "useCardToTargeted" },
 		filter(event, player) {
-			return player != event.target && event.targets.length == 1 && (event.card.name == "sha" || get.type(event.card, null, false) == "trick") && event.target.countCards("he") > 0;
+			return player !== event.target && event.targets.length === 1 && (event.card.name === "sha" || get.type(event.card, null, false) === "trick") && event.target.countCards("he") > 0;
 		},
 		locked: false,
 		logTarget: "target",
@@ -457,68 +457,77 @@ const skills = {
 			return get.effect(event.target, { name: "guohe_copy2" }, player, player) > 0;
 		},
 		prompt2: "将该角色的一张牌置于武将牌上作为“嫕”",
-		content() {
-			"step 0";
-			event.target = trigger.target;
-			player.choosePlayerCard(event.target, true, "he");
-			"step 1";
-			if (result.bool) {
-				var cards = result.cards;
-				player.addToExpansion(cards, target, "give").gaintag.add("xinwanyi");
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
+			await player.addToExpansion({
+				cards: result.cards,
+				source: target,
+				animate: "give",
+				gaintag: ["xinwanyi"]
+			});
 		},
 		mod: {
 			cardEnabled(card, player) {
-				var cards = player.getExpansions("xinwanyi");
+				const cards = player.getExpansions("xinwanyi");
 				if (cards.length) {
-					var suit = get.suit(card);
-					if (suit == "none") {
+					const suit = get.suit(card);
+					if (suit === "none") {
 						return;
 					}
-					for (var i of cards) {
-						if (get.suit(i, player) == suit) {
+					for (const expansionCard of cards) {
+						if (get.suit(expansionCard, player) === suit) {
 							return false;
 						}
 					}
 				}
 			},
 			cardRespondable(card, player) {
-				var cards = player.getExpansions("xinwanyi");
+				const cards = player.getExpansions("xinwanyi");
 				if (cards.length) {
-					var suit = get.suit(card);
-					if (suit == "none") {
+					const suit = get.suit(card);
+					if (suit === "none") {
 						return;
 					}
-					for (var i of cards) {
-						if (get.suit(i, player) == suit) {
+					for (const expansionCard of cards) {
+						if (get.suit(expansionCard, player) === suit) {
 							return false;
 						}
 					}
 				}
 			},
 			cardSavable(card, player) {
-				var cards = player.getExpansions("xinwanyi");
+				const cards = player.getExpansions("xinwanyi");
 				if (cards.length) {
-					var suit = get.suit(card);
-					if (suit == "none") {
+					const suit = get.suit(card);
+					if (suit === "none") {
 						return;
 					}
-					for (var i of cards) {
-						if (get.suit(i, player) == suit) {
+					for (const expansionCard of cards) {
+						if (get.suit(expansionCard, player) === suit) {
 							return false;
 						}
 					}
 				}
 			},
 			cardDiscardable(card, player) {
-				var cards = player.getExpansions("xinwanyi");
+				const cards = player.getExpansions("xinwanyi");
 				if (cards.length) {
-					var suit = get.suit(card);
-					if (suit == "none") {
+					const suit = get.suit(card);
+					if (suit === "none") {
 						return;
 					}
-					for (var i of cards) {
-						if (get.suit(i, player) == suit) {
+					for (const expansionCard of cards) {
+						if (get.suit(expansionCard, player) === suit) {
 							return false;
 						}
 					}
@@ -531,9 +540,9 @@ const skills = {
 			content: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		group: "xinwanyi_give",
@@ -544,31 +553,39 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return player.getExpansions("xinwanyi").length > 0;
+					return player.hasExpansions("xinwanyi");
 				},
-				content() {
-					"step 0";
-					player.chooseTarget(true, "婉嫕：令一名角色获得一张“嫕”").set("ai", function (target) {
-						return get.attitude(_status.event.player, target);
-					});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.line(target, "green");
-						var cards = player.getExpansions("xinwanyi");
-						if (cards.length == 1) {
-							event._result = { bool: true, links: cards };
-						} else {
-							player.chooseButton(["令" + get.translation(target) + "获得一张“嫕”", cards], true);
-						}
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "婉嫕：令一名角色获得一张“嫕”",
+							forced: true,
+							ai(target) {
+								const player = get.player();
+								get.attitude(player, target)
+							}
+						})
+						.forResult();
+					if (!result.bool || !result.targets?.length) {
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						target.gain(result.links, player, "give");
+					const [target] = result.targets;
+					player.line(target, "green");
+					const cards = player.getExpansions("xinwanyi");
+					if (cards.length === 1) {
+						await player.give(cards, target, true);
+						return;
 					}
+					const result2 = await player
+						.chooseButton({
+							createDialog: [`令${get.translation(target)}获得一张“嫕”`, cards],
+							forced: true,
+						})
+						.forResult();
+					if (!result2.bool || !result2.links?.length) {
+						return;
+					}
+					await player.give(result2.links, target, true);
 				},
 			},
 		},
