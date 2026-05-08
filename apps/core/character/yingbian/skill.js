@@ -4353,7 +4353,7 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("sanchen") > 2;
 		},
-		async content(_event, _trigger, player) {
+		async content(event, _trigger, player) {
 			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			await player.addSkills("pozhu");
@@ -4368,7 +4368,7 @@ const skills = {
 		enable: "phaseUse",
 		viewAs: { name: "chuqibuyi" },
 		viewAsFilter(player) {
-			return player.countCards("hs") > 0;
+			return player.hasCards("hs");
 		},
 		filterCard: true,
 		position: "hs",
@@ -4383,7 +4383,7 @@ const skills = {
 		silent: true,
 		sourceSkill: "pozhu",
 		filter(event, player) {
-			return event.skill == "pozhu" && (get.mode() === "guozhan" || !player.hasHistory("sourceDamage", evt => evt.card === event.card));
+			return event.skill === "pozhu" && (get.mode() === "guozhan" || !player.hasHistory("sourceDamage", evt => evt.card === event.card));
 		},
 		async content(_event, _trigger, player) {
 			player.tempBanSkill("pozhu");
