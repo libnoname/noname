@@ -776,14 +776,14 @@ export default () => {
 					equipValue: 9,
 				},
 			},
-			longfenghemingjian: {
+			luanfenghemingjian: {
 				type: "equip",
 				fullskin: true,
 				bingzhu: ["刘备"],
 				modeimage: "boss",
 				subtype: "equip1",
 				distance: { attackFrom: -2 },
-				skills: ["longfenghemingjian"],
+				skills: ["luanfenghemingjian"],
 				nomod: true,
 				nopower: true,
 				unique: true,
@@ -1655,7 +1655,7 @@ export default () => {
 			},
 		},
 		cardPack: {
-			mode_boss: ["honghuangzhili", "sadouchengbing", "yihuajiemu", "chiyanzhenhunqin", "juechenjinge", "xiuluolianyuji", "longfenghemingjian", "qicaishenlu", "hongmianbaihuapao", "boss_mengpohuihun", "lingsheji", "shanrangzhaoshu", "jinwuluorigong", "xingtianpojunfu", "gubuzifeng", "boss_sanshou"],
+			mode_boss: ["honghuangzhili", "sadouchengbing", "yihuajiemu", "chiyanzhenhunqin", "juechenjinge", "xiuluolianyuji", "luanfenghemingjian", "qicaishenlu", "hongmianbaihuapao", "boss_mengpohuihun", "lingsheji", "shanrangzhaoshu", "jinwuluorigong", "xingtianpojunfu", "gubuzifeng", "boss_sanshou"],
 		},
 		init() {
 			for (var i in lib.characterPack.mode_boss) {
@@ -2370,7 +2370,7 @@ export default () => {
 						["赵云", { replace: "qinggang", card: ["chixueqingfeng", "spade", 6] }],
 						["吕布", { replace: "fangtian", card: ["xiuluolianyuji", "diamond", 12] }],
 						["司马懿", { card: ["xuwangzhimian", "diamond", 4] }],
-						["刘备", { replace: "fangtian", card: ["longfenghemingjian", "spade", 2] }],
+						["刘备", { replace: "fangtian", card: ["luanfenghemingjian", "spade", 2] }],
 						["吕蒙", { card: ["guofengyupao", "diamond", 3] }],
 						["陆逊", { card: ["qicaishenlu", "diamond", 3] }],
 						["甘宁", { replace: "qilin", card: ["jinwuluorigong", "heart", 5] }],
@@ -6012,7 +6012,7 @@ export default () => {
 					game.setNature(trigger, "fire");
 				},
 			},
-			longfenghemingjian: {
+			luanfenghemingjian: {
 				equipSkill: true,
 				inherit: "cixiong_skill",
 				filter(event, player) {
@@ -10891,8 +10891,8 @@ export default () => {
 			juechenjinge_info: "锁定技，敌方角色计算与己方其他角色距离+1。",
 			xiuluolianyuji: "修罗炼狱戟",
 			xiuluolianyuji_info: "你使用【杀】可以额外指定任意名攻击范围内的其他角色为目标；锁定技，你使用【杀】造成的伤害+1，然后令受到伤害的角色回复1点体力。",
-			longfenghemingjian: "鸾凤和鸣剑",
-			longfenghemingjian_info: "你使用的雷【杀】或火【杀】指定目标后，可令对方选择弃置一张牌或令你摸一张牌。",
+			luanfenghemingjian: "鸾凤和鸣剑",
+			luanfenghemingjian_info: "你使用的雷【杀】或火【杀】指定目标后，可令对方选择弃置一张牌或令你摸一张牌。",
 			qicaishenlu: "七彩神鹿",
 			qicaishenlu_info: "锁定技，你计算与其他角色的距离时-1，当你造成属性伤害时，你令此伤害+1。",
 			boss_mengpohuihun: "回魂",
