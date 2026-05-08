@@ -1,0 +1,184 @@
+#bosslist {
+	width: 100%;
+	height: 260px;
+	text-align: center;
+	/* top: calc(50% - 200px); */
+	top: 60px;
+	white-space: nowrap;
+	z-index: 1;
+	overflow-x: scroll;
+}
+
+#window[data-radius_size="reduce"] #bosslist > .player {
+	border-radius: 4px;
+}
+
+#window[data-radius_size="off"] #bosslist > .player {
+	border-radius: 0px;
+}
+
+#window[data-radius_size="increase"] #bosslist > .player {
+	border-radius: 20px;
+}
+
+#window #bosslist > .player {
+	border-radius: 10px;
+}
+
+#window[data-player_border="normal"] #bosslist > .player > .avatar {
+	left: 8px;
+	top: 8px;
+	width: 164px;
+	height: 200px;
+}
+
+#window[data-player_border="slim"] #bosslist > .player > .avatar {
+	left: 4px;
+	top: 4px;
+	width: 172px;
+	height: 208px;
+}
+
+.bosspaused > #bosslist,
+.bosspaused > #control,
+.bosspaused > .dialog.bosscharacter {
+	opacity: 0.2 !important;
+}
+
+#bosslist.hidden > .player {
+	transition: all 0s;
+}
+
+#bosslist > div:first-child,
+#bosslist > div:last-child {
+	width: 20px;
+	position: relative;
+}
+
+#bosslist > .player .identity {
+	align-items: flex-start;
+	width: min-content;
+}
+
+#bosslist > .player .identity > div {
+	writing-mode: vertical-rl;
+	-webkit-writing-mode: vertical-rl;
+}
+
+#window:not(.nopointer) #bosslist > .player {
+	cursor: pointer;
+}
+
+.dialog.bosscharacter .buttons .button.selectable {
+	cursor: pointer;
+}
+
+.dialog.bosscharacter .buttons .button:not(.selectable) {
+	opacity: 0.6;
+}
+
+.player.bossplayer.bossing {
+	position: absolute;
+}
+
+.player.bossing .avatar {
+	transition: all 0.5s;
+}
+
+.player.bossplayer.highlight {
+	transform: scale(1.1);
+	opacity: 1;
+}
+
+#bosslist.removing > .player.bossplayer.highlight {
+	transition: all 0s;
+	opacity: 0;
+}
+
+.player.bossplayer {
+	position: relative;
+	margin: 10px;
+	left: 0;
+	top: 4px;
+	width: 180px;
+	height: 216px;
+	transition: all 0.3s;
+	opacity: 0.6;
+	animation: game_start 0.5s;
+	-webkit-animation: game_start 0.5s;
+}
+
+.player.bossplayer > div:not(.hp):not(.identity):not(.avatar):not(.framebg) {
+	display: none !important;
+}
+
+.player.bossplayer > .identity {
+	left: 16px;
+	top: 18px;
+	line-height: 24px;
+	white-space: normal;
+}
+
+.player.bossplayer > .hp {
+	top: 22px;
+	left: 144px;
+}
+
+.player.bossplayer > .avatar {
+	width: 160px;
+	height: 196px;
+}
+
+#control.bosslist {
+	top: calc(100% - 50px) !important;
+	position: fixed;
+}
+
+.dialog.bosscharacter {
+	top: auto;
+	bottom: 65px;
+	height: calc(100% - 383px);
+	animation: dialog_start2 0.5s;
+	-webkit-animation: dialog_start2 0.5s;
+}
+
+.bosschongzheng {
+	width: calc(100% - 20px);
+	white-space: nowrap;
+	position: relative;
+}
+
+.bosschongzheng div {
+	position: relative;
+}
+
+.bosschongzheng > div {
+	width: 100%;
+	display: block;
+	margin-bottom: 5px;
+}
+
+.bosschongzheng > div > div:first-child {
+	text-align: left;
+	width: 30%;
+}
+
+.bosschongzheng > div > div:last-child {
+	text-align: right;
+	width: 70%;
+}
+
+@media screen and (min-height: 800px) {
+	.dialog.bosscharacter {
+		height: 417px;
+		bottom: calc(50% - 335px);
+	}
+
+	#control.bosslist {
+		top: calc(50% + 350px) !important;
+	}
+
+	#bosslist {
+		top: calc(40% - 260px);
+	}
+}

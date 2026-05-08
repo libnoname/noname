@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "noEmitOnError": false,
+    "outDir": "dist-types",
+    "stripInternal": true,
+    "skipLibCheck": true,
+    "preserveSymlinks": false
+  },
+  "files": ["noname.js"]
+}

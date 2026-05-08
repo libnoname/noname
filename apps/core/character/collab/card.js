@@ -1,0 +1,136 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+
+const cards = {
+	bachiqionggouyu: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip5",
+		ai: {
+			equipValue(card, player) {
+				const lose = player.maxHp - player.getHp();
+				if (_status.currentPhase != player) {
+					return 4 - lose * 2;
+				} else if (_status.currentPhase) {
+					const phase = get.event().getParent("phase");
+					const nexts = phase.phaseList.slice(phase.num);
+					if (nexts.includes("phaseUse") && !player.isDamaged()) {
+						return 2;
+					}
+				}
+				return 0;
+			},
+		},
+		skills: ["bachiqionggouyu_skill"],
+	},
+	bazhijing: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip2",
+		onLose(card, player) {
+			player.unmarkAuto("bazhing", player.getStorage("bazhijing"));
+		},
+		ai: {
+			equipValue(card, player) {
+				return 10 - player.getStorage("bazhijing").length;
+			},
+		},
+		skills: ["bazhijing_skill"],
+	},
+	luoyangchan: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip1",
+		destroy: true,
+		derivation: "ol_le_caohong",
+		distance: {
+			attackFrom: -1,
+		},
+		skills: ["luoyangchan_skill"],
+	},
+	real_zhuge: {
+		derivation: "you_zhugeliang",
+		cardimage: "zhuge",
+		fullskin: true,
+		type: "equip",
+		subtype: "equip1",
+		distance: {
+			attackFrom: -98,
+		},
+		destroy: true,
+		ai: {
+			order() {
+				return get.order({ name: "sha" }) + 0.1;
+			},
+			equipValue(card, player) {
+				if (player._zhuge_temp) {
+					return 1;
+				}
+				player._zhuge_temp = true;
+				var result = (function () {
+					if (
+						!game.hasPlayer(function (current) {
+							return get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
+						})
+					) {
+						return 1;
+					}
+					if (player.hasSha() && _status.currentPhase === player) {
+						if ((player.getEquip("zhuge") && player.countUsed("sha")) || player.getCardUsable("sha") === 0) {
+							return 10;
+						}
+					}
+					var num = player.countCards("h", "sha");
+					if (num > 1) {
+						return 6 + num;
+					}
+					return 3 + num;
+				})();
+				delete player._zhuge_temp;
+				return result;
+			},
+			basic: {
+				equipValue: 5,
+			},
+			tag: {
+				valueswap: 1,
+			},
+		},
+		skills: ["real_zhuge_skill"],
+	},
+	olhuaquan_heavy: {
+		fullskin: true,
+		noname: true,
+	},
+	olhuaquan_light: {
+		fullskin: true,
+		noname: true,
+	},
+	ruyijingubang: {
+		fullskin: true,
+		derivation: "sunwukong",
+		type: "equip",
+		subtype: "equip1",
+		cardcolor: "heart",
+		skills: ["ruyijingubang_skill", "ruyijingubang_effect"],
+		equipDelay: false,
+		distance: {
+			attackFrom: -2,
+			attackRange: (card, player) => {
+				return player.storage.ruyijingubang_skill || 3;
+			},
+		},
+		onEquip() {
+			if (!card.storage.ruyijingubang_skill) {
+				card.storage.ruyijingubang_skill = 3;
+			}
+			player.storage.ruyijingubang_skill = card.storage.ruyijingubang_skill;
+			player.markSkill("ruyijingubang_skill");
+		},
+		onLose() {
+			if (player.getStat().skill.ruyijingubang_skill) {
+				delete player.getStat().skill.ruyijingubang_skill;
+			}
+		},
+	},
+};
+export default cards;

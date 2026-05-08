@@ -2,20 +2,35 @@ name: Lint Check
 
 on:
   pull_request:
-    branches: [PR-Branch]
+    branches: [main]
 
 jobs:
   eslint:
     name: ESLint Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
-      - name: Install modules
-        run: |
-          yarn add -D eslint @eslint/js globals typescript typescript-eslint eslint-plugin-vue vue-eslint-parser
-          yarn global add eslint
+      - name: Fetch base branch (shallow)
+        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}:${{ github.base_ref }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run ESLint
-        run: yarn exec eslint card/ character/ extension/ game/game.js game/entry.js mode/ noname/ noname.js noname-compatible.js service-worker.js
+        run: pnpm --filter "...[${{ github.base_ref }}]" --filter "!./" lint

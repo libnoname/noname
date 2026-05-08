@@ -1,0 +1,368 @@
+@import "../newlayout/global.css";
+@import "equip.css";
+
+#arena {
+	height: calc(95% + 20px);
+}
+#arena.oblongcard:not(.chess):not(.nome) {
+	height: 95%;
+}
+#arena.oblongcard:not(.chess):not(.nome) #me,
+#arena.oblongcard:not(.chess):not(.nome) #mebg {
+	height: 140px;
+	bottom: 10px;
+}
+#historybar {
+	height: calc(95% - 160px);
+}
+#window.oblongcard #historybar {
+	height: calc(95% - 180px);
+}
+#control {
+	width: calc(5000% / 47 - 240px);
+	left: calc(-150% / 47 + 120px);
+	bottom: 150px;
+	height: 40px;
+}
+#arena.choose-to-move > #control,
+#arena.discard-player-card > #control,
+#arena.gain-player-card > #control,
+#arena.choose-player-card > #control {
+	bottom: 30px;
+	transition: all 0s;
+}
+
+#arena.phone.discard-player-card > #control,
+#arena.phone.gain-player-card > #control,
+#arena.phone.choose-player-card > #control,
+#arena.phone.choose-to-move > #control {
+	bottom: 43px;
+}
+
+#arena.ipad.discard-player-card > #control,
+#arena.ipad.gain-player-card > #control,
+#arena.ipad.choose-player-card > #control,
+#arena.ipad.choose-to-move > #control {
+	bottom: 45px;
+}
+#arena:not(.chess) > #me,
+#arena:not(.chess) > #mebg,
+#arena:not(.chess) > #autonode {
+	bottom: 30px;
+	width: calc(5000% / 47);
+	left: calc(-150% / 47);
+	top: auto;
+	border-radius: 0 !important;
+	height: 120px;
+}
+#arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 - 240px);
+	left: calc(-150% / 47 + 120px);
+}
+#window.leftbar #arena:not(.chess) > #me,
+#window.leftbar #arena:not(.chess) > #mebg,
+#window.leftbar #arena:not(.chess) > #autonode,
+#window.leftbar #arena:not(.chess) .player[data-position="0"] {
+	width: calc(5000% / 47 + 2500px / 47);
+	left: calc(-150% / 47 - 50px - 75px / 47);
+}
+#window.leftbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47 - 240px);
+	left: calc(-150% / 47 - 50px - 75px / 47 + 120px);
+}
+#window.rightbar #arena:not(.chess) > #me,
+#window.rightbar #arena:not(.chess) > #mebg,
+#window.rightbar #arena:not(.chess) > #autonode,
+#window.rightbar #arena:not(.chess) .player[data-position="0"] {
+	width: calc(5000% / 47 + 2500px / 47);
+	left: calc(-150% / 47 - 75px / 47);
+}
+#window.rightbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47 - 240px);
+	left: calc(-150% / 47 - 75px / 47 + 120px);
+}
+#arena:not(.chess) #handcards1 {
+	height: 120px;
+	padding: 0;
+	top: calc(100% - 120px);
+}
+#arena:not(.chess):not(.single-handcard) #handcards1 {
+	width: calc(100% - 240px);
+	left: 120px;
+}
+#handcards2 {
+	display: none;
+}
+/*#arena:not(.chess) .player[data-position='0']>.playerjiu{
+    width: 120px;
+    border-radius: 0px;
+}*/
+#arena:not(.chess) .player[data-position="0"].playerfocus {
+	transform: scale(1);
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) {
+	width: 45px;
+	height: 45px;
+	margin: 0;
+	border-radius: 4px;
+	position: absolute;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .image {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .name {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: left top;
+	left: 2px;
+	top: 3px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .name.long {
+	top: 2px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > div:not(.equip5) > .info {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: right top;
+	right: 3px;
+	top: 3px;
+}
+/*#arena.oblongcard:not(.chess) .player[data-position='0']>.equips>div:not(.equip5){
+    height: 54px;
+}
+#arena.oblongcard:not(.chess) .player[data-position='0']>.equips>div:not(.equip5)>.image{
+    width: 120%;
+    height: 100%;
+    left: -20%;
+    top: 0%;
+}*/
+#arena:not(.chess):not(.textequip) .player[data-position="0"] > .equips > div.legend {
+	border: 1px solid rgb(192, 90, 255);
+}
+#arena:not(.chess):not(.textequip) .player[data-position="0"] > .equips > div.epic {
+	border: 1px solid rgb(90, 171, 255);
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 {
+	border-radius: 100%;
+}
+#arena:not(.chess) .player[data-position="0"] {
+	width: calc(5000% / 47);
+	left: calc(-150% / 47);
+	height: 120px;
+	top: calc(100% - 150px);
+	background: none !important;
+	border: none !important;
+	border-radius: 0 !important;
+	pointer-events: none;
+}
+#arena:not(.chess) .player[data-position="0"] > .turned {
+	width: 120px;
+}
+#arena:not(.chess) .player[data-position="0"] > .chain {
+	width: 120px;
+}
+#arena.oblongcard:not(.chess) .player[data-position="0"] {
+	height: 140px;
+}
+
+#arena:not(.chess) .player[data-position="0"].linked > .damage {
+	transform: scale(0.7) rotate(0);
+}
+#arena:not(.chess) .player[data-position="0"].linked > .damage.damageadded {
+	transform: scale(1) rotate(0);
+}
+#arena:not(.chess) .player[data-position="0"]:not(.selected):not(.selectedx):not(.selectable):not(.glow) {
+	box-shadow: none !important;
+}
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .avatar,
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .avatar2,
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .equips {
+	width: 120px;
+	height: 100%;
+	border-radius: 0px !important;
+	top: 0;
+	left: 0;
+	transition-property: opacity, transform;
+	transition-duration: 0.5s;
+	pointer-events: auto;
+	/*-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 180px, -10px 180px);*/
+}
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .identity {
+	pointer-events: auto;
+}
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .judges,
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .marks {
+	pointer-events: auto;
+}
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .equips {
+	left: calc(100% - 120px);
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip1 {
+	top: 10px;
+	left: 10px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip2 {
+	top: 10px;
+	right: 10px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip3 {
+	bottom: 10px;
+	left: 10px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip4 {
+	bottom: 10px;
+	right: 10px;
+}
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip6 {
+	bottom: 10px;
+	right: 10px;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .name,
+#arena:not(.chess) .player[data-position="0"].linked > .name {
+	left: 4px;
+	top: 10px;
+	transform: none;
+}
+#arena:not(.chess) .player[data-position="0"] > .nameol {
+	display: none;
+}
+#arena:not(.chess) .player[data-position="0"] > .name.name2,
+#arena:not(.chess) .player[data-position="0"].linked > .name.name2 {
+	left: 69px;
+}
+#arena:not(.chess):not(.stone) .player[data-position="0"] > .identity {
+	left: 0;
+	width: 130px;
+}
+#arena:not(.chess) .player[data-position="0"] > .damage {
+	width: 120px;
+}
+#arena:not(.chess) .player[data-position="0"].target {
+	transform: none !important;
+}
+#arena:not(.chess) .player[data-position="0"] > .hp:not(.actcount) {
+	bottom: 5px;
+	left: 100px;
+}
+#arena:not(.chess) .player[data-position="0"]:not(.minskin) > .count {
+	bottom: 10px;
+	border-radius: 0 2px 2px 0;
+	left: -1px;
+	z-index: 3;
+	text-align: right;
+}
+#arena:not(.chess).slim_player .player[data-position="0"]:not(.minskin) > .count {
+	border-radius: 0 2px 2px 0;
+	left: -1px;
+	z-index: 3;
+	text-align: right;
+}
+#arena:not(.chess) .player[data-position="0"] > .hp.actcount {
+	top: 10px;
+	left: 2px;
+}
+
+#arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar,
+#arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar2 {
+	width: 60px;
+	background-position: 50%;
+}
+#arena:not(.chess) .player.fullskin2[data-position="0"]:not(.minskin) > .avatar2 {
+	left: 60px;
+	top: 0;
+	z-index: 1;
+}
+
+.popup[data-position="0"] {
+	top: calc(100% - 187px);
+	left: calc(-150% / 47 + 15px);
+}
+
+#arena:not(.chess) .player[data-position="0"] > .judges {
+	left: 6px;
+	top: -16px;
+	transform: none;
+}
+#arena:not(.chess) .player[data-position="0"] > .marks {
+	right: -6px;
+	left: auto;
+	top: -16px;
+	transform: none;
+}
+
+#arena:not(.chess) .player[data-position="0"].linked {
+	transform: none;
+}
+#arena:not(.chess) .player[data-position="0"].linked .avatar,
+#arena:not(.chess) .player[data-position="0"].linked .avatar2 {
+	transform: rotate(-90deg);
+}
+#arena:not(.chess) .player[data-position="0"].fullskin2 .avatar {
+	transform-origin: right center;
+}
+#arena:not(.chess) .player[data-position="0"].fullskin2 .avatar2 {
+	transform-origin: left center;
+}
+
+.dialog {
+	height: calc(100% - 370px);
+	bottom: 170px;
+}
+.dialog.fullheight {
+	height: calc(100% - 123px) !important;
+	top: 40px !important;
+}
+
+#me > .fakeme.avatar {
+	width: 120px;
+	height: 100%;
+	border-radius: 0px;
+	top: 0;
+	left: 0;
+	background-size: cover;
+	clip-path: polygon(-10px 0, 130px 0, 130px 150px, -10px 150px);
+	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 150px, -10px 150px);
+}
+#window[data-radius_size="increase"] #me > .fakeme.avatar,
+#window[data-radius_size="reduce"] #me > .fakeme.avatar {
+	border-radius: 0px;
+}
+
+#arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip1,
+#arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip2 {
+	top: 20px;
+}
+#arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip3,
+#arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip4,
+#arena.mobile.oblongcard:not(.chess):not(.textequip) .player[data-position="0"] > .equips > .equip6 {
+	bottom: 20px;
+}
+
+#arena.mobile.oblongcard.textequip:not(.chess) .player[data-position="0"] .equips > .removing {
+	margin-top: -14px !important;
+	margin-bottom: -14px !important;
+	transform: scale(1);
+}
+
+#arena.mobile.oblongcard:not(.chess) #handcards1 {
+	height: 100%;
+	top: 2px;
+}
+#arena.mobile.oblongcard:not(.chess) > .card,
+#arena.mobile.oblongcard:not(.chess) .handcards > .card {
+	height: 120px;
+}
+#arena.mobile.oblongcard:not(.chess) > .card > .image,
+#arena.mobile.oblongcard:not(.chess) .handcards > .card > .image {
+	height: 110px;
+	top: 8px;
+	background-position-x: -3px;
+}
+
+#arena.phone.oblongcard:not(.chess):not(.nome) {
+	height: calc(97% + 10px);
+}

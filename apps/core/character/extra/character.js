@@ -1,0 +1,93 @@
+const characters = {
+	shen_guanyu: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["wushen", "new_wuhun"],
+		groupInGuozhan: "shu",
+	},
+	shen_zhaoyun: {
+		sex: "male",
+		group: "shen",
+		hp: 2,
+		skills: ["xinjuejing", "relonghun"],
+		groupInGuozhan: "shu",
+	},
+	shen_zhugeliang: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["qixing", "kuangfeng", "dawu"],
+		groupInGuozhan: "shu",
+		names: "诸葛|亮",
+	},
+	shen_lvmeng: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["shelie", "gongxin"],
+		groupInGuozhan: "wu",
+	},
+	shen_zhouyu: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["yeyan", "qinyin"],
+		groupInGuozhan: "wu",
+	},
+	shen_simayi: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["renjie", "sbaiyin", "lianpo"],
+		groupInGuozhan: "wei",
+		names: "司马|懿",
+	},
+	shen_caocao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["new_guixin", "feiying"],
+		groupInGuozhan: "wei",
+	},
+	shen_lvbu: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["baonu", "wumou", "ol_wuqian", "ol_shenfen"],
+		groupInGuozhan: "qun",
+	},
+
+	shen_liubei: {
+		sex: "male",
+		group: "shen",
+		hp: 6,
+		skills: ["nzry_longnu", "nzry_jieying"],
+		groupInGuozhan: "shu",
+	},
+	shen_luxun: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["nzry_junlve", "nzry_cuike", "nzry_dinghuo"],
+		groupInGuozhan: "wu",
+		clans: ["吴郡陆氏"],
+	},
+	shen_zhangliao: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["drlt_duorui", "drlt_zhiti"],
+		groupInGuozhan: "wei",
+	},
+	shen_ganning: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		maxHp: 6,
+		skills: ["drlt_poxi", "drlt_jieying"],
+		groupInGuozhan: "wu",
+	},
+};
+
+export default characters;

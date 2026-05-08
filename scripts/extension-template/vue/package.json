@@ -1,0 +1,19 @@
+{
+	"name": "@noname-extension/{{EXTENSION_NAME}}",
+	"author": "{{AUTHOR}}",
+	"license": "GPL-3.0-only",
+	"type": "module",
+	"scripts": {
+		"build": "vite build",
+		"build:watch": "vite build --watch --mode development"
+	},
+	"dependencies": {
+		"noname": "workspace:*",
+		"vue": "^3.5.28"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^6.0.4",
+		"vite": "^7.3.1",
+        "vite-plugin-static-copy": "^3.2.0"
+	}
+}

@@ -1,0 +1,248 @@
+html {
+	color: white;
+	text-shadow: black 0 0 2px;
+	min-height: 100%;
+	background-image: url("../../image/background/ol_bg.jpg");
+	background-size: cover;
+	background-position: 50% 50%;
+}
+.glass_ui .dialog.scroll1.scroll2,
+.glass_ui .menubg.charactercard,
+.glass_ui .menu {
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+	background: rgba(0, 0, 0, 0.4);
+	box-shadow: rgba(0, 0, 0, 0.5) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px;
+}
+#window.glass_ui .dialog.popped:not(.menu) {
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+	box-shadow: rgba(0, 0, 0, 0.6) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 10px;
+}
+#system > div > div,
+#mebg,
+.control,
+.player,
+.card,
+.avatar,
+.avatar2,
+.button,
+#window > .dialog.popped,
+#arena:not(.long) .player.unseen .equips:not(*:empty),
+#arena.long .player.unseen2 .equips:not(*:empty),
+.menu,
+.new-menu,
+.menubutton,
+.new-menubutton,
+#splash > div,
+#arena.mobile:not(.chess) .player[data-position="0"] .equips,
+.playerbg,
+#window .player.playerbg,
+.menubg,
+.mebg {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+	border-radius: 8px;
+}
+#arena.mobile.textequip:not(.chess) .player[data-position="0"] .equips {
+	background-image: none;
+	box-shadow: rgba(0, 0, 0, 0.2) -1px 0px 0px 0px;
+	overflow-y: scroll;
+}
+#arena:not(.chess).textequip .player[data-position="0"] .equips > .card {
+	background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)) !important;
+}
+#arena.observe .handcards > .card {
+	background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)) !important;
+}
+.videonode.menubutton.extension.current {
+	background-image: linear-gradient(rgba(89, 111, 117, 0.4), rgba(89, 111, 117, 0.4));
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+}
+
+/*.player.current_action{
+	background-image: linear-gradient(rgba(47,101,150,1), rgba(43, 90, 132,1));
+}*/
+.menubutton {
+	border-radius: 4px;
+}
+/*.player{
+	background-image: url('card.png');
+	background-size: cover;
+}*/
+#window > .dialog.popped {
+	border-radius: 6px;
+}
+.control,
+#system > div > div,
+.judges > div,
+.marks > div,
+#arena:not(.long) .player.unseen .equips:not(*:empty),
+#arena.long .player.unseen2 .equips:not(*:empty) {
+	border-radius: 4px;
+	overflow: hidden;
+}
+#arena:not(.long).mobile:not(.oldlayout) .player.unseen:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena:not(.long):not(.mobile):not(.oldlayout) .player.unseen .equips:not(*:empty) > .card:not(.selected),
+#arena.long.mobile:not(.oldlayout) .player.unseen2:not([data-position="0"]) .equips:not(*:empty) > .card,
+#arena.long:not(.mobile):not(.oldlayout) .player.unseen2 .equips:not(*:empty) > .card:not(.selected) {
+	background: none !important;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 {
+	border-radius: 4px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .name {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: left top;
+	left: 2px;
+	top: 3px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .name.long {
+	top: 2px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .info {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: right top;
+	right: 3px;
+	top: 3px;
+}
+.cardbg {
+	background-size: 100% 100% !important;
+}
+.card {
+	color: white;
+}
+.card:not(*:empty),
+.cardbg {
+	color: rgb(77, 60, 51);
+	text-shadow: none;
+	background: url("card.png");
+	background-size: 100% 100%;
+}
+.card .markcount {
+	box-shadow: rgba(0, 0, 0, 0.8) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px;
+	background: url("card.png");
+	background-size: cover;
+	/*color: white;*/
+}
+#me > div > div > .card,
+#arena > .card:not(*:empty) {
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+}
+/*.player{
+	background:repeating-linear-gradient(
+      135deg,
+      rgba(0,0,0,0.4),
+      rgba(0,0,0,0.4) 2px,
+      rgba(0,0,0,0.2) 2px,
+      rgba(0,0,0,0.2) 4px
+    );
+}*/
+
+.card:empty,
+.card.infohidden {
+	background: url("../style/cardback/image/official.png");
+	background-size: 100% 100%;
+}
+.card.infohidden:not(.infoflip) {
+	background: url("../style/cardback/image/official2.png");
+	background-size: 100% 100%;
+}
+
+#system > div > .glow {
+	/*background-image: linear-gradient(rgba(47, 101, 150, 1), rgba(43, 90, 132, 1));*/
+	box-shadow: rgba(47, 101, 150, 1) 0 0 0 2px, rgba(43, 90, 132, 1) 0 4px 10px !important;
+}
+
+.menupaused {
+	opacity: 0.3 !important;
+}
+
+.player .marks > div:first-child > div {
+	filter: invert(0.8) sepia(1);
+	-webkit-filter: invert(0.8) sepia(1);
+}
+
+.fire {
+	color: rgb(255, 119, 63);
+}
+.thunder {
+	color: rgb(117, 186, 255);
+}
+.poison {
+	color: rgb(104, 221, 127);
+}
+.brown {
+	color: rgb(195, 161, 223);
+}
+#roundmenu.clock > div:nth-of-type(15) {
+	background: rgba(0, 0, 0, 0.3);
+	box-shadow: rgba(0, 0, 0, 0.6) 0 0 5px inset;
+}
+
+.woodbg {
+	color: rgba(77, 60, 51, 1) !important;
+	text-shadow: none !important;
+}
+.woodbg .menubutton.large {
+	background: url("card2.png") !important;
+	background-size: 100% 100% !important;
+	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 0 5px !important;
+}
+
+.player > .glassbg {
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border-radius: 8px;
+	box-shadow: none;
+	z-index: 1;
+	pointer-events: none;
+}
+.player > .glassbg > div:last-child {
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+}
+.player > .glassbg > div:first-child {
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	transition-property: transform;
+	transition-duration: 0s;
+	background-size: cover;
+	filter: blur(3px);
+	-webkit-filter: blur(3px);
+}
+.popup-container > .prompt-container > div > div {
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.popup-container > .menu.visual > .button.dashedmenubutton {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 3px 10px !important;
+	border: none;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)) !important;
+}
+.popup-container > .menu.visual > .button.dashedmenubutton:not(.hpbutton) {
+	width: 90px;
+	height: 90px;
+}
+.popup-container > .menu.visual > .button.dashedmenubutton.controlbutton {
+	height: 26px;
+}
+.popup-container > .menu.visual > .button.dashedmenubutton.controlbutton > div {
+	line-height: 26px;
+}
