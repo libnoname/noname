@@ -598,34 +598,33 @@ const skills = {
 			return game.hasPlayer(current => lib.skill.xinxuanbei.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("hej") > 0;
+			return target !== player && target.hasCards("hej");
 		},
-		content() {
-			"step 0";
-			player.choosePlayerCard(target, "hej", true);
-			"step 1";
-			if (result.bool) {
-				var card = result.cards[0];
-				var cardx = get.autoViewAs({ name: "sha" }, [card]);
-				if ((get.position(card) != "j" && !game.checkMod(card, target, "unchanged", "cardEnabled2", target)) || !target.canUse(cardx, player, false)) {
-					event.finish();
-				} else {
-					var next = target.useCard(cardx, [card], player, false);
-					event.card = next.card;
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var num = 1;
-			if (
-				player.hasHistory("damage", function (evt) {
-					return evt.card == event.card;
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "hej",
+					forced: true,
 				})
-			) {
-				num++;
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
-			player.draw(num);
+			const card = result.cards[0];
+			const cardx = get.autoViewAs({ name: "sha" }, [card]);
+			if ((get.position(card) !== "j" && !game.checkMod(card, target, "unchanged", "cardEnabled2", target)) || !target.canUse(cardx, player, false)) {
+				return;
+			}
+			await target.useCard({
+				card: cardx, 
+				cards: [card],
+				targets: [player], 
+				addCount: false,
+			});
+			const num = player.hasHistory("damage", evt => evt.card === cardx) ? 2 : 1;
+			await player.draw(num);
 		},
 		ai: {
 			order: 7,
