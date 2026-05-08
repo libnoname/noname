@@ -3960,12 +3960,12 @@ const skills = {
 		intro: { content: "手牌中的非$牌均视为杀" },
 		mod: {
 			cardname(card, player) {
-				if (get.type2(card, false) != player.storage.choufa2) {
+				if (get.type2(card, false) !== player.storage.choufa2) {
 					return "sha";
 				}
 			},
 			cardnature(card, player) {
-				if (get.type2(card, false) != player.storage.choufa2) {
+				if (get.type2(card, false) !== player.storage.choufa2) {
 					return false;
 				}
 			},
@@ -3975,11 +3975,14 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		preHidden: true,
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill("zhaoran2", "phaseUseAfter");
-			var cards = player.getCards("h");
+			const cards = player.getCards("h");
 			if (cards.length > 0) {
-				player.addShownCards(cards, "visible_zhaoran");
+				await player.addShownCards({
+					cards,
+					gaintag: ["visible_zhaoran"],
+				});
 			}
 		},
 	},
@@ -4001,82 +4004,74 @@ const skills = {
 		charlotte: true,
 		popup: false,
 		filter(event, player, name) {
-			if (name == "gainBegin") {
+			if (name === "gainBegin") {
 				return true;
 			}
-			var evt = event.getl(player);
+			const evt = event.getl(player);
 			if (!evt || !evt.hs || !evt.hs.length) {
 				return false;
 			}
-			var list = player.getStorage("zhaoran2");
-			for (var i of evt.hs) {
-				var suit = get.suit(i, player);
+			const list = player.getStorage("zhaoran2");
+			for (const card of evt.hs) {
+				const suit = get.suit(card, player);
 				if (!list.includes(suit) && !player.countCards("h", { suit: suit })) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (trigger.delay === false) {
-				game.delayx();
+				await game.delayx();
 			}
-			"step 1";
-			var list = [];
-			var suits = get.copy(player.storage.zhaoran2);
-			suits.addArray(
-				player.getCards("h").map(function (card) {
-					return get.suit(card);
-				})
-			);
-			var evt = trigger.getl(player);
-			for (var i of evt.hs) {
-				var suit = get.suit(i, player);
+			const list = [];
+			const suits = get.copy(player.storage.zhaoran2);
+			suits.addArray(player.getCards("h").map(card => get.suit(card)));
+			const evt = trigger.getl(player);
+			for (const card of evt.hs) {
+				const suit = get.suit(card, player);
 				if (!suits.includes(suit)) {
 					list.add(suit);
 				}
 			}
-			event.count = list.length;
 			player.markAuto("zhaoran2", list);
-			"step 1";
-			event.count--;
-			var filterTarget = function (card, player, target) {
-				return target != player && target.countDiscardableCards(player, "he") > 0;
+			const filterTarget = (card, currentPlayer, target) => {
+				return target !== currentPlayer && target.countDiscardableCards(currentPlayer, "he") > 0;
 			};
-			if (
-				!game.hasPlayer(function (current) {
-					return filterTarget(null, player, current);
-				})
-			) {
-				event._result = { bool: false };
-			} else {
-				player.chooseTarget(filterTarget, "弃置一名其他角色的一张牌或摸一张牌").set("ai", function (target) {
-					var att = get.attitude(player, target);
-					if (att >= 0) {
-						return 0;
-					}
-					if (
-						target.countCards("he", function (card) {
-							return get.value(card) > 5;
-						})
-					) {
-						return -att;
-					}
-					return 0;
-				});
-			}
-			"step 2";
-			if (!result.bool) {
-				player.logSkill("zhaoran2");
-				player.draw();
-			} else {
-				var target = result.targets[0];
+			for (let count = list.length; count > 0; count--) {
+				if (!game.hasPlayer(current => filterTarget(null, player, current))) {
+					player.logSkill("zhaoran2");
+					await player.draw();
+					continue;
+				}
+				const result = await player
+					.chooseTarget({
+						prompt: "弃置一名其他角色的一张牌或摸一张牌",
+						filterTarget,
+						ai(target) {
+							const attitude = get.attitude(player, target);
+							if (attitude >= 0) {
+								return 0;
+							}
+							if (target.countCards("he", card => get.value(card) > 5)) {
+								return -attitude;
+							}
+							return 0;
+						}
+					})
+					.forResult();
+				if (!result.bool || !result.targets?.length) {
+					player.logSkill("zhaoran2");
+					await player.draw();
+					continue;
+				}
+				const target = result.targets[0];
 				player.logSkill("zhaoran2", target);
-				player.discardPlayerCard(target, true, "he");
-			}
-			if (event.count > 0) {
-				event.goto(1);
+				await player.discardPlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 		intro: {
@@ -4090,11 +4085,14 @@ const skills = {
 		firstDo: true,
 		silent: true,
 		sourceSkill: "zhaoran",
-		content() {
-			if (event.triggername == "gainBegin") {
+		async content(event, trigger, player) {
+			if (event.triggername === "gainBegin") {
 				trigger.gaintag.add("visible_zhaoran");
 			} else {
-				player.hideShownCards(player.getCards("h"), "visible_zhaoran");
+				await player.hideShownCards({
+					cards: player.getCards("h"),
+					gaintag: ["visible_zhaoran"],
+				});
 			}
 		},
 	},
@@ -4107,9 +4105,7 @@ const skills = {
 					return;
 				}
 				from._chengwu = true;
-				var bool = game.hasPlayer(function (current) {
-					return current != from && current != to && current.group == "jin" && from.hasZhuSkill("chengwu", current) && current.inRange(to);
-				});
+				const bool = game.hasPlayer(current => current !== from && current !== to && current.group === "jin" && from.hasZhuSkill("chengwu", current) && current.inRange(to));
 				delete from._chengwu;
 				if (bool) {
 					return true;
