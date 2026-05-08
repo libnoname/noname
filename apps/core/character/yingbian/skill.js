@@ -2345,69 +2345,69 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["useCard", "respond"] },
 		hasHand(event) {
-			var evts = event.player.getHistory("lose", function (evt) {
-				return (evt.relatedEvent || evt.getParent()) == event;
-			});
-			return evts && evts.length == 1 && evts[0].hs.length > 0;
+			const evts = event.player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === event);
+			return evts && evts.length === 1 && evts[0].hs.length > 0;
 		},
 		filter(event, player) {
-			var phase = event.getParent("phaseUse");
-			if (!phase || phase.player != player) {
+			const phase = event.getParent("phaseUse");
+			if (phase == null || phase.player !== player) {
 				return false;
 			}
-			var suit = get.suit(event.card);
-			if (!lib.suit.includes(suit) || !lib.skill.quanbian.hasHand(event)) {
+			const suit = get.suit(event.card);
+			if (suit == null || !lib.suit.includes(suit) || !lib.skill.quanbian.hasHand(event)) {
 				return false;
 			}
-			return (
-				player.getHistory("useCard", function (evt) {
-					return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
-				}).length +
-					player.getHistory("respond", function (evt) {
-						return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
-					}).length ==
-				0
-			);
+			return player.getHistory("useCard", evt => evt !== event && get.suit(evt.card) === suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") === phase).length + player.getHistory("respond", evt => evt !== event && get.suit(evt.card) === suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") === phase).length === 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseControl("cancel2")
-				.set("prompt", get.prompt("quanbian"))
-				.set("choiceList", ["摸一张牌", "观看牌堆顶的" + get.cnNumber(player.maxHp) + "张牌并将其中一张置于牌堆底"])
-				.set("ai", function () {
-					var player = _status.event.player;
-					var suit = get.suit(_status.event.getTrigger().card);
-					if (
-						player.countCards("h", function (card) {
-							return get.suit(card) == suit && player.hasValueTarget(card, null, true);
-						})
-					) {
-						return "cancel2";
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
-			}
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					prompt: get.prompt("quanbian"),
+					controls: ["cancel2"],
+					choiceList: [`摸一张牌`, `观看牌堆顶的${get.cnNumber(player.maxHp)}张牌并将其中一张置于牌堆底`],
+					ai() {
+						const event = get.event();
+						const player = event.player;
+						const trigger = event.getTrigger();
+						const suit = get.suit(trigger.card);
+						if (player.hasCards("h", card => get.suit(card) === suit && player.hasValueTarget(card, null, true))) {
+							return "cancel2";
+						}
+						return 0;
+					},
+				})
+				.forResult();
+
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: {
+					index: result.index,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const { index } = event.cost_data;
 			player.addTempSkill("quanbian2");
 			player.storage.quanbian2.add(get.suit(trigger.card));
 			player.markSkill("quanbian2");
-			if (result.index == 0) {
-				player.draw();
-				event.finish();
+			if (index === 0) {
+				await player.draw();
 				return;
 			}
-			event.cards = get.cards(player.maxHp);
-			player.chooseButton(["将一张牌置于牌堆底", event.cards], true);
-			"step 2";
-			while (cards.length) {
-				var card = cards.pop();
+			const cards = get.cards(player.maxHp);
+			const result = await player
+				.chooseButton({
+					createDialog: ["将一张牌置于牌堆底", cards],
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			const [bottomCard] = result.links;
+			for (const card of cards.slice().reverse()) {
 				card.fix();
-				if (card == result.links[0]) {
+				if (card === bottomCard) {
 					ui.cardPile.appendChild(card);
 				} else {
 					ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
@@ -2425,7 +2425,7 @@ const skills = {
 		onremove: true,
 		mod: {
 			cardEnabled2(card, player) {
-				if (get.position(card) == "h" && player.storage.quanbian2.includes(get.suit(card))) {
+				if (get.position(card) === "h" && player.storage.quanbian2.includes(get.suit(card))) {
 					return false;
 				}
 			},
