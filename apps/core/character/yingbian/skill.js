@@ -3155,24 +3155,23 @@ const skills = {
 	},
 	zhuosheng: {
 		audio: 2,
+		trigger: { player: "useCard2" },
 		locked: false,
 		init(player) {
 			player.addSkill("zhuosheng_count");
 			if (game.phaseNumber > 0) {
-				var hs = player.getCards("h"),
-					all = player.getAllHistory(),
-					cards = [];
-				for (var i = all.length - 1; i >= 0; i--) {
-					for (var j of all[i].gain) {
-						cards.addArray(j.cards);
+				const handCards = player.getCards("h");
+				const allHistory = player.getAllHistory();
+				let cards = [];
+				for (let i = allHistory.length - 1; i >= 0; i--) {
+					for (const gainEvent of allHistory[i].gain) {
+						cards.addArray(gainEvent.cards);
 					}
-					if (all[i].isRound) {
+					if (allHistory[i].isRound) {
 						break;
 					}
 				}
-				cards = cards.filter(function (i) {
-					return hs.includes(i);
-				});
+				cards = cards.filter(card => handCards.includes(card));
 				if (cards.length) {
 					player.addGaintag(cards, "zhuosheng");
 				}
@@ -3211,88 +3210,76 @@ const skills = {
 				}
 			},
 		},
-		trigger: { player: "useCard2" },
-		direct: true,
-		filterx(event, player) {
-			if (!player.isPhaseUsing()) {
-				return false;
-			}
-			return (
-				player.getHistory("lose", function (evt) {
-					if ((evt.relatedEvent || evt.getParent()) != event) {
-						return false;
-					}
-					for (var i in evt.gaintag_map) {
-						if (evt.gaintag_map[i].includes("zhuosheng")) {
-							return true;
-						}
-					}
-					return false;
-				}).length > 0
-			);
-		},
 		filter(event, player) {
 			if (!lib.skill.zhuosheng.filterx(event, player)) {
 				return false;
 			}
-			if (get.type(event.card) != "trick") {
+			if (get.type(event.card) !== "trick") {
 				return false;
 			}
 			if (event.targets && event.targets.length > 0) {
 				return true;
 			}
-			var info = get.info(event.card);
-			if (info.allowMultiple == false) {
+			const info = get.info(event.card);
+			if (info.allowMultiple === false) {
 				return false;
 			}
 			if (event.targets && !info.multitarget) {
-				if (
-					game.hasPlayer(function (current) {
-						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current);
-					})
-				) {
+				if (game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current))) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var prompt2 = "为" + get.translation(trigger.card) + "增加或减少一个目标";
-			player
-				.chooseTarget(get.prompt("zhuosheng"), function (card, player, target) {
-					var player = _status.event.player;
-					if (_status.event.targets.includes(target)) {
+		filterx(event, player) {
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
+			return player.hasHistory("lose", evt => {
+				if ((evt.relatedEvent || evt.getParent()) !== event) {
+					return false;
+				}
+				for (const key in evt.gaintag_map) {
+					if (evt.gaintag_map[key].includes("zhuosheng")) {
 						return true;
 					}
-					return lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target);
+				}
+				return false;
+			});
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("zhuosheng"),
+					prompt2: `为${get.translation(trigger.card)}增加或减少一个目标`,
+					filterTarget(_card, _player, target) {
+						const { player, card, targets } = get.event();
+						if (targets.includes(target)) {
+							return true;
+						}
+						return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+					},
+					ai(target) {
+						const event = get.event();
+						const { player, card, targets } = event;
+						return get.effect(target, card, player, player) * (targets.includes(target) ? -1 : 1);
+					},
 				})
-				.set("prompt2", prompt2)
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, player, player) * (_status.event.targets.includes(target) ? -1 : 1);
-				})
+				.set("card", trigger.card)
 				.set("targets", trigger.targets)
-				.set("card", trigger.card);
-			"step 1";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
-				}
-				event.targets = result.targets;
-			} else {
-				event.finish();
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
-			"step 2";
-			if (event.targets) {
-				player.logSkill("zhuosheng", event.targets);
-				if (trigger.targets.includes(event.targets[0])) {
-					trigger.targets.removeArray(event.targets);
-				} else {
-					trigger.targets.addArray(event.targets);
-				}
+			const targets = event.targets;
+			if (trigger.targets.includes(targets[0])) {
+				trigger.targets.removeArray(targets);
+				return;
 			}
+			trigger.targets.addArray(targets);
 		},
 		group: ["zhuosheng_equip", "zhuosheng_silent"],
 		subfrequent: ["equip"],
@@ -3301,12 +3288,12 @@ const skills = {
 				audio: "zhuosheng",
 				trigger: { player: "useCard" },
 				filter(event, player) {
-					return get.type(event.card) == "equip" && lib.skill.zhuosheng.filterx(event, player);
+					return get.type(event.card) === "equip" && lib.skill.zhuosheng.filterx(event, player);
 				},
 				frequent: true,
 				prompt: "是否发动【擢升】摸一张牌？",
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			silent: {
@@ -3316,11 +3303,11 @@ const skills = {
 				silent: true,
 				firstDo: true,
 				filter(event, player) {
-					return get.mode() != "guozhan" && get.type(event.card) == "basic" && lib.skill.zhuosheng.filterx(event, player) && event.addCount !== false;
+					return get.mode() !== "guozhan" && get.type(event.card) === "basic" && lib.skill.zhuosheng.filterx(event, player) && event.addCount !== false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.addCount = false;
-					var stat = player.getStat();
+					const stat = player.getStat();
 					if (stat && stat.card && stat.card[trigger.card.name]) {
 						stat.card[trigger.card.name]--;
 					}
@@ -3336,13 +3323,13 @@ const skills = {
 		silent: true,
 		sourceSkill: "zhuosheng",
 		filter(event, player) {
-			if (event.name == "gain") {
-				return event.getParent(2).name != "zhuosheng_equip";
+			if (event.name === "gain") {
+				return event.getParent(2).name !== "zhuosheng_equip";
 			}
 			return game.roundNumber > 1;
 		},
-		content() {
-			if (trigger.name == "gain") {
+		async content(event, trigger, player) {
+			if (trigger.name === "gain") {
 				trigger.gaintag.add("zhuosheng");
 			} else {
 				player.removeGaintag("zhuosheng");
