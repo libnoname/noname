@@ -1858,7 +1858,7 @@ const skills = {
 					return;
 				}
 				const map = player.storage.caozhao_info;
-				if (map && map[card.cardid] && get.itemtype(card) == "card" && card.hasGaintag("caozhao")) {
+				if (map && map[card.cardid] && get.itemtype(card) === "card" && card.hasGaintag("caozhao")) {
 					return map[card.cardid];
 				}
 			},
@@ -1867,7 +1867,7 @@ const skills = {
 					return;
 				}
 				const map = player.storage.caozhao_info;
-				if (map && map[card.cardid] && get.itemtype(card) == "card" && card.hasGaintag("caozhao")) {
+				if (map && map[card.cardid] && get.itemtype(card) === "card" && card.hasGaintag("caozhao")) {
 					return false;
 				}
 			},
@@ -1877,100 +1877,99 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return event.player && event.source && event.player != event.source && event.player.isAlive() && event.source.isAlive() && (event.player.countCards("he") > 0 || event.source.countCards("he") > 0);
+			return event.player && event.source && event.player !== event.source && event.player.isAlive() && event.source.isAlive() && (event.player.countCards("he") > 0 || event.source.countCards("he") > 0);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var target = trigger.source;
-			event.target = target;
-			player
-				.chooseTarget(get.prompt("olxibing"), "弃置自己或" + get.translation(target) + "的两张牌，然后手牌数较少的角色摸两张牌且不能对你使用牌直到回合结束", function (card, player, target) {
-					if (target != player && target != _status.event.target) {
-						return false;
-					}
-					return target.countCards("he") > 0;
-				})
-				.set("target", target)
-				.set("ai", function (targetx) {
-					var player = _status.event.player,
-						target = _status.event.target;
-					if (target == targetx) {
-						if (get.attitude(player, target) > 0) {
+		async cost(event, trigger, player) {
+			const source = trigger.source;
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("olxibing"),
+					prompt2: `弃置自己或${get.translation(source)}的两张牌，然后手牌数较少的角色摸两张牌且不能对你使用牌直到回合结束`,
+					filterTarget(card, player, target) {
+						const source = get.event().source;
+						if (target !== player && target !== source) {
+							return false;
+						}
+						return target.hasCards("he");
+					},
+					ai(target) {
+						const { player, source } = get.event();
+						if (source === target) {
+							if (get.attitude(player, source) > 0) {
+								return 0;
+							}
+							const cards = source
+								.iterableGetCards("he", card => lib.filter.canBeDiscarded(card, player, source))
+								.map(card => ({ link: card }))
+								.toArray()
+								.sort((a, b) => get.buttonValue(b) - get.buttonValue(a))
+								.map(button => button.link);
+							if (
+								source.countCards("h") - player.countCards("h") >=
+								Math.max(
+									0,
+									Math.min(2, cards.length) -
+										source.countCards("e", card => {
+											const index = cards.indexOf(card);
+											return index !== -1 && index < 2;
+										})
+								)
+							) {
+								return 1;
+							}
 							return 0;
 						}
-						var cards = target
-							.getCards("he", function (card) {
-								return lib.filter.canBeDiscarded(card, player, target);
-							})
-							.map(c => ({
-								link: c,
-							}))
-							.sort(function (a, b) {
-								return get.buttonValue(b) - get.buttonValue(a);
-							})
-							.map(b => b.link);
+						const cards = player.getCards("he", card => lib.filter.cardDiscardable(card, player, "olxibing")).sort((a, b) => get.useful(a) - get.useful(b));
 						if (
-							target.countCards("h") - player.countCards("h") >=
-							Math.max(
-								0,
-								Math.min(2, cards.length) -
-									target.countCards("e", function (card) {
-										var index = cards.indexOf(card);
-										return index != -1 && index < 2;
-									})
-							)
+							player.countCards("h") - source.countCards("h") <
+								Math.max(
+									0,
+									Math.min(cards.length, 2) -
+										player.countCards("e", card => {
+											const index = cards.indexOf(card);
+											return index !== -1 && index < 2;
+										})
+								) &&
+							(cards.length < 2 || get.value(cards[1]) < 5.5)
 						) {
-							return 1;
+							return 0.8;
 						}
 						return 0;
-					}
-					var cards = player
-						.getCards("he", function (card) {
-							return lib.filter.cardDiscardable(card, player, "olxibing");
-						})
-						.sort(function (a, b) {
-							return get.useful(a) - get.useful(b);
-						});
-					if (
-						player.countCards("h") - target.countCards("h") <
-							Math.max(
-								0,
-								Math.min(cards.length, 2) -
-									player.countCards("e", function (card) {
-										var index = cards.indexOf(card);
-										return index != -1 && index < 2;
-									})
-							) &&
-						(cards.length < 2 || get.value(cards[1]) < 5.5)
-					) {
-						return 0.8;
-					}
-					return 0;
+					},
+				})
+				.set("source", source)
+				.forResult();
+		},
+		logTarget: "source",
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			const target = event.targets[0];
+			if (target === player) {
+				await player.chooseToDiscard({
+					selectCard: 2,
+					position: "he",
+					forced: true,
 				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("olxibing", target);
-				var target = result.targets[0];
-				if (target == player) {
-					player.chooseToDiscard("he", 2, true);
-				} else {
-					player.discardPlayerCard(target, "he", true, 2);
-				}
 			} else {
-				event.finish();
+				await player.discardPlayerCard({
+					target,
+					selectButton: 2,
+					position: "he",
+					forced: true,
+				});
 			}
-			"step 2";
-			if (player.isIn() && target.isIn()) {
-				var hs = player.countCards("h"),
-					ts = target.countCards("h");
-				if (hs != ts) {
-					var drawer = hs > ts ? target : player;
-					drawer.draw(2);
-					player.addTempSkill("olxibing2");
-					player.markAuto("olxibing2", [drawer]);
-				}
+			if (!player.isIn() || !source.isIn()) {
+				return;
 			}
+			const playerHandCount = player.countCards("h");
+			const sourceHandCount = source.countCards("h");
+			if (playerHandCount === sourceHandCount) {
+				return;
+			}
+			const drawer = playerHandCount > sourceHandCount ? source : player;
+			await drawer.draw(2);
+			player.addTempSkill("olxibing2");
+			player.markAuto("olxibing2", [drawer]);
 		},
 	},
 	olxibing2: {
@@ -1995,7 +1994,7 @@ const skills = {
 		initList(player) {
 			var list,
 				skills = [];
-			if (get.mode() == "guozhan") {
+			if (get.mode() === "guozhan") {
 				list = [];
 				for (var i in lib.characterPack.mode_guozhan) {
 					if (lib.character[i]) {
