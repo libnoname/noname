@@ -1419,6 +1419,7 @@ const skills = {
 	//疑包
 	//曹操 -by.柴油鹿鹿
 	sxrmkuxin: {
+		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return game.hasPlayer(current => {
@@ -1698,6 +1699,7 @@ const skills = {
 		},
 	},
 	sxrmsigu: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
@@ -1759,6 +1761,7 @@ const skills = {
 	},
 	//刘备
 	sxrmchengbian: {
+		audio: 2,
 		trigger: {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
@@ -2009,6 +2012,7 @@ const skills = {
 	},
 	//华佗
 	sxrmmiehai: {
+		audio: 2,
 		enable: "chooseToUse",
 		filterCard: true,
 		selectCard: 2,
@@ -2079,6 +2083,7 @@ const skills = {
 		},
 	},
 	sxrmqingjun: {
+		audio: 2,
 		trigger: {
 			global: "roundEnd",
 		},
@@ -2279,6 +2284,7 @@ const skills = {
 	},
 	//伏寿
 	sxrmmitu: {
+		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
@@ -2398,6 +2404,7 @@ const skills = {
 		},
 	},
 	sxrmqianliu: {
+		audio: 2,
 		trigger: {
 			global: "useCardToTargeted",
 		},

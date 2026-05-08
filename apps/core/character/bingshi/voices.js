@@ -10,7 +10,7 @@ export default {
 	"#potjianlv2": "蜀汉若灭，恐唇亡齿寒啊。",
 	"#potjianlv3": "卫护江东，以全节义。",
 	"#zhuji:die": "诸葛融何以引军不发，致我有此惨败。",
-	"#zhuji_shaodw:die": "哎，内忧至此，回天无力啊。",
+	"#zhuji_shadow:die": "哎，内忧至此，回天无力啊。",
 	"#mbsizi1": "昔韩信暗度陈仓，乃定三秦之地。",
 	"#mbsizi2": "今吾大军十万，岂惧蜀道之险？",
 	"#mbsizi3": "德彰功显，取之何愧？",
