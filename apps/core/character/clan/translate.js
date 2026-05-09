@@ -55,7 +55,7 @@ const translates = {
 	clansankuang: "三恇",
 	clansankuang_info: "锁定技。当你每轮第一次使用一种类别的牌后，你令一名其他角色交给你至少X张牌，然后于装备区或处理区内获得你使用的牌对应的所有实体牌（X为以下条件中其满足的项数：场上有牌、已受伤、体力值小于手牌数）。",
 	clanbeishi: "卑势",
-	clanbeishi_info: "锁定技。当一名角色失去最后的手牌后，若其是你首次发动〖三恇〗的目标角色，你回复1点体力。",
+	clanbeishi_info: `锁定技。当一名角色失去最后的手牌后，若其是你首次发动${get.poptip("clansankuang")}的目标角色，你回复1点体力。`,
 	clan_xuncan: "族荀粲",
 	clanyunshen: "熨身",
 	clanyunshen_info: "出牌阶段限一次。你可以令一名其他角色回复1点体力，然后选择一项：1.你视为对其使用一张冰【杀】；2.其视为对你使用一张冰【杀】。",

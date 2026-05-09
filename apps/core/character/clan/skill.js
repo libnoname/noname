@@ -6403,6 +6403,16 @@ const skills = {
 		},
 	},
 	clanbeishi: {
+		init(player, skill) {
+			if (player.getStorage(skill).length > 0) return;
+			player.addSkill(skill + "_mark");
+			const history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
+			if (history.length) {
+				const { targets } = history[0];
+				player.markAuto(skill, targets);
+			}
+		},
+		onremove: true,
 		audio: 2,
 		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		forced: true,
@@ -6424,7 +6434,23 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.recover();
 		},
+		derivation: "clansankuang",
 		ai: { combo: "clansankuang" },
+		intro: { content: "三框目标：$" },
+		subSkill: {
+			mark: {
+				trigger: { player: "logSkillBegin" },
+				silent: true,
+				firstDo: true,
+				filter(event, player) {
+					const history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
+					return history.map(evt => evt.event).indexOf(event.getParent()) == 0;
+				},
+				async content(event, trigger, player) {
+					player.markAuto("clanbeishi", trigger.targets);
+				},
+			},
+		},
 	},
 	//族荀淑
 	clanshenjun: {
