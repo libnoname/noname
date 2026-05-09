@@ -20108,28 +20108,49 @@ const skills = {
 		async content(event, trigger, player) {
 			const cards = get.cards(3, true);
 			await player.showCards(cards, get.translation(player) + "发动了【星卜】", true).set("clearArena", false);
-			let num = cards.filter(i => get.color(i, false) == "red").length;
+			let num = cards.filter(card => get.color(card, false) == "red").length;
+			event.num = num;
+			let prompt = "";
+			if (num <= 1) {
+				prompt = "其于准备阶段开始时弃置一张手牌";
+			} else if (num == 2) {
+				prompt = "其使用【杀】的次数上限-1，跳过弃牌阶段";
+			} else {
+				prompt = "其摸牌阶段多摸两张牌，使用【杀】的次数上限+1";
+			}
+			if (!game.hasPlayer(current => player != current)) {
+				return;
+			}
 			const result = await player
-				.chooseTarget("是否选择一名其他角色获得星卜效果（" + get.cnNumber(num) + "张）？", lib.filter.notMe)
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						num = _status.event.getParent().num;
-					var att = get.attitude(player, target);
-					if (num < 3) {
-						att *= -1;
+				.chooseTarget("星卜：你可以一名其他角色直到其回合结束获得以下效果", prompt, lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player(),
+						num = get.event().getParent().num;
+					let att = get.attitude(player, target);
+					if (num <= 1) {
+						return -att * target.countCards("h");
 					}
-					if (num == 2 && target.hasJudge("lebu")) {
-						att *= -1.4;
+					if (num == 2) {
+						if (target.hasJudge("lebu")) {
+							if (target.needsToDiscard() > 2) {
+								return att;
+							}
+							return -1.4 * att;
+						}
+						if (att < 0 && target.countCards("h") <= 3) {
+							return -1.4 * att;
+						}
+						return 0;
 					}
-					return att;
+					if (num == 3) {
+						return att;
+					}
+					return 0;
 				})
 				.forResult();
-			if (num == 0) {
-				num = 1;
-			}
 			game.broadcastAll(ui.clear);
-			if (result.bool && result.targets?.length) {
-				const skill = "xingbu_effect" + num,
+			if (result?.bool && result.targets?.length) {
+				const skill = "xingbu_effect" + Math.max(1, num),
 					target = result.targets[0];
 				player.line(target, "green");
 				game.log(player, "选择了", target);
@@ -20149,7 +20170,7 @@ const skills = {
 					return player.countCards("h") > 0;
 				},
 				async content(event, trigger, player) {
-					await player.chooseToDiscard("h", true, player.countMark("xingbu_effect1"));
+					await player.chooseToDiscard("h", true, player.countMark(event.name));
 				},
 			},
 			effect2: {
@@ -20180,7 +20201,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					if (trigger.name == "phaseDraw") {
-						trigger.num += player.countMark("xingbu_effect3") * 2;
+						trigger.num += player.countMark(event.name) * 2;
 					}
 				},
 				mod: {
