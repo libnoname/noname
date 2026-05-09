@@ -18998,7 +18998,7 @@ const skills = {
 					[
 						[
 							["draw", "摸体力上限张牌"],
-							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `并于此牌造成伤害时获得${get.translation(trigger.cards)}` : "")],
+							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `且于此牌造成伤害时获得${get.translation(trigger.cards)}` : "")],
 						],
 						"textbutton",
 					],
@@ -19051,6 +19051,7 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove: true,
+				trigger: { source: 'damageBegin1' },
 				filter(event, player) {
 					return event.card && player.getStorage("dckengqiang_effect").includes(event.card);
 				},
