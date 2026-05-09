@@ -3593,7 +3593,7 @@ const skills = {
 	ruilve3: {},
 	tairan: {
 		audio: 2,
-		trigger: { player: "phaseEnd" },
+		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		preHidden: true,
 		filter(event, player) {
