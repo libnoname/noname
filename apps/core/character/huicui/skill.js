@@ -16027,15 +16027,14 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			/** @type { Card[] } */
 			const cards = [];
 			while (cards.length < 3) {
-				const card = get.cardPile2(function (card) {
-					for (const i of cards) {
-						if (i.name == card.name) {
-							return false;
-						}
+				const card = get.cardPile2(card => {
+					if (cards.some(cardx => cardx.name == card.name)) {
+						return false;
 					}
 					const info = get.info(card, false);
 					if (info.ai && info.ai.tag && info.ai.tag.damage) {
@@ -16044,7 +16043,6 @@ const skills = {
 					return !info.notarget && (info.toself || info.singleCard || !info.selectTarget || info.selectTarget == 1);
 				});
 				if (card) {
-					// @ts-ignore
 					cards.push(card);
 				} else {
 					break;
@@ -16064,7 +16062,7 @@ const skills = {
 				.chooseTarget({
 					prompt: "选择【锦绘】的目标",
 					filterTarget: lib.filter.notMe,
-					forced: true, 
+					forced: true,
 					ai(target) {
 						const event = get.event();
 						const cards = event.getParent().cards.slice(0);
@@ -16086,7 +16084,7 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (!result.bool || !result.targets?.length) {
+			if (!result?.bool || !result.targets?.length) {
 				return;
 			}
 
@@ -16125,17 +16123,17 @@ const skills = {
 									effect += effect3;
 								}
 								return effect;
-							}
+							},
 						})
 						.forResult();
 				}
-				if (result.bool) {
+				if (result?.bool) {
 					const card = result.links[0];
 					cards.remove(card);
 					const targetx = lib.skill.jinhui.getUsableTarget(card, target, player);
 					await target.useCard({
 						card,
-						targets: [targetx], 
+						targets: [targetx],
 						addCount: false,
 						noai: true,
 					});
@@ -16148,19 +16146,16 @@ const skills = {
 					.chooseButton({
 						createDialog: ["是否按“锦绘”规则使用其中一张牌？", selfCards],
 						ai(button) {
-							const event = get.event();
-							const player = get.player();
-							const target = event.getParent().target;
-
-							const card = button.link
+							const { player, target } = get.event();
+							const card = button.link;
 							const targetx = lib.skill.jinhui.getUsableTarget(card, player, target);
-
 							return get.effect(targetx, card, player, player);
-						}
+						},
 					})
+					.set("target", target)
 					.forResult();
 
-				if (!result.bool) {
+				if (!result?.bool) {
 					return;
 				}
 				const card = result.links[0];
@@ -16168,9 +16163,9 @@ const skills = {
 				const targetx = lib.skill.jinhui.getUsableTarget(card, player, target);
 				if (targetx) {
 					await player.useCard({
-						card, 
+						card,
 						targets: [targetx],
-						addCount: false, 
+						addCount: false,
 						noai: true,
 					});
 				}
@@ -16181,7 +16176,7 @@ const skills = {
 			if (info.toself) {
 				return player.canUse(card, player, false) ? player : false;
 			}
-			return target.isIn() && player.canUse(card, target, false) ? target : false;
+			return target?.isIn() && player.canUse(card, target, false) ? target : false;
 		},
 		ai: {
 			order: 5,
