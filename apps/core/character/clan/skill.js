@@ -7220,16 +7220,16 @@ const skills = {
 					return event.skill == "clanzhanding";
 				},
 				async content(event, trigger, player) {
-					let result;
-					if (
-						player.hasHistory("sourceDamage", evt => {
-							return evt.card == trigger.card;
-						})
-					) {
+					if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
 						const num1 = player.countCards("h");
 						const num2 = player.getHandcardLimit();
 						if (num1 < num2) {
 							await player.draw({ num: num2 - num1 });
+						} else if (num1 > num2) {
+							const num = Math.min(num1 - num2, player.countDiscardableCards(player, "h"));
+							if (num > 0) {
+								await player.chooseToDiscard(num, "h", true, "allowChooseAll");
+							}
 						}
 					} else if (trigger.addCount !== false) {
 						trigger.addCount = false;
