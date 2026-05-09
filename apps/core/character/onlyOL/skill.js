@@ -3068,7 +3068,7 @@ const skills = {
 		},
 	},
 	oltianen: {
-		audio: 2,
+		audio: 3,
 		forced: true,
 		trigger: {
 			player: "useCardToPlayered",
@@ -3132,7 +3132,7 @@ const skills = {
 		},
 	},
 	olqiangang: {
-		audio: 2,
+		audio: 3,
 		derivation: ["olrumo"],
 		enable: "phaseUse",
 		filter(event, player) {

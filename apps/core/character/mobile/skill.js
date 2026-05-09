@@ -536,7 +536,7 @@ const skills = {
 		},
 	},
 	mbyouye: {
-		audio: 2,
+		audio: "twyouye",
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			return event.player != player && !event.player.hasHistory("sourceDamage", evt => evt.player == player) && player.getExpansions("mbyouye").length < 5;

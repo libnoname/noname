@@ -90,7 +90,7 @@ const skills = {
 		},
 	},
 	pothuanshi: {
-		audio: "pothuanshi2.mp3",
+		audio: 3,
 		dutySkill: true,
 		locked: false,
 		group: ["pothuanshi_achieve", "pothuanshi_damage"],
@@ -117,6 +117,8 @@ const skills = {
 		lose: false,
 		discard: false,
 		delay: false,
+		logAudio: () => "pothuanshi2.mp3",
+		derivation: ["potjianlv"],
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
 		},

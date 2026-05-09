@@ -4605,148 +4605,213 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	/**
 	 * 从指定区域获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string | boolean } [position] 筛选区域，默认牌堆+弃牌堆：
 	 *
-	 * cardPile: 仅牌堆；discardPile: 仅弃牌堆；field: 牌堆+弃牌堆+场上
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { boolean | "cardPile" | "discardPile" | "field" } [position] - 筛选区域，默认牌堆+弃牌堆：
 	 *
-	 * 若为true且name为string | object类型，则在筛选区域内没有找到卡牌时创建一张name条件的牌
+	 * - cardPile: 仅牌堆
+	 * - discardPile: 仅弃牌堆
+	 * - field: 牌堆+弃牌堆+场上
 	 *
-	 * @param { string } [start] 遍历方式。默认top
+	 * > 若为true且name为`string | VCard`类型，则在筛选区域内没有找到卡牌时创建一张`name`条件的牌
 	 *
-	 * top: 从牌堆/弃牌堆顶自顶向下遍历
-	 * bottom: 从牌堆/弃牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	cardPile(name, position, start = "top") {
-		let filter,
-			create = null;
-		if (typeof name === "function") {
-			filter = function (card) {
-				return name(card);
-			};
-		} else if (name === true) {
-			filter = () => true;
-		} else if (name) {
-			if (typeof name === "string") {
-				name = { name };
-			}
-			filter = function (card) {
-				for (let i in name) {
-					if (card[i] && card[i] !== name[i]) {
-						return false;
-					}
+	cardPile(pattern, position, start = "top") {
+		let filter;
+		let create = false;
+		let filtering = true;
+		if (pattern === true) {
+			filtering = false;
+		} else if (typeof pattern === "function") {
+			filter = pattern;
+		} else if (pattern) {
+			if (typeof pattern === "string") {
+				filter = card => card.name === pattern;
+			} else {
+				// 预计算过滤器条目，避免每张牌都重复判断 key 类型和 filterVal 类型
+				const entries = [];
+				for (const key in pattern) {
+					const filterVal = pattern[key];
+					entries.push({
+						key,
+						filterVal,
+						isArray: Array.isArray(filterVal),
+					});
 				}
-				return true;
-			};
+				filter = card => {
+					for (const { key, filterVal, isArray } of entries) {
+						const value = card[key];
+						if (!value) {
+							continue;
+						}
+						if ((!isArray && value !== filterVal) || (isArray && !filterVal.includes(value))) {
+							return false;
+						}
+					}
+					return true;
+				};
+			}
 			if (position === true) {
 				create = true;
 			}
 		} else {
-			console.error("调用Get.cardPile()时未传入符合条件的参数name！");
+			console.error("调用get.cardPile()时未传入符合条件的参数name！");
 			return null;
 		}
+
+		const matches = card => !filtering || filter(card);
+		const findInPile = (pile, reverse = false) => {
+			const nodes = pile.childNodes;
+			const length = nodes.length;
+			if (!length) {
+				return null;
+			}
+			if (reverse) {
+				let index = length;
+				while (index--) {
+					const card = nodes[index];
+					if (matches(card)) {
+						return card;
+					}
+				}
+				return null;
+			}
+			let index = start === "random" ? get.rand(0, length - 1) : 0;
+			let count = 0;
+			while (count < length) {
+				const card = nodes[index];
+				if (matches(card)) {
+					return card;
+				}
+				count++;
+				index++;
+				if (index === length) {
+					index = 0;
+				}
+			}
+			return null;
+		};
+
 		if (start === "bottom") {
 			if (position !== "cardPile") {
-				for (let i = ui.discardPile.childNodes.length - 1; i >= 0; i--) {
-					if (filter(ui.discardPile.childNodes[i])) {
-						return ui.discardPile.childNodes[i];
-					}
+				const card = findInPile(ui.discardPile, true);
+				if (card) {
+					return card;
 				}
 			}
 			if (position !== "discardPile") {
-				for (let i = ui.cardPile.childNodes.length - 1; i >= 0; i--) {
-					if (filter(ui.cardPile.childNodes[i])) {
-						return ui.cardPile.childNodes[i];
-					}
+				const card = findInPile(ui.cardPile, true);
+				if (card) {
+					return card;
 				}
 			}
 			if (position === "field") {
-				let curs = game.filterPlayer(() => true);
-				for (let i = curs.length - 1; i >= 0; i--) {
-					const ej = curs[i].getCards("ej");
-					for (let j = ej.length - 1; j >= 0; j--) {
-						if (filter(ej[j])) {
-							return ej[j];
+				for (const current of reversedPlayers()) {
+					for (const card of reversedFieldCards(current)) {
+						if (matches(card)) {
+							return card;
 						}
 					}
 				}
 			}
 			if (create) {
-				return game.createCard(name);
+				return game.createCard(pattern);
 			}
 			return null;
 		}
+
 		if (position !== "discardPile") {
-			let j = 0;
-			if (start === "random") {
-				j = get.rand(0, ui.cardPile.childNodes.length - 1);
-			}
-			for (let i = 0; i < ui.cardPile.childNodes.length; i++, j++) {
-				if (j >= ui.cardPile.childNodes.length) {
-					j -= ui.cardPile.childNodes.length;
-				}
-				if (filter(ui.cardPile.childNodes[j])) {
-					return ui.cardPile.childNodes[j];
-				}
+			const card = findInPile(ui.cardPile);
+			if (card) {
+				return card;
 			}
 		}
 		if (position !== "cardPile") {
-			let j = 0;
-			if (start === "random") {
-				j = get.rand(0, ui.discardPile.childNodes.length - 1);
-			}
-			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {
-				if (j >= ui.discardPile.childNodes.length) {
-					j -= ui.discardPile.childNodes.length;
-				}
-				if (filter(ui.discardPile.childNodes[j])) {
-					return ui.discardPile.childNodes[j];
-				}
+			const card = findInPile(ui.discardPile);
+			if (card) {
+				return card;
 			}
 		}
 		if (position === "field") {
-			let curs = game.filterPlayer(() => true);
-			for (let i = 0; i < curs.length; i++) {
-				const ej = curs[i].getCards("ej");
-				for (let j = 0; j < ej.length; j++) {
-					if (filter(ej[j])) {
-						return ej[j];
+			for (const current of game.filterPlayer()) {
+				for (const card of current.iterableGetCards("ej")) {
+					if (matches(card)) {
+						return card;
 					}
 				}
 			}
 		}
 		if (create) {
-			return game.createCard(name);
+			return game.createCard(pattern);
 		}
 		return null;
+
+		function* reversedPlayers() {
+			let i = game.players.length;
+			while (i--) {
+				const player = game.players[i];
+				if (!player.isOut()) {
+					yield player;
+				}
+			}
+		}
+		function* reversedFieldCards(player) {
+			const judges = player.node.judges.childNodes;
+			let index = judges.length;
+			while (index--) {
+				const card = judges[index];
+				if (card.classList.contains("removing") || card.classList.contains("feichu")) {
+					continue;
+				}
+				yield card;
+			}
+			const equips = player.node.equips.childNodes;
+			index = equips.length;
+			while (index--) {
+				const card = equips[index];
+				if (card.classList.contains("removing") || card.classList.contains("feichu") || card.classList.contains("emptyequip")) {
+					continue;
+				}
+				yield card;
+			}
+		}
 	}
 	/**
 	 * 从牌堆获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string } [start] 遍历方式。默认top
 	 *
-	 * top：从牌堆顶自顶向下遍历
-	 * bottom：从牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	cardPile2(name, start) {
-		return get.cardPile(name, "cardPile", start || "top");
+	cardPile2(pattern, start) {
+		return get.cardPile(pattern, "cardPile", start || "top");
 	}
 	/**
 	 * 从弃牌堆获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string } [start] 遍历方式。默认top
 	 *
-	 * top：从弃牌堆顶自顶向下遍历
-	 * bottom：从弃牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	discardPile(name, start) {
-		return get.cardPile(name, "discardPile", start || "top");
+	discardPile(pattern, start) {
+		return get.cardPile(pattern, "discardPile", start || "top");
 	}
 	aiStrategy() {
 		switch (get.config("ai_strategy")) {
