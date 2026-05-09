@@ -759,7 +759,7 @@ const skills = {
 				pre_targets.length > 1
 					? await player
 							.chooseTarget(
-								`定安：与一名不为此牌目标的其他角色各摸一张牌`,
+								`定安：与一名不为此牌目标的角色各摸一张牌`,
 								(card, player, target) => {
 									return get.event().targetx.includes(target);
 								},
