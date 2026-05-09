@@ -5609,7 +5609,7 @@ const skills = {
 									if (current == player || current == target) {
 										return false;
 									}
-									return current.inRangeOf(player) || current.inRangeOf(target);
+									return true;
 								})))
 					);
 				},
@@ -5644,7 +5644,7 @@ const skills = {
 										if (current == player || current == target) {
 											return false;
 										}
-										return current.inRangeOf(player) || current.inRangeOf(target);
+										return true;
 									})
 								) {
 									kita.add(target);
@@ -5710,7 +5710,7 @@ const skills = {
 							if (current == player || current == target) {
 								return false;
 							}
-							return current.inRangeOf(player) || current.inRangeOf(target);
+							return true;
 						});
 
 						if (!targets.length) {
