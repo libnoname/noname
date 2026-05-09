@@ -78,7 +78,7 @@ const skills = {
 				if (suits?.length) {
 					const cards = [];
 					for (const suit of suits) {
-						const card = get.cardPile(i => get.suit(i) == suit);
+						const card = get.cardPile2(card => get.suit(card) == suit);
 						if (card) {
 							cards.push(card);
 						}
