@@ -13754,7 +13754,14 @@ const skills = {
 		},
 		ai: {
 			order: 9,
-			result: { player: 1 },
+			result: {
+				player(player, target) {
+					if (!player.hasUseTarget({ name: "sha" }, null, false)) {
+						return 0;
+					}
+					return 1;
+				},
+			},
 		},
 	},
 	//威曹丕
