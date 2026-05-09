@@ -4599,40 +4599,36 @@ const skills = {
 	},
 	qingleng: {
 		audio: 2,
-		trigger: { global: "phaseEnd" },
-		direct: true,
-		preHidden: true,
+		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			var target = event.player;
+			const target = event.player;
 			return target != player && target.isIn() && !target.storage.nohp && target.hp + target.countCards("h") >= ui.cardPile.childElementCount % 10 && player.countCards("he") > 0 && player.canUse({ name: "sha", nature: "ice" }, target, false);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("he", get.prompt("qingleng", trigger.player), "将一张牌当做冰【杀】对其使用", function (card, player) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard("he", get.prompt(event.skill, trigger.player), "将一张牌当做冰【杀】对其使用", (card, player, target) => {
 					return player.canUse(get.autoViewAs({ name: "sha", nature: "ice" }, [card]), _status.event.target, false);
 				})
 				.set("target", trigger.player)
-				.set("ai", function (card) {
+				.set("ai", card => {
 					if (get.effect(_status.event.target, get.autoViewAs({ name: "sha", nature: "ice" }, [card]), player) <= 0) {
 						return false;
 					}
 					return 6 - get.value(card);
 				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				player.useCard(get.autoViewAs({ name: "sha", nature: "ice" }, result.cards), result.cards, false, trigger.player, "qingleng");
-				if (!player.storage.qingleng || !player.storage.qingleng.includes(trigger.player)) {
-					player.draw();
-					player.markAuto("qingleng", [trigger.player]);
-					player.storage.qingleng.sortBySeat();
-				}
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		popup: false,
+		preHidden: true,
+		async content(event, trigger, player) {
+			await player.useCard(get.autoViewAs({ name: "sha", nature: "ice" }, event.cards), event.cards, false, trigger.player, event.name);
+			if (!player.getStorage(event.name).includes(trigger.player)) {
+				player.markAuto(event.name, [trigger.player]);
+				await player.draw();
 			}
 		},
-		intro: {
-			content: "已对$发动过此技能",
-		},
+		intro: { content: "已对$发动过此技能" },
 	},
 	xuanmu: {
 		audio: 2,
