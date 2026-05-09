@@ -476,7 +476,9 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					selectTarget: [1, Infinity],
+					selectTarget() {
+						return [1, get.player().getHp()];
+					},
 					filterTarget(card, player, target) {
 						return get.distance(target, player) <= player.getHp() && target != player;
 					},
