@@ -1318,60 +1318,49 @@ const skills = {
 	canmou: {
 		audio: 2,
 		trigger: { global: "useCardToPlayer" },
-		direct: true,
 		filter(event, player) {
-			if (!event.player.isMaxHandcard(true) || !event.isFirstTarget || get.type(event.card, null, false) != "trick") {
+			if (!event.player.isMaxHandcard(true) || !event.isFirstTarget || get.type(event.card, null, false) !== "trick") {
 				return false;
 			}
-			var info = get.info(event.card);
-			if (info.allowMultiple == false) {
+			const info = get.info(event.card);
+			if (info.allowMultiple === false) {
 				return false;
 			}
 			if (event.targets && !info.multitarget) {
-				if (
-					game.hasPlayer(function (current) {
-						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current); //&&lib.filter.targetInRange(event.card,event.player,current);
-					})
-				) {
+				if (game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current))) {
 					return true;
 				}
 			}
 			return false;
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var prompt2 = "为" + get.translation(trigger.card) + "增加一个目标";
-			player
-				.chooseTarget(get.prompt("canmou"), function (card, player, target) {
-					var player = _status.event.source;
-					return !_status.event.targets.includes(target) && lib.filter.targetEnabled2(_status.event.card, player, target); //&&lib.filter.targetInRange(_status.event.card,player,target);
-				})
-				.set("prompt2", prompt2)
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.source;
-					return get.effect(target, trigger.card, player, _status.event.player);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("canmou"),
+					prompt2: `为${get.translation(trigger.card)}增加一个目标`,
+					filterTarget(_card, player, target) {
+						const { card, source, targets } = get.event();
+						return !targets.includes(target) && lib.filter.targetEnabled2(card, source, target);
+					},
+					ai(target) {
+						const { card, source, player } = get.event();
+						return get.effect(target, card, source, player);
+					},
 				})
 				.set("targets", trigger.targets)
 				.set("card", trigger.card)
 				.set("source", trigger.player)
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
-				}
-				event.targets = result.targets;
-			} else {
-				event.finish();
+				.setHiddenSkill(event.name)
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
-			"step 2";
-			if (event.targets) {
-				player.logSkill(event.name, event.targets);
-				trigger.targets.addArray(event.targets);
-				game.log(event.targets, "也成为了", trigger.card, "的目标");
-			}
+			trigger.targets.addArray(event.targets);
+			game.log(event.targets, "也成为了", trigger.card, "的目标");
 		},
 	},
 	congjian: {
@@ -1379,7 +1368,7 @@ const skills = {
 		trigger: { global: "useCardToTarget" },
 		logTarget: "target",
 		filter(event, player) {
-			return event.target != player && event.targets.length == 1 && get.type(event.card, null, false) == "trick" && event.target.isMaxHp(true) && lib.filter.targetEnabled2(event.card, event.player, player);
+			return event.target !== player && event.targets.length === 1 && get.type(event.card, null, false) === "trick" && event.target.isMaxHp(true) && lib.filter.targetEnabled2(event.card, event.player, player);
 		},
 		check(event, player) {
 			return get.effect(player, event.card, event.player, player) > 0;
