@@ -5405,8 +5405,6 @@ const skills = {
 						);
 						game.broadcastAll(() => delete _status._olhuanhuo_debuff_check);
 						if (!cards.length) {
-							trigger.getParent("phaseUse").skipped = true;
-							trigger.cancel();
 							return;
 						}
 						const card = cards.randomGet();
