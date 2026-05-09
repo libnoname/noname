@@ -34421,9 +34421,7 @@ const skills = {
 			effect: {
 				audio: "dcfanyin",
 				trigger: { player: "useCard2" },
-				forced: true,
 				charlotte: true,
-				popup: false,
 				onremove: true,
 				filter(event, player) {
 					return ["basic", "trick"].includes(get.type(event.card, null, false));
