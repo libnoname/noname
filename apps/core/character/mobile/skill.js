@@ -173,7 +173,7 @@ const skills = {
 								return true;
 						}
 					},
-					selectButton: [0, 4],
+					selectButton: [1, 4],
 					processAI() {
 						const event = get.event();
 						const target = event.player;
