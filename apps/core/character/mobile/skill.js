@@ -13236,9 +13236,9 @@ const skills = {
 				var target = trigger.player;
 				var card = result.cards[0];
 				player.line(target, "green");
-				target.addTempSkills("mbzhixi", "phaseUseAfter");
+				target.addTempSkills("mbzhixi", "phaseEnd");
 				if (card.name != "sha" && !(get.type(card, "trick") == "trick" && get.color(card) == "black")) {
-					target.addTempSkill("new_meibu_range", "phaseUseAfter");
+					target.addTempSkill("new_meibu_range", "phaseEnd");
 					target.markAuto("new_meibu_range", player);
 				}
 				target.markSkillCharacter("mbmeibu", player, "魅步", "锁定技。出牌阶段，若你于此阶段使用过的牌数不小于X，你不能使用牌（X为你的体力值）；当你使用锦囊牌时，你结束此阶段。");
