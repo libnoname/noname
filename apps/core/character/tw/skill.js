@@ -15480,9 +15480,9 @@ const skills = {
 					});
 					if (
 						!game.countPlayer2(current => current.hasHistory("damage", evt => evt.card == trigger.card)) &&
-						player.canUse(card, trigger.player, false)
+						player.canUse(card, trigger.player)
 					) {
-						await player.useCard(card, trigger.player, false);
+						await player.useCard(card, trigger.player);
 					}
 				},
 			},

@@ -1,5 +1,5 @@
 export default {
-	//ol_xiahoushi: "",
+	ol_xiahoushi: "疾冲之恋",
 	shen_sunquan: "坐断东南",
 	shen_dianwei: "襢裼暴虎",
 	ol_shen_dianwei: "襢裼暴虎",

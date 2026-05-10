@@ -3687,6 +3687,9 @@ export default {
 					return player.storage.fakeqimei_draw;
 				},
 				filter(event, player) {
+					if (event.changedHp == 0) {
+						return false;
+					}
 					var target = player.storage.fakeqimei_draw;
 					if (!target || !target.isIn()) {
 						return false;

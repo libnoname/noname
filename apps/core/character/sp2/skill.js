@@ -7327,7 +7327,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const num = event.triggername == "damageEnd" ? 1 : -1;
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "令一名角色下回合的额定摸牌数" + (event.num > 0 ? "+1" : "-1"))
+				.chooseTarget(get.prompt(event.skill), "令一名角色下回合的额定摸牌数" + (num > 0 ? "+1" : "-1"))
 				.set("ai", target => {
 					const { player, numx: num } = get.event();
 					const att = get.attitude(player, target);

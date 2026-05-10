@@ -9085,7 +9085,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 调整玩家的体力值
+	 * 调整玩家的体力
 	 * @param { number } num
 	 * @param { boolean } [popup]
 	 * @returns { GameEvent }
@@ -9097,6 +9097,7 @@ export class Player extends HTMLDivElement {
 			next.popup = popup;
 		}
 		next.player = this;
+		next.originalHp = this.hp;
 		next.setContent("changeHp");
 		return next;
 	}

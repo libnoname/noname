@@ -11018,7 +11018,7 @@ const skills = {
 	xy_jinshou: {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.getGlobalHistory("changeHp", evt => evt.player == player).length == 0;
+			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.changedHp !== 0).length == 0;
 		},
 		check(event, player) {
 			const cards = player.getCards("h");
@@ -15812,6 +15812,9 @@ const skills = {
 	jun_xiongtu: {
 		audio: "sbjianxiong",
 		trigger: { player: "changeHpAfter" },
+		filter(event, player) {
+			return event.changedHp != 0;
+		},
 		frequent: true,
 		async content(event, trigger, player) {
 			const list = [];
@@ -40695,49 +40698,52 @@ const skills = {
 	},
 	//用间beta张飞
 	yjmangji: {
-		forced: true,
 		trigger: {
-			player: ["loseAfter", "damageEnd", "loseHpEnd", "recoverEnd"],
+			player: ["loseAfter", "changeHpAfter"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		direct: true,
 		filter(event, player) {
 			if (player.hp < 1 || !player.countDiscardableCards(player, "h")) {
 				return false;
 			}
-			if (["damage", "loseHp", "recover"].includes(event.name)) {
-				return true;
+			if (event.name == "changeHp") {
+				return event.changedHp != 0;
 			}
-			var evt = event.getl(player);
+			const evt = event.getl(player);
 			if (event.name == "equip" && event.player == player) {
 				return !evt || evt.cards.length != 1;
 			}
-			if (!evt || !evt.es.length) {
+			if (!evt?.es.length) {
 				return false;
 			}
-			return game.hasPlayer(current => player.canUse("sha", current, false));
+			return game.hasPlayer(current => player.canUse({ name: "sha", isCard: true }, current, false));
 		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				prompt: "莽击：弃置一张手牌，视为对一名其他角色使用一张【杀】",
-				forced: true,
-				filterCard: lib.filter.cardDiscardable,
-				filterTarget(card, player, target) {
-					return player.canUse("sha", target, false);
-				},
-				ai2(target) {
-					return get.effect(target, { name: "sha" }, _status.event.player);
-				},
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
+		direct: true,
+		forced: true,
+		async content(event, trigger, player) {
+			if (!player.countDiscardableCards(player, "h") || !game.hasPlayer(current => player.canUse({ name: "sha", isCard: true }, current, false))) {
+				return;
+			}
+			const result = await player
+				.chooseCardTarget({
+					prompt: "莽击：弃置一张手牌，视为对一名其他角色使用一张【杀】",
+					forced: true,
+					filterCard: lib.filter.cardDiscardable,
+					filterTarget(card, player, target) {
+						return player.canUse({ name: "sha", isCard: true }, target, false);
+					},
+					ai2(target) {
+						return get.effect(target, { name: "sha" }, _status.event.player);
+					},
+				})
+				.forResult();
+			if (result?.bool) {
+				const target = result.targets[0],
 					cards = result.cards;
-				player.logSkill("yjmangji", target);
-				player.discard(cards);
-				if (player.canUse("sha", target, false)) {
-					player.useCard({ name: "sha", isCard: true }, target, false);
+				player.logSkill(event.name, target);
+				await player.discard(cards);
+				if (player.canUse({ name: "sha", isCard: true }, target, false)) {
+					await player.useCard({ name: "sha", isCard: true }, target, false);
 				}
 			}
 		},

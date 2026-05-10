@@ -78,7 +78,7 @@ const skills = {
 				if (suits?.length) {
 					const cards = [];
 					for (const suit of suits) {
-						const card = get.cardPile(i => get.suit(i) == suit);
+						const card = get.cardPile2(card => get.suit(card) == suit);
 						if (card) {
 							cards.push(card);
 						}
@@ -759,7 +759,7 @@ const skills = {
 				pre_targets.length > 1
 					? await player
 							.chooseTarget(
-								`定安：与一名不为此牌目标的其他角色各摸一张牌`,
+								`定安：与一名不为此牌目标的角色各摸一张牌`,
 								(card, player, target) => {
 									return get.event().targetx.includes(target);
 								},
@@ -2049,7 +2049,7 @@ const skills = {
 			global: "phaseAnyEnd",
 		},
 		filter(event, player, name) {
-			if (name !== "phaseZhunbeiBegin" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0 && evt.getParent(event.name) === event)) {
+			if (name !== "phaseZhunbeiBegin" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.changedHp !== 0 && evt.getParent(event.name) === event)) {
 				return false;
 			}
 			return true;
@@ -5609,7 +5609,7 @@ const skills = {
 									if (current == player || current == target) {
 										return false;
 									}
-									return current.inRangeOf(player) || current.inRangeOf(target);
+									return true;
 								})))
 					);
 				},
@@ -5644,7 +5644,7 @@ const skills = {
 										if (current == player || current == target) {
 											return false;
 										}
-										return current.inRangeOf(player) || current.inRangeOf(target);
+										return true;
 									})
 								) {
 									kita.add(target);
@@ -5710,7 +5710,7 @@ const skills = {
 							if (current == player || current == target) {
 								return false;
 							}
-							return current.inRangeOf(player) || current.inRangeOf(target);
+							return true;
 						});
 
 						if (!targets.length) {
@@ -6403,6 +6403,16 @@ const skills = {
 		},
 	},
 	clanbeishi: {
+		init(player, skill) {
+			if (player.getStorage(skill).length > 0) return;
+			player.addSkill(skill + "_mark");
+			const history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
+			if (history.length) {
+				const { targets } = history[0];
+				player.markAuto(skill, targets);
+			}
+		},
+		onremove: true,
 		audio: 2,
 		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		forced: true,
@@ -6424,7 +6434,23 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.recover();
 		},
+		derivation: "clansankuang",
 		ai: { combo: "clansankuang" },
+		intro: { content: "三框目标：$" },
+		subSkill: {
+			mark: {
+				trigger: { player: "logSkillBegin" },
+				silent: true,
+				firstDo: true,
+				filter(event, player) {
+					const history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
+					return history.map(evt => evt.event).indexOf(event.getParent()) == 0;
+				},
+				async content(event, trigger, player) {
+					player.markAuto("clanbeishi", trigger.targets);
+				},
+			},
+		},
 	},
 	//族荀淑
 	clanshenjun: {
@@ -7220,16 +7246,16 @@ const skills = {
 					return event.skill == "clanzhanding";
 				},
 				async content(event, trigger, player) {
-					let result;
-					if (
-						player.hasHistory("sourceDamage", evt => {
-							return evt.card == trigger.card;
-						})
-					) {
+					if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
 						const num1 = player.countCards("h");
 						const num2 = player.getHandcardLimit();
 						if (num1 < num2) {
 							await player.draw({ num: num2 - num1 });
+						} else if (num1 > num2) {
+							const num = Math.min(num1 - num2, player.countDiscardableCards(player, "h"));
+							if (num > 0) {
+								await player.chooseToDiscard(num, "h", true, "allowChooseAll");
+							}
 						}
 					} else if (trigger.addCount !== false) {
 						trigger.addCount = false;

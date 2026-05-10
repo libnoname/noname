@@ -1027,8 +1027,9 @@ const skills = {
 	},
 	//可爱之神
 	dcmaimeng: {
-		trigger: {
-			player: "changeHpAfter",
+		trigger: { player: "changeHpAfter" },
+		filter(event, player) {
+			return event.changedHp != 0;
 		},
 		async cost(event, trigger, player) {
 			let num = player.getHistory("useSkill", evt => evt.skill == event.skill).length + 1;
@@ -1075,13 +1076,9 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					player: "damageBegin4",
-				},
+				trigger: { player: "damageBegin4" },
 				marktext: "萌",
-				intro: {
-					content: "防止本回合下一次受到的伤害",
-				},
+				intro: { content: "防止本回合下一次受到的伤害" },
 				onremove: true,
 				charlotte: true,
 				forced: true,
@@ -1092,15 +1089,11 @@ const skills = {
 				},
 			},
 			deEffect: {
-				trigger: {
-					player: "useCard",
-				},
+				trigger: { player: "useCard" },
 				forced: true,
 				mark: true,
 				marktext: "萌",
-				intro: {
-					content: "本回合使用的下一张牌无效",
-				},
+				intro: { content: "本回合使用的下一张牌无效" },
 				charlotte: true,
 				onremove: true,
 				async content(event, trigger, player) {

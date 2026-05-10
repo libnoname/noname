@@ -12496,8 +12496,8 @@ export const Content = {
 			await player.draw();
 		}
 	},
-	async loseMaxHp(event) {
-		const { player, num } = event;
+	async loseMaxHp(event, trigger, player) {
+		const { num } = event;
 		game.broadcastAll(function () {
 			if (lib.config.background_audio) {
 				game.playAudio("effect", "loseMaxHp");
@@ -12515,14 +12515,14 @@ export const Content = {
 			await player.die(event);
 		}
 	},
-	async gainMaxHp(event) {
-		const { player, num } = event;
+	async gainMaxHp(event, trigger, player) {
+		const { num } = event;
 		game.log(player, "增加了" + get.cnNumber(num) + "点体力上限");
 		player.maxHp += num;
 		player.update();
 	},
-	async changeHp(event) {
-		let { player, num } = event;
+	async changeHp(event, trigger, player) {
+		let { num, originalHp } = event;
 		//add to GlobalHistory
 		game.getGlobalHistory().changeHp.push(event);
 		//changeHujia moved here
@@ -12535,6 +12535,7 @@ export const Content = {
 			player.changeHujia(-event.hujia).type = "damage";
 		}
 		//old part
+		// 体力的变化值
 		num = event.num;
 		player.hp += num;
 		if (isNaN(player.hp)) {
@@ -12544,6 +12545,10 @@ export const Content = {
 			player.hp = player.maxHp;
 		}
 		player.update();
+
+		// 体力值的变化值
+		event.changedHp = player.getHp() - Math.max(0, originalHp);
+
 		if (event.popup !== false) {
 			player.$damagepop(num, "water");
 		}
@@ -12563,8 +12568,7 @@ export const Content = {
 		}
 		await event.trigger("changeHp");
 	},
-	async changeHujia(event) {
-		const { player } = event;
+	async changeHujia(event, trigger, player) {
 		let { num } = event;
 		if (num > 0) {
 			game.log(player, "获得了" + get.cnNumber(num) + "点护甲");
@@ -13301,16 +13305,12 @@ export const Content = {
 			}
 		},
 	],
-	async turnOver(event) {
-		const { player } = event;
-
+	async turnOver(event, trigger, player) {
 		game.log(player, "翻面");
 		game.broadcastAll(player => player.classList.toggle("turnedover"), player);
 		game.addVideo("turnOver", player, player.classList.contains("turnedover"));
 	},
-	async link(event) {
-		const { player } = event;
-
+	async link(event, trigger, player) {
 		const isLinked = player.isLinked();
 		game.log(player, (isLinked ? "解除" : "被") + "连环");
 		game.broadcastAll(

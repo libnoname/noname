@@ -1294,10 +1294,11 @@ const skills = {
 		subSkill: {
 			changeHp: {
 				audio: "dcxiangchen",
-				trigger: {
-					global: "changeHpAfter",
-				},
+				trigger: { global: "changeHpAfter" },
 				filter(event, player) {
+					if (event.changedHp == 0) {
+						return false;
+					}
 					return event.player == player || player.getStorage("dcxiangchen", null) == event.player;
 				},
 				direct: true,
@@ -1327,9 +1328,7 @@ const skills = {
 				audio: "dcxiangchen",
 				forced: true,
 				locked: false,
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				async content(event, trigger, player) {
 					await player.removeAdditionalSkills("dcxiangchen");
 					await player.recover();
@@ -13754,7 +13753,14 @@ const skills = {
 		},
 		ai: {
 			order: 9,
-			result: { player: 1 },
+			result: {
+				player(player, target) {
+					if (!player.hasUseTarget({ name: "sha" }, null, false)) {
+						return 0;
+					}
+					return 1;
+				},
+			},
 		},
 	},
 	//威曹丕
@@ -16636,14 +16642,13 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard(`###${get.prompt(event.skill)}###弃置一张牌，然后用牌堆中点数最大的牌拼点`, "he")
-				.set("ai", cardx => {
+				.set("ai", card => {
 					const player = get.player();
-					return !player.hasCard(function (card) {
-						var val = get.value(card);
-						return val < 0 || (val <= 4 && get.number(card) >= 11);
-					}, "h")
-						? 6 - get.value(cardx)
-						: 0;
+					const number = get.number(card);
+					if (number >= 11 || player.hasCard(card => get.number(card) >= 12, "h")) {
+						return 0;
+					}
+					return 7 - get.value(card);
 				})
 				.forResult();
 		},
@@ -16676,16 +16681,16 @@ const skills = {
 			}
 			return cards;
 		},
-		group: ["dcshenduan_2"],
+		group: ["dcshenduan_effect"],
 		subSkill: {
-			2: {
-				audio: 2,
+			effect: {
+				audio: "dcshenduan",
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
 				filter(event, player, name) {
 					if (event.preserve || event.result?.cancelled) {
 						return false;
 					}
-					if (!lib.skill.dcshenduan_2.logTarget(event, player).length) {
+					if (!lib.skill.dcshenduan_effect.logTarget(event, player).length) {
 						return false;
 					}
 					if (event.name == "compareMultiple") {
@@ -18999,7 +19004,7 @@ const skills = {
 					[
 						[
 							["draw", "摸体力上限张牌"],
-							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `并于此牌造成伤害时获得${get.translation(trigger.cards)}` : "")],
+							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `且于此牌造成伤害时获得${get.translation(trigger.cards)}` : "")],
 						],
 						"textbutton",
 					],
@@ -19052,6 +19057,7 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove: true,
+				trigger: { source: 'damageBegin1' },
 				filter(event, player) {
 					return event.card && player.getStorage("dckengqiang_effect").includes(event.card);
 				},
@@ -25462,14 +25468,17 @@ const skills = {
 			event.getParent().addCount = false;
 			player
 				.when("useCardToPlayer")
-				.filter(evt => evt.card.storage && evt.card.storage.dchuahuo)
+				.filter(evt => evt.card.storage?.dchuahuo)
 				.step(async (event, trigger, player) => {
 					if (!trigger.target.getExpansions("dcxiaoyin").length) {
 						return;
 					}
 					const targets = game.filterPlayer(current => {
-						return current.getExpansions("dcxiaoyin").length;
+						return current.getExpansions("dcxiaoyin").length && lib.filter.targetEnabled2(trigger.card, player, current);
 					});
+					if (!targets.length) {
+						return;
+					}
 					const result = await player
 						.chooseBool(`是否更改${get.translation(trigger.card)}的目标？`, `将此牌的目标改为所有有“硝引”的角色（${get.translation(targets)}）。`)
 						.set("choice", targets.map(current => get.effect(current, trigger.card, player, player)).reduce((p, c) => p + c, 0) > get.effect(trigger.target, trigger.card, player, player))
@@ -34421,9 +34430,7 @@ const skills = {
 			effect: {
 				audio: "dcfanyin",
 				trigger: { player: "useCard2" },
-				forced: true,
 				charlotte: true,
-				popup: false,
 				onremove: true,
 				filter(event, player) {
 					return ["basic", "trick"].includes(get.type(event.card, null, false));

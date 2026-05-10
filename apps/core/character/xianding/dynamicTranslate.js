@@ -119,7 +119,7 @@ const dynamicTranslates = {
 	},
 	dckengqiang(player) {
 		let str = player.storage.dcshangjue ? "每回合每项各限一次" : "每回合限一次";
-		str += "，当你使用伤害牌时，你可以选择一项：1.摸体力上限张牌；2.令此牌伤害+1且获得造成伤害的牌。";
+		str += "，当你使用伤害牌时，你可以选择一项：1.摸体力上限张牌；2.令此牌伤害+1且于此牌造成伤害时获得此牌对应的所有实体牌。";
 		return str;
 	},
 	xinlvli(player) {
