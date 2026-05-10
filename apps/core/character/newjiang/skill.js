@@ -5231,10 +5231,10 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			var zhu = game.findPlayer(i => i.getSeatNum() == 1);
+			const zhu = game.findPlayer(current => current.getSeatNum() == 1);
 			return (
 				(zhu &&
-					player.hasSkill("shiming_round") &&
+					player.storage["shiming_roundcount"] &&
 					(game.getGlobalHistory("changeHp", evt => {
 						return evt.player == zhu && evt._dyinged;
 					}).length > 0 ||
@@ -5244,47 +5244,42 @@ const skills = {
 		},
 		direct: true,
 		seatRelated: true,
-		content() {
-			"step 0";
-			var zhu = game.findPlayer(i => i.getSeatNum() == 1);
-			if (zhu && player.hasSkill("shiming_round")) {
+		async content(event, trigger, player) {
+			const zhu = game.findPlayer(current => current.getSeatNum() == 1);
+			if (zhu && player.storage["shiming_roundcount"]) {
 				if (
 					game.getGlobalHistory("changeHp", evt => {
 						return evt.player == zhu && evt._dyinged;
 					}).length > 0 ||
 					zhu.getHistory("damage").length == 0
 				) {
-					player.chooseBool(get.prompt("jiangxi"), "重置〖识命〗");
+					const result = await player.chooseBool(get.prompt(event.name), "重置〖识命〗").forResult();
+					if (result?.bool) {
+						player.logSkill(event.name);
+						event.logged = true;
+						player.refreshSkill("shiming");
+						await player.draw();
+					}
 				}
-			} else {
-				event.goto(2);
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("jiangxi");
-				event.logged = true;
-				player.removeSkill("shiming_round");
-				player.draw();
-			}
-			"step 2";
 			if (!game.hasPlayer2(current => current.getHistory("damage").length > 0)) {
-				player.chooseBool(get.prompt("jiangxi"), "与" + get.translation(trigger.player) + "各摸一张牌").set(
-					"choice",
-					(() => {
-						let eff = current => get.effect(current, { name: "draw" }, player, player);
-						return eff(trigger.player) + eff(player) > 0;
-					})()
-				);
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				if (!event.logged) {
-					player.logSkill("jiangxi");
+				const result = await player
+					.chooseBool(get.prompt(event.name), `与${get.translation(trigger.player)}各摸一张牌`)
+					.set(
+						"choice",
+						(() => {
+							let eff = current => get.effect(current, { name: "draw" }, player, player);
+							return eff(trigger.player) + eff(player) > 0;
+						})()
+					)
+					.forResult();
+				if (result?.bool) {
+					if (!event.logged) {
+						player.logSkill(event.name);
+					}
+					await trigger.player.draw("nodelay");
+					await player.draw();
 				}
-				trigger.player.draw("nodelay");
-				player.draw();
 			}
 		},
 	},
