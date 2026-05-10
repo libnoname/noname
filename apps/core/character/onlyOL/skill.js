@@ -6356,18 +6356,23 @@ const skills = {
 		audio: 2,
 		trigger: {
 			global: "roundStart",
-			player: ["recoverEnd", "damageEnd", "loseHpEnd"],
+			player: "changeHpAfter",
+		},
+		filter(event, player) {
+			return event.name != "changeHp" || event.changedHp != 0;
 		},
 		check: () => true,
 		frequent: true,
 		prompt2: "随机从牌堆或弃牌堆获得一张不计入手牌上限的【闪】",
-		content() {
+		async content(event, trigger, player) {
 			const card = get.cardPile("shan", null, "random");
 			if (!card) {
 				player.chat("桀桀桀，居然没闪了吗");
 				return;
 			}
-			player.gain(card, "gain2").gaintag.add("olguifu");
+			const next = player.gain(card, "gain2");
+			next.gaintag.add(event.name);
+			await next;
 		},
 		group: ["olguifu_viewAs", "olguifu_record"],
 		locked: false,
@@ -6392,22 +6397,13 @@ const skills = {
 			viewAs: {
 				enable: "chooseToUse",
 				hiddenCard(player, name) {
-					if (
-						player.storage.olguifu_record.card.includes(name) &&
-						!player.getStorage("olguifu_used").includes(name) &&
-						player.hasCard(card => card.hasGaintag("olguifu"), "h")
-					) {
+					if (player.storage.olguifu_record?.card?.includes(name) && !player.getStorage("olguifu_used").includes(name) && player.hasCard(card => card.hasGaintag("olguifu"), "h")) {
 						return true;
 					}
 				},
 				filter(event, player) {
-					const names = player.storage.olguifu_record.card.slice(0).removeArray(player.getStorage("olguifu_used"));
-					return (
-						player.hasCard(card => card.hasGaintag("olguifu"), "h") &&
-						names.some(name =>
-							event.filterCard(get.autoViewAs({ name: name, storage: { olguifu_viewAs: true } }, "unsure"), player, event)
-						)
-					);
+					const names = (player.storage.olguifu_record?.card || []).slice(0).removeArray(player.getStorage("olguifu_used"));
+					return player.hasCard(card => card.hasGaintag("olguifu"), "h") && names.some(name => event.filterCard(get.autoViewAs({ name: name, storage: { olguifu_viewAs: true } }, "unsure"), player, event));
 				},
 				chooseButton: {
 					dialog(event, player) {
@@ -6429,11 +6425,7 @@ const skills = {
 						return get
 							.event()
 							.getParent()
-							.filterCard(
-								get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { olguifu_viewAs: true } }, "unsure"),
-								player,
-								get.event().getParent()
-							);
+							.filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { olguifu_viewAs: true } }, "unsure"), player, get.event().getParent());
 					},
 					check(button) {
 						return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
@@ -6482,9 +6474,7 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "已转化过$",
-				},
+				intro: { content: "已转化过$" },
 			},
 			record: {
 				audio: "olguifu",
