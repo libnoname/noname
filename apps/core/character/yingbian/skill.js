@@ -2604,33 +2604,33 @@ const skills = {
 		check(card) {
 			return 5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseButton(
-					[
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseButton({
+					createDialog: [
 						"请选择要装备的宝物",
 						[
-							lib.skill.chexuan.derivation.map(function (i) {
-								return ["宝物", "", i];
-							}),
+							lib.skill.chexuan.derivation?.map(skillName => ["宝物", "", skillName]),
 							"vcard",
 						],
 					],
-					true
-				)
-				.set("ai", function (button) {
-					if (button.link[2] == "cheliji_sichengliangyu" && player.countCards("h") < player.hp) {
-						return 1;
+					forced: true,
+					ai(button) {
+						if (button.link[2] === "cheliji_sichengliangyu" && player.countCards("h") < player.hp) {
+							return 1;
+						}
+						return Math.random();
 					}
-					return Math.random();
-				});
-			"step 1";
-			var name = result.links[0][2],
-				card = game.createCard(name, lib.card[name].cardcolor, 5);
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			const name = result.links[0][2];
+			const card = game.createCard(name, lib.card[name].cardcolor, 5);
 			player.$gain2(card);
-			player.equip(card);
-			game.delay();
+			await player.equip(card);
+			await game.delay();
 		},
 		group: "chexuan_lose",
 		subfrequent: ["lose"],
@@ -2649,36 +2649,35 @@ const skills = {
 				},
 				frequent: true,
 				filter(event, player) {
-					var evt = event.getl(player);
+					const evt = event.getl(player);
 					if (!evt || !evt.es || !evt.es.length) {
 						return false;
 					}
-					if (event.name == "equip" && event.player == player) {
+					if (event.name === "equip" && event.player === player) {
 						return false;
 					}
-					for (var i of evt.es) {
-						if (get.subtype(i, false) == "equip5") {
+					for (const card of evt.es) {
+						if (get.subtype(card, false) === "equip5") {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						if (get.color(card) == "black") {
+				async content(event, trigger, player) {
+					const result = await player.judge(card => {
+						if (get.color(card) === "black") {
 							return 3;
 						}
 						return 0;
-					});
-					"step 1";
-					if (result.bool) {
-						const name = lib.skill.chexuan.derivation.randomGet(),
-							card = game.createCard(name, lib.card[name].cardcolor, 5);
-						player.$gain2(card);
-						player.equip(card);
-						game.delay();
+					}).forResult();
+					if (!result.bool) {
+						return;
 					}
+					const name = lib.skill.chexuan.derivation?.randomGet();
+					const card = game.createCard(name, lib.card[name].cardcolor, 5);
+					player.$gain2(card);
+					await player.equip(card);
+					await game.delay();
 				},
 			},
 		},
@@ -2700,15 +2699,13 @@ const skills = {
 		equipSkill: true,
 		cardcolor: "heart",
 		filter(event, player) {
-			return player.countCards("h") < player.hp && player.getEquip("cheliji_sichengliangyu");
+			return player.countCards("h") < player.hp && player.getEquip("cheliji_sichengliangyu") != null;
 		},
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			var card = player.getEquip("cheliji_sichengliangyu");
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const card = player.getEquip("cheliji_sichengliangyu");
 			if (card) {
-				player.discard(card);
+				await player.discard({ cards: [card] });
 			}
 		},
 	},
@@ -2717,19 +2714,21 @@ const skills = {
 		equipSkill: true,
 		cardcolor: "club",
 		filter(event, player) {
-			return player != event.player && !event.player.getHistory("sourceDamage").length && event.player.countCards("he") > 0 && player.getEquip("cheliji_tiejixuanyu");
+			return player !== event.player && !event.player.hasHistory("sourceDamage") && event.player.hasCards("he") && player.getEquip("cheliji_tiejixuanyu") != null;
 		},
 		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) < 0;
 		},
-		content() {
-			"step 0";
-			trigger.player.chooseToDiscard("he", 2, true);
-			"step 1";
-			var card = player.getEquip("cheliji_tiejixuanyu");
+		async content(event, trigger, player) {
+			await trigger.player.chooseToDiscard({
+				selectCard: 2,
+				position: "he",
+				forced: true,
+			});
+			const card = player.getEquip("cheliji_tiejixuanyu");
 			if (card) {
-				player.discard(card);
+				await player.discard({ cards: [card] });
 			}
 		},
 	},
@@ -2738,30 +2737,26 @@ const skills = {
 		equipSkill: true,
 		cardcolor: "spade",
 		filter(event, player) {
-			return (
-				player != event.player &&
-				event.player.getHistory("useCard", function (card) {
-					return get.type(card.card) != "basic";
-				}).length > 0 &&
-				event.player.countCards("he") > 0 &&
-				player.getEquip("cheliji_feilunzhanyu")
-			);
+			return player !== event.player && event.player.hasHistory("useCard", card => get.type(card.card) !== "basic") && event.player.hasCards("he") && player.getEquip("cheliji_feilunzhanyu") != null;
 		},
 		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) <= 0;
 		},
-		content() {
-			"step 0";
-			trigger.player.chooseCard("he", true, "将一张牌交给" + get.translation(player));
-			"step 1";
-			if (result.bool) {
-				trigger.player.give(result.cards, player);
+		async content(event, trigger, player) {
+			const result = await trigger.player
+				.chooseCard({
+					prompt: `将一张牌交给${get.translation(player)}`,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (result.bool && result.cards?.length) {
+				await trigger.player.give(result.cards, player);
 			}
-			"step 2";
-			var card = player.getEquip("cheliji_feilunzhanyu");
+			const card = player.getEquip("cheliji_feilunzhanyu");
 			if (card) {
-				player.discard(card);
+				await player.discard({ cards: [card] });
 			}
 		},
 	},
