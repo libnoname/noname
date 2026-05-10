@@ -1057,7 +1057,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
-			return !player.hasCard(function (card) {
+			return !player.hasCard(card => {
 				return card.hasGaintag("huaiyuanx");
 			}, "h");
 		},
@@ -1072,19 +1072,31 @@ const skills = {
 		trigger: { player: "gainAfter" },
 		forced: true,
 		filter(event, player) {
-			return event.getParent().name == "draw" && event.getParent(2).name != "weishu" && event.getParent("phaseDraw").player != player;
-		},
-		content() {
-			"step 0";
-			player.chooseTarget(true, "请选择【卫戍】的目标", "令一名角色摸一张牌").set("ai", function (target) {
-				return get.attitude(_status.event.player, target) * Math.sqrt(Math.max(1, 4 - target.countCards("h")));
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.draw();
+			const evt = event.getParent();
+			const evt2 = event.getParent(2);
+			const drawEvt = event.getParent("phaseDraw");
+			if (evt == null || evt2 == null || drawEvt == null) {
+				return false;
 			}
+			return evt.name === "draw" && evt2.name !== "weishu" && drawEvt.player !== player;
+		},
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【卫戍】的目标", 
+					prompt2: "令一名角色摸一张牌",
+					forced: true,
+					ai(target) {
+						return get.attitude(_status.event.player, target) * Math.sqrt(Math.max(1, 4 - target.countCards("h")));
+					}
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
+			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			await target.draw();
 		},
 		group: "weishu_discard",
 		subSkill: {
@@ -1096,24 +1108,38 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return event.type == "discard" && event.getParent(3).name != "weishu_discard" && event.getParent("phaseDiscard").player != player && event.getl(player).cards2.length > 0 && game.hasPlayer(target => target != player && target.countDiscardableCards(player, "he") > 0);
-				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget(true, "请选择【卫戍】的目标", "弃置一名其他角色的一张牌", function (card, player, target) {
-							return target != player && target.countDiscardableCards(player, "he") > 0;
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "guohe_copy2" }, player, player);
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target, "green");
-						player.discardPlayerCard(target, "he", true);
+					const evt3 = event.getParent(3);
+					const discardEvt = event.getParent("phaseDiscard");
+					if (evt3 == null || discardEvt == null) {
+						return false;
 					}
+					return event.type === "discard" && evt3.name !== "weishu_discard" && discardEvt.player !== player && event.getl(player).cards2.length > 0 && game.hasPlayer(target => target !== player && target.hasDiscardableCards(player, "he"));
+				},
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "请选择【卫戍】的目标",
+							prompt2: "弃置一名其他角色的一张牌",
+							filterTarget(card, player, target) {
+								return target !== player && target.hasDiscardableCards(player, "he");
+							},
+							forced: true,
+							ai(target) {
+								const player = get.player();
+								return get.effect(target, { name: "guohe_copy2" }, player, player);
+							}
+						})
+						.forResult();
+					if (!result.bool || !result.targets?.length) {
+						return;
+					}
+					const target = result.targets[0];
+					player.line(target, "green");
+					await player.discardPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					});
 				},
 			},
 		},
@@ -1123,7 +1149,7 @@ const skills = {
 		trigger: { player: "showCharacterAfter" },
 		hiddenSkill: true,
 		filter(event, player) {
-			return event.toShow?.some(i => get.character(i).skills?.includes("gaoling")) && player != _status.currentPhase && game.hasPlayer(current => current.isDamaged());
+			return event.toShow?.some(i => get.character(i).skills?.includes("gaoling")) && player !== _status.currentPhase && game.hasPlayer(current => current.isDamaged());
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
