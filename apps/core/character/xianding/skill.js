@@ -1294,10 +1294,11 @@ const skills = {
 		subSkill: {
 			changeHp: {
 				audio: "dcxiangchen",
-				trigger: {
-					global: "changeHpAfter",
-				},
+				trigger: { global: "changeHpAfter" },
 				filter(event, player) {
+					if (event.changedHp == 0) {
+						return false;
+					}
 					return event.player == player || player.getStorage("dcxiangchen", null) == event.player;
 				},
 				direct: true,
@@ -1327,9 +1328,7 @@ const skills = {
 				audio: "dcxiangchen",
 				forced: true,
 				locked: false,
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				async content(event, trigger, player) {
 					await player.removeAdditionalSkills("dcxiangchen");
 					await player.recover();

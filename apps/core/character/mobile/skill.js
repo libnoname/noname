@@ -90,7 +90,7 @@ const skills = {
 			if (!player.hasUseTarget({ name: "wanjian", isCard: true })) {
 				return false;
 			}
-			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.getParent(event.name) == event).length > 0 && game.getGlobalHistory("useCard", evt => evt.targets?.includes(player) && evt.getParent(event.name) == event).length > 0;
+			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.getParent(event.name) == event && evt.changedHp !== 0).length > 0 && game.getGlobalHistory("useCard", evt => evt.targets?.includes(player) && evt.getParent(event.name) == event).length > 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -105,7 +105,7 @@ const skills = {
 			if (!player.hasUseTarget({ name: "juedou", isCard: true })) {
 				return false;
 			}
-			return !game.getGlobalHistory("changeHp", evt => evt.player == player && evt.getParent(event.name) == event).length && game.getGlobalHistory("useCard", evt => evt.targets?.includes(player) && evt.getParent(event.name) == event).length > 0;
+			return !game.getGlobalHistory("changeHp", evt => evt.player == player && evt.getParent(event.name) == event && evt.changedHp !== 0).length && game.getGlobalHistory("useCard", evt => evt.targets?.includes(player) && evt.getParent(event.name) == event).length > 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {

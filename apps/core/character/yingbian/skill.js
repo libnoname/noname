@@ -1127,25 +1127,25 @@ const skills = {
 	qimei: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("qimei"), "选择一名其他角色并获得“齐眉”效果", lib.filter.notMe)
-				.set("ai", function (target) {
-					var player = _status.event.player;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "选择一名其他角色并获得“齐眉”效果", lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
 					return get.attitude(player, target) / (Math.abs(player.countCards("h") + 2 - target.countCards("h")) + 1);
 				})
-				.setHiddenSkill("qimei");
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("qimei", target);
-				player.storage.qimei_draw = target;
-				player.addTempSkill("qimei_draw", { player: "phaseBegin" });
-				game.delayx();
-			}
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.storage.qimei_draw = target;
+			player.addTempSkill("qimei_draw", { player: "phaseBegin" });
+			await game.delayx();
 		},
 		subSkill: {
 			draw: {
@@ -1153,20 +1153,18 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				popup: false,
-				trigger: {
-					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "loseAfter", "addToExpansionAfter"],
-				},
+				trigger: { global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "loseAfter", "addToExpansionAfter"] },
 				usable: 1,
 				filter(event, player) {
-					var target = player.storage.qimei_draw;
+					const target = player.storage.qimei_draw;
 					if (!target || !target.isIn()) {
 						return false;
 					}
 					if (player.countCards("h") != target.countCards("h")) {
 						return false;
 					}
-					var hasChange = function (event, player) {
-						var gain = 0,
+					const hasChange = function (event, player) {
+						let gain = 0,
 							lose = 0;
 						if (event.getg) {
 							gain = event.getg(player).length;
@@ -1178,17 +1176,17 @@ const skills = {
 					};
 					return hasChange(event, player) || hasChange(event, target);
 				},
-				content() {
-					"step 0";
+				logTarget(event, player) {
+					return player.storage.qimei_draw;
+				},
+				async content(event, trigger, player) {
 					if (trigger.delay === false) {
-						game.delayx();
+						await game.delayx();
 					}
-					"step 1";
-					var target = player.storage.qimei_draw;
-					player.logSkill("qimei_draw", target);
-					var drawer = [];
-					var hasChange = function (event, player) {
-						var gain = 0,
+					const target = event.targets[0];
+					const drawer = [];
+					const hasChange = function (event, player) {
+						let gain = 0,
 							lose = 0;
 						if (event.getg) {
 							gain = event.getg(player).length;
@@ -1205,10 +1203,10 @@ const skills = {
 						drawer.push(player);
 					}
 					if (drawer.length == 1) {
-						drawer[0].draw();
+						await drawer[0].draw();
 					} else {
-						game.asyncDraw(drawer.sortBySeat());
-						game.delayex();
+						await game.asyncDraw(drawer.sortBySeat());
+						await game.delayex();
 					}
 				},
 				group: "qimei_hp",
@@ -1218,7 +1216,7 @@ const skills = {
 			},
 			hp: {
 				audio: "qimei",
-				trigger: { global: "changeHp" },
+				trigger: { global: "changeHpAfter" },
 				charlotte: true,
 				forced: true,
 				logTarget(event, player) {
@@ -1226,7 +1224,10 @@ const skills = {
 				},
 				usable: 1,
 				filter(event, player) {
-					var target = player.storage.qimei_draw;
+					if (event.changedHp == 0) {
+						return false;
+					}
+					const target = player.storage.qimei_draw;
 					if (!target || !target.isIn()) {
 						return false;
 					}

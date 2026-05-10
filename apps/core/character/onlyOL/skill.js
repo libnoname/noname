@@ -10958,12 +10958,10 @@ const skills = {
 	},
 	olsbyipo: {
 		audio: 3,
-		trigger: {
-			player: "changeHp",
-		},
+		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
 			const hp = player.getHp();
-			if (hp <= 0) {
+			if (hp <= 0 || event.changedHp == 0) {
 				return false;
 			}
 			return !player

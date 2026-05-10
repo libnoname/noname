@@ -5665,7 +5665,7 @@ const skills = {
 				effect: {
 					trigger: { player: "changeHpEnd" },
 					filter(event, player) {
-						return event.num !== 0;
+						return event.changedHp != 0;
 					},
 				},
 			},

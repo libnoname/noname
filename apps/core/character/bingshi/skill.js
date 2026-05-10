@@ -539,20 +539,18 @@ const skills = {
 	},
 	mbxiezhi: {
 		audio: 2,
-		trigger: {
-			player: "changeHpAfter",
-		},
+		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
-			return event.num != 0;
+			return event.changedHp != 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const max = Math.max(player.countCharge(true), 0);
-			const num = Math.min(Math.abs(trigger.num), max);
+			const num = Math.min(Math.abs(trigger.changedHp), max);
 			if (num > 0) {
 				player.addCharge(num);
 			}
-			const num2 = Math.abs(trigger.num) - num;
+			const num2 = Math.abs(trigger.changedHp) - num;
 			if (num2 > 0) {
 				const buff = `${event.name}_effect`;
 				player.addSkill(buff);
@@ -565,10 +563,7 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				mark: true,
-				intro: {
-					content: "手牌上限和出杀次数+#",
-				},
+				intro: { content: "手牌上限和出杀次数+#" },
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("mbxiezhi_effect");

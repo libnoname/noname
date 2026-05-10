@@ -10843,7 +10843,7 @@ const skills = {
 	yui_yinhang: {
 		trigger: { player: "changeHp" },
 		locked: true,
-		getIndex: event => Math.abs(event.num),
+		getIndex: event => Math.abs(event.changedHp),
 		line: { color: [253, 153, 182] },
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -10856,7 +10856,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets;
 			targets.sortBySeat();
-			game.asyncDraw(targets);
+			await game.asyncDraw(targets);
 		},
 	},
 	//吉野晴彦
@@ -11043,7 +11043,7 @@ const skills = {
 		trigger: { player: "changeHp" },
 		locked: true,
 		line: { color: [235, 96, 138] },
-		getIndex: event => Math.abs(event.num),
+		getIndex: event => Math.abs(event.changedHp),
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget([1, 2], get.prompt(event.skill), "令至多两名角色各摸一张牌")
@@ -11055,7 +11055,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets;
 			targets.sortBySeat();
-			game.asyncDraw(targets);
+			await game.asyncDraw(targets);
 		},
 	},
 	iwasawa_mysong: {
