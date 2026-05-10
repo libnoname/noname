@@ -579,15 +579,13 @@ const skills = {
 		inherit: "mingjian",
 		async content(event, trigger, player) {
 			const { cards, target } = event;
-			if (cards && target) {
-				await player.give(cards, target);
-				target.addTempSkill("remingjian_buff", { player: "phaseAfter" });
-				if (!target.storage.remingjian_buff) {
-					target.storage.remingjian_buff = [];
-				}
-				target.storage.remingjian_buff.push(player);
-				target.markSkill("remingjian_buff");
+			await player.give(cards, target);
+			target.addTempSkill("remingjian_buff", { player: "phaseAfter" });
+			if (!target.storage.remingjian_buff) {
+				target.storage.remingjian_buff = [];
 			}
+			target.storage.remingjian_buff.push(player);
+			target.markSkill("remingjian_buff");
 		},
 		derivation: "huituo",
 		subSkill: {
@@ -602,21 +600,20 @@ const skills = {
 					},
 				},
 				onremove: true,
-				trigger: {
-					source: "damageSource",
-				},
+				trigger: { source: "damageSource" },
 				filter(event, player) {
 					// @ts-ignore
 					if (_status.currentPhase !== player) {
 						return false;
 					}
-					return player.getHistory("sourceDamage").indexOf(event) == 0 && player.getStorage("remingjian_buff").some(i => i.isIn());
+					return player.getHistory("sourceDamage").indexOf(event) == 0 && player.getStorage("remingjian_buff").some(current => current.isIn());
 				},
-				direct: true,
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					const masters = player
-						.getStorage("remingjian_buff")
-						.filter(i => i.isIn())
+						.getStorage(event.name)
+						.filter(current => current.isIn())
 						.toUniqued()
 						// @ts-ignore
 						.sortBySeat(_status.currentPhase);

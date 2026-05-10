@@ -9234,7 +9234,6 @@ const skills = {
 				})
 				.forResult();
 		},
-		logTarget: "targets",
 		async content(event, trigger, player) {
 			trigger.cancel();
 			const target = event.targets[0];
@@ -9269,31 +9268,28 @@ const skills = {
 		audio: 2,
 		audioname: ["re_caorui"],
 		trigger: { player: "damageEnd" },
-		async cost(event, trigger, player) {
-			const forced = event.forced == null ? false : event.forced;
+		direct: true,
+		async content(event, trigger, player) {
+			const forced = event.forced === undefined ? false : event.forced;
+			const info = get.skillInfoTranslation("huituo", player, false);
 			const str = `###${forced ? "恢拓：请选择一名角色" : get.prompt("huituo")}###令一名角色判定。若结果为红色，其回复1点体力；若结果为黑色，其摸${get.cnNumber(trigger.num)}张牌`;
-
-			event.result = await player
-				.chooseTarget({
-					prompt: str,
-					forced,
-					ai(target) {
-						const player = get.player();
-						if (get.attitude(player, target) > 0) {
-							return get.recoverEffect(target, player, player) + 1;
-						}
-						return 0;
-					},
+			let result = await player
+				.chooseTarget(str, event.forced)
+				.set("ai", function (target) {
+					const player = get.player();
+					if (get.attitude(player, target) > 0) {
+						return get.recoverEffect(target, player, player) + 1;
+					}
+					return 0;
 				})
 				.forResult();
-		},
-		logTarget: "targets",
-		async content(event, trigger, player) {
-			const target = event.targets[0];
-			const result = await target
-				.judge({
-					judge(card) {
-						if (target.hp == target.maxHp) {
+			if (result?.bool) {
+				player.logSkill(event.name, result.targets);
+				const target = result.targets[0];
+				event.target = target;
+				result = await target
+					.judge(card => {
+						if (target.isDamaged()) {
 							if (get.color(card) == "red") {
 								return -1;
 							}
@@ -9302,18 +9298,20 @@ const skills = {
 							return 1;
 						}
 						return 0;
-					},
-				})
-				.forResult();
-			switch (result.color) {
-				case "red":
-					if (target.hp < target.maxHp) {
-						await target.recover();
-					}
-					break;
-				case "black":
-					await target.draw(trigger.num);
-					break;
+					})
+					.forResult();
+				switch (result?.color) {
+					case "red":
+						await event.target.recover();
+						break;
+
+					case "black":
+						await event.target.draw(trigger.num);
+						break;
+
+					default:
+						break;
+				}
 			}
 		},
 		ai: {
