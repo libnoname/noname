@@ -2038,6 +2038,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const num = 5;
 			const cards = get.cards(num, true);
@@ -2119,47 +2120,26 @@ const skills = {
 				let showCards = [];
 				const top = get.cards(5, true);
 				if (player.countCards("h")) {
+					const dialog = [];
+					dialog.push("星魂：请选择五张牌");
+					dialog.add(`<div class="text center">${get.translation(player)}的手牌</div>`);
+					if (target.hasSkillTag("viewHandcard", null, player, true)) {
+						dialog.push(player.getCards("h"));
+					} else {
+						dialog.push([player.getCards("h"), "blank"]);
+					}
+					dialog.addArray([`<div class="text center">牌堆顶</div>`, [top, "blank"]]);
 					const result = await target
-						.chooseButton(
-							[
-								`星魂：请展示五张牌`,
-								`<div class="text center">牌堆顶</div>`,
-								[top, "blank"],
-								`<div class="text center">${get.translation(player)}的手牌</div>`,
-								player.getCards("h").slice().randomSort(),
-								[
-									dialog => {
-										const { target, player, top } = get.event();
-										dialog.buttons.forEach(button => {
-											const card = button.link;
-											if (top.includes(card)) {
-												return;
-											}
-											if (
-												!target.isUnderControl(true) &&
-												!player.hasSkillTag("viewHandcard", null, target, true) &&
-												!get.is.shownCard(card)
-											) {
-												button.classList.add("infoflip");
-												button.classList.add("infohidden");
-											}
-										});
-									},
-									"handle",
-								],
-							],
-							5,
-							true
-						)
+						.chooseButton(5, true)
+						.set("createDialog", dialog)
 						.set("top", top)
 						.set("target", player)
 						.set("ai", () => Math.random())
 						.forResult();
-					showCards = result.links;
+					showCards = result?.links || [];
 				} else {
 					showCards = top;
 				}
-				//await game.cardsGotoOrdering(top);
 				await target
 					.showCards(showCards, `${get.translation(target)}因“${get.translation(event.name)}”展示`)
 					.set("customButton", button => {
@@ -2181,9 +2161,6 @@ const skills = {
 						}
 					}
 				}
-				/*if (top.length) {
-					await game.cardsGotoPile(top.slice().reverse(), "insert");
-				}*/
 			}
 		},
 		ai: {
