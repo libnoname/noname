@@ -1981,44 +1981,44 @@ const skills = {
 		banned: ["kotomi_chuanxiang"],
 		global: "bolan_g",
 		initList(player) {
-			var list,
-				skills = [];
+			let list;
+			const skills = [];
 			if (get.mode() === "guozhan") {
 				list = [];
-				for (var i in lib.characterPack.mode_guozhan) {
-					if (lib.character[i]) {
-						list.push(i);
+				for (const characterName in lib.characterPack.mode_guozhan) {
+					if (lib.character[characterName]) {
+						list.push(characterName);
 					}
 				}
 			} else if (_status.connectMode) {
 				list = get.charactersOL();
 			} else {
 				list = [];
-				for (var i in lib.character) {
-					if (lib.filter.characterDisabled2(i) || lib.filter.characterDisabled(i)) {
+				for (const characterName in lib.character) {
+					if (lib.filter.characterDisabled2(characterName) || lib.filter.characterDisabled(characterName)) {
 						continue;
 					}
-					list.push(i);
+					list.push(characterName);
 				}
 			}
-			for (var i of list) {
-				if (i.indexOf("gz_jun") == 0) {
+			for (const characterName of list) {
+				if (characterName.indexOf("gz_jun") === 0) {
 					continue;
 				}
-				for (var j of lib.character[i][3]) {
-					if (j == "bolan") {
+				for (const skillName of lib.character[characterName][3]) {
+					if (skillName === "bolan") {
 						continue;
 					}
-					var skill = lib.skill[j];
-					if (!skill || skill.juexingji || skill.hiddenSkill || skill.zhuSkill || skill.dutySkill || skill.chargeSkill || lib.skill.bolan.banned.includes(j)) {
+					const skill = lib.skill[skillName];
+					if (!skill || skill.juexingji || skill.hiddenSkill || skill.zhuSkill || skill.dutySkill || skill.chargeSkill || lib.skill.bolan.banned.includes(skillName)) {
 						continue;
 					}
 					if (skill.init || (skill.ai && (skill.ai.combo || skill.ai.notemp || skill.ai.neg))) {
 						continue;
 					}
-					var info = lib.translate[j + "_info"];
-					if (info && get.plainText(info).indexOf("出牌阶段限一次") != -1) {
-						skills.add(j);
+					const info = lib.translate[`${skillName}_info`];
+					if (info && get.plainText(info).indexOf("出牌阶段限一次") !== -1) {
+						skills.add(skillName);
 					}
 				}
 			}
@@ -2030,37 +2030,37 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		frequent: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			if (player.isIn()) {
-				if (!player.storage.bolan) {
-					lib.skill.bolan.initList(player);
-				}
-				var list = player.storage.bolan.randomGets(3);
-				if (!list.length) {
-					event.finish();
-					return;
-				}
-				player
-					.chooseControl(list)
-					.set(
-						"choiceList",
-						list.map(function (i) {
-							return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
-						})
-					)
-					.set("displayIndex", false)
-					.set("prompt", "博览：请选择你要获得的技能")
-					.set("ai", () => {
-						var list = _status.event.controls.slice();
-						return list.sort((a, b) => {
-							return get.skillRank(b, "in") - get.skillRank(a, "in");
-						})[0];
-					});
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			if (!player.isIn()) {
+				return;
 			}
-			"step 1";
+			if (!player.storage.bolan) {
+				lib.skill.bolan.initList(player);
+			}
+			const list = player.storage.bolan.randomGets(3);
+			if (!list.length) {
+				return;
+			}
+			const result = await player
+				.chooseControl(list)
+				.set(
+					"choiceList",
+					list.map(skillName => {
+						return `<div class="skill">【${get.translation(lib.translate[`${skillName}_ab`] || get.translation(skillName).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skillName, player, false)}</div>`;
+					})
+				)
+				.set("displayIndex", false)
+				.set("prompt", "博览：请选择你要获得的技能")
+				.set("ai", () => {
+					const controls = _status.event.controls.slice();
+					return controls.sort((a, b) => {
+						return get.skillRank(b, "in") - get.skillRank(a, "in");
+					})[0];
+				})
+				.forResult();
+			if (!result.control) {
+				return;
+			}
 			player.addTempSkills(result.control, "phaseUseEnd");
 			player.popup(result.control);
 			// game.log(player,'获得了','#g【'+get.translation(result.control)+'】');
@@ -2075,56 +2075,50 @@ const skills = {
 				prompt: "出牌阶段限一次。你可以令一名有〖博览〗的角色从三个描述中包含“出牌阶段限一次”的技能中选择一个，你获得此技能直到此阶段结束。",
 				chessForceAll: true,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						return current != player && current.hasSkill("bolan");
-					});
+					return game.hasPlayer(current => current !== player && current.hasSkill("bolan"));
 				},
 				filterTarget(card, player, target) {
-					return player != target && target.hasSkill("bolan");
+					return player !== target && target.hasSkill("bolan");
 				},
 				selectTarget() {
-					if (
-						game.countPlayer(current => {
-							return lib.skill.bolan_g.filterTarget(null, _status.event.player, current);
-						}) == 1
-					) {
+					if (game.countPlayer(current => lib.skill.bolan_g.filterTarget(null, _status.event.player, current)) === 1) {
 						return -1;
 					}
 					return 1;
 				},
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					if (target.isIn() && player.isIn()) {
-						if (!target.storage.bolan) {
-							lib.skill.bolan.initList(target);
-						}
-						var list = target.storage.bolan.randomGets(3);
-						if (!list.length) {
-							event.finish();
-							return;
-						}
-						target
-							.chooseControl(list)
-							.set(
-								"choiceList",
-								list.map(function (i) {
-									return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
-								})
-							)
-							.set("displayIndex", false)
-							.set("prompt", "博览：请选择令" + get.translation(player) + "获得的技能")
-							.set("ai", () => {
-								var list = _status.event.controls.slice();
-								return list.sort((a, b) => {
-									return (get.skillRank(b, "in") - get.skillRank(a, "in")) * get.attitude(_status.event.player, _status.event.getParent().player);
-								})[0];
-							});
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					await player.loseHp();
+					const target = event.targets[0];
+					if (!target.isIn() || !player.isIn()) {
+						return;
 					}
-					"step 2";
+					if (!target.storage.bolan) {
+						lib.skill.bolan.initList(target);
+					}
+					const list = target.storage.bolan.randomGets(3);
+					if (!list.length) {
+						return;
+					}
+					const result = await target
+						.chooseControl(list)
+						.set(
+							"choiceList",
+							list.map(skillName => {
+								return `<div class="skill">【${get.translation(lib.translate[`${skillName}_ab`] || get.translation(skillName).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skillName, player, false)}</div>`;
+							})
+						)
+						.set("displayIndex", false)
+						.set("prompt", `博览：请选择令${get.translation(player)}获得的技能`)
+						.set("ai", () => {
+							const controls = _status.event.controls.slice();
+							return controls.sort((a, b) => {
+								return (get.skillRank(b, "in") - get.skillRank(a, "in")) * get.attitude(_status.event.player, _status.event.getParent().player);
+							})[0];
+						})
+						.forResult();
+					if (!result.control) {
+						return;
+					}
 					target.line(player);
 					player.addTempSkills(result.control, "phaseUseEnd");
 				},
@@ -2133,8 +2127,8 @@ const skills = {
 						if (player.hp >= 5 || player.countCards("h") >= 10) {
 							return 10;
 						}
-						var list = game.filterPlayer(current => lib.skill.bolan_g.filterTarget(null, player, current));
-						for (var target of list) {
+						const list = game.filterPlayer(current => lib.skill.bolan_g.filterTarget(null, player, current));
+						for (const target of list) {
 							if (get.attitude(target, player) > 0) {
 								return 10;
 							}
@@ -2146,7 +2140,7 @@ const skills = {
 							if (player.hasUnknown()) {
 								return player.hp + player.countCards("h") / 4 - 5 > 0 ? 1 : 0;
 							}
-							var tao = player.countCards("h", "tao");
+							const tao = player.countCards("h", "tao");
 							if (player.hp + tao > 4) {
 								return 4 + get.attitude(player, target);
 							}
