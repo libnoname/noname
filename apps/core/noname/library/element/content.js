@@ -12522,7 +12522,7 @@ export const Content = {
 		player.update();
 	},
 	async changeHp(event, trigger, player) {
-		let { num, original_hp } = event;
+		let { num, originalHp } = event;
 		//add to GlobalHistory
 		game.getGlobalHistory().changeHp.push(event);
 		//changeHujia moved here
@@ -12547,7 +12547,7 @@ export const Content = {
 		player.update();
 
 		// 体力值的变化值
-		event.changedHp = player.getHp() - Math.max(0, original_hp);
+		event.changedHp = player.getHp() - Math.max(0, originalHp);
 
 		if (event.popup !== false) {
 			player.$damagepop(num, "water");

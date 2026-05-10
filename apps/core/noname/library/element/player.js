@@ -9097,7 +9097,7 @@ export class Player extends HTMLDivElement {
 			next.popup = popup;
 		}
 		next.player = this;
-		next.original_hp = this.hp;
+		next.originalHp = this.hp;
 		next.setContent("changeHp");
 		return next;
 	}
