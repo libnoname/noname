@@ -2181,7 +2181,7 @@ div.select-all:not(.card):not(.player) {
 	padding-right: 4px;
 }
 .control {
-	font-size: 28px;
+	font-size: 20px;
 	white-space: nowrap;
 	overflow: hidden;
 	opacity: 0;
