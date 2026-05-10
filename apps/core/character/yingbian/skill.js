@@ -1292,34 +1292,34 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			var list = ["摸两张牌，并于出牌阶段结束时失去1点体力"];
+		async content(event, trigger, player) {
+			const list = ["摸两张牌，并于出牌阶段结束时失去1点体力"];
 			if (player.isDamaged()) {
 				list.push("回复1点体力，并于出牌阶段结束时弃置两张牌");
 			}
-			player
-				.chooseControl("cancel2")
+			const result = await player
+				.chooseControl({ controls: ["cancel2"] })
 				.set("choiceList", list)
 				.set("prompt", get.prompt("ybzhuiji"))
-				.set("ai", function () {
-					var player = _status.event.player;
-					if (player.isDamaged() && player.countCards("h", "tao") < player.getDamagedHp()) {
+				.set("ai", () => {
+					const currentPlayer = _status.event.player;
+					if (currentPlayer.isDamaged() && currentPlayer.countCards("h", "tao") < currentPlayer.getDamagedHp()) {
 						return 1;
 					}
 					return "cancel2";
 				})
-				.setHiddenSkill("ybzhuiji");
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("ybzhuiji");
-				if (result.index == 0) {
-					player.draw(2);
-				} else {
-					player.recover();
-				}
-				player.addTempSkill("ybzhuiji_" + result.index, "phaseUseAfter");
+				.setHiddenSkill("ybzhuiji")
+				.forResult();
+			if (result.control === "cancel2") {
+				return;
 			}
+			player.logSkill("ybzhuiji");
+			if (result.index === 0) {
+				await player.draw(2);
+			} else {
+				await player.recover();
+			}
+			player.addTempSkill(`ybzhuiji_${result.index}`, "phaseUseAfter");
 		},
 		subSkill: {
 			0: {
@@ -1327,8 +1327,8 @@ const skills = {
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,
-				content() {
-					player.loseHp();
+				async content(event, trigger, player) {
+					await player.loseHp();
 				},
 			},
 			1: {
@@ -1336,8 +1336,12 @@ const skills = {
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,
-				content() {
-					player.chooseToDiscard("he", 2, true);
+				async content(event, trigger, player) {
+					await player.chooseToDiscard({
+						selectCard: 2,
+						position: "he",
+						forced: true,
+					});
 				},
 			},
 		},
