@@ -2802,36 +2802,34 @@ const skills = {
 		trigger: { global: ["useCard", "respond"] },
 		preHidden: true,
 		filter(event, player) {
-			if (!Array.isArray(event.respondTo) || event.respondTo[0] == event.player || ![event.respondTo[0], event.player].includes(player)) {
+			if (!Array.isArray(event.respondTo) || event.respondTo[0] === event.player || ![event.respondTo[0], event.player].includes(player)) {
 				return false;
 			}
-			var color = get.color(event.card);
-			if (color == "none" || get.color(event.respondTo[1]) != color) {
+			const color = get.color(event.card);
+			if (color === "none" || get.color(event.respondTo[1]) !== color) {
 				return false;
 			}
-			var target = lib.skill.caiwang.logTarget(event, player);
+			const target = lib.skill.caiwang.logTarget(event, player);
 			return target[player.getStorage("naxiang2").includes(target) ? "countGainableCards" : "countDiscardableCards"](player, "he") > 0;
 		},
 		logTarget(event, player) {
-			return player == event.respondTo[0] ? event.player : event.respondTo[0];
+			return player === event.respondTo[0] ? event.player : event.respondTo[0];
 		},
 		prompt2(event, player) {
-			var target = lib.skill.caiwang.logTarget(event, player);
-			return (player.getStorage("naxiang2").includes(target) ? "获得" : "弃置") + "该角色的一张牌";
+			const target = lib.skill.caiwang.logTarget(event, player);
+			return `${player.getStorage("naxiang2").includes(target) ? "获得" : "弃置"}该角色的一张牌`;
 		},
 		check(event, player) {
 			return get.attitude(player, lib.skill.caiwang.logTarget(event, player)) <= 0;
 		},
 		popup: false,
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline()) {
-				game.delayx();
+		async content(event, trigger, player) {
+			if (player !== game.me && !player.isOnline()) {
+				await game.delayx();
 			}
-			"step 1";
-			var target = lib.skill.caiwang.logTarget(trigger, player);
+			const target = lib.skill.caiwang.logTarget(trigger, player);
 			player.logSkill(event.name, target);
-			player[player.getStorage("naxiang2").includes(target) ? "gainPlayerCard" : "discardPlayerCard"](target, "he", true);
+			await player[player.getStorage("naxiang2").includes(target) ? "gainPlayerCard" : "discardPlayerCard"](target, "he", true);
 		},
 	},
 	naxiang: {
@@ -2843,13 +2841,16 @@ const skills = {
 		forced: true,
 		preHidden: true,
 		filter(event, player) {
-			var target = lib.skill.naxiang.logTarget(event, player);
-			return target && target != player && target.isAlive();
+			const target = lib.skill.naxiang.logTarget(event, player);
+			return target && target !== player && target.isAlive();
 		},
 		logTarget(event, player) {
-			return player == event.player ? event.source : event.player;
+			if (event == null) {
+				return;
+			}
+			return player === event.player ? event.source : event.player;
 		},
-		content() {
+		async content(_event, trigger, player) {
 			player.addTempSkill("naxiang2", { player: "phaseBegin" });
 			if (!player.storage.naxiang2) {
 				player.storage.naxiang2 = [];
