@@ -65,6 +65,16 @@ const skills = {
 				}
 			}
 		},
+		ai: {
+			nothunder: true,
+			effect: {
+				target(card, player, target, current) {
+					if (get.tag(card, "thunderDamage") {
+						return "zeroplayertarget";
+					}
+				},
+			},
+		},
 	},
 	tingwei: {
 		audio: 2,
@@ -508,8 +518,7 @@ const skills = {
 			});
 
 			if (player.hasSkill("yuli")) {
-				player.storage._yuli_def = false;
-				player.storage._yuli_atk = false;
+				player.storage.yuli = 0;
 			}
 		},
 		mark: true,
