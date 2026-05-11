@@ -2464,38 +2464,35 @@ const skills = {
 		trigger: { player: ["damageEnd", "recoverEnd"] },
 		forced: true,
 		filter(event, player) {
-			return (
-				player.hp == player.countCards("h") &&
-				(player.isDamaged() ||
-					game.hasPlayer(function (current) {
-						return player.inRange(current);
-					}))
-			);
+			return player.hp === player.countCards("h") && (player.isDamaged() || game.hasPlayer(current => player.inRange(current)));
 		},
 		usable: 1,
 		preHidden: ["zhongyun2"],
-		content() {
-			"step 0";
-			var filterTarget = function (card, player, target) {
-				return player.inRange(target);
-			};
-			if (game.hasPlayer(current => filterTarget("L∞pers", player, current))) {
-				var bool = player.isHealthy();
-				player.chooseTarget("忠允：对攻击范围内的一名角色造成1点伤害" + (bool ? "" : "，或点取消回复1点体力"), filterTarget, bool).set("ai", function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				});
-			} else {
-				event._result = { bool: false };
+		async content(event, trigger, player) {
+			const filterTarget = (card, player, target) => player.inRange(target);
+			if (!game.hasPlayer(current => filterTarget("L∞pers", player, current))) {
+				await player.recover();
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.damage();
-			} else {
-				player.recover();
+			const bool = player.isHealthy();
+			const result = await player
+				.chooseTarget({
+					prompt: `忠允：对攻击范围内的一名角色造成1点伤害${bool ? "" : "，或点取消回复1点体力"}`,
+					filterTarget,
+					forced: bool,
+					ai(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					}
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				await player.recover();
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			await target.damage();
 		},
 		group: "zhongyun2",
 	},
@@ -2508,48 +2505,47 @@ const skills = {
 		forced: true,
 		sourceSkill: "zhongyun",
 		filter(event, player) {
-			var cards1 = event.getl(player).hs,
-				cards2 = [];
+			const cards1 = event.getl(player).hs;
+			let cards2 = [];
 			if (event.getg) {
 				cards2 = event.getg(player);
 			}
-			return (cards1.length > 0 || cards2.length > 0) && player.countCards("h") == player.hp;
+			return (cards1.length > 0 || cards2.length > 0) && player.countCards("h") === player.hp;
 		},
 		usable: 1,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (trigger.delay === false) {
-				game.delayx();
+				await game.delayx();
 			}
-			var filterTarget = function (card, player, target) {
-				return target != player && target.countDiscardableCards(player, "he") > 0;
-			};
+			const filterTarget = (card, player, target) => target !== player && target.hasDiscardableCards(player, "he");
 			if (!game.hasPlayer(current => filterTarget("L∞pers", player, current))) {
-				event._result = { bool: false };
-			} else {
-				player.chooseTarget(filterTarget, "忠允：弃置一名其他角色的一张牌，或点取消摸一张牌").set("ai", function (target) {
-					var att = get.attitude(player, target);
-					if (att >= 0) {
+				await player.draw();
+				return;
+			}
+			const result = await player
+				.chooseTarget({
+					prompt: "忠允：弃置一名其他角色的一张牌，或点取消摸一张牌",
+					filterTarget,
+					ai(target) {
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (att >= 0) {
+							return 0;
+						}
+						if (target.hasCards("he", card => get.value(card) > 5)) {
+							return -att;
+						}
 						return 0;
 					}
-					if (
-						target.countCards("he", function (card) {
-							return get.value(card) > 5;
-						})
-					) {
-						return -att;
-					}
-					return 0;
-				});
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				await player.draw();
+				return;
 			}
-			"step 1";
-			if (!result.bool) {
-				player.draw();
-			} else {
-				var target = result.targets[0];
-				player.line(target, "green");
-				player.discardPlayerCard(target, true, "he");
-			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			await player.discardPlayerCard(target, true, "he");
 		},
 	},
 	shenpin: {
