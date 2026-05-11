@@ -3063,40 +3063,43 @@ const skills = {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			if (event.all_excluded || event.player == player || event.player != _status.currentPhase || !player.countCards("he")) {
+			if (event.all_excluded || event.player === player || event.player !== _status.currentPhase || !player.hasCards("he")) {
 				return false;
 			}
-			return event.player.getHistory("useCard").indexOf(event) == 1 && ["basic", "trick"].includes(get.type(event.card));
+			return event.player.getHistory("useCard").indexOf(event) === 1 && ["basic", "trick"].includes(get.type(event.card));
 		},
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline()) {
-				game.delayx();
+		async content(event, trigger, player) {
+			if (player !== game.me && !player.isOnline()) {
+				await game.delayx();
 			}
-			player
-				.chooseToDiscard(get.prompt("ciwei", trigger.player), "弃置一张牌，取消" + get.translation(trigger.card) + "的所有目标", "he")
-				.set("ai", function (card) {
-					return _status.event.goon / 1.4 - get.value(card);
+			const next = player
+				.chooseToDiscard({
+					prompt: get.prompt("ciwei", trigger.player),
+					prompt2: `弃置一张牌，取消${get.translation(trigger.card)}的所有目标`,
+					position: "he",
 				})
+				.set("ai", card => _status.event.goon / 1.4 - get.value(card))
 				.set(
 					"goon",
-					(function () {
+					(() => {
 						if (!trigger.targets.length) {
 							return -get.attitude(player, trigger.player);
 						}
-						var num = 0;
-						for (var i of trigger.targets) {
-							num -= get.effect(i, trigger.card, trigger.player, player);
+						let num = 0;
+						for (const target of trigger.targets) {
+							num -= get.effect(target, trigger.card, trigger.player, player);
 						}
 						return num;
 					})()
 				)
-				.setHiddenSkill(event.name).logSkill = ["ciwei", trigger.player];
-			"step 1";
-			if (result.bool) {
-				trigger.targets.length = 0;
-				trigger.all_excluded = true;
+				.setHiddenSkill(event.name);
+			next.logSkill = ["ciwei", trigger.player];
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
 			}
+			trigger.targets.length = 0;
+			trigger.all_excluded = true;
 		},
 	},
 	ciwei_ai: {
@@ -3130,12 +3133,12 @@ const skills = {
 		},
 		trigger: { player: "dieAfter" },
 		sourceSkill: "ciwei",
-		filter: () => {
-			return !game.hasPlayer(i => i.hasSkill("ciwei", null, null, false), true);
+		filter() {
+			return !game.hasPlayer(current => current.hasSkill("ciwei", null, null, false), true);
 		},
 		silent: true,
 		forceDie: true,
-		content: () => {
+		async content() {
 			game.removeGlobalSkill("ciwei_ai");
 		},
 	},
