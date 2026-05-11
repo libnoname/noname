@@ -3942,23 +3942,27 @@ const skills = {
 		audio: 2,
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return lib.skill.choufa.filterTarget(null, player, current);
-			});
+			return game.hasPlayer(current => lib.skill.choufa.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			return target != player && !target.hasSkill("choufa2") && target.countCards("h") > 0;
+			return target !== player && !target.hasSkill("choufa2") && target.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player.choosePlayerCard(target, "h", true);
-			"step 1";
-			if (result?.bool && result.cards?.length) {
-				player.showCards(result.cards);
-				var type = get.type2(result.cards[0], target);
-				target.storage.choufa2 = type;
-				target.addTempSkill("choufa2", { player: "phaseAfter" });
+		async content(event, _trigger, player) {
+			const target = event.targets[0];
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "h",
+					forced: true,
+				})
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
 			}
+			await player.showCards(result.cards);
+			const type = get.type2(result.cards[0], target);
+			target.storage.choufa2 = type;
+			target.addTempSkill("choufa2", { player: "phaseAfter" });
 		},
 		ai: {
 			order: 9,
