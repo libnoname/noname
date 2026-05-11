@@ -3703,21 +3703,21 @@ const skills = {
 		filter(event, player) {
 			return event.toShow?.some(i => get.character(i).skills?.includes("baoqie"));
 		},
-		content() {
-			"step 0";
-			var card = get.cardPile(function (card) {
-				return get.subtype(card, false) == "equip5" && !get.cardtag(card, "gifts");
-			});
+		async content(event, _trigger, player) {
+			const card = get.cardPile(card => get.subtype(card, false) === "equip5" && !get.cardtag(card, "gifts"));
 			if (!card) {
-				event.finish();
 				return;
 			}
-			event.card = card;
-			player.gain(card, "gain2");
-			"step 1";
-			if (player.getCards("h").includes(card) && get.subtype(card) == "equip5") {
-				player.chooseUseTarget(card).nopopup = true;
+			await player.gain({
+				cards: [card],
+				animate: "gain2",
+			});
+			if (!player.hasCards("h", cardx => cardx === card) || get.subtype(card) !== "equip5") {
+				return;
 			}
+			const next = player.chooseUseTarget({ card });
+			next.nopopup = true;
+			await next;
 		},
 	},
 	jyishi: {
