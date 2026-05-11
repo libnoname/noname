@@ -3902,21 +3902,24 @@ const skills = {
 	xinchoufa: {
 		audio: "choufa",
 		inherit: "choufa",
-		content() {
-			"step 0";
-			player.choosePlayerCard(target, "h", true);
-			"step 1";
-			if (result?.bool && result.cards?.length) {
-				player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
-				var type = get.type2(result.cards[0], target),
-					hs = target.getCards("h", function (card) {
-						return card != result.cards[0] && get.type2(card, target) != type;
-					});
-				if (hs.length) {
-					target.addGaintag(hs, "xinchoufa");
-					target.addTempSkill("xinchoufa2", { player: "phaseAfter" });
-				}
+		async content(event, _trigger, player) {
+			const target = event.targets[0];
+			const result = await player.choosePlayerCard({
+				target,
+				position: "h",
+				forced: true,
+			}).forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
 			}
+			await player.showCards(result.cards, `${get.translation(player)}对${get.translation(target)}发动了【筹伐】`);
+			const type = get.type2(result.cards[0], target);
+			const hs = target.getCards("h", card => card !== result.cards?.[0] && get.type2(card, target) !== type);
+			if (!hs.length) {
+				return;
+			}
+			target.addGaintag(hs, "xinchoufa");
+			target.addTempSkill("xinchoufa2", { player: "phaseAfter" });
 		},
 	},
 	xinchoufa2: {
@@ -3926,12 +3929,12 @@ const skills = {
 		},
 		mod: {
 			cardname(card) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("xinchoufa")) {
+				if (get.itemtype(card) === "card" && card.hasGaintag("xinchoufa")) {
 					return "sha";
 				}
 			},
 			cardnature(card) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("xinchoufa")) {
+				if (get.itemtype(card) === "card" && card.hasGaintag("xinchoufa")) {
 					return false;
 				}
 			},
