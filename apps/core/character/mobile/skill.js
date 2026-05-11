@@ -19,6 +19,7 @@ const skills = {
 					return event.player === player && get.natureList(event.nature).includes("thunder");
 			}
 		},
+		locked: true,
 		forced: true,
 		async content(event, trigger, player) {
 			switch (event.triggername) {
@@ -69,7 +70,7 @@ const skills = {
 			nothunder: true,
 			effect: {
 				target(card, player, target, current) {
-					if (get.tag(card, "thunderDamage") {
+					if (get.tag(card, "thunderDamage")) {
 						return "zeroplayertarget";
 					}
 				},
