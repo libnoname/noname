@@ -6348,7 +6348,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	}
 	/**
 	 * @param { string } skill
-	 * @param { Player } player
+	 * @param { Player } [player]
 	 */
 	removeGlobalSkill(skill, player) {
 		const players = lib.skill.globalmap[skill];
