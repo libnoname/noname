@@ -1479,21 +1479,29 @@ const skills = {
 		trigger: { target: "useCardToTargeted" },
 		logTarget: "player",
 		filter(event, player) {
-			return event.card.name == "sha" && event.card.isCard && event.getParent(2).name != "maihuo_effect" && event.cards.filterInD().length > 0 && event.targets.length == 1 && event.player.isIn() && !event.player.getExpansions("maihuo_effect").length;
+			const evt2 = event.getParent(2);
+			if (evt2 == null) {
+				return false;
+			}
+			return event.card.name === "sha" && event.card.isCard && evt2.name !== "maihuo_effect" && event.cards.filterInD().length > 0 && event.targets.length === 1 && event.player.isIn() && !event.player.hasExpansions("maihuo_effect");
 		},
 		prompt2(event) {
-			return "令" + get.translation(event.card) + "暂时对你无效";
+			return `令${get.translation(event.card)}暂时对你无效`;
 		},
 		check(event, player) {
 			return get.effect(player, event.card, event.player, player) < 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.excluded.add(player);
-			var target = trigger.player,
-				cards = trigger.cards.filterInD();
-			target.addToExpansion("gain2", cards).gaintag.add("maihuo_effect");
+			const target = trigger.player;
+			const cards = trigger.cards.filterInD();
 			target.storage.maihuo_target = player;
 			target.addSkill("maihuo_effect");
+			await target.addToExpansion({
+				cards,
+				animate: "gain2",
+				gaintag: ["maihuo_effect"],
+			});
 		},
 		group: "maihuo_damage",
 		subSkill: {
@@ -1504,11 +1512,10 @@ const skills = {
 				filter(event, player) {
 					return player.getExpansions("maihuo_effect").length > 0;
 				},
-				content() {
-					"step 0";
-					var cards = player.getExpansions("maihuo_effect"),
-						card = cards[0];
-					if (card.name != "sha") {
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("maihuo_effect");
+					let card = cards[0];
+					if (card.name !== "sha") {
 						card = get.autoViewAs(
 							{
 								name: "sha",
@@ -1517,12 +1524,15 @@ const skills = {
 							cards
 						);
 					}
-					var target = player.storage.maihuo_target;
-					if (target.isIn() && player.canUse(card, target, null, true)) {
-						player.useCard(card, target, cards);
-					}
-					"step 1";
+					const target = player.storage.maihuo_target;
 					player.removeSkill("maihuo_effect");
+					if (target.isIn() && player.canUse(card, target, null, true)) {
+						await player.useCard({
+							card,
+							cards,
+							targets: [target],
+						});
+					}
 				},
 				marktext: "祸",
 				intro: {
@@ -1530,9 +1540,9 @@ const skills = {
 					markcount: "expansion",
 				},
 				onremove(player, skill) {
-					var cards = player.getExpansions(skill);
+					const cards = player.getExpansions(skill);
 					if (cards.length) {
-						player.loseToDiscardpile(cards);
+						player.loseToDiscardpile({ cards });
 					}
 				},
 				ai: { threaten: 1.05 },
@@ -1544,7 +1554,7 @@ const skills = {
 				filter(event, player) {
 					return event.player.hasSkill("maihuo_effect") && event.player.getExpansions("maihuo_effect").length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.removeSkill("maihuo_effect");
 				},
 			},
