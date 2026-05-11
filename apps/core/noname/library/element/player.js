@@ -12023,6 +12023,37 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
+	 * 按时间顺序遍历当前回合内指定类型的历史事件。
+	 *
+	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { Generator<TReturn> } 符合条件且不晚于last的历史事件
+	 */
+	*iterHistory(key, filter, last) {
+		const histories = this.getHistory(key);
+
+		if (filter == null && last == null) {
+			yield* histories;
+			return;
+		}
+
+		if (last != null && !histories.includes(last)) {
+			return;
+		}
+
+		for (const history of histories) {
+			if (filter == null || filter(history)) {
+				yield history;
+			}
+			if (history === last) {
+				break;
+			}
+		}
+	}
+	/**
 	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
