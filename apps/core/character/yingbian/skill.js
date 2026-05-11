@@ -3639,21 +3639,22 @@ const skills = {
 		filter(event, player) {
 			return player.hp < player.maxHp || player.countCards("h") < player.maxHp;
 		},
-		content() {
-			"step 0";
+		async content(_event, _trigger, player) {
 			player.addSkill("tairan2");
 			if (!player.storage.tairan2) {
 				player.storage.tairan2 = 0;
 			}
-			var num = player.maxHp - player.hp;
+			const num = player.maxHp - player.hp;
 			if (num > 0) {
 				player.storage.tairan2 = num;
-				player.recover(num);
+				await player.recover({ num });
 			}
-			"step 1";
-			if (player.countCards("h") < player.maxHp) {
-				player.drawTo(player.maxHp).gaintag = ["tairan"];
+			if (player.countCards("h") >= player.maxHp) {
+				return;
 			}
+			const next = player.drawTo(player.maxHp);
+			next.gaintag = ["tairan"];
+			await next;
 		},
 	},
 	tairan2: {
@@ -3681,16 +3682,14 @@ const skills = {
 		forced: true,
 		onremove: true,
 		sourceSkill: "tairan",
-		content() {
-			var map = player.storage.tairan2;
+		async content(_event, _trigger, player) {
+			const map = player.storage.tairan2;
 			if (map > 0) {
 				player.loseHp(map);
 			}
-			var hs = player.getCards("h", function (card) {
-				return card.hasGaintag("tairan");
-			});
+			const hs = player.getCards("h", card => card.hasGaintag("tairan"));
 			if (hs.length) {
-				player.discard(hs);
+				player.discard({ cards: hs });
 			}
 			player.removeSkill("tairan2");
 		},
