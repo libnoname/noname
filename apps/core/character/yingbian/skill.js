@@ -3618,7 +3618,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.give(event.cards, event.target);
-			target.addTempSkill("ruilve3", "phaseUseEnd");
+			event.target.addTempSkill("ruilve3", "phaseUseEnd");
 		},
 		ai: {
 			expose: 0.3,
