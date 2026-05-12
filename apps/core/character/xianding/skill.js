@@ -164,7 +164,7 @@ const skills = {
 					},
 				},
 				trigger: {
-					player: ["gainBegin", "phaseBefore", "phaseAfter"],
+					player: ["gainBegin", "phaseBeforeStart", "phaseAfter"],
 					source: ["damageSource"],
 				},
 				filter(event, player) {
