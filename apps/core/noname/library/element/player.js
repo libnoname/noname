@@ -12023,7 +12023,7 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
-	 * 按时间顺序遍历当前回合内指定类型的历史事件
+	 * 遍历当前回合内该玩家指定类型的历史事件
 	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
@@ -12055,7 +12055,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 获得当前回合的该玩家的整个历史对象。
+	 * 获得当前回合该玩家的整个历史对象
 	 *
 	 * @overload
 	 * @returns { ActionHistory }
@@ -12068,7 +12068,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { boolean }
 	 */
 	/**
-	 * 获取当前回合内指定类型的历史事件
+	 * 获取当前回合内该玩家指定类型的历史事件
 	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
@@ -12089,7 +12089,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 遍历当前回合内指定类型的历史事件
+	 * 遍历当前回合内该玩家指定类型的历史事件
 	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
@@ -12106,7 +12106,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 获取当前回合内指定类型的历史事件的数量
+	 * 获取当前回合内该玩家指定类型的历史事件的数量
 	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
@@ -12123,7 +12123,7 @@ export class Player extends HTMLDivElement {
 		return count;
 	}
 	/**
-	 * 判断当前回合内是否有指定类型的历史事件
+	 * 判断当前回合内该玩家是否有指定类型的历史事件
 	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
@@ -12181,97 +12181,123 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 遍历整局游戏该玩家的历史
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
-	 * @param { T } key
-	 * @param { (event: GameEvent) => void } filter
-	 * @param { GameEvent } [last]
+	 * 遍历整局游戏内该玩家的历史对象
+	 *
+	 * @overload
+	 * @returns { Generator<ActionHistory> }
 	 */
-	checkAllHistory(key, filter, last) {
-		if (!key || !filter) {
+	/**
+	 * 遍历整局游戏内该玩家指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @overload
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { Generator<TReturn> } 符合条件且不晚于last的历史事件
+	 */
+	*iterAllHistory(key, filter, last) {
+		if (!key) {
+			for (const histories of this.actionHistory) {
+				yield histories;
+			}
 			return;
 		}
-		this.actionHistory.forEach(value => {
-			let history = value[key];
-			if (last && history.includes(last)) {
-				const lastIndex = history.indexOf(last);
-				history.forEach((event, index) => {
-					if (index > lastIndex) {
-						return false;
-					}
-					return filter(event);
-				});
-			} else {
-				history.forEach(filter);
+
+		if (last != null) {
+			if (!this.actionHistory.some(histories => histories[key].includes(last))) {
+				return;
 			}
-		});
+		}
+
+		for (const currentHistories of this.actionHistory) {
+			const histories = currentHistories[key];
+
+			if (filter == null) {
+				yield* histories;
+				continue;
+			}
+
+			for (const history of histories) {
+				if (filter(history)) {
+					yield history;
+				}
+				if (history === last) {
+					return;
+				}
+			}
+		}
 	}
 	/**
-	 * 获得整局游戏该玩家的行动历史
+	 * 遍历整局游戏内该玩家指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => void } content - 遍历过程需要执行的函数
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 */
+	checkAllHistory(key, content, last) {
+		if (!key || !content) {
+			return;
+		}
+		for (const event of this.iterAllHistory(key, undefined, last)) {
+			content(event);
+		}
+	}
+	/**
+	 * 获得整局游戏内该玩家的历史对象
+	 *
 	 * @overload
 	 * @returns { ActionHistory[] }
 	 */
 	/**
-	 * 获得整局游戏该玩家的某个指定行为的历史
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
+	 * 获取整局游戏内该玩家指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @overload
-	 * @param { T } key
-	 * @param { (event: GameEvent) => boolean } [filter]
-	 * @param { GameEvent } [last]
-	 * @returns { ActionHistory[T] }
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { TReturn[] } 符合条件且不晚于last的历史事件
 	 */
 	getAllHistory(key, filter, last) {
-		const history = [];
-		this.actionHistory.forEach(value => {
-			if (!key || !value[key]) {
-				history.push(value);
-			} else {
-				history.push(...value[key]);
-			}
-		});
-		if (filter) {
-			if (last) {
-				const lastIndex = history.indexOf(last);
-				return history.filter((event, index) => {
-					if (index > lastIndex) {
-						return false;
-					}
-					return filter(event);
-				});
-			}
-			return history.filter(filter);
-		}
-		return history;
+		return this.iterAllHistory(key, filter, last).toArray();
 	}
 	/**
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
-	 * @param { T } key
-	 * @param { (event: GameEvent) => boolean } filter
-	 * @param { GameEvent } [last]
+	 * 获取整局游戏内该玩家指定类型的历史事件的数量
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { number } 符合条件且不晚于last的历史事件的数量
+	 */
+	countAllHistory(key, filter, last) {
+		let count = 0;
+		for (const _ of this.iterAllHistory(key, filter, last)) {
+			count++;
+		}
+		return count;
+	}
+	/**
+	 * 判断整局游戏内该玩家是否有指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 判断过程需要执行的函数
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则返回`false`
 	 * @returns { boolean }
 	 */
 	hasAllHistory(key, filter, last) {
-		return this.actionHistory.some(value => {
-			let history = value[key];
-			if (last && history.includes(last)) {
-				const lastIndex = history.indexOf(last);
-				if (
-					history.some(function (event, index) {
-						if (index > lastIndex) {
-							return false;
-						}
-						return filter(event);
-					})
-				) {
-					return true;
-				}
-			} else {
-				if (history.some(filter)) {
-					return true;
-				}
-			}
-			return false;
-		});
+		for (const _ of this.iterAllHistory(key, filter, last)) {
+			return true;
+		}
+		return false;
 	}
 	getLastUsed(num) {
 		if (typeof num != "number") {
