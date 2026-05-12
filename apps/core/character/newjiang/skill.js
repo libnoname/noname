@@ -589,9 +589,9 @@ const skills = {
 							},
 							add: {
 								confirm(bool) {
+									const event = get.event();
+									const { fake, top } = event;
 									if (bool === true) {
-										const event = get.event();
-										const { fake, top } = event;
 										const { cards } = event.result;
 										for (let i = 0; i < cards?.length; i++) {
 											const card = cards[i];

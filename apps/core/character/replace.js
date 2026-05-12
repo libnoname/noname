@@ -324,7 +324,7 @@ window.noname_character_replace = {
 	zhangchangpu: ["ol_zhangchangpu", "zhangchangpu", "sp_zhangchangpu"],
 	zhangchu: ["zhangchu", "jsrg_zhangchu"],
 	zhangchunhua: ["zhangchunhua", "ol_zhangchunhua", "jin_zhangchunhua", "re_zhangchunhua", "star_zhangchunhua"],
-	zhangfei: ["zhangfei", "re_zhangfei", "ol_sb_zhangfei", "old_zhangfei", "xin_zhangfei", "sb_zhangfei", "tw_zhangfei", "jsrg_zhangfei", "jd_sb_zhangfei", "yj_zhangfei", "sp_zhangfei", "yj_zhangfei"],
+	zhangfei: ["zhangfei", "re_zhangfei", "ol_sb_zhangfei", "dm_zhangfei", "old_zhangfei", "xin_zhangfei", "sb_zhangfei", "tw_zhangfei", "jsrg_zhangfei", "jd_sb_zhangfei", "yj_zhangfei", "sp_zhangfei", "yj_zhangfei"],
 	zhangfen: ["zhangfen", "mb_zhangfen", "std_zhangfen"],
 	zhangji: ["zhangji", "ns_zhangji", "ca_zhangji"],
 	zhangjiao: ["sp_zhangjiao", "re_zhangjiao", "sb_zhangjiao", "jsrg_zhangjiao", "zhangjiao", "pe_jun_zhangjiao"],
@@ -458,4 +458,5 @@ window.noname_character_replace = {
 	shie: ["shie", "xia_shie"],
 	xia_wangyue: ["dc_xia_wangyue", "xia_wangyue", "ns_wangyue"],
 	tadun: ["tadun", "o_tadun"],
+	shen_caopi: ["shen_caopi", "dc_shen_caopi"],
 };

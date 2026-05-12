@@ -378,7 +378,7 @@ const translates = {
 	zhimeng: "智盟",
 	zhimeng_info: "回合结束后，你可以选择一名其他角色。若如此做，你与其将各自所有手牌置于处理区，然后你随机获得这些牌中的一半（向上取整），其获得剩余的牌。",
 	mb_shen_jiangwei: "手杀神姜维",
-	mb_shen_jiangwei_prefix: "手杀|神",
+	mb_shen_jiangwei_prefix: "手杀神",
 	mbtiantao: "天涛",
 	mbtiantao_info: "锁定技，结束阶段，你选择一个区域并弃置其中所有牌，然后依次弃置任意名其他角色相同区域各一张牌，因此弃置牌且未弃置【杀】的角色失去1点体力。",
 	mbxinghun: "星魂",

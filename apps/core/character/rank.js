@@ -101,6 +101,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"dm_zhangfei",
 		"mb_shen_jiangwei",
 		"ol_sb_dongzhao",
 		"ol_sb_chengyu",
@@ -308,6 +309,7 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"dc_shen_caopi",
 		"o_tadun",
 		"o_chenlan",
 		"o_meicheng",
@@ -2635,6 +2637,8 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"dc_shen_caopi",
+			"dm_zhangfei",
 			"tw_dm_zhouyu",
 			"o_tadun",
 			"o_guanyu",

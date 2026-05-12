@@ -1,6 +1,17 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dm_zhangfei: "魔张飞",
+	dm_zhangfei_prefix: "魔",
+	olzhuohun: "灼魂",
+	olzhuohun_info: "锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你摸一张牌。",
+	olchenshi: "瞋视",
+	olchenshi_info: `锁定技，若其他角色的勾玉颜色与你：不同，你使用黑色【杀】能额外指定其为目标；相同，你对其，或其对你使用的黑色【杀】改为【决斗】。你因【杀】和【决斗】首次造成了或受到了至少3点伤害后，你回复1点体力，${get.poptip({
+		id: "olzhuohun_rewrite",
+		name: "修改〖灼魂〗",
+		type: "character",
+		info: "你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你将手牌摸至体力上限，并执行对应效果：绿色，其本回合摸牌改为从牌堆获得等量【杀】；黄色，其本回合非锁定技失效；红色，若无角色处于濒死状态，其失去所有体力。"
+	})}并${get.poptip("olrumo")}。`,
 	ol_xiahoushi: "OL界夏侯氏",
 	ol_xiahoushi_prefix: "OL界",
 	olqiaoshi: "樵拾",
