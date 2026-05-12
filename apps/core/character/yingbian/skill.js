@@ -4234,7 +4234,7 @@ const skills = {
 			if (card2 !== card) {
 				player.popup("杯具");
 				await player.gain({
-					cards: card2,
+					cards: [card2],
 					animate: "gain2",
 					gaintag: ["yanxi"],
 				});
