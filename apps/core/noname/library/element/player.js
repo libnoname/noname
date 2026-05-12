@@ -12056,7 +12056,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 获得当前回合的该玩家的整个历史对象。
-	 * 
+	 *
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -12069,7 +12069,7 @@ export class Player extends HTMLDivElement {
 	 */
 	/**
 	 * 获取当前回合内指定类型的历史事件
-	 * 
+	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @overload
@@ -12089,52 +12089,35 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 遍历历史
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
-	 * @param { T } key
-	 * @param { (event: GameEvent) => void } filter 遍历过程需要执行的函数
-	 * @param { GameEvent } [last]
+	 * 遍历当前回合内指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => void } content - 遍历过程需要执行的函数
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
 	 */
-	checkHistory(key, filter, last) {
-		if (!key || !filter) {
+	checkHistory(key, content, last) {
+		if (!key || !content) {
 			return;
-		} else {
-			const history = this.getHistory(key);
-			if (last) {
-				const lastIndex = history.indexOf(last);
-				history.forEach((event, index) => {
-					if (index > lastIndex) {
-						return false;
-					}
-					filter(event);
-				});
-			} else {
-				history.forEach(filter);
-			}
+		}
+		for (const event of this.iterHistory(key, undefined, last)) {
+			content(event);
 		}
 	}
 	/**
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
-	 * @param { T } key
-	 * @param { (event: GameEvent) => boolean } [filter]
-	 * @param { GameEvent } [last]
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要判断的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 判断过程需要执行的函数
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则返回`false`
 	 * @returns { boolean }
 	 */
-	hasHistory(key, filter = lib.filter.all, last) {
-		const history = this.getHistory(key);
-		if (!filter || typeof filter != "function") {
-			filter = lib.filter.all;
+	hasHistory(key, filter, last) {
+		for (const _ of this.iterHistory(key, filter, last)) {
+			return true;
 		}
-		if (last) {
-			const lastIndex = history.indexOf(last);
-			return history.some((event, index) => {
-				if (index > lastIndex) {
-					return false;
-				}
-				return filter(event);
-			});
-		}
-		return history.some(filter);
+		return false;
 	}
 	/**
 	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
