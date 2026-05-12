@@ -12106,6 +12106,25 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
+	 * 获取当前回合内指定类型的历史事件的数量
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { number } 符合条件且不晚于last的历史事件的数量
+	 */
+	countHistory(key, filter, last) {
+		let count = 0;
+		for (const _ of this.iterHistory(key, filter, last)) {
+			count++;
+		}
+		return count;
+	}
+	/**
+	 * 判断当前回合内是否有指定类型的历史事件
+	 *
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @param { TKey } key - 要判断的历史类型
