@@ -6528,7 +6528,7 @@ const skills = {
 						}
 						if (num < 0) {
 							await player.loseHp(index + 1);
-							await target.damage();
+							//await target.damage();
 							if (player.hasSkill("dcliexiang", null, null, false)) {
 								player.addTempSkill("dcliexiang_extra");
 								player.setMark("dcliexiang_extra", index + 1, false);

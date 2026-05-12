@@ -245,26 +245,36 @@ const skills = {
 	},
 	starfanglang: {
 		audio: 2,
-		trigger: { player: "phaseDrawBegin2" },
+		trigger: { player: "phaseDrawEnd" },
 		filter(event, player) {
-			return !event.numFixed;
+			const hs = player.getCards("he");
+			return player
+				.getHistory("gain", evt => evt.getParent("phaseDraw") == event)
+				.reduce((list, evt) => [...list, ...evt.cards], [])
+				.containsSome(...hs);
 		},
 		check: () => true,
+		async cost(event, trigger, player) {
+			const cards = player.getHistory("gain", evt => evt.getParent("phaseDraw") == trigger).reduce((list, evt) => [...list, ...evt.cards], []);
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt2(event.skill),
+					position: "he",
+					filterCard(card, player) {
+						return get.event().cards.includes(card);
+					},
+					cards,
+					ai(card) {
+						return Math.random();
+					},
+				})
+				.forResult();
+		},
 		async content(event, trigger, player) {
-			trigger.num = 1;
-			trigger.numFixed = true;
-			player
-				.when("drawEnd")
-				.filter(evt => evt.getParent() == trigger)
-				.then(async (event, trigger, player) => {
-					let { cards } = trigger.result;
-					cards = cards?.filter(card => get.owner(card) == player);
-					if (cards?.length) {
-						player.addTempSkill("starfanglang_draw", { player: "phaseBeforeStart" });
-						player.markAuto("starfanglang_draw", cards);
-						await player.showCards(cards);
-					}
-				});
+			const { cards } = event;
+			player.addTempSkill(event.name + "_draw", { player: "phaseBeforeStart" });
+			player.markAuto(event.name + "_draw", cards);
+			await player.showCards(cards);
 		},
 		group: ["starfanglang_gain"],
 		subSkill: {
@@ -7371,7 +7381,7 @@ const skills = {
 				onremove: true,
 				trigger: { player: "phaseDrawBegin2" },
 				filter(event, player) {
-					return typeof player.storage.dcbihuo_effect == 'number' && !event.numFixed;
+					return typeof player.storage.dcbihuo_effect == "number" && !event.numFixed;
 				},
 				forced: true,
 				popup: false,
