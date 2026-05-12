@@ -11978,49 +11978,105 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 快速获取一名角色当前轮次/倒数第X轮次的历史
-	 *	@template {Exclude< keyof ActionHistory, 'isRound'|'isMe'>} T
-	 * @param {T} key
-	 * @param {(event:GameEvent)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
-	 * @param {number} [num] 获取倒数第num轮的历史，默认为0，表示当前轮
-	 * @param {boolean} [keep] 若为true,则获取倒数第num轮到现在的所有历史
-	 * @param {GameEvent} [last] 代表最后一个事件，获取该事件之前的历史
+	 * 遍历当前轮次/倒数第X轮次内该玩家指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { number } [num] - 获取倒数第num轮的历史，默认为0，表示当前轮
+	 * @param { boolean } [keep] - 若为`true`，则获取倒数第num轮到现在的所有历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { Generator<TReturn> } 符合条件且不晚于last的历史事件
 	 */
-	getRoundHistory(key, filter = lib.filter.all, num, keep, last) {
-		if (!num) {
-			num = 0;
-		}
-		if (!filter || typeof filter != "function") {
-			filter = lib.filter.all;
-		}
-		const player = this;
-		let evts = [],
-			history = player.actionHistory;
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (keep === true || num == 0) {
-				let currentHistory = history[i];
-				if (key) {
-					currentHistory = currentHistory[key];
-				}
-				if (filter) {
-					currentHistory = currentHistory.filter(filter);
-				}
-				evts.addArray(currentHistory.slice().reverse());
+	*iterRoundHistory(key, filter, num, keep, last) {
+		num ??= 0;
+
+		const allHistories = this.actionHistory;
+		let startIndex = allHistories.length;
+		let endIndex = allHistories.length;
+		for (let i = allHistories.length - 1; i >= 0; i--) {
+			if (keep || num === 0) {
+				startIndex = i;
 			}
-			if (history[i].isRound) {
-				if (num > 0) {
-					num--;
-				} else {
+			if (allHistories[i].isRound) {
+				if (num <= 0) {
 					break;
 				}
+				num--;
+				if (!keep) {
+					endIndex = i;
+				}
 			}
 		}
-		evts.reverse();
-		if (last && evts.includes(last)) {
-			const lastIndex = evts.indexOf(last);
-			return evts.filter(evt => evts.indexOf(evt) <= lastIndex);
+
+		if (startIndex >= endIndex) {
+			return;
 		}
-		return evts;
+
+		for (let i = startIndex; i < endIndex; i++) {
+			const histories = allHistories[i][key];
+			for (const history of histories) {
+				if (filter == null || filter(history)) {
+					yield history;
+				}
+				if (history === last) {
+					return;
+				}
+			}
+		}
+	}
+	/**
+	 * 获取当前轮次/倒数第X轮次内该玩家指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { number } [num] - 获取倒数第num轮的历史，默认为0，表示当前轮
+	 * @param { boolean } [keep] - 若为`true`，则获取倒数第num轮到现在的所有历史
+	 * @param { TReturn } [last] - 可选的截止事件
+	 * @returns { TReturn[] } 符合条件且不晚于last的历史事件
+	 */
+	getRoundHistory(key, filter, num, keep, last) {
+		return this.iterRoundHistory(key, filter, num, keep, last).toArray();
+	}
+	/**
+	 * 获取当前轮次/倒数第X轮次内该玩家指定类型的历史事件的数量
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时统计全部历史
+	 * @param { number } [num] - 获取倒数第num轮的历史，默认为0，表示当前轮
+	 * @param { boolean } [keep] - 若为`true`，则获取倒数第num轮到现在的所有历史
+	 * @param { TReturn } [last] - 可选的截止事件
+	 * @returns { number } 符合条件且不晚于last的历史事件的数量
+	 */
+	countRoundHistory(key, filter, num, keep, last) {
+		let count = 0;
+		for (const _ of this.iterRoundHistory(key, filter, num, keep, last)) {
+			count++;
+		}
+		return count;
+	}
+	/**
+	 * 判断当前轮次/倒数第X轮次内该玩家是否有指定类型的历史事件
+	 *
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
+	 * @param { TKey } key - 要判断的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 判断过程需要执行的函数
+	 * @param { number } [num] - 倒数倒数第num轮的历史，默认为0，表示当前轮
+	 * @param { boolean } [keep] - 若为`true`，则判断倒数第num轮到现在的所有历史
+	 * @param { TReturn } [last] - 可选的截止事件
+	 * @returns { boolean }
+	 */
+	hasRoundHistory(key, filter, num, keep, last) {
+		for (const _ of this.iterRoundHistory(key, filter, num, keep, last)) {
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 遍历当前回合内该玩家指定类型的历史事件
@@ -12111,7 +12167,7 @@ export class Player extends HTMLDivElement {
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @param { TKey } key - 要遍历的历史类型
-	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时统计全部历史
 	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
 	 * @returns { number } 符合条件且不晚于last的历史事件的数量
 	 */
@@ -12272,7 +12328,7 @@ export class Player extends HTMLDivElement {
 	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @param { TKey } key - 要遍历的历史类型
-	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时统计全部历史
 	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
 	 * @returns { number } 符合条件且不晚于last的历史事件的数量
 	 */
