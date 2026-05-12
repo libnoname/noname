@@ -1773,7 +1773,7 @@ const skills = {
 				trigger: { player: "phaseEnd" },
 				async content(event, trigger, player) {
 					await player.removeAdditionalSkills("dcxiangchen");
-					await player.recover();
+					//await player.recover();
 				},
 			},
 		},
@@ -1830,7 +1830,7 @@ const skills = {
 				return true;
 			});
 			await player.draw({ num: Math.min(5, toAdd.length) });
-			await player.addSkills(toAdd.randomGets(4));
+			await player.addSkills(toAdd.randomGets(3));
 			player.addTempSkill(`${event.name}_die`, { player: "dieAfter" });
 			player.setStorage(`${event.name}_die`, trigger.getParent("phase", true));
 		},
