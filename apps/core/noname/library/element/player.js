@@ -12023,9 +12023,9 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
-	 * 按时间顺序遍历当前回合内指定类型的历史事件。
+	 * 按时间顺序遍历当前回合内指定类型的历史事件
 	 *
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } TKey
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
 	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @param { TKey } key - 要遍历的历史类型
 	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
@@ -12033,7 +12033,8 @@ export class Player extends HTMLDivElement {
 	 * @returns { Generator<TReturn> } 符合条件且不晚于last的历史事件
 	 */
 	*iterHistory(key, filter, last) {
-		const histories = this.getHistory(key);
+		const currentHistory = this.actionHistory[this.actionHistory.length - 1];
+		const histories = currentHistory[key];
 
 		if (filter == null && last == null) {
 			yield* histories;
@@ -12054,23 +12055,28 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
+	 * 获得当前回合的该玩家的整个历史对象。
+	 * 
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
 	/**
+	 * 获取当前回合是否为轮次开始时/该玩家的回合
 	 *
 	 * @overload
-	 * @param { 'isRound'|'isMe' } key
-	 * @returns { boolean}
+	 * @param { "isRound" | "isMe" } key
+	 * @returns { boolean }
 	 */
 	/**
-	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
+	 * 获取当前回合内指定类型的历史事件
+	 * 
+	 * @template { Exclude<keyof ActionHistory, "isRound" | "isMe"> } TKey
+	 * @template { ActionHistory[TKey] extends Array<infer E> ? E : never} TReturn
 	 * @overload
-	 * @param { T } key
-	 * @param { (event: GameEvent) => boolean } [filter] 过滤条件
-	 * @param { GameEvent } [last] 若有该参数，则该参数事件之后的将被排除掉
-	 * @returns { ActionHistory[T] }
+	 * @param { TKey } key - 要遍历的历史类型
+	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
+	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @returns { TReturn[] } 符合条件且不晚于last的历史事件
 	 */
 	getHistory(key, filter, last) {
 		if (!key) {
@@ -12079,17 +12085,7 @@ export class Player extends HTMLDivElement {
 		if (!filter) {
 			return this.actionHistory[this.actionHistory.length - 1][key];
 		} else {
-			const history = this.getHistory(key);
-			if (last) {
-				const lastIndex = history.indexOf(last);
-				return history.filter((event, index) => {
-					if (index > lastIndex) {
-						return false;
-					}
-					return filter(event);
-				});
-			}
-			return history.filter(filter);
+			return this.iterHistory(key, filter, last).toArray();
 		}
 	}
 	/**
