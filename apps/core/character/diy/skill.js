@@ -5344,8 +5344,8 @@ const skills = {
 						const target = player.storage.nsfengli_use;
 						event.target = target;
 						player.logSkill("nsfengli", target);
-						player.showCards(card, get.translation(player) + "发动了【奉礼】");
-						target.hideShownCards(card);
+						await player.showCards(card, get.translation(player) + "发动了【奉礼】");
+						await target.hideShownCards(card);
 					},
 				};
 			},
