@@ -18225,11 +18225,11 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = trigger.player;
 					if (target.getHistory("useCard", evt => get.color(evt.card) == "black").length > 0 && player.canUse("juedou", target)) {
-						await player.useCard({ name: "juedou", isCard: true }, target, "dcxunji_effect");
+						await player.useCard({ name: "juedou", isCard: true }, target, event.name);
 					}
-					player.unmarkAuto("dcxunji_effect", [target]);
-					if (!player.storage.dcxunji_effect.length) {
-						player.removeSkill("dcxunji_effect");
+					player.unmarkAuto(event.name, [target]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
 					}
 				},
 				group: "dcxunji_loseHp",
