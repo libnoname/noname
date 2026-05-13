@@ -11986,11 +11986,14 @@ export class Player extends HTMLDivElement {
 	 * @param { (event: TReturn) => boolean } [filter] - 可选过滤条件；不填写时返回全部历史
 	 * @param { number } [num] - 获取倒数第num轮的历史，默认为0，表示当前轮
 	 * @param { boolean } [keep] - 若为`true`，则获取倒数第num轮到现在的所有历史
-	 * @param { TReturn } [last] - 可选的截止事件；若指定事件不在历史中，则不产生结果
+	 * @param { TReturn } [last] - 可选的截止事件
 	 * @returns { Generator<TReturn> } 符合条件且不晚于last的历史事件
 	 */
 	*iterRoundHistory(key, filter, num, keep, last) {
 		num ??= 0;
+		if (filter != null && !filter) {
+			filter = undefined;
+		}
 
 		const allHistories = this.actionHistory;
 		let startIndex = allHistories.length;
@@ -12261,7 +12264,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { TReturn[] } 符合条件且不晚于last的历史事件
 	 */
 	getLastHistory(key, filter, last) {
-		if (key != null && key !== "isRound" && key !== "isMe") {
+		if (key != null && filter != null) {
 			return this.iterLastHistory(key, filter, last).toArray();
 		}
 
@@ -12275,14 +12278,7 @@ export class Player extends HTMLDivElement {
 		if (currentHistory == null) {
 			return null;
 		}
-
-		if (!key) {
-			return history;
-		}
-		if (key === "isMe") {
-			return true;
-		}
-		return history[key];
+		return key ? currentHistory[key] : currentHistory;
 	}
 	/**
 	 * 获取该玩家最新回合内该玩家指定类型的历史事件的数量
@@ -12351,13 +12347,13 @@ export class Player extends HTMLDivElement {
 		for (const currentHistories of this.actionHistory) {
 			const histories = currentHistories[key];
 
-			if (filter == null) {
+			if (filter == null && last == null) {
 				yield* histories;
 				continue;
 			}
 
 			for (const history of histories) {
-				if (filter(history)) {
+				if (filter == null || filter(history)) {
 					yield history;
 				}
 				if (history === last) {
