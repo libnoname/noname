@@ -8661,7 +8661,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {
@@ -8854,7 +8854,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {
@@ -9078,7 +9078,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {

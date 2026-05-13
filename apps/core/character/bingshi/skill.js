@@ -4576,7 +4576,7 @@ const skills = {
 			prompt(links, player) {
 				let prompt = "将你";
 				if (_status.currentPhase?.isIn() && _status.currentPhase !== player) {
-					prompt += "与" + get.translation(_status.currentPhase);
+					prompt += "或" + get.translation(_status.currentPhase);
 				}
 				prompt += "的一张牌置入弃牌堆，";
 				return '###道转###<div class="text center">' + prompt + "视为使用" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】</div>";
@@ -4595,7 +4595,7 @@ const skills = {
 						const goon = _status.currentPhase?.isIn() && _status.currentPhase !== player;
 						let prompt = "将你";
 						if (goon) {
-							prompt += "与" + get.translation(_status.currentPhase);
+							prompt += "或" + get.translation(_status.currentPhase);
 						}
 						prompt += "的一张牌置入弃牌堆";
 						let dialog = ["道转：" + prompt];
