@@ -20,7 +20,7 @@ const skills = {
 				return false;
 			}
 			const hs = player.getCards("h");
-			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.changedHp != 0).indexOf(event) == 0 && player.countDiscardableCards(player, "h", card => !get.info("clanqingjue").isOnlySuit(card, player)) > 0;
+			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.changedHp != 0).indexOf(event) == 0 && player.hasDiscardableCards(player, "h", card => !get.info("clanqingjue").isOnlySuit(card, player));
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -327,10 +327,10 @@ const skills = {
 				log: false,
 				enable: "chooseToUse",
 				hiddenCard(player, name) {
-					return name == "sha" && !player.storage.clandongxu && player.countCards("e") > 0;
+					return name == "sha" && !player.storage.clandongxu && player.hasCards("e");
 				},
 				filter(event, player) {
-					return event.filterCard(get.autoViewAs({ name: "sha", isCard: true }), player, event) && !player.storage.clandongxu && player.countCards("e") > 0;
+					return event.filterCard(get.autoViewAs({ name: "sha", isCard: true }), player, event) && !player.storage.clandongxu && player.hasCards("e");
 				},
 				prompt: "将装备区里的一张牌置于其他角色装备区（替换原装备），视为对其使用一张【杀】",
 				ignoreMod: true,
@@ -367,7 +367,7 @@ const skills = {
 						if (tag == "respond") {
 							return false;
 						}
-						if (tag == "respondSha" && (player.storage.clandongxu || !player.countCards("e"))) {
+						if (tag == "respondSha" && (player.storage.clandongxu || !player.hasCards("e"))) {
 							return false;
 						}
 					},

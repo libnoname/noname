@@ -8935,7 +8935,7 @@ const skills = {
 			return false;
 		},
 		filter(event, player) {
-			return player != event.player && event.player.countDiscardableCards(player, "he") > 0;
+			return player != event.player && event.player.hasDiscardableCards(player, "he");
 		},
 		async content(event, trigger, player) {
 			await player.discardPlayerCard(trigger.player, true, "he", [1, 2]);

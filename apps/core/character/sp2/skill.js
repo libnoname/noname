@@ -5618,7 +5618,7 @@ const skills = {
 					if (
 						button.link == "discard" &&
 						_status.event.getTrigger().targets.every(target => {
-							return target.countDiscardableCards(player, "he") == 0;
+							return !target.hasDiscardableCards(player, "he");
 						})
 					) {
 						return false;
@@ -5652,7 +5652,7 @@ const skills = {
 			}
 			if (choices.includes("discard")) {
 				game.log(player, "选择了", "#y选项二");
-				const targets = trigger.targets.filter(current => current.countDiscardableCards(player, "he") > 0);
+				const targets = trigger.targets.filter(current => current.hasDiscardableCards(player, "he"));
 				if (!targets.length) {
 					return;
 				}
