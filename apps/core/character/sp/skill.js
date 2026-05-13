@@ -1898,19 +1898,7 @@ const skills = {
 				if (opinion == "red") {
 					const cards = result.red.flatMap(i => i[1]).filter(card => get.itemtype(card) == "card");
 					if (cards.length) {
-						await player
-							.gain(cards)
-							.set("animate", event => {
-								const player = event.player,
-									cards = event.cards;
-								event.targets.forEach((target, index) => {
-									target.$give(cards[index], player);
-								});
-							})
-							.set(
-								"targets",
-								result.red.map(i => i[0]).filter(target => target != player)
-							);
+						await player.gain(cards, "giveAuto");
 					}
 				} else if (opinion == "black") {
 					const drawer = result.red
