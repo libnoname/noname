@@ -10207,7 +10207,7 @@ const skills = {
 				marktext: "完杀",
 				intro: {
 					name: "完杀",
-					content: "本回合红色牌均视为杀",
+					content: "本回合红色基本牌均视为杀",
 				},
 				charlotte: true,
 				mod: {

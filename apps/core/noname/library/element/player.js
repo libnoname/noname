@@ -1323,7 +1323,7 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		if (!next.cards?.length || !next.gaintag?.length) {
+		if (!next.cards?.length) {// || !next.gaintag?.length
 			_status.event.next.remove(next);
 			next.resolve();
 		}

@@ -1,4 +1,11 @@
 const characters = {
+	dc_shen_caopi: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["dcyinzhi", "dckeming"],
+		groupInGuozhan: "wei",
+	},
 	dc_xia_wangyue: {
 		sex: "male",
 		group: "qun",

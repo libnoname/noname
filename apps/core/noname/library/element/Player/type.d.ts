@@ -80,7 +80,7 @@ export interface CheckCardParams {
 	 * AI选择牌时的优先级评分函数
 	 * 
 	 * @param card - 选择的牌
-	 * @RETURNS 选择该牌的优先级评分
+	 * @returns 选择该牌的优先级评分
 	 */
 	ai?(card: Card): number;
 }

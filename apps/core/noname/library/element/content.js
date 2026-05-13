@@ -8661,7 +8661,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {
@@ -8854,7 +8854,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {
@@ -9078,7 +9078,7 @@ export const Content = {
 						title.style.margin = "0px";
 						title.style.padding = "0px";
 						hs.randomSort();
-						if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+						if (event.visible || target.isUnderControl(true, player) || player.hasSkillTag("viewHandcard", null, target, true)) {
 							event.dialog.add(hs);
 							directh = false;
 						} else {
@@ -12504,12 +12504,16 @@ export const Content = {
 			}
 		});
 		game.log(player, "减少了" + get.cnNumber(num) + "点体力上限");
+		event.originalHp = player.getHp();
+		event.originalMaxHp = player.maxHp;
 		player.maxHp -= num;
 		if (isNaN(player.maxHp)) {
 			player.maxHp = 0;
 		}
+		event.changedMaxHp = player.maxHp - event.originalMaxHp;
 		event.loseHp = Math.max(0, player.hp - player.maxHp);
 		player.update();
+		event.changedHp = player.getHp() - Math.max(0, event.originalHp);
 
 		if (player.maxHp <= 0) {
 			await player.die(event);
@@ -12518,11 +12522,17 @@ export const Content = {
 	async gainMaxHp(event, trigger, player) {
 		const { num } = event;
 		game.log(player, "增加了" + get.cnNumber(num) + "点体力上限");
+		event.originalHp = player.getHp();
+		event.originalMaxHp = player.maxHp;
 		player.maxHp += num;
+		event.changedMaxHp = player.maxHp - event.originalMaxHp;
+		event.changedHp = 0;
 		player.update();
 	},
 	async changeHp(event, trigger, player) {
 		let { num, originalHp } = event;
+		event.originalMaxHp = player.maxHp;
+		event.changedMaxHp = 0;
 		//add to GlobalHistory
 		game.getGlobalHistory().changeHp.push(event);
 		//changeHujia moved here

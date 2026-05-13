@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	olzhuohun(player, skill) {
+		const bool = player.storage[skill];
+		if (bool) {
+			return `你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你将手牌摸至体力上限，并执行对应效果：绿色，其本回合摸牌改为从牌堆获得等量【杀】；黄色，其本回合非锁定技失效；红色，若无角色处于濒死状态，其失去所有体力。`
+		}
+		return lib.translate[skill + "_info"];
+	},
 	olsblixian(player) {
 		let names =
 			player
