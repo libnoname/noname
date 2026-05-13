@@ -159,7 +159,7 @@ const skills = {
 		},
 		logTarget: "targets",
 		async content(event, trigger, player) {
-			player.addMark("jimie", 4);
+			player.addMark("tingwei", 4);
 
 			const target = event.targets[0];
 
@@ -362,7 +362,7 @@ const skills = {
 								return -1;
 							}
 
-							const mark = player.countMark("jimie");
+							const mark = player.countMark("tingwei");
 
 							let value = 1;
 							// 能立刻开限定技，1枚霆价值极高
@@ -473,10 +473,16 @@ const skills = {
 						break;
 					}
 				}
-				player.removeMark("jimie", 1);
+				player.removeMark("tingwei", 1);
 			}
 
 			return;
+		},
+		mark: true,
+		marktext: "霆",
+		intro: {
+			name: "霆",
+			content: "当前拥有#个“霆”标记",
 		},
 		subSkill: {
 			fengyin: {
@@ -496,7 +502,7 @@ const skills = {
 			}
 		},
 		filter(_event, player) {
-			return player.countMark("jimie") >= 8;
+			return player.countMark("tingwei") >= 8;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -512,7 +518,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill("jimie");
-			player.removeMark("jimie", 8);
+			player.removeMark("tingwei", 8);
 			const target = event.targets[0];
 			await target.damage({
 				num: target.maxHp,
@@ -521,12 +527,6 @@ const skills = {
 			if (player.hasSkill("yuli")) {
 				player.storage.yuli = 0;
 			}
-		},
-		mark: true,
-		marktext: "霆",
-		intro: {
-			name: "霆",
-			content: "当前拥有#个“霆”标记",
 		},
 	},
 	// OP蹋顿
