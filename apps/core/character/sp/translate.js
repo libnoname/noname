@@ -544,7 +544,6 @@ const translates = {
 	oldshenxian: "甚贤",
 	qiangwu: "枪舞",
 	moukui: "谋溃",
-	moukui2: "谋溃",
 	lirang: "礼让",
 	mingshi: "名士",
 	liangzhu: "良助",
