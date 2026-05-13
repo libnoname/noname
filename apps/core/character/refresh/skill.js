@@ -13629,7 +13629,10 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeHp" },
 		filter(event, player) {
-			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.num);
+			if (event.changedHp == 0) {
+				return false;
+			}
+			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.changedHp);
 		},
 		forced: true,
 		async content(event, trigger, player) {},
