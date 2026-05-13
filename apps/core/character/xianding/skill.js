@@ -8599,7 +8599,7 @@ const skills = {
 				return false;
 			}
 			if (type == "hp") {
-				return event.num !== 0 && player.getHp() == 1;
+				return event.changedHp !== 0 && player.getHp() == 1;
 			}
 			return player.countCards(type[0]) == 1;
 		},
@@ -13046,7 +13046,7 @@ const skills = {
 		audio: 2,
 		forced: true,
 		filter(event, player) {
-			return player.hp == 1 && event.num != 0;
+			return player.hp == 1 && event.changedHp != 0;
 		},
 		async content(event, trigger, player) {
 			await player.link(false);
@@ -24311,7 +24311,7 @@ const skills = {
 				},
 				trigger: { player: ["changeHp", "useCardAfter"] },
 				filter(event, player) {
-					return event.name == "useCard" || event.num > 0;
+					return event.name == "useCard" || event.changedHp > 0;
 				},
 				forced: true,
 				popup: false,

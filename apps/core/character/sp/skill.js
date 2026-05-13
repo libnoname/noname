@@ -1444,14 +1444,12 @@ const skills = {
 	},
 	olwenyi: {
 		audio: 2,
-		trigger: {
-			global: ["changeHpAfter"],
-		},
+		trigger: { global: ["changeHpAfter"] },
 		filter(event, player) {
 			if (player.countMark("olwenyi_used") > player.countMark("olwenyi_limit")) {
 				return false;
 			}
-			if (event.player.hp != 1 || event.num == 0) {
+			if (event.player.hp != 1 || event.changedHp == 0) {
 				return false;
 			}
 			return player.hasUsableCard("tao", "use") || player.countCards("he", card => _status.connectMode || get.type(card) == "equip");
@@ -33062,7 +33060,7 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "xiahui",
 		filter(event) {
-			return event.num < 0;
+			return event.changedHp < 0;
 		},
 		content() {
 			player.removeSkill("xiahui2");

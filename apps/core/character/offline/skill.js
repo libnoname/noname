@@ -13218,7 +13218,6 @@ const skills = {
 		},
 	},
 	zj_linze: {
-		locked: true,
 		init(player, skill) {
 			player.setStorage("kunfen", true);
 			let skills = [],
@@ -13235,11 +13234,11 @@ const skills = {
 				player.addAdditionalSkill(skill, skills);
 			}
 		},
-		trigger: {
-			player: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
-		},
-		async cost(event, trigger, player) {
-			get.info(event.skill).init(player, event.skill);
+		trigger: { player: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"] },
+		forced: true,
+		popup: false,
+		async content(event, trigger, player) {
+			get.info(event.name).init(player, event.name);
 		},
 		derivation: ["retiaoxin", "kunfenx"],
 	},

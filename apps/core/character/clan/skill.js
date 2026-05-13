@@ -4,11 +4,6 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const skills = {
 	//族荀莳（族荀肘）
 	clanqingjue: {
-		audio: 2,
-		forced: true,
-		trigger: {
-			player: "changeHpAfter",
-		},
 		isOnlySuit(card, player) {
 			return !player.hasCard(cardx => cardx != card && get.suit(cardx) == get.suit(card), "h");
 		},
@@ -18,10 +13,16 @@ const skills = {
 		onremove(player, skill) {
 			player.removeSkill(`${skill}_mark`);
 		},
+		audio: 2,
+		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
+			if (event.changedHp == 0) {
+				return false;
+			}
 			const hs = player.getCards("h");
-			return game.getGlobalHistory("changeHp", evt => evt.player == player).indexOf(event) == 0 && player.countDiscardableCards(player, "h", card => !get.info("clanqingjue").isOnlySuit(card, player)) > 0;
+			return game.getGlobalHistory("changeHp", evt => evt.player == player && evt.changedHp != 0).indexOf(event) == 0 && player.countDiscardableCards(player, "h", card => !get.info("clanqingjue").isOnlySuit(card, player)) > 0;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			const result = await player
 				.chooseToDiscard(`###${get.translation(event.name)}###弃置手牌中任意张花色数量不为一的牌，并执行等量项`, "h", [1, Infinity], true, "allowChooseAll")
@@ -73,7 +74,7 @@ const skills = {
 				await next;
 			}
 			if (links?.includes("gain")) {
-				const hs = player.getCards("h").map(i => get.suit(i));
+				const hs = player.getCards("h").map(card => get.suit(card));
 				const suits = lib.suit.slice().removeArray(hs);
 				if (suits?.length) {
 					const cards = [];
@@ -875,7 +876,10 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
-			const evts = game.getRoundHistory("changeHp", evt => evt.player == player && evt.num != 0);
+			if (event.changedHp == 0) {
+				return false;
+			}
+			const evts = game.getRoundHistory("changeHp", evt => evt.player == player && evt.changedHp != 0);
 			if (evts.indexOf(event) !== 0) {
 				return false;
 			}
@@ -6594,28 +6598,30 @@ const skills = {
 	},
 	clanbalong: {
 		audio: 2,
-		trigger: {
-			player: ["damageEnd", "recoverEnd", "loseHpEnd"],
-		},
+		trigger: { player: "changeHpAfter" },
 		forced: true,
 		filter(event, player) {
-			if (game.getGlobalHistory("changeHp", evt => evt.player == player).length != 1) {
+			if (event.changedHp == 0) {
 				return false;
 			}
-			var cards = player.getCards("h"),
+			const evts = game.getGlobalHistory("changeHp", evt => evt.player == player && evt.changedHp != 0);
+			if (evts.indexOf(event) !== 0) {
+				return false;
+			}
+			const cards = player.getCards("h"),
 				map = {};
 			if (!cards.length) {
 				return false;
 			}
-			for (var card of cards) {
-				var type = get.type2(card);
+			for (const card of cards) {
+				const type = get.type2(card);
 				if (typeof map[type] != "number") {
 					map[type] = 0;
 				}
 				map[type]++;
 			}
-			var list = [];
-			for (var i in map) {
+			const list = [];
+			for (let i in map) {
 				if (map[i] > 0) {
 					list.push([i, map[i]]);
 				}
@@ -6624,8 +6630,8 @@ const skills = {
 			return list[0][0] == "trick" && (list.length == 1 || list[0][1] > list[1][1]);
 		},
 		async content(event, trigger, player) {
-			player.showHandcards(get.translation(player) + "发动了【八龙】");
-			player.drawTo(game.countPlayer());
+			await player.showHandcards(get.translation(player) + "发动了【八龙】");
+			await player.drawTo(game.countPlayer());
 		},
 	},
 	//族荀粲

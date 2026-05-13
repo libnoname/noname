@@ -9740,6 +9740,9 @@ const skills = {
 			}
 		},
 		trigger: { player: "changeHp" },
+		filter(event, player) {
+			return event.changedHp !== 0;
+		},
 		firstDo: true,
 		silent: true,
 		async content(event, trigger, player) {

@@ -6786,7 +6786,7 @@ const skills = {
 					for (var phase of lib.phaseName) {
 						var evtx = evt.getParent(phase);
 						if (evtx && evtx.name == phase) {
-							del += evt.num;
+							del += evt.changedHp;
 							break;
 						}
 					}
@@ -17917,7 +17917,7 @@ const skills = {
 				popup: false,
 				trigger: { player: "changeHp" },
 				filter(event, player) {
-					return event.num < 0;
+					return event.changedHp < 0;
 				},
 				async content(event, trigger, player) {
 					player.removeSkill("rexiahui_block");

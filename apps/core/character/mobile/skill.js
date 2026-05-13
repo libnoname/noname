@@ -2996,11 +2996,9 @@ const skills = {
 	//乐周瑜
 	mbshouyue: {
 		audio: 2,
-		trigger: {
-			player: ["phaseDrawBegin", "changeHpAfter"],
-		},
+		trigger: { player: ["phaseDrawBegin", "changeHpAfter"] },
 		filter(event, player) {
-			return event.name != "changeHp" || event.num < 0;
+			return event.name != "changeHp" || event.changedHp < 0;
 		},
 		async cost(event, trigger, player) {
 			const next = player.chooseButtonTarget({
@@ -12292,7 +12290,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
-			const delt = target.getHp(true) - 1,
+			let delt = target.getHp() - 1,
 				num = Math.abs(delt);
 			if (delt != 0) {
 				if (delt > 0) {
@@ -12300,6 +12298,7 @@ const skills = {
 					next._triggered = null;
 					await next;
 				} else {
+					num = 1 - target.getHp(true);
 					await target.recover(num);
 				}
 			}
@@ -12345,9 +12344,7 @@ const skills = {
 		},
 		subSkill: {
 			xiangsicunwei: {
-				trigger: {
-					global: ["loseAfter", "equipAfter", "loseAsyncAfter", "cardsDiscardAfter"],
-				},
+				trigger: { global: ["loseAfter", "equipAfter", "loseAsyncAfter", "cardsDiscardAfter"] },
 				forced: true,
 				silent: true,
 				firstDo: true,
