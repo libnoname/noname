@@ -19092,11 +19092,17 @@ const skills = {
 	},
 	//毛玠
 	bingqing: {
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			const evt = event.getParent("phaseUse");
-			if (!evt || !evt.player || evt.player != player) {
+			if (!evt?.player || evt.player != player) {
 				return false;
 			}
 			const suit = get.suit(event.card);
@@ -19145,8 +19151,8 @@ const skills = {
 						return true;
 					};
 					ai = function (target) {
-						var player = _status.event.player;
-						var att = get.attitude(player, target);
+						const player = get.player();
+						let att = get.attitude(player, target);
 						if (target.hasSkill("nogain")) {
 							att /= 10;
 						}
@@ -19161,8 +19167,8 @@ const skills = {
 						}, "hej");
 					};
 					ai = function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "guohe" }, player, player);
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy" }, player, player);
 					};
 					break;
 				case 4:
@@ -19171,7 +19177,7 @@ const skills = {
 						return target != player;
 					};
 					ai = function (target) {
-						var player = _status.event.player;
+						const player = get.player();
 						return get.damageEffect(target, player, player);
 					};
 					break;
@@ -19197,25 +19203,78 @@ const skills = {
 					break;
 			}
 		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					const evt = get.event().getParent("phaseUse");
+					if (!evt?.player || evt.player != player) {
+						return;
+					}
+					const suits = player
+						.getHistory("useCard", evtx => evtx.getParent("phaseUse") == evt && lib.suit.includes(get.suit(evtx.card)))
+						.map(evtx => get.suit(evtx.card))
+						.toUniqued();
+					if (suits.length) {
+						player.markAuto(skill, suits);
+						player.addTip(
+							skill,
+							`${get.translation(skill)} ${player
+								.getStorage(skill)
+								.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+								.reduce((str, suit) => str + get.translation(suit), "")}`
+						);
+					}
+				},
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					const evt = event.getParent("phaseUse");
+					if (!evt?.player || evt.player != player) {
+						return false;
+					}
+					const suit = get.suit(event.card);
+					if (!lib.suit.includes(suit)) {
+						return false;
+					}
+					return true;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					player.markAuto(event.name, [get.suit(trigger.card)]);
+					player.addTip(
+						event.name,
+						`${get.translation(event.name)} ${player
+							.getStorage(event.name)
+							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+							.reduce((str, suit) => str + get.translation(suit), "")}`
+					);
+				},
+				intro: { content: "本阶段已使用$花色" },
+			},
+		},
 	},
 	yingfeng: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("yingfeng"), "令一名角色获得“奉”标记", function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return !target.hasSkill("yingfeng_mark");
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
+				.set("ai", target => {
+					const player = get.player();
+					let att = get.attitude(player, target);
 					if (att <= 0) {
 						return 0;
 					}
-					var eff = 0.1;
-					var preTarget = game.findPlayer(function (current) {
+					let eff = 0.1;
+					const preTarget = game.findPlayer(current => {
 						return current != target && current.hasSkill("yingfeng_mark");
 					});
 					if (preTarget) {
@@ -19232,19 +19291,18 @@ const skills = {
 						att *= 1.2;
 					}
 					return 0.01 + att * eff;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("yingfeng", target);
-				target.addAdditionalSkill("yingfeng_" + player.playerid, "yingfeng_mark");
-				game.countPlayer(function (current) {
-					if (current != target && current.hasSkill("yingfeng_mark")) {
-						current.removeSkill("yingfeng_mark");
-						current.removeAdditionalSkill("yingfeng_" + player.playerid);
-					}
-				});
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addAdditionalSkill("yingfeng_" + player.playerid, "yingfeng_mark");
+			game.countPlayer(current => {
+				if (current != target && current.hasSkill("yingfeng_mark")) {
+					current.removeSkill("yingfeng_mark");
+					current.removeAdditionalSkill("yingfeng_" + player.playerid);
+				}
+			});
 		},
 		subSkill: {
 			mark: {
