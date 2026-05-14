@@ -290,7 +290,7 @@ const skills = {
 					if (!_status.characterlist) {
 						game.initCharacterList();
 					}
-					const list = _status.characterlist.filter(nmae => get.characterSurname(nmae).some(j => j[0] == "曹") && get.character(nmae).skills.some(skill => checkTrigger(skill)));
+					const list = _status.characterlist.filter(name => get.characterSurname(name).some(j => j[0] == "曹") && get.character(name).skills.some(skill => checkTrigger(skill)));
 					if (!list.length) {
 						player.chat("无将可用");
 						return;
