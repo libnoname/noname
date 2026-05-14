@@ -19728,44 +19728,45 @@ const skills = {
 	shhlianhua: {
 		audio: 2,
 		derivation: ["shhlianhua1", "shhlianhua2"],
-		trigger: { target: "useCardToTargeted" },
+		trigger: { target: "useCardToTarget" },
 		forced: true,
-		locked: false,
-		filter: event => event.card.name == "sha",
-		content() {
-			"step 0";
-			player.draw();
-			var level = player.countMark("shhlianhua");
+		filter(event, player) {
+			return event.card.name == "sha";
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+			const level = player.countMark("shhlianhua");
 			if (!level) {
-				event.finish();
+				return;
 			} else if (level == 2) {
-				event.goto(2);
-			} else {
-				player
-					.judge(function (result) {
-						return get.suit(result) == "spade" ? 1 : -1;
+				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
+				const result = await trigger.player
+					.chooseToDiscard("he", `${get.translation(player)}发动了【莲华】`, `你可以弃置一张牌，或令${get.translation(trigger.card)}对其无效`)
+					.set("ai", card => {
+						if (get.event().eff > 0) {
+							return 10 - get.value(card);
+						}
+						return 0;
 					})
-					.set("judge2", result => result.bool);
-			}
-			"step 1";
-			if (result.bool) {
-				trigger.excluded.add(player);
-			}
-			event.finish();
-			"step 2";
-			var eff = get.effect(player, trigger.card, trigger.player, trigger.player);
-			trigger.player
-				.chooseToDiscard("he", "弃置一张牌，或令" + get.translation(trigger.card) + "对" + get.translation(player) + "无效")
-				.set("ai", function (card) {
-					if (_status.event.eff > 0) {
-						return 10 - get.value(card);
-					}
-					return 0;
-				})
-				.set("eff", eff);
-			"step 3";
-			if (result.bool == false) {
-				trigger.getParent().excluded.add(player);
+					.set("eff", eff)
+					.forResult();
+				if (!result?.bool) {
+					trigger.targets.remove(player);
+					trigger.getParent().triggeredTargets2.remove(player);
+					trigger.untrigger();
+				}
+			} else {
+				const result = await player
+					.judge(card => {
+						return get.suit(card) == "spade" ? 1 : -1;
+					})
+					.set("judge2", result => result.bool)
+					.forResult();
+				if (result?.bool) {
+					trigger.targets.remove(player);
+					trigger.getParent().triggeredTargets2.remove(player);
+					trigger.untrigger();
+				}
 			}
 		},
 		ai: {

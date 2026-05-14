@@ -43,7 +43,7 @@ const dynamicTranslates = {
 		return ["出牌阶段限一次。你可将一张【杀】当做刺【杀】使用，或将一张锦囊牌当做【无中生有】使用。", "出牌阶段限一次。你可将一张基本牌当做刺【杀】使用，或将一张非基本牌当做【无中生有】使用。", "出牌阶段限一次。你可视为使用一张刺【杀】或【无中生有】。"][player.countMark("miaojian")];
 	},
 	shhlianhua(player) {
-		return ["当你成为【杀】的目标后，你摸一张牌。", "当你成为【杀】的目标后，你摸一张牌。然后你进行判定，若结果为黑桃，则此【杀】对你无效。", "当你成为【杀】的目标后，你摸一张牌。然后此【杀】的使用者选择一项：①弃置一张牌。②令此【杀】对你无效。"][player.countMark("shhlianhua")];
+		return ["当你成为【杀】的目时，你摸一张牌。", "当你成为【杀】的目标时，你摸一张牌。然后你进行判定，若结果为黑桃，则取消此目标。", "当你成为【杀】的目标时，你摸一张牌。然后此【杀】的使用者选择一项：①弃置一张牌。②取消此目标。"][player.countMark("shhlianhua")];
 	},
 	mobilexingxue(player) {
 		return lib.translate[(player.storage.mobileyanzhu ? "mobilexingxuex" : "mobilexingxue") + "_info"];
