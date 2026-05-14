@@ -240,7 +240,7 @@ const skills = {
 					const name = "damageEnd";
 					for (const i of list) {
 						const info = get.info(i);
-						if (!info || !info.trigger || info.silent) {// || info.limited || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())
+						if (!info || !info.trigger || info.silent) {
 							return false;
 						}
 						const toArray = arr => {
@@ -257,17 +257,21 @@ const skills = {
 							if (typeof info.getIndex == "function") {
 								try {
 									const indexedResult = info.getIndex(trigger, player, name);
-									if (!Array.isArray(indexedResult) || typeof indexedResult != "number" || indexedResult <= 0) {
-										return false;
+									if (Array.isArray(indexedResult)) {
+										if (!info.filter || indexedResult.some(indexedData => info.filter(trigger, player, name, indexedData))) {
+											return true;
+										}
 									}
-									if (info.filter && !indexedResult?.some(i => info.filter(trigger, player, name, i))) {
-										return false;
+									if (typeof indexedResult == "number" && indexedResult > 0) {
+										if (!info.filter || info.filter(trigger, player, name)) {
+											return true;
+										}
 									}
+									return false;
 								} catch (e) {
 									return false;
 								}
-							}
-							else if (info.filter) {
+							} else if (info.filter) {
 								try {
 									const bool = info.filter(trigger, player, name);
 									if (!bool) {
@@ -281,12 +285,12 @@ const skills = {
 						}
 					}
 				};
-				let skills = target.getStockSkills(true, true).filter(i => checkTrigger(i));
+				let skills = target.getStockSkills(true, true).filter(skill => checkTrigger(skill));
 				if (!skills.length) {
 					if (!_status.characterlist) {
 						game.initCharacterList();
 					}
-					const list = _status.characterlist.filter(i => get.characterSurname(i).some(j => j[0] == "曹") && get.character(i).skills.some(skill => checkTrigger(skill)));
+					const list = _status.characterlist.filter(nmae => get.characterSurname(nmae).some(j => j[0] == "曹") && get.character(nmae).skills.some(skill => checkTrigger(skill)));
 					if (!list.length) {
 						player.chat("无将可用");
 						return;
@@ -316,9 +320,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				silent: true,
-				trigger: {
-					player: ["logSkillBegin", "useSkill"],
-				},
+				trigger: { player: ["logSkillBegin", "useSkill"] },
 				filter(event, player) {
 					const info = get.info(event.skill);
 					if (info && info.charlotte) {
@@ -338,13 +340,9 @@ const skills = {
 			},
 			effect: {
 				charlotte: true,
-				trigger: {
-					global: ["logSkill", "useSkillAfter"],
-				},
 				onremove: true,
-				intro: {
-					content: "players",
-				},
+				trigger: { global: ["logSkill", "useSkillAfter"] },
+				intro: { content: "players" },
 				forced: true,
 				filter(event, player) {
 					if (["global", "equip"].includes(event.type) || !player.getStorage("dckeming_effect").includes(event.player)) {
@@ -370,7 +368,6 @@ const skills = {
 						if (triggers.some(i => ["phaseZhunbei", "phaseJieshu", "phaseUse", "chooseToUse"].some(j => i.startsWith(j)))) {
 							const evtx = event.log_event || event;
 							const history = _status.globalHistory[_status.globalHistory.length - 1]["everything"].slice().reverse();
-							console.log(evtx);
 							for (const evt of history) {
 								if (evt.player != event.player) {
 									continue;
