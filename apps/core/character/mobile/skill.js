@@ -29936,40 +29936,56 @@ const skills = {
 		ai: { combo: "tunchu" },
 	},
 	choulve: {
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
+		getCard(player) {
+			let card;
+			const history = player.getAllHistory("damage", evt => {
+				return evt.card && get.type(evt.card) != "delay";
+			});
+			if (history.length) {
+				const evt = history.at(-1);
+				card = {
+					name: evt.card.name,
+					nature: evt.card.nature,
+					isCard: true,
+				};
+			}
+			return card;
+		},
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("he");
+			return game.hasPlayer(current => {
+				return current != player && current.hasCards("he");
 			});
 		},
 		async cost(event, trigger, player) {
 			let str = "令一名其他角色交给你一张牌";
-			const history = player.getAllHistory("damage", function (evt) {
-				return evt.card && evt.card.name && lib.card[evt.card.name];
-			});
-			if (history.length) {
-				event.cardname = history[history.length - 1].card.name;
-			}
-			if (event.cardname) {
-				str += "。若其如此做，视为你使用【" + get.translation(event.cardname) + "】";
+			const card = get.info(event.skill).getCard(player);
+			if (card) {
+				str += `，若其如此做，视为你使用${get.translation(card)}`;
 			}
 			let goon = true;
-			if (event.cardname) {
-				goon = game.hasPlayer(function (current) {
-					return player.canUse(event.cardname, current) && get.effect(current, { name: event.cardname }, player, player) > 0;
-				});
+			if (card) {
+				goon = player.hasValueTarget(card);
 			}
-			const result = await player
-				.chooseTarget(get.prompt(event.skill), str, function (card, player, target) {
-					return target != player && target.countCards("he");
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), str, (card, player, target) => {
+					return target != player && target.hasCards("he");
 				})
-				.set("ai", function (target) {
-					const event = get.event();
-					if (!event.goon) {
+				.set("ai", target => {
+					const { goon, player } = get.event();
+					if (!goon) {
 						return 0;
 					}
-					var player = event.player;
+					if (!game.hasPlayer(current => current != player && current.hasCards("he") && get.attitude(player, current) >= 0 && get.attitude(current, player) >= 0)) {
+						return get.threaten(target, player);
+					}
 					if (get.attitude(player, target) >= 0 && get.attitude(target, player) >= 0) {
 						return Math.sqrt(target.countCards("he"));
 					}
@@ -29977,32 +29993,62 @@ const skills = {
 				})
 				.set("goon", goon)
 				.forResult();
-			if (result.bool) {
-				result.cost_data = { cardname: event.cardname };
-				event.result = result;
-			}
 		},
-		content() {
-			"step 0";
-			event.cardname = event.cost_data.cardname;
-			var target = targets[0];
-			target
-				.chooseCard("he", "是否交给" + get.translation(player) + "一张牌？", event.cardname ? "若如此做，视为" + get.translation(player) + "使用【" + get.translation(event.cardname) + "】" : null)
-				.set("ai", function (card) {
-					if (_status.event.goon) {
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const card = get.info(event.name).getCard(player);
+			event.choulveCard = card;
+			const result = await target
+				.chooseToGive("he", player, `${get.translation(player)}对你发动了【筹略】`, `是否交给其一张牌${card ? `，然后其视为使用${get.translation(card)}` : ""}`)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					const att = get.attitude(player, target);
+					if (att > 0) {
 						return 7 - get.value(card);
 					}
 					return 0;
 				})
-				.set("goon", get.attitude(target, player) > 1);
-			event.target = target;
-			"step 1";
-			if (result.bool) {
-				event.target.give(result.cards, player);
-				if (event.cardname) {
-					player.chooseUseTarget(event.cardname, true, false);
+				.forResult();
+			target.addExpose(0.1);
+			if (result?.bool) {
+				if (card) {
+					await player.chooseUseTarget(card, true, false);
 				}
 			}
+		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					const card = get.info("choulve").getCard(player);
+					if (card) {
+						player.storage[skill] = card;
+						player.markSkill(skill);
+						player.addTip(skill, `${get.translation(skill)} ${get.translation(card)}`);
+					}
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				trigger: { player: "damageEnd" },
+				filter(event, player) {
+					return event.card && get.type(event.card) != "delay";
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const card = {
+						name: trigger.card.name,
+						nature: trigger.card.nature,
+						isCard: true,
+					};
+					player.storage[event.name] = card;
+					player.markSkill(event.name);
+					player.addTip(event.name, `${get.translation(event.name)} ${get.translation(card)}`);
+				},
+				intro: { content: "下次【筹略】可以视为使用$" },
+			},
 		},
 	},
 	polu: {
@@ -30015,15 +30061,20 @@ const skills = {
 			}
 			return get.cardPile(card => card.name == "ly_piliche");
 		},
-		content() {
-			var card;
+		async content(event, trigger, player) {
+			let card;
 			if (!lib.inpile.includes("ly_piliche")) {
-				card = game.createCard2("ly_piliche", "diamond", 1);
+				card = game.createCard2("ly_piliche", "diamond", 9);
 				lib.inpile.push("ly_piliche");
 			} else {
 				card = get.cardPile(card => card.name == "ly_piliche");
 			}
-			player.chooseUseTarget(card, true, "nopopup");
+			if (card) {
+				await target.gain(card, "gain2");
+				if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+					await player.chooseUseTarget(card, true, "nopopup");
+				}
+			}
 		},
 		group: "polu_damage",
 		subSkill: {
@@ -30037,9 +30088,12 @@ const skills = {
 				getIndex: event => event.num,
 				async content(event, trigger, player) {
 					await player.draw();
-					const card = get.cardPile2(card => get.subtype(card, false) == "equip1" && player.canUse(card, player));
+					const card = get.cardPile2(card => get.subtypes(card).includes("equip1") && player.hasUseTarget(card));
 					if (card) {
-						await player.chooseUseTarget(card, true, "nopopup");
+						await target.gain(card, "gain2");
+						if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+							await player.chooseUseTarget(card, true, "nopopup");
+						}
 					}
 				},
 			},
@@ -30052,11 +30106,11 @@ const skills = {
 			return get.attitude(player, event.player) * get.value(event.player.getDiscardableCards(player, "e"), event.player) <= 0;
 		},
 		filter(event, player) {
-			return player != event.player && event.player.countDiscardableCards(player, "e") > 0;
+			return player != event.player && event.player.hasDiscardableCards(player, "he") && event.player.isIn();
 		},
 		logTarget: "player",
-		content() {
-			player.discardPlayerCard(trigger.player, "e", true, trigger.player.countCards("e"));
+		async content(event, trigger, player) {
+			await player.discardPlayerCard(trigger.player, "e", true, trigger.player.countCards("e"));
 		},
 	},
 };
