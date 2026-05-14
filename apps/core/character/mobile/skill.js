@@ -17824,14 +17824,17 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			var num = (player.getStat("skill").buxu || 0) + 1;
+			if (!player.hasSkill("chengye", null, null, false)) {
+				return false;
+			}
+			const num = (player.getStat("skill").buxu || 0) + 1;
 			return player.countCards("he") >= num && player.getExpansions("chengye").length < 6;
 		},
 		chooseButton: {
 			chooseControl(event, player) {
-				var list = ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"];
-				var choices = [];
-				for (var i = 0; i < 6; i++) {
+				const list = ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"];
+				const choices = [];
+				for (let i = 0; i < 6; i++) {
 					if (!lib.skill.chengye.getLiujing(player, i)) {
 						choices.push(list[i]);
 					}
@@ -17840,8 +17843,8 @@ const skills = {
 				return choices;
 			},
 			check(event, player) {
-				var list = [4, 3, 5, 0, 2, 1];
-				for (var i of list) {
+				const list = [4, 3, 5, 0, 2, 1];
+				for (const i of list) {
 					if (!lib.skill.chengye.getLiujing(player, i)) {
 						return ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"][i];
 					}
@@ -17849,22 +17852,24 @@ const skills = {
 				return "cancel2";
 			},
 			dialog(event, player) {
-				var num = (player.getStat("skill").buxu || 0) + 1;
+				const num = (player.getStat("skill").buxu || 0) + 1;
 				return ui.create.dialog("###补续###弃置" + get.cnNumber(num) + "张牌并补充一张“六经”");
 			},
 			prompt(links, player) {
 				var num = (player.getStat("skill").buxu || 0) + 1;
 				return "弃置" + get.cnNumber(num) + "张牌并补充一张《" + links.control + "》";
 			},
-			backup(links, player) {
+			backup(result, player) {
 				return {
 					audio: "buxu",
-					index: ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"].indexOf(links.control),
-					filterCard: true,
+					index: ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"].indexOf(result.control),
+					filterCard: lib.filter.cardDiscardable,
 					position: "he",
-					selectCard: (player.getStat("skill").buxu || 0) + 1,
+					selectCard: () => {
+						return (get.player().getStat("skill").buxu || 0) + 1;
+					},
 					ai1(card) {
-						var player = _status.event.player;
+						const player = get.player();
 						if (
 							player.needsToDiscard(0, (i, player) => {
 								return !ui.selected.cards.includes(i) && !player.canIgnoreHandcard(i);
@@ -17875,11 +17880,13 @@ const skills = {
 						return 5 - (player.getStat("skill").buxu || 0) - get.value(card);
 					},
 					ai2: () => 1,
-					content() {
-						var filter = lib.skill.chengye.liujing_filter[lib.skill.buxu_backup.index];
-						var card = get.cardPile2(filter);
+					async content(event, trigger, player) {
+						const filter = lib.skill.chengye.liujing_filter[lib.skill.buxu_backup.index];
+						const card = get.cardPile2(filter);
 						if (card) {
-							player.addToExpansion(card, "gain2").gaintag.add("chengye");
+							const next = player.addToExpansion(card, "gain2");
+							next.gaintag.add("chengye");
+							await next;
 						}
 					},
 					ai: { result: { player: 1 } },
@@ -17891,6 +17898,7 @@ const skills = {
 			order: 0.2,
 			result: { player: 1 },
 		},
+		subSkill: { backup: {} },
 	},
 	//阮慧
 	mingcha: {
