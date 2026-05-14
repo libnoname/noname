@@ -13226,9 +13226,9 @@ const skills = {
 	},
 	zhouxian: {
 		audio: 2,
-		trigger: { target: "useCardToTargeted" },
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			return event.player != player && get.tag(event.card, "damage");
+			return event.player != player && get.is.damageCard(event.card);
 		},
 		forced: true,
 		logTarget: "player",
@@ -13250,8 +13250,10 @@ const skills = {
 				})
 				.set("goon", get.effect(player, trigger.card, target, target) > 0)
 				.forResult();
-			if (!result || !result.bool) {
-				trigger.getParent().excluded.add(player);
+			if (!result?.bool) {
+				trigger.targets.remove(player);
+				trigger.getParent().triggeredTargets2.remove(player);
+				trigger.untrigger();
 			}
 		},
 		ai: {
