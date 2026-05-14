@@ -1420,6 +1420,7 @@ export const Content = {
 								return element;
 							}),
 							ratio: 8,
+							overflow: "scroll",
 						}
 					);
 				}

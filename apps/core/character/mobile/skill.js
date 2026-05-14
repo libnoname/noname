@@ -17657,7 +17657,7 @@ const skills = {
 		audio: 3,
 		liujing_filter: [
 			function (card) {
-				return get.type(card, null, false) == "trick" && get.tag(card, "damage", null, false) > 0;
+				return get.type(card, null, false) == "trick" && get.is.damageCard(card);
 			},
 			card => get.type(card, null, false) == "basic",
 			card => get.name(card, false) == "wuxie",
@@ -17827,7 +17827,7 @@ const skills = {
 			if (!player.hasSkill("chengye", null, null, false)) {
 				return false;
 			}
-			const num = (player.getStat("skill").buxu || 0) + 1;
+			const num = player.countMark("buxu_mark") + 1;
 			return player.countCards("he") >= num && player.getExpansions("chengye").length < 6;
 		},
 		chooseButton: {
@@ -17844,19 +17844,24 @@ const skills = {
 			},
 			check(event, player) {
 				const list = [4, 3, 5, 0, 2, 1];
-				for (const i of list) {
-					if (!lib.skill.chengye.getLiujing(player, i)) {
-						return ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"][i];
+				const choice = list.find(num => {
+					if (lib.skill.chengye.getLiujing(player, num)) {
+						return false;
 					}
+					const jingdian = ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"][num];
+					return !player.getStorage("buxu_ai").includes(jingdian);
+				});
+				if (choice) {
+					return choice;
 				}
 				return "cancel2";
 			},
 			dialog(event, player) {
-				const num = (player.getStat("skill").buxu || 0) + 1;
+				const num = player.countMark("buxu_mark") + 1;
 				return ui.create.dialog("###补续###弃置" + get.cnNumber(num) + "张牌并补充一张“六经”");
 			},
 			prompt(links, player) {
-				var num = (player.getStat("skill").buxu || 0) + 1;
+				const num = player.countMark("buxu_mark") + 1;
 				return "弃置" + get.cnNumber(num) + "张牌并补充一张《" + links.control + "》";
 			},
 			backup(result, player) {
@@ -17866,7 +17871,7 @@ const skills = {
 					filterCard: lib.filter.cardDiscardable,
 					position: "he",
 					selectCard: () => {
-						return (get.player().getStat("skill").buxu || 0) + 1;
+						return get.player().countMark("buxu_mark") + 1;
 					},
 					ai1(card) {
 						const player = get.player();
@@ -17877,16 +17882,26 @@ const skills = {
 						) {
 							return 10 / Math.max(0.1, get.value(card));
 						}
-						return 5 - (player.getStat("skill").buxu || 0) - get.value(card);
+						return 5 - (player.countMark("buxu_mark") + 1) - get.value(card);
 					},
 					ai2: () => 1,
 					async content(event, trigger, player) {
-						const filter = lib.skill.chengye.liujing_filter[lib.skill.buxu_backup.index];
+						const index = get.info("buxu_backup").index;
+						const chice = ["诗经", "尚书", "仪礼", "易经", "乐经", "春秋"][index];
+						const filter = get.info("chengye").liujing_filter[index];
 						const card = get.cardPile2(filter);
 						if (card) {
+							event.getParent().buxu = true;
+							player.addTempSkill("buxu_mark", "phaseUseAfter");
+							player.addMark("buxu_mark", 1, false);
 							const next = player.addToExpansion(card, "gain2");
 							next.gaintag.add("chengye");
 							await next;
+						} else {
+							game.log(`但是牌堆里没有《${chice}》`);
+							player.chat("我chovy！你们拿经典你们给我拿有的啊！");
+							player.addTempSkill("buxu_ai", "phaseUseAfter");
+							player.markAuto("buxu_ai", [chice]);
 						}
 					},
 					ai: { result: { player: 1 } },
@@ -17895,10 +17910,27 @@ const skills = {
 		},
 		ai: {
 			combo: "chengye",
-			order: 0.2,
+			order(item, player) {
+				const num = player.countMark("buxu_mark");
+				if (player.countCards("he", card => get.value(card) <= 6) >= num * 2) {
+					return 10;
+				}
+				return 1;
+			},
 			result: { player: 1 },
 		},
-		subSkill: { backup: {} },
+		subSkill: {
+			backup: {},
+			mark: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本阶段已成功“补续”#次" },
+			},
+			ai: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
 	//阮慧
 	mingcha: {
