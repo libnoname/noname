@@ -590,7 +590,7 @@ const translates = {
 		info: '<span style="font-family:yuanli"><li>《诗经》：伤害类锦囊牌<br><li>《尚书》：基本牌<br><li>《仪礼》：无懈可击<br><li>《易经》：无中生有<br><li>《乐经》：乐不思蜀<br><li>《春秋》：装备牌</span>',
 	})}有空缺的位置可以置入此牌，则你将此牌置于你武将牌上，填补${get.poptip("chengye_liujing")}的对应位置。②出牌阶段开始时，若你的${get.poptip("chengye_liujing")}没有空缺的位置，则你获得所有${get.poptip("chengye_liujing")}。`,
 	buxu: "补续",
-	buxu_info: `出牌阶段，若你拥有${get.poptip("chengye")}且你的${get.poptip("chengye_liujing")}中有空缺的位置，则你可以弃置X+1张牌并选择一种空缺的${get.poptip("chengye_liujing")}（X为你本阶段内发动过〖补续〗的次数）。系统从牌堆中检索一张对应的牌，然后你将此牌置于你武将牌上，填补${get.poptip("chengye_liujing")}的对应位置。`,
+	buxu_info: `出牌阶段，若你拥有${get.poptip("chengye")}且你的${get.poptip("chengye_liujing")}中有空缺的位置，则你可以弃置X+1张牌并选择一种空缺的${get.poptip("chengye_liujing")}（X为你本阶段内发动过〖补续〗成功填补${get.poptip("chengye_liujing")}的次数）。系统从牌堆中检索一张对应的牌，然后你将此牌置于你武将牌上，填补${get.poptip("chengye_liujing")}的对应位置。`,
 	re_dianwei: "手杀界典韦",
 	re_dianwei_prefix: "手杀界",
 	liuye: "手杀刘晔",
