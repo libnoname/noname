@@ -2226,7 +2226,7 @@ const skills = {
 					return;
 				}
 				const hs = player.getCards("he", card => get.type(card) == "equip");
-				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
 			},
@@ -2235,7 +2235,7 @@ const skills = {
 					return;
 				}
 				const hs = player.getCards("he", card => get.type(card) == "equip");
-				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
 			},
