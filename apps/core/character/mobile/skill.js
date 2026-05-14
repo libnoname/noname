@@ -28286,20 +28286,15 @@ const skills = {
 		},
 	},
 	xinfu_zhaoxin: {
-		group: ["zhaoxin_give"],
-		intro: {
-			content: "expansion",
-			markcount: "expansion",
-		},
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		audio: 2,
 		filter(event, player) {
-			return player.countCards("he") > 0 && player.getExpansions("xinfu_zhaoxin").length < 3;
+			return player.hasCards("he") && player.countExpansions("xinfu_zhaoxin") < 3;
 		},
 		filterCard: true,
 		selectCard() {
-			var player = _status.event.player;
+			const player = get.player();
 			return [1, 3 - player.getExpansions("xinfu_zhaoxin").length];
 		},
 		position: "he",
@@ -28307,73 +28302,79 @@ const skills = {
 		lose: false,
 		delay: false,
 		allowChooseAll: true,
-		content() {
-			player.addToExpansion(player, "give", cards).gaintag.add("xinfu_zhaoxin");
-			player.draw(cards.length);
+		async content(event, trigger, player) {
+			const { cards } = event;
+			const next = player.addToExpansion(player, "give", cards);
+			next.gaintag.add(event.name);
+			await next;
+			await player.draw(cards.length);
 		},
 		check(card) {
 			return 6 - get.value(card);
 		},
+		marktext: "望",
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
 		},
 		ai: {
-			order: 1,
-			result: {
-				player: 1,
+			order: 10,
+			result: { player: 1 },
+		},
+		group: ["xinfu_zhaoxin_give"],
+		subSkill: {
+			give: {
+				audio: "xinfu_zhaoxin",
+				trigger: { global: "phaseDrawAfter" },
+				filter(event, player) {
+					if (!player.hasExpansions("xinfu_zhaoxin")) {
+						return false;
+					}
+					return player == event.player || player.inRange(event.player);
+				},
+				async cost(event, trigger, player) {
+					const target = trigger.player;
+					const result = await target
+						.chooseButton([`###昭然：你可以获得其中一张牌###<div class='text center'>然后${get.translation(player)}可以对你造成1点伤害</div>`, player.getExpansions("xinfu_zhaoxin")])
+						.set("ai", button => {
+							const { player, target } = get.event();
+							const att = get.attitude(player, target);
+							const eff = get.damageEffect(player, target, player);
+							const card = button.link;
+							if (att > 0 || eff > 0) {
+								return get.value(card);
+							}
+							return 0;
+						})
+						.set("target", player)
+						.forResult();
+					event.result = {
+						bool: result?.bool,
+						cost_data: result?.links,
+					};
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+						cost_data: cards,
+					} = event;
+					await target.gain(cards, "give", player, "bySelf");
+					const result = await player
+						.chooseBool(`是否对${get.translation(target)}造成1点伤害？`)
+						.set("choice", get.damageEffect(target, player, player) > 0)
+						.forResult();
+					if (result?.bool) {
+						await target.damage("nocard");
+					}
+				},
 			},
-		},
-	},
-	zhaoxin_give: {
-		trigger: {
-			global: "phaseDrawAfter",
-		},
-		filter(event, player) {
-			if (!player.getExpansions("xinfu_zhaoxin").length) {
-				return false;
-			}
-			return player == event.player || player.inRange(event.player);
-		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseCardButton(get.prompt("xinfu_zhaoxin", trigger.player), player.getExpansions("xinfu_zhaoxin"), function (button) {
-					return true;
-				})
-				.set("ai", function (button) {
-					return 1 + Math.random();
-				});
-			"step 1";
-			if (result.bool) {
-				event.card = result.links[0];
-				player.logSkill("xinfu_zhaoxin", target);
-				player.line(trigger.player, "thunder");
-				player.showCards(event.card);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			trigger.player.chooseBool("是否获得" + get.translation(event.card) + "?").ai = function () {
-				return get.attitude(trigger.player, player) > 0;
-			};
-			"step 3";
-			if (result.bool) {
-				trigger.player.gain(event.card, "give", player, "bySelf");
-				player.chooseBool("是否对" + get.translation(trigger.player) + "造成1点伤害？").ai = function () {
-					return get.damageEffect(trigger.player, player, player) > 0;
-				};
-			} else {
-				trigger.player.chat("拒绝");
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				trigger.player.damage("nocard");
-			}
 		},
 	},
 	xinfu_qianchong: {
