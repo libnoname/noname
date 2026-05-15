@@ -50,13 +50,13 @@ const dynamicTranslates = {
 	},
 	shoufa(player) {
 		const zhoufa = player.storage.zhoulin_zhoufa;
-		const nodoudizhu = get.mode() == "doudizhu" ? "与你距离不小于1的/距离不大于1的" : "与你距离不小于2的/距离不大于2的";
+		const num = get.mode() == "doudizhu" ? 1 : 2;
 		if (!zhoufa) {
-			return "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，令其随机执行以下一项：豹，令其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，令其摸一张牌。";
+			return `①当你于一回合首次造成伤害后，你可以选择一名距离${num}以内的角色。②每回合限五次，当你受到伤害后，你可以选择一名与你距离不小于${num}的角色。其随机执行以下一项：豹，其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，其摸一张牌。`;
 		}
-		let str = "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，";
-		str += ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
-		return str + "。";
+		let str = `①当你于一回合首次造成伤害后，你可以选择一名距离${num}以内的角色。②每回合限五次，当你受到伤害后，你可以选择一名与你距离不小于${num}的角色。`;
+		str += ["其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
+		return `${str}。`;
 	},
 	mbxuetu(player) {
 		const bool = player.storage.mbxuetu,

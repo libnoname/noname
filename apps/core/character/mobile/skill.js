@@ -12846,6 +12846,58 @@ const skills = {
 	},
 	//木鹿大王
 	shoufa: {
+		filterTargetx(name, player, target) {
+			const num = get.mode() == "doudizhu" ? 1 : 2;
+			if (name == "damageEnd" && get.distance(target, player) < num) {
+				return false;
+			}
+			if (name == "damageSource" && get.distance(player, target) > num) {
+				return false;
+			}
+			const zhoufa = player.storage.zhoulin_zhoufa;
+			if (!zhoufa) {
+				return true;
+			}
+			if (zhoufa == "豹" || zhoufa == "兔") {
+				return true;
+			}
+			if (zhoufa == "鹰") {
+				return target.hasCards("he");
+			}
+			return target.hasDiscardableCards(player, "e");
+		},
+		getPrompt2(event, player) {
+			const zhoufa = player.storage.zhoulin_zhoufa;
+			const bool = (get.mode() == "versus" && _status.mode == "two") || get.mode() == "doudizhu";
+			let str;
+			if (zhoufa) {
+				str = ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
+			} else if (bool) {
+				str = "令其随机执行一个效果（若该角色为你或你的队友，则其必定摸牌）";
+			} else {
+				str = "令其随机执行一个效果";
+			}
+			const nodoudizhu = (event.triggername === "damageEnd" ? "与你距离不小于" : "距离不大于") + (1 + (get.mode() !== "doudizhu")) + "的";
+			return `选择一名${nodoudizhu}角色，${str}`;
+		},
+		// 是的孩子们，斗地主和22我就是开了
+		zhishiRabbit(player, target) {
+			if ((get.mode() == "versus" && _status.mode == "two") || get.mode() == "doudizhu") {
+				return player == target || player.getFriends().includes(target);
+			}
+			return false;
+		},
+		filterList(player, target) {
+			return ["豹", "鹰", "熊", "兔"].filter(animal => {
+				if (animal == "豹" || animal == "兔") {
+					return true;
+				}
+				if (animal == "鹰") {
+					return target.hasCards("he");
+				}
+				return target.hasDiscardableCards(player, "e");
+			});
+		},
 		audio: 2,
 		trigger: {
 			player: "damageEnd",
@@ -12855,59 +12907,28 @@ const skills = {
 			if (name == "damageSource" && player.getHistory("sourceDamage").indexOf(event) != 0) {
 				return false;
 			}
-			return game.hasPlayer(target => {
-				const num = get.mode() == "doudizhu" ? 1 : 2;
-				if (name == "damageEnd" && get.distance(target, player) < num) {
-					return false;
-				}
-				if (name == "damageSource" && get.distance(player, target) > num) {
-					return false;
-				}
-				const zhoufa = player.storage.zhoulin_zhoufa;
-				if (!zhoufa) {
-					return true;
-				}
-				if (zhoufa == "豹" || zhoufa == "兔") {
-					return true;
-				}
-				if (zhoufa == "鹰") {
-					return target.countCards("he");
-				}
-				return target.countDiscardableCards(player, "e");
-			});
+			if (name == "damageEnd" && player.countMark("shoufa_used") > 4) {
+				return false;
+			}
+			return game.hasPlayer(target => get.info("shoufa").filterTargetx(name, player, target));
 		},
-		direct: true,
-		async content(event, trigger, player) {
-			const zhoufa = player.storage.zhoulin_zhoufa;
-			const str = zhoufa ? ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)] : "令其随机执行一个效果";
-			const nodoudizhu = (event.triggername === "damageEnd" ? "与你距离不小于" : "距离不大于") + (1 + (get.mode() !== "doudizhu")) + "的";
-			const { bool, targets } = await player
-				.chooseTarget(get.prompt("shoufa"), "选择一名" + nodoudizhu + "角色，" + str, (card, player, target) => {
-					const name = _status.event.triggername;
-					const num = get.mode() == "doudizhu" ? 1 : 2;
-					if (name == "damageEnd" && get.distance(target, player) < num) {
-						return false;
-					}
-					if (name == "damageSource" && get.distance(player, target) > num) {
-						return false;
-					}
-					const zhoufa = player.storage.zhoulin_zhoufa;
-					if (!zhoufa) {
-						return true;
-					}
-					if (zhoufa == "豹" || zhoufa == "兔") {
-						return true;
-					}
-					if (zhoufa == "鹰") {
-						return target.countCards("he");
-					}
-					return target.countDiscardableCards(player, "e");
+		async cost(event, trigger, player) {
+			const prompt2 = get.info(event.skill).getPrompt2(event, player);
+			const targets = game.filterPlayer(current => get.info(event.skill).filterTargetx(event.triggername, player, current));
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), prompt2, (cards, player, target) => {
+					return get.event().targets.includes(target);
 				})
+				.set("targets", targets)
 				.set("ai", target => {
-					const player = _status.event.player;
+					const player = get.player();
 					const zhoufa = player.storage.zhoulin_zhoufa;
 					if (!zhoufa) {
-						return -get.attitude(player, target);
+						const att = get.attitude(player, target);
+						if (get.info("shoufa").zhishiRabbit(player, target) || get.isLuckyStar(player)) {
+							return att * 10;
+						}
+						return -att;
 					}
 					switch (zhoufa) {
 						case "豹": {
@@ -12930,29 +12951,54 @@ const skills = {
 						}
 					}
 				})
-				.set("triggername", event.triggername)
 				.forResult();
-			if (!bool) {
-				return;
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (event.triggername == "damageEnd") {
+				player.addTempSkill(event.name + "_used");
+				player.addMark(event.name + "_used", 1, false);
 			}
-			const target = targets[0];
-			player.logSkill("shoufa", target);
-			const shoufa = zhoufa ? zhoufa : ["豹", "鹰", "熊", "兔"].randomGet();
+			let shoufa;
+			const zhoufa = player.storage.zhoulin_zhoufa;
+			if (zhoufa) {
+				shoufa = zhoufa;
+			} else if (get.info(event.name).zhishiRabbit(player, target) || get.isLuckyStar(player)) {
+				player.chat("是的孩子们，我开了");
+				shoufa = "兔";
+			} else {
+				shoufa = get.info(event.name).filterList(player, target).randomGet();
+			}
+			player.popup(shoufa);
 			game.log(target, "执行", "#g" + shoufa, "效果");
 			switch (shoufa) {
-				case "豹":
-					target.damage("nosource");
+				case "豹": {
+					await target.damage("nosource");
 					break;
-				case "鹰":
-					player.gain(target.getGainableCards(player, "he").randomGet(), target, "giveAuto");
+				}
+				case "鹰": {
+					const cards = target.getGainableCards(player, "he");
+					if (cards.length) {
+						await player.gain(cards.randomGet(), target, "giveAuto");
+					}
 					break;
-				case "熊":
-					target.randomDiscard("e", player);
+				}
+				case "熊": {
+					await target.randomDiscard("e", player);
 					break;
-				case "兔":
-					target.draw();
+				}
+				case "兔": {
+					await target.draw();
 					break;
+				}
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本回合因受伤触发【兽法】#次" },
+			},
 		},
 	},
 	yuxiang: {
@@ -13016,6 +13062,7 @@ const skills = {
 			order: 12,
 			result: { player: 1 },
 		},
+		derivation: "shoufa",
 		subSkill: {
 			zhoufa: {
 				charlotte: true,
