@@ -1064,7 +1064,7 @@ const translates = {
 	mb_caocao: "手杀SP曹操",
 	mb_caocao_prefix: "手杀|SP",
 	mblingfa: "令法",
-	mblingfa_info: `①第一轮开始时，你可令本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。②第二轮游戏开始时，你可令本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害。③非前两轮游戏开始时，你可以失去〖令法〗并获得${get.poptip("twzhian")}和${get.poptip("new_rejianxiong")}。`,
+	mblingfa_info: `①第一轮开始时，你可令本轮其他角色使用【杀】时，其需弃置一张牌，否则你对其造成1点伤害。②第二轮游戏开始时，你可令本轮其他角色使用【桃】结算结束后，其需交给你一张牌，否则你对其造成1点伤害。③非前两轮游戏开始时，你可以失去〖令法〗并获得${get.poptip("twzhian")}和${get.poptip("new_rejianxiong")}。`,
 	mb_luyu: "礼卢毓",
 	mb_luyu_prefix: "礼",
 	mbbingfa: "秉法",

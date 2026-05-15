@@ -5198,9 +5198,9 @@ const skills = {
 		prompt2(event, player) {
 			switch (game.roundNumber) {
 				case 1:
-					return "本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害";
+					return "本轮其他角色使用【杀】时，其需弃置一张牌，否则你对其造成1点伤害";
 				case 2:
-					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
+					return "本轮其他角色使用【桃】结算结束后，其需交给你一张牌，否则你对其造成1点伤害";
 				default: {
 					const skills = lib.skill["mblingfa"].derivation.filter(i => !player.hasSkill(i, null, false, false));
 					return `失去【${get.translation("mblingfa")}】${skills.length > 0 ? `并获得${skills.map(i => `【${get.translation(i)}】`).join("、")}` : ""}`;
@@ -5229,7 +5229,7 @@ const skills = {
 				audio: "mblingfa",
 				trigger: { global: "useCard" },
 				filter(event, player) {
-					return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
+					return player != event.player && event.card.name == "sha";
 				},
 				forced: true,
 				logTarget: "player",
@@ -5252,14 +5252,14 @@ const skills = {
 				},
 				mark: true,
 				marktext: '<span style="text-decoration: line-through;">杀</span>',
-				intro: { content: "其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。" },
+				intro: { content: "其他角色使用【杀】时，其需弃置一张牌，否则你对其造成1点伤害。" },
 			},
 			tao: {
 				charlotte: true,
 				audio: "mblingfa",
 				trigger: { global: "useCardAfter" },
 				filter(event, player) {
-					return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
+					return player != event.player && event.card.name == "tao";
 				},
 				forced: true,
 				logTarget: "player",
@@ -5284,7 +5284,7 @@ const skills = {
 				},
 				mark: true,
 				marktext: '<span style="text-decoration: line-through;">桃</span>',
-				intro: { content: "其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害。" },
+				intro: { content: "其他角色使用【桃】结算结束后，其需交给你一张牌，否则你对其造成1点伤害。" },
 			},
 		},
 	},
