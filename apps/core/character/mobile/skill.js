@@ -9373,18 +9373,18 @@ const skills = {
 	//SP甄宓
 	mbbojian: {
 		audio: 2,
-		init(player) {
-			player.addSkill("mbbojian_record");
+		init(player, skill) {
+			player.addSkill(skill + "_record");
 		},
-		trigger: {
-			player: "phaseUseEnd",
+		onremove(player, skill) {
+			player.removeTip(skill + "_record");
 		},
+		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
+			_status.mbbojian ??= {};
+			_status.mbbojian[player.playerid] ??= [0, 0];
 			const record = _status.mbbojian;
-			if (!record || !record[player.playerid]) {
-				return false;
-			}
-			const history = player.getHistory("useCard", evt => evt.getParent("phaseUse", true));
+			const history = player.getHistory("useCard", evt => evt.getParent(event.name) == event);
 			const num1 = history.length,
 				num2 = history.map(evt => get.suit(evt.card)).toUniqued().length,
 				cards = history.reduce((list, evt) => list.addArray(evt.cards.filterInD("d")), []);
@@ -9392,65 +9392,97 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
+			_status.mbbojian ??= {};
+			_status.mbbojian[player.playerid] ??= [0, 0];
 			const record = _status.mbbojian;
-			const history = player.getHistory("useCard", evt => evt.getParent("phaseUse", true));
+			const history = player.getHistory("useCard", evt => evt.getParent(trigger.name) == trigger);
 			const num1 = history.length,
 				num2 = history.map(evt => get.suit(evt.card)).toUniqued().length,
 				cards = history.reduce((list, evt) => list.addArray(evt.cards.filterInD("d")), []);
 			if (num1 != record[player.playerid][0] && num2 != record[player.playerid][1]) {
 				await player.draw();
 			} else {
-				const links =
-					cards.length == 1
-						? cards
-						: (
-								await player
-									.chooseButton(["博鉴：请选择要分配的牌", cards], true)
-									.set("ai", button => {
+				if (!cards.length) {
+					return;
+				}
+				const result =
+					cards.length > 1
+						? await player
+								.chooseButtonTarget({
+									createDialog: [`博鉴：请选择要分配的牌`, cards],
+									selectButton: [1, Infinity],
+									forced: true,
+									filterTarget: true,
+									ai1(button) {
 										return get.value(button.link);
-									})
-									.forResult()
-							).links;
-				const togive = links[0];
-				const result = await player
-					.chooseTarget("选择获得" + get.translation(togive) + "的角色", true)
-					.set("ai", target => {
-						const player = get.player();
-						return get.attitude(player, target);
-					})
-					.forResult();
-				if (result.bool) {
-					await result.targets[0].gain(togive, "gain2");
+									},
+									canHidden: true,
+									ai2(target) {
+										const player = get.player();
+										const card = ui.selected.buttons[0].link;
+										if (card) {
+											return get.value(card, target) * get.attitude(player, target);
+										}
+										return 1;
+									},
+								})
+								.forResult()
+						: await player
+								.chooseTarget(`博鉴：令一名角色获得${get.translation(cards)}`, true)
+								.set("ai", target => {
+									const { player, enemy } = get.event();
+									const att = get.attitude(player, target);
+									if (enemy) {
+										return -att;
+									} else if (att > 0) {
+										return att / (1 + target.countCards("h"));
+									} else {
+										return att / 100;
+									}
+								})
+								.set("enemy", get.value(cards[0], player, "raw") < 0)
+								.forResult();
+				if (result?.bool) {
+					let links;
+					if (!result.links?.length) {
+						links = cards.slice();
+					} else {
+						links = result.links;
+					}
+					await result.targets[0].gain(links, "gain2");
 				}
 			}
 		},
 		subSkill: {
 			record: {
-				trigger: {
-					player: "phaseUseAfter",
+				init(player, skill) {
+					_status.mbbojian ??= {};
+					_status.mbbojian[player.playerid] ??= [0, 0];
+					player.addTip(skill, `${get.translation(skill)} 上次 ${_status.mbbojian[player.playerid][0]}/${_status.mbbojian[player.playerid][1]}`);
+					player.markSkill(skill);
 				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				trigger: { player: "phaseUseAfter" },
 				firstDo: true,
 				charlotte: true,
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const history = player.getHistory("useCard", evt => evt.getParent("phaseUse", true));
+					const history = player.getHistory("useCard", evt => evt.getParent(trigger.name) == trigger);
 					const num1 = history.length,
 						num2 = history.map(evt => get.suit(evt.card)).toUniqued().length;
-					if (!_status.mbbojian) {
-						_status.mbbojian = {};
-					}
+					_status.mbbojian ??= {};
 					_status.mbbojian[player.playerid] = [num1, num2];
+					player.addTip(event.name, `${get.translation(event.name)} 上次 ${_status.mbbojian[player.playerid][0]}/${_status.mbbojian[player.playerid][1]}`);
 					player.markSkill(event.name);
 				},
 				intro: {
 					markcount: () => 0,
 					content(storage, player) {
-						const record = _status.mbbojian;
-						if (!record || !record[player.playerid]) {
-							return "无信息";
-						}
-						return "上个出牌阶段使用牌情况：①牌数：" + record[player.playerid][0] + "；②花色数：" + record[player.playerid][1];
+						const record = _status.mbbojian || {};
+						return "上个出牌阶段使用牌情况：①牌数：" + (record[player.playerid]?.[0] || 0) + "；②花色数：" + (record[player.playerid]?.[1] || 0);
 					},
 				},
 			},
