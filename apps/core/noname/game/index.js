@@ -166,9 +166,9 @@ export class Game {
 		}
 		if (filter !== false) {
 			if (list.length) {
-				game.countPlayer2(current => {
+				for (const current of game.filterPlayer2()) {
 					list.removeArray(get.nameList(current));
-				});
+				}
 			}
 			if (filter === undefined) {
 				_status.characterlist = list;
