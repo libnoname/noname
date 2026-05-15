@@ -27280,7 +27280,7 @@ const skills = {
 				list2.push("trick");
 			}
 			if (list.includes("qiaosi_c2")) {
-				if (list.includes("qiaosi_c1")) {
+				if (list.includes("qiaosi_c6")) {
 					list2.push(["sha", "jiu"]);
 				} else {
 					list2.push(Math.random() < 0.66 ? "equip" : ["sha", "jiu"]);
@@ -27293,7 +27293,7 @@ const skills = {
 				list2.push([Math.random() < 0.66 ? "shan" : "tao"]);
 			}
 			if (list.includes("qiaosi_c5")) {
-				if (list.includes("qiaosi_c6")) {
+				if (list.includes("qiaosi_c1")) {
 					list2.push(["shan", "tao"]);
 				} else {
 					list2.push(Math.random() < 0.66 ? "trick" : ["shan", "tao"]);
@@ -27337,9 +27337,10 @@ const skills = {
 			"step 2";
 			player.gain(event.cards, "gain2");
 			"step 3";
-			if (!player.countCards("he")) {
+			const goon = game.hasPlayer(current => current != player);
+			if (!player.hasCards("he") && goon) {
 				event.finish();
-			} else {
+			} else if (player.hasCards("he") && goon) {
 				player
 					.chooseControl()
 					.set("choiceList", ["将" + get.cnNumber(event.num) + "张牌交给一名其他角色", "弃置" + get.cnNumber(event.num) + "张牌"])
@@ -27353,6 +27354,8 @@ const skills = {
 						}
 						return 1;
 					});
+			} else {
+				event._result = { index: goon ? 0 : 1 };
 			}
 			"step 4";
 			if (result.index == 0) {
@@ -27380,7 +27383,7 @@ const skills = {
 					forced: true,
 				});
 			} else {
-				player.chooseToDiscard(event.num, true, "he");
+				player.chooseToDiscard(event.num, true, "he", "allowChooseAll");
 				event.finish();
 			}
 			"step 5";
