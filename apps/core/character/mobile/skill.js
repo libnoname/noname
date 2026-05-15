@@ -7909,6 +7909,9 @@ const skills = {
 	mbzengou: {
 		audio: 3,
 		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => get.info("mbzengou").filterTarget(null, player, current));
+		},
 		filterTarget(card, player, target) {
 			if (player.getStorage("mbfeili_effect").includes(target)) {
 				return false;
@@ -7923,12 +7926,24 @@ const skills = {
 			target.chat("孩子我" + (["xizhicai", "xiahoumao"].some(i => get.is.playerNames(target, i)) ? "也干了" : "没干"));
 			await game.delayx();
 			await player.viewHandcards(target);
-			const names = lib.inpile.filter(i => get.type(i) === "basic");
+			// 基本牌名
+			const names = lib.inpile.filter(name => get.type(name) === "basic");
+			// 共同拥有的牌名
 			const allNames = player
-				.getCards("h", i => target.hasCard({ name: get.name(i) }, "h"))
-				.map(i => get.name(i))
+				.getCards("h", card => target.hasCards("h", { name: get.name(card) }))
+				.map(card => get.name(card))
 				.unique();
-			const goon = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).some(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
+			// 有能用的牌
+			const list = get.inpileVCardList(info => {
+				if (info[0] !== "basic") {
+					return false;
+				}
+				if (info[3]) {
+					return false;
+				}
+				return !target.hasCards("h", { name: info[2] });
+			});
+			const goon = list.length > 0;
 			if (!goon && !allNames.length) {
 				return;
 			}
@@ -7938,24 +7953,26 @@ const skills = {
 			} else if (!allNames.length) {
 				result = { index: 0 };
 			} else {
+				const listx = names.filter(name => !target.hasCards("h", { name }));
 				result = await player
 					.chooseControl()
-					.set("choiceList", [
-						"视为使用两张" +
-							names
-								.filter(i => !target.hasCard({ name: i }, "h"))
-								.map(i => "【" + get.translation(i) + "】")
-								.join("、") +
-							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的牌" : "") +
-							"（不计入次数且无次数限制）",
-						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且你的这些牌不计入手牌上限直到你的结束阶段",
-					])
+					.set("choiceList", [`视为使用两张${listx.map(name => `【${get.translation(name)}】`).join("、")}${listx.length > 1 ? "中的牌" : ""}（不计入次数且无次数限制）`, `将你与其手牌中的${allNames.map(name => `【${get.translation(name)}】`).join("、")}替换为牌堆中等量的【杀】且你的这些牌不计入手牌上限直到你的结束阶段`])
 					.set("ai", () => {
 						const {
 							player,
 							list: [target, names, allNames],
 						} = get.event();
-						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
+						const list = get
+							.inpileVCardList(info => {
+								if (info[0] !== "basic") {
+									return false;
+								}
+								if (info[3]) {
+									return false;
+								}
+								return !target.hasCards("h", { name: info[2] });
+							})
+							.filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
 						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), false))) >
 							(() => {
 								let sum = 0;
@@ -7970,28 +7987,34 @@ const skills = {
 					.set("list", [target, names, allNames])
 					.forResult();
 			}
-			if (result.index === 0) {
+			if (result?.index === 0) {
 				const used = [];
 				for (let i = 0; i < 2; i++) {
-					let list = get.inpileVCardList(info => !used.includes(info[2]) && names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
+					let list = get
+						.inpileVCardList(info => {
+							if (info[0] !== "basic" || used.includes(info[2])) {
+								return false;
+							}
+							if (info[3]) {
+								return false;
+							}
+							return !target.hasCards("h", { name: info[2] });
+						})
+						.filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
 					if (!list.length) {
 						break;
 					}
-					const [choice] =
-						list.length > 1
-							? (
-									await player
-										.chooseButton([get.translation(event.name) + "：请选择你要视为使用的基本牌", [list, "vcard"]], true)
-										.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), false, false))
-										.forResult()
-								).links
-							: list;
-					if (choice) {
-						used.add(choice[2]);
-						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3], isCard: true }), true, false);
+					const result = await player
+						.chooseButton([get.translation(event.name) + "：请选择你要视为使用的基本牌", [list, "vcard"]], true)
+						.set("direct", true)
+						.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true }), false, false))
+						.forResult();
+					if (result?.bool) {
+						used.add(result.links[0][2]);
+						await player.chooseUseTarget(new lib.element.VCard({ name: result.links[0][2], nature: result.links[0][3], isCard: true }), true, false);
 					}
 				}
-			} else {
+			} else if (result?.index === 1) {
 				const cards = [player.getCards("h", { name: allNames }), target.getCards("h", { name: allNames })];
 				await game
 					.loseAsync({
@@ -8020,7 +8043,6 @@ const skills = {
 				if (gains.flat().length) {
 					player.addTempSkill("mbzengou_effect", { player: "phaseJieshuBegin" });
 					if (gains[1].length) {
-						//target.addTempSkill("mbzengou_effect");
 						await game
 							.loseAsync({
 								gain_list: [
@@ -8065,8 +8087,6 @@ const skills = {
 					player.line(target);
 					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
-					//target.setStorage("mbzengou_debuff", choose, true);
-					//target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`);
 					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"]?.[choose] || 0);
 					target.addTip("mbzengou_debuff", `谮构 ${get.translation(Object.keys(target.storage["mbzengou_debuff"]))}`);
 					target.markSkill("mbzengou_debuff");
@@ -8130,7 +8150,6 @@ const skills = {
 						]
 							.map(str => "<li>" + str)
 							.join("<br>");
-						//return `每回合使用第一张牌结算完毕后，若你拥有此牌名的“诬”标记，则你失去1点体力并移去1枚此牌名的“诬”标记。`若此牌牌名为${get.translation(storage)}，;
 					},
 				},
 				audio: "mbzengou",
@@ -8139,13 +8158,11 @@ const skills = {
 					if (player.getHistory("useCard").indexOf(event) > 2) {
 						return false;
 					}
-					//return player.getStorage("mbzengou_debuff") == event.card.name;
 					return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					/*player.removeSkill(event.name);*/
 					player.storage[event.name][trigger.card.name]--;
 					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 						player.removeSkill(event.name);
