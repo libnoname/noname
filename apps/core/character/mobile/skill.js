@@ -7126,52 +7126,71 @@ const skills = {
 			const target = event.targets[0];
 			const num = Math.min(5, target.maxHp) - target.countCards("h");
 			if (num > 0) {
-				await target.draw(num);
-			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
-				await target.chooseToDiscard("h", -num, true, "allowChooseAll");
-			}
-			const isDraw = target.hasHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2) == event);
-			if (!isDraw && target.isDamaged()) {
-				await target.recover();
-			}
-			//按描述来说是因此成为，所以必须得是调整前不是最多，而且还必须要有摸牌且最后是最多，共三个条件（官方实际的结算也是这么回事）
-			//描述删掉力
-			if (target.isMaxHandcard()) {
-				const result = await player
-					.chooseTarget("助国：选择一名其他角色，令" + get.translation(target) + "选择是否对其使用一张无距离限制的【杀】", (card, player, targetx) => ![player, get.event().target].includes(targetx))
-					.set("ai", targetz => {
-						let player = get.player(),
-							target = get.event().target;
-						return get.effect(targetz, { name: "sha" }, target, player);
-					})
-					.set("target", target)
-					.forResult();
-				if (result.bool) {
-					player.logSkill("mbzhuguo", [result.targets[0]], null, null, [3]);
-					await target
-						.chooseToUse(
-							function (card, player, event) {
-								return get.name(card, player) === "sha" && lib.filter.filterCard.apply(this, arguments);
-							},
-							`助国：是否对${get.translation(result.targets[0])}使用【杀】？`
-						)
-						.set("filterTarget", function (card, player, target) {
-							const sourcex = get.event().sourcex;
-							if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
-								return false;
-							}
-							return lib.filter.targetEnabled.apply(this, arguments);
-						})
-						.set("addCount", false)
-						.set("sourcex", result.targets[0]);
+				const next = target.draw(num);
+				await next;
+				const targets = game.filterPlayer(current => current != player && current != target);
+				if (target.isMaxHandcard() && targets.length) {
+					const result =
+						targets.length == 1
+							? { bool: true, targets }
+							: await player
+									.chooseTarget(`助国：选择一名其他角色，令${get.translation(target)}选择是否对其使用一张无距离和次数限制的【杀】`, (card, player, target) => {
+										return get.event.targets?.includes(target);
+									})
+									.set("ai", target => {
+										const { player, targetx } = get.event();
+										return get.effect(target, { name: "sha" }, targetx, player);
+									})
+									.set("targets", targets)
+									.set("targetx", target)
+									.forResult();
+					if (result?.bool) {
+						player.logSkill(event.name, [result.targets[0]], null, null, [3]);
+						await target
+							.chooseToUse(
+								function (card, player, event) {
+									return get.name(card, player) === "sha" && lib.filter.filterCard.apply(this, arguments);
+								},
+								`助国：是否对${get.translation(result.targets[0])}使用【杀】？`
+							)
+							.set("filterTarget", function (card, player, target) {
+								const sourcex = get.event().sourcex;
+								if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
+									return false;
+								}
+								return lib.filter.targetEnabled.apply(this, arguments);
+							})
+							.set("addCount", false)
+							.set("sourcex", result.targets[0]);
+					}
 				}
+			} else {
+				if (num < 0 && target.hasDiscardableCards(target, "h")) {
+					await target.chooseToDiscard("h", -num, true, "allowChooseAll");
+				}
+				await target.recover();
 			}
 		},
 		ai: {
 			order: 8,
 			result: {
 				target(player, target) {
-					return target.maxHp - target.countCards("h");
+					const att = get.sgnAttitude(player, target);
+					const num = target.maxHp - target.countCards("h");
+					if (att > 0) {
+						if (num < 0 && target.isDamaged()) {
+							if (target.maxHp >= 3 && num >= -2) {
+								return 1.1;
+							}
+							return 0;
+						}
+						return num;
+					} else {
+						if (num >= 0) {
+							return 0;
+						}
+						return num;
+					}
 				},
 			},
 		},
