@@ -360,6 +360,7 @@ const translates = {
 	xin_hansui_prefix: "手杀",
 	xinniluan: "逆乱",
 	xinniluan_info: "其他角色的结束阶段，若其本回合对除其以外的角色使用过牌，则你可以对其使用一张【杀】。若以此法使用的【杀】造成伤害，则你弃置其一张牌。",
+	xinniluan_info_versus_two: "敌方角色的结束阶段，若其本回合对除其以外的角色使用过牌，则你可以对其使用一张【杀】。若以此法使用的【杀】造成伤害，则你弃置其一张牌。",
 	xiaoxi_hansui: "骁袭",
 	xiaoxi_hansui_info: "你可以将一张黑色牌当做【杀】使用或打出。",
 	xin_zhangfei: "手杀界张飞",

@@ -23409,21 +23409,14 @@ const skills = {
 		trigger: { global: "phaseJieshuBegin" },
 		direct: true,
 		filter(event, player) {
-			return (
-				player != event.player &&
-				event.player.isIn() &&
-				event.player.getHistory("useCard", function (evt) {
-					if (evt.targets && evt.targets.length) {
-						var targets = evt.targets.slice(0);
-						while (targets.includes(event.player)) {
-							targets.remove(event.player);
-						}
-						return targets.length > 0;
-					}
-					return false;
-				}).length > 0 &&
-				(_status.connectMode || player.hasSha())
-			);
+			const target = event.player;
+			if (!target.isIn() || !target.hasHistory("useCard", evt => evt.targets?.some(targetx => targetx != target))) {
+				return false;
+			}
+			if (get.mode() == "versus" && _status.mode == "two") {
+				return player.getEnemies().includes(target);
+			}
+			return player != target;
 		},
 		clearTime: true,
 		content() {
