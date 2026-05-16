@@ -17027,7 +17027,7 @@ const skills = {
 		logAudio: () => 1,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he", "allowChooseAll")
+				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he", "allowChooseAll", "chooseonly")
 				.set("ai", card => {
 					var player = _status.event.player;
 					if (ui.selected.cards.length < _status.event.num) {
@@ -17084,6 +17084,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			const num = event.cards.length;
 			player.addTempSkill("sbbenxi_effect", "phaseUseAfter");
 			player.addTempSkill("sbbenxi_effect2", "phaseUseAfter");
