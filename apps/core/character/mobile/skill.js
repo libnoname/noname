@@ -2529,7 +2529,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha" && event.targets?.length == 1;
+			return event.card.name == "sha" && event.targets?.length == 1 && !get.is.convertedCard(event.card) && !get.is.virtualCard(event.card);
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
@@ -2640,16 +2640,14 @@ const skills = {
 	},
 	hefeizherui: {
 		audio: 4,
-		trigger: {
-			global: "useCardToPlayered",
-		},
+		trigger: { global: "useCardToPlayered" },
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			if (event.card.name != "sha") {
+			if (event.card.name != "sha" || get.is.convertedCard(event.card) || get.is.virtualCard(event.card)) {
 				return false;
 			}
-			return event.player.countCards("e", card => card.name == "hefei_xianjian");
+			return event.player.hasCards("e", card => card.name == "hefei_xianjian");
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -2707,9 +2705,7 @@ const skills = {
 		group: "hefeizherui_damage",
 		subSkill: {
 			damage: {
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"] },
 				getIndex(event, player) {
 					let list = [];
 					game.countPlayer(current => {
@@ -2742,9 +2738,7 @@ const skills = {
 				},
 			},
 		},
-		ai: {
-			combo: "hefeixianjian",
-		},
+		ai: { combo: "hefeixianjian" },
 	},
 	hefeiheyuyuejin: {
 		audio: 2,
