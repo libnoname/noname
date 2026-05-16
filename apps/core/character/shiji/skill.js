@@ -3541,10 +3541,10 @@ const skills = {
 				if (get.suit(button.links[0], player) == min_suit) return 1;
 				return 0;
 			},
-			backup(result, player) {
+			backup(links, player) {
 				return {
 					audio: "spyanjiao",
-					filterCard: { suit: result[0] },
+					filterCard: { suit: links[0] },
 					selectCard: -1,
 					position: "h",
 					filterTarget: lib.filter.notMe,

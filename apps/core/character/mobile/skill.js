@@ -18177,96 +18177,211 @@ const skills = {
 	},
 	//全琮
 	sbyaoming: {
+		init(player, skill) {
+			const history = player.getAllHistory("useSkill", evt => evt.skill == "sbyaoming_backup").map(evt => evt.event().getParent());
+			if (history.length) {
+				const index = history.at(-1).sbyaomingIndex;
+				player.addTip(skill, `${get.translation(skill)} ${index == 0 ? "弃牌" : "摸牌"}`);
+			}
+		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+		},
+		getNum(player, target) {
+			let att = get.attitude(player, target),
+				eff = [0, 0];
+			const hs = player.countCards("h"),
+				ht = target.countCards("h");
+			if (hs >= ht) {
+				eff[0] = get.effect(target, { name: "draw" }, player, player);
+				if (player.storage.sbyaoming_status == 0) {
+					eff[0] *= 1.2;
+				}
+			}
+			if (hs <= ht && player != target && target.hasDiscardableCards(player, "he")) {
+				eff[1] = get.effect(target, { name: "guohe_copy2" }, player, player);
+				if (player.storage.sbyaoming_status == 1) {
+					eff[1] *= 1.2;
+				}
+			}
+			return eff;
+		},
 		audio: 2,
 		chargeSkill: 4,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.countCharge() > 0;
 		},
-		filterTarget: true,
-		prompt() {
-			var num = _status.event.player.storage.sbyaoming_status;
-			var list = ["弃置一名手牌数不小于你的角色的一张牌", "；或令一名手牌数不大于你的角色摸一张牌"];
-			if (typeof num == "number") {
-				list[num] += "（上次选择）";
-			}
-			return list[0] + list[1];
-		},
-		content() {
-			"step 0";
-			player.removeCharge();
-			var num = target.countCards("h"),
-				num2 = player.countCards("h");
-			if (num == num2 && target.countCards("he") > 0) {
-				var choice = get.attitude(player, target) > 0 ? 1 : 0;
-				var str = get.translation(target),
-					choiceList = ["弃置" + str + "的一张牌", "令" + str + "摸一张牌"];
-				if (typeof player.storage.sbyaoming_status == "number") {
-					choiceList[player.storage.sbyaoming_status] += "（上次选择）";
+		chooseButton: {
+			dialog(event, player) {
+				const num = player.storage.sbyaoming_status;
+				const list = [
+					["discard", "弃置一名手牌数不小于你的其他角色的一张牌"],
+					["draw", "令一名手牌数不大于你的角色摸一张牌"],
+				];
+				if (typeof num == "number") {
+					list[1 - num][1] += "（选择此项可获得蓄力值）";
 				}
-				var next = player.chooseControl().set("choiceList", choiceList);
-				next.set("ai_choice", choice);
-				next.set("ai", () => _status.event.ai_choice);
-			} else {
-				event._result = { index: num > num2 ? 0 : 1 };
-			}
-			"step 1";
-			if (result.index == 0) {
-				player.discardPlayerCard(target, true, "he");
-			} else {
-				target.draw();
-			}
-			if (typeof player.storage.sbyaoming_status == "number" && result.index != player.storage.sbyaoming_status) {
-				player.addCharge();
-				delete player.storage.sbyaoming_status;
-			} else {
-				player.storage.sbyaoming_status = result.index;
-			}
+				const dialog = ui.create.dialog(`邀名：你可以消耗1点蓄力值并…`, [list, "textbutton"], "hidden");
+				return dialog;
+			},
+			filter(button, player) {
+				if (button.link === "discard") {
+					return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
+				}
+				return true;
+			},
+			check(button) {
+				const player = get.player();
+				const link = button.link;
+				const list = game.filterPlayer().map(current => [current, get.info("sbyaoming").getNum(player, current)]);
+				const draw = Math.max(...list.map(item => item[1][0]));
+				const discard = Math.max(...list.map(item => item[1][1]));
+				const choice = draw >= discard ? "draw" : "discard";
+				if (link == choice) {
+					return 10;
+				}
+				return 0;
+			},
+			backup(links, player) {
+				const backup = get.copy(lib.skill["sbyaoming_backup"]);
+				backup.link = links[0];
+				return backup;
+			},
+			prompt(links, player) {
+				const link = links[0];
+				return `###邀名###消耗1点蓄力值并${link == "discard" ? "弃置一名手牌数不小于你的其他角色的一张牌" : "令一名手牌数不大于你的角色摸一张牌"}`;
+			},
 		},
 		ai: {
-			order: 6,
-			result: {
-				player(player, target) {
-					var att = get.attitude(player, target),
-						eff = [0, 0];
-					var hs = player.countCards("h"),
-						ht = target.countCards("h");
-					if (hs >= ht) {
-						eff[0] = get.effect(target, { name: "draw" }, player, player);
-						if (player.storage.sbyaoming_status == 0) {
-							eff[0] *= 1.2;
-						}
-					}
-					if (hs <= ht) {
-						eff[1] = get.effect(target, { name: "guohe_copy2" }, player, player);
-						if (player.storage.sbyaoming_status == 1) {
-							eff[1] *= 1.2;
-						}
-					}
-					return Math.max.apply(Math, eff);
-				},
+			order(item, player) {
+				if (
+					game.hasPlayer(current => {
+						const num = Math.max.apply(Math, get.info("sbyaoming").getNum(player, current));
+						return num > 0;
+					})
+				) {
+					return 7.1;
+				}
+				return 0.1;
 			},
+			result: { player: 1 },
 		},
 		group: ["sbyaoming_damage", "sbyaoming_init"],
 		subSkill: {
+			backup: {
+				audio: "sbyaoming",
+				filterCard: () => false,
+				selectCard: -1,
+				filterTarget(card, player, target) {
+					const link = lib.skill.sbyaoming_backup.link;
+					if (link === "discard") {
+						return target != player && target.hasDiscardableCards(player, "he") && target.countCards("h") >= player.countCards("h");
+					}
+					return target.countCards("h") <= target.countCards("h");
+				},
+				async content(event, trigger, player) {
+					const link = lib.skill.sbyaoming_backup.link;
+					const index = link === "discard" ? 0 : 1;
+					event.getParent(2).sbyaomingIndex = index;
+					player.addTip("sbyaoming", `${get.translation("sbyaoming")} ${index == 0 ? "弃牌" : "摸牌"}`);
+					player.removeCharge();
+					const { target } = event;
+					if (link === "discard") {
+						await player.discardPlayerCard(target, true, "he");
+					} else if (link === "draw") {
+						await target.draw();
+					}
+					if (typeof player.storage.sbyaoming_status == "number" && index != player.storage.sbyaoming_status && player.countCharge(true)) {
+						player.addCharge();
+						delete player.storage.sbyaoming_status;
+					} else {
+						player.storage.sbyaoming_status = index;
+					}
+				},
+				ai: {
+					result: {
+						player(player, target) {
+							switch (lib.skill.sbyaoming_backup.link) {
+								case "discard": {
+									let eff = get.effect(target, { name: "guohe_copy2" }, player, player);
+									if (player.storage.sbyaoming_status == 1) {
+										eff *= 1.2;
+									}
+									return eff;
+								}
+								case "draw": {
+									let eff = get.effect(target, { name: "draw" }, player, player);
+									if (player.storage.sbyaoming_status == 0) {
+										eff *= 1.2;
+									}
+									return eff;
+								}
+							}
+						},
+					},
+				},
+			},
 			damage: {
+				audio: "sbyaoming",
 				trigger: { player: "damageEnd" },
 				direct: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (player.countCharge(true)) {
-						player.logSkill("sbyaoming_damage");
+						// 手杀不记录发动
+						// player.logSkill(event.name);
 						player.addCharge(trigger.num);
-						game.delayx();
+						await game.delayx();
 					}
-					"step 1";
-					player.chooseTarget(get.prompt("sbyaoming"), lib.skill.sbyaoming.prompt()).set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, "sbyaoming", player, player);
-					});
-					"step 2";
-					if (result.bool) {
-						player.useSkill("sbyaoming", result.targets);
+					if (!player.countCharge()) {
+						return;
+					}
+					const num = player.storage.sbyaoming_status;
+					const list = [
+						["discard", "弃置一名手牌数不小于你的其他角色的一张牌"],
+						["draw", "令一名手牌数不大于你的角色摸一张牌"],
+					];
+					if (typeof num == "number") {
+						list[1 - num][1] += "（选择此项可获得蓄力值）";
+					}
+					const result = await player
+						.chooseButton(["邀名：你可以消耗1点蓄力值并…", [list, "textbutton"]])
+						.set("filterButton", button => {
+							if (button.link === "discard") {
+								return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
+							}
+							return true;
+						})
+						.set("ai", button => {
+							const player = get.player();
+							const link = button.link;
+							const list = game.filterPlayer().map(current => [current, get.info("sbyaoming").getNum(player, current)]);
+							const draw = Math.max(...list.map(item => item[1][0]));
+							const discard = Math.max(...list.map(item => item[1][1]));
+							const choice = draw >= discard ? "draw" : "discard";
+							if (link == choice) {
+								return 10;
+							}
+							return 0;
+						})
+						.forResult();
+					if (result?.bool) {
+						const link = result.links[0];
+						game.broadcastAll(link => {
+							lib.skill.sbyaoming_backup.link = link;
+						}, link);
+						const skill = "sbyaoming_backup";
+						const next = player.chooseToUse();
+						next.set("openskilldialog", lib.skill["sbyaoming"].chooseButton.prompt(result.links, player));
+						next.set("norestore", true);
+						next.set("_backupevent", skill);
+						next.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
+						next.set("ai1", () => 1);
+						next.backup(skill);
+						await next;
 					}
 				},
 			},
@@ -18281,7 +18396,7 @@ const skills = {
 				filter(event, player) {
 					return (event.name != "phase" || game.phaseNumber == 0) && player.countCharge(true);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addCharge(2);
 				},
 			},
