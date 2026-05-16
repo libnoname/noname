@@ -10416,7 +10416,7 @@ const skills = {
 			list.push("cancel2");
 			const result = await player
 				.chooseControl(list)
-				.set("choiceList", ["令此【杀】伤害+1", "若此【杀】被【闪】抵消，你可以获得与你距离为1以内的一名其他角色区域里的一张牌", "背水！弃置你与其装备区的武器牌并执行所有选项"])
+				.set("choiceList", ["令此【杀】伤害+1", "若此【杀】被【闪】抵消，你可以获得你距离1以内的一名其他角色区域里的一张牌", "背水！弃置你与其装备区的武器牌并执行所有选项"])
 				.set("prompt", get.prompt(event.skill))
 				.set(
 					"resultx",
@@ -10478,21 +10478,19 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "mbchoumang",
-				trigger: {
-					global: "shaMiss",
-				},
+				trigger: { global: "shaMiss" },
 				filter(event, player) {
 					if (!player.getStorage("mbchoumang_effect").includes(event.card)) {
 						return false;
 					}
-					return game.hasPlayer(current => player != current && get.distance(player, current) <= 1 && current.countCards("hej"));
+					return game.hasPlayer(current => player != current && get.distance(player, current) <= 1 && current.hasGainableCards(player, "hej"));
 				},
 				charlotte: true,
 				onremove: true,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget("仇铓：是否获得与你距离为1以内的一名其他角色区域里的一张牌？", function (card, player, target) {
-							return player != target && get.distance(player, target) <= 1 && target.countCards("hej");
+						.chooseTarget("仇铓：是否获得你距离1以内的一名其他角色区域里的一张牌？", function (card, player, target) {
+							return player != target && get.distance(player, target) <= 1 && target.hasGainableCards(player, "hej");
 						})
 						.set("ai", function (target) {
 							const player = _status.event.player;
@@ -10503,9 +10501,9 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await player.gainPlayerCard(target, "hej", true);
-					player.unmarkAuto("mbchoumang_effect", [trigger.card]);
-					if (!player.getStorage("mbchoumang_effect").length) {
-						player.removeSkill("mbchoumang_effect");
+					player.unmarkAuto(event.name, [trigger.card]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
 					}
 				},
 			},
