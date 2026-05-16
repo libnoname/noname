@@ -21,11 +21,14 @@ const skills = {
 		},
 		enable: "phaseUse",
 		usable: 1,
-		filter: (event, player) => game.hasPlayer(current => current != player && current.maxHp > 1),
-		filterTarget: (card, player, target) => target != player && target.maxHp > 1,
+		filter(event, player) {
+			return game.hasPlayer(current => get.info("yingba").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			return target != player && target.maxHp > 1;
+		},
 		async content(event, trigger, player) {
 			const { target } = event;
-
 			await target.loseMaxHp();
 			if (target.isIn()) {
 				target.addMark("yingba_mark", 1);
@@ -70,15 +73,9 @@ const skills = {
 				},
 				mod: {
 					maxHandcard(player, numx) {
-						var num = player.countMark("yingba_mark");
+						const num = player.countMark("yingba_mark");
 						if (num) {
-							return (
-								numx +
-								num *
-								game.countPlayer(function (current) {
-									return current.hasSkill("yingba");
-								})
-							);
+							return numx + num * game.countPlayer(current => current.hasSkill("yingba"));
 						}
 					},
 				},
@@ -90,11 +87,11 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		forced: true,
 		filter(event, player) {
-			return event.target && event.target.hasMark("yingba_mark");
+			return event.target.hasMark("yingba_mark");
 		},
 		logTarget: "target",
 		async content(event, trigger, player) {
-			trigger.directHit.add(trigger.target);
+			trigger.getParent().directHit.add(trigger.target);
 			if (player.getHistory("gain", evt => evt.getParent(2).name == "scfuhai").length < 2) {
 				await player.draw();
 			}
@@ -116,9 +113,7 @@ const skills = {
 					return lib.skill.scfuhai_usea.logTarget(event, player).length > 0;
 				},
 				logTarget(event, player) {
-					return event.targets.filter(function (i) {
-						return i.hasMark("yingba_mark");
-					});
+					return event.targets.filter(target => target.hasMark("yingba_mark")).sortBySeat();
 				},
 				async content(event, trigger, player) {
 					let num = 0;
@@ -126,7 +121,7 @@ const skills = {
 						const numx = target.countMark("yingba_mark");
 						if (numx) {
 							num += numx;
-							target.removeMark("yingba_mark", numx);
+							target.clearMark("yingba_mark");
 						}
 					}
 					if (num) {
@@ -139,65 +134,69 @@ const skills = {
 				trigger: { global: "die" },
 				forced: true,
 				filter(event, player) {
-					return event.player.countMark("yingba_mark") > 0;
+					return event.player.hasMark("yingba_mark");
 				},
 				async content(event, trigger, player) {
-					await player.gainMaxHp(trigger.player.countMark("yingba_mark"));
-					await player.draw(trigger.player.countMark("yingba_mark"));
+					const num = trigger.player.countMark("yingba_mark");
+					await player.gainMaxHp(num);
+					await player.draw(num);
 				},
 			},
 		},
 	},
 	pinghe: {
+		derivation: "yingba",
 		audio: 2,
 		mod: {
 			maxHandcardBase(player) {
 				return player.getDamagedHp();
 			},
 		},
-		trigger: { player: "damageBegin2" },
+		trigger: { player: "damageBegin4" },
 		forced: true,
 		filter(event, player) {
-			return event.source && event.source != player && player.maxHp > 1 && player.countCards("h") > 0;
+			return event.source && event.source != player && player.maxHp > 1 && player.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
 			await player.loseMaxHp();
-			let result = await player
-				.chooseCardTarget({
-					prompt: "请选择【冯河】的牌和目标",
-					prompt2: "将一张手牌交给一名其他角色并防止伤害" + (player.hasSkill("yingba") ? "，然后令伤害来源获得一个“平定”标记" : ""),
-					filterCard: true,
-					forced: true,
-					filterTarget: lib.filter.notMe,
-					ai1(card) {
-						if (
-							get.tag(card, "recover") &&
-							!game.hasPlayer(function (current) {
-								return get.attitude(current, player) > 0 && !current.hasSkillTag("nogain");
-							})
-						) {
-							return 0;
-						}
-						return 1 / Math.max(0.1, get.value(card));
-					},
-					ai2(target) {
-						var player = _status.event.player,
-							att = get.attitude(player, target);
-						if (target.hasSkillTag("nogain")) {
-							att /= 9;
-						}
-						return 4 + att;
-					},
-				})
-				.forResult();
-			if (result.bool) {
-				const target = result.targets[0];
-				//player.logSkill('pinghe',target);
-				player.line(target, "green");
-				await player.give(result.cards, target);
-				if (player.hasSkill("yingba")) {
-					trigger.source.addMark("yingba_mark", 1);
+			if (game.hasPlayer(current => current != player) && player.hasCards("h")) {
+				const result = await player
+					.chooseCardTarget({
+						prompt: "请选择【冯河】的牌和目标",
+						prompt2: `将一张手牌交给一名其他角色并防止伤害${player.hasSkill("yingba") ? `，然后令${get.translation(trigger.source)}获得1枚“平定”标记` : ""}`,
+						filterCard: true,
+						forced: true,
+						filterTarget: lib.filter.notMe,
+						ai1(card) {
+							const player = get.player();
+							if (
+								get.tag(card, "recover") &&
+								!game.hasPlayer(current => {
+									return get.attitude(current, player) > 0 && !current.hasSkillTag("nogain");
+								})
+							) {
+								return 0;
+							}
+							return 1 / Math.max(0.1, get.value(card));
+						},
+						ai2(target) {
+							const player = get.player();
+							let att = get.attitude(player, target);
+							if (target.hasSkillTag("nogain")) {
+								att /= 9;
+							}
+							return 4 + att;
+						},
+					})
+					.forResult();
+				if (result?.bool) {
+					const target = result.targets[0];
+					player.line(target, "green");
+					await player.give(result.cards, target);
+					if (player.hasSkill("yingba")) {
+						trigger.source.addMark("yingba_mark", 1);
+					}
 				}
 			}
 		},
