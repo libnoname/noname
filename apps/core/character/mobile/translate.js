@@ -1146,7 +1146,7 @@ const translates = {
 	})}在场且与你阵营相同，将${get.poptip("hefeidangshi")}中的X固定为3。`,
 	hefeiduanjin: "断津",
 	hefeiduanjin_info: "你使用基本牌结算结束后，可以弃置一名本回合使用过牌的其他角色一张牌。",
-	hefeigaigong: "概公",
+	hefeigaigong: "慨公",
 	hefeigaigong_info: "每回合限一次，你对其他角色造成伤害后，或受到其他角色造成的伤害后，你可选择你或其的至多两张手牌，展示并与牌堆底等量牌进行交换。若以此法移动的牌包含至少三种花色，你可使用其中一张牌（无次数限制）。",
 	hefeiheyulidian: "合御",
 	hefeiheyulidian_info: `锁定技，①若${get.poptip("characterx_hefei_yuejin")}在场且与你阵营相同，你获得因${get.poptip("hefeiduanjin")}弃置的牌。②若${get.poptip({
