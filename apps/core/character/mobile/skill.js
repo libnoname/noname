@@ -10201,119 +10201,125 @@ const skills = {
 	//司马伷
 	mbbifeng: {
 		audio: 3,
-		trigger: {
-			target: "useCardToTarget",
-			global: "useCardAfter",
-		},
+		trigger: { target: "useCardToTarget" },
 		filter(event, player, name) {
-			if (name == "useCardAfter") {
-				return player.getStorage("mbbifeng").includes(event.card);
-			}
-			if (event.targets && event.targets.length > 4) {
+			if (event.targets?.length > 4) {
 				return false;
 			}
 			return ["trick", "basic"].includes(get.type(event.card));
 		},
-		logAudio: index => (typeof index === "number" ? "mbbifeng" + index + ".mp3" : 3),
-		async cost(event, trigger, player) {
-			if (event.triggername == "useCardAfter") {
-				event.result = { bool: true };
-			} else {
-				event.result = await player
-					.chooseBool(get.prompt2(event.skill))
-					.set("ai", () => get.event().bool)
-					.set(
-						"bool",
-						(function () {
-							let cancel = get.effect(player, trigger.card, trigger.player, player),
-								name = trigger.card.name;
-							if (get.effect(player, { name: "losehp" }, player, player) - cancel > 0) {
-								return true;
-							}
-							if (2 * get.effect(player, { name: "draw" }, player, player) - cancel <= 0) {
+		prompt2(event, player) {
+			return `取消你为${get.translation(event.card)}的目标。若如此做，此牌结算完成后若没有其他角色响应此牌，你失去1点体力，否则你摸两张牌。`;
+		},
+		check(event, player) {
+			let cancel = get.effect(player, event.card, event.player, player),
+				name = event.card.name;
+			if (get.effect(player, { name: "losehp" }, player, player) - cancel > 0) {
+				return true;
+			}
+			if (2 * get.effect(player, { name: "draw" }, player, player) - cancel <= 0) {
+				return false;
+			}
+			const targets = event.targets.filter(current => {
+				return player !== current && get.effect(current, event.card, event.player, current) < 0;
+			});
+			if (name === "sha") {
+				return targets.some(target => {
+					return target.mayHaveShan(player, "use");
+				});
+			}
+			if (name === "juedou" || name === "nanman") {
+				return targets.some(target => {
+					return target.mayHaveSha(player, "respond");
+				});
+			}
+			if (name === "wanjian") {
+				return targets.some(target => {
+					return target.mayHaveShan(player, "respond");
+				});
+			}
+			if (name === "qizhengxiangsheng") {
+				return targets.some(target => {
+					return target.mayHaveSha(player, "respond") || target.mayHaveShan(player, "respond");
+				});
+			}
+			return false;
+		},
+		logAudio: () => 1,
+		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", [trigger.card]);
+			trigger.targets.remove(player);
+			trigger.getParent().triggeredTargets2.remove(player);
+			trigger.untrigger();
+		},
+		subSkill: {
+			effect: {
+				audio: "mbbifeng",
+				trigger: { global: "useCardAfter" },
+				filter(event, player, name) {
+					return player.getStorage("mbbifeng_effect").includes(event.card);
+				},
+				forced: true,
+				popup: false,
+				logAudio: () => ["mbbifeng2.mp3", "mbbifeng3.mp3"],
+				async content(event, trigger, player) {
+					player.unmarkAuto(event.name, [trigger.card]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
+					if (
+						game.hasPlayer(current => {
+							if (current == player) {
 								return false;
 							}
-							let targets = trigger.targets.filter(current => {
-								return player !== current && get.effect(current, trigger.card, trigger.player, current) < 0;
+							let respondEvts = [];
+							respondEvts.addArray(current.getHistory("useCard")).addArray(current.getHistory("respond"));
+							respondEvts = respondEvts.filter(evt => evt.respondTo).map(evt => evt.respondTo);
+							return respondEvts.some(list => {
+								return list[1] == trigger.card;
 							});
-							if (name === "sha") {
-								return targets.some(target => {
-									return target.mayHaveShan(player, "use");
-								});
-							}
-							if (name === "juedou" || name === "nanman") {
-								return targets.some(target => {
-									return target.mayHaveSha(player, "respond");
-								});
-							}
-							/*if (name === "jiedao") return targets.some(target => {
-						return target.mayHaveSha(player, "use");
-					});*/
-							if (name === "wanjian") {
-								return targets.some(target => {
-									return target.mayHaveShan(player, "respond");
-								});
-							}
-							if (name === "qizhengxiangsheng") {
-								return targets.some(target => {
-									return target.mayHaveSha(player, "respond") || target.mayHaveShan(player, "respond");
-								});
-							}
-							return false;
-						})()
-					)
-					.forResult();
-			}
-		},
-		popup: false,
-		async content(event, trigger, player) {
-			if (event.triggername == "useCardAfter") {
-				player.unmarkAuto("mbbifeng", trigger.card);
-				if (
-					game.hasPlayer(current => {
-						if (current == player) {
-							return false;
-						}
-						let respondEvts = [];
-						respondEvts.addArray(current.getHistory("useCard")).addArray(current.getHistory("respond"));
-						respondEvts = respondEvts.filter(i => i.respondTo).map(evt => evt.respondTo);
-						return respondEvts.some(list => {
-							return list[1] == trigger.card;
-						});
-					})
-				) {
-					player.logSkill("mbbifeng", null, null, null, [3]);
-					await player.draw(2);
-				} else {
-					player.logSkill("mbbifeng", null, null, null, [2]);
-					await player.loseHp();
-				}
-			} else {
-				player.logSkill("mbbifeng", null, null, null, [1]);
-				trigger.getParent().excluded.add(player);
-				player.markAuto("mbbifeng", trigger.card);
-			}
+						})
+					) {
+						player.logSkill(event.name, null, null, null, [3]);
+						await player.draw(2);
+					} else {
+						player.logSkill(event.name, null, null, null, [2]);
+						await player.loseHp();
+					}
+				},
+			},
 		},
 	},
 	mbsuwang: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			if (player.getHistory("damage").length > 1 - ["identity", "doudizhu"].includes(get.mode())) {
+			if (
+				!event.player.hasHistory("useCard", evt => {
+					return (evt.stocktargets || []).includes(player) || (evt.targets || []).includes(player);
+				})
+			) {
 				return false;
 			}
-			return event.player.hasHistory("useCard", evt => evt.targets && evt.targets.includes(player));
+			if (get.mode() == "versus" && _status.mode == "two") {
+				return player.getHistory("damage").reduce((numx, evt) => numx + evt.num, 0) <= 1;
+			}
+			return !player.hasHistory("damage");
 		},
-		frequent: true,
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
-			await player.addToExpansion(get.cards(1), "draw").gaintag.add("mbsuwang");
+			const next = player.addToExpansion(get.cards(1), "draw");
+			next.gaintag.add(event.name);
+			await next;
 		},
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
@@ -10324,27 +10330,31 @@ const skills = {
 				audio: "mbsuwang",
 				trigger: { player: "phaseDrawBegin1" },
 				filter(event, player) {
-					return !event.numFixed && player.getExpansions("mbsuwang").length;
+					return !event.numFixed && player.hasExpansions("mbsuwang");
 				},
-				async cost(event, trigger, player) {
+				prompt2(event, player) {
 					const cards = player.getExpansions("mbsuwang");
-					event.result = await player
-						.chooseBool(get.prompt("mbsuwang"), "放弃摸牌并获得" + get.translation(cards))
-						.set("choice", trigger.num <= cards.length)
-						.forResult();
+					return `改为获得${get.translation(cards)}，然后你可以令一名其他角色摸两张牌`;
+				},
+				check(event, player) {
+					const cards = player.getExpansions("mbsuwang");
+					return event.num <= cards.length;
 				},
 				async content(event, trigger, player) {
 					const cards = player.getExpansions("mbsuwang");
 					trigger.changeToZero();
-					await player.gain(cards, "gain2");
-					if (cards.length >= 0) {
+					if (cards.length) {
+						await player.gain(cards, "gain2");
+					}
+					if (game.hasPlayer(current => current != player)) {
 						const result = await player
-							.chooseTarget("是否令一名其他角色摸两张牌?", lib.filter.notMe)
-							.set("ai", function (target) {
-								return get.effect(target, { name: "draw" }, _status.event.player, _status.event.player);
+							.chooseTarget("宿望：你可以令一名其他角色摸两张牌", lib.filter.notMe)
+							.set("ai", target => {
+								const player = get.player();
+								return get.effect(target, { name: "draw" }, player, player);
 							})
 							.forResult();
-						if (result.bool) {
+						if (result?.bool) {
 							player.line(result.targets[0], "green");
 							await result.targets[0].draw(2);
 						}
