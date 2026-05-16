@@ -14539,15 +14539,9 @@ const skills = {
 			event.suit = suit;
 			player.chat(get.translation(suit + 2));
 			game.log(player, "选择了", "#y" + get.translation(suit + 2));
-			const cards = target.getCards("e", card => {
+			const cards = target.getCards("he", card => {
 				return lib.filter.canBeGained(card, target, player) && get.suit(card) == suit;
 			});
-			const hs = target.getCards("h", card => {
-				return lib.filter.canBeGained(card, target, player) && get.suit(card) == suit;
-			});
-			if (hs.length) {
-				cards.add(hs.randomGet());
-			}
 			if (cards.length) {
 				await player.gain(cards, target, "giveAuto", "bySelf");
 			}
@@ -14625,45 +14619,54 @@ const skills = {
 	},
 	wufei: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-			source: "damageBefore",
-		},
+		trigger: { source: "damageBefore" },
 		filter(event, player, name) {
 			const target = game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
 			if (!target) {
 				return false;
 			}
-			if (name == "damageEnd") {
-				const num = target.getHp();
-				return num > 3 && num > player.getHp();
-			}
 			return event.card && (event.card.name == "sha" || (get.type(event.card) == "trick" && get.is.damageCard(event.card)));
 		},
-		async cost(event, trigger, player) {
-			const target = game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
-			if (event.triggername == "damageEnd") {
-				event.result = await player
-					.chooseBool(get.prompt(event.skill, target), `令${get.translation(target)}受到1点无来源伤害`)
-					.set("choice", get.damageEffect(target, player, player) > 0)
-					.forResult();
-			} else {
-				event.result = { bool: true };
-			}
-		},
+		forced: true,
+		locked: false,
 		logTarget(event, player) {
 			return game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			if (event.triggername == "damageBefore") {
-				trigger.source = target;
-				game.log(target, "成为了", trigger.card, "的伤害来源");
-			} else {
-				await target.damage("nosource");
-			}
+			trigger.source = target;
+			game.log(target, "成为了", trigger.card, "的伤害来源");
 		},
 		ai: { combo: "yichong" },
+		group: "wufei_damage",
+		subSkill: {
+			damage: {
+				audio: "wufei",
+				trigger: { player: "damageEnd" },
+				filter(event, player, name) {
+					const target = game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
+					if (!target) {
+						return false;
+					}
+					const num = target.getHp();
+					return num > 3 && num > player.getHp();
+				},
+				async cost(event, trigger, player) {
+					const target = game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
+					event.result = await player
+						.chooseBool(get.prompt(event.skill, target), `令${get.translation(target)}受到1点无来源伤害`)
+						.set("choice", get.damageEffect(target, player, player) > 0)
+						.forResult();
+				},
+				logTarget(event, player) {
+					return game.findPlayer(current => current.hasSkill(`yichong_${player.playerid}`));
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					await target.damage("nosource");
+				},
+			},
+		},
 	},
 	//张嶷
 	xinwurong: {
