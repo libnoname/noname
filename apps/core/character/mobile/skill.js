@@ -2414,10 +2414,10 @@ const skills = {
 				return;
 			}
 			const cards = result.links;
-			await player.showCards(cards, `${get.translation(player)}发动了【概公】`);
+			await player.showCards(cards, `${get.translation(player)}发动了【慨公】`);
 			const cards2 = get.bottomCards(2, true);
 			const result2 = await player
-				.chooseToMove(`概公：交换${player == target ? "你" : get.translation(target)}的手牌与牌堆底的牌`, true)
+				.chooseToMove(`慨公：交换${player == target ? "你" : get.translation(target)}的手牌与牌堆底的牌`, true)
 				.set("list", [
 					[`${player == target ? "你" : get.translation(target)}的手牌`, cards],
 					["牌堆底", cards2],
@@ -2462,7 +2462,7 @@ const skills = {
 			}
 			const result3 = await player
 				.chooseButton([
-					"概公：是否使用一张牌？",
+					"慨公：是否使用一张牌？",
 					[
 						allCards.map(card => [
 							card,
@@ -26733,12 +26733,13 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return event.getg(player).length && event.getParent("phaseDraw").player != player && player.countCards("h") > 0;
+			return event.getg(player).length && event.getParent("phaseDraw").player != player && player.hasCards("h");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCard(get.prompt2(event.name.slice(0, -5)), "h", [1, player.countCards("h")], "allowChooseAll")
 				.set("ai", card => {
+					const player = get.player();
 					if (!game.hasPlayer(target => player != target && get.attitude(player, target) > 0)) {
 						return 0;
 					}
@@ -26747,120 +26748,123 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.addSkill("xinqingjian2");
+			player.addSkill(event.name + "_effect");
 			const next = player.addToExpansion(event.cards, "giveAuto", player);
-			next.gaintag.add("xinqingjian2");
+			next.gaintag.add(event.name + "_effect");
 			await next;
 		},
-	},
-	xinqingjian2: {
-		audio: "xinqingjian",
-		charlotte: true,
-		trigger: { global: "phaseEnd" },
-		forced: true,
-		sourceSkill: "xinqingjian",
-		filter(event, player) {
-			return player.getExpansions("xinqingjian2").length > 0;
-		},
-		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
-			}
-		},
-		async content(event, trigger, player) {
-			if (_status.connectMode) {
-				game.broadcastAll(() => {
-					_status.noclearcountdown = true;
-				});
-			}
-			const given_map = {};
-			event.given_map = given_map;
-			const expansions = player.getExpansions("xinqingjian2");
-			const goon = expansions.length > 1;
-			let result;
-			while (true) {
-				if (expansions.length > 1) {
-					result = await player
-						.chooseCardButton("清俭：请选择要分配的牌", true, expansions, [1, expansions.length])
-						.set("ai", button => {
-							if (ui.selected.buttons.length) {
-								return 0;
+		subSkill: {
+			effect: {
+				charlotte: true,
+				audio: "xinqingjian",
+				trigger: { global: "phaseAfter" },
+				filter(event, player) {
+					return player.hasExpansions("xinqingjian_effect") && game.hasPlayer(current => current != player);
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const cards = player.getExpansions(event.name);
+					if (_status.connectMode) {
+						game.broadcastAll(function () {
+							_status.noclearcountdown = true;
+						});
+					}
+					const goon = cards.length > 1;
+					const given_map = new Map();
+					while (cards.length > 0 && game.hasPlayer(current => current != player)) {
+						const result =
+							cards.length > 1
+								? await player
+										.chooseButtonTarget({
+											createDialog: [`清俭：请选择要分配的牌`, cards],
+											selectButton: [1, Infinity],
+											forced: true,
+											filterTarget: lib.filter.notMe,
+											ai1(button) {
+												return get.value(button.link);
+											},
+											canHidden: true,
+											ai2(target) {
+												const player = get.player();
+												const card = ui.selected.buttons[0].link;
+												if (card) {
+													return get.value(card, target) * get.attitude(player, target);
+												}
+												return 1;
+											},
+										})
+										.set("allowChooseAll", true)
+										.forResult()
+								: await player
+										.chooseTarget(`清俭：令一名其他角色获得${get.translation(cards)}`, true, lib.filter.notMe)
+										.set("ai", target => {
+											const { player, enemy } = get.event();
+											const att = get.attitude(player, target);
+											if (enemy) {
+												return -att;
+											} else if (att > 0) {
+												return att / (1 + target.countCards("h"));
+											} else {
+												return att / 100;
+											}
+										})
+										.set("enemy", get.value(cards[0], player, "raw") < 0)
+										.forResult();
+						if (result?.bool) {
+							let links;
+							if (!result.links?.length) {
+								links = cards.slice();
+							} else {
+								links = result.links;
 							}
-							return get.value(button.link, get.player());
-						})
-						.forResult();
-				} else if (expansions.length === 1) {
-					result = { bool: true, links: expansions.slice(0) };
-				} else {
-					return;
-				}
-				if (!result.bool) {
-					return;
-				}
-				const toGive = result.links;
-				result = await player
-					.chooseTarget(`选择一名其他角色获得${get.translation(toGive)}`, expansions.length === 1, lib.filter.notMe)
-					.set("ai", target => {
-						const att = get.attitude(get.player(), target);
-						if (get.event().toEnemy) {
-							return Math.max(0.01, 100 - att);
-						} else if (att > 0) {
-							return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event().getParent().given_map[target.playerid] || 0)));
+							cards.removeArray(links);
+							const [target] = result.targets;
+							if (!given_map.has(target)) {
+								given_map.set(target, links);
+							} else {
+								given_map.get(target).addArray(links);
+							}
 						} else {
-							return Math.max(0.01, (100 + att) / 200);
+							break;
 						}
-					})
-					.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
-					.forResult();
-				if (result.bool) {
-					expansions.removeArray(toGive);
-					if (result.targets.length) {
-						const id = result.targets[0].playerid;
-						if (!given_map[id]) {
-							given_map[id] = [];
+					}
+					if (_status.connectMode) {
+						game.broadcastAll(() => {
+							delete _status.noclearcountdown;
+							game.stopCountChoose();
+						});
+					}
+					if (given_map.size) {
+						await game
+							.loseAsync({
+								gain_list: Array.from(given_map),
+								giver: player,
+								animate: "gain2",
+							})
+							.setContent("gaincardMultiple");
+						if (goon) {
+							await player.draw();
 						}
-						given_map[id].addArray(toGive);
 					}
-					if (!expansions.length) {
-						break;
+					player.removeSkill(event.name);
+				},
+				onremove(player, skill) {
+					const cards = player.getExpansions(skill);
+					if (cards.length) {
+						player.loseToDiscardpile(cards);
 					}
-				}
-			}
-			if (_status.connectMode) {
-				game.broadcastAll(() => {
-					delete _status.noclearcountdown;
-					game.stopCountChoose();
-				});
-			}
-			const gain_list = [];
-			for (const i in given_map) {
-				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				player.line(source, "green");
-				gain_list.push([source, given_map[i]]);
-				game.log(source, "获得了", given_map[i]);
-			}
-			await game
-				.loseAsync({
-					gain_list,
-					giver: player,
-					animate: "gain2",
-				})
-				.setContent("gaincardMultiple");
-			if (goon) {
-				await player.draw();
-			}
-			player.removeSkill("xinqingjian2");
-		},
-		intro: {
-			markcount: "expansion",
-			mark(dialog, storage, player) {
-				var cards = player.getExpansions("xinqingjian2");
-				if (player.isUnderControl(true)) {
-					dialog.addAuto(cards);
-				} else {
-					return "共有" + get.cnNumber(cards.length) + "张牌";
-				}
+				},
+				intro: {
+					markcount: "expansion",
+					mark(dialog, storage, player) {
+						var cards = player.getExpansions("xinqingjian_effect");
+						if (player.isUnderControl(true)) {
+							dialog.addAuto(cards);
+						} else {
+							return "共有" + get.cnNumber(cards.length) + "张牌";
+						}
+					},
+				},
 			},
 		},
 	},
