@@ -32777,14 +32777,14 @@ const skills = {
 	yjixi: {
 		derivation: "rewangzun",
 		audio: "weidi",
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: { player: "phaseAfter" },
 		forced: true,
 		filter(event, player) {
 			if (player.phaseNumber < 3) {
 				return false;
 			}
-			var num = 0;
-			for (var i = player.actionHistory.length - 1; i >= 0; i--) {
+			let num = 0;
+			for (let i = player.actionHistory.length - 1; i >= 0; i--) {
 				if (!player.actionHistory[i].isMe) {
 					continue;
 				}
@@ -32802,24 +32802,18 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "gray",
 		juexingji: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.gainMaxHp();
-			player.recover();
-			"step 1";
-			var str = "摸两张牌";
-			var mode = get.mode();
-			var choice = "选项一";
+			await player.gainMaxHp();
+			await player.recover();
+			let str = "摸两张牌";
+			const mode = get.mode();
+			let choice = "选项一";
+				const list = [];
 			if (mode == "identity" || (mode == "versus" && _status.mode == "four")) {
-				var list = [];
-				var zhu = get.zhu(player);
+				const zhu = get.zhu(player);
 				if (zhu && zhu != player && zhu.skills) {
-					for (var i = 0; i < zhu.skills.length; i++) {
-						if (lib.skill[zhu.skills[i]] && lib.skill[zhu.skills[i]].zhuSkill) {
-							list.push(zhu.skills[i]);
-						}
-					}
+					list.addArray(zhu.skills.filter(skill => lib.skill[skill].zhuSkill));
 				}
 				if (list.length) {
 					str += "并获得技能" + get.translation(list);
@@ -32827,23 +32821,22 @@ const skills = {
 					choice = "选项二";
 				}
 			}
-			player
-				.chooseControl(function (event, player) {
-					return _status.event.choice;
-				})
+			const result = await player
+				.chooseControl()
 				.set("choiceList", ["获得技能〖妄尊〗", str])
-				.set("choice", choice);
-			"step 2";
-			if (result.control == "选项一") {
-				player.addSkills("rewangzun");
-			} else {
-				player.draw(2);
-				if (event.list) {
-					player.addSkills(event.list);
+				.set("choice", choice)
+				.set("ai", () => _status.event.choice)
+				.forResult();
+			if (result?.control == "选项一") {
+					player.addSkills("rewangzun");
+			} else if (result?.control == "选项二") {
+				await player.draw(2);
+				if (list.length) {
+					await player.addSkills(list);
 					game.broadcastAll(function (list) {
 						game.expandSkills(list);
-						for (var i of list) {
-							var info = lib.skill[i];
+						for (const skill of list) {
+							const info = lib.skill[skill];
 							if (!info) {
 								continue;
 							}
@@ -32852,7 +32845,7 @@ const skills = {
 							}
 							info.audioname2.old_yuanshu = "weidi";
 						}
-					}, event.list);
+					}, list);
 				}
 			}
 		},
