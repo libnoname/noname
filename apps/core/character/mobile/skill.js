@@ -10114,15 +10114,13 @@ const skills = {
 	},
 	mbdingfa: {
 		audio: "dingfa",
-		trigger: {
-			player: "phaseDiscardAfter",
-		},
+		trigger: { player: "phaseDiscardAfter" },
 		filter(event, player) {
 			let num = 0;
 			player.getHistory("lose", evt => {
 				num += evt.cards2.length;
 			});
-			return num >= 3 && (player.isDamaged() || game.hasPlayer(current => current.countDiscardableCards(player, "he")));
+			return num >= 4 && (player.isDamaged() || game.hasPlayer(current => current.hasDiscardableCards(player, "he")));
 		},
 		async cost(event, trigger, player) {
 			const choices = [];
@@ -10132,7 +10130,7 @@ const skills = {
 			} else {
 				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
 			}
-			if (game.hasPlayer(current => current.countDiscardableCards(player, "he"))) {
+			if (game.hasPlayer(current => current.hasDiscardableCards(player, "he"))) {
 				choices.push("选项二");
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
@@ -10168,23 +10166,28 @@ const skills = {
 			if (event.cost_data == "选项一") {
 				await player.recover();
 			} else {
-				const { targets } = await player
+				const targets = game.filterPlayer(current => current.hasDiscardableCards(player, "he"));
+				if (!targets.length) {
+					return;
+				}
+				const result = await player
 					.chooseTarget(
 						"选择一名角色弃置其至多两张牌",
 						(card, player, target) => {
-							return target.countDiscardableCards(player, "he");
+							return get.event().targets?.includes(target);
 						},
 						true
 					)
+					.set("targets", targets)
 					.set("ai", target => {
 						const player = get.player();
 						return get.effect(target, { name: "guohe_copy2" }, player, player);
 					})
 					.forResult();
-				if (!targets || !targets.length) {
+				if (!result?.targets?.length) {
 					return;
 				}
-				const target = targets[0];
+				const target = result.targets[0];
 				await player.discardPlayerCard(target, "he", true, [1, 2]);
 			}
 		},
