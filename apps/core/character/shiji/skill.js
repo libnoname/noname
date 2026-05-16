@@ -9481,7 +9481,7 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (player.hasSkill("spwanwei2") || player.hp < 1) {
+			if (player.hasMark("spwanwei_used") || player.hp < 1) {
 				return false;
 			}
 			if (event.type == "dying") {
@@ -9490,7 +9490,7 @@ const skills = {
 			if (event.type != "phase") {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return current != player && current.isDamaged();
 			});
 		},
@@ -9506,11 +9506,13 @@ const skills = {
 			}
 			return 1;
 		},
-		content() {
-			player.addTempSkill("spwanwei2", "roundStart");
-			var num = player.hp;
-			target.recover(Math.max(num + 1, 1 - target.hp));
-			player.loseHp(num);
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.addTempSkill(event.name + "_used", "roundStart");
+			player.addMark(event.name + "_used", 1, false);
+			const num = player.getHp();
+			await target.recover(Math.max(num + 1, 1 - target.hp));
+			await player.loseHp(num);
 		},
 		ai: {
 			save: true,
@@ -9534,64 +9536,110 @@ const skills = {
 				},
 			},
 		},
+		subskill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
-	spwanwei2: {},
+	spwanwei: {
+		audio: 2,
+		enable: "chooseToUse",
+		round: 1,
+		filter(event, player) {
+			if (player.hp < 1) {
+				return false;
+			}
+			if (event.type == "dying") {
+				return event.dying != player;
+			}
+			if (event.type != "phase") {
+				return false;
+			}
+			return game.hasPlayer(current => {
+				return current != player && current.isDamaged();
+			});
+		},
+		filterTarget(card, player, target) {
+			if (_status.event.type == "dying") {
+				return target == _status.event.dying;
+			}
+			return player != target && target.isDamaged();
+		},
+		selectTarget() {
+			if (_status.event.type == "dying") {
+				return -1;
+			}
+			return 1;
+		},
+		prompt(event, player) {
+			const num = player.getHp();
+			if (event.type == "dying") {
+				const target = event.dying;
+				return `令${get.translation(target)}回复${Math.max(num + 1, 1 - target.hp)}点体力，然后你失去${num}点体力`;
+			} else {
+				return `令一名其他角色回复${num + 1}点体力（至少回复至1），然后你失去${num}点体力`;
+			}
+		},
+		manualConfirm: true,
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const num = player.getHp();
+			await target.recover(Math.max(num + 1, 1 - target.hp));
+			await player.loseHp(num);
+		},
+		ai: {
+			save: true,
+			skillTagFilter(player, tag, target) {
+				return player != target;
+			},
+			expose: 0.5,
+			order: 6,
+			result: {
+				target(player, target) {
+					if (get.attitude(player, target) < 4) {
+						return 0;
+					}
+					if ((!player.hasSkill("spyuejian") || player.countCards("he") < 2) && !player.hasCards("hs", card => player.canSaveCard(card, player))) {
+						return 0;
+					}
+					if (_status.event.type != "dying") {
+						const num = player.getHp();
+						if (target.getDamagedHp() < 2) {
+							return 0;
+						}
+						return Math.max(num + 1, 1 - target.hp);
+					} else {
+						return 1;
+					}
+				},
+			},
+		},
+	},
 	spyuejian: {
 		mod: {
 			maxHandcardBase(player) {
 				return player.maxHp;
 			},
 		},
+		locked: false,
 		audio: 2,
-		enable: "chooseToUse",
+		trigger: { player: "dying" },
 		filter(event, player) {
-			return event.type == "dying" && player == event.dying && player.countCards("he") > 1;
+			return player.countCards("he") > 1;
 		},
-		selectCard: 2,
-		filterCard: true,
-		position: "he",
-		check(card) {
-			return 1 / Math.max(0.1, get.value(card));
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard("he", 2, get.prompt(event.skill), "弃置两张牌，然后回复1点体力", "chooseonly")
+				.set("ai", card => {
+					return 1 / Math.max(0.1, get.value(card));
+				})
+				.forResult();
 		},
-		content() {
-			player.recover();
-		},
-		ai: {
-			save: true,
-			skillTagFilter(player, tag, target) {
-				return player == target;
-			},
-			order: 1.4,
-			result: {
-				player: 1,
-			},
-		},
-	},
-	spwuku: {
-		audio: 2,
-		trigger: { global: "useCard" },
-		forced: true,
-		preHidden: true,
-		filter(event, player) {
-			if (get.type(event.card) != "equip") {
-				return false;
-			}
-			var gz = get.mode() == "guozhan";
-			if (gz && event.player.isFriendOf(player)) {
-				return false;
-			}
-			return player.countMark("spwuku") < (gz ? 2 : 3);
-		},
-		content() {
-			player.addMark("spwuku", 1);
-		},
-		marktext: "库",
-		intro: {
-			content: "mark",
-		},
-		ai: {
-			combo: "spmiewu",
-			threaten: 3.6,
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			await player.recover();
 		},
 	},
 	spsanchen: {
