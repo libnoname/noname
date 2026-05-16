@@ -8362,6 +8362,9 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
+			if (player.countMark("friendmanjuan_used") >= 5) {
+				return false;
+			}
 			const cards = event.getg?.(player) || [];
 			if (cards.length < 2 || !cards.some(i => get.owner(i) === player && ["h", "e"].includes(get.position(i)))) {
 				return false;
@@ -8394,6 +8397,8 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_used", "roundStart");
+			player.addMark(event.name + "_used", 1, false);
 			const cards = event.cost_data[0];
 			await player.lose(cards, ui.cardPile, "insert");
 			const list = [];
@@ -8414,6 +8419,13 @@ const skills = {
 			if (list.length) {
 				await player.gain(list, "gain2");
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本轮已发动【漫卷】#次" },
+			},
 		},
 	},
 	friendyangming: {
