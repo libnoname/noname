@@ -8591,9 +8591,7 @@ const skills = {
 	},
 	new_fenji: {
 		audio: "fenji",
-		trigger: {
-			global: "phaseJieshuBegin",
-		},
+		trigger: { global: "phaseAfter" },
 		filter(event, player) {
 			if (event.player.countCards("h") == 0 && event.player.isIn()) {
 				return true;
