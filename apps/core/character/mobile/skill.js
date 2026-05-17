@@ -9724,28 +9724,20 @@ const skills = {
 		filter(event, player) {
 			if (
 				!game.hasPlayer(target => {
-					return target.hasCard(card => card.name.startsWith("dagongche_"), "e");
+					return target.hasCards("e", card => card.name.startsWith("dagongche_"));
 				})
 			) {
 				const num = player.getAllHistory("custom", evt => evt.name == "mbquchong").length;
 				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */ [0, 2, 5, 5];
 				return num < 4 && player.countMark("mbquchong") >= list[num];
 			}
-			return player.canMoveCard(
-				null,
-				true,
-				game.filterPlayer(target => {
-					return target.hasCard(card => card.name.startsWith("dagongche_"), "e");
-				}),
-				(card, player) => {
-					return card.name.startsWith("dagongche_");
-				},
-				"canReplace"
-			);
+			return game.hasPlayer(target => {
+				return target.hasCards("e", card => card.name.startsWith("dagongche_")) && game.hasPlayer(current => current != target /* && !current.hasCards("e", card => card.name.startsWith("dagongche_")) */);
+			});
 		},
 		mod: {
 			aiValue(player, card, num) {
-				if (!player.countCards(cardx => cardx.name.startsWith("dagongche_"), "e")) {
+				if (!player.hasCards("e", cardx => cardx.name.startsWith("dagongche_"))) {
 					return num;
 				}
 				if (card.name.startsWith("dagongche_")) {
@@ -9762,23 +9754,62 @@ const skills = {
 		async content(event, trigger, player) {
 			if (
 				game.hasPlayer(target => {
-					return target.hasCard(card => card.name.startsWith("dagongche_"), "e");
+					return target.hasCards("e", card => card.name.startsWith("dagongche_"));
 				})
 			) {
-				await player
-					.moveCard(
-						get.prompt("mbquchong"),
-						"移动场上的一张【大攻车】",
-						(card, player) => {
-							return card.name.startsWith("dagongche_");
-						},
-						game.filterPlayer(target => {
-							return target.hasCard(card => card.name.startsWith("dagongche_"), "e");
-						}),
-						"canReplace"
-					)
-					.set("nojudge", true)
-					.set("logSkill", ["mbquchong", null, null, null, [4]]);
+				let result = await player
+					.chooseTarget(2, (card, player, target) => {
+						if (!ui.selected.targets.length) {
+							return target.hasCards("e", card => card.name.startsWith("dagongche_"));
+						} else {
+							const from = ui.selected.targets[0];
+							return target != from;
+						}
+					})
+					.set("multitarget", true)
+					.set("cards", event.cards)
+					.set("targetprompt", ["被移走", "获得目标"])
+					.set("prompt", get.prompt(event.name))
+					.set("prompt2", `将场上的一张【大攻车】交给另一名角色并令其使用之`)
+					.set("ai", target => {
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (!ui.selected.targets.length) {
+							if (att > 0) {
+								return 0;
+							}
+							if (target.hasSkillTag("noe")) {
+								att /= 4;
+							}
+							return -att;
+						} else {
+							const from = ui.selected.targets[0];
+							if (from.hasCards("e", card => card.name.startsWith("dagongche_") && target.canEquip(card))) {
+								return att * (2.5 - target.countCards("e"));
+							}
+							return att;
+						}
+					})
+					.forResult();
+				if (result?.bool) {
+					const { targets } = result;
+					const [target1, target2] = targets;
+					player.logSkill(event.name, targets, null, null, [4]);
+					const cards = target1.getCards("e", card => card.name.startsWith("dagongche_"));
+					if (cards.length) {
+						result = await target1
+							.chooseButton([`###渠冲###<div class='text center'>请选择其中一张牌将之交给${get.translation(target2)}并令其使用</div>`, cards], true)
+							.set("direct", true)
+							.forResult();
+						if (result?.bool) {
+							const card = result.links[0];
+							await target2.gain(card, target1, "giveAuto").set("giver", player);
+							if (get.position(card) == "h" && get.owner(card) == target2 && target2.hasUseTarget(card)) {
+								await target2.chooseUseTarget(card, "nopopup", false, true);
+							}
+						}
+					}
+				}
 			} else {
 				const numbers = Array.from({ length: 13 }).map((_, i) => get.strNumber(i + 1));
 				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */ [0, 2, 5, 5];
@@ -9831,7 +9862,7 @@ const skills = {
 						})
 						.set("card", card)
 						.forResult();
-					if (resultx.bool) {
+					if (resultx?.bool) {
 						const target = resultx.targets[0];
 						player.logSkill("mbquchong", target, null, null, [card.name == "dagongche_attack" ? 3 : 2]);
 						if (costMark > 0) {
@@ -9871,12 +9902,12 @@ const skills = {
 				audio: "mbquchong1.mp3",
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					return get.discardPile(i => get.type(i, false) == "equip");
+					return get.discardPile(card => get.type(card, false) == "equip");
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const cards = Array.from(ui.discardPile.childNodes).filter(i => get.type(i, false) == "equip");
+					const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card, false) == "equip");
 					await game.cardsGotoSpecial(cards);
 					await player.showCards(cards, get.translation(player) + "发动了【渠冲】");
 					game.log(cards, "被移出了游戏");
@@ -9885,12 +9916,10 @@ const skills = {
 			},
 			effect: {
 				equipSkill: true,
-				trigger: {
-					player: ["loseBefore", "mbquchongOnRemove", "equipBefore", "equipAfter"],
-				},
+				trigger: { player: ["loseBefore", "mbquchongOnRemove", "equipBefore", "equipAfter"] },
 				filter(event, player, name) {
 					if (name == "mbquchongOnRemove") {
-						return player.hasCard(card => card.name.startsWith("dagongche_") && card.storage?.mbquchong <= 0, "e");
+						return player.hasCards("e", card => card.name.startsWith("dagongche_") && card.storage?.mbquchong <= 0);
 					}
 					if (event.name == "equip") {
 						if (name == "equipBefore") {
@@ -9899,22 +9928,22 @@ const skills = {
 						if (!event.card.name.startsWith("dagongche_")) {
 							return false;
 						}
-						return player.hasCard(card => {
+						return player.hasCards("e", card => {
 							return !event.cards.includes(card) && lib.filter.cardDiscardable(card, player);
-						}, "e");
+						});
 					}
 					if (event.getParent(2).name == "disableEquip") {
 						return false;
 					}
-					if (event.getParent(3).name == "mbquchong" || event.getParent(3).name == "mbquchong_recast") {
+					if (event.getParent(2).name == "mbquchong" || event.getParent(3).name == "mbquchong_recast") {
 						return false;
 					}
-					return player.hasCard(card => {
+					return player.hasCards("e", card => {
 						if (!event.cards.includes(card)) {
 							return false;
 						}
 						return card.name.startsWith("dagongche_") && card.storage?.mbquchong > 0;
-					}, "e");
+					});
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -9956,7 +9985,7 @@ const skills = {
 				ai: {
 					effect: {
 						target(card, player, target) {
-							if (!target.hasCard(card => card.name.startsWith("dagongche_"), "e")) {
+							if (!target.hasCards("e", card => card.name.startsWith("dagongche_"))) {
 								return;
 							}
 							if (player == target && get.type(card) == "equip") {
