@@ -10942,12 +10942,58 @@ const skills = {
 	},
 	//新司马孚
 	mbpanxiang: {
+		initSkill(skill) {
+			if (!lib.skill[skill]) {
+				lib.skill[skill] = {
+					charlotte: true,
+					onremove(player, skill) {
+						delete player.storage[skill];
+						player.removeTip(skill);
+					},
+					mark: true,
+					marktext: "襄",
+					intro: {
+						markcount: () => 0,
+						content: storage => `上次${get.translation(storage[1])}对你发动【蹒襄】选择的选项是：${storage[0]}`,
+					},
+				};
+				lib.translate[skill] = "蹒襄";
+			}
+		},
+		init(player, skill) {
+			game.countPlayer(current => {
+				const history = game.getAllGlobalHistory("everything", evt => evt.name == skill && evt.player == player && evt.targets?.[0] == current);
+				if (history.length) {
+					const { control } = history.at(-1).cost_data;
+					const mark = `${skill}_${player.playerid}`;
+					game.broadcastAll(lib.skill.mbpanxiang.initSkill, mark);
+					const storage = [control, player];
+					current.storage[mark] = storage;
+					current.addSkill(mark);
+					current.markSkill(mark);
+					current.addTip(mark, `${get.translation(mark)}(${get.translation(storage[1])}) ${storage[0]}`);
+				}
+			});
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			game.countPlayer(current => {
+				current.removeSkill(`${skill}_${player.playerid}`);
+			});
+		},
 		audio: 4,
 		trigger: { global: "damageBegin3" },
 		async cost(event, trigger, player) {
 			const { player: target, source, card } = trigger;
+			const history = game.getAllGlobalHistory("everything", evt => evt.name == event.skill && evt.player == player && evt.targets?.[0] == target);
 			const [SUB, ADD] = ["减伤", "加伤"];
-			const list = ["减伤", "加伤"].filter(text => text !== (player.storage[event.skill] || {})[target.playerid]);
+			const list = ["减伤", "加伤"].filter(text => {
+				if (!history.length) {
+					return true;
+				}
+				const { control } = history.at(-1).cost_data;
+				return text !== control;
+			});
 			list.push("cancel2");
 			let prompt = `${get.translation(target)}即将受到${source ? "来自" + get.translation(source) : "无来源"}的${trigger.num}点伤害，你可以选择一项：`;
 			const choiceTexts = [`⒈令此伤害-1${source && source.isIn() ? "，" + get.translation(source) + "摸两张牌" : ""}；`, `⒉令此伤害+1，${get.translation(target)}摸三张牌。`];
@@ -11044,7 +11090,6 @@ const skills = {
 			}
 		},
 		logTarget: "player",
-		onremove: true,
 		logAudio(event, player, name, indexedData, evt) {
 			const { control } = evt.cost_data;
 			return control == "减伤" ? ["mbpanxiang1.mp3", "mbpanxiang2.mp3"] : ["mbpanxiang3.mp3", "mbpanxiang4.mp3"];
@@ -11052,11 +11097,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const { control } = event.cost_data;
 			const { player: target, source } = trigger;
-			if (!player.storage.mbpanxiang) {
-				player.storage.mbpanxiang = {};
-			}
-			player.storage.mbpanxiang[target.playerid] = control;
 			player.markAuto("mbpanxiang_mark", [trigger.player]);
+			const skill = `mbpanxiang_${player.playerid}`;
+			game.broadcastAll(lib.skill.mbpanxiang.initSkill, skill);
+			const storage = [control, player];
+			target.storage[skill] = storage;
+			target.addSkill(skill);
+			target.markSkill(skill);
+			target.addTip(skill, `${get.translation(skill)}(${get.translation(storage[1])}) ${storage[0]}`);
 			if (control === "减伤") {
 				trigger.num--;
 				game.log(player, "令此伤害", "#y-1");
