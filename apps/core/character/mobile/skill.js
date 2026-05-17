@@ -6881,17 +6881,28 @@ const skills = {
 			sha: {
 				mod: {
 					cardname(card) {
+						const evt = get.event();
+						if (!["chooseToUse", "chooseToRespond"].includes(evt.name)) {
+							return;
+						}
 						if (get.itemtype(card) == "card" && card.hasGaintag("mbxuehen_sha")) {
 							return "sha";
 						}
 					},
 					cardnature(card) {
+						const evt = get.event();
+						if (!["chooseToUse", "chooseToRespond"].includes(evt.name)) {
+							return;
+						}
 						if (get.itemtype(card) == "card" && card.hasGaintag("mbxuehen_sha")) {
 							return false;
 						}
 					},
 					cardUsable(card, player, num) {
-						if (card?.cards?.some(cardx => cardx.hasGaintag("mbxuehen_sha"))) {
+						if (!card.cards || card.cards.length != 1) {
+							return;
+						}
+						if (get.itemtype(card.cards[0]) === "card" && card.cards[0].hasGaintag("mbxuehen_sha")) {
 							return Infinity;
 						}
 					},
