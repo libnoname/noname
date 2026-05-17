@@ -131,16 +131,14 @@ const skills = {
 	//张世平
 	dcbinji: {
 		audio: 2,
-		trigger: {
-			global: "roundStart",
-		},
+		trigger: { global: "roundStart" },
 		filter(event, player) {
 			return true;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
 			await player.draw(3);
-			if (!player.countCards("h")) {
+			if (!player.hasCards("he") || !game.hasPlayer(current => current != player)) {
 				return;
 			}
 			const result = await player
@@ -149,6 +147,7 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: [1, 3],
 					filterCard: true,
+					forced: true,
 					selectCard: [1, 3],
 					position: "he",
 					complexSelect: true,
@@ -195,9 +194,7 @@ const skills = {
 				audio: "dcbinji",
 				charlotte: true,
 				forced: true,
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "addToExpansionAfter", "equipAfter", "addJudgeAfter", "gainAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "addToExpansionAfter", "equipAfter", "addJudgeAfter", "gainAfter"] },
 				getIndex(event, player) {
 					return game
 						.filterPlayer(target => {
