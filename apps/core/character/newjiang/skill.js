@@ -6509,7 +6509,7 @@ const skills = {
 			},
 			result: {
 				player(player) {
-					if ((player.hp > 2 && (player.hasValueTarget({ name: "sha" }), false)) || player.canMoveCard(true)) {
+					if (player.hp > 2 && (player.hasValueTarget({ name: "sha", isCard: true }, false) || player.canMoveCard(true))) {
 						return 1;
 					}
 					return 0;

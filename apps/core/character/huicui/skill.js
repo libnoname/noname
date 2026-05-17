@@ -15897,7 +15897,6 @@ const skills = {
 			};
 			next._args.remove("glow_result");
 			const result = await next.forResult();
-			console.warn(result);
 			const listMap = new Map();
 			for (let i = 0; i < targets.length; i++) {
 				listMap.set(result[i].cards[0], targets[i]);
