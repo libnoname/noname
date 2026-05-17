@@ -7183,7 +7183,7 @@ const skills = {
 				if (target.isMaxHandcard() && targets.length) {
 					const result = await player
 						.chooseTarget(`助国：你可以选择一名角色，令${get.translation(target)}选择是否对其使用一张无距离和次数限制的【杀】`, (card, player, target) => {
-							return get.event.targets.includes(target);
+							return get.event().targets.includes(target);
 						})
 						.set("ai", target => {
 							const { player, targetx } = get.event();
