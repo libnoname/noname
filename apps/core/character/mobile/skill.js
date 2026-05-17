@@ -2383,7 +2383,7 @@ const skills = {
 				if (!current?.isIn()) {
 					return false;
 				}
-				return current.countCards("h") >= 2;
+				return current.hasCards("h");
 			});
 		},
 		usable: 1,
@@ -2392,82 +2392,110 @@ const skills = {
 				if (!current?.isIn()) {
 					return false;
 				}
-				return current.countCards("h") >= 2;
+				return current.hasCards("h");
 			});
-			if (!targets?.length) {
-				return;
-			}
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return get.event().targetx.includes(target);
 				})
 				.set("targetx", targets)
 				.set("ai", target => {
-					return Math.max(0.1, get.attitude(get.player(), target));
+					const { player, bottomCards } = get.event();
+					const cards = bottomCards.filter(card => card.isKnownBy(player));
+					const suits = cards.map(card => get.suit(card)).toUniqued();
+					const att = get.attitude(player, target);
+					if (att < 0) {
+						if (cards.length) {
+							if (suits.length > 1) {
+								return 10;
+							}
+						}
+						if (player.hasSkillTag("viewHandcard", null, target, true)) {
+							return 5 * Math.min(2, target.countCards("h"));
+						}
+						if (target.hasCards("h", card => get.is.shownCard(card))) {
+							return Math.min(2, target.countCards("h"));
+						}
+						return 0;
+					} else {
+						if (cards.length) {
+							if (suits.length > 1 || get.value(cards) >= 7) {
+								return 10;
+							}
+						}
+						return att * Math.min(2, target.countCards("h"));
+					}
 				})
+				.set("bottomCards", Array.from(ui.cardPile.childNodes).slice(-2))
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const result = await player.choosePlayerCard(target, 2, true, "h", "展示两张手牌并与牌堆底的牌交换").forResult();
+			if (!target.hasCards("h")) {
+				return;
+			}
+			let result = await player
+				.choosePlayerCard(target, [1, 2], true, "h", `展示${get.translation(target)}的至多两张手牌并令其与牌堆底的等量牌交换`)
+				.set("ai", button => {
+					const { player, target } = get.event();
+					const card = button.link;
+					const att = get.attitude(player, target);
+					if (player == target) {
+						if (!ui.selected.buttons.length) {
+							if (player.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
+								return 6.5 - get.value(card);
+							}
+						}
+						const card1 = ui.selected.buttons[0].link;
+						if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+							return 10;
+						}
+						return -get.value(card);
+					} else {
+						if (player.hasSkillTag("viewHandcard", null, target, true)) {
+							if (!ui.selected.buttons.length) {
+								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
+									return att > 0 ? 6 - get.value(card) : get.value(card);
+								}
+							}
+							const card1 = ui.selected.buttons[0].link;
+							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+								return 10;
+							}
+							return att > 0 ? 6 - get.value(card) : get.value(card);
+						}
+						if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
+							return 10;
+						}
+						return Math.random();
+					}
+				})
+				.forResult();
 			if (!result?.bool || !result.links?.length) {
 				return;
 			}
-			const cards = result.links;
-			await player.showCards(cards, `${get.translation(player)}发动了【慨公】`);
-			const cards2 = get.bottomCards(2, true);
-			const result2 = await player
-				.chooseToMove(`慨公：交换${player == target ? "你" : get.translation(target)}的手牌与牌堆底的牌`, true)
-				.set("list", [
-					[`${player == target ? "你" : get.translation(target)}的手牌`, cards],
-					["牌堆底", cards2],
-				])
-				.set("filterMove", function (from, to, moved) {
-					if (typeof to == "number") {
-						return false;
-					}
-					return true;
-				})
-				.set("att", get.attitude(player, target))
-				.set("processAI", function (list) {
-					const cards = list[0][1].slice(0).sort(function (a, b) {
-						return get.value(b) - get.value(a);
-					});
-					if (get.event().att <= 0) {
-						cards.reverse();
-					}
-					return [cards, cards.splice(2)];
-				})
-				.forResult();
-			if (!result2?.bool || !result2.moved?.length) {
-				return;
-			}
-			const puts = cards.removeArray(result2.moved[0]),
-				gains = cards2.removeArray(result2.moved[1]);
+			const puts = result.links;
+			await player.showCards(puts, `${get.translation(player)}发动了【慨公】`);
+			const gains = get.bottomCards(puts.length, true);
 			if (puts.length && gains.length) {
 				target.$throw(puts.length, 1000);
-				await target.lose(puts, ui.special);
+				await target.lose(puts, ui.cardPile);
 				await target.gain(gains, "draw");
-				const bottoms = result2.moved[1].slice();
-				if (bottoms.length) {
-					await game.cardsGotoOrdering(bottoms);
-					await game.cardsGotoPile(bottoms);
-					game.updateRoundNumber();
-				}
 			}
+			game.addCardKnower(puts, player);
 			const allCards = [puts, gains].flat(),
 				suits = allCards.map(card => get.suit(card)).toUniqued();
-			if (suits.length < 3 || allCards.every(card => !player.hasUseTarget(card))) {
+			if (suits.length < 3) {
 				return;
 			}
-			const result3 = await player
+			result = await player
 				.chooseButton([
-					"慨公：是否使用一张牌？",
+					"慨公：你可以使用其中一张牌",
 					[
 						allCards.map(card => [
 							card,
 							(() => {
-								return result2.moved[0].includes(card) ? "手牌" : "牌堆底";
+								return gains.includes(card) ? "手牌" : "牌堆底";
 							})(),
 						]),
 						(item, type, position, noclick, node) => {
@@ -2481,14 +2509,23 @@ const skills = {
 					return get.player().hasUseTarget(button.link);
 				})
 				.set("ai", button => {
-					return get.player().getUseValue(button.link);
+					const card = button.link;
+					let eff = get.player().getUseValue(button.link);
+					if (get.owner(card)) {
+						const att = get.sgnAttitude(player, get.owner(card));
+						eff += -1.5 * att;
+					}
+					return eff;
 				})
 				.forResult();
-			if (!result3?.bool || !result3?.links?.length) {
+			if (!result?.bool || !result?.links?.length) {
 				return;
 			}
-			const card = result3.links[0];
+			const card = result.links[0];
 			if (player.hasUseTarget(card)) {
+				if (puts.includes(card)) {
+					game.clearCardKnowers(card);
+				}
 				await player.chooseUseTarget(card, true, false);
 			}
 		},
