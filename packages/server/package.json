@@ -2,6 +2,9 @@
     "name": "@noname/server",
     "version": "1.0.0",
     "description": "",
+    "keywords": [],
+    "license": "ISC",
+    "author": "",
     "type": "module",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -10,17 +13,16 @@
         "dist"
     ],
     "scripts": {
-        "dev": "tsx src/index.ts",
         "build": "tsup",
+        "dev": "tsx src/index.ts",
         "lint": "pnpm eslint src/**"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
     "dependencies": {
         "ws": "^8.19.0"
     },
     "devDependencies": {
-        "@types/ws": "^8.18.1"
+        "@types/ws": "^8.18.1",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     }
 }

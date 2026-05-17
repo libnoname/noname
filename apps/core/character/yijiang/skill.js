@@ -5216,7 +5216,7 @@ const skills = {
 			player.storage.jiaozhao_card = fakecard;
 			game.broadcastAll(
 				function (name, card) {
-					lib.skill.jiaozhao2.viewAs = fakecard;
+					lib.skill.jiaozhao2.viewAs = name;
 					card.addGaintag("jiaozhao");
 				},
 				fakecard,
