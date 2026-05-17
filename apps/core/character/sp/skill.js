@@ -1898,7 +1898,7 @@ const skills = {
 				if (opinion == "red") {
 					const cards = result.red.flatMap(i => i[1]).filter(card => get.itemtype(card) == "card");
 					if (cards.length) {
-						await player.gain(cards, "giveAuto");
+						await player.gain(cards, "give");
 					}
 				} else if (opinion == "black") {
 					const drawer = result.red

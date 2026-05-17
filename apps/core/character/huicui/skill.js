@@ -15897,88 +15897,88 @@ const skills = {
 			};
 			next._args.remove("glow_result");
 			const result = await next.forResult();
-			const cards = result.map(i => i.cards[0]);
+			console.warn(result);
+			const listMap = new Map();
+			for (let i = 0; i < targets.length; i++) {
+				listMap.set(result[i].cards[0], targets[i]);
+			}
+			const cards = Array.from(listMap.keys()).flat();
 			await player
 				.showCards(cards, get.translation(player) + "发动了【清谈】")
 				.set("customButton", button => {
 					const target = get.owner(button.link);
 					if (target) {
-						button.node.gaintag.innerHTML = target.getName();
+						game.createButtonCardsetion(`${target.getName(true)}`, button);
 					}
 				})
 				.set("delay_time", 4)
 				.set("multipleShow", true);
-
 			const list = [],
 				map = {};
-			for (const i of cards) {
-				const suit = get.suit(i);
-				if (!map[suit]) {
-					map[suit] = [];
-				}
-				map[suit].push(i);
+			for (const card of cards) {
+				const color = get.color(card);
+				map[color] ??= [];
+				map[color].push(card);
 			}
-			const dialog = ["选择获得一种花色的所有牌"];
-			for (const suit of lib.suit) {
-				if (map[suit]) {
-					const targetsx = map[suit].map(function (card) {
-						return targets[cards.indexOf(card)];
-					});
-					dialog.push('<div class="text center">' + get.translation(targetsx) + "</div>");
-					dialog.push(map[suit]);
-					list.push(suit);
+			const dialog = ["清谈：你可以获得一种颜色的所有牌"];
+			for (const color of Object.keys(lib.color)) {
+				if (map[color]) {
+					// @ts-ignore
+					dialog.push([
+						map[color].map(card => [card, listMap.get(card)]),
+						(item, type, position, noclick, node) => {
+							node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+							game.createButtonCardsetion(`${item[1].getName(true)}`, node);
+							return node;
+						},
+					]);
+					list.push(color);
 				}
 			}
 			if (list.length) {
-				const resultx = await player
+				const result = await player
 					.chooseControl(list, "cancel2")
 					.set("dialog", dialog)
 					.set("list", list)
 					.set("map", map)
-					.set("ai", function () {
+					.set("listMap", listMap)
+					.set("ai", () => {
 						let max = 0,
 							res = "cancel2";
-						for (let s of _status.event.list) {
+						const { list, map, player, listMap } = get.event();
+						for (let color of list) {
 							let temp = 0;
-							for (let i of _status.event.map[s]) {
-								temp += get.value(i, _status.event.player) + get.sgn(get.attitude(_status.event.player, get.owner(i))) * (6 - get.value(i, get.owner(i)));
+							for (let card of map[color]) {
+								temp += get.value(card, player) + get.sgn(get.attitude(player, listMap.get(card))) * (6 - get.value(card, listMap.get(card)));
 							}
-							for (let i in _status.event.map) {
-								if (i === s) {
+							for (let colorx in map) {
+								if (colorx === color) {
 									continue;
 								}
-								for (let j of _status.event.map[i]) {
-									temp -= get.sgn(get.attitude(_status.event.player, get.owner(j))) * get.value(j, get.owner(j));
+								for (let cardx of map[colorx]) {
+									temp -= get.sgn(get.attitude(player, listMap.get(cardx))) * get.value(cardx, listMap.get(cardx));
 								}
 							}
 							if (temp > max) {
-								res = s;
+								res = color;
 								max = temp;
 							}
 						}
 						return res;
 					})
 					.forResult();
-				if (resultx?.control != "cancel2") {
-					const cards2 = cards.filter(function (i) {
-						return get.suit(i) == resultx.control;
-					});
-					for (let i = 0; i < cards.length; i++) {
-						if (cards2.includes(cards[i])) {
-							targets[i].$give(cards[i], player, false);
-						}
-					}
-					await player.gain(cards2, "log");
-					const draws = [];
+				if (result?.control != "cancel2") {
+					const color = result.control;
+					player.chat(get.translation(color + 2));
+					game.log(player, "选择了", "#y" + get.translation(color + 2));
+					const cards2 = cards.filter(card => get.color(card) == color);
+					await player.gain(cards2, "give");
+					const draws = cards2.map(card => listMap.get(card));
+					await game.asyncDraw(draws);
 					for (let i = 0; i < cards.length; i++) {
 						if (!cards2.includes(cards[i])) {
 							await targets[i].modedDiscard(cards[i], player);
-						} else {
-							draws.push(targets[i]);
 						}
-					}
-					if (draws.length) {
-						await game.asyncDraw(draws);
 					}
 					await game.delayx();
 				}

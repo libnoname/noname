@@ -11897,7 +11897,7 @@ const skills = {
 					targets.remove(player);
 					player.logSkill("jsrgshanzheng", targets, null, null, [4]);
 					if (cards.length) {
-						await player.gain(cards, "giveAuto");
+						await player.gain(cards, "give");
 					}
 				}
 			}
