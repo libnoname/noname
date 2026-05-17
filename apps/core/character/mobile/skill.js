@@ -4267,6 +4267,7 @@ const skills = {
 	mbweizhuang: {
 		// @ts-ignore audio的类型注释不够全
 		audio: ["guidian", "dongjiao", "xiuge"].map(key => `mbweizhuang_${key}`),
+		// 手杀：一名角色装备区和判定区的牌都是明置牌，但是一名角色的明置牌不包括其判定区的牌
 		getFaceupCards(player, judge = false) {
 			const cards = player.getCards("h", card => card.hasGaintag("faceup_tag"));
 			if (player.countCards("e")) {
@@ -4298,7 +4299,7 @@ const skills = {
 					return ["mbweizhuang_guidian2.mp3", "mbweizhuang_guidian3.mp3"];
 				},
 				trigger: {
-					global: ["faceUpCardAfter", "phaseJieshuBegin"],
+					global: ["faceUpCardAfter", "phaseJieshuBegin", "equipAfter", "addJudgeAfter"],
 					player: "phaseDrawBegin2",
 				},
 				filter(event, player) {
@@ -4313,7 +4314,7 @@ const skills = {
 						return !event.numFixed && player.getStorage("mbweizhuang_guidian", [0, 0, 0])[0] !== 0;
 					}
 					if (event.name == "phaseJieshu") {
-						if (!get.info("mbweizhuang").getFaceupCards(event.player).length) {
+						if (!get.info("mbweizhuang").getFaceupCards(event.player, true).length) {
 							return false;
 						}
 						return true;
@@ -4322,14 +4323,16 @@ const skills = {
 						return false;
 					}
 					let num = 0,
-						evts = game.getAllGlobalHistory("everything", evt => evt.name == "faceUpCard");
+						evts = game.getAllGlobalHistory("everything", evt => ["faceUpCard", "equip", "addJudge"].includes(evt.name));
 					for (let i = evts.indexOf(event); i >= 0; i--) {
 						const evt = evts[i];
 						if (evt?.mbweizhuang_count) {
 							break;
 						}
-						if (evt.cards?.length) {
+						if (evt.name == "faceUpCard" && evt.cards?.length) {
 							num += evt.cards.length;
+						} else if (["equip", "addJudge"].includes(evt.name)) {
+							num++;
 						}
 					}
 					return num > game.countPlayer2(() => true, true);
@@ -4469,9 +4472,7 @@ const skills = {
 			},
 			dongjiao: {
 				audio: 6,
-				trigger: {
-					player: ["useCard", "useCardToPlayered", "useCardAfter"],
-				},
+				trigger: { player: ["useCard", "useCardToPlayered", "useCardAfter"] },
 				logAudio(event, player, name) {
 					if (name == "useCardAfter") {
 						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao6.mp3"];
