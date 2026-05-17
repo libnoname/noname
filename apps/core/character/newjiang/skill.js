@@ -6489,13 +6489,18 @@ const skills = {
 				return player.hasUseTarget({ name: "sha", isCard: true }, false);
 			},
 			check(button) {
-				return button.link;
+				const player = get.player();
+				const link = button.link;
+				if (link == 0) {
+					return player.canMoveCard(true);
+				}
+				return player.hasValueTarget({ name: "sha", isCard: true }, false);
 			},
 			backup(links) {
 				return lib.skill["xinzhilve_" + ["move", "use"][links[0]]];
 			},
-			prompt() {
-				return "请选择【杀】的目标";
+			prompt(links, player) {
+				return links[0] == 0 ? "点击“确定”以移动场上一张牌" : "请选择【杀】的目标";
 			},
 		},
 		ai: {
@@ -6504,7 +6509,7 @@ const skills = {
 			},
 			result: {
 				player(player) {
-					if (player.hp > 2 && player.hasValueTarget({ name: "sha" })) {
+					if ((player.hp > 2 && (player.hasValueTarget({ name: "sha" }), false)) || player.canMoveCard(true)) {
 						return 1;
 					}
 					return 0;
