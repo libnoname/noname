@@ -1160,7 +1160,7 @@ const translates = {
 	hefei_xianjian: "陷坚",
 	hefei_xianjian_info: "先登陷城！",
 	hefeizherui: "折锐",
-	hefeizherui_info: `①装备区有“陷坚”牌的角色使用非转化且非虚拟的【杀】指定目标后，你对其发动一次其选择选项的${get.poptip("hefeixianjian")}。②有角色失去装备栏里的一张“陷坚”牌后，你对其造成1点伤害。`,
+	hefeizherui_info: `①装备区有“陷坚”牌的角色使用非转化且非虚拟的【杀】指定目标后，你可以对其发动一次其选择选项的${get.poptip("hefeixianjian")}。②有角色失去装备栏里的一张“陷坚”牌后，你对其造成1点伤害。`,
 	hefeiheyuyuejin: "合御",
 	hefeiheyuyuejin_info: `锁定技，①若${get.poptip("characterx_hefei_zhangliao")}在场且与你阵营相同，你发动过${get.poptip("hefeixianjian")}的【杀】对一名角色造成伤害后，你可对其执行未选择的一项。②若${get.poptip("characterx_hefei_lidian")}在场且与你阵营相同，每回合首次有角色失去“陷坚”牌后，你摸一张牌。`,
 	hanxuan: "韩玄",

@@ -2657,6 +2657,9 @@ const skills = {
 								list.add(slot);
 							}
 						}
+						if (!list.length) {
+							return;
+						}
 						const result = await player
 							.chooseControl(list)
 							.set("prompt", `陷坚：将${get.translation(cards)}置入${get.translation(target)}的一个空置装备栏中`)
@@ -2665,7 +2668,7 @@ const skills = {
 							})
 							.set("resultx", list.randomGet())
 							.forResult();
-						if (result.control) {
+						if (result?.control) {
 							const card = get.autoViewAs({ name: `hefei_xianjian` }, cards);
 							card.subtypes = [result.control];
 							target.$gain2(cards, false);
@@ -2676,10 +2679,9 @@ const skills = {
 		},
 	},
 	hefeizherui: {
+		derivation: "hefei_xianjian",
 		audio: 4,
 		trigger: { global: "useCardToPlayered" },
-		forced: true,
-		locked: false,
 		filter(event, player) {
 			if (event.card.name != "sha" || get.is.convertedCard(event.card) || get.is.virtualCard(event.card)) {
 				return false;
@@ -2687,6 +2689,12 @@ const skills = {
 			return event.player.hasCards("e", card => card.name == "hefei_xianjian");
 		},
 		logTarget: "player",
+		prompt2(event, player) {
+			return `对其发动一次其选择选项的${get.poptip("hefeixianjian")}`;
+		},
+		check(event, player) {
+			return get.attitude(player, event.player) < 0;
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const result = await target
