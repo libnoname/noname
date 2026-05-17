@@ -7181,20 +7181,17 @@ const skills = {
 				await next;
 				const targets = game.filterPlayer(current => current != player && current != target);
 				if (target.isMaxHandcard() && targets.length) {
-					const result =
-						targets.length == 1
-							? { bool: true, targets }
-							: await player
-									.chooseTarget(`助国：选择一名其他角色，令${get.translation(target)}选择是否对其使用一张无距离和次数限制的【杀】`, (card, player, target) => {
-										return get.event.targets?.includes(target);
-									})
-									.set("ai", target => {
-										const { player, targetx } = get.event();
-										return get.effect(target, { name: "sha" }, targetx, player);
-									})
-									.set("targets", targets)
-									.set("targetx", target)
-									.forResult();
+					const result = await player
+						.chooseTarget(`助国：你可以选择一名角色，令${get.translation(target)}选择是否对其使用一张无距离和次数限制的【杀】`, (card, player, target) => {
+							return get.event.targets.includes(target);
+						})
+						.set("ai", target => {
+							const { player, targetx } = get.event();
+							return get.effect(target, { name: "sha" }, targetx, player);
+						})
+						.set("targets", targets)
+						.set("targetx", target)
+						.forResult();
 					if (result?.bool) {
 						player.logSkill(event.name, [result.targets[0]], null, null, [3]);
 						await target
