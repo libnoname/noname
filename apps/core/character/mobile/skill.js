@@ -18306,9 +18306,9 @@ const skills = {
 	//全琮
 	sbyaoming: {
 		init(player, skill) {
-			const history = player.getAllHistory("useSkill", evt => evt.skill == "sbyaoming_backup").map(evt => evt.event().getParent());
+			const history = game.getAllGlobalHistory("everything", evt => evt.name == "sbyaoming_backup" && evt.player == player);
 			if (history.length) {
-				const index = history.at(-1).sbyaomingIndex;
+				const index = history.at(-1).index;
 				player.addTip(skill, `${get.translation(skill)} ${index == 0 ? "弃牌" : "摸牌"}`);
 			}
 		},
@@ -18406,12 +18406,12 @@ const skills = {
 					if (link === "discard") {
 						return target != player && target.hasDiscardableCards(player, "he") && target.countCards("h") >= player.countCards("h");
 					}
-					return target.countCards("h") <= target.countCards("h");
+					return target.countCards("h") <= player.countCards("h");
 				},
 				async content(event, trigger, player) {
 					const link = lib.skill.sbyaoming_backup.link;
 					const index = link === "discard" ? 0 : 1;
-					event.getParent(2).sbyaomingIndex = index;
+					event.index = index;
 					player.addTip("sbyaoming", `${get.translation("sbyaoming")} ${index == 0 ? "弃牌" : "摸牌"}`);
 					player.removeCharge();
 					const { target } = event;
@@ -18473,43 +18473,67 @@ const skills = {
 						list[1 - num][1] += "（选择此项可获得蓄力值）";
 					}
 					const result = await player
-						.chooseButton(["邀名：你可以消耗1点蓄力值并…", [list, "textbutton"]])
-						.set("filterButton", button => {
-							if (button.link === "discard") {
-								return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
-							}
-							return true;
-						})
-						.set("ai", button => {
-							const player = get.player();
-							const link = button.link;
-							const list = game.filterPlayer().map(current => [current, get.info("sbyaoming").getNum(player, current)]);
-							const draw = Math.max(...list.map(item => item[1][0]));
-							const discard = Math.max(...list.map(item => item[1][1]));
-							const choice = draw >= discard ? "draw" : "discard";
-							if (link == choice) {
-								return 10;
-							}
-							return 0;
+						.chooseButtonTarget({
+							createDialog: ["邀名：你可以消耗1点蓄力值并…", [list, "textbutton"]],
+							filterButto(button) {
+								if (button.link === "discard") {
+									return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
+								}
+								return true;
+							},
+							filterTarget(card, player, target) {
+								if (!ui.selected.buttons.length) {
+									return false;
+								}
+								const link = ui.selected.buttons[0].link;
+								if (link === "discard") {
+									return target != player && target.hasDiscardableCards(player, "he") && target.countCards("h") >= player.countCards("h");
+								}
+								return target.countCards("h") <= player.countCards("h");
+							},
+							ai1(button) {
+								const player = get.player();
+								const link = button.link;
+								const list = game.filterPlayer().map(current => [current, get.info("sbyaoming").getNum(player, current)]);
+								const draw = Math.max(...list.map(item => item[1][0]));
+								const discard = Math.max(...list.map(item => item[1][1]));
+								const choice = draw >= discard ? "draw" : "discard";
+								if (link == choice) {
+									return 10;
+								}
+								return 0;
+							},
+							ai2(target) {
+								const { player, numx } = get.event();
+								const link = ui.selected.buttons[0].link;
+								switch (link) {
+									case "discard": {
+										let eff = get.effect(target, { name: "guohe_copy2" }, player, player);
+										if (player.storage.sbyaoming_status == 1) {
+											eff *= 1.2;
+										}
+										return eff;
+									}
+									case "draw": {
+										let eff = get.effect(target, { name: "draw" }, player, player);
+										if (player.storage.sbyaoming_status == 0) {
+											eff *= 1.2;
+										}
+										return eff;
+									}
+									default: {
+										return 0;
+									}
+								}
+							},
 						})
 						.forResult();
-					if (result?.bool) {
+					if (result?.links?.length && result.targets?.length) {
 						const link = result.links[0];
 						game.broadcastAll(link => {
 							lib.skill.sbyaoming_backup.link = link;
 						}, link);
-						const skill = "sbyaoming_backup";
-						const next = player.chooseToUse();
-						next.set("openskilldialog", lib.skill["sbyaoming"].chooseButton.prompt(result.links, player));
-						next.set("norestore", true);
-						next.set("_backupevent", skill);
-						next.set("custom", {
-							add: {},
-							replace: { window() {} },
-						});
-						next.set("ai1", () => 1);
-						next.backup(skill);
-						await next;
+						await player.useSkill("sbyaoming_backup", result.targets);
 					}
 				},
 			},
