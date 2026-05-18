@@ -21856,32 +21856,41 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
+			const target = event.player;
 			const phaseUse = event.getParent("phaseUse");
-			if (!phaseUse || phaseUse.name !== "phaseUse" || phaseUse.player === player) {
+			if (player == target || !phaseUse || phaseUse.name !== "phaseUse" || phaseUse.player !== target) {
 				return false;
 			}
-			const filter = card => {
-				const color = get.color(card);
-				return (get.name(card) === "sha" && color === "red") || (get.type(card) === "trick" && color === "black");
-			};
+			const filterx = evt => get.name(evt.card) === "sha" && get.color(evt.card) === "red";
+			const filtery = evt => get.type(evt.card) === "trick" && get.color(evt.card) === "black";
+			if (filterx(event) && !player.hasCards("he")) {
+				return false;
+			}
+			if (filtery(event) && !target.hasDiscardableCards(player, "he")) {
+				return false;
+			}
 			const evt = event.getParent();
-			if (
-				game
-					.getGlobalHistory(
-						"useCard",
-						evt => {
-							if (!evt.targets?.includes(player)) {
-								return false;
-							}
-							return filter(evt.card);
-						},
-						evt
-					)
-					.indexOf(evt) !== 0
-			) {
-				return false;
-			}
-			return filter(event.card);
+			const history = game.getGlobalHistory(
+				"useCard",
+				evtx => {
+					const evtxx = evtx.getParent("phaseUse");
+					if (player == evtx.player || evtxx !== phaseUse) {
+						return false;
+					}
+					if (!evtx.targets?.includes(player)) {
+						return false;
+					}
+					if (filterx(event)) {
+						return filterx(evtx);
+					}
+					if (filtery(event)) {
+						return filtery(evtx);
+					}
+					return false;
+				},
+				evt
+			);
+			return history.indexOf(evt) == 0;
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
