@@ -11359,7 +11359,7 @@ export const Content = {
 		for (const target of targets.sortBySeat()) {
 			const next = player.gainPlayerCard(target, event.position, true).set("boolline", false).set("delay", false);
 			next.gaintag.addArray(event.gaintag);
-			const result = await next;
+			const result = await next.forResult();
 			if (result?.bool && result.cards?.length) {
 				map.set(target, result.cards);
 			}
