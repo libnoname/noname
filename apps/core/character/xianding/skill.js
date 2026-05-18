@@ -18883,6 +18883,9 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
 		filterTarget: lib.filter.notMe,
 		selectTarget: -1,
 		multiline: true,
@@ -18904,22 +18907,22 @@ const skills = {
 			const targets = event.targets;
 			const gains = [];
 			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseCard, [player]).forResult();
-			for (const i of targets) {
-				const result = map.get(i);
+			for (const target of targets) {
+				const result = map.get(target);
 				if (result.bool) {
-					i.popup("交给", "wood");
+					target.popup("交给", "wood");
 					gains.addArray(result.cards);
 				} else {
-					i.popup("拒绝", "fire");
+					target.popup("拒绝", "fire");
 					player.addTempSkill("dcsbyaozuo_effect");
-					player.markAuto("dcsbyaozuo_effect", [i]);
+					player.markAuto("dcsbyaozuo_effect", [target]);
 				}
 			}
 			await game.delay();
 			if (!gains.length) {
 				return;
 			} else {
-				await player.gain(gains, "giveAuto");
+				await player.gain(gains, "give");
 			}
 			const first = Array.from(map.keys()).find(current => map.get(current)?.bool);
 			if (first && first.isIn()) {
@@ -18929,8 +18932,8 @@ const skills = {
 					return;
 				}
 				const result = await first
-					.chooseTarget("令" + get.translation(player) + "对一名其他角色发动〖撰文〗", true, function (card, player, target) {
-						return !get.event().targets.includes(target);
+					.chooseTarget(`令${get.translation(player)}对一名其他角色发动〖撰文〗`, true, function (card, player, target) {
+						return !get.event().targets?.includes(target);
 					})
 					.set("targets", [first, player])
 					.set("ai", target => {
@@ -18942,7 +18945,7 @@ const skills = {
 						return hs;
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					first.line(result.targets, "green");
 					await player.useSkill("dcsbzhuanwen", null, result.targets);
 				}
@@ -18950,9 +18953,7 @@ const skills = {
 		},
 		ai: {
 			order: 9,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		derivation: "dcsbzhuanwen",
 		subSkill: {
@@ -18961,12 +18962,8 @@ const skills = {
 				onremove: true,
 				charlotte: true,
 				mark: true,
-				intro: {
-					content: "本回合下次对$造成的伤害+1",
-				},
-				trigger: {
-					source: "damageBegin1",
-				},
+				intro: { content: "本回合下次对$造成的伤害+1" },
+				trigger: { source: "damageBegin1" },
 				filter(event, player) {
 					return player.getStorage("dcsbyaozuo_effect").includes(event.player);
 				},
@@ -18992,12 +18989,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(current => current != player && current.countCards("h"));
+			return game.hasPlayer(current => current != player && current.hasCards("h"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
-					return target != player && target.countCards("h");
+					return target != player && target.hasCards("h");
 				})
 				.set("ai", target => {
 					const player = get.player(),
@@ -19015,7 +19012,9 @@ const skills = {
 				game.log(target, "没有手牌");
 				return;
 			}
-			let cards = game.cardsGotoOrdering(get.cards(Math.min(5, target.countCards("h")))).cards;
+			const next = game.cardsGotoOrdering(get.cards(Math.min(5, target.countCards("h"))));
+			await next;
+			let cards = next.cards;
 			await player.showCards(cards, get.translation(player) + "发动了〖撰文〗");
 			let damages = cards.filter(card => get.is.damageCard(card) && player.canUse(card, target, false)),
 				nodamages = cards.filter(card => !get.is.damageCard(card));
@@ -19044,22 +19043,9 @@ const skills = {
 					return "获得非伤害牌";
 				})
 				.forResult();
-			if (result.control == "使用伤害牌") {
+			if (result?.control == "使用伤害牌") {
 				while (damages.length) {
-					let card;
-					if (damages.length == 1) {
-						card = damages[0];
-					} else {
-						const result2 = await player
-							.chooseButton([`选择要对${get.translation(target)}使用的牌`, damages], true)
-							.set("ai", button => {
-								const { player, target } = get.event();
-								return get.effect(target, button.link, player, player);
-							})
-							.set("target", target)
-							.forResult();
-						card = result2.links[0];
-					}
+					const card = damages[0];
 					if (player.canUse(card, target, false)) {
 						await player.useCard(card, target, false);
 					}
@@ -19068,7 +19054,9 @@ const skills = {
 				}
 			} else {
 				cards.removeArray(nodamages);
-				await target.gain(nodamages, "gain2");
+				if (cards.length) {
+					await target.gain(nodamages, "gain2");
+				}
 			}
 			await game.cardsGotoPile(cards.reverse(), "insert");
 		},
