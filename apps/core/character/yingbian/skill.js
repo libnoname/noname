@@ -3253,12 +3253,7 @@ const skills = {
 				if ((evt.relatedEvent || evt.getParent()) !== event) {
 					return false;
 				}
-				for (const key in evt.gaintag_map) {
-					if (evt.gaintag_map[key].includes("zhuosheng")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(evt.gaintag_map).flat().includes("zhuosheng");
 			});
 		},
 		async cost(event, trigger, player) {
@@ -3268,10 +3263,10 @@ const skills = {
 					prompt2: `为${get.translation(trigger.card)}增加或减少一个目标`,
 					filterTarget(_card, _player, target) {
 						const { player, card, targets } = get.event();
-						if (targets.includes(target)) {
+						if (targets.includes(target) && targets.length > 1) {
 							return true;
 						}
-						return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+						return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
 					},
 					ai(target) {
 						const event = get.event();
@@ -3288,12 +3283,11 @@ const skills = {
 			if (!event.isMine() && !event.isOnline()) {
 				await game.delayx();
 			}
-			const targets = event.targets;
-			if (trigger.targets.includes(targets[0])) {
-				trigger.targets.removeArray(targets);
-				return;
+			if (trigger.targets.includes(event.targets[0])) {
+				trigger.targets.removeArray(event.targets);
+			} else {
+				trigger.targets.addArray(event.targets);
 			}
-			trigger.targets.addArray(targets);
 		},
 		group: ["zhuosheng_equip", "zhuosheng_silent"],
 		subfrequent: ["equip"],
