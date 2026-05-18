@@ -19658,8 +19658,11 @@ const skills = {
 					delete player.storage[skill];
 					player.removeTip(skill);
 				},
-				trigger: { player: "useCard1" },
+				trigger: { player: ["useCard1", "phaseUseAfter"] },
 				filter(event, player) {
+					if (event.name == "phaseUse") {
+						return true;
+					}
 					const evt = event.getParent("phaseUse");
 					if (!evt?.player || evt.player != player) {
 						return false;
@@ -19674,14 +19677,20 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
-					player.markAuto(event.name, [get.suit(trigger.card)]);
-					player.addTip(
-						event.name,
-						`${get.translation(event.name)} ${player
-							.getStorage(event.name)
-							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
-							.reduce((str, suit) => str + get.translation(suit), "")}`
-					);
+					if (trigger.name == "phaseUse") {
+						delete player.storage[event.name];
+						player.removeTip(event.name);
+						player.unmarkSkill(event.name);
+					} else {
+						player.markAuto(event.name, [get.suit(trigger.card)]);
+						player.addTip(
+							event.name,
+							`${get.translation(event.name)} ${player
+								.getStorage(event.name)
+								.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+								.reduce((str, suit) => str + get.translation(suit), "")}`
+						);
+					}
 				},
 				intro: { content: "本阶段已使用$花色" },
 			},

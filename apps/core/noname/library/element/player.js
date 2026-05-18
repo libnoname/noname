@@ -8447,6 +8447,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.targets = targets;
 		next.position = position || "h";
+		next.gaintag = [];
 		return next;
 	}
 	/**
