@@ -26084,53 +26084,48 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			var num = 0;
-			player.getHistory("gain", function (evt) {
+			let num = 0;
+			player.checkHistory("gain", function (evt) {
 				num += evt.cards.length;
 			});
 			if (num < 2) {
 				return false;
 			}
-			return (
-				player.countCards("h") > 0 &&
-				game.hasPlayer(function (current) {
-					return player != current && player.canCompare(current);
-				})
-			);
+			return player.hasCards("h") && game.hasPlayer(current => current.canCompare(player));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("chengzhao"), function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return player.canCompare(target);
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) / target.countCards("h");
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("chengzhao", target);
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var card = { name: "sha", isCard: true };
+				.set("ai", target => {
+					const player = get.player();
+					return -get.attitude(player, target) / target.countCards("h");
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player.chooseToCompare(target).forResult();
+			if (result?.bool) {
+				const card = { name: "sha", isCard: true, storage: { chengzhao: true } };
 				if (player.canUse(card, target, false)) {
-					player.useCard(card, target, false).card.chengzhao = true;
+					player.addTempSkill(event.name + "_effect");
+					await player.useCard(card, target, false);
 				}
 			}
 		},
-		ai: {
-			unequip: true,
-			skillTagFilter(player, tag, arg) {
-				if (!arg || !arg.card || arg.card.chengzhao != true) {
-					return false;
-				}
+		subSkill: {
+			effect: {
+				charlotte: true,
+				ai: {
+					unequip: true,
+					skillTagFilter(player, tag, arg) {
+						if (!arg?.card?.storage?.chengzhao) {
+							return false;
+						}
+					},
+				},
 			},
 		},
 	},

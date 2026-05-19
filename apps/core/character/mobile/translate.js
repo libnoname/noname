@@ -250,7 +250,7 @@ const translates = {
 	dongcheng: "手杀董承",
 	dongcheng_prefix: "手杀",
 	chengzhao: "承诏",
-	chengzhao_info: "一名角色的结束阶段，若你于本回合内获得了两张以上的牌，则你可以与一名其他角色拼点。若你赢，你视为对其使用一张无视防具的【杀】。",
+	chengzhao_info: "一名角色的结束阶段，若你于本回合内获得了至少两张牌，则你可以与一名角色拼点。若你赢，你视为对其使用一张无视防具的【杀】。",
 	yangyi: "手杀杨仪",
 	yangyi_prefix: "手杀",
 	duoduan: "度断",
