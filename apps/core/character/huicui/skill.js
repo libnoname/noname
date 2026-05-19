@@ -9654,7 +9654,9 @@ const skills = {
 					return player.maxHp > 1;
 				},
 				async content(event, trigger, player) {
-					player.draw(player.maxHp).gaintag = ["dcaishou_tag"];
+					const next = player.draw(player.maxHp);
+					next.gaintag.add("dcaishou_tag");
+					await next;
 				},
 			},
 			lose: {

@@ -13379,99 +13379,60 @@ const skills = {
 	//谋胡烈
 	dcsbchuanyu: {
 		audio: 2,
-		trigger: { global: ["roundStart", "roundEnd"] },
-		filter(event, player, name) {
-			if (name == "roundStart") {
-				return player.countCards("he");
-			}
-			return player.getStorage("dcsbchuanyu").some(target => target.isIn());
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			return player.hasCards("he");
 		},
 		async cost(event, trigger, player) {
-			if (event.triggername == "roundStart") {
-				event.result = await player
-					.chooseCardTarget({
-						prompt: get.prompt(event.skill),
-						prompt2: "将一张牌交给一名角色",
-						filterCard: true,
-						position: "he",
-						filterTarget: true,
-						ai1(card) {
-							return 1 / Math.max(0.1, get.value(card));
-						},
-						ai2(target) {
-							var player = _status.event.player,
-								att = get.attitude(player, target);
-							if (target.hasSkillTag("nogain")) {
-								att /= 9;
-							}
-							return 4 + att;
-						},
-					})
-					.forResult();
-			} else {
-				event.result = await player
-					.chooseTarget(`###${get.prompt(event.skill)}###本轮所有获得过「舆」的角色依次视为对你指定的一名角色使用【杀】(不限距离），然后弃置所有「舆」`)
-					.set("ai", target => {
-						return get.effect(target, { name: "sha" }, get.player(), get.player());
-					})
-					.forResult();
-			}
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "将一张牌交给一名角色，称为“舆”",
+					filterCard: true,
+					position: "he",
+					filterTarget: true,
+					ai1(card) {
+						const player = get.player();
+						if (["equip", "delay"].includes(get.type(card))) {
+							return 0;
+						}
+						return Math.max(0.1, player.getUseValue(card));
+					},
+					ai2(target) {
+						const player = get.player();
+						let att = get.attitude(player, target);
+						if (target.hasSkillTag("nogain")) {
+							att /= 9;
+						}
+						return 4 + att;
+					},
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (event.triggername == "roundStart") {
-				if (!player.storage[event.name]) {
-					player
-						.when({ global: "roundStart" })
-						.filter(evt => evt != trigger)
-						.step(async () => {
-							player.unmarkSkill("dcsbchuanyu");
-							delete player.storage.dcsbchuanyu;
-						});
-				}
-				const {
-					cards,
-					targets: [target],
-				} = event;
-				player.line(target);
-				player.markAuto(event.name, target);
-				//player.markAuto(event.name+"_card",cards);
-				if (target == player) {
-					player.addGaintag(cards, event.name + "_tag");
-				} else {
-					await player.give(cards, target).set("gaintag", [event.name + "_tag"]);
-				}
+			if (!player.storage[event.name]) {
+				player
+					.when({ global: "roundStart" })
+					.filter(evt => evt != trigger)
+					.step(async () => {
+						player.unmarkSkill("dcsbchuanyu");
+						delete player.storage.dcsbchuanyu;
+					});
+			}
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			player.line(target);
+			player.markAuto(event.name, target);
+			if (target == player) {
+				player.addGaintag(cards, event.name + "_tag");
 			} else {
-				const use = player
-						.getStorage("dcsbchuanyu")
-						.filter(target => target.isIn())
-						.sortBySeat(),
-					card = get.autoViewAs({ name: "sha", isCard: true }),
-					target = event.targets[0];
-				while (use.length) {
-					const source = use.shift();
-					if (source.canUse(card, target, false, false)) {
-						await source.useCard(card, target, false);
-					}
-				}
-				const lose_list = [];
-				game.players.forEach(target => {
-					const cards = target.getCards("h", card => card.hasGaintag(event.name + "_tag"));
-					if (cards.length) {
-						lose_list.push([target, cards]);
-					}
-				});
-				await game
-					.loseAsync({
-						lose_list: lose_list,
-						discarder: player,
-					})
-					.setContent("discardMultiple");
+				await player.give(cards, target).set("gaintag", [event.name + "_tag"]);
 			}
 		},
-		intro: {
-			content: "本轮获得过「舆」的角色：$",
-		},
-		group: ["dcsbchuanyu_give"],
+		intro: { content: "本轮获得过“舆”的角色：$" },
+		group: ["dcsbchuanyu_give", "dcsbchuanyu_discard"],
 		subSkill: {
 			give: {
 				audio: "dcsbchuanyu",
@@ -13501,7 +13462,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const cards = lib.skill.dcsbchuanyu_give.getCards(trigger, player);
 					event.result = await player
-						.chooseTarget(`###${get.prompt(event.skill)}###将${get.translation(cards)}交给本轮未获得过「舆」的一名角色`, (card, player, target) => {
+						.chooseTarget(`###${get.prompt(event.skill)}###将${get.translation(cards)}交给本轮未获得过“舆”的一名角色`, (card, player, target) => {
 							return !player.getStorage("dcsbchuanyu").includes(target);
 						})
 						.set("ai", target => {
@@ -13521,6 +13482,51 @@ const skills = {
 						cards = lib.skill.dcsbchuanyu_give.getCards(trigger, player);
 					player.markAuto("dcsbchuanyu", target);
 					await target.gain(cards, "gain2").set("gaintag", ["dcsbchuanyu_tag"]);
+				},
+			},
+			discard: {
+				audio: "dcsbchuanyu",
+				trigger: { global: "roundEnd" },
+				filter(event, player) {
+					return game.hasPlayer(current => current.hasCards("h", card => card.hasGaintag("dcsbchuanyu_tag")));
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					const lose_list = [];
+					game.players.forEach(target => {
+						const cards = target.getCards("h", card => card.hasGaintag("dcsbchuanyu_tag"));
+						if (cards.length) {
+							lose_list.push([target, cards]);
+						}
+					});
+					if (lose_list.length) {
+						await game
+							.loseAsync({
+								lose_list: lose_list,
+								discarder: player,
+							})
+							.setContent("discardMultiple");
+					}
+					let list = player.getStorage("dcsbchuanyu").filter(target => target.isIn());
+					const result = await player
+						.chooseTarget("传舆：你可以选择一名角色", `${get.translation(list)}${list.length > 1 ? "依次" : ""}视为对其使用一张无距离限制的【杀】`)
+						.set("ai", target => {
+							const player = get.player();
+							return get.effect(target, { name: "sha" }, player, player);
+						})
+						.forResult();
+					if (result?.bool) {
+						const target = result.targets[0];
+						const card = get.autoViewAs({ name: "sha", isCard: true });
+						list = list.filter(target => target.isIn()).sortBySeat();
+						while (list.length) {
+							const source = list.shift();
+							if (source.canUse(card, target, false, false)) {
+								await source.useCard(card, target, false);
+							}
+						}
+					}
 				},
 			},
 		},
@@ -13557,9 +13563,7 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.draw();
 				},
-				intro: {
-					content: "players",
-				},
+				intro: { content: "players" },
 			},
 		},
 	},
