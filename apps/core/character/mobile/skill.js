@@ -28243,59 +28243,53 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.players.length > 1;
+			return game.countPlayer(current => current != player) > 1;
 		},
 		filterTarget: lib.filter.notMe,
 		targetprompt: ["打人", "被打"],
 		selectTarget: 2,
 		multitarget: true,
-		content() {
-			"step 0";
-			game.delay(0.5);
-			if (!targets[0].hasEquipableSlot(1)) {
-				event.goto(2);
-			}
-			"step 1";
-			let target = targets[0];
-			let equip1 = get.cardPile2(card => card.name == "qinggang");
-			if (!equip1 || Math.random() > 0.5) {
-				equip1 = get.cardPile2(function (card) {
-					return get.subtype(card) == "equip1" && target.canUse(card, target);
-				}, "random");
-			}
-			if (equip1) {
-				if (equip1.name == "qinggang" && !lib.inpile.includes("qibaodao")) {
-					game.broadcastAll(function (card) {
-						card.init([card.suit, card.number, "qibaodao"]);
-					}, equip1);
+		async content(event, trigger, player) {
+			await game.delay(0.5);
+			const [target1, target2] = event.targets;
+			if (target1.hasEquipableSlot(1)) {
+				let equip1 = get.cardPile2(card => card.name == "qinggang");
+				if (!equip1 || Math.random() > 0.5) {
+					equip1 = get.cardPile2(card => get.subtype(card) == "equip1" && target1.hasUseTarget(card), "random");
 				}
-				target.$draw(equip1);
-				target.chooseUseTarget(equip1, "noanimate", "nopopup", true);
-			}
-			"step 2";
-			game.updateRoundNumber();
-			var list = ["nanman", "wanjian", "huogong", "juedou", "sha"];
-			var list2 = game.players.slice(0);
-			for (var i = 0; i < list.length; i++) {
-				if (!targets[0].canUse(list[i], targets[1], false)) {
-					list.splice(i--, 1);
+				if (equip1) {
+					if (equip1.name == "qinggang" && !lib.inpile.includes("qibaodao")) {
+						game.broadcastAll(card => {
+							card.init([card.suit, card.number, "qibaodao"]);
+						}, equip1);
+					}
+					target1.$draw(equip1);
+					await target1.chooseUseTarget(equip1, "noanimate", "nopopup", true);
 				}
 			}
+			const list = ["nanman", "wanjian", "huogong", "juedou", "sha"].filter(name => target1.canUse({ name, isCard: true }, target2, false));
 			if (!list.length) {
 				return;
 			}
-			var name = list.randomGet();
-			if (name == "nanman" || name == "wanjian") {
-				for (var i = 0; i < list2.length; i++) {
-					if (!targets[0].canUse(name, list2[i], false)) {
-						list2.splice(i--, 1);
-					}
-				}
+			let list2;
+			const name = list.randomGet();
+			if (["nanman", "wanjian"].includes(name)) {
+				list2 = game.filterPlayer(current => target1.canUse({ name, isCard: true }, current, false));
 			} else {
-				list2 = targets[1];
+				list2 = target2;
 			}
-			targets[0].useCard({ name: name, isCard: true }, list2, "noai");
-			game.delay(0.5);
+			if (list2) {
+				player.addTempSkill(event.name + "_mark");
+				await target1.useCard({ name, isCard: true }, list2, "noai");
+				await game.delay(0.5);
+			}
+		},
+		onremove: true,
+		marktext: "计",
+		intro: {
+			name: "连计(连计/谋逞)",
+			name2: "连计",
+			content: "mark",
 		},
 		ai: {
 			order: 8,
@@ -28311,50 +28305,45 @@ const skills = {
 			expose: 0.4,
 			threaten: 3,
 		},
-		group: "relianji_count",
 		subSkill: {
-			count: {
-				sub: true,
+			mark: {
+				charlotte: true,
+				trigger: { global: "changeHpAfter" },
+				filter(event, player) {
+					const evt = event.getParent(4);
+					if (!evt || evt.name !== "relianji" || evt.player !== player) {
+						return false;
+					}
+					const source = evt.targets[0];
+					return event.changedHp < 0 && event.getParent().source == source && evt.getParent(3).player == source;
+				},
 				forced: true,
 				popup: false,
 				silent: true,
-				trigger: { global: "damageEnd" },
-				filter(event, player) {
-					var evt = event.getParent(3);
-					return evt && evt.name == "relianji" && evt.player == player;
-				},
-				content() {
-					if (!player.storage.relianji) {
-						player.storage.relianji = 0;
-					}
-					player.storage.relianji++;
-					event.trigger("remoucheng_awaken");
+				async content(event, trigger, player) {
+					player.addMark("relianji", Math.abs(trigger.changedHp));
 				},
 			},
 		},
 	},
 	remoucheng: {
-		derivation: "jingong",
-		trigger: {
-			player: "remoucheng_awaken",
-		},
+		derivation: ["jingong", "relianji"],
+		trigger: { global: "damageSource" },
 		forced: true,
 		filter(event, player) {
-			return player.storage.relianji && player.storage.relianji > 2;
+			return player.countMark("relianji") > 2;
 		},
 		audio: "moucheng",
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.changeSkills(["jingong"], ["relianji"]);
-			player.gainMaxHp();
-			player.recover();
+			await player.gainMaxHp();
+			await player.recover();
+			await player.changeSkills(["jingong"], ["relianji"]);
 		},
-		ai: {
-			combo: "relianji",
-		},
+		ai: { combo: "relianji" },
 	},
 	shouye: {
 		audio: 2,
