@@ -7592,80 +7592,20 @@ const skills = {
 			player.addTempSkill("dcrende_targeted", "phaseUseAfter");
 			player.markAuto("dcrende_targeted", [event.target]);
 			await player.gainPlayerCard(event.target, "h", true, 2);
-			var list = [];
-			for (var name of lib.inpile) {
-				if (get.type(name) != "basic") {
-					continue;
-				}
-				var card = { name: name, isCard: true };
-				if (
-					lib.filter.cardUsable(card, player, event.getParent("chooseToUse")) &&
-					game.hasPlayer(current => {
-						return player.canUse(card, current);
-					})
-				) {
-					list.push(["基本", "", name]);
-				}
-				if (name == "sha") {
-					for (var nature of lib.inpile_nature) {
-						card.nature = nature;
-						if (
-							lib.filter.cardUsable(card, player, event.getParent("chooseToUse")) &&
-							game.hasPlayer(current => {
-								return player.canUse(card, current);
-							})
-						) {
-							list.push(["基本", "", name, nature]);
-						}
-					}
-				}
-			}
+			const list = get.inpileVCardList(info => {
+				return info[0] == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), null, true);
+			});
 			if (list.length) {
 				const result = await player
-					.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]])
-					.set("ai", function (button) {
-						var player = _status.event.player;
-						var card = {
-							name: button.link[2],
-							nature: button.link[3],
-							isCard: true,
-						};
-						if (card.name == "tao") {
-							if (player.hp == 1 || (player.hp == 2 && !player.hasShan("all")) || player.needsToDiscard()) {
-								return 5;
-							}
-							return 1;
-						}
-						if (card.name == "sha") {
-							if (
-								game.hasPlayer(function (current) {
-									return player.canUse(card, current) && get.effect(current, card, player, player) > 0;
-								})
-							) {
-								if (card.nature == "fire") {
-									return 2.95;
-								}
-								if (card.nature == "thunder" || card.nature == "ice") {
-									return 2.92;
-								}
-								return 2.9;
-							}
-							return 0;
-						}
-						if (card.name == "jiu") {
-							return 0.5;
-						}
-						return 0;
+					.chooseButton(["仁德：你可以视为使用一张基本牌", [list, "vcard"]])
+					.set("ai", button => {
+						return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
 					})
 					.forResult();
-				if (result && result.bool && result.links[0]) {
-					var card = {
-						name: result.links[0][2],
-						nature: result.links[0][3],
-						isCard: true,
-					};
-					await player.chooseUseTarget(card, true);
+				if (!result?.links?.length) {
+					return;
 				}
+				await player.chooseUseTarget(get.autoViewAs({ name: result.links[0][2], nature: result.links[0][3], isCard: true }), true);
 			}
 		},
 		subSkill: {
@@ -7680,6 +7620,7 @@ const skills = {
 				return 10;
 			},
 			result: {
+				player: 1,
 				target(player, target) {
 					if (target.hasSkillTag("noh")) {
 						return -0.1;
