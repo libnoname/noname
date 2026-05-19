@@ -168,14 +168,14 @@ declare interface Mod {
 	* @param player 源玩家（使用牌的角色）
 	* @param target 目标玩家
 	*/
-	playerEnabled?(card: Card, player: Player, target: Player, result: boolean): boolean | void;
+	playerEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	* 【表示你能否成为其他角色的目标】 
 	* @param card
 	* @param player 使用牌的角色
 	* @param target 玩家
 	*/
-	targetEnabled?(card: Card, player: Player, target: Player, result: boolean): boolean | void;
+	targetEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 
 	/**
 	 * 可以指定任意（范围内）目标
@@ -1763,7 +1763,7 @@ declare interface SkillAI {
 	 * ai发动技能的优先度 【也用于卡牌的优先度】
 	 * 要具体比什么先发发动，可以使用函数返回结果
 	 */
-	order?: number | ((item: string | Card | { name: string }, player: Player) => number | void);
+	order?: number | ((item?: string | Card | { name: string }, player?: Player) => number | void);
 	/** 
 	 * 发动技能是身份暴露度（0~1，相当于概率）
 	 * 取值范围为0~1,用于帮助AI判断身份,AI中未写expose其他AI将会无法判断其身份
