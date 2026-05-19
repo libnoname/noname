@@ -14970,19 +14970,8 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				const dialog = ui.create.dialog(
-					`斩绊：请选择是否摸牌或者弃牌`,
-					[[1, 2, 3].map((item, index) => [index + 1, `摸${item}张`]), "tdnodes"],
-					[
-						[
-							[0, "不摸不弃"],
-							[-1, "弃置至多3张"],
-						],
-						"tdnodes",
-					],
-					"hidden"
-				);
-				return dialog;
+				const list = [1, 2, 3].map((item, index) => [index + 1, `摸${get.cnNumber(item)}张牌`]).concat([[-1, "弃置至多三张牌"]]);
+				const dialog = ui.create.dialog(`斩绊：请选择是否摸牌或者弃牌`, [list.slice(0, 2), "tdnodes"], [list.slice(2, 4), "tdnodes"], "hidden");
 			},
 			filter(button, player) {
 				if (button.link == -1) {
@@ -15061,7 +15050,7 @@ const skills = {
 						if (link > 0) {
 							await player.draw(link);
 						} else if (link < 0) {
-							await player.chooseToDiscard(`斩绊：弃置至多三张牌`, "he", [1, 3], true);
+							await player.chooseToDiscard(`斩绊：请弃置一至三张牌`, "he", [1, 3], true);
 						}
 					},
 					async content(event, trigger, player) {
@@ -15089,21 +15078,17 @@ const skills = {
 		},
 		ai: {
 			order: 5,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	dcsbchensheng: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
-		forced: true,
-		locked: false,
 		filter(event, player) {
 			return !player.isMaxHandcard(true) && !_status.currentPhase?.isMaxHandcard(true) && player != _status.currentPhase;
 		},
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 	},
 	dcsbtiancheng: {
