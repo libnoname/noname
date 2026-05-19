@@ -7679,95 +7679,24 @@ const skills = {
 	//谋法正
 	dcsbzhenjian: {
 		audio: 2,
-		trigger: {
-			global: ["roundStart", "useCard"],
-		},
-		onremove(player, skill) {
-			player.removeTip(skill);
-			player.setStorage(skill, null);
-		},
+		trigger: { global: "roundStart" },
 		filter(event, player) {
-			if (event.name == "useCard") {
-				const list = player.getStorage("dcsbzhenjian");
-				if (!list.length || event.player != list[0] || get.type(event.card) != "trick") {
-					return false;
-				}
-				if (event.card.name == list[1]) {
-					return true;
-				}
-				if (!event.targets?.length) {
-					return false;
-				}
-				return game.hasPlayer(current => {
-					if (event.targets?.includes(current)) {
-						return event.targets.length > 1;
-					}
-					return lib.filter.targetEnabled2(event.card, event.player, current);
-				});
-			}
 			return game.hasPlayer(current => current != player);
 		},
-		async cost(event, trigger, player) {
-			if (trigger.name == "useCard") {
-				const list = player.getStorage(event.skill);
-				if (trigger.card.name == list[1]) {
-					event.result = {
-						bool: true,
-					};
-					return;
-				}
-				const targets = game.filterPlayer(current => {
-					if (trigger.targets?.includes(current)) {
-						if (trigger.targets.length > 1) {
-							return true;
-						}
-					} else if (lib.filter.targetEnabled2(trigger.card, trigger.player, current)) {
-						return true;
-					}
-					return false;
-				});
-				if (!targets.length) {
-					return;
-				}
-				const next = player
-					.chooseTarget(get.prompt(event.skill), `为${get.translation(trigger.card)}增加或减少1个目标（至少为1）`, (card, player, target) => {
-						return get.event().targetx.includes(target);
-					})
-					.set("targetx", targets)
-					.set("ai", target => {
-						const player = get.player(),
-							trigger = get.event().getTrigger(),
-							eff = get.effect(target, trigger.card, trigger.player, player);
-						if (trigger.targets.includes(target)) {
-							return -eff;
-						}
-						return eff;
-					});
-				next.set(
-					"targetprompt2",
-					next.targetprompt2.concat([
-						target => {
-							if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
-								return false;
-							}
-							const trigger = get.event().getTrigger();
-							if (trigger.targets?.includes(target)) {
-								return "减少目标";
-							}
-							return "增加目标";
-						},
-					])
-				);
-				event.result = await next.forResult();
-				return;
-			}
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
 				return info[0] == "trick";
 			});
+			if (!list.length || !game.hasPlayer(current => current != player)) {
+				return;
+			}
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: [get.prompt(event.skill), [list, "vcard"]],
+					createDialog: [`###缜鉴###<div class='text center'>请选择一名其他角色和一个普通锦囊牌的牌名</div>`, [list, "vcard"]],
 					filterTarget: lib.filter.notMe,
+					forced: true,
 					ai1(button) {
 						return button.link[2] == "wanjian" ? 2 : Math.random();
 					},
@@ -7777,44 +7706,126 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (result?.bool && result.links?.length) {
-				event.result = {
-					bool: true,
-					targets: result.targets,
-					cost_data: result.links,
-				};
-			}
-		},
-		async content(event, trigger, player) {
-			if (trigger.name == "useCard") {
-				if (!event.targets?.length) {
-					await player.draw();
-					player.tempBanSkill(event.name);
-					return;
-				}
+			if (result?.bool) {
 				const {
 					targets: [target],
-				} = event;
-				const bool = trigger.targets.includes(target);
-				trigger.targets[bool ? "remove" : "add"](target);
-				return;
+					links: [link],
+				} = result;
+				const skill = "dcsbzhenjian";
+				player.addTip(skill, `缜鉴 ${get.translation(target)}`);
+				player.setStorage(skill, [target, link[2]], true);
+				player
+					.when({ global: "roundStart" })
+					.filter(evt => evt != trigger)
+					.step(async (event, trigger, player) => {
+						player.setStorage(skill, null, true);
+						player.removeTip(skill);
+					});
 			}
-			const {
-				targets: [target],
-				cost_data: [link],
-				name,
-			} = event;
-			player.addTip(name, `缜鉴 ${get.translation(target)}`);
-			player.setStorage(name, [target, link[2]]);
-			player
-				.when({
-					global: "roundStart",
-				})
-				.filter(evt => evt != trigger)
-				.step(async (event, trigger, player) => {
-					player.setStorage(name, null);
-					player.removeTip(name);
-				});
+		},
+		onremove(player, skill) {
+			player.setStorage(skill, null, true);
+			player.removeTip(skill);
+		},
+		marktext: "鉴",
+		intro: {
+			name: "缜鉴",
+			mark(dialog, storage, player) {
+				const list = player.getStorage("dcsbzhenjian");
+				if (!list.length) {
+					return "无信息";
+				}
+				if (player == game.me || player.isUnderControl()) {
+					dialog.addSmall([[list[1]], "vcard"]);
+					dialog.addText(`本轮${get.translation(list[0])}使用普通锦囊牌时，若不为${get.translation(list[1])}，你可为此牌增加或减少一个目标（目标数至少为1），否则你摸一张牌且【缜鉴】本回合失效`, false);
+				} else {
+					return `${get.translation(player)}本轮缜鉴了${get.translation(list[0])}`;
+				}
+			},
+		},
+		group: "dcsbzhenjian_sheyan",
+		subSkill: {
+			sheyan: {
+				audio: "dcsbzhenjian",
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					const list = player.getStorage("dcsbzhenjian");
+					if (!list.length || event.player != list[0] || get.type(event.card) != "trick") {
+						return false;
+					}
+					if (event.card.name == list[1]) {
+						return true;
+					}
+					if (!event.targets?.length) {
+						return false;
+					}
+					return game.hasPlayer(current => {
+						if (event.targets?.includes(current)) {
+							return event.targets.length > 1;
+						}
+						return lib.filter.targetEnabled2(event.card, event.player, current);
+					});
+				},
+				async cost(event, trigger, player) {
+					const list = player.getStorage("dcsbzhenjian");
+					if (trigger.card.name == list[1]) {
+						event.result = { bool: true };
+					} else {
+						const targets = game.filterPlayer(current => {
+							if (trigger.targets?.includes(current)) {
+								if (trigger.targets.length > 1) {
+									return true;
+								}
+							} else if (lib.filter.targetEnabled2(trigger.card, trigger.player, current)) {
+								return true;
+							}
+							return false;
+						});
+						const next = player
+							.chooseTarget(get.prompt(event.skill), `为${get.translation(trigger.card)}增加或减少一个目标（至少为1）`, (card, player, target) => {
+								return get.event().targetx.includes(target);
+							})
+							.set("targetx", targets)
+							.set("ai", target => {
+								const player = get.player(),
+									trigger = get.event().getTrigger(),
+									eff = get.effect(target, trigger.card, trigger.player, player);
+								if (trigger.targets.includes(target)) {
+									return -eff;
+								}
+								return eff;
+							});
+						next.set(
+							"targetprompt2",
+							next.targetprompt2.concat([
+								target => {
+									if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+										return false;
+									}
+									const trigger = get.event().getTrigger();
+									if (trigger.targets?.includes(target)) {
+										return "减少目标";
+									}
+									return "增加目标";
+								},
+							])
+						);
+						event.result = await next.forResult();
+					}
+				},
+				async content(event, trigger, player) {
+					if (!event.targets?.length) {
+						await player.draw();
+						player.tempBanSkill("dcsbzhenjian");
+					} else {
+						const {
+							targets: [target],
+						} = event;
+						const bool = trigger.targets.includes(target);
+						trigger.targets[bool ? "remove" : "add"](target);
+					}
+				},
+			},
 		},
 	},
 	dcsbxixing: {
@@ -15126,6 +15137,7 @@ const skills = {
 			await game.delayx();
 		},
 		ai: { combo: "dcsbzhanban" },
+		derivation: "dcsbzhanban",
 	},
 	//谋曹洪
 	dcsbyingjia: {
