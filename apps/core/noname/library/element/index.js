@@ -1,7 +1,7 @@
 export { Button } from "./button.js";
 export { Card } from "./card.js";
 export { Client } from "./client.js";
-export { Content } from "./content.js";
+export { Content } from "./content.ts";
 export { Control } from "./control.js";
 export { Dialog } from "./dialog.js";
 export { GameEvent } from "./gameEvent.js";

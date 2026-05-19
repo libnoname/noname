@@ -308,7 +308,7 @@ next.triggername = name;
 
 ## arrangeTrigger
 
-`arrangeTrigger` 的 content 在 `apps/core/noname/library/element/content.js`。
+`arrangeTrigger` 的 content 在 `apps/core/noname/library/element/content.ts`。
 
 简化流程：
 
