@@ -8598,7 +8598,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = game.createCard2("xuanjian", "spade", 9);
 			await player.gain(card, "gain2");
-			if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+			if (player.hasUseTarget(card) && player.getCards("h").includes(card) && get.name(card, player) == "xuanjian") {
 				await player.chooseUseTarget(card, true, false);
 			}
 		},
@@ -30533,8 +30533,8 @@ const skills = {
 				card = get.cardPile(card => card.name == "ly_piliche");
 			}
 			if (card) {
-				await target.gain(card, "gain2");
-				if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+				await player.gain(card, "gain2");
+				if (player.hasUseTarget(card) && player.getCards("h").includes(card) && get.name(card, player) == "ly_piliche") {
 					await player.chooseUseTarget(card, true, "nopopup");
 				}
 			}
@@ -30553,8 +30553,8 @@ const skills = {
 					await player.draw();
 					const card = get.cardPile2(card => get.subtypes(card).includes("equip1") && player.hasUseTarget(card));
 					if (card) {
-						await target.gain(card, "gain2");
-						if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+						await player.gain(card, "gain2");
+						if (player.hasUseTarget(card) && player.getCards("h").includes(card) && get.name(card, player) == card.name) {
 							await player.chooseUseTarget(card, true, "nopopup");
 						}
 					}

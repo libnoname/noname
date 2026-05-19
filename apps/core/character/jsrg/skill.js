@@ -3444,24 +3444,80 @@ const skills = {
 	//孙峻
 	jsrgyaoyan: {
 		trigger: { player: "phaseZhunbeiBegin" },
-		prompt: "是否发动【邀宴】？",
-		logTarget: () => game.filterPlayer(),
+		multiline: true,
+		multitarget: true,
+		logTarget: () => game.filterPlayer().sortBySeat(),
 		async content(event, trigger, player) {
-			const targets = game.filterPlayer();
+			const { targets } = event;
 			const toDebateList = [];
 			while (targets.length) {
 				const current = targets.shift();
+				if (!current.isIn()) {
+					continue;
+				}
 				const { bool } = await current
 					.chooseBool(`是否响应${get.translation(player)}的【邀宴】，于回合结束参与议事？`)
-					.set("ai", () => Math.random() < 0.5)
+					.set(
+						"choice",
+						(() => {
+							if (current === player) {
+								return true;
+							}
+							const att = get.attitude(current, player);
+							if (att > 0) {
+								if (!toDebateList.includes(player)) {
+									return false;
+								}
+								return true;
+							} else {
+								if (!player.hasCards("h")) {
+									return false;
+								}
+								if (Math.ceil([...toDebateList, current].length / 2) <= [...toDebateList, current].filter(currentx => get.attitude(currentx, player) < 0).length) {
+									return true;
+								}
+								if (!player.hasCards("h", { color: "red" })) {
+									return false;
+								}
+								const num1 = game.countPlayer(currentx => get.attitude(current, currentx) < 0 && currentx.hasCards("h") && toDebateList.includes(currentx));
+								const num2 = game.countPlayer(currentx => get.attitude(currentx, player) > 0 && currentx.hasCards("h") && toDebateList.includes(currentx));
+								if (num1 >= num2 + 2) {
+									return true;
+								}
+								if (num1 >= num2) {
+									return Math.random() < 0.5;
+								}
+								return Math.random() < 0.2;
+							}
+						})()
+					)
 					.forResult();
 				if (bool) {
 					toDebateList.add(current);
-					current.popup("同意", "wood");
+					if (current == player) {
+						current.chat(["感谢诸位前来会盟！", "列位诸公！对酒！当歌！"].randomGet());
+					} else {
+						const list = ["我是不会客气的！", "来啊！换大盏", "是啊，吃什么"];
+						if (toDebateList.length > 1) {
+							list.add("那好啊！他参会我也参会！");
+						}
+						current.chat(list.randomGet());
+					}
 					game.log(current, "#g同意", "参加", player, "的议事");
+					await game.delay();
 				} else {
-					current.popup("拒绝", "fire");
+					if (!toDebateList.includes(player)) {
+						if (current == player) {
+							current.chat(["我和你们开玩笑呢？！", "容我告老还乡"].randomGet());
+						} else {
+							current.chat(["你走了，我们吃什么？"].randomGet());
+						}
+					} else {
+						current.addExpose(0.3);
+						current.chat(["孙什么？峻什么？没听说过", "他请我们了吗？"].randomGet());
+					}
 					game.log(current, "#r拒绝", "参加", player, "的议事");
+					await game.delay();
 				}
 			}
 			if (toDebateList.length) {
@@ -3471,60 +3527,107 @@ const skills = {
 		},
 		subSkill: {
 			hold: {
-				trigger: { player: "phaseEnd" },
 				charlotte: true,
+				onremove: true,
+				intro: { content: "已邀请$于回合结束时议事" },
+				trigger: { player: "phaseEnd" },
+				filter(event, player) {
+					return player.getStorage("jsrgyaoyan_hold").some(current => current.isIn());
+				},
 				forced: true,
 				popup: false,
-				onremove: true,
-				filter(event, player) {
-					return player.getStorage("jsrgyaoyan_hold").some(i => i.isIn());
-				},
 				async content(event, trigger, player) {
-					player.chooseToDebate(player.getStorage("jsrgyaoyan_hold").filter(i => i.isIn())).set("callback", async event => {
-						const { bool, opinion, targets } = event.debateResult;
-						if (bool && opinion && ["red", "black"].includes(opinion)) {
-							if (opinion == "red") {
-								const notDebated = game.filterPlayer().removeArray(targets);
-								if (notDebated.length) {
-									const result = await player
-										.chooseTarget("获得任意名未议事的角色的各一张手牌", [1, Infinity], true, (card, player, target) => {
-											return get.event().targets.includes(target) && target.countGainableCards(player, "h");
-										})
-										.set("targets", notDebated)
-										.set("ai", target => {
-											const player = get.player();
-											const att = get.attitude(player, target);
-											return -att;
-										})
-										.forResult();
-									if (result.bool) {
-										const targets = result.targets;
-										targets.sortBySeat();
-										player.line(targets, "green");
-										for (const current of targets) {
-											await player.gainPlayerCard(current, "h", true);
+					const list = player.getStorage(event.name).filter(current => current.isIn());
+					player.removeSkill(event.name);
+					const others = game
+						.filterPlayer()
+						.removeArray(list)
+						.filter(current => current != player && current.hasGainableCards(player, "h"));
+					await player
+						.chooseToDebate(list)
+						.set("others", others)
+						.set("ai", card => {
+							const evt = get.event();
+							const { player, source } = evt;
+							const { targets, others } = evt.getParent(2);
+							const att = get.attitude(player, source);
+							if (!others.length) {
+								return color = att > 0 ? "black" : "red";
+								if (get.color(card) == color) {
+									return 10;
+								}
+								return Math.random();
+							} else {
+								if (get.color(card) == "red") {
+									return 10;
+								}
+								return Math.random();
+							}
+						})
+						.set("aiCard", target => {
+							const evt = get.event();
+							const { player, source } = evt;
+							const { targets, others } = evt.getParent(2);
+							const att = get.attitude(target, source);
+							if (!others.length) {
+								const color = att > 0 ? "black" : "red";
+								let hs = target.getCards("h", { color });
+								if (!hs.length) {
+									hs = target.getCards("h");
+								}
+								return { bool: true, cards: [hs.randomGet()] };
+							} else {
+								let hs = target.getCards("h", { color: "red" });
+								if (!hs.length) {
+									hs = target.getCards("h");
+								}
+								return { bool: true, cards: [hs.randomGet()] };
+							}
+						})
+						.set("callback", async event => {
+							const { bool, opinion, targets } = event.debateResult;
+							if (bool && opinion && ["red", "black"].includes(opinion)) {
+								if (opinion == "red") {
+									const notDebated = game
+										.filterPlayer()
+										.removeArray(targets)
+										.filter(current => current != player && current.hasGainableCards(player, "h"));
+									if (notDebated.length) {
+										const result = await player
+											.chooseTarget("邀宴：获得任意名未议事的角色的各一张手牌", [1, Infinity], true, (card, player, target) => {
+												return get.event().targets?.includes(target);
+											})
+											.set("targets", notDebated)
+											.set("ai", target => {
+												const player = get.player();
+												const att = get.attitude(player, target);
+												return -att;
+											})
+											.forResult();
+										if (result?.bool) {
+											const targets = result.targets.sortBySeat();
+											player.line(targets, "green");
+											await player.gainMultiple(targets);
 										}
 									}
-								}
-							} else {
-								const { bool, targets: targets2 } = await player
-									.chooseTarget("是否对一名议事的角色造成2点伤害？", (card, player, target) => {
-										return get.event().targets.includes(target);
-									})
-									.set("targets", targets)
-									.set("ai", target => {
-										const player = get.player();
-										const eff = get.damageEffect(target, player, player);
-										return eff;
-									})
-									.forResult();
-								if (bool) {
-									player.line(targets2[0]);
-									targets2[0].damage(2);
+								} else {
+									const result = await player
+										.chooseTarget("邀宴：你可以对本次参与议事的一名角色造成2点伤害", (card, player, target) => {
+											return get.event().targets.includes(target);
+										})
+										.set("targets", targets)
+										.set("ai", target => {
+											const player = get.player();
+											return get.damageEffect(target, player, player);
+										})
+										.forResult();
+									if (result?.bool) {
+										player.line(result.targets[0]);
+										await result.targets[0].damage(2);
+									}
 								}
 							}
-						}
-					});
+						});
 				},
 			},
 		},

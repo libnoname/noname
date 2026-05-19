@@ -15298,7 +15298,7 @@ const skills = {
 						target = trigger.player;
 					const result = await player
 						.chooseControl(list, "cancel2")
-						.set("prompt", `###${get.prompt(event.skill, target)}###废除1个装备栏并防止其受到的伤害，且${get.translation(trigger.card)}结算完毕后你获得之。`)
+						.set("prompt", `###${get.prompt(event.skill, target)}###废除一个装备栏并防止其受到的伤害，且${get.translation(trigger.card)}结算完毕后你获得之。`)
 						.set("ai", () => {
 							if (get.attitude(get.player(), get.event().target) < 0) {
 								return "cancel2";
@@ -15341,10 +15341,10 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.hasCard(card => get.is.damageCard(card), "h");
+			return player.hasCards("h", card => get.info("dcsbdouwei").filterCard(card, player));
 		},
 		filterCard(card, player) {
-			if (!lib.filter.cardDiscardable(card, player, "dcsbdouwei")) {
+			if (!lib.filter.cardDiscardable(card, player, "dcsbdouwei") || !get.is.damageCard(card)) {
 				return false;
 			}
 			const cardx = get.autoViewAs({
@@ -15354,9 +15354,22 @@ const skills = {
 				number: get.number(card, player),
 				isCard: true,
 			});
-			return get.is.damageCard(card) && game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+		},
+		check(card) {
+			const player = get.player();
+			const cardx = get.autoViewAs({
+				name: get.name(card, player),
+				nature: get.nature(card, player),
+				suit: get.suit(card, player),
+				number: get.number(card, player),
+				isCard: true,
+			});
+			const eff = game.filterPlayer(current => player !== current && player.inRangeOf(current) && player.canUse(cardx, current, false, false)).reduce((num, current) => num + get.effect(current, cardx, player, player));
+			return eff;
 		},
 		async content(event, trigger, player) {
+			player.addTempSkill("dcsbdouwei_effect");
 			const card = event.cards[0],
 				cardx = get.autoViewAs({
 					name: get.name(card, player),
@@ -15373,23 +15386,47 @@ const skills = {
 				return lib.filter.targetEnabledx(card, player, target);
 			});
 		},
-		group: ["dcsbdouwei_effect"],
+		ai: {
+			order(item, player) {
+				const cards = player
+					.getCards("h", card => get.info("dcsbdouwei").filterCard(card, player))
+					.map(card => {
+						const cardx = get.autoViewAs({
+							name: get.name(card, player),
+							nature: get.nature(card, player),
+							suit: get.suit(card, player),
+							number: get.number(card, player),
+							isCard: true,
+							storage: { dcsbdouwei: true },
+						});
+						return cardx;
+					});
+				if (cards.some(cardx => game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false) && get.effect(target, cardx, player, player) > 0))) {
+					return 12;
+				}
+				return 1;
+			},
+			result: { player: 1 },
+		},
 		subSkill: {
 			effect: {
-				silent: true,
+				charlotte: true,
+				mark: true,
+				intro: { content: "一名角色因你【斗围】进入濒死时，你回复1点体力并恢复一个装备栏" },
+				audio: "dcsbdouwei",
 				trigger: { global: "dying" },
 				filter(event, player) {
-					return event.reason?.card?.storage?.dcsbdouwei;
+					return event.reason?.card?.storage?.dcsbdouwei && event.reason.getParent().player == player;
 				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
-					if (player.isDamaged()) {
-						await player.recover();
-					}
+					await player.recover();
 					if (player.hasDisabledSlot()) {
 						const list = [1, 2, 3, 4, 5].filter(num => player.hasDisabledSlot(num)).map(num => "equip" + num);
 						const result = await player
 							.chooseControl(list)
-							.set("prompt", `斗围：恢复一个装备栏`)
+							.set("prompt", `斗围：选择一个装备栏恢复`)
 							.set("ai", () => {
 								const player = get.player();
 								const val = slot => {

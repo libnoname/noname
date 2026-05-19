@@ -159,9 +159,6 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
-						if (ui.selected.cards?.length >= game.filterPlayer(target => target != get.player() && get.attitude(get.player(), target) > 0).length) {
-							return 0;
-						}
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
