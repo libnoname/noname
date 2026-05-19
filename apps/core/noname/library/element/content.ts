@@ -6,10 +6,7 @@ import { Player } from "./player.js";
 import { delay } from "@/util/index.js";
 
 // 未来再改
-/**
- * @type {Record<string, ContentFuncByAll | ContentFuncsByAll>}
- */
-export const Content = {
+export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	async emptyEvent(event) {
 		await event.trigger(event.name);
 	},
@@ -26,13 +23,12 @@ export const Content = {
 
 			// @ts-expect-error 部分模式存在Player#side
 			const taoEnemyConfig = lib.config.tao_enemy && dying.side !== player.side && lib.config.mode != "identity" && lib.config.mode != "guozhan" && !dying.hasSkillTag("revertsave");
-			/** @type {Partial<Result>} */
-			let result = { bool: false };
+			let result: Partial<Result> = { bool: false };
 			if (!taoEnemyConfig && player.canSave(dying) && player.isIn()) {
 				result = await player
 					.chooseToUse({
-						filterCard(card, player, event) {
-							event = event || _status.event;
+						filterCard(card, player, name) {
+							const event = <GameEvent><unknown>name || _status.event;
 							return lib.filter.cardSavable(card, player, event.dying);
 						},
 						filterTarget(card, player, target) {
@@ -42,15 +38,15 @@ export const Content = {
 							if (!card) {
 								return false;
 							}
-							var info = get.info(card);
+							const info = get.info(card);
 							if (!info.singleCard || ui.selected.targets.length == 0) {
 								var mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
 								if (mod == false) {
 									return false;
 								}
 								var mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-								if (mod != "unchanged") {
-									return mod;
+								if (mod !== "unchanged") {
+									return mod ?? false;
 								}
 							}
 							return true;
@@ -736,8 +732,7 @@ export const Content = {
 			const left = player.countEnabledSlot(slot);
 
 			let slot_key = slot;
-			/** @type {number} */
-			let lose;
+			let lose: number;
 			if (slot == "equip3_4") {
 				lose = Math.min(left, Math.max(get.numOf(event.slots, "equip3"), get.numOf(event.slots, "equip4")));
 				slot_key = "equip3";
@@ -756,8 +751,7 @@ export const Content = {
 					continue;
 				}
 
-				/** @type {Partial<Result>} */
-				let result;
+				let result: Partial<Result>;
 				if (lose < left) {
 					let source = event.source;
 					const num = cards.length - (left - lose);
@@ -1200,11 +1194,9 @@ export const Content = {
 	async chooseToDebate(event, trigger, player) {
 		const { list } = event;
 
-		/** @type {Player[]} */
-		let targets = list.filter(target => target.countCards("h") > 0);
+		let targets: Player[] = list.filter(target => target.hasCards("h"));
 
-		/** @type {Partial<Result> | Partial<Result>[]} */
-		let result;
+		let result: Partial<Result> | Partial<Result>[];
 		if (targets.length) {
 			if (event.fixedResult) {
 				targets = targets.removeArray(event.fixedResult.map(i => i[0]));
@@ -1502,8 +1494,7 @@ export const Content = {
 		);
 
 		const beatmap = event.beatmap;
-		/** @type {Partial<Result>} */
-		let result;
+		let result: Partial<Result>;
 		if (event.isMine()) {
 			// 摆了，有空再修
 			const { promise, resolve } = Promise.withResolvers();
@@ -1945,13 +1936,14 @@ export const Content = {
 				}
 
 				/**
-				 * @type { Card[][] } 保存每次移动后的对应实体牌的位置
+				 * 保存每次移动后的对应实体牌的位置
 				 */
-				event.moved = [];
+				var moved: Card[][] = [];
+				event.moved = moved;
 				/**
-				 * @type { HTMLDivElement[] } 所有可移动的buttons数组
+				 * 所有可移动的buttons数组
 				 */
-				var buttonss = [];
+				var buttonss: HTMLDivElement[] = [];
 				event.buttonss = buttonss;
 				/**
 				 * 是否处于拖拽动画中(禁止其他的选择，拖拽)
@@ -2230,10 +2222,7 @@ export const Content = {
 					clearSelected();
 					selectButtons(currentElement);
 					// 显示拖拽的元素
-					/**
-					 * @type { HTMLDivElement }
-					 */
-					var copy = currentElement.copy;
+					var copy: HTMLDivElement = currentElement.copy;
 					if (!ui.window.contains(copy)) {
 						copy.style.position = "absolute";
 						copy.style.transition = "none";
@@ -2765,8 +2754,7 @@ export const Content = {
 			const targetChoose = [target, attackChoose, true];
 
 			const choose = [playerChoose, targetChoose];
-			/** @type {Record<string, Partial<Result>>} */
-			const result = await player
+			const result: Record<string, Partial<Result>> = await player
 				.chooseButtonOL(choose, () => {}, event.ai)
 				.set("switchToAuto", () => {
 					_status.event.result = "ai";
@@ -2872,8 +2860,7 @@ export const Content = {
 				[target, pssChoose, true],
 			];
 
-			/** @type {Record<string, Partial<Result>>} */
-			const result = await player
+			const result: Record<string, Partial<Result>> = await player
 				.chooseButtonOL(
 					choose,
 					() => {},
@@ -3106,8 +3093,7 @@ export const Content = {
 	async chooseToEnable(event, trigger, player) {
 		const { source } = event;
 		if (event.selectButton) {
-			/** @type {string[]} */
-			const list = Array(5);
+			const list: string[] = Array(5);
 			for (let i = 0; i < 5; i++) {
 				list[i] = `equip${i + 1}`;
 			}
@@ -3116,8 +3102,7 @@ export const Content = {
 				return;
 			}
 
-			/** @type {Partial<Result>} */
-			let result;
+			let result: Partial<Result>;
 			if (event.selectButton[0] >= realList.length) {
 				event.list = list;
 				result = { links: list };
@@ -3147,8 +3132,7 @@ export const Content = {
 			const slots = result.links;
 			await player.enableEquip(slots);
 		} else {
-			/** @type {string[]} */
-			const list = [];
+			const list: string[] = [];
 			for (let i = 1; i <= 5; i++) {
 				if (player.hasDisabledSlot(i)) {
 					list.push("equip" + i);
@@ -3158,8 +3142,7 @@ export const Content = {
 				return;
 			}
 
-			/** @type {Partial<Result>} */
-			let result;
+			let result: Partial<Result>;
 			if (list.length == 1) {
 				event.list = list;
 				result = { control: list[0] };
@@ -3178,8 +3161,7 @@ export const Content = {
 	async chooseToDisable(event, trigger, player) {
 		const { source } = event;
 		if (event.selectButton) {
-			/** @type {string[]} */
-			const list = Array(5);
+			const list: string[] = Array(5);
 			for (let i = 0; i < 5; i++) {
 				list[i] = `equip${i + 1}`;
 			}
@@ -3196,8 +3178,7 @@ export const Content = {
 				return;
 			}
 
-			/** @type {Partial<Result>} */
-			let result;
+			let result: Partial<Result>;
 			if (event.selectButton[0] >= realList.length) {
 				event.list = list;
 				result = { links: list };
@@ -3232,8 +3213,7 @@ export const Content = {
 			}
 			await player.disableEquip(slots);
 		} else {
-			/** @type {string[]} */
-			const list = [];
+			const list: string[] = [];
 			for (let i = 1; i <= 5; i++) {
 				if (player.hasEnabledSlot(i)) {
 					list.push("equip" + i);
@@ -3250,8 +3230,7 @@ export const Content = {
 				return;
 			}
 
-			/** @type {Partial<Result>} */
-			let result;
+			let result: Partial<Result>;
 			if (list.length == 1) {
 				event.list = list;
 				result = { control: list[0] };
@@ -3401,8 +3380,7 @@ export const Content = {
 		list.remove(player.storage.subplayer.name2);
 		event.list = list;
 
-		/** @type {Partial<Result>} */
-		let result;
+		let result: Partial<Result>;
 		if (!event.directresult) {
 			if (list.length > 1) {
 				const dialog = ui.create.dialog("更换一个随从", "hidden");
@@ -3536,8 +3514,7 @@ export const Content = {
 		}
 
 		const cfg = player.storage[event.directresult];
-		/** @type {string} */
-		const source = cfg.source || player.name;
+		const source: string = cfg.source || player.name;
 		const name = event.directresult;
 		game.log(player, "调遣了随从", "#g" + name);
 		player.storage.subplayer = {
@@ -3575,8 +3552,7 @@ export const Content = {
 
 		const info = get.info(card);
 		for (const target of targets) {
-			/** @type {Partial<Result>} */
-			let result;
+			let result: Partial<Result>;
 			if (target == event.target && event.addedTarget) {
 				event.addedTargets.push(event.addedTarget);
 				result = { bool: false };
@@ -4088,8 +4064,7 @@ export const Content = {
 			lib.skill[event.skill].triggered = true;
 		}
 
-		/** @type {Partial<Result>} */
-		let result;
+		let result: Partial<Result>;
 		if (event.revealed || info.forced) {
 			result = { bool: true };
 		} else {
@@ -7448,8 +7423,7 @@ export const Content = {
 			return get.max(list, get.skillRank, "item");
 		};
 
-		/** @type {string} */
-		let result;
+		let result: string;
 		if (event.isMine()) {
 			const { promise, resolve } = Promise.withResolvers();
 			const dialog = ui.create.dialog("forcebutton");
@@ -9562,8 +9536,7 @@ export const Content = {
 	async viewCards(event, trigger, player) {
 		game.addCardKnower(event.cards, player);
 
-		/** @type {Partial<Result>} */
-		let result;
+		let result: Partial<Result>;
 		if (player == game.me) {
 			event.dialog = ui.create.dialog(event.str, event.cards);
 			if (event.isMine()) {
@@ -13477,8 +13450,7 @@ export const Content = {
 			}, event.chooseTime);
 		}
 
-		/** @type {Partial<Result>} */
-		let result;
+		let result: Partial<Result>;
 		if (event.isMine()) {
 			const { promise, resolve } = Promise.withResolvers();
 			const animationDuration = lib.config.animation_choose_to_move ? 300 : 0;
