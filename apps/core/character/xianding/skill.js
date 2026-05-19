@@ -15893,66 +15893,47 @@ const skills = {
 	//威董卓
 	dcguangyong: {
 		audio: 2,
-		locked: true,
-		group: ["dcguangyong_self", "dcguangyong_toself"], //同时机沟槽技能改个翻译方便区分
-		subSkill: {
-			self: {
-				trigger: { player: "useCardToPlayered" },
-				filter(event, player) {
-					return event.isFirstTarget && event.targets.includes(player);
-				},
-				forced: true,
-				popup: false,
-				prompt2: () => "增加1点体力上限",
-				async content(event, trigger, player) {
-					player.logSkill("dcguangyong");
-					if (player.maxHp < 8) {
-						await player.gainMaxHp();
-					}
-				},
-			},
-			toself: {
-				trigger: { player: "useCardToPlayered" },
-				filter(event, player) {
-					return event.isFirstTarget && event.targets.some(i => i !== player && i.countGainableCards(player, "he"));
-				},
-				locked: true,
-				popup: false,
-				async cost(event, trigger, player) {
-					const targets = trigger.targets.filter(i => i !== player && i.countGainableCards(player, "he"));
-					if (targets.length === 1) {
-						event.result = { bool: true, targets: targets };
-						return;
-					}
-					let prompt = '<div class="text center">';
-					if (player.maxHp > 1) {
-						prompt += "减1点体力上限，";
-					}
-					prompt += "获得一名其他目标角色的一张牌</div>";
-					event.result = await player
-						.chooseTarget(
-							true,
-							(card, player, target) => {
-								const targets = get.event().getTrigger().targets;
-								return targets.includes(target) && target !== player && target.countGainableCards(player, "he");
-							},
-							"请选择【" + get.translation("dcguangyong") + "】的目标",
-							prompt
-						)
-						.set("ai", target => {
-							const player = get.player();
-							return get.effect(target, { name: "shunshou_copy2" }, player, player);
-						})
-						.forResult();
-				},
-				async content(event, trigger, player) {
-					player.logSkill("dcguangyong", event.targets);
-					if (player.maxHp > 1) {
-						await player.loseMaxHp();
-					}
-					await player.gainPlayerCard(event.targets[0], "he", true);
-				},
-			},
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			return event.isFirstTarget;
+		},
+		forced: true,
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			if (trigger.targets.includes(player)) {
+				if (player.maxHp < 8) {
+					await player.gainMaxHp();
+				}
+			}
+			if (trigger.targets.some(target => target !== player)) {
+				if (player.maxHp > 1) {
+					await player.loseMaxHp();
+				}
+				const targets = trigger.targets.filter(target => target !== player && target.hasGainableCards(player, "he"));
+				if (!targets.length) {
+					return;
+				}
+				const result =
+					targets.length === 1
+						? { bool: true, targets: targets }
+						: await player
+								.chooseTarget(
+									true,
+									(card, player, target) => {
+										return get.event().targets?.includes(target);
+									},
+									"犷勇：请选择其中一名角色，获得其一张牌"
+								)
+								.set("ai", target => {
+									const player = get.player();
+									return get.effect(target, { name: "shunshou_copy2" }, player, player);
+								})
+								.set("targets", targets)
+								.forResult();
+				if (result?.targets?.length) {
+					await player.gainPlayerCard(result.targets[0], "he", true);
+				}
+			}
 		},
 	},
 	dcjuchui: {
