@@ -6167,12 +6167,20 @@ const skills = {
 	},
 	//威公孙瓒
 	dcjuxi: {
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.dcjuxi) {
+					return Infinity;
+				}
+			},
+		},
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		getList(event, player) {
 			return get.inpileVCardList(info => {
-				const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true });
+				const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true, storage: { dcjuxi: true } });
 				return ["basic", "trick"].includes(info[0]) && get.is.damageCard(card) && event.filterCard(card, player, event) && !player.getStorage("dcjuxi_clear").includes(info[2]);
 			});
 		},
@@ -6185,7 +6193,7 @@ const skills = {
 			},
 			check(button) {
 				const { link } = button;
-				return get.player().getUseValue(get.autoViewAs({ name: link[2], nature: link[3], isCard: true }));
+				return get.player().getUseValue(get.autoViewAs({ name: link[2], nature: link[3], isCard: true, storage: { dcjuxi: true } }));
 			},
 			backup(links, player) {
 				return {
@@ -6196,6 +6204,7 @@ const skills = {
 						name: links[0][2],
 						nature: links[0][3],
 						isCard: true,
+						storage: { dcjuxi: true },
 					},
 					async precontent(event, trigger, player) {
 						const { card } = event.result;
@@ -6204,6 +6213,7 @@ const skills = {
 						player.markAuto("dcjuxi_clear", name);
 						player.addTempSkill("dcjuxi_refresh", "phaseChange");
 						player.markAuto("dcjuxi_refresh", name);
+						event.getParent().addCount = false;
 					},
 				};
 			},
@@ -6233,7 +6243,7 @@ const skills = {
 					player.removeSkill(event.name);
 					player.refreshSkill("dcjuxi");
 				},
-				intro: { content: "$进入弃牌堆重置技能" },
+				intro: { content: "$进入弃牌堆重置【举袭】" },
 			},
 		},
 	},
