@@ -28358,8 +28358,7 @@ const skills = {
 	},
 	shouye: {
 		audio: 2,
-		group: "shouye_after",
-		trigger: { target: "useCardToTarget" },
+		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return event.player != player && event.targets.length == 1;
 		},
@@ -28371,86 +28370,78 @@ const skills = {
 		},
 		usable: 1,
 		logTarget: "player",
-		content() {
-			"step 0";
-			player.line(trigger.player, "green");
-			player.chooseToDuiben(trigger.player);
-			"step 1";
-			if (result.bool) {
-				trigger.targets.remove(player);
-				trigger.getParent().triggeredTargets2.remove(player);
-				trigger.getParent().shouyeer = player;
+		async content(event, trigger, player) {
+			const result = await player.chooseToDuiben(trigger.player).forResult();
+			if (result?.bool) {
+				player.addTempSkill(event.name + "_after");
+				player.markAuto(event.name + "_after", [trigger.getParent()]);
+				trigger.getParent().excluded.add(player);
 			}
 		},
 		subSkill: {
 			after: {
-				sub: true,
-				trigger: { global: "useCardAfter" },
-				forced: true,
-				silent: true,
-				popup: false,
+				charlotte: true,
+				onremove: true,
+				trigger: { global: "cardsDiscardEnd" },
 				filter(event, player) {
-					if (event.shouyeer != player) {
-						return false;
-					}
-					if (event.cards) {
-						for (var i = 0; i < event.cards.length; i++) {
-							if (event.cards[i].isInPile()) {
-								return true;
-							}
-						}
-					}
-					return false;
+					if (!event.cards.filterInD("d").length) return false;
+					const evt = event.getParent();
+					if (evt.name != "orderingDiscard") return false;
+					const evtx = evt.relatedEvent || evt.getParent();
+					return evtx.player.hasHistory("useCard", evtxx => {
+						return evtx.getParent() == (evtxx.relatedEvent || evtxx.getParent()) && player.getStorage("shouye_after").includes(evtxx);
+					});
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < trigger.cards.length; i++) {
-						if (trigger.cards[i].isInPile()) {
-							list.push(trigger.cards[i]);
-						}
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const evt = trigger.getParent();
+					const evtx = evt.relatedEvent || evt.getParent();
+					player.unmarkAuto(event.name, [evtx]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
 					}
-					player.gain(list, "gain2", "log");
+					const cards = trigger.cards.filterInD("d");
+					if (cards.length) {
+						await player.gain(cards, "gain2", "log");
+					}
 				},
 			},
 		},
 	},
 	liezhi: {
 		audio: 2,
-		group: "liezhi_damage",
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("liezhi"), "弃置至多两名其他角色区域内的各一张牌", [1, 2], function (card, player, target) {
-				return target != player && target.countDiscardableCards(player, "hej") > 0;
-			}).ai = function (target) {
-				var player = _status.event.player;
-				return get.effect(target, { name: "guohe" }, player, player);
-			};
-			"step 1";
-			if (result.bool) {
-				result.targets.sortBySeat();
-				event.targets = result.targets;
-				player.line(result.targets, "green");
-				player.logSkill("liezhi", result.targets);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			event.current = targets.shift();
-			player.discardPlayerCard(event.current, "hej", true);
-			if (targets.length) {
-				event.redo();
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "hej"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "弃置至多两名其他角色区域内的各一张牌", [1, 2], (card, player, target) => {
+					return target != player && target.hasDiscardableCards(player, "hej");
+				})
+				.set("ai", target => {
+					const player = _status.event.player;
+					return get.effect(target, { name: "guohe_copy" }, player, player);
+				})
+				.forResult();
+		},
+		logAudio: () => 1,
+		async content(event, trigger, player) {
+			for (const target of event.targets.sortBySeat()) {
+				await player.discardPlayerCard(target, "hej", true);
 			}
 		},
+		group: "liezhi_damage",
 		subSkill: {
 			damage: {
+				audio: "liezhi",
 				trigger: { player: "damage" },
 				forced: true,
-				silent: true,
-				popup: false,
-				content() {
-					player.tempBanSkill("liezhi", { player: "phaseAfter" });
+				locked: false,
+				logAudio: () => "liezhi2.mp3",
+				async content(event, trigger, player) {
+					player.tempBanSkill("liezhi", { player: "phaseJieshuBegin" });
 				},
 			},
 		},
