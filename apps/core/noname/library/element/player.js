@@ -1559,14 +1559,43 @@ export class Player extends HTMLDivElement {
 	 * @param { Player } target
 	 */
 	getGiftAIResultTarget(card, target) {
-		if (!card || target.refuseGifts(card, this)) {
+		if (!card || !this.canGift(card, target, true) || target.refuseGifts(card, this)) {
 			return 0;
 		}
 		if (get.type(card, null, target) == "equip") {
-			return get.effect(target, card, target, target);
+			let eff = get.effect(target, card, target, target);
+			const att = get.sgnAttitude(this, target);
+			if (att < 0) {
+				if (eff == 0) {
+					eff -= 0.1;
+				}
+				if (target.canEquip(card)) {
+					eff--;
+				}
+			} else {
+				if (att > 0 && target.canEquip(card) && eff > 0) {
+					eff++;
+				}
+			}
+			return eff;
 		}
 		if (card.name == "du") {
-			return this.hp > target.hp ? -1 : 0;
+			// 保留毒/使用毒会有收益
+			if (["usedu", "keepdu"].some(tag => this.hasSkillTag(tag))) {
+				return 0;
+			}
+			const att = get.sgnAttitude(this, target);
+			// 不受毒影响
+			if (this.hasSkillTag("nodu")) {
+				if (["usedu", "keepdu"].some(tag => target.hasSkillTag(tag))) {
+					return get.attitude(this, target) - 0.01;
+				}
+				return -att * Math.max(1, 4 - target.getHp());
+			}
+			if (get.effect(this, { name: "losehp" }, this, this) > 0) {
+				return -att * Math.max(1, 4 - target.getHp());
+			}
+			return this.getHp() > target.getHp() ? -1 : 0;
 		}
 		if (target.hasSkillTag("nogain")) {
 			return 0;
