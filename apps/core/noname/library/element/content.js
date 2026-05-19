@@ -11357,7 +11357,9 @@ export const Content = {
 		const map = new Map([]);
 
 		for (const target of targets.sortBySeat()) {
-			const result = await player.gainPlayerCard(target, event.position, true).set("boolline", false).set("delay", false).forResult();
+			const next = player.gainPlayerCard(target, event.position, true).set("boolline", false).set("delay", false);
+			next.gaintag.addArray(event.gaintag);
+			const result = await next.forResult();
 			if (result?.bool && result.cards?.length) {
 				map.set(target, result.cards);
 			}

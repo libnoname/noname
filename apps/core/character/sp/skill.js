@@ -31898,11 +31898,11 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			if (!event.targets || !event.targets.includes(player)) {
+			if (!event.targets?.includes(player)) {
 				return false;
 			}
-			var info = get.info(event.card);
-			if (info.type != "trick") {
+			const info = get.info(event.card);
+			if (!info || info.type != "trick") {
 				return false;
 			}
 			if (info.multitarget) {
@@ -31911,85 +31911,65 @@ const skills = {
 			if (event.targets.length > 1) {
 				return true;
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current);
 			});
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var bool1 = trigger.targets.length > 1;
-			var bool2 = game.hasPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const bool1 = game.hasPlayer(current => {
 				return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, trigger.player, current);
 			});
+			const bool2 = trigger.targets.length > 1;
+			let str = "";
+			if (bool1) {
+				str += `为${get.translation(trigger.card)}增加一个目标`;
+			}
 			if (bool1 && bool2) {
-				player
-					.chooseControlList(get.prompt("sheyan"), ["为" + get.translation(trigger.card) + "增加一个目标", "为" + get.translation(trigger.card) + "减少一个目标"], function (event, player) {
-						if (_status.event.add) {
-							return 0;
-						}
-						return 1;
-					})
-					.set("add", get.effect(player, trigger.card, trigger.player, player) >= 0);
-			} else if (bool2) {
-				event.type = "add";
-				event.goto(2);
-				event.unchosen = true;
-			} else {
-				event.type = "remove";
-				event.goto(2);
-				event.unchosen = true;
+				str += `，或`;
 			}
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-			} else if (result.index == 1) {
-				event.type = "remove";
-			} else {
-				event.type = "add";
+			if (bool2) {
+				str += `令${get.translation(trigger.card)}对其中一个目标无效`;
 			}
-			"step 2";
-			if (event.type == "add") {
-				player
-					.chooseTarget(event.unchosen ? get.prompt("sheyan") : null, "为" + get.translation(trigger.card) + "增加一个目标", function (card, player, target) {
-						var trigger = _status.event.getTrigger();
-						return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, trigger.player, target);
-					})
-					.set("ai", function (target) {
-						var trigger = _status.event.getTrigger();
-						return get.effect(target, trigger.card, trigger.player, _status.event.player);
-					});
-			} else {
-				player
-					.chooseTarget(event.unchosen ? get.prompt("sheyan") : null, "为" + get.translation(trigger.card) + "减少一个目标", function (card, player, target) {
-						return _status.event.targets.includes(target);
-					})
-					.set("ai", function (target) {
-						var trigger = _status.event.getTrigger();
-						return -get.effect(target, trigger.card, trigger.player, _status.event.player);
-					})
-					.set("targets", trigger.targets);
-			}
-			"step 3";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
+			const next = player
+				.chooseTarget(get.prompt(event.skill), str, (card, player, target) => {
+					const trigger = get.event().getTrigger();
+					if (trigger.targets.includes(target) && trigger.targets.length > 1) {
+						return true;
+					}
+					return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, trigger.player, target);
+				})
+				.set("ai", target => {
+					const player = get.player();
+					const trigger = get.event().getTrigger();
+					return get.effect(target, trigger.card, player, player) * (trigger.targets.includes(target) ? -1 : 1);
+				})
+				.set("targets", trigger.targets);
+			next.targetprompt2.add(target => {
+				const trigger = get.event().getTrigger();
+				if (!target.classList.contains("selectable") || !trigger.targets.includes(target)) {
+					return;
 				}
-				event.target = result.targets[0];
-			} else {
-				event.finish();
+				return "可无效";
+			});
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			event.type = trigger.targets.includes(target) ? "remove" : "add";
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
-			"step 4";
-			player.logSkill("sheyan", event.target);
-			if (event.type == "add") {
-				trigger.targets.push(event.target);
+			if (event.type == "remove") {
+				trigger.getParent().excluded.add(target);
+				game.log(trigger.card, "对", target, "无效");
 			} else {
-				trigger.getParent().excluded.add(event.target);
+				trigger.targets.add(target);
+				game.log(target, "成为了", trigger.card, "的目标");
 			}
 		},
-		ai: {
-			expose: 0.2,
-		},
+		ai: { expose: 0.2 },
 	},
 	bingzheng: {
 		audio: 2,

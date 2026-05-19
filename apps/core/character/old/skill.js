@@ -540,9 +540,6 @@ const skills = {
 	//魏武帝
 	junkguixin: {
 		audio: "guixin",
-		trigger: {
-			player: "phaseEnd"
-		},
 		forbid: ["guozhan"],
 		init() {
 			if (!_status.junkguixin) {
@@ -551,135 +548,108 @@ const skills = {
 					game.initCharacterList();
 				}
 				for (const name of _status.characterlist) {
-					if (!lib.character[name][3]) {
-						continue;
-					}
 					_status.junkguixin.addArray(
-						lib.character[name][3].filter(skill => {
-							var info = get.info(skill);
+						get.character(name, 3).filter(skill => {
+							const info = get.info(skill);
 							return info && info.zhuSkill && (!info.ai || !info.ai.combo);
 						})
 					);
 				}
 			}
 		},
-		async cost(event, trigger, player) {
-			const controls = ["获得技能", "修改势力", "cancel2"];
+		trigger: { player: "phaseEnd" },
+		filter(event, player) {
+			return !_status.junkguixin.some(skill => !player.hasSkill(skill, null, false, false)) || game.hasPlayer(current => current != player);
+		},
+		direct: true,
+		async content(event, trigger, player) {
+			const controls = ["获得技能", "修改势力"];
 			if (!_status.junkguixin.some(skill => !player.hasSkill(skill, null, false, false))) {
 				controls.shift();
 			}
+			if (!game.hasPlayer(current => current != player)) {
+				controls.shift();
+			}
+			if (!controls.length) {
+				return;
+			}
+			controls.push("cancel2");
 			const result = await player
 				.chooseControl({
 					controls,
-					prompt: get.prompt2("junkguixin"),
+					prompt: get.prompt2(event.name),
 					ai() {
 						return _status.event.controls.length === 3 ? "获得技能" : "cancel2";
 					},
 				})
 				.forResult();
-			
-			if (result.control === "cancel2") {
-				event.result = {
-					bool: false,
-				};
+			if (result?.control === "cancel2") {
 				return;
 			}
-
-			switch (result.control) {
-				case "获得技能": {
-					const skills = _status.junkguixin.filter(skill => !player.hasSkill(skill, null, false, false));
-					if (!skills.length) {
-						event.result = {
-							bool: false,
-						};
-						return;
-					}
-					const list = skills.map(skill => {
-						return [
-							skill,
-							'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' +
-								get.translation(skill) +
-								"】</div><div>" +
-								lib.translate[skill + "_info"] +
-								"</div></div>",
-						];
-					});
+			const control = result.control;
+			if (control === "获得技能") {
+				const skills = _status.junkguixin.filter(skill => !player.hasSkill(skill, null, false, false));
+				if (skills.length) {
+					const list = skills.map(skill => [
+						skill,
+						'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
+							(() => {
+								let str = get.translation(skill);
+								if (!lib.skill[skill]?.nobracket) {
+									str = "【" + str + "】";
+								}
+								return str;
+							})() +
+							"</div><div>" +
+							lib.translate[skill + "_info"] +
+							"</div></div>",
+					]);
 					const result = await player
 						.chooseButton({
-							prompt: "归心：选择获得一个主公技",
-							createDialog: [list, "textbutton"],
+							createDialog: ["归心：选择获得一个主公技", [list, "textbutton"]],
 							forced: true,
 							ai() {
 								return 1 + Math.random();
 							},
 						})
 						.forResult();
-					event.result = {
-						bool: result.bool,
-						cost_data: {
-							control: "skill",
-							skill: result.links?.[0],
-						},
-					};
-					break;
+					if (result?.bool) {
+						player.logSkill(event.name);
+						await player.addSkill(result.links);
+					}
 				}
-				case "修改势力": {
-					const result = await player
-						.chooseTarget({
-							prompt: "请选择【归心】的目标",
-							prompt2: "更改一名其他角色的势力",
-							filterTarget: lib.filter.notMe,
-							forced: true,
-							ai() {
-								return 1 + Math.random();
-							}
-						})
-						.forResult();
-					
-					event.result = {
-						bool: result.bool,
-						targets: result.targets,
-						cost_data: {
-							control: "target",
+			} else if (control === "修改势力" && game.hasPlayer(current => current != player)) {
+				const result = await player
+					.chooseTarget({
+						prompt: "请选择【归心】的目标",
+						prompt2: "更改一名其他角色的势力",
+						filterTarget: lib.filter.notMe,
+						forced: true,
+						ai() {
+							return 1 + Math.random();
+						},
+					})
+					.forResult();
+				if (result?.bool) {
+					const target = result.targets[0];
+					player.logSkill(event.name, target);
+					const groups = lib.group.filter(group => group !== "shen" && group !== target.group);
+					if (groups.length) {
+						const result = await player
+							.chooseControl({
+								prompt: `请选择${get.translation(target)}要变更的势力`,
+								controls: groups,
+								ai() {
+									return get.event().controls.randomGet();
+								},
+							})
+							.forResult();
+						if (result?.control) {
+							player.popup(get.translation(result.control + "2"));
+							await target.changeGroup(result.control);
 						}
 					}
-					break;
 				}
-			}
-		},
-		logTarget(event) {
-			const type = event?.cost_data.control;
-			if (type === "skill") {
-				return null;
-			}
-
-			return event?.targets;
-		},
-		async content(event, trigger, player) {
-			/** @type {string} */
-			const control = event.cost_data.control;
-
-			if (control === "skill") {
-				await player.addSkills(event.cost_data.skill);
-				return;
-			}
-
-			const target = event.targets[0];
-			const groups = lib.group.filter(group => group !== "shen" && group !== target.group);
-
-			const result = await player
-				.chooseControl({
-					prompt: "请选择" + get.translation(target) + "变更的势力",
-					controls: groups,
-					ai() {
-						return get.event().controls.randomGet();
-					}
-				})
-				.forResult();
-			
-			if (result.control) {
-				player.popup(get.translation(result.control + "2"));
-				await target.changeGroup(result.control);
 			}
 		},
 	},

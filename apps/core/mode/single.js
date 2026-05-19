@@ -1962,14 +1962,23 @@ export default () => {
 			},
 		},
 		get: {
-			attitude: function (from, to) {
+			attitude(from, to) {
 				if (!from || !to) {
 					return 0;
 				}
-				if (from.identity == to.identity) {
-					return 10;
+				from = from._trueMe || from;
+				let att = from.identity == to.identity ? 10 : -10;
+				if (!_status.tempnofake) {
+					_status.tempnofake = true;
+					if (from.ai.modAttitudeFrom) {
+						att = from.ai.modAttitudeFrom(from, to, att);
+					}
+					if (to.ai.modAttitudeTo) {
+						att = to.ai.modAttitudeTo(from, to, att);
+					}
+					delete _status.tempnofake;
 				}
-				return -10;
+				return att;
 			},
 		},
 		skill: {

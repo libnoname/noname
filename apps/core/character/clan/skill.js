@@ -5349,27 +5349,24 @@ const skills = {
 		},
 	},
 	clanxiaoyong: {
-		audio: 2,
-		trigger: {
-			player: "useCard",
+		derivation: "clanguangu",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
 		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
+		audio: 2,
+		trigger: { player: "useCard" },
 		filter(event, player) {
-			var len = get.cardNameLength(event.card);
-			if (
-				player.hasHistory(
-					"useCard",
-					function (evt) {
-						return evt != event && get.cardNameLength(evt.card) == len;
-					},
-					event
-				)
-			) {
+			const len = get.cardNameLength(event.card);
+			if (player.hasHistory("useCard", evt => evt != event && get.cardNameLength(evt.card) == len, event)) {
 				return false;
 			}
 			if (!player.getStat().skill.clanguangu) {
 				return false;
 			}
-			var history = player
+			const history = player
 				.getAllHistory("useSkill", evt => {
 					return evt.skill == "clanguangu_backup";
 				})
@@ -5377,9 +5374,9 @@ const skills = {
 			if (!history.length) {
 				return false;
 			}
-			var num = 0;
-			for (var i = history.length - 1; i >= 0; i--) {
-				var evt = history[i];
+			let num = 0;
+			for (let i = history.length - 1; i >= 0; i--) {
+				const evt = history[i];
 				if (evt.viewedCount) {
 					num = evt.viewedCount;
 					break;
@@ -5395,15 +5392,13 @@ const skills = {
 			delete player.getStat().skill.clanguangu;
 			game.log(player, "重置了", "#g【观骨】");
 		},
-		ai: {
-			combo: "clanguangu",
-		},
+		ai: { combo: "clanguangu" },
 		mod: {
 			aiOrder(player, card, num) {
 				if (!player.hasSkill("clanguangu") || !player.getStat().skill.clanguangu) {
 					return;
 				}
-				var history = player
+				const history = player
 					.getAllHistory("useSkill", evt => {
 						return evt.skill == "clanguangu_backup";
 					})
@@ -5411,23 +5406,74 @@ const skills = {
 				if (!history.length) {
 					return;
 				}
-				var numx = 0;
-				for (var i = history.length - 1; i >= 0; i--) {
-					var evt = history[i];
+				let numx = 0;
+				for (let i = history.length - 1; i >= 0; i--) {
+					const evt = history[i];
 					if (evt.viewedCount) {
 						numx = evt.viewedCount;
 						break;
 					}
 				}
 				if (numx == get.cardNameLength(card)) {
-					if (
-						!player.hasHistory("useCard", evt => {
-							return numx == get.cardNameLength(evt.card);
-						})
-					) {
+					if (!player.hasHistory("useCard", evt => numx == get.cardNameLength(evt.card))) {
 						return num + 9;
 					}
 				}
+			},
+		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					const list = player
+						.getHistory("useCard")
+						.map(evt => get.cardNameLength(evt.card))
+						.toUniqued();
+					if (list.length) {
+						player.markAuto(skill, list);
+						player.storage[skill].sort((a, b) => a - b);
+						player.addTip(
+							skill,
+							`${get.translation(skill)} ${player
+								.getStorage(skill)
+								.map(num => get.translation(num))
+								.join("/")}`
+						);
+					}
+				},
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				trigger: { player: ["useCard1", "phaseAfter"] },
+				filter(event, player) {
+					if (event.name == "phase") {
+						return true;
+					}
+					return player.getHistory("useCard", evt => get.cardNameLength(evt.card) == get.cardNameLength(event.card)).indexOf(event) == 0;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (trigger.name == "phase") {
+						delete player.storage[event.name];
+						player.removeTip(event.name);
+						player.unmarkSkill(event.name);
+					} else {
+						player.markAuto(event.name, [get.cardNameLength(trigger.card)]);
+						player.storage[event.name].sort((a, b) => a - b);
+						player.addTip(
+							event.name,
+							`${get.translation(event.name)} ${player
+								.getStorage(event.name)
+								.map(num => get.translation(num))
+								.join("/")}`
+						);
+					}
+				},
+				marktext: "咏",
+				intro: { content: "本回合已使用牌名字数：$" },
 			},
 		},
 	},

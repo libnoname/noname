@@ -87,7 +87,7 @@ const translates = {
 	clanguangu: "观骨",
 	clanguangu_info: "转换技，出牌阶段限一次。阳：你可以观看牌堆顶的至多四张牌；阴：你可以观看一名角色的至多四张手牌。然后你可以使用其中的一张牌。",
 	clanxiaoyong: "啸咏",
-	clanxiaoyong_info: "锁定技。当你于回合内首次使用字数为X的牌时，你重置〖观骨〗（X为你上次发动〖观骨〗观看的牌数）。",
+	clanxiaoyong_info: `锁定技。当你于回合内首次使用字数为X的牌时，你重置${get.poptip("clanguangu")}（X为你上次发动${get.poptip("clanguangu")}观看的牌数）。`,
 	clanbaozu: "保族",
 	clanbaozu_info: "宗族技，限定技。当一名颍川钟氏角色进入濒死状态时，你可以令其横置并回复1点体力。",
 	clan_wangyun: "族王允",

@@ -32957,28 +32957,26 @@ const skills = {
 			}
 			return event.targets.length >= 2;
 		},
-		direct: true,
-		skillAnimation: true,
-		animationColor: "wood",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("jdfenwei"), "令" + get.translation(trigger.card) + "对任意名角色无效", [1, trigger.targets.length], (card, player, target) => {
-					return _status.event.targets.includes(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `令${get.translation(trigger.card)}对任意名角色无效`, [1, trigger.targets.length], (card, player, target) => {
+					return get.event().targets.includes(target);
 				})
 				.set("ai", target => {
-					var trigger = _status.event.getTrigger();
-					return -get.effect(target, trigger.card, trigger.player, _status.event.player);
+					const player = get.player();
+					const trigger = get.event().getTrigger();
+					return -get.effect(target, trigger.card, trigger.player, player);
 				})
-				.set("targets", trigger.targets);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("jdfenwei", result.targets);
-				player.awakenSkill(event.name);
-				trigger.getParent().excluded.addArray(result.targets);
-				if (result.targets.includes(player)) {
-					player.addTempSkill("jdfenwei_qixi");
-				}
+				.set("targets", trigger.targets)
+				.forResult();
+		},
+		skillAnimation: true,
+		animationColor: "wood",
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			trigger.getParent().excluded.addArray(event.targets);
+			if (event.targets.includes(player)) {
+				player.addTempSkill("jdfenwei_qixi");
 			}
 		},
 		ai: { expose: 0.2 },
@@ -32989,7 +32987,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const result = await player
 						.chooseCardTarget({
-							prompt: get.prompt2("jdqixi"),
+							prompt: get.prompt("jdqixi"),
 							prompt2: lib.translate.jdqixi_info.slice("出牌阶段限一次，你可以".length),
 							filterCard: lib.skill.jdqixi.filterCard,
 							filterTarget: lib.skill.jdqixi.filterTarget,
