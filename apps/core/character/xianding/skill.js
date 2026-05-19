@@ -7641,7 +7641,7 @@ const skills = {
 		},
 		prompt2(event, player) {
 			if (event.name == "useCard") {
-				return `摸一张牌并视为使用${get.translation(event.card)}`;
+				return `摸一张牌，然后可以视为使用${get.translation(event.card)}`;
 			}
 			return `摸一张牌并令${get.translation(event.card)}的目标改为自己`;
 		},
@@ -7663,9 +7663,7 @@ const skills = {
 			await player.draw();
 			if (trigger.name == "useCard") {
 				const card = get.autoViewAs({ name: trigger.card.name, nature: trigger.card.nature, isCard: true });
-				if (player.hasUseTarget(card) || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
-					await player.chooseUseTarget(card, false, true);
-				}
+				await player.chooseUseTarget(card, false);
 				return;
 			}
 			game.log(trigger.card, "的目标改为", player);
