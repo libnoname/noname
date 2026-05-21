@@ -976,9 +976,15 @@ export default () => {
 					game.over(true);
 				}
 			},
-			checkOnlineResult: function (player) {
+			/**
+			 * 联机结算时检查指定玩家是否胜利。
+			 *
+			 * @param { Player } player - 要检查结算结果的玩家。
+			 * @returns { boolean | null } 返回`true`表示胜利，`false`表示失败；所有玩家均失败时返回`null`。
+			 */
+			checkOnlineResult(player) {
 				if (_status.winner && _status.loser) {
-					if (_status.loser.length == game.players.length) {
+					if (_status.loser.length === game.players.length) {
 						return null;
 					}
 					if (_status.loser.includes(player)) {
@@ -989,11 +995,11 @@ export default () => {
 					}
 				}
 				if (game.zhu.isAlive()) {
-					return player.identity == "zhu" || player.identity == "zhong" || player.identity == "mingzhong" || (player.identity == "commoner" && player.isAlive());
-				} else if ((game.players.length == 1 + game.players.filter(i => i.identity == "commoner").length && game.players[0].identity == "nei") || game.players[0].identity == "commoner") {
+					return player.identity === "zhu" || player.identity === "zhong" || player.identity === "mingzhong" || (player.identity === "commoner" && player.isAlive());
+				} else if ((game.players.length == 1 + game.players.filter(i => i.identity === "commoner").length && game.players[0].identity === "nei") || game.players[0].identity === "commoner") {
 					return player.isAlive();
 				} else {
-					return player.identity == "fan" || (player.identity == "commoner" && player.isAlive());
+					return player.identity === "fan" || (player.identity === "commoner" && player.isAlive());
 				}
 			},
 			/**
