@@ -4,7 +4,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const skills = {
 	// 手杀神马超
 	yuli: {
-		audio: 2,
+		audio: 6,
 		trigger: {
 			source: ["damageBegin1", "damageBegin2"],
 			player: ["damageBegin4"],
@@ -21,10 +21,17 @@ const skills = {
 		},
 		locked: true,
 		forced: true,
+		logAudio(event) {
+			if (typeof event == "number") {
+				return `yuli${event}.mp3`;
+			}
+			return 2;
+		},
 		async content(event, trigger, player) {
 			switch (event.triggername) {
 				// 莫名想贪一波，理论上filter肯定都判断过了
 				case "damageBegin1":
+					player.logSkill("yuli", null, null, null, [get.rand(3, 4)]);
 					++trigger.num;
 					updateState(player, "atk");
 					break;
@@ -33,6 +40,7 @@ const skills = {
 					updateState(player, "atk");
 					break;
 				case "damageBegin4":
+					player.logSkill("yuli", null, null, null, [get.rand(5, 6)]);
 					trigger.cancel();
 					await player.draw(trigger.num);
 					updateState(player, "def");
@@ -61,6 +69,7 @@ const skills = {
 						break;
 				}
 				if (player.storage.yuli === 0b11) {
+					player.logSkill("jimie", null, null, null, [get.rand(3, 4)]);
 					player.restoreSkill("jimie");
 					player.storage.yuli = 0;
 				}
@@ -78,12 +87,18 @@ const skills = {
 		},
 	},
 	tingwei: {
-		audio: 2,
+		audio: 4,
 		trigger: {
 			player: "useCardToPlayered",
 		},
 		filter(event) {
 			return event.isFirstTarget && event.card?.name === "sha";
+		},
+		logAudio(event) {
+			if (typeof event == "number") {
+				return `tingwei${event}.mp3`;
+			}
+			return 2;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -411,6 +426,7 @@ const skills = {
 				.forResult();
 
 			if (!result.bool || !result.links?.length) {
+				player.logSkill("tingwei", null, null, null, [get.rand(3, 4)]);
 				await target.link(true);
 				return;
 			}
@@ -491,6 +507,7 @@ const skills = {
 		},
 	},
 	jimie: {
+		audio: 4,
 		trigger: {
 			player: ["phaseUseEnd"],
 		},
@@ -503,6 +520,12 @@ const skills = {
 		},
 		filter(_event, player) {
 			return player.countMark("tingwei") >= 8;
+		},
+		logAudio(event) {
+			if (typeof event == "number") {
+				return `jimie${event}.mp3`;
+			}
+			return 2;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
