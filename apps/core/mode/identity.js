@@ -1069,7 +1069,8 @@ export default () => {
 						event.mapNum = {};
 						const list = [];
 						const libCharacter = {};
-						for (const pack of lib.configOL.characterPack) {
+						for (const name of lib.configOL.characterPack) {
+							const pack = lib.characterPack[name];
 							for (const name in pack) {
 								if (lib.character[name]) {
 									libCharacter[name] = pack[name];
@@ -1407,254 +1408,262 @@ export default () => {
 				];
 				next.setContent(contents);
 			},
-			chooseCharacterStratagemOL: function () {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
-					ui.arena.classList.add("choose-character");
-					var i;
-					var identityList = get.identityList(game.players.length);
-					if (lib.configOL.double_nei) {
-						switch (lib.configOL.number) {
-							case 8:
-								identityList.remove("fan");
-								identityList.push("nei");
-								break;
-							case 7:
-								identityList.remove("zhong");
-								identityList.push("nei");
-								break;
-							case 6:
-								identityList.remove("fan");
-								identityList.push("nei");
-								break;
-							case 5:
-								identityList.remove("fan");
-								identityList.push("nei");
-								break;
-							case 4:
-								identityList.remove("zhong");
-								identityList.push("nei");
-								break;
-							case 3:
-								identityList.remove("fan");
-								identityList.push("nei");
-								break;
-						}
-					}
-					identityList.randomSort();
-					for (i = 0; i < game.players.length; i++) {
-						game.players[i].identity = identityList[i];
-						game.players[i].setIdentity("cai");
-						game.players[i].node.identity.classList.add("guessing");
-						if (identityList[i] == "zhu") {
-							game.zhu = game.players[i];
-						}
-						game.players[i].identityShown = false;
-					}
+			/**
+			 * @this {Game}
+			 */
+			chooseCharacterStratagemOL() {
+				const next = game.createEvent("chooseCharacter");
+				/** @type { ContentFuncsByAll } */
+				const contents = [
+					// step 0
+					async (event, trigger, player) => {
+						ui.arena.classList.add("choose-character");
 
-					game.me.setIdentity();
-					game.me.node.identity.classList.remove("guessing");
-
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].send(
-							function (zhu, zhuid, me, identity) {
-								for (var i in lib.playerOL) {
-									lib.playerOL[i].setIdentity("cai");
-									lib.playerOL[i].node.identity.classList.add("guessing");
-								}
-								zhu.identity = zhuid;
-								if (zhuid == "zhu") {
-									zhu.isZhu = true;
-								}
-								me.node.identity.classList.remove("guessing");
-								ui.arena.classList.add("choose-character");
-							},
-							game.zhu,
-							game.zhu.identity,
-							game.players[i],
-							game.players[i].identity
-						);
-					}
-
-					var list;
-					var list3 = [];
-					var list4 = [];
-					event.list = [];
-					event.list2 = [];
-
-					var libCharacter = {};
-					for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-						var pack = lib.characterPack[lib.configOL.characterPack[i]];
-						for (var j in pack) {
-							if (lib.character[j]) {
-								libCharacter[j] = pack[j];
+						const identityList = get.identityList(game.players.length);
+						if (lib.configOL.double_nei) {
+							switch (lib.configOL.number) {
+								case 8:
+									identityList.remove("fan");
+									identityList.push("nei");
+									break;
+								case 7:
+									identityList.remove("zhong");
+									identityList.push("nei");
+									break;
+								case 6:
+									identityList.remove("fan");
+									identityList.push("nei");
+									break;
+								case 5:
+									identityList.remove("fan");
+									identityList.push("nei");
+									break;
+								case 4:
+									identityList.remove("zhong");
+									identityList.push("nei");
+									break;
+								case 3:
+									identityList.remove("fan");
+									identityList.push("nei");
+									break;
 							}
 						}
-					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j])) {
-								ix.splice(j--, 1);
+						identityList.randomSort();
+						for (const [current, identity] of Iterator.zip([game.players, identityList])) {
+							current.identity = identity;
+							current.setIdentity("cai");
+							current.node.identity.classList.add("guessing");
+							if (identity === "zhu") {
+								game.zhu = current;
 							}
+							current.identityShown = false;
 						}
-						if (ix.length) {
-							event.list.push(i);
-							event.list2.push(i);
-							list4.addArray(ix);
-							list3.push(i);
+						game.me.setIdentity();
+						game.me.node.identity.classList.remove("guessing");
+
+						for (const current of game.players) {
+							current.send(
+								(zhu, zhuid, me, identity) => {
+									for (var i in lib.playerOL) {
+										lib.playerOL[i].setIdentity("cai");
+										lib.playerOL[i].node.identity.classList.add("guessing");
+									}
+									zhu.identity = zhuid;
+									if (zhuid == "zhu") {
+										zhu.isZhu = true;
+									}
+									me.node.identity.classList.remove("guessing");
+									ui.arena.classList.add("choose-character");
+								},
+								game.zhu,
+								game.zhu.identity,
+								current,
+								current.identity
+							);
 						}
-					}
-					game.broadcast(function (list) {
-						for (var i in lib.characterReplace) {
-							var ix = lib.characterReplace[i];
-							for (var j = 0; j < ix.length; j++) {
-								if (!list.includes(ix[j])) {
-									ix.splice(j--, 1);
+
+						const characters = [];
+						event.list = [];
+						event.list2 = [];
+
+						const libCharacter = {};
+						for (const name of lib.configOL.characterPack) {
+							const pack = lib.characterPack[name];
+							for (const item in pack) {
+								if (lib.character[item]) {
+									libCharacter[item] = pack[item];
 								}
 							}
 						}
-					}, list4);
-					for (i in libCharacter) {
-						if (list4.includes(i)) {
-							continue;
-						}
-						if (lib.filter.characterDisabled(i, libCharacter)) {
-							continue;
-						}
-						event.list.push(i);
-						event.list2.push(i);
-						list4.push(i);
-						list3.push(i);
-					}
-					_status.characterlist = list4.slice(0);
-					list = list3.randomGets(5);
-					("step 1");
-					var list = [];
-					var selectButton = lib.configOL.double_character ? 2 : 1;
-
-					var num = Math.floor(event.list.length / (game.players.length - 1));
-					for (var i = 0; i < game.players.length; i++) {
-						let num2 = lib.configOL["choice_" + game.players[i].identity];
-						var str = "选择角色";
-						list.push([game.players[i], [str, [event.list.randomRemove(Math.min(num, num2)), "characterx"]], selectButton, true]);
-					}
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0], result.links[1]);
-						}
-					});
-					("step 2");
-					var shen = [];
-					for (var i in result) {
-						if (result[i] && result[i].links) {
-							for (var j = 0; j < result[i].links.length; j++) {
-								event.list2.remove(get.sourceCharacter(result[i].links[j]));
-							}
-						}
-					}
-					for (var i in result) {
-						if (result[i] == "ai") {
-							result[i] = event.list2.randomRemove(lib.configOL.double_character ? 2 : 1);
-							for (var j = 0; j < result[i].length; j++) {
-								var listx = lib.characterReplace[result[i][j]];
-								if (listx && listx.length) {
-									result[i][j] = listx.randomGet();
+						for (const name in lib.characterReplace) {
+							const names = lib.characterReplace[name];
+							for (let j = 0; j < names.length; ++j) {
+								if (!libCharacter[names[j]] || lib.filter.characterDisabled(names[j])) {
+									names.splice(j--, 1);
 								}
 							}
+							if (names.length) {
+								event.list.push(name);
+								event.list2.push(name);
+								characters.addArray(names);
+							}
+						}
+						game.broadcast(list => {
+							for (const name in lib.characterReplace) {
+								const names = lib.characterReplace[name];
+								for (let j = 0; j < names.length; ++j) {
+									if (!list.includes(names[j])) {
+										names.splice(j--, 1);
+									}
+								}
+							}
+						}, characters);
+						for (const name in libCharacter) {
+							if (characters.includes(name)) {
+								continue;
+							}
+							if (lib.filter.characterDisabled(name, libCharacter)) {
+								continue;
+							}
+							event.list.push(name);
+							event.list2.push(name);
+							characters.push(name);
+						}
+						_status.characterlist = characters.slice(0);
+					},
+					// step 1
+					async (event, trigger, player) => {
+						const list = [];
+
+						const num = Math.floor(event.list.length / (game.players.length - 1));
+						const selectButton = lib.configOL.double_character ? 2 : 1;
+						for (const current of game.players) {
+							const num2 = lib.configOL["choice_" + current.identity];
+							const str = "选择角色";
+							list.push([current, [str, [event.list.randomRemove(Math.min(num, num2)), "characterx"]], selectButton, true]);
+						}
+
+						/** @type { Record<string, Partial<Result>> } */
+						const result = await game.me
+							.chooseButtonOL(list, function (player, result) {
+								if (game.online || player == game.me) {
+									player.init(result.links[0], result.links[1]);
+								}
+							})
+							.forResult();
+
+						const shen = [];
+						for (const id in result) {
+							if (result[id] && result[id].links) {
+								for (const character of result[id].links) {
+									event.list2.remove(get.sourceCharacter(character));
+								}
+							}
+						}
+						for (const id in result) {
+							if (result[id] === "ai") {
+								result[id] = event.list2.randomRemove(lib.configOL.double_character ? 2 : 1);
+								for (let j = 0; j < result[id].length; j++) {
+									const listx = lib.characterReplace[result[id][j]];
+									if (listx && listx.length) {
+										result[id][j] = listx.randomGet();
+									}
+								}
+							} else {
+								result[id] = result[id].links;
+							}
+							if (get.selectGroup(result[id][0]).length > 1) {
+								shen.push(lib.playerOL[id]);
+							}
+						}
+						event.result2 = result;
+
+						if (shen.length) {
+							for (let i = 0; i < shen.length; i++) {
+								const name = result[shen[i].playerid][0];
+								const groups = get.selectGroup(name).map(group => ["", "", `group_${group}`]);
+								const type = get.selectGroup(name, true);
+								shen[i]._groupChosen = type;
+								shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true];
+							}
+							game.me
+								.chooseButtonOL(shen, (player, result) => {
+									if (player === game.me) {
+										player.changeGroup(result.links[0][2].slice(6), false, false);
+									}
+								})
+								.set("switchToAuto", () => {
+									_status.event.result = "ai";
+								})
+								.set("processAI", () => {
+									return {
+										bool: true,
+										links: [_status.event.dialog.buttons.randomGet().link],
+									};
+								});
 						} else {
-							result[i] = result[i].links;
+							event._result = {};
 						}
-						if (get.selectGroup(result[i][0]).length > 1) {
-							shen.push(lib.playerOL[i]);
+					},
+					// step 2
+					async (event, trigger, player, result) => {
+						if (!result) {
+							result = {};
 						}
-					}
-					event.result2 = result;
-					if (shen.length) {
-						for (var i = 0; i < shen.length; i++) {
-							const name = result[shen[i].playerid][0];
-							const groups = get.selectGroup(name).map(group => ["", "", `group_${group}`]),
-								type = get.selectGroup(name, true);
-							shen[i]._groupChosen = type;
-							shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true];
-						}
-						game.me
-							.chooseButtonOL(shen, function (player, result) {
-								if (player == game.me) {
-									player.changeGroup(result.links[0][2].slice(6), false, false);
-								}
-							})
-							.set("switchToAuto", function () {
-								_status.event.result = "ai";
-							})
-							.set("processAI", function () {
-								return {
-									bool: true,
-									links: [_status.event.dialog.buttons.randomGet().link],
-								};
-							});
-					} else {
-						event._result = {};
-					}
-					("step 3");
-					if (!result) {
-						result = {};
-					}
-					for (var i in result) {
-						if (result[i] && result[i].links) {
-							result[i] = result[i].links[0][2].slice(6);
-						} else if (result[i] == "ai") {
-							result[i] = (function () {
-								return ["wei", "shu", "wu", "qun", "jin", "key"].randomGet();
-							})();
-						}
-					}
-					var result2 = event.result2;
-					game.broadcast(
-						function (result, result2) {
-							for (var i in result) {
-								if (!lib.playerOL[i].name) {
-									lib.playerOL[i].init(result[i][0], result[i][1]);
-								}
-								if (result2[i] && result2[i].length) {
-									lib.playerOL[i].changeGroup(result2[i], false, false);
-								}
+						for (const id in result) {
+							if (result[id] && result[id].links) {
+								result[id] = result[id].links[0][2].slice(6);
+							} else if (result[id] === "ai") {
+								result[id] = ["wei", "shu", "wu", "qun", "jin", "key"].randomGet();
 							}
-							setTimeout(function () {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
-						},
-						result2,
-						result
-					);
-
-					for (var i in result2) {
-						if (!lib.playerOL[i].name) {
-							lib.playerOL[i].init(result2[i][0], result2[i][1]);
 						}
-						if (result[i] && result[i].length) {
-							lib.playerOL[i].changeGroup(result[i], false, false);
+						const result2 = event.result2;
+						game.broadcast(
+							(result, result2) => {
+								for (const id in result) {
+									if (!lib.playerOL[id].name) {
+										lib.playerOL[id].init(result[id][0], result[id][1]);
+									}
+									if (result2[id] && result2[id].length) {
+										lib.playerOL[id].changeGroup(result2[id], false, false);
+									}
+								}
+								setTimeout(() => {
+									ui.arena.classList.remove("choose-character");
+								}, 500);
+							},
+							result2,
+							result
+						);
+
+						for (const id in result2) {
+							if (!lib.playerOL[id].name) {
+								lib.playerOL[id].init(result2[id][0], result2[id][1]);
+							}
+							if (result[id] && result[id].length) {
+								lib.playerOL[id].changeGroup(result[id], false, false);
+							}
 						}
-					}
 
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name);
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
-					}
+						for (let i = 0; i < game.players.length; i++) {
+							_status.characterlist.remove(game.players[i].name);
+							_status.characterlist.remove(game.players[i].name1);
+							_status.characterlist.remove(game.players[i].name2);
+						}
 
-					["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
-					game.players.forEach(current => {
-						current.storage.zhibi = [];
-						current.storage.stratagem_expose = [];
-						current.markSkill("stratagem_fury");
-					});
+						["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
+						game.players.forEach(current => {
+							current.storage.zhibi = [];
+							current.storage.stratagem_expose = [];
+							current.markSkill("stratagem_fury");
+						});
 
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-				});
+						setTimeout(() => {
+							ui.arena.classList.remove("choose-character");
+						}, 500);
+					},
+				];
+				next.setContent(contents);
 			},
 			chooseCharacter: function () {
 				if (_status.mode == "purple") {
