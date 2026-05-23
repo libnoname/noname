@@ -3386,23 +3386,29 @@ export default () => {
 						markIdentity(this.ai.identity_mark == "zhong" ? undefined : "fan");
 					}
 				},
+				/**
+				 * 公开当前角色身份，并清理身份猜测交互节点。
+				 *
+				 * @this { Player }
+				 * @returns { void }
+				 */
 				showIdentity() {
 					this.node.identity.classList.remove("guessing");
 					this.identityShown = true;
 					this.ai.shown = 1;
 					this.setIdentity();
 					if (this.special_identity) {
-						this.node.identity.firstChild.innerHTML = get.translation(this.special_identity + "_bg");
+						this.node.identity.firstChild.innerHTML = get.translation(`${this.special_identity}_bg`);
 					}
-					if (this.identity == "zhu") {
+					if (this.identity === "zhu") {
 						this.isZhu = true;
 					} else {
 						delete this.isZhu;
 					}
 					if (_status.clickingidentity) {
-						for (var i = 0; i < _status.clickingidentity[1].length; i++) {
-							_status.clickingidentity[1][i].delete();
-							_status.clickingidentity[1][i].style.transform = "";
+						for (const node of _status.clickingidentity[1]) {
+							node.delete();
+							node.style.transform = "";
 						}
 						delete _status.clickingidentity;
 					}
