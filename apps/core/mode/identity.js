@@ -1665,38 +1665,40 @@ export default () => {
 				];
 				next.setContent(contents);
 			},
-			chooseCharacter: function () {
+			/**
+			 * @this {Game}
+			 */
+			chooseCharacter() {
 				if (_status.mode == "purple") {
 					game.chooseCharacterPurple();
 					return;
 				}
-				var next = game.createEvent("chooseCharacter");
+
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.addPlayer = function (player) {
-					var list = get.identityList(game.players.length - 1);
-					var list2 = get.identityList(game.players.length);
-					for (var i = 0; i < list.length; i++) {
-						list2.remove(list[i]);
+				next.addPlayer = player => {
+					const list = get.identityList(game.players.length - 1);
+					const list2 = get.identityList(game.players.length);
+					for (const item of list) {
+						list2.remove(item);
 					}
 					player.identity = list2[0];
 					player.setIdentity("cai");
 				};
-				next.removePlayer = function () {
+				next.removePlayer = () => {
 					return game.players.randomGet(game.me, game.zhu);
 				};
-				next.ai = function (player, list, list2, back) {
-					if (_status.brawl && _status.brawl.chooseCharacterAi) {
-						if (_status.brawl.chooseCharacterAi(player, list, list2, back) !== false) {
-							return;
-						}
+				next.ai = (player, list, list2, back) => {
+					if (_status.brawl && _status.brawl.chooseCharacterAi && _status.brawl.chooseCharacterAi(player, list, list2, back) !== false) {
+						return;
 					}
-					var stratagemMode = _status.event.stratagemMode;
+					const stratagemMode = _status.event.stratagemMode;
 					if (_status.event.zhongmode) {
-						var listc = list.slice(0, 2);
-						for (var i = 0; i < listc.length; i++) {
-							var listx = lib.characterReplace[listc[i]];
+						const listc = list.slice(0, 2);
+						for (const index of listc.keys()) {
+							const listx = lib.characterReplace[listc[index]];
 							if (listx && listx.length) {
-								listc[i] = listx.randomGet();
+								listc[index] = listx.randomGet();
 							}
 						}
 						if (get.config("double_character")) {
@@ -1704,56 +1706,52 @@ export default () => {
 						} else {
 							player.init(listc[0]);
 						}
-						if (player.identity == "mingzhong") {
-							if (!player.isInitFilter("noZhuHp")) {
-								player.hp++;
-								player.maxHp++;
-								player.update();
-							}
+						if (player.identity === "mingzhong" && !player.isInitFilter("noZhuHp")) {
+							player.hp++;
+							player.maxHp++;
+							player.update();
 						}
-					} else if (player.identity == "zhu" && !stratagemMode) {
+					} else if (player.identity === "zhu" && !stratagemMode) {
 						list2.randomSort();
-						var choice, choice2;
+						let choice = list[0];
+						let choice2 = list[1];
 						if (!_status.event.zhongmode && Math.random() - 0.8 < 0 && list2.length) {
 							choice = list2[0];
 							choice2 = list[0];
 							if (choice2 == choice) {
 								choice2 = list[1];
 							}
-						} else {
-							choice = list[0];
-							choice2 = list[1];
 						}
-						if (lib.characterReplace[choice] && lib.characterReplace[choice].length) {
-							choice = lib.characterReplace[choice].randomGet();
+						const choiceList = lib.characterReplace[choice];
+						if (choiceList && choiceList.length) {
+							choice = choiceList.randomGet();
 						}
-						if (lib.characterReplace[choice2] && lib.characterReplace[choice2].length) {
-							choice2 = lib.characterReplace[choice2].randomGet();
+						const choice2List = lib.characterReplace[choice2];
+						if (choice2List && choice2List.length) {
+							choice2 = choice2List.randomGet();
 						}
 						if (get.config("double_character")) {
 							player.init(choice, choice2);
 						} else {
 							player.init(choice);
 						}
-						if (game.players.length > 4) {
-							if (!player.isInitFilter("noZhuHp")) {
-								player.hp++;
-								player.maxHp++;
-								player.update();
-							}
+						if (game.players.length > 4 && !player.isInitFilter("noZhuHp")) {
+							player.hp++;
+							player.maxHp++;
+							player.update();
 						}
-					} else if (player.identity == "zhong" && (Math.random() < 0.5 || ["sunliang", "key_akane"].includes(game.zhu.name)) && !stratagemMode) {
-						var listc = list.slice(0);
-						for (var i = 0; i < listc.length; i++) {
-							var listx = lib.characterReplace[listc[i]];
+					} else if (player.identity === "zhong" && (Math.random() < 0.5 || ["sunliang", "key_akane"].includes(game.zhu.name)) && !stratagemMode) {
+						const listc = list.slice(0);
+						for (const index of listc.keys()) {
+							const listx = lib.characterReplace[listc[index]];
 							if (listx && listx.length) {
-								listc[i] = listx.randomGet();
+								listc[index] = listx.randomGet();
 							}
 						}
-						var choice = 0;
-						for (var i = 0; i < listc.length; i++) {
-							if (lib.character[listc[i]][1] == game.zhu.group) {
-								choice = i;
+						let choice = 0;
+						for (const index of listc.keys()) {
+							if (lib.character[listc[index]][1] == game.zhu.group) {
+								choice = index;
 								break;
 							}
 						}
@@ -1763,11 +1761,11 @@ export default () => {
 							player.init(listc[choice]);
 						}
 					} else {
-						var listc = list.slice(0, 2);
-						for (var i = 0; i < listc.length; i++) {
-							var listx = lib.characterReplace[listc[i]];
+						const listc = list.slice(0, 2);
+						for (const index of listc.keys()) {
+							const listx = lib.characterReplace[listc[index]];
 							if (listx && listx.length) {
-								listc[i] = listx.randomGet();
+								listc[index] = listx.randomGet();
 							}
 						}
 						if (get.config("double_character")) {
@@ -1779,14 +1777,12 @@ export default () => {
 					if (back) {
 						list.remove(get.sourceCharacter(player.name1));
 						list.remove(get.sourceCharacter(player.name2));
-						for (var i = 0; i < list.length; i++) {
-							back.push(list[i]);
+						for (const name of list) {
+							back.push(name);
 						}
 					}
-					if (typeof lib.config.test_game == "string" && player == game.me.next) {
-						if (lib.config.test_game != "_") {
-							player.init(lib.config.test_game);
-						}
+					if (typeof lib.config.test_game === "string" && player === game.me.next && lib.config.test_game !== "_") {
+						player.init(lib.config.test_game);
 					}
 					if (get.is.double(player.name1)) {
 						player._groupChosen = "double";
@@ -1794,715 +1790,725 @@ export default () => {
 						player.node.name.dataset.nature = get.groupnature(player.group);
 					} else if (get.config("choose_group") && lib.selectGroup.includes(player.group) && !player.isUnseen(0)) {
 						player._groupChosen = "kami";
-						var list = lib.group.slice(0);
-						list.remove("shen");
-						if (list.length) {
-							player.group = (function () {
-								if (_status.mode != "zhong" && game.zhu && game.zhu.group) {
-									if (["re_zhangjiao", "liubei", "re_liubei", "caocao", "re_caocao", "sunquan", "re_sunquan", "zhangjiao", "sp_zhangjiao", "caopi", "re_caopi", "liuchen", "caorui", "sunliang", "sunxiu", "sunce", "re_sunben", "ol_liushan", "re_liushan", "key_akane", "dongzhuo", "re_dongzhuo", "ol_dongzhuo", "jin_simashi", "caomao"].includes(game.zhu.name)) {
+						const groups = lib.group.slice(0);
+						groups.remove("shen");
+						if (groups.length) {
+							player.group = (() => {
+								if (_status.mode === "zhong" || !game.zhu || !game.zhu.group) {
+									return groups.randomGet();
+								}
+								if (["re_zhangjiao", "liubei", "re_liubei", "caocao", "re_caocao", "sunquan", "re_sunquan", "zhangjiao", "sp_zhangjiao", "caopi", "re_caopi", "liuchen", "caorui", "sunliang", "sunxiu", "sunce", "re_sunben", "ol_liushan", "re_liushan", "key_akane", "dongzhuo", "re_dongzhuo", "ol_dongzhuo", "jin_simashi", "caomao"].includes(game.zhu.name)) {
+									return game.zhu.group;
+								}
+								if (game.zhu.name === "yl_yuanshu") {
+									if (player.identity !== "zhong") {
+										return "qun";
+									}
+									groups.remove("qun");
+								}
+								if (["sunhao", "xin_yuanshao", "re_yuanshao", "re_sunce", "ol_yuanshao", "yuanshu", "jin_simazhao", "liubian"].includes(game.zhu.name)) {
+									if (player.identity == "zhong") {
 										return game.zhu.group;
 									}
-									if (game.zhu.name == "yl_yuanshu") {
-										if (player.identity == "zhong") {
-											list.remove("qun");
-										} else {
-											return "qun";
-										}
-									}
-									if (["sunhao", "xin_yuanshao", "re_yuanshao", "re_sunce", "ol_yuanshao", "yuanshu", "jin_simazhao", "liubian"].includes(game.zhu.name)) {
-										if (player.identity != "zhong") {
-											list.remove(game.zhu.group);
-										} else {
-											return game.zhu.group;
-										}
-									}
+									groups.remove(game.zhu.group);
 								}
-								return list.randomGet();
+								return groups.randomGet();
 							})();
 						}
 					}
 					player.node.name.dataset.nature = get.groupnature(player.group);
 				};
-				next.setContent(function () {
-					"step 0";
-					ui.arena.classList.add("choose-character");
-					var i;
-					var list;
-					var list2 = [];
-					var list3 = [];
-					var list4 = [];
-					var identityList;
-					var chosen = lib.config.continue_name || [];
-					game.saveConfig("continue_name");
-					event.chosen = chosen;
-					if (_status.mode == "zhong") {
-						event.zhongmode = true;
-						identityList = ["zhu", "zhong", "mingzhong", "nei", "fan", "fan", "fan", "fan"];
-					} else {
-						if (_status.mode == "stratagem") {
-							event.stratagemMode = true;
-						}
-						identityList = get.identityList(game.players.length);
-					}
-					var stratagemMode = event.stratagemMode;
-					var addSetting = function (dialog) {
-						dialog.add("选择身份").classList.add("add-setting");
-						var table = document.createElement("div");
-						table.classList.add("add-setting");
-						table.style.margin = "0";
-						table.style.width = "100%";
-						table.style.position = "relative";
-						var listi;
-						if (event.zhongmode) {
-							listi = ["random", "zhu", "mingzhong", "zhong", "fan", "nei"];
+
+				/** @type { ContentFuncsByAll } */
+				const contents = [
+					// step 0
+					async (event, trigger, player) => {
+						ui.arena.classList.add("choose-character");
+						let list;
+						let identityList;
+						let num;
+						const list2 = [];
+						const list3 = [];
+						const list4 = [];
+						const chosen = lib.config.continue_name || [];
+						game.saveConfig("continue_name");
+						event.chosen = chosen;
+						if (_status.mode === "zhong") {
+							event.zhongmode = true;
+							identityList = ["zhu", "zhong", "mingzhong", "nei", "fan", "fan", "fan", "fan"];
 						} else {
-							listi = ["random", "zhu", "zhong", "fan", "nei"];
-							if (get.config("enable_commoner") && !event.stratagemMode) {
-								listi.push("commoner");
+							if (_status.mode === "stratagem") {
+								event.stratagemMode = true;
 							}
+							identityList = get.identityList(game.players.length);
 						}
-
-						for (var i = 0; i < listi.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-							td.link = listi[i];
-							if (td.link === game.me.identity) {
-								td.classList.add("bluebg");
+						const stratagemMode = event.stratagemMode;
+						const addSetting = dialog => {
+							dialog.add("选择身份").classList.add("add-setting");
+							const table = document.createElement("div");
+							table.classList.add("add-setting");
+							table.style.margin = "0";
+							table.style.width = "100%";
+							table.style.position = "relative";
+							let identityChoices;
+							let seats;
+							if (event.zhongmode) {
+								identityChoices = ["random", "zhu", "mingzhong", "zhong", "fan", "nei"];
+							} else {
+								identityChoices = ["random", "zhu", "zhong", "fan", "nei"];
+								if (get.config("enable_commoner") && !event.stratagemMode) {
+									identityChoices.push("commoner");
+								}
 							}
-							table.appendChild(td);
-							td.innerHTML = "<span>" + get.translation(listi[i] + "2") + "</span>";
-							td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-								if (_status.dragged) {
-									return;
-								}
-								if (_status.justdragged) {
-									return;
-								}
-								_status.tempNoButton = true;
-								setTimeout(function () {
-									_status.tempNoButton = false;
-								}, 500);
-								var link = this.link;
-								if (game.zhu) {
-									if (link != "random") {
-										_status.event.parent.fixedseat = get.distance(game.me, game.zhu, "absolute");
-									}
-									if (game.zhu.name) {
-										game.zhu.uninit();
-									}
-									delete game.zhu.isZhu;
-									delete game.zhu.identityShown;
-								}
-								var current = this.parentNode.querySelector(".bluebg");
-								if (current) {
-									current.classList.remove("bluebg");
-								}
-								current = _status.cheat_seat || seats.querySelector(".bluebg");
-								if (current) {
-									current.classList.remove("bluebg");
-								}
-								if (link == "random") {
-									if (event.zhongmode) {
-										link = ["zhu", "zhong", "nei", "fan", "mingzhong"].randomGet();
-									} else {
-										var listi = ["zhu", "zhong", "nei", "fan"];
-										if (get.config("enable_commoner") && !event.stratagemMode) {
-											listi.push("commoner");
-										}
-										link = listi.randomGet();
-									}
-									for (var i = 0; i < this.parentNode.childElementCount; i++) {
-										if (this.parentNode.childNodes[i].link == link) {
-											this.parentNode.childNodes[i].classList.add("bluebg");
-										}
-									}
-								} else {
-									this.classList.add("bluebg");
-								}
-								num = get.config("choice_" + link);
-								if (event.zhongmode) {
-									num = 6;
-									if (link == "zhu" || link == "nei" || link == "mingzhong") {
-										num = 8;
-									}
-								}
-								_status.event.parent.swapnodialog = function (dialog, list) {
-									var buttons = ui.create.div(".buttons");
-									var node = dialog.buttons[0].parentNode;
-									dialog.buttons = ui.create.buttons(list, "characterx", buttons);
-									dialog.content.insertBefore(buttons, node);
-									buttons.addTempClass("start");
-									node.remove();
-									game.uncheck();
-									game.check();
-									if (event.stratagemMode) {
-										return;
-									}
-									for (var i = 0; i < seats.childElementCount; i++) {
-										if (get.distance(game.zhu, game.me, "absolute") === seats.childNodes[i].link) {
-											seats.childNodes[i].classList.add("bluebg");
-										}
-									}
-								};
-								_status.event = _status.event.parent;
-								_status.event.step = 0;
-								_status.event.identity = link;
-								if (ui.selected.buttons.length > 0) {
-									ui.selected.buttons.forEach(function (button) {
-										if (button && button.parentNode) {
-											button.classList.remove("selected");
-										}
-									});
-									ui.selected.buttons.length = 0;
-								}
-								if (!event.stratagemMode) {
-									if (link != (event.zhongmode ? "mingzhong" : "zhu")) {
-										seats.previousSibling.style.display = "";
-										seats.style.display = "";
-									} else {
-										seats.previousSibling.style.display = "none";
-										seats.style.display = "none";
-									}
-								}
-								game.resume();
-							});
-						}
-						dialog.content.appendChild(table);
 
-						dialog.add("选择座位").classList.add("add-setting");
-						var seats = document.createElement("div");
-						seats.classList.add("add-setting");
-						seats.style.margin = "0";
-						seats.style.width = "100%";
-						seats.style.position = "relative";
-						for (var i = stratagemMode ? 1 : 2; i <= game.players.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-							td.innerHTML = get.cnNumber(i, true);
-							td.link = i - 1;
-							seats.appendChild(td);
-							if (!stratagemMode && get.distance(game.zhu, game.me, "absolute") === i - 1) {
-								td.classList.add("bluebg");
-							}
-							td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-								if (_status.dragged) {
-									return;
+							for (const identity of identityChoices) {
+								const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+								td.link = identity;
+								if (td.link === game.me.identity) {
+									td.classList.add("bluebg");
 								}
-								if (_status.justdragged) {
-									return;
-								}
-								if (_status.cheat_seat) {
-									_status.cheat_seat.classList.remove("bluebg");
-									if (_status.cheat_seat == this) {
-										delete _status.cheat_seat;
+								table.appendChild(td);
+								td.innerHTML = `<span>${get.translation(`${identity}2`)}</span>`;
+								td.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+									const target = e.currentTarget;
+									if (_status.dragged) {
 										return;
 									}
-								}
-								if (stratagemMode) {
-									this.classList.add("bluebg");
-									_status.cheat_seat = this;
-								} else {
-									if (get.distance(game.zhu, game.me, "absolute") == this.link) {
+									if (_status.justdragged) {
 										return;
 									}
-									var current = this.parentNode.querySelector(".bluebg");
+									_status.tempNoButton = true;
+									setTimeout(() => {
+										_status.tempNoButton = false;
+									}, 500);
+									let link = target.link;
+									if (game.zhu) {
+										if (link !== "random") {
+											_status.event.parent.fixedseat = get.distance(game.me, game.zhu, "absolute");
+										}
+										if (game.zhu.name) {
+											game.zhu.uninit();
+										}
+										delete game.zhu.isZhu;
+										delete game.zhu.identityShown;
+									}
+									let current = target.parentNode.querySelector(".bluebg");
 									if (current) {
 										current.classList.remove("bluebg");
 									}
-									this.classList.add("bluebg");
-									for (var i = 0; i < game.players.length; i++) {
-										if (get.distance(game.players[i], game.me, "absolute") == this.link) {
-											game.swapSeat(game.zhu, game.players[i], false);
+									current = _status.cheat_seat || seats.querySelector(".bluebg");
+									if (current) {
+										current.classList.remove("bluebg");
+									}
+									if (link === "random") {
+										if (event.zhongmode) {
+											link = ["zhu", "zhong", "nei", "fan", "mingzhong"].randomGet();
+										} else {
+											const randomIdentities = ["zhu", "zhong", "nei", "fan"];
+											if (get.config("enable_commoner") && !event.stratagemMode) {
+												randomIdentities.push("commoner");
+											}
+											link = randomIdentities.randomGet();
+										}
+										for (const identityNode of target.parentNode.childNodes) {
+											if (identityNode.link === link) {
+												identityNode.classList.add("bluebg");
+											}
+										}
+									} else {
+										target.classList.add("bluebg");
+									}
+									num = get.config(`choice_${link}`);
+									if (event.zhongmode) {
+										num = 6;
+										if (link === "zhu" || link === "nei" || link === "mingzhong") {
+											num = 8;
+										}
+									}
+									_status.event.parent.swapnodialog = (dialog, list) => {
+										const buttons = ui.create.div(".buttons");
+										const node = dialog.buttons[0].parentNode;
+										dialog.buttons = ui.create.buttons(list, "characterx", buttons);
+										dialog.content.insertBefore(buttons, node);
+										buttons.addTempClass("start");
+										node.remove();
+										game.uncheck();
+										game.check();
+										if (event.stratagemMode) {
+											return;
+										}
+										for (const seatNode of seats.childNodes) {
+											if (get.distance(game.zhu, game.me, "absolute") === seatNode.link) {
+												seatNode.classList.add("bluebg");
+											}
+										}
+									};
+									_status.event = _status.event.parent;
+									_status.event.step = 0;
+									_status.event.identity = link;
+									if (ui.selected.buttons.length > 0) {
+										ui.selected.buttons.forEach(button => {
+											if (button && button.parentNode) {
+												button.classList.remove("selected");
+											}
+										});
+										ui.selected.buttons.length = 0;
+									}
+									if (!event.stratagemMode) {
+										const zhuIdentity = event.zhongmode ? "mingzhong" : "zhu";
+										if (link === zhuIdentity) {
+											seats.previousSibling.style.display = "none";
+											seats.style.display = "none";
+										} else {
+											seats.previousSibling.style.display = "";
+											seats.style.display = "";
+										}
+									}
+									game.resume();
+								});
+							}
+							dialog.content.appendChild(table);
+
+							dialog.add("选择座位").classList.add("add-setting");
+							seats = document.createElement("div");
+							seats.classList.add("add-setting");
+							seats.style.margin = "0";
+							seats.style.width = "100%";
+							seats.style.position = "relative";
+							const firstSeat = stratagemMode ? 1 : 2;
+							for (let seatNumber = firstSeat; seatNumber <= game.players.length; seatNumber++) {
+								const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+								td.innerHTML = get.cnNumber(seatNumber, true);
+								td.link = seatNumber - 1;
+								seats.appendChild(td);
+								if (!stratagemMode && get.distance(game.zhu, game.me, "absolute") === seatNumber - 1) {
+									td.classList.add("bluebg");
+								}
+								td.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+									const target = e.currentTarget;
+									if (_status.dragged) {
+										return;
+									}
+									if (_status.justdragged) {
+										return;
+									}
+									if (_status.cheat_seat) {
+										_status.cheat_seat.classList.remove("bluebg");
+										if (_status.cheat_seat === target) {
+											delete _status.cheat_seat;
 											return;
 										}
 									}
-								}
-							});
-						}
-						dialog.content.appendChild(seats);
-						if (!stratagemMode && game.me == game.zhu) {
-							seats.previousSibling.style.display = "none";
-							seats.style.display = "none";
-						}
-
-						dialog.add(ui.create.div(".placeholder.add-setting"));
-						dialog.add(ui.create.div(".placeholder.add-setting"));
-						if (get.is.phoneLayout()) {
-							dialog.add(ui.create.div(".placeholder.add-setting"));
-						}
-					};
-					var removeSetting = function () {
-						var dialog = _status.event.dialog;
-						if (dialog) {
-							dialog.style.height = "";
-							delete dialog._scrollset;
-							var list = Array.from(dialog.querySelectorAll(".add-setting"));
-							while (list.length) {
-								list.shift().remove();
-							}
-							ui.update();
-						}
-					};
-					event.addSetting = addSetting;
-					event.removeSetting = removeSetting;
-					event.list = [];
-					identityList.randomSort();
-					if (event.identity) {
-						identityList.remove(event.identity);
-						identityList.unshift(event.identity);
-						if (event.fixedseat) {
-							var zhuIdentity = _status.mode == "zhong" ? "mingzhong" : "zhu";
-							if (zhuIdentity != event.identity) {
-								identityList.remove(zhuIdentity);
-								identityList.splice(event.fixedseat, 0, zhuIdentity);
-							}
-							delete event.fixedseat;
-						}
-						delete event.identity;
-					} else if (_status.mode != "zhong" && (!_status.brawl || !_status.brawl.identityShown)) {
-						var ban_identity = [];
-						ban_identity.push(get.config("ban_identity") || "off");
-						if (ban_identity[0] != "off") {
-							ban_identity.push(get.config("ban_identity2") || "off");
-							if (ban_identity[1] != "off") {
-								ban_identity.push(get.config("ban_identity3") || "off");
-							}
-						}
-						ban_identity.remove("off");
-						if (ban_identity.length) {
-							var identityList2 = identityList.slice(0);
-							for (var i = 0; i < ban_identity.length; i++) {
-								while (identityList2.includes(ban_identity[i])) {
-									identityList2.remove(ban_identity[i]);
-								}
-							}
-							ban_identity = identityList2.randomGet();
-							identityList.remove(ban_identity);
-							identityList.splice(game.players.indexOf(game.me), 0, ban_identity);
-						}
-					}
-					for (i = 0; i < game.players.length; i++) {
-						if (_status.brawl && _status.brawl.identityShown) {
-							if (game.players[i].identity == "zhu") {
-								game.zhu = game.players[i];
-							}
-							if (!stratagemMode) {
-								game.players[i].identityShown = true;
-							}
-						} else {
-							game.players[i].node.identity.classList.add("guessing");
-							game.players[i].identity = identityList[i];
-							game.players[i].setIdentity("cai");
-							if (event.zhongmode) {
-								if (identityList[i] == "mingzhong") {
-									game.zhu = game.players[i];
-								} else if (identityList[i] == "zhu") {
-									game.zhu2 = game.players[i];
-								}
-							} else {
-								if (identityList[i] == "zhu") {
-									game.zhu = game.players[i];
-								}
-							}
-							game.players[i].identityShown = false;
-						}
-					}
-
-					if (get.config("special_identity") && !event.zhongmode && !event.stratagemMode && game.players.length == 8) {
-						for (var i = 0; i < game.players.length; i++) {
-							delete game.players[i].special_identity;
-						}
-						event.special_identity = [];
-						var zhongs = game.filterPlayer(function (current) {
-							return current.identity == "zhong";
-						});
-						var fans = game.filterPlayer(function (current) {
-							return current.identity == "fan";
-						});
-						if (fans.length >= 1) {
-							fans.randomRemove().special_identity = "identity_zeishou";
-							event.special_identity.push("identity_zeishou");
-						}
-						if (zhongs.length > 1) {
-							zhongs.randomRemove().special_identity = "identity_dajiang";
-							zhongs.randomRemove().special_identity = "identity_junshi";
-							event.special_identity.push("identity_dajiang");
-							event.special_identity.push("identity_junshi");
-						} else if (zhongs.length == 1) {
-							if (Math.random() < 0.5) {
-								zhongs.randomRemove().special_identity = "identity_dajiang";
-								event.special_identity.push("identity_dajiang");
-							} else {
-								zhongs.randomRemove().special_identity = "identity_junshi";
-								event.special_identity.push("identity_junshi");
-							}
-						}
-					}
-
-					if (!game.zhu) {
-						game.zhu = game.me;
-					} else {
-						if (!stratagemMode) {
-							game.zhu.setIdentity();
-							game.zhu.isZhu = game.zhu.identity == "zhu";
-							game.zhu.identityShown = true;
-							game.zhu.node.identity.classList.remove("guessing");
-						}
-						game.me.setIdentity();
-						game.me.node.identity.classList.remove("guessing");
-					}
-					//选将框分配
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (chosen.includes(ix[j]) || lib.filter.characterDisabled(ix[j])) {
-								ix.splice(j--, 1);
-							}
-						}
-						if (ix.length) {
-							event.list.push(i);
-							list4.addArray(ix);
-							if (stratagemMode) {
-								list3.push(i);
-							} else {
-								var bool = false;
-								for (var j of ix) {
-									if (lib.character[j].isZhugong) {
-										bool = true;
-										break;
+									if (stratagemMode) {
+										target.classList.add("bluebg");
+										_status.cheat_seat = target;
+										return;
 									}
-								}
-								(bool ? list2 : list3).push(i);
+									if (get.distance(game.zhu, game.me, "absolute") === target.link) {
+										return;
+									}
+									const current = target.parentNode.querySelector(".bluebg");
+									if (current) {
+										current.classList.remove("bluebg");
+									}
+									target.classList.add("bluebg");
+									for (const currentPlayer of game.players) {
+										if (get.distance(currentPlayer, game.me, "absolute") === target.link) {
+											game.swapSeat(game.zhu, currentPlayer, false);
+											return;
+										}
+									}
+								});
 							}
-						}
-					}
-					for (i in lib.character) {
-						if (list4.includes(i)) {
-							continue;
-						}
-						if (chosen.includes(i)) {
-							continue;
-						}
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						event.list.push(i);
-						list4.push(i);
-						if (!stratagemMode && lib.character[i].isZhugong) {
-							list2.push(i);
-						} else {
-							list3.push(i);
-						}
-					}
-					var getZhuList = function () {
-						if (stratagemMode) {
-							list2.sort(lib.sort.character);
-							return list2;
-						}
-						var limit_zhu = get.config("limit_zhu");
-						if (!limit_zhu || limit_zhu == "off") {
-							return list2.slice(0).sort(lib.sort.character);
-						}
-						if (limit_zhu != "group") {
-							var num = parseInt(limit_zhu) || 6;
-							return list2.randomGets(num).sort(lib.sort.character);
-						}
-						var getGroup = function (name) {
-							var characterReplace = lib.characterReplace[name];
-							if (characterReplace && characterReplace[0] && lib.character[characterReplace[0]]) {
-								return lib.character[characterReplace[0]][1];
+							dialog.content.appendChild(seats);
+							if (!stratagemMode && game.me === game.zhu) {
+								seats.previousSibling.style.display = "none";
+								seats.style.display = "none";
 							}
-							return lib.character[name][1];
+
+							dialog.add(ui.create.div(".placeholder.add-setting"));
+							dialog.add(ui.create.div(".placeholder.add-setting"));
+							if (get.is.phoneLayout()) {
+								dialog.add(ui.create.div(".placeholder.add-setting"));
+							}
 						};
-						var list2x = list2.slice(0);
-						list2x.randomSort();
-						for (var i = 0; i < list2x.length; i++) {
-							for (var j = i + 1; j < list2x.length; j++) {
-								if (getGroup(list2x[i]) == getGroup(list2x[j])) {
-									list2x.splice(j--, 1);
-								}
-							}
-						}
-						list2x.sort(lib.sort.character);
-						return list2x;
-					};
-					event.list.randomSort();
-					_status.characterlist = list4.slice(0).randomSort();
-					list3.randomSort();
-					if (_status.brawl && _status.brawl.chooseCharacterFilter) {
-						_status.brawl.chooseCharacterFilter(event.list, getZhuList(), list3);
-					}
-					var num = get.config("choice_" + game.me.identity);
-					if (event.zhongmode) {
-						num = 6;
-						if (game.me.identity == "zhu" || game.me.identity == "nei" || game.me.identity == "mingzhong") {
-							num = 8;
-						}
-					}
-					if (stratagemMode) {
-						list = event.list.slice(0, num);
-					} else if (game.zhu != game.me) {
-						event.ai(game.zhu, event.list, getZhuList());
-						event.list.remove(get.sourceCharacter(game.zhu.name1));
-						event.list.remove(get.sourceCharacter(game.zhu.name2));
-						if (_status.brawl && _status.brawl.chooseCharacter) {
-							list = _status.brawl.chooseCharacter(event.list, num);
-							if (list === false || list === "nozhu") {
-								list = event.list.slice(0, num);
-							}
-						} else {
-							list = event.list.slice(0, num);
-						}
-					} else {
-						if (_status.brawl && _status.brawl.chooseCharacter) {
-							list = _status.brawl.chooseCharacter(getZhuList(), list3, num);
-							if (list === false) {
-								if (event.zhongmode) {
-									list = list3.slice(0, 6);
-								} else {
-									list = getZhuList().concat(list3.slice(0, num));
-								}
-							} else if (list === "nozhu") {
-								list = event.list.slice(0, num);
-							}
-						} else {
-							if (event.zhongmode) {
-								list = list3.slice(0, 8);
-							} else {
-								list = getZhuList().concat(list3.slice(0, num));
-							}
-						}
-					}
-					delete event.swapnochoose;
-					var dialog;
-					if (event.swapnodialog) {
-						dialog = ui.dialog;
-						event.swapnodialog(dialog, list);
-						delete event.swapnodialog;
-					} else {
-						var str = "选择角色";
-						if (_status.brawl && _status.brawl.chooseCharacterStr) {
-							str = _status.brawl.chooseCharacterStr;
-						}
-						dialog = ui.create.dialog(str, "hidden", [list, "characterx"]);
-						if (!_status.brawl || !_status.brawl.noAddSetting) {
-							if (get.config("change_identity")) {
-								addSetting(dialog);
-							}
-						}
-					}
-					if (game.me.special_identity) {
-						dialog.setCaption("选择角色（" + get.translation(game.me.special_identity) + "）");
-						game.me.node.identity.firstChild.innerHTML = get.translation(game.me.special_identity + "_bg");
-					} else {
-						dialog.setCaption("选择角色");
-						game.me.setIdentity();
-					}
-					if (!event.chosen.length) {
-						game.me.chooseButton(dialog, true).set("onfree", true).selectButton = function () {
-							if (_status.brawl && _status.brawl.doubleCharacter) {
-								return 2;
-							}
-							return get.config("double_character") ? 2 : 1;
-						};
-					} else {
-						lib.init.onfree();
-					}
-					ui.create.cheat = function () {
-						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", function () {
-							if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+						const removeSetting = () => {
+							const dialog = _status.event.dialog;
+							if (!dialog) {
 								return;
 							}
-							if (game.changeCoin) {
-								game.changeCoin(-3);
+							dialog.style.height = "";
+							delete dialog._scrollset;
+							const settingNodes = Array.from(dialog.querySelectorAll(".add-setting"));
+							while (settingNodes.length) {
+								settingNodes.shift().remove();
 							}
-							if (game.zhu != game.me) {
-								event.list.randomSort();
-								if (_status.brawl && _status.brawl.chooseCharacter) {
-									list = _status.brawl.chooseCharacter(event.list, num);
-									if (list === false || list === "nozhu") {
-										list = event.list.slice(0, num);
+							ui.update();
+						};
+						event.addSetting = addSetting;
+						event.removeSetting = removeSetting;
+						event.list = [];
+						identityList.randomSort();
+						if (event.identity) {
+							identityList.remove(event.identity);
+							identityList.unshift(event.identity);
+							if (event.fixedseat) {
+								const zhuIdentity = _status.mode === "zhong" ? "mingzhong" : "zhu";
+								if (zhuIdentity !== event.identity) {
+									identityList.remove(zhuIdentity);
+									identityList.splice(event.fixedseat, 0, zhuIdentity);
+								}
+								delete event.fixedseat;
+							}
+							delete event.identity;
+						} else if (_status.mode !== "zhong" && (!_status.brawl || !_status.brawl.identityShown)) {
+							const banIdentity = [];
+							banIdentity.push(get.config("ban_identity") || "off");
+							if (banIdentity[0] !== "off") {
+								banIdentity.push(get.config("ban_identity2") || "off");
+								if (banIdentity[1] !== "off") {
+									banIdentity.push(get.config("ban_identity3") || "off");
+								}
+							}
+							banIdentity.remove("off");
+							if (banIdentity.length) {
+								const identityList2 = identityList.slice(0);
+								for (const bannedIdentity of banIdentity) {
+									while (identityList2.includes(bannedIdentity)) {
+										identityList2.remove(bannedIdentity);
 									}
+								}
+								const selectedIdentity = identityList2.randomGet();
+								identityList.remove(selectedIdentity);
+								identityList.splice(game.players.indexOf(game.me), 0, selectedIdentity);
+							}
+						}
+						let playerIndex = 0;
+						for (const currentPlayer of game.players) {
+							const currentIdentity = identityList[playerIndex];
+							playerIndex++;
+							if (_status.brawl && _status.brawl.identityShown) {
+								if (currentPlayer.identity === "zhu") {
+									game.zhu = currentPlayer;
+								}
+								if (!stratagemMode) {
+									currentPlayer.identityShown = true;
+								}
+								continue;
+							}
+							currentPlayer.node.identity.classList.add("guessing");
+							currentPlayer.identity = currentIdentity;
+							currentPlayer.setIdentity("cai");
+							if (event.zhongmode) {
+								if (currentIdentity === "mingzhong") {
+									game.zhu = currentPlayer;
+								} else if (currentIdentity === "zhu") {
+									game.zhu2 = currentPlayer;
+								}
+							} else if (currentIdentity === "zhu") {
+								game.zhu = currentPlayer;
+							}
+							currentPlayer.identityShown = false;
+						}
+
+						if (get.config("special_identity") && !event.zhongmode && !event.stratagemMode && game.players.length === 8) {
+							for (const currentPlayer of game.players) {
+								delete currentPlayer.special_identity;
+							}
+							event.special_identity = [];
+							const zhongs = game.filterPlayer(current => current.identity === "zhong");
+							const fans = game.filterPlayer(current => current.identity === "fan");
+							if (fans.length >= 1) {
+								fans.randomRemove().special_identity = "identity_zeishou";
+								event.special_identity.push("identity_zeishou");
+							}
+							if (zhongs.length > 1) {
+								zhongs.randomRemove().special_identity = "identity_dajiang";
+								zhongs.randomRemove().special_identity = "identity_junshi";
+								event.special_identity.push("identity_dajiang");
+								event.special_identity.push("identity_junshi");
+							} else if (zhongs.length === 1) {
+								if (Math.random() < 0.5) {
+									zhongs.randomRemove().special_identity = "identity_dajiang";
+									event.special_identity.push("identity_dajiang");
 								} else {
+									zhongs.randomRemove().special_identity = "identity_junshi";
+									event.special_identity.push("identity_junshi");
+								}
+							}
+						}
+
+						if (!game.zhu) {
+							game.zhu = game.me;
+						} else {
+							if (!stratagemMode) {
+								game.zhu.setIdentity();
+								game.zhu.isZhu = game.zhu.identity === "zhu";
+								game.zhu.identityShown = true;
+								game.zhu.node.identity.classList.remove("guessing");
+							}
+							game.me.setIdentity();
+							game.me.node.identity.classList.remove("guessing");
+						}
+						//选将框分配
+						for (const name in lib.characterReplace) {
+							const replacements = lib.characterReplace[name];
+							for (let index = replacements.length - 1; index >= 0; index--) {
+								const replacement = replacements[index];
+								if (chosen.includes(replacement) || lib.filter.characterDisabled(replacement)) {
+									replacements.splice(index, 1);
+								}
+							}
+							if (!replacements.length) {
+								continue;
+							}
+							event.list.push(name);
+							list4.addArray(replacements);
+							if (stratagemMode) {
+								list3.push(name);
+								continue;
+							}
+							let hasZhugong = false;
+							for (const replacement of replacements) {
+								if (lib.character[replacement].isZhugong) {
+									hasZhugong = true;
+									break;
+								}
+							}
+							(hasZhugong ? list2 : list3).push(name);
+						}
+						for (const name in lib.character) {
+							if (list4.includes(name)) {
+								continue;
+							}
+							if (chosen.includes(name)) {
+								continue;
+							}
+							if (lib.filter.characterDisabled(name)) {
+								continue;
+							}
+							event.list.push(name);
+							list4.push(name);
+							if (!stratagemMode && lib.character[name].isZhugong) {
+								list2.push(name);
+							} else {
+								list3.push(name);
+							}
+						}
+						const getZhuList = () => {
+							if (stratagemMode) {
+								list2.sort(lib.sort.character);
+								return list2;
+							}
+							const limitZhu = get.config("limit_zhu");
+							if (!limitZhu || limitZhu === "off") {
+								return list2.slice(0).sort(lib.sort.character);
+							}
+							if (limitZhu !== "group") {
+								const zhuCount = parseInt(limitZhu) || 6;
+								return list2.randomGets(zhuCount).sort(lib.sort.character);
+							}
+							const getGroup = name => {
+								const characterReplace = lib.characterReplace[name];
+								if (characterReplace && characterReplace[0] && lib.character[characterReplace[0]]) {
+									return lib.character[characterReplace[0]][1];
+								}
+								return lib.character[name][1];
+							};
+							const list2Random = list2.slice(0);
+							const list2x = [];
+							const selectedGroups = new Set();
+							list2Random.randomSort();
+							for (const name of list2Random) {
+								const group = getGroup(name);
+								if (selectedGroups.has(group)) {
+									continue;
+								}
+								selectedGroups.add(group);
+								list2x.push(name);
+							}
+							list2x.sort(lib.sort.character);
+							return list2x;
+						};
+						event.list.randomSort();
+						_status.characterlist = list4.slice(0).randomSort();
+						list3.randomSort();
+						if (_status.brawl && _status.brawl.chooseCharacterFilter) {
+							_status.brawl.chooseCharacterFilter(event.list, getZhuList(), list3);
+						}
+						num = get.config(`choice_${game.me.identity}`);
+						if (event.zhongmode) {
+							num = 6;
+							if (game.me.identity === "zhu" || game.me.identity === "nei" || game.me.identity === "mingzhong") {
+								num = 8;
+							}
+						}
+						if (stratagemMode) {
+							list = event.list.slice(0, num);
+						} else if (game.zhu !== game.me) {
+							event.ai(game.zhu, event.list, getZhuList());
+							event.list.remove(get.sourceCharacter(game.zhu.name1));
+							event.list.remove(get.sourceCharacter(game.zhu.name2));
+							if (_status.brawl && _status.brawl.chooseCharacter) {
+								list = _status.brawl.chooseCharacter(event.list, num);
+								if (list === false || list === "nozhu") {
 									list = event.list.slice(0, num);
 								}
 							} else {
-								getZhuList().sort(lib.sort.character);
-								list3.randomSort();
-								if (_status.brawl && _status.brawl.chooseCharacter) {
-									list = _status.brawl.chooseCharacter(getZhuList(), list3, num);
-									if (list === false) {
-										if (event.zhongmode) {
-											list = list3.slice(0, 6);
-										} else {
-											list = getZhuList().concat(list3.slice(0, num));
-										}
-									} else if (list === "nozhu") {
-										event.list.randomSort();
-										list = event.list.slice(0, num);
-									}
-								} else {
+								list = event.list.slice(0, num);
+							}
+						} else {
+							if (_status.brawl && _status.brawl.chooseCharacter) {
+								list = _status.brawl.chooseCharacter(getZhuList(), list3, num);
+								if (list === false) {
 									if (event.zhongmode) {
 										list = list3.slice(0, 6);
 									} else {
 										list = getZhuList().concat(list3.slice(0, num));
 									}
-								}
-							}
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
-							_status.event.dialog.buttons = ui.create.buttons(list, "characterx", buttons);
-							_status.event.dialog.content.insertBefore(buttons, node);
-							buttons.addTempClass("start");
-							node.remove();
-							game.uncheck();
-							game.check();
-						});
-						delete _status.createControl;
-					};
-					if (lib.onfree) {
-						lib.onfree.push(function () {
-							event.dialogxx = ui.create.characterDialog("heightset");
-							if (ui.cheat2) {
-								ui.cheat2.addTempClass("controlpressdownx", 500);
-								ui.cheat2.classList.remove("disabled");
-							}
-						});
-					} else {
-						event.dialogxx = ui.create.characterDialog("heightset");
-					}
-
-					ui.create.cheat2 = function () {
-						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
-								if (game.changeCoin) {
-									game.changeCoin(10);
-								}
-								this.dialog.close();
-								_status.event.dialog = this.backup;
-								this.backup.open();
-								delete this.backup;
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.addTempClass("controlpressdownx", 500);
-									ui.cheat.classList.remove("disabled");
+								} else if (list === "nozhu") {
+									list = event.list.slice(0, num);
 								}
 							} else {
-								if (game.changeCoin) {
-									game.changeCoin(-10);
-								}
-								this.backup = _status.event.dialog;
-								_status.event.dialog.close();
-								_status.event.dialog = _status.event.parent.dialogxx;
-								this.dialog = _status.event.dialog;
-								this.dialog.open();
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.classList.add("disabled");
+								if (event.zhongmode) {
+									list = list3.slice(0, 8);
+								} else {
+									list = getZhuList().concat(list3.slice(0, num));
 								}
 							}
-						});
-						if (lib.onfree) {
-							ui.cheat2.classList.add("disabled");
 						}
-					};
-					if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
-						if (!ui.cheat && get.config("change_choice")) {
-							ui.create.cheat();
-						}
-						if (!ui.cheat2 && get.config("free_choose")) {
-							ui.create.cheat2();
-						}
-					}
-					("step 1");
-					if (ui.cheat) {
-						ui.cheat.close();
-						delete ui.cheat;
-					}
-					if (ui.cheat2) {
-						ui.cheat2.close();
-						delete ui.cheat2;
-					}
-					if (event.chosen.length) {
-						event.choosed = event.chosen;
-					} else if (event.modchosen) {
-						if (event.modchosen[0] == "random") {
-							event.modchosen[0] = result.buttons[0].link;
+						delete event.swapnochoose;
+						let dialog;
+						if (event.swapnodialog) {
+							dialog = ui.dialog;
+							event.swapnodialog(dialog, list);
+							delete event.swapnodialog;
 						} else {
-							event.modchosen[1] = result.buttons[0].link;
+							let str = "选择角色";
+							if (_status.brawl && _status.brawl.chooseCharacterStr) {
+								str = _status.brawl.chooseCharacterStr;
+							}
+							dialog = ui.create.dialog(str, "hidden", [list, "characterx"]);
+							if ((!_status.brawl || !_status.brawl.noAddSetting) && get.config("change_identity")) {
+								addSetting(dialog);
+							}
 						}
-						event.choosed = event.modchosen;
-					} else if (result.buttons.length == 2) {
-						event.choosed = [result.buttons[0].link, result.buttons[1].link];
-						game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
-					} else {
-						event.choosed = [result.buttons[0].link];
-						game.addRecentCharacter(result.buttons[0].link);
-					}
-					var name = event.choosed[0];
-					const groups = get.selectGroup(name),
-						type = get.selectGroup(name, true);
-					if (type !== "default") {
-						game.me._groupChosen = type;
-					}
-					if (groups.length) {
-						game.me.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true).set("direct", true);
-					}
-					("step 2");
-					if (result.links?.length) {
-						event.group = result.links[0][2].slice(6);
-					}
-					if (event.choosed.length == 2) {
-						game.me.init(event.choosed[0], event.choosed[1]);
-					} else {
-						game.me.init(event.choosed[0]);
-					}
-					event.list.remove(get.sourceCharacter(game.me.name1));
-					event.list.remove(get.sourceCharacter(game.me.name2));
-					if (!event.stratagemMode && game.me == game.zhu && game.players.length > 4) {
-						if (!game.me.isInitFilter("noZhuHp")) {
+						if (game.me.special_identity) {
+							dialog.setCaption(`选择角色（${get.translation(game.me.special_identity)}）`);
+							game.me.node.identity.firstChild.innerHTML = get.translation(`${game.me.special_identity}_bg`);
+						} else {
+							dialog.setCaption("选择角色");
+							game.me.setIdentity();
+						}
+						if (!event.chosen.length) {
+							game.me.chooseButton(dialog, true).set("onfree", true).selectButton = () => ((_status.brawl && _status.brawl.doubleCharacter) || get.config("double_character") ? 2 : 1);
+						} else {
+							lib.init.onfree();
+						}
+						ui.create.cheat = () => {
+							_status.createControl = ui.cheat2;
+							ui.cheat = ui.create.control("更换", () => {
+								if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
+									return;
+								}
+								if (game.changeCoin) {
+									game.changeCoin(-3);
+								}
+								if (game.zhu !== game.me) {
+									event.list.randomSort();
+									if (_status.brawl && _status.brawl.chooseCharacter) {
+										list = _status.brawl.chooseCharacter(event.list, num);
+										if (list === false || list === "nozhu") {
+											list = event.list.slice(0, num);
+										}
+									} else {
+										list = event.list.slice(0, num);
+									}
+								} else {
+									getZhuList().sort(lib.sort.character);
+									list3.randomSort();
+									if (_status.brawl && _status.brawl.chooseCharacter) {
+										list = _status.brawl.chooseCharacter(getZhuList(), list3, num);
+										if (list === false) {
+											if (event.zhongmode) {
+												list = list3.slice(0, 6);
+											} else {
+												list = getZhuList().concat(list3.slice(0, num));
+											}
+										} else if (list === "nozhu") {
+											event.list.randomSort();
+											list = event.list.slice(0, num);
+										}
+									} else {
+										if (event.zhongmode) {
+											list = list3.slice(0, 6);
+										} else {
+											list = getZhuList().concat(list3.slice(0, num));
+										}
+									}
+								}
+								const buttons = ui.create.div(".buttons");
+								const node = _status.event.dialog.buttons[0].parentNode;
+								_status.event.dialog.buttons = ui.create.buttons(list, "characterx", buttons);
+								_status.event.dialog.content.insertBefore(buttons, node);
+								buttons.addTempClass("start");
+								node.remove();
+								game.uncheck();
+								game.check();
+							});
+							delete _status.createControl;
+						};
+						if (lib.onfree) {
+							lib.onfree.push(() => {
+								event.dialogxx = ui.create.characterDialog("heightset");
+								if (ui.cheat2) {
+									ui.cheat2.addTempClass("controlpressdownx", 500);
+									ui.cheat2.classList.remove("disabled");
+								}
+							});
+						} else {
+							event.dialogxx = ui.create.characterDialog("heightset");
+						}
+
+						ui.create.cheat2 = () => {
+							ui.cheat2 = ui.create.control("自由选将", () => {
+								const control = ui.cheat2;
+								if (control.dialog === _status.event.dialog) {
+									if (game.changeCoin) {
+										game.changeCoin(10);
+									}
+									control.dialog.close();
+									_status.event.dialog = control.backup;
+									control.backup.open();
+									delete control.backup;
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.addTempClass("controlpressdownx", 500);
+										ui.cheat.classList.remove("disabled");
+									}
+								} else {
+									if (game.changeCoin) {
+										game.changeCoin(-10);
+									}
+									control.backup = _status.event.dialog;
+									_status.event.dialog.close();
+									_status.event.dialog = _status.event.parent.dialogxx;
+									control.dialog = _status.event.dialog;
+									control.dialog.open();
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.classList.add("disabled");
+									}
+								}
+							});
+							if (lib.onfree) {
+								ui.cheat2.classList.add("disabled");
+							}
+						};
+						if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
+							if (!ui.cheat && get.config("change_choice")) {
+								ui.create.cheat();
+							}
+							if (!ui.cheat2 && get.config("free_choose")) {
+								ui.create.cheat2();
+							}
+						}
+					},
+					// step 1
+					async (event, trigger, player, result) => {
+						if (ui.cheat) {
+							ui.cheat.close();
+							delete ui.cheat;
+						}
+						if (ui.cheat2) {
+							ui.cheat2.close();
+							delete ui.cheat2;
+						}
+						if (event.chosen.length) {
+							event.choosed = event.chosen;
+						} else if (event.modchosen) {
+							if (event.modchosen[0] === "random") {
+								event.modchosen[0] = result.buttons[0].link;
+							} else {
+								event.modchosen[1] = result.buttons[0].link;
+							}
+							event.choosed = event.modchosen;
+						} else if (result.buttons.length === 2) {
+							event.choosed = [result.buttons[0].link, result.buttons[1].link];
+							game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
+						} else {
+							event.choosed = [result.buttons[0].link];
+							game.addRecentCharacter(result.buttons[0].link);
+						}
+						const name = event.choosed[0];
+						const groups = get.selectGroup(name);
+						const type = get.selectGroup(name, true);
+						if (type !== "default") {
+							game.me._groupChosen = type;
+						}
+						if (groups.length) {
+							const groupResult = await game.me
+								.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true)
+								.set("direct", true)
+								.forResult();
+
+							if (groupResult.links?.length) {
+								event.group = groupResult.links[0][2].slice(6);
+							}
+						}
+						if (event.choosed.length === 2) {
+							game.me.init(event.choosed[0], event.choosed[1]);
+						} else {
+							game.me.init(event.choosed[0]);
+						}
+						event.list.remove(get.sourceCharacter(game.me.name1));
+						event.list.remove(get.sourceCharacter(game.me.name2));
+						if (!event.stratagemMode && game.me === game.zhu && game.players.length > 4 && !game.me.isInitFilter("noZhuHp")) {
 							game.me.hp++;
 							game.me.maxHp++;
 							game.me.update();
 						}
-					}
-					for (var i = 0; i < game.players.length; i++) {
-						if ((event.stratagemMode || game.players[i] != game.zhu) && game.players[i] != game.me) {
-							event.list.randomSort();
-							event.ai(game.players[i], event.list.splice(0, get.config("choice_" + game.players[i].identity)), null, event.list);
+						for (const currentPlayer of game.players) {
+							if ((event.stratagemMode || currentPlayer !== game.zhu) && currentPlayer !== game.me) {
+								event.list.randomSort();
+								event.ai(currentPlayer, event.list.splice(0, get.config(`choice_${currentPlayer.identity}`)), null, event.list);
+							}
 						}
-					}
-					("step 3");
-					if (event.group) {
-						game.me.group = event.group;
-						game.me.node.name.dataset.nature = get.groupnature(game.me.group);
-						game.me.update();
-					}
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name);
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
-					}
-					("step 4");
-					if (event.stratagemMode) {
-						["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
-						game.players.forEach(i => {
-							i.storage.zhibi = [];
-							i.storage.stratagem_expose = [];
-							i.markSkill("stratagem_fury");
-						});
-					}
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					},
+					// step 2
+					async (event, trigger, player) => {
+						if (event.group) {
+							game.me.group = event.group;
+							game.me.node.name.dataset.nature = get.groupnature(game.me.group);
+							game.me.update();
+						}
+						for (const currentPlayer of game.players) {
+							_status.characterlist.remove(currentPlayer.name);
+							_status.characterlist.remove(currentPlayer.name1);
+							_status.characterlist.remove(currentPlayer.name2);
+						}
+						if (event.stratagemMode) {
+							["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
+							game.players.forEach(i => {
+								i.storage.zhibi = [];
+								i.storage.stratagem_expose = [];
+								i.markSkill("stratagem_fury");
+							});
+						}
+						setTimeout(() => {
+							ui.arena.classList.remove("choose-character");
+						}, 500);
 
-					if (event.special_identity) {
-						for (var i = 0; i < event.special_identity.length; i++) {
-							game.zhu.addSkill(event.special_identity[i]);
+						if (event.special_identity) {
+							for (const specialIdentity of event.special_identity) {
+								game.zhu.addSkill(specialIdentity);
+							}
 						}
-					}
-				});
+					},
+				];
+				next.setContent(contents);
 			},
 			chooseCharacterOL: function () {
 				if (_status.mode == "purple") {
