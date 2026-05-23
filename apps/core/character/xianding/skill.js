@@ -8135,7 +8135,7 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-        	return player.storage.dcsbmoyou_count >= 2;
+			return player.storage.dcsbmoyou_count >= 2;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
@@ -8143,16 +8143,19 @@ const skills = {
 			await player.draw(3);
 			player.addTempSkill(`${event.name}_distance`);
 			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
-			const suits = lib.suit.filter(suit => getCards(suit).length > 0);
+			const hasCards = suit => player.hasDiscardableCards(player, "h", { suit: suit });
+			const suits = lib.suit.filter(suit => hasCards(suit));
 			if (suits.length) {
 				const choice = suits.slice().sort((a, b) => get.value(getCards(a)) - get.value(getCards(b)))[0];
 				const result = await player
-					.chooseControl(suits)
-					.set("prompt", "谟猷：请弃置一种花色的所有手牌")
-					.set("suit", choice)
-					.set("ai", function() {
-						return _status.event.suit;
+					.chooseControl({
+						prompt: "谟猷：请弃置一种花色的所有手牌",
+						controls: suits,
+						ai() {
+							return get.event().suit;
+						},
 					})
+					.set("suit", choice)
 					.forResult();
 				if (result?.control) {
 					const suit = result.control;
