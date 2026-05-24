@@ -4744,7 +4744,7 @@ const skills = {
 	},
 	olchouniu: {
 		audio: true,
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			return player.isMinHp();
 		},
