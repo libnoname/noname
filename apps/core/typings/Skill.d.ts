@@ -1478,8 +1478,7 @@ declare interface Skill {
 	 * 而对于一些牌移动事件的技能而言，不仅要“多次发动”，每次发动时还都有不同的目标，
 	 * 比如伊籍的【急援】，可能会出现“同时将一些牌交给了多名角色”的情况。
 	 * 
-	 * 如果返回值为数组或任意可遍历对象，则会分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用；
-	 * 如果返回值为数字，`event.indexedData`则会存放“现在是第x次发动该技能”，可用于简化一些情况。
+	 * 如果返回值为数组或任意可遍历对象，则会分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用。
 	 */
 	getIndex?<T>(event: GameEvent, player: Player, triggername: string): number | Iterable<T>;
 
