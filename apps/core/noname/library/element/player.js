@@ -14113,10 +14113,7 @@ export class Player extends HTMLDivElement {
 	 * @returns { boolean }
 	 */
 	hasCard(pattern, position) {
-		for (const _ of this.iterableGetCards(position, pattern)) {
-			return true;
-		}
-		return false;
+		return this.hasCards(position, pattern);
 	}
 	hasVCard(name, position) {
 		if (typeof name == "function") {
