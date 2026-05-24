@@ -606,13 +606,14 @@ const skills = {
 											}
 										}
 									}
-									if (typeof bool == "boolean") {
+									/*if (typeof bool == "boolean") {
 										game.deleteFakeCards(fake);
-									}
+									}*/
 								},
 							},
 						})
 						.forResult();
+					game.deleteFakeCards(fake);
 				}
 				if (result.bool && result?.cards?.length && result.targets?.length) {
 					const {
@@ -2135,28 +2136,26 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return game.hasGlobalHistory("cardMove", evt => {
-				if (evt.type != "discard" || evt.getlx === false) {
+				if (evt.type != "discard") {
 					return false;
 				}
-				return evt.getd().someInD("d");
+				return evt.cards2.someInD("d");
 			});
 		},
 		async content(event, trigger, player) {
 			const cards = [],
 				cards2 = [];
 			game.checkGlobalHistory("cardMove", evt => {
-				if (evt.type != "discard" || evt.getlx === false) {
+				if (evt.type != "discard") {
 					return false;
 				}
-				game.filterPlayer2().forEach(target => {
-					const cardsx = evt.getd(target, "cards2").filterInD("d");
-					if (cardsx.length) {
-						cards.addArray(cardsx);
-						if (target != player) {
-							cards2.addArray(cardsx);
-						}
+				const cardsx = evt.cards2.filterInD("d");
+				if (cardsx.length) {
+					cards.addArray(cardsx);
+					if (evt.player != player) {
+						cards2.addArray(cardsx);
 					}
-				});
+				}
 			});
 			const goon = () => cards.some(card => player.hasUseTarget(card) && get.position(card) == "d");
 			while (goon()) {
