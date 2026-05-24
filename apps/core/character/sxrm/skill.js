@@ -85,7 +85,7 @@ const skills = {
 						} else {
 							let str = "【香饵】目标受伤情况：";
 							storage.forEach(i => {
-								str += "<br />" + get.translation(i.target) + "：" + i.damage;
+								str += `<br />${get.translation(i.target)}：${i.damage}`;
 							});
 							return str;
 						}

@@ -6118,7 +6118,7 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter(event, player) {
-			return event.source && player != event.source && event.source.countDiscardableCards(event.source, "he");
+			return event.source && player !== event.source && event.source.hasDiscardableCards(event.source, "he");
 		},
 		getIndex: event => event.num,
 		async content(event, trigger, player) {

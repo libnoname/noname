@@ -2136,7 +2136,7 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return game.hasGlobalHistory("cardMove", evt => {
-				if (evt.type != "discard") {
+				if (evt.type !== "discard") {
 					return false;
 				}
 				return evt.cards2.someInD("d");
@@ -2146,13 +2146,13 @@ const skills = {
 			const cards = [],
 				cards2 = [];
 			game.checkGlobalHistory("cardMove", evt => {
-				if (evt.type != "discard") {
+				if (evt.type !== "discard") {
 					return false;
 				}
 				const cardsx = evt.cards2.filterInD("d");
 				if (cardsx.length) {
 					cards.addArray(cardsx);
-					if (evt.player != player) {
+					if (evt.player !== player) {
 						cards2.addArray(cardsx);
 					}
 				}
