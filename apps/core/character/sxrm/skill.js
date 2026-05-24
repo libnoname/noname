@@ -2,6 +2,309 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//嗔包
+	//魔周瑜
+	sxrmjiehuo: {
+		audio: 2,
+		dutySkill: true,
+		trigger: {
+			player: "phaseBegin",
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseBool({
+					prompt: "是否令本局游戏的下次伤害改为3点火焰伤害？",
+					ai() {
+						const player = get.player();
+						return player.hasCards("h", card => get.tag(card, "damage") && player.getUseValue(card));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.storage.sxrmjiehuo_mark = true;
+			player.markSkill("sxrmjiehuo");
+		},
+		intro: {
+			content: "本局下次伤害改为3点火焰伤害",
+		},
+		group: ["sxrmjiehuo_damage"],
+		subSkill: {
+			damage: {
+				trigger: {
+					global: "damageBegin1",
+				},
+				forced: true,
+				filter(event, player) {
+					return player.storage.sxrmjiehuo_mark;
+				},
+				async content(event, trigger, player) {
+					player.unmarkSkill("sxrmjiehuo");
+					delete player.storage.sxrmjiehuo_mark;
+					game.setNature(trigger, "fire");
+					trigger.num = 3;
+					player.line(trigger.source);
+					game.log(player, "令", trigger.source, "造成的伤害改为3点火焰伤害");
+					if (trigger.source !== player) {
+						player
+							.when({ global: "damageEnd" })
+							.filter(evt => evt === trigger)
+							.then(async (event, trigger, player) => {
+								player.awakenSkill("sxrmjiehuo");
+								game.log(player, `【${get.translation("sxrmjiehuo")}】`, "使命失败");
+								await player.loseMaxHp();
+							});
+					}
+				},
+				sub: true,
+			},
+		},
+	},
+	sxrmxianger: {
+		audio: 2,
+		dutySkill: true,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: true,
+		async content(event, trigger, player) {
+			const target = event.target;
+			player.logSkill("sxrmxianger", target);
+			target.addTempSkill("sxrmxianger_limit", { player: "phaseEnd" });
+			target.addMark("sxrmxianger_limit", 2, false);
+			player.addSkill("sxrmxianger_mark");
+			if (!player.getStorage("sxrmxianger_mark")?.some(i => i.target === target)) {
+				let tmp = { target, damage: 0 };
+				player.markAuto("sxrmxianger_mark", tmp);
+			}
+		},
+		subSkill: {
+			mark: {
+				intro: {
+					content(storage, player) {
+						if (!storage?.length) {
+							return "目前没有【香饵】目标";
+						} else {
+							let str = "【香饵】目标受伤情况：";
+							storage.forEach(i => {
+								str += "<br />" + get.translation(i.target) + "：" + i.damage + "。";
+							});
+							return str;
+						}
+					},
+				},
+				onremove: true,
+				charlotte: true,
+				sub: true,
+			},
+			limit: {
+				charlotte: true,
+				forced: true,
+				mark: true,
+				popup: false,
+				onremove: true,
+				intro: {
+					content(storage, player) {
+						return `<ul><li>不能使用点数大于6的牌</li><li>下个结束阶段回复${player.countMark("sxrmxianger_limit")}点体力</li></ul>`;
+					},
+				},
+				mod: {
+					cardEnabled(card, player) {
+						const num = get.number(card);
+						if (typeof num === "number" && num > 6) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						const num = get.number(card);
+						if (typeof num === "number" && num > 6) {
+							return false;
+						}
+					},
+				},
+				trigger: {
+					player: ["phaseJieshuBegin", "damageEnd"],
+				},
+				filter(event, player) {
+					if (event.name === "damage") {
+						return game.hasPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player));
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					if (trigger.name === "damage") {
+						for (const target of game.filterPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player))) {
+							target.storage.sxrmxianger_mark.find(i => i.target === player).damage += trigger.num;
+						}
+					} else {
+						await player.recover({ num: player.countMark("sxrmxianger_limit") });
+						const targets = game.filterPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player));
+						for (const target of targets) {
+							const item = target.storage.sxrmxianger_mark.find(i => i.target === player);
+							const num = item.damage;
+							target.storage.sxrmxianger_mark.remove(item);
+							if (num < 2) {
+								target.line(player);
+								game.log(target, "【香饵】使命失败");
+								target.awakenSkill("sxrmxianger");
+								await target.loseMaxHp();
+							}
+						}
+						player.removeSkill(event.name);
+					}
+				},
+				sub: true,
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				target(player, target) {
+					if (player.hasSkill("sxrmxianger_limit") || get.attitude(player, target) > 0 || player === target || !player.storage.sxrmjiehuo_mark) {
+						return 0;
+					}
+					let val = get.damageEffect(target, player, player);
+					if (player.inRange(target)) {
+						val++;
+					}
+					return -val;
+				},
+			},
+		},
+	},
+	sxrmmieguo: {
+		audio: 2,
+		dutySkill: true,
+		trigger: {
+			player: "phaseEnd",
+		},
+		filter(event, player) {
+			return !event.skill;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("sxrmmieguo"),
+					prompt2: "获得一名其他角色的至多3张牌",
+					filterTarget(card, player, target) {
+						return target !== player && target.hasCards("he");
+					},
+					ai(target) {
+						const player = get.player();
+						if (get.attitude(player, target) > 0 && target.countCards("he") >= 4) {
+							return 10;
+						}
+						if (get.attitude(player, target) < 0) {
+							return 5;
+						}
+						return -1;
+					}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player
+				.choosePlayerCard({
+					target,
+					prompt: "选择至多3张牌获得",
+					selectButton: [1, 3],
+					position: "he",
+					forced: true,
+					ai(button) {
+						const player = get.player();
+						if (ui.selected.buttons?.length) {
+							return -1;
+						}
+						if (get.attitude(player, target) > 0) {
+							if (get.position(button.link) === "h") {
+								return 5;
+							}
+							return 1;
+						} else {
+							return 1;
+						}
+					},
+				})
+				.forResult();
+			const cards = result.cards;
+			if (!cards?.length) {
+				return;
+			}
+			const num = cards.length;
+			await player.gain({
+				cards,
+				source: target,
+				animate: "give",
+			});
+			const targetsx =
+				game.countPlayer() <= num
+					? game.filterPlayer()
+					: (
+							await target
+								.chooseTarget({
+									prompt: `选择${num}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
+									selectTarget: num,
+									forced: true,
+									ai(target) {
+										if (target === get.player()) {
+											return 5;
+										}
+										return 1;
+									},
+								})
+								.forResult()
+						).targets;
+			if (!targetsx?.length) {
+				return;
+			}
+			player.addSkill("sxrmmieguo_ban");
+			player.markAuto("sxrmmieguo_ban", targetsx);
+			game.log(player, "执行了一个额外回合");
+			player.insertPhase();
+		},
+		subSkill: {
+			ban: {
+				charlotte: true,
+				forced: true,
+				onremove: true,
+				popup: false,
+				intro: {
+					content(storage) {
+						if (!storage?.length) {
+							return "";
+						}
+						const list = [];
+						for (let i of storage) {
+							list.push(get.translation(i));
+						}
+						return "不能对" + list.join("、") + "使用牌";
+					},
+				},
+				mod: {
+					playerEnabled(card, player, target) {
+						if (player.getStorage("sxrmmieguo_ban")?.includes(target)) {
+							return false;
+						}
+					},
+				},
+				trigger: {
+					player: "phaseJieshuBegin",
+				},
+				filter(event, player) {
+					return event.getParent("phase")?.skill === "sxrmmieguo";
+				},
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					if (!player.hasHistory("useCard")) {
+						game.log(player, "【灭虢】使命失败");
+						player.awakenSkill("sxrmmieguo");
+						await player.loseMaxHp();
+					}
+				},
+				sub: true,
+			},
+		},
+	},
 	//曼巴
 	//关羽
 	sxrmhanguo: {
