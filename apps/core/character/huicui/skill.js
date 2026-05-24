@@ -6,9 +6,6 @@ const skills = {
 	dchuozhong: {
 		audio: 2,
 		enable: "phaseUse",
-		/*usable(skill, player) {
-			return player.hasSkill(`${skill}_twice`) ? 2 : 1;
-		},*/
 		usable: 2,
 		filterCard: true,
 		position: "h",
@@ -16,7 +13,7 @@ const skills = {
 			return player.countCards("h") > 0;
 		},
 		filterTarget(card, player, target) {
-			return player.inRange(target);
+			return player.inRange(target) && target !== player;
 		},
 		selectTarget: [1, Infinity],
 		multiline: true,
@@ -30,41 +27,46 @@ const skills = {
 				targets,
 			} = event;
 			const type = get.type2(card);
-			await player.showCards(card, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`);
+			await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
 			await game.doAsyncInOrder(targets, async target => {
-				if (!game.hasPlayer(target => target.countCards("he") > 0)) {
+				if (!game.hasPlayer(target2 => target2.hasCards("he"))) {
 					return;
 				}
 				const result = await target
 					.chooseCardTarget({
-						prompt: "惑众：交给或获得一名其他角色一张牌（不选择卡牌即视为进行获得牌操作）",
+						prompt: "惑众：选择一项：1.获得一名不为你角色的一张牌；2.交给发动者一张牌（不选择卡牌即视为进行获得牌操作）",
 						filterCard: true,
 						position: "he",
 						selectCard: [0, 1],
 						complexSelect: true,
-						filterTarget(card, player, target) {
-							return target != player && (!ui.selected.cards?.length ? target.countCards("he") > 0 : true);
+						filterTarget(card2, player2, target2) {
+							if (target2 === player2) return false;
+							if (!ui.selected.cards?.length) {
+								return target2.hasCards("he");
+							}
+							return target2 === get.event().sourcex;
 						},
 						forced: true,
-						type: type,
+						type,
 						sourcex: player,
-						ai1(card) {
-							if (get.player().countCards("he") < 3) {
+						ai1(card2) {
+							const player2 = get.player();
+							if (player2.countCards("he") < 3) {
 								return 0;
 							}
-							if (get.type2(card) == get.event().type) {
-								return 6.5 - get.value(card);
+							if (get.type2(card2) === get.event().type) {
+								return 6.5 - get.value(card2);
 							}
-							return 5 - get.value(card);
+							return 5 - get.value(card2);
 						},
-						ai2(target) {
-							const player = get.player();
-							let att = get.attitude(player, target);
+						ai2(target2) {
+							const player2 = get.player();
+							let att = get.attitude(player2, target2);
 							if (ui.selected.cards?.length) {
-								if (att < 0 && target == get.event().sourcex) {
+								if (att < 0 && target2 === get.event().sourcex) {
 									return 0;
 								}
-								if (target.hasSkillTag("nogain")) {
+								if (target2.hasSkillTag("nogain")) {
 									att /= 9;
 								}
 								return 4 - att;
@@ -74,54 +76,53 @@ const skills = {
 					})
 					.forResult();
 				if (result?.targets?.length) {
-					const { cards, targets } = result;
-					target.line(targets);
-					if (!cards?.length) {
-						return target.gainPlayerCard(targets[0], "he", true);
+					const { cards: cards2, targets: targets2 } = result;
+					target.line(targets2);
+					if (!cards2?.length) {
+						await target.gainPlayerCard({
+							target: targets2[0], 
+							position: "he", 
+							forced: true,
+						});
 					} else {
-						return target.give(cards, targets[0]);
+						await target.give(cards2, targets2[0]);
 					}
 				}
 			});
-			const targetsx = game.filterPlayer(target => target != player && target.isMaxHandcard(void 0, target => target != player));
+			const targetsx = game.filterPlayer(target => target === player && target.isMaxHandcard(void 0, target2 => target2 !== player));
 			await game.doAsyncInOrder(targetsx, async target => {
 				await target.showHandcards();
-				const hs = target.getCards("he", card => get.type2(card) == type);
+				const hs = target.getCards("he", card2 => get.type2(card2) === type);
 				if (hs.length) {
-					//const bool = target.isMinHandcard(void 0, target => target != player);
-					target.$throw(hs.length, 1000);
+					target.$throw(hs.length, 1e3);
 					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
-					await target.lose(hs, ui.cardPile, "insert");
-					/*if (!bool && target.isMinHandcard(void 0, target => target != player)) {
-						player.addTempSkill(`${event.name}_twice`);
-					}*/
+					await target.lose({
+						cards: hs, 
+						position: ui.cardPile, 
+						insert_card: true,
+					});
 				}
 			});
 		},
-		/*subSkill: {
-			twice: {
-				charlotte: true,
-			},
-		},*/
 	},
 	dczhuguo: {
 		audio: 2,
 		forced: true,
 		trigger: {
-			global: ["loseAfter", "loseAsyncAfter", "cardsGotoPileAfter"],
+			global: ["loseAfter", "loseAsyncAfter", "cardsGotoPileAfter"]
 		},
 		usable: 3,
 		filter(event, player, name, target) {
-			if (event.name == "cardsGotoPile") {
+			if (event.name === "cardsGotoPile") {
 				return true;
 			}
-			if (event.name == "lose") {
-				if (event.position == ui.cardPile && event.getlx !== false && event.cards2.length) {
+			if (event.name === "lose") {
+				if (event.position === ui.cardPile && event.getlx !== false && event.cards2.length) {
 					return true;
 				}
 			}
-			return game.hasPlayer(target => {
-				return target.hasHistory("lose", evt => evt.getParent() == event && evt.position == ui.cardPile && evt.cards2?.length);
+			return game.hasPlayer(target2 => {
+				return target2.hasHistory("lose", evt => evt.getParent() === event && evt.position === ui.cardPile && evt.cards2?.length);
 			});
 		},
 		async content(event, trigger, player) {

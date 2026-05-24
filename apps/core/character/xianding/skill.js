@@ -8135,27 +8135,22 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			const lose = player.getAllHistory("lose", evt => (evt.relatedEvent || evt.getParent()).name == "useCard");
-			const index = player
-				.getAllHistory("useCard", evt => {
-					return lose.some(evtx => (evtx.relatedEvent || evtx.getParent()) == evt && evtx.hs?.length);
-				})
-				.indexOf(event);
-			return index >= 0 && (index + 1) % 2 == 0;
+			return player.storage.dcsbmoyou_count >= 2;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
-			await player.draw({ num: 3 });
+			player.storage.dcsbmoyou_count = 0;
+			await player.draw(3);
+			player.addTempSkill(`${event.name}_distance`);
 			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
-			const suits = lib.suit.filter(suit => getCards(suit).length > 0);
+			const hasCards = suit => player.hasDiscardableCards(player, "h", { suit: suit });
+			const suits = lib.suit.filter(suit => hasCards(suit));
 			if (suits.length) {
-				const hs = player.getCards("h");
-				const types = hs.map(card => get.type2(card)).unique();
 				const choice = suits.slice().sort((a, b) => get.value(getCards(a)) - get.value(getCards(b)))[0];
 				const result = await player
 					.chooseControl({
-						controls: suits,
 						prompt: "谟猷：请弃置一种花色的所有手牌",
+						controls: suits,
 						ai() {
 							return get.event().suit;
 						},
@@ -8165,33 +8160,61 @@ const skills = {
 				if (result?.control) {
 					const suit = result.control;
 					const cards = getCards(suit);
-					await player.discard({ cards });
+					await player.discard(cards);
 					if (
 						!player
 							.getCards("h")
 							.map(card => get.type2(card))
 							.containsAll("basic", "trick", "equip")
 					) {
-						player.addTempSkill(`${event.name}_handcard`);
-						player.addMark(`${event.name}_handcard`, 1, false);
 						player.addTempSkill(`${event.name}_basic`);
 						player.addTempSkill(`${event.name}_trick`);
 					}
 				}
 			}
 		},
+		group: ["dcsbmoyou_count", "dcsbmoyou_reset"],
 		subSkill: {
-			handcard: {
-				charlotte: true,
-				onremove: true,
-				markimage: "image/card/handcard.png",
-				intro: {
-					content: "本回合手牌上限+#",
+			count: {
+				trigger: {
+					player: "useCardAfter",
 				},
+				firstDo: true,
+				silent: true,
+				filter(event, player) {
+					return !event.skill || !event.skill.startsWith("dcsbmoyou");
+				},
+				async content(event, trigger, player) {
+					if (typeof player.storage.dcsbmoyou_count !== "number") {
+						player.storage.dcsbmoyou_count = 0;
+					}
+					player.storage.dcsbmoyou_count++;
+				},
+			},
+			reset: {
+				trigger: {
+					player: "phaseBegin",
+				},
+				silent: true,
+				forced: true,
+				filter(event, player) {
+					return typeof player.storage.dcsbmoyou_count === "number";
+				},
+				async content(event, trigger, player) {
+					player.storage.dcsbmoyou_count = 0;
+				},
+			},
+			distance: {
+				charlotte: true,
 				mod: {
-					maxHandcard(player, num) {
-						return num + player.countMark("dcsbmoyou_handcard");
+					targetInRange(card, player) {
+						return true;
 					},
+				},
+				mark: true,
+				marktext: "距",
+				intro: {
+					content: "本回合使用牌无距离限制",
 				},
 			},
 			basic: {
@@ -8199,11 +8222,6 @@ const skills = {
 					cardUsable(card, player) {
 						if (get.type(card) == "basic") {
 							return Infinity;
-						}
-					},
-					targetInRange(card, player) {
-						if (get.type(card) == "basic") {
-							return true;
 						}
 					},
 				},
@@ -8231,7 +8249,7 @@ const skills = {
 				mark: true,
 				marktext: "基",
 				intro: {
-					content: "使用下一张基本牌无距离和次数限制",
+					content: "使用下一张基本牌无次数限制",
 				},
 			},
 			trick: {
