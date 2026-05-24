@@ -33,6 +33,7 @@ const staticModules: Target[] = [
 
 const charaDist = join(root, "character");
 const charaInputs: Record<string, string> = {};
+const charaCopys: Target[] = [];
 for (const file of readdirSync(charaDist)) {
 	if (moderned_characters.includes(file)) {
 		// 考虑后续可能存在的ts版本，优先使用ts文件
@@ -48,7 +49,7 @@ for (const file of readdirSync(charaDist)) {
 	}
 	// 剩下的武将包未完成进行异步化，可能仍然存在step content，故直接复制
 	// 此外，该过程也会将位于character文件夹的单文件复制过去
-	staticModules.push({ src: `character/${file}`, dest: "character" });
+	charaCopys.push({ src: `character/${file}`, dest: "" });
 }
 
 // 打包无名杀本体
@@ -92,8 +93,7 @@ await build({
 		target,
 		sourcemap: false,
 		minify: false,
-		// 由于outDir会被清空，因此先输出到临时目录，待打包完成后再移动到最终目录
-		outDir: `dist/character/.tmp`,
+		outDir: `dist/character`,
 		rollupOptions: {
 			preserveEntrySignatures: "strict",
 			treeshake: true,
@@ -114,12 +114,5 @@ await build({
 			},
 		},
 	},
+	plugins: [viteStaticCopy({ targets: charaCopys })],
 });
-// 移动武将包打包结果
-const distChara = join(root, "dist/character");
-const tmp = join(distChara, ".tmp");
-for (const file of readdirSync(tmp)) {
-	moveSync(join(tmp, file), join(distChara, file));
-}
-// 现在tmp目录应该为空，如果仍有文件说明存在异常情况，使用rmdirSync而非rmSync以即使发现问题
-rmdirSync(tmp);
