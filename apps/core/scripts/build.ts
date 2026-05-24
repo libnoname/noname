@@ -8,11 +8,23 @@ import jit from "@noname/jit";
 import { moderned_characters } from "../game/config.json";
 const root = join(import.meta.dirname, "..");
 
+/**
+ * 构建脚本入口。
+ *
+ * 负责收集本体构建需要复制的静态资源、各类单独构建包体的入口，
+ * 然后依次执行本体构建和包体构建。
+ */
 async function main() {
-	// 编译目标，目前无名杀的目标为Chromium >= 91 || Safari >=16.4.0
+	/**
+	 * 编译目标
+	 * 
+	 * 目前无名杀的目标为`Chromium >= 91 || Safari >=16.4.0`
+	 */
 	const target = ["chrome91", "safari16.4"];
 
-	// 无名杀所使用的导入映射（import map，翻译来源MDN）
+	/**
+	 * 无名杀所使用的导入映射（import map，翻译来源MDN）
+	 */
 	const importMap: Record<string, string> = {
 		noname: "/noname.js",
 		vue: "vue/dist/vue.esm-browser.js",
@@ -21,7 +33,9 @@ async function main() {
 		// jszip: "jszip",
 	};
 
-	// 编译过程需要直接复制的文件
+	/**
+	 * 本体编译过程需要直接复制的文件
+	 */
 	const staticModules: Target[] = [
 		// { src: "character", dest: "" },
 		// { src: "card", dest: "" },
@@ -35,7 +49,13 @@ async function main() {
 		{ src: "noname.js", dest: "src" },
 	];
 
-	// 需要单独构建的包体，false表示暂未存在可以构建的文件，后续会直接复制
+	/**
+	 * 需要脱离本体单独输出的包体，无名杀中即为武将包、卡牌包和模式
+	 * 
+	 * Individual译为“个体”，不过此处只是找个后续不太用得上的单词
+	 * 
+	 * `false`表示暂未存在可以构建的文件，后续会直接复制
+	 */
 	const individuals: Record<IndividualType, false | IndividualContent[]> = {
 		character: [],
 		mode: [{ name: "identity", index: "mode/identity.js", moderned: false }],
@@ -72,7 +92,7 @@ async function main() {
 	// 编译无名杀本体
 	await buildSelf(target, importMap, staticModules);
 
-	// 编译单独包体
+	// 编译脱离本体单独输出的包体
 	for (const [type, content] of Object.entries(individuals)) {
 		if (content === false) {
 			continue;
@@ -84,7 +104,7 @@ async function main() {
 			input[name] = index;
 		}
 
-		// 构建需要单独复制的文件
+		// 获取需要单独复制的文件
 		const copies: Target[] = [];
 		for (const file of readdirSync(join(root, type))) {
 			if (getEntryName(file) in input) {
@@ -98,6 +118,13 @@ async function main() {
 	}
 }
 
+/**
+ * 构建无名杀本体。
+ *
+ * @param target Vite/Rollup的浏览器编译目标
+ * @param importMap 写入最终产物的导入映射
+ * @param copies 本体构建阶段需要直接复制到dist的文件
+ */
 async function buildSelf(target: string | string[], importMap: Record<string, string>, copies: Target[]) {
 	// 继承vite.config.ts
 	// 合并会导致开发服务器依赖失效
@@ -133,6 +160,15 @@ async function buildSelf(target: string | string[], importMap: Record<string, st
 	});
 }
 
+/**
+ * 构建需要脱离本体单独输出的包体。
+ *
+ * @param type 包体类型，同时也是输出目录名
+ * @param target Vite/Rollup的浏览器编译目标
+ * @param input Rollup入口配置，key会成为最终输出文件名
+ * @param importMap 用于决定哪些依赖在单独构建时保持外部引用
+ * @param copies 单独构建阶段需要原样复制的同类包体
+ */
 async function buildIndividual(type: string, target: string | string[], input: Record<string, string>, importMap: Record<string, string>, copies: Target[]) {
 	await build({
 		build: {
@@ -164,16 +200,30 @@ async function buildIndividual(type: string, target: string | string[], input: R
 	});
 }
 
-function getEntryName(file: string) {
+/**
+ * 从顶层文件或目录名中取得可与Rollup入口配置对比的入口名。
+ *
+ * @example
+ * getEntryName("identity.js") // "identity"
+ * getEntryName("guozhan") // "guozhan"
+ */
+function getEntryName(file: string): string {
 	return file.replace(/\.(js|ts)$/, "");
 }
 
+/** 支持按包体维度处理的目录类型。 */
 type IndividualType = "character" | "card" | "mode";
 
+/** 单个需要独立构建的包体配置。 */
 interface IndividualContent {
+	/** 包体名称，同时作为 Rollup input 的 key 使用。 */
 	name: string;
+	/** 包体入口文件，使用相对于 apps/core 的路径。 */
 	index: string;
+	/** 是否属于已经现代化为目录入口的包体。 */
 	moderned: boolean;
 }
 
-await main();
+if (import.meta.main) {
+	await main();
+}
