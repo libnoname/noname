@@ -17,7 +17,7 @@ const root = join(import.meta.dirname, "..");
 async function main() {
 	/**
 	 * 编译目标
-	 * 
+	 *
 	 * 目前无名杀的目标为`Chromium >= 91 || Safari >=16.4.0`
 	 */
 	const target = ["chrome91", "safari16.4"];
@@ -51,7 +51,7 @@ async function main() {
 
 	/**
 	 * 需要脱离本体单独输出的包体，无名杀中即为武将包、卡牌包和模式
-	 * 
+	 *
 	 * Individual译为“个体”，不过此处只是找个后续不太用得上的单词
 	 * 
 	 * `false`表示暂未存在可以构建的文件，后续会直接复制
