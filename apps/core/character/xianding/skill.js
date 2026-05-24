@@ -8131,15 +8131,21 @@ const skills = {
 	//新杀谋许攸
 	dcsbmoyou: {
 		audio: 2,
+		init(player, skill) {
+			player.addSkill(skill + "_count");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_count");
+		},
 		trigger: {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			return player.storage.dcsbmoyou_count >= 2;
+			return player.countMark("dcsbmoyou_count") >= 2;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
-			player.storage.dcsbmoyou_count = 0;
+			player.clearMark(`${event.name}_count`, false);
 			await player.draw(3);
 			player.addTempSkill(`${event.name}_distance`);
 			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
@@ -8167,42 +8173,29 @@ const skills = {
 							.map(card => get.type2(card))
 							.containsAll("basic", "trick", "equip")
 					) {
-						player.addTempSkill(`${event.name}_basic`);
-						player.addTempSkill(`${event.name}_trick`);
+						player.addTempSkill(`${event.name}_basic`, { player: "dieAfter"});
+						player.addTempSkill(`${event.name}_trick`, { player: "dieAfter"});
 					}
 				}
 			}
 		},
-		group: ["dcsbmoyou_count", "dcsbmoyou_reset"],
 		subSkill: {
 			count: {
 				trigger: {
 					player: "useCardAfter",
 				},
 				firstDo: true,
+				charlotte: true,
 				silent: true,
 				filter(event, player) {
 					return !event.skill || !event.skill.startsWith("dcsbmoyou");
 				},
 				async content(event, trigger, player) {
-					if (typeof player.storage.dcsbmoyou_count !== "number") {
-						player.storage.dcsbmoyou_count = 0;
-					}
-					player.storage.dcsbmoyou_count++;
+					player.addMark(event.name, 1, false);
 				},
-			},
-			reset: {
-				trigger: {
-					player: "phaseBegin",
-				},
-				silent: true,
-				forced: true,
-				filter(event, player) {
-					return typeof player.storage.dcsbmoyou_count === "number";
-				},
-				async content(event, trigger, player) {
-					player.storage.dcsbmoyou_count = 0;
-				},
+				intro: {
+					content: "已使用$张牌"
+				}
 			},
 			distance: {
 				charlotte: true,

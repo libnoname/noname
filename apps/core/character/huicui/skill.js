@@ -34,7 +34,7 @@ const skills = {
 				}
 				const result = await target
 					.chooseCardTarget({
-						prompt: "惑众：选择一项：1.获得一名不为你角色的一张牌；2.交给发动者一张牌（不选择卡牌即视为进行获得牌操作）",
+						prompt: `惑众：选择一项：1.获得一名不为你角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
 						filterCard: true,
 						position: "he",
 						selectCard: [0, 1],
