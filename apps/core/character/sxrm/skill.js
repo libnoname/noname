@@ -159,9 +159,13 @@ const skills = {
 			order: 10,
 			result: {
 				target(player, target) {
-					if (player.hasSkill("sxrmxianger_limit") || get.attitude(player, target) > 0 || player == target || !player.storage.sxrmjiehuo_mark) return 0;
+					if (player.hasSkill("sxrmxianger_limit") || get.attitude(player, target) > 0 || player === target || !player.storage.sxrmjiehuo_mark) {
+						return 0;
+					}
 					let val = get.damageEffect(target, player, player);
-					if (player.inRange(target)) val++;
+					if (player.inRange(target)) {
+						val++;
+					}
 					return -val;
 				},
 			},
