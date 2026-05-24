@@ -8173,8 +8173,8 @@ const skills = {
 							.map(card => get.type2(card))
 							.containsAll("basic", "trick", "equip")
 					) {
-						player.addTempSkill(`${event.name}_basic`, { player: "dieAfter"});
-						player.addTempSkill(`${event.name}_trick`, { player: "dieAfter"});
+						player.addTempSkill(`${event.name}_basic`, { player: "dieAfter" });
+						player.addTempSkill(`${event.name}_trick`, { player: "dieAfter" });
 					}
 				}
 			}
@@ -8194,8 +8194,8 @@ const skills = {
 					player.addMark(event.name, 1, false);
 				},
 				intro: {
-					content: "已使用$张牌"
-				}
+					content: "已使用$张牌",
+				},
 			},
 			distance: {
 				charlotte: true,
