@@ -26857,7 +26857,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "useCard" },
 		filter(event, player) {
-			return event.card.name === "sha" && (event.player === player || player.inRange(event.player)) && player.countCards("he") > 0;
+			return event.card.name === "sha" && (event.player === player || player.inRange(event.player)) && player.hasCards("he");
 		},
 		checkx(event, player) {
 			const nature = get.nature(event.card);
@@ -26903,13 +26903,8 @@ const skills = {
 			return mayDamage + (1 - odds) * get.damageEffect(event.player, player, player);
 		},
 		async cost(event, trigger, player) {
-			const skillName = event.name.slice(0, -5);
 			event.result = await player
-				.chooseToDiscard(
-					"he",
-					get.prompt(skillName, trigger.player),
-					"弃置一张牌并令" + get.translation(trigger.player) + "使用的【杀】伤害+1，但若其未造成伤害，则你对其造成1点伤害。"
-				)
+				.chooseToDiscard("chooseonly", "he", get.prompt(event.skill, trigger.player), `弃置一张牌并令${get.translation(trigger.player)}使用的${get.translation(trigger.card)}伤害+1，但若其未造成伤害，则你对其造成1点伤害。`)
 				.set("ai", function (card) {
 					const goon = get.event().goon;
 					if (goon) {
@@ -26921,16 +26916,15 @@ const skills = {
 					"goon",
 					(() => {
 						const num = (lib.skill.cuijin.checkx(trigger, player) * player.countCards("he")) / 10;
-						// game.log(trigger.player, "对", trigger.targets, "使用", trigger.card, "，TW乐就发动技能的收益为", num);
 						return num;
 					})()
 				)
-				.set("logSkill", [skillName, trigger.player])
 				.forResult();
-			event.result.skill_popup = false;
 		},
+		logTarget: "player",
 		async content(event, trigger, player) {
-			if (typeof trigger.baseDamage === "number") {
+			await player.discard(event.cards);
+			if (typeof trigger.baseDamage !== "number") {
 				trigger.baseDamage = 1;
 			}
 			trigger.baseDamage++;
@@ -26945,12 +26939,12 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				filter(event, player) {
-					return player.storage.cuijin_damage.includes(event.card);
+					return player.getStorage("cuijin_damage").includes(event.card);
 				},
-				content() {
-					player.storage.cuijin_damage.remove(trigger.card);
-					if (!player.storage.cuijin_damage.length) {
-						player.removeSkill("cuijin_damage");
+				async content(event, trigger, player) {
+					player.unmarkAuto(event.name, [trigger.card]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
 					}
 					if (
 						trigger.player.isIn() &&
@@ -26961,8 +26955,8 @@ const skills = {
 						})
 					) {
 						player.line(trigger.player, "green");
-						player.draw();
-						trigger.player.damage();
+						await player.draw();
+						await trigger.player.damage();
 					}
 				},
 			},

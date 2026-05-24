@@ -5490,15 +5490,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				uiintro.add(addFavourite);
 			}
 			if (!simple || get.is.phoneLayout()) {
-				let viewInfo = ui.create.div(".text.center.pointerdiv");
-				viewInfo.link = node;
-				viewInfo.innerHTML = "查看资料";
-				viewInfo.listen(function () {
-					let player = this.link;
-					let audioName = player.skin.name || player.name1 || player.name;
-					ui.click.charactercard(player.name1 || player.name, null, null, true, player.node.avatar, audioName);
-				});
-				uiintro.add(viewInfo);
+				if (!node.name.startsWith("unknown")) {
+					let viewInfo = ui.create.div(".text.center.pointerdiv");
+					viewInfo.link = node;
+					viewInfo.innerHTML = "查看资料";
+					viewInfo.listen(function () {
+						let player = this.link;
+						let audioName = player.skin.name || player.name1 || player.name;
+						ui.click.charactercard(player.name1 || player.name, null, null, true, player.node.avatar, audioName);
+					});
+					uiintro.add(viewInfo);
+				}
 			}
 			if ((lib.config.change_skin || lib.skin) && (!simple || get.is.phoneLayout())) {
 				[node.name1, node.name2].forEach((nameskin, index) => {

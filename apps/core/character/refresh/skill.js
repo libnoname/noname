@@ -13629,7 +13629,10 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeHp" },
 		filter(event, player) {
-			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.num);
+			if (event.changedHp == 0) {
+				return false;
+			}
+			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.changedHp);
 		},
 		forced: true,
 		async content(event, trigger, player) {},
@@ -17581,13 +17584,10 @@ const skills = {
 		},
 	},
 	fenwei: {
-		skillAnimation: true,
-		animationColor: "wood",
 		audio: 2,
 		audioname2: { heqi: "fenwei_heqi" },
 		limited: true,
 		trigger: { global: "useCardToPlayered" },
-		//priority:5,
 		filter(event, player) {
 			if (event.getParent().triggeredTargets3.length > 1) {
 				return false;
@@ -17601,42 +17601,27 @@ const skills = {
 			if (event.targets.length < 2) {
 				return false;
 			}
-			if (player.storage.fenwei) {
-				return false;
-			}
 			return true;
 		},
-		direct: true,
-		async content(event, trigger, player) {
-			let result;
-
-			// step 0
-			result = await player
-				.chooseTarget(get.prompt("fenwei"), [1, trigger.targets.length], (card, player, target) => {
-					return _status.event.targets.includes(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `令${get.translation(trigger.card)}对任意名角色无效`, [1, trigger.targets.length], (card, player, target) => {
+					return get.event().targets.includes(target);
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					if (
-						game.phaseNumber > game.players.length * 2 &&
-						trigger.targets.length >= game.players.length - 1 &&
-						!trigger.excluded.includes(target)
-					) {
-						return -get.effect(target, trigger.card, trigger.player, _status.event.player);
-					}
-					return -1;
+				.set("ai", target => {
+					const player = get.player();
+					const trigger = get.event().getTrigger();
+					return -get.effect(target, trigger.card, trigger.player, player);
 				})
 				.set("targets", trigger.targets)
 				.forResult();
-
-			// step 1
-			if (result?.bool) {
-				player.awakenSkill(event.name);
-				player.logSkill("fenwei", result.targets);
-				player.storage.fenwei = true;
-				trigger.getParent().excluded.addArray(result.targets);
-				await game.delayx();
-			}
+		},
+		skillAnimation: true,
+		animationColor: "wood",
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			trigger.getParent().excluded.addArray(event.targets);
+			await game.delayx();
 		},
 	},
 	chulao: {

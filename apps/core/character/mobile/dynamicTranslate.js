@@ -43,20 +43,15 @@ const dynamicTranslates = {
 		return ["出牌阶段限一次。你可将一张【杀】当做刺【杀】使用，或将一张锦囊牌当做【无中生有】使用。", "出牌阶段限一次。你可将一张基本牌当做刺【杀】使用，或将一张非基本牌当做【无中生有】使用。", "出牌阶段限一次。你可视为使用一张刺【杀】或【无中生有】。"][player.countMark("miaojian")];
 	},
 	shhlianhua(player) {
-		return ["当你成为【杀】的目标后，你摸一张牌。", "当你成为【杀】的目标后，你摸一张牌。然后你进行判定，若结果为黑桃，则此【杀】对你无效。", "当你成为【杀】的目标后，你摸一张牌。然后此【杀】的使用者选择一项：①弃置一张牌。②令此【杀】对你无效。"][player.countMark("shhlianhua")];
+		return ["当你成为【杀】的目标时，你摸一张牌。", "当你成为【杀】的目标时，你摸一张牌。然后你进行判定，若结果为黑桃，则取消此目标。", "当你成为【杀】的目标时，你摸一张牌。然后此【杀】的使用者选择一项：①弃置一张牌。②取消此目标。"][player.countMark("shhlianhua")];
 	},
 	mobilexingxue(player) {
 		return lib.translate[(player.storage.mobileyanzhu ? "mobilexingxuex" : "mobilexingxue") + "_info"];
 	},
 	shoufa(player) {
 		const zhoufa = player.storage.zhoulin_zhoufa;
-		const nodoudizhu = get.mode() == "doudizhu" ? "与你距离不小于1的/距离不大于1的" : "与你距离不小于2的/距离不大于2的";
-		if (!zhoufa) {
-			return "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，令其随机执行以下一项：豹，令其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，令其摸一张牌。";
-		}
-		let str = "当你受到伤害后/于一回合首次造成伤害后，你可以选择一名" + nodoudizhu + "角色，";
-		str += ["令其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "令其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)];
-		return str + "。";
+		const num = get.mode() == "doudizhu" ? 1 : 2;
+		return `①当你于一回合首次造成伤害后，你可以选择一名距离${num}以内的角色。②每回合限五次，当你受到伤害后，你可以选择一名与你距离不小于${num}的角色。${!zhoufa ? "其随机执行以下一项：豹，其受到1点无来源伤害；鹰，你随机获得其一张牌；熊，你随机弃置其装备区的一张牌；兔，其摸一张牌" : ["其受到1点无来源伤害", "你随机获得其一张牌", "你随机弃置其装备区的一张牌", "其摸一张牌"][["豹", "鹰", "熊", "兔"].indexOf(zhoufa)]}。`;
 	},
 	mbxuetu(player) {
 		const bool = player.storage.mbxuetu,
@@ -90,9 +85,9 @@ const dynamicTranslates = {
 	},
 	mbfunan(player) {
 		if (player.storage.mbfunan_rewrite) {
-			return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
+			return lib.translate[`mbfunan_rewrite_info`];
 		}
-		return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌。`;
+		return lib.translate[`mbfunan_info`];
 	},
 	mbxuehen(player) {
 		const storage = player.storage.mbxuehen;

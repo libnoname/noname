@@ -1,17 +1,15 @@
 import { build } from "vite";
-import { join, dirname } from "path";
+import { join } from "path";
 import { moveSync } from "fs-extra/esm";
-import { fileURLToPath } from "node:url";
 import { existsSync, readdirSync, rmdirSync } from "fs";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
 import jit from "@noname/jit";
 
 import { moderned_characters } from "../game/config.json";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const root = join(__dirname, "..");
+const root = join(import.meta.dirname, "..");
 
+const target = ["chrome91", "safari16.4"];
 const importMap: Record<string, string> = {
 	noname: "/noname.js",
 	vue: "vue/dist/vue.esm-browser.js",
@@ -58,6 +56,7 @@ for (const file of readdirSync(charaDist)) {
 // 合并会导致开发服务器依赖失效
 await build({
 	build: {
+		target,
 		sourcemap: false,
 		minify: false,
 		rollupOptions: {
@@ -90,6 +89,7 @@ await build({
 // 由于武将包拥有更多的“外部包”，且最终需要打包成单文件，因此需要单独构建
 await build({
 	build: {
+		target,
 		sourcemap: false,
 		minify: false,
 		// 由于outDir会被清空，因此先输出到临时目录，待打包完成后再移动到最终目录

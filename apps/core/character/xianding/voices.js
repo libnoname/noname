@@ -1,4 +1,11 @@
 export default {
+	"#dcsbjutu1": "蜀川岁岁熟，何必起刀兵？",
+	"#dcsbjutu2": "益州天府之国，不知何为饥馑。",
+	"#dcsbrenshan1": "既有宗族之情，何虑天下之争？",
+	"#dcsbrenshan2": "善者不为人所欺，必有春风来报。",
+	"#dcsbyizhi1": "此岁丰稔，当与诸君共浮一大白！",
+	"#dcsbyizhi2": "凡入我益州之士，皆为我座上之宾。",
+	"#dc_sb_liuzhang:die": "沃土养懦骨，一夕照胆寒。",
 	"#dcxiangchen1": "将军目藏北斗，奈何，呵呵，潞涿无毛。",
 	"#dcxiangchen2": "品貌知命途，一语解百忧。",
 	"#dcmingding1": "举镜视面，自知刑死，唯叹造化弄人。",

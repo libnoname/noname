@@ -2226,7 +2226,7 @@ const skills = {
 					return;
 				}
 				const hs = player.getCards("he", card => get.type(card) == "equip");
-				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
 			},
@@ -2235,7 +2235,7 @@ const skills = {
 					return;
 				}
 				const hs = player.getCards("he", card => get.type(card) == "equip");
-				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
 			},
@@ -5338,28 +5338,33 @@ const skills = {
 		forced: true,
 		locked: false,
 		//牢萌的方案
-		/*init(player, skill) {
-			if (!_status[skill]) {
+		init(player) {
+			if (!_status.olhuanhuo) {
 				game.broadcastAll(() => {
-					_status[skill] = lib.filter.filterEnable;
-					lib.filter.filterEnable = function (event, ...args) {
-						if (event.name === "chooseToUse" && event.type === "phase" && event[skill + "_debuff"]) {
+					_status.olhuanhuo = lib.filter.filterEnable;
+					lib.filter.filterEnable = function (event, player, skill) {
+						const cards = player.getCards("h", card => player.hasUseTarget(card, null, event));
+						if (event.name === "chooseToUse" && event.type === "phase" && player.hasMark("olhuanhuo_debuff") && cards.length) {
 							return false;
 						}
-						return _status[skill](event, ...args);
+						return _status.olhuanhuo(event, player, skill);
 					};
 				});
 			}
-		},*/
+		},
 		async content(event, trigger, player) {
 			await player.draw(2);
 			const num = Math.min(
 				2,
 				game.countPlayer(target => target != player)
 			);
+			if (!num) {
+				return;
+			}
 			const result = await player
 				.chooseCardTarget({
-					prompt: `幻惑：弃置至多两张牌并选择等量其他角色`,
+					prompt: get.prompt(event.name),
+					prompt2: `弃置至多两张牌并选择等量其他角色，这些角色下回合出牌阶段强制选中一张可以使用的手牌，且使用一张牌后随机弃置一张牌，直到其使用了两张牌`,
 					filterCard: lib.filter.cardDiscardable,
 					selectCard: [1, num],
 					filterTarget: lib.filter.notMe,
@@ -5401,12 +5406,12 @@ const skills = {
 				const { cards, targets } = result;
 				await player.discard(cards);
 				player.line(targets);
-				targets.forEach(target => target.addTempSkill(event.name + "_debuff", { player: "phaseUseAfter" }));
+				targets.forEach(target => target.addSkill(event.name + "_mark"));
 			}
 		},
 		subSkill: {
 			backup: {
-				filterCard(card) {
+				filterCard(card, player, event) {
 					return get.itemtype(card) == "card" && card == get.event().olhuanhuo_debuff;
 				},
 				viewAs(cards, player) {
@@ -5424,11 +5429,29 @@ const skills = {
 				popname: true,
 				log: false,
 			},
+			mark: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "下回合出牌阶段强制选中一张可以使用的手牌，且使用一张牌后随机弃置一张牌，直到使用了两张牌" },
+				trigger: { player: "phaseBegin" },
+				firstDo: true,
+				silent: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.addTempSkill("olhuanhuo_limit");
+				},
+			},
+			limit: {
+				charlotte: true,
+				trigger: { player: "phaseUseBegin" },
+				silent: true,
+				async content(event, trigger, player) {
+					player.addTempSkill("olhuanhuo_debuff", "phaseUseAfter");
+					player.addMark("olhuanhuo_debuff", 2, false);
+				},
+			},
 			debuff: {
 				charlotte: true,
-				init(player, skill) {
-					player.addMark(skill, 2, false);
-				},
 				onremove: true,
 				intro: { content: "当前“幻惑”剩余次数：#" },
 				trigger: { player: ["chooseToUseBegin", "useCardAfter"] },
@@ -5437,24 +5460,6 @@ const skills = {
 						return event.type == "phase";
 					}
 					return event.isPhaseUsing(player);
-				},
-				mod: {
-					cardEnabled(card, player) {
-						const event = get.event();
-						if (player.isPhaseUsing() && !_status._olhuanhuo_debuff_check && (!event.skill || event.skill !== "olhuanhuo_backup")) {
-							return false;
-						}
-					},
-					cardSavable(card, player) {
-						if (player.isPhaseUsing()) {
-							return false;
-						}
-					},
-					cardRespondable(card, player) {
-						if (player.isPhaseUsing()) {
-							return false;
-						}
-					},
 				},
 				forced: true,
 				popup: false,
@@ -5473,7 +5478,7 @@ const skills = {
 						}
 					} else {
 						game.broadcastAll(() => (_status._olhuanhuo_debuff_check = true));
-						const cards = player.getCards("h", card => lib.filter.cardEnabled(card, player, trigger) && lib.filter.cardUsable(card, player, trigger));
+						const cards = player.getCards("h", card => player.hasUseTarget(card, null, trigger));
 						game.broadcastAll(() => delete _status._olhuanhuo_debuff_check);
 						if (!cards.length) {
 							return;
@@ -5489,13 +5494,6 @@ const skills = {
 							replace: { window() {} },
 						});
 						trigger.backup(name);
-						/*const originalFilter = trigger.filterCard;
-						trigger.filterCard = function (card) {
-							if (get.itemtype(card) !== "card" || card != get.event().olhuanhuo_debuff) {
-								return false;
-							}
-							return originalFilter.apply(this, arguments);
-						};*/
 					}
 				},
 			},
@@ -8422,6 +8420,9 @@ const skills = {
 	olsbchoulie: {
 		audio: 2,
 		trigger: { player: "phaseBegin" },
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(lib.filter.notMe, get.prompt2(event.skill))
@@ -8437,7 +8438,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event;
 			player.awakenSkill(event.name);
-			player.addTempSkill(["olsbchoulie_buff", "olsbchoulie_use"]);
+			player.addTempSkill(["olsbchoulie_buff", "olsbchoulie_excluded"]);
 			player.markAuto("olsbchoulie_buff", targets);
 		},
 		subSkill: {
@@ -8445,13 +8446,11 @@ const skills = {
 				audio: "olsbchoulie",
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					player: "phaseAnyBegin",
-				},
+				trigger: { player: "phaseAnyBegin" },
 				getIndex(event, player) {
-					const storage = player.storage.olsbchoulie_buff;
+					const storage = player.getStorage("olsbchoulie_buff");
 					const vcard = new lib.element.VCard({ name: "sha", isCard: true });
-					return storage.filter(i => player.canUse(vcard, i, false));
+					return storage.filter(current => player.canUse(vcard, current, false)).sortBySeat();
 				},
 				filter(event, player) {
 					return player.hasCard(card => {
@@ -8465,9 +8464,9 @@ const skills = {
 					const target = event.indexedData;
 					const list = [event.skill, target];
 					event.result = await player
-						.chooseToDiscard("he")
+						.chooseToDiscard("he", "chooseonly")
 						.set("prompt", get.prompt2(...list))
-						.set("prompt2", `弃置一张牌，视为对${get.translation(target)}使用一张【杀】`)
+						.set("prompt2", `弃置一张牌，视为对${get.translation(target)}使用一张【杀】（当前为${get.translation(trigger.name)}）`)
 						.set("ai", card => {
 							const player = get.player(),
 								target = get.event().getParent().indexedData;
@@ -8483,41 +8482,38 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					const target = event.indexedData;
+					await player.discard(event.cards);
 					const vcard = new lib.element.VCard({ name: "sha", isCard: true });
 					if (player.canUse(vcard, target, false)) {
 						await player.useCard(vcard, target, false);
 					}
 				},
 			},
-			use: {
+			excluded: {
 				charlotte: true,
-				trigger: { player: "useCard" },
+				trigger: { global: "useCardToTargeted" },
 				filter(event, player) {
-					return event.getParent().name == "olsbchoulie_buff";
+					return event.getParent(2).name == "olsbchoulie_buff" && player.getStorage("olsbchoulie_buff").includes(event.target);
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const storage = player.storage.olsbchoulie_buff;
-					for (const target of trigger.targets) {
-						if (target == storage[0]) {
-							const { bool } = await target
-								.chooseToDiscard(`仇猎：你可以弃置一张基本牌或武器牌，令${get.translation(trigger.card)}对你无效`, "he")
-								.set("filterCard", card => {
-									return get.type(card) == "basic" || get.subtypes(card).includes("equip1");
-								})
-								.set("ai", card => {
-									const player = get.player(),
-										trigger = get.event().getTrigger();
-									return -get.effect(player, trigger.card, trigger.player, player) - get.value(card);
-								})
-								.forResult();
-							if (bool) {
-								trigger.excluded.add(target);
-								game.log(trigger.card, "对", target, "无效");
-								await game.delayx();
-							}
-						}
+					const { target } = trigger;
+					const result = await target
+						.chooseToDiscard(`仇猎：你可以弃置一张基本牌或武器牌，令${get.translation(trigger.card)}对你无效`, "he")
+						.set("filterCard", card => {
+							return get.type(card) == "basic" || get.subtypes(card).includes("equip1");
+						})
+						.set("ai", card => {
+							const player = get.player(),
+								trigger = get.event().getTrigger();
+							return -get.effect(player, trigger.card, trigger.player, player) - get.value(card);
+						})
+						.forResult();
+					if (result?.bool) {
+						trigger.excluded.add(target);
+						game.log(trigger.card, "对", target, "无效");
+						await game.delayx();
 					}
 				},
 			},
