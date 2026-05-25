@@ -6462,10 +6462,10 @@ const skills = {
 						.chooseTarget(lib.filter.notMe, [1, max], true)
 						.set("prompt", `烈骧：选择${max > 1 ? "至多" : ""}${get.cnNumber(max)}名其他角色并对其造成1点伤害`)
 						.set("prompt2", prompt.slice(prompt.indexOf("若你的手牌数")))
-						.set("multitarget",true)
-						.set("targetprompt",target=>{
+						.set("multitarget", true)
+						.set("targetprompt", target => {
 							const num = ui.selected.targets.length;
-							return "第"+(num)+"个结算";
+							return "第" + num + "个结算";
 						})
 						.set("ai", target => {
 							const { player, numx, drawNum } = get.event(),
@@ -6548,7 +6548,7 @@ const skills = {
 						}
 					};
 					player.line(result.targets);
-					await game.doAsyncInOrder(result.targets, func,()=>0);
+					await game.doAsyncInOrder(result.targets, func, () => 0);
 				},
 			},
 			debuff: {
@@ -8140,19 +8140,20 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			const lose = player.getAllHistory("lose", evt => (evt.relatedEvent || evt.getParent()).name == "useCard");
+			const lose = player.getAllHistory("lose", evt => (evt.relatedEvent || evt.getParent()).name === "useCard");
 			const index = player
 				.getAllHistory("useCard", evt => {
-					return lose.some(evtx => (evtx.relatedEvent || evtx.getParent()) == evt && evtx.hs?.length);
+					return lose.some(evtx => (evtx.relatedEvent || evtx.getParent()) === evt && evtx.hs?.length);
 				})
 				.indexOf(event);
-			return index >= 0 && (index + 1) % 2 == 0;
+			return index >= 0 && (index + 1) % 2 === 0;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
 			await player.draw({ num: 3 });
-			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
-			const suits = lib.suit.filter(suit => getCards(suit).length > 0);
+			const getCards = suit => player.getDiscardableCards(player, "h", { suit });
+			const hasCards = suit => player.hasDiscardableCards(player, "h", { suit });
+			const suits = lib.suit.filter(suit => hasCards(suit));
 			if (suits.length) {
 				const hs = player.getCards("h");
 				const types = hs.map(card => get.type2(card)).unique();
