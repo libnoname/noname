@@ -6462,6 +6462,11 @@ const skills = {
 						.chooseTarget(lib.filter.notMe, [1, max], true)
 						.set("prompt", `烈骧：选择${max > 1 ? "至多" : ""}${get.cnNumber(max)}名其他角色并对其造成1点伤害`)
 						.set("prompt2", prompt.slice(prompt.indexOf("若你的手牌数")))
+						.set("multitarget",true)
+						.set("targetprompt",target=>{
+							const num = ui.selected.targets.length;
+							return "第"+(num)+"个结算";
+						})
 						.set("ai", target => {
 							const { player, numx, drawNum } = get.event(),
 								num = target.countCards("h");
@@ -6543,7 +6548,7 @@ const skills = {
 						}
 					};
 					player.line(result.targets);
-					await game.doAsyncInOrder(result.targets, func);
+					await game.doAsyncInOrder(result.targets, func,()=>0);
 				},
 			},
 			debuff: {
@@ -8131,32 +8136,31 @@ const skills = {
 	//新杀谋许攸
 	dcsbmoyou: {
 		audio: 2,
-		init(player, skill) {
-			player.addSkill(skill + "_count");
-		},
-		onremove(player, skill) {
-			player.removeSkill(skill + "_count");
-		},
 		trigger: {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			return player.countMark("dcsbmoyou_count") >= 2;
+			const lose = player.getAllHistory("lose", evt => (evt.relatedEvent || evt.getParent()).name == "useCard");
+			const index = player
+				.getAllHistory("useCard", evt => {
+					return lose.some(evtx => (evtx.relatedEvent || evtx.getParent()) == evt && evtx.hs?.length);
+				})
+				.indexOf(event);
+			return index >= 0 && (index + 1) % 2 == 0;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
-			player.clearMark(`${event.name}_count`, false);
-			await player.draw(3);
-			player.addTempSkill(`${event.name}_distance`);
+			await player.draw({ num: 3 });
 			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
-			const hasCards = suit => player.hasDiscardableCards(player, "h", { suit: suit });
-			const suits = lib.suit.filter(suit => hasCards(suit));
+			const suits = lib.suit.filter(suit => getCards(suit).length > 0);
 			if (suits.length) {
+				const hs = player.getCards("h");
+				const types = hs.map(card => get.type2(card)).unique();
 				const choice = suits.slice().sort((a, b) => get.value(getCards(a)) - get.value(getCards(b)))[0];
 				const result = await player
 					.chooseControl({
-						prompt: "谟猷：请弃置一种花色的所有手牌",
 						controls: suits,
+						prompt: "谟猷：请弃置一种花色的所有手牌",
 						ai() {
 							return get.event().suit;
 						},
@@ -8166,48 +8170,33 @@ const skills = {
 				if (result?.control) {
 					const suit = result.control;
 					const cards = getCards(suit);
-					await player.discard(cards);
+					await player.discard({ cards });
 					if (
 						!player
 							.getCards("h")
 							.map(card => get.type2(card))
 							.containsAll("basic", "trick", "equip")
 					) {
-						player.addTempSkill(`${event.name}_basic`, { player: "dieAfter" });
-						player.addTempSkill(`${event.name}_trick`, { player: "dieAfter" });
+						player.addTempSkill(`${event.name}_handcard`);
+						player.addMark(`${event.name}_handcard`, 1, false);
+						player.addTempSkill(`${event.name}_basic`);
+						player.addTempSkill(`${event.name}_trick`);
 					}
 				}
 			}
 		},
 		subSkill: {
-			count: {
-				trigger: {
-					player: "useCardAfter",
-				},
-				firstDo: true,
+			handcard: {
 				charlotte: true,
-				silent: true,
-				filter(event, player) {
-					return !event.skill || !event.skill.startsWith("dcsbmoyou");
-				},
-				async content(event, trigger, player) {
-					player.addMark(event.name, 1, false);
-				},
+				onremove: true,
+				markimage: "image/card/handcard.png",
 				intro: {
-					content: "已使用$张牌",
+					content: "本回合手牌上限+#",
 				},
-			},
-			distance: {
-				charlotte: true,
 				mod: {
-					targetInRange(card, player) {
-						return true;
+					maxHandcard(player, num) {
+						return num + player.countMark("dcsbmoyou_handcard");
 					},
-				},
-				mark: true,
-				marktext: "距",
-				intro: {
-					content: "本回合使用牌无距离限制",
 				},
 			},
 			basic: {
@@ -8215,6 +8204,11 @@ const skills = {
 					cardUsable(card, player) {
 						if (get.type(card) == "basic") {
 							return Infinity;
+						}
+					},
+					targetInRange(card, player) {
+						if (get.type(card) == "basic") {
+							return true;
 						}
 					},
 				},
@@ -8242,7 +8236,7 @@ const skills = {
 				mark: true,
 				marktext: "基",
 				intro: {
-					content: "使用下一张基本牌无次数限制",
+					content: "使用下一张基本牌无距离和次数限制",
 				},
 			},
 			trick: {
