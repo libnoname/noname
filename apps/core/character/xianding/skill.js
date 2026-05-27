@@ -10167,73 +10167,160 @@ const skills = {
 	//谋徐盛
 	dcsbqinqiang: {
 		audio: 2,
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: {
+			player: "useCard",
+		},
 		filter(event, player) {
-			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
+			if (!event.cards || !event.cards.some(card => card.original === "h")) {
+				return false;
+			}
+			const stat = player.getStat("skill");
+			stat.dcsbxinqinqiang = stat.dcsbxinqinqiang || { 加伤: 0, 摸牌: 0 };
+			return !(stat.dcsbxinqinqiang["加伤"] >= 1 && stat.dcsbxinqinqiang["摸牌"] >= 1);
 		},
 		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, 4], "allowChooseAll")
-				.set("ai", card => {
-					return 1 / (get.value(card) || 0.5);
+			const color = get.color(trigger.card);
+			const history = player.getHistory("useCard", evt => evt.cards && evt.cards.some(card => card.original === "h"));
+			let x = 0;
+			for (let i = history.length - 1; i >= 0; i--) {
+				const evt = history[i];
+				const c = get.color(evt.card);
+				if (c === color) {
+					x++;
+				} else {
+					break;
+				}
+			}
+			const stat = player.getStat("skill");
+			stat.dcsbxinqinqiang = stat.dcsbxinqinqiang || { 加伤: 0, 摸牌: 0 };
+			const choices = [];
+			const choiceList = [];
+			if (stat.dcsbxinqinqiang["加伤"] < 1 && get.tag(trigger.card, "damage")) {
+				choices.push("加伤");
+				choiceList.push(`令此牌伤害+${x}`);
+			}
+			if (stat.dcsbxinqinqiang["摸牌"] < 1) {
+				choices.push("摸牌");
+				choiceList.push(`摸${get.cnNumber(x)}张牌`);
+			}
+			if (!choices.length) {
+				return;
+			}
+			choices.push("cancel2");
+
+			const result = await player
+				.chooseControl({
+					prompt: "勤强：请选择一项",
+					controls: choices,
+					choiceList,
+					ai() {
+						const evt = get.event();
+						if (!evt.controls.includes("摸牌")) {
+							return "加伤";
+						}
+						return "摸牌";
+					},
 				})
 				.forResult();
+
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: {
+					control: result.control,
+					x,
+				},
+			};
 		},
 		async content(event, trigger, player) {
-			await player.draw(event.cards.length * 2);
+			const stat = player.getStat("skill");
+			const { control, x } = event.cost_data;
+			stat.dcsbxinqinqiang = stat.dcsbxinqinqiang || { 加伤: 0, 摸牌: 0 };
+			if (control === "加伤") {
+				stat.dcsbxinqinqiang["加伤"]++;
+				player.addTempSkill("dcsbxinqinqiang_damage");
+				player.storage.dcsbxinqinqiang_damage_num = event.x;
+			} else if (control == "摸牌") {
+				stat.dcsbxinqinqiang["摸牌"]++;
+				await player.draw(x);
+			}
+		},
+		subSkill: {
+			damage: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				trigger: {
+					source: "damageBegin1",
+				},
+				async content(event, trigger, player) {
+					const num = player.storage.dcsbxinqinqiang_damage_num;
+					if (num > 0) {
+						trigger.num += num;
+						delete player.storage.dcsbxinqinqiang_damage_num;
+					}
+					player.removeSkill("dcsbxinqinqiang_damage");
+				},
+			},
 		},
 	},
 	dcsbyizhen: {
 		audio: 2,
-		trigger: { target: "useCardToTargeted" },
+		trigger: {
+			player: "damageEnd",
+		},
 		filter(event, player) {
-			if (player == event.player) {
-				return false;
-			}
-			const suit = get.suit(event.card),
-				suits = lib.suit.slice(0),
-				map = {};
-			suits.add(suit);
-			for (const suitx of suits) {
-				map[suitx] = player.countCards("h", { suit: suitx });
-			}
-			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
-				return player.countDiscardableCards(player, "h", card => get.suit(card) == suit) > 0;
-			}
-			return suits.every(suitx => map[suitx] >= map[suit]);
+			return event.source && event.source !== player && event.source.hasCards("h") && player.hasCards("h");
 		},
-		forced: true,
 		async content(event, trigger, player) {
-			const suit = get.suit(trigger.card),
-				suits = lib.suit.slice(0),
-				map = {};
-			suits.add(suit);
-			for (const suitx of suits) {
-				map[suitx] = player.countCards("h", { suit: suitx });
-			}
-			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
-				await player.chooseToDiscard("h", card => get.suit(card) == suit, true);
-			}
-			if (suits.every(suitx => map[suitx] >= map[suit])) {
+			const source = trigger.source;
+			const [result1, result2] = await Promise.all([
 				player
-					.when({ global: "useCardAfter" })
-					.filter((evt, player) => evt == trigger.getParent() && evt.cards?.someInD("od"))
-					.step(async (event, trigger, player) => {
-						await player.gain(trigger.cards.filterInD("od"), "gain2");
+					.discardPlayerCard({
+						prompt: `疑阵：观看${get.translation(source)}的手牌，选择弃置其中一张`,
+						target: source,
+						position: "h",
+						forced: true,
+						visible: true,
+						ai(button) {
+							return 5 - get.value(button.link);
+						},
+					})
+					.set("chooseonly", true)
+					.forResult(),
+				source
+					.discardPlayerCard({
+						prompt: `疑阵：观看${get.translation(player)}的手牌，选择弃置其中一张`,
+						target: player,
+						position: "h",
+						forced: true,
+						visible: true,
+						ai(button) {
+							return 5 - get.value(button.link);
+						},
+					})
+					.set("chooseonly", true)
+					.forResult()
+			]);
+			if (result1?.cards?.length && result2?.cards?.length) {
+				const card1 = result1.cards[0];
+				const card2 = result2.cards[0];
+				const color1 = get.color(card1);
+				const color2 = get.color(card2);
+				await game
+					.loseAsync({
+						lose_list: [
+							[player, [card2]],
+							[source, [card1]],
+						],
+					})
+					.setContent("discardMultiple");
+				if (color1 === color2) {
+					await player.gain({
+						cards: [card1, card2],
+						animate: "gain2",
 					});
+				}
 			}
-		},
-		ai: {
-			effect: {
-				target(card, player, target) {
-					const suit = get.suit(card),
-						suits = target.getKnownCards(player).map(card => get.suit(card));
-					if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
-						return [1, 1];
-					}
-					return [1, 0];
-				},
-			},
 		},
 	},
 	//徐妏
