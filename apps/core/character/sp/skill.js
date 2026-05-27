@@ -32641,7 +32641,7 @@ const skills = {
 		audio: "fanghun",
 		inherit: "fanghun",
 		trigger: {
-			player: "useCard",
+			player: "useCardToPlayered",
 			target: "useCardToTargeted",
 		},
 	},

@@ -16260,12 +16260,23 @@ const skills = {
 			return event.num;
 		},
 		filter(event) {
-			return event.source?.isIn() && event.num > 0;
+			return event.num > 0;
 		},
 		check(event, player) {
+			if (!event.source?.isIn()) {
+				return Math.random() < 0.5;
+			}
 			return get.attitude(player, event.source) <= 0;
 		},
-		logTarget: "source",
+		prompt2(event, player) {
+			let str = "你可以判定";
+			if (event.source?.isIn()) {
+				str += `，若结果为：红色，你对${get.translation(event.source)}造成1点伤害；黑色，你弃置${get.translation(event.source)}一张牌。`;
+			} else {
+				str += "。";
+			}
+			return str;
+		},
 		preHidden: true,
 		async content(event, trigger, player) {
 			const { source } = trigger;
@@ -16277,6 +16288,9 @@ const skills = {
 					return 0;
 				})
 				.forResult();
+			if (!source?.isIn()) {
+				return;
+			}
 			switch (result?.color) {
 				case "black":
 					if (source.countDiscardableCards(player, "he")) {
@@ -16285,9 +16299,7 @@ const skills = {
 					break;
 
 				case "red":
-					if (source.isIn()) {
-						await source.damage();
-					}
+					await source.damage();
 					break;
 				default:
 					break;

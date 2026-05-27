@@ -18,7 +18,7 @@ const characters = {
 	sxrm_guanyinping: {
 		sex: "female",
 		group: "shu",
-		hp: 3,
+		hp: 4,
 		skills: ["sxrmyinmou", "sxrmquchi"],
 	},
 	sxrm_yujin: {

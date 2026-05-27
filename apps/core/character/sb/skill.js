@@ -374,7 +374,9 @@ const skills = {
 								.set("choice", get.effect(target, { name: "draw" }, player, player) > 0)
 								.forResult();
 							if (result?.bool) {
-								await target.draw(2);
+								const next = target.draw(2);
+								next.gaintag.add("sbqiaobian");
+								await next;
 							}
 						}
 					}
@@ -478,7 +480,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return `将一张因【巧变】进入你装备区或手牌区的牌当作${get.translation(links[0][3]) || ""}【${get.translation(links[0][2])}】使用或打出`;
+				return `将一张“巧变”牌当作${get.translation(links[0][3]) || ""}【${get.translation(links[0][2])}】使用或打出`;
 			},
 		},
 		ai: {

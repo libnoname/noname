@@ -225,7 +225,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：",
+		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的手牌后，或其他角色得到你的手牌后：",
 			end = "（X为你的体力上限，Y为X-其打出【杀】数）。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

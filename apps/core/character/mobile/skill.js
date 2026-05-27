@@ -2417,6 +2417,7 @@ const skills = {
 				}
 				return current.hasCards("h");
 			});
+			const target = player == trigger.player ? trigger.source : trigger.player;
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return get.event().targetx.includes(target);
@@ -2427,6 +2428,8 @@ const skills = {
 					const cards = bottomCards.filter(card => card.isKnownBy(player));
 					const suits = cards.map(card => get.suit(card)).toUniqued();
 					const att = get.attitude(player, target);
+					const hs = player.getCards("h");
+					const ts = target.getCards("h");
 					if (att < 0) {
 						if (cards.length) {
 							if (suits.length > 1) {
@@ -2434,19 +2437,25 @@ const skills = {
 							}
 						}
 						if (player.hasSkillTag("viewHandcard", null, target, true)) {
-							return 5 * Math.min(2, target.countCards("h"));
+							return 1.2 * Math.min(2, ts);
 						}
 						if (target.hasCards("h", card => get.is.shownCard(card))) {
-							return Math.min(2, target.countCards("h"));
+							return 1.1 * Math.min(2, ts);
 						}
-						return 0;
+						if (hs.length <= ts && get.value(hs) <= 7) {
+							return 10;
+						}
+						return Math.max(0.1, 3 - ts);
 					} else {
 						if (cards.length) {
-							if (suits.length > 1 || get.value(cards) >= 7) {
-								return 10;
+							if (get.value(cards) >= 7) {
+								return 11;
+							}
+							if (suits.length > 1) {
+								return 9;
 							}
 						}
-						return att * Math.min(2, target.countCards("h"));
+						return Math.min(2, ts);
 					}
 				})
 				.set("bottomCards", Array.from(ui.cardPile.childNodes).slice(-2))
@@ -2466,31 +2475,37 @@ const skills = {
 					if (player == target) {
 						if (!ui.selected.buttons.length) {
 							if (player.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
-								return 6.5 - get.value(card);
-							}
-						}
-						const card1 = ui.selected.buttons[0].link;
-						if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
-							return 10;
-						}
-						return -get.value(card);
-					} else {
-						if (player.hasSkillTag("viewHandcard", null, target, true)) {
-							if (!ui.selected.buttons.length) {
-								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
-									return att > 0 ? 6 - get.value(card) : get.value(card);
+								if (card.name == "sha") {
+									return 10;
 								}
+								return 7 - get.value(card);
 							}
+							return 6 - get.value(card);
+						} else {
 							const card1 = ui.selected.buttons[0].link;
 							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
 								return 10;
 							}
-							return att > 0 ? 6 - get.value(card) : get.value(card);
+							return -get.value(card);
 						}
-						if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
-							return 10;
+					} else {
+						if (player.hasSkillTag("viewHandcard", null, target, true)) {
+							if (!ui.selected.buttons.length) {
+								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
+									return att > 0 ? 6.5 - get.value(card) : get.value(card);
+								}
+								if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
+									return 10;
+								}
+								return att > 0 ? 6 - get.value(card) : get.value(card);
+							} else {
+								const card1 = ui.selected.buttons[0].link;
+								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+									return 10;
+								}
+								return att > 0 ? 6 - get.value(card) : get.value(card);
+							}
 						}
-						return Math.random();
 					}
 				})
 				.forResult();
@@ -10946,9 +10961,7 @@ const skills = {
 			},
 			liuli: {
 				audio: "mbjiejian2.mp3",
-				trigger: {
-					global: "useCardToTarget",
-				},
+				trigger: { global: "useCardToTarget" },
 				filter(event, player) {
 					if (event.player == player || get.type(event.card) == "equip") {
 						return false;
@@ -10961,14 +10974,37 @@ const skills = {
 					}
 					return !player.getStorage("mbjiejian_used").includes(event.target);
 				},
-				prompt2: "将此牌转移给自己",
+				prompt2(event, player) {
+					return `将${get.translation(event.card)}转移给自己`;
+				},
 				check(event, player) {
-					let eff1 = get.effect(player, event.card, event.player, player),
-						eff2 = get.effect(event.targets[0], event.card, event.player, player);
-					if (eff2 > 0) {
-						eff2 *= 1.7;
+					const target = event.targets[0];
+					const card = event.card;
+					const source = event.player;
+					const eff1 = get.effect(target, card, source, player);
+					if (eff1 > 0) {
+						return false;
 					}
-					return eff1 >= eff2;
+					const eff2 = get.effect(player, card, source, player) + get.effect(player, { name: "draw" }, player, player);
+					if (eff2 >= eff1) {
+						return true;
+					}
+					// 照搬【镇卫】
+					let save = false;
+					if (get.attitude(player, target) > 2) {
+						if (card.name == "sha") {
+							if (player.hasShan() || player.getEquip(2) || target.hp == 1 || player.hp > target.hp + 1) {
+								if (!target.hasShan() || target.countCards("h") < player.countCards("h")) {
+									save = true;
+								}
+							}
+						} else if (card.name == "juedou" && target.hp == 1) {
+							save = true;
+						} else if (card.name == "shunshou" && get.attitude(player, source) < 0 && get.attitude(source, target) < 0) {
+							save = true;
+						}
+					}
+					return save;
 				},
 				logTarget: "target",
 				async content(event, trigger, player) {
@@ -10985,9 +11021,7 @@ const skills = {
 			},
 			remove: {
 				audio: "mbjiejian3.mp3",
-				trigger: {
-					global: "phaseEnd",
-				},
+				trigger: { global: "phaseEnd" },
 				forced: true,
 				filter(event, player) {
 					return event.player.hasMark("mbjiejian_mark");
@@ -11002,11 +11036,7 @@ const skills = {
 					}
 				},
 			},
-			mark: {
-				intro: {
-					content: "获得“节谏”时的体力值：$",
-				},
-			},
+			mark: { intro: { content: "获得“节谏”时的体力值：$" } },
 		},
 	},
 	//新司马孚
@@ -16864,10 +16894,10 @@ const skills = {
 					}
 					const [targetx] = result.targets;
 					target.line(targetx);
-					if (targetx.countCards("he", { type: type })) {
+					if (targetx.countCards("he", card => get.type2(card) == type)) {
 						await targetx
 							.chooseToGive(player, `交给${get.translation(player)}一张${get.translation(type)}牌`, "he", true, card => {
-								return get.type(card) == get.event().cardtype;
+								return get.type2(card) == get.event().cardtype;
 							})
 							.set("ai", card => 10 - get.value(card))
 							.set("cardtype", type);
@@ -18506,7 +18536,7 @@ const skills = {
 					const result = await player
 						.chooseButtonTarget({
 							createDialog: ["邀名：你可以消耗1点蓄力值并…", [list, "textbutton"]],
-							filterButto(button) {
+							filterButton(button) {
 								if (button.link === "discard") {
 									return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
 								}

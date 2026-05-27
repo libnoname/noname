@@ -14,14 +14,21 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 0.1,
-			},
+		ai: { basic: { equipValue: 0.1 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	gongqiao_trick: {
-		type: "trick",
+		type: "equip",
 		derivation: "yj_majun",
 		fullskin: true,
 		image: "image/card/majun_gongqiao.png",
@@ -33,14 +40,21 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 4,
-			},
+		ai: { basic: { equipValue: 4 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	gongqiao_basic: {
-		type: "basic",
+		type: "equip",
 		derivation: "yj_majun",
 		fullskin: true,
 		image: "image/card/majun_gongqiao.png",
@@ -52,10 +66,17 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 3,
-			},
+		ai: { basic: { equipValue: 3 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	lukai_spade: {

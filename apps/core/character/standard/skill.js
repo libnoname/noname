@@ -434,13 +434,21 @@ const skills = {
 	ganglie: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
-		filter(event, player) {
-			return event.source?.isIn();
-		},
 		check(event, player) {
+			if (!event.source?.isIn()) {
+				return Math.random() < 0.5;
+			}
 			return get.attitude(player, event.source) <= 0;
 		},
-		logTarget: "source",
+		prompt2(event, player) {
+			let str = "你可以判定";
+			if (event.source?.isIn()) {
+				str += `。若结果不为红桃，则${get.translation(event.source)}须弃置两张手牌，否则其受到来自你的1点伤害。`;
+			} else {
+				str += "。";
+			}
+			return str;
+		},
 		async content(event, trigger, player) {
 			const { source } = trigger;
 			const judgeEvent = player.judge(card => {
@@ -452,7 +460,7 @@ const skills = {
 			judgeEvent.judge2 = result => result.bool;
 			let result;
 			result = await judgeEvent.forResult();
-			if (!result?.bool) {
+			if (!result?.bool || !source?.isIn()) {
 				return;
 			}
 			result =
