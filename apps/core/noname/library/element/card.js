@@ -104,6 +104,10 @@ export class Card extends HTMLDivElement {
 	 */
 	isCard;
 	/**
+	 * @type { string | undefined }
+	 */
+	original;
+	/**
 	 * @type { string[] }
 	 * 卡牌“占用的装备栏”
 	 * TODO: 补充对应的typings
