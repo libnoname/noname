@@ -6563,10 +6563,10 @@ const skills = {
 						.chooseTarget(lib.filter.notMe, [1, max], true)
 						.set("prompt", `烈骧：选择${max > 1 ? "至多" : ""}${get.cnNumber(max)}名其他角色并对其造成1点伤害`)
 						.set("prompt2", prompt.slice(prompt.indexOf("若你的手牌数")))
-						.set("multitarget", true)
-						.set("targetprompt", target => {
+						.set("multitarget",true)
+						.set("targetprompt",target=>{
 							const num = ui.selected.targets.length;
-							return "第" + num + "个结算";
+							return "第"+(num)+"个结算";
 						})
 						.set("ai", target => {
 							const { player, numx, drawNum } = get.event(),
@@ -6649,7 +6649,7 @@ const skills = {
 						}
 					};
 					player.line(result.targets);
-					await game.doAsyncInOrder(result.targets, func, () => 0);
+					await game.doAsyncInOrder(result.targets, func,()=>0);
 				},
 			},
 			debuff: {
