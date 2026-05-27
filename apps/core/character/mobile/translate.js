@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_xiahoumao: "手杀夏侯楙",
+	mb_xiahoumao_prefix: "手杀",
+	mb_tongwei: "统围",
+	mb_tongwei_info: "出牌阶段限一次，你可重铸手牌中任意张基本牌。然后选择一项：1、令所有手牌中有同名牌的角色弃置一张基本牌；2、获得本回合因弃置进入弃牌堆的同名基本牌。背水：移除一个可“蹙国”牌名。",
+	mb_cuguo: "蹙国",
+	mb_cuguo_info: "锁定技，当你使用伤害牌指定目标后，弃置你与目标角色点数最大的手牌。若弃置了点数小于此牌的牌，此牌对所有目标额外结算一次。",
 	mb_shen_machao_prefix: "手杀|神",
 	mb_shen_machao: "手杀神马超",
 	yuli: "驭雳",
