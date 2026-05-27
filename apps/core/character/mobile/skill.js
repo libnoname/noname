@@ -2,6 +2,106 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 诸葛果
+	mb_qirang: {
+		audio: 2,
+		trigger: {
+			player: "equipEnd",
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const card = get.cardPile(card => get.type(card, "trick") === "trick");
+			if (card) {
+				const next = player.gain(card, "gain2");
+				next.gaintag.add("mb_qirang");
+				game.log(player, "获得了", card);
+			}
+		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
+						return [1, 3];
+					}
+				},
+			},
+			threaten: 1.3,
+		},
+		group: ["mb_qirang_use"],
+		subSkill: {
+			use: {
+				audio: "mb_qirang",
+				trigger: {
+					player: "useCard",
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					if (get.type(event.card, "trick") !== "trick") {
+						return false;
+					}
+					return player.hasHistory("lose", evt => {
+						if ((evt.relatedEvent || evt.getParent()) !== event) {
+							return false;
+						}
+						for (const i in evt.gaintag_map) {
+							if (evt.gaintag_map[i].includes("mb_qirang")) {
+								return true;
+							}
+						}
+						return false;
+					});
+				},
+				async content(event, trigger, player) {
+					trigger.nodistance = true;
+					await player.draw();
+					game.log(player, "发动了〖祈禳〗，摸了一张牌");
+				},
+			},
+		},
+	},
+	mb_yvhua: {
+		audio: 2,
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		forced: true,
+		locked: true,
+		filter(event, player) {
+			return player.countCards("h") > player.hp;
+		},
+		mod: {
+			ignoredHandcard(card, player) {
+				if (get.type(card) !== "basic") {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name === "phaseDiscard" && get.type(card) !== "basic") {
+					return false;
+				}
+			},
+		},
+		async content(event, trigger, player) {
+			const types = new Set();
+			const cards = player.getCards("h");
+			for (const card of cards) {
+				const type = get.type(card);
+				if (type === "delay") {
+					types.add("trick");
+				} else {
+					types.add(type);
+				}
+			}
+			const num = Math.min(5, types.size);
+			if (num > 0) {
+				await player.chooseToGuanxing(num);
+			}
+		},
+		ai: {
+			guanxing: true,
+		},
+	},
 	// 曹纯
 	mb_shanjia: {
 		audio: 2,
@@ -124,7 +224,7 @@ const skills = {
 				},
 			},
 		},
-	}
+	},
 	// 夏侯楙
 	mb_tongwei: {
 		audio: 2,
