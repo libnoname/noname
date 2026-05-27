@@ -26705,141 +26705,108 @@ const skills = {
 		},
 	},
 	reshanxi: {
-		audio: "shanxi",
-		trigger: { player: "phaseUseBegin" },
-		direct: true,
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
 		filter(event, player) {
-			return (
-				player.hp > 0 &&
-				player.countCards("h", function (card) {
-					if (_status.connectMode) {
-						return true;
+			return player.hasCards("h", card => get.type(card) === "basic");
+		},
+		filterTarget(card, player, target) {
+			return target !== player && target.hasCards("h");
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player
+				.chooseCard({
+					prompt: "闪袭：请弃置一张基本牌",
+					forced: true,
+					position: "h",
+					filterCard(card) {
+						return get.type(card) === "basic";
+					},
+					ai(card) {
+						return 5 - get.value(card);
+					},
+				})
+				.forResult();
+			if (result?.cards?.length) {
+				const discardCard = result.cards[0];
+				const discardColor = get.color(discardCard);
+				await player.discard(discardCard);
+				if (target.hasCards("h")) {
+					const result2 = await player
+						.choosePlayerCard({
+							target: target,
+							position: "h",
+							forced: true,
+							prompt: "闪袭：请选择弃置对方的一张手牌",
+						})
+						.forResult();
+					if (result2?.cards?.length) {
+						const targetCard = result2.cards[0];
+						const targetCardName = targetCard.name;
+						await target.discard(targetCard);
+						if (discardColor === "red") {
+							await player.gain(targetCard, "gain2");
+							game.log(player, "获得了", targetCard);
+						}
+						if (!player.storage.dchqxinshanxi) {
+							player.storage.dchqxinshanxi = [];
+						}
+						if (!player.storage.dchqxinshanxi.includes(targetCardName)) {
+							player.storage.dchqxinshanxi.push(targetCardName);
+							await target.damage();
+							game.log(player, "对", target, "造成了1点伤害");
+						}
 					}
-					return get.color(card) == "red" && get.type(card) == "basic";
-				}) > 0
-			);
-		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				filterCard(card) {
-					return get.color(card) == "red" && get.type(card) == "basic" && lib.filter.cardDiscardable.apply(this, arguments);
-				},
-				filterTarget(card, player, target) {
-					return player != target && target.countCards("he") > 0;
-				},
-				prompt: get.prompt("reshanxi"),
-				prompt2: "弃置一张红色基本牌并选择一名其他角色，将其的至多X张牌置于其武将牌上直到回合结束。（X为你的体力值）",
-				ai1() {
-					return -1;
-				},
-			});
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				player.logSkill("reshanxi", event.target);
-				player.discard(result.cards);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var max = Math.min(player.hp, target.countCards("he"));
-			if (max > 0 && target.isIn()) {
-				player
-					.choosePlayerCard("he", target, true, [1, max])
-					.set("forceAuto", true)
-					.set("prompt", "将" + get.translation(target) + "的至多" + get.cnNumber(max) + "张牌置于其武将牌上");
-			} else {
-				event.finish();
-			}
-			"step 3";
-			target.addSkill("reshanxi2");
-			target.addToExpansion(result.cards, "giveAuto", target).gaintag.add("reshanxi2");
-		},
-	},
-	reshanxi2: {
-		trigger: { global: "phaseEnd" },
-		forced: true,
-		popup: false,
-		charlotte: true,
-		sourceSkill: "reshanxi",
-		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
-			}
-		},
-		content() {
-			"step 0";
-			var cards = player.getExpansions("reshanxi2");
-			if (cards.length) {
-				player.gain(cards, "draw");
-			}
-			"step 1";
-			player.removeSkill("reshanxi2");
-		},
-		intro: {
-			markcount: "expansion",
-			mark(dialog, storage, player) {
-				var cards = player.getExpansions("reshanxi2");
-				if (player.isUnderControl(true)) {
-					dialog.addAuto(cards);
-				} else {
-					return "共有" + get.cnNumber(cards.length) + "张牌";
 				}
+			}
+		},
+		ai: {
+			order: 9,
+			result: {
+				target: -2,
 			},
 		},
 	},
 	reqizhou: {
-		trigger: { player: ["equipEnd", "loseEnd"] },
+		audio: 2,
+		trigger: {
+			player: "useCard",
+		},
 		forced: true,
-		popup: false,
-		derivation: ["reyingzi", "qixi", "rexuanfeng"],
 		filter(event, player) {
-			if (player.equiping) {
+			if (get.type(event.card) !== "equip") {
 				return false;
 			}
-			var suits = [];
-			var es = player.getCards("e");
-			for (var i = 0; i < es.length; i++) {
-				suits.add(get.suit(es[i]));
-			}
-			if (suits.length > 3) {
-				suits.length = 3;
-			}
-			if (player.additionalSkills.reqizhou) {
-				return player.additionalSkills.reqizhou.length != suits.length;
-			} else {
-				return suits.length > 0;
-			}
+			return true;
 		},
-		content() {
-			lib.skill.reqizhou.init(player, "reqizhou");
-		},
-		init(player, skill) {
-			var suits = [];
-			var es = player.getCards("e");
-			for (var i = 0; i < es.length; i++) {
-				suits.add(get.suit(es[i]));
+		derivation: ["yingzi", "jiang", "xinpojun", "dbchongjian", "fenwei"],
+		async content(event, trigger, player) {
+			if (!player.storage.dchqxinqizhou) {
+				player.storage.dchqxinqizhou = [];
 			}
-			if (suits.length > 3) {
-				suits.length = 3;
+			const cardName = trigger.card.name;
+			if (!player.storage.dchqxinqizhou.includes(cardName)) {
+				player.storage.dchqxinqizhou.push(cardName);
 			}
-			player.removeAdditionalSkill(skill);
-			switch (suits.length) {
-				case 1:
-					player.addAdditionalSkill(skill, ["reyingzi"]);
-					break;
-				case 2:
-					player.addAdditionalSkill(skill, ["reyingzi", "qixi"]);
-					break;
-				case 3:
-					player.addAdditionalSkill(skill, ["reyingzi", "qixi", "rexuanfeng"]);
-					break;
+			const count = player.storage.dchqxinqizhou.length;
+			const skillMap = {
+				1: "yingzi",
+				2: "jiang",
+				3: "xinpojun",
+				4: "dbchongjian",
+				5: "fenwei",
+			};
+			const skills = [];
+			for (let i = 1; i <= Math.min(count, 5); i++) {
+				skills.push(skillMap[i]);
 			}
-		},
-		ai: {
-			threaten: 1.2,
+			player.removeAdditionalSkill("dchqxinqizhou");
+			if (skills.length > 0) {
+				player.addAdditionalSkill("dchqxinqizhou", skills);
+				game.log(player, "已使用过", count, "种不同装备牌");
+			}
 		},
 	},
 	zhaohan: {
