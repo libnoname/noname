@@ -2,6 +2,326 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 族陆郁生
+	clan_shixi: {
+		audio: 2,
+		trigger: {
+			player: "useCard",
+		},
+		forced: true,
+		filterx(card, player) {
+			if (get.type(card, null, false) !== "trick") return false;
+			const info = get.info(card, player);
+			if (!info || info.notarget) return false;
+			if (info.selectTarget && info.selectTarget !== 1) return false;
+			return info.type === "trick";
+		},
+		filter(event, player) {
+			const card = event.card;
+			if (!card || get.type(card, null, false) !== "trick") return false;
+			if (get.is.virtualCard(card) || get.is.convertedCard(card)) return false;
+			const info = get.info(card, player);
+			if (!info || info.notarget) return false;
+			if (info.selectTarget && info.selectTarget !== 1) return false;
+			if (info.type !== "trick") return false;
+			const suit = get.suit(card);
+			if (suit === "none") return false;
+			const key = `${suit}+${get.type2(card)}`;
+			const storage = player.getStorage("clan_shixi") || {};
+			return !(key in storage);
+		},
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card);
+			const name = trigger.card.name;
+			const key = `${suit}+${get.type2(trigger.card)}`;
+			player.storage.clan_shixi ??= {};
+			player.storage.clan_shixi[key] = name;
+			player.markSkill("clan_shixi");
+			game.log(player, "记录了", "#y" + get.translation(name), "（" + get.translation(suit) + "）");
+		},
+		mark: true,
+		intro: {
+			markcount(storage) {
+				if (!storage) return 0;
+				return Object.keys(storage).length;
+			},
+			mark(dialog, storage) {
+				if (!storage || Object.keys(storage).length === 0) {
+					return "尚未记录任何牌";
+				}
+				const list = Object.entries(storage).map(([key, name]) => {
+					const suit = key.split("+")[0];
+					return `${get.translation(name)}（${get.translation(suit)}）`;
+				});
+				return "已记录：" + list.join("、");
+			},
+		},
+		group: "clan_shixi_use",
+		subSkill: {
+			use: {
+				audio: "clan_shixi",
+				enable: "phaseUse",
+				filter(event, player) {
+					if (event.respondTo) return false;
+					const storage = player.getStorage("clan_shixi") || {};
+					for (const [key, name] of Object.entries(storage)) {
+						const suit = key.split("+")[0];
+						if (!player.hasCard(card => get.suit(card) === suit, "he")) continue;
+						const card = get.autoViewAs({ name, isCard: true });
+						if (!lib.skill.clan_shixi.filterx(card, player)) continue;
+						return true;
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					const list = [];
+					const storage = player.getStorage("clan_shixi") || {};
+					for (const [key, name] of Object.entries(storage)) {
+						const suit = key.split("+")[0];
+						const suitCards = player.getCards("he", card => get.suit(card) === suit);
+						if (suitCards.length > 0) {
+							list.push(get.translation(suit) + "：" + get.translation(name));
+						}
+					}
+					if (list.length === 0) {
+						return;
+					}
+					list.push("cancel2");
+					const result = await player
+						.chooseControl(list)
+						.set("prompt", "拾昔：选择要使用的锦囊")
+						.set("ai", () => {
+							const player = get.player();
+							let best = "cancel2";
+							let maxVal = 0;
+							const storage = player.getStorage("clan_shixi") || {};
+							for (const [key, name] of Object.entries(storage)) {
+								const suit = key.split("+")[0];
+								const suitCards = player.getCards("he", card => get.suit(card) === suit);
+								if (suitCards.length === 0) continue;
+								const val = player.getUseValue({ name, isCard: true });
+								if (val > maxVal) {
+									maxVal = val;
+									best = get.translation(suit) + "：" + get.translation(name);
+								}
+							}
+							return best;
+						})
+						.forResult();
+					if (result.control === "cancel2") {
+						return;
+					}
+					const choiceText = result.control;
+					let cardName = "";
+					let suit = "";
+					for (const [key, name] of Object.entries(storage)) {
+						const currentSuit = key.split("+")[0];
+						if (get.translation(currentSuit) + "：" + get.translation(name) === choiceText) {
+							cardName = name;
+							suit = currentSuit;
+							break;
+						}
+					}
+					if (!cardName || !suit) {
+						return;
+					}
+					const suitCards = player.getCards("hes", card => get.suit(card) === suit);
+					if (suitCards.length === 0) {
+						return;
+					}
+					player.logSkill("clan_shixi");
+					game.log(player, "弃置了", suitCards.length, "张", get.translation(suit), "牌");
+					await player.discard(suitCards);
+					const vCard = new lib.element.VCard({
+						name: cardName,
+						cards: suitCards,
+					});
+					await player.chooseUseTarget(vCard, true, false);
+				},
+			},
+		},
+		hiddenCard(player, name) {
+			const storage = player.getStorage("clan_shixi") || {};
+			for (const [key, cardName] of Object.entries(storage)) {
+				if (cardName === name) {
+					const suit = key.split("+")[0];
+					if (player.hasCard(card => get.suit(card, player) === suit, "he")) {
+						const card = get.autoViewAs({ name, isCard: true });
+						if (lib.skill.clan_shixi.filterx(card, player)) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		},
+		ai: {
+			order: 7,
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+	},
+	clan_jianbai: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+		},
+		forced: true,
+		locked: true,
+		filter(event, player) {
+			if (!event.cards || !event.cards.some(card => card === "h" || card.original === "h")) return false;
+			const type = get.type(event.card);
+			if (!player.storage.clan_jianbai) {
+				player.storage.clan_jianbai = {
+					types: [],
+				};
+			}
+			return !player.storage.clan_jianbai.types.includes(type);
+		},
+		async content(event, trigger, player) {
+			const type = get.type(trigger.card);
+			player.storage.clan_jianbai ??= { types: [] };
+			player.storage.clan_jianbai.types.push(type);
+			player.addTempSkill("clan_jianbai_clear", "roundStart");
+			const heCards = player.getCards("he");
+			const heSuits = [...new Set(heCards.map(card => get.suit(card)))].filter(suit => suit !== "none");
+			if (heSuits.length === 0) {
+				return;
+			}
+			let keepSuit;
+			if (heSuits.length === 1) {
+				keepSuit = heSuits[0];
+				game.log(player, "仅有一种花色，自动保留", get.translation(keepSuit), "花色");
+				return;
+			} else {
+				const result = await player
+					.chooseControl(heSuits)
+					.set("prompt", "坚白：请选择要保留的花色")
+					.set("ai", () => {
+						const player = get.player();
+						let max = -1;
+						let best = heSuits[0];
+						for (const suit of heSuits) {
+							const cards = player.getCards("he", card => get.suit(card) === suit);
+							let value = cards.reduce((sum, card) => sum + get.value(card), 0);
+							if (value > max) {
+								max = value;
+								best = suit;
+							}
+						}
+						return best;
+					})
+					.forResult();
+				keepSuit = result.control;
+				game.log(player, "选择了保留", get.translation(keepSuit), "花色");
+			}
+			const keepCards = player.getCards("he", card => get.suit(card) === keepSuit);
+			for (const card of keepCards) {
+				const skill = "clan_jianbai_mark";
+				let tag = card.gaintag?.find(t => t.startsWith(skill));
+				if (tag) {
+					player.removeGaintag(tag, [card]);
+					tag = skill + (parseInt(tag.slice(skill.length)) + 1);
+				} else {
+					tag = skill + "1";
+				}
+				game.addTempTag(tag, `坚白${tag.slice(skill.length)}`);
+				player.addGaintag([card], tag);
+			}
+			const discardCards = player.getCards("he", card => get.suit(card) !== keepSuit);
+			if (discardCards.length > 0) {
+				await player.recast(discardCards);
+				game.log(player, "重铸了", discardCards.length, "张牌");
+			}
+		},
+		subSkill: {
+			clear: {
+				audio: "clan_jianbai",
+				charlotte: true,
+				onremove(player, skill) {
+					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clan_jianbai_mark")));
+					if (tags.length) {
+						const tagList = tags
+							.slice()
+							.map(card => card.gaintag.find(t => t.startsWith("clan_jianbai_mark")))
+							.unique();
+						tagList.forEach(tag => player.removeGaintag(tag));
+					}
+					delete player.storage.clan_jianbai;
+				},
+				trigger: {
+					global: "phaseEnd",
+				},
+				forced: true,
+				filter(event, player) {
+					return player.storage.clan_jianbai?.types?.length > 0;
+				},
+				async content(event, trigger, player) {
+					if (player.hasCards("he")) {
+						const result = await player
+							.chooseCardTarget({
+								prompt: "坚白：交给一名其他角色一张牌",
+								position: "he",
+								selectCard: 1,
+								filterTarget: lib.filter.notMe,
+								forced: true,
+								ai1(card) {
+									let tag = card.gaintag?.find(t => t.startsWith("clan_jianbai_mark"));
+									let count = 0;
+									if (tag) {
+										count = parseInt(tag.slice("clan_jianbai_mark".length)) || 0;
+									}
+									return 5 - get.value(card) + count * 10;
+								},
+								ai2(target) {
+									return get.attitude(get.player(), target);
+								},
+							})
+							.forResult();
+						if (result.bool && result?.cards?.length && result?.targets?.length) {
+							const {
+								targets: [target],
+								cards,
+							} = result;
+							const giveCard = cards[0];
+							let count = 0;
+							const tag = giveCard.gaintag?.find(t => t.startsWith("clan_jianbai_mark"));
+							if (tag) {
+								count = parseInt(tag.slice("clan_jianbai_mark".length)) || 0;
+							}
+							player.line(target);
+							await player.give(cards, target);
+							if (count > 0) {
+								await player.draw(count);
+								game.log(player, "摸了", count, "张牌");
+							}
+						}
+					}
+					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clan_jianbai_mark")));
+					if (tags.length) {
+						const tagList = tags
+							.slice()
+							.map(card => card.gaintag.find(t => t.startsWith("clan_jianbai_mark")))
+							.unique();
+						tagList.forEach(tag => player.removeGaintag(tag));
+					}
+					delete player.storage.clan_jianbai;
+				},
+			},
+		},
+		ai: {
+			combo: "clan_shixi",
+		},
+	},
+	clan_zelie: {
+		// ???
+	},
 	//族荀莳（族荀肘）
 	clanqingjue: {
 		isOnlySuit(card, player) {

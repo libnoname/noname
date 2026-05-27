@@ -1,4 +1,10 @@
 const characters = {
+	clan_luyusheng: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["clan_shixi", "clan_jianbai", "clan_zelie"],
+	},
 	clan_xunshi: {
 		sex: "female",
 		group: "wei",
