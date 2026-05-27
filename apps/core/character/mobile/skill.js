@@ -1720,6 +1720,7 @@ const skills = {
 		group: ["mbhengwei_show"],
 		subSkill: {
 			show: {
+				audio: "mbhengwei",
 				forced: true,
 				trigger: {
 					global: ["showCardsAfter"],
@@ -1800,7 +1801,7 @@ const skills = {
 		},
 	},
 	mbjuezhi: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.getStorage("mbjuezhi_used").length < 2;
@@ -1823,6 +1824,10 @@ const skills = {
 				return {
 					audio: "mbjuezhi",
 					choice: links[0],
+					logAudio: (event, player) => {
+						const control = get.info("mbjuezhi_backup")?.choice;
+						return control == "damage" ? ["mbjuezhi3.mp3", "mbjuezhi4.mp3"] : 2;
+					},
 					async content(event, trigger, player) {
 						const { choice } = get.info(event.name);
 						player.addTempSkill("mbjuezhi_used", "phaseChange");
@@ -2788,6 +2793,7 @@ const skills = {
 		group: "hefeizherui_damage",
 		subSkill: {
 			damage: {
+				audio: "hefeizherui",
 				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"] },
 				getIndex(event, player) {
 					let list = [];

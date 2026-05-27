@@ -141,6 +141,7 @@ const skills = {
 		group: ["olchenshi_useCard"],
 		subSkill: {
 			useCard: {
+				audio: "olchenshi",
 				forced: true,
 				trigger: {
 					player: ["useCard2"],
@@ -3121,6 +3122,7 @@ const skills = {
 		group: "olquanyu_effect",
 		subSkill: {
 			effect: {
+				audio: "olquanyu",
 				trigger: { player: "useCardToPlayer" },
 				filter(event, player) {
 					if (event.card.name != "sha" || event.targets?.length != 1) {
@@ -3277,6 +3279,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "olqiangang",
 				charlotte: true,
 				trigger: { player: "useCard" },
 				filter(event, player) {

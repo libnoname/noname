@@ -7137,6 +7137,7 @@ const skills = {
 		},
 		subSkill: {
 			sha: {
+				audio: "dcsbwankang",
 				trigger: {
 					global: "phaseEnd",
 				},
@@ -7643,6 +7644,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcsbshibian",
 				charlotte: true,
 				onremove(player, skill) {
 					player.removeTip(skill);
@@ -8932,6 +8934,7 @@ const skills = {
 				onremove: true,
 			},
 			effect: {
+				audio: "dcdulu",
 				charlotte: true,
 				onremove: true,
 				intro: {
@@ -8994,6 +8997,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcfuji",
 				charlotte: true,
 				onremove: true,
 				trigger: { target: "useCardToTargeted" },

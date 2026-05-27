@@ -37400,6 +37400,7 @@ const skills = {
 		},
 	},
 	zhuiji: {
+		audio: 2,
 		mod: {
 			globalFrom(from, to) {
 				if (from.hp >= to.hp) {

@@ -1076,7 +1076,7 @@ const skills = {
 				equipSkill: true,
 				forced: true,
 				priority: 6,
-				audio: "tengjia",
+				audio: "tenggu",
 				logAudio(event) {
 					return `tengjia${event.name == "damage" ? 2 : 1}.mp3`;
 				},

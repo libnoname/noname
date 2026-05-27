@@ -18006,6 +18006,7 @@ const skills = {
 	},
 	rexingshang: {
 		audio: 2,
+		audioname: ["v_caopi"],
 		audioname2: { caoying: "lingren_xingshang" },
 		trigger: { global: "die" },
 		filter(event, player) {
