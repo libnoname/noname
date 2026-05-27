@@ -2,6 +2,129 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 曹纯
+	mb_shanjia: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		init(player) {
+			player.addSkill("mb_shanjia_count");
+		},
+		onremove(player) {
+			player.removeSkill("mb_shanjia_count");
+		},
+		mod: {
+			aiValue(player, card, num) {
+				if ((player.storage.mb_shanjia ?? 0) < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
+					return num / player.hp;
+				}
+			},
+		},
+		intro: {
+			content: "已从装备区失去过#张装备牌",
+		},
+		sync(player) {
+			const history = player.actionHistory;
+			let num = 0;
+			for (let i = 0; i < history.length; i++) {
+				for (let j = 0; j < history[i].lose.length; j++) {
+					const loseEvent = history[i].lose[j];
+					const es = loseEvent.es;
+					if (es?.length) {
+						num += es.filter(card => get.type(card) === "equip").length;
+					}
+				}
+			}
+			player.storage.mb_shanjia = num;
+			if (num > 0) {
+				player.markSkill("mb_shanjia");
+			}
+		},
+		async content(event, trigger, player) {
+			await player.draw(3);
+			lib.skill.mb_shanjia.sync(player);
+			const num = 3 - (player.storage.mb_shanjia ?? 0);
+			let result;
+			if (num > 0) {
+				result = await player
+					.chooseToDiscard({
+						position: "he",
+						forced: true,
+						selectCard: num,
+						ai: card => -get.value(card),
+					})
+					.forResult();
+			}
+			lib.skill.mb_shanjia.sync(player);
+			let bool1 = true;
+			let bool2 = true;
+			if (result?.cards?.length) {
+				const cards = result.cards;
+				for (const card of cards) {
+					const type = get.type(card, "trick", card.original === "h" ? player : false);
+					if (type === "basic") {
+						bool1 = false;
+					}
+					if (type === "trick") {
+						bool2 = false;
+					}
+				}
+			}
+			if (bool2) {
+				player.addTempSkill("mb_shanjia_nodis", "phaseChange");
+			}
+			if (bool1) {
+				player.addTempSkill("mb_shanjia_sha", "phaseChange");
+				await player.chooseUseTarget({ name: "sha", isCard: true, addCount: false, nodistance: true }, "缮甲：是否视为使用一张【杀】？", false);
+			}
+		},
+		ai: {
+			order: 10,
+			result: {
+				player(player) {
+					const lostEquip = player.storage.mb_shanjia ?? 0;
+					const discardNum = 3 - lostEquip;
+					if (discardNum <= 0) {
+						return 3;
+					}
+					const cards = player.getCards("he");
+					if (cards.length >= discardNum) {
+						return 2;
+					}
+					return 0;
+				},
+			},
+			threaten: 3,
+			noe: true,
+		},
+		subSkill: {
+			count: {
+				forced: true,
+				silent: true,
+				popup: false,
+				trigger: {
+					player: "loseEnd",
+				},
+				filter(event, player) {
+					const es = event.es;
+					return es?.some(card => get.type(card) === "equip");
+				},
+				async content(event, trigger, player) {
+					lib.skill.mb_shanjia.sync(player);
+				},
+			},
+			nodis: {
+				mark: true,
+				charlotte: true,
+				intro: {
+					content: "使用牌无距离限制",
+				},
+				mod: {
+					targetInRange: () => true,
+				},
+			},
+		},
+	}
 	// 夏侯楙
 	mb_tongwei: {
 		audio: 2,

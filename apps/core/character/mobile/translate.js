@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_caochun: "手杀曹纯",
+	mb_caochun_prefix: "手杀",
+	mb_shanjia: "缮甲",
+	mb_shanjia_info: "出牌阶段限一次，你可以摸三张牌，然后弃置X张牌（X为3-你本局失去过的装备区里的牌数）。若你未因此弃置：基本牌，你可视为使用一张不计入次数且无次数限制的普通【杀】；锦囊牌，你本回合使用牌无距离限制。",
 	mb_xiahoumao: "手杀夏侯楙",
 	mb_xiahoumao_prefix: "手杀",
 	mb_tongwei: "统围",
