@@ -5884,21 +5884,18 @@ const skills = {
 				return Math.sqrt(eff / 1.5) * att;
 			}
 		},
-		content() {
-			"step 0";
-			event.list1 = [];
-			event.list2 = [];
-			event.used = [];
-			player.getHistory("useCard", function (evt) {
-				event.used.add(evt.card.name);
-			});
-			for (let name of lib.inpile) {
-				let add = false,
-					type = get.type(name);
+		async content(event, trigger, player) {
+			const list1 = [];
+			const list2 = [];
+			const used = player.iterHistory("useCard").map(evt => evt.card.name).toArray();
+			for (const name of lib.inpile) {
+				let add = false;
+				const type = get.type(name);
 				if (name === "sha") {
 					add = true;
-				} else if (type === "trick") {
-					let info = lib.card[name];
+				}
+				if (!add && type === "trick") {
+					const info = lib.card[name];
 					if (info && !info.singleCard && !info.notarget) {
 						add = true;
 					}
@@ -5906,18 +5903,20 @@ const skills = {
 				if (!add) {
 					continue;
 				}
-				if (event.used.includes(name)) {
-					event.list1.push(name);
+				if (used.includes(name)) {
+					list1.push(name);
 				} else {
-					event.list2.push(name);
+					list2.push(name);
 				}
 			}
-			if (!event.list1.length && !event.list2.length) {
-				event.finish();
-			} else {
-				player
-					.chooseTarget(get.prompt2("sangu"), lib.filter.notMe)
-					.set("ai", function (target) {
+			if (!list1.length && !list2.length) {
+				return;
+			}
+			const targetResult = await player
+				.chooseTarget({
+					prompt: get.prompt2("sangu"),
+					filterTarget: lib.filter.notMe,
+					ai(target) {
 						return lib.skill.sangu.getEffect(
 							_status.event.player,
 							target,
@@ -5925,56 +5924,58 @@ const skills = {
 							_status.event.list1,
 							_status.event.list2
 						);
-					})
-					.set("list1", event.list1)
-					.set("list2", event.list2);
+					}
+				})
+				.set("list1", list1)
+				.set("list2", list2)
+				.forResult();
+			if (!targetResult.bool || !targetResult.targets?.length) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sangu", target);
-				event.target = target;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var dialog = ["为" + get.translation(target) + "选择至多三个牌名"];
-			if (event.list1.length) {
+			const target = targetResult.targets[0];
+			player.logSkill("sangu", target);
+			event.target = target;
+			/** @type { any[] } */
+			const dialog = [`为${get.translation(target)}选择至多三个牌名`];
+			if (list1.length) {
 				dialog.push('<div class="text center">本回合已使用过的牌</div>');
-				dialog.push([event.list1.map(i => [get.type(i), "", i]), "vcard"]);
+				dialog.push([list1.map(i => [get.type(i), "", i]), "vcard"]);
 			}
-			if (event.list2.length) {
+			if (list2.length) {
 				dialog.push('<div class="text center">本回合未使用过的牌</div>');
-				dialog.push([event.list2.map(i => [get.type(i), "", i]), "vcard"]);
+				dialog.push([list2.map(i => [get.type(i), "", i]), "vcard"]);
 			}
-			player
-				.chooseButton(dialog, true, [1, 3])
-				.set("ai", function (button) {
-					let name = button.link[2],
-						list = _status.event.list,
-						player = _status.event.player,
-						target = _status.event.getParent().target,
-						trigger = _status.event.getTrigger(),
-						getv = (name, player) => {
-							let v = trigger.getTempCache("sangu", player.playerid + name);
+			const buttonResult = await player
+				.chooseButton({
+					createDialog: dialog,
+					selectButton: [1, 3],
+					forced: true,
+					ai(button) {
+						const name = button.link[2];
+						const list = _status.event.list;
+						const player = _status.event.player;
+						const target = _status.event.getParent()?.target;
+						const triggerEvent = _status.event.getTrigger();
+						const getv = (name, player) => {
+							let v = triggerEvent.getTempCache("sangu", `${player.playerid}${name}`);
 							if (typeof v === "number") {
 								return v;
 							}
 							v = player.getUseValue({ name: name, storage: { sangu: true } });
-							trigger.putTempCache("sangu", player.playerid + name, v);
+							triggerEvent.putTempCache("sangu", `${player.playerid}${name}`, v);
 							return v;
 						};
-					if (get.attitude(player, target) < 0) {
-						if (!list.includes(name)) {
-							return 0;
+						if (get.attitude(player, target) < 0) {
+							if (!list.includes(name)) {
+								return 0;
+							}
+							return -getv(name, target);
 						}
-						return -getv(name, target);
-					} else {
 						if (player.hp < 2 && !list.includes(name)) {
 							return 0;
 						}
-						let val = getv(name, target),
-							base = 5;
+						let val = getv(name, target);
+						const base = 5;
 						val = Math.min(15, val - base);
 						if (name === "wuzhong" || name === "dongzhuxianji") {
 							val += 15;
@@ -5984,28 +5985,23 @@ const skills = {
 						return val;
 					}
 				})
-				.set("list", event.list1);
-			"step 3";
-			if (result.bool) {
-				var names = result.links.map(i => i[2]);
-				if (!target.storage.sangu_effect) {
-					target.storage.sangu_effect = [];
-				}
-				target.storage.sangu_effect = target.storage.sangu_effect.concat(names);
-				game.log(player, "为", target, "选择了", "#y" + get.translation(names));
-				target.addTempSkill("sangu_effect", { player: "phaseUseAfter" });
-				target.markSkill("sangu_effect");
-				var bool = true;
-				for (var i of names) {
-					if (!event.used.includes(i)) {
-						bool = false;
-						break;
-					}
-				}
-				if (bool) {
-					target.addTempSkill("sangu_prevent", { player: "phaseUseAfter" });
-					target.markAuto("sangu_prevent", [player]);
-				}
+				.set("list", list1)
+				.forResult();
+			if (!buttonResult.bool || !buttonResult.links?.length) {
+				return;
+			}
+			const names = buttonResult.links.map(i => i[2]);
+			if (!target.storage.sangu_effect) {
+				target.storage.sangu_effect = [];
+			}
+			target.storage.sangu_effect = target.storage.sangu_effect.concat(names);
+			game.log(player, "为", target, "选择了", `#y${get.translation(names)}`);
+			target.addTempSkill("sangu_effect", { player: "phaseUseAfter" });
+			target.markSkill("sangu_effect");
+			const allUsed = names.every(name => used.includes(name));
+			if (allUsed) {
+				target.addTempSkill("sangu_prevent", { player: "phaseUseAfter" });
+				target.markAuto("sangu_prevent", [player]);
 			}
 		},
 		ai: {
@@ -6023,7 +6019,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("sangu_viewas");
 				},
 				onremove: true,
@@ -6073,7 +6069,7 @@ const skills = {
 				filter(event, player) {
 					return event.cards.length > 0 && player.getStorage("sangu_effect").length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!trigger.card.storage) {
 						trigger.card.storage = {};
 					}
@@ -6089,7 +6085,7 @@ const skills = {
 				filter(event, player) {
 					return event.card && event.card.storage && event.card.storage.sangu && player.getStorage("sangu_prevent").includes(event.player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 			},
