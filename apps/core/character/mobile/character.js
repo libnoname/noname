@@ -4,6 +4,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["mbqirang", "mbyvhua"],
+		names: "诸葛|果",
 	},
 	mb_caochun: {
 		sex: "male",
@@ -16,6 +17,7 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["mbtongwei", "mbcuguo"],
+		names: "夏侯|楙",
 	},
 	mb_shen_machao: {
 		sex: "male",
