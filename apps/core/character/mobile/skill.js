@@ -220,174 +220,156 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.hasCards("h", card => get.type(card) === "basic");
+			return player.hasCards("h", card => get.info("mbtongwei").filterCard(card, player));
 		},
+		filterCard(card, player) {
+			return get.type(card) == "basic" && player.canRecast(card);
+		},
+		selectCard: [1, Infinity],
+		position: "h",
+		check(card) {
+			return 6.5 - get.value(card);
+		},
+		discard: false,
+		lose: false,
+		delay: false,
+		allowChooseAll: true,
 		async content(event, trigger, player) {
-			const result = await player
-				.chooseCard({
-					prompt: "统围：请选择要重铸的基本牌",
-					filterCard(card) {
-						return get.type(card) === "basic";
-					},
-					position: "h",
-					selectCard: [1, Infinity],
-				})
-				.set("ai", card => 6 - get.value(card))
-				.forResult();
-			if (!result.bool || !result.cards?.length) {
-				return;
-			}
-			const cards = result.cards;
-			const cardNames = [...new Set(cards.map(c => c.name))];
+			const cards = event.cards;
 			await player.recast(cards);
-			game.log(player, "重铸了", cards.length, "张基本牌");
-			player.storage.mbtongwei_cardNames = cardNames;
+			const cardNames = [...new Set(cards.map(card => card.name))];
+			const nameStr = cardNames.map(name => "【" + get.translation(name) + "】").join("、");
 			const list = [];
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name != "lose" || evt.type != "discard") {
+					return false;
+				}
+				for (const card of evt.cards) {
+					if (get.type(card) === "basic" && cardNames.includes(card.name) && get.position(card, true) == "d") {
+						list.push(card);
+					}
+				}
+			});
+			const choices = [];
+			const choiceList = [`令所有手牌中有${nameStr}的角色各弃置一张基本牌`, `获得${list.length > 0 ? get.translation(list) : "空气"}`, "背水！移除一个可触发【蹙国】的牌名"];
 			const targets = game.filterPlayer(current => current.hasCards("h", card => cardNames.includes(card.name)));
-			const canOption1 = targets.length > 0;
-			if (canOption1) {
-				list.push("选项一");
+			const bool1 = targets.length > 0;
+			if (bool1) {
+				choices.push("选项一");
+			} else {
+				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
 			}
-			const canOption2 = [...ui.discardPile.childNodes].some(card => cardNames.includes(card.name) && get.type(card) === "basic");
-			if (canOption2) {
-				list.push("选项二");
+			const bool2 = list.length > 0;
+			if (bool2) {
+				choices.push("选项二");
+			} else {
+				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
-			list.push("背水！");
-			list.push("cancel2");
-			const nameStr = cardNames.map(n => "【" + get.translation(n) + "】").join("、");
+			choices.push("背水！");
 			const { control } = await player
-				.chooseControl(list)
-				.set("choiceList", [`令所有手牌中有${nameStr}的角色各弃置一张基本牌`, `获得弃牌堆中所有${nameStr}`, "背水！移除一个可触发“蹙国”的牌名"])
+				.chooseControl(choices)
+				.set("choiceList", choiceList)
 				.set("prompt", "统围：请选择一项")
 				.set("ai", () => {
-					if (list.includes("背水！")) return "背水！";
-					if (list.includes("选项一")) return "选项一";
-					if (list.includes("选项二")) return "选项二";
-					return "cancel2";
+					const controls = get.event().controls.slice();
+					if (["背水！", "选项一", "选项二"].every(choice => controls.includes(choice))) return "背水！";
+					if (controls.includes("选项一")) return "选项一";
+					if (controls.includes("选项二")) return "选项二";
+					return controls.randomGet();
 				})
 				.forResult();
-			if (!control || control === "cancel2") {
+			if (!control) {
 				return;
 			}
-			player.logSkill("mbtongwei");
 			if (control === "背水！") {
-				const skipNames = player.storage.mbtongwei || [];
-				const availableCards = lib.inpile.filter(card => {
-					if (skipNames.includes(card)) return false;
-					const type2 = get.type2(card);
-					return type2 === "basic" || type2 === "trick";
+				const skipNames = player.getStorage("mbtongwei");
+				const vcards = get.inpileVCardList(info => {
+					if (skipNames.includes(info[2]) || info[3]) {
+						return false;
+					}
+					return get.is.damageCard({ name: info[2] });
 				});
-				if (availableCards.length > 0) {
-					const nameList = availableCards.map(name => [get.type2(name) || "基本", "", name]);
-					nameList.push(["取消", "", "cancel2"]);
-					const addResult = await player
+				if (vcards.length > 0) {
+					const result = await player
 						.chooseButton({
-							createDialog: [`统围·背水：选择要移除的牌名`, [nameList, "vcard"]],
+							createDialog: [`统围·背水：选择要移除的牌名`, [vcards, "vcard"]],
+							forced: true,
 							ai() {
 								return Math.random();
 							},
 						})
 						.forResult();
-					if (addResult.bool) {
-						const addName = addResult.links?.[0]?.[2];
-						if (addName && addName !== "cancel2") {
-							player.storage.mbtongwei ??= [];
-							if (!player.storage.mbtongwei.includes(addName)) {
-								player.storage.mbtongwei.push(addName);
-							}
-							player.markSkill("mbtongwei");
-							game.log(player, "移除了牌名", "#y" + get.translation(addName), "");
-						}
+					if (result?.bool) {
+						const name = result.links[0][2];
+						player.markAuto("mbtongwei", [name]);
+						game.log(player, "移除了牌名", "#y" + get.translation(name));
 					}
 				}
 			}
-			if (["选项一", "背水！"].includes(control) && canOption1) {
-				for (const target of targets) {
-					await target
-						.chooseToDiscard({
-							prompt: `统围：请弃置一张基本牌`,
-							position: "h",
-							forced: true,
-							filterCard(card) {
-								return get.type(card) === "basic";
-							},
-							ai(card) {
-								return -get.value(card);
-							},
-						})
-						.forResult();
+			if (["选项一", "背水！"].includes(control) && bool1) {
+				for (const target of targets.sortBySeat()) {
+					await target.chooseToDiscard({
+						prompt: `统围：请弃置一张基本牌`,
+						position: "h",
+						forced: true,
+						filterCard(card) {
+							return get.type(card) === "basic";
+						},
+						ai(card) {
+							return -get.value(card);
+						},
+					});
 				}
 			}
-			if (["选项二", "背水！"].includes(control) && canOption2) {
-				const gainCards = [...ui.discardPile.childNodes].filter(card => cardNames.includes(card.name) && get.type(card) === "basic");
+			if (["选项二", "背水！"].includes(control) && list.someInD("d")) {
+				const gainCards = list.filterInD("d");
 				if (gainCards.length > 0) {
 					await player.gain(gainCards, "gain2");
-					game.log(player, "获得了", gainCards.length, "张基本牌");
 				}
 			}
 		},
-		mark: true,
-		intro: {
-			content(storage) {
-				if (!storage?.length) {
-					return "尚未移除牌名";
-				}
-				return `已移除牌名：${storage.map(name => get.translation(name)).join("、")}`;
-			},
-		},
-		subSkill: {
-			remove: {
-				trigger: { player: "phaseUseBegin" },
-				charlotte: true,
-				silent: true,
-				async content(event, trigger, player) {
-					delete player.storage.mbtongwei_cardNames;
-				},
-			},
+		intro: { content: "已移除牌名：$" },
+		oneremove: true,
+		derivation: "mbcuguo",
+		ai: {
+			order: 7,
+			result: { player: 1 },
 		},
 	},
 	mbcuguo: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayered",
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			if (!get.is.damageCard(event.card) || !event.isFirstTarget) return false;
+			return !player.getStorage("mbtongwei").includes(event.card.name);
 		},
 		forced: true,
-		locked: true,
-		filter(event, player) {
-			if (!event.card || !get.tag(event.card, "damage")) return false;
-			if (!event.targets?.length) return false;
-			return true;
-		},
+		logTarget: "target",
 		async content(event, trigger, player) {
 			const card = trigger.card;
-			const targets = trigger.targets;
-			player.logSkill("mbcuguo");
-			const skipNames = player.storage.mbtongwei || [];
+			const cardNumber = get.number(card);
+			const targets = event.targets;
 			const allTargets = [player, ...targets];
 			const discardMap = new Map();
 			for (const target of allTargets) {
-				const handCards = target.getCards("h");
-				const availableCards = handCards.filter(c => !skipNames.includes(c.name));
-				if (availableCards.length > 0) {
-					const maxNum = Math.max(...availableCards.map(c => c.number));
-					const maxCards = availableCards.filter(c => c.number === maxNum);
+				const hs = target.getCards("h");
+				if (hs.length > 0) {
+					const maxNum = Math.max(...hs.map(card => get.number(card)));
+					const maxCards = hs.filter(card => get.number(card) === maxNum);
 					discardMap.set(target, maxCards);
 				}
 			}
 			if (discardMap.size === 0) {
 				return;
 			}
-			const cardNumber = card.number || 0;
-			let hasSmallerCard = false;
+			let bool = false;
 			for (const [target, cards] of discardMap) {
-				await target.discard(cards);
-				for (const c of cards) {
-					if (c.number < cardNumber) {
-						hasSmallerCard = true;
-					}
+				const result = await target.modedDiscard(cards).forResult();
+				if (typeof cardNumber == "number" && result?.cards?.some(card => get.number(card) < cardNumber)) {
+					bool = true;
 				}
 			}
-			if (hasSmallerCard) {
+			if (bool) {
 				trigger.getParent().effectCount++;
 			}
 		},
