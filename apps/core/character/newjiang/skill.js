@@ -7309,54 +7309,49 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		// filterTarget:lib.filter.notMe,
-		content() {
-			"step 0";
-			player.damage("nosource");
-			"step 1";
-			if (game.countPlayer() < 2) {
-				event.finish();
+		async content(event, trigger, player) {
+			await player.damage("nosource");
+
+			const players = game.filterPlayer(current => current !== player);
+			if (players.length < 1) {
+				return;
 			}
-			if (game.countPlayer() == 2) {
-				event._result = {
-					bool: true,
-					targets: [game.findPlayer(i => i != player), player],
-				};
-			} else {
-				player
-					.chooseTarget(
-						`慧夭：请选择两名角色`,
-						`令不为你的第一名角色视为对第二名角色造成过1点伤害。`,
-						(card, player, target) => {
-							if (!ui.selected.targets.length) {
-								return player != target;
-							}
-							return true;
-						},
-						2,
-						true
-					)
-					.set("multitarget", true)
-					.set("targetprompt", ["伤害来源", "受伤角色"])
-					.set("ai", target => {
-						return target == get.event().aiTargets[ui.selected.targets.length] ? 10 : 0;
-					})
-					.set(
-						"aiTargets",
-						lib.skill.mbhuiyao.getUnrealDamageTargets(player, [game.filterPlayer(i => i != player), game.filterPlayer()], true)
-					);
+			const result =
+				players.length === 1
+					? { bool: true, targets: [players[0], player] }
+					: await player
+							.chooseTarget({
+								prompt: `慧夭：请选择两名角色`,
+								prompt2: `令不为你的第一名角色视为对第二名角色造成过1点伤害。`,
+								filterTarget(card, player, target) {
+									return ui.selected.targets.length > 0 || player !== target;
+								},
+								selectTarget: 2,
+								forced: true,
+								ai(target) {
+									return target === get.event().aiTargets[ui.selected.targets.length] ? 10 : 0;
+								},
+							})
+							.set("multitarget", true)
+							.set("targetprompt", ["伤害来源", "受伤角色"])
+							.set("aiTargets", lib.skill.mbhuiyao.getUnrealDamageTargets(player, [players, [...players, player]], true))
+							.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var targets = result.targets;
-				player.line2(targets, "green");
-				game.delaye();
-				targets[1].damage(targets[0], "unreal");
-			}
+			const targets = result.targets;
+			player.line2(targets, "green");
+			await game.delaye();
+			await targets[1].damage({
+				source: targets[0],
+				unreal: true,
+			});
 		},
-		getUnrealDamageTargets: (player, lists, forced) => {
+		getUnrealDamageTargets(player, lists, forced) {
 			const targets = [null, null];
-			let sourceList, targetList;
-			if (lists.length == 2 && lists.every(l => Array.isArray(l))) {
+			let sourceList;
+			let targetList;
+			if (lists.length === 2 && lists.every(l => Array.isArray(l))) {
 				sourceList = lists[0];
 				targetList = lists[1];
 			} else {
@@ -7365,8 +7360,8 @@ const skills = {
 			}
 			const list = targetList
 				.map(current => {
-					const _hp = current.hp,
-						_maxhp = current.maxHp;
+					const hp = current.hp;
+					const maxHp = current.maxHp;
 					current.hp = 100;
 					current.maxHp = 100;
 					const att = -get.sgnAttitude(player, current);
@@ -7378,8 +7373,8 @@ const skills = {
 						}
 					});
 					const eff = 100 / val + 15;
-					current.hp = _hp;
-					current.maxHp = _maxhp;
+					current.hp = hp;
+					current.maxHp = maxHp;
 					return [current, eff];
 				})
 				.sort((a, b) => b[1] - a[1])[0];
@@ -7389,16 +7384,16 @@ const skills = {
 			const targetx = list[0];
 			targets[1] = targetx;
 			const list2 = sourceList
-				.filter(i => i != targetx)
+				.filter(i => i !== targetx)
 				.map(current => {
-					const _hp = targetx.hp,
-						_maxhp = targetx.maxHp;
+					const hp = targetx.hp;
+					const maxHp = targetx.maxHp;
 					targetx.hp = 100;
 					targetx.maxHp = 100;
 					const att = -get.sgnAttitude(player, current);
 					const eff = get.damageEffect(targetx, current, current) * att;
-					targetx.hp = _hp;
-					targetx.maxHp = _maxhp;
+					targetx.hp = hp;
+					targetx.maxHp = maxHp;
 					return [current, eff];
 				})
 				.sort((a, b) => b[1] - a[1])[0];
@@ -7415,15 +7410,15 @@ const skills = {
 					if (player.getHp() + player.countCards("hs", card => player.canSaveCard(card, player)) <= 1) {
 						return 0;
 					}
-					var limit = 25;
-					var quesong = player.hasSkill("mbquesong") && !player.getStat().damaged;
+					let limit = 25;
+					const quesong = player.hasSkill("mbquesong") && !player.getStat().damaged;
 					if (quesong) {
 						limit -= 7.5;
 					}
 					if (
 						quesong &&
 						game.hasPlayer(target => {
-							var att = get.attitude(player, target);
+							const att = get.attitude(player, target);
 							if (att < 0) {
 								return false;
 							}
@@ -7444,24 +7439,24 @@ const skills = {
 					if (
 						!quesong &&
 						game.hasPlayer(target => {
-							if (target == player) {
+							if (target === player) {
 								return false;
 							}
-							var _hp = target.hp,
-								_maxhp = target.maxHp;
+							const hp = target.hp;
+							const maxHp = target.maxHp;
 							target.hp = 100;
 							target.maxHp = 100;
-							var att = -get.sgnAttitude(player, target);
-							var val = get.damageEffect(target, player, target) * att;
+							const att = -get.sgnAttitude(player, target);
+							let val = get.damageEffect(target, player, target) * att;
 							target.getSkills(null, false, false).forEach(skill => {
-								var info = get.info(skill);
+								const info = get.info(skill);
 								if (info && info.ai && (info.ai.maixie || info.ai.maixie_hp || info.ai.maixie_defend)) {
 									val = Math[val > 0 ? "max" : "min"](val > 0 ? 0.1 : -0.1, val + 2 * att);
 								}
 							});
-							var eff = 100 / val;
-							target.hp = _hp;
-							target.maxHp = _maxhp;
+							const eff = 100 / val;
+							target.hp = hp;
+							target.maxHp = maxHp;
 							if (eff < limit) {
 								return false;
 							}
