@@ -319,9 +319,6 @@ const skills = {
 			combo: "clan_shixi",
 		},
 	},
-	clan_zelie: {
-		// ???
-	},
 	//族荀莳（族荀肘）
 	clanqingjue: {
 		isOnlySuit(card, player) {
