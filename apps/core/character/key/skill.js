@@ -11612,7 +11612,9 @@ const skills = {
 	umi_lunhui: {
 		trigger: { global: "phaseAfter" },
 		filter(summer, umi) {
-			if(typeof umi.getStorage("umi_shiroha") === "player") return false;
+			if (get.itemtype(umi.getStorage("umi_shiroha")) === "player") {
+				return false;
+			}
 			return summer.player != umi && umi.countCards("h") < umi.hp;
 		},
 		line: { color: [251, 193, 217] },
@@ -11623,7 +11625,7 @@ const skills = {
 			await player.draw(2);
 			player.insertPhase();
 			player.storage.umi_shiroha = trigger.player;
-			player.addTempSkill("umi_shiroha", {player: "phaseAfter"});
+			player.addTempSkill("umi_shiroha", { player: "phaseAfter" });
 		},
 	},
 	umi_shiroha: {
