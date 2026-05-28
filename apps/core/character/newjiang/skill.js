@@ -6143,40 +6143,36 @@ const skills = {
 	kousheng: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard(
-					"h",
-					[1, player.countCards("h")],
-					get.prompt("kousheng"),
-					"你可以选择任意张手牌，这些手牌于本回合内视为无次数限制的【杀】。但当有角色受到这些【杀】的伤害后，其可以用所有手牌交换剩余的牌。",
-					"allowChooseAll"
-				)
-				.set("standard", player.getUseValue({ name: "sha" }, null, true))
-				.set("ai", function (card) {
-					var player = _status.event.player,
-						standard = _status.event.standard;
-					if (standard <= 0) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt("kousheng"),
+					prompt2: "你可以选择任意张手牌，这些手牌于本回合内视为无次数限制的【杀】。但当有角色受到这些【杀】的伤害后，其可以用所有手牌交换剩余的牌。",
+					selectCard: [1, player.countCards("h")],
+					position: "h",
+					allowChooseAll: true,
+					ai(card) {
+						const player = _status.event.player;
+						const standard = _status.event.standard;
+						if (standard <= 0) {
+							return 0;
+						}
+						const eff = player.getUseValue(card, null, true);
+						if (eff <= standard) {
+							return standard - eff + 0.1;
+						}
 						return 0;
-					}
-					var eff = player.getUseValue(card, null, true);
-					if (eff <= standard) {
-						return standard - eff + 0.1;
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("kousheng");
-				player.addGaintag(result.cards, "kousheng");
-				player.addTempSkill("kousheng_effect");
-				game.delayx();
-			}
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addGaintag(event.cards, "kousheng");
+			player.addTempSkill("kousheng_effect");
+			await game.delayx();
 		},
 		subSkill: {
 			effect: {
@@ -6186,32 +6182,27 @@ const skills = {
 				charlotte: true,
 				firstDo: true,
 				filter(event, player) {
-					if (event.card.name != "sha") {
+					if (event.card.name !== "sha") {
 						return false;
 					}
-					return player.hasHistory("lose", function (evt) {
+					return player.hasHistory("lose", evt => {
 						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != event) {
+						if (evtx !== event) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("kousheng")) {
-								return true;
-							}
-						}
-						return false;
+						return Object.values(evt.gaintag_map).some(tags => tags.includes("kousheng"));
 					});
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!trigger.card.storage) {
 						trigger.card.storage = {};
 					}
 					trigger.card.storage.kousheng = true;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						const stat = player.getStat().card,
-							name = trigger.card.name;
-						if (typeof stat[name] == "number") {
+						const stat = player.getStat().card;
+						const name = trigger.card.name;
+						if (typeof stat[name] === "number") {
 							stat[name]--;
 						}
 					}
@@ -6221,22 +6212,20 @@ const skills = {
 				},
 				mod: {
 					cardUsable(card, player, target) {
-						if (card.name != "sha" || !card.cards) {
+						if (card.name !== "sha" || !card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
-							if (i.hasGaintag("kousheng")) {
-								return Infinity;
-							}
+						if (card.cards.some(i => i.hasGaintag("kousheng"))) {
+							return Infinity;
 						}
 					},
 					cardname(card) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("kousheng")) {
+						if (get.itemtype(card) === "card" && card.hasGaintag("kousheng")) {
 							return "sha";
 						}
 					},
 					cardnature(card) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("kousheng")) {
+						if (get.itemtype(card) === "card" && card.hasGaintag("kousheng")) {
 							return false;
 						}
 					},
@@ -6248,53 +6237,46 @@ const skills = {
 				trigger: { source: "damageSource" },
 				forced: true,
 				filter(event, player) {
-					if (!event.card || !event.card.storage || !event.card.storage.kousheng || event.getParent().type != "card") {
+					if (!event.card || !event.card.storage || !event.card.storage.kousheng || event.getParent()?.type !== "card") {
 						return false;
 					}
-					var target = event.player;
-					return (
-						target.isIn() &&
-						player.hasCard(function (card) {
-							return card.hasGaintag("kousheng");
-						}, "h")
-					);
+					const target = event.player;
+					return target.isIn() && player.hasCard(card => card.hasGaintag("kousheng"), "h");
 				},
-				content() {
-					"step 0";
-					var target = trigger.player;
-					event.target = target;
-					var cards = player.getCards("h", function (card) {
-						return card.hasGaintag("kousheng");
-					});
-					event.cards = cards;
-					var str = get.translation(player);
-					player.showCards(cards, str + "的【寇旌】牌");
-					if (target.countCards("h") > 0) {
-						target
-							.chooseBool("是否交换“寇旌”牌？", "用你的所有手牌交换" + str + "的下列“寇旌”牌：" + get.translation(cards))
-							.set("ai", function () {
-								var player = _status.event.player,
-									target = _status.event.getParent().player;
-								if (player.hasShan() || player.countCards("hs", { name: ["tao", "jiu"] }) > 0 || get.attitude(player, target) >= 0) {
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const cards = player.getCards("h", card => card.hasGaintag("kousheng"));
+					const str = get.translation(player);
+					await player.showCards(cards, `${str}的【寇旌】牌`);
+					if (!target.hasCards("h")) {
+						return;
+					}
+					const result = await target
+						.chooseBool({
+							prompt: "是否交换“寇旌”牌？",
+							prompt2: `用你的所有手牌交换${str}的下列“寇旌”牌：${get.translation(cards)}`,
+							ai() {
+								const player = _status.event.player;
+								const target = _status.event.getParent()?.player;
+								if (player.hasShan() || player.hasCards("hs", { name: ["tao", "jiu"] }) || get.attitude(player, target) >= 0) {
 									return false;
 								}
-								var hs1 = player.getCards("h"),
-									hs2 = _status.event.getParent().cards;
-								if (hs2.length >= player.hp) {
+								const hs1 = player.getCards("h");
+								const hs2 = _status.event.getParent()?.cards;
+								if (hs2?.length >= player.hp) {
 									return true;
 								}
 								if (get.value(hs1, player) >= get.value(hs2, target)) {
 									return false;
 								}
 								return true;
-							});
-					} else {
-						event.finish();
+							}
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 1";
-					if (result.bool) {
-						player.swapHandcards(target, cards, target.getCards("h"));
-					}
+					await player.swapHandcards(target, cards, target.getCards("h"));
 				},
 			},
 		},
