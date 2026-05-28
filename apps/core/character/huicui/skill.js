@@ -3,108 +3,117 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//魏讽
-	dchuozhong: {
-		audio: 2,
-		enable: "phaseUse",
-		usable: 2,
-		filterCard: true,
-		position: "h",
-		filter(event, player) {
-			return player.countCards("h") > 0;
-		},
-		filterTarget(card, player, target) {
-			return player.inRange(target) && target !== player;
-		},
-		selectTarget: [1, Infinity],
-		multiline: true,
-		multitarget: true,
-		lose: false,
-		discard: false,
-		delay: false,
-		async content(event, trigger, player) {
-			const {
-				cards: [card],
-				targets,
-			} = event;
-			const type = get.type2(card);
-			await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
-			await game.doAsyncInOrder(targets, async target => {
-				if (!game.hasPlayer(target2 => target2.hasCards("he"))) {
-					return;
-				}
-				const result = await target
-					.chooseCardTarget({
-						prompt: `惑众：选择一项：1.获得一名不为你角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
-						filterCard: true,
-						position: "he",
-						selectCard: [0, 1],
-						complexSelect: true,
-						filterTarget(card2, player2, target2) {
-							if (target2 === player2) return false;
-							if (!ui.selected.cards?.length) {
-								return target2.hasCards("he");
-							}
-							return target2 === get.event().sourcex;
-						},
-						forced: true,
-						type,
-						sourcex: player,
-						ai1(card2) {
-							const player2 = get.player();
-							if (player2.countCards("he") < 3) {
-								return 0;
-							}
-							if (get.type2(card2) === get.event().type) {
-								return 6.5 - get.value(card2);
-							}
-							return 5 - get.value(card2);
-						},
-						ai2(target2) {
-							const player2 = get.player();
-							let att = get.attitude(player2, target2);
-							if (ui.selected.cards?.length) {
-								if (att < 0 && target2 === get.event().sourcex) {
+		dchuozhong: {
+			audio: 2,
+			enable: "phaseUse",
+			usable: 2,
+			filterCard: true,
+			position: "h",
+			filter(event, player) {
+				return player.countCards("h") > 0 && game.countPlayer(p => p !== player && p.countCards("he") > 0) > 0;
+			},
+			filterTarget(card, player, target) {
+				return player.inRange(target) && target !== player;
+			},
+			selectTarget: [1, Infinity],
+			multiline: true,
+			multitarget: true,
+			lose: false,
+			discard: false,
+			delay: false,
+			async content(event, trigger, player) {
+				const {
+					cards: [card],
+					targets,
+				} = event;
+				const type = get.type2(card);
+				await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
+				await game.doAsyncInOrder(targets, async target => {
+					if (!game.hasPlayer(target2 => target2.countCards("he") > 0)) {
+						return;
+					}
+					const result = await target
+						.chooseCardTarget({
+							prompt: `惑众：选择一项：1.获得另一名其他角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
+							filterCard: true,
+							position: "he",
+							selectCard: [0, 1],
+							complexSelect: true,
+							filterTarget(card2, player2, target2) {
+								if (target2 === player2) return false;
+								if (!ui.selected.cards?.length) {
+									if (target2 === get.event().sourcex) return false;
+									return target2.countCards("he") > 0;
+								}
+								return target2 === get.event().sourcex;
+							},
+							forced: true,
+							type,
+							sourcex: player,
+							ai1(card2) {
+								const player2 = get.player();
+								if (player2.countCards("he") < 3) {
 									return 0;
 								}
-								if (target2.hasSkillTag("nogain")) {
-									att /= 9;
+								if (get.type2(card2) === get.event().type) {
+									return 6.5 - get.value(card2);
 								}
-								return 4 - att;
-							}
-							return -att;
-						},
-					})
-					.forResult();
-				if (result?.targets?.length) {
-					const { cards: cards2, targets: targets2 } = result;
-					target.line(targets2);
-					if (!cards2?.length) {
-						await target.gainPlayerCard({
-							target: targets2[0], 
-							position: "he", 
-							forced: true,
-						});
-					} else {
-						await target.give(cards2, targets2[0]);
+								return 5 - get.value(card2);
+							},
+							ai2(target2) {
+								const player2 = get.player();
+								let att = get.attitude(player2, target2);
+								if (ui.selected.cards?.length) {
+									if (att < 0 && target2 === get.event().sourcex) {
+										return 0;
+									}
+									if (target2.hasSkillTag("nogain")) {
+										att /= 9;
+									}
+									return 4 - att;
+								}
+								return -att;
+							},
+						})
+						.forResult();
+					if (result?.targets?.length) {
+						const { cards: cards2, targets: targets2 } = result;
+						target.line(targets2);
+						if (!cards2?.length) {
+							await target.gainPlayerCard({
+								target: targets2[0],
+								position: "he",
+								forced: true,
+							});
+						} else {
+							await target.give(cards2, targets2[0]);
+						}
 					}
+				});
+				const otherPlayers = game.filterPlayer(p => p !== player);
+
+				// 计算这些角色的最大手牌数（只计算手牌数，用于判断哪些角色需要弃牌）
+				let maxHandCount = -1;
+				for (let p of otherPlayers) {
+					let handNum = p.countCards("h");  // 只计算手牌数量（决定谁弃牌）
+					if (handNum > maxHandCount) maxHandCount = handNum;
 				}
-			});
-			const targetsx = game.filterPlayer(target => target === player && target.isMaxHandcard(void 0, target2 => target2 !== player));
-			await game.doAsyncInOrder(targetsx, async target => {
-				await target.showHandcards();
-				const hs = target.getCards("he", card2 => get.type2(card2) === type);
-				if (hs.length) {
-					target.$throw(hs.length, 1e3);
-					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
-					await target.lose({
-						cards: hs, 
-						position: ui.cardPile, 
-						insert_card: true,
-					});
-				}
-			});
+				const playersToDiscard = otherPlayers.filter(p => p.countCards("h") === maxHandCount);
+
+				// 让这些角色依次弃置与展示牌类型相同的所有牌（包括手牌和装备区）
+				await game.doAsyncInOrder(playersToDiscard, async target => {
+
+					await target.showHandcards();
+					const hs = target.getCards("he", card2 => get.type2(card2) === type);
+
+					if (hs.length) {
+						target.$throw(hs.length, 1e3);
+						game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
+						await target.lose(hs, ui.cardPile, "insert");
+					}
+				});
+			},
 		},
-	},
 	dczhuguo: {
 		audio: 2,
 		forced: true,
