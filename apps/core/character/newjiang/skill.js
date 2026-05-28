@@ -5201,60 +5201,57 @@ const skills = {
 		check(card, player) {
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
-			var num = 3 - get.skillCount("shuojian") + 1;
-			event.num = num;
-			event.num2 = num;
-			if (event.num == 0) {
-				event.finish();
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const target = event.target;
+			await player.give(cards, target);
+			const num = 3 - get.skillCount("shuojian") + 1;
+			if (num === 0) {
+				return;
 			}
-			"step 2";
-			var forced = num != event.num2;
-			var prompt =
-				"###" +
-				get.translation(player) +
-				"对你发动了【数谏】###视为使用" +
-				get.cnNumber(num) +
-				"张【过河拆桥】" +
-				(forced ? "" : "且" + get.translation(player) + "此技能本回合失效，或点击“取消”令其摸" + get.cnNumber(num) + "张牌");
-			if (!target.hasUseTarget({ name: "guohe" })) {
-				event._result = { bool: false };
-			} else {
-				target
-					.chooseUseTarget(prompt, "guohe", forced)
-					.set("ai", function () {
-						var evt = _status.event;
-						if (evt.name == "chooseTarget") {
-							evt = evt.getParent();
-						}
-						if (!evt.goon) {
-							return 0;
-						}
-						return get.effect_use.apply(this, arguments);
-					})
-					.set(
-						"goon",
-						target.getUseValue({ name: "guohe" }) >
-							(get.sgnAttitude(target, player) * player.getUseValue({ name: "wuzhong" })) / (2 - num * 0.4)
-					);
-			}
-			"step 3";
-			if (!result.bool) {
-				player.draw(num);
-				if (num > 1) {
-					player.chooseToDiscard("he", num - 1, true);
+			const playerName = get.translation(player);
+			const numText = get.cnNumber(num);
+			for (let num2 = num; num2 > 0; num2--) {
+				const forced = num !== num2;
+				const prompt = `###${playerName}对你发动了【数谏】###视为使用${numText}张【过河拆桥】${forced ? "" : `且${playerName}此技能本回合失效，或点击“取消”令其摸${numText}张牌`}`;
+				const result = target.hasUseTarget({ name: "guohe" })
+					? await target
+							.chooseUseTarget({
+								prompt,
+								card: get.autoViewAs({ name: "guohe", isCard: true }),
+								forced,
+								ai(...args) {
+									let evt = _status.event;
+									if (evt.name === "chooseTarget") {
+										const parent = evt.getParent();
+										if (parent == null) {
+											return 0;
+										}
+										evt = parent;
+									}
+									if (!evt.goon) {
+										return 0;
+									}
+									return get.effect_use(...args);
+								},
+							})
+							.set("goon", target.getUseValue({ name: "guohe" }) > (get.sgnAttitude(target, player) * player.getUseValue({ name: "wuzhong" })) / (2 - num * 0.4))
+							.forResult()
+					: { bool: false };
+				if (result.bool) {
+					continue;
 				}
-				event.finish();
+				await player.draw(num);
+				if (num > 1) {
+					await player.chooseToDiscard({
+						selectCard: num - 1,
+						position: "he",
+						forced: true,
+					});
+				}
+				return;
 			}
-			"step 4";
-			if (--event.num2 > 0) {
-				event.goto(2);
-			} else {
-				player.tempBanSkill("shuojian");
-			}
+			player.tempBanSkill("shuojian");
 		},
 		ai: {
 			expose: 0.15,
