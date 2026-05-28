@@ -3,73 +3,73 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//魏讽
-		dchuozhong: {
-			audio: 2,
-			enable: "phaseUse",
-			usable: 2,
-			filterCard: true,
-			position: "h",
-			filter(event, player) {
-				return player.countCards("h") > 0 && game.countPlayer(p => p !== player && p.countCards("he") > 0) > 0;
-			},
-			filterTarget(card, player, target) {
-				return player.inRange(target) && target !== player;
-			},
-			selectTarget: [1, Infinity],
-			multiline: true,
-			multitarget: true,
-			lose: false,
-			discard: false,
-			delay: false,
-			async content(event, trigger, player) {
-				const {
-					cards: [card],
-					targets,
-				} = event;
-				const type = get.type2(card);
-				await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
-				await game.doAsyncInOrder(targets, async target => {
-					if (!game.hasPlayer(target2 => target2.countCards("he") > 0)) {
-						return;
-					}
-					const result = await target
-						.chooseCardTarget({
-							prompt: `惑众：选择一项：1.获得另一名其他角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
-							filterCard: true,
-							position: "he",
-							selectCard: [0, 1],
-							complexSelect: true,
-							filterTarget(card2, player2, target2) {
-								if (target2 === player2) return false;
-								if (!ui.selected.cards?.length) {
-									if (target2 === get.event().sourcex) return false;
-									return target2.countCards("he") > 0;
-								}
-								return target2 === get.event().sourcex;
-							},
-							forced: true,
-							type,
-							sourcex: player,
-							ai1(card2) {
-								const player2 = get.player();
-								if (player2.countCards("he") < 3) {
+	dchuozhong: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 2,
+		filterCard: true,
+		position: "h",
+		filter(event, player) {
+			return player.countCards("h") > 0 && game.countPlayer(p => p !== player && p.countCards("he") > 0) > 0;
+		},
+		filterTarget(card, player, target) {
+			return player.inRange(target) && target !== player;
+		},
+		selectTarget: [1, Infinity],
+		multiline: true,
+		multitarget: true,
+		lose: false,
+		discard: false,
+		delay: false,
+		async content(event, trigger, player) {
+			const {
+				cards: [card],
+				targets,
+			} = event;
+			const type = get.type2(card);
+			await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
+			await game.doAsyncInOrder(targets, async target => {
+				if (!game.hasPlayer(target2 => target2.countCards("he") > 0)) {
+					return;
+				}
+				const result = await target
+					.chooseCardTarget({
+						prompt: `惑众：选择一项：1.获得另一名其他角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
+						filterCard: true,
+						position: "he",
+						selectCard: [0, 1],
+						complexSelect: true,
+						filterTarget(card2, player2, target2) {
+							if (target2 === player2) return false;
+							if (!ui.selected.cards?.length) {
+								if (target2 === get.event().sourcex) return false;
+								return target2.countCards("he") > 0;
+							}
+							return target2 === get.event().sourcex;
+						},
+						forced: true,
+						type,
+						sourcex: player,
+						ai1(card2) {
+							const player2 = get.player();
+							if (player2.countCards("he") < 3) {
+								return 0;
+							}
+							if (get.type2(card2) === get.event().type) {
+								return 6.5 - get.value(card2);
+							}
+							return 5 - get.value(card2);
+						},
+						ai2(target2) {
+							const player2 = get.player();
+							let att = get.attitude(player2, target2);
+							if (ui.selected.cards?.length) {
+								if (att < 0 && target2 === get.event().sourcex) {
 									return 0;
 								}
-								if (get.type2(card2) === get.event().type) {
-									return 6.5 - get.value(card2);
+								if (target2.hasSkillTag("nogain")) {
+									att /= 9;
 								}
-								return 5 - get.value(card2);
-							},
-							ai2(target2) {
-								const player2 = get.player();
-								let att = get.attitude(player2, target2);
-								if (ui.selected.cards?.length) {
-									if (att < 0 && target2 === get.event().sourcex) {
-										return 0;
-									}
-									if (target2.hasSkillTag("nogain")) {
-										att /= 9;
-									}
 									return 4 - att;
 								}
 								return -att;
