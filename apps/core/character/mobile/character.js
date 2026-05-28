@@ -3,19 +3,19 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 3,
-		skills: ["mb_qirang", "mb_yvhua"],
+		skills: ["mbqirang", "mbyvhua"],
 	},
 	mb_caochun: {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["mb_shanjia"],
+		skills: ["mbshanjia"],
 	},
 	mb_xiahoumao: {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["mb_tongwei", "mb_cuguo"],
+		skills: ["mbtongwei", "mbcuguo"],
 	},
 	mb_shen_machao: {
 		sex: "male",

@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	// 族陆郁生
-	clan_shixi: {
+	clanshixi: {
 		audio: 2,
 		trigger: {
 			player: "useCard",
@@ -27,16 +27,16 @@ const skills = {
 			const suit = get.suit(card);
 			if (suit === "none") return false;
 			const key = `${suit}+${get.type2(card)}`;
-			const storage = player.getStorage("clan_shixi") || {};
+			const storage = player.getStorage("clanshixi") || {};
 			return !(key in storage);
 		},
 		async content(event, trigger, player) {
 			const suit = get.suit(trigger.card);
 			const name = trigger.card.name;
 			const key = `${suit}+${get.type2(trigger.card)}`;
-			player.storage.clan_shixi ??= {};
-			player.storage.clan_shixi[key] = name;
-			player.markSkill("clan_shixi");
+			player.storage.clanshixi ??= {};
+			player.storage.clanshixi[key] = name;
+			player.markSkill("clanshixi");
 			game.log(player, "记录了", "#y" + get.translation(name), "（" + get.translation(suit) + "）");
 		},
 		mark: true,
@@ -56,26 +56,26 @@ const skills = {
 				return "已记录：" + list.join("、");
 			},
 		},
-		group: "clan_shixi_use",
+		group: "clanshixi_use",
 		subSkill: {
 			use: {
-				audio: "clan_shixi",
+				audio: "clanshixi",
 				enable: "phaseUse",
 				filter(event, player) {
 					if (event.respondTo) return false;
-					const storage = player.getStorage("clan_shixi") || {};
+					const storage = player.getStorage("clanshixi") || {};
 					for (const [key, name] of Object.entries(storage)) {
 						const suit = key.split("+")[0];
 						if (!player.hasCard(card => get.suit(card) === suit, "he")) continue;
 						const card = get.autoViewAs({ name, isCard: true });
-						if (!lib.skill.clan_shixi.filterx(card, player)) continue;
+						if (!lib.skill.clanshixi.filterx(card, player)) continue;
 						return true;
 					}
 					return false;
 				},
 				async content(event, trigger, player) {
 					const list = [];
-					const storage = player.getStorage("clan_shixi") || {};
+					const storage = player.getStorage("clanshixi") || {};
 					for (const [key, name] of Object.entries(storage)) {
 						const suit = key.split("+")[0];
 						const suitCards = player.getCards("he", card => get.suit(card) === suit);
@@ -94,7 +94,7 @@ const skills = {
 							const player = get.player();
 							let best = "cancel2";
 							let maxVal = 0;
-							const storage = player.getStorage("clan_shixi") || {};
+							const storage = player.getStorage("clanshixi") || {};
 							for (const [key, name] of Object.entries(storage)) {
 								const suit = key.split("+")[0];
 								const suitCards = player.getCards("he", card => get.suit(card) === suit);
@@ -129,7 +129,7 @@ const skills = {
 					if (suitCards.length === 0) {
 						return;
 					}
-					player.logSkill("clan_shixi");
+					player.logSkill("clanshixi");
 					game.log(player, "弃置了", suitCards.length, "张", get.translation(suit), "牌");
 					await player.discard(suitCards);
 					const vCard = new lib.element.VCard({
@@ -141,13 +141,13 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			const storage = player.getStorage("clan_shixi") || {};
+			const storage = player.getStorage("clanshixi") || {};
 			for (const [key, cardName] of Object.entries(storage)) {
 				if (cardName === name) {
 					const suit = key.split("+")[0];
 					if (player.hasCard(card => get.suit(card, player) === suit, "he")) {
 						const card = get.autoViewAs({ name, isCard: true });
-						if (lib.skill.clan_shixi.filterx(card, player)) {
+						if (lib.skill.clanshixi.filterx(card, player)) {
 							return true;
 						}
 					}
@@ -167,7 +167,7 @@ const skills = {
 			},
 		},
 	},
-	clan_jianbai: {
+	clanjianbai: {
 		audio: 2,
 		trigger: {
 			player: "useCardAfter",
@@ -175,20 +175,20 @@ const skills = {
 		forced: true,
 		locked: true,
 		filter(event, player) {
-			if (!event.cards || !event.cards.some(card => card === "h" || card.original === "h")) return false;
+			if (!event.cards || !event.cards.some(card => card.original === "h")) return false;
 			const type = get.type(event.card);
-			if (!player.storage.clan_jianbai) {
-				player.storage.clan_jianbai = {
+			if (!player.storage.clanjianbai) {
+				player.storage.clanjianbai = {
 					types: [],
 				};
 			}
-			return !player.storage.clan_jianbai.types.includes(type);
+			return !player.storage.clanjianbai.types.includes(type);
 		},
 		async content(event, trigger, player) {
 			const type = get.type(trigger.card);
-			player.storage.clan_jianbai ??= { types: [] };
-			player.storage.clan_jianbai.types.push(type);
-			player.addTempSkill("clan_jianbai_clear", "roundStart");
+			player.storage.clanjianbai ??= { types: [] };
+			player.storage.clanjianbai.types.push(type);
+			player.addTempSkill("clanjianbai_clear", "roundStart");
 			const heCards = player.getCards("he");
 			const heSuits = [...new Set(heCards.map(card => get.suit(card)))].filter(suit => suit !== "none");
 			if (heSuits.length === 0) {
@@ -223,7 +223,7 @@ const skills = {
 			}
 			const keepCards = player.getCards("he", card => get.suit(card) === keepSuit);
 			for (const card of keepCards) {
-				const skill = "clan_jianbai_mark";
+				const skill = "clanjianbai_mark";
 				let tag = card.gaintag?.find(t => t.startsWith(skill));
 				if (tag) {
 					player.removeGaintag(tag, [card]);
@@ -242,25 +242,25 @@ const skills = {
 		},
 		subSkill: {
 			clear: {
-				audio: "clan_jianbai",
+				audio: "clanjianbai",
 				charlotte: true,
 				onremove(player, skill) {
-					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clan_jianbai_mark")));
+					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clanjianbai_mark")));
 					if (tags.length) {
 						const tagList = tags
 							.slice()
-							.map(card => card.gaintag.find(t => t.startsWith("clan_jianbai_mark")))
+							.map(card => card.gaintag.find(t => t.startsWith("clanjianbai_mark")))
 							.unique();
 						tagList.forEach(tag => player.removeGaintag(tag));
 					}
-					delete player.storage.clan_jianbai;
+					delete player.storage.clanjianbai;
 				},
 				trigger: {
 					global: "phaseEnd",
 				},
 				forced: true,
 				filter(event, player) {
-					return player.storage.clan_jianbai?.types?.length > 0;
+					return player.storage.clanjianbai?.types?.length > 0;
 				},
 				async content(event, trigger, player) {
 					if (player.hasCards("he")) {
@@ -272,10 +272,10 @@ const skills = {
 								filterTarget: lib.filter.notMe,
 								forced: true,
 								ai1(card) {
-									let tag = card.gaintag?.find(t => t.startsWith("clan_jianbai_mark"));
+									let tag = card.gaintag?.find(t => t.startsWith("clanjianbai_mark"));
 									let count = 0;
 									if (tag) {
-										count = parseInt(tag.slice("clan_jianbai_mark".length)) || 0;
+										count = parseInt(tag.slice("clanjianbai_mark".length)) || 0;
 									}
 									return 5 - get.value(card) + count * 10;
 								},
@@ -291,9 +291,9 @@ const skills = {
 							} = result;
 							const giveCard = cards[0];
 							let count = 0;
-							const tag = giveCard.gaintag?.find(t => t.startsWith("clan_jianbai_mark"));
+							const tag = giveCard.gaintag?.find(t => t.startsWith("clanjianbai_mark"));
 							if (tag) {
-								count = parseInt(tag.slice("clan_jianbai_mark".length)) || 0;
+								count = parseInt(tag.slice("clanjianbai_mark".length)) || 0;
 							}
 							player.line(target);
 							await player.give(cards, target);
@@ -303,20 +303,20 @@ const skills = {
 							}
 						}
 					}
-					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clan_jianbai_mark")));
+					const tags = player.getCards("he", card => card.gaintag?.some(t => t.startsWith("clanjianbai_mark")));
 					if (tags.length) {
 						const tagList = tags
 							.slice()
-							.map(card => card.gaintag.find(t => t.startsWith("clan_jianbai_mark")))
+							.map(card => card.gaintag.find(t => t.startsWith("clanjianbai_mark")))
 							.unique();
 						tagList.forEach(tag => player.removeGaintag(tag));
 					}
-					delete player.storage.clan_jianbai;
+					delete player.storage.clanjianbai;
 				},
 			},
 		},
 		ai: {
-			combo: "clan_shixi",
+			combo: "clanshixi",
 		},
 	},
 	//族荀莳（族荀肘）

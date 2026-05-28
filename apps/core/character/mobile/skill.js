@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	// 诸葛果
-	mb_qirang: {
+	mbqirang: {
 		audio: 2,
 		trigger: {
 			player: "equipEnd",
@@ -13,7 +13,7 @@ const skills = {
 			const card = get.cardPile(card => get.type(card, "trick") === "trick");
 			if (card) {
 				const next = player.gain(card, "gain2");
-				next.gaintag.add("mb_qirang");
+				next.gaintag.add("mbqirang");
 				game.log(player, "获得了", card);
 			}
 		},
@@ -27,10 +27,10 @@ const skills = {
 			},
 			threaten: 1.3,
 		},
-		group: ["mb_qirang_use"],
+		group: ["mbqirang_use"],
 		subSkill: {
 			use: {
-				audio: "mb_qirang",
+				audio: "mbqirang",
 				trigger: {
 					player: "useCard",
 				},
@@ -45,7 +45,7 @@ const skills = {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("mb_qirang")) {
+							if (evt.gaintag_map[i].includes("mbqirang")) {
 								return true;
 							}
 						}
@@ -60,7 +60,7 @@ const skills = {
 			},
 		},
 	},
-	mb_yvhua: {
+	mbyvhua: {
 		audio: 2,
 		trigger: {
 			player: "phaseJieshuBegin",
@@ -103,19 +103,19 @@ const skills = {
 		},
 	},
 	// 曹纯
-	mb_shanjia: {
+	mbshanjia: {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		init(player) {
-			player.addSkill("mb_shanjia_count");
+			player.addSkill("mbshanjia_count");
 		},
 		onremove(player) {
-			player.removeSkill("mb_shanjia_count");
+			player.removeSkill("mbshanjia_count");
 		},
 		mod: {
 			aiValue(player, card, num) {
-				if ((player.storage.mb_shanjia ?? 0) < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
+				if ((player.storage.mbshanjia ?? 0) < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
 					return num / player.hp;
 				}
 			},
@@ -135,15 +135,15 @@ const skills = {
 					}
 				}
 			}
-			player.storage.mb_shanjia = num;
+			player.storage.mbshanjia = num;
 			if (num > 0) {
-				player.markSkill("mb_shanjia");
+				player.markSkill("mbshanjia");
 			}
 		},
 		async content(event, trigger, player) {
 			await player.draw(3);
-			lib.skill.mb_shanjia.sync(player);
-			const num = 3 - (player.storage.mb_shanjia ?? 0);
+			lib.skill.mbshanjia.sync(player);
+			const num = 3 - (player.storage.mbshanjia ?? 0);
 			let result;
 			if (num > 0) {
 				result = await player
@@ -155,7 +155,7 @@ const skills = {
 					})
 					.forResult();
 			}
-			lib.skill.mb_shanjia.sync(player);
+			lib.skill.mbshanjia.sync(player);
 			let bool1 = true;
 			let bool2 = true;
 			if (result?.cards?.length) {
@@ -171,10 +171,10 @@ const skills = {
 				}
 			}
 			if (bool2) {
-				player.addTempSkill("mb_shanjia_nodis", "phaseChange");
+				player.addTempSkill("mbshanjia_nodis", "phaseChange");
 			}
 			if (bool1) {
-				player.addTempSkill("mb_shanjia_sha", "phaseChange");
+				player.addTempSkill("mbshanjia_sha", "phaseChange");
 				await player.chooseUseTarget({ name: "sha", isCard: true, addCount: false, nodistance: true }, "缮甲：是否视为使用一张【杀】？", false);
 			}
 		},
@@ -182,7 +182,7 @@ const skills = {
 			order: 10,
 			result: {
 				player(player) {
-					const lostEquip = player.storage.mb_shanjia ?? 0;
+					const lostEquip = player.storage.mbshanjia ?? 0;
 					const discardNum = 3 - lostEquip;
 					if (discardNum <= 0) {
 						return 3;
@@ -210,7 +210,7 @@ const skills = {
 					return es?.some(card => get.type(card) === "equip");
 				},
 				async content(event, trigger, player) {
-					lib.skill.mb_shanjia.sync(player);
+					lib.skill.mbshanjia.sync(player);
 				},
 			},
 			nodis: {
@@ -226,7 +226,7 @@ const skills = {
 		},
 	},
 	// 夏侯楙
-	mb_tongwei: {
+	mbtongwei: {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
@@ -252,7 +252,7 @@ const skills = {
 			const cardNames = [...new Set(cards.map(c => c.name))];
 			await player.recast(cards);
 			game.log(player, "重铸了", cards.length, "张基本牌");
-			player.storage.mb_tongwei_cardNames = cardNames;
+			player.storage.mbtongwei_cardNames = cardNames;
 			const list = [];
 			const targets = game.filterPlayer(current => current.hasCards("h", card => cardNames.includes(card.name)));
 			const canOption1 = targets.length > 0;
@@ -280,9 +280,9 @@ const skills = {
 			if (!control || control === "cancel2") {
 				return;
 			}
-			player.logSkill("mb_tongwei");
+			player.logSkill("mbtongwei");
 			if (control === "背水！") {
-				const skipNames = player.storage.mb_tongwei || [];
+				const skipNames = player.storage.mbtongwei || [];
 				const availableCards = lib.inpile.filter(card => {
 					if (skipNames.includes(card)) return false;
 					const type2 = get.type2(card);
@@ -302,11 +302,11 @@ const skills = {
 					if (addResult.bool) {
 						const addName = addResult.links?.[0]?.[2];
 						if (addName && addName !== "cancel2") {
-							player.storage.mb_tongwei ??= [];
-							if (!player.storage.mb_tongwei.includes(addName)) {
-								player.storage.mb_tongwei.push(addName);
+							player.storage.mbtongwei ??= [];
+							if (!player.storage.mbtongwei.includes(addName)) {
+								player.storage.mbtongwei.push(addName);
 							}
-							player.markSkill("mb_tongwei");
+							player.markSkill("mbtongwei");
 							game.log(player, "移除了牌名", "#y" + get.translation(addName), "");
 						}
 					}
@@ -352,12 +352,12 @@ const skills = {
 				charlotte: true,
 				silent: true,
 				async content(event, trigger, player) {
-					delete player.storage.mb_tongwei_cardNames;
+					delete player.storage.mbtongwei_cardNames;
 				},
 			},
 		},
 	},
-	mb_cuguo: {
+	mbcuguo: {
 		audio: 2,
 		trigger: {
 			player: "useCardToPlayered",
@@ -372,8 +372,8 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = trigger.card;
 			const targets = trigger.targets;
-			player.logSkill("mb_cuguo");
-			const skipNames = player.storage.mb_tongwei || [];
+			player.logSkill("mbcuguo");
+			const skipNames = player.storage.mbtongwei || [];
 			const allTargets = [player, ...targets];
 			const discardMap = new Map();
 			for (const target of allTargets) {
