@@ -6847,80 +6847,53 @@ const skills = {
 	},
 	gnjinfan: {
 		trigger: { player: "phaseDiscardBegin" },
-		direct: true,
 		locked: false,
 		audio: 2,
 		filter(event, player) {
-			var list = [];
-			player.getCards("s", function (card) {
-				if (card.hasGaintag("gnjinfan")) {
-					list.add(get.suit(card));
-				}
-			});
+			const list = player
+				.iterableGetCards("s", card => card.hasGaintag("gnjinfan"))
+				.map(card => get.suit(card))
+				.toArray();
 			if (list.length >= lib.suit.length) {
 				return false;
 			}
-			return (
-				player.countCards("h", function (card) {
-					return _status.connectMode || !list.includes(get.suit(card));
-				}) > 0
-			);
+			return _status.connectMode || player.hasCards("h", card => !list.includes(get.suit(card)));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard(
-					"h",
-					get.prompt("gnjinfan"),
-					"将任意张手牌当做“铃”置于武将牌上",
-					[
-						1,
-						(function () {
-							var list = [];
-							var list2 = [];
-							player.getCards("s", function (card) {
-								if (card.hasGaintag("gnjinfan")) {
-									list.add(get.suit(card));
-								}
-							});
-							player.getCards("h", function (card) {
-								list2.add(get.suit(card));
-							});
-							list2.removeArray(list);
-							return Math.max(1, list2.length);
-						})(),
-					],
-					function (card, player) {
-						return (
-							!player.countCards("s", function (cardx) {
-								return cardx.hasGaintag("gnjinfan") && get.suit(cardx, false) == get.suit(card, player);
-							}) &&
-							!ui.selected.cards.filter(function (cardx) {
-								return get.suit(cardx, player) == get.suit(card, player);
-							}).length
-						);
-					}
-				)
-				.set("ai", function (card) {
-					var player = _status.event.player;
-					if (player.hasUseTarget(card) && !player.hasValueTarget(card)) {
-						return 0;
-					}
-					if (["sha", "shan", "wuxie", "caochuan"].includes(card.name)) {
-						return 2 + Math.random();
-					}
-					return 1 + Math.random();
+		async cost(event, trigger, player) {
+			const max = (() => {
+				const list = new Set(player.iterableGetCards("s", card => card.hasGaintag("gnjinfan")).map(card => get.suit(card)));
+				const list2 = new Set(player.iterableGetCards("h").map(card => get.suit(card)));
+				return Math.max(1, list2.difference(list).size);
+			})();
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt("gnjinfan"),
+					prompt2: "将任意张手牌当做“铃”置于武将牌上",
+					filterCard(card, player) {
+						const suit = get.suit(card, player);
+						return !player.countCards("s", cardx => cardx.hasGaintag("gnjinfan") && get.suit(cardx, false) === suit) && !ui.selected.cards.some(cardx => get.suit(cardx, player) === suit);
+					},
+					selectCard: [1, max],
+					position: "h",
+					complexCard: true,
+					ai(card) {
+						const player = _status.event.player;
+						if (player.hasUseTarget(card) && !player.hasValueTarget(card)) {
+							return 0;
+						}
+						if (["sha", "shan", "wuxie", "caochuan"].includes(card.name)) {
+							return 2 + Math.random();
+						}
+						return 1 + Math.random();
+					},
 				})
-				.set("complexCard", true);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gnjinfan");
-				game.log(player, "将", result.cards, "放到了武将牌上");
-				player.loseToSpecial(result.cards, "gnjinfan").visible = true;
-			} else {
-				event.finish();
-			}
-			"step 2";
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			game.log(player, "将", event.cards, "放到了武将牌上");
+			const next = player.loseToSpecial(event.cards, "gnjinfan");
+			next.visible = true;
+			await next;
 			player.markSkill("gnjinfan");
 		},
 		group: ["gnjinfan_gain"],
@@ -6928,22 +6901,19 @@ const skills = {
 		intro: {
 			mark(dialog, storage, player) {
 				dialog.addAuto(
-					player.getCards("s", function (card) {
-						return card.hasGaintag("gnjinfan");
-					})
+					player.getCards("s", card => card.hasGaintag("gnjinfan"))
 				);
 			},
 			markcount(storage, player) {
-				return player.getCards("s", function (card) {
-					return card.hasGaintag("gnjinfan");
-				}).length;
+				return player.getCards("s", card => card.hasGaintag("gnjinfan")).length;
 			},
 			onunmark(storage, player) {
-				var cards = player.getCards("s", function (card) {
-					return card.hasGaintag("gnjinfan");
-				});
+				const cards = player.getCards("s", card => card.hasGaintag("gnjinfan"));
 				if (cards.length) {
-					player.lose(cards, ui.discardPile);
+					player.lose({
+						cards,
+						position: ui.discardPile,
+					});
 					player.$throw(cards, 1000);
 					game.log(cards, "进入了弃牌堆");
 				}
@@ -6951,7 +6921,7 @@ const skills = {
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("gnjinfan")) {
+				if (get.itemtype(card) === "card" && card.hasGaintag("gnjinfan")) {
 					return num + 0.5;
 				}
 			},
@@ -6968,10 +6938,11 @@ const skills = {
 				locked: true,
 				mod: {
 					cardEnabled2(card, player) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("gnjinfan")) {
-							if (!player.hasSkill("gnjinfan")) {
-								return false;
-							}
+						if (get.itemtype(card) !== "card" || !card.hasGaintag("gnjinfan")) {
+							return;
+						}
+						if (!player.hasSkill("gnjinfan")) {
+							return false;
 						}
 					},
 				},
@@ -6987,40 +6958,35 @@ const skills = {
 			if (!event.ss || !event.ss.length) {
 				return false;
 			}
-			for (var i in event.gaintag_map) {
+			for (const i in event.gaintag_map) {
 				if (event.gaintag_map[i].includes("gnjinfan")) {
 					return true;
 				}
 				return false;
 			}
 		},
-		content() {
-			"step 0";
-			var cards = [];
-			for (var i of trigger.ss) {
+		async content(event, trigger, player) {
+			const cards = [];
+			for (const i of trigger.ss) {
 				if (!trigger.gaintag_map[i.cardid] || !trigger.gaintag_map[i.cardid].includes("gnjinfan")) {
 					continue;
 				}
-				var suit = get.suit(i, false);
-				var card = get.cardPile2(function (card) {
-					return !cards.includes(card) && get.suit(card, false) == suit;
-				});
+				const suit = get.suit(i, false);
+				const card = get.cardPile2(card => !cards.includes(card) && get.suit(card, false) === suit);
 				if (card) {
 					cards.push(card);
 				}
 			}
-			if (cards.length) {
-				player.gain(cards, "gain2");
-			}
-			var num = player.getCards("s", function (card) {
-				return card.hasGaintag("gnjinfan");
-			}).length;
+			const next = cards.length ? player.gain({ cards, animate: "gain2" }) : null;
+			const num = player.countCards("s", card => card.hasGaintag("gnjinfan"));
 			if (num) {
 				player.markSkill("gnjinfan");
 			} else {
 				player.unmarkSkill("gnjinfan");
 			}
-			"step 1";
+			if (cards.length) {
+				await next;
+			}
 			game.updateRoundNumber();
 		},
 	},
