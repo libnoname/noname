@@ -10,7 +10,7 @@ const skills = {
 		filterCard: true,
 		position: "h",
 		filter(event, player) {
-			return player.countCards("h") > 0 && game.countPlayer(p => p !== player && p.countCards("he") > 0) > 0;
+			return player.hasCards("h") && game.hasPlayer(p => p !== player && p.hasCards("he"));
 		},
 		filterTarget(card, player, target) {
 			return player.inRange(target) && target !== player;
@@ -29,7 +29,7 @@ const skills = {
 			const type = get.type2(card);
 			await player.showCards(card, `${get.translation(player)}发动了〖惑众〗`);
 			await game.doAsyncInOrder(targets, async target => {
-				if (!game.hasPlayer(target2 => target2.countCards("he") > 0)) {
+				if (!game.hasPlayer(target2 => target2.hasCards("he"))) {
 					return;
 				}
 				const result = await target
@@ -42,8 +42,10 @@ const skills = {
 						filterTarget(card2, player2, target2) {
 							if (target2 === player2) return false;
 							if (!ui.selected.cards?.length) {
-								if (target2 === get.event().sourcex) return false;
-								return target2.countCards("he") > 0;
+								if (target2 === get.event().sourcex) {
+									return false;
+								}
+								return target2.hasCards("he");
 							}
 							return target2 === get.event().sourcex;
 						},
