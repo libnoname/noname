@@ -9,6 +9,18 @@ const characters = {
 		skills:["sxrmjiehuo","sxrmxianger","sxrmmieguo"],
 		groupInGuozhan: "wu",
 	},
+	sxrm_sunshangxiang:{
+		sex:"female",
+		group:"wu",
+		hp:3,
+		skills:["sxrmjiaozong","sxrmfusui"],
+	},
+	sxrm_zhangzhao:{
+		sex:"male",
+		group:"wu",
+		hp:3,
+		skills:["sxrmxiezhong","sxrmqishi"],
+	},
 	//慢
 	sxrm_guanyu: {
 		sex: "male",

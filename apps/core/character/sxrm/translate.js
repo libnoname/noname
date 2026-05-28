@@ -116,6 +116,20 @@ const translates = {
 	sxrmxianger_info: "使命技，出牌阶段限一次，你可以令一名角色于其下个结束阶段回复2点体力，期间其不能使用点数大于6的牌。失败：期间其受到的伤害值小于2：你减1点体力上限。",
 	sxrmmieguo: "灭虢",
 	sxrmmieguo_info:"使命技，额定回合结束后，你可以获得一名其他角色至多三张牌并令其指定等量角色，然后你执行一个不能对其指定角色使用牌的额外回合；失败：此回合你未使用过牌：你减1点体力上限。",
+	sxrm_sunshangxiang:"嗔孙尚香",
+	sxrm_sunshangxiang_prefix:"嗔",
+	sxrmjiaozong: "骄纵",
+	sxrmjiaozong_info: "准备阶段或当你成为【杀】的目标后，你可以移动场上一张装备牌至一名角色装备区内，其本回合不能使用与之颜色相同的牌且受到的伤害+1。",
+	sxrmfusui: "妇随",
+	sxrmfusui_info: "限定技，出牌阶段，你可以选择一名其他男性角色的一个非标签技能，你令其失去此技能，然后你与其获得“比翼”并防止你们本轮受到的伤害。",
+	sxrmbiyi: "比翼",
+	sxrmbiyi_info: "转换技，你视为拥有：阳：因【妇随】失去的技能；阴：【枭姬】。当你发动上述对应技能后，切换本技能状态。",
+	sxrm_zhangzhao: "嗔张昭",
+	sxrm_zhangzhao_prefix:"嗔",
+	sxrmxiezhong: "挟众",
+	sxrmxiezhong_info: "准备阶段，你可令场上半数角色（向上取整）依次选择并执行一项：1.摸两张牌，失去 1 点体力；2.将两张牌当【杀】使用。然后你可以令另一名角色执行两次被选择较多的一项。",
+	sxrmqishi: "乞施",
+	sxrmqishi_info: `${get.poptip("sxrm_qidingSkill")}。结束阶段，你可以获得本回合其他角色进入弃牌堆的至多五张牌，然后你跳过下个摸牌阶段。`,
 };
 
 export default translates;
