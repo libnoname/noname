@@ -7601,57 +7601,51 @@ const skills = {
 		audio: "mbquesong",
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.getHistory("damage").length;
+			return player.hasHistory("damage");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("mbquesong")).set("ai", target => {
-				var player = _status.event.player;
-				if (get.attitude(player, target) <= 0) {
-					return 0;
-				}
-				var len = lib.skill.old_mbquesong.getNum(target),
-					hp = target.getHp();
-				return len + target.isTurnedOver() * 2 + (1.5 * Math.min(4, target.getDamagedHp())) / (hp + 1);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("mbquesong", target);
-				var len = lib.skill.old_mbquesong.getNum(target);
-				if (target.isHealthy()) {
-					event._result = { index: 0 };
-				} else {
-					target
-						.chooseControl()
-						.set("choiceList", ["摸" + get.cnNumber(len) + "张牌并复原武将牌", "回复1点体力"])
-						.set("prompt", "雀颂：请选择一项")
-						.set("ai", () => {
-							var player = _status.event.player;
-							var len = _status.event.len;
-							return get.effect(player, { name: "draw" }, player, player) * len >= get.recoverEffect(player, player, player) ? 0 : 1;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("mbquesong"),
+					ai(target) {
+						const player = get.player();
+						if (get.attitude(player, target) <= 0) {
+							return 0;
+						}
+						const len = lib.skill.old_mbquesong.getNum(target);
+						const hp = target.getHp();
+						return len + target.isTurnedOver() * 2 + (1.5 * Math.min(4, target.getDamagedHp())) / (hp + 1);
+					},
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const len = lib.skill.old_mbquesong.getNum(target);
+			const choice = target.isHealthy()
+				? { index: 0 }
+				: await target
+						.chooseControl({
+							prompt: "雀颂：请选择一项",
+							choiceList: [`摸${get.cnNumber(len)}张牌并复原武将牌`, "回复1点体力"],
+							ai() {
+								const { player, len } = get.event();
+								return get.effect(player, { name: "draw" }, player, player) * len >= get.recoverEffect(player, player, player) ? 0 : 1;
+							},
 						})
-						.set("len", len);
-				}
-			} else {
-				event.finish();
+						.set("len", len)
+						.forResult();
+			if (choice.index == 1) {
+				await target.recover();
+				return;
 			}
-			"step 2";
-			if (result.index == 1) {
-				target.recover();
-				event.finish();
-			} else {
-				target.draw(lib.skill.old_mbquesong.getNum(target));
-			}
-			"step 3";
-			target.link(false);
-			"step 4";
-			target.turnOver(false);
+			await target.draw(lib.skill.old_mbquesong.getNum(target));
+			await target.link(false);
+			await target.turnOver(false);
 		},
 		getNum(player) {
-			return player.countCards("e", card => get.subtype(card) != "equip5") >= 3 ? 2 : 3;
+			return player.countCards("e", card => get.subtype(card) !== "equip5") >= 3 ? 2 : 3;
 		},
 		ai: {
 			expose: 0.2,
