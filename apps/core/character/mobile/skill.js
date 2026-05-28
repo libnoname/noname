@@ -5,16 +5,14 @@ const skills = {
 	// 诸葛果
 	mbqirang: {
 		audio: 2,
-		trigger: {
-			player: "equipEnd",
-		},
+		trigger: { player: "equipEnd" },
 		frequent: true,
 		async content(event, trigger, player) {
-			const card = get.cardPile(card => get.type(card, "trick") === "trick");
+			const card = get.cardPile2(card => get.type2(card) === "trick");
 			if (card) {
 				const next = player.gain(card, "gain2");
 				next.gaintag.add("mbqirang");
-				game.log(player, "获得了", card);
+				await next;
 			}
 		},
 		ai: {
@@ -30,45 +28,44 @@ const skills = {
 		group: ["mbqirang_use"],
 		subSkill: {
 			use: {
-				audio: "mbqirang",
-				trigger: {
-					player: "useCard",
+				mod: {
+					targetInRange(card, player, target) {
+						if (!card.cards) {
+							return;
+						}
+						for (const cardx of card.cards) {
+							if (get.itemtype(cardx) == "card" && cardx.hasGaintag("mbqirang")) {
+								return true;
+							}
+						}
+					},
 				},
-				forced: true,
-				popup: false,
+				audio: "mbqirang",
+				trigger: { player: "useCard" },
 				filter(event, player) {
-					if (get.type(event.card, "trick") !== "trick") {
+					if (get.type2(event.card) != "trick") {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
 						if ((evt.relatedEvent || evt.getParent()) !== event) {
 							return false;
 						}
-						for (const i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("mbqirang")) {
-								return true;
-							}
-						}
-						return false;
+						return Object.values(evt.gaintag_map).flat().includes("mbqirang");
 					});
 				},
+				forced: true,
 				async content(event, trigger, player) {
-					trigger.nodistance = true;
 					await player.draw();
-					game.log(player, "发动了〖祈禳〗，摸了一张牌");
 				},
 			},
 		},
 	},
-	mbyvhua: {
+	mbyuhua: {
 		audio: 2,
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
-		locked: true,
 		filter(event, player) {
-			return player.countCards("h") > player.hp;
+			return player.countCards("h") > player.getHp();
 		},
 		mod: {
 			ignoredHandcard(card, player) {
@@ -83,24 +80,16 @@ const skills = {
 			},
 		},
 		async content(event, trigger, player) {
-			const types = new Set();
-			const cards = player.getCards("h");
-			for (const card of cards) {
-				const type = get.type(card);
-				if (type === "delay") {
-					types.add("trick");
-				} else {
-					types.add(type);
-				}
-			}
-			const num = Math.min(5, types.size);
+			const types = player
+				.getCards("h")
+				.map(card => get.type2(card))
+				.toUniqued();
+			const num = Math.min(5, types.length);
 			if (num > 0) {
 				await player.chooseToGuanxing(num);
 			}
 		},
-		ai: {
-			guanxing: true,
-		},
+		ai: { guanxing: true },
 	},
 	// 曹纯
 	mbshanjia: {
