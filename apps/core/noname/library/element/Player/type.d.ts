@@ -271,8 +271,10 @@ export interface EventChooseCooperationForParams {
 }
 
 export interface EventChooseToMoveParams extends ChooseBase {
+	list: any[];
 	forced?: boolean;
 	allowChooseAll?: boolean;
+	processAI?(list: any[]): any[] | false;
 }
 
 export type EventChooseToMoveNewParams = ChooseBase;

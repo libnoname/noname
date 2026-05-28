@@ -2186,6 +2186,7 @@ const skills = {
 		group: ["olmojin_equip", "olmojin_effect"],
 		subSkill: {
 			equip: {
+				audio: "olmojin",
 				trigger: {
 					player: ["phaseBegin"],
 				},
@@ -2199,6 +2200,7 @@ const skills = {
 				},
 			},
 			effect: {
+				audio: "olmojin",
 				trigger: {
 					player: "useCard",
 					global: "recoverBegin",
@@ -4744,7 +4746,7 @@ const skills = {
 	},
 	olchouniu: {
 		audio: true,
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			return player.isMinHp();
 		},

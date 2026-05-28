@@ -32641,7 +32641,7 @@ const skills = {
 		audio: "fanghun",
 		inherit: "fanghun",
 		trigger: {
-			player: "useCard",
+			player: "useCardToPlayered",
 			target: "useCardToTargeted",
 		},
 	},
@@ -37400,6 +37400,7 @@ const skills = {
 		},
 	},
 	zhuiji: {
+		audio: 2,
 		mod: {
 			globalFrom(from, to) {
 				if (from.hp >= to.hp) {

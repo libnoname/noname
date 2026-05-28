@@ -3508,9 +3508,9 @@ const skills = {
 				} else {
 					if (!toDebateList.includes(player)) {
 						if (current == player) {
-							current.chat(["我和你们开玩笑呢？！", "容我告老还乡"].randomGet());
+							current.chat(["我和你们开玩笑呢？！", "容我告老还乡", "我就不能歇会儿吗？！"].randomGet());
 						} else {
-							current.chat(["你走了，我们吃什么？"].randomGet());
+							current.chat(["你走了，我们吃什么？", "接着奏乐接着舞！"].randomGet());
 						}
 					} else {
 						current.addExpose(0.3);
@@ -3552,7 +3552,7 @@ const skills = {
 							const { targets, others } = evt.getParent(2);
 							const att = get.attitude(player, source);
 							if (!others.length) {
-								return color = att > 0 ? "black" : "red";
+								const color = att > 0 ? "black" : "red";
 								if (get.color(card) == color) {
 									return 10;
 								}
@@ -5237,137 +5237,134 @@ const skills = {
 		forced: true,
 		direct: true,
 		async content(event, trigger, player) {
-			const { targets } = event;
-			let count = Math.ceil(game.countPlayer() / 2);
+			const count = Math.ceil(game.countPlayer() / 2);
 			let result = await player
 				.chooseTarget(`伏匿：请选择至多${get.cnNumber(count)}名角色`, `令这些角色获得共计${get.cnNumber(count)}张【影】`, true, [1, count])
 				.set("ai", target => {
 					return get.attitude(get.player(), target) + get.event().getRand(target.playerid);
 				})
 				.forResult();
-			if (result.bool) {
-				let targets = result.targets.slice().sortBySeat(_status.currentPhase);
+			if (result?.bool) {
+				const targets = result.targets.slice().sortBySeat(_status.currentPhase);
 				player.logSkill("jsrgfuni", targets);
-			} else {
-				return;
-			}
-			let num = count / targets.length;
-			if (num == 1 || num == count) {
-				result = {
-					bool: true,
-					links: targets.map(current => {
-						return `${num}|${current.playerid}`;
-					}),
-				};
-			} else {
-				let dialog = ["伏匿：选择每名角色要获得的【影】数"];
-				let len = count - targets.length + 1;
-				for (let target of targets) {
-					dialog.addArray([
-						`<div class="text center">${get.translation(target)}</div>`,
-						[
-							Array.from({ length: len }).map((_, i) => {
-								return [`${i + 1}|${target.playerid}`, get.cnNumber(i + 1, true)];
-							}),
-							"tdnodes",
-						],
-					]);
-				}
-				result = await player
-					.chooseButton(dialog, true)
-					.set("filterButton", button => {
-						let total = 0,
-							info = button.link.split("|");
-						let numFix = 0;
-						for (let buttonx of ui.selected.buttons) {
-							let infox = buttonx.link.split("|");
-							let num = parseInt(infox[0]);
-							total += num;
-							if (infox[1] == info[1]) {
-								numFix = num;
+				const num = count / targets.length;
+				if (num == 1 || num == count) {
+					result = {
+						bool: true,
+						links: targets.map(current => {
+							return `${num}|${current.playerid}`;
+						}),
+					};
+				} else {
+					let dialog = ["伏匿：选择每名角色要获得的【影】数"];
+					let len = count - targets.length + 1;
+					for (let target of targets) {
+						dialog.addArray([
+							`<div class="text center">${get.translation(target)}</div>`,
+							[
+								Array.from({ length: len }).map((_, i) => {
+									return [`${i + 1}|${target.playerid}`, get.cnNumber(i + 1, true)];
+								}),
+								"tdnodes",
+							],
+						]);
+					}
+					result = await player
+						.chooseButton(dialog, true)
+						.set("filterButton", button => {
+							let total = 0,
+								info = button.link.split("|");
+							let numFix = 0;
+							for (let buttonx of ui.selected.buttons) {
+								let infox = buttonx.link.split("|");
+								let num = parseInt(infox[0]);
+								total += num;
+								if (infox[1] == info[1]) {
+									numFix = num;
+								}
 							}
-						}
-						return total + parseInt(info[0]) - numFix <= get.event().count;
-					})
-					.set("count", count)
-					.set("filterOk", () => {
-						let total = 0;
-						for (let buttonx of ui.selected.buttons) {
-							total += parseInt(buttonx.link.split("|")[0]);
-						}
-						return total == get.event().count;
-					})
-					.set("selectButton", () => {
-						return [get.event().len, Math.max(get.event().len, ui.selected.buttons.length) + 1];
-					})
-					.set("len", targets.length)
-					.set("custom", {
-						add: {},
-						replace: {
-							button(button) {
-								if (!_status.event.isMine()) {
-									return;
-								}
-								if (button.classList.contains("selectable") == false) {
-									return;
-								}
-								if (button.classList.contains("selected")) {
-									ui.selected.buttons.remove(button);
-									button.classList.remove("selected");
-									if (_status.multitarget || _status.event.complexSelect) {
-										game.uncheck();
-										game.check();
+							return total + parseInt(info[0]) - numFix <= get.event().count;
+						})
+						.set("count", count)
+						.set("filterOk", () => {
+							let total = 0;
+							for (let buttonx of ui.selected.buttons) {
+								total += parseInt(buttonx.link.split("|")[0]);
+							}
+							return total == get.event().count;
+						})
+						.set("selectButton", () => {
+							return [get.event().len, Math.max(get.event().len, ui.selected.buttons.length) + 1];
+						})
+						.set("len", targets.length)
+						.set("custom", {
+							add: {},
+							replace: {
+								button(button) {
+									if (!_status.event.isMine()) {
+										return;
 									}
-								} else {
-									let current = button.parentNode.querySelector(".selected");
-									if (current) {
-										ui.selected.buttons.remove(current);
-										current.classList.remove("selected");
+									if (button.classList.contains("selectable") == false) {
+										return;
 									}
-									button.classList.add("selected");
-									ui.selected.buttons.add(button);
-								}
-								game.check();
+									if (button.classList.contains("selected")) {
+										ui.selected.buttons.remove(button);
+										button.classList.remove("selected");
+										if (_status.multitarget || _status.event.complexSelect) {
+											game.uncheck();
+											game.check();
+										}
+									} else {
+										let current = button.parentNode.querySelector(".selected");
+										if (current) {
+											ui.selected.buttons.remove(current);
+											current.classList.remove("selected");
+										}
+										button.classList.add("selected");
+										ui.selected.buttons.add(button);
+									}
+									game.check();
+								},
 							},
-						},
-					})
-					.set("processAI", () => {
-						return get.event().aiResult;
-					})
-					.set(
-						"aiResult",
-						(() => {
-							let result = targets.map(i => {
-								return [i == player ? 2 : 1, i.playerid];
-							});
-							let rest = count - targets.length - 1;
-							while (rest--) {
-								result[Math.floor(Math.random() * result.length)][0]++;
-							}
-							return {
-								bool: true,
-								links: result.map(i => `${i[0]}|${i[1]}`),
-							};
-						})()
-					)
-					.forResult();
-			}
-			if (result.bool) {
-				let links = result.links;
-				let list = [];
-				for (let link of links) {
-					let info = link.split("|");
-					let id = info[1];
-					let target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-					player.line(target);
-					let yings = lib.card.ying.getYing(parseInt(info[0]));
-					list.push([target, yings]);
-					game.log(target, "获得了", yings);
+						})
+						.set("processAI", () => {
+							return get.event().aiResult;
+						})
+						.set(
+							"aiResult",
+							(() => {
+								let result = targets.map(i => {
+									return [i == player ? 2 : 1, i.playerid];
+								});
+								let rest = count - targets.length - 1;
+								while (rest--) {
+									result[Math.floor(Math.random() * result.length)][0]++;
+								}
+								return {
+									bool: true,
+									links: result.map(i => `${i[0]}|${i[1]}`),
+								};
+							})()
+						)
+						.forResult();
 				}
-				game.loseAsync({
-					gain_list: list,
-					animate: "gain2",
-				}).setContent("gaincardMultiple");
+				if (result?.bool) {
+					let links = result.links;
+					let list = [];
+					for (let link of links) {
+						let info = link.split("|");
+						let id = info[1];
+						let target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+						player.line(target);
+						let yings = lib.card.ying.getYing(parseInt(info[0]));
+						list.push([target, yings]);
+						game.log(target, "获得了", yings);
+					}
+					await game.loseAsync({
+						gain_list: list,
+						animate: "gain2",
+					}).setContent("gaincardMultiple");
+				}
 			}
 		},
 		subSkill: {
@@ -7598,6 +7595,7 @@ const skills = {
 		},
 		subSkill: {
 			after: {
+				audio: "jsrgxianzhu",
 				trigger: {
 					global: "damageSource",
 				},

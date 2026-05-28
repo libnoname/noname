@@ -672,26 +672,25 @@ game.import("card", function () {
 			},
 			caomu_skill: {
 				cardSkill: true,
-				trigger: { player: "phaseDrawBegin" },
-				popup: false,
 				charlotte: true,
+				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				content() {
+				popup: false,
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 				group: "caomu_skill2",
 			},
 			caomu_skill2: {
 				cardSkill: true,
-				popup: false,
+				charlotte: true,
+				trigger: { player: "phaseDrawEnd" },
 				forced: true,
-				trigger: { player: "phaseDrawAfter" },
-				content() {
-					var targets = game.filterPlayer(function (current) {
-						return get.distance(player, current) <= 1 && player != current;
-					});
+				popup: false,
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => get.distance(current, player) == 1 && player != current);
 					if (targets.length) {
-						game.asyncDraw(targets);
+						await game.asyncDraw(targets);
 					}
 				},
 			},

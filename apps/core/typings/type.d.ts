@@ -295,7 +295,7 @@ declare interface importModeConfig {
     /**
      * mode的start启动方法
      */
-    start: ContentFuncByAll;
+    start: ContentFuncByAll | ContentFuncsByAll;
     /**
      * mode的start启动之前的处理方法
      */

@@ -1889,37 +1889,45 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { (...args: any[]) => unknown } T
-	 * @param { T } func
-	 * @param { Parameters<T> } args
+	 * 向所有联机客户端广播并执行指定函数。
+	 *
+	 * 注意：`func`函数体内不能引用函数块外的作用域（如外层局部变量或闭包变量），
+	 * 否则客户端无法找到对应变量；需要的数据应通过`args`显式传入。
+	 *
+	 * @template { any[] } TParams
+	 * @param { (...args: TParams) => any } func
+	 * @param { TParams } args
 	 * @returns { void }
 	 */
 	broadcast(func, ...args) {
 		if (!lib.node || !lib.node.clients || game.online) {
 			return;
 		}
-		for (var i = 0; i < lib.node.clients.length; i++) {
-			if (lib.node.clients[i].inited) {
-				lib.node.clients[i].send.apply(lib.node.clients[i], arguments);
-			}
+		for (const client of lib.node.clients) {
+			client.send(func, ...args);
 		}
 	}
 	/**
-	 * @template { (...args: any[]) => unknown } T
-	 * @param { T } func
-	 * @param { Parameters<T> } args
+	 * 向所有联机客户端广播并执行指定函数，同时在主机上执行相同函数。
+	 *
+	 * 注意：联机场景下传入的`func`会被发送到客户端执行，函数体内不能引用函数块外的作用域
+	 * （如外层局部变量或闭包变量），否则客户端无法找到对应变量；需要的数据应通过 `args` 显式传入。
+	 *
+	 * @template { any[] } TParams
+	 * @param { (...args: TParams) => any } func
+	 * @param { TParams } args
 	 * @returns { void }
 	 */
 	broadcastAll(func, ...args) {
 		if (game.online) {
 			return;
 		}
-		game.broadcast.apply(this, arguments);
+		game.broadcast(func, ...args);
 		if (typeof func == "string") {
 			func = lib.message.client[func];
 		}
 		if (typeof func == "function") {
-			func.apply(this, args);
+			func(...args);
 		}
 	}
 	syncState() {
