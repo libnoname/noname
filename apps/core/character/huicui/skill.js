@@ -96,11 +96,17 @@ const skills = {
 
 			// 计算这些角色的最大手牌数（只计算手牌数，用于判断哪些角色需要弃牌）
 			let maxHandCount = -1;
-			for (let p of otherPlayers) {
+			const playersToDiscard = [];
+			for (const p of otherPlayers) {
 				let handNum = p.countCards("h");  // 只计算手牌数量（决定谁弃牌）
-				if (handNum > maxHandCount) maxHandCount = handNum;
+				if (handNum > maxHandCount) {
+					maxHandCount = handNum;
+					playersToDiscard.length = 1;
+					playersToDiscard[0] = p;
+				} else if (handNum === maxHandCount) {
+					playersToDiscard.push(p);
+				}
 			}
-			const playersToDiscard = otherPlayers.filter(p => p.countCards("h") === maxHandCount);
 
 			// 让这些角色依次弃置与展示牌类型相同的所有牌（包括手牌和装备区）
 			await game.doAsyncInOrder(playersToDiscard, async target => {
