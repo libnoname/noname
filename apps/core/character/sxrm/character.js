@@ -1,12 +1,10 @@
-import skills from "./skill";
-
 const characters = {
 	//嗔
-	sxrm_zhouyu:{
-		sex:"male",
+	sxrm_zhouyu: {
+		sex: "male",
 		group: "devil",
 		hp: 4,
-		skills:["sxrmjiehuo","sxrmxianger","sxrmmieguo"],
+		skills: ["sxrmjiehuo", "sxrmxianger", "sxrmmieguo"],
 		groupInGuozhan: "wu",
 	},
 	sxrm_sunshangxiang:{
