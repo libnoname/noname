@@ -108,7 +108,11 @@ const skills = {
 				if (hs.length) {
 					target.$throw(hs.length, 1e3);
 					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
-					await target.lose(hs, ui.cardPile, "insert");
+					await target.lose({
+						cards: hs, 
+						position: ui.cardPile, 
+						insert_card: true,
+					});
 				}
 			});
 		},
