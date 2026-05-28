@@ -5846,62 +5846,54 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		direct: true,
 		getEffect(player, target, event, list1, list2) {
-			let att = get.attitude(player, target);
+			const att = get.attitude(player, target);
 			if (att === 0) {
 				return 0;
 			}
-			let getv = function (name, player, arg) {
-				let v = event.getTempCache("sangu", player.playerid + name);
+			const getv = (name, player, arg) => {
+				let v = event.getTempCache("sangu", `${player.playerid}${name}`);
 				if (typeof v === "number") {
 					return v;
 				}
-				v = player.getUseValue({ name: name, storage: { sangu: true } }, arg);
-				event.putTempCache("sangu", player.playerid + name, v);
+				v = player.getUseValue({ name, storage: { sangu: true } }, arg);
+				event.putTempCache("sangu", `${player.playerid}${name}`, v);
 				return v;
 			};
 			if (att < 0) {
-				for (let i of list1) {
-					if (getv(i, target) <= 0 || getv(i, target) <= 0) {
+				for (const name of list1) {
+					if (getv(name, target) <= 0) {
 						return -att * Math.sqrt(get.threaten(target)) * 2;
 					}
 				}
 				return 0;
-			} else {
-				let list = list1.concat(player.hp > 1 ? list2 : []),
-					eff = 0;
-				list.sort(function (a, b) {
-					return getv(b, target) - getv(a, target);
-				});
-				list = list.slice(3);
-				for (let i of list) {
-					let res = getv(i, target);
-					if (res <= 5) {
-						break;
-					} else {
-						eff += res;
-					}
-				}
-				return Math.sqrt(eff / 1.5) * att;
 			}
+			let list = list1.concat(player.hp > 1 ? list2 : []);
+			let eff = 0;
+			list.sort((a, b) => getv(b, target) - getv(a, target));
+			list = list.slice(3);
+			for (const name of list) {
+				const res = getv(name, target);
+				if (res <= 5) {
+					break;
+				}
+				eff += res;
+			}
+			return Math.sqrt(eff / 1.5) * att;
 		},
 		async content(event, trigger, player) {
 			const list1 = [];
 			const list2 = [];
 			const used = player.iterHistory("useCard").map(evt => evt.card.name).toArray();
 			for (const name of lib.inpile) {
-				let add = false;
-				const type = get.type(name);
-				if (name === "sha") {
-					add = true;
-				}
-				if (!add && type === "trick") {
-					const info = lib.card[name];
-					if (info && !info.singleCard && !info.notarget) {
-						add = true;
+				if (name !== "sha") {
+					const type = get.type(name);
+					if (type !== "trick") {
+						continue;
 					}
-				}
-				if (!add) {
-					continue;
+					const info = lib.card[name];
+					if (!info || info.singleCard || info.notarget) {
+						continue;
+					}
 				}
 				if (used.includes(name)) {
 					list1.push(name);
@@ -5961,7 +5953,7 @@ const skills = {
 							if (typeof v === "number") {
 								return v;
 							}
-							v = player.getUseValue({ name: name, storage: { sangu: true } });
+							v = player.getUseValue({ name, storage: { sangu: true } });
 							triggerEvent.putTempCache("sangu", `${player.playerid}${name}`, v);
 							return v;
 						};
@@ -6038,29 +6030,32 @@ const skills = {
 			},
 			viewas: {
 				hiddenCard(player, name) {
-					var storage = player.getStorage("sangu_effect");
-					if (storage.length) {
-						return name == storage[0];
+					const storage = player.getStorage("sangu_effect");
+					if (!storage.length) {
+						return;
 					}
+					return name === storage[0];
 				},
 				mod: {
 					cardname(card, player) {
-						if (_status.event.name != "chooseToUse" || _status.event.skill) {
+						if (_status.event.name !== "chooseToUse" || _status.event.skill) {
 							return;
 						}
-						var storage = player.getStorage("sangu_effect");
-						if (storage.length) {
-							return storage[0];
+						const storage = player.getStorage("sangu_effect");
+						if (!storage.length) {
+							return;
 						}
+						return storage[0];
 					},
 					cardnature(card, player) {
-						if (_status.event.name != "chooseToUse" || _status.event.skill) {
+						if (_status.event.name !== "chooseToUse" || _status.event.skill) {
 							return;
 						}
-						var storage = player.getStorage("sangu_effect");
-						if (storage.length) {
-							return false;
+						const storage = player.getStorage("sangu_effect");
+						if (!storage.length) {
+							return;
 						}
+						return false;
 					},
 				},
 				trigger: { player: ["useCard", "respond"] },
