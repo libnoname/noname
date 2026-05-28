@@ -5567,98 +5567,106 @@ const skills = {
 			if (player.hasSkill("diezhang_used")) {
 				return false;
 			}
-			if (event.type != "card") {
+			if (event.type !== "card") {
 				return false;
 			}
-			var evt = event._neutralize_event;
-			var user, responder;
-			if (event.name == "sha") {
-				user = event.player;
+			const evt = event._neutralize_event;
+			const user = event.player;
+			let responder;
+			if (event.name === "sha") {
 				responder = event.target;
 			} else {
-				if (evt.type != "card") {
+				if (evt.type !== "card") {
 					return false;
 				}
-				user = event.player;
 				responder = evt.player;
 			}
 			if (!player.storage.diezhang) {
-				if (user != player || responder == player) {
+				if (user !== player || responder === player) {
 					return false;
 				}
 				return player.countDiscardableCards(player, "he") > 0 && player.canUse("sha", responder, false);
-			} else {
-				if (user == player || responder != player) {
-					return false;
-				}
-				return player.canUse("sha", user, false);
 			}
+			if (user === player || responder !== player) {
+				return false;
+			}
+			return player.canUse("sha", user, false);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var evt = trigger._neutralize_event;
-			var user, responder;
-			if (trigger.name == "sha") {
-				user = trigger.player;
-				responder = trigger.target;
-			} else {
-				user = trigger.player;
-				responder = evt.player;
-			}
-			var num = player.storage.duanwan ? 2 : 1;
-			event.num = num;
-			if (!player.storage.diezhang) {
-				var target = responder;
-				event.target = target;
-				var next = player
-					.chooseToDiscard(get.prompt("diezhang", target), "弃置一张牌，视为对其使用" + get.cnNumber(num) + "张【杀】", "he")
-					.set("ai", card => {
-						if (_status.event.goon) {
-							return 6 - get.value(card);
-						}
-						return 0;
+		async cost(event, trigger, player) {
+			const evt = trigger._neutralize_event;
+			const user = trigger.player;
+			const responder = trigger.name === "sha" ? trigger.target : evt.player;
+			const num = player.storage.duanwan ? 2 : 1;
+			const target = player.storage.diezhang ? user : responder;
+			const next = player.storage.diezhang
+				? player.chooseBool({
+						prompt: get.prompt("diezhang", target),
+						prompt2: `摸${get.cnNumber(num)}张牌，视为对其使用一张【杀】`,
+						ai() {
+							return get.event().goon;
+						},
 					})
-					.set("logSkill", ["diezhang", target]);
-			} else {
-				var target = user;
-				event.target = target;
-				var next = player
-					.chooseBool(get.prompt("diezhang", target), "摸" + get.cnNumber(num) + "张牌，视为对其使用一张【杀】")
-					.set("ai", () => _status.event.goon);
-			}
+				: player
+						.chooseToDiscard({
+							prompt: get.prompt("diezhang", target),
+							prompt2: `弃置一张牌，视为对其使用${get.cnNumber(num)}张【杀】`,
+							position: "he",
+							ai(card) {
+								return get.event().goon ? 6 - get.value(card) : 0;
+							},
+						})
+						.set("chooseonly", true);
 			next.set("goon", get.effect(target, { name: "sha" }, player, player) > 0);
-			"step 1";
-			if (result.bool) {
-				if (player.storage.duanwan) {
-					player.addTempSkill("diezhang_used");
-				}
-				player.changeZhuanhuanji("diezhang");
-				if (!result.cards || !result.cards.length) {
-					player.logSkill("diezhang", target);
-					player.draw(num, "nodelay");
-					player.useCard({ name: "sha", isCard: true }, target, false);
-				} else {
-					while (num--) {
-						player.useCard({ name: "sha", isCard: true }, target, false);
-					}
-				}
+			event.result = await next.forResult();
+			event.result.targets = [target];
+			event.result.cost_data = {
+				num,
+			};
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			if (player.storage.duanwan) {
+				player.addTempSkill("diezhang_used");
+			}
+			player.changeZhuanhuanji("diezhang");
+
+			const target = event.targets[0];
+			const num = event.cost_data.num;
+			if (!event.cards?.length) {
+				await player.draw({
+					num,
+					nodelay: true,
+				});
+				await player.useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true }),
+					targets: [target], 
+					addCount: false,
+				});
+				return;
+			}
+			await player.discard({ cards: event.cards });
+			for (let i = 0; i < num; ++i) {
+				await player.useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true }),
+					targets: [target], 
+					addCount: false,
+				});
 			}
 		},
 		marktext: "☯",
 		mark: true,
 		intro: {
 			content(storage, player) {
-				var cnNum = get.cnNumber(player.storage.duanwan ? 2 : 1);
+				const cnNum = get.cnNumber(player.storage.duanwan ? 2 : 1);
 				if (storage) {
-					return "当其他角色使用牌被你抵消后，你可以摸" + cnNum + "张牌，视为对其使用一张【杀】。";
+					return `当其他角色使用牌被你抵消后，你可以摸${cnNum}张牌，视为对其使用一张【杀】。`;
 				}
-				return "当你使用牌被其他角色抵消后，你可以弃置一张牌，视为对其使用" + cnNum + "张【杀】。";
+				return `当你使用牌被其他角色抵消后，你可以弃置一张牌，视为对其使用${cnNum}张【杀】。`;
 			},
 		},
 		mod: {
 			cardUsable(card, player, num) {
-				if (!player.storage.duanwan && card.name == "sha") {
+				if (!player.storage.duanwan && card.name === "sha") {
 					return num + 1;
 				}
 			},
@@ -5672,20 +5680,20 @@ const skills = {
 		animationColor: "soil",
 		limited: true,
 		filter(event, player) {
-			return event.type == "dying" && player == event.dying;
+			return event.type === "dying" && player === event.dying;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.changeZhuanhuanji("diezhang");
 			player.awakenSkill(event.name);
-			var num = 2 - player.hp;
+			const num = 2 - player.hp;
 			if (num > 0) {
-				player.recover(num);
+				await player.recover({ num });
 			}
 		},
 		ai: {
 			save: true,
 			skillTagFilter(player, tag, target) {
-				return player == target;
+				return player === target;
 			},
 			result: { player: 1 },
 		},
