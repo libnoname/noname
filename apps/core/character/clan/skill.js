@@ -4,165 +4,227 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const skills = {
 	// 族陆郁生
 	clanshixi: {
-		audio: 2,
-		trigger: {
-			player: "useCard",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
 		},
-		forced: true,
-		filterx(card, player) {
-			if (get.type(card, null, false) !== "trick") return false;
-			const info = get.info(card, player);
-			if (!info || info.notarget) return false;
-			if (info.selectTarget && info.selectTarget !== 1) return false;
-			return info.type === "trick";
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
 		},
-		filter(event, player) {
-			const card = event.card;
-			if (!card || get.type(card, null, false) !== "trick") return false;
-			if (get.is.virtualCard(card) || get.is.convertedCard(card)) return false;
-			const info = get.info(card, player);
-			if (!info || info.notarget) return false;
-			if (info.selectTarget && info.selectTarget !== 1) return false;
-			if (info.type !== "trick") return false;
-			const suit = get.suit(card);
-			if (suit === "none") return false;
-			const key = `${suit}+${get.type2(card)}`;
-			const storage = player.getStorage("clanshixi") || {};
-			return !(key in storage);
-		},
-		async content(event, trigger, player) {
-			const suit = get.suit(trigger.card);
-			const name = trigger.card.name;
-			const key = `${suit}+${get.type2(trigger.card)}`;
-			player.storage.clanshixi ??= {};
-			player.storage.clanshixi[key] = name;
-			player.markSkill("clanshixi");
-			game.log(player, "记录了", "#y" + get.translation(name), "（" + get.translation(suit) + "）");
-		},
-		mark: true,
-		intro: {
-			markcount(storage) {
-				if (!storage) return 0;
-				return Object.keys(storage).length;
-			},
-			mark(dialog, storage) {
-				if (!storage || Object.keys(storage).length === 0) {
-					return "尚未记录任何牌";
-				}
-				const list = Object.entries(storage).map(([key, name]) => {
-					const suit = key.split("+")[0];
-					return `${get.translation(name)}（${get.translation(suit)}）`;
+		onChooseToUse(event) {
+			if (!game.online && !event.clanshixi) {
+				const player = event.player;
+				const storage = player.getStorage("clanshixi", {});
+				const list = Object.entries(storage).filter(([suit, name]) => {
+					if (!player.hasCards("he", card => get.suit(card, player) === suit)) {
+						return false;
+					}
+					const card = get.autoViewAs({ name, isCard: true }, "unsure");
+					if (!lib.skill.clanshixi.filterx(card, player) || !event.filterCard(card, player, event)) {
+						return false;
+					}
+					return true;
 				});
-				return "已记录：" + list.join("、");
-			},
-		},
-		group: "clanshixi_use",
-		subSkill: {
-			use: {
-				audio: "clanshixi",
-				enable: "phaseUse",
-				filter(event, player) {
-					if (event.respondTo) return false;
-					const storage = player.getStorage("clanshixi") || {};
-					for (const [key, name] of Object.entries(storage)) {
-						const suit = key.split("+")[0];
-						if (!player.hasCard(card => get.suit(card) === suit, "he")) continue;
-						const card = get.autoViewAs({ name, isCard: true });
-						if (!lib.skill.clanshixi.filterx(card, player)) continue;
-						return true;
-					}
-					return false;
-				},
-				async content(event, trigger, player) {
-					const list = [];
-					const storage = player.getStorage("clanshixi") || {};
-					for (const [key, name] of Object.entries(storage)) {
-						const suit = key.split("+")[0];
-						const suitCards = player.getCards("he", card => get.suit(card) === suit);
-						if (suitCards.length > 0) {
-							list.push(get.translation(suit) + "：" + get.translation(name));
-						}
-					}
-					if (list.length === 0) {
-						return;
-					}
-					list.push("cancel2");
-					const result = await player
-						.chooseControl(list)
-						.set("prompt", "拾昔：选择要使用的锦囊")
-						.set("ai", () => {
-							const player = get.player();
-							let best = "cancel2";
-							let maxVal = 0;
-							const storage = player.getStorage("clanshixi") || {};
-							for (const [key, name] of Object.entries(storage)) {
-								const suit = key.split("+")[0];
-								const suitCards = player.getCards("he", card => get.suit(card) === suit);
-								if (suitCards.length === 0) continue;
-								const val = player.getUseValue({ name, isCard: true });
-								if (val > maxVal) {
-									maxVal = val;
-									best = get.translation(suit) + "：" + get.translation(name);
-								}
-							}
-							return best;
-						})
-						.forResult();
-					if (result.control === "cancel2") {
-						return;
-					}
-					const choiceText = result.control;
-					let cardName = "";
-					let suit = "";
-					for (const [key, name] of Object.entries(storage)) {
-						const currentSuit = key.split("+")[0];
-						if (get.translation(currentSuit) + "：" + get.translation(name) === choiceText) {
-							cardName = name;
-							suit = currentSuit;
-							break;
-						}
-					}
-					if (!cardName || !suit) {
-						return;
-					}
-					const suitCards = player.getCards("hes", card => get.suit(card) === suit);
-					if (suitCards.length === 0) {
-						return;
-					}
-					player.logSkill("clanshixi");
-					game.log(player, "弃置了", suitCards.length, "张", get.translation(suit), "牌");
-					await player.discard(suitCards);
-					const vCard = new lib.element.VCard({
-						name: cardName,
-						cards: suitCards,
-					});
-					await player.chooseUseTarget(vCard, true, false);
-				},
-			},
+				event.set("clanshixi", list);
+			}
 		},
 		hiddenCard(player, name) {
-			const storage = player.getStorage("clanshixi") || {};
-			for (const [key, cardName] of Object.entries(storage)) {
-				if (cardName === name) {
-					const suit = key.split("+")[0];
-					if (player.hasCard(card => get.suit(card, player) === suit, "he")) {
-						const card = get.autoViewAs({ name, isCard: true });
-						if (lib.skill.clanshixi.filterx(card, player)) {
-							return true;
-						}
-					}
+			const storage = player.getStorage("clanshixi", {});
+			for (const [suit, cardName] of Object.entries(storage)) {
+				if (cardName == name && player.hasCards("he", card => get.suit(card, player) === suit)) {
+					return true;
 				}
 			}
 			return false;
 		},
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			return event.clanshixi?.length > 0;
+		},
+		filterx(card, player) {
+			if (get.type(card, null, false) !== "trick") {
+				return false;
+			}
+			const info = get.info(card, player);
+			if (!info || info.notarget) {
+				return false;
+			}
+			if (info.selectTarget && info.selectTarget !== 1) {
+				return false;
+			}
+			return info.type === "trick";
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.addNewRowList(player.getCards("he"), "suit", player);
+				const storage = player.getStorage("clanshixi", {});
+				const str = Object.entries(storage)
+					.map(([suit, name]) => {
+						return `${get.translation(suit)}：${get.translation(name)}`;
+					})
+					.join("；");
+				const dialog = ui.create.dialog();
+				dialog.add([
+					[[`###拾昔###<div class="text center">将一种花色的所有牌置入弃牌堆视为使用对应花色记录的普通锦囊牌<br>当前花色及对应的牌：${str}</div>`], "addNewRow"],
+					[
+						dialog => {
+							dialog.classList.add("fullheight");
+							dialog.forcebutton = false;
+							dialog._scrollset = false;
+						},
+						"handle",
+					],
+					list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+				]);
+				dialog.direct = true;
+				return dialog;
+			},
+			filter(button, player) {
+				if (!button.links.length) {
+					return false;
+				}
+				const evt = get.event().getParent();
+				return evt.clanshixi.some(([suit, name]) => suit === button.link);
+			},
+			check(button) {
+				const player = get.player();
+				const evt = get.event().getParent();
+				const { clanshixi } = evt;
+				const name = clanshixi.find(([suit, name]) => suit === button.link)[1];
+				if (button.links.length >= 3) {
+					return 0;
+				}
+				if (evt.type != "phase") {
+					return 1;
+				}
+				return get.player().getUseValue({ name: name });
+			},
+			backup(links, player) {
+				return {
+					audio: "clanshixi",
+					suit: links[0],
+					filterCard: { suit: links[0] },
+					selectCard: -1,
+					position: "he",
+					popname: true,
+					viewAs: {
+						name: player.storage.clanshixi[links[0]],
+						cards: [],
+						isCard: true,
+					},
+					ignoreMod: true,
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("clanshixi");
+						const cards = event.result.cards;
+						await player.loseToDiscardpile(cards);
+						const viewAs = new lib.element.VCard({ name: event.result.card.name, isCard: true });
+						event.result.card = viewAs;
+						event.result.cards = [];
+					},
+				};
+			},
+			prompt(links, player) {
+				const suit = links[0];
+				const cards = player.getCards("he", { suit });
+				const card = { name: player.storage.clanshixi[suit] };
+				return `###拾昔###将${get.translation(cards)}置入弃牌堆，视为使用【${get.translation(card)}】`;
+			},
+		},
+		mark: true,
+		intro: {
+			markcount(storage = {}) {
+				if (!storage) {
+					return 0;
+				}
+				return Object.keys(storage).length;
+			},
+			mark(dialog, storage = {}) {
+				if (!storage || Object.keys(storage).length === 0) {
+					return "当前暂无记录";
+				}
+				let str = "已记录花色和牌名：<br>";
+				for (const suit of lib.suit.slice()) {
+					const name = storage[suit];
+					if (name) {
+						str += get.translation(suit) + "：" + get.poptip(name) + "<br>";
+					}
+				}
+				return str;
+			},
+		},
 		ai: {
-			order: 7,
+			order(item, player) {
+				const storage = player.getStorage("clanshixi", {});
+				const list = Object.entries(storage)
+					.filter(([suit, name]) => player.hasCards("he", card => get.suit(card, player) === suit))
+					.map(([suit, name]) => {
+						return { name };
+					})
+					.filter(card => player.getUseValue(card, true, true) > 0);
+				if (!list.length) {
+					return 0;
+				}
+				list.sort((a, b) => (player.getUseValue(b, true, true) || 0) - (player.getUseValue(a, true, true) || 0));
+				return get.order(list[0], player) * 0.99;
+			},
 			result: {
 				player(player) {
 					if (_status.event.dying) {
 						return get.attitude(player, _status.event.dying);
 					}
 					return 1;
+				},
+			},
+		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					const history = player.getAllHistory("useCard", evt => get.suit(evt.card) !== "none" && lib.skill.clanshixi.filterx(evt.card, player));
+					if (history.length) {
+						player.storage.clanshixi ??= {};
+						const storage = player.storage.clanshixi;
+						for (const evt of history) {
+							if (Object.keys(storage).length == lib.suits.length) {
+								break;
+							}
+							const card = evt.card;
+							const suit = get.suit(card);
+							const name = get.name(card);
+							if (!(suit in storage)) {
+								player.storage.clanshixi[suit] = name;
+							}
+						}
+						player.markSkill("clanshixi");
+					}
+				},
+				onremove(player, skill) {
+					player.setStorage("clanshixi", null, true);
+				},
+				audio: "clanshixi",
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					const card = event.card;
+					if (!lib.skill.clanshixi.filterx(card, player)) {
+						return false;
+					}
+					const suit = get.suit(card);
+					if (suit === "none") {
+						return false;
+					}
+					const storage = player.getStorage("clanshixi", {});
+					return !(suit in storage);
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					const suit = get.suit(trigger.card);
+					const name = trigger.card.name;
+					player.storage.clanshixi ??= {};
+					player.storage.clanshixi[suit] = name;
+					player.markSkill("clanshixi");
+					game.log(player, "记录了", "#y" + get.translation(name), "（" + get.translation(suit) + "）");
 				},
 			},
 		},

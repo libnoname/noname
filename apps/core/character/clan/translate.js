@@ -23,8 +23,8 @@ const translates = {
 
 	clan_luyusheng: "族陆郁生",
 	clan_luyusheng_prefix: "族",
-	clan_shixi: "拾昔",
-	clan_shixi_info: "你首次使用一个花色的单目标普通锦囊牌时，记录牌名和花色。当你需要使用记录牌时，你可将所有对应花色的牌置入弃牌堆，视为使用之。",
+	clanshixi: "拾昔",
+	clanshixi_info: "你可以将一种花色的所有牌置入弃牌堆，视为使用你本局游戏首次使用的此花色单目标普通锦囊牌。",
 	clan_jianbai: "坚白",
 	clan_jianbai_info: "锁定技，你每回合首次使用一种类型的牌后，你保留一个花色，重铸其余牌。此回合结束时，你交给一名其他角色一张牌并摸X张牌（X为此牌本回合被保留的次数）。",
 	clan_wangshen: "族王沈",
