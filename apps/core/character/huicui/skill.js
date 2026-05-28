@@ -70,50 +70,49 @@ const skills = {
 								if (target2.hasSkillTag("nogain")) {
 									att /= 9;
 								}
-									return 4 - att;
-								}
-								return -att;
-							},
-						})
-						.forResult();
-					if (result?.targets?.length) {
-						const { cards: cards2, targets: targets2 } = result;
-						target.line(targets2);
-						if (!cards2?.length) {
-							await target.gainPlayerCard({
-								target: targets2[0],
-								position: "he",
-								forced: true,
-							});
-						} else {
-							await target.give(cards2, targets2[0]);
-						}
+								return 4 - att;
+							}
+							return -att;
+						},
+					})
+					.forResult();
+				if (result?.targets?.length) {
+					const { cards: cards2, targets: targets2 } = result;
+					target.line(targets2);
+					if (!cards2?.length) {
+						await target.gainPlayerCard({
+							target: targets2[0],
+							position: "he",
+							forced: true,
+						});
+					} else {
+						await target.give(cards2, targets2[0]);
 					}
-				});
-				const otherPlayers = game.filterPlayer(p => p !== player);
-
-				// 计算这些角色的最大手牌数（只计算手牌数，用于判断哪些角色需要弃牌）
-				let maxHandCount = -1;
-				for (let p of otherPlayers) {
-					let handNum = p.countCards("h");  // 只计算手牌数量（决定谁弃牌）
-					if (handNum > maxHandCount) maxHandCount = handNum;
 				}
-				const playersToDiscard = otherPlayers.filter(p => p.countCards("h") === maxHandCount);
+			});
+			const otherPlayers = game.filterPlayer(p => p !== player);
 
-				// 让这些角色依次弃置与展示牌类型相同的所有牌（包括手牌和装备区）
-				await game.doAsyncInOrder(playersToDiscard, async target => {
+			// 计算这些角色的最大手牌数（只计算手牌数，用于判断哪些角色需要弃牌）
+			let maxHandCount = -1;
+			for (let p of otherPlayers) {
+				let handNum = p.countCards("h");  // 只计算手牌数量（决定谁弃牌）
+				if (handNum > maxHandCount) maxHandCount = handNum;
+			}
+			const playersToDiscard = otherPlayers.filter(p => p.countCards("h") === maxHandCount);
 
-					await target.showHandcards();
-					const hs = target.getCards("he", card2 => get.type2(card2) === type);
+			// 让这些角色依次弃置与展示牌类型相同的所有牌（包括手牌和装备区）
+			await game.doAsyncInOrder(playersToDiscard, async target => {
+				await target.showHandcards();
+				const hs = target.getCards("he", card2 => get.type2(card2) === type);
 
-					if (hs.length) {
-						target.$throw(hs.length, 1e3);
-						game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
-						await target.lose(hs, ui.cardPile, "insert");
-					}
-				});
-			},
+				if (hs.length) {
+					target.$throw(hs.length, 1e3);
+					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
+					await target.lose(hs, ui.cardPile, "insert");
+				}
+			});
 		},
+	},
 	dczhuguo: {
 		audio: 2,
 		forced: true,
