@@ -104,7 +104,7 @@ const skills = {
 		},
 		mod: {
 			aiValue(player, card, num) {
-				if ((player.storage.mbshanjia ?? 0) < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
+				if (player.countMark("mbshanjia") < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
 					return num / player.hp;
 				}
 			},
@@ -124,15 +124,14 @@ const skills = {
 					}
 				}
 			}
-			player.storage.mbshanjia = num;
 			if (num > 0) {
-				player.markSkill("mbshanjia");
+				player.addMark("mbshanjia", num, false);
 			}
 		},
 		async content(event, trigger, player) {
 			await player.draw(3);
 			lib.skill.mbshanjia.sync(player);
-			const num = 3 - (player.storage.mbshanjia ?? 0);
+			const num = 3 - player.countMark("mbshanjia");
 			let result;
 			if (num > 0) {
 				result = await player
@@ -163,15 +162,18 @@ const skills = {
 				player.addTempSkill("mbshanjia_nodis", "phaseChange");
 			}
 			if (bool1) {
-				player.addTempSkill("mbshanjia_sha", "phaseChange");
-				await player.chooseUseTarget({ name: "sha", isCard: true, addCount: false, nodistance: true }, "缮甲：是否视为使用一张【杀】？", false);
+				await player.chooseUseTarget({
+					card: new lib.element.VCard({ name: "sha", isCard: true }),
+					addCount: false,
+					prompt: "缮甲：是否视为使用一张无任何次数限制的【杀】？",
+				});
 			}
 		},
 		ai: {
 			order: 10,
 			result: {
 				player(player) {
-					const lostEquip = player.storage.mbshanjia ?? 0;
+					const lostEquip = player.countMark("mbshanjia");
 					const discardNum = 3 - lostEquip;
 					if (discardNum <= 0) {
 						return 3;
@@ -205,9 +207,7 @@ const skills = {
 			nodis: {
 				mark: true,
 				charlotte: true,
-				intro: {
-					content: "使用牌无距离限制",
-				},
+				intro: { content: "使用牌无距离限制" },
 				mod: {
 					targetInRange: () => true,
 				},
