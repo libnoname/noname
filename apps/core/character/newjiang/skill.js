@@ -4725,7 +4725,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he", card => lib.skill.tongwei.filterCard(card, player)) > 1 && game.hasPlayer(i => i != player);
+			return player.countCards("he", card => lib.skill.tongwei.filterCard(card, player)) > 1 && game.hasPlayer(i => i !== player);
 		},
 		filterTarget: lib.filter.notMe,
 		filterCard: lib.filter.cardRecastable,
@@ -4736,18 +4736,17 @@ const skills = {
 		delay: false,
 		popname: true,
 		check(card) {
-			var num = 6.5;
+			let num = 6.5;
 			if (ui.selected.cards.length) {
-				var cardx = ui.selected.cards[0];
+				const cardx = ui.selected.cards[0];
 				num = get.number(cardx);
 			}
-			var del = Math.abs(get.number(card) - num);
+			const del = Math.abs(get.number(card) - num);
 			return 5 + del / 5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.recast(cards);
-			"step 1";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.recast(cards);
 			const numbers = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
 			target.when("useCard1").step(async (event, trigger, player) => {
 				trigger._tongwei_checked = true;
@@ -4758,50 +4757,43 @@ const skills = {
 				.assign({
 					mod: {
 						aiOrder(player, card, num) {
-							var number = get.number(card);
-							if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
+							const number = get.number(card);
+							if (typeof number !== "number" || number < numbers[0] || number > numbers[1]) {
 								return num + 10;
 							}
 						},
 					},
 				})
-				.filter((event, player) => {
-					return event._tongwei_checked;
-				})
+				.filter((event, player) => event._tongwei_checked)
 				.step(async (event, trigger, player) => {
 					const number = get.number(trigger.card);
-					if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
+					if (typeof number !== "number" || number < numbers[0] || number > numbers[1]) {
 						return;
 					}
-					const names = ["sha", "guohe"].filter(name => playerx.canUse({ name: name, isCard: true }, player, false));
+					const names = ["sha", "guohe"].filter(name => playerx.canUse({ name, isCard: true }, player, false));
 					let result;
 					if (!names.length) {
 						return;
-					} else if (names.length == 1) {
+					}
+					if (names.length === 1) {
 						result = { links: [[null, null, names[0]]] };
 					} else {
+						const choice = names
+							.map(name => [name, get.effect(player, { name, isCard: true }, playerx, playerx)])
+							.sort((a, b) => b[1] - a[1])[0][0];
 						result = await playerx
-							.chooseButton([`请选择要视为对${get.translation(player)}使用的牌`, [names, "vcard"]], true)
-							.set("ai", button => {
-								return button.link[0][2] == _status.event.choice;
+							.chooseButton({
+								createDialog: [`请选择要视为对${get.translation(player)}使用的牌`, [names, "vcard"]], 
+								forced: true,
+								ai(button) {
+									return button.link[0][2] === _status.event.choice;
+								}
 							})
-							.set(
-								"choice",
-								(function () {
-									const list = names
-										.map(name => {
-											return [name, get.effect(player, { name: name, isCard: true }, playerx, playerx)];
-										})
-										.sort((a, b) => {
-											return b[1] - a[1];
-										});
-									return list[0][0];
-								})()
-							)
+							.set("choice", choice)
 							.forResult();
 					}
 					const name = result.links[0][2];
-					const card = { name: name, isCard: true };
+					const card = { name, isCard: true };
 					if (playerx.canUse(card, player, false)) {
 						await playerx.useCard(card, player, "tongwei");
 					}
