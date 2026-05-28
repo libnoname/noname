@@ -5406,66 +5406,72 @@ const skills = {
 		audio: 2,
 		trigger: { global: "cardsDiscardAfter" },
 		filter(event, player) {
-			if (!player.getExpansions("duwang").filter(i => i.name != "sha").length) {
+			if (!player.getExpansions("duwang").filter(card => card.name !== "sha").length) {
 				return false;
 			}
-			var evt = event.getParent();
-			if (evt.name != "orderingDiscard") {
+			const evt = event.getParent();
+			if (evt.name !== "orderingDiscard") {
 				return false;
 			}
-			var evtx = evt.relatedEvent || evt.getParent();
+			const evtx = evt.relatedEvent || evt.getParent();
 			return (
-				evtx.name == "useCard" &&
-				evtx.card.name == "sha" &&
+				evtx.name === "useCard" &&
+				evtx.card.name === "sha" &&
 				evtx.card.isCard &&
 				event.cards.filterInD("d").length &&
-				game.hasPlayer2(current =>
-					current.hasHistory("sourceDamage", evtxx => {
-						return evtxx.card == evtx.card;
-					})
-				)
+				game.hasPlayer2(current => current.hasHistory("sourceDamage", evtxx => evtxx.card === evtx.card))
 			);
 		},
-		direct: true,
 		group: "cibei_fullyReady",
-		content() {
-			"step 0";
-			player
-				.chooseButton([
-					"###" +
-						get.prompt(event.name) +
-						'###<div class="text center">将一张“刺”置入弃牌堆，并将' +
-						get.translation(trigger.cards.filterInD("d")) +
-						"置入“刺”</div>",
-					player.getExpansions("duwang"),
-				])
-				.set("filterButton", button => {
-					return button.link.name != "sha";
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill(event.name);
-				player.loseToDiscardpile(result.links);
-				player.addToExpansion(trigger.cards.filterInD("d"), "gain2").gaintag.add("duwang");
-				if (game.hasPlayer(current => current.countDiscardableCards(player, "hej") > 0)) {
-					player
-						.chooseTarget("刺北：弃置一名角色区域内的一张牌", true, (card, player, target) => {
-							return target.countDiscardableCards(player, "hej") > 0;
-						})
-						.set("ai", target => {
-							return get.effect(target, { name: "guohe" }, _status.event.player);
-						});
-				}
-			} else {
-				event.finish();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseButton({
+					createDialog: [`###${get.prompt(event.name)}###<div class="text center">将一张“刺”置入弃牌堆，并将${get.translation(trigger.cards.filterInD("d"))}置入“刺”</div>`, player.getExpansions("duwang")],
+					filterButton(button) {
+						return button.link.name !== "sha";
+					}
+				})
+				.set("filterButton", button => button.link.name !== "sha")
+				.forResult();
+			event.result.cards = event.result.links;
+		},
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const loseEvent = player.loseToDiscardpile({ cards });
+			const expansionEvent = player.addToExpansion({
+				cards: trigger.cards.filterInD("d"),
+				animate: "gain2",
+				gaintag: ["duwang"],
+			});
+			await loseEvent;
+			await expansionEvent;
+			if (!game.hasPlayer(current => current.hasDiscardableCards(player, "hej"))) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				player.discardPlayerCard(target, "hej", true);
-				player.addExpose(0.1);
+			const result = await player
+				.chooseTarget({
+					prompt: "刺北：弃置一名角色区域内的一张牌",
+					filterTarget(card, player, target) {
+						return target.hasDiscardableCards(player, "hej");
+					},
+					forced: true,
+					ai(target) {
+						return get.effect(target, { name: "guohe" }, get.player());
+					}
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target);
+			const discardEvent = player.discardPlayerCard({
+				target,
+				position: "hej", 
+				forced: true,
+			});
+			player.addExpose(0.1);
+			await discardEvent;
 		},
 		ai: {
 			combo: "duwang",
@@ -5477,12 +5483,17 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					var storage = player.getExpansions("duwang");
-					return storage.length > 0 && storage.every(i => i.name == "sha");
+					const storage = player.getExpansions("duwang");
+					return storage.length > 0 && storage.every(i => i.name === "sha");
 				},
-				content() {
-					player.gain(player.getExpansions("duwang"), "gain2").gaintag.add("cibei_mark");
+				async content(event, trigger, player) {
+					const next = player.gain({
+						cards: player.getExpansions("duwang"), 
+						animate: "gain2",
+						gaintag: ["cibei_mark"],
+					});
 					player.addSkill("cibei_mark");
+					await next;
 				},
 			},
 			mark: {
@@ -5494,23 +5505,18 @@ const skills = {
 				filter(event, player) {
 					return player.hasHistory("lose", evt => {
 						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != event) {
+						if (evtx !== event) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("cibei_mark")) {
-								return true;
-							}
-						}
-						return false;
+						return Object.values(evt.gaintag_map).some(tags => tags.includes("cibei_mark"));
 					});
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						var stat = player.getStat().card,
-							name = trigger.card.name;
-						if (typeof stat[name] == "number") {
+						const stat = player.getStat().card;
+						const name = trigger.card.name;
+						if (typeof stat[name] === "number") {
 							stat[name]--;
 						}
 					}
@@ -5535,21 +5541,13 @@ const skills = {
 						if (!card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
-							if (i.hasGaintag("cibei_mark")) {
-								return true;
-							}
-						}
+						return card.cards.some(i => i.hasGaintag("cibei_mark"));
 					},
 					cardUsable(card, player) {
 						if (!card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
-							if (i.hasGaintag("cibei_mark")) {
-								return true;
-							}
-						}
+						return card.cards.some(i => i.hasGaintag("cibei_mark"));
 					},
 				},
 			},
