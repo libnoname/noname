@@ -1309,165 +1309,128 @@ const skills = {
 	//刘璿
 	mogui: {
 		audio: 2,
-		trigger: {
-			player: ["phaseJudgeBegin", "phaseDrawBegin", "phaseDiscardBegin"],
-		},
-		direct: true,
+		trigger: { player: ["phaseJudgeBegin", "phaseDrawBegin", "phaseDiscardBegin"] },
 		filter(event, player) {
-			if (!player.storage.dc_mogui_options) {
-				player.storage.dc_mogui_options = ["judge", "draw", "discard"];
+			if (player != _status.currentPhase) {
+				return false;
 			}
-			const options = player.storage.dc_mogui_options;
+			const storage = player.getStorage("mogui");
 			if (event.name === "phaseJudge") {
-				return options.includes("judge");
+				return !storage.includes("phaseJudge");
 			}
 			if (event.name === "phaseDraw") {
-				return options.includes("draw");
+				return !storage.includes("phaseDraw");
 			}
 			if (event.name === "phaseDiscard") {
-				return options.includes("discard");
+				return !storage.includes("phaseDiscard") && player.hasCards("he");
 			}
 			return false;
 		},
-		async content(event, trigger, player) {
-			const options = player.storage.dc_mogui_options || ["judge", "draw", "discard"];
-			let choice = null;
-			if (trigger.name === "phaseJudge" && options.includes("judge")) {
-				choice = "judge";
-			} else if (trigger.name === "phaseDraw" && options.includes("draw")) {
-				choice = "draw";
-			} else if (trigger.name === "phaseDiscard" && options.includes("discard")) {
-				choice = "discard";
-			}
-			if (!choice) {
-				return;
-			}
-			const promptMap = {
-				judge: "漠规：是否令一名角色回复1点体力并弃置判定区所有牌？",
-				draw: "漠规：是否令一名角色摸牌阶段摸牌数+1，出牌阶段使用【杀】次数+1？",
-				discard: "漠规：是否弃置至多5张牌，令一名角色手牌上限+1并摸等量张牌？",
-			};
-			const result = await player
-				.chooseBool({
-					prompt: promptMap[choice],
-					ai: () => {
-						return true;
-					},
-				})
-				.forResult();
-			if (!result.bool) {
-				return;
-			}
-			player.storage.dc_mogui_options = options.filter(opt => opt !== choice);
-			if (choice === "judge") {
-				const result2 = await player
-					.chooseTarget({
-						prompt: "漠规：令一名角色回复1点体力并弃置判定区所有牌",
-						filterTarget: lib.filter.all,
-						ai(target) {
-							return get.attitude(get.player(), target) + get.recoverEffect(target, get.player(), get.player());
-						},
+		async cost(event, trigger, player) {
+			const storage = player.getStorage(event.skill);
+			if (trigger.name === "phaseJudge" && !storage.includes(trigger.name)) {
+				event.result = await player
+					.chooseTarget(get.prompt(event.skill), "令一名角色回复1点体力并弃置判定区所有牌")
+					.set("ai", target => {
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (!player.awakenedSkills.includes("zunjian")) {
+							return att;
+						}
+						const effectOk = get.recoverEffect(target, player, player) > 0;
+						const hasBadCards = target.hasCards("j", card => {
+							const vcard = {
+								name: card.viewAs || card.name,
+								cards: [card],
+							};
+							return get.effect(target, vcard, target, target) < -1;
+						});
+						return att * (effectOk + hasBadCards);
 					})
 					.forResult();
-				if (result2?.targets?.length) {
-					const [target] = result2.targets;
-					player.line(target);
-					await target.recover();
-					const cards = target.getCards("j");
-					if (cards.length > 0) {
-						await target.discard(cards);
-					}
-				}
-			}
-			if (choice === "draw") {
-				const result2 = await player
-					.chooseTarget({
-						prompt: "漠规：令一名角色摸牌阶段摸牌数+1，出牌阶段使用【杀】次数+1",
-						filterTarget: lib.filter.all,
-						ai(target) {
-							if (target === get.player()) {
-								return 2;
-							}
-							return get.sgnAttitude(get.player(), target);
-						},
+			} else if (trigger.name === "phaseDraw" && !storage.includes(trigger.name)) {
+				event.result = await player
+					.chooseTarget(get.prompt(event.skill), "令一名角色摸牌阶段摸牌数和使用【杀】的次数上限+1")
+					.set("ai", target => {
+						const player = get.player();
+						return get.attitude(player, target);
 					})
 					.forResult();
-				if (result2?.targets?.length) {
-					const [target] = result2.targets;
-					player.line(target);
-					target.addMark("dc_mogui_draw", 1, false);
-					target.addTempSkill("dc_mogui_draw_effect", { player: "phaseDrawAfter" });
-					target.addMark("dc_mogui_sha", 1, false);
-					target.addTempSkill("dc_mogui_sha_effect", { player: "phaseUseAfter" });
-				}
-			}
-			if (choice === "discard") {
-				const result2 = await player
-					.chooseCard({
-						prompt: "漠规：弃置至多5张牌（可弃置0张）",
+			} else if (trigger.name === "phaseDiscard" && !storage.includes(trigger.name)) {
+				event.result = await player
+					.chooseCardTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: "弃置至多五张牌，令一名角色手牌上限+1并摸等量张牌",
+						filterCard: lib.filter.cardDiscardable,
+						selectCard: [1, 5],
+						allowChooseAll: true,
+						filterTarget: true,
 						position: "he",
-						selectCard: [0, 5],
-						ai(card) {
-							return 5 - get.value(card);
+						ai1(card) {
+							return 7 - get.value(card);
+						},
+						ai2(target) {
+							const player = get.player();
+							return get.attitude(player, target);
 						},
 					})
 					.forResult();
-				if (result2?.cards?.length > 0) {
-					const cards = result2.cards;
-					const num = cards.length;
-					await player.discard(cards);
-					const result3 = await player
-						.chooseTarget({
-							prompt: `漠规：令一名角色手牌上限+1并摸${num}张牌`,
-							filterTarget: lib.filter.all,
-							ai(target) {
-								return get.attitude(get.player(), target) + num;
-							},
-						})
-						.forResult();
-					if (result3?.targets?.length) {
-						const [target] = result3.targets;
-						player.line(target);
-						target.addMark("dc_mogui_handcard", 1, false);
-						target.addTempSkill("dc_mogui_handcard_effect");
-						await target.draw(num);
-					}
-				}
 			}
 		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			player.markAuto(event.name, [trigger.name]);
+			if (trigger.name == "phaseJudge") {
+				await target.recover();
+				const cards = target.getCards("j");
+				if (cards.length > 0) {
+					await target.discard(cards, target);
+				}
+			} else if (trigger.name == "phaseDraw") {
+				target.addMark(event.name + "_effect", 1, false);
+				target.addSkill(event.name + "_effect");
+			} else if (trigger.name == "phaseDiscard") {
+				await player.discard(cards);
+				target.addMark(event.name + "_hand", 1, false);
+				target.addSkill(event.name + "_hand");
+				await target.draw(cards.length);
+			}
+		},
+		onremove: true,
+		intro: { content: `已移除选项：$` },
 		subSkill: {
-			draw_effect: {
+			effect: {
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					player: "phaseDrawBegin2",
-				},
+				intro: { content: "摸牌阶段摸牌数和使用【杀】的次数上限+#" },
+				trigger: { player: "phaseDrawBegin2" },
 				forced: true,
 				popup: false,
 				filter(event, player) {
 					return !event.numFixed;
 				},
 				async content(event, trigger, player) {
-					trigger.num += player.countMark("dc_mogui_draw");
+					trigger.num += player.countMark(event.name);
 				},
-			},
-			sha_effect: {
-				charlotte: true,
-				onremove: true,
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name === "sha") {
-							return num + player.countMark("dc_mogui_sha");
+							return num + player.countMark("mogui_effect");
 						}
 					},
 				},
 			},
-			handcard_effect: {
+			hand: {
 				charlotte: true,
 				onremove: true,
+				markimage: "image/card/handcard.png",
+				intro: { content: "手牌上限+#" },
 				mod: {
 					maxHandcard(player, num) {
-						return num + player.countMark("dc_mogui_handcard");
+						return num + player.countMark("mogui_hand");
 					},
 				},
 			},
@@ -1475,43 +1438,38 @@ const skills = {
 	},
 	zunjian: {
 		audio: 2,
-		derivation: ["dc_rencheng_modified"],
-		limited: true,
+		derivation: ["mogui", "rencheng", "rencheng_rewrite"],
+		trigger: { player: "phaseBegin" },
+		filter(event, player) {
+			return player.getStorage("mogui").length > 2;
+		},
+		juexingji: true,
+		forced: true,
 		skillAnimation: true,
 		animationColor: "orange",
-		juexingji: true,
-		trigger: {
-			player: "phaseBegin",
-		},
-		forced: true,
-		filter(event, player) {
-			const options = player.storage.dc_mogui_options || ["judge", "draw", "discard"];
-			return options.length === 0;
-		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.recover();
 			const result = await player
 				.chooseControl(["选项一", "选项二"])
 				.set("prompt", "遵谏：请选择一项")
-				.set("choiceList", ["摸2张牌并重置“漠规”", "再回复1点体力，然后失去“漠规”修改“仁诚”"])
+				.set("choiceList", ["摸两张牌并重置【漠规】", "回复1点体力，然后失去【漠规】并修改【仁诚】"])
 				.set("ai", () => {
-					if (get.player().hp <= 2) {
+					const player = get.player();
+					if (player.getDamagedHp() >= 2) {
 						return "选项二";
 					}
 					return "选项一";
 				})
 				.forResult();
-			if (result.control === "选项一") {
+			if (result?.control === "选项一") {
 				await player.draw(2);
-				player.storage.dc_mogui_options = ["judge", "draw", "discard"];
-			} else if (result.control === "选项二") {
+				player.setStorage("mogui", [], true);
+			} else if (result?.control === "选项二") {
 				await player.recover();
 				await player.removeSkills("mogui");
-				if (player.hasSkill("rencheng")) {
-					await player.removeSkills("rencheng");
-				}
-				await player.addSkills("rencheng_modified");
+				player.storage.rencheng = true;
+				game.log(player, "修改了", "#g【仁诚】");
 			}
 		},
 	},
@@ -1519,54 +1477,19 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
-			await player.draw(2);
-			const result = await player
-				.chooseCardTarget({
-					prompt: "仁诚：你可交给一名其他角色至多2张牌",
-					position: "he",
-					selectCard: [1, 2],
-					filterTarget: lib.filter.notMe,
-					ai1(card) {
-						return 7 - get.value(card);
-					},
-					ai2(target) {
-						const player = get.player();
-						let att = get.attitude(player, target);
-						if (target.hasSkillTag("nogain")) {
-							att = 0;
-						}
-						return att;
-					},
-				})
-				.forResult();
-			if (result.bool && result?.cards?.length && result.targets?.length) {
-				const {
-					targets: [target],
-					cards,
-				} = result;
-				player.line(target);
-				await player.give(cards, target);
+			const bool = player.storage[event.name];
+			const num = bool ? 3 : 2;
+			await player.draw(num);
+			if (!game.hasPlayer(current => current != player) || !player.hasCards("he")) {
+				return;
 			}
-		},
-		ai: {
-			order: 6,
-			result: {
-				player: 1,
-			},
-		},
-	},
-	rencheng_modified: {
-		audio: 2,
-		enable: "phaseUse",
-		usable: 1,
-		async content(event, trigger, player) {
-			await player.draw(3);
 			const result = await player
 				.chooseCardTarget({
-					prompt: "仁诚：你可交给一名其他角色至多3张牌",
+					prompt: `仁诚：你可交给一名其他角色至多${get.cnNumber(num)}张牌`,
 					position: "he",
-					selectCard: [1, 3],
+					selectCard: [1, num],
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
 						return 7 - get.value(card);
@@ -1575,65 +1498,73 @@ const skills = {
 						const player = get.player();
 						let att = get.attitude(player, target);
 						if (target.hasSkillTag("nogain")) {
-							att = 0;
+							att /= 10;
 						}
 						return att;
 					},
 				})
 				.forResult();
-			if (result.bool && result?.cards?.length && result.targets?.length) {
+			if (result?.bool && result.cards?.length && result.targets?.length) {
 				const {
 					targets: [target],
 					cards,
 				} = result;
 				player.line(target);
 				await player.give(cards, target);
-				const hasBasic = cards.some(card => get.type(card) === "basic");
-				const hasTrick = cards.some(card => get.type(card) === "trick");
-				const hasEquip = cards.some(card => get.type(card) === "equip");
-				if (hasBasic) {
-					target.addTempSkill("rencheng_modified_distance", { player: "phaseUseAfter" });
+				if (!bool) {
+					return;
 				}
-				if (hasTrick) {
-					const result2 = await player
+				if (cards.some(card => get.type(card) === "basic")) {
+					target.addSkill(event.name + "_effect");
+				}
+				if (cards.some(card => get.type2(card) === "trick") && game.hasPlayer(current => current.hasDiscardableCards(player, "hej"))) {
+					const result = await player
 						.chooseTarget({
-							prompt: "仁诚：你可弃置一名角色区域内1张牌",
-							filterTarget: lib.filter.all,
+							prompt: "仁诚：你可以选择一名角色，然后弃置其区域内的一张牌",
+							filterTarget(card, player, target) {
+								return target.hasDiscardableCards(player, "hej");
+							},
 							ai(target) {
-								return -get.attitude(get.player(), target);
+								const player = get.player();
+								return get.effect(target, { name: "guohe_copy" }, player, player);
 							},
 						})
 						.forResult();
-					if (result2?.targets?.length) {
-						const [target2] = result2.targets;
-						player.line(target2);
-						const result3 = await player
-							.choosePlayerCard({
-								target: target2,
-								forced: true,
-								prompt: "仁诚：弃置一张牌",
-							})
-							.forResult();
-						if (result3?.cards?.length) {
-							await target2.discard(result3.cards);
-						}
+					if (result?.targets?.length) {
+						const [target] = result.targets;
+						player.line(target);
+						await player.discardPlayerCard(target, "hej", true);
 					}
 				}
-				if (hasEquip) {
+				if (cards.some(card => get.type(card) === "equip")) {
 					await player.recover();
 					await target.recover();
 				}
 			}
 		},
 		ai: {
-			order: 6,
-			result: {
-				player: 1,
-			},
+			order: 7,
+			result: { player: 1 },
 		},
 		subSkill: {
-			distance: {
+			rewrite: {},
+			effect: {
 				charlotte: true,
+				mark: true,
+				intro: { content: "下个出牌阶段使用牌无距离限制" },
+				trigger: { player: "phaseUseBegin" },
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.addTempSkill("rencheng_nodistance", "phaseUseAfter");
+				},
+			},
+			nodistance: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "本阶段使用牌无距离限制" },
 				mod: {
 					targetInRange(card, player, target) {
 						return true;

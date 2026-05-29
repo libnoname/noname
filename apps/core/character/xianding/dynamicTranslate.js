@@ -314,5 +314,12 @@ const dynamicTranslates = {
 		});
 		return result;
 	},
+	rencheng(player, skill) {
+		const storage = player.storage[skill];
+		if (!storage) {
+			return lib.translate["rencheng_info"];
+		}
+		return lib.translate["rencheng_rewrite_info"];
+	},
 };
 export default dynamicTranslates;
