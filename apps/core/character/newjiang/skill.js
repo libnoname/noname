@@ -6283,7 +6283,7 @@ const skills = {
 			return player.storage.lkbushi;
 		},
 		init(player, skill) {
-			player.addTip(skill, get.translation(skill) + lib.skill.lkbushi.getBushi(player).reduce((str, i) => str + get.translation(i), ""));
+			player.addTip(skill, `${get.translation(skill)}${lib.skill.lkbushi.getBushi(player).map(i => get.translation(i)).join("")}`);
 		},
 		onremove(player, skill) {
 			delete player.storage[skill];
@@ -6292,99 +6292,58 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		direct: true,
 		locked: false,
-		content() {
-			"step 0";
-			var list = lib.skill.lkbushi.getBushi(player);
-			list = list.map(function (i) {
-				return ["", "", "lukai_" + i];
-			});
-			var next = player.chooseToMove("卜筮：是否调整〖卜筮〗的花色顺序？");
-			next.set("list", [
-				[
-					"无次数限制/使用打出摸牌<br>可弃牌无效/结束阶段获得",
-					[list, "vcard"],
-					function (list) {
-						var list2 = list.map(function (i) {
-							return get.translation(i[2].slice(6));
-						});
-						return (
-							"你使用" +
-							list2[0] +
-							"牌时无次数限制；使用或打出" +
-							list2[1] +
-							"时，摸一张牌；<br>成为" +
-							list2[2] +
-							"牌目标后可弃一张牌无效；结束阶段获得一张" +
-							list2[3] +
-							"牌"
-						);
+		async content(event, trigger, player) {
+			const list = lib.skill.lkbushi.getBushi(player).map(i => ["", "", `lukai_${i}`]);
+			const result = await player
+				.chooseToMove({
+					prompt: "卜筮：是否调整〖卜筮〗的花色顺序？",
+					list: [
+						[
+							"无次数限制/使用打出摸牌<br>可弃牌无效/结束阶段获得",
+							[list, "vcard"],
+							list => {
+								const list2 = list.map(i => get.translation(i[2].slice(6)));
+								return `你使用${list2[0]}牌时无次数限制；使用或打出${list2[1]}时，摸一张牌；<br>成为${list2[2]}牌目标后可弃一张牌无效；结束阶段获得一张${list2[3]}牌`;
+							},
+						],
+					],
+					processAI() {
+						const player = _status.event.player;
+						const list = lib.skill.lkbushi.getBushi(player);
+						const list2 = [];
+						let hs = player.getCards("hs", card => player.hasValueTarget(card));
+						list.sort((a, b) => hs.filter(i => get.suit(i) === b).length - hs.filter(i => get.suit(i) === a).length);
+						list2.push(list.shift());
+						hs = player.getCards("hs", "sha");
+						list.sort((a, b) => hs.filter(i => get.suit(i) === b).length - hs.filter(i => get.suit(i) === a).length);
+						list2.unshift(list.shift());
+						list.randomSort();
+						list2.addArray(list);
+						return [list2.map(i => ["", "", `lukai_${i}`])];
 					},
-				],
-			]);
-			next.set("processAI", function () {
-				var player = _status.event.player;
-				var list = lib.skill.lkbushi.getBushi(player);
-				var list2 = [];
-				var hs = player.getCards("hs", function (card) {
-					return player.hasValueTarget(card);
-				});
-				list.sort(function (a, b) {
-					return hs.filter(i => get.suit(i) == b).length - hs.filter(i => get.suit(i) == a).length;
-				});
-				list2.push(list.shift());
-				hs = player.getCards("hs", "sha");
-				list.sort(function (a, b) {
-					return hs.filter(i => get.suit(i) == b).length - hs.filter(i => get.suit(i) == a).length;
-				});
-				list2.unshift(list.shift());
-				list.randomSort();
-				list2.addArray(list);
-				return [list2.map(i => ["", "", "lukai_" + i])];
-			});
-			"step 1";
-			if (result.bool) {
-				var list = lib.skill.lkbushi.getBushi(player),
-					list2 = result.moved[0].map(function (i) {
-						return i[2].slice(6);
-					});
-				for (var i = 0; i < 4; i++) {
-					if (list[i] != list2[i]) {
-						player.logSkill("lkbushi");
-						player.storage.lkbushi = list2;
-						player.addTip(
-							"lkbushi",
-							get.translation("lkbushi") + lib.skill.lkbushi.getBushi(player).reduce((str, i) => str + get.translation(i), "")
-						);
-						var str = "#g";
-						for (var j = 0; j < 4; j++) {
-							str += get.translation(list2[j]);
-							if (j != 3) {
-								str += "/";
-							}
-						}
-						game.log(player, "将", "#g【卜筮】", "的花色序列改为", str);
-						game.delayx();
-						break;
-					}
-				}
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const oldList = lib.skill.lkbushi.getBushi(player);
+			const list2 = result.moved[0].map(i => i[2].slice(6));
+			if (oldList.every((suit, index) => suit === list2[index])) {
+				return;
+			}
+			player.logSkill("lkbushi");
+			player.storage.lkbushi = list2;
+			player.addTip("lkbushi", `${get.translation("lkbushi")}${lib.skill.lkbushi.getBushi(player).map(i => get.translation(i)).join("")}`);
+			const str = `#g${list2.map(i => get.translation(i)).join("/")}`;
+			game.log(player, "将", "#g【卜筮】", "的花色序列改为", str);
+			await game.delayx();
 		},
 		mark: true,
 		marktext: "筮",
 		intro: {
 			content(storage, player) {
-				var list = lib.skill.lkbushi.getBushi(player).map(i => get.translation(i));
-				return (
-					"①你使用" +
-					list[0] +
-					"牌无次数限制。②当你使用或打出" +
-					list[1] +
-					"牌后，你摸一张牌。③当你成为" +
-					list[2] +
-					"牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆或弃牌堆获得一张" +
-					list[3] +
-					"牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。"
-				);
+				const list = lib.skill.lkbushi.getBushi(player).map(i => get.translation(i));
+				return `①你使用${list[0]}牌无次数限制。②当你使用或打出${list[1]}牌后，你摸一张牌。③当你成为${list[2]}牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆或弃牌堆获得一张${list[3]}牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。`;
 			},
 		},
 		group: ["lkbushi_unlimit", "lkbushi_draw", "lkbushi_defend", "lkbushi_gain"],
@@ -6392,8 +6351,8 @@ const skills = {
 			unlimit: {
 				mod: {
 					cardUsable(card, player) {
-						const list = lib.skill.lkbushi.getBushi(player),
-							suit = get.suit(card);
+						const list = lib.skill.lkbushi.getBushi(player);
+						const suit = get.suit(card);
 						if (suit === "unsure" || list[0] === suit) {
 							return Infinity;
 						}
@@ -6408,14 +6367,14 @@ const skills = {
 					if (event.addCount === false) {
 						return false;
 					}
-					var list = lib.skill.lkbushi.getBushi(player);
-					return list[0] == get.suit(event.card);
+					const list = lib.skill.lkbushi.getBushi(player);
+					return list[0] === get.suit(event.card);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.addCount = false;
-					var stat = player.getStat().card,
-						name = trigger.card.name;
-					if (stat[name] && typeof stat[name] == "number") {
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
+					if (stat[name] && typeof stat[name] === "number") {
 						stat[name]--;
 					}
 				},
@@ -6426,11 +6385,11 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					var list = lib.skill.lkbushi.getBushi(player);
-					return list[1] == get.suit(event.card);
+					const list = lib.skill.lkbushi.getBushi(player);
+					return list[1] === get.suit(event.card);
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			defend: {
@@ -6438,21 +6397,25 @@ const skills = {
 				trigger: { target: "useCardToTargeted" },
 				direct: true,
 				filter(event, player) {
-					var list = lib.skill.lkbushi.getBushi(player);
-					return list[2] == get.suit(event.card) && !event.excluded.includes(player) && player.countCards("he") > 0;
+					const list = lib.skill.lkbushi.getBushi(player);
+					return list[2] === get.suit(event.card) && !event.excluded.includes(player) && player.countCards("he") > 0;
 				},
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard("he", get.prompt("lkbushi"), "弃置一张牌，令" + get.translation(trigger.card) + "对你无效")
-						.set("ai", function (card) {
-							if (_status.event.eff >= 0) {
-								return false;
+				async content(event, trigger, player) {
+					const next = player
+						.chooseToDiscard({
+							prompt: get.prompt("lkbushi"),
+							prompt2: `弃置一张牌，令${get.translation(trigger.card)}对你无效`,
+							position: "he",
+							ai(card) {
+								if (_status.event.eff >= 0) {
+									return 0;
+								}
+								return -_status.event.eff * 1.1 - get.value(card);
 							}
-							return -_status.event.eff * 1.1 - get.value(card);
 						})
-						.set("eff", get.effect(player, trigger.card, trigger.player, player)).logSkill = ["lkbushi_defend", trigger.player];
-					"step 1";
+						.set("eff", get.effect(player, trigger.card, trigger.player, player));
+					next.logSkill = ["lkbushi_defend", trigger.player];
+					const result = await next.forResult();
 					if (result.bool) {
 						trigger.excluded.add(player);
 					}
@@ -6463,13 +6426,14 @@ const skills = {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				locked: false,
-				content() {
-					var list = lib.skill.lkbushi.getBushi(player);
-					var card = get.cardPile(function (card) {
-						return get.suit(card, false) == list[3];
-					});
+				async content(event, trigger, player) {
+					const list = lib.skill.lkbushi.getBushi(player);
+					const card = get.cardPile(card => get.suit(card, false) === list[3]);
 					if (card) {
-						player.gain(card, "gain2");
+						await player.gain({
+							cards: [card],
+							animate: "gain2",
+						});
 					}
 				},
 			},
@@ -6480,17 +6444,17 @@ const skills = {
 		trigger: { source: ["damageBegin1", "damageBegin4"] },
 		forced: true,
 		filter(event, player, name) {
-			if (!event.card || event.card.name != "sha" || event.getParent().type != "card") {
+			if (!event.card || event.card.name !== "sha" || event.getParent().type !== "card") {
 				return false;
 			}
-			var range = player.getAttackRange();
-			if (name == "damageBegin1") {
+			const range = player.getAttackRange();
+			if (name === "damageBegin1") {
 				return range > 3;
 			}
 			return range < 3 && event.num > 1;
 		},
-		content() {
-			if (event.triggername == "damageBegin1") {
+		async content(event, trigger) {
+			if (event.triggername === "damageBegin1") {
 				trigger.num++;
 			} else {
 				trigger.num = 1;
@@ -6502,12 +6466,10 @@ const skills = {
 				ai: {
 					filterDamage: true,
 					skillTagFilter(player, tag, arg) {
-						if (arg && arg.card && arg.card.name == "sha") {
-							if (arg.player && arg.player.hasSkill("lkzhongzhuang") && arg.player.getAttackRange() < 3) {
-								return true;
-							}
+						if (!arg || !arg.card || arg.card.name !== "sha") {
+							return false;
 						}
-						return false;
+						return Boolean(arg.player && arg.player.hasSkill("lkzhongzhuang") && arg.player.getAttackRange() < 3);
 					},
 				},
 			},
