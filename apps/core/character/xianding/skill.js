@@ -1472,6 +1472,7 @@ const skills = {
 				game.log(player, "修改了", "#g【仁诚】");
 			}
 		},
+		ai: { combo: "mogui" },
 	},
 	rencheng: {
 		audio: 2,
