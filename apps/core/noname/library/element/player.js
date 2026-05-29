@@ -11464,7 +11464,9 @@ export class Player extends HTMLDivElement {
 		return this;
 	}
 	awakenQidingSkill(skill){
-		if (this.storage[skill]) return;
+		if (this.storage[skill]) {
+			return;
+		}
 		if (this.storage[skill] === undefined || this.storage[skill] === false) {
 			this.storage[skill] = true;
 		}

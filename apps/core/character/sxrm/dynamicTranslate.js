@@ -3,21 +3,22 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const dynamicTranslates = {
 	sxrmqishi(player, skill) {
 		const bool = player.getStorage(skill, false);
-		let type = !bool ? get.poptip("sxrm_qidingSkill") : '锁定技';
-		let forced = !bool ? '可以' : '';
+		let type = !bool ? get.poptip("sxrm_qidingSkill") : "锁定技";
+		let forced = !bool ? "可以" : "";
 		return `${type}。结束阶段，你${forced}获得本回合其他角色进入弃牌堆的至多五张牌，然后你跳过下个摸牌阶段。`;
 	},
-	sxrmbiyi(player, skill){
+	sxrmbiyi(player, skill) {
 		const bool = player.getStorage(skill, false);
 		let sk = player.storage.sxrmfusui_skill;
-		let yang = sk ? `【${get.translation(sk)}】` : '无技能',
-			yin = '【枭姬】'; 
+		let yang = sk ? `【${get.translation(sk)}】` : "无技能",
+			yin = "【枭姬】";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = '转换技，你视为拥有：', end = '。当你发动上述对应技能后，切换本技能状态。';
+		let start = "转换技，你视为拥有：",
+			end = "。当你发动上述对应技能后，切换本技能状态。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	sxrmcongfeng(player, skill) {

@@ -648,8 +648,12 @@ export class Is {
 	 * @returns
 	 */
 	qidingSkill(skill, player) {
-		const info = get.info(skill), { qidingSkill } = info;
-		if(typeof(qidingSkill) === "function") {
+		const info = get.info(skill);
+		if (!info) {
+			return false;
+		}
+		const { qidingSkill } = info;
+		if (typeof qidingSkill === "function") {
 			return Boolean(qidingSkill(skill, player));
 		}
 		return Boolean(qidingSkill);
