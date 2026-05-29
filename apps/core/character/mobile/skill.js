@@ -27081,105 +27081,67 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.hasCards("h", card => get.type(card) === "basic");
+			return player.hasCards("h", card => get.info("reshanxi").filterCard(card, player)) && game.hasPlayer(current => get.info("reshanxi").filterTarget(null, player, current));
+		},
+		filterCard(card, player) {
+			return get.type(card) == "basic" && lib.filter.cardDiscardable(card, player);
 		},
 		filterTarget(card, player, target) {
 			return target !== player && target.hasCards("h");
 		},
+		check(card) {
+			return 7 - get.value(card);
+		},
 		async content(event, trigger, player) {
 			const target = event.target;
+			const discardCard = event.cards[0];
+			const discardColor = get.color(discardCard, player);
 			const result = await player
-				.chooseCard({
-					prompt: "闪袭：请弃置一张基本牌",
-					forced: true,
+				.discardPlayerCard({
+					target: target,
 					position: "h",
-					filterCard(card) {
-						return get.type(card) === "basic";
-					},
-					ai(card) {
-						return 5 - get.value(card);
-					},
+					forced: true,
+					prompt: "闪袭：请选择弃置对方一张手牌",
 				})
 				.forResult();
 			if (result?.cards?.length) {
-				const discardCard = result.cards[0];
-				const discardColor = get.color(discardCard);
-				await player.discard(discardCard);
-				if (target.hasCards("h")) {
-					const result2 = await player
-						.choosePlayerCard({
-							target: target,
-							position: "h",
-							forced: true,
-							prompt: "闪袭：请选择弃置对方的一张手牌",
-						})
-						.forResult();
-					if (result2?.cards?.length) {
-						const targetCard = result2.cards[0];
-						const targetCardName = targetCard.name;
-						await target.discard(targetCard);
-						if (discardColor === "red") {
-							await player.gain(targetCard, "gain2");
-							game.log(player, "获得了", targetCard);
-						}
-						if (!player.storage.dchqxinshanxi) {
-							player.storage.dchqxinshanxi = [];
-						}
-						if (!player.storage.dchqxinshanxi.includes(targetCardName)) {
-							player.storage.dchqxinshanxi.push(targetCardName);
-							await target.damage();
-							game.log(player, "对", target, "造成了1点伤害");
-						}
-					}
+				const targetCard = result.cards[0];
+				const targetCardName = get.name(targetCard, target);
+				if (discardColor === "red" && result.cards.someInD("d")) {
+					await player.gain(result.cards.filterInD("d"), "gain2");
+				}
+				if (!player.getStorage(event.name).includes(targetCardName)) {
+					player.markAuto(event.name, [targetCardName]);
+					await target.damage();
 				}
 			}
 		},
 		ai: {
 			order: 9,
-			result: {
-				target: -2,
-			},
+			result: { target: -2 },
 		},
+		onremove: true,
+		intro: { content: "已弃置牌名：$" },
 	},
 	reqizhou: {
 		audio: 2,
-		trigger: {
-			player: "useCard",
-		},
+		trigger: { player: "useCard" },
 		forced: true,
 		filter(event, player) {
-			if (get.type(event.card) !== "equip") {
-				return false;
-			}
-			return true;
+			return get.type(event.card) == "equip";
 		},
 		derivation: ["yingzi", "jiang", "xinpojun", "dbchongjian", "fenwei"],
 		async content(event, trigger, player) {
-			if (!player.storage.dchqxinqizhou) {
-				player.storage.dchqxinqizhou = [];
-			}
-			const cardName = trigger.card.name;
-			if (!player.storage.dchqxinqizhou.includes(cardName)) {
-				player.storage.dchqxinqizhou.push(cardName);
-			}
-			const count = player.storage.dchqxinqizhou.length;
-			const skillMap = {
-				1: "yingzi",
-				2: "jiang",
-				3: "xinpojun",
-				4: "dbchongjian",
-				5: "fenwei",
-			};
-			const skills = [];
-			for (let i = 1; i <= Math.min(count, 5); i++) {
-				skills.push(skillMap[i]);
-			}
+			player.markAuto(event.name, [trigger.card.name]);
+			const count = player.getStorage(event.name).length;
+			const skills = get.info(event.name).derivation.slice(0, Math.min(count, 5));
 			player.removeAdditionalSkill("dchqxinqizhou");
 			if (skills.length > 0) {
 				player.addAdditionalSkill("dchqxinqizhou", skills);
-				game.log(player, "已使用过", count, "种不同装备牌");
 			}
 		},
+		onremove: true,
+		intro: { content: "已使用过装备牌名：$" },
 	},
 	zhaohan: {
 		audio: 2,
