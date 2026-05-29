@@ -102,6 +102,7 @@ const skills = {
 		onremove(player) {
 			player.removeSkill("mbshanjia_count");
 		},
+		locked: false,
 		mod: {
 			aiValue(player, card, num) {
 				if (player.countMark("mbshanjia") < 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
