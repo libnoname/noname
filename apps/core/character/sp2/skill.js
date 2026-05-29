@@ -55,7 +55,7 @@ const skills = {
 		audio: 2,
 		forced: true,
 		trigger: { player: "phaseBegin" },
-		async content(event, triger, player) {
+		async content(event, trigger, player) {
 			let result = await player.draw({ num: player.maxHp }).forResult();
 			if (get.itemtype(result?.cards) != "cards") {
 				return;
@@ -110,7 +110,7 @@ const skills = {
 				logTarget(event, player, name) {
 					return game.filterPlayer(target => target.isMaxHandcard()).sortBySeat();
 				},
-				async content(event, triger, player) {
+				async content(event, trigger, player) {
 					const { targets } = event;
 					for (const target of targets.sortBySeat()) {
 						if (!target.isIn()) {

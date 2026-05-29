@@ -38,7 +38,7 @@ const characterSortTranslate = {
 	sp2_zhangtai: "章台春望",
 	sp2_jinse: "锦瑟良缘",
 	sp2_bizhe: "笔舌如椽",
-	sp2_wangzhe: "往者可荐",
+	sp2_wangzhe: "往者可谏",
 	sp2_doukou: "豆蔻梢头",
 	sp2_jichu: "计将安出",
 	sp2_yuxiu: "钟灵毓秀",

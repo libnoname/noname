@@ -417,7 +417,7 @@ export class Library {
 	 */
 	playerOL;
 	/**
-	 * @type { IDBRequest<IDBDatabase> }
+	 * @type { IDBDatabase }
 	 */
 	db;
 	//函数钩子

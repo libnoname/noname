@@ -6118,7 +6118,7 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter(event, player) {
-			return event.source && player != event.source && event.source.countDiscardableCards(source, "he");
+			return event.source && player !== event.source && event.source.hasDiscardableCards(event.source, "he");
 		},
 		getIndex: event => event.num,
 		async content(event, trigger, player) {
@@ -7025,83 +7025,84 @@ const skills = {
 			if (_status.renku.length) {
 				return true;
 			}
-			return event.player.countCards("h") > event.player.hp;
+			return event.player.countCards("h") > event.player.getHp();
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var target = trigger.player;
-			event.target = target;
-			var num = Math.max(0, target.countCards("h") - target.hp);
-			var choiceList = ["令其从仁库中获得一张牌", "令其将" + get.cnNumber(num) + "张手牌置入仁库"];
-			var choices = [];
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const num = Math.max(0, target.countCards("h") - target.getHp());
+			const choiceList = ["令其从仁库中获得一张牌", `令其将${get.cnNumber(num)}张手牌置入仁库`];
+			const choices = [];
 			if (_status.renku.length) {
 				choices.push("选项一");
 			} else {
 				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
 			}
-			if (target.countCards("h") > target.hp) {
-				event.num = num;
+			if (target.countCards("h") > target.getHp()) {
 				choices.push("选项二");
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
 			if (!choices.length) {
-				event.finish();
-			} else {
-				player
-					.chooseControl(choices, "cancel2")
-					.set("prompt", get.prompt("xinliaoyi", target))
-					.set("choiceList", choiceList)
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getTrigger().player;
-						var att = get.attitude(player, target);
-						if (att > 0) {
-							if (_status.renku.length > 0) {
-								return "选项一";
-							}
-							return 0;
+				return;
+			}
+			const result = await player
+				.chooseControl(choices, "cancel2")
+				.set("prompt", get.prompt("xinliaoyi", target))
+				.set("choiceList", choiceList)
+				.set("ai", () => {
+					const { player, target, controls } = get.event();
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						if (controls.includes("选项一")) {
+							return "选项一";
 						}
-						if (target.countCards("h") > target.hp) {
+						return "cancel2";
+					} else {
+						if (controls.includes("选项二")) {
 							return "选项二";
 						}
 						return "cancel2";
-					});
-			}
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("xinliaoyi", target);
-				if (result.control == "选项一") {
-					target.chooseButton(true, ["选择获得一张牌", _status.renku]).set("ai", function (button) {
-						return get.value(button.link, _status.event.player);
-					});
-					event.goto(4);
-				} else {
-					var hs = target.getCards("h");
-					if (hs.length <= num) {
-						event._result = { bool: true, cards: hs };
-					} else {
-						target.chooseCard("h", true, "将" + get.cnNumber(num) + "张手牌置于仁库中", num);
 					}
+				})
+				.set("target", target)
+				.forResult();
+			event.result = {
+				bool: result.control != "cancel2",
+				cost_data: result.control,
+			};
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const control = event.cost_data;
+			if (control == "选项一") {
+				if (!_status.renku.length) {
+					return;
+				}
+				const result = await target
+					.chooseButton(true, ["选择获得一张牌", _status.renku])
+					.set("ai", button => {
+						return get.value(button.link, get.player());
+					})
+					.set("direct", true)
+					.forResult();
+				if (result?.bool) {
+					await target.gain(result.links, "gain2", "fromRenku");
 				}
 			} else {
-				event.finish();
+				const hs = target.getCards("h");
+				const num = Math.max(0, target.countCards("h") - target.getHp());
+				if (!hs.length) {
+					return;
+				}
+				const result = hs.length <= num ? { bool: true, cards: hs } : await target.chooseCard("h", true, `将${get.cnNumber(num)}张手牌置于仁库中`, num).forResult();
+				if (result?.bool) {
+					target.$throw(result.cards, 1000);
+					game.log(target, "将", result.cards, "置入了仁库");
+					await target.lose(result.cards, ui.special, "toRenku");
+					await game.delayx();
+				}
 			}
-			"step 2";
-			if (result.bool) {
-				target.$throw(result.cards, 1000);
-				game.log(target, "将", result.cards, "置入了仁库");
-				target.lose(result.cards, ui.special, "toRenku");
-			} else {
-				event.finish();
-			}
-			"step 3";
-			game.delayx();
-			event.finish();
-			"step 4";
-			var cards = result.links;
-			target.gain(cards, "gain2", "fromRenku");
 		},
 		init(player) {
 			player.storage.renku = true;
@@ -7115,7 +7116,7 @@ const skills = {
 			if (player == event.player) {
 				return false;
 			}
-			var num = event.player.hp - event.player.countCards("h");
+			const num = event.player.getHp() - event.player.countCards("h");
 			if (num < 0) {
 				return true;
 			}
@@ -7123,16 +7124,16 @@ const skills = {
 		},
 		logTarget: "player",
 		prompt2(event, player) {
-			var target = event.player,
-				num = target.hp - target.countCards("h");
+			const target = event.player,
+				num = target.getHp() - target.countCards("h");
 			if (num < 0) {
-				return "令" + get.translation(target) + "将" + get.cnNumber(Math.min(4, -num)) + "张牌置入仁库";
+				return `令${get.translation(target)}将${get.cnNumber(Math.min(4, -num))}张牌置入仁库`;
 			}
-			return "令" + get.translation(target) + "从仁库中获得" + get.cnNumber(Math.min(4, num)) + "张牌";
+			return `令${get.translation(target)}从仁库中获得${get.cnNumber(Math.min(4, num))}张牌`;
 		},
 		check(event, player) {
-			var target = event.player,
-				num = target.hp - target.countCards("h"),
+			const target = event.player,
+				num = target.getHp() - target.countCards("h"),
 				att = get.attitude(player, target);
 			if (num < 0) {
 				if (
@@ -7147,35 +7148,38 @@ const skills = {
 			}
 			return att > 0;
 		},
-		content() {
-			"step 0";
-			var target = trigger.player,
-				num = target.hp - target.countCards("h");
-			event.target = target;
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			let num = target.getHp() - target.countCards("h");
 			if (num < 0) {
 				num = Math.min(4, -num);
-				target.chooseCard("he", true, "将" + get.cnNumber(num) + "张牌置于仁库中", num);
+				const hs = target.getCards("he");
+				if (!hs.length) {
+					return;
+				}
+				const result = hs.length <= num ? { bool: true, cards: hs } : await target.chooseCard("he", true, `将${get.cnNumber(num)}张牌置于仁库中`, num).forResult();
+				if (result?.bool) {
+					target.$throw(result.cards, 1000);
+					game.log(target, "将", result.cards, "置入了仁库");
+					await target.lose(result.cards, ui.special, "toRenku");
+					await game.delayx();
+				}
 			} else {
 				num = Math.min(4, num);
-				target.chooseButton(["选择获得" + get.cnNumber(num) + "张牌", _status.renku], num, true).set("ai", function (button) {
-					return get.value(button.link, _status.event.player);
-				});
-				event.goto(3);
+				if (!_status.renku.length) {
+					return;
+				}
+				const result = await target
+					.chooseButton([`选择获得${get.cnNumber(num)}张牌`, _status.renku], num, true)
+					.set("ai", button => {
+						return get.value(button.link, get.player());
+					})
+					.set("direct", true)
+					.forResult();
+				if (result?.bool) {
+					await target.gain(result.links, "gain2", "fromRenku");
+				}
 			}
-			"step 1";
-			if (result.bool) {
-				target.$throw(result.cards, 1000);
-				game.log(target, "将", result.cards, "置入了仁库");
-				target.lose(result.cards, ui.special, "toRenku");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			game.delayx();
-			event.finish();
-			"step 3";
-			var cards = result.links;
-			target.gain(cards, "gain2", "fromRenku");
 		},
 	},
 	binglun: {
@@ -9573,6 +9577,33 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
 			await player.recover();
+		},
+	},
+	spwuku: {
+		audio: 2,
+		trigger: { global: "useCard" },
+		forced: true,
+		preHidden: true,
+		filter(event, player) {
+			if (get.type(event.card) != "equip") {
+				return false;
+			}
+			var gz = get.mode() == "guozhan";
+			if (gz && event.player.isFriendOf(player)) {
+				return false;
+			}
+			return player.countMark("spwuku") < (gz ? 2 : 3);
+		},
+		content() {
+			player.addMark("spwuku", 1);
+		},
+		marktext: "库",
+		intro: {
+			content: "mark",
+		},
+		ai: {
+			combo: "spmiewu",
+			threaten: 3.6,
 		},
 	},
 	spsanchen: {

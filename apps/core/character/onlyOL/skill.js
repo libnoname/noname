@@ -141,6 +141,7 @@ const skills = {
 		group: ["olchenshi_useCard"],
 		subSkill: {
 			useCard: {
+				audio: "olchenshi",
 				forced: true,
 				trigger: {
 					player: ["useCard2"],
@@ -3121,6 +3122,7 @@ const skills = {
 		group: "olquanyu_effect",
 		subSkill: {
 			effect: {
+				audio: "olquanyu",
 				trigger: { player: "useCardToPlayer" },
 				filter(event, player) {
 					if (event.card.name != "sha" || event.targets?.length != 1) {
@@ -3277,6 +3279,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "olqiangang",
 				charlotte: true,
 				trigger: { player: "useCard" },
 				filter(event, player) {
@@ -4255,9 +4258,7 @@ const skills = {
 	},
 	olsbmengshi: {
 		audio: 2,
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		skillAnimation: true,
 		limited: true,
 		animationColor: "wood",
@@ -4273,7 +4274,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "选择两名其他角色交换体力，然后失去其体力差点体力", (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					if (target == player) {
 						return false;
 					}
@@ -4281,42 +4282,168 @@ const skills = {
 				})
 				.set("selectTarget", 2)
 				.set("multitarget", true)
-				.set("complexTarget", true)
 				.set("ai", target => {
 					const player = get.player();
-					const att = get.attitude(player, target);
-					if (!ui.selected.targets && att > 0) {
-						return 1145141919810 - target.getHp();
+					const trigger = _status.event.getTrigger();
+					const getCache = (trigger, player) => {
+						let cache = trigger.getTempCache("olsbmengshi", player.playerid);
+						if (Array.isArray(cache)) {
+							return cache;
+						}
+						// 角色体力值
+						const hp = player.getHp();
+						// 可以自救的牌数
+						const save = player.countCards("hs", card => player.canSaveCard(card, player));
+						// 获取所有其他角色
+						const others = game.filterPlayer(current => current !== player);
+						const list = [];
+						for (let i = 0; i < others.length; i++) {
+							for (let j = i + 1; j < others.length; j++) {
+								const target1 = others[i];
+								const target2 = others[j];
+								// 相同体力值，pass
+								if (target1.getHp() == target2.getHp()) {
+									continue;
+								}
+								// 体力值的差值
+								const diff = target1.getHp() - target2.getHp();
+								// 差值的绝对值
+								const num = Math.abs(diff);
+								// 自救不回来，pass
+								if (num >= save + hp) {
+									continue;
+								}
+								// 按体力值排序组合，体力值低的在前
+								const targets = diff > 0 ? [target2, target1] : [target1, target2];
+								// 对低体力值角色的态度值
+								const att1 = get.attitude(player, targets[0]);
+								// 对高体力值角色的态度值
+								const att2 = get.attitude(player, targets[1]);
+								// 类别
+								let type = "";
+								// 敌敌
+								if (att1 < 0 && att2 < 0) {
+									type = "敌敌";
+								}
+								// 敌友，必须是低血队友换高血敌人
+								else if (att1 > 0 && att2 < 0) {
+									type = "敌友";
+								}
+								// 敌中，必须是低血中立换高血敌人
+								else if (att1 == 0 && att2 < 0) {
+									type = "敌中";
+								}
+								// 友友
+								else if (att1 > 0 && att2 > 0) {
+									type = "友友";
+								}
+								// 友中，必须是低血队友换高血中立
+								else if (att1 == 0 && att2 > 0) {
+									type = "友中";
+								}
+								// 中中
+								else if (att1 == 0 && att2 == 0) {
+									type = "中中";
+								}
+								// 其他的情况不管
+								if (!type) {
+									continue;
+								}
+								list.push({
+									targets,
+									type,
+									diff: num,
+								});
+							}
+						}
+						const scoredList = list.map((item, index, array) => {
+							const { targets, type, diff } = item;
+							let score = 0;
+							switch (type) {
+								case "敌敌":
+									if (["友", "中"].every(str => !array.some(item => item.type.startsWith(str)))) {
+										if (diff <= 2) {
+											score = 2 + Math.random() - diff;
+										} else {
+											score = 0;
+										}
+									}
+									break;
+								case "敌友":
+									score = (diff + 1) * 20 + get.recoverEffect(targets[0], player, player) + get.effect(targets[1], { name: "losehp" }, player, player);
+									break;
+								case "敌中":
+									score = diff * 20 + get.recoverEffect(targets[0], player, player) + get.effect(targets[1], { name: "losehp" }, player, player);
+									break;
+								case "友友":
+									if (!array.some(item => item.type.startsWith("敌"))) {
+										if (diff <= 2) {
+											score = 3 + Math.random() - diff + Math.max(0, get.effect(targets[1], { name: "losehp" }, targets[1], targets[1])) / 2;
+										} else {
+											score = 0;
+										}
+									}
+									break;
+								case "友中":
+									if (!array.some(item => item.type.startsWith("敌"))) {
+										if (diff <= 2) {
+											score = 4 + Math.random() - diff;
+										} else {
+											score = 0;
+										}
+									}
+									break;
+								case "中中":
+									if (["敌", "友"].every(str => !array.some(item => item.type.startsWith(str)))) {
+										if (diff <= 2) {
+											score = 2 + Math.random() - diff;
+										} else {
+											score = 0;
+										}
+									}
+									break;
+							}
+							return { ...item, score };
+						});
+						scoredList.sort((a, b) => b.score - a.score);
+						trigger.putTempCache("olsbmengshi", player.playerid, scoredList);
+						return scoredList;
+					};
+					const cache = getCache(trigger, player);
+					if (!cache?.length || !cache[0].targets.includes(target)) {
+						return 0;
 					}
-					if (ui.selected?.targets?.length && att < 0 && ui.selected.targets[0].getHp() < target.getHp()) {
-						return target.getHp() - ui.selected.targets[0].getHp();
-					}
+					return 1;
 				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const [target1, target2] = event.targets.sortBySeat();
-			if (target1.getHp() === target2.getHp()) {
-				return;
-			}
 			if ([target1, target2].some(target => !target.isIn())) {
 				player.chat("怎么肘了");
 				return;
 			}
 			const num = Math.abs(target1.getHp() - target2.getHp());
-			await player.loseHp(num);
+			if (num) {
+				await player.loseHp(num);
+				const num1 = target1.getHp();
+				const num2 = target2.getHp();
+				if (num1 > num2) {
+					await target1.loseHp(Math.abs(num1 - num2));
+					await target2.recoverTo(num1);
+				} else if (num2 > num1) {
+					await target1.recoverTo(num2);
+					await target2.loseHp(Math.abs(num1 - num2));
+				}
+			}
 			player.addTempSkill("olsbmengshi_effect", { player: "dieAfter" });
 			player.markAuto("olsbmengshi_effect", event.targets);
-			const list = target2.getHp() > target1.getHp() ? [num, -num] : [-num, num];
-			await target1[list[0] > 0 ? "recover" : "loseHp"](Math.abs(list[0]));
-			await target2[list[1] > 0 ? "recover" : "loseHp"](Math.abs(list[1]));
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					global: ["dieAfter", "phaseEnd"],
-				},
+				audio: "olsbmengshi",
+				trigger: { global: ["dieAfter", "phaseEnd"] },
 				charlotte: true,
 				popup: false,
 				forced: true,
@@ -4336,9 +4463,7 @@ const skills = {
 					}
 				},
 				onremove: true,
-				intro: {
-					content: "每个回合结束时，摸一张牌并回复1点体力，直到 $ 中的一名角色死亡",
-				},
+				intro: { content: "每个回合结束时，摸一张牌并回复1点体力，直到$中的一名角色死亡" },
 			},
 		},
 	},
@@ -9715,15 +9840,13 @@ const skills = {
 				if (links.includes("lose")) {
 					await player.loseMaxHp();
 				} else {
-					const { links: cards } =
-						player.countExpansions("olsbjigu") <= 2
-							? player.getExpansions("olsbjigu")
-							: await player
-									.chooseButton([`解腕：移去两张“谷”`, player.getExpansions("olsbjigu")], 2, true)
-									.set("ai", button => 6 - get.value(button.link))
-									.forResult();
-					if (cards?.length) {
-						await player.loseToDiscardpile(cards);
+					const result = await player
+						.chooseButton([`解腕：移去两张“谷”`, player.getExpansions("olsbjigu")], 2, true)
+						.set("ai", button => 6 - get.value(button.link))
+						.set("direct", true)
+						.forResult();
+					if (result?.links?.length) {
+						await player.loseToDiscardpile(result.links);
 					}
 				}
 				if (!player.countCards("hs", card => player.hasUseTarget(get.autoViewAs({ name: "shunshou", storage: { olsbjiewan: true } }, [card]), void 0, false))) {

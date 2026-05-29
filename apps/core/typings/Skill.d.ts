@@ -1473,15 +1473,14 @@ declare interface Skill {
 	 * 
 	 * 现在，无名杀的“按点卖血”技能可以和OL线上一样，在同时触发多个技能时，自选技能的顺序了。
 	 * 
-	 * 用例见郭嘉【遗计】
+	 * 用例见郭嘉【遗计】。
 	 * 
-	 * 而对于一些牌移动事件的技能而言，不仅要“多次发动”，每次发动时还都有不同的目标。
+	 * 而对于一些牌移动事件的技能而言，不仅要“多次发动”，每次发动时还都有不同的目标，
+	 * 比如伊籍的【急援】，可能会出现“同时将一些牌交给了多名角色”的情况。
 	 * 
-	 * 比如伊籍的【急援】，可能会出现“同时将一些牌交给了多名角色”的情况
-	 * 
-	 * 如果返回值为数组，则会遍历数组，分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用；
+	 * 如果返回值为数组或任意可遍历对象，则会分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用。
 	 */
-	getIndex?: (event, player, triggername) => number | any[];
+	getIndex?<T>(event: GameEvent, player: Player, triggername: string): number | Iterable<T>;
 
 	/**
 	 * 持恒技
