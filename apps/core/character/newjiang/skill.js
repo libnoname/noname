@@ -6689,16 +6689,11 @@ const skills = {
 		trigger: { player: "useCardAfter" },
 		forced: true,
 		filter(event, player) {
-			if (
-				!event.targets ||
-				!event.targets.filter(function (target) {
-					return target != player && !target.storage.weifeng2;
-				}).length
-			) {
+			if (!event.targets?.some(target => target !== player && !target.storage.weifeng2)) {
 				return false;
 			}
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != player) {
+			const evt = event.getParent("phaseUse");
+			if (evt?.player !== player) {
 				return false;
 			}
 			if (!get.tag(event.card, "damage")) {
@@ -6707,49 +6702,41 @@ const skills = {
 			if (!["basic", "trick"].includes(get.type(event.card))) {
 				return false;
 			}
-			return (
-				player
-					.getHistory("useCard", function (ev) {
-						return ev.getParent("phaseUse") == evt && get.tag(ev.card, "damage") && ["basic", "trick"].includes(get.type(ev.card));
-					})
-					.indexOf(event) == 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && !current.storage.weifeng2 && event.targets.includes(current);
-				})
-			);
+			return player.getHistory("useCard", ev => ev.getParent("phaseUse") === evt && get.tag(ev.card, "damage") && ["basic", "trick"].includes(get.type(ev.card))).indexOf(event) === 0 && game.hasPlayer(current => current !== player && !current.storage.weifeng2 && event.targets.includes(current));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(
-					true,
-					"威风：请选择一个目标，令其获得一个【惧(" + get.translation(trigger.card.name) + ")】标记",
-					function (card, player, target) {
-						return player != target && !target.storage.weifeng2 && _status.event.getTrigger().targets.includes(target);
-					}
-				)
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				target.storage.weifeng2 = trigger.card.name;
-				player.line(target, "green");
-				game.log(target, "获得了一个", "#g【惧(" + get.translation(trigger.card.name) + ")】", "标记");
-				target.markSkill("weifeng2");
-				player.addSkill("weifeng3");
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: `威风：请选择一个目标，令其获得一个【惧(${get.translation(trigger.card.name)})】标记`,
+					filterTarget(_card, player, target) {
+						return player !== target && !target.storage.weifeng2 && _status.event.getTrigger().targets.includes(target);
+					},
+					forced: true,
+					ai(target) {
+						return -get.attitude(_status.event.player, target);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
+			const target = result.targets[0];
+			target.storage.weifeng2 = trigger.card.name;
+			player.line(target, "green");
+			game.log(target, "获得了一个", `#g【惧(${get.translation(trigger.card.name)})】`, "标记");
+			target.markSkill("weifeng2");
+			player.addSkill("weifeng3");
 		},
 	},
 	weifeng2: {
 		intro: {
 			content: "当前“惧”标记名称：$",
 			onunmark(storage, player) {
-				if (player.storage.weifeng2) {
-					game.log(player, "移去了一个", "#g【惧(" + get.translation(player.storage.weifeng2) + ")】", "标记");
-					delete player.storage.weifeng2;
+				if (!player.storage.weifeng2) {
+					return;
 				}
+				game.log(player, "移去了一个", `#g【惧(${get.translation(player.storage.weifeng2)})】`, "标记");
+				delete player.storage.weifeng2;
 			},
 		},
 		marktext: "惧",
@@ -6763,27 +6750,33 @@ const skills = {
 		popup: false,
 		sourceSkill: "weifeng",
 		filter(event, player) {
-			if (event.name != "damage") {
+			if (event.name !== "damage") {
 				return true;
 			}
-			return event.player != player && typeof event.player.storage.weifeng2 == "string";
+			return event.player !== player && typeof event.player.storage.weifeng2 === "string";
 		},
-		content() {
-			if (trigger.name == "damage") {
-				player.logSkill("weifeng", trigger.player);
-				if (trigger.card && trigger.card.name == trigger.player.storage.weifeng2) {
-					trigger.num++;
-				} else if (trigger.player.countGainableCards(player, "he") > 0) {
-					player.gainPlayerCard(trigger.player, "he", true);
+		async content(event, trigger, player) {
+			if (trigger.name !== "damage") {
+				for (const current of game.filterPlayer(current => current.storage.weifeng2)) {
+					current.unmarkSkill("weifeng2");
 				}
-				trigger.player.unmarkSkill("weifeng2");
-			} else {
-				game.countPlayer(function (current) {
-					if (current.storage.weifeng2) {
-						current.unmarkSkill("weifeng2");
-					}
-				});
 				player.removeSkill("weifeng3");
+				return;
+			}
+			player.logSkill("weifeng", trigger.player);
+			let gainEvent;
+			if (trigger.card && trigger.card.name === trigger.player.storage.weifeng2) {
+				trigger.num++;
+			} else if (trigger.player.countGainableCards(player, "he") > 0) {
+				gainEvent = player.gainPlayerCard({
+					target: trigger.player,
+					position: "he",
+					forced: true,
+				});
+			}
+			trigger.player.unmarkSkill("weifeng2");
+			if (gainEvent) {
+				await gainEvent;
 			}
 		},
 	},
