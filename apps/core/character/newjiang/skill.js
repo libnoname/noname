@@ -4754,7 +4754,6 @@ const skills = {
 			const playerx = player;
 			target
 				.when("useCardAfter")
-				.vars({ numbers })
 				.assign({
 					mod: {
 						aiOrder(player, card, num) {
